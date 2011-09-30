@@ -26,13 +26,56 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_LIGHT_H
-#define APPLESEED_RENDERER_API_LIGHT_H
+#ifndef APPLESEED_RENDERER_MODELING_LIGHT_LIGHTFACTORYREGISTRAR_H
+#define APPLESEED_RENDERER_MODELING_LIGHT_LIGHTFACTORYREGISTRAR_H
 
-// API headers.
-#include "renderer/modeling/light/ilightfactory.h"
-#include "renderer/modeling/light/light.h"
-#include "renderer/modeling/light/lightfactoryregistrar.h"
-#include "renderer/modeling/light/lighttraits.h"
+// appleseed.renderer headers.
+#include "renderer/global/global.h"
 
-#endif  // !APPLESEED_RENDERER_API_LIGHT_H
+// appleseed.foundation headers.
+#include "foundation/utility/containers/array.h"
+#include "foundation/utility/implptr.h"
+
+// Forward declarations.
+namespace renderer      { class ILightFactory; }
+
+namespace renderer
+{
+
+//
+// An array of light factories.
+//
+
+DECLARE_ARRAY(LightFactoryArray, ILightFactory*);
+
+
+//
+// Light factory registrar.
+//
+
+class RENDERERDLL LightFactoryRegistrar
+  : public foundation::NonCopyable
+{
+  public:
+    typedef ILightFactory FactoryType;
+    typedef LightFactoryArray FactoryArrayType;
+
+    // Constructor.
+    LightFactoryRegistrar();
+
+    // Register a light factory.
+    void register_factory(std::auto_ptr<FactoryType> factory);
+
+    // Retrieve the registered factories.
+    FactoryArrayType get_factories() const;
+
+    // Lookup a factory by name.
+    const FactoryType* lookup(const char* name) const;
+
+  private:
+    PIMPL(LightFactoryRegistrar);
+};
+
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_MODELING_LIGHT_LIGHTFACTORYREGISTRAR_H

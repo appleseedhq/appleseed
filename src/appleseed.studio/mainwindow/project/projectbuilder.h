@@ -44,6 +44,7 @@
 #include "renderer/api/environment.h"
 #include "renderer/api/environmentedf.h"
 #include "renderer/api/environmentshader.h"
+#include "renderer/api/light.h"
 #include "renderer/api/material.h"
 #include "renderer/api/surfaceshader.h"
 
@@ -145,9 +146,10 @@ class ProjectBuilder
     renderer::CameraFactoryRegistrar                m_camera_factory_registrar;
     renderer::BSDFFactoryRegistrar                  m_bsdf_factory_registrar;
     renderer::EDFFactoryRegistrar                   m_edf_factory_registrar;
-    renderer::SurfaceShaderFactoryRegistrar         m_surface_shader_factory_registrar;
     renderer::EnvironmentEDFFactoryRegistrar        m_environment_edf_factory_registrar;
     renderer::EnvironmentShaderFactoryRegistrar     m_environment_shader_factory_registrar;
+    renderer::LightFactoryRegistrar                 m_light_factory_registrar;
+    renderer::SurfaceShaderFactoryRegistrar         m_surface_shader_factory_registrar;
 
     static std::string get_entity_name(const foundation::Dictionary& values);
 
@@ -196,13 +198,6 @@ ProjectBuilder::get_factory_registrar<renderer::EDF>() const
 }
 
 template <>
-inline const renderer::EntityTraits<renderer::SurfaceShader>::FactoryRegistrarType&
-ProjectBuilder::get_factory_registrar<renderer::SurfaceShader>() const
-{
-    return m_surface_shader_factory_registrar;
-}
-
-template <>
 inline const renderer::EntityTraits<renderer::EnvironmentEDF>::FactoryRegistrarType&
 ProjectBuilder::get_factory_registrar<renderer::EnvironmentEDF>() const
 {
@@ -214,6 +209,20 @@ inline const renderer::EntityTraits<renderer::EnvironmentShader>::FactoryRegistr
 ProjectBuilder::get_factory_registrar<renderer::EnvironmentShader>() const
 {
     return m_environment_shader_factory_registrar;
+}
+
+template <>
+inline const renderer::EntityTraits<renderer::Light>::FactoryRegistrarType&
+ProjectBuilder::get_factory_registrar<renderer::Light>() const
+{
+    return m_light_factory_registrar;
+}
+
+template <>
+inline const renderer::EntityTraits<renderer::SurfaceShader>::FactoryRegistrarType&
+ProjectBuilder::get_factory_registrar<renderer::SurfaceShader>() const
+{
+    return m_surface_shader_factory_registrar;
 }
 
 template <typename Entity, typename ParentEntity>

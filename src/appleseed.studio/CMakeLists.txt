@@ -135,8 +135,6 @@ set(mainwindow_project_sources
     mainwindow/project/itembase.cpp
     mainwindow/project/itembase.h
     mainwindow/project/itemtypemap.h
-    mainwindow/project/lightcollectionitem.cpp
-    mainwindow/project/lightcollectionitem.h
     mainwindow/project/multimodelcollectionitem.h
     mainwindow/project/multimodelentityeditorformfactory.h
     mainwindow/project/multimodelentityitem.h

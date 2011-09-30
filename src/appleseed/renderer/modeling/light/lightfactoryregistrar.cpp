@@ -26,42 +26,54 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_LIGHTCOLLECTIONITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_LIGHTCOLLECTIONITEM_H
-
-// appleseed.studio headers.
-#include "mainwindow/project/collectionitembase.h"
+// Interface header.
+#include "lightfactoryregistrar.h"
 
 // appleseed.renderer headers.
-#include "renderer/api/light.h"
-#include "renderer/api/scene.h"
+#include "renderer/modeling/light/ilightfactory.h"
 
-// Qt headers.
-#include <QObject>
+// appleseed.foundation headers.
+#include "foundation/utility/registrar.h"
 
-// Forward declarations.
-namespace appleseed { namespace studio { class ProjectBuilder; } }
+using namespace foundation;
+using namespace std;
 
-namespace appleseed {
-namespace studio {
-
-class LightCollectionItem
-  : public CollectionItemBase<renderer::Light>
+namespace renderer
 {
-    Q_OBJECT
 
-  public:
-    LightCollectionItem(
-        renderer::Assembly&         assembly,
-        renderer::LightContainer&   lights,
-        ProjectBuilder&             project_builder);
+DEFINE_ARRAY(LightFactoryArray);
 
-  private:
-    renderer::Assembly& m_assembly;
-    ProjectBuilder&     m_project_builder;
+struct LightFactoryRegistrar::Impl
+{
+    Registrar<ILightFactory> m_registrar;
 };
 
-}       // namespace studio
-}       // namespace appleseed
+LightFactoryRegistrar::LightFactoryRegistrar()
+  : impl(new Impl())
+{
+}
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_LIGHTCOLLECTIONITEM_H
+void LightFactoryRegistrar::register_factory(auto_ptr<FactoryType> factory)
+{
+    const string model = factory->get_model();
+    impl->m_registrar.insert(model, factory);
+}
+
+LightFactoryArray LightFactoryRegistrar::get_factories() const
+{
+    FactoryArrayType factories;
+
+    for (const_each<Registrar<FactoryType>::Items> i = impl->m_registrar.items(); i; ++i)
+        factories.push_back(i->second);
+
+    return factories;
+}
+
+const LightFactoryRegistrar::FactoryType* LightFactoryRegistrar::lookup(const char* name) const
+{
+    assert(name);
+
+    return impl->m_registrar.lookup(name);
+}
+
+}   // namespace renderer

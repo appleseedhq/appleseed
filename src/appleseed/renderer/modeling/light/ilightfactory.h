@@ -26,33 +26,47 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "lightcollectionitem.h"
+#ifndef APPLESEED_RENDERER_MODELING_LIGHT_ILIGHTFACTORY_H
+#define APPLESEED_RENDERER_MODELING_LIGHT_ILIGHTFACTORY_H
+
+// appleseed.renderer headers.
+#include "renderer/global/global.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/uid.h"
+#include "foundation/utility/containers/specializedarrays.h"
 
-using namespace foundation;
-using namespace renderer;
+// Forward declarations.
+namespace renderer      { class Light; }
 
-namespace appleseed {
-namespace studio {
-
-namespace
+namespace renderer
 {
-    const UniqueID g_class_uid = new_guid();
-}
 
-LightCollectionItem::LightCollectionItem(
-    Assembly&           assembly,
-    LightContainer&     lights,
-    ProjectBuilder&     project_builder)
-  : ItemBase(g_class_uid, "Lights")
-  , m_assembly(assembly)
-  , m_project_builder(project_builder)
+//
+// Light factory interface.
+//
+
+class RENDERERDLL ILightFactory
+  : public foundation::NonCopyable
 {
-    add_items(lights);
-}
+  public:
+    // Destructor.
+    virtual ~ILightFactory() {}
 
-}   // namespace studio
-}   // namespace appleseed
+    // Return a string identifying this light model.
+    virtual const char* get_model() const = 0;
+
+    // Return a human-readable string identifying this light model.
+    virtual const char* get_human_readable_model() const = 0;
+
+    // Return a set of widget definitions for this light model.
+    virtual foundation::DictionaryArray get_widget_definitions() const = 0;
+
+    // Create a new light instance.
+    virtual foundation::auto_release_ptr<Light> create(
+        const char*         name,
+        const ParamArray&   params) const = 0;
+};
+
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_MODELING_LIGHT_ILIGHTFACTORY_H

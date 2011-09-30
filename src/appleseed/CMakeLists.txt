@@ -1195,8 +1195,12 @@ source_group("renderer\\modeling\\input" FILES
 )
 
 set(renderer_modeling_light_sources
+    renderer/modeling/light/ilightfactory.h
     renderer/modeling/light/light.cpp
     renderer/modeling/light/light.h
+    renderer/modeling/light/lightfactoryregistrar.cpp
+    renderer/modeling/light/lightfactoryregistrar.h
+    renderer/modeling/light/lighttraits.h
 )
 list(APPEND appleseed_sources
     ${renderer_modeling_light_sources}

@@ -35,7 +35,6 @@
 // Forward declarations.
 namespace appleseed { namespace studio { class AssemblyCollectionItem; } }
 namespace appleseed { namespace studio { class AssemblyInstanceCollectionItem; } }
-namespace appleseed { namespace studio { class LightCollectionItem; } }
 namespace appleseed { namespace studio { class ObjectCollectionItem; } }
 namespace appleseed { namespace studio { class ObjectInstanceCollectionItem; } }
 namespace appleseed { namespace studio { class TextureCollectionItem; } }
@@ -52,7 +51,6 @@ template <typename> struct ItemTypeMap;
 
 template <> struct ItemTypeMap<renderer::AssemblyContainer>             { typedef AssemblyCollectionItem T; };
 template <> struct ItemTypeMap<renderer::AssemblyInstanceContainer>     { typedef AssemblyInstanceCollectionItem T; };
-template <> struct ItemTypeMap<renderer::LightContainer>                { typedef LightCollectionItem T; };
 template <> struct ItemTypeMap<renderer::ObjectContainer>               { typedef ObjectCollectionItem T; };
 template <> struct ItemTypeMap<renderer::ObjectInstanceContainer>       { typedef ObjectInstanceCollectionItem T; };
 template <> struct ItemTypeMap<renderer::TextureContainer>              { typedef TextureCollectionItem T; };

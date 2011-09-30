@@ -32,7 +32,6 @@
 // appleseed.studio headers.
 #include "mainwindow/project/collectionitem.h"
 #include "mainwindow/project/itemtypemap.h"
-#include "mainwindow/project/lightcollectionitem.h"
 #include "mainwindow/project/multimodelcollectionitem.h"
 #include "mainwindow/project/objectcollectionitem.h"
 #include "mainwindow/project/objectinstancecollectionitem.h"
@@ -90,7 +89,7 @@ struct AssemblyItem::Impl
     CollectionItem<EDF, Assembly>*              m_edf_collection_item;
     CollectionItem<SurfaceShader, Assembly>*    m_surface_shader_collection_item;
     CollectionItem<Material, Assembly>*         m_material_collection_item;
-    LightCollectionItem*                        m_light_collection_item;
+    CollectionItem<Light, Assembly>*            m_light_collection_item;
     ObjectCollectionItem*                       m_object_collection_item;
     ObjectInstanceCollectionItem*               m_object_instance_collection_item;
 
@@ -111,7 +110,7 @@ struct AssemblyItem::Impl
         m_edf_collection_item = add_multi_model_collection_item<EDF>(assembly->edfs());
         m_surface_shader_collection_item = add_multi_model_collection_item<SurfaceShader>(assembly->surface_shaders());
         m_material_collection_item = add_single_model_collection_item<Material>(assembly->materials());
-        m_light_collection_item = add_collection_item(assembly->lights());
+        m_light_collection_item = add_multi_model_collection_item<Light>(assembly->lights());
         m_object_collection_item = add_collection_item(assembly->objects());
         m_object_instance_collection_item = add_collection_item(assembly->object_instances());
     }
@@ -198,6 +197,9 @@ QMenu* AssemblyItem::get_single_item_context_menu() const
     menu->addAction("Create EDF...", impl->m_edf_collection_item, SLOT(slot_create()));
     menu->addAction("Create Surface Shader...", impl->m_surface_shader_collection_item, SLOT(slot_create()));
     menu->addAction("Create Material...", impl->m_material_collection_item, SLOT(slot_create()));
+    menu->addSeparator();
+
+    menu->addAction("Create Light...", impl->m_light_collection_item, SLOT(slot_create()));
 
     return menu;
 }
