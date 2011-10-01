@@ -32,6 +32,7 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/edf/edf.h"
+#include "renderer/modeling/light/light.h"
 #include "renderer/modeling/input/uniforminputevaluator.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 
@@ -182,10 +183,12 @@ void Assembly::on_frame_begin(const Project& project)
     invoke_on_frame_begin(project, *this, surface_shaders());
     invoke_on_frame_begin(project, *this, bsdfs(), input_evaluator);
     invoke_on_frame_begin(project, *this, edfs(), input_evaluator);
+    invoke_on_frame_begin(project, *this, lights(), input_evaluator);
 }
 
 void Assembly::on_frame_end(const Project& project)
 {
+    invoke_on_frame_end(project, *this, lights());
     invoke_on_frame_end(project, *this, edfs());
     invoke_on_frame_end(project, *this, bsdfs());
     invoke_on_frame_end(project, *this, surface_shaders());

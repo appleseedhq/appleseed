@@ -30,7 +30,6 @@
 #include "light.h"
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -41,9 +40,7 @@ namespace renderer
 
 struct Light::Impl
 {
-    // Order of data members impacts performance, preserve it.
-    Transformd              m_transform;
-    const EDF*              m_edf;
+    Transformd m_transform;
 };
 
 namespace
@@ -52,32 +49,12 @@ namespace
 }
 
 Light::Light(
-    const char*             name,
-    const Transformd&       transform,
-    const EDF*              edf)
-  : Entity(g_class_uid)
-  , impl(new Impl())
-{
-    assert(edf);
-
-    set_name(name);
-
-    impl->m_transform = transform;
-    impl->m_edf = edf;
-}
-
-Light::Light(
-    const char*             name,
-    const ParamArray&       params,
-    const Transformd&       transform,
-    const EDFContainer&     edfs)
-  : Entity(g_class_uid, params)
+    const char*         name,
+    const ParamArray&   params)
+  : ConnectableEntity(g_class_uid, params)
   , impl(new Impl())
 {
     set_name(name);
-
-    impl->m_transform = transform;
-    impl->m_edf = get_required_entity<EDF>(edfs, params, "edf");
 }
 
 Light::~Light()
@@ -85,62 +62,22 @@ Light::~Light()
     delete impl;
 }
 
-void Light::release()
-{
-    delete this;
-}
-
-const char* Light::get_model() const
-{
-    return LightFactory::get_model();
-}
-
 const Transformd& Light::get_transform() const
 {
     return impl->m_transform;
 }
 
-const EDF* Light::get_edf() const
+void Light::on_frame_begin(
+    const Project&      project,
+    const Assembly&     assembly,
+    const void*         data)
 {
-    return impl->m_edf;
 }
 
-
-//
-// LightFactory class implementation.
-//
-
-const char* LightFactory::get_model()
+void Light::on_frame_end(
+    const Project&      project,
+    const Assembly&     assembly)
 {
-    return "generic_light";
-}
-
-auto_release_ptr<Light> LightFactory::create(
-    const char*             name,
-    const Transformd&       transform,
-    const EDF*              edf)
-{
-    return
-        auto_release_ptr<Light>(
-            new Light(
-                name,
-                transform,
-                edf));
-}
-
-auto_release_ptr<Light> LightFactory::create(
-    const char*             name,
-    const ParamArray&       params,
-    const Transformd&       transform,
-    const EDFContainer&     edfs)
-{
-    return
-        auto_release_ptr<Light>(
-            new Light(
-                name,
-                params,
-                transform,
-                edfs));
 }
 
 }   // namespace renderer

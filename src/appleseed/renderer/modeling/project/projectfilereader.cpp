@@ -48,7 +48,9 @@
 #include "renderer/modeling/environmentshader/environmentshaderfactoryregistrar.h"
 #include "renderer/modeling/environmentshader/ienvironmentshaderfactory.h"
 #include "renderer/modeling/frame/frame.h"
+#include "renderer/modeling/light/ilightfactory.h"
 #include "renderer/modeling/light/light.h"
+#include "renderer/modeling/light/lightfactoryregistrar.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/meshobjectreader.h"
@@ -1243,69 +1245,20 @@ namespace
     //
 
     class LightElementHandler
-      : public ParametrizedElementHandler
+      : public EntityElementHandler<Light, LightFactoryRegistrar>
     {
       public:
-        explicit LightElementHandler(ParseContext& context)
-          : m_context(context)
-          , m_edfs(0)
-        {
-        }
+        typedef EntityElementHandler<Light, LightFactoryRegistrar> Base;
 
-        void set_edf_container(const EDFContainer* edfs)
+        explicit LightElementHandler(ParseContext& context)
+          : Base("light", context)
         {
-            m_edfs = edfs;
         }
 
         virtual void start_element(const Attributes& attrs)
         {
-            ParametrizedElementHandler::start_element(attrs);
-            m_light.reset();
-            m_name = get_value(attrs, "name");
-            m_model = get_value(attrs, "model");
+            Base::start_element(attrs);
             m_transform = Transformd(Matrix4d::identity());
-        }
-
-        virtual void end_element()
-        {    
-            assert(m_edfs);
-
-            try
-            {
-                if (m_model == LightFactory::get_model())
-                {
-                    m_light =
-                        LightFactory::create(
-                            m_name.c_str(),
-                            m_params,
-                            m_transform,
-                            *m_edfs);
-                }
-                else
-                {
-                    RENDERER_LOG_ERROR(
-                        "while defining light \"%s\": invalid model \"%s\"",
-                        m_name.c_str(),
-                        m_model.c_str());
-                    m_context.get_event_counters().signal_error();
-                }
-            }
-            catch (const ExceptionDictionaryItemNotFound& e)
-            {
-                RENDERER_LOG_ERROR(
-                    "while defining light \"%s\": required parameter \"%s\" missing",
-                    m_name.c_str(),
-                    e.string());
-                m_context.get_event_counters().signal_error();
-            }
-            catch (const ExceptionUnknownEntity& e)
-            {
-                RENDERER_LOG_ERROR(
-                    "while defining light \"%s\": unknown entity \"%s\"",
-                    m_name.c_str(),
-                    e.string());
-                m_context.get_event_counters().signal_error();
-            }
         }
 
         virtual void end_child_element(
@@ -1323,23 +1276,13 @@ namespace
                 break;
 
               default:
-                ParametrizedElementHandler::end_child_element(element, handler);
+                Base::end_child_element(element, handler);
                 break;
             }
         }
 
-        auto_release_ptr<Light> get_light()
-        {
-            return m_light;
-        }
-
       private:
-        ParseContext&               m_context;
-        const EDFContainer*         m_edfs;
-        auto_release_ptr<Light>     m_light;
-        string                      m_name;
-        string                      m_model;
-        Transformd                  m_transform;
+        Transformd m_transform;
     };
 
 
@@ -1794,11 +1737,6 @@ namespace
                 break;
 
               case ElementLight:
-                {
-                    LightElementHandler* light_handler =
-                        static_cast<LightElementHandler*>(handler);
-                    light_handler->set_edf_container(&m_edfs);
-                }
                 break;
 
               case ElementMaterial:
@@ -1876,7 +1814,7 @@ namespace
                 {
                     LightElementHandler* light_handler =
                         static_cast<LightElementHandler*>(handler);
-                    auto_release_ptr<Light> light = light_handler->get_light();
+                    auto_release_ptr<Light> light = light_handler->get_entity();
                     if (light.get())
                         m_lights.insert(light);
                 }

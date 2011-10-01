@@ -1201,6 +1201,8 @@ set(renderer_modeling_light_sources
     renderer/modeling/light/lightfactoryregistrar.cpp
     renderer/modeling/light/lightfactoryregistrar.h
     renderer/modeling/light/lighttraits.h
+    renderer/modeling/light/pointlight.cpp
+    renderer/modeling/light/pointlight.h
 )
 list(APPEND appleseed_sources
     ${renderer_modeling_light_sources}

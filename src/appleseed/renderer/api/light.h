@@ -34,5 +34,6 @@
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/light/lightfactoryregistrar.h"
 #include "renderer/modeling/light/lighttraits.h"
+#include "renderer/modeling/light/pointlight.h"
 
 #endif  // !APPLESEED_RENDERER_API_LIGHT_H

@@ -30,15 +30,17 @@
 #define APPLESEED_RENDERER_MODELING_LIGHT_LIGHT_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
-#include "renderer/modeling/entity/entity.h"
-#include "renderer/modeling/scene/containers.h"
+#include "renderer/global/globaltypes.h"
+#include "renderer/modeling/entity/connectableentity.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/transform.h"
+#include "foundation/math/vector.h"
 
 // Forward declarations.
-namespace renderer      { class EDF; }
+namespace renderer      { class Assembly; }
+namespace renderer      { class ParamArray; }
+namespace renderer      { class Project; }
 
 namespace renderer
 {
@@ -48,64 +50,63 @@ namespace renderer
 //
 
 class RENDERERDLL Light
-  : public Entity
+  : public ConnectableEntity
 {
   public:
-    // Delete this instance.
-    virtual void release();
+    // Constructor.
+    Light(
+        const char*                     name,
+        const ParamArray&               params);
 
-    // Return a string identifying the model of this light.
-    virtual const char* get_model() const;
+    // Destructor.
+    ~Light();
+
+    // Return a string identifying the model of this entity.
+    virtual const char* get_model() const = 0;
 
     // Return the transform of this light.
     const foundation::Transformd& get_transform() const;
 
-    // Return the EDF of this light.
-    const EDF* get_edf() const;
+    // This method is called once before rendering each frame.
+    virtual void on_frame_begin(
+        const Project&                  project,
+        const Assembly&                 assembly,
+        const void*                     data);                      // input values
+
+    // This method is called once after rendering each frame.
+    virtual void on_frame_end(
+        const Project&                  project,
+        const Assembly&                 assembly);
+
+    // Sample the light and compute the emission direction, the probability
+    // density with which it was chosen and the value of the light for this
+    // direction.
+    virtual void sample(
+        const void*                     data,                       // input values
+        const foundation::Vector2d&     s,                          // sample in [0,1)^2
+        foundation::Vector3d&           outgoing,                   // world space emission direction, unit-length
+        Spectrum&                       value,                      // light value for this direction
+        double&                         probability) const = 0;     // PDF value
+
+    // Evaluate the light for a given emission direction.
+    virtual void evaluate(
+        const void*                     data,                       // input values
+        const foundation::Vector3d&     outgoing,                   // world space emission direction, unit-length
+        Spectrum&                       value) const = 0;           // light value for this direction
+    virtual void evaluate(
+        const void*                     data,                       // input values
+        const foundation::Vector3d&     outgoing,                   // world space emission direction, unit-length
+        Spectrum&                       value,                      // EDF value for this direction
+        double&                         probability) const = 0;     // light value
+
+    // Evaluate the PDF for a given emission direction.
+    virtual double evaluate_pdf(
+        const void*                     data,                       // input values
+        const foundation::Vector3d&     outgoing) const = 0;        // world space emission direction, unit-length
 
   private:
-    friend class LightFactory;
-
-    // Private implementation.
     struct Impl;
     Impl* impl;
-
-    // Constructors.
-    Light(
-        const char*                     name,
-        const foundation::Transformd&   transform,
-        const EDF*                      edf);
-    Light(
-        const char*                     name,
-        const ParamArray&               params,
-        const foundation::Transformd&   transform,
-        const EDFContainer&             edfs);
-
-    // Destructor.
-    ~Light();
-};
-
-
-//
-// Light factory.
-//
-
-class RENDERERDLL LightFactory
-{
-  public:
-    // Return a string identifying this light model.
-    static const char* get_model();
-
-    // Create a new light.
-    static foundation::auto_release_ptr<Light> create(
-        const char*                     name,
-        const foundation::Transformd&   transform,
-        const EDF*                      edf);
-    static foundation::auto_release_ptr<Light> create(
-        const char*                     name,
-        const ParamArray&               params,
-        const foundation::Transformd&   transform,
-        const EDFContainer&             edfs);
 };
 
 }       // namespace renderer
