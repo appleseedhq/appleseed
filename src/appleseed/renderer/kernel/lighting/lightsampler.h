@@ -77,7 +77,7 @@ struct EmittingTriangle
 
 struct LightSample
 {
-    size_t                      m_triangle_index;               // index of the emitting triangle, ~size_t(0) if none
+    const EmittingTriangle*     m_emitting_triangle;
     InputParams                 m_input_params;                 // parameters for input evaluation
     const EDF*                  m_edf;                          // EDF at the position of the light sample
     double                      m_probability;                  // probability of this sample to be chosen
@@ -116,9 +116,6 @@ class LightSampler
 
     // Compute the probability density in area measure of a given light sample.
     double evaluate_pdf(const ShadingPoint& result) const;
-
-    // Retrieve a light-emitting triangle.
-    const EmittingTriangle& get_emitting_triangle(const size_t triangle_index) const;
 
   private:
     typedef std::vector<const Light*> LightVector;
@@ -201,12 +198,6 @@ inline double LightSampler::evaluate_pdf(const ShadingPoint& /*result*/) const
     //
 
     return m_rcp_total_emissive_area;
-}
-
-inline const EmittingTriangle& LightSampler::get_emitting_triangle(const size_t triangle_index) const
-{
-    assert(triangle_index < m_emitting_triangles.size());
-    return m_emitting_triangles[triangle_index];
 }
 
 }       // namespace renderer

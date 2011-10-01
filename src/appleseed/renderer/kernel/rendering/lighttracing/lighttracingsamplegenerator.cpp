@@ -498,19 +498,17 @@ namespace
                     dot(emission_direction, light_sample.m_input_params.m_shading_normal)
                         / (light_sample.m_probability * edf_prob));
 
-            // Manufacture a ShadingPoint object at the position of the light sample.
+            // Manufacture a shading point at the position of the light sample.
             // It will be used to avoid self-intersections.
-            const EmittingTriangle& emitting_triangle =
-                m_light_sampler.get_emitting_triangle(light_sample.m_triangle_index);
             ShadingPoint parent_shading_point;
             m_intersector.manufacture_hit(
                 parent_shading_point,
                 ShadingRay(light_sample.m_input_params.m_point, emission_direction, 0.0, 0.0, 0.0f, ~0),
-                emitting_triangle.m_assembly_instance_uid,
-                emitting_triangle.m_object_instance_index,
-                emitting_triangle.m_region_index,
-                emitting_triangle.m_triangle_index,
-                emitting_triangle.m_triangle_support_plane);
+                light_sample.m_emitting_triangle->m_assembly_instance_uid,
+                light_sample.m_emitting_triangle->m_object_instance_index,
+                light_sample.m_emitting_triangle->m_region_index,
+                light_sample.m_emitting_triangle->m_triangle_index,
+                light_sample.m_emitting_triangle->m_triangle_support_plane);
 
             // Build the light ray.
             const ShadingRay light_ray(

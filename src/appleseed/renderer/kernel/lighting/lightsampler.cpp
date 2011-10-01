@@ -383,8 +383,9 @@ void LightSampler::sample_emitting_triangle(
     const double            triangle_prob,
     LightSample&            sample) const
 {
-    // Set the triangle index.
-    sample.m_triangle_index = triangle_index;
+    // Fetch and set the emitting triangle.
+    const EmittingTriangle& triangle = m_emitting_triangles[triangle_index];
+    sample.m_emitting_triangle = &triangle;
 
     // Uniformly sample the surface of the triangle.
     const Vector3d bary = sample_triangle_uniform(s);
@@ -392,9 +393,6 @@ void LightSampler::sample_emitting_triangle(
     // Set the barycentric coordinates.
     sample.m_input_params.m_uv[0] = bary[0];
     sample.m_input_params.m_uv[1] = bary[1];
-
-    // Fetch the emitting triangle.
-    const EmittingTriangle& triangle = m_emitting_triangles[triangle_index];
 
     // Compute the world space position of the sample.
     sample.m_input_params.m_point =
