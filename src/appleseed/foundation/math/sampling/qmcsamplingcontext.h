@@ -130,8 +130,9 @@ class QMCSamplingContext
     size_t      m_base_instance;
 
     size_t      m_dimension;
-    size_t      m_instance;
+    size_t      m_sample_count;
 
+    size_t      m_instance;
     VectorType  m_offset;
 
     QMCSamplingContext(
@@ -139,6 +140,7 @@ class QMCSamplingContext
         const size_t        base_dimension,
         const size_t        base_instance,
         const size_t        dimension,
+        const size_t        sample_count,
         const size_t        instance);
 
     void compute_offset();
@@ -155,6 +157,7 @@ inline QMCSamplingContext<RNG>::QMCSamplingContext(RNG& rng)
   , m_base_dimension(0)
   , m_base_instance(0)
   , m_dimension(0)
+  , m_sample_count(0)
   , m_instance(0)
   , m_offset(0.0)
 {
@@ -170,6 +173,7 @@ inline QMCSamplingContext<RNG>::QMCSamplingContext(
   , m_base_dimension(0)
   , m_base_instance(0)
   , m_dimension(dimension)
+  , m_sample_count(sample_count)
   , m_instance(instance)
   , m_offset(0.0)
 {
@@ -182,11 +186,13 @@ inline QMCSamplingContext<RNG>::QMCSamplingContext(
     const size_t        base_dimension,
     const size_t        base_instance,
     const size_t        dimension,
+    const size_t        sample_count,
     const size_t        instance)
   : m_rng(rng)
   , m_base_dimension(base_dimension)
   , m_base_instance(base_instance)
   , m_dimension(dimension)
+  , m_sample_count(sample_count)
   , m_instance(instance)
 {
     assert(dimension <= VectorType::Dimension);
@@ -199,6 +205,7 @@ QMCSamplingContext<RNG>::operator=(const QMCSamplingContext& rhs)
     m_base_dimension = rhs.m_base_dimension;
     m_base_instance = rhs.m_base_instance;
     m_dimension = rhs.m_dimension;
+    m_sample_count = rhs.m_sample_count;
     m_instance = rhs.m_instance;
     m_offset = rhs.m_offset;
     return *this;
@@ -214,6 +221,7 @@ inline QMCSamplingContext<RNG> QMCSamplingContext<RNG>::split(
         m_base_dimension + m_dimension,     // dimension allocation
         m_base_instance + m_instance,       // decorrelation by generalization
         dimension,
+        sample_count,
         0);
 
     child_context.compute_offset();
@@ -231,6 +239,7 @@ inline void QMCSamplingContext<RNG>::split_in_place(
     m_base_dimension += m_dimension;        // dimension allocation
     m_base_instance += m_instance;          // decorrelation by generalization
     m_dimension = dimension;
+    m_sample_count = sample_count;
     m_instance = 0;
 
     compute_offset();
