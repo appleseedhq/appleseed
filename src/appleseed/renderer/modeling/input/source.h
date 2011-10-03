@@ -50,7 +50,7 @@ class Source
     explicit Source(const bool uniform);
 
     // Destructor.
-    virtual ~Source();
+    virtual ~Source() {}
 
     // Return true if the source is uniform, false if it is varying.
     bool is_uniform() const;
@@ -90,24 +90,16 @@ class Source
 // Source class implementation.
 //
 
-// Constructor.
 inline Source::Source(const bool uniform)
   : m_uniform(uniform)
 {
 }
 
-// Destructor.
-inline Source::~Source()
-{
-}
-
-// Return true if the source is uniform, false if it is varying.
 inline bool Source::is_uniform() const
 {
     return m_uniform;
 }
 
-// Evaluate the source at a given shading point.
 inline void Source::evaluate(
     TextureCache&               texture_cache,
     const InputParams&          params,
@@ -115,6 +107,7 @@ inline void Source::evaluate(
 {
     evaluate_uniform(scalar);
 }
+
 inline void Source::evaluate(
     TextureCache&               texture_cache,
     const InputParams&          params,
@@ -123,6 +116,7 @@ inline void Source::evaluate(
 {
     evaluate_uniform(linear_rgb, alpha);
 }
+
 inline void Source::evaluate(
     TextureCache&               texture_cache,
     const InputParams&          params,
@@ -132,12 +126,12 @@ inline void Source::evaluate(
     evaluate_uniform(spectrum, alpha);
 }
 
-// Evaluate the source as a uniform source.
 inline void Source::evaluate_uniform(
     double&                     scalar)
 {
     scalar = 0.0;
 }
+
 inline void Source::evaluate_uniform(
     foundation::Color3f&        linear_rgb,
     Alpha&                      alpha)
@@ -145,6 +139,7 @@ inline void Source::evaluate_uniform(
     linear_rgb.set(0.0f);
     alpha.set(0.0f);
 }
+
 inline void Source::evaluate_uniform(
     Spectrum&                   spectrum,
     Alpha&                      alpha)
