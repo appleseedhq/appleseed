@@ -59,11 +59,9 @@ class UniformInputEvaluator
 // UniformInputEvaluator class implementation.
 //
 
-// Evaluate all uniform inputs from a set of inputs.
 inline const void* UniformInputEvaluator::evaluate(const InputArray& inputs)
 {
     inputs.evaluate_uniforms(m_scratch);
-
     return m_scratch;
 }
 
