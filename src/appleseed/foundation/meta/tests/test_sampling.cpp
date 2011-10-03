@@ -108,14 +108,14 @@ TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext)
 TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext_DirectIlluminationSimulation)
 {
     typedef MersenneTwister RNG;
-    typedef QMCSamplingContext<RNG> SamplingContext;
+    typedef QMCSamplingContext<RNG> QMCSamplingContext;
 
     void shade(
-        const SamplingContext&  sampling_context,
-        const size_t            light_sample_count,
-        vector<Vector2d>&       light_samples)
+        const QMCSamplingContext&   sampling_context,
+        const size_t                light_sample_count,
+        vector<Vector2d>&           light_samples)
     {
-        SamplingContext child_context = sampling_context.split(2, light_sample_count);
+        QMCSamplingContext child_context = sampling_context.split(2, light_sample_count);
 
         for (size_t i = 0; i < light_sample_count; ++i)
         {
@@ -125,11 +125,11 @@ TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext_DirectIlluminationSimulat
     }
 
     void render(
-        const size_t            pixel_sample_count,
-        const size_t            light_sample_count)
+        const size_t                pixel_sample_count,
+        const size_t                light_sample_count)
     {
         RNG rng;
-        SamplingContext sampling_context(rng, 2, pixel_sample_count, 0);
+        QMCSamplingContext sampling_context(rng, 2, pixel_sample_count, 0);
 
         vector<Vector2d> pixel_samples;
         vector<Vector2d> light_samples;
