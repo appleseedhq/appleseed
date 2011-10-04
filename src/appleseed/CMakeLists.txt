@@ -984,6 +984,7 @@ set_source_files_properties(
 )
 
 set(renderer_meta_tests_sources
+    renderer/meta/tests/test_bsdfmix.cpp
     renderer/meta/tests/test_compareimages.cpp
     renderer/meta/tests/test_entitymap.cpp
     renderer/meta/tests/test_entityvector.cpp
