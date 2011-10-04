@@ -156,12 +156,13 @@ namespace
         const Project&          project,
         const Assembly&         assembly,
         EntityCollection&       entities,
-        UniformInputEvaluator&  input_evaluator)
+        UniformInputEvaluator&  uniform_input_evaluator)
     {
         for (each<EntityCollection> i = entities; i; ++i)
         {
-            const void* data = input_evaluator.evaluate(i->get_inputs());
-            i->on_frame_begin(project, assembly, data);
+            const void* uniform_data =
+                uniform_input_evaluator.evaluate(i->get_inputs());
+            i->on_frame_begin(project, assembly, uniform_data);
         }
     }
 
@@ -178,12 +179,12 @@ namespace
 
 void Assembly::on_frame_begin(const Project& project)
 {
-    UniformInputEvaluator input_evaluator;
+    UniformInputEvaluator uniform_input_evaluator;
 
     invoke_on_frame_begin(project, *this, surface_shaders());
-    invoke_on_frame_begin(project, *this, bsdfs(), input_evaluator);
-    invoke_on_frame_begin(project, *this, edfs(), input_evaluator);
-    invoke_on_frame_begin(project, *this, lights(), input_evaluator);
+    invoke_on_frame_begin(project, *this, bsdfs(), uniform_input_evaluator);
+    invoke_on_frame_begin(project, *this, edfs(), uniform_input_evaluator);
+    invoke_on_frame_begin(project, *this, lights(), uniform_input_evaluator);
 }
 
 void Assembly::on_frame_end(const Project& project)
