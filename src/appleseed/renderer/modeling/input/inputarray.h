@@ -176,7 +176,7 @@ class RENDERERDLL InputArray
     size_t compute_data_size() const;
 
     // Evaluate all inputs into a preallocated block of memory.
-    // The pointer (values + offset) must be 16-byte aligned.
+    // The address 'values + offset' must be 16-byte aligned.
     void evaluate(
         TextureCache&       texture_cache,
         const InputParams&  params,
@@ -184,7 +184,7 @@ class RENDERERDLL InputArray
         const size_t        offset = 0) const;
 
     // Evaluate all uniform inputs into a preallocated block of memory.
-    // The pointer (values + offset) must be 16-byte aligned.
+    // The address 'values + offset' must be 16-byte aligned.
     void evaluate_uniforms(
         void*               values,
         const size_t        offset = 0) const;
