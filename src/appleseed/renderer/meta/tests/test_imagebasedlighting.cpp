@@ -39,6 +39,7 @@
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/input/inputparams.h"
+#include "renderer/modeling/input/uniforminputevaluator.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/containers.h"
@@ -92,14 +93,17 @@ TEST_SUITE(Renderer_Kernel_Lighting_ImageBasedLighting)
 
         bind_inputs();
 
-        InputEvaluator input_evaluator(m_texture_cache);
-        specular_brdf_ref.evaluate_inputs(
-            input_evaluator,
-            InputParams());
-        const void* brdf_data = input_evaluator.data();
+        UniformInputEvaluator uniform_input_evaluator;
+        const void* uniform_data =
+            uniform_input_evaluator.evaluate(specular_brdf_ref.get_inputs());
+        specular_brdf_ref.on_frame_begin(m_project, m_assembly, uniform_data);
 
-        specular_brdf_ref.on_frame_begin(m_project, m_assembly, brdf_data);
         env_edf_ref.on_frame_begin(m_project);
+
+        InputEvaluator input_evaluator(m_texture_cache);
+        InputParams input_params;
+        specular_brdf_ref.evaluate_inputs(input_evaluator, input_params);
+        const void* specular_brdf_data = input_evaluator.data();
 
         Spectrum radiance;
         compute_image_based_lighting(
@@ -111,7 +115,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_ImageBasedLighting)
             Basis3d(Vector3d(0.0, 1.0, 0.0)),
             Vector3d(0.0, 1.0, 0.0),
             specular_brdf_ref,
-            brdf_data,
+            specular_brdf_data,
             1,              // number of samples in BSDF sampling
             0,              // number of samples in environment sampling
             radiance);
