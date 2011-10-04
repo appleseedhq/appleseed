@@ -134,7 +134,9 @@
         </frame>
     </output>
     <configurations>
-        <configuration name="final" base="base_final" />
+        <configuration name="final" base="base_final">
+            <parameter name="lighting_engine" value="drt" />
+        </configuration>
         <configuration name="interactive" base="base_interactive">
             <parameter name="lighting_engine" value="drt" />
         </configuration>
