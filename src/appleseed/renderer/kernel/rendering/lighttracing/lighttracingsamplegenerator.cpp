@@ -438,7 +438,11 @@ namespace
             const size_t                sequence_index,
             SampleVector&               samples)
         {
-            SamplingContext sampling_context(m_rng, 0, 0, sequence_index);
+            SamplingContext sampling_context(
+                m_rng,
+                0,
+                sequence_index,
+                sequence_index);
 
             size_t stored_sample_count = 0;
 

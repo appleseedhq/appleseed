@@ -140,10 +140,12 @@ class QMCSamplingContext
         const size_t        base_dimension,
         const size_t        base_instance,
         const size_t        dimension,
-        const size_t        sample_count,
-        const size_t        instance);
+        const size_t        sample_count);
 
     void compute_offset();
+
+    // Cranley-Patterson rotation.
+    static double rotate(double x, const double offset);
 };
 
 
@@ -186,16 +188,17 @@ inline QMCSamplingContext<RNG>::QMCSamplingContext(
     const size_t        base_dimension,
     const size_t        base_instance,
     const size_t        dimension,
-    const size_t        sample_count,
-    const size_t        instance)
+    const size_t        sample_count)
   : m_rng(rng)
   , m_base_dimension(base_dimension)
   , m_base_instance(base_instance)
   , m_dimension(dimension)
   , m_sample_count(sample_count)
-  , m_instance(instance)
+  , m_instance(0)
 {
     assert(dimension <= VectorType::Dimension);
+
+    compute_offset();
 }
 
 template <typename RNG> inline
@@ -216,17 +219,13 @@ inline QMCSamplingContext<RNG> QMCSamplingContext<RNG>::split(
     const size_t    dimension,
     const size_t    sample_count) const
 {
-    QMCSamplingContext child_context(
-        m_rng,
-        m_base_dimension + m_dimension,     // dimension allocation
-        m_base_instance + m_instance,       // decorrelation by generalization
-        dimension,
-        sample_count,
-        0);
-
-    child_context.compute_offset();
-
-    return child_context;
+    return
+        QMCSamplingContext(
+            m_rng,
+            m_base_dimension + m_dimension,         // dimension allocation
+            m_base_instance + m_instance,           // decorrelation by generalization
+            dimension,
+            sample_count);
 }
 
 template <typename RNG>
@@ -234,10 +233,11 @@ inline void QMCSamplingContext<RNG>::split_in_place(
     const size_t    dimension,
     const size_t    sample_count)
 {
+    assert(m_instance == m_sample_count);           // can't split in the middle of a sequence
     assert(dimension <= VectorType::Dimension);
 
-    m_base_dimension += m_dimension;        // dimension allocation
-    m_base_instance += m_instance;          // decorrelation by generalization
+    m_base_dimension += m_dimension;                // dimension allocation
+    m_base_instance += m_instance;                  // decorrelation by generalization
     m_dimension = dimension;
     m_sample_count = sample_count;
     m_instance = 0;
@@ -298,6 +298,7 @@ template <typename RNG>
 template <size_t N>
 inline Vector<double, N> QMCSamplingContext<RNG>::next_vector2()
 {
+    assert(m_sample_count == 0 || m_instance < m_sample_count);
     assert(N == m_dimension);
     assert(N <= PrimeTableSize);
 
@@ -308,39 +309,35 @@ inline Vector<double, N> QMCSamplingContext<RNG>::next_vector2()
         for (size_t i = 0; i < N; ++i)
         {
             v[i] = PrecomputedHaltonSequence[m_instance * 4 + i];
-
-            // Cranley-Patterson rotation.
-            v[i] += m_offset[i];
-            if (v[i] >= 1.0)
-                v[i] -= 1.0;
+            v[i] = rotate(v[i], m_offset[i]);
         }
     }
     else
     {
         v[0] = radical_inverse_base2<double>(m_instance);
-
-        // Cranley-Patterson rotation.
-        v[0] += m_offset[0];
-        if (v[0] >= 1.0)
-            v[0] -= 1.0;
+        v[0] = rotate(v[0], m_offset[0]);
 
         for (size_t i = 1; i < N; ++i)
         {
-            v[i] =
-                radical_inverse<double>(
-                    Primes[i],
-                    m_instance);
-
-            // Cranley-Patterson rotation.
-            v[i] += m_offset[i];
-            if (v[i] >= 1.0)
-                v[i] -= 1.0;
+            v[i] = radical_inverse<double>(Primes[i], m_instance);
+            v[i] = rotate(v[i], m_offset[i]);
         }
     }
 
     ++m_instance;
 
     return v;
+}
+
+template <typename RNG>
+inline double QMCSamplingContext<RNG>::rotate(double x, const double offset)
+{
+    x += offset;
+
+    if (x >= 1.0)
+        x -= 1.0;
+
+    return x;
 }
 
 template <typename RNG>

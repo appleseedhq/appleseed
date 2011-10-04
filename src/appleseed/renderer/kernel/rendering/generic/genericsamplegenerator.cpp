@@ -253,7 +253,7 @@ namespace
                 sequence_index);            // initial instance number
 
             // Compute the sample position in NDC.
-            sampling_context.split_in_place(2, 0);
+            sampling_context.split_in_place(2, 1);
             const Vector2d subpixel = sampling_context.next_vector2<2>();
             const Vector2d sample_position(
                 (pixel_x + subpixel.x) * m_frame_props.m_rcp_canvas_width,
@@ -271,7 +271,7 @@ namespace
             SamplingContext sampling_context(
                 m_rng,
                 2,                          // number of dimensions
-                0,                          // number of samples
+                sequence_index,             // number of samples
                 sequence_index);            // initial instance number
 
 #endif

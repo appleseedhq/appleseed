@@ -218,7 +218,7 @@ namespace
                             SamplingContext sampling_context(
                                 m_rng,
                                 1,              // number of dimensions
-                                0,              // number of samples
+                                instance,       // number of samples
                                 instance);      // initial instance number
 
                             // Render the sample.
