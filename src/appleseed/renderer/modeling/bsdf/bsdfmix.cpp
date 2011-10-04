@@ -37,6 +37,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
 #include "foundation/math/vector.h"
+#include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/containers/specializedarrays.h"
 
@@ -71,12 +72,12 @@ namespace
             m_inputs.declare("weight1", InputFormatScalar);
         }
 
-        virtual void release()
+        virtual void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const
+        virtual const char* get_model() const override
         {
             return Model;
         }
@@ -84,22 +85,36 @@ namespace
         virtual void on_frame_begin(
             const Project&      project,
             const Assembly&     assembly,
-            const void*         data)
+            const void*         uniform_data) override
         {
             m_bsdf[0] = retrieve_bsdf(assembly, "bsdf0");
             m_bsdf[1] = retrieve_bsdf(assembly, "bsdf1");
 
             m_bsdf_data_offset[0] = get_inputs().compute_data_size();
-            m_bsdf_data_offset[1] = m_bsdf_data_offset[0] + m_bsdf[0]->get_inputs().compute_data_size();
+            m_bsdf_data_offset[1] = m_bsdf_data_offset[0] + m_bsdf[0]->compute_input_data_size(assembly);
+        }
+
+        virtual size_t compute_input_data_size(
+            const Assembly&     assembly) const override
+        {
+            const BSDF* bsdf0 = retrieve_bsdf(assembly, "bsdf0");
+            const BSDF* bsdf1 = retrieve_bsdf(assembly, "bsdf1");
+
+            return
+                  get_inputs().compute_data_size()
+                + bsdf0->compute_input_data_size(assembly)
+                + bsdf1->compute_input_data_size(assembly);
         }
 
         virtual void evaluate_inputs(
             InputEvaluator&     input_evaluator,
-            const InputParams&  input_params) const
+            const InputParams&  input_params,
+            const size_t        offset) const override
         {
-            input_evaluator.evaluate(get_inputs(), input_params);
-            input_evaluator.evaluate(m_bsdf[0]->get_inputs(), input_params, m_bsdf_data_offset[0]);
-            input_evaluator.evaluate(m_bsdf[1]->get_inputs(), input_params, m_bsdf_data_offset[1]);
+            input_evaluator.evaluate(get_inputs(), input_params, offset);
+
+            m_bsdf[0]->evaluate_inputs(input_evaluator, input_params, offset + m_bsdf_data_offset[0]);
+            m_bsdf[1]->evaluate_inputs(input_evaluator, input_params, offset + m_bsdf_data_offset[1]);
         }
 
         FORCE_INLINE virtual void sample(

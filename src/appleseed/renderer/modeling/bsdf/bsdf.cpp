@@ -32,6 +32,9 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/input/inputevaluator.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/uid.h"
+
 using namespace foundation;
 
 namespace renderer
@@ -59,7 +62,7 @@ BSDF::BSDF(
 void BSDF::on_frame_begin(
     const Project&      project,
     const Assembly&     assembly,
-    const void*         data)
+    const void*         uniform_data)
 {
 }
 
@@ -69,11 +72,18 @@ void BSDF::on_frame_end(
 {
 }
 
+size_t BSDF::compute_input_data_size(
+    const Assembly&     assembly) const
+{
+    return get_inputs().compute_data_size();
+}
+
 void BSDF::evaluate_inputs(
     InputEvaluator&     input_evaluator,
-    const InputParams&  input_params) const
+    const InputParams&  input_params,
+    const size_t        offset) const
 {
-    input_evaluator.evaluate(get_inputs(), input_params);
+    input_evaluator.evaluate(get_inputs(), input_params, offset);
 }
 
 }   // namespace renderer

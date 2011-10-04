@@ -107,9 +107,9 @@ namespace
         virtual void on_frame_begin(
             const Project&      project,
             const Assembly&     assembly,
-            const void*         data)
+            const void*         uniform_data)
         {
-            const InputValues* values = static_cast<const InputValues*>(data);
+            const InputValues* values = static_cast<const InputValues*>(uniform_data);
 
             m_uniform_reflectance =
                 m_inputs.source("diffuse_reflectance")->is_uniform() &&

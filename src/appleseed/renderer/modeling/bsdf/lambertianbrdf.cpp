@@ -84,13 +84,13 @@ namespace
         virtual void on_frame_begin(
             const Project&      project,
             const Assembly&     assembly,
-            const void*         data)
+            const void*         uniform_data)
         {
             if (m_inputs.source("reflectance")->is_uniform())
             {
                 m_uniform_reflectance = true;
 
-                const InputValues* values = static_cast<const InputValues*>(data);
+                const InputValues* values = static_cast<const InputValues*>(uniform_data);
                 m_brdf_value = values->m_reflectance;
                 m_brdf_value *= static_cast<float>(RcpPi);
             }

@@ -30,16 +30,21 @@
 #define APPLESEED_RENDERER_MODELING_BSDF_BSDF_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/entity/connectableentity.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
+#include "foundation/math/vector.h"
+
+// Standard headers.
+#include <cstddef>
 
 // Forward declarations.
 namespace renderer      { class Assembly; }
 namespace renderer      { class InputEvaluator; }
 namespace renderer      { class InputParams; }
+namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 
 namespace renderer
@@ -76,19 +81,25 @@ class RENDERERDLL BSDF
     virtual void on_frame_begin(
         const Project&              project,
         const Assembly&             assembly,
-        const void*                 data);                      // input values
+        const void*                 uniform_data);              // input values
 
     // This method is called once after rendering each frame.
     virtual void on_frame_end(
         const Project&              project,
         const Assembly&             assembly);
 
-    // Evaluate the BSDF inputs. Input values are stored int the input evaluator.
-    // This method is called once per shading point and pair of incoming/outgoing
-    // directions.
+    // Compute the cumulated size in bytes of the values of all inputs of
+    // this BSDF and its child BSDFs, if any.
+    virtual size_t compute_input_data_size(
+        const Assembly&             assembly) const;
+
+    // Evaluate the inputs of this BSDF and of its child BSDFs, if any.
+    // Input values are stored in the input evaluator. This method is called
+    // once per shading point and pair of incoming/outgoing directions.
     virtual void evaluate_inputs(
         InputEvaluator&             input_evaluator,
-        const InputParams&          input_params) const;
+        const InputParams&          input_params,
+        const size_t                offset = 0) const;
 
     // Scattering modes.
     enum Mode
@@ -163,7 +174,7 @@ inline foundation::Vector3d BSDF::force_above_surface(
 
     return
         correction > 0.0
-            ? normalize(direction + correction * normal)
+            ? foundation::normalize(direction + correction * normal)
             : direction;
 }
 
