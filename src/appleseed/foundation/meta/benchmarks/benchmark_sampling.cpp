@@ -57,7 +57,8 @@ BENCHMARK_SUITE(Foundation_Math_Sampling_QMCSamplingContext)
 
     BENCHMARK_CASE_F(BenchmarkTrajectory, Fixture)
     {
-        QMCSamplingContextType context(m_rng, 1, 0, 1234567);
+        const size_t InitialInstance = 1234567;
+        QMCSamplingContextType context(m_rng, 1, InitialInstance, InitialInstance);
 
         for (size_t i = 0; i < 32; ++i)
         {
