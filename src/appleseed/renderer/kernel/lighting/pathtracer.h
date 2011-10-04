@@ -206,8 +206,9 @@ size_t PathTracer<PathVisitor, ScatteringModesMask, Adjoint>::trace(
         }
 
         // Retrieve the BSDF.
-        // Terminate the path if the material has no BSDF.
         const BSDF* bsdf = material->get_bsdf();
+
+        // Terminate the path if the material has no BSDF.
         if (bsdf == 0)
             break;
 
