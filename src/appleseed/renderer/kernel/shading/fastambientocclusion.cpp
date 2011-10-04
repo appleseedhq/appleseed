@@ -315,7 +315,7 @@ double compute_fast_ambient_occlusion(
     double&                         min_distance)
 {
     // Create a sampling context.
-    SamplingContext child_context = sampling_context.split(2, sample_count);
+    SamplingContext child_sampling_context = sampling_context.split(2, sample_count);
 
     // Construct an ambient occlusion ray.
     ShadingRay::RayType ao_ray;
@@ -331,7 +331,7 @@ double compute_fast_ambient_occlusion(
     for (size_t i = 0; i < sample_count; ++i)
     {
         // Generate a cosine-weighted direction over the unit hemisphere.
-        const Vector2d s = child_context.next_vector2<2>();
+        const Vector2d s = child_sampling_context.next_vector2<2>();
         ao_ray.m_dir = sample_hemisphere_cosine(s);
 
         // Transform the direction to world space.

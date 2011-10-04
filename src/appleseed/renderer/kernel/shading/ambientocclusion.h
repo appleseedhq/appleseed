@@ -62,7 +62,7 @@ double compute_ambient_occlusion(
     const ShadingPoint*             parent_shading_point = 0)
 {
     // Create a sampling context.
-    SamplingContext child_context = sampling_context.split(2, sample_count);
+    SamplingContext child_sampling_context = sampling_context.split(2, sample_count);
 
     // Construct an ambient occlusion ray.
     ShadingRay ao_ray;
@@ -78,7 +78,7 @@ double compute_ambient_occlusion(
     for (size_t i = 0; i < sample_count; ++i)
     {
         // Generate a direction over the unit hemisphere.
-        const foundation::Vector2d s = child_context.next_vector2<2>();
+        const foundation::Vector2d s = child_sampling_context.next_vector2<2>();
         ao_ray.m_dir = sampling_function(s);
 
         // Transform the direction to world space.
