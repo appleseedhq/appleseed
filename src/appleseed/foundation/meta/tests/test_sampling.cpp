@@ -111,11 +111,11 @@ TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext_DirectIlluminationSimulat
     typedef QMCSamplingContext<RNG> QMCSamplingContext;
 
     void shade(
-        const QMCSamplingContext&   sampling_context,
+        const QMCSamplingContext&   context,
         const size_t                light_sample_count,
         vector<Vector2d>&           light_samples)
     {
-        QMCSamplingContext child_context = sampling_context.split(2, light_sample_count);
+        QMCSamplingContext child_context = context.split(2, light_sample_count);
 
         for (size_t i = 0; i < light_sample_count; ++i)
         {
