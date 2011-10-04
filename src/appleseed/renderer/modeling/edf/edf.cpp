@@ -54,7 +54,7 @@ EDF::EDF(
 void EDF::on_frame_begin(
     const Project&      project,
     const Assembly&     assembly,
-    const void*         data)
+    const void*         uniform_data)
 {
 }
 
