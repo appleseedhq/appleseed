@@ -201,7 +201,7 @@ namespace
 
                 // Compute direct lighting.
                 Spectrum vertex_radiance;
-                compute_direct_lighting(
+                compute_direct_lighting_light_sampling(
                     sampling_context,
                     m_shading_context,
                     m_light_sampler,
