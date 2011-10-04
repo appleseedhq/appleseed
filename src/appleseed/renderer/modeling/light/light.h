@@ -71,7 +71,7 @@ class RENDERERDLL Light
     virtual void on_frame_begin(
         const Project&                  project,
         const Assembly&                 assembly,
-        const void*                     data);                      // input values
+        const void*                     uniform_data);              // input values
 
     // This method is called once after rendering each frame.
     virtual void on_frame_end(
