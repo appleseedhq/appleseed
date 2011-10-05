@@ -136,6 +136,8 @@ namespace
         struct Parameters
         {
             const size_t        m_minimum_path_length;      // minimum path length before Russian Roulette is used
+
+            const size_t        m_dl_bsdf_sample_count;     // number of BSDF samples used to estimate direct illumination
             const size_t        m_dl_light_sample_count;    // number of light samples used to estimate direct illumination
 
             const bool          m_enable_ibl;               // IBL enabled?
@@ -143,11 +145,12 @@ namespace
             const size_t        m_ibl_env_sample_count;     // number of environment samples used to estimate IBL
 
             explicit Parameters(const ParamArray& params)
-              : m_minimum_path_length   ( params.get_optional<size_t>("minimum_path_length", 3) )
-              , m_dl_light_sample_count ( params.get_optional<size_t>("dl_light_samples", 1) )
-              , m_enable_ibl            ( params.get_optional<bool>("enable_ibl", true) )
-              , m_ibl_bsdf_sample_count ( params.get_optional<size_t>("ibl_bsdf_samples", 1) )
-              , m_ibl_env_sample_count  ( params.get_optional<size_t>("ibl_env_samples", 1) )
+              : m_minimum_path_length(params.get_optional<size_t>("minimum_path_length", 3))
+              , m_dl_bsdf_sample_count(params.get_optional<size_t>("dl_bsdf_samples", 1))
+              , m_dl_light_sample_count(params.get_optional<size_t>("dl_light_samples", 1))
+              , m_enable_ibl(params.get_optional<bool>("enable_ibl", true))
+              , m_ibl_bsdf_sample_count(params.get_optional<size_t>("ibl_bsdf_samples", 1))
+              , m_ibl_env_sample_count(params.get_optional<size_t>("ibl_env_samples", 1))
             {
             }
         };
@@ -199,10 +202,11 @@ namespace
                 const Material* material = shading_point.get_material();
                 const InputParams& input_params = shading_point.get_input_params();
 
-                // Compute direct lighting. Note that we're sampling both the lights and the BSDF,
-                // unlike in the path tracer where we're only sampling the lights. The reason is
-                // that, while the path tracer follows paths after hitting diffuse surfaces (using
-                // BSDF sampling to extend the path), the distributed ray tracer doesn't.
+                // Compute direct lighting. We're sampling both the lights and the BSDF,
+                // unlike in the path tracer where we're only sampling the lights.
+                // The reason is that, while the path tracer extends paths that hit a
+                // diffuse surface (using a single BSDF sample), the distributed ray
+                // tracer doesn't.
                 Spectrum vertex_radiance;
                 compute_direct_lighting(
                     sampling_context,
@@ -214,7 +218,7 @@ namespace
                     outgoing,
                     *bsdf,
                     bsdf_data,
-                    1,                  // todo: make user-settable
+                    m_params.m_dl_bsdf_sample_count,
                     m_params.m_dl_light_sample_count,
                     vertex_radiance,
                     &shading_point);
