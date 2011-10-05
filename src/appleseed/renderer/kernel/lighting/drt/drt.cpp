@@ -199,7 +199,6 @@ namespace
                 const Material* material = shading_point.get_material();
                 const InputParams& input_params = shading_point.get_input_params();
 
-
                 // Compute direct lighting. Note that we're sampling both the lights and the BSDF,
                 // unlike in the path tracer where we're only sampling the lights. The reason is
                 // that, while the path tracer follows paths after hitting diffuse surfaces (using
