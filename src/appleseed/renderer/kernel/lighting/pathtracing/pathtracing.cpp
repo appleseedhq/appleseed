@@ -233,7 +233,10 @@ namespace
 
                 if (m_params.m_next_event_estimation)
                 {
-                    // Compute direct lighting.
+                    // Compute direct lighting. We're using light sampling only: direct lighting
+                    // via BSDF sampling will be taken into account when we'll extend the path.
+                    // The number of light samples is user-adjustable. The number of BSDF samples
+                    // is set to 1 since we'll extend the path via a single BSDF sample.
                     Spectrum vertex_radiance;
                     compute_direct_lighting_light_sampling(
                         sampling_context,
