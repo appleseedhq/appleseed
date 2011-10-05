@@ -230,10 +230,11 @@ void compute_direct_lighting_light_sampling(
         cos_on *= rcp_sample_distance;
 
         // Compute the transmission factor between the light sample and the shading point.
+        SamplingContext child_sampling_context(sampling_context);
         Tracer tracer(
             shading_context.get_intersector(),
             shading_context.get_texture_cache(),
-            sampling_context);
+            child_sampling_context);
         double transmission;
         const ShadingPoint& shading_point =
             tracer.trace_between(
