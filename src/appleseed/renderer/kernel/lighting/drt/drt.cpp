@@ -188,8 +188,8 @@ namespace
                 const Vector3d&         outgoing,
                 const BSDF*             bsdf,
                 const void*             bsdf_data,
-                const BSDF::Mode        bsdf_mode,
-                const double            bsdf_prob,
+                const BSDF::Mode        prev_bsdf_mode,
+                const double            prev_bsdf_prob,
                 const Spectrum&         throughput)
             {
                 const Vector3d& point = shading_point.get_point();
@@ -260,10 +260,10 @@ namespace
 
                     // Multiple importance sampling.
                     const double square_distance = square(shading_point.get_distance());
-                    if (bsdf_mode != BSDF::Specular && square_distance > 0.0)
+                    if (prev_bsdf_mode != BSDF::Specular && square_distance > 0.0)
                     {
-                        // Transform bsdf_prob to surface area measure (Veach: 8.2.2.2 eq. 8.10).
-                        const double bsdf_point_prob = bsdf_prob * cos_on / square_distance;
+                        // Transform prev_bsdf_prob to surface area measure (Veach: 8.2.2.2 eq. 8.10).
+                        const double bsdf_point_prob = prev_bsdf_prob * cos_on / square_distance;
 
                         // Compute the probability density wrt. surface area of choosing this point
                         // by sampling the light sources.
@@ -291,7 +291,7 @@ namespace
             void visit_environment(
                 const ShadingPoint&     shading_point,
                 const Vector3d&         outgoing,
-                const BSDF::Mode        bsdf_mode,
+                const BSDF::Mode        prev_bsdf_mode,
                 const Spectrum&         throughput)
             {
                 // Can't look up the environment if there's no environment EDF.
@@ -303,7 +303,7 @@ namespace
                     return;
 
                 // If IBL is disabled, only specular surfaces should reflect the environment.
-                if (bsdf_mode != BSDF::Specular)
+                if (prev_bsdf_mode != BSDF::Specular)
                     return;
 
                 // Evaluate the environment EDF.
