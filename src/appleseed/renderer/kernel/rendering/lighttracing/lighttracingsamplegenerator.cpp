@@ -259,8 +259,8 @@ namespace
                 const Vector3d&             outgoing,           // in this context, toward the light
                 const BSDF*                 bsdf,
                 const void*                 bsdf_data,
-                const BSDF::Mode            bsdf_mode,
-                const double                bsdf_prob,
+                const BSDF::Mode            prev_bsdf_mode,
+                const double                prev_bsdf_prob,
                 const Spectrum&             throughput)
             {
                 Vector2d sample_position_ndc;
@@ -326,7 +326,7 @@ namespace
             void visit_environment(
                 const ShadingPoint&         shading_point,
                 const Vector3d&             outgoing,
-                const BSDF::Mode            bsdf_mode,
+                const BSDF::Mode            prev_bsdf_mode,
                 const Spectrum&             throughput)
             {
                 // The particle escapes.
