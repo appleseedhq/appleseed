@@ -149,7 +149,7 @@
         <configuration name="final" base="base_final">
             <parameter name="lighting_engine" value="drt" />
             <parameters name="generic_tile_renderer">
-                <parameter name="max_samples" value="32" />
+                <parameter name="max_samples" value="64" />
             </parameters>
         </configuration>
         <configuration name="interactive" base="base_interactive">
