@@ -199,9 +199,13 @@ namespace
                 const Material* material = shading_point.get_material();
                 const InputParams& input_params = shading_point.get_input_params();
 
-                // Compute direct lighting.
+
+                // Compute direct lighting. Note that we're sampling both the lights and the BSDF,
+                // unlike in the path tracer where we're only sampling the lights. The reason is
+                // that, while the path tracer follows paths after hitting diffuse surfaces (using
+                // BSDF sampling to extend the path), the distributed ray tracer doesn't.
                 Spectrum vertex_radiance;
-                compute_direct_lighting_light_sampling(
+                compute_direct_lighting(
                     sampling_context,
                     m_shading_context,
                     m_light_sampler,
@@ -211,7 +215,7 @@ namespace
                     outgoing,
                     *bsdf,
                     bsdf_data,
-                    1,
+                    1,                  // todo: make user-settable
                     m_params.m_dl_light_sample_count,
                     vertex_radiance,
                     &shading_point);
