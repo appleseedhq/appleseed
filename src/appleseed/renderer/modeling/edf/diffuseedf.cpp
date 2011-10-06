@@ -36,6 +36,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
 #include "foundation/math/sampling.h"
+#include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/containers/specializedarrays.h"
 
