@@ -114,7 +114,6 @@ class each
 // const_each class implementation.
 //
 
-// Constructor.
 template <typename C>
 inline const_each<C>::const_each(const C& c)
   : i(c.begin())
@@ -122,46 +121,42 @@ inline const_each<C>::const_each(const C& c)
 {
 }
 
-// Conversion to bool, return true if the iterator
-// hasn't yet reached the end of the collection.
 template <typename C>
 inline const_each<C>::operator bool() const
 {
     return i != e;
 }
 
-// Preincrement operator.
 template <typename C>
 inline void const_each<C>::operator++()
 {
     ++i;
 }
 
-// Iterator comparison.
 template <typename C>
 inline bool const_each<C>::operator<(const const_iterator& rhs) const
 {
     return i < rhs;
 }
+
 template <typename C>
 inline bool const_each<C>::operator>(const const_iterator& rhs) const
 {
     return i > rhs;
 }
 
-// Iterator dereference.
 template <typename C>
 inline const typename const_each<C>::value_type& const_each<C>::operator*() const
 {
     return *i;
 }
+
 template <typename C>
 inline const typename const_each<C>::value_type* const_each<C>::operator->() const
 {
     return &(*i);
 }
 
-// Return the underlying iterator.
 template <typename C>
 inline typename const_each<C>::const_iterator const_each<C>::it() const
 {
@@ -173,7 +168,6 @@ inline typename const_each<C>::const_iterator const_each<C>::it() const
 // each class implementation.
 //
 
-// Constructor.
 template <typename C>
 inline each<C>::each(C& c)
   : i(c.begin())
@@ -181,46 +175,42 @@ inline each<C>::each(C& c)
 {
 }
 
-// Conversion to bool, return true if the iterator
-// hasn't yet reached the end of the collection.
 template <typename C>
 inline each<C>::operator bool() const
 {
     return i != e;
 }
 
-// Preincrement operator.
 template <typename C>
 inline void each<C>::operator++()
 {
     ++i;
 }
 
-// Iterator comparison.
 template <typename C>
 inline bool each<C>::operator<(const iterator& rhs) const
 {
     return i < rhs;
 }
+
 template <typename C>
 inline bool each<C>::operator>(const iterator& rhs) const
 {
     return i > rhs;
 }
 
-// Iterator dereference.
 template <typename C>
 inline typename each<C>::value_type& each<C>::operator*()
 {
     return *i;
 }
+
 template <typename C>
 inline typename each<C>::value_type* each<C>::operator->()
 {
     return &(*i);
 }
 
-// Return the underlying iterator.
 template <typename C>
 inline typename each<C>::iterator each<C>::it() const
 {
