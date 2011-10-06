@@ -30,11 +30,19 @@
 #define APPLESEED_RENDERER_MODELING_EDF_DIFFUSEEDF_H
 
 // appleseed.renderer headers.
+#include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/edf/iedffactory.h"
+
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
+#include "foundation/utility/autoreleaseptr.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
-namespace renderer      { class EDF; }
+namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
@@ -43,23 +51,23 @@ namespace renderer
 // Diffuse EDF factory.
 //
 
-class RENDERERDLL DiffuseEDFFactory
+class DLLSYMBOL DiffuseEDFFactory
   : public IEDFFactory
 {
   public:
     // Return a string identifying this EDF model.
-    virtual const char* get_model() const;
+    virtual const char* get_model() const override;
 
     // Return a human-readable string identifying this EDF model.
-    virtual const char* get_human_readable_model() const;
+    virtual const char* get_human_readable_model() const override;
 
     // Return a set of widget definitions for this EDF model.
-    virtual foundation::DictionaryArray get_widget_definitions() const;
+    virtual foundation::DictionaryArray get_widget_definitions() const override;
 
     // Create a new EDF instance.
     virtual foundation::auto_release_ptr<EDF> create(
         const char*         name,
-        const ParamArray&   params) const;
+        const ParamArray&   params) const override;
 };
 
 }       // namespace renderer

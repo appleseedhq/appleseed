@@ -30,17 +30,19 @@
 #include "diffuseedf.h"
 
 // appleseed.renderer headers.
-#include "renderer/modeling/edf/edf.h"
+#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/input/inputarray.h"
-#include "renderer/modeling/input/source.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
 #include "foundation/math/sampling.h"
+#include "foundation/math/vector.h"
 #include "foundation/utility/containers/specializedarrays.h"
 
+// Standard headers.
+#include <cassert>
+
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
