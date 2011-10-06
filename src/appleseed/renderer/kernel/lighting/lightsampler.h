@@ -77,9 +77,11 @@ struct EmittingTriangle
 
 struct LightSample
 {
-    const EmittingTriangle*     m_emitting_triangle;
+    const EmittingTriangle*     m_triangle;
     InputParams                 m_input_params;                 // parameters for input evaluation
-    const EDF*                  m_edf;                          // EDF at the position of the light sample
+
+    const Light*                m_light;
+
     double                      m_probability;                  // probability of this sample to be chosen
 };
 

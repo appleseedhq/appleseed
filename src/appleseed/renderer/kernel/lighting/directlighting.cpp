@@ -200,7 +200,6 @@ void compute_direct_lighting_light_sampling(
         LightSample sample;
         if (!light_sampler.sample(s, sample))
             continue;
-        assert(sample.m_edf);
 
         // Compute the incoming direction in world space.
         Vector3d incoming = sample.m_input_params.m_point - point;
@@ -263,13 +262,13 @@ void compute_direct_lighting_light_sampling(
         InputEvaluator edf_input_evaluator(shading_context.get_texture_cache());
         const void* edf_data =
             edf_input_evaluator.evaluate(
-                sample.m_edf->get_inputs(),
+                sample.m_triangle->m_edf->get_inputs(),
                 sample.m_input_params);
 
         // Evaluate the EDF.
         Spectrum edf_value;
         double edf_prob;
-        sample.m_edf->evaluate(
+        sample.m_triangle->m_edf->evaluate(
             edf_data,
             sample.m_input_params.m_geometric_normal,
             Basis3d(sample.m_input_params.m_shading_normal),
@@ -428,7 +427,6 @@ void compute_direct_lighting_single_sample(
         LightSample sample;
         if (!light_sampler.sample(s, sample))
             return;
-        assert(sample.m_edf);
 
         // Compute the incoming direction in world space.
         Vector3d incoming = sample.m_input_params.m_point - point;
@@ -490,13 +488,13 @@ void compute_direct_lighting_single_sample(
         InputEvaluator edf_input_evaluator(shading_context.get_texture_cache());
         const void* edf_data =
             edf_input_evaluator.evaluate(
-                sample.m_edf->get_inputs(),
+                sample.m_triangle->m_edf->get_inputs(),
                 sample.m_input_params);
 
         // Evaluate the EDF.
         Spectrum edf_value;
         double edf_prob;
-        sample.m_edf->evaluate(
+        sample.m_triangle->m_edf->evaluate(
             edf_data,
             sample.m_input_params.m_geometric_normal,
             Basis3d(sample.m_input_params.m_shading_normal),

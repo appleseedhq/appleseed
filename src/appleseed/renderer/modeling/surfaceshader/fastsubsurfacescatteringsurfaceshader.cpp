@@ -190,12 +190,12 @@ namespace
                 InputEvaluator edf_input_evaluator(shading_context.get_texture_cache());
                 const void* edf_data =
                     edf_input_evaluator.evaluate(
-                        light_sample.m_edf->get_inputs(),
+                        light_sample.m_triangle->m_edf->get_inputs(),
                         light_sample.m_input_params);
 
                 // Evaluate the EDF.
                 Spectrum edf_value;
-                light_sample.m_edf->evaluate(
+                light_sample.m_triangle->m_edf->evaluate(
                     edf_data,
                     light_sample.m_input_params.m_geometric_normal,
                     Basis3d(light_sample.m_input_params.m_shading_normal),

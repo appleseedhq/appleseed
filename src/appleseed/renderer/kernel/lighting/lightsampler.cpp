@@ -362,6 +362,9 @@ void LightSampler::sample_emitters(
             emitter_prob,
             sample);
     }
+
+    assert(sample.m_triangle != 0 || sample.m_light != 0);
+    assert(sample.m_triangle == 0 || sample.m_triangle->m_edf != 0);
 }
 
 void LightSampler::sample_light(
@@ -371,10 +374,7 @@ void LightSampler::sample_light(
     LightSample&            sample) const
 {
     // Fetch the light.
-    const Light* light = m_lights[light_index];
-    assert(light);
-
-    throw ExceptionNotImplemented();
+    sample.m_light = m_lights[light_index];
 }
 
 void LightSampler::sample_emitting_triangle(
@@ -385,7 +385,7 @@ void LightSampler::sample_emitting_triangle(
 {
     // Fetch and set the emitting triangle.
     const EmittingTriangle& triangle = m_emitting_triangles[triangle_index];
-    sample.m_emitting_triangle = &triangle;
+    sample.m_triangle = &triangle;
 
     // Uniformly sample the surface of the triangle.
     const Vector3d bary = sample_triangle_uniform(s);
@@ -410,9 +410,6 @@ void LightSampler::sample_emitting_triangle(
 
     // Set the world space geometric normal.
     sample.m_input_params.m_geometric_normal = triangle.m_geometric_normal;
-
-    // Set the EDF.
-    sample.m_edf = triangle.m_edf;
 
     // Compute the probability of choosing this sample.
     assert(feq(triangle_prob * triangle.m_rcp_area, m_rcp_total_emissive_area));

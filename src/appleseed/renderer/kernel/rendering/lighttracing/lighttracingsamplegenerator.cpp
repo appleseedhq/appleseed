@@ -478,7 +478,7 @@ namespace
             InputEvaluator edf_input_evaluator(m_texture_cache);
             const void* edf_data =
                 edf_input_evaluator.evaluate(
-                    light_sample.m_edf->get_inputs(),
+                    light_sample.m_triangle->m_edf->get_inputs(),
                     light_sample.m_input_params);
 
             // Sample the EDF.
@@ -486,7 +486,7 @@ namespace
             Vector3d emission_direction;
             Spectrum edf_value;
             double edf_prob;
-            light_sample.m_edf->sample(
+            light_sample.m_triangle->m_edf->sample(
                 edf_data,
                 light_sample.m_input_params.m_geometric_normal,
                 Basis3d(light_sample.m_input_params.m_shading_normal),
@@ -508,11 +508,11 @@ namespace
             m_intersector.manufacture_hit(
                 parent_shading_point,
                 ShadingRay(light_sample.m_input_params.m_point, emission_direction, 0.0, 0.0, 0.0f, ~0),
-                light_sample.m_emitting_triangle->m_assembly_instance_uid,
-                light_sample.m_emitting_triangle->m_object_instance_index,
-                light_sample.m_emitting_triangle->m_region_index,
-                light_sample.m_emitting_triangle->m_triangle_index,
-                light_sample.m_emitting_triangle->m_triangle_support_plane);
+                light_sample.m_triangle->m_assembly_instance_uid,
+                light_sample.m_triangle->m_object_instance_index,
+                light_sample.m_triangle->m_region_index,
+                light_sample.m_triangle->m_triangle_index,
+                light_sample.m_triangle->m_triangle_support_plane);
 
             // Build the light ray.
             const ShadingRay light_ray(
