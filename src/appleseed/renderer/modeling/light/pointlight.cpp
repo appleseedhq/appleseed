@@ -32,11 +32,17 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/input/inputarray.h"
+#include "renderer/modeling/input/source.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/exceptions/exceptionnotimplemented.h"
+#include "foundation/math/sampling.h"
+#include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/containers/specializedarrays.h"
+
+// Forward declarations.
+namespace renderer      { class Assembly; }
+namespace renderer      { class Project; }
 
 using namespace foundation;
 
@@ -73,6 +79,17 @@ namespace
             return Model;
         }
 
+        virtual void on_frame_begin(
+            const Project&      project,
+            const Assembly&     assembly,
+            const void*         uniform_data) override
+        {
+            assert(m_inputs.source("exitance")->is_uniform());
+            
+            const InputValues* values = static_cast<const InputValues*>(uniform_data);
+            m_exitance = values->m_exitance;
+        }
+
         virtual void sample(
             const void*         data,
             const Vector2d&     s,
@@ -80,7 +97,9 @@ namespace
             Spectrum&           value,
             double&             probability) const override
         {
-            throw ExceptionNotImplemented();
+            outgoing = sample_sphere_uniform(s);
+            value = m_exitance;
+            probability = 1.0 / (4.0 * Pi);
         }
 
         virtual void evaluate(
@@ -88,7 +107,7 @@ namespace
             const Vector3d&     outgoing,
             Spectrum&           value) const override
         {
-            throw ExceptionNotImplemented();
+            value = m_exitance;
         }
 
         virtual void evaluate(
@@ -97,16 +116,25 @@ namespace
             Spectrum&           value,
             double&             probability) const override
         {
-            throw ExceptionNotImplemented();
+            value = m_exitance;
+            probability = 1.0 / (4.0 * Pi);
         }
 
         virtual double evaluate_pdf(
             const void*         data,
             const Vector3d&     outgoing) const override
         {
-            throw ExceptionNotImplemented();
-            return 0.0;
+            return 1.0 / (4.0 * Pi);
         }
+
+      private:
+        struct InputValues
+        {
+            Spectrum    m_exitance;         // radiant exitance, in W.m^-2
+            Alpha       m_exitance_alpha;   // alpha channel of radiant exitance
+        };
+
+        Spectrum        m_exitance;
     };
 }
 
