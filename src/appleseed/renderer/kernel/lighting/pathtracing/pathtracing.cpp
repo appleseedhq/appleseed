@@ -255,7 +255,11 @@ namespace
 
                     if (m_env_edf && m_params.m_enable_ibl)
                     {
-                        // Compute image-based lighting.
+                        // Compute image-based lighting. We're sampling both the lights and
+                        // the BSDF. There's no double contribution for diffuse BSDF samples
+                        // because IBL is not accounted for a second time when the path hits
+                        // the environment and next event estimation is enabled.
+                        // See visit_environment() below.
                         Spectrum ibl_radiance;
                         compute_image_based_lighting(
                             sampling_context,

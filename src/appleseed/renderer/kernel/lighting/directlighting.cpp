@@ -88,13 +88,9 @@ void compute_direct_lighting_bsdf_sampling(
             bsdf_prob,
             bsdf_mode);
 
-        // Handle absorption.
-        if (bsdf_mode == BSDF::None)
-            continue;
-
-        // Ignore specular components: they must be handled by the parent.
+        // Ignore glossy/specular components: they must be handled by the parent.
         // See Physically Based Rendering vol. 1 page 732.
-        if (bsdf_mode == BSDF::Specular)
+        if (bsdf_mode != BSDF::Diffuse)
             continue;
 
         // Trace a ray in the direction of the reflection.
@@ -348,13 +344,9 @@ void compute_direct_lighting_single_sample(
             bsdf_prob,
             bsdf_mode);
 
-        // Handle absorption.
-        if (bsdf_mode == BSDF::None)
-            return;
-
-        // Ignore specular components: they must be handled by the parent.
+        // Ignore glossy/specular components: they must be handled by the parent.
         // See Physically Based Rendering vol. 1 page 732.
-        if (bsdf_mode == BSDF::Specular)
+        if (bsdf_mode != BSDF::Diffuse)
             return;
 
         // Trace a ray in the direction of the reflection.

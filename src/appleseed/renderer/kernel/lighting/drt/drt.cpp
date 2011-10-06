@@ -206,7 +206,10 @@ namespace
                 // unlike in the path tracer where we're only sampling the lights.
                 // The reason is that, while the path tracer extends paths that hit a
                 // diffuse surface (using a single BSDF sample), the distributed ray
-                // tracer doesn't.
+                // tracer doesn't. There's no double contribution either for glossy
+                // BSDF samples since compute_direct_lighting() only computes direct
+                // lighting for diffuse BSDF samples; glossy BSDF samples are accounted
+                // for when the path is extended.
                 Spectrum vertex_radiance;
                 compute_direct_lighting(
                     sampling_context,
@@ -225,7 +228,10 @@ namespace
 
                 if (m_env_edf && m_params.m_enable_ibl)
                 {
-                    // Compute image-based lighting.
+                    // Compute image-based lighting. We're sampling both the lights and
+                    // the BSDF. There's no double contribution for diffuse BSDF samples
+                    // because IBL is not accounted for a second time when the path hits
+                    // the environment. See visit_environment() below.
                     Spectrum ibl_radiance;
                     compute_image_based_lighting(
                         sampling_context,
