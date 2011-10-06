@@ -31,11 +31,11 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/modeling/light/light.h"
+#include "renderer/modeling/input/inputarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exceptionnotimplemented.h"
-#include "foundation/math/transform.h"
+#include "foundation/math/vector.h"
 #include "foundation/utility/containers/specializedarrays.h"
 
 using namespace foundation;
@@ -60,6 +60,7 @@ namespace
             const ParamArray&   params)
           : Light(name, params)
         {
+            m_inputs.declare("exitance", InputFormatSpectrum);
         }
 
         virtual void release() override
@@ -132,9 +133,12 @@ DictionaryArray PointLightFactory::get_widget_definitions() const
         Dictionary()
             .insert("name", "exitance")
             .insert("label", "Exitance")
-            .insert("widget", "text_box")
+            .insert("widget", "entity_picker")
+            .insert("entity_types",
+                Dictionary()
+                    .insert("color", "Colors"))
             .insert("use", "required")
-            .insert("default", ""));    // todo: set default
+            .insert("default", ""));
 
     return definitions;
 }

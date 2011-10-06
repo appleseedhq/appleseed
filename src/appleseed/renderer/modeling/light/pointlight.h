@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/light/ilightfactory.h"
+#include "renderer/modeling/light/light.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
