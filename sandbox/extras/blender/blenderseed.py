@@ -44,7 +44,7 @@ bl_info = {
     "name": "appleseed project format",
     "description": "Exports a scene to the appleseed project file format.",
     "author": "Franz Beaune",
-    "version": (1, 1, 1),
+    "version": (1, 1, 2),
     "blender": (2, 5, 8),   # we really need Blender 2.58 or newer
     "api": 36339,
     "location": "File > Export",
@@ -216,269 +216,6 @@ def write_mesh_to_disk(mesh, filepath):
 
         return mesh_parts
 
-def write_sphere_mesh_to_disk(filepath):
-    with open(filepath, "w") as output_file:
-        output_file.write( \
-"""v 0.500000 1.866025 0.000000
-v 0.866025 1.500000 0.000000
-v 1.000000 1.000000 0.000000
-v 0.866025 0.500000 0.000000
-v 0.500000 0.133975 0.000000
-v 0.433013 1.866025 0.250000
-v 0.750000 1.500000 0.433013
-v 0.866025 1.000000 0.500000
-v 0.750000 0.500000 0.433013
-v 0.433013 0.133975 0.250000
-v 0.250000 1.866025 0.433013
-v 0.433013 1.500000 0.750000
-v 0.500000 1.000000 0.866025
-v 0.433013 0.500000 0.750000
-v 0.250000 0.133975 0.433013
-v -0.000000 1.866025 0.500000
-v -0.000000 1.500000 0.866025
-v -0.000000 1.000000 1.000000
-v -0.000000 0.500000 0.866025
-v -0.000000 0.133975 0.500000
-v -0.250000 1.866025 0.433013
-v -0.433013 1.500000 0.750000
-v -0.500000 1.000000 0.866025
-v -0.433013 0.500000 0.750000
-v -0.250000 0.133975 0.433013
-v -0.433013 1.866025 0.250000
-v -0.750000 1.500000 0.433013
-v -0.866025 1.000000 0.500000
-v -0.750000 0.500000 0.433013
-v -0.433013 0.133975 0.250000
-v -0.500000 1.866025 -0.000000
-v -0.866025 1.500000 -0.000000
-v -1.000000 1.000000 -0.000000
-v -0.866025 0.500000 -0.000000
-v -0.500000 0.133975 -0.000000
-v -0.433013 1.866025 -0.250000
-v -0.750000 1.500000 -0.433013
-v -0.866025 1.000000 -0.500000
-v -0.750000 0.500000 -0.433013
-v -0.433013 0.133975 -0.250000
-v -0.250000 1.866025 -0.433013
-v -0.433013 1.500000 -0.750000
-v -0.500000 1.000000 -0.866025
-v -0.433013 0.500000 -0.750000
-v -0.250000 0.133975 -0.433013
-v 0.000000 1.866025 -0.500000
-v 0.000000 1.500000 -0.866025
-v 0.000000 1.000000 -1.000000
-v 0.000000 0.500000 -0.866025
-v 0.000000 0.133975 -0.500000
-v 0.250000 1.866025 -0.433013
-v 0.433013 1.500000 -0.750000
-v 0.500000 1.000000 -0.866025
-v 0.433013 0.500000 -0.750000
-v 0.250000 0.133975 -0.433013
-v 0.433013 1.866025 -0.250000
-v 0.750000 1.500000 -0.433013
-v 0.866025 1.000000 -0.500000
-v 0.750000 0.500000 -0.433013
-v 0.433013 0.133975 -0.250000
-v 0.000000 2.000000 0.000000
-v 0.000000 0.000000 0.000000
-vn 0.498231 0.867044 -0.000000
-vn 0.865033 0.501714 -0.000000
-vn 1.000000 0.000000 -0.000000
-vn 0.865033 -0.501715 -0.000000
-vn 0.498231 -0.867044 -0.000000
-vn 0.431481 0.867044 0.249116
-vn 0.749141 0.501714 0.432517
-vn 0.866025 -0.000000 0.500000
-vn 0.749141 -0.501714 0.432517
-vn 0.431481 -0.867044 0.249116
-vn 0.249116 0.867044 0.431481
-vn 0.432517 0.501714 0.749141
-vn 0.500000 -0.000000 0.866025
-vn 0.432517 -0.501714 0.749141
-vn 0.249116 -0.867044 0.431481
-vn -0.000000 0.867044 0.498231
-vn -0.000000 0.501714 0.865033
-vn -0.000000 -0.000000 1.000000
-vn -0.000000 -0.501714 0.865033
-vn -0.000000 -0.867044 0.498231
-vn -0.249116 0.867044 0.431481
-vn -0.432517 0.501714 0.749141
-vn -0.500000 -0.000000 0.866025
-vn -0.432517 -0.501714 0.749141
-vn -0.249116 -0.867044 0.431481
-vn -0.431481 0.867044 0.249116
-vn -0.749141 0.501714 0.432517
-vn -0.866025 -0.000000 0.500000
-vn -0.749141 -0.501714 0.432517
-vn -0.431481 -0.867044 0.249116
-vn -0.498231 0.867044 -0.000000
-vn -0.865033 0.501714 -0.000000
-vn -1.000000 0.000000 -0.000000
-vn -0.865033 -0.501714 -0.000000
-vn -0.498231 -0.867044 -0.000000
-vn -0.431481 0.867044 -0.249116
-vn -0.749141 0.501714 -0.432517
-vn -0.866025 0.000000 -0.500000
-vn -0.749141 -0.501714 -0.432517
-vn -0.431481 -0.867044 -0.249116
-vn -0.249116 0.867044 -0.431481
-vn -0.432517 0.501714 -0.749141
-vn -0.500000 0.000000 -0.866025
-vn -0.432517 -0.501714 -0.749141
-vn -0.249116 -0.867044 -0.431481
-vn 0.000000 0.867044 -0.498231
-vn 0.000000 0.501714 -0.865033
-vn 0.000000 0.000000 -1.000000
-vn 0.000000 -0.501714 -0.865033
-vn 0.000000 -0.867044 -0.498231
-vn 0.249116 0.867044 -0.431481
-vn 0.432517 0.501714 -0.749141
-vn 0.500000 0.000000 -0.866025
-vn 0.432517 -0.501715 -0.749141
-vn 0.249116 -0.867044 -0.431481
-vn 0.431481 0.867044 -0.249116
-vn 0.749141 0.501714 -0.432517
-vn 0.866025 0.000000 -0.500000
-vn 0.749141 -0.501715 -0.432517
-vn 0.431481 -0.867044 -0.249116
-vn -0.000000 1.000000 -0.000000
-vn 0.000000 -1.000000 -0.000000
-vt 0.871287 0.285637
-vt 0.928725 0.500000
-vt 0.747525 0.500000
-vt 0.714363 0.376238
-vt 0.928725 0.252475
-vt 0.995049 0.500000
-vt 0.871287 0.285637
-vt 0.928725 0.500000
-vt 0.714363 0.376238
-vt 0.747525 0.500000
-vt 0.500000 0.500000
-vt 0.500000 0.500000
-vt 0.714363 0.128713
-vt 0.623762 0.285637
-vt 0.747525 0.071275
-vt 0.714363 0.128713
-vt 0.623762 0.285637
-vt 0.500000 0.071275
-vt 0.500000 0.252475
-vt 0.500000 0.004950
-vt 0.500000 0.071275
-vt 0.500000 0.252475
-vt 0.285637 0.128713
-vt 0.376238 0.285637
-vt 0.252475 0.071275
-vt 0.285637 0.128713
-vt 0.376238 0.285637
-vt 0.128713 0.285637
-vt 0.285637 0.376238
-vt 0.071275 0.252475
-vt 0.128713 0.285637
-vt 0.285637 0.376238
-vt 0.071275 0.500000
-vt 0.252475 0.500000
-vt 0.004950 0.500000
-vt 0.071275 0.500000
-vt 0.252475 0.500000
-vt 0.128713 0.714363
-vt 0.285637 0.623762
-vt 0.071275 0.747525
-vt 0.128713 0.714363
-vt 0.285637 0.623762
-vt 0.285637 0.871287
-vt 0.376238 0.714363
-vt 0.252475 0.928725
-vt 0.285637 0.871287
-vt 0.376238 0.714363
-vt 0.500000 0.928725
-vt 0.500000 0.747525
-vt 0.500000 0.995049
-vt 0.500000 0.928725
-vt 0.500000 0.747525
-vt 0.714363 0.871287
-vt 0.623762 0.714363
-vt 0.747525 0.928725
-vt 0.714363 0.871287
-vt 0.623762 0.714363
-vt 0.871287 0.714363
-vt 0.714363 0.623762
-vt 0.928725 0.747525
-vt 0.871287 0.714363
-vt 0.714363 0.623762
-f 7/1/7 2/2/2 1/3/1 6/4/6
-f 8/5/8 3/6/3 2/2/2 7/1/7
-f 9/7/9 4/8/4 3/6/3 8/5/8
-f 10/9/10 5/10/5 4/8/4 9/7/9
-f 6/4/6 1/3/1 61/11/61
-f 5/10/5 10/9/10 62/12/62
-f 12/13/12 7/1/7 6/4/6 11/14/11
-f 13/15/13 8/5/8 7/1/7 12/13/12
-f 14/16/14 9/7/9 8/5/8 13/15/13
-f 15/17/15 10/9/10 9/7/9 14/16/14
-f 11/14/11 6/4/6 61/11/61
-f 10/9/10 15/17/15 62/12/62
-f 17/18/17 12/13/12 11/14/11 16/19/16
-f 18/20/18 13/15/13 12/13/12 17/18/17
-f 19/21/19 14/16/14 13/15/13 18/20/18
-f 20/22/20 15/17/15 14/16/14 19/21/19
-f 16/19/16 11/14/11 61/11/61
-f 15/17/15 20/22/20 62/12/62
-f 22/23/22 17/18/17 16/19/16 21/24/21
-f 23/25/23 18/20/18 17/18/17 22/23/22
-f 24/26/24 19/21/19 18/20/18 23/25/23
-f 25/27/25 20/22/20 19/21/19 24/26/24
-f 21/24/21 16/19/16 61/11/61
-f 20/22/20 25/27/25 62/12/62
-f 27/28/27 22/23/22 21/24/21 26/29/26
-f 28/30/28 23/25/23 22/23/22 27/28/27
-f 29/31/29 24/26/24 23/25/23 28/30/28
-f 30/32/30 25/27/25 24/26/24 29/31/29
-f 26/29/26 21/24/21 61/11/61
-f 25/27/25 30/32/30 62/12/62
-f 32/33/32 27/28/27 26/29/26 31/34/31
-f 33/35/33 28/30/28 27/28/27 32/33/32
-f 34/36/34 29/31/29 28/30/28 33/35/33
-f 35/37/35 30/32/30 29/31/29 34/36/34
-f 31/34/31 26/29/26 61/11/61
-f 30/32/30 35/37/35 62/12/62
-f 37/38/37 32/33/32 31/34/31 36/39/36
-f 38/40/38 33/35/33 32/33/32 37/38/37
-f 39/41/39 34/36/34 33/35/33 38/40/38
-f 40/42/40 35/37/35 34/36/34 39/41/39
-f 36/39/36 31/34/31 61/11/61
-f 35/37/35 40/42/40 62/12/62
-f 42/43/42 37/38/37 36/39/36 41/44/41
-f 43/45/43 38/40/38 37/38/37 42/43/42
-f 44/46/44 39/41/39 38/40/38 43/45/43
-f 45/47/45 40/42/40 39/41/39 44/46/44
-f 41/44/41 36/39/36 61/11/61
-f 40/42/40 45/47/45 62/12/62
-f 47/48/47 42/43/42 41/44/41 46/49/46
-f 48/50/48 43/45/43 42/43/42 47/48/47
-f 49/51/49 44/46/44 43/45/43 48/50/48
-f 50/52/50 45/47/45 44/46/44 49/51/49
-f 46/49/46 41/44/41 61/11/61
-f 45/47/45 50/52/50 62/12/62
-f 52/53/52 47/48/47 46/49/46 51/54/51
-f 53/55/53 48/50/48 47/48/47 52/53/52
-f 54/56/54 49/51/49 48/50/48 53/55/53
-f 55/57/55 50/52/50 49/51/49 54/56/54
-f 51/54/51 46/49/46 61/11/61
-f 50/52/50 55/57/55 62/12/62
-f 57/58/57 52/53/52 51/54/51 56/59/56
-f 58/60/58 53/55/53 52/53/52 57/58/57
-f 59/61/59 54/56/54 53/55/53 58/60/58
-f 60/62/60 55/57/55 54/56/54 59/61/59
-f 56/59/56 51/54/51 61/11/61
-f 55/57/55 60/62/60 62/12/62
-f 2/2/2 57/58/57 56/59/56 1/3/1
-f 3/6/3 58/60/58 57/58/57 2/2/2
-f 4/8/4 59/61/59 58/60/58 3/6/3
-f 5/10/5 60/62/60 59/61/59 4/8/4
-f 1/3/1 56/59/56 61/11/61
-f 60/62/60 5/10/5 62/12/62
-""")
-
 
 #
 # AppleseedExportOperator class.
@@ -515,13 +252,6 @@ class AppleseedExportOperator(bpy.types.Operator):
     export_emitting_obj_as_lights = bpy.props.BoolProperty(name="Export Emitting Objects As Mesh Lights",
                                                            description="Export object with light-emitting materials as mesh (area) lights",
                                                            default=False)
-
-    point_lights_diameter = bpy.props.FloatProperty(name="Point Lights Diameter",
-                                                    description="Points lights are currently emitted as little sphere of this diameter",
-                                                    min=0.0001,
-                                                    max=10.0,
-                                                    default=0.1,
-                                                    subtype='FACTOR')
 
     point_lights_exitance_mult = bpy.props.FloatProperty(name="Point Lights Energy Multiplier",
                                                          description="Multiply the exitance of point lights by this factor",
@@ -651,16 +381,9 @@ class AppleseedExportOperator(bpy.types.Operator):
 
     def __emit_assembly(self, scene):
         self.__open_element('assembly name="' + scene.name + '"')
-
         self.__emit_physical_surface_shader_element()
         self.__emit_default_material()
-
-        if self.__scene_has_renderable_point_lights(scene):
-            self.__emit_spherical_light()
-            self.__emit_pass_through_surface_shader()
-
         self.__emit_objects(scene)
-
         self.__close_element("assembly")
 
     def __emit_assembly_instance_element(self, scene):
@@ -1059,32 +782,6 @@ class AppleseedExportOperator(bpy.types.Operator):
     # Lights.
     #
 
-    def __scene_has_renderable_point_lights(self, scene):
-        for object in scene.objects:
-            if object.hide_render:
-                continue
-            if object.type != 'LAMP':
-                continue
-            if object.data.type == 'POINT':
-                return True
-        return False
-
-    def __emit_spherical_light(self):
-        filename = "__spherical_light.obj"
-
-        if self.generate_mesh_files:
-            filepath = os.path.join(os.path.dirname(self.filepath), filename)
-            self.__progress("Emitting built-in object 'spherical_light' to {0}...".format(filename))
-            write_sphere_mesh_to_disk(filepath)
-
-        self.__emit_object_element("__spherical_light", filename)
-
-    def __emit_pass_through_surface_shader(self):
-        self.__emit_color_element("transparent_black", "linear_rgb", [ 0.0 ], [ 0.0 ], 1.0)
-        self.__open_element('surface_shader name="pass_through_shader" model="constant_surface_shader"')
-        self.__emit_parameter("color", "transparent_black")
-        self.__close_element("surface_shader")
-
     def __emit_light(self, scene, object):
         light_type = object.data.type
 
@@ -1094,21 +791,17 @@ class AppleseedExportOperator(bpy.types.Operator):
             self.__warning("While exporting light '{0}': unsupported light type '{1}', skipping this light.".format(object.name, light_type))
 
     def __emit_point_light(self, scene, lamp):
-        material_name = "{0}_material".format(lamp.name)
-        bsdf_name = ""
-        edf_name = "{0}_edf".format(material_name)
-        exitance_name = "{0}_exitance".format(edf_name)
-
+        exitance_name = "{0}_exitance".format(lamp.name)
         half_intensity_dist = lamp.data.distance * self.global_scale
         intensity_factor = square(half_intensity_dist + 1.0) / 2.0
-
         self.__emit_solid_linear_rgb_color_element(exitance_name, lamp.data.color, lamp.data.energy * self.point_lights_exitance_mult * intensity_factor)
-        self.__emit_diffuse_edf_element(edf_name, exitance_name)
-        self.__emit_material_element(material_name, bsdf_name, edf_name, "pass_through_shader")
+        self.__emit_light_element(lamp.name, "point_light", exitance_name, self.global_matrix * lamp.matrix_world)
 
-        matrix = self.global_matrix * lamp.matrix_world
-        matrix = matrix * mathutils.Matrix.Scale(self.point_lights_diameter, 4)
-        self.__emit_object_instance_element("__spherical_light.0", lamp.name, matrix, material_name)
+    def __emit_light_element(self, light_name, light_model, exitance_name, matrix)
+        self.__open_element('light name="{0}" model="{1}"'.format(light_name, light_model))
+        self.__emit_parameter("exitance", exitance_name)
+        self.__emit_transform_element(matrix)
+        self.__close_element("light")
 
     #
     # Output.
