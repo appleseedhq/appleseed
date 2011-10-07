@@ -542,7 +542,7 @@ namespace
             return m_entity;
         }
 
-      private:
+      protected:
         ParseContext&                   m_context;
         const EntityFactoryRegistrar    m_registrar;
         const string                    m_entity_type;
@@ -1339,52 +1339,26 @@ namespace
     //
 
     class CameraElementHandler
-      : public ParametrizedElementHandler
+      : public EntityElementHandler<Camera, CameraFactoryRegistrar>
     {
       public:
+        typedef EntityElementHandler<Camera, CameraFactoryRegistrar> Base;
+
         explicit CameraElementHandler(ParseContext& context)
-          : m_context(context)
+          : Base("camera", context)
         {
         }
 
         virtual void start_element(const Attributes& attrs)
         {
-            ParametrizedElementHandler::start_element(attrs);
-            m_camera.reset();
-            m_name = get_value(attrs, "name");
-            m_model = get_value(attrs, "model");
+            Base::start_element(attrs);
             m_transform = Transformd(Matrix4d::identity());
         }
 
         virtual void end_element()
         {
-            try
-            {
-                const CameraFactoryRegistrar::FactoryType* factory =
-                    m_camera_factory_registrar.lookup(m_model.c_str());
-
-                if (factory)
-                {
-                    m_camera = factory->create(m_name.c_str(), m_params);
-                    m_camera->set_transform(m_transform);
-                }
-                else
-                {
-                    RENDERER_LOG_ERROR(
-                        "while defining camera \"%s\": invalid model \"%s\"",
-                        m_name.c_str(),
-                        m_model.c_str());
-                    m_context.get_event_counters().signal_error();
-                }
-            }
-            catch (const ExceptionDictionaryItemNotFound& e)
-            {
-                RENDERER_LOG_ERROR(
-                    "while defining camera \"%s\": required parameter \"%s\" missing",
-                    m_name.c_str(),
-                    e.string());
-                m_context.get_event_counters().signal_error();
-            }
+            Base::end_element();
+            m_entity->set_transform(m_transform);
         }
 
         virtual void end_child_element(
@@ -1402,23 +1376,13 @@ namespace
                 break;
 
               default:
-                ParametrizedElementHandler::end_child_element(element, handler);
+                Base::end_child_element(element, handler);
                 break;
             }
         }
 
-        auto_release_ptr<Camera> get_camera()
-        {
-            return m_camera;
-        }
-
       private:
-        const CameraFactoryRegistrar    m_camera_factory_registrar;
-        ParseContext&                   m_context;
-        auto_release_ptr<Camera>        m_camera;
-        string                          m_name;
-        string                          m_model;
-        Transformd                      m_transform;
+        Transformd m_transform;
     };
 
 
@@ -2128,7 +2092,7 @@ namespace
                 {
                     CameraElementHandler* camera_handler =
                         static_cast<CameraElementHandler*>(handler);
-                    auto_release_ptr<Camera> camera = camera_handler->get_camera();
+                    auto_release_ptr<Camera> camera = camera_handler->get_entity();
                     if (camera.get())
                     {
                         if (m_scene->get_camera())
