@@ -795,7 +795,7 @@ class AppleseedExportOperator(bpy.types.Operator):
         self.__emit_solid_linear_rgb_color_element(exitance_name, lamp.data.color, lamp.data.energy * self.point_lights_exitance_mult)
         self.__emit_light_element(lamp.name, "point_light", exitance_name, self.global_matrix * lamp.matrix_world)
 
-    def __emit_light_element(self, light_name, light_model, exitance_name, matrix)
+    def __emit_light_element(self, light_name, light_model, exitance_name, matrix):
         self.__open_element('light name="{0}" model="{1}"'.format(light_name, light_model))
         self.__emit_parameter("exitance", exitance_name)
         self.__emit_transform_element(matrix)
