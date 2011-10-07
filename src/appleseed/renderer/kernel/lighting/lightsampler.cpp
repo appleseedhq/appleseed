@@ -348,6 +348,7 @@ void LightSampler::sample_emitters(
     // Generate one sample on the chosen emitter.
     if (emitter_index < m_light_count)
     {
+        sample.m_triangle = 0;
         sample_light(
             Vector2d(s[1], s[2]),
             emitter_index,
@@ -356,6 +357,7 @@ void LightSampler::sample_emitters(
     }
     else
     {
+        sample.m_light = 0;
         sample_emitting_triangle(
             Vector2d(s[1], s[2]),
             emitter_index - m_light_count,
@@ -374,7 +376,15 @@ void LightSampler::sample_light(
     LightSample&            sample) const
 {
     // Fetch the light.
-    sample.m_light = m_lights[light_index];
+    const Light* light = m_lights[light_index];
+    sample.m_light = light;
+
+    // Compute the world space position of the light.
+    const Transformd::MatrixType& mat = light->get_transform().get_local_to_parent();
+    sample.m_input_params.m_point = Vector3d(mat[3], mat[7], mat[11]);
+
+    // Store the probability of choosing this light.
+    sample.m_probability = light_prob;
 }
 
 void LightSampler::sample_emitting_triangle(
