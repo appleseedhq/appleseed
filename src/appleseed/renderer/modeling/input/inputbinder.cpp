@@ -271,6 +271,20 @@ void InputBinder::bind_assembly_entities_inputs(
             assembly.edfs());
     }
 
+    // Bind lights inputs.
+    for (each<LightContainer> i = assembly.lights(); i; ++i)
+    {
+        bind_assembly_entity_inputs(
+            scene,
+            scene_symbols,
+            assembly,
+            assembly_symbols,
+            SymbolTable::symbol_name(SymbolTable::SymbolLight),
+            i->get_name(),
+            i->get_parameters(),
+            i->get_inputs());
+    }
+
     // Bind object instances inputs.
     for (each<ObjectInstanceContainer> i = assembly.object_instances(); i; ++i)
         i->bind_entities(assembly.materials());
