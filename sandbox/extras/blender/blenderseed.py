@@ -257,7 +257,7 @@ class AppleseedExportOperator(bpy.types.Operator):
                                                          description="Multiply the exitance of point lights by this factor",
                                                          min=0.001,
                                                          max=1000.0,
-                                                         default=200.0,
+                                                         default=1.0,
                                                          subtype='FACTOR')
 
     light_mats_exitance_mult = bpy.props.FloatProperty(name="Light-Emitting Materials Energy Multiplier",
@@ -792,9 +792,7 @@ class AppleseedExportOperator(bpy.types.Operator):
 
     def __emit_point_light(self, scene, lamp):
         exitance_name = "{0}_exitance".format(lamp.name)
-        half_intensity_dist = lamp.data.distance * self.global_scale
-        intensity_factor = square(half_intensity_dist + 1.0) / 2.0
-        self.__emit_solid_linear_rgb_color_element(exitance_name, lamp.data.color, lamp.data.energy * self.point_lights_exitance_mult * intensity_factor)
+        self.__emit_solid_linear_rgb_color_element(exitance_name, lamp.data.color, lamp.data.energy * self.point_lights_exitance_mult)
         self.__emit_light_element(lamp.name, "point_light", exitance_name, self.global_matrix * lamp.matrix_world)
 
     def __emit_light_element(self, light_name, light_model, exitance_name, matrix)
