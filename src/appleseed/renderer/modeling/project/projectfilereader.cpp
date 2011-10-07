@@ -1261,6 +1261,12 @@ namespace
             m_transform = Transformd(Matrix4d::identity());
         }
 
+        virtual void end_element()
+        {
+            Base::end_element();
+            m_entity->set_transform(m_transform);
+        }
+
         virtual void end_child_element(
             const ProjectElementID      element,
             ElementHandlerType*         handler)
