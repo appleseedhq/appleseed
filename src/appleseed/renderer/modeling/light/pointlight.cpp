@@ -32,17 +32,12 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/input/inputarray.h"
-#include "renderer/modeling/input/source.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/sampling.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/containers/specializedarrays.h"
-
-// Forward declarations.
-namespace renderer      { class Assembly; }
-namespace renderer      { class Project; }
 
 using namespace foundation;
 
@@ -79,17 +74,6 @@ namespace
             return Model;
         }
 
-        virtual void on_frame_begin(
-            const Project&      project,
-            const Assembly&     assembly,
-            const void*         uniform_data) override
-        {
-            assert(m_inputs.source("exitance")->is_uniform());
-            
-            const InputValues* values = static_cast<const InputValues*>(uniform_data);
-            m_exitance = values->m_exitance;
-        }
-
         virtual void sample(
             const void*         data,
             const Vector2d&     s,
@@ -98,7 +82,7 @@ namespace
             double&             probability) const override
         {
             outgoing = sample_sphere_uniform(s);
-            value = m_exitance;
+            value = static_cast<const InputValues*>(data)->m_exitance;
             probability = 1.0 / (4.0 * Pi);
         }
 
@@ -107,7 +91,7 @@ namespace
             const Vector3d&     outgoing,
             Spectrum&           value) const override
         {
-            value = m_exitance;
+            value = static_cast<const InputValues*>(data)->m_exitance;
         }
 
         virtual void evaluate(
@@ -116,7 +100,7 @@ namespace
             Spectrum&           value,
             double&             probability) const override
         {
-            value = m_exitance;
+            value = static_cast<const InputValues*>(data)->m_exitance;
             probability = 1.0 / (4.0 * Pi);
         }
 
@@ -133,8 +117,6 @@ namespace
             Spectrum    m_exitance;         // radiant exitance, in W.m^-2
             Alpha       m_exitance_alpha;   // alpha channel of radiant exitance
         };
-
-        Spectrum        m_exitance;
     };
 }
 
