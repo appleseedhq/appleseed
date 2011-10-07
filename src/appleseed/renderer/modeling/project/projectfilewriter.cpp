@@ -409,7 +409,12 @@ namespace
         // Write a <light> element.
         void write(const Light& light)
         {
-            write_entity("light", light);
+            Element element("light", m_file, m_indenter);
+            element.add_attribute("name", light.get_name());
+            element.add_attribute("model", light.get_model());
+            element.write(true);
+            write(light.get_parameters());
+            write(light.get_transform());
         }
 
         // Write a <camera> element.
