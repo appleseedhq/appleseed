@@ -72,7 +72,6 @@ namespace
             const char*         name,
             const ParamArray&   params)
           : Camera(name, params)
-          , m_transform(Transformd::identity())
         {
             m_film_dimensions = get_film_dimensions();
             m_focal_length = get_focal_length();
@@ -110,17 +109,6 @@ namespace
         virtual const char* get_model() const
         {
             return Model;
-        }
-
-        virtual void set_transform(const Transformd& transform)
-        {
-            m_transform = transform;
-            bump_version_id();
-        }
-
-        virtual const Transformd& get_transform() const
-        {
-            return m_transform;
         }
 
         virtual void on_frame_begin(const Project& project)
@@ -171,7 +159,8 @@ namespace
             }
 
             // Set the ray origin.
-            const Transformd::MatrixType& mat = m_transform.get_local_to_parent();
+            const Transformd& transform = get_transform();
+            const Transformd::MatrixType& mat = transform.get_local_to_parent();
             ray.m_org.x =    mat[ 0] * lens_point.x +
                              mat[ 1] * lens_point.y +
                              mat[ 3];
@@ -198,7 +187,7 @@ namespace
             ray.m_dir = focus_point;
             ray.m_dir.x -= lens_point.x;
             ray.m_dir.y -= lens_point.y;
-            ray.m_dir = m_transform.transform_vector_to_parent(ray.m_dir);
+            ray.m_dir = transform.transform_vector_to_parent(ray.m_dir);
         }
 
         virtual Vector2d project(const Vector3d& point) const
@@ -208,9 +197,6 @@ namespace
         }
 
       private:
-        // Order of data members impacts performance, preserve it.
-        Transformd          m_transform;                // camera transformation
-
         // Parameters.
         Vector2d            m_film_dimensions;          // film dimensions, in meters
         double              m_focal_length;             // focal length, in meters
@@ -264,7 +250,8 @@ namespace
             ray.m_flags = ~0;
 
             // Set the ray origin.
-            const Transformd::MatrixType& mat = m_transform.get_local_to_parent();
+            const Transformd& transform = get_transform();
+            const Transformd::MatrixType& mat = transform.get_local_to_parent();
             ray.m_org.x = mat[ 3];
             ray.m_org.y = mat[ 7];
             ray.m_org.z = mat[11];
@@ -280,7 +267,7 @@ namespace
                 -m_focal_length);
 
             // Set the ray direction.
-            ray.m_dir = m_transform.transform_vector_to_parent(target);
+            ray.m_dir = transform.transform_vector_to_parent(target);
 
             // Trace the ray.
             ShadingPoint shading_point;
@@ -291,7 +278,7 @@ namespace
                 // Hit: compute the focal distance.
                 const Vector3d v = shading_point.get_point() - ray.m_org;
                 const Vector3d camera_direction =
-                    m_transform.transform_vector_to_parent(Vector3d(0.0, 0.0, -1.0));
+                    transform.transform_vector_to_parent(Vector3d(0.0, 0.0, -1.0));
                 const double af_focal_distance = dot(v, camera_direction);
 
                 RENDERER_LOG_INFO(

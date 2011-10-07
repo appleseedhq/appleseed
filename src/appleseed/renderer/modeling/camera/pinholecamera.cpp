@@ -61,7 +61,6 @@ namespace
             const char*             name,
             const ParamArray&       params)
           : Camera(name, params)
-          , m_transform(Transformd::identity())
         {
             m_film_dimensions = get_film_dimensions();
             m_focal_length = get_focal_length();
@@ -80,21 +79,10 @@ namespace
             return Model;
         }
 
-        virtual void set_transform(const Transformd& transform)
-        {
-            m_transform = transform;
-            bump_version_id();
-        }
-
-        virtual const Transformd& get_transform() const
-        {
-            return m_transform;
-        }
-
         virtual void on_frame_begin(const Project& project)
         {
             // Precompute the rays origin in world space.
-            const Transformd::MatrixType& mat = m_transform.get_local_to_parent();
+            const Transformd::MatrixType& mat = get_transform().get_local_to_parent();
             m_ray_org.x = mat[ 3];
             m_ray_org.y = mat[ 7];
             m_ray_org.z = mat[11];
@@ -126,7 +114,7 @@ namespace
                 -m_focal_length);
 
             // Set the ray direction.
-            ray.m_dir = m_transform.transform_vector_to_parent(target);
+            ray.m_dir = get_transform().transform_vector_to_parent(target);
         }
 
         virtual Vector2d project(const Vector3d& point) const
@@ -138,9 +126,6 @@ namespace
         }
 
       private:
-        // Order of data members impacts performance, preserve it.
-        Transformd      m_transform;            // camera transformation
-
         // Parameters.
         Vector2d        m_film_dimensions;      // film dimensions, in meters
         double          m_focal_length;         // focal length, in meters

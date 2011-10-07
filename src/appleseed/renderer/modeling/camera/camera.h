@@ -63,10 +63,10 @@ class RENDERERDLL Camera
     virtual const char* get_model() const = 0;
 
     // Set the camera transformation.
-    virtual void set_transform(const foundation::Transformd& transform) = 0;
+    void set_transform(const foundation::Transformd& transform);
 
     // Get the camera transformation.
-    virtual const foundation::Transformd& get_transform() const = 0;
+    const foundation::Transformd& get_transform() const;
 
     // Get the film dimensions (in meters).
     const foundation::Vector2d& get_film_dimensions() const;
