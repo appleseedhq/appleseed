@@ -38,6 +38,7 @@
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/input/inputparams.h"
+#include "renderer/modeling/light/light.h"
 #include "renderer/modeling/material/material.h"
 
 // appleseed.foundation headers.
@@ -172,6 +173,49 @@ void compute_direct_lighting_bsdf_sampling(
         radiance /= static_cast<float>(bsdf_sample_count);
 }
 
+namespace
+{
+    void evaluate_light_sample(
+        InputEvaluator&         input_evaluator,
+        const LightSample&      sample,
+        const Vector3d&         outgoing,
+        Spectrum&               exitance)
+    {
+        if (sample.m_triangle)
+        {
+            const EDF* edf = sample.m_triangle->m_edf;
+
+            // Evaluate the input values of the EDF.
+            const void* edf_data =
+                input_evaluator.evaluate(
+                    edf->get_inputs(),
+                    sample.m_input_params);
+
+            // Evaluate the EDF.
+            edf->evaluate(
+                edf_data,
+                sample.m_input_params.m_geometric_normal,
+                Basis3d(sample.m_input_params.m_shading_normal),
+                outgoing,
+                exitance);
+        }
+        else
+        {
+            // Evaluate the input values of the light.
+            const void* light_data =
+                input_evaluator.evaluate(
+                    sample.m_light->get_inputs(),
+                    sample.m_input_params);
+
+            // Evaluate the light.
+            sample.m_light->evaluate(
+                light_data,
+                outgoing,
+                exitance);
+        }
+    }
+}
+
 void compute_direct_lighting_light_sampling(
     SamplingContext&            sampling_context,
     const ShadingContext&       shading_context,
@@ -209,10 +253,19 @@ void compute_direct_lighting_light_sampling(
         if (cos_in <= 0.0)
             continue;
 
-        // Cull samples on lights emitting in the wrong direction.
-        double cos_on = dot(-incoming, sample.m_input_params.m_shading_normal);
-        if (cos_on <= 0.0)
-            continue;
+        double cos_on;
+        if (sample.m_triangle)
+        {
+            // Cull samples on lights emitting in the wrong direction.
+            cos_on = dot(-incoming, sample.m_input_params.m_shading_normal);
+            if (cos_on <= 0.0)
+                continue;
+        }
+        else
+        {
+            // We shouldn't use cos_on in the case of non-physical lights. Make sure we detect misusage.
+            cos_on = 0.0;
+        }
 
         // Compute the square distance between the light sample and the shading point.
         const double sample_square_distance = square_norm(incoming);
@@ -258,47 +311,40 @@ void compute_direct_lighting_light_sampling(
         if (!bsdf_defined)
             continue;
 
-        // Evaluate the input values of the EDF.
-        InputEvaluator edf_input_evaluator(shading_context.get_texture_cache());
-        const void* edf_data =
-            edf_input_evaluator.evaluate(
-                sample.m_triangle->m_edf->get_inputs(),
-                sample.m_input_params);
-
-        // Evaluate the EDF.
-        Spectrum edf_value;
-        double edf_prob;
-        sample.m_triangle->m_edf->evaluate(
-            edf_data,
-            sample.m_input_params.m_geometric_normal,
-            Basis3d(sample.m_input_params.m_shading_normal),
+        // Evaluate the sample's exitance.
+        InputEvaluator input_evaluator(shading_context.get_texture_cache());
+        Spectrum exitance;
+        evaluate_light_sample(
+            input_evaluator,
+            sample,
             -incoming,
-            edf_value,
-            edf_prob);
+            exitance);
 
-        // Compute the geometric term. To keep the estimator unbiased, we don't
-        // clamp the geometric term g if it is too small, and in particular we
-        // allow it to be exactly zero, which will result in a variance spike.
-        const double g = cos_on * rcp_sample_square_distance;
-        assert(g >= 0.0);
-
-        // Transform bsdf_prob to surface area measure (Veach: 8.2.2.2 eq. 8.10).
-        const double bsdf_point_prob = bsdf_prob * cos_on * rcp_sample_square_distance;
-
-        // Compute MIS weight.
-        const double mis_weight =
-            mis_power2(
-                light_sample_count * sample.m_probability,
-                bsdf_sample_count * bsdf_point_prob);
-
-        // Compute the contribution of this sample to the illumination.
+        // In order to keep the estimator unbiased, we don't clamp the geometric term
+        // (rcp_sample_square_distance) if it is too small, and in particular we allow
+        // it to be exactly zero, which will result in a variance spike.
+        // todo: introduce a parameter to enable and control clamping.
         assert(sample.m_probability > 0.0);
-        const double weight = transmission * g / sample.m_probability * mis_weight;
-        edf_value *= static_cast<float>(weight);
-        edf_value *= bsdf_value;
+        double weight = transmission * rcp_sample_square_distance / sample.m_probability;
+
+        if (sample.m_triangle)
+        {
+            weight *= cos_on;
+
+            // Transform bsdf_prob to surface area measure (Veach: 8.2.2.2 eq. 8.10).
+            const double bsdf_point_prob = bsdf_prob * cos_on * rcp_sample_square_distance;
+
+            // Apply MIS.
+            weight *=
+                mis_power2(
+                    light_sample_count * sample.m_probability,
+                    bsdf_sample_count * bsdf_point_prob);
+        }
 
         // Add the contribution of this sample to the illumination.
-        radiance += edf_value;
+        exitance *= static_cast<float>(weight);
+        exitance *= bsdf_value;
+        radiance += exitance;
     }
 
     if (light_sample_count > 1)
@@ -505,6 +551,7 @@ void compute_direct_lighting_single_sample(
         // Compute the geometric term. To keep the estimator unbiased, we don't
         // clamp the geometric term g if it is too small, and in particular we
         // allow it to be exactly zero, which will result in a variance spike.
+        // todo: introduce a parameter to enable and control clamping.
         const double g = cos_on * rcp_sample_square_distance;
         assert(g >= 0.0);
 
