@@ -62,6 +62,12 @@ Light::~Light()
     delete impl;
 }
 
+void Light::set_transform(const Transformd& transform)
+{
+    impl->m_transform = transform;
+    bump_version_id();
+}
+
 const Transformd& Light::get_transform() const
 {
     return impl->m_transform;

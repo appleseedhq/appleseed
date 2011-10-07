@@ -64,7 +64,10 @@ class RENDERERDLL Light
     // Return a string identifying the model of this entity.
     virtual const char* get_model() const = 0;
 
-    // Return the transform of this light.
+    // Set the light transformation.
+    void set_transform(const foundation::Transformd& transform);
+
+    // Get the light transformation.
     const foundation::Transformd& get_transform() const;
 
     // This method is called once before rendering each frame.
