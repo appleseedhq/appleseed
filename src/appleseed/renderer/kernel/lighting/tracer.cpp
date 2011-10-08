@@ -45,6 +45,7 @@ namespace renderer
 {
 
 const ShadingPoint& Tracer::trace(
+    SamplingContext&        sampling_context,
     const Vector3d&         origin,
     const Vector3d&         direction,
     double&                 transmission,
@@ -93,7 +94,7 @@ const ShadingPoint& Tracer::trace(
         // Evaluate the alpha mask at the shading point.
         Alpha alpha_mask;
         surface_shader.evaluate_alpha_mask(
-            m_sampling_context,
+            sampling_context,
             m_texture_cache,
             *shading_point_ptr,
             alpha_mask);
@@ -113,6 +114,7 @@ const ShadingPoint& Tracer::trace(
 }
 
 const ShadingPoint& Tracer::trace_between(
+    SamplingContext&        sampling_context,
     const Vector3d&         origin,
     const Vector3d&         target,
     double&                 transmission,
@@ -167,7 +169,7 @@ const ShadingPoint& Tracer::trace_between(
         // Evaluate the alpha mask at the shading point.
         Alpha alpha_mask;
         surface_shader.evaluate_alpha_mask(
-            m_sampling_context,
+            sampling_context,
             m_texture_cache,
             *shading_point_ptr,
             alpha_mask);

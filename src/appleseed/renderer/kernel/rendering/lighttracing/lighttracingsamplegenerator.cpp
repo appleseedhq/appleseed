@@ -373,10 +373,10 @@ namespace
                 // Prevent self-intersections by letting the ray originate from the camera.
                 Tracer tracer(
                     m_shading_context.get_intersector(),
-                    m_shading_context.get_texture_cache(),
-                    sampling_context);
+                    m_shading_context.get_texture_cache());
                 const ShadingPoint& shading_point =
                     tracer.trace_between(
+                        sampling_context,
                         m_camera_position,
                         vertex_position_world,
                         transmission);

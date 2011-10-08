@@ -51,14 +51,14 @@ class Tracer
     // Constructor.
     Tracer(
         const Intersector&              intersector,
-        TextureCache&                   texture_cache,
-        SamplingContext&                sampling_context);
+        TextureCache&                   texture_cache);
 
     // Compute the transmission in a given direction. Returns the intersection
     // with the closest fully opaque occluder and the transmission factor up
     // to (but excluding) this occluder, or a miss if there is no fully opaque
     // occluder in this direction.
     const ShadingPoint& trace(
+        SamplingContext&                sampling_context,
         const foundation::Vector3d&     origin,
         const foundation::Vector3d&     direction,
         double&                         transmission,
@@ -69,6 +69,7 @@ class Tracer
     // to (but excluding) this occluder, or a miss if there is no fully opaque
     // occluder in the segment [origin, target).
     const ShadingPoint& trace_between(
+        SamplingContext&                sampling_context,
         const foundation::Vector3d&     origin,
         const foundation::Vector3d&     target,
         double&                         transmission,
@@ -77,7 +78,6 @@ class Tracer
   private:
     const Intersector&                  m_intersector;
     TextureCache&                       m_texture_cache;
-    SamplingContext&                    m_sampling_context;
     ShadingPoint                        m_shading_points[2];
 };
 
@@ -88,11 +88,9 @@ class Tracer
 
 inline Tracer::Tracer(
     const Intersector&                  intersector,
-    TextureCache&                       texture_cache,
-    SamplingContext&                    sampling_context)
+    TextureCache&                       texture_cache)
   : m_intersector(intersector)
   , m_texture_cache(texture_cache)
-  , m_sampling_context(sampling_context)
 {
 }
 
