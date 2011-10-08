@@ -71,7 +71,6 @@ T mis_maximum(const T q1, const T q2);
 // MIS heuristics implementation.
 //
 
-// Balance heuristic.
 template <typename T>
 inline T mis_balance(const T q1, const T q2)
 {
@@ -82,7 +81,6 @@ inline T mis_balance(const T q1, const T q2)
     return q1 / (q1 + q2);
 }
 
-// Power heuristic.
 template <typename T>
 inline T mis_power(const T q1, const T q2, const T beta)
 {
@@ -97,7 +95,6 @@ inline T mis_power(const T q1, const T q2, const T beta)
     return q1_pow / (q1_pow + q2_pow);
 }
 
-// Power heuristic with beta = 2.
 template <typename T>
 inline T mis_power2(const T q1, const T q2)
 {
@@ -111,7 +108,6 @@ inline T mis_power2(const T q1, const T q2)
     return q1_pow / (q1_pow + q2_pow);
 }
 
-// Cutoff heuristic.
 template <typename T>
 inline T mis_cutoff(const T q1, const T q2, const T alpha)
 {
@@ -130,7 +126,6 @@ inline T mis_cutoff(const T q1, const T q2, const T alpha)
     else return q1 / (q1 + q2);
 }
 
-// Maximum heuristic.
 template <typename T>
 inline T mis_maximum(const T q1, const T q2)
 {
