@@ -367,6 +367,7 @@ void LightSampler::sample_emitters(
 
     assert(sample.m_triangle != 0 || sample.m_light != 0);
     assert(sample.m_triangle == 0 || sample.m_triangle->m_edf != 0);
+    assert(sample.m_probability > 0.0);
 }
 
 void LightSampler::sample_light(
