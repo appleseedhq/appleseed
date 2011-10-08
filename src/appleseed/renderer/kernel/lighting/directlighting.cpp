@@ -31,12 +31,10 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/lightsampler.h"
-#include "renderer/kernel/lighting/tracer.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/edf/edf.h"
-#include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/input/inputparams.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/material/material.h"
@@ -45,599 +43,427 @@
 #include "foundation/math/mis.h"
 
 // Standard headers.
-#include <algorithm>
+#include <cassert>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
 
-void compute_direct_lighting_bsdf_sampling(
-    SamplingContext&            sampling_context,
-    const ShadingContext&       shading_context,
-    const LightSampler&         light_sampler,
-    const Vector3d&             point,
-    const Vector3d&             geometric_normal,
-    const Basis3d&              shading_basis,
-    const Vector3d&             outgoing,
-    const BSDF&                 bsdf,
-    const void*                 bsdf_data,
-    const size_t                bsdf_sample_count,
-    const size_t                light_sample_count,
-    Spectrum&                   radiance,
-    const ShadingPoint*         parent_shading_point)
-{
-    radiance.set(0.0f);
-
-    for (size_t i = 0; i < bsdf_sample_count; ++i)
-    {
-        // Sample the BSDF.
-        Vector3d incoming;
-        Spectrum bsdf_value;
-        double bsdf_prob;
-        BSDF::Mode bsdf_mode;
-        bsdf.sample(
-            sampling_context,
-            bsdf_data,
-            false,              // adjoint
-            geometric_normal,
-            shading_basis,
-            outgoing,
-            incoming,
-            bsdf_value,
-            bsdf_prob,
-            bsdf_mode);
-
-        // Ignore glossy/specular components: they must be handled by the parent.
-        // See Physically Based Rendering vol. 1 page 732.
-        if (bsdf_mode != BSDF::Diffuse)
-            continue;
-
-        // Trace a ray in the direction of the reflection.
-        Tracer tracer(
-            shading_context.get_intersector(),
-            shading_context.get_texture_cache(),
-            sampling_context);
-        double weight;
-        const ShadingPoint& light_shading_point =
-            tracer.trace(
-                point,
-                incoming,
-                weight,
-                parent_shading_point);
-
-        // todo: wouldn't it be more efficient to look the environment up at this point?
-        if (!light_shading_point.hit())
-            continue;
-
-        // Retrieve the material at the intersection point.
-        const Material* material = light_shading_point.get_material();
-        if (material == 0)
-            continue;
-
-        // Retrieve the EDF at the intersection point.
-        const EDF* edf = material->get_edf();
-        if (edf == 0)
-            continue;
-
-        // Evaluate the input values of the EDF.
-        InputEvaluator edf_input_evaluator(shading_context.get_texture_cache());
-        const void* edf_data =
-            edf_input_evaluator.evaluate(
-                edf->get_inputs(),
-                light_shading_point.get_input_params());
-
-        // Evaluate emitted radiance.
-        Spectrum edf_value;
-        double edf_prob;
-        edf->evaluate(
-            edf_data,
-            light_shading_point.get_geometric_normal(),
-            light_shading_point.get_shading_basis(),
-            -incoming,
-            edf_value,
-            edf_prob);
-
-        if (edf_prob == 0.0)
-            continue;
-
-        // Multiple importance sampling.
-        const double square_distance = square(light_shading_point.get_distance());
-        if (square_distance > 0.0)
-        {
-            // Transform bsdf_prob to surface area measure (Veach: 8.2.2.2 eq. 8.10).
-            const double bsdf_point_prob =
-                  bsdf_prob
-                * dot(-incoming, light_shading_point.get_shading_normal())
-                / square_distance;
-
-            // Compute the probability density wrt. surface area of choosing this point
-            // by sampling the light sources.
-            const double light_point_prob = light_sampler.evaluate_pdf(light_shading_point);
-
-            // Apply MIS.
-            weight *=
-                mis_power2(
-                    bsdf_sample_count * bsdf_point_prob,
-                    light_sample_count * light_point_prob);
-        }
-
-        // Add the contribution of this sample to the illumination.
-        edf_value *= static_cast<float>(weight);
-        edf_value *= bsdf_value;
-        radiance += edf_value;
-    }
-
-    if (bsdf_sample_count > 1)
-        radiance /= static_cast<float>(bsdf_sample_count);
-}
-
 namespace
 {
-    void evaluate_light_sample(
-        InputEvaluator&         input_evaluator,
-        const LightSample&      sample,
-        const Vector3d&         outgoing,
-        Spectrum&               exitance)
+    double mis_balance_wrapper(
+        const size_t    n1,
+        const size_t    n2,
+        const double    q1,
+        const double    q2)
     {
-        if (sample.m_triangle)
-        {
-            const EDF* edf = sample.m_triangle->m_edf;
+        return q1 / (0.5 * (q1 + q2));
+    }
 
-            // Evaluate the input values of the EDF.
-            const void* edf_data =
-                input_evaluator.evaluate(
-                    edf->get_inputs(),
-                    sample.m_input_params);
-
-            // Evaluate the EDF.
-            edf->evaluate(
-                edf_data,
-                sample.m_input_params.m_geometric_normal,
-                Basis3d(sample.m_input_params.m_shading_normal),
-                outgoing,
-                exitance);
-        }
-        else
-        {
-            // Evaluate the input values of the light.
-            const void* light_data =
-                input_evaluator.evaluate(
-                    sample.m_light->get_inputs(),
-                    sample.m_input_params);
-
-            // Evaluate the light.
-            sample.m_light->evaluate(
-                light_data,
-                outgoing,
-                exitance);
-        }
+    double mis_power2_wrapper(
+        const size_t    n1,
+        const size_t    n2,
+        const double    q1,
+        const double    q2)
+    {
+        return mis_power2(n1 * q1, n2 * q2);
     }
 }
 
-void compute_direct_lighting_light_sampling(
-    SamplingContext&            sampling_context,
-    const ShadingContext&       shading_context,
-    const LightSampler&         light_sampler,
-    const Vector3d&             point,
-    const Vector3d&             geometric_normal,
-    const Basis3d&              shading_basis,
-    const Vector3d&             outgoing,
-    const BSDF&                 bsdf,
-    const void*                 bsdf_data,
-    const size_t                bsdf_sample_count,
-    const size_t                light_sample_count,
-    Spectrum&                   radiance,
-    const ShadingPoint*         parent_shading_point)
-{
-    radiance.set(0.0f);
-
-    sampling_context.split_in_place(3, light_sample_count);
-
-    for (size_t i = 0; i < light_sample_count; ++i)
-    {
-        // Generate a uniform sample in [0,1)^3.
-        const Vector3d s = sampling_context.next_vector2<3>();
-
-        // Sample the light sources.
-        LightSample sample;
-        if (!light_sampler.sample(s, sample))
-            continue;
-
-        // Compute the incoming direction in world space.
-        Vector3d incoming = sample.m_input_params.m_point - point;
-
-        // Cull light samples behind the shading surface.
-        double cos_in = dot(incoming, shading_basis.get_normal());
-        if (cos_in <= 0.0)
-            continue;
-
-        double cos_on;
-        if (sample.m_triangle)
-        {
-            // Cull samples on lights emitting in the wrong direction.
-            cos_on = dot(-incoming, sample.m_input_params.m_shading_normal);
-            if (cos_on <= 0.0)
-                continue;
-        }
-        else
-        {
-            // We shouldn't use cos_on in the case of non-physical lights. Make sure we detect misusage.
-            cos_on = 0.0;
-        }
-
-        // Compute the square distance between the light sample and the shading point.
-        const double sample_square_distance = square_norm(incoming);
-        const double rcp_sample_square_distance = 1.0 / sample_square_distance;
-        const double rcp_sample_distance = sqrt(rcp_sample_square_distance);
-
-        // Normalize the incoming direction.
-        incoming *= rcp_sample_distance;
-        cos_in *= rcp_sample_distance;
-        cos_on *= rcp_sample_distance;
-
-        // Compute the transmission factor between the light sample and the shading point.
-        SamplingContext child_sampling_context(sampling_context);
-        Tracer tracer(
-            shading_context.get_intersector(),
-            shading_context.get_texture_cache(),
-            child_sampling_context);
-        double transmission;
-        const ShadingPoint& shading_point =
-            tracer.trace_between(
-                point,
-                sample.m_input_params.m_point,
-                transmission,
-                parent_shading_point);
-
-        // Discard occluded samples.
-        if (shading_point.hit())
-            continue;
-
-        // Evaluate the BSDF.
-        Spectrum bsdf_value;
-        double bsdf_prob;
-        const bool bsdf_defined =
-            bsdf.evaluate(
-                bsdf_data,
-                false,              // adjoint
-                geometric_normal,
-                shading_basis,
-                outgoing,
-                incoming,
-                bsdf_value,
-                &bsdf_prob);
-        if (!bsdf_defined)
-            continue;
-
-        // Evaluate the sample's exitance.
-        InputEvaluator input_evaluator(shading_context.get_texture_cache());
-        Spectrum exitance;
-        evaluate_light_sample(
-            input_evaluator,
-            sample,
-            -incoming,
-            exitance);
-
-        // In order to keep the estimator unbiased, we don't clamp the geometric term
-        // (rcp_sample_square_distance) if it is too small, and in particular we allow
-        // it to be exactly zero, which will result in a variance spike.
-        // todo: introduce a parameter to enable and control clamping.
-        assert(sample.m_probability > 0.0);
-        double weight = transmission * rcp_sample_square_distance / sample.m_probability;
-
-        if (sample.m_triangle)
-        {
-            weight *= cos_on;
-
-            // Transform bsdf_prob to surface area measure (Veach: 8.2.2.2 eq. 8.10).
-            const double bsdf_point_prob = bsdf_prob * cos_on * rcp_sample_square_distance;
-
-            // Apply MIS.
-            weight *=
-                mis_power2(
-                    light_sample_count * sample.m_probability,
-                    bsdf_sample_count * bsdf_point_prob);
-        }
-
-        // Add the contribution of this sample to the illumination.
-        exitance *= static_cast<float>(weight);
-        exitance *= bsdf_value;
-        radiance += exitance;
-    }
-
-    if (light_sample_count > 1)
-        radiance /= static_cast<float>(light_sample_count);
-}
-
-void compute_direct_lighting_single_sample(
-    SamplingContext&            sampling_context,
-    const ShadingContext&       shading_context,
-    const LightSampler&         light_sampler,
-    const Vector3d&             point,
-    const Vector3d&             geometric_normal,
-    const Basis3d&              shading_basis,
-    const Vector3d&             outgoing,
-    const BSDF&                 bsdf,
-    const void*                 bsdf_data,
-    Spectrum&                   radiance,
-    const ShadingPoint*         parent_shading_point)
-{
-    radiance.set(0.0f);
-
-    // Generate a uniform sample in [0,1).
-    sampling_context.split_in_place(1, 1);
-    const double s = sampling_context.next_double2();
-
-    if (s < 0.5)
-    {
-        // Sample the BSDF.
-        Vector3d incoming;
-        Spectrum bsdf_value;
-        double bsdf_prob;
-        BSDF::Mode bsdf_mode;
-        bsdf.sample(
-            sampling_context,
-            bsdf_data,
-            false,              // adjoint
-            geometric_normal,
-            shading_basis,
-            outgoing,
-            incoming,
-            bsdf_value,
-            bsdf_prob,
-            bsdf_mode);
-
-        // Ignore glossy/specular components: they must be handled by the parent.
-        // See Physically Based Rendering vol. 1 page 732.
-        if (bsdf_mode != BSDF::Diffuse)
-            return;
-
-        // Trace a ray in the direction of the reflection.
-        Tracer tracer(
-            shading_context.get_intersector(),
-            shading_context.get_texture_cache(),
-            sampling_context);
-        double weight;
-        const ShadingPoint& light_shading_point =
-            tracer.trace(
-                point,
-                incoming,
-                weight,
-                parent_shading_point);
-
-        // todo: wouldn't it be more efficient to look the environment up at this point?
-        if (!light_shading_point.hit())
-            return;
-
-        // Retrieve the material at the intersection point.
-        const Material* material = light_shading_point.get_material();
-        if (material == 0)
-            return;
-
-        // Retrieve the EDF at the intersection point.
-        const EDF* edf = material->get_edf();
-        if (edf == 0)
-            return;
-
-        // Evaluate the input values of the EDF.
-        InputEvaluator edf_input_evaluator(shading_context.get_texture_cache());
-        const void* edf_data =
-            edf_input_evaluator.evaluate(
-                edf->get_inputs(),
-                light_shading_point.get_input_params());
-
-        // Evaluate emitted radiance.
-        Spectrum edf_value;
-        double edf_prob;
-        edf->evaluate(
-            edf_data,
-            light_shading_point.get_geometric_normal(),
-            light_shading_point.get_shading_basis(),
-            -incoming,
-            edf_value,
-            edf_prob);
-
-        if (edf_prob == 0)
-            return;
-
-        // Multiple importance sampling.
-        const double square_distance = square(light_shading_point.get_distance());
-        if (square_distance > 0.0)
-        {
-            // Compute the probability density wrt. solid angle of choosing
-            // this point by sampling the light sources.
-            const double light_dir_prob =
-                  light_sampler.evaluate_pdf(light_shading_point)
-                / dot(-incoming, light_shading_point.get_shading_normal())
-                * square_distance;
-
-            // Apply the MIS balance heuristic.
-            weight *= bsdf_prob;                            // cancel division by PDF in BSDF::sample()
-            weight /= 0.5 * (bsdf_prob + light_dir_prob);   // divide by PDF computed using MIS
-        }
-
-        // Add the contribution of this sample to the illumination.
-        edf_value *= static_cast<float>(weight);
-        edf_value *= bsdf_value;
-        radiance += edf_value;
-    }
-    else
-    {
-        // Generate a uniform sample in [0,1)^3.
-        sampling_context.split_in_place(3, 1);
-        const Vector3d s = sampling_context.next_vector2<3>();
-
-        // Sample the light sources.
-        LightSample sample;
-        if (!light_sampler.sample(s, sample))
-            return;
-
-        // Compute the incoming direction in world space.
-        Vector3d incoming = sample.m_input_params.m_point - point;
-
-        // Cull light samples behind the shading surface.
-        double cos_in = dot(incoming, shading_basis.get_normal());
-        if (cos_in <= 0.0)
-            return;
-
-        // Cull samples on lights emitting in the wrong direction.
-        double cos_on = dot(-incoming, sample.m_input_params.m_shading_normal);
-        if (cos_on <= 0.0)
-            return;
-
-        // Compute the square distance between the light sample and the shading point.
-        const double sample_square_distance = square_norm(incoming);
-        const double rcp_sample_square_distance = 1.0 / sample_square_distance;
-        const double rcp_sample_distance = sqrt(rcp_sample_square_distance);
-
-        // Normalize the incoming direction.
-        incoming *= rcp_sample_distance;
-        cos_in *= rcp_sample_distance;
-        cos_on *= rcp_sample_distance;
-
-        // Compute the transmission factor between the light sample and the shading point.
-        Tracer tracer(
-            shading_context.get_intersector(),
-            shading_context.get_texture_cache(),
-            sampling_context);
-        double transmission;
-        const ShadingPoint& shading_point =
-            tracer.trace_between(
-                point,
-                sample.m_input_params.m_point,
-                transmission,
-                parent_shading_point);
-
-        // Discard occluded samples.
-        if (shading_point.hit())
-            return;
-
-        // Evaluate the BSDF.
-        Spectrum bsdf_value;
-        double bsdf_prob;
-        const bool bsdf_defined =
-            bsdf.evaluate(
-                bsdf_data,
-                false,              // adjoint
-                geometric_normal,
-                shading_basis,
-                outgoing,
-                incoming,
-                bsdf_value,
-                &bsdf_prob);
-        if (!bsdf_defined)
-            return;
-
-        // Evaluate the input values of the EDF.
-        InputEvaluator edf_input_evaluator(shading_context.get_texture_cache());
-        const void* edf_data =
-            edf_input_evaluator.evaluate(
-                sample.m_triangle->m_edf->get_inputs(),
-                sample.m_input_params);
-
-        // Evaluate the EDF.
-        Spectrum edf_value;
-        double edf_prob;
-        sample.m_triangle->m_edf->evaluate(
-            edf_data,
-            sample.m_input_params.m_geometric_normal,
-            Basis3d(sample.m_input_params.m_shading_normal),
-            -incoming,
-            edf_value,
-            edf_prob);
-
-        // Compute the geometric term. To keep the estimator unbiased, we don't
-        // clamp the geometric term g if it is too small, and in particular we
-        // allow it to be exactly zero, which will result in a variance spike.
-        // todo: introduce a parameter to enable and control clamping.
-        const double g = cos_on * rcp_sample_square_distance;
-        assert(g >= 0.0);
-
-        // Transform bsdf_prob to surface area measure (Veach: 8.2.2.2 eq. 8.10).
-        const double bsdf_point_prob = bsdf_prob * cos_on * rcp_sample_square_distance;
-
-        // Compute the combined PDF using MIS balance heuristic.
-        const double mis_pdf = 0.5 * (sample.m_probability + bsdf_point_prob);
-
-        // Add the contribution of this sample to the illumination.
-        edf_value *= static_cast<float>(transmission * g / mis_pdf);
-        edf_value *= bsdf_value;
-        radiance += edf_value;
-    }
-}
-
-void compute_direct_lighting(
-    SamplingContext&            sampling_context,
-    const ShadingContext&       shading_context,
-    const LightSampler&         light_sampler,
-    const Vector3d&             point,
-    const Vector3d&             geometric_normal,
-    const Basis3d&              shading_basis,
-    const Vector3d&             outgoing,
-    const BSDF&                 bsdf,
-    const void*                 bsdf_data,
-    const size_t                bsdf_sample_count,
-    const size_t                light_sample_count,
-    Spectrum&                   radiance,
-    const ShadingPoint*         parent_shading_point)
+DirectLightingIntegrator::DirectLightingIntegrator(
+    const ShadingContext&   shading_context,
+    const LightSampler&     light_sampler,
+    const Vector3d&         point,
+    const Vector3d&         geometric_normal,
+    const Basis3d&          shading_basis,
+    const Vector3d&         outgoing,
+    const BSDF&             bsdf,
+    const void*             bsdf_data,
+    const size_t            bsdf_sample_count,
+    const size_t            light_sample_count,
+    const ShadingPoint*     parent_shading_point)
+  : m_light_sampler(light_sampler)
+  , m_point(point)
+  , m_geometric_normal(geometric_normal)
+  , m_shading_basis(shading_basis)
+  , m_outgoing(outgoing)
+  , m_bsdf(bsdf)
+  , m_bsdf_data(bsdf_data)
+  , m_bsdf_sample_count(bsdf_sample_count)
+  , m_light_sample_count(light_sample_count)
+  , m_parent_shading_point(parent_shading_point)
+  , m_tracer(
+        shading_context.get_intersector(),
+        shading_context.get_texture_cache())
+  , m_input_evaluator(
+        shading_context.get_texture_cache())
 {
     assert(is_normalized(geometric_normal));
     assert(is_normalized(outgoing));
+}
 
-    if (bsdf_sample_count == 0 && light_sample_count == 0)
+void DirectLightingIntegrator::sample_bsdf(
+    SamplingContext&        sampling_context,
+    Spectrum&               radiance)
+{
+    radiance.set(0.0f);
+
+    for (size_t i = 0; i < m_bsdf_sample_count; ++i)
     {
-        // Compute direct lighting using a single BSDF/light sample and MIS.
-        compute_direct_lighting_single_sample(
+        take_single_bsdf_sample(
             sampling_context,
-            shading_context,
-            light_sampler,
-            point,
-            geometric_normal,
-            shading_basis,
-            outgoing,
-            bsdf,
-            bsdf_data,
-            radiance,
-            parent_shading_point);
+            mis_power2_wrapper,
+            radiance);
+    }
+
+    if (m_bsdf_sample_count > 1)
+        radiance /= static_cast<float>(m_bsdf_sample_count);
+}
+
+void DirectLightingIntegrator::sample_lights(
+    SamplingContext&        sampling_context,
+    Spectrum&               radiance)
+{
+    radiance.set(0.0f);
+
+    sampling_context.split_in_place(3, m_light_sample_count);
+
+    for (size_t i = 0; i < m_light_sample_count; ++i)
+    {
+        take_single_light_sample(
+            sampling_context,
+            mis_power2_wrapper,
+            radiance);
+    }
+
+    if (m_light_sample_count > 1)
+        radiance /= static_cast<float>(m_light_sample_count);
+}
+
+void DirectLightingIntegrator::sample_bsdf_and_lights(
+    SamplingContext&        sampling_context,
+    Spectrum&               radiance)
+{
+    if (m_bsdf_sample_count + m_light_sample_count == 0)
+        take_single_bsdf_or_light_sample(sampling_context, radiance);
+    else
+    {
+        Spectrum radiance_light_sampling;
+        sample_bsdf(sampling_context, radiance);
+        sample_lights(sampling_context, radiance_light_sampling);
+        radiance += radiance_light_sampling;
+    }
+}
+
+void DirectLightingIntegrator::take_single_bsdf_or_light_sample(
+    SamplingContext&        sampling_context,
+    Spectrum&               radiance)
+{
+    radiance.set(0.0f);
+
+    sampling_context.split_in_place(1, 1);
+
+    if (sampling_context.next_double2() < 0.5)
+    {
+        sampling_context.split_in_place(3, m_light_sample_count);
+
+        take_single_light_sample(
+            sampling_context,
+            mis_balance_wrapper,
+            radiance);
     }
     else
     {
-        // Compute direct lighting by sampling the BSDF.
-        compute_direct_lighting_bsdf_sampling(
+        take_single_bsdf_sample(
             sampling_context,
-            shading_context,
-            light_sampler,
-            point,
-            geometric_normal,
-            shading_basis,
-            outgoing,
-            bsdf,
-            bsdf_data,
-            bsdf_sample_count,
-            light_sample_count,
-            radiance,
-            parent_shading_point);
-
-        // Compute direct lighting by sampling the lights.
-        Spectrum radiance_light_sampling;
-        compute_direct_lighting_light_sampling(
-            sampling_context,
-            shading_context,
-            light_sampler,
-            point,
-            geometric_normal,
-            shading_basis,
-            outgoing,
-            bsdf,
-            bsdf_data,
-            bsdf_sample_count,
-            light_sample_count,
-            radiance_light_sampling,
-            parent_shading_point);
-        radiance += radiance_light_sampling;
+            mis_balance_wrapper,
+            radiance);
     }
+}
+
+template <typename WeightingFunction>
+void DirectLightingIntegrator::take_single_bsdf_sample(
+    SamplingContext&        sampling_context,
+    WeightingFunction&      weighting_function,
+    Spectrum&               radiance)
+{
+    // Sample the BSDF.
+    Vector3d incoming;
+    Spectrum bsdf_value;
+    double bsdf_prob;
+    BSDF::Mode bsdf_mode;
+    m_bsdf.sample(
+        sampling_context,
+        m_bsdf_data,
+        false,              // adjoint
+        m_geometric_normal,
+        m_shading_basis,
+        m_outgoing,
+        incoming,
+        bsdf_value,
+        bsdf_prob,
+        bsdf_mode);
+
+    // Ignore glossy/specular components: they must be handled by the parent.
+    // See Physically Based Rendering vol. 1 page 732.
+    if (bsdf_mode != BSDF::Diffuse)
+        return;
+
+    // Trace a ray in the direction of the reflection.
+    double weight;
+    const ShadingPoint& light_shading_point =
+        m_tracer.trace(
+            sampling_context,
+            m_point,
+            incoming,
+            weight,
+            m_parent_shading_point);
+
+    // todo: wouldn't it be more efficient to look the environment up at this point?
+    if (!light_shading_point.hit())
+        return;
+
+    // Retrieve the material at the intersection point.
+    const Material* material = light_shading_point.get_material();
+    if (material == 0)
+        return;
+
+    // Retrieve the EDF at the intersection point.
+    const EDF* edf = material->get_edf();
+    if (edf == 0)
+        return;
+
+    // Evaluate the input values of the EDF.
+    const void* edf_data =
+        m_input_evaluator.evaluate(
+            edf->get_inputs(),
+            light_shading_point.get_input_params());
+
+    // Evaluate emitted radiance.
+    Spectrum edf_value;
+    double edf_prob;
+    edf->evaluate(
+        edf_data,
+        light_shading_point.get_geometric_normal(),
+        light_shading_point.get_shading_basis(),
+        -incoming,
+        edf_value,
+        edf_prob);
+    if (edf_prob == 0.0)
+        return;
+
+    const double square_distance = square(light_shading_point.get_distance());
+
+    if (square_distance > 0.0)
+    {
+        // Transform bsdf_prob to surface area measure (Veach: 8.2.2.2 eq. 8.10).
+        const double cos_on = dot(-incoming, light_shading_point.get_shading_normal());
+        const double bsdf_point_prob = bsdf_prob * cos_on / square_distance;
+
+        // Compute the probability density wrt. surface area mesure of the light sample.
+        const double light_point_prob = m_light_sampler.evaluate_pdf(light_shading_point);
+
+        // Apply multiply importance sampling.
+        weight *=
+            weighting_function(
+                m_bsdf_sample_count,
+                m_light_sample_count,
+                bsdf_point_prob,
+                light_point_prob);
+    }
+
+    // Add the contribution of this sample to the illumination.
+    edf_value *= static_cast<float>(weight);
+    edf_value *= bsdf_value;
+    radiance += edf_value;
+}
+
+template <typename WeightingFunction>
+void DirectLightingIntegrator::take_single_light_sample(
+    SamplingContext&        sampling_context,
+    WeightingFunction&      weighting_function,
+    Spectrum&               radiance)
+{
+    const Vector3d s = sampling_context.next_vector2<3>();
+
+    LightSample sample;
+    if (!m_light_sampler.sample(s, sample))
+        return;
+
+    SamplingContext child_sampling_context(sampling_context);
+
+    if (sample.m_triangle)
+    {
+        add_emitting_triangle_sample_contribution(
+            child_sampling_context,
+            sample,
+            weighting_function,
+            radiance);
+    }
+    else
+    {
+        add_light_sample_contribution(
+            child_sampling_context,
+            sample,
+            radiance);
+    }
+}
+
+template <typename WeightingFunction>
+void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
+    SamplingContext&        sampling_context,
+    const LightSample&      sample,
+    WeightingFunction&      weighting_function,
+    Spectrum&               radiance)
+{
+    // Compute the incoming direction in world space.
+    Vector3d incoming = sample.m_input_params.m_point - m_point;
+
+    // Cull light samples behind the shading surface.
+    double cos_in = dot(incoming, m_shading_basis.get_normal());
+    if (cos_in <= 0.0)
+        return;
+
+    // Cull samples on lights emitting in the wrong direction.
+    double cos_on = dot(-incoming, sample.m_input_params.m_shading_normal);
+    if (cos_on <= 0.0)
+        return;
+
+    // Compute the square distance between the light sample and the shading point.
+    const double rcp_sample_square_distance = 1.0 / square_norm(incoming);
+    const double rcp_sample_distance = sqrt(rcp_sample_square_distance);
+
+    // Normalize the incoming direction.
+    incoming *= rcp_sample_distance;
+    cos_in *= rcp_sample_distance;
+    cos_on *= rcp_sample_distance;
+
+    // Compute the transmission factor between the light sample and the shading point.
+    double transmission;
+    if (!check_visibility(sampling_context, sample, transmission))
+        return;
+
+    // Evaluate the BSDF.
+    Spectrum bsdf_value;
+    double bsdf_prob;
+    if (!m_bsdf.evaluate(
+            m_bsdf_data,
+            false,              // adjoint
+            m_geometric_normal,
+            m_shading_basis,
+            m_outgoing,
+            incoming,
+            bsdf_value,
+            &bsdf_prob))
+        return;
+
+    const EDF* edf = sample.m_triangle->m_edf;
+
+    // Evaluate the input values of the EDF.
+    const void* edf_data =
+        m_input_evaluator.evaluate(
+            edf->get_inputs(),
+            sample.m_input_params);
+
+    // Evaluate the EDF.
+    Spectrum edf_value;
+    edf->evaluate(
+        edf_data,
+        sample.m_input_params.m_geometric_normal,
+        Basis3d(sample.m_input_params.m_shading_normal),
+        -incoming,
+        edf_value);
+
+    // Transform bsdf_prob to surface area measure (Veach: 8.2.2.2 eq. 8.10).
+    const double bsdf_point_prob = bsdf_prob * cos_on * rcp_sample_square_distance;
+
+    // Compute multiple importance sampling weight.
+    const double mis_weight =
+        weighting_function(
+            m_light_sample_count,
+            m_bsdf_sample_count,
+            sample.m_probability,
+            bsdf_point_prob);
+
+    // Add the contribution of this sample to the illumination.
+    const double weight = mis_weight * transmission * cos_on * rcp_sample_square_distance / sample.m_probability;
+    edf_value *= static_cast<float>(weight);
+    edf_value *= bsdf_value;
+    radiance += edf_value;
+}
+
+void DirectLightingIntegrator::add_light_sample_contribution(
+    SamplingContext&        sampling_context,
+    const LightSample&      sample,
+    Spectrum&               radiance)
+{
+    // Compute the incoming direction in world space.
+    Vector3d incoming = sample.m_input_params.m_point - m_point;
+
+    // Cull light samples behind the shading surface.
+    double cos_in = dot(incoming, m_shading_basis.get_normal());
+    if (cos_in <= 0.0)
+        return;
+
+    // Compute the square distance between the light sample and the shading point.
+    const double rcp_sample_square_distance = 1.0 / square_norm(incoming);
+    const double rcp_sample_distance = sqrt(rcp_sample_square_distance);
+
+    // Normalize the incoming direction.
+    incoming *= rcp_sample_distance;
+    cos_in *= rcp_sample_distance;
+
+    // Compute the transmission factor between the light sample and the shading point.
+    double transmission;
+    if (!check_visibility(sampling_context, sample, transmission))
+        return;
+
+    // Evaluate the BSDF.
+    Spectrum bsdf_value;
+    double bsdf_prob;
+    if (!m_bsdf.evaluate(
+            m_bsdf_data,
+            false,              // adjoint
+            m_geometric_normal,
+            m_shading_basis,
+            m_outgoing,
+            incoming,
+            bsdf_value,
+            &bsdf_prob))
+        return;
+
+    // Evaluate the input values of the light.
+    const void* light_data =
+        m_input_evaluator.evaluate(
+            sample.m_light->get_inputs(),
+            sample.m_input_params);
+
+    // Evaluate the light.
+    Spectrum light_value;
+    sample.m_light->evaluate(light_data, -incoming, light_value);
+
+    // Add the contribution of this sample to the illumination.
+    const double weight = transmission * rcp_sample_square_distance / sample.m_probability;
+    light_value *= static_cast<float>(weight);
+    light_value *= bsdf_value;
+    radiance += light_value;
+}
+
+bool DirectLightingIntegrator::check_visibility(
+    SamplingContext&        sampling_context,
+    const LightSample&      sample,
+    double&                 transmission)
+{
+    const ShadingPoint& shading_point =
+        m_tracer.trace_between(
+            sampling_context,
+            m_point,
+            sample.m_input_params.m_point,
+            transmission,
+            m_parent_shading_point);
+
+    return !shading_point.hit();
 }
 
 }   // namespace renderer

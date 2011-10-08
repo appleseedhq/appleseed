@@ -210,9 +210,7 @@ namespace
                 // BSDF samples since compute_direct_lighting() only computes direct
                 // lighting for diffuse BSDF samples; glossy BSDF samples are accounted
                 // for when the path is extended.
-                Spectrum vertex_radiance;
-                compute_direct_lighting(
-                    sampling_context,
+                DirectLightingIntegrator integrator(
                     m_shading_context,
                     m_light_sampler,
                     point,
@@ -223,8 +221,9 @@ namespace
                     bsdf_data,
                     m_params.m_dl_bsdf_sample_count,
                     m_params.m_dl_light_sample_count,
-                    vertex_radiance,
                     &shading_point);
+                Spectrum vertex_radiance;
+                integrator.sample_bsdf_and_lights(sampling_context, vertex_radiance);
 
                 if (m_env_edf && m_params.m_enable_ibl)
                 {

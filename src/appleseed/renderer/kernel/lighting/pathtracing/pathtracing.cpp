@@ -237,9 +237,7 @@ namespace
                     // via BSDF sampling will be taken into account when we'll extend the path.
                     // The number of light samples is user-adjustable. The number of BSDF samples
                     // is set to 1 since we'll extend the path via a single BSDF sample.
-                    Spectrum vertex_radiance;
-                    compute_direct_lighting_light_sampling(
-                        sampling_context,
+                    DirectLightingIntegrator integrator(
                         m_shading_context,
                         m_light_sampler,
                         point,
@@ -250,8 +248,9 @@ namespace
                         bsdf_data,
                         1,
                         m_params.m_dl_light_sample_count,
-                        vertex_radiance,
                         &shading_point);
+                    Spectrum vertex_radiance;
+                    integrator.sample_lights(sampling_context, vertex_radiance);
 
                     if (m_env_edf && m_params.m_enable_ibl)
                     {
