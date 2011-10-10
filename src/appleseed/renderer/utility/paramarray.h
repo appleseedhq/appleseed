@@ -30,11 +30,15 @@
 #define APPLESEED_RENDERER_UTILITY_PARAMARRAY_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/global/globallogger.h"
+#include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/string.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Standard headers.
 #include <cassert>
@@ -47,14 +51,14 @@ namespace renderer
 // A collection of parameters.
 //
 
-class RENDERERDLL ParamArray
+class DLLSYMBOL ParamArray
   : public foundation::Dictionary
 {
   public:
     // Constructors.
     ParamArray();
     ParamArray(const ParamArray& rhs);
-    ParamArray(const Dictionary& dictionary);
+    ParamArray(const foundation::Dictionary& dictionary);
 
     // Assignment operator.
     ParamArray& operator=(const ParamArray& rhs);
@@ -141,7 +145,7 @@ class RENDERERDLL ParamArray
 template <typename T>
 inline ParamArray& ParamArray::insert(const char* key, const T& value)
 {
-    Dictionary::insert(key, value);
+    foundation::Dictionary::insert(key, value);
     return *this;
 }
 
