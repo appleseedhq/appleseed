@@ -51,6 +51,7 @@
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/input/inputevaluator.h"
+#include "renderer/modeling/light/light.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/image.h"
@@ -210,6 +211,7 @@ namespace
                 return m_sample_count;
             }
 
+            template <bool IsAreaLight>
             void visit_light_vertex(
                 SamplingContext&            sampling_context,
                 const LightSample&          light_sample,
@@ -232,10 +234,14 @@ namespace
                 if (!visible)
                     return;
 
-                // Lights are one-sided.
-                const double cos_alpha = dot(vertex_to_camera, light_sample.m_input_params.m_shading_normal);
-                if (cos_alpha <= 0.0)
-                    return;
+                double cos_alpha = 0.0;
+                if (IsAreaLight)
+                {
+                    // Area lights are one-sided.
+                    cos_alpha = dot(vertex_to_camera, light_sample.m_input_params.m_shading_normal);
+                    if (cos_alpha <= 0.0)
+                        return;
+                }
 
                 // Compute the flux-to-radiance conversion factor.
                 const double cos_theta = abs(dot(vertex_to_camera, m_camera_direction));
@@ -244,7 +250,10 @@ namespace
                 const double flux_to_radiance = square(dist_pixel_to_camera * rcp_cos_theta) * m_rcp_pixel_area;
 
                 // Compute the geometric term.
-                const double g = transmission * cos_alpha * cos_theta / square_distance;
+                const double g =
+                    IsAreaLight
+                        ? transmission * cos_alpha * cos_theta / square_distance
+                        : transmission * cos_theta / square_distance;
                 assert(g >= 0.0);
 
                 // Store the contribution of this path vertex.
@@ -468,17 +477,30 @@ namespace
                 m_light_sampler.sample(sampling_context.next_vector2<3>(), light_sample);
             assert(got_sample);
 
+            return
+                light_sample.m_triangle
+                    ? generate_emitting_triangle_sample(sampling_context, light_sample, samples)
+                    : generate_non_physical_light_sample(sampling_context, light_sample, samples);
+        }
+
+        size_t generate_emitting_triangle_sample(
+            SamplingContext&            sampling_context,
+            LightSample&                light_sample,
+            SampleVector&               samples)
+        {
             // Make sure the geometric normal of the light sample is in the same hemisphere as the shading normal.
             light_sample.m_input_params.m_geometric_normal =
                 flip_to_same_hemisphere(
                     light_sample.m_input_params.m_geometric_normal,
                     light_sample.m_input_params.m_shading_normal);
 
-            // Evaluate the input values of the EDF of this light sample.
-            InputEvaluator edf_input_evaluator(m_texture_cache);
+            const EDF* edf = light_sample.m_triangle->m_edf;
+
+            // Evaluate the EDF inputs.
+            InputEvaluator input_evaluator(m_texture_cache);
             const void* edf_data =
-                edf_input_evaluator.evaluate(
-                    light_sample.m_triangle->m_edf->get_inputs(),
+                input_evaluator.evaluate(
+                    edf->get_inputs(),
                     light_sample.m_input_params);
 
             // Sample the EDF.
@@ -486,7 +508,7 @@ namespace
             Vector3d emission_direction;
             Spectrum edf_value;
             double edf_prob;
-            light_sample.m_triangle->m_edf->sample(
+            edf->sample(
                 edf_data,
                 light_sample.m_input_params.m_geometric_normal,
                 Basis3d(light_sample.m_input_params.m_shading_normal),
@@ -536,7 +558,7 @@ namespace
             // Handle the light vertex separately.
             Spectrum light_particle_flux = edf_value;       // todo: only works for diffuse EDF? What we need is the light exitance
             light_particle_flux /= static_cast<float>(light_sample.m_probability);
-            path_visitor.visit_light_vertex(
+            path_visitor.visit_light_vertex<true>(
                 sampling_context,
                 light_sample,
                 light_particle_flux);
@@ -549,6 +571,77 @@ namespace
                     m_texture_cache,
                     light_ray,
                     &parent_shading_point);
+
+            // Update path statistics.
+            ++m_stats.m_path_count;
+            m_stats.m_path_length.insert(path_length);
+
+            // Return the number of samples generated when tracing this light path.
+            return path_visitor.get_sample_count();
+        }
+
+        size_t generate_non_physical_light_sample(
+            SamplingContext&            sampling_context,
+            const LightSample&          light_sample,
+            SampleVector&               samples)
+        {
+            // Evaluate the light inputs.
+            InputEvaluator input_evaluator(m_texture_cache);
+            const void* light_data =
+                input_evaluator.evaluate(
+                    light_sample.m_light->get_inputs(),
+                    light_sample.m_input_params);
+
+            // Sample the light.
+            sampling_context.split_in_place(2, 1);
+            Vector3d emission_direction;
+            Spectrum light_value;
+            double light_prob;
+            light_sample.m_light->sample(
+                light_data,
+                sampling_context.next_vector2<2>(),
+                emission_direction,
+                light_value,
+                light_prob);
+
+            // Compute the initial particle weight.
+            Spectrum initial_alpha = light_value;
+            initial_alpha /= static_cast<float>(light_sample.m_probability * light_prob);
+
+            // Build the light ray.
+            const ShadingRay light_ray(
+                light_sample.m_input_params.m_point,
+                emission_direction,
+                0.0f,
+                ~0);
+
+            // Build the path tracer.
+            PathVisitor path_visitor(
+                m_scene,
+                m_frame,
+                m_intersector,
+                m_texture_cache,
+                samples,
+                initial_alpha);
+            PathTracerType path_tracer(
+                path_visitor,
+                m_params.m_minimum_path_length);
+
+            // Handle the light vertex separately.
+            Spectrum light_particle_flux = light_value;
+            light_particle_flux /= static_cast<float>(light_sample.m_probability);
+            path_visitor.visit_light_vertex<false>(
+                sampling_context,
+                light_sample,
+                light_particle_flux);
+
+            // Trace the light path.
+            const size_t path_length =
+                path_tracer.trace(
+                    sampling_context,
+                    m_intersector,
+                    m_texture_cache,
+                    light_ray);
 
             // Update path statistics.
             ++m_stats.m_path_count;
