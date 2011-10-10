@@ -29,12 +29,11 @@
 #ifndef APPLESEED_RENDERER_KERNEL_SHADING_SHADINGRAY_H
 #define APPLESEED_RENDERER_KERNEL_SHADING_SHADINGRAY_H
 
-// appleseed.renderer headers.
-#include "renderer/global/global.h"
-
 // appleseed.foundation headers.
 #include "foundation/math/ray.h"
 #include "foundation/math/transform.h"
+#include "foundation/math/vector.h"
+#include "foundation/platform/types.h"
 
 namespace renderer
 {
@@ -96,10 +95,10 @@ ShadingRay transform_to_parent(
 // ShadingRay class implementation.
 //
 
-// Constructors.
 inline ShadingRay::ShadingRay()
 {
 }
+
 inline ShadingRay::ShadingRay(
     const RayType&                  ray,
     const float                     time,
@@ -109,6 +108,7 @@ inline ShadingRay::ShadingRay(
   , m_flags(flags)
 {
 }
+
 inline ShadingRay::ShadingRay(
     const VectorType&               org,
     const VectorType&               dir,
@@ -119,6 +119,7 @@ inline ShadingRay::ShadingRay(
   , m_flags(flags)
 {
 }
+
 inline ShadingRay::ShadingRay(
     const VectorType&               org,
     const VectorType&               dir,
@@ -132,7 +133,6 @@ inline ShadingRay::ShadingRay(
 {
 }
 
-// Transform a ShadingRay.
 template <typename U>
 inline ShadingRay transform_to_local(
     const foundation::Transform<U>& transform,
@@ -143,6 +143,7 @@ inline ShadingRay transform_to_local(
         ray.m_time,
         ray.m_flags);
 }
+
 template <typename U>
 inline ShadingRay transform_to_parent(
     const foundation::Transform<U>& transform,

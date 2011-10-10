@@ -29,8 +29,14 @@
 #ifndef APPLESEED_RENDERER_MODELING_INPUT_INPUTARRAY_H
 #define APPLESEED_RENDERER_MODELING_INPUT_INPUTARRAY_H
 
-// appleseed.renderer headers.
-#include "renderer/global/global.h"
+// appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+// Standard headers.
+#include <cstddef>
 
 // Forward declarations.
 namespace renderer      { class InputParams; }
@@ -55,14 +61,14 @@ enum InputFormat
 // Input array.
 //
 
-class RENDERERDLL InputArray
+class DLLSYMBOL InputArray
   : public foundation::NonCopyable
 {
   public:
     class iterator;
 
     // Constant iterator.
-    class RENDERERDLL const_iterator
+    class DLLSYMBOL const_iterator
     {
       public:
         // Value type.
@@ -111,7 +117,7 @@ class RENDERERDLL InputArray
     };
 
     // Mutable iterator.
-    class RENDERERDLL iterator
+    class DLLSYMBOL iterator
       : public const_iterator
     {
       public:

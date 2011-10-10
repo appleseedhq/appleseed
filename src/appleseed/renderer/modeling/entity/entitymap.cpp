@@ -32,6 +32,10 @@
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
 
+// Standard headers.
+#include <cassert>
+#include <map>
+
 using namespace foundation;
 using namespace std;
 

@@ -30,6 +30,7 @@
 #include "inputarray.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/input/source.h"
 
 // appleseed.foundation headers.
@@ -37,6 +38,8 @@
 #include "foundation/utility/memory.h"
 
 // Standard headers.
+#include <cassert>
+#include <string>
 #include <vector>
 
 using namespace foundation;

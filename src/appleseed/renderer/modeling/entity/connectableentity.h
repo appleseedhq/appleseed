@@ -30,9 +30,17 @@
 #define APPLESEED_RENDERER_MODELING_ENTITY_CONNECTABLEENTITY_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
 #include "renderer/modeling/entity/entity.h"
 #include "renderer/modeling/input/inputarray.h"
+
+// appleseed.foundation headers.
+#include "foundation/utility/uid.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+// Forward declarations.
+namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
@@ -41,7 +49,7 @@ namespace renderer
 // Base class for all entities with inputs.
 //
 
-class RENDERERDLL ConnectableEntity
+class DLLSYMBOL ConnectableEntity
   : public Entity
 {
   public:

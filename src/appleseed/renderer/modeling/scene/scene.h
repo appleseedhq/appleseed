@@ -30,15 +30,21 @@
 #define APPLESEED_RENDERER_MODELING_SCENE_SCENE_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/global/globaltypes.h"
+#include "renderer/modeling/camera/camera.h"
+#include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/scene/containers.h"
 
 // appleseed.foundation headers.
+#include "foundation/core/concepts/iunknown.h"
+#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/utility/uid.h"
 #include "foundation/utility/version.h"
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // Forward declarations.
-namespace renderer      { class Camera; }
-namespace renderer      { class Environment; }
 namespace renderer      { class Project; }
 
 namespace renderer
@@ -48,7 +54,7 @@ namespace renderer
 // A scene. Self-contained.
 //
 
-class RENDERERDLL Scene
+class DLLSYMBOL Scene
   : public foundation::IUnknown
   , public foundation::Identifiable
 {
@@ -126,7 +132,7 @@ class RENDERERDLL Scene
 // SceneFactory.
 //
 
-class RENDERERDLL SceneFactory
+class DLLSYMBOL SceneFactory
 {
   public:
     // Create a new scene.

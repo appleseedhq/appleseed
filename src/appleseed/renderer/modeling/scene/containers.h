@@ -30,12 +30,15 @@
 #define APPLESEED_RENDERER_MODELING_SCENE_CONTAINERS_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
 #include "renderer/modeling/entity/entitymap.h"
 #include "renderer/modeling/entity/entityvector.h"
+#include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/stringexception.h"
+
+// Standard headers.
+#include <string>
 
 // Forward declarations.
 namespace renderer  { class Assembly; }

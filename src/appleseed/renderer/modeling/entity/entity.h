@@ -30,11 +30,16 @@
 #define APPLESEED_RENDERER_MODELING_ENTITY_ENTITY_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/core/concepts/iunknown.h"
 #include "foundation/utility/implptr.h"
+#include "foundation/utility/uid.h"
 #include "foundation/utility/version.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 namespace renderer
 {
@@ -43,7 +48,7 @@ namespace renderer
 // Base class for all entities in the scene.
 //
 
-class RENDERERDLL Entity
+class DLLSYMBOL Entity
   : public foundation::Identifiable
   , public foundation::Versionable
   , public foundation::IUnknown

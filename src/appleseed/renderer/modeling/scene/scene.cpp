@@ -30,8 +30,6 @@
 #include "scene.h"
 
 // appleseed.renderer headers.
-#include "renderer/modeling/camera/camera.h"
-#include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/environmentshader/environmentshader.h"
 #include "renderer/modeling/scene/assembly.h"
@@ -39,7 +37,12 @@
 #include "renderer/utility/bbox.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/vector.h"
 #include "foundation/utility/foreach.h"
+
+// Standard headers.
+#include <cmath>
+#include <cstddef>
 
 using namespace foundation;
 using namespace std;

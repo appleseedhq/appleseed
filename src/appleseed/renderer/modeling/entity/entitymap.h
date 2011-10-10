@@ -30,14 +30,19 @@
 #define APPLESEED_RENDERER_MODELING_ENTITY_ENTITYMAP_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
 #include "renderer/modeling/entity/entity.h"
 
 // appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
+#include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/implptr.h"
+#include "foundation/utility/uid.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Standard headers.
-#include <map>
+#include <cstddef>
 
 namespace renderer
 {
@@ -46,12 +51,12 @@ namespace renderer
 // An entity container providing insertion of deletion of entities.
 //
 
-class RENDERERDLL EntityMap
+class DLLSYMBOL EntityMap
   : public foundation::NonCopyable
 {
   public:
     // Mutable iterator.
-    class RENDERERDLL iterator
+    class DLLSYMBOL iterator
     {
       public:
         // Value type.
@@ -79,7 +84,7 @@ class RENDERERDLL EntityMap
     };
 
     // Constant iterator.
-    class RENDERERDLL const_iterator
+    class DLLSYMBOL const_iterator
     {
       public:
         // Value type.
