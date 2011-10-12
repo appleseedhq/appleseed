@@ -1,0 +1,9 @@
+ 
+This is a minimum version of Alembic 0.9.3.
+
+For technical reason, some of the getter methods are declared as non-constant
+member methods, this breaks our exists reading function, in our minimum version,
+all getter methods we are using have been modified to be constant.
+
+We also use compiling flag "Werror" in release build, in this version of Alembic,
+all unused variable and functions have been removed.
