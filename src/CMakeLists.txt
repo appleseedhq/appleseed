@@ -27,19 +27,20 @@
 #
 
 
-#
+#--------------------------------------------------------------------------------------------------
 # CMake configuration.
-#
+#--------------------------------------------------------------------------------------------------
 
 cmake_minimum_required (VERSION 2.8 FATAL_ERROR)
+
 cmake_policy (SET CMP0008 NEW)  # libraries linked by full-path must have a valid library file name
 
 include (cmake/utilities.txt)
 
 
-#
+#--------------------------------------------------------------------------------------------------
 # Build configurations.
-#
+#--------------------------------------------------------------------------------------------------
 
 # Create the build configurations. Must come before project ().
 set (CMAKE_CONFIGURATION_TYPES "Debug;Release;Profile;Ship" CACHE STRING "" FORCE)
@@ -54,9 +55,9 @@ endif ()
 project (appleseed)
 
 
-#
+#--------------------------------------------------------------------------------------------------
 # Platform-specific settings.
-#
+#--------------------------------------------------------------------------------------------------
 
 # This must come after project () otherwise CMAKE_SYSTEM_NAME is undefined.
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
@@ -71,10 +72,11 @@ else ()
 endif ()
 
 
-#
-# Extract git tag.
-#
+#--------------------------------------------------------------------------------------------------
+# Version information.
+#--------------------------------------------------------------------------------------------------
 
+# Extract git tag.
 exec_program (
     ${git_command}
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -83,9 +85,9 @@ exec_program (
 )
 
 
-#
+#--------------------------------------------------------------------------------------------------
 # Boost libraries.
-#
+#--------------------------------------------------------------------------------------------------
 
 set (Boost_MULTITHREADED TRUE)
 set (Boost_USE_STATIC_LIBS TRUE)
@@ -96,9 +98,9 @@ include_directories (${Boost_INCLUDE_DIRS})
 link_directories (${Boost_LIBRARY_DIRS})
 
 
-#
+#--------------------------------------------------------------------------------------------------
 # Include paths.
-#
+#--------------------------------------------------------------------------------------------------
 
 include_directories (
     appleseed
@@ -111,9 +113,9 @@ include_directories (
 )
 
 
-#
+#--------------------------------------------------------------------------------------------------
 # Preprocessor definitions.
-#
+#--------------------------------------------------------------------------------------------------
 
 # All configurations.
 set (preprocessor_definitions_common
@@ -202,9 +204,9 @@ macro (append_custom_preprocessor_definitions target first_definition)
 endmacro ()
 
 
-#
+#--------------------------------------------------------------------------------------------------
 # Compilation/linking flags.
-#
+#--------------------------------------------------------------------------------------------------
 
 # All configurations.
 set (compiler_flags_common
@@ -294,9 +296,9 @@ convert_list_to_string (CMAKE_EXE_LINKER_FLAGS_PROFILE "${exe_linker_flags_profi
 convert_list_to_string (CMAKE_SHARED_LINKER_FLAGS_PROFILE "${shared_lib_linker_flags_profile}")
 
 
-#
-# Build the individual products.
-#
+#--------------------------------------------------------------------------------------------------
+# Products.
+#--------------------------------------------------------------------------------------------------
 
 add_subdirectory (appleseed)
 add_subdirectory (appleseed.shared)

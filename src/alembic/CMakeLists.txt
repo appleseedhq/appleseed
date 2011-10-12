@@ -1,17 +1,46 @@
 
 #
-# CMake configuration.
+# This source file is part of appleseed.
+# Visit http://appleseedhq.net/ for additional information and resources.
+#
+# This software is released under the MIT license.
+#
+# Copyright (c) 2010-2011 Francois Beaune
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
 #
 
+
+#--------------------------------------------------------------------------------------------------
+# CMake configuration.
+#--------------------------------------------------------------------------------------------------
+
 cmake_minimum_required (VERSION 2.8 FATAL_ERROR)
+
 cmake_policy (SET CMP0008 NEW)  # libraries linked by full-path must have a valid library file name
 
 project (alembic)
 
 
-#
+#--------------------------------------------------------------------------------------------------
 # Platform-specific settings.
-#
+#--------------------------------------------------------------------------------------------------
 
 # This must come after project () otherwise CMAKE_SYSTEM_NAME is undefined.
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
@@ -29,16 +58,16 @@ else ()
 endif ()
 
 
-#
+#--------------------------------------------------------------------------------------------------
 # Output directory.
-#
+#--------------------------------------------------------------------------------------------------
 
 set (LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/../../build/${platform}/alembic)
 
 
-#
+#--------------------------------------------------------------------------------------------------
 # Version information.
-#
+#--------------------------------------------------------------------------------------------------
 
 set (PROJECT_VERSION_MAJOR 1)
 set (PROJECT_VERSION_MINOR 0)
@@ -47,9 +76,9 @@ set (PROJECT_VERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT
 set (VERSION ${PROJECT_VERSION})
 
 
-#
+#--------------------------------------------------------------------------------------------------
 # Boost libraries.
-#
+#--------------------------------------------------------------------------------------------------
 
 set (Boost_MULTITHREADED TRUE)
 set (Boost_USE_STATIC_LIBS TRUE)
@@ -59,9 +88,9 @@ find_package (Boost 1.44 REQUIRED thread)
 include_directories (${Boost_INCLUDE_DIRS})
 
 
-#
+#--------------------------------------------------------------------------------------------------
 # Include paths.
-#
+#--------------------------------------------------------------------------------------------------
 
 include_directories (
     include
@@ -73,9 +102,9 @@ include_directories (
 )
 
 
-#
+#--------------------------------------------------------------------------------------------------
 # Preprocessor definitions.
-#
+#--------------------------------------------------------------------------------------------------
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     add_definitions(
@@ -93,9 +122,9 @@ elseif (CMAKE_SYSTEM_NAME STREQUAL "Linux")
 endif ()
 
 
-#
-# Collect all header and source files.
-#
+#--------------------------------------------------------------------------------------------------
+# Source files.
+#--------------------------------------------------------------------------------------------------
 
 macro (ak_common_append_files ret ext)
   foreach (_dir ${ARGN})
@@ -112,9 +141,9 @@ ak_common_append_files (alembic_sources "*.cpp" lib/Alembic/MD5Hash)
 ak_common_append_files (alembic_sources "*.cpp" lib/Alembic/Util)
 
 
-#
+#--------------------------------------------------------------------------------------------------
 # Target.
-#
+#--------------------------------------------------------------------------------------------------
 
 add_library (alembic STATIC
     ${alembic_sources}
