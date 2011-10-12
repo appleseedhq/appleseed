@@ -1,4 +1,5 @@
-boost/*
+alembic/*
+hdf5/*
 libpng/*
 openexr/*
 rply/*
