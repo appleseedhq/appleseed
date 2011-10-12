@@ -1,0 +1,108 @@
+#############################
+Expected output for 'h5dump --xml tdset2.h5'
+#############################
+<?xml version="1.0" encoding="UTF-8"?>
+<hdf5:HDF5-File xmlns:hdf5="http://hdfgroup.org/DTDs/HDF5-File" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://hdfgroup.org/DTDs/HDF5-File http://www.hdfgroup.org/DTDs/HDF5-File.xsd">
+<hdf5:RootGroup OBJ-XID="xid_696" H5Path="/">
+   <hdf5:Dataset Name="dset1" OBJ-XID="xid_744" H5Path= "/dset1" Parents="xid_696" H5ParentPaths="/">
+      <hdf5:StorageLayout>
+         <hdf5:ChunkedLayout Ndims="2">
+            <hdf5:ChunkDimension DimSize="5" />
+            <hdf5:ChunkDimension DimSize="5" />
+            <hdf5:RequiredFilter>
+            </hdf5:RequiredFilter>
+         </hdf5:ChunkedLayout>
+      </hdf5:StorageLayout>
+      <hdf5:FillValueInfo FillTime="FillIfSet" AllocationTime="Incremental">
+         <hdf5:FillValue>
+               <hdf5:NoFill/>
+         </hdf5:FillValue>
+      </hdf5:FillValueInfo>
+      <hdf5:Dataspace>
+         <hdf5:SimpleDataspace Ndims="2">
+            <hdf5:Dimension  DimSize="10" MaxDimSize="UNLIMITED"/>
+            <hdf5:Dimension  DimSize="20" MaxDimSize="20"/>
+         </hdf5:SimpleDataspace>
+      </hdf5:Dataspace>
+      <hdf5:DataType>
+         <hdf5:AtomicType>
+            <hdf5:IntegerType ByteOrder="BE" Sign="true" Size="4" />
+         </hdf5:AtomicType>
+      </hdf5:DataType>
+      <hdf5:Data>
+         <hdf5:DataFromFile>
+         0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19
+         0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19
+         0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19
+         0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19
+         0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19
+         0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19
+         0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19
+         0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19
+         0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19
+         0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19
+         </hdf5:DataFromFile>
+      </hdf5:Data>
+   </hdf5:Dataset>
+   <hdf5:Dataset Name="dset2" OBJ-XID="xid_3800" H5Path= "/dset2" Parents="xid_696" H5ParentPaths="/">
+      <hdf5:StorageLayout>
+         <hdf5:ChunkedLayout Ndims="2">
+            <hdf5:ChunkDimension DimSize="5" />
+            <hdf5:ChunkDimension DimSize="5" />
+            <hdf5:RequiredFilter>
+            </hdf5:RequiredFilter>
+         </hdf5:ChunkedLayout>
+      </hdf5:StorageLayout>
+      <hdf5:FillValueInfo FillTime="FillIfSet" AllocationTime="Incremental">
+         <hdf5:FillValue>
+               <hdf5:NoFill/>
+         </hdf5:FillValue>
+      </hdf5:FillValueInfo>
+      <hdf5:Dataspace>
+         <hdf5:SimpleDataspace Ndims="2">
+            <hdf5:Dimension  DimSize="30" MaxDimSize="30"/>
+            <hdf5:Dimension  DimSize="10" MaxDimSize="UNLIMITED"/>
+         </hdf5:SimpleDataspace>
+      </hdf5:Dataspace>
+      <hdf5:DataType>
+         <hdf5:AtomicType>
+            <hdf5:FloatType ByteOrder="BE" Size="8" SignBitLocation="63" ExponentBits="11" ExponentLocation="52" MantissaBits="52" MantissaLocation="0" />
+         </hdf5:AtomicType>
+      </hdf5:DataType>
+      <hdf5:Data>
+         <hdf5:DataFromFile>
+         0 1 2 3 4 5 6 7 8 9
+         0 1 2 3 4 5 6 7 8 9
+         0 1 2 3 4 5 6 7 8 9
+         0 1 2 3 4 5 6 7 8 9
+         0 1 2 3 4 5 6 7 8 9
+         0 1 2 3 4 5 6 7 8 9
+         0 1 2 3 4 5 6 7 8 9
+         0 1 2 3 4 5 6 7 8 9
+         0 1 2 3 4 5 6 7 8 9
+         0 1 2 3 4 5 6 7 8 9
+         0 1 2 3 4 5 6 7 8 9
+         0 1 2 3 4 5 6 7 8 9
+         0 1 2 3 4 5 6 7 8 9
+         0 1 2 3 4 5 6 7 8 9
+         0 1 2 3 4 5 6 7 8 9
+         0 1 2 3 4 5 6 7 8 9
+         0 1 2 3 4 5 6 7 8 9
+         0 1 2 3 4 5 6 7 8 9
+         0 1 2 3 4 5 6 7 8 9
+         0 1 2 3 4 5 6 7 8 9
+         0 1 2 3 4 5 6 7 8 9
+         0 1 2 3 4 5 6 7 8 9
+         0 1 2 3 4 5 6 7 8 9
+         0 1 2 3 4 5 6 7 8 9
+         0 1 2 3 4 5 6 7 8 9
+         0 1 2 3 4 5 6 7 8 9
+         0 1 2 3 4 5 6 7 8 9
+         0 1 2 3 4 5 6 7 8 9
+         0 1 2 3 4 5 6 7 8 9
+         0 1 2 3 4 5 6 7 8 9
+         </hdf5:DataFromFile>
+      </hdf5:Data>
+   </hdf5:Dataset>
+</hdf5:RootGroup>
+</hdf5:HDF5-File>

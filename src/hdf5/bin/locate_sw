@@ -1,0 +1,297 @@
+#!/bin/sh
+#
+# Copyright by The HDF Group.
+# Copyright by the Board of Trustees of the University of Illinois.
+# All rights reserved.
+#
+# This file is part of HDF5.  The full HDF5 copyright notice, including
+# terms governing use, modification, and redistribution, is contained in
+# the files COPYING and Copyright.html.  COPYING can be found at the root
+# of the source code distribution tree; Copyright.html can be found at the
+# root level of an installed copy of the electronic HDF5 document set and
+# is linked from the top-level documents page.  It can also be found at
+# http://hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have
+# access to either file, you may request a copy from help@hdfgroup.org.
+#
+
+# Try to locate the software as named in argument.
+# This is a sequential search of all possible locations of the software.
+# Usage: locate_sw <SW-Name>
+# It prints a string showing the paths leading to the include, lib and bin
+# directory of the software, separated by colons.  E.g., if the software is
+# located in /usr/sdt/*, it prints
+# /usr/sdt/include:/usr/sdt/lib:/usr/sdt/bin
+# Any component that is not found will be returned as an empty string. E.g.,
+# if somehow the header files of the software are not found, it prints
+# :/usr/sdt/lib;/usr/sdt/bin
+
+# Function definitions
+USAGE()
+{
+    echo "Usage: locate_sw <SW-Name>"
+    echo "    where <SW-Name> can be hdf4, hdf5, zlib"
+    echo "    It prints the paths leading the header files (include),"
+    echo "    library (lib), and tools (bin).   E.g.,"
+    echo "    /usr/sdt/include:/usr/sdt/lib:/usr/sdt/bin"
+    echo "    Any component that is not found will be returned as an empty string. E.g.,"
+    echo "    if somehow the header files of the software are not found, it prints"
+    echo "    :/usr/sdt/lib;/usr/sdt/bin"
+    echo "Exit code: 0 if software located; otherwise non-zero"
+}
+
+# locate hdf4 software
+locate_hdf4()
+{
+# this default is the best guess of locating hdf4 software
+swpaths_defaults="/usr/ncsa /usr/sdt /usr/local"
+swpaths=
+
+case "$OSname" in
+    SunOS)
+        case "$OSrelease" in
+            5.7)
+               swpaths="/afs/ncsa/packages/hdf/SunOS_5.7"
+               ;;
+	    *)
+            # use default
+	       ;;
+        esac
+        ;;
+    HP-UX)
+        case "$OSrelease" in
+	   B.11.00)
+	        swpaths="/afs/ncsa/packages/hdf/HPUX_11.00"
+               ;;
+           *)
+           # use default
+              ;;
+        esac
+	;;
+    IRIX)
+	swpaths="/afs/ncsa/packages/hdf/IRIX_6.5"
+	;;
+    IRIX64)
+	case "$CC" in
+	cc|"")	#default cc
+	    abi=`cc -show_defaults 2>&1 | grep 'default abi'`
+	    case $abi in
+	    *-n32)
+		swpaths="/afs/ncsa/packages/hdf/IRIX64-n32_6.5"
+		;;
+	    *-64)
+		swpaths="/afs/ncsa/packages/hdf/IRIX64_6.5"
+		;;
+	    *)
+		swpaths="/afs/ncsa/packages/hdf/IRIX64_6.5"
+		;;
+	    esac	# $abi
+	    ;;
+	*-n32)
+	    swpaths="/afs/ncsa/packages/hdf/IRIX64-n32_6.5"
+	    ;;
+	*)
+	    swpaths="/afs/ncsa/packages/hdf/IRIX64_6.5"
+	    ;;
+	esac
+	;;
+    Linux)
+	swpaths="/afs/ncsa/packages/hdf/Linux"
+	;;
+    OSF1)
+	swpaths="/afs/ncsa/packages/hdf/OSF1_V4.0"
+	;;
+    *)
+	# just use the defaults
+	;;
+esac
+
+# Check if the hdf4 software is actually available.
+# Accept the directory only if needed .h, .a and tools are found
+# in the same place.  That way, they are more likely to be of the
+# same version.
+# 
+swpaths="$swpaths $swpaths_defaults"
+for sw in $swpaths; do
+    if [ -r $sw/include/hdf.h -a -r $sw/lib/libdf.a -a -r $sw/bin/hdp ]; then
+	SW_inc=$sw/include
+	SW_lib=$sw/lib
+	SW_bin=$sw/bin
+	SW_Location=$sw
+	break
+    fi
+done
+}
+
+# locate hdf5 software
+locate_hdf5()
+{
+# this default is the best guess of locating hdf5 software
+swpaths_defaults="/usr/ncsa /usr/sdt /usr/local"
+swpaths=
+
+case "$OSname" in
+    SunOS)
+        case "$OSrelease" in
+            5.7)
+               swpaths="/afs/ncsa/packages/hdf5/SunOS_5.7"
+               ;;
+	    *)
+            # use default
+	       ;;
+        esac
+        ;;
+    HP-UX)
+        case "$OSrelease" in
+	   B.11.00)
+	        swpaths="/afs/ncsa/packages/hdf5/HPUX_11.00"
+               ;;
+           *)
+           # use default
+              ;;
+        esac
+	;;
+    IRIX)
+	swpaths="/afs/ncsa/packages/hdf5/IRIX_6.5"
+	;;
+    IRIX64)
+	case "$CC" in
+	cc|"")	#default cc
+	    abi=`cc -show_defaults 2>&1 | grep 'default abi'`
+	    case $abi in
+	    *-n32)
+		swpaths="/afs/ncsa/packages/hdf5/IRIX64-n32_6.5"
+		;;
+	    *-64)
+		#swpaths="/afs/ncsa/packages/hdf5/IRIX64_6.5"
+                swpaths="/afs/ncsa/packages/hdf5/5-1.4.3-irix64"
+		;;
+	    *)
+		#swpaths="/afs/ncsa/packages/hdf5/IRIX64_6.5"
+                swpaths="/afs/ncsa/packages/hdf5/5-1.4.3-irix64"  
+		;;
+	    esac	# $abi
+	    ;;
+	*-n32)
+	    swpaths="/afs/ncsa/packages/hdf5/IRIX64-n32_6.5"
+	    ;;
+	*)
+	    #swpaths="/afs/ncsa/packages/hdf5/IRIX64_6.5"
+            swpaths="/afs/ncsa/packages/hdf5/5-1.4.3-irix64"
+	    ;;
+	esac
+	;;
+    Linux)
+	swpaths="/afs/ncsa/packages/hdf5/Linux"
+	;;
+    FreeBSD)
+        swpaths="/afs/ncsa/packages/hdf5/FreeBSD"
+        ;;
+    OSF1)
+	swpaths="/afs/ncsa/packages/hdf5/OSF1_V4.0"
+	;;
+    *)
+	# just use the defaults
+	;;
+esac
+
+# Check if the hdf5 software is actually available.
+# Accept the directory only if needed .h, .a and tools are found
+# in the same place.  That way, they are more likely to be of the
+# same version.
+# 
+swpaths="$swpaths $swpaths_defaults"
+for sw in $swpaths; do
+    if [ -r $sw/include/hdf5.h -a -r $sw/lib/libhdf5.a -a -r $sw/bin/h5dump ]; then
+	SW_inc=$sw/include
+	SW_lib=$sw/lib
+	SW_bin=$sw/bin
+	SW_Location=$sw
+	break
+    fi
+done
+}
+
+# locate zlib software
+locate_zlib()
+{
+# this default is the best guess of locating zlib software
+swpaths_defaults="/usr /usr/local /usr/ncsa /usr/sdt"
+swpaths=
+
+
+# Check if the zlib software is actually available.
+# Accept the directory only if needed .h, .a and tools are found
+# in the same place.  That way, they are more likely to be of the
+# same version.
+# Don't know something specific to check the bin directory.  Maybe gzip?
+# Just make sure it exists.
+# 
+swpaths="$swpaths $swpaths_defaults"
+for sw in $swpaths; do
+    if [ -r $sw/include/zlib.h -a	\
+	    \( -r $sw/lib/libz.a -o -r $sw/lib/libz.so \) -a -d $cw/bin ]; then
+	SW_inc=$sw/include
+	SW_lib=$sw/lib
+	SW_bin=$sw/bin
+	SW_Location=$sw
+	break
+    fi
+done
+
+# if none found, try HDF4 software which contains a version of zlib.
+if [ x-$SW_Location = x- ]; then
+    locate_hdf4
+fi
+
+}
+
+# Main
+#
+# Options
+#
+if [ $# -lt 1 ]; then
+    USAGE
+    exit 1
+fi
+
+if [ "$1" = -h ]; then
+    USAGE
+    exit 0
+fi
+
+SW=$1
+shift
+
+# locations of the software seeked.
+SW_inc=			# include place
+SW_lib=			# library place
+SW_bin=			# binary place
+SW_Location=		# parent directory of all the above
+
+OSname=`uname -s`
+OSrelease=`uname -r`
+
+case $SW in
+hdf4|hdf)
+    locate_hdf4
+    ;;
+hdf5)
+    locate_hdf5
+    ;;
+zlib)
+    locate_zlib
+    ;;
+*)
+    echo "unknown software ($SW)"
+    USAGE
+    exit 1
+    ;;
+esac
+
+# show the results located, separated by commas.
+if [ -n "${SW_inc}" -a -n "${SW_lib}" -a -n "${SW_bin}" ]; then
+    echo ${SW_inc},${SW_lib},${SW_bin}
+    exit 0
+else
+    exit 1
+fi

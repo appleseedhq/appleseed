@@ -1,0 +1,2 @@
+Warning: </softlink_noexist> is a dangling link.
+EXIT CODE: 2

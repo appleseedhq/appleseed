@@ -1,0 +1,3 @@
+Not comparable: </g2/dset4> has rank 2, dimensions [3x2], max dimensions [3x2]
+and </g2/dset5> has rank 2, dimensions [2x2], max dimensions [2x2]
+EXIT CODE: 0

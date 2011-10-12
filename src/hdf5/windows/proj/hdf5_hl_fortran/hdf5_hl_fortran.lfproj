@@ -1,0 +1,93 @@
+﻿<Project Version="8.00" DefaultTargets="Link" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <UsingTask TaskName="LF_Tasks.LFC" AssemblyFile="$(PackageRoot)\FortranTasks.dll" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{0dbcf685-557e-4513-a8ae-29ab24dc1019}</ProjectGuid>
+    <PackageRoot>C:\Program Files\Lahey-Fujitsu Fortran\v7.2\Visual Studio 2008\Packages</PackageRoot>
+    <OutputType>StaticLibrary</OutputType>
+    <AssemblyName>hdf5_hl_fortran</AssemblyName>
+    <Name>hdf5_hl_fortran</Name>
+    <RootNamespace>hdf5_hl_fortran</RootNamespace>
+    <OutputName>hdf5_hl_fortran.lib</OutputName>
+    <DLL>False</DLL>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DLL>False</DLL>
+    <DebugSymbols>True</DebugSymbols>
+    <DeallocateLocals>False</DeallocateLocals>
+    <TraceBack>True</TraceBack>
+    <StackChk>True</StackChk>
+    <Optimize>false</Optimize>
+    <MixLang>MSVC</MixLang>
+    <FixForm>Default</FixForm>
+    <ConCC>False</ConCC>
+    <IncPath>..\..\..\hl\fortran\src\;..\..\..\fortran\src\</IncPath>
+    <ModPath>..\..\..\proj\hdf5_hl_fortran\Debug\;..\..\..\proj\hdf5_fortran\Debug\</ModPath>
+    <Preprocessor>False</Preprocessor>
+    <AdditionalOpts> -DEF:"..\..\..\fortran\src\hdf5_fortrandll_lf.def"</AdditionalOpts>
+    <AdditionalLnkOpts>hdf5_hl_f90cstubddll.lib</AdditionalLnkOpts>
+    <LibPath>\testing\hdf5\proj\hdf5_hl_f90cstubdll\Debug\</LibPath>
+    <OutputPath>..\..\..\proj\hdf5_hl_fortran\Debug\</OutputPath>
+    <OutputName>hdf5_hl_fortrand.lib</OutputName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DLL>False</DLL>
+    <DebugSymbols>False</DebugSymbols>
+    <Optimize>true</Optimize>
+    <OutputPath>..\..\..\proj\hdf5_hl_fortran\Release\</OutputPath>
+    <OutputName>hdf5_hl_fortran.lib</OutputName>
+    <MixLang>MSVC</MixLang>
+    <FixForm>Default</FixForm>
+    <ConCC>False</ConCC>
+    <IncPath>..\..\..\fortran\src\;..\..\..\hl\fortran\src\</IncPath>
+    <ModPath>..\..\..\proj\hdf5_hl_fortran\Release\;..\..\..\proj\hdf5_fortran\Release\</ModPath>
+    <AdditionalOpts> -DEF:"..\..\..\fortran\src\hdf5_fortrandll_lf.def"</AdditionalOpts>
+    <AdditionalLnkOpts>hdf5_hl_f90cstubdll.lib</AdditionalLnkOpts>
+    <LibPath>\testing\hdf5\proj\hdf5_hl_f90cstubdll\Release\</LibPath>
+    <Preprocessor>False</Preprocessor>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\..\..\hl\fortran\src\H5IMff.f90">
+      <SubType>Code</SubType>
+      <FileExt>.obj</FileExt>
+      <CompileOrder>1</CompileOrder>
+    </Compile>
+    <Compile Include="..\..\..\hl\fortran\src\H5LTff.f90">
+      <SubType>Code</SubType>
+      <FileExt>.obj</FileExt>
+      <CompileOrder>2</CompileOrder>
+    </Compile>
+    <Compile Include="..\..\..\hl\fortran\src\H5TBff.f90">
+      <SubType>Code</SubType>
+      <FileExt>.obj</FileExt>
+      <CompileOrder>3</CompileOrder>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="..\" />
+    <Folder Include="..\..\" />
+    <Folder Include="..\..\..\" />
+    <Folder Include="..\..\..\hl\" />
+    <Folder Include="..\..\..\hl\fortran\" />
+    <Folder Include="..\..\..\hl\fortran\src\" />
+  </ItemGroup>
+  <Target Name="Link" DependsOnTargets="Build" Inputs="@(Compile -> '%(Filename)%(FileExt)')" Outputs="$(OutputPath)$(OutputName)">
+    <LFC Source="@(Compile -> '%(Filename)%(FileExt)')" OutputName="$(OutputPath)$(OutputName)" Options="$(LinkOptions)" />
+  </Target>
+  <Target Name="Build" Inputs="@(Compile)" Outputs="@(Compile -> '%(Filename)%(FileExt)')" DependsOnTargets="Build1">
+    <LFC Source="%(Compile.FullPath)" CompileOnly="-c" Options="%(Compile.FortranOptions)|$(ProjectOptions)" Condition="%(Compile.Compileorder) == '3'" />
+  </Target>
+  <Target Name="Build1" DependsOnTargets="Build2" Inputs="@(Compile)" Outputs="@(Compile -> '%(Filename)%(FileExt)')">
+    <Touch Files="%(Compile.TouchList)" Condition="%(Compile.Compileorder) == '3'" />
+    <LFC Condition="%(Compile.Compileorder) == '2'" Source="%(Compile.FullPath)" CompileOnly="-c" Options="%(Compile.FortranOptions)" />
+  </Target>
+  <Target Name="Build2" Inputs="@(Compile)" Outputs="@(Compile -> '%(Filename)%(FileExt)')">
+    <Touch Files="%(Compile.TouchList)" Condition="%(Compile.Compileorder) == '2'" />
+    <LFC Condition="%(Compile.Compileorder) == '1'" Source="%(Compile.FullPath)" CompileOnly="-c" Options="%(Compile.FortranOptions)" />
+  </Target>
+  <Target Name="Clean">
+    <LFC Clean="True" Source="%(Compile.FullPath)" OutputName="$(OutputPath)$(OutputName)" />
+  </Target>
+  <Target Name="Rebuild" DependsOnTargets="Clean; Link" />
+</Project>

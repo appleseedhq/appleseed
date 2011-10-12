@@ -1,0 +1,34 @@
+#############################
+Expected output for 'h5dump --xml topaque.h5'
+#############################
+<?xml version="1.0" encoding="UTF-8"?>
+<hdf5:HDF5-File xmlns:hdf5="http://hdfgroup.org/DTDs/HDF5-File" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://hdfgroup.org/DTDs/HDF5-File http://www.hdfgroup.org/DTDs/HDF5-File.xsd">
+<hdf5:RootGroup OBJ-XID="xid_696" H5Path="/">
+   <hdf5:Dataset Name="opaque test" OBJ-XID="xid_744" H5Path= "/opaque test" Parents="xid_696" H5ParentPaths="/">
+      <hdf5:StorageLayout>
+         <hdf5:ContiguousLayout/>
+      </hdf5:StorageLayout>
+         <hdf5:FillValueInfo FillTime="FillIfSet" AllocationTime="Late">
+         <hdf5:FillValue>
+               <hdf5:NoFill/>
+         </hdf5:FillValue>
+      </hdf5:FillValueInfo>
+      <hdf5:Dataspace>
+         <hdf5:SimpleDataspace Ndims="1">
+            <hdf5:Dimension  DimSize="2" MaxDimSize="2"/>
+         </hdf5:SimpleDataspace>
+      </hdf5:Dataspace>
+      <hdf5:DataType>
+         <hdf5:AtomicType>
+            <hdf5:OpaqueType Tag="test opaque type" Size="200"/>
+         </hdf5:AtomicType>
+      </hdf5:DataType>
+      <hdf5:Data>
+         <hdf5:DataFromFile>
+         00:63:01:62:02:61:03:60:04:5f:05:5e:06:5d:07:5c:08:5b:09:5a:0a:59:0b:58:0c:57:0d:56:0e:55:0f:54:10:53:11:52:12:51:13:50:14:4f:15:4e:16:4d:17:4c:18:4b:19:4a:1a:49:1b:48:1c:47:1d:46:1e:45:1f:44:20:43:21:42:22:41:23:40:24:3f:25:3e:26:3d:27:3c:28:3b:29:3a:2a:39:2b:38:2c:37:2d:36:2e:35:2f:34:30:33:31:32:32:31:33:30:34:2f:35:2e:36:2d:37:2c:38:2b:39:2a:3a:29:3b:28:3c:27:3d:26:3e:25:3f:24:40:23:41:22:42:21:43:20:44:1f:45:1e:46:1d:47:1c:48:1b:49:1a:4a:19:4b:18:4c:17:4d:16:4e:15:4f:14:50:13:51:12:52:11:53:10:54:0f:55:0e:56:0d:57:0c:58:0b:59:0a:5a:09:5b:08:5c:07:5d:06:5e:05:5f:04:60:03:61:02:62:01:63:00
+         38:00:00:2c:3c:00:00:27:34:00:01:ea:04:00:00:12:00:00:00:00:00:08:a4:64:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:ef:7e:c9:c0:00:00:00:01:ef:ff:fa:84:ef:ff:fa:8c:00:03:fc:00:00:00:00:00:00:00:00:00:ef:ff:fa:20:00:01:2e:84:ef:ff:fa:20:00:01:2e:58:00:00:00:03:ef:ff:fa:84:00:00:00:04:ef:ff:fa:8c:00:00:00:05:ef:ff:fa:f0:00:00:00:00:00:00:00:00:00:00:00:01:ef:ff:fa:84:ef:ff:fa:8c:00:03:fc:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00
+         </hdf5:DataFromFile>
+      </hdf5:Data>
+   </hdf5:Dataset>
+</hdf5:RootGroup>
+</hdf5:HDF5-File>

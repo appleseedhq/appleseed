@@ -1,0 +1,96 @@
+#							-*- shell-script -*-
+#
+# Copyright by The HDF Group.
+# Copyright by the Board of Trustees of the University of Illinois.
+# All rights reserved.
+#
+# This file is part of HDF5.  The full HDF5 copyright notice, including
+# terms governing use, modification, and redistribution, is contained in
+# the files COPYING and Copyright.html.  COPYING can be found at the root
+# of the source code distribution tree; Copyright.html can be found at the
+# root level of an installed copy of the electronic HDF5 document set and
+# is linked from the top-level documents page.  It can also be found at
+# http://hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have
+# access to either file, you may request a copy from help@hdfgroup.org.
+
+
+# This file is part of the HDF5 build script.  It is processed shortly
+# after configure starts and defines, among other things, flags for
+# the various compile modes.
+#
+# See BlankForm in this directory for details.
+
+# Default compiler is `cc'
+if test "X-" =  "X-$CC"; then
+  CC=cc
+  CC_BASENAME=cc
+fi
+
+# Flags
+case "X-$CC" in
+  X-gcc)
+    H5_CFLAGS="$H5_CFLAGS -Wsign-compare" #Only works for some versions
+    DEBUG_CFLAGS="-g -fverbose-asm"
+    DEBUG_CPPFLAGS=
+    PROD_CFLAGS="-O3"
+    PROD_CPPFLAGS=
+    PROFILE_CFLAGS="-pg"
+    PROFILE_CPPFLAGS=
+    ;;
+
+  *)
+    H5_CFLAGS="$H5_CFLAGS -Ae -Wp,-H65536" #increase the size of macro definition table. For test/dtypes.c
+    DEBUG_CFLAGS=-g
+    DEBUG_CPPFLAGS="-Ae"
+    PROD_CFLAGS=-O
+    PROD_CPPFLAGS="-Ae"
+    PROFILE_CFLAGS=
+    PROFILE_CPPFLAGS="-Ae"
+    ;;
+esac
+
+# The default Fortran 90 compiler
+
+if test "X$FC" = "X"; then
+  FC=f90
+fi
+
+if test "X$f9x_flags_set" = "X"; then
+  F9XSUFFIXFLAG=""
+  FSEARCH_DIRS=""
+  H5_FCFLAGS="$H5_FCFLAGS -O"
+  DEBUG_FCFLAGS="-O"
+  PROD_FCFLAGS="-O"
+  PROFILE_FCFLAGS="-O"
+  f9x_flags_set=yes
+fi
+
+# The default C++ compiler
+
+if test -z "$CXX"; then
+  CXX=aCC
+  CXX_BASENAME=aCC
+fi
+
+case "X-$CXX" in
+  X-aCC)
+    # +Z for PIC
+    H5_CXXFLAGS="$H5_CXXFLAGS +Z  -D_INCLUDE_LONGLONG"
+    H5_CFLAGS="$H5_CFLAGS -g +O2"
+    DEBUG_CXXFLAGS=-g
+    DEBUG_CPPFLAGS=
+    PROD_CXXFLAGS="-O -s"
+    PROD_CPPFLAGS=
+    PROFILE_CPPFLAGS=
+    ;;
+
+  *)
+    H5_CXXFLAGS="$H5_CXXFLAGS -D_INCLUDE_LONGLONG"
+    H5_CFLAGS="$H5_CFLAGS"
+    DEBUG_CXXFLAGS=
+    DEBUG_CPPFLAGS=
+    PROD_CXXFLAGS=
+    PROD_CPPFLAGS=
+    PROFILE_CPPFLAGS=
+    ;;
+esac

@@ -1,0 +1,49 @@
+#############################
+Expected output for 'h5dump --xml thlink.h5'
+#############################
+<?xml version="1.0" encoding="UTF-8"?>
+<hdf5:HDF5-File xmlns:hdf5="http://hdfgroup.org/DTDs/HDF5-File" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://hdfgroup.org/DTDs/HDF5-File http://www.hdfgroup.org/DTDs/HDF5-File.xsd">
+<hdf5:RootGroup OBJ-XID="xid_96" H5Path="/">
+   <hdf5:Dataset Name="dset1" OBJ-XID="xid_808" H5Path= "/dset1" Parents="xid_96" H5ParentPaths="/">
+      <hdf5:StorageLayout>
+         <hdf5:ContiguousLayout/>
+      </hdf5:StorageLayout>
+         <hdf5:FillValueInfo FillTime="FillIfSet" AllocationTime="Late">
+         <hdf5:FillValue>
+               <hdf5:NoFill/>
+         </hdf5:FillValue>
+      </hdf5:FillValueInfo>
+      <hdf5:Dataspace>
+         <hdf5:SimpleDataspace Ndims="1">
+            <hdf5:Dimension  DimSize="5" MaxDimSize="5"/>
+         </hdf5:SimpleDataspace>
+      </hdf5:Dataspace>
+      <hdf5:DataType>
+         <hdf5:AtomicType>
+            <hdf5:IntegerType ByteOrder="BE" Sign="true" Size="4" />
+         </hdf5:AtomicType>
+      </hdf5:DataType>
+      <hdf5:Data>
+         <hdf5:DataFromFile>
+         0 1 2 3 4
+         </hdf5:DataFromFile>
+      </hdf5:Data>
+   </hdf5:Dataset>
+   <hdf5:Group Name="g1" OBJ-XID="xid_1408" H5Path="/g1" Parents="xid_96" H5ParentPaths="/" >
+      <hdf5:Dataset Name="dset2" OBJ-XID="xid_808-1" H5Path="/g1/dset2" Parents="xid_1408" H5ParentPaths="/g1">
+         <hdf5:DatasetPtr OBJ-XID="xid_808" H5Path="/dset1"/>
+      </hdf5:Dataset>
+      <hdf5:Group Name="g1.1" OBJ-XID="xid_2000" H5Path="/g1/g1.1" Parents="xid_1408" H5ParentPaths="/g1" >
+         <hdf5:Dataset Name="dset3" OBJ-XID="xid_808-2" H5Path="/g1/g1.1/dset3" Parents="xid_2000" H5ParentPaths="/g1/g1.1">
+            <hdf5:DatasetPtr OBJ-XID="xid_808" H5Path="/dset1"/>
+         </hdf5:Dataset>
+      </hdf5:Group>
+   </hdf5:Group>
+   <hdf5:Group Name="g2" OBJ-XID="xid_2000-3" H5Path="/g1/g1.1" Parents="xid_96" H5ParentPaths="/">
+         <hdf5:GroupPtr OBJ-XID="xid_2000" H5Path="/g1/g1.1" Parents="xid_96" H5ParentPaths="/" />
+   </hdf5:Group>
+   <hdf5:Group Name="g3" OBJ-XID="xid_96-4" H5Path="/" Parents="xid_96" H5ParentPaths="/">
+         <hdf5:GroupPtr OBJ-XID="xid_96" H5Path="/" Parents="xid_96" H5ParentPaths="/" />
+   </hdf5:Group>
+</hdf5:RootGroup>
+</hdf5:HDF5-File>

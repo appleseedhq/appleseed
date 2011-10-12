@@ -1,0 +1,179 @@
+#!/bin/sh
+#
+# Copyright by The HDF Group.
+# Copyright by the Board of Trustees of the University of Illinois.
+# All rights reserved.
+#
+# This file is part of HDF5.  The full HDF5 copyright notice, including
+# terms governing use, modification, and redistribution, is contained in
+# the files COPYING and Copyright.html.  COPYING can be found at the root
+# of the source code distribution tree; Copyright.html can be found at the
+# root level of an installed copy of the electronic HDF5 document set and
+# is linked from the top-level documents page.  It can also be found at
+# http://hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have
+# access to either file, you may request a copy from help@hdfgroup.org.
+#
+
+# Check that all the files in MANIFEST exist and that (if this is a
+# SVN checkout) that all the SVN-managed files appear in the
+# MANIFEST.
+
+verbose=yes
+MANIFEST=/tmp/HD_MANIFEST.$$
+SVNENTRY=/tmp/HD_SVNENTRY.$$
+
+# function definitions
+
+GETSVNENTRIES_13 ()
+# Purpose: Extract filenames from the svn v1.3.* entries file
+# $1: directory name in which the svn entries is.
+# steps:
+# 1. remove all single line entries so that step 2 does not fail on them. 
+# 2. merge all multiple lines entries into single lines.
+# 3. remove all non file entries.
+# 4. insert a blank line because some entries files has no kind="file"
+#    entry and ed does not like to do g on an empty file.
+# 5. remove everything except the file name.
+# 6. remove all blank lines, including the inserted one.
+{
+cp $1/entries $SVNENTRY
+chmod u+w $SVNENTRY	# entries file is not writable.
+ed - $SVNENTRY <<EOF
+g/^<.*>$/d
+g/^</.,/>$/j
+v/kind="file"/d
+a
+
+.
+g/.*name="/s///
+g/".*/s///
+g/^$/d
+w
+q
+EOF
+cat $SVNENTRY
+rm $SVNENTRY
+}
+
+GETSVNENTRIES_14 ()
+# Purpose: Extract filenames from the svn v1.4.* entries file
+# $1: directory name in which the svn entries is.
+# steps:
+# 1. all valid files are followed by a line containing "file" only.
+# 2. find them by looking for "file" first, then mark its preceding line as
+#    wanted.
+# 3. remove all non-marked line.
+# 4. insert a blank line because some entries files has no kind="file"
+#    entry and ed does not like to do g on an empty file.
+# 5. remove the marks.
+{
+cp $1/entries $SVNENTRY
+chmod u+w $SVNENTRY	# entries file is not writable.
+ed - $SVNENTRY <<EOF
+g/^file$/-s/^/%WANTED%/
+v/%WANTED%/d
+a
+
+.
+g/^%WANTED%/s///
+w
+q
+EOF
+cat $SVNENTRY
+rm $SVNENTRY
+}
+
+
+# Main
+test "$verbose" && echo "   Checking MANIFEST..." 1>&2
+# clean up $MANIFEST file when exits
+trap "rm -f $MANIFEST" 0
+
+# First make sure i am in the directory in which there is an MANIFEST file
+# and then do the checking from there.  Will try the following,
+# current directory, parent directory, the directory this command resides.
+if [ -f MANIFEST ]; then
+    continue
+elif [ -f ../MANIFEST ]; then
+    cd ..
+else
+    commanddir=`dirname $0`
+    if [ -d "$commanddir" -a -f $commanddir/MANIFEST ]; then
+	cd $commanddir
+	continue
+    else
+	echo MANIFEST file not found. Abort.
+	exit 1
+    fi
+fi
+
+# Check for duplicate entries.  This can be done at any time, but it may as 
+# well be sooner so that if something else fails the presence of duplicates
+# will already be known.
+errcode=0
+DUPLICATES=`perl -ne 's/#.*//; next if /^\s*$/; if ($uniq{$_}++) { print $_; }' MANIFEST`
+if [ "$DUPLICATES" ]; then
+   cat 1>&2 <<EOF
+These entries appear more than once in the MANIFEST:  
+$DUPLICATES
+Please remove the duplicate lines and try again.
+
+EOF
+errcode=1 
+fi
+
+# Copy the manifest file to get a list of file names.
+grep '^\.' MANIFEST | expand | cut -f1 -d' ' >$MANIFEST
+
+for file in `cat $MANIFEST`; do
+    if [ ! -f $file ]; then
+       echo "- $file"
+       fail=yes
+    fi
+done
+
+
+# Inspect the .svn/entries to figure out what version of svn file entry is
+# used.
+# The following algorithm is formed via reverse engineering.
+# I don't know what the official svn format is if such a specification exists.
+# Algorithm:
+# If the first line of the file has 'xml version="1.0"' in it, it is created
+# by svn 1.3 or older; else if it has '^file$' in it, it is created by svn 1.4.
+svn_entry_file=.svn/entries
+if head -1 $svn_entry_file | grep 'xml version="1.0"' > /dev/null 2>&1;then
+    getsvnentries=GETSVNENTRIES_13
+elif grep '^file$' $svn_entry_file > /dev/null 2>&1; then
+    getsvnentries=GETSVNENTRIES_14
+else
+    echo "Unknown svn entries format. Aborted"
+    exit 1
+fi
+
+for svn in `find . -type d -name .svn -print`; do
+    path=`echo $svn |sed 's/\/.svn//'`
+    for file in `$getsvnentries $svn`; do
+	if (grep ^$path/$file$ $MANIFEST >/dev/null); then
+	    :
+	else
+	    echo "+ $path/$file"
+	    fail=yes
+	fi
+    done
+done
+
+if [ "X$fail" = "Xyes" ]; then
+    cat 1>&2 <<EOF
+The MANIFEST is out of date. Files marked with a minus sign (-) no
+longer exist; files marked with a plus sign (+) are SVN-managed but do
+not appear in the MANIFEST.  Please remedy the situation and try again.
+EOF
+    exit 1
+fi
+
+if [ $errcode -ne 0 ]; then
+    exit 1
+fi 
+
+test "$verbose" && echo "   The MANIFEST is up to date." 1>&2
+exit 0

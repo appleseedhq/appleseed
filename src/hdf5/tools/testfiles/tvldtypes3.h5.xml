@@ -1,0 +1,58 @@
+#############################
+Expected output for 'h5dump --xml tvldtypes3.h5'
+#############################
+<?xml version="1.0" encoding="UTF-8"?>
+<hdf5:HDF5-File xmlns:hdf5="http://hdfgroup.org/DTDs/HDF5-File" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://hdfgroup.org/DTDs/HDF5-File http://www.hdfgroup.org/DTDs/HDF5-File.xsd">
+<hdf5:RootGroup OBJ-XID="xid_928" H5Path="/">
+   <hdf5:Dataset Name="Dataset1" OBJ-XID="xid_976" H5Path= "/Dataset1" Parents="xid_928" H5ParentPaths="/">
+      <hdf5:StorageLayout>
+         <hdf5:ContiguousLayout/>
+      </hdf5:StorageLayout>
+         <hdf5:FillValueInfo FillTime="FillIfSet" AllocationTime="Late">
+         <hdf5:FillValue>
+               <hdf5:NoFill/>
+         </hdf5:FillValue>
+      </hdf5:FillValueInfo>
+      <hdf5:Dataspace>
+         <hdf5:SimpleDataspace Ndims="1">
+            <hdf5:Dimension  DimSize="4" MaxDimSize="4"/>
+         </hdf5:SimpleDataspace>
+      </hdf5:Dataspace>
+      <hdf5:DataType>
+         <hdf5:CompoundType>
+            <hdf5:Field FieldName="i">
+               <hdf5:DataType>
+                  <hdf5:AtomicType>
+                     <hdf5:IntegerType ByteOrder="LE" Sign="true" Size="4" />
+                  </hdf5:AtomicType>
+               </hdf5:DataType>
+            </hdf5:Field>
+            <hdf5:Field FieldName="f">
+               <hdf5:DataType>
+                  <hdf5:AtomicType>
+                     <hdf5:FloatType ByteOrder="LE" Size="4" SignBitLocation="31" ExponentBits="8" ExponentLocation="23" MantissaBits="23" MantissaLocation="0" />
+                  </hdf5:AtomicType>
+               </hdf5:DataType>
+            </hdf5:Field>
+            <hdf5:Field FieldName="v">
+               <hdf5:DataType>
+                  <hdf5:VLType>
+                     <hdf5:DataType>
+                        <hdf5:AtomicType>
+                           <hdf5:IntegerType ByteOrder="LE" Sign="false" Size="4" />
+                        </hdf5:AtomicType>
+                     </hdf5:DataType>
+                  </hdf5:VLType>
+               </hdf5:DataType>
+            </hdf5:Field>
+         </hdf5:CompoundType>
+      </hdf5:DataType>
+   <!-- Note: format of compound data not specified -->
+      <hdf5:Data>
+         <hdf5:DataFromFile>
+         0 0  0 10 6.66667  10 11 20 13.3333  20 21 22 30 20  30 31 32 33
+         </hdf5:DataFromFile>
+      </hdf5:Data>
+   </hdf5:Dataset>
+</hdf5:RootGroup>
+</hdf5:HDF5-File>

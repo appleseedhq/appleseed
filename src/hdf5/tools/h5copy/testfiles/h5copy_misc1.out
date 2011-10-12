@@ -1,0 +1,3 @@
+Copying file <h5copytst.h5> and object </simple> to file <./testfiles/h5copytst.out.h5> and object </g1/g2/simple>
+Error in copy...Exiting
+h5copy error: group </g1> doesn't exist. Use -p to create parent groups.

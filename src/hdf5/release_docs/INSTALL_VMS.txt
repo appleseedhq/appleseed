@@ -1,0 +1,77 @@
+		Building and installation instructions for Alpha Open VMS
+                              HDF5 1.8.7 release
+                                  9 May 2011
+   
+
+
+		CONTENTS
+		--------
+                
+		1. Obtaining HDF5
+		2. Building and testing HDF5 C, Fortran and C++ libraries,
+                   and utilities
+		3. Installing HDF5 libraries
+		4. Known problems
+
+
+	1.Obtaining HDF5
+
+	  Please see INSTALL file in this directory for downloading instructions.
+
+	2. Building and testing HDF5 C, Fortran and C++ libraries and utilities.
+
+           IMPORTANT: This version REQUIRES GNU ZLIB library to be installed
+                      on a system. You may download the source code from
+                      http://www.zlib.net/
+
+	 -  Use tar command to untar HDF5 source ball
+
+		tar -xvf <source>.tar
+
+	 -  Change default directory to [.<source>.vms]
+         -  Specify top HDF5 source directory in the build.com file where the 
+            "hdf5top" is defined.
+         -  Edit make.com:
+         	specify path to ZLIB library
+        	if necessary, modify compilation flags 
+	    Do NOT REMOVE /define=H5_VMS and /standard=strict_ansi qualifiers.
+         -  Run build.com command file 
+		@build
+            We recommend using batch queue to build and test this distribution. 
+            The command file runs make.com and builds 
+			C library, tests, and utilities	
+			Fortran library and tests
+			C++ library and tests
+            It also runs test scripts to test C, Fortran and C++ libraries, and
+	    h5dump, h5diff, h5ls, and h5repack utilities.
+
+	3. Installing HDF5 libraries
+
+	   Modify install.com file to specify installation directory (hdf5top) 
+           and run
+	       @install
+           to install HDF5 C, Fortran, and C++ libraries, and utilities.
+           The script will create the directories shown below in the
+           installation directory:
+
+           [.HDF5]...
+           [.HDF5.INCLUDE]
+           [.HDF5.LIB]
+           [.HDF5.BIN]
+           [.HDF5.EXAMPLES]
+           [.HDF5.EXAMPLES.C]
+           [.HDF5.EXAMPLES.F90]
+           [.HDF5.EXAMPLES.CXX]
+
+           [.HDF5.EXAMPLES.*] directories contain make.com and check.com files 
+           to build examples against the installed libraries and to verify 
+           the installation.
+
+	4. Known problems
+
+           - There is no support for szip compression filter.
+	   - Fortran multifile driver test fails; similar C test passes.
+
+
+	For help contact help@hdfgroup.org
+

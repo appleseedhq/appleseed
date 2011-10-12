@@ -1,0 +1,516 @@
+#!/bin/sh
+#
+# Copyright by The HDF Group.
+# Copyright by the Board of Trustees of the University of Illinois.
+# All rights reserved.
+#
+# This file is part of HDF5.  The full HDF5 copyright notice, including
+# terms governing use, modification, and redistribution, is contained in
+# the files COPYING and Copyright.html.  COPYING can be found at the root
+# of the source code distribution tree; Copyright.html can be found at the
+# root level of an installed copy of the electronic HDF5 document set and
+# is linked from the top-level documents page.  It can also be found at
+# http://hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have
+# access to either file, you may request a copy from help@hdfgroup.org.
+
+# This script should be run nightly from cron.  It checks out hdf5
+# from the source repository and compares it against the previous
+# snapshot.  If anything significant changed then a new snapshot is
+# created, the minor version number is incremented, and the change is
+# checked back into the source repository.
+#
+
+# function definitions
+TIMESTAMP()
+{
+    echo "=====" "$1": "`date`" "====="
+}
+
+EXIT_BANNER()
+{
+TIMESTAMP "Exit $PROGNAME with status=$?"
+}
+
+# Show current total disk usage.
+DISKUSAGE()
+{
+    du -ks | \
+    ( read x y; echo "Disk Usage=$x KB" )
+}
+
+
+# MAIN
+# SGI /bin/sh replaces $0 as function name if used in a function.
+# Set the name here to avoid that ambiguity and better style too.
+PROGNAME=$0
+
+echo "====================================="
+echo "$PROGNAME $*"
+echo "====================================="
+TIMESTAMP MAIN
+uname -a
+
+# setup exit banner message
+trap EXIT_BANNER 0
+
+# Dump environment variables before option parsing
+echo ===Dumping environment variables before option parsing ===
+printenv | sort
+echo ===Done Dumping environment variables before option parsing ===
+
+# snapshots release directory.  Default relative to $BASEDIR.
+ReleaseDir_default=release_dir
+
+# Where is the zlib library?
+# At NCSA, half of the machines have it in /usr/lib, the other half at
+# /usr/ncsa/lib.  Leave it unset.
+ZLIB_default=
+ZLIB=$ZLIB_default
+
+# What compression methods to use? (md5 does checksum).
+METHODS="gzip bzip2 md5 doc"
+
+# Use User's MAKE if set.  Else use generic make.
+MAKE=${MAKE:-make}
+
+# Default check action.
+CHECKVAL=check
+
+#
+# Command options
+cmd="all"
+test_opt=""
+errcode=0
+while [ $# -gt 0 ] ; do
+    case "$1" in
+	all)	
+	    cmd="all"
+	    ;;
+	checkout)
+	    cmdcheckout="checkout"
+	    cmd=""
+	    ;;
+	diff)
+	    cmddiff="diff"
+	    cmd=""
+	    ;;
+	deploy)
+	    # deploy the built binary.
+	    shift
+	    if [ $# -lt 1 ]; then
+		echo "deploy <dir> missing"
+		errcode=1
+		cmd="help"
+		break
+	    fi
+	    cmddeploy="deploy"
+	    DEPLOYDIRNAME="$1"
+	    ;;
+	deploydir)
+	    # default directory for deployment.
+	    shift
+	    if [ $# -lt 1 ]; then
+		echo "deploydir <dir> missing"
+		errcode=1
+		cmd="help"
+		break
+	    fi
+	    deploydir="$1"
+	    ;;
+	test)
+	    cmdtest="test"
+	    cmd=""
+	    ;;
+	setenv)
+	    # set environment variable
+	    shift
+	    eval $1="$2"
+	    export $1
+	    shift
+	    ;;
+	setenvN)
+	    # set environment variable with $1 values
+	    # e.g., setenvN 3 x a b c is same as setenv x="a b c".
+	    # a kludge now--the extra single quotes are needed
+	    # else eval complains.
+	    shift
+	    envN=$1
+	    shift
+	    envname=$1
+	    envalue=
+	    while test $envN -gt 0; do
+		shift
+		envalue="$envalue $1"
+		envN=`expr $envN - 1`
+	    done
+	    eval $envname="'$envalue'"
+	    export $envname
+	    ;;
+	srcdir)
+	    #use srcdir option for test
+	    srcdir="yes"
+	    ;;
+	srcdirname)
+	    shift
+	    if [ $# -lt 1 ]; then
+		echo "srcdirname <dir> missing"
+		errcode=1
+		cmd="help"
+		break
+	    fi
+	    SRCDIRNAME="$1"
+	    ;;
+	release)
+	    cmdrel="release"
+	    cmd=""
+	    ;;
+	clean | distclean)
+	    cmdclean="$1"
+	    cmd=""
+	    ;;
+	help)
+	    cmd="help"
+	    break
+	    ;;
+	echo)
+	    set -x
+	    break
+	    ;;
+	zlib)
+	    shift
+	    if [ $# -lt 1 ]; then
+		echo "ZLIB information missing"
+		errcode=1
+		cmd="help"
+		break
+	    fi
+	    ZLIB="$1"
+	    ;;
+	releasedir)
+	    shift
+	    if [ $# -lt 1 ]; then
+		echo "Release directory name missing"
+		errcode=1
+		cmd="help"
+		break
+	    fi
+	    ReleaseDir="$1"
+	    ;;
+	check-vfd)
+	    CHECKVAL=check-vfd
+	    ;;
+	yodconfigure)
+	    YODCONFIGURE=yes
+	    ;;
+	--*)
+	    OP_CONFIGURE="$OP_CONFIGURE $1"
+	    ;;
+	op-configure)
+	    shift
+	    if [ $# -lt 1 ]; then
+		echo "op-configure option missing"
+		errcode=1
+		cmd="help"
+		break
+	    fi
+	    OP_CONFIGURE="$OP_CONFIGURE $1"
+	    ;;
+	*)
+	    echo "Unkown option $1"
+	    errcode=1
+	    cmd="help"
+	    break
+	    ;;
+    esac
+    shift
+done
+
+# Dump environment variables after option parsing
+echo ===Dumping environment variables after option parsing ===
+printenv | sort
+echo ===Done Dumping environment variables after option parsing ===
+
+if [ "$cmd" = help ]; then
+    set -
+    cat <<EOF
+Usage: $PROGNAME [all] [checkout] [diff] [test] [srcdir] [release] [help]
+	[clean] [distclean] [echo] [deploy <dir>] [deploydir <dir>]
+	[zlib <zlib_path>] [releasedir <dir>] [srcdirname <dir>] [check-vfd]
+	[op-configure <option>] [--<option>]
+    all:      Run all commands (checkout, test & release)
+              [Default is all]
+    checkout: Run source checkout
+    diff:     Run diff on current and previous versions.  Exit 0 if
+              no significant differences are found.  Otherwise, non-zero.
+    deploy:   deploy binary to directory <dir>
+    deploydir: use <dir> as the default directory for deployment
+    test:     Run test
+    release:  Run release
+    clean:    Run make clean
+    distclean:Run make distclean
+    echo:     Turn on echo mode (set -x)
+    setenv <name> <value>:
+              Set environment variable <name> to <value>.
+    setenvN <N> <name> <value> ...:
+	      Set environment variable with <N> values.
+	      E.g., setenvN 3 x a b c is same as setenv x="a b c".
+    srcdir:   Use srcdir option (does not imply other commands)
+              "snapshot srcdir" is equivalent to "snapshot srcdir all"
+              "snapshot srcdir checkout" is equivalent to "snapshot checkout"
+    srcdirname <dir>:
+              Use <dir> as the srcdir testing directory if srcdir is choosen.
+              If <dir> starts with '-', it is append to the default name
+              E.g., "snapshot srcdir srcdirname -xx" uses hostname-xx
+              [Default is hostname]
+    help:     Print this message
+    echo:     Turn on shell echo
+    zlib <zlib_path>:
+              Use <zlib_path> as the ZLIB locations
+              [Default is $ZLIB_default]
+    releasedir <dir>:
+              Use <dir> as the release directory
+              [Default is $ReleaseDir_default]
+    check-vfd:
+	      Run make check-vfd instead of just make check.
+    op-configure <option>:
+              Pass <option> to the configure command
+              E.g., "snapshot op-configure --enable-parallel"
+                  configures for parallel mode
+    --<option>:
+              Pass --<option> to the configure command
+              E.g., "snapshot --enable-parallel"
+                  configures for parallel mode
+EOF
+    exit $errcode
+fi
+
+# Setup the proper configure option (--with-zlib) to use zlib library
+# provide ZLIB is non-empty.
+ZLIB=${ZLIB:+"--with-zlib="$ZLIB}
+if [ -n "$YODCONFIGURE" ]; then
+    cp configure configure.yod
+    bin/yodconfigure configure.yod
+    CONFIGURE="./configure.yod"
+else
+    CONFIGURE="./configure"
+fi
+CONFIGURE="$CONFIGURE $ZLIB $OP_CONFIGURE"
+
+# Execute the requests
+snapshot=yes
+
+if [ -f bin/snapshot_version ]; then
+    . bin/snapshot_version
+else
+    H5VERSION=hdf5
+fi
+
+BASEDIR=${HOME}/snapshots-${H5VERSION}
+if [ ! -d ${BASEDIR} ]; then
+    echo "BASEDIR ($BASEDIR) does not exist"
+    exit 1
+fi
+
+CURRENT=${BASEDIR}/current
+PREVIOUS=${BASEDIR}/previous
+ReleaseDir=${ReleaseDir:=${BASEDIR}/${ReleaseDir_default}}
+HOSTNAME=`hostname | cut -f1 -d.`	# no domain part
+if [ $H5VERSION != hdf5 ]; then
+    SVNVERSION="hdf5/branches/$H5VERSION"
+else
+    SVNVERSION=hdf5/trunk		# use the default (trunk) version
+fi
+
+# Try finding a version of diff that supports the -I option too.
+DIFF=diff
+for d in `echo $PATH | sed -e 's/:/ /g'` ; do
+    test -x $d/diff && $d/diff -I XYZ /dev/null /dev/null > /dev/null 2>&1 &&
+	DIFF=$d/diff && break
+done
+
+#=============================
+# Run source checkout
+#=============================
+if [ "$cmd" = "all" -o -n "$cmdcheckout" ]; then
+    TIMESTAMP "checkout"
+    # If there is a Makefile in ${CURRENT}, the last test done in it
+    # has not been distclean'ed.  They would interfere with other
+    # --srcdir build since make considers the files in ${CURRENT}
+    # take precedence over files in its own build-directory.  Run
+    # a "make distclean" to clean them all out.  This is not really
+    # part of the "checkout" functions but this is the most convenient
+    # spot to do the distclean.  We will also continue the checkout process
+    # regardless of the return code of distclean.
+    ( cd ${CURRENT}; test -f Makefile && ${MAKE} distclean)
+
+    SVNROOT=http://svn.hdfgroup.uiuc.edu
+    # Check out the current version from source repository.
+    (cd $BASEDIR; svn -q co ${SVNROOT}/${SVNVERSION} current ) || exit 1
+fi # Do source checkout
+
+
+#=============================
+# Run Test the HDF5 library
+#=============================
+if [ "$cmd" = "all" -o -n "$cmdtest" -o -n "$cmddiff" ]; then
+    TIMESTAMP "diff"
+    # setup if srcdir is used.
+    if [ -z "$srcdir" ]; then
+	TESTDIR=${CURRENT}
+    else
+	#create TESTDIR if not exist yet
+	case "$SRCDIRNAME" in
+	"")
+	    SRCDIRNAME=$HOSTNAME
+	    ;;
+	-*)
+	    SRCDIRNAME="$HOSTNAME$SRCDIRNAME"
+	    ;;
+	esac
+	TESTDIR=${BASEDIR}/TestDir/${SRCDIRNAME}
+	test -d ${TESTDIR} || mkdir ${TESTDIR}
+    fi
+    # Make sure current version exists and is clean
+    if [ -d ${TESTDIR} ]; then
+	(cd ${TESTDIR} && ${MAKE} distclean)
+    else
+	errcode=$?
+        snapshot=no
+        exit $errcode
+    fi
+
+    # Compare it with the previous version.  Compare only files listed in
+    # the MANIFEST plus the MANIFEST itself.
+    if [ -d ${PREVIOUS} ]; then
+	if (${DIFF} -c ${PREVIOUS}/MANIFEST ${CURRENT}/MANIFEST); then
+	    snapshot=no
+	    for src in `grep '^\.' ${CURRENT}/MANIFEST|expand|cut -f1 -d' '`; do
+		if ${DIFF} -I H5_VERS_RELEASE -I " released on " \
+		    -I " currently under development" \
+		    ${PREVIOUS}/$src ${CURRENT}/$src
+		then
+		    :	#continue
+		else
+		    snapshot=yes
+		    break
+		fi
+	    done
+	fi
+    fi
+
+    # if diff is choosen, exit 0 if no significant differences are found.
+    # otherwise, exit 1.  This includes cases of other failures.
+    if [ -n "$cmddiff" ]; then
+	if [ $snapshot = no ]; then
+	    exit 0
+	else
+	    exit 1
+	fi
+    fi
+
+    # Build, run tests and install procedures
+    if [ "$snapshot" = "yes" ]; then
+	if (cd ${TESTDIR} && \
+	    TIMESTAMP "configure" && \
+	    ${srcdir:+${CURRENT}/}${CONFIGURE} && \
+	    TIMESTAMP "make" && \
+	    ${MAKE} && DISKUSAGE \
+	    TIMESTAMP ${CHECKVAL} && \
+	    ${MAKE} ${CHECKVAL} && DISKUSAGE \
+	    TIMESTAMP "install" && \
+	    ${MAKE} install-all && DISKUSAGE \
+	    TIMESTAMP "check-install" && \
+	    ${MAKE} check-install && DISKUSAGE \
+	    TIMESTAMP "uninstall" && \
+	    ${MAKE} uninstall-all && DISKUSAGE); then
+	    :
+	else
+	    errcode=$?
+	    snapshot=no
+	    exit $errcode
+	fi
+    fi
+fi # Test the HDF5 library
+
+
+#=============================
+# Run deployment if requested.
+#=============================
+if [ -n "$DEPLOYDIRNAME" ]; then
+    if [ "$snapshot" = "yes" ]; then
+	TIMESTAMP "deploy"
+        if (cd ${TESTDIR} &&
+            ${CURRENT}/bin/deploy ${deploydir}/${DEPLOYDIRNAME} && \
+            TIMESTAMP "clean" && \
+            ${MAKE} clean && \
+            TIMESTAMP "check-install prefix=${deploydir}/${DEPLOYDIRNAME}" && \
+            ${MAKE} check-install prefix=${deploydir}/${DEPLOYDIRNAME}); then
+	    :	#continue
+	else
+	    errcode=$?
+	    exit $errcode
+	fi
+    fi
+fi # Deploy
+
+
+#=============================
+# Run Release snapshot, update version, and commit to source repository
+#=============================
+if [ "$cmd" = "all" -o -n "$cmdrel" ]; then
+    if [ "$snapshot" = "yes" ]; then
+	TIMESTAMP "release"
+	(cd ${CURRENT} && ${MAKE} distclean)
+	(
+	    # Turn on exit on error in the sub-shell so that it does not
+	    # commit source if errors encounter here.
+	    set -e
+	    cd ${CURRENT}
+	    RELEASE_VERSION="`perl bin/h5vers -v`"
+	    echo "Making snapshot release ($RELEASE_VERSION) to ${ReleaseDir}..."
+	    bin/release -d $ReleaseDir $METHODS
+	    perl bin/h5vers -i
+	    svn -q commit -m "Snapshot $RELEASE_VERSION"
+	)
+	errcode=$?
+    fi
+
+    # Replace the previous version with the current version.
+    # Should check if the errcode of the release process but there
+    # are other failures after release was done (e.g. h5vers or svn failures)
+    # that should allow the replacement to occure.
+    rm -rf ${PREVIOUS}
+    mv ${CURRENT} ${PREVIOUS}
+fi #Release snapshot
+
+
+#=============================
+# Clean the test area.  Default is no clean.
+#=============================
+if [ -n "$cmdclean" ]; then
+    TIMESTAMP "clean"
+    # setup if srcdir is used.
+    if [ -z "$srcdir" ]; then
+	TESTDIR=${CURRENT}
+    else
+	case "$SRCDIRNAME" in
+	"")
+	    SRCDIRNAME=$HOSTNAME
+	    ;;
+	-*)
+	    SRCDIRNAME="$HOSTNAME$SRCDIRNAME"
+	    ;;
+	esac
+	TESTDIR=${BASEDIR}/TestDir/${SRCDIRNAME}
+    fi
+    # clean it
+    if (cd ${TESTDIR} && ${MAKE} $cmdclean ) then
+	:
+    else
+	errcode=$?
+        snapshot=no
+        exit $errcode
+    fi
+fi # Clean the Test directory
+
+exit $errcode

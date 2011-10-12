@@ -1,0 +1,34 @@
+#############################
+Expected output for 'h5dump --xml tgroup.h5'
+#############################
+<?xml version="1.0" encoding="UTF-8"?>
+<hdf5:HDF5-File xmlns:hdf5="http://hdfgroup.org/DTDs/HDF5-File" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://hdfgroup.org/DTDs/HDF5-File http://www.hdfgroup.org/DTDs/HDF5-File.xsd">
+<hdf5:RootGroup OBJ-XID="xid_696" H5Path="/">
+   <hdf5:Group Name="g1" OBJ-XID="xid_1344" H5Path="/g1" Parents="xid_696" H5ParentPaths="/" >
+      <hdf5:Group Name="g1.1" OBJ-XID="xid_3616" H5Path="/g1/g1.1" Parents="xid_1344" H5ParentPaths="/g1" >
+      </hdf5:Group>
+      <hdf5:Group Name="g1.2" OBJ-XID="xid_4592" H5Path="/g1/g1.2" Parents="xid_1344" H5ParentPaths="/g1" >
+      </hdf5:Group>
+   </hdf5:Group>
+   <hdf5:Group Name="g2" OBJ-XID="xid_2320" H5Path="/g2" Parents="xid_696" H5ParentPaths="/" >
+      <hdf5:Group Name="g2.1" OBJ-XID="xid_5240" H5Path="/g2/g2.1" Parents="xid_2320" H5ParentPaths="/g2" >
+         <hdf5:Group Name="g2.1.1" OBJ-XID="xid_9136" H5Path="/g2/g2.1/g2.1.1" Parents="xid_5240" H5ParentPaths="/g2/g2.1" >
+         </hdf5:Group>
+         <hdf5:Group Name="g2.1.2" OBJ-XID="xid_10112" H5Path="/g2/g2.1/g2.1.2" Parents="xid_5240" H5ParentPaths="/g2/g2.1" >
+         </hdf5:Group>
+         <hdf5:Group Name="g2.1.3" OBJ-XID="xid_10760" H5Path="/g2/g2.1/g2.1.3" Parents="xid_5240" H5ParentPaths="/g2/g2.1" >
+         </hdf5:Group>
+      </hdf5:Group>
+   </hdf5:Group>
+   <hdf5:Group Name="g3" OBJ-XID="xid_2968" H5Path="/g3" Parents="xid_696" H5ParentPaths="/" >
+      <hdf5:Group Name="g3.1" OBJ-XID="xid_6216" H5Path="/g3/g3.1" Parents="xid_2968" H5ParentPaths="/g3" >
+      </hdf5:Group>
+      <hdf5:Group Name="g3.2" OBJ-XID="xid_7192" H5Path="/g3/g3.2" Parents="xid_2968" H5ParentPaths="/g3" >
+      </hdf5:Group>
+      <hdf5:Group Name="g3.3" OBJ-XID="xid_7840" H5Path="/g3/g3.3" Parents="xid_2968" H5ParentPaths="/g3" >
+      </hdf5:Group>
+      <hdf5:Group Name="g3.4" OBJ-XID="xid_8488" H5Path="/g3/g3.4" Parents="xid_2968" H5ParentPaths="/g3" >
+      </hdf5:Group>
+   </hdf5:Group>
+</hdf5:RootGroup>
+</hdf5:HDF5-File>

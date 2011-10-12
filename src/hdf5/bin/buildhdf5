@@ -1,0 +1,324 @@
+#!/bin/sh
+#
+# Copyright by The HDF Group.
+# Copyright by the Board of Trustees of the University of Illinois.
+# All rights reserved.
+#
+# This file is part of HDF5.  The full HDF5 copyright notice, including
+# terms governing use, modification, and redistribution, is contained in
+# the files COPYING and Copyright.html.  COPYING can be found at the root
+# of the source code distribution tree; Copyright.html can be found at the
+# root level of an installed copy of the electronic HDF5 document set and
+# is linked from the top-level documents page.  It can also be found at
+# http://hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have
+# access to either file, you may request a copy from help@hdfgroup.org.
+#
+# Build HDF5 library by doing configure, make, and tests.
+# Usage: See USAGE()
+# Programmer: Albert Cheng
+# Creation date: Jul  9, 2003
+
+# Some handy definitions
+USAGE()
+{
+cat <<EOF
+Buildhdf5 builds the HDF5 library by running configure, make and make check.
+It skips the configure part if one has been done already.  In effect, one
+can continue from a previous build.
+
+Command Syntax
+==============
+buildhdf5 [-config] [-szlib] [-help] [-n] [-srcdir dir] [-fortran] [-cxx] [-pp] config-arguments ...
+   -config:	run configure only. [default to do build too]
+   -szlib:      configure in the szlib option
+   -help:	show this help page
+   -n:   	no execution, just show commands
+   -srcdir:	use dir as the source directory
+             	   [Note: this is different from --srcdir
+             	    which will be passed to configure]
+   -fortran:	add --enable-fortran
+   -cxx:	add --enable-cxx
+   -pp:		add --enable-parallel
+   all other arguments are passed to configure
+
+
+Configure in place or by srcdir
+===============================
+By default, the command looks for the configure command in
+'.' and then '../hdf5'.  When it finds it, it uses it to do
+the configure part.  In effect, if ./configure is found, it
+does the build in place.  If it finds ../hdf5/configure, it
+does the --srcdir (that is separated source) build.  Therefore,
+if you have the following structure setup, you can run multiple
+hosts building simultantously using a common source code.
+     hdf5_v1.7/hdf5       # holds the source
+	  .../sunbox      # for SunOS
+	  .../linux       # for Linux
+	  .../linuxpp     # for Linux parallel
+EOF
+}
+
+
+TIMESTAMP()
+{
+    echo "=====" "`date`" "====="
+}
+
+
+QUIT()
+{
+    # print the closing time
+    TIMESTAMP
+}
+
+
+# Do one step bracketed with time stamps
+# The '< /dev/null' is needed to prevent some applications like MPI
+# jobs blocked for reading when they read stdin unnecessary.
+STEP()
+{
+    banner="$1"
+    command="$2"
+    resultfile="$3"
+
+    echo "$banner"
+    (TIMESTAMP; nerror=0 ;
+	echo "eval $command"
+	eval $command || nerror=1 ;
+	TIMESTAMP; exit $nerror) < /dev/null >> "$resultfile" 2>&1
+    if [ $? -ne 0 ]; then
+	echo "error in '$banner'.  buildhdf5 aborted."
+	exit 1
+    fi
+}
+
+
+# Try locate the SZLIB.
+# This is a hack because there is no consistent szlib pathname.
+LOCATE_SZLIB()
+{
+    # Try to guess what domain I am in.
+    if [ -d /usr/hdf/bin ]; then
+	# I am in an THG host.
+	mydomain=thg
+    elif [ -d /afs/ncsa/projects/hdf/packages ]; then
+	# I am in an NCSA host that has AFS.
+	mydomain=ncsa
+    else
+	mydomain=unknown
+    fi
+    
+    case $mydomain in
+	thg)
+	    # THG hosts
+	    OS=`uname -s`
+	    echo OS=$OS
+	    case "$OS" in
+		Linux)
+		    case `uname -m` in
+		    i686)	# 32 bits
+			szlibpaths="/home/packages/szip/static/encoder/Linux2.6-gcc"
+			;;
+		    x86_64)	# 64 bits
+			szlibpaths="/home/packages/szip/static/encoder/Linux2.6-x86_64-gcc"
+			;;
+		    *)
+			# Don't know.  Give a shot at standard places.
+			szlibpaths="/usr/hdf /usr/local"
+			;;
+		    esac
+		    ;;
+		SunOS)
+		    szlibpaths="/home/packages/szip/static/encoder/SunOS-5.10"
+		    ;;
+		FreeBSD)
+		    case `uname -m` in
+		    i386)	# 32 bits
+			szlibpaths="/home/packages/szip/static/encoder/FreeBSD"
+			;;
+		    amd64)	# 64 bits
+			szlibpaths="/home/packages/szip/static/encoder/FreeBSD-64"
+			;;
+		    *)
+			# Don't know.  Give a shot at standard places.
+			szlibpaths="/usr/hdf /usr/local"
+			;;
+		    esac
+		    ;;
+		*)
+		    # Don't know.  Give a shot at standard places.
+		    szlibpaths="/usr/hdf /usr/local"
+		    ;;
+	    esac
+	    ;;	# end of case thg
+	ncsa)
+	    # ncsa hosts
+	    OS=`uname -s`
+	    echo OS=$OS
+	    case "$OS" in
+		HP-UX)
+		    szlibpaths="/afs/ncsa/projects/hdf/packages/szip_new/HPUX-11.00"
+		    ;;
+		IRIX)
+		    szlibpaths="/afs/ncsa/projects/hdf/packages/szip_new/IRIX64-6.5-32bit"
+		    ;;
+		IRIX64)
+		    case "$CC" in
+		    *-n32)
+			szlibpaths="/afs/ncsa/projects/hdf/packages/szip_new/IRIX64-6.5-32bit"
+			;;
+		    *)
+			szlibpaths="/afs/ncsa/projects/hdf/packages/szip_new/IRIX64-6.5"
+			;;
+		    esac
+		    ;;
+		Linux)
+		    case `uname -m` in
+		    i686)
+			szlibpaths="/afs/ncsa/projects/hdf/packages/szip_new/Linux2.4"
+			;;
+		    *)
+			# Don't know.  Give a shot at standard places.
+			szlibpaths="/usr/ncsa /usr/sdt"
+			;;
+		    esac
+		    ;;
+		SunOS)
+		    szlibpaths="/afs/ncsa/projects/hdf/packages/szip_new/SunOS_5.8"
+		    ;;
+		*)
+		    # Don't know.  Give a shot at standard places.
+		    szlibpaths="/usr/ncsa /usr/sdt"
+		    ;;
+	    esac
+	    ;;	# end of case ncsa
+	unknown)
+	    # Unknow domain. Give a shot at the some standard places.
+	    szlibpaths="/usr/local"
+	    ;;
+    esac	# end of case $mydomain
+
+
+
+
+
+    echo szlibpaths=$szlibpaths
+    for x in $szlibpaths dummy; do
+	if [ $x != dummy -a -f $x/include/szlib.h -a -f $x/lib/libsz.a ]; then
+	   WITH_SZLIB="--with-szlib=$x"
+	   break
+	fi
+    done
+
+    echo WITH_SZLIB="$WITH_SZLIB"
+}
+
+
+# Configure.  Default to do --srcdir.
+CONFIG()
+{
+    CMD="$SRCDIR/configure $*"
+    echo $CMD
+    if [ "$NOEXEC" != 'noexec' ]; then
+	$CMD
+    else
+	true		# set exit code as 0
+    fi
+}
+
+# Main body
+TIMESTAMP
+trap QUIT 0
+
+#
+# setup
+#
+MAKE=${MAKE:-'gmake'}
+export MAKE
+CONFIG_CMD="CONFIG"
+CONFIG_OP=		# configure options
+CONFIG_ONLY=no		# default is configure and build
+NOEXEC=			# default to execute commands
+SRCDIRLIST=". ../hdf5"  # places to look for configure
+nerror=0
+
+# parse some options
+while [ $# -gt 0 ]; do
+    case "$1" in
+	-config)
+	    # do configure only
+	    CONFIG_ONLY=yes
+	    ;;
+	-szlib)
+	    LOCATE_SZLIB
+	    CONFIG_OP="$CONFIG_OP $WITH_SZLIB"
+	    ;;
+	-help)
+	    USAGE
+	    exit 0
+	    ;;
+	-n)
+	    NOEXEC='noexec'
+	    ;;
+	-srcdir)
+	    shift
+	    SRCDIRLIST="$1"
+	    ;;
+	-cxx)
+	    CONFIG_OP="$CONFIG_OP --enable-cxx"
+	    ;;
+	-fortran)
+	    CONFIG_OP="$CONFIG_OP --enable-fortran"
+	    ;;
+	-pp)
+	    CONFIG_OP="$CONFIG_OP --enable-parallel"
+	    ;;
+	*)	# pass it as a configure option
+	    CONFIG_OP="$CONFIG_OP $1"
+	    ;;
+    esac
+    shift
+done
+	    
+# Figure out if srcdir is wished.
+# Make sure we are at the library root level
+# by checking couple typical files.  Not bullet-proof.
+for SRCDIR in $SRCDIRLIST dummy; do
+    if [ x-$SRCDIR = x-dummy ]; then
+	break
+    fi
+    if [ -d $SRCDIR/src -a -d $SRCDIR/config -a -f $SRCDIR/configure ]
+    then
+	break
+    fi
+done
+
+if [ x-$SRCDIR = x-dummy ]; then
+    echo "Could not find the source dir or configure script.  Abort."
+    exit 1
+fi
+
+# Configure
+# no configure if already done.
+if [ ! -f config.status ]; then
+    STEP "Configure HDF5..." "$CONFIG_CMD $CONFIG_OP" "#config"
+else
+    STEP "Configure Skipped" "echo Configure Skipped" "#config"
+fi
+
+if [ x-$CONFIG_ONLY = x-yes ]; then
+    exit 0
+fi
+
+
+# Compile
+STEP "Make HDF5..." "$MAKE" "#make"
+
+# Serial tests 
+STEP "Testing HDF5 serial parts..." "$MAKE check-s" "#test-s"
+
+# Parallel tests
+STEP "Testing HDF5 parallel parts..." "$MAKE check-p" "#test-p"
+
+# all done
+echo "No Errors encountered"

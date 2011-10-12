@@ -1,0 +1,6 @@
+#############################
+Expected output for links_env
+#############################
+Testing external links via environment variable                        PASSED
+Testing external links via environment variable (w/new group format)   PASSED
+All external Link (HDF5_EXT_PREFIX) tests passed.

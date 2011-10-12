@@ -1,0 +1,266 @@
+#! /bin/sh
+#
+# Copyright by The HDF Group.
+# Copyright by the Board of Trustees of the University of Illinois.
+# All rights reserved.
+#
+# This file is part of HDF5.  The full HDF5 copyright notice, including
+# terms governing use, modification, and redistribution, is contained in
+# the files COPYING and Copyright.html.  COPYING can be found at the root
+# of the source code distribution tree; Copyright.html can be found at the
+# root level of an installed copy of the electronic HDF5 document set and
+# is linked from the top-level documents page.  It can also be found at
+# http://hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have
+# access to either file, you may request a copy from help@hdfgroup.org.
+
+#
+# Tests for the H5check_version function.
+#
+# Programmer: Albert Cheng
+#	      Sep 28, 2009
+
+# Variables filled in by the configure process.
+# Determine the configure options of the hdf5 library and executables.
+Shared_Lib=@enable_shared@
+Static_Lib=@enable_static@
+Static_exec=@STATIC_EXEC@
+h5haveexitcode=yes	# default is yes
+
+CMP='cmp -s'
+DIFF='diff -c'
+RM='rm -f'
+
+# Function definitions
+#
+# Show the purpose of this test script and a note about the abort messages.
+PURPOSE() {
+    echo "Tests for the H5check_version function."
+    echo "Note that abort messages may appear due to the expected termination"
+    echo "of the program when it is tested with mis-matched version numnbers."
+}
+
+# Print a line-line message left justified in a field of 70 characters.
+#
+LINEMSG() {
+   SPACES="                                                               "
+   echo "$* $SPACES" | cut -c1-70 | tr -d '\012'
+}
+
+
+# Print a "SKIP" message
+SKIP() {
+    LINEMSG $*
+    echo  " -SKIP-"
+}
+
+
+# Print warning message of version mismatch.
+WarnMesg(){
+    echo "Warning! ***HDF5 library version mismatched error***"
+    echo "The HDF5 header files used to compile this application do not match"
+    echo "the version used by the HDF5 library to which this application is linked."
+    echo "Data corruption or segmentation faults may occur if the application continues."
+    echo "This can happen when an application was compiled by one version of HDF5 but"
+    echo "linked with a different version of static or shared HDF5 library."
+    echo "You should recompile the application or check your shared library related"
+    echo "settings such as 'LD_LIBRARY_PATH'."
+    echo "You can, at your own risk, disable this warning by setting the environment"
+    echo "variable 'HDF5_DISABLE_VERSION_CHECK' to a value of '1'."
+    echo "Setting it to 2 or higher will suppress the warning messages totally."
+    echo "Headers are $xxh5versmajor.$xxh5versminor.$xxh5versrelease, library is $h5versmajor.$h5versminor.$h5versrelease"
+    test -n "$H5_HAVE_EMBEDDED_LIBINFO" && cat $h5libsettings
+    echo "Bye..."
+}
+  
+
+# Print warning message2 of version mismatch.
+WarnMesg2(){
+    echo "Warning! ***HDF5 library version mismatched error***"
+    echo "The HDF5 header files used to compile this application do not match"
+    echo "the version used by the HDF5 library to which this application is linked."
+    echo "Data corruption or segmentation faults may occur if the application continues."
+    echo "This can happen when an application was compiled by one version of HDF5 but"
+    echo "linked with a different version of static or shared HDF5 library."
+    echo "You should recompile the application or check your shared library related"
+    echo "settings such as 'LD_LIBRARY_PATH'."
+    echo "'HDF5_DISABLE_VERSION_CHECK' environment variable is set to 1, application will"
+    echo "continue at your own risk."
+    echo "Headers are $xxh5versmajor.$xxh5versminor.$xxh5versrelease, library is $h5versmajor.$h5versminor.$h5versrelease"
+    test -n "$H5_HAVE_EMBEDDED_LIBINFO" && cat $h5libsettings
+}
+  
+
+# Run a test and print PASS or *FAIL*.  If a test fails then increment
+# the `nerrors' global variable and (if $verbose is set) display the
+# difference between the actual output and the expected output. The
+# expected output generated according to the parameter values and compared
+# against actual output. 
+# The expected and actual output files are removed unless $HDF5_NOCLEANUP
+# has a non-zero value.
+# $1: the set value of $HDF5_DISABLE_VERSION_CHECK. (unset means not to set
+#     it at all.
+# $2: Change the version number(s) to cause a mismatch. (none means no
+#     mismatch).
+#
+# Expected results:
+# 		Value of $HDF5_DISABLE_VERSION_CHECK
+#		unset	""	-1	0	1	2	3
+# Matched	OK	OK	OK	OK	OK	OK	OK
+# Mismatched	W/A	W/A	W/A	W/A	W2/OK	OK	W2/OK
+# Result codes:
+# OK:    No warning, exit 0.
+# W/A:   Warning, abort and exit non-0.
+# W2/OK: Different Warning, exit 0.
+#
+# Implemented only exit code matching. Still need to match output.
+TESTING() {
+    DEBUGPRINT command is $0 $*
+    TEST_NAME=tcheck_version                  # The test name
+    TEST_BIN=`pwd`/$TEST_NAME # The path of the test binary
+
+    expect=${TEST_NAME}_expect.out
+    actual=${TEST_NAME}_actual.out
+    actual_err=${TEST_NAME}_actual.err
+    arguments=
+
+    h5DisableVersion="$1"
+    wrongversionnumbers="$2"
+    xxh5versmajor=$h5versmajor
+    xxh5versminor=$h5versminor
+    xxh5versrelease=$h5versrelease
+
+    if [ "$h5DisableVersion" = unset ]; then
+	envcmd=""		# noop
+    else
+	envcmd="env HDF5_DISABLE_VERSION_CHECK=$h5DisableVersion"
+    fi
+
+    if [ "$wrongversionnumbers" = none ]; then
+	# OK: No warning, exit 0
+	cp /dev/null $expect
+	expect_code=0
+    else
+	arguments=-t"$wrongversionnumbers"
+	# calculate mismatched version numbers by listing.
+	case $wrongversionnumbers in
+	    "M")    xxh5versmajor=`expr $h5versmajor + 1`
+		    ;;
+	    "m")    xxh5versminor=`expr $h5versminor + 1`
+		    ;;
+	    "r")    xxh5versrelease=`expr $h5versrelease + 1`
+		    ;;
+	esac
+	case "$h5DisableVersion" in
+	    1)
+		# W2/OK: Different Warning, exit 0.
+		WarnMesg2 > $expect
+		expect_code=0
+		;;
+	    [2-9]|[1-9][0-9]*)
+		# OK: No warning, exit 0
+		cp /dev/null $expect
+		expect_code=0
+		;;
+	    *)	# W/A:   Warning, abort and exit non-0.
+		WarnMesg > $expect
+		expect_code=6	# Signal Abort exit code (128+6)
+		;;
+	esac
+    fi
+
+    # Run test.
+    LINEMSG $envcmd $TEST_NAME $arguments
+    (
+      $envcmd $RUNSERIAL $TEST_BIN  $arguments
+    ) >$actual 2>$actual_err
+    ret_code=$?
+    cat $actual_err >> $actual
+    
+    if [ $h5haveexitcode = 'yes' -a \( $expect_code -ne $ret_code \) ]; then
+	echo "*FAILED*"
+	echo "    Expected exit code ($expect_code) differs from actual code ($ret_code)"
+	nerrors="`expr $nerrors + 1`"
+    elif $CMP $expect $actual; then
+	echo " PASSED"
+    else
+	echo "*FAILED*"
+	echo "    Expected result differs from actual result"
+	nerrors="`expr $nerrors + 1`"
+	test yes = "$verbose" && $DIFF $expect $actual |sed 's/^/    /'
+    fi
+
+    # Clean up output file. 
+    # Also clean the core file generated by H5check_version's abort.
+    if test -z "$HDF5_NOCLEANUP"; then
+	$RM $expect $actual $actual_err
+	$RM core
+    fi
+}
+
+
+# Echo parameters for debugging if verbose mode is on.
+DEBUGPRINT() {
+    if [ -n "$debugmode" ]; then
+	echo $*
+    fi
+}
+
+
+# MAIN Body
+nerrors=0
+verbose=yes	# default on
+debugmode=	# default off
+H5_HAVE_EMBEDDED_LIBINFO=`grep '#define H5_HAVE_EMBEDDED_LIBINFO ' ../src/H5pubconf.h`
+h5libsettings=../src/libhdf5.settings 
+
+PURPOSE
+
+# The build (current) directory might be different than the source directory.
+if test -z "$srcdir"; then
+   srcdir=.
+fi
+
+# Figure out library version numbers from the header file.
+h5versmajor=`grep '#define H5_VERS_MAJOR' $srcdir/../src/H5public.h | cut -f2` 
+h5versminor=`grep '#define H5_VERS_MINOR' $srcdir/../src/H5public.h | cut -f2` 
+h5versrelease=`grep '#define H5_VERS_RELEASE' $srcdir/../src/H5public.h | cut -f2` 
+DEBUGPRINT $h5versmajor.$h5versminor.$h5versrelease
+case "$h5versmajor$h5versminor$h5versrelease" in
+    [0-9]*)     # good. noop.
+        ;;
+    *)
+        echo "Illegal library version numbers($h5versmajor.$h5versminor.$h5versrelease)"
+        echo "Test aborted"
+        exit 1
+        ;;
+esac
+
+# RUNSERIAL is used. Check if it can return exit code from executalbe correctly.
+if [ -n "$RUNSERIAL_NOEXITCODE" ]; then
+    echo "***Warning*** Serial Exit Code is not passed back to shell corretly."
+    echo "***Warning*** Exit code checking is skipped."
+    h5haveexitcode=no
+fi
+
+# Three Categories of tests:
+# Normal: where the version numbers all matched (wrong_version == none).
+# Mismatched version numbers (could be Major or minor version
+#	or release numbers or a combination of all three.)
+# Test all the above with different values of the environment variable,
+# HDF5_DISABLE_VERSION_CHECK, as unset, "", -1, 0, 1, 2, 3
+
+for val_disable_version_check in unset "" -1 0 1 2 3; do
+    for wrong_version in none M m r; do
+	TESTING "$val_disable_version_check" "$wrong_version"
+    done
+done
+
+
+# Check and report results.
+if [ $nerrors -gt 0 ]; then
+    echo "***$nerrors errors encountered***"
+    exit 1
+else
+    echo "No error encountered"
+    exit 0
+fi

@@ -1,0 +1,2 @@
+h5diff: <file1.h6>: unable to open file
+EXIT CODE: 2

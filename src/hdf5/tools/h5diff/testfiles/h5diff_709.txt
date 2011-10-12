@@ -1,0 +1,12 @@
+
+group1   group2
+---------------------------------------
+    x      x                   
+
+
+group  : </g4> and </g4>
+0 differences found
+   obj1   obj2
+ --------------------------------------
+Attributes status:  0 common, 0 only in obj1, 0 only in obj2
+EXIT CODE: 0

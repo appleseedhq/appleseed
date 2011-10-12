@@ -1,0 +1,3 @@
+datatype: </t1> and </t1>
+0 differences found
+EXIT CODE: 0

@@ -1,0 +1,30 @@
+
+file1     file2
+---------------------------------------
+    x      x    /              
+    x      x    /dset1         
+    x      x    /group1        
+    x      x    /group1/dset2  
+    x      x    /group1/dset3  
+
+group  : </> and </>
+0 differences found
+dataset: </dset1> and </dset1>
+0 differences found
+group  : </group1> and </group1>
+0 differences found
+dataset: </group1/dset2> and </group1/dset2>
+0 differences found
+dataset: </group1/dset3> and </group1/dset3>
+size:           [2x4]           [2x4]
+position        dset3           dset3           difference          
+------------------------------------------------------------
+[ 0 1 ]          0               1               1              
+[ 0 2 ]          0               2               2              
+[ 0 3 ]          0               3               3              
+[ 1 0 ]          0               1               1              
+[ 1 1 ]          0               2               2              
+[ 1 2 ]          0               3               3              
+[ 1 3 ]          0               4               4              
+7 differences found
+EXIT CODE: 1

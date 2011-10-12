@@ -1,0 +1,2 @@
+Error: -q (quiet mode) cannot be added to verbose or report modes
+EXIT CODE: 2

@@ -1,0 +1,739 @@
+#! /bin/sh
+#
+# Copyright by The HDF Group.
+# Copyright by the Board of Trustees of the University of Illinois.
+# All rights reserved.
+#
+# This file is part of HDF5.  The full HDF5 copyright notice, including
+# terms governing use, modification, and redistribution, is contained in
+# the files COPYING and Copyright.html.  COPYING can be found at the root
+# of the source code distribution tree; Copyright.html can be found at the
+# root level of an installed copy of the electronic HDF5 document set and
+# is linked from the top-level documents page.  It can also be found at
+# http://hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have
+# access to either file, you may request a copy from help@hdfgroup.org.
+#
+# Tests for the h5repack tool
+#
+# Modification:
+#  Pedro Vicente Nunes, 11/15/2006
+#  Added $FILEN variables for file names
+#   
+
+USE_FILTER_SZIP="@USE_FILTER_SZIP@"
+USE_FILTER_DEFLATE="@USE_FILTER_DEFLATE@"
+USE_FILTER_SHUFFLE="@USE_FILTER_SHUFFLE@"
+USE_FILTER_FLETCHER32="@USE_FILTER_FLETCHER32@"
+USE_FILTER_NBIT="@USE_FILTER_NBIT@"
+USE_FILTER_SCALEOFFSET="@USE_FILTER_SCALEOFFSET@"
+
+TESTNAME=h5repack
+EXIT_SUCCESS=0
+EXIT_FAILURE=1
+
+H5REPACK=h5repack               # The tool name
+H5REPACK_BIN=`pwd`/$H5REPACK    # The path of the tool binary
+
+H5DIFF=../h5diff/h5diff         # The h5diff tool name 
+H5DIFF_BIN=`pwd`/$H5DIFF        # The path of the h5diff tool binary
+
+H5DUMP=../h5dump/h5dump         # The h5dump tool name
+H5DUMP_BIN=`pwd`/$H5DUMP        # The path of the h5dump tool binary
+
+GREP='grep'
+
+H5DETECTSZIP=testh5repack_detect_szip              
+H5DETECTSZIP_BIN=`pwd`/$H5DETECTSZIP    
+
+INFO_FILE=testfiles/h5repack.info
+
+FILE0=h5repack_fill.h5
+FILE1=h5repack_objs.h5
+FILE2=h5repack_attr.h5
+FILE3=h5repack_hlink.h5
+FILE4=h5repack_layout.h5
+FILE5=h5repack_early.h5
+FILE7=h5repack_szip.h5
+FILE8=h5repack_deflate.h5
+FILE9=h5repack_shuffle.h5
+FILE10=h5repack_fletcher.h5
+FILE11=h5repack_filters.h5
+FILE12=h5repack_nbit.h5
+FILE13=h5repack_soffset.h5
+FILE14=h5repack_layouto.h5      # A file with an older version of the layout message
+                                # (copy of test/tlayouto.h5)
+FILE15=h5repack_named_dtypes.h5
+FILE16=tfamily%05d.h5           # located in common testfiles folder
+FILE18=h5repack_layout2.h5
+FILE_REF=h5repack_refs.h5
+
+
+nerrors=0
+verbose=yes
+
+# The build (current) directory might be different than the source directory.
+#
+if test -z "$srcdir"; then
+   srcdir=.
+fi
+
+
+
+# Print a line-line message left justified in a field of 70 characters
+# beginning with the word "Testing".
+#
+TESTING() {
+   SPACES="                                                               "
+   echo "Testing $* $SPACES" | cut -c1-70 | tr -d '\012'
+}
+
+# Print a line-line message left justified in a field of 70 characters
+# beginning with the word "Verifying".
+#
+VERIFY() {
+ SPACES="                                                               "
+ echo "Verifying h5diff output $* $SPACES" | cut -c1-70 | tr -d '\012'
+}
+
+# Print a message that a test has been skipped (because a required filter
+# was unavailable)
+SKIP() {
+    TESTING $H5REPACK $@
+    echo " -SKIP-"
+}
+
+# Call the h5diff tool
+#
+DIFFTEST() 
+{
+    VERIFY  $@
+    $RUNSERIAL $H5DIFF_BIN -q  "$@" 
+    RET=$?
+    if [ $RET != 0 ] ; then
+         echo "*FAILED*"
+         nerrors="`expr $nerrors + 1`"
+    else
+         echo " PASSED"
+    fi
+        
+}
+          
+# Call h5repack
+#
+
+
+# call TOOLTEST_MAIN and delete $output file
+TOOLTEST() 
+{
+    echo $@
+    TOOLTEST_MAIN $@
+    path=`pwd`
+    outfile=$path/out.$1
+    rm -f $outfile
+}
+
+# TOOLTEST main function, doesn't delete $output file
+TOOLTEST_MAIN() 
+{
+    # Run test.
+    TESTING $H5REPACK $@
+
+    infile=$srcdir/testfiles/$1
+    path=`pwd`
+    outfile=$path/out.$1
+    shift
+    $RUNSERIAL $H5REPACK_BIN "$@" $infile $outfile
+    RET=$?
+    if [ $RET != 0 ] ; then
+	echo "*FAILED*"
+	nerrors="`expr $nerrors + 1`"
+    else
+	echo " PASSED"
+	DIFFTEST $infile $outfile
+    fi
+}
+
+#------------------------------------------
+# Verifying layouts of a dataset 
+VERIFY_LAYOUT_DSET()
+{
+    path=`pwd`
+    outfile=$path/out.$1
+    layoutfile=$path/layout.$1
+    dset=$2
+    expectlayout=$3
+    
+    #---------------------------------
+    # check the layout from a dataset
+    VERIFY  "Layout"
+    $H5DUMP_BIN -d $dset -pH $outfile > $layoutfile
+    $GREP $expectlayout $layoutfile > /dev/null
+    if [ $? -eq 0 ]; then
+        echo " PASSED"
+    else
+        echo " FAILED"
+    fi
+
+    # clean up tmp files
+    rm -f $outfile
+    rm -f $layoutfile
+}
+
+#----------------------------------------
+# Verifying layouts from entire file
+VERIFY_LAYOUT_ALL()
+{
+    path=`pwd`
+    outfile=$path/out.$1
+    layoutfile=$path/layout.$1
+    expectlayout=$2
+    
+    #---------------------------------
+    # check the layout from a dataset
+    # check if the other layouts still exsit
+    VERIFY  "Layout "
+        # if CONTIGUOUS
+        if [ $expectlayout = "CONTIGUOUS" ]; then
+            $H5DUMP_BIN -pH $outfile > $layoutfile
+            $GREP "COMPACT" $layoutfile  > /dev/null
+            if [ $? -eq 0 ]; then
+                echo " FAILED"
+            else
+                $GREP "CHUNKED" $layoutfile  > /dev/null
+                if [ $? -eq 0 ]; then
+                    echo " FAILED"
+                else
+                    echo " PASSED"
+                fi
+            fi
+        else    
+            # if COMPACT
+            if [ $expectlayout = "COMPACT" ]; then
+                $H5DUMP_BIN -pH $outfile > $layoutfile
+                $GREP "CHUNKED" $layoutfile  > /dev/null
+                if [ $? -eq 0 ]; then
+                    echo " FAILED"
+                else
+                    $GREP "CONTIGUOUS" $layoutfile  > /dev/null
+                    if [ $? -eq 0 ]; then
+                        echo " FAILED"
+                    else
+                        echo " PASSED"
+                    fi
+                fi
+            else
+                # if CHUNKED
+                if [ $expectlayout = "CHUNKED" ]; then
+                    $H5DUMP_BIN -pH $outfile > $layoutfile
+                    $GREP "CONTIGUOUS" $layoutfile  > /dev/null
+                    if [ $? -eq 0 ]; then
+                        echo " FAILED"
+                    else
+                        $GREP "COMPACT" $layoutfile  > /dev/null
+                        if [ $? -eq 0 ]; then
+                            echo " FAILED"
+                        else
+                            echo " PASSED"
+                        fi
+                    fi
+                fi
+           fi
+        fi
+
+    # clean up tmp files
+    rm -f $outfile
+    rm -f $layoutfile
+}
+
+# same as TOOLTEST, but it uses the old syntax -i input_file -o output_file
+#
+TOOLTEST0() 
+{
+    # Run test.
+    TESTING $H5REPACK $@
+
+    infile=$srcdir/testfiles/$1
+    path=`pwd`
+    outfile=$path/out.$1
+    shift
+    $RUNSERIAL $H5REPACK_BIN -i $infile -o $outfile "$@"
+    RET=$?
+    if [ $RET != 0 ] ; then
+        echo "*FAILED*"
+        nerrors="`expr $nerrors + 1`"
+    else
+        echo " PASSED"
+        DIFFTEST $infile $outfile
+    fi
+    rm -f $outfile
+}
+
+
+# same as TOOLTEST, but it uses the common testfiles at $srcdir/../testfiles/
+# used to test the family driver, where these files reside
+#
+TOOLTEST1() 
+{
+    # Run test.
+    TESTING $H5REPACK $@
+
+    infile=$srcdir/../testfiles/$1
+    path=`pwd`
+    outfile=$path/out.$1
+    shift
+    $RUNSERIAL $H5REPACK_BIN "$@" $infile $outfile
+    RET=$?
+    if [ $RET != 0 ] ; then
+	echo "*FAILED*"
+	nerrors="`expr $nerrors + 1`"
+    else
+	echo " PASSED"
+	DIFFTEST $infile $outfile
+    fi
+    rm -f $outfile
+}
+          
+# Call h5repack and compare output to a text file for -v option
+#
+TOOLTESTV() 
+{
+    # Run test.
+    TESTING $H5REPACK $@
+    expect="$srcdir/../testfiles/$1.ddl"
+    actual="../testfiles/`basename $1 .ddl`.out"
+    actual_err="../testfiles/`basename $1 .ddl`.err"
+
+    infile=$srcdir/testfiles/$1
+    path=`pwd`
+    outfile=$path/out.$1
+    shift
+    $RUNSERIAL $H5REPACK_BIN "$@" $infile $outfile >$actual 2>$actual_err
+    cp $actual $actual_sav
+    STDOUT_FILTER $actual
+    cat $actual_err >> $actual
+
+    if cmp -s $expect $actual; then
+     echo " PASSED"
+    else
+     echo "*FAILED*"
+     echo "    Expected result (*.ddl) differs from actual result (*.out)"
+     nerrors="`expr $nerrors + 1`"
+     test yes = "$verbose" && diff -c $expect $actual |sed 's/^/    /'
+    fi
+    
+   rm -f $actual $actual_err $actual_sav
+}
+
+STDOUT_FILTER() {
+    result_file=$1
+    tmp_file=/tmp/h5test_tmp_$$
+    # Filter name of files.
+    cp $result_file $tmp_file
+    sed -e '/^Opening file/d' -e '/^Making file/d' \
+    < $tmp_file > $result_file
+    # cleanup
+    rm -f $tmp_file
+}
+
+#
+# The tests
+# We use the files generated by h5repacktst
+# Each run generates "<file>.out.h5" and the tool h5diff is used to
+# compare the input and output files
+#
+# the tests are the same as the program h5repacktst, but run from the CLI 
+#
+
+# See which filters are usable (and skip tests for filters we
+# don't have).  Do this by searching H5pubconf.h to see which
+# filters are defined.
+
+# detect whether the encoder is present. 
+USE_FILTER_SZIP_ENCODER="no";
+if test $USE_FILTER_SZIP = "yes"; then
+USE_FILTER_SZIP_ENCODER=`$RUNSERIAL $H5DETECTSZIP_BIN`
+fi
+
+# copy files (these files have no filters) 
+TOOLTEST $FILE0
+TOOLTEST $FILE1
+TOOLTEST $FILE2
+TOOLTEST $FILE3
+TOOLTEST $FILE4
+TOOLTEST $FILE5
+
+
+# use $FILE4 to write some filters  (this file has  no filters)
+
+# gzip with individual object
+arg="$FILE4 -f dset1:GZIP=1  -l dset1:CHUNK=20x10"
+if test  $USE_FILTER_DEFLATE != "yes" ; then
+ SKIP $arg
+else
+ TOOLTEST $arg
+fi
+  
+# gzip for all 
+arg="$FILE4 -f GZIP=1"
+if test  $USE_FILTER_DEFLATE != "yes" ; then
+ SKIP $arg
+else
+ TOOLTEST $arg
+fi
+
+# szip with individual object
+arg="$FILE4 -f dset2:SZIP=8,EC  -l dset2:CHUNK=20x10"
+if test $USE_FILTER_SZIP_ENCODER != "yes" -o $USE_FILTER_SZIP != "yes" ; then
+ SKIP $arg
+else
+ TOOLTEST $arg 
+fi
+
+# szip for all
+arg="$FILE4 -f SZIP=8,NN"
+if test $USE_FILTER_SZIP_ENCODER != "yes" -o $USE_FILTER_SZIP != "yes" ; then
+ SKIP $arg
+else
+ TOOLTEST $arg 
+fi
+
+# shuffle with individual object
+arg="$FILE4 -f dset2:SHUF  -l dset2:CHUNK=20x10"
+if test $USE_FILTER_SHUFFLE != "yes"  ; then
+ SKIP $arg
+else
+ TOOLTEST $arg 
+fi
+  
+
+# shuffle for all
+arg="$FILE4 -f SHUF"
+if test $USE_FILTER_SHUFFLE != "yes"  ; then
+ SKIP $arg
+else
+ TOOLTEST $arg
+fi
+  
+# fletcher32  with individual object
+arg="$FILE4 -f dset2:FLET  -l dset2:CHUNK=20x10"
+if test $USE_FILTER_FLETCHER32 != "yes"  ; then
+ SKIP $arg
+else
+ TOOLTEST $arg
+fi
+
+# fletcher32 for all
+arg="$FILE4 -f FLET"
+if test $USE_FILTER_FLETCHER32 != "yes"  ; then
+ SKIP $arg
+else
+ TOOLTEST $arg
+fi
+
+# all filters
+arg="$FILE4 -f dset2:SHUF -f dset2:FLET -f dset2:SZIP=8,NN -f dset2:GZIP=1 -l dset2:CHUNK=20x10"
+if test $USE_FILTER_SZIP_ENCODER != "yes" -o $USE_FILTER_SZIP != "yes" -o $USE_FILTER_SHUFFLE != "yes" -o $USE_FILTER_FLETCHER32 != "yes" -o $USE_FILTER_DEFLATE != "yes" ; then
+ SKIP $arg
+else
+ TOOLTEST $arg
+fi
+
+# verbose gzip with individual object
+arg="$FILE11 -v -f /dset_deflate:GZIP=9"
+if test  $USE_FILTER_DEFLATE != "yes" ; then
+ SKIP $arg
+else
+ TOOLTEST $arg
+fi
+  
+###########################################################
+# the following tests assume the input files have filters
+###########################################################
+
+# szip copy
+arg="$FILE7"
+if test $USE_FILTER_SZIP_ENCODER != "yes" -o $USE_FILTER_SZIP != "yes" ; then
+ SKIP $arg
+else
+ TOOLTEST $arg
+fi
+  
+# szip remove
+arg="$FILE7 --filter=dset_szip:NONE"
+if test $USE_FILTER_SZIP_ENCODER != "yes" -o $USE_FILTER_SZIP != "yes" ; then
+ SKIP $arg
+else
+ TOOLTEST $arg
+fi
+  
+# deflate copy
+arg="$FILE8"
+if test $USE_FILTER_DEFLATE != "yes" ; then
+ SKIP $arg
+else
+ TOOLTEST $arg
+fi
+
+# deflate remove
+arg="$FILE8 -f dset_deflate:NONE"
+if test $USE_FILTER_DEFLATE != "yes" ; then
+ SKIP $arg
+else
+ TOOLTEST $arg
+fi
+    
+# shuffle copy
+arg="$FILE9"
+if test $USE_FILTER_SHUFFLE != "yes" ; then
+ SKIP $arg
+else
+ TOOLTEST $arg
+fi
+
+# shuffle remove
+arg="$FILE9 -f dset_shuffle:NONE"
+if test $USE_FILTER_SHUFFLE != "yes" ; then
+ SKIP $arg
+else
+ TOOLTEST $arg
+fi
+
+# fletcher32 copy
+arg="$FILE10"
+if test $USE_FILTER_FLETCHER32 != "yes" ; then
+ SKIP $arg
+else
+ TOOLTEST $arg
+fi
+
+# fletcher32 remove
+arg="$FILE10 -f dset_fletcher32:NONE"
+if test $USE_FILTER_FLETCHER32 != "yes" ; then
+ SKIP $arg
+else
+ TOOLTEST $arg
+fi        
+
+# nbit copy
+arg="$FILE12"
+if test $USE_FILTER_NBIT != "yes" ; then
+ SKIP $arg
+else
+ TOOLTEST $arg
+fi
+
+# nbit remove
+arg="$FILE12 -f dset_nbit:NONE"
+if test $USE_FILTER_NBIT != "yes" ; then
+ SKIP $arg
+else
+ TOOLTEST $arg
+fi        
+
+# nbit add
+arg="$FILE12 -f dset_int31:NBIT"
+if test $USE_FILTER_NBIT != "yes" ; then
+ SKIP $arg
+else
+ TOOLTEST $arg
+fi
+
+# scaleoffset copy
+arg="$FILE13"
+if test $USE_FILTER_SCALEOFFSET != "yes" ; then
+ SKIP $arg
+else
+ TOOLTEST $arg
+fi
+
+# scaleoffset add
+arg="$FILE13 -f dset_none:SOFF=31,IN"
+if test $USE_FILTER_SCALEOFFSET != "yes" ; then
+ SKIP $arg
+else
+ TOOLTEST $arg
+fi
+
+# scaleoffset remove
+arg="$FILE13 -f dset_scaleoffset:NONE"
+if test $USE_FILTER_SCALEOFFSET != "yes" ; then
+ SKIP $arg
+else
+ TOOLTEST $arg
+fi        
+
+# remove all  filters
+arg="$FILE11 -f NONE"
+if test $USE_FILTER_FLETCHER32 != "yes" -o $USE_FILTER_DEFLATE != "yes" -o $USE_FILTER_SZIP != "yes" -o $USE_FILTER_SZIP_ENCODER != "yes" -o $USE_FILTER_SHUFFLE != "yes"  -o $USE_FILTER_NBIT != "yes"  -o $USE_FILTER_SCALEOFFSET != "yes"  ; then
+ SKIP $arg
+else
+ TOOLTEST $arg
+fi
+
+#filter conversions
+
+arg="$FILE8 -f dset_deflate:SZIP=8,NN"
+if test $USE_FILTER_SZIP_ENCODER != "yes" -o $USE_FILTER_SZIP != "yes" -o $USE_FILTER_DEFLATE != "yes" ; then
+ SKIP $arg
+else
+ TOOLTEST $arg 
+fi
+
+arg="$FILE7 -f dset_szip:GZIP=1"
+if test $USE_FILTER_SZIP != "yes" -o $USE_FILTER_SZIP_ENCODER != "yes"  -o $USE_FILTER_DEFLATE != "yes" ; then
+ SKIP $arg
+else
+ TOOLTEST $arg 
+fi
+
+
+#limit
+arg="$FILE4 -f GZIP=1 -m 1024"
+if test $USE_FILTER_DEFLATE != "yes"  ; then
+ SKIP $arg
+else
+ TOOLTEST $arg
+fi
+
+#file
+arg="$FILE4 -e $INFO_FILE"
+if test $USE_FILTER_DEFLATE != "yes" ; then
+ SKIP $arg 
+else
+ TOOLTEST $arg 
+fi
+
+#########################################################
+# layout options (these files have no filters)
+#########################################################
+TOOLTEST_MAIN $FILE4 --layout dset2:CHUNK=20x10
+VERIFY_LAYOUT_DSET $FILE4 dset2 CHUNKED
+
+TOOLTEST_MAIN $FILE4 -l CHUNK=20x10
+VERIFY_LAYOUT_ALL $FILE4 CHUNKED
+
+TOOLTEST_MAIN $FILE4 -l dset2:CONTI
+VERIFY_LAYOUT_DSET $FILE4 dset2 CONTIGUOUS
+
+TOOLTEST_MAIN $FILE4 -l CONTI
+VERIFY_LAYOUT_ALL $FILE4 CONTIGUOUS
+
+TOOLTEST_MAIN $FILE4 -l dset2:COMPA
+VERIFY_LAYOUT_DSET $FILE4 dset2 COMPACT
+
+TOOLTEST_MAIN $FILE4 -l COMPA
+VERIFY_LAYOUT_ALL $FILE4 COMPACT
+
+################################################################
+# layout conversions (file has no filters)
+###############################################################
+
+TOOLTEST_MAIN $FILE4 -l dset_compact:CONTI
+VERIFY_LAYOUT_DSET $FILE4 dset_compact CONTIGUOUS
+
+TOOLTEST_MAIN $FILE4 -l dset_compact:CHUNK=2x5
+VERIFY_LAYOUT_DSET $FILE4 dset_compact CHUNKED
+
+TOOLTEST_MAIN $FILE4 -l dset_compact:COMPA
+VERIFY_LAYOUT_DSET $FILE4 dset_compact COMPACT
+
+TOOLTEST_MAIN $FILE4 -l dset_contiguous:COMPA
+VERIFY_LAYOUT_DSET $FILE4 dset_contiguous COMPACT
+
+TOOLTEST_MAIN $FILE4 -l dset_contiguous:CHUNK=3x6
+VERIFY_LAYOUT_DSET $FILE4 dset_contiguous CHUNKED
+
+TOOLTEST_MAIN $FILE4 -l dset_contiguous:CONTI
+VERIFY_LAYOUT_DSET $FILE4 dset_contiguous CONTIGUOUS
+
+TOOLTEST_MAIN $FILE4 -l dset_chunk:COMPA
+VERIFY_LAYOUT_DSET $FILE4 dset_chunk COMPACT
+
+TOOLTEST_MAIN $FILE4 -l dset_chunk:CONTI
+VERIFY_LAYOUT_DSET $FILE4 dset_chunk CONTIGUOUS
+
+TOOLTEST_MAIN $FILE4 -l dset_chunk:CHUNK=18x13
+VERIFY_LAYOUT_DSET $FILE4 dset_chunk CHUNKED
+
+# test convert small size dataset ( < 1k) to compact layout without -m
+TOOLTEST_MAIN $FILE18 -l contig_small:COMPA
+VERIFY_LAYOUT_DSET $FILE18 contig_small COMPACT
+
+TOOLTEST_MAIN $FILE18 -l chunked_small_fixed:COMPA
+VERIFY_LAYOUT_DSET $FILE18 chunked_small_fixed COMPACT
+
+# Native option
+# Do not use FILE1, as the named dtype will be converted to native, and h5diff will
+# report a difference.
+TOOLTEST $FILE0 -n
+TOOLTEST $FILE2 -n
+
+
+# latest file format with long switches. use FILE4=h5repack_layout.h5 (no filters)
+arg="$FILE4 --layout CHUNK=20x10 --filter GZIP=1 --minimum=10 --native --latest --compact=8 --indexed=6 --ssize=8[:dtype]"
+if test $USE_FILTER_DEFLATE != "yes" ; then
+ SKIP $arg
+else
+ TOOLTEST_MAIN $arg
+ VERIFY_LAYOUT_ALL $FILE4 CHUNKED
+fi
+
+# latest file format with short switches. use FILE4=h5repack_layout.h5 (no filters)
+arg="$FILE4 -l CHUNK=20x10 -f GZIP=1 -m 10 -n -L -c 8 -d 6 -s 8[:dtype]"
+if test $USE_FILTER_DEFLATE != "yes" ; then
+ SKIP $arg
+else
+ TOOLTEST_MAIN $arg
+ VERIFY_LAYOUT_ALL $FILE4 CHUNKED
+fi
+
+# several global filters
+
+arg="$FILE4 --filter GZIP=1 --filter SHUF"
+if test $USE_FILTER_DEFLATE != "yes" -o $USE_FILTER_SHUFFLE != "yes" ; then
+ SKIP $arg
+else
+ TOOLTEST $arg
+fi
+
+# syntax of -i infile -o outfile
+# latest file format with short switches. use FILE4=h5repack_layout.h5 (no filters)
+arg="$FILE4 -l CHUNK=20x10 -f GZIP=1 -m 10 -n -L -c 8 -d 6 -s 8[:dtype]"
+if test $USE_FILTER_DEFLATE != "yes" ; then
+ SKIP $arg
+else
+ TOOLTEST0 $arg
+fi 
+
+# add a userblock to file
+arg="$FILE1 -u ublock.bin -b 2048"
+TOOLTEST $arg
+
+# add alignment
+arg="$FILE1 -t 1 -a 1 "
+TOOLTEST $arg
+
+# Check repacking file with old version of layout message (should get upgraded
+#       to new version and be readable, etc.)
+TOOLTEST $FILE14
+
+# test for datum size > H5TOOLS_MALLOCSIZE
+TOOLTEST $FILE1 -f GZIP=1
+
+# Check repacking file with committed datatypes in odd configurations
+TOOLTEST $FILE15
+
+# tests family driver (file is located in common testfiles folder, uses TOOLTEST1
+TOOLTEST1 $FILE16
+
+# test various references (bug 1814 and 1726)
+TOOLTEST $FILE_REF
+
+if test $nerrors -eq 0 ; then
+    echo "All $TESTNAME tests passed."
+    exit $EXIT_SUCCESS
+else
+    echo "$TESTNAME tests failed with $nerrors errors."
+    exit $EXIT_FAILURE
+fi
+

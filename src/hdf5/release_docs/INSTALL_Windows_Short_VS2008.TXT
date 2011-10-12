@@ -1,0 +1,192 @@
+************************************************************************
+* Build and Install HDF5 C/C++ Library with Visual Studio 2008         *
+*                     with Windows XP (Short Version)                  *
+************************************************************************
+
+Notes: This short instruction is written for users who want to quickly build 
+       HDF5 library and tools from the HDF5 source code package with Microsoft 
+       Visual Studio 2008 but do not want to know HDF5 building and installation 
+       details on Windows XP.
+         
+       For detailed HDF5 build and install information, or if you have trouble 
+       following any steps in the instructions, please refer to 
+       INSTALL_Windows.txt for further information.
+      
+       For users who would like to build and test HDF5 package from the
+       command line, please refer to INSTALL_Windows_From_Command_Line.txt.
+       
+       Notes:
+       
+         1. HDF5 1.8 can also be built using Visual Studio 2008 on Windows
+            Vista.  For details, please see Section X of INSTALL_Windows.txt.
+            
+         2. 64-bit builds are also supported in Visual Studio 2008.  For details
+            please see Section IX of INSTALL_Windows.txt.
+            
+         3. Fortran libraries can be built with Visual Studio 2008 and Intel
+            Fortran 10.1.  For details, see Section VI of INSTALL_Windows.txt.
+
+WARNINGS:
+
+Please read CAREFULLY about HDF5 build and install preconditions and 
+notes in INSTALL_Windows.txt before starting below procedures.
+
+
+========================================================================
+                            Preconditions                                                           
+========================================================================                          
+
+   1. Set up path for external libraries and headers                     
+                                                                         
+      Skip this part if you don't want to use ANY compression features provided 
+      by HDF5.  Please do read Section V in INSTALL_Windows.txt.                         
+                                                                         
+      You have to read this part even if you want to only use Zlib or Szip.  You 
+      also need to read Section V in INSTALL_Windows.txt.                           
+                                                                         
+      Invoke Microsoft Visual Studio and go to "Tools" and select "Options". In 
+      the left pane of  "Option" window poped up, choose and expand "Projects", 
+      Click on "VC++ Directories".  In the right pane, Find the box "Show 
+      directories for", choose "Include files", if you can not find your Zlib 
+      and Szip header path (for example, c:\zlib125\include, c:\szip\include)
+      from the directory list, add the header path (c:\zlib125\include, 
+      c:\szip\include) to the included directories.                                                
+                                                                         
+      Find the box "Show directories for", choose "Library files", If you cannot 
+      find your Zlib and Szip library path (for example, c:\zlib125\dll, 
+      c:\szip\dll) from the directory list, add the library path 
+      (c:\zlib125\dll, c:\szip\dll) to the library directories.            
+
+========================================================================
+          Building HDF5 C/C++ Libraries with Visual Studio 2005
+========================================================================
+
+   1. Run batch file copy_hdf.bat
+
+      Go to  c:\MyHDFstuff\hdf5\windows and run copy_hdf.bat. This process will 
+      copy all the necessary batch files, windows specific source codes and 
+      text files saved under c:\MyHDFstuff\hdf5\windows directory to the 
+      corresponding directories under hdf5.
+
+   2. Invoke Microsoft Visual Studio compiler
+
+      Invoke Microsoft Visual Studio.  From the main menu, go to "File" and 
+      select the "Open Solution" option. Then open the
+      c:\MyHDFstuff\hdf5\windows\proj\all\all.sln solution if you are building
+      without Fortran libraries, or 
+      c:\MyHDFstuff\hdf5\windows\proj\all_fortran\all_fortran.sln if you would
+      like to use Fortran.
+
+      You should find Windows project files listed as "all", "big", etc. on the
+      left.
+
+
+   3. (Optional) Disable HDF5 C++ and High level C++
+   
+      In HDF5 1.8, C++ and HL C++ libraries are built by default.  To opt-out,
+      you must explicitly disable them.
+
+      3.1 Skip this step if you do want to build HDF5 High-Level C++ libraries
+
+          Go to "Project" and select "Project Dependencies".  Select "all", and 
+          disable all of the following projects:
+
+            hdf5_hl_cpp
+            hdf5_hl_cppdll
+            hl_test_table_cpp
+            hl_test_table_cppdll
+      
+      3.2 Skip this step if you do want to build HDF5 High-Level libraries
+
+          Go to "Project" and select "Project Dependencies".  Select "all", and 
+          disable all of the project files listed in the previous step, as well
+          as the following projects:
+
+             hdf5_hl
+             hdf5_hldll
+             hl_test_image
+             hl_test_imagedll
+             hl_test_lite
+             hl_test_litedll
+             hl_test_table
+             hl_test_tabledll
+             hl_test_ds
+             hl_test_dsdll
+             hl_test_packet
+             hl_test_packetdll
+   
+   Click on "OK", From the main menu, choose "Build"-> "Build" or  
+   "Rebuild ALL" to build both release and debug version of HDF5   
+   Libraries.                                                                                           
+             
+
+   4. Select "Build", then Select "Configuration Manager".
+
+      4.1 To build debug static libraries, debug multithreaded DLLs, and tests:
+
+      In "Active Solution Configuration", select "Debug". Select "Close". 
+      Select "Build" -> "Build Solution" or "Rebuild Solution" to build debug 
+      version of project "all".
+
+      4.2 To build release static libraries, multithreaded DLLs and tests:
+
+      In "Active Solution Configuration", select "Release". Select "Close". 
+      Select "Build" -> "Build Solution" or "Rebuild Solution" to build release 
+      version of project "all".
+
+      Both debug and release versions must be built.
+
+      Warning messages can be ignored.
+             
+========================================================================
+               Testing HDF5 C/C++ Libraries
+========================================================================
+
+HDF5 libraries and tools should be tested to make sure that they were
+built correctly. c:\MyHDFstuff\hdf5\hdf5check.bat was provided to test
+HDF5 libraries and tools.
+
+hdf5check.bat has four options:
+   
+   hdf5check                     test HDF5 C library and tools only
+      
+   hdf5check enablecpp           test HDF5 C/C++ libraries and tools
+         
+   hdf5check enablefortran       test HDF5 C/Fortran libraries and tools
+         
+   hdf5check enableall           test HDF5 C/C++/Fortran libraries and tools
+
+   nodebug                       -- can be added to any of the above to not 
+                                    test debug versions   
+
+Notes: Users who only build HDF5 C/C++ libraries ONLY have the first 
+       two options.
+
+Invoke a command prompt window and run hdf5check with appropriate option.
+Users are encouraged to pipe the test output into a file.  You should find
+no "*FAILED*" marks.
+
+If you want to test HDF5 libraries and tools one by one, please refer to
+Section II, step 2 in INSTALL_Windows.txt.
+
+
+========================================================================
+                    Installing HDF5 C/C++ Libraries
+========================================================================
+
+Run the batch file c:\MyHDFstuff\hdf5\installhdf5lib.bat to install 
+all HDF5 libraries and tools into c:\MyHDFstuff\hdf5\hdf5lib directory.
+
+========================================================================
+               Building HDF5 Examples and Applications
+========================================================================
+
+Building HDF5 Examples is Optional. Please read Section II, step 4 and 
+the following part in INSTALL_Windows.txt for detailed information.
+
+
+
+************************************************************************
+
+Need further assistance, send email to help@hdfgroup.org
+

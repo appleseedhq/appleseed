@@ -1,0 +1,150 @@
+#							-*- shell-script -*-
+#
+# Copyright by The HDF Group.
+# Copyright by the Board of Trustees of the University of Illinois.
+# All rights reserved.
+#
+# This file is part of HDF5.  The full HDF5 copyright notice, including
+# terms governing use, modification, and redistribution, is contained in
+# the files COPYING and Copyright.html.  COPYING can be found at the root
+# of the source code distribution tree; Copyright.html can be found at the
+# root level of an installed copy of the electronic HDF5 document set and
+# is linked from the top-level documents page.  It can also be found at
+# http://hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have
+# access to either file, you may request a copy from help@hdfgroup.org.
+
+
+# This file should be sourced into configure if the compiler is a DEC
+# compiler.  It is careful not to do anything if the compiler is not
+# DEC; otherwise `cc_flags_set' is set to `yes'
+#
+
+# Get the compiler version unless it's already known.
+#
+#   cc_vendor:    The compiler vendor: DEC
+#   cc_version:   Version number, like: V5.2-038
+#
+if test X = "X$cc_flags_set"; then
+    cc_vendor=DEC
+    cc_version="`$CC $CFLAGS $H5_CFLAGS -V 2>&1 |head -1`"
+    case "$cc_version" in
+	DEC*)
+	    cc_version="`echo $cc_version |\
+			sed 's/.*DEC C \(V[0-9][-\.0-9]*\).*/\1/'`"
+	;;
+	Compaq*)
+	    cc_version="`echo $cc_version |\
+			sed 's/.*Compaq C \(V[0-9][-\.0-9]*\).*/\1/'`"
+	;;
+    esac
+
+    if test X != "$gcc_version"; then
+	echo "compiler '$CC' is $cc_vendor-$cc_version"
+    else
+        cc_vendor=
+    fi
+fi
+
+# Warn about old compilers that don't work right.
+case "$cc_vendor-$cc_version" in
+    DEC-V5.2-038)
+        cat <<EOF
+    **
+    ** This compiler may generate incorrect code when optimizations are
+    ** enabled. Please upgrade to a newer version (we're not sure which
+    ** version actually works) before reporting bugs to the HDF5 team.
+    **
+EOF
+	sleep 5
+	;;
+esac
+
+# Compiler flags
+case "$cc_vendor-$cc_version" in
+    DEC-V5.*)
+	# Production
+	PROD_CFLAGS="-std -verbose -warnprotos -ieee -misalign -O4  -ansi_args -fp_reorder -readonly_strings -inline speed"
+	PROD_CPPFLAGS="-D_INTRINSICS -D_INLINE_INTRINSICS"
+
+	# Debug
+	DEBUG_CFLAGS="-g -std -verbose -warnprotos -ieee -misalign"
+	DEBUG_CPPFLAGS=
+
+	# Profile
+	PROFILE_CFLAGS="-pg -std -verbose -warnprotos -ieee -misalign"
+	PROFILE_CPPFLAGS=
+
+	# Flags are set
+	cc_flags_set=yes
+	;;
+
+    DEC-V6.*)
+	# Production
+	PROD_CFLAGS="-c99 -verbose -warnprotos -ieee -misalign -O4 -fp_reorder -readonly_strings -inline speed"
+	PROD_CPPFLAGS="-D_INTRINSICS -D_INLINE_INTRINSICS"
+
+	# Debug
+	DEBUG_CFLAGS="-g -c99 -verbose -warnprotos -ieee -misalign"
+	DEBUG_CPPFLAGS=
+
+	# Profile
+	PROFILE_CFLAGS="-pg -c99 -verbose -warnprotos -ieee -misalign"
+	PROFILE_CPPFLAGS=
+
+	# Flags are set
+	cc_flags_set=yes
+	;;
+esac
+
+# If no flags were set then clear the compiler vendor and version info.
+if test X = "X$cc_flags_set"; then
+    cc_vendor=
+    cc_version=
+fi
+
+# The default Fortran 90 compiler
+
+if test "X-" = "X-$FC"; then
+  FC=f90
+fi
+
+if test "X-" = "X-$f9x_flags_set"; then
+  F9XSUFFIXFLAG=""
+  FSEARCH_DIRS=""
+  H5_FCFLAGS="$H5_FCFLAGS -Olimit 2048 -std1"
+  DEBUG_FCFLAGS="-Olimit 2048 -std1"
+  PROD_FCFLAGS="-Olimit 2048 -std1"
+  PROFILE_FCFLAGS="-Olimit 2048 -std1"
+  f9x_flags_set=yes
+fi
+
+# The default C++ compiler
+
+if test -z "$CXX"; then
+    CXX=cxx
+    CXX_BASENAME=cxx
+fi
+
+
+case $CXX_BASENAME in
+    g++)
+	H5_CXXFLAGS="$H5_CXXFLAGS -Wsign-compare" #Only works for some versions
+	DEBUG_CXXFLAGS="-g -fverbose-asm"
+	DEBUG_CPPFLAGS=
+	PROD_CXXFLAGS="-O3 -fomit-frame-pointer"
+	PROD_CPPFLAGS=
+	PROFILE_CXXFLAGS="-pg"
+	PROFILE_CPPFLAGS=
+	;;
+
+    *)
+	H5_CXXFLAGS="$H5_CXXFLAGS -tlocal -D__USE_STD_IOSTREAM"
+	DEBUG_CXXFLAGS="-g"
+	DEBUG_CPPFLAGS=
+	PROD_CXXFLAGS="-O"
+	PROD_CPPFLAGS=
+	PROFILE_CXXFLAGS="-pg"
+	PROFILE_CPPFLAGS=
+	;;
+esac
+

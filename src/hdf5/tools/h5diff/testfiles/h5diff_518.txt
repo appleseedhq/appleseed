@@ -1,0 +1,23 @@
+
+group1   group2
+---------------------------------------
+    x      x                   
+    x      x    /g2            
+    x      x    /g2/g3         
+    x      x    /g2/g3/dset1   
+    x      x    /g2/g3/g4      
+    x      x    /g2/g3/g4/dset2
+
+group  : </g1> and </g1>
+0 differences found
+group  : </g1/g2> and </g1/g2>
+0 differences found
+group  : </g1/g2/g3> and </g1/g2/g3>
+0 differences found
+dataset: </g1/g2/g3/dset1> and </g1/g2/g3/dset1>
+0 differences found
+group  : </g1/g2/g3/g4> and </g1/g2/g3/g4>
+0 differences found
+dataset: </g1/g2/g3/g4/dset2> and </g1/g2/g3/g4/dset2>
+0 differences found
+EXIT CODE: 0

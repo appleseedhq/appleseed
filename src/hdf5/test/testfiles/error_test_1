@@ -1,0 +1,40 @@
+#############################
+Expected output for error_test
+#############################
+Testing error API based on data I/O                                   
+All error API tests passed.
+   This program tests the Error API.  There're supposed to be some error messages
+********* Print error stack in HDF5 default way *********
+Second Test-DIAG: Error detected in Second Program (1.0) thread (IDs):
+  #000: (file name) line (number) in main(): Error stack test failed
+    major: Error in test
+    minor: Error in error stack
+Error Test-DIAG: Error detected in Error Program (1.0) thread (IDs):
+  #001: (file name) line (number) in error_stack(): Get number test failed, returned 0
+    major: Error in API
+    minor: Error in H5Eget_num
+
+********* Print error stack in customized way *********
+    error #000: (file name) in error_stack(): line (number)
+        class: Error Test
+        major: Error in API
+        minor: Error in H5Eget_num
+    error #001: (file name) in main(): line (number)
+        class: Second Test
+        major: Error in test
+        minor: Error in error stack
+HDF5-DIAG: Error detected in HDF5 (version (number)) thread (IDs):
+  #000: (file name) line (number) in H5Dwrite(): not a dataset
+    major: Invalid arguments to routine
+    minor: Inappropriate type
+Error Test-DIAG: Error detected in Error Program (1.0) thread (IDs):
+  #000: (file name) line (number) in main(): Error test failed, it's wrong
+    major: Error in test
+    minor: Error in subroutine
+  #001: (file name) line (number) in test_error(): H5Dwrite failed as supposed to
+    major: Error in IO
+    minor: Error in H5Dwrite
+HDF5-DIAG: Error detected in HDF5 (version (number)) thread (IDs):
+  #002: (file name) line (number) in H5Dwrite(): not a dataset
+    major: Invalid arguments to routine
+    minor: Inappropriate type

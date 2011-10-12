@@ -1,0 +1,243 @@
+#############################
+Expected output for 'h5dump --xml tstr2.h5'
+#############################
+<?xml version="1.0" encoding="UTF-8"?>
+<hdf5:HDF5-File xmlns:hdf5="http://hdfgroup.org/DTDs/HDF5-File" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://hdfgroup.org/DTDs/HDF5-File http://www.hdfgroup.org/DTDs/HDF5-File.xsd">
+<hdf5:RootGroup OBJ-XID="xid_696" H5Path="/">
+   <hdf5:Group Name="g1" OBJ-XID="xid_1344" H5Path="/g1" Parents="xid_696" H5ParentPaths="/" >
+      <hdf5:Dataset Name="dset1" OBJ-XID="xid_1720" H5Path= "/g1/dset1" Parents="xid_1344" H5ParentPaths="/g1">
+         <hdf5:StorageLayout>
+            <hdf5:ContiguousLayout/>
+         </hdf5:StorageLayout>
+               <hdf5:FillValueInfo FillTime="FillIfSet" AllocationTime="Late">
+            <hdf5:FillValue>
+                  <hdf5:NoFill/>
+            </hdf5:FillValue>
+         </hdf5:FillValueInfo>
+         <hdf5:Dataspace>
+            <hdf5:SimpleDataspace Ndims="1">
+               <hdf5:Dimension  DimSize="10" MaxDimSize="10"/>
+            </hdf5:SimpleDataspace>
+         </hdf5:Dataspace>
+         <hdf5:DataType>
+            <hdf5:AtomicType>
+               <hdf5:StringType Cset="H5T_CSET_ASCII" StrSize="50" StrPad="H5T_STR_NULLTERM"/>
+            </hdf5:AtomicType>
+         </hdf5:DataType>
+         <hdf5:Attribute Name="attr1">
+            <hdf5:Dataspace>
+               <hdf5:SimpleDataspace Ndims="1">
+                  <hdf5:Dimension  DimSize="3" MaxDimSize="3"/>
+               </hdf5:SimpleDataspace>
+            </hdf5:Dataspace>
+            <hdf5:DataType>
+               <hdf5:AtomicType>
+                  <hdf5:StringType Cset="H5T_CSET_ASCII" StrSize="11" StrPad="H5T_STR_NULLTERM"/>
+               </hdf5:AtomicType>
+            </hdf5:DataType>
+            <hdf5:Data>
+               <hdf5:DataFromFile>
+               "0123456789"
+               "abcdefghij"
+               "ABCDEFGHIJ"
+               </hdf5:DataFromFile>
+            </hdf5:Data>
+         </hdf5:Attribute>
+         <hdf5:Data>
+            <hdf5:DataFromFile>
+            "This is row 0 of type H5T_STR_NULLTERM of"
+            "This is row 1 of type H5T_STR_NULLTERM of"
+            "This is row 2 of type H5T_STR_NULLTERM of"
+            "This is row 3 of type H5T_STR_NULLTERM of"
+            "This is row 4 of type H5T_STR_NULLTERM of"
+            "This is row 5 of type H5T_STR_NULLTERM of"
+            "This is row 6 of type H5T_STR_NULLTERM of"
+            "This is row 7 of type H5T_STR_NULLTERM of"
+            "This is row 8 of type H5T_STR_NULLTERM of"
+            "This is row 9 of type H5T_STR_NULLTERM of"
+            </hdf5:DataFromFile>
+         </hdf5:Data>
+      </hdf5:Dataset>
+   </hdf5:Group>
+   <hdf5:Group Name="g2" OBJ-XID="xid_3260" H5Path="/g2" Parents="xid_696" H5ParentPaths="/" >
+      <hdf5:Dataset Name="dset2" OBJ-XID="xid_3308" H5Path= "/g2/dset2" Parents="xid_3260" H5ParentPaths="/g2">
+         <hdf5:StorageLayout>
+            <hdf5:ContiguousLayout/>
+         </hdf5:StorageLayout>
+               <hdf5:FillValueInfo FillTime="FillIfSet" AllocationTime="Late">
+            <hdf5:FillValue>
+                  <hdf5:NoFill/>
+            </hdf5:FillValue>
+         </hdf5:FillValueInfo>
+         <hdf5:Dataspace>
+            <hdf5:SimpleDataspace Ndims="1">
+               <hdf5:Dimension  DimSize="10" MaxDimSize="10"/>
+            </hdf5:SimpleDataspace>
+         </hdf5:Dataspace>
+         <hdf5:DataType>
+            <hdf5:AtomicType>
+               <hdf5:StringType Cset="H5T_CSET_ASCII" StrSize="50" StrPad="H5T_STR_NULLTERM"/>
+            </hdf5:AtomicType>
+         </hdf5:DataType>
+         <hdf5:Data>
+            <hdf5:DataFromFile>
+            "This is row 0 of type H5T_STR_NULLTERM of string "
+            "This is row 1 of type H5T_STR_NULLTERM of string "
+            "This is row 2 of type H5T_STR_NULLTERM of string "
+            "This is row 3 of type H5T_STR_NULLTERM of string "
+            "This is row 4 of type H5T_STR_NULLTERM of string "
+            "This is row 5 of type H5T_STR_NULLTERM of string "
+            "This is row 6 of type H5T_STR_NULLTERM of string "
+            "This is row 7 of type H5T_STR_NULLTERM of string "
+            "This is row 8 of type H5T_STR_NULLTERM of string "
+            "This is row 9 of type H5T_STR_NULLTERM of string "
+            </hdf5:DataFromFile>
+         </hdf5:Data>
+      </hdf5:Dataset>
+   </hdf5:Group>
+   <hdf5:Group Name="g3" OBJ-XID="xid_4848" H5Path="/g3" Parents="xid_696" H5ParentPaths="/" >
+      <hdf5:Dataset Name="dset3" OBJ-XID="xid_4896" H5Path= "/g3/dset3" Parents="xid_4848" H5ParentPaths="/g3">
+         <hdf5:StorageLayout>
+            <hdf5:ContiguousLayout/>
+         </hdf5:StorageLayout>
+               <hdf5:FillValueInfo FillTime="FillIfSet" AllocationTime="Late">
+            <hdf5:FillValue>
+                  <hdf5:NoFill/>
+            </hdf5:FillValue>
+         </hdf5:FillValueInfo>
+         <hdf5:Dataspace>
+            <hdf5:SimpleDataspace Ndims="1">
+               <hdf5:Dimension  DimSize="10" MaxDimSize="10"/>
+            </hdf5:SimpleDataspace>
+         </hdf5:Dataspace>
+         <hdf5:DataType>
+            <hdf5:AtomicType>
+               <hdf5:StringType Cset="H5T_CSET_ASCII" StrSize="50" StrPad="H5T_STR_NULLPAD"/>
+            </hdf5:AtomicType>
+         </hdf5:DataType>
+         <hdf5:Data>
+            <hdf5:DataFromFile>
+            "This is row 0 of type H5T_STR_NULLPAD of"
+            "This is row 1 of type H5T_STR_NULLPAD of"
+            "This is row 2 of type H5T_STR_NULLPAD of"
+            "This is row 3 of type H5T_STR_NULLPAD of"
+            "This is row 4 of type H5T_STR_NULLPAD of"
+            "This is row 5 of type H5T_STR_NULLPAD of"
+            "This is row 6 of type H5T_STR_NULLPAD of"
+            "This is row 7 of type H5T_STR_NULLPAD of"
+            "This is row 8 of type H5T_STR_NULLPAD of"
+            "This is row 9 of type H5T_STR_NULLPAD of"
+            </hdf5:DataFromFile>
+         </hdf5:Data>
+      </hdf5:Dataset>
+   </hdf5:Group>
+   <hdf5:Group Name="g4" OBJ-XID="xid_6436" H5Path="/g4" Parents="xid_696" H5ParentPaths="/" >
+      <hdf5:Dataset Name="dset4" OBJ-XID="xid_6484" H5Path= "/g4/dset4" Parents="xid_6436" H5ParentPaths="/g4">
+         <hdf5:StorageLayout>
+            <hdf5:ContiguousLayout/>
+         </hdf5:StorageLayout>
+               <hdf5:FillValueInfo FillTime="FillIfSet" AllocationTime="Late">
+            <hdf5:FillValue>
+                  <hdf5:NoFill/>
+            </hdf5:FillValue>
+         </hdf5:FillValueInfo>
+         <hdf5:Dataspace>
+            <hdf5:SimpleDataspace Ndims="1">
+               <hdf5:Dimension  DimSize="10" MaxDimSize="10"/>
+            </hdf5:SimpleDataspace>
+         </hdf5:Dataspace>
+         <hdf5:DataType>
+            <hdf5:AtomicType>
+               <hdf5:StringType Cset="H5T_CSET_ASCII" StrSize="50" StrPad="H5T_STR_NULLPAD"/>
+            </hdf5:AtomicType>
+         </hdf5:DataType>
+         <hdf5:Data>
+            <hdf5:DataFromFile>
+            "This is row 0 of type H5T_STR_NULLPAD of string ar"
+            "This is row 1 of type H5T_STR_NULLPAD of string ar"
+            "This is row 2 of type H5T_STR_NULLPAD of string ar"
+            "This is row 3 of type H5T_STR_NULLPAD of string ar"
+            "This is row 4 of type H5T_STR_NULLPAD of string ar"
+            "This is row 5 of type H5T_STR_NULLPAD of string ar"
+            "This is row 6 of type H5T_STR_NULLPAD of string ar"
+            "This is row 7 of type H5T_STR_NULLPAD of string ar"
+            "This is row 8 of type H5T_STR_NULLPAD of string ar"
+            "This is row 9 of type H5T_STR_NULLPAD of string ar"
+            </hdf5:DataFromFile>
+         </hdf5:Data>
+      </hdf5:Dataset>
+   </hdf5:Group>
+   <hdf5:Group Name="g5" OBJ-XID="xid_8024" H5Path="/g5" Parents="xid_696" H5ParentPaths="/" >
+      <hdf5:Dataset Name="dset5" OBJ-XID="xid_8072" H5Path= "/g5/dset5" Parents="xid_8024" H5ParentPaths="/g5">
+         <hdf5:StorageLayout>
+            <hdf5:ContiguousLayout/>
+         </hdf5:StorageLayout>
+               <hdf5:FillValueInfo FillTime="FillIfSet" AllocationTime="Late">
+            <hdf5:FillValue>
+                  <hdf5:NoFill/>
+            </hdf5:FillValue>
+         </hdf5:FillValueInfo>
+         <hdf5:Dataspace>
+            <hdf5:SimpleDataspace Ndims="1">
+               <hdf5:Dimension  DimSize="10" MaxDimSize="10"/>
+            </hdf5:SimpleDataspace>
+         </hdf5:Dataspace>
+         <hdf5:DataType>
+            <hdf5:AtomicType>
+               <hdf5:StringType Cset="H5T_CSET_ASCII" StrSize="50" StrPad="H5T_STR_SPACEPAD"/>
+            </hdf5:AtomicType>
+         </hdf5:DataType>
+         <hdf5:Data>
+            <hdf5:DataFromFile>
+            "This is row 0 of type H5T_STR_SPACEPAD of         "
+            "This is row 1 of type H5T_STR_SPACEPAD of         "
+            "This is row 2 of type H5T_STR_SPACEPAD of         "
+            "This is row 3 of type H5T_STR_SPACEPAD of         "
+            "This is row 4 of type H5T_STR_SPACEPAD of         "
+            "This is row 5 of type H5T_STR_SPACEPAD of         "
+            "This is row 6 of type H5T_STR_SPACEPAD of         "
+            "This is row 7 of type H5T_STR_SPACEPAD of         "
+            "This is row 8 of type H5T_STR_SPACEPAD of         "
+            "This is row 9 of type H5T_STR_SPACEPAD of         "
+            </hdf5:DataFromFile>
+         </hdf5:Data>
+      </hdf5:Dataset>
+   </hdf5:Group>
+   <hdf5:Group Name="g6" OBJ-XID="xid_9612" H5Path="/g6" Parents="xid_696" H5ParentPaths="/" >
+      <hdf5:Dataset Name="dset6" OBJ-XID="xid_9660" H5Path= "/g6/dset6" Parents="xid_9612" H5ParentPaths="/g6">
+         <hdf5:StorageLayout>
+            <hdf5:ContiguousLayout/>
+         </hdf5:StorageLayout>
+               <hdf5:FillValueInfo FillTime="FillIfSet" AllocationTime="Late">
+            <hdf5:FillValue>
+                  <hdf5:NoFill/>
+            </hdf5:FillValue>
+         </hdf5:FillValueInfo>
+         <hdf5:Dataspace>
+            <hdf5:SimpleDataspace Ndims="1">
+               <hdf5:Dimension  DimSize="10" MaxDimSize="10"/>
+            </hdf5:SimpleDataspace>
+         </hdf5:Dataspace>
+         <hdf5:DataType>
+            <hdf5:AtomicType>
+               <hdf5:StringType Cset="H5T_CSET_ASCII" StrSize="50" StrPad="H5T_STR_SPACEPAD"/>
+            </hdf5:AtomicType>
+         </hdf5:DataType>
+         <hdf5:Data>
+            <hdf5:DataFromFile>
+            "This is row 0 of type H5T_STR_SPACEPAD of string a"
+            "This is row 1 of type H5T_STR_SPACEPAD of string a"
+            "This is row 2 of type H5T_STR_SPACEPAD of string a"
+            "This is row 3 of type H5T_STR_SPACEPAD of string a"
+            "This is row 4 of type H5T_STR_SPACEPAD of string a"
+            "This is row 5 of type H5T_STR_SPACEPAD of string a"
+            "This is row 6 of type H5T_STR_SPACEPAD of string a"
+            "This is row 7 of type H5T_STR_SPACEPAD of string a"
+            "This is row 8 of type H5T_STR_SPACEPAD of string a"
+            "This is row 9 of type H5T_STR_SPACEPAD of string a"
+            </hdf5:DataFromFile>
+         </hdf5:Data>
+      </hdf5:Dataset>
+   </hdf5:Group>
+</hdf5:RootGroup>
+</hdf5:HDF5-File>

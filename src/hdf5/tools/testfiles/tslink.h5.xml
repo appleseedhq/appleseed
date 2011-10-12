@@ -1,0 +1,10 @@
+#############################
+Expected output for 'h5dump --xml tslink.h5'
+#############################
+<?xml version="1.0" encoding="UTF-8"?>
+<hdf5:HDF5-File xmlns:hdf5="http://hdfgroup.org/DTDs/HDF5-File" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://hdfgroup.org/DTDs/HDF5-File http://www.hdfgroup.org/DTDs/HDF5-File.xsd">
+<hdf5:RootGroup OBJ-XID="xid_696" H5Path="/">
+   <hdf5:SoftLink LinkName="slink1" OBJ-XID="xid_18446744073709551614" H5SourcePath="/slink1" TargetPath="somevalue"  Parents="xid_696" H5ParentPaths="/" />
+   <hdf5:SoftLink LinkName="slink2" OBJ-XID="xid_18446744073709551613" H5SourcePath="/slink2" TargetPath="linkvalue"  Parents="xid_696" H5ParentPaths="/" />
+</hdf5:RootGroup>
+</hdf5:HDF5-File>

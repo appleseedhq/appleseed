@@ -1,0 +1,62 @@
+#############################
+Expected output for err_compat
+#############################
+Testing error API H5Eset/get_auto                                     Testing error API based on data I/O                                   All error API tests passed.
+   This program tests the Error API compatible with HDF5 version (number).  There're supposed to be some error messages
+********* Print error stack in HDF5 default way *********
+HDF5-DIAG: Error detected in HDF5 (version (number)) thread (IDs):
+  #000: (file name) line (number) in main(): Error test failed
+    major: Error API
+    minor: Bad value
+
+********* Print error stack in customized way *********
+    error #000: (file name) in main(): line (number)
+        major: Error API
+        minor: Bad value
+
+HDF5-DIAG: Error detected in HDF5 (version (number)) thread (IDs):
+  #000: (file name) line (number) in H5Dcreate2(): not a location ID
+    major: Invalid arguments to routine
+    minor: Inappropriate type
+  #001: (file name) line (number) in H5G_loc(): invalid object ID
+    major: Invalid arguments to routine
+    minor: Bad value
+
+********* Print error stack in customized way *********
+    error #000: (file name) in H5G_loc(): line (number)
+        major: Invalid arguments to routine
+        minor: Bad value
+    error #001: (file name) in H5Dcreate2(): line (number)
+        major: Invalid arguments to routine
+        minor: Inappropriate type
+
+********* Print error stack in customized way *********
+    error #000: (file name) in H5Eget_auto(1 or 2)(): line (number)
+        major: Error API
+        minor: Can't get value
+
+********* Print error stack in customized way *********
+    error #000: (file name) in H5G_loc(): line (number)
+        major: Invalid arguments to routine
+        minor: Bad value
+    error #001: (file name) in H5Dcreate2(): line (number)
+        major: Invalid arguments to routine
+        minor: Inappropriate type
+HDF5-DIAG: Error detected in HDF5 (version (number)) thread (IDs):
+  #000: (file name) line (number) in H5Dcreate2(): not a location ID
+    major: Invalid arguments to routine
+    minor: Inappropriate type
+  #001: (file name) line (number) in H5G_loc(): invalid object ID
+    major: Invalid arguments to routine
+    minor: Bad value
+
+HDF5-DIAG: Error detected in HDF5 (version (number)) thread (IDs):
+  #000: (file name) line (number) in main(): Error test failed
+    major: Error API
+    minor: Unrecognized message
+  #001: (file name) line (number) in test_error2(): H5Dwrite shouldn't succeed
+    major: Error API
+    minor: Write failed
+  #002: (file name) line (number) in H5Dwrite(): not a dataset
+    major: Invalid arguments to routine
+    minor: Inappropriate type

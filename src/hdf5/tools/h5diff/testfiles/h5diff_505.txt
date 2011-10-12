@@ -1,0 +1,6 @@
+</grp1> is of type H5G_GROUP and </slink_grp1> is of type H5G_LINK
+--------------------------------
+Some objects are not comparable
+--------------------------------
+Use -c for a list of objects.
+EXIT CODE: 0

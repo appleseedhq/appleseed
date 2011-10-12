@@ -1,0 +1,17 @@
+
+group1   group2
+---------------------------------------
+    x      x                   
+
+
+group  : </g3> and </g3>
+0 differences found
+   obj1   obj2
+ --------------------------------------
+    x           float11        
+    x           float12        
+           x    float4         
+    x           integer10      
+           x    integer3       
+Attributes status:  0 common, 3 only in obj1, 2 only in obj2
+EXIT CODE: 0

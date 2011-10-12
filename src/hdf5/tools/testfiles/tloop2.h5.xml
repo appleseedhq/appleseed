@@ -1,0 +1,16 @@
+#############################
+Expected output for 'h5dump --xml tloop2.h5'
+#############################
+<?xml version="1.0" encoding="UTF-8"?>
+<hdf5:HDF5-File xmlns:hdf5="http://hdfgroup.org/DTDs/HDF5-File" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://hdfgroup.org/DTDs/HDF5-File http://www.hdfgroup.org/DTDs/HDF5-File.xsd">
+<hdf5:RootGroup OBJ-XID="xid_696" H5Path="/">
+   <hdf5:Group Name="g1" OBJ-XID="xid_1344" H5Path="/g1" Parents="xid_696" H5ParentPaths="/" >
+      <hdf5:Group Name="g1.1" OBJ-XID="xid_2320" H5Path="/g1/g1.1" Parents="xid_1344" H5ParentPaths="/g1" >
+         <hdf5:SoftLink LinkName="g2.1" OBJ-XID="xid_1344" H5SourcePath="/g1/g1.1/g2.1" TargetPath="/g1" TargetObj="xid_1344" Parents="xid_2320" H5ParentPaths="/g1/g1.1" />
+      </hdf5:Group>
+   </hdf5:Group>
+   <hdf5:Group Name="g2" OBJ-XID="xid_2320-1" H5Path="/g1/g1.1" Parents="xid_696" H5ParentPaths="/">
+         <hdf5:GroupPtr OBJ-XID="xid_2320" H5Path="/g1/g1.1" Parents="xid_696" H5ParentPaths="/" />
+   </hdf5:Group>
+</hdf5:RootGroup>
+</hdf5:HDF5-File>

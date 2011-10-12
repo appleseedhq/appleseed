@@ -1,0 +1,81 @@
+Data set has INTEGER type
+Little endian byte ordering (0)
+Data size is 4
+rank 2, dimensions 5 x 6
+0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 
+3 4 5 6 0 0 0 
+4 5 6 7 0 0 0 
+5 6 7 8 0 0 0 
+0 0 0 0 0 0 0 
+10  0  11  12  0  0  0  0  0  
+18  0  19  20  0  21  22  0  0  
+0  59  0  61  0  0  0  0  0  
+0  0  27  28  0  29  30  0  0  
+0  0  35  36  67  37  38  0  0  
+0  0  43  44  0  45  46  0  0  
+0  0  0  0  0  0  0  0  0  
+0  0  0  0  0  0  0  0  0  
+
+Field c : 
+1 0.5 0.333333 0.25 0.2 0.166667 0.142857 0.125 0.111111 0.1 
+
+Field a : 
+0 1 2 3 4 5 6 7 8 9 
+
+Field b : 
+0 1 4 9 16 25 36 49 64 81 
+1  1  1  3  3  
+1  1  1  3  3  
+1  1  1  0  0  
+2  0  0  0  0  
+2  0  0  0  0  
+2  0  0  0  0  
+2  0  0  0  0  
+2  0  0  0  0  
+2  0  0  0  0  
+2  0  0  0  0  
+dataset rank = 2, dimensions 10 x 5
+
+Dataset: 
+1 1 1 3 3 
+1 1 1 3 3 
+1 1 1 0 0 
+2 0 0 0 0 
+2 0 0 0 0 
+2 0 0 0 0 
+2 0 0 0 0 
+2 0 0 0 0 
+2 0 0 0 0 
+2 0 0 0 0 
+
+Third column: 
+1
+1
+1
+0
+0
+0
+0
+0
+0
+0
+chunk rank 2dimensions 2 x 5
+
+Chunk:
+1 1 1 0 0 
+2 0 0 0 0 
+dataset "/Data/Compressed_Data" is open
+dataset "/Data_new/Compressed_Data" is open
+
+Iterating over elements in the file
+Name : Data
+Name : Data_new
+
+Unlinking...
+"Data" is unlinked
+
+Iterating over elements in the file again
+Name : Data_new
+

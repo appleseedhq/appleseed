@@ -1,0 +1,659 @@
+
+***********************************************************************
+*        HDF5 Build and Install Instructions for Windows XP/VISTA     *
+*                         (Full Version)                              *
+***********************************************************************
+
+The following instructions assume that the HDF5 binary code package from
+HDF website (http://hdfgroup.org) is used.
+
+Warnings:
+Please read CAREFULLY about the following preconditions and notes first.
+
+Contents:
+
+   Section       :  Preconditions and Notes
+   Section I     :  What do we provide?
+   Section II    :  How to build examples (optional)
+   Section III   :  How to build an application using the HDF5 library or DLL
+   Section IV    :  How to build HDF5 for 64-bit Windows
+   Section V     :  How to build HDF5 applications using Visual Studio 2010
+   Section VI    :  Misc.
+
+
+========================================================================
+                          Preconditions and Notes
+========================================================================
+
+Preconditions:
+
+   1. Installed Microsoft Visual Studio.  This document is written for Visual
+      Studio 2008. Express Editions may work with the project files
+      but not from the command line. We do not support the Express Editions.
+   
+   2. (Optional) Installed Intel Compiler 10.1 or 11.1 if you want to use HDF5 
+      Fortran libraries.
+      
+   3. Install Winzip or 7-zip for extracting source tarball.
+
+      Note: 1. 7zip is an open-source alternative to WinZip.  Some of the
+            advanced functionality is disabled in WinZip unless you buy the
+            software.  With 7zip, most of this functionality is included for
+            free.
+            
+   5. Set up a directory structure to unpack the library.  For example:
+
+            c:\                              (any drive)
+            MyHDFstuff\                      (any folder name)
+
+   6. Download the hdf5-1.8.x binary code package and use 7zip or WinZip to
+      extract the HDF5 package into c:\MyHDFstuff.  This creates a directory 
+      called 'hdf5-1.8.x' under MyHDFstuff which contains several files and 
+      directories.  Rename "hdf5-1.8.x" to "hdf5".
+
+   7. HDF5 provide options to do in-memory compression  within HDF5 library.  
+      Currently, two external compression libraries Zlib and Szip can be used 
+      with HDF5.
+
+      7.1 HDF5 uses Zlib version 1.2.5 for compression and Zlib is 
+          distributed with HDF5 library in 1.8.x release.
+
+      7.2 HDF5 uses Szip version 2.1 for compression and Szip compression 
+          software is provided with HDF5 products in 1.8.x release.
+
+          Please note that Szip is not a totally open-source free software.  
+          For licensing issue of Szip, please check "Licensing terms" at
+          http://hdfgroup.org/doc_resource/SZIP/index.html.
+
+      Szip compression feature inside HDF5 is enabled by default.
+
+   8. Define the following environment variables:
+
+        HDF5_EXT_ZLIB
+        HDF5_EXT_SZIP
+
+      In this section, Zlib and Szip compression packages are assumed to be 
+      used.  Please read Section V as well as this section if you do not want 
+      to use compression feature inside HDF5.
+
+      To define these environment variables:
+
+      Click "Start", click "Control Panel", and then double-click "System".  
+      On the "Advanced" tab, click "Environment Variables".
+
+      If you are logged on as administrator to the local computer AND want to 
+      let all other users use these two environment variables, click "New" 
+      under "System Variables" box; otherwise, click "New" under "User 
+      Variables" box.
+
+      In the New Variable window, set "Variable name" as HDF5_EXT_ZLIB and 
+      "Variable value" as zlib1.lib, then click OK.
+
+      Similarly, you can set:
+
+      HDF5_EXT_SZIP environment variable as szip.lib
+
+      Notes:
+
+         a. You will have to close and reopen running programs for the new 
+            environment variable settings to take effect.
+
+         b. c:\zlib\zlib1.dll and c:\szip\dll\szip.dll should be copied 
+            into a location that the application can find.
+
+   9. Set up path for libraries and headers
+
+      Invoke Microsoft Visual Studio and go to "Tools" and select "Options", 
+      find "Projects", and then "VC++ Directories".
+      
+      9.1 If you are building on 64-bit Windows, find the "Platform" dropdown
+          and select "x64".
+
+      9.2 Find the box "Show directories for", choose "Include files", if you 
+          can not find your HDF5 header path (for example, 
+          c:\MyHDFstuff\include) from the directory list, add the 
+          header path (c:\MyHDFstuff\include) to the included 
+          directories.
+
+      9.3 Find the box "Show directories for", choose "Library files".  If you 
+          cannot find your HDF5 library path (for example, 
+          c:\MyHDFstuff\dll for dynamic-shared and c:\MyHDFstuff\lib for static) 
+          from the directory list, add the library 
+          path (c:\MyHDFstuff\dll or c:\MyHDFstuff\lib) to the library directories.
+          
+      9.4 If building Fortran applications, you will also need to setup the path
+          for the Intel Fortran compiler.  Please see Section VI.
+
+Notes:
+
+   1. HDF4-related tools are not built and released with HDF5 library packages 
+      any more. To obtain HDF4 related tools, please check
+      http://hdfgroup.org/h4toh5/ and ftp://ftp.hdfgroup.org/HDF5/h4toh5
+
+   2. For Fortran users, Intel Fortran Compiler 10.1 is currently supported
+      -- please see Section VI. Intel Compiler 11.1 can be used but the project files
+      must be upgraded within the Visual Studio IDE. 
+      
+   3. The szip and zlib dlls must be in the PATH for using the tools (including static).
+     
+
+========================================================================
+                 Section I: What do we provide?
+========================================================================
+
+   1. Provide
+
+      HDF5 static library:
+           release version
+
+      HDF5 Dynamic Link Library(DLL):
+           release version as well as export libraries for DLL
+
+      HDF5 High-Level Library (Optional):
+           HDF5 C++ Library
+           HDF5 HL-Fortran Library
+
+      HDF5 tools:
+           HDF5 tools
+
+      HDF5 tool library:
+           release version
+
+      HDF5 tool export library for DLL:
+           release version
+
+   2. Examples (Included in the binary distribution as a zip file)
+
+      Unpack the examples, hdf5-examples.zip, into your "hdf5" folder 
+      (c:\MyHDFstuff\hdf5).
+      The resulting structure under this folder should be:
+      c++
+      c++/examples
+      examples
+      fortran
+      fortran/examples
+      hl
+      hl/c++
+      hl/c++/examples
+      hl/examples
+      hl/fortran
+      hl/fortran/examples
+      windows
+      windows/c++
+      windows/c++/examples
+      windows/examples
+      windows/fortran
+      windows/fortran/examples
+      windows/hl
+      windows/hl/examples
+      windows/hl/fortran
+      windows/hl/fortran/examples
+      hdf5build_examples.bat
+      InstallExamples.bat            
+      
+      HDF5 examples:
+           Simple HDF5 C/C++/Fortran and High level C/Fortran examples
+
+========================================================================
+                 Section II: How To Build Examples (Optional)
+========================================================================
+
+Simple examples have been provided for users to test HDF5 C/C++/Fortran and 
+High level C/Fortran library and tools.
+
+Note:
+      1) To build HDF5 C++ examples, HDF5 C++ library must have been installed in 
+         Step I.
+
+      2) To build HDF5 Fortran or HL Fortran examples, please see Section VI, 
+         Step 3.
+
+      3) To build HDF5 High Level C examples, HDF5 High level library must have 
+         been installed in step I.
+
+      4) By default, the HDF5 binary distribution only includes the release 
+         versions of HDF5 C/C++ libraries and DLLs.
+
+To build and test HDF5 C examples:
+----------------------------------
+   1. Invoke Microsoft Visual Studio, go to "File" and select the "Open 
+      Solution" option.
+
+      Then open the solution
+      c:\MyHDFstuff\hdf5examples\windows\examples\allexamples\allexamples.sln.
+
+   2. Select "Build", and "Configuration Manager".
+
+      To build release versions of C examples.
+       
+          In "Active Solution Configuration", select "Release". Select "Close". 
+          Select "Build" -> "Build Solution" or "Rebuild Solution" to build 
+          release version of project "allexamples".
+
+      When the release build is done, there should be the following 
+      subdirectories in c:\MyHDFstuff\hdf5examples\examples\
+
+          attributetest
+          attributetestdll
+          chunkread
+          chunkreaddll
+          compoundtest
+          compoundtestdll
+          extendwritetest
+          extendwritetestdll
+          grouptest
+          grouptestdll
+          readtest
+          readtestdll
+          selectest
+          selectestdll
+          writetest
+          writetestdll
+
+   3. Invoke a command prompt window and run the batch file InstallExamples.bat 
+      which resides in the top level directory (c:\MyHDFstuff\hdf5examples).  This file 
+      creates new directories, examplesREL, examplesRELDLL in the 
+      c:\MyHDFstuff\hdf5examples\examples directory and places 
+      all the executables in it.
+
+   4. We provide a batch file named testExamples.bat and an expected examples 
+      tests output file named testExamples_exp_output.txt in 
+      c:\MyHDFstuff\hdf5\examples directory for you to test HDF5 C examples.
+
+      testExamples.bat batch file has options:
+
+         testExamples release     -- for release version
+
+         testExamples release dll -- for release DLL version
+
+      Invoke a command prompt and run testExamples.bat with appropriate options.
+      You should get "All HDF5 C examples tests passed." when the C examples are
+      built successfully.  Otherwise, the difference between the expected 
+      outputs and actual outputs will be given.
+
+To build and test HDF5 C++ examples:
+------------------------------------
+
+   1. Invoke Microsoft Visual Studio, go to "File" and select the "Open 
+      Solution" option.
+
+      Then open the solution
+      c:\MyHDFstuff\hdf5examples\windows\examples\allexamples\allcppexamples.sln.
+
+   2. Select "Build", and "Configuration Manager".
+
+       To build release versions of C examples.
+       
+          In "Active Solution Configuration", select "Release". Select "Close". 
+          Select "Build" -> "Build Solution" or "Rebuild Solution" to build 
+          release version of project "allcppexamples".
+
+   When the release build is done, there should be the following 
+   subdirectories in c:\MyHDFstuff\hdf5examples\c++\examples\
+
+          chunks
+          chunksdll
+          compound
+          compounddll
+          create
+          createdll
+          extend_ds
+          extend_dsll
+          h5group
+          h5groupdll
+          readdata
+          readdatadll
+          writedata
+          writedatadll
+
+   3. Invoke a command prompt window and run the batch file 
+      InstallcppExamples.bat which resides in the top level directory
+      (c:\MyHDFstuff\hdf5examples).  This file creates new directories,
+      cppexamplesREL, cppexamplesRELDLL in the 
+      c:\MyHDFstuff\hdf5examples\c++\examples directory and places all 
+      the executables in it.
+
+   4. We provide a batch file named testcppExamples.bat in
+      c:\MyHDFstuff\hdf5examples\c++\examples directory for you to test HDF5 C++ 
+      examples.
+
+      testcppExamples.bat batch file has options:
+
+         testcppExamples release     -- for release version
+
+         testcppExamples release dll -- for release DLL version
+
+      Invoke a command prompt and run testcppExamples.bat with appropriate 
+      options.  You should get "All HDF5 C++ examples tests passed." when the 
+      C++ examples are built successfully.  Otherwise, the difference between 
+      the expected outputs and actual outputs will be given.
+
+
+To build and test HDF5 High Level C examples:
+---------------------------------------------
+
+   1. Invoke Microsoft Visual Studio, go to "File" and select the "Open 
+      Solution" option.
+
+      Then open the solution
+      c:\MyHDFstuff\hdf5examples\windows\hl\examples\allhlcexamples\allhlcexamples.sln
+
+   2. Select "Build", and "Configuration Manager".
+
+       To build release versions of C examples.
+       
+          In "Active Solution Configuration", select "Release". Select "Close". 
+          Select "Build" -> "Build Solution" or "Rebuild Solution" to build 
+          release version of project "allhlcexamples".
+
+      When the release build is done, binaries will be built in the
+      following subdirectories of c:\MyHDFstuff\hdf5\examples\
+
+          ex_image[1-2](dll)
+          ex_lite1(dll)
+          ex_table[01-12](dll)
+          ex_ds1(dll)
+          ptExample[FL+VL](dll)
+
+   3. Invoke a command prompt and run the batch file Install_hlcexamples.bat 
+      which resides in the top level directory (c:\MyHDFstuff\hdf5examples).  This file 
+      creates new directories, HLCexamplesRELEASE, HLCexamplesRELEASEDLL in the 
+      c:\MyHDFstuff\hdf5examples\hl\examples directory and places all the executables in
+      it.
+
+   4. We provide a batch file named test_hl_cexamples.bat in 
+      c:\MyHDFstuff\hdf5examples\hl\examples directory for you to test HDF5 high level C
+      examples.
+
+      test_hl_cexamples.bat batch file has options:
+
+         Options                        purpose
+
+         test_hl_cexamples release      -- for release version
+
+         test_hl_cexamples release dll  -- for release DLL version
+
+      Invoke a command prompt window and run test_hl_cexamples with
+      appropriate options.
+
+      Invoke a command prompt and run testExamples.bat with appropriate options.
+      You should get "All of the HL C Examples Passed!" when the HL C examples 
+      are built successfully.  Otherwise, the difference between the expected 
+      outputs and actual outputs will be given.
+      
+
+========================================================================
+   Section III: Building an application using the HDF5 library or DLL
+========================================================================
+
+Waring: The instructions below will only describe how to build an application 
+        using the release version of the HDF5 library or DLL.  To use the debug
+        version of the HDF5 library or DLL, you need to substitute the release 
+        version of the HDF5 library or DLL with the debug version.
+
+        
+To build an application that uses the HDF5 static library the following 
+locations will need to be specified for locating header files and linking with
+the HDF static library, for example:
+
+c:\MyHDFstuff\hdf5\hdf5lib\release\include
+c:\MyHDFstuff\hdf5\hdf5lib\release\lib
+
+We assume that you will use Zlib and Szip compression with HDF5 library.
+
+1. Specifying Include Directories
+
+To specify the include directories in the settings for your Visual Studio 
+project, you may choose one of the following two methods.
+
+  Method One: Project-wide Settings
+
+    1. Open your project in Microsoft Visual Studio and make sure it is the 
+       active project.
+
+    2. Go to the Project menu and chose the "Properties" option.
+
+    3. Choose the build configuration you would like to modify in the drop 
+       down menu labeled "Configuration:"
+
+    4. Choose the "C/C++" tab, and select "General".
+
+    5. In a text-area labeled with "Additional Include Directories:", add 
+       HDF5, Zlib, and Szip header files directories.  For example:
+
+          c:\MyHDFstuff\hdf5\hdf5lib\release\include
+          c:\zlib\include
+          c:\szip\include
+
+       Then click OK.
+
+    6. (Optional) To use HDF5 Fortran static library, the location of 
+       Fortran module files should be specified by following Project->
+       Settings->Fortran->Preprocessor, and in the text-area labeled 
+       "Additional Include Directories", add HDF5 Fortran module files 
+       directories.  For example:
+
+          c:\MyHDFstuff\hdf5\hdf5lib\release\include
+          
+  Method Two: Visual Studio Settings
+
+    1. In Visual STudio, go to Tools->Options->Projects->
+       VC++ Directories.  Under "Show Directories For", select "Include files"
+
+    2. Insert the correct HDF5, Zlib, Szip paths for headers(include).  For 
+       example,
+
+          c:\MyHDFstuff\hdf5\hdf5lib\release\include
+          c:\zlib\include
+          c:\szip\include
+
+    
+2. Specifying Library Directories
+
+To specify the library directories in the settings for your Visual Studio 
+project, you may choose one of the following two methods.
+
+  Method One: Project-wide Settings
+
+    1. Open your project in Microsoft Visual Studio and make sure it is the 
+       active project.
+
+    2. Go to the Project menu and chose the "Properties" option.
+
+    3. Choose the build configuration you would like to modify in the drop 
+       down menu labeled "Configuration:"
+
+    4. Choose the "Linker" tab, and select "General".
+
+    5. In a text-area labeled with "Additional Library Directories:", add 
+       HDF5, Zlib, and Szip library files directories.  For example:
+
+          c:\MyHDFstuff\hdf5\hdf5lib\release\lib
+          c:\zlib\dll
+          c:\szip\dll
+          
+      Note: To link with HDF5 DLLs rathern that static libraries, simply
+            specify the "dll" directory rather than "lib", and link with the
+            corresponding DLL link library below.
+
+       Then click OK.
+
+          
+  Method Two: Visual Studio Settings
+
+    1. In Visual STudio, go to Tools->Options->Projects->
+       VC++ Directories.  Under "Show Directories For", select "Library files"
+
+    2. Insert the correct HDF5, Zlib, Szip paths for link libraries.  For 
+       example,
+
+          c:\MyHDFstuff\hdf5\hdf5lib\release\lib
+          c:\zlib\dll
+          c:\szip\dll
+          
+       Note: To link with HDF5 DLLs rathern that static libraries, simply
+            specify the "dll" directory rather than "lib", and link with the
+            corresponding DLL link library below.
+
+    
+3. Specifying Libraries to Link
+
+  To link the HDF5 static library with your application:
+
+    1. In Visual Studio, go to the Project menu and choose "Properties".
+
+    2. Find the "Link" option and "Input" category.  In the "Additional
+       Dependencies" field, insert "zlib.lib, libszip.lib, hdf5.lib".
+
+    3. (Optional) Also insert "hdf5_cpp.lib" if you want to use HDF5 C++ 
+       static library.
+
+    4. (Optional) Also insert "hdf5_fortran.lib" if you want to use HDF5 
+       Fortran static library.
+
+    5. (Optional) Also insert "hdf5_hl.lib" if you want to use HDF5 high 
+       level static library.
+
+    6. (Optional) Also insert "hdf5_hl_cpp.lib" if you want to use HDF5 High
+       Level C++ static library.
+
+    7. (Optional) Also insert "hdf5_hl_fortran.lib" if you want to use HDF5 
+       High Level Fortran static library.
+
+
+  To link the HDF5 DLL library with your application:
+
+    1. Follow the steps for linking the HDF5 static library as shown above,
+       except now link the export library that is created with the DLL.
+       
+       The export library is called hdf5dll.lib for HDF5 C libray,
+       hdf5_cppdll.lib for HDF5 C++ library, and hdf5_fortrandll.lib
+       for HDF5 Fortran library.
+       
+    2. In the Project Properties dialog, go to the C/C++ > Preprocessor
+       subsection.  In the "Preprocessor Definitions" box, add "_HDF5USEDLL_"
+       to the list.
+       
+    3. (Optional) Also add HDF5CPP_USEDLL to use HDF5 C++ DLL.
+
+    4. (Optional) Also add _HDF5USEHLDLL_ to use HDF5 high level DLL.
+
+    5. (Optional) Also add HDF5USE_HLCPPDLL use HDF5 high level C++ DLL.
+
+    6. (Optional) Follow Project->Settings->Fortran->Category->General->
+       Predefined Preprocess or Symbols, and add "HDF5F90_WINDOWS" to use HDF5 
+       Fortran DLL.
+
+    7. Place the DLLs in a location that Windows will be able to locate.  The 
+       searched path and order for DLL's is
+
+       a) The directory where the executable module for the current
+          process is located.
+       b) The current directory.
+       c} The Windows system directory. The GetSystemDirectory function
+          retrieves the path of this directory.
+       d) The Windows directory. The GetWindowsDirectory function
+          retrieves the path of this directory.
+       e) The directories listed in the PATH environment variable.
+
+   
+========================================================================
+            Section IV: How to build HDF5 for 64-bit Windows
+========================================================================
+
+HDF5 is available for 64-bit Windows in Visual Studio 2008.  
+    
+Prerequisites:
+
+    1. A 64-bit Windows machine.
+    
+    2. Microsoft Visual Studio 2008 installed with x64 Extensions.
+           
+
+Building:
+
+    Building 64-bit Windows binaries is very similar to the process for 32-bit.
+    Therefore, you may follow the instructions in Section II with the following
+    modifications.
+    
+        1. The x64 platform must be selected in the build configuration for
+           debug and release versions.  Before building, go to "Build", 
+           "Configuration Manager".  In the "Active solution platform" box, 
+           select "x64", and press "Close".
+           
+        2. 64-bit HDF5 applications must be built with 64-bit external libraries.
+           You must add the include and
+           library paths for x64 configurations as you have in the 
+           "Prerequisites" section.  This is also true for Intel Fortran if
+           Fortran libraries are to be built.       
+
+========================================================================
+            Section V: How to build HDF5 applications using Visual Studio 2010
+========================================================================
+Building with Visual Studio 2010 is very similar to building with Visual Studio
+2008, with some minor changes.  Therefore, follow the build instructions above, 
+with the following considerations:
+
+    1. Visual Studio 2010 uses a new format for project files, but Visual Studio
+       2008 project files can be easily converted.  The HDF5 project files
+       will need to be converted on first use.  To do so:
+       
+       1.1. Open the HDF5 Visual Studio 2008 solution file as in Section II
+            (all.sln)
+       
+       NOTE. Intel Fortran 11.1 currently does not integrate with Visual Studio 2010.
+            
+       1.2. You will be prompted with an automatic conversion wizard.  Click
+            through, accepting the default values.  You may choose to create
+            backups of the project files, although it isn't necessary.
+            
+       1.3. When it is finished, it should state that all projects were
+            converted successfully with no errors.  Warnings can be ignored.
+            
+    2. Once the project files have been converted, build and test normally.
+       Note that the converted project files aren't backwards compatible with
+       previous versions of Visual Studio.
+
+
+========================================================================
+                            Section VI: Misc.
+========================================================================
+
+1. Helpful Pointers
+
+Here are some helpful notes if you are not familiar with
+using the Visual C++ Development Environment.
+
+    1.1 Project name and location issues:
+
+    It is recommended that you use the given directory structure for building
+    HDF5 Examples.  However, it is possible to create your own structure.  If you must 
+    install all.sln and all.vcproj in another directory, relative to hdf5 
+    directory, you will be asked to locate the sub-project files, when you open 
+    the project all.sln.
+
+    If you want to rename "all" (the entire project), you will need to modify 
+    two files all.sln and all.vcproj as text (contrary to the explicit warnings 
+    in the files).
+
+
+    1.2 Settings... details:
+
+    If you create your own project, the necessary settings can be read
+    from the all.vcproj file (as text), or from the Project Settings in the
+    Visual Studio project settings dialog.
+    
+    1.3 FAQ
+    
+    Many other common questions and hints are located online and being updated
+    in the HDF5 FAQ.  For Windows-specific questions, please see:
+    
+        http://www.hdfgroup.uiuc.edu/windows/faq.html
+        
+    For all other general questions, you can look in the general FAQ:
+    
+        http://hdfgroup.org/HDF5-FAQ.html
+
+    
+************************************************************************
+ Please send email to help@hdfgroup.org for further assistance.

@@ -1,0 +1,69 @@
+#############################
+Expected output for 'h5dump --xml tdatareg.h5'
+#############################
+<?xml version="1.0" encoding="UTF-8"?>
+<hdf5:HDF5-File xmlns:hdf5="http://hdfgroup.org/DTDs/HDF5-File" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://hdfgroup.org/DTDs/HDF5-File http://www.hdfgroup.org/DTDs/HDF5-File.xsd">
+<hdf5:RootGroup OBJ-XID="xid_696" H5Path="/">
+   <hdf5:Dataset Name="Dataset1" OBJ-XID="xid_1284" H5Path= "/Dataset1" Parents="xid_696" H5ParentPaths="/">
+      <hdf5:StorageLayout>
+         <hdf5:ContiguousLayout/>
+      </hdf5:StorageLayout>
+         <hdf5:FillValueInfo FillTime="FillIfSet" AllocationTime="Late">
+         <hdf5:FillValue>
+               <hdf5:NoFill/>
+         </hdf5:FillValue>
+      </hdf5:FillValueInfo>
+      <hdf5:Dataspace>
+         <hdf5:SimpleDataspace Ndims="1">
+            <hdf5:Dimension  DimSize="4" MaxDimSize="4"/>
+         </hdf5:SimpleDataspace>
+      </hdf5:Dataspace>
+      <hdf5:DataType>
+         <hdf5:AtomicType>
+            <hdf5:ReferenceType>
+               <hdf5:ObjectReferenceType />
+            </hdf5:ReferenceType>
+         </hdf5:AtomicType>
+      </hdf5:DataType>
+   <hdf5:Data>
+   <!-- Note: Region references not supported -->
+   <hdf5:NoData />
+   </hdf5:Data>
+   </hdf5:Dataset>
+   <hdf5:Dataset Name="Dataset2" OBJ-XID="xid_744" H5Path= "/Dataset2" Parents="xid_696" H5ParentPaths="/">
+      <hdf5:StorageLayout>
+         <hdf5:ContiguousLayout/>
+      </hdf5:StorageLayout>
+         <hdf5:FillValueInfo FillTime="FillIfSet" AllocationTime="Late">
+         <hdf5:FillValue>
+               <hdf5:NoFill/>
+         </hdf5:FillValue>
+      </hdf5:FillValueInfo>
+      <hdf5:Dataspace>
+         <hdf5:SimpleDataspace Ndims="2">
+            <hdf5:Dimension  DimSize="10" MaxDimSize="10"/>
+            <hdf5:Dimension  DimSize="10" MaxDimSize="10"/>
+         </hdf5:SimpleDataspace>
+      </hdf5:Dataspace>
+      <hdf5:DataType>
+         <hdf5:AtomicType>
+            <hdf5:IntegerType ByteOrder="BE" Sign="false" Size="1" />
+         </hdf5:AtomicType>
+      </hdf5:DataType>
+      <hdf5:Data>
+         <hdf5:DataFromFile>
+         0 3 6 9 12 15 18 21 24 27
+         30 33 36 39 42 45 48 51 54 57
+         60 63 66 69 72 75 78 81 84 87
+         90 93 96 99 102 105 108 111 114 117
+         120 123 126 129 132 135 138 141 144 147
+         150 153 156 159 162 165 168 171 174 177
+         180 183 186 189 192 195 198 201 204 207
+         210 213 216 219 222 225 228 231 234 237
+         240 243 246 249 252 255 2 5 8 11
+         14 17 20 23 26 29 32 35 38 41
+         </hdf5:DataFromFile>
+      </hdf5:Data>
+   </hdf5:Dataset>
+</hdf5:RootGroup>
+</hdf5:HDF5-File>

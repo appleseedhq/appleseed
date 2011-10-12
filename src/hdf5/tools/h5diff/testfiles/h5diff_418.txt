@@ -1,0 +1,3 @@
+obj2 </softlink_noexist> is a dangling link.
+1 differences found
+EXIT CODE: 1

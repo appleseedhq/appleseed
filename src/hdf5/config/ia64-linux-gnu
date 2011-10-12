@@ -1,0 +1,153 @@
+#							-*- shell-script -*-
+#
+# Copyright by The HDF Group.
+# Copyright by the Board of Trustees of the University of Illinois.
+# All rights reserved.
+#
+# This file is part of HDF5.  The full HDF5 copyright notice, including
+# terms governing use, modification, and redistribution, is contained in
+# the files COPYING and Copyright.html.  COPYING can be found at the root
+# of the source code distribution tree; Copyright.html can be found at the
+# root level of an installed copy of the electronic HDF5 document set and
+# is linked from the top-level documents page.  It can also be found at
+# http://hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have
+# access to either file, you may request a copy from help@hdfgroup.org.
+
+
+# This file is part of the HDF5 build script.  It is processed shortly
+# after configure starts and defines, among other things, flags for
+# the various compile modes.
+
+# Use Intel C compiler by default (if it's available).
+# Use mpicc for parallel by default.
+if test "X$CC" = "X"; then
+    if test "X-$enable_parallel" = "X-yes"; then
+	CC=mpicc
+	CC_BASENAME=mpicc
+    elif which icc > /dev/null; then
+	CC=icc
+	CC_BASENAME=icc
+    fi
+fi
+
+# Define RUNPARALLEL if parallel mode is enabled or a parallel compiler used.
+if test "X-$enable_parallel" = "X-yes" -o X-$CC_BASENAME = X-mpicc; then
+    RUNPARALLEL=${RUNPARALLEL="mpirun -np \$\${NPROCS:=6}"}
+fi
+
+#----------------------------------------------------------------------------
+# Compiler flags. The CPPFLAGS values should not include package debug
+# flags like `-DH5G_DEBUG' since these are added with the
+# `--enable-debug' switch of configure.
+
+case $CC_BASENAME in
+    ecc|icc)
+	. $srcdir/config/intel-flags
+	;;
+
+    gcc)
+	. $srcdir/config/gnu-flags
+	;;
+
+    *)
+	H5_CFLAGS="$H5_CFLAGS -ansi"
+	DEBUG_CFLAGS="-g"
+	DEBUG_CPPFLAGS=
+	PROD_CFLAGS="-O"
+	PROD_CPPFLAGS=
+	PROFILE_CFLAGS="-pg"
+	PROFILE_CPPFLAGS=
+	;;
+esac
+
+# The default Fortran 90 compiler
+
+# Use Intel Fortran compiler by default.
+if test X-$enable_fortran = X-yes -a "X-$FC" = "X-"; then
+    if test "X-$enable_parallel" = "X-yes"; then
+	FC=mpif90
+    else
+	FC="ifort"
+    fi
+fi
+
+case $FC in
+  *efc|*ifort)
+    # this is for efc v7.  Older efc do not work with these.
+    # -Vaxlib is for non-standard fortran calls like exit().
+    MORE_FCFLAGS='-fpp -DDEC$=DEC_ -DMS$=MS_ -Vaxlib'
+    H5_FCFLAGS="$H5_FCFLAGS $MORE_FCFLAGS"
+    f9x_flags_set=yes
+    ;;
+
+  *)
+    f9x_flags_set=yes
+    ;;
+esac
+
+# The following is not right and need work.
+if test "X$f9x_flags_set" = "X"; then
+  F9XSUFFIXFLAG=""
+  FSEARCH_DIRS=""
+  H5_FCFLAGS="$H5_FCFLAGS"
+  DEBUG_FCFLAGS=""
+  PROD_FCFLAGS=""
+  PROFILE_FCFLAGS=""
+  f9x_flags_set=yes
+fi
+
+# The Default settings for C++
+# Intel changed C++ compiler's name from "icc" to "icpc" in version 8.1
+if test -z "$CXX"; then
+    CXX=icpc
+    CXX_BASENAME=icpc
+fi
+
+# A patch to make g++ getting the default settings.
+# CXX_BASENAME should have been set in configure.
+if test "X$CXX" = "Xg++"; then
+    CXX_BASENAME=g++
+fi
+
+
+case $CXX_BASENAME in
+    ecc|icc)	# Intel compilers
+	# Default to C99 standard.
+	H5_CXXFLAGS="${H5_CXXFLAGS:--std=c99}"
+	DEBUG_CXXFLAGS="-g -w2 -Wall"
+	DEBUG_CPPFLAGS=
+	PROD_CXXFLAGS=""     #Default optimization O2 is used
+	PROD_CPPFLAGS=
+	PROFILE_CXXFLAGS="-pg"
+	PROFILE_CPPFLAGS=
+	;;
+    g++)
+	H5_CXXFLAGS="$H5_CXXFLAGS -Wsign-compare" #Only works for some versions
+	DEBUG_CXXFLAGS="-g -fverbose-asm"
+	DEBUG_CPPFLAGS=
+	PROD_CXXFLAGS="-O3 -fomit-frame-pointer"
+	PROD_CPPFLAGS=
+	PROFILE_CXXFLAGS="-pg"
+	PROFILE_CPPFLAGS=
+	;;
+
+    *)
+	# Default to C99 standard.
+	H5_CXXFLAGS="${H5_CXXFLAGS:--std=c99}"
+	DEBUG_CXXFLAGS="-g"
+	DEBUG_CPPFLAGS=
+	PROD_CXXFLAGS="-O"
+	PROD_CPPFLAGS=
+	PROFILE_CXXFLAGS="-pg"
+	PROFILE_CPPFLAGS=
+	;;
+esac
+
+# Check MPICH settings
+. $srcdir/config/mpich
+#Uncomment the next line if your system doesn't support MPI complex derived datatype.
+#hdf5_cv_mpi_complex_derived_datatype_works=${hdf5_cv_mpi_complex_derived_datatype_works='no'}
+#Comment out the following line if your system supports collective IO when some processes
+#don't have any contributions to IOs.
+hdf5_cv_mpi_special_collective_io_works=${hdf5_cv_mpi_special_collective_io_works='no'}
+

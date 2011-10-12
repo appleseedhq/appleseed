@@ -1,0 +1,1 @@
+-l dset1:CHUNK=20x20 -f dset1,dset2:GZIP=1

@@ -1,0 +1,11 @@
+dataset: </g1/dset1> and </g1/dset2>
+size:           [3x2]           [3x2]
+position        dset1           dset2           difference          
+------------------------------------------------------------
+[ 0 0 ]          1               0               1              
+[ 0 1 ]          1               1.1             0.1            
+[ 1 0 ]          1               1.01            0.01           
+[ 1 1 ]          1               1.001           0.001          
+[ 2 1 ]          0               1               1              
+5 differences found
+EXIT CODE: 1

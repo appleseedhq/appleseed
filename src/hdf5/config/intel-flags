@@ -1,0 +1,114 @@
+#							-*- shell-script -*-
+#
+# Copyright by The HDF Group.
+# Copyright by the Board of Trustees of the University of Illinois.
+# All rights reserved.
+#
+# This file is part of HDF5.  The full HDF5 copyright notice, including
+# terms governing use, modification, and redistribution, is contained in
+# the files COPYING and Copyright.html.  COPYING can be found at the root
+# of the source code distribution tree; Copyright.html can be found at the
+# root level of an installed copy of the electronic HDF5 document set and
+# is linked from the top-level documents page.  It can also be found at
+# http://hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have
+# access to either file, you may request a copy from help@hdfgroup.org.
+
+
+# This file should be sourced into configure if the compiler is the
+# Intel icc compiler or a derivative.  It is careful not to do anything
+# if the compiler is not Intel; otherwise `cc_flags_set' is set to `yes'
+#
+
+# Get the compiler version in a way that works for icc
+# icc unless a compiler version is already known
+#
+#   cc_vendor:    The compiler name: icc
+#   cc_version:   Version number: 8.0
+#
+if test X = "X$cc_flags_set"; then
+    cc_version="`$CC $CFLAGS $H5_CFLAGS -V 2>&1 |grep 'Version'`"
+    if test X != "X$cc_version"; then
+        cc_vendor=icc
+        cc_version=`echo $cc_version |sed 's/.*Version \([-a-z0-9\.\-]*\).*/\1/'`
+        echo "compiler '$CC' is Intel $cc_vendor-$cc_version"
+
+        # Some version numbers
+        # Intel version numbers are of the form: "major.minor"
+        cc_vers_major=`echo $cc_version | cut -f1 -d.`
+        cc_vers_minor=`echo $cc_version | cut -f2 -d.`
+        #cc_vers_patch=`echo $cc_version | cut -f2 -d.`
+        test -n "$cc_vers_major" || cc_vers_major=0
+        test -n "$cc_vers_minor" || cc_vers_minor=0
+        test -n "$cc_vers_patch" || cc_vers_patch=0
+        cc_vers_all=`expr $cc_vers_major '*' 1000000 + $cc_vers_minor '*' 1000 + $cc_vers_patch`
+    fi
+fi
+
+# Common Intel flags for various situations
+if test "X-icc" = "X-$cc_vendor"; then
+    # Insert section about version specific problems from compiler flags here,
+    # if necessary.
+
+    arch=
+    # Architecture-specific flags
+    # Nothing currently. (Uncomment code below and modify to add any)
+    #case "$host_os-$host_cpu" in
+    #    *-i686)
+    #        arch="-march=i686"
+    #        ;;
+    #esac
+
+    # Host-specific flags
+    # Nothing currently. (Uncomment code below and modify to add any)
+    #case "`hostname`" in
+    #    sleipnir.ncsa.uiuc.edu)
+    #        arch="$arch -pipe"
+    #        ;;
+    #esac
+
+    # General
+    # Default to C99 standard.
+    H5_CFLAGS="${H5_CFLAGS:--std=c99 $arch}"
+
+    # Production is set to default; see settings for specific version further down
+    PROD_CFLAGS="-O" 
+    PROD_CPPFLAGS=
+
+    # Debug
+    DEBUG_CFLAGS="-Wcheck -Wall -g -O0"
+    DEBUG_CPPFLAGS=
+
+    # Profile
+    # Use this for profiling with gprof
+    PROFILE_CFLAGS="-g -p"
+    PROFILE_CPPFLAGS=
+
+    # Flags are set
+    cc_flags_set=yes
+
+fi
+
+# Version specific ICC flags
+#
+# Please follow the pattern below by adding new versions at the top, copying
+# the information from the previous version and adding modifications to that.
+case "$cc_vendor-$cc_version" in
+    icc-11*)
+        # -s became obsolete; we also fixed bugs that allow us to enable higher level
+        # of optimization starting with 1.8.7
+        PROD_CFLAGS="-O3"
+        ;;
+    icc-10*)
+        PROD_CFLAGS="-O1 -Wl,-s"
+        ;;
+    icc-8.0*)
+	# v8.0 -O3 infinite loops when compiling test/tselect.c. Use -O2.
+	PROD_CFLAGS="-O2 -Wl,-s"
+	;;
+esac
+
+# Clear cc info if no flags set
+if test "X-$cc_flags_set" = "X-"; then
+    cc_vendor=
+    cc_version=
+fi

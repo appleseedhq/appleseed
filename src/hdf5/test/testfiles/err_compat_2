@@ -1,0 +1,4 @@
+#############################
+Expected output for err_compat
+#############################
+Test skipped because backward compatbility with v1.6 is NOT configured in

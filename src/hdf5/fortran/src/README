@@ -1,0 +1,242 @@
+
+          README for the FORTRAN90 Prototype APIs to HDF5
+
+
+This distribution contains the HDF5 FORTRAN90 APIs source code (prototype) 
+based on the HDF5 1.2.2 release (ftp://ftp.ncsa.uiuc.edu/HDF/HDF5/current), 
+tests and examples.
+
+This prototype supports a selected subset of the HDF5 Library functionality. 
+A complete list of the Fortran subroutines can be found in the HDF5 
+Reference Manual provided with this release.
+Check the online documentation at http://hdf.ncsa.uiuc.edu/HDF5/doc (select 
+the "HDF5 Fortran90 Docs" link at the bottom of the left-hand column) or 
+H5_F90.R1.2.2.RefMan.tar at ftp://hdf.ncsa.uiuc.edu/HDF5/fortran .
+
+Changes since last release (October 1999)
+=========================================
+* Support for Linux 
+* Support for parallel features (tested on O2K platform only)
+* Most of the functions from the H5R, H5P, H5T, H5E and H5I interfaces were 
+  implemented. See Reference Manual for complete list. The new functions  
+  include support for object and dataset region references, and for 
+  compound datatypes.
+* This prototype supports more predefined types. See list below in 
+  the "About the Fortran APIs" section.
+* This prototype supports T3E and T3E with mpt 1.3. One has to modify
+  H5Dff.f90, H5Aff.f90, H5Pff.f90 to comment lines with the module procedures for
+  double precision datatypes. See source code.
+
+Supported platforms
+===================
+The FORTRAN90 APIs provided here are known to work with the
+following platforms and compilers:
+
+     *  SunOS 5.6  with  WorkshopCompilers 4.2 Fortran 90 1.2
+     *  SunOS 5.7  with  WorkshopCompilers 5.0 Fortran 90 2.0 
+     *  OSF1 V4.0  with  Digital Fortran 90 4.1 
+     *  IRIX64 6.5 (64 option only) with  MIPSpro Compilers: Version 7.3.1m    
+                          mpt.1.4
+     *  Linux RedHat 6.1, Kernel 2.2.12 with PGF90
+     *  T3E with Cray Fortran: Version 3.4.0.0
+            with mpt 1.3
+
+Compilation
+===========
+
+1. Install HDF5 Release 1.2.2 on your system
+   (ftp://ftp.ncsa.uiuc.edu/HDF/HDF5/current).  If you are using a
+   binary distribution provided by the HDF group, make sure that a GZIP 
+   library is installed on your system. If you do not have a GZIP library,
+   you may copy it from the HDF FTP server.
+
+2. In the src directory copy H5fortran_types.f90_<system> to 
+   H5fortran_types.f90, where <system> is one of the following:
+
+     solaris
+     digunix
+     irix
+     linux
+
+   Example: On Digital Unix systems use the following command
+            cp H5fortran_types.f90_digunix H5fortran_types.f90
+
+3. Edit Makefile_<system >in the src/, test/ and examples/ directories
+   to specify the locations of the HDF5 C Library, the GZIP Library, and the 
+   corresponding include files on your system.
+
+4. In the src directory, run make to create the HDF5 FORTRAN90 library 
+   hdf5_fortran.a
+             make -f Makefile_<system>
+             
+   Example: On Solaris run
+            make -f Makefile_solaris
+
+   The Fortran library hdf5_fortran.a will be created.
+
+5. In the test directory, build tests by running  
+            make -f Makefile_<system>
+   This command will build fortranlib_test, fflush1 and fflush2 executables.
+   Run those executables to make sure that the library works on your system.
+
+6. In the examples directory, run
+            make -f Makefile_<system>
+   to build the following examples:
+   
+   fileexample       - creates an HDF5 file
+   dsetexample       - creates an empty dataset of integers
+   rwdsetexample     - writes and reads to the dataset created by dsetexample
+   groupexample      - creates a group in the file
+   grpsexample       - creates groups using absolute and relative names
+   grpdsetexample    - creates datasets in the groups
+   hyperslabexample  - writes and reads a hyperslab
+   selectele         - writes element selections
+   grpit             - iterates through the members of the group
+   attrexample       - creates and writes a dataset attribute
+   compound          - creates, writes and reads one dim array of structures
+   mountexample      - shows how to use mounting files to access a dataset
+   refobjexample     - creates and stores references to the objects
+   refregexample     - creates and stores references to the dataset regions
+
+   The script run_example.sh runs the examples in the appropriate order. 
+
+   Use the HDF5 utility, h5dump, to see the content of the created HDF5 files.
+
+7. Install the HDF5 Reference Manual (in HTML format).  The manual
+   can be found in the Unix tar file H5_F90.R1.2.2.RefMan.tar
+   on the ftp server and is served over the Web from
+   http://hdf.ncsa.uiuc.edu/HDF5/doc/ (select the "HDF5 Fortran90 Docs" 
+   link at the bottom of the left-hand column).
+
+
+8. Send bug reports and comments to hdfhelp@ncsa.uiuc.edu
+
+User's Guide Notes
++++++++++++++++++++
+
+About the source code organization
+==================================
+
+The Fortran APIs are organized in modules parallel to the HDF5 Interfaces.
+Each module is in a separate file with the name H5*ff.f.  Corresponding C
+stubs are in the H5*f.c files.  For example, the Fortran File APIs are in 
+the file H5Fff.f and the corresponding C stubs are in the file H5Ff.c. 
+
+Each module contains Fortran definitions of the constants, interfaces to 
+the subroutines if needed, and the subroutines themselves.  
+
+Users must use constant names in their programs instead of the numerical 
+values, as the numerical values are subject to change without notice. 
+
+About the Fortran APIs 
+=======================
+
+*  The Fortran APIs come in the form of Fortran subroutines.
+
+*  Each Fortran subroutine name is derived from the corresponding C function
+   name by adding "_f" to the name.  For example, the name of the C function 
+   to create an HDF5 file is H5Fcreate;  the corresponding Fortran subroutine 
+   is h5fcreate_f. 
+
+*  A description of each Fortran subroutine and its parameters can be found 
+   following the description of the corresponding C function in the 
+   Reference Manual provided with this release.  The manual can be found in 
+   the Unix tar file H5_F90.R1.2.2.tar in this directory and
+   is served over the Web from http://hdf.ncsa.uiuc.edu/HDF5/doc/ (select 
+   the "HDF5 Fortran90 Docs" link at the bottom of the left-hand column).
+
+*  The parameter list for each Fortran subroutine has two more parameters
+   than the corresponding C function.  These additional parameters hold 
+   the return value and an error code.  The order of the Fortran subroutine 
+   parameters may differ from the order of the C function parameters. 
+   The Fortran subroutine parameters are listed in the following order: 
+      -- required input parameters,
+      -- output parameters, including return value and error code, and 
+      -- optional input parameters.
+   For example, the C function to create a dataset has the following 
+   prototype:
+
+       hid_t H5Dcreate2(hid_it loc_id, char *name, hid_t type_id, 
+             hid_t space_id, hid_t link_creation_prp, hid_t dset_creation_prp,
+             hid_t dset_access_prop);
+   
+   The corresponding Fortran subroutine has the following form:
+   
+       SUBROUTINE h5dcreate_f(loc_id, name, type_id, space_id, dset_id, 
+             hdferr, creation_prp)
+  
+   The first four parameters of the Fortran subroutine correspond to the 
+   C function parameters.  The fifth parameter dset_id is an output 
+   parameter and contains a valid dataset identifier if the value of the 
+   sixth output parameter hdferr indicates successful completion. 
+   (Error code descriptions are provided with the subroutine descriptions 
+   in the Reference Manual.)  The seventh input parameter creation_prp 
+   is optional, and may be omitted when the default creation property 
+   list is used.
+   (XXX: Update this! - QAK)
+
+*  Parameters to the Fortran subroutines have one of the following 
+   predefined datatypes (see the file H5fortran_types.f90 for KIND 
+   definitions):
+   
+        INTEGER(HID_T)      compares with hid_t type in HDF5 C APIs
+        INTEGER(HSIZE_T)    compares with hsize_t in HDF5 C APIs
+        INTEGER(HSSIZE_T)   compares with hssize_t in HDF5 C APIs
+        INTEGER(SIZE_T)     compares with the C size_t type
+   These integer types usually correspond to 4 or 8 byte integers, 
+   depending on the FORTRAN90 compiler and corresponding HDF5 
+   C library definitions.
+   
+   The H5R module defines two types: 
+        TYPE(HOBJ_REF_T_F)  compares to the hobj_ref_t in HDF5 C API
+        TYPE(HDSET_REG_REF_T_F) compares to hdset_reg_ref_t in HDF5 C API
+   These types are represented by character arrays now. 
+   The internal representation can be changed in the future.
+
+*  Each Fortran application must call the h5init_types subroutine to 
+   initialize the Fortran predefined datatypes before calling the HDF5 Fortran 
+   subroutines.  The application must call the h5close_types subroutine 
+   after all calls to the HDF5 Fortran Library. 
+
+*  The following predefined types are implemented in this prototype: 
+
+                                H5T_NATIVE_INTEGER
+                                H5T_NATIVE_REAL
+                                H5T_NATIVE_DOUBLE
+                                H5T_NATIVE_CHARACTER
+                                H5T_STD_REF_OBJ
+                                H5T_STD_REF_DSETREG
+                                H5T_IEEE_F32BE
+                                H5T_IEEE_F32LE
+                                H5T_IEEE_F64BE
+                                H5T_IEEE_F64LE
+                                H5T_STD_I8BE
+                                H5T_STD_I8LE
+                                H5T_STD_I16BE
+                                H5T_STD_I16LE
+                                H5T_STD_I32BE
+                                H5T_STD_I32LE
+                                H5T_STD_I64BE
+                                H5T_STD_I64LE
+                                H5T_STD_U8BE
+                                H5T_STD_U8LE
+                                H5T_STD_U16BE
+                                H5T_STD_U16LE
+                                H5T_STD_U32BE
+                                H5T_STD_U32LE
+                                H5T_STD_U64BE
+                                H5T_STD_U64LE
+                                
+    
+*  When a C application reads data stored from a Fortran program, the data 
+   will appear to be transposed due to the difference in the C - Fortran 
+   storage order.  For example, if Fortran writes a 4x6 two-dimensional dataset 
+   to the file, a C program will read it as a 6x4 two-dimensional dataset into 
+   memory.  The HDF5 C utilities h5dump and h5ls display transposed data, if
+   data is written from a Fortran program.
+ 
+*  Fortran indices are 1 based.
+
+*  Compound datatype datasets can be written or read by atomic fields only.
+
+Not all of the APIs provided with this prototype have been fully tested. 

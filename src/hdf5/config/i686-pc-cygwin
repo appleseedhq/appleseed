@@ -1,0 +1,118 @@
+#							-*- shell-script -*-
+#
+# Copyright by The HDF Group.
+# Copyright by the Board of Trustees of the University of Illinois.
+# All rights reserved.
+#
+# This file is part of HDF5.  The full HDF5 copyright notice, including
+# terms governing use, modification, and redistribution, is contained in
+# the files COPYING and Copyright.html.  COPYING can be found at the root
+# of the source code distribution tree; Copyright.html can be found at the
+# root level of an installed copy of the electronic HDF5 document set and
+# is linked from the top-level documents page.  It can also be found at
+# http://hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have
+# access to either file, you may request a copy from help@hdfgroup.org.
+
+
+# This file is part of the HDF5 build script.  It is processed shortly
+# after configure starts and defines, among other things, flags for
+# the various compile modes.
+#
+# See BlankForm in this directory for details.
+
+# The default compiler is `gcc'.
+if test -z "$CC"; then
+   CC=gcc
+   CC_BASENAME=gcc
+fi
+
+# Figure out GNU C compiler flags
+. $srcdir/config/gnu-flags
+
+# Figure out PGI C compiler flags
+. $srcdir/config/pgi-flags
+
+# Figure out Intel C compiler flags
+. $srcdir/config/intel-flags
+
+# The default Fortran 90 compiler
+if test "X-" = "X-$FC"; then
+    case $CC_BASENAME in
+        gcc*)
+            FC=g95
+            FCLIBS=-lgcc
+            FC_BASENAME=g95
+            ;;
+        pgcc*)
+            FC=pgf90
+            FC_BASENAME=pgf90
+            ;;
+        icc*)
+            FC=ifort
+            FC_BASENAME=ifort
+            ;;
+        mpicc*)
+            FC=mpif90
+            FC_BASENAME=mpif90
+            ;;
+    esac
+else
+    case $FC in
+        # The PGI and Intel compilers are automatically detected below
+        ifc*|ifort*|pgf90*)
+            ;;
+        g95)
+            FCLIBS=-lgcc
+            ;;
+        *)
+            # Figure out which compiler we are using: pgf90 or Absoft f95
+            RM='rm -f'
+            tmpfile=/tmp/cmpver.$$
+            $FC -V >$tmpfile
+            if test -s "$tmpfile"; then 
+                if( grep -s 'Absoft' $tmpfile > /dev/null) then
+                    FC_BASENAME=f95
+                fi 
+                if( grep -s 'pgf90' $tmpfile > /dev/null) then
+                    FC_BASENAME=pgf90
+                fi 
+            fi
+            $RM $tmpfile
+            ;;
+    esac
+fi
+
+# Figure out PGI F90 compiler flags
+. $srcdir/config/pgi-fflags
+
+# Figure out Intel F90 compiler flags
+. $srcdir/config/intel-fflags
+
+case $FC_BASENAME in
+    #
+    # Absoft compiler
+    #
+    f95)
+        # Set required flag for compiling C stubs
+        H5_CFLAGS="$H5_CFLAGS -DH5_ABSOFT" 
+
+        F9XSUFFIXFLAG=""
+# We force compiler to use upper case for external names 
+# (just in case since this should be a default EIP)
+        H5_FCFLAGS="$H5_FCFLAGS -YEXT_NAMES=UCS"
+        FSEARCH_DIRS=""
+        DEBUG_FCFLAGS="-g"
+        PROD_FCFLAGS="-O"
+        PROFILE_FCFLAGS="-g -pg"
+        f9x_flags_set=yes
+        ;;
+
+esac  
+
+# The default C++ compiler
+
+# The default compiler is `g++'.
+if test -z "$CXX"; then
+  CXX=g++
+  CXX_BASENAME=g++
+fi

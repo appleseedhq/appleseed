@@ -1,0 +1,6 @@
+</dset> is of type H5G_DATASET and </g1> is of type H5G_GROUP
+--------------------------------
+Some objects are not comparable
+--------------------------------
+Use -c for a list of objects.
+EXIT CODE: 0

@@ -1,0 +1,10 @@
+************************************************************************
+* Build and Install HDF5 C/C++ Library with Visual Studio 2005         *
+*                     with Windows XP (Short Version)                  *
+************************************************************************
+
+Notes: We no longer support building HDF5 using Microsoft Visual Studio 2005.
+************************************************************************
+
+Need further assistance, send email to help@hdfgroup.org
+

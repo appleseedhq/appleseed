@@ -1,0 +1,3 @@
+link   : </link_g1> and </link_g2>
+1 differences found
+EXIT CODE: 1

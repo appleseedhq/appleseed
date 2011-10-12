@@ -1,0 +1,45 @@
+#############################
+Expected output for 'h5dump --xml tarray6.h5'
+#############################
+<?xml version="1.0" encoding="UTF-8"?>
+<hdf5:HDF5-File xmlns:hdf5="http://hdfgroup.org/DTDs/HDF5-File" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://hdfgroup.org/DTDs/HDF5-File http://www.hdfgroup.org/DTDs/HDF5-File.xsd">
+<hdf5:RootGroup OBJ-XID="xid_928" H5Path="/">
+   <hdf5:Dataset Name="Dataset1" OBJ-XID="xid_976" H5Path= "/Dataset1" Parents="xid_928" H5ParentPaths="/">
+      <hdf5:StorageLayout>
+         <hdf5:ContiguousLayout/>
+      </hdf5:StorageLayout>
+         <hdf5:FillValueInfo FillTime="FillIfSet" AllocationTime="Late">
+         <hdf5:FillValue>
+               <hdf5:NoFill/>
+         </hdf5:FillValue>
+      </hdf5:FillValueInfo>
+      <hdf5:Dataspace>
+         <hdf5:SimpleDataspace Ndims="1">
+            <hdf5:Dimension  DimSize="4" MaxDimSize="4"/>
+         </hdf5:SimpleDataspace>
+      </hdf5:Dataspace>
+      <hdf5:DataType>
+         <hdf5:ArrayType Ndims="1">
+            <hdf5:ArrayDimension DimSize="4"/>
+            <hdf5:DataType>
+               <hdf5:VLType>
+                  <hdf5:DataType>
+                     <hdf5:AtomicType>
+                        <hdf5:IntegerType ByteOrder="LE" Sign="false" Size="4" />
+                     </hdf5:AtomicType>
+                  </hdf5:DataType>
+               </hdf5:VLType>
+            </hdf5:DataType>
+         </hdf5:ArrayType>
+      </hdf5:DataType>
+      <hdf5:Data>
+         <hdf5:DataFromFile>
+           0  10 11  20 21 22  30 31 32 33
+           100 101  110 111 112  120 121 122 123  130 131 132 133 134
+           200 201 202  210 211 212 213  220 221 222 223 224  230 231 232 233 234 235
+           300 301 302 303  310 311 312 313 314  320 321 322 323 324 325  330 331 332 333 334 335 336
+         </hdf5:DataFromFile>
+      </hdf5:Data>
+   </hdf5:Dataset>
+</hdf5:RootGroup>
+</hdf5:HDF5-File>

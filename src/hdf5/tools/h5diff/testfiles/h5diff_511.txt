@@ -1,0 +1,24 @@
+
+group1   group2
+---------------------------------------
+    x      x                   
+    x      x    /dset4         
+    x      x    /dset5         
+    x      x    /elink_grp_circle
+
+group  : </grp10> and </grp11>
+0 differences found
+dataset: </grp10/dset4> and </grp11/dset4>
+0 differences found
+dataset: </grp10/dset5> and </grp11/dset5>
+size:           [2x4]           [2x4]
+position        dset5           dset5           difference          
+------------------------------------------------------------
+[ 0 1 ]          3               2               1              
+[ 0 3 ]          3               2               1              
+[ 1 0 ]          3               2               1              
+[ 1 2 ]          3               2               1              
+4 differences found
+external link: </grp10/elink_grp_circle> and </grp11/elink_grp_circle>
+1 differences found
+EXIT CODE: 1

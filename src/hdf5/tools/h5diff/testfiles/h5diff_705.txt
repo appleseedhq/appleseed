@@ -1,0 +1,17 @@
+
+dataset: </dset> and </dset>
+   obj1   obj2
+ --------------------------------------
+    x           float2         
+           x    float3         
+    x      x    integer1       
+Attributes status:  1 common, 1 only in obj1, 1 only in obj2
+attribute: <integer1 of </dset>> and <integer1 of </dset>>
+size:           [2]           [2]
+position        integer1 of </dset> integer1 of </dset> difference          
+------------------------------------------------------------
+[ 0 ]          1               2               1              
+[ 1 ]          2               3               1              
+2 differences found
+2 differences found
+EXIT CODE: 1

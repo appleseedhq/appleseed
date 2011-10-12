@@ -1,0 +1,447 @@
+	    Installation instructions for Parallel HDF5
+	    -------------------------------------------
+
+
+1. Overview
+-----------
+This file contains instructions for the installation of parallel HDF5 (PHDF5).
+It is assumed that you are familiar with the general installation steps as
+described in the INSATLL file.  Get familiar with that file before trying
+the parallel HDF5 installation.
+
+The remaining of this section explains the requirements to run PHDF5.
+Section 2 shows quick instructions for some well know systems.  Section 3
+explains the details of the installation steps. Section 4 shows some details
+of running the parallel test suites.
+
+
+1.1. Requirements
+-----------------
+PHDF5 requires an MPI compiler with MPI-IO support and a parallel file system.
+If you don't know yet, you should first consult with your system support staff
+of information how to compile an MPI program, how to run an MPI application,
+and how to access the parallel file system.  There are sample MPI-IO C and
+Fortran programs in the appendix section of "Sample programs".  You can use
+them to run simple tests of your MPI compilers and the parallel file system.
+
+
+1.2. Further Help
+-----------------
+If you still have difficulties installing PHDF5 in your system, please send
+mail to
+	help@hdfgroup.org
+
+In your mail, please include the output of "uname -a". If you have run the
+"configure" command, attach the output of the command and the content of
+the file "config.log".
+
+
+2. Quick Instruction for known systems
+--------------------------------------
+The following shows particular steps to run the parallel HDF5 configure for
+a few machines we've tested. If your particular platform is not shown or
+somehow the steps do not work for yours, please go to the next section for
+more detailed explanations.
+
+
+2.1. Know parallel compilers
+----------------------------
+HDF5 knows several parallel compilers: mpicc, hcc, mpcc, mpcc_r.  To build
+parallel HDF5 with one of the above, just set CC as it and configure.
+The "--enable-parallel" is optional in this case.
+
+    $ CC=/usr/local/mpi/bin/mpicc ./configure --prefix=<install-directory>
+    $ make		# build the library
+    $ make check	# verify the correctness
+			# Read the Details section about parallel tests.
+    $ make install
+
+
+2.2. IBM SP
+-----------
+During the build stage, the H5detect is compiled and executed to generate
+the source file H5Tinit.c which is compiled as part of the HDF5 library. In
+parallel mode, make sure your environment variables are set correctly to
+execute a single process mpi application. Otherwise, multiple processes
+attempt to write to the same H5Tinit.c file, resulting in a scrambled
+source file.  Unfortunately, the setting varies from machine to machine.
+E.g., the following works for the IBM SP machine at LLNL.
+
+    setenv MP_PROCS     1
+    setenv MP_NODES     1
+    setenv MP_LABELIO   no
+    setenv MP_RMPOOL    0
+    setenv LLNL_COMPILE_SINGLE_THREADED TRUE    # for LLNL site only
+
+The shared library configuration is problematic.  So, only static library
+is supported.
+
+Then do the following steps:
+
+    $ ./configure --disable-shared --prefix=<install-directory>
+    $ make		# build the library
+    $ make check	# verify the correctness
+			# Read the Details section about parallel tests.
+    $ make install
+
+We also suggest that you add "-qxlf90=autodealloc" to FFLAGS when building
+parallel with fortran enabled.  This can be done by invoking:
+
+    setenv FFLAGS -qxlf90=autodealloc		# 32 bit build
+or
+    setenv FFLAGS "-q64 -qxlf90=autodealloc"	# 64 bit build
+
+prior to running configure.  Recall that the "-q64" is necessary for 64
+bit builds.
+
+
+2.3. Linux 2.4 and greater
+--------------------------
+Be sure that your installation of MPICH was configured with the following
+configuration command-line option:
+
+    -cflags="-D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64"
+
+This allows for >2GB sized files on Linux systems and is only available with
+Linux kernels 2.4 and greater.
+
+
+2.4. Red Storm (Cray XT3) (for v1.8 and later)
+-------------------------
+Both serial and parallel HDF5 are supported in Red Storm.
+
+2.4.1 Building serial HDF5 for Red Storm
+------------------------------------------
+The following steps are for building the serial HDF5 for the Red Storm
+compute nodes.  They would probably work for other Cray XT3 systems but have
+not been verified.
+
+# Assume you already have a copy of HDF5 source code in directory `hdf5' and
+# want to install the binary in directory `/project/hdf5/hdf5'.
+
+$ cd hdf5
+$ bin/yodconfigure configure
+$ env RUNSERIAL="yod -sz 1" \
+    CC=cc FC=ftn CXX=CC \
+    ./configure --prefix=/project/hdf5/hdf5
+$ make
+$ make check
+
+# if all is well, install the binary.
+$ make install
+
+2.4.2 Building parallel HDF5 for Red Storm
+------------------------------------------
+The following steps are for building the Parallel HDF5 for the Red Storm
+compute nodes.  They would probably work for other Cray XT3 systems but have
+not been verified.
+
+# Assume you already have a copy of HDF5 source code in directory `hdf5' and
+# want to install the binary in directory `/project/hdf5/phdf5'.  You also
+# have done the proper setup to have mpicc and mpif90 as the compiler commands.
+
+$ cd hdf5
+$ bin/yodconfigure configure
+$ env RUNSERIAL="yod -sz 1" RUNPARALLEL="yod -sz 3" \
+    CC=cc FC=ftn \
+    ./configure --enable-parallel --prefix=/project/hdf5/phdf5
+$ make
+$ make check
+
+# if all is well, install the binary.
+$ make install
+
+2.4.3 Red Storm known problems
+------------------------------
+For Red Storm, a Cray XT3 system, the yod command sometimes gives the
+message,  "yod allocation delayed for node recovery".  This interferes with
+test suites that do not expect seeing this message.  To bypass this problem,
+I launch the executables with a command shell script called "myyod" which
+consists of the following lines.  (You should set $RUNSERIAL and $RUNPARALLEL
+to use myyod instead of yod.)
+==== myyod =======
+#!/bin/sh
+# sleep 2 seconds to allow time for the node recovery else it pops the
+# message,
+#   yod allocation delayed for node recovery
+sleep 2
+yod $*
+==== end of myyod =======
+
+For Red Storm, a Cray XT3 system, the tools/h5ls/testh5ls.sh will fail on
+the test "Testing h5ls -w80 -r -g tgroup.h5" fails.  This test is
+expected to fail and exit with a non-zero code but the yod command does
+not propagate the exit code of the executables. Yod always returns 0 if it
+can launch the executable.  The test suite shell expects a non-zero for
+this particular test, therefore it concludes the test has failed when it
+receives 0 from yod.  To bypass this problem for now, change the following
+lines in the tools/h5ls/testh5ls.sh.
+======== Original =========
+# The following combination of arguments is expected to return an error message
+# and return value 1
+TOOLTEST tgroup-1.ls 1 -w80 -r -g tgroup.h5
+======== Skip the test =========
+echo SKIP TOOLTEST tgroup-1.ls 1 -w80 -r -g tgroup.h5
+======== end of bypass ========
+
+
+3. Detail explanation
+---------------------
+
+3.1. Installation steps (Uni/Multiple processes modes)
+-----------------------
+During the step of configure, you must be running in the uni-process mode.
+If multiple processes are doing the configure simultaneously, they will
+incur errors.
+
+In the build step (make), it depends on your make command whether it can
+run correctly in multiple processes mode.  If you are not sure, you should
+try running it in uni-process mode.
+
+In the test step (make check), if your system can control number of processes
+running in the MPI application, you can just use "make check".  But if your
+system (e.g., IBM SP) has a fixed number of processes for each batch run,
+you need to do the serial tests by "make check-s", requesting 1 process and
+then do the parallel tests by "make check-p", requesting n processes.
+
+Lastly, "make install" should be run in the uni-process mode.
+
+
+3.2. Configure details
+----------------------
+The HDF5 library can be configured to use MPI and MPI-IO for parallelism on
+a distributed multi-processor system. The easiest way to do this is to have
+a properly installed parallel compiler (e.g., MPICH's mpicc or IBM's mpcc_r)
+and supply the compiler name as the value of the CC environment variable.
+For examples,
+
+    $ CC=mpcc_r ./configure
+    $ CC=/usr/local/mpi/bin/mpicc ./configure
+
+If no such a compiler command is available then you must use your normal
+C compiler along with the location(s) of MPI/MPI-IO files to be used.
+For example,
+
+    $ CPPFLAGS=-I/usr/local/mpi/include \
+      LDFLAGS=-L/usr/local/mpi/lib/LINUX/ch_p4 \
+      ./configure --enable-parallel=mpich
+
+If a parallel library is being built then configure attempts to determine how
+to run a parallel application on one processor and on many processors. If the
+compiler is `mpicc' and the user hasn't specified values for RUNSERIAL and
+RUNPARALLEL then configure chooses `mpiexec' from the same directory as `mpicc':
+
+    RUNSERIAL:    /usr/local/mpi/bin/mpiexec -np 1
+    RUNPARALLEL:  /usr/local/mpi/bin/mpiexec -np $${NPROCS:=6}
+
+The `$${NPROCS:=6}' will be substituted with the value of the NPROCS
+environment variable at the time `make check' is run (or the value 6).
+
+
+4. Parallel test suite
+----------------------
+The testpar/ directory contains tests for Parallel HDF5 and MPI-IO.  Here are
+some notes about some of the tests.
+
+The t_mpi tests the basic functionalities of some MPI-IO features used by
+Parallel HDF5.  It usually exits with non-zero code if a required MPI-IO
+feature does not succeed as expected.  One exception is the testing of
+accessing files larger than 2GB.  If the underlying filesystem or if the
+MPI-IO library fails to handle file sizes larger than 2GB, the test will
+print informational messages stating the failure but will not exit with
+non-zero code.  Failure to support file size greater than 2GB is not a fatal
+error for HDF5 because HDF5 can use other file-drivers such as families of
+files to bypass the file size limit.
+
+The t_posix_compliant tests if the file system is POSIX compliant when POSIX
+and MPI IO APIs are used.  This is for information only and it always exits
+with 0 even when non-compliance errors have occurred.  This is to prevent
+the test from aborting the remaining parallel HDF5 tests unnecessarily.
+
+The t_cache does many small sized I/O requests and may not run well in a
+slow file system such as NFS disk. If it takes a long time to run it, try
+set the environment variable $HDF5_PARAPREFIX to a file system more suitable
+for MPI-IO requests before running t_cache.
+
+By default, the parallel tests use the current directory as the test directory.
+This can be changed by the environment variable $HDF5_PARAPREFIX.  For example,
+if the tests should use directory /PFS/user/me, do
+    HDF5_PARAPREFIX=/PFS/user/me
+    export HDF5_PARAPREFIX
+    make check
+
+(In some batch job system, you many need to hardset HDF5_PARAPREFIX in the
+shell initial files like .profile, .cshrc, etc.)
+
+
+Appendix A. Sample programs
+---------------------------
+Here are sample MPI-IO C and Fortran programs.  You may use them to run simple
+tests of your MPI compilers and the parallel file system.  The MPI commands
+used here are mpicc, mpif90 and mpiexec.  Replace them with the commands of
+your system.
+
+The programs assume they run in the parallel file system. Thus they create
+the test data file in the current directory.  If the parallel file system
+is somewhere else, you need to run the sample programs there or edit the
+programs to use a different file name.
+
+Example compiling and running:
+
+% mpicc Sample_mpio.c -o c.out
+% mpiexec -np 4 c.out
+
+% mpif90 Sample_mpio.f90 -o f.out
+% mpiexec -np 4 f.out
+
+
+==> Sample_mpio.c <==
+/* Simple MPI-IO program testing if a parallel file can be created.
+ * Default filename can be specified via first program argument.
+ * Each process writes something, then reads all data back.
+ */
+
+#include <mpi.h>
+#ifndef MPI_FILE_NULL           /*MPIO may be defined in mpi.h already       */
+#   include <mpio.h>
+#endif
+
+#define DIMSIZE	10		/* dimension size, avoid powers of 2. */
+#define PRINTID printf("Proc %d: ", mpi_rank)
+
+main(int ac, char **av)
+{
+    char hostname[128];
+    int  mpi_size, mpi_rank;
+    MPI_File fh;
+    char *filename = "./mpitest.data";
+    char mpi_err_str[MPI_MAX_ERROR_STRING];
+    int  mpi_err_strlen;
+    int  mpi_err;
+    char writedata[DIMSIZE], readdata[DIMSIZE];
+    char expect_val;
+    int  i, irank; 
+    int  nerrors = 0;		/* number of errors */
+    MPI_Offset  mpi_off;
+    MPI_Status  mpi_stat;
+
+    MPI_Init(&ac, &av);
+    MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
+    MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
+
+    /* get file name if provided */
+    if (ac > 1){
+	filename = *++av;
+    }
+    if (mpi_rank==0){
+	printf("Testing simple MPIO program with %d processes accessing file %s\n",
+	    mpi_size, filename);
+        printf("    (Filename can be specified via program argument)\n");
+    }
+
+    /* show the hostname so that we can tell where the processes are running */
+    if (gethostname(hostname, 128) < 0){
+	PRINTID;
+	printf("gethostname failed\n");
+	return 1;
+    }
+    PRINTID;
+    printf("hostname=%s\n", hostname);
+
+    if ((mpi_err = MPI_File_open(MPI_COMM_WORLD, filename,
+	    MPI_MODE_RDWR | MPI_MODE_CREATE | MPI_MODE_DELETE_ON_CLOSE,
+	    MPI_INFO_NULL, &fh))
+	    != MPI_SUCCESS){
+	MPI_Error_string(mpi_err, mpi_err_str, &mpi_err_strlen);
+	PRINTID;
+	printf("MPI_File_open failed (%s)\n", mpi_err_str);
+	return 1;
+    }
+
+    /* each process writes some data */
+    for (i=0; i < DIMSIZE; i++)
+	writedata[i] = mpi_rank*DIMSIZE + i;
+    mpi_off = mpi_rank*DIMSIZE;
+    if ((mpi_err = MPI_File_write_at(fh, mpi_off, writedata, DIMSIZE, MPI_BYTE,
+	    &mpi_stat))
+	    != MPI_SUCCESS){
+	MPI_Error_string(mpi_err, mpi_err_str, &mpi_err_strlen);
+	PRINTID;
+	printf("MPI_File_write_at offset(%ld), bytes (%d), failed (%s)\n",
+		(long) mpi_off, (int) DIMSIZE, mpi_err_str);
+	return 1;
+    };
+
+    /* make sure all processes has done writing. */
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    /* each process reads all data and verify. */
+    for (irank=0; irank < mpi_size; irank++){
+	mpi_off = irank*DIMSIZE;
+	if ((mpi_err = MPI_File_read_at(fh, mpi_off, readdata, DIMSIZE, MPI_BYTE,
+		&mpi_stat))
+		!= MPI_SUCCESS){
+	    MPI_Error_string(mpi_err, mpi_err_str, &mpi_err_strlen);
+	    PRINTID;
+	    printf("MPI_File_read_at offset(%ld), bytes (%d), failed (%s)\n",
+		    (long) mpi_off, (int) DIMSIZE, mpi_err_str);
+	    return 1;
+	};
+	for (i=0; i < DIMSIZE; i++){
+	    expect_val = irank*DIMSIZE + i;
+	    if (readdata[i] != expect_val){
+		PRINTID;
+		printf("read data[%d:%d] got %d, expect %d\n", irank, i,
+			readdata[i], expect_val);
+		nerrors++;
+	    }
+	}
+    }
+    if (nerrors)
+	return 1;
+
+    MPI_File_close(&fh);
+
+    PRINTID;
+    printf("all tests passed\n");
+
+    MPI_Finalize();
+    return 0;
+}
+
+==> Sample_mpio.f90 <==
+!
+! The following example demonstrates how to create and close a parallel
+! file using MPI-IO calls.
+!
+! USE MPI is the proper way to bring in MPI definitions but many
+! MPI Fortran compiler supports the pseudo standard of INCLUDE.
+! So, HDF5 uses the INCLUDE statement instead.
+! 
+
+     PROGRAM MPIOEXAMPLE
+
+     ! USE MPI
+
+     IMPLICIT NONE
+
+     INCLUDE 'mpif.h'
+        
+     CHARACTER(LEN=80), PARAMETER :: filename = "filef.h5" ! File name
+     INTEGER     ::   ierror  ! Error flag
+     INTEGER     ::   fh      ! File handle
+     INTEGER     ::   amode   ! File access mode
+     
+     call MPI_INIT(ierror)
+     amode = MPI_MODE_RDWR + MPI_MODE_CREATE + MPI_MODE_DELETE_ON_CLOSE
+     call MPI_FILE_OPEN(MPI_COMM_WORLD, filename, amode, MPI_INFO_NULL, fh, ierror)
+     print *, "Trying to create ", filename
+     if ( ierror .eq. MPI_SUCCESS ) then
+        print *, "MPI_FILE_OPEN succeeded"
+        call MPI_FILE_CLOSE(fh, ierror)
+     else
+        print *, "MPI_FILE_OPEN failed"
+     endif
+
+     call MPI_FINALIZE(ierror);
+     END PROGRAM

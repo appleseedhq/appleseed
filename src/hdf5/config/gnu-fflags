@@ -1,0 +1,99 @@
+#							-*- shell-script -*-
+#
+# Copyright by The HDF Group.
+# Copyright by the Board of Trustees of the University of Illinois.
+# All rights reserved.
+#
+# This file is part of HDF5.  The full HDF5 copyright notice, including
+# terms governing use, modification, and redistribution, is contained in
+# the files COPYING and Copyright.html.  COPYING can be found at the root
+# of the source code distribution tree; Copyright.html can be found at the
+# root level of an installed copy of the electronic HDF5 document set and
+# is linked from the top-level documents page.  It can also be found at
+# http://hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have
+# access to either file, you may request a copy from help@hdfgroup.org.
+
+
+# This file should be sourced into configure if the compiler is the
+# GNU g95/gfortran compiler or a derivative.  It is careful not to do anything
+# if the compiler is not GNU; otherwise `f9x_flags_set' is set to `yes'
+#
+
+# Get the compiler version in a way that works for GNU fortran
+# gfortran unless a compiler version is already known
+#
+#   f9x_vendor:    The compiler name: gfortran
+#   f9x_version:   Version number: 5.0-2, 5.2-2
+#
+if test X = "X$f9x_flags_set"; then
+    f9x_version="`$FC $FCFLAGS $H5_FCFLAGS -v 2>&1 |grep 'gcc version' |\
+	        sed 's/.*gcc version \([-a-z0-9\.]*\).*/\1/'`"
+    if test X != "X$f9x_version"; then
+#        is_mpi="`$FC $FCFLAGS $H5_FCFLAGS -help 2>&1 |grep 'link MPI'`"
+        f9x_vendor=`echo $f9x_version |sed 's/\([a-z]*\).*/\1/'`
+        f9x_version=`echo $f9x_version |sed 's/[-a-z]//g'`
+        if test X = "X$f9x_vendor" -a X != "X$f9x_version"; then
+            f9x_vendor=gfortran
+        fi
+        if test "-" != "$f9x_vendor-$f9x_version"; then
+            echo "compiler '$FC' is GNU $f9x_vendor-$f9x_version"
+        fi
+
+        # Some version numbers
+        f9x_vers_major=`echo $f9x_version | cut -f1 -d.`
+        f9x_vers_minor=`echo $f9x_version | cut -f2 -d.`
+        f9x_vers_patch=`echo $f9x_version | cut -f3 -d.`
+        test -n "$f9x_vers_major" || f9x_vers_major=0
+        test -n "$f9x_vers_minor" || f9x_vers_minor=0
+        test -n "$f9x_vers_patch" || f9x_vers_patch=0
+        f9x_vers_all=`expr $f9x_vers_major '*' 1000000 + $f9x_vers_minor '*' 1000 + $f9x_vers_patch`
+    fi
+fi
+
+# Common GNU flags for various situations
+if test "X-gfortran" = "X-$f9x_vendor"; then
+    # Insert section about version specific problems from gnu-flags here, if
+    # necessary.
+
+    arch=
+    # Architecture-specific flags
+    # Nothing currently. (Uncomment code below and modify to add any)
+    #case "$host_os-$host_cpu" in
+    #    *-i686)
+    #        arch="-march=i686"
+    #        ;;
+    #esac
+
+    # Host-specific flags
+    # Nothing currently. (Uncomment code below and modify to add any)
+    #case "`hostname`" in
+    #    sleipnir.ncsa.uiuc.edu)
+    #        arch="$arch -pipe"
+    #        ;;
+    #esac
+
+    # General
+    FC_BASENAME=gfortran40
+    F9XSUFFIXFLAG=""
+    FSEARCH_DIRS=""
+    H5_FCFLAGS="$H5_FCFLAGS -pedantic -Wall -Wconversion -Wunderflow -Wimplicit-interface -W"
+
+    # Production
+    PROD_FCFLAGS="-O2 -s"
+
+    # Debug
+    DEBUG_FCFLAGS="-g -fbounds-check"
+
+    # Profile
+    PROFILE_FCFLAGS="-g -pg"
+
+    # Flags are set
+    f9x_flags_set=yes
+fi
+
+# Clear f9x info if no flags set
+if test "X-$f9x_flags_set" = "X-"; then
+  f9x_vendor=
+  f9x_version=
+fi
+

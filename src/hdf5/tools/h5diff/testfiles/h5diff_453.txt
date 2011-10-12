@@ -1,0 +1,34 @@
+
+file1     file2
+---------------------------------------
+    x      x    /              
+    x      x    /softlink_dset1_1
+    x      x    /softlink_dset2
+    x      x    /softlink_group1
+    x      x    /softlink_group1/dset
+    x      x    /softlink_noexist
+    x      x    /target_dset1  
+    x      x    /target_dset2  
+    x      x    /target_group  
+    x      x    /target_group/dset
+
+group  : </> and </>
+0 differences found
+dataset: </softlink_dset1_1> and </softlink_dset1_1>
+0 differences found
+dataset: </softlink_dset2> and </softlink_dset2>
+0 differences found
+group  : </softlink_group1> and </softlink_group1>
+0 differences found
+dataset: </softlink_group1/dset> and </softlink_group1/dset>
+0 differences found
+Warning: </softlink_noexist> is a dangling link.
+dataset: </target_dset1> and </target_dset1>
+0 differences found
+dataset: </target_dset2> and </target_dset2>
+0 differences found
+group  : </target_group> and </target_group>
+0 differences found
+dataset: </target_group/dset> and </target_group/dset>
+0 differences found
+EXIT CODE: 2

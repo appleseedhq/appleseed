@@ -1,0 +1,179 @@
+#							-*- shell-script -*-
+#
+# Copyright by The HDF Group.
+# Copyright by the Board of Trustees of the University of Illinois.
+# All rights reserved.
+#
+# This file is part of HDF5.  The full HDF5 copyright notice, including
+# terms governing use, modification, and redistribution, is contained in
+# the files COPYING and Copyright.html.  COPYING can be found at the root
+# of the source code distribution tree; Copyright.html can be found at the
+# root level of an installed copy of the electronic HDF5 document set and
+# is linked from the top-level documents page.  It can also be found at
+# http://hdfgroup.org/HDF5/doc/Copyright.html.  If you do not have
+# access to either file, you may request a copy from help@hdfgroup.org.
+
+
+# This file is part of the HDF5 build script.  It is processed shortly
+# after configure starts and defines, among other things, flags for
+# the various compile modes.
+# [ak] created for a nec sx6 running superux with native compilers
+# [ak] -xint is neccessary because of src/H5FDmulti.c[H5Pset_fapl_multi]
+# [ak]  integer division of unsigned longs for _memb_addr
+ 
+#----------------------------------------------------------------------------
+# Compiler flags. The CPPFLAGS values should not include package debug
+# flags like `-DH5G_DEBUG' since these are added with the
+# `--enable-debug' switch of configure.
+#----------------------------------------------------------------------------
+
+
+# Choosing a C Compiler
+# ---------------------
+#
+# The user should be able to specify the compiler by setting the CC
+# environment variable to the name of the compiler and any switches it 
+# requires for proper operation.  If CC is unset then this script may
+# set it.  If CC is unset by time this script completes then configure 
+# will try `gcc' and `cc' in that order (perhaps some others too).
+#
+# Note: Code later in this file may depend on the value of $CC_BASENAME
+#       in order to distinguish between different compilers when
+#       deciding which compiler command-line switches to use.  This
+#       variable is set based on the incoming value of $CC and is only
+#       used within this file.
+
+if test "X-" =  "X-$CC"; then
+    CC="sxc++ -Xa -size_t64 -xint -K c99"
+    CC_BASENAME=sxc++
+fi
+# The default archiver is `sxar'
+AR=${AR:-sxar}
+RANLIB=${RANLIB:=":"}
+
+if test "X-" = "X-$CXX"; then
+    CXX="sxc++ -size_t64 -xint -Kexceptions"
+    CXX_BASENAME=sxc++
+fi
+
+if test "X-" = "X-$F9X"; then
+    FC="sxf90 -size_t64 -ew "
+    FC_BASENAME=sxf90
+fi
+
+# C Compiler and Preprocessor Flags
+# ---------------------------------
+#
+# Flags that end with `_CFLAGS' are always passed to the compiler.
+# Flags that end with `_CPPFLAGS' are passed to the compiler when
+# compiling but not when linking.
+#
+# DEBUG_CFLAGS		Flags to pass to the compiler to create a
+# DEBUG_CPPFLAGS	library suitable for use with debugging
+#			tools. Usually this list will exclude
+#			optimization switches (like `-O') and include
+#			switches that turn on symbolic debugging
+#			support (like `-g').
+#
+# PROD_CFLAGS		Flags to pass to the compiler to create a
+# PROD_CPPFLAGS		production version of the library.  These
+#			usualy exclude symbolic debugging switches
+#			(like `-g') and include optimization switches
+#			(like `-O').
+#
+# PROFILE_CFLAGS	Flags to pass to the compiler to create a
+# PROFILE_CPPFLAGS	library suitable for performance testing (like 
+# 			`-pg').  This may or may not include debugging 
+# 			or production flags.
+#
+# H5_CFLAGS		Flags can be added to this variable which
+#			might already be partially initialized.  These 
+#			flags will always be passed to the compiler
+#			and should include switches to turn on full
+#			warnings.  HDF5 attempts to be ANSI and Posix
+#			compliant and employ good programming
+#			practices resulting in few if any
+#			warnings.
+#
+#			Warning flags do not have to be added to H5_CFLAGS
+#			variable if the compiler is the GNU gcc
+#			compiler or a descendent of gcc such as EGCS or PGCC.
+#
+# AM_CFLAGS             Flags added directly into this variable will
+#                       be propogated to the compiler wrapper scripts (h5cc,
+#                       h5c++, et cetera) in addition to being used to compile 
+#                       the library.
+#
+# These flags should be set according to the compiler being used.
+# There are two ways to check the compiler.  You can try using `-v' or 
+# `--version' to see if the compiler will print a version string.  You 
+# can use the value of $CC_BASENAME which is the base name of the
+# first word in $CC (note that the value of CC may have changed
+# above).
+
+case $CC_BASENAME in
+    cc)
+        H5_CFLAGS="$H5_CFLAGS"
+	DEBUG_CFLAGS="-Cdebug -g -wall"
+	DEBUG_CPPFLAGS=
+	PROD_CFLAGS="-Cnoopt"
+	PROD_CPPFLAGS=
+	PROFILE_CFLAGS="-p"
+	PROFILE_CPPFLAGS=
+	;;
+
+    *)
+	H5_CFLAGS="$H5_CFLAGS"
+	DEBUG_CFLAGS="-g"
+	DEBUG_CPPFLAGS=
+	PROD_CFLAGS=""
+	PROD_CPPFLAGS=
+	PROFILE_CFLAGS="-p"
+	PROFILE_CPPFLAGS=
+	;;
+esac
+
+case $CXX_BASENAME in
+    c++)
+         H5_CXXFLAGS="$H5_CXXFLAGS -Tlocal"
+         ;;
+
+    *)
+         H5_CXXFLAGS="$H5_CXXFLAGS"
+         ;;
+esac
+ 
+case $FC_BASENAME in
+    f90)
+         H5_FCFLAGS="$F9XFLAGS"
+         ;;
+
+    *)
+         H5_FCFLAGS="$F9XFLAGS"
+         ;;
+esac
+
+# Overriding Configure Tests
+# --------------------------
+#
+ac_cv_sizeof_long_double=${ac_cv_sizeof_long_double=0}
+hdf5_cv_gettimeofday_tz=no
+# I have to add the follwoing two lines when -K c99 was used
+ac_cv_func_getrusage=no
+ac_cv_func_gethostname=no
+hdf5_cv_vsnprintf_works=no
+hdf5_cv_printf_ll=l
+hdf5_cv_system_scope_threads=no
+hdf5_cv_sw_ldouble_to_integer_works=no
+hdf5_cv_fp_to_ullong_right_maximum=no
+hdf5_cv_fp_to_ullong_bottom_bit_works=yes
+hdf5_cv_fp_to_ullong_right_maximum=no
+hdf5_cv_ldouble_to_uint_work=no
+hdf5_cv_ullong_to_fp_cast_works=yes
+hdf5_cv_ullong_to_ldouble_precision_works=no
+hdf5_cv_fp_to_integer_overflow_works=yes
+hdf5_cv_fp_to_ullong_accurate=no
+hdf5_cv_fp_to_ullong_right_maximum=no
+CONFIGURE_LIBS=/usr/lib/libi90sxe.a
+
+

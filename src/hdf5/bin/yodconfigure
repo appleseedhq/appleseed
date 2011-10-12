@@ -1,0 +1,77 @@
+#!/bin/sh
+#
+# Copyright by the Board of Trustees of the University of Illinois.
+# All rights reserved.
+#
+# This file is part of HDF5.  The full HDF5 copyright notice, including
+# terms governing use, modification, and redistribution, is contained in
+# the files COPYING and Copyright.html.  COPYING can be found at the root
+# of the source code distribution tree; Copyright.html can be found at the
+# root level of an installed copy of the electronic HDF5 document set and
+# is linked from the top-level documents page.  It can also be found at
+# http://hdf.ncsa.uiuc.edu/HDF5/doc/Copyright.html.  If you do not have
+# access to either file, you may request a copy from hdfhelp@ncsa.uiuc.edu.
+#
+# Fix configure file so that it can launch configure testing executable
+# via the proper launching command, e.g., yod.  (Thus the name yodconfigure
+# is used.)
+#
+# Author: Albert Cheng
+
+if [ "$1" = -f ]; then
+    FORCEMODE=yes
+    echo turn FORCEMODE to $FORCEMODE
+    shift
+fi
+
+if [ $# -ne 1 ]; then
+    echo "Usage: $0 [-f] <configure file>"
+    echo "   -f   apply the change even if it has been applied already."
+    exit 1
+fi
+confile=$1
+
+if [ ! -w $confile ]; then
+    echo "$0: $confile is not writable"
+    exit 1
+fi
+
+ACTRY_NAME="ACTRY()"
+if grep ^"$ACTRY_NAME"$ $confile >/dev/null 2>&1 && [ "$FORCEMODE" != yes ]; then
+    echo "$0: $confile is already yodconfigure ready.  Use -f to force yodconfigure again."
+    exit 1
+fi
+
+# Insert the ACTRY function after the 1st line which is the #!/bin/sh.
+# Change all "eval $ac_try" commands to call ACTRY.
+# auto-configure have changed the ac_try syntax from 'eval $ac_try' to
+# 'eval "$ac_try"'.  Thus requiring two very similar global-substitute.
+# The single quotes around EOF tell shell NOT to expand or do substitution in
+# the body of ed input.
+#
+ed - $confile <<'EOF'
+1a
+# ===inserted by yodconfigure ====
+# ACTRY will figure out when it is approprirate to run the command by the
+# $RUNSERIAL launcher (e.g., yod -sz 1) and when to just run it as is.
+# So far, ./a.out and ./conftest are names of real executable that should
+# be run by $RUNSERIAL.
+#
+# (uncomment the echo line if you want to see what is going on.)
+ACTRY()
+{
+#echo ACTRY: args are: $* > /dev/tty
+if [ "$1" = ./a.out -o "$1" = ./conftest ]; then
+#    echo $RUNSERIAL $* > /dev/tty
+    $RUNSERIAL $*
+else
+    $*
+fi
+}
+# === end of ACTRY inserted by yodconfigure ====
+.
+g/eval $ac_try/s/eval/eval ACTRY/
+g/eval "$ac_try"/s/eval/eval ACTRY/
+w
+q
+EOF

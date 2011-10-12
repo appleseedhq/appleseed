@@ -1,0 +1,11 @@
+dataset: </g1/dset5> and </g1/dset6>
+size:           [3x2]           [3x2]
+position        dset5           dset6           difference      relative       
+------------------------------------------------------------------------
+[ 0 0 ]          100             120             20              0.200000      
+[ 0 1 ]          100             80              20              0.200000      
+[ 1 0 ]          100             0               100             1.000000      
+[ 1 1 ]          0               100             100             not comparable
+[ 2 1 ]          100             50              50              0.500000      
+5 differences found
+EXIT CODE: 1
