@@ -28,46 +28,46 @@
 
 
 #
-# Source Files.
+# Source files.
 #
 
-set(meta_templates_sources
+set (meta_templates_sources
     meta/templates/cli_component_template.cpp
     meta/templates/cli_component_template.h
     meta/templates/cli_test_template.cpp
 )
-list(APPEND appleseed.cli_sources
+list (APPEND appleseed.cli_sources
     ${meta_templates_sources}
 )
-source_group("meta\\templates" FILES
+source_group ("meta\\templates" FILES
     ${meta_templates_sources}
 )
-set_source_files_properties(
+set_source_files_properties (
     ${meta_templates_sources}
     PROPERTIES HEADER_FILE_ONLY TRUE
 )
 
-set(meta_tests_sources
+set (meta_tests_sources
     meta/tests/test_superlogger.cpp
 )
-list(APPEND appleseed.cli_sources
+list (APPEND appleseed.cli_sources
     ${meta_tests_sources}
 )
-source_group("meta\\tests" FILES
+source_group ("meta\\tests" FILES
     ${meta_tests_sources}
 )
 
-set(sources
+set (sources
     commandline.cpp
     commandline.h
     main.cpp
     superlogger.cpp
     superlogger.h
 )
-list(APPEND appleseed.cli_sources
+list (APPEND appleseed.cli_sources
     ${sources}
 )
-source_group("" FILES
+source_group ("" FILES
     ${sources}
 )
 
@@ -76,35 +76,41 @@ source_group("" FILES
 # Target.
 #
 
-add_executable(appleseed.cli
+add_executable (appleseed.cli
     ${appleseed.cli_sources}
+)
+
+set_target_properties (appleseed.cli PROPERTIES
+    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/../build/${platform}/appleseed.cli
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/../build/${platform}/appleseed.cli
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/../build/${platform}/appleseed.cli
 )
 
 
 #
-# Include Paths.
+# Include paths.
 #
 
-include_directories(
+include_directories (
     .
     ../appleseed.shared
 )
 
 
 #
-# Preprocessor Definitions.
+# Preprocessor definitions.
 #
 
-apply_preprocessor_definitions(appleseed.cli)
+apply_preprocessor_definitions (appleseed.cli)
 
 
 #
-# Static Libraries.
+# Static libraries.
 #
 
-link_against_platform(appleseed.cli)
+link_against_platform (appleseed.cli)
 
-target_link_libraries(appleseed.cli
+target_link_libraries (appleseed.cli
     appleseed
     appleseed.shared
     ${Boost_LIBRARIES}
@@ -112,7 +118,7 @@ target_link_libraries(appleseed.cli
 
 
 #
-# Post-Build Commands.
+# Post-build commands.
 #
 
-add_copy_target_to_sandbox_command(appleseed.cli)
+add_copy_target_to_sandbox_command (appleseed.cli)

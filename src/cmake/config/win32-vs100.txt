@@ -31,20 +31,22 @@
 # Microsoft Visual Studio 2010 (10.0) on Windows, generating 32-bit binaries.
 #
 
+set (platform "win32.vs100")
+
 
 #
 # Tools.
 #
 
-set(git_command "git.cmd")
+set (git_command "git.cmd")
 
 
 #
-# Preprocessor Definitions.
+# Preprocessor definitions.
 #
 
 # All configurations.
-set(preprocessor_definitions_common
+set (preprocessor_definitions_common
     WIN32
     _CRT_SECURE_NO_WARNINGS
     _USRDLL
@@ -53,42 +55,42 @@ set(preprocessor_definitions_common
 )
 
 # Debug configuration.
-set(preprocessor_definitions_debug
+set (preprocessor_definitions_debug
 )
 
 # Release configuration.
-set(preprocessor_definitions_release
+set (preprocessor_definitions_release
     _SECURE_SCL=0
 )
 
 
 #
-# Compilation/Linking Flags.
+# Compilation/linking flags.
 #
 
 # All configurations.
-set(compiler_flags_common
+set (compiler_flags_common
     /MP                                     # Multi-processor Compilation
     /WX                                     # Treat Warnings As Errors
     /GF                                     # Enable String Pooling
     /wd4290                                 # Disable warning C4290: C++ exception specification ignored except to indicate a function is not __declspec(nothrow)
     /wd4355                                 # Disable warning C4355: 'this' : used in base member initializer list
 )
-set(exe_linker_flags_common
+set (exe_linker_flags_common
     /WX                                     # Treat Warnings As Errors
 )
-set(shared_lib_linker_flags_common
+set (shared_lib_linker_flags_common
     ${exe_linker_flags_common}
 )
 
 # Debug configuration.
-set(compiler_flags_debug
+set (compiler_flags_debug
     /ZI                                     # set Debug Information Format to Program Database for Edit & Continue
     /MDd                                    # set Runtime Library to Multi-threaded Debug DLL
 )
 
 # Release configuration.
-set(compiler_flags_release
+set (compiler_flags_release
     /Zi                                     # set Debug Information Format to Program Database
     /Ox                                     # Full Optimization
     /Ob2                                    # set Inline Function Expansion to Any Suitable
@@ -100,93 +102,93 @@ set(compiler_flags_release
     /arch:SSE2                              # Streaming SIMD Extensions 2
     /fp:fast                                # set Floating Point Model to Fast
 )
-set(exe_linker_flags_release
+set (exe_linker_flags_release
     /OPT:REF                                # Eliminate Unreferenced Data
     /OPT:ICF                                # Remove Redundant COMDATs
 )
-set(shared_lib_linker_flags_release
+set (shared_lib_linker_flags_release
     ${exe_linker_flags_release}
 )
 
 # Ship configuration.
-set(compiler_flags_ship
+set (compiler_flags_ship
     /GL                                     # Enable link-time code generation
 )
-set(exe_linker_flags_ship
+set (exe_linker_flags_ship
     /LTCG                                   # Use Link Time Code Generation
     /INCREMENTAL:NO                         # Disable Incremental Linking
 )
-set(shared_lib_linker_flags_ship
+set (shared_lib_linker_flags_ship
     ${exe_linker_flags_ship}
 )
 
 # Profile configuration.
-set(exe_linker_flags_profile
+set (exe_linker_flags_profile
     /DEBUG                                  # Generate Debug Info
 )
-set(shared_lib_linker_flags_profile
+set (shared_lib_linker_flags_profile
     ${exe_linker_flags_profile}
 )
 
 
 #
-# Static Libraries.
+# Static libraries.
 #
 
-macro(link_against_platform target)
-endmacro()
+macro (link_against_platform target)
+endmacro ()
 
-macro(link_against_openexr target)
-    target_link_libraries(${target}
-        debug       ${CMAKE_SOURCE_DIR}/build/win32.vs100/openexr/Half/Debug/Half.lib
-        debug       ${CMAKE_SOURCE_DIR}/build/win32.vs100/openexr/Iex/Debug/Iex.lib
-        debug       ${CMAKE_SOURCE_DIR}/build/win32.vs100/openexr/IlmImf/Debug/IlmImf.lib
-        debug       ${CMAKE_SOURCE_DIR}/build/win32.vs100/openexr/IlmThread/Debug/IlmThread.lib
-        debug       ${CMAKE_SOURCE_DIR}/build/win32.vs100/openexr/Imath/Debug/Imath.lib
-        optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs100/openexr/Half/Release/Half.lib
-        optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs100/openexr/Iex/Release/Iex.lib
-        optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs100/openexr/IlmImf/Release/IlmImf.lib
-        optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs100/openexr/IlmThread/Release/IlmThread.lib
-        optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs100/openexr/Imath/Release/Imath.lib
+macro (link_against_openexr target)
+    target_link_libraries (${target}
+        debug       ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/Half/Debug/Half.lib
+        debug       ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/Iex/Debug/Iex.lib
+        debug       ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/IlmImf/Debug/IlmImf.lib
+        debug       ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/IlmThread/Debug/IlmThread.lib
+        debug       ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/Imath/Debug/Imath.lib
+        optimized   ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/Half/Release/Half.lib
+        optimized   ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/Iex/Release/Iex.lib
+        optimized   ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/IlmImf/Release/IlmImf.lib
+        optimized   ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/IlmThread/Release/IlmThread.lib
+        optimized   ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/Imath/Release/Imath.lib
     )
-endmacro()
+endmacro ()
 
-macro(link_against_zlib target)
-    target_link_libraries(${target}
-        debug       ${CMAKE_SOURCE_DIR}/build/win32.vs100/zlib/Debug/zlib.lib
-        optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs100/zlib/Release/zlib.lib
+macro (link_against_zlib target)
+    target_link_libraries (${target}
+        debug       ${CMAKE_SOURCE_DIR}/../build/${platform}/zlib/Debug/zlib.lib
+        optimized   ${CMAKE_SOURCE_DIR}/../build/${platform}/zlib/Release/zlib.lib
     )
-endmacro()
+endmacro ()
 
-macro(link_against_libpng target)
-    target_link_libraries(${target}
-        debug       ${CMAKE_SOURCE_DIR}/build/win32.vs100/libpng/Debug/libpng.lib
-        optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs100/libpng/Release/libpng.lib
+macro (link_against_libpng target)
+    target_link_libraries (${target}
+        debug       ${CMAKE_SOURCE_DIR}/../build/${platform}/libpng/Debug/libpng.lib
+        optimized   ${CMAKE_SOURCE_DIR}/../build/${platform}/libpng/Release/libpng.lib
     )
-endmacro()
+endmacro ()
 
-macro(link_against_xercesc target)
-    target_link_libraries(${target}
-        debug       ${CMAKE_SOURCE_DIR}/build/win32.vs100/xerces-c/Static\ Debug/xerces-c_static_3D.lib
-        optimized   ${CMAKE_SOURCE_DIR}/build/win32.vs100/xerces-c/Static\ Release/xerces-c_static_3.lib
+macro (link_against_xercesc target)
+    target_link_libraries (${target}
+        debug       ${CMAKE_SOURCE_DIR}/../build/${platform}/xerces-c/Static\ Debug/xerces-c_static_3D.lib
+        optimized   ${CMAKE_SOURCE_DIR}/../build/${platform}/xerces-c/Static\ Release/xerces-c_static_3.lib
     )
-endmacro()
+endmacro ()
 
 
 #
 # Copy a target binary to the sandbox.
 #
 
-macro(get_sandbox_bin_path path)
-    slashes_to_backslashes(${path} ${PROJECT_SOURCE_DIR})
-    set(${path} ${${path}}\\sandbox\\bin\\$(ConfigurationName)\\)
-endmacro()
+macro (get_sandbox_bin_path path)
+    slashes_to_backslashes (${path} ${PROJECT_SOURCE_DIR})
+    set (${path} ${${path}}\\..\\sandbox\\bin\\$(ConfigurationName)\\)
+endmacro ()
 
-macro(add_copy_target_to_sandbox_command target)
-    get_sandbox_bin_path(sandbox_path)
+macro (add_copy_target_to_sandbox_command target)
+    get_sandbox_bin_path (sandbox_path)
 
-    add_custom_command(TARGET ${target} POST_BUILD
+    add_custom_command (TARGET ${target} POST_BUILD
         COMMAND if not exist ${sandbox_path} mkdir ${sandbox_path}
         COMMAND copy $(TargetPath) ${sandbox_path}
     )
-endmacro()
+endmacro ()

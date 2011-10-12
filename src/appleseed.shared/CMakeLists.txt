@@ -28,17 +28,17 @@
 
 
 #
-# Source Files.
+# Source files.
 #
 
-set(application_sources
+set (application_sources
     application/application.cpp
     application/application.h
 )
-list(APPEND appleseed.shared_sources
+list (APPEND appleseed.shared_sources
     ${application_sources}
 )
-source_group("application" FILES
+source_group ("application" FILES
     ${application_sources}
 )
 
@@ -47,43 +47,49 @@ source_group("application" FILES
 # Target.
 #
 
-add_library(appleseed.shared SHARED
+add_library (appleseed.shared SHARED
     ${appleseed.shared_sources}
+)
+
+set_target_properties (appleseed.shared PROPERTIES
+    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/../build/${platform}/appleseed.shared
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/../build/${platform}/appleseed.shared
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/../build/${platform}/appleseed.shared
 )
 
 
 #
-# Include Paths.
+# Include paths.
 #
 
-include_directories(
+include_directories (
     .
 )
 
 
 #
-# Preprocessor Definitions.
+# Preprocessor definitions.
 #
 
-apply_preprocessor_definitions(appleseed.shared)
+apply_preprocessor_definitions (appleseed.shared)
 
-append_custom_preprocessor_definitions(appleseed.shared
+append_custom_preprocessor_definitions (appleseed.shared
     APPLESEED_SHARED_EXPORTS
 )
 
 
 #
-# Static Libraries.
+# Static libraries.
 #
 
-target_link_libraries(appleseed.shared
+target_link_libraries (appleseed.shared
     appleseed
     ${Boost_LIBRARIES}
 )
 
 
 #
-# Post-Build Commands.
+# Post-build commands.
 #
 
-add_copy_target_to_sandbox_command(appleseed.shared)
+add_copy_target_to_sandbox_command (appleseed.shared)

@@ -28,53 +28,56 @@
 
 
 #
-# gcc 4.x.x on Linux, generating 64-bit binaries.
+# gcc 4.x.x on Mac OS X, generating 32-bit binaries.
 #
+
+set (platform "mac32.xcode24")
 
 
 #
 # Tools.
 #
 
-set(git_command "git")
+set (git_command "git")
 
 
 #
-# Preprocessor Definitions.
-#
-
-# All configurations.
-set(preprocessor_definitions_common
-)
-
-# Debug configuration.
-set(preprocessor_definitions_debug
-)
-
-# Release configuration.
-set(preprocessor_definitions_release
-)
-
-
-#
-# Compilation/Linking Flags.
+# Preprocessor definitions.
 #
 
 # All configurations.
-set(compiler_flags_common
+set (preprocessor_definitions_common
+)
+
+# Debug configuration.
+set (preprocessor_definitions_debug
+)
+
+# Release configuration.
+set (preprocessor_definitions_release
+)
+
+
+#
+# Compilation/linking flags.
+#
+
+# All configurations.
+set (compiler_flags_common
     -Werror                                 # Treat Warnings As Errors
 )
-set(exe_linker_flags_common
+set (exe_linker_flags_common
     -Werror                                 # Treat Warnings As Errors
+    -bind_at_load
 )
-set(shared_lib_linker_flags_common
+set (shared_lib_linker_flags_common
     -Werror                                 # Treat Warnings As Errors
 )
 
 # Debug configuration.
 
 # Release configuration.
-set(compiler_flags_release
+set (compiler_flags_release
     -O3                                     # Maximum optimization
 )
 
@@ -84,59 +87,58 @@ set(compiler_flags_release
 
 
 #
-# Static Libraries.
+# Static libraries.
 #
 
-macro(link_against_platform target)
-    target_link_libraries(${target}
-        -lpthread
-        -licuuc
+macro (link_against_platform target)
+    set_target_properties (${target} PROPERTIES
+        LINK_FLAGS "-framework Cocoa -lcurl"
     )
-endmacro()
+endmacro ()
 
-macro(link_against_openexr target)
-    target_link_libraries(${target}
-        ${CMAKE_SOURCE_DIR}/build/linux64.gcc4/openexr/libHalf.a
-        ${CMAKE_SOURCE_DIR}/build/linux64.gcc4/openexr/libIex.a
-        ${CMAKE_SOURCE_DIR}/build/linux64.gcc4/openexr/libIlmImf.a
-        ${CMAKE_SOURCE_DIR}/build/linux64.gcc4/openexr/libIlmThread.a
-        ${CMAKE_SOURCE_DIR}/build/linux64.gcc4/openexr/libImath.a
+macro (link_against_openexr target)
+    target_link_libraries (${target}
+        ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/libHalf.a
+        ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/libIex.a
+        ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/libIlmImf.a
+        ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/libIlmThread.a
+        ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/libImath.a
     )
-endmacro()
+endmacro ()
 
-macro(link_against_zlib target)
-    target_link_libraries(${target}
-        ${CMAKE_SOURCE_DIR}/build/linux64.gcc4/zlib/libz.a
+macro (link_against_zlib target)
+    target_link_libraries (${target}
+        ${CMAKE_SOURCE_DIR}/../build/${platform}/zlib/libz.a
     )
-endmacro()
+endmacro ()
 
-macro(link_against_libpng target)
-    target_link_libraries(${target}
-        ${CMAKE_SOURCE_DIR}/build/linux64.gcc4/libpng/libpng.a
+macro (link_against_libpng target)
+    target_link_libraries (${target}
+        ${CMAKE_SOURCE_DIR}/../build/${platform}/libpng/libpng.a
     )
-endmacro()
+endmacro ()
 
-macro(link_against_xercesc target)
-    target_link_libraries(${target}
-        ${CMAKE_SOURCE_DIR}/build/linux64.gcc4/xerces-c/libxerces-c.a
+macro (link_against_xercesc target)
+    target_link_libraries (${target}
+        ${CMAKE_SOURCE_DIR}/../build/${platform}/xerces-c/libxerces-c.a
     )
-endmacro()
+endmacro ()
 
 
 #
 # Copy a target binary to the sandbox.
 #
 
-macro(get_sandbox_bin_path path)
-    set(${path} ${PROJECT_SOURCE_DIR}/sandbox/bin/${CMAKE_BUILD_TYPE}/)
-endmacro()
+macro (get_sandbox_bin_path path)
+    set (${path} ${PROJECT_SOURCE_DIR}/../sandbox/bin/${CMAKE_BUILD_TYPE}/)
+endmacro ()
 
-macro(add_copy_target_to_sandbox_command target)
-    get_target_property(target_path ${target} LOCATION)
-    get_sandbox_bin_path(sandbox_path)
+macro (add_copy_target_to_sandbox_command target)
+    get_target_property (target_path ${target} LOCATION)
+    get_sandbox_bin_path (sandbox_path)
 
-    add_custom_command(TARGET ${target} POST_BUILD
+    add_custom_command (TARGET ${target} POST_BUILD
         COMMAND mkdir -p ${sandbox_path}
         COMMAND cp ${target_path} ${sandbox_path}
     )
-endmacro()
+endmacro ()
