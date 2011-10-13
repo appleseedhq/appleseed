@@ -26,85 +26,46 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MESH_OBJMESHFILEREADER_H
-#define APPLESEED_FOUNDATION_MESH_OBJMESHFILEREADER_H
+#ifndef APPLESEED_FOUNDATION_MESH_GENERICMESHFILEREADER_H
+#define APPLESEED_FOUNDATION_MESH_GENERICMESHFILEREADER_H
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
 #include "foundation/mesh/imeshfilereader.h"
 
 // Standard headers.
-#include <cstddef>
 #include <string>
 
 // Forward declarations.
 namespace foundation    { class IMeshBuilder; }
-namespace foundation    { class IOBJMeshBuilder; }
 
 namespace foundation
 {
 
 //
-// Wavefront OBJ mesh file reader.
-//
-// Reference:
-//
-//   http://people.scs.fsu.edu/~burkardt/txt/obj_format.txt
+// Read a mesh file using the right reader based on the extension of the mesh file name.
 //
 
-class OBJMeshFileReader
+class GenericMeshFileReader
   : public IMeshFileReader
 {
   public:
-    // Parse error exception.
-    struct ExceptionParseError
+    // Unknown file type error.
+    struct ExceptionUnknownFileTypeError
       : public Exception
     {
-        const size_t m_line;                    // the line at which the parse error occurred
-        explicit ExceptionParseError(const size_t line)
-          : m_line(line)
+        ExceptionUnknownFileTypeError()
+          : Exception("unknown file type")
         {
         }
     };
 
-    // Exception thrown when an invalid face definition is encountered.
-    struct ExceptionInvalidFaceDef
-      : public ExceptionParseError
-    {
-        explicit ExceptionInvalidFaceDef(const size_t line)
-          : ExceptionParseError(line)
-        {
-        }
-    };
-
-    // Read options.
-    enum Options
-    {
-        None                    = 0,
-        StopOnInvalidFaceDef    = 1 << 0        // stop parsing on invalid face definitions
-    };
-
-    // Constructor.
-    explicit OBJMeshFileReader(
-        const Options       options = None);
-
-    // Destructor.
-    virtual ~OBJMeshFileReader();
-
-    // Read an OBJ mesh file.
+    // Read a mesh file.
     virtual void read(
         const std::string&  filename,
         IMeshBuilder&       builder);
-    void read(
-        const std::string&  filename,
-        IOBJMeshBuilder&    builder);
-
-  private:
-    // Private implementation.
-    struct Impl;
-    Impl* impl;
 };
 
 }       // namespace foundation
 
-#endif  // !APPLESEED_FOUNDATION_MESH_OBJMESHFILEREADER_H
+#endif  // !APPLESEED_FOUNDATION_MESH_GENERICMESHFILEREADER_H

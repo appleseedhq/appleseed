@@ -87,7 +87,7 @@ void ObjectCollectionItem::slot_import_objects()
             treeWidget(),
             "Import Objects...",
             "",
-            "Geometry Files (*.obj);;All Files (*.*)",
+            "Geometry Files (*.abc; *.obj);;All Files (*.*)",
             &selected_filter,
             options);
 

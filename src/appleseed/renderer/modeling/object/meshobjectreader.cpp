@@ -34,9 +34,9 @@
 #include "renderer/modeling/object/triangle.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/exceptions/exception.h"
 #include "foundation/core/exceptions/exceptionioerror.h"
 #include "foundation/math/triangulator.h"
+#include "foundation/mesh/genericmeshfilereader.h"
 #include "foundation/mesh/imeshbuilder.h"
 #include "foundation/mesh/imeshfilereader.h"
 #include "foundation/mesh/objmeshfilereader.h"
@@ -46,6 +46,7 @@
 #include "foundation/utility/string.h"
 
 // Standard headers.
+#include <exception>
 #include <vector>
 
 using namespace foundation;
@@ -176,7 +177,7 @@ namespace
                         Vector3d(m_objects.back()->get_vertex(m_face_vertices[i])));
                 }
 
-                // Triangulate the polygonal face.
+                // Triangulate the polygon.
                 clear_keep_memory(m_triangles);
                 if (!m_triangulator.triangulate(m_polygon, m_triangles))
                 {
@@ -315,7 +316,7 @@ MeshObjectArray MeshObjectReader::read(
     assert(filename);
     assert(base_object_name);
 
-    OBJMeshFileReader reader;
+    GenericMeshFileReader reader;
     MeshObjectBuilder builder(params, base_object_name);
 
     Stopwatch<DefaultWallclockTimer> stopwatch;
@@ -348,7 +349,7 @@ MeshObjectArray MeshObjectReader::read(
             filename);
         return MeshObjectArray();
     }
-    catch (const Exception& e)
+    catch (const exception& e)
     {
         RENDERER_LOG_ERROR(
             "failed to load mesh file %s: %s",

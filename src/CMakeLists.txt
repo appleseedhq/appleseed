@@ -103,6 +103,7 @@ link_directories (${Boost_LIBRARY_DIRS})
 #--------------------------------------------------------------------------------------------------
 
 include_directories (
+    alembic/lib
     appleseed
     libpng
     openexr/include

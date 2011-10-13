@@ -279,6 +279,10 @@ source_group ("foundation\\math" FILES
 )
 
 set (foundation_mesh_sources
+    foundation/mesh/alembicmeshfilereader.cpp
+    foundation/mesh/alembicmeshfilereader.h
+    foundation/mesh/genericmeshfilereader.cpp
+    foundation/mesh/genericmeshfilereader.h
     foundation/mesh/imeshbuilder.h
     foundation/mesh/imeshfilereader.h
     foundation/mesh/imeshfilewriter.h
@@ -1410,6 +1414,8 @@ link_against_openexr (appleseed)
 link_against_zlib (appleseed)
 link_against_libpng (appleseed)
 link_against_xercesc (appleseed)
+link_against_hdf5 (appleseed)
+link_against_alembic (appleseed)
 
 target_link_libraries (appleseed
     ${Boost_LIBRARIES}
