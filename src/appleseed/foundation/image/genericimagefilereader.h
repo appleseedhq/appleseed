@@ -60,7 +60,7 @@ namespace foundation
 {
 
 //
-// Generic image file reader.
+// Read an image file using the right reader based on the extension of the image file name.
 //
 
 class FOUNDATIONDLL GenericImageFileReader
@@ -68,7 +68,14 @@ class FOUNDATIONDLL GenericImageFileReader
 {
   public:
     // Unknown file type error.
-    struct ExceptionUnknownFileTypeError : public Exception {};
+    struct ExceptionUnknownFileTypeError
+      : public Exception
+    {
+        ExceptionUnknownFileTypeError()
+          : Exception("unknown file type")
+        {
+        }
+    };
 
     // Read an image file.
     virtual Image* read(

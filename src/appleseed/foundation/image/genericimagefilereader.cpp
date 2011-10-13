@@ -37,9 +37,6 @@
 // boost headers.
 #include "boost/filesystem/path.hpp"
 
-// Standard headers.
-#include <memory>
-
 using namespace boost;
 using namespace std;
 
@@ -54,20 +51,24 @@ Image* GenericImageFileReader::read(
     const char*         filename,
     ImageAttributes*    image_attributes)
 {
-    // Extract the extension of the image filename.
     const filesystem::path filepath(filename);
     const string extension = lower_case(filepath.extension());
 
-    // Create the appropriate image file reader, depending on the filename extension.
-    auto_ptr<IImageFileReader> image_file_reader;
     if (extension == ".exr")
-        image_file_reader.reset(new EXRImageFileReader());
+    {
+        EXRImageFileReader reader;
+        return reader.read(filename, image_attributes);
+    }
     else if (extension == ".png")
-        image_file_reader.reset(new PNGImageFileReader());
-    else throw ExceptionUnknownFileTypeError();
-
-    // Read the image file.
-    return image_file_reader->read(filename, image_attributes);
+    {
+        PNGImageFileReader reader;
+        return reader.read(filename, image_attributes);
+    }
+    else
+    {
+        throw ExceptionUnknownFileTypeError();
+        return 0;
+    }
 }
 
 }   // namespace foundation
