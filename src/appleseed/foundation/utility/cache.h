@@ -34,7 +34,6 @@
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/memory.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <cassert>
@@ -85,38 +84,45 @@ namespace cache_impl
         }
 
       protected:
-        uint64      m_hit_count;
-        uint64      m_miss_count;
+        uint64  m_hit_count;
+        uint64  m_miss_count;
     };
+
+
+    //
+    // Timestamp type.
+    //
+
+    typedef size_t Timestamp;
 
 
     //
     // Timestamp source.
     //
 
-    class TSSource
+    class Timestamper
       : public NonCopyable
     {
       public:
-        // Constructor, initializes the source.
-        TSSource()
+        // Constructor.
+        Timestamper()
           : m_timestamp(0)
         {
         }
 
         // Return the next timestamp value.
-        size_t next()
+        Timestamp next()
         {
             return m_timestamp++;
         }
 
       private:
-        size_t      m_timestamp;
+        Timestamp m_timestamp;
     };
 
 
     //
-    // Cache entry for set associative caches.
+    // Single cache entry for set associative caches.
     //
 
     template <typename Key, typename Element, bool WithTimestamp>
@@ -124,6 +130,7 @@ namespace cache_impl
 
     template <typename Key, typename Element>
     struct SACacheEntry<Key, Element, false>
+      : public NonCopyable
     {
         Key         m_key;
         Element     m_element;
@@ -131,15 +138,16 @@ namespace cache_impl
 
     template <typename Key, typename Element>
     struct SACacheEntry<Key, Element, true>
+      : public NonCopyable
     {
         Key         m_key;
         Element     m_element;
-        size_t      m_timestamp;
+        Timestamp   m_timestamp;
     };
 
 
     //
-    // Cache line for a generic N-way set associative cache.
+    // Single cache line for a generic N-way set associative cache.
     //
 
     template <typename Key, typename Element, size_t Ways>
@@ -162,29 +170,30 @@ namespace cache_impl
             }
         }
 
-        // Return a pointer to the entry corresponding to a given key,
-        // or 0 if this key was not found.
+        // Return a pointer to the entry corresponding to a given key, or 0 if this key was not found.
         EntryType* find_entry(const KeyType& key)
         {
             for (size_t i = 0; i < Ways; ++i)
             {
                 if (m_entries[i].m_key == key)
-                    return m_entries + i;
+                    return &m_entries[i];
             }
+
             return 0;
         }
 
         // Update the timestamp of a given entry in this cache line.
-        void touch_entry(EntryType* entry, TSSource& ts_source)
+        void touch_entry(EntryType* entry, Timestamper& timestamper)
         {
-            entry->m_timestamp = ts_source.next();
+            entry->m_timestamp = timestamper.next();
         }
 
         // Find an entry to replace in this cache line.
         EntryType* find_eviction_candidate()
         {
-            size_t timestamp = std::numeric_limits<size_t>::max();
+            Timestamp timestamp = std::numeric_limits<Timestamp>::max();
             size_t oldest = 0;
+
             for (size_t i = 0; i < Ways; ++i)
             {
                 if (timestamp > m_entries[i].m_timestamp)
@@ -193,10 +202,11 @@ namespace cache_impl
                     oldest = i;
                 }
             }
-            return m_entries + oldest;
+            
+            return &m_entries[oldest];
         }
 
-        // Check the integrity of the cache line.  For debug only.
+        // Check the integrity of the cache line. For debug purposes only.
         template <typename IntegrityChecker>
         void check_integrity(IntegrityChecker& checker) const
         {
@@ -205,12 +215,12 @@ namespace cache_impl
         }
 
       private:
-        EntryType   m_entries[Ways];
+        EntryType m_entries[Ways];
     };
 
 
     //
-    // Specialization of SACacheLine for 1-way caches.
+    // Specialization of SACacheLine for 1-way (direct-mapped) caches.
     //
 
     template <typename Key, typename Element>
@@ -229,15 +239,14 @@ namespace cache_impl
             m_entry.m_key = invalid_key;
         }
 
-        // Return a pointer to the entry corresponding to a given key,
-        // or 0 if this key was not found.
+        // Return a pointer to the entry corresponding to a given key, or 0 if this key was not found.
         EntryType* find_entry(const KeyType& key)
         {
             return m_entry.m_key == key ? &m_entry : 0;
         }
 
         // Update the timestamp of a given entry in this cache line.
-        void touch_entry(EntryType* entry, TSSource& ts_source)
+        void touch_entry(EntryType* entry, Timestamper& timestamper)
         {
         }
 
@@ -247,7 +256,7 @@ namespace cache_impl
             return &m_entry;
         }
 
-        // Check the integrity of the cache line.  For debug only.
+        // Check the integrity of the cache line. For debug purposes only.
         template <typename IntegrityChecker>
         void check_integrity(IntegrityChecker& checker) const
         {
@@ -255,7 +264,7 @@ namespace cache_impl
         }
 
       private:
-        EntryType   m_entry;
+        EntryType m_entry;
     };
 
 
@@ -281,17 +290,16 @@ namespace cache_impl
             m_oldest = 0;
         }
 
-        // Return a pointer to the entry corresponding to a given key,
-        // or 0 if this key was not found.
+        // Return a pointer to the entry corresponding to a given key, or 0 if this key was not found.
         EntryType* find_entry(const KeyType& key)
         {
             return
-                m_entries[0].m_key == key ? m_entries :
-                m_entries[1].m_key == key ? m_entries + 1 : 0;
+                m_entries[0].m_key == key ? &m_entries[0] :
+                m_entries[1].m_key == key ? &m_entries[1] : 0;
         }
 
         // Update the timestamp of a given entry in this cache line.
-        void touch_entry(EntryType* entry, TSSource& ts_source)
+        void touch_entry(EntryType* entry, Timestamper& timestamper)
         {
             m_oldest = 1 - (entry - m_entries);
         }
@@ -299,10 +307,10 @@ namespace cache_impl
         // Find an entry to replace in this cache line.
         EntryType* find_eviction_candidate()
         {
-            return m_entries + m_oldest;
+            return &m_entries[m_oldest];
         }
 
-        // Check the integrity of the cache line.  For debug only.
+        // Check the integrity of the cache line. For debug purposes only.
         template <typename IntegrityChecker>
         void check_integrity(IntegrityChecker& checker) const
         {
@@ -387,7 +395,7 @@ class SACache
     // Return the size (in bytes) of this object in memory.
     size_t get_memory_size() const;
 
-    // Check the integrity of the cache.  For debug only.
+    // Check the integrity of the cache. For debug purposes only.
     template <typename IntegrityChecker>
     void check_integrity(IntegrityChecker& checker) const;
 
@@ -402,10 +410,10 @@ class SACache
     // Entry type.
     typedef typename LineType::EntryType EntryType;
 
-    KeyHasherType&          m_key_hasher;               // key hasher
-    ElementSwapperType&     m_element_swapper;          // element swapper
-    const KeyType           m_invalid_key;              // an invalid key
-    cache_impl::TSSource    m_ts_source;                // timestamp source
+    KeyHasherType&          m_key_hasher;
+    ElementSwapperType&     m_element_swapper;
+    const KeyType           m_invalid_key;
+    cache_impl::Timestamper m_timestamper;
     LineType                m_lines[Lines];             // cache storage
 };
 
@@ -468,7 +476,7 @@ class LRUCache
     // Return the size (in bytes) of this object in memory.
     size_t get_memory_size() const;
 
-    // Check the integrity of the cache.  For debug only.
+    // Check the integrity of the cache. For debug purposes only.
     template <typename IntegrityChecker>
     void check_integrity(IntegrityChecker& checker) const;
 
@@ -590,7 +598,7 @@ class DualStageCache
     uint64 get_stage1_hit_count() const;
     uint64 get_stage1_miss_count() const;
 
-    // Check the integrity of the cache.  For debug only.
+    // Check the integrity of the cache. For debug purposes only.
     template <typename IntegrityChecker>
     void check_integrity(IntegrityChecker& checker) const;
 
@@ -680,14 +688,6 @@ class DualStageCache
 // Utility functions to query and format cache statistics.
 //
 
-// Return the total number of accesses to a given cache.
-template <typename Cache>
-uint64 get_access_count(const Cache& cache);
-
-// Return the hit rate of a given cache.
-template <typename Cache>
-double get_hit_rate(const Cache& cache);
-
 // Format cache performance statistics into a string.
 std::string format_cache_stats(const uint64 hits, const uint64 misses);
 
@@ -743,7 +743,7 @@ get(const KeyType& key)
 {
     // Find the cache line that might contain this key.
     const size_t index = m_key_hasher(key);
-    LineType& line = m_lines[index & (Lines - 1)];
+    LineType& line = m_lines[index % Lines];
 
     // Look for this key inside the cache line.
     EntryType* entry = line.find_entry(key);
@@ -770,7 +770,7 @@ get(const KeyType& key)
     }
 
     // Update the timestamp of this entry.
-    line.touch_entry(entry, m_ts_source);
+    line.touch_entry(entry, m_timestamper);
 
     // Return the corresponding element.
     return entry->m_element;
@@ -781,7 +781,7 @@ invalidate(const KeyType& key)
 {
     // Find the cache line that might contain this key.
     const size_t index = m_key_hasher(key);
-    LineType& line = m_lines[index & (Lines - 1)];
+    LineType& line = m_lines[index % Lines];
 
     // Look for this key inside the cache line.
     EntryType* entry = line.find_entry(key);
@@ -1053,34 +1053,6 @@ check_integrity(IntegrityChecker& checker) const
 //
 // Utility functions implementation.
 //
-
-template <typename Cache>
-uint64 get_access_count(const Cache& cache)
-{
-    return cache.get_hit_count() + cache.get_miss_count();
-}
-
-template <typename Cache>
-double get_hit_rate(const Cache& cache)
-{
-    return static_cast<double>(cache.get_hit_count()) / get_access_count(cache);
-}
-
-inline std::string format_cache_stats(const uint64 hits, const uint64 misses)
-{
-    const uint64 accesses = hits + misses;
-
-    if (accesses == 0)
-        return "n/a";
-    else
-    {
-        return
-              "efficiency " + pretty_percent(hits, accesses)
-            + "  accesses " + pretty_uint(accesses)
-            + "  hits " + pretty_uint(hits)
-            + "  misses " + pretty_uint(misses);
-    }
-}
 
 template <typename Cache>
 std::string format_cache_stats(const Cache& cache)

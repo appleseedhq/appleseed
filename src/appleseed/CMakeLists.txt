@@ -625,6 +625,7 @@ set (foundation_utility_sources
     foundation/utility/benchmark.h
     foundation/utility/bufferedfile.cpp
     foundation/utility/bufferedfile.h
+    foundation/utility/cache.cpp
     foundation/utility/cache.h
     foundation/utility/cameracontroller.h
     foundation/utility/casts.h
