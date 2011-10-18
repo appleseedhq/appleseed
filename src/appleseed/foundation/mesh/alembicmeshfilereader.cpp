@@ -33,6 +33,7 @@
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/vector.h"
 #include "foundation/mesh/imeshbuilder.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/memory.h"
 
 // Alembic headers.
@@ -50,7 +51,6 @@
 
 // Standard headers.
 #include <cstddef>
-#include <cstdint>
 #include <vector>
 
 using namespace Alembic;
@@ -183,10 +183,10 @@ namespace
 
         void read_face_indices(IPolyMeshSchema::Sample mesh_sample)
         {
-            const int32_t* face_sizes = mesh_sample.getFaceCounts()->get();
+            const int32* face_sizes = mesh_sample.getFaceCounts()->get();
             const size_t face_count = mesh_sample.getFaceCounts()->size();
         
-            const int32_t* face_indices = mesh_sample.getFaceIndices()->get();
+            const int32* face_indices = mesh_sample.getFaceIndices()->get();
             size_t current_vertex_index = 0;
             vector<size_t> indices;
 
