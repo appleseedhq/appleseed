@@ -120,11 +120,11 @@ class Access
     // Constructor, acquires access to a lazy object.
     explicit Access(LazyType* lazy = 0);
 
-    // Copy constructor (modifies the source object).
-    Access(Access<Object>& rhs);
+    // Copy constructor.
+    Access(const Access& rhs);
 
-    // Assignment operator (modifies the source object).
-    Access<Object>& operator=(Access<Object>& rhs);
+    // Assignment operator.
+    Access<Object>& operator=(const Access& rhs);
 
     // Destructor.
     ~Access();
@@ -369,14 +369,14 @@ inline Access<Object>::Access(LazyType* lazy)
 }
 
 template <typename Object>
-inline Access<Object>::Access(Access<Object>& rhs)
+inline Access<Object>::Access(const Access& rhs)
   : m_lazy(0)
 {
     reset(rhs.m_lazy);
 }
 
 template <typename Object>
-inline Access<Object>& Access<Object>::operator=(Access<Object>& rhs)
+inline Access<Object>& Access<Object>::operator=(const Access& rhs)
 {
     reset(rhs.m_lazy);
     return *this;
