@@ -124,6 +124,19 @@ macro (link_against_xercesc target)
     )
 endmacro ()
 
+macro (link_against_hdf5 target)
+    target_link_libraries (${target}
+        ${CMAKE_SOURCE_DIR}/../build/${platform}/hdf5/libhdf5.a
+        ${CMAKE_SOURCE_DIR}/../build/${platform}/hdf5/libhdf5_hl.a
+    )
+endmacro ()
+
+macro (link_against_alembic target)
+    target_link_libraries (${target}
+        ${CMAKE_SOURCE_DIR}/../build/${platform}/alembic/libalembic.a
+    )
+endmacro ()
+
 
 #--------------------------------------------------------------------------------------------------
 # Copy a target binary to the sandbox.
