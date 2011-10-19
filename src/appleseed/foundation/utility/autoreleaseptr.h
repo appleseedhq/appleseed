@@ -36,143 +36,150 @@ namespace foundation
 {
 
 //
-// Similarly to std::auto_ptr, foundation::auto_release_ptr allows
-// to wrap a pointer to ensure automatic deletion of the object
-// pointer when falling out of scope. The object pointer is deleted
-// using the foundation::IUnknown::release() method, instead of the
-// plain delete operator.
+// Similarly to std::auto_ptr, foundation::auto_release_ptr is a smart pointer
+// providing strict ownership semantics. The only difference with std::auto_ptr
+// is that the pointed object is deleted using foundation::IUnknown::release()
+// instead of the delete operator.
 //
 
-// Proxy reference for auto_release_ptr<> copying.
-template <class T>
+// A wrapper class to provide auto_release_ptr with reference semantics.
+template <typename T>
 struct auto_release_ptr_ref
 {
-    // Construct from generic pointer.
-    explicit auto_release_ptr_ref(void* rhs)
-      : m_ref(rhs)
+    T* m_ptr;
+
+    explicit auto_release_ptr_ref(T* ptr)
+      : m_ptr(ptr)
     {
     }
-
-    void* m_ref;    // generic pointer to auto_release_ptr pointer
 };
 
-template <class T>
+template <typename T>
 class auto_release_ptr
 {
   public:
     typedef T element_type;
 
-    // Construct from pointer.
+    // Construct from a raw pointer.
     explicit auto_release_ptr(T* ptr = 0) throw()
       : m_ptr(ptr)
     {
     }
 
-    // Copy constructors.
-    auto_release_ptr(auto_release_ptr<T>& rhs) throw()
+    // Construct from another auto_release_ptr of the same type.
+    auto_release_ptr(auto_release_ptr& rhs) throw()
       : m_ptr(rhs.release())
     {
     }
-    template <class U>
+
+    // Construct from another auto_release_ptr of a different but related type.
+    template <typename U>
     auto_release_ptr(auto_release_ptr<U>& rhs) throw()
       : m_ptr(rhs.release())
     {
     }
-    auto_release_ptr(auto_release_ptr_ref<T> rhs) throw()
+
+    // Construct from an auto_release_ptr_ref.
+    auto_release_ptr(auto_release_ptr_ref<T> ref) throw()
+      : m_ptr(ref.m_ptr)
     {
-        T** pptr = (T**)rhs.m_ref;
-        T* ptr = *pptr;
-        *pptr = 0;          // release old
-        m_ptr = ptr;        // reset this
     }
 
-    // Delete the pointer using IUnknown::release().
+    // Assign from another auto_release_ptr of the same type.
+    auto_release_ptr& operator=(auto_release_ptr& rhs) throw()
+    {
+        reset(rhs.release());
+        return *this;
+    }
+
+    // Assign from another auto_release_ptr of a different but related type.
+    template <typename U>
+    auto_release_ptr& operator=(auto_release_ptr<U>& rhs) throw()
+    {
+        reset(rhs.release());
+        return *this;
+    }
+
+    // Assign from an auto_release_ptr_ref.
+    auto_release_ptr<T>& operator=(auto_release_ptr_ref<T> ref) throw()
+    {
+        if (m_ptr != ref.m_ptr)
+        {
+            if (m_ptr)
+                m_ptr->release();
+
+            m_ptr = ref.m_ptr;
+        }
+
+        return *this;
+    }
+
+    // Delete the wrapped pointer.
     ~auto_release_ptr()
     {
         if (m_ptr)
             m_ptr->release();
     }
 
-    // Assignment operators.
-    auto_release_ptr<T>& operator=(auto_release_ptr<T>& rhs) throw()
-    {
-        reset(rhs.release());
-        return *this;
-    }
-    template <class U>
-    auto_release_ptr<T>& operator=(auto_release_ptr<U>& rhs) throw()
-    {
-        reset(rhs.release());
-        return *this;
-    }
-    auto_release_ptr<T>& operator=(auto_release_ptr_ref<T> rhs) throw()
-    {
-        T** pptr = (T**)rhs.m_ref;
-        T* ptr = *pptr;
-        *pptr = 0;          // release old
-        reset(ptr);         // set new
-        return *this;
-    }
-
-    // Convert to compatible auto_release_ptr<>.
-    template <class U>
-    operator auto_release_ptr<U>() throw()
-    {
-        return auto_release_ptr<U>(*this);
-    }
-
-    // Convert to compatible auto_release_ptr_ref<>.
-    template <class U>
+    // Automatic conversion to an auto_release_ptr_ref.
+    template <typename U>
     operator auto_release_ptr_ref<U>() throw()
     {
-        U* test_ptr = m_ptr;    // test implicit conversion
-        auto_release_ptr_ref<U> ans(&m_ptr);
-        return test_ptr != 0 ? ans : ans;
+        return auto_release_ptr_ref<U>(release());
     }
 
-    // Pointer dereference.
+    // Automatic conversion to an auto_release_ptr of a different type.
+    template <typename U>
+    operator auto_release_ptr<U>() throw()
+    {
+        return auto_release_ptr<U>(release());
+    }
+
+    // Dereference the wrapped pointer.
     T& operator*() const throw()
     {
+        assert(m_ptr);
         return *m_ptr;
     }
     T* operator->() const throw()
     {
-        return &**this;
+        assert(m_ptr);
+        return m_ptr;
     }
 
-    // Return wrapped pointer.
+    // Return the wrapped pointer.
     T* get() const throw()
     {
         return m_ptr;
     }
-
     T& ref() const throw()
     {
         assert(m_ptr);
         return *m_ptr;
     }
 
-    // Return wrapped pointer and give up ownership.
+    // Return the wrapped pointer and give up ownership.
     T* release() throw()
     {
-        T* tmp = m_ptr;
+        T* rv = m_ptr;
         m_ptr = 0;
-        return tmp;
+        return rv;
     }
 
-    // Destroy designated object and store new pointer.
-    void reset(T* ptr = 0)
+    // Delete the owned pointer and replace it with the provided raw pointer.
+    void reset(T* ptr = 0) throw()
     {
-        if (ptr != m_ptr)
+        if (m_ptr != ptr)
         {
             if (m_ptr)
                 m_ptr->release();
+
             m_ptr = ptr;
         }
     }
 
   private:
-    T* m_ptr;       // the wrapped pointer
+    T* m_ptr;
 };
 
 }       // namespace foundation
