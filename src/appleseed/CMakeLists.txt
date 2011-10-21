@@ -1404,6 +1404,7 @@ append_custom_preprocessor_definitions (appleseed
     APPLESEED_RENDERER_EXPORTS          # deprecated, remove
     APPLESEED_EXPORTS
     APPLESEED_FOUNDATION_USE_SSE
+    APPLESEED_ENABLE_IMATH_INTEROP
 )
 
 

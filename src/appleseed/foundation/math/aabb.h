@@ -33,6 +33,11 @@
 #include "foundation/math/minmax.h"
 #include "foundation/math/vector.h"
 
+// Imath headers.
+#ifdef APPLESEED_ENABLE_IMATH_INTEROP
+#include "openexr/ImathBox.h"
+#endif
+
 // Standard headers.
 #include <algorithm>
 #include <cassert>
@@ -75,6 +80,17 @@ class AABB
     // Construct a bounding box from another bounding box of a different type.
     template <typename U>
     explicit AABB(const AABB<U, N>& rhs);
+
+#ifdef APPLESEED_ENABLE_IMATH_INTEROP
+
+    // Implicit construction from an Imath::Box.
+    AABB(const Imath::Box< typename ImathVecEquivalent<T, N>::Type >& rhs);
+
+    // Reinterpret this bounding box as an Imath::Box.
+    operator Imath::Box< typename ImathVecEquivalent<T, N>::Type >&();
+    operator const Imath::Box< typename ImathVecEquivalent<T, N>::Type >&() const;
+
+#endif
 
     // Return an invalidated bounding box.
     static AABBType invalid();
@@ -181,6 +197,29 @@ inline AABB<T, N>::AABB(const AABB<U, N>& rhs)
   , max(VectorType(rhs.max))
 {
 }
+
+#ifdef APPLESEED_ENABLE_IMATH_INTEROP
+
+template <typename T, size_t N>
+inline AABB<T, N>::AABB(const Imath::Box< typename ImathVecEquivalent<T, N>::Type >& rhs)
+  : min(rhs.min)
+  , max(rhs.max)
+{
+}
+
+template <typename T, size_t N>
+inline AABB<T, N>::operator Imath::Box< typename ImathVecEquivalent<T, N>::Type >&()
+{
+    return reinterpret_cast<Imath::Box< typename ImathVecEquivalent<T, N>::Type >&>(*this);
+}
+
+template <typename T, size_t N>
+inline AABB<T, N>::operator const Imath::Box< typename ImathVecEquivalent<T, N>::Type >&() const
+{
+    return reinterpret_cast<const Imath::Box< typename ImathVecEquivalent<T, N>::Type >&>(*this);
+}
+
+#endif
 
 template <typename T, size_t N>
 inline AABB<T, N> AABB<T, N>::invalid()

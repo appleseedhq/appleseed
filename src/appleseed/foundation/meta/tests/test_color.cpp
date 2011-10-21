@@ -31,6 +31,11 @@
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"
 
+// Imath headers.
+#ifdef APPLESEED_ENABLE_IMATH_INTEROP
+#include "openexr/ImathColor.h"
+#endif
+
 using namespace foundation;
 using namespace std;
 
@@ -60,10 +65,53 @@ TEST_SUITE(Foundation_Image_Color)
     }
 }
 
+TEST_SUITE(Foundation_Image_Color3)
+{
+#ifdef APPLESEED_ENABLE_IMATH_INTEROP
+
+    TEST_CASE(ConstructFromImathColor3)
+    {
+        const Imath::Color3<double> source(1.0, 2.0, 3.0);
+        const Color3d copy(source);
+
+        EXPECT_EQ(Color3d(1.0, 2.0, 3.0), copy);
+    }
+
+    TEST_CASE(ConvertToImathColor3)
+    {
+        const Color3d source(1.0, 2.0, 3.0);
+        const Imath::Color3<double> copy(source);
+
+        EXPECT_EQ(Imath::Color3<double>(1.0, 2.0, 3.0), copy);
+    }
+
+#endif
+}
+
 TEST_SUITE(Foundation_Image_Color4)
 {
     TEST_CASE(Constructor_GivenColor3AndSeparateAlpha)
     {
         EXPECT_EQ(Color4d(1.0, 2.0, 3.0, 4.0), Color4d(Color3d(1.0, 2.0, 3.0), 4.0));
     }
+
+#ifdef APPLESEED_ENABLE_IMATH_INTEROP
+
+    TEST_CASE(ConstructFromImathColor4)
+    {
+        const Imath::Color4<double> source(1.0, 2.0, 3.0, 4.0);
+        const Color4d copy(source);
+
+        EXPECT_EQ(Color4d(1.0, 2.0, 3.0, 4.0), copy);
+    }
+
+    TEST_CASE(ConvertToImathColor4)
+    {
+        const Color4d source(1.0, 2.0, 3.0, 4.0);
+        const Imath::Color4<double> copy(source);
+
+        EXPECT_EQ(Imath::Color4<double>(1.0, 2.0, 3.0, 4.0), copy);
+    }
+
+#endif
 }

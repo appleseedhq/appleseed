@@ -33,6 +33,11 @@
 #include "foundation/math/scalar.h"
 #include "foundation/platform/types.h"
 
+// Imath headers.
+#ifdef APPLESEED_ENABLE_IMATH_INTEROP
+#include "openexr/ImathColor.h"
+#endif
+
 // Standard headers.
 #include <algorithm>
 #include <cassert>
@@ -153,6 +158,17 @@ class Color<T, 3>
     template <typename U>
     explicit Color(const Color<U, 3>& rhs);
 
+#ifdef APPLESEED_ENABLE_IMATH_INTEROP
+
+    // Implicit construction from an Imath::Color3.
+    Color(const Imath::Color3<T>& rhs);
+
+    // Reinterpret this color as an Imath::Color3.
+    operator Imath::Color3<T>&();
+    operator const Imath::Color3<T>&() const;
+
+#endif
+
     // Set all components to a given value.
     void set(const ValueType val);
 
@@ -193,6 +209,17 @@ class Color<T, 4>
     // Construct a color from another color of a different type.
     template <typename U>
     explicit Color(const Color<U, 4>& rhs);
+
+#ifdef APPLESEED_ENABLE_IMATH_INTEROP
+
+    // Implicit construction from an Imath::Color4.
+    Color(const Imath::Color4<T>& rhs);
+
+    // Reinterpret this color as an Imath::Color4.
+    operator Imath::Color4<T>&();
+    operator const Imath::Color4<T>&() const;
+
+#endif
 
     // Set all components to a given value.
     void set(const ValueType val);
@@ -655,6 +682,30 @@ inline Color<T, 3>::Color(const Color<U, 3>& rhs)
 {
 }
 
+#ifdef APPLESEED_ENABLE_IMATH_INTEROP
+
+template <typename T>
+inline Color<T, 3>::Color(const Imath::Color3<T>& rhs)
+  : r(rhs.x)
+  , g(rhs.y)
+  , b(rhs.z)
+{
+}
+
+template <typename T>
+inline Color<T, 3>::operator Imath::Color3<T>&()
+{
+    return reinterpret_cast<Imath::Color3<T>&>(*this);
+}
+
+template <typename T>
+inline Color<T, 3>::operator const Imath::Color3<T>&() const
+{
+    return reinterpret_cast<const Imath::Color3<T>&>(*this);
+}
+
+#endif
+
 template <typename T>
 inline void Color<T, 3>::set(const ValueType val)
 {
@@ -737,6 +788,31 @@ inline Color<T, 4>::Color(const Color<U, 4>& rhs)
   , a(static_cast<ValueType>(rhs.a))
 {
 }
+
+#ifdef APPLESEED_ENABLE_IMATH_INTEROP
+
+template <typename T>
+inline Color<T, 4>::Color(const Imath::Color4<T>& rhs)
+  : r(rhs.r)
+  , g(rhs.g)
+  , b(rhs.b)
+  , a(rhs.a)
+{
+}
+
+template <typename T>
+inline Color<T, 4>::operator Imath::Color4<T>&()
+{
+    return reinterpret_cast<Imath::Color4<T>&>(*this);
+}
+
+template <typename T>
+inline Color<T, 4>::operator const Imath::Color4<T>&() const
+{
+    return reinterpret_cast<const Imath::Color4<T>&>(*this);
+}
+
+#endif
 
 template <typename T>
 inline void Color<T, 4>::set(const ValueType val)

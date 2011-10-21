@@ -32,6 +32,11 @@
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"
 
+// Imath headers.
+#ifdef APPLESEED_ENABLE_IMATH_INTEROP
+#include "openexr/ImathMatrix.h"
+#endif
+
 // Standard headers.
 #include <cstddef>
 
@@ -39,7 +44,8 @@ using namespace foundation;
 
 TEST_SUITE(Foundation_Math_MatrixMN)
 {
-    typedef Matrix<double, 2, 3> Mat23;
+    typedef Matrix<double, 2, 3> Mat23d;
+    typedef Matrix<double, 3, 2> Mat32d;
 
     static const double Values[] =
     {
@@ -49,21 +55,21 @@ TEST_SUITE(Foundation_Math_MatrixMN)
 
     TEST_CASE(TestProperties)
     {
-        EXPECT_EQ(2, Mat23::Rows);
-        EXPECT_EQ(3, Mat23::Columns);
-        EXPECT_EQ(6, Mat23::Components);
+        EXPECT_EQ(2, Mat23d::Rows);
+        EXPECT_EQ(3, Mat23d::Columns);
+        EXPECT_EQ(6, Mat23d::Components);
     }
 
     TEST_CASE(ConstructMatrixWithArrayOfValues)
     {
-        const Mat23 m(Values);
+        const Mat23d m(Values);
 
         EXPECT_SEQUENCE_EQ(6, Values, &m[0]);
     }
 
     TEST_CASE(ConstructMatrixWithSingleValue)
     {
-        const Mat23 m(42.0);
+        const Mat23d m(42.0);
 
         for (size_t i = 0; i < 6; ++i)
             EXPECT_EQ(42.0, m[i]);
@@ -71,7 +77,7 @@ TEST_SUITE(Foundation_Math_MatrixMN)
 
     TEST_CASE(ConstructMatrixByTypeConversion)
     {
-        const Mat23 m(Values);
+        const Mat23d m(Values);
         const Matrix<float, 2, 3> mf(m);
 
         for (size_t i = 0; i < 6; ++i)
@@ -80,7 +86,7 @@ TEST_SUITE(Foundation_Math_MatrixMN)
 
     TEST_CASE(TestFortranStyleSubscripting)
     {
-        const Mat23 m(Values);
+        const Mat23d m(Values);
 
         EXPECT_EQ(1.0, m(0, 0));
         EXPECT_EQ(2.0, m(0, 1));
@@ -90,9 +96,9 @@ TEST_SUITE(Foundation_Math_MatrixMN)
 
     TEST_CASE(TestEquality)
     {
-        const Mat23 m1(Values);
-        const Mat23 m2(Values);
-        const Mat23 m3(42.0);
+        const Mat23d m1(Values);
+        const Mat23d m2(Values);
+        const Mat23d m3(42.0);
 
         EXPECT_TRUE(m1 == m2);
         EXPECT_FALSE(m1 == m3);
@@ -100,9 +106,9 @@ TEST_SUITE(Foundation_Math_MatrixMN)
 
     TEST_CASE(TestInequality)
     {
-        const Mat23 m1(Values);
-        const Mat23 m2(Values);
-        const Mat23 m3(42.0);
+        const Mat23d m1(Values);
+        const Mat23d m2(Values);
+        const Mat23d m3(42.0);
 
         EXPECT_FALSE(m1 != m2);
         EXPECT_TRUE(m1 != m3);
@@ -110,9 +116,9 @@ TEST_SUITE(Foundation_Math_MatrixMN)
 
     TEST_CASE(TestApproximateEquality)
     {
-        const Mat23 m1(Values);
-        const Mat23 m2(Values);
-        const Mat23 m3(42.0);
+        const Mat23d m1(Values);
+        const Mat23d m2(Values);
+        const Mat23d m3(42.0);
 
         EXPECT_TRUE(feq(m1, m2));
         EXPECT_FALSE(feq(m1, m3));
@@ -120,8 +126,8 @@ TEST_SUITE(Foundation_Math_MatrixMN)
 
     TEST_CASE(TestComparisonToZero)
     {
-        const Mat23 m1(Values);
-        const Mat23 m2(0.0);
+        const Mat23d m1(Values);
+        const Mat23d m2(0.0);
 
         EXPECT_FALSE(fz(m1));
         EXPECT_TRUE(fz(m2));
@@ -141,7 +147,7 @@ TEST_SUITE(Foundation_Math_MatrixMN)
             44.0, 55.0, 66.0
         };
 
-        EXPECT_FEQ(Mat23(ExpectedValues), Mat23(Values) + Mat23(OtherValues));
+        EXPECT_FEQ(Mat23d(ExpectedValues), Mat23d(Values) + Mat23d(OtherValues));
     }
 
     TEST_CASE(TestSubstraction)
@@ -158,7 +164,7 @@ TEST_SUITE(Foundation_Math_MatrixMN)
             36.0, 45.0, 54.0
         };
 
-        EXPECT_FEQ(Mat23(ExpectedValues), Mat23(OtherValues) - Mat23(Values));
+        EXPECT_FEQ(Mat23d(ExpectedValues), Mat23d(OtherValues) - Mat23d(Values));
     }
 
     TEST_CASE(TestNegation)
@@ -169,7 +175,7 @@ TEST_SUITE(Foundation_Math_MatrixMN)
             -4.0, -5.0, -6.0
         };
 
-        EXPECT_EQ(Mat23(ExpectedValues), -Mat23(Values));
+        EXPECT_EQ(Mat23d(ExpectedValues), -Mat23d(Values));
     }
 
     TEST_CASE(TestRightMultiplicationByScalar)
@@ -180,7 +186,7 @@ TEST_SUITE(Foundation_Math_MatrixMN)
              8.0, 10.0, 12.0
         };
 
-        EXPECT_FEQ(Mat23(ExpectedValues), Mat23(Values) * 2.0);
+        EXPECT_FEQ(Mat23d(ExpectedValues), Mat23d(Values) * 2.0);
     }
 
     TEST_CASE(TestLeftMultiplicationByScalar)
@@ -191,7 +197,7 @@ TEST_SUITE(Foundation_Math_MatrixMN)
              8.0, 10.0, 12.0
         };
 
-        EXPECT_FEQ(Mat23(ExpectedValues), 2.0 * Mat23(Values));
+        EXPECT_FEQ(Mat23d(ExpectedValues), 2.0 * Mat23d(Values));
     }
 
     TEST_CASE(TestDivisionByScalar)
@@ -202,7 +208,7 @@ TEST_SUITE(Foundation_Math_MatrixMN)
              2.0, 2.5, 3.0
         };
 
-        EXPECT_FEQ(Mat23(ExpectedValues), Mat23(Values) / 2.0);
+        EXPECT_FEQ(Mat23d(ExpectedValues), Mat23d(Values) / 2.0);
     }
 
     TEST_CASE(TestInPlaceAddition)
@@ -219,10 +225,10 @@ TEST_SUITE(Foundation_Math_MatrixMN)
             44.0, 55.0, 66.0
         };
 
-        Mat23 m(Values);
-        m += Mat23(OtherValues);
+        Mat23d m(Values);
+        m += Mat23d(OtherValues);
 
-        EXPECT_FEQ(Mat23(ExpectedValues), m);
+        EXPECT_FEQ(Mat23d(ExpectedValues), m);
     }
 
     TEST_CASE(TestInPlaceSubstraction)
@@ -239,10 +245,10 @@ TEST_SUITE(Foundation_Math_MatrixMN)
             36.0, 45.0, 54.0
         };
 
-        Mat23 m(OtherValues);
-        m -= Mat23(Values);
+        Mat23d m(OtherValues);
+        m -= Mat23d(Values);
 
-        EXPECT_FEQ(Mat23(ExpectedValues), m);
+        EXPECT_FEQ(Mat23d(ExpectedValues), m);
     }
 
     TEST_CASE(TestInPlaceMultiplicationByScalar)
@@ -253,10 +259,10 @@ TEST_SUITE(Foundation_Math_MatrixMN)
              8.0, 10.0, 12.0
         };
 
-        Mat23 m(Values);
+        Mat23d m(Values);
         m *= 2.0;
 
-        EXPECT_FEQ(Mat23(ExpectedValues), m);
+        EXPECT_FEQ(Mat23d(ExpectedValues), m);
     }
 
     TEST_CASE(TestInPlaceDivisionByScalar)
@@ -267,10 +273,10 @@ TEST_SUITE(Foundation_Math_MatrixMN)
              2.0, 2.5, 3.0
         };
 
-        Mat23 m(Values);
+        Mat23d m(Values);
         m /= 2.0;
 
-        EXPECT_FEQ(Mat23(ExpectedValues), m);
+        EXPECT_FEQ(Mat23d(ExpectedValues), m);
     }
 
     TEST_CASE(TestMatrixMatrixMultiplication)
@@ -318,17 +324,15 @@ TEST_SUITE(Foundation_Math_MatrixMN)
             3.0, 6.0
         };
 
-        const Mat23 m(Values);
+        const Mat32d result = transpose(Mat23d(Values));
 
-        typedef Matrix<double, 3, 2> Mat32d;
-
-        EXPECT_EQ(Mat32d(ExpectedValues), transpose(m));
+        EXPECT_EQ(Mat32d(ExpectedValues), result);
     }
 }
 
 TEST_SUITE(Foundation_Math_MatrixNN)
 {
-    typedef Matrix<double, 5, 5> Mat55;
+    typedef Matrix<double, 5, 5> Mat55d;
 
     static const double Values[] =
     {
@@ -341,21 +345,21 @@ TEST_SUITE(Foundation_Math_MatrixNN)
 
     TEST_CASE(TestProperties)
     {
-        EXPECT_EQ(5, Mat55::Rows);
-        EXPECT_EQ(5, Mat55::Columns);
-        EXPECT_EQ(25, Mat55::Components);
+        EXPECT_EQ(5, Mat55d::Rows);
+        EXPECT_EQ(5, Mat55d::Columns);
+        EXPECT_EQ(25, Mat55d::Components);
     }
 
     TEST_CASE(ConstructMatrixWithArrayOfValues)
     {
-        const Mat55 m(Values);
+        const Mat55d m(Values);
 
         EXPECT_SEQUENCE_EQ(25, Values, &m[0]);
     }
 
     TEST_CASE(ConstructMatrixWithSingleValue)
     {
-        const Mat55 m(42.0);
+        const Mat55d m(42.0);
 
         for (size_t i = 0; i < 25; ++i)
             EXPECT_EQ(42.0, m[i]);
@@ -363,7 +367,7 @@ TEST_SUITE(Foundation_Math_MatrixNN)
 
     TEST_CASE(ConstructMatrixByTypeConversion)
     {
-        const Mat55 m(Values);
+        const Mat55d m(Values);
         const Matrix<float, 5, 5> mf(m);
 
         for (size_t i = 0; i < 25; ++i)
@@ -381,18 +385,18 @@ TEST_SUITE(Foundation_Math_MatrixNN)
              0.0, 0.0, 0.0, 0.0, 1.0
         };
 
-        const Mat55 m(Mat55::identity());
+        const Mat55d m(Mat55d::identity());
 
         EXPECT_SEQUENCE_EQ(25, Values, &m[0]);
     }
 
     TEST_CASE(TestFortranStyleSubscripting)
     {
-        const Mat55 m(Values);
+        const Mat55d m(Values);
 
-        EXPECT_EQ(1.0, m(0, 0));
-        EXPECT_EQ(2.0, m(0, 1));
-        EXPECT_EQ(3.0, m(0, 2));
+        EXPECT_EQ( 1.0, m(0, 0));
+        EXPECT_EQ( 2.0, m(0, 1));
+        EXPECT_EQ( 3.0, m(0, 2));
         EXPECT_EQ(25.0, m(4, 4));
     }
 
@@ -412,9 +416,9 @@ TEST_SUITE(Foundation_Math_MatrixNN)
             0.0, 3.0 / 19, -2.0 / 19
         };
 
-        typedef Matrix<double, 3, 3> Mat33;
+        const Matrix3d result = inverse(Matrix3d(Values));
 
-        EXPECT_FEQ(Matrix3d(ExpectedValues), inverse(Matrix3d(Values)));
+        EXPECT_FEQ(Matrix3d(ExpectedValues), result);
     }
 
     TEST_CASE(TestInversionOfSingularMatrix)
@@ -437,9 +441,9 @@ TEST_SUITE(Foundation_Math_Matrix33)
 {
     static const double Values[] =
     {
-        1.0, 2.0, 3.0,
-        4.0, 5.0, 6.0,
-        7.0, 8.0, 9.0
+         -7.0, -40.0, 42.0,
+        -50.0,  23.0, 75.0,
+        -92.0,   6.0, 74.0
     };
 
     TEST_CASE(TestProperties)
@@ -473,9 +477,36 @@ TEST_SUITE(Foundation_Math_Matrix33)
             EXPECT_FEQ(static_cast<float>(Values[i]), mf[i]);
     }
 
+#ifdef APPLESEED_ENABLE_IMATH_INTEROP
+
+    static const double ValuesImathFormat[3][3] =
+    {
+        { Values[0], Values[1], Values[2] },
+        { Values[3], Values[4], Values[5] },
+        { Values[6], Values[7], Values[8] }
+    };
+
+    TEST_CASE(ConstructFromImathMatrix33)
+    {
+        const Imath::M33d source(ValuesImathFormat);
+        const Matrix3d copy(source);
+
+        EXPECT_EQ(Matrix3d(Values), copy);
+    }
+
+    TEST_CASE(ConvertToImathMatrix33)
+    {
+        const Matrix3d source(Values);
+        const Imath::M33d copy(source);
+
+        EXPECT_EQ(Imath::M33d(ValuesImathFormat), copy);
+    }
+
+#endif
+
     TEST_CASE(ConstructIdentityMatrix)
     {
-        static const double Values[] =
+        static const double ExpectedValues[] =
         {
              1.0, 0.0, 0.0,
              0.0, 1.0, 0.0,
@@ -484,17 +515,17 @@ TEST_SUITE(Foundation_Math_Matrix33)
 
         const Matrix3d m(Matrix3d::identity());
 
-        EXPECT_SEQUENCE_EQ(9, Values, &m[0]);
+        EXPECT_SEQUENCE_EQ(9, ExpectedValues, &m[0]);
     }
 
     TEST_CASE(TestFortranStyleSubscripting)
     {
         const Matrix3d m(Values);
 
-        EXPECT_EQ(1.0, m(0, 0));
-        EXPECT_EQ(2.0, m(0, 1));
-        EXPECT_EQ(3.0, m(0, 2));
-        EXPECT_EQ(9.0, m(2, 2));
+        EXPECT_EQ( -7.0, m(0, 0));
+        EXPECT_EQ(-40.0, m(0, 1));
+        EXPECT_EQ( 42.0, m(0, 2));
+        EXPECT_EQ( 74.0, m(2, 2));
     }
 
     TEST_CASE(TestMatrixMatrixMultiplication)
@@ -520,7 +551,27 @@ TEST_SUITE(Foundation_Math_Matrix33)
             -5.0, -13.0,   67.0
         };
 
-        EXPECT_FEQ(Matrix3d(ExpectedValues), Matrix3d(LhsValues) * Matrix3d(RhsValues));
+        const Matrix3d result = Matrix3d(LhsValues) * Matrix3d(RhsValues);
+
+        EXPECT_FEQ(Matrix3d(ExpectedValues), result);
+    }
+
+    TEST_CASE(TestMatrixVectorMultiplication)
+    {
+        const Vector3d Vec(72.0, 37.0, -23.0);
+
+        const Vector3d result = Matrix3d(Values) * Vec;
+
+        EXPECT_FEQ(Vector3d(-2950.0, -4474.0, -8104.0), result);
+    }
+
+    TEST_CASE(TestVectorMatrixMultiplication)
+    {
+        const Vector3d Vec(72.0, 37.0, -23.0);
+
+        const Vector3d result = Vec * Matrix3d(Values);
+
+        EXPECT_FEQ(Vector3d(-238.0, -2167.0, 4097.0), result);
     }
 }
 
@@ -528,10 +579,10 @@ TEST_SUITE(Foundation_Math_Matrix44)
 {
     static const double Values[] =
     {
-         1.0,  2.0,  3.0,  4.0,
-         5.0,  6.0,  7.0,  8.0,
-         9.0, 10.0, 11.0, 12.0,
-        13.0, 14.0, 15.0, 16.0
+        -38.0,  23.0, 14.0,  58.0,
+        -92.0,  -8.0, 36.0, -90.0,
+         96.0, -19.0, -4.0,  38.0,
+        -99.0, -67.0, 68.0,  45.0
     };
 
     TEST_CASE(TestProperties)
@@ -565,9 +616,37 @@ TEST_SUITE(Foundation_Math_Matrix44)
             EXPECT_FEQ(static_cast<float>(Values[i]), mf[i]);
     }
 
+#ifdef APPLESEED_ENABLE_IMATH_INTEROP
+
+    static const double ValuesImathFormat[4][4] =
+    {
+        { Values[ 0], Values[ 1], Values[ 2], Values[ 3] },
+        { Values[ 4], Values[ 5], Values[ 6], Values[ 7] },
+        { Values[ 8], Values[ 9], Values[10], Values[11] },
+        { Values[12], Values[13], Values[14], Values[15] }
+    };
+
+    TEST_CASE(ConstructFromImathMatrix44)
+    {
+        const Imath::M44d source(ValuesImathFormat);
+        const Matrix4d copy(source);
+
+        EXPECT_EQ(Matrix4d(Values), copy);
+    }
+
+    TEST_CASE(ConvertToImathMatrix44)
+    {
+        const Matrix4d source(Values);
+        const Imath::M44d copy(source);
+
+        EXPECT_EQ(Imath::M44d(ValuesImathFormat), copy);
+    }
+
+#endif
+
     TEST_CASE(ConstructIdentityMatrix)
     {
-        static const double Values[] =
+        static const double ExpectedValues[] =
         {
              1.0, 0.0, 0.0, 0.0,
              0.0, 1.0, 0.0, 0.0,
@@ -577,17 +656,17 @@ TEST_SUITE(Foundation_Math_Matrix44)
 
         const Matrix4d m(Matrix4d::identity());
 
-        EXPECT_SEQUENCE_EQ(16, Values, &m[0]);
+        EXPECT_SEQUENCE_EQ(16, ExpectedValues, &m[0]);
     }
 
     TEST_CASE(TestFortranStyleSubscripting)
     {
         const Matrix4d m(Values);
 
-        EXPECT_EQ(1.0, m(0, 0));
-        EXPECT_EQ(2.0, m(0, 1));
-        EXPECT_EQ(3.0, m(0, 2));
-        EXPECT_EQ(16.0, m(3, 3));
+        EXPECT_EQ(-38.0, m(0, 0));
+        EXPECT_EQ( 23.0, m(0, 1));
+        EXPECT_EQ( 14.0, m(0, 2));
+        EXPECT_EQ( 45.0, m(3, 3));
     }
 
     TEST_CASE(TestMatrixMatrixMultiplication)
@@ -616,38 +695,26 @@ TEST_SUITE(Foundation_Math_Matrix44)
             -58.0, -69.0,  55.0, -89.0
         };
 
-        EXPECT_FEQ(Matrix4d(ExpectedValues), Matrix4d(LhsValues) * Matrix4d(RhsValues));
+        const Matrix4d result = Matrix4d(LhsValues) * Matrix4d(RhsValues);
+
+        EXPECT_FEQ(Matrix4d(ExpectedValues), result);
     }
 
     TEST_CASE(TestMatrixVectorMultiplication)
     {
-        static const double Values[] =
-        {
-            -38.0,  23.0, 14.0,  58.0,
-            -92.0,  -8.0, 36.0, -90.0,
-             96.0, -19.0, -4.0,  38.0,
-            -99.0, -67.0, 68.0,  45.0
-        };
+        const Vector4d Vec(73.0, 76.0, -68.0, 67.0);
 
-        const Vector<double, 4> Vec(73.0, 76.0, -68.0, 67.0);
-        const Vector<double, 4> Expected(1908.0, -15802.0, 8382.0, -13928.0);
+        const Vector4d result = Matrix4d(Values) * Vec;
 
-        EXPECT_FEQ(Expected, Matrix4d(Values) * Vec);
+        EXPECT_FEQ(Vector4d(1908.0, -15802.0, 8382.0, -13928.0), result);
     }
 
     TEST_CASE(TestVectorMatrixMultiplication)
     {
-        static const double Values[] =
-        {
-            -99.0, -67.0, 68.0,  45.0,
-             76.0,   6.0, 72.0, -28.0,
-            -61.0, -59.0,  6.0, -87.0,
-            -38.0,  23.0, 14.0,  58.0
-        };
+        const Vector4d Vec(73.0, 76.0, -68.0, 67.0);
 
-        const Vector<double, 4> Vec(11.0, 93.0, -14.0, 73.0);
-        const Vector<double, 4> Expected(-4987.0, -1658.0, -12593.0, 5759.0);
+        const Vector4d result = Vec * Matrix4d(Values);
 
-        EXPECT_FEQ(Expected, Vec * Matrix4d(Values));
+        EXPECT_FEQ(Vector4d(-22927.0, -2126.0, 8586.0, -2175.0), result);
     }
 }
