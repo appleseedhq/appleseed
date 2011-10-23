@@ -270,9 +270,14 @@ class WindowsPackageBuilder(PackageBuilder):
 #
 
 class MacPackageBuilder(PackageBuilder):
+    def __init__(self, settings, package_info):
+        PackageBuilder.__init__(self, settings, package_info)
+        self.build_path = os.path.join(os.path.join(self.settings.appleseed_path, "build/"), self.settings.platform)
+
     def alterate_stage(self):
         self.fixup_binaries()
         self.add_dependencies_to_stage()
+        safe_delete_file("appleseed/bin/.DS_Store")
 
     def fixup_binaries(self):
         progress("Mac-specific: fixing up binaries")
@@ -286,15 +291,15 @@ class MacPackageBuilder(PackageBuilder):
 
     def fixup_libappleseed_shared(self):
         self.fixup_id("libappleseed.shared.dylib")
-        self.fixup_change("libappleseed.shared.dylib", os.path.join(self.settings.appleseed_path, "build/src/appleseed/libappleseed.dylib"), "libappleseed.dylib")
+        self.fixup_change("libappleseed.shared.dylib", os.path.join(self.build_path, "appleseed/libappleseed.dylib"), "libappleseed.dylib")
 
     def fixup_appleseed_cli(self):
-        self.fixup_change("appleseed.cli", os.path.join(self.settings.appleseed_path, "build/src/appleseed/libappleseed.dylib"), "libappleseed.dylib")
-        self.fixup_change("appleseed.cli", os.path.join(self.settings.appleseed_path, "build/src/appleseed.shared/libappleseed.shared.dylib"), "libappleseed.shared.dylib")
+        self.fixup_change("appleseed.cli", os.path.join(self.build_path, "appleseed/libappleseed.dylib"), "libappleseed.dylib")
+        self.fixup_change("appleseed.cli", os.path.join(self.build_path, "appleseed.shared/libappleseed.shared.dylib"), "libappleseed.shared.dylib")
 
     def fixup_appleseed_studio(self):
-        self.fixup_change("appleseed.studio", os.path.join(self.settings.appleseed_path, "build/src/appleseed/libappleseed.dylib"), "libappleseed.dylib")
-        self.fixup_change("appleseed.studio", os.path.join(self.settings.appleseed_path, "build/src/appleseed.shared/libappleseed.shared.dylib"), "libappleseed.shared.dylib")
+        self.fixup_change("appleseed.studio", os.path.join(self.build_path, "appleseed/libappleseed.dylib"), "libappleseed.dylib")
+        self.fixup_change("appleseed.studio", os.path.join(self.build_path, "appleseed.shared/libappleseed.shared.dylib"), "libappleseed.shared.dylib")
 
     def fixup_id(self, target):
         self.fixup(target, '-id @"' + target + '"')
