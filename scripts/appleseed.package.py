@@ -272,7 +272,8 @@ class WindowsPackageBuilder(PackageBuilder):
 class MacPackageBuilder(PackageBuilder):
     def __init__(self, settings, package_info):
         PackageBuilder.__init__(self, settings, package_info)
-        self.build_path = os.path.join(os.path.join(self.settings.appleseed_path, "build/"), self.settings.platform)
+        platform_dir = self.settings.platform.replace("-", ".")
+        self.build_path = os.path.join(os.path.join(self.settings.appleseed_path, "build/"), platform_dir)
 
     def alterate_stage(self):
         self.fixup_binaries()
