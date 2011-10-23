@@ -32,6 +32,11 @@
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"
 
+// Imath headers.
+#ifdef APPLESEED_ENABLE_IMATH_INTEROP
+#include "openexr/ImathBox.h"
+#endif
+
 // Standard headers.
 #include <cstddef>
 
@@ -60,6 +65,34 @@ TEST_SUITE(Foundation_Math_AABB)
         EXPECT_FEQ(Vector3f(1.0f, 2.0f, 3.0f), bboxf.min);
         EXPECT_FEQ(Vector3f(4.0f, 5.0f, 6.0f), bboxf.max);
     }
+
+#ifdef APPLESEED_ENABLE_IMATH_INTEROP
+
+    TEST_CASE(ConstructFromImathBox)
+    {
+        const Imath::Box2d source(
+            Imath::V2d(1.0, 2.0),
+            Imath::V2d(3.0, 4.0));
+
+        const AABB2d copy(source);
+
+        EXPECT_EQ(Vector2d(1.0, 2.0), copy.min);
+        EXPECT_EQ(Vector2d(3.0, 4.0), copy.max);
+    }
+
+    TEST_CASE(ConvertToImathBox)
+    {
+        const AABB2d source(
+            Vector2d(1.0, 2.0),
+            Vector2d(3.0, 4.0));
+
+        const Imath::Box2d copy(source);
+
+        EXPECT_EQ(Imath::V2d(1.0, 2.0), copy.min);
+        EXPECT_EQ(Imath::V2d(3.0, 4.0), copy.max);
+    }
+
+#endif
 
     TEST_CASE(ConstructInvalidAABB)
     {

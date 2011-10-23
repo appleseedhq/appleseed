@@ -31,6 +31,11 @@
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"
 
+// Imath headers.
+#ifdef APPLESEED_ENABLE_IMATH_INTEROP
+#include "openexr/ImathVec.h"
+#endif
+
 // Standard headers.
 #include <cmath>
 
@@ -39,14 +44,13 @@ using namespace std;
 
 TEST_SUITE(Foundation_Math_Vector)
 {
-    typedef Vector<double, 2> Vec2;
-    typedef Vector<double, 3> Vec3;
-    typedef Vector<double, 5> Vec5;
+    typedef Vector<float, 5> Vector5f;
+    typedef Vector<double, 5> Vector5d;
 
     TEST_CASE(ConstructVectorWithArrayOfValues)
     {
         static const double Values[] = { 1.0, 5.0, 19.0, -4.0, -100.0 };
-        const Vec5 v(Values);
+        const Vector5d v(Values);
 
         EXPECT_EQ(Values[0], v[0]);
         EXPECT_EQ(Values[1], v[1]);
@@ -57,7 +61,7 @@ TEST_SUITE(Foundation_Math_Vector)
 
     TEST_CASE(ConstructVectorWithSingleValue)
     {
-        const Vec5 v(7.0);
+        const Vector5d v(7.0);
 
         EXPECT_EQ(7.0, v[0]);
         EXPECT_EQ(7.0, v[1]);
@@ -69,8 +73,8 @@ TEST_SUITE(Foundation_Math_Vector)
     TEST_CASE(ConstructVectorByTypeConversion)
     {
         static const double Values[] = { 1.0, 5.0, 19.0, -4.0, -100.0 };
-        const Vec5 v(Values);
-        const Vector<float, 5> vf(v);
+        const Vector5d v(Values);
+        const Vector5f vf(v);
 
         EXPECT_FEQ(static_cast<float>(Values[0]), vf[0]);
         EXPECT_FEQ(static_cast<float>(Values[1]), vf[1]);
@@ -81,11 +85,11 @@ TEST_SUITE(Foundation_Math_Vector)
 
     TEST_CASE(TestEquality)
     {
-        const Vec3 u(1.0, 5.0, 19.0);
-        const Vec3 v(1.0, 5.0, 19.0);
-        const Vec3 a(1.0, 5.0,  0.0);
-        const Vec3 b(1.0, 0.0, 19.0);
-        const Vec3 c(1.0, 5.0,  0.0);
+        const Vector3d u(1.0, 5.0, 19.0);
+        const Vector3d v(1.0, 5.0, 19.0);
+        const Vector3d a(1.0, 5.0,  0.0);
+        const Vector3d b(1.0, 0.0, 19.0);
+        const Vector3d c(1.0, 5.0,  0.0);
 
         EXPECT_TRUE(u == v);
         EXPECT_FALSE(u == a);
@@ -95,11 +99,11 @@ TEST_SUITE(Foundation_Math_Vector)
 
     TEST_CASE(TestInequality)
     {
-        const Vec3 u(1.0, 5.0, 19.0);
-        const Vec3 v(1.0, 5.0, 19.0);
-        const Vec3 a(0.0, 5.0, 19.0);
-        const Vec3 b(1.0, 0.0, 19.0);
-        const Vec3 c(1.0, 5.0,  0.0);
+        const Vector3d u(1.0, 5.0, 19.0);
+        const Vector3d v(1.0, 5.0, 19.0);
+        const Vector3d a(0.0, 5.0, 19.0);
+        const Vector3d b(1.0, 0.0, 19.0);
+        const Vector3d c(1.0, 5.0,  0.0);
 
         EXPECT_FALSE(u != v);
         EXPECT_TRUE(u != a);
@@ -109,11 +113,11 @@ TEST_SUITE(Foundation_Math_Vector)
 
     TEST_CASE(TestApproximateEquality)
     {
-        const Vec3 u(1.0, 5.0, 19.0);
-        const Vec3 v(1.0, 5.0, 19.0);
-        const Vec3 a(0.0, 5.0, 19.0);
-        const Vec3 b(1.0, 0.0, 19.0);
-        const Vec3 c(1.0, 5.0,  0.0);
+        const Vector3d u(1.0, 5.0, 19.0);
+        const Vector3d v(1.0, 5.0, 19.0);
+        const Vector3d a(0.0, 5.0, 19.0);
+        const Vector3d b(1.0, 0.0, 19.0);
+        const Vector3d c(1.0, 5.0,  0.0);
 
         EXPECT_TRUE(feq(u, v));
         EXPECT_FALSE(feq(u, a));
@@ -123,9 +127,9 @@ TEST_SUITE(Foundation_Math_Vector)
 
     TEST_CASE(TestComparisonToZero)
     {
-        const Vec3 v(1.0, 5.0, 19.0);
-        const Vec3 a(0.0, 5.0, 19.0);
-        const Vec3 b(0.0, 0.0,  0.0);
+        const Vector3d v(1.0, 5.0, 19.0);
+        const Vector3d a(0.0, 5.0, 19.0);
+        const Vector3d b(0.0, 0.0,  0.0);
 
         EXPECT_FALSE(fz(v));
         EXPECT_FALSE(fz(a));
@@ -134,230 +138,228 @@ TEST_SUITE(Foundation_Math_Vector)
 
     TEST_CASE(TestAddition)
     {
-        EXPECT_FEQ(Vec3(5.0, 7.0, 9.0), Vec3(1.0, 2.0, 3.0) + Vec3(4.0, 5.0, 6.0));
+        EXPECT_FEQ(Vector3d(5.0, 7.0, 9.0), Vector3d(1.0, 2.0, 3.0) + Vector3d(4.0, 5.0, 6.0));
     }
 
     TEST_CASE(TestSubstraction)
     {
-        EXPECT_FEQ(Vec3(1.0, 3.0, 5.0), Vec3(4.0, 5.0, 6.0) - Vec3(3.0, 2.0, 1.0));
+        EXPECT_FEQ(Vector3d(1.0, 3.0, 5.0), Vector3d(4.0, 5.0, 6.0) - Vector3d(3.0, 2.0, 1.0));
     }
 
     TEST_CASE(TestNegation)
     {
-        EXPECT_FEQ(Vec3(-1.0, -2.0, -3.0), -Vec3(1.0, 2.0, 3.0));
+        EXPECT_FEQ(Vector3d(-1.0, -2.0, -3.0), -Vector3d(1.0, 2.0, 3.0));
     }
 
     TEST_CASE(TestRightMultiplicationByScalar)
     {
-        EXPECT_FEQ(Vec3(2.0, 4.0, 6.0), Vec3(1.0, 2.0, 3.0) * 2.0);
+        EXPECT_FEQ(Vector3d(2.0, 4.0, 6.0), Vector3d(1.0, 2.0, 3.0) * 2.0);
     }
 
     TEST_CASE(TestLeftMultiplicationByScalar)
     {
-        EXPECT_FEQ(Vec3(2.0, 4.0, 6.0), 2.0 * Vec3(1.0, 2.0, 3.0));
+        EXPECT_FEQ(Vector3d(2.0, 4.0, 6.0), 2.0 * Vector3d(1.0, 2.0, 3.0));
     }
 
     TEST_CASE(TestDivisionByScalar)
     {
-        EXPECT_FEQ(Vec3(1.0, 2.0, 3.0), Vec3(2.0, 4.0, 6.0) / 2.0);
+        EXPECT_FEQ(Vector3d(1.0, 2.0, 3.0), Vector3d(2.0, 4.0, 6.0) / 2.0);
     }
 
     TEST_CASE(TestMultiplicationByVector)
     {
-        EXPECT_FEQ(Vec3(6.0, 20.0, 42.0), Vec3(2.0, 4.0, 6.0) * Vec3(3.0, 5.0, 7.0));
+        EXPECT_FEQ(Vector3d(6.0, 20.0, 42.0), Vector3d(2.0, 4.0, 6.0) * Vector3d(3.0, 5.0, 7.0));
     }
 
     TEST_CASE(TestDivisionByVector)
     {
-        EXPECT_FEQ(Vec3(1.0, 2.0, 3.0), Vec3(2.0, 4.0, 6.0) / Vec3(2.0, 2.0, 2.0));
+        EXPECT_FEQ(Vector3d(1.0, 2.0, 3.0), Vector3d(2.0, 4.0, 6.0) / Vector3d(2.0, 2.0, 2.0));
     }
 
     TEST_CASE(TestInPlaceAddition)
     {
-        Vec3 v(1.0, 2.0, 3.0); v += Vec3(4.0, 5.0, 6.0);
-        EXPECT_FEQ(Vec3(5.0, 7.0, 9.0), v);
+        Vector3d v(1.0, 2.0, 3.0); v += Vector3d(4.0, 5.0, 6.0);
+        EXPECT_FEQ(Vector3d(5.0, 7.0, 9.0), v);
     }
 
     TEST_CASE(TestInPlaceSubstraction)
     {
-        Vec3 v(4.0, 5.0, 6.0); v -= Vec3(3.0, 2.0, 1.0);
-        EXPECT_FEQ(Vec3(1.0, 3.0, 5.0), v);
+        Vector3d v(4.0, 5.0, 6.0); v -= Vector3d(3.0, 2.0, 1.0);
+        EXPECT_FEQ(Vector3d(1.0, 3.0, 5.0), v);
     }
 
     TEST_CASE(TestInPlaceMultiplicationByScalar)
     {
-        Vec3 v(1.0, 2.0, 3.0); v *= 2.0;
-        EXPECT_FEQ(Vec3(2.0, 4.0, 6.0), v);
+        Vector3d v(1.0, 2.0, 3.0); v *= 2.0;
+        EXPECT_FEQ(Vector3d(2.0, 4.0, 6.0), v);
     }
 
     TEST_CASE(TestInPlaceDivisionByScalar)
     {
-        Vec3 v(2.0, 4.0, 6.0); v /= 2.0;
-        EXPECT_FEQ(Vec3(1.0, 2.0, 3.0), v);
+        Vector3d v(2.0, 4.0, 6.0); v /= 2.0;
+        EXPECT_FEQ(Vector3d(1.0, 2.0, 3.0), v);
     }
 
     TEST_CASE(TestInPlaceMultiplicationByVector)
     {
-        Vec3 v(2.0, 4.0, 6.0); v *= Vec3(3.0, 5.0, 7.0);
-        EXPECT_FEQ(Vec3(6.0, 20.0, 42.0), v);
+        Vector3d v(2.0, 4.0, 6.0); v *= Vector3d(3.0, 5.0, 7.0);
+        EXPECT_FEQ(Vector3d(6.0, 20.0, 42.0), v);
     }
 
     TEST_CASE(TestInPlaceDivisionByVector)
     {
-        Vec3 v(2.0, 4.0, 6.0); v /= Vec3(2.0, 2.0, 2.0);
-        EXPECT_FEQ(Vec3(1.0, 2.0, 3.0), v);
+        Vector3d v(2.0, 4.0, 6.0); v /= Vector3d(2.0, 2.0, 2.0);
+        EXPECT_FEQ(Vector3d(1.0, 2.0, 3.0), v);
     }
 
     TEST_CASE(TestDotProduct)
     {
-        EXPECT_FEQ(68.0, dot(Vec3(2.0, 4.0, 6.0), Vec3(3.0, 5.0, 7.0)));
+        EXPECT_FEQ(68.0, dot(Vector3d(2.0, 4.0, 6.0), Vector3d(3.0, 5.0, 7.0)));
     }
 
     TEST_CASE(TestSquareNorm)
     {
-        EXPECT_EQ(0.0, square_norm(Vec3(0.0)));
-        EXPECT_FEQ(56.0, square_norm(Vec3(2.0, 4.0, 6.0)));
+        EXPECT_EQ(0.0, square_norm(Vector3d(0.0)));
+        EXPECT_FEQ(56.0, square_norm(Vector3d(2.0, 4.0, 6.0)));
     }
 
     TEST_CASE(TestNorm)
     {
-        EXPECT_EQ(0.0, norm(Vec3(0.0)));
-        EXPECT_FEQ(sqrt(56.0), norm(Vec3(2.0, 4.0, 6.0)));
+        EXPECT_EQ(0.0, norm(Vector3d(0.0)));
+        EXPECT_FEQ(sqrt(56.0), norm(Vector3d(2.0, 4.0, 6.0)));
     }
 
     TEST_CASE(TestNormalize)
     {
-        EXPECT_FEQ(Vec3(1.0, 0.0, 0.0), normalize(Vec3(4.0, 0.0, 0.0)));
-        EXPECT_FEQ(Vec3(0.0, 1.0, 0.0), normalize(Vec3(0.0, 4.0, 0.0)));
-        EXPECT_FEQ(Vec3(0.0, 0.0, 1.0), normalize(Vec3(0.0, 0.0, 4.0)));
+        EXPECT_FEQ(Vector3d(1.0, 0.0, 0.0), normalize(Vector3d(4.0, 0.0, 0.0)));
+        EXPECT_FEQ(Vector3d(0.0, 1.0, 0.0), normalize(Vector3d(0.0, 4.0, 0.0)));
+        EXPECT_FEQ(Vector3d(0.0, 0.0, 1.0), normalize(Vector3d(0.0, 0.0, 4.0)));
     }
 
     TEST_CASE(TestIsNormalized)
     {
-        const Vec3 v(3.0, -5.0, 7.0);
+        const Vector3d v(3.0, -5.0, 7.0);
 
         EXPECT_FALSE(is_normalized(v));
         EXPECT_TRUE(is_normalized(normalize(v)));
 
-        EXPECT_FALSE(is_normalized(Vec3(0.0)));
-        EXPECT_TRUE(is_normalized(Vec3(1.0, 0.0, 0.0)));
-        EXPECT_TRUE(is_normalized(Vec3(0.0, 1.0, 0.0)));
-        EXPECT_TRUE(is_normalized(Vec3(0.0, 0.0, 1.0)));
+        EXPECT_FALSE(is_normalized(Vector3d(0.0)));
+        EXPECT_TRUE(is_normalized(Vector3d(1.0, 0.0, 0.0)));
+        EXPECT_TRUE(is_normalized(Vector3d(0.0, 1.0, 0.0)));
+        EXPECT_TRUE(is_normalized(Vector3d(0.0, 0.0, 1.0)));
     }
 
     TEST_CASE(TestReflect)
     {
-        const Vec3 i(1.0, 2.0, 3.0);
-        const Vec3 n(0.0, 1.0, 0.0);
+        const Vector3d i(1.0, 2.0, 3.0);
+        const Vector3d n(0.0, 1.0, 0.0);
 
-        const Vec3 r = reflect(i, n);
+        const Vector3d r = reflect(i, n);
 
-        EXPECT_FEQ(Vec3(-1.0, 2.0, -3.0), r);
+        EXPECT_FEQ(Vector3d(-1.0, 2.0, -3.0), r);
     }
 
     TEST_CASE(TestRefract_IncidentDirectionAndNormalAreInTheSameHemisphere)
     {
-        const Vec2 i = normalize(Vec2(-1.0, 1.0));
-        const Vec2 n(0.0, 1.0);
+        const Vector2d i = normalize(Vector2d(-1.0, 1.0));
+        const Vector2d n(0.0, 1.0);
         const double eta = 0.9;
 
-        const Vec2 r = refract(i, n, eta);
+        const Vector2d r = refract(i, n, eta);
 
-        EXPECT_FEQ(Vec2(0.63639610306789274, -0.77136243102707558), r);
+        EXPECT_FEQ(Vector2d(0.63639610306789274, -0.77136243102707558), r);
     }
 
     TEST_CASE(TestRefract_IncidentDirectionAndNormalAreInOppositeHemispheres)
     {
-        const Vec2 i = normalize(Vec2(-1.0, 1.0));
-        const Vec2 n(0.0, -1.0);
+        const Vector2d i = normalize(Vector2d(-1.0, 1.0));
+        const Vector2d n(0.0, -1.0);
         const double eta = 0.9;
 
-        const Vec2 r = refract(i, n, eta);
+        const Vector2d r = refract(i, n, eta);
 
-        EXPECT_FEQ(Vec2(0.63639610306789274, -0.77136243102707558), r);
+        EXPECT_FEQ(Vector2d(0.63639610306789274, -0.77136243102707558), r);
     }
 
     TEST_CASE(TestClamp)
     {
-        const Vec3 v(-1.0, 2.0, 3.0);
+        const Vector3d v(-1.0, 2.0, 3.0);
 
-        EXPECT_EQ(Vec3(0.0), clamp(v, 0.0, 0.0));
-        EXPECT_EQ(Vec3(2.0), clamp(v, 2.0, 2.0));
-        EXPECT_EQ(Vec3(0.0, 2.0, 2.0), clamp(v, 0.0, 2.0));
+        EXPECT_EQ(Vector3d(0.0), clamp(v, 0.0, 0.0));
+        EXPECT_EQ(Vector3d(2.0), clamp(v, 2.0, 2.0));
+        EXPECT_EQ(Vector3d(0.0, 2.0, 2.0), clamp(v, 0.0, 2.0));
     }
 
     TEST_CASE(TestSaturate)
     {
-        EXPECT_EQ(Vec3(0.0, 1.0, 1.0), saturate(Vec3(-1.0, 2.0, 3.0)));
+        EXPECT_EQ(Vector3d(0.0, 1.0, 1.0), saturate(Vector3d(-1.0, 2.0, 3.0)));
     }
 
     TEST_CASE(TestMin)
     {
-        const Vec2 a(2.0, -4.0);
-        const Vec2 b(-3.0, -2.0);
+        const Vector2d a(2.0, -4.0);
+        const Vector2d b(-3.0, -2.0);
 
-        EXPECT_EQ(Vec2(-3.0, -4.0), min(a, b));
+        EXPECT_EQ(Vector2d(-3.0, -4.0), min(a, b));
     }
 
     TEST_CASE(TestMax)
     {
-        const Vec2 a(2.0, -4.0);
-        const Vec2 b(-3.0, -2.0);
+        const Vector2d a(2.0, -4.0);
+        const Vector2d b(-3.0, -2.0);
 
-        EXPECT_EQ(Vec2(2.0, -2.0), max(a, b));
+        EXPECT_EQ(Vector2d(2.0, -2.0), max(a, b));
     }
 
     TEST_CASE(TestMinValue)
     {
-        EXPECT_EQ(1.0, min_value(Vec3(1.0, 2.0, 3.0)));
-        EXPECT_EQ(1.0, min_value(Vec3(2.0, 1.0, 3.0)));
-        EXPECT_EQ(1.0, min_value(Vec3(3.0, 2.0, 1.0)));
+        EXPECT_EQ(1.0, min_value(Vector3d(1.0, 2.0, 3.0)));
+        EXPECT_EQ(1.0, min_value(Vector3d(2.0, 1.0, 3.0)));
+        EXPECT_EQ(1.0, min_value(Vector3d(3.0, 2.0, 1.0)));
     }
 
     TEST_CASE(TestMaxValue)
     {
-        EXPECT_EQ(3.0, max_value(Vec3(1.0, 2.0, 3.0)));
-        EXPECT_EQ(3.0, max_value(Vec3(2.0, 1.0, 3.0)));
-        EXPECT_EQ(3.0, max_value(Vec3(3.0, 2.0, 1.0)));
+        EXPECT_EQ(3.0, max_value(Vector3d(1.0, 2.0, 3.0)));
+        EXPECT_EQ(3.0, max_value(Vector3d(2.0, 1.0, 3.0)));
+        EXPECT_EQ(3.0, max_value(Vector3d(3.0, 2.0, 1.0)));
     }
 
     TEST_CASE(TestMinIndex)
     {
-        EXPECT_EQ(0, min_index(Vec3(1.0, 2.0, 3.0)));
-        EXPECT_EQ(1, min_index(Vec3(2.0, 1.0, 3.0)));
-        EXPECT_EQ(2, min_index(Vec3(3.0, 2.0, 1.0)));
+        EXPECT_EQ(0, min_index(Vector3d(1.0, 2.0, 3.0)));
+        EXPECT_EQ(1, min_index(Vector3d(2.0, 1.0, 3.0)));
+        EXPECT_EQ(2, min_index(Vector3d(3.0, 2.0, 1.0)));
     }
 
     TEST_CASE(TestMaxIndex)
     {
-        EXPECT_EQ(0, max_index(Vec3(3.0, 2.0, 1.0)));
-        EXPECT_EQ(1, max_index(Vec3(2.0, 3.0, 1.0)));
-        EXPECT_EQ(2, max_index(Vec3(1.0, 2.0, 3.0)));
+        EXPECT_EQ(0, max_index(Vector3d(3.0, 2.0, 1.0)));
+        EXPECT_EQ(1, max_index(Vector3d(2.0, 3.0, 1.0)));
+        EXPECT_EQ(2, max_index(Vector3d(1.0, 2.0, 3.0)));
     }
 
     TEST_CASE(TestMinAbsIndex)
     {
-        EXPECT_EQ(0, min_abs_index(Vec3(-1.0, -2.0, -3.0)));
-        EXPECT_EQ(1, min_abs_index(Vec3(-2.0, -1.0, -3.0)));
-        EXPECT_EQ(2, min_abs_index(Vec3(-3.0, -2.0, -1.0)));
+        EXPECT_EQ(0, min_abs_index(Vector3d(-1.0, -2.0, -3.0)));
+        EXPECT_EQ(1, min_abs_index(Vector3d(-2.0, -1.0, -3.0)));
+        EXPECT_EQ(2, min_abs_index(Vector3d(-3.0, -2.0, -1.0)));
     }
 
     TEST_CASE(TestMaxAbsIndex)
     {
-        EXPECT_EQ(0, max_abs_index(Vec3(-3.0, -2.0, -1.0)));
-        EXPECT_EQ(1, max_abs_index(Vec3(-2.0, -3.0, -1.0)));
-        EXPECT_EQ(2, max_abs_index(Vec3(-1.0, -2.0, -3.0)));
+        EXPECT_EQ(0, max_abs_index(Vector3d(-3.0, -2.0, -1.0)));
+        EXPECT_EQ(1, max_abs_index(Vector3d(-2.0, -3.0, -1.0)));
+        EXPECT_EQ(2, max_abs_index(Vector3d(-1.0, -2.0, -3.0)));
     }
 }
 
 TEST_SUITE(Foundation_Math_Vector2)
 {
-    typedef Vector<double, 2> Vec2;
-
     TEST_CASE(ConstructVectorWithArrayOfValues)
     {
         static const double Values[] = { 1.0, 5.0 };
-        const Vec2 v(Values);
+        const Vector2d v(Values);
 
         EXPECT_EQ(Values[0], v[0]);
         EXPECT_EQ(Values[1], v[1]);
@@ -365,7 +367,7 @@ TEST_SUITE(Foundation_Math_Vector2)
 
     TEST_CASE(ConstructVectorWithSingleValue)
     {
-        const Vec2 v(7.0);
+        const Vector2d v(7.0);
 
         EXPECT_EQ(7.0, v[0]);
         EXPECT_EQ(7.0, v[1]);
@@ -373,7 +375,7 @@ TEST_SUITE(Foundation_Math_Vector2)
 
     TEST_CASE(ConstructVectorWithTwoValues)
     {
-        const Vec2 v(1.0, 5.0);
+        const Vector2d v(1.0, 5.0);
 
         EXPECT_EQ(1.0, v[0]);
         EXPECT_EQ(5.0, v[1]);
@@ -382,27 +384,45 @@ TEST_SUITE(Foundation_Math_Vector2)
     TEST_CASE(ConstructVectorByTypeConversion)
     {
         static const double Values[] = { 1.0, 5.0 };
-        const Vec2 v(Values);
-        const Vector<float, 2> vf(v);
+        const Vector2d v(Values);
+        const Vector2f vf(v);
 
         EXPECT_FEQ(static_cast<float>(Values[0]), vf[0]);
         EXPECT_FEQ(static_cast<float>(Values[1]), vf[1]);
     }
 
+#ifdef APPLESEED_ENABLE_IMATH_INTEROP
+
+    TEST_CASE(ConstructFromImathVec2)
+    {
+        const Imath::V2d source(1.0, 2.0);
+        const Vector2d copy(source);
+
+        EXPECT_EQ(Vector2d(1.0, 2.0), copy);
+    }
+
+    TEST_CASE(ConvertToImathVec2)
+    {
+        const Vector2d source(1.0, 2.0);
+        const Imath::V2d copy(source);
+
+        EXPECT_EQ(Imath::V2d(1.0, 2.0), copy);
+    }
+
+#endif
+
     TEST_CASE(TestDeterminant)
     {
-        EXPECT_FEQ(17.0, det(Vec2(2.0, 3.0), Vec2(-1.0, 7.0)));
+        EXPECT_FEQ(17.0, det(Vector2d(2.0, 3.0), Vector2d(-1.0, 7.0)));
     }
 }
 
 TEST_SUITE(Foundation_Math_Vector3)
 {
-    typedef Vector<double, 3> Vec3;
-
     TEST_CASE(ConstructVectorWithArrayOfValues)
     {
         static const double Values[] = { 1.0, 5.0, 19.0 };
-        const Vec3 v(Values);
+        const Vector3d v(Values);
 
         EXPECT_EQ(Values[0], v[0]);
         EXPECT_EQ(Values[1], v[1]);
@@ -411,7 +431,7 @@ TEST_SUITE(Foundation_Math_Vector3)
 
     TEST_CASE(ConstructVectorWithSingleValue)
     {
-        const Vec3 v(7.0);
+        const Vector3d v(7.0);
 
         EXPECT_EQ(7.0, v[0]);
         EXPECT_EQ(7.0, v[1]);
@@ -420,7 +440,7 @@ TEST_SUITE(Foundation_Math_Vector3)
 
     TEST_CASE(ConstructVectorWithTreeValues)
     {
-        const Vec3 v(1.0, 5.0, 19.0);
+        const Vector3d v(1.0, 5.0, 19.0);
 
         EXPECT_EQ(1.0, v[0]);
         EXPECT_EQ(5.0, v[1]);
@@ -430,34 +450,52 @@ TEST_SUITE(Foundation_Math_Vector3)
     TEST_CASE(ConstructVectorByTypeConversion)
     {
         static const double Values[] = { 1.0, 5.0, 19.0 };
-        const Vec3 v(Values);
-        const Vector<float, 3> vf(v);
+        const Vector3d v(Values);
+        const Vector3f vf(v);
 
         EXPECT_FEQ(static_cast<float>(Values[0]), vf[0]);
         EXPECT_FEQ(static_cast<float>(Values[1]), vf[1]);
         EXPECT_FEQ(static_cast<float>(Values[2]), vf[2]);
     }
 
+#ifdef APPLESEED_ENABLE_IMATH_INTEROP
+
+    TEST_CASE(ConstructFromImathVec3)
+    {
+        const Imath::V3d source(1.0, 2.0, 3.0);
+        const Vector3d copy(source);
+
+        EXPECT_EQ(Vector3d(1.0, 2.0, 3.0), copy);
+    }
+
+    TEST_CASE(ConvertToImathVec3)
+    {
+        const Vector3d source(1.0, 2.0, 3.0);
+        const Imath::V3d copy(source);
+
+        EXPECT_EQ(Imath::V3d(1.0, 2.0, 3.0), copy);
+    }
+
+#endif
+
     TEST_CASE(TestCrossProduct)
     {
-        const Vec3 w = cross(Vec3(1.0, 0.0, 0.0), Vec3(0.0, 1.0, 0.0));
-        const Vec3 u = cross(Vec3(0.0, 1.0, 0.0), Vec3(0.0, 0.0, 1.0));
-        const Vec3 v = cross(Vec3(0.0, 0.0, 1.0), Vec3(1.0, 0.0, 0.0));
+        const Vector3d w = cross(Vector3d(1.0, 0.0, 0.0), Vector3d(0.0, 1.0, 0.0));
+        const Vector3d u = cross(Vector3d(0.0, 1.0, 0.0), Vector3d(0.0, 0.0, 1.0));
+        const Vector3d v = cross(Vector3d(0.0, 0.0, 1.0), Vector3d(1.0, 0.0, 0.0));
 
-        EXPECT_FEQ(Vec3(1.0, 0.0, 0.0), u);
-        EXPECT_FEQ(Vec3(0.0, 1.0, 0.0), v);
-        EXPECT_FEQ(Vec3(0.0, 0.0, 1.0), w);
+        EXPECT_FEQ(Vector3d(1.0, 0.0, 0.0), u);
+        EXPECT_FEQ(Vector3d(0.0, 1.0, 0.0), v);
+        EXPECT_FEQ(Vector3d(0.0, 0.0, 1.0), w);
     }
 }
 
 TEST_SUITE(Foundation_Math_Vector4)
 {
-    typedef Vector<double, 4> Vec4;
-
     TEST_CASE(ConstructVectorWithArrayOfValues)
     {
         static const double Values[] = { 1.0, 5.0, 19.0, -100.0 };
-        const Vec4 v(Values);
+        const Vector4d v(Values);
 
         EXPECT_EQ(Values[0], v[0]);
         EXPECT_EQ(Values[1], v[1]);
@@ -467,7 +505,7 @@ TEST_SUITE(Foundation_Math_Vector4)
 
     TEST_CASE(ConstructVectorWithSingleValue)
     {
-        const Vec4 v(7.0);
+        const Vector4d v(7.0);
 
         EXPECT_EQ(7.0, v[0]);
         EXPECT_EQ(7.0, v[1]);
@@ -477,7 +515,7 @@ TEST_SUITE(Foundation_Math_Vector4)
 
     TEST_CASE(ConstructVectorWithFourValues)
     {
-        const Vec4 v(1.0, 5.0, 19.0, -100.0);
+        const Vector4d v(1.0, 5.0, 19.0, -100.0);
 
         EXPECT_EQ(1.0, v[0]);
         EXPECT_EQ(5.0, v[1]);
@@ -488,8 +526,8 @@ TEST_SUITE(Foundation_Math_Vector4)
     TEST_CASE(ConstructVectorByTypeConversion)
     {
         static const double Values[] = { 1.0, 5.0, 19.0, -100.0 };
-        const Vec4 v(Values);
-        const Vector<float, 4> vf(v);
+        const Vector4d v(Values);
+        const Vector4f vf(v);
 
         EXPECT_FEQ(static_cast<float>(Values[0]), vf[0]);
         EXPECT_FEQ(static_cast<float>(Values[1]), vf[1]);

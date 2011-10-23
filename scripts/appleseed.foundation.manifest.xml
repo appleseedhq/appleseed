@@ -21,6 +21,7 @@
         <files>foundation/math/aabb.h</files>
         <files>foundation/math/area.h</files>
         <files>foundation/math/basis.h</files>
+        <files>foundation/math/bestcandidate.h</files>
         <files>foundation/math/cdf.h</files>
         <files>foundation/math/combination.h</files>
         <files>foundation/math/distance.h</files>
@@ -62,7 +63,7 @@
         <files>foundation/utility/log/openfilelogtarget.*</files>
         <files>foundation/utility/test/*</files>
         <files>foundation/utility/bufferedfile.*</files>
-        <files>foundation/utility/cache.h</files>
+        <files>foundation/utility/cache.*</files>
         <files>foundation/utility/cameracontroller.h</files>
         <files>foundation/utility/casts.h</files>
         <files>foundation/utility/cc.h</files>
@@ -82,7 +83,7 @@
         <files>foundation/utility/vpythonfile.*</files>
     </input>
     <output>
-        <base_path>../archives/releases/appleseed.foundation-1.5/</base_path>
+        <base_path>../archives/releases/appleseed.foundation-1.6/</base_path>
         <base_filename>appleseed.foundation</base_filename>
         <header>
 //
@@ -113,7 +114,7 @@
 //
 
 //
-// This is appleseed.foundation version 1.5.
+// This is appleseed.foundation version 1.6.
 //
 
 // Enable SSE extensions.
@@ -121,17 +122,15 @@
 #define APPLESEED_FOUNDATION_USE_SSE
 #endif
 
+// Include Imath headers if Imath / appleseed.foundation interoperability is enabled.
+#ifdef APPLESEED_ENABLE_IMATH_INTEROP
+#include "openexr/ImathBox.h"
+#include "openexr/ImathColor.h"
+#include "openexr/ImathMatrix.h"
+#include "openexr/ImathVec.h"
+#endif
+
 </header>
-        <strip type="literal">// appleseed.foundation headers.
-</strip>
-        <strip type="literal">// Interface header.
-</strip>
-        <strip type="literal">// Interface headers.
-</strip>
-        <strip type="literal">// Standard headers.
-</strip>
-        <strip type="literal">// Platform headers.
-</strip>
         <strip type="literal">
 //
 // This source file is part of appleseed.
@@ -161,6 +160,20 @@
 //
 
 </strip>
+        <strip type="regex">^#ifndef APPLESEED_FOUNDATION_[A-Z0-9_]*_H[\r\n]+</strip>
+        <strip type="regex">^#define APPLESEED_FOUNDATION_[A-Z0-9_]*_H[\r\n]+</strip>
+        <strip type="regex">^#endif\s+// !APPLESEED_FOUNDATION_[A-Z0-9_]*_H[\r\n]+</strip>
+        <strip type="literal">// appleseed.foundation headers.
+</strip>
+        <strip type="literal">// Interface header.
+</strip>
+        <strip type="literal">// Interface headers.
+</strip>
+        <strip type="literal">// Standard headers.
+</strip>
+        <strip type="literal">// Platform headers.
+</strip>
+        <strip type="regex">^// Imath headers\.[\r\n]+^#ifdef APPLESEED_ENABLE_IMATH_INTEROP[\r\n]+^#include \"openexr\/[a-zA-Z0-9_]+\.h\"[\r\n]+^#endif[\r\n]+</strip>
         <strip type="literal">//
 // On Windows, define FOUNDATIONDLL to __declspec(dllexport) when building the DLL
 // and to __declspec(dllimport) when building an application using the DLL.
@@ -182,14 +195,11 @@
 
 </strip>
         <strip type="literal">FOUNDATIONDLL </strip>
-        <strip type="regex">^#ifndef APPLESEED_FOUNDATION_[A-Z0-9_]*_H[\r\n]+</strip>
-        <strip type="regex">^#define APPLESEED_FOUNDATION_[A-Z0-9_]*_H[\r\n]+</strip>
-        <strip type="regex">^#endif\s+// !APPLESEED_FOUNDATION_[A-Z0-9_]*_H[\r\n]+</strip>
         <strip type="literal">#include "foundation/utility/log/consolelogtarget.h"
 </strip>
-        <strip type="literal">#ifdef APPLESEED_FOUNDATION_USE_SSE
+        <!--<strip type="literal">#ifdef APPLESEED_FOUNDATION_USE_SSE
 #endif
-</strip>
+</strip>-->
     </output>
     <test>
         <commandline>copy appleseed.foundation.test.cpp "$OutputBasePath"</commandline>

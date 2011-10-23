@@ -62,21 +62,6 @@ namespace foundation
 
 namespace
 {
-    // todo: get rid of the from_imath() functions when the Imath/appleseed.foundation
-    // compatibility layer is available.
-
-    template <typename T>
-    Vector<T, 2> from_imath(const Imath::Vec2<T>& v)
-    {
-        return Vector<T, 2>(v.x, v.y);
-    }
-
-    template <typename T>
-    Vector<T, 3> from_imath(const Imath::Vec3<T>& v)
-    {
-        return Vector<T, 3>(v.x, v.y, v.z);
-    }
-
     class MeshObjectReader
       : public NonCopyable
     {
@@ -132,7 +117,7 @@ namespace
 
             for (size_t i = 0; i < vertex_count; ++i)
             {
-                const Vector3d v(from_imath(vertices[i]));  // todo: transform to world space using matrix stack
+                const Vector3d v(vertices[i]);      // todo: transform to world space using matrix stack
                 m_mesh_builder.push_vertex(v);
             }
         }
@@ -152,7 +137,7 @@ namespace
                 
             for (size_t i = 0; i < normal_count; ++i)
             {
-                const Vector3d n(from_imath(normals[i]));   // todo: transform to world space using matrix stack
+                const Vector3d n(normals[i]);       // todo: transform to world space using matrix stack
                 m_mesh_builder.push_vertex_normal(n);
             }
 
@@ -174,7 +159,7 @@ namespace
                 
             for (size_t i = 0; i < uv_count; ++i)
             {
-                const Vector2d v(from_imath(uv[i]));
+                const Vector2d v(uv[i]);
                 m_mesh_builder.push_tex_coords(v);
             }
 

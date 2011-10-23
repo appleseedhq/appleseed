@@ -40,11 +40,19 @@
 #include "foundation/platform/sse.h"
 #endif
 
+// Imath headers.
+#ifdef APPLESEED_ENABLE_IMATH_INTEROP
+#include "openexr/ImathMatrix.h"
+#endif
+
 // Standard headers.
 #include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <cstddef>
+#ifdef APPLESEED_ENABLE_IMATH_INTEROP
+#include <cstring>
+#endif
 
 namespace foundation
 {
@@ -229,6 +237,17 @@ class Matrix<T, 3, 3>
     template <typename U>
     explicit Matrix(const Matrix<U, 3, 3>& rhs);
 
+#ifdef APPLESEED_ENABLE_IMATH_INTEROP
+
+    // Implicit construction from an Imath::Matrix33.
+    Matrix(const Imath::Matrix33<T>& rhs);
+
+    // Reinterpret this matrix as an Imath::Matrix33.
+    operator Imath::Matrix33<T>&();
+    operator const Imath::Matrix33<T>&() const;
+
+#endif
+
     // Return the 3x3 identity matrix.
     static MatrixType identity();
 
@@ -307,6 +326,17 @@ class Matrix<T, 4, 4>
     // Construct a matrix from another matrix of a different type.
     template <typename U>
     explicit Matrix(const Matrix<U, 4, 4>& rhs);
+
+#ifdef APPLESEED_ENABLE_IMATH_INTEROP
+
+    // Implicit construction from an Imath::Matrix44.
+    Matrix(const Imath::Matrix44<T>& rhs);
+
+    // Reinterpret this matrix as an Imath::Matrix44.
+    operator Imath::Matrix44<T>&();
+    operator const Imath::Matrix44<T>&() const;
+
+#endif
 
     // Return the 4x4 identity matrix.
     static MatrixType identity();
@@ -621,159 +651,6 @@ inline Matrix<T, M, K> operator*(
     return res;
 }
 
-template <typename T>
-inline Matrix<T, 3, 3> operator*(
-    const Matrix<T, 3, 3>&  lhs,
-    const Matrix<T, 3, 3>&  rhs)
-{
-    Matrix<T, 3, 3> res;
-
-    // Compute first row.
-    res[0] = lhs[0] * rhs[0] + lhs[1] * rhs[3] + lhs[2] * rhs[6];
-    res[1] = lhs[0] * rhs[1] + lhs[1] * rhs[4] + lhs[2] * rhs[7];
-    res[2] = lhs[0] * rhs[2] + lhs[1] * rhs[5] + lhs[2] * rhs[8];
-
-    // Compute second row.
-    res[3] = lhs[3] * rhs[0] + lhs[4] * rhs[3] + lhs[5] * rhs[6];
-    res[4] = lhs[3] * rhs[1] + lhs[4] * rhs[4] + lhs[5] * rhs[7];
-    res[5] = lhs[3] * rhs[2] + lhs[4] * rhs[5] + lhs[5] * rhs[8];
-
-    // Compute third row.
-    res[6] = lhs[6] * rhs[0] + lhs[7] * rhs[3] + lhs[8] * rhs[6];
-    res[7] = lhs[6] * rhs[1] + lhs[7] * rhs[4] + lhs[8] * rhs[7];
-    res[8] = lhs[6] * rhs[2] + lhs[7] * rhs[5] + lhs[8] * rhs[8];
-
-    return res;
-}
-
-template <typename T>
-inline Matrix<T, 4, 4> operator*(
-    const Matrix<T, 4, 4>&  lhs,
-    const Matrix<T, 4, 4>&  rhs)
-{
-    Matrix<T, 4, 4> res;
-
-    // Compute first row.
-    res[ 0] = lhs[ 0] * rhs[0] + lhs[ 1] * rhs[4] + lhs[ 2] * rhs[ 8] + lhs[ 3] * rhs[12];
-    res[ 1] = lhs[ 0] * rhs[1] + lhs[ 1] * rhs[5] + lhs[ 2] * rhs[ 9] + lhs[ 3] * rhs[13];
-    res[ 2] = lhs[ 0] * rhs[2] + lhs[ 1] * rhs[6] + lhs[ 2] * rhs[10] + lhs[ 3] * rhs[14];
-    res[ 3] = lhs[ 0] * rhs[3] + lhs[ 1] * rhs[7] + lhs[ 2] * rhs[11] + lhs[ 3] * rhs[15];
-
-    // Compute second row.
-    res[ 4] = lhs[ 4] * rhs[0] + lhs[ 5] * rhs[4] + lhs[ 6] * rhs[ 8] + lhs[ 7] * rhs[12];
-    res[ 5] = lhs[ 4] * rhs[1] + lhs[ 5] * rhs[5] + lhs[ 6] * rhs[ 9] + lhs[ 7] * rhs[13];
-    res[ 6] = lhs[ 4] * rhs[2] + lhs[ 5] * rhs[6] + lhs[ 6] * rhs[10] + lhs[ 7] * rhs[14];
-    res[ 7] = lhs[ 4] * rhs[3] + lhs[ 5] * rhs[7] + lhs[ 6] * rhs[11] + lhs[ 7] * rhs[15];
-
-    // Compute third row.
-    res[ 8] = lhs[ 8] * rhs[0] + lhs[ 9] * rhs[4] + lhs[10] * rhs[ 8] + lhs[11] * rhs[12];
-    res[ 9] = lhs[ 8] * rhs[1] + lhs[ 9] * rhs[5] + lhs[10] * rhs[ 9] + lhs[11] * rhs[13];
-    res[10] = lhs[ 8] * rhs[2] + lhs[ 9] * rhs[6] + lhs[10] * rhs[10] + lhs[11] * rhs[14];
-    res[11] = lhs[ 8] * rhs[3] + lhs[ 9] * rhs[7] + lhs[10] * rhs[11] + lhs[11] * rhs[15];
-
-    // Compute fourth row.
-    res[12] = lhs[12] * rhs[0] + lhs[13] * rhs[4] + lhs[14] * rhs[ 8] + lhs[15] * rhs[12];
-    res[13] = lhs[12] * rhs[1] + lhs[13] * rhs[5] + lhs[14] * rhs[ 9] + lhs[15] * rhs[13];
-    res[14] = lhs[12] * rhs[2] + lhs[13] * rhs[6] + lhs[14] * rhs[10] + lhs[15] * rhs[14];
-    res[15] = lhs[12] * rhs[3] + lhs[13] * rhs[7] + lhs[14] * rhs[11] + lhs[15] * rhs[15];
-
-    return res;
-}
-
-#ifdef APPLESEED_FOUNDATION_USE_SSE
-
-// SSE2-optimized double precision 4x4 matrix multiplication.
-template <>
-inline Matrix<double, 4, 4> operator*(
-    const Matrix<double, 4, 4>& lhs,
-    const Matrix<double, 4, 4>& rhs)
-{
-    Matrix<double, 4, 4> res;
-
-    const sse2d rhs0  = loadpd(&rhs[0]);
-    const sse2d rhs2  = loadpd(&rhs[2]);
-    const sse2d rhs4  = loadpd(&rhs[4]);
-    const sse2d rhs6  = loadpd(&rhs[6]);
-    const sse2d rhs8  = loadpd(&rhs[8]);
-    const sse2d rhs10 = loadpd(&rhs[10]);
-    const sse2d rhs12 = loadpd(&rhs[12]);
-    const sse2d rhs14 = loadpd(&rhs[14]);
-
-    sse2d res0, res2;
-
-    const sse2d lhs0 = set1pd(lhs[0]);
-    const sse2d lhs1 = set1pd(lhs[1]);
-    const sse2d lhs2 = set1pd(lhs[2]);
-    const sse2d lhs3 = set1pd(lhs[3]);
-
-    res0 = mulpd(lhs0, rhs0);
-    res2 = mulpd(lhs0, rhs2);
-    res0 = addpd(res0, mulpd(lhs1, rhs4));
-    res2 = addpd(res2, mulpd(lhs1, rhs6));
-    res0 = addpd(res0, mulpd(lhs2, rhs8));
-    res2 = addpd(res2, mulpd(lhs2, rhs10));
-    res0 = addpd(res0, mulpd(lhs3, rhs12));
-    res2 = addpd(res2, mulpd(lhs3, rhs14));
-
-    storepd(&res[0], res0);
-    storepd(&res[2], res2);
-
-    const sse2d lhs4 = set1pd(lhs[4]);
-    const sse2d lhs5 = set1pd(lhs[5]);
-    const sse2d lhs6 = set1pd(lhs[6]);
-    const sse2d lhs7 = set1pd(lhs[7]);
-
-    res0 = mulpd(lhs4, rhs0);
-    res2 = mulpd(lhs4, rhs2);
-    res0 = addpd(res0, mulpd(lhs5, rhs4));
-    res2 = addpd(res2, mulpd(lhs5, rhs6));
-    res0 = addpd(res0, mulpd(lhs6, rhs8));
-    res2 = addpd(res2, mulpd(lhs6, rhs10));
-    res0 = addpd(res0, mulpd(lhs7, rhs12));
-    res2 = addpd(res2, mulpd(lhs7, rhs14));
-
-    storepd(&res[4], res0);
-    storepd(&res[6], res2);
-
-    const sse2d lhs8  = set1pd(lhs[8]);
-    const sse2d lhs9  = set1pd(lhs[9]);
-    const sse2d lhs10 = set1pd(lhs[10]);
-    const sse2d lhs11 = set1pd(lhs[11]);
-
-    res0 = mulpd(lhs8, rhs0);
-    res2 = mulpd(lhs8, rhs2);
-    res0 = addpd(res0, mulpd(lhs9, rhs4));
-    res2 = addpd(res2, mulpd(lhs9, rhs6));
-    res0 = addpd(res0, mulpd(lhs10, rhs8));
-    res2 = addpd(res2, mulpd(lhs10, rhs10));
-    res0 = addpd(res0, mulpd(lhs11, rhs12));
-    res2 = addpd(res2, mulpd(lhs11, rhs14));
-
-    storepd(&res[8],  res0);
-    storepd(&res[10], res2);
-
-    const sse2d lhs12 = set1pd(lhs[12]);
-    const sse2d lhs13 = set1pd(lhs[13]);
-    const sse2d lhs14 = set1pd(lhs[14]);
-    const sse2d lhs15 = set1pd(lhs[15]);
-
-    res0 = mulpd(lhs12, rhs0);
-    res2 = mulpd(lhs12, rhs2);
-    res0 = addpd(res0, mulpd(lhs13, rhs4));
-    res2 = addpd(res2, mulpd(lhs13, rhs6));
-    res0 = addpd(res0, mulpd(lhs14, rhs8));
-    res2 = addpd(res2, mulpd(lhs14, rhs10));
-    res0 = addpd(res0, mulpd(lhs15, rhs12));
-    res2 = addpd(res2, mulpd(lhs15, rhs14));
-
-    storepd(&res[12], res0);
-    storepd(&res[14], res2);
-
-    return res;
-}
-
-#endif  // APPLESEED_FOUNDATION_USE_SSE
-
 template <typename T, size_t M, size_t N>
 inline Vector<T, M> operator*(
     const Matrix<T, M, N>&  lhs,
@@ -784,60 +661,13 @@ inline Vector<T, M> operator*(
     for (size_t r = 0; r < M; ++r)
     {
         res[r] = T(0.0);
+
         for (size_t c = 0; c < N; ++c)
             res[r] += lhs(r, c) * rhs[c];
     }
 
     return res;
 }
-
-template <typename T>
-inline Vector<T, 4> operator*(
-    const Matrix<T, 4, 4>&  lhs,
-    const Vector<T, 4>&     rhs)
-{
-    Vector<T, 4> res;
-    res[0] = lhs[ 0] * rhs[0] + lhs[ 1] * rhs[1] + lhs[ 2] * rhs[2] + lhs[ 3] * rhs[3];
-    res[1] = lhs[ 4] * rhs[0] + lhs[ 5] * rhs[1] + lhs[ 6] * rhs[2] + lhs[ 7] * rhs[3];
-    res[2] = lhs[ 8] * rhs[0] + lhs[ 9] * rhs[1] + lhs[10] * rhs[2] + lhs[11] * rhs[3];
-    res[3] = lhs[12] * rhs[0] + lhs[13] * rhs[1] + lhs[14] * rhs[2] + lhs[15] * rhs[3];
-    return res;
-}
-
-#ifdef APPLESEED_FOUNDATION_USE_SSE_DISABLED
-
-// SSE2-optimized double precision 4x4 matrix-vector multiplication.
-template <>
-inline Vector<double, 4> operator*(
-    const Matrix<double, 4, 4>& lhs,
-    const Vector<double, 4>&    rhs)
-{
-    Vector<double, 4> res;
-
-    const sse2d rhs0 = loadupd(&rhs[0]);
-    const sse2d rhs2 = loadupd(&rhs[2]);
-
-    const sse2d res0 = addpd(mulpd(loadpd(&lhs[0]), rhs0), mulpd(loadpd(&lhs[2]), rhs2));
-    const sse2d res1 = addpd(mulpd(loadpd(&lhs[4]), rhs0), mulpd(loadpd(&lhs[6]), rhs2));
-    const sse2d res2 = addpd(mulpd(loadpd(&lhs[8]), rhs0), mulpd(loadpd(&lhs[10]), rhs2));
-    const sse2d res3 = addpd(mulpd(loadpd(&lhs[12]), rhs0), mulpd(loadpd(&lhs[14]), rhs2));
-
-    storeupd(
-        &res[0],
-        addpd(
-            shufflepd(res0, res1, _MM_SHUFFLE2(0, 0)),
-            shufflepd(res0, res1, _MM_SHUFFLE2(1, 1))));
-
-    storeupd(
-        &res[2],
-        addpd(
-            shufflepd(res2, res3, _MM_SHUFFLE2(0, 0)),
-            shufflepd(res2, res3, _MM_SHUFFLE2(1, 1))));
-
-    return res;
-}
-
-#endif  // APPLESEED_FOUNDATION_USE_SSE
 
 template <typename T, size_t M, size_t N>
 inline Vector<T, N> operator*(
@@ -849,21 +679,12 @@ inline Vector<T, N> operator*(
     for (size_t c = 0; c < N; ++c)
     {
         res[c] = T(0.0);
+
         for (size_t r = 0; r < M; ++r)
             res[c] += lhs[r] * rhs(r, c);
     }
 
     return res;
-}
-
-template <typename T>
-inline Vector<T, 4> operator*(
-    const Vector<T, 4>&     lhs,
-    const Matrix<T, 4, 4>&  rhs)
-{
-    // todo: it might be possible to do this more efficiently.
-    // todo: is this correct at all?
-    return rhs * lhs;
 }
 
 template <typename T, size_t M, size_t N>
@@ -896,6 +717,7 @@ template <typename T, size_t N>
 inline Matrix<T, N, N>::Matrix(const ValueType* rhs)
 {
     assert(rhs);
+
     for (size_t i = 0; i < Components; ++i)
         m_comp[i] = rhs[i];
 }
@@ -1064,6 +886,7 @@ Matrix<T, N, N> inverse(
         for (size_t c = 0; c < N; ++c)
             res(r, c) = m(r, N + c);
     }
+
     return res;
 }
 
@@ -1081,6 +904,7 @@ template <typename T>
 inline Matrix<T, 3, 3>::Matrix(const ValueType* rhs)
 {
     assert(rhs);
+
     for (size_t i = 0; i < Components; ++i)
         m_comp[i] = rhs[i];
 }
@@ -1100,13 +924,37 @@ inline Matrix<T, 3, 3>::Matrix(const Matrix<U, 3, 3>& rhs)
         m_comp[i] = static_cast<ValueType>(rhs[i]);
 }
 
+#ifdef APPLESEED_ENABLE_IMATH_INTEROP
+
+template <typename T>
+inline Matrix<T, 3, 3>::Matrix(const Imath::Matrix33<T>& rhs)
+{
+    std::memcpy(m_comp, rhs.x, sizeof(m_comp));
+}
+
+template <typename T>
+inline Matrix<T, 3, 3>::operator Imath::Matrix33<T>&()
+{
+    return reinterpret_cast<Imath::Matrix33<T>&>(*this);
+}
+
+template <typename T>
+inline Matrix<T, 3, 3>::operator const Imath::Matrix33<T>&() const
+{
+    return reinterpret_cast<const Imath::Matrix33<T>&>(*this);
+}
+
+#endif
+
 template <typename T>
 inline Matrix<T, 3, 3> Matrix<T, 3, 3>::identity()
 {
     MatrixType mat(T(0.0));
+
     mat[0] = T(1.0);
     mat[4] = T(1.0);
     mat[8] = T(1.0);
+    
     return mat;
 }
 
@@ -1114,9 +962,11 @@ template <typename T>
 inline Matrix<T, 3, 3> Matrix<T, 3, 3>::scaling(const Vector<T, 3>& s)
 {
     MatrixType mat(T(0.0));
+
     mat[0] = s.x;
     mat[4] = s.y;
     mat[8] = s.z;
+
     return mat;
 }
 
@@ -1125,12 +975,15 @@ inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation_x(const ValueType angle)
 {
     const T cos_angle = T(std::cos(angle));
     const T sin_angle = T(std::sin(angle));
+
     MatrixType mat(T(0.0));
+
     mat[0] =  T(1.0);
     mat[4] =  cos_angle;
     mat[5] = -sin_angle;
     mat[7] =  sin_angle;
     mat[8] =  cos_angle;
+
     return mat;
 }
 
@@ -1139,12 +992,15 @@ inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation_y(const ValueType angle)
 {
     const T cos_angle = T(std::cos(angle));
     const T sin_angle = T(std::sin(angle));
+
     MatrixType mat(T(0.0));
+
     mat[0] =  cos_angle;
     mat[2] =  sin_angle;
     mat[4] =  T(1.0);
     mat[6] = -sin_angle;
     mat[8] =  cos_angle;
+
     return mat;
 }
 
@@ -1153,12 +1009,15 @@ inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation_z(const ValueType angle)
 {
     const T cos_angle = T(std::cos(angle));
     const T sin_angle = T(std::sin(angle));
+
     MatrixType mat(T(0.0));
+
     mat[0] =  cos_angle;
     mat[1] = -sin_angle;
     mat[3] =  sin_angle;
     mat[4] =  cos_angle;
     mat[8] =  T(1.0);
+
     return mat;
 }
 
@@ -1383,6 +1242,59 @@ inline Vector<T, 3> rotate(
     return Matrix<T, 3, 3>::rotation(axis, angle) * v;
 }
 
+template <typename T>
+inline Matrix<T, 3, 3> operator*(
+    const Matrix<T, 3, 3>&  lhs,
+    const Matrix<T, 3, 3>&  rhs)
+{
+    Matrix<T, 3, 3> res;
+
+    // Compute first row.
+    res[0] = lhs[0] * rhs[0] + lhs[1] * rhs[3] + lhs[2] * rhs[6];
+    res[1] = lhs[0] * rhs[1] + lhs[1] * rhs[4] + lhs[2] * rhs[7];
+    res[2] = lhs[0] * rhs[2] + lhs[1] * rhs[5] + lhs[2] * rhs[8];
+
+    // Compute second row.
+    res[3] = lhs[3] * rhs[0] + lhs[4] * rhs[3] + lhs[5] * rhs[6];
+    res[4] = lhs[3] * rhs[1] + lhs[4] * rhs[4] + lhs[5] * rhs[7];
+    res[5] = lhs[3] * rhs[2] + lhs[4] * rhs[5] + lhs[5] * rhs[8];
+
+    // Compute third row.
+    res[6] = lhs[6] * rhs[0] + lhs[7] * rhs[3] + lhs[8] * rhs[6];
+    res[7] = lhs[6] * rhs[1] + lhs[7] * rhs[4] + lhs[8] * rhs[7];
+    res[8] = lhs[6] * rhs[2] + lhs[7] * rhs[5] + lhs[8] * rhs[8];
+
+    return res;
+}
+
+template <typename T>
+inline Vector<T, 3> operator*(
+    const Matrix<T, 3, 3>&  lhs,
+    const Vector<T, 3>&     rhs)
+{
+    Vector<T, 3> res;
+
+    res[0] = lhs[0] * rhs[0] + lhs[1] * rhs[1] + lhs[2] * rhs[2];
+    res[1] = lhs[3] * rhs[0] + lhs[4] * rhs[1] + lhs[5] * rhs[2];
+    res[2] = lhs[6] * rhs[0] + lhs[7] * rhs[1] + lhs[8] * rhs[2];
+    
+    return res;
+}
+
+template <typename T>
+inline Vector<T, 3> operator*(
+    const Vector<T, 3>&     lhs,
+    const Matrix<T, 3, 3>&  rhs)
+{
+    Vector<T, 3> res;
+
+    res[0] = lhs[0] * rhs[0] + lhs[1] * rhs[3] + lhs[2] * rhs[6];
+    res[1] = lhs[0] * rhs[1] + lhs[1] * rhs[4] + lhs[2] * rhs[7];
+    res[2] = lhs[0] * rhs[2] + lhs[1] * rhs[5] + lhs[2] * rhs[8];
+    
+    return res;
+}
+
 
 //
 // 4x4 matrix class implementation.
@@ -1416,14 +1328,38 @@ inline Matrix<T, 4, 4>::Matrix(const Matrix<U, 4, 4>& rhs)
         m_comp[i] = static_cast<ValueType>(rhs[i]);
 }
 
+#ifdef APPLESEED_ENABLE_IMATH_INTEROP
+
+template <typename T>
+inline Matrix<T, 4, 4>::Matrix(const Imath::Matrix44<T>& rhs)
+{
+    std::memcpy(m_comp, rhs.x, sizeof(m_comp));
+}
+
+template <typename T>
+inline Matrix<T, 4, 4>::operator Imath::Matrix44<T>&()
+{
+    return reinterpret_cast<Imath::Matrix44<T>&>(*this);
+}
+
+template <typename T>
+inline Matrix<T, 4, 4>::operator const Imath::Matrix44<T>&() const
+{
+    return reinterpret_cast<const Imath::Matrix44<T>&>(*this);
+}
+
+#endif
+
 template <typename T>
 inline Matrix<T, 4, 4> Matrix<T, 4, 4>::identity()
 {
     MatrixType mat(T(0.0));
+
     mat[ 0] = T(1.0);
     mat[ 5] = T(1.0);
     mat[10] = T(1.0);
     mat[15] = T(1.0);
+
     return mat;
 }
 
@@ -1431,9 +1367,11 @@ template <typename T>
 inline Matrix<T, 4, 4> Matrix<T, 4, 4>::translation(const Vector<T, 3>& v)
 {
     MatrixType mat = identity();
+
     mat[ 3] = v.x;
     mat[ 7] = v.y;
     mat[11] = v.z;
+
     return mat;
 }
 
@@ -1441,10 +1379,12 @@ template <typename T>
 inline Matrix<T, 4, 4> Matrix<T, 4, 4>::scaling(const Vector<T, 3>& s)
 {
     MatrixType mat(T(0.0));
+
     mat[ 0] = s.x;
     mat[ 5] = s.y;
     mat[10] = s.z;
     mat[15] = T(1.0);
+
     return mat;
 }
 
@@ -1453,13 +1393,16 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation_x(const ValueType angle)
 {
     const T cos_angle = T(std::cos(angle));
     const T sin_angle = T(std::sin(angle));
+
     MatrixType mat(T(0.0));
+
     mat[ 0] =  T(1.0);
     mat[ 5] =  cos_angle;
     mat[ 6] = -sin_angle;
     mat[ 9] =  sin_angle;
     mat[10] =  cos_angle;
     mat[15] =  T(1.0);
+
     return mat;
 }
 
@@ -1468,13 +1411,16 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation_y(const ValueType angle)
 {
     const T cos_angle = T(std::cos(angle));
     const T sin_angle = T(std::sin(angle));
+
     MatrixType mat(T(0.0));
+
     mat[ 0] =  cos_angle;
     mat[ 2] =  sin_angle;
     mat[ 5] =  T(1.0);
     mat[ 8] = -sin_angle;
     mat[10] =  cos_angle;
     mat[15] =  T(1.0);
+
     return mat;
 }
 
@@ -1483,13 +1429,16 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation_z(const ValueType angle)
 {
     const T cos_angle = T(std::cos(angle));
     const T sin_angle = T(std::sin(angle));
+
     MatrixType mat(T(0.0));
+
     mat[ 0] =  cos_angle;
     mat[ 1] = -sin_angle;
     mat[ 4] =  sin_angle;
     mat[ 5] =  cos_angle;
     mat[10] =  T(1.0);
     mat[15] =  T(1.0);
+
     return mat;
 }
 
@@ -1780,6 +1729,199 @@ inline const T& Matrix<T, 4, 4>::operator()(const size_t row, const size_t col) 
     assert(row < Rows);
     assert(col < Columns);
     return m_comp[row * Columns + col];
+}
+
+template <typename T>
+inline Matrix<T, 4, 4> operator*(
+    const Matrix<T, 4, 4>&  lhs,
+    const Matrix<T, 4, 4>&  rhs)
+{
+    Matrix<T, 4, 4> res;
+
+    // Compute first row.
+    res[ 0] = lhs[ 0] * rhs[0] + lhs[ 1] * rhs[4] + lhs[ 2] * rhs[ 8] + lhs[ 3] * rhs[12];
+    res[ 1] = lhs[ 0] * rhs[1] + lhs[ 1] * rhs[5] + lhs[ 2] * rhs[ 9] + lhs[ 3] * rhs[13];
+    res[ 2] = lhs[ 0] * rhs[2] + lhs[ 1] * rhs[6] + lhs[ 2] * rhs[10] + lhs[ 3] * rhs[14];
+    res[ 3] = lhs[ 0] * rhs[3] + lhs[ 1] * rhs[7] + lhs[ 2] * rhs[11] + lhs[ 3] * rhs[15];
+
+    // Compute second row.
+    res[ 4] = lhs[ 4] * rhs[0] + lhs[ 5] * rhs[4] + lhs[ 6] * rhs[ 8] + lhs[ 7] * rhs[12];
+    res[ 5] = lhs[ 4] * rhs[1] + lhs[ 5] * rhs[5] + lhs[ 6] * rhs[ 9] + lhs[ 7] * rhs[13];
+    res[ 6] = lhs[ 4] * rhs[2] + lhs[ 5] * rhs[6] + lhs[ 6] * rhs[10] + lhs[ 7] * rhs[14];
+    res[ 7] = lhs[ 4] * rhs[3] + lhs[ 5] * rhs[7] + lhs[ 6] * rhs[11] + lhs[ 7] * rhs[15];
+
+    // Compute third row.
+    res[ 8] = lhs[ 8] * rhs[0] + lhs[ 9] * rhs[4] + lhs[10] * rhs[ 8] + lhs[11] * rhs[12];
+    res[ 9] = lhs[ 8] * rhs[1] + lhs[ 9] * rhs[5] + lhs[10] * rhs[ 9] + lhs[11] * rhs[13];
+    res[10] = lhs[ 8] * rhs[2] + lhs[ 9] * rhs[6] + lhs[10] * rhs[10] + lhs[11] * rhs[14];
+    res[11] = lhs[ 8] * rhs[3] + lhs[ 9] * rhs[7] + lhs[10] * rhs[11] + lhs[11] * rhs[15];
+
+    // Compute fourth row.
+    res[12] = lhs[12] * rhs[0] + lhs[13] * rhs[4] + lhs[14] * rhs[ 8] + lhs[15] * rhs[12];
+    res[13] = lhs[12] * rhs[1] + lhs[13] * rhs[5] + lhs[14] * rhs[ 9] + lhs[15] * rhs[13];
+    res[14] = lhs[12] * rhs[2] + lhs[13] * rhs[6] + lhs[14] * rhs[10] + lhs[15] * rhs[14];
+    res[15] = lhs[12] * rhs[3] + lhs[13] * rhs[7] + lhs[14] * rhs[11] + lhs[15] * rhs[15];
+
+    return res;
+}
+
+#ifdef APPLESEED_FOUNDATION_USE_SSE
+
+// SSE2-optimized double precision 4x4 matrix multiplication.
+template <>
+inline Matrix<double, 4, 4> operator*(
+    const Matrix<double, 4, 4>& lhs,
+    const Matrix<double, 4, 4>& rhs)
+{
+    Matrix<double, 4, 4> res;
+
+    const sse2d rhs0  = loadpd(&rhs[0]);
+    const sse2d rhs2  = loadpd(&rhs[2]);
+    const sse2d rhs4  = loadpd(&rhs[4]);
+    const sse2d rhs6  = loadpd(&rhs[6]);
+    const sse2d rhs8  = loadpd(&rhs[8]);
+    const sse2d rhs10 = loadpd(&rhs[10]);
+    const sse2d rhs12 = loadpd(&rhs[12]);
+    const sse2d rhs14 = loadpd(&rhs[14]);
+
+    sse2d res0, res2;
+
+    const sse2d lhs0 = set1pd(lhs[0]);
+    const sse2d lhs1 = set1pd(lhs[1]);
+    const sse2d lhs2 = set1pd(lhs[2]);
+    const sse2d lhs3 = set1pd(lhs[3]);
+
+    res0 = mulpd(lhs0, rhs0);
+    res2 = mulpd(lhs0, rhs2);
+    res0 = addpd(res0, mulpd(lhs1, rhs4));
+    res2 = addpd(res2, mulpd(lhs1, rhs6));
+    res0 = addpd(res0, mulpd(lhs2, rhs8));
+    res2 = addpd(res2, mulpd(lhs2, rhs10));
+    res0 = addpd(res0, mulpd(lhs3, rhs12));
+    res2 = addpd(res2, mulpd(lhs3, rhs14));
+
+    storepd(&res[0], res0);
+    storepd(&res[2], res2);
+
+    const sse2d lhs4 = set1pd(lhs[4]);
+    const sse2d lhs5 = set1pd(lhs[5]);
+    const sse2d lhs6 = set1pd(lhs[6]);
+    const sse2d lhs7 = set1pd(lhs[7]);
+
+    res0 = mulpd(lhs4, rhs0);
+    res2 = mulpd(lhs4, rhs2);
+    res0 = addpd(res0, mulpd(lhs5, rhs4));
+    res2 = addpd(res2, mulpd(lhs5, rhs6));
+    res0 = addpd(res0, mulpd(lhs6, rhs8));
+    res2 = addpd(res2, mulpd(lhs6, rhs10));
+    res0 = addpd(res0, mulpd(lhs7, rhs12));
+    res2 = addpd(res2, mulpd(lhs7, rhs14));
+
+    storepd(&res[4], res0);
+    storepd(&res[6], res2);
+
+    const sse2d lhs8  = set1pd(lhs[8]);
+    const sse2d lhs9  = set1pd(lhs[9]);
+    const sse2d lhs10 = set1pd(lhs[10]);
+    const sse2d lhs11 = set1pd(lhs[11]);
+
+    res0 = mulpd(lhs8, rhs0);
+    res2 = mulpd(lhs8, rhs2);
+    res0 = addpd(res0, mulpd(lhs9, rhs4));
+    res2 = addpd(res2, mulpd(lhs9, rhs6));
+    res0 = addpd(res0, mulpd(lhs10, rhs8));
+    res2 = addpd(res2, mulpd(lhs10, rhs10));
+    res0 = addpd(res0, mulpd(lhs11, rhs12));
+    res2 = addpd(res2, mulpd(lhs11, rhs14));
+
+    storepd(&res[8],  res0);
+    storepd(&res[10], res2);
+
+    const sse2d lhs12 = set1pd(lhs[12]);
+    const sse2d lhs13 = set1pd(lhs[13]);
+    const sse2d lhs14 = set1pd(lhs[14]);
+    const sse2d lhs15 = set1pd(lhs[15]);
+
+    res0 = mulpd(lhs12, rhs0);
+    res2 = mulpd(lhs12, rhs2);
+    res0 = addpd(res0, mulpd(lhs13, rhs4));
+    res2 = addpd(res2, mulpd(lhs13, rhs6));
+    res0 = addpd(res0, mulpd(lhs14, rhs8));
+    res2 = addpd(res2, mulpd(lhs14, rhs10));
+    res0 = addpd(res0, mulpd(lhs15, rhs12));
+    res2 = addpd(res2, mulpd(lhs15, rhs14));
+
+    storepd(&res[12], res0);
+    storepd(&res[14], res2);
+
+    return res;
+}
+
+#endif  // APPLESEED_FOUNDATION_USE_SSE
+
+template <typename T>
+inline Vector<T, 4> operator*(
+    const Matrix<T, 4, 4>&  lhs,
+    const Vector<T, 4>&     rhs)
+{
+    Vector<T, 4> res;
+
+    res[0] = lhs[ 0] * rhs[0] + lhs[ 1] * rhs[1] + lhs[ 2] * rhs[2] + lhs[ 3] * rhs[3];
+    res[1] = lhs[ 4] * rhs[0] + lhs[ 5] * rhs[1] + lhs[ 6] * rhs[2] + lhs[ 7] * rhs[3];
+    res[2] = lhs[ 8] * rhs[0] + lhs[ 9] * rhs[1] + lhs[10] * rhs[2] + lhs[11] * rhs[3];
+    res[3] = lhs[12] * rhs[0] + lhs[13] * rhs[1] + lhs[14] * rhs[2] + lhs[15] * rhs[3];
+    
+    return res;
+}
+
+#ifdef APPLESEED_FOUNDATION_USE_SSE_DISABLED
+
+// SSE2-optimized double precision 4x4 matrix-vector multiplication.
+template <>
+inline Vector<double, 4> operator*(
+    const Matrix<double, 4, 4>& lhs,
+    const Vector<double, 4>&    rhs)
+{
+    Vector<double, 4> res;
+
+    const sse2d rhs0 = loadupd(&rhs[0]);
+    const sse2d rhs2 = loadupd(&rhs[2]);
+
+    const sse2d res0 = addpd(mulpd(loadpd(&lhs[0]), rhs0), mulpd(loadpd(&lhs[2]), rhs2));
+    const sse2d res1 = addpd(mulpd(loadpd(&lhs[4]), rhs0), mulpd(loadpd(&lhs[6]), rhs2));
+    const sse2d res2 = addpd(mulpd(loadpd(&lhs[8]), rhs0), mulpd(loadpd(&lhs[10]), rhs2));
+    const sse2d res3 = addpd(mulpd(loadpd(&lhs[12]), rhs0), mulpd(loadpd(&lhs[14]), rhs2));
+
+    storeupd(
+        &res[0],
+        addpd(
+            shufflepd(res0, res1, _MM_SHUFFLE2(0, 0)),
+            shufflepd(res0, res1, _MM_SHUFFLE2(1, 1))));
+
+    storeupd(
+        &res[2],
+        addpd(
+            shufflepd(res2, res3, _MM_SHUFFLE2(0, 0)),
+            shufflepd(res2, res3, _MM_SHUFFLE2(1, 1))));
+
+    return res;
+}
+
+#endif  // APPLESEED_FOUNDATION_USE_SSE
+
+template <typename T>
+inline Vector<T, 4> operator*(
+    const Vector<T, 4>&     lhs,
+    const Matrix<T, 4, 4>&  rhs)
+{
+    Vector<T, 4> res;
+
+    res[0] = lhs[0] * rhs[ 0] + lhs[1] * rhs[ 4] + lhs[2] * rhs[ 8] + lhs[3] * rhs[12];
+    res[1] = lhs[0] * rhs[ 1] + lhs[1] * rhs[ 5] + lhs[2] * rhs[ 9] + lhs[3] * rhs[13];
+    res[2] = lhs[0] * rhs[ 2] + lhs[1] * rhs[ 6] + lhs[2] * rhs[10] + lhs[3] * rhs[14];
+    res[3] = lhs[0] * rhs[ 3] + lhs[1] * rhs[ 7] + lhs[2] * rhs[11] + lhs[3] * rhs[15];
+    
+    return res;
 }
 
 }       // namespace foundation

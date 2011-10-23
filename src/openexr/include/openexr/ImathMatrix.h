@@ -3088,7 +3088,7 @@ std::ostream &
 operator << (std::ostream &s, const Matrix33<T> &m)
 {
     std::ios_base::fmtflags oldFlags = s.flags();
-    int width;
+    std::streamsize width;
 
     if (s.flags() & std::ios_base::fixed)
     {
@@ -3123,7 +3123,7 @@ std::ostream &
 operator << (std::ostream &s, const Matrix44<T> &m)
 {
     std::ios_base::fmtflags oldFlags = s.flags();
-    int width;
+    std::streamsize width;
 
     if (s.flags() & std::ios_base::fixed)
     {

@@ -32,6 +32,11 @@
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
 
+// Imath headers.
+#ifdef APPLESEED_ENABLE_IMATH_INTEROP
+#include "openexr/ImathVec.h"
+#endif
+
 // Standard headers.
 #include <algorithm>
 #include <cassert>
@@ -194,6 +199,17 @@ class Vector<T, 2>
     template <typename U>
     explicit Vector(const Vector<U, 2>& rhs);
 
+#ifdef APPLESEED_ENABLE_IMATH_INTEROP
+
+    // Implicit construction from an Imath::Vec2.
+    Vector(const Imath::Vec2<T>& rhs);
+
+    // Reinterpret this vector as an Imath::Vec2.
+    operator Imath::Vec2<T>&();
+    operator const Imath::Vec2<T>&() const;
+
+#endif
+
     // Unchecked array subscripting.
     ValueType& operator[](const size_t i);
     const ValueType& operator[](const size_t i) const;
@@ -233,6 +249,17 @@ class Vector<T, 3>
     // Construct a vector from another vector of a different type.
     template <typename U>
     explicit Vector(const Vector<U, 3>& rhs);
+
+#ifdef APPLESEED_ENABLE_IMATH_INTEROP
+
+    // Implicit construction from an Imath::Vec3.
+    Vector(const Imath::Vec3<T>& rhs);
+
+    // Reinterpret this vector as an Imath::Vec3.
+    operator Imath::Vec3<T>&();
+    operator const Imath::Vec3<T>&() const;
+
+#endif
 
     // Build a unit vector from two angles.
     static VectorType unit_vector(
@@ -313,6 +340,30 @@ typedef Vector<double, 4> Vector4d;
 
 
 //
+// Utility class to find the Imath equivalent of a given foundation::Vector type.
+//
+
+#ifdef APPLESEED_ENABLE_IMATH_INTEROP
+
+template <typename T, size_t N>
+struct ImathVecEquivalent;          // no equivalent in the general case
+
+template <typename T>
+struct ImathVecEquivalent<T, 2>
+{
+    typedef Imath::Vec2<T> Type;
+};
+
+template <typename T>
+struct ImathVecEquivalent<T, 3>
+{
+    typedef Imath::Vec3<T> Type;
+};
+
+#endif
+
+
+//
 // N-dimensional vector implementation.
 //
 
@@ -363,8 +414,10 @@ template <typename T, size_t N>
 inline bool operator!=(const Vector<T, N>& lhs, const Vector<T, N>& rhs)
 {
     for (size_t i = 0; i < N; ++i)
+    {
         if (lhs[i] != rhs[i])
             return true;
+    }
 
     return false;
 }
@@ -379,8 +432,10 @@ template <typename T, size_t N>
 inline bool feq(const Vector<T, N>& lhs, const Vector<T, N>& rhs)
 {
     for (size_t i = 0; i < N; ++i)
+    {
         if (!feq(lhs[i], rhs[i]))
             return false;
+    }
 
     return true;
 }
@@ -389,8 +444,10 @@ template <typename T, size_t N>
 inline bool feq(const Vector<T, N>& lhs, const Vector<T, N>& rhs, const T eps)
 {
     for (size_t i = 0; i < N; ++i)
+    {
         if (!feq(lhs[i], rhs[i], eps))
             return false;
+    }
 
     return true;
 }
@@ -399,8 +456,10 @@ template <typename T, size_t N>
 inline bool fz(const Vector<T, N>& v)
 {
     for (size_t i = 0; i < N; ++i)
+    {
         if (!fz(v[i]))
             return false;
+    }
 
     return true;
 }
@@ -409,8 +468,10 @@ template <typename T, size_t N>
 inline bool fz(const Vector<T, N>& v, const T eps)
 {
     for (size_t i = 0; i < N; ++i)
+    {
         if (!fz(v[i], eps))
             return false;
+    }
 
     return true;
 }
@@ -812,6 +873,29 @@ inline Vector<T, 2>::Vector(const Vector<U, 2>& rhs)
 {
 }
 
+#ifdef APPLESEED_ENABLE_IMATH_INTEROP
+
+template <typename T>
+inline Vector<T, 2>::Vector(const Imath::Vec2<T>& rhs)
+  : x(rhs.x)
+  , y(rhs.y)
+{
+}
+
+template <typename T>
+inline Vector<T, 2>::operator Imath::Vec2<T>&()
+{
+    return reinterpret_cast<Imath::Vec2<T>&>(*this);
+}
+
+template <typename T>
+inline Vector<T, 2>::operator const Imath::Vec2<T>&() const
+{
+    return reinterpret_cast<const Imath::Vec2<T>&>(*this);
+}
+
+#endif
+
 template <typename T>
 inline T& Vector<T, 2>::operator[](const size_t i)
 {
@@ -878,6 +962,30 @@ inline Vector<T, 3>::Vector(const Vector<U, 3>& rhs)
   , z(static_cast<ValueType>(rhs.z))
 {
 }
+
+#ifdef APPLESEED_ENABLE_IMATH_INTEROP
+
+template <typename T>
+inline Vector<T, 3>::Vector(const Imath::Vec3<T>& rhs)
+  : x(rhs.x)
+  , y(rhs.y)
+  , z(rhs.z)
+{
+}
+
+template <typename T>
+inline Vector<T, 3>::operator Imath::Vec3<T>&()
+{
+    return reinterpret_cast<Imath::Vec3<T>&>(*this);
+}
+
+template <typename T>
+inline Vector<T, 3>::operator const Imath::Vec3<T>&() const
+{
+    return reinterpret_cast<const Imath::Vec3<T>&>(*this);
+}
+
+#endif
 
 template <typename T>
 inline Vector<T, 3> Vector<T, 3>::unit_vector(
