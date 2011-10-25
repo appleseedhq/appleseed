@@ -45,7 +45,7 @@
 using namespace foundation;
 using namespace std;
 
-TEST_SUITE(CompareImages)
+TEST_SUITE(ImageTools)
 {
     static const Color3f IsoLumBlue(0.0f, 0.0f, 1.0f);                                              // sRGB
     static const Color3f Red(1.0f, 0.0f, 0.0f);                                                     // linear RGB
@@ -209,7 +209,7 @@ TEST_SUITE(CompareImages)
 
 #if 0
 
-    TEST_CASE(Compare)
+    TEST_CASE(CompareImages)
     {
         GenericImageFileReader reader;
         auto_ptr<Image> left_image(reader.read("../images/autosave/autosave.XXXXXXXX.XXXXXX.XXX.exr"));
@@ -228,17 +228,17 @@ TEST_SUITE(CompareImages)
         auto_ptr<Image> result = compare(*left_image.get(), *right_image.get(), op);
 
         GenericImageFileWriter writer;
-        writer.write("unit tests/outputs/test_compareimages_result.png", *result.get());
+        writer.write("unit tests/outputs/test_imagetools_compareimages.png", *result.get());
     }
 
 #endif
 
 #if 0
 
-    TEST_CASE(Dither)
+    TEST_CASE(TweakImage)
     {
-        const float DitherAmplitude = 2.0f;
-        const float GammaCorrection = 1.2f;
+        const float DitherAmplitude = 1.0f;
+        const float GammaCorrection = 1.6f;
         const float DarksBoost = 0.0f;
         const float DarksGammaCorrection = 10.0f;
 
@@ -300,7 +300,7 @@ TEST_SUITE(CompareImages)
         }
 
         GenericImageFileWriter writer;
-        writer.write("unit tests/outputs/test_dither_result.png", output_image);
+        writer.write("unit tests/outputs/test_imagetools_tweakimage.png", output_image);
     }
 
 #endif
