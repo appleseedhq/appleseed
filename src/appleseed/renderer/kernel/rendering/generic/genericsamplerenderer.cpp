@@ -162,8 +162,7 @@ namespace
                     break;
 
                 // Stop once we hit full opacity.
-                const float Threshold = 1.0e-5f;
-                if (max_value(shading_result.m_alpha) > 1.0f - Threshold)
+                if (max_value(shading_result.m_alpha) > m_params.m_transparency_threshold)
                     break;
 
                 // Move the ray origin to the intersection point.
@@ -211,10 +210,12 @@ namespace
         struct Parameters
         {
             const size_t    m_texture_cache_size;           // size in bytes of the texture cache
+            const float     m_transparency_threshold;
             const bool      m_report_self_intersections;
 
             explicit Parameters(const ParamArray& params)
               : m_texture_cache_size(params.get_optional<size_t>("texture_cache_size", 16 * 1024 * 1024))
+              , m_transparency_threshold(1.0f - params.get_optional<float>("opacity_threshold", 1.0e-5f))
               , m_report_self_intersections(params.get_optional<bool>("report_self_intersections", false))
             {
             }
