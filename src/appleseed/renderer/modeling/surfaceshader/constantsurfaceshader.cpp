@@ -140,20 +140,17 @@ DictionaryArray ConstantSurfaceShaderFactory::get_widget_definitions() const
 {
     DictionaryArray definitions;
 
-    {
-        Dictionary entity_types;
-        entity_types.insert("color", "Colors");
-        entity_types.insert("texture_instance", "Textures");
-
-        Dictionary widget;
-        widget.insert("name", "color");
-        widget.insert("label", "Color");
-        widget.insert("widget", "entity_picker");
-        widget.insert("entity_types", entity_types);
-        widget.insert("use", "required");
-        widget.insert("default", "");
-        definitions.push_back(widget);
-    }
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "color")
+            .insert("label", "Color")
+            .insert("widget", "entity_picker")
+            .insert("entity_types",
+                Dictionary()
+                    .insert("color", "Colors")
+                    .insert("texture_instance", "Textures"))
+            .insert("use", "required")
+            .insert("default", ""));
 
     return definitions;
 }
