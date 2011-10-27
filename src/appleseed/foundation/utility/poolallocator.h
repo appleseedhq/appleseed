@@ -46,8 +46,8 @@ namespace foundation
 // A standard-conformant, single-threaded, fixed-size object allocator.
 // The implementation is essentially the same as boost's quick_allocator.
 //
-// Note that memory allocated through is allocator is never returned to
-// the system, and thus is never made available for other uses.
+// Note that memory allocated through this allocator is never returned
+// to the system, and thus is never made available for other uses.
 //
 
 namespace impl
@@ -60,31 +60,26 @@ namespace impl
       : public Singleton<Pool<ItemSize, ItemsPerPage> >
     {
       public:
-        // Constructor.
-        Pool()
-          : m_page(0)
-          , m_free_head(0)
-          , m_free_index(ItemsPerPage)
-        {
-        }
-
         // Allocate a memory block.
         void* allocate()
         {
             if (Node* node = m_free_head)
             {
+                // Return the first node from the list of free nodes.
                 m_free_head = m_free_head->m_next;
                 return node;
             }
             else
             {
-                if (m_free_index == ItemsPerPage)
+                // The current page is full, allocate a new page of nodes.
+                if (m_page_index == ItemsPerPage)
                 {
                     m_page = new Node[ItemsPerPage];
-                    m_free_index = 0;
+                    m_page_index = 0;
                 }
 
-                return &m_page[m_free_index++];
+                // Return the next node from the page.
+                return &m_page[m_page_index++];
             }
         }
 
@@ -92,22 +87,34 @@ namespace impl
         void deallocate(void* p)
         {
             assert(p);
+
             Node* node = static_cast<Node*>(p);
+
+            // Insert this node at the beginning of the list of free nodes.
             node->m_next = m_free_head;
             m_free_head = node;
         }
 
       private:
+        friend class Singleton<Pool<ItemSize, ItemsPerPage> >;
+
         union Node
         {
-            // todo: handle alignment.
-            uint8   m_item[ItemSize];
-            Node*   m_next;
+            uint8   m_item[ItemSize];   // the actual storage for one item
+            Node*   m_next;             // pointer to the next free node
         };
 
         Node*       m_page;
+        size_t      m_page_index;
         Node*       m_free_head;
-        size_t      m_free_index;
+
+        // Constructor.
+        Pool()
+          : m_page(0)
+          , m_page_index(ItemsPerPage)
+          , m_free_head(0)
+        {
+        }
     };
 }
 
@@ -146,6 +153,12 @@ class PoolAllocator
     template <typename U>
     PoolAllocator(const PoolAllocator<U, ItemsPerPage, typename FallBackAllocator::template rebind<U>::other>& rhs)
       : m_pool(Pool::instance())
+      , m_fallback_alloc(rhs.m_fallback_alloc)
+    {
+    }
+
+    PoolAllocator(const PoolAllocator& rhs)
+      : m_pool(rhs.m_pool)
       , m_fallback_alloc(rhs.m_fallback_alloc)
     {
     }
