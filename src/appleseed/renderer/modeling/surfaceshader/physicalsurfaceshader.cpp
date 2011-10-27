@@ -112,8 +112,12 @@ namespace
                 shading_point,
                 shading_result.m_color);
 
-            // Set alpha channel to full opacity.
-            shading_result.m_alpha = Alpha(1.0);
+            // Evaluate alpha mask.
+            evaluate_alpha_mask(
+                sampling_context,
+                shading_context.get_texture_cache(),
+                shading_point,
+                shading_result.m_alpha);
         }
 
         virtual void evaluate_alpha_mask(
@@ -170,6 +174,19 @@ const char* PhysicalSurfaceShaderFactory::get_human_readable_model() const
 DictionaryArray PhysicalSurfaceShaderFactory::get_widget_definitions() const
 {
     DictionaryArray definitions;
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "alpha_mask")
+            .insert("label", "Alpha Mask")
+            .insert("widget", "entity_picker")
+            .insert("entity_types",
+                Dictionary()
+                    .insert("color", "Colors")
+                    .insert("texture_instance", "Textures"))
+            .insert("use", "optional")
+            .insert("default", ""));
+
     return definitions;
 }
 
