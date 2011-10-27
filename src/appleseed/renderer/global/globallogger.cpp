@@ -42,6 +42,10 @@ namespace
     class GlobalLogger
       : public Singleton<Logger>
     {
+      private:
+        friend class Singleton<Logger>;
+
+        GlobalLogger() {}
     };
 }
 

@@ -30,11 +30,18 @@
 #include "foundation/core/concepts/singleton.h"
 #include "foundation/utility/test.h"
 
+using namespace foundation;
+
 TEST_SUITE(Foundation_Core_Concepts_Singleton)
 {
-    using namespace foundation;
+    class Foo
+      : public Singleton<Foo>
+    {
+      private:
+        friend class Singleton<Foo>;
 
-    struct Foo : public Singleton<Foo> {};
+        Foo() {}
+    };
 
     TEST_CASE(Instance_WhenCalledTwice_ReturnsTheSameInstance)
     {

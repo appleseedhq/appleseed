@@ -92,12 +92,6 @@ class FOUNDATIONDLL Console
         LightCyan
     };
 
-    // Constructor.
-    Console();
-
-    // Destructor.
-    ~Console();
-
     // Set the text color.
     void set_text_color(
         const Device    device,
@@ -108,9 +102,17 @@ class FOUNDATIONDLL Console
         const Device    device);
 
   private:
+    friend class Singleton<Console>;
+
     // Private implementation.
     struct Impl;
     Impl* impl;
+
+    // Constructor.
+    Console();
+
+    // Destructor.
+    ~Console();
 };
 
 FOUNDATIONDLL Console& console();

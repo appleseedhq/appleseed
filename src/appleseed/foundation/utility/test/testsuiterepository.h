@@ -71,10 +71,10 @@ class FOUNDATIONDLL TestSuiteRepository
   : public Singleton<TestSuiteRepository>
 {
   public:
-    // Constructor.
+    // Constructor (kept public for the unit tests).
     TestSuiteRepository();
 
-    // Destructor.
+    // Destructor (kept public for the unit tests).
     ~TestSuiteRepository();
 
     // Remove all test suites.

@@ -45,7 +45,9 @@ class GlobalTestSuite
   : public Singleton<GlobalTestSuite>
   , public TestSuite
 {
-  public:
+  private:
+    friend class Singleton<GlobalTestSuite>;
+
     // Constructor.
     GlobalTestSuite();
 };
@@ -55,7 +57,6 @@ class GlobalTestSuite
 // GlobalTestSuite class implementation.
 //
 
-// Constructor.
 inline GlobalTestSuite::GlobalTestSuite()
   : TestSuite("GlobalTestSuite")
 {

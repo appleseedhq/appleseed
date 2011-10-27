@@ -67,12 +67,6 @@ class FOUNDATIONDLL BenchmarkSuiteRepository
   : public Singleton<BenchmarkSuiteRepository>
 {
   public:
-    // Constructor.
-    BenchmarkSuiteRepository();
-
-    // Destructor.
-    ~BenchmarkSuiteRepository();
-
     // Register a benchmark suite.
     void register_suite(BenchmarkSuite* suite);
 
@@ -85,9 +79,17 @@ class FOUNDATIONDLL BenchmarkSuiteRepository
         BenchmarkResult&    result) const;
 
   private:
+    friend class Singleton<BenchmarkSuiteRepository>;
+
     // Private implementation.
     struct Impl;
     Impl* impl;
+
+    // Constructor.
+    BenchmarkSuiteRepository();
+
+    // Destructor.
+    ~BenchmarkSuiteRepository();
 };
 
 }       // namespace foundation
