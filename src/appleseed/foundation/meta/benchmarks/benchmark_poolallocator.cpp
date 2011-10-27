@@ -40,6 +40,8 @@ BENCHMARK_SUITE(Foundation_Utility_PoolAllocator)
     using namespace foundation;
     using namespace std;
 
+    const size_t N = 100;
+
     template <typename Allocator>
     struct Fixture
     {
@@ -53,7 +55,6 @@ BENCHMARK_SUITE(Foundation_Utility_PoolAllocator)
 
         void first_allocated_first_deallocated_batch()
         {
-            const size_t N = 100;
             uint32* p[N];
 
             for (size_t i = 0; i < N; ++i)
@@ -65,7 +66,6 @@ BENCHMARK_SUITE(Foundation_Utility_PoolAllocator)
 
         void first_allocated_last_deallocated_batch()
         {
-            const size_t N = 100;
             uint32* p[N];
 
             for (size_t i = 0; i < N; ++i)
@@ -77,7 +77,7 @@ BENCHMARK_SUITE(Foundation_Utility_PoolAllocator)
     };
 
     typedef allocator<uint32> DefaultAllocator;
-    typedef PoolAllocator<uint32> PoolAllocator;
+    typedef PoolAllocator<uint32, N> PoolAllocator;
 
     BENCHMARK_CASE_F(RepeatedAllocation_PoolAllocator, Fixture<PoolAllocator>)
     {

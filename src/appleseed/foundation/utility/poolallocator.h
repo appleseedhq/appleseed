@@ -54,10 +54,10 @@ namespace impl
 {
     template <
         size_t ItemSize,    // in bytes
-        size_t PageSize     // in bytes
+        size_t ItemsPerPage
     >
     class Pool
-      : public Singleton<Pool<ItemSize, PageSize> >
+      : public Singleton<Pool<ItemSize, ItemsPerPage> >
     {
       public:
         // Constructor.
@@ -98,8 +98,6 @@ namespace impl
         }
 
       private:
-        enum { ItemsPerPage = PageSize / ItemSize };
-
         union Node
         {
             // todo: handle alignment.
@@ -115,7 +113,7 @@ namespace impl
 
 template <
     typename    T,
-    size_t      PageSize = 512,     // in bytes
+    size_t      ItemsPerPage,
     typename    FallBackAllocator = std::allocator<T>
 >
 class PoolAllocator
@@ -134,33 +132,29 @@ class PoolAllocator
     {
         typedef PoolAllocator<
             U,
-            PageSize,
+            ItemsPerPage,
             typename FallBackAllocator::template rebind<U>::other
         > other;
     };
 
-    // Constructors.
     explicit PoolAllocator(FallBackAllocator allocator = FallBackAllocator())
       : m_pool(Pool::instance())
       , m_fallback_alloc(allocator)
     {
     }
+
     template <typename U>
-    PoolAllocator(const PoolAllocator<U, PageSize, typename FallBackAllocator::template rebind<U>::other>& rhs)
+    PoolAllocator(const PoolAllocator<U, ItemsPerPage, typename FallBackAllocator::template rebind<U>::other>& rhs)
       : m_pool(Pool::instance())
       , m_fallback_alloc(rhs.m_fallback_alloc)
     {
-    }
-
-    void operator=(const PoolAllocator& rhs)
-    {
-        m_fallback_alloc = rhs.m_fallback_alloc;
     }
 
     pointer address(reference x) const
     {
         return &x;
     }
+
     const_pointer address(const_reference x) const
     {
         return &x;
@@ -196,21 +190,25 @@ class PoolAllocator
     }
 
   private:
+    // Allow allocators of different types to access each other private members.
     template <typename, size_t, typename>
     friend class PoolAllocator;
 
-    typedef impl::Pool<sizeof(value_type), PageSize> Pool;
+    typedef impl::Pool<sizeof(value_type), ItemsPerPage> Pool;
 
     Pool&               m_pool;
     FallBackAllocator   m_fallback_alloc;
+
+    void operator=(const PoolAllocator& rhs);
 };
 
-// Partial specialization for T = void.
+// A partial specialization for the void value type is required for rebinding
+// to another, different value type.
 template <
-    size_t      PageSize,
+    size_t      ItemsPerPage,
     typename    FallBackAllocator
 >
-class PoolAllocator<void, PageSize, FallBackAllocator>
+class PoolAllocator<void, ItemsPerPage, FallBackAllocator>
 {
   public:
     typedef void                value_type;
@@ -222,18 +220,18 @@ class PoolAllocator<void, PageSize, FallBackAllocator>
     {
         typedef PoolAllocator<
             U,
-            PageSize,
+            ItemsPerPage,
             typename FallBackAllocator::template rebind<U>::other
         > other;
     };
 
-    // Constructors.
     explicit PoolAllocator(FallBackAllocator allocator = FallBackAllocator())
       : m_fallback_alloc(allocator)
     {
     }
+
     template <typename U>
-    PoolAllocator(const PoolAllocator<U, PageSize, typename FallBackAllocator::template rebind<U>::other>& rhs)
+    PoolAllocator(const PoolAllocator<U, ItemsPerPage, typename FallBackAllocator::template rebind<U>::other>& rhs)
       : m_fallback_alloc(rhs.m_fallback_alloc)
     {
     }
@@ -243,46 +241,47 @@ class PoolAllocator<void, PageSize, FallBackAllocator>
 };
 
 template <
-    typename    LhsT,
-    typename    RhsT,
-    size_t      PageSize,
+    typename    T,
+    size_t      ItemsPerPage,
     typename    FallBackAllocator
 >
 inline bool operator==(
-    const PoolAllocator<LhsT, PageSize, FallBackAllocator>&,
-    const PoolAllocator<RhsT, PageSize, FallBackAllocator>&)
+    const PoolAllocator<T, ItemsPerPage, FallBackAllocator>&,
+    const PoolAllocator<T, ItemsPerPage, FallBackAllocator>&)
 {
-    // Pool allocators with same page sizes and fall back allocators are always equal.
+    // Pool allocators for the same type, with the same number of items per
+    // page and the same fall back allocators are considered equal.
     return true;
 }
 
 template <
     typename    LhsT,
     typename    RhsT,
-    size_t      LhsPageSize,
-    size_t      RhsPageSize,
+    size_t      LhsItemsPerPage,
+    size_t      RhsItemsPerPage,
     typename    LhsFallBackAllocator,
     typename    RhsFallBackAllocator
 >
 inline bool operator==(
-    const PoolAllocator<LhsT, LhsPageSize, LhsFallBackAllocator>&,
-    const PoolAllocator<RhsT, RhsPageSize, RhsFallBackAllocator>&)
+    const PoolAllocator<LhsT, LhsItemsPerPage, LhsFallBackAllocator>&,
+    const PoolAllocator<RhsT, RhsItemsPerPage, RhsFallBackAllocator>&)
 {
-    // Pool allocators with different page sizes or fall back allocators are never equal.
+    // Pool allocators for different types, with different numbers of items per
+    // page or with different fall back allocators are not considered equal.
     return false;
 }
 
 template <
     typename    LhsT,
     typename    RhsT,
-    size_t      LhsPageSize,
-    size_t      RhsPageSize,
+    size_t      LhsItemsPerPage,
+    size_t      RhsItemsPerPage,
     typename    LhsFallBackAllocator,
     typename    RhsFallBackAllocator
 >
 inline bool operator!=(
-    const PoolAllocator<LhsT, LhsPageSize, LhsFallBackAllocator>& lhs,
-    const PoolAllocator<RhsT, RhsPageSize, RhsFallBackAllocator>& rhs)
+    const PoolAllocator<LhsT, LhsItemsPerPage, LhsFallBackAllocator>& lhs,
+    const PoolAllocator<RhsT, RhsItemsPerPage, RhsFallBackAllocator>& rhs)
 {
     return !operator==(lhs, rhs);
 }
