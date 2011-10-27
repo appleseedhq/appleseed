@@ -31,6 +31,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/singleton.h"
+#include "foundation/platform/thread.h"
 #include "foundation/platform/types.h"
 
 // Standard headers.
@@ -43,8 +44,7 @@ namespace foundation
 {
 
 //
-// A standard-conformant, single-threaded, fixed-size object allocator.
-// The implementation is essentially the same as boost's quick_allocator.
+// A standard-conformant, thread-safe, fixed-size object allocator.
 //
 // Note that memory allocated through this allocator is never returned
 // to the system, and thus is never made available for other uses.
@@ -63,6 +63,8 @@ namespace impl
         // Allocate a memory block.
         void* allocate()
         {
+            Spinlock::ScopedLock lock(m_spinlock);
+
             if (Node* node = m_free_head)
             {
                 // Return the first node from the list of free nodes.
@@ -86,6 +88,8 @@ namespace impl
         // Return a memory block to the pool.
         void deallocate(void* p)
         {
+            Spinlock::ScopedLock lock(m_spinlock);
+
             assert(p);
 
             Node* node = static_cast<Node*>(p);
@@ -104,6 +108,7 @@ namespace impl
             Node*   m_next;             // pointer to the next free node
         };
 
+        Spinlock    m_spinlock;
         Node*       m_page;
         size_t      m_page_index;
         Node*       m_free_head;
