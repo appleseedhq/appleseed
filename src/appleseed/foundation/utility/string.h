@@ -664,8 +664,8 @@ inline std::string replace_special_xml_characters(const std::string& s)
 
     static const XMLEntity XMLEntities[] =
     {
+        { "&",  "&amp;" },      // must stay first!
         { "\"", "&quot;" },
-        { "&",  "&amp;" },
         { "'",  "&apos;" },
         { "<",  "&lt;" },
         { ">",  "&gt;" }

@@ -467,6 +467,34 @@ TEST_SUITE(Foundation_Utility_String)
         EXPECT_EQ("xyzbbb", result);
     }
 
+    TEST_CASE(ReplaceSpecialXMLCharacters_GivenEmptyString_ReturnsEmptyString)
+    {
+        const string result = replace_special_xml_characters("");
+
+        EXPECT_EQ("", result);
+    }
+
+    TEST_CASE(ReplaceSpecialXMLCharacters_GivenStringWithAmpersand_ReplacesAmpersandByEntity)
+    {
+        const string result = replace_special_xml_characters("aa&bb");
+
+        EXPECT_EQ("aa&amp;bb", result);
+    }
+
+    TEST_CASE(ReplaceSpecialXMLCharacters_GivenStringWithQuoteThenAmpersand_ReplacesQuoteAndAmpersandByEntities)
+    {
+        const string result = replace_special_xml_characters("aa\"&bb");
+
+        EXPECT_EQ("aa&quot;&amp;bb", result);
+    }
+
+    TEST_CASE(ReplaceSpecialXMLCharacters_GivenStringWithXMLEntity_ReplacesAmpersandByEntity)
+    {
+        const string result = replace_special_xml_characters("aa&amp;bb");
+
+        EXPECT_EQ("aa&amp;amp;bb", result);
+    }
+
     TEST_CASE(Capitalize_GivenEmptyString_ReturnsEmptyString)
     {
         const string result = capitalize("");
