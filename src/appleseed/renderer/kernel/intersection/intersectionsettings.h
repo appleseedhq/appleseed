@@ -52,7 +52,7 @@ const size_t RegionTreeMaxLeafSize = 64;
 const size_t RegionTreeMaxDepth = 16;
 
 // Size of the region tree access cache.
-const size_t RegionTreeAccessCacheSize = 4;
+const size_t RegionTreeAccessCacheSize = 16;
 
 
 //
