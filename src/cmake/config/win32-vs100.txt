@@ -75,6 +75,7 @@ set (compiler_flags_common
     /GF                                     # Enable String Pooling
     /wd4290                                 # Disable warning C4290: C++ exception specification ignored except to indicate a function is not __declspec(nothrow)
     /wd4355                                 # Disable warning C4355: 'this' : used in base member initializer list
+    /wd4503                                 # Disable warning C4503: decorated name length exceeded, name was truncated
 )
 set (exe_linker_flags_common
     /WX                                     # Treat Warnings As Errors
