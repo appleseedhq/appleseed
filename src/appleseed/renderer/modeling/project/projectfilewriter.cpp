@@ -111,6 +111,7 @@ namespace
         ~Element()
         {
             assert(m_opened);
+
             if (!m_closed)
             {
                 --m_indenter;
@@ -136,7 +137,10 @@ namespace
             fprintf(m_file, "%s<%s", m_indenter.c_str(), m_name.c_str());
 
             for (const_each<AttributeVector> i = m_attributes; i; ++i)
-                fprintf(m_file, " %s=\"%s\"", i->first.c_str(), i->second.c_str());
+            {
+                const string attribute_value = replace_special_xml_characters(i->second);
+                fprintf(m_file, " %s=\"%s\"", i->first.c_str(), attribute_value.c_str());
+            }
 
             if (has_content)
             {

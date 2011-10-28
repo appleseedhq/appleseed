@@ -33,10 +33,12 @@
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/indenter.h"
+#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <cassert>
 #include <cstdio>
+#include <string>
 
 using namespace std;
 
@@ -60,21 +62,26 @@ namespace
 
         for (const_each<StringDictionary> i = dictionary.strings(); i; ++i)
         {
+            const string name = replace_special_xml_characters(i->name());
+            const string value = replace_special_xml_characters(i->value());
+
             fprintf(
                 file,
                 "%s<parameter name=\"%s\" value=\"%s\" />\n",
                 indenter.c_str(),
-                i->name(),
-                i->value());
+                name.c_str(),
+                value.c_str());
         }
 
         for (const_each<DictionaryDictionary> i = dictionary.dictionaries(); i; ++i)
         {
+            const string name = replace_special_xml_characters(i->name());
+
             fprintf(
                 file,
                 "%s<parameters name=\"%s\">\n",
                 indenter.c_str(),
-                i->name());
+                name.c_str());
 
             write_dictionary(file, indenter, i->value());
 

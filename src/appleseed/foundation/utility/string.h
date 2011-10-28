@@ -33,6 +33,7 @@
 #include "foundation/core/exceptions/exception.h"
 #include "foundation/math/scalar.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/countof.h"
 #include "foundation/utility/typetraits.h"
 
 // Standard headers.
@@ -183,6 +184,9 @@ std::string replace(
     const std::string&          s,
     const std::string&          old_string,
     const std::string&          new_string);
+
+// Replace all special characters of a string by the corresponding XML entities.
+std::string replace_special_xml_characters(const std::string& s);
 
 
 //
@@ -642,6 +646,38 @@ inline std::string replace(
         result.replace(pos, old_string.size(), new_string);
         pos += new_string.size();
     } while ((pos = result.find(old_string, pos)) != std::string::npos);
+
+    return result;
+}
+
+inline std::string replace_special_xml_characters(const std::string& s)
+{
+    //
+    // Reference: http://en.wikipedia.org/wiki/List_of_XML_and_HTML_character_entity_references
+    //
+
+    struct XMLEntity
+    {
+        char* m_character;
+        char* m_entity;
+    };
+
+    static const XMLEntity XMLEntities[] =
+    {
+        { "\"", "&quot;" },
+        { "&",  "&amp;" },
+        { "'",  "&apos;" },
+        { "<",  "&lt;" },
+        { ">",  "&gt;" }
+    };
+
+    std::string result = s;
+
+    for (size_t i = 0; i < countof(XMLEntities); ++i)
+    {
+        const XMLEntity& e = XMLEntities[i];
+        result = replace(result, e.m_character, e.m_entity);
+    }
 
     return result;
 }
