@@ -37,6 +37,7 @@
 #include "renderer/utility/cache.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/memory.h"
 #include "foundation/utility/string.h"
 
 using namespace foundation;
@@ -131,11 +132,12 @@ TextureCache::TileSwapper::TileSwapper(
     const size_t    memory_limit)
   : m_scene(scene)
   , m_memory_limit(memory_limit)
+  , m_memory_size(0)
 {
     assert(m_memory_limit > 0);
 }
 
-void TextureCache::TileSwapper::load(const TileKey& key, TilePtr& tile) const
+void TextureCache::TileSwapper::load(const TileKey& key, TilePtr& tile)
 {
     // Fetch the texture container.
     const TextureContainer& textures =
@@ -175,10 +177,18 @@ void TextureCache::TileSwapper::load(const TileKey& key, TilePtr& tile) const
 
       assert_otherwise;
     }
+
+    // Track the amount of memory used by the tile cache.
+    m_memory_size += dynamic_sizeof(*tile);
 }
 
-void TextureCache::TileSwapper::unload(const TileKey& key, TilePtr& tile) const
+void TextureCache::TileSwapper::unload(const TileKey& key, TilePtr& tile)
 {
+    // Track the amount of memory used by the tile cache.
+    const size_t tile_memory_size = dynamic_sizeof(*tile);
+    assert(m_memory_size >= tile_memory_size);
+    m_memory_size -= tile_memory_size;
+
     // Fetch the texture container.
     const TextureContainer& textures =
         key.m_assembly_uid == ~UniqueID(0)
@@ -202,19 +212,17 @@ void TextureCache::TileSwapper::unload(const TileKey& key, TilePtr& tile) const
     texture->unload_tile(key.m_tile_x, key.m_tile_y, tile);
 }
 
-bool TextureCache::TileSwapper::is_full(
-    const size_t    element_count,
-    const size_t    memory_size) const
+bool TextureCache::TileSwapper::is_full(const size_t element_count) const
 {
 /*
     RENDERER_LOG_DEBUG(
         "texture cache contains %s %s (%s)",
         pretty_uint(element_count).c_str(),
         plural(element_count, "tile").c_str(),
-        pretty_size(memory_size).c_str());
+        pretty_size(m_memory_size).c_str());
 */
 
-    return memory_size >= m_memory_limit;
+    return m_memory_size >= m_memory_limit;
 }
 
 }   // namespace renderer

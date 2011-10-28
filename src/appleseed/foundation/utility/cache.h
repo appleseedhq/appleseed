@@ -33,15 +33,17 @@
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
-#include "foundation/utility/memory.h"
+#include "foundation/utility/foreach.h"
 
 // Standard headers.
 #include <cassert>
 #include <cstddef>
-#include <limits>
+#include <functional>
 #include <list>
 #include <map>
+#include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace foundation
@@ -191,19 +193,19 @@ namespace cache_impl
         // Find an entry to replace in this cache line.
         EntryType* find_eviction_candidate()
         {
-            Timestamp timestamp = std::numeric_limits<Timestamp>::max();
-            size_t oldest = 0;
+            size_t oldest_index = 0;
+            Timestamp oldest_timestamp = m_entries[0].m_timestamp;
 
-            for (size_t i = 0; i < Ways; ++i)
+            for (size_t i = 1; i < Ways; ++i)
             {
-                if (timestamp > m_entries[i].m_timestamp)
+                if (oldest_timestamp > m_entries[i].m_timestamp)
                 {
-                    timestamp = m_entries[i].m_timestamp;
-                    oldest = i;
+                    oldest_index = i;
+                    oldest_timestamp = m_entries[i].m_timestamp;
                 }
             }
             
-            return &m_entries[oldest];
+            return &m_entries[oldest_index];
         }
 
         // Check the integrity of the cache line. For debug purposes only.
@@ -421,9 +423,6 @@ class SACache
 //
 // LRU cache.
 //
-// The Element type must implement the foundation::dynamic_sizeof<>()
-// operator.
-//
 // The ElementSwapper class must conform to the following prototype:
 //
 //      class ElementSwapper
@@ -436,23 +435,20 @@ class SACache
 //          // Unload a cache line.
 //          void unload(const Key key, Element& element);
 //
-//          // This method must return true if the cache is considered
-//          // to be full, given the number of elements already stored
-//          // in the cache and the total amount of memory they occupy.
-//          // If true is returned, the least recently used element will
-//          // be replaced next time an element needs to be loaded into
-//          // the cache. If false is returned, the cache will grow in
-//          // order to accommodate the new element.
-//          bool is_full(
-//              const size_t    element_count,
-//              const size_t    memory_size) const;     // in bytes
+//          // Return true if the cache is full, false otherwise.
+//          // If true is returned, the least recently used element
+//          // will be replaced next time an element needs to be
+//          // loaded into the cache. If false is returned, the cache
+//          // will grow in order to accommodate the new element.
+//          bool is_full(const size_t element_count);
 //      };
 //
 
 template <
     typename    Key,
     typename    Element,
-    typename    ElementSwapper
+    typename    ElementSwapper,
+    typename    Allocator = std::allocator<void>
 >
 class LRUCache
   : public cache_impl::CacheBase
@@ -462,10 +458,12 @@ class LRUCache
     typedef Key             KeyType;
     typedef Element         ElementType;
     typedef ElementSwapper  ElementSwapperType;
+    typedef Allocator       AllocatorType;
 
     // Constructor.
-    explicit LRUCache(
-        ElementSwapperType& element_swapper);
+    LRUCache(
+        ElementSwapperType& element_swapper,
+        AllocatorType       allocator = AllocatorType());
 
     // Clear the cache.
     void clear();
@@ -488,32 +486,30 @@ class LRUCache
         ElementType         m_element;
     };
 
-    // Cache queue.
-    typedef std::list<size_t> Queue;
+    // Queue: stores cache lines ordered from MRU to LRU.
+    typedef std::list<
+        Line,
+        typename AllocatorType::template rebind<Line>::other> Queue;
     typedef typename Queue::iterator QueueIterator;
 
-    // Cache index.
-    struct IndexEntry
-    {
-        size_t              m_line_index;
-        QueueIterator       m_queue_it;
-    };
-    typedef std::map<KeyType, IndexEntry> Index;
+    // Index: given a key, find the cache line in the queue.
+    typedef std::map<
+        KeyType,
+        QueueIterator,
+        std::less<KeyType>,
+        typename AllocatorType::template rebind<
+            std::pair<KeyType, QueueIterator> >::other> Index;
 
-    std::vector<Line>       m_lines;                    // cache storage
-    Index                   m_index;                    // cache index
-    Queue                   m_queue;                    // LRU queue
-    ElementSwapperType&     m_element_swapper;          // element swapper
-    size_t                  m_memory_size;              // total size of the elements in the cache, in bytes
+    Index                   m_index;
+    Queue                   m_queue;
+    size_t                  m_queue_size;
+    ElementSwapperType&     m_element_swapper;
 };
 
 
 //
 // Dual stage cache: the front end is a set associative cache, and the
 // back-end is a LRU cache.
-//
-// The Element type must implement the foundation::dynamic_sizeof<>()
-// operator.
 //
 // The KeyHasher class must conform to the following prototype:
 //
@@ -537,16 +533,12 @@ class LRUCache
 //          // Unload a cache line.
 //          void unload(const Key key, Element& element);
 //
-//          // This method must return true if the cache is considered
-//          // to be full, given the number of elements already stored
-//          // in the cache and the total amount of memory they occupy.
-//          // If true is returned, the least recently used element will
-//          // be replaced next time an element needs to be loaded into
-//          // the cache. If false is returned, the cache will grow in
-//          // order to accommodate the new element.
-//          bool is_full(
-//              const size_t    element_count,
-//              const size_t    memory_size) const;     // in bytes
+//          // Return true if the cache is full, false otherwise.
+//          // If true is returned, the least recently used element
+//          // will be replaced next time an element needs to be
+//          // loaded into the cache. If false is returned, the cache
+//          // will grow in order to accommodate the new element.
+//          bool is_full(const size_t element_count);
 //      };
 //
 
@@ -556,7 +548,8 @@ template <
     typename    Element,
     typename    ElementSwapper,
     size_t      Lines_,             // number of lines of the set associative cache
-    size_t      Ways_ = 1           // number of ways of the set associate cache
+    size_t      Ways_ = 1,          // number of ways of the set associate cache
+    typename    Allocator = std::allocator<void>
 >
 class DualStageCache
   : public NonCopyable
@@ -567,6 +560,7 @@ class DualStageCache
     typedef KeyHasher       KeyHasherType;
     typedef Element         ElementType;
     typedef ElementSwapper  ElementSwapperType;
+    typedef Allocator       AllocatorType;
 
     // Line and way count.
     static const size_t Lines = Lines_;
@@ -576,7 +570,8 @@ class DualStageCache
     DualStageCache(
         KeyHasherType&      key_hasher,
         ElementSwapperType& element_swapper,
-        const KeyType&      invalid_key);
+        const KeyType&      invalid_key,
+        AllocatorType       allocator = AllocatorType());
 
     // Clear the cache.
     void clear();
@@ -618,7 +613,8 @@ class DualStageCache
     typedef LRUCache<
         KeyType,
         ElementType,
-        S1ElementSwapper> S1Cache;
+        S1ElementSwapper,
+        AllocatorType> S1Cache;
 
     // Stage-0 cache element swapper.
     class S0ElementSwapper
@@ -664,11 +660,9 @@ class DualStageCache
             m_swapper.unload(key, element);
         }
 
-        bool is_full(
-          const size_t    element_count,
-          const size_t    memory_size) const
+        bool is_full(const size_t element_count) const
         {
-            return m_swapper.is_full(element_count, memory_size);
+            return m_swapper.is_full(element_count);
         }
 
       private:
@@ -820,18 +814,24 @@ check_integrity(IntegrityChecker& checker) const
     template <                                          \
         typename    Key,                                \
         typename    Element,                            \
-        typename    ElementSwapper                      \
+        typename    ElementSwapper,                     \
+        typename    Allocator                           \
     >                                                   \
     MiddleDecl                                          \
     LRUCache<                                           \
         Key,                                            \
         Element,                                        \
-        ElementSwapper                                  \
+        ElementSwapper,                                 \
+        Allocator                                       \
     >::
 
 FOUNDATION_LRUCACHE_TEMPLATE_DEF(FOUNDATION_EMPTY)
-LRUCache(ElementSwapperType& element_swapper)
-  : m_element_swapper(element_swapper)
+LRUCache(
+    ElementSwapperType& element_swapper,
+    AllocatorType       allocator)
+  : m_index(typename Index::key_compare(), allocator)
+  , m_queue(allocator)
+  , m_element_swapper(element_swapper)
 {
     clear();
 }
@@ -839,10 +839,9 @@ LRUCache(ElementSwapperType& element_swapper)
 FOUNDATION_LRUCACHE_TEMPLATE_DEF(void)
 clear()
 {
-    m_lines.clear();
     m_index.clear();
     m_queue.clear();
-    m_memory_size = 0;
+    m_queue_size = 0;
 }
 
 FOUNDATION_LRUCACHE_TEMPLATE_DEF(inline Element&)
@@ -856,77 +855,56 @@ get(const KeyType& key)
         // The key was found in the index: cache hit.
         ++m_hit_count;
 
-        if (m_lines.size() > 1)
+        if (m_queue_size > 1)
         {
             // Move the element to the front of the queue.
             m_queue.splice(
                 m_queue.begin(),
                 m_queue,
-                index_it->second.m_queue_it);
+                index_it->second);
 
             // Update the queue iterator in the index.
-            index_it->second.m_queue_it = m_queue.begin();
+            index_it->second = m_queue.begin();
         }
 
         // Return the element.
-        return m_lines[index_it->second.m_line_index].m_element;
+        return index_it->second->m_element;
     }
     else
     {
         // The key was not found in the index: cache miss.
         ++m_miss_count;
 
-        // Let the element swapper decide whether to replace the least
-        // recently used element, or to simply insert the element into
-        // the cache.
-        const bool is_full =
-            m_element_swapper.is_full(
-                m_lines.size(),
-                m_memory_size);
-
-        size_t line_index;
-        if (is_full)
+        if (m_element_swapper.is_full(m_queue_size))
         {
             // Locate the least recently used element.
-            line_index = m_queue.back();
+            Line& line = m_queue.back();
 
             // Unload the least recently used element.
-            m_memory_size -= dynamic_sizeof(m_lines[line_index].m_element);
-            m_element_swapper.unload(
-                m_lines[line_index].m_key,
-                m_lines[line_index].m_element);
+            m_element_swapper.unload(line.m_key, line.m_element);
+
+            // Remove the least recently used element from the index.
+            m_index.erase(line.m_key);
 
             // Remove the least recently used element from the queue.
             m_queue.pop_back();
-
-            // Remove the least recently used element from the index.
-            m_index.erase(m_lines[line_index].m_key);
-        }
-        else
-        {
-            // Insert a new line into the cache storage.
-            line_index = m_lines.size();
-            m_lines.push_back(Line());
+            --m_queue_size;
         }
 
         // Load the new element.
-        m_lines[line_index].m_key = key;
-        m_element_swapper.load(
-            m_lines[line_index].m_key,
-            m_lines[line_index].m_element);
-        m_memory_size += dynamic_sizeof(m_lines[line_index].m_element);
+        Line line;
+        line.m_key = key;
+        m_element_swapper.load(line.m_key, line.m_element);
 
         // Insert the new element into the queue.
-        m_queue.push_front(line_index);
+        m_queue.push_front(line);
+        ++m_queue_size;
 
         // Insert the new element into the index.
-        IndexEntry index_entry;
-        index_entry.m_line_index = line_index;
-        index_entry.m_queue_it = m_queue.begin();
-        m_index[key] = index_entry;
+        m_index[key] = m_queue.begin();
 
         // Return the element.
-        return m_lines[line_index].m_element;
+        return m_queue.front().m_element;
     }
 }
 
@@ -935,18 +913,15 @@ get_memory_size() const
 {
     return
           sizeof(*this)
-        + sizeof(Line) * m_lines.capacity()
-        + sizeof(KeyType) * m_index.size()
-        + sizeof(IndexEntry*) * m_index.size()
-        + sizeof(size_t) * m_lines.size()               // m_queue.size() == m_lines.size()
-        + m_memory_size;
+        + sizeof(typename Index::value_type) * m_index.size()
+        + sizeof(Line) * m_queue_size;
 }
 
 FOUNDATION_LRUCACHE_TEMPLATE_DEF(template <typename IntegrityChecker> void)
 check_integrity(IntegrityChecker& checker) const
 {
-    for (size_t i = 0; i < m_lines.size(); ++i)
-        checker(m_lines[i].m_key, m_lines[i].m_element);
+    for (const_each<Queue> i = m_queue; i; ++i)
+        checker(i->m_key, i->m_element);
 }
 
 #undef FOUNDATION_LRUCACHE_TEMPLATE_DEF
@@ -963,7 +938,8 @@ check_integrity(IntegrityChecker& checker) const
         typename    Element,                            \
         typename    ElementSwapper,                     \
         size_t      Lines_,                             \
-        size_t      Ways_                               \
+        size_t      Ways_,                              \
+        typename    Allocator                           \
     >                                                   \
     MiddleDecl                                          \
     DualStageCache<                                     \
@@ -972,16 +948,18 @@ check_integrity(IntegrityChecker& checker) const
         Element,                                        \
         ElementSwapper,                                 \
         Lines_,                                         \
-        Ways_                                           \
+        Ways_,                                          \
+        Allocator                                       \
     >::
 
 FOUNDATION_DSCACHE_TEMPLATE_DEF(FOUNDATION_EMPTY)
 DualStageCache(
     KeyHasherType&      key_hasher,
     ElementSwapperType& element_swapper,
-    const KeyType&      invalid_key)
+    const KeyType&      invalid_key,
+    AllocatorType       allocator)
   : m_s1_element_swapper(m_s0_cache, element_swapper)   // warning: referring to an uninitialized member
-  , m_s1_cache(m_s1_element_swapper)
+  , m_s1_cache(m_s1_element_swapper, allocator)
   , m_s0_element_swapper(m_s1_cache)
   , m_s0_cache(key_hasher, m_s0_element_swapper, invalid_key)
 {

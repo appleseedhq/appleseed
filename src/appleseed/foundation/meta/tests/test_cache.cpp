@@ -33,7 +33,11 @@
 #include "foundation/utility/test.h"
 
 // Standard headers.
+#include <cassert>
 #include <cstddef>
+
+using namespace foundation;
+using namespace std;
 
 namespace
 {
@@ -52,6 +56,13 @@ namespace
 
     struct MyElementSwapper
     {
+        const size_t m_cache_size;
+
+        explicit MyElementSwapper(const size_t cache_size)
+          : m_cache_size(cache_size)
+        {
+        }
+
         void load(const MyKey key, MyElement*& element) const
         {
             element = new MyElement(key * 10);
@@ -63,11 +74,10 @@ namespace
             element = 0;
         }
 
-        bool is_full(
-            const size_t    element_count,
-            const size_t    memory_size) const
+        bool is_full(const size_t element_count) const
         {
-            return element_count >= 4;
+            assert(element_count <= m_cache_size);
+            return element_count == m_cache_size;
         }
     };
 
@@ -80,7 +90,7 @@ namespace
                 const MyElement expected = 10 * key;
 
                 if (expected != *element)
-                    throw foundation::Exception("Cache integrity check failed");
+                    throw Exception("Cache integrity check failed");
             }
         }
     };
@@ -88,20 +98,22 @@ namespace
 
 TEST_SUITE(Foundation_Utility_Cache_DualStageCache)
 {
-    using namespace foundation;
-
     TEST_CASE(StressTest)
     {
+        const size_t Stage0LineCount = 128;
+        const size_t Stage0WayCount = 1;
+        const size_t Stage1LineCount = 4;
+
         MyKeyHasher key_hasher;
-        MyElementSwapper element_swapper;
+        MyElementSwapper element_swapper(Stage1LineCount);
 
         DualStageCache<
             MyKey,
             MyKeyHasher,
             MyElement*,
             MyElementSwapper,
-            128,
-            1> cache(key_hasher, element_swapper, MyInvalidKey);
+            Stage0LineCount,
+            Stage0WayCount> cache(key_hasher, element_swapper, MyInvalidKey);
 
         MyIntegrityChecker checker;
 

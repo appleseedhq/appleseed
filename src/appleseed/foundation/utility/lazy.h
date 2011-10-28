@@ -153,16 +153,22 @@ class Access
 // Access cache.
 //
 
-template <typename Object, size_t Lines = 16, size_t Ways = 1>
+template <
+    typename    Object,
+    size_t      Lines,
+    size_t      Ways = 1,
+    typename    Allocator = std::allocator<void>
+>
 class AccessCache
   : public NonCopyable
 {
   public:
     // Types.
-    typedef foundation::UniqueID KeyType;
-    typedef Object ObjectType;
-    typedef Lazy<Object> LazyType;
-    typedef Access<Object> AccessType;
+    typedef UniqueID        KeyType;
+    typedef Object          ObjectType;
+    typedef Lazy<Object>    LazyType;
+    typedef Access<Object>  AccessType;
+    typedef Allocator       AllocatorType;
 
     // Constructor.
     AccessCache();
@@ -213,9 +219,7 @@ class AccessCache
             AccessType&     access);
 
         // Return true if the cache is full.
-        bool is_full(
-            const size_t    element_count,
-            const size_t    memory_size) const;
+        bool is_full(const size_t element_count) const;
     };
 
     // Cache type.
@@ -225,7 +229,8 @@ class AccessCache
         AccessType,
         ObjectSwapper,
         Lines,
-        Ways
+        Ways,
+        AllocatorType
     > CacheType;
 
     KeyHasher               m_key_hasher;
@@ -233,17 +238,23 @@ class AccessCache
     mutable CacheType       m_cache;
 };
 
-template <typename ObjectMap, size_t Lines = 16, size_t Ways = 1>
+template <
+    typename    ObjectMap,
+    size_t      Lines,
+    size_t      Ways = 1,
+    typename    Allocator = std::allocator<void>
+>
 class AccessCacheMap
   : public NonCopyable
 {
   public:
     // Types.
-    typedef foundation::UniqueID KeyType;
-    typedef typename ObjectMap::mapped_type LazyPtrType;
-    typedef typename PointerDeref<LazyPtrType>::R LazyType;
-    typedef typename LazyType::ObjectType ObjectType;
-    typedef Access<ObjectType> AccessType;
+    typedef UniqueID                                KeyType;
+    typedef typename ObjectMap::mapped_type         LazyPtrType;
+    typedef typename PointerDeref<LazyPtrType>::R   LazyType;
+    typedef typename LazyType::ObjectType           ObjectType;
+    typedef Access<ObjectType>                      AccessType;
+    typedef Allocator                               AllocatorType;
 
     // Exception thrown when looking for an object that does not exist.
     struct ExceptionObjectNotFound : public Exception {};
@@ -298,9 +309,7 @@ class AccessCacheMap
             AccessType&     access);
 
         // Return true if the cache is full.
-        bool is_full(
-            const size_t    element_count,
-            const size_t    memory_size) const;
+        bool is_full(const size_t element_count) const;
     };
 
     // Cache type.
@@ -310,7 +319,8 @@ class AccessCacheMap
         AccessType,
         ObjectSwapper,
         Lines,
-        Ways
+        Ways,
+        AllocatorType
     > CacheType;
 
     KeyHasher               m_key_hasher;
@@ -443,14 +453,14 @@ inline const Object& Access<Object>::operator*() const
 // AccessCache class implementation.
 //
 
-template <typename Object, size_t Lines, size_t Ways>
-AccessCache<Object, Lines, Ways>::AccessCache()
+template <typename Object, size_t Lines, size_t Ways, typename Allocator>
+AccessCache<Object, Lines, Ways, Allocator>::AccessCache()
   : m_cache(m_key_hasher, m_object_swapper, ~KeyType(0))
 {
 }
 
-template <typename Object, size_t Lines, size_t Ways>
-inline const Object* AccessCache<Object, Lines, Ways>::access(
+template <typename Object, size_t Lines, size_t Ways, typename Allocator>
+inline const Object* AccessCache<Object, Lines, Ways, Allocator>::access(
     const KeyType&      key,
     LazyType&           lazy) const
 {
@@ -458,78 +468,78 @@ inline const Object* AccessCache<Object, Lines, Ways>::access(
     return m_cache.get(key).get();
 }
 
-template <typename Object, size_t Lines, size_t Ways>
-void AccessCache<Object, Lines, Ways>::clear_statistics()
+template <typename Object, size_t Lines, size_t Ways, typename Allocator>
+void AccessCache<Object, Lines, Ways, Allocator>::clear_statistics()
 {
     return m_cache.clear_statistics();
 }
 
-template <typename Object, size_t Lines, size_t Ways>
-inline uint64 AccessCache<Object, Lines, Ways>::get_stage0_hit_count() const
+template <typename Object, size_t Lines, size_t Ways, typename Allocator>
+inline uint64 AccessCache<Object, Lines, Ways, Allocator>::get_stage0_hit_count() const
 {
     return m_cache.get_stage0_hit_count();
 }
 
-template <typename Object, size_t Lines, size_t Ways>
-inline uint64 AccessCache<Object, Lines, Ways>::get_stage0_miss_count() const
+template <typename Object, size_t Lines, size_t Ways, typename Allocator>
+inline uint64 AccessCache<Object, Lines, Ways, Allocator>::get_stage0_miss_count() const
 {
     return m_cache.get_stage0_miss_count();
 }
 
-template <typename Object, size_t Lines, size_t Ways>
-inline uint64 AccessCache<Object, Lines, Ways>::get_stage1_hit_count() const
+template <typename Object, size_t Lines, size_t Ways, typename Allocator>
+inline uint64 AccessCache<Object, Lines, Ways, Allocator>::get_stage1_hit_count() const
 {
     return m_cache.get_stage1_hit_count();
 }
 
-template <typename Object, size_t Lines, size_t Ways>
-inline uint64 AccessCache<Object, Lines, Ways>::get_stage1_miss_count() const
+template <typename Object, size_t Lines, size_t Ways, typename Allocator>
+inline uint64 AccessCache<Object, Lines, Ways, Allocator>::get_stage1_miss_count() const
 {
     return m_cache.get_stage1_miss_count();
 }
 
-template <typename Object, size_t Lines, size_t Ways>
-inline size_t AccessCache<Object, Lines, Ways>::KeyHasher::operator()(
+template <typename Object, size_t Lines, size_t Ways, typename Allocator>
+inline size_t AccessCache<Object, Lines, Ways, Allocator>::KeyHasher::operator()(
     const KeyType&      key) const
 {
     return static_cast<size_t>(key);
 }
 
-template <typename Object, size_t Lines, size_t Ways>
-AccessCache<Object, Lines, Ways>::ObjectSwapper::ObjectSwapper()
+template <typename Object, size_t Lines, size_t Ways, typename Allocator>
+AccessCache<Object, Lines, Ways, Allocator>::ObjectSwapper::ObjectSwapper()
   : m_lazy(0)
 {
 }
 
-template <typename Object, size_t Lines, size_t Ways>
-inline void AccessCache<Object, Lines, Ways>::ObjectSwapper::set_lazy(
+template <typename Object, size_t Lines, size_t Ways, typename Allocator>
+inline void AccessCache<Object, Lines, Ways, Allocator>::ObjectSwapper::set_lazy(
     LazyType&           lazy)
 {
     m_lazy = &lazy;
 }
 
-template <typename Object, size_t Lines, size_t Ways>
-inline void AccessCache<Object, Lines, Ways>::ObjectSwapper::load(
+template <typename Object, size_t Lines, size_t Ways, typename Allocator>
+inline void AccessCache<Object, Lines, Ways, Allocator>::ObjectSwapper::load(
     const KeyType&      key,
     AccessType&         access)
 {
     access.reset(m_lazy);
 }
 
-template <typename Object, size_t Lines, size_t Ways>
-inline void AccessCache<Object, Lines, Ways>::ObjectSwapper::unload(
+template <typename Object, size_t Lines, size_t Ways, typename Allocator>
+inline void AccessCache<Object, Lines, Ways, Allocator>::ObjectSwapper::unload(
     const KeyType&      key,
     AccessType&         access)
 {
     access.reset(0);
 }
 
-template <typename Object, size_t Lines, size_t Ways>
-inline bool AccessCache<Object, Lines, Ways>::ObjectSwapper::is_full(
-    const size_t        element_count,
-    const size_t        memory_size) const
+template <typename Object, size_t Lines, size_t Ways, typename Allocator>
+inline bool AccessCache<Object, Lines, Ways, Allocator>::ObjectSwapper::is_full(
+    const size_t        element_count) const
 {
-    return element_count >= Lines * Ways;
+    assert(element_count <= Lines * Ways);
+    return element_count == Lines * Ways;
 }
 
 
@@ -537,15 +547,15 @@ inline bool AccessCache<Object, Lines, Ways>::ObjectSwapper::is_full(
 // AccessCacheMap class implementation.
 //
 
-template <typename ObjectMap, size_t Lines, size_t Ways>
-AccessCacheMap<ObjectMap, Lines, Ways>::AccessCacheMap()
+template <typename ObjectMap, size_t Lines, size_t Ways, typename Allocator>
+AccessCacheMap<ObjectMap, Lines, Ways, Allocator>::AccessCacheMap()
   : m_cache(m_key_hasher, m_object_swapper, ~KeyType(0))
 {
 }
 
-template <typename ObjectMap, size_t Lines, size_t Ways>
-inline const typename AccessCacheMap<ObjectMap, Lines, Ways>::ObjectType*
-AccessCacheMap<ObjectMap, Lines, Ways>::access(
+template <typename ObjectMap, size_t Lines, size_t Ways, typename Allocator>
+inline const typename AccessCacheMap<ObjectMap, Lines, Ways, Allocator>::ObjectType*
+AccessCacheMap<ObjectMap, Lines, Ways, Allocator>::access(
     const KeyType&      key,
     const ObjectMap&    object_map) const
 {
@@ -553,82 +563,84 @@ AccessCacheMap<ObjectMap, Lines, Ways>::access(
     return m_cache.get(key).get();
 }
 
-template <typename ObjectMap, size_t Lines, size_t Ways>
-void AccessCacheMap<ObjectMap, Lines, Ways>::clear_statistics()
+template <typename ObjectMap, size_t Lines, size_t Ways, typename Allocator>
+void AccessCacheMap<ObjectMap, Lines, Ways, Allocator>::clear_statistics()
 {
     return m_cache.clear_statistics();
 }
 
-template <typename Object, size_t Lines, size_t Ways>
-inline uint64 AccessCacheMap<Object, Lines, Ways>::get_stage0_hit_count() const
+template <typename ObjectMap, size_t Lines, size_t Ways, typename Allocator>
+inline uint64 AccessCacheMap<ObjectMap, Lines, Ways, Allocator>::get_stage0_hit_count() const
 {
     return m_cache.get_stage0_hit_count();
 }
 
-template <typename Object, size_t Lines, size_t Ways>
-inline uint64 AccessCacheMap<Object, Lines, Ways>::get_stage0_miss_count() const
+template <typename ObjectMap, size_t Lines, size_t Ways, typename Allocator>
+inline uint64 AccessCacheMap<ObjectMap, Lines, Ways, Allocator>::get_stage0_miss_count() const
 {
     return m_cache.get_stage0_miss_count();
 }
 
-template <typename Object, size_t Lines, size_t Ways>
-inline uint64 AccessCacheMap<Object, Lines, Ways>::get_stage1_hit_count() const
+template <typename ObjectMap, size_t Lines, size_t Ways, typename Allocator>
+inline uint64 AccessCacheMap<ObjectMap, Lines, Ways, Allocator>::get_stage1_hit_count() const
 {
     return m_cache.get_stage1_hit_count();
 }
 
-template <typename Object, size_t Lines, size_t Ways>
-inline uint64 AccessCacheMap<Object, Lines, Ways>::get_stage1_miss_count() const
+template <typename ObjectMap, size_t Lines, size_t Ways, typename Allocator>
+inline uint64 AccessCacheMap<ObjectMap, Lines, Ways, Allocator>::get_stage1_miss_count() const
 {
     return m_cache.get_stage1_miss_count();
 }
 
-template <typename ObjectMap, size_t Lines, size_t Ways>
-inline size_t AccessCacheMap<ObjectMap, Lines, Ways>::KeyHasher::operator()(
+template <typename ObjectMap, size_t Lines, size_t Ways, typename Allocator>
+inline size_t AccessCacheMap<ObjectMap, Lines, Ways, Allocator>::KeyHasher::operator()(
     const KeyType&      key) const
 {
     return static_cast<size_t>(key);
 }
 
-template <typename ObjectMap, size_t Lines, size_t Ways>
-AccessCacheMap<ObjectMap, Lines, Ways>::ObjectSwapper::ObjectSwapper()
+template <typename ObjectMap, size_t Lines, size_t Ways, typename Allocator>
+AccessCacheMap<ObjectMap, Lines, Ways, Allocator>::ObjectSwapper::ObjectSwapper()
   : m_object_map(0)
 {
 }
 
-template <typename ObjectMap, size_t Lines, size_t Ways>
-inline void AccessCacheMap<ObjectMap, Lines, Ways>::ObjectSwapper::set_object_map(
+template <typename ObjectMap, size_t Lines, size_t Ways, typename Allocator>
+inline void AccessCacheMap<ObjectMap, Lines, Ways, Allocator>::ObjectSwapper::set_object_map(
     const ObjectMap*    object_map)
 {
     assert(object_map);
     m_object_map = object_map;
 }
 
-template <typename ObjectMap, size_t Lines, size_t Ways>
-inline void AccessCacheMap<ObjectMap, Lines, Ways>::ObjectSwapper::load(
+template <typename ObjectMap, size_t Lines, size_t Ways, typename Allocator>
+inline void AccessCacheMap<ObjectMap, Lines, Ways, Allocator>::ObjectSwapper::load(
     const KeyType&      key,
     AccessType&         access)
 {
     const typename ObjectMap::const_iterator i = m_object_map->find(key);
+
     if (i == m_object_map->end())
         throw ExceptionObjectNotFound();
+
     access.reset(i->second);
 }
 
-template <typename ObjectMap, size_t Lines, size_t Ways>
-inline void AccessCacheMap<ObjectMap, Lines, Ways>::ObjectSwapper::unload(
+template <typename ObjectMap, size_t Lines, size_t Ways, typename Allocator>
+inline void AccessCacheMap<ObjectMap, Lines, Ways, Allocator>::ObjectSwapper::unload(
     const KeyType&      key,
     AccessType&         access)
 {
     access.reset(0);
 }
 
-template <typename Object, size_t Lines, size_t Ways>
-inline bool AccessCacheMap<Object, Lines, Ways>::ObjectSwapper::is_full(
-    const size_t        element_count,
-    const size_t        memory_size) const
+template <typename ObjectMap, size_t Lines, size_t Ways, typename Allocator>
+inline bool AccessCacheMap<ObjectMap, Lines, Ways, Allocator>::ObjectSwapper::is_full(
+    const size_t        element_count) const
 {
-    return element_count >= Lines * Ways;
+    assert(element_count <= Lines * Ways);
+    return element_count == Lines * Ways;
 }
 
 }       // namespace foundation

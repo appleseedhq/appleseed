@@ -89,10 +89,9 @@ class TextureCache
         bool operator<(const TileKey& rhs) const;
     };
 
-    class TileKeyHasher
+    struct TileKeyHasher
       : public foundation::NonCopyable
     {
-      public:
         // Hash a key into an integer.
         size_t operator()(const TileKey& key) const;
     };
@@ -109,19 +108,18 @@ class TextureCache
             const size_t            memory_limit);
 
         // Load a cache line.
-        void load(const TileKey& key, TilePtr& tile) const;
+        void load(const TileKey& key, TilePtr& tile);
 
         // Unload a cache line.
-        void unload(const TileKey& key, TilePtr& tile) const;
+        void unload(const TileKey& key, TilePtr& tile);
 
         // Return true if the cache is full, false otherwise.
-        bool is_full(
-            const size_t            element_count,
-            const size_t            memory_size) const;
+        bool is_full(const size_t element_count) const;
             
       private:
         const Scene&                m_scene;
         const size_t                m_memory_limit;
+        size_t                      m_memory_size;
     };
 
     typedef foundation::DualStageCache<

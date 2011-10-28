@@ -303,6 +303,7 @@ source_group ("foundation\\mesh" FILES
 )
 
 set (foundation_meta_benchmarks_sources
+    foundation/meta/benchmarks/benchmark_cache.cpp
     foundation/meta/benchmarks/benchmark_cdf.cpp
     foundation/meta/benchmarks/benchmark_colorspace.cpp
     foundation/meta/benchmarks/benchmark_fastmath.cpp
