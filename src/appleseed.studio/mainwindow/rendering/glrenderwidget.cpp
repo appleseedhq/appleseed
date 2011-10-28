@@ -48,7 +48,6 @@ namespace studio {
 // GLRenderWidget class implementation.
 //
 
-// Constructor.
 GLRenderWidget::GLRenderWidget(
     const int       width,
     const int       height,
