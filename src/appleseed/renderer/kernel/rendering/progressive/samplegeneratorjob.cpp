@@ -51,9 +51,9 @@ namespace renderer
 namespace
 {
     const size_t MinSampleCount     = 1024 * 4;     // minimum number of samples in one pass
-    const size_t MaxSampleCount     = 1024 * 64;    // maximum number of samples in one pass
-    const size_t MinSamplePassCount = 8;            // number of passes that will stick to the minimum number of samples
-    const size_t SampleIncrement    = 1024 * 4;     // number of samples added at each pass
+    const size_t MaxSampleCount     = 1024 * 128;   // maximum number of samples in one pass
+    const size_t MinSamplePassCount = 6;            // number of passes that will stick to the minimum number of samples
+    const size_t SampleIncrement    = 1024 * 8;     // number of samples added at each pass
     const bool RoundRobinRender     = false;        // enable/disable Round Robin rendering
 
     size_t compute_sample_count(const size_t pass)
@@ -61,7 +61,7 @@ namespace
         return
             pass < MinSamplePassCount ? MinSampleCount :
             min(
-                MinSampleCount + (pass - MinSamplePassCount) * SampleIncrement,
+                MinSampleCount + (pass - MinSamplePassCount + 1) * SampleIncrement,
                 MaxSampleCount);
     }
 }
