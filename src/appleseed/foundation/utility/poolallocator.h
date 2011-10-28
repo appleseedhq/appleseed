@@ -255,6 +255,10 @@ class PoolAllocator<void, ItemsPerPage, FallBackAllocator>
     }
 
   private:
+    // Allow allocators of different types to access each other private members.
+    template <typename, size_t, typename>
+    friend class PoolAllocator;
+
     FallBackAllocator m_fallback_alloc;
 };
 
