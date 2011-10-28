@@ -36,6 +36,7 @@
 // appleseed.foundation headers.
 #include "foundation/utility/attributeset.h"
 #include "foundation/utility/lazy.h"
+#include "foundation/utility/poolallocator.h"
 
 // Standard headers.
 #include <vector>
@@ -77,7 +78,9 @@ typedef StaticTessellation<Triangle> StaticTriangleTess;
 
 typedef foundation::AccessCache<
             StaticTriangleTess,
-            16
+            16,
+            1,
+            foundation::PoolAllocator<void, 16>
         > StaticTriangleTessAccessCache;
 
 }       // namespace renderer

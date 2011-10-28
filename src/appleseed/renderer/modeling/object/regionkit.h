@@ -34,6 +34,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/lazy.h"
+#include "foundation/utility/poolallocator.h"
 
 // Standard headers.
 #include <vector>
@@ -57,7 +58,9 @@ typedef std::vector<const IRegion*> RegionKit;
 
 typedef foundation::AccessCache<
         RegionKit,
-        16
+        16,
+        1,
+        foundation::PoolAllocator<void, 16>
     > RegionKitAccessCache;
 
 }       // namespace renderer

@@ -39,6 +39,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/bsp.h"
 #include "foundation/utility/lazy.h"
+#include "foundation/utility/poolallocator.h"
 
 // Standard headers.
 #include <map>
@@ -129,7 +130,9 @@ typedef TriangleTreeContainer::const_iterator TriangleTreeConstIterator;
 // Triangle tree access cache type.
 typedef foundation::AccessCacheMap<
             TriangleTreeContainer,
-            TriangleTreeAccessCacheSize
+            TriangleTreeAccessCacheSize,
+            1,
+            foundation::PoolAllocator<void, TriangleTreeAccessCacheSize>
         > TriangleTreeAccessCache;
 
 

@@ -39,6 +39,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/bsp.h"
 #include "foundation/utility/lazy.h"
+#include "foundation/utility/poolallocator.h"
 
 // Standard headers.
 #include <map>
@@ -146,7 +147,9 @@ typedef RegionTreeContainer::const_iterator RegionTreeConstIterator;
 // Region tree access cache type.
 typedef foundation::AccessCacheMap<
             RegionTreeContainer,
-            RegionTreeAccessCacheSize
+            RegionTreeAccessCacheSize,
+            1,
+            foundation::PoolAllocator<void, RegionTreeAccessCacheSize>
         > RegionTreeAccessCache;
 
 
