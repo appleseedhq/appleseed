@@ -308,6 +308,8 @@ namespace
                         m_params,
                         "exitance");
 
+                assert(texture_instance);
+
                 Texture* texture =
                     scene.textures().get_by_index(texture_instance->get_texture_index());
 

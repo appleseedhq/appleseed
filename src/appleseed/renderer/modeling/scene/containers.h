@@ -94,9 +94,8 @@ struct ExceptionUnknownEntity
 };
 
 // Retrieve a mandatory entity from a container.
-// Throws:
-//   - a renderer::ParamArray::ExceptionUnknownName if the parameter does not exist
-//   - a renderer::ExceptionUnknownEntity exception if the requested entity does not exist
+// Returns 0 if the parameter does not exist.
+// Throws a renderer::ExceptionUnknownEntity exception if the requested entity does not exist.
 template <typename T, typename Container>
 const T* get_required_entity(
     const Container&    container,
@@ -104,7 +103,10 @@ const T* get_required_entity(
     const std::string&  param_name)
 {
     const std::string entity_name =
-        params.get<std::string>(param_name.c_str());
+        params.get_required<std::string>(param_name.c_str(), "");
+
+    if (entity_name.empty())
+        return 0;
 
     const T* entity = container.get_by_name(entity_name.c_str());
 

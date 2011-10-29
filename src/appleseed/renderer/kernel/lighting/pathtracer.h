@@ -158,17 +158,17 @@ size_t PathTracer<PathVisitor, ScatteringModesMask, Adjoint>::trace(
 
         // Retrieve the material at the shading point.
         const Material* material = shading_point_ptr->get_material();
-
-        // Terminate the path if the surface has no material.
         if (material == 0)
             break;
 
         // Retrieve the surface shader.
-        const SurfaceShader& surface_shader = material->get_surface_shader();
+        const SurfaceShader* surface_shader = material->get_surface_shader();
+        if (surface_shader == 0)
+            break;
 
         // Evaluate the alpha mask at the shading point.
         Alpha alpha_mask;
-        surface_shader.evaluate_alpha_mask(
+        surface_shader->evaluate_alpha_mask(
             sampling_context,
             texture_cache,
             *shading_point_ptr,
@@ -207,8 +207,6 @@ size_t PathTracer<PathVisitor, ScatteringModesMask, Adjoint>::trace(
 
         // Retrieve the BSDF.
         const BSDF* bsdf = material->get_bsdf();
-
-        // Terminate the path if the material has no BSDF.
         if (bsdf == 0)
             break;
 

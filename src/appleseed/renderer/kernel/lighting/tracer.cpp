@@ -83,17 +83,17 @@ const ShadingPoint& Tracer::trace(
 
         // Retrieve the material at the shading point.
         const Material* material = shading_point_ptr->get_material();
-
-        // Stop if the surface has no material.
         if (material == 0)
             break;
 
         // Retrieve the surface shader.
-        const SurfaceShader& surface_shader = material->get_surface_shader();
+        const SurfaceShader* surface_shader = material->get_surface_shader();
+        if (surface_shader == 0)
+            break;
 
         // Evaluate the alpha mask at the shading point.
         Alpha alpha_mask;
-        surface_shader.evaluate_alpha_mask(
+        surface_shader->evaluate_alpha_mask(
             sampling_context,
             m_texture_cache,
             *shading_point_ptr,
@@ -158,17 +158,17 @@ const ShadingPoint& Tracer::trace_between(
 
         // Retrieve the material at the shading point.
         const Material* material = shading_point_ptr->get_material();
-
-        // Stop if the surface has no material.
         if (material == 0)
             break;
 
         // Retrieve the surface shader.
-        const SurfaceShader& surface_shader = material->get_surface_shader();
+        const SurfaceShader* surface_shader = material->get_surface_shader();
+        if (surface_shader == 0)
+            break;
 
         // Evaluate the alpha mask at the shading point.
         Alpha alpha_mask;
-        surface_shader.evaluate_alpha_mask(
+        surface_shader->evaluate_alpha_mask(
             sampling_context,
             m_texture_cache,
             *shading_point_ptr,

@@ -90,7 +90,14 @@ void ShadingEngine::shade_hit_point(
         }
 
         // Use the surface shader of the intersected surface.
-        surface_shader = &material->get_surface_shader();
+        surface_shader = material->get_surface_shader();
+
+        if (surface_shader == 0)
+        {
+            // The intersected surface has no surface shader: return solid pink.
+            shading_result.set_to_solid_pink();
+            return;
+        }
     }
 
     // Execute the surface shader.

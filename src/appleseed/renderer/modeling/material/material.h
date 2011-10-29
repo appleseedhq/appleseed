@@ -62,8 +62,8 @@ class RENDERERDLL Material
         const BSDFContainer&            bsdfs,
         const EDFContainer&             edfs);
 
-    // Return the surface shader of this material.
-    const SurfaceShader& get_surface_shader() const;
+    // Return the surface shader of this material, or 0 if the material doesn't have one.
+    const SurfaceShader* get_surface_shader() const;
 
     // Return the BSDF of this material, or 0 if the material doesn't have one.
     const BSDF* get_bsdf() const;
@@ -109,10 +109,9 @@ class RENDERERDLL MaterialFactory
 // Material class implementation.
 //
 
-inline const SurfaceShader& Material::get_surface_shader() const
+inline const SurfaceShader* Material::get_surface_shader() const
 {
-    assert(m_surface_shader);
-    return *m_surface_shader;
+    return m_surface_shader;
 }
 
 inline const BSDF* Material::get_bsdf() const
