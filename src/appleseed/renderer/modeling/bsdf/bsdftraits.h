@@ -61,7 +61,7 @@ struct EntityTraits<BSDF>
     template <typename ParentEntity>
     static ContainerType& get_entity_container(ParentEntity& parent)    { return parent.bsdfs(); }
 
-    static foundation::Dictionary get_entity_values(BSDF* entity)
+    static foundation::Dictionary get_entity_values(const BSDF* entity)
     {
         return entity->get_parameters();
     }

@@ -61,7 +61,7 @@ struct EntityTraits<EDF>
     template <typename ParentEntity>
     static ContainerType& get_entity_container(ParentEntity& parent)    { return parent.edfs(); }
 
-    static foundation::Dictionary get_entity_values(EDF* entity)
+    static foundation::Dictionary get_entity_values(const EDF* entity)
     {
         return entity->get_parameters();
     }

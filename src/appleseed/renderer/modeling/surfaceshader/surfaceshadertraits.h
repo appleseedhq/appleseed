@@ -61,7 +61,7 @@ struct EntityTraits<SurfaceShader>
     template <typename ParentEntity>
     static ContainerType& get_entity_container(ParentEntity& parent)    { return parent.surface_shaders(); }
 
-    static foundation::Dictionary get_entity_values(SurfaceShader* entity)
+    static foundation::Dictionary get_entity_values(const SurfaceShader* entity)
     {
         return entity->get_parameters();
     }

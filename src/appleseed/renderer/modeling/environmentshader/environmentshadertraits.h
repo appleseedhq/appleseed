@@ -61,7 +61,7 @@ struct EntityTraits<EnvironmentShader>
     template <typename ParentEntity>
     static ContainerType& get_entity_container(ParentEntity& parent)    { return parent.environment_shaders(); }
 
-    static foundation::Dictionary get_entity_values(EnvironmentShader* entity)
+    static foundation::Dictionary get_entity_values(const EnvironmentShader* entity)
     {
         return entity->get_parameters();
     }

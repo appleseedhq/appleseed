@@ -61,7 +61,7 @@ struct EntityTraits<Light>
     template <typename ParentEntity>
     static ContainerType& get_entity_container(ParentEntity& parent)    { return parent.lights(); }
 
-    static foundation::Dictionary get_entity_values(Light* entity)
+    static foundation::Dictionary get_entity_values(const Light* entity)
     {
         return entity->get_parameters();
     }

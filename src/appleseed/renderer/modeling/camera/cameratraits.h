@@ -55,7 +55,7 @@ struct EntityTraits<Camera>
     static const char* get_entity_type_name()                   { return "camera"; }
     static const char* get_human_readable_entity_type_name()    { return "Camera"; }
 
-    static foundation::Dictionary get_entity_values(Camera* entity)
+    static foundation::Dictionary get_entity_values(const Camera* entity)
     {
         return entity->get_parameters();
     }

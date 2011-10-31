@@ -52,7 +52,7 @@ struct EntityTraits<Environment>
     static const char* get_entity_type_name()                   { return "environment"; }
     static const char* get_human_readable_entity_type_name()    { return "Environment"; }
 
-    static foundation::Dictionary get_entity_values(Environment* entity)
+    static foundation::Dictionary get_entity_values(const Environment* entity)
     {
         return entity->get_parameters();
     }

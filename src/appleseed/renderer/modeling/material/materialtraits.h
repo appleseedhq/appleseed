@@ -58,7 +58,7 @@ struct EntityTraits<Material>
     template <typename ParentEntity>
     static ContainerType& get_entity_container(ParentEntity& parent)    { return parent.materials(); }
 
-    static foundation::Dictionary get_entity_values(Material* entity)
+    static foundation::Dictionary get_entity_values(const Material* entity)
     {
         return entity->get_parameters();
     }

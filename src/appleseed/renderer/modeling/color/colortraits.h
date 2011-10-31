@@ -58,7 +58,7 @@ struct EntityTraits<ColorEntity>
     template <typename ParentEntity>
     static ContainerType& get_entity_container(ParentEntity& parent)    { return parent.colors(); }
 
-    static foundation::Dictionary get_entity_values(ColorEntity* entity)
+    static foundation::Dictionary get_entity_values(const ColorEntity* entity)
     {
         foundation::Dictionary values = entity->get_parameters();
         values.insert("color", entity->get_values());
