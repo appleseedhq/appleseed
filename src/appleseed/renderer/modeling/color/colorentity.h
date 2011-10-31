@@ -35,10 +35,10 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
-#include "foundation/utility/containers/specializedarrays.h"
 
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
+namespace foundation    { class FloatArray; }
 
 namespace renderer
 {
