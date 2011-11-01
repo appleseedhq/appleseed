@@ -39,6 +39,7 @@
 // Forward declarations.
 namespace foundation    { class Logger; }
 
+
 //
 // Command line handler.
 //
