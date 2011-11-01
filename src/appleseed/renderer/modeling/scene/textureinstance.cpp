@@ -29,6 +29,10 @@
 // Interface header.
 #include "textureinstance.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/containers/specializedarrays.h"
+
 using namespace foundation;
 using namespace std;
 
@@ -131,6 +135,45 @@ float TextureInstance::get_multiplier() const
 //
 // TextureInstanceFactory class implementation.
 //
+
+DictionaryArray TextureInstanceFactory::get_widget_definitions()
+{
+    DictionaryArray definitions;
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "addressing_mode")
+            .insert("label", "Addressing Mode")
+            .insert("widget", "dropdown_list")
+            .insert("dropdown_items",
+                Dictionary()
+                    .insert("Clamp", "clamp")
+                    .insert("Wrap", "wrap"))
+            .insert("use", "required")
+            .insert("default", "clamp"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "filtering_mode")
+            .insert("label", "Filtering Mode")
+            .insert("widget", "dropdown_list")
+            .insert("dropdown_items",
+                Dictionary()
+                    .insert("Nearest", "nearest")
+                    .insert("Bilinear", "bilinear"))
+            .insert("use", "required")
+            .insert("default", "bilinear"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "multiplier")
+            .insert("label", "Multiplier")
+            .insert("widget", "text_box")
+            .insert("default", "1.0")
+            .insert("use", "optional"));
+
+    return definitions;
+}
 
 auto_release_ptr<TextureInstance> TextureInstanceFactory::create(
     const char*             name,

@@ -39,13 +39,14 @@
 #include "mainwindow/project/multimodelcollectionitem.h"
 #include "mainwindow/project/singlemodelcollectionitem.h"
 #include "mainwindow/project/texturecollectionitem.h"
-#include "mainwindow/project/textureinstancecollectionitem.h"
 
 // appleseed.renderer headers.
-#include "renderer/api/camera.h"
+#include "renderer/api/color.h"
 #include "renderer/api/entity.h"
+#include "renderer/api/environmentedf.h"
+#include "renderer/api/environmentshader.h"
 #include "renderer/api/project.h"
-#include "renderer/api/texture.h"
+#include "renderer/api/scene.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/uid.h"
@@ -54,11 +55,8 @@
 #include <QTreeWidget>
 
 // Forward declarations.
-namespace renderer  { class ColorEntity; }
+namespace renderer  { class Camera; }
 namespace renderer  { class Environment; }
-namespace renderer  { class EnvironmentEDF; }
-namespace renderer  { class EnvironmentShader; }
-namespace renderer  { class Scene; }
 
 using namespace foundation;
 using namespace renderer;
@@ -74,7 +72,7 @@ struct ProjectTree::Impl
     EnvironmentItem*                            m_environment_item;
     CollectionItem<ColorEntity, Scene>*         m_color_collection_item;
     TextureCollectionItem*                      m_texture_collection_item;
-    TextureInstanceCollectionItem*              m_texture_instance_collection_item;
+    CollectionItem<TextureInstance, Scene>*     m_texture_instance_collection_item;
     CollectionItem<EnvironmentEDF, Scene>*      m_environment_edf_collection_item;
     CollectionItem<EnvironmentShader, Scene>*   m_environment_shader_collection_item;
     AssemblyCollectionItem*                     m_assembly_collection_item;
@@ -216,7 +214,7 @@ void ProjectTree::initialize(Project& project, ProjectBuilder& project_builder)
             project_builder);
 
     impl->m_texture_instance_collection_item =
-        impl->add_collection_item(
+        impl->add_single_model_collection_item<TextureInstance>(
             scene,
             scene.texture_instances(),
             project_builder);

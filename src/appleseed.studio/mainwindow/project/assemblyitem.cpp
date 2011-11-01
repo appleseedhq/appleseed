@@ -39,7 +39,6 @@
 #include "mainwindow/project/projecttree.h"
 #include "mainwindow/project/singlemodelcollectionitem.h"
 #include "mainwindow/project/texturecollectionitem.h"
-#include "mainwindow/project/textureinstancecollectionitem.h"
 #include "mainwindow/project/tools.h"
 
 // appleseed.renderer headers.
@@ -84,7 +83,7 @@ struct AssemblyItem::Impl
 
     CollectionItem<ColorEntity, Assembly>*      m_color_collection_item;
     TextureCollectionItem*                      m_texture_collection_item;
-    TextureInstanceCollectionItem*              m_texture_instance_collection_item;
+    CollectionItem<TextureInstance, Assembly>*  m_texture_instance_collection_item;
     CollectionItem<BSDF, Assembly>*             m_bsdf_collection_item;
     CollectionItem<EDF, Assembly>*              m_edf_collection_item;
     CollectionItem<SurfaceShader, Assembly>*    m_surface_shader_collection_item;
@@ -105,7 +104,7 @@ struct AssemblyItem::Impl
     {
         m_color_collection_item = add_single_model_collection_item<ColorEntity>(assembly->colors());
         m_texture_collection_item = add_collection_item(assembly->textures());
-        m_texture_instance_collection_item = add_collection_item(assembly->texture_instances());
+        m_texture_instance_collection_item = add_single_model_collection_item<TextureInstance>(assembly->texture_instances());
         m_bsdf_collection_item = add_multi_model_collection_item<BSDF>(assembly->bsdfs());
         m_edf_collection_item = add_multi_model_collection_item<EDF>(assembly->edfs());
         m_surface_shader_collection_item = add_multi_model_collection_item<SurfaceShader>(assembly->surface_shaders());

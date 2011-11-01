@@ -33,6 +33,9 @@
 #include "renderer/global/global.h"
 #include "renderer/modeling/entity/entity.h"
 
+// Forward declarations.
+namespace foundation    { class DictionaryArray; }
+
 namespace renderer
 {
 
@@ -106,6 +109,9 @@ class RENDERERDLL TextureInstance
 class RENDERERDLL TextureInstanceFactory
 {
   public:
+    // Return a set of widget definitions for this texture instance entity model.
+    static foundation::DictionaryArray get_widget_definitions();
+
     // Create a new texture instance.
     static foundation::auto_release_ptr<TextureInstance> create(
         const char*         name,

@@ -46,6 +46,7 @@
 #include "renderer/api/environmentshader.h"
 #include "renderer/api/light.h"
 #include "renderer/api/material.h"
+#include "renderer/api/scene.h"
 #include "renderer/api/surfaceshader.h"
 
 // appleseed.foundation headers.
@@ -104,6 +105,13 @@ class ProjectBuilder
         ParentEntity&                       parent,
         const foundation::Dictionary&       values) const;
 
+    // Simulate partial specialization of edit_entity() for Entity = renderer::TextureInstance.
+    template <typename ParentEntity>
+    renderer::TextureInstance* edit_entity(
+        renderer::TextureInstance*          old_entity,
+        ParentEntity&                       parent,
+        const foundation::Dictionary&       values) const;
+
     void insert_assembly(
         const std::string&                  name) const;
 
@@ -155,9 +163,8 @@ class ProjectBuilder
 
     static bool is_valid_entity_name(const std::string& name);
 
-    template <typename Entity, typename ParentEntity>
+    template <typename Entity>
     foundation::auto_release_ptr<Entity> create_entity(
-        ParentEntity&                       parent,
         const foundation::Dictionary&       values) const;
 
     template <typename Entity>
@@ -230,8 +237,7 @@ void ProjectBuilder::insert_entity(
     ParentEntity&                       parent,
     const foundation::Dictionary&       values) const
 {
-    foundation::auto_release_ptr<Entity> entity(
-        create_entity<Entity, ParentEntity>(parent, values));
+    foundation::auto_release_ptr<Entity> entity(create_entity<Entity>(values));
 
     add_item(entity.get(), parent);
 
@@ -258,9 +264,7 @@ Entity* ProjectBuilder::edit_entity(
 {
     renderer::EntityTraits<Entity>::remove_entity(old_entity, parent);
 
-    foundation::auto_release_ptr<Entity> new_entity(
-        create_entity<Entity, ParentEntity>(parent, values));
-
+    foundation::auto_release_ptr<Entity> new_entity(create_entity<Entity>(values));
     Entity* new_entity_ptr = new_entity.get();
 
     renderer::EntityTraits<Entity>::insert_entity(new_entity, parent);
@@ -283,9 +287,8 @@ inline renderer::Camera* ProjectBuilder::edit_entity(
     renderer::EntityTraits<renderer::Camera>::remove_entity(old_entity, parent);
 
     foundation::auto_release_ptr<renderer::Camera> new_entity(
-        create_entity<renderer::Camera, renderer::Scene>(parent, values));
+        create_entity<renderer::Camera>(values));
     new_entity->set_transform(camera_transform);
-
     renderer::Camera* new_entity_ptr = new_entity.get();
 
     renderer::EntityTraits<renderer::Camera>::insert_entity(new_entity, parent);
@@ -295,9 +298,37 @@ inline renderer::Camera* ProjectBuilder::edit_entity(
     return new_entity_ptr;
 }
 
-template <typename Entity, typename ParentEntity>
-foundation::auto_release_ptr<Entity> ProjectBuilder::create_entity(
+template <typename ParentEntity>
+inline renderer::TextureInstance* ProjectBuilder::edit_entity(
+    renderer::TextureInstance*          old_entity,
     ParentEntity&                       parent,
+    const foundation::Dictionary&       values) const
+{
+    const size_t texture_index = old_entity->get_texture_index();
+
+    renderer::EntityTraits<renderer::TextureInstance>::remove_entity(old_entity, parent);
+
+    const std::string name = get_entity_name(values);
+
+    foundation::Dictionary clean_values(values);
+    clean_values.strings().remove(EntityEditorFormFactoryBase::NameParameter);
+
+    foundation::auto_release_ptr<renderer::TextureInstance> new_entity(
+        renderer::TextureInstanceFactory::create(
+            name.c_str(),
+            clean_values,
+            texture_index));
+    renderer::TextureInstance* new_entity_ptr = new_entity.get();
+
+    renderer::EntityTraits<renderer::TextureInstance>::insert_entity(new_entity, parent);
+
+    notify_project_modification();
+
+    return new_entity_ptr;
+}
+
+template <typename Entity>
+foundation::auto_release_ptr<Entity> ProjectBuilder::create_entity(
     const foundation::Dictionary&       values) const
 {
     typedef typename renderer::EntityTraits<Entity>::FactoryRegistrarType FactoryRegistrarType;
@@ -320,7 +351,6 @@ foundation::auto_release_ptr<Entity> ProjectBuilder::create_entity(
 
 template <>
 inline foundation::auto_release_ptr<renderer::ColorEntity> ProjectBuilder::create_entity(
-    renderer::Scene&                    scene,
     const foundation::Dictionary&       values) const
 {
     const std::string name = get_entity_name(values);
@@ -332,21 +362,27 @@ inline foundation::auto_release_ptr<renderer::ColorEntity> ProjectBuilder::creat
 }
 
 template <>
-inline foundation::auto_release_ptr<renderer::ColorEntity> ProjectBuilder::create_entity(
-    renderer::Assembly&                 assembly,
+inline foundation::auto_release_ptr<renderer::TextureInstance> ProjectBuilder::create_entity(
     const foundation::Dictionary&       values) const
 {
+    static const char* TextureIndexParameter = "__texture_index";
+
     const std::string name = get_entity_name(values);
+    const size_t texture_index = values.get<size_t>(TextureIndexParameter);
 
     foundation::Dictionary clean_values(values);
     clean_values.strings().remove(EntityEditorFormFactoryBase::NameParameter);
+    clean_values.strings().remove(TextureIndexParameter);
 
-    return renderer::ColorEntityFactory::create(name.c_str(), clean_values);
+    return
+        renderer::TextureInstanceFactory::create(
+            name.c_str(),
+            clean_values,
+            texture_index);
 }
 
 template <>
 inline foundation::auto_release_ptr<renderer::Environment> ProjectBuilder::create_entity(
-    renderer::Scene&                    scene,
     const foundation::Dictionary&       values) const
 {
     const std::string name = get_entity_name(values);
@@ -359,7 +395,6 @@ inline foundation::auto_release_ptr<renderer::Environment> ProjectBuilder::creat
 
 template <>
 inline foundation::auto_release_ptr<renderer::Material> ProjectBuilder::create_entity(
-    renderer::Assembly&                 assembly,
     const foundation::Dictionary&       values) const
 {
     const std::string name = get_entity_name(values);

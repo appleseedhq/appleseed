@@ -38,7 +38,6 @@ namespace appleseed { namespace studio { class AssemblyInstanceCollectionItem; }
 namespace appleseed { namespace studio { class ObjectCollectionItem; } }
 namespace appleseed { namespace studio { class ObjectInstanceCollectionItem; } }
 namespace appleseed { namespace studio { class TextureCollectionItem; } }
-namespace appleseed { namespace studio { class TextureInstanceCollectionItem; } }
 
 namespace appleseed {
 namespace studio {
@@ -54,7 +53,6 @@ template <> struct ItemTypeMap<renderer::AssemblyInstanceContainer>     { typede
 template <> struct ItemTypeMap<renderer::ObjectContainer>               { typedef ObjectCollectionItem T; };
 template <> struct ItemTypeMap<renderer::ObjectInstanceContainer>       { typedef ObjectInstanceCollectionItem T; };
 template <> struct ItemTypeMap<renderer::TextureContainer>              { typedef TextureCollectionItem T; };
-template <> struct ItemTypeMap<renderer::TextureInstanceContainer>      { typedef TextureInstanceCollectionItem T; };
 
 }       // namespace studio
 }       // namespace appleseed

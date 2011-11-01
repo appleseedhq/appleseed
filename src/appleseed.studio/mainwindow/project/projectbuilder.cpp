@@ -35,12 +35,10 @@
 #include "mainwindow/project/objectcollectionitem.h"
 #include "mainwindow/project/objectinstancecollectionitem.h"
 #include "mainwindow/project/texturecollectionitem.h"
-#include "mainwindow/project/textureinstancecollectionitem.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/object.h"
 #include "renderer/api/project.h"
-#include "renderer/api/scene.h"
 #include "renderer/api/texture.h"
 
 // appleseed.foundation headers.
