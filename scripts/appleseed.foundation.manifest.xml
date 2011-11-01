@@ -77,7 +77,6 @@
         <files>foundation/utility/memory.*</files>
         <files>foundation/utility/numerictype.h</files>
         <files>foundation/utility/otherwise.h</files>
-        <files>foundation/utility/poolallocator.h</files>
         <files>foundation/utility/string.*</files>
         <files>foundation/utility/typetraits.h</files>
         <files>foundation/utility/vpythonfile.*</files>
