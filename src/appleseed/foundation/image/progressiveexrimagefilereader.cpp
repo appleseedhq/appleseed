@@ -284,7 +284,6 @@ void ProgressiveEXRImageFileReader::read_image_attributes(
     ImageAttributes&    attrs)
 {
     assert(is_open());
-    throw ExceptionNotImplemented();
 }
 
 Tile* ProgressiveEXRImageFileReader::read_tile(
