@@ -54,6 +54,9 @@ namespace foundation
 struct GenericProgressiveImageFileReader::Impl
 {
     Logger*                                 m_logger;
+    bool                                    m_has_default_tile_size;
+    size_t                                  m_default_tile_width;
+    size_t                                  m_default_tile_height;
     auto_ptr<IProgressiveImageFileReader>   m_reader;
 };
 
@@ -61,6 +64,32 @@ GenericProgressiveImageFileReader::GenericProgressiveImageFileReader(Logger* log
   : impl(new Impl())
 {
     impl->m_logger = logger;
+    impl->m_has_default_tile_size = false;
+    impl->m_default_tile_width = 0;
+    impl->m_default_tile_height = 0;
+}
+
+GenericProgressiveImageFileReader::GenericProgressiveImageFileReader(
+    const size_t        default_tile_width,
+    const size_t        default_tile_height)
+  : impl(new Impl())
+{
+    impl->m_logger = 0;
+    impl->m_has_default_tile_size = true;
+    impl->m_default_tile_width = default_tile_width;
+    impl->m_default_tile_height = default_tile_height;
+}
+
+GenericProgressiveImageFileReader::GenericProgressiveImageFileReader(
+    Logger*             logger,
+    const size_t        default_tile_width,
+    const size_t        default_tile_height)
+  : impl(new Impl())
+{
+    impl->m_logger = logger;
+    impl->m_has_default_tile_size = true;
+    impl->m_default_tile_width = default_tile_width;
+    impl->m_default_tile_height = default_tile_height;
 }
 
 GenericProgressiveImageFileReader::~GenericProgressiveImageFileReader()
@@ -80,10 +109,13 @@ void GenericProgressiveImageFileReader::open(const char* filename)
     if (extension == ".exr")
     {
         impl->m_reader.reset(
-            new ProgressiveEXRImageFileReader(
-                impl->m_logger,
-                impl->m_default_tile_width,
-                impl->m_default_tile_height));
+            impl->m_has_default_tile_size
+                ? new ProgressiveEXRImageFileReader(
+                      impl->m_logger,
+                      impl->m_default_tile_width,
+                      impl->m_default_tile_height)
+                : new ProgressiveEXRImageFileReader(
+                      impl->m_logger));
     }
     else
     {

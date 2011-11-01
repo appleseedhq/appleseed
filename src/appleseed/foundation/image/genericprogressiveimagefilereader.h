@@ -72,8 +72,15 @@ class FOUNDATIONDLL GenericProgressiveImageFileReader
   : public IProgressiveImageFileReader
 {
   public:
-    // Constructor.
+    // Constructors.
     explicit GenericProgressiveImageFileReader(Logger* logger = 0);
+    GenericProgressiveImageFileReader(
+        const size_t        default_tile_width,
+        const size_t        default_tile_height);
+    GenericProgressiveImageFileReader(
+        Logger*             logger,
+        const size_t        default_tile_width,
+        const size_t        default_tile_height);
 
     // Destructor.
     ~GenericProgressiveImageFileReader();
