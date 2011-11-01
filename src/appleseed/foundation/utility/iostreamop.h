@@ -33,6 +33,7 @@
 #include "foundation/image/color.h"
 #include "foundation/image/spectrum.h"
 #include "foundation/math/matrix.h"
+#include "foundation/math/quaternion.h"
 #include "foundation/math/ray.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/containers/specializedarrays.h"
@@ -78,6 +79,12 @@ template <typename T, size_t M, size_t N>
 std::ostream& operator<<(std::ostream& s, const Matrix<T, M, N>& matrix);
 template <typename T, size_t M, size_t N>
 std::istream& operator>>(std::istream& s, Matrix<T, M, N>& matrix);
+
+// foundation::Quaternion.
+template <typename T>
+std::ostream& operator<<(std::ostream& s, const Quaternion<T>& quat);
+template <typename T>
+std::istream& operator>>(std::istream& s, Quaternion<T>& quat);
 
 // foundation::Color.
 template <typename T, size_t N>
@@ -224,6 +231,22 @@ template <typename T, size_t M, size_t N>
 std::istream& operator>>(std::istream& s, Matrix<T, M, N>& matrix)
 {
     return iostreamop_impl::read_sequence(s, matrix, M * N);
+}
+
+template <typename T>
+std::ostream& operator<<(std::ostream& s, const Quaternion<T>& quat)
+{
+    s << quat.s << ' ';
+    s << quat.v;
+    return s;
+}
+
+template <typename T>
+std::istream& operator>>(std::istream& s, Quaternion<T>& quat)
+{
+    s >> quat.s;
+    s >> quat.v;
+    return s;
 }
 
 template <typename T, size_t N>

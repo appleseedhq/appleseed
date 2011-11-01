@@ -396,6 +396,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_population.cpp
     foundation/meta/tests/test_preprocessor.cpp
     foundation/meta/tests/test_qmc.cpp
+    foundation/meta/tests/test_quaternion.cpp
     foundation/meta/tests/test_ray.cpp
     foundation/meta/tests/test_registrar.cpp
     foundation/meta/tests/test_rng.cpp

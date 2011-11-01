@@ -33,6 +33,11 @@
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 
+// Imath headers.
+#ifdef APPLESEED_ENABLE_IMATH_INTEROP
+#include "openexr/ImathQuat.h"
+#endif
+
 // Standard headers.
 #include <cassert>
 #include <cmath>
@@ -64,6 +69,17 @@ class Quaternion
     // Construct a quaternion from another quaternion of a different type.
     template <typename U>
     explicit Quaternion(const Quaternion<U>& rhs);
+
+#ifdef APPLESEED_ENABLE_IMATH_INTEROP
+
+    // Implicit construction from an Imath::Quat.
+    Quaternion(const Imath::Quat<T>& rhs);
+
+    // Reinterpret this quaternion as an Imath::Quat.
+    operator Imath::Quat<T>&();
+    operator const Imath::Quat<T>&() const;
+
+#endif
 
     // Return the identity quaternion.
     static QuaternionType identity();
@@ -135,11 +151,11 @@ typedef Quaternion<double> Quaterniond;
 // Quaternion class implementation.
 //
 
-// Constructors.
 template <typename T>
 inline Quaternion<T>::Quaternion()
 {
 }
+
 template <typename T>
 inline Quaternion<T>::Quaternion(const ValueType s_, const VectorType& v_)
   : s(s_)
@@ -147,7 +163,6 @@ inline Quaternion<T>::Quaternion(const ValueType s_, const VectorType& v_)
 {
 }
 
-// Construct a quaternion from another quaternion of a different type.
 template <typename T>
 template <typename U>
 inline Quaternion<T>::Quaternion(const Quaternion<U>& rhs)
@@ -156,27 +171,49 @@ inline Quaternion<T>::Quaternion(const Quaternion<U>& rhs)
 {
 }
 
-// Return the identity quaternion.
+#ifdef APPLESEED_ENABLE_IMATH_INTEROP
+
+template <typename T>
+inline Quaternion<T>::Quaternion(const Imath::Quat<T>& rhs)
+  : s(rhs.r)
+  , v(rhs.v)
+{
+}
+
+template <typename T>
+inline Quaternion<T>::operator Imath::Quat<T>&()
+{
+    return reinterpret_cast<Imath::Quat<T>&>(*this);
+}
+
+template <typename T>
+inline Quaternion<T>::operator const Imath::Quat<T>&() const
+{
+    return reinterpret_cast<const Imath::Quat<T>&>(*this);
+}
+
+#endif
+
 template <typename T>
 inline Quaternion<T> Quaternion<T>::identity()
 {
     return QuaternionType(ValueType(1.0), VectorType(0.0));
 }
 
-// Build a rotation quaternion from an axis and an angle.
 template <typename T>
 inline Quaternion<T> Quaternion<T>::rotation(
     const VectorType&   axis,
     const ValueType     angle)
 {
     assert(is_normalized(axis));
+
     const ValueType half_angle = ValueType(0.5) * angle;
+
     return QuaternionType(
         std::cos(half_angle),
         std::sin(half_angle) * axis);
 }
 
-// Build a rotation quaternion from two point on the unit sphere.
 template <typename T>
 inline Quaternion<T> Quaternion<T>::rotation(
     const VectorType&   from,
@@ -185,73 +222,78 @@ inline Quaternion<T> Quaternion<T>::rotation(
     return Quaternion(dot(from, to), cross(from, to));
 }
 
-// Exact inequality and equality tests.
 template <typename T>
 inline bool operator!=(const Quaternion<T>& lhs, const Quaternion<T>& rhs)
 {
     return lhs.s != rhs.s || lhs.v != rhs.v;
 }
+
 template <typename T>
 inline bool operator==(const Quaternion<T>& lhs, const Quaternion<T>& rhs)
 {
     return !(lhs != rhs);
 }
 
-// Approximate equality tests.
 template <typename T>
 inline bool feq(const Quaternion<T>& lhs, const Quaternion<T>& rhs)
 {
     return feq(lhs.s, rhs.s) && feq(lhs.v, rhs.v);
 }
+
 template <typename T>
 inline bool feq(const Quaternion<T>& lhs, const Quaternion<T>& rhs, const T eps)
 {
     return feq(lhs.s, rhs.s, eps) && feq(lhs.v, rhs.v, eps);
 }
 
-// Approximate zero tests.
 template <typename T>
 inline bool fz(const Quaternion<T>& q)
 {
     return fz(q.s) && fz(q.v);
 }
+
 template <typename T>
 inline bool fz(const Quaternion<T>& q, const T eps)
 {
     return fz(q.s, eps) && fz(q.v, eps);
 }
 
-// Quaternion arithmetic.
 template <typename T>
 inline Quaternion<T> operator+(const Quaternion<T>& lhs, const Quaternion<T>& rhs)
 {
     return Quaternion<T>(lhs.s + rhs.s, lhs.v + rhs.v);
 }
+
 template <typename T>
 inline Quaternion<T> operator-(const Quaternion<T>& lhs, const Quaternion<T>& rhs)
 {
     return Quaternion<T>(lhs.s - rhs.s, lhs.v - rhs.v);
 }
+
 template <typename T>
 inline Quaternion<T> operator-(const Quaternion<T>& lhs)
 {
     return Quaternion<T>(-lhs.s, -lhs.v);
 }
+
 template <typename T>
 inline Quaternion<T> operator*(const Quaternion<T>& lhs, const T rhs)
 {
     return Quaternion<T>(lhs.s * rhs, lhs.v * rhs);
 }
+
 template <typename T>
 inline Quaternion<T> operator*(const T lhs, const Quaternion<T>& rhs)
 {
     return rhs * lhs;
 }
+
 template <typename T>
 inline Quaternion<T> operator/(const Quaternion<T>& lhs, const T rhs)
 {
     return lhs * (T(1.0) / rhs);
 }
+
 template <typename T>
 inline Quaternion<T>& operator+=(Quaternion<T>& lhs, const Quaternion<T>& rhs)
 {
@@ -259,6 +301,7 @@ inline Quaternion<T>& operator+=(Quaternion<T>& lhs, const Quaternion<T>& rhs)
     lhs.v += rhs.v;
     return lhs;
 }
+
 template <typename T>
 inline Quaternion<T>& operator-=(Quaternion<T>& lhs, const Quaternion<T>& rhs)
 {
@@ -266,6 +309,7 @@ inline Quaternion<T>& operator-=(Quaternion<T>& lhs, const Quaternion<T>& rhs)
     lhs.v -= rhs.v;
     return lhs;
 }
+
 template <typename T>
 inline Quaternion<T>& operator*=(Quaternion<T>& lhs, const T rhs)
 {
@@ -273,13 +317,13 @@ inline Quaternion<T>& operator*=(Quaternion<T>& lhs, const T rhs)
     lhs.v *= rhs;
     return lhs;
 }
+
 template <typename T>
 inline Quaternion<T>& operator/=(Quaternion<T>& lhs, const T rhs)
 {
     return lhs *= (T(1.0) / rhs);
 }
 
-// Quaternion products.
 template <typename T>
 inline Quaternion<T> operator*(const Quaternion<T>& lhs, const Quaternion<T>& rhs)
 {
@@ -287,6 +331,7 @@ inline Quaternion<T> operator*(const Quaternion<T>& lhs, const Quaternion<T>& rh
         lhs.s * rhs.s - dot(lhs.v, rhs.v),
         lhs.s * rhs.v + rhs.s * lhs.v + cross(lhs.v, rhs.v));
 }
+
 template <typename T>
 inline Quaternion<T>& operator*=(Quaternion<T>& lhs, const Quaternion<T>& rhs)
 {
@@ -296,43 +341,42 @@ inline Quaternion<T>& operator*=(Quaternion<T>& lhs, const Quaternion<T>& rhs)
     return lhs;
 }
 
-// Quaternion conjugate.
 template <typename T>
 inline Quaternion<T> conjugate(const Quaternion<T>& q)
 {
     return Quaternion<T>(q.s, -q.v);
 }
 
-// Quaternion inverse.
 template <typename T>
 inline Quaternion<T> inverse(const Quaternion<T>& q)
 {
     return conjugate(q) / square_norm(q);
 }
 
-// Quaternion square norm, norm and normalization.
 template <typename T>
 inline T square_norm(const Quaternion<T>& q)
 {
     return q.s * q.s + dot(q.v, q.v);
 }
+
 template <typename T>
 inline T norm(const Quaternion<T>& q)
 {
     return std::sqrt(square_norm(q));
 }
+
 template <typename T>
 inline Quaternion<T> normalize(const Quaternion<T>& q)
 {
     return q / norm(q);
 }
 
-// Return true if a quaternion is normalized (unit-length), false otherwise.
 template <typename T>
 inline bool is_normalized(const Quaternion<T>& q)
 {
     return feq(square_norm(q), T(1.0));
 }
+
 template <typename T>
 inline bool is_normalized(const Quaternion<T>& q, const T eps)
 {
