@@ -36,7 +36,7 @@ namespace foundation
 {
 
 //
-// An exception thrown when an I/O occurs.
+// Exception thrown when an I/O error occurs.
 //
 
 class ExceptionIOError

@@ -36,7 +36,7 @@ namespace foundation
 {
 
 //
-// An exception thrown when reaching a code path that hasn't been implemented.
+// Exception thrown when reaching a code path that hasn't been implemented.
 //
 
 class ExceptionNotImplemented
