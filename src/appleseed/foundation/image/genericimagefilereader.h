@@ -30,7 +30,6 @@
 #define APPLESEED_FOUNDATION_IMAGE_GENERICIMAGEFILEREADER_H
 
 // appleseed.foundation headers.
-#include "foundation/core/exceptions/exception.h"
 #include "foundation/image/iimagefilereader.h"
 
 // Forward declarations.
@@ -67,16 +66,6 @@ class FOUNDATIONDLL GenericImageFileReader
   : public IImageFileReader
 {
   public:
-    // Unknown file type error.
-    struct ExceptionUnknownFileTypeError
-      : public Exception
-    {
-        ExceptionUnknownFileTypeError()
-          : Exception("unknown file type")
-        {
-        }
-    };
-
     // Read an image file.
     virtual Image* read(
         const char*         filename,

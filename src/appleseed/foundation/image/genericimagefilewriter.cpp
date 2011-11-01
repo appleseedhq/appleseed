@@ -30,6 +30,7 @@
 #include "genericimagefilewriter.h"
 
 // appleseed.foundation headers.
+#include "foundation/core/exceptions/exceptionunsupportedfiletype.h"
 #include "foundation/image/exrimagefilewriter.h"
 #include "foundation/image/pngimagefilewriter.h"
 #include "foundation/utility/string.h"
@@ -56,23 +57,23 @@ void GenericImageFileWriter::write(
     const ICanvas&          image,
     const ImageAttributes&  image_attributes)
 {
-    // Extract the extension of the image filename.
     const filesystem::path filepath(filename);
     const string extension = lower_case(filepath.extension());
 
-    // Create the appropriate image file writer, depending on the filename extension.
-    auto_ptr<IImageFileWriter> image_file_writer;
     if (extension == ".exr")
-        image_file_writer.reset(new EXRImageFileWriter());
+    {
+        EXRImageFileWriter writer;
+        writer.write(filename, image, image_attributes);
+    }
     else if (extension == ".png")
-        image_file_writer.reset(new PNGImageFileWriter());
-    else throw ExceptionUnknownFileTypeError();
-
-    // Write the image file.
-    image_file_writer->write(
-        filename,
-        image,
-        image_attributes);
+    {
+        PNGImageFileWriter writer;
+        writer.write(filename, image, image_attributes);
+    }
+    else
+    {
+        throw ExceptionUnsupportedFileType();
+    }
 }
 
 }   // namespace foundation

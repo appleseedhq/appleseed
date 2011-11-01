@@ -26,50 +26,30 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "genericimagefilereader.h"
+#ifndef APPLESEED_FOUNDATION_CORE_EXCEPTIONS_EXCEPTIONUNSUPPORTEDFILETYPE_H
+#define APPLESEED_FOUNDATION_CORE_EXCEPTIONS_EXCEPTIONUNSUPPORTEDFILETYPE_H
 
 // appleseed.foundation headers.
-#include "foundation/core/exceptions/exceptionunsupportedfiletype.h"
-#include "foundation/image/exrimagefilereader.h"
-#include "foundation/image/pngimagefilereader.h"
-#include "foundation/utility/string.h"
-
-// boost headers.
-#include "boost/filesystem/path.hpp"
-
-using namespace boost;
-using namespace std;
+#include "foundation/core/exceptions/exception.h"
 
 namespace foundation
 {
 
 //
-// GenericImageFileReader class implementation.
+// Exception thrown when attempting to deal with a file whose type is unsupported.
 //
 
-Image* GenericImageFileReader::read(
-    const char*         filename,
-    ImageAttributes*    image_attributes)
+class ExceptionUnsupportedFileType
+  : public Exception
 {
-    const filesystem::path filepath(filename);
-    const string extension = lower_case(filepath.extension());
+  public:
+    // Constructor.
+    ExceptionUnsupportedFileType()
+      : Exception("Unsupported file type")
+    {
+    }
+};
 
-    if (extension == ".exr")
-    {
-        EXRImageFileReader reader;
-        return reader.read(filename, image_attributes);
-    }
-    else if (extension == ".png")
-    {
-        PNGImageFileReader reader;
-        return reader.read(filename, image_attributes);
-    }
-    else
-    {
-        throw ExceptionUnsupportedFileType();
-        return 0;
-    }
-}
+}       // namespace foundation
 
-}   // namespace foundation
+#endif  // !APPLESEED_FOUNDATION_CORE_EXCEPTIONS_EXCEPTIONUNSUPPORTEDFILETYPE_H

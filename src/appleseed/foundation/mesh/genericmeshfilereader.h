@@ -30,7 +30,6 @@
 #define APPLESEED_FOUNDATION_MESH_GENERICMESHFILEREADER_H
 
 // appleseed.foundation headers.
-#include "foundation/core/exceptions/exception.h"
 #include "foundation/mesh/imeshfilereader.h"
 
 // Standard headers.
@@ -50,16 +49,6 @@ class GenericMeshFileReader
   : public IMeshFileReader
 {
   public:
-    // Unknown file type error.
-    struct ExceptionUnknownFileTypeError
-      : public Exception
-    {
-        ExceptionUnknownFileTypeError()
-          : Exception("unknown file type")
-        {
-        }
-    };
-
     // Read a mesh file.
     virtual void read(
         const std::string&  filename,

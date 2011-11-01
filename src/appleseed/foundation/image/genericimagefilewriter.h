@@ -30,7 +30,6 @@
 #define APPLESEED_FOUNDATION_IMAGE_GENERICIMAGEFILEWRITER_H
 
 // appleseed.foundation headers.
-#include "foundation/core/exceptions/exception.h"
 #include "foundation/image/iimagefilewriter.h"
 #include "foundation/image/imageattributes.h"
 
@@ -67,9 +66,6 @@ class FOUNDATIONDLL GenericImageFileWriter
   : public IImageFileWriter
 {
   public:
-    // Unknown file type error.
-    struct ExceptionUnknownFileTypeError : public Exception {};
-
     // Write an image file.
     virtual void write(
         const char*             filename,

@@ -30,6 +30,7 @@
 #include "genericmeshfilereader.h"
 
 // appleseed.foundation headers.
+#include "foundation/core/exceptions/exceptionunsupportedfiletype.h"
 #include "foundation/mesh/alembicmeshfilereader.h"
 #include "foundation/mesh/objmeshfilereader.h"
 #include "foundation/utility/string.h"
@@ -62,7 +63,7 @@ void GenericMeshFileReader::read(
     }
     else
     {
-        throw ExceptionUnknownFileTypeError();
+        throw ExceptionUnsupportedFileType();
     }
 }
 

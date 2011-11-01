@@ -30,6 +30,7 @@
 #include "genericprogressiveimagefilereader.h"
 
 // appleseed.foundation headers.
+#include "foundation/core/exceptions/exceptionunsupportedfiletype.h"
 #include "foundation/image/progressiveexrimagefilereader.h"
 #include "foundation/utility/string.h"
 
@@ -56,40 +57,42 @@ struct GenericProgressiveImageFileReader::Impl
     auto_ptr<IProgressiveImageFileReader>   m_reader;
 };
 
-// Constructor.
 GenericProgressiveImageFileReader::GenericProgressiveImageFileReader(Logger* logger)
   : impl(new Impl())
 {
     impl->m_logger = logger;
 }
 
-// Destructor.
 GenericProgressiveImageFileReader::~GenericProgressiveImageFileReader()
 {
     if (is_open())
         close();
 }
 
-// Open an image file.
 void GenericProgressiveImageFileReader::open(const char* filename)
 {
     assert(filename);
     assert(!is_open());
 
-    // Extract the extension of the image filename.
     const filesystem::path filepath(filename);
     const string extension = lower_case(filepath.extension());
 
-    // Create the appropriate image file reader, depending on the filename extension.
     if (extension == ".exr")
-        impl->m_reader.reset(new ProgressiveEXRImageFileReader(impl->m_logger));
-    else throw ExceptionUnknownFileTypeError();
+    {
+        impl->m_reader.reset(
+            new ProgressiveEXRImageFileReader(
+                impl->m_logger,
+                impl->m_default_tile_width,
+                impl->m_default_tile_height));
+    }
+    else
+    {
+        throw ExceptionUnsupportedFileType();
+    }
 
-    // Open the image file.
     impl->m_reader->open(filename);
 }
 
-// Close the image file.
 void GenericProgressiveImageFileReader::close()
 {
     assert(is_open());
@@ -97,13 +100,11 @@ void GenericProgressiveImageFileReader::close()
     impl->m_reader.reset();
 }
 
-// Return true if an image file is currently open.
 bool GenericProgressiveImageFileReader::is_open() const
 {
     return impl->m_reader.get() && impl->m_reader->is_open();
 }
 
-// Read canvas properties.
 void GenericProgressiveImageFileReader::read_canvas_properties(
     CanvasProperties&   props)
 {
@@ -111,7 +112,6 @@ void GenericProgressiveImageFileReader::read_canvas_properties(
     impl->m_reader->read_canvas_properties(props);
 }
 
-// Read image attributes.
 void GenericProgressiveImageFileReader::read_image_attributes(
     ImageAttributes&    attrs)
 {
@@ -119,7 +119,6 @@ void GenericProgressiveImageFileReader::read_image_attributes(
     impl->m_reader->read_image_attributes(attrs);
 }
 
-// Read an image tile. Returns a newly allocated tile.
 Tile* GenericProgressiveImageFileReader::read_tile(
     const size_t        tile_x,
     const size_t        tile_y)

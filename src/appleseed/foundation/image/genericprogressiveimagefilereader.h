@@ -30,7 +30,6 @@
 #define APPLESEED_FOUNDATION_IMAGE_GENERICPROGRESSIVEIMAGEFILEREADER_H
 
 // appleseed.foundation headers.
-#include "foundation/core/exceptions/exception.h"
 #include "foundation/image/iprogressiveimagefilereader.h"
 #include "foundation/utility/implptr.h"
 
@@ -73,9 +72,6 @@ class FOUNDATIONDLL GenericProgressiveImageFileReader
   : public IProgressiveImageFileReader
 {
   public:
-    // Unknown file type error.
-    struct ExceptionUnknownFileTypeError : public Exception {};
-
     // Constructor.
     explicit GenericProgressiveImageFileReader(Logger* logger = 0);
 
