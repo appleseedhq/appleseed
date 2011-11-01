@@ -90,8 +90,8 @@ ProgressiveEXRImageFileReader::ProgressiveEXRImageFileReader(Logger* logger)
   : impl(new Impl())
 {
     impl->m_logger = logger;
-    impl->m_default_tile_width = 64;
-    impl->m_default_tile_height = 16;
+    impl->m_default_tile_width = 32;
+    impl->m_default_tile_height = 32;
 }
 
 ProgressiveEXRImageFileReader::ProgressiveEXRImageFileReader(
