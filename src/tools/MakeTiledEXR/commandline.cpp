@@ -37,6 +37,7 @@
 #include <cstdio>
 #include <cstdlib>
 
+using namespace foundation;
 using namespace std;
 
 
@@ -84,16 +85,16 @@ void CommandLine::parse(const int argc, const char* argv[])
     m_parser.parse(argc, argv);
 
     // Create a logger.
-    foundation::Logger logger;
+    Logger logger;
 
     // Create and configure a log target that outputs to stderr, and attach it to the logger.
-    foundation::auto_release_ptr<foundation::LogTargetBase> log_target(
+    auto_release_ptr<LogTargetBase> log_target(
         m_message_coloring.found()
-            ? foundation::create_console_log_target(stderr)
-            : foundation::create_open_file_log_target(stderr));
+            ? create_console_log_target(stderr)
+            : create_open_file_log_target(stderr));
     log_target->set_formatting_flags(
-        foundation::LogMessage::Info,
-        foundation::LogMessage::DisplayMessage);
+        LogMessage::Info,
+        LogMessage::DisplayMessage);
     logger.add_target(log_target.get());
 
     // Print program usage.
@@ -109,8 +110,8 @@ void CommandLine::parse(const int argc, const char* argv[])
 }
 
 void CommandLine::print_program_usage(
-    const char*         program_name,
-    foundation::Logger& logger) const
+    const char*     program_name,
+    Logger&         logger) const
 {
     LOG_INFO(logger, "usage: %s [options] input output", program_name);
     LOG_INFO(logger, "options:");

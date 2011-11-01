@@ -50,11 +50,11 @@
 // Standard headers.
 #include <cstddef>
 
+using namespace foundation;
 using namespace std;
 
 namespace
 {
-    // Program command line, globally accessible within this file.
     CommandLine g_cl;
 }
 
@@ -69,13 +69,13 @@ int main(int argc, const char* argv[])
     g_cl.parse(argc, argv);
 
     // Create a logger.
-    foundation::Logger logger;
+    Logger logger;
 
     // Create and configure a log target that outputs to stderr, and attach it to the logger.
-    foundation::auto_release_ptr<foundation::LogTargetBase> log_target(
+    auto_release_ptr<LogTargetBase> log_target(
         g_cl.m_message_coloring.found()
-            ? foundation::create_console_log_target(stderr)
-            : foundation::create_open_file_log_target(stderr));
+            ? create_console_log_target(stderr)
+            : create_open_file_log_target(stderr));
     logger.add_target(log_target.get());
 
     // Retrieve the tile size.
@@ -103,19 +103,19 @@ int main(int argc, const char* argv[])
     try
     {
         // Open the input file.
-        foundation::GenericProgressiveImageFileReader reader(&logger, tile_width, tile_height);
+        GenericProgressiveImageFileReader reader(&logger, tile_width, tile_height);
         reader.open(g_cl.m_filenames.values()[0].c_str());
 
         // Read canvas properties from the input file.
-        foundation::CanvasProperties props;
+        CanvasProperties props;
         reader.read_canvas_properties(props);
 
         // Read image attributes from the input file.
-        foundation::ImageAttributes attrs;
+        ImageAttributes attrs;
         reader.read_image_attributes(attrs);
 
         // Open the output file.
-        foundation::ProgressiveEXRImageFileWriter writer(&logger);
+        ProgressiveEXRImageFileWriter writer(&logger);
         writer.open(g_cl.m_filenames.values()[1].c_str(), props, attrs);
 
         // Copy the tiles.
@@ -134,9 +134,9 @@ int main(int argc, const char* argv[])
             for (size_t x = 0; x < props.m_tile_count_x; ++x)
             {
                 // Read the tile.
-                const foundation::Tile* tile = reader.read_tile(x, y);
+                const Tile* tile = reader.read_tile(x, y);
                 if (tile == 0)
-                    throw foundation::Exception("couldn't read a tile");
+                    throw Exception("couldn't read a tile");
 
                 // Write the tile.
                 writer.write_tile(*tile, x, y);
@@ -150,7 +150,7 @@ int main(int argc, const char* argv[])
         writer.close();
         reader.close();
     }
-    catch (const foundation::Exception& e)
+    catch (const Exception& e)
     {
         LOG_FATAL(logger, "%s", e.what());
         return 1;
