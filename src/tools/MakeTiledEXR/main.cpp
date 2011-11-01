@@ -26,7 +26,7 @@
 // THE SOFTWARE.
 //
 
-// maketiledexr headers.
+// Project headers.
 #include "commandline.h"
 
 // appleseed.foundation headers.
