@@ -28,9 +28,10 @@
 #
 
 # Settings.
-VersionString = "1.4"
+VersionString = "1.5"
 Verbose = False
 DumpStrippedInputFiles = False
+StrippedInputFilesDirectory = "stripped/"
 
 # Imports.
 import glob
@@ -176,6 +177,9 @@ class DependencyFinder:
     def __init__(self, manifest):
         self.manifest = manifest
 
+        if DumpStrippedInputFiles:
+            safe_make_directory(StrippedInputFilesDirectory)
+
     def gather_all_user_header_files(self):
         files = []
 
@@ -225,7 +229,7 @@ class DependencyFinder:
         text = self.manifest.strip(text)
 
         if DumpStrippedInputFiles:
-            write_file(os.path.join("stripped/", os.path.basename(file_path) + ".stripped"), text)
+            write_file(os.path.join(StrippedInputFilesDirectory, os.path.basename(file_path) + ".stripped"), text)
 
         deps = []
         pattern = re.compile(r"^#include " + opening_marker +
