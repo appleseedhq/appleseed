@@ -30,10 +30,13 @@
 #include "commandline.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/exception.h"
-#include "foundation/image/progressiveexrimagefilereader.h"
+#include "foundation/core/exceptions/exception.h"
+#include "foundation/image/canvasproperties.h"
+#include "foundation/image/genericprogressiveimagefilereader.h"
+#include "foundation/image/imageattributes.h"
 #include "foundation/image/progressiveexrimagefilewriter.h"
 #include "foundation/image/tile.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/log.h"
 
@@ -51,11 +54,9 @@ using namespace std;
 
 namespace
 {
-
     // Program command line, globally accessible within this file.
     CommandLine g_cl;
-
-}   // anonymous namespace
+}
 
 
 //
@@ -71,8 +72,10 @@ int main(int argc, const char* argv[])
     foundation::Logger logger;
 
     // Create and configure a log target that outputs to stderr, and attach it to the logger.
-    foundation::auto_release_ptr<foundation::ILogTarget> log_target(
-        foundation::create_file_log_target(stderr, g_cl.m_message_coloring.found()));
+    foundation::auto_release_ptr<foundation::LogTargetBase> log_target(
+        g_cl.m_message_coloring.found()
+            ? foundation::create_console_log_target(stderr)
+            : foundation::create_open_file_log_target(stderr));
     logger.add_target(log_target.get());
 
     // Retrieve the tile size.
@@ -89,7 +92,7 @@ int main(int argc, const char* argv[])
         }
         else
         {
-            FOUNDATION_LOG_ERROR(
+            LOG_ERROR(
                 logger,
                 "invalid tile size, using default size %dx%d pixels",
                 tile_width,
@@ -100,7 +103,7 @@ int main(int argc, const char* argv[])
     try
     {
         // Open the input file.
-        foundation::ProgressiveEXRImageFileReader reader(tile_width, tile_height);
+        foundation::GenericProgressiveImageFileReader reader(&logger, tile_width, tile_height);
         reader.open(g_cl.m_filenames.values()[0].c_str());
 
         // Read canvas properties from the input file.
@@ -112,7 +115,7 @@ int main(int argc, const char* argv[])
         reader.read_image_attributes(attrs);
 
         // Open the output file.
-        foundation::ProgressiveEXRImageFileWriter writer;
+        foundation::ProgressiveEXRImageFileWriter writer(&logger);
         writer.open(g_cl.m_filenames.values()[1].c_str(), props, attrs);
 
         // Copy the tiles.
@@ -121,7 +124,7 @@ int main(int argc, const char* argv[])
             // Print a progress message.
             if (g_cl.m_progress_messages.found())
             {
-                FOUNDATION_LOG_INFO(
+                LOG_INFO(
                     logger,
                     "processing tile row " FMT_SIZE_T "/" FMT_SIZE_T "...",
                     y + 1,
@@ -149,7 +152,7 @@ int main(int argc, const char* argv[])
     }
     catch (const foundation::Exception& e)
     {
-        FOUNDATION_LOG_FATAL(logger, "%s", e.what());
+        LOG_FATAL(logger, "%s", e.what());
         return 1;
     }
 

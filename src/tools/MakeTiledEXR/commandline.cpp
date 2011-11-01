@@ -43,7 +43,6 @@ using namespace std;
 // CommandLine class implementation.
 //
 
-// Constructor.
 CommandLine::CommandLine()
 {
     // Help.
@@ -78,7 +77,6 @@ CommandLine::CommandLine()
     m_parser.add_option_handler(&m_tile_size);
 }
 
-// Parse program command line.
 void CommandLine::parse(const int argc, const char* argv[])
 {
     // Parse the command line.
@@ -87,10 +85,11 @@ void CommandLine::parse(const int argc, const char* argv[])
     // Create a logger.
     foundation::Logger logger;
 
-    // Create and configure a log target that outputs to stderr,
-    // and attach it to the logger.
-    foundation::auto_release_ptr<foundation::ILogTarget> log_target(
-        foundation::create_file_log_target(stderr, m_message_coloring.found()));
+    // Create and configure a log target that outputs to stderr, and attach it to the logger.
+    foundation::auto_release_ptr<foundation::LogTargetBase> log_target(
+        m_message_coloring.found()
+            ? foundation::create_console_log_target(stderr)
+            : foundation::create_open_file_log_target(stderr));
     log_target->set_formatting_flags(
         foundation::LogMessage::Info,
         foundation::LogMessage::DisplayMessage);
@@ -108,12 +107,11 @@ void CommandLine::parse(const int argc, const char* argv[])
     m_parser.print_messages(logger);
 }
 
-// Print program usage.
 void CommandLine::print_program_usage(
     const char*         program_name,
     foundation::Logger& logger) const
 {
-    FOUNDATION_LOG_INFO(logger, "usage: %s [options] input output", program_name);
-    FOUNDATION_LOG_INFO(logger, "options:");
+    LOG_INFO(logger, "usage: %s [options] input output", program_name);
+    LOG_INFO(logger, "options:");
     m_parser.print_usage(logger);
 }

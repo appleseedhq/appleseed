@@ -30,7 +30,7 @@
 #define MAKETILEDEXR_COMMANDLINE_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts.h"
+#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/utility/commandlineparser.h"
 
 // Standard headers.
@@ -47,11 +47,11 @@ class CommandLine
   : public foundation::NonCopyable
 {
   public:
-    foundation::commandline::FlagOptionHandler                  m_help;
-    foundation::commandline::FlagOptionHandler                  m_message_coloring;
-    foundation::commandline::FlagOptionHandler                  m_progress_messages;
-    foundation::commandline::ValueOptionHandler<std::string>    m_filenames;
-    foundation::commandline::ValueOptionHandler<int>            m_tile_size;
+    foundation::FlagOptionHandler                   m_help;
+    foundation::FlagOptionHandler                   m_message_coloring;
+    foundation::FlagOptionHandler                   m_progress_messages;
+    foundation::ValueOptionHandler<std::string>     m_filenames;
+    foundation::ValueOptionHandler<int>             m_tile_size;
 
     // Constructor.
     CommandLine();
@@ -60,7 +60,7 @@ class CommandLine
     void parse(const int argc, const char* argv[]);
 
   private:
-    foundation::commandline::Parser m_parser;
+    foundation::CommandLineParser m_parser;
 
     // Print program usage.
     void print_program_usage(
