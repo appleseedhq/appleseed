@@ -26,12 +26,10 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_category_module_file_H
-#define APPLESEED_RENDERER_category_module_file_H
+// Interface header.
+#include "component.h"
 
-namespace renderer
+namespace library
 {
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_category_module_file_H
+}   // namespace library

@@ -26,14 +26,12 @@
 // THE SOFTWARE.
 //
 
-// appleseed.renderer headers.
+#ifndef PROJECT_LIBRARY_CATEGORY_MODULE_COMPONENT_H
+#define PROJECT_LIBRARY_CATEGORY_MODULE_COMPONENT_H
 
-// appleseed.foundation headers.
-#include "foundation/utility/test.h"
-
-TEST_SUITE( )
+namespace library
 {
-    TEST_CASE( )
-    {
-    }
-}
+
+}       // namespace library
+
+#endif  // !PROJECT_LIBRARY_CATEGORY_MODULE_COMPONENT_H

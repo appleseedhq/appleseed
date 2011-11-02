@@ -329,23 +329,6 @@ source_group ("foundation\\meta\\benchmarks" FILES
     ${foundation_meta_benchmarks_sources}
 )
 
-set (foundation_meta_templates_sources
-    foundation/meta/templates/foundation_benchmark_template.cpp
-    foundation/meta/templates/foundation_component_template.cpp
-    foundation/meta/templates/foundation_component_template.h
-    foundation/meta/templates/foundation_test_template.cpp
-)
-list (APPEND appleseed_sources
-    ${foundation_meta_templates_sources}
-)
-source_group ("foundation\\meta\\templates" FILES
-    ${foundation_meta_templates_sources}
-)
-set_source_files_properties (
-    ${foundation_meta_templates_sources}
-    PROPERTIES HEADER_FILE_ONLY TRUE
-)
-
 set (foundation_meta_tests_sources
     foundation/meta/tests/test_aabb.cpp
     foundation/meta/tests/test_analysis.cpp
@@ -973,23 +956,6 @@ list (APPEND appleseed_sources
 )
 source_group ("renderer\\meta\\benchmarks" FILES
     ${renderer_meta_benchmarks_sources}
-)
-
-set (renderer_meta_templates_sources
-    renderer/meta/templates/renderer_benchmark_template.cpp
-    renderer/meta/templates/renderer_component_template.cpp
-    renderer/meta/templates/renderer_component_template.h
-    renderer/meta/templates/renderer_test_template.cpp
-)
-list (APPEND appleseed_sources
-    ${renderer_meta_templates_sources}
-)
-source_group ("renderer\\meta\\templates" FILES
-    ${renderer_meta_templates_sources}
-)
-set_source_files_properties (
-    ${renderer_meta_templates_sources}
-    PROPERTIES HEADER_FILE_ONLY TRUE
 )
 
 set (renderer_meta_tests_sources

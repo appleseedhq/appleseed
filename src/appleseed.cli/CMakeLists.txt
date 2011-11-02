@@ -31,22 +31,6 @@
 # Source files.
 #--------------------------------------------------------------------------------------------------
 
-set (meta_templates_sources
-    meta/templates/cli_component_template.cpp
-    meta/templates/cli_component_template.h
-    meta/templates/cli_test_template.cpp
-)
-list (APPEND appleseed.cli_sources
-    ${meta_templates_sources}
-)
-source_group ("meta\\templates" FILES
-    ${meta_templates_sources}
-)
-set_source_files_properties (
-    ${meta_templates_sources}
-    PROPERTIES HEADER_FILE_ONLY TRUE
-)
-
 set (meta_tests_sources
     meta/tests/test_superlogger.cpp
 )

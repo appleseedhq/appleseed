@@ -211,22 +211,6 @@ source_group ("mainwindow" FILES
     ${mainwindow_sources}
 )
 
-set (meta_templates_sources
-    meta/templates/studio_component_template.cpp
-    meta/templates/studio_component_template.h
-    meta/templates/studio_test_template.cpp
-)
-list (APPEND appleseed.studio_sources
-    ${meta_templates_sources}
-)
-source_group ("meta\\templates" FILES
-    ${meta_templates_sources}
-)
-set_source_files_properties (
-    ${meta_templates_sources}
-    PROPERTIES HEADER_FILE_ONLY TRUE
-)
-
 set (meta_tests_sources
     meta/tests/test_interop.cpp
     meta/tests/test_projectmanager.cpp
