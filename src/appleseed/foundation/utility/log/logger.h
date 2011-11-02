@@ -75,7 +75,7 @@ class FOUNDATIONDLL Logger
     Logger();
 
     // Destructor.
-    ~Logger();
+    virtual ~Logger();
 
     // Enable/disable logging.
     void set_enabled(const bool enabled = true);
