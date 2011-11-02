@@ -73,7 +73,6 @@ struct TriangleSSK
     // Triangle vertex.
     ValueType   m_pu;
     ValueType   m_pv;
-    ValueType   m_pw;
 
     // Index of principal component.
     uint32      m_ci;
@@ -184,7 +183,6 @@ FORCE_INLINE TriangleSSK<T>::TriangleSSK(const TriangleSSK<U>& rhs)
   , m_np (static_cast<ValueType>(rhs.m_np))
   , m_pu (static_cast<ValueType>(rhs.m_pu))
   , m_pv (static_cast<ValueType>(rhs.m_pv))
-  , m_pw (static_cast<ValueType>(rhs.m_pw))
   , m_ci (rhs.m_ci)
   , m_e0u(static_cast<ValueType>(rhs.m_e0u))
   , m_e0v(static_cast<ValueType>(rhs.m_e0v))
