@@ -297,10 +297,10 @@ inline const LeafInfo<T, N>& LeafRecord<T, N>::get_leaf_info() const
 // Builder class implementation.
 //
 
-// Return the appropriate epsilon factor for enlarging the tree bounding box.
-template <typename U> U get_tree_bbox_grow_eps();           // intentionally left unimplemented
-template <> inline float get_tree_bbox_grow_eps<float>()    { return 1.0e-4f; }
-template <> inline double get_tree_bbox_grow_eps<double>()  { return 1.0e-9;  }
+// Return the appropriate epsilon factor for enlarging bounding boxes.
+template <typename U> U get_bbox_grow_eps();            // intentionally left unimplemented
+template <> inline float get_bbox_grow_eps<float>()     { return 1.0e-4f; }
+template <> inline double get_bbox_grow_eps<double>()   { return 1.0e-9;  }
 
 // Constructor.
 template <
@@ -343,7 +343,7 @@ void Builder<Tree, LeafFactory, LeafSplitter, Timer>::build(
     // wall of the bounding box.
     if (tree.m_bbox.is_valid())
     {
-        const ValueType eps = get_tree_bbox_grow_eps<ValueType>();
+        const ValueType eps = get_bbox_grow_eps<ValueType>();
         tree.m_bbox.robust_grow(eps);
     }
 
