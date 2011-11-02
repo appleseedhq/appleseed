@@ -26,18 +26,18 @@
 // THE SOFTWARE.
 //
 
-// appleseed.cli headers.
-#include "superlogger.h"
+// appleseed.shared headers.
+#include "application/superlogger.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/log.h"
 #include "foundation/utility/test.h"
 
-TEST_SUITE(Cli_SuperLogger)
-{
-    using namespace appleseed::cli;
-    using namespace foundation;
+using namespace appleseed::shared;
+using namespace foundation;
 
+TEST_SUITE(Application_SuperLogger)
+{
     TEST_CASE(Constructor_SetsLogTargetFormattingFlagsToCategoryAndMessage)
     {
         SuperLogger super_logger;

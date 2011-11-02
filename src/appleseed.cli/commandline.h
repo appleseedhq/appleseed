@@ -37,7 +37,7 @@
 #include <string>
 
 // Forward declarations.
-namespace appleseed { namespace cli { class SuperLogger; } }
+namespace appleseed { namespace shared { class SuperLogger; } }
 
 namespace appleseed {
 namespace cli {
@@ -79,18 +79,19 @@ class CommandLine
 
     // Parse program command line.
     void parse(
-        const int       argc,
-        const char*     argv[],
-        SuperLogger&    logger);
+        const int               argc,
+        const char*             argv[],
+        shared::SuperLogger&    logger);
 
   private:
     foundation::CommandLineParser m_parser;
 
-    void print_version_information(SuperLogger& logger) const;
+    void print_version_information(
+        shared::SuperLogger&    logger) const;
 
     void print_program_usage(
-        const char*     program_name,
-        SuperLogger&    logger) const;
+        const char*             program_name,
+        shared::SuperLogger&    logger) const;
 };
 
 }       // namespace cli

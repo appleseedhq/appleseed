@@ -31,22 +31,10 @@
 # Source files.
 #--------------------------------------------------------------------------------------------------
 
-set (meta_tests_sources
-    meta/tests/test_superlogger.cpp
-)
-list (APPEND appleseed.cli_sources
-    ${meta_tests_sources}
-)
-source_group ("meta\\tests" FILES
-    ${meta_tests_sources}
-)
-
 set (sources
     commandline.cpp
     commandline.h
     main.cpp
-    superlogger.cpp
-    superlogger.h
 )
 list (APPEND appleseed.cli_sources
     ${sources}

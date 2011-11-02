@@ -31,9 +31,21 @@
 # Source files.
 #--------------------------------------------------------------------------------------------------
 
+set (application_meta_tests_sources
+    application/meta/tests/test_superlogger.cpp
+)
+list (APPEND appleseed.shared_sources
+    ${application_meta_tests_sources}
+)
+source_group ("application\\meta\\tests" FILES
+    ${application_meta_tests_sources}
+)
+
 set (application_sources
     application/application.cpp
     application/application.h
+    application/superlogger.cpp
+    application/superlogger.h
 )
 list (APPEND appleseed.shared_sources
     ${application_sources}
@@ -74,7 +86,7 @@ include_directories (
 apply_preprocessor_definitions (appleseed.shared)
 
 append_custom_preprocessor_definitions (appleseed.shared
-    APPLESEED_SHARED_EXPORTS
+    APPLESEED_EXPORTS
 )
 
 

@@ -29,8 +29,8 @@
 // Interface header.
 #include "commandline.h"
 
-// appleseed.cli headers.
-#include "superlogger.h"
+// appleseed.shared headers.
+#include "application/superlogger.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/appleseed.h"
@@ -43,6 +43,7 @@
 // Standard headers.
 #include <cstdlib>
 
+using namespace appleseed::shared;
 using namespace boost;
 using namespace foundation;
 using namespace std;

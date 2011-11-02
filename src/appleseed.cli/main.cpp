@@ -28,10 +28,10 @@
 
 // appleseed.cli headers.
 #include "commandline.h"
-#include "superlogger.h"
 
 // appleseed.shared headers.
 #include "application/application.h"
+#include "application/superlogger.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/frame.h"

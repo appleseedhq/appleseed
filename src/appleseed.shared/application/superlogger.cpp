@@ -37,44 +37,52 @@ using namespace foundation;
 using namespace std;
 
 namespace appleseed {
-namespace cli {
+namespace shared {
 
 SuperLogger::SuperLogger()
+  : m_log_target(create_open_file_log_target(stderr))
 {
-    m_log_target.reset(create_open_file_log_target(stderr));
+    add_target(m_log_target);
+}
 
-    add_target(m_log_target.get());
+SuperLogger::~SuperLogger()
+{
+    delete m_log_target;
+}
+
+namespace
+{
+    void save_formatting_flags(const LogTargetBase& log_target, LogMessage::FormattingFlags flags[])
+    {
+        for (size_t i = 0; i < LogMessage::NumMessageCategories; ++i)
+            flags[i] = log_target.get_formatting_flags(static_cast<LogMessage::Category>(i));
+    }
+
+    void restore_formatting_flags(LogTargetBase& log_target, const LogMessage::FormattingFlags flags[])
+    {
+        for (size_t i = 0; i < LogMessage::NumMessageCategories; ++i)
+            log_target.set_formatting_flags(static_cast<LogMessage::Category>(i), flags[i]);
+    }
 }
 
 void SuperLogger::enable_message_coloring()
 {
-    save_log_target_formatting_flags();
+    LogMessage::FormattingFlags flags[LogMessage::NumMessageCategories];
+    save_formatting_flags(*m_log_target, flags);
 
-    remove_target(m_log_target.get());
+    remove_target(m_log_target);
+    delete m_log_target;
 
-    m_log_target.reset(create_console_log_target(stderr));
+    m_log_target = create_console_log_target(stderr);
+    add_target(m_log_target);
 
-    add_target(m_log_target.get());
-
-    restore_log_target_formatting_flags();
-}
-
-void SuperLogger::save_log_target_formatting_flags()
-{
-    for (size_t i = 0; i < LogMessage::NumMessageCategories; ++i)
-        m_flags[i] = m_log_target->get_formatting_flags(static_cast<LogMessage::Category>(i));
-}
-
-void SuperLogger::restore_log_target_formatting_flags()
-{
-    for (size_t i = 0; i < LogMessage::NumMessageCategories; ++i)
-        m_log_target->set_formatting_flags(static_cast<LogMessage::Category>(i), m_flags[i]);
+    restore_formatting_flags(*m_log_target, flags);
 }
 
 LogTargetBase& SuperLogger::get_log_target() const
 {
-    return m_log_target.ref();
+    return *m_log_target;
 }
 
-}   // namespace cli
+}   // namespace shared
 }   // namespace appleseed

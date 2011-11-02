@@ -26,37 +26,37 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_CLI_SUPERLOGGER_H
-#define APPLESEED_CLI_SUPERLOGGER_H
+#ifndef APPLESEED_SHARED_APPLICATION_SUPERLOGGER_H
+#define APPLESEED_SHARED_APPLICATION_SUPERLOGGER_H
 
 // appleseed.foundation headers.
-#include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/log.h"
 
-namespace appleseed {
-namespace cli {
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
-class SuperLogger
+namespace appleseed {
+namespace shared {
+
+class DLLSYMBOL SuperLogger
   : public foundation::Logger
 {
   public:
     // Constructor.
     SuperLogger();
 
+    // Destructor.
+    virtual ~SuperLogger();
+
     void enable_message_coloring();
 
     foundation::LogTargetBase& get_log_target() const;
 
   private:
-    foundation::auto_release_ptr<foundation::LogTargetBase> m_log_target;
-
-    foundation::LogMessage::FormattingFlags m_flags[foundation::LogMessage::NumMessageCategories];
-
-    void save_log_target_formatting_flags();
-    void restore_log_target_formatting_flags();
+    foundation::LogTargetBase* m_log_target;
 };
 
-}       // namespace cli
+}       // namespace shared
 }       // namespace appleseed
 
-#endif  // !APPLESEED_CLI_SUPERLOGGER_H
+#endif  // !APPLESEED_SHARED_APPLICATION_SUPERLOGGER_H
