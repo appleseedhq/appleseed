@@ -26,30 +26,30 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_CORE_EXCEPTIONS_EXCEPTIONUNSUPPORTEDFILETYPE_H
-#define APPLESEED_FOUNDATION_CORE_EXCEPTIONS_EXCEPTIONUNSUPPORTEDFILETYPE_H
+#ifndef APPLESEED_FOUNDATION_CORE_EXCEPTIONS_EXCEPTIONUNSUPPORTEDFILEFORMAT_H
+#define APPLESEED_FOUNDATION_CORE_EXCEPTIONS_EXCEPTIONUNSUPPORTEDFILEFORMAT_H
 
 // appleseed.foundation headers.
-#include "foundation/core/exceptions/exception.h"
+#include "foundation/core/exceptions/stringexception.h"
 
 namespace foundation
 {
 
 //
-// Exception thrown when attempting to deal with a file whose type is unsupported.
+// Exception thrown when the format of a file cannot be determined or is unsupported.
 //
 
-class ExceptionUnsupportedFileType
-  : public Exception
+class ExceptionUnsupportedFileFormat
+  : public StringException
 {
   public:
     // Constructor.
-    ExceptionUnsupportedFileType()
-      : Exception("Unsupported file type")
+    explicit ExceptionUnsupportedFileFormat(const char* filename)
+      : StringException("could not determine the format of this file, or this format is unsupported", filename)
     {
     }
 };
 
 }       // namespace foundation
 
-#endif  // !APPLESEED_FOUNDATION_CORE_EXCEPTIONS_EXCEPTIONUNSUPPORTEDFILETYPE_H
+#endif  // !APPLESEED_FOUNDATION_CORE_EXCEPTIONS_EXCEPTIONUNSUPPORTEDFILEFORMAT_H

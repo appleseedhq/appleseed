@@ -32,7 +32,7 @@
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
 #include "foundation/core/exceptions/exceptionioerror.h"
-#include "foundation/core/exceptions/exceptionunsupportedfiletype.h"
+#include "foundation/core/exceptions/exceptionunsupportedfileformat.h"
 #include "foundation/image/colorspace.h"
 #include "foundation/image/exrimagefilewriter.h"
 #include "foundation/image/genericimagefilewriter.h"
@@ -173,7 +173,7 @@ namespace
             GenericImageFileWriter writer;
             writer.write(filename, image, image_attributes);
         }
-        catch (const ExceptionUnsupportedFileType&)
+        catch (const ExceptionUnsupportedFileFormat&)
         {
             // Extract the extension of the image filename.
             const filesystem::path filepath(filename);

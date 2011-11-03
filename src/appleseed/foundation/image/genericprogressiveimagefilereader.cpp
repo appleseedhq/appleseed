@@ -30,7 +30,7 @@
 #include "genericprogressiveimagefilereader.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/exceptions/exceptionunsupportedfiletype.h"
+#include "foundation/core/exceptions/exceptionunsupportedfileformat.h"
 #include "foundation/image/progressiveexrimagefilereader.h"
 #include "foundation/utility/string.h"
 
@@ -119,7 +119,7 @@ void GenericProgressiveImageFileReader::open(const char* filename)
     }
     else
     {
-        throw ExceptionUnsupportedFileType();
+        throw ExceptionUnsupportedFileFormat(filename);
     }
 
     impl->m_reader->open(filename);

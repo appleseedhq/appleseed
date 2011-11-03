@@ -30,7 +30,7 @@
 #include "genericimagefilewriter.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/exceptions/exceptionunsupportedfiletype.h"
+#include "foundation/core/exceptions/exceptionunsupportedfileformat.h"
 #include "foundation/image/exrimagefilewriter.h"
 #include "foundation/image/pngimagefilewriter.h"
 #include "foundation/utility/string.h"
@@ -72,7 +72,7 @@ void GenericImageFileWriter::write(
     }
     else
     {
-        throw ExceptionUnsupportedFileType();
+        throw ExceptionUnsupportedFileFormat(filename);
     }
 }
 

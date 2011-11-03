@@ -30,7 +30,7 @@
 #include "genericimagefilereader.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/exceptions/exceptionunsupportedfiletype.h"
+#include "foundation/core/exceptions/exceptionunsupportedfileformat.h"
 #include "foundation/image/exrimagefilereader.h"
 #include "foundation/image/pngimagefilereader.h"
 #include "foundation/utility/string.h"
@@ -67,7 +67,7 @@ Image* GenericImageFileReader::read(
     }
     else
     {
-        throw ExceptionUnsupportedFileType();
+        throw ExceptionUnsupportedFileFormat(filename);
         return 0;
     }
 }
