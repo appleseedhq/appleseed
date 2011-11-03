@@ -54,6 +54,7 @@
 
 // Standard headers.
 #include <cstddef>
+#include <memory>
 
 using namespace appleseed::maketiledexr;
 using namespace appleseed::shared;
@@ -139,15 +140,10 @@ int main(int argc, const char* argv[])
             for (size_t x = 0; x < props.m_tile_count_x; ++x)
             {
                 // Read the tile.
-                const Tile* tile = reader.read_tile(x, y);
-                if (tile == 0)
-                    throw Exception("couldn't read a tile");
+                auto_ptr<Tile> tile(reader.read_tile(x, y));
 
                 // Write the tile.
-                writer.write_tile(*tile, x, y);
-
-                // Deallocate the tile.
-                delete tile;
+                writer.write_tile(*tile.get(), x, y);
             }
         }
 
