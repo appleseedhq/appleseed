@@ -90,7 +90,7 @@ namespace
                 const MyElement expected = 10 * key;
 
                 if (expected != *element)
-                    throw Exception("Cache integrity check failed");
+                    throw Exception("cache integrity check failed.");
             }
         }
     };

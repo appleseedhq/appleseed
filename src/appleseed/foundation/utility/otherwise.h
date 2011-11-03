@@ -49,7 +49,7 @@ struct SwitchException
   : public Exception
 {
     SwitchException(const char* file, const size_t line)
-      : Exception("unhandled case in switch () statement")
+      : Exception("unhandled case in switch statement.")
       , m_line(line)
     {
         assert(file);

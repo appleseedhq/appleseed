@@ -45,7 +45,7 @@ class ExceptionNotImplemented
   public:
     // Constructor.
     ExceptionNotImplemented()
-      : Exception("Reached non-implemented code path")
+      : Exception("reached non-implemented code path.")
     {
     }
 };
