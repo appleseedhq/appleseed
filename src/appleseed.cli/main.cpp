@@ -459,12 +459,9 @@ int main(int argc, const char* argv[])
     start_memory_tracking();
 
     SuperLogger logger;
-    logger.get_log_target().set_formatting_flags(LogMessage::DisplayMessage);
 
-    // Make sure the application is properly installed, bail out if not.
     Application::check_installation(logger);
 
-    // Parse the command line.
     g_cl.parse(argc, argv, logger);
 
     // Read the application's settings from disk.
@@ -481,7 +478,6 @@ int main(int argc, const char* argv[])
     if (g_cl.m_run_unit_benchmarks.found())
         run_unit_benchmarks(logger);
 
-    logger.get_log_target().reset_formatting_flags();
     global_logger().add_target(&logger.get_log_target());
 
     // Render the specified project.

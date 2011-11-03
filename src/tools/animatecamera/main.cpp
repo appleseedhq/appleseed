@@ -226,16 +226,10 @@ namespace
 int main(int argc, const char* argv[])
 {
     SuperLogger logger;
-    logger.get_log_target().set_formatting_flags(LogMessage::DisplayMessage);
 
-    // Make sure the application is properly installed, bail out if not.
     Application::check_installation(logger);
 
-    // Parse the command line.
     g_cl.parse(argc, argv, logger);
-
-    logger.get_log_target().reset_formatting_flags();
-    global_logger().add_target(&logger.get_log_target());
 
     const string base_output_filename =
         filesystem::path(g_cl.m_filenames.values()[1]).stem();
@@ -247,6 +241,8 @@ int main(int argc, const char* argv[])
 
     if (frame_count < 1)
         LOG_FATAL(g_logger, "the frame count must be greater than or equal to 1.");
+
+    global_logger().add_target(&logger.get_log_target());
 
     generate_project_files(base_output_filename, frame_count);
 

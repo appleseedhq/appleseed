@@ -68,6 +68,11 @@ struct CommandLineHandlerBase::Impl
 
     void print_version_information(SuperLogger& logger) const
     {
+        LogTargetBase& log_target = logger.get_log_target();
+
+        const LogMessage::FormattingFlags old_flags =
+            log_target.set_formatting_flags(LogMessage::Info, LogMessage::DisplayMessage);
+
         LOG_INFO(
             logger,
             "%s, using %s version %s, %s configuration\n"
@@ -83,6 +88,8 @@ struct CommandLineHandlerBase::Impl
             Appleseed::get_lib_compilation_time(),
             Compiler::get_compiler_name(),
             Compiler::get_compiler_version());
+
+        log_target.set_formatting_flags(LogMessage::Info, old_flags);
     }
 };
 

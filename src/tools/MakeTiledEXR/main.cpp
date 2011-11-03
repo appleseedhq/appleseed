@@ -74,15 +74,10 @@ namespace
 int main(int argc, const char* argv[])
 {
     SuperLogger logger;
-    logger.get_log_target().set_formatting_flags(LogMessage::DisplayMessage);
 
-    // Make sure the application is properly installed, bail out if not.
     Application::check_installation(logger);
 
-    // Parse the command line.
     g_cl.parse(argc, argv, logger);
-
-    logger.get_log_target().reset_formatting_flags();
 
     // Retrieve the tile size.
     size_t tile_width = 32;
