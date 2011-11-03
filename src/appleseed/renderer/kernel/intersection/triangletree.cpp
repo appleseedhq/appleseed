@@ -232,6 +232,15 @@ namespace
             if (m_tracer.get())
                 m_tracer->begin_sort(triangle_count);
 
+            // Fetch the bounding box of the leaves.
+            GAABB3 left_bbox = left_leaf_info.get_bbox();
+            GAABB3 right_bbox = right_leaf_info.get_bbox();
+
+            // Prevent numerical instabilities by slightly enlarging the bounding boxes.
+            const GScalar eps = bsp::get_bbox_grow_eps<GScalar>();
+            left_bbox.robust_grow(eps);
+            right_bbox.robust_grow(eps);
+
             for (size_t i = 0; i < triangle_count; ++i)
             {
                 // Fetch the triangle info.
@@ -254,15 +263,6 @@ namespace
                     const GVector3& v0 = triangle_info.get_vertex(0);
                     const GVector3& v1 = triangle_info.get_vertex(1);
                     const GVector3& v2 = triangle_info.get_vertex(2);
-
-                    // Fetch the bounding box of the leaves.
-                    GAABB3 left_bbox = left_leaf_info.get_bbox();
-                    GAABB3 right_bbox = right_leaf_info.get_bbox();
-
-                    // Prevent numerical instabilities by slightly enlarging the bounding boxes.
-                    const GScalar eps = bsp::get_bbox_grow_eps<GScalar>();
-                    left_bbox.robust_grow(eps);
-                    right_bbox.robust_grow(eps);
 
                     // Determine to which leaves the triangle belongs.
                     const bool in_left = intersect(left_bbox, v0, v1, v2);
