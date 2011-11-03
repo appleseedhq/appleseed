@@ -84,7 +84,8 @@ class FOUNDATIONDLL LogTargetBase
         const LogMessage::FormattingFlags   flags);
 
     // Configure the formatting for a particular category of messages.
-    void set_formatting_flags(
+    // Return the previous flags values for this category.
+    LogMessage::FormattingFlags set_formatting_flags(
         const LogMessage::Category          category,
         const LogMessage::FormattingFlags   flags);
 
@@ -125,11 +126,15 @@ inline void LogTargetBase::set_formatting_flags(
         m_flags[i] = flags;
 }
 
-inline void LogTargetBase::set_formatting_flags(
+inline LogMessage::FormattingFlags LogTargetBase::set_formatting_flags(
     const LogMessage::Category          category,
     const LogMessage::FormattingFlags   flags)
 {
+    LogMessage::FormattingFlags previous_value = m_flags[category];
+
     m_flags[category] = flags;
+
+    return previous_value;
 }
 
 inline LogMessage::FormattingFlags LogTargetBase::get_formatting_flags(
