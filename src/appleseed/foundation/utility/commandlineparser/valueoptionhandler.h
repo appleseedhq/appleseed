@@ -155,7 +155,12 @@ void ValueOptionHandler<T>::parse(
     if (vals.size() < m_min_value_count)
     {
         // Error: wrong number of option values.
-        std::string error = "option '" + name + "': wrong number of values.";
+        std::string error =
+            name.empty()
+                ? "wrong number of positional arguments"
+                : "option '" + name + "': wrong number of values";
+        error += ", expected at least " + to_string(m_min_value_count);
+        error += " but " + to_string(vals.size()) + " given.";
         if (!m_syntax.empty())
             error += " syntax: " + name + " " + m_syntax + ".";
         messages.add(LogMessage::Error, "%s\n", error.c_str());
@@ -172,7 +177,11 @@ void ValueOptionHandler<T>::parse(
         catch (const ExceptionStringConversionError&)
         {
             // Error: value type mismatch.
-            std::string error = "option '" + name + "': type mismatch.";
+            std::string error =
+                name.empty()
+                    ? "positional arguments: "
+                    : "option '" + name + "': ";
+            error += "type mismatch.";
             if (!m_syntax.empty())
                 error += " syntax: " + name + " " + m_syntax + ".";
             messages.add(LogMessage::Error, "%s\n", error.c_str());
