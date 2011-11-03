@@ -50,7 +50,6 @@
 #include "foundation/utility/string.h"
 
 // boost headers.
-#include "boost/filesystem/operations.hpp"
 #include "boost/filesystem/path.hpp"
 
 // Standard headers.
