@@ -26,12 +26,14 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_CLI_COMMANDLINE_H
-#define APPLESEED_CLI_COMMANDLINE_H
+#ifndef APPLESEED_CLI_COMMANDLINEHANDLER_H
+#define APPLESEED_CLI_COMMANDLINEHANDLER_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/utility/commandlineparser.h"
+
+// appleseed.shared headers.
+#include "application/commandlinehandlerbase.h"
 
 // Standard headers.
 #include <string>
@@ -46,15 +48,11 @@ namespace cli {
 // Command line handler.
 //
 
-class CommandLine
-  : public foundation::NonCopyable
+class CommandLineHandler
+  : public shared::CommandLineHandlerBase
 {
   public:
     // General options.
-    foundation::FlagOptionHandler                   m_help;
-    foundation::FlagOptionHandler                   m_version;
-    foundation::FlagOptionHandler                   m_message_coloring;
-    foundation::FlagOptionHandler                   m_display_options;
 #if defined __APPLE__ || defined _WIN32
     foundation::FlagOptionHandler                   m_display_output;
 #endif
@@ -75,21 +73,11 @@ class CommandLine
     foundation::ValueOptionHandler<std::string>     m_override_shading;
 
     // Constructor.
-    CommandLine();
-
-    // Parse program command line.
-    void parse(
-        const int               argc,
-        const char*             argv[],
-        shared::SuperLogger&    logger);
+    CommandLineHandler();
 
   private:
-    foundation::CommandLineParser m_parser;
-
-    void print_version_information(
-        shared::SuperLogger&    logger) const;
-
-    void print_program_usage(
+    // Emit usage instructions to the logger.
+    virtual void print_program_usage(
         const char*             program_name,
         shared::SuperLogger&    logger) const;
 };
@@ -97,4 +85,4 @@ class CommandLine
 }       // namespace cli
 }       // namespace appleseed
 
-#endif  // !APPLESEED_CLI_COMMANDLINE_H
+#endif  // !APPLESEED_CLI_COMMANDLINEHANDLER_H

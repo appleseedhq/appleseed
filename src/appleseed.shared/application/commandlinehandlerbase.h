@@ -26,11 +26,15 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_SHARED_APPLICATION_SUPERLOGGER_H
-#define APPLESEED_SHARED_APPLICATION_SUPERLOGGER_H
+#ifndef APPLESEED_SHARED_APPLICATION_COMMANDLINEHANDLERBASE_H
+#define APPLESEED_SHARED_APPLICATION_COMMANDLINEHANDLERBASE_H
 
 // appleseed.foundation headers.
-#include "foundation/utility/log.h"
+#include "foundation/core/concepts/noncopyable.h"
+
+// Forward declarations.
+namespace appleseed     { namespace shared { class SuperLogger; } }
+namespace foundation    { class CommandLineParser; }
 
 //
 // On Windows, define SHAREDDLL to __declspec(dllexport) when building the DLL
@@ -54,25 +58,43 @@
 namespace appleseed {
 namespace shared {
 
-class SHAREDDLL SuperLogger
-  : public foundation::Logger
+//
+// Base class for command line handlers.
+//
+
+class SHAREDDLL CommandLineHandlerBase
+  : public foundation::NonCopyable
 {
   public:
     // Constructor.
-    SuperLogger();
+    explicit CommandLineHandlerBase(const char* application_name);
 
     // Destructor.
-    virtual ~SuperLogger();
+    virtual ~CommandLineHandlerBase();
 
-    void enable_message_coloring();
+    // Parse the application's command line.
+    // This method may reconfigure the logger (to enable message coloring, for instance).
+    virtual void parse(
+        const int       argc,
+        const char*     argv[],
+        SuperLogger&    logger);
 
-    foundation::LogTargetBase& get_log_target() const;
+  protected:
+    // This method must be implemented to emit usage instructions to the logger.
+    virtual void print_program_usage(
+        const char*     program_name,
+        SuperLogger&    logger) const = 0;
+
+    // Access the command line parser object.
+    foundation::CommandLineParser& parser();
+    const foundation::CommandLineParser& parser() const;
 
   private:
-    foundation::LogTargetBase* m_log_target;
+    struct Impl;
+    Impl* impl;
 };
 
 }       // namespace shared
 }       // namespace appleseed
 
-#endif  // !APPLESEED_SHARED_APPLICATION_SUPERLOGGER_H
+#endif  // !APPLESEED_SHARED_APPLICATION_COMMANDLINEHANDLERBASE_H

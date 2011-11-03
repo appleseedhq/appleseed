@@ -27,7 +27,7 @@
 //
 
 // appleseed.cli headers.
-#include "commandline.h"
+#include "commandlinehandler.h"
 
 // appleseed.shared headers.
 #include "application/application.h"
@@ -74,8 +74,8 @@ using namespace std;
 
 namespace
 {
-    CommandLine     g_cl;
-    ParamArray      g_settings;
+    CommandLineHandler  g_cl;
+    ParamArray          g_settings;
 
     void load_settings(Logger& logger)
     {
@@ -459,7 +459,6 @@ int main(int argc, const char* argv[])
     start_memory_tracking();
 
     SuperLogger logger;
-
     logger.get_log_target().set_formatting_flags(LogMessage::DisplayMessage);
 
     // Make sure the application is properly installed, bail out if not.
@@ -483,7 +482,6 @@ int main(int argc, const char* argv[])
         run_unit_benchmarks(logger);
 
     logger.get_log_target().reset_formatting_flags();
-
     global_logger().add_target(&logger.get_log_target());
 
     // Render the specified project.

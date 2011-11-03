@@ -26,49 +26,54 @@
 // THE SOFTWARE.
 //
 
-#ifndef ANIMATECAMERA_COMMANDLINE_H
-#define ANIMATECAMERA_COMMANDLINE_H
+#ifndef APPLESEED_MAKETILEDEXR_COMMANDLINEHANDLER_H
+#define APPLESEED_MAKETILEDEXR_COMMANDLINEHANDLER_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/commandlineparser.h"
+
+// appleseed.shared headers.
+#include "application/commandlinehandlerbase.h"
 
 // Standard headers.
 #include <string>
 
 // Forward declarations.
-namespace foundation    { class Logger; }
+namespace appleseed { namespace shared { class SuperLogger; } }
 
+namespace appleseed {
+namespace maketiledexr {
 
 //
 // Command line handler.
 //
 
-class CommandLine
-  : public foundation::NonCopyable
+class CommandLineHandler
+  : public shared::CommandLineHandlerBase
 {
   public:
-    foundation::FlagOptionHandler                   m_help;
-    foundation::FlagOptionHandler                   m_message_coloring;
     foundation::FlagOptionHandler                   m_progress_messages;
     foundation::ValueOptionHandler<std::string>     m_filenames;
-    foundation::ValueOptionHandler<int>             m_frame_count;
-    foundation::ValueOptionHandler<double>          m_camera_distance;
-    foundation::ValueOptionHandler<double>          m_camera_elevation;
+    foundation::ValueOptionHandler<int>             m_tile_size;
 
     // Constructor.
-    CommandLine();
+    CommandLineHandler();
 
-    // Parse program command line.
-    void parse(const int argc, const char* argv[]);
+    // Parse the application's command line.
+    virtual void parse(
+        const int               argc,
+        const char*             argv[],
+        shared::SuperLogger&    logger) override;
 
   private:
-    foundation::CommandLineParser m_parser;
-
-    // Print program usage.
-    void print_program_usage(
-        const char*         program_name,
-        foundation::Logger& logger) const;
+    // Emit usage instructions to the logger.
+    virtual void print_program_usage(
+        const char*             program_name,
+        shared::SuperLogger&    logger) const;
 };
 
-#endif  // !ANIMATECAMERA_COMMANDLINE_H
+}       // namespace maketiledexr
+}       // namespace appleseed
+
+#endif  // !APPLESEED_MAKETILEDEXR_COMMANDLINEHANDLER_H

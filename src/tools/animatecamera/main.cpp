@@ -27,11 +27,12 @@
 //
 
 // Project headers.
-#include "commandline.h"
+#include "commandlinehandler.h"
 #include "defaults.h"
 
 // appleseed.shared headers.
 #include "application/application.h"
+#include "application/superlogger.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/camera.h"
@@ -55,11 +56,13 @@
 // Standard headers.
 #include <cmath>
 #include <cstddef>
+#include <cstdlib>
 #include <iomanip>
 #include <sstream>
 #include <string>
 
-using namespace appleseed;
+using namespace appleseed::animatecamera;
+using namespace appleseed::shared;
 using namespace boost;
 using namespace foundation;
 using namespace renderer;
@@ -67,8 +70,8 @@ using namespace std;
 
 namespace
 {
-    CommandLine g_cl;
-    Logger      g_logger;
+    CommandLineHandler  g_cl;
+    Logger              g_logger;
 
     string make_numbered_filename(
         const string    filename,
@@ -92,7 +95,7 @@ namespace
     {
         // Construct the schema filename.
         const filesystem::path schema_path =
-              filesystem::path(shared::Application::get_root_path())
+              filesystem::path(Application::get_root_path())
             / "schemas/project.xsd";
 
         // Load the input project from disk.
@@ -104,7 +107,7 @@ namespace
 
         // Bail out if the project couldn't be loaded.
         if (project.get() == 0)
-            return;
+            exit(1);
 
         const double normalized_distance =
             g_cl.m_camera_distance.found()
@@ -215,22 +218,24 @@ namespace
     }
 }
 
+
 //
 // Entry point of animatecamera.
 //
 
 int main(int argc, const char* argv[])
 {
-    // Parse program command line.
-    g_cl.parse(argc, argv);
+    SuperLogger logger;
+    logger.get_log_target().set_formatting_flags(LogMessage::DisplayMessage);
 
-    // Create and configure a log target that outputs to stderr and attach it to the loggers.
-    auto_release_ptr<LogTargetBase> log_target(
-        g_cl.m_message_coloring.found()
-            ? create_console_log_target(stderr)
-            : create_open_file_log_target(stderr));
-    g_logger.add_target(log_target.get());
-    global_logger().add_target(log_target.get());
+    // Make sure the application is properly installed, bail out if not.
+    Application::check_installation(logger);
+
+    // Parse the command line.
+    g_cl.parse(argc, argv, logger);
+
+    logger.get_log_target().reset_formatting_flags();
+    global_logger().add_target(&logger.get_log_target());
 
     const string base_output_filename =
         filesystem::path(g_cl.m_filenames.values()[1]).stem();

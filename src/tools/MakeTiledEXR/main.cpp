@@ -27,7 +27,11 @@
 //
 
 // Project headers.
-#include "commandline.h"
+#include "commandlinehandler.h"
+
+// appleseed.shared headers.
+#include "application/application.h"
+#include "application/superlogger.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
@@ -50,12 +54,14 @@
 // Standard headers.
 #include <cstddef>
 
+using namespace appleseed::maketiledexr;
+using namespace appleseed::shared;
 using namespace foundation;
 using namespace std;
 
 namespace
 {
-    CommandLine g_cl;
+    CommandLineHandler g_cl;
 }
 
 
@@ -65,18 +71,16 @@ namespace
 
 int main(int argc, const char* argv[])
 {
-    // Parse program command line.
-    g_cl.parse(argc, argv);
+    SuperLogger logger;
+    logger.get_log_target().set_formatting_flags(LogMessage::DisplayMessage);
 
-    // Create a logger.
-    Logger logger;
+    // Make sure the application is properly installed, bail out if not.
+    Application::check_installation(logger);
 
-    // Create and configure a log target that outputs to stderr, and attach it to the logger.
-    auto_release_ptr<LogTargetBase> log_target(
-        g_cl.m_message_coloring.found()
-            ? create_console_log_target(stderr)
-            : create_open_file_log_target(stderr));
-    logger.add_target(log_target.get());
+    // Parse the command line.
+    g_cl.parse(argc, argv, logger);
+
+    logger.get_log_target().reset_formatting_flags();
 
     // Retrieve the tile size.
     size_t tile_width = 32;

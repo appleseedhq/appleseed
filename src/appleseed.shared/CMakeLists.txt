@@ -44,6 +44,8 @@ source_group ("application\\meta\\tests" FILES
 set (application_sources
     application/application.cpp
     application/application.h
+    application/commandlinehandlerbase.cpp
+    application/commandlinehandlerbase.h
     application/superlogger.cpp
     application/superlogger.h
 )
@@ -86,7 +88,7 @@ include_directories (
 apply_preprocessor_definitions (appleseed.shared)
 
 append_custom_preprocessor_definitions (appleseed.shared
-    APPLESEED_EXPORTS
+    APPLESEED_SHARED_EXPORTS
 )
 
 

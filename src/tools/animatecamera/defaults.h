@@ -26,12 +26,18 @@
 // THE SOFTWARE.
 //
 
-#ifndef ANIMATECAMERA_DEFAULTS_H
-#define ANIMATECAMERA_DEFAULTS_H
+#ifndef APPLESEED_ANIMATECAMERA_DEFAULTS_H
+#define APPLESEED_ANIMATECAMERA_DEFAULTS_H
+
+namespace appleseed {
+namespace animatecamera {
 
 // Default values for command line parameters.
 const int DefaultFrameCount = 20;
 const double DefaultNormalizedCameraDistance = 10.0;
 const double DefaultNormalizedCameraElevation = 2.0;
 
-#endif  // !ANIMATECAMERA_DEFAULTS_H
+}       // namespace animatecamera
+}       // namespace appleseed
+
+#endif  // !APPLESEED_ANIMATECAMERA_DEFAULTS_H

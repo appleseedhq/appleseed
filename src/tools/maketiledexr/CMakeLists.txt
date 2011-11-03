@@ -32,8 +32,8 @@
 #--------------------------------------------------------------------------------------------------
 
 set (sources
-    commandline.cpp
-    commandline.h
+    commandlinehandler.cpp
+    commandlinehandler.h
     main.cpp
 )
 list (APPEND maketiledexr_sources
@@ -65,6 +65,7 @@ set_target_properties (maketiledexr PROPERTIES
 
 include_directories (
     .
+    ../../appleseed.shared
 )
 
 
@@ -83,6 +84,7 @@ link_against_platform (maketiledexr)
 
 target_link_libraries (maketiledexr
     appleseed
+    appleseed.shared
 )
 
 

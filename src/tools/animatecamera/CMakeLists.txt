@@ -32,8 +32,8 @@
 #--------------------------------------------------------------------------------------------------
 
 set (sources
-    commandline.cpp
-    commandline.h
+    commandlinehandler.cpp
+    commandlinehandler.h
     defaults.h
     main.cpp
 )

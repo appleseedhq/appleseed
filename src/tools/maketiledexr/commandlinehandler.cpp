@@ -27,93 +27,65 @@
 //
 
 // Interface header.
-#include "commandline.h"
+#include "commandlinehandler.h"
+
+// appleseed.shared headers.
+#include "application/superlogger.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/log.h"
 
 // Standard headers.
-#include <cstdio>
 #include <cstdlib>
 
+using namespace appleseed::shared;
 using namespace foundation;
 using namespace std;
 
+namespace appleseed {
+namespace maketiledexr {
 
-//
-// CommandLine class implementation.
-//
-
-CommandLine::CommandLine()
+CommandLineHandler::CommandLineHandler()
+  : CommandLineHandlerBase("maketiledexr")
 {
-    // Help.
-    m_help.add_name("--help");
-    m_help.add_name("-h");
-    m_help.set_description("print program usage and exit");
-    m_parser.add_option_handler(&m_help);
-
-    // Message coloring.
-    m_message_coloring.add_name("--message-coloring");
-    m_message_coloring.set_description("enable message coloring");
-    m_parser.add_option_handler(&m_message_coloring);
-
-    // Progress messages.
     m_progress_messages.add_name("--progress");
     m_progress_messages.add_name("-p");
     m_progress_messages.set_description("print progress messages");
-    m_parser.add_option_handler(&m_progress_messages);
+    parser().add_option_handler(&m_progress_messages);
 
-    // Filenames.
     m_filenames.set_min_value_count(2);
     m_filenames.set_max_value_count(2);
-    m_parser.set_default_option_handler(&m_filenames);
+    parser().set_default_option_handler(&m_filenames);
 
-    // Tile size.
     m_tile_size.add_name("--tile-size");
     m_tile_size.add_name("-t");
     m_tile_size.set_description("set the size of the tiles in the output image");
     m_tile_size.set_syntax("width height");
     m_tile_size.set_min_value_count(2);
     m_tile_size.set_max_value_count(2);
-    m_parser.add_option_handler(&m_tile_size);
+    parser().add_option_handler(&m_tile_size);
 }
 
-void CommandLine::parse(const int argc, const char* argv[])
+void CommandLineHandler::parse(
+    const int       argc,
+    const char*     argv[],
+    SuperLogger&    logger)
 {
-    // Parse the command line.
-    m_parser.parse(argc, argv);
+    CommandLineHandlerBase::parse(argc, argv, logger);
 
-    // Create a logger.
-    Logger logger;
-
-    // Create and configure a log target that outputs to stderr, and attach it to the logger.
-    auto_release_ptr<LogTargetBase> log_target(
-        m_message_coloring.found()
-            ? create_console_log_target(stderr)
-            : create_open_file_log_target(stderr));
-    log_target->set_formatting_flags(
-        LogMessage::Info,
-        LogMessage::DisplayMessage);
-    logger.add_target(log_target.get());
-
-    // Print program usage.
-    if (m_help.found() || !m_filenames.found())
-        print_program_usage(argv[0], logger);
-
-    // Exit if necessary.
-    if (m_help.found() || !m_filenames.found())
+    if (!m_filenames.found())
         exit(0);
-
-    // Print messages generated during command line parsing.
-    m_parser.print_messages(logger);
 }
 
-void CommandLine::print_program_usage(
+void CommandLineHandler::print_program_usage(
     const char*     program_name,
-    Logger&         logger) const
+    SuperLogger&    logger) const
 {
-    LOG_INFO(logger, "usage: %s [options] input output", program_name);
+    LOG_INFO(logger, "usage: %s [options] input output.exr", program_name);
     LOG_INFO(logger, "options:");
-    m_parser.print_usage(logger);
+
+    parser().print_usage(logger);
 }
+
+}   // namespace maketiledexr
+}   // namespace appleseed
