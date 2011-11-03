@@ -86,7 +86,9 @@ namespace
         return sstr.str();
     }
 
-    void proceed()
+    void generate_project_files(
+        const string    base_output_filename,
+        const int       frame_count)
     {
         // Construct the schema filename.
         const filesystem::path schema_path =
@@ -103,17 +105,6 @@ namespace
         // Bail out if the project couldn't be loaded.
         if (project.get() == 0)
             return;
-
-        const string base_output_filename =
-            filesystem::path(g_cl.m_filenames.values()[1]).stem();
-
-        const int frame_count =
-            g_cl.m_frame_count.found()
-                ? g_cl.m_frame_count.values()[0]
-                : DefaultFrameCount;
-
-        if (frame_count < 1)
-            LOG_FATAL(g_logger, "the frame count must be greater than or equal to 1.");
 
         const double normalized_distance =
             g_cl.m_camera_distance.found()
@@ -153,9 +144,12 @@ namespace
             project->set_path(new_path.c_str());
             ProjectFileWriter::write(project.ref(), false);
         }
+    }
 
-#ifdef _WIN32
-
+    void generate_windows_render_script(
+        const string    base_output_filename,
+        const int       frame_count)
+    {
         LOG_INFO(g_logger, "generating batch file...");
 
         const char* BatchFileName = "render.bat";
@@ -163,7 +157,7 @@ namespace
         FILE* batch_file = fopen(BatchFileName, "wt");
 
         if (batch_file == 0)
-            LOG_FATAL(g_logger, "could not write to %s", BatchFileName);
+            LOG_FATAL(g_logger, "could not write to %s.", BatchFileName);
 
         fprintf(
             batch_file,
@@ -192,6 +186,16 @@ namespace
             const string project_filename = make_numbered_filename(base_output_filename + ".appleseed", i + 1);
             const string image_filename = make_numbered_filename(base_output_filename + ".png", i + 1);
 
+            const size_t LineLength = 80 + 1;   // +1 to account for the escape character
+            const string header = "--- " + project_filename + " -^> " + image_filename + " ";
+            const string header_suffix(header.size() < LineLength ? LineLength - header.size() : 0, '-');
+
+            fprintf(
+                batch_file,
+                "echo %s%s\n",
+                header.c_str(),
+                header_suffix.c_str());
+
             fprintf(
                 batch_file,
                 "%%bin%% %s -o frames\\%s\n",
@@ -208,7 +212,6 @@ namespace
             ":end\n");
 
         fclose(batch_file);
-#endif
     }
 }
 
@@ -229,7 +232,22 @@ int main(int argc, const char* argv[])
     g_logger.add_target(log_target.get());
     global_logger().add_target(log_target.get());
 
-    proceed();
+    const string base_output_filename =
+        filesystem::path(g_cl.m_filenames.values()[1]).stem();
+
+    const int frame_count =
+        g_cl.m_frame_count.found()
+            ? g_cl.m_frame_count.values()[0]
+            : DefaultFrameCount;
+
+    if (frame_count < 1)
+        LOG_FATAL(g_logger, "the frame count must be greater than or equal to 1.");
+
+    generate_project_files(base_output_filename, frame_count);
+
+#ifdef _WIN32
+    generate_windows_render_script(base_output_filename, frame_count);
+#endif
 
     return 0;
 }
