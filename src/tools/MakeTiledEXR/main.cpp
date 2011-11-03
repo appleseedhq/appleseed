@@ -35,6 +35,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
+#include "foundation/core/exceptions/stringexception.h"
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/genericprogressiveimagefilereader.h"
 #include "foundation/image/imageattributes.h"
@@ -153,6 +154,11 @@ int main(int argc, const char* argv[])
         // Close the files.
         writer.close();
         reader.close();
+    }
+    catch (const StringException& e)
+    {
+        LOG_FATAL(logger, "%s: %s", e.what(), e.string());
+        return 1;
     }
     catch (const Exception& e)
     {
