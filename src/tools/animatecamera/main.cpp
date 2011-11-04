@@ -69,8 +69,7 @@ using namespace std;
 
 namespace
 {
-    CommandLineHandler  g_cl;
-    Logger              g_logger;
+    CommandLineHandler g_cl;
 
     string make_numbered_filename(
         const string    filename,
@@ -150,16 +149,17 @@ namespace
 
     void generate_windows_render_script(
         const string    base_output_filename,
-        const int       frame_count)
+        const int       frame_count,
+        SuperLogger&    logger)
     {
-        LOG_INFO(g_logger, "generating batch file...");
+        LOG_INFO(logger, "generating batch file...");
 
         const char* BatchFileName = "render.bat";
 
         FILE* batch_file = fopen(BatchFileName, "wt");
 
         if (batch_file == 0)
-            LOG_FATAL(g_logger, "could not write to %s.", BatchFileName);
+            LOG_FATAL(logger, "could not write to %s.", BatchFileName);
 
         fprintf(
             batch_file,
@@ -239,14 +239,17 @@ int main(int argc, const char* argv[])
             : DefaultFrameCount;
 
     if (frame_count < 1)
-        LOG_FATAL(g_logger, "the frame count must be greater than or equal to 1.");
+        LOG_FATAL(logger, "the frame count must be greater than or equal to 1.");
 
     global_logger().add_target(&logger.get_log_target());
 
     generate_project_files(base_output_filename, frame_count);
 
 #ifdef _WIN32
-    generate_windows_render_script(base_output_filename, frame_count);
+    generate_windows_render_script(
+        base_output_filename,
+        frame_count,
+        logger);
 #endif
 
     return 0;
