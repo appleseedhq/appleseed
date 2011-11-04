@@ -53,16 +53,14 @@ CommandLineHandler::CommandLineHandler()
     m_progress_messages.set_description("print progress messages");
     parser().add_option_handler(&m_progress_messages);
 
-    m_filenames.set_min_value_count(2);
-    m_filenames.set_max_value_count(2);
+    m_filenames.set_exact_value_count(2);
     parser().set_default_option_handler(&m_filenames);
 
     m_tile_size.add_name("--tile-size");
     m_tile_size.add_name("-t");
     m_tile_size.set_description("set the size of the tiles in the output image");
     m_tile_size.set_syntax("width height");
-    m_tile_size.set_min_value_count(2);
-    m_tile_size.set_max_value_count(2);
+    m_tile_size.set_exact_value_count(2);
     parser().add_option_handler(&m_tile_size);
 }
 

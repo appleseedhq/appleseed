@@ -65,6 +65,7 @@ class ValueOptionHandler
     // Set minimum/maximum number of values.
     void set_min_value_count(const size_t min_count);
     void set_max_value_count(const size_t max_count);
+    void set_exact_value_count(const size_t count);
 
     // Return the string values of this option.
     const StringVector& string_values() const;
@@ -117,6 +118,13 @@ inline void ValueOptionHandler<T>::set_max_value_count(const size_t max_count)
 }
 
 template <typename T>
+inline void ValueOptionHandler<T>::set_exact_value_count(const size_t count)
+{
+    m_min_value_count = count;
+    m_max_value_count = count;
+}
+
+template <typename T>
 inline const StringVector& ValueOptionHandler<T>::string_values() const
 {
     return m_string_values;
@@ -159,10 +167,13 @@ void ValueOptionHandler<T>::parse(
             name.empty()
                 ? "wrong number of positional arguments"
                 : "option '" + name + "': wrong number of values";
-        error += ", expected at least " + to_string(m_min_value_count);
-        error += " but " + to_string(vals.size()) + " given.";
+        error += ", expected ";
+        error += m_min_value_count == m_max_value_count ? "exactly " : "at least ";
+        error += to_string(m_min_value_count) + " but ";
+        error += to_string(vals.size()) + " given";
         if (!m_syntax.empty())
-            error += " syntax: " + name + " " + m_syntax + ".";
+            error += " (syntax: " + name + " " + m_syntax + ")";
+        error += ".";
         messages.add(LogMessage::Error, "%s\n", error.c_str());
         return;
     }

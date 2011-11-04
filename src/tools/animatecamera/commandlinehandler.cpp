@@ -52,8 +52,7 @@ namespace animatecamera {
 CommandLineHandler::CommandLineHandler()
   : CommandLineHandlerBase("animatecamera")
 {
-    m_filenames.set_min_value_count(2);
-    m_filenames.set_max_value_count(2);
+    m_filenames.set_exact_value_count(2);
     parser().set_default_option_handler(&m_filenames);
 
     m_frame_count.add_name("--frames");
@@ -62,8 +61,7 @@ CommandLineHandler::CommandLineHandler()
         "set the number of frames in the animation (default " +
         to_string(DefaultFrameCount) + ")");
     m_frame_count.set_syntax("count");
-    m_frame_count.set_min_value_count(1);
-    m_frame_count.set_max_value_count(1);
+    m_frame_count.set_exact_value_count(1);
     parser().add_option_handler(&m_frame_count);
 
     m_camera_distance.add_name("--distance");
@@ -72,8 +70,7 @@ CommandLineHandler::CommandLineHandler()
         "set the normalized distance from the camera to the scene (default " +
         to_string(DefaultNormalizedCameraDistance) + ")");
     m_camera_distance.set_syntax("scalar");
-    m_camera_distance.set_min_value_count(1);
-    m_camera_distance.set_max_value_count(1);
+    m_camera_distance.set_exact_value_count(1);
     parser().add_option_handler(&m_camera_distance);
 
     m_camera_elevation.add_name("--elevation");
@@ -82,8 +79,7 @@ CommandLineHandler::CommandLineHandler()
         "set the normalized elevation of the camera (default " +
         to_string(DefaultNormalizedCameraElevation) + ")");
     m_camera_elevation.set_syntax("scalar");
-    m_camera_elevation.set_min_value_count(1);
-    m_camera_elevation.set_max_value_count(1);
+    m_camera_elevation.set_exact_value_count(1);
     parser().add_option_handler(&m_camera_elevation);
 }
 

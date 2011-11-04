@@ -49,8 +49,7 @@ namespace normalizeprojectfile {
 CommandLineHandler::CommandLineHandler()
   : CommandLineHandlerBase("normalizeprojectfile")
 {
-    m_filename.set_min_value_count(1);
-    m_filename.set_max_value_count(1);
+    m_filename.set_exact_value_count(1);
     parser().set_default_option_handler(&m_filename);
 }
 
