@@ -375,17 +375,17 @@ TEST_SUITE(Foundation_Utility_String)
         EXPECT_EQ(vector<string>(), tokenize_wrapper("\n\n", "\n"));
         EXPECT_EQ(vector<string>(), tokenize_wrapper("\n\n\n", "\n"));
 
-        EXPECT_EQ(make_vector(1, "hello"), tokenize_wrapper("hello", "\n"));
-        EXPECT_EQ(make_vector(1, "hello"), tokenize_wrapper("hello\n", "\n"));
-        EXPECT_EQ(make_vector(1, "hello"), tokenize_wrapper("hello\n\n", "\n"));
-        EXPECT_EQ(make_vector(1, "hello"), tokenize_wrapper("\nhello", "\n"));
-        EXPECT_EQ(make_vector(1, "hello"), tokenize_wrapper("\n\nhello", "\n"));
-        EXPECT_EQ(make_vector(1, "hello"), tokenize_wrapper("\n\nhello\n\n", "\n"));
+        EXPECT_EQ(make_vector("hello"), tokenize_wrapper("hello", "\n"));
+        EXPECT_EQ(make_vector("hello"), tokenize_wrapper("hello\n", "\n"));
+        EXPECT_EQ(make_vector("hello"), tokenize_wrapper("hello\n\n", "\n"));
+        EXPECT_EQ(make_vector("hello"), tokenize_wrapper("\nhello", "\n"));
+        EXPECT_EQ(make_vector("hello"), tokenize_wrapper("\n\nhello", "\n"));
+        EXPECT_EQ(make_vector("hello"), tokenize_wrapper("\n\nhello\n\n", "\n"));
 
-        EXPECT_EQ(make_vector(2, "hello", "world"), tokenize_wrapper("hello\nworld", "\n"));
-        EXPECT_EQ(make_vector(2, "hello", "world"), tokenize_wrapper("hello\n\nworld", "\n"));
+        EXPECT_EQ(make_vector("hello", "world"), tokenize_wrapper("hello\nworld", "\n"));
+        EXPECT_EQ(make_vector("hello", "world"), tokenize_wrapper("hello\n\nworld", "\n"));
 
-        EXPECT_EQ(make_vector(3, "hello", "world", "bunny"), tokenize_wrapper("helloXworld\nbunny", "X\n"));
+        EXPECT_EQ(make_vector("hello", "world", "bunny"), tokenize_wrapper("helloXworld\nbunny", "X\n"));
     }
 
     vector<string> split_wrapper(
@@ -401,21 +401,21 @@ TEST_SUITE(Foundation_Utility_String)
     {
         EXPECT_EQ(vector<string>(), split_wrapper("", "\n"));
 
-        EXPECT_EQ(make_vector(1, ""), split_wrapper("\n", "\n"));
-        EXPECT_EQ(make_vector(2, "", ""), split_wrapper("\n\n", "\n"));
-        EXPECT_EQ(make_vector(3, "", "", ""), split_wrapper("\n\n\n", "\n"));
+        EXPECT_EQ(make_vector(""), split_wrapper("\n", "\n"));
+        EXPECT_EQ(make_vector("", ""), split_wrapper("\n\n", "\n"));
+        EXPECT_EQ(make_vector("", "", ""), split_wrapper("\n\n\n", "\n"));
 
-        EXPECT_EQ(make_vector(1, "hello"), split_wrapper("hello", "\n"));
-        EXPECT_EQ(make_vector(1, "hello"), split_wrapper("hello\n", "\n"));
-        EXPECT_EQ(make_vector(2, "hello", ""), split_wrapper("hello\n\n", "\n"));
+        EXPECT_EQ(make_vector("hello"), split_wrapper("hello", "\n"));
+        EXPECT_EQ(make_vector("hello"), split_wrapper("hello\n", "\n"));
+        EXPECT_EQ(make_vector("hello", ""), split_wrapper("hello\n\n", "\n"));
 
-        EXPECT_EQ(make_vector(2, "", "hello"), split_wrapper("\nhello", "\n"));
-        EXPECT_EQ(make_vector(2, "", "hello"), split_wrapper("\nhello\n", "\n"));
-        EXPECT_EQ(make_vector(3, "", "hello", ""), split_wrapper("\nhello\n\n", "\n"));
+        EXPECT_EQ(make_vector("", "hello"), split_wrapper("\nhello", "\n"));
+        EXPECT_EQ(make_vector("", "hello"), split_wrapper("\nhello\n", "\n"));
+        EXPECT_EQ(make_vector("", "hello", ""), split_wrapper("\nhello\n\n", "\n"));
 
-        EXPECT_EQ(make_vector(3, "", "", "hello"), split_wrapper("\n\nhello", "\n"));
-        EXPECT_EQ(make_vector(3, "", "", "hello"), split_wrapper("\n\nhello\n", "\n"));
-        EXPECT_EQ(make_vector(4, "", "", "hello", ""), split_wrapper("\n\nhello\n\n", "\n"));
+        EXPECT_EQ(make_vector("", "", "hello"), split_wrapper("\n\nhello", "\n"));
+        EXPECT_EQ(make_vector("", "", "hello"), split_wrapper("\n\nhello\n", "\n"));
+        EXPECT_EQ(make_vector("", "", "hello", ""), split_wrapper("\n\nhello\n\n", "\n"));
     }
 
     TEST_CASE(Replace_GivenEmptyString_ReturnsEmptyString)

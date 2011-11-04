@@ -43,17 +43,99 @@ namespace foundation
 // Build a std::vector<> out of a set of POD values.
 //
 
-std::vector<std::string> make_vector(const size_t n, const char* val, ...);
+std::vector<std::string> make_vector(const char* v1);
+std::vector<std::string> make_vector(const char* v1, const char* v2);
+std::vector<std::string> make_vector(const char* v1, const char* v2, const char* v3);
+std::vector<std::string> make_vector(const char* v1, const char* v2, const char* v3, const char* v4);
+
+template <typename T> std::vector<T> make_vector(const T v1);
+template <typename T> std::vector<T> make_vector(const T v1, const T v2);
+template <typename T> std::vector<T> make_vector(const T v1, const T v2, const T v3);
+template <typename T> std::vector<T> make_vector(const T v1, const T v2, const T v3, const T v4);
+
+std::vector<std::string> make_vector_n(const size_t n, const char* val, ...);
 
 template <typename T>
-std::vector<T> make_vector(const size_t n, const T val, ...);
+std::vector<T> make_vector_n(const size_t n, const T val, ...);
 
 
 //
-// make_vector() functions implementation.
+// Implementation.
 //
 
-inline std::vector<std::string> make_vector(const size_t n, const char* val, ...)
+inline std::vector<std::string> make_vector(const char* v1)
+{
+    std::vector<std::string> vec;
+    vec.push_back(v1);
+    return vec;
+}
+
+inline std::vector<std::string> make_vector(const char* v1, const char* v2)
+{
+    std::vector<std::string> vec;
+    vec.push_back(v1);
+    vec.push_back(v2);
+    return vec;
+}
+
+inline std::vector<std::string> make_vector(const char* v1, const char* v2, const char* v3)
+{
+    std::vector<std::string> vec;
+    vec.push_back(v1);
+    vec.push_back(v2);
+    vec.push_back(v3);
+    return vec;
+}
+
+inline std::vector<std::string> make_vector(const char* v1, const char* v2, const char* v3, const char* v4)
+{
+    std::vector<std::string> vec;
+    vec.push_back(v1);
+    vec.push_back(v2);
+    vec.push_back(v3);
+    vec.push_back(v4);
+    return vec;
+}
+
+template <typename T>
+std::vector<T> make_vector(const T v1)
+{
+    std::vector<T> vec;
+    vec.push_back(v1);
+    return vec;
+}
+
+template <typename T>
+std::vector<T> make_vector(const T v1, const T v2)
+{
+    std::vector<T> vec;
+    vec.push_back(v1);
+    vec.push_back(v2);
+    return vec;
+}
+
+template <typename T>
+std::vector<T> make_vector(const T v1, const T v2, const T v3)
+{
+    std::vector<T> vec;
+    vec.push_back(v1);
+    vec.push_back(v2);
+    vec.push_back(v3);
+    return vec;
+}
+
+template <typename T>
+std::vector<T> make_vector(const T v1, const T v2, const T v3, const T v4)
+{
+    std::vector<T> vec;
+    vec.push_back(v1);
+    vec.push_back(v2);
+    vec.push_back(v3);
+    vec.push_back(v4);
+    return vec;
+}
+
+inline std::vector<std::string> make_vector_n(const size_t n, const char* val, ...)
 {
     assert(n > 0);
 
@@ -72,7 +154,7 @@ inline std::vector<std::string> make_vector(const size_t n, const char* val, ...
 }
 
 template <typename T>
-std::vector<T> make_vector(const size_t n, const T val, ...)
+std::vector<T> make_vector_n(const size_t n, const T val, ...)
 {
     assert(n > 0);
 

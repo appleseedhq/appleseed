@@ -45,7 +45,7 @@ TEST_SUITE(Foundation_Utility_MakeVector)
         vector<int> expected_vector;
         expected_vector.push_back(10);
 
-        EXPECT_EQ(expected_vector, make_vector(1, 10));
+        EXPECT_EQ(expected_vector, make_vector(10));
     }
 
     TEST_CASE(TestMakeVectorWithMultipleIntegerValues)
@@ -55,7 +55,7 @@ TEST_SUITE(Foundation_Utility_MakeVector)
         expected_vector.push_back(20);
         expected_vector.push_back(30);
 
-        EXPECT_EQ(expected_vector, make_vector(3, 10, 20, 30));
+        EXPECT_EQ(expected_vector, make_vector(10, 20, 30));
     }
 
     TEST_CASE(TestMakeVectorWithMultipleStringValues)
@@ -65,6 +65,6 @@ TEST_SUITE(Foundation_Utility_MakeVector)
         expected_vector.push_back("world");
         expected_vector.push_back("bunny");
 
-        EXPECT_EQ(expected_vector, make_vector(3, "hello", "world", "bunny"));
+        EXPECT_EQ(expected_vector, make_vector("hello", "world", "bunny"));
     }
 }
