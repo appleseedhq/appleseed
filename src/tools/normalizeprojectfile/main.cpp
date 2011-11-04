@@ -62,6 +62,8 @@ int main(int argc, const char* argv[])
     CommandLineHandler cl;
     cl.parse(argc, argv, logger);
 
+    global_logger().add_target(&logger.get_log_target());
+
     // Construct the schema filename.
     const filesystem::path schema_path =
           filesystem::path(Application::get_root_path())
