@@ -998,6 +998,8 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/bsdftraits.h
     renderer/modeling/bsdf/btdfwrapper.h
     renderer/modeling/bsdf/ibsdffactory.h
+    renderer/modeling/bsdf/kelemenbrdf.cpp
+    renderer/modeling/bsdf/kelemenbrdf.h
     renderer/modeling/bsdf/lambertianbrdf.cpp
     renderer/modeling/bsdf/lambertianbrdf.h
     renderer/modeling/bsdf/nullbsdf.h
