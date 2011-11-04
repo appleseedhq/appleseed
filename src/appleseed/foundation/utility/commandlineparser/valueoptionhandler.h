@@ -33,6 +33,7 @@
 #include "foundation/utility/commandlineparser/messagelist.h"
 #include "foundation/utility/commandlineparser/optionhandler.h"
 #include "foundation/utility/foreach.h"
+#include "foundation/utility/iostreamop.h"
 #include "foundation/utility/log.h"
 #include "foundation/utility/string.h"
 
@@ -67,18 +68,29 @@ class ValueOptionHandler
     void set_max_value_count(const size_t max_count);
     void set_exact_value_count(const size_t count);
 
+    // Set default values.
+    void set_default_values(const ValueVectorType& default_values);
+
     // Return the string values of this option.
     const StringVector& string_values() const;
 
     // Return the values of this option.
     const ValueVectorType& values() const;
 
+    // Return true if this option is set.
+    virtual bool is_set() const;
+
   private:
     size_t              m_min_value_count;
     size_t              m_max_value_count;
 
+    ValueVectorType     m_default_values;
+
     StringVector        m_string_values;
     ValueVectorType     m_values;
+
+    // Return a description of this option.
+    virtual std::string get_description() const;
 
     // Return the maximum number of values this option can handle.
     virtual size_t get_max_value_count() const;
@@ -125,6 +137,18 @@ inline void ValueOptionHandler<T>::set_exact_value_count(const size_t count)
 }
 
 template <typename T>
+inline void ValueOptionHandler<T>::set_default_values(const ValueVectorType& default_values)
+{
+    m_default_values = default_values;
+    m_values = default_values;
+
+    m_string_values.clear();
+
+    for (size_t i = 0; i < m_default_values.size(); ++i)
+        m_string_values.push_back(to_string(m_values[i]));
+}
+
+template <typename T>
 inline const StringVector& ValueOptionHandler<T>::string_values() const
 {
     return m_string_values;
@@ -134,6 +158,23 @@ template <typename T>
 inline const std::vector<T>& ValueOptionHandler<T>::values() const
 {
     return m_values;
+}
+
+template <typename T>
+inline bool ValueOptionHandler<T>::is_set() const
+{
+    return !m_default_values.empty() || m_occurrence_count > 0;
+}
+
+template <typename T>
+std::string ValueOptionHandler<T>::get_description() const
+{
+    std::string result = m_description;
+
+    if (!m_default_values.empty())
+        result += " (default: " + to_string(m_default_values) + ")";
+
+    return result;
 }
 
 template <typename T>
@@ -150,13 +191,14 @@ void ValueOptionHandler<T>::parse(
 {
     assert(vals.size() <= m_max_value_count);
 
-    if (m_found && !(m_flags & OptionHandler::Repeatable))
+    if ((m_flags & OptionHandler::Repeatable) == 0 && m_occurrence_count == 1)
     {
         // Error: option already specified.
         messages.add(
             LogMessage::Error,
-            "option '%s' already specified, ignoring this definition.\n",
+            "option '%s' already specified, ignoring all extra occurrences.\n",
             name.c_str());
+        ++m_occurrence_count;
         return;
     }
 
@@ -179,11 +221,12 @@ void ValueOptionHandler<T>::parse(
     }
 
     // Parse option values.
+    ValueVectorType parsed_values;
     for (const_each<StringVector> i = vals; i; ++i)
     {
         try
         {
-            m_values.push_back(from_string<T>(*i));
+            parsed_values.push_back(from_string<T>(*i));
         }
         catch (const ExceptionStringConversionError&)
         {
@@ -201,10 +244,11 @@ void ValueOptionHandler<T>::parse(
     }
 
     // Copy string values locally.
+    m_values = parsed_values;
     m_string_values = vals;
 
     // The option was successfully parsed.
-    m_found = true;
+    ++m_occurrence_count;
 }
 
 template <typename T>

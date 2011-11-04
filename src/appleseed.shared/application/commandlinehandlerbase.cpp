@@ -127,20 +127,20 @@ void CommandLineHandlerBase::parse(
 {
     impl->m_parser.parse(argc, argv);
 
-    if (impl->m_message_coloring.found())
+    if (impl->m_message_coloring.is_set())
         logger.enable_message_coloring();
 
-    if (impl->m_version.found())
+    if (impl->m_version.is_set())
         impl->print_version_information(logger);
 
-    if (impl->m_help.found())
+    if (impl->m_help.is_set())
     {
         const string program_name = filesystem::path(argv[0]).filename();
         print_program_usage(program_name.c_str(), logger);
         exit(0);
     }
 
-    if (impl->m_display_options.found())
+    if (impl->m_display_options.is_set())
     {
         LOG_INFO(logger, "recognized options:");
         impl->m_parser.print_recognized_options(logger);

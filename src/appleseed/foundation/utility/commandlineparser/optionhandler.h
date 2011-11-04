@@ -82,8 +82,8 @@ class OptionHandler
     // Set the flags for this option.
     void set_flags(const Flags flags);
 
-    // Return true if this option was found on the command line.
-    bool found() const;
+    // Return true if this option is set.
+    virtual bool is_set() const;
 
   protected:
     friend class CommandLineParser;
@@ -92,10 +92,11 @@ class OptionHandler
     std::string     m_description;
     std::string     m_syntax;
     Flags           m_flags;
-    bool            m_found;
+    size_t          m_occurrence_count;
 
-    // Return true if an argument matches any of the name of this option.
-    bool match_name(const std::string& arg) const;
+    // Return a description of this option.
+    // The returned value may be different than what was set with set_description().
+    virtual std::string get_description() const;
 
     // Return the maximum number of values this option can handle.
     virtual size_t get_max_value_count() const = 0;
@@ -108,6 +109,9 @@ class OptionHandler
 
     // Print this option to a string.
     virtual void print(std::string& s) const = 0;
+
+    // Return true if an argument matches any of the name of this option.
+    bool match_name(const std::string& arg) const;
 };
 
 
@@ -117,7 +121,7 @@ class OptionHandler
 
 inline OptionHandler::OptionHandler()
   : m_flags(None)
-  , m_found(false)
+  , m_occurrence_count(0)
 {
 }
 
@@ -141,9 +145,14 @@ inline void OptionHandler::set_flags(const Flags flags)
     m_flags = flags;
 }
 
-inline bool OptionHandler::found() const
+inline bool OptionHandler::is_set() const
 {
-    return m_found;
+    return m_occurrence_count > 0;
+}
+
+inline std::string OptionHandler::get_description() const
+{
+    return m_description;
 }
 
 inline bool OptionHandler::match_name(const std::string& arg) const

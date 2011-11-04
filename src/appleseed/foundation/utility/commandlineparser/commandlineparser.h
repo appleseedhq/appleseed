@@ -146,25 +146,25 @@ inline void CommandLineParser::print_usage(Logger& logger) const
         if (handler->m_flags & OptionHandler::Hidden)
             continue;
 
+        std::string line;
+
         // Build the header string for this option.
-        std::string header;
         for (const_each<StringVector> j = handler->m_names; j; ++j)
         {
             if (j > handler->m_names.begin())
-                header += ", ";
-            header += *j;
+                line += ", ";
+            line += *j;
         }
 
         // Pad with spaces so that descriptions are aligned.
-        if (max_header_length > header.size())
-            header += std::string(max_header_length - header.size(), ' ');
+        if (max_header_length > line.size())
+            line += std::string(max_header_length - line.size(), ' ');
+
+        // Append the description.
+        line += "  " + handler->get_description();
 
         // Emit the line.
-        LOG_INFO(
-            logger,
-            "  %s  %s",
-            header.c_str(),
-            handler->m_description.c_str());
+        LOG_INFO(logger, "  %s", line.c_str());
     }
 }
 
@@ -194,7 +194,7 @@ inline void CommandLineParser::print_recognized_options(Logger& logger)
         const OptionHandler* handler = *i;
 
         // Skip options that were not found on the command line.
-        if (!handler->found())
+        if (handler->m_occurrence_count == 0)
             continue;
 
         ++found_options;
@@ -210,7 +210,7 @@ inline void CommandLineParser::print_recognized_options(Logger& logger)
         for (const_each<StringVector> i = m_default_option.m_values; i; ++i)
         {
             ++found_options;
-            LOG_INFO(logger, "  default option: %s", i->c_str());
+            LOG_INFO(logger, "  positional argument: %s", i->c_str());
         }
     }
 

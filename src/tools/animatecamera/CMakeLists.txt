@@ -34,7 +34,6 @@
 set (sources
     commandlinehandler.cpp
     commandlinehandler.h
-    defaults.h
     main.cpp
 )
 list (APPEND animatecamera_sources

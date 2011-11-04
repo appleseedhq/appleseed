@@ -107,21 +107,14 @@ namespace
         if (project.get() == 0)
             exit(1);
 
-        const double normalized_distance =
-            g_cl.m_camera_distance.found()
-                ? g_cl.m_camera_distance.values()[0]
-                : DefaultNormalizedCameraDistance;
-
-        const double normalized_elevation =
-            g_cl.m_camera_elevation.found()
-                ? g_cl.m_camera_elevation.values()[0]
-                : DefaultNormalizedCameraElevation;
-
         // Retrieve the scene's bounding box.
         const AABB3d scene_bbox(project->get_scene()->compute_bbox());
         const Vector3d extent = scene_bbox.extent();
         const double max_radius = 0.5 * max(extent.x, extent.z);
         const double max_height = 0.5 * extent.y;
+
+        const double normalized_distance = g_cl.m_camera_distance.values()[0];
+        const double normalized_elevation = g_cl.m_camera_elevation.values()[0];
 
         for (int i = 0; i < frame_count; ++i)
         {
@@ -233,10 +226,7 @@ int main(int argc, const char* argv[])
     const string base_output_filename =
         filesystem::path(g_cl.m_filenames.values()[1]).stem();
 
-    const int frame_count =
-        g_cl.m_frame_count.found()
-            ? g_cl.m_frame_count.values()[0]
-            : DefaultFrameCount;
+    const int frame_count = g_cl.m_frame_count.values()[0];
 
     if (frame_count < 1)
         LOG_FATAL(logger, "the frame count must be greater than or equal to 1.");

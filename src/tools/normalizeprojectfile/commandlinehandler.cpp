@@ -60,7 +60,7 @@ void CommandLineHandler::parse(
 {
     CommandLineHandlerBase::parse(argc, argv, logger);
 
-    if (!m_filename.found())
+    if (!m_filename.is_set())
         exit(0);
 }
 

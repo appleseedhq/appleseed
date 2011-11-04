@@ -82,7 +82,7 @@ int main(int argc, const char* argv[])
     // Retrieve the tile size.
     size_t tile_width = 32;
     size_t tile_height = 32;
-    if (g_cl.m_tile_size.found())
+    if (g_cl.m_tile_size.is_set())
     {
         const int tw = g_cl.m_tile_size.values()[0];
         const int th = g_cl.m_tile_size.values()[1];
@@ -123,7 +123,7 @@ int main(int argc, const char* argv[])
         for (size_t y = 0; y < props.m_tile_count_y; ++y)
         {
             // Print a progress message.
-            if (g_cl.m_progress_messages.found())
+            if (g_cl.m_progress_messages.is_set())
             {
                 LOG_INFO(
                     logger,

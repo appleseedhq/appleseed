@@ -29,14 +29,12 @@
 // Interface header.
 #include "commandlinehandler.h"
 
-// Project headers.
-#include "defaults.h"
-
 // appleseed.shared headers.
 #include "application/superlogger.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/log.h"
+#include "foundation/utility/makevector.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
@@ -57,29 +55,26 @@ CommandLineHandler::CommandLineHandler()
 
     m_frame_count.add_name("--frames");
     m_frame_count.add_name("-f");
-    m_frame_count.set_description(
-        "set the number of frames in the animation (default " +
-        to_string(DefaultFrameCount) + ")");
+    m_frame_count.set_description("set the number of frames in the animation");
     m_frame_count.set_syntax("count");
     m_frame_count.set_exact_value_count(1);
+    m_frame_count.set_default_values(make_vector(20));
     parser().add_option_handler(&m_frame_count);
 
     m_camera_distance.add_name("--distance");
     m_camera_distance.add_name("-d");
-    m_camera_distance.set_description(
-        "set the normalized distance from the camera to the scene (default " +
-        to_string(DefaultNormalizedCameraDistance) + ")");
+    m_camera_distance.set_description("set the normalized distance from the camera to the scene");
     m_camera_distance.set_syntax("scalar");
     m_camera_distance.set_exact_value_count(1);
+    m_camera_distance.set_default_values(make_vector(10.0));
     parser().add_option_handler(&m_camera_distance);
 
     m_camera_elevation.add_name("--elevation");
     m_camera_elevation.add_name("-e");
-    m_camera_elevation.set_description(
-        "set the normalized elevation of the camera (default " +
-        to_string(DefaultNormalizedCameraElevation) + ")");
+    m_camera_elevation.set_description("set the normalized elevation of the camera");
     m_camera_elevation.set_syntax("scalar");
     m_camera_elevation.set_exact_value_count(1);
+    m_camera_elevation.set_default_values(make_vector(2.0));
     parser().add_option_handler(&m_camera_elevation);
 }
 
@@ -90,7 +85,7 @@ void CommandLineHandler::parse(
 {
     CommandLineHandlerBase::parse(argc, argv, logger);
 
-    if (!m_filenames.found())
+    if (!m_filenames.is_set())
         exit(0);
 }
 

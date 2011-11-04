@@ -80,17 +80,19 @@ inline void FlagOptionHandler::parse(
 {
     assert(values.empty());
 
-    if (m_found && !(m_flags & OptionHandler::Repeatable))
+    if ((m_flags & OptionHandler::Repeatable) == 0 && m_occurrence_count == 1)
     {
+        // Error: option already specified.
         messages.add(
             LogMessage::Error,
-            "option '%s' already specified.\n",
+            "flag '%s' already specified, ignoring all extra occurrences.\n",
             name.c_str());
+        ++m_occurrence_count;
         return;
     }
 
     // The option was successfully parsed.
-    m_found = true;
+    ++m_occurrence_count;
 }
 
 inline void FlagOptionHandler::print(std::string& s) const

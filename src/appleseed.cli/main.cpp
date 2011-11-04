@@ -139,7 +139,7 @@ namespace
         auto_release_ptr<ITestListener> listener(
             create_logger_test_listener(
                 logger,
-                g_cl.m_verbose_unit_tests.found()));
+                g_cl.m_verbose_unit_tests.is_set()));
 
         TestResult result;
 
@@ -233,7 +233,7 @@ namespace
     void apply_command_line_options(ParamArray& params)
     {
         // Apply rendering threads option.
-        if (g_cl.m_rendering_threads.found())
+        if (g_cl.m_rendering_threads.is_set())
         {
             params.insert_path(
                 "generic_frame_renderer.rendering_threads",
@@ -241,7 +241,7 @@ namespace
         }
 
         // Apply window option.
-        if (g_cl.m_window.found())
+        if (g_cl.m_window.is_set())
         {
             const string window =
                   g_cl.m_window.string_values()[0] + ' ' +
@@ -252,7 +252,7 @@ namespace
         }
 
         // Apply samples option.
-        if (g_cl.m_samples.found())
+        if (g_cl.m_samples.is_set())
         {
             params.insert_path(
                 "generic_tile_renderer.min_samples",
@@ -263,7 +263,7 @@ namespace
         }
 
         // Apply shading override option.
-        if (g_cl.m_override_shading.found())
+        if (g_cl.m_override_shading.is_set())
         {
             params.insert_path(
                 "shading_engine.override_shading.mode",
@@ -288,7 +288,7 @@ namespace
 
     void apply_resolution_command_line_option(Project* project)
     {
-        if (g_cl.m_resolution.found())
+        if (g_cl.m_resolution.is_set())
         {
             const string resolution =
                   g_cl.m_resolution.string_values()[0] + ' ' +
@@ -367,7 +367,7 @@ namespace
             &archive_path);
 
         // Write the frame to disk.
-        if (g_cl.m_output.found())
+        if (g_cl.m_output.is_set())
         {
             RENDERER_LOG_INFO("writing frame to disk...");
             project.get_frame()->write(g_cl.m_output.values()[0].c_str());
@@ -376,7 +376,7 @@ namespace
 #if defined __APPLE__ || defined _WIN32
 
         // Display the output image.
-        if (g_cl.m_display_output.found())
+        if (g_cl.m_display_output.is_set())
             display_frame(archive_path);
 
 #endif
@@ -418,7 +418,7 @@ namespace
             return;
 
         // Retrieve the name of the configuration to use.
-        const string config_name = g_cl.m_configuration.found()
+        const string config_name = g_cl.m_configuration.is_set()
             ? g_cl.m_configuration.values()[0]
             : "final";
 
@@ -471,11 +471,11 @@ int main(int argc, const char* argv[])
         logger.enable_message_coloring();
 
     // Run unit tests.
-    if (g_cl.m_run_unit_tests.found())
+    if (g_cl.m_run_unit_tests.is_set())
         run_unit_tests(logger);
 
     // Run unit benchmarks.
-    if (g_cl.m_run_unit_benchmarks.found())
+    if (g_cl.m_run_unit_benchmarks.is_set())
         run_unit_benchmarks(logger);
 
     global_logger().add_target(&logger.get_log_target());
