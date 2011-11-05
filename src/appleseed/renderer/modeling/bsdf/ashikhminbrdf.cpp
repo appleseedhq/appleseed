@@ -54,19 +54,6 @@ namespace renderer
 namespace
 {
     //
-    // Return x^5.
-    //
-
-    inline double pow5(const double x)
-    {
-        double y = x * x;
-        y *= y;
-        y *= x;
-        return y;
-    }
-
-
-    //
     // Ashikhmin-Shirley BRDF.
     //
     // References:
@@ -468,6 +455,12 @@ namespace
         SVal            m_uniform_sval;
         bool            m_compute_rval_return_value;
 
+        static double pow5(const double x)
+        {
+            const double x2 = x * x;
+            return x2 * x2 * x;
+        }
+
         static bool compute_rval(const Spectrum& raw_rd, const Spectrum& raw_rg, RVal& rval)
         {
             const Spectrum rd = saturate(raw_rd);
@@ -546,47 +539,39 @@ DictionaryArray AshikhminBRDFFactory::get_widget_definitions() const
 
     DictionaryArray definitions;
 
-    {
-        Dictionary widget;
-        widget.insert("name", "diffuse_reflectance");
-        widget.insert("label", "Diffuse Reflectance");
-        widget.insert("widget", "entity_picker");
-        widget.insert("entity_types", entity_types);
-        widget.insert("use", "required");
-        widget.insert("default", "");
-        definitions.push_back(widget);
-    }
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "diffuse_reflectance")
+            .insert("label", "Diffuse Reflectance")
+            .insert("widget", "entity_picker")
+            .insert("entity_types", entity_types)
+            .insert("use", "required")
+            .insert("default", ""));
 
-    {
-        Dictionary widget;
-        widget.insert("name", "glossy_reflectance");
-        widget.insert("label", "Glossy Reflectance");
-        widget.insert("widget", "entity_picker");
-        widget.insert("entity_types", entity_types);
-        widget.insert("use", "required");
-        widget.insert("default", "");
-        definitions.push_back(widget);
-    }
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "glossy_reflectance")
+            .insert("label", "Glossy Reflectance")
+            .insert("widget", "entity_picker")
+            .insert("entity_types", entity_types)
+            .insert("use", "required")
+            .insert("default", ""));
 
-    {
-        Dictionary widget;
-        widget.insert("name", "shininess_u");
-        widget.insert("label", "Shininess U");
-        widget.insert("widget", "text_box");
-        widget.insert("use", "required");
-        widget.insert("default", "1000.0");
-        definitions.push_back(widget);
-    }
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "shininess_u")
+            .insert("label", "Shininess U")
+            .insert("widget", "text_box")
+            .insert("use", "required")
+            .insert("default", "1000.0"));
 
-    {
-        Dictionary widget;
-        widget.insert("name", "shininess_v");
-        widget.insert("label", "Shininess V");
-        widget.insert("widget", "text_box");
-        widget.insert("use", "required");
-        widget.insert("default", "1000.0");
-        definitions.push_back(widget);
-    }
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "shininess_v")
+            .insert("label", "Shininess V")
+            .insert("widget", "text_box")
+            .insert("use", "required")
+            .insert("default", "1000.0"));
 
     return definitions;
 }
