@@ -30,6 +30,7 @@
 #include "phongbrdf.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/bsdf/brdfwrapper.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/input/inputarray.h"
@@ -38,10 +39,10 @@
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exceptionnotimplemented.h"
 #include "foundation/math/basis.h"
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/containers/specializedarrays.h"
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -65,12 +66,12 @@ namespace
         {
         }
 
-        virtual void release()
+        virtual void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const
+        virtual const char* get_model() const override
         {
             return Model;
         }
