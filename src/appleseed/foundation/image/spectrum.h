@@ -37,6 +37,7 @@
 #endif
 
 // Standard headers.
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <cstddef>
@@ -288,45 +289,45 @@ inline bool fz(const RegularSpectrum<T, N>& s, const T eps)
 template <typename T, size_t N>
 inline RegularSpectrum<T, N> operator+(const RegularSpectrum<T, N>& lhs, const RegularSpectrum<T, N>& rhs)
 {
-    RegularSpectrum<T, N> spect;
+    RegularSpectrum<T, N> result;
 
     for (size_t i = 0; i < N; ++i)
-        spect[i] = lhs[i] + rhs[i];
+        result[i] = lhs[i] + rhs[i];
 
-    return spect;
+    return result;
 }
 
 template <typename T, size_t N>
 inline RegularSpectrum<T, N> operator-(const RegularSpectrum<T, N>& lhs, const RegularSpectrum<T, N>& rhs)
 {
-    RegularSpectrum<T, N> spect;
+    RegularSpectrum<T, N> result;
 
     for (size_t i = 0; i < N; ++i)
-        spect[i] = lhs[i] - rhs[i];
+        result[i] = lhs[i] - rhs[i];
 
-    return spect;
+    return result;
 }
 
 template <typename T, size_t N>
 inline RegularSpectrum<T, N> operator-(const RegularSpectrum<T, N>& lhs)
 {
-    RegularSpectrum<T, N> spect;
+    RegularSpectrum<T, N> result;
 
     for (size_t i = 0; i < N; ++i)
-        spect[i] = -lhs[i];
+        result[i] = -lhs[i];
 
-    return spect;
+    return result;
 }
 
 template <typename T, size_t N>
 inline RegularSpectrum<T, N> operator*(const RegularSpectrum<T, N>& lhs, const T rhs)
 {
-    RegularSpectrum<T, N> spect;
+    RegularSpectrum<T, N> result;
 
     for (size_t i = 0; i < N; ++i)
-        spect[i] = lhs[i] * rhs;
+        result[i] = lhs[i] * rhs;
 
-    return spect;
+    return result;
 }
 
 template <typename T, size_t N>
@@ -338,12 +339,12 @@ inline RegularSpectrum<T, N> operator*(const T lhs, const RegularSpectrum<T, N>&
 template <typename T, size_t N>
 inline RegularSpectrum<T, N> operator*(const RegularSpectrum<T, N>& lhs, const RegularSpectrum<T, N>& rhs)
 {
-    RegularSpectrum<T, N> spect;
+    RegularSpectrum<T, N> result;
 
     for (size_t i = 0; i < N; ++i)
-        spect[i] = lhs[i] * rhs[i];
+        result[i] = lhs[i] * rhs[i];
 
-    return spect;
+    return result;
 }
 
 template <typename T, size_t N>
@@ -355,12 +356,12 @@ inline RegularSpectrum<T, N> operator/(const RegularSpectrum<T, N>& lhs, const T
 template <typename T, size_t N>
 inline RegularSpectrum<T, N> operator/(const RegularSpectrum<T, N>& lhs, const RegularSpectrum<T, N>& rhs)
 {
-    RegularSpectrum<T, N> spect;
+    RegularSpectrum<T, N> result;
 
     for (size_t i = 0; i < N; ++i)
-        spect[i] = lhs[i] / rhs[i];
+        result[i] = lhs[i] / rhs[i];
 
-    return spect;
+    return result;
 }
 
 template <typename T, size_t N>
@@ -612,5 +613,41 @@ inline T average_value(const RegularSpectrum<T, N>& s)
 }
 
 }       // namespace foundation
+
+
+//
+// Overload std::min() and std::max() for component-wise min/max operations on spectra.
+//
+
+namespace std
+{
+
+template <typename T, size_t N>
+inline foundation::RegularSpectrum<T, N> min(
+    const foundation::RegularSpectrum<T, N>&    lhs,
+    const foundation::RegularSpectrum<T, N>&    rhs)
+{
+    foundation::RegularSpectrum<T, N> result;
+
+    for (size_t i = 0; i < N; ++i)
+        result[i] = min(lhs[i], rhs[i]);
+
+    return result;
+}
+
+template <typename T, size_t N>
+inline foundation::RegularSpectrum<T, N> max(
+    const foundation::RegularSpectrum<T, N>&    lhs,
+    const foundation::RegularSpectrum<T, N>&    rhs)
+{
+    foundation::RegularSpectrum<T, N> result;
+
+    for (size_t i = 0; i < N; ++i)
+        result[i] = max(lhs[i], rhs[i]);
+
+    return result;
+}
+
+}       // namespace std
 
 #endif  // !APPLESEED_FOUNDATION_IMAGE_SPECTRUM_H
