@@ -35,7 +35,6 @@
 // appleseed.foundation headers.
 #include "foundation/utility/log.h"
 #include "foundation/utility/makevector.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <cstdlib>
