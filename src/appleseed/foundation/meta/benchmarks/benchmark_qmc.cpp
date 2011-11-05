@@ -40,7 +40,7 @@ using namespace foundation;
 BENCHMARK_SUITE(Foundation_Math_QMC)
 {
     template <typename T>
-    struct Fixture
+    struct ScalarFixture
     {
         T m_x;
 
@@ -86,73 +86,79 @@ BENCHMARK_SUITE(Foundation_Math_QMC)
         }
     };
 
-    BENCHMARK_CASE_F(RadicalInverseBase2_SinglePrecision, Fixture<float>)
+    template <typename T>
+    struct Vector2Fixture
+    {
+        Vector<T, 2> m_x;
+
+        void halton_payload()
+        {
+            static const size_t Bases[] = { 2, 3 };
+
+            m_x = Vector<T, 2>(0.0f);
+
+            for (size_t i = 0; i < 64; ++i)
+                m_x += halton_sequence<T, 2>(Bases, i);
+        }
+
+        void hammersley_payload()
+        {
+            static const size_t Bases[] = { 2 };
+
+            m_x = Vector<T, 2>(0.0f);
+
+            for (size_t i = 0; i < 64; ++i)
+                m_x += hammersley_sequence<T, 2>(Bases, i, 64);
+        }
+    };
+
+    BENCHMARK_CASE_F(RadicalInverseBase2_SinglePrecision, ScalarFixture<float>)
     {
         radical_inverse_base2_payload();
     }
 
-    BENCHMARK_CASE_F(RadicalInverse_SinglePrecision, Fixture<float>)
+    BENCHMARK_CASE_F(RadicalInverse_SinglePrecision, ScalarFixture<float>)
     {
         radical_inverse_payload();
     }
 
-    BENCHMARK_CASE_F(PermutedRadicalInverse_SinglePrecision, Fixture<float>)
+    BENCHMARK_CASE_F(PermutedRadicalInverse_SinglePrecision, ScalarFixture<float>)
     {
         permuted_radical_inverse_payload();
     }
 
-    BENCHMARK_CASE_F(RadicalInverseBase2_DoublePrecision, Fixture<double>)
+    BENCHMARK_CASE_F(RadicalInverseBase2_DoublePrecision, ScalarFixture<double>)
     {
         radical_inverse_base2_payload();
     }
 
-    BENCHMARK_CASE_F(RadicalInverse_DoublePrecision, Fixture<double>)
+    BENCHMARK_CASE_F(RadicalInverse_DoublePrecision, ScalarFixture<double>)
     {
         radical_inverse_payload();
     }
 
-    BENCHMARK_CASE_F(PermutedRadicalInverse_DoublePrecision, Fixture<double>)
+    BENCHMARK_CASE_F(PermutedRadicalInverse_DoublePrecision, ScalarFixture<double>)
     {
         permuted_radical_inverse_payload();
     }
 
-    BENCHMARK_CASE_F(HaltonSequence_Bases2And3_SinglePrecision, Fixture<Vector2f>)
+    BENCHMARK_CASE_F(HaltonSequence_Bases2And3_SinglePrecision, Vector2Fixture<float>)
     {
-        static const size_t Bases[] = { 2, 3 };
-
-        m_x = Vector2f(0.0f);
-
-        for (size_t i = 0; i < 64; ++i)
-            m_x += halton_sequence<float, 2>(Bases, i);
+        halton_payload();
     }
 
-    BENCHMARK_CASE_F(HaltonSequence_Bases2And3_DoublePrecision, Fixture<Vector2d>)
+    BENCHMARK_CASE_F(HaltonSequence_Bases2And3_DoublePrecision, Vector2Fixture<double>)
     {
-        static const size_t Bases[] = { 2, 3 };
-
-        m_x = Vector2d(0.0);
-
-        for (size_t i = 0; i < 64; ++i)
-            m_x += halton_sequence<double, 2>(Bases, i);
+        halton_payload();
     }
 
-    BENCHMARK_CASE_F(HammersleySequence_Bases2And3_SinglePrecision, Fixture<Vector2f>)
+    BENCHMARK_CASE_F(HammersleySequence_Base2_SinglePrecision, Vector2Fixture<float>)
     {
-        static const size_t Bases[] = { 2, 3 };
-
-        m_x = Vector2f(0.0f);
-
-        for (size_t i = 0; i < 64; ++i)
-            m_x += hammersley_sequence<float, 2>(Bases, i, 128);
+        hammersley_payload();
     }
 
-    BENCHMARK_CASE_F(HammersleySequence_Bases2And3_DoublePrecision, Fixture<Vector2d>)
+    BENCHMARK_CASE_F(HammersleySequence_Base2_DoublePrecision, Vector2Fixture<double>)
     {
-        static const size_t Bases[] = { 2, 3 };
-
-        m_x = Vector2d(0.0);
-
-        for (size_t i = 0; i < 64; ++i)
-            m_x += hammersley_sequence<double, 2>(Bases, i, 128);
+        hammersley_payload();
     }
 }
