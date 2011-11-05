@@ -479,45 +479,45 @@ inline bool fz(const Vector<T, N>& v, const T eps)
 template <typename T, size_t N>
 inline Vector<T, N> operator+(const Vector<T, N>& lhs, const Vector<T, N>& rhs)
 {
-    Vector<T, N> vec;
+    Vector<T, N> result;
 
     for (size_t i = 0; i < N; ++i)
-        vec[i] = lhs[i] + rhs[i];
+        result[i] = lhs[i] + rhs[i];
 
-    return vec;
+    return result;
 }
 
 template <typename T, size_t N>
 inline Vector<T, N> operator-(const Vector<T, N>& lhs, const Vector<T, N>& rhs)
 {
-    Vector<T, N> vec;
+    Vector<T, N> result;
 
     for (size_t i = 0; i < N; ++i)
-        vec[i] = lhs[i] - rhs[i];
+        result[i] = lhs[i] - rhs[i];
 
-    return vec;
+    return result;
 }
 
 template <typename T, size_t N>
 inline Vector<T, N> operator-(const Vector<T, N>& lhs)
 {
-    Vector<T, N> vec;
+    Vector<T, N> result;
 
     for (size_t i = 0; i < N; ++i)
-        vec[i] = -lhs[i];
+        result[i] = -lhs[i];
 
-    return vec;
+    return result;
 }
 
 template <typename T, size_t N>
 inline Vector<T, N> operator*(const Vector<T, N>& lhs, const T rhs)
 {
-    Vector<T, N> vec;
+    Vector<T, N> result;
 
     for (size_t i = 0; i < N; ++i)
-        vec[i] = lhs[i] * rhs;
+        result[i] = lhs[i] * rhs;
 
-    return vec;
+    return result;
 }
 
 template <typename T, size_t N>
@@ -535,23 +535,23 @@ inline Vector<T, N> operator/(const Vector<T, N>& lhs, const T rhs)
 template <typename T, size_t N>
 inline Vector<T, N> operator*(const Vector<T, N>& lhs, const Vector<T, N>& rhs)
 {
-    Vector<T, N> vec;
+    Vector<T, N> result;
 
     for (size_t i = 0; i < N; ++i)
-        vec[i] = lhs[i] * rhs[i];
+        result[i] = lhs[i] * rhs[i];
 
-    return vec;
+    return result;
 }
 
 template <typename T, size_t N>
 inline Vector<T, N> operator/(const Vector<T, N>& lhs, const Vector<T, N>& rhs)
 {
-    Vector<T, N> vec;
+    Vector<T, N> result;
 
     for (size_t i = 0; i < N; ++i)
-        vec[i] = lhs[i] / rhs[i];
+        result[i] = lhs[i] / rhs[i];
 
-    return vec;
+    return result;
 }
 
 template <typename T, size_t N>
@@ -708,23 +708,23 @@ inline Vector<T, N> clamp(
     const T             min,
     const T             max)
 {
-    Vector<T, N> vec;
+    Vector<T, N> result;
 
     for (size_t i = 0; i < N; ++i)
-        vec[i] = clamp(v[i], min, max);
+        result[i] = clamp(v[i], min, max);
 
-    return vec;
+    return result;
 }
 
 template <typename T, size_t N>
 inline Vector<T, N> saturate(const Vector<T, N>& v)
 {
-    Vector<T, N> vec;
+    Vector<T, N> result;
 
     for (size_t i = 0; i < N; ++i)
-        vec[i] = saturate(v[i]);
+        result[i] = saturate(v[i]);
 
-    return vec;
+    return result;
 }
 
 template <typename T, size_t N>
@@ -1029,11 +1029,11 @@ inline const T& Vector<T, 3>::operator[](const size_t i) const
 template <typename T>
 inline Vector<T, 3> cross(const Vector<T, 3>& lhs, const Vector<T, 3>& rhs)
 {
-    Vector<T, 3> vec;
-    vec.x = lhs.y * rhs.z - rhs.y * lhs.z;
-    vec.y = lhs.z * rhs.x - rhs.z * lhs.x;
-    vec.z = lhs.x * rhs.y - rhs.x * lhs.y;
-    return vec;
+    Vector<T, 3> result;
+    result.x = lhs.y * rhs.z - rhs.y * lhs.z;
+    result.y = lhs.z * rhs.x - rhs.z * lhs.x;
+    result.z = lhs.x * rhs.y - rhs.x * lhs.y;
+    return result;
 }
 
 
@@ -1115,23 +1115,23 @@ namespace std
 template <typename T, size_t N>
 inline foundation::Vector<T, N> min(const foundation::Vector<T, N>& lhs, const foundation::Vector<T, N>& rhs)
 {
-    foundation::Vector<T, N> vec;
+    foundation::Vector<T, N> result;
 
     for (size_t i = 0; i < N; ++i)
-        vec[i] = min(lhs[i], rhs[i]);
+        result[i] = min(lhs[i], rhs[i]);
 
-    return vec;
+    return result;
 }
 
 template <typename T, size_t N>
 inline foundation::Vector<T, N> max(const foundation::Vector<T, N>& lhs, const foundation::Vector<T, N>& rhs)
 {
-    foundation::Vector<T, N> vec;
+    foundation::Vector<T, N> result;
 
     for (size_t i = 0; i < N; ++i)
-        vec[i] = max(lhs[i], rhs[i]);
+        result[i] = max(lhs[i], rhs[i]);
 
-    return vec;
+    return result;
 }
 
 }       // namespace std

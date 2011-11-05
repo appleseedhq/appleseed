@@ -368,45 +368,45 @@ inline bool fz(const Color<T, N>& v, const T eps)
 template <typename T, size_t N>
 inline Color<T, N> operator+(const Color<T, N>& lhs, const Color<T, N>& rhs)
 {
-    Color<T, N> col;
+    Color<T, N> result;
 
     for (size_t i = 0; i < N; ++i)
-        col[i] = lhs[i] + rhs[i];
+        result[i] = lhs[i] + rhs[i];
 
-    return col;
+    return result;
 }
 
 template <typename T, size_t N>
 inline Color<T, N> operator-(const Color<T, N>& lhs, const Color<T, N>& rhs)
 {
-    Color<T, N> col;
+    Color<T, N> result;
 
     for (size_t i = 0; i < N; ++i)
-        col[i] = lhs[i] - rhs[i];
+        result[i] = lhs[i] - rhs[i];
 
-    return col;
+    return result;
 }
 
 template <typename T, size_t N>
 inline Color<T, N> operator-(const Color<T, N>& lhs)
 {
-    Color<T, N> col;
+    Color<T, N> result;
 
     for (size_t i = 0; i < N; ++i)
-        col[i] = -lhs[i];
+        result[i] = -lhs[i];
 
-    return col;
+    return result;
 }
 
 template <typename T, size_t N>
 inline Color<T, N> operator*(const Color<T, N>& lhs, const T rhs)
 {
-    Color<T, N> col;
+    Color<T, N> result;
 
     for (size_t i = 0; i < N; ++i)
-        col[i] = lhs[i] * rhs;
+        result[i] = lhs[i] * rhs;
 
-    return col;
+    return result;
 }
 
 template <typename T, size_t N>
@@ -418,12 +418,12 @@ inline Color<T, N> operator*(const T lhs, const Color<T, N>& rhs)
 template <typename T, size_t N>
 inline Color<T, N> operator*(const Color<T, N>& lhs, const Color<T, N>& rhs)
 {
-    Color<T, N> col;
+    Color<T, N> result;
 
     for (size_t i = 0; i < N; ++i)
-        col[i] = lhs[i] * rhs[i];
+        result[i] = lhs[i] * rhs[i];
 
-    return col;
+    return result;
 }
 
 template <typename T, size_t N>
@@ -435,12 +435,12 @@ inline Color<T, N> operator/(const Color<T, N>& lhs, const T rhs)
 template <typename T, size_t N>
 inline Color<T, N> operator/(const Color<T, N>& lhs, const Color<T, N>& rhs)
 {
-    Color<T, N> col;
+    Color<T, N> result;
 
     for (size_t i = 0; i < N; ++i)
-        col[i] = lhs[i] / rhs[i];
+        result[i] = lhs[i] / rhs[i];
 
-    return col;
+    return result;
 }
 
 template <typename T, size_t N>
@@ -497,23 +497,23 @@ inline Color<T, N>& operator/=(Color<T, N>& lhs, const Color<T, N>& rhs)
 template <typename T, size_t N>
 inline Color<T, N> clamp(const Color<T, N>& c, const T min, const T max)
 {
-    Color<T, N> col;
+    Color<T, N> result;
 
     for (size_t i = 0; i < N; ++i)
-        col[i] = clamp(c[i], min, max);
+        result[i] = clamp(c[i], min, max);
 
-    return col;
+    return result;
 }
 
 template <typename T, size_t N>
 inline Color<T, N> saturate(const Color<T, N>& c)
 {
-    Color<T, N> col;
+    Color<T, N> result;
 
     for (size_t i = 0; i < N; ++i)
-        col[i] = saturate(c[i]);
+        result[i] = saturate(c[i]);
 
-    return col;
+    return result;
 }
 
 template <typename T, size_t N>
@@ -859,23 +859,23 @@ namespace std
 template <typename T, size_t N>
 inline foundation::Color<T, N> min(const foundation::Color<T, N>& lhs, const foundation::Color<T, N>& rhs)
 {
-    foundation::Color<T, N> col;
+    foundation::Color<T, N> result;
 
     for (size_t i = 0; i < N; ++i)
-        col[i] = min(lhs[i], rhs[i]);
+        result[i] = min(lhs[i], rhs[i]);
 
-    return col;
+    return result;
 }
 
 template <typename T, size_t N>
 inline foundation::Color<T, N> max(const foundation::Color<T, N>& lhs, const foundation::Color<T, N>& rhs)
 {
-    foundation::Color<T, N> col;
+    foundation::Color<T, N> result;
 
     for (size_t i = 0; i < N; ++i)
-        col[i] = max(lhs[i], rhs[i]);
+        result[i] = max(lhs[i], rhs[i]);
 
-    return col;
+    return result;
 }
 
 }       // namespace std
