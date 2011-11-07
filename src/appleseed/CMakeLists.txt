@@ -243,6 +243,7 @@ set (foundation_math_sources
     foundation/math/intersection.h
     foundation/math/knn.h
     foundation/math/matrix.h
+    foundation/math/microfacet.h
     foundation/math/minmax.h
     foundation/math/mis.h
     foundation/math/noise.cpp
@@ -369,6 +370,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_makevector.cpp
     foundation/meta/tests/test_matrix.cpp
     foundation/meta/tests/test_memory.cpp
+    foundation/meta/tests/test_microfacet.cpp
     foundation/meta/tests/test_minmax.cpp
     foundation/meta/tests/test_noise.cpp
     foundation/meta/tests/test_objmeshfilereader.cpp
