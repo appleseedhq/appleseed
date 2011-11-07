@@ -123,15 +123,17 @@ void MapleFile::with(const string& package)
 
 void MapleFile::plot(
     const string&   variable,
-    const string&   color,
-    const string&   legend)
+    const string&   legend,
+    const string&   style,
+    const string&   color)
 {
     fprintf(
         m_file,
-        "plot([%s],color=[%s],legend=[\"%s\"]);\n",
+        "plot([%s],legend=[\"%s\"],style=[%s],color=[%s]);\n",
         variable.c_str(),
-        color.c_str(),
-        legend.c_str());
+        legend.c_str(),
+        style.c_str(),
+        color.c_str());
 }
 
 void MapleFile::plot(const vector<MaplePlotDef>& plots)
@@ -156,15 +158,6 @@ void MapleFile::plot(const vector<MaplePlotDef>& plots)
         sstr << "\"" << plots[i].m_legend << "\"";
     }
 
-    sstr << "],color=[";
-
-    for (size_t i = 0; i < plots.size(); ++i)
-    {
-        if (i > 0)
-            sstr << ",";
-        sstr << plots[i].m_color;
-    }
-
     sstr << "],style=[";
 
     for (size_t i = 0; i < plots.size(); ++i)
@@ -172,6 +165,15 @@ void MapleFile::plot(const vector<MaplePlotDef>& plots)
         if (i > 0)
             sstr << ",";
         sstr << plots[i].m_style;
+    }
+
+    sstr << "],color=[";
+
+    for (size_t i = 0; i < plots.size(); ++i)
+    {
+        if (i > 0)
+            sstr << ",";
+        sstr << plots[i].m_color;
     }
 
     sstr << "]);" << endl;

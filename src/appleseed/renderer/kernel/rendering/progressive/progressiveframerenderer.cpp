@@ -316,7 +316,7 @@ namespace
                 {
                     MapleFile file("RMS Deviation.mpl");
                     file.define("rmsd", m_spp_count_history, m_rmsd_history);
-                    file.plot("rmsd", "blue", "RMS Deviation");
+                    file.plot("rmsd", "RMS Deviation");
                 }
             }
 

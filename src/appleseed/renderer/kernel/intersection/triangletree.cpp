@@ -866,7 +866,6 @@ namespace
             maple_file.define("histogram", abscissa, histogram);
             maple_file.plot(
                 "histogram",
-                "red",
                 "Triangle tree #" + tree_uid_str + ": X=number of triangles, Y=number of leaves");
         }
     };

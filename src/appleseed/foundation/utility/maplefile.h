@@ -104,11 +104,14 @@ class MapleFile
         const std::vector<T>&   x,
         const std::vector<T>&   y);
 
-    // Issue a plot() command to plot a function.
+    // Issue a plot() command to plot a single function.
     void plot(
         const std::string&      variable,
-        const std::string&      color,
-        const std::string&      legend);
+        const std::string&      legend,
+        const std::string&      style = "line",
+        const std::string&      color = "black");
+
+    // Issue a plot() command to plot several functions on the same canvas.
     void plot(const std::vector<MaplePlotDef>& plots);
 
   private:
