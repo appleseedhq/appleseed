@@ -37,6 +37,7 @@
 #include "foundation/math/rng.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
+#include "foundation/utility/makevector.h"
 #include "foundation/utility/maplefile.h"
 #include "foundation/utility/string.h"
 #include "foundation/utility/test.h"
@@ -367,11 +368,12 @@ TEST_SUITE(Foundation_Math_QMC)
         }
 
         MapleFile file("unit tests/outputs/test_qmc_integrate1dfunction.mpl");
-        file.define("rng_rmsd", abscissa.size(), &abscissa[0], &rng_rmsd[0]);
-        file.define("qmc_rmsd", abscissa.size(), &abscissa[0], &qmc_rmsd[0]);
+        file.define("rng_rmsd", abscissa, rng_rmsd);
+        file.define("qmc_rmsd", abscissa, qmc_rmsd);
         file.plot(
-            "rng_rmsd", "blue", "RMS Deviation (RNG)",
-            "qmc_rmsd", "red", "RMS Deviation (QMC)");
+            make_vector(
+                MaplePlotDef("rng_rmsd").set_legend("RMS Deviation (RNG)").set_color("blue"),
+                MaplePlotDef("qmc_rmsd").set_legend("RMS Deviation (QMC)").set_color("red")));
     }
 
 #if 0

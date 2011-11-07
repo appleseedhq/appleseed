@@ -28,6 +28,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/spline.h"
+#include "foundation/utility/makevector.h"
 #include "foundation/utility/maplefile.h"
 #include "foundation/utility/test.h"
 
@@ -67,11 +68,7 @@ TEST_SUITE(Foundation_Math_Spline)
         maple_file.with("CurveFitting");
 
         // Knots.
-        maple_file.define(
-            "knots",
-            knot_x.size(),
-            &knot_x[0],
-            &knot_y[0]);
+        maple_file.define("knots", knot_x, knot_y);
 
         // Reference spline.
         maple_file.print("ref:=Spline(knots,x,degree=3):\n");
@@ -98,14 +95,11 @@ TEST_SUITE(Foundation_Math_Spline)
                 point_x.size(),
                 &point_x[0],
                 &point_y[0]);
-            maple_file.define(
-                "output1",
-                point_x.size(),
-                &point_x[0],
-                &point_y[0]);
+            maple_file.define("output1", point_x, point_y);
             maple_file.plot(
-                "knots", "gray", "knots",
-                "output1", "red", "spline for tension 0.0");
+                make_vector(
+                    MaplePlotDef("knots").set_legend("knots").set_color("gray"),
+                    MaplePlotDef("output1").set_legend("spline for tension 0.0").set_color("red")));
         }
 
         // Tension = 0.5
@@ -126,14 +120,11 @@ TEST_SUITE(Foundation_Math_Spline)
                 point_x.size(),
                 &point_x[0],
                 &point_y[0]);
-            maple_file.define(
-                "output2",
-                point_x.size(),
-                &point_x[0],
-                &point_y[0]);
+            maple_file.define("output2", point_x, point_y);
             maple_file.plot(
-                "knots", "gray", "knots",
-                "output2", "red", "spline for tension 0.5");
+                make_vector(
+                    MaplePlotDef("knots").set_legend("knots").set_color("gray"),
+                    MaplePlotDef("output2").set_legend("spline for tension 0.5").set_color("red")));
         }
 
         // Tension = 1.0
@@ -154,21 +145,19 @@ TEST_SUITE(Foundation_Math_Spline)
                 point_x.size(),
                 &point_x[0],
                 &point_y[0]);
-            maple_file.define(
-                "output3",
-                point_x.size(),
-                &point_x[0],
-                &point_y[0]);
+            maple_file.define("output3", point_x, point_y);
             maple_file.plot(
-                "knots", "gray", "knots",
-                "output3", "red", "spline for tension 1.0");
+                make_vector(
+                    MaplePlotDef("knots").set_legend("knots").set_color("gray"),
+                    MaplePlotDef("output3").set_legend("spline for tension 1.0").set_color("red")));
         }
 
         // Comparative plots.
         maple_file.plot(
-            "output1", "red", "spline for tension 0.0",
-            "output2", "green", "spline for tension 0.5",
-            "output3", "blue", "spline for tension 1.0");
+            make_vector(
+                MaplePlotDef("output1").set_legend("spline for tension 0.0").set_color("red"),
+                MaplePlotDef("output2").set_legend("spline for tension 0.5").set_color("green"),
+                MaplePlotDef("output3").set_legend("spline for tension 1.0").set_color("blue")));
         maple_file.print(
             "plot([ref(x),output1,output3],x=%f..%f,color=[black,red,blue],"
             "legend=[\"reference\",\"spline for tension 0.0\",\"spline for tension 1.0\"]);\n",

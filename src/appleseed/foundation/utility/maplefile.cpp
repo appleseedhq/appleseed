@@ -42,6 +42,44 @@ namespace foundation
 {
 
 //
+// MaplePlotDef class implementation.
+//
+
+MaplePlotDef::MaplePlotDef(const string& variable)
+  : m_variable(variable)
+  , m_style("line")
+  , m_color("black")
+{
+}
+
+MaplePlotDef::MaplePlotDef(const MaplePlotDef& rhs)
+  : m_variable(rhs.m_variable)
+  , m_legend(rhs.m_legend)
+  , m_style(rhs.m_style)
+  , m_color(rhs.m_color)
+{
+}
+
+MaplePlotDef& MaplePlotDef::set_legend(const string& legend)
+{
+    m_legend = legend;
+    return *this;
+}
+
+MaplePlotDef& MaplePlotDef::set_style(const string& style)
+{
+    m_style = style;
+    return *this;
+}
+
+MaplePlotDef& MaplePlotDef::set_color(const string& color)
+{
+    m_color = color;
+    return *this;
+}
+
+
+//
 // MapleFile class implementation.
 //
 
@@ -84,60 +122,61 @@ void MapleFile::with(const string& package)
 }
 
 void MapleFile::plot(
-    const string&   variable1,
-    const string&   color1,
-    const string&   legend1)
+    const string&   variable,
+    const string&   color,
+    const string&   legend)
 {
     fprintf(
         m_file,
         "plot([%s],color=[%s],legend=[\"%s\"]);\n",
-        variable1.c_str(),
-        color1.c_str(),
-        legend1.c_str());
+        variable.c_str(),
+        color.c_str(),
+        legend.c_str());
 }
 
-void MapleFile::plot(
-    const string&   variable1,
-    const string&   color1,
-    const string&   legend1,
-    const string&   variable2,
-    const string&   color2,
-    const string&   legend2)
+void MapleFile::plot(const vector<MaplePlotDef>& plots)
 {
-    fprintf(
-        m_file,
-        "plot([%s,%s],color=[%s,%s],legend=[\"%s\",\"%s\"]);\n",
-        variable1.c_str(),
-        variable2.c_str(),
-        color1.c_str(),
-        color2.c_str(),
-        legend1.c_str(),
-        legend2.c_str());
-}
+    stringstream sstr;
 
-void MapleFile::plot(
-    const string&   variable1,
-    const string&   color1,
-    const string&   legend1,
-    const string&   variable2,
-    const string&   color2,
-    const string&   legend2,
-    const string&   variable3,
-    const string&   color3,
-    const string&   legend3)
-{
-    fprintf(
-        m_file,
-        "plot([%s,%s,%s],color=[%s,%s,%s],legend=[\"%s\",\"%s\",\"%s\"]);\n",
-        variable1.c_str(),
-        variable2.c_str(),
-        variable3.c_str(),
-        color1.c_str(),
-        color2.c_str(),
-        color3.c_str(),
-        legend1.c_str(),
-        legend2.c_str(),
-        legend3.c_str());
+    sstr << "plot([";
+
+    for (size_t i = 0; i < plots.size(); ++i)
+    {
+        if (i > 0)
+            sstr << ",";
+        sstr << plots[i].m_variable;
+    }
+
+    sstr << "],legend=[";
+
+    for (size_t i = 0; i < plots.size(); ++i)
+    {
+        if (i > 0)
+            sstr << ",";
+        sstr << "\"" << plots[i].m_legend << "\"";
+    }
+
+    sstr << "],color=[";
+
+    for (size_t i = 0; i < plots.size(); ++i)
+    {
+        if (i > 0)
+            sstr << ",";
+        sstr << plots[i].m_color;
+    }
+
+    sstr << "],style=[";
+
+    for (size_t i = 0; i < plots.size(); ++i)
+    {
+        if (i > 0)
+            sstr << ",";
+        sstr << plots[i].m_style;
+    }
+
+    sstr << "]);" << endl;
+
+    fprintf(m_file, "%s", sstr.str().c_str());
 }
 
 }   // namespace foundation

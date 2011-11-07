@@ -315,13 +315,7 @@ namespace
                 if (!m_spp_count_history.empty())
                 {
                     MapleFile file("RMS Deviation.mpl");
-
-                    file.define(
-                        "rmsd",
-                        m_spp_count_history.size(),
-                        &m_spp_count_history[0],
-                        &m_rmsd_history[0]);
-                    
+                    file.define("rmsd", m_spp_count_history, m_rmsd_history);
                     file.plot("rmsd", "blue", "RMS Deviation");
                 }
             }

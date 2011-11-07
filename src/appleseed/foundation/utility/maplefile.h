@@ -33,13 +33,40 @@
 #include "foundation/core/concepts/noncopyable.h"
 
 // Standard headers.
+#include <cassert>
 #include <cstddef>
 #include <cstdio>
 #include <sstream>
 #include <string>
+#include <vector>
 
 namespace foundation
 {
+
+//
+// Maple plot definition.
+//
+
+class MaplePlotDef
+{
+  public:
+    explicit MaplePlotDef(const std::string& variable);
+
+    MaplePlotDef(const MaplePlotDef& rhs);
+
+    MaplePlotDef& set_legend(const std::string& legend);
+    MaplePlotDef& set_style(const std::string& style);
+    MaplePlotDef& set_color(const std::string& color);
+
+  private:
+    friend class MapleFile;
+
+    std::string m_variable;
+    std::string m_legend;
+    std::string m_style;
+    std::string m_color;
+};
+
 
 //
 // Maple input file (textual).
@@ -67,33 +94,22 @@ class MapleFile
     // Define an array of 2D vectors.
     template <typename T>
     void define(
-        const std::string&  variable,
-        const size_t        size,
-        const T             x[],
-        const T             y[]);
+        const std::string&      variable,
+        const size_t            size,
+        const T                 x[],
+        const T                 y[]);
+    template <typename T>
+    void define(
+        const std::string&      variable,
+        const std::vector<T>&   x,
+        const std::vector<T>&   y);
 
     // Issue a plot() command to plot a function.
     void plot(
-        const std::string&  variable1,
-        const std::string&  color1,
-        const std::string&  legend1);
-    void plot(
-        const std::string&  variable1,
-        const std::string&  color1,
-        const std::string&  legend1,
-        const std::string&  variable2,
-        const std::string&  color2,
-        const std::string&  legend2);
-    void plot(
-        const std::string&  variable1,
-        const std::string&  color1,
-        const std::string&  legend1,
-        const std::string&  variable2,
-        const std::string&  color2,
-        const std::string&  legend2,
-        const std::string&  variable3,
-        const std::string&  color3,
-        const std::string&  legend3);
+        const std::string&      variable,
+        const std::string&      color,
+        const std::string&      legend);
+    void plot(const std::vector<MaplePlotDef>& plots);
 
   private:
     std::FILE* m_file;
@@ -111,6 +127,8 @@ void MapleFile::define(
     const T                 x[],
     const T                 y[])
 {
+    assert(size > 0);
+
     std::stringstream sstr;
 
     sstr << variable << ":=[";
@@ -125,6 +143,18 @@ void MapleFile::define(
     sstr << "]:" << std::endl;
 
     std::fprintf(m_file, "%s", sstr.str().c_str());
+}
+
+template <typename T>
+void MapleFile::define(
+    const std::string&      variable,
+    const std::vector<T>&   x,
+    const std::vector<T>&   y)
+{
+    assert(!x.empty());
+    assert(x.size() == y.size());
+
+    define(variable, x.size(), &x[0], &y[0]);
 }
 
 }       // namespace foundation

@@ -31,6 +31,7 @@
 #include "foundation/image/colorspace.h"
 #include "foundation/image/spectrum.h"
 #include "foundation/utility/iostreamop.h"
+#include "foundation/utility/makevector.h"
 #include "foundation/utility/maplefile.h"
 #include "foundation/utility/test.h"
 
@@ -715,8 +716,9 @@ TEST_SUITE(Foundation_Image_ColorSpace)
             &OutputWavelength[0],
             &white_spectrum[0]);
         maple_file.plot(
-            "input_white_spectrum", "gray", "white spectrum [input]",
-            "output_white_spectrum", "red", "white spectrum [output]");
+            make_vector(
+                MaplePlotDef("input_white_spectrum").set_legend("white spectrum [input]").set_color("gray"),
+                MaplePlotDef("output_white_spectrum").set_legend("white spectrum [output]").set_color("red")));
 
         // Green spectrum.
         maple_file.define(
@@ -730,8 +732,9 @@ TEST_SUITE(Foundation_Image_ColorSpace)
             &OutputWavelength[0],
             &green_spectrum[0]);
         maple_file.plot(
-            "input_green_spectrum", "gray", "green spectrum [input]",
-            "output_green_spectrum", "red", "green spectrum [output]");
+            make_vector(
+                MaplePlotDef("input_green_spectrum").set_legend("green spectrum [input]").set_color("gray"),
+                MaplePlotDef("output_green_spectrum").set_legend("green spectrum [output]").set_color("red")));
 
         // Red spectrum.
         maple_file.define(
@@ -745,8 +748,9 @@ TEST_SUITE(Foundation_Image_ColorSpace)
             &OutputWavelength[0],
             &red_spectrum[0]);
         maple_file.plot(
-            "input_red_spectrum", "gray", "red spectrum [input]",
-            "output_red_spectrum", "red", "red spectrum [output]");
+            make_vector(
+                MaplePlotDef("input_red_spectrum").set_legend("red spectrum [input]").set_color("gray"),
+                MaplePlotDef("output_red_spectrum").set_legend("red spectrum [output]").set_color("red")));
 
         // Camera response.
         maple_file.define(
@@ -760,8 +764,9 @@ TEST_SUITE(Foundation_Image_ColorSpace)
             &OutputWavelength[0],
             &camera_response[0]);
         maple_file.plot(
-            "input_camera_response", "gray", "camera response [input]",
-            "output_camera_response", "red", "camera response [output]");
+            make_vector(
+                MaplePlotDef("input_camera_response").set_legend("camera response [input]").set_color("gray"),
+                MaplePlotDef("output_camera_response").set_legend("camera response [output]").set_color("red")));
 
         // Light source emission spectrum.
         maple_file.define(
@@ -775,8 +780,9 @@ TEST_SUITE(Foundation_Image_ColorSpace)
             &OutputWavelength[0],
             &source_spectrum[0]);
         maple_file.plot(
-            "input_source_spectrum", "gray", "light source emission spectrum [input]",
-            "output_source_spectrum", "red", "light source emission spectrum [output]");
+            make_vector(
+                MaplePlotDef("input_source_spectrum").set_legend("light source emission spectrum [input]").set_color("gray"),
+                MaplePlotDef("output_source_spectrum").set_legend("light source emission spectrum [output]").set_color("red")));
     }
 }
 

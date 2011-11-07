@@ -863,11 +863,7 @@ namespace
 
             MapleFile maple_file("leaf_size_histogram_" + tree_uid_str + ".mpl");
             maple_file.restart();
-            maple_file.define(
-                "histogram",
-                abscissa.size(),
-                &abscissa[0],
-                &histogram[0]);
+            maple_file.define("histogram", abscissa, histogram);
             maple_file.plot(
                 "histogram",
                 "red",
