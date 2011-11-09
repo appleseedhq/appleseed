@@ -160,7 +160,7 @@ namespace
             {
                 const InputValues* values = static_cast<const InputValues*>(data);
                 value = values->m_reflectance;
-                value *= static_cast<float>(1.0 / Pi);
+                value *= static_cast<float>(RcpPi);
             }
 
             if (probability)
