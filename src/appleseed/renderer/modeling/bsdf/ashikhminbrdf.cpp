@@ -533,10 +533,6 @@ const char* AshikhminBRDFFactory::get_human_readable_model() const
 
 DictionaryArray AshikhminBRDFFactory::get_widget_definitions() const
 {
-    Dictionary entity_types;
-    entity_types.insert("color", "Colors");
-    entity_types.insert("texture_instance", "Textures");
-
     DictionaryArray definitions;
 
     definitions.push_back(
@@ -544,7 +540,10 @@ DictionaryArray AshikhminBRDFFactory::get_widget_definitions() const
             .insert("name", "diffuse_reflectance")
             .insert("label", "Diffuse Reflectance")
             .insert("widget", "entity_picker")
-            .insert("entity_types", entity_types)
+            .insert("entity_types",
+                Dictionary()
+                    .insert("color", "Colors")
+                    .insert("texture_instance", "Textures"))
             .insert("use", "required")
             .insert("default", ""));
 
@@ -553,7 +552,10 @@ DictionaryArray AshikhminBRDFFactory::get_widget_definitions() const
             .insert("name", "glossy_reflectance")
             .insert("label", "Glossy Reflectance")
             .insert("widget", "entity_picker")
-            .insert("entity_types", entity_types)
+            .insert("entity_types",
+                Dictionary()
+                    .insert("color", "Colors")
+                    .insert("texture_instance", "Textures"))
             .insert("use", "required")
             .insert("default", ""));
 
@@ -561,7 +563,9 @@ DictionaryArray AshikhminBRDFFactory::get_widget_definitions() const
         Dictionary()
             .insert("name", "shininess_u")
             .insert("label", "Shininess U")
-            .insert("widget", "text_box")
+            .insert("widget", "entity_picker")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "required")
             .insert("default", "1000.0"));
 
@@ -569,7 +573,9 @@ DictionaryArray AshikhminBRDFFactory::get_widget_definitions() const
         Dictionary()
             .insert("name", "shininess_v")
             .insert("label", "Shininess V")
-            .insert("widget", "text_box")
+            .insert("widget", "entity_picker")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "required")
             .insert("default", "1000.0"));
 
