@@ -139,7 +139,8 @@ namespace
             camera->set_transform(Transformd(Matrix4d::lookat(position, center, Up)));
 
             // Write the project file for this frame.
-            const string new_path = make_numbered_filename(base_output_filename + ".appleseed", i + 1);
+            const int frame = i + 1;
+            const string new_path = make_numbered_filename(base_output_filename + ".appleseed", frame);
             project->set_path(new_path.c_str());
             ProjectFileWriter::write(project.ref(), false);
         }
@@ -183,24 +184,20 @@ namespace
 
         for (int i = 0; i < frame_count; ++i)
         {
-            const string project_filename = make_numbered_filename(base_output_filename + ".appleseed", i + 1);
-            const string image_filename = make_numbered_filename(base_output_filename + ".png", i + 1);
+            const int frame = i + 1;
+            const string project_filename = make_numbered_filename(base_output_filename + ".appleseed", frame);
+            const string image_filename = make_numbered_filename(base_output_filename + ".png", frame);
 
             const size_t LineLength = 80 + 1;   // +1 to account for the escape character
             const string header = "--- " + project_filename + " -^> " + image_filename + " ";
             const string header_suffix(header.size() < LineLength ? LineLength - header.size() : 0, '-');
 
-            fprintf(
-                batch_file,
-                "echo %s%s\n",
-                header.c_str(),
-                header_suffix.c_str());
-
-            fprintf(
-                batch_file,
-                "%%bin%% %s -o frames\\%s\n",
-                project_filename.c_str(),
-                image_filename.c_str());
+            fprintf(batch_file, "if exist \"frames\\%s\" (\n", image_filename.c_str());
+            fprintf(batch_file, "    echo Skipping %s...\n", project_filename.c_str());
+            fprintf(batch_file, ") else (\n");
+            fprintf(batch_file, "    echo %s%s\n", header.c_str(), header_suffix.c_str());
+            fprintf(batch_file, "    %%bin%% %s -o \"frames\\%s\"\n", project_filename.c_str(), image_filename.c_str());
+            fprintf(batch_file, ")\n");
         }
 
         fprintf(
