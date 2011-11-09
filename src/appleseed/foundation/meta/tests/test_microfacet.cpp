@@ -76,15 +76,15 @@ TEST_SUITE(Foundation_Math_Microfacet)
         {
             const double theta = radical_inverse_base2<double>(i) * HalfPi;
             const double cos_theta = cos(theta);
+            const double sin_theta = sin(theta);
 
             const double value = mdf.evaluate(cos_theta);
-            const double sample = value * HalfPi;
 
-            integral += sample * cos_theta * sin(theta);
+            integral += value * cos_theta * sin_theta;
         }
 
-        integral *= TwoPi;
-        integral /= static_cast<double>(sample_count);
+        integral *= HalfPi / sample_count;  // integration over theta
+        integral *= TwoPi;                  // integration over phi
 
         return integral;
     }
