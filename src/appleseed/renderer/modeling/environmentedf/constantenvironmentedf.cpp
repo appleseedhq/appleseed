@@ -80,6 +80,7 @@ namespace
         {
             assert(m_inputs.source("exitance"));
 
+            // todo: what happens if exitance is not uniform?
             check_uniform("exitance");
 
             m_inputs.evaluate_uniforms(&m_values);
@@ -161,9 +162,7 @@ DictionaryArray ConstantEnvironmentEDFFactory::get_widget_definitions() const
             .insert("label", "Exitance")
             .insert("widget", "entity_picker")
             .insert("entity_types",
-                Dictionary()
-                    .insert("color", "Colors")
-                    .insert("texture_instance", "Textures"))
+                Dictionary().insert("color", "Colors"))
             .insert("use", "required")
             .insert("default", ""));
 
