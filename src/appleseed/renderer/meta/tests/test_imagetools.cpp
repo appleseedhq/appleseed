@@ -238,7 +238,7 @@ TEST_SUITE(ImageTools)
     TEST_CASE(TweakImage)
     {
         const float DitherAmplitude = 1.0f;
-        const float GammaCorrection = 1.6f;
+        const float GammaCorrection = 1.0f;
         const float DarksBoost = 0.0f;
         const float DarksGammaCorrection = 10.0f;
 
