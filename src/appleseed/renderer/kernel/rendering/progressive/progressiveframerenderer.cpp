@@ -354,11 +354,13 @@ namespace
 
                 m_sps_count_history.insert(sps_count);
 
+                const uint64 avg_sps_count = truncate<uint64>(m_sps_count_history.compute_average());
+
                 RENDERER_LOG_INFO(
                     "%s samples, %s samples/pixel, %s samples/second",
                     pretty_uint(new_sample_count).c_str(),
                     pretty_scalar(spp_count).c_str(),
-                    pretty_scalar(m_sps_count_history.compute_average()).c_str());
+                    pretty_uint(avg_sps_count).c_str());
 
                 m_last_sample_count = new_sample_count;
             }
