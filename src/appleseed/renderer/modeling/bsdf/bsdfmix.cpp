@@ -304,14 +304,18 @@ DictionaryArray BSDFMixFactory::get_widget_definitions() const
             .insert("name", "bsdf0")
             .insert("label", "BSDF 1")
             .insert("widget", "entity_picker")
-            .insert("entity_types", Dictionary().insert("bsdf", "BSDF")));
+            .insert("entity_types",
+                Dictionary().insert("bsdf", "BSDF"))
+            .insert("use", "required"));
 
     definitions.push_back(
         Dictionary()
             .insert("name", "weight0")
             .insert("label", "Weight 1")
             .insert("widget", "entity_picker")
-            .insert("entity_types", Dictionary().insert("texture_instance", "Textures"))
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "required")
             .insert("default", "0.5"));
 
     definitions.push_back(
@@ -319,14 +323,18 @@ DictionaryArray BSDFMixFactory::get_widget_definitions() const
             .insert("name", "bsdf1")
             .insert("label", "BSDF 2")
             .insert("widget", "entity_picker")
-            .insert("entity_types", Dictionary().insert("bsdf", "BSDF")));
+            .insert("entity_types",
+                Dictionary().insert("bsdf", "BSDF"))
+            .insert("use", "required"));
 
     definitions.push_back(
         Dictionary()
             .insert("name", "weight1")
             .insert("label", "Weight 2")
             .insert("widget", "entity_picker")
-            .insert("entity_types", Dictionary().insert("texture_instance", "Textures"))
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "required")
             .insert("default", "0.5"));
 
     return definitions;
