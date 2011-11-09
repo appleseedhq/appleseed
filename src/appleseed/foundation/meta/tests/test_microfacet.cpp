@@ -236,14 +236,14 @@ TEST_SUITE(Foundation_Math_Microfacet)
 
     TEST_CASE(BlinnMDF_Evaluate_ReturnsNonNegativeValues)
     {
-        BlinnMDF<double> mdf(10.0);
+        const BlinnMDF<double> mdf(10.0);
 
         EXPECT_TRUE(is_positive(mdf, PositivityTestSampleCount));
     }
 
     TEST_CASE(BlinnMDF_Evaluate_GivenCosThetaIsZero_ReturnsZero)
     {
-        BlinnMDF<double> mdf(10.0);
+        const BlinnMDF<double> mdf(10.0);
 
         const double limit = mdf.evaluate(0.0);
 
@@ -252,7 +252,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
 
     TEST_CASE(BlinnMDF_EvaluatePDF_GivenCosThetaIsZero_ReturnsZero)
     {
-        BlinnMDF<double> mdf(10.0);
+        const BlinnMDF<double> mdf(10.0);
 
         const double limit = mdf.evaluate_pdf(0.0);
 
@@ -261,7 +261,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
 
     TEST_CASE(BlinnMDF_IntegratedOverSphericalCoordinates_EqualsOne)
     {
-        BlinnMDF<double> mdf(10.0);
+        const BlinnMDF<double> mdf(10.0);
 
         const double integral = integrate_spherical(mdf, IntegrationSampleCount);
 
@@ -270,7 +270,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
 
     TEST_CASE(BlinnMDF_IntegratedOverSolidAngle_UsingUniformSampling_EqualsOne)
     {
-        BlinnMDF<double> mdf(10.0);
+        const BlinnMDF<double> mdf(10.0);
 
         const double integral = integrate_random(mdf, UniformHemisphereSampler<double>(), IntegrationSampleCount);
 
@@ -279,7 +279,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
 
     TEST_CASE(BlinnMDF_IntegratedOverSolidAngle_UsingCosineWeightedSampling_EqualsOne)
     {
-        BlinnMDF<double> mdf(10.0);
+        const BlinnMDF<double> mdf(10.0);
 
         const double integral = integrate_random(mdf, CosineHemisphereSampler<double>(), IntegrationSampleCount);
 
@@ -288,7 +288,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
 
     TEST_CASE(BlinnMDF_IntegratedOverSolidAngle_UsingImportanceSampling_EqualsOne)
     {
-        BlinnMDF<double> mdf(10.0);
+        const BlinnMDF<double> mdf(10.0);
 
         const double integral = integrate_importance(mdf, IntegrationSampleCount);
 
@@ -309,14 +309,14 @@ TEST_SUITE(Foundation_Math_Microfacet)
 
     TEST_CASE(BeckmannMDF_Evaluate_ReturnsNonNegativeValues)
     {
-        BeckmannMDF<double> mdf(0.5);
+        const BeckmannMDF<double> mdf(0.5);
 
         EXPECT_TRUE(is_positive(mdf, PositivityTestSampleCount));
     }
 
     TEST_CASE(BeckmannMDF_Evaluate_GivenCosThetaIsZero_ReturnsZero)
     {
-        BeckmannMDF<double> mdf(0.5);
+        const BeckmannMDF<double> mdf(0.5);
 
         const double limit = mdf.evaluate(0.0);
 
@@ -325,7 +325,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
 
     TEST_CASE(BeckmannMDF_EvaluatePDF_GivenCosThetaIsZero_ReturnsZero)
     {
-        BeckmannMDF<double> mdf(0.5);
+        const BeckmannMDF<double> mdf(0.5);
 
         const double limit = mdf.evaluate_pdf(0.0);
 
@@ -334,7 +334,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
 
     TEST_CASE(BeckmannMDF_IntegratedOverSphericalCoordinates_EqualsOne)
     {
-        BeckmannMDF<double> mdf(0.5);
+        const BeckmannMDF<double> mdf(0.5);
 
         const double integral = integrate_spherical(mdf, IntegrationSampleCount);
 
@@ -343,7 +343,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
 
     TEST_CASE(BeckmannMDF_IntegratedOverSolidAngle_UsingUniformSampling_EqualsOne)
     {
-        BeckmannMDF<double> mdf(0.5);
+        const BeckmannMDF<double> mdf(0.5);
 
         const double integral = integrate_random(mdf, UniformHemisphereSampler<double>(), IntegrationSampleCount);
 
@@ -352,7 +352,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
 
     TEST_CASE(BeckmannMDF_IntegratedOverSolidAngle_UsingCosineWeightedSampling_EqualsOne)
     {
-        BeckmannMDF<double> mdf(0.5);
+        const BeckmannMDF<double> mdf(0.5);
 
         const double integral = integrate_random(mdf, CosineHemisphereSampler<double>(), IntegrationSampleCount);
 
@@ -361,7 +361,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
 
     TEST_CASE(BeckmannMDF_IntegratedOverSolidAngle_UsingImportanceSampling_EqualsOne)
     {
-        BeckmannMDF<double> mdf(0.5);
+        const BeckmannMDF<double> mdf(0.5);
 
         const double integral = integrate_importance(mdf, IntegrationSampleCount);
 
@@ -382,14 +382,14 @@ TEST_SUITE(Foundation_Math_Microfacet)
 
     TEST_CASE(WardMDF_Evaluate_ReturnsNonNegativeValues)
     {
-        WardMDF<double> mdf(0.5);
+        const WardMDF<double> mdf(0.5);
 
         EXPECT_TRUE(is_positive(mdf, PositivityTestSampleCount));
     }
 
     TEST_CASE(WardMDF_Evaluate_GivenCosThetaIsZero_ReturnsZero)
     {
-        WardMDF<double> mdf(0.5);
+        const WardMDF<double> mdf(0.5);
 
         const double limit = mdf.evaluate(0.0);
 
@@ -398,7 +398,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
 
     TEST_CASE(WardMDF_EvaluatePDF_GivenCosThetaIsZero_ReturnsZero)
     {
-        WardMDF<double> mdf(0.5);
+        const WardMDF<double> mdf(0.5);
 
         const double limit = mdf.evaluate_pdf(0.0);
 
@@ -419,7 +419,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
 
     TEST_CASE(GGXMDF_Evaluate_ReturnsNonNegativeValues)
     {
-        GGXMDF<double> mdf(0.5);
+        const GGXMDF<double> mdf(0.5);
 
         EXPECT_TRUE(is_positive(mdf, PositivityTestSampleCount));
     }
@@ -427,17 +427,17 @@ TEST_SUITE(Foundation_Math_Microfacet)
     TEST_CASE(GGXMDF_Evaluate_GivenCosThetaIsZero_ReturnsLimitValue)
     {
         const double AlphaG = 0.5;
-        GGXMDF<double> mdf(AlphaG);
+        const GGXMDF<double> mdf(AlphaG);
+        const double ExpectedLimit = AlphaG * AlphaG * RcpPi;
 
-        const double Expected = AlphaG * AlphaG * RcpPi;
         const double limit = mdf.evaluate(0.0);
 
-        EXPECT_FEQ(Expected, limit);
+        EXPECT_FEQ(ExpectedLimit, limit);
     }
 
     TEST_CASE(GGXMDF_EvaluatePDF_GivenCosThetaIsZero_ReturnsZero)
     {
-        GGXMDF<double> mdf(0.5);
+        const GGXMDF<double> mdf(0.5);
 
         const double limit = mdf.evaluate_pdf(0.0);
 
@@ -446,7 +446,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
 
     TEST_CASE(GGXMDF_IntegratedOverSphericalCoordinates_EqualsOne)
     {
-        GGXMDF<double> mdf(0.5);
+        const GGXMDF<double> mdf(0.5);
 
         const double integral = integrate_spherical(mdf, IntegrationSampleCount);
 
@@ -455,7 +455,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
 
     TEST_CASE(GGXMDF_IntegratedOverSolidAngle_UsingUniformSampling_EqualsOne)
     {
-        GGXMDF<double> mdf(0.5);
+        const GGXMDF<double> mdf(0.5);
 
         const double integral = integrate_random(mdf, UniformHemisphereSampler<double>(), IntegrationSampleCount);
 
@@ -464,7 +464,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
 
     TEST_CASE(GGXMDF_IntegratedOverSolidAngle_UsingCosineWeightedSampling_EqualsOne)
     {
-        GGXMDF<double> mdf(0.5);
+        const GGXMDF<double> mdf(0.5);
 
         const double integral = integrate_random(mdf, CosineHemisphereSampler<double>(), IntegrationSampleCount);
 
@@ -473,7 +473,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
 
     TEST_CASE(GGXMDF_IntegratedOverSolidAngle_UsingImportanceSampling_EqualsOne)
     {
-        GGXMDF<double> mdf(0.5);
+        const GGXMDF<double> mdf(0.5);
 
         const double integral = integrate_importance(mdf, IntegrationSampleCount);
 
