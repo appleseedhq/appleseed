@@ -84,6 +84,11 @@ namespace studio {
 // MainWindow class implementation.
 //
 
+namespace
+{
+    const char* LastDirectorySettingsKey = "ui.mainwindow.filedialog.lastdirectory";
+}
+
 MainWindow::MainWindow(QWidget* parent)
   : QMainWindow(parent)
   , m_ui(new Ui::MainWindow())
@@ -598,12 +603,6 @@ void MainWindow::slot_new_project()
 
 namespace
 {
-    QString normalize_filepath(const QString& s)
-    {
-        return QString::fromStdString(
-            filesystem::path(s.toStdString()).file_string());
-    }
-
     void show_project_file_loading_failed_message_box(QWidget* parent, const QString& filepath)
     {
         QMessageBox msgbox(parent);
@@ -636,8 +635,6 @@ void MainWindow::slot_open_project()
     if (!can_close_project())
         return;
 
-    static const char* SettingsKey = "ui.mainwindow.openfiledialog.lastdirectory";
-
     QFileDialog::Options options;
     QString selected_filter;
 
@@ -645,7 +642,7 @@ void MainWindow::slot_open_project()
         QFileDialog::getOpenFileName(
             this,
             "Open...",
-            m_settings.get_path_optional<QString>(SettingsKey),
+            m_settings.get_path_optional<QString>(LastDirectorySettingsKey),
             get_project_filter_string(),
             &selected_filter,
             options);
@@ -656,7 +653,9 @@ void MainWindow::slot_open_project()
 
     if (!filepath.isEmpty())
     {
-        m_settings.insert_path(SettingsKey, path.parent_path().external_directory_string());
+        m_settings.insert_path(
+            LastDirectorySettingsKey,
+            path.parent_path().external_directory_string());
 
         const bool successful =
             m_project_manager.load_project(filepath.toAscii().constData());
@@ -737,15 +736,23 @@ void MainWindow::slot_save_project_as()
         QFileDialog::getSaveFileName(
             this,
             "Save As...",
-            "",
+            m_settings.get_path_optional<QString>(LastDirectorySettingsKey),
             get_project_filter_string(),
             &selected_filter,
             options);
 
-    filepath = normalize_filepath(filepath);
+    const filesystem::path path(filepath.toStdString());
+
+    filepath = QString::fromStdString(path.file_string());
 
     if (!filepath.isEmpty())
+    {
+        m_settings.insert_path(
+            LastDirectorySettingsKey,
+            path.parent_path().external_directory_string());
+
         m_project_manager.save_project_as(filepath.toAscii().constData());
+    }
 
     update_workspace();
 }
