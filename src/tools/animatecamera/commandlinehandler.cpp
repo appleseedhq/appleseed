@@ -60,6 +60,14 @@ CommandLineHandler::CommandLineHandler()
     m_frame_count.set_default_values(make_vector(20));
     parser().add_option_handler(&m_frame_count);
 
+    m_camera_target.add_name("--target");
+    m_camera_target.add_name("-t");
+    m_camera_target.set_description("set the target of the camera relatively to the center of the scene");
+    m_camera_target.set_syntax("x y z");
+    m_camera_target.set_exact_value_count(3);
+    m_camera_target.set_default_values(make_vector(0.0, 0.0, 0.0));
+    parser().add_option_handler(&m_camera_target);
+
     m_camera_distance.add_name("--distance");
     m_camera_distance.add_name("-d");
     m_camera_distance.set_description("set the normalized distance from the camera to the scene");

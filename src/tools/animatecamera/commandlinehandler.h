@@ -55,6 +55,7 @@ class CommandLineHandler
   public:
     foundation::ValueOptionHandler<std::string>     m_filenames;
     foundation::ValueOptionHandler<int>             m_frame_count;
+    foundation::ValueOptionHandler<double>          m_camera_target;
     foundation::ValueOptionHandler<double>          m_camera_distance;
     foundation::ValueOptionHandler<double>          m_camera_elevation;
 

@@ -113,6 +113,11 @@ namespace
         const double max_radius = 0.5 * max(extent.x, extent.z);
         const double max_height = 0.5 * extent.y;
 
+        // Retrieve the command line parameter values.
+        const Vector3d center_offset(
+            g_cl.m_camera_target.values()[0],
+            g_cl.m_camera_target.values()[1],
+            g_cl.m_camera_target.values()[2]);
         const double normalized_distance = g_cl.m_camera_distance.values()[0];
         const double normalized_elevation = g_cl.m_camera_elevation.values()[0];
 
@@ -128,7 +133,7 @@ namespace
                 distance * sin(angle));
 
             // Compute and set the transform of the camera at this frame.
-            const Vector3d center = scene_bbox.center();
+            const Vector3d center = scene_bbox.center() + center_offset;
             const Vector3d Up(0.0, 1.0, 0.0);
             Camera* camera = project->get_scene()->get_camera();
             camera->set_transform(Transformd(Matrix4d::lookat(position, center, Up)));
