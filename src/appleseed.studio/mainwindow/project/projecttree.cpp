@@ -218,6 +218,7 @@ void ProjectTree::initialize(Project& project, ProjectBuilder& project_builder)
             scene,
             scene.texture_instances(),
             project_builder);
+    impl->m_texture_instance_collection_item->set_allow_creation(false);
 
     impl->m_environment_edf_collection_item =
         impl->add_multi_model_collection_item<EnvironmentEDF>(

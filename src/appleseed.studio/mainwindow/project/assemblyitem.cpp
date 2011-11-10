@@ -104,7 +104,10 @@ struct AssemblyItem::Impl
     {
         m_color_collection_item = add_single_model_collection_item<ColorEntity>(assembly->colors());
         m_texture_collection_item = add_collection_item(assembly->textures());
+
         m_texture_instance_collection_item = add_single_model_collection_item<TextureInstance>(assembly->texture_instances());
+        m_texture_instance_collection_item->set_allow_creation(false);
+
         m_bsdf_collection_item = add_multi_model_collection_item<BSDF>(assembly->bsdfs());
         m_edf_collection_item = add_multi_model_collection_item<EDF>(assembly->edfs());
         m_surface_shader_collection_item = add_multi_model_collection_item<SurfaceShader>(assembly->surface_shaders());
