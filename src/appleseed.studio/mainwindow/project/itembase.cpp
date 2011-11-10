@@ -100,10 +100,10 @@ QMenu* ItemBase::get_single_item_context_menu() const
 {
     QMenu* menu = new QMenu(treeWidget());
 
-    if (allows_edition())
+    if (m_allow_edition)
         menu->addAction("Edit...", this, SLOT(slot_edit()));
 
-    if (allows_deletion())
+    if (m_allow_deletion)
         menu->addAction("Delete", this, SLOT(slot_delete()), QKeySequence(Qt::Key_Delete));
 
     return menu;
