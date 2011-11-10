@@ -118,7 +118,15 @@ namespace
             compute_specular_albedo(mdf, uniform_values->m_rs, m_a_spec);
 
             // Precompute the average specular albedo.
-            compute_average_specular_albedo(m_a_spec, m_a_spec_avg);
+            Spectrum a_spec_avg;
+            compute_average_specular_albedo(m_a_spec, a_spec_avg);
+
+            // Precompute the normalization constant for the matte component.
+            Spectrum s_denom(1.0f);
+            s_denom -= a_spec_avg;
+            s_denom *= static_cast<float>(Pi);
+            m_s.set(1.0f);
+            m_s /= s_denom;
 
             // plot_specular_albedo_curves();
         }
@@ -143,19 +151,20 @@ namespace
             const Vector3d& V = outgoing;
             const Vector3d& N = shading_basis.get_normal();
 
+            // Compute the outgoing angle.
             const double dot_VN = max(dot(V, N), 1.0e-3);
             const double theta = acos(dot_VN);
 
-            // Compute the specular albedo.
-            Spectrum specular_albedo;
-            evaluate_a_spec(m_a_spec, theta, specular_albedo);
+            // Compute the specular albedo for the outgoing angle.
+            Spectrum specular_albedo_V;
+            evaluate_a_spec(m_a_spec, theta, specular_albedo_V);
 
             // Compute the probability of a specular bounce.
-            const double specular_prob = average_value(specular_albedo);
+            const double specular_prob = average_value(specular_albedo_V);
 
             // Compute the matte albedo.
             Spectrum matte_albedo(1.0f);
-            matte_albedo -= specular_albedo;
+            matte_albedo -= specular_albedo_V;
             matte_albedo *= values->m_rm;
 
             // Compute the probability of a matte bounce.
@@ -171,8 +180,8 @@ namespace
                 const MDFType mdf(values->m_roughness);
 
                 // Sample the microfacet distribution to get an halfway vector H.
-                const Vector3d H =
-                    shading_basis.transform_to_parent(mdf.sample(Vector2d(s[0], s[1])));
+                const Vector3d local_H = mdf.sample(Vector2d(s[0], s[1]));
+                const Vector3d H = shading_basis.transform_to_parent(local_H);
                 const double dot_HV = dot(H, V);
                 if (dot_HV <= 0.0)
                     return;
@@ -185,13 +194,9 @@ namespace
                 if (dot_iN <= 0.0)
                     return;
 
-                // Compute the probability density of H.
+                // Compute the probability density of the incoming direction.
                 const double dot_HN = dot(H, N);
                 const double pdf_H = mdf.evaluate_pdf(dot_HN);
-                assert(pdf_H > 0.0);
-
-                // Change from a density in terms of H to a density in terms of incoming direction.
-                // Physically Based Rendering, first edition, section 15.5.1.
                 probability = pdf_H / (4.0 * dot_HV);
                 assert(probability > 0.0);
 
@@ -201,7 +206,7 @@ namespace
                 assert(is_normalized(incoming));
 
                 // Evaluate the specular component for this (L, V) pair.
-                evaluate_fr_spec(mdf, values->m_rs, dot_HV, dot_HN, value); // dot_HL == dot_HV
+                evaluate_fr_spec(mdf, values->m_rs, dot_HV, dot_HN, value);
 
                 // Compute the ratio BRDF/PDF.
                 value /= static_cast<float>(probability);
@@ -220,15 +225,19 @@ namespace
                 probability = wi.y * RcpPi;
                 assert(probability > 0.0);
 
+                // Compute the incoming angle.
+                const double dot_iN = dot(incoming, N);
+                const double theta_prime = acos(dot_iN);
+
+                // Compute the specular albedo for the incoming angle.
+                Spectrum specular_albedo_L;
+                evaluate_a_spec(m_a_spec, theta_prime, specular_albedo_L);
+
                 // Evaluate the matte component (last equation of section 2.2).
-                // todo: optimize.
-                const Spectrum UnitSpectrum(1.0f);
-                const double theta_prime = acos(dot(incoming, N));
-                Spectrum a_spec_theta_prime;
-                evaluate_a_spec(m_a_spec, theta_prime, a_spec_theta_prime);
-                value = matte_albedo;
-                value *= UnitSpectrum - a_spec_theta_prime;
-                value /= static_cast<float>(Pi) * (UnitSpectrum - m_a_spec_avg);
+                value.set(1.0f);
+                value -= specular_albedo_L;
+                value *= matte_albedo;
+                value *= m_s;
 
                 // Compute the ratio BRDF/PDF.
                 value /= static_cast<float>(probability);
@@ -255,7 +264,6 @@ namespace
             const InputValues* values = static_cast<const InputValues*>(data);
 
             // Define aliases to match the notations in the paper.
-            // todo: correct?
             const Vector3d& V = outgoing;
             const Vector3d& L = incoming;
             const Vector3d& N = shading_basis.get_normal();
@@ -275,13 +283,14 @@ namespace
             const double theta = acos(dot_VN);
             const double theta_prime = acos(dot_LN);
 
-            // Compute the specular albedo.
-            Spectrum specular_albedo;
-            evaluate_a_spec(m_a_spec, theta, specular_albedo);
+            // Compute the specular albedos for the outgoing and incoming angles.
+            Spectrum specular_albedo_V, specular_albedo_L;
+            evaluate_a_spec(m_a_spec, theta, specular_albedo_V);
+            evaluate_a_spec(m_a_spec, theta_prime, specular_albedo_L);
 
             // Compute the matte albedo.
             Spectrum matte_albedo(1.0f);
-            matte_albedo -= specular_albedo;
+            matte_albedo -= specular_albedo_V;
             matte_albedo *= values->m_rm;
 
             // Specular component (equation 3).
@@ -289,15 +298,11 @@ namespace
             Spectrum fr_spec;
             evaluate_fr_spec(mdf, values->m_rs, dot_HL, dot_HN, fr_spec);
 
-            Spectrum a_spec_theta_prime;    // todo: give it a better name
-            evaluate_a_spec(m_a_spec, theta_prime, a_spec_theta_prime);
-
             // Matte component (last equation of section 2.2).
-            // todo: optimize.
-            const Spectrum UnitSpectrum(1.0f);
-            value = matte_albedo;
-            value *= UnitSpectrum - a_spec_theta_prime;
-            value /= static_cast<float>(Pi) * (UnitSpectrum - m_a_spec_avg);
+            value.set(1.0f);
+            value -= specular_albedo_L;
+            value *= matte_albedo;
+            value *= m_s;
 
             // The final value of the BRDF is the sum of the specular and matte components.
             value += fr_spec;
@@ -305,17 +310,17 @@ namespace
             if (probability)
             {
                 // Compute the probability of a specular bounce.
-                const double specular_prob = average_value(specular_albedo);
+                const double specular_prob = average_value(specular_albedo_V);
 
                 // Compute the probability of a matte bounce.
                 const double matte_prob = average_value(matte_albedo);
 
-                // Compute the probability density of the specular component.
+                // Compute the PDF of the incoming direction for the specular component.
                 const double pdf_H = mdf.evaluate_pdf(dot_HN);
                 const double pdf_specular = pdf_H / (4.0 * dot_HL);
                 assert(pdf_specular >= 0.0);
 
-                // Compute the probability density of the matte component.
+                // Compute the PDF of the incoming direction for the matte component.
                 const double pdf_matte = dot_VN * RcpPi;
                 assert(pdf_matte >= 0.0);
 
@@ -348,30 +353,30 @@ namespace
             const double dot_VN = dot(V, N);
             const double theta = acos(dot_VN);
 
-            // Compute the specular albedo.
-            Spectrum specular_albedo;
-            evaluate_a_spec(m_a_spec, theta, specular_albedo);
+            // Compute the specular albedo for the outgoing angle.
+            Spectrum specular_albedo_V;
+            evaluate_a_spec(m_a_spec, theta, specular_albedo_V);
+
+            // Compute the probability of a specular bounce.
+            const double specular_prob = average_value(specular_albedo_V);
 
             // Compute the matte albedo.
             Spectrum matte_albedo(1.0f);
-            matte_albedo -= specular_albedo;
+            matte_albedo -= specular_albedo_V;
             matte_albedo *= values->m_rm;
-
-            // Compute the probability of a specular bounce.
-            const double specular_prob = average_value(specular_albedo);
 
             // Compute the probability of a matte bounce.
             const double matte_prob = average_value(matte_albedo);
 
-            // Compute the probability density of the specular component.
+            // Compute the PDF of the incoming direction for the specular component.
             const MDFType mdf(values->m_roughness);
             const double pdf_H = mdf.evaluate_pdf(dot_HN);
             const double pdf_specular = pdf_H / (4.0 * dot_HL);
-            assert(pdf_specular > 0.0);
+            assert(pdf_specular >= 0.0);
 
-            // Compute the probability density of the matte component.
+            // Compute the PDF of the incoming direction for the matte component.
             const double pdf_matte = dot_VN * RcpPi;
-            assert(pdf_matte > 0.0);
+            assert(pdf_matte >= 0.0);
 
             // Evaluate the final PDF.
             return specular_prob * pdf_specular + matte_prob * pdf_matte;
@@ -390,7 +395,7 @@ namespace
         typedef WardMDF<double> MDFType;
 
         Spectrum        m_a_spec[AlbedoTableSize];  // albedo of the specular component as V varies
-        Spectrum        m_a_spec_avg;               // average albedo of the specular component
+        Spectrum        m_s;                        // normalization constant for the matte component
 
         // Evaluate the specular component of the BRDF (equation 3).
         template <typename MDF>
@@ -408,6 +413,7 @@ namespace
             fr_spec *= static_cast<float>(mdf.evaluate(dot_HN) / (4.0 * dot_HL * dot_HL));
         }
 
+        // Compute the specular albedo function.
         template <typename MDF>
         static void compute_specular_albedo(
             const MDF&          mdf,
@@ -427,7 +433,6 @@ namespace
 
         // Compute the albedo of the specular component for a given outgoing direction.
         // See Physically Based Rendering, first edition, pp. 689-690.
-        // todo: lots of optimization opportunities.
         template <typename MDF>
         static void compute_specular_albedo(
             const MDF&          mdf,
@@ -459,13 +464,9 @@ namespace
                 if (L.y <= 0.0)
                     continue;
 
-                // Compute the probability density of H.
+                // Compute the PDF of L.
                 const double dot_HN = H.y;
                 const double pdf_H = mdf.evaluate_pdf(dot_HN);
-                assert(pdf_H > 0.0);
-
-                // Change from a density in terms of H to a density in terms of L.
-                // Physically Based Rendering, first edition, section 15.5.1.
                 const double pdf_L = pdf_H / (4.0 * dot_HV);
                 assert(pdf_L > 0.0);
 
@@ -476,7 +477,7 @@ namespace
 
                 // Evaluate the specular component for this (L, V) pair.
                 Spectrum fr_spec;
-                evaluate_fr_spec(mdf, rs, dot_HV, dot_HN, fr_spec);     // dot_HL == dot_HV
+                evaluate_fr_spec(mdf, rs, dot_HV, dot_HN, fr_spec);
 
                 // Add the contribution to the albedo.
                 fr_spec *= static_cast<float>(L.y / pdf_L);
@@ -486,6 +487,7 @@ namespace
             albedo /= static_cast<float>(AlbedoSampleCount);
         }
 
+        // Compute the average specular albedo.
         static void compute_average_specular_albedo(
             const Spectrum      a_spec[],
             Spectrum&           a_spec_avg)
@@ -509,7 +511,7 @@ namespace
             a_spec_avg *= static_cast<float>(RcpPi);                        // average
         }
 
-        // Evaluate the albedo function of the specular component for an arbitrary theta angle.
+        // Evaluate the specular albedo function for an arbitrary angle.
         static void evaluate_a_spec(
             const Spectrum      a_spec[],
             const double        theta,
@@ -517,7 +519,7 @@ namespace
         {
             assert(theta >= 0.0 && theta <= HalfPi);
 
-            const double t = fit<double>(theta, 0.0, HalfPi, 0.0, AlbedoTableSize - 1);
+            const double t = (AlbedoTableSize - 1) * RcpHalfPi * theta;
             const size_t i = truncate<size_t>(t);
             const double x = t - i;
 
@@ -527,7 +529,6 @@ namespace
             if (i < AlbedoTableSize - 1)
             {
                 // Piecewise linear reconstruction.
-                // todo: implement smoother reconstruction.
                 const Spectrum& prev_a = a_spec[i];
                 const Spectrum& next_a = a_spec[i + 1];
                 result = next_a;
@@ -588,17 +589,13 @@ namespace
             Spectrum a_spec[AlbedoTableSize];
             compute_specular_albedo(mdf, rs, a_spec);
 
-            // Index of the spectral channel to plot.
-            // todo: plot luminance instead.
-            const size_t W = 16;
-
             double angle[AlbedoTableSize];
             double albedo[AlbedoTableSize];
 
             for (size_t i = 0; i < AlbedoTableSize; ++i)
             {
                 angle[i] = fit<double>(i, 0, AlbedoTableSize - 1, 0.0, HalfPi);
-                albedo[i] = a_spec[i][W];
+                albedo[i] = average_value(a_spec[i]);
             }
 
             const size_t PointCount = 256;
@@ -609,10 +606,10 @@ namespace
             {
                 reconstruction_angle[i] = fit<double>(i, 0, PointCount - 1, 0.0, HalfPi);
 
-                Spectrum result;
-                evaluate_a_spec(a_spec, reconstruction_angle[i], result);
+                Spectrum albedo;
+                evaluate_a_spec(a_spec, reconstruction_angle[i], albedo);
 
-                reconstruction_albedo[i] = result[W];
+                reconstruction_albedo[i] = average_value(albedo);
             }
 
             file.define(name, AlbedoTableSize, angle, albedo);
