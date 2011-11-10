@@ -314,6 +314,7 @@ set (foundation_meta_benchmarks_sources
     foundation/meta/benchmarks/benchmark_job.cpp
     foundation/meta/benchmarks/benchmark_knn.cpp
     foundation/meta/benchmarks/benchmark_matrix.cpp
+    foundation/meta/benchmarks/benchmark_microfacet.cpp
     foundation/meta/benchmarks/benchmark_permutation.cpp
     foundation/meta/benchmarks/benchmark_poolallocator.cpp
     foundation/meta/benchmarks/benchmark_qmc.cpp

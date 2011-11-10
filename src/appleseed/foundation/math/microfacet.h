@@ -96,7 +96,7 @@ class BeckmannMDF
     T evaluate_pdf(const T cos_alpha) const;
 
   private:
-    const T m_m;
+    const T m_m_2;
 };
 
 
@@ -126,7 +126,7 @@ class WardMDF
     T evaluate_pdf(const T cos_alpha) const;
 
   private:
-    const T m_m;
+    const T m_m_2;
 };
 
 
@@ -154,7 +154,7 @@ class GGXMDF
     T evaluate_pdf(const T cos_alpha) const;
 
   private:
-    const T m_alpha_g;
+    const T m_alpha_g_2;
 };
 
 
@@ -174,10 +174,11 @@ inline Vector<T, 3> BlinnMDF<T>::sample(const Vector<T, 2>& s) const
     assert(s[0] >= T(0.0) && s[0] < T(1.0));
     assert(s[1] >= T(0.0) && s[1] < T(1.0));
 
-    const T alpha = std::acos(std::pow(T(1.0) - s[0], T(1.0) / (m_e + T(2.0))));
+    const T cos_alpha = std::pow(T(1.0) - s[0], T(1.0) / (m_e + T(2.0)));
+    const T sin_alpha = std::sqrt(T(1.0) - cos_alpha * cos_alpha);
     const T phi = TwoPi * s[1];
 
-    return Vector<T, 3>::unit_vector(alpha, phi);
+    return Vector<T, 3>::unit_vector(cos_alpha, sin_alpha, std::cos(phi), std::sin(phi));
 }
 
 template <typename T>
@@ -203,7 +204,7 @@ inline T BlinnMDF<T>::evaluate_pdf(const T cos_alpha) const
 
 template <typename T>
 inline BeckmannMDF<T>::BeckmannMDF(const T m)
-  : m_m(m)
+  : m_m_2(m * m)
 {
 }
 
@@ -215,10 +216,12 @@ inline Vector<T, 3> BeckmannMDF<T>::sample(const Vector<T, 2>& s) const
     assert(s[0] >= T(0.0) && s[0] < T(1.0));
     assert(s[1] >= T(0.0) && s[1] < T(1.0));
 
-    const double alpha = std::atan(m_m * std::sqrt(-std::log(T(1.0) - s[0])));
-    const double phi = TwoPi * s[1];
+    const T tan_alpha_2 = m_m_2 * (-std::log(T(1.0) - s[0]));
+    const T cos_alpha = T(1.0) / std::sqrt(T(1.0) + tan_alpha_2);
+    const T sin_alpha = cos_alpha * std::sqrt(tan_alpha_2);
+    const T phi = TwoPi * s[1];
 
-    return Vector<T, 3>::unit_vector(alpha, phi);
+    return Vector<T, 3>::unit_vector(cos_alpha, sin_alpha, std::cos(phi), std::sin(phi));
 }
 
 template <typename T>
@@ -232,10 +235,9 @@ inline T BeckmannMDF<T>::evaluate(const T cos_alpha) const
     const T cos_alpha_2 = cos_alpha * cos_alpha;
     const T cos_alpha_4 = cos_alpha_2 * cos_alpha_2;
     const T tan_alpha_2 = (T(1.0) - cos_alpha_2) / cos_alpha_2;
-    const T m_2 = m_m * m_m;
 
     // Note: in [2] there's a missing Pi factor in the denominator.
-    return std::exp(-tan_alpha_2 / m_2) / (m_2 * T(Pi) * cos_alpha_4);
+    return std::exp(-tan_alpha_2 / m_m_2) / (m_m_2 * T(Pi) * cos_alpha_4);
 }
 
 template <typename T>
@@ -251,9 +253,8 @@ inline T BeckmannMDF<T>::evaluate_pdf(const T cos_alpha) const
     const T cos_alpha_2 = cos_alpha * cos_alpha;
     const T cos_alpha_3 = cos_alpha * cos_alpha_2;
     const T tan_alpha_2 = (T(1.0) - cos_alpha_2) / cos_alpha_2;
-    const T m_2 = m_m * m_m;
 
-    return std::exp(-tan_alpha_2 / m_2) / (m_2 * T(Pi) * cos_alpha_3);
+    return std::exp(-tan_alpha_2 / m_m_2) / (m_m_2 * T(Pi) * cos_alpha_3);
 }
 
 
@@ -263,7 +264,7 @@ inline T BeckmannMDF<T>::evaluate_pdf(const T cos_alpha) const
 
 template <typename T>
 inline WardMDF<T>::WardMDF(const T m)
-  : m_m(m)
+  : m_m_2(m * m)
 {
 }
 
@@ -273,10 +274,12 @@ inline Vector<T, 3> WardMDF<T>::sample(const Vector<T, 2>& s) const
     assert(s[0] >= T(0.0) && s[0] < T(1.0));
     assert(s[1] >= T(0.0) && s[1] < T(1.0));
 
-    const double alpha = std::atan(m_m * std::sqrt(-std::log(T(1.0) - s[0])));
-    const double phi = TwoPi * s[1];
+    const T tan_alpha_2 = m_m_2 * (-std::log(T(1.0) - s[0]));
+    const T cos_alpha = T(1.0) / std::sqrt(T(1.0) + tan_alpha_2);
+    const T sin_alpha = cos_alpha * std::sqrt(tan_alpha_2);
+    const T phi = TwoPi * s[1];
 
-    return Vector<T, 3>::unit_vector(alpha, phi);
+    return Vector<T, 3>::unit_vector(cos_alpha, sin_alpha, std::cos(phi), std::sin(phi));
 }
 
 template <typename T>
@@ -290,9 +293,8 @@ inline T WardMDF<T>::evaluate(const T cos_alpha) const
     const T cos_alpha_2 = cos_alpha * cos_alpha;
     const T cos_alpha_3 = cos_alpha * cos_alpha_2;
     const T tan_alpha_2 = (T(1.0) - cos_alpha_2) / cos_alpha_2;
-    const T m_2 = m_m * m_m;
 
-    return std::exp(-tan_alpha_2 / m_2) / (m_2 * T(Pi) * cos_alpha_3);
+    return std::exp(-tan_alpha_2 / m_m_2) / (m_m_2 * T(Pi) * cos_alpha_3);
 }
 
 template <typename T>
@@ -308,7 +310,7 @@ inline T WardMDF<T>::evaluate_pdf(const T cos_alpha) const
 
 template <typename T>
 inline GGXMDF<T>::GGXMDF(const T alpha_g)
-  : m_alpha_g(alpha_g)
+  : m_alpha_g_2(alpha_g * alpha_g)
 {
 }
 
@@ -318,10 +320,12 @@ inline Vector<T, 3> GGXMDF<T>::sample(const Vector<T, 2>& s) const
     assert(s[0] >= T(0.0) && s[0] < T(1.0));
     assert(s[1] >= T(0.0) && s[1] < T(1.0));
 
-    const T alpha = std::atan(m_alpha_g * std::sqrt(s[0] / (T(1.0) - s[0])));
+    const T tan_alpha_2 = m_alpha_g_2 * s[0] / (T(1.0) - s[0]);
+    const T cos_alpha = T(1.0) / std::sqrt(T(1.0) + tan_alpha_2);
+    const T sin_alpha = cos_alpha * std::sqrt(tan_alpha_2);
     const T phi = TwoPi * s[1];
 
-    return Vector<T, 3>::unit_vector(alpha, phi);
+    return Vector<T, 3>::unit_vector(cos_alpha, sin_alpha, std::cos(phi), std::sin(phi));
 }
 
 template <typename T>
@@ -329,16 +333,14 @@ inline T GGXMDF<T>::evaluate(const T cos_alpha) const
 {
     assert(cos_alpha >= T(0.0));
 
-    const T alpha_g_2 = m_alpha_g * m_alpha_g;
-
     if (cos_alpha == T(0.0))
-        return alpha_g_2 * RcpPi;
+        return m_alpha_g_2 * RcpPi;
 
     const T cos_alpha_2 = cos_alpha * cos_alpha;
     const T cos_alpha_4 = cos_alpha_2 * cos_alpha_2;
     const T tan_alpha_2 = (T(1.0) - cos_alpha_2) / cos_alpha_2;
 
-    return alpha_g_2 / (Pi * cos_alpha_4 * square(alpha_g_2 + tan_alpha_2));
+    return m_alpha_g_2 / (T(Pi) * cos_alpha_4 * square(m_alpha_g_2 + tan_alpha_2));
 }
 
 template <typename T>
@@ -352,9 +354,8 @@ inline T GGXMDF<T>::evaluate_pdf(const T cos_alpha) const
     const T cos_alpha_2 = cos_alpha * cos_alpha;
     const T cos_alpha_3 = cos_alpha * cos_alpha_2;
     const T tan_alpha_2 = (T(1.0) - cos_alpha_2) / cos_alpha_2;
-    const T alpha_g_2 = m_alpha_g * m_alpha_g;
 
-    return alpha_g_2 / (Pi * cos_alpha_3 * square(alpha_g_2 + tan_alpha_2));
+    return m_alpha_g_2 / (T(Pi) * cos_alpha_3 * square(m_alpha_g_2 + tan_alpha_2));
 }
 
 }       // namespace foundation
