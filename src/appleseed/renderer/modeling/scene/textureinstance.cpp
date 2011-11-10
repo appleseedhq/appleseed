@@ -148,7 +148,7 @@ DictionaryArray TextureInstanceFactory::get_widget_definitions()
             .insert("dropdown_items",
                 Dictionary()
                     .insert("Clamp", "clamp")
-                    .insert("Wrap", "wrap"))
+                    .insert("Wrap/Tile", "wrap"))
             .insert("use", "required")
             .insert("default", "clamp"));
 
