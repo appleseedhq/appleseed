@@ -76,11 +76,15 @@ class CollectionItem
         ParentEntity&               parent,
         ProjectBuilder&             project_builder);
 
+    void set_allow_creation(const bool allow);
+    bool allows_creation() const;
+
     virtual QMenu* get_single_item_context_menu() const;
 
   protected:
     ParentEntity&       m_parent;
     ProjectBuilder&     m_project_builder;
+    bool                m_allow_creation;
 
     virtual void slot_create_accepted(foundation::Dictionary values);
 
@@ -101,7 +105,20 @@ CollectionItem<Entity, ParentEntity>::CollectionItem(
     ProjectBuilder&                 project_builder)
   : m_parent(parent)
   , m_project_builder(project_builder)
+  , m_allow_creation(true)
 {
+}
+
+template <typename Entity, typename ParentEntity>
+inline void CollectionItem<Entity, ParentEntity>::set_allow_creation(const bool allow)
+{
+    m_allow_creation = allow;
+}
+
+template <typename Entity, typename ParentEntity>
+inline bool CollectionItem<Entity, ParentEntity>::allows_creation() const
+{
+    return m_allow_creation;
 }
 
 template <typename Entity, typename ParentEntity>
@@ -110,11 +127,14 @@ QMenu* CollectionItem<Entity, ParentEntity>::get_single_item_context_menu() cons
     QMenu* menu = CollectionItemBase<Entity>::get_single_item_context_menu();
     menu->addSeparator();
 
-    menu->addAction(
-        QString("Create %1...").arg(
-            renderer::EntityTraits<Entity>::get_human_readable_entity_type_name()),
-        this,
-        SLOT(slot_create()));
+    if (m_allow_creation)
+    {
+        menu->addAction(
+            QString("Create %1...").arg(
+                renderer::EntityTraits<Entity>::get_human_readable_entity_type_name()),
+            this,
+            SLOT(slot_create()));
+    }
 
     return menu;
 }
