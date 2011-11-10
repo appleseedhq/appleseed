@@ -171,8 +171,8 @@ inline BlinnMDF<T>::BlinnMDF(const T e)
 template <typename T>
 inline Vector<T, 3> BlinnMDF<T>::sample(const Vector<T, 2>& s) const
 {
-    assert(s[0] >= 0.0 && s[0] < 1.0);
-    assert(s[1] >= 0.0 && s[1] < 1.0);
+    assert(s[0] >= T(0.0) && s[0] < T(1.0));
+    assert(s[1] >= T(0.0) && s[1] < T(1.0));
 
     const T alpha = std::acos(std::pow(T(1.0) - s[0], T(1.0) / (m_e + T(2.0))));
     const T phi = TwoPi * s[1];
@@ -212,10 +212,10 @@ inline Vector<T, 3> BeckmannMDF<T>::sample(const Vector<T, 2>& s) const
 {
     // Same sampling procedure as for the Ward distribution.
 
-    assert(s[0] >= 0.0 && s[0] < 1.0);
-    assert(s[1] >= 0.0 && s[1] < 1.0);
+    assert(s[0] >= T(0.0) && s[0] < T(1.0));
+    assert(s[1] >= T(0.0) && s[1] < T(1.0));
 
-    const double alpha = std::atan(m_m * std::sqrt(-std::log(1.0 - s[0])));
+    const double alpha = std::atan(m_m * std::sqrt(-std::log(T(1.0) - s[0])));
     const double phi = TwoPi * s[1];
 
     return Vector<T, 3>::unit_vector(alpha, phi);
@@ -270,10 +270,10 @@ inline WardMDF<T>::WardMDF(const T m)
 template <typename T>
 inline Vector<T, 3> WardMDF<T>::sample(const Vector<T, 2>& s) const
 {
-    assert(s[0] >= 0.0 && s[0] < 1.0);
-    assert(s[1] >= 0.0 && s[1] < 1.0);
+    assert(s[0] >= T(0.0) && s[0] < T(1.0));
+    assert(s[1] >= T(0.0) && s[1] < T(1.0));
 
-    const double alpha = std::atan(m_m * std::sqrt(-std::log(1.0 - s[0])));
+    const double alpha = std::atan(m_m * std::sqrt(-std::log(T(1.0) - s[0])));
     const double phi = TwoPi * s[1];
 
     return Vector<T, 3>::unit_vector(alpha, phi);
@@ -315,8 +315,8 @@ inline GGXMDF<T>::GGXMDF(const T alpha_g)
 template <typename T>
 inline Vector<T, 3> GGXMDF<T>::sample(const Vector<T, 2>& s) const
 {
-    assert(s[0] >= 0.0 && s[0] < 1.0);
-    assert(s[1] >= 0.0 && s[1] < 1.0);
+    assert(s[0] >= T(0.0) && s[0] < T(1.0));
+    assert(s[1] >= T(0.0) && s[1] < T(1.0));
 
     const T alpha = std::atan(m_alpha_g * std::sqrt(s[0] / (T(1.0) - s[0])));
     const T phi = TwoPi * s[1];
