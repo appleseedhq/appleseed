@@ -341,8 +341,8 @@ namespace
             const InputValues* values = static_cast<const InputValues*>(data);
 
             // Define aliases to match the notations in the paper.
-            const Vector3d& L = outgoing;
-            const Vector3d& V = incoming;
+            const Vector3d& V = outgoing;
+            const Vector3d& L = incoming;
             const Vector3d& N = shading_basis.get_normal();
 
             // Compute the halfway vector.
