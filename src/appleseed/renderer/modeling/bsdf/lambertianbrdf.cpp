@@ -147,10 +147,11 @@ namespace
             Spectrum&           value,
             double*             probability) const
         {
+            const Vector3d& n = shading_basis.get_normal();
+            const double cos_in = dot(incoming, n);
+            const double cos_on = dot(outgoing, n);
+
             // No reflection in or below the shading surface.
-            const Vector3d& shading_normal = shading_basis.get_normal();
-            const double cos_in = dot(incoming, shading_normal);
-            const double cos_on = dot(outgoing, shading_normal);
             if (cos_in <= 0.0 || cos_on <= 0.0)
                 return false;
 
@@ -176,10 +177,11 @@ namespace
             const Vector3d&     outgoing,
             const Vector3d&     incoming) const
         {
+            const Vector3d& n = shading_basis.get_normal();
+            const double cos_in = dot(incoming, n);
+            const double cos_on = dot(outgoing, n);
+
             // No reflection in or below the shading surface.
-            const Vector3d& shading_normal = shading_basis.get_normal();
-            const double cos_in = dot(incoming, shading_normal);
-            const double cos_on = dot(outgoing, shading_normal);
             if (cos_in <= 0.0 || cos_on <= 0.0)
                 return 0.0;
 
