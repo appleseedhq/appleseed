@@ -168,11 +168,10 @@ namespace
 
             // Compute the outgoing angle.
             const double dot_VN = max(dot(V, N), 0.0);
-            const double theta = acos(dot_VN);
 
             // Compute the specular albedo for the outgoing angle.
             Spectrum specular_albedo_V;
-            evaluate_a_spec(m_a_spec, theta, specular_albedo_V);
+            evaluate_a_spec(m_a_spec, dot_VN, specular_albedo_V);
 
             // Compute the matte albedo.
             Spectrum matte_albedo(1.0f);
@@ -249,12 +248,9 @@ namespace
                 return;
             }
 
-            // Compute the incoming angle.
-            const double theta_prime = acos(dot_LN);
-
             // Compute the specular albedo for the incoming angle.
             Spectrum specular_albedo_L;
-            evaluate_a_spec(m_a_spec, theta_prime, specular_albedo_L);
+            evaluate_a_spec(m_a_spec, dot_LN, specular_albedo_L);
 
             // Specular component (equation 3).
             Spectrum fr_spec;
@@ -280,6 +276,7 @@ namespace
 
             // Evaluate the final PDF.
             probability = specular_prob * pdf_specular + matte_prob * pdf_matte;
+            assert(probability >= 0.0);
 
             // Compute the ratio BRDF/PDF.
             value /= static_cast<float>(probability);
@@ -314,14 +311,10 @@ namespace
             if (dot_LN <= 0.0 || dot_VN <= 0.0)
                 return false;
 
-            // Compute the outgoing and incoming angles.
-            const double theta = acos(dot_VN);
-            const double theta_prime = acos(dot_LN);
-
             // Compute the specular albedos for the outgoing and incoming angles.
             Spectrum specular_albedo_V, specular_albedo_L;
-            evaluate_a_spec(m_a_spec, theta, specular_albedo_V);
-            evaluate_a_spec(m_a_spec, theta_prime, specular_albedo_L);
+            evaluate_a_spec(m_a_spec, dot_VN, specular_albedo_V);
+            evaluate_a_spec(m_a_spec, dot_LN, specular_albedo_L);
 
             // Compute the matte albedo.
             Spectrum matte_albedo(1.0f);
@@ -360,6 +353,7 @@ namespace
 
                 // Evaluate the final PDF.
                 *probability = specular_prob * pdf_specular + matte_prob * pdf_matte;
+                assert(*probability >= 0.0);
             }
 
             return true;
@@ -391,12 +385,9 @@ namespace
             if (dot_LN <= 0.0 || dot_VN <= 0.0)
                 return 0.0;
 
-            // Compute the outgoing angle.
-            const double theta = acos(dot_VN);
-
             // Compute the specular albedo for the outgoing angle.
             Spectrum specular_albedo_V;
-            evaluate_a_spec(m_a_spec, theta, specular_albedo_V);
+            evaluate_a_spec(m_a_spec, dot_VN, specular_albedo_V);
 
             // Compute the matte albedo.
             Spectrum matte_albedo(1.0f);
@@ -462,8 +453,9 @@ namespace
             for (size_t i = 0; i < AlbedoTableSize; ++i)
             {
                 // Compute an outgoing direction V in the XY plane.
-                const double theta = fit<double>(i, 0, AlbedoTableSize - 1, 0.0, HalfPi);
-                const Vector3d V(sin(theta), max(cos(theta), 0.0), 0.0);
+                const double cos_theta = static_cast<double>(i) / (AlbedoTableSize - 1);
+                const double sin_theta = sqrt(1.0 - cos_theta * cos_theta);
+                const Vector3d V(sin_theta, cos_theta, 0.0);
 
                 // Compute the albedo for this outgoing direction.
                 compute_specular_albedo(mdf, rs, V, albedo[i]);
@@ -516,10 +508,8 @@ namespace
 
                 // Evaluate the specular component for this (L, V) pair.
                 Spectrum fr_spec;
-                evaluate_fr_spec(mdf, rs, dot_HV, dot_HN, fr_spec);
-
-                // Add the contribution to the albedo.
-                fr_spec *= static_cast<float>(L.y / pdf_L);
+                fr_spec = schlick_fresnel_reflection(rs, dot_HV);
+                fr_spec *= static_cast<float>((L.y * mdf.evaluate(dot_HN)) / (4.0 * pdf_L * dot_HV * dot_HV));
                 albedo += fr_spec;
             }
 
@@ -535,9 +525,8 @@ namespace
 
             for (size_t i = 0; i < AlbedoTableSize; ++i)
             {
-                const double theta = fit<double>(i, 0, AlbedoTableSize - 1, 0.0, HalfPi);
-                const double cos_theta = cos(theta);
-                const double sin_theta = sin(theta);
+                const double cos_theta = static_cast<double>(i) / (AlbedoTableSize - 1);
+                const double sin_theta = sqrt(1.0 - cos_theta * cos_theta);
 
                 Spectrum sample = a_spec[i];
                 sample *= static_cast<float>(cos_theta * sin_theta);
@@ -551,15 +540,14 @@ namespace
         }
 
         // Evaluate the specular albedo function for an arbitrary angle.
-        // todo: index a_spec[] using cos(theta) instead of theta.
         static void evaluate_a_spec(
             const Spectrum      a_spec[],
-            const double        theta,
+            const double        cos_theta,
             Spectrum&           result)
         {
-            assert(theta >= 0.0 && theta <= HalfPi);
+            assert(cos_theta >= 0.0 && cos_theta <= 1.0);
 
-            const double t = (AlbedoTableSize - 1) * RcpHalfPi * theta;
+            const double t = (AlbedoTableSize - 1) * cos_theta;
             const size_t i = truncate<size_t>(t);
             const double x = t - i;
 
@@ -635,7 +623,9 @@ namespace
 
             for (size_t i = 0; i < AlbedoTableSize; ++i)
             {
-                angle[i] = fit<double>(i, 0, AlbedoTableSize - 1, 0.0, HalfPi);
+                const double cos_angle = static_cast<double>(i) / (AlbedoTableSize - 1);
+
+                angle[i] = acos(cos_angle);
                 albedo[i] = average_value(a_spec[i]);
             }
 
@@ -645,11 +635,12 @@ namespace
 
             for (size_t i = 0; i < PointCount; ++i)
             {
-                reconstruction_angle[i] = fit<double>(i, 0, PointCount - 1, 0.0, HalfPi);
+                const double cos_angle = static_cast<double>(i) / (PointCount - 1);
 
                 Spectrum albedo;
-                evaluate_a_spec(a_spec, reconstruction_angle[i], albedo);
+                evaluate_a_spec(a_spec, cos_angle, albedo);
 
+                reconstruction_angle[i] = acos(cos_angle);
                 reconstruction_albedo[i] = average_value(albedo);
             }
 
