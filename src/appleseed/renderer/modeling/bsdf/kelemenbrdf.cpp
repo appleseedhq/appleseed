@@ -85,10 +85,16 @@ namespace
             const char*         name,
             const ParamArray&   params)
           : BSDF(name, params)
+          , m_mdf(0)
         {
             m_inputs.declare("matte_reflectance", InputFormatSpectrum);
             m_inputs.declare("specular_reflectance", InputFormatSpectrum);
             m_inputs.declare("roughness", InputFormatScalar);
+        }
+
+        ~KelemenBRDFImpl()
+        {
+            assert(m_mdf == 0);
         }
 
         virtual void release() override
@@ -112,10 +118,13 @@ namespace
             assert(m_inputs.source("roughness"));
             assert(m_inputs.source("roughness")->is_uniform());
 
-            // Precompute the specular albedo curve.
             const InputValues* uniform_values = static_cast<const InputValues*>(uniform_data);
-            const MDFType mdf(uniform_values->m_roughness);     // todo: avoid constructing repeatedly
-            compute_specular_albedo(mdf, uniform_values->m_rs, m_a_spec);
+
+            // Construct the Microfacet Distribution Function.
+            m_mdf = new WardMDF<double>(uniform_values->m_roughness);
+
+            // Precompute the specular albedo curve.
+            compute_specular_albedo(*m_mdf, uniform_values->m_rs, m_a_spec);
 
             // Precompute the average specular albedo.
             Spectrum a_spec_avg;
@@ -131,6 +140,14 @@ namespace
             // plot_specular_albedo_curves();
         }
 
+        virtual void on_frame_end(
+            const Project&              project,
+            const Assembly&             assembly)
+        {
+            delete m_mdf;
+            m_mdf = 0;
+        }
+
         FORCE_INLINE virtual void sample(
             SamplingContext&    sampling_context,
             const void*         data,
@@ -144,8 +161,6 @@ namespace
             Mode&               mode) const
         {
             const InputValues* values = static_cast<const InputValues*>(data);
-
-            const MDFType mdf(values->m_roughness);     // todo: avoid constructing repeatedly
 
             // Define aliases to match the notations in the paper.
             const Vector3d& V = outgoing;
@@ -200,7 +215,7 @@ namespace
                 mode = Glossy;
 
                 // Sample the microfacet distribution to get an halfway vector H.
-                const Vector3d local_H = mdf.sample(Vector2d(s[0], s[1]));
+                const Vector3d local_H = m_mdf->sample(Vector2d(s[0], s[1]));
 
                 // Transform the halfway vector to parent space.
                 H = shading_basis.transform_to_parent(local_H);
@@ -243,7 +258,7 @@ namespace
 
             // Specular component (equation 3).
             Spectrum fr_spec;
-            evaluate_fr_spec(mdf, values->m_rs, dot_HV, dot_HN, fr_spec);
+            evaluate_fr_spec(*m_mdf, values->m_rs, dot_HV, dot_HN, fr_spec);
 
             // Matte component (last equation of section 2.2).
             value.set(1.0f);
@@ -255,7 +270,7 @@ namespace
             value += fr_spec;
 
             // Compute the PDF of the incoming direction for the specular component.
-            const double pdf_H = mdf.evaluate_pdf(dot_HN);
+            const double pdf_H = m_mdf->evaluate_pdf(dot_HN);
             const double pdf_specular = pdf_H / (4.0 * dot_HV);
             assert(pdf_specular >= 0.0);
 
@@ -314,9 +329,8 @@ namespace
             matte_albedo *= values->m_rm;
 
             // Specular component (equation 3).
-            const MDFType mdf(values->m_roughness);     // todo: avoid constructing repeatedly
             Spectrum fr_spec;
-            evaluate_fr_spec(mdf, values->m_rs, dot_HL, dot_HN, fr_spec);
+            evaluate_fr_spec(*m_mdf, values->m_rs, dot_HL, dot_HN, fr_spec);
 
             // Matte component (last equation of section 2.2).
             value.set(1.0f);
@@ -336,7 +350,7 @@ namespace
                 const double matte_prob = average_value(matte_albedo);
 
                 // Compute the PDF of the incoming direction for the specular component.
-                const double pdf_H = mdf.evaluate_pdf(dot_HN);
+                const double pdf_H = m_mdf->evaluate_pdf(dot_HN);
                 const double pdf_specular = pdf_H / (4.0 * dot_HL);
                 assert(pdf_specular >= 0.0);
 
@@ -396,8 +410,7 @@ namespace
             const double matte_prob = average_value(matte_albedo);
 
             // Compute the PDF of the incoming direction for the specular component.
-            const MDFType mdf(values->m_roughness);     // todo: avoid constructing repeatedly
-            const double pdf_H = mdf.evaluate_pdf(dot_HN);
+            const double pdf_H = m_mdf->evaluate_pdf(dot_HN);
             const double pdf_specular = pdf_H / (4.0 * dot_HL);
             assert(pdf_specular >= 0.0);
 
@@ -412,17 +425,16 @@ namespace
       private:
         struct InputValues
         {
-            Spectrum    m_rm;                       // matte reflectance of the substrate
-            Alpha       m_rm_alpha;                 // alpha channel of matte reflectance
-            Spectrum    m_rs;                       // specular reflectance at normal incidence
-            Alpha       m_rs_alpha;                 // alpha channel of specular reflectance
-            double      m_roughness;                // technically, root-mean-square of the microfacets slopes
+            Spectrum        m_rm;                       // matte reflectance of the substrate
+            Alpha           m_rm_alpha;                 // alpha channel of matte reflectance
+            Spectrum        m_rs;                       // specular reflectance at normal incidence
+            Alpha           m_rs_alpha;                 // alpha channel of specular reflectance
+            double          m_roughness;                // technically, root-mean-square of the microfacets slopes
         };
 
-        typedef WardMDF<double> MDFType;
-
-        Spectrum        m_a_spec[AlbedoTableSize];  // albedo of the specular component as V varies
-        Spectrum        m_s;                        // normalization constant for the matte component
+        WardMDF<double>*    m_mdf;                      // Microfacet Distribution Function
+        Spectrum            m_a_spec[AlbedoTableSize];  // albedo of the specular component as V varies
+        Spectrum            m_s;                        // normalization constant for the matte component
 
         // Evaluate the specular component of the BRDF (equation 3).
         template <typename MDF>
