@@ -167,7 +167,7 @@ namespace
             const Vector3d& N = shading_basis.get_normal();
 
             // Compute the outgoing angle.
-            const double dot_VN = max(dot(V, N), 1.0e-3);
+            const double dot_VN = max(dot(V, N), 0.0);
             const double theta = acos(dot_VN);
 
             // Compute the specular albedo for the outgoing angle.
