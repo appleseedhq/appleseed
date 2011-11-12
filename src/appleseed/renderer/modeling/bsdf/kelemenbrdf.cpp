@@ -114,7 +114,7 @@ namespace
 
             // Precompute the specular albedo curve.
             const InputValues* uniform_values = static_cast<const InputValues*>(uniform_data);
-            const MDFType mdf(uniform_values->m_roughness);
+            const MDFType mdf(uniform_values->m_roughness);     // todo: avoid constructing repeatedly
             compute_specular_albedo(mdf, uniform_values->m_rs, m_a_spec);
 
             // Precompute the average specular albedo.
@@ -143,9 +143,9 @@ namespace
             double&             probability,
             Mode&               mode) const
         {
-            mode = None;
-
             const InputValues* values = static_cast<const InputValues*>(data);
+
+            const MDFType mdf(values->m_roughness);     // todo: avoid constructing repeatedly
 
             // Define aliases to match the notations in the paper.
             const Vector3d& V = outgoing;
@@ -159,13 +159,13 @@ namespace
             Spectrum specular_albedo_V;
             evaluate_a_spec(m_a_spec, theta, specular_albedo_V);
 
-            // Compute the probability of a specular bounce.
-            const double specular_prob = average_value(specular_albedo_V);
-
             // Compute the matte albedo.
             Spectrum matte_albedo(1.0f);
             matte_albedo -= specular_albedo_V;
             matte_albedo *= values->m_rm;
+
+            // Compute the probability of a specular bounce.
+            const double specular_prob = average_value(specular_albedo_V);
 
             // Compute the probability of a matte bounce.
             const double matte_prob = average_value(matte_albedo);
@@ -174,81 +174,100 @@ namespace
             sampling_context.split_in_place(3, 1);
             const Vector3d s = sampling_context.next_vector2<3>();
 
-            // Select the component to sample and set the scattering mode.
-            if (s[2] < specular_prob)
+            Vector3d H;
+            double dot_LN, dot_HN, dot_HV;
+
+            // Select a component and sample it to compute the incoming direction.
+            if (s[2] < matte_prob)
             {
-                const MDFType mdf(values->m_roughness);
+                mode = Diffuse;
 
-                // Sample the microfacet distribution to get an halfway vector H.
-                const Vector3d local_H = mdf.sample(Vector2d(s[0], s[1]));
-                const Vector3d H = shading_basis.transform_to_parent(local_H);
-                const double dot_HV = dot(H, V);
-                if (dot_HV <= 0.0)
-                    return;
-
-                // The incoming direction is the reflection of V around H.
-                incoming = (dot_HV + dot_HV) * H - V;
-
-                // Reject the incoming direction if it lies in or below the surface.
-                const double dot_iN = dot(incoming, N);
-                if (dot_iN <= 0.0)
-                    return;
-
-                // Compute the probability density of the incoming direction.
-                const double dot_HN = dot(H, N);
-                const double pdf_H = mdf.evaluate_pdf(dot_HN);
-                probability = pdf_H / (4.0 * dot_HV);
-                assert(probability > 0.0);
-
-                // Sanity checks.
-                assert(is_normalized(V));
-                assert(is_normalized(H));
-                assert(is_normalized(incoming));
-
-                // Evaluate the specular component for this (L, V) pair.
-                evaluate_fr_spec(mdf, values->m_rs, dot_HV, dot_HN, value);
-
-                // Compute the ratio BRDF/PDF.
-                value /= static_cast<float>(probability);
-
-                mode = Glossy;
-            }
-            else if (s[2] < matte_prob + specular_prob)
-            {
                 // Compute the incoming direction in local space.
                 const Vector3d wi = sample_hemisphere_cosine(Vector2d(s[0], s[1]));
 
                 // Transform the incoming direction to parent space.
                 incoming = shading_basis.transform_to_parent(wi);
 
-                // Compute the probability density of the sampled direction.
-                probability = wi.y * RcpPi;
-                assert(probability > 0.0);
+                // Compute the halfway vector.
+                H = normalize(incoming + V);
 
-                // Compute the incoming angle.
-                const double dot_iN = dot(incoming, N);
-                const double theta_prime = acos(dot_iN);
+                dot_LN = wi.y;
+                dot_HN = dot(H, N);
+                dot_HV = dot(H, V);
+            }
+            else if (s[2] < matte_prob + specular_prob)
+            {
+                mode = Glossy;
 
-                // Compute the specular albedo for the incoming angle.
-                Spectrum specular_albedo_L;
-                evaluate_a_spec(m_a_spec, theta_prime, specular_albedo_L);
+                // Sample the microfacet distribution to get an halfway vector H.
+                const Vector3d local_H = mdf.sample(Vector2d(s[0], s[1]));
 
-                // Evaluate the matte component (last equation of section 2.2).
-                value.set(1.0f);
-                value -= specular_albedo_L;
-                value *= matte_albedo;
-                value *= m_s;
+                // Transform the halfway vector to parent space.
+                H = shading_basis.transform_to_parent(local_H);
 
-                // Compute the ratio BRDF/PDF.
-                value /= static_cast<float>(probability);
+                dot_HV = dot(H, V);
 
-                mode = Diffuse;
+                // The incoming direction is the reflection of V around H.
+                incoming = (dot_HV + dot_HV) * H - V;
+
+                dot_LN = dot(incoming, N);
+                dot_HN = local_H.y;
             }
             else
             {
-                // Absorption.
+                mode = None;
                 return;
             }
+
+            // No reflection in or below the geometric surface.
+            const double cos_ig = dot(incoming, geometric_normal);
+            if (cos_ig <= 0.0)
+            {
+                mode = None;
+                return;
+            }
+
+            // No reflection in or below the shading surface.
+            if (dot_LN <= 0.0)
+            {
+                mode = None;
+                return;
+            }
+
+            // Compute the incoming angle.
+            const double theta_prime = acos(dot_LN);
+
+            // Compute the specular albedo for the incoming angle.
+            Spectrum specular_albedo_L;
+            evaluate_a_spec(m_a_spec, theta_prime, specular_albedo_L);
+
+            // Specular component (equation 3).
+            Spectrum fr_spec;
+            evaluate_fr_spec(mdf, values->m_rs, dot_HV, dot_HN, fr_spec);
+
+            // Matte component (last equation of section 2.2).
+            value.set(1.0f);
+            value -= specular_albedo_L;
+            value *= matte_albedo;
+            value *= m_s;
+
+            // The final value of the BRDF is the sum of the specular and matte components.
+            value += fr_spec;
+
+            // Compute the PDF of the incoming direction for the specular component.
+            const double pdf_H = mdf.evaluate_pdf(dot_HN);
+            const double pdf_specular = pdf_H / (4.0 * dot_HV);
+            assert(pdf_specular >= 0.0);
+
+            // Compute the PDF of the incoming direction for the matte component.
+            const double pdf_matte = dot_LN * RcpPi;
+            assert(pdf_matte >= 0.0);
+
+            // Evaluate the final PDF.
+            probability = specular_prob * pdf_specular + matte_prob * pdf_matte;
+
+            // Compute the ratio BRDF/PDF.
+            value /= static_cast<float>(probability);
         }
 
         FORCE_INLINE virtual bool evaluate(
@@ -280,6 +299,7 @@ namespace
             if (dot_LN <= 0.0 || dot_VN <= 0.0)
                 return false;
 
+            // Compute the outgoing and incoming angles.
             const double theta = acos(dot_VN);
             const double theta_prime = acos(dot_LN);
 
@@ -294,7 +314,7 @@ namespace
             matte_albedo *= values->m_rm;
 
             // Specular component (equation 3).
-            const MDFType mdf(values->m_roughness);
+            const MDFType mdf(values->m_roughness);     // todo: avoid constructing repeatedly
             Spectrum fr_spec;
             evaluate_fr_spec(mdf, values->m_rs, dot_HL, dot_HN, fr_spec);
 
@@ -321,7 +341,7 @@ namespace
                 assert(pdf_specular >= 0.0);
 
                 // Compute the PDF of the incoming direction for the matte component.
-                const double pdf_matte = dot_VN * RcpPi;
+                const double pdf_matte = dot_LN * RcpPi;
                 assert(pdf_matte >= 0.0);
 
                 // Evaluate the final PDF.
@@ -351,31 +371,38 @@ namespace
             const double dot_HN = dot(H, N);
             const double dot_HL = dot(H, L);
             const double dot_VN = dot(V, N);
+            const double dot_LN = dot(L, N);
+
+            // No reflection in or below the shading surface.
+            if (dot_LN <= 0.0 || dot_VN <= 0.0)
+                return 0.0;
+
+            // Compute the outgoing angle.
             const double theta = acos(dot_VN);
 
             // Compute the specular albedo for the outgoing angle.
             Spectrum specular_albedo_V;
             evaluate_a_spec(m_a_spec, theta, specular_albedo_V);
 
-            // Compute the probability of a specular bounce.
-            const double specular_prob = average_value(specular_albedo_V);
-
             // Compute the matte albedo.
             Spectrum matte_albedo(1.0f);
             matte_albedo -= specular_albedo_V;
             matte_albedo *= values->m_rm;
 
+            // Compute the probability of a specular bounce.
+            const double specular_prob = average_value(specular_albedo_V);
+
             // Compute the probability of a matte bounce.
             const double matte_prob = average_value(matte_albedo);
 
             // Compute the PDF of the incoming direction for the specular component.
-            const MDFType mdf(values->m_roughness);
+            const MDFType mdf(values->m_roughness);     // todo: avoid constructing repeatedly
             const double pdf_H = mdf.evaluate_pdf(dot_HN);
             const double pdf_specular = pdf_H / (4.0 * dot_HL);
             assert(pdf_specular >= 0.0);
 
             // Compute the PDF of the incoming direction for the matte component.
-            const double pdf_matte = dot_VN * RcpPi;
+            const double pdf_matte = dot_LN * RcpPi;
             assert(pdf_matte >= 0.0);
 
             // Evaluate the final PDF.
@@ -512,6 +539,7 @@ namespace
         }
 
         // Evaluate the specular albedo function for an arbitrary angle.
+        // todo: index a_spec[] using cos(theta) instead of theta.
         static void evaluate_a_spec(
             const Spectrum      a_spec[],
             const double        theta,
@@ -547,6 +575,7 @@ namespace
             MapleFile file("albedo.txt");
             plot_specular_albedo_curve(file, 0.8, Spectrum(1.0f));
             plot_specular_albedo_curve(file, 0.4, Spectrum(1.0f));
+            plot_specular_albedo_curve(file, 0.03, Spectrum(1.0f));
         }
 
         static void plot_specular_albedo_curve(
