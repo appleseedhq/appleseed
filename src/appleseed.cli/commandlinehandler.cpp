@@ -87,6 +87,7 @@ CommandLineHandler::CommandLineHandler()
     parser().set_default_option_handler(&m_filenames);
 
     m_rendering_threads.add_name("--threads");
+    m_rendering_threads.add_name("-t");
     m_rendering_threads.set_description("set the number of rendering threads");
     m_rendering_threads.set_syntax("n");
     m_rendering_threads.set_exact_value_count(1);
