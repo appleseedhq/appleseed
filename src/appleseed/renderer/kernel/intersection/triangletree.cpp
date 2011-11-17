@@ -237,7 +237,7 @@ namespace
             GAABB3 right_bbox = right_leaf_info.get_bbox();
 
             // Prevent numerical instabilities by slightly enlarging the bounding boxes.
-            const GScalar eps = bsp::get_bbox_grow_eps<GScalar>();
+            const GScalar eps = bsp::get_bbox_grow_eps<GScalar>() * 2;
             left_bbox.robust_grow(eps);
             right_bbox.robust_grow(eps);
 
