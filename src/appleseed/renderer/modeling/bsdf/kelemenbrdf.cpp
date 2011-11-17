@@ -206,7 +206,7 @@ namespace
                 H = normalize(incoming + V);
 
                 dot_LN = wi.y;
-                dot_HN = dot(H, N);
+                dot_HN = max(dot(H, N), 0.0);
                 dot_HV = dot(H, V);
             }
             else if (s[2] < matte_prob + specular_prob)
@@ -226,6 +226,13 @@ namespace
 
                 dot_LN = dot(incoming, N);
                 dot_HN = local_H.y;
+
+                // No reflection in or below the shading surface.
+                if (dot_LN <= 0.0)
+                {
+                    mode = None;
+                    return;
+                }
             }
             else
             {
@@ -236,13 +243,6 @@ namespace
             // No reflection in or below the geometric surface.
             const double cos_ig = dot(incoming, geometric_normal);
             if (cos_ig <= 0.0)
-            {
-                mode = None;
-                return;
-            }
-
-            // No reflection in or below the shading surface.
-            if (dot_LN <= 0.0)
             {
                 mode = None;
                 return;
@@ -299,17 +299,17 @@ namespace
             const Vector3d& L = incoming;
             const Vector3d& N = shading_basis.get_normal();
 
-            // Compute the halfway vector.
-            const Vector3d H = normalize(L + V);
-
-            const double dot_HN = dot(H, N);
-            const double dot_HL = dot(H, L);
             const double dot_VN = dot(V, N);
             const double dot_LN = dot(L, N);
 
             // No reflection in or below the shading surface.
             if (dot_LN <= 0.0 || dot_VN <= 0.0)
                 return false;
+
+            // Compute the halfway vector.
+            const Vector3d H = normalize(L + V);
+            const double dot_HN = dot(H, N);
+            const double dot_HL = dot(H, L);
 
             // Compute the specular albedos for the outgoing and incoming angles.
             Spectrum specular_albedo_V, specular_albedo_L;
@@ -373,17 +373,17 @@ namespace
             const Vector3d& L = incoming;
             const Vector3d& N = shading_basis.get_normal();
 
-            // Compute the halfway vector.
-            const Vector3d H = normalize(L + V);
-
-            const double dot_HN = dot(H, N);
-            const double dot_HL = dot(H, L);
             const double dot_VN = dot(V, N);
             const double dot_LN = dot(L, N);
 
             // No reflection in or below the shading surface.
             if (dot_LN <= 0.0 || dot_VN <= 0.0)
                 return 0.0;
+
+            // Compute the halfway vector.
+            const Vector3d H = normalize(L + V);
+            const double dot_HN = dot(H, N);
+            const double dot_HL = dot(H, L);
 
             // Compute the specular albedo for the outgoing angle.
             Spectrum specular_albedo_V;
@@ -436,8 +436,8 @@ namespace
             const double        dot_HN,
             Spectrum&           fr_spec)
         {
-            assert(dot_HL > 0.0);
-            assert(dot_HN > 0.0);
+            assert(dot_HL >= 0.0);
+            assert(dot_HN >= 0.0);
 
             fr_spec = schlick_fresnel_reflection(rs, dot_HL);
             fr_spec *= static_cast<float>(mdf.evaluate(dot_HN) / (4.0 * dot_HL * dot_HL));
