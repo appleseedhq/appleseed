@@ -119,6 +119,9 @@ template <typename T> Quaternion<T>& operator-=(Quaternion<T>& lhs, const Quater
 template <typename T> Quaternion<T>& operator*=(Quaternion<T>& lhs, const T rhs);
 template <typename T> Quaternion<T>& operator/=(Quaternion<T>& lhs, const T rhs);
 
+// Dot product.
+template <typename T> T dot(const Quaternion<T>& lhs, const Quaternion<T>& rhs);
+
 // Quaternion products.
 template <typename T> Quaternion<T>  operator* (const Quaternion<T>& lhs, const Quaternion<T>& rhs);
 template <typename T> Quaternion<T>& operator*=(Quaternion<T>& lhs, const Quaternion<T>& rhs);
@@ -137,6 +140,9 @@ template <typename T> Quaternion<T> normalize(const Quaternion<T>& q);
 // Return true if a quaternion is normalized (unit-length), false otherwise.
 template <typename T> bool is_normalized(const Quaternion<T>& q);
 template <typename T> bool is_normalized(const Quaternion<T>& q, const T eps);
+
+// Spherical linear interpolation between two unit-length quaternions.
+template <typename T> Quaternion<T> slerp(const Quaternion<T>& p, const Quaternion<T>& q, const T t);
 
 
 //
@@ -325,6 +331,12 @@ inline Quaternion<T>& operator/=(Quaternion<T>& lhs, const T rhs)
 }
 
 template <typename T>
+inline T dot(const Quaternion<T>& lhs, const Quaternion<T>& rhs)
+{
+    return lhs.s * rhs.s + dot(lhs.v, rhs.v);
+}
+
+template <typename T>
 inline Quaternion<T> operator*(const Quaternion<T>& lhs, const Quaternion<T>& rhs)
 {
     return Quaternion<T>(
@@ -356,7 +368,7 @@ inline Quaternion<T> inverse(const Quaternion<T>& q)
 template <typename T>
 inline T square_norm(const Quaternion<T>& q)
 {
-    return q.s * q.s + dot(q.v, q.v);
+    return dot(q, q);
 }
 
 template <typename T>
@@ -381,6 +393,24 @@ template <typename T>
 inline bool is_normalized(const Quaternion<T>& q, const T eps)
 {
     return feq(square_norm(q), T(1.0), eps);
+}
+
+template <typename T>
+inline Quaternion<T> slerp(const Quaternion<T>& p, const Quaternion<T>& q, const T t)
+{
+    assert(is_normalized(p));
+    assert(is_normalized(q));
+
+    const T cos_theta = clamp(dot(p, q), T(-1.0), T(1.0));
+    const T theta = std::acos(cos_theta);
+    const T sin_theta = std::sin(theta);
+
+    const T Eps = T(1.0e-6);
+
+    return
+        std::abs(sin_theta) < Eps
+            ? lerp(p, q, t)
+            : (std::sin((T(1.0) - t) * theta) * p + std::sin(t * theta) * q) / sin_theta;
 }
 
 }       // namespace foundation
