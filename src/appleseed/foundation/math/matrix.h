@@ -370,6 +370,9 @@ class Matrix<T, 4, 4>
         const Vector<T, 3>&     target,                     // target point
         const Vector<T, 3>&     up);                        // up vector, unit-length
 
+    // Extract the translation from a transformation matrix.
+    Vector<T, 3> extract_translation() const;
+
     // Extract Euler angles from a rotation matrix.
     void extract_euler_angles(
         ValueType&              yaw,
@@ -1624,6 +1627,12 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::lookat(
     mat[15] = T(1.0);
 
     return mat;
+}
+
+template <typename T>
+inline Vector<T, 3> Matrix<T, 4, 4>::extract_translation() const
+{
+    return Vector<T, 3>(m_comp[3], m_comp[7], m_comp[11]);
 }
 
 template <typename T>
