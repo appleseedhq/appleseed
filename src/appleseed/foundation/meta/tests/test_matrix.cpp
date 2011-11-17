@@ -28,9 +28,13 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/matrix.h"
+#include "foundation/math/quaternion.h"
+#include "foundation/math/scalar.h"
+#include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"
+#include "foundation/utility/vpythonfile.h"
 
 // Imath headers.
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
@@ -573,6 +577,15 @@ TEST_SUITE(Foundation_Math_Matrix33)
 
         EXPECT_FEQ(Vector3d(-238.0, -2167.0, 4097.0), result);
     }
+
+    TEST_CASE(TestExtractUnitQuaternion)
+    {
+        const Matrix3d m = Matrix3d::rotation_x(Pi / 4.0);
+
+        const Quaterniond q = m.extract_unit_quaternion();
+
+        EXPECT_FEQ(Quaterniond::rotation(Vector3d(1.0, 0.0, 0.0), Pi / 4.0), q);
+    }
 }
 
 TEST_SUITE(Foundation_Math_Matrix44)
@@ -716,5 +729,64 @@ TEST_SUITE(Foundation_Math_Matrix44)
         const Vector4d result = Vec * Matrix4d(Values);
 
         EXPECT_FEQ(Vector4d(-22927.0, -2126.0, 8586.0, -2175.0), result);
+    }
+
+    TEST_CASE(TestExtractUnitQuaternion)
+    {
+        const Matrix4d m = Matrix4d::rotation_x(Pi / 4.0);
+
+        const Quaterniond q = m.extract_unit_quaternion();
+
+        EXPECT_FEQ(Quaterniond::rotation(Vector3d(1.0, 0.0, 0.0), Pi / 4.0), q);
+    }
+
+    template <typename T>
+    class MatrixInterpolator
+    {
+      public:
+        MatrixInterpolator(const Matrix<T, 4, 4>& from, const Matrix<T, 4, 4>& to)
+          : m_t0(from.extract_translation())
+          , m_t1(to.extract_translation())
+          , m_q0(from.extract_unit_quaternion())
+          , m_q1(to.extract_unit_quaternion())
+        {
+        }
+
+        Matrix<T, 4, 4> evaluate(const T t) const
+        {
+            return
+                Matrix4d::translation(lerp(m_t0, m_t1, t)) *
+                Matrix4d::rotation(slerp(m_q0, m_q1, t));
+        }
+
+      private:
+        const Vector<T, 3>  m_t0, m_t1;
+        const Quaternion<T> m_q0, m_q1;
+    };
+
+    TEST_CASE(TransformationInterpolation)
+    {
+        const Matrix4d initial = Matrix4d::identity();
+
+        const Matrix4d target =
+            Matrix4d::translation(Vector3d(1.0, 0.0, 0.0)) *
+            Matrix4d::rotation_x(Pi);
+
+        const MatrixInterpolator<double> interpolator(initial, target);
+
+        VPythonFile file("unit tests/outputs/test_matrix_transformationinterpolation.py");
+
+        const size_t FrameCount = 20;
+
+        for (size_t i = 0; i < FrameCount; ++i)
+        {
+            const double t = static_cast<double>(i) / (FrameCount - 1);
+            const Transformd transform(interpolator.evaluate(t));
+
+            const Vector3d origin = transform.transform_point_to_parent(Vector3d(0.0, 0.0, 0.0));
+            const Vector3d axis = transform.transform_vector_to_parent(Vector3d(0.0, 1.0, 0.0));
+
+            file.draw_arrow(origin, origin + axis);
+        }
     }
 }
