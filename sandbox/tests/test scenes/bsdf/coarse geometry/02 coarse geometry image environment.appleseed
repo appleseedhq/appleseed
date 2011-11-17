@@ -98,7 +98,7 @@
                 <parameter name="surface_shader" value="surface_shader" />
             </material>
             <object name="geometry" model="mesh_object">
-                <parameter name="filename" value="bsdf.obj" />
+                <parameter name="filename" value="coarse geometry.obj" />
             </object>
             <object_instance name="sphere_lambertian_outward" object="geometry.sphere_lambertian_outward">
                 <transform>
