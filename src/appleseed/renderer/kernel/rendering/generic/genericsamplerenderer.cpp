@@ -115,7 +115,6 @@ namespace
             m_scene.get_camera()->generate_ray(
                 sampling_context,
                 image_point,
-                0.0f,               // ray time
                 primary_ray);
 
             // Initialize the result to linear RGB transparent black.

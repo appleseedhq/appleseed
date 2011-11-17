@@ -81,40 +81,55 @@ namespace
 
         virtual void on_frame_begin(const Project& project)
         {
-            // Precompute the rays origin in world space.
-            const Transformd::MatrixType& mat = get_transform().get_local_to_parent();
-            m_ray_org.x = mat[ 3];
-            m_ray_org.y = mat[ 7];
-            m_ray_org.z = mat[11];
-            const double w = mat[15];
-            assert(w != 0.0);
-            if (w != 1.0)
-                m_ray_org /= w;
+            // Precompute the rays origin in world space if the camera is static.
+            if (!has_motion())
+            {
+                const Transformd::MatrixType& mat = get_transform().get_local_to_parent();
+
+                m_ray_org.x = mat[ 3];
+                m_ray_org.y = mat[ 7];
+                m_ray_org.z = mat[11];
+
+                const double w = mat[15];
+                assert(w != 0.0);
+
+                if (w != 1.0)
+                    m_ray_org /= w;
+            }
         }
 
         virtual void generate_ray(
             SamplingContext&        sampling_context,
             const Vector2d&         point,
-            const float             time,
             ShadingRay&             ray) const
         {
-            // Create the ray.
-            ray.m_tmin = 0.0;
-            ray.m_tmax = numeric_limits<double>::max();
-            ray.m_time = time;
-            ray.m_flags = ~0;
-
-            // Set the ray origin.
-            ray.m_org = m_ray_org;
-
             // Transform the film point from NDC to camera space.
             const Vector3d target(
                 (point.x - 0.5) * m_film_dimensions[0],
                 (0.5 - point.y) * m_film_dimensions[1],
                 -m_focal_length);
 
-            // Set the ray direction.
-            ray.m_dir = get_transform().transform_vector_to_parent(target);
+            if (has_motion())
+            {
+                sampling_context.split_in_place(1, 1);
+
+                const double time = sampling_context.next_double2();
+                const Transformd transform = get_transform(time);
+
+                ray.m_org = transform.get_local_to_parent().extract_translation();
+                ray.m_dir = transform.transform_vector_to_parent(target);
+                ray.m_time = time;
+            }
+            else
+            {
+                ray.m_org = m_ray_org;
+                ray.m_dir = get_transform().transform_vector_to_parent(target);
+                ray.m_time = 0.0;
+            }
+
+            ray.m_tmin = 0.0;
+            ray.m_tmax = numeric_limits<double>::max();
+            ray.m_flags = ~0;
         }
 
         virtual Vector2d project(const Vector3d& point) const

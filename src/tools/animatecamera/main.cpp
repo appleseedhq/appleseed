@@ -121,22 +121,29 @@ namespace
         const double normalized_distance = g_cl.m_camera_distance.values()[0];
         const double normalized_elevation = g_cl.m_camera_elevation.values()[0];
 
+        // Precompute some stuff.
+        const Vector3d Up(0.0, 1.0, 0.0);
+        const Vector3d center = scene_bbox.center() + center_offset;
+        const double distance = max_radius * normalized_distance;
+        const double elevation = max_height * normalized_elevation;
+
+        // Compute the transform of the camera at the last frame.
+        const double angle = static_cast<double>(-1) / frame_count * TwoPi;
+        const Vector3d position(distance * cos(angle), elevation, distance * sin(angle));
+        Transformd previous_transform(Matrix4d::lookat(position, center, Up));
+
         for (int i = 0; i < frame_count; ++i)
         {
-            // Compute the position of the camera at this frame.
+            // Compute the transform of the camera at this frame.
             const double angle = static_cast<double>(i) / frame_count * TwoPi;
-            const double distance = max_radius * normalized_distance;
-            const double elevation = max_height * normalized_elevation;
-            const Vector3d position(
-                distance * cos(angle),
-                elevation,
-                distance * sin(angle));
+            const Vector3d position(distance * cos(angle), elevation, distance * sin(angle));
+            const Transformd new_transform(Matrix4d::lookat(position, center, Up));
 
-            // Compute and set the transform of the camera at this frame.
-            const Vector3d center = scene_bbox.center() + center_offset;
-            const Vector3d Up(0.0, 1.0, 0.0);
+            // Set the camera transformations.
             Camera* camera = project->get_scene()->get_camera();
-            camera->set_transform(Transformd(Matrix4d::lookat(position, center, Up)));
+            camera->set_transform(0.0, previous_transform);
+            camera->set_transform(1.0, new_transform);
+            previous_transform = new_transform;
 
             // Write the project file for this frame.
             const int frame = i + 1;

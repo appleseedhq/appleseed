@@ -248,7 +248,7 @@ namespace
             ao_ray.m_org = point;
             ao_ray.m_tmin = 0.0;
             ao_ray.m_tmax = numeric_limits<double>::max();
-            ao_ray.m_time = 0.0f;
+            ao_ray.m_time = 0.0;
             ao_ray.m_flags = ~0;
 
             size_t computed_samples = 0;

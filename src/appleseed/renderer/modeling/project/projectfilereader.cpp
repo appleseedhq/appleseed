@@ -776,6 +776,7 @@ namespace
 
         virtual void start_element(const Attributes& attrs)
         {
+            m_time = get_scalar(get_value(attrs, "time", "0.0"), m_context);
             m_matrix = Matrix4d::identity();
         }
 
@@ -843,6 +844,11 @@ namespace
             }
         }
 
+        double get_time() const
+        {
+            return m_time;
+        }
+
         const Transformd& get_transform() const
         {
             return m_transform;
@@ -850,6 +856,7 @@ namespace
 
       private:
         ParseContext&   m_context;
+        double          m_time;
         Matrix4d        m_matrix;
         Transformd      m_transform;
     };
@@ -1358,13 +1365,16 @@ namespace
         virtual void start_element(const Attributes& attrs)
         {
             Base::start_element(attrs);
-            m_transform = Transformd(Matrix4d::identity());
+
+            m_transforms[0.0] = Transformd(Matrix4d::identity());
         }
 
         virtual void end_element()
         {
             Base::end_element();
-            m_entity->set_transform(m_transform);
+
+            for (const_each<TransformMap> i = m_transforms; i; ++i)
+                m_entity->set_transform(i->first, i->second);
         }
 
         virtual void end_child_element(
@@ -1377,7 +1387,7 @@ namespace
                 {
                     TransformElementHandler* transform_handler =
                         static_cast<TransformElementHandler*>(handler);
-                    m_transform = transform_handler->get_transform();
+                    m_transforms[transform_handler->get_time()] = transform_handler->get_transform();
                 }
                 break;
 
@@ -1388,7 +1398,8 @@ namespace
         }
 
       private:
-        Transformd m_transform;
+        typedef map<double, Transformd> TransformMap;
+        TransformMap m_transforms;
     };
 
 

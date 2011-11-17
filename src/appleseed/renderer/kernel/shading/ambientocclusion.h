@@ -69,7 +69,7 @@ double compute_ambient_occlusion(
     ao_ray.m_org = point;
     ao_ray.m_tmin = 0.0;
     ao_ray.m_tmax = max_distance;
-    ao_ray.m_time = 0.0f;
+    ao_ray.m_time = 0.0;
     ao_ray.m_flags = ~0;
 
     size_t computed_samples = 0;

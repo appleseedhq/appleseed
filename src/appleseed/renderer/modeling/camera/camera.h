@@ -56,17 +56,28 @@ class RENDERERDLL Camera
   public:
     // Constructor.
     Camera(
-        const char*         name,
-        const ParamArray&   params);
+        const char*                     name,
+        const ParamArray&               params);
 
     // Return a string identifying the model of this entity.
     virtual const char* get_model() const = 0;
 
-    // Set the camera transformation.
+    // Set the camera transformation at time=0.
     void set_transform(const foundation::Transformd& transform);
 
-    // Get the camera transformation.
+    // Set the camera transformation at a given time.
+    void set_transform(
+        const double                    time,
+        const foundation::Transformd&   transform);
+
+    // Get the camera transformation at time=0.
     const foundation::Transformd& get_transform() const;
+
+    // Get the camera transformation at a given time.
+    foundation::Transformd get_transform(const double time) const;
+
+    // Return true if the camera has multiple transformations.
+    bool has_motion() const;
 
     // Get the film dimensions (in meters).
     const foundation::Vector2d& get_film_dimensions() const;
@@ -83,21 +94,18 @@ class RENDERERDLL Camera
     // This method is called once after rendering each frame.
     virtual void on_frame_end(const Project& project);
 
-    // Generate a ray originating from a given point on the lens surface of the camera
-    // and directed toward a given point on the film plane, at a given time. point is
-    // the target point on the film plane expressed in normalized device coordinates
-    // (http://appleseedhq.net/conventions). time is the time at which the ray must be
-    // generated. The generated ray is expressed in world space.
+    // Generate a ray directed toward a given point on the film plane, expressed
+    // in normalized device coordinates (http://appleseedhq.net/conventions).
+    // The generated ray is expressed in world space.
     virtual void generate_ray(
-        SamplingContext&            sampling_context,
-        const foundation::Vector2d& point,              // point on film plane, in NDC
-        const float                 time,               // time at which to generate the ray
-        ShadingRay&                 ray) const = 0;
+        SamplingContext&                sampling_context,
+        const foundation::Vector2d&     point,              // point on film plane, in NDC
+        ShadingRay&                     ray) const = 0;
 
     // Project a 3D point back to the film plane. The input point is expressed in camera
     // space. The returned point is expressed in normalized device coordinates.
     virtual foundation::Vector2d project(
-        const foundation::Vector3d& point) const = 0;   // point in camera space
+        const foundation::Vector3d&     point) const = 0;   // point in camera space
 
   protected:
     struct Impl;

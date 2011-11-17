@@ -279,6 +279,25 @@ namespace
             }
         }
 
+        // Write a <transform> element with a "time" attribute.
+        void write(const Transformd& transform, const double time)
+        {
+            Element element("transform", m_file, m_indenter);
+            element.add_attribute("time", time);
+            element.write(true);
+
+            {
+                Element element("matrix", m_file, m_indenter);
+                element.write(true);
+
+                write_vector(
+                    transform.get_local_to_parent(),
+                    16,
+                    4,
+                    MatrixFormat);
+            }
+        }
+
         // Write an array of color values.
         void write(const char* element_name, const ColorValueArray& values)
         {
@@ -428,8 +447,15 @@ namespace
             element.add_attribute("name", camera.get_name());
             element.add_attribute("model", camera.get_model());
             element.write(true);
+
             write(camera.get_parameters());
-            write(camera.get_transform());
+
+            if (camera.has_motion())
+            {
+                write(camera.get_transform(0.0), 0.0);
+                write(camera.get_transform(1.0), 1.0);
+            }
+            else write(camera.get_transform());
         }
 
         void write(const ObjectContainer& objects)

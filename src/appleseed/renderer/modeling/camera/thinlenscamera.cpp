@@ -129,13 +129,12 @@ namespace
         virtual void generate_ray(
             SamplingContext&        sampling_context,
             const Vector2d&         point,
-            const float             time,
             ShadingRay&             ray) const
         {
             // Create the ray.
             ray.m_tmin = 0.0;
             ray.m_tmax = numeric_limits<double>::max();
-            ray.m_time = time;
+            ray.m_time = 0.0;
             ray.m_flags = ~0;
 
             // Sample the surface of the lens.
@@ -246,7 +245,7 @@ namespace
             ShadingRay ray;
             ray.m_tmin = 0.0;
             ray.m_tmax = numeric_limits<double>::max();
-            ray.m_time = 0.0f;
+            ray.m_time = 0.0;
             ray.m_flags = ~0;
 
             // Set the ray origin.

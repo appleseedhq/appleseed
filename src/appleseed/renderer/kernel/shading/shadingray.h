@@ -57,26 +57,26 @@ class ShadingRay
     typedef foundation::uint32      RayFlagsType;
 
     // Public members.
-    float           m_time;
+    double          m_time;
     RayFlagsType    m_flags;
 
     // Constructors.
     ShadingRay();                               // leave all fields uninitialized
     ShadingRay(
         const RayType&              ray,
-        const float                 time,
+        const double                time,
         const RayFlagsType          flags);
     ShadingRay(
         const VectorType&           org,
         const VectorType&           dir,
-        const float                 time,
+        const double                time,
         const RayFlagsType          flags);
     ShadingRay(
         const VectorType&           org,
         const VectorType&           dir,
         const ValueType             tmin,
         const ValueType             tmax,
-        const float                 time,
+        const double                time,
         const RayFlagsType          flags);
 };
 
@@ -101,7 +101,7 @@ inline ShadingRay::ShadingRay()
 
 inline ShadingRay::ShadingRay(
     const RayType&                  ray,
-    const float                     time,
+    const double                    time,
     const RayFlagsType              flags)
   : RayType(ray)
   , m_time(time)
@@ -112,7 +112,7 @@ inline ShadingRay::ShadingRay(
 inline ShadingRay::ShadingRay(
     const VectorType&               org,
     const VectorType&               dir,
-    const float                     time,
+    const double                    time,
     const RayFlagsType              flags)
   : RayType(org, dir)
   , m_time(time)
@@ -125,7 +125,7 @@ inline ShadingRay::ShadingRay(
     const VectorType&               dir,
     const ValueType                 tmin,
     const ValueType                 tmax,
-    const float                     time,
+    const double                    time,
     const RayFlagsType              flags)
   : RayType(org, dir, tmin, tmax)
   , m_time(time)
