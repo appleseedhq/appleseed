@@ -58,7 +58,7 @@ namespace
     //
     // References:
     //
-    //   http://citeseer.ist.psu.edu/ashikhmin00anisotropic.html
+    //   http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.18.4558&rep=rep1&type=pdf
     //   http://jesper.kalliope.org/blog/library/dbrdfs.pdf
     //
 
@@ -148,17 +148,13 @@ namespace
             sampling_context.split_in_place(3, 1);
             const Vector3d s = sampling_context.next_vector2<3>();
 
-            // Select the component to sample and set the scattering mode.
-            mode = s[2] < rval.m_pd ? Diffuse : Glossy;
-
             Vector3d h;
             double exp;
 
-            if (mode == Diffuse)
+            // Select a component and sample it to compute the incoming direction.
+            if (s[2] < rval.m_pd)
             {
-                //
-                // Sample the diffuse component.
-                //
+                mode = Diffuse;
 
                 // Compute the incoming direction in local space.
                 const Vector3d wi = sample_hemisphere_cosine(Vector2d(s[0], s[1]));
@@ -188,43 +184,57 @@ namespace
             }
             else
             {
-                //
-                // Sample the glossy component.
-                //
+                mode = Glossy;
 
-                // Compute phi of halfway vector (equation 9).
-                double phi;
-                if (s[0] < 0.25)
+                double cos_phi, sin_phi;
+
+                if (sval.m_isotropic)
                 {
-                    // First quadrant.
-                    const double b = tan(HalfPi * (4.0 * s[0]));
-                    phi = atan(sval.m_k * b);
-                }
-                else if (s[0] < 0.5)
-                {
-                    // Second quadrant.
-                    const double b = tan(HalfPi * (4.0 * s[0] - 1.0));
-                    phi = atan(sval.m_k * b) + HalfPi;
-                }
-                else if (s[0] < 0.75)
-                {
-                    // Third quadrant.
-                    const double b = tan(HalfPi * (4.0 * s[0] - 2.0));
-                    phi = atan(sval.m_k * b) + Pi;
+                    const double phi = s[0] * TwoPi;
+
+                    cos_phi = cos(phi);
+                    sin_phi = sin(phi);
+
+                    exp = values->m_nu;
                 }
                 else
                 {
-                    // Fourth quadrant.
-                    const double b = tan(HalfPi * (4.0 * s[0] - 3.0));
-                    phi = atan(sval.m_k * b) + Pi + HalfPi;
+                    double phi;
+
+                    if (s[0] < 0.25)
+                    {
+                        // First quadrant.
+                        const double b = tan(HalfPi * (4.0 * s[0]));
+                        phi = atan(sval.m_k * b);
+                    }
+                    else if (s[0] < 0.5)
+                    {
+                        // Second quadrant.
+                        const double b = tan(HalfPi * (4.0 * s[0] - 1.0));
+                        phi = atan(sval.m_k * b) + HalfPi;
+                    }
+                    else if (s[0] < 0.75)
+                    {
+                        // Third quadrant.
+                        const double b = tan(HalfPi * (4.0 * s[0] - 2.0));
+                        phi = atan(sval.m_k * b) + Pi;
+                    }
+                    else
+                    {
+                        // Fourth quadrant.
+                        const double b = tan(HalfPi * (4.0 * s[0] - 3.0));
+                        phi = atan(sval.m_k * b) + Pi + HalfPi;
+                    }
+
+                    cos_phi = cos(phi);
+                    sin_phi = sin(phi);
+
+                    const double exp_u = values->m_nu * cos_phi * cos_phi;
+                    const double exp_v = values->m_nv * sin_phi * sin_phi;
+
+                    exp = exp_u + exp_v;
                 }
 
-                // Compute theta of halfway vector (equation 10).
-                const double cos_phi = cos(phi);
-                const double sin_phi = sin(phi);
-                const double exp_u = values->m_nu * cos_phi * cos_phi;
-                const double exp_v = values->m_nv * sin_phi * sin_phi;
-                exp = exp_u + exp_v;
                 const double cos_theta = pow(1.0 - s[1], 1.0 / (exp + 1.0));
                 const double sin_theta = sqrt(1.0 - cos_theta * cos_theta);
 
@@ -256,10 +266,10 @@ namespace
             // Compute dot products.
             const double cos_on = max(dot(outgoing, shading_normal), 1.0e-3);
             const double cos_oh = max(dot(outgoing, h), 1.0e-3);
-            const double cos_hn = dot(h, shading_normal);
+            const double cos_hn = max(dot(h, shading_normal), 0.0);
 
             // Evaluate the glossy component of the BRDF (equation 4).
-            const double num = pow(max(cos_hn, 0.0), exp);
+            const double num = pow(cos_hn, exp);
             const double den = cos_oh * (cos_in + cos_on - cos_in * cos_on);
             value = schlick_fresnel_reflection(values->m_rg, cos_oh);
             value *= static_cast<float>(sval.m_kg * num / den);
@@ -270,7 +280,7 @@ namespace
             value += rval.m_kd * static_cast<float>(a * b);
 
             // Evaluate the PDF of the diffuse component.
-            const double pdf_diffuse = cos_in * (1.0 / Pi);
+            const double pdf_diffuse = cos_in * RcpPi;
             assert(pdf_diffuse > 0.0);
 
             // Evaluate the PDF of the glossy component (equation 8).
@@ -320,7 +330,7 @@ namespace
 
             // Compute dot products.
             const double cos_oh = max(dot(outgoing, h), 1.0e-3);
-            const double cos_hn = dot(h, shading_basis.get_normal());
+            const double cos_hn = max(dot(h, shading_basis.get_normal()), 0.0);
             const double cos_hu = dot(h, shading_basis.get_tangent_u());
             const double cos_hv = dot(h, shading_basis.get_tangent_v());
 
@@ -329,7 +339,7 @@ namespace
             const double exp_num_v = values->m_nv * cos_hv * cos_hv;
             const double exp_den = 1.0 - cos_hn * cos_hn;
             const double exp = (exp_num_u + exp_num_v) / exp_den;
-            const double num = sval.m_kg * pow(max(cos_hn, 0.0), exp);
+            const double num = sval.m_kg * pow(cos_hn, exp);
             const double den = cos_oh * (cos_in + cos_on - cos_in * cos_on);
             Spectrum glossy = schlick_fresnel_reflection(values->m_rg, cos_oh);
             glossy *= static_cast<float>(num / den);
@@ -351,7 +361,7 @@ namespace
                 assert(pdf_glossy >= 0.0);
 
                 // Evaluate the PDF of the diffuse component.
-                const double pdf_diffuse = cos_in * (1.0 / Pi);
+                const double pdf_diffuse = cos_in * RcpPi;
                 assert(pdf_diffuse >= 0.0);
 
                 // Evaluate the final PDF. Note that the probability might be zero,
@@ -396,7 +406,7 @@ namespace
 
             // Compute dot products.
             const double cos_oh = max(dot(outgoing, h), 1.0e-3);
-            const double cos_hn = dot(h, shading_basis.get_normal());
+            const double cos_hn = max(dot(h, shading_basis.get_normal()), 0.0);
             const double cos_hu = dot(h, shading_basis.get_tangent_u());
             const double cos_hv = dot(h, shading_basis.get_tangent_v());
 
@@ -405,14 +415,14 @@ namespace
             const double exp_num_v = values->m_nv * cos_hv * cos_hv;
             const double exp_den = 1.0 - cos_hn * cos_hn;
             const double exp = (exp_num_u + exp_num_v) / exp_den;
-            const double pdf_h = sval.m_kg * pow(max(cos_hn, 0.0), exp);
+            const double pdf_h = sval.m_kg * pow(cos_hn, exp);
 
             // Evaluate the PDF of the glossy component (equation 8).
             const double pdf_glossy = pdf_h / cos_oh;
             assert(pdf_glossy >= 0.0);
 
             // Evaluate the PDF of the diffuse component.
-            const double pdf_diffuse = cos_in * (1.0 / Pi);
+            const double pdf_diffuse = cos_in * RcpPi;
             assert(pdf_diffuse >= 0.0);
 
             // Evaluate the final PDF. Note that the probability might be zero,
@@ -447,6 +457,7 @@ namespace
         {
             double      m_kg;
             double      m_k;
+            bool        m_isotropic;
         };
 
         bool            m_uniform_reflectance;
@@ -461,16 +472,8 @@ namespace
             return x2 * x2 * x;
         }
 
-        static bool compute_rval(const Spectrum& raw_rd, const Spectrum& raw_rg, RVal& rval)
+        static bool compute_rval(const Spectrum& rd, const Spectrum& rg, RVal& rval)
         {
-            const Spectrum rd = saturate(raw_rd);
-            const Spectrum rg = saturate(raw_rg);
-
-            // Precompute constant factor of diffuse component (equation 5).
-            rval.m_kd = rd;
-            rval.m_kd *= Spectrum(1.0f) - rg;
-            rval.m_kd *= static_cast<float>(28.0 / (23.0 * Pi));
-
             // Compute average diffuse and glossy reflectances.
             const double rd_avg = average_value(rd);
             const double rg_avg = average_value(rg);
@@ -483,16 +486,28 @@ namespace
             rval.m_pg = 1.0 - rval.m_pd;
             assert(feq(rval.m_pd + rval.m_pg, 1.0));
 
+            // Precompute constant factor of diffuse component (equation 5).
+            rval.m_kd.set(1.0f);
+            rval.m_kd -= rg;
+            rval.m_kd *= rd;
+            rval.m_kd *= static_cast<float>(28.0 / (23.0 * Pi));
+
             return true;
         }
 
         static void compute_sval(const double nu, const double nv, SVal& sval)
         {
+            // Check for isotropicity.
+            sval.m_isotropic = feq(nu, nv, 1.0e-6);
+
             // Precompute constant factor of glossy component (equations 4 and 6).
             sval.m_kg = sqrt((nu + 1.0) * (nv + 1.0)) / (8.0 * Pi);
 
-            // Precompute constant factor needed during hemisphere sampling.
-            sval.m_k = sqrt((nu + 1.0) / (nv + 1.0));
+            if (!sval.m_isotropic)
+            {
+                // Precompute constant factor needed during hemisphere sampling.
+                sval.m_k = sqrt((nu + 1.0) / (nv + 1.0));
+            }
         }
 
         bool get_rval(RVal& rval, const InputValues* values) const
