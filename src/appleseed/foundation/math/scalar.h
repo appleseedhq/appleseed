@@ -455,7 +455,7 @@ inline T mix(const T a, const T b, const U x)
 template <typename T, typename U>
 inline T lerp(const T a, const T b, const U x)
 {
-    return a + x * (b - a);
+    return (U(1.0) - x) * a + x * b;
 }
 
 template <typename T>
