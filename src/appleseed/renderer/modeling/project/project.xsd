@@ -74,6 +74,7 @@
                 </xsd:complexType>
             </xsd:element>
         </xsd:choice>
+        <xsd:attribute name="time" type="xsd:double" use="optional"/>
     </xsd:complexType>
     <xsd:element name="project">
         <xsd:complexType>
@@ -194,7 +195,7 @@
                                 <xsd:complexType>
                                     <xsd:complexContent>
                                         <xsd:extension base="parameterSet">
-                                            <xsd:sequence>
+                                            <xsd:sequence maxOccurs="unbounded">
                                                 <xsd:element name="transform" type="transform" minOccurs="0"/>
                                             </xsd:sequence>
                                             <xsd:attribute name="name" type="xsd:string" use="required"/>
