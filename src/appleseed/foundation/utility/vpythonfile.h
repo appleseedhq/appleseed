@@ -74,6 +74,12 @@ class VPythonFile
     void draw_unit_square(
         const double        thickness = 0.001);
 
+    // Output an arrow.
+    void draw_arrow(
+        const Vector3d&     from,
+        const Vector3d&     to,
+        const double        shaft_width = 0.01);
+
   private:
     std::FILE* m_file;
 };

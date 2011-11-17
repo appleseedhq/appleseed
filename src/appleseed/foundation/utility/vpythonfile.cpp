@@ -116,4 +116,19 @@ void VPythonFile::draw_unit_square(const double thickness)
         thickness);
 }
 
+void VPythonFile::draw_arrow(
+    const Vector3d&     from,
+    const Vector3d&     to,
+    const double        shaft_width)
+{
+    const Vector3d axis = to - from;
+
+    fprintf(
+        m_file,
+        "arrow(pos=(%f,%f,%f), axis=(%f,%f,%f), shaftwidth=%f)\n",
+        from.x, from.y, from.z,
+        axis.x, axis.y, axis.z,
+        shaft_width);
+}
+
 }   // namespace foundation
