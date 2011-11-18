@@ -30,8 +30,6 @@
 #include "camera.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/matrix.h"
-#include "foundation/math/quaternion.h"
 #include "foundation/math/scalar.h"
 #include "foundation/utility/containers/specializedarrays.h"
 
@@ -54,14 +52,15 @@ struct Camera::Impl
 {
     // Order of data members impacts performance, preserve it.
 
-    Transformd  m_transform_t0;         // camera transformation at time=0
-    Transformd  m_transform_t1;         // camera transformation at time=1
-    bool        m_has_motion;
+    Transformd              m_transform_t0;             // camera transformation at time=0
+    Transformd              m_transform_t1;             // camera transformation at time=1
+    TransformInterpolatord  m_transform_interpolator;
+    bool                    m_has_motion;
 
-    Vector2d    m_film_dimensions;      // film dimensions, in meters
-    double      m_focal_length;         // focal length, in meters
+    Vector2d                m_film_dimensions;          // film dimensions, in meters
+    double                  m_focal_length;             // focal length, in meters
 
-    Pyramid3d   m_view_pyramid;
+    Pyramid3d               m_view_pyramid;
 };
 
 Camera::Camera(
@@ -112,53 +111,12 @@ const Transformd& Camera::get_transform() const
     return impl->m_transform_t0;
 }
 
-namespace
-{
-    template <typename T>
-    class TransformInterpolator
-    {
-      public:
-        TransformInterpolator(const Transform<T>& from, const Transform<T>& to)
-        {
-            const MatrixType& from_matrix = from.get_local_to_parent();
-            const MatrixType& to_matrix = to.get_local_to_parent();
-
-            m_t0 = from_matrix.extract_translation();
-            m_q0 = from_matrix.extract_unit_quaternion();
-
-            m_t1 = to_matrix.extract_translation();
-            m_q1 = to_matrix.extract_unit_quaternion();
-
-            if (m_q0.s * m_q1.s < 0.0)
-                m_q1 = -m_q1;
-        }
-
-        Transform<T> evaluate(const T t) const
-        {
-            const MatrixType translation = MatrixType::translation(lerp(m_t0, m_t1, t));
-            const MatrixType rotation = MatrixType::rotation(slerp(m_q0, m_q1, t));
-
-            return
-                Transform<T>(
-                    translation * rotation,
-                    transpose(rotation) * (-translation));
-        }
-
-      private:
-        typedef Matrix<T, 4, 4> MatrixType;
-
-        Vector<T, 3>  m_t0, m_t1;
-        Quaternion<T> m_q0, m_q1;
-    };
-}
-
 Transformd Camera::get_transform(const double time) const
 {
-    const TransformInterpolator<double> interpolator(
-        impl->m_transform_t0,
-        impl->m_transform_t1);
-
-    return interpolator.evaluate(time);
+    return
+        impl->m_has_motion
+            ? impl->m_transform_interpolator.evaluate(time)
+            : impl->m_transform_t0;
 }
 
 bool Camera::has_motion() const
@@ -183,6 +141,12 @@ const Pyramid3d& Camera::get_view_pyramid() const
 
 void Camera::on_frame_begin(const Project& project)
 {
+    if (impl->m_has_motion)
+    {
+        impl->m_transform_interpolator.set_transforms(
+            impl->m_transform_t0,
+            impl->m_transform_t1);
+    }
 }
 
 void Camera::on_frame_end(const Project& project)

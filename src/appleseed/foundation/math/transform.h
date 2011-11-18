@@ -32,8 +32,10 @@
 // appleseed.foundation headers.
 #include "foundation/math/aabb.h"
 #include "foundation/math/matrix.h"
-#include "foundation/math/vector.h"
+#include "foundation/math/quaternion.h"
 #include "foundation/math/ray.h"
+#include "foundation/math/scalar.h"
+#include "foundation/math/vector.h"
 
 // Standard headers.
 #include <cassert>
@@ -120,6 +122,46 @@ class Transform
 
 typedef Transform<float>  Transformf;
 typedef Transform<double> Transformd;
+
+
+//
+// The TransformInterpolator class allows to interpolate between two
+// rigid transformations (combinations of rotations and translations).
+//
+
+template <typename T>
+class TransformInterpolator
+{
+  public:
+    // Matrix and transform types.
+    typedef Matrix<T, 4, 4> MatrixType;
+    typedef Transform<T> TransformType;
+
+    // Constructors.
+    TransformInterpolator();                // leave the interpolator uninitialized
+    TransformInterpolator(
+        const TransformType& from,
+        const TransformType& to);
+
+    // Set the initial and final transformations.
+    void set_transforms(
+        const TransformType& from,
+        const TransformType& to);
+
+    TransformType evaluate(const T t) const;
+
+  private:
+    Vector<T, 3>  m_t0, m_t1;
+    Quaternion<T> m_q0, m_q1;
+};
+
+
+//
+// Specializations for single and double precision transformation interpolators.
+//
+
+typedef TransformInterpolator<float>  TransformInterpolatorf;
+typedef TransformInterpolator<double> TransformInterpolatord;
 
 
 //
@@ -400,6 +442,54 @@ inline AABB<U, 3> Transform<T>::transform_to_parent(const AABB<U, 3>& b) const
     res.insert(transform_point_to_parent(Vector<U, 3>(b[1][0], b[0][1], b[1][2])));
     res.insert(transform_point_to_parent(Vector<U, 3>(b[1][0], b[0][1], b[0][2])));
     return res;
+}
+
+
+//
+// TransformInterpolator class implementation.
+//
+
+template <typename T>
+inline TransformInterpolator<T>::TransformInterpolator()
+{
+}
+
+template <typename T>
+inline TransformInterpolator<T>::TransformInterpolator(
+    const TransformType& from,
+    const TransformType& to)
+{
+    set_transforms(from, to);
+}
+
+template <typename T>
+void TransformInterpolator<T>::set_transforms(
+    const TransformType& from,
+    const TransformType& to)
+{
+    const MatrixType& from_matrix = from.get_local_to_parent();
+    const MatrixType& to_matrix = to.get_local_to_parent();
+
+    m_t0 = from_matrix.extract_translation();
+    m_q0 = from_matrix.extract_unit_quaternion();
+
+    m_t1 = to_matrix.extract_translation();
+    m_q1 = to_matrix.extract_unit_quaternion();
+
+    if (m_q0.s * m_q1.s < T(0.0))
+        m_q1 = -m_q1;
+}
+
+template <typename T>
+inline Transform<T> TransformInterpolator<T>::evaluate(const T t) const
+{
+    const MatrixType translation = MatrixType::translation(lerp(m_t0, m_t1, t));
+    const MatrixType rotation = MatrixType::rotation(slerp(m_q0, m_q1, t));
+
+    return
+        Transform<T>(
+            translation * rotation,
+            transpose(rotation) * (-translation));
 }
 
 }       // namespace foundation

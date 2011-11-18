@@ -122,17 +122,17 @@ class RENDERERDLL Camera
 
     // Utility function to retrieve the focal distance from the entity parameters.
     void extract_focal_distance(
-        bool&                       autofocus_enabled,
-        foundation::Vector2d&       autofocus_target,
-        double&                     focal_distance) const;
+        bool&                           autofocus_enabled,
+        foundation::Vector2d&           autofocus_target,
+        double&                         focal_distance) const;
 
   private:
     bool has_param(const char* name) const;
     bool has_params(const char* name1, const char* name2) const;
 
     double get_greater_than_zero(
-        const char*                 name,
-        const double                default_value) const;
+        const char*                     name,
+        const double                    default_value) const;
 
     void compute_view_pyramid();
 };

@@ -81,6 +81,8 @@ namespace
 
         virtual void on_frame_begin(const Project& project)
         {
+            Camera::on_frame_begin(project);
+
             // Precompute the rays origin in world space if the camera is static.
             if (!has_motion())
             {

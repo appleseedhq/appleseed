@@ -113,6 +113,8 @@ namespace
 
         virtual void on_frame_begin(const Project& project)
         {
+            Camera::on_frame_begin(project);
+
             // Perform autofocus, if enabled.
             if (m_autofocus_enabled)
             {
