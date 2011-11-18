@@ -96,6 +96,8 @@ namespace
             const Assembly&     assembly,
             const void*         uniform_data)
         {
+            BSDF::on_frame_begin(project, assembly, uniform_data);
+
             const InputValues* values = static_cast<const InputValues*>(uniform_data);
 
             m_uniform_reflectance =

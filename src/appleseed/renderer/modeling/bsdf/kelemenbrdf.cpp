@@ -112,6 +112,8 @@ namespace
             const Assembly&     assembly,
             const void*         uniform_data) override
         {
+            BSDF::on_frame_begin(project, assembly, uniform_data);
+
             // todo: implement proper error handling.
             assert(m_inputs.source("specular_reflectance"));
             assert(m_inputs.source("specular_reflectance")->is_uniform());
@@ -146,6 +148,8 @@ namespace
         {
             delete m_mdf;
             m_mdf = 0;
+
+            BSDF::on_frame_end(project, assembly);
         }
 
         FORCE_INLINE virtual void sample(

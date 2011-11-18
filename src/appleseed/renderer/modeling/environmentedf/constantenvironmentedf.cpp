@@ -78,6 +78,8 @@ namespace
 
         virtual void on_frame_begin(const Project& project)
         {
+            EnvironmentEDF::on_frame_begin(project);
+
             assert(m_inputs.source("exitance"));
 
             // todo: what happens if exitance is not uniform?

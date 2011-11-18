@@ -87,6 +87,8 @@ namespace
             const Assembly&     assembly,
             const void*         uniform_data) override
         {
+            BSDF::on_frame_begin(project, assembly, uniform_data);
+
             m_bsdf[0] = retrieve_bsdf(assembly, "bsdf0");
             m_bsdf[1] = retrieve_bsdf(assembly, "bsdf1");
 

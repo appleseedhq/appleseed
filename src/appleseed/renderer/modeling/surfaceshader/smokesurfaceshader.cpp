@@ -105,6 +105,8 @@ namespace
             const Project&          project,
             const Assembly&         assembly) override
         {
+            SurfaceShader::on_frame_begin(project, assembly);
+
             if (m_first_frame)
             {
                 create_voxel_grid(project.get_search_paths());

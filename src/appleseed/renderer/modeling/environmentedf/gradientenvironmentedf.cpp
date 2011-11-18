@@ -79,6 +79,8 @@ namespace
 
         virtual void on_frame_begin(const Project& project)
         {
+            EnvironmentEDF::on_frame_begin(project);
+
             assert(m_inputs.source("horizon_exitance"));
             assert(m_inputs.source("zenith_exitance"));
 

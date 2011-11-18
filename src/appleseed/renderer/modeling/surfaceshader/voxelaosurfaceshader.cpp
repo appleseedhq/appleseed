@@ -94,6 +94,8 @@ namespace
             const Project&          project,
             const Assembly&         assembly) override
         {
+            SurfaceShader::on_frame_begin(project, assembly);
+
             const Scene& scene = *project.get_scene();
 
             // Rebuild the voxel tree if the scene geometry has changed since the last frame.

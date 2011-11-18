@@ -88,6 +88,8 @@ namespace
             const Project&          project,
             const Assembly&         assembly) override
         {
+            SurfaceShader::on_frame_begin(project, assembly);
+
             m_has_alpha_mask = m_inputs.source("alpha_mask") != 0;
         }
 

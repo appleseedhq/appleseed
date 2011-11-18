@@ -79,6 +79,8 @@ namespace
 
         virtual void on_frame_begin(const Project& project)
         {
+            EnvironmentEDF::on_frame_begin(project);
+
             assert(m_inputs.source("upper_hemi_exitance"));
             assert(m_inputs.source("lower_hemi_exitance"));
 

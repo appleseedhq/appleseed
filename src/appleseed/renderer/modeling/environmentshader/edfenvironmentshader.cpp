@@ -75,6 +75,8 @@ namespace
 
         virtual void on_frame_begin(const Project& project)
         {
+            EnvironmentShader::on_frame_begin(project);
+
             m_env_edf = 0;
 
             if (!m_env_edf_name.empty())

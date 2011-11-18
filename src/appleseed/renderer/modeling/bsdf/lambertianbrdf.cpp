@@ -86,6 +86,8 @@ namespace
             const Assembly&     assembly,
             const void*         uniform_data)
         {
+            BSDF::on_frame_begin(project, assembly, uniform_data);
+
             if (m_inputs.source("reflectance")->is_uniform())
             {
                 m_uniform_reflectance = true;

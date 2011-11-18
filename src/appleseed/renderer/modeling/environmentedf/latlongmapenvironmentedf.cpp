@@ -142,6 +142,8 @@ namespace
 
         virtual void on_frame_begin(const Project& project)
         {
+            EnvironmentEDF::on_frame_begin(project);
+
             if (m_importance_sampler.get() == 0)
                 build_importance_map(*project.get_scene());
         }

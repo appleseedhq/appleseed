@@ -118,6 +118,8 @@ namespace
             const Project&          project,
             const Assembly&         assembly) override
         {
+            SurfaceShader::on_frame_begin(project, assembly);
+
             const Scene& scene = *project.get_scene();
             m_light_sampler.reset(new LightSampler(scene));
         }
