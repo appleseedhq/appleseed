@@ -113,10 +113,13 @@ const Transformd& Camera::get_transform() const
 
 Transformd Camera::get_transform(const double time) const
 {
+    if (!impl->m_has_motion)
+        return impl->m_transform_t0;
+
     return
-        impl->m_has_motion
-            ? impl->m_transform_interpolator.evaluate(time)
-            : impl->m_transform_t0;
+        time == 0.0 ? impl->m_transform_t0 :
+        time == 1.0 ? impl->m_transform_t1 :
+        impl->m_transform_interpolator.evaluate(time);
 }
 
 bool Camera::has_motion() const
