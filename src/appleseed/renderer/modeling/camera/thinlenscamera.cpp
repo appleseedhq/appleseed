@@ -159,8 +159,17 @@ namespace
                         &m_diaphragm_vertices.front());
             }
 
+            // Retrieve the camera transformation.
+            Transformd transform;
+            if (has_motion())
+            {
+                sampling_context.split_in_place(1, 1);
+                const double time = sampling_context.next_double2();
+                transform = get_transform(time);
+            }
+            else transform = get_transform();
+
             // Set the ray origin.
-            const Transformd& transform = get_transform();
             const Transformd::MatrixType& mat = transform.get_local_to_parent();
             ray.m_org.x =    mat[ 0] * lens_point.x +
                              mat[ 1] * lens_point.y +
