@@ -27,11 +27,16 @@
 //
 
 // appleseed.foundation headers.
+#include "foundation/math/matrix.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"
+#include "foundation/utility/vpythonfile.h"
+
+// Standard headers.
+#include <cstddef>
 
 using namespace foundation;
 
@@ -215,5 +220,34 @@ TEST_SUITE(Foundation_Math_Transform)
         const Transformd result = a * b;
 
         EXPECT_EQ(rotation, result.get_local_to_parent());
+    }
+}
+
+TEST_SUITE(Foundation_Math_TransformInterpolator)
+{
+    TEST_CASE(VisualizeTransform)
+    {
+        const Transformd from(Matrix4d::identity());
+
+        const Transformd to(
+            Matrix4d::translation(Vector3d(1.0, 0.0, 0.0)) *
+            Matrix4d::rotation_x(Pi));
+
+        const TransformInterpolatord interpolator(from, to);
+
+        VPythonFile file("unit tests/outputs/test_transform_transforminterpolator.py");
+
+        const size_t FrameCount = 20;
+
+        for (size_t i = 0; i < FrameCount; ++i)
+        {
+            const double t = static_cast<double>(i) / (FrameCount - 1);
+            const Transformd transform = interpolator.evaluate(t);
+
+            const Vector3d origin = transform.transform_point_to_parent(Vector3d(0.0, 0.0, 0.0));
+            const Vector3d axis = transform.transform_vector_to_parent(Vector3d(0.0, 1.0, 0.0));
+
+            file.draw_arrow(origin, origin + axis);
+        }
     }
 }
