@@ -26,18 +26,55 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_ANIMATECAMERA_DEFAULTS_H
-#define APPLESEED_ANIMATECAMERA_DEFAULTS_H
+#ifndef APPLESEED_ANIMATECAMERA_ANIMATIONPATH_H
+#define APPLESEED_ANIMATECAMERA_ANIMATIONPATH_H
+
+// appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
+#include "foundation/math/transform.h"
+
+// Standard headers.
+#include <cstddef>
+#include <vector>
+
+// Forward declarations.
+namespace foundation    { class Logger; }
 
 namespace appleseed {
 namespace animatecamera {
 
-// Default values for command line parameters.
-const int DefaultFrameCount = 20;
-const double DefaultNormalizedCameraDistance = 10.0;
-const double DefaultNormalizedCameraElevation = 2.0;
+//
+// An animation path is a series of rigid transformation keyframes.
+//
+
+class AnimationPath
+  : public foundation::NonCopyable
+{
+  public:
+    enum Format
+    {
+        Default,            // appleseed's coordinate system (right-handed, up is Y)
+        Autodesk3dsMax      // Autodesk 3ds Max's coordinate system (right-handed, up is Z)
+    };
+
+    // Constructor.
+    explicit AnimationPath(foundation::Logger& logger);
+
+    // Load an animation path from disk. Returns true on success.
+    bool load(const char* filename, const Format format = Default);
+
+    // Return the number of keyframes in the animation path.
+    size_t size() const;
+
+    // Return the i'th keyframe of the animation path.
+    const foundation::Transformd& operator[](const size_t i) const;
+
+  private:
+    foundation::Logger&                 m_logger;
+    std::vector<foundation::Transformd> m_keyframes;
+};
 
 }       // namespace animatecamera
 }       // namespace appleseed
 
-#endif  // !APPLESEED_ANIMATECAMERA_DEFAULTS_H
+#endif  // !APPLESEED_ANIMATECAMERA_ANIMATIONPATH_H

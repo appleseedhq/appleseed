@@ -27,8 +27,8 @@
 //
 
 // Project headers.
+#include "animationpath.h"
 #include "commandlinehandler.h"
-#include "defaults.h"
 
 // appleseed.shared headers.
 #include "application/application.h"
@@ -72,7 +72,7 @@ namespace
     CommandLineHandler g_cl;
 
     string make_numbered_filename(
-        const string    filename,
+        const string&   filename,
         const size_t    frame,
         const size_t    digits = 4)
     {
@@ -87,39 +87,85 @@ namespace
         return sstr.str();
     }
 
-    void generate_project_files(
-        const string    base_output_filename,
-        const int       frame_count)
+    auto_release_ptr<Project> load_master_project()
     {
         // Construct the schema filename.
         const filesystem::path schema_path =
               filesystem::path(Application::get_root_path())
             / "schemas/project.xsd";
 
-        // Load the input project from disk.
+        // Read the master project file.
         ProjectFileReader reader;
         auto_release_ptr<Project> project(
             reader.read(
                 g_cl.m_filenames.values()[0].c_str(),
                 schema_path.file_string().c_str()));
 
-        // Bail out if the project couldn't be loaded.
+        // Bail out if the master project file couldn't be read.
         if (project.get() == 0)
             exit(1);
 
-        // Retrieve the scene's bounding box.
-        const AABB3d scene_bbox(project->get_scene()->compute_bbox());
-        const Vector3d extent = scene_bbox.extent();
-        const double max_radius = 0.5 * max(extent.x, extent.z);
-        const double max_height = 0.5 * extent.y;
+        return project;
+    }
 
+    size_t generate_path_animation(
+        const string&   base_output_filename,
+        Logger&         logger)
+    {
+        // Load the animation path file from disk.
+        AnimationPath animation_path(logger);
+        animation_path.load(
+            g_cl.m_animation_path.values()[0].c_str(),
+            g_cl.m_3dsmax_mode.is_set() ? AnimationPath::Autodesk3dsMax : AnimationPath::Default);
+
+        // Load the master project from disk.
+        auto_release_ptr<Project> project(load_master_project());
+
+        for (size_t i = 0; i < animation_path.size(); ++i)
+        {
+            // Set the camera transformations.
+            Camera* camera = project->get_scene()->get_camera();
+            if (i > 0)
+            {
+                camera->set_transform(0.0, animation_path[i - 1]);
+                camera->set_transform(1.0, animation_path[i]);
+            }
+            else camera->set_transform(animation_path[i]);
+
+            // Write the project file for this frame.
+            const size_t frame = i + 1;
+            const string new_path = make_numbered_filename(base_output_filename + ".appleseed", frame);
+            project->set_path(new_path.c_str());
+            ProjectFileWriter::write(project.ref(), false);
+        }
+
+        return animation_path.size();
+    }
+
+    size_t generate_turntable_animation(
+        const string&   base_output_filename,
+        Logger&         logger)
+    {
         // Retrieve the command line parameter values.
+        const int frame_count = g_cl.m_frame_count.values()[0];
         const Vector3d center_offset(
             g_cl.m_camera_target.values()[0],
             g_cl.m_camera_target.values()[1],
             g_cl.m_camera_target.values()[2]);
         const double normalized_distance = g_cl.m_camera_distance.values()[0];
         const double normalized_elevation = g_cl.m_camera_elevation.values()[0];
+
+        if (frame_count < 1)
+            LOG_FATAL(logger, "the frame count must be greater than or equal to 1.");
+
+        // Load the master project from disk.
+        auto_release_ptr<Project> project(load_master_project());
+
+        // Retrieve the scene's bounding box.
+        const AABB3d scene_bbox(project->get_scene()->compute_bbox());
+        const Vector3d extent = scene_bbox.extent();
+        const double max_radius = 0.5 * max(extent.x, extent.z);
+        const double max_height = 0.5 * extent.y;
 
         // Precompute some stuff.
         const Vector3d Up(0.0, 1.0, 0.0);
@@ -128,7 +174,7 @@ namespace
         const double elevation = max_height * normalized_elevation;
 
         // Compute the transform of the camera at the last frame.
-        const double angle = static_cast<double>(-1) / frame_count * TwoPi;
+        const double angle = -1.0 / frame_count * TwoPi;
         const Vector3d position(distance * cos(angle), elevation, distance * sin(angle));
         Transformd previous_transform(Matrix4d::lookat(position, center, Up));
 
@@ -146,17 +192,19 @@ namespace
             previous_transform = new_transform;
 
             // Write the project file for this frame.
-            const int frame = i + 1;
+            const size_t frame = static_cast<size_t>(i + 1);
             const string new_path = make_numbered_filename(base_output_filename + ".appleseed", frame);
             project->set_path(new_path.c_str());
             ProjectFileWriter::write(project.ref(), false);
         }
+
+        return static_cast<size_t>(frame_count);
     }
 
     void generate_windows_render_script(
-        const string    base_output_filename,
-        const int       frame_count,
-        SuperLogger&    logger)
+        const string&   base_output_filename,
+        const size_t    frame_count,
+        Logger&         logger)
     {
         LOG_INFO(logger, "generating batch file...");
 
@@ -189,9 +237,9 @@ namespace
             ")\n"
             "\n");
 
-        for (int i = 0; i < frame_count; ++i)
+        for (size_t i = 0; i < frame_count; ++i)
         {
-            const int frame = i + 1;
+            const size_t frame = i + 1;
             const string project_filename = make_numbered_filename(base_output_filename + ".appleseed", frame);
             const string image_filename = make_numbered_filename(base_output_filename + ".png", frame);
 
@@ -235,14 +283,12 @@ int main(int argc, const char* argv[])
     const string base_output_filename =
         filesystem::path(g_cl.m_filenames.values()[1]).stem();
 
-    const int frame_count = g_cl.m_frame_count.values()[0];
-
-    if (frame_count < 1)
-        LOG_FATAL(logger, "the frame count must be greater than or equal to 1.");
-
     global_logger().add_target(&logger.get_log_target());
 
-    generate_project_files(base_output_filename, frame_count);
+    const size_t frame_count =
+        g_cl.m_animation_path.is_set()
+            ? generate_path_animation(base_output_filename, logger)
+            : generate_turntable_animation(base_output_filename, logger);
 
 #ifdef _WIN32
     generate_windows_render_script(

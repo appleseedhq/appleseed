@@ -32,6 +32,8 @@
 #--------------------------------------------------------------------------------------------------
 
 set (sources
+    animationpath.cpp
+    animationpath.h
     commandlinehandler.cpp
     commandlinehandler.h
     main.cpp

@@ -52,6 +52,17 @@ CommandLineHandler::CommandLineHandler()
     m_filenames.set_exact_value_count(2);
     parser().set_default_option_handler(&m_filenames);
 
+    m_animation_path.add_name("--animation-path");
+    m_animation_path.add_name("-a");
+    m_animation_path.set_description("load an animation path file");
+    m_animation_path.set_syntax("filename.txt");
+    m_animation_path.set_exact_value_count(1);
+    parser().add_option_handler(&m_animation_path);
+
+    m_3dsmax_mode.add_name("--3dsmax");
+    m_3dsmax_mode.set_description("assume the animation path file uses Autodesk 3ds Max's coordinate system");
+    parser().add_option_handler(&m_3dsmax_mode);
+
     m_frame_count.add_name("--frames");
     m_frame_count.add_name("-f");
     m_frame_count.set_description("set the number of frames in the animation");
