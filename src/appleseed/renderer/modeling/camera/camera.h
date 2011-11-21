@@ -62,7 +62,7 @@ class RENDERERDLL Camera
     // Return a string identifying the model of this entity.
     virtual const char* get_model() const = 0;
 
-    // Set the camera transformation at time=0.
+    // Clear all previous transforms and set the camera transformation at time=0.
     void set_transform(const foundation::Transformd& transform);
 
     // Set the camera transformation at a given time.

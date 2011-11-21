@@ -84,6 +84,7 @@ Camera::Camera(
 void Camera::set_transform(const Transformd& transform)
 {
     impl->m_transform_t0 = transform;
+    impl->m_has_motion = false;
     bump_version_id();
 }
 
