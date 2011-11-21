@@ -93,6 +93,11 @@ class Quaternion
     static QuaternionType rotation(
         const VectorType&   from,
         const VectorType&   to);
+
+    // Convert a unit quaternion to the axis-angle representation.
+    void extract_axis_angle(
+        VectorType&         axis,
+        ValueType&          angle) const;
 };
 
 // Exact inequality and equality tests.
@@ -226,6 +231,24 @@ inline Quaternion<T> Quaternion<T>::rotation(
     const VectorType&   to)
 {
     return Quaternion(dot(from, to), cross(from, to));
+}
+
+template <typename T>
+inline void Quaternion<T>::extract_axis_angle(
+    VectorType&         axis,
+    ValueType&          angle) const
+{
+    assert(is_normalized(*this));
+
+    const ValueType half_angle = std::acos(s);
+    const ValueType sin_half_angle = std::sin(half_angle);
+
+    axis =
+        sin_half_angle == ValueType(0.0)
+            ? VectorType(ValueType(1.0), ValueType(0.0), ValueType(0.0))
+            : VectorType(v / sin_half_angle);
+
+    angle = half_angle + half_angle;
 }
 
 template <typename T>
