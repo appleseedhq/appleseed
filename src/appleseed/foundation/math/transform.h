@@ -62,12 +62,12 @@ class Transform
     typedef Transform<T> TransformType;
 
     // Constructors.
-    Transform();                            // leave the transformation uninitialized
+    Transform();                                // leave the transformation uninitialized
     explicit Transform(
         const MatrixType& local_to_parent);
     Transform(
         const MatrixType& local_to_parent,
-        const MatrixType& parent_to_local);
+        const MatrixType& parent_to_local);     // must be equal to inverse(local_to_parent)
 
     // Return the identity transform.
     static Transform identity();
@@ -115,6 +115,14 @@ class Transform
     MatrixType  m_parent_to_local;
 };
 
+// Exact inequality and equality tests.
+template <typename T> bool operator!=(const Transform<T>& lhs, const Transform<T>& rhs);
+template <typename T> bool operator==(const Transform<T>& lhs, const Transform<T>& rhs);
+
+// Approximate equality tests.
+template <typename T> bool feq(const Transform<T>& lhs, const Transform<T>& rhs);
+template <typename T> bool feq(const Transform<T>& lhs, const Transform<T>& rhs, const T eps);
+
 
 //
 // Specializations for single and double precision transformations.
@@ -138,7 +146,7 @@ class TransformInterpolator
     typedef Transform<T> TransformType;
 
     // Constructors.
-    TransformInterpolator();                // leave the interpolator uninitialized
+    TransformInterpolator();                    // leave the interpolator uninitialized
     TransformInterpolator(
         const TransformType& from,
         const TransformType& to);
@@ -187,6 +195,7 @@ inline Transform<T>::Transform(
   : m_local_to_parent(local_to_parent)
   , m_parent_to_local(parent_to_local)
 {
+    assert(feq(m_parent_to_local, inverse(m_local_to_parent)));
 }
 
 template <typename T>
@@ -374,10 +383,12 @@ template <typename U>
 inline Ray<U, 3> Transform<T>::transform_to_local(const Ray<U, 3>& r) const
 {
     Ray<U, 3> res;
+
     res.m_org = transform_point_to_local(r.m_org);
     res.m_dir = transform_vector_to_local(r.m_dir);
     res.m_tmin = r.m_tmin;
     res.m_tmax = r.m_tmax;
+
     return res;
 }
 
@@ -386,10 +397,12 @@ template <typename U>
 inline Ray<U, 3> Transform<T>::transform_to_parent(const Ray<U, 3>& r) const
 {
     Ray<U, 3> res;
+
     res.m_org = transform_point_to_parent(r.m_org);
     res.m_dir = transform_vector_to_parent(r.m_dir);
     res.m_tmin = r.m_tmin;
     res.m_tmax = r.m_tmax;
+
     return res;
 }
 
@@ -413,6 +426,7 @@ inline AABB<U, 3> Transform<T>::transform_to_local(const AABB<U, 3>& b) const
 
     AABB<U, 3> res;
     res.invalidate();
+
     res.insert(transform_point_to_local(Vector<U, 3>(b[0][0], b[0][1], b[0][2])));
     res.insert(transform_point_to_local(Vector<U, 3>(b[0][0], b[0][1], b[1][2])));
     res.insert(transform_point_to_local(Vector<U, 3>(b[0][0], b[1][1], b[1][2])));
@@ -421,6 +435,7 @@ inline AABB<U, 3> Transform<T>::transform_to_local(const AABB<U, 3>& b) const
     res.insert(transform_point_to_local(Vector<U, 3>(b[1][0], b[1][1], b[1][2])));
     res.insert(transform_point_to_local(Vector<U, 3>(b[1][0], b[0][1], b[1][2])));
     res.insert(transform_point_to_local(Vector<U, 3>(b[1][0], b[0][1], b[0][2])));
+
     return res;
 }
 
@@ -433,6 +448,7 @@ inline AABB<U, 3> Transform<T>::transform_to_parent(const AABB<U, 3>& b) const
 
     AABB<U, 3> res;
     res.invalidate();
+
     res.insert(transform_point_to_parent(Vector<U, 3>(b[0][0], b[0][1], b[0][2])));
     res.insert(transform_point_to_parent(Vector<U, 3>(b[0][0], b[0][1], b[1][2])));
     res.insert(transform_point_to_parent(Vector<U, 3>(b[0][0], b[1][1], b[1][2])));
@@ -441,7 +457,32 @@ inline AABB<U, 3> Transform<T>::transform_to_parent(const AABB<U, 3>& b) const
     res.insert(transform_point_to_parent(Vector<U, 3>(b[1][0], b[1][1], b[1][2])));
     res.insert(transform_point_to_parent(Vector<U, 3>(b[1][0], b[0][1], b[1][2])));
     res.insert(transform_point_to_parent(Vector<U, 3>(b[1][0], b[0][1], b[0][2])));
+
     return res;
+}
+
+template <typename T>
+inline bool operator!=(const Transform<T>& lhs, const Transform<T>& rhs)
+{
+    return lhs.get_local_to_parent() != rhs.get_local_to_parent();
+}
+
+template <typename T>
+inline bool operator==(const Transform<T>& lhs, const Transform<T>& rhs)
+{
+    return lhs.get_local_to_parent() == rhs.get_local_to_parent();
+}
+
+template <typename T>
+inline bool feq(const Transform<T>& lhs, const Transform<T>& rhs)
+{
+    return feq(lhs.get_local_to_parent(), rhs.get_local_to_parent());
+}
+
+template <typename T>
+inline bool feq(const Transform<T>& lhs, const Transform<T>& rhs, const T eps)
+{
+    return feq(lhs.get_local_to_parent(), rhs.get_local_to_parent(), eps);
 }
 
 
@@ -483,13 +524,86 @@ void TransformInterpolator<T>::set_transforms(
 template <typename T>
 inline Transform<T> TransformInterpolator<T>::evaluate(const T t) const
 {
-    const MatrixType translation = MatrixType::translation(lerp(m_t0, m_t1, t));
-    const MatrixType rotation = MatrixType::rotation(slerp(m_q0, m_q1, t));
+    const Vector<T, 3> p = lerp(m_t0, m_t1, t);
+    const Quaternion<T> q = slerp(m_q0, m_q1, t);
 
-    return
-        Transform<T>(
-            translation * rotation,
-            transpose(rotation) * (-translation));
+    assert(is_normalized(q));
+
+    //
+    // Form the local-to-parent transformation matrix.
+    // See the implementation of foundation::Matrix<T, 4, 4>::rotation().
+    //
+
+    const T tx  = q.v[0] + q.v[0];
+    const T ty  = q.v[1] + q.v[1];
+    const T tz  = q.v[2] + q.v[2];
+    const T twx = tx * q.s;
+    const T twy = ty * q.s;
+    const T twz = tz * q.s;
+    const T txx = tx * q.v[0];
+    const T txy = ty * q.v[0];
+    const T txz = tz * q.v[0];
+    const T tyy = ty * q.v[1];
+    const T tyz = tz * q.v[1];
+    const T tzz = tz * q.v[2];
+
+    Matrix<T, 4, 4> local_to_parent;
+
+    // First row.
+    local_to_parent[ 0] = T(1.0) - (tyy + tzz);
+    local_to_parent[ 1] = txy - twz;
+    local_to_parent[ 2] = txz + twy;
+    local_to_parent[ 3] = p.x;
+
+    // Second row.
+    local_to_parent[ 4] = txy + twz;
+    local_to_parent[ 5] = T(1.0) - (txx + tzz);
+    local_to_parent[ 6] = tyz - twx;
+    local_to_parent[ 7] = p.y;
+
+    // Third row.
+    local_to_parent[ 8] = txz - twy;
+    local_to_parent[ 9] = tyz + twx;
+    local_to_parent[10] = T(1.0) - (txx + tyy);
+    local_to_parent[11] = p.z;
+
+    // Fourth row.
+    local_to_parent[12] = T(0.0);
+    local_to_parent[13] = T(0.0);
+    local_to_parent[14] = T(0.0);
+    local_to_parent[15] = T(1.0);
+
+    //
+    // Form the parent-to-local transformation matrix.
+    //
+
+    Matrix<T, 4, 4> parent_to_local;
+
+    // First row.
+    parent_to_local[ 0] = local_to_parent[ 0];
+    parent_to_local[ 1] = local_to_parent[ 4];
+    parent_to_local[ 2] = local_to_parent[ 8];
+    parent_to_local[ 3] = -(parent_to_local[0] * p[0] + parent_to_local[1] * p[1] + parent_to_local[2] * p[2]);
+
+    // Second row.
+    parent_to_local[ 4] = local_to_parent[ 1];
+    parent_to_local[ 5] = local_to_parent[ 5];
+    parent_to_local[ 6] = local_to_parent[ 9];
+    parent_to_local[ 7] = -(parent_to_local[4] * p[0] + parent_to_local[5] * p[1] + parent_to_local[6] * p[2]);
+
+    // Third row.
+    parent_to_local[ 8] = local_to_parent[ 2];
+    parent_to_local[ 9] = local_to_parent[ 6];
+    parent_to_local[10] = local_to_parent[10];
+    parent_to_local[11] = -(parent_to_local[8] * p[0] + parent_to_local[9] * p[1] + parent_to_local[10] * p[2]);
+
+    // Fourth row.
+    parent_to_local[12] = T(0.0);
+    parent_to_local[13] = T(0.0);
+    parent_to_local[14] = T(0.0);
+    parent_to_local[15] = T(1.0);
+
+    return Transform<T>(local_to_parent, parent_to_local);
 }
 
 }       // namespace foundation
