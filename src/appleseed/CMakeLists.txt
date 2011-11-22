@@ -980,6 +980,7 @@ set (renderer_meta_tests_sources
     renderer/meta/tests/test_samplecounter.cpp
     renderer/meta/tests/test_scene.cpp
     renderer/meta/tests/test_tracer.cpp
+    renderer/meta/tests/test_transformsequence.cpp
 )
 list (APPEND appleseed_sources
     ${renderer_meta_tests_sources}
@@ -1332,6 +1333,8 @@ set (renderer_utility_sources
     renderer/utility/paramarray.h
     renderer/utility/testutils.cpp
     renderer/utility/testutils.h
+    renderer/utility/transformsequence.cpp
+    renderer/utility/transformsequence.h
 )
 list (APPEND appleseed_sources
     ${renderer_utility_sources}
