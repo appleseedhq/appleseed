@@ -56,6 +56,9 @@ class DLLSYMBOL TransformSequence
     // Destructor.
     ~TransformSequence();
 
+    // Remove all transforms from the sequence.
+    void clear();
+
     // Set a transform at a given time.
     // Replaces any transform already set at this time.
     void set_transform(
@@ -75,7 +78,8 @@ class DLLSYMBOL TransformSequence
     size_t size() const;
 
     // Prepare the sequence for quick evaluation.
-    // Must be called once and only once prior to any call to evaluate().
+    // This method must be called after new transforms have been set and
+    // before any call to evaluate(). It may be called multiple times.
     void prepare();
 
     // Compute the transform at any given time.

@@ -50,8 +50,19 @@ TransformSequence::TransformSequence()
 
 TransformSequence::~TransformSequence()
 {
-    delete [] m_interpolators;
+    clear();
+}
+
+void TransformSequence::clear()
+{
+    m_capacity = 0;
+    m_size = 0;
+
     delete [] m_keys;
+    m_keys = 0;
+
+    delete [] m_interpolators;
+    m_interpolators = 0;
 }
 
 void TransformSequence::set_transform(
@@ -114,7 +125,9 @@ size_t TransformSequence::size() const
 void TransformSequence::prepare()
 {
     assert(m_size > 0);
-    assert(m_interpolators == 0);
+
+    delete [] m_interpolators;
+    m_interpolators = 0;
 
     if (m_size > 1)
     {

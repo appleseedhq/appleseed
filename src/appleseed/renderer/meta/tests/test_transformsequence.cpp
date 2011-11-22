@@ -89,6 +89,16 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
         EXPECT_EQ(1, sequence.size());
     }
 
+    TEST_CASE(Clear_GivenSequenceWithOneTransform_RemovesTransform)
+    {
+        TransformSequence sequence;
+        sequence.set_transform(1.0, Transformd(Matrix4d::translation(Vector3d(1.0, 2.0, 3.0))));
+
+        sequence.clear();
+
+        EXPECT_TRUE(sequence.empty());
+    }
+
     TEST_CASE(SetTransform_GivenNewTime_AddsTransform)
     {
         const Transformd ExpectedTransform(Matrix4d::translation(Vector3d(1.0, 2.0, 3.0)));
