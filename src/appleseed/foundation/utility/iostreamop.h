@@ -35,6 +35,7 @@
 #include "foundation/math/matrix.h"
 #include "foundation/math/quaternion.h"
 #include "foundation/math/ray.h"
+#include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/string.h"
@@ -103,6 +104,10 @@ template <typename T, size_t N>
 std::ostream& operator<<(std::ostream& s, const Ray<T, N>& ray);
 template <typename T, size_t N>
 std::istream& operator>>(std::istream& s, Ray<T, N>& ray);
+
+// foundation::Transform.
+template <typename T>
+std::ostream& operator<<(std::ostream& s, const Transform<T>& transform);
 
 
 //
@@ -291,6 +296,12 @@ std::istream& operator>>(std::istream& s, Ray<T, N>& ray)
     s >> ray.m_tmin;
     s >> ray.m_tmax;
     return s;
+}
+
+template <typename T>
+std::ostream& operator<<(std::ostream& s, const Transform<T>& transform)
+{
+    return s << transform.get_local_to_parent();
 }
 
 }       // namespace foundation
