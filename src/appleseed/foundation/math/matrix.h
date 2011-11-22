@@ -1096,9 +1096,9 @@ inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation(
 
     assert(is_normalized(q));
 
-    const ValueType tx  = ValueType(2.0) * q.v[0];
-    const ValueType ty  = ValueType(2.0) * q.v[1];
-    const ValueType tz  = ValueType(2.0) * q.v[2];
+    const ValueType tx  = q.v[0] + q.v[0];
+    const ValueType ty  = q.v[1] + q.v[1];
+    const ValueType tz  = q.v[2] + q.v[2];
     const ValueType twx = tx * q.s;
     const ValueType twy = ty * q.s;
     const ValueType twz = tz * q.s;
@@ -1538,9 +1538,9 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation(
 
     assert(is_normalized(q));
 
-    const ValueType tx  = ValueType(2.0) * q.v[0];
-    const ValueType ty  = ValueType(2.0) * q.v[1];
-    const ValueType tz  = ValueType(2.0) * q.v[2];
+    const ValueType tx  = q.v[0] + q.v[0];
+    const ValueType ty  = q.v[1] + q.v[1];
+    const ValueType tz  = q.v[2] + q.v[2];
     const ValueType twx = tx * q.s;
     const ValueType twy = ty * q.s;
     const ValueType twz = tz * q.s;
