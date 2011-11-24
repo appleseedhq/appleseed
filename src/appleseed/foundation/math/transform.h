@@ -195,7 +195,7 @@ inline Transform<T>::Transform(
   : m_local_to_parent(local_to_parent)
   , m_parent_to_local(parent_to_local)
 {
-    assert(feq(m_parent_to_local, inverse(m_local_to_parent)));
+    assert(feq(m_parent_to_local, inverse(m_local_to_parent), make_eps<T>(1.0e-6f, 1.0e-9)));
 }
 
 template <typename T>
