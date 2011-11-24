@@ -105,15 +105,6 @@ Tile& Image::tile(
     const size_t        tile_x,
     const size_t        tile_y)
 {
-    return
-        const_cast<Tile&>(
-            const_cast<const Image*>(this)->tile(tile_x, tile_y));
-}
-
-const Tile& Image::tile(
-    const size_t        tile_x,
-    const size_t        tile_y) const
-{
     const size_t tile_index = tile_y * m_props.m_tile_count_x + tile_x;
 
     if (m_tiles[tile_index] == 0)
@@ -131,6 +122,13 @@ const Tile& Image::tile(
     }
 
     return *m_tiles[tile_index];
+}
+
+const Tile& Image::tile(
+    const size_t        tile_x,
+    const size_t        tile_y) const
+{
+    return const_cast<Image*>(this)->tile(tile_x, tile_y);
 }
 
 void Image::set_tile(
