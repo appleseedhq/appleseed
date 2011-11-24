@@ -196,30 +196,20 @@ template <typename T> T default_eps();          // intentionally left unimplemen
 template <> inline float default_eps<float>()   { return 1.0e-6f; }
 template <> inline double default_eps<double>() { return 1.0e-14; }
 
+// Allow using custom epsilon values in template code.
+template <typename T> T make_eps(const float feps, const double deps);
+template <> inline float make_eps(const float feps, const double deps)  { return feps; }
+template <> inline double make_eps(const float feps, const double deps) { return deps; }
+
 // Approximate equality tests.
-bool feq(
-    const int       lhs,
-    const int       rhs,
-    const int       eps = 0);   // eps is not used, always test for exact equality
-bool feq(
-    const float     lhs,
-    const float     rhs,
-    const float     eps = default_eps<float>());
-bool feq(
-    const double    lhs,
-    const double    rhs,
-    const double    eps = default_eps<double>());
+template <typename T> bool feq(const T lhs, const T rhs);
+template <typename T> bool feq(const T lhs, const T rhs, const T eps);
+bool feq(const int lhs, const int rhs);
 
 // Approximate zero tests.
-bool fz(
-    const int       lhs,
-    const int       eps = 0);   // eps is not used, always test for exact zero
-bool fz(
-    const float     lhs,
-    const float     eps = default_eps<float>());
-bool fz(
-    const double    lhs,
-    const double    eps = default_eps<double>());
+template <typename T> bool fz(const T lhs);
+template <typename T> bool fz(const T lhs, const T eps);
+bool fz(const int lhs);
 
 
 //
@@ -478,85 +468,62 @@ inline T fit(
 // Robust floating-point tests implementation.
 //
 
-namespace scalar_impl
+template <typename T>
+inline bool feq(const T lhs, const T rhs)
 {
-
-    // Actual implementation of foundation::feq(), as a templatized class.
-    template <typename T>
-    inline bool feq(const T lhs, const T rhs, const T eps)
-    {
-        // Handle case where lhs is exactly +0.0 or -0.0.
-        if (lhs == T(0.0))
-            return std::abs(rhs) < eps;
-
-        // Handle case where rhs is exactly +0.0 or -0.0.
-        if (rhs == T(0.0))
-            return std::abs(lhs) < eps;
-
-        const T abs_lhs = std::abs(lhs);
-        const T abs_rhs = std::abs(rhs);
-
-        // No equality if lhs/rhs overflows.
-        if (abs_rhs < T(1.0) &&
-            abs_lhs > abs_rhs * std::numeric_limits<T>::max())
-            return false;
-
-        // No equality if lhs/rhs underflows.
-        if (abs_rhs > T(1.0) &&
-            abs_lhs < abs_rhs * std::numeric_limits<T>::min())
-            return false;
-
-        // There is equality if the ratio lhs/rhs is close enough to 1.
-        return
-            (lhs / rhs) > (T(1.0) - eps) &&
-            (lhs / rhs) < (T(1.0) + eps);
-    }
-
+    return feq(lhs, rhs, default_eps<T>());
 }
 
-inline bool feq(
-    const int       lhs,
-    const int       rhs,
-    const int       eps)
+template <typename T>
+inline bool feq(const T lhs, const T rhs, const T eps)
+{
+    // Handle case where lhs is exactly +0.0 or -0.0.
+    if (lhs == T(0.0))
+        return std::abs(rhs) < eps;
+
+    // Handle case where rhs is exactly +0.0 or -0.0.
+    if (rhs == T(0.0))
+        return std::abs(lhs) < eps;
+
+    const T abs_lhs = std::abs(lhs);
+    const T abs_rhs = std::abs(rhs);
+
+    // No equality if lhs/rhs overflows.
+    if (abs_rhs < T(1.0) &&
+        abs_lhs > abs_rhs * std::numeric_limits<T>::max())
+        return false;
+
+    // No equality if lhs/rhs underflows.
+    if (abs_rhs > T(1.0) &&
+        abs_lhs < abs_rhs * std::numeric_limits<T>::min())
+        return false;
+
+    // There is equality if the ratio lhs/rhs is close enough to 1.
+    return
+        (lhs / rhs) > (T(1.0) - eps) &&
+        (lhs / rhs) < (T(1.0) + eps);
+}
+
+inline bool feq(const int lhs, const int rhs)
 {
     return lhs == rhs;
 }
 
-inline bool feq(
-    const float     lhs,
-    const float     rhs,
-    const float     eps)
+template <typename T>
+inline bool fz(const T lhs)
 {
-    return scalar_impl::feq<float>(lhs, rhs, eps);
+    return fz(lhs, default_eps<T>());
 }
 
-inline bool feq(
-    const double    lhs,
-    const double    rhs,
-    const double    eps)
+template <typename T>
+inline bool fz(const T lhs, const T eps)
 {
-    return scalar_impl::feq<double>(lhs, rhs, eps);
+    return std::abs(lhs) < eps;
 }
 
-inline bool fz(
-    const int       lhs,
-    const int       eps)
+inline bool fz(const int lhs)
 {
     return lhs == 0;
-}
-
-inline bool fz(
-    const float     lhs,
-    const float     eps)
-{
-    return std::abs(lhs) < eps;
-}
-
-inline bool fz(
-    const double    lhs,
-    const double    eps)
-{
-    return std::abs(lhs) < eps;
 }
 
 }       // namespace foundation
