@@ -30,6 +30,7 @@
 #include "defaultproject.h"
 
 // appleseed.renderer headers.
+// todo: include the required individual renderer headers rather than API headers.
 #include "renderer/api/camera.h"
 #include "renderer/api/frame.h"
 #include "renderer/api/project.h"

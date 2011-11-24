@@ -29,6 +29,9 @@
 // Interface header.
 #include "transformsequence.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/version.h"
+
 // Standard headers.
 #include <algorithm>
 #include <cassert>
@@ -40,8 +43,9 @@ using namespace std;
 namespace renderer
 {
 
-TransformSequence::TransformSequence()
-  : m_capacity(0)
+TransformSequence::TransformSequence(Versionable* parent)
+  : m_parent(parent)
+  , m_capacity(0)
   , m_size(0)
   , m_keys(0)
   , m_interpolators(0)
@@ -50,7 +54,8 @@ TransformSequence::TransformSequence()
 
 TransformSequence::~TransformSequence()
 {
-    clear();
+    delete [] m_keys;
+    delete [] m_interpolators;
 }
 
 void TransformSequence::clear()
@@ -63,6 +68,9 @@ void TransformSequence::clear()
 
     delete [] m_interpolators;
     m_interpolators = 0;
+
+    if (m_parent)
+        m_parent->bump_version_id();
 }
 
 void TransformSequence::set_transform(
@@ -70,7 +78,9 @@ void TransformSequence::set_transform(
     const Transformd&   transform)
 {
     assert(m_size <= m_capacity);
-    assert(m_interpolators == 0);
+
+    if (m_parent)
+        m_parent->bump_version_id();
 
     for (size_t i = 0; i < m_size; ++i)
     {
@@ -112,14 +122,30 @@ void TransformSequence::get_transform(
     transform = m_keys[index].m_transform;
 }
 
-bool TransformSequence::empty() const
+Transformd& TransformSequence::earliest_transform()
 {
-    return m_size == 0;
+    assert(m_size > 0);
+
+    double earliest_time = m_keys[0].m_time;
+    size_t earliest_index = 0;
+
+    for (size_t i = 1; i < m_size; ++i)
+    {
+        const double time = m_keys[i].m_time;
+
+        if (earliest_time > time)
+        {
+            earliest_time = time;
+            earliest_index = i;
+        }
+    }
+
+    return m_keys[earliest_index].m_transform;
 }
 
-size_t TransformSequence::size() const
+const Transformd& TransformSequence::earliest_transform() const
 {
-    return m_size;
+    return const_cast<TransformSequence*>(this)->earliest_transform();
 }
 
 void TransformSequence::prepare()
@@ -175,9 +201,11 @@ Transformd TransformSequence::evaluate(const double time) const
 
     const double begin_time = m_keys[begin].m_time;
     const double end_time = m_keys[end].m_time;
-    const double span_time = end_time - begin_time;
+    assert(end_time > begin_time);
 
-    return m_interpolators[begin].evaluate((time - begin_time) / span_time);
+    const double t = (time - begin_time) / (end_time - begin_time);
+
+    return m_interpolators[begin].evaluate(t);
 }
 
 }   // namespace renderer

@@ -34,6 +34,7 @@
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/project/project.h"
+#include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exceptionnotimplemented.h"
@@ -161,13 +162,13 @@ namespace
 
             // Retrieve the camera transformation.
             Transformd transform;
-            if (has_motion())
+            if (m_transform_sequence.size() > 1)
             {
                 sampling_context.split_in_place(1, 1);
                 const double time = sampling_context.next_double2();
-                transform = get_transform(time);
+                transform = m_transform_sequence.evaluate(time);
             }
-            else transform = get_transform();
+            else transform = m_transform_sequence.evaluate(0.0);
 
             // Set the ray origin.
             const Transformd::MatrixType& mat = transform.get_local_to_parent();
@@ -260,7 +261,7 @@ namespace
             ray.m_flags = ~0;
 
             // Set the ray origin.
-            const Transformd& transform = get_transform();
+            const Transformd transform = m_transform_sequence.evaluate(0.0);
             const Transformd::MatrixType& mat = transform.get_local_to_parent();
             ray.m_org.x = mat[ 3];
             ray.m_org.y = mat[ 7];
@@ -292,7 +293,7 @@ namespace
                 const double af_focal_distance = dot(v, camera_direction);
 
                 RENDERER_LOG_INFO(
-                    "camera \"%s\": autofocus sets focal distance to %f %s",
+                    "camera \"%s\": autofocus sets focal distance to %f %s (using camera position at time=0.0)",
                     get_name(),
                     af_focal_distance,
                     plural(af_focal_distance, "meter").c_str());
@@ -303,7 +304,7 @@ namespace
             {
                 // No hit: focus at infinity.
                 RENDERER_LOG_INFO(
-                    "camera \"%s\": autofocus sets focal distance to infinity",
+                    "camera \"%s\": autofocus sets focal distance to infinity (using camera position at time=0.0)",
                     get_name());
 
                 return 1.0e38;

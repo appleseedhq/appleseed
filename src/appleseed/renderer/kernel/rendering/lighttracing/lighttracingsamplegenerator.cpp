@@ -52,6 +52,7 @@
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/light/light.h"
+#include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/image.h"
@@ -192,8 +193,10 @@ namespace
               , m_initial_alpha(initial_alpha)
             {
                 // Compute the world space position and direction of the camera.
-                m_camera_position = m_camera.get_transform().transform_point_to_parent(Vector3d(0.0));
-                m_camera_direction = m_camera.get_transform().transform_vector_to_parent(Vector3d(0.0, 0.0, -1.0));
+                // todo: add support for camera motion blur.
+                m_camera_transform = m_camera.transform_sequence().evaluate(0.0);
+                m_camera_position = m_camera_transform.transform_point_to_parent(Vector3d(0.0));
+                m_camera_direction = m_camera_transform.transform_vector_to_parent(Vector3d(0.0, 0.0, -1.0));
                 assert(is_normalized(m_camera_direction));
 
                 // Compute the reciprocal of the area of a single pixel.
@@ -347,6 +350,7 @@ namespace
             const ShadingContext            m_shading_context;
 
             const Spectrum                  m_initial_alpha;        // initial particle flux (in W)
+            Transformd                      m_camera_transform;     // camera transform at selected time
             Vector3d                        m_camera_position;      // camera position in world space
             Vector3d                        m_camera_direction;     // camera direction (gaze) in world space
             double                          m_rcp_pixel_area;       // reciprocal of the area of a single pixel (in m^-2)
@@ -364,7 +368,7 @@ namespace
             {
                 // Transform the vertex position to camera space.
                 const Vector3d vertex_position_camera =
-                    m_camera.get_transform().transform_point_to_local(vertex_position_world);
+                    m_camera_transform.transform_point_to_local(vertex_position_world);
 
                 // Reject vertices behind the image plane.
                 if (vertex_position_camera.z > -m_camera.get_focal_length())

@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/camera/camera.h"
+#include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/transform.h"
@@ -84,9 +85,10 @@ namespace
             Camera::on_frame_begin(project);
 
             // Precompute the rays origin in world space if the camera is static.
-            if (!has_motion())
+            if (m_transform_sequence.size() == 1)
             {
-                const Transformd::MatrixType& mat = get_transform().get_local_to_parent();
+                const Transformd::MatrixType mat =
+                    m_transform_sequence.evaluate(0.0).get_local_to_parent();
 
                 m_ray_org.x = mat[ 3];
                 m_ray_org.y = mat[ 7];
@@ -111,12 +113,12 @@ namespace
                 (0.5 - point.y) * m_film_dimensions[1],
                 -m_focal_length);
 
-            if (has_motion())
+            if (m_transform_sequence.size() > 1)
             {
                 sampling_context.split_in_place(1, 1);
 
                 const double time = sampling_context.next_double2();
-                const Transformd transform = get_transform(time);
+                const Transformd transform = m_transform_sequence.evaluate(time);
 
                 ray.m_org = transform.get_local_to_parent().extract_translation();
                 ray.m_dir = transform.transform_vector_to_parent(target);
@@ -125,7 +127,7 @@ namespace
             else
             {
                 ray.m_org = m_ray_org;
-                ray.m_dir = get_transform().transform_vector_to_parent(target);
+                ray.m_dir = m_transform_sequence.evaluate(0.0).transform_vector_to_parent(target);
                 ray.m_time = 0.0;
             }
 

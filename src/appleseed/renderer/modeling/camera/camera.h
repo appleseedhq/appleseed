@@ -33,10 +33,10 @@
 #include "renderer/global/global.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/entity/entity.h"
+#include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/frustum.h"
-#include "foundation/math/transform.h"
 #include "foundation/utility/implptr.h"
 
 // Forward declarations.
@@ -62,22 +62,9 @@ class RENDERERDLL Camera
     // Return a string identifying the model of this entity.
     virtual const char* get_model() const = 0;
 
-    // Clear all previous transforms and set the camera transformation at time=0.
-    void set_transform(const foundation::Transformd& transform);
-
-    // Set the camera transformation at a given time.
-    void set_transform(
-        const double                    time,
-        const foundation::Transformd&   transform);
-
-    // Get the camera transformation at time=0.
-    const foundation::Transformd& get_transform() const;
-
-    // Get the camera transformation at a given time.
-    foundation::Transformd get_transform(const double time) const;
-
-    // Return true if the camera has multiple transformations.
-    bool has_motion() const;
+    // Access the transform sequence of the camera.
+    TransformSequence& transform_sequence();
+    const TransformSequence& transform_sequence() const;
 
     // Get the film dimensions (in meters).
     const foundation::Vector2d& get_film_dimensions() const;
@@ -99,17 +86,20 @@ class RENDERERDLL Camera
     // The generated ray is expressed in world space.
     virtual void generate_ray(
         SamplingContext&                sampling_context,
-        const foundation::Vector2d&     point,              // point on film plane, in NDC
+        const foundation::Vector2d&     point,
         ShadingRay&                     ray) const = 0;
 
-    // Project a 3D point back to the film plane. The input point is expressed in camera
-    // space. The returned point is expressed in normalized device coordinates.
+    // Project a 3D point back to the film plane. The input point is expressed in
+    // camera space. The returned point is expressed in normalized device coordinates.
     virtual foundation::Vector2d project(
-        const foundation::Vector3d&     point) const = 0;   // point in camera space
+        const foundation::Vector3d&     point) const = 0;
 
   protected:
     struct Impl;
     foundation::impl_ptr<Impl, false> impl;
+
+    // Derogate to the private implementation rule, for performance reasons.
+    TransformSequence m_transform_sequence;
 
     // Utility function to retrieve the film dimensions from the entity parameters.
     foundation::Vector2d extract_film_dimensions() const;
@@ -149,6 +139,21 @@ class RENDERERDLL CameraFactory
     // Return a set of widget definitions common to all camera models.
     static foundation::DictionaryArray get_widget_definitions();
 };
+
+
+//
+// Camera class implementation.
+//
+
+inline TransformSequence& Camera::transform_sequence()
+{
+    return m_transform_sequence;
+}
+
+inline const TransformSequence& Camera::transform_sequence() const
+{
+    return m_transform_sequence;
+}
 
 }       // namespace renderer
 

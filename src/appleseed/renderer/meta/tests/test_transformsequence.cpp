@@ -35,71 +35,37 @@
 #include "foundation/math/vector.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"
+#include "foundation/utility/version.h"
 
 using namespace foundation;
 using namespace renderer;
 
 TEST_SUITE(Renderer_Utility_TransformSequence)
 {
-    TEST_CASE(Empty_GivenDefaultConstructedSequence_ReturnsTrue)
-    {
-        TransformSequence sequence;
-
-        EXPECT_TRUE(sequence.empty());
-    }
-
-    TEST_CASE(Empty_AfterSettingOneTransform_ReturnsFalse)
-    {
-        TransformSequence sequence;
-        sequence.set_transform(1.0, Transformd(Matrix4d::translation(Vector3d(1.0, 2.0, 3.0))));
-
-        EXPECT_FALSE(sequence.empty());
-    }
-
-    TEST_CASE(Size_GivenDefaultConstructedSequence_ReturnsZero)
-    {
-        TransformSequence sequence;
-
-        EXPECT_EQ(0, sequence.size());
-    }
-
-    TEST_CASE(Size_AfterSettingOneTransform_ReturnsOne)
-    {
-        TransformSequence sequence;
-        sequence.set_transform(1.0, Transformd(Matrix4d::translation(Vector3d(1.0, 2.0, 3.0))));
-
-        EXPECT_EQ(1, sequence.size());
-    }
-
-    TEST_CASE(Size_AfterSettingTwoTransformsAtDistinctTimes_ReturnsTwo)
-    {
-        TransformSequence sequence;
-        sequence.set_transform(1.0, Transformd(Matrix4d::translation(Vector3d(1.0, 2.0, 3.0))));
-        sequence.set_transform(3.0, Transformd(Matrix4d::translation(Vector3d(4.0, 5.0, 6.0))));
-
-        EXPECT_EQ(2, sequence.size());
-    }
-
-    TEST_CASE(Size_AfterSettingTwoTransformsAtSameTime_ReturnsOne)
-    {
-        TransformSequence sequence;
-        sequence.set_transform(1.0, Transformd(Matrix4d::translation(Vector3d(1.0, 2.0, 3.0))));
-        sequence.set_transform(1.0, Transformd(Matrix4d::translation(Vector3d(4.0, 5.0, 6.0))));
-
-        EXPECT_EQ(1, sequence.size());
-    }
-
     TEST_CASE(Clear_GivenSequenceWithOneTransform_RemovesTransform)
     {
         TransformSequence sequence;
-        sequence.set_transform(1.0, Transformd(Matrix4d::translation(Vector3d(1.0, 2.0, 3.0))));
+        sequence.set_transform(1.0, Transformd::identity());
 
         sequence.clear();
 
         EXPECT_TRUE(sequence.empty());
     }
 
-    TEST_CASE(SetTransform_GivenNewTime_AddsTransform)
+    TEST_CASE(Clear_GivenSequenceTiedToParent_BumpsParentVersionID)
+    {
+        Versionable parent;
+        const VersionID initial_version_id = parent.get_version_id();
+
+        TransformSequence sequence(&parent);
+        sequence.clear();
+
+        const VersionID new_version_id = parent.get_version_id();
+
+        EXPECT_GT(initial_version_id, new_version_id);
+    }
+
+    TEST_CASE(SetTransform_GivenTimeAtWhichNoTransformExists_AddsTransform)
     {
         const Transformd ExpectedTransform(Matrix4d::translation(Vector3d(1.0, 2.0, 3.0)));
 
@@ -129,6 +95,91 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
 
         EXPECT_EQ(1.0, time);
         EXPECT_EQ(NewTransform, transform);
+    }
+
+    TEST_CASE(SetTransform_GivenSequenceTiedToParent_BumpsParentVersionID)
+    {
+        Versionable parent;
+        const VersionID initial_version_id = parent.get_version_id();
+
+        TransformSequence sequence(&parent);
+        sequence.set_transform(1.0, Transformd::identity());
+
+        const VersionID new_version_id = parent.get_version_id();
+
+        EXPECT_GT(initial_version_id, new_version_id);
+    }
+
+    TEST_CASE(GetEarliestTransform_EarliestTransformIsFirst)
+    {
+        const Transformd Transform1(Matrix4d::translation(Vector3d(1.0, 2.0, 3.0)));
+        const Transformd Transform2(Matrix4d::translation(Vector3d(4.0, 5.0, 6.0)));
+
+        TransformSequence sequence;
+        sequence.set_transform(1.0, Transform1);
+        sequence.set_transform(2.0, Transform2);
+
+        EXPECT_EQ(Transform1, sequence.earliest_transform());
+    }
+
+    TEST_CASE(GetEarliestTransform_EarliestTransformIsLast)
+    {
+        const Transformd Transform1(Matrix4d::translation(Vector3d(1.0, 2.0, 3.0)));
+        const Transformd Transform2(Matrix4d::translation(Vector3d(4.0, 5.0, 6.0)));
+
+        TransformSequence sequence;
+        sequence.set_transform(2.0, Transform2);
+        sequence.set_transform(1.0, Transform1);
+
+        EXPECT_EQ(Transform1, sequence.earliest_transform());
+    }
+
+    TEST_CASE(Empty_GivenDefaultConstructedSequence_ReturnsTrue)
+    {
+        TransformSequence sequence;
+
+        EXPECT_TRUE(sequence.empty());
+    }
+
+    TEST_CASE(Empty_AfterSettingOneTransform_ReturnsFalse)
+    {
+        TransformSequence sequence;
+        sequence.set_transform(1.0, Transformd::identity());
+
+        EXPECT_FALSE(sequence.empty());
+    }
+
+    TEST_CASE(Size_GivenDefaultConstructedSequence_ReturnsZero)
+    {
+        TransformSequence sequence;
+
+        EXPECT_EQ(0, sequence.size());
+    }
+
+    TEST_CASE(Size_AfterSettingOneTransform_ReturnsOne)
+    {
+        TransformSequence sequence;
+        sequence.set_transform(1.0, Transformd::identity());
+
+        EXPECT_EQ(1, sequence.size());
+    }
+
+    TEST_CASE(Size_AfterSettingTwoTransformsAtDistinctTimes_ReturnsTwo)
+    {
+        TransformSequence sequence;
+        sequence.set_transform(1.0, Transformd::identity());
+        sequence.set_transform(3.0, Transformd::identity());
+
+        EXPECT_EQ(2, sequence.size());
+    }
+
+    TEST_CASE(Size_AfterSettingTwoTransformsAtSameTime_ReturnsOne)
+    {
+        TransformSequence sequence;
+        sequence.set_transform(1.0, Transformd::identity());
+        sequence.set_transform(1.0, Transformd::identity());
+
+        EXPECT_EQ(1, sequence.size());
     }
 
     TEST_CASE(Evaluate_GivenSingleTransform_ReturnsTransformRegardlessOfTime)

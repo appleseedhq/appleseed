@@ -39,6 +39,9 @@
 // Standard headers.
 #include <cstddef>
 
+// Forward declarations.
+namespace foundation    { class Versionable; }
+
 namespace renderer
 {
 
@@ -51,7 +54,7 @@ class DLLSYMBOL TransformSequence
 {
   public:
     // Constructor.
-    TransformSequence();
+    explicit TransformSequence(foundation::Versionable* parent = 0);
 
     // Destructor.
     ~TransformSequence();
@@ -70,6 +73,10 @@ class DLLSYMBOL TransformSequence
         const size_t                    index,
         double&                         time,
         foundation::Transformd&         transform) const;
+
+    // Access the transform at the lowest time value.
+    foundation::Transformd& earliest_transform();
+    const foundation::Transformd& earliest_transform() const;
 
     // Return true if the sequence is empty.
     bool empty() const;
@@ -97,11 +104,27 @@ class DLLSYMBOL TransformSequence
         }
     };
 
+    foundation::Versionable*            m_parent;
     size_t                              m_capacity;
     size_t                              m_size;
     TransformKey*                       m_keys;
     foundation::TransformInterpolatord* m_interpolators;
 };
+
+
+//
+// TransformSequence class implementation.
+//
+
+inline bool TransformSequence::empty() const
+{
+    return m_size == 0;
+}
+
+inline size_t TransformSequence::size() const
+{
+    return m_size;
+}
 
 }       // namespace renderer
 

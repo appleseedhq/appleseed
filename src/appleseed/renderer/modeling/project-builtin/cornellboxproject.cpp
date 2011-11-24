@@ -30,6 +30,7 @@
 #include "cornellboxproject.h"
 
 // appleseed.renderer headers.
+// todo: include the required individual renderer headers rather than API headers.
 #include "renderer/api/bsdf.h"
 #include "renderer/api/camera.h"
 #include "renderer/api/color.h"
@@ -40,6 +41,7 @@
 #include "renderer/api/project.h"
 #include "renderer/api/scene.h"
 #include "renderer/api/surfaceshader.h"
+#include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/transform.h"
@@ -977,7 +979,8 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         params.insert("focal_length", "0.035");
         auto_release_ptr<Camera> camera(
             PinholeCameraFactory().create("camera", params));
-        camera->set_transform(
+        camera->transform_sequence().set_transform(
+            0.0,
             Transformd(
                   Matrix4d::translation(Vector3d(0.278f, 0.273f, -0.800f))
                 * Matrix4d::rotation_y(Pi)));

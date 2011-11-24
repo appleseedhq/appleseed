@@ -31,6 +31,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
+#include "foundation/math/transform.h"
 #include "foundation/utility/containers/specializedarrays.h"
 
 using namespace foundation;
@@ -50,17 +51,9 @@ namespace
 
 struct Camera::Impl
 {
-    // Order of data members impacts performance, preserve it.
-
-    Transformd              m_transform_t0;             // camera transformation at time=0
-    Transformd              m_transform_t1;             // camera transformation at time=1
-    TransformInterpolatord  m_transform_interpolator;
-    bool                    m_has_motion;
-
-    Vector2d                m_film_dimensions;          // film dimensions, in meters
-    double                  m_focal_length;             // focal length, in meters
-
-    Pyramid3d               m_view_pyramid;
+    Vector2d    m_film_dimensions;      // film dimensions, in meters
+    double      m_focal_length;         // focal length, in meters
+    Pyramid3d   m_view_pyramid;
 };
 
 Camera::Camera(
@@ -68,64 +61,16 @@ Camera::Camera(
     const ParamArray&   params)
   : Entity(g_class_uid, params)
   , impl(new Impl())
+  , m_transform_sequence(this)
 {
     set_name(name);
 
-    impl->m_transform_t0 = Transformd::identity();
-    impl->m_transform_t1 = Transformd::identity();
-    impl->m_has_motion = false;
+    m_transform_sequence.set_transform(0.0, Transformd::identity());
 
     impl->m_film_dimensions = extract_film_dimensions();
     impl->m_focal_length = extract_focal_length(impl->m_film_dimensions[0]);
 
     compute_view_pyramid();
-}
-
-void Camera::set_transform(const Transformd& transform)
-{
-    impl->m_transform_t0 = transform;
-    impl->m_has_motion = false;
-    bump_version_id();
-}
-
-void Camera::set_transform(const double time, const Transformd& transform)
-{
-    if (time == 0.0)
-    {
-        impl->m_transform_t0 = transform;
-        bump_version_id();
-    }
-    else if (time == 1.0)
-    {
-        impl->m_transform_t1 = transform;
-        impl->m_has_motion = true;
-        bump_version_id();
-    }
-    else
-    {
-        RENDERER_LOG_ERROR("limitation: ignoring transformations at times other than 0.0 and 1.0");
-    }
-}
-
-const Transformd& Camera::get_transform() const
-{
-    return impl->m_transform_t0;
-}
-
-Transformd Camera::get_transform(const double time) const
-{
-    if (!impl->m_has_motion)
-        return impl->m_transform_t0;
-
-    return
-        time == 0.0 ? impl->m_transform_t0 :
-        time == 1.0 ? impl->m_transform_t1 :
-        impl->m_transform_interpolator.evaluate(time);
-}
-
-bool Camera::has_motion() const
-{
-    return impl->m_has_motion;
 }
 
 const Vector2d& Camera::get_film_dimensions() const
@@ -145,12 +90,7 @@ const Pyramid3d& Camera::get_view_pyramid() const
 
 void Camera::on_frame_begin(const Project& project)
 {
-    if (impl->m_has_motion)
-    {
-        impl->m_transform_interpolator.set_transforms(
-            impl->m_transform_t0,
-            impl->m_transform_t1);
-    }
+    m_transform_sequence.prepare();
 }
 
 void Camera::on_frame_end(const Project& project)

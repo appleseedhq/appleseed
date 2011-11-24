@@ -39,6 +39,7 @@
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/scene/scene.h"
+#include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
@@ -287,7 +288,8 @@ void DiagnosticSurfaceShader::evaluate(
             // Retrieve the camera.
             const Scene& scene = shading_point.get_scene();
             const Camera& camera = *scene.get_camera();
-            const Transformd& camera_transform = camera.get_transform();
+            const double time = shading_point.get_ray().m_time;
+            const Transformd camera_transform = camera.transform_sequence().evaluate(time);
             const Pyramid3d& view_pyramid = camera.get_view_pyramid();
 
             // Compute the film space coordinates of the intersection point.

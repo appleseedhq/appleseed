@@ -33,5 +33,6 @@
 #include "renderer/utility/bbox.h"
 #include "renderer/utility/paramarray.h"
 #include "renderer/utility/testutils.h"
+#include "renderer/utility/transformsequence.h"
 
 #endif  // !APPLESEED_RENDERER_API_UTILITY_H

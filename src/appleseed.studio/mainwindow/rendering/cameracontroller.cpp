@@ -32,6 +32,7 @@
 // appleseed.renderer headers.
 #include "renderer/api/camera.h"
 #include "renderer/api/scene.h"
+#include "renderer/api/utility.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/transform.h"
@@ -71,7 +72,7 @@ CameraController::~CameraController()
 
 void CameraController::update_camera_transform()
 {
-    m_camera->set_transform(Transformd(m_controller.get_transform()));
+    m_camera->transform_sequence().earliest_transform() = Transformd(m_controller.get_transform());
 }
 
 bool CameraController::eventFilter(QObject* object, QEvent* event)
@@ -101,7 +102,7 @@ void CameraController::configure_controller(const Scene* scene)
 {
     // Set the controller orientation and position based on the scene camera.
     m_controller.set_transform(
-        m_camera->get_transform().get_local_to_parent());
+        m_camera->transform_sequence().earliest_transform().get_local_to_parent());
 
     if (m_camera->get_parameters().strings().exist("controller_target"))
     {

@@ -38,6 +38,7 @@
 #include "renderer/api/camera.h"
 #include "renderer/api/project.h"
 #include "renderer/api/scene.h"
+#include "renderer/api/utility.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/aabb.h"
@@ -121,16 +122,22 @@ namespace
         // Load the master project from disk.
         auto_release_ptr<Project> project(load_master_project());
 
-        for (size_t i = 0; i < animation_path.size(); ++i)
+        if (animation_path.size() == 0)
+            return 0;
+
+        const size_t frame_count =
+            animation_path.size() > 1
+                ? animation_path.size() - 1
+                : 1;
+
+        for (size_t i = 0; i < frame_count; ++i)
         {
-            // Set the camera transformations.
+            // Set the camera's transform sequence.
             Camera* camera = project->get_scene()->get_camera();
-            if (i > 0)
-            {
-                camera->set_transform(0.0, animation_path[i - 1]);
-                camera->set_transform(1.0, animation_path[i]);
-            }
-            else camera->set_transform(animation_path[i]);
+            camera->transform_sequence().clear();
+            camera->transform_sequence().set_transform(0.0, animation_path[i]);
+            if (i + 1 < animation_path.size())
+                camera->transform_sequence().set_transform(1.0, animation_path[i + 1]);
 
             // Write the project file for this frame.
             const size_t frame = i + 1;
@@ -139,7 +146,7 @@ namespace
             ProjectFileWriter::write(project.ref(), false);
         }
 
-        return animation_path.size();
+        return frame_count;
     }
 
     size_t generate_turntable_animation(
@@ -185,10 +192,11 @@ namespace
             const Vector3d position(distance * cos(angle), elevation, distance * sin(angle));
             const Transformd new_transform(Matrix4d::lookat(position, center, Up));
 
-            // Set the camera transformations.
+            // Set the camera's transform sequence.
             Camera* camera = project->get_scene()->get_camera();
-            camera->set_transform(0.0, previous_transform);
-            camera->set_transform(1.0, new_transform);
+            camera->transform_sequence().clear();
+            camera->transform_sequence().set_transform(0.0, previous_transform);
+            camera->transform_sequence().set_transform(1.0, new_transform);
             previous_transform = new_transform;
 
             // Write the project file for this frame.

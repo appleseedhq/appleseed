@@ -48,6 +48,7 @@
 #include "renderer/api/material.h"
 #include "renderer/api/scene.h"
 #include "renderer/api/surfaceshader.h"
+#include "renderer/api/utility.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -262,11 +263,10 @@ Entity* ProjectBuilder::edit_entity(
     ParentEntity&                       parent,
     const foundation::Dictionary&       values) const
 {
-    renderer::EntityTraits<Entity>::remove_entity(old_entity, parent);
-
     foundation::auto_release_ptr<Entity> new_entity(create_entity<Entity>(values));
     Entity* new_entity_ptr = new_entity.get();
 
+    renderer::EntityTraits<Entity>::remove_entity(old_entity, parent);
     renderer::EntityTraits<Entity>::insert_entity(new_entity, parent);
 
     notify_project_modification();
@@ -275,22 +275,27 @@ Entity* ProjectBuilder::edit_entity(
 }
 
 // Specialize edit_entity() for cameras because we need to carry over
-// the camera's transformation when we replace one camera by another.
+// the camera's transform sequence when we replace one camera by another.
 template <>
 inline renderer::Camera* ProjectBuilder::edit_entity(
     renderer::Camera*                   old_entity,
     renderer::Scene&                    parent,
     const foundation::Dictionary&       values) const
 {
-    const foundation::Transformd camera_transform = old_entity->get_transform();
-
-    renderer::EntityTraits<renderer::Camera>::remove_entity(old_entity, parent);
-
-    foundation::auto_release_ptr<renderer::Camera> new_entity(
-        create_entity<renderer::Camera>(values));
-    new_entity->set_transform(camera_transform);
+    foundation::auto_release_ptr<renderer::Camera> new_entity(create_entity<renderer::Camera>(values));
     renderer::Camera* new_entity_ptr = new_entity.get();
 
+    new_entity->transform_sequence().clear();
+
+    for (size_t i = 0; i < old_entity->transform_sequence().size(); ++i)
+    {
+        double time;
+        foundation::Transformd transform;
+        old_entity->transform_sequence().get_transform(i, time, transform);
+        new_entity->transform_sequence().set_transform(time, transform);
+    }
+
+    renderer::EntityTraits<renderer::Camera>::remove_entity(old_entity, parent);
     renderer::EntityTraits<renderer::Camera>::insert_entity(new_entity, parent);
 
     notify_project_modification();
@@ -305,9 +310,6 @@ inline renderer::TextureInstance* ProjectBuilder::edit_entity(
     const foundation::Dictionary&       values) const
 {
     const size_t texture_index = old_entity->get_texture_index();
-
-    renderer::EntityTraits<renderer::TextureInstance>::remove_entity(old_entity, parent);
-
     const std::string name = get_entity_name(values);
 
     foundation::Dictionary clean_values(values);
@@ -320,6 +322,7 @@ inline renderer::TextureInstance* ProjectBuilder::edit_entity(
             texture_index));
     renderer::TextureInstance* new_entity_ptr = new_entity.get();
 
+    renderer::EntityTraits<renderer::TextureInstance>::remove_entity(old_entity, parent);
     renderer::EntityTraits<renderer::TextureInstance>::insert_entity(new_entity, parent);
 
     notify_project_modification();

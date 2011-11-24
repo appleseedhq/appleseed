@@ -73,6 +73,7 @@
 #include "renderer/modeling/texture/texture.h"
 #include "renderer/modeling/texture/texturefactoryregistrar.h"
 #include "renderer/utility/bbox.h"
+#include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/matrix.h"
@@ -1373,8 +1374,10 @@ namespace
         {
             Base::end_element();
 
+            m_entity->transform_sequence().clear();
+
             for (const_each<TransformMap> i = m_transforms; i; ++i)
-                m_entity->set_transform(i->first, i->second);
+                m_entity->transform_sequence().set_transform(i->first, i->second);
         }
 
         virtual void end_child_element(

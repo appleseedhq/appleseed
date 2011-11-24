@@ -54,6 +54,7 @@
 #include "renderer/modeling/scene/textureinstance.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/modeling/texture/texture.h"
+#include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/appleseed.h"
@@ -450,12 +451,15 @@ namespace
 
             write(camera.get_parameters());
 
-            if (camera.has_motion())
+            const TransformSequence& transform_sequence = camera.transform_sequence();
+
+            for (size_t i = 0; i < transform_sequence.size(); ++i)
             {
-                write(camera.get_transform(0.0), 0.0);
-                write(camera.get_transform(1.0), 1.0);
+                double time;
+                Transformd transform;
+                transform_sequence.get_transform(i, time, transform);
+                write(transform, time);
             }
-            else write(camera.get_transform());
         }
 
         void write(const ObjectContainer& objects)
