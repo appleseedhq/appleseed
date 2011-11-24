@@ -39,7 +39,55 @@
 using namespace foundation;
 using namespace std;
 
-namespace
+TEST_SUITE(Foundation_Utility_Cache_LRUCache)
+{
+    typedef size_t MyKey;
+    typedef int MyElement;
+
+    struct MyElementSwapper
+    {
+        size_t m_unloaded_element_count;
+
+        MyElementSwapper()
+          : m_unloaded_element_count(0)
+        {
+        }
+
+        void load(const MyKey key, MyElement*& element) const
+        {
+            element = new MyElement(key * 10);
+        }
+
+        void unload(const MyKey key, MyElement*& element)
+        {
+            delete element;
+            element = 0;
+            ++m_unloaded_element_count;
+        }
+
+        bool is_full(const size_t element_count) const
+        {
+            return false;
+        }
+    };
+
+    TEST_CASE(Destructor_UnloadsElementsStillInCache)
+    {
+        MyElementSwapper element_swapper;
+
+        {
+            LRUCache<MyKey, MyElement*, MyElementSwapper> cache(element_swapper);
+
+            cache.get(1);
+            cache.get(2);
+            cache.get(3);
+        }
+
+        EXPECT_EQ(3, element_swapper.m_unloaded_element_count);
+    }
+}
+
+TEST_SUITE(Foundation_Utility_Cache_DualStageCache)
 {
     typedef size_t MyKey;
     typedef int MyElement;
@@ -94,10 +142,7 @@ namespace
             }
         }
     };
-}
 
-TEST_SUITE(Foundation_Utility_Cache_DualStageCache)
-{
     TEST_CASE(StressTest)
     {
         const size_t Stage0LineCount = 128;

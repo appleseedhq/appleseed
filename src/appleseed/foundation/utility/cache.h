@@ -465,6 +465,9 @@ class LRUCache
         ElementSwapperType& element_swapper,
         AllocatorType       allocator = AllocatorType());
 
+    // Destructor.
+    ~LRUCache();
+
     // Clear the cache.
     void clear();
 
@@ -831,7 +834,13 @@ LRUCache(
     AllocatorType       allocator)
   : m_index(typename Index::key_compare(), allocator)
   , m_queue(allocator)
+  , m_queue_size(0)
   , m_element_swapper(element_swapper)
+{
+}
+
+FOUNDATION_LRUCACHE_TEMPLATE_DEF(FOUNDATION_EMPTY)
+~LRUCache()
 {
     clear();
 }
@@ -839,6 +848,9 @@ LRUCache(
 FOUNDATION_LRUCACHE_TEMPLATE_DEF(void)
 clear()
 {
+    for (each<Queue> i = m_queue; i; ++i)
+        m_element_swapper.unload(i->m_key, i->m_element);
+
     m_index.clear();
     m_queue.clear();
     m_queue_size = 0;

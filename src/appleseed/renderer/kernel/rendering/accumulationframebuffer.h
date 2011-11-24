@@ -53,6 +53,9 @@ class AccumulationFramebuffer
         const size_t    width,
         const size_t    height);
 
+    // Destructor.
+    virtual ~AccumulationFramebuffer() {}
+
     // Get the dimensions of the framebuffer.
     size_t get_width() const;
     size_t get_height() const;
