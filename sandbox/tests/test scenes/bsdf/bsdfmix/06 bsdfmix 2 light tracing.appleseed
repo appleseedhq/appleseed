@@ -424,7 +424,13 @@
         </frame>
     </output>
     <configurations>
-        <configuration name="final" base="base_final" />
-        <configuration name="interactive" base="base_interactive" />
+        <configuration name="final" base="base_final">
+            <parameters name="generic_tile_renderer">
+                <parameter name="max_samples" value="64" />
+            </parameters>
+        </configuration>
+        <configuration name="interactive" base="base_interactive">
+            <parameter name="sample_generator" value="lighttracing" />
+        </configuration>
     </configurations>
 </project>
