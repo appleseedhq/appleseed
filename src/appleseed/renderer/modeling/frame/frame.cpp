@@ -66,6 +66,7 @@ struct Frame::Impl
     size_t              m_tile_height;
     PixelFormat         m_pixel_format;
     ColorSpace          m_color_space;
+    bool                m_clamping;
     bool                m_gamma_correct;
     float               m_target_gamma;
     float               m_rcp_target_gamma;
@@ -377,6 +378,9 @@ void Frame::extract_parameters()
         impl->m_color_space = DefaultColorSpace;
     }
 
+    // Retrieve clamping parameter.
+    impl->m_clamping = m_params.get_optional<bool>("clamping", false);
+
     // Retrieve gamma correction parameter.
     impl->m_gamma_correct = m_params.strings().exist("gamma_correction");
     impl->m_target_gamma =
@@ -384,6 +388,21 @@ void Frame::extract_parameters()
             ? m_params.get_required<float>("gamma_correction", 2.2f)
             : 1.0f;
     impl->m_rcp_target_gamma = 1.0f / impl->m_target_gamma;
+}
+
+namespace
+{
+    template <typename T, size_t N>
+    Color<T, N> clamp_to_zero(Color<T, N> c)
+    {
+        for (size_t i = 0; i < N; ++i)
+        {
+            if (c[i] < T(0.0))
+                c[i] = T(0.0);
+        }
+
+        return c;
+    }
 }
 
 Color4f Frame::linear_rgb_to_frame(const Color4f& linear_rgb) const
@@ -413,11 +432,11 @@ Color4f Frame::linear_rgb_to_frame(const Color4f& linear_rgb) const
         break;
     }
 
-    // Clamp all pixel color channels to [0,1].
+    // Clamp the color.
     // todo: mark clamped pixels in the diagnostic map.
-    result = saturate(result);
+    result = impl->m_clamping ? saturate(result) : clamp_to_zero(result);
 
-    // Gamma-correct the pixel color if gamma correction is enabled.
+    // Gamma-correct color.
     if (impl->m_gamma_correct)
     {
         // todo: investigate the usage of fast_pow() for gamma correction.

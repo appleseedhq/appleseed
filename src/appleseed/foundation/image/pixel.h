@@ -30,7 +30,6 @@
 #define APPLESEED_FOUNDATION_IMAGE_PIXEL_H
 
 // appleseed.foundation headers.
-#include "foundation/math/minmax.h"
 #include "foundation/math/scalar.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/otherwise.h"
@@ -166,7 +165,6 @@ class Pixel
 // Pixel class implementation.
 //
 
-// Return the size in bytes of a given pixel format.
 inline size_t Pixel::size(PixelFormat format)
 {
     switch (format)
@@ -182,8 +180,6 @@ inline size_t Pixel::size(PixelFormat format)
         return 0;
     }
 }
-
-// Convert from templatized format to variable format.
 
 template <>
 inline void Pixel::convert_to_format<uint8>(
@@ -460,8 +456,7 @@ inline void Pixel::convert_to_format<half>(
             uint8* typed_dest = dest;
             for (const half* it = src_begin; it < src_end; it += src_stride)
             {
-                assert(*it >= half(0.0f) && *it <= half(1.0f));
-                const float val = std::min(*it * 256.0f, 255.0f);
+                const float val = clamp(*it * 256.0f, 0.0f, 255.0f);
                 *typed_dest = truncate<uint8>(val);
                 typed_dest += dest_stride;
             }
@@ -473,8 +468,7 @@ inline void Pixel::convert_to_format<half>(
             uint16* typed_dest = reinterpret_cast<uint16*>(dest);
             for (const half* it = src_begin; it < src_end; it += src_stride)
             {
-                assert(*it >= half(0.0f) && *it <= half(1.0f));
-                const float val = std::min(*it * 65536.0f, 65535.0f);
+                const float val = clamp(*it * 65536.0f, 0.0f, 65535.0f);
                 *typed_dest = truncate<uint16>(val);
                 typed_dest += dest_stride;
             }
@@ -486,8 +480,7 @@ inline void Pixel::convert_to_format<half>(
             uint32* typed_dest = reinterpret_cast<uint32*>(dest);
             for (const half* it = src_begin; it < src_end; it += src_stride)
             {
-                assert(*it >= half(0.0f) && *it <= half(1.0f));
-                const float val = std::min(*it * 4294967296.0f, 4294967295.0f);
+                const float val = clamp(*it * 4294967296.0f, 0.0f, 4294967295.0f);
                 *typed_dest = truncate<uint32>(val);
                 typed_dest += dest_stride;
             }
@@ -552,8 +545,7 @@ inline void Pixel::convert_to_format<float>(
             uint8* typed_dest = dest;
             for (const float* it = src_begin; it < src_end; it += src_stride)
             {
-                assert(*it >= 0.0f && *it <= 1.0f);
-                const float val = std::min(*it * 256.0f, 255.0f);
+                const float val = clamp(*it * 256.0f, 0.0f, 255.0f);
                 *typed_dest = truncate<uint8>(val);
                 typed_dest += dest_stride;
             }
@@ -565,8 +557,7 @@ inline void Pixel::convert_to_format<float>(
             uint16* typed_dest = reinterpret_cast<uint16*>(dest);
             for (const float* it = src_begin; it < src_end; it += src_stride)
             {
-                assert(*it >= 0.0f && *it <= 1.0f);
-                const float val = std::min(*it * 65536.0f, 65535.0f);
+                const float val = clamp(*it * 65536.0f, 0.0f, 65535.0f);
                 *typed_dest = truncate<uint16>(val);
                 typed_dest += dest_stride;
             }
@@ -578,8 +569,7 @@ inline void Pixel::convert_to_format<float>(
             uint32* typed_dest = reinterpret_cast<uint32*>(dest);
             for (const float* it = src_begin; it < src_end; it += src_stride)
             {
-                assert(*it >= 0.0f && *it <= 1.0f);
-                const float val = std::min(*it * 4294967296.0f, 4294967295.0f);
+                const float val = clamp(*it * 4294967296.0f, 0.0f, 4294967295.0f);
                 *typed_dest = truncate<uint32>(val);
                 typed_dest += dest_stride;
             }
@@ -643,8 +633,7 @@ inline void Pixel::convert_to_format<double>(
             uint8* typed_dest = dest;
             for (const double* it = src_begin; it < src_end; it += src_stride)
             {
-                assert(*it >= 0.0 && *it <= 1.0);
-                const double val = std::min(*it * 256.0, 255.0);
+                const double val = clamp(*it * 256.0, 0.0, 255.0);
                 *typed_dest = truncate<uint8>(val);
                 typed_dest += dest_stride;
             }
@@ -656,8 +645,7 @@ inline void Pixel::convert_to_format<double>(
             uint16* typed_dest = reinterpret_cast<uint16*>(dest);
             for (const double* it = src_begin; it < src_end; it += src_stride)
             {
-                assert(*it >= 0.0 && *it <= 1.0);
-                const double val = std::min(*it * 65536.0, 65535.0);
+                const double val = clamp(*it * 65536.0, 0.0, 65535.0);
                 *typed_dest = truncate<uint16>(val);
                 typed_dest += dest_stride;
             }
@@ -669,8 +657,7 @@ inline void Pixel::convert_to_format<double>(
             uint32* typed_dest = reinterpret_cast<uint32*>(dest);
             for (const double* it = src_begin; it < src_end; it += src_stride)
             {
-                assert(*it >= 0.0 && *it <= 1.0);
-                const double val = std::min(*it * 4294967296.0, 4294967295.0);
+                const double val = clamp(*it * 4294967296.0, 0.0, 4294967295.0);
                 *typed_dest = truncate<uint32>(val);
                 typed_dest += dest_stride;
             }
@@ -713,8 +700,6 @@ inline void Pixel::convert_to_format<double>(
       assert_otherwise;
     }
 }
-
-// Convert from variable format to templatized format.
 
 template <>
 inline void Pixel::convert_from_format<uint8>(
@@ -769,8 +754,7 @@ inline void Pixel::convert_from_format<uint8>(
             const half* it = reinterpret_cast<const half*>(src_begin);
             for (; it < reinterpret_cast<const half*>(src_end); it += src_stride)
             {
-                assert(*it >= half(0.0f) && *it <= half(1.0f));
-                const half val = static_cast<half>(std::min(*it * 256.0f, 255.0f));
+                const half val = static_cast<half>(clamp(*it * 256.0f, 0.0f, 255.0f));
                 *dest = truncate<uint8>(val);
                 dest += dest_stride;
             }
@@ -782,8 +766,7 @@ inline void Pixel::convert_from_format<uint8>(
             const float* it = reinterpret_cast<const float*>(src_begin);
             for (; it < reinterpret_cast<const float*>(src_end); it += src_stride)
             {
-                assert(*it >= 0.0f && *it <= 1.0f);
-                const float val = std::min(*it * 256.0f, 255.0f);
+                const float val = clamp(*it * 256.0f, 0.0f, 255.0f);
                 *dest = truncate<uint8>(val);
                 dest += dest_stride;
             }
@@ -795,8 +778,7 @@ inline void Pixel::convert_from_format<uint8>(
             const double* it = reinterpret_cast<const double*>(src_begin);
             for (; it < reinterpret_cast<const double*>(src_end); it += src_stride)
             {
-                assert(*it >= 0.0 && *it <= 1.0);
-                const double val = std::min(*it * 256.0, 255.0);
+                const double val = clamp(*it * 256.0, 0.0, 255.0);
                 *dest = truncate<uint8>(val);
                 dest += dest_stride;
             }
@@ -860,8 +842,7 @@ inline void Pixel::convert_from_format<uint16>(
             const half* it = reinterpret_cast<const half*>(src_begin);
             for (; it < reinterpret_cast<const half*>(src_end); it += src_stride)
             {
-                assert(*it >= half(0.0f) && *it <= half(1.0f));
-                const half val = static_cast<half>(std::min(*it * 65536.0f, 65535.0f));
+                const half val = static_cast<half>(clamp(*it * 65536.0f, 0.0f, 65535.0f));
                 *dest = truncate<uint16>(val);
                 dest += dest_stride;
             }
@@ -873,8 +854,7 @@ inline void Pixel::convert_from_format<uint16>(
             const float* it = reinterpret_cast<const float*>(src_begin);
             for (; it < reinterpret_cast<const float*>(src_end); it += src_stride)
             {
-                assert(*it >= 0.0f && *it <= 1.0f);
-                const float val = std::min(*it * 65536.0f, 65535.0f);
+                const float val = clamp(*it * 65536.0f, 0.0f, 65535.0f);
                 *dest = truncate<uint16>(val);
                 dest += dest_stride;
             }
@@ -886,8 +866,7 @@ inline void Pixel::convert_from_format<uint16>(
             const double* it = reinterpret_cast<const double*>(src_begin);
             for (; it < reinterpret_cast<const double*>(src_end); it += src_stride)
             {
-                assert(*it >= 0.0 && *it <= 1.0);
-                const double val = std::min(*it * 65536.0, 65535.0);
+                const double val = clamp(*it * 65536.0, 0.0, 65535.0);
                 *dest = truncate<uint16>(val);
                 dest += dest_stride;
             }
@@ -951,8 +930,7 @@ inline void Pixel::convert_from_format<uint32>(
             const half* it = reinterpret_cast<const half*>(src_begin);
             for (; it < reinterpret_cast<const half*>(src_end); it += src_stride)
             {
-                assert(*it >= half(0.0f) && *it <= half(1.0f));
-                const half val = static_cast<half>(std::min(*it * 4294967296.0f, 4294967295.0f));
+                const half val = static_cast<half>(clamp(*it * 4294967296.0f, 0.0f, 4294967295.0f));
                 *dest = truncate<uint32>(val);
                 dest += dest_stride;
             }
@@ -964,8 +942,7 @@ inline void Pixel::convert_from_format<uint32>(
             const float* it = reinterpret_cast<const float*>(src_begin);
             for (; it < reinterpret_cast<const float*>(src_end); it += src_stride)
             {
-                assert(*it >= 0.0f && *it <= 1.0f);
-                const float val = std::min(*it * 4294967296.0f, 4294967295.0f);
+                const float val = clamp(*it * 4294967296.0f, 0.0f, 4294967295.0f);
                 *dest = truncate<uint32>(val);
                 dest += dest_stride;
             }
@@ -977,8 +954,7 @@ inline void Pixel::convert_from_format<uint32>(
             const double* it = reinterpret_cast<const double*>(src_begin);
             for (; it < reinterpret_cast<const double*>(src_end); it += src_stride)
             {
-                assert(*it >= 0.0 && *it <= 1.0);
-                const double val = std::min(*it * 4294967296.0, 4294967295.0);
+                const double val = clamp(*it * 4294967296.0, 0.0, 4294967295.0);
                 *dest = truncate<uint32>(val);
                 dest += dest_stride;
             }
@@ -1159,7 +1135,6 @@ inline void Pixel::convert_from_format<double>(
     }
 }
 
-// Convert from variable format to variable format.
 inline void Pixel::convert(
     const PixelFormat       src_format,     // source format
     const uint8*            src_begin,      // points to the first value to convert
