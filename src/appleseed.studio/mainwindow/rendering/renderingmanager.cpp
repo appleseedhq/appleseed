@@ -274,7 +274,7 @@ void RenderingManager::slot_rendering_begin()
             .dictionaries().remove("override_shading");
     }
 
-    const int UpdateRate = 15;
+    const int UpdateRate = 5;
     m_render_widget_update_timer.start(1000 / UpdateRate, this);
 }
 
