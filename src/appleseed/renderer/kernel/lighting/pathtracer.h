@@ -239,6 +239,7 @@ size_t PathTracer<PathVisitor, ScatteringModesMask, Adjoint>::trace(
             sampling_context,
             bsdf_data,
             Adjoint,
+            true,       // multiply by |cos(incoming, normal)|
             shading_point_ptr->get_geometric_normal(),
             shading_point_ptr->get_shading_basis(),
             outgoing,
@@ -250,6 +251,9 @@ size_t PathTracer<PathVisitor, ScatteringModesMask, Adjoint>::trace(
         // Terminate the path if this scattering mode is not accepted.
         if (!(bsdf_mode & ScatteringModesMask))
             break;
+
+        if (bsdf_prob > 0.0)
+            bsdf_value /= static_cast<float>(bsdf_prob);
 
         // Update the path throughput.
         throughput *= bsdf_value;

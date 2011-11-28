@@ -196,7 +196,8 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     m_bsdf.sample(
         sampling_context,
         m_bsdf_data,
-        false,              // adjoint
+        false,              // not adjoint
+        true,               // multiply by |cos(incoming, normal)|
         m_geometric_normal,
         m_shading_basis,
         m_outgoing,
@@ -209,6 +210,9 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     // See Physically Based Rendering vol. 1 page 732.
     if (bsdf_mode != BSDF::Diffuse)
         return;
+
+    if (bsdf_prob > 0.0)
+        bsdf_value /= static_cast<float>(bsdf_prob);
 
     // Trace a ray in the direction of the reflection.
     double weight;
@@ -349,7 +353,8 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     double bsdf_prob;
     if (!m_bsdf.evaluate(
             m_bsdf_data,
-            false,              // adjoint
+            false,          // not adjoint
+            true,           // multiply by |cos(incoming, normal)|
             m_geometric_normal,
             m_shading_basis,
             m_outgoing,
@@ -424,7 +429,8 @@ void DirectLightingIntegrator::add_light_sample_contribution(
     double bsdf_prob;
     if (!m_bsdf.evaluate(
             m_bsdf_data,
-            false,              // adjoint
+            false,              // not adjoint
+            true,               // multiply by |cos(incoming, normal)|
             m_geometric_normal,
             m_shading_basis,
             m_outgoing,

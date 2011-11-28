@@ -156,6 +156,7 @@ namespace
             SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
+            const bool          cosine_mult,
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
@@ -281,14 +282,12 @@ namespace
             // Evaluate the final PDF.
             probability = specular_prob * pdf_specular + matte_prob * pdf_matte;
             assert(probability >= 0.0);
-
-            // Compute the ratio BRDF/PDF.
-            value /= static_cast<float>(probability);
         }
 
         FORCE_INLINE virtual bool evaluate(
             const void*         data,
             const bool          adjoint,
+            const bool          cosine_mult,
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,

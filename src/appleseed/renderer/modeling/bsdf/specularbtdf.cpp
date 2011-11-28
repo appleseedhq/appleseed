@@ -82,6 +82,7 @@ namespace
             SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
+            const bool          cosine_mult,
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
@@ -169,7 +170,6 @@ namespace
                 }
             }
 
-            // Divide the value of the BTDF by the PDF.
             const double cos_in = abs(dot(incoming, shading_normal));
             value *= static_cast<float>(1.0 / cos_in);
 
@@ -183,6 +183,7 @@ namespace
         FORCE_INLINE virtual bool evaluate(
             const void*         data,
             const bool          adjoint,
+            const bool          cosine_mult,
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,

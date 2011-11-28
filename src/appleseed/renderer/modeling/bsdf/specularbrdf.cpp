@@ -79,6 +79,7 @@ namespace
             SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
+            const bool          cosine_mult,
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
@@ -103,7 +104,7 @@ namespace
                 return;
             }
 
-            // Compute the ratio BRDF/PDF.
+            // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
             value = values->m_reflectance;
             value *= static_cast<float>(1.0 / cos_in);
@@ -118,6 +119,7 @@ namespace
         FORCE_INLINE virtual bool evaluate(
             const void*         data,
             const bool          adjoint,
+            const bool          cosine_mult,
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,

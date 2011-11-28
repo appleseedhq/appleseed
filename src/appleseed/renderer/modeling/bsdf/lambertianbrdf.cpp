@@ -102,6 +102,7 @@ namespace
             SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
+            const bool          cosine_mult,
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
@@ -126,10 +127,15 @@ namespace
                 return;
             }
 
-            // Compute the ratio BRDF/PDF.
-            const InputValues* values = static_cast<const InputValues*>(data);
-            value = values->m_reflectance;
-            value *= static_cast<float>(1.0 / wi.y);
+            // Compute the BRDF value.
+            if (m_uniform_reflectance)
+                value = m_brdf_value;
+            else
+            {
+                const InputValues* values = static_cast<const InputValues*>(data);
+                value = values->m_reflectance;
+                value *= static_cast<float>(RcpPi);
+            }
 
             // Compute the probability density of the sampled direction.
             probability = wi.y * RcpPi;
@@ -142,6 +148,7 @@ namespace
         FORCE_INLINE virtual bool evaluate(
             const void*         data,
             const bool          adjoint,
+            const bool          cosine_mult,
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
@@ -157,6 +164,7 @@ namespace
             if (cos_in <= 0.0 || cos_on <= 0.0)
                 return false;
 
+            // Compute the BRDF value.
             if (m_uniform_reflectance)
                 value = m_brdf_value;
             else
@@ -166,6 +174,7 @@ namespace
                 value *= static_cast<float>(RcpPi);
             }
 
+            // Compute the probability density of the sampled direction.
             if (probability)
                 *probability = cos_in * RcpPi;
 

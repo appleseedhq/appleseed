@@ -120,12 +120,13 @@ class RENDERERDLL BSDF
     virtual void sample(
         SamplingContext&            sampling_context,
         const void*                 data,                       // input values
-        const bool                  adjoint,                    // use the adjoint scattering kernel if true
+        const bool                  adjoint,                    // if true, use the adjoint scattering kernel
+        const bool                  cosine_mult,                // if true, multiply by |cos(incoming, normal)|
         const foundation::Vector3d& geometric_normal,           // world space geometric normal, unit-length
         const foundation::Basis3d&  shading_basis,              // world space orthonormal basis around shading normal
         const foundation::Vector3d& outgoing,                   // world space outgoing direction, unit-length
         foundation::Vector3d&       incoming,                   // world space incoming direction, unit-length
-        Spectrum&                   value,                      // BSDF value / PDF value * |cos(incoming, normal)|
+        Spectrum&                   value,                      // BSDF value, or BSDF value * |cos(incoming, normal)|
         double&                     probability,                // PDF value
         Mode&                       mode) const = 0;            // scattering mode
 
@@ -135,7 +136,8 @@ class RENDERERDLL BSDF
     // returned by this function are undefined.
     virtual bool evaluate(
         const void*                 data,                       // input values
-        const bool                  adjoint,                    // use the adjoint scattering kernel if true
+        const bool                  adjoint,                    // if true, use the adjoint scattering kernel
+        const bool                  cosine_mult,                // if true, multiply by |cos(incoming, normal)|
         const foundation::Vector3d& geometric_normal,           // world space geometric normal, unit-length
         const foundation::Basis3d&  shading_basis,              // world space orthonormal basis around shading normal
         const foundation::Vector3d& outgoing,                   // world space outgoing direction, unit-length

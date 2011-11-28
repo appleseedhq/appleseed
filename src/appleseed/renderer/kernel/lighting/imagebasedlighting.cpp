@@ -79,7 +79,8 @@ namespace
             bsdf.sample(
                 sampling_context,
                 bsdf_data,
-                false,              // adjoint
+                false,              // not adjoint
+                true,               // multiply by |cos(incoming, normal)|
                 geometric_normal,
                 shading_basis,
                 outgoing,
@@ -91,6 +92,9 @@ namespace
             // Handle absorption.
             if (mode == BSDF::None)
                 continue;
+
+            if (bsdf_prob > 0.0)
+                bsdf_value /= static_cast<float>(bsdf_prob);
 
             // todo: deliberately ignore specular mode to avoid double contribution?
 
@@ -216,7 +220,8 @@ namespace
             const bool bsdf_defined =
                 bsdf.evaluate(
                     bsdf_data,
-                    false,              // adjoint
+                    false,              // not adjoint
+                    true,               // multiply by |cos(incoming, normal)|
                     geometric_normal,
                     shading_basis,
                     outgoing,

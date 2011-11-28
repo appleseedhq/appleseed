@@ -304,7 +304,8 @@ namespace
                 const bool bsdf_defined =
                     bsdf->evaluate(
                         bsdf_data,
-                        true,
+                        true,                               // adjoint
+                        true,                               // multiply by |cos(incoming, normal)|
                         geometric_normal,
                         shading_point.get_shading_basis(),
                         outgoing,                           // outgoing

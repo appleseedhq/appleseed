@@ -58,6 +58,7 @@ class BRDFWrapper
         SamplingContext&                sampling_context,
         const void*                     data,
         const bool                      adjoint,
+        const bool                      cosine_mult,
         const foundation::Vector3d&     geometric_normal,
         const foundation::Basis3d&      shading_basis,
         const foundation::Vector3d&     outgoing,
@@ -69,6 +70,7 @@ class BRDFWrapper
     virtual bool evaluate(
         const void*                     data,
         const bool                      adjoint,
+        const bool                      cosine_mult,
         const foundation::Vector3d&     geometric_normal,
         const foundation::Basis3d&      shading_basis,
         const foundation::Vector3d&     outgoing,
@@ -102,6 +104,7 @@ void BRDFWrapper<BRDFImpl>::sample(
     SamplingContext&                    sampling_context,
     const void*                         data,
     const bool                          adjoint,
+    const bool                          cosine_mult,
     const foundation::Vector3d&         geometric_normal,
     const foundation::Basis3d&          shading_basis,
     const foundation::Vector3d&         outgoing,
@@ -134,6 +137,7 @@ void BRDFWrapper<BRDFImpl>::sample(
         sampling_context,
         data,
         adjoint,
+        false,
         geometric_normal,
         shading_basis,
         outgoing,
@@ -142,16 +146,19 @@ void BRDFWrapper<BRDFImpl>::sample(
         probability,
         mode);
 
-    if (adjoint)
+    if (cosine_mult)
     {
-        const double cos_on = std::abs(foundation::dot(outgoing, shading_normal));
-        const double cos_ig = foundation::dot(incoming, geometric_normal);
-        value *= static_cast<float>(cos_on * cos_ig / cos_og);
-    }
-    else
-    {
-        const double cos_in = std::abs(foundation::dot(incoming, shading_normal));
-        value *= static_cast<float>(cos_in);
+        if (adjoint)
+        {
+            const double cos_on = std::abs(foundation::dot(outgoing, shading_normal));
+            const double cos_ig = foundation::dot(incoming, geometric_normal);
+            value *= static_cast<float>(cos_on * cos_ig / cos_og);
+        }
+        else
+        {
+            const double cos_in = std::abs(foundation::dot(incoming, shading_normal));
+            value *= static_cast<float>(cos_in);
+        }
     }
 }
 
@@ -159,6 +166,7 @@ template <typename BRDFImpl>
 bool BRDFWrapper<BRDFImpl>::evaluate(
     const void*                         data,
     const bool                          adjoint,
+    const bool                          cosine_mult,
     const foundation::Vector3d&         geometric_normal,
     const foundation::Basis3d&          shading_basis,
     const foundation::Vector3d&         outgoing,
@@ -186,6 +194,7 @@ bool BRDFWrapper<BRDFImpl>::evaluate(
         BRDFImpl::evaluate(
             data,
             adjoint,
+            false,
             geometric_normal,
             shading_basis,
             outgoing,
@@ -198,15 +207,18 @@ bool BRDFWrapper<BRDFImpl>::evaluate(
 
     assert(probability == 0 || *probability >= 0.0);
 
-    if (adjoint)
+    if (cosine_mult)
     {
-        const double cos_on = std::abs(foundation::dot(outgoing, shading_normal));
-        value *= static_cast<float>(cos_on * cos_ig / cos_og);
-    }
-    else
-    {
-        const double cos_in = std::abs(foundation::dot(incoming, shading_normal));
-        value *= static_cast<float>(cos_in);
+        if (adjoint)
+        {
+            const double cos_on = std::abs(foundation::dot(outgoing, shading_normal));
+            value *= static_cast<float>(cos_on * cos_ig / cos_og);
+        }
+        else
+        {
+            const double cos_in = std::abs(foundation::dot(incoming, shading_normal));
+            value *= static_cast<float>(cos_in);
+        }
     }
 
     return true;
