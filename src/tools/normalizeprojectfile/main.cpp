@@ -81,5 +81,5 @@ int main(int argc, const char* argv[])
         return 1;
 
     // Write the project back to disk.
-    return ProjectFileWriter::write(project.ref(), false) ? 0 : 1;
+    return ProjectFileWriter::write(project.ref()) ? 0 : 1;
 }

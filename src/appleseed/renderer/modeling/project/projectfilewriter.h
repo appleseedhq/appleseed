@@ -45,11 +45,19 @@ namespace renderer
 class RENDERERDLL ProjectFileWriter
 {
   public:
+    // Writing options.
+    enum Options
+    {
+        Defaults            = 0,
+        OmitHeaderComment   = 1 << 0,
+        OmitMeshFiles       = 1 << 1
+    };
+
     // Write a project to disk. The project must be named.
     // Return true on success, false otherwise.
     static bool write(
         const Project&  project,
-        const bool      omit_header_comment = false);
+        const Options   options = Defaults);
 };
 
 }       // namespace renderer

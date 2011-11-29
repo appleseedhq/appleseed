@@ -53,7 +53,7 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileReader)
 
         project->set_path("unit tests/outputs/test_projectfilereader_configurationblocks.appleseed");
 
-        ProjectFileWriter::write(project.ref(), true);
+        ProjectFileWriter::write(project.ref(), ProjectFileWriter::OmitHeaderComment);
 
         const bool identical =
             compare_text_files(

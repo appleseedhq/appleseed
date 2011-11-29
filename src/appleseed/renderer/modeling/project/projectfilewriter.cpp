@@ -185,10 +185,11 @@ namespace
       public:
         // Constructor.
         Writer(
-            const Project&  project,
-            FILE*           file,
-            const bool      omit_header_comment)
-          : m_file(file)
+            const Project&                      project,
+            FILE*                               file,
+            const ProjectFileWriter::Options    options)
+          : m_options(options)
+          , m_file(file)
           , m_indenter(4)
         {
             assert(m_file);
@@ -200,7 +201,7 @@ namespace
             fprintf(m_file, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
 
             // Write an optional header comment.
-            if (!omit_header_comment)
+            if (!(m_options & ProjectFileWriter::OmitHeaderComment))
             {
                 fprintf(
                     m_file,
@@ -213,9 +214,10 @@ namespace
         }
 
       private:
-        FILE*               m_file;
-        Indenter            m_indenter;
-        filesystem::path    m_project_root_path;
+        const ProjectFileWriter::Options        m_options;
+        FILE*                                   m_file;
+        Indenter                                m_indenter;
+        filesystem::path                        m_project_root_path;
 
         // Write a vector of scalars.
         template <typename Vec>
@@ -564,6 +566,7 @@ namespace
                 // Write the mesh object to disk.
                 const string file_path = (m_project_root_path / filename).file_string();
                 const bool success =
+                    (m_options & ProjectFileWriter::OmitMeshFiles) ||
                     MeshObjectWriter::write(
                         static_cast<const MeshObject&>(*object),
                         file_path.c_str());
@@ -754,8 +757,9 @@ namespace
     };
 }
 
-// Write a project to disk.
-bool ProjectFileWriter::write(const Project& project, const bool omit_header_comment)
+bool ProjectFileWriter::write(
+    const Project&  project,
+    const Options   options)
 {
     if (!project.has_path())
         return false;
@@ -768,7 +772,10 @@ bool ProjectFileWriter::write(const Project& project, const bool omit_header_com
         return false;
 
     // Write the project.
-    Writer writer(project, file, omit_header_comment);
+    Writer writer(
+        project,
+        file,
+        options);
 
     // Close the file.
     fclose(file);

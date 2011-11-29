@@ -143,7 +143,9 @@ namespace
             const size_t frame = i + 1;
             const string new_path = make_numbered_filename(base_output_filename + ".appleseed", frame);
             project->set_path(new_path.c_str());
-            ProjectFileWriter::write(project.ref(), false);
+            if (i == 0)
+                ProjectFileWriter::write(project.ref());
+            else ProjectFileWriter::write(project.ref(), ProjectFileWriter::OmitMeshFiles);
         }
 
         return frame_count;
@@ -203,7 +205,9 @@ namespace
             const size_t frame = static_cast<size_t>(i + 1);
             const string new_path = make_numbered_filename(base_output_filename + ".appleseed", frame);
             project->set_path(new_path.c_str());
-            ProjectFileWriter::write(project.ref(), false);
+            if (i == 0)
+                ProjectFileWriter::write(project.ref());
+            else ProjectFileWriter::write(project.ref(), ProjectFileWriter::OmitMeshFiles);
         }
 
         return static_cast<size_t>(frame_count);
