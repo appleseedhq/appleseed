@@ -58,6 +58,7 @@ class CommandLineHandler
     foundation::FlagOptionHandler                   m_3dsmax_mode;
     foundation::ValueOptionHandler<std::string>     m_output_format;
     foundation::ValueOptionHandler<int>             m_frame_count;
+    foundation::ValueOptionHandler<int>             m_part_count;
     foundation::ValueOptionHandler<double>          m_camera_target;
     foundation::ValueOptionHandler<double>          m_camera_distance;
     foundation::ValueOptionHandler<double>          m_camera_elevation;

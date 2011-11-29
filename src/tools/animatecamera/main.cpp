@@ -156,7 +156,10 @@ namespace
         {
             const vector<size_t> frames = do_generate();
 
-            LOG_INFO(m_logger, "generating render script...");
+            LOG_INFO(
+                m_logger,
+                "generating render script%s...",
+                g_cl.m_part_count.values()[0] > 1 ? "s" : "");
 
 #ifdef _WIN32
             generate_windows_render_script(frames);
@@ -173,7 +176,7 @@ namespace
 
         static string make_numbered_filename(
             const string&   filename,
-            const size_t    frame,
+            const size_t    number,
             const size_t    digits = 4)
         {
             const filesystem::path path(filename);
@@ -181,7 +184,7 @@ namespace
             stringstream sstr;
             sstr << path.stem();
             sstr << '.';
-            sstr << setw(digits) << setfill('0') << frame;
+            sstr << setw(digits) << setfill('0') << number;
             sstr << path.extension();
 
             return sstr.str();
@@ -211,12 +214,41 @@ namespace
       private:
         void generate_windows_render_script(const vector<size_t>& frames) const
         {
-            const char* RenderScriptFileName = "render.bat";
+            const size_t part_count = g_cl.m_part_count.values()[0];
+            const size_t frames_per_part =
+                static_cast<size_t>(ceil(static_cast<double>(frames.size()) / part_count));
 
-            FILE* script_file = fopen(RenderScriptFileName, "wt");
+            for (size_t part = 1, frame_begin = 0; frame_begin < frames.size(); ++part)
+            {
+                const size_t frame_end = min(frame_begin + frames_per_part, frames.size());
+
+                generate_windows_render_script(
+                    frames,
+                    part,
+                    frame_begin,
+                    frame_end);
+
+                frame_begin = frame_end;
+            }
+        }
+
+        void generate_windows_render_script(
+            const vector<size_t>&   frames,
+            const size_t            part,
+            const size_t            frame_begin,
+            const size_t            frame_end) const
+        {
+            const string RenderScriptBaseFileName = "render.bat";
+
+            const string script_filename =
+                frame_begin == 0 && frame_end == frames.size()
+                    ? RenderScriptBaseFileName
+                    : make_numbered_filename(RenderScriptBaseFileName, part);
+
+            FILE* script_file = fopen(script_filename.c_str(), "wt");
 
             if (script_file == 0)
-                LOG_FATAL(m_logger, "could not write to %s.", RenderScriptFileName);
+                LOG_FATAL(m_logger, "could not write to %s.", script_filename.c_str());
 
             fprintf(
                 script_file,
@@ -243,7 +275,7 @@ namespace
 
             const string output_format = g_cl.m_output_format.values()[0];
 
-            for (size_t i = 0; i < frames.size(); ++i)
+            for (size_t i = frame_begin; i < frame_end; ++i)
             {
                 const size_t current_frame = i + 1;
                 const size_t actual_frame = frames[i];

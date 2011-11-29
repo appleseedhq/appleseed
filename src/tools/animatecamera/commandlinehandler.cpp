@@ -79,6 +79,14 @@ CommandLineHandler::CommandLineHandler()
     m_frame_count.set_default_values(make_vector(20));
     parser().add_option_handler(&m_frame_count);
 
+    m_part_count.add_name("--part-count");
+    m_part_count.add_name("-p");
+    m_part_count.set_description("split the render script in that many parts");
+    m_part_count.set_syntax("count");
+    m_part_count.set_exact_value_count(1);
+    m_part_count.set_default_values(make_vector(1));
+    parser().add_option_handler(&m_part_count);
+
     m_camera_target.add_name("--target");
     m_camera_target.add_name("-t");
     m_camera_target.set_description("set the target of the camera relatively to the center of the scene");
