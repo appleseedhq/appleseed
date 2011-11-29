@@ -77,16 +77,15 @@ class OBJMeshFileReader
         }
     };
 
-    // Read options.
+    // Reading options.
     enum Options
     {
-        None                    = 0,
+        Defaults                = 0,
         StopOnInvalidFaceDef    = 1 << 0        // stop parsing on invalid face definitions
     };
 
     // Constructor.
-    explicit OBJMeshFileReader(
-        const Options       options = None);
+    explicit OBJMeshFileReader(const Options options = Defaults);
 
     // Destructor.
     virtual ~OBJMeshFileReader();
