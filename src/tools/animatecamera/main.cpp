@@ -181,14 +181,10 @@ namespace
                 const string image_filename = make_numbered_filename(m_base_output_filename + ".png", frame);
                 const string image_filepath = "frames\\" + image_filename;
 
-                const size_t LineLength = 80 + 1;   // +1 to account for the escape character
-                const string header = "--- " + project_filename + " -^> " + image_filename + " ";
-                const string header_suffix(header.size() < LineLength ? LineLength - header.size() : 0, '-');
-
                 fprintf(batch_file, "if exist \"frames\\%s\" (\n", image_filename.c_str());
-                fprintf(batch_file, "    echo Skipping %s...\n", project_filename.c_str());
+                fprintf(batch_file, "    echo Skipping %s because it was already rendered...\n", project_filename.c_str());
                 fprintf(batch_file, ") else (\n");
-                fprintf(batch_file, "    echo %s%s\n", header.c_str(), header_suffix.c_str());
+                fprintf(batch_file, "    echo Rendering %s to %s...\n", project_filename.c_str(), image_filepath.c_str());
                 fprintf(batch_file, "    start \"Rendering %s to %s...\" %%options%% %%bin%% %s -o \"%s\"\n",
                     project_filename.c_str(),
                     image_filepath.c_str(),
