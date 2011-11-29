@@ -63,7 +63,15 @@ CommandLineHandler::CommandLineHandler()
     m_3dsmax_mode.set_description("assume the animation path file uses Autodesk 3ds Max's coordinate system");
     parser().add_option_handler(&m_3dsmax_mode);
 
-    m_frame_count.add_name("--frames");
+    m_output_format.add_name("--output-format");
+    m_output_format.add_name("-o");
+    m_output_format.set_description("set the format of the output frames");
+    m_output_format.set_syntax("format");
+    m_output_format.set_exact_value_count(1);
+    m_output_format.set_default_values(make_vector("exr"));
+    parser().add_option_handler(&m_output_format);
+
+    m_frame_count.add_name("--frame-count");
     m_frame_count.add_name("-f");
     m_frame_count.set_description("set the number of frames in the animation");
     m_frame_count.set_syntax("count");

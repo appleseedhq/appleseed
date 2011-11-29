@@ -142,17 +142,17 @@ namespace
       private:
         void generate_windows_render_script(const vector<size_t>& frames) const
         {
-            LOG_INFO(m_logger, "generating batch file...");
+            LOG_INFO(m_logger, "generating render script...");
 
-            const char* BatchFileName = "render.bat";
+            const char* RenderScriptFileName = "render.bat";
 
-            FILE* batch_file = fopen(BatchFileName, "wt");
+            FILE* script_file = fopen(RenderScriptFileName, "wt");
 
-            if (batch_file == 0)
-                LOG_FATAL(m_logger, "could not write to %s.", BatchFileName);
+            if (script_file == 0)
+                LOG_FATAL(m_logger, "could not write to %s.", RenderScriptFileName);
 
             fprintf(
-                batch_file,
+                script_file,
                 "%s",
                 "@echo off\n"
                 "\n"
@@ -174,32 +174,36 @@ namespace
                 ")\n"
                 "\n");
 
+            const string output_format = g_cl.m_output_format.values()[0];
+
             for (size_t i = 0; i < frames.size(); ++i)
             {
                 const size_t frame = frames[i];
                 const string project_filename = make_numbered_filename(m_base_output_filename + ".appleseed", frame);
-                const string image_filename = make_numbered_filename(m_base_output_filename + ".png", frame);
+                const string image_filename = make_numbered_filename(m_base_output_filename + "." + output_format, frame);
                 const string image_filepath = "frames\\" + image_filename;
 
-                fprintf(batch_file, "if exist \"frames\\%s\" (\n", image_filename.c_str());
-                fprintf(batch_file, "    echo Skipping %s because it was already rendered...\n", project_filename.c_str());
-                fprintf(batch_file, ") else (\n");
-                fprintf(batch_file, "    echo Rendering %s to %s...\n", project_filename.c_str(), image_filepath.c_str());
-                fprintf(batch_file, "    start \"Rendering %s to %s...\" %%options%% %%bin%% %s -o \"%s\"\n",
+                fprintf(script_file, "if exist \"frames\\%s\" (\n", image_filename.c_str());
+                fprintf(script_file, "    echo Skipping %s because it was already rendered...\n", project_filename.c_str());
+                fprintf(script_file, ") else (\n");
+                fprintf(script_file, "    echo Rendering %s to %s...\n", project_filename.c_str(), image_filepath.c_str());
+                fprintf(script_file, "    start \"Rendering %s to %s...\" %%options%% %%bin%% %s -o \"%s\"\n",
                     project_filename.c_str(),
                     image_filepath.c_str(),
                     project_filename.c_str(),
                     image_filepath.c_str());
-                fprintf(batch_file, ")\n\n");
+                fprintf(script_file, ")\n\n");
             }
 
             fprintf(
-                batch_file,
+                script_file,
+                "echo.\n"
+                "echo Rendering terminated.\n"
                 "echo.\n"
                 "\n"
                 ":end\n");
 
-            fclose(batch_file);
+            fclose(script_file);
         }
     };
 
