@@ -46,6 +46,7 @@
 #include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/log.h"
 #include "foundation/utility/string.h"
@@ -58,9 +59,11 @@
 #include <cstddef>
 #include <cstdlib>
 #include <iomanip>
+#include <map>
 #include <memory>
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 using namespace appleseed::animatecamera;
@@ -72,7 +75,69 @@ using namespace std;
 
 namespace
 {
+    //
+    // Command line parameters are globally accessible within this file.
+    //
+
     CommandLineHandler g_cl;
+
+
+    //
+    // Define a strict weak ordering on foundation::Transform<> objects.
+    //
+
+    template <typename T>
+    struct TransformComparer
+    {
+        bool operator()(const Transform<T>& lhs, const Transform<T>& rhs) const
+        {
+            typedef typename Transform<T>::MatrixType MatrixType;
+
+            const MatrixType& lhs_mat = lhs.get_local_to_parent();
+            const MatrixType& rhs_mat = rhs.get_local_to_parent();
+
+            const T Eps = make_eps<T>(1.0e-6f, 1.0e-12);
+
+            for (size_t i = 0; i < MatrixType::Components; ++i)
+            {
+                const T delta = lhs_mat[i] - rhs_mat[i];
+
+                if (delta < -Eps)
+                    return true;
+
+                if (delta > Eps)
+                    return false;
+            }
+
+            return false;
+        }
+    };
+
+
+    //
+    // Define an ordering on pairs of transforms.
+    //
+
+    template <typename T>
+    struct TransformPairComparer
+    {
+        typedef pair<Transform<T>, Transform<T> > TransformPair;
+
+        bool operator()(const TransformPair& lhs, const TransformPair& rhs) const
+        {
+            const TransformComparer<T> transform_comparer;
+
+            return
+                transform_comparer(lhs.first, rhs.first) ? true :
+                transform_comparer(rhs.first, lhs.first) ? false :
+                transform_comparer(lhs.second, rhs.second);
+        }
+    };
+
+
+    //
+    // The base class for animation generators.
+    //
 
     class AnimationGenerator
     {
@@ -91,8 +156,12 @@ namespace
         {
             const vector<size_t> frames = do_generate();
 
+            LOG_INFO(m_logger, "generating render script...");
+
 #ifdef _WIN32
             generate_windows_render_script(frames);
+#else
+            LOG_WARNING(m_logger, "oops, don't know how to generate a render script for this platform.");
 #endif
         }
 
@@ -142,8 +211,6 @@ namespace
       private:
         void generate_windows_render_script(const vector<size_t>& frames) const
         {
-            LOG_INFO(m_logger, "generating render script...");
-
             const char* RenderScriptFileName = "render.bat";
 
             FILE* script_file = fopen(RenderScriptFileName, "wt");
@@ -178,20 +245,45 @@ namespace
 
             for (size_t i = 0; i < frames.size(); ++i)
             {
-                const size_t frame = frames[i];
-                const string project_filename = make_numbered_filename(m_base_output_filename + ".appleseed", frame);
-                const string image_filename = make_numbered_filename(m_base_output_filename + "." + output_format, frame);
+                const size_t current_frame = i + 1;
+                const size_t actual_frame = frames[i];
+
+                const string project_filename = make_numbered_filename(m_base_output_filename + ".appleseed", current_frame);
+                const string image_filename = make_numbered_filename(m_base_output_filename + "." + output_format, current_frame);
                 const string image_filepath = "frames\\" + image_filename;
 
                 fprintf(script_file, "if exist \"frames\\%s\" (\n", image_filename.c_str());
                 fprintf(script_file, "    echo Skipping %s because it was already rendered...\n", project_filename.c_str());
                 fprintf(script_file, ") else (\n");
-                fprintf(script_file, "    echo Rendering %s to %s...\n", project_filename.c_str(), image_filepath.c_str());
-                fprintf(script_file, "    start \"Rendering %s to %s...\" %%options%% %%bin%% %s -o \"%s\"\n",
-                    project_filename.c_str(),
-                    image_filepath.c_str(),
-                    project_filename.c_str(),
-                    image_filepath.c_str());
+
+                if (actual_frame == current_frame)
+                {
+                    fprintf(script_file, "    echo Rendering %s to %s...\n", project_filename.c_str(), image_filepath.c_str());
+                    fprintf(
+                        script_file,
+                        "    start \"Rendering %s to %s...\" %%options%% %%bin%% %s -o \"%s\"\n",
+                        project_filename.c_str(),
+                        image_filepath.c_str(),
+                        project_filename.c_str(),
+                        image_filepath.c_str());
+                }
+                else
+                {
+                    const string source_image_filename = make_numbered_filename(m_base_output_filename + "." + output_format, actual_frame);
+                    const string source_image_filepath = "frames\\" + source_image_filename;
+
+                    fprintf(
+                        script_file,
+                        "    echo Copying %s to %s...\n",
+                        source_image_filepath.c_str(),
+                        image_filepath.c_str());
+                    fprintf(
+                        script_file,
+                        "    copy \"%s\" \"%s\" >nul\n",
+                        source_image_filepath.c_str(),
+                        image_filepath.c_str());
+                }
+                
                 fprintf(script_file, ")\n\n");
             }
 
@@ -207,6 +299,11 @@ namespace
         }
     };
 
+
+    //
+    // Generate an animation using a custom camera path.
+    //
+
     class PathAnimationGenerator
       : public AnimationGenerator
     {
@@ -221,6 +318,10 @@ namespace
       private:
         virtual vector<size_t> do_generate()
         {
+            typedef pair<Transformd, Transformd> TransformPair;
+            typedef map<TransformPair, size_t, TransformPairComparer<double> > TransformMap;
+
+            TransformMap transform_map;
             vector<size_t> frames;
 
             // Load the animation path file from disk.
@@ -242,6 +343,27 @@ namespace
 
             for (size_t i = 0; i < frame_count; ++i)
             {
+                const size_t frame = i + 1;
+
+                // Don't render twice the same frame.
+                if (i + 1 < animation_path.size())
+                {
+                    const TransformPair transform_pair(animation_path[i], animation_path[i + 1]);
+                    const TransformMap::const_iterator transform_map_key = transform_map.find(transform_pair);
+
+                    if (transform_map_key != transform_map.end())
+                    {
+                        LOG_INFO(
+                            m_logger, "frame " FMT_SIZE_T " is the same as frame " FMT_SIZE_T,
+                            frame,
+                            transform_map_key->second);
+                        frames.push_back(transform_map_key->second);
+                        continue;
+                    }
+
+                    transform_map.insert(make_pair(transform_pair, frame));
+                }
+
                 // Set the camera's transform sequence.
                 Camera* camera = project->get_scene()->get_camera();
                 camera->transform_sequence().clear();
@@ -250,7 +372,6 @@ namespace
                     camera->transform_sequence().set_transform(1.0, animation_path[i + 1]);
 
                 // Write the project file for this frame.
-                const size_t frame = i + 1;
                 const string new_path = make_numbered_filename(m_base_output_filename + ".appleseed", frame);
                 project->set_path(new_path.c_str());
                 if (i == 0)
@@ -260,9 +381,16 @@ namespace
                 frames.push_back(frame);
             }
 
+            assert(frames.size() == frame_count);
+
             return frames;
         }
     };
+
+
+    //
+    // Generate a turntable animation.
+    //
 
     class TurntableAnimationGenerator
       : public AnimationGenerator
@@ -336,6 +464,8 @@ namespace
 
                 frames.push_back(frame);
             }
+
+            assert(frames.size() == static_cast<size_t>(frame_count));
 
             return frames;
         }
