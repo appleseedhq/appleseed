@@ -256,7 +256,12 @@ namespace
                 "@echo off\n"
                 "\n"
                 "set bin=\"%1\"\n"
+                "set outputpath=\"%2\"\n"
                 "set options=/WAIT /BELOWNORMAL /MIN\n"
+                "\n"
+                "if %outputpath% == \"\" (\n"
+                "    set outputpath=frames\n"
+                ")\n"
                 "\n"
                 "if %bin% == \"\" (\n"
                 "    echo Usage: %0 path-to-appleseed-binary\n"
@@ -268,8 +273,8 @@ namespace
                 "    goto :end\n"
                 ")\n"
                 "\n"
-                "if not exist frames (\n"
-                "    mkdir frames\n"
+                "if not exist %outputpath% (\n"
+                "    mkdir %outputpath%\n"
                 ")\n"
                 "\n");
 
@@ -282,9 +287,9 @@ namespace
 
                 const string project_filename = make_numbered_filename(m_base_output_filename + ".appleseed", current_frame);
                 const string image_filename = make_numbered_filename(m_base_output_filename + "." + output_format, current_frame);
-                const string image_filepath = "frames\\" + image_filename;
+                const string image_filepath = "%outputpath%\\" + image_filename;
 
-                fprintf(script_file, "if exist \"frames\\%s\" (\n", image_filename.c_str());
+                fprintf(script_file, "if exist \"%s\" (\n", image_filepath.c_str());
                 fprintf(script_file, "    echo Skipping %s because it was already rendered...\n", project_filename.c_str());
                 fprintf(script_file, ") else (\n");
 
@@ -302,7 +307,7 @@ namespace
                 else
                 {
                     const string source_image_filename = make_numbered_filename(m_base_output_filename + "." + output_format, actual_frame);
-                    const string source_image_filepath = "frames\\" + source_image_filename;
+                    const string source_image_filepath = "%outputpath%\\" + source_image_filename;
 
                     fprintf(
                         script_file,
