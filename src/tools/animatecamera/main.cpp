@@ -157,6 +157,7 @@ namespace
                 "@echo off\n"
                 "\n"
                 "set bin=\"%1\"\n"
+                "set options=/WAIT /BELOWNORMAL /MIN\n"
                 "\n"
                 "if %bin% == \"\" (\n"
                 "    echo Usage: %0 path-to-appleseed-binary\n"
@@ -178,6 +179,7 @@ namespace
                 const size_t frame = frames[i];
                 const string project_filename = make_numbered_filename(m_base_output_filename + ".appleseed", frame);
                 const string image_filename = make_numbered_filename(m_base_output_filename + ".png", frame);
+                const string image_filepath = "frames\\" + image_filename;
 
                 const size_t LineLength = 80 + 1;   // +1 to account for the escape character
                 const string header = "--- " + project_filename + " -^> " + image_filename + " ";
@@ -187,14 +189,16 @@ namespace
                 fprintf(batch_file, "    echo Skipping %s...\n", project_filename.c_str());
                 fprintf(batch_file, ") else (\n");
                 fprintf(batch_file, "    echo %s%s\n", header.c_str(), header_suffix.c_str());
-                fprintf(batch_file, "    %%bin%% %s -o \"frames\\%s\"\n", project_filename.c_str(), image_filename.c_str());
-                fprintf(batch_file, ")\n");
+                fprintf(batch_file, "    start \"Rendering %s to %s...\" %%options%% %%bin%% %s -o \"%s\"\n",
+                    project_filename.c_str(),
+                    image_filepath.c_str(),
+                    project_filename.c_str(),
+                    image_filepath.c_str());
+                fprintf(batch_file, ")\n\n");
             }
 
             fprintf(
                 batch_file,
-                "%s",
-                "\n"
                 "echo.\n"
                 "\n"
                 ":end\n");
