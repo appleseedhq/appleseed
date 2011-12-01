@@ -68,7 +68,7 @@ TextureInstance::TextureInstance(
     impl->m_texture_index = texture_index;
 
     // Retrieve the texture addressing mode.
-    const string addressing_mode = m_params.get_required<string>("addressing_mode", "clamp");
+    const string addressing_mode = m_params.get_required<string>("addressing_mode", "wrap");
     if (addressing_mode == "clamp")
         impl->m_addressing_mode = TextureAddressingClamp;
     else if (addressing_mode == "wrap")
@@ -77,9 +77,9 @@ TextureInstance::TextureInstance(
     {
         RENDERER_LOG_ERROR(
             "invalid value \"%s\" for parameter \"addressing_mode\", ",
-            "using default value \"clamp\"",
+            "using default value \"wrap\"",
             addressing_mode.c_str());
-        impl->m_addressing_mode = TextureAddressingClamp;
+        impl->m_addressing_mode = TextureAddressingWrap;
     }
 
     // Retrieve the texture filtering mode.
@@ -150,7 +150,7 @@ DictionaryArray TextureInstanceFactory::get_widget_definitions()
                     .insert("Clamp", "clamp")
                     .insert("Wrap/Tile", "wrap"))
             .insert("use", "required")
-            .insert("default", "clamp"));
+            .insert("default", "wrap"));
 
     definitions.push_back(
         Dictionary()
