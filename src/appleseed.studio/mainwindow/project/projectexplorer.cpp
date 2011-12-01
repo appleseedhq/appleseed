@@ -53,11 +53,12 @@ namespace appleseed {
 namespace studio {
 
 ProjectExplorer::ProjectExplorer(
+    QTreeWidget*    tree_widget,
     Project&        project,
-    QTreeWidget*    tree_widget)
-  : m_project(project)
-  , m_tree_widget(tree_widget)
+    ParamArray&     settings)
+  : m_tree_widget(tree_widget)
   , m_project_tree(tree_widget)
+  , m_project(project)
   , m_project_builder(project, m_project_tree)
 {
     m_tree_widget->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -81,7 +82,7 @@ ProjectExplorer::ProjectExplorer(
         &m_project_builder, SIGNAL(signal_project_modified()),
         this, SIGNAL(signal_project_modified()));
 
-    m_project_tree.initialize(project, m_project_builder);
+    m_project_tree.initialize(project, m_project_builder, settings);
 }
 
 QMenu* ProjectExplorer::build_no_item_context_menu() const

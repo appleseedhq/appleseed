@@ -96,14 +96,22 @@ struct AssemblyItem::Impl
         AssemblyItem*   assembly_item,
         Assembly*       assembly,
         Scene&          scene,
-        ProjectBuilder& project_builder)
+        ProjectBuilder& project_builder,
+        ParamArray&     settings)
       : m_assembly_item(assembly_item)
       , m_assembly(assembly)
       , m_scene(scene)
       , m_project_builder(project_builder)
     {
         m_color_collection_item = add_single_model_collection_item<ColorEntity>(assembly->colors());
-        m_texture_collection_item = add_collection_item(assembly->textures());
+
+        m_assembly_item->addChild(
+            m_texture_collection_item =
+                new TextureCollectionItem(
+                    *m_assembly,
+                    assembly->textures(),
+                    m_project_builder,
+                    settings));
 
         m_texture_instance_collection_item = add_single_model_collection_item<TextureInstance>(assembly->texture_instances());
         m_texture_instance_collection_item->set_allow_creation(false);
@@ -113,7 +121,15 @@ struct AssemblyItem::Impl
         m_surface_shader_collection_item = add_multi_model_collection_item<SurfaceShader>(assembly->surface_shaders());
         m_material_collection_item = add_single_model_collection_item<Material>(assembly->materials());
         m_light_collection_item = add_multi_model_collection_item<Light>(assembly->lights());
-        m_object_collection_item = add_collection_item(assembly->objects());
+        
+        m_assembly_item->addChild(
+            m_object_collection_item =
+                new ObjectCollectionItem(
+                    *m_assembly,
+                    assembly->objects(),
+                    m_project_builder,
+                    settings));
+        
         m_object_instance_collection_item = add_collection_item(assembly->object_instances());
     }
 
@@ -171,9 +187,10 @@ struct AssemblyItem::Impl
 AssemblyItem::AssemblyItem(
     Assembly*       assembly,
     Scene&          scene,
-    ProjectBuilder& project_builder)
+    ProjectBuilder& project_builder,
+    ParamArray&     settings)
   : ItemBase(assembly->get_class_uid(), assembly->get_name())
-  , impl(new Impl(this, assembly, scene, project_builder))
+  , impl(new Impl(this, assembly, scene, project_builder, settings))
 {
     set_allow_edition(false);
 }

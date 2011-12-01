@@ -41,6 +41,7 @@
 
 // Forward declarations.
 namespace appleseed { namespace studio { class ProjectBuilder; } }
+namespace renderer  { class ParamArray; }
 class QMenu;
 
 namespace appleseed {
@@ -55,12 +56,14 @@ class TextureCollectionItem
     TextureCollectionItem(
         renderer::Scene&            scene,
         renderer::TextureContainer& textures,
-        ProjectBuilder&             project_builder);
+        ProjectBuilder&             project_builder,
+        renderer::ParamArray&       settings);
 
     TextureCollectionItem(
         renderer::Assembly&         assembly,
         renderer::TextureContainer& textures,
-        ProjectBuilder&             project_builder);
+        ProjectBuilder&             project_builder,
+        renderer::ParamArray&       settings);
 
     virtual QMenu* get_single_item_context_menu() const;
 
@@ -68,8 +71,9 @@ class TextureCollectionItem
     void slot_import_textures();
 
   private:
-    renderer::Assembly* m_assembly;
-    ProjectBuilder&     m_project_builder;
+    renderer::Assembly*             m_assembly;
+    ProjectBuilder&                 m_project_builder;
+    renderer::ParamArray&           m_settings;
 };
 
 }       // namespace studio

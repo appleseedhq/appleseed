@@ -31,6 +31,11 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/projectbuilder.h"
+#include "utility/interop.h"
+#include "utility/settingskeys.h"
+
+// appleseed.renderer headers.
+#include "renderer/api/utility.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/uid.h"
@@ -41,9 +46,13 @@
 #include <QString>
 #include <QStringList>
 
+// boost headers.
+#include "boost/filesystem/path.hpp"
+
 // Standard headers.
 #include <string>
 
+using namespace boost;
 using namespace foundation;
 using namespace renderer;
 using namespace std;
@@ -59,10 +68,12 @@ namespace
 TextureCollectionItem::TextureCollectionItem(
     Scene&              scene,
     TextureContainer&   textures,
-    ProjectBuilder&     project_builder)
+    ProjectBuilder&     project_builder,
+    ParamArray&         settings)
   : ItemBase(g_class_uid, "Textures")
   , m_assembly(0)
   , m_project_builder(project_builder)
+  , m_settings(settings)
 {
     add_items(textures);
 }
@@ -70,10 +81,12 @@ TextureCollectionItem::TextureCollectionItem(
 TextureCollectionItem::TextureCollectionItem(
     Assembly&           assembly,
     TextureContainer&   textures,
-    ProjectBuilder&     project_builder)
+    ProjectBuilder&     project_builder,
+    ParamArray&         settings)
   : ItemBase(g_class_uid, "Textures")
   , m_assembly(&assembly)
   , m_project_builder(project_builder)
+  , m_settings(settings)
 {
     add_items(textures);
 }
@@ -97,10 +110,19 @@ void TextureCollectionItem::slot_import_textures()
         QFileDialog::getOpenFileNames(
             treeWidget(),
             "Import Textures...",
-            "",
+            m_settings.get_path_optional<QString>(LAST_DIRECTORY_SETTINGS_KEY),
             "Texture Files (*.exr);;All Files (*.*)",
             &selected_filter,
             options);
+
+    if (filepaths.empty())
+        return;
+
+    const filesystem::path path(filepaths.first().toStdString());
+
+    m_settings.insert_path(
+        LAST_DIRECTORY_SETTINGS_KEY,
+        path.parent_path().external_directory_string());
 
     for (int i = 0; i < filepaths.size(); ++i)
     {

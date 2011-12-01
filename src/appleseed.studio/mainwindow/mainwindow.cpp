@@ -35,6 +35,7 @@
 // appleseed.studio headers.
 #include "mainwindow/logwidget.h"
 #include "utility/interop.h"
+#include "utility/settingskeys.h"
 #include "utility/tweaks.h"
 
 // appleseed.shared headers.
@@ -83,11 +84,6 @@ namespace studio {
 //
 // MainWindow class implementation.
 //
-
-namespace
-{
-    const char* LastDirectorySettingsKey = "ui.mainwindow.filedialog.lastdirectory";
-}
 
 MainWindow::MainWindow(QWidget* parent)
   : QMainWindow(parent)
@@ -362,8 +358,9 @@ void MainWindow::update_project_explorer()
     {
         m_project_explorer.reset(
             new ProjectExplorer(
+                m_ui->treewidget_project_explorer_scene,    
                 *m_project_manager.get_project(),
-                m_ui->treewidget_project_explorer_scene));
+                m_settings));
 
         QObject::connect(
             m_project_explorer.get(), SIGNAL(signal_project_modified()),
@@ -642,7 +639,7 @@ void MainWindow::slot_open_project()
         QFileDialog::getOpenFileName(
             this,
             "Open...",
-            m_settings.get_path_optional<QString>(LastDirectorySettingsKey),
+            m_settings.get_path_optional<QString>(LAST_DIRECTORY_SETTINGS_KEY),
             get_project_filter_string(),
             &selected_filter,
             options);
@@ -654,7 +651,7 @@ void MainWindow::slot_open_project()
     if (!filepath.isEmpty())
     {
         m_settings.insert_path(
-            LastDirectorySettingsKey,
+            LAST_DIRECTORY_SETTINGS_KEY,
             path.parent_path().external_directory_string());
 
         const bool successful =
@@ -736,7 +733,7 @@ void MainWindow::slot_save_project_as()
         QFileDialog::getSaveFileName(
             this,
             "Save As...",
-            m_settings.get_path_optional<QString>(LastDirectorySettingsKey),
+            m_settings.get_path_optional<QString>(LAST_DIRECTORY_SETTINGS_KEY),
             get_project_filter_string(),
             &selected_filter,
             options);
@@ -748,7 +745,7 @@ void MainWindow::slot_save_project_as()
     if (!filepath.isEmpty())
     {
         m_settings.insert_path(
-            LastDirectorySettingsKey,
+            LAST_DIRECTORY_SETTINGS_KEY,
             path.parent_path().external_directory_string());
 
         m_project_manager.save_project_as(filepath.toAscii().constData());

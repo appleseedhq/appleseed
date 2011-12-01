@@ -50,6 +50,7 @@ namespace renderer  { class Light; }
 namespace renderer  { class Material; }
 namespace renderer  { class Object; }
 namespace renderer  { class ObjectInstance; }
+namespace renderer  { class ParamArray; }
 namespace renderer  { class Scene; }
 namespace renderer  { class SurfaceShader; }
 namespace renderer  { class Texture; }
@@ -66,9 +67,10 @@ class AssemblyItem
 
   public:
     AssemblyItem(
-        renderer::Assembly* assembly,
-        renderer::Scene&    scene,
-        ProjectBuilder&     project_builder);
+        renderer::Assembly*     assembly,
+        renderer::Scene&        scene,
+        ProjectBuilder&         project_builder,
+        renderer::ParamArray&   settings);
 
     ~AssemblyItem();
 

@@ -41,6 +41,7 @@ namespace renderer  { class AssemblyInstance; }
 namespace renderer  { class ColorEntity; }
 namespace renderer  { class EnvironmentEDF; }
 namespace renderer  { class EnvironmentShader; }
+namespace renderer  { class ParamArray; }
 namespace renderer  { class Project; }
 namespace renderer  { class Texture; }
 namespace renderer  { class TextureInstance; }
@@ -53,14 +54,14 @@ class ProjectTree
   : foundation::NonCopyable
 {
   public:
-    explicit ProjectTree(
-        QTreeWidget*        tree_widget);
+    explicit ProjectTree(QTreeWidget* tree_widget);
 
     ~ProjectTree();
 
     void initialize(
-        renderer::Project&  project,
-        ProjectBuilder&     project_builder);
+        renderer::Project&      project,
+        ProjectBuilder&         project_builder,
+        renderer::ParamArray&   settings);
 
     void add_item(renderer::ColorEntity* color);
     void add_item(renderer::Texture* texture);

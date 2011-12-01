@@ -45,6 +45,7 @@
 namespace appleseed { namespace studio { class AssemblyItem; } }
 namespace appleseed { namespace studio { class ItemBase; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
+namespace renderer  { class ParamArray; }
 class QMenu;
 
 namespace appleseed {
@@ -59,7 +60,8 @@ class AssemblyCollectionItem
     AssemblyCollectionItem(
         renderer::Scene&                scene,
         renderer::AssemblyContainer&    assemblies,
-        ProjectBuilder&                 project_builder);
+        ProjectBuilder&                 project_builder,
+        renderer::ParamArray&           settings);
 
     virtual QMenu* get_single_item_context_menu() const override;
 
@@ -69,8 +71,9 @@ class AssemblyCollectionItem
     void slot_create_assembly();
 
   private:
-    renderer::Scene&    m_scene;
-    ProjectBuilder&     m_project_builder;
+    renderer::Scene&        m_scene;
+    ProjectBuilder&         m_project_builder;
+    renderer::ParamArray&   m_settings;
 
     virtual ItemBase* create_item(renderer::Assembly* assembly) const override;
 };

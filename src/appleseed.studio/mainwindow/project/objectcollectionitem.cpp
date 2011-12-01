@@ -32,6 +32,8 @@
 // appleseed.studio headers.
 #include "mainwindow/project/objectitem.h"
 #include "mainwindow/project/projectbuilder.h"
+#include "utility/interop.h"
+#include "utility/settingskeys.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/uid.h"
@@ -42,9 +44,13 @@
 #include <QString>
 #include <QStringList>
 
+// boost headers.
+#include "boost/filesystem/path.hpp"
+
 // Standard headers.
 #include <cassert>
 
+using namespace boost;
 using namespace foundation;
 using namespace renderer;
 
@@ -59,10 +65,12 @@ namespace
 ObjectCollectionItem::ObjectCollectionItem(
     Assembly&           assembly,
     ObjectContainer&    objects,
-    ProjectBuilder&     project_builder)
+    ProjectBuilder&     project_builder,
+    ParamArray&         settings)
   : ItemBase(g_class_uid, "Objects")
   , m_assembly(assembly)
   , m_project_builder(project_builder)
+  , m_settings(settings)
 {
     add_items(objects);
 }
@@ -86,10 +94,19 @@ void ObjectCollectionItem::slot_import_objects()
         QFileDialog::getOpenFileNames(
             treeWidget(),
             "Import Objects...",
-            "",
+            m_settings.get_path_optional<QString>(LAST_DIRECTORY_SETTINGS_KEY),
             "Geometry Files (*.abc; *.obj);;All Files (*.*)",
             &selected_filter,
             options);
+
+    if (filepaths.empty())
+        return;
+
+    const filesystem::path path(filepaths.first().toStdString());
+
+    m_settings.insert_path(
+        LAST_DIRECTORY_SETTINGS_KEY,
+        path.parent_path().external_directory_string());
 
     for (int i = 0; i < filepaths.size(); ++i)
     {

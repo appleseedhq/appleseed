@@ -59,10 +59,12 @@ namespace
 AssemblyCollectionItem::AssemblyCollectionItem(
     Scene&              scene,
     AssemblyContainer&  assemblies,
-    ProjectBuilder&     project_builder)
+    ProjectBuilder&     project_builder,
+    ParamArray&         settings)
   : ItemBase(g_class_uid, "Assemblies")
   , m_scene(scene)
   , m_project_builder(project_builder)
+  , m_settings(settings)
 {
     add_items(assemblies);
 }
@@ -105,7 +107,12 @@ ItemBase* AssemblyCollectionItem::create_item(Assembly* assembly) const
 {
     assert(assembly);
 
-    return new AssemblyItem(assembly, m_scene, m_project_builder);
+    return
+        new AssemblyItem(
+            assembly,
+            m_scene,
+            m_project_builder,
+            m_settings);
 }
 
 }   // namespace studio

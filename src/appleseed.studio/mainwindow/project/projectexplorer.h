@@ -45,6 +45,7 @@
 #include <memory>
 
 // Forward declarations.
+namespace renderer  { class ParamArray; }
 namespace renderer  { class Project; }
 class QMenu;
 class QPoint;
@@ -62,16 +63,17 @@ class ProjectExplorer
 
   public:
     ProjectExplorer(
+        QTreeWidget*            tree_widget,
         renderer::Project&      project,
-        QTreeWidget*            tree_widget);
+        renderer::ParamArray&   settings);
 
   signals:
     void signal_project_modified() const;
 
   private:
-    renderer::Project&          m_project;
     QTreeWidget*                m_tree_widget;
     ProjectTree                 m_project_tree;
+    renderer::Project&          m_project;
     ProjectBuilder              m_project_builder;
     std::auto_ptr<QShortcut>    m_delete_shortcut;
 

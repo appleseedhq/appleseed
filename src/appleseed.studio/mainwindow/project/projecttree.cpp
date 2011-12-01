@@ -185,7 +185,10 @@ ProjectTree::~ProjectTree()
     delete impl;
 }
 
-void ProjectTree::initialize(Project& project, ProjectBuilder& project_builder)
+void ProjectTree::initialize(
+    Project&        project,
+    ProjectBuilder& project_builder,
+    ParamArray&     settings)
 {
     Scene& scene = *project.get_scene();
 
@@ -207,11 +210,13 @@ void ProjectTree::initialize(Project& project, ProjectBuilder& project_builder)
             scene.colors(),
             project_builder);
 
-    impl->m_texture_collection_item =
-        impl->add_collection_item(
-            scene,
-            scene.textures(),
-            project_builder);
+    impl->m_tree_widget->addTopLevelItem(
+        impl->m_texture_collection_item =
+            new TextureCollectionItem(
+                scene,
+                scene.textures(),
+                project_builder,
+                settings));
 
     impl->m_texture_instance_collection_item =
         impl->add_single_model_collection_item<TextureInstance>(
@@ -232,11 +237,13 @@ void ProjectTree::initialize(Project& project, ProjectBuilder& project_builder)
             scene.environment_shaders(),
             project_builder);
 
-    impl->m_assembly_collection_item =
-        impl->add_collection_item(
-            scene,
-            scene.assemblies(),
-            project_builder);
+    impl->m_tree_widget->addTopLevelItem(
+        impl->m_assembly_collection_item =
+            new AssemblyCollectionItem(
+                scene,
+                scene.assemblies(),
+                project_builder,
+                settings));
 
     impl->m_assembly_instance_collection_item =
         impl->add_collection_item(

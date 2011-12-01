@@ -229,6 +229,7 @@ set (utility_sources
     utility/interop.h
     utility/scrollareapanhandler.cpp
     utility/scrollareapanhandler.h
+    utility/settingskeys.h
     utility/tweaks.cpp
     utility/tweaks.h
     utility/widgetzoomhandler.cpp

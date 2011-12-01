@@ -45,6 +45,7 @@
 // Forward declarations.
 namespace appleseed { namespace studio { class ItemBase; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
+namespace renderer  { class ParamArray; }
 class QMenu;
 
 namespace appleseed {
@@ -59,7 +60,8 @@ class ObjectCollectionItem
     ObjectCollectionItem(
         renderer::Assembly&         assembly,
         renderer::ObjectContainer&  objects,
-        ProjectBuilder&             project_builder);
+        ProjectBuilder&             project_builder,
+        renderer::ParamArray&       settings);
 
     virtual QMenu* get_single_item_context_menu() const override;
 
@@ -67,8 +69,9 @@ class ObjectCollectionItem
     void slot_import_objects();
 
   private:
-    renderer::Assembly& m_assembly;
-    ProjectBuilder&     m_project_builder;
+    renderer::Assembly&             m_assembly;
+    ProjectBuilder&                 m_project_builder;
+    renderer::ParamArray&           m_settings;
 
     virtual ItemBase* create_item(renderer::Object* object) const override;
 };
