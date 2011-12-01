@@ -182,9 +182,11 @@ namespace
           , m_frame_props(frame.image().properties())
           , m_lighting_conditions(frame.get_lighting_conditions())
           , m_sample_renderer(sample_renderer_factory->create())
+#ifdef ADAPTIVE_IMAGE_SAMPLING
           , m_pixel_sampler(m_frame_props.m_canvas_width, m_frame_props.m_canvas_height)
           , m_image_sampler(m_frame_props.m_canvas_width, m_frame_props.m_canvas_height, m_pixel_sampler)
           , m_sample_count(0)
+#endif
         {
         }
 
@@ -222,9 +224,11 @@ namespace
         auto_release_ptr<ISampleRenderer>   m_sample_renderer;
         MersenneTwister                     m_rng;
 
+#ifdef ADAPTIVE_IMAGE_SAMPLING
         PixelSampler                        m_pixel_sampler;
         ImageImportanceSampler<double>      m_image_sampler;
         size_t                              m_sample_count;
+#endif
 
         Population<size_t>                  m_total_sampling_dim;
         Population<size_t>                  m_total_sampling_inst;
