@@ -77,22 +77,27 @@ namespace
             TextureCache&   texture_cache,
             TextureSource*  source,
             const size_t    width,
-            const size_t    height)
+            const size_t    height,
+            const double    u_shift,
+            const double    v_shift)
           : m_texture_cache(texture_cache)
           , m_source(source)
           , m_rcp_width(1.0 / width)
           , m_rcp_height(1.0 / height)
+          , m_u_shift(u_shift)
+          , m_v_shift(v_shift)
+          , m_out_of_range_luminance_error_count(0)
         {
         }
 
-        double operator()(const size_t x, const size_t y) const
+        double operator()(const size_t x, const size_t y)
         {
             if (m_source == 0)
                 return 0.0;
 
             InputParams input_params;
-            input_params.m_uv[0] = x * m_rcp_width;
-            input_params.m_uv[1] = 1.0 - y * m_rcp_height;
+            input_params.m_uv[0] = x * m_rcp_width + m_u_shift;
+            input_params.m_uv[1] = 1.0 - y * m_rcp_height + m_v_shift;
 
             Color3f linear_rgb;
             Alpha alpha;
@@ -103,7 +108,28 @@ namespace
                 linear_rgb,
                 alpha);
 
-            return static_cast<double>(luminance(linear_rgb));
+            const double MaxLuminance = 1.0e4;
+
+            double lum = static_cast<double>(luminance(linear_rgb));
+
+            if (lum < 0.0)
+            {
+                lum = 0.0;
+                ++m_out_of_range_luminance_error_count;
+            }
+
+            if (lum > MaxLuminance)
+            {
+                lum = MaxLuminance;
+                ++m_out_of_range_luminance_error_count;
+            }
+
+            return lum;
+        }
+
+        size_t get_out_of_range_luminance_error_count() const
+        {
+            return m_out_of_range_luminance_error_count;
         }
 
       private:
@@ -111,6 +137,9 @@ namespace
         TextureSource*  m_source;
         const double    m_rcp_width;
         const double    m_rcp_height;
+        const double    m_u_shift;
+        const double    m_v_shift;
+        size_t          m_out_of_range_luminance_error_count;
     };
 
     const char* Model = "latlong_map_environment_edf";
@@ -128,6 +157,9 @@ namespace
           , m_probability_scale(0.0)
         {
             m_inputs.declare("exitance", InputFormatSpectrum);
+
+            m_u_shift = m_params.get_optional<double>("horizontal_shift", 0.0) / 360.0;
+            m_v_shift = m_params.get_optional<double>("vertical_shift", 0.0) / 360.0;
         }
 
         virtual void release()
@@ -234,6 +266,9 @@ namespace
 
         typedef ImageImportanceSampler<double> ImageImportanceSamplerType;
 
+        double                                  m_u_shift;
+        double                                  m_v_shift;
+
         size_t                                  m_importance_map_width;
         size_t                                  m_importance_map_height;
         double                                  m_probability_scale;
@@ -329,7 +364,9 @@ namespace
                 texture_cache,
                 exitance,
                 m_importance_map_width,
-                m_importance_map_height);
+                m_importance_map_height,
+                m_u_shift,
+                m_v_shift);
 
             RENDERER_LOG_INFO(
                 "building " FMT_SIZE_T "x" FMT_SIZE_T " importance map "
@@ -344,6 +381,18 @@ namespace
                     m_importance_map_height,
                     sampler));
 
+            const size_t oor_error_count = sampler.get_out_of_range_luminance_error_count();
+
+            if (oor_error_count > 0)
+            {
+                RENDERER_LOG_WARNING(
+                    "while building importance map for environment edf \"%s\": "
+                    "found %s pixel%s with out-of-range luminance; rendering artifacts are to be expected.",
+                    get_name(),
+                    pretty_uint(oor_error_count).c_str(),
+                    oor_error_count > 1 ? "s" : "");
+            }
+
             RENDERER_LOG_INFO(
                 "built importance map for environment edf \"%s\"",
                 get_name());
@@ -356,8 +405,8 @@ namespace
             Spectrum&           value) const
         {
             InputParams input_params;
-            input_params.m_uv[0] = u;
-            input_params.m_uv[1] = 1.0 - v;
+            input_params.m_uv[0] = u + m_u_shift;
+            input_params.m_uv[1] = 1.0 - v + m_v_shift;
 
             const InputValues* values =
                 input_evaluator.evaluate<InputValues>(m_inputs, input_params);
@@ -411,6 +460,22 @@ DictionaryArray LatLongMapEnvironmentEDFFactory::get_widget_definitions() const
                     .insert("texture_instance", "Textures"))
             .insert("use", "required")
             .insert("default", ""));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "horizontal_shift")
+            .insert("label", "Horizontal Shift")
+            .insert("widget", "text_box")
+            .insert("default", "0.0")
+            .insert("use", "optional"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "vertical_shift")
+            .insert("label", "Vertical Shift")
+            .insert("widget", "text_box")
+            .insert("default", "0.0")
+            .insert("use", "optional"));
 
     return definitions;
 }
