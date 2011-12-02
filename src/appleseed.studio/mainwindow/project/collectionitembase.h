@@ -38,6 +38,7 @@
 
 // Qt headers.
 #include <QFont>
+#include <QString>
 
 // Standard headers.
 #include <cassert>
@@ -65,6 +66,8 @@ class CollectionItemBase
 
     ItemMap m_items;
 
+    void add_item(const int index, Entity* entity);
+
     virtual ItemBase* create_item(Entity* entity) const;
 };
 
@@ -89,11 +92,34 @@ void CollectionItemBase<Entity>::add_item(Entity* entity)
 {
     assert(entity);
 
-    ItemBase* item = create_item(entity);
+    //
+    // Insert the entity's item such that the list of items stays sorted.
+    //
+    // Unfortunately, QTreeWidgetItem::sortChildren() only works if a model
+    // is bound to the tree view, so we can't use this method.
+    //
+    // Equally unfortunately, we can't easily use qLowerBound() either since
+    // the QTreeWidgetItem class doesn't expose an iterator-based interface.
+    //
 
-    addChild(item);
+    const QString entity_name(entity->get_name());
+    int index = 0;
 
-    m_items[entity->get_uid()] = item;
+    if (childCount() > 0)
+    {
+        int end = childCount();
+
+        while (end - index > 0)
+        {
+            const int middle = (index + end) / 2;
+
+            if (QString::localeAwareCompare(child(middle)->text(0), entity_name) > 0)
+                end = middle;
+            else index = middle + 1;
+        }
+    }
+
+    add_item(index, entity);
 }
 
 template <typename Entity>
@@ -113,6 +139,18 @@ void CollectionItemBase<Entity>::remove_item(const foundation::UniqueID entity_i
     removeChild(it->second);
 
     m_items.erase(it);
+}
+
+template <typename Entity>
+void CollectionItemBase<Entity>::add_item(const int index, Entity* entity)
+{
+    assert(entity);
+
+    ItemBase* item = create_item(entity);
+
+    insertChild(index, item);
+
+    m_items[entity->get_uid()] = item;
 }
 
 template <typename Entity>
