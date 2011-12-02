@@ -53,7 +53,6 @@
 #include <QMainWindow>
 #include <QObject>
 #include <QScrollArea>
-#include <QString>
 
 // Standard headers.
 #include <map>
@@ -63,6 +62,7 @@
 // Forward declarations.
 namespace appleseed     { namespace studio { class LogWidget; } }
 namespace Ui            { class MainWindow; }
+class QString;
 
 namespace appleseed {
 namespace studio {
@@ -195,6 +195,8 @@ class MainWindow
 
     void slot_load_settings();
     void slot_save_settings();
+
+    void slot_filter_text_changed(const QString& pattern);
 };
 
 }       // namespace studio

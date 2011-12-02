@@ -66,7 +66,10 @@
 #include <QGridLayout>
 #include <QIcon>
 #include <QMessageBox>
+#include <QMetaType>
+#include <QRegExp>
 #include <QStatusBar>
+#include <QString>
 #include <QWidget>
 
 // boost headers.
@@ -235,6 +238,10 @@ void MainWindow::build_override_shading_menu_item()
 void MainWindow::build_connections()
 {
     build_menu_items_connections();
+
+    connect(
+        m_ui->lineedit_filter, SIGNAL(textChanged(const QString&)),
+        this, SLOT(slot_filter_text_changed(const QString&)));
 
     connect(
         &m_rendering_manager, SIGNAL(signal_rendering_end()),
@@ -845,6 +852,39 @@ void MainWindow::slot_save_settings()
     writer.write(
         settings_file_path.file_string().c_str(),
         m_settings);
+}
+
+namespace
+{
+    bool filter_items(QTreeWidgetItem* item, const QRegExp& regexp)
+    {
+        bool any_children_visible = false;
+
+        for (int i = 0; i < item->childCount(); ++i)
+        {
+            if (filter_items(item->child(i), regexp))
+                any_children_visible = true;
+        }
+
+        const bool visible = any_children_visible || regexp.indexIn(item->text(0)) >= 0;
+
+        item->setHidden(!visible);
+
+        return visible;
+    }
+
+    void filter_items(const QTreeWidget* tree_widget, const QRegExp& regexp)
+    {
+        for (int i = 0; i < tree_widget->topLevelItemCount(); ++i)
+            filter_items(tree_widget->topLevelItem(i), regexp);
+    }
+}
+
+void MainWindow::slot_filter_text_changed(const QString& pattern)
+{
+    const QRegExp regexp(pattern);
+
+    filter_items(m_ui->treewidget_project_explorer_scene, regexp);
 }
 
 }   // namespace studio
