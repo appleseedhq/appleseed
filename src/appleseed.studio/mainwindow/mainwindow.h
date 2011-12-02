@@ -197,6 +197,7 @@ class MainWindow
     void slot_save_settings();
 
     void slot_filter_text_changed(const QString& pattern);
+    void slot_clear_filter();
 };
 
 }       // namespace studio

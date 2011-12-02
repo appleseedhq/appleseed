@@ -244,6 +244,10 @@ void MainWindow::build_connections()
         this, SLOT(slot_filter_text_changed(const QString&)));
 
     connect(
+        m_ui->pushbutton_clear_filter, SIGNAL(clicked()),
+        this, SLOT(slot_clear_filter()));
+
+    connect(
         &m_rendering_manager, SIGNAL(signal_rendering_end()),
         this, SLOT(slot_rendering_end()));
 
@@ -885,6 +889,11 @@ void MainWindow::slot_filter_text_changed(const QString& pattern)
     const QRegExp regexp(pattern);
 
     filter_items(m_ui->treewidget_project_explorer_scene, regexp);
+}
+
+void MainWindow::slot_clear_filter()
+{
+    m_ui->lineedit_filter->clear();
 }
 
 }   // namespace studio
