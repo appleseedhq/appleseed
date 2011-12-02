@@ -38,7 +38,6 @@ namespace renderer
 // ShadingResult class implementation.
 //
 
-// Transform the shading result to a given color space.
 void ShadingResult::transform_to_color_space(
     const ColorSpace            target,
     const LightingConditions&   lighting)
@@ -167,7 +166,6 @@ void ShadingResult::transform_to_color_space(
     }
 }
 
-// Transform the shading result to the linear RGB color space.
 void ShadingResult::transform_to_linear_rgb(
     const LightingConditions&   lighting)
 {
@@ -203,7 +201,6 @@ void ShadingResult::transform_to_linear_rgb(
     }
 }
 
-// Transform the shading result to the spectral color space.
 void ShadingResult::transform_to_spectrum(
     const LightingConditions&   lighting)
 {
