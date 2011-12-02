@@ -35,6 +35,7 @@
 #define BORDER_COLOR                    rgb(40, 40, 40)
 #define BORDER_STYLE                    1px solid BORDER_COLOR
 
+#define INPUT_BACKGROUND_COLOR          rgb(45, 45, 45)
 #define DEFAULT_BACKGROUND_COLOR        rgb(50, 50, 50)
 #define ACTIVE_BACKGROUND_COLOR         rgb(60, 60, 60)
 #define HOVER_BACKGROUND_COLOR          rgb(190, 140, 50)
@@ -556,6 +557,16 @@ QTreeView::branch:has-sibling
 
 
 /*
+ * QAbstractItemView.
+ */
+
+QAbstractItemView::item
+{
+    padding: 2px;
+}
+
+
+/*
  * QCheckBox.
  * QAbstractItemView.
  */
@@ -617,6 +628,8 @@ QAbstractItemView::indicator:indeterminate:disabled
 QLineEdit
 {
     border: BORDER_STYLE;
+    background-color: INPUT_BACKGROUND_COLOR;
+    padding: 1px;
 }
 
 
@@ -647,6 +660,8 @@ QFrame[hasFrame="true"]
 QComboBox
 {
     border: BORDER_STYLE;
+    background-color: INPUT_BACKGROUND_COLOR;
+    padding: 0px 4px 0px 4px;
 }
 
 QComboBox::drop-down
@@ -672,6 +687,7 @@ QComboBox::down-arrow:hover
 QComboBox QAbstractItemView
 {
     border: BORDER_STYLE;
+    background-color: INPUT_BACKGROUND_COLOR;
     selection-background-color: HOVER_BACKGROUND_COLOR;
 }
 
