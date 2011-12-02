@@ -68,8 +68,13 @@ QWidget
 QMainWindow::separator
 {
     background-color: DEFAULT_BACKGROUND_COLOR;
-    width: 5px;
-    height: 5px;
+    width: 8px;
+    height: 8px;
+}
+
+QMainWindow::separator:hover
+{
+    background-color: HOVER_BACKGROUND_COLOR;
 }
 
 
@@ -562,7 +567,7 @@ QTreeView::branch:has-sibling
 
 QAbstractItemView::item
 {
-    padding: 2px;
+    padding: 1px;
 }
 
 
