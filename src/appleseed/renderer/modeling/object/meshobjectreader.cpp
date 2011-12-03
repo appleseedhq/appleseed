@@ -78,6 +78,7 @@ namespace
             const ParamArray&   params,
             const string&       base_object_name)
           : m_params(params)
+          , m_ignore_vertex_normals(m_params.get_optional<bool>("ignore_vertex_normals"))
           , m_base_object_name(base_object_name)
           , m_untitled_mesh_counter(0)
           , m_vertex_count(0)
@@ -227,8 +228,10 @@ namespace
         }
 
       private:
-        ParamArray              m_params;
+        const ParamArray        m_params;
+        const bool              m_ignore_vertex_normals;
         const string            m_base_object_name;
+
         size_t                  m_untitled_mesh_counter;
         MeshObjectVector        m_objects;
 
@@ -258,7 +261,7 @@ namespace
             triangle.m_v2 = m_face_vertices[v2_index];
 
             // Set triangle vertex normals.
-            if (m_face_normals.size() == m_vertex_count)
+            if (!m_ignore_vertex_normals && m_face_normals.size() == m_vertex_count)
             {
                 triangle.m_n0 = m_face_normals[v0_index];
                 triangle.m_n1 = m_face_normals[v1_index];
