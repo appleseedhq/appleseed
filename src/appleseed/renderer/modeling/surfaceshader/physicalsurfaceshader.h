@@ -37,6 +37,7 @@
 
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
+namespace renderer      { class ParamArray; }
 namespace renderer      { class SurfaceShader; }
 
 namespace renderer
