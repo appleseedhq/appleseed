@@ -132,7 +132,6 @@ namespace
         print_suite_case_result(logger, result);
     }
 
-    // Run unit tests.
     void run_unit_tests(Logger& logger)
     {
         // Create a test listener that outputs to the logger.
@@ -172,7 +171,6 @@ namespace
         print_unit_test_result(logger, result);
     }
 
-    // Run unit benchmarks.
     void run_unit_benchmarks(Logger& logger)
     {
         BenchmarkResult result;
@@ -229,7 +227,6 @@ namespace
         print_unit_benchmark_result(logger, result);
     }
 
-    // Apply command line options to a given project.
     void apply_command_line_options(ParamArray& params)
     {
         // Apply rendering threads option.
@@ -328,7 +325,6 @@ namespace
 
 #endif
 
-    // Render one frame of a given project.
     void render_frame(
         Project&            project,
         const ParamArray&   params)
@@ -385,7 +381,6 @@ namespace
         free_string(archive_path);
     }
 
-    // Render a given project.
     void render_project(const string& project_filename)
     {
         auto_release_ptr<Project> project;
