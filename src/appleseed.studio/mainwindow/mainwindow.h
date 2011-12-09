@@ -62,6 +62,7 @@
 // Forward declarations.
 namespace appleseed     { namespace studio { class LogWidget; } }
 namespace Ui            { class MainWindow; }
+class QAction;
 class QString;
 
 namespace appleseed {
@@ -142,6 +143,7 @@ class MainWindow
     void build_log();
 
     void build_override_shading_menu_item();
+    void update_override_shading_menu_item();
 
     void build_connections();
     void build_menu_items_connections();
@@ -149,6 +151,8 @@ class MainWindow
     void print_library_information();
 
     static QString get_project_filter_string();
+
+    renderer::ParamArray get_project_params(const char* configuration_name) const;
 
     bool can_close_project();
     void on_project_change();

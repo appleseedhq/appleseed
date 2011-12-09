@@ -235,6 +235,33 @@ void MainWindow::build_override_shading_menu_item()
     }
 }
 
+void MainWindow::update_override_shading_menu_item()
+{
+    const ParamArray project_params = get_project_params("interactive");
+    const ParamArray shading_engine_params = project_params.child("shading_engine");
+
+    if (shading_engine_params.dictionaries().exist("override_shading"))
+    {
+        const string shading_mode =
+            shading_engine_params.child("override_shading").get_optional<string>("mode", "coverage");
+
+        for (const_each<QList<QAction*> > i = m_ui->menu_diagnostics_override_shading->actions(); i; ++i)
+        {
+            QAction* action = *i;
+
+            if (action->data().toString().toStdString() == shading_mode)
+            {
+                action->activate(QAction::Trigger);
+                break;
+            }
+        }
+    }
+    else
+    {
+        m_ui->action_diagnostics_override_shading_no_override->activate(QAction::Trigger);
+    }
+}
+
 void MainWindow::build_connections()
 {
     build_menu_items_connections();
@@ -302,6 +329,26 @@ QString MainWindow::get_project_filter_string()
     return "Project Files (*.appleseed);;All Files (*.*)";
 }
 
+ParamArray MainWindow::get_project_params(const char* configuration_name) const
+{
+    ParamArray params;
+
+    Configuration* configuration =
+        m_project_manager.is_project_open()
+            ? m_project_manager.get_project()->configurations().get_by_name(configuration_name)
+            : 0;
+
+    if (configuration && configuration->get_base())
+        params = configuration->get_base()->get_parameters();
+
+    params.merge(m_settings);
+
+    if (configuration)
+        params.merge(configuration->get_parameters());
+
+    return params;
+}
+
 namespace
 {
     int show_modified_project_message_box(QWidget* parent)
@@ -350,8 +397,11 @@ bool MainWindow::can_close_project()
 void MainWindow::on_project_change()
 {
     recreate_render_widgets();
+
     update_workspace();
     update_project_explorer();
+    update_override_shading_menu_item();
+
     m_status_bar.clear();
 }
 
@@ -536,19 +586,8 @@ void MainWindow::start_rendering(const bool interactive)
 
     enable_disable_widgets(true);
 
-    const char* configuration_name =
-        interactive
-            ? "interactive"
-            : "final";
-
-    const Configuration* configuration =
-        m_project_manager.get_project()->configurations().get_by_name(configuration_name);
-
-    ParamArray params;
-    if (configuration->get_base())
-        params = configuration->get_base()->get_parameters();
-    params.merge(m_settings);
-    params.merge(configuration->get_parameters());
+    const char* configuration_name = interactive ? "interactive" : "final";
+    const ParamArray params = get_project_params(configuration_name);
 
     m_rendering_manager.start_rendering(
         m_project_manager.get_project(),
