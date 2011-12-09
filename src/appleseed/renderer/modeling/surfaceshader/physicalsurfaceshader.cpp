@@ -86,7 +86,7 @@ namespace
             m_inputs.declare("alpha_mask", InputFormatSpectrum, true);
             m_inputs.declare("aerial_persp_sky_color", InputFormatSpectrum, true);
 
-            const string aerial_persp_mode = m_params.get_required<string>("aerial_persp_mode", "none");
+            const string aerial_persp_mode = m_params.get_optional<string>("aerial_persp_mode", "none");
             if (aerial_persp_mode == "none")
                 m_aerial_persp_mode = AerialPerspNone;
             else if (aerial_persp_mode == "environment_shader")
