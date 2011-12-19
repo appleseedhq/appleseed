@@ -39,6 +39,18 @@ namespace renderer
 {
 
 //
+// Triangle types.
+//
+
+// Triangle format used for storage.
+typedef foundation::TriangleSSK<GScalar> GTriangleType;
+
+// Triangle format used for intersection.
+typedef foundation::TriangleSSK<double> TriangleType;
+typedef foundation::TriangleSSKSupportPlane<double> TriangleSupportPlaneType;
+
+
+//
 // Region BSP tree statistics.
 //
 
@@ -64,13 +76,6 @@ const size_t RegionTreeAccessCacheSize = 16;
 // are considered for splitting, resulting in better trees (faster
 // intersection, but slower construction).
 #undef RENDERER_TRIANGLE_TREE_SPLIT_LONGEST_AXIS
-
-// Triangle format used for storage.
-typedef foundation::TriangleSSK<GScalar> GTriangleType;
-
-// Triangle format used for intersection.
-typedef foundation::TriangleSSK<double> TriangleType;
-typedef foundation::TriangleSSKSupportPlane<double> TriangleSupportPlaneType;
 
 // Maximum triangle duplication rate.
 const double TriangleTreeMaxDuplication = 2.0;
