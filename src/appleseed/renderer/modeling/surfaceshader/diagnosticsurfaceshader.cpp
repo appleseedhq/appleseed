@@ -203,19 +203,19 @@ void DiagnosticSurfaceShader::evaluate(
             normal_to_color(shading_point.get_shading_normal()));
         break;
 
-      // Assign an unique color to each assembly instance.
+      // Assign a unique color to each assembly instance.
       case AssemblyInstances:
         shading_result.set_to_linear_rgb(
             integer_to_color(shading_point.get_assembly_instance_uid()));
         break;
 
-      // Assign an unique color to each object instance.
+      // Assign a unique color to each object instance.
       case ObjectInstances:
         shading_result.set_to_linear_rgb(
             integer_to_color(shading_point.get_object_instance().get_uid()));
         break;
 
-      // Assign an unique color to each region.
+      // Assign a unique color to each region.
       case Regions:
         {
             const uint32 h =
@@ -226,7 +226,7 @@ void DiagnosticSurfaceShader::evaluate(
         }
         break;
 
-      // Assign an unique color to each triangle.
+      // Assign a unique color to each triangle.
       case Triangles:
         {
             const uint32 h =
@@ -238,7 +238,7 @@ void DiagnosticSurfaceShader::evaluate(
         }
         break;
 
-      // Assign an unique color to each material.
+      // Assign a unique color to each material.
       case Materials:
         {
             const ObjectInstance& object_instance = shading_point.get_object_instance();
@@ -254,7 +254,6 @@ void DiagnosticSurfaceShader::evaluate(
         }
         break;
 
-      // Ambient occlusion.
       case AmbientOcclusion:
         {
             // Compute the occlusion.
@@ -276,7 +275,6 @@ void DiagnosticSurfaceShader::evaluate(
         }
         break;
 
-      // Wireframe.
       case Wireframe:
         {
             // Film space thickness of the wires.
