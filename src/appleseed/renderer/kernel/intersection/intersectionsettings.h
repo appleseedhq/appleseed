@@ -43,11 +43,11 @@ namespace renderer
 //
 
 // Triangle format used for storage.
-typedef foundation::TriangleSSK<GScalar> GTriangleType;
+typedef foundation::TriangleMT<GScalar> GTriangleType;
 
 // Triangle format used for intersection.
-typedef foundation::TriangleSSK<double> TriangleType;
-typedef foundation::TriangleSSKSupportPlane<double> TriangleSupportPlaneType;
+typedef foundation::TriangleMT<double> TriangleType;
+typedef foundation::TriangleMTSupportPlane<double> TriangleSupportPlaneType;
 
 
 //
