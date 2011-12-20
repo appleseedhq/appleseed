@@ -230,7 +230,6 @@ class Builder
 // LeafInfo class implementation.
 //
 
-// Constructor.
 template <typename T, size_t N>
 inline LeafInfo<T, N>::LeafInfo(
     const size_t        node_depth,     // depth of the leaf node in the tree
@@ -240,14 +239,12 @@ inline LeafInfo<T, N>::LeafInfo(
 {
 }
 
-// Return the depth of the leaf node in the tree.
 template <typename T, size_t N>
 inline size_t LeafInfo<T, N>::get_node_depth() const
 {
     return m_node_depth;
 }
 
-// Return the bounding box of the leaf.
 template <typename T, size_t N>
 inline const AABB<T, N>& LeafInfo<T, N>::get_bbox() const
 {
@@ -259,7 +256,6 @@ inline const AABB<T, N>& LeafInfo<T, N>::get_bbox() const
 // LeafRecord class implementation.
 //
 
-// Constructor.
 template <typename T, size_t N>
 inline LeafRecord<T, N>::LeafRecord(
     const size_t        node_index,     // index of the leaf node in Tree::m_nodes
@@ -271,21 +267,18 @@ inline LeafRecord<T, N>::LeafRecord(
 {
 }
 
-// Sorting predicate.
 template <typename T, size_t N>
 inline bool LeafRecord<T, N>::operator<(const LeafRecord& rhs) const
 {
     return m_leaf_priority < rhs.m_leaf_priority;
 }
 
-// Return the index of the leaf node in Tree::m_nodes.
 template <typename T, size_t N>
 inline size_t LeafRecord<T, N>::get_node_index() const
 {
     return m_node_index;
 }
 
-// Return the leaf info.
 template <typename T, size_t N>
 inline const LeafInfo<T, N>& LeafRecord<T, N>::get_leaf_info() const
 {
@@ -302,7 +295,6 @@ template <typename U> U get_bbox_grow_eps();            // intentionally left un
 template <> inline float get_bbox_grow_eps<float>()     { return 1.0e-4f; }
 template <> inline double get_bbox_grow_eps<double>()   { return 1.0e-9;  }
 
-// Constructor.
 template <
     typename Tree,
     typename LeafFactory,
@@ -314,7 +306,6 @@ Builder<Tree, LeafFactory, LeafSplitter, Timer>::Builder()
 {
 }
 
-// Build a BSP tree for a given root leaf.
 template <
     typename Tree,
     typename LeafFactory,
@@ -358,7 +349,6 @@ void Builder<Tree, LeafFactory, LeafSplitter, Timer>::build(
     m_build_time = stopwatch.get_seconds();
 }
 
-// Return the construction time.
 template <
     typename Tree,
     typename LeafFactory,
@@ -370,7 +360,6 @@ double Builder<Tree, LeafFactory, LeafSplitter, Timer>::get_build_time() const
     return m_build_time;
 }
 
-// Insert a leaf into a leaf queue.
 template <
     typename Tree,
     typename LeafFactory,
@@ -400,7 +389,6 @@ void Builder<Tree, LeafFactory, LeafSplitter, Timer>::insert_leaf_record(
     }
 }
 
-// Create the root of the tree.
 template <
     typename Tree,
     typename LeafFactory,
@@ -425,7 +413,6 @@ void Builder<Tree, LeafFactory, LeafSplitter, Timer>::create_root(
     tree.m_nodes.push_back(root_node);
 }
 
-// Subdivide the tree.
 template <
     typename Tree,
     typename LeafFactory,
