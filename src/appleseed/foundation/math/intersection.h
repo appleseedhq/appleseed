@@ -34,6 +34,7 @@
 #include "foundation/math/intersection/rayaabb.h"
 #include "foundation/math/intersection/rayplane.h"
 #include "foundation/math/intersection/raysphere.h"
+#include "foundation/math/intersection/raytrianglehh.h"
 #include "foundation/math/intersection/raytrianglemt.h"
 #include "foundation/math/intersection/raytrianglessk.h"
 

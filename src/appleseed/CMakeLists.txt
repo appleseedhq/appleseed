@@ -156,6 +156,7 @@ set (foundation_math_intersection_sources
     foundation/math/intersection/rayaabb.h
     foundation/math/intersection/rayplane.h
     foundation/math/intersection/raysphere.h
+    foundation/math/intersection/raytrianglehh.h
     foundation/math/intersection/raytrianglemt.h
     foundation/math/intersection/raytrianglessk.h
 )
