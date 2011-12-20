@@ -30,7 +30,6 @@
 #define APPLESEED_FOUNDATION_MATH_INTERSECTION_RAYTRIANGLESSK_H
 
 // appleseed.foundation headers.
-#include "foundation/math/fp.h"
 #include "foundation/math/ray.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
@@ -154,7 +153,7 @@ inline TriangleSSK<T>::TriangleSSK(
     const size_t w = max_abs_index(n);
     const size_t u = (2 - w) >> 1;
     const size_t v = 3 - u - w;
-    assert(abs(n[w]) > ValueType(0.0));
+    assert(std::abs(n[w]) > ValueType(0.0));
     ValueType rcp_nw = ValueType(1.0) / n[w];
     m_nu = n[u] * rcp_nw;
     m_nv = n[v] * rcp_nw;
@@ -213,16 +212,16 @@ FORCE_INLINE bool TriangleSSK<float>::intersect(
 
     // Compute the barycentric coordinates of the intersection point.
     const ValueType det = du * m_nu + dv * m_nv + dw;
-    const ValueType dett = m_np - (ou * m_nu + ov * m_nv + ow);
-    const ValueType Du = du * dett - (m_pu - ou) * det;
-    const ValueType Dv = dv * dett - (m_pv - ov) * det;
-    const ValueType detu = m_e1v * Du - m_e1u * Dv;
-    const ValueType detv = m_e0u * Dv - m_e0v * Du;
-    const ValueType detw = det - detu - detv;
+    const ValueType tprime = m_np - (ou * m_nu + ov * m_nv + ow);
+    const ValueType Du = du * tprime - (m_pu - ou) * det;
+    const ValueType Dv = dv * tprime - (m_pv - ov) * det;
+    const ValueType uprime = m_e1v * Du - m_e1u * Dv;
+    const ValueType vprime = m_e0u * Dv - m_e0v * Du;
+    const ValueType wprime = det - uprime - vprime;
 
     // Check that the intersection point lies inside the triangle.
 #ifdef APPLESEED_FOUNDATION_USE_SSE
-    ALIGN_SSE_VARIABLE float detarray[4] = { detu, detu, detv, detw };
+    ALIGN_SSE_VARIABLE float detarray[4] = { uprime, uprime, vprime, wprime };
     const sse4f mu = loadps(detarray);
     const sse4f mv = shuffleps(mu, mu, _MM_SHUFFLE(2, 3, 3, 2));
     const sse4f product = mulps(mu, mv);
@@ -232,22 +231,22 @@ FORCE_INLINE bool TriangleSSK<float>::intersect(
     if (mask != 0xF)
         return false;
 #else
-    if (detu * detv < 0.0f ||
-        detu * detw < 0.0f ||
-        detv * detw < 0.0f)
+    if (uprime * vprime < ValueType(0.0) ||
+        uprime * wprime < ValueType(0.0) ||
+        vprime * wprime < ValueType(0.0))
         return false;
 #endif
 
     const ValueType rdet = ValueType(1.0) / det;
 
     // Calculate t parameter and test bounds.
-    t = dett * rdet;
+    t = tprime * rdet;
     if (t >= ray.m_tmax || t < ray.m_tmin)
         return false;
 
     // Calculate u and v parameters.
-    u = detu * rdet;
-    v = detv * rdet;
+    u = uprime * rdet;
+    v = vprime * rdet;
     return true;
 }
 
@@ -273,41 +272,41 @@ FORCE_INLINE bool TriangleSSK<double>::intersect(
 
     // Compute the barycentric coordinates of the intersection point.
     const ValueType det = du * m_nu + dv * m_nv + dw;
-    const ValueType dett = m_np - (ou * m_nu + ov * m_nv + ow);
-    const ValueType Du = du * dett - (m_pu - ou) * det;
-    const ValueType Dv = dv * dett - (m_pv - ov) * det;
-    const ValueType detu = m_e1v * Du - m_e1u * Dv;
-    const ValueType detv = m_e0u * Dv - m_e0v * Du;
-    const ValueType detw = det - detu - detv;
+    const ValueType tprime = m_np - (ou * m_nu + ov * m_nv + ow);
+    const ValueType Du = du * tprime - (m_pu - ou) * det;
+    const ValueType Dv = dv * tprime - (m_pv - ov) * det;
+    const ValueType uprime = m_e1v * Du - m_e1u * Dv;
+    const ValueType vprime = m_e0u * Dv - m_e0v * Du;
+    const ValueType wprime = det - uprime - vprime;
 
     // Check that the intersection point lies inside the triangle.
 #ifdef APPLESEED_FOUNDATION_USE_SSE
     const sse2d zero = set1pd(0.0);
-    const sse2d mdetu = set1pd(detu);
-    const sse2d mdetv = set1pd(detv);
-    const sse2d mdetvw = setpd(detv, detw);
+    const sse2d mdetu = set1pd(uprime);
+    const sse2d mdetv = set1pd(vprime);
+    const sse2d mdetvw = setpd(vprime, wprime);
     const int mask =
           movemaskpd(cmpgepd(mulpd(mdetu, mdetvw), zero))
         & movemaskpd(cmpgepd(mulpd(mdetv, mdetvw), zero));
     if (mask != 3)
         return false;
 #else
-    if (detu * detv < 0.0 ||
-        detu * detw < 0.0 ||
-        detv * detw < 0.0)
+    if (uprime * vprime < ValueType(0.0) ||
+        uprime * wprime < ValueType(0.0) ||
+        vprime * wprime < ValueType(0.0))
         return false;
 #endif
 
     const ValueType rdet = ValueType(1.0) / det;
 
     // Calculate t parameter and test bounds.
-    t = dett * rdet;
+    t = tprime * rdet;
     if (t >= ray.m_tmax || t < ray.m_tmin)
         return false;
 
     // Calculate u and v parameters.
-    u = detu * rdet;
-    v = detv * rdet;
+    u = uprime * rdet;
+    v = vprime * rdet;
     return true;
 }
 
@@ -329,16 +328,16 @@ FORCE_INLINE bool TriangleSSK<float>::intersect(const RayType& ray) const
 
     // Compute the barycentric coordinates of the intersection point.
     const ValueType det = du * m_nu + dv * m_nv + dw;
-    const ValueType dett = m_np - (ou * m_nu + ov * m_nv + ow);
-    const ValueType Du = du * dett - (m_pu - ou) * det;
-    const ValueType Dv = dv * dett - (m_pv - ov) * det;
-    const ValueType detu = m_e1v * Du - m_e1u * Dv;
-    const ValueType detv = m_e0u * Dv - m_e0v * Du;
-    const ValueType detw = det - detu - detv;
+    const ValueType tprime = m_np - (ou * m_nu + ov * m_nv + ow);
+    const ValueType Du = du * tprime - (m_pu - ou) * det;
+    const ValueType Dv = dv * tprime - (m_pv - ov) * det;
+    const ValueType uprime = m_e1v * Du - m_e1u * Dv;
+    const ValueType vprime = m_e0u * Dv - m_e0v * Du;
+    const ValueType wprime = det - uprime - vprime;
 
     // Check that the intersection point lies inside the triangle.
 #ifdef APPLESEED_FOUNDATION_USE_SSE
-    ALIGN_SSE_VARIABLE float detarray[4] = { detu, detu, detv, detw };
+    ALIGN_SSE_VARIABLE float detarray[4] = { uprime, uprime, vprime, wprime };
     const sse4f mu = loadps(detarray);
     const sse4f mv = shuffleps(mu, mu, _MM_SHUFFLE(2, 3, 3, 2));
     const sse4f product = mulps(mu, mv);
@@ -348,14 +347,14 @@ FORCE_INLINE bool TriangleSSK<float>::intersect(const RayType& ray) const
     if (mask != 0xF)
         return false;
 #else
-    if (detu * detv < 0.0f ||
-        detu * detw < 0.0f ||
-        detv * detw < 0.0f)
+    if (uprime * vprime < 0.0f ||
+        uprime * wprime < 0.0f ||
+        vprime * wprime < 0.0f)
         return false;
 #endif
 
     // Calculate t parameter and test bounds.
-    const ValueType t = dett / det;
+    const ValueType t = tprime / det;
     return t >= ray.m_tmin && t < ray.m_tmax;
 }
 
@@ -377,33 +376,33 @@ FORCE_INLINE bool TriangleSSK<double>::intersect(const RayType& ray) const
 
     // Compute the barycentric coordinates of the intersection point.
     const ValueType det = du * m_nu + dv * m_nv + dw;
-    const ValueType dett = m_np - (ou * m_nu + ov * m_nv + ow);
-    const ValueType Du = du * dett - (m_pu - ou) * det;
-    const ValueType Dv = dv * dett - (m_pv - ov) * det;
-    const ValueType detu = m_e1v * Du - m_e1u * Dv;
-    const ValueType detv = m_e0u * Dv - m_e0v * Du;
-    const ValueType detw = det - detu - detv;
+    const ValueType tprime = m_np - (ou * m_nu + ov * m_nv + ow);
+    const ValueType Du = du * tprime - (m_pu - ou) * det;
+    const ValueType Dv = dv * tprime - (m_pv - ov) * det;
+    const ValueType uprime = m_e1v * Du - m_e1u * Dv;
+    const ValueType vprime = m_e0u * Dv - m_e0v * Du;
+    const ValueType wprime = det - uprime - vprime;
 
     // Check that the intersection point lies inside the triangle.
 #ifdef APPLESEED_FOUNDATION_USE_SSE
     const sse2d zero = set1pd(0.0);
-    const sse2d mdetu = set1pd(detu);
-    const sse2d mdetv = set1pd(detv);
-    const sse2d mdetvw = setpd(detv, detw);
+    const sse2d mdetu = set1pd(uprime);
+    const sse2d mdetv = set1pd(vprime);
+    const sse2d mdetvw = setpd(vprime, wprime);
     const int mask =
           movemaskpd(cmpgepd(mulpd(mdetu, mdetvw), zero))
         & movemaskpd(cmpgepd(mulpd(mdetv, mdetvw), zero));
     if (mask != 3)
         return false;
 #else
-    if (detu * detv < 0.0 ||
-        detu * detw < 0.0 ||
-        detv * detw < 0.0)
+    if (uprime * vprime < 0.0 ||
+        uprime * wprime < 0.0 ||
+        vprime * wprime < 0.0)
         return false;
 #endif
 
     // Calculate t parameter and test bounds.
-    const ValueType t = dett / det;
+    const ValueType t = tprime / det;
     return t >= ray.m_tmin && t < ray.m_tmax;
 }
 
@@ -452,8 +451,8 @@ inline T TriangleSSKSupportPlane<T>::intersect(
 
     // Calculate and return t parameter.
     const ValueType det = du * m_nu + dv * m_nv + dw;
-    const ValueType dett = m_np - (ou * m_nu + ov * m_nv + ow);
-    return dett / det;
+    const ValueType tprime = m_np - (ou * m_nu + ov * m_nv + ow);
+    return tprime / det;
 }
 
 }       // namespace foundation
