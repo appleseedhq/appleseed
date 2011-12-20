@@ -30,22 +30,15 @@
 #define APPLESEED_FOUNDATION_MATH_INTERSECTION_RAYTRIANGLEMT_H
 
 // appleseed.foundation headers.
-#include "foundation/math/fp.h"
 #include "foundation/math/ray.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/platform/types.h"
-
-// Standard headers.
-#include <cassert>
-#include <cmath>
-#include <cstddef>
 
 namespace foundation
 {
 
 //
-// Möller-Trumbore 3D ray-triangle intersection test.
+// Moeller-Trumbore 3D ray-triangle intersection test.
 //
 // Reference:
 //
@@ -60,10 +53,12 @@ struct TriangleMT
     typedef Vector<T, 3> VectorType;
     typedef Ray<T, 3> RayType;
 
-    // Vertices.
+    // First vertex.
     VectorType  m_v0;
-    VectorType  m_v1;
-    VectorType  m_v2;
+
+    // Two edges.
+    VectorType  m_e0;
+    VectorType  m_e1;
 
     // Constructors.
     TriangleMT();
@@ -93,9 +88,9 @@ struct TriangleMTSupportPlane
     typedef Vector<T, 3> VectorType;
     typedef Ray<T, 3> RayType;
 
-    VectorType  m_v0;
-    VectorType  m_edge1;
-    VectorType  m_edge2;
+    // Triangle plane.
+    VectorType  m_n;
+    ValueType   m_d;
 
     // Constructors.
     TriangleMTSupportPlane();
@@ -124,8 +119,8 @@ inline TriangleMT<T>::TriangleMT(
     const VectorType&       v1,
     const VectorType&       v2)
   : m_v0(v0)
-  , m_v1(v1)
-  , m_v2(v2)
+  , m_e0(v1 - v0)
+  , m_e1(v2 - v0)
 {
 }
 
@@ -133,8 +128,8 @@ template <typename T>
 template <typename U>
 FORCE_INLINE TriangleMT<T>::TriangleMT(const TriangleMT<U>& rhs)
   : m_v0(VectorType(rhs.m_v0))
-  , m_v1(VectorType(rhs.m_v1))
-  , m_v2(VectorType(rhs.m_v2))
+  , m_e0(VectorType(rhs.m_e0))
+  , m_e1(VectorType(rhs.m_e1))
 {
 }
 
@@ -145,13 +140,9 @@ FORCE_INLINE bool TriangleMT<T>::intersect(
     ValueType&              u,
     ValueType&              v) const
 {
-    // Find vectors for two edges sharing v0.
-    const VectorType edge1 = m_v1 - m_v0;
-    const VectorType edge2 = m_v2 - m_v0;
-
     // Calculate determinant.
-    const VectorType pvec = cross(ray.m_dir, edge2);
-    const ValueType det = dot(edge1, pvec);
+    const VectorType pvec = cross(ray.m_dir, m_e1);
+    const ValueType det = dot(m_e0, pvec);
 
     // Calculate distance from v0 to ray origin.
     const VectorType tvec = ray.m_org - m_v0;
@@ -165,7 +156,7 @@ FORCE_INLINE bool TriangleMT<T>::intersect(
             return false;
 
         // Prepare to test v parameter.
-        qvec = cross(tvec, edge1);
+        qvec = cross(tvec, m_e0);
 
         // Calculate v parameter and test bounds.
         v = dot(ray.m_dir, qvec);
@@ -173,7 +164,7 @@ FORCE_INLINE bool TriangleMT<T>::intersect(
             return false;
 
         // Calculate t parameter and test bounds.
-        t = dot(edge2, qvec);
+        t = dot(m_e1, qvec);
         if (t >= ray.m_tmax * det || t < ray.m_tmin * det)
             return false;
     }
@@ -185,7 +176,7 @@ FORCE_INLINE bool TriangleMT<T>::intersect(
             return false;
 
         // Prepare to test v parameter.
-        qvec = cross(tvec, edge1);
+        qvec = cross(tvec, m_e0);
 
         // Calculate v parameter and test bounds.
         v = dot(ray.m_dir, qvec);
@@ -193,7 +184,7 @@ FORCE_INLINE bool TriangleMT<T>::intersect(
             return false;
 
         // Calculate t parameter and test bounds.
-        t = dot(edge2, qvec);
+        t = dot(m_e1, qvec);
         if (t <= ray.m_tmax * det || t > ray.m_tmin * det)
             return false;
     }
@@ -211,13 +202,9 @@ FORCE_INLINE bool TriangleMT<T>::intersect(
 template <typename T>
 FORCE_INLINE bool TriangleMT<T>::intersect(const RayType& ray) const
 {
-    // Find vectors for two edges sharing v0.
-    const VectorType edge1 = m_v1 - m_v0;
-    const VectorType edge2 = m_v2 - m_v0;
-
     // Calculate determinant.
-    const VectorType pvec = cross(ray.m_dir, edge2);
-    const ValueType det = dot(edge1, pvec);
+    const VectorType pvec = cross(ray.m_dir, m_e1);
+    const ValueType det = dot(m_e0, pvec);
 
     // Calculate distance from v0 to ray origin.
     const VectorType tvec = ray.m_org - m_v0;
@@ -231,7 +218,7 @@ FORCE_INLINE bool TriangleMT<T>::intersect(const RayType& ray) const
             return false;
 
         // Prepare to test v parameter.
-        qvec = cross(tvec, edge1);
+        qvec = cross(tvec, m_e0);
 
         // Calculate v parameter and test bounds.
         const ValueType v = dot(ray.m_dir, qvec);
@@ -239,7 +226,7 @@ FORCE_INLINE bool TriangleMT<T>::intersect(const RayType& ray) const
             return false;
 
         // Calculate t parameter and test bounds.
-        const ValueType t = dot(edge2, qvec);
+        const ValueType t = dot(m_e1, qvec);
         if (t >= ray.m_tmax * det || t < ray.m_tmin * det)
             return false;
     }
@@ -251,7 +238,7 @@ FORCE_INLINE bool TriangleMT<T>::intersect(const RayType& ray) const
             return false;
 
         // Prepare to test v parameter.
-        qvec = cross(tvec, edge1);
+        qvec = cross(tvec, m_e0);
 
         // Calculate v parameter and test bounds.
         const ValueType v = dot(ray.m_dir, qvec);
@@ -259,7 +246,7 @@ FORCE_INLINE bool TriangleMT<T>::intersect(const RayType& ray) const
             return false;
 
         // Calculate t parameter and test bounds.
-        const ValueType t = dot(edge2, qvec);
+        const ValueType t = dot(m_e1, qvec);
         if (t <= ray.m_tmax * det || t > ray.m_tmin * det)
             return false;
     }
@@ -287,9 +274,8 @@ inline TriangleMTSupportPlane<T>::TriangleMTSupportPlane(const TriangleMT<T>& tr
 template <typename T>
 inline void TriangleMTSupportPlane<T>::initialize(const TriangleMT<T>& triangle)
 {
-    m_v0 = triangle.m_v0;
-    m_edge1 = triangle.m_v1 - triangle.m_v0;
-    m_edge2 = triangle.m_v2 - triangle.m_v0;
+    m_n = cross(triangle.m_e0, triangle.m_e1);
+    m_d = dot(triangle.m_v0, m_n);
 }
 
 template <typename T>
@@ -297,9 +283,7 @@ inline T TriangleMTSupportPlane<T>::intersect(
     const VectorType&       org,
     const VectorType&       dir) const
 {
-    const VectorType n = cross(m_edge1, m_edge2);
-    const VectorType u = m_v0 - org;
-    return dot(u, n) / dot(dir, n);
+    return (m_d - dot(org, m_n)) / dot(dir, m_n);
 }
 
 }       // namespace foundation
