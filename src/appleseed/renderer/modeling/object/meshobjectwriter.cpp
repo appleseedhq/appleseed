@@ -63,15 +63,18 @@ namespace
     {
       public:
         // Constructor.
-        explicit MeshObjectWalker(const MeshObject& object)
+        MeshObjectWalker(
+            const MeshObject&   object,
+            const char*         object_name)
           : m_object(object)
+          , m_object_name(object_name)
         {
         }
 
         // Return the name of the mesh.
         virtual string get_name() const
         {
-            return m_object.get_name();
+            return m_object_name;
         }
 
         // Return the number of vertices in the mesh.
@@ -141,19 +144,20 @@ namespace
         }
 
       private:
-        const MeshObject& m_object;
+        const MeshObject&   m_object;
+        const string        m_object_name;
     };
 }
 
-// Write a mesh object to disk.
 bool MeshObjectWriter::write(
     const MeshObject&   object,
+    const char*         object_name,
     const char*         filename)
 {
     assert(filename);
 
     OBJMeshFileWriter writer;
-    MeshObjectWalker walker(object);
+    MeshObjectWalker walker(object, object_name);
 
     Stopwatch<DefaultWallclockTimer> stopwatch;
     stopwatch.start();

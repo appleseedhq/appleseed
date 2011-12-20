@@ -49,6 +49,7 @@ class RENDERERDLL MeshObjectWriter
     // Return true on success, false otherwise.
     static bool write(
         const MeshObject&   object,
+        const char*         object_name,
         const char*         filename);
 };
 

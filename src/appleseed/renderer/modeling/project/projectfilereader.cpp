@@ -1452,7 +1452,7 @@ namespace
                     {
                         MeshObject* object = object_array[i];
                         object->get_parameters().insert("filename", filename);
-                        object->get_parameters().insert("__common_base_name", m_name);
+                        object->get_parameters().insert("__base_object_name", m_name);
                     }
 
                     m_objects = array_vector<ObjectVector>(object_array);

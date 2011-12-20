@@ -528,25 +528,16 @@ namespace
                 const vector<size_t>& object_indices = i->second;
                 assert(!object_indices.empty());
 
-                // Retrieve the common base name of this set of mesh objects.
+                // Retrieve the base object name common to all the mesh objects of this set.
                 ParamArray params = objects.get_by_index(object_indices[0])->get_parameters();
-                const string common_base_name = params.get<string>("__common_base_name");
-                params.strings().remove("__common_base_name");
+                const string base_object_name = params.get<string>("__base_object_name");
+
+                // Remove the base object name parameter which is internal to appleseed.
+                params.strings().remove("__base_object_name");
 
                 // Write a single <object> element for this set of mesh objects.
-                write_mesh_object(common_base_name, params);
+                write_mesh_object(base_object_name, params);
             }
-        }
-
-        // Object name mapping established by write_mesh_objects_without_file().
-        typedef map<string, string> ObjectNameMapping;
-        ObjectNameMapping m_object_name_mapping;
-
-        // Get the new name of an object, given its old name.
-        string translate_object_name(const string& old_name) const
-        {
-            const ObjectNameMapping::const_iterator i = m_object_name_mapping.find(old_name);
-            return i == m_object_name_mapping.end() ? old_name : i->second;
         }
 
         // Write mesh objects that don't have their geometry already stored on disk.
@@ -559,31 +550,35 @@ namespace
                 const Object* object = objects.get_by_index(*i);
                 assert(object);
 
-                // Generate a filename for this mesh object.
-                const string object_name = object->get_name();
-                const string filename = object_name + ".obj";
+                string name = object->get_name();
+                ParamArray params = object->get_parameters();
+
+                // Strip the base object name from the object name.
+                if (params.strings().exist("__base_object_name"))
+                {
+                    const string base_object_name = params.get<string>("__base_object_name");
+                    const string prefix = base_object_name + ".";
+                    if (name.substr(0, prefix.size()) == prefix)
+                        name = name.substr(prefix.size());
+                }
 
                 // Write the mesh object to disk.
+                const string filename = name + ".obj";
                 const string file_path = (m_project_root_path / filename).file_string();
-                const bool success =
-                    (m_options & ProjectFileWriter::OmitMeshFiles) ||
-                    MeshObjectWriter::write(
-                        static_cast<const MeshObject&>(*object),
-                        file_path.c_str());
-
-                // Only keep mesh objects that were successfully written to disk.
-                if (success)
+                if (!(m_options & ProjectFileWriter::OmitMeshFiles))
                 {
-                    // Update the object name mapping.
-                    m_object_name_mapping[object_name] = object_name + "." + object_name;
-
-                    // Add a "filename" parameter to the parameters of the object.
-                    ParamArray params = object->get_parameters();
-                    params.insert("filename", filename);
-
-                    // Write an <object> element.
-                    write_mesh_object(object->get_name(), params);
+                    const MeshObject* mesh_object = static_cast<const MeshObject*>(object);
+                    MeshObjectWriter::write(*mesh_object, name.c_str(), file_path.c_str());
                 }
+
+                // Remove the base object name parameter which is internal to appleseed.
+                params.strings().remove("__base_object_name");
+
+                // Add a "filename" parameter to the parameters of the object.
+                params.insert("filename", filename);
+
+                // Write an <object> element.
+                write_mesh_object(name, params);
             }
         }
 
@@ -615,7 +610,7 @@ namespace
         {
             Element element("object_instance", m_file, m_indenter);
             element.add_attribute("name", object_instance.get_name());
-            element.add_attribute("object", translate_object_name(object_instance.get_object().get_name()));
+            element.add_attribute("object", object_instance.get_object().get_name());
             element.write(true);
 
             write(object_instance.get_transform());
