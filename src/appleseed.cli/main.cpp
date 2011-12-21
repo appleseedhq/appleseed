@@ -194,7 +194,7 @@ namespace
         {
             RENDERER_LOG_WARNING(
                 "automatic benchmark results archiving to %s failed: i/o error",
-                xmlfile_path.string().c_str());
+                xmlfile_path.native_file_string().c_str());
         }
 
         const filesystem::path old_current_path =
