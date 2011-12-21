@@ -71,6 +71,7 @@
 // Standard headers.
 #include <cstdio>
 #include <cstring>
+#include <exception>
 #include <map>
 #include <utility>
 #include <vector>
@@ -218,6 +219,27 @@ namespace
         FILE*                                   m_file;
         Indenter                                m_indenter;
         filesystem::path                        m_project_root_path;
+
+        static void safe_copy_file(
+            const filesystem::path& source_path,
+            const filesystem::path& dest_path)
+        {
+            if (!filesystem::exists(dest_path))
+            {
+                try
+                {
+                    filesystem::copy_file(source_path, dest_path);
+                }
+                catch (const std::exception& e)
+                {
+                    RENDERER_LOG_ERROR(
+                        "failed to copy %s to %s: %s.",
+                        source_path.native_file_string().c_str(),
+                        dest_path.native_file_string().c_str(),
+                        e.what());
+                }
+            }
+        }
 
         // Write a vector of scalars.
         template <typename Vec>
@@ -369,7 +391,25 @@ namespace
         // Write a <texture> element.
         void write(const Texture& texture)
         {
-            write_entity("texture", texture);
+            Element element("texture", m_file, m_indenter);
+            element.add_attribute("name", texture.get_name());
+            element.add_attribute("model", texture.get_model());
+            element.write(!texture.get_parameters().empty());
+
+            ParamArray params = texture.get_parameters();
+
+            if (params.strings().exist("filename"))
+            {
+                const filesystem::path source_filepath = params.get<string>("filename");
+                const filesystem::path filename = source_filepath.filename();
+                const filesystem::path dest_filepath = m_project_root_path / filename;
+
+                safe_copy_file(source_filepath, dest_filepath);
+
+                params.insert("filename", filename.string());
+            }
+
+            write(params);
         }
 
         // Write a <texture_instance> element.
@@ -506,15 +546,22 @@ namespace
                 if (strcmp(object->get_model(), MeshObjectFactory::get_model()))
                     continue;
 
-                const string filename =
-                    object->get_parameters().get_optional<string>("filename", "");
+                const ParamArray& params = object->get_parameters();
 
-                const bool has_file =
-                    !filename.empty() && filesystem::exists(m_project_root_path / filename);
+                if (params.strings().exist("filename"))
+                {
+                    const filesystem::path source_filepath = params.get<string>("filename");
+                    const filesystem::path filename = source_filepath.filename();
+                    const filesystem::path dest_filepath = m_project_root_path / filename;
 
-                if (has_file)
-                    objects_with_file[filename].push_back(i);
-                else objects_without_file.push_back(i);
+                    safe_copy_file(source_filepath, dest_filepath);
+
+                    objects_with_file[filename.string()].push_back(i);
+                }
+                else
+                {
+                    objects_without_file.push_back(i);
+                }
             }
         }
 
@@ -528,11 +575,15 @@ namespace
                 const vector<size_t>& object_indices = i->second;
                 assert(!object_indices.empty());
 
-                // Retrieve the base object name common to all the mesh objects of this set.
                 ParamArray params = objects.get_by_index(object_indices[0])->get_parameters();
-                const string base_object_name = params.get<string>("__base_object_name");
 
-                // Remove the base object name parameter which is internal to appleseed.
+                // At this point the "filename" parameter must contain a filename, not a path.
+                const string filepath = params.get<string>("filename");
+                const string filename = filesystem::path(filepath).filename();
+                params.insert("filename", filename);
+
+                // Extract the base object name common to all the mesh objects of this set.
+                const string base_object_name = params.get<string>("__base_object_name");
                 params.strings().remove("__base_object_name");
 
                 // Write a single <object> element for this set of mesh objects.
@@ -560,19 +611,17 @@ namespace
                     const string prefix = base_object_name + ".";
                     if (name.substr(0, prefix.size()) == prefix)
                         name = name.substr(prefix.size());
+                    params.strings().remove("__base_object_name");
                 }
 
                 // Write the mesh object to disk.
                 const string filename = name + ".obj";
-                const string file_path = (m_project_root_path / filename).file_string();
+                const string filepath = (m_project_root_path / filename).file_string();
                 if (!(m_options & ProjectFileWriter::OmitMeshFiles))
                 {
                     const MeshObject* mesh_object = static_cast<const MeshObject*>(object);
-                    MeshObjectWriter::write(*mesh_object, name.c_str(), file_path.c_str());
+                    MeshObjectWriter::write(*mesh_object, name.c_str(), filepath.c_str());
                 }
-
-                // Remove the base object name parameter which is internal to appleseed.
-                params.strings().remove("__base_object_name");
 
                 // Add a "filename" parameter to the parameters of the object.
                 params.insert("filename", filename);

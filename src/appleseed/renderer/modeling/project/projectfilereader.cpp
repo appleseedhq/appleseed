@@ -1437,13 +1437,12 @@ namespace
                 {
                     // Retrieve the name of the mesh file.
                     const string filename = m_params.get<string>("filename");
-                    const string qualified_filename =
-                        m_context.get_project().get_search_paths().qualify(filename);
+                    const string filepath = m_context.get_project().get_search_paths().qualify(filename);
 
                     // Read the mesh file.
                     MeshObjectArray object_array =
                         MeshObjectReader::read(
-                            qualified_filename.c_str(),
+                            filepath.c_str(),
                             m_name.c_str(),
                             m_params);
 
@@ -1451,7 +1450,7 @@ namespace
                     for (size_t i = 0; i < object_array.size(); ++i)
                     {
                         MeshObject* object = object_array[i];
-                        object->get_parameters().insert("filename", filename);
+                        object->get_parameters().insert("filename", filepath);
                         object->get_parameters().insert("__base_object_name", m_name);
                     }
 

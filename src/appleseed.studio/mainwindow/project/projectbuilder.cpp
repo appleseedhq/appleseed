@@ -188,7 +188,7 @@ void ProjectBuilder::insert_objects(
     {
         MeshObject* object = mesh_objects[i];
 
-        object->get_parameters().insert("filename", filesystem::path(path).filename());
+        object->get_parameters().insert("filename", path);
         object->get_parameters().insert("__base_object_name", base_object_name);
 
         m_project_tree.get_assembly_collection_item().get_item(assembly).add_item(object);

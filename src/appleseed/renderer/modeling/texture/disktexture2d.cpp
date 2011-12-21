@@ -108,7 +108,7 @@ namespace
         }
 
       private:
-        string                              m_filename;
+        string                              m_filepath;
         ColorSpace                          m_color_space;
 
         mutable mutex                       m_mutex;
@@ -118,7 +118,9 @@ namespace
         void extract_parameters(const SearchPaths& search_paths)
         {
             // Retrieve the texture filename.
-            m_filename = search_paths.qualify(m_params.get_required<string>("filename", ""));
+            const string filename = m_params.get_required<string>("filename", "");
+            m_filepath = search_paths.qualify(filename);
+            m_params.insert("filename", m_filepath);
 
             // Retrieve the color space.
             const string color_space = m_params.get_required<string>("color_space", "linear_rgb");
@@ -145,9 +147,9 @@ namespace
             {
                 RENDERER_LOG_INFO(
                     "opening texture file %s for reading...",
-                    m_filename.c_str());
+                    m_filepath.c_str());
 
-                m_reader.open(m_filename.c_str());
+                m_reader.open(m_filepath.c_str());
                 m_reader.read_canvas_properties(m_props);
             }
         }
