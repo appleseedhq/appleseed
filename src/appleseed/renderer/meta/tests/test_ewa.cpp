@@ -153,8 +153,8 @@ TEST_SUITE(EWAFilteringExploration)
         draw_checkerboard(image, 32, Color3f(0.3f), Color3f(1.0f));
 
         // Corners of the trapezoid.
-        const Vector2i V00(150, 300);
-        const Vector2i V10(300, 380);
+        const Vector2i V00(130, 400);
+        const Vector2i V10(220, 440);
         const Vector2i V01(200, 60);
         const Vector2i V11(480, 230);
 
