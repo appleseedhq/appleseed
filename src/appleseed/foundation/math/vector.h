@@ -529,7 +529,30 @@ inline Vector<T, N> operator*(const T lhs, const Vector<T, N>& rhs)
 template <typename T, size_t N>
 inline Vector<T, N> operator/(const Vector<T, N>& lhs, const T rhs)
 {
-    return lhs * (T(1.0) / rhs);
+    Vector<T, N> result;
+
+    for (size_t i = 0; i < N; ++i)
+        result[i] = lhs[i] / rhs;
+
+    return result;
+}
+
+template <size_t N>
+inline Vector<float, N> operator/(const Vector<float, N>& lhs, const float rhs)
+{
+    return lhs * (1.0f / rhs);
+}
+
+template <size_t N>
+inline Vector<double, N> operator/(const Vector<double, N>& lhs, const double rhs)
+{
+    return lhs * (1.0 / rhs);
+}
+
+template <size_t N>
+inline Vector<long double, N> operator/(const Vector<long double, N>& lhs, const long double rhs)
+{
+    return lhs * (1.0L / rhs);
 }
 
 template <typename T, size_t N>
@@ -584,7 +607,28 @@ inline Vector<T, N>& operator*=(Vector<T, N>& lhs, const T rhs)
 template <typename T, size_t N>
 inline Vector<T, N>& operator/=(Vector<T, N>& lhs, const T rhs)
 {
-    return lhs *= (T(1.0) / rhs);
+    for (size_t i = 0; i < N; ++i)
+        lhs[i] /= rhs;
+
+    return lhs;
+}
+
+template <size_t N>
+inline Vector<float, N>& operator/(Vector<float, N>& lhs, const float rhs)
+{
+    return lhs *= 1.0f / rhs;
+}
+
+template <size_t N>
+inline Vector<double, N>& operator/(Vector<double, N>& lhs, const double rhs)
+{
+    return lhs *= 1.0 / rhs;
+}
+
+template <size_t N>
+inline Vector<long double, N>& operator/(Vector<long double, N>& lhs, const long double rhs)
+{
+    return lhs *= 1.0L / rhs;
 }
 
 template <typename T, size_t N>

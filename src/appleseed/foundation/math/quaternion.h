@@ -320,7 +320,25 @@ inline Quaternion<T> operator*(const T lhs, const Quaternion<T>& rhs)
 template <typename T>
 inline Quaternion<T> operator/(const Quaternion<T>& lhs, const T rhs)
 {
-    return lhs * (T(1.0) / rhs);
+    return Quaternion<T>(lhs.s / rhs, lhs.v / rhs);
+}
+
+template <>
+inline Quaternion<float> operator/(const Quaternion<float>& lhs, const float rhs)
+{
+    return lhs * (1.0f / rhs);
+}
+
+template <>
+inline Quaternion<double> operator/(const Quaternion<double>& lhs, const double rhs)
+{
+    return lhs * (1.0 / rhs);
+}
+
+template <>
+inline Quaternion<long double> operator/(const Quaternion<long double>& lhs, const long double rhs)
+{
+    return lhs * (1.0L / rhs);
 }
 
 template <typename T>
@@ -350,7 +368,27 @@ inline Quaternion<T>& operator*=(Quaternion<T>& lhs, const T rhs)
 template <typename T>
 inline Quaternion<T>& operator/=(Quaternion<T>& lhs, const T rhs)
 {
-    return lhs *= (T(1.0) / rhs);
+    lhs.s /= rhs;
+    lhs.v /= rhs;
+    return lhs;
+}
+
+template <>
+inline Quaternion<float>& operator/=(Quaternion<float>& lhs, const float rhs)
+{
+    return lhs *= 1.0f / rhs;
+}
+
+template <>
+inline Quaternion<double>& operator/=(Quaternion<double>& lhs, const double rhs)
+{
+    return lhs *= 1.0 / rhs;
+}
+
+template <>
+inline Quaternion<long double>& operator/=(Quaternion<long double>& lhs, const long double rhs)
+{
+    return lhs *= 1.0L / rhs;
 }
 
 template <typename T>

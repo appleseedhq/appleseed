@@ -350,7 +350,30 @@ inline RegularSpectrum<T, N> operator*(const RegularSpectrum<T, N>& lhs, const R
 template <typename T, size_t N>
 inline RegularSpectrum<T, N> operator/(const RegularSpectrum<T, N>& lhs, const T rhs)
 {
-    return lhs * (T(1.0) / rhs);
+    RegularSpectrum<T, N> result;
+
+    for (size_t i = 0; i < N; ++i)
+        result[i] = lhs[i] / rhs;
+
+    return result;
+}
+
+template <size_t N>
+inline RegularSpectrum<float, N> operator/(const RegularSpectrum<float, N>& lhs, const float rhs)
+{
+    return lhs * (1.0f / rhs);
+}
+
+template <size_t N>
+inline RegularSpectrum<double, N> operator/(const RegularSpectrum<double, N>& lhs, const double rhs)
+{
+    return lhs * (1.0 / rhs);
+}
+
+template <size_t N>
+inline RegularSpectrum<long double, N> operator/(const RegularSpectrum<long double, N>& lhs, const long double rhs)
+{
+    return lhs * (1.0L / rhs);
 }
 
 template <typename T, size_t N>
@@ -462,7 +485,28 @@ FORCE_INLINE RegularSpectrum<float, 31>& operator*=(RegularSpectrum<float, 31>& 
 template <typename T, size_t N>
 inline RegularSpectrum<T, N>& operator/=(RegularSpectrum<T, N>& lhs, const T rhs)
 {
-    return lhs *= (T(1.0) / rhs);
+    for (size_t i = 0; i < N; ++i)
+        lhs[i] /= rhs;
+
+    return lhs;
+}
+
+template <size_t N>
+inline RegularSpectrum<float, N>& operator/(RegularSpectrum<float, N>& lhs, const float rhs)
+{
+    return lhs *= 1.0f / rhs;
+}
+
+template <size_t N>
+inline RegularSpectrum<double, N>& operator/(RegularSpectrum<double, N>& lhs, const double rhs)
+{
+    return lhs *= 1.0 / rhs;
+}
+
+template <size_t N>
+inline RegularSpectrum<long double, N>& operator/(RegularSpectrum<long double, N>& lhs, const long double rhs)
+{
+    return lhs *= 1.0L / rhs;
 }
 
 template <typename T, size_t N>

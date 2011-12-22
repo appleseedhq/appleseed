@@ -592,7 +592,30 @@ inline Matrix<T, M, N> operator*(const T lhs, const Matrix<T, M, N>& rhs)
 template <typename T, size_t M, size_t N>
 inline Matrix<T, M, N> operator/(const Matrix<T, M, N>& lhs, const T rhs)
 {
-    return lhs * (T(1.0) / rhs);
+    Matrix<T, M, N> result;
+
+    for (size_t i = 0; i < lhs.Components; ++i)
+        result[i] = lhs[i] / rhs;
+
+    return result;
+}
+
+template <size_t M, size_t N>
+inline Matrix<float, M, N> operator/(const Matrix<float, M, N>& lhs, const float rhs)
+{
+    return lhs * (1.0f / rhs);
+}
+
+template <size_t M, size_t N>
+inline Matrix<double, M, N> operator/(const Matrix<double, M, N>& lhs, const double rhs)
+{
+    return lhs * (1.0 / rhs);
+}
+
+template <size_t M, size_t N>
+inline Matrix<long double, M, N> operator/(const Matrix<long double, M, N>& lhs, const long double rhs)
+{
+    return lhs * (1.0L / rhs);
 }
 
 template <typename T, size_t M, size_t N>
@@ -625,7 +648,28 @@ inline Matrix<T, M, N>& operator*=(Matrix<T, M, N>& lhs, const T rhs)
 template <typename T, size_t M, size_t N>
 inline Matrix<T, M, N>& operator/=(Matrix<T, M, N>& lhs, const T rhs)
 {
-    return lhs *= (T(1.0) / rhs);
+    for (size_t i = 0; i < lhs.Components; ++i)
+        lhs[i] /= rhs;
+
+    return lhs;
+}
+
+template <size_t M, size_t N>
+inline Matrix<float, M, N>& operator/=(Matrix<float, M, N>& lhs, const float rhs)
+{
+    return lhs *= 1.0f / rhs;
+}
+
+template <size_t M, size_t N>
+inline Matrix<double, M, N>& operator/=(Matrix<double, M, N>& lhs, const double rhs)
+{
+    return lhs *= 1.0 / rhs;
+}
+
+template <size_t M, size_t N>
+inline Matrix<long double, M, N>& operator/=(Matrix<long double, M, N>& lhs, const long double rhs)
+{
+    return lhs *= 1.0L / rhs;
 }
 
 template <typename T, size_t M, size_t N, size_t K>

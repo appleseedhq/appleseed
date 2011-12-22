@@ -429,7 +429,30 @@ inline Color<T, N> operator*(const Color<T, N>& lhs, const Color<T, N>& rhs)
 template <typename T, size_t N>
 inline Color<T, N> operator/(const Color<T, N>& lhs, const T rhs)
 {
-    return lhs * (T(1.0) / rhs);
+    Color<T, N> result;
+
+    for (size_t i = 0; i < N; ++i)
+        result[i] = lhs[i] / rhs;
+
+    return result;
+}
+
+template <size_t N>
+inline Color<float, N> operator/(const Color<float, N>& lhs, const float rhs)
+{
+    return lhs * (1.0f / rhs);
+}
+
+template <size_t N>
+inline Color<double, N> operator/(const Color<double, N>& lhs, const double rhs)
+{
+    return lhs * (1.0 / rhs);
+}
+
+template <size_t N>
+inline Color<long double, N> operator/(const Color<long double, N>& lhs, const long double rhs)
+{
+    return lhs * (1.0L / rhs);
 }
 
 template <typename T, size_t N>
@@ -482,7 +505,28 @@ inline Color<T, N>& operator*=(Color<T, N>& lhs, const Color<T, N>& rhs)
 template <typename T, size_t N>
 inline Color<T, N>& operator/=(Color<T, N>& lhs, const T rhs)
 {
-    return lhs *= (T(1.0) / rhs);
+    for (size_t i = 0; i < N; ++i)
+        lhs[i] /= rhs;
+
+    return lhs;
+}
+
+template <size_t N>
+inline Color<float, N>& operator/=(Color<float, N>& lhs, const float rhs)
+{
+    return lhs *= 1.0f / rhs;
+}
+
+template <size_t N>
+inline Color<double, N>& operator/=(Color<double, N>& lhs, const double rhs)
+{
+    return lhs *= 1.0 / rhs;
+}
+
+template <size_t N>
+inline Color<long double, N>& operator/=(Color<long double, N>& lhs, const long double rhs)
+{
+    return lhs *= 1.0L / rhs;
 }
 
 template <typename T, size_t N>
