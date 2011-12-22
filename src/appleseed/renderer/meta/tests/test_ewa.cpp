@@ -31,6 +31,7 @@
 #include "foundation/image/genericimagefilewriter.h"
 #include "foundation/image/image.h"
 #include "foundation/image/pixel.h"
+#include "foundation/math/aabb.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/test.h"
@@ -125,6 +126,29 @@ TEST_SUITE(EWAFilteringExploration)
         }
     }
 
+    void draw_bbox(
+        Image&          image,
+        const AABB2i&   bbox,
+        const Color3f&  color)
+    {
+        draw_line(image, Vector2i(bbox.min.x, bbox.min.y), Vector2i(bbox.max.x, bbox.min.y), color);
+        draw_line(image, Vector2i(bbox.max.x, bbox.min.y), Vector2i(bbox.max.x, bbox.max.y), color);
+        draw_line(image, Vector2i(bbox.max.x, bbox.max.y), Vector2i(bbox.min.x, bbox.max.y), color);
+        draw_line(image, Vector2i(bbox.min.x, bbox.max.y), Vector2i(bbox.min.x, bbox.min.y), color);
+    }
+
+    void tint_pixel(
+        Image&          image,
+        const int       x,
+        const int       y,
+        const Color3f&  color,
+        const float     intensity)
+    {
+        Color3f base;
+        image.get_pixel(size_t(x), size_t(y), base);
+        image.set_pixel(size_t(x), size_t(y), lerp(base, color, intensity));
+    }
+
     void trapezoid_to_ellipse(
         const Vector2i& v00,
         const Vector2i& v10,
@@ -185,27 +209,36 @@ TEST_SUITE(EWAFilteringExploration)
         assert(A > 0.0);
         assert(A * C - B * B / 4.0 > 0.0);
 
+        // Compute the bounding box of the ellipse (derived using implicit differentation
+        // of the ellipse equation; extrema values of v are where the derivative is zero;
+        // extrema values of u are where the derivative is not defined).
+        const double ku = 2.0 * C * sqrt(F / (4 * A * C * C - C * B * B));
+        const double kv = 2.0 * A * sqrt(F / (4 * A * A * C - A * B * B));
+        AABB2i bbox;
+        bbox.min.x = truncate<int>(floor(center.x - ku));
+        bbox.min.y = truncate<int>(floor(center.y - kv));
+        bbox.max.x = truncate<int>(ceil(center.x + ku));
+        bbox.max.y = truncate<int>(ceil(center.y + kv));
+
+        // Draw the bounding box of the ellipse.
+        draw_bbox(image, bbox, Color3f(1.0f, 1.0f, 0.0f));
+
+        const int u = bbox.min.x - center.x;
         const double Ddq = 2.0 * A;
-        const double u = 0 - center.x;
 
-        for (int y = 0; y < Height; ++y)
+        for (int y = bbox.min.y; y <= bbox.max.y; ++y)
         {
-            const double v = y - center.y;
-
+            const int v = y - center.y;
             double dq = A * (2.0 * u + 1.0) + B * v;
             double q = (C * v + B * u) * v + A * u * u;
 
-            for (int x = 0; x < Width; ++x)
+            for (int x = bbox.min.x; x <= bbox.max.x; ++x)
             {
-                if (q < F)
-                {
-                    Color3f base;
-                    image.get_pixel(size_t(x), size_t(y), base);
-
-                    const Color3f EllipseColor(0.0f, 0.0f, 1.0f);
-
-                    image.set_pixel(size_t(x), size_t(y), lerp(base, EllipseColor, 0.2f));
-                }
+                tint_pixel(
+                    image,
+                    x, y,
+                    q < F ? Color3f(0.0f, 1.0f, 0.0f) : Color3f(0.0f, 0.0f, 1.0f),
+                    0.2f);
 
                 q += dq;
                 dq += Ddq;
