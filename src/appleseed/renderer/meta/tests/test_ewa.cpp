@@ -169,46 +169,48 @@ TEST_SUITE(EWAFilteringExploration)
             compute_weights();
         }
 
+        // Trapezoid vertices are in [0,width)x[0,height) (note: open on the right).
         Color3f filter_trapezoid(
             const Image&    texture,
-            const Vector2i& v00,
-            const Vector2i& v10,
-            const Vector2i& v01,
-            const Vector2i& v11,
+            const Vector2f& v00,
+            const Vector2f& v10,
+            const Vector2f& v01,
+            const Vector2f& v11,
             const bool      ungamma = false) const
         {
             // Draw the input trapezoid.
             const Color3f TrapezoidColor(1.0f, 0.0f, 1.0f);
-            draw_line(m_debug_image, v00, v10, TrapezoidColor);
-            draw_line(m_debug_image, v10, v11, TrapezoidColor);
-            draw_line(m_debug_image, v11, v01, TrapezoidColor);
-            draw_line(m_debug_image, v01, v00, TrapezoidColor);
+            draw_line(m_debug_image, f2i(v00), f2i(v10), TrapezoidColor);
+            draw_line(m_debug_image, f2i(v10), f2i(v11), TrapezoidColor);
+            draw_line(m_debug_image, f2i(v11), f2i(v01), TrapezoidColor);
+            draw_line(m_debug_image, f2i(v01), f2i(v00), TrapezoidColor);
 
             // Compute the parameters of the inscribed ellipse.
-            Vector2i center, du, dv;
+            Vector2f center, du, dv;
             trapezoid_to_ellipse(v00, v10, v01, v11, center, du, dv);
 
             // Draw the axes of the ellipse.
-            draw_line(m_debug_image, center, center + du, Color3f(1.0f, 0.0, 0.0));
-            draw_line(m_debug_image, center, center + dv, Color3f(0.0f, 1.0, 0.0));
-
-            // Compute the ellipse coefficients.
-            double A = du.y * du.y + dv.y * dv.y;
-            double B = -2.0 * (du.x * du.y + dv.x * dv.y);
-            double C = du.x * du.x + dv.x * dv.x;
+            draw_line(m_debug_image, f2i(center), f2i(center + du), Color3f(1.0f, 0.0f, 0.0f));
+            draw_line(m_debug_image, f2i(center), f2i(center + dv), Color3f(0.0f, 1.0f, 0.0f));
 
             // Compute the inclusion threshold.
-            double F = square(du.x * dv.y - dv.x * du.y);
+            const float F = static_cast<float>(WeightCount);
+
+            // Compute the ellipse coefficients.
+            const float K = F / square(du.x * dv.y - dv.x * du.y);
+            const float A = K * (du.y * du.y + dv.y * dv.y);
+            const float B = K * (-2.0f * (du.x * du.y + dv.x * dv.y));
+            const float C = K * (du.x * du.x + dv.x * dv.x);
 
             // Make sure we have an elliptical paraboloid, concave upward.
-            assert(A > 0.0);
-            assert(A * C - B * B / 4.0 > 0.0);
+            assert(A > 0.0f);
+            assert(A * C - B * B / 4.0f > 0.0f);
 
             // Compute the bounding box of the ellipse (derived using implicit differentation
             // of the ellipse equation; extrema values of v are where the derivative is zero;
             // extrema values of u are where the derivative is not defined).
-            const double ku = 2.0 * C * sqrt(F / (4.0 * A * C * C - C * B * B));
-            const double kv = 2.0 * A * sqrt(F / (4.0 * A * A * C - A * B * B));
+            const float ku = 2.0f * C * sqrt(F / (4.0f * A * C * C - C * B * B));
+            const float kv = 2.0f * A * sqrt(F / (4.0f * A * A * C - A * B * B));
             AABB2i bbox;
             bbox.min.x = truncate<int>(floor(center.x - ku));
             bbox.min.y = truncate<int>(floor(center.y - kv));
@@ -218,24 +220,17 @@ TEST_SUITE(EWAFilteringExploration)
             // Draw the bounding box of the ellipse.
             draw_box(m_debug_image, bbox, Color3f(1.0f, 1.0f, 0.0f));
 
-            // Rescale the ellipse parameters.
-            const double Scale = static_cast<double>(WeightCount) / F;
-            A *= Scale;
-            B *= Scale;
-            C *= Scale;
-            F *= Scale;
-
             Color3f num(0.0f);
             float den = 0.0f;
 
-            const int u = bbox.min.x - center.x;
-            const double Ddq = 2.0 * A;
+            const float u = bbox.min.x - center.x;
+            const float Ddq = 2.0f * A;
 
             for (int y = bbox.min.y; y <= bbox.max.y; ++y)
             {
-                const int v = y - center.y;
-                double dq = A * (2.0 * u + 1.0) + B * v;
-                double q = (C * v + B * u) * v + A * u * u;
+                const float v = y - center.y;
+                float dq = A * (2.0f * u + 1.0f) + B * v;
+                float q = (C * v + B * u) * v + A * u * u;
 
                 for (int x = bbox.min.x; x <= bbox.max.x; ++x)
                 {
@@ -247,12 +242,7 @@ TEST_SUITE(EWAFilteringExploration)
                         texture.get_pixel(x, y, texel);
 
                         if (ungamma)
-                        {
-                            const float TextureGamma = 2.2f;
-                            texel[0] = pow(texel[0], TextureGamma);
-                            texel[1] = pow(texel[1], TextureGamma);
-                            texel[2] = pow(texel[2], TextureGamma);
-                        }
+                            texel = do_ungamma(texel);
 
                         num += texel * w;
                         den += w;
@@ -281,8 +271,43 @@ TEST_SUITE(EWAFilteringExploration)
                 return num / den;
 
             // Fallback to bilinear filtering.
-            texture.get_pixel(center.x, center.y, num);
-            return num;
+
+            // Fetch neighboring texels.
+            const int ix = truncate<int>(center.x);
+            const int iy = truncate<int>(center.y);
+            Color3f c00, c10, c01, c11;
+            texture.get_pixel(ix + 0, iy + 0, c00);
+            texture.get_pixel(ix + 1, iy + 0, c10);
+            texture.get_pixel(ix + 0, iy + 1, c01);
+            texture.get_pixel(ix + 1, iy + 1, c11);
+
+            // Ungamma texels.
+            if (ungamma)
+            {
+                c00 = do_ungamma(c00);
+                c10 = do_ungamma(c10);
+                c01 = do_ungamma(c01);
+                c11 = do_ungamma(c11);
+            }
+
+            // Compute weights.
+            const float wx1 = center.x - ix;
+            const float wy1 = center.y - iy;
+            const float wx0 = 1.0f - wx1;
+            const float wy0 = 1.0f - wy1;
+
+            // Apply weights.
+            c00 *= wx0 * wy0;
+            c10 *= wx1 * wy0;
+            c01 *= wx0 * wy1;
+            c11 *= wx1 * wy1;
+
+            // Accumulate.
+            c00 += c10;
+            c00 += c01;
+            c00 += c11;
+
+            return c00;
         }
 
       private:
@@ -302,21 +327,36 @@ TEST_SUITE(EWAFilteringExploration)
         }
 
         static void trapezoid_to_ellipse(
-            const Vector2i& v00,
-            const Vector2i& v10,
-            const Vector2i& v01,
-            const Vector2i& v11,
-            Vector2i&       center,
-            Vector2i&       du,
-            Vector2i&       dv)
+            const Vector2f& v00,
+            const Vector2f& v10,
+            const Vector2f& v01,
+            const Vector2f& v11,
+            Vector2f&       center,
+            Vector2f&       du,
+            Vector2f&       dv)
         {
-            const Vector2i middle_00_10 = (v00 + v10) / 2;
-            const Vector2i middle_01_11 = (v01 + v11) / 2;
-            const Vector2i middle_10_11 = (v10 + v11) / 2;
+            const Vector2f middle_00_10 = 0.5f * (v00 + v10);
+            const Vector2f middle_01_11 = 0.5f * (v01 + v11);
+            const Vector2f middle_10_11 = 0.5f * (v10 + v11);
 
-            center = (middle_00_10 + middle_01_11) / 2;
+            center = 0.5f * (middle_00_10 + middle_01_11);
             du = middle_10_11 - center;
             dv = middle_01_11 - center;
+        }
+
+        static Color3f do_ungamma(const Color3f& c)
+        {
+            const float InputGamma = 2.2f;
+
+            return Color3f(
+                pow(c[0], InputGamma),
+                pow(c[1], InputGamma),
+                pow(c[2], InputGamma));
+        }
+
+        static Vector2i f2i(const Vector2f& v)
+        {
+            return Vector2i(truncate<int>(v[0]), truncate<int>(v[1]));
         }
     };
 
@@ -332,16 +372,17 @@ TEST_SUITE(EWAFilteringExploration)
             compute_weights();
         }
 
+        // Trapezoid vertices are in [0,width)x[0,height) (note: open on the right).
         Color3f filter_trapezoid(
             const Image&    texture,
-            const Vector2i& v00,
-            const Vector2i& v10,
-            const Vector2i& v01,
-            const Vector2i& v11,
+            const Vector2f& v00,
+            const Vector2f& v10,
+            const Vector2f& v01,
+            const Vector2f& v11,
             const bool      ungamma = false) const
         {
             // Compute the parameters of the inscribed ellipse.
-            Vector2i center, du, dv;
+            Vector2f center, du, dv;
             trapezoid_to_ellipse(v00, v10, v01, v11, center, du, dv);
 
             // Compute the inclusion threshold.
@@ -368,12 +409,12 @@ TEST_SUITE(EWAFilteringExploration)
             Color3f num(0.0f);
             float den = 0.0f;
 
-            const int u = min_x - center.x;
+            const float u = min_x - center.x;
             const float Ddq = 2.0f * A;
 
             for (int y = min_y; y <= max_y; ++y)
             {
-                const int v = y - center.y;
+                const float v = y - center.y;
                 float dq = A * (2.0f * u + 1.0f) + B * v;
                 float q = (C * v + B * u) * v + A * u * u;
 
@@ -387,12 +428,7 @@ TEST_SUITE(EWAFilteringExploration)
                         texture.get_pixel(x, y, texel);
 
                         if (ungamma)
-                        {
-                            const float TextureGamma = 2.2f;
-                            texel[0] = pow(texel[0], TextureGamma);
-                            texel[1] = pow(texel[1], TextureGamma);
-                            texel[2] = pow(texel[2], TextureGamma);
-                        }
+                            texel = do_ungamma(texel);
 
                         num += texel * w;
                         den += w;
@@ -407,8 +443,43 @@ TEST_SUITE(EWAFilteringExploration)
                 return num / den;
 
             // Fallback to bilinear filtering.
-            texture.get_pixel(center.x, center.y, num);
-            return num;
+
+            // Fetch neighboring texels.
+            const int ix = truncate<int>(center.x);
+            const int iy = truncate<int>(center.y);
+            Color3f c00, c10, c01, c11;
+            texture.get_pixel(ix + 0, iy + 0, c00);
+            texture.get_pixel(ix + 1, iy + 0, c10);
+            texture.get_pixel(ix + 0, iy + 1, c01);
+            texture.get_pixel(ix + 1, iy + 1, c11);
+
+            // Ungamma texels.
+            if (ungamma)
+            {
+                c00 = do_ungamma(c00);
+                c10 = do_ungamma(c10);
+                c01 = do_ungamma(c01);
+                c11 = do_ungamma(c11);
+            }
+
+            // Compute weights.
+            const float wx1 = center.x - ix;
+            const float wy1 = center.y - iy;
+            const float wx0 = 1.0f - wx1;
+            const float wy0 = 1.0f - wy1;
+
+            // Apply weights.
+            c00 *= wx0 * wy0;
+            c10 *= wx1 * wy0;
+            c01 *= wx0 * wy1;
+            c11 *= wx1 * wy1;
+
+            // Accumulate.
+            c00 += c10;
+            c00 += c01;
+            c00 += c11;
+
+            return c00;
         }
 
       private:
@@ -426,21 +497,32 @@ TEST_SUITE(EWAFilteringExploration)
         }
 
         static void trapezoid_to_ellipse(
-            const Vector2i& v00,
-            const Vector2i& v10,
-            const Vector2i& v01,
-            const Vector2i& v11,
-            Vector2i&       center,
-            Vector2i&       du,
-            Vector2i&       dv)
+            const Vector2f& v00,
+            const Vector2f& v10,
+            const Vector2f& v01,
+            const Vector2f& v11,
+            Vector2f&       center,
+            Vector2f&       du,
+            Vector2f&       dv)
         {
-            const Vector2i middle_00_10 = (v00 + v10) / 2;
-            const Vector2i middle_01_11 = (v01 + v11) / 2;
-            const Vector2i middle_10_11 = (v10 + v11) / 2;
+            const Vector2f middle_00_10 = 0.5f * (v00 + v10);
+            const Vector2f middle_01_11 = 0.5f * (v01 + v11);
+            const Vector2f middle_10_11 = 0.5f * (v10 + v11);
 
-            center = (middle_00_10 + middle_01_11) / 2;
+            center = 0.5f * (middle_00_10 + middle_01_11);
             du = middle_10_11 - center;
             dv = middle_01_11 - center;
+        }
+
+        static Color3f do_ungamma(const Color3f& c)
+        {
+            const float InputGamma = 2.2f;
+
+            // todo: use fast_pow().
+            return Color3f(
+                pow(c[0], InputGamma),
+                pow(c[1], InputGamma),
+                pow(c[2], InputGamma));
         }
     };
 
@@ -455,10 +537,10 @@ TEST_SUITE(EWAFilteringExploration)
         draw_checkerboard(texture, 32, Color3f(0.3f), Color3f(1.0f));
 
         // Corners of the input trapezoid.
-        const Vector2i V00(130, 400);
-        const Vector2i V10(220, 440);
-        const Vector2i V01(200,  60);
-        const Vector2i V11(480, 230);
+        const Vector2f V00(130.0f, 400.0f);
+        const Vector2f V10(220.0f, 440.0f);
+        const Vector2f V01(200.0f,  60.0f);
+        const Vector2f V11(480.0f, 230.0f);
 
         // Run the reference filter.
         Image debug_image(texture);
