@@ -296,12 +296,12 @@ TEST_SUITE(EWAFilteringExploration)
             Color3f num(0.0f);
             float den = 0.0f;
 
-            const float u = bbox.min.x - center.x + 0.5f;
+            const float u = (bbox.min.x + 0.5f) - center.x;
             const float Ddq = 2.0f * A;
 
             for (int y = bbox.min.y; y <= bbox.max.y; ++y)
             {
-                const float v = y - center.y + 0.5f;
+                const float v = (y + 0.5f) - center.y;
                 float dq = A * (2.0f * u + 1.0f) + B * v;
                 float q = (C * v + B * u) * v + A * u * u;
 
@@ -498,12 +498,12 @@ TEST_SUITE(EWAFilteringExploration)
             Color3f num(0.0f);
             float den = 0.0f;
 
-            const float u = min_x - center.x + 0.5f;
+            const float u = (min_x + 0.5f) - center.x;
             const float Ddq = 2.0f * A;
 
             for (int y = min_y; y <= max_y; ++y)
             {
-                const float v = y - center.y + 0.5f;
+                const float v = (y + 0.5f) - center.y;
                 float dq = A * (2.0f * u + 1.0f) + B * v;
                 float q = (C * v + B * u) * v + A * u * u;
 
@@ -648,7 +648,7 @@ TEST_SUITE(EWAFilteringExploration)
         const size_t Width = 32;
         const size_t Height = 32;
         Image texture(Width, Height, Width, Height, 3, PixelFormatFloat);
-        draw_checkerboard(texture, 32, Color3f(0.3f), Color3f(1.0f));
+        draw_checkerboard(texture, 1, Color3f(0.3f), Color3f(1.0f));
 
         // Create the filters.
         Image debug_image(texture);
