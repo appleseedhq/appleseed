@@ -198,12 +198,12 @@ TEST_SUITE(EWAFilteringExploration)
         draw_line(image, center, center + dv, Color3f(0.0f, 1.0, 0.0));
 
         // Compute the ellipse coefficients.
-        const double A = du.y * du.y + dv.y * dv.y;
-        const double B = -2.0 * (du.x * du.y + dv.x * dv.y);
-        const double C = du.x * du.x + dv.x * dv.x;
+        double A = du.y * du.y + dv.y * dv.y;
+        double B = -2.0 * (du.x * du.y + dv.x * dv.y);
+        double C = du.x * du.x + dv.x * dv.x;
 
         // Compute the inclusion threshold.
-        const double F = square(du.x * dv.y - dv.x * du.y);
+        double F = square(du.x * dv.y - dv.x * du.y);
 
         // Make sure we have an elliptical paraboloid, concave upward.
         assert(A > 0.0);
@@ -223,6 +223,23 @@ TEST_SUITE(EWAFilteringExploration)
         // Draw the bounding box of the ellipse.
         draw_bbox(image, bbox, Color3f(1.0f, 1.0f, 0.0f));
 
+        // Precompute the filter profile.
+        const size_t FilterProfileSize = 256;
+        float FilterProfile[FilterProfileSize];
+        for (size_t i = 0; i < FilterProfileSize; ++i)
+        {
+            const float Alpha = 2.0f;
+            const float r2 = static_cast<float>(i) / (FilterProfileSize - 1);
+            FilterProfile[i] = exp(-Alpha * r2);
+        }
+
+        // Rescale the ellipse parameters.
+        const double Scale = static_cast<double>(FilterProfileSize) / F;
+        A *= Scale;
+        B *= Scale;
+        C *= Scale;
+        F *= Scale;
+
         const int u = bbox.min.x - center.x;
         const double Ddq = 2.0 * A;
 
@@ -238,7 +255,7 @@ TEST_SUITE(EWAFilteringExploration)
                     image,
                     x, y,
                     q < F ? Color3f(0.0f, 1.0f, 0.0f) : Color3f(0.0f, 0.0f, 1.0f),
-                    0.2f);
+                    q < F ? FilterProfile[truncate<size_t>(q)] : 0.2f);
 
                 q += dq;
                 dq += Ddq;
