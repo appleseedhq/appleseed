@@ -558,4 +558,28 @@ TEST_SUITE(EWAFilteringExploration)
         // Verify that the results match.
         EXPECT_FEQ(ref_result, ak_result);
     }
+
+    TEST_CASE(BilinearFilteringFallback)
+    {
+        // Generate a 2x2 checkerboard texture.
+        Image texture(2, 2, 2, 2, 3, PixelFormatFloat);
+        draw_checkerboard(texture, 1, Color3f(0.0f), Color3f(1.0f));
+
+        // Corners of the input trapezoid.
+        const Vector2f V00(0.0f, 0.0f);
+        const Vector2f V10(0.999f, 0.0f);
+        const Vector2f V01(0.0f, 0.999f);
+        const Vector2f V11(0.999f, 0.999f);
+
+        // Run the reference filter.
+        Image debug_image(texture);
+        EWAFilterRef ref_filter(debug_image);
+        const Color3f ref_result = ref_filter.filter_trapezoid(texture, V00, V10, V01, V11);
+        EXPECT_FEQ_EPS(Color3f(0.5f), ref_result, 1.0e-4f);
+
+        // Run the AK filter.
+        EWAFilterAK ak_filter;
+        const Color3f ak_result = ak_filter.filter_trapezoid(texture, V00, V10, V01, V11);
+        EXPECT_FEQ_EPS(Color3f(0.5f), ak_result, 1.0e-4f);
+    }
 }
