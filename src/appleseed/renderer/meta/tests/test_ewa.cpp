@@ -65,7 +65,7 @@ TEST_SUITE(EWAFilteringExploration)
         {
             for (size_t x = 0; x < width; ++x)
             {
-                const int b = ((x / scale) ^ (y / scale)) & 1;
+                const size_t b = ((x / scale) ^ (y / scale)) & 1;
                 image.set_pixel(x, y, b ? color1 : color2);
             }
         }
@@ -170,8 +170,8 @@ TEST_SUITE(EWAFilteringExploration)
         if (is_inside(image, x, y))
         {
             Color3f base;
-            image.get_pixel(size_t(x), size_t(y), base);
-            image.set_pixel(size_t(x), size_t(y), lerp(base, color, intensity));
+            image.get_pixel(x, y, base);
+            image.set_pixel(x, y, lerp(base, color, intensity));
         }
     }
 
@@ -645,7 +645,9 @@ TEST_SUITE(EWAFilteringExploration)
     TEST_CASE(StressTest)
     {
         // Generate a checkerboard texture.
-        Image texture(512, 512, 512, 512, 3, PixelFormatFloat);
+        const size_t Width = 32;
+        const size_t Height = 32;
+        Image texture(Width, Height, Width, Height, 3, PixelFormatFloat);
         draw_checkerboard(texture, 32, Color3f(0.3f), Color3f(1.0f));
 
         // Create the filters.
@@ -653,10 +655,12 @@ TEST_SUITE(EWAFilteringExploration)
         EWAFilterRef ref_filter(debug_image);
         EWAFilterAK ak_filter;
 
-        const AABB2f domain(Vector2f(0.0f, 0.0f), Vector2f(512.0f, 512.0f));
+        const AABB2f domain(
+            Vector2f(0.0f, 0.0f),
+            Vector2f(static_cast<float>(Width), static_cast<float>(Height)));
         MersenneTwister rng;
 
-        for (size_t i = 0; i < 100; ++i)
+        for (size_t i = 0; i < 1000; ++i)
         {
             // Corners of the input trapezoid.
             const Vector2f v00 = random_point(rng, domain);
