@@ -26,6 +26,9 @@
 // THE SOFTWARE.
 //
 
+// EWA filter implementation for AtomKraft.
+#include "ewa.h"
+
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
 #include "foundation/image/genericimagefilewriter.h"
@@ -484,10 +487,10 @@ TEST_SUITE(EWAFilteringExploration)
     TEST_CASE(StressTest)
     {
         // Generate a checkerboard texture.
-        const size_t Width = 32;
-        const size_t Height = 32;
+        const size_t Width = 64;
+        const size_t Height = 64;
         Image texture(Width, Height, Width, Height, 3, PixelFormatFloat);
-        draw_checkerboard(texture, 1, Color3f(0.3f), Color3f(1.0f));
+        draw_checkerboard(texture, 2, Color3f(0.3f, 0.6f, 0.1f), Color3f(1.0f, 0.8f, 0.5f));
 
         // Create the filters.
         Image debug_image(texture);
@@ -507,9 +510,15 @@ TEST_SUITE(EWAFilteringExploration)
             const Vector2f v01 = random_point(rng, domain);
             const Vector2f v11 = random_point(rng, domain);
 
+            // Draw a random gamma value.
+            const float texture_gamma = rand_float1(rng, 0.1f, 10.0f);
+
             // Run the reference filter.
             const Color3f ref_result =
-                ref_filter.filter_trapezoid(texture, 1.0f, v00, v10, v01, v11);
+                ref_filter.filter_trapezoid(
+                    texture,
+                    texture_gamma,
+                    v00, v10, v01, v11);
 
             // Run the AK filter.
             Color3f ak_result;
@@ -518,7 +527,7 @@ TEST_SUITE(EWAFilteringExploration)
                 texture.properties().m_canvas_width,
                 texture.properties().m_canvas_height,
                 texture.properties().m_channel_count,
-                1.0f,
+                texture_gamma,
                 v00.x, v00.y,
                 v10.x, v10.y,
                 v01.x, v01.y,

@@ -81,10 +81,10 @@ class EWAFilterAK
         const float w01 = wx0 * wy1;
         const float w11 = wx1 * wy1;
 
-        const int index00 = (iy0 * texture_width + ix0) * texture_channels;
-        const int index10 = (iy1 * texture_width + ix0) * texture_channels;
-        const int index01 = (iy0 * texture_width + ix1) * texture_channels;
-        const int index11 = (iy1 * texture_width + ix1) * texture_channels;
+        const int index00 = (ix0 + iy0 * texture_width) * texture_channels;
+        const int index10 = (ix1 + iy0 * texture_width) * texture_channels;
+        const int index01 = (ix0 + iy1 * texture_width) * texture_channels;
+        const int index11 = (ix1 + iy1 * texture_width) * texture_channels;
 
         if (texture_gamma != 1.0f)
         {
