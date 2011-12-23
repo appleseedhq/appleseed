@@ -32,6 +32,7 @@
 #include "foundation/image/image.h"
 #include "foundation/image/pixel.h"
 #include "foundation/math/aabb.h"
+#include "foundation/math/rng.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/iostreamop.h"
@@ -70,6 +71,20 @@ TEST_SUITE(EWAFilteringExploration)
         }
     }
 
+    bool is_inside(
+        const Image&    image, 
+        const int       x,
+        const int       y)
+    {
+        const CanvasProperties& props = image.properties();
+
+        return
+            x >= 0 &&
+            y >= 0 &&
+            x < static_cast<int>(props.m_canvas_width) &&
+            y < static_cast<int>(props.m_canvas_height);
+    }
+
     void draw_line(
         Image&          image,
         const Vector2i& v0,
@@ -94,7 +109,8 @@ TEST_SUITE(EWAFilteringExploration)
 
             while (true)
             {
-                image.set_pixel(x, y, color);
+                if (is_inside(image, x, y))
+                    image.set_pixel(x, y, color);
 
                 if (x == v1.x)
                     return;
@@ -115,7 +131,8 @@ TEST_SUITE(EWAFilteringExploration)
 
             while (true)
             {
-                image.set_pixel(x, y, color);
+                if (is_inside(image, x, y))
+                    image.set_pixel(x, y, color);
 
                 if (y == v1.y)
                     return;
@@ -150,13 +167,17 @@ TEST_SUITE(EWAFilteringExploration)
         const Color3f&  color,
         const float     intensity)
     {
-        Color3f base;
-        image.get_pixel(size_t(x), size_t(y), base);
-        image.set_pixel(size_t(x), size_t(y), lerp(base, color, intensity));
+        if (is_inside(image, x, y))
+        {
+            Color3f base;
+            image.get_pixel(size_t(x), size_t(y), base);
+            image.set_pixel(size_t(x), size_t(y), lerp(base, color, intensity));
+        }
     }
 
     //---------------------------------------------------------------------------------------------
     //--- Reference EWA Filter Implementation -----------------------------------------------------
+    //--- http://www.cs.cmu.edu/~ph/texfund/texfund.pdf -------------------------------------------
     //---------------------------------------------------------------------------------------------
 
     class EWAFilterRef
@@ -169,7 +190,57 @@ TEST_SUITE(EWAFilteringExploration)
             compute_weights();
         }
 
-        // Trapezoid vertices are in [0,width)x[0,height) (note: open on the right).
+        // The lookup point is expressed in [0,width)x[0,height) (note: open on the right).
+        Color3f filter_bilinear(
+            const Image&    texture,
+            const Vector2f& point,
+            const bool      ungamma = false) const
+        {
+            // Fetch neighboring texels.
+            const CanvasProperties& props = texture.properties();
+            const Vector2f p(
+                point.x / props.m_canvas_width * (props.m_canvas_width - 1),
+                point.y / props.m_canvas_height * (props.m_canvas_height - 1));
+            const int ix0 = truncate<int>(p.x);
+            const int iy0 = truncate<int>(p.y);
+            const int ix1 = min(ix0 + 1, static_cast<int>(props.m_canvas_width - 1));
+            const int iy1 = min(iy0 + 1, static_cast<int>(props.m_canvas_height - 1));
+            Color3f c00, c10, c01, c11;
+            texture.get_pixel(ix0, iy0, c00);
+            texture.get_pixel(ix1, iy0, c10);
+            texture.get_pixel(ix0, iy1, c01);
+            texture.get_pixel(ix1, iy1, c11);
+
+            // Ungamma texels.
+            if (ungamma)
+            {
+                c00 = do_ungamma(c00);
+                c10 = do_ungamma(c10);
+                c01 = do_ungamma(c01);
+                c11 = do_ungamma(c11);
+            }
+
+            // Compute weights.
+            const float wx1 = p.x - ix0;
+            const float wy1 = p.y - iy0;
+            const float wx0 = 1.0f - wx1;
+            const float wy0 = 1.0f - wy1;
+
+            // Apply weights.
+            c00 *= wx0 * wy0;
+            c10 *= wx1 * wy0;
+            c01 *= wx0 * wy1;
+            c11 *= wx1 * wy1;
+
+            // Accumulate.
+            c00 += c10;
+            c00 += c01;
+            c00 += c11;
+
+            return c00;
+        }
+
+        // Trapezoid vertices are expressed in [0,width)x[0,height) (note: open on the right).
         Color3f filter_trapezoid(
             const Image&    texture,
             const Vector2f& v00,
@@ -197,7 +268,10 @@ TEST_SUITE(EWAFilteringExploration)
             const float F = static_cast<float>(WeightCount);
 
             // Compute the ellipse coefficients.
-            const float K = F / square(du.x * dv.y - dv.x * du.y);
+            const float K_den = square(du.x * dv.y - dv.x * du.y);
+            if (K_den == 0.0f)
+                return filter_bilinear(texture, center, ungamma);
+            const float K = F / K_den;
             const float A = K * (du.y * du.y + dv.y * dv.y);
             const float B = K * (-2.0f * (du.x * du.y + dv.x * dv.y));
             const float C = K * (du.x * du.x + dv.x * dv.x);
@@ -206,16 +280,15 @@ TEST_SUITE(EWAFilteringExploration)
             assert(A > 0.0f);
             assert(A * C - B * B / 4.0f > 0.0f);
 
-            // Compute the bounding box of the ellipse (derived using implicit differentation
-            // of the ellipse equation; extrema values of v are where the derivative is zero;
-            // extrema values of u are where the derivative is not defined).
+            // Compute the bounding box of the ellipse.
+            const CanvasProperties& props = texture.properties();
             const float ku = 2.0f * C * sqrt(F / (4.0f * A * C * C - C * B * B));
             const float kv = 2.0f * A * sqrt(F / (4.0f * A * A * C - A * B * B));
             AABB2i bbox;
-            bbox.min.x = truncate<int>(floor(center.x - ku));
-            bbox.min.y = truncate<int>(floor(center.y - kv));
-            bbox.max.x = truncate<int>(ceil(center.x + ku));
-            bbox.max.y = truncate<int>(ceil(center.y + kv));
+            bbox.min.x = max(truncate<int>(floor(center.x - ku)), 0);
+            bbox.min.y = max(truncate<int>(floor(center.y - kv)), 0);
+            bbox.max.x = min(truncate<int>(ceil(center.x + ku)), static_cast<int>(props.m_canvas_width - 1));
+            bbox.max.y = min(truncate<int>(ceil(center.y + kv)), static_cast<int>(props.m_canvas_height - 1));
 
             // Draw the bounding box of the ellipse.
             draw_box(m_debug_image, bbox, Color3f(1.0f, 1.0f, 0.0f));
@@ -223,12 +296,12 @@ TEST_SUITE(EWAFilteringExploration)
             Color3f num(0.0f);
             float den = 0.0f;
 
-            const float u = bbox.min.x - center.x;
+            const float u = bbox.min.x - center.x + 0.5f;
             const float Ddq = 2.0f * A;
 
             for (int y = bbox.min.y; y <= bbox.max.y; ++y)
             {
-                const float v = y - center.y;
+                const float v = y - center.y + 0.5f;
                 float dq = A * (2.0f * u + 1.0f) + B * v;
                 float q = (C * v + B * u) * v + A * u * u;
 
@@ -267,47 +340,9 @@ TEST_SUITE(EWAFilteringExploration)
                 }
             }
 
-            if (den > 0.0f)
-                return num / den;
-
-            // Fallback to bilinear filtering.
-
-            // Fetch neighboring texels.
-            const int ix = truncate<int>(center.x);
-            const int iy = truncate<int>(center.y);
-            Color3f c00, c10, c01, c11;
-            texture.get_pixel(ix + 0, iy + 0, c00);
-            texture.get_pixel(ix + 1, iy + 0, c10);
-            texture.get_pixel(ix + 0, iy + 1, c01);
-            texture.get_pixel(ix + 1, iy + 1, c11);
-
-            // Ungamma texels.
-            if (ungamma)
-            {
-                c00 = do_ungamma(c00);
-                c10 = do_ungamma(c10);
-                c01 = do_ungamma(c01);
-                c11 = do_ungamma(c11);
-            }
-
-            // Compute weights.
-            const float wx1 = center.x - ix;
-            const float wy1 = center.y - iy;
-            const float wx0 = 1.0f - wx1;
-            const float wy0 = 1.0f - wy1;
-
-            // Apply weights.
-            c00 *= wx0 * wy0;
-            c10 *= wx1 * wy0;
-            c01 *= wx0 * wy1;
-            c11 *= wx1 * wy1;
-
-            // Accumulate.
-            c00 += c10;
-            c00 += c01;
-            c00 += c11;
-
-            return c00;
+            return den > 0.0f
+                ? num / den
+                : filter_bilinear(texture, center, ungamma);
         }
 
       private:
@@ -372,6 +407,56 @@ TEST_SUITE(EWAFilteringExploration)
             compute_weights();
         }
 
+        // The lookup point is expressed in [0,width)x[0,height) (note: open on the right).
+        Color3f filter_bilinear(
+            const Image&    texture,
+            const Vector2f& point,
+            const bool      ungamma = false) const
+        {
+            // Fetch neighboring texels.
+            const CanvasProperties& props = texture.properties();
+            const Vector2f p(
+                point.x / props.m_canvas_width * (props.m_canvas_width - 1),
+                point.y / props.m_canvas_height * (props.m_canvas_height - 1));
+            const int ix0 = truncate<int>(p.x);
+            const int iy0 = truncate<int>(p.y);
+            const int ix1 = min(ix0 + 1, static_cast<int>(props.m_canvas_width - 1));
+            const int iy1 = min(iy0 + 1, static_cast<int>(props.m_canvas_height - 1));
+            Color3f c00, c10, c01, c11;
+            texture.get_pixel(ix0, iy0, c00);
+            texture.get_pixel(ix1, iy0, c10);
+            texture.get_pixel(ix0, iy1, c01);
+            texture.get_pixel(ix1, iy1, c11);
+
+            // Ungamma texels.
+            if (ungamma)
+            {
+                c00 = do_ungamma(c00);
+                c10 = do_ungamma(c10);
+                c01 = do_ungamma(c01);
+                c11 = do_ungamma(c11);
+            }
+
+            // Compute weights.
+            const float wx1 = p.x - ix0;
+            const float wy1 = p.y - iy0;
+            const float wx0 = 1.0f - wx1;
+            const float wy0 = 1.0f - wy1;
+
+            // Apply weights.
+            c00 *= wx0 * wy0;
+            c10 *= wx1 * wy0;
+            c01 *= wx0 * wy1;
+            c11 *= wx1 * wy1;
+
+            // Accumulate.
+            c00 += c10;
+            c00 += c01;
+            c00 += c11;
+
+            return c00;
+        }
+
         // Trapezoid vertices are in [0,width)x[0,height) (note: open on the right).
         Color3f filter_trapezoid(
             const Image&    texture,
@@ -389,7 +474,10 @@ TEST_SUITE(EWAFilteringExploration)
             const float F = static_cast<float>(WeightCount);
 
             // Compute the ellipse coefficients.
-            const float K = F / square(du.x * dv.y - dv.x * du.y);
+            const float K_den = square(du.x * dv.y - dv.x * du.y);
+            if (K_den == 0.0f)
+                return filter_bilinear(texture, center, ungamma);
+            const float K = F / K_den;
             const float A = K * (du.y * du.y + dv.y * dv.y);
             const float B = K * (-2.0f * (du.x * du.y + dv.x * dv.y));
             const float C = K * (du.x * du.x + dv.x * dv.x);
@@ -399,22 +487,23 @@ TEST_SUITE(EWAFilteringExploration)
             assert(A * C - B * B / 4.0f > 0.0f);
 
             // Compute the bounding box of the ellipse.
+            const CanvasProperties& props = texture.properties();
             const float ku = 2.0f * C * sqrt(F / (4.0f * A * C * C - C * B * B));
             const float kv = 2.0f * A * sqrt(F / (4.0f * A * A * C - A * B * B));
-            const int min_x = truncate<int>(floor(center.x - ku));
-            const int min_y = truncate<int>(floor(center.y - kv));
-            const int max_x = truncate<int>(ceil(center.x + ku));
-            const int max_y = truncate<int>(ceil(center.y + kv));
+            const int min_x = max(truncate<int>(floor(center.x - ku)), 0);
+            const int min_y = max(truncate<int>(floor(center.y - kv)), 0);
+            const int max_x = min(truncate<int>(ceil(center.x + ku)), static_cast<int>(props.m_canvas_width - 1));
+            const int max_y = min(truncate<int>(ceil(center.y + kv)), static_cast<int>(props.m_canvas_height - 1));
 
             Color3f num(0.0f);
             float den = 0.0f;
 
-            const float u = min_x - center.x;
+            const float u = min_x - center.x + 0.5f;
             const float Ddq = 2.0f * A;
 
             for (int y = min_y; y <= max_y; ++y)
             {
-                const float v = y - center.y;
+                const float v = y - center.y + 0.5f;
                 float dq = A * (2.0f * u + 1.0f) + B * v;
                 float q = (C * v + B * u) * v + A * u * u;
 
@@ -439,47 +528,9 @@ TEST_SUITE(EWAFilteringExploration)
                 }
             }
 
-            if (den > 0.0f)
-                return num / den;
-
-            // Fallback to bilinear filtering.
-
-            // Fetch neighboring texels.
-            const int ix = truncate<int>(center.x);
-            const int iy = truncate<int>(center.y);
-            Color3f c00, c10, c01, c11;
-            texture.get_pixel(ix + 0, iy + 0, c00);
-            texture.get_pixel(ix + 1, iy + 0, c10);
-            texture.get_pixel(ix + 0, iy + 1, c01);
-            texture.get_pixel(ix + 1, iy + 1, c11);
-
-            // Ungamma texels.
-            if (ungamma)
-            {
-                c00 = do_ungamma(c00);
-                c10 = do_ungamma(c10);
-                c01 = do_ungamma(c01);
-                c11 = do_ungamma(c11);
-            }
-
-            // Compute weights.
-            const float wx1 = center.x - ix;
-            const float wy1 = center.y - iy;
-            const float wx0 = 1.0f - wx1;
-            const float wy0 = 1.0f - wy1;
-
-            // Apply weights.
-            c00 *= wx0 * wy0;
-            c10 *= wx1 * wy0;
-            c01 *= wx0 * wy1;
-            c11 *= wx1 * wy1;
-
-            // Accumulate.
-            c00 += c10;
-            c00 += c01;
-            c00 += c11;
-
-            return c00;
+            return den > 0.0f
+                ? num / den
+                : filter_bilinear(texture, center, ungamma);
         }
 
       private:
@@ -530,7 +581,7 @@ TEST_SUITE(EWAFilteringExploration)
     //--- Test Code -------------------------------------------------------------------------------
     //---------------------------------------------------------------------------------------------
 
-    TEST_CASE(EWA)
+    TEST_CASE(EWAFiltering)
     {
         // Generate a checkerboard texture.
         Image texture(512, 512, 512, 512, 3, PixelFormatFloat);
@@ -566,20 +617,61 @@ TEST_SUITE(EWAFilteringExploration)
         draw_checkerboard(texture, 1, Color3f(0.0f), Color3f(1.0f));
 
         // Corners of the input trapezoid.
-        const Vector2f V00(0.0f, 0.0f);
-        const Vector2f V10(0.999f, 0.0f);
-        const Vector2f V01(0.0f, 0.999f);
-        const Vector2f V11(0.999f, 0.999f);
+        const Vector2f V00(0.99f, 0.99f);
+        const Vector2f V10(1.01f, 0.99f);
+        const Vector2f V01(0.99f, 1.01f);
+        const Vector2f V11(1.01f, 1.01f);
 
         // Run the reference filter.
         Image debug_image(texture);
         EWAFilterRef ref_filter(debug_image);
         const Color3f ref_result = ref_filter.filter_trapezoid(texture, V00, V10, V01, V11);
-        EXPECT_FEQ_EPS(Color3f(0.5f), ref_result, 1.0e-4f);
+        EXPECT_FEQ(Color3f(0.5f), ref_result);
 
         // Run the AK filter.
         EWAFilterAK ak_filter;
         const Color3f ak_result = ak_filter.filter_trapezoid(texture, V00, V10, V01, V11);
-        EXPECT_FEQ_EPS(Color3f(0.5f), ak_result, 1.0e-4f);
+        EXPECT_FEQ(Color3f(0.5f), ak_result);
+    }
+
+    Vector2f random_point(MersenneTwister& rng, const AABB2f& bbox)
+    {
+        Vector2f v;
+        v.x = rand_float2(rng, bbox.min.x, bbox.max.x);
+        v.y = rand_float2(rng, bbox.min.y, bbox.max.y);
+        return v;
+    }
+
+    TEST_CASE(StressTest)
+    {
+        // Generate a checkerboard texture.
+        Image texture(512, 512, 512, 512, 3, PixelFormatFloat);
+        draw_checkerboard(texture, 32, Color3f(0.3f), Color3f(1.0f));
+
+        // Create the filters.
+        Image debug_image(texture);
+        EWAFilterRef ref_filter(debug_image);
+        EWAFilterAK ak_filter;
+
+        const AABB2f domain(Vector2f(0.0f, 0.0f), Vector2f(512.0f, 512.0f));
+        MersenneTwister rng;
+
+        for (size_t i = 0; i < 100; ++i)
+        {
+            // Corners of the input trapezoid.
+            const Vector2f v00 = random_point(rng, domain);
+            const Vector2f v10 = random_point(rng, domain);
+            const Vector2f v01 = random_point(rng, domain);
+            const Vector2f v11 = random_point(rng, domain);
+
+            // Run the reference filter.
+            const Color3f ref_result = ref_filter.filter_trapezoid(texture, v00, v10, v01, v11);
+
+            // Run the AK filter.
+            const Color3f ak_result = ak_filter.filter_trapezoid(texture, v00, v10, v01, v11);
+
+            // Verify that the results match.
+            EXPECT_FEQ(ref_result, ak_result);
+        }
     }
 }
