@@ -428,14 +428,18 @@ struct OBJMeshFileReader::Impl
         m_mesh_name.clear();
 
         // Retrieve the name of the upcoming mesh.
-        if (!m_lexer.is_eol())
+        while (!m_lexer.is_eol())
         {
             const char* mesh_name;
             size_t mesh_name_length;
 
             m_lexer.accept_string(&mesh_name, &mesh_name_length);
+            m_lexer.eat_blanks();
 
-            m_mesh_name.assign(mesh_name, mesh_name_length);
+            if (!m_mesh_name.empty())
+                m_mesh_name += ' ';
+
+            m_mesh_name.append(mesh_name, mesh_name_length);
         }
     }
 

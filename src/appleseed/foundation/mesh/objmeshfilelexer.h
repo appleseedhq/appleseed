@@ -156,12 +156,14 @@ class OBJMeshFileLexer
 
             if (c == '\n')
                 break;
-            else if (c == '#')
+
+            if (c == '#')
             {
                 m_line_index = m_line.size();
                 break;
             }
-            else if (!is_space(c))
+
+            if (!is_space(c))
                 break;
 
             next_char();
@@ -173,6 +175,25 @@ class OBJMeshFileLexer
     {
         m_line_index = 0;
         read_next_line();
+    }
+
+    // Eat until the end-of-line character (eat the remaining of the line).
+    void eat_until_newline()
+    {
+        assert(m_file.is_open());
+
+        while (true)
+        {
+            if (is_eof())
+                break;
+
+            const unsigned char c = get_char();
+
+            if (c == '\n')
+                break;
+
+            next_char();
+        }
     }
 
     // Accept a end-of-line character, or generate a parse error.
