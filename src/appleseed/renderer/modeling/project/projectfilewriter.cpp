@@ -662,6 +662,7 @@ namespace
             element.add_attribute("object", object_instance.get_object().get_name());
             element.write(true);
 
+            write(object_instance.get_parameters());
             write(object_instance.get_transform());
 
             // Write the <assign_material> elements.

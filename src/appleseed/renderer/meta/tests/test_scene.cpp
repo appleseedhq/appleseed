@@ -83,6 +83,7 @@ TEST_SUITE(Renderer_Modeling_Scene_Scene)
         assembly->object_instances().insert(
             ObjectInstanceFactory::create(
                 "object_inst",
+                ParamArray(),
                 *object,
                 Transformd(Matrix4d::identity()),
                 StringArray()));

@@ -1580,6 +1580,7 @@ namespace
                 m_object_instance =
                     ObjectInstanceFactory::create(
                         m_name.c_str(),
+                        m_params,
                         *object,
                         m_transform,
                         m_material_names);

@@ -127,6 +127,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             assembly->object_instances().insert(
                 ObjectInstanceFactory::create(
                     name,
+                    ParamArray(),
                     *object,
                     Transformd(Matrix4d::translation(position)),
                     material_names));

@@ -630,6 +630,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         assembly->object_instances().insert(
             ObjectInstanceFactory::create(
                 "floor_inst",
+                ParamArray(),
                 *object,
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
                 material_names));
@@ -668,6 +669,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         assembly->object_instances().insert(
             ObjectInstanceFactory::create(
                 "ceiling_inst",
+                ParamArray(),
                 *object,
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
                 material_names));
@@ -706,6 +708,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         assembly->object_instances().insert(
             ObjectInstanceFactory::create(
                 "back_wall_inst",
+                ParamArray(),
                 *object,
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
                 material_names));
@@ -744,6 +747,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         assembly->object_instances().insert(
             ObjectInstanceFactory::create(
                 "right_wall_inst",
+                ParamArray(),
                 *object,
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
                 material_names));
@@ -783,6 +787,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         assembly->object_instances().insert(
             ObjectInstanceFactory::create(
                 "left_wall_inst",
+                ParamArray(),
                 *object,
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
                 material_names));
@@ -849,6 +854,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         assembly->object_instances().insert(
             ObjectInstanceFactory::create(
                 "short_block_inst",
+                ParamArray(),
                 *object,
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
                 material_names));
@@ -915,6 +921,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         assembly->object_instances().insert(
             ObjectInstanceFactory::create(
                 "tall_block_inst",
+                ParamArray(),
                 *object,
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
                 material_names));
@@ -953,6 +960,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         assembly->object_instances().insert(
             ObjectInstanceFactory::create(
                 "light_inst",
+                ParamArray(),
                 *object,
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
                 material_names));

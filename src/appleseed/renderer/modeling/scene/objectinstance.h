@@ -87,6 +87,9 @@ class RENDERERDLL ObjectInstance
     // Return the materials referenced by this instance.
     const MaterialArray& get_materials() const;
 
+    // Return true if the surface of this instance is double-sided.
+    bool is_double_sided() const;
+
   private:
     friend class ObjectInstanceFactory;
 
@@ -94,9 +97,12 @@ class RENDERERDLL ObjectInstance
     struct Impl;
     Impl* impl;
 
+    bool m_double_sided;
+
     // Constructor.
     ObjectInstance(
         const char*                     name,
+        const ParamArray&               params,
         Object&                         object,
         const foundation::Transformd&   transform,
         const foundation::StringArray&  material_names);
@@ -116,10 +122,21 @@ class RENDERERDLL ObjectInstanceFactory
     // Create a new object instance.
     static foundation::auto_release_ptr<ObjectInstance> create(
         const char*                     name,
+        const ParamArray&               params,
         Object&                         object,
         const foundation::Transformd&   transform,
         const foundation::StringArray&  material_names);
 };
+
+
+//
+// ObjectInstance class implementation.
+//
+
+inline bool ObjectInstance::is_double_sided() const
+{
+    return m_double_sided;
+}
 
 }       // namespace renderer
 

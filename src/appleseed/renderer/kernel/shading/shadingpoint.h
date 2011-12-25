@@ -409,6 +409,13 @@ inline const foundation::Vector3d& ShadingPoint::get_shading_normal() const
         // Normalize the shading normal.
         m_input_params.m_shading_normal = foundation::normalize(m_input_params.m_shading_normal);
 
+        // Optionally make the shading normal face the direction of the incoming ray.
+        if (m_object_instance->is_double_sided())
+        {
+            m_input_params.m_shading_normal =
+                foundation::faceforward(m_input_params.m_shading_normal, m_ray.m_dir);
+        }
+
         // The shading normal is now available.
         m_members |= HasShadingNormal;
     }

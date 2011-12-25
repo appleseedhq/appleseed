@@ -103,6 +103,7 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
             assembly->object_instances().insert(
                 ObjectInstanceFactory::create(
                     "object_instance",
+                    ParamArray(),
                     *object,
                     Transformd(Matrix4d::identity()),
                     StringArray()));

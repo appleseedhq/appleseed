@@ -200,6 +200,7 @@ void ProjectBuilder::insert_objects(
         auto_release_ptr<ObjectInstance> object_instance(
             ObjectInstanceFactory::create(
                 object_instance_name.c_str(),
+                ParamArray(),
                 *object,
                 Transformd(Matrix4d::identity()),
                 StringArray()));

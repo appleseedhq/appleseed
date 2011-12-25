@@ -75,10 +75,11 @@ namespace
 
 ObjectInstance::ObjectInstance(
     const char*         name,
+    const ParamArray&   params,
     Object&             object,
     const Transformd&   transform,
     const StringArray&  material_names)
-  : Entity(g_class_uid)
+  : Entity(g_class_uid, params)
   , impl(new Impl(object))
 {
     set_name(name);
@@ -86,6 +87,8 @@ ObjectInstance::ObjectInstance(
     impl->m_transform = transform;
     impl->m_parent_bbox = transform.transform_to_parent(object.get_local_bbox());
     impl->m_material_names = material_names;
+
+    m_double_sided = params.get_optional<bool>("double_sided", false);
 }
 
 ObjectInstance::~ObjectInstance()
@@ -160,6 +163,7 @@ const MaterialArray& ObjectInstance::get_materials() const
 
 auto_release_ptr<ObjectInstance> ObjectInstanceFactory::create(
     const char*         name,
+    const ParamArray&   params,
     Object&             object,
     const Transformd&   transform,
     const StringArray&  material_names)
@@ -168,6 +172,7 @@ auto_release_ptr<ObjectInstance> ObjectInstanceFactory::create(
         auto_release_ptr<ObjectInstance>(
             new ObjectInstance(
                 name,
+                params,
                 object,
                 transform,
                 material_names));
