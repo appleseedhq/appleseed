@@ -56,6 +56,7 @@ class RENDERERDLL Environment
     // Return a string identifying the model of this environment.
     const char* get_model() const;
 
+    // Perform entity binding.
     void bind_entities(
         const EnvironmentEDFContainer&      environment_edfs,
         const EnvironmentShaderContainer&   environment_shaders);

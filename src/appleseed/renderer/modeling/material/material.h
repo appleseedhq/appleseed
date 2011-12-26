@@ -57,6 +57,7 @@ class RENDERERDLL Material
     // Return a string identifying the model of this material.
     const char* get_model() const;
 
+    // Perform entity binding.
     void bind_entities(
         const SurfaceShaderContainer&   surface_shaders,
         const BSDFContainer&            bsdfs,
