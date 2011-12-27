@@ -63,6 +63,7 @@ class RENDERERDLL DiagnosticSurfaceShader
         UV,                     // shade according to UV coordinates
         GeometricNormal,        // shade according to the geometric normal
         ShadingNormal,          // shade according to the shading normal
+        Sides,                  // shade according to the surface side
         AssemblyInstances,      // assign a unique color to each assembly instance
         ObjectInstances,        // assign a unique color to each object instance
         Regions,                // assign a unique color to each region

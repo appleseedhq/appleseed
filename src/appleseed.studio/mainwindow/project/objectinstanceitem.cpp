@@ -53,11 +53,46 @@
 // Standard headers.
 #include <string>
 
+using namespace appleseed::studio;
 using namespace foundation;
 using namespace renderer;
 using namespace std;
 
-Q_DECLARE_METATYPE(QList<appleseed::studio::ItemBase*>);
+namespace
+{
+    enum Side
+    {
+        FrontSide = 0,
+        BackSide,
+        FrontAndBackSides
+    };
+
+    struct MaterialAssignmentData
+    {
+        Side                m_side;
+        QList<ItemBase*>    m_items;
+
+        MaterialAssignmentData()
+        {
+        }
+
+        explicit MaterialAssignmentData(const Side side)
+            : m_side(side)
+        {
+        }
+
+        MaterialAssignmentData(
+            const Side              side,
+            const QList<ItemBase*>& items)
+          : m_side(side)
+          , m_items(items)
+        {
+        }
+    };
+}
+
+Q_DECLARE_METATYPE(QList<ItemBase*>);
+Q_DECLARE_METATYPE(MaterialAssignmentData);
 
 namespace appleseed {
 namespace studio {
@@ -81,8 +116,25 @@ QMenu* ObjectInstanceItem::get_single_item_context_menu() const
     QMenu* menu = ItemBase::get_single_item_context_menu();
     menu->addSeparator();
 
-    menu->addAction("Assign Material...", this, SLOT(slot_assign_material()));
-    menu->addAction("Unassign Material", this, SLOT(slot_unassign_material()));
+    menu->addAction("Assign Material To Front Side...", this, SLOT(slot_assign_material()))
+        ->setData(QVariant::fromValue(MaterialAssignmentData(FrontSide)));
+
+    menu->addAction("Assign Material To Back Side...", this, SLOT(slot_assign_material()))
+        ->setData(QVariant::fromValue(MaterialAssignmentData(BackSide)));
+
+    menu->addAction("Assign Material To Both Sides...", this, SLOT(slot_assign_material()))
+        ->setData(QVariant::fromValue(MaterialAssignmentData(FrontAndBackSides)));
+
+    menu->addSeparator();
+
+    menu->addAction("Unassign Front Side Material", this, SLOT(slot_unassign_material()))
+        ->setData(QVariant::fromValue(MaterialAssignmentData(FrontSide)));
+
+    menu->addAction("Unassign Back Side Material", this, SLOT(slot_unassign_material()))
+        ->setData(QVariant::fromValue(MaterialAssignmentData(BackSide)));
+
+    menu->addAction("Unassign Both Sides Materials", this, SLOT(slot_unassign_material()))
+        ->setData(QVariant::fromValue(MaterialAssignmentData(FrontAndBackSides)));
 
     return menu;
 }
@@ -121,10 +173,25 @@ QMenu* ObjectInstanceItem::get_multiple_items_context_menu(const QList<ItemBase*
     QMenu* menu = ItemBase::get_multiple_items_context_menu(items);
     menu->addSeparator();
 
-    menu->addAction("Assign Material...", this, SLOT(slot_assign_material()))
-        ->setData(QVariant::fromValue(items));
-    menu->addAction("Unassign Material", this, SLOT(slot_unassign_material()))
-        ->setData(QVariant::fromValue(items));
+    menu->addAction("Assign Material To Front Side...", this, SLOT(slot_assign_material()))
+        ->setData(QVariant::fromValue(MaterialAssignmentData(FrontSide, items)));
+
+    menu->addAction("Assign Material To Back Side...", this, SLOT(slot_assign_material()))
+        ->setData(QVariant::fromValue(MaterialAssignmentData(BackSide, items)));
+
+    menu->addAction("Assign Material To Both Sides...", this, SLOT(slot_assign_material()))
+        ->setData(QVariant::fromValue(MaterialAssignmentData(FrontAndBackSides, items)));
+
+    menu->addSeparator();
+
+    menu->addAction("Unassign Front Side Material", this, SLOT(slot_unassign_material()))
+        ->setData(QVariant::fromValue(MaterialAssignmentData(FrontSide, items)));
+
+    menu->addAction("Unassign Back Side Material", this, SLOT(slot_unassign_material()))
+        ->setData(QVariant::fromValue(MaterialAssignmentData(BackSide, items)));
+
+    menu->addAction("Unassign Both Sides Materials", this, SLOT(slot_unassign_material()))
+        ->setData(QVariant::fromValue(MaterialAssignmentData(FrontAndBackSides, items)));
 
     return menu;
 }
@@ -166,8 +233,10 @@ void ObjectInstanceItem::slot_assign_material()
 {
     QAction* action = static_cast<QAction*>(sender());
 
+    const MaterialAssignmentData data = action->data().value<MaterialAssignmentData>();
+
     const QString window_title =
-        action->data().isNull()
+        data.m_items.empty()
             ? QString("Assign Material to %1").arg(m_object_instance.get_name())
             : QString("Assign Material to Multiple Object Instances");
 
@@ -198,18 +267,25 @@ void ObjectInstanceItem::slot_assign_material()
     browser_window->activateWindow();
 }
 
-void ObjectInstanceItem::slot_assign_material_accepted(QString page_name, QString entity_name, QVariant data)
+void ObjectInstanceItem::slot_assign_material_accepted(QString page_name, QString entity_name, QVariant untyped_data)
 {
     const string material_name = entity_name.toStdString();
 
-    if (data.isNull())
-        assign_material(material_name.c_str());
+    const MaterialAssignmentData data = untyped_data.value<MaterialAssignmentData>();
+    const bool front_side = data.m_side == FrontSide || data.m_side == FrontAndBackSides;
+    const bool back_side = data.m_side == BackSide || data.m_side == FrontAndBackSides;
+
+    if (data.m_items.empty())
+    {
+        assign_material(front_side, back_side, material_name.c_str());
+    }
     else
     {
-        const QList<ItemBase*> items = data.value<QList<ItemBase*> >();
-
-        for (int i = 0; i < items.size(); ++i)
-            static_cast<ObjectInstanceItem*>(items[i])->assign_material(material_name.c_str());
+        for (int i = 0; i < data.m_items.size(); ++i)
+        {
+            ObjectInstanceItem* item = static_cast<ObjectInstanceItem*>(data.m_items[i]);
+            item->assign_material(front_side, back_side, material_name.c_str());
+        }
     }
 
     qobject_cast<QWidget*>(sender()->parent())->close();
@@ -219,14 +295,21 @@ void ObjectInstanceItem::slot_unassign_material()
 {
     QAction* action = static_cast<QAction*>(sender());
 
-    if (action->data().isNull())
-        unassign_material();
+    const MaterialAssignmentData data = action->data().value<MaterialAssignmentData>();
+    const bool front_side = data.m_side == FrontSide || data.m_side == FrontAndBackSides;
+    const bool back_side = data.m_side == BackSide || data.m_side == FrontAndBackSides;
+
+    if (data.m_items.empty())
+    {
+        unassign_material(front_side, back_side);
+    }
     else
     {
-        const QList<ItemBase*> items = action->data().value<QList<ItemBase*> >();
-
-        for (int i = 0; i < items.size(); ++i)
-            static_cast<ObjectInstanceItem*>(items[i])->unassign_material();
+        for (int i = 0; i < data.m_items.size(); ++i)
+        {
+            ObjectInstanceItem* item = static_cast<ObjectInstanceItem*>(data.m_items[i]);
+            item->unassign_material(front_side, back_side);
+        }
     }
 }
 
@@ -240,18 +323,26 @@ void ObjectInstanceItem::slot_delete()
     // 'this' no longer exists at this point.
 }
 
-void ObjectInstanceItem::assign_material(const char* material_name)
+void ObjectInstanceItem::assign_material(const bool front_side, const bool back_side, const char* material_name)
 {
-    m_object_instance.assign_material(0, material_name);
+    if (front_side)
+        m_object_instance.assign_material(0, ObjectInstance::FrontSide, material_name);
+
+    if (back_side)
+        m_object_instance.assign_material(0, ObjectInstance::BackSide, material_name);
 
     m_project_builder.notify_project_modification();
 
     update_style();
 }
 
-void ObjectInstanceItem::unassign_material()
+void ObjectInstanceItem::unassign_material(const bool front_side, const bool back_side)
 {
-    m_object_instance.clear_materials();
+    if (front_side)
+        m_object_instance.clear_front_materials();
+
+    if (back_side)
+        m_object_instance.clear_back_materials();
 
     m_project_builder.notify_project_modification();
 
@@ -260,8 +351,11 @@ void ObjectInstanceItem::unassign_material()
 
 void ObjectInstanceItem::update_style()
 {
-    if (m_object_instance.get_material_names().empty())
+    if (m_object_instance.get_front_material_names().empty() &&
+        m_object_instance.get_back_material_names().empty())
+    {
         setTextColor(0, QColor(255, 0, 255, 255));
+    }
     else
     {
         // Remove the color overload. Not sure this is the easiest way to do it.

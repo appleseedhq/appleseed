@@ -643,13 +643,24 @@ namespace
 
         // Write an <assign_material> element.
         void write_assign_material(
-            const size_t            slot,
-            const string&           material)
+            const size_t                slot,
+            const ObjectInstance::Side  side,
+            const string&               material_name)
         {
             Element element("assign_material", m_file, m_indenter);
             element.add_attribute("slot", slot);
-            element.add_attribute("material", material);
+            element.add_attribute("side", side == ObjectInstance::FrontSide ? "front" : "back");
+            element.add_attribute("material", material_name);
             element.write(false);
+        }
+
+        // Write a series of <assign_material> elements.
+        void write_assign_materials(
+            const ObjectInstance::Side  side,
+            const StringArray&          material_names)
+        {
+            for (size_t i = 0; i < material_names.size(); ++i)
+                write_assign_material(i, side, material_names[i]);
         }
 
         // Write an <object_instance> element.
@@ -666,9 +677,8 @@ namespace
             write(object_instance.get_transform());
 
             // Write the <assign_material> elements.
-            const StringArray& material_names = object_instance.get_material_names();
-            for (size_t i = 0; i < material_names.size(); ++i)
-                write_assign_material(i, material_names[i]);
+            write_assign_materials(ObjectInstance::FrontSide, object_instance.get_front_material_names());
+            write_assign_materials(ObjectInstance::BackSide, object_instance.get_back_material_names());
         }
 
         // Write an <assembly> element.

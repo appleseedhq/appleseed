@@ -69,7 +69,7 @@ class ObjectInstanceItem
 
   private slots:
     void slot_assign_material();
-    void slot_assign_material_accepted(QString page_name, QString entity_name, QVariant data);
+    void slot_assign_material_accepted(QString page_name, QString entity_name, QVariant untyped_data);
     void slot_unassign_material();
 
   private:
@@ -79,8 +79,14 @@ class ObjectInstanceItem
 
     virtual void slot_delete() override;
 
-    void assign_material(const char* material_name);
-    void unassign_material();
+    void assign_material(
+        const bool                  font_side,
+        const bool                  back_side,
+        const char*                 material_name);
+
+    void unassign_material(
+        const bool                  font_side,
+        const bool                  back_side);
 
     void update_style();
 };

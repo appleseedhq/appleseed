@@ -100,6 +100,9 @@ class ShadingPoint
     // Return a world space orthonormal basis around the shading normal.
     const foundation::Basis3d& get_shading_basis() const;
 
+    // Return the side of the surface that was hit.
+    ObjectInstance::Side get_side() const;
+
     // Return the i'th world space vertex of the hit triangle.
     const foundation::Vector3d& get_vertex(const size_t i) const;
 
@@ -183,6 +186,7 @@ class ShadingPoint
     mutable GVector3                m_v0, m_v1, m_v2;           // object instance space triangle vertices
     mutable GVector3                m_n0, m_n1, m_n2;           // object instance space triangle vertex normals
     mutable InputParams             m_input_params;             // parameters for input evaluation
+    mutable ObjectInstance::Side    m_side;                     // side of the surface that was hit
     mutable foundation::Basis3d     m_shading_basis;            // world space orthonormal basis around shading normal
     mutable foundation::Vector3d    m_v0_w, m_v1_w, m_v2_w;     // world space triangle vertices
     mutable foundation::Vector3d    m_n0_w, m_n1_w, m_n2_w;     // world space triangle vertex normals
@@ -351,7 +355,7 @@ inline const foundation::Vector3d& ShadingPoint::get_geometric_normal() const
         m_input_params.m_geometric_normal =
             foundation::normalize(m_input_params.m_geometric_normal);
 
-        // The geometric normal should always be facing the direction of the incoming ray.
+        // Make the geometric normal face the direction of the incoming ray.
         m_input_params.m_geometric_normal =
             foundation::faceforward(m_input_params.m_geometric_normal, m_ray.m_dir);
 
@@ -406,15 +410,18 @@ inline const foundation::Vector3d& ShadingPoint::get_shading_normal() const
                     obj_instance_transform.transform_normal_to_parent(m_input_params.m_shading_normal));
         }
 
+        // Remember which side of the surface we hit.
+        m_side =
+            dot(m_ray.m_dir, m_input_params.m_shading_normal) > 0.0
+                ? ObjectInstance::BackSide
+                : ObjectInstance::FrontSide;
+
         // Normalize the shading normal.
         m_input_params.m_shading_normal = foundation::normalize(m_input_params.m_shading_normal);
 
-        // Optionally make the shading normal face the direction of the incoming ray.
-        if (m_object_instance->is_double_sided())
-        {
-            m_input_params.m_shading_normal =
-                foundation::faceforward(m_input_params.m_shading_normal, m_ray.m_dir);
-        }
+        // Make the shading normal face the direction of the incoming ray.
+        if (m_side == ObjectInstance::BackSide)
+            m_input_params.m_shading_normal = -m_input_params.m_shading_normal;
 
         // The shading normal is now available.
         m_members |= HasShadingNormal;
@@ -437,6 +444,13 @@ inline const foundation::Basis3d& ShadingPoint::get_shading_basis() const
     }
 
     return m_shading_basis;
+}
+
+inline ObjectInstance::Side ShadingPoint::get_side() const
+{
+    get_shading_normal();
+
+    return m_side;
 }
 
 inline const foundation::Vector3d& ShadingPoint::get_vertex(const size_t i) const
@@ -523,7 +537,10 @@ inline const Material* ShadingPoint::get_material() const
         if (m_triangle_pa != Triangle::None)
         {
             // Retrieve material indices from the object instance.
-            const MaterialArray& materials = m_object_instance->get_materials();
+            const MaterialArray& materials =
+                get_side() == ObjectInstance::BackSide
+                    ? m_object_instance->get_back_materials()
+                    : m_object_instance->get_front_materials();
 
             // Fetch the material.
             if (static_cast<size_t>(m_triangle_pa) < materials.size())

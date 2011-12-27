@@ -110,6 +110,7 @@ const KeyValuePair<const char*, DiagnosticSurfaceShader::ShadingMode>
     { "uv",                     UV },
     { "geometric_normal",       GeometricNormal },
     { "shading_normal",         ShadingNormal },
+    { "sides",                  Sides },
     { "assembly_instances",     AssemblyInstances },
     { "object_instances",       ObjectInstances },
     { "regions",                Regions },
@@ -126,6 +127,7 @@ const KeyValuePair<const char*, const char*> DiagnosticSurfaceShader::ShadingMod
     { "uv",                     "UV Coordinates" },
     { "geometric_normal",       "Geometric Normals" },
     { "shading_normal",         "Shading Normals" },
+    { "sides",                  "Sides" },
     { "assembly_instances",     "Assembly Instances" },
     { "object_instances",       "Object Instances" },
     { "regions",                "Regions" },
@@ -203,6 +205,14 @@ void DiagnosticSurfaceShader::evaluate(
             normal_to_color(shading_point.get_shading_normal()));
         break;
 
+      // Shade according to the surface side.
+      case Sides:
+        shading_result.set_to_linear_rgb(
+            shading_point.get_side() == ObjectInstance::FrontSide
+                ? Color3f(1.0f, 0.0f, 0.0f)
+                : Color3f(0.0f, 0.0f, 1.0f));
+        break;
+
       // Assign a unique color to each assembly instance.
       case AssemblyInstances:
         shading_result.set_to_linear_rgb(
@@ -241,15 +251,9 @@ void DiagnosticSurfaceShader::evaluate(
       // Assign a unique color to each material.
       case Materials:
         {
-            const ObjectInstance& object_instance = shading_point.get_object_instance();
-            const size_t pa_index = shading_point.get_primitive_attribute_index();
-            const MaterialArray& materials = object_instance.get_materials();
-            if (pa_index < materials.size())
-            {
-                assert(materials[pa_index]);
-                shading_result.set_to_linear_rgb(
-                    integer_to_color(materials[pa_index]->get_uid()));
-            }
+            const Material* material = shading_point.get_material();
+            if (material)
+                shading_result.set_to_linear_rgb(integer_to_color(material->get_uid()));
             else shading_result.set_to_solid_pink();
         }
         break;

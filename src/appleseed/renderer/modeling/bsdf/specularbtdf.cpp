@@ -65,7 +65,8 @@ namespace
           : BSDF(name, params)
         {
             m_inputs.declare("reflectance", InputFormatSpectrum);
-            m_inputs.declare("ior", InputFormatScalar);
+            m_inputs.declare("from_ior", InputFormatScalar);
+            m_inputs.declare("to_ior", InputFormatScalar);
         }
 
         virtual void release()
@@ -95,25 +96,7 @@ namespace
 
             const Vector3d& shading_normal = shading_basis.get_normal();
 
-            const bool entering = dot(shading_normal, geometric_normal) > 0.0;
-
-            const double ior_outside = 1.0;     // todo: remove
-
-            // Figure out the incoming and transmitted IOR.
-            double ior_i, ior_t;
-            if (entering)
-            {
-                ior_i = ior_outside;
-                ior_t = values->m_ior;
-            }
-            else
-            {
-                ior_i = values->m_ior;
-                ior_t = ior_outside;
-            }
-
-            const double eta = ior_i / ior_t;
-
+            const double eta = values->m_from_ior / values->m_to_ior;
             const double cos_theta_i = dot(outgoing, shading_normal);
             const double sin_theta_i2 = 1.0 - cos_theta_i * cos_theta_i;
             const double cos_theta_t2 = 1.0 - eta * eta * sin_theta_i2;
@@ -121,7 +104,6 @@ namespace
             if (cos_theta_t2 < 0.0)
             {
                 // Total internal reflection.
-                assert(!entering);
                 incoming = reflect(outgoing, shading_normal);
                 value = values->m_reflectance;
             }
@@ -132,8 +114,8 @@ namespace
                 // Compute the Fresnel reflection factor.
                 const Spectrum fresnel_reflection =
                     fresnel_reflection_no_polarization(
-                        Spectrum(static_cast<Spectrum::ValueType>(ior_i)),
-                        Spectrum(static_cast<Spectrum::ValueType>(ior_t)),
+                        Spectrum(static_cast<Spectrum::ValueType>(values->m_from_ior)),
+                        Spectrum(static_cast<Spectrum::ValueType>(values->m_to_ior)),
                         abs(cos_theta_i),
                         cos_theta_t);
 
@@ -209,7 +191,8 @@ namespace
         {
             Spectrum    m_reflectance;          // specular transmittance
             Alpha       m_reflectance_alpha;    // alpha channel of specular transmittance
-            double      m_ior;                  // index of refraction
+            double      m_from_ior;             // from this index of refraction
+            double      m_to_ior;               // to this index of refraction
         };
     };
 
@@ -233,32 +216,35 @@ const char* SpecularBTDFFactory::get_human_readable_model() const
 
 DictionaryArray SpecularBTDFFactory::get_widget_definitions() const
 {
-    Dictionary entity_types;
-    entity_types.insert("color", "Colors");
-    entity_types.insert("texture_instance", "Textures");
-
     DictionaryArray definitions;
 
-    {
-        Dictionary widget;
-        widget.insert("name", "reflectance");
-        widget.insert("label", "Reflectance");
-        widget.insert("widget", "entity_picker");
-        widget.insert("entity_types", entity_types);
-        widget.insert("use", "required");
-        widget.insert("default", "");
-        definitions.push_back(widget);
-    }
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "reflectance")
+            .insert("label", "Reflectance")
+            .insert("widget", "entity_picker")
+            .insert("entity_types",
+                Dictionary()
+                    .insert("color", "Colors")
+                    .insert("texture_instance", "Textures"))
+            .insert("use", "required")
+            .insert("default", ""));
 
-    {
-        Dictionary widget;
-        widget.insert("name", "ior");
-        widget.insert("label", "Index of Refraction");
-        widget.insert("widget", "text_box");
-        widget.insert("use", "required");
-        widget.insert("default", "1.5");
-        definitions.push_back(widget);
-    }
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "from_ior")
+            .insert("label", "From Index of Refraction")
+            .insert("widget", "text_box")
+            .insert("use", "required")
+            .insert("default", "1.0"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "to_ior")
+            .insert("label", "To Index of Refraction")
+            .insert("widget", "text_box")
+            .insert("use", "required")
+            .insert("default", "1.5"));
 
     return definitions;
 }

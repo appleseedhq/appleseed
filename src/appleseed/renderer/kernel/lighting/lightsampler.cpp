@@ -98,7 +98,7 @@ LightSampler::LightSampler(const Scene& scene)
 {
     RENDERER_LOG_INFO("collecting light emitters...");
 
-    // Collect all lights and light emitting triangles.
+    // Collect all lights and light-emitting triangles.
     collect_lights(scene);
     collect_emitting_triangles(scene);
 
@@ -169,10 +169,11 @@ void LightSampler::collect_emitting_triangles(
         const ObjectInstance* object_instance = assembly.object_instances().get_by_index(object_instance_index);
 
         // Retrieve the materials of the object instance.
-        const MaterialArray& materials = object_instance->get_materials();
+        const MaterialArray& front_materials = object_instance->get_front_materials();
+        const MaterialArray& back_materials = object_instance->get_back_materials();
 
-        // Skip object instances without light emitting materials.
-        if (!has_emitting_materials(materials))
+        // Skip object instances without light-emitting materials.
+        if (!has_emitting_materials(front_materials) && !has_emitting_materials(back_materials))
             continue;
 
         // Compute the object space to world space transformation.
@@ -204,16 +205,15 @@ void LightSampler::collect_emitting_triangles(
                 const Triangle& triangle = tess->m_primitives[triangle_index];
                 const size_t pa_index = static_cast<size_t>(triangle.m_pa);
 
-                // Skip triangles without materials.
-                if (pa_index >= materials.size())
-                    continue;
-
-                // Fetch the material assigned to this triangle.
-                const Material* material = materials[pa_index];
-                assert(material);
+                // Fetch the materials assigned to this triangle.
+                const Material* front_material =
+                    pa_index < front_materials.size() ? front_materials[pa_index] : 0;
+                const Material* back_material =
+                    pa_index < back_materials.size() ? back_materials[pa_index] : 0;
 
                 // Skip triangles that don't emit light.
-                if (material->get_edf() == 0)
+                if ((front_material == 0 || front_material->get_edf() == 0) &&
+                    (back_material == 0 || back_material->get_edf() == 0))
                     continue;
 
                 // Retrieve object instance space vertices of the triangle.
@@ -247,9 +247,6 @@ void LightSampler::collect_emitting_triangles(
                 geometric_normal *= rcp_geometric_normal_norm;
                 assert(is_normalized(geometric_normal));
 
-                // Keep track of the total area of the light emitting triangles.
-                m_total_emissive_area += area;
-
                 // Retrieve object instance space vertex normals.
                 const GVector3& n0_os = tess->m_vertex_normals[triangle.m_n0];
                 const GVector3& n1_os = tess->m_vertex_normals[triangle.m_n1];
@@ -260,28 +257,45 @@ void LightSampler::collect_emitting_triangles(
                 const Vector3d n1(normalize(global_transform.transform_normal_to_parent(n1_os)));
                 const Vector3d n2(normalize(global_transform.transform_normal_to_parent(n2_os)));
 
-                const size_t emitting_triangle_index = m_lights.size() + m_emitting_triangles.size();
+                for (size_t side = 0; side < 2; ++side)
+                {
+                    const Material* material = side == 0 ? front_material : back_material;
+                    const Vector3d side_geometric_normal = side == 0 ? geometric_normal : -geometric_normal;
+                    const Vector3d side_n0 = side == 0 ? n0 : -n0;
+                    const Vector3d side_n1 = side == 0 ? n1 : -n1;
+                    const Vector3d side_n2 = side == 0 ? n2 : -n2;
 
-                // Copy the triangle into the array of emitting triangles.
-                EmittingTriangle emitting_triangle;
-                emitting_triangle.m_assembly_instance_uid = assembly_instance.get_uid();
-                emitting_triangle.m_object_instance_index = object_instance_index;
-                emitting_triangle.m_region_index = region_index;
-                emitting_triangle.m_triangle_index = triangle_index;
-                emitting_triangle.m_v0 = v0;
-                emitting_triangle.m_v1 = v1;
-                emitting_triangle.m_v2 = v2;
-                emitting_triangle.m_n0 = n0;
-                emitting_triangle.m_n1 = n1;
-                emitting_triangle.m_n2 = n2;
-                emitting_triangle.m_geometric_normal = geometric_normal;
-                emitting_triangle.m_triangle_support_plane = triangle_support_plane;
-                emitting_triangle.m_rcp_area = rcp_area;
-                emitting_triangle.m_edf = material->get_edf();
-                m_emitting_triangles.push_back(emitting_triangle);
+                    // Skip sides without a light-emitting material.
+                    if (material == 0 || material->get_edf() == 0)
+                        continue;
 
-                // Insert the triangle into the CDF.
-                m_light_cdf.insert(emitting_triangle_index, area);
+                    // Create a light-emitting triangle.
+                    EmittingTriangle emitting_triangle;
+                    emitting_triangle.m_assembly_instance_uid = assembly_instance.get_uid();
+                    emitting_triangle.m_object_instance_index = object_instance_index;
+                    emitting_triangle.m_region_index = region_index;
+                    emitting_triangle.m_triangle_index = triangle_index;
+                    emitting_triangle.m_v0 = v0;
+                    emitting_triangle.m_v1 = v1;
+                    emitting_triangle.m_v2 = v2;
+                    emitting_triangle.m_n0 = side_n0;
+                    emitting_triangle.m_n1 = side_n1;
+                    emitting_triangle.m_n2 = side_n2;
+                    emitting_triangle.m_geometric_normal = side_geometric_normal;
+                    emitting_triangle.m_triangle_support_plane = triangle_support_plane;
+                    emitting_triangle.m_rcp_area = rcp_area;
+                    emitting_triangle.m_edf = material->get_edf();
+
+                    // Store the light-emitting triangle.
+                    const size_t emitting_triangle_index = m_lights.size() + m_emitting_triangles.size();
+                    m_emitting_triangles.push_back(emitting_triangle);
+
+                    // Insert the light-emitting triangle into the CDF.
+                    m_light_cdf.insert(emitting_triangle_index, area);
+
+                    // Keep track of the total area of the light-emitting triangles.
+                    m_total_emissive_area += area;
+                }
             }
         }
     }

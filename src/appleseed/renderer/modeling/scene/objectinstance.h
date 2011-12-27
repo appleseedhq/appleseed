@@ -73,22 +73,32 @@ class RENDERERDLL ObjectInstance
     // Return the parent space bounding box of the instance.
     const GAABB3& get_parent_bbox() const;
 
+    enum Side
+    {
+        FrontSide = 0,
+        BackSide
+    };
+
     // Clear all material assignments.
-    void clear_materials();
+    void clear_front_materials();
+    void clear_back_materials();
 
     // Assign a material to a given slot.
-    void assign_material(const size_t slot, const char* material_name);
+    void assign_material(
+        const size_t    slot,
+        const Side      side,
+        const char*     material_name);
 
     // Return the names of the materials referenced by this instance.
-    const foundation::StringArray& get_material_names() const;
+    const foundation::StringArray& get_front_material_names() const;
+    const foundation::StringArray& get_back_material_names() const;
 
+    // Perform entity binding.
     void bind_entities(const MaterialContainer& materials);
 
     // Return the materials referenced by this instance.
-    const MaterialArray& get_materials() const;
-
-    // Return true if the surface of this instance is double-sided.
-    bool is_double_sided() const;
+    const MaterialArray& get_front_materials() const;
+    const MaterialArray& get_back_materials() const;
 
   private:
     friend class ObjectInstanceFactory;
@@ -97,7 +107,9 @@ class RENDERERDLL ObjectInstance
     struct Impl;
     Impl* impl;
 
-    bool m_double_sided;
+    // Derogate to the private implementation rule, for performance reasons.
+    MaterialArray   m_front_materials;
+    MaterialArray   m_back_materials;
 
     // Constructor.
     ObjectInstance(
@@ -105,7 +117,8 @@ class RENDERERDLL ObjectInstance
         const ParamArray&               params,
         Object&                         object,
         const foundation::Transformd&   transform,
-        const foundation::StringArray&  material_names);
+        const foundation::StringArray&  front_materials,
+        const foundation::StringArray&  back_materials);
 
     // Destructor.
     ~ObjectInstance();
@@ -125,7 +138,8 @@ class RENDERERDLL ObjectInstanceFactory
         const ParamArray&               params,
         Object&                         object,
         const foundation::Transformd&   transform,
-        const foundation::StringArray&  material_names);
+        const foundation::StringArray&  front_materials,
+        const foundation::StringArray&  back_materials = foundation::StringArray());
 };
 
 
@@ -133,9 +147,14 @@ class RENDERERDLL ObjectInstanceFactory
 // ObjectInstance class implementation.
 //
 
-inline bool ObjectInstance::is_double_sided() const
+inline const MaterialArray& ObjectInstance::get_front_materials() const
 {
-    return m_double_sided;
+    return m_front_materials;
+}
+
+inline const MaterialArray& ObjectInstance::get_back_materials() const
+{
+    return m_back_materials;
 }
 
 }       // namespace renderer

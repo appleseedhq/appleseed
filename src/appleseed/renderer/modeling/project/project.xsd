@@ -150,6 +150,7 @@
                                                                     <xsd:element name="assign_material" minOccurs="0" maxOccurs="unbounded">
                                                                         <xsd:complexType>
                                                                             <xsd:attribute name="slot" type="xsd:nonNegativeInteger" use="required"/>
+                                                                            <xsd:attribute name="side" type="xsd:string" use="optional"/>
                                                                             <xsd:attribute name="material" type="xsd:string" use="required"/>
                                                                         </xsd:complexType>
                                                                     </xsd:element>

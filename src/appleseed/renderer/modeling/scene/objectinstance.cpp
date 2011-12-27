@@ -59,8 +59,8 @@ struct ObjectInstance::Impl
     Transformd          m_transform;
     GAABB3              m_parent_bbox;
     Object&             m_object;
-    MaterialArray       m_materials;
-    StringArray         m_material_names;
+    StringArray         m_front_material_names;
+    StringArray         m_back_material_names;
 
     explicit Impl(Object& object)
       : m_object(object)
@@ -78,7 +78,8 @@ ObjectInstance::ObjectInstance(
     const ParamArray&   params,
     Object&             object,
     const Transformd&   transform,
-    const StringArray&  material_names)
+    const StringArray&  front_materials,
+    const StringArray&  back_materials)
   : Entity(g_class_uid, params)
   , impl(new Impl(object))
 {
@@ -86,9 +87,8 @@ ObjectInstance::ObjectInstance(
 
     impl->m_transform = transform;
     impl->m_parent_bbox = transform.transform_to_parent(object.get_local_bbox());
-    impl->m_material_names = material_names;
-
-    m_double_sided = params.get_optional<bool>("double_sided", false);
+    impl->m_front_material_names = front_materials;
+    impl->m_back_material_names = back_materials;
 }
 
 ObjectInstance::~ObjectInstance()
@@ -116,44 +116,70 @@ const GAABB3& ObjectInstance::get_parent_bbox() const
     return impl->m_parent_bbox;
 }
 
-void ObjectInstance::clear_materials()
+void ObjectInstance::clear_front_materials()
 {
-    impl->m_materials.clear();
-    impl->m_material_names.clear();
+    m_front_materials.clear();
+    impl->m_front_material_names.clear();
 }
 
-void ObjectInstance::assign_material(const size_t slot, const char* material_name)
+void ObjectInstance::clear_back_materials()
 {
-    ensure_size(impl->m_material_names, slot + 1);
-    impl->m_material_names.set(slot, material_name);
+    m_back_materials.clear();
+    impl->m_back_material_names.clear();
 }
 
-const StringArray& ObjectInstance::get_material_names() const
+void ObjectInstance::assign_material(
+    const size_t    slot,
+    const Side      side,
+    const char*     material_name)
 {
-    return impl->m_material_names;
+    StringArray& material_names =
+        side == FrontSide
+            ? impl->m_front_material_names
+            : impl->m_back_material_names;
+
+    ensure_size(material_names, slot + 1);
+    material_names.set(slot, material_name);
+}
+
+const StringArray& ObjectInstance::get_front_material_names() const
+{
+    return impl->m_front_material_names;
+}
+
+const StringArray& ObjectInstance::get_back_material_names() const
+{
+    return impl->m_back_material_names;
+}
+
+namespace
+{
+    void bind_materials(
+        const MaterialContainer&    materials,
+        const StringArray&          material_names,
+        MaterialArray&              material_array)
+    {
+        const size_t material_count = material_names.size();
+
+        material_array.clear();
+        material_array.resize(material_count);
+
+        for (size_t i = 0; i < material_count; ++i)
+        {
+            const char* material_name = material_names[i];
+
+            material_array[i] = materials.get_by_name(material_name);
+
+            if (material_array[i] == 0)
+                throw ExceptionUnknownEntity(material_name);
+        }
+    }
 }
 
 void ObjectInstance::bind_entities(const MaterialContainer& materials)
 {
-    const size_t material_count = impl->m_material_names.size();
-
-    impl->m_materials.clear();
-    impl->m_materials.resize(material_count);
-
-    for (size_t i = 0; i < material_count; ++i)
-    {
-        const char* material_name = impl->m_material_names[i];
-
-        impl->m_materials[i] = materials.get_by_name(material_name);
-
-        if (impl->m_materials[i] == 0)
-            throw ExceptionUnknownEntity(material_name);
-    }
-}
-
-const MaterialArray& ObjectInstance::get_materials() const
-{
-    return impl->m_materials;
+    bind_materials(materials, impl->m_front_material_names, m_front_materials);
+    bind_materials(materials, impl->m_back_material_names, m_back_materials);
 }
 
 
@@ -166,7 +192,8 @@ auto_release_ptr<ObjectInstance> ObjectInstanceFactory::create(
     const ParamArray&   params,
     Object&             object,
     const Transformd&   transform,
-    const StringArray&  material_names)
+    const StringArray&  front_materials,
+    const StringArray&  back_materials)
 {
     return
         auto_release_ptr<ObjectInstance>(
@@ -175,7 +202,8 @@ auto_release_ptr<ObjectInstance> ObjectInstanceFactory::create(
                 params,
                 object,
                 transform,
-                material_names));
+                front_materials,
+                back_materials));
 }
 
 }   // namespace renderer

@@ -1516,6 +1516,21 @@ namespace
                 m_context.get_event_counters().signal_error();
                 m_slot = 0;
             }
+
+            const string side_string = get_value(attrs, "side", "front");
+            if (side_string == "front")
+                m_side = ObjectInstance::FrontSide;
+            else if (side_string == "back")
+                m_side = ObjectInstance::BackSide;
+            else
+            {
+                RENDERER_LOG_ERROR(
+                    "while assigning material: side must be \"front\" or \"back\", got \"%s\"",
+                    side_string.c_str());
+                m_context.get_event_counters().signal_error();
+                m_side = ObjectInstance::FrontSide;
+            }
+
             m_material = get_value(attrs, "material");
         }
 
@@ -1524,15 +1539,21 @@ namespace
             return m_slot;
         }
 
+        ObjectInstance::Side get_material_side() const
+        {
+            return m_side;
+        }
+
         const string& get_material_name() const
         {
             return m_material;
         }
 
       private:
-        ParseContext&   m_context;
-        size_t          m_slot;
-        string          m_material;
+        ParseContext&           m_context;
+        size_t                  m_slot;
+        ObjectInstance::Side    m_side;
+        string                  m_material;
     };
 
 
@@ -1564,7 +1585,8 @@ namespace
             ParametrizedElementHandler::start_element(attrs);
             m_object_instance.reset();
             m_transform = Transformd(Matrix4d::identity());
-            m_material_names.clear();
+            m_front_material_names.clear();
+            m_back_material_names.clear();
             m_name = get_value(attrs, "name");
             m_object = get_value(attrs, "object");
         }
@@ -1583,7 +1605,8 @@ namespace
                         m_params,
                         *object,
                         m_transform,
-                        m_material_names);
+                        m_front_material_names,
+                        m_back_material_names);
             }
             else
             {
@@ -1607,14 +1630,19 @@ namespace
                         static_cast<AssignMaterialElementHandler*>(handler);
 
                     const size_t material_slot = assign_mat_handler->get_material_slot();
+                    const ObjectInstance::Side material_side = assign_mat_handler->get_material_side();
                     const string& material_name = assign_mat_handler->get_material_name();
+                    StringArray& material_names =
+                        material_side == ObjectInstance::FrontSide
+                            ? m_front_material_names
+                            : m_back_material_names;
 
                     const size_t MaxMaterialSlots = 256;
 
                     if (material_slot < MaxMaterialSlots)
                     {
-                        ensure_size(m_material_names, material_slot + 1);
-                        m_material_names.set(material_slot, material_name.c_str());
+                        ensure_size(material_names, material_slot + 1);
+                        material_names.set(material_slot, material_name.c_str());
                     }
                     else
                     {
@@ -1656,7 +1684,8 @@ namespace
         string                              m_name;
         string                              m_object;
         Transformd                          m_transform;
-        StringArray                         m_material_names;
+        StringArray                         m_front_material_names;
+        StringArray                         m_back_material_names;
     };
 
 
