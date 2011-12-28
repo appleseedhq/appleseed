@@ -111,8 +111,7 @@ void EXRImageFileWriter::write(
         // Construct Header object.
         Header header(
             static_cast<int>(props.m_canvas_width),
-            static_cast<int>(props.m_canvas_height),
-            static_cast<float>(props.m_canvas_width) / props.m_canvas_height);
+            static_cast<int>(props.m_canvas_height));
         header.setTileDescription(tile_desc);
         header.channels() = channels;
 
