@@ -111,13 +111,14 @@ const KeyValuePair<const char*, DiagnosticSurfaceShader::ShadingMode>
     { "geometric_normal",       GeometricNormal },
     { "shading_normal",         ShadingNormal },
     { "sides",                  Sides },
+    { "depth",                  Depth },
+    { "wireframe" ,             Wireframe },
+    { "ambient_occlusion",      AmbientOcclusion },
     { "assembly_instances",     AssemblyInstances },
     { "object_instances",       ObjectInstances },
     { "regions",                Regions },
     { "triangles",              Triangles },
-    { "materials",              Materials  },
-    { "ambient_occlusion",      AmbientOcclusion },
-    { "wireframe" ,             Wireframe }
+    { "materials",              Materials }
 };
 
 const KeyValuePair<const char*, const char*> DiagnosticSurfaceShader::ShadingModeNames[] =
@@ -128,13 +129,14 @@ const KeyValuePair<const char*, const char*> DiagnosticSurfaceShader::ShadingMod
     { "geometric_normal",       "Geometric Normals" },
     { "shading_normal",         "Shading Normals" },
     { "sides",                  "Sides" },
+    { "depth",                  "Depth" },
+    { "wireframe" ,             "Wireframe" },
+    { "ambient_occlusion",      "Ambient Occlusion" },
     { "assembly_instances",     "Assembly Instances" },
     { "object_instances",       "Object Instances" },
     { "regions",                "Regions" },
     { "triangles",              "Triangles" },
-    { "materials",              "Materials" },
-    { "ambient_occlusion",      "Ambient Occlusion" },
-    { "wireframe" ,             "Wireframe" }
+    { "materials",              "Materials" }
 };
 
 DiagnosticSurfaceShader::DiagnosticSurfaceShader(
@@ -164,12 +166,10 @@ void DiagnosticSurfaceShader::evaluate(
 {
     switch (impl->m_shading_mode)
     {
-      // Shade according to pixel coverage
       case Coverage:
         shading_result.set_to_linear_rgb(Color3f(1.0f));
         break;
 
-      // Shade according to barycentric coordinates.
       case Barycentric:
         {
             const Vector2d& bary = shading_point.get_bary();
@@ -181,7 +181,6 @@ void DiagnosticSurfaceShader::evaluate(
         }
         break;
 
-      // Shade according to UV coordinates from UV set #0.
       case UV:
         {
             const Vector2d& uv0 = shading_point.get_uv(0);
@@ -193,19 +192,16 @@ void DiagnosticSurfaceShader::evaluate(
         }
         break;
 
-      // Shade according to the geometric normal.
       case GeometricNormal:
         shading_result.set_to_linear_rgb(
             normal_to_color(shading_point.get_geometric_normal()));
         break;
 
-      // Shade according to the shading normal.
       case ShadingNormal:
         shading_result.set_to_linear_rgb(
             normal_to_color(shading_point.get_shading_normal()));
         break;
 
-      // Shade according to the surface side.
       case Sides:
         shading_result.set_to_linear_rgb(
             shading_point.get_side() == ObjectInstance::FrontSide
@@ -213,70 +209,9 @@ void DiagnosticSurfaceShader::evaluate(
                 : Color3f(0.0f, 0.0f, 1.0f));
         break;
 
-      // Assign a unique color to each assembly instance.
-      case AssemblyInstances:
+      case Depth:
         shading_result.set_to_linear_rgb(
-            integer_to_color(shading_point.get_assembly_instance_uid()));
-        break;
-
-      // Assign a unique color to each object instance.
-      case ObjectInstances:
-        shading_result.set_to_linear_rgb(
-            integer_to_color(shading_point.get_object_instance().get_uid()));
-        break;
-
-      // Assign a unique color to each region.
-      case Regions:
-        {
-            const uint32 h =
-                mix32(
-                    static_cast<uint32>(shading_point.get_object_instance().get_uid()),
-                    static_cast<uint32>(shading_point.get_region_index()));
-            shading_result.set_to_linear_rgb(integer_to_color(h));
-        }
-        break;
-
-      // Assign a unique color to each triangle.
-      case Triangles:
-        {
-            const uint32 h =
-                mix32(
-                    static_cast<uint32>(shading_point.get_object_instance().get_uid()),
-                    static_cast<uint32>(shading_point.get_region_index()),
-                    static_cast<uint32>(shading_point.get_triangle_index()));
-            shading_result.set_to_linear_rgb(integer_to_color(h));
-        }
-        break;
-
-      // Assign a unique color to each material.
-      case Materials:
-        {
-            const Material* material = shading_point.get_material();
-            if (material)
-                shading_result.set_to_linear_rgb(integer_to_color(material->get_uid()));
-            else shading_result.set_to_solid_pink();
-        }
-        break;
-
-      case AmbientOcclusion:
-        {
-            // Compute the occlusion.
-            const double occlusion =
-                compute_ambient_occlusion(
-                    sampling_context,
-                    sample_hemisphere_uniform<double>,
-                    shading_context.get_intersector(),
-                    shading_point.get_point(),
-                    shading_point.get_geometric_normal(),
-                    shading_point.get_shading_basis(),
-                    impl->m_ao_max_distance,
-                    impl->m_ao_samples,
-                    &shading_point);
-
-            // Return a gray scale value proportional to the accessibility.
-            const float accessibility = static_cast<float>(1.0 - occlusion);
-            shading_result.set_to_linear_rgb(Color3f(accessibility));
-        }
+            Color3f(static_cast<float>(shading_point.get_distance())));
         break;
 
       case Wireframe:
@@ -333,7 +268,67 @@ void DiagnosticSurfaceShader::evaluate(
         }
         break;
 
-      // Invalid shader.
+      case AmbientOcclusion:
+        {
+            // Compute the occlusion.
+            const double occlusion =
+                compute_ambient_occlusion(
+                    sampling_context,
+                    sample_hemisphere_uniform<double>,
+                    shading_context.get_intersector(),
+                    shading_point.get_point(),
+                    shading_point.get_geometric_normal(),
+                    shading_point.get_shading_basis(),
+                    impl->m_ao_max_distance,
+                    impl->m_ao_samples,
+                    &shading_point);
+
+            // Return a gray scale value proportional to the accessibility.
+            const float accessibility = static_cast<float>(1.0 - occlusion);
+            shading_result.set_to_linear_rgb(Color3f(accessibility));
+        }
+        break;
+
+      case AssemblyInstances:
+        shading_result.set_to_linear_rgb(
+            integer_to_color(shading_point.get_assembly_instance_uid()));
+        break;
+
+      case ObjectInstances:
+        shading_result.set_to_linear_rgb(
+            integer_to_color(shading_point.get_object_instance().get_uid()));
+        break;
+
+      case Regions:
+        {
+            const uint32 h =
+                mix32(
+                    static_cast<uint32>(shading_point.get_object_instance().get_uid()),
+                    static_cast<uint32>(shading_point.get_region_index()));
+            shading_result.set_to_linear_rgb(integer_to_color(h));
+        }
+        break;
+
+      case Triangles:
+        {
+            const uint32 h =
+                mix32(
+                    static_cast<uint32>(shading_point.get_object_instance().get_uid()),
+                    static_cast<uint32>(shading_point.get_region_index()),
+                    static_cast<uint32>(shading_point.get_triangle_index()));
+            shading_result.set_to_linear_rgb(integer_to_color(h));
+        }
+        break;
+
+      case Materials:
+        {
+            const Material* material = shading_point.get_material();
+            if (material)
+                shading_result.set_to_linear_rgb(integer_to_color(material->get_uid()));
+            else shading_result.set_to_solid_pink();
+        }
+        break;
+
       default:
         assert(false);
         shading_result.clear();
