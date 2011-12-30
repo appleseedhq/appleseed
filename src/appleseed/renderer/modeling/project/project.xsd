@@ -249,7 +249,6 @@
                                     <xsd:complexContent>
                                         <xsd:extension base="parameterSet">
                                             <xsd:attribute name="name" type="xsd:string" use="required"/>
-                                            <xsd:attribute name="base" type="xsd:string" use="optional"/>
                                         </xsd:extension>
                                     </xsd:complexContent>
                                 </xsd:complexType>
