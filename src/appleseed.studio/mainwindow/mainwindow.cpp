@@ -112,6 +112,8 @@ MainWindow::MainWindow(QWidget* parent)
     update_workspace();
     update_project_explorer();
 
+    m_ui->pushbutton_clear_filter->setEnabled(false);
+
     remove_render_widgets();
 
     showMaximized();
@@ -402,6 +404,7 @@ void MainWindow::on_project_change()
     update_project_explorer();
     update_override_shading_menu_item();
 
+    m_ui->lineedit_filter->clear();
     m_status_bar.clear();
 }
 
@@ -925,6 +928,8 @@ namespace
 
 void MainWindow::slot_filter_text_changed(const QString& pattern)
 {
+    m_ui->pushbutton_clear_filter->setEnabled(!pattern.isEmpty());
+
     const QRegExp regexp(pattern);
 
     filter_items(m_ui->treewidget_project_explorer_scene, regexp);
