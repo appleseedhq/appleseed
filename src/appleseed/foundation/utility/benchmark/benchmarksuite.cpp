@@ -145,7 +145,6 @@ struct BenchmarkSuite::Impl
         size_t  m_measurement_count;
     };
 
-    // Estimate benchmarking parameters.
     static void estimate_benchmark_params(
         IBenchmarkCase*         benchmark,
         StopwatchType&          stopwatch,
@@ -161,7 +160,7 @@ struct BenchmarkSuite::Impl
             measure_runtime(
                 benchmark,
                 stopwatch,
-                measure_runtime_seconds,
+                BenchmarkSuite::Impl::measure_runtime_seconds,
                 InitialIterationCount,
                 InitialMeasurementCount);
 
@@ -185,7 +184,7 @@ struct BenchmarkSuite::Impl
             measure_runtime(
                 benchmark,
                 stopwatch,
-                measure_runtime_ticks,
+                BenchmarkSuite::Impl::measure_runtime_ticks,
                 params.m_iteration_count,
                 params.m_measurement_count)
             / params.m_iteration_count;
@@ -201,7 +200,6 @@ struct BenchmarkSuite::Impl
     }
 };
 
-// Constructor.
 BenchmarkSuite::BenchmarkSuite(const char* name)
   : impl(new Impl())
 {
@@ -209,33 +207,28 @@ BenchmarkSuite::BenchmarkSuite(const char* name)
     impl->m_name = name;
 }
 
-// Destructor.
 BenchmarkSuite::~BenchmarkSuite()
 {
     delete impl;
 }
 
-// Return the name of the test suite.
 const char* BenchmarkSuite::get_name() const
 {
     return impl->m_name.c_str();
 }
 
-// Register a benchmark case (via its factory function).
 void BenchmarkSuite::register_case(IBenchmarkCaseFactory* factory)
 {
     assert(factory);
     impl->m_factories.push_back(factory);
 }
 
-// Run all the registered benchmark cases.
 void BenchmarkSuite::run(BenchmarkResult& suite_result) const
 {
     LetThroughFilter filter;
     run(filter, suite_result);
 }
 
-// Run those benchmark cases whose name pass a given filter.
 void BenchmarkSuite::run(
     const IFilter&      filter,
     BenchmarkResult&    suite_result) const
