@@ -78,7 +78,6 @@ class FOUNDATIONDLL MessageList
     void print(Logger& logger) const;
 
   private:
-    // Private implementation.
     struct Impl;
     Impl* impl;
 };

@@ -94,7 +94,6 @@ class RENDERERDLL Assembly
   private:
     friend class AssemblyFactory;
 
-    // Private implementation.
     struct Impl;
     Impl* impl;
 

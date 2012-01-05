@@ -31,7 +31,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/utility/implptr.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
@@ -73,6 +72,9 @@ class FOUNDATIONDLL SearchPaths
     // Constructor.
     SearchPaths();
 
+    // Destructor.
+    ~SearchPaths();
+
     // Insert a search path at the end of the collection.
     void push_back(const char* path);
     template <typename T> void push_back(const std::basic_string<T>& path);
@@ -88,7 +90,8 @@ class FOUNDATIONDLL SearchPaths
     template <typename T> std::basic_string<T> qualify(const std::basic_string<T>& filepath) const;
 
   private:
-    PIMPL(SearchPaths);
+    struct Impl;
+    Impl* impl;
 
     char* qualify(const char* filepath) const;
 };

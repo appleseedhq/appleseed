@@ -99,7 +99,6 @@ class FOUNDATIONDLL Logger
         const char*                 format, ...);
 
   private:
-    // Private implementation.
     struct Impl;
     Impl* impl;
 };

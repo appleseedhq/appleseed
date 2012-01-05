@@ -99,7 +99,6 @@ class RENDERERDLL Frame
   private:
     friend class FrameFactory;
 
-    // Private implementation.
     struct Impl;
     Impl* impl;
 

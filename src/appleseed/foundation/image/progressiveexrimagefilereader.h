@@ -113,7 +113,6 @@ class FOUNDATIONDLL ProgressiveEXRImageFileReader
         const size_t        tile_y);
         
   private:
-    // Private implementation.
     struct Impl;
     Impl* impl;
 };

@@ -88,7 +88,6 @@ class FOUNDATIONDLL BenchmarkSuite
         BenchmarkResult&    suite_result) const;
 
   private:
-    // Private implementation.
     struct Impl;
     Impl* impl;
 };

@@ -81,7 +81,6 @@ class RENDERERDLL ColorEntity
   private:
     friend class ColorEntityFactory;
 
-    // Private implementation.
     struct Impl;
     Impl* impl;
 

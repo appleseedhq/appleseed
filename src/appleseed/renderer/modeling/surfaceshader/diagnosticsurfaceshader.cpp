@@ -148,6 +148,11 @@ DiagnosticSurfaceShader::DiagnosticSurfaceShader(
     extract_parameters();
 }
 
+DiagnosticSurfaceShader::~DiagnosticSurfaceShader()
+{
+    delete impl;
+}
+
 void DiagnosticSurfaceShader::release()
 {
     delete this;

@@ -32,9 +32,6 @@
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
 
-// appleseed.foundation headers.
-#include "foundation/utility/implptr.h"
-
 // Forward declarations.
 namespace renderer      { class ITextureFactory; }
 
@@ -54,11 +51,15 @@ class RENDERERDLL TextureFactoryRegistrar
     // Constructor.
     TextureFactoryRegistrar();
 
+    // Destructor.
+    ~TextureFactoryRegistrar();
+
     // Lookup a factory by name.
     const FactoryType* lookup(const char* name) const;
 
   private:
-    PIMPL(TextureFactoryRegistrar);
+    struct Impl;
+    Impl* impl;
 };
 
 }       // namespace renderer

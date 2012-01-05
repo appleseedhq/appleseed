@@ -102,7 +102,6 @@ class FOUNDATIONDLL TestSuite
         TestResult&     cumulated_result) const;
 
   private:
-    // Private implementation.
     struct Impl;
     Impl* impl;
 

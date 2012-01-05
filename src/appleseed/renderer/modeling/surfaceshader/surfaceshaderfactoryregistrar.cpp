@@ -67,6 +67,11 @@ SurfaceShaderFactoryRegistrar::SurfaceShaderFactoryRegistrar()
     register_factory(auto_ptr<FactoryType>(new VoxelAOSurfaceShaderFactory()));
 }
 
+SurfaceShaderFactoryRegistrar::~SurfaceShaderFactoryRegistrar()
+{
+    delete impl;
+}
+
 void SurfaceShaderFactoryRegistrar::register_factory(auto_ptr<FactoryType> factory)
 {
     const string model = factory->get_model();

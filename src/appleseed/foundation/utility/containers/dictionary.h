@@ -31,7 +31,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/stringexception.h"
-#include "foundation/utility/implptr.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
@@ -90,9 +89,16 @@ class FOUNDATIONDLL StringDictionary
         // Value type.
         typedef const_iterator value_type;
 
-        // Constructor.
+        // Constructors.
         const_iterator();
+        const_iterator(const const_iterator& rhs);
+
+        // Destructor.
+        ~const_iterator();
         
+        // Assignment operator.
+        const_iterator& operator=(const const_iterator& rhs);
+
         // Equality and inequality tests.
         bool operator==(const const_iterator& rhs) const;
         bool operator!=(const const_iterator& rhs) const;
@@ -114,11 +120,19 @@ class FOUNDATIONDLL StringDictionary
       private:
         friend class StringDictionary;
 
-        PIMPL(const_iterator);
+        struct Impl;
+        Impl* impl;
     };
 
-    // Constructor.
+    // Constructors.
     StringDictionary();
+    StringDictionary(const StringDictionary& rhs);
+
+    // Destructor.
+    ~StringDictionary();
+
+    // Assignment operator.
+    StringDictionary& operator=(const StringDictionary& rhs);
 
     // Return the number of items in the dictionary.
     size_t size() const;
@@ -152,7 +166,8 @@ class FOUNDATIONDLL StringDictionary
     const_iterator end() const;
 
   private:
-    PIMPL(StringDictionary);
+    struct Impl;
+    Impl* impl;
 };
 
 
@@ -169,8 +184,15 @@ class FOUNDATIONDLL DictionaryDictionary
         // Value type.
         typedef const_iterator value_type;
 
-        // Constructor.
+        // Constructors.
         const_iterator();
+        const_iterator(const const_iterator& rhs);
+
+        // Destructor.
+        ~const_iterator();
+
+        // Assignment operator.
+        const_iterator& operator=(const const_iterator& rhs);
 
         // Equality and inequality tests.
         bool operator==(const const_iterator& rhs) const;
@@ -192,11 +214,19 @@ class FOUNDATIONDLL DictionaryDictionary
       private:
         friend class DictionaryDictionary;
 
-        PIMPL(const_iterator);
+        struct Impl;
+        Impl* impl;
     };
 
-    // Constructor.
+    // Constructors.
     DictionaryDictionary();
+    DictionaryDictionary(const DictionaryDictionary& rhs);
+
+    // Destructor.
+    ~DictionaryDictionary();
+
+    // Assignment operator.
+    DictionaryDictionary& operator=(const DictionaryDictionary& rhs);
 
     // Return the number of items in the dictionary.
     size_t size() const;
@@ -232,7 +262,8 @@ class FOUNDATIONDLL DictionaryDictionary
     const_iterator end() const;
 
   private:
-    PIMPL(DictionaryDictionary);
+    struct Impl;
+    Impl* impl;
 };
 
 

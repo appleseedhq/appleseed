@@ -56,6 +56,22 @@ StringDictionary::const_iterator::const_iterator()
 {
 }
 
+StringDictionary::const_iterator::const_iterator(const const_iterator& rhs)
+  : impl(new Impl(*rhs.impl))
+{
+}
+
+StringDictionary::const_iterator::~const_iterator()
+{
+    delete impl;
+}
+
+StringDictionary::const_iterator& StringDictionary::const_iterator::operator=(const const_iterator& rhs)
+{
+    *impl = *rhs.impl;
+    return *this;
+}
+
 bool StringDictionary::const_iterator::operator==(const const_iterator& rhs) const
 {
     return impl->m_it == rhs.impl->m_it;
@@ -106,6 +122,22 @@ struct StringDictionary::Impl
 StringDictionary::StringDictionary()
   : impl(new Impl())
 {
+}
+
+StringDictionary::StringDictionary(const StringDictionary& rhs)
+  : impl(new Impl(*rhs.impl))
+{
+}
+
+StringDictionary::~StringDictionary()
+{
+    delete impl;
+}
+
+StringDictionary& StringDictionary::operator=(const StringDictionary& rhs)
+{
+    *impl = *rhs.impl;
+    return *this;
 }
 
 size_t StringDictionary::size() const
@@ -193,6 +225,22 @@ DictionaryDictionary::const_iterator::const_iterator()
 {
 }
 
+DictionaryDictionary::const_iterator::const_iterator(const const_iterator& rhs)
+  : impl(new Impl(*rhs.impl))
+{
+}
+
+DictionaryDictionary::const_iterator::~const_iterator()
+{
+    delete impl;
+}
+
+DictionaryDictionary::const_iterator& DictionaryDictionary::const_iterator::operator=(const const_iterator& rhs)
+{
+    *impl = *rhs.impl;
+    return *this;
+}
+
 bool DictionaryDictionary::const_iterator::operator==(const const_iterator& rhs) const
 {
     return impl->m_it == rhs.impl->m_it;
@@ -243,6 +291,22 @@ struct DictionaryDictionary::Impl
 DictionaryDictionary::DictionaryDictionary()
   : impl(new Impl())
 {
+}
+
+DictionaryDictionary::DictionaryDictionary(const DictionaryDictionary& rhs)
+  : impl(new Impl(*rhs.impl))
+{
+}
+
+DictionaryDictionary::~DictionaryDictionary()
+{
+    delete impl;
+}
+
+DictionaryDictionary& DictionaryDictionary::operator=(const DictionaryDictionary& rhs)
+{
+    *impl = *rhs.impl;
+    return *this;
 }
 
 size_t DictionaryDictionary::size() const

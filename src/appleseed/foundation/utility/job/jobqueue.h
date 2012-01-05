@@ -122,7 +122,6 @@ class FOUNDATIONDLL JobQueue
   private:
     friend class WorkerThread;
 
-    // Private implementation.
     struct Impl;
     Impl* impl;
 

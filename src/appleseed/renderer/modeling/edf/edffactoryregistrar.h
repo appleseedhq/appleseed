@@ -34,7 +34,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/array.h"
-#include "foundation/utility/implptr.h"
 
 // Forward declarations.
 namespace renderer      { class IEDFFactory; }
@@ -63,6 +62,9 @@ class RENDERERDLL EDFFactoryRegistrar
     // Constructor.
     EDFFactoryRegistrar();
 
+    // Destructor.
+    ~EDFFactoryRegistrar();
+
     // Register an EDF factory.
     void register_factory(std::auto_ptr<FactoryType> factory);
 
@@ -73,7 +75,8 @@ class RENDERERDLL EDFFactoryRegistrar
     const FactoryType* lookup(const char* name) const;
 
   private:
-    PIMPL(EDFFactoryRegistrar);
+    struct Impl;
+    Impl* impl;
 };
 
 }       // namespace renderer

@@ -417,6 +417,11 @@ Preprocessor::Preprocessor()
 {
 }
 
+Preprocessor::~Preprocessor()
+{
+    delete impl;
+}
+
 void Preprocessor::define_symbol(const char* name)
 {
     assert(name);

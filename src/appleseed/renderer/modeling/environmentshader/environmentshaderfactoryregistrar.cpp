@@ -55,6 +55,11 @@ EnvironmentShaderFactoryRegistrar::EnvironmentShaderFactoryRegistrar()
     register_factory(auto_ptr<FactoryType>(new EDFEnvironmentShaderFactory()));
 }
 
+EnvironmentShaderFactoryRegistrar::~EnvironmentShaderFactoryRegistrar()
+{
+    delete impl;
+}
+
 void EnvironmentShaderFactoryRegistrar::register_factory(auto_ptr<FactoryType> factory)
 {
     const string model = factory->get_model();

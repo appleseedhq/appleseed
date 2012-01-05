@@ -37,7 +37,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/frustum.h"
-#include "foundation/utility/implptr.h"
 
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
@@ -96,10 +95,13 @@ class RENDERERDLL Camera
 
   protected:
     struct Impl;
-    foundation::impl_ptr<Impl, false> impl;
+    Impl* impl;
 
     // Derogate to the private implementation rule, for performance reasons.
     TransformSequence m_transform_sequence;
+
+    // Destructor.
+    ~Camera();
 
     // Utility function to retrieve the film dimensions from the entity parameters.
     foundation::Vector2d extract_film_dimensions() const;

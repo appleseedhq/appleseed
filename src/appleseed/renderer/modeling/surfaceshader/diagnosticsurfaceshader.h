@@ -35,7 +35,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
-#include "foundation/utility/implptr.h"
 #include "foundation/utility/kvpair.h"
 
 // Forward declarations.
@@ -98,7 +97,10 @@ class RENDERERDLL DiagnosticSurfaceShader
 
   private:
     struct Impl;
-    foundation::impl_ptr<Impl, false> impl;
+    Impl* impl;
+
+    // Destructor.
+    ~DiagnosticSurfaceShader();
 
     void extract_parameters();
 };

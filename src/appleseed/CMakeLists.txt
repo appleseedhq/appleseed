@@ -361,7 +361,6 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_fresnel.cpp
     foundation/meta/tests/test_frustum.cpp
     foundation/meta/tests/test_image.cpp
-    foundation/meta/tests/test_implptr.cpp
     foundation/meta/tests/test_intersection.cpp
     foundation/meta/tests/test_iostreamop.cpp
     foundation/meta/tests/test_job.cpp
@@ -625,7 +624,6 @@ set (foundation_utility_sources
     foundation/utility/countof.h
     foundation/utility/filter.h
     foundation/utility/foreach.h
-    foundation/utility/implptr.h
     foundation/utility/indenter.h
     foundation/utility/iostreamop.h
     foundation/utility/iterators.h

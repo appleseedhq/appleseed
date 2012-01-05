@@ -63,6 +63,11 @@ TextureFactoryRegistrar::TextureFactoryRegistrar()
         auto_ptr<ITextureFactory>(new WritableTexture2dFactory()));
 }
 
+TextureFactoryRegistrar::~TextureFactoryRegistrar()
+{
+    delete impl;
+}
+
 const TextureFactoryRegistrar::FactoryType* TextureFactoryRegistrar::lookup(const char* name) const
 {
     assert(name);

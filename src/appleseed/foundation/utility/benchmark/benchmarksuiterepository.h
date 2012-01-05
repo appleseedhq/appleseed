@@ -81,7 +81,6 @@ class FOUNDATIONDLL BenchmarkSuiteRepository
   private:
     friend class Singleton<BenchmarkSuiteRepository>;
 
-    // Private implementation.
     struct Impl;
     Impl* impl;
 

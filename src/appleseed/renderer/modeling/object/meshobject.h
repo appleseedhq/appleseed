@@ -88,7 +88,6 @@ class RENDERERDLL MeshObject
   private:
     friend class MeshObjectFactory;
 
-    // Private implementation.
     struct Impl;
     Impl* impl;
 

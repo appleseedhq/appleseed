@@ -196,7 +196,6 @@ class DLLSYMBOL InputArray
         const size_t        offset = 0) const;
 
   private:
-    // Private implementation.
     struct Impl;
     Impl* impl;
 };

@@ -87,7 +87,6 @@ class RENDERERDLL TextureInstance
   private:
     friend class TextureInstanceFactory;
 
-    // Private implementation.
     struct Impl;
     Impl* impl;
 

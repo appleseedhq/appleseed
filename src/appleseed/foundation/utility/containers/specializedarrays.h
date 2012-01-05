@@ -116,7 +116,6 @@ class FOUNDATIONDLL StringArray
     value_type operator[](const size_type pos) const;
 
   private:
-    // Private implementation.
     struct Impl;
     Impl* impl;
 };

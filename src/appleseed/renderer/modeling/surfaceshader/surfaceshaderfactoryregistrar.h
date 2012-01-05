@@ -34,7 +34,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/array.h"
-#include "foundation/utility/implptr.h"
 
 // Forward declarations.
 namespace renderer      { class ISurfaceShaderFactory; }
@@ -63,6 +62,9 @@ class RENDERERDLL SurfaceShaderFactoryRegistrar
     // Constructor.
     SurfaceShaderFactoryRegistrar();
 
+    // Destructor.
+    ~SurfaceShaderFactoryRegistrar();
+
     // Register a surface shader factory.
     void register_factory(std::auto_ptr<FactoryType> factory);
 
@@ -73,7 +75,8 @@ class RENDERERDLL SurfaceShaderFactoryRegistrar
     const FactoryType* lookup(const char* name) const;
 
   private:
-    PIMPL(SurfaceShaderFactoryRegistrar);
+    struct Impl;
+    Impl* impl;
 };
 
 }       // namespace renderer

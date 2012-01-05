@@ -63,6 +63,11 @@ EnvironmentEDFFactoryRegistrar::EnvironmentEDFFactoryRegistrar()
     register_factory(auto_ptr<FactoryType>(new MirrorBallMapEnvironmentEDFFactory()));
 }
 
+EnvironmentEDFFactoryRegistrar::~EnvironmentEDFFactoryRegistrar()
+{
+    delete impl;
+}
+
 void EnvironmentEDFFactoryRegistrar::register_factory(auto_ptr<FactoryType> factory)
 {
     const string model = factory->get_model();

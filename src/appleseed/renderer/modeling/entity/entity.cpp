@@ -55,6 +55,11 @@ Entity::Entity(
 {
 }
 
+Entity::~Entity()
+{
+    delete impl;
+}
+
 void Entity::set_name(const char* name)
 {
     assert(name);

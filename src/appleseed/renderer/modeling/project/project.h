@@ -93,7 +93,6 @@ class RENDERERDLL Project
   private:
     friend class ProjectFactory;
 
-    // Private implementation.
     struct Impl;
     Impl* impl;
 

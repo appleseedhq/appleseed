@@ -116,7 +116,6 @@ class FOUNDATIONDLL XMLFileBenchmarkListener
   private:
     friend FOUNDATIONDLL XMLFileBenchmarkListener* create_xmlfile_benchmark_listener();
 
-    // Private implementation.
     struct Impl;
     Impl* impl;
 

@@ -31,7 +31,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/filter/ifilter.h"
-#include "foundation/utility/implptr.h"
 
 //
 // On Windows, define FOUNDATIONDLL to __declspec(dllexport) when building the DLL
@@ -73,12 +72,15 @@ class FOUNDATIONDLL RegExFilter
         const char*         regex,
         const CaseSensivity case_sensivity = CaseSensitive);
 
+    ~RegExFilter();
+
     bool is_valid() const;
 
     virtual bool accepts(const char* name) const;
 
   private:
-    PIMPL(RegExFilter);
+    struct Impl;
+    Impl* impl;
 };
 
 }       // namespace foundation

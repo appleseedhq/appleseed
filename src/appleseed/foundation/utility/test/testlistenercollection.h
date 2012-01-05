@@ -114,7 +114,6 @@ class FOUNDATIONDLL TestListenerCollection
         const char*             message);
 
   private:
-    // Private implementation.
     struct Impl;
     Impl* impl;
 };

@@ -99,7 +99,6 @@ class OBJMeshFileReader
         IOBJMeshBuilder&    builder);
 
   private:
-    // Private implementation.
     struct Impl;
     Impl* impl;
 };

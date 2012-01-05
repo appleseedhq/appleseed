@@ -104,7 +104,6 @@ class FOUNDATIONDLL Console
   private:
     friend class Singleton<Console>;
 
-    // Private implementation.
     struct Impl;
     Impl* impl;
 

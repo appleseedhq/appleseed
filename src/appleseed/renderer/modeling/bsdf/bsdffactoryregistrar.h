@@ -34,7 +34,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/array.h"
-#include "foundation/utility/implptr.h"
 
 // Forward declarations.
 namespace renderer      { class IBSDFFactory; }
@@ -63,6 +62,9 @@ class RENDERERDLL BSDFFactoryRegistrar
     // Constructor.
     BSDFFactoryRegistrar();
 
+    // Destructor.
+    ~BSDFFactoryRegistrar();
+
     // Register a BSDF factory.
     void register_factory(std::auto_ptr<FactoryType> factory);
 
@@ -73,7 +75,8 @@ class RENDERERDLL BSDFFactoryRegistrar
     const FactoryType* lookup(const char* name) const;
 
   private:
-    PIMPL(BSDFFactoryRegistrar);
+    struct Impl;
+    Impl* impl;
 };
 
 }       // namespace renderer

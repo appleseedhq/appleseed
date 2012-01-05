@@ -116,7 +116,6 @@ class DLLSYMBOL Scene
   private:
     friend class SceneFactory;
 
-    // Private implementation.
     struct Impl;
     Impl* impl;
 

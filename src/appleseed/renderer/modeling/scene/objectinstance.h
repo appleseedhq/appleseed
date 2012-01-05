@@ -103,7 +103,6 @@ class RENDERERDLL ObjectInstance
   private:
     friend class ObjectInstanceFactory;
 
-    // Private implementation.
     struct Impl;
     Impl* impl;
 

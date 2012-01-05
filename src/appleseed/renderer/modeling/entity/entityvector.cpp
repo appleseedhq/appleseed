@@ -69,6 +69,22 @@ EntityVector::iterator::iterator()
 {
 }
 
+EntityVector::iterator::iterator(const iterator& rhs)
+  : impl(new Impl(*rhs.impl))
+{
+}
+
+EntityVector::iterator::~iterator()
+{
+    delete impl;
+}
+
+EntityVector::iterator& EntityVector::iterator::operator=(const iterator& rhs)
+{
+    *impl = *rhs.impl;
+    return *this;
+}
+
 bool EntityVector::iterator::operator==(const iterator& rhs) const
 {
     return impl->m_it == rhs.impl->m_it;
@@ -118,6 +134,22 @@ struct EntityVector::const_iterator::Impl
 EntityVector::const_iterator::const_iterator()
   : impl(new Impl())
 {
+}
+
+EntityVector::const_iterator::const_iterator(const const_iterator& rhs)
+  : impl(new Impl(*rhs.impl))
+{
+}
+
+EntityVector::const_iterator::~const_iterator()
+{
+    delete impl;
+}
+
+EntityVector::const_iterator& EntityVector::const_iterator::operator=(const const_iterator& rhs)
+{
+    *impl = *rhs.impl;
+    return *this;
 }
 
 bool EntityVector::const_iterator::operator==(const const_iterator& rhs) const

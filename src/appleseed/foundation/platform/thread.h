@@ -107,7 +107,6 @@ class FOUNDATIONDLL BenchmarkingThreadContext
     ~BenchmarkingThreadContext();
 
   private:
-    // Private implementation.
     struct Impl;
     Impl* impl;
 };

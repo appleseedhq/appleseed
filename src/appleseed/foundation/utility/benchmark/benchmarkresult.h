@@ -133,7 +133,6 @@ class FOUNDATIONDLL BenchmarkResult
         const TimingResult&     timing_result);
 
   private:
-    // Private implementation.
     struct Impl;
     Impl* impl;
 };

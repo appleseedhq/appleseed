@@ -73,6 +73,11 @@ Camera::Camera(
     compute_view_pyramid();
 }
 
+Camera::~Camera()
+{
+    delete impl;
+}
+
 const Vector2d& Camera::get_film_dimensions() const
 {
     return impl->m_film_dimensions;

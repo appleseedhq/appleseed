@@ -55,6 +55,11 @@ LightFactoryRegistrar::LightFactoryRegistrar()
     register_factory(auto_ptr<FactoryType>(new PointLightFactory()));
 }
 
+LightFactoryRegistrar::~LightFactoryRegistrar()
+{
+    delete impl;
+}
+
 void LightFactoryRegistrar::register_factory(auto_ptr<FactoryType> factory)
 {
     const string model = factory->get_model();

@@ -91,7 +91,6 @@ class FOUNDATIONDLL JobManager
     void stop();
 
   private:
-    // Private implementation.
     struct Impl;
     Impl* impl;
 };

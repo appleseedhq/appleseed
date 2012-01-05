@@ -81,7 +81,6 @@ class FOUNDATIONDLL BenchmarkAggregator
     const BenchmarkSerie& get_serie(const UniqueID case_uid) const;
 
   private:
-    // Private implementation.
     struct Impl;
     Impl* impl;
 };

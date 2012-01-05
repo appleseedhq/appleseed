@@ -55,6 +55,11 @@ EDFFactoryRegistrar::EDFFactoryRegistrar()
     register_factory(auto_ptr<FactoryType>(new DiffuseEDFFactory()));
 }
 
+EDFFactoryRegistrar::~EDFFactoryRegistrar()
+{
+    delete impl;
+}
+
 void EDFFactoryRegistrar::register_factory(auto_ptr<FactoryType> factory)
 {
     const string model = factory->get_model();

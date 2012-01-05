@@ -57,6 +57,11 @@ CameraFactoryRegistrar::CameraFactoryRegistrar()
     register_factory(auto_ptr<FactoryType>(new ThinLensCameraFactory()));
 }
 
+CameraFactoryRegistrar::~CameraFactoryRegistrar()
+{
+    delete impl;
+}
+
 void CameraFactoryRegistrar::register_factory(auto_ptr<FactoryType> factory)
 {
     const string model = factory->get_model();

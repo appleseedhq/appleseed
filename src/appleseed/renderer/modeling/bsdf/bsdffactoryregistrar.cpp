@@ -67,6 +67,11 @@ BSDFFactoryRegistrar::BSDFFactoryRegistrar()
     register_factory(auto_ptr<FactoryType>(new SpecularBTDFFactory()));
 }
 
+BSDFFactoryRegistrar::~BSDFFactoryRegistrar()
+{
+    delete impl;
+}
+
 void BSDFFactoryRegistrar::register_factory(auto_ptr<FactoryType> factory)
 {
     const string model = factory->get_model();

@@ -34,7 +34,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/iunknown.h"
-#include "foundation/utility/implptr.h"
 #include "foundation/utility/uid.h"
 #include "foundation/utility/version.h"
 
@@ -73,11 +72,14 @@ class DLLSYMBOL Entity
     const ParamArray& get_parameters() const;
 
   protected:
+    struct Impl;
+    Impl* impl;
+
     const foundation::UniqueID          m_class_uid;
     ParamArray                          m_params;
 
-    struct Impl;
-    foundation::impl_ptr<Impl, false>   impl;
+    // Destructor.
+    ~Entity();
 };
 
 

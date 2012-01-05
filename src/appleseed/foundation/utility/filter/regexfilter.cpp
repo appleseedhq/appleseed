@@ -65,6 +65,11 @@ RegExFilter::RegExFilter(const char* regex, const CaseSensivity case_sensivity)
     }
 }
 
+RegExFilter::~RegExFilter()
+{
+    delete impl;
+}
+
 bool RegExFilter::is_valid() const
 {
     return impl->m_valid;

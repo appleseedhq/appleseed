@@ -34,7 +34,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/array.h"
-#include "foundation/utility/implptr.h"
 
 // Forward declarations.
 namespace renderer      { class IEnvironmentShaderFactory; }
@@ -63,6 +62,9 @@ class RENDERERDLL EnvironmentShaderFactoryRegistrar
     // Constructor.
     EnvironmentShaderFactoryRegistrar();
 
+    // Destructor.
+    ~EnvironmentShaderFactoryRegistrar();
+
     // Register an environment EDF factory.
     void register_factory(std::auto_ptr<FactoryType> factory);
 
@@ -73,7 +75,8 @@ class RENDERERDLL EnvironmentShaderFactoryRegistrar
     const FactoryType* lookup(const char* name) const;
 
   private:
-    PIMPL(EnvironmentShaderFactoryRegistrar);
+    struct Impl;
+    Impl* impl;
 };
 
 }       // namespace renderer

@@ -31,7 +31,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/utility/implptr.h"
 
 // Standard headers.
 #include <cstddef>
@@ -75,6 +74,8 @@ class FOUNDATIONDLL Preprocessor
   public:
     Preprocessor();
 
+    ~Preprocessor();
+
     void define_symbol(const char* name);
     void define_symbol(const char* name, const char* value);
 
@@ -89,7 +90,8 @@ class FOUNDATIONDLL Preprocessor
     size_t get_error_location() const;
 
   private:
-    PIMPL(Preprocessor);
+    struct Impl;
+    Impl* impl;
 };
 
 }       // namespace foundation

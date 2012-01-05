@@ -35,7 +35,6 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/utility/autoreleaseptr.h"
-#include "foundation/utility/implptr.h"
 #include "foundation/utility/uid.h"
 
 // appleseed.main headers.
@@ -62,8 +61,15 @@ class DLLSYMBOL EntityMap
         // Value type.
         typedef Entity value_type;
 
-        // Constructor.
+        // Constructors.
         iterator();
+        iterator(const iterator& rhs);
+
+        // Destructor.
+        ~iterator();
+
+        // Assignment operator.
+        iterator& operator=(const iterator& rhs);
 
         // Equality and inequality tests.
         bool operator==(const iterator& rhs) const;
@@ -80,7 +86,8 @@ class DLLSYMBOL EntityMap
       private:
         friend class EntityMap;
 
-        PIMPL(iterator);
+        struct Impl;
+        Impl* impl;
     };
 
     // Constant iterator.
@@ -90,8 +97,15 @@ class DLLSYMBOL EntityMap
         // Value type.
         typedef Entity value_type;
 
-        // Constructor.
+        // Constructors.
         const_iterator();
+        const_iterator(const const_iterator& rhs);
+
+        // Destructor.
+        ~const_iterator();
+
+        // Assignment operator.
+        const_iterator& operator=(const const_iterator& rhs);
 
         // Equality and inequality tests.
         bool operator==(const const_iterator& rhs) const;
@@ -108,7 +122,8 @@ class DLLSYMBOL EntityMap
       private:
         friend class EntityMap;
 
-        PIMPL(const_iterator);
+        struct Impl;
+        Impl* impl;
     };
 
     // Constructor.
