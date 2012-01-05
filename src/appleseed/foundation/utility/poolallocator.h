@@ -168,6 +168,12 @@ class PoolAllocator
     {
     }
 
+    PoolAllocator& operator=(const PoolAllocator& rhs)
+    {
+        m_fallback_alloc = rhs.m_fallback_alloc;
+        return *this;
+    }
+
     pointer address(reference x) const
     {
         return &x;
@@ -216,8 +222,6 @@ class PoolAllocator
 
     Pool&               m_pool;
     FallBackAllocator   m_fallback_alloc;
-
-    void operator=(const PoolAllocator& rhs);
 };
 
 // A partial specialization for the void value type is required for rebinding
