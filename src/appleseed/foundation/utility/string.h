@@ -650,19 +650,22 @@ inline std::string replace(
     return result;
 }
 
+namespace impl
+{
+    struct XMLEntity
+    {
+        const char* m_character;
+        const char* m_entity;
+    };
+}
+
 inline std::string replace_special_xml_characters(const std::string& s)
 {
     //
     // Reference: http://en.wikipedia.org/wiki/List_of_XML_and_HTML_character_entity_references
     //
 
-    struct XMLEntity
-    {
-        char* m_character;
-        char* m_entity;
-    };
-
-    static const XMLEntity XMLEntities[] =
+    static const impl::XMLEntity XMLEntities[] =
     {
         { "&",  "&amp;" },      // must stay first!
         { "\"", "&quot;" },
@@ -675,7 +678,7 @@ inline std::string replace_special_xml_characters(const std::string& s)
 
     for (size_t i = 0; i < countof(XMLEntities); ++i)
     {
-        const XMLEntity& e = XMLEntities[i];
+        const impl::XMLEntity& e = XMLEntities[i];
         result = replace(result, e.m_character, e.m_entity);
     }
 
