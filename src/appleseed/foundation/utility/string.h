@@ -658,8 +658,9 @@ inline std::string replace_special_xml_characters(const std::string& s)
 
     struct XMLEntity
     {
-        char* m_character;
-        char* m_entity;
+		// Est. gcc 4.4: char * to string conversion is now deprecated.
+        const char* m_character;
+        const char* m_entity;
     };
 
     static const XMLEntity XMLEntities[] =
@@ -673,7 +674,8 @@ inline std::string replace_special_xml_characters(const std::string& s)
 
     std::string result = s;
 
-    for (size_t i = 0; i < countof(XMLEntities); ++i)
+	// Est. gcc 4.4: countof does not work with gcc 4.4
+	for (size_t i = 0, e = sizeof(XMLEntities) / sizeof(XMLEntity); i < e; ++i)
     {
         const XMLEntity& e = XMLEntities[i];
         result = replace(result, e.m_character, e.m_entity);
