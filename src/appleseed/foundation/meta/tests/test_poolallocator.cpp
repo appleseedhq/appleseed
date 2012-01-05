@@ -1453,6 +1453,10 @@ TEST_SUITE(Foundation_Utility_PoolAllocator)
         // variety of other types.
 
         PoolAllocator<int, 2> a;
-        StlAllocatorTestbed::TestAlloc( a );
+
+		// Est. gcc 4.4: StlAllocatorTestbed swaps allocators in one
+		// of it's tests, but PoolAllocator<> operator= is private.
+
+        //StlAllocatorTestbed::TestAlloc( a );
     }
 }
