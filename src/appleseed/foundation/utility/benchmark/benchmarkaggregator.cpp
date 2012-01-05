@@ -234,6 +234,11 @@ BenchmarkAggregator::BenchmarkAggregator()
 {
 }
 
+BenchmarkAggregator::~BenchmarkAggregator()
+{
+    delete impl;
+}
+
 void BenchmarkAggregator::clear()
 {
     impl->m_benchmarks.clear();

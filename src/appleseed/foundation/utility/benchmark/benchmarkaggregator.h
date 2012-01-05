@@ -31,7 +31,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/utility/implptr.h"
 #include "foundation/utility/uid.h"
 
 // Standard headers.
@@ -69,6 +68,8 @@ class FOUNDATIONDLL BenchmarkAggregator
   public:
     BenchmarkAggregator();
 
+    ~BenchmarkAggregator();
+
     void clear();
 
     bool scan_file(const char* path);
@@ -80,7 +81,9 @@ class FOUNDATIONDLL BenchmarkAggregator
     const BenchmarkSerie& get_serie(const UniqueID case_uid) const;
 
   private:
-    PIMPL(BenchmarkAggregator);
+    // Private implementation.
+    struct Impl;
+    Impl* impl;
 };
 
 }       // namespace foundation
