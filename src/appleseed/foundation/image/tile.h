@@ -192,7 +192,7 @@ class FOUNDATIONDLL Tile
     bool            m_own_storage;                  // does the tile own the memory used for pixel storage?
 
     // Forbid usage of assignment operator.
-    const Tile& operator=(const Tile&);             // intentionally left unimplemented
+    Tile& operator=(const Tile&);                   // intentionally left unimplemented
 };
 
 // Return the size of a tile, including the dynamically allocated memory.

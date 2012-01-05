@@ -72,7 +72,7 @@ class FOUNDATIONDLL NonCopyable
     // Prevent NonCopyable class and any class inheriting it from being
     // copied or constructed by copy.
     NonCopyable(const NonCopyable&);
-    const NonCopyable& operator=(const NonCopyable&);
+    NonCopyable& operator=(const NonCopyable&);
 };
 
 
