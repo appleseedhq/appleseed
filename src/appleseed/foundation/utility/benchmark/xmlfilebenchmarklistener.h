@@ -31,7 +31,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/benchmark/benchmarklistenerbase.h"
-#include "foundation/utility/implptr.h"
 
 // Standard headers.
 #include <cstddef>
@@ -117,7 +116,9 @@ class FOUNDATIONDLL XMLFileBenchmarkListener
   private:
     friend FOUNDATIONDLL XMLFileBenchmarkListener* create_xmlfile_benchmark_listener();
 
-    PIMPL(XMLFileBenchmarkListener);
+    // Private implementation.
+    struct Impl;
+    Impl* impl;
 
     // Constructor.
     XMLFileBenchmarkListener();

@@ -72,6 +72,8 @@ XMLFileBenchmarkListener::XMLFileBenchmarkListener()
 XMLFileBenchmarkListener::~XMLFileBenchmarkListener()
 {
     close();
+
+    delete impl;
 }
 
 void XMLFileBenchmarkListener::release()
