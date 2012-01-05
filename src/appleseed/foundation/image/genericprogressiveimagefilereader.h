@@ -31,7 +31,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/iprogressiveimagefilereader.h"
-#include "foundation/utility/implptr.h"
 
 // Standard headers.
 #include <cstddef>
@@ -109,7 +108,9 @@ class FOUNDATIONDLL GenericProgressiveImageFileReader
         const size_t        tile_y);
 
   private:
-    PIMPL(GenericProgressiveImageFileReader);
+    // Private implementation.
+    struct Impl;
+    Impl* impl;
 };
 
 }       // namespace foundation

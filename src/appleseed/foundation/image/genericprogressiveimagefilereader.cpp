@@ -96,6 +96,8 @@ GenericProgressiveImageFileReader::~GenericProgressiveImageFileReader()
 {
     if (is_open())
         close();
+
+    delete impl;
 }
 
 void GenericProgressiveImageFileReader::open(const char* filename)
