@@ -51,28 +51,15 @@
 namespace appleseed {
 namespace studio {
 
-#pragma warning (push)
-#pragma warning (disable: 4250)     // 'class1' : inherits 'class2::member' via dominance
-
-// Work around a limitation in Qt: a template class cannot have slots.
-class CollectionItemSlots
-  : public virtual ItemBase
-{
-    Q_OBJECT
-
-  protected slots:
-    virtual void slot_create() {}
-    virtual void slot_create_accepted(foundation::Dictionary values) {}
-};
-
 template <typename Entity, typename ParentEntity>
 class CollectionItem
   : public CollectionItemBase<Entity>
-  , public CollectionItemSlots
   , private EntityCreatorBase
 {
   public:
     CollectionItem(
+        const foundation::UniqueID  class_uid,
+        const QString&              title,
         ParentEntity&               parent,
         ProjectBuilder&             project_builder);
 
@@ -101,9 +88,12 @@ class CollectionItem
 
 template <typename Entity, typename ParentEntity>
 CollectionItem<Entity, ParentEntity>::CollectionItem(
+    const foundation::UniqueID      class_uid,
+    const QString&                  title,
     ParentEntity&                   parent,
     ProjectBuilder&                 project_builder)
-  : m_parent(parent)
+  : CollectionItemBase(class_uid, title)
+  , m_parent(parent)
   , m_project_builder(project_builder)
   , m_allow_creation(true)
 {
@@ -155,8 +145,6 @@ void CollectionItem<Entity, ParentEntity>::create(const foundation::Dictionary& 
 
     qobject_cast<QWidget*>(sender())->close();
 }
-
-#pragma warning (pop)
 
 }       // namespace studio
 }       // namespace appleseed

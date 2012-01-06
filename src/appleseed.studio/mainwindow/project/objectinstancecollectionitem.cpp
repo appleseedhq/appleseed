@@ -53,7 +53,7 @@ ObjectInstanceCollectionItem::ObjectInstanceCollectionItem(
     Assembly&                   assembly,
     ObjectInstanceContainer&    object_instances,
     ProjectBuilder&             project_builder)
-  : ItemBase(g_class_uid, "Object Instances")
+  : CollectionItemBase(g_class_uid, "Object Instances")
   , m_assembly(assembly)
   , m_project_builder(project_builder)
 {

@@ -33,6 +33,7 @@
 #include "mainwindow/project/itembase.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/uid.h"
 
@@ -47,12 +48,28 @@
 namespace appleseed {
 namespace studio {
 
+// Work around a limitation in Qt: a template class cannot have slots.
+class CollectionItemBaseSlots
+  : public ItemBase
+{
+    Q_OBJECT
+
+  protected:
+    explicit CollectionItemBaseSlots(const foundation::UniqueID class_uid);
+    CollectionItemBaseSlots(const foundation::UniqueID class_uid, const QString& title);
+
+  protected slots:
+    virtual void slot_create() {}
+    virtual void slot_create_accepted(foundation::Dictionary values) {}
+};
+
 template <typename Entity>
 class CollectionItemBase
-  : public virtual ItemBase
+  : public CollectionItemBaseSlots
 {
   public:
-    CollectionItemBase();
+    explicit CollectionItemBase(const foundation::UniqueID class_uid);
+    CollectionItemBase(const foundation::UniqueID class_uid, const QString& title);
 
     void add_item(Entity* entity);
 
@@ -66,6 +83,8 @@ class CollectionItemBase
 
     ItemMap m_items;
 
+    void initialize();
+
     void add_item(const int index, Entity* entity);
 
     virtual ItemBase* create_item(Entity* entity) const;
@@ -73,11 +92,40 @@ class CollectionItemBase
 
 
 //
+// CollectionItemBaseSlots class implementation.
+//
+
+inline CollectionItemBaseSlots::CollectionItemBaseSlots(const foundation::UniqueID class_uid)
+  : ItemBase(class_uid)
+{
+}
+
+inline CollectionItemBaseSlots::CollectionItemBaseSlots(const foundation::UniqueID class_uid, const QString& title)
+  : ItemBase(class_uid, title)
+{
+}
+
+
+//
 // CollectionItemBase class implementation.
 //
 
 template <typename Entity>
-CollectionItemBase<Entity>::CollectionItemBase()
+CollectionItemBase<Entity>::CollectionItemBase(const foundation::UniqueID class_uid)
+  : CollectionItemBaseSlots(class_uid)
+{
+    initialize();
+}
+
+template <typename Entity>
+CollectionItemBase<Entity>::CollectionItemBase(const foundation::UniqueID class_uid, const QString& title)
+  : CollectionItemBaseSlots(class_uid, title)
+{
+    initialize();
+}
+
+template <typename Entity>
+void CollectionItemBase<Entity>::initialize()
 {
     set_allow_edition(false);
     set_allow_deletion(false);

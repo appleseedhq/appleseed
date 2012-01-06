@@ -90,8 +90,7 @@ MultiModelCollectionItem<Entity, ParentEntity>::MultiModelCollectionItem(
     const QString&                  title,
     ParentEntity&                   parent,
     ProjectBuilder&                 project_builder)
-  : ItemBase(class_uid, title)
-  , CollectionItemType(parent, project_builder)
+  : CollectionItemType(class_uid, title, parent, project_builder)
 {
 }
 
