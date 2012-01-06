@@ -125,7 +125,7 @@ namespace
 
         bool operator()(const TransformPair& lhs, const TransformPair& rhs) const
         {
-            const TransformComparer<T> transform_comparer;
+            TransformComparer<T> transform_comparer;
 
             return
                 transform_comparer(lhs.first, rhs.first) ? true :
