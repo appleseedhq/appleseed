@@ -70,7 +70,7 @@ TextureCollectionItem::TextureCollectionItem(
     TextureContainer&   textures,
     ProjectBuilder&     project_builder,
     ParamArray&         settings)
-  : CollectionItemBase(g_class_uid, "Textures")
+  : CollectionItemBase<Texture>(g_class_uid, "Textures")
   , m_assembly(0)
   , m_project_builder(project_builder)
   , m_settings(settings)
@@ -83,7 +83,7 @@ TextureCollectionItem::TextureCollectionItem(
     TextureContainer&   textures,
     ProjectBuilder&     project_builder,
     ParamArray&         settings)
-  : CollectionItemBase(g_class_uid, "Textures")
+  : CollectionItemBase<Texture>(g_class_uid, "Textures")
   , m_assembly(&assembly)
   , m_project_builder(project_builder)
   , m_settings(settings)

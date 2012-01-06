@@ -67,7 +67,7 @@ ObjectCollectionItem::ObjectCollectionItem(
     ObjectContainer&    objects,
     ProjectBuilder&     project_builder,
     ParamArray&         settings)
-  : CollectionItemBase(g_class_uid, "Objects")
+  : CollectionItemBase<Object>(g_class_uid, "Objects")
   , m_assembly(assembly)
   , m_project_builder(project_builder)
   , m_settings(settings)

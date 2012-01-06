@@ -61,7 +61,7 @@ AssemblyCollectionItem::AssemblyCollectionItem(
     AssemblyContainer&  assemblies,
     ProjectBuilder&     project_builder,
     ParamArray&         settings)
-  : CollectionItemBase(g_class_uid, "Assemblies")
+  : CollectionItemBase<Assembly>(g_class_uid, "Assemblies")
   , m_scene(scene)
   , m_project_builder(project_builder)
   , m_settings(settings)

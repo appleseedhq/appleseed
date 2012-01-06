@@ -92,7 +92,7 @@ CollectionItem<Entity, ParentEntity>::CollectionItem(
     const QString&                  title,
     ParentEntity&                   parent,
     ProjectBuilder&                 project_builder)
-  : CollectionItemBase(class_uid, title)
+  : CollectionItemBase<Entity>(class_uid, title)
   , m_parent(parent)
   , m_project_builder(project_builder)
   , m_allow_creation(true)
