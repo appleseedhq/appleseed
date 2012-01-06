@@ -274,8 +274,6 @@ Entity* ProjectBuilder::edit_entity(
     return new_entity_ptr;
 }
 
-// Specialize edit_entity() for cameras because we need to carry over
-// the camera's transform sequence when we replace one camera by another.
 template <>
 inline renderer::Camera* ProjectBuilder::edit_entity(
     renderer::Camera*                   old_entity,
@@ -324,6 +322,25 @@ inline renderer::TextureInstance* ProjectBuilder::edit_entity(
 
     renderer::EntityTraits<renderer::TextureInstance>::remove_entity(old_entity, parent);
     renderer::EntityTraits<renderer::TextureInstance>::insert_entity(new_entity, parent);
+
+    notify_project_modification();
+
+    return new_entity_ptr;
+}
+
+template <>
+inline renderer::Light* ProjectBuilder::edit_entity(
+    renderer::Light*                    old_entity,
+    renderer::Assembly&                 parent,
+    const foundation::Dictionary&       values) const
+{
+    foundation::auto_release_ptr<renderer::Light> new_entity(create_entity<renderer::Light>(values));
+    renderer::Light* new_entity_ptr = new_entity.get();
+
+    new_entity->set_transform(old_entity->get_transform());
+
+    renderer::EntityTraits<renderer::Light>::remove_entity(old_entity, parent);
+    renderer::EntityTraits<renderer::Light>::insert_entity(new_entity, parent);
 
     notify_project_modification();
 
