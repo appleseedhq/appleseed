@@ -526,7 +526,8 @@ void EntityEditorWindow::slot_open_color_picker(const QString& widget_name)
         QColorDialog::getColor(
             color_to_qcolor(initial_color),
             this,
-            "Pick Color");
+            "Pick Color",
+            QColorDialog::DontUseNativeDialog);
 
     if (new_color.isValid())
         widget_proxy->set(to_string(qcolor_to_color<Color3d>(new_color)));
