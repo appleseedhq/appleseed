@@ -107,7 +107,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             mesh_object->push_vertex(GVector3(0.0f, +0.5f, +0.5f));
             mesh_object->push_vertex(GVector3(0.0f, -0.5f, +0.5f));
             
-            mesh_object->push_vertex_normal(GVector3(1.0f, 0.0f, 0.0f));
+            mesh_object->push_vertex_normal(GVector3(-1.0f, 0.0f, 0.0f));
 
             mesh_object->push_triangle(Triangle(0, 1, 2, 0, 0, 0, 0));
             mesh_object->push_triangle(Triangle(2, 3, 0, 0, 0, 0, 0));
