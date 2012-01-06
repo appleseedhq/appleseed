@@ -143,7 +143,7 @@ void CollectionItem<Entity, ParentEntity>::create(const foundation::Dictionary& 
 {
     m_project_builder.insert_entity<Entity>(m_parent, values);
 
-    qobject_cast<QWidget*>(sender())->close();
+    qobject_cast<QWidget*>(QObject::sender())->close();
 }
 
 }       // namespace studio
