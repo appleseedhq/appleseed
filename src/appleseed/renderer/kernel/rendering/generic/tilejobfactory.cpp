@@ -49,6 +49,7 @@ namespace renderer
 
 void TileJobFactory::create(
     const Frame&                        frame,
+    const AOVFrameCollection&           aov_frames,
     const TileOrdering                  tile_ordering,
     const TileJob::TileRendererVector&  tile_renderers,
     const TileJob::TileCallbackVector&  tile_callbacks,
@@ -81,6 +82,7 @@ void TileJobFactory::create(
                 tile_renderers,
                 tile_callbacks,
                 frame,
+                aov_frames,
                 tile_x,
                 tile_y,
                 abort_switch));

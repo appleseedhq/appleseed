@@ -119,6 +119,8 @@ class RenderingManager
 
     void print_final_rendering_time();
     void print_average_luminance();
+
+    void write_aov_frames_to_disk();
     void archive_frame_to_disk();
 
   private slots:

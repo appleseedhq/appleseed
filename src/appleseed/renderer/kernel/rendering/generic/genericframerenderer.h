@@ -34,6 +34,7 @@
 #include "renderer/kernel/rendering/iframerenderer.h"
 
 // Forward declarations.
+namespace renderer  { class AOVFrameCollection; }
 namespace renderer  { class Frame; }
 namespace renderer  { class ITileCallbackFactory; }
 namespace renderer  { class ITileRendererFactory; }
@@ -51,10 +52,11 @@ class RENDERERDLL GenericFrameRendererFactory
   public:
     // Constructor.
     GenericFrameRendererFactory(
-        const Frame&            frame,
-        ITileRendererFactory*   renderer_factory,
-        ITileCallbackFactory*   callback_factory,       // may be 0
-        const ParamArray&       params);
+        const Frame&                frame,
+        const AOVFrameCollection&   aov_frames,
+        ITileRendererFactory*       renderer_factory,
+        ITileCallbackFactory*       callback_factory,       // may be 0
+        const ParamArray&           params);
 
     // Delete this instance.
     virtual void release();
@@ -64,16 +66,18 @@ class RENDERERDLL GenericFrameRendererFactory
 
     // Return a new generic frame renderer instance.
     static IFrameRenderer* create(
-        const Frame&            frame,
-        ITileRendererFactory*   renderer_factory,
-        ITileCallbackFactory*   callback_factory,       // may be 0
-        const ParamArray&       params);
+        const Frame&                frame,
+        const AOVFrameCollection&   aov_frames,
+        ITileRendererFactory*       renderer_factory,
+        ITileCallbackFactory*       callback_factory,       // may be 0
+        const ParamArray&           params);
 
   private:
-    const Frame&                m_frame;
-    ITileRendererFactory*       m_renderer_factory;
-    ITileCallbackFactory*       m_callback_factory;     // may be 0
-    ParamArray                  m_params;
+    const Frame&                    m_frame;
+    const AOVFrameCollection&       m_aov_frames;
+    ITileRendererFactory*           m_renderer_factory;
+    ITileCallbackFactory*           m_callback_factory;     // may be 0
+    ParamArray                      m_params;
 };
 
 }       // namespace renderer

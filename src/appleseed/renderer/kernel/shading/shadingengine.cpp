@@ -31,7 +31,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/shadingcontext.h"
-#include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentshader/environmentshader.h"
 #include "renderer/modeling/input/inputevaluator.h"
@@ -129,11 +128,6 @@ void ShadingEngine::shade_environment(
             input_evaluator,
             direction,
             shading_result);
-    }
-    else
-    {
-        // No environment shader: return transparent black.
-        shading_result.clear();
     }
 }
 

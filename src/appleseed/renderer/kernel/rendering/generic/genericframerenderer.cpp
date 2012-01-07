@@ -61,11 +61,13 @@ namespace
     {
       public:
         GenericFrameRenderer(
-            const Frame&            frame,
-            ITileRendererFactory*   renderer_factory,
-            ITileCallbackFactory*   callback_factory,   // may be 0
-            const ParamArray&       params)
+            const Frame&                frame,
+            const AOVFrameCollection&   aov_frames,
+            ITileRendererFactory*       renderer_factory,
+            ITileCallbackFactory*       callback_factory,   // may be 0
+            const ParamArray&           params)
           : m_frame(frame)
+          , m_aov_frames(aov_frames)
           , m_params(params)
         {
             // We must have a renderer factory, but it's OK not to have a callback factory.
@@ -126,6 +128,7 @@ namespace
             TileJobFactory::TileJobVector tile_jobs;
             m_tile_job_factory.create(
                 m_frame,
+                m_aov_frames,
                 m_params.m_tile_ordering,
                 m_tile_renderers,
                 m_tile_callbacks,
@@ -209,6 +212,8 @@ namespace
         };
 
         const Frame&                m_frame;            // target framebuffer
+        const AOVFrameCollection&   m_aov_frames;
+
         const Parameters            m_params;
 
         JobQueue                    m_job_queue;
@@ -228,11 +233,13 @@ namespace
 //
 
 GenericFrameRendererFactory::GenericFrameRendererFactory(
-    const Frame&            frame,
-    ITileRendererFactory*   renderer_factory,
-    ITileCallbackFactory*   callback_factory,
-    const ParamArray&       params)
+    const Frame&                frame,
+    const AOVFrameCollection&   aov_frames,
+    ITileRendererFactory*       renderer_factory,
+    ITileCallbackFactory*       callback_factory,
+    const ParamArray&           params)
   : m_frame(frame)
+  , m_aov_frames(aov_frames)
   , m_renderer_factory(renderer_factory)  
   , m_callback_factory(callback_factory)
   , m_params(params)
@@ -249,20 +256,23 @@ IFrameRenderer* GenericFrameRendererFactory::create()
     return
         new GenericFrameRenderer(
             m_frame,
+            m_aov_frames,
             m_renderer_factory,
             m_callback_factory,
             m_params);
 }
 
 IFrameRenderer* GenericFrameRendererFactory::create(
-    const Frame&            frame,
-    ITileRendererFactory*   renderer_factory,
-    ITileCallbackFactory*   callback_factory,
-    const ParamArray&       params)
+    const Frame&                frame,
+    const AOVFrameCollection&   aov_frames,
+    ITileRendererFactory*       renderer_factory,
+    ITileCallbackFactory*       callback_factory,
+    const ParamArray&           params)
 {
     return
         new GenericFrameRenderer(
             frame,
+            aov_frames,
             renderer_factory,
             callback_factory,
             params);

@@ -36,6 +36,7 @@
 #include "renderer/kernel/lighting/pathtracer.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/modeling/aov/aovcollection.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/environment/environment.h"
@@ -101,7 +102,8 @@ namespace
             SamplingContext&        sampling_context,
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
-            Spectrum&               radiance)   // output radiance, in W.sr^-1.m^-2
+            Spectrum&               radiance,   // output radiance, in W.sr^-1.m^-2
+            AOVCollection&          aovs)
         {
             typedef PathTracer<
                 PathVisitor,
@@ -223,7 +225,8 @@ namespace
                     m_params.m_dl_light_sample_count,
                     &shading_point);
                 Spectrum vertex_radiance;
-                integrator.sample_bsdf_and_lights(sampling_context, vertex_radiance);
+                AOVCollection vertex_aovs;
+                integrator.sample_bsdf_and_lights(sampling_context, vertex_radiance, vertex_aovs);
 
                 if (m_env_edf && m_params.m_enable_ibl)
                 {

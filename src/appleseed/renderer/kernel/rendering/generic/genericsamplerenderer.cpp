@@ -139,6 +139,7 @@ namespace
 
                 // Shade the intersection point.
                 ShadingResult local_result;
+                local_result.m_aovs.copy_declarations_from(shading_result.m_aovs);
                 m_shading_engine.shade(
                     sampling_context,
                     shading_context,
@@ -149,12 +150,7 @@ namespace
                 local_result.transform_to_linear_rgb(m_lighting_conditions);
 
                 // "Over" alpha compositing.
-                const Alpha contrib = Alpha(1.0) - shading_result.m_alpha;
-                const Alpha color_contrib = contrib * local_result.m_alpha;
-                shading_result.m_color[0] += color_contrib[0] * local_result.m_color[0];
-                shading_result.m_color[1] += color_contrib[0] * local_result.m_color[1];
-                shading_result.m_color[2] += color_contrib[0] * local_result.m_color[2];
-                shading_result.m_alpha += contrib * local_result.m_alpha;
+                shading_result.composite_over(local_result);
 
                 // Stop once we hit the environment.
                 if (!shading_point_ptr->hit())

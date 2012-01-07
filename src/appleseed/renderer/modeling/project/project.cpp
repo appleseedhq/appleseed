@@ -31,13 +31,27 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/intersection/tracecontext.h"
+#include "renderer/modeling/aov/aovframecollection.h"
+#include "renderer/modeling/edf/edf.h"
+#include "renderer/modeling/environment/environment.h"
+#include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/frame/frame.h"
+#include "renderer/modeling/light/light.h"
 #include "renderer/modeling/project/configuration.h"
 #include "renderer/modeling/project/configurationcontainer.h"
+#include "renderer/modeling/scene/assembly.h"
+#include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/scene.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/canvasproperties.h"
+#include "foundation/image/image.h"
+#include "foundation/image/pixel.h"
+#include "foundation/utility/foreach.h"
 #include "foundation/utility/searchpaths.h"
+
+// Standard headers.
+#include <string>
 
 using namespace foundation;
 using namespace std;
@@ -51,12 +65,13 @@ namespace renderer
 
 struct Project::Impl
 {
-    string                  m_path;
-    auto_release_ptr<Scene> m_scene;
-    auto_release_ptr<Frame> m_frame;
-    ConfigurationContainer  m_configurations;
-    SearchPaths             m_search_paths;
-    auto_ptr<TraceContext>  m_trace_context;
+    string                          m_path;
+    auto_release_ptr<Scene>         m_scene;
+    auto_release_ptr<Frame>         m_frame;
+    AOVFrameCollection              m_aov_frames;
+    ConfigurationContainer          m_configurations;
+    SearchPaths                     m_search_paths;
+    auto_ptr<TraceContext>          m_trace_context;
 };
 
 namespace
@@ -116,6 +131,40 @@ void Project::set_frame(auto_release_ptr<Frame> frame)
 Frame* Project::get_frame() const
 {
     return impl->m_frame.get();
+}
+
+void Project::create_aov_frames()
+{
+    const CanvasProperties& props = impl->m_frame->image().properties();
+    const PixelFormat format = props.m_pixel_format;
+
+    impl->m_aov_frames.clear();
+
+    for (const_each<AssemblyContainer> i = impl->m_scene->assemblies(); i; ++i)
+    {
+        for (const_each<EDFContainer> j = i->edfs(); j; ++j)
+            impl->m_aov_frames.declare(j->get_name(), format, j->get_uid());
+
+        for (const_each<LightContainer> j = i->lights(); j; ++j)
+            impl->m_aov_frames.declare(j->get_name(), format, j->get_uid());
+    }
+
+    const Environment* env = impl->m_scene->get_environment();
+
+    if (env)
+    {
+        const EnvironmentEDF* env_edf = env->get_environment_edf();
+
+        if (env_edf)
+            impl->m_aov_frames.declare(env_edf->get_name(), format, env_edf->get_uid());
+    }
+
+    impl->m_aov_frames.allocate_frames(props);
+}
+
+const AOVFrameCollection& Project::get_aov_frames() const
+{
+    return impl->m_aov_frames;
 }
 
 ConfigurationContainer& Project::configurations()

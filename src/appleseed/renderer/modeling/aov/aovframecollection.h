@@ -26,52 +26,65 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_ILIGHTINGENGINE_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_ILIGHTINGENGINE_H
+#ifndef APPLESEED_RENDERER_MODELING_AOV_AOVFRAMECOLLECTION_H
+#define APPLESEED_RENDERER_MODELING_AOV_AOVFRAMECOLLECTION_H
 
-// appleseed.renderer headers.
-#include "renderer/global/global.h"
+// appleseed.foundation headers.
+#include "foundation/image/pixel.h"
+#include "foundation/utility/uid.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+// Standard headers.
+#include <cstddef>
 
 // Forward declarations.
+namespace foundation    { class CanvasProperties; }
 namespace renderer      { class AOVCollection; }
-namespace renderer      { class ShadingContext; }
-namespace renderer      { class ShadingPoint; }
 
 namespace renderer
 {
 
-//
-// Lighting engine interface.
-//
-
-class RENDERERDLL ILightingEngine
-  : public foundation::IUnknown
+class DLLSYMBOL AOVFrameCollection
 {
   public:
-    // Compute the lighting at a given point of the scene.
-    virtual void compute_lighting(
-        SamplingContext&        sampling_context,
-        const ShadingContext&   shading_context,
-        const ShadingPoint&     shading_point,
-        Spectrum&               radiance,           // output radiance, in W.sr^-1.m^-2
-        AOVCollection&          aovs) = 0;
-};
+    AOVFrameCollection();
 
+    ~AOVFrameCollection();
 
-//
-// Interface of a ILightingEngine factory that can cross DLL boundaries.
-// This means that classes implementing the ILightingEngineFactory interface
-// must themselves be instantiated by a factory.
-//
+    bool empty() const;
 
-class RENDERERDLL ILightingEngineFactory
-  : public foundation::IUnknown
-{
-  public:
-    // Return a new sample lighting engine instance.
-    virtual ILightingEngine* create() = 0;
+    size_t size() const;
+
+    void clear();
+
+    void copy_declarations_to(AOVCollection& aovs) const;
+
+    void declare(
+        const char*                         name,
+        const foundation::PixelFormat       format,
+        const foundation::UniqueID          uid);
+
+    foundation::UniqueID declare(
+        const char*                         name,
+        const foundation::PixelFormat       format);
+
+    void allocate_frames(
+        const foundation::CanvasProperties& props);
+
+    void set_pixel(
+        const size_t                        x,
+        const size_t                        y,
+        const AOVCollection&                aovs) const;
+
+    bool write(const char* path) const;
+
+  private:
+    struct Impl;
+    Impl* impl;
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_ILIGHTINGENGINE_H
+#endif  // !APPLESEED_RENDERER_MODELING_AOV_AOVFRAMECOLLECTION_H

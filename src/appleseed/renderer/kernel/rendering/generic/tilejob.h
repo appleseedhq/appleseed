@@ -39,6 +39,7 @@
 #include <vector>
 
 // Forward declarations.
+namespace renderer      { class AOVFrameCollection; }
 namespace renderer      { class Frame; }
 namespace renderer      { class ITileRenderer; }
 namespace renderer      { class ITileCallback; }
@@ -62,6 +63,7 @@ class TileJob
         const TileRendererVector&   tile_renderers,
         const TileCallbackVector&   tile_callbacks,
         const Frame&                frame,
+        const AOVFrameCollection&   aov_frames,
         const size_t                tile_x,
         const size_t                tile_y,
         foundation::AbortSwitch&    abort_switch);
@@ -73,6 +75,7 @@ class TileJob
     const TileRendererVector&       m_tile_renderers;
     const TileCallbackVector&       m_tile_callbacks;
     const Frame&                    m_frame;
+    const AOVFrameCollection&       m_aov_frames;
     const size_t                    m_tile_x;
     const size_t                    m_tile_y;
     foundation::AbortSwitch&        m_abort_switch;

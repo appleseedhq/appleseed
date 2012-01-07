@@ -26,50 +26,10 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_ITILERENDERER_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_ITILERENDERER_H
+#ifndef APPLESEED_RENDERER_API_AOV_H
+#define APPLESEED_RENDERER_API_AOV_H
 
-// appleseed.renderer headers.
-#include "renderer/global/global.h"
+// API headers.
+#include "renderer/modeling/aov/aovframecollection.h"
 
-// Forward declarations.
-namespace foundation    { class AbortSwitch; }
-namespace renderer      { class AOVFrameCollection; }
-namespace renderer      { class Frame; }
-
-namespace renderer
-{
-
-//
-// Tile renderer interface.
-//
-
-class RENDERERDLL ITileRenderer
-  : public foundation::IUnknown
-{
-  public:
-    // Render a tile.
-    virtual void render_tile(
-        const Frame&                frame,
-        const AOVFrameCollection&   aov_frames,
-        const size_t                tile_x,
-        const size_t                tile_y,
-        foundation::AbortSwitch&    abort_switch) = 0;
-};
-
-
-//
-// Interface of a ITileRenderer factory that can cross DLL boundaries.
-//
-
-class RENDERERDLL ITileRendererFactory
-  : public foundation::IUnknown
-{
-  public:
-    // Return a new tile renderer instance.
-    virtual ITileRenderer* create() = 0;
-};
-
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_ITILERENDERER_H
+#endif  // !APPLESEED_RENDERER_API_AOV_H

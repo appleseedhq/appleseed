@@ -682,6 +682,7 @@ source_group ("main" FILES
 )
 
 set (renderer_api_sources
+    renderer/api/aov.h
     renderer/api/bsdf.h
     renderer/api/camera.h
     renderer/api/color.h
@@ -986,6 +987,19 @@ list (APPEND appleseed_sources
 )
 source_group ("renderer\\meta\\tests" FILES
     ${renderer_meta_tests_sources}
+)
+
+set (renderer_modeling_aov_sources
+    renderer/modeling/aov/aovcollection.cpp
+    renderer/modeling/aov/aovcollection.h
+    renderer/modeling/aov/aovframecollection.cpp
+    renderer/modeling/aov/aovframecollection.h
+)
+list (APPEND appleseed_sources
+    ${renderer_modeling_aov_sources}
+)
+source_group ("renderer\\modeling\\aov" FILES
+    ${renderer_modeling_aov_sources}
 )
 
 set (renderer_modeling_bsdf_sources

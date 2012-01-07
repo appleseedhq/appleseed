@@ -42,6 +42,7 @@
 #include <cstddef>
 
 // Forward declarations.
+namespace renderer      { class AOVCollection; }
 namespace renderer      { class BSDF; }
 namespace renderer      { struct LightSample; }
 namespace renderer      { class LightSampler; }
@@ -73,15 +74,18 @@ class DirectLightingIntegrator
 
     void sample_bsdf(
         SamplingContext&                sampling_context,
-        Spectrum&                       radiance);
+        Spectrum&                       radiance,
+        AOVCollection&                  aovs);
 
     void sample_lights(
         SamplingContext&                sampling_context,
-        Spectrum&                       radiance);
+        Spectrum&                       radiance,
+        AOVCollection&                  aovs);
 
     void sample_bsdf_and_lights(
         SamplingContext&                sampling_context,
-        Spectrum&                       radiance);
+        Spectrum&                       radiance,
+        AOVCollection&                  aovs);
 
   private:
     const LightSampler&                 m_light_sampler;
@@ -99,31 +103,36 @@ class DirectLightingIntegrator
 
     void take_single_bsdf_or_light_sample(
         SamplingContext&                sampling_context,
-        Spectrum&                       radiance);
+        Spectrum&                       radiance,
+        AOVCollection&                  aovs);
 
     template <typename WeightingFunction>
     void take_single_bsdf_sample(
         SamplingContext&                sampling_context,
         WeightingFunction&              weighting_function,
-        Spectrum&                       radiance);
+        Spectrum&                       radiance,
+        AOVCollection&                  aovs);
 
     template <typename WeightingFunction>
     void take_single_light_sample(
         SamplingContext&                sampling_context,
         WeightingFunction&              weighting_function,
-        Spectrum&                       radiance);
+        Spectrum&                       radiance,
+        AOVCollection&                  aovs);
 
     template <typename WeightingFunction>
     void add_emitting_triangle_sample_contribution(
         SamplingContext&                sampling_context,
         const LightSample&              sample,
         WeightingFunction&              weighting_function,
-        Spectrum&                       radiance);
+        Spectrum&                       radiance,
+        AOVCollection&                  aovs);
 
     void add_light_sample_contribution(
         SamplingContext&                sampling_context,
         const LightSample&              sample,
-        Spectrum&                       radiance);
+        Spectrum&                       radiance,
+        AOVCollection&                  aovs);
 
     bool check_visibility(
         SamplingContext&                sampling_context,

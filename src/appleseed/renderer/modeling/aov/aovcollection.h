@@ -26,52 +26,57 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_ILIGHTINGENGINE_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_ILIGHTINGENGINE_H
+#ifndef APPLESEED_RENDERER_MODELING_AOV_AOVCOLLECTION_H
+#define APPLESEED_RENDERER_MODELING_AOV_AOVCOLLECTION_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/global/globaltypes.h"
 
-// Forward declarations.
-namespace renderer      { class AOVCollection; }
-namespace renderer      { class ShadingContext; }
-namespace renderer      { class ShadingPoint; }
+// appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
+#include "foundation/utility/uid.h"
 
 namespace renderer
 {
 
-//
-// Lighting engine interface.
-//
-
-class RENDERERDLL ILightingEngine
-  : public foundation::IUnknown
+class AOVCollection
+  : public foundation::NonCopyable
 {
   public:
-    // Compute the lighting at a given point of the scene.
-    virtual void compute_lighting(
-        SamplingContext&        sampling_context,
-        const ShadingContext&   shading_context,
-        const ShadingPoint&     shading_point,
-        Spectrum&               radiance,           // output radiance, in W.sr^-1.m^-2
-        AOVCollection&          aovs) = 0;
-};
+    AOVCollection();
 
+    void copy_declarations_from(const AOVCollection& source);
 
-//
-// Interface of a ILightingEngine factory that can cross DLL boundaries.
-// This means that classes implementing the ILightingEngineFactory interface
-// must themselves be instantiated by a factory.
-//
+    void declare(const foundation::UniqueID uid);
 
-class RENDERERDLL ILightingEngineFactory
-  : public foundation::IUnknown
-{
-  public:
-    // Return a new sample lighting engine instance.
-    virtual ILightingEngine* create() = 0;
+    void set(const float val);
+
+    Spectrum& operator[](const foundation::UniqueID uid);
+    const Spectrum& operator[](const foundation::UniqueID uid) const;
+
+    AOVCollection& operator+=(const AOVCollection& rhs);
+    AOVCollection& operator*=(const Spectrum& rhs);
+    AOVCollection& operator*=(const float rhs);
+    AOVCollection& operator/=(const float rhs);
+
+  private:
+    friend class AOVFrameCollection;
+    friend class ShadingResult;
+
+    struct AOV
+    {
+        foundation::UniqueID    m_uid;
+        Spectrum                m_spectrum;
+    };
+
+    enum { MaxAOVCount = 8 };
+
+    AOV         m_aovs[MaxAOVCount];
+    size_t      m_aov_count;
+
+    Spectrum    m_trash;
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_ILIGHTINGENGINE_H
+#endif  // !APPLESEED_RENDERER_MODELING_AOV_AOVCOLLECTION_H
