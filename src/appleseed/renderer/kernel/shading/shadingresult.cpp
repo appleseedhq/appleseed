@@ -38,72 +38,65 @@ namespace renderer
 // ShadingResult class implementation.
 //
 
+namespace
+{
+    inline void transform_srgb_to_linear_rgb(Spectrum& s)
+    {
+        Color3f& linear_rgb = *reinterpret_cast<Color3f*>(&s[0]);
+        linear_rgb = srgb_to_linear_rgb(Color3f(s[0], s[1], s[2]));
+    }
+
+    inline void transform_ciexyz_to_linear_rgb(Spectrum& s)
+    {
+        Color3f& linear_rgb = *reinterpret_cast<Color3f*>(&s[0]);
+        linear_rgb = ciexyz_to_linear_rgb(Color3f(s[0], s[1], s[2]));
+    }
+
+    inline void transform_spectrum_to_linear_rgb(const LightingConditions& lighting, Spectrum& s)
+    {
+        Color3f& linear_rgb = *reinterpret_cast<Color3f*>(&s[0]);
+        linear_rgb = ciexyz_to_linear_rgb(spectrum_to_ciexyz<float>(lighting, s));
+    }
+}
+
 void ShadingResult::transform_to_linear_rgb(
     const LightingConditions&   lighting)
 {
-    const ColorSpace source = m_color_space;
-    m_color_space = ColorSpaceLinearRGB;
+    const size_t aov_size = m_aovs.size();
 
-    Color3f& rgb_out = *reinterpret_cast<Color3f*>(&m_color[0]);
-
-    switch (source)
+    switch (m_color_space)
     {
       case ColorSpaceLinearRGB:
         return;
 
       case ColorSpaceSRGB:
-        rgb_out =
-            srgb_to_linear_rgb(
-                Color3f(m_color[0], m_color[1], m_color[2]));
-        for (size_t i = 0; i < m_aovs.size(); ++i)
-        {
-            const Spectrum& aov_in = m_aovs[i];
-            Color3f& aov_rgb_out = *reinterpret_cast<Color3f*>(&m_aovs[i][0]);
-            aov_rgb_out =
-                srgb_to_linear_rgb(
-                    Color3f(aov_in[0], aov_in[1], aov_in[2]));
-        }
+        transform_srgb_to_linear_rgb(m_color);
+        for (size_t i = 0; i < aov_size; ++i)
+            transform_srgb_to_linear_rgb(m_aovs[i]);
         return;
 
       case ColorSpaceCIEXYZ:
-        rgb_out =
-            ciexyz_to_linear_rgb(
-                Color3f(m_color[0], m_color[1], m_color[2]));
-        for (size_t i = 0; i < m_aovs.size(); ++i)
-        {
-            const Spectrum& aov_in = m_aovs[i];
-            Color3f& aov_rgb_out = *reinterpret_cast<Color3f*>(&m_aovs[i][0]);
-            aov_rgb_out =
-                ciexyz_to_linear_rgb(
-                    Color3f(aov_in[0], aov_in[1], aov_in[2]));
-        }
+        transform_ciexyz_to_linear_rgb(m_color);
+        for (size_t i = 0; i < aov_size; ++i)
+            transform_ciexyz_to_linear_rgb(m_aovs[i]);
         return;
 
       case ColorSpaceSpectral:
-        rgb_out =
-            ciexyz_to_linear_rgb(
-                spectrum_to_ciexyz<float>(lighting, m_color));
-        for (size_t i = 0; i < m_aovs.size(); ++i)
-        {
-            const Spectrum& aov_in = m_aovs[i];
-            Color3f& aov_rgb_out = *reinterpret_cast<Color3f*>(&m_aovs[i][0]);
-            aov_rgb_out =
-                ciexyz_to_linear_rgb(
-                    spectrum_to_ciexyz<float>(lighting, aov_in));
-        }
+        transform_spectrum_to_linear_rgb(lighting, m_color);
+        for (size_t i = 0; i < aov_size; ++i)
+            transform_spectrum_to_linear_rgb(lighting, m_aovs[i]);
         return;
 
       assert_otherwise;
     }
+
+    m_color_space = ColorSpaceLinearRGB;
 }
 
 void ShadingResult::transform_to_spectrum(
     const LightingConditions&   lighting)
 {
-    const ColorSpace source = m_color_space;
-    m_color_space = ColorSpaceSpectral;
-
-    switch (source)
+    switch (m_color_space)
     {
       case ColorSpaceLinearRGB:
         linear_rgb_to_spectrum(
@@ -132,6 +125,8 @@ void ShadingResult::transform_to_spectrum(
 
       assert_otherwise;
     }
+
+    m_color_space = ColorSpaceSpectral;
 }
 
 void ShadingResult::composite_over(const ShadingResult& other)
