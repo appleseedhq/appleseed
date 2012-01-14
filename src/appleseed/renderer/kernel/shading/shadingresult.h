@@ -62,11 +62,6 @@ class ShadingResult
     // Set the shading result to a given fully opaque linear RGB value.
     void set_to_linear_rgb(const foundation::Color3f& linear_rgb);
 
-    // Transform the shading result to a given color space.
-    void transform_to_color_space(
-        const foundation::ColorSpace            target,
-        const foundation::LightingConditions&   lighting);
-
     // Transform the shading result to the linear RGB color space.
     void transform_to_linear_rgb(
         const foundation::LightingConditions&   lighting);
