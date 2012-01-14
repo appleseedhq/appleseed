@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/intersection/tracecontext.h"
+#include "renderer/modeling/aov/aovcollection.h"
 #include "renderer/modeling/aov/aovframecollection.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/environment/environment.h"
@@ -139,7 +140,7 @@ namespace
 {
     typedef map<string, size_t> RenderLayerMapping;
 
-    void assign_render_layer_to_entity(
+    void assign_entity_to_render_layer(
         AOVFrameCollection&     layers,
         RenderLayerMapping&     mapping,
         const PixelFormat       format,
@@ -162,6 +163,19 @@ namespace
             return;
         }
 
+        assert(mapping.size() <= AOVCollection::MaxSize);
+
+        if (mapping.size() == AOVCollection::MaxSize)
+        {
+            RENDERER_LOG_ERROR(
+                "while assigning entity \"%s\" to render layer \"%s\": could not create render layer, maximum number of AOVs (" FMT_SIZE_T ") reached",
+                entity.get_name(),
+                render_layer_name.c_str(),
+                AOVCollection::MaxSize);
+            entity.set_render_layer(~size_t(0));
+            return;
+        }
+
         const size_t render_layer_index =
             layers.declare(render_layer_name.c_str(), format);
 
@@ -171,17 +185,17 @@ namespace
     }
 
     template <typename EntityCollection>
-    void assign_render_layer_to_entities(
+    void assign_entities_to_render_layers(
         AOVFrameCollection&     layers,
         RenderLayerMapping&     mapping,
         const PixelFormat       format,
         EntityCollection&       entities)
     {
         for (each<EntityCollection> i = entities; i; ++i)
-            assign_render_layer_to_entity(layers, mapping, format, *i);
+            assign_entity_to_render_layer(layers, mapping, format, *i);
     }
 
-    void assign_render_layers(
+    void assign_scene_entities_to_render_layers(
         AOVFrameCollection&     layers,
         RenderLayerMapping&     mapping,
         const PixelFormat       format,
@@ -189,14 +203,14 @@ namespace
     {
         for (const_each<AssemblyContainer> i = scene.assemblies(); i; ++i)
         {
-            assign_render_layer_to_entities(layers, mapping, format, i->edfs());
-            assign_render_layer_to_entities(layers, mapping, format, i->lights());
+            assign_entities_to_render_layers(layers, mapping, format, i->edfs());
+            assign_entities_to_render_layers(layers, mapping, format, i->lights());
         }
 
         EnvironmentEDF* env_edf = scene.get_environment()->get_environment_edf();
 
         if (env_edf)
-            assign_render_layer_to_entity(layers, mapping, format, *env_edf);
+            assign_entity_to_render_layer(layers, mapping, format, *env_edf);
     }
 }
 
@@ -208,7 +222,7 @@ void Project::create_aov_frames()
     const PixelFormat format = props.m_pixel_format;
 
     RenderLayerMapping mapping;
-    assign_render_layers(
+    assign_scene_entities_to_render_layers(
         impl->m_aov_frames,
         mapping,
         format,

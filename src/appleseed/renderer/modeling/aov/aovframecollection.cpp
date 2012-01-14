@@ -129,13 +129,15 @@ void AOVFrameCollection::set_pixel(
     const size_t            y,
     const AOVCollection&    aovs) const
 {
-    assert(aovs.m_size == impl->m_aov_frames.size());
+    const size_t size = aovs.size();
 
-    for (size_t i = 0; i < aovs.m_size; ++i)
+    assert(size == impl->m_aov_frames.size());
+
+    for (size_t i = 0; i < size; ++i)
     {
         const Impl::AOVFrame& aov_frame = impl->m_aov_frames[i];
 
-        const Spectrum& spectrum = aovs.m_aovs[i];
+        const Spectrum& spectrum = aovs[i];
         const Color4f color(spectrum[0], spectrum[1], spectrum[2], 1.0f);
 
         aov_frame.m_frame->set_pixel(x, y, color);

@@ -50,6 +50,8 @@ class AOVCollection
   : public foundation::NonCopyable
 {
   public:
+    static const size_t MaxSize = 8;
+
     AOVCollection();
     explicit AOVCollection(const size_t size);
 
@@ -69,12 +71,7 @@ class AOVCollection
     AOVCollection& operator/=(const float rhs);
 
   private:
-    friend class AOVFrameCollection;
-    friend class ShadingResult;
-
-    enum { MaxAOVCount = 8 };
-
-    Spectrum    m_aovs[MaxAOVCount];
+    Spectrum    m_aovs[MaxSize];
     size_t      m_size;
 };
 
@@ -90,10 +87,12 @@ inline AOVCollection::AOVCollection()
 inline AOVCollection::AOVCollection(const size_t size)
   : m_size(size)
 {
+    assert(size <= MaxSize);
 }
 
 inline void AOVCollection::set_size(const size_t size)
 {
+    assert(size <= MaxSize);
     m_size = size;
 }
 
