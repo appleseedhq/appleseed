@@ -50,7 +50,7 @@ class AOVCollection
   : public foundation::NonCopyable
 {
   public:
-    static const size_t MaxSize = 8;
+    static const size_t MaxSize = 32;
 
     AOVCollection();
     explicit AOVCollection(const size_t size);
