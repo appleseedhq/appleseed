@@ -42,7 +42,6 @@
 // Forward declarations.
 namespace foundation    { class AbortSwitch; }
 namespace foundation    { class CanvasProperties; }
-namespace renderer      { class AOVFrameCollection; }
 namespace renderer      { class Frame; }
 namespace renderer      { class TileJob; }
 
@@ -70,7 +69,6 @@ class TileJobFactory
     // Create tile jobs for a given frame.
     void create(
         const Frame&                        frame,
-        const AOVFrameCollection&           aov_frames,
         const TileOrdering                  tile_ordering,
         const TileJob::TileRendererVector&  tile_renderers,
         const TileJob::TileCallbackVector&  tile_callbacks,

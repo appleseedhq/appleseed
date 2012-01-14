@@ -36,7 +36,6 @@
 
 // Forward declarations.
 namespace foundation    { class SearchPaths; }
-namespace renderer      { class AOVFrameCollection; }
 namespace renderer      { class Frame; }
 namespace renderer      { class Scene; }
 namespace renderer      { class TraceContext; }
@@ -74,9 +73,8 @@ class RENDERERDLL Project
     // Return 0 if the project does not contain a frame.
     Frame* get_frame() const;
 
-    void create_aov_frames();
-
-    const AOVFrameCollection& get_aov_frames() const;
+    // Create the AOV images in the frame.
+    void create_aov_images();
 
     // Access the configurations.
     ConfigurationContainer& configurations();

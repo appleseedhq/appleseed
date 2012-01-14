@@ -30,6 +30,6 @@
 #define APPLESEED_RENDERER_API_AOV_H
 
 // API headers.
-#include "renderer/modeling/aov/aovframecollection.h"
+#include "renderer/modeling/aov/aovimagecollection.h"
 
 #endif  // !APPLESEED_RENDERER_API_AOV_H

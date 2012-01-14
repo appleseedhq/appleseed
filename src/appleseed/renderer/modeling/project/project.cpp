@@ -32,7 +32,7 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/intersection/tracecontext.h"
 #include "renderer/modeling/aov/aovcollection.h"
-#include "renderer/modeling/aov/aovframecollection.h"
+#include "renderer/modeling/aov/aovimagecollection.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
@@ -74,7 +74,6 @@ struct Project::Impl
     string                          m_path;
     auto_release_ptr<Scene>         m_scene;
     auto_release_ptr<Frame>         m_frame;
-    AOVFrameCollection              m_aov_frames;
     ConfigurationContainer          m_configurations;
     SearchPaths                     m_search_paths;
     auto_ptr<TraceContext>          m_trace_context;
@@ -144,7 +143,7 @@ namespace
     typedef map<string, size_t> RenderLayerMapping;
 
     void assign_entity_to_render_layer(
-        AOVFrameCollection&     layers,
+        AOVImageCollection&     aov_images,
         RenderLayerMapping&     mapping,
         const PixelFormat       format,
         Entity&                 entity)
@@ -179,69 +178,64 @@ namespace
             return;
         }
 
-        const size_t render_layer_index =
-            layers.declare(render_layer_name.c_str(), format);
+        const size_t aov_image_index = aov_images.size();
+        aov_images.insert(render_layer_name.c_str(), format);
+        mapping[render_layer_name] = aov_image_index;
 
-        mapping[render_layer_name] = render_layer_index;
-
-        entity.set_render_layer(render_layer_index);
+        entity.set_render_layer(aov_image_index);
     }
 
     template <typename EntityCollection>
     void assign_entities_to_render_layers(
-        AOVFrameCollection&     layers,
+        AOVImageCollection&     aov_images,
         RenderLayerMapping&     mapping,
         const PixelFormat       format,
         EntityCollection&       entities)
     {
         for (each<EntityCollection> i = entities; i; ++i)
-            assign_entity_to_render_layer(layers, mapping, format, *i);
+            assign_entity_to_render_layer(aov_images, mapping, format, *i);
     }
 
-    void assign_scene_entities_to_render_layers(
-        AOVFrameCollection&     layers,
-        RenderLayerMapping&     mapping,
+    void assign_entities_to_render_layers(
+        AOVImageCollection&     aov_images,
         const PixelFormat       format,
         const Scene&            scene)
     {
-        assign_entities_to_render_layers(layers, mapping, format, scene.assemblies());
-        assign_entities_to_render_layers(layers, mapping, format, scene.assembly_instances());
+        RenderLayerMapping mapping;
+
+        assign_entities_to_render_layers(aov_images, mapping, format, scene.assemblies());
+        assign_entities_to_render_layers(aov_images, mapping, format, scene.assembly_instances());
 
         for (const_each<AssemblyContainer> i = scene.assemblies(); i; ++i)
         {
-            assign_entities_to_render_layers(layers, mapping, format, i->edfs());
-            assign_entities_to_render_layers(layers, mapping, format, i->lights());
-            assign_entities_to_render_layers(layers, mapping, format, i->objects());
-            assign_entities_to_render_layers(layers, mapping, format, i->object_instances());
+            assign_entities_to_render_layers(aov_images, mapping, format, i->edfs());
+            assign_entities_to_render_layers(aov_images, mapping, format, i->lights());
+            assign_entities_to_render_layers(aov_images, mapping, format, i->objects());
+            assign_entities_to_render_layers(aov_images, mapping, format, i->object_instances());
         }
 
         EnvironmentEDF* env_edf = scene.get_environment()->get_environment_edf();
 
         if (env_edf)
-            assign_entity_to_render_layer(layers, mapping, format, *env_edf);
+            assign_entity_to_render_layer(aov_images, mapping, format, *env_edf);
     }
 }
 
-void Project::create_aov_frames()
+void Project::create_aov_images()
 {
-    impl->m_aov_frames.clear();
+    assert(impl->m_frame.get());
 
-    const CanvasProperties& props = impl->m_frame->image().properties();
-    const PixelFormat format = props.m_pixel_format;
+    const PixelFormat format =
+        impl->m_frame->image().properties().m_pixel_format;
 
-    RenderLayerMapping mapping;
-    assign_scene_entities_to_render_layers(
-        impl->m_aov_frames,
-        mapping,
+    AOVImageCollection& aov_images = impl->m_frame->aov_images();
+
+    aov_images.clear();
+
+    assign_entities_to_render_layers(
+        aov_images,
         format,
         impl->m_scene.ref());
-
-    impl->m_aov_frames.allocate_frames(props);
-}
-
-const AOVFrameCollection& Project::get_aov_frames() const
-{
-    return impl->m_aov_frames;
 }
 
 ConfigurationContainer& Project::configurations()

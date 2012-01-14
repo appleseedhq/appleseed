@@ -245,19 +245,6 @@ void RenderingManager::print_average_luminance()
         pretty_scalar(average_luminance, 6).c_str());
 }
 
-void RenderingManager::write_aov_frames_to_disk()
-{
-    if (!m_project->get_aov_frames().empty())
-    {
-        RENDERER_LOG_INFO("writing aov frames to disk...");
-
-        const filesystem::path project_path =
-            filesystem::path(m_project->get_path()).branch_path();
-
-        m_project->get_aov_frames().write(project_path.string().c_str());
-    }
-}
-
 void RenderingManager::archive_frame_to_disk()
 {
     RENDERER_LOG_INFO("archiving frame to disk...");
@@ -301,7 +288,6 @@ void RenderingManager::slot_rendering_end()
     print_final_rendering_time();
     print_average_luminance();
 
-    write_aov_frames_to_disk();
     archive_frame_to_disk();
 
     // Prevent manipulation of the camera after rendering has ended.

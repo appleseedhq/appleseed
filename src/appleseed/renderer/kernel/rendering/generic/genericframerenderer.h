@@ -34,7 +34,6 @@
 #include "renderer/kernel/rendering/iframerenderer.h"
 
 // Forward declarations.
-namespace renderer  { class AOVFrameCollection; }
 namespace renderer  { class Frame; }
 namespace renderer  { class ITileCallbackFactory; }
 namespace renderer  { class ITileRendererFactory; }
@@ -53,7 +52,6 @@ class RENDERERDLL GenericFrameRendererFactory
     // Constructor.
     GenericFrameRendererFactory(
         const Frame&                frame,
-        const AOVFrameCollection&   aov_frames,
         ITileRendererFactory*       renderer_factory,
         ITileCallbackFactory*       callback_factory,       // may be 0
         const ParamArray&           params);
@@ -67,14 +65,12 @@ class RENDERERDLL GenericFrameRendererFactory
     // Return a new generic frame renderer instance.
     static IFrameRenderer* create(
         const Frame&                frame,
-        const AOVFrameCollection&   aov_frames,
         ITileRendererFactory*       renderer_factory,
         ITileCallbackFactory*       callback_factory,       // may be 0
         const ParamArray&           params);
 
   private:
     const Frame&                    m_frame;
-    const AOVFrameCollection&       m_aov_frames;
     ITileRendererFactory*           m_renderer_factory;
     ITileCallbackFactory*           m_callback_factory;     // may be 0
     ParamArray                      m_params;

@@ -38,8 +38,10 @@
 
 // Forward declarations.
 namespace foundation    { class Image; }
+namespace foundation    { class ImageAttributes; }
 namespace foundation    { class LightingConditions; }
 namespace foundation    { class Tile; }
+namespace renderer      { class AOVImageCollection; }
 
 namespace renderer
 {
@@ -57,28 +59,31 @@ class RENDERERDLL Frame
     // Delete this instance.
     virtual void release();
 
-    // Direct access to the underlying image.
+    // Access the main underlying image.
     foundation::Image& image() const;
 
-    // Return the lighting conditions for spectral to RGB conversion.
-    const foundation::LightingConditions& get_lighting_conditions() const;
+    // Access the AOV images.
+    AOVImageCollection& aov_images() const;
 
     // Return the normalized device coordinates of a given sample.
     foundation::Vector2d get_sample_position(
-        const double        sample_x,           // x coordinate of the sample in the image, in [0,width)
-        const double        sample_y) const;    // y coordinate of the sample in the image, in [0,height)
+        const double    sample_x,               // x coordinate of the sample in the image, in [0,width)
+        const double    sample_y) const;        // y coordinate of the sample in the image, in [0,height)
     foundation::Vector2d get_sample_position(
-        const size_t        pixel_x,            // x coordinate of the pixel in the image
-        const size_t        pixel_y,            // y coordinate of the pixel in the image
-        const double        sample_x,           // x coordinate of the sample in the pixel, in [0,1)
-        const double        sample_y) const;    // y coordinate of the sample in the pixel, in [0,1)
+        const size_t    pixel_x,                // x coordinate of the pixel in the image
+        const size_t    pixel_y,                // y coordinate of the pixel in the image
+        const double    sample_x,               // x coordinate of the sample in the pixel, in [0,1)
+        const double    sample_y) const;        // y coordinate of the sample in the pixel, in [0,1)
     foundation::Vector2d get_sample_position(
-        const size_t        tile_x,             // x coordinate of the tile in the image
-        const size_t        tile_y,             // y coordinate of the tile in the image
-        const size_t        pixel_x,            // x coordinate of the pixel in the tile
-        const size_t        pixel_y,            // y coordinate of the pixel in the tile
-        const double        sample_x,           // x coordinate of the sample in the pixel, in [0,1)
-        const double        sample_y) const;    // y coordinate of the sample in the pixel, in [0,1)
+        const size_t    tile_x,                 // x coordinate of the tile in the image
+        const size_t    tile_y,                 // y coordinate of the tile in the image
+        const size_t    pixel_x,                // x coordinate of the pixel in the tile
+        const size_t    pixel_y,                // y coordinate of the pixel in the tile
+        const double    sample_x,               // x coordinate of the sample in the pixel, in [0,1)
+        const double    sample_y) const;        // y coordinate of the sample in the pixel, in [0,1)
+
+    // Return the lighting conditions for spectral to RGB conversion.
+    const foundation::LightingConditions& get_lighting_conditions() const;
 
     // Convert a tile or an image from linear RGB to the output color space.
     void transform_to_output_color_space(foundation::Tile& tile) const;
@@ -86,15 +91,15 @@ class RENDERERDLL Frame
 
     // Write the frame to disk.
     // Return true if successful, false otherwise.
-    bool write(const char* filename) const;
+    bool write(const char* file_path) const;
 
     // Archive the frame to a given directory on disk. If output_path is provided,
     // the full path to the output file will be returned. The returned string must
     // be freed using foundation::free_string().
     // Return true if successful, false otherwise.
     bool archive(
-        const char*         directory,
-        char**              output_path = 0) const;
+        const char*     directory,
+        char**          output_path = 0) const;
 
   private:
     friend class FrameFactory;
@@ -118,7 +123,14 @@ class RENDERERDLL Frame
 
     // Transform a linear RGB color to the color space of the frame.
     foundation::Color4f linear_rgb_to_frame(
-        const foundation::Color4f&  linear_rgb) const;
+        const foundation::Color4f&          linear_rgb) const;
+
+    // Write an image to disk after transformation to the frame's color space.
+    // Return true if successful, false otherwise.
+    bool write_image(
+        const char*                         file_path,
+        const foundation::Image&            image,
+        const foundation::ImageAttributes&  image_attributes) const;
 };
 
 

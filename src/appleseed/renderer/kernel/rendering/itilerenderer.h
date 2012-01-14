@@ -34,7 +34,6 @@
 
 // Forward declarations.
 namespace foundation    { class AbortSwitch; }
-namespace renderer      { class AOVFrameCollection; }
 namespace renderer      { class Frame; }
 
 namespace renderer
@@ -51,7 +50,6 @@ class RENDERERDLL ITileRenderer
     // Render a tile.
     virtual void render_tile(
         const Frame&                frame,
-        const AOVFrameCollection&   aov_frames,
         const size_t                tile_x,
         const size_t                tile_y,
         foundation::AbortSwitch&    abort_switch) = 0;

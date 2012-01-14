@@ -34,7 +34,7 @@
 #include "renderer/kernel/rendering/isamplerenderer.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/aov/aovcollection.h"
-#include "renderer/modeling/aov/aovframecollection.h"
+#include "renderer/modeling/aov/aovimagecollection.h"
 #include "renderer/modeling/frame/frame.h"
 
 // appleseed.foundation headers.
@@ -130,7 +130,6 @@ namespace
 
         virtual void render_tile(
             const Frame&                frame,
-            const AOVFrameCollection&   aov_frames,
             const size_t                tile_x,
             const size_t                tile_y,
             AbortSwitch&                abort_switch)
@@ -193,7 +192,7 @@ namespace
                 // Initialize the pixel color.
                 Color4f pixel_color(0.0f);
 
-                AOVCollection pixel_aovs(aov_frames.size());
+                AOVCollection pixel_aovs(frame.aov_images().size());
                 pixel_aovs.set(0.0f);
 
                 if (!abort_switch.is_aborted())
@@ -261,7 +260,8 @@ namespace
                 // Store the pixel color into the tile.
                 tile.set_pixel(tx, ty, pixel_color);
 
-                aov_frames.set_pixel(ix, iy, pixel_aovs);
+                // Store the AOVs.
+                frame.aov_images().set_pixel(ix, iy, pixel_aovs);
             }
         }
 

@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_AOV_AOVFRAMECOLLECTION_H
-#define APPLESEED_RENDERER_MODELING_AOV_AOVFRAMECOLLECTION_H
+#ifndef APPLESEED_RENDERER_MODELING_AOV_AOVIMAGECOLLECTION_H
+#define APPLESEED_RENDERER_MODELING_AOV_AOVIMAGECOLLECTION_H
 
 // appleseed.foundation headers.
 #include "foundation/image/pixel.h"
@@ -39,38 +39,41 @@
 #include <cstddef>
 
 // Forward declarations.
-namespace foundation    { class CanvasProperties; }
+namespace foundation    { class Image; }
 namespace renderer      { class AOVCollection; }
 
 namespace renderer
 {
 
-class DLLSYMBOL AOVFrameCollection
+class DLLSYMBOL AOVImageCollection
 {
   public:
-    AOVFrameCollection();
+    AOVImageCollection(
+        const size_t                    canvas_width,
+        const size_t                    canvas_height,
+        const size_t                    tile_width,
+        const size_t                    tile_height);
 
-    ~AOVFrameCollection();
+    ~AOVImageCollection();
 
     bool empty() const;
 
     size_t size() const;
 
+    const char* get_name(const size_t index) const;
+
+    const foundation::Image& get_image(const size_t index) const;
+
     void clear();
 
-    size_t declare(
+    void insert(
         const char*                     name,
         const foundation::PixelFormat   format);
-
-    void allocate_frames(
-        const foundation::CanvasProperties& props);
 
     void set_pixel(
         const size_t                    x,
         const size_t                    y,
         const AOVCollection&            aovs) const;
-
-    bool write(const char* path) const;
 
   private:
     struct Impl;
@@ -79,4 +82,4 @@ class DLLSYMBOL AOVFrameCollection
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_AOV_AOVFRAMECOLLECTION_H
+#endif  // !APPLESEED_RENDERER_MODELING_AOV_AOVIMAGECOLLECTION_H

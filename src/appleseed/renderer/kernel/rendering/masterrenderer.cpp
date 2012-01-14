@@ -155,7 +155,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     if (!bind_scene_entities_inputs())
         return IRendererController::AbortRendering;
 
-    m_project.create_aov_frames();
+    m_project.create_aov_images();
     m_project.update_trace_context();
 
     const Scene& scene = *m_project.get_scene();
@@ -279,7 +279,6 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
         frame_renderer.reset(
             GenericFrameRendererFactory::create(
                 frame,
-                m_project.get_aov_frames(),
                 tile_renderer_factory.get(),
                 m_tile_callback_factory,
                 m_params.child("generic_frame_renderer")));
