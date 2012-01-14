@@ -63,12 +63,12 @@ class AOVCollection
     Spectrum& operator[](const size_t index);
     const Spectrum& operator[](const size_t index) const;
 
-    void add(const size_t index, const Spectrum& rhs);
-
     AOVCollection& operator+=(const AOVCollection& rhs);
     AOVCollection& operator*=(const Spectrum& rhs);
     AOVCollection& operator*=(const float rhs);
     AOVCollection& operator/=(const float rhs);
+
+    void add(const size_t index, const Spectrum& rhs);
 
   private:
     Spectrum    m_aovs[MaxSize];
@@ -81,6 +81,7 @@ class AOVCollection
 //
 
 inline AOVCollection::AOVCollection()
+  : m_size(0)
 {
 }
 
@@ -104,25 +105,19 @@ inline size_t AOVCollection::size() const
 inline Spectrum& AOVCollection::operator[](const size_t index)
 {
     assert(index < m_size);
-
     return m_aovs[index];
 }
 
 inline const Spectrum& AOVCollection::operator[](const size_t index) const
 {
     assert(index < m_size);
-
     return m_aovs[index];
 }
 
 inline void AOVCollection::add(const size_t index, const Spectrum& rhs)
 {
-    if (index == ~size_t(0))
-        return;
-
-    assert(index < m_size);
-
-    m_aovs[index] += rhs;
+    if (index < m_size)
+        m_aovs[index] += rhs;
 }
 
 }       // namespace renderer
