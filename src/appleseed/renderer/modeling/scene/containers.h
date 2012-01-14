@@ -97,7 +97,7 @@ struct ExceptionUnknownEntity
 // Returns 0 if the parameter does not exist.
 // Throws a renderer::ExceptionUnknownEntity exception if the requested entity does not exist.
 template <typename T, typename Container>
-const T* get_required_entity(
+T* get_required_entity(
     const Container&    container,
     const ParamArray&   params,
     const std::string&  param_name)
@@ -108,7 +108,7 @@ const T* get_required_entity(
     if (entity_name.empty())
         return 0;
 
-    const T* entity = container.get_by_name(entity_name.c_str());
+    T* entity = container.get_by_name(entity_name.c_str());
 
     if (entity == 0)
         throw ExceptionUnknownEntity(entity_name.c_str());
@@ -120,7 +120,7 @@ const T* get_required_entity(
 // Returns 0 if the parameter does not exist.
 // Throws a renderer::ExceptionUnknownEntity exception if the requested entity does not exist.
 template <typename T, typename Container>
-const T* get_optional_entity(
+T* get_optional_entity(
     const Container&    container,
     const ParamArray&   params,
     const std::string&  param_name)
@@ -131,7 +131,7 @@ const T* get_optional_entity(
     if (entity_name.empty())
         return 0;
 
-    const T* entity = container.get_by_name(entity_name.c_str());
+    T* entity = container.get_by_name(entity_name.c_str());
 
     if (entity == 0)
         throw ExceptionUnknownEntity(entity_name.c_str());
