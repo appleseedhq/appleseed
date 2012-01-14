@@ -51,7 +51,9 @@
 #include "foundation/utility/searchpaths.h"
 
 // Standard headers.
+#include <map>
 #include <string>
+#include <vector>
 
 using namespace foundation;
 using namespace std;
@@ -133,31 +135,84 @@ Frame* Project::get_frame() const
     return impl->m_frame.get();
 }
 
+namespace
+{
+    typedef map<string, size_t> RenderLayerMapping;
+
+    void assign_render_layer_to_entity(
+        AOVFrameCollection&     layers,
+        RenderLayerMapping&     mapping,
+        const PixelFormat       format,
+        Entity&                 entity)
+    {
+        const string render_layer_name =
+            entity.get_parameters().get_optional<string>("render_layer", "");
+
+        if (render_layer_name.empty())
+        {
+            entity.set_render_layer(~size_t(0));
+            return;
+        }
+
+        const RenderLayerMapping::const_iterator i = mapping.find(render_layer_name);
+
+        if (i != mapping.end())
+        {
+            entity.set_render_layer(i->second);
+            return;
+        }
+
+        const size_t render_layer_index =
+            layers.declare(render_layer_name.c_str(), format);
+
+        mapping[render_layer_name] = render_layer_index;
+
+        entity.set_render_layer(render_layer_index);
+    }
+
+    template <typename EntityCollection>
+    void assign_render_layer_to_entities(
+        AOVFrameCollection&     layers,
+        RenderLayerMapping&     mapping,
+        const PixelFormat       format,
+        EntityCollection&       entities)
+    {
+        for (each<EntityCollection> i = entities; i; ++i)
+            assign_render_layer_to_entity(layers, mapping, format, *i);
+    }
+
+    void assign_render_layers(
+        AOVFrameCollection&     layers,
+        RenderLayerMapping&     mapping,
+        const PixelFormat       format,
+        const Scene&            scene)
+    {
+        for (const_each<AssemblyContainer> i = scene.assemblies(); i; ++i)
+        {
+            assign_render_layer_to_entities(layers, mapping, format, i->edfs());
+            assign_render_layer_to_entities(layers, mapping, format, i->lights());
+        }
+
+        EnvironmentEDF* env_edf = scene.get_environment()->get_environment_edf();
+
+        if (env_edf)
+            assign_render_layer_to_entity(layers, mapping, format, *env_edf);
+    }
+}
+
 void Project::create_aov_frames()
 {
+    impl->m_aov_frames.clear();
+
     const CanvasProperties& props = impl->m_frame->image().properties();
     const PixelFormat format = props.m_pixel_format;
 
-    impl->m_aov_frames.clear();
-
-    for (const_each<AssemblyContainer> i = impl->m_scene->assemblies(); i; ++i)
-    {
-        for (const_each<EDFContainer> j = i->edfs(); j; ++j)
-            impl->m_aov_frames.declare(j->get_name(), format, j->get_uid());
-
-        for (const_each<LightContainer> j = i->lights(); j; ++j)
-            impl->m_aov_frames.declare(j->get_name(), format, j->get_uid());
-    }
-
-    const Environment* env = impl->m_scene->get_environment();
-
-    if (env)
-    {
-        const EnvironmentEDF* env_edf = env->get_environment_edf();
-
-        if (env_edf)
-            impl->m_aov_frames.declare(env_edf->get_name(), format, env_edf->get_uid());
-    }
+    RenderLayerMapping mapping;
+    assign_render_layers(
+        impl->m_aov_frames,
+        mapping,
+        format,
+        impl->m_scene.ref());
 
     impl->m_aov_frames.allocate_frames(props);
 }

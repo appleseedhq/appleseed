@@ -139,7 +139,7 @@ namespace
 
                 // Shade the intersection point.
                 ShadingResult local_result;
-                local_result.m_aovs.copy_declarations_from(shading_result.m_aovs);
+                local_result.m_aovs.set_size(shading_result.m_aovs.size());
                 m_shading_engine.shade(
                     sampling_context,
                     shading_context,

@@ -183,10 +183,10 @@ void ShadingResult::transform_to_linear_rgb(
         rgb_out =
             srgb_to_linear_rgb(
                 Color3f(m_color[0], m_color[1], m_color[2]));
-        for (size_t i = 0; i < m_aovs.m_aov_count; ++i)
+        for (size_t i = 0; i < m_aovs.m_size; ++i)
         {
-            const Spectrum& aov_in = m_aovs.m_aovs[i].m_spectrum;
-            Color3f& aov_rgb_out = *reinterpret_cast<Color3f*>(&m_aovs.m_aovs[i].m_spectrum[0]);
+            const Spectrum& aov_in = m_aovs.m_aovs[i];
+            Color3f& aov_rgb_out = *reinterpret_cast<Color3f*>(&m_aovs.m_aovs[i][0]);
             aov_rgb_out =
                 srgb_to_linear_rgb(
                     Color3f(aov_in[0], aov_in[1], aov_in[2]));
@@ -197,10 +197,10 @@ void ShadingResult::transform_to_linear_rgb(
         rgb_out =
             ciexyz_to_linear_rgb(
                 Color3f(m_color[0], m_color[1], m_color[2]));
-        for (size_t i = 0; i < m_aovs.m_aov_count; ++i)
+        for (size_t i = 0; i < m_aovs.m_size; ++i)
         {
-            const Spectrum& aov_in = m_aovs.m_aovs[i].m_spectrum;
-            Color3f& aov_rgb_out = *reinterpret_cast<Color3f*>(&m_aovs.m_aovs[i].m_spectrum[0]);
+            const Spectrum& aov_in = m_aovs.m_aovs[i];
+            Color3f& aov_rgb_out = *reinterpret_cast<Color3f*>(&m_aovs.m_aovs[i][0]);
             aov_rgb_out =
                 ciexyz_to_linear_rgb(
                     Color3f(aov_in[0], aov_in[1], aov_in[2]));
@@ -211,10 +211,10 @@ void ShadingResult::transform_to_linear_rgb(
         rgb_out =
             ciexyz_to_linear_rgb(
                 spectrum_to_ciexyz<float>(lighting, m_color));
-        for (size_t i = 0; i < m_aovs.m_aov_count; ++i)
+        for (size_t i = 0; i < m_aovs.m_size; ++i)
         {
-            const Spectrum& aov_in = m_aovs.m_aovs[i].m_spectrum;
-            Color3f& aov_rgb_out = *reinterpret_cast<Color3f*>(&m_aovs.m_aovs[i].m_spectrum[0]);
+            const Spectrum& aov_in = m_aovs.m_aovs[i];
+            Color3f& aov_rgb_out = *reinterpret_cast<Color3f*>(&m_aovs.m_aovs[i][0]);
             aov_rgb_out =
                 ciexyz_to_linear_rgb(
                     spectrum_to_ciexyz<float>(lighting, aov_in));
@@ -274,10 +274,10 @@ void ShadingResult::composite_over(const ShadingResult& other)
     m_color[1] += color_contrib[0] * other.m_color[1];
     m_color[2] += color_contrib[0] * other.m_color[2];
 
-    for (size_t i = 0; i < m_aovs.m_aov_count; ++i)
+    for (size_t i = 0; i < m_aovs.m_size; ++i)
     {
-        const Spectrum& other_aov_color = other.m_aovs.m_aovs[i].m_spectrum;
-        Spectrum& aov_color = m_aovs.m_aovs[i].m_spectrum;
+        const Spectrum& other_aov_color = other.m_aovs.m_aovs[i];
+        Spectrum& aov_color = m_aovs.m_aovs[i];
 
         aov_color[0] += color_contrib[0] * other_aov_color[0];
         aov_color[1] += color_contrib[0] * other_aov_color[1];

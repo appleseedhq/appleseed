@@ -29,99 +29,47 @@
 // Interface header.
 #include "aovcollection.h"
 
-// appleseed.foundation headers.
-#include "foundation/core/exceptions/exception.h"
-
-// Standard headers.
-#include <cassert>
-#include <cstddef>
-
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
 
-AOVCollection::AOVCollection()
-  : m_aov_count(0)
-{
-}
-
-void AOVCollection::copy_declarations_from(const AOVCollection& source)
-{
-    m_aov_count = source.m_aov_count;
-
-    for (size_t i = 0; i < m_aov_count; ++i)
-        m_aovs[i].m_uid = source.m_aovs[i].m_uid;
-}
-
-void AOVCollection::declare(const UniqueID uid)
-{
-    if (m_aov_count == MaxAOVCount)
-        throw new Exception("too many AOVs");
-
-    m_aovs[m_aov_count].m_uid = uid;
-
-    ++m_aov_count;
-}
-
 void AOVCollection::set(const float val)
 {
-    for (size_t i = 0; i < m_aov_count; ++i)
-        m_aovs[i].m_spectrum.set(val);
-
-    m_trash.set(0.0f);
-}
-
-Spectrum& AOVCollection::operator[](const UniqueID uid)
-{
-    for (size_t i = 0; i < m_aov_count; ++i)
-    {
-        if (m_aovs[i].m_uid == uid)
-            return m_aovs[i].m_spectrum;
-    }
-
-    return m_trash;
-}
-
-const Spectrum& AOVCollection::operator[](const UniqueID uid) const
-{
-    return const_cast<AOVCollection&>(*this)[uid];
+    for (size_t i = 0; i < m_size; ++i)
+        m_aovs[i].set(val);
 }
 
 AOVCollection& AOVCollection::operator+=(const AOVCollection& rhs)
 {
-    assert(m_aov_count == rhs.m_aov_count);
+    assert(m_size == rhs.m_size);
 
-    for (size_t i = 0; i < m_aov_count; ++i)
-    {
-        assert(m_aovs[i].m_uid == rhs.m_aovs[i].m_uid);
-        m_aovs[i].m_spectrum += rhs.m_aovs[i].m_spectrum;
-    }
+    for (size_t i = 0; i < m_size; ++i)
+        m_aovs[i] += rhs.m_aovs[i];
 
     return *this;
 }
 
 AOVCollection& AOVCollection::operator*=(const Spectrum& rhs)
 {
-    for (size_t i = 0; i < m_aov_count; ++i)
-        m_aovs[i].m_spectrum *= rhs;
+    for (size_t i = 0; i < m_size; ++i)
+        m_aovs[i] *= rhs;
 
     return *this;
 }
 
 AOVCollection& AOVCollection::operator*=(const float rhs)
 {
-    for (size_t i = 0; i < m_aov_count; ++i)
-        m_aovs[i].m_spectrum *= rhs;
+    for (size_t i = 0; i < m_size; ++i)
+        m_aovs[i] *= rhs;
 
     return *this;
 }
 
 AOVCollection& AOVCollection::operator/=(const float rhs)
 {
-    for (size_t i = 0; i < m_aov_count; ++i)
-        m_aovs[i].m_spectrum /= rhs;
+    for (size_t i = 0; i < m_size; ++i)
+        m_aovs[i] /= rhs;
 
     return *this;
 }

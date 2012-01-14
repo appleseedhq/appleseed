@@ -63,7 +63,6 @@ struct AOVFrameCollection::Impl
     {
         string              m_name;
         PixelFormat         m_format;
-        UniqueID            m_uid;
         Image*              m_frame;
     };
 
@@ -100,35 +99,19 @@ void AOVFrameCollection::clear()
     impl->m_aov_frames.clear();
 }
 
-void AOVFrameCollection::copy_declarations_to(AOVCollection& aovs) const
-{
-    assert(aovs.m_aov_count == 0);
-
-    const size_t aov_count = impl->m_aov_frames.size();
-
-    for (size_t i = 0; i < aov_count; ++i)
-        aovs.declare(impl->m_aov_frames[i].m_uid);
-}
-
-void AOVFrameCollection::declare(
-    const char*             name,
-    const PixelFormat       format,
-    const UniqueID          uid)
-{
-    Impl::AOVFrame aov_frame;
-    aov_frame.m_name = name;
-    aov_frame.m_format = format;
-    aov_frame.m_uid = uid;
-    impl->m_aov_frames.push_back(aov_frame);
-}
-
-UniqueID AOVFrameCollection::declare(
+size_t AOVFrameCollection::declare(
     const char*             name,
     const PixelFormat       format)
 {
-    const UniqueID uid = new_guid();
-    declare(name, format, uid);
-    return uid;
+    const size_t index = impl->m_aov_frames.size();
+
+    Impl::AOVFrame aov_frame;
+    aov_frame.m_name = name;
+    aov_frame.m_format = format;
+    aov_frame.m_frame = 0;
+    impl->m_aov_frames.push_back(aov_frame);
+
+    return index;
 }
 
 void AOVFrameCollection::allocate_frames(const CanvasProperties& props)
@@ -146,14 +129,13 @@ void AOVFrameCollection::set_pixel(
     const size_t            y,
     const AOVCollection&    aovs) const
 {
-    assert(aovs.m_aov_count == impl->m_aov_frames.size());
+    assert(aovs.m_size == impl->m_aov_frames.size());
 
-    for (size_t i = 0; i < aovs.m_aov_count; ++i)
+    for (size_t i = 0; i < aovs.m_size; ++i)
     {
         const Impl::AOVFrame& aov_frame = impl->m_aov_frames[i];
-        assert(aovs.m_aovs[i].m_uid == aov_frame.m_uid);
 
-        const Spectrum& spectrum = aovs.m_aovs[i].m_spectrum;
+        const Spectrum& spectrum = aovs.m_aovs[i];
         const Color4f color(spectrum[0], spectrum[1], spectrum[2], 1.0f);
 
         aov_frame.m_frame->set_pixel(x, y, color);

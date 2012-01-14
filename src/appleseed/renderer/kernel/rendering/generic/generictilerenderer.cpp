@@ -193,8 +193,7 @@ namespace
                 // Initialize the pixel color.
                 Color4f pixel_color(0.0f);
 
-                AOVCollection pixel_aovs;
-                aov_frames.copy_declarations_to(pixel_aovs);
+                AOVCollection pixel_aovs(aov_frames.size());
                 pixel_aovs.set(0.0f);
 
                 if (!abort_switch.is_aborted())
@@ -230,7 +229,7 @@ namespace
 
                             // Render the sample.
                             ShadingResult shading_result;
-                            shading_result.m_aovs.copy_declarations_from(pixel_aovs);
+                            shading_result.m_aovs.set_size(pixel_aovs.size());
                             m_sample_renderer->render_sample(
                                 sampling_context,
                                 sample_position,

@@ -31,7 +31,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/pixel.h"
-#include "foundation/utility/uid.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -59,24 +58,17 @@ class DLLSYMBOL AOVFrameCollection
 
     void clear();
 
-    void copy_declarations_to(AOVCollection& aovs) const;
-
-    void declare(
-        const char*                         name,
-        const foundation::PixelFormat       format,
-        const foundation::UniqueID          uid);
-
-    foundation::UniqueID declare(
-        const char*                         name,
-        const foundation::PixelFormat       format);
+    size_t declare(
+        const char*                     name,
+        const foundation::PixelFormat   format);
 
     void allocate_frames(
         const foundation::CanvasProperties& props);
 
     void set_pixel(
-        const size_t                        x,
-        const size_t                        y,
-        const AOVCollection&                aovs) const;
+        const size_t                    x,
+        const size_t                    y,
+        const AOVCollection&            aovs) const;
 
     bool write(const char* path) const;
 

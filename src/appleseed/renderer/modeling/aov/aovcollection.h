@@ -34,25 +34,34 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/utility/uid.h"
+
+// Standard headers.
+#include <cassert>
+#include <cstddef>
 
 namespace renderer
 {
+
+//
+// This is nothing more than an array of spectra.
+//
 
 class AOVCollection
   : public foundation::NonCopyable
 {
   public:
     AOVCollection();
+    explicit AOVCollection(const size_t size);
 
-    void copy_declarations_from(const AOVCollection& source);
-
-    void declare(const foundation::UniqueID uid);
+    void set_size(const size_t size);
+    size_t size() const;
 
     void set(const float val);
 
-    Spectrum& operator[](const foundation::UniqueID uid);
-    const Spectrum& operator[](const foundation::UniqueID uid) const;
+    Spectrum& operator[](const size_t index);
+    const Spectrum& operator[](const size_t index) const;
+
+    void add(const size_t index, const Spectrum& rhs);
 
     AOVCollection& operator+=(const AOVCollection& rhs);
     AOVCollection& operator*=(const Spectrum& rhs);
@@ -63,19 +72,59 @@ class AOVCollection
     friend class AOVFrameCollection;
     friend class ShadingResult;
 
-    struct AOV
-    {
-        foundation::UniqueID    m_uid;
-        Spectrum                m_spectrum;
-    };
-
     enum { MaxAOVCount = 8 };
 
-    AOV         m_aovs[MaxAOVCount];
-    size_t      m_aov_count;
-
-    Spectrum    m_trash;
+    Spectrum    m_aovs[MaxAOVCount];
+    size_t      m_size;
 };
+
+
+//
+// AOVCollection class implementation.
+//
+
+inline AOVCollection::AOVCollection()
+{
+}
+
+inline AOVCollection::AOVCollection(const size_t size)
+  : m_size(size)
+{
+}
+
+inline void AOVCollection::set_size(const size_t size)
+{
+    m_size = size;
+}
+
+inline size_t AOVCollection::size() const
+{
+    return m_size;
+}
+
+inline Spectrum& AOVCollection::operator[](const size_t index)
+{
+    assert(index < m_size);
+
+    return m_aovs[index];
+}
+
+inline const Spectrum& AOVCollection::operator[](const size_t index) const
+{
+    assert(index < m_size);
+
+    return m_aovs[index];
+}
+
+inline void AOVCollection::add(const size_t index, const Spectrum& rhs)
+{
+    if (index == ~size_t(0))
+        return;
+
+    assert(index < m_size);
+
+    m_aovs[index] += rhs;
+}
 
 }       // namespace renderer
 

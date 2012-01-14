@@ -256,8 +256,7 @@ namespace
                         m_params.m_dl_light_sample_count,
                         &shading_point);
                     Spectrum vertex_radiance;
-                    AOVCollection vertex_aovs;
-                    vertex_aovs.copy_declarations_from(m_path_aovs);
+                    AOVCollection vertex_aovs(m_path_aovs.size());
                     integrator.sample_lights(sampling_context, vertex_radiance, vertex_aovs);
 
                     if (m_env_edf && m_params.m_enable_ibl)
@@ -283,7 +282,7 @@ namespace
                             ibl_radiance,
                             &shading_point);
                         vertex_radiance += ibl_radiance;
-                        vertex_aovs[m_env_edf->get_uid()] += ibl_radiance;
+                        vertex_aovs.add(m_env_edf->get_render_layer(), ibl_radiance);
                     }
 
                     if (edf && cos_on > 0.0)
@@ -317,7 +316,7 @@ namespace
                         }
 
                         vertex_radiance += emitted_radiance;
-                        vertex_aovs[edf->get_uid()] += emitted_radiance;
+                        vertex_aovs.add(edf->get_render_layer(), emitted_radiance);
                     }
 
                     // Update the path radiance.
@@ -342,7 +341,7 @@ namespace
                         // Update the path radiance.
                         emitted_radiance *= throughput;
                         m_path_radiance += emitted_radiance;
-                        m_path_aovs[edf->get_uid()] += emitted_radiance;
+                        m_path_aovs.add(edf->get_render_layer(), emitted_radiance);
                     }
                 }
 
@@ -389,7 +388,7 @@ namespace
                 // Update the path radiance.
                 environment_radiance *= throughput;
                 m_path_radiance += environment_radiance;
-                m_path_aovs[m_env_edf->get_uid()] += environment_radiance;
+                m_path_aovs.add(m_env_edf->get_render_layer(), environment_radiance);
             }
 
           private:
