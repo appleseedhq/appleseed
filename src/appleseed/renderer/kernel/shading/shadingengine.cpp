@@ -35,6 +35,10 @@
 #include "renderer/modeling/environmentshader/environmentshader.h"
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/material/material.h"
+#include "renderer/modeling/object/object.h"
+#include "renderer/modeling/scene/assembly.h"
+#include "renderer/modeling/scene/assemblyinstance.h"
+#include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/surfaceshader/constantsurfaceshader.h"
 #include "renderer/modeling/surfaceshader/diagnosticsurfaceshader.h"
 
@@ -105,6 +109,12 @@ void ShadingEngine::shade_hit_point(
         shading_context,
         shading_point,
         shading_result);
+
+    // Set AOVs.
+    shading_result.m_aovs.set(shading_point.get_assembly().get_render_layer(), shading_result.m_color);
+    shading_result.m_aovs.set(shading_point.get_assembly_instance().get_render_layer(), shading_result.m_color);
+    shading_result.m_aovs.set(shading_point.get_object().get_render_layer(), shading_result.m_color);
+    shading_result.m_aovs.set(shading_point.get_object_instance().get_render_layer(), shading_result.m_color);
 }
 
 void ShadingEngine::shade_environment(

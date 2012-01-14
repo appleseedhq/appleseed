@@ -68,6 +68,7 @@ class AOVCollection
     AOVCollection& operator*=(const float rhs);
     AOVCollection& operator/=(const float rhs);
 
+    void set(const size_t index, const Spectrum& rhs);
     void add(const size_t index, const Spectrum& rhs);
 
   private:
@@ -112,6 +113,12 @@ inline const Spectrum& AOVCollection::operator[](const size_t index) const
 {
     assert(index < m_size);
     return m_aovs[index];
+}
+
+inline void AOVCollection::set(const size_t index, const Spectrum& rhs)
+{
+    if (index < m_size)
+        m_aovs[index] = rhs;
 }
 
 inline void AOVCollection::add(const size_t index, const Spectrum& rhs)

@@ -38,10 +38,13 @@
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/light/light.h"
+#include "renderer/modeling/object/object.h"
 #include "renderer/modeling/project/configuration.h"
 #include "renderer/modeling/project/configurationcontainer.h"
 #include "renderer/modeling/scene/assembly.h"
+#include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/containers.h"
+#include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
 
 // appleseed.foundation headers.
@@ -201,10 +204,15 @@ namespace
         const PixelFormat       format,
         const Scene&            scene)
     {
+        assign_entities_to_render_layers(layers, mapping, format, scene.assemblies());
+        assign_entities_to_render_layers(layers, mapping, format, scene.assembly_instances());
+
         for (const_each<AssemblyContainer> i = scene.assemblies(); i; ++i)
         {
             assign_entities_to_render_layers(layers, mapping, format, i->edfs());
             assign_entities_to_render_layers(layers, mapping, format, i->lights());
+            assign_entities_to_render_layers(layers, mapping, format, i->objects());
+            assign_entities_to_render_layers(layers, mapping, format, i->object_instances());
         }
 
         EnvironmentEDF* env_edf = scene.get_environment()->get_environment_edf();
