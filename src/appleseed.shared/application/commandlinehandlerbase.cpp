@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2011 Francois Beaune
+// Copyright (c) 2010-2012 Francois Beaune, Jupiter Jazz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -77,7 +77,7 @@ struct CommandLineHandlerBase::Impl
             logger,
             "%s, using %s version %s, %s configuration\n"
             "compiled on %s at %s using %s version %s\n"
-            "copyright (c) 2010-2011 francois beaune.\n"
+            "copyright (c) 2010-2012 Francois Beaune, Jupiter Jazz.\n"
             "this software is released under the MIT license (http://www.opensource.org/licenses/mit-license.php).\n"
             "visit http://appleseedhq.net/ for additional information and resources.",
             m_application_name.c_str(),
