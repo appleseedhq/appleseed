@@ -96,6 +96,11 @@ void ItemBase::set_title(const QString& title)
     setText(0, title);
 }
 
+void ItemBase::set_render_layer(const QString& name)
+{
+    setText(1, name);
+}
+
 QMenu* ItemBase::get_single_item_context_menu() const
 {
     QMenu* menu = new QMenu(treeWidget());
