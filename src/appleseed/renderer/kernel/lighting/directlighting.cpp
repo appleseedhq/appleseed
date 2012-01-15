@@ -123,8 +123,9 @@ void DirectLightingIntegrator::sample_bsdf(
 
     if (m_bsdf_sample_count > 1)
     {
-        radiance /= static_cast<float>(m_bsdf_sample_count);
-        aovs /= static_cast<float>(m_bsdf_sample_count);
+        const float rcp_bsdf_sample_count = 1.0f / m_bsdf_sample_count;
+        radiance *= rcp_bsdf_sample_count;
+        aovs *= rcp_bsdf_sample_count;
     }
 }
 
@@ -149,8 +150,9 @@ void DirectLightingIntegrator::sample_lights(
 
     if (m_light_sample_count > 1)
     {
-        radiance /= static_cast<float>(m_light_sample_count);
-        aovs /= static_cast<float>(m_light_sample_count);
+        const float rcp_light_sample_count = 1.0f / m_light_sample_count;
+        radiance *= rcp_light_sample_count;
+        aovs *= rcp_light_sample_count;
     }
 }
 

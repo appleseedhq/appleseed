@@ -189,9 +189,8 @@ namespace
 
 #endif
 
-                // Initialize the pixel color.
+                // Initialize the pixel values.
                 Color4f pixel_color(0.0f);
-
                 AOVCollection pixel_aovs(frame.aov_images().size());
                 pixel_aovs.set(0.0f);
 
@@ -246,21 +245,17 @@ namespace
                             pixel_color[1] += shading_result.m_color[1];
                             pixel_color[2] += shading_result.m_color[2];
                             pixel_color[3] += shading_result.m_alpha[0];
-
                             pixel_aovs += shading_result.m_aovs;
                         }
                     }
 
-                    // Finish computing the pixel color.
+                    // Finish computing the pixel values.
                     pixel_color *= m_rcp_sample_count;
-
                     pixel_aovs *= m_rcp_sample_count;
                 }
 
-                // Store the pixel color into the tile.
+                // Store the pixel values.
                 tile.set_pixel(tx, ty, pixel_color);
-
-                // Store the AOVs.
                 frame.aov_images().set_pixel(ix, iy, pixel_aovs);
             }
         }
