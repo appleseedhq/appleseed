@@ -148,12 +148,11 @@ namespace
         const PixelFormat       format,
         Entity&                 entity)
     {
-        const string render_layer_name =
-            entity.get_parameters().get_optional<string>("render_layer", "");
+        const string render_layer_name = entity.get_render_layer_name();
 
         if (render_layer_name.empty())
         {
-            entity.set_render_layer(~size_t(0));
+            entity.set_render_layer_index(~size_t(0));
             return;
         }
 
@@ -161,7 +160,7 @@ namespace
 
         if (i != mapping.end())
         {
-            entity.set_render_layer(i->second);
+            entity.set_render_layer_index(i->second);
             return;
         }
 
@@ -174,7 +173,7 @@ namespace
                 entity.get_name(),
                 render_layer_name.c_str(),
                 AOVCollection::MaxSize);
-            entity.set_render_layer(~size_t(0));
+            entity.set_render_layer_index(~size_t(0));
             return;
         }
 
@@ -182,7 +181,7 @@ namespace
         aov_images.insert(render_layer_name.c_str(), format);
         mapping[render_layer_name] = aov_image_index;
 
-        entity.set_render_layer(aov_image_index);
+        entity.set_render_layer_index(aov_image_index);
     }
 
     template <typename EntityCollection>

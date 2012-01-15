@@ -282,7 +282,7 @@ namespace
                             ibl_radiance,
                             &shading_point);
                         vertex_radiance += ibl_radiance;
-                        vertex_aovs.add(m_env_edf->get_render_layer(), ibl_radiance);
+                        vertex_aovs.add(m_env_edf->get_render_layer_index(), ibl_radiance);
                     }
 
                     if (edf && cos_on > 0.0)
@@ -316,7 +316,7 @@ namespace
                         }
 
                         vertex_radiance += emitted_radiance;
-                        vertex_aovs.add(edf->get_render_layer(), emitted_radiance);
+                        vertex_aovs.add(edf->get_render_layer_index(), emitted_radiance);
                     }
 
                     // Update the path radiance.
@@ -341,7 +341,7 @@ namespace
                         // Update the path radiance.
                         emitted_radiance *= throughput;
                         m_path_radiance += emitted_radiance;
-                        m_path_aovs.add(edf->get_render_layer(), emitted_radiance);
+                        m_path_aovs.add(edf->get_render_layer_index(), emitted_radiance);
                     }
                 }
 
@@ -388,7 +388,7 @@ namespace
                 // Update the path radiance.
                 environment_radiance *= throughput;
                 m_path_radiance += environment_radiance;
-                m_path_aovs.add(m_env_edf->get_render_layer(), environment_radiance);
+                m_path_aovs.add(m_env_edf->get_render_layer_index(), environment_radiance);
             }
 
           private:

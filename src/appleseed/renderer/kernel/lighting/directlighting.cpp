@@ -300,7 +300,7 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     edf_value *= static_cast<float>(weight);
     edf_value *= bsdf_value;
     radiance += edf_value;
-    aovs.add(edf->get_render_layer(), radiance);
+    aovs.add(edf->get_render_layer_index(), radiance);
 }
 
 template <typename WeightingFunction>
@@ -420,7 +420,7 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     edf_value *= static_cast<float>(weight);
     edf_value *= bsdf_value;
     radiance += edf_value;
-    aovs.add(edf->get_render_layer(), radiance);
+    aovs.add(edf->get_render_layer_index(), radiance);
 }
 
 void DirectLightingIntegrator::add_light_sample_contribution(
@@ -482,7 +482,7 @@ void DirectLightingIntegrator::add_light_sample_contribution(
     light_value *= static_cast<float>(weight);
     light_value *= bsdf_value;
     radiance += light_value;
-    aovs.add(light->get_render_layer(), radiance);
+    aovs.add(light->get_render_layer_index(), radiance);
 }
 
 bool DirectLightingIntegrator::check_visibility(
