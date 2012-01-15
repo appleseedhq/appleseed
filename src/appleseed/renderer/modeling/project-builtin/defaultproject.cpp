@@ -69,6 +69,7 @@ auto_release_ptr<Project> DefaultProjectFactory::create()
     scene->assembly_instances().insert(
         AssemblyInstanceFactory::create(
             "assembly_inst",
+            ParamArray(),
             *assembly,
             Transformd(Matrix4d::identity())));
 

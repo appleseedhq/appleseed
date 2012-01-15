@@ -93,6 +93,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             m_scene->assembly_instances().insert(
                 AssemblyInstanceFactory::create(
                     "assembly_inst",
+                    ParamArray(),
                     *assembly,
                     Transformd(Matrix4d::identity())));
         }

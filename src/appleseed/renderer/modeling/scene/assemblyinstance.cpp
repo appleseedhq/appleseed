@@ -58,9 +58,10 @@ namespace
 
 AssemblyInstance::AssemblyInstance(
     const char*         name,
+    const ParamArray&   params,
     const Assembly&     assembly,
     const Transformd&   transform)
-  : Entity(g_class_uid)
+  : Entity(g_class_uid, params)
   , impl(new Impl())
   , m_assembly(assembly)
   , m_assembly_uid(assembly.get_uid())
@@ -101,6 +102,7 @@ GAABB3 AssemblyInstance::compute_parent_bbox() const
 
 auto_release_ptr<AssemblyInstance> AssemblyInstanceFactory::create(
     const char*         name,
+    const ParamArray&   params,
     const Assembly&     assembly,
     const Transformd&   transform)
 {
@@ -108,6 +110,7 @@ auto_release_ptr<AssemblyInstance> AssemblyInstanceFactory::create(
         auto_release_ptr<AssemblyInstance>(
             new AssemblyInstance(
                 name,
+                params,
                 assembly,
                 transform));
 }
