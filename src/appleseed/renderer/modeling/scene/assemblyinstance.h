@@ -78,6 +78,7 @@ class RENDERERDLL AssemblyInstance
     // Constructor.
     AssemblyInstance(
         const char*                     name,
+        const ParamArray&               params,
         const Assembly&                 assembly,
         const foundation::Transformd&   transform);
 
@@ -96,6 +97,7 @@ class RENDERERDLL AssemblyInstanceFactory
     // Create a new assembly instance.
     static foundation::auto_release_ptr<AssemblyInstance> create(
         const char*                     name,
+        const ParamArray&               params,
         const Assembly&                 assembly,
         const foundation::Transformd&   transform);
 };

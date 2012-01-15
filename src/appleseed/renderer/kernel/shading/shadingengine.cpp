@@ -31,11 +31,14 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/shadingcontext.h"
-#include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentshader/environmentshader.h"
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/material/material.h"
+#include "renderer/modeling/object/object.h"
+#include "renderer/modeling/scene/assembly.h"
+#include "renderer/modeling/scene/assemblyinstance.h"
+#include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/surfaceshader/constantsurfaceshader.h"
 #include "renderer/modeling/surfaceshader/diagnosticsurfaceshader.h"
 
@@ -106,6 +109,12 @@ void ShadingEngine::shade_hit_point(
         shading_context,
         shading_point,
         shading_result);
+
+    // Set AOVs.
+    shading_result.m_aovs.set(shading_point.get_assembly().get_render_layer_index(), shading_result.m_color);
+    shading_result.m_aovs.set(shading_point.get_assembly_instance().get_render_layer_index(), shading_result.m_color);
+    shading_result.m_aovs.set(shading_point.get_object().get_render_layer_index(), shading_result.m_color);
+    shading_result.m_aovs.set(shading_point.get_object_instance().get_render_layer_index(), shading_result.m_color);
 }
 
 void ShadingEngine::shade_environment(
@@ -129,11 +138,6 @@ void ShadingEngine::shade_environment(
             input_evaluator,
             direction,
             shading_result);
-    }
-    else
-    {
-        // No environment shader: return transparent black.
-        shading_result.clear();
     }
 }
 

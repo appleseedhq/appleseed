@@ -73,6 +73,9 @@ class RENDERERDLL Project
     // Return 0 if the project does not contain a frame.
     Frame* get_frame() const;
 
+    // Create the AOV images in the frame.
+    void create_aov_images();
+
     // Access the configurations.
     ConfigurationContainer& configurations();
     const ConfigurationContainer& configurations() const;

@@ -27,36 +27,51 @@
 //
 
 // Interface header.
-#include "singlemodelentityeditorformfactory.h"
-
-// appleseed.foundation headers.
-#include "foundation/utility/containers/dictionary.h"
+#include "aovcollection.h"
 
 using namespace foundation;
-using namespace std;
 
-namespace appleseed {
-namespace studio {
-
-SingleModelEntityEditorFormFactory::SingleModelEntityEditorFormFactory(
-    const string&               entity_name,
-    const DictionaryArray&      entity_widgets)
-  : EntityEditorFormFactoryBase(entity_name)
-  , m_entity_widgets(entity_widgets)
+namespace renderer
 {
+
+void AOVCollection::set(const float val)
+{
+    for (size_t i = 0; i < m_size; ++i)
+        m_aovs[i].set(val);
 }
 
-void SingleModelEntityEditorFormFactory::update(
-    const Dictionary&           values,
-    WidgetDefinitionCollection& definitions) const
+AOVCollection& AOVCollection::operator+=(const AOVCollection& rhs)
 {
-    definitions.clear();
+    assert(m_size == rhs.m_size);
 
-    add_name_widget_definition(values, definitions);
-    add_render_layer_widget_definition(values, definitions);
+    for (size_t i = 0; i < m_size; ++i)
+        m_aovs[i] += rhs.m_aovs[i];
 
-    add_widget_definitions(m_entity_widgets, values, definitions);
+    return *this;
 }
 
-}   // namespace studio
-}   // namespace appleseed
+AOVCollection& AOVCollection::operator*=(const Spectrum& rhs)
+{
+    for (size_t i = 0; i < m_size; ++i)
+        m_aovs[i] *= rhs;
+
+    return *this;
+}
+
+AOVCollection& AOVCollection::operator*=(const float rhs)
+{
+    for (size_t i = 0; i < m_size; ++i)
+        m_aovs[i] *= rhs;
+
+    return *this;
+}
+
+AOVCollection& AOVCollection::operator/=(const float rhs)
+{
+    for (size_t i = 0; i < m_size; ++i)
+        m_aovs[i] /= rhs;
+
+    return *this;
+}
+
+}   // namespace renderer

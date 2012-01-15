@@ -62,16 +62,16 @@ class RENDERERDLL Environment
         const EnvironmentShaderContainer&   environment_shaders);
 
     // Return the EDF of this environment, or 0 if the environment doesn't have one.
-    const EnvironmentEDF* get_environment_edf() const;
+    EnvironmentEDF* get_environment_edf() const;
 
     // Return the shader of this environment, or 0 if the environment doesn't have one.
-    const EnvironmentShader* get_environment_shader() const;
+    EnvironmentShader* get_environment_shader() const;
 
   private:
     friend class EnvironmentFactory;
 
-    const EnvironmentEDF*       m_environment_edf;
-    const EnvironmentShader*    m_environment_shader;
+    EnvironmentEDF*     m_environment_edf;
+    EnvironmentShader*  m_environment_shader;
 
     // Constructor.
     Environment(
@@ -104,12 +104,12 @@ class RENDERERDLL EnvironmentFactory
 // Environment class implementation.
 //
 
-inline const EnvironmentEDF* Environment::get_environment_edf() const
+inline EnvironmentEDF* Environment::get_environment_edf() const
 {
     return m_environment_edf;
 }
 
-inline const EnvironmentShader* Environment::get_environment_shader() const
+inline EnvironmentShader* Environment::get_environment_shader() const
 {
     return m_environment_shader;
 }

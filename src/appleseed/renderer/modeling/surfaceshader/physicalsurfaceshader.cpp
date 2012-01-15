@@ -144,7 +144,8 @@ namespace
                 sampling_context,
                 shading_context,
                 shading_point,
-                shading_result.m_color);
+                shading_result.m_color,
+                shading_result.m_aovs);
 
             // Evaluate alpha mask.
             evaluate_alpha_mask(

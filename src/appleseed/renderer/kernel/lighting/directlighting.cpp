@@ -33,6 +33,7 @@
 #include "renderer/kernel/lighting/lightsampler.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/modeling/aov/aovcollection.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/input/inputparams.h"
@@ -105,27 +106,35 @@ DirectLightingIntegrator::DirectLightingIntegrator(
 
 void DirectLightingIntegrator::sample_bsdf(
     SamplingContext&        sampling_context,
-    Spectrum&               radiance)
+    Spectrum&               radiance,
+    AOVCollection&          aovs)
 {
     radiance.set(0.0f);
+    aovs.set(0.0f);
 
     for (size_t i = 0; i < m_bsdf_sample_count; ++i)
     {
         take_single_bsdf_sample(
             sampling_context,
             mis_power2_wrapper,
-            radiance);
+            radiance,
+            aovs);
     }
 
     if (m_bsdf_sample_count > 1)
+    {
         radiance /= static_cast<float>(m_bsdf_sample_count);
+        aovs /= static_cast<float>(m_bsdf_sample_count);
+    }
 }
 
 void DirectLightingIntegrator::sample_lights(
     SamplingContext&        sampling_context,
-    Spectrum&               radiance)
+    Spectrum&               radiance,
+    AOVCollection&          aovs)
 {
     radiance.set(0.0f);
+    aovs.set(0.0f);
 
     sampling_context.split_in_place(3, m_light_sample_count);
 
@@ -134,33 +143,40 @@ void DirectLightingIntegrator::sample_lights(
         take_single_light_sample(
             sampling_context,
             mis_power2_wrapper,
-            radiance);
+            radiance,
+            aovs);
     }
 
     if (m_light_sample_count > 1)
+    {
         radiance /= static_cast<float>(m_light_sample_count);
+        aovs /= static_cast<float>(m_light_sample_count);
+    }
 }
 
 void DirectLightingIntegrator::sample_bsdf_and_lights(
     SamplingContext&        sampling_context,
-    Spectrum&               radiance)
+    Spectrum&               radiance,
+    AOVCollection&          aovs)
 {
     if (m_bsdf_sample_count + m_light_sample_count == 0)
-        take_single_bsdf_or_light_sample(sampling_context, radiance);
+        take_single_bsdf_or_light_sample(sampling_context, radiance, aovs);
     else
     {
         Spectrum radiance_light_sampling;
-        sample_bsdf(sampling_context, radiance);
-        sample_lights(sampling_context, radiance_light_sampling);
+        sample_bsdf(sampling_context, radiance, aovs);
+        sample_lights(sampling_context, radiance_light_sampling, aovs);
         radiance += radiance_light_sampling;
     }
 }
 
 void DirectLightingIntegrator::take_single_bsdf_or_light_sample(
     SamplingContext&        sampling_context,
-    Spectrum&               radiance)
+    Spectrum&               radiance,
+    AOVCollection&          aovs)
 {
     radiance.set(0.0f);
+    aovs.set(0.0f);
 
     sampling_context.split_in_place(1, 1);
 
@@ -171,14 +187,16 @@ void DirectLightingIntegrator::take_single_bsdf_or_light_sample(
         take_single_light_sample(
             sampling_context,
             mis_balance_wrapper,
-            radiance);
+            radiance,
+            aovs);
     }
     else
     {
         take_single_bsdf_sample(
             sampling_context,
             mis_balance_wrapper,
-            radiance);
+            radiance,
+            aovs);
     }
 }
 
@@ -186,7 +204,8 @@ template <typename WeightingFunction>
 void DirectLightingIntegrator::take_single_bsdf_sample(
     SamplingContext&        sampling_context,
     WeightingFunction&      weighting_function,
-    Spectrum&               radiance)
+    Spectrum&               radiance,
+    AOVCollection&          aovs)
 {
     // Sample the BSDF.
     Vector3d incoming;
@@ -281,13 +300,15 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     edf_value *= static_cast<float>(weight);
     edf_value *= bsdf_value;
     radiance += edf_value;
+    aovs.add(edf->get_render_layer_index(), radiance);
 }
 
 template <typename WeightingFunction>
 void DirectLightingIntegrator::take_single_light_sample(
     SamplingContext&        sampling_context,
     WeightingFunction&      weighting_function,
-    Spectrum&               radiance)
+    Spectrum&               radiance,
+    AOVCollection&          aovs)
 {
     const Vector3d s = sampling_context.next_vector2<3>();
 
@@ -303,14 +324,16 @@ void DirectLightingIntegrator::take_single_light_sample(
             child_sampling_context,
             sample,
             weighting_function,
-            radiance);
+            radiance,
+            aovs);
     }
     else
     {
         add_light_sample_contribution(
             child_sampling_context,
             sample,
-            radiance);
+            radiance,
+            aovs);
     }
 }
 
@@ -319,7 +342,8 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     SamplingContext&        sampling_context,
     const LightSample&      sample,
     WeightingFunction&      weighting_function,
-    Spectrum&               radiance)
+    Spectrum&               radiance,
+    AOVCollection&          aovs)
 {
     // Compute the incoming direction in world space.
     Vector3d incoming = sample.m_input_params.m_point - m_point;
@@ -396,12 +420,14 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     edf_value *= static_cast<float>(weight);
     edf_value *= bsdf_value;
     radiance += edf_value;
+    aovs.add(edf->get_render_layer_index(), radiance);
 }
 
 void DirectLightingIntegrator::add_light_sample_contribution(
     SamplingContext&        sampling_context,
     const LightSample&      sample,
-    Spectrum&               radiance)
+    Spectrum&               radiance,
+    AOVCollection&          aovs)
 {
     // Compute the incoming direction in world space.
     Vector3d incoming = sample.m_input_params.m_point - m_point;
@@ -439,21 +465,24 @@ void DirectLightingIntegrator::add_light_sample_contribution(
             &bsdf_prob))
         return;
 
+    const Light* light = sample.m_light;
+
     // Evaluate the input values of the light.
     const void* light_data =
         m_input_evaluator.evaluate(
-            sample.m_light->get_inputs(),
+            light->get_inputs(),
             sample.m_input_params);
 
     // Evaluate the light.
     Spectrum light_value;
-    sample.m_light->evaluate(light_data, -incoming, light_value);
+    light->evaluate(light_data, -incoming, light_value);
 
     // Add the contribution of this sample to the illumination.
     const double weight = transmission * rcp_sample_square_distance / sample.m_probability;
     light_value *= static_cast<float>(weight);
     light_value *= bsdf_value;
     radiance += light_value;
+    aovs.add(light->get_render_layer_index(), radiance);
 }
 
 bool DirectLightingIntegrator::check_visibility(

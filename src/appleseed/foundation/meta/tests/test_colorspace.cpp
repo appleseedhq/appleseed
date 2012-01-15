@@ -85,8 +85,8 @@ TEST_SUITE(Foundation_Image_ColorSpace)
 
     TEST_CASE(TestCIEXYZToLinearRGBConversion)
     {
-        const Color3d cie_xyz(0.5, 0.7, 0.2);
-        const Color3d linear_rgb = ciexyz_to_linear_rgb(cie_xyz);
+        const Color3d ciexyz(0.5, 0.7, 0.2);
+        const Color3d linear_rgb = ciexyz_to_linear_rgb(ciexyz);
 
         EXPECT_FEQ_EPS(
             Color3d(0.44452747702598583, 0.83687689900398254, 0.096456110477447538),
@@ -97,11 +97,11 @@ TEST_SUITE(Foundation_Image_ColorSpace)
     TEST_CASE(TestLinearRGBToCIEXYZConversion)
     {
         const Color3d linear_rgb(0.44452747702598583, 0.83687689900398254, 0.096456110477447538);
-        const Color3d cie_xyz = linear_rgb_to_ciexyz(linear_rgb);
+        const Color3d ciexyz = linear_rgb_to_ciexyz(linear_rgb);
 
         EXPECT_FEQ_EPS(
             Color3d(0.5, 0.7, 0.2),
-            cie_xyz,
+            ciexyz,
             1.0e-5);
     }
 
@@ -166,21 +166,21 @@ TEST_SUITE(Foundation_Image_ColorSpace)
     {
         const Spectrum31f spectrum = get_white_spectrum();
         const LightingConditions lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg);
-        const Color3f cie_xyz = spectrum_to_ciexyz<float>(lighting_conditions, spectrum);
+        const Color3f ciexyz = spectrum_to_ciexyz<float>(lighting_conditions, spectrum);
 
         EXPECT_FEQ_EPS(
             Color3f(0.699385f, 0.738633f, 0.790319f),
-            cie_xyz,
+            ciexyz,
             1.0e-6f);
     }
 
     TEST_CASE(TestCIEXYZToSpectrumConversion)
     {
-        const Color3f cie_xyz(0.699385f, 0.738633f, 0.790319f);
+        const Color3f ciexyz(0.699385f, 0.738633f, 0.790319f);
         const LightingConditions lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg);
 
         Spectrum31f spectrum;
-        ciexyz_to_spectrum(lighting_conditions, cie_xyz, spectrum);
+        ciexyz_to_spectrum(lighting_conditions, ciexyz, spectrum);
 
         const float ExpectedSpectrumValues[31] =
         {

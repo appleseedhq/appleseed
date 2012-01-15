@@ -92,6 +92,7 @@ TEST_SUITE(Renderer_Modeling_Scene_Scene)
         scene->assembly_instances().insert(
             AssemblyInstanceFactory::create(
                 "assembly_inst",
+                ParamArray(),
                 *assembly,
                 Transformd(
                     Matrix4d::translation(Vector3d(1.0)) *

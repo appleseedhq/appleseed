@@ -36,6 +36,7 @@
 #include "renderer/kernel/lighting/pathtracer.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/modeling/aov/aovcollection.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/environment/environment.h"
@@ -101,7 +102,8 @@ namespace
             SamplingContext&        sampling_context,
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
-            Spectrum&               radiance)   // output radiance, in W.sr^-1.m^-2
+            Spectrum&               radiance,   // output radiance, in W.sr^-1.m^-2
+            AOVCollection&          aovs)
         {
             typedef PathTracer<
                 PathVisitor,
@@ -114,7 +116,8 @@ namespace
                 m_light_sampler,
                 shading_context,
                 shading_point.get_scene(),
-                radiance);
+                radiance,
+                aovs);
 
             PathTracer path_tracer(
                 path_visitor,
@@ -174,15 +177,18 @@ namespace
                 const LightSampler&     light_sampler,
                 const ShadingContext&   shading_context,
                 const Scene&            scene,
-                Spectrum&               path_radiance)
+                Spectrum&               path_radiance,
+                AOVCollection&          path_aovs)
               : m_params(params)
               , m_light_sampler(light_sampler)
               , m_shading_context(shading_context)
               , m_texture_cache(shading_context.get_texture_cache())
               , m_env_edf(scene.get_environment()->get_environment_edf())
               , m_path_radiance(path_radiance)
+              , m_path_aovs(path_aovs)
             {
                 m_path_radiance.set(0.0f);
+                m_path_aovs.set(0.0f);
             }
 
             bool visit_vertex(
@@ -223,7 +229,8 @@ namespace
                     m_params.m_dl_light_sample_count,
                     &shading_point);
                 Spectrum vertex_radiance;
-                integrator.sample_bsdf_and_lights(sampling_context, vertex_radiance);
+                AOVCollection vertex_aovs(m_path_aovs.size());
+                integrator.sample_bsdf_and_lights(sampling_context, vertex_radiance, vertex_aovs);
 
                 if (m_env_edf && m_params.m_enable_ibl)
                 {
@@ -247,6 +254,7 @@ namespace
                         ibl_radiance,
                         &shading_point);
                     vertex_radiance += ibl_radiance;
+                    vertex_aovs.add(m_env_edf->get_render_layer_index(), ibl_radiance);
                 }
 
                 const EDF* edf = material->get_edf();
@@ -290,11 +298,14 @@ namespace
                     }
 
                     vertex_radiance += emitted_radiance;
+                    vertex_aovs.add(edf->get_render_layer_index(), emitted_radiance);
                 }
 
                 // Update the path radiance.
                 vertex_radiance *= throughput;
                 m_path_radiance += vertex_radiance;
+                vertex_aovs *= throughput;
+                m_path_aovs += vertex_aovs;
 
                 // Proceed with this path.
                 return true;
@@ -329,6 +340,7 @@ namespace
                 // Update the path radiance.
                 environment_radiance *= throughput;
                 m_path_radiance += environment_radiance;
+                m_path_aovs.add(m_env_edf->get_render_layer_index(), environment_radiance);
             }
 
           private:
@@ -338,6 +350,7 @@ namespace
             TextureCache&           m_texture_cache;
             const EnvironmentEDF*   m_env_edf;
             Spectrum&               m_path_radiance;
+            AOVCollection&          m_path_aovs;
         };
 
         const Parameters        m_params;

@@ -482,12 +482,51 @@ QHeaderView::section
 {
     background-color: ACTIVE_BACKGROUND_COLOR;
     border: 0px;
+    border-left: 1px solid BORDER_COLOR;
     padding: 3px 11px 4px 11px;
+}
+
+QHeaderView::section:first
+{
+    border-left: 0px;
+}
+
+QHeaderView::section:hover
+{
+    background-color: HOVER_BACKGROUND_COLOR;
 }
 
 QHeaderView::section:disabled
 {
     color: DISABLED_TEXT_COLOR;
+}
+
+QHeaderView::up-arrow,
+QHeaderView::down-arrow
+{
+    width: 9px;
+    height: 7px;
+    subcontrol-position: center top;
+}
+
+QHeaderView::up-arrow
+{
+    image: url(":/widgets/header_arrow_up_enabled.png");
+}
+
+QHeaderView::up-arrow:disabled
+{
+    image: url(":/widgets/header_arrow_up_disabled.png");
+}
+
+QHeaderView::down-arrow
+{
+    image: url(":/widgets/header_arrow_down_enabled.png");
+}
+
+QHeaderView::down-arrow:disabled
+{
+    image: url(":/widgets/header_arrow_down_disabled.png");
 }
 
 

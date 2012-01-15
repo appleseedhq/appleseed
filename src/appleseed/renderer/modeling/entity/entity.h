@@ -40,6 +40,9 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
+// Standard headers.
+#include <cstddef>
+
 namespace renderer
 {
 
@@ -67,9 +70,18 @@ class DLLSYMBOL Entity
     void set_name(const char* name);
     const char* get_name() const;
 
-    // Return the parameters of this instance.
+    // Return the parameters of this entity.
     ParamArray& get_parameters();
     const ParamArray& get_parameters() const;
+
+    // Set/get the name of the render layer for this entity.
+    void set_render_layer_name(const char* name);
+    const char* get_render_layer_name() const;
+
+    // Set/get the index of the render layer for this entity.
+    // Use ~size_t(0) to disable render layer assignment.
+    void set_render_layer_index(const size_t render_layer);
+    size_t get_render_layer_index() const;
 
   protected:
     struct Impl;
@@ -77,6 +89,7 @@ class DLLSYMBOL Entity
 
     const foundation::UniqueID          m_class_uid;
     ParamArray                          m_params;
+    size_t                              m_render_layer;
 
     // Destructor.
     ~Entity();
@@ -100,6 +113,30 @@ inline ParamArray& Entity::get_parameters()
 inline const ParamArray& Entity::get_parameters() const
 {
     return m_params;
+}
+
+inline void Entity::set_render_layer_name(const char* name)
+{
+    assert(name);
+    m_params.insert("render_layer", name);
+}
+
+inline const char* Entity::get_render_layer_name() const
+{
+    return
+        m_params.strings().exist("render_layer")
+            ? m_params.strings().get("render_layer")
+            : "";
+}
+
+inline void Entity::set_render_layer_index(const size_t render_layer)
+{
+    m_render_layer = render_layer;
+}
+
+inline size_t Entity::get_render_layer_index() const
+{
+    return m_render_layer;
 }
 
 }       // namespace renderer

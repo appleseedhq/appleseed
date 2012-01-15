@@ -970,6 +970,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
     scene->assembly_instances().insert(
         AssemblyInstanceFactory::create(
             "assembly_inst",
+            ParamArray(),
             *assembly,
             Transformd(Matrix4d::identity())));
 

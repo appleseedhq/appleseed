@@ -144,6 +144,7 @@ void ProjectBuilder::insert_assembly_instance(
     auto_release_ptr<AssemblyInstance> assembly_instance(
         AssemblyInstanceFactory::create(
             name.c_str(),
+            ParamArray(),
             assembly,
             Transformd(Matrix4d::identity())));
 

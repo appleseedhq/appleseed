@@ -65,6 +65,21 @@ void EntityEditorFormFactoryBase::add_name_widget_definition(
             .insert("focus", "true"));
 }
 
+void EntityEditorFormFactoryBase::add_render_layer_widget_definition(
+    const Dictionary&                   values,
+    WidgetDefinitionCollection&         definitions) const
+{
+    const string render_layer = get_value(values, "render_layer", "");
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "render_layer")
+            .insert("label", "Render Layer")
+            .insert("widget", "text_box")
+            .insert("use", "optional")
+            .insert("default", render_layer));
+}
+
 void EntityEditorFormFactoryBase::add_widget_definitions(
     const DictionaryArray&              widgets,
     const Dictionary&                   values,

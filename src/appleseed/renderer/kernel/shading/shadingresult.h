@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
+#include "renderer/modeling/aov/aovcollection.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
@@ -50,6 +51,7 @@ class ShadingResult
     foundation::ColorSpace  m_color_space;
     Spectrum                m_color;
     Alpha                   m_alpha;
+    AOVCollection           m_aovs;
 
     // Set the shading result to transparent black in linear RGB.
     void clear();
@@ -59,11 +61,6 @@ class ShadingResult
 
     // Set the shading result to a given fully opaque linear RGB value.
     void set_to_linear_rgb(const foundation::Color3f& linear_rgb);
-
-    // Transform the shading result to a given color space.
-    void transform_to_color_space(
-        const foundation::ColorSpace            target,
-        const foundation::LightingConditions&   lighting);
 
     // Transform the shading result to the linear RGB color space.
     void transform_to_linear_rgb(
@@ -75,6 +72,8 @@ class ShadingResult
 
     // Set the shading result to solid pink (used for debugging).
     void set_to_solid_pink();
+
+    void composite_over(const ShadingResult& other);
 };
 
 
@@ -91,6 +90,8 @@ inline void ShadingResult::clear()
     m_color[2] = 0.0f;
 
     m_alpha.set(0.0f);
+
+    m_aovs.set(0.0f);
 }
 
 inline void ShadingResult::set_to_linear_rgba(const foundation::Color4f& linear_rgba)

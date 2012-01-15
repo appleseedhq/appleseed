@@ -63,6 +63,7 @@
 namespace appleseed     { namespace studio { class LogWidget; } }
 namespace Ui            { class MainWindow; }
 class QAction;
+class QPoint;
 class QString;
 
 namespace appleseed {
@@ -137,20 +138,20 @@ class MainWindow
 
     RenderWidgetCollection              m_render_widgets;
 
+    void build_menus();
+    void build_override_shading_menu_item();
+    void update_override_shading_menu_item();
+
     void build_toolbar();
 
     LogWidget* create_log_widget() const;
     void build_log();
 
-    void build_override_shading_menu_item();
-    void update_override_shading_menu_item();
+    void build_project_explorer();
 
     void build_connections();
-    void build_menu_items_connections();
 
     void print_library_information();
-
-    static QString get_project_filter_string();
 
     renderer::ParamArray get_project_params(const char* configuration_name) const;
 
@@ -202,6 +203,9 @@ class MainWindow
 
     void slot_filter_text_changed(const QString& pattern);
     void slot_clear_filter();
+
+    void slot_render_widget_context_menu(const QPoint&);
+    void slot_save_frame();
 };
 
 }       // namespace studio

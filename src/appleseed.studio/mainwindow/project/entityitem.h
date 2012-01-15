@@ -118,7 +118,7 @@ void EntityItem<Entity, ParentEntity>::edit(const foundation::Dictionary& values
             m_parent,
             values);
 
-    EntityItemBaseType::update_title();
+    EntityItemBaseType::update();
 
     qobject_cast<QWidget*>(QObject::sender())->close();
 }

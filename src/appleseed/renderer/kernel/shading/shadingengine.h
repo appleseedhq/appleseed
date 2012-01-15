@@ -32,11 +32,11 @@
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
 #include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 
 // Forward declarations.
 namespace renderer      { class ShadingContext; }
-namespace renderer      { class ShadingResult; }
 
 namespace renderer
 {
@@ -88,6 +88,9 @@ inline void ShadingEngine::shade(
     const ShadingPoint&         shading_point,
     ShadingResult&              shading_result) const
 {
+    // Default to transparent black.
+    shading_result.clear();
+
     if (shading_point.hit())
     {
         return

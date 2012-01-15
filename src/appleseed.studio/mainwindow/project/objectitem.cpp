@@ -44,7 +44,7 @@ ObjectItem::ObjectItem(
     Object*         object,
     Assembly&       assembly,
     ProjectBuilder& project_builder)
-  : ItemBase(object->get_class_uid(), object->get_name())
+  : EntityItemBase<Object>(object)
   , m_object(object)
   , m_assembly(assembly)
   , m_project_builder(project_builder)

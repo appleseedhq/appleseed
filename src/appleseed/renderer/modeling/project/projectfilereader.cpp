@@ -1960,6 +1960,7 @@ namespace
                 m_assembly_instance =
                     AssemblyInstanceFactory::create(
                         m_name.c_str(),
+                        m_params,
                         *assembly,
                         m_transform);
             }

@@ -33,6 +33,8 @@
 #include "renderer/kernel/rendering/generic/pixelsampler.h"
 #include "renderer/kernel/rendering/isamplerenderer.h"
 #include "renderer/kernel/shading/shadingresult.h"
+#include "renderer/modeling/aov/aovcollection.h"
+#include "renderer/modeling/aov/aovimagecollection.h"
 #include "renderer/modeling/frame/frame.h"
 
 // appleseed.foundation headers.
@@ -74,9 +76,9 @@ namespace
     {
       public:
         GenericTileRenderer(
-            const Frame&            frame,
-            ISampleRendererFactory* factory,
-            const ParamArray&       params)
+            const Frame&                frame,
+            ISampleRendererFactory*     factory,
+            const ParamArray&           params)
           : m_params(params)
           , m_sample_renderer(factory->create())
         {
@@ -127,10 +129,10 @@ namespace
         }
 
         virtual void render_tile(
-            const Frame&    frame,
-            const size_t    tile_x,
-            const size_t    tile_y,
-            AbortSwitch&    abort_switch)
+            const Frame&                frame,
+            const size_t                tile_x,
+            const size_t                tile_y,
+            AbortSwitch&                abort_switch)
         {
             // Retrieve frame properties.
             const CanvasProperties& properties = frame.image().properties();
@@ -190,6 +192,9 @@ namespace
                 // Initialize the pixel color.
                 Color4f pixel_color(0.0f);
 
+                AOVCollection pixel_aovs(frame.aov_images().size());
+                pixel_aovs.set(0.0f);
+
                 if (!abort_switch.is_aborted())
                 {
                     // Render, filter and accumulate samples.
@@ -223,6 +228,7 @@ namespace
 
                             // Render the sample.
                             ShadingResult shading_result;
+                            shading_result.m_aovs.set_size(pixel_aovs.size());
                             m_sample_renderer->render_sample(
                                 sampling_context,
                                 sample_position,
@@ -240,15 +246,22 @@ namespace
                             pixel_color[1] += shading_result.m_color[1];
                             pixel_color[2] += shading_result.m_color[2];
                             pixel_color[3] += shading_result.m_alpha[0];
+
+                            pixel_aovs += shading_result.m_aovs;
                         }
                     }
 
                     // Finish computing the pixel color.
                     pixel_color *= m_rcp_sample_count;
+
+                    pixel_aovs *= m_rcp_sample_count;
                 }
 
                 // Store the pixel color into the tile.
                 tile.set_pixel(tx, ty, pixel_color);
+
+                // Store the AOVs.
+                frame.aov_images().set_pixel(ix, iy, pixel_aovs);
             }
         }
 
@@ -305,7 +318,7 @@ GenericTileRendererFactory::GenericTileRendererFactory(
     ISampleRendererFactory*     factory,
     const ParamArray&           params)
   : m_frame(frame)
-  , m_factory(factory)  
+  , m_factory(factory)
   , m_params(params)
 {
 }

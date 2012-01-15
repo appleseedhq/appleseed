@@ -26,52 +26,60 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_ILIGHTINGENGINE_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_ILIGHTINGENGINE_H
+#ifndef APPLESEED_RENDERER_MODELING_AOV_AOVIMAGECOLLECTION_H
+#define APPLESEED_RENDERER_MODELING_AOV_AOVIMAGECOLLECTION_H
 
-// appleseed.renderer headers.
-#include "renderer/global/global.h"
+// appleseed.foundation headers.
+#include "foundation/image/pixel.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+// Standard headers.
+#include <cstddef>
 
 // Forward declarations.
+namespace foundation    { class Image; }
 namespace renderer      { class AOVCollection; }
-namespace renderer      { class ShadingContext; }
-namespace renderer      { class ShadingPoint; }
 
 namespace renderer
 {
 
-//
-// Lighting engine interface.
-//
-
-class RENDERERDLL ILightingEngine
-  : public foundation::IUnknown
+class DLLSYMBOL AOVImageCollection
 {
   public:
-    // Compute the lighting at a given point of the scene.
-    virtual void compute_lighting(
-        SamplingContext&        sampling_context,
-        const ShadingContext&   shading_context,
-        const ShadingPoint&     shading_point,
-        Spectrum&               radiance,           // output radiance, in W.sr^-1.m^-2
-        AOVCollection&          aovs) = 0;
-};
+    AOVImageCollection(
+        const size_t                    canvas_width,
+        const size_t                    canvas_height,
+        const size_t                    tile_width,
+        const size_t                    tile_height);
 
+    ~AOVImageCollection();
 
-//
-// Interface of a ILightingEngine factory that can cross DLL boundaries.
-// This means that classes implementing the ILightingEngineFactory interface
-// must themselves be instantiated by a factory.
-//
+    bool empty() const;
 
-class RENDERERDLL ILightingEngineFactory
-  : public foundation::IUnknown
-{
-  public:
-    // Return a new sample lighting engine instance.
-    virtual ILightingEngine* create() = 0;
+    size_t size() const;
+
+    const char* get_name(const size_t index) const;
+
+    const foundation::Image& get_image(const size_t index) const;
+
+    void clear();
+
+    void insert(
+        const char*                     name,
+        const foundation::PixelFormat   format);
+
+    void set_pixel(
+        const size_t                    x,
+        const size_t                    y,
+        const AOVCollection&            aovs) const;
+
+  private:
+    struct Impl;
+    Impl* impl;
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_ILIGHTINGENGINE_H
+#endif  // !APPLESEED_RENDERER_MODELING_AOV_AOVIMAGECOLLECTION_H

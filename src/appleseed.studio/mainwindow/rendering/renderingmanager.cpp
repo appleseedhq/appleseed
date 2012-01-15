@@ -37,6 +37,7 @@
 #include "application/application.h"
 
 // appleseed.renderer headers.
+#include "renderer/api/aov.h"
 #include "renderer/api/camera.h"
 #include "renderer/api/frame.h"
 #include "renderer/api/project.h"
@@ -286,6 +287,7 @@ void RenderingManager::slot_rendering_end()
 
     print_final_rendering_time();
     print_average_luminance();
+
     archive_frame_to_disk();
 
     // Prevent manipulation of the camera after rendering has ended.

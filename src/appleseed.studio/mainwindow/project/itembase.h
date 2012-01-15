@@ -34,6 +34,7 @@
 
 // Qt headers.
 #include <QList>
+#include <QMetaType>
 #include <QObject>
 #include <QTreeWidgetItem>
 
@@ -65,6 +66,7 @@ class ItemBase
     bool allows_deletion() const;
 
     void set_title(const QString& title);
+    void set_render_layer(const QString& name);
 
     virtual QMenu* get_single_item_context_menu() const;
     virtual QMenu* get_multiple_items_context_menu(const QList<ItemBase*>& items) const;
@@ -85,5 +87,7 @@ class ItemBase
 
 }       // namespace studio
 }       // namespace appleseed
+
+Q_DECLARE_METATYPE(QList<appleseed::studio::ItemBase*>);
 
 #endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ITEMBASE_H

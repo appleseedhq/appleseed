@@ -30,7 +30,7 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_OBJECTINSTANCEITEM_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/itembase.h"
+#include "mainwindow/project/entityitembase.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -51,14 +51,14 @@ namespace appleseed {
 namespace studio {
 
 class ObjectInstanceItem
-  : public ItemBase
+  : public EntityItemBase<renderer::ObjectInstance>
 {
     Q_OBJECT
 
   public:
     ObjectInstanceItem(
+        renderer::ObjectInstance*   object_instance,
         renderer::Assembly&         assembly,
-        renderer::ObjectInstance&   object_instance,
         ProjectBuilder&             project_builder);
 
     virtual QMenu* get_single_item_context_menu() const override;
@@ -73,8 +73,8 @@ class ObjectInstanceItem
     void slot_unassign_material();
 
   private:
+    renderer::ObjectInstance*       m_object_instance;
     renderer::Assembly&             m_assembly;
-    renderer::ObjectInstance&       m_object_instance;
     ProjectBuilder&                 m_project_builder;
 
     virtual void slot_delete() override;

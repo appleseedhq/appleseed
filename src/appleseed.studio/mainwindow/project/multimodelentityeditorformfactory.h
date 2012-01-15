@@ -90,6 +90,7 @@ void MultiModelEntityEditorFormFactory<FactoryRegistrar>::update(
     definitions.clear();
 
     add_name_widget_definition(values, definitions);
+    add_render_layer_widget_definition(values, definitions);
 
     const std::string model =
         add_model_widget_definition(values, definitions);

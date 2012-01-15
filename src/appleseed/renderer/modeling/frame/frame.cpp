@@ -29,6 +29,9 @@
 // Interface header.
 #include "frame.h"
 
+// appleseed.renderer headers.
+#include "renderer/modeling/aov/aovimagecollection.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
 #include "foundation/core/exceptions/exceptionioerror.h"
@@ -60,19 +63,20 @@ namespace renderer
 
 struct Frame::Impl
 {
-    size_t              m_frame_width;
-    size_t              m_frame_height;
-    size_t              m_tile_width;
-    size_t              m_tile_height;
-    PixelFormat         m_pixel_format;
-    ColorSpace          m_color_space;
-    bool                m_clamping;
-    bool                m_gamma_correct;
-    float               m_target_gamma;
-    float               m_rcp_target_gamma;
+    size_t                          m_frame_width;
+    size_t                          m_frame_height;
+    size_t                          m_tile_width;
+    size_t                          m_tile_height;
+    PixelFormat                     m_pixel_format;
+    ColorSpace                      m_color_space;
+    bool                            m_clamping;
+    bool                            m_gamma_correct;
+    float                           m_target_gamma;
+    float                           m_rcp_target_gamma;
+    LightingConditions              m_lighting_conditions;
 
-    auto_ptr<Image>     m_image;
-    LightingConditions  m_lighting_conditions;
+    auto_ptr<Image>                 m_image;
+    auto_ptr<AOVImageCollection>    m_aov_images;
 
     Impl()
       : m_lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg)
@@ -106,6 +110,14 @@ Frame::Frame(
 
     // Retrieve the image properties.
     m_props = impl->m_image->properties();
+
+    // Create the AOV image collection.
+    impl->m_aov_images.reset(
+        new AOVImageCollection(
+            impl->m_frame_width,
+            impl->m_frame_height,
+            impl->m_tile_width,
+            impl->m_tile_height));
 }
 
 Frame::~Frame()
@@ -121,6 +133,11 @@ void Frame::release()
 Image& Frame::image() const
 {
     return *impl->m_image.get();
+}
+
+AOVImageCollection& Frame::aov_images() const
+{
+    return *impl->m_aov_images.get();
 }
 
 const LightingConditions& Frame::get_lighting_conditions() const
@@ -159,81 +176,37 @@ void Frame::transform_to_output_color_space(Image& image) const
     }
 }
 
-namespace
+bool Frame::write(const char* file_path) const
 {
-    double write_image(
-        const char*             filename,
-        const Image&            image,
-        const ImageAttributes&  image_attributes)
-    {
-        Stopwatch<DefaultWallclockTimer> stopwatch;
-        stopwatch.start();
+    assert(file_path);
 
-        try
+    const ImageAttributes image_attributes =
+        ImageAttributes::create_default_attributes();
+
+    bool result = write_image(file_path, *impl->m_image, image_attributes);
+
+    if (!impl->m_aov_images->empty())
+    {
+        const filesystem::path boost_file_path(file_path);
+        const filesystem::path directory = boost_file_path.branch_path();
+        const string base_file_name = boost_file_path.stem();
+        const string extension = boost_file_path.extension();
+
+        for (size_t i = 0; i < impl->m_aov_images->size(); ++i)
         {
-            GenericImageFileWriter writer;
-            writer.write(filename, image, image_attributes);
+            const string aov_file_name =
+                base_file_name + "." + impl->m_aov_images->get_name(i) + extension;
+            const string aov_file_path = (directory / aov_file_name).string();
+
+            if (!write_image(
+                    aov_file_path.c_str(),
+                    impl->m_aov_images->get_image(i),
+                    image_attributes))
+                result = false;
         }
-        catch (const ExceptionUnsupportedFileFormat&)
-        {
-            // Extract the extension of the image filename.
-            const filesystem::path filepath(filename);
-            const string extension = lower_case(filepath.extension());
-
-            // Emit an error message.
-            RENDERER_LOG_ERROR(
-                "file format '%s' not supported, writing the image in OpenEXR format "
-                "(but keeping the filename unmodified)",
-                extension.c_str());
-
-            // Write the image in OpenEXR format.
-            EXRImageFileWriter writer;
-            writer.write(filename, image, image_attributes);
-        }
-
-        stopwatch.measure();
-
-        return stopwatch.get_seconds();
-    }
-}
-
-bool Frame::write(const char* filename) const
-{
-    assert(filename);
-
-    try
-    {
-        Image final_image(*impl->m_image);
-        transform_to_output_color_space(final_image);
-
-        const double seconds =
-            write_image(
-                filename,
-                final_image,
-                ImageAttributes::create_default_attributes());
-
-        RENDERER_LOG_INFO(
-            "wrote image file %s in %s", filename, pretty_time(seconds).c_str());
-    }
-    catch (const ExceptionIOError&)
-    {
-        RENDERER_LOG_ERROR(
-            "failed to write image file %s: i/o error",
-            filename);
-
-        return false;
-    }
-    catch (const Exception& e)
-    {
-        RENDERER_LOG_ERROR(
-            "failed to write image file %s: %s",
-            filename,
-            e.what());
-
-        return false;
     }
 
-    return true;
+    return result;
 }
 
 bool Frame::archive(
@@ -247,47 +220,17 @@ bool Frame::archive(
         "autosave." + get_time_stamp_string() + ".exr";
 
     // Construct the path to the image file.
-    const filesystem::path image_path = filesystem::path(directory) / filename;
+    const string file_path = (filesystem::path(directory) / filename).file_string();
 
     // Return the path to the image file.
     if (output_path)
-        *output_path = duplicate_string(image_path.file_string().c_str());
+        *output_path = duplicate_string(file_path.c_str());
 
-    try
-    {
-        Image final_image(*impl->m_image);
-        transform_to_output_color_space(final_image);
-
-        const double seconds =
-            write_image(
-                image_path.file_string().c_str(),
-                final_image,
-                ImageAttributes::create_default_attributes());
-
-        RENDERER_LOG_INFO(
-            "frame successfully archived to %s in %s",
-            image_path.file_string().c_str(),
-            pretty_time(seconds).c_str());
-    }
-    catch (const ExceptionIOError&)
-    {
-        RENDERER_LOG_WARNING(
-            "automatic frame archiving to %s failed: i/o error",
-            image_path.file_string().c_str());
-
-        return false;
-    }
-    catch (const Exception& e)
-    {
-        RENDERER_LOG_WARNING(
-            "automatic frame archiving to %s failed: %s",
-            image_path.file_string().c_str(),
-            e.what());
-
-        return false;
-    }
-
-    return true;
+    return
+        write_image(
+            file_path.c_str(),
+            *impl->m_image,
+            ImageAttributes::create_default_attributes());
 }
 
 void Frame::extract_parameters()
@@ -447,6 +390,67 @@ Color4f Frame::linear_rgb_to_frame(const Color4f& linear_rgb) const
     }
 
     return result;
+}
+
+bool Frame::write_image(
+    const char*             file_path,
+    const Image&            image,
+    const ImageAttributes&  image_attributes) const
+{
+    assert(file_path);
+
+    Image final_image(image);
+    transform_to_output_color_space(final_image);
+
+    Stopwatch<DefaultWallclockTimer> stopwatch;
+    stopwatch.start();
+
+    try
+    {
+        try
+        {
+            GenericImageFileWriter writer;
+            writer.write(file_path, final_image, image_attributes);
+        }
+        catch (const ExceptionUnsupportedFileFormat&)
+        {
+            const string extension = lower_case(filesystem::path(file_path).extension());
+
+            RENDERER_LOG_ERROR(
+                "file format '%s' not supported, writing the image in OpenEXR format "
+                "(but keeping the filename unmodified)",
+                extension.c_str());
+
+            EXRImageFileWriter writer;
+            writer.write(file_path, final_image, image_attributes);
+        }
+    }
+    catch (const ExceptionIOError&)
+    {
+        RENDERER_LOG_ERROR(
+            "failed to write image file %s: i/o error",
+            file_path);
+
+        return false;
+    }
+    catch (const Exception& e)
+    {
+        RENDERER_LOG_ERROR(
+            "failed to write image file %s: %s",
+            file_path,
+            e.what());
+
+        return false;
+    }
+
+    stopwatch.measure();
+
+    RENDERER_LOG_INFO(
+        "wrote image file %s in %s",
+        file_path,
+        pretty_time(stopwatch.get_seconds()).c_str());
+
+    return true;
 }
 
 

@@ -112,6 +112,7 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
                 auto_release_ptr<AssemblyInstance>(
                     AssemblyInstanceFactory::create(
                         "assembly_instance",
+                        ParamArray(),
                         *assembly,
                         Transformd(Matrix4d::identity()))));
 
