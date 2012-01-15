@@ -53,6 +53,7 @@ void SingleModelEntityEditorFormFactory::update(
     definitions.clear();
 
     add_name_widget_definition(values, definitions);
+    add_render_layer_widget_definition(values, definitions);
 
     add_widget_definitions(m_entity_widgets, values, definitions);
 }

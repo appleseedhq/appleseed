@@ -57,6 +57,10 @@ class EntityEditorFormFactoryBase
         const foundation::Dictionary&       values,
         WidgetDefinitionCollection&         definitions) const;
 
+    void add_render_layer_widget_definition(
+        const foundation::Dictionary&       values,
+        WidgetDefinitionCollection&         definitions) const;
+
     void add_widget_definitions(
         const foundation::DictionaryArray&  widgets,
         const foundation::Dictionary&       values,
