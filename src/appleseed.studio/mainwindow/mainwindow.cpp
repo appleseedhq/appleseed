@@ -326,11 +326,6 @@ void MainWindow::print_library_information()
         Compiler::get_compiler_version());
 }
 
-QString MainWindow::get_project_filter_string()
-{
-    return "Project Files (*.appleseed);;All Files (*.*)";
-}
-
 ParamArray MainWindow::get_project_params(const char* configuration_name) const
 {
     ParamArray params;
@@ -554,6 +549,12 @@ void MainWindow::add_render_widget(
     // Create a render widget.
     RenderWidget* render_widget = new RenderWidget(width, height);
 
+    // Attach a contextual menu to the render widget.
+    render_widget->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(
+        render_widget, SIGNAL(customContextMenuRequested(const QPoint&)),
+        this, SLOT(slot_render_widget_context_menu(const QPoint&)));
+
     // Encapsulate the render widget into another widget that adds a margin around it.
     QWidget* render_widget_wrapper = new QWidget();
     render_widget_wrapper->setLayout(new QGridLayout());
@@ -693,7 +694,7 @@ void MainWindow::slot_open_project()
             this,
             "Open...",
             m_settings.get_path_optional<QString>(LAST_DIRECTORY_SETTINGS_KEY),
-            get_project_filter_string(),
+            "Project Files (*.appleseed);;All Files (*.*)",
             &selected_filter,
             options);
 
@@ -787,7 +788,7 @@ void MainWindow::slot_save_project_as()
             this,
             "Save As...",
             m_settings.get_path_optional<QString>(LAST_DIRECTORY_SETTINGS_KEY),
-            get_project_filter_string(),
+            "Project Files (*.appleseed)",
             &selected_filter,
             options);
 
@@ -938,6 +939,40 @@ void MainWindow::slot_filter_text_changed(const QString& pattern)
 void MainWindow::slot_clear_filter()
 {
     m_ui->lineedit_filter->clear();
+}
+
+void MainWindow::slot_render_widget_context_menu(const QPoint& point)
+{
+    QMenu* menu = new QMenu(this);
+
+    menu->addAction("Save Frame As...", this, SLOT(slot_save_frame()));
+
+    menu->exec(reinterpret_cast<QWidget*>(sender())->mapToGlobal(point));
+}
+
+void MainWindow::slot_save_frame()
+{
+    QFileDialog::Options options;
+    QString selected_filter;
+
+    QString filepath =
+        QFileDialog::getSaveFileName(
+            this,
+            "Save Frame As...",
+            m_settings.get_path_optional<QString>(LAST_DIRECTORY_SETTINGS_KEY),
+            "OpenEXR (*.exr);;PNG (*.png)",
+            &selected_filter,
+            options);
+
+    const filesystem::path path(filepath.toStdString());
+
+    filepath = QString::fromStdString(path.file_string());
+
+    if (!filepath.isEmpty())
+    {
+        const Project* project = m_project_manager.get_project();
+        project->get_frame()->write(filepath.toAscii().constData());
+    }
 }
 
 }   // namespace studio
