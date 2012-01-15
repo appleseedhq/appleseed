@@ -81,6 +81,9 @@ namespace
             const ParamArray&           params)
           : m_params(params)
           , m_sample_renderer(factory->create())
+          , m_frame_properties(frame.image().properties())
+          , m_lighting_conditions(frame.get_lighting_conditions())
+          , m_aov_images(frame.aov_images())
         {
             // Retrieve frame properties.
             const CanvasProperties& properties = frame.image().properties();
@@ -118,6 +121,8 @@ namespace
             // Initialize the pixel sampler.
             m_pixel_sampler.initialize(m_sqrt_max_samples);
 
+            // Precompute some stuff.
+            m_aov_image_count = m_aov_images.size();
             m_rcp_sample_canvas_width = 1.0 / (properties.m_canvas_width * m_sqrt_max_samples);
             m_rcp_sample_canvas_height = 1.0 / (properties.m_canvas_height * m_sqrt_max_samples);
             m_rcp_sample_count = 1.0f / (m_sqrt_max_samples * m_sqrt_max_samples);
@@ -134,22 +139,15 @@ namespace
             const size_t                tile_y,
             AbortSwitch&                abort_switch)
         {
-            // Retrieve frame properties.
-            const CanvasProperties& properties = frame.image().properties();
-
-            assert(tile_x < properties.m_tile_count_x);
-            assert(tile_y < properties.m_tile_count_y);
+            assert(tile_x < m_frame_properties.m_tile_count_x);
+            assert(tile_y < m_frame_properties.m_tile_count_y);
 
             // Access the tile.
             Tile& tile = frame.image().tile(tile_x, tile_y);
             const size_t tile_width = tile.get_width();
             const size_t tile_height = tile.get_height();
-            const size_t tile_origin_x = properties.m_tile_width * tile_x;
-            const size_t tile_origin_y = properties.m_tile_height * tile_y;
-
-            // Precompute some stuff.
-            const LightingConditions& lighting_conditions =
-                frame.get_lighting_conditions();
+            const size_t tile_origin_x = m_frame_properties.m_tile_width * tile_x;
+            const size_t tile_origin_y = m_frame_properties.m_tile_height * tile_y;
 
             // Loop over tile pixels.
             const size_t num_pixels = m_pixel_ordering.size();
@@ -163,23 +161,14 @@ namespace
                 if (tx >= tile_width || ty >= tile_height)
                     continue;
 
+                // Initialize the pixel values.
+                Color4f pixel_color(0.0f);
+                AOVCollection pixel_aovs(m_aov_image_count);
+                pixel_aovs.set(0.0f);
+
                 // Compute the coordinates of the pixel in the image.
                 const size_t ix = tile_origin_x + tx;
                 const size_t iy = tile_origin_y + ty;
-
-                // Skip pixels outside the crop window, if cropping is enabled.
-                if (m_params.m_crop)
-                {
-                    if (static_cast<int>(ix) < m_params.m_crop_window[0] ||
-                        static_cast<int>(iy) < m_params.m_crop_window[1] ||
-                        static_cast<int>(ix) > m_params.m_crop_window[2] ||
-                        static_cast<int>(iy) > m_params.m_crop_window[3])
-                    {
-                        // Pixels outside the crop window are set to transparent black.
-                        tile.set_pixel(tx, ty, Color4f(0.0f));
-                        continue;
-                    }
-                }
 
 #ifdef DEBUG_BREAK_AT_PIXEL
 
@@ -189,74 +178,19 @@ namespace
 
 #endif
 
-                // Initialize the pixel values.
-                Color4f pixel_color(0.0f);
-                AOVCollection pixel_aovs(frame.aov_images().size());
-                pixel_aovs.set(0.0f);
-
                 if (!abort_switch.is_aborted())
                 {
-                    // Render, filter and accumulate samples.
-                    const size_t base_sx = ix * m_sqrt_max_samples;
-                    const size_t base_sy = iy * m_sqrt_max_samples;
-                    for (size_t sy = 0; sy < m_sqrt_max_samples; ++sy)
+                    // If cropping is enabled, skip pixels outside the crop window.
+                    if (!m_params.m_crop || is_pixel_inside_crop_window(ix, iy))
                     {
-                        for (size_t sx = 0; sx < m_sqrt_max_samples; ++sx)
-                        {
-                            // Compute the sample position in sample space and the instance number.
-                            Vector2d s;
-                            size_t instance;
-                            m_pixel_sampler.sample(
-                                base_sx + sx,
-                                base_sy + sy,
-                                s,
-                                instance);
-
-                            // Compute the sample position in NDC.
-                            const Vector2d sample_position =
-                                frame.get_sample_position(s.x, s.y);
-
-                            // Create a sampling context. We start with an initial dimension of 1,
-                            // as this seems to give less correlation artifacts than when the
-                            // initial dimension is set to 0 or 2.
-                            SamplingContext sampling_context(
-                                m_rng,
-                                1,              // number of dimensions
-                                instance,       // number of samples
-                                instance);      // initial instance number
-
-                            // Render the sample.
-                            ShadingResult shading_result;
-                            shading_result.m_aovs.set_size(pixel_aovs.size());
-                            m_sample_renderer->render_sample(
-                                sampling_context,
-                                sample_position,
-                                shading_result);
-
-                            // todo: implement proper sample filtering.
-                            // todo: detect invalid sample values (NaN, infinity, etc.), set
-                            // them to black and mark them as faulty in the diagnostic map.
-
-                            // Transform the sample to the linear RGB color space.
-                            shading_result.transform_to_linear_rgb(lighting_conditions);
-
-                            // Accumulate the sample.
-                            pixel_color[0] += shading_result.m_color[0];
-                            pixel_color[1] += shading_result.m_color[1];
-                            pixel_color[2] += shading_result.m_color[2];
-                            pixel_color[3] += shading_result.m_alpha[0];
-                            pixel_aovs += shading_result.m_aovs;
-                        }
+                        // Render, filter and accumulate samples.
+                        render_pixel(frame, ix, iy, pixel_color, pixel_aovs);
                     }
-
-                    // Finish computing the pixel values.
-                    pixel_color *= m_rcp_sample_count;
-                    pixel_aovs *= m_rcp_sample_count;
                 }
 
                 // Store the pixel values.
                 tile.set_pixel(tx, ty, pixel_color);
-                frame.aov_images().set_pixel(ix, iy, pixel_aovs);
+                m_aov_images.set_pixel(ix, iy, pixel_aovs);
             }
         }
 
@@ -291,6 +225,11 @@ namespace
         const Parameters                    m_params;
         auto_release_ptr<ISampleRenderer>   m_sample_renderer;
 
+        const CanvasProperties&             m_frame_properties;
+        const LightingConditions&           m_lighting_conditions;
+        const AOVImageCollection&           m_aov_images;
+        size_t                              m_aov_image_count;
+
         vector<Pixel>                       m_pixel_ordering;
         PixelSampler                        m_pixel_sampler;
 
@@ -300,6 +239,82 @@ namespace
         float                               m_rcp_sample_count;
 
         SamplingContext::RNGType            m_rng;
+
+        bool is_pixel_inside_crop_window(
+            const size_t                ix,
+            const size_t                iy) const
+        {
+            return
+                static_cast<int>(ix) >= m_params.m_crop_window[0] &&
+                static_cast<int>(iy) >= m_params.m_crop_window[1] &&
+                static_cast<int>(ix) <= m_params.m_crop_window[2] &&
+                static_cast<int>(iy) <= m_params.m_crop_window[3];
+        }
+
+        void render_pixel(
+            const Frame&                frame,
+            const size_t                ix,
+            const size_t                iy,
+            Color4f&                    pixel_color,
+            AOVCollection&              pixel_aovs)
+        {
+            const size_t base_sx = ix * m_sqrt_max_samples;
+            const size_t base_sy = iy * m_sqrt_max_samples;
+
+            for (size_t sy = 0; sy < m_sqrt_max_samples; ++sy)
+            {
+                for (size_t sx = 0; sx < m_sqrt_max_samples; ++sx)
+                {
+                    // Compute the sample position in sample space and the instance number.
+                    Vector2d s;
+                    size_t instance;
+                    m_pixel_sampler.sample(
+                        base_sx + sx,
+                        base_sy + sy,
+                        s,
+                        instance);
+
+                    // Compute the sample position in NDC.
+                    const Vector2d sample_position =
+                        frame.get_sample_position(s.x, s.y);
+
+                    // Create a sampling context. We start with an initial dimension of 1,
+                    // as this seems to give less correlation artifacts than when the
+                    // initial dimension is set to 0 or 2.
+                    SamplingContext sampling_context(
+                        m_rng,
+                        1,              // number of dimensions
+                        instance,       // number of samples
+                        instance);      // initial instance number
+
+                    // Render the sample.
+                    ShadingResult shading_result;
+                    shading_result.m_aovs.set_size(pixel_aovs.size());
+                    m_sample_renderer->render_sample(
+                        sampling_context,
+                        sample_position,
+                        shading_result);
+
+                    // todo: implement proper sample filtering.
+                    // todo: detect invalid sample values (NaN, infinity, etc.), set
+                    // them to black and mark them as faulty in the diagnostic map.
+
+                    // Transform the sample to the linear RGB color space.
+                    shading_result.transform_to_linear_rgb(m_lighting_conditions);
+
+                    // Accumulate the sample.
+                    pixel_color[0] += shading_result.m_color[0];
+                    pixel_color[1] += shading_result.m_color[1];
+                    pixel_color[2] += shading_result.m_color[2];
+                    pixel_color[3] += shading_result.m_alpha[0];
+                    pixel_aovs += shading_result.m_aovs;
+                }
+            }
+
+            // Finish computing the pixel values.
+            pixel_color *= m_rcp_sample_count;
+            pixel_aovs *= m_rcp_sample_count;
+        }
     };
 }
 
