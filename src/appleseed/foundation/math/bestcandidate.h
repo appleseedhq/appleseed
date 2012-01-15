@@ -184,7 +184,7 @@ void best_candidate_sequence(
                 }
             }
 
-exit_visit:
+        exit_visit:
 
             // Keep track of the sample which is the furthest away
             // from its closest neighbor in the grid.
