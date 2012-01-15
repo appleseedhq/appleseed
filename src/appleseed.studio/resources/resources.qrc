@@ -12,6 +12,10 @@
         <file>widgets/checkbox_indeterminate_enabled.png</file>
         <file>widgets/checkbox_unchecked_disabled.png</file>
         <file>widgets/checkbox_unchecked_enabled.png</file>
+        <file>widgets/header_arrow_down_disabled.png</file>
+        <file>widgets/header_arrow_down_enabled.png</file>
+        <file>widgets/header_arrow_up_disabled.png</file>
+        <file>widgets/header_arrow_up_enabled.png</file>
         <file>widgets/scrollbar_arrow_down_disabled.png</file>
         <file>widgets/scrollbar_arrow_down_enabled.png</file>
         <file>widgets/scrollbar_arrow_left_disabled.png</file>
