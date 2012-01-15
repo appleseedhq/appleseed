@@ -34,6 +34,7 @@
 
 // Qt headers.
 #include <QList>
+#include <QMetaType>
 #include <QObject>
 #include <QTreeWidgetItem>
 
@@ -86,5 +87,7 @@ class ItemBase
 
 }       // namespace studio
 }       // namespace appleseed
+
+Q_DECLARE_METATYPE(QList<appleseed::studio::ItemBase*>);
 
 #endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ITEMBASE_H

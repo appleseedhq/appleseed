@@ -91,7 +91,6 @@ namespace
     };
 }
 
-Q_DECLARE_METATYPE(QList<ItemBase*>);
 Q_DECLARE_METATYPE(MaterialAssignmentData);
 
 namespace appleseed {

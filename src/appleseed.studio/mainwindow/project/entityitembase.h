@@ -42,8 +42,6 @@
 #include <QObject>
 #include <QString>
 
-Q_DECLARE_METATYPE(QList<appleseed::studio::ItemBase*>);
-
 namespace appleseed {
 namespace studio {
 

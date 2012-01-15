@@ -40,8 +40,6 @@
 
 using namespace foundation;
 
-Q_DECLARE_METATYPE(QList<appleseed::studio::ItemBase*>);
-
 namespace appleseed {
 namespace studio {
 
