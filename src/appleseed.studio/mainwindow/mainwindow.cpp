@@ -95,14 +95,12 @@ MainWindow::MainWindow(QWidget* parent)
 {
     m_ui->setupUi(this);
 
-    disable_mac_focus_rect(*m_ui->treewidget_project_explorer_scene);
-    disable_mac_focus_rect(*m_ui->treewidget_project_explorer_renders);
-
     statusBar()->addWidget(&m_status_bar);
 
+    build_menus();
     build_toolbar();
     build_log();
-    build_override_shading_menu_item();
+    build_project_explorer();
 
     build_connections();
 
@@ -111,8 +109,6 @@ MainWindow::MainWindow(QWidget* parent)
 
     update_workspace();
     update_project_explorer();
-
-    m_ui->pushbutton_clear_filter->setEnabled(false);
 
     remove_render_widgets();
 
@@ -124,62 +120,35 @@ MainWindow::~MainWindow()
     delete m_ui;
 }
 
-void MainWindow::build_toolbar()
+void MainWindow::build_menus()
 {
-    m_action_new_project = new QAction(QIcon(":/icons/page_white.png"), "&New", this);
-    connect(m_action_new_project, SIGNAL(triggered()), this, SLOT(slot_new_project()));
-    m_ui->main_toolbar->addAction(m_action_new_project);
+    // File menu.
+    connect(m_ui->action_file_new_project, SIGNAL(triggered()), this, SLOT(slot_new_project()));
+    connect(m_ui->action_file_open_project, SIGNAL(triggered()), this, SLOT(slot_open_project()));
+    connect(m_ui->action_file_open_builtin_project_cornellbox, SIGNAL(triggered()), SLOT(slot_open_cornellbox_builtin_project()));
+    connect(m_ui->action_file_reload_project, SIGNAL(triggered()), SLOT(slot_reload_project()));
+    connect(m_ui->action_file_save_project, SIGNAL(triggered()), this, SLOT(slot_save_project()));
+    connect(m_ui->action_file_save_project_as, SIGNAL(triggered()), this, SLOT(slot_save_project_as()));
+    connect(m_ui->action_file_exit, SIGNAL(triggered()), this, SLOT(close()));
 
-    m_action_open_project = new QAction(QIcon(":/icons/folder.png"), "&Open", this);
-    connect(m_action_open_project, SIGNAL(triggered()), this, SLOT(slot_open_project()));
-    m_ui->main_toolbar->addAction(m_action_open_project);
+    // Rendering menu.
+    connect(m_ui->action_rendering_start_interactive_rendering, SIGNAL(triggered()), this, SLOT(slot_start_interactive_rendering()));
+    connect(m_ui->action_rendering_start_final_rendering, SIGNAL(triggered()), this, SLOT(slot_start_final_rendering()));
+    connect(m_ui->action_rendering_stop_rendering, SIGNAL(triggered()), this, SLOT(slot_stop_rendering()));
 
-    m_action_save_project = new QAction(QIcon(":/icons/disk.png"), "&Save", this);
-    connect(m_action_save_project, SIGNAL(triggered()), this, SLOT(slot_save_project()));
-    m_ui->main_toolbar->addAction(m_action_save_project);
+    // Diagnostics menu.
+    build_override_shading_menu_item();
 
-    m_ui->main_toolbar->addSeparator();
+    // Debug menu.
+    connect(m_ui->action_debug_tests, SIGNAL(triggered()), this, SLOT(slot_show_test_window()));
+    connect(m_ui->action_debug_benchmarks, SIGNAL(triggered()), this, SLOT(slot_show_benchmark_window()));
 
-    m_action_start_interactive_rendering = new QAction(QIcon(":/icons/film_go.png"), "Start &Interactive Rendering", this);
-    connect(m_action_start_interactive_rendering, SIGNAL(triggered()), this, SLOT(slot_start_interactive_rendering()));
-    m_ui->main_toolbar->addAction(m_action_start_interactive_rendering);
+    // Tools menu.
+    connect(m_ui->action_tools_save_settings, SIGNAL(triggered()), this, SLOT(slot_save_settings()));
+    connect(m_ui->action_tools_reload_settings, SIGNAL(triggered()), this, SLOT(slot_load_settings()));
 
-    m_action_start_final_rendering = new QAction(QIcon(":/icons/cog_go.png"), "Start &Final Rendering", this);
-    connect(m_action_start_final_rendering, SIGNAL(triggered()), this, SLOT(slot_start_final_rendering()));
-    m_ui->main_toolbar->addAction(m_action_start_final_rendering);
-
-    m_action_stop_rendering = new QAction(QIcon(":/icons/cross.png"), "S&top Rendering", this);
-    connect(m_action_stop_rendering, SIGNAL(triggered()), this, SLOT(slot_stop_rendering()));
-    m_ui->main_toolbar->addAction(m_action_stop_rendering);
-}
-
-LogWidget* MainWindow::create_log_widget() const
-{
-    LogWidget* log_widget = new LogWidget(m_ui->log_contents);
-    m_ui->log_contents->layout()->addWidget(log_widget);
-
-    log_widget->setObjectName(QString::fromUtf8("textedit_log"));
-    log_widget->setUndoRedoEnabled(false);
-    log_widget->setLineWrapMode(QTextEdit::NoWrap);
-    log_widget->setReadOnly(true);
-    log_widget->setTextInteractionFlags(Qt::TextSelectableByMouse);
-    log_widget->setStyleSheet("QTextEdit { border: 0px; }");
-
-    QFont font;
-    font.setFamily(QString::fromUtf8("Consolas"));
-    font.setPixelSize(11);
-    log_widget->setFont(font);
-
-    return log_widget;
-}
-
-void MainWindow::build_log()
-{
-    LogWidget* log_widget = create_log_widget();
-
-    m_log_target.reset(new QtLogTarget(log_widget));
-
-    global_logger().add_target(m_log_target.get());
+    // Help menu.
+    connect(m_ui->action_help_about, SIGNAL(triggered()), this, SLOT(slot_show_about_window()));
 }
 
 void MainWindow::build_override_shading_menu_item()
@@ -264,9 +233,71 @@ void MainWindow::update_override_shading_menu_item()
     }
 }
 
-void MainWindow::build_connections()
+void MainWindow::build_toolbar()
 {
-    build_menu_items_connections();
+    m_action_new_project = new QAction(QIcon(":/icons/page_white.png"), "&New", this);
+    connect(m_action_new_project, SIGNAL(triggered()), this, SLOT(slot_new_project()));
+    m_ui->main_toolbar->addAction(m_action_new_project);
+
+    m_action_open_project = new QAction(QIcon(":/icons/folder.png"), "&Open", this);
+    connect(m_action_open_project, SIGNAL(triggered()), this, SLOT(slot_open_project()));
+    m_ui->main_toolbar->addAction(m_action_open_project);
+
+    m_action_save_project = new QAction(QIcon(":/icons/disk.png"), "&Save", this);
+    connect(m_action_save_project, SIGNAL(triggered()), this, SLOT(slot_save_project()));
+    m_ui->main_toolbar->addAction(m_action_save_project);
+
+    m_ui->main_toolbar->addSeparator();
+
+    m_action_start_interactive_rendering = new QAction(QIcon(":/icons/film_go.png"), "Start &Interactive Rendering", this);
+    connect(m_action_start_interactive_rendering, SIGNAL(triggered()), this, SLOT(slot_start_interactive_rendering()));
+    m_ui->main_toolbar->addAction(m_action_start_interactive_rendering);
+
+    m_action_start_final_rendering = new QAction(QIcon(":/icons/cog_go.png"), "Start &Final Rendering", this);
+    connect(m_action_start_final_rendering, SIGNAL(triggered()), this, SLOT(slot_start_final_rendering()));
+    m_ui->main_toolbar->addAction(m_action_start_final_rendering);
+
+    m_action_stop_rendering = new QAction(QIcon(":/icons/cross.png"), "S&top Rendering", this);
+    connect(m_action_stop_rendering, SIGNAL(triggered()), this, SLOT(slot_stop_rendering()));
+    m_ui->main_toolbar->addAction(m_action_stop_rendering);
+}
+
+LogWidget* MainWindow::create_log_widget() const
+{
+    LogWidget* log_widget = new LogWidget(m_ui->log_contents);
+    m_ui->log_contents->layout()->addWidget(log_widget);
+
+    log_widget->setObjectName(QString::fromUtf8("textedit_log"));
+    log_widget->setUndoRedoEnabled(false);
+    log_widget->setLineWrapMode(QTextEdit::NoWrap);
+    log_widget->setReadOnly(true);
+    log_widget->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    log_widget->setStyleSheet("QTextEdit { border: 0px; }");
+
+    QFont font;
+    font.setFamily(QString::fromUtf8("Consolas"));
+    font.setPixelSize(11);
+    log_widget->setFont(font);
+
+    return log_widget;
+}
+
+void MainWindow::build_log()
+{
+    LogWidget* log_widget = create_log_widget();
+
+    m_log_target.reset(new QtLogTarget(log_widget));
+
+    global_logger().add_target(m_log_target.get());
+}
+
+void MainWindow::build_project_explorer()
+{
+    m_ui->treewidget_project_explorer_scene->setColumnWidth(0, 220);    // name
+    m_ui->treewidget_project_explorer_scene->setColumnWidth(1, 75);     // render layer
+
+    disable_mac_focus_rect(*m_ui->treewidget_project_explorer_scene);
+    disable_mac_focus_rect(*m_ui->treewidget_project_explorer_renders);
 
     connect(
         m_ui->lineedit_filter, SIGNAL(textChanged(const QString&)),
@@ -276,6 +307,11 @@ void MainWindow::build_connections()
         m_ui->pushbutton_clear_filter, SIGNAL(clicked()),
         this, SLOT(slot_clear_filter()));
 
+    m_ui->pushbutton_clear_filter->setEnabled(false);
+}
+
+void MainWindow::build_connections()
+{
     connect(
         &m_rendering_manager, SIGNAL(signal_rendering_end()),
         this, SLOT(slot_rendering_end()));
@@ -283,34 +319,6 @@ void MainWindow::build_connections()
     connect(
         &m_rendering_manager, SIGNAL(signal_camera_changed()),
         this, SLOT(slot_camera_changed()));
-}
-
-void MainWindow::build_menu_items_connections()
-{
-    // File menu.
-    connect(m_ui->action_file_new_project, SIGNAL(triggered()), this, SLOT(slot_new_project()));
-    connect(m_ui->action_file_open_project, SIGNAL(triggered()), this, SLOT(slot_open_project()));
-    connect(m_ui->action_file_open_builtin_project_cornellbox, SIGNAL(triggered()), SLOT(slot_open_cornellbox_builtin_project()));
-    connect(m_ui->action_file_reload_project, SIGNAL(triggered()), SLOT(slot_reload_project()));
-    connect(m_ui->action_file_save_project, SIGNAL(triggered()), this, SLOT(slot_save_project()));
-    connect(m_ui->action_file_save_project_as, SIGNAL(triggered()), this, SLOT(slot_save_project_as()));
-    connect(m_ui->action_file_exit, SIGNAL(triggered()), this, SLOT(close()));
-
-    // Rendering menu.
-    connect(m_ui->action_rendering_start_interactive_rendering, SIGNAL(triggered()), this, SLOT(slot_start_interactive_rendering()));
-    connect(m_ui->action_rendering_start_final_rendering, SIGNAL(triggered()), this, SLOT(slot_start_final_rendering()));
-    connect(m_ui->action_rendering_stop_rendering, SIGNAL(triggered()), this, SLOT(slot_stop_rendering()));
-
-    // Debug menu.
-    connect(m_ui->action_debug_tests, SIGNAL(triggered()), this, SLOT(slot_show_test_window()));
-    connect(m_ui->action_debug_benchmarks, SIGNAL(triggered()), this, SLOT(slot_show_benchmark_window()));
-
-    // Tools menu.
-    connect(m_ui->action_tools_save_settings, SIGNAL(triggered()), this, SLOT(slot_save_settings()));
-    connect(m_ui->action_tools_reload_settings, SIGNAL(triggered()), this, SLOT(slot_load_settings()));
-
-    // Help menu.
-    connect(m_ui->action_help_about, SIGNAL(triggered()), this, SLOT(slot_show_about_window()));
 }
 
 void MainWindow::print_library_information()

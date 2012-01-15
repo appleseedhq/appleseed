@@ -223,7 +223,7 @@
            </attribute>
            <column>
             <property name="text">
-             <string notr="true">Name</string>
+             <string>Name</string>
             </property>
            </column>
            <column>
