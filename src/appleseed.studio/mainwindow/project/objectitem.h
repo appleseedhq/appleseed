@@ -30,7 +30,7 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_OBJECTITEM_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/itembase.h"
+#include "mainwindow/project/entityitembase.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -47,7 +47,7 @@ namespace appleseed {
 namespace studio {
 
 class ObjectItem
-  : public ItemBase
+  : public EntityItemBase<renderer::Object>
 {
     Q_OBJECT
 

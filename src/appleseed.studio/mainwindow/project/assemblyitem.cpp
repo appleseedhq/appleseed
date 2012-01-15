@@ -189,7 +189,7 @@ AssemblyItem::AssemblyItem(
     Scene&          scene,
     ProjectBuilder& project_builder,
     ParamArray&     settings)
-  : ItemBase(assembly->get_class_uid(), assembly->get_name())
+  : EntityItemBase<Assembly>(assembly)
   , impl(new Impl(this, assembly, scene, project_builder, settings))
 {
     set_allow_edition(false);

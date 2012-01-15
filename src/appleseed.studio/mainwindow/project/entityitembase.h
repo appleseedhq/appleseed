@@ -66,7 +66,7 @@ class EntityItemBase
   public:
     explicit EntityItemBase(Entity* entity);
 
-    void update_title();
+    void update();
 
     virtual QMenu* get_single_item_context_menu() const;
     virtual QMenu* get_multiple_items_context_menu(const QList<ItemBase*>& items) const;
@@ -85,13 +85,14 @@ EntityItemBase<Entity>::EntityItemBase(Entity* entity)
   : EntityItemBaseSlots(entity->get_class_uid())
   , m_entity(entity)
 {
-    update_title();
+    update();
 }
 
 template <typename Entity>
-void EntityItemBase<Entity>::update_title()
+void EntityItemBase<Entity>::update()
 {
     set_title(QString::fromAscii(m_entity->get_name()));
+    set_render_layer(QString::fromAscii(m_entity->get_render_layer_name()));
 }
 
 template <typename Entity>

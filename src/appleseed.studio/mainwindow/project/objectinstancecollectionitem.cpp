@@ -66,8 +66,8 @@ ItemBase* ObjectInstanceCollectionItem::create_item(ObjectInstance* object_insta
 
     return
         new ObjectInstanceItem(
+            object_instance,
             m_assembly,
-            *object_instance,
             m_project_builder);
 }
 

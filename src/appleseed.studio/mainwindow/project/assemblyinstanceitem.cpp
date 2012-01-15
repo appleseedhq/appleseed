@@ -43,7 +43,7 @@ namespace studio {
 AssemblyInstanceItem::AssemblyInstanceItem(
     AssemblyInstance*   assembly_instance,
     ProjectBuilder&     project_builder)
-  : ItemBase(assembly_instance->get_class_uid(), assembly_instance->get_name())
+  : EntityItemBase<AssemblyInstance>(assembly_instance)
   , m_assembly_instance(assembly_instance)
   , m_project_builder(project_builder)
 {

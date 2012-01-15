@@ -97,12 +97,12 @@ namespace appleseed {
 namespace studio {
 
 ObjectInstanceItem::ObjectInstanceItem(
+    ObjectInstance*     object_instance,
     Assembly&           assembly,
-    ObjectInstance&     object_instance,
     ProjectBuilder&     project_builder)
-  : ItemBase(object_instance.get_class_uid(), object_instance.get_name())
-  , m_assembly(assembly)
+  : EntityItemBase<ObjectInstance>(object_instance)
   , m_object_instance(object_instance)
+  , m_assembly(assembly)
   , m_project_builder(project_builder)
 {
     set_allow_edition(false);
@@ -236,7 +236,7 @@ void ObjectInstanceItem::slot_assign_material()
 
     const QString window_title =
         data.m_items.empty()
-            ? QString("Assign Material to %1").arg(m_object_instance.get_name())
+            ? QString("Assign Material to %1").arg(m_object_instance->get_name())
             : QString("Assign Material to Multiple Object Instances");
 
     EntityBrowserWindow* browser_window =
@@ -317,7 +317,7 @@ void ObjectInstanceItem::slot_delete()
     if (!allows_deletion())
         return;
 
-    m_project_builder.remove_object_instance(m_assembly, m_object_instance.get_uid());
+    m_project_builder.remove_object_instance(m_assembly, m_object_instance->get_uid());
 
     // 'this' no longer exists at this point.
 }
@@ -325,10 +325,10 @@ void ObjectInstanceItem::slot_delete()
 void ObjectInstanceItem::assign_material(const bool front_side, const bool back_side, const char* material_name)
 {
     if (front_side)
-        m_object_instance.assign_material(0, ObjectInstance::FrontSide, material_name);
+        m_object_instance->assign_material(0, ObjectInstance::FrontSide, material_name);
 
     if (back_side)
-        m_object_instance.assign_material(0, ObjectInstance::BackSide, material_name);
+        m_object_instance->assign_material(0, ObjectInstance::BackSide, material_name);
 
     m_project_builder.notify_project_modification();
 
@@ -338,10 +338,10 @@ void ObjectInstanceItem::assign_material(const bool front_side, const bool back_
 void ObjectInstanceItem::unassign_material(const bool front_side, const bool back_side)
 {
     if (front_side)
-        m_object_instance.clear_front_materials();
+        m_object_instance->clear_front_materials();
 
     if (back_side)
-        m_object_instance.clear_back_materials();
+        m_object_instance->clear_back_materials();
 
     m_project_builder.notify_project_modification();
 
@@ -350,8 +350,8 @@ void ObjectInstanceItem::unassign_material(const bool front_side, const bool bac
 
 void ObjectInstanceItem::update_style()
 {
-    if (m_object_instance.get_front_material_names().empty() &&
-        m_object_instance.get_back_material_names().empty())
+    if (m_object_instance->get_front_material_names().empty() &&
+        m_object_instance->get_back_material_names().empty())
     {
         setTextColor(0, QColor(255, 0, 255, 255));
     }
