@@ -52,11 +52,11 @@ void linear_ordering(
     const size_t        size)
 {
     assert(ordering.empty());
+    assert(size > 0);
 
     ordering.resize(size);
 
-    for (size_t i = 0; i < size; ++i)
-        ordering[i] = i;
+    identity_permutation(size, &ordering[0]);
 }
 
 void spiral_ordering(

@@ -80,6 +80,7 @@ void random_ordering(
     RNG&                    rng)
 {
     assert(ordering.empty());
+    assert(size > 0);
 
     ordering.resize(size);
 
