@@ -33,6 +33,52 @@ namespace foundation
 {
 
 //
+// Permutation generators implementation.
+//
+
+void faure_qmc_permutation(
+    const size_t    size,
+    size_t          perm[])
+{
+    assert(size >= 2);
+
+    if (size == 2)
+    {
+        // Identity permutation.
+        perm[0] = 0;
+        perm[1] = 1;
+    }
+    else if (size & 1)
+    {
+        // Recursively build Faure permutation for odd size.
+        faure_qmc_permutation(size - 1, perm);
+        const size_t k = (size - 1) >> 1;
+        for (size_t i = 0; i < size - 1; ++i)
+        {
+            if (perm[i] >= k)
+                ++perm[i];
+        }
+
+        // Insert k in the middle of the permutation.
+        for (size_t i = size - 1; i >= k + 1; --i)
+            perm[i] = perm[i - 1];
+        perm[k] = k;
+    }
+    else
+    {
+        // Recursively build Faure permutation for even size.
+        const size_t k = size >> 1;
+        faure_qmc_permutation(k, perm);
+        for (size_t i = 0; i < k; ++i)
+        {
+            perm[i] <<= 1;
+            perm[i + k] = perm[i] + 1;
+        }
+    }
+}
+
+
+//
 // Precomputed Faure permutations.
 //
 

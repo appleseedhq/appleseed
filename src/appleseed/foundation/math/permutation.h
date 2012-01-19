@@ -92,7 +92,11 @@ void faure_qmc_permutation(
     const size_t    size,       // size of the permutation
     size_t          perm[]);    // [out] permutation
 
+
+//
 // Precomputed Faure permutations.
+//
+
 const size_t FaurePermutationTableSize = 100;
 FOUNDATIONDLL extern const size_t* FaurePermutations[FaurePermutationTableSize];
 
@@ -137,7 +141,6 @@ void large_item_reorder(
 // Permutation generators implementation.
 //
 
-// Generate an identity permutation.
 inline void identity_permutation(
     const size_t    size,
     size_t          perm[])
@@ -146,13 +149,14 @@ inline void identity_permutation(
         perm[i] = i;
 }
 
-// Generate a random permutation using Knuth algorithm.
 template <typename RNG>
 inline void random_permutation(
     const size_t    size,
     size_t          perm[],
     RNG&            rng)
 {
+    assert(size > 0);
+
     // Start with identity permutation.
     for (size_t i = 0; i < size; ++i)
         perm[i] = i;
@@ -171,57 +175,16 @@ inline void random_permutation(
     }
 }
 
-// Generate a reverse permutation.
 inline void reverse_qmc_permutation(
     const size_t    size,
     size_t          perm[])
 {
     assert(size > 0);
+
     perm[0] = 0;
-    size_t n = size;
-    for (size_t i = 1; i < size; ++i)
+
+    for (size_t i = 1, n = size; i < size; ++i)
         perm[i] = --n;
-}
-
-// Generate a Faure permutation.
-inline void faure_qmc_permutation(
-    const size_t    size,
-    size_t          perm[])
-{
-    assert(size >= 2);
-    if (size == 2)
-    {
-        // Identity permutation.
-        perm[0] = 0;
-        perm[1] = 1;
-    }
-    else if (size & 1)
-    {
-        // Recursively build Faure permutation for odd size.
-        faure_qmc_permutation(size - 1, perm);
-        const size_t k = (size - 1) >> 1;
-        for (size_t i = 0; i < size - 1; ++i)
-        {
-            if (perm[i] >= k)
-                ++perm[i];
-        }
-
-        // Insert k in the middle of the permutation.
-        for (size_t i = size - 1; i >= k + 1; --i)
-            perm[i] = perm[i - 1];
-        perm[k] = k;
-    }
-    else
-    {
-        // Recursively build Faure permutation for even size.
-        const size_t k = size >> 1;
-        faure_qmc_permutation(k, perm);
-        for (size_t i = 0; i < k; ++i)
-        {
-            perm[i] <<= 1;
-            perm[i + k] = perm[i] + 1;
-        }
-    }
 }
 
 
@@ -229,7 +192,6 @@ inline void faure_qmc_permutation(
 // Permutation operations implementation.
 //
 
-// Test whether a given vector is a valid permutation.
 inline bool is_permutation(
     const size_t    size,
     const size_t    v[])
@@ -259,7 +221,6 @@ inline bool is_permutation(
 // Reordering functions implementation.
 //
 
-// Shuffle items in a vector according to a given permutation.
 template <typename T>
 inline void small_item_reorder(
     T               items[],
@@ -278,6 +239,7 @@ inline void small_item_reorder(
     for (size_t i = 0; i < count; ++i)
         items[i] = temp[i];
 }
+
 template <typename T>
 inline void large_item_reorder(
     T               items[],
@@ -313,6 +275,7 @@ inline void large_item_reorder(
         items[j] = temp;
     }
 }
+
 template <typename T>
 inline void large_item_reorder(
     T               items[],
