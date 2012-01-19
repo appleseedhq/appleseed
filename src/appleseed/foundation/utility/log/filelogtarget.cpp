@@ -41,25 +41,21 @@ namespace foundation
 // FileLogTarget class implementation.
 //
 
-// Constructor.
 FileLogTarget::FileLogTarget()
   : m_file(0)
 {
 }
 
-// Destructor.
 FileLogTarget::~FileLogTarget()
 {
     close();
 }
 
-// Delete this instance.
 void FileLogTarget::release()
 {
     delete this;
 }
 
-// Write a message.
 void FileLogTarget::write(
     const LogMessage::Category  category,
     const char*                 file,

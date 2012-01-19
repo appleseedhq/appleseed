@@ -47,7 +47,6 @@ namespace foundation
 // FileLogTargetBase class implementation.
 //
 
-// Format and display the message.
 void FileLogTargetBase::write_message(
     FILE*                       file,
     const LogMessage::Category  category,
