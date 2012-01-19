@@ -44,6 +44,7 @@
 #include "foundation/utility/testutils.h"
 
 // Standard headers.
+#include <cassert>
 #include <cmath>
 #include <cstddef>
 #include <cstdio>
@@ -307,22 +308,22 @@ TEST_SUITE(Foundation_Math_QMC)
 
     TEST_CASE(SampleImagePlaneWithHaltonSequence)
     {
-        // This test shows that the first W*H points of the Halton sequence in bases
-        // 2 and 3 don't visit all the pixels of a WxH image uniformly: some pixels
-        // won't be visited at all, while some will be visited multiple times.
+        //
+        // This test shows that the first W*H points of the Halton sequence in bases 2 and 3
+        // don't cover all pixels of a WxH image uniformly: some pixels will contain 0 point
+        // while others will contain several points.
+        //
 
-        const size_t Width = 512;
-        const size_t Height = 512;
-        const size_t SPP = 1;
+        const size_t Width = 640;
+        const size_t Height = 480;
         const size_t PixelCount = Width * Height;
-        const size_t SampleCount = PixelCount * SPP;
-        const size_t Bases[] = { 2, 3 };
 
         Image image(Width, Height, 32, 32, 3, PixelFormatFloat);
         image.clear(Color3f(0.0f));
 
-        for (size_t i = 0; i < SampleCount; ++i)
+        for (size_t i = 0; i < PixelCount; ++i)
         {
+            const size_t Bases[] = { 2, 3 };
             const Vector2d s = halton_sequence<double, 2>(Bases, i);
 
             const size_t x = truncate<size_t>(s[0] * Width);
@@ -338,6 +339,59 @@ TEST_SUITE(Foundation_Math_QMC)
         }
 
         GenericImageFileWriter().write("unit tests/outputs/test_qmc_sampleimageplanewithhaltonsequence.png", image);
+    }
+
+    double log(const double x, const double base)
+    {
+        return std::log(x) / std::log(base);
+    }
+
+    double next_power(const double x, const double base)
+    {
+        return pow(base, ceil(log(x, base)));
+    }
+
+    TEST_CASE(SampleImagePlaneWithHaltonSequenceUniform)
+    {
+        //
+        // This test builds on the observation that the first W*H points of the Halton sequence
+        // in bases 2 and 3 cover all pixels of a WxH image uniformly as long as W is a power
+        // of 2 and H is a power of 3.
+        //
+
+        const size_t Width = 640;
+        const size_t Height = 480;
+        const size_t PixelCount = Width * Height;
+
+        const double NextWidth = next_power(Width, 2.0);
+        const double NextHeight = next_power(Height, 3.0);
+
+        Image image(Width, Height, 32, 32, 3, PixelFormatFloat);
+        image.clear(Color3f(0.0f));
+
+        for (size_t k = 0, n = 0; n < PixelCount; ++k)
+        {
+            const size_t Bases[] = { 2, 3 };    // can't change these
+            const Vector2d s = halton_sequence<double, 2>(Bases, k);
+
+            const size_t x = truncate<size_t>(s[0] * NextWidth);
+            const size_t y = truncate<size_t>(s[1] * NextHeight);
+
+            if (x >= Width || y >= Height)
+                continue;
+
+            ++n;
+
+            Color3f c;
+            image.get_pixel(x, y, c);
+
+            c += Color3f(0.2f);
+            c = saturate(c);
+
+            image.set_pixel(x, y, c);
+        }
+
+        GenericImageFileWriter().write("unit tests/outputs/test_qmc_sampleimageplanewithhaltonsequenceuniform.png", image);
     }
 
     TEST_CASE(Integrate1DFunction)
