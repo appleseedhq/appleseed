@@ -64,7 +64,8 @@ class PathTracer
   public:
     PathTracer(
         PathVisitor&            path_visitor,
-        const size_t            rr_minimum_path_length);
+        const size_t            rr_min_path_length,
+        const size_t            max_path_length);
 
     size_t trace(
         SamplingContext&        sampling_context,
@@ -81,9 +82,8 @@ class PathTracer
 
   private:
     PathVisitor&                m_path_visitor;
-    const size_t                m_rr_minimum_path_length;
-
-    static bool has_reached_max_path_length(const size_t path_length);
+    const size_t                m_rr_min_path_length;
+    const size_t                m_max_path_length;
 };
 
 
@@ -94,9 +94,11 @@ class PathTracer
 template <typename PathVisitor, int ScatteringModesMask, bool Adjoint>
 inline PathTracer<PathVisitor, ScatteringModesMask, Adjoint>::PathTracer(
     PathVisitor&                path_visitor,
-    const size_t                rr_minimum_path_length)
+    const size_t                rr_min_path_length,
+    const size_t                max_path_length)
   : m_path_visitor(path_visitor)
-  , m_rr_minimum_path_length(rr_minimum_path_length)
+  , m_rr_min_path_length(rr_min_path_length)
+  , m_max_path_length(max_path_length)
 {
 }
 
@@ -137,10 +139,6 @@ size_t PathTracer<PathVisitor, ScatteringModesMask, Adjoint>::trace(
     double bsdf_prob = BSDF::DiracDelta;
     while (true)
     {
-        // Limit the length of the path.
-        if (has_reached_max_path_length(path_length))
-            break;
-
         // Retrieve the ray.
         const ShadingRay& ray = shading_point_ptr->get_ray();
 
@@ -259,7 +257,7 @@ size_t PathTracer<PathVisitor, ScatteringModesMask, Adjoint>::trace(
         throughput *= bsdf_value;
 
         // Use Russian Roulette to cut the path without introducing bias.
-        if (path_length >= m_rr_minimum_path_length)
+        if (m_rr_min_path_length > 0 && path_length >= m_rr_min_path_length)
         {
             // Generate a uniform sample in [0,1).
             sampling_context.split_in_place(1, 1);
@@ -275,6 +273,20 @@ size_t PathTracer<PathVisitor, ScatteringModesMask, Adjoint>::trace(
 
             assert(scattering_prob > 0.0);
             throughput /= static_cast<float>(scattering_prob);
+        }
+
+        // Honor the user bounce limit.
+        if (m_max_path_length > 0 && path_length >= m_max_path_length)
+            break;
+
+        // Put a hard limit on the number of bounces.
+        const size_t HardPathLengthLimit = 10000;
+        if (path_length >= HardPathLengthLimit)
+        {
+            RENDERER_LOG_WARNING(
+                "reached hard path length limit (%s), terminating path.",
+                foundation::pretty_int(path_length).c_str());
+            break;
         }
 
         ++path_length;
@@ -299,22 +311,6 @@ size_t PathTracer<PathVisitor, ScatteringModesMask, Adjoint>::trace(
     }
 
     return path_length;
-}
-
-template <typename PathVisitor, int ScatteringModesMask, bool Adjoint>
-inline bool PathTracer<PathVisitor, ScatteringModesMask, Adjoint>::
-    has_reached_max_path_length(const size_t path_length)
-{
-    const size_t MaxPathLength = 10000;
-
-    if (path_length < MaxPathLength)
-        return false;
-
-    RENDERER_LOG_WARNING(
-        "reached path length limit (%s), terminating path.",
-        foundation::pretty_int(path_length).c_str());
-
-    return true;
 }
 
 }       // namespace renderer

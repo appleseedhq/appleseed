@@ -78,6 +78,22 @@ namespace
           : m_params(params)
           , m_light_sampler(light_sampler)
         {
+            RENDERER_LOG_INFO(
+                "distribution ray tracing settings:\n"
+                "  rr min path len. %s\n"
+                "  max path length  %s\n"
+                "  dl bsdf samples  %s\n"
+                "  dl light samples %s\n"
+                "  ibl              %s\n"
+                "  ibl bsdf samples %s\n"
+                "  ibl env samples  %s",
+                m_params.m_rr_min_path_length == 0 ? "infinite" : pretty_uint(m_params.m_rr_min_path_length).c_str(),
+                m_params.m_max_path_length == 0 ? "infinite" : pretty_uint(m_params.m_max_path_length).c_str(),
+                pretty_uint(m_params.m_dl_bsdf_sample_count).c_str(),
+                pretty_uint(m_params.m_dl_light_sample_count).c_str(),
+                m_params.m_enable_ibl ? "on" : "off",
+                pretty_uint(m_params.m_ibl_bsdf_sample_count).c_str(),
+                pretty_uint(m_params.m_ibl_env_sample_count).c_str());
         }
 
         ~DRTLightingEngine()
@@ -121,7 +137,8 @@ namespace
 
             PathTracer path_tracer(
                 path_visitor,
-                m_params.m_minimum_path_length);
+                m_params.m_rr_min_path_length,
+                m_params.m_max_path_length);
 
             const size_t path_length =
                 path_tracer.trace(
@@ -138,7 +155,8 @@ namespace
       private:
         struct Parameters
         {
-            const size_t        m_minimum_path_length;      // minimum path length before Russian Roulette is used
+            const size_t        m_rr_min_path_length;       // minimum path length before Russian Roulette is used, 0 for unlimited
+            const size_t        m_max_path_length;          // maximum path length, 0 for unlimited
 
             const size_t        m_dl_bsdf_sample_count;     // number of BSDF samples used to estimate direct illumination
             const size_t        m_dl_light_sample_count;    // number of light samples used to estimate direct illumination
@@ -148,7 +166,8 @@ namespace
             const size_t        m_ibl_env_sample_count;     // number of environment samples used to estimate IBL
 
             explicit Parameters(const ParamArray& params)
-              : m_minimum_path_length(params.get_optional<size_t>("minimum_path_length", 3))
+              : m_rr_min_path_length(params.get_optional<size_t>("rr_min_path_length", 3))
+              , m_max_path_length(params.get_optional<size_t>("max_path_length", 0))
               , m_dl_bsdf_sample_count(params.get_optional<size_t>("dl_bsdf_samples", 1))
               , m_dl_light_sample_count(params.get_optional<size_t>("dl_light_samples", 1))
               , m_enable_ibl(params.get_optional<bool>("enable_ibl", true))

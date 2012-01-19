@@ -110,6 +110,12 @@ namespace
           , m_intersector(trace_context, true, m_params.m_report_self_intersections)
           , m_texture_cache(scene, m_params.m_texture_cache_size)
         {
+            RENDERER_LOG_INFO(
+                "light tracing settings:\n"
+                "  rr min path len. %s\n"
+                "  max path length  %s",
+                m_params.m_rr_min_path_length == 0 ? "infinite" : pretty_uint(m_params.m_rr_min_path_length).c_str(),
+                m_params.m_max_path_length == 0 ? "infinite" : pretty_uint(m_params.m_max_path_length).c_str());
         }
 
         ~LightTracingSampleGenerator()
@@ -154,12 +160,14 @@ namespace
         {
             const size_t    m_texture_cache_size;           // size in bytes of the texture cache
             const bool      m_report_self_intersections;
-            const size_t    m_minimum_path_length;          // minimum path length before Russian Roulette is used
+            const size_t    m_rr_min_path_length;           // minimum path length before Russian Roulette is used, 0 for unlimited
+            const size_t    m_max_path_length;              // maximum path length, 0 for unlimited
 
             explicit Parameters(const ParamArray& params)
               : m_texture_cache_size(params.get_optional<size_t>("texture_cache_size", 16 * 1024 * 1024))
               , m_report_self_intersections(params.get_optional<bool>("report_self_intersections", false))
-              , m_minimum_path_length(params.get_optional<size_t>("minimum_path_length", 3))
+              , m_rr_min_path_length(params.get_optional<size_t>("rr_min_path_length", 3))
+              , m_max_path_length(params.get_optional<size_t>("max_path_length", 0))
             {
             }
         };
@@ -559,7 +567,8 @@ namespace
                 initial_alpha);
             PathTracerType path_tracer(
                 path_visitor,
-                m_params.m_minimum_path_length);
+                m_params.m_rr_min_path_length,
+                m_params.m_max_path_length);
 
             // Handle the light vertex separately.
             Spectrum light_particle_flux = edf_value;       // todo: only works for diffuse EDF? What we need is the light exitance
@@ -631,7 +640,8 @@ namespace
                 initial_alpha);
             PathTracerType path_tracer(
                 path_visitor,
-                m_params.m_minimum_path_length);
+                m_params.m_rr_min_path_length,
+                m_params.m_max_path_length);
 
             // Handle the light vertex separately.
             Spectrum light_particle_flux = light_value;
@@ -707,7 +717,8 @@ namespace
                 initial_alpha);
             PathTracerType path_tracer(
                 path_visitor,
-                m_params.m_minimum_path_length);
+                m_params.m_rr_min_path_length,
+                m_params.m_max_path_length);
 
             // Trace the light path.
             const size_t path_length =
