@@ -437,7 +437,7 @@ void LightSampler::sample_emitting_triangle(
     sample.m_input_params.m_geometric_normal = triangle.m_geometric_normal;
 
     // Compute the probability of choosing this sample.
-    assert(feq(triangle_prob * triangle.m_rcp_area, m_rcp_total_emissive_area));
+//  assert(feq(triangle_prob * triangle.m_rcp_area, m_rcp_total_emissive_area));    // subject to numerical instability
     sample.m_probability = m_rcp_total_emissive_area;
 }
 
