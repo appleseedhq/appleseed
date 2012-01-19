@@ -41,12 +41,12 @@ namespace renderer
 // PixelSampler class implementation.
 //
 
-void PixelSampler::initialize(const size_t sqrt_sample_count)
+void PixelSampler::initialize(const size_t subpixel_grid_size)
 {
-    m_rcp_sqrt_sample_count = 1.0 / sqrt_sample_count;
+    m_rcp_subpixel_grid_size = 1.0 / subpixel_grid_size;
 
-    const size_t sample_count = sqrt_sample_count * sqrt_sample_count;
-    m_log_period = log2(sample_count * 32);
+    const size_t subpixel_count = subpixel_grid_size * subpixel_grid_size;
+    m_log_period = log2(subpixel_count * 32);
 
     if (m_log_period > 16)
         m_log_period = 16;
