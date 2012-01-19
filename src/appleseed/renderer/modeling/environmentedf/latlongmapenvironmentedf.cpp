@@ -331,7 +331,7 @@ namespace
                 RENDERER_LOG_ERROR(
                     "while building importance map for environment edf \"%s\": "
                     "the input \"%s\" is not bound to a texture, using default "
-                    "importance map resolution " FMT_SIZE_T "x" FMT_SIZE_T,
+                    "importance map resolution " FMT_SIZE_T "x" FMT_SIZE_T ".",
                     get_name(),
                     "exitance",
                     m_importance_map_width,
@@ -394,7 +394,7 @@ namespace
             }
 
             RENDERER_LOG_INFO(
-                "built importance map for environment edf \"%s\"",
+                "built importance map for environment edf \"%s\".",
                 get_name());
         }
 

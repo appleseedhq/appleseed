@@ -198,7 +198,7 @@ namespace
                 else
                 {
                     RENDERER_LOG_ERROR(
-                        "invalid value \"%s\" for parameter \"%s\", using default value \"%s\"",
+                        "invalid value \"%s\" for parameter \"%s\", using default value \"%s\".",
                         tile_ordering.c_str(),
                         "tile_ordering",
                         "hilbert");

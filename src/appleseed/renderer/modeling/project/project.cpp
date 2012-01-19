@@ -169,7 +169,8 @@ namespace
         if (mapping.size() == AOVCollection::MaxSize)
         {
             RENDERER_LOG_ERROR(
-                "while assigning entity \"%s\" to render layer \"%s\": could not create render layer, maximum number of AOVs (" FMT_SIZE_T ") reached",
+                "while assigning entity \"%s\" to render layer \"%s\": "
+                "could not create render layer, maximum number of AOVs (" FMT_SIZE_T ") reached.",
                 entity.get_name(),
                 render_layer_name.c_str(),
                 AOVCollection::MaxSize);

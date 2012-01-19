@@ -237,7 +237,7 @@ namespace
                 m_diaphragm_blade_count = 0;
                 RENDERER_LOG_ERROR(
                     "while defining camera \"%s\": invalid value \"%d\" for parameter \"%s\", "
-                    "using default value \"" FMT_SIZE_T "\"",
+                    "using default value \"" FMT_SIZE_T "\".",
                     get_name(),
                     blade_count,
                     "diaphragm_blades",
@@ -293,7 +293,7 @@ namespace
                 const double af_focal_distance = dot(v, camera_direction);
 
                 RENDERER_LOG_INFO(
-                    "camera \"%s\": autofocus sets focal distance to %f %s (using camera position at time=0.0)",
+                    "camera \"%s\": autofocus sets focal distance to %f %s (using camera position at time=0.0).",
                     get_name(),
                     af_focal_distance,
                     plural(af_focal_distance, "meter").c_str());
@@ -304,7 +304,7 @@ namespace
             {
                 // No hit: focus at infinity.
                 RENDERER_LOG_INFO(
-                    "camera \"%s\": autofocus sets focal distance to infinity (using camera position at time=0.0)",
+                    "camera \"%s\": autofocus sets focal distance to infinity (using camera position at time=0.0).",
                     get_name());
 
                 return 1.0e38;

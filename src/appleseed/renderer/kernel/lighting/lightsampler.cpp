@@ -111,7 +111,7 @@ LightSampler::LightSampler(const Scene& scene)
         m_light_cdf.prepare();
 
     RENDERER_LOG_INFO(
-        "found %s %s, %s emitting %s",
+        "found %s %s, %s emitting %s.",
         pretty_int(m_light_count).c_str(),
         plural(m_light_count, "light").c_str(),
         pretty_int(m_emitting_triangles.size()).c_str(),

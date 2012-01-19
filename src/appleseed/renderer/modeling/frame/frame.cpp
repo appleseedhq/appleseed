@@ -242,7 +242,7 @@ void Frame::extract_parameters()
     {
         // Invalid value for resolution parameter, use default.
         RENDERER_LOG_ERROR(
-            "invalid value \"%d %d\" for parameter \"%s\", using default value \"%d %d\"",
+            "invalid value \"%d %d\" for parameter \"%s\", using default value \"%d %d\".",
             resolution[0],
             resolution[1],
             "resolution",
@@ -260,7 +260,7 @@ void Frame::extract_parameters()
     {
         // Invalid value for tile_size parameter, use default.
         RENDERER_LOG_ERROR(
-            "invalid value \"%d %d\" for parameter \"%s\", using default value \"%d %d\"",
+            "invalid value \"%d %d\" for parameter \"%s\", using default value \"%d %d\".",
             tile_size[0],
             tile_size[1],
             "tile_size",
@@ -292,7 +292,7 @@ void Frame::extract_parameters()
     {
         // Invalid value for pixel_format parameter, use default.
         RENDERER_LOG_ERROR(
-            "invalid value \"%s\" for parameter \"%s\", using default value \"%s\"",
+            "invalid value \"%s\" for parameter \"%s\", using default value \"%s\".",
             pixel_format.c_str(),
             "pixel_format",
             DefaultPixelFormatString);
@@ -314,7 +314,7 @@ void Frame::extract_parameters()
     {
         // Invalid value for color_space parameter, use default.
         RENDERER_LOG_ERROR(
-            "invalid value \"%s\" for parameter \"%s\", using default value \"%s\"",
+            "invalid value \"%s\" for parameter \"%s\", using default value \"%s\".",
             color_space.c_str(),
             "color_space",
             DefaultColorSpaceString);
@@ -418,7 +418,7 @@ bool Frame::write_image(
 
             RENDERER_LOG_ERROR(
                 "file format '%s' not supported, writing the image in OpenEXR format "
-                "(but keeping the filename unmodified)",
+                "(but keeping the filename unmodified).",
                 extension.c_str());
 
             EXRImageFileWriter writer;
@@ -428,7 +428,7 @@ bool Frame::write_image(
     catch (const ExceptionIOError&)
     {
         RENDERER_LOG_ERROR(
-            "failed to write image file %s: i/o error",
+            "failed to write image file %s: i/o error.",
             file_path);
 
         return false;
@@ -436,7 +436,7 @@ bool Frame::write_image(
     catch (const Exception& e)
     {
         RENDERER_LOG_ERROR(
-            "failed to write image file %s: %s",
+            "failed to write image file %s: %s.",
             file_path,
             e.what());
 
@@ -446,7 +446,7 @@ bool Frame::write_image(
     stopwatch.measure();
 
     RENDERER_LOG_INFO(
-        "wrote image file %s in %s",
+        "wrote image file %s in %s.",
         file_path,
         pretty_time(stopwatch.get_seconds()).c_str());
 

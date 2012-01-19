@@ -70,7 +70,7 @@ bool XercesCManager::initialize(Logger& logger)
     {
         LOG_ERROR(
             logger,
-            "failed to initialize Xerces-C++ library: %s",
+            "failed to initialize Xerces-C++ library: %s.",
             transcode(e.getMessage()).c_str());
 
         return false;
@@ -157,7 +157,7 @@ void ErrorLogger::fatalError(const SAXParseException& e)
       case XMLExcepts::Scan_CouldNotOpenSource:
         LOG_ERROR(
             m_logger,
-            "failed to open %s for reading",
+            "failed to open %s for reading.",
             m_input_filename.c_str());
         break;
 
@@ -190,7 +190,7 @@ void ErrorLogger::print(
     LOG(
         m_logger,
         category,
-        "while reading %s: %s",
+        "while reading %s: %s.",
         m_input_filename.c_str(),
         transcode(e.getMessage()).c_str());
 }

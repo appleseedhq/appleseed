@@ -159,7 +159,7 @@ namespace
             {
                 LOG_ERROR(
                     logger,
-                    "malformed regular expression '%s', disabling test filtering",
+                    "malformed regular expression '%s', disabling test filtering.",
                     regex);
                 TestSuiteRepository::instance().run(listener.ref(), result);
             }
@@ -193,7 +193,7 @@ namespace
         else
         {
             RENDERER_LOG_WARNING(
-                "automatic benchmark results archiving to %s failed: i/o error",
+                "automatic benchmark results archiving to %s failed: i/o error.",
                 xmlfile_path.native_file_string().c_str());
         }
 
@@ -214,7 +214,7 @@ namespace
             {
                 LOG_ERROR(
                     logger,
-                    "malformed regular expression '%s', disabling benchmark filtering",
+                    "malformed regular expression '%s', disabling benchmark filtering.",
                     regex);
                 BenchmarkSuiteRepository::instance().run(result);
             }
@@ -347,7 +347,7 @@ namespace
         // Print rendering time.
         const double seconds = stopwatch.get_seconds();
         RENDERER_LOG_INFO(
-            "rendering finished in %s",
+            "rendering finished in %s.",
             pretty_time(seconds, 3).c_str());
 
         // Construct the path to the archive directory.
@@ -423,7 +423,7 @@ namespace
         if (configuration == 0)
         {
             RENDERER_LOG_ERROR(
-                "the configuration \"%s\" does not exist",
+                "the configuration \"%s\" does not exist.",
                 config_name.c_str());
             return;
         }

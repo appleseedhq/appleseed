@@ -77,7 +77,7 @@ namespace
             {
                 RENDERER_LOG_ERROR(
                     "invalid value \"%s\" for parameter \"sampling_method\", "
-                    "using default value \"uniform\"",
+                    "using default value \"uniform\".",
                     sampling_method.c_str());
                 m_sampling_method = UniformSampling;
             }

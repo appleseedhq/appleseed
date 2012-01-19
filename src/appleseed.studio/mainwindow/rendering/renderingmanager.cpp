@@ -228,7 +228,7 @@ void RenderingManager::print_final_rendering_time()
     const double rendering_time = m_rendering_timer.get_seconds();
     const string rendering_time_string = pretty_time(rendering_time, 3);
 
-    RENDERER_LOG_INFO("rendering finished in %s", rendering_time_string.c_str());
+    RENDERER_LOG_INFO("rendering finished in %s.", rendering_time_string.c_str());
 
     m_status_bar.set_text("Rendering finished in " + rendering_time_string);
 }
@@ -241,7 +241,7 @@ void RenderingManager::print_average_luminance()
     const double average_luminance = compute_average_luminance(final_image);
 
     RENDERER_LOG_DEBUG(
-        "final average luminance %s",
+        "final average luminance is %s.",
         pretty_scalar(average_luminance, 6).c_str());
 }
 

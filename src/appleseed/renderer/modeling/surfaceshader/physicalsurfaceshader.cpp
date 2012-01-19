@@ -97,7 +97,7 @@ namespace
             {
                 RENDERER_LOG_ERROR(
                     "invalid value \"%s\" for parameter \"aerial_persp_mode\", ",
-                    "using default value \"none\"",
+                    "using default value \"none\".",
                     aerial_persp_mode.c_str());
                 m_aerial_persp_mode = AerialPerspNone;
             }

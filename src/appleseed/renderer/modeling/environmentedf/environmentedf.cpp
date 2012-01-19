@@ -68,7 +68,7 @@ void EnvironmentEDF::check_uniform(const char* input_name) const
     if (!m_inputs.source(input_name)->is_uniform())
     {
         RENDERER_LOG_ERROR(
-            "the \"%s\" input of a \"%s\" must be bound to a scalar or a color",
+            "the \"%s\" input of a \"%s\" must be bound to a scalar or a color.",
             input_name,
             get_model());
     }

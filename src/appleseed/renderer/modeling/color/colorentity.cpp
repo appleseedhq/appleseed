@@ -144,7 +144,7 @@ void ColorEntity::extract_parameters()
     {
         RENDERER_LOG_ERROR(
             "invalid value \"%s\" for parameter \"color_space\", "
-            "using default value \"%s\"",
+            "using default value \"%s\".",
             color_space.c_str(),
             DefaultColorSpaceName);
         impl->m_color_space = DefaultColorSpace;
@@ -165,7 +165,7 @@ void ColorEntity::extract_parameters()
         {
             RENDERER_LOG_ERROR(
                 "invalid value \"%f %f\" for parameter \"%s\", "
-                "using default value \"%f %f\"",
+                "using default value \"%f %f\".",
                 impl->m_wavelength_range[0],
                 impl->m_wavelength_range[1],
                 "wavelength_range",
@@ -205,7 +205,7 @@ void ColorEntity::check_validity()
     {
         if (impl->m_values.empty())
         {
-            RENDERER_LOG_ERROR("1 or more values required for \"spectral\" color space, got 0");
+            RENDERER_LOG_ERROR("1 or more values required for \"spectral\" color space, got 0.");
         }
     }
     else
@@ -213,7 +213,7 @@ void ColorEntity::check_validity()
         if (impl->m_values.size() != 1 && impl->m_values.size() != 3)
         {
             RENDERER_LOG_ERROR(
-                "1 or 3 values required for \"%s\" color space, got " FMT_SIZE_T,
+                "1 or 3 values required for \"%s\" color space, got " FMT_SIZE_T ".",
                 color_space_name(impl->m_color_space),
                 impl->m_values.size());
         }

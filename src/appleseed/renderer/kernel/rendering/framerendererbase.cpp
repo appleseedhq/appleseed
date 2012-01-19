@@ -62,7 +62,7 @@ size_t FrameRendererBase::get_rendering_thread_count(const ParamArray& params)
             catch (const ExceptionStringConversionError&)
             {
                 RENDERER_LOG_ERROR(
-                    "invalid value \"%s\" for parameter \"%s\", using default value \"%s\"",
+                    "invalid value \"%s\" for parameter \"%s\", using default value \"%s\".",
                     rendering_threads_str.c_str(),
                     ParameterName,
                     "auto");
@@ -76,7 +76,7 @@ size_t FrameRendererBase::get_rendering_thread_count(const ParamArray& params)
 void FrameRendererBase::print_rendering_thread_count(const size_t thread_count)
 {
     RENDERER_LOG_INFO(
-        "using %s %s for rendering",
+        "using %s %s for rendering.",
         pretty_int(thread_count).c_str(),
         plural(thread_count, "thread").c_str());
 }

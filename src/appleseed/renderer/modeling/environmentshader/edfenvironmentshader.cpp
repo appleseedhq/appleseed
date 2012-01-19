@@ -89,7 +89,7 @@ namespace
                     RENDERER_LOG_ERROR(
                         "while preparing environment shader \"%s\": "
                         "cannot find environment EDF \"%s\", "
-                        "the environment will be transparent black",
+                        "the environment will be transparent black.",
                         get_name(),
                         m_env_edf_name.c_str());
                 }

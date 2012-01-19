@@ -77,7 +77,7 @@ TextureInstance::TextureInstance(
     {
         RENDERER_LOG_ERROR(
             "invalid value \"%s\" for parameter \"addressing_mode\", ",
-            "using default value \"wrap\"",
+            "using default value \"wrap\".",
             addressing_mode.c_str());
         impl->m_addressing_mode = TextureAddressingWrap;
     }
@@ -92,7 +92,7 @@ TextureInstance::TextureInstance(
     {
         RENDERER_LOG_ERROR(
             "invalid value \"%s\" for parameter \"filtering_mode\", ",
-            "using default value \"bilinear\"",
+            "using default value \"bilinear\".",
             filtering_mode.c_str());
         impl->m_filtering_mode = TextureFilteringBilinear;
     }

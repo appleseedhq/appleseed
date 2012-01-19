@@ -835,7 +835,7 @@ bool ProjectFileWriter::write(
     // Close the file.
     fclose(file);
 
-    RENDERER_LOG_INFO("wrote project file %s", project.get_path());
+    RENDERER_LOG_INFO("wrote project file %s.", project.get_path());
 
     return true;
 }

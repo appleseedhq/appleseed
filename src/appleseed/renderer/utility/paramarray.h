@@ -209,7 +209,7 @@ T ParamArray::get_helper(
         if (required)
         {
             RENDERER_LOG_ERROR(
-                "parameter \"%s\" not found, using default value \"%s\"",
+                "parameter \"%s\" not found, using default value \"%s\".",
                 name,
                 foundation::to_string(default_value).c_str());
         }
@@ -217,7 +217,7 @@ T ParamArray::get_helper(
     catch (const foundation::ExceptionStringConversionError&)
     {
         RENDERER_LOG_ERROR(
-            "invalid value \"%s\" for parameter \"%s\", using default value \"%s\"",
+            "invalid value \"%s\" for parameter \"%s\", using default value \"%s\".",
             get(name),
             name,
             foundation::to_string(default_value).c_str());
@@ -243,7 +243,7 @@ T ParamArray::get_path_helper(
         if (required)
         {
             RENDERER_LOG_ERROR(
-                "parameter \"%s\" not found, using default value \"%s\"",
+                "parameter \"%s\" not found, using default value \"%s\".",
                 path,
                 foundation::to_string(default_value).c_str());
         }
@@ -251,7 +251,7 @@ T ParamArray::get_path_helper(
     catch (const foundation::ExceptionStringConversionError&)
     {
         RENDERER_LOG_ERROR(
-            "invalid value \"%s\" for parameter \"%s\", using default value \"%s\"",
+            "invalid value \"%s\" for parameter \"%s\", using default value \"%s\".",
             get_path(path),
             path,
             foundation::to_string(default_value).c_str());

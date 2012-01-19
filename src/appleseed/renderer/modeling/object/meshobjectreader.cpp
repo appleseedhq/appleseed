@@ -115,7 +115,7 @@ namespace
             if (m_triangulation_error_count > 0)
             {
                 RENDERER_LOG_WARNING(
-                    "%s polygonal %s (out of %s) could not be triangulated",
+                    "%s polygonal %s (out of %s) could not be triangulated.",
                     pretty_int(m_triangulation_error_count).c_str(),
                     plural(m_triangulation_error_count, "face").c_str(),
                     pretty_int(m_face_count).c_str());
@@ -125,7 +125,7 @@ namespace
             const size_t vertex_count = m_objects.back()->get_vertex_count();
             const size_t triangle_count = m_objects.back()->get_triangle_count();
             RENDERER_LOG_INFO(
-                "loaded mesh object \"%s\" (%s %s, %s %s)",
+                "loaded mesh object \"%s\" (%s %s, %s %s).",
                 m_objects.back()->get_name(),
                 pretty_int(vertex_count).c_str(),
                 plural(vertex_count, "vertex", "vertices").c_str(),
@@ -332,7 +332,7 @@ MeshObjectArray MeshObjectReader::read(
     catch (const OBJMeshFileReader::ExceptionInvalidFaceDef& e)
     {
         RENDERER_LOG_ERROR(
-            "failed to load mesh file %s: invalid face definition on line " FMT_SIZE_T,
+            "failed to load mesh file %s: invalid face definition on line " FMT_SIZE_T ".",
             filename,
             e.m_line);
         return MeshObjectArray();
@@ -340,7 +340,7 @@ MeshObjectArray MeshObjectReader::read(
     catch (const OBJMeshFileReader::ExceptionParseError& e)
     {
         RENDERER_LOG_ERROR(
-            "failed to load mesh file %s: parse error on line " FMT_SIZE_T,
+            "failed to load mesh file %s: parse error on line " FMT_SIZE_T ".",
             filename,
             e.m_line);
         return MeshObjectArray();
@@ -348,14 +348,14 @@ MeshObjectArray MeshObjectReader::read(
     catch (const ExceptionIOError&)
     {
         RENDERER_LOG_ERROR(
-            "failed to load mesh file %s: i/o error",
+            "failed to load mesh file %s: i/o error.",
             filename);
         return MeshObjectArray();
     }
     catch (const exception& e)
     {
         RENDERER_LOG_ERROR(
-            "failed to load mesh file %s: %s",
+            "failed to load mesh file %s: %s.",
             filename,
             e.what());
         return MeshObjectArray();
@@ -369,7 +369,7 @@ MeshObjectArray MeshObjectReader::read(
 
     // Print the number of loaded objects.
     RENDERER_LOG_INFO(
-        "loaded mesh file %s (%s %s) in %s",
+        "loaded mesh file %s (%s %s) in %s.",
         filename,
         pretty_int(objects.size()).c_str(),
         plural(objects.size(), "object").c_str(),

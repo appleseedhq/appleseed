@@ -215,7 +215,7 @@ namespace
         }
         catch (const ExceptionStringConversionError&)
         {
-            RENDERER_LOG_ERROR("expected scalar value, got \"%s\"", text.c_str());
+            RENDERER_LOG_ERROR("expected scalar value, got \"%s\".", text.c_str());
             context.get_event_counters().signal_error();
             return 0.0;
         }
@@ -248,7 +248,7 @@ namespace
 
         if (!succeeded)
         {
-            RENDERER_LOG_ERROR("invalid vector format");
+            RENDERER_LOG_ERROR("invalid vector format.");
             context.get_event_counters().signal_error();
             vec = Vector3d(0.0);
         }
@@ -268,7 +268,7 @@ namespace
         }
         catch (const ExceptionStringConversionError&)
         {
-            RENDERER_LOG_ERROR("invalid vector format");
+            RENDERER_LOG_ERROR("invalid vector format.");
             context.get_event_counters().signal_error();
             values.clear();
         }
@@ -295,7 +295,7 @@ namespace
             else
             {
                 RENDERER_LOG_ERROR(
-                    "while defining %s \"%s\": invalid model \"%s\"",
+                    "while defining %s \"%s\": invalid model \"%s\".",
                     type.c_str(),
                     name.c_str(),
                     model.c_str());
@@ -305,7 +305,7 @@ namespace
         catch (const ExceptionDictionaryItemNotFound& e)
         {
             RENDERER_LOG_ERROR(
-                "while defining %s \"%s\": required parameter \"%s\" missing",
+                "while defining %s \"%s\": required parameter \"%s\" missing.",
                 type.c_str(),
                 name.c_str(),
                 e.string());
@@ -314,7 +314,7 @@ namespace
         catch (const ExceptionUnknownEntity& e)
         {
             RENDERER_LOG_ERROR(
-                "while defining %s \"%s\": unknown entity \"%s\"",
+                "while defining %s \"%s\": unknown entity \"%s\".",
                 type.c_str(),
                 name.c_str(),
                 e.string());
@@ -587,7 +587,7 @@ namespace
                     "  origin  (%f, %f, %f)\n"
                     "  target  (%f, %f, %f)\n"
                     "  up      (%f, %f, %f)\n"
-                    "form a singular transformation matrix",
+                    "form a singular transformation matrix.",
                     origin[0], origin[1], origin[2],
                     target[0], target[1], target[2],
                     up[0], up[1], up[2]);
@@ -635,7 +635,7 @@ namespace
             else
             {
                 RENDERER_LOG_ERROR(
-                    "while defining <matrix> element: expected 16 scalar coefficients, got " FMT_SIZE_T,
+                    "while defining <matrix> element: expected 16 scalar coefficients, got " FMT_SIZE_T ".",
                     m_values.size());
                 m_context.get_event_counters().signal_error();
             }
@@ -686,7 +686,7 @@ namespace
             }
             else
             {
-                RENDERER_LOG_ERROR("while defining <rotation> element: the rotation axis cannot be null");
+                RENDERER_LOG_ERROR("while defining <rotation> element: the rotation axis cannot be null.");
                 m_context.get_event_counters().signal_error();
             }
         }
@@ -789,7 +789,7 @@ namespace
             }
             catch (const ExceptionSingularMatrix&)
             {
-                RENDERER_LOG_ERROR("while defining <transform> element: the transformation matrix is singular");
+                RENDERER_LOG_ERROR("while defining <transform> element: the transformation matrix is singular.");
                 m_context.get_event_counters().signal_error();
                 m_transform = Transformd(Matrix4d::identity());
             }
@@ -940,7 +940,7 @@ namespace
             catch (const ExceptionDictionaryItemNotFound& e)
             {
                 RENDERER_LOG_ERROR(
-                    "while defining color \"%s\": required parameter \"%s\" missing",
+                    "while defining color \"%s\": required parameter \"%s\" missing.",
                     m_name.c_str(),
                     e.string());
                 m_context.get_event_counters().signal_error();
@@ -1020,7 +1020,7 @@ namespace
                 else
                 {
                     RENDERER_LOG_ERROR(
-                        "while defining texture \"%s\": invalid model \"%s\"",
+                        "while defining texture \"%s\": invalid model \"%s\".",
                         m_name.c_str(),
                         m_model.c_str());
                     m_context.get_event_counters().signal_error();
@@ -1029,7 +1029,7 @@ namespace
             catch (const ExceptionDictionaryItemNotFound& e)
             {
                 RENDERER_LOG_ERROR(
-                    "while defining texture \"%s\": required parameter \"%s\" missing",
+                    "while defining texture \"%s\": required parameter \"%s\" missing.",
                     m_name.c_str(),
                     e.string());
                 m_context.get_event_counters().signal_error();
@@ -1095,7 +1095,7 @@ namespace
                 catch (const ExceptionDictionaryItemNotFound& e)
                 {
                     RENDERER_LOG_ERROR(
-                        "while defining texture instance \"%s\": required parameter \"%s\" missing",
+                        "while defining texture instance \"%s\": required parameter \"%s\" missing.",
                         m_name.c_str(),
                         e.string());
                     m_context.get_event_counters().signal_error();
@@ -1104,7 +1104,7 @@ namespace
             else
             {
                 RENDERER_LOG_ERROR(
-                    "while defining texture instance \"%s\": the texture \"%s\" does not exist",
+                    "while defining texture instance \"%s\": the texture \"%s\" does not exist.",
                     m_name.c_str(),
                     m_texture.c_str());
                 m_context.get_event_counters().signal_error();
@@ -1198,7 +1198,7 @@ namespace
             else
             {
                 RENDERER_LOG_ERROR(
-                    "while defining environment \"%s\": invalid model \"%s\"",
+                    "while defining environment \"%s\": invalid model \"%s\".",
                     m_name.c_str(),
                     m_model.c_str());
                 m_context.get_event_counters().signal_error();
@@ -1328,7 +1328,7 @@ namespace
             else
             {
                 RENDERER_LOG_ERROR(
-                    "while defining material \"%s\": invalid model \"%s\"",
+                    "while defining material \"%s\": invalid model \"%s\".",
                     m_name.c_str(),
                     m_model.c_str());
                 m_context.get_event_counters().signal_error();
@@ -1459,7 +1459,7 @@ namespace
                 else
                 {
                     RENDERER_LOG_ERROR(
-                        "while defining object \"%s\": invalid model \"%s\"",
+                        "while defining object \"%s\": invalid model \"%s\".",
                         m_name.c_str(),
                         m_model.c_str());
                     m_context.get_event_counters().signal_error();
@@ -1468,7 +1468,7 @@ namespace
             catch (const ExceptionDictionaryItemNotFound& e)
             {
                 RENDERER_LOG_ERROR(
-                    "while defining object \"%s\": required parameter \"%s\" missing",
+                    "while defining object \"%s\": required parameter \"%s\" missing.",
                     m_name.c_str(),
                     e.string());
                 m_context.get_event_counters().signal_error();
@@ -1511,7 +1511,7 @@ namespace
             catch (const ExceptionStringConversionError&)
             {
                 RENDERER_LOG_ERROR(
-                    "while assigning material: slot must be an integer >= 0, got \"%s\"",
+                    "while assigning material: slot must be an integer >= 0, got \"%s\".",
                     slot_string.c_str());
                 m_context.get_event_counters().signal_error();
                 m_slot = 0;
@@ -1525,7 +1525,7 @@ namespace
             else
             {
                 RENDERER_LOG_ERROR(
-                    "while assigning material: side must be \"front\" or \"back\", got \"%s\"",
+                    "while assigning material: side must be \"front\" or \"back\", got \"%s\".",
                     side_string.c_str());
                 m_context.get_event_counters().signal_error();
                 m_side = ObjectInstance::FrontSide;
@@ -1611,7 +1611,7 @@ namespace
             else
             {
                 RENDERER_LOG_ERROR(
-                    "while defining object instance \"%s\": the object \"%s\" does not exist",
+                    "while defining object instance \"%s\": the object \"%s\" does not exist.",
                     m_name.c_str(),
                     m_object.c_str());
                 m_context.get_event_counters().signal_error();
@@ -1648,7 +1648,7 @@ namespace
                     {
                         RENDERER_LOG_ERROR(
                             "while defining object instance \"%s\": "
-                            "material slot should be in [0, " FMT_SIZE_T "], got " FMT_SIZE_T,
+                            "material slot should be in [0, " FMT_SIZE_T "], got " FMT_SIZE_T ".",
                             m_name.c_str(),
                             MaxMaterialSlots - 1,
                             material_slot);
@@ -2038,13 +2038,13 @@ namespace
             // Print the bounding box of the scene.
             if (bbox.is_valid())
             {
-                RENDERER_LOG_INFO("scene bounding box: (%f, %f, %f)-(%f, %f, %f)",
+                RENDERER_LOG_INFO("scene bounding box: (%f, %f, %f)-(%f, %f, %f).",
                     bbox.min[0], bbox.min[1], bbox.min[2],
                     bbox.max[0], bbox.max[1], bbox.max[2]);
             }
             else
             {
-                RENDERER_LOG_INFO("scene bounding box is empty");
+                RENDERER_LOG_INFO("scene bounding box is empty.");
             }
         }
 
@@ -2147,7 +2147,7 @@ namespace
                     {
                         if (m_scene->get_camera())
                         {
-                            RENDERER_LOG_WARNING("support for multiple cameras is not implemented yet");
+                            RENDERER_LOG_WARNING("support for multiple cameras is not implemented yet.");
                             m_context.get_event_counters().signal_warning();
                         }
                         m_scene->set_camera(camera);
@@ -2164,7 +2164,7 @@ namespace
                     {
                         if (m_scene->get_environment())
                         {
-                            RENDERER_LOG_ERROR("cannot define multiple environments");
+                            RENDERER_LOG_ERROR("cannot define multiple environments.");
                             m_context.get_event_counters().signal_error();
                         }
                         m_scene->set_environment(environment);
@@ -2359,7 +2359,7 @@ namespace
                 else
                 {
                     RENDERER_LOG_ERROR(
-                        "while defining configuration \"%s\": the configuration \"%s\" does not exist",
+                        "while defining configuration \"%s\": the configuration \"%s\" does not exist.",
                         m_configuration->get_name(),
                         m_base_name.c_str());
                     m_context.get_event_counters().signal_error();
@@ -2745,7 +2745,7 @@ auto_release_ptr<Project> ProjectFileReader::construct_builtin_project(
     }
     else
     {
-        RENDERER_LOG_ERROR("unknown built-in project %s", project_name);
+        RENDERER_LOG_ERROR("unknown built-in project %s.", project_name);
         event_counters.signal_error();
         return auto_release_ptr<Project>(0);
     }
@@ -2772,32 +2772,32 @@ void ProjectFileReader::validate_project(
         // Make sure the scene contains a camera.
         if (project.get_scene()->get_camera() == 0)
         {
-            RENDERER_LOG_ERROR("the scene does not define any camera");
+            RENDERER_LOG_ERROR("the scene does not define any camera.");
             event_counters.signal_error();
         }
     }
     else
     {
-        RENDERER_LOG_ERROR("the project does not define a scene");
+        RENDERER_LOG_ERROR("the project does not define a scene.");
         event_counters.signal_error();
     }
 
     // Make sure the project contains at least one output frame.
     if (project.get_frame() == 0)
     {
-        RENDERER_LOG_ERROR("the project does not define any frame");
+        RENDERER_LOG_ERROR("the project does not define any frame.");
         event_counters.signal_error();
     }
 
     // Make sure the project contains the required configurations.
     if (project.configurations().get_by_name("final") == 0)
     {
-        RENDERER_LOG_ERROR("the project must define a \"final\" configuration");
+        RENDERER_LOG_ERROR("the project must define a \"final\" configuration.");
         event_counters.signal_error();
     }
     if (project.configurations().get_by_name("interactive") == 0)
     {
-        RENDERER_LOG_ERROR("the project must define an \"interactive\" configuration");
+        RENDERER_LOG_ERROR("the project must define an \"interactive\" configuration.");
         event_counters.signal_error();
     }
 }
@@ -2830,7 +2830,7 @@ void ProjectFileReader::print_loading_results(
 
     RENDERER_LOG(
         log_category,
-        "%s %s %s (" FMT_SIZE_T " %s, " FMT_SIZE_T " %s)",
+        "%s %s %s (" FMT_SIZE_T " %s, " FMT_SIZE_T " %s).",
         error_count > 0 ? "failed to load" : "successfully loaded",
         builtin_project ? "built-in project" : "project file",
         project_name,

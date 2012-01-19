@@ -133,7 +133,7 @@ namespace
                 m_ref_image_avg_lum = compute_average_luminance(*m_ref_image.get());
 
                 RENDERER_LOG_DEBUG(
-                    "reference image average luminance %s",
+                    "reference image average luminance is %s.",
                     pretty_scalar(m_ref_image_avg_lum, 6).c_str());
             }
 

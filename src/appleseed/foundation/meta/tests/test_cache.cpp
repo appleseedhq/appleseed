@@ -138,7 +138,7 @@ TEST_SUITE(Foundation_Utility_Cache_DualStageCache)
                 const MyElement expected = 10 * key;
 
                 if (expected != *element)
-                    throw Exception("cache integrity check failed.");
+                    throw Exception("cache integrity check failed");
             }
         }
     };

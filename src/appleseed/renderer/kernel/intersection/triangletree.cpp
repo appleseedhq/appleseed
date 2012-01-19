@@ -1088,7 +1088,7 @@ TriangleTree::TriangleTree(const Arguments& arguments)
     // Print the alignment of the node array base address.
     assert(!m_nodes.empty());
     RENDERER_LOG_DEBUG(
-        "triangle bsp tree node array is %u-byte aligned",
+        "triangle bsp tree node array is %u-byte aligned.",
         alignment(&m_nodes[0]));
 
     // Convert the minimum page size from bytes to 4-byte words.

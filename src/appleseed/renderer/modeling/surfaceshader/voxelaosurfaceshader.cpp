@@ -319,7 +319,7 @@ namespace
                 m_high_threshold < m_low_threshold)
             {
                 RENDERER_LOG_ERROR(
-                    "invalid low and high threshold values, switching back to default %f and %f",
+                    "invalid low and high threshold values, switching back to default %f and %f.",
                     DefaultLowThreshold,
                     DefaultHighThreshold);
 

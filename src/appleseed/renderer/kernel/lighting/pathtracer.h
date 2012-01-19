@@ -311,7 +311,7 @@ inline bool PathTracer<PathVisitor, ScatteringModesMask, Adjoint>::
         return false;
 
     RENDERER_LOG_WARNING(
-        "reached path length limit (%s), terminating path",
+        "reached path length limit (%s), terminating path.",
         foundation::pretty_int(path_length).c_str());
 
     return true;

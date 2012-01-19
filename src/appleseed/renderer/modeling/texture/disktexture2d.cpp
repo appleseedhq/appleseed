@@ -134,7 +134,7 @@ namespace
             {
                 RENDERER_LOG_ERROR(
                     "invalid value \"%s\" for parameter \"color_space\", "
-                    "using default value \"linear_rgb\"",
+                    "using default value \"linear_rgb\".",
                     color_space.c_str());
                 m_color_space = ColorSpaceLinearRGB;
             }

@@ -391,7 +391,7 @@ namespace
                     if (transform_map_key != transform_map.end())
                     {
                         LOG_INFO(
-                            m_logger, "frame " FMT_SIZE_T " is the same as frame " FMT_SIZE_T,
+                            m_logger, "frame " FMT_SIZE_T " is the same as frame " FMT_SIZE_T ".",
                             frame,
                             transform_map_key->second);
                         frames.push_back(transform_map_key->second);

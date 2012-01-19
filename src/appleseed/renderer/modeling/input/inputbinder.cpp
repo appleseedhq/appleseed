@@ -146,7 +146,7 @@ void InputBinder::build_scene_symbol_table(
     }
     catch (const SymbolTable::ExceptionDuplicateSymbol& e)
     {
-        RENDERER_LOG_ERROR("duplicate item \"%s\"", e.string());
+        RENDERER_LOG_ERROR("duplicate item \"%s\".", e.string());
         ++m_error_count;
     }
 }
@@ -170,7 +170,7 @@ void InputBinder::build_assembly_symbol_table(
     }
     catch (const SymbolTable::ExceptionDuplicateSymbol& e)
     {
-        RENDERER_LOG_ERROR("duplicate item \"%s\"", e.string());
+        RENDERER_LOG_ERROR("duplicate item \"%s\".", e.string());
         ++m_error_count;
     }
 }
@@ -314,7 +314,7 @@ void InputBinder::bind_scene_entity_inputs(
             if (!input.is_optional())
             {
                 RENDERER_LOG_ERROR(
-                    "while defining %s \"%s\": required parameter \"%s\" missing",
+                    "while defining %s \"%s\": required parameter \"%s\" missing.",
                     entity_type,
                     entity_name,
                     input.name());
@@ -362,7 +362,7 @@ void InputBinder::bind_assembly_entity_inputs(
             if (!input.is_optional())
             {
                 RENDERER_LOG_ERROR(
-                    "while defining %s \"%s\": required parameter \"%s\" missing",
+                    "while defining %s \"%s\": required parameter \"%s\" missing.",
                     entity_type,
                     entity_name,
                     input.name());
@@ -416,7 +416,7 @@ void InputBinder::bind_scene_entity_to_input(
 
       default:
         RENDERER_LOG_ERROR(
-            "while defining %s \"%s\": cannot bind \"%s\" to parameter \"%s\"",
+            "while defining %s \"%s\": cannot bind \"%s\" to parameter \"%s\".",
             entity_type,
             entity_name,
             param_value,
@@ -470,7 +470,7 @@ void InputBinder::bind_assembly_entity_to_input(
 
       default:
         RENDERER_LOG_ERROR(
-            "while defining %s \"%s\": cannot bind \"%s\" to parameter \"%s\"",
+            "while defining %s \"%s\": cannot bind \"%s\" to parameter \"%s\".",
             entity_type,
             entity_name,
             param_value,
@@ -536,7 +536,7 @@ void InputBinder::bind_texture_instance_to_input(
     catch (const exception& e)
     {
         RENDERER_LOG_ERROR(
-            "while defining %s \"%s\", while binding \"%s\" to parameter \"%s\": %s",
+            "while defining %s \"%s\", while binding \"%s\" to parameter \"%s\": %s.",
             entity_type,
             entity_name,
             param_value,

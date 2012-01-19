@@ -77,7 +77,7 @@ namespace
             same_triangle(*parent_shading_point, shading_point))
         {
             RENDERER_LOG_WARNING(
-                "self-intersection detected, distance %e",
+                "self-intersection detected, distance %e.",
                 shading_point.get_distance());
         }
     }

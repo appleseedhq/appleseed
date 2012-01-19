@@ -238,7 +238,7 @@ namespace
             else
             {
                 RENDERER_LOG_ERROR(
-                    "invalid shading mode \"%s\", using default value \"volume\"",
+                    "invalid shading mode \"%s\", using default value \"volume\".",
                     shading_mode_string.c_str());
                 m_shading_mode = VolumeMode;
             }
@@ -255,7 +255,7 @@ namespace
             else
             {
                 RENDERER_LOG_ERROR(
-                    "invalid interpolation mode \"%s\", using default value \"linear\"",
+                    "invalid interpolation mode \"%s\", using default value \"linear\".",
                     interp_mode_string.c_str());
                 m_interpolation_mode = LinearMode;
             }
@@ -336,7 +336,7 @@ namespace
             m_voxel_grid = read_fluid_file(filepath.c_str(), m_channels);
 
             if (m_voxel_grid.get() == 0)
-                RENDERER_LOG_ERROR("failed to load fluid file %s", filepath.c_str());
+                RENDERER_LOG_ERROR("failed to load fluid file %s.", filepath.c_str());
 
 /*
             write_voxel_grid(

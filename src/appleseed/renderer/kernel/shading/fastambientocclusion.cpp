@@ -101,13 +101,13 @@ void AOVoxelTree::dump_solid_leaves_to_disk(const string& filename) const
     if (m_tree.dump_solid_leaves_to_disk(filename))
     {
         RENDERER_LOG_INFO(
-            "wrote ambient occlusion voxel tree file %s",
+            "wrote ambient occlusion voxel tree file %s.",
             filename.c_str());
     }
     else
     {
         RENDERER_LOG_ERROR(
-            "failed to write ambient occlusion voxel tree file %s: i/o error",
+            "failed to write ambient occlusion voxel tree file %s: i/o error.",
             filename.c_str());
     }
 }
@@ -122,13 +122,13 @@ void AOVoxelTree::dump_tree_to_disk(const string& filename) const
     if (m_tree.dump_tree_to_disk(filename))
     {
         RENDERER_LOG_INFO(
-            "wrote ambient occlusion voxel tree file %s",
+            "wrote ambient occlusion voxel tree file %s.",
             filename.c_str());
     }
     else
     {
         RENDERER_LOG_ERROR(
-            "failed to write ambient occlusion voxel tree file %s: i/o error",
+            "failed to write ambient occlusion voxel tree file %s: i/o error.",
             filename.c_str());
     }
 }

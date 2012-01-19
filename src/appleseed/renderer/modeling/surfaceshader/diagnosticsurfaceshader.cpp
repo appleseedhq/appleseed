@@ -354,7 +354,7 @@ void DiagnosticSurfaceShader::extract_parameters()
     else
     {
         RENDERER_LOG_ERROR(
-            "invalid shading mode \"%s\", using default value \"coverage\"",
+            "invalid shading mode \"%s\", using default value \"coverage\".",
             mode_string.c_str());
         impl->m_shading_mode = Coverage;
     }

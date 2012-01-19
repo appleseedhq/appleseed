@@ -169,14 +169,14 @@ bool MeshObjectWriter::write(
     catch (const ExceptionIOError&)
     {
         RENDERER_LOG_ERROR(
-            "failed to write mesh file %s: i/o error",
+            "failed to write mesh file %s: i/o error.",
             filename);
         return false;
     }
     catch (const Exception& e)
     {
         RENDERER_LOG_ERROR(
-            "failed to write mesh file %s: %s",
+            "failed to write mesh file %s: %s.",
             filename,
             e.what());
         return false;
@@ -185,7 +185,7 @@ bool MeshObjectWriter::write(
     stopwatch.measure();
 
     RENDERER_LOG_INFO(
-        "wrote mesh file %s in %s",
+        "wrote mesh file %s in %s.",
         filename,
         pretty_time(stopwatch.get_seconds()).c_str());
 

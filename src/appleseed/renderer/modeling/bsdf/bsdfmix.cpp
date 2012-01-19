@@ -344,7 +344,7 @@ namespace
 
             const BSDF* bsdf = assembly.bsdfs().get_by_name(bsdf_name.c_str());
             if (bsdf == 0)
-                RENDERER_LOG_ERROR("while preparing bsdf \"%s\": cannot find bsdf \"%s\"", get_name(), bsdf_name.c_str());
+                RENDERER_LOG_ERROR("while preparing bsdf \"%s\": cannot find bsdf \"%s\".", get_name(), bsdf_name.c_str());
 
             return bsdf;
         }

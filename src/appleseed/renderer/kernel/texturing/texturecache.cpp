@@ -216,7 +216,7 @@ bool TextureCache::TileSwapper::is_full(const size_t element_count) const
 {
 /*
     RENDERER_LOG_DEBUG(
-        "texture cache contains %s %s (%s)",
+        "texture cache contains %s %s (%s).",
         pretty_uint(element_count).c_str(),
         plural(element_count, "tile").c_str(),
         pretty_size(m_memory_size).c_str());

@@ -95,7 +95,7 @@ int main(int argc, const char* argv[])
         {
             LOG_ERROR(
                 logger,
-                "invalid tile size, using default size %dx%d pixels",
+                "invalid tile size, using default size %dx%d pixels.",
                 tile_width,
                 tile_height);
         }

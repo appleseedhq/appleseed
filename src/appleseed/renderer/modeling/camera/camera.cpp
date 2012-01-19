@@ -137,7 +137,7 @@ Vector2d Camera::extract_film_dimensions() const
         {
             RENDERER_LOG_ERROR(
                 "while defining camera \"%s\": invalid value \"%f %f\" for parameter \"%s\", "
-                "using default value \"%f %f\"",
+                "using default value \"%f %f\".",
                 get_name(),
                 film_dimensions[0],
                 film_dimensions[1],
@@ -173,7 +173,7 @@ double Camera::extract_focal_length(const double film_width) const
         {
             RENDERER_LOG_WARNING(
                 "while defining camera \"%s\": the parameter \"horizontal_fov\" "
-                "has precedence over \"focal_length\"",
+                "has precedence over \"focal_length\".",
                 get_name());
 
             const double hfov = get_greater_than_zero("horizontal_fov", DefaultHFov);
@@ -193,7 +193,7 @@ double Camera::extract_focal_length(const double film_width) const
     {
         RENDERER_LOG_ERROR(
             "while defining camera \"%s\": no \"horizontal_fov\" or \"focal_length\" parameter found, "
-            "using default focal length value \"%f\"",
+            "using default focal length value \"%f\".",
             get_name(),
             DefaultFocalLength);
 
@@ -222,7 +222,7 @@ void Camera::extract_focal_distance(
         {
             RENDERER_LOG_WARNING(
                 "while defining camera \"%s\": autofocus is enabled; \"focal_distance\" parameter "
-                "will be ignored",
+                "will be ignored.",
                 get_name());
 
             autofocus_enabled = true;
@@ -246,7 +246,7 @@ void Camera::extract_focal_distance(
     {
         RENDERER_LOG_ERROR(
             "while defining camera \"%s\": no \"focal_distance\" or \"autofocus_target\" parameter found, "
-            "using default focal distance value \"%f\"",
+            "using default focal distance value \"%f\".",
             get_name(),
             DefaultFocalDistance);
 
@@ -276,7 +276,7 @@ double Camera::get_greater_than_zero(
     {
         RENDERER_LOG_ERROR(
             "while defining camera \"%s\": invalid value \"%f\" for parameter \"%s\", "
-            "using default value \"%f\"",
+            "using default value \"%f\".",
             get_name(),
             value,
             name,

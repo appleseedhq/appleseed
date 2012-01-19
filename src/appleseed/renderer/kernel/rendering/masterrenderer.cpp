@@ -102,22 +102,22 @@ void MasterRenderer::render()
     catch (const StringException& e)
     {
         m_renderer_controller->on_rendering_abort();
-        RENDERER_LOG_ERROR("rendering failed (%s: %s)", e.what(), e.string());
+        RENDERER_LOG_ERROR("rendering failed (%s: %s).", e.what(), e.string());
     }
     catch (const Exception& e)
     {
         m_renderer_controller->on_rendering_abort();
-        RENDERER_LOG_ERROR("rendering failed (%s)", e.what());
+        RENDERER_LOG_ERROR("rendering failed (%s).", e.what());
     }
     catch (const bad_alloc&)
     {
         m_renderer_controller->on_rendering_abort();
-        RENDERER_LOG_ERROR("rendering failed (ran out of memory)");
+        RENDERER_LOG_ERROR("rendering failed (ran out of memory).");
     }
     catch (...)
     {
         m_renderer_controller->on_rendering_abort();
-        RENDERER_LOG_ERROR("rendering failed (unknown exception)");
+        RENDERER_LOG_ERROR("rendering failed (unknown exception).");
     }
 }
 
@@ -193,7 +193,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     else
     {
         RENDERER_LOG_ERROR(
-            "invalid value for \"lighting_engine\" parameter: \"%s\"",
+            "invalid value for \"lighting_engine\" parameter: \"%s\".",
             lighting_engine_param.c_str());
         return IRendererController::AbortRendering;
     }
@@ -221,7 +221,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     else
     {
         RENDERER_LOG_ERROR(
-            "invalid value for \"sample_renderer\" parameter: \"%s\"",
+            "invalid value for \"sample_renderer\" parameter: \"%s\".",
             sample_renderer_param.c_str());
         return IRendererController::AbortRendering;
     }
@@ -254,7 +254,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     else
     {
         RENDERER_LOG_ERROR(
-            "invalid value for \"tile_renderer\" parameter: \"%s\"",
+            "invalid value for \"tile_renderer\" parameter: \"%s\".",
             tile_renderer_param.c_str());
         return IRendererController::AbortRendering;
     }
@@ -288,7 +288,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     else
     {
         RENDERER_LOG_ERROR(
-            "invalid value for \"sample_generator\" parameter: \"%s\"",
+            "invalid value for \"sample_generator\" parameter: \"%s\".",
             sample_generator_param.c_str());
         return IRendererController::AbortRendering;
     }
@@ -323,7 +323,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     else
     {
         RENDERER_LOG_ERROR(
-            "invalid value for \"frame_renderer\" parameter: \"%s\"",
+            "invalid value for \"frame_renderer\" parameter: \"%s\".",
             frame_renderer_param.c_str());
         return IRendererController::AbortRendering;
     }
