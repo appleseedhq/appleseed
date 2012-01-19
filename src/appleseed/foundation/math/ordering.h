@@ -33,6 +33,7 @@
 #include "foundation/math/permutation.h"
 
 // Standard headers.
+#include <cassert>
 #include <cstddef>
 #include <vector>
 
@@ -72,14 +73,16 @@ void random_ordering(
 // 2D ordering generators implementation.
 //
 
-// Generate a random ordering.
 template <typename RNG>
 void random_ordering(
     std::vector<size_t>&    ordering,
     const size_t            size,
     RNG&                    rng)
 {
+    assert(ordering.empty());
+
     ordering.resize(size);
+
     random_permutation(size, &ordering[0], rng);
 }
 

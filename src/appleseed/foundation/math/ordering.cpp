@@ -36,7 +36,6 @@
 
 // Standard headers.
 #include <algorithm>
-#include <cassert>
 
 using namespace foundation;
 using namespace std;
@@ -52,8 +51,12 @@ void linear_ordering(
     vector<size_t>&     ordering,
     const size_t        size)
 {
+    assert(ordering.empty());
+
+    ordering.resize(size);
+
     for (size_t i = 0; i < size; ++i)
-        ordering.push_back(i);
+        ordering[i] = i;
 }
 
 void spiral_ordering(
@@ -104,6 +107,10 @@ void hilbert_ordering(
     const size_t        size_x,
     const size_t        size_y)
 {
+    assert(ordering.empty());
+
+    ordering.reserve(size_x * size_y);
+
     // This Hilbert curve generator only works on a square grid whose size is a power of two.
     const size_t root_size = next_pow2(max(size_x, size_y));
 
