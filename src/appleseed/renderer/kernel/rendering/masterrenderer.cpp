@@ -190,6 +190,13 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
                 light_sampler,
                 m_params.child("pt")));
     }
+    else
+    {
+        RENDERER_LOG_ERROR(
+            "invalid value for \"lighting_engine\" parameter: \"%s\"",
+            lighting_engine_param.c_str());
+        return IRendererController::AbortRendering;
+    }
 
     //
     // Create a sample renderer factory.
@@ -210,6 +217,13 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
                 lighting_engine_factory.get(),
                 shading_engine,
                 m_params.child("generic_sample_renderer")));
+    }
+    else
+    {
+        RENDERER_LOG_ERROR(
+            "invalid value for \"sample_renderer\" parameter: \"%s\"",
+            sample_renderer_param.c_str());
+        return IRendererController::AbortRendering;
     }
 
     //
@@ -236,6 +250,13 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     else if (tile_renderer_param == "debug")
     {
         tile_renderer_factory.reset(new DebugTileRendererFactory());
+    }
+    else
+    {
+        RENDERER_LOG_ERROR(
+            "invalid value for \"tile_renderer\" parameter: \"%s\"",
+            tile_renderer_param.c_str());
+        return IRendererController::AbortRendering;
     }
 
     //
@@ -264,6 +285,13 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
                 light_sampler,
                 m_params.child("lighttracing_sample_generator")));
     }
+    else
+    {
+        RENDERER_LOG_ERROR(
+            "invalid value for \"sample_generator\" parameter: \"%s\"",
+            sample_generator_param.c_str());
+        return IRendererController::AbortRendering;
+    }
 
     //
     // Create a frame renderer.
@@ -291,6 +319,13 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
                 sample_generator_factory.get(),
                 m_tile_callback_factory,
                 m_params.child("progressive_frame_renderer")));
+    }
+    else
+    {
+        RENDERER_LOG_ERROR(
+            "invalid value for \"frame_renderer\" parameter: \"%s\"",
+            frame_renderer_param.c_str());
+        return IRendererController::AbortRendering;
     }
 
     // Execute the main rendering loop.
