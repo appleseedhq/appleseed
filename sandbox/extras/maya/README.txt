@@ -1,0 +1,1 @@
+Mayaseed is a maya script and gui for exporting camera, material and geometry data to the appleseed renderer. Mayaseed is released under the MIT licence.
