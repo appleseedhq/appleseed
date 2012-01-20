@@ -501,7 +501,7 @@ class LRUCache
         QueueIterator,
         std::less<KeyType>,
         typename AllocatorType::template rebind<
-            std::pair<KeyType, QueueIterator> >::other> Index;
+            std::pair<const KeyType, QueueIterator> >::other> Index;
 
     Index                   m_index;
     Queue                   m_queue;
