@@ -318,6 +318,7 @@ class MacPackageBuilder(PackageBuilder):
         self.copy_qt_framework("QtCore")
         self.copy_qt_framework("QtGui")
         self.copy_qt_framework("QtOpenGL")
+        self.copy_qt_resources("QtGui")
 
     def copy_qt_framework(self, framework_name):
         framework_path = os.path.join(framework_name + ".framework", "Versions", "4")
@@ -326,6 +327,11 @@ class MacPackageBuilder(PackageBuilder):
         os.makedirs(dest_path)
         shutil.copy(src_filepath, dest_path)
 
+    def copy_qt_resources(self, framework_name):
+        framework_path = os.path.join(framework_name + ".framework", "Versions", "4")
+        src_filepath = os.path.join(self.settings.qt_runtime_path, framework_path, "Resources", "qt_menu.nib")
+        dest_path = os.path.join("appleseed", "bin", framework_name + ".framework", "Resources", "qt_menu.nib")
+        shutil.copytree(src_filepath, dest_path)
 
 #
 # Linux package builder.
