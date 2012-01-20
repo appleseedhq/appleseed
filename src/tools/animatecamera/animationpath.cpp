@@ -97,7 +97,12 @@ bool AnimationPath::load(const char* filename, const Format format)
     }
 
     char header[1000];
-    fgets(header, sizeof(header), file);
+
+    if (fgets(header, sizeof(header), file) == 0)
+    {
+        LOG_ERROR(m_logger, "could not read animation path file %s.", filename);
+        return false;
+    }
 
     if (strcmp(header, "frame pos_x pos_y pos_z rot_x rot_y rot_z rot_w\n"))
     {
