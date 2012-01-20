@@ -272,9 +272,11 @@ BENCHMARK_SUITE(Foundation_Math_Knn_Query)
 
         void run_queries()
         {
+            const size_t query_point_count = m_query_points.size();
+
             knn::Query3f query(m_tree, m_answer);
 
-            for (size_t i = 0; i < QueryCount; ++i)
+            for (size_t i = 0; i < query_point_count; ++i)
             {
                 query.run(
                     m_query_points[i]
