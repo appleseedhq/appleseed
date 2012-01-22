@@ -28,10 +28,10 @@
 
 
 #--------------------------------------------------------------------------------------------------
-# gcc 4.x.x on Linux, generating 64-bit binaries.
+# gcc 4.x.x on Mac OS X, generating 32-bit or 64-bit binaries.
 #--------------------------------------------------------------------------------------------------
 
-set (platform "linux64.gcc4")
+set (platform "mac-gcc4")
 
 
 #--------------------------------------------------------------------------------------------------
@@ -59,7 +59,7 @@ set (preprocessor_definitions_release
 
 
 #--------------------------------------------------------------------------------------------------
-# Compilation/Linking Flags.
+# Compilation/linking flags.
 #--------------------------------------------------------------------------------------------------
 
 # All configurations.
@@ -68,6 +68,7 @@ set (compiler_flags_common
 )
 set (exe_linker_flags_common
     -Werror                                 # Treat Warnings As Errors
+    -bind_at_load
 )
 set (shared_lib_linker_flags_common
     -Werror                                 # Treat Warnings As Errors
@@ -90,9 +91,8 @@ set (compiler_flags_release
 #--------------------------------------------------------------------------------------------------
 
 macro (link_against_platform target)
-    target_link_libraries (${target}
-        -lpthread
-        -licuuc
+    set_target_properties (${target} PROPERTIES
+        LINK_FLAGS "-framework Cocoa -lcurl"
     )
 endmacro ()
 

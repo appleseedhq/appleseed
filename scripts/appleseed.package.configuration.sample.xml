@@ -3,12 +3,10 @@
     <!-- The name of the configuration. Binary files will be taken from sandbox/bin/<configuration>/. -->
     <configuration>Ship</configuration>
 
-    <!-- The ID of the target platform, i.e. the name of the subdirectory in build/.
-         Note: use a dot to separate the OS identifier from the compiler identifier. -->
-    <platform_id>win32.vs100</platform_id>
+    <!-- The ID of the target platform, i.e. the name of the subdirectory in build/. -->
+    <platform_id>win32-vs100</platform_id>
 
-    <!-- The name of the target platform. May differ from the platform ID to indicate a 64-bit variant, for instance.
-         Note: use a dash to separate the OS identifier from the compiler identifier. -->
+    <!-- The name of the target platform. May differ from the platform ID, e.g. to indicate if the build is a 32-bit or 64-bit variant. -->
     <platform_name>win32-vs100</platform_name>
 
     <!-- The path to the appleseed installation where binaries files will be taken from. -->
