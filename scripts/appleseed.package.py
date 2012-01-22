@@ -28,7 +28,7 @@
 #
 
 # Package builder settings.
-VersionString = "1.6"
+VersionString = "1.7"
 SettingsFileName = "appleseed.package.configuration.xml"
 
 # Imports.
@@ -106,7 +106,8 @@ class Settings:
 
     def load_values(self, tree):
         self.configuration = tree.findtext("configuration")
-        self.platform = tree.findtext("platform")
+        self.platform_id = tree.findtext("platform_id")
+        self.platform_name = tree.findtext("platform_name")
         self.appleseed_path = tree.findtext("appleseed_path")
         self.qt_runtime_path = tree.findtext("qt_runtime_path")
         self.platform_runtime_path = tree.findtext("platform_runtime_path")
@@ -115,7 +116,8 @@ class Settings:
     def print_summary(self):
         print
         print "  Configuration:             " + self.configuration
-        print "  Platform:                  " + self.platform + " (Python says " + os.name + ")"
+        print "  Platform ID:               " + self.platform_id + " (Python says " + os.name + ")"
+        print "  Platform Name:             " + self.platform_name
         print "  Path to appleseed:         " + self.appleseed_path
         print "  Path to Qt runtime:        " + self.qt_runtime_path
         print "  Path to platform runtime:  " + self.platform_runtime_path
@@ -143,7 +145,7 @@ class PackageInfo:
         os.chdir(current_path)
 
     def build_package_path(self):
-        package_name = "appleseed-" + self.version + "-" + self.settings.platform + ".zip"
+        package_name = "appleseed-" + self.version + "-" + self.settings.platform_name + ".zip"
         self.package_path = os.path.join(self.settings.package_output_path, self.version, package_name)
 
     def print_summary(self):
@@ -274,7 +276,7 @@ class WindowsPackageBuilder(PackageBuilder):
 class MacPackageBuilder(PackageBuilder):
     def __init__(self, settings, package_info):
         PackageBuilder.__init__(self, settings, package_info)
-        platform_dir = self.settings.platform.replace("-", ".")
+        platform_dir = self.settings.platform_id.replace("-", ".")
         self.build_path = os.path.join(os.path.join(self.settings.appleseed_path, "build/"), platform_dir)
 
     def alterate_stage(self):
@@ -308,6 +310,7 @@ class MacPackageBuilder(PackageBuilder):
         self.fixup(target, '-id @"' + target + '"')
 
     def fixup_change(self, target, old, new):
+        progress("Mac-specific fixup: changing {0} to {1}".format(old, new))
         self.fixup(target, '-change "' + old + '" "' + new + '"')
 
     def fixup(self, target, args):

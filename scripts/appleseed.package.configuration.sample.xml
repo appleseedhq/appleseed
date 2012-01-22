@@ -1,9 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
+    <!-- The name of the configuration. Binary files will be taken from sandbox/bin/<configuration>/. -->
     <configuration>Ship</configuration>
-    <platform>win32-vs100</platform>
+
+    <!-- The ID of the target platform, i.e. the name of the subdirectory in build/.
+         Note: use a dot to separate the OS identifier from the compiler identifier. -->
+    <platform_id>win32.vs100</platform_id>
+
+    <!-- The name of the target platform. May differ from the platform ID to indicate a 64-bit variant, for instance.
+         Note: use a dash to separate the OS identifier from the compiler identifier. -->
+    <platform_name>win32-vs100</platform_name>
+
+    <!-- The path to the appleseed installation where binaries files will be taken from. -->
     <appleseed_path>C:\appleseed</appleseed_path>
+
+    <!-- The directory inside which the final archive file will be created. -->
     <package_output_path>C:\appleseed\archives\releases</package_output_path>
+
+    <!-- The path to the Qt shared libraries. -->
     <qt_runtime_path>C:\Qt\2010.05\qt\lib</qt_runtime_path>
+
+    <!-- The path to the platform runtime files (Windows only). -->
     <platform_runtime_path>C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\redist\x86\Microsoft.VC100.CRT</platform_runtime_path>
 </configuration>
