@@ -44,7 +44,7 @@ bl_info = {
     "name": "appleseed project format",
     "description": "Exports a scene to the appleseed project file format.",
     "author": "Franz Beaune",
-    "version": (1, 1, 2),
+    "version": (1, 1, 3),
     "blender": (2, 5, 8),   # we really need Blender 2.58 or newer
     "api": 36339,
     "location": "File > Export",
@@ -604,7 +604,8 @@ class AppleseedExportOperator(bpy.types.Operator):
     def __emit_object_instance_element(self, object_name, instance_name, instance_matrix, material_name):
         self.__open_element('object_instance name="{0}" object="{1}"'.format(instance_name, object_name))
         self.__emit_transform_element(instance_matrix)
-        self.__emit_line('<assign_material slot="0" material="{0}" />'.format(material_name))
+        self.__emit_line('<assign_material slot="0" side="front" material="{0}" />'.format(material_name))
+        self.__emit_line('<assign_material slot="0" side="back" material="{0}" />'.format(material_name))
         self.__close_element("object_instance")
 
     #
