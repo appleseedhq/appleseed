@@ -405,6 +405,36 @@ QDockWidget::close-button:hover
     background-color: HOVER_BACKGROUND_COLOR;
 }
 
+#ifdef __APPLE__
+
+QDockWidget
+{
+    icon-size: 20px;
+}
+
+QDockWidget::close-button,
+QDockWidget::float-button
+{
+    subcontrol-position: left;
+}
+
+QDockWidget::close-button
+{
+    left: 3px;
+}
+
+QDockWidget::float-button
+{
+    left: 20px;
+}
+
+QDockWidget::title
+{
+    padding-left: 45px;
+}
+
+#endif
+
 
 /*
  * QTabWidget.
