@@ -49,6 +49,7 @@
                     </matrix>
                 </transform>
                 <assign_material slot="0" side="front" material="smoke_material" />
+                <assign_material slot="0" side="back" material="smoke_material" />
             </object_instance>
         </assembly>
         <assembly_instance name="assembly_inst" assembly="assembly">
