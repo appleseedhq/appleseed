@@ -28,7 +28,7 @@
 #
 
 # Package builder settings.
-VersionString = "1.7"
+VersionString = "1.8"
 SettingsFileName = "appleseed.package.configuration.xml"
 
 # Imports.
@@ -276,8 +276,7 @@ class WindowsPackageBuilder(PackageBuilder):
 class MacPackageBuilder(PackageBuilder):
     def __init__(self, settings, package_info):
         PackageBuilder.__init__(self, settings, package_info)
-        platform_dir = self.settings.platform_id.replace("-", ".")
-        self.build_path = os.path.join(os.path.join(self.settings.appleseed_path, "build/"), platform_dir)
+        self.build_path = os.path.join(os.path.join(self.settings.appleseed_path, "build/"), self.settings.platform_id)
 
     def alterate_stage(self):
         self.fixup_binaries()
