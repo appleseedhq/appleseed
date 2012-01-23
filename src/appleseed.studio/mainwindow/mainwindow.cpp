@@ -951,11 +951,11 @@ void MainWindow::slot_clear_filter()
 
 void MainWindow::slot_render_widget_context_menu(const QPoint& point)
 {
+    if (m_rendering_manager.is_rendering())
+        return;
+
     QMenu* menu = new QMenu(this);
-
-    menu->addAction("Save Frame As...", this, SLOT(slot_save_frame()))
-        ->setEnabled(!m_rendering_manager.is_rendering());
-
+    menu->addAction("Save Frame As...", this, SLOT(slot_save_frame()));
     menu->exec(reinterpret_cast<QWidget*>(sender())->mapToGlobal(point));
 }
 
