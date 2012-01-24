@@ -307,6 +307,8 @@ void RenderingManager::slot_frame_begin()
 void RenderingManager::slot_frame_end()
 {
     m_status_bar.stop_rendering_time_display();
+
+    m_render_widget->update();
 }
 
 void RenderingManager::slot_clear_shading_override()
