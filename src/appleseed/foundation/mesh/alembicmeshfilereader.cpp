@@ -90,7 +90,7 @@ namespace
             if (mesh_sample.getPositions()->size() < 3)
                 return;
 
-            m_mesh_builder.begin_mesh(mesh_schema.getName());
+            m_mesh_builder.begin_mesh(mesh.getName());
 
             read_vertices(mesh_sample);
             read_vertex_normals(mesh_schema);
