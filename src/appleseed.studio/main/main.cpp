@@ -42,6 +42,7 @@
 
 // Qt headers.
 #include <QApplication>
+#include <QLocale>
 #include <QMessageBox>
 #include <QString>
 #include <QTextStream>
@@ -53,6 +54,7 @@
 // Standard headers.
 #include <cstdlib>
 #include <fstream>
+#include <locale>
 #include <sstream>
 #include <string>
 
@@ -213,11 +215,14 @@ int main(int argc, char *argv[])
     start_memory_tracking();
 
     QApplication application(argc, argv);
-
     QApplication::setOrganizationName("appleseedhq");
     QApplication::setOrganizationDomain("appleseedhq.net");
     QApplication::setApplicationName("appleseed.studio");
     QApplication::setApplicationVersion(Appleseed::get_lib_version());
+
+    // The locale must be set after the construction of QApplication.
+    QLocale::setDefault(QLocale::C);
+    setlocale(LC_ALL, "C");
 
     check_installation();
 
