@@ -63,10 +63,8 @@ void DefaultRendererController::on_frame_end()
 
 DefaultRendererController::Status DefaultRendererController::on_progress()
 {
-    const uint32 PollRate = 10;    // hertz
-
-    // The namespace qualifier is necessary for disambiguation.
-    foundation::sleep(1000 / PollRate);
+    const uint32 PollRate = 250;            // hertz
+    foundation::sleep(1000 / PollRate);     // namespace qualifer required
 
     return ContinueRendering;
 }
