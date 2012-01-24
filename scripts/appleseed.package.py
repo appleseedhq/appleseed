@@ -6,7 +6,7 @@
 #
 # This software is released under the MIT license.
 #
-# Copyright (c) 2010-2011 Francois Beaune
+# Copyright (c) 2010-2012 Francois Beaune
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@
 #
 
 # Package builder settings.
-VersionString = "1.7"
+VersionString = "1.9"
 SettingsFileName = "appleseed.package.configuration.xml"
 
 # Imports.
@@ -276,8 +276,7 @@ class WindowsPackageBuilder(PackageBuilder):
 class MacPackageBuilder(PackageBuilder):
     def __init__(self, settings, package_info):
         PackageBuilder.__init__(self, settings, package_info)
-        platform_dir = self.settings.platform_id.replace("-", ".")
-        self.build_path = os.path.join(os.path.join(self.settings.appleseed_path, "build/"), platform_dir)
+        self.build_path = os.path.join(self.settings.appleseed_path, "build", self.settings.platform_id)
 
     def alterate_stage(self):
         self.fixup_binaries()
@@ -320,14 +319,21 @@ class MacPackageBuilder(PackageBuilder):
         progress("Mac-specific: adding dependencies to staging directory")
         self.copy_qt_framework("QtCore")
         self.copy_qt_framework("QtGui")
+        self.copy_qt_resources("QtGui")
         self.copy_qt_framework("QtOpenGL")
 
     def copy_qt_framework(self, framework_name):
-        framework_path = os.path.join(framework_name + ".framework", "Versions", "4")
-        src_filepath = os.path.join(self.settings.qt_runtime_path, framework_path, framework_name)
-        dest_path = os.path.join("appleseed", "bin", framework_path)
-        os.makedirs(dest_path)
+        framework_dir = framework_name + ".framework"
+        src_filepath = os.path.join(self.settings.qt_runtime_path, framework_dir, "Versions", "4", framework_name)
+        dest_path = os.path.join("appleseed", "bin", framework_dir, "Versions", "4")
+        safe_make_directory(dest_path)
         shutil.copy(src_filepath, dest_path)
+
+    def copy_qt_resources(self, framework_name):
+        framework_dir = framework_name + ".framework"
+        src_path = os.path.join(self.settings.qt_runtime_path, framework_dir, "Versions", "4", "Resources")
+        dest_path = os.path.join("appleseed", "bin", framework_dir, "Resources")
+        shutil.copytree(src_path, dest_path)
 
 
 #

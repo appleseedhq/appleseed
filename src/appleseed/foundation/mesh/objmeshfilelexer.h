@@ -201,9 +201,6 @@ class OBJMeshFileLexer
     {
         assert(m_file.is_open());
 
-        if (is_eof())
-            parse_error();
-
         if (!is_eol())
             parse_error();
 
