@@ -341,16 +341,6 @@ TEST_SUITE(Foundation_Math_QMC)
         GenericImageFileWriter().write("unit tests/outputs/test_qmc_sampleimageplanewithhaltonsequence.png", image);
     }
 
-    double log(const double x, const double base)
-    {
-        return std::log(x) / std::log(base);
-    }
-
-    double next_power(const double x, const double base)
-    {
-        return pow(base, ceil(log(x, base)));
-    }
-
     TEST_CASE(SampleImagePlaneWithHaltonSequenceUniform)
     {
         //
@@ -363,8 +353,8 @@ TEST_SUITE(Foundation_Math_QMC)
         const size_t Height = 480;
         const size_t PixelCount = Width * Height;
 
-        const double NextWidth = next_power(Width, 2.0);
-        const double NextHeight = next_power(Height, 3.0);
+        const double NextWidth = next_power<double>(Width, 2.0);
+        const double NextHeight = next_power<double>(Height, 3.0);
 
         Image image(Width, Height, 32, 32, 3, PixelFormatFloat);
         image.clear(Color3f(0.0f));

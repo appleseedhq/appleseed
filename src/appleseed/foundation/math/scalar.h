@@ -125,6 +125,14 @@ T log2(T x);
 template <typename T>
 T factorial(T x);
 
+// Return the log in a given base of a given scalar.
+template <typename T>
+T log(const T x, const T base);
+
+// Return the next given power of a given scalar.
+template <typename T>
+T next_power(const T x, const T base);
+
 // Clamp the argument to [min, max].
 template <typename T>
 T clamp(const T x, const T min, const T max);
@@ -333,6 +341,18 @@ inline T factorial(T x)
     }
 
     return fac;
+}
+
+template <typename T>
+inline T log(const T x, const T base)
+{
+    return std::log(x) / std::log(base);
+}
+
+template <typename T>
+inline T next_power(const T x, const T base)
+{
+    return std::pow(base, std::ceil(log(x, base)));
 }
 
 template <typename T>
