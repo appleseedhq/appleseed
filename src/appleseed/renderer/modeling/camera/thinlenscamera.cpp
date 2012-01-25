@@ -37,7 +37,6 @@
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/exceptions/exceptionnotimplemented.h"
 #include "foundation/math/sampling.h"
 #include "foundation/math/transform.h"
 #include "foundation/utility/containers/specializedarrays.h"
@@ -203,8 +202,10 @@ namespace
 
         virtual Vector2d project(const Vector3d& point) const
         {
-            throw ExceptionNotImplemented();
-            return Vector2d(0.0);
+            const double k = -m_focal_length / point.z;
+            const double x = 0.5 + (point.x * k * m_rcp_film_width);
+            const double y = 0.5 - (point.y * k * m_rcp_film_height);
+            return Vector2d(x, y);
         }
 
       private:
