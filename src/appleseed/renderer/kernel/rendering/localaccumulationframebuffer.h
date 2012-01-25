@@ -39,7 +39,7 @@
 
 // Standard headers.
 #include <cstddef>
-#include <memory>
+#include <vector>
 
 // Forward declarations.
 namespace renderer      { class Frame; }
@@ -57,6 +57,9 @@ class LocalAccumulationFramebuffer
         const size_t    width,
         const size_t    height);
 
+    // Destructor.
+    ~LocalAccumulationFramebuffer();
+
     // Reset the framebuffer to its initial state. Thread-safe.
     virtual void clear();
 
@@ -72,16 +75,9 @@ class LocalAccumulationFramebuffer
         foundation::uint32              m_count;
     };
 
-    std::auto_ptr<foundation::Tile>     m_tile;
-
-    void add_pixel(
-        const size_t                    x,
-        const size_t                    y,
-        const foundation::Color4f&      color);
-
-    foundation::Color4f get_pixel(
-        const size_t                    x,
-        const size_t                    y) const;
+    std::vector<foundation::Tile*>      m_levels;
+    std::vector<size_t>                 m_set_pixels;
+    size_t                              m_current_level;
 
     virtual void develop_to_frame(Frame& frame) const;
 
@@ -92,36 +88,6 @@ class LocalAccumulationFramebuffer
         const size_t                    tile_x,
         const size_t                    tile_y) const;
 };
-
-
-//
-// LocalAccumulationFramebuffer class implementation.
-//
-
-inline void LocalAccumulationFramebuffer::add_pixel(
-    const size_t                        x,
-    const size_t                        y,
-    const foundation::Color4f&          color)
-{
-    AccumulationPixel* pixel =
-        reinterpret_cast<AccumulationPixel*>(m_tile->pixel(x, y));
-
-    pixel->m_color += color;
-    pixel->m_count += 1;
-}
-
-inline foundation::Color4f LocalAccumulationFramebuffer::get_pixel(
-    const size_t                        x,
-    const size_t                        y) const
-{
-    const AccumulationPixel* pixel =
-        reinterpret_cast<const AccumulationPixel*>(m_tile->pixel(x, y));
-
-    return
-        pixel->m_count > 0
-            ? pixel->m_color / static_cast<float>(pixel->m_count)
-            : foundation::Color4f(0.0f);
-}
 
 }       // namespace renderer
 

@@ -51,9 +51,9 @@ namespace renderer
 namespace
 {
     const size_t MinSampleCount     = 1024 * 4;     // minimum number of samples in one pass
-    const size_t MaxSampleCount     = 1024 * 128;   // maximum number of samples in one pass
-    const size_t MinSamplePassCount = 6;            // number of passes that will stick to the minimum number of samples
-    const size_t SampleIncrement    = 1024 * 8;     // number of samples added at each pass
+    const size_t MaxSampleCount     = 1024 * 256;   // maximum number of samples in one pass
+    const size_t MinSamplePassCount = 1;            // number of passes that will stick to the minimum number of samples
+    const size_t SampleIncrement    = 1024 * 4;     // number of samples added at each pass
     const bool RoundRobinRender     = false;        // enable/disable Round Robin rendering
 
     size_t compute_sample_count(const size_t pass)
@@ -107,10 +107,21 @@ void SampleGeneratorJob::execute(const size_t thread_index)
             m_framebuffer.get_height());
     }
 
-    m_sample_generator->generate_samples(
-        sample_count,
-        m_framebuffer,
-        m_abort_switch);
+    if (m_pass == 0)
+    {
+        AbortSwitch no_abort;
+        m_sample_generator->generate_samples(
+            sample_count,
+            m_framebuffer,
+            no_abort);
+    }
+    else
+    {
+        m_sample_generator->generate_samples(
+            sample_count,
+            m_framebuffer,
+            m_abort_switch);
+    }
 
     if (!RoundRobinRender || m_pass % m_job_count == m_job_index)
         m_framebuffer.render_to_frame(m_frame);

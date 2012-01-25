@@ -106,6 +106,11 @@ inline foundation::uint64 AccumulationFramebuffer::get_sample_count() const
     return m_sample_count;
 }
 
+inline void AccumulationFramebuffer::clear_no_lock()
+{
+    m_sample_count = 0;
+}
+
 }       // namespace renderer
 
 #endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_ACCUMULATIONFRAMEBUFFER_H

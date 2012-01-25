@@ -50,9 +50,4 @@ void AccumulationFramebuffer::render_to_frame(Frame& frame)
     develop_to_frame(frame);
 }
 
-void AccumulationFramebuffer::clear_no_lock()
-{
-    m_sample_count = 0;
-}
-
 }   // namespace renderer
