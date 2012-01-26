@@ -34,6 +34,7 @@
 #include "foundation/math/voxel/voxel_node.h"
 #include "foundation/math/split.h"
 #include "foundation/math/aabb.h"
+#include "foundation/utility/bufferedfile.h"
 
 // Standard headers.
 #include <cstddef>
@@ -199,34 +200,26 @@ template <typename T, size_t N>
 bool Tree<T, N>::dump_tree_to_disk(const std::string& filename) const
 {
     // Open the file for writing.
-    // todo: switch to use foundation::BufferedFile.
-    std::FILE* file = std::fopen(filename.c_str(), "wb");
-    if (file == 0)
+    BufferedFile file(
+        filename.c_str(),
+        BufferedFile::BinaryType,
+        BufferedFile::WriteMode);
+    if (!file.is_open())
         return false;
 
     // Write the bounding box of the tree.
-    std::fwrite(&m_bbox.min.x, sizeof(m_bbox.min.x), 1, file);
-    std::fwrite(&m_bbox.min.y, sizeof(m_bbox.min.y), 1, file);
-    std::fwrite(&m_bbox.min.z, sizeof(m_bbox.min.z), 1, file);
-    std::fwrite(&m_bbox.max.x, sizeof(m_bbox.max.x), 1, file);
-    std::fwrite(&m_bbox.max.y, sizeof(m_bbox.max.y), 1, file);
-    std::fwrite(&m_bbox.max.z, sizeof(m_bbox.max.z), 1, file);
+    file.write(m_bbox.min);
+    file.write(m_bbox.max);
 
     // Write the nodes.
     const size_t node_count = m_nodes.size();
-    std::fwrite(&node_count, sizeof(node_count), 1, file);
+    file.write(node_count);
     for (size_t i = 0; i < node_count; ++i)
     {
         const NodeType& node = m_nodes[i];
-        std::fwrite(&node.m_info, sizeof(node.m_info), 1, file);
-        std::fwrite(&node.m_abscissa, sizeof(node.m_abscissa), 1, file);
+        file.write(node.m_info);
+        file.write(node.m_abscissa);
     }
-
-    if (std::ferror(file))
-        return false;
-
-    // Close the file.
-    std::fclose(file);
 
     return true;
 }
