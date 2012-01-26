@@ -137,14 +137,12 @@ class Tree
 // Tree class implementation.
 //
 
-// Constructor.
 template <typename T, size_t N>
 Tree<T, N>::Tree()
 {
     clear();
 }
 
-// Clear the tree.
 template <typename T, size_t N>
 void Tree<T, N>::clear()
 {
@@ -153,21 +151,18 @@ void Tree<T, N>::clear()
     m_max_diag = ValueType(0.0);
 }
 
-// Return the bounding box of the tree.
 template <typename T, size_t N>
 inline const AABB<T, N>& Tree<T, N>::get_bbox() const
 {
     return m_bbox;
 }
 
-// Return the maximum leaf node diagonal length.
 template <typename T, size_t N>
 inline T Tree<T, N>::get_max_diag_length() const
 {
     return m_max_diag;
 }
 
-// Return the size (in bytes) of this object in memory.
 template <typename T, size_t N>
 size_t Tree<T, N>::get_memory_size() const
 {
@@ -176,7 +171,6 @@ size_t Tree<T, N>::get_memory_size() const
     return mem_size;
 }
 
-// Dump all solid leaves of the tree to disk, as an .obj mesh file.
 template <typename T, size_t N>
 bool Tree<T, N>::dump_solid_leaves_to_disk(const std::string& filename) const
 {
@@ -201,7 +195,6 @@ bool Tree<T, N>::dump_solid_leaves_to_disk(const std::string& filename) const
     return result;
 }
 
-// Dump the entire tree to disk, in proprietary binary format.
 template <typename T, size_t N>
 bool Tree<T, N>::dump_tree_to_disk(const std::string& filename) const
 {
@@ -238,7 +231,6 @@ bool Tree<T, N>::dump_tree_to_disk(const std::string& filename) const
     return true;
 }
 
-// Write a vertex definition to a file.
 template <typename T, size_t N>
 size_t Tree<T, N>::dump_vertex(
     const double    x,
@@ -249,7 +241,6 @@ size_t Tree<T, N>::dump_vertex(
     return std::fprintf(file, "v %f %f %f\n", x, y, z) < 0 ? 0 : 1;
 }
 
-// Write a face definition to a file.
 template <typename T, size_t N>
 size_t Tree<T, N>::dump_face(
     const size_t    base,
@@ -269,7 +260,6 @@ size_t Tree<T, N>::dump_face(
             base + v3) < 0 ? 0 : 1;
 }
 
-// Recursively write solid leaves to a file
 template <typename T, size_t N>
 bool Tree<T, N>::dump_recurse(
     const size_t        node_index,

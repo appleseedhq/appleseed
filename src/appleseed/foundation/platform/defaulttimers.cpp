@@ -52,7 +52,6 @@ namespace foundation
 // DefaultProcessorTimer class implementation.
 //
 
-// Constructor.
 DefaultProcessorTimer::DefaultProcessorTimer()
 {
 // Windows.
@@ -65,7 +64,6 @@ DefaultProcessorTimer::DefaultProcessorTimer()
 #endif
 }
 
-// Get the timer frequency, in Hz.
 uint64 DefaultProcessorTimer::frequency()
 {
 // Windows.
@@ -90,7 +88,6 @@ uint64 DefaultProcessorTimer::frequency()
 #endif
 }
 
-// Read the timer value.
 uint64 DefaultProcessorTimer::read()
 {
 // Windows.
@@ -120,7 +117,6 @@ uint64 DefaultProcessorTimer::read()
 // DefaultWallclockTimer class implementation.
 //
 
-// Get the timer frequency, in Hz.
 uint64 DefaultWallclockTimer::frequency()
 {
 // POSIX platforms.
@@ -141,7 +137,6 @@ uint64 DefaultWallclockTimer::frequency()
 #endif
 }
 
-// Read the timer value.
 uint64 DefaultWallclockTimer::read()
 {
 // POSIX platforms.
