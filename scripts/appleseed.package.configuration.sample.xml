@@ -3,10 +3,15 @@
     <!-- The name of the configuration. Binary files will be taken from sandbox/bin/<configuration>/. -->
     <configuration>Ship</configuration>
 
-    <!-- The ID of the target platform, i.e. the name of the subdirectory in build/. -->
+    <!-- The ID of the target platform, i.e. the name of the subdirectory in build/.
+         Valid values for this parameter are: linux-gcc4, mac-gcc4 and win32-vs100.
+         For the definitive list of accepted values, see the name of the configuration
+         files in src/cmake/config/. -->
     <platform_id>win32-vs100</platform_id>
 
-    <!-- The name of the target platform. May differ from the platform ID, e.g. to indicate if the build is a 32-bit or 64-bit variant. -->
+    <!-- The name of the target platform. May differ from the platform ID, e.g. to indicate
+         if the build is a 32-bit or 64-bit variant. This parameter is only used to name
+         the final archive file. -->
     <platform_name>win32-vs100</platform_name>
 
     <!-- The path to the appleseed installation where binaries files will be taken from. -->
