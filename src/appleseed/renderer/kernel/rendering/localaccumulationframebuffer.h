@@ -77,7 +77,7 @@ class LocalAccumulationFramebuffer
 
     std::vector<foundation::Tile*>      m_levels;
     std::vector<size_t>                 m_set_pixels;
-    size_t                              m_current_level;
+    size_t                              m_active_level;
 
     virtual void develop_to_frame(Frame& frame) const;
 

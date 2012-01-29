@@ -58,19 +58,15 @@ namespace renderer
 // The algorithm for progressive display deserves some explanations.  Here is how it works:
 //
 //   When the accumulation framebuffer is constructed, we create a "pyramid" of framebuffers
-//   of decreasing resolution, much like a mipmap pyramid.  Each level of this pyramid is half
-//   the resolution of its previous one.  We actually don't go down all the way to the 1x1
-//   pixel level, but we stop when we reach what we consider to be a coarse enough resolution.
+//   of decreasing resolution, much like a mipmap pyramid: each level of this pyramid is half
+//   the resolution of the previous one.  We actually don't go down all the way to the 1x1
+//   level, instead we stop when we reach what we consider to be a coarse enough resolution.
 //
 //   At render-time, the store_samples() method pushes the individual samples through this
-//   pyramid.  Samples are stored starting at the highest resolution level, and up to what
-//   we call the "current level": the current level is the coarsest level of the pyramid that
-//   is not completely full.  A level is considered full when all its pixels have been set at
-//   least once.  While pushing samples through the pyramid, we might fill up the current level;
-//   in that case, its immediate (higher resolution) parent becomes the new current level.
-//
-//   When developing the accumulation framebuffer to a frame, we just draw the finest level
-//   that is completely full.
+//   pyramid.  Samples are stored starting at the highest resolution level and up to what
+//   we call the "active level", that is, the coarsest level of the pyramid that we're still
+//   pushing samples to and the level that is displayed.  As soon as a level has been filled
+//   up (i.e. all its pixels contain at least one sample), it becomes the new active level.
 //
 
 // If defined, draw each pixel with a shade of gray proportional to the number of samples it contains.
@@ -136,7 +132,7 @@ void LocalAccumulationFramebuffer::clear()
         m_set_pixels[level_index] = 0;
     }
 
-    m_current_level = m_levels.size() - 1;
+    m_active_level = m_levels.size() - 1;
 }
 
 void LocalAccumulationFramebuffer::store_samples(
@@ -148,7 +144,7 @@ void LocalAccumulationFramebuffer::store_samples(
     const Sample* RESTRICT sample_ptr = samples;
     const Sample* RESTRICT sample_end = samples + sample_count;
 
-    if (m_current_level == 0)
+    if (m_active_level == 0)
     {
         Tile* level = m_levels[0];
 
@@ -168,9 +164,6 @@ void LocalAccumulationFramebuffer::store_samples(
             pixel->m_color += sample_ptr->m_color;
             pixel->m_count += 1;
 
-            if (pixel->m_count == 1)
-                ++m_set_pixels[0];
-
             ++sample_ptr;
         }
     }
@@ -178,7 +171,7 @@ void LocalAccumulationFramebuffer::store_samples(
     {
         while (sample_ptr < sample_end)
         {
-            for (size_t level_index = 0; level_index <= m_current_level; ++level_index)
+            for (size_t level_index = 0; level_index <= m_active_level; ++level_index)
             {
                 Tile* level = m_levels[level_index];
 
@@ -197,7 +190,7 @@ void LocalAccumulationFramebuffer::store_samples(
                 {
                     if (++m_set_pixels[level_index] == level->get_pixel_count())
                     {
-                        --m_current_level;
+                        m_active_level = level_index;
                         break;
                     }
                 }
@@ -265,12 +258,7 @@ void LocalAccumulationFramebuffer::develop_to_tile(
 
 #else
 
-    const size_t display_level_index =
-        m_current_level > 0 || m_set_pixels[0] < m_pixel_count
-            ? min(m_current_level + 1, m_levels.size() - 1)
-            : 0;
-
-    const Tile* level = m_levels[display_level_index];
+    const Tile* level = m_levels[m_active_level];
 
     for (size_t y = 0; y < tile_height; ++y)
     {
