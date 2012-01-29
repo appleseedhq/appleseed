@@ -251,7 +251,6 @@ typedef foundation::bsp::Intersector<
 // TriangleLeafVisitor class implementation.
 //
 
-// Constructor.
 inline TriangleLeafVisitor::TriangleLeafVisitor(ShadingPoint& shading_point)
   : m_shading_point(shading_point)
   , m_triangle_ptr(0)
