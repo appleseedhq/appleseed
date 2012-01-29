@@ -239,6 +239,10 @@
                 <parameter name="min_samples" value="16" />
             </parameters>
         </configuration>
-        <configuration name="interactive" base="base_interactive" />
+        <configuration name="interactive" base="base_interactive">
+            <parameters name="progressive_frame_renderer">
+                <parameter name="reference_image" value="cornell box.ref.exr" />
+            </parameters>
+        </configuration>
     </configurations>
 </project>
