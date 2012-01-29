@@ -186,6 +186,11 @@ namespace
           , m_pixel_sampler(m_frame_props.m_canvas_width, m_frame_props.m_canvas_height)
           , m_image_sampler(m_frame_props.m_canvas_width, m_frame_props.m_canvas_height, m_pixel_sampler)
           , m_sample_count(0)
+#else
+          , m_frame_width_next_pow2(next_power<double>(m_frame_props.m_canvas_width, 2))
+          , m_frame_height_next_pow3(next_power<double>(m_frame_props.m_canvas_height, 3))
+          , m_scale_x(m_frame_width_next_pow2 / m_frame_props.m_canvas_width)
+          , m_scale_y(m_frame_height_next_pow3 / m_frame_props.m_canvas_height)
 #endif
         {
         }
@@ -228,6 +233,11 @@ namespace
         PixelSampler                        m_pixel_sampler;
         ImageImportanceSampler<double>      m_image_sampler;
         size_t                              m_sample_count;
+#else
+        const double                        m_frame_width_next_pow2;
+        const double                        m_frame_height_next_pow3;
+        const double                        m_scale_x;
+        const double                        m_scale_y;
 #endif
 
         Population<size_t>                  m_total_sampling_dim;
@@ -267,8 +277,18 @@ namespace
 
             // Compute the sample position in NDC.
             const size_t Bases[2] = { 2, 3 };
-            const Vector2d sample_position =
-                halton_sequence<double, 2>(Bases, sequence_index);
+            const Vector2d s = halton_sequence<double, 2>(Bases, sequence_index);
+
+            // Compute the coordinates of the pixel in the larger frame.
+            const size_t x = truncate<size_t>(s[0] * m_frame_width_next_pow2);
+            const size_t y = truncate<size_t>(s[1] * m_frame_height_next_pow3);
+
+            // Reject samples that fall outside the actual frame.
+            if (x >= m_frame_props.m_canvas_width || y >= m_frame_props.m_canvas_height)
+                return 0;
+
+            // Transform back the pixel coordinates to NDC.
+            const Vector2d sample_position(s[0] * m_scale_x, s[1] * m_scale_y);
 
             // Create a sampling context. We start with an initial dimension of 2,
             // corresponding to the Halton sequence used for the sample positions.
