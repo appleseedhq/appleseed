@@ -111,7 +111,7 @@ class TriangleTreeFactory
     virtual std::auto_ptr<TriangleTree> create();
 
   private:
-    TriangleTree::Arguments m_arguments;
+    const TriangleTree::Arguments       m_arguments;
 };
 
 
