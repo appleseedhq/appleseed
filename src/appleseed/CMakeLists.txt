@@ -966,6 +966,7 @@ set (renderer_meta_tests_sources
     renderer/meta/tests/test_entitymap.cpp
     renderer/meta/tests/test_entityvector.cpp
     renderer/meta/tests/test_environmentedf.cpp
+    renderer/meta/tests/test_ewa.cpp
     renderer/meta/tests/test_frame.cpp
     renderer/meta/tests/test_imagebasedlighting.cpp
     renderer/meta/tests/test_imageimportancesampler.cpp
