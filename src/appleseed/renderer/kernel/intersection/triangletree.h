@@ -137,56 +137,6 @@ typedef foundation::AccessCacheMap<
 
 
 //
-// Utility class to load a triangle from a given memory address,
-// converting the triangle to the desired precision if necessary,
-// but avoiding any work (in particular, no copy) if the triangle
-// is stored with the desired precision and can be used in-place.
-//
-
-namespace impl
-{
-    template <bool CompatibleTypes>
-    struct TriangleGeometryReader;
-
-    // The triangle is stored with a different precision than the
-    // required one, perform a conversion.
-    template <>
-    struct TriangleGeometryReader<false>
-    {
-        const TriangleType m_triangle;
-
-        explicit TriangleGeometryReader(const GTriangleType& triangle)
-          : m_triangle(triangle)
-        {
-        }
-        explicit TriangleGeometryReader(const foundation::uint32* ptr)
-          : m_triangle(*reinterpret_cast<const GTriangleType*>(ptr))
-        {
-        }
-    };
-
-    // The triangle is stored with the same precision as required,
-    // use it directly, without any conversion or copy.
-    template <>
-    struct TriangleGeometryReader<true>
-    {
-        const TriangleType& m_triangle;
-
-        explicit TriangleGeometryReader(const TriangleType& triangle)
-          : m_triangle(triangle)
-        {
-        }
-        explicit TriangleGeometryReader(const foundation::uint32* ptr)
-          : m_triangle(*reinterpret_cast<const TriangleType*>(ptr))
-        {
-        }
-    };
-}
-
-typedef impl::TriangleGeometryReader<sizeof(GScalar) == sizeof(double)> TriangleGeometryReader;
-
-
-//
 // Triangle leaf visitor, used during tree intersection.
 //
 
