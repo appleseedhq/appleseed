@@ -515,7 +515,6 @@ double RegionLeafVisitor::visit(
             , m_triangle_bsp_stats
 #endif
             );
-        visitor.read_hit_triangle_data();
     }
 
     // Return the distance to the closest intersection so far.

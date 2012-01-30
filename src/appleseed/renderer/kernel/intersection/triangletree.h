@@ -30,19 +30,23 @@
 #define APPLESEED_RENDERER_KERNEL_INTERSECTION_TRIANGLETREE_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/intersection/intersectionsettings.h"
 #include "renderer/kernel/intersection/probevisitorbase.h"
 #include "renderer/kernel/intersection/regioninfo.h"
 #include "renderer/kernel/shading/shadingray.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/bsp.h"
+#include "foundation/core/concepts/noncopyable.h"
+#include "foundation/math/bvh.h"
 #include "foundation/utility/lazy.h"
 #include "foundation/utility/poolallocator.h"
+#include "foundation/utility/uid.h"
 
 // Standard headers.
+#include <cstddef>
 #include <map>
+#include <memory>
 #include <vector>
 
 // Forward declarations.
@@ -53,10 +57,14 @@ namespace renderer
 {
 
 //
-// Leaf of a triangle tree.
+// A triangle in the BVH.
 //
 
-typedef foundation::uint32 TriangleLeaf;
+struct BVHTriangle
+{
+    size_t  m_triangle_index;
+    size_t  m_v0, m_v1, m_v2;
+};
 
 
 //
@@ -64,7 +72,7 @@ typedef foundation::uint32 TriangleLeaf;
 //
 
 class TriangleTree
-  : public foundation::bsp::Tree<GScalar, 3, TriangleLeaf>
+  : public foundation::bvh::Tree<GScalar, 3, BVHTriangle>
 {
   public:
     // Construction arguments.
@@ -91,7 +99,6 @@ class TriangleTree
 
   private:
     const foundation::UniqueID          m_triangle_tree_uid;
-    std::vector<foundation::uint32*>    m_leaf_page_array;
 };
 
 
@@ -105,7 +112,7 @@ class TriangleTreeFactory
   public:
     // Constructor.
     explicit TriangleTreeFactory(
-        const TriangleTree::Arguments& arguments);
+        const TriangleTree::Arguments&  arguments);
 
     // Create the triangle tree.
     virtual std::auto_ptr<TriangleTree> create();
@@ -137,56 +144,6 @@ typedef foundation::AccessCacheMap<
 
 
 //
-// Utility class to load a triangle from a given memory address,
-// converting the triangle to the desired precision if necessary,
-// but avoiding any work (in particular, no copy) if the triangle
-// is stored with the desired precision and can be used in-place.
-//
-
-namespace impl
-{
-    template <bool CompatibleTypes>
-    struct TriangleGeometryReader;
-
-    // The triangle is stored with a different precision than the
-    // required one, perform a conversion.
-    template <>
-    struct TriangleGeometryReader<false>
-    {
-        const TriangleType m_triangle;
-
-        explicit TriangleGeometryReader(const GTriangleType& triangle)
-          : m_triangle(triangle)
-        {
-        }
-        explicit TriangleGeometryReader(const foundation::uint32* ptr)
-          : m_triangle(*reinterpret_cast<const GTriangleType*>(ptr))
-        {
-        }
-    };
-
-    // The triangle is stored with the same precision as required,
-    // use it directly, without any conversion or copy.
-    template <>
-    struct TriangleGeometryReader<true>
-    {
-        const TriangleType& m_triangle;
-
-        explicit TriangleGeometryReader(const TriangleType& triangle)
-          : m_triangle(triangle)
-        {
-        }
-        explicit TriangleGeometryReader(const foundation::uint32* ptr)
-          : m_triangle(*reinterpret_cast<const TriangleType*>(ptr))
-        {
-        }
-    };
-}
-
-typedef impl::TriangleGeometryReader<sizeof(GScalar) == sizeof(double)> TriangleGeometryReader;
-
-
-//
 // Triangle leaf visitor, used during tree intersection.
 //
 
@@ -198,18 +155,19 @@ class TriangleLeafVisitor
     explicit TriangleLeafVisitor(ShadingPoint& shading_point);
 
     // Visit a leaf.
-    double visit(
-        const TriangleLeaf*             leaf,
+    bool visit(
+        const std::vector<BVHTriangle>& items,
+        const std::vector<GAABB3>&      bboxes,
+        const size_t                    begin,
+        const size_t                    end,
         const ShadingRay::RayType&      ray,
-        const ShadingRay::RayInfoType&  ray_info);
-
-    // Read additional data about the triangle that was hit, if any.
-    void read_hit_triangle_data() const;
+        const ShadingRay::RayInfoType&  ray_info,
+        const double                    tmin,
+        const double                    tmax,
+        double&                         distance);
 
   private:
-    ShadingPoint&               m_shading_point;
-    const foundation::uint32*   m_triangle_ptr;
-    size_t                      m_cold_data_index;
+    ShadingPoint&                       m_shading_point;
 };
 
 
@@ -223,10 +181,16 @@ class TriangleLeafProbeVisitor
 {
   public:
     // Visit a leaf.
-    double visit(
-        const TriangleLeaf*             leaf,
+    bool visit(
+        const std::vector<BVHTriangle>& items,
+        const std::vector<GAABB3>&      bboxes,
+        const size_t                    begin,
+        const size_t                    end,
         const ShadingRay::RayType&      ray,
-        const ShadingRay::RayInfoType&  ray_info);
+        const ShadingRay::RayInfoType&  ray_info,
+        const double                    tmin,
+        const double                    tmax,
+        double&                         distance);
 };
 
 
@@ -234,13 +198,13 @@ class TriangleLeafProbeVisitor
 // Triangle tree intersectors.
 //
 
-typedef foundation::bsp::Intersector<
+typedef foundation::bvh::Intersector<
     double,
     TriangleTree,
     TriangleLeafVisitor
 > TriangleLeafIntersector;
 
-typedef foundation::bsp::Intersector<
+typedef foundation::bvh::Intersector<
     double,
     TriangleTree,
     TriangleLeafProbeVisitor
@@ -253,7 +217,6 @@ typedef foundation::bsp::Intersector<
 
 inline TriangleLeafVisitor::TriangleLeafVisitor(ShadingPoint& shading_point)
   : m_shading_point(shading_point)
-  , m_triangle_ptr(0)
 {
 }
 

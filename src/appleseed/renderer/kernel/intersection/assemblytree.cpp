@@ -552,7 +552,6 @@ bool AssemblyLeafVisitor::visit(
                 , m_triangle_bsp_stats
 #endif
                 );
-            visitor.read_hit_triangle_data();
         }
     }
 
