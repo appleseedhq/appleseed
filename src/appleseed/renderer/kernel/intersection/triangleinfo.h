@@ -30,10 +30,11 @@
 #define APPLESEED_RENDERER_KERNEL_INTERSECTION_TRIANGLEINFO_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/global/globaltypes.h"
 
 // Standard headers.
-#include <vector>
+#include <cassert>
+#include <cstddef>
 
 namespace renderer
 {
@@ -74,23 +75,20 @@ class TriangleInfo
     GVector3                m_vertices[3];              // triangle vertices in assembly space
 };
 
-// A vector of TriangleInfoVector.
-typedef std::vector<TriangleInfo> TriangleInfoVector;
-
 
 //
 // TriangleInfo class implementation.
 //
 
-// Constructors.
 inline TriangleInfo::TriangleInfo()
 {
 }
+
 inline TriangleInfo::TriangleInfo(
     const size_t            object_instance_index,
     const size_t            region_index,
     const size_t            triangle_index,
-    const GVector3&         v0,                         // triangle vertices in assembly space
+    const GVector3&         v0,
     const GVector3&         v1,
     const GVector3&         v2)
   : m_object_instance_index(object_instance_index)
@@ -102,25 +100,21 @@ inline TriangleInfo::TriangleInfo(
     m_vertices[2] = v2;
 }
 
-// Return the index of the object instance within the assembly.
 inline size_t TriangleInfo::get_object_instance_index() const
 {
     return m_object_instance_index;
 }
 
-// Return the index of the region within the region kit of the object.
 inline size_t TriangleInfo::get_region_index() const
 {
     return m_region_index;
 }
 
-// Return the index of the triangle within the region.
 inline size_t TriangleInfo::get_triangle_index() const
 {
     return m_triangle_index;
 }
 
-// Return the i'th vertex of the triangle, i = { 0, 1, 2 }.
 inline const GVector3& TriangleInfo::get_vertex(const size_t index) const
 {
     assert(index < 3);
