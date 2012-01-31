@@ -34,6 +34,7 @@
 #include "renderer/kernel/intersection/intersectionsettings.h"
 #include "renderer/kernel/intersection/probevisitorbase.h"
 #include "renderer/kernel/intersection/regioninfo.h"
+#include "renderer/kernel/intersection/triangleinfo.h"
 #include "renderer/kernel/shading/shadingray.h"
 
 // appleseed.foundation headers.
@@ -99,6 +100,9 @@ class TriangleTree
 
   private:
     const foundation::UniqueID          m_triangle_tree_uid;
+    TriangleInfoVector                  m_triangle_infos;
+
+    void collect_triangles(const Arguments& arguments);
 };
 
 
