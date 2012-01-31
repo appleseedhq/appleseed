@@ -196,7 +196,7 @@ class EWAFilterAK
             {
                 if (q < F)
                 {
-                    const float w = m_weights[static_cast<int>(q)];
+                    const float w = m_weights[q <= 0.0f ? 0 : static_cast<size_t>(q)];
                     const int texture_index = (y * texture_width + x) * texture_channels;
 
                     if (texture_gamma != 1.0f)

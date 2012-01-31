@@ -314,7 +314,7 @@ TEST_SUITE(EWAFilteringExploration)
                 {
                     if (q < F)
                     {
-                        const float w = m_weights[truncate<int>(q)];
+                        const float w = m_weights[q <= 0.0f ? 0 : truncate<size_t>(q)];
 
                         Color3f texel;
                         texture.get_pixel(x, y, texel);
