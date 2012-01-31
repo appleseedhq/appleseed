@@ -34,7 +34,7 @@
 #include "renderer/kernel/intersection/intersectionsettings.h"
 #include "renderer/kernel/intersection/probevisitorbase.h"
 #include "renderer/kernel/intersection/regioninfo.h"
-#include "renderer/kernel/intersection/triangleinfo.h"
+#include "renderer/kernel/intersection/trianglekey.h"
 #include "renderer/kernel/shading/shadingray.h"
 
 // appleseed.foundation headers.
@@ -58,22 +58,11 @@ namespace renderer
 {
 
 //
-// A triangle in the BVH.
-//
-
-struct BVHTriangle
-{
-    size_t  m_triangle_index;
-    size_t  m_v0, m_v1, m_v2;
-};
-
-
-//
 // Triangle tree.
 //
 
 class TriangleTree
-  : public foundation::bvh::Tree<GScalar, 3, BVHTriangle>
+  : public foundation::bvh::Tree<GScalar, 3, TriangleKey>
 {
   public:
     // Construction arguments.
@@ -99,8 +88,11 @@ class TriangleTree
     ~TriangleTree();
 
   private:
+    friend class TriangleLeafVisitor;
+    friend class TriangleLeafProbeVisitor;
+
     const foundation::UniqueID          m_triangle_tree_uid;
-    TriangleInfoVector                  m_triangle_infos;
+    std::vector<GTriangleType>          m_triangles;
 
     void collect_triangles(const Arguments& arguments);
 };
@@ -156,22 +148,29 @@ class TriangleLeafVisitor
 {
   public:
     // Constructor.
-    explicit TriangleLeafVisitor(ShadingPoint& shading_point);
+    TriangleLeafVisitor(
+        const TriangleTree&                 tree,
+        ShadingPoint&                       shading_point);
 
     // Visit a leaf.
     bool visit(
-        const std::vector<BVHTriangle>& items,
-        const std::vector<GAABB3>&      bboxes,
-        const size_t                    begin,
-        const size_t                    end,
-        const ShadingRay::RayType&      ray,
-        const ShadingRay::RayInfoType&  ray_info,
-        const double                    tmin,
-        const double                    tmax,
-        double&                         distance);
+        const std::vector<TriangleKey>&     items,
+        const std::vector<GAABB3>&          bboxes,
+        const size_t                        begin,
+        const size_t                        end,
+        const ShadingRay::RayType&          ray,
+        const ShadingRay::RayInfoType&      ray_info,
+        const double                        tmin,
+        const double                        tmax,
+        double&                             distance);
+
+    // Read additional data about the triangle that was hit, if any.
+    void read_hit_triangle_data() const;
 
   private:
-    ShadingPoint&                       m_shading_point;
+    const TriangleTree&     m_tree;
+    ShadingPoint&           m_shading_point;
+    size_t                  m_hit_triangle_index;
 };
 
 
@@ -184,17 +183,24 @@ class TriangleLeafProbeVisitor
   : public ProbeVisitorBase
 {
   public:
+    // Constructor.
+    explicit TriangleLeafProbeVisitor(
+        const TriangleTree&                 tree);
+
     // Visit a leaf.
     bool visit(
-        const std::vector<BVHTriangle>& items,
-        const std::vector<GAABB3>&      bboxes,
-        const size_t                    begin,
-        const size_t                    end,
-        const ShadingRay::RayType&      ray,
-        const ShadingRay::RayInfoType&  ray_info,
-        const double                    tmin,
-        const double                    tmax,
-        double&                         distance);
+        const std::vector<TriangleKey>&     items,
+        const std::vector<GAABB3>&          bboxes,
+        const size_t                        begin,
+        const size_t                        end,
+        const ShadingRay::RayType&          ray,
+        const ShadingRay::RayInfoType&      ray_info,
+        const double                        tmin,
+        const double                        tmax,
+        double&                             distance);
+
+  private:
+    const TriangleTree&     m_tree;
 };
 
 
@@ -219,8 +225,23 @@ typedef foundation::bvh::Intersector<
 // TriangleLeafVisitor class implementation.
 //
 
-inline TriangleLeafVisitor::TriangleLeafVisitor(ShadingPoint& shading_point)
-  : m_shading_point(shading_point)
+inline TriangleLeafVisitor::TriangleLeafVisitor(
+    const TriangleTree&                     tree,
+    ShadingPoint&                           shading_point)
+  : m_tree(tree)
+  , m_shading_point(shading_point)
+  , m_hit_triangle_index(~0)
+{
+}
+
+
+//
+// TriangleLeafProbeVisitor class implementation.
+//
+
+inline TriangleLeafProbeVisitor::TriangleLeafProbeVisitor(
+    const TriangleTree&                     tree)
+  : m_tree(tree)
 {
 }
 

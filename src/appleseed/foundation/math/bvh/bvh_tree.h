@@ -82,11 +82,7 @@ class Tree
     size_t get_memory_size() const;
 
   protected:
-    template <
-        typename Tree,
-        typename Partitioner,
-        typename Timer
-    >
+    template <typename Tree, typename Partitioner>
     friend class Builder;
 
     template <

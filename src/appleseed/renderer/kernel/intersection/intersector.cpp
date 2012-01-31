@@ -98,7 +98,7 @@ Intersector::Intersector(
     {
         RENDERER_LOG_DEBUG(
             "data structures size:\n"
-            "  bsp::NodeType    %s\n"
+            "  bvh::NodeType    %s\n"
             "  ShadingRay       %s\n"
             "  ShadingPoint     %s\n",
             pretty_size(sizeof(TriangleTree::NodeType)).c_str(),

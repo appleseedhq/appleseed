@@ -32,9 +32,10 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/aabb.h"
+#include "foundation/math/permutation.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/timer.h"
+#include "foundation/utility/memory.h"
 #include "foundation/utility/stopwatch.h"
 
 // Standard headers.
@@ -54,11 +55,11 @@ namespace bvh {
 //        : public foundation::NonCopyable
 //      {
 //          // Partition a set of items into two distinct sets.
-//          // bbox is the bounding box of the items in [begin, end).
+//          // 'bbox' is the bounding box of the items in [begin, end).
 //          // Return the index of the first item in the right
-//          // partition, or end if the set is not to be partitioned.
+//          // partition, or 'end' if the set is not to be partitioned.
 //          size_t partition(
-//              std::vector<Item>&      items,
+//              std::vector<size_t>&    indices,
 //              std::vector<AABB>&      bboxes,
 //              const size_t            begin,
 //              const size_t            end,
@@ -66,11 +67,7 @@ namespace bvh {
 //      };
 //
 
-template <
-    typename Tree,
-    typename Partitioner,
-    typename Timer = DefaultWallclockTimer
->
+template <typename Tree, typename Partitioner>
 class Builder
   : public NonCopyable
 {
@@ -85,37 +82,35 @@ class Builder
     // Constructor.
     Builder();
 
-    // Build a BVH for a given set of items.
+    // Build a tree for a given set of items.
+    template <typename Timer>
     void build(
-        TreeType&       tree,
-        Partitioner&    partitioner);
+        TreeType&                       tree,
+        Partitioner&                    partitioner);
 
     // Return the construction time.
     double get_build_time() const;
 
-  private:
-    double m_build_time;
+    // Return the items ordering.
+    const std::vector<size_t>& get_item_ordering() const;
 
-    // Compute the bounding box of a set of bounding boxes.
-    static AABBType compute_bbox(
+  private:
+    std::vector<size_t>                 m_indices;
+    double                              m_build_time;
+
+    // Compute the bounding box of a given set of items.
+    AABBType compute_bbox(
         const std::vector<AABBType>&    bboxes,
         const size_t                    begin,
-        const size_t                    end)
-    {
-        AABBType bbox;
-        bbox.invalidate();
-        for (size_t i = begin; i < end; ++i)
-            bbox.insert(bboxes[i]);
-        return bbox;
-    }
+        const size_t                    end);
 
     // Recursively subdivide the tree.
     void subdivide_recurse(
-        TreeType&       tree,
-        const size_t    node_index,
-        const size_t    begin,
-        const size_t    end,
-        Partitioner&    partitioner);
+        TreeType&                       tree,
+        const size_t                    node_index,
+        const size_t                    begin,
+        const size_t                    end,
+        Partitioner&                    partitioner);
 };
 
 
@@ -123,24 +118,17 @@ class Builder
 // Builder class implementation.
 //
 
-template <
-    typename Tree,
-    typename Partitioner,
-    typename Timer
->
-Builder<Tree, Partitioner, Timer>::Builder()
+template <typename Tree, typename Partitioner>
+Builder<Tree, Partitioner>::Builder()
   : m_build_time(0.0)
 {
 }
 
-template <
-    typename Tree,
-    typename Partitioner,
-    typename Timer
->
-void Builder<Tree, Partitioner, Timer>::build(
-    TreeType&           tree,
-    Partitioner&        partitioner)
+template <typename Tree, typename Partitioner>
+template <typename Timer>
+void Builder<Tree, Partitioner>::build(
+    TreeType&                       tree,
+    Partitioner&                    partitioner)
 {
     assert(tree.m_items.size() == tree.m_bboxes.size());
 
@@ -148,7 +136,14 @@ void Builder<Tree, Partitioner, Timer>::build(
     Stopwatch<Timer> stopwatch;
     stopwatch.start();
 
-    // Clear the BVH.
+    const size_t size = tree.m_items.size();
+
+    // Initialize the items ordering.
+    m_indices.resize(size);
+    for (size_t i = 0; i < size; ++i)
+        m_indices[i] = i;
+
+    // Clear the tree.
     tree.m_nodes.clear();
 
     // Create the root node of the tree.
@@ -159,37 +154,63 @@ void Builder<Tree, Partitioner, Timer>::build(
     // Recursively subdivide the tree.
     subdivide_recurse(
         tree,
-        0,                      // node index
-        0,                      // begin
-        tree.m_items.size(),    // end
+        0,              // node index
+        0,              // begin
+        size,           // end
         partitioner);
+
+    if (size > 0)
+    {
+        // Reorder the items.
+        std::vector<ItemType> temp_items(size);
+        small_item_reorder(&tree.m_items[0], &temp_items[0], &m_indices[0], size);
+        clear_release_memory(temp_items);
+
+        // Reorder their bounding boxes.
+        std::vector<AABBType> temp_bboxes(size);
+        small_item_reorder(&tree.m_bboxes[0], &temp_bboxes[0], &m_indices[0], size);
+        clear_release_memory(temp_bboxes);
+    }
 
     // Measure and save construction time.
     stopwatch.measure();
     m_build_time = stopwatch.get_seconds();
 }
 
-template <
-    typename Tree,
-    typename Partitioner,
-    typename Timer
->
-double Builder<Tree, Partitioner, Timer>::get_build_time() const
+template <typename Tree, typename Partitioner>
+inline double Builder<Tree, Partitioner>::get_build_time() const
 {
     return m_build_time;
 }
 
-template <
-    typename Tree,
-    typename Partitioner,
-    typename Timer
->
-void Builder<Tree, Partitioner, Timer>::subdivide_recurse(
-    TreeType&           tree,
-    const size_t        node_index,
-    const size_t        begin,
-    const size_t        end,
-    Partitioner&        partitioner)
+template <typename Tree, typename Partitioner>
+inline const std::vector<size_t>& Builder<Tree, Partitioner>::get_item_ordering() const
+{
+    return m_indices;
+}
+
+template <typename Tree, typename Partitioner>
+inline typename Tree::AABBType Builder<Tree, Partitioner>::compute_bbox(
+    const std::vector<AABBType>&    bboxes,
+    const size_t                    begin,
+    const size_t                    end)
+{
+    AABBType bbox;
+    bbox.invalidate();
+
+    for (size_t i = begin; i < end; ++i)
+        bbox.insert(bboxes[m_indices[i]]);
+
+    return bbox;
+}
+
+template <typename Tree, typename Partitioner>
+void Builder<Tree, Partitioner>::subdivide_recurse(
+    TreeType&                       tree,
+    const size_t                    node_index,
+    const size_t                    begin,
+    const size_t                    end,
+    Partitioner&                    partitioner)
 {
     assert(node_index < tree.m_nodes.size());
 
@@ -202,7 +223,7 @@ void Builder<Tree, Partitioner, Timer>::subdivide_recurse(
     {
         pivot =
             partitioner.partition(
-                tree.m_items,
+                m_indices,
                 tree.m_bboxes,
                 begin,
                 end,

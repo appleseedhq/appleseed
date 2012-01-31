@@ -26,35 +26,28 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_INTERSECTION_TRIANGLEINFO_H
-#define APPLESEED_RENDERER_KERNEL_INTERSECTION_TRIANGLEINFO_H
-
-// appleseed.renderer headers.
-#include "renderer/global/globaltypes.h"
+#ifndef APPLESEED_RENDERER_KERNEL_INTERSECTION_TRIANGLEKEY_H
+#define APPLESEED_RENDERER_KERNEL_INTERSECTION_TRIANGLEKEY_H
 
 // Standard headers.
-#include <cassert>
 #include <cstddef>
 
 namespace renderer
 {
 
 //
-// The TriangleInfo class uniquely identifies a triangle within an assembly.
+// The TriangleKey class uniquely identifies a triangle within an assembly.
 //
 
-class TriangleInfo
+class TriangleKey
 {
   public:
     // Constructors.
-    TriangleInfo();                                     // leave all fields uninitialized
-    TriangleInfo(
+    TriangleKey();          // leave all fields uninitialized
+    TriangleKey(
         const size_t        object_instance_index,
         const size_t        region_index,
-        const size_t        triangle_index,
-        const GVector3&     v0,                         // triangle vertices in assembly space
-        const GVector3&     v1,
-        const GVector3&     v2);
+        const size_t        triangle_index);
 
     // Return the index of the object instance within the assembly.
     size_t get_object_instance_index() const;
@@ -65,62 +58,46 @@ class TriangleInfo
     // Return the index of the triangle within the region.
     size_t get_triangle_index() const;
 
-    // Return the i'th vertex of the triangle in assembly space.
-    const GVector3& get_vertex(const size_t index) const;
-
   private:
     size_t                  m_object_instance_index;
     size_t                  m_region_index;
     size_t                  m_triangle_index;
-    GVector3                m_vertices[3];              // triangle vertices in assembly space
 };
 
 
 //
-// TriangleInfo class implementation.
+// TriangleKey class implementation.
 //
 
-inline TriangleInfo::TriangleInfo()
+inline TriangleKey::TriangleKey()
 {
 }
 
-inline TriangleInfo::TriangleInfo(
+inline TriangleKey::TriangleKey(
     const size_t            object_instance_index,
     const size_t            region_index,
-    const size_t            triangle_index,
-    const GVector3&         v0,
-    const GVector3&         v1,
-    const GVector3&         v2)
+    const size_t            triangle_index)
   : m_object_instance_index(object_instance_index)
   , m_region_index(region_index)
   , m_triangle_index(triangle_index)
 {
-    m_vertices[0] = v0;
-    m_vertices[1] = v1;
-    m_vertices[2] = v2;
 }
 
-inline size_t TriangleInfo::get_object_instance_index() const
+inline size_t TriangleKey::get_object_instance_index() const
 {
     return m_object_instance_index;
 }
 
-inline size_t TriangleInfo::get_region_index() const
+inline size_t TriangleKey::get_region_index() const
 {
     return m_region_index;
 }
 
-inline size_t TriangleInfo::get_triangle_index() const
+inline size_t TriangleKey::get_triangle_index() const
 {
     return m_triangle_index;
 }
 
-inline const GVector3& TriangleInfo::get_vertex(const size_t index) const
-{
-    assert(index < 3);
-    return m_vertices[index];
-}
-
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_KERNEL_INTERSECTION_TRIANGLEINFO_H
+#endif  // !APPLESEED_RENDERER_KERNEL_INTERSECTION_TRIANGLEKEY_H

@@ -51,7 +51,7 @@ typedef foundation::TriangleMTSupportPlane<double> TriangleSupportPlaneType;
 
 
 //
-// Region BSP tree statistics.
+// Region tree statistics.
 //
 
 // Maximum region duplication rate.
@@ -68,7 +68,7 @@ const size_t RegionTreeAccessCacheSize = 16;
 
 
 //
-// Triangle BSP tree statistics.
+// Triangle tree statistics.
 //
 
 // If defined, leaves of the triangle tree get split along their
@@ -77,14 +77,8 @@ const size_t RegionTreeAccessCacheSize = 16;
 // intersection, but slower construction).
 #undef RENDERER_TRIANGLE_TREE_SPLIT_LONGEST_AXIS
 
-// Maximum triangle duplication rate.
-const double TriangleTreeMaxDuplication = 2.0;
-
 // Maximum number of triangles per leaf.
-const size_t TriangleTreeMaxLeafSize = 1;
-
-// Maximum depth of the tree.
-const size_t TriangleTreeMaxDepth = 64;
+const size_t TriangleTreeMaxLeafSize = 4;
 
 // Number of bins used in the construction of the approximate SAH function.
 const size_t TriangleTreeApproxSAHBinCount = 32;
@@ -100,9 +94,6 @@ const size_t TriangleTreeO2Threshold = 32;
 
 // Depth of a subtree in the van Emde Boas node layout.
 const size_t TriangleTreeSubtreeDepth = 3;
-
-// Minimum size in bytes of one page of leaves.
-const size_t TriangleTreeMinLeafPageSize = 1024 * 1024;
 
 // Size of the triangle tree access cache.
 const size_t TriangleTreeAccessCacheSize = 16;

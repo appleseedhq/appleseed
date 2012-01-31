@@ -504,7 +504,7 @@ double RegionLeafVisitor::visit(
     if (triangle_tree)
     {
         // Check the intersection between the ray and the triangle tree.
-        TriangleLeafVisitor visitor(m_shading_point);
+        TriangleLeafVisitor visitor(*triangle_tree, m_shading_point);
         TriangleLeafIntersector intersector;
         intersector.intersect(
             *triangle_tree,
@@ -515,6 +515,7 @@ double RegionLeafVisitor::visit(
             , m_triangle_bsp_stats
 #endif
             );
+        visitor.read_hit_triangle_data();
     }
 
     // Return the distance to the closest intersection so far.
@@ -542,7 +543,7 @@ double RegionLeafProbeVisitor::visit(
     if (triangle_tree)
     {
         // Check the intersection between the ray and the triangle tree.
-        TriangleLeafProbeVisitor visitor;
+        TriangleLeafProbeVisitor visitor(*triangle_tree);
         TriangleLeafProbeIntersector intersector;
         intersector.intersect(
             *triangle_tree,

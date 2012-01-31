@@ -40,6 +40,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/intersection.h"
+#include "foundation/platform/timer.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
@@ -222,9 +223,9 @@ void AssemblyTree::build_assembly_tree()
         plural(size(), "assembly instance").c_str());
 
     // Build the assembly tree.
-    AssemblyTreePartitioner partitioner;
+    AssemblyTreePartitioner partitioner(1);
     AssemblyTreeBuilder builder;
-    builder.build(*this, partitioner);
+    builder.build<DefaultWallclockTimer>(*this, partitioner);
 
     // Collect and print assembly tree statistics.
     AssemblyTreeStatistics tree_stats(*this, builder);
@@ -411,7 +412,7 @@ bool AssemblyLeafVisitor::visit(
         if (triangle_tree)
         {
             // Check the intersection between the ray and the triangle tree.
-            TriangleLeafVisitor visitor(result);
+            TriangleLeafVisitor visitor(*triangle_tree, result);
             TriangleLeafIntersector intersector;
             intersector.intersect(
                 *triangle_tree,
@@ -422,6 +423,7 @@ bool AssemblyLeafVisitor::visit(
                 , m_triangle_bsp_stats
 #endif
                 );
+            visitor.read_hit_triangle_data();
         }
     }
 
@@ -529,7 +531,7 @@ bool AssemblyLeafProbeVisitor::visit(
         if (triangle_tree)
         {
             // Check the intersection between the ray and the triangle tree.
-            TriangleLeafProbeVisitor visitor;
+            TriangleLeafProbeVisitor visitor(*triangle_tree);
             TriangleLeafProbeIntersector intersector;
             intersector.intersect(
                 *triangle_tree,

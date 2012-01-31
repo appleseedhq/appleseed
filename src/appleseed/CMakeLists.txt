@@ -140,6 +140,7 @@ set (foundation_math_bvh_sources
     foundation/math/bvh/bvh_builder.h
     foundation/math/bvh/bvh_intersector.h
     foundation/math/bvh/bvh_node.h
+    foundation/math/bvh/bvh_sahpartitioner.h
     foundation/math/bvh/bvh_statistics.cpp
     foundation/math/bvh/bvh_statistics.h
     foundation/math/bvh/bvh_tree.h
@@ -737,7 +738,7 @@ set (renderer_kernel_intersection_sources
     renderer/kernel/intersection/regiontree.h
     renderer/kernel/intersection/tracecontext.cpp
     renderer/kernel/intersection/tracecontext.h
-    renderer/kernel/intersection/triangleinfo.h
+    renderer/kernel/intersection/trianglekey.h
     renderer/kernel/intersection/triangletree.cpp
     renderer/kernel/intersection/triangletree.h
 )
