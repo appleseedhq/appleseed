@@ -141,10 +141,6 @@ void Intersector<T, Tree, Visitor, StackSize, SortSize>::intersect(
 {
     assert(!tree.m_nodes.empty());
 
-    // Handle empty trees.
-    if (tree.size() == 0)
-        return;
-
     // Check the intersection between the ray and the bounding box of the tree.
     const AABBType root_bbox = AABBType(tree.get_bbox());
     ValueType tmin, tmax;
