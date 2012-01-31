@@ -51,10 +51,6 @@ class TreeStatistics
   : public NonCopyable
 {
   public:
-    // Node type.
-    typedef typename Tree::ValueType ValueType;
-    typedef typename Tree::NodeType NodeType;
-
     // Constructor, collects statistics for a given tree.
     TreeStatistics(
         const Tree&         tree,
@@ -64,6 +60,9 @@ class TreeStatistics
     void print(Logger& logger);
 
   private:
+    typedef typename Tree::ValueType ValueType;
+    typedef typename Tree::NodeType NodeType;
+
     const double            m_build_time;           // construction time in seconds
     const size_t            m_memory_size;          // size of the tree in memory
     const size_t            m_node_count;           // total number of nodes (leaf and interior nodes)
@@ -89,7 +88,6 @@ class TraversalStatistics
   : public NonCopyable
 {
   public:
-    // Public members.
     size_t                  m_traversal_count;      // number of times the tree was traversed
     Population<size_t>      m_fetched_nodes;        // number of nodes fetched from memory
     Population<size_t>      m_visited_leaves;       // number of leaves actually visited
@@ -107,7 +105,6 @@ class TraversalStatistics
 // TreeStatistics class implementation.
 //
 
-// Constructor, collects statistics for a given tree.
 template <typename Tree, typename Builder>
 TreeStatistics<Tree, Builder>::TreeStatistics(
     const Tree&         tree,
@@ -126,7 +123,6 @@ TreeStatistics<Tree, Builder>::TreeStatistics(
         collect_stats_recurse(tree, tree.m_nodes.front(), 0);
 }
 
-// Print tree statistics.
 template <typename Tree, typename Builder>
 void TreeStatistics<Tree, Builder>::print(Logger& logger)
 {
@@ -154,7 +150,6 @@ void TreeStatistics<Tree, Builder>::print(Logger& logger)
         m_leaf_size.get_dev());
 }
 
-// Helper method to recursively traverse the tree and collect statistics.
 template <typename Tree, typename Builder>
 void TreeStatistics<Tree, Builder>::collect_stats_recurse(
     const Tree&             tree,

@@ -123,7 +123,6 @@ class Builder
 // Builder class implementation.
 //
 
-// Constructor.
 template <
     typename Tree,
     typename Partitioner,
@@ -134,7 +133,6 @@ Builder<Tree, Partitioner, Timer>::Builder()
 {
 }
 
-// Build a BVH for a given set of items.
 template <
     typename Tree,
     typename Partitioner,
@@ -171,7 +169,6 @@ void Builder<Tree, Partitioner, Timer>::build(
     m_build_time = stopwatch.get_seconds();
 }
 
-// Return the construction time.
 template <
     typename Tree,
     typename Partitioner,
@@ -182,7 +179,6 @@ double Builder<Tree, Partitioner, Timer>::get_build_time() const
     return m_build_time;
 }
 
-// Recursively subdivide the tree.
 template <
     typename Tree,
     typename Partitioner,

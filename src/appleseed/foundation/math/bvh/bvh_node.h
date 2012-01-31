@@ -110,7 +110,6 @@ class Node
 // Node class implementation.
 //
 
-// Set/get the node type.
 template <typename T, size_t N>
 inline void Node<T, N>::set_type(const Type type)
 {
@@ -118,35 +117,37 @@ inline void Node<T, N>::set_type(const Type type)
     m_info &= 0x7FFFFFFFUL;
     m_info |= type;
 }
+
 template <typename T, size_t N>
 inline typename Node<T, N>::Type Node<T, N>::get_type() const
 {
     return static_cast<Type>(m_info & 0x80000000UL);
 }
+
 template <typename T, size_t N>
 inline bool Node<T, N>::is_interior() const
 {
     return (m_info & 0x80000000UL) != 0;
 }
+
 template <typename T, size_t N>
 inline bool Node<T, N>::is_leaf() const
 {
     return (m_info & 0x80000000UL) == 0;
 }
 
-// Set/get the node bounding box.
 template <typename T, size_t N>
 inline void Node<T, N>::set_bbox(const AABBType& bbox)
 {
     m_bbox = bbox;
 }
+
 template <typename T, size_t N>
 inline const AABB<T, N>& Node<T, N>::get_bbox() const
 {
     return m_bbox;
 }
 
-// Set/get the child node index (interior nodes only).
 template <typename T, size_t N>
 inline void Node<T, N>::set_child_node_index(const size_t index)
 {
@@ -154,13 +155,13 @@ inline void Node<T, N>::set_child_node_index(const size_t index)
     m_info &= 0x80000000UL;
     m_info |= static_cast<uint32>(index);
 }
+
 template <typename T, size_t N>
 inline size_t Node<T, N>::get_child_node_index() const
 {
     return static_cast<size_t>(m_info & 0x7FFFFFFFUL);
 }
 
-// Set/get the item index (leaf nodes only).
 template <typename T, size_t N>
 inline void Node<T, N>::set_item_index(const size_t index)
 {
@@ -168,19 +169,20 @@ inline void Node<T, N>::set_item_index(const size_t index)
     m_info &= 0x80000000UL;
     m_info |= static_cast<uint32>(index);
 }
+
 template <typename T, size_t N>
 inline size_t Node<T, N>::get_item_index() const
 {
     return static_cast<size_t>(m_info & 0x7FFFFFFFUL);
 }
 
-// Set/get the item count (leaf nodes only).
 template <typename T, size_t N>
 inline void Node<T, N>::set_item_count(const size_t count)
 {
     assert(count <= 0xFFFFFFFFUL);
     m_count = static_cast<uint32>(count);
 }
+
 template <typename T, size_t N>
 inline size_t Node<T, N>::get_item_count() const
 {

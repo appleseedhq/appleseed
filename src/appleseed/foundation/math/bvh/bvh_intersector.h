@@ -122,7 +122,6 @@ class Intersector
 #define FOUNDATION_BVH_TRAVERSAL_STATS(x)
 #endif
 
-// Intersect a ray with a given BVH.
 template <
     typename T,
     typename Tree,

@@ -121,14 +121,12 @@ template <typename U> U get_item_bbox_grow_eps();           // intentionally lef
 template <> inline float get_item_bbox_grow_eps<float>()    { return 1.0e-6f; }
 template <> inline double get_item_bbox_grow_eps<double>()  { return 1.0e-15;  }
 
-// Constructor.
 template <typename T, size_t N, typename Item>
 Tree<T, N, Item>::Tree()
 {
     clear();
 }
 
-// Clear the tree.
 template <typename T, size_t N, typename Item>
 void Tree<T, N, Item>::clear()
 {
@@ -138,7 +136,6 @@ void Tree<T, N, Item>::clear()
     m_nodes.clear();
 }
 
-// Insert an item into the tree.
 template <typename T, size_t N, typename Item>
 void Tree<T, N, Item>::insert(
     const ItemType& item,
@@ -156,21 +153,18 @@ void Tree<T, N, Item>::insert(
     assert(m_items.size() == m_bboxes.size());
 }
 
-// Return the number of items in the tree.
 template <typename T, size_t N, typename Item>
 inline size_t Tree<T, N, Item>::size() const
 {
     return m_items.size();
 }
 
-// Return the bounding box of the tree.
 template <typename T, size_t N, typename Item>
 inline const AABB<T, N>& Tree<T, N, Item>::get_bbox() const
 {
     return m_bbox;
 }
 
-// Return the size (in bytes) of this object in memory.
 template <typename T, size_t N, typename Item>
 size_t Tree<T, N, Item>::get_memory_size() const
 {
