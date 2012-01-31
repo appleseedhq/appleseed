@@ -53,43 +53,17 @@ namespace renderer
 {
 
 //
-// Triangle tree partitioner.
+// Specializations.
 //
 
-namespace
-{
-    class TriangleTreePartitioner
-      : public NonCopyable
-    {
-      public:
-        // Partition a set of items into two distinct sets.
-        // Return end if the set is not to be partitioned.
-        size_t partition(
-            vector<BVHTriangle>&    items,
-            vector<GAABB3>&         bboxes,
-            const size_t            begin,
-            const size_t            end,
-            const GAABB3&           bbox)
-        {
-            return 0;
-        }
-    };
-}
-
-
-//
-// Triangle tree builder.
-//
+typedef bvh::SAHPartitioner<
+        TriangleTree
+    > TriangleTreePartitioner;
 
 typedef bvh::Builder<
         TriangleTree,
         TriangleTreePartitioner
     > TriangleTreeBuilder;
-
-
-//
-// Triangle tree statistics.
-//
 
 typedef bvh::TreeStatistics<
         TriangleTree,
