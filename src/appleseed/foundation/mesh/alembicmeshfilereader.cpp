@@ -185,7 +185,7 @@ namespace
 
                 m_mesh_builder.begin_face(face_size);
 
-                ensure_size(indices, face_size);
+                ensure_minimum_size(indices, face_size);
 
                 // Collect face vertex indices and push them to the builder.
                 for (size_t j = 0; j < face_size; ++j)

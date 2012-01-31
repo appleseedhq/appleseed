@@ -104,10 +104,10 @@ namespace
             assert(count > 1);
 
             // Ensure that sufficient memory is allocated for the working arrays.
-            ensure_size(m_indices, count);
-            ensure_size(m_left_bboxes, count);
-            ensure_size(m_temp_items, count);
-            ensure_size(m_temp_bboxes, count);
+            ensure_minimum_size(m_indices, count);
+            ensure_minimum_size(m_left_bboxes, count);
+            ensure_minimum_size(m_temp_items, count);
+            ensure_minimum_size(m_temp_bboxes, count);
 
             // Create the set of indices.
             for (size_t i = 0; i < count; ++i)

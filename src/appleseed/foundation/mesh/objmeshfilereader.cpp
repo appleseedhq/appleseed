@@ -340,7 +340,7 @@ struct OBJMeshFileReader::Impl
         for (size_t i = 0; i < face_vertex_index_count; ++i)
         {
             const size_t vertex_index = m_face_vertex_indices[i];
-            ensure_size(m_vertex_index_mapping, vertex_index + 1, Undefined);
+            ensure_minimum_size(m_vertex_index_mapping, vertex_index + 1, Undefined);
             if (m_vertex_index_mapping[vertex_index] == Undefined)
                 m_vertex_index_mapping[vertex_index] = m_builder->push_vertex(m_vertices[vertex_index]);
         }
@@ -353,7 +353,7 @@ struct OBJMeshFileReader::Impl
         for (size_t i = 0; i < face_normal_index_count; ++i)
         {
             const size_t normal_index = m_face_normal_indices[i];
-            ensure_size(m_normal_index_mapping, normal_index + 1, Undefined);
+            ensure_minimum_size(m_normal_index_mapping, normal_index + 1, Undefined);
             if (m_normal_index_mapping[normal_index] == Undefined)
                 m_normal_index_mapping[normal_index] = m_builder->push_vertex_normal(m_normals[normal_index]);
         }
@@ -366,7 +366,7 @@ struct OBJMeshFileReader::Impl
         for (size_t i = 0; i < face_tex_coord_index_count; ++i)
         {
             const size_t tex_coord_index = m_face_tex_coord_indices[i];
-            ensure_size(m_tex_coord_index_mapping, tex_coord_index + 1, Undefined);
+            ensure_minimum_size(m_tex_coord_index_mapping, tex_coord_index + 1, Undefined);
             if (m_tex_coord_index_mapping[tex_coord_index] == Undefined)
                 m_tex_coord_index_mapping[tex_coord_index] = m_builder->push_tex_coords(m_tex_coords[tex_coord_index]);
         }

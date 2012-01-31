@@ -138,7 +138,7 @@ void ObjectInstance::assign_material(
             ? impl->m_front_material_names
             : impl->m_back_material_names;
 
-    ensure_size(material_names, slot + 1);
+    ensure_minimum_size(material_names, slot + 1);
     material_names.set(slot, material_name);
 }
 

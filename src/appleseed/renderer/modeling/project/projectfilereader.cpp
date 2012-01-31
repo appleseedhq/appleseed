@@ -1641,7 +1641,7 @@ namespace
 
                     if (material_slot < MaxMaterialSlots)
                     {
-                        ensure_size(material_names, material_slot + 1);
+                        ensure_minimum_size(material_names, material_slot + 1);
                         material_names.set(material_slot, material_name.c_str());
                     }
                     else

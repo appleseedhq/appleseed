@@ -85,11 +85,11 @@ void aligned_free(void* aligned_ptr);
 
 // Ensure that a container has a minimum given size.
 template <typename Vector>
-void ensure_size(
+void ensure_minimum_size(
     Vector&         vector,
     const size_t    minimum_size);
 template <typename Vector, typename T>
-void ensure_size(
+void ensure_minimum_size(
     Vector&         vector,
     const size_t    minimum_size,
     const T&        value);
@@ -167,7 +167,7 @@ inline bool is_aligned(const T ptr, const size_t alignment)
 //
 
 template <typename Vector>
-inline void ensure_size(
+inline void ensure_minimum_size(
     Vector&         vector,
     const size_t    minimum_size)
 {
@@ -176,7 +176,7 @@ inline void ensure_size(
 }
 
 template <typename Vector, typename T>
-inline void ensure_size(
+inline void ensure_minimum_size(
     Vector&         vector,
     const size_t    minimum_size,
     const T&        value)

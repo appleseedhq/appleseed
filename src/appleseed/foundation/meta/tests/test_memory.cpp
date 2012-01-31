@@ -128,31 +128,31 @@ TEST_SUITE(Foundation_Utility_Memory)
         EXPECT_FALSE(is_aligned((void*)65, 32));
     }
 
-    TEST_CASE(EnsureSize_GivenEmptyVector_ResizesVectorByInsertingDefaultValue)
+    TEST_CASE(EnsureMinimumSize_GivenEmptyVector_ResizesVectorByInsertingDefaultValue)
     {
         vector<int> v;
 
-        ensure_size(v, 2);
+        ensure_minimum_size(v, 2);
 
         EXPECT_EQ(2, v.size());
     }
 
-    TEST_CASE(EnsureSize_GivenEmptyVector_ResizesVectorByInsertingProvidedValue)
+    TEST_CASE(EnsureMinimumSize_GivenEmptyVector_ResizesVectorByInsertingProvidedValue)
     {
         vector<int> v;
 
-        ensure_size(v, 2, 42);
+        ensure_minimum_size(v, 2, 42);
 
         ASSERT_EQ(2, v.size());
         EXPECT_EQ(42, v[0]);
         EXPECT_EQ(42, v[1]);
     }
 
-    TEST_CASE(EnsureSize_GivenMinimumSizeSmallerThanCurrentVectorSize_DoesNothing)
+    TEST_CASE(EnsureMinimumSize_GivenMinimumSizeSmallerThanCurrentVectorSize_DoesNothing)
     {
         vector<int> v(12);
 
-        ensure_size(v, 3);
+        ensure_minimum_size(v, 3);
 
         EXPECT_EQ(12, v.size());
     }

@@ -165,7 +165,7 @@ inline void AttributeSet::set_attribute(
 
     // Resize the storage to accommodate the new attribute.
     const size_t new_size = (index + 1) * sizeof(T);
-    ensure_size(channel->m_storage, new_size);
+    ensure_minimum_size(channel->m_storage, new_size);
 
     // Store the new attribute.
     T* typed_storage = reinterpret_cast<T*>(&channel->m_storage.front());
