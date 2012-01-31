@@ -231,7 +231,6 @@ inline void small_item_reorder(
     assert(items);
     assert(temp);
     assert(order);
-    assert(count > 0);
 
     for (size_t i = 0; i < count; ++i)
         temp[i] = items[order[i]];
@@ -250,7 +249,6 @@ inline void large_item_reorder(
     assert(items);
     assert(tags);
     assert(order);
-    assert(count > 0);
 
     for (size_t i = 0; i < count; ++i)
         tags[i] = 0;
@@ -284,7 +282,6 @@ inline void large_item_reorder(
 {
     assert(items);
     assert(order);
-    assert(count > 0);
 
     for (size_t i = 0; i < count; ++i)
     {
