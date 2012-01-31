@@ -86,99 +86,99 @@ namespace
         const size_t            m_begin;
         const size_t            m_dim;
     };
-}
 
-class AssemblyTreePartitioner
-  : public NonCopyable
-{
-  public:
-    // Partition a set of items into two distinct sets.
-    // Return end if the set is not to be partitioned.
-    size_t partition(
-        vector<UniqueID>&   items,
-        vector<GAABB3>&     bboxes,
-        const size_t        begin,
-        const size_t        end,
-        const GAABB3&       bbox)
+    class AssemblyTreePartitioner
+      : public NonCopyable
     {
-        const size_t count = end - begin;
-        assert(count > 1);
-
-        // Ensure that sufficient memory is allocated for the working arrays.
-        ensure_size(m_indices, count);
-        ensure_size(m_left_bboxes, count);
-        ensure_size(m_temp_items, count);
-        ensure_size(m_temp_bboxes, count);
-
-        // Create the set of indices.
-        for (size_t i = 0; i < count; ++i)
-            m_indices[i] = i;
-
-        GScalar best_split_cost = numeric_limits<GScalar>::max();
-        size_t best_split_dim = 0;
-        size_t best_split_pivot = 0;
-        GAABB3 group_bbox;
-
-        for (size_t dim = 0; dim < 3; ++dim)
+      public:
+        // Partition a set of items into two distinct sets.
+        // Return end if the set is not to be partitioned.
+        size_t partition(
+            vector<UniqueID>&   items,
+            vector<GAABB3>&     bboxes,
+            const size_t        begin,
+            const size_t        end,
+            const GAABB3&       bbox)
         {
-            // Sort the items according to their bounding boxes.
-            BboxSortPredicate predicate(bboxes, begin, dim);
-            sort(&m_indices[0], &m_indices[0] + count, predicate);
+            const size_t count = end - begin;
+            assert(count > 1);
 
-            // Left-to-right sweep to accumulate bounding boxes.
-            group_bbox.invalidate();
+            // Ensure that sufficient memory is allocated for the working arrays.
+            ensure_size(m_indices, count);
+            ensure_size(m_left_bboxes, count);
+            ensure_size(m_temp_items, count);
+            ensure_size(m_temp_bboxes, count);
+
+            // Create the set of indices.
             for (size_t i = 0; i < count; ++i)
+                m_indices[i] = i;
+
+            GScalar best_split_cost = numeric_limits<GScalar>::max();
+            size_t best_split_dim = 0;
+            size_t best_split_pivot = 0;
+            GAABB3 group_bbox;
+
+            for (size_t dim = 0; dim < 3; ++dim)
             {
-                group_bbox.insert(bboxes[begin + m_indices[i]]);
-                m_left_bboxes[i] = group_bbox;
-            }
+                // Sort the items according to their bounding boxes.
+                BboxSortPredicate predicate(bboxes, begin, dim);
+                sort(&m_indices[0], &m_indices[0] + count, predicate);
 
-            // Right-to-left sweep to accumulate bounding boxes and evaluate SAH.
-            group_bbox.invalidate();
-            for (size_t i = count - 1; i > 0; --i)
-            {
-                // Get left and right bounding boxes.
-                const GAABB3& left_bbox = m_left_bboxes[i - 1];
-                group_bbox.insert(bboxes[begin + m_indices[i]]);
-
-                // Compute the cost of this partition.
-                const GScalar left_cost = left_bbox.half_surface_area() * i;
-                const GScalar right_cost = group_bbox.half_surface_area() * (count - i);
-                const GScalar split_cost = left_cost + right_cost;
-
-                // Keep track of the partition with the lowest cost.
-                if (best_split_cost > split_cost)
+                // Left-to-right sweep to accumulate bounding boxes.
+                group_bbox.invalidate();
+                for (size_t i = 0; i < count; ++i)
                 {
-                    best_split_cost = split_cost;
-                    best_split_dim = dim;
-                    best_split_pivot = i;
+                    group_bbox.insert(bboxes[begin + m_indices[i]]);
+                    m_left_bboxes[i] = group_bbox;
+                }
+
+                // Right-to-left sweep to accumulate bounding boxes and evaluate SAH.
+                group_bbox.invalidate();
+                for (size_t i = count - 1; i > 0; --i)
+                {
+                    // Get left and right bounding boxes.
+                    const GAABB3& left_bbox = m_left_bboxes[i - 1];
+                    group_bbox.insert(bboxes[begin + m_indices[i]]);
+
+                    // Compute the cost of this partition.
+                    const GScalar left_cost = left_bbox.half_surface_area() * i;
+                    const GScalar right_cost = group_bbox.half_surface_area() * (count - i);
+                    const GScalar split_cost = left_cost + right_cost;
+
+                    // Keep track of the partition with the lowest cost.
+                    if (best_split_cost > split_cost)
+                    {
+                        best_split_cost = split_cost;
+                        best_split_dim = dim;
+                        best_split_pivot = i;
+                    }
                 }
             }
+
+            // Just split in half if the cost of the best partition is too high.
+            const GScalar leaf_cost = bbox.half_surface_area() * count;
+            if (best_split_cost >= leaf_cost)
+                return (begin + end) / 2;
+
+            // Sort the indices according to the item bounding boxes.
+            BboxSortPredicate predicate(bboxes, begin, best_split_dim);
+            sort(&m_indices[0], &m_indices[0] + count, predicate);
+
+            // Reorder the items.
+            small_item_reorder(&items[begin], &m_temp_items[0], &m_indices[0], count);
+            small_item_reorder(&bboxes[begin], &m_temp_bboxes[0], &m_indices[0], count);
+
+            assert(begin + best_split_pivot < end);
+            return begin + best_split_pivot;
         }
 
-        // Just split in half if the cost of the best partition is too high.
-        const GScalar leaf_cost = bbox.half_surface_area() * count;
-        if (best_split_cost >= leaf_cost)
-            return (begin + end) / 2;
-
-        // Sort the indices according to the item bounding boxes.
-        BboxSortPredicate predicate(bboxes, begin, best_split_dim);
-        sort(&m_indices[0], &m_indices[0] + count, predicate);
-
-        // Reorder the items.
-        small_item_reorder(&items[begin], &m_temp_items[0], &m_indices[0], count);
-        small_item_reorder(&bboxes[begin], &m_temp_bboxes[0], &m_indices[0], count);
-
-        assert(begin + best_split_pivot < end);
-        return begin + best_split_pivot;
-    }
-
-  private:
-    vector<size_t>      m_indices;
-    vector<GAABB3>      m_left_bboxes;
-    vector<UniqueID>    m_temp_items;
-    vector<GAABB3>      m_temp_bboxes;
-};
+      private:
+        vector<size_t>      m_indices;
+        vector<GAABB3>      m_left_bboxes;
+        vector<UniqueID>    m_temp_items;
+        vector<GAABB3>      m_temp_bboxes;
+    };
+}
 
 
 //
