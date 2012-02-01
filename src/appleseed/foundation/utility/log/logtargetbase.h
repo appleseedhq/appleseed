@@ -80,8 +80,7 @@ class FOUNDATIONDLL LogTargetBase
     void reset_formatting_flags();
 
     // Configure the formatting for all message categories.
-    void set_formatting_flags(
-        const int                   flags);
+    void set_formatting_flags(const int flags);
 
     // Configure the formatting for a particular category of messages.
     // Return the previous flags values for this category.
@@ -90,14 +89,16 @@ class FOUNDATIONDLL LogTargetBase
         const int                   flags);
 
     // Return the formatting flags for a given category of messages.
-    int get_formatting_flags(
-        const LogMessage::Category  category) const;
+    int get_formatting_flags(const LogMessage::Category category) const;
 
-  protected:
     // Return true if a given formatting flag is set for a given category of messages.
     bool has_formatting_flags(
         const LogMessage::Category  category,
         const int                   flags) const;
+
+    // Save/restore all formatting flags.
+    void save_formatting_flags(int flags[]) const;
+    void restore_formatting_flags(const int flags[]);
 
   private:
     int m_flags[LogMessage::NumMessageCategories];
@@ -148,6 +149,18 @@ inline bool LogTargetBase::has_formatting_flags(
     const int                   flags) const
 {
     return (m_flags[category] & flags) != 0;
+}
+
+inline void LogTargetBase::save_formatting_flags(int flags[]) const
+{
+    for (size_t i = 0; i < LogMessage::NumMessageCategories; ++i)
+        flags[i] = m_flags[i];
+}
+
+inline void LogTargetBase::restore_formatting_flags(const int flags[])
+{
+    for (size_t i = 0; i < LogMessage::NumMessageCategories; ++i)
+        m_flags[i] = flags[i];
 }
 
 }       // namespace foundation

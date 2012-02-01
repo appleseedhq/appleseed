@@ -30,7 +30,6 @@
 #include "superlogger.h"
 
 // Standard headers.
-#include <cstddef>
 #include <cstdio>
 
 using namespace foundation;
@@ -50,25 +49,10 @@ SuperLogger::~SuperLogger()
     delete m_log_target;
 }
 
-namespace
-{
-    void save_formatting_flags(const LogTargetBase& log_target, int flags[])
-    {
-        for (size_t i = 0; i < LogMessage::NumMessageCategories; ++i)
-            flags[i] = log_target.get_formatting_flags(static_cast<LogMessage::Category>(i));
-    }
-
-    void restore_formatting_flags(LogTargetBase& log_target, const int flags[])
-    {
-        for (size_t i = 0; i < LogMessage::NumMessageCategories; ++i)
-            log_target.set_formatting_flags(static_cast<LogMessage::Category>(i), flags[i]);
-    }
-}
-
 void SuperLogger::enable_message_coloring()
 {
     int flags[LogMessage::NumMessageCategories];
-    save_formatting_flags(*m_log_target, flags);
+    m_log_target->save_formatting_flags(flags);
 
     remove_target(m_log_target);
     delete m_log_target;
@@ -76,7 +60,7 @@ void SuperLogger::enable_message_coloring()
     m_log_target = create_console_log_target(stderr);
     add_target(m_log_target);
 
-    restore_formatting_flags(*m_log_target, flags);
+    m_log_target->restore_formatting_flags(flags);
 }
 
 LogTargetBase& SuperLogger::get_log_target() const
