@@ -189,10 +189,10 @@ inline foundation::uint64 TextureCache::get_stage1_miss_count() const
 inline TextureCache::TileKey TextureCache::TileKey::invalid()
 {
     TileKey key;
-    key.m_assembly_uid = ~foundation::UniqueID(0);
-    key.m_texture_index = ~size_t(0);
-    key.m_tile_x = ~size_t(0);
-    key.m_tile_y = ~size_t(0);
+    key.m_assembly_uid = ~0;
+    key.m_texture_index = ~0;
+    key.m_tile_x = ~0;
+    key.m_tile_y = ~0;
     return key;
 }
 

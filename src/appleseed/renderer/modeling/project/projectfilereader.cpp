@@ -1082,7 +1082,7 @@ namespace
             assert(m_textures);
             const size_t texture_index = m_textures->get_index(m_texture.c_str());
 
-            if (texture_index != ~size_t(0))
+            if (texture_index != ~0)
             {
                 try
                 {

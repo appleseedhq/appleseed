@@ -141,7 +141,7 @@ void TextureCache::TileSwapper::load(const TileKey& key, TilePtr& tile)
 {
     // Fetch the texture container.
     const TextureContainer& textures =
-        key.m_assembly_uid == ~UniqueID(0)
+        key.m_assembly_uid == ~0
             ? m_scene.textures()
             : m_scene.assemblies().get_by_uid(key.m_assembly_uid)->textures();
 
@@ -191,7 +191,7 @@ void TextureCache::TileSwapper::unload(const TileKey& key, TilePtr& tile)
 
     // Fetch the texture container.
     const TextureContainer& textures =
-        key.m_assembly_uid == ~UniqueID(0)
+        key.m_assembly_uid == ~0
             ? m_scene.textures()
             : m_scene.assemblies().get_by_uid(key.m_assembly_uid)->textures();
 

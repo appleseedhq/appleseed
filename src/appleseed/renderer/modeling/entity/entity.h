@@ -79,7 +79,7 @@ class DLLSYMBOL Entity
     const char* get_render_layer_name() const;
 
     // Set/get the index of the render layer for this entity.
-    // Use ~size_t(0) to disable render layer assignment.
+    // Use ~0 to disable render layer assignment.
     void set_render_layer_index(const size_t render_layer);
     size_t get_render_layer_index() const;
 

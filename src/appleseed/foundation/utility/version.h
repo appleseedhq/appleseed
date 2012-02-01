@@ -66,7 +66,7 @@ typedef uint64 VersionID;
 // An invalid version ID.
 //
 
-const VersionID InvalidVersionID = ~static_cast<VersionID>(0);
+const VersionID InvalidVersionID = ~0;
 
 
 //

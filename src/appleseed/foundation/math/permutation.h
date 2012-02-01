@@ -285,7 +285,7 @@ inline void large_item_reorder(
 
     for (size_t i = 0; i < count; ++i)
     {
-        if (order[i] == ~size_t(0))
+        if (order[i] == ~0)
             continue;
 
         const T temp = items[i];
@@ -297,7 +297,7 @@ inline void large_item_reorder(
             items[j] = items[next];
             j = next;
             next = order[j];
-            order[j] = ~size_t(0);
+            order[j] = ~0;
         }
 
         items[j] = temp;

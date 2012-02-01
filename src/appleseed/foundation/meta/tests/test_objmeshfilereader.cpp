@@ -99,7 +99,7 @@ TEST_SUITE(Foundation_Mesh_OBJMeshFileReader)
             face.m_vertices.resize(vertex_count);
             face.m_vertex_normals.resize(vertex_count);
             face.m_tex_coords.resize(vertex_count);
-            face.m_material = ~size_t(0);
+            face.m_material = ~0;
             m_meshes.back().m_faces.push_back(face);
         }
 

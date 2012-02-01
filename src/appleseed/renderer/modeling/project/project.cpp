@@ -152,7 +152,7 @@ namespace
 
         if (render_layer_name.empty())
         {
-            entity.set_render_layer_index(~size_t(0));
+            entity.set_render_layer_index(~0);
             return;
         }
 
@@ -174,7 +174,7 @@ namespace
                 entity.get_name(),
                 render_layer_name.c_str(),
                 AOVCollection::MaxSize);
-            entity.set_render_layer_index(~size_t(0));
+            entity.set_render_layer_index(~0);
             return;
         }
 
