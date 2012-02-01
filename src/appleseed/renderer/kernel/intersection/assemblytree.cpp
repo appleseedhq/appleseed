@@ -346,6 +346,7 @@ bool AssemblyLeafVisitor::visit(
     const double                        tmax,
     double&                             distance)
 {
+    // A leaf must contain exactly one assembly.
     assert(begin + 1 == end);
 
     // Retrieve the assembly instance.
@@ -461,6 +462,7 @@ bool AssemblyLeafProbeVisitor::visit(
     const double                        tmax,
     double&                             distance)
 {
+    // A leaf must contain exactly one assembly.
     assert(begin + 1 == end);
 
     // Retrieve the assembly instance.

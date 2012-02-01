@@ -123,6 +123,7 @@ void Intersector<T, Tree, Visitor, S>::intersect(
 #endif
     ) const
 {
+    // Make sure the tree was built.
     assert(!tree.m_nodes.empty());
 
     // Initialize traversal statistics.
