@@ -109,12 +109,15 @@ TriangleTree::TriangleTree(const Arguments& arguments)
     builder.build<DefaultWallclockTimer>(*this, partitioner);
 
     // Reorder the triangles according to the BVH ordering.
-    vector<size_t> item_ordering(builder.get_item_ordering());
-    assert(m_triangles.size() == item_ordering.size());
-    large_item_reorder(
-        &m_triangles[0],
-        &item_ordering[0],
-        m_triangles.size());
+    if (!m_triangles.empty())
+    {
+        vector<size_t> item_ordering(builder.get_item_ordering());
+        assert(m_triangles.size() == item_ordering.size());
+        large_item_reorder(
+            &m_triangles[0],
+            &item_ordering[0],
+            m_triangles.size());
+    }
 
     // Collect and print triangle tree statistics.
     TriangleTreeStatistics tree_stats(*this, builder);
@@ -199,7 +202,6 @@ void TriangleTree::collect_triangles(const Arguments& arguments)
                 insert(triangle_key, triangle_bbox);
 
                 const GTriangleType triangle(v0, v1, v2);
-
                 m_triangles.push_back(triangle);
             }
         }
