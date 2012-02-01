@@ -153,7 +153,7 @@ void Logger::write(
         va_start(argptr, format);
         write_to_buffer(impl->m_message_buffer, MaxBufferSize, format, argptr);
 
-        // Send the message to every log targets.
+        // Send the message to every log target.
         for (const_each<Impl::LogTargetContainer> i = impl->m_targets; i; ++i)
         {
             LogTargetBase* target = *i;
