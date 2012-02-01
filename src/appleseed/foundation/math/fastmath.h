@@ -97,7 +97,7 @@ inline float fast_log2(const float x)
 {
     assert(x > 0.0f);
     float y = static_cast<float>(binary_cast<int32>(x));
-    y *= 0.1192092896e-6f;                  // y *= pow(2.0f, -23)
+    y *= 0.1192092896e-6f;                      // y *= pow(2.0f, -23)
     y -= 127.0f;
     return y;
 }
@@ -106,7 +106,7 @@ inline float fast_log2_refined(const float x)
 {
     assert(x > 0.0f);
     float y = static_cast<float>(binary_cast<int32>(x));
-    y *= 0.1192092896e-6f;                  // y *= pow(2.0f, -23)
+    y *= 0.1192092896e-6f;                      // y *= pow(2.0f, -23)
     y -= 127.0f;
     float z = y - std::floor(y);
     z = (z - z * z) * 0.346607f;
@@ -118,7 +118,7 @@ inline float fast_pow2(const float x)
     float y = x - std::floor(x);
     y = (y - y * y) * 0.33971f;
     float z = x + 127.0f - y;
-    z *= 8388608.0f;                        // z *= pow(2.0f, 23)
+    z *= 8388608.0f;                            // z *= pow(2.0f, 23)
     return binary_cast<float>(static_cast<int32>(z));
 }
 
@@ -209,9 +209,9 @@ inline float fast_sqrt(const float x)
 {
     assert(x >= 0.0f);
     int32 i = binary_cast<int32>(x);
-    i -= 1 << 23;                           // remove last bit to not let it go to mantissa
-    i = i >> 1;                             // divide by 2
-    i += 1 << 29;                           // add 64 to exponent
+    i -= 1 << 23;                               // remove last bit to not let it go to mantissa
+    i = i >> 1;                                 // divide by 2
+    i += 1 << 29;                               // add 64 to exponent
     return binary_cast<float>(i);
 }
 
@@ -220,9 +220,9 @@ inline float fast_rcp_sqrt(const float x)
     assert(x >= 0.0f);
     const float xhalf = 0.5f * x;
     int32 i = binary_cast<int32>(x);
-    i = 0x5F375A86L - (i >> 1);             // gives initial guess
+    i = 0x5F375A86L - (i >> 1);                 // gives initial guess
     float z = binary_cast<float>(i);
-    z = z * (1.5f - xhalf * z * z);         // Newton step, repeating increases accuracy
+    z = z * (1.5f - xhalf * z * z);             // Newton step, repeating increases accuracy
     return z;
 }
 
@@ -231,9 +231,9 @@ inline double fast_rcp_sqrt(const double x)
     assert(x >= 0.0);
     const double xhalf = 0.5 * x;
     int64 i = binary_cast<int64>(x);
-    i = 0x5FE6EC85E7DE30DALL - (i >> 1);    // gives initial guess
+    i = 0x5FE6EC85E7DE30DALL - (i >> 1);        // gives initial guess
     double z = binary_cast<double>(i);
-    z = z * (1.5 - xhalf * z * z);          // Newton step, repeating increases accuracy
+    z = z * (1.5 - xhalf * z * z);              // Newton step, repeating increases accuracy
     return z;
 }
 
