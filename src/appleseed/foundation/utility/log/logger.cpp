@@ -157,11 +157,15 @@ void Logger::write(
         for (const_each<Impl::LogTargetContainer> i = impl->m_targets; i; ++i)
         {
             LogTargetBase* target = *i;
-            target->write(
-                category,
-                file,
-                line,
-                &impl->m_message_buffer[0]);
+
+            if (target->get_formatting_flags(category))
+            {
+                target->write(
+                    category,
+                    file,
+                    line,
+                    &impl->m_message_buffer[0]);
+            }
         }
     }
 
