@@ -124,19 +124,19 @@ class TriangleTreeFactory
 
 // Triangle tree container and iterator types.
 typedef std::map<
-            foundation::UniqueID,
-            foundation::Lazy<TriangleTree>*
-        > TriangleTreeContainer;
+    foundation::UniqueID,
+    foundation::Lazy<TriangleTree>*
+> TriangleTreeContainer;
 typedef TriangleTreeContainer::iterator TriangleTreeIterator;
 typedef TriangleTreeContainer::const_iterator TriangleTreeConstIterator;
 
 // Triangle tree access cache type.
 typedef foundation::AccessCacheMap<
-            TriangleTreeContainer,
-            TriangleTreeAccessCacheSize,
-            1,
-            foundation::PoolAllocator<void, TriangleTreeAccessCacheSize>
-        > TriangleTreeAccessCache;
+    TriangleTreeContainer,
+    TriangleTreeAccessCacheSize,
+    1,
+    foundation::PoolAllocator<void, TriangleTreeAccessCacheSize>
+> TriangleTreeAccessCache;
 
 
 //

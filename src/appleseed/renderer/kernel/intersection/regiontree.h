@@ -138,19 +138,19 @@ class RegionTreeFactory
 
 // Region tree container and iterator types.
 typedef std::map<
-            foundation::UniqueID,
-            foundation::Lazy<RegionTree>*
-        > RegionTreeContainer;
+    foundation::UniqueID,
+    foundation::Lazy<RegionTree>*
+> RegionTreeContainer;
 typedef RegionTreeContainer::iterator RegionTreeIterator;
 typedef RegionTreeContainer::const_iterator RegionTreeConstIterator;
 
 // Region tree access cache type.
 typedef foundation::AccessCacheMap<
-            RegionTreeContainer,
-            RegionTreeAccessCacheSize,
-            1,
-            foundation::PoolAllocator<void, RegionTreeAccessCacheSize>
-        > RegionTreeAccessCache;
+    RegionTreeContainer,
+    RegionTreeAccessCacheSize,
+    1,
+    foundation::PoolAllocator<void, RegionTreeAccessCacheSize>
+> RegionTreeAccessCache;
 
 
 //

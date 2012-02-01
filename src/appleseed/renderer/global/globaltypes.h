@@ -45,21 +45,22 @@ namespace renderer
 //
 
 // Geometry types.
-typedef float                                   GScalar;
-typedef foundation::Vector<GScalar, 2>          GVector2;
-typedef foundation::Vector<GScalar, 3>          GVector3;
-typedef foundation::AABB<GScalar, 3>            GAABB3;
-typedef foundation::AABB<GScalar, 1>            GAABB1;
+typedef float GScalar;
+typedef foundation::Vector<GScalar, 2> GVector2;
+typedef foundation::Vector<GScalar, 3> GVector3;
+typedef foundation::AABB<GScalar, 3> GAABB3;
+typedef foundation::AABB<GScalar, 1> GAABB1;
 
 // Spectrum representation.
-typedef foundation::RegularSpectrum<float, 31>  Spectrum;
+typedef foundation::RegularSpectrum<float, 31> Spectrum;
 
 // Alpha channel representation.
-typedef foundation::Color<float, 1>             Alpha;
+typedef foundation::Color<float, 1> Alpha;
 
 // Sampling context.
 typedef foundation::QMCSamplingContext<
-            foundation::MersenneTwister>        SamplingContext;
+    foundation::MersenneTwister
+> SamplingContext;
 
 }       // namespace renderer
 

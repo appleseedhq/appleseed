@@ -77,11 +77,11 @@ typedef StaticTessellation<Triangle> StaticTriangleTess;
 //
 
 typedef foundation::AccessCache<
-            StaticTriangleTess,
-            16,
-            1,
-            foundation::PoolAllocator<void, 16>
-        > StaticTriangleTessAccessCache;
+    StaticTriangleTess,
+    16,
+    1,
+    foundation::PoolAllocator<void, 16>
+> StaticTriangleTessAccessCache;
 
 }       // namespace renderer
 

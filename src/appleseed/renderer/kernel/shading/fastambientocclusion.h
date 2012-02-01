@@ -71,9 +71,9 @@ class AOVoxelTree
     typedef foundation::voxel::Tree<GScalar, 3> TreeType;
     typedef foundation::voxel::Builder<TreeType> BuilderType;
     typedef foundation::voxel::TreeStatistics<
-            TreeType,
-            BuilderType
-        > TreeStatisticsType;
+        TreeType,
+        BuilderType
+    > TreeStatisticsType;
 
     // Voxel tree.
     TreeType                m_tree;
@@ -107,9 +107,9 @@ class AOVoxelTreeIntersector
   private:
     // Types.
     typedef foundation::voxel::Intersector<
-            double,
-            AOVoxelTree::TreeType
-        > IntersectorType;
+        double,
+        AOVoxelTree::TreeType
+    > IntersectorType;
 
     // Voxel tree.
     const AOVoxelTree&      m_tree;

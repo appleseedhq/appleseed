@@ -60,18 +60,18 @@ namespace renderer
 //
 
 typedef bvh::SAHPartitioner<
-        TriangleTree
-    > TriangleTreePartitioner;
+    TriangleTree
+> TriangleTreePartitioner;
 
 typedef bvh::Builder<
-        TriangleTree,
-        TriangleTreePartitioner
-    > TriangleTreeBuilder;
+    TriangleTree,
+    TriangleTreePartitioner
+> TriangleTreeBuilder;
 
 typedef bvh::TreeStatistics<
-        TriangleTree,
-        TriangleTreeBuilder
-    > TriangleTreeStatistics;
+    TriangleTree,
+    TriangleTreeBuilder
+> TriangleTreeStatistics;
 
 
 //
@@ -258,8 +258,8 @@ namespace
     };
 
     typedef TriangleReaderImpl<
-                sizeof(GTriangleType::ValueType) == sizeof(TriangleType::ValueType)
-            > TriangleReader;
+        sizeof(GTriangleType::ValueType) == sizeof(TriangleType::ValueType)
+    > TriangleReader;
 }
 
 

@@ -58,18 +58,18 @@ namespace renderer
 //
 
 typedef bvh::SAHPartitioner<
-        AssemblyTree
-    > AssemblyTreePartitioner;
+    AssemblyTree
+> AssemblyTreePartitioner;
 
 typedef bvh::Builder<
-        AssemblyTree,
-        AssemblyTreePartitioner
-    > AssemblyTreeBuilder;
+    AssemblyTree,
+    AssemblyTreePartitioner
+> AssemblyTreeBuilder;
 
 typedef bvh::TreeStatistics<
-        AssemblyTree,
-        AssemblyTreeBuilder
-    > AssemblyTreeStatistics;
+    AssemblyTree,
+    AssemblyTreeBuilder
+> AssemblyTreeStatistics;
 
 
 //
