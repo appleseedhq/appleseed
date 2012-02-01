@@ -52,13 +52,13 @@ SuperLogger::~SuperLogger()
 
 namespace
 {
-    void save_formatting_flags(const LogTargetBase& log_target, LogMessage::FormattingFlags flags[])
+    void save_formatting_flags(const LogTargetBase& log_target, int flags[])
     {
         for (size_t i = 0; i < LogMessage::NumMessageCategories; ++i)
             flags[i] = log_target.get_formatting_flags(static_cast<LogMessage::Category>(i));
     }
 
-    void restore_formatting_flags(LogTargetBase& log_target, const LogMessage::FormattingFlags flags[])
+    void restore_formatting_flags(LogTargetBase& log_target, const int flags[])
     {
         for (size_t i = 0; i < LogMessage::NumMessageCategories; ++i)
             log_target.set_formatting_flags(static_cast<LogMessage::Category>(i), flags[i]);
@@ -67,7 +67,7 @@ namespace
 
 void SuperLogger::enable_message_coloring()
 {
-    LogMessage::FormattingFlags flags[LogMessage::NumMessageCategories];
+    int flags[LogMessage::NumMessageCategories];
     save_formatting_flags(*m_log_target, flags);
 
     remove_target(m_log_target);

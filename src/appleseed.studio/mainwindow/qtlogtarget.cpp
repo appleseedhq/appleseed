@@ -121,13 +121,13 @@ QString QtLogTarget::format_line(
 {
     QString result;
 
-    if (has_formatting_flag(category, LogMessage::DisplayCategory))
+    if (has_formatting_flags(category, LogMessage::DisplayCategory))
     {
         result.append(LogMessage::get_padded_category_name(category));
         result.append(": ");
     }
 
-    if (has_formatting_flag(category, LogMessage::DisplayMessage))
+    if (has_formatting_flags(category, LogMessage::DisplayMessage))
         result.append(line.c_str());
 
     return result;

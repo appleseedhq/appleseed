@@ -39,10 +39,8 @@ namespace foundation
 // LogMessage class implementation.
 //
 
-const LogMessage::FormattingFlags LogMessage::DefaultFormattingFlags =
-    static_cast<LogMessage::FormattingFlags>(
-        LogMessage::DisplayCategory |
-        LogMessage::DisplayMessage);
+const int LogMessage::DefaultFormattingFlags =
+    LogMessage::DisplayCategory | LogMessage::DisplayMessage;
 
 const char* LogMessage::get_category_name(const Category c)
 {

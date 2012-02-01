@@ -71,36 +71,36 @@ class FOUNDATIONDLL LogTargetBase
 
     // Write a message.
     virtual void write(
-        const LogMessage::Category          category,
-        const char*                         file,
-        const size_t                        line,
-        const char*                         message) = 0;
+        const LogMessage::Category  category,
+        const char*                 file,
+        const size_t                line,
+        const char*                 message) = 0;
 
     // Use default formatting for all message categories.
     void reset_formatting_flags();
 
     // Configure the formatting for all message categories.
     void set_formatting_flags(
-        const LogMessage::FormattingFlags   flags);
+        const int                   flags);
 
     // Configure the formatting for a particular category of messages.
     // Return the previous flags values for this category.
-    LogMessage::FormattingFlags set_formatting_flags(
-        const LogMessage::Category          category,
-        const LogMessage::FormattingFlags   flags);
+    int set_formatting_flags(
+        const LogMessage::Category  category,
+        const int                   flags);
 
     // Return the formatting flags for a given category of messages.
-    LogMessage::FormattingFlags get_formatting_flags(
-        const LogMessage::Category          category) const;
+    int get_formatting_flags(
+        const LogMessage::Category  category) const;
 
   protected:
     // Return true if a given formatting flag is set for a given category of messages.
-    bool has_formatting_flag(
-        const LogMessage::Category          category,
-        const LogMessage::FormattingFlags   flag) const;
+    bool has_formatting_flags(
+        const LogMessage::Category  category,
+        const int                   flags) const;
 
   private:
-    LogMessage::FormattingFlags m_flags[LogMessage::NumMessageCategories];
+    int m_flags[LogMessage::NumMessageCategories];
 };
 
 
@@ -120,34 +120,34 @@ inline void LogTargetBase::reset_formatting_flags()
 }
 
 inline void LogTargetBase::set_formatting_flags(
-    const LogMessage::FormattingFlags   flags)
+    const int                   flags)
 {
     for (size_t i = 0; i < LogMessage::NumMessageCategories; ++i)
         m_flags[i] = flags;
 }
 
-inline LogMessage::FormattingFlags LogTargetBase::set_formatting_flags(
-    const LogMessage::Category          category,
-    const LogMessage::FormattingFlags   flags)
+inline int LogTargetBase::set_formatting_flags(
+    const LogMessage::Category  category,
+    const int                   flags)
 {
-    LogMessage::FormattingFlags previous_value = m_flags[category];
+    const int previous_value = m_flags[category];
 
     m_flags[category] = flags;
 
     return previous_value;
 }
 
-inline LogMessage::FormattingFlags LogTargetBase::get_formatting_flags(
-    const LogMessage::Category          category) const
+inline int LogTargetBase::get_formatting_flags(
+    const LogMessage::Category  category) const
 {
     return m_flags[category];
 }
 
-inline bool LogTargetBase::has_formatting_flag(
-    const LogMessage::Category          category,
-    const LogMessage::FormattingFlags   flag) const
+inline bool LogTargetBase::has_formatting_flags(
+    const LogMessage::Category  category,
+    const int                   flags) const
 {
-    return (m_flags[category] & flag) != 0;
+    return (m_flags[category] & flags) != 0;
 }
 
 }       // namespace foundation

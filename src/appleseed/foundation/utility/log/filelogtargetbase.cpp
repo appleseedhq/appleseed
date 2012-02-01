@@ -62,10 +62,10 @@ void FileLogTargetBase::write_message(
     // Write the lines.
     for (const_each<vector<string> > i = lines; i; ++i)
     {
-        if (has_formatting_flag(category, LogMessage::DisplayCategory))
+        if (has_formatting_flags(category, LogMessage::DisplayCategory))
             fprintf(file, "%s: ", LogMessage::get_padded_category_name(category));
 
-        if (has_formatting_flag(category, LogMessage::DisplayMessage))
+        if (has_formatting_flags(category, LogMessage::DisplayMessage))
             fprintf(file, "%s\n", i->c_str());
     }
 }
