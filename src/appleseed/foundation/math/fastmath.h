@@ -139,7 +139,7 @@ inline void fast_pow(float a[4], const float b)
     x = subps(x, K);
     x = mulps(x, set1ps(b));
 
-    sse4f y = subps(x, FLOOR_SSE(x));
+    sse4f y = subps(x, floorps(x));
     y = subps(y, mulps(y, y));
     y = mulps(y, set1ps(0.33971f));
     y = subps(addps(x, K), y);
@@ -177,14 +177,14 @@ inline void fast_pow_refined(float a[4], const float b)
     x = subps(x, K);
 
     // One Newton-Raphson refinement step.
-    sse4f z = subps(x, FLOOR_SSE(x));
+    sse4f z = subps(x, floorps(x));
     z = subps(z, mulps(z, z));
     z = mulps(z, set1ps(0.346607f));
     x = addps(x, z);
 
     x = mulps(x, set1ps(b));
 
-    sse4f y = subps(x, FLOOR_SSE(x));
+    sse4f y = subps(x, floorps(x));
     y = subps(y, mulps(y, y));
     y = mulps(y, set1ps(0.33971f));
     y = subps(addps(x, K), y);
