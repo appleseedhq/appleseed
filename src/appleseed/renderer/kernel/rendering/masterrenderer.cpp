@@ -93,35 +93,40 @@ const ParamArray& MasterRenderer::get_parameters() const
     return m_params;
 }
 
-void MasterRenderer::render()
+bool MasterRenderer::render() const
 {
     try
     {
         do_render();
+        return true;
     }
     catch (const StringException& e)
     {
         m_renderer_controller->on_rendering_abort();
         RENDERER_LOG_ERROR("rendering failed (%s: %s).", e.what(), e.string());
+        return false;
     }
     catch (const Exception& e)
     {
         m_renderer_controller->on_rendering_abort();
         RENDERER_LOG_ERROR("rendering failed (%s).", e.what());
+        return false;
     }
     catch (const bad_alloc&)
     {
         m_renderer_controller->on_rendering_abort();
         RENDERER_LOG_ERROR("rendering failed (ran out of memory).");
+        return false;
     }
     catch (...)
     {
         m_renderer_controller->on_rendering_abort();
         RENDERER_LOG_ERROR("rendering failed (unknown exception).");
+        return false;
     }
 }
 
-void MasterRenderer::do_render()
+void MasterRenderer::do_render() const
 {
     while (true)
     {
@@ -147,7 +152,7 @@ void MasterRenderer::do_render()
     }
 }
 
-IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence()
+IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence() const
 {
     assert(m_project.get_scene());
     assert(m_project.get_frame());
@@ -332,7 +337,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     return render_frame_sequence(frame_renderer.get());
 }
 
-IRendererController::Status MasterRenderer::render_frame_sequence(IFrameRenderer* frame_renderer)
+IRendererController::Status MasterRenderer::render_frame_sequence(IFrameRenderer* frame_renderer) const
 {
     while (true) 
     {
@@ -362,7 +367,7 @@ IRendererController::Status MasterRenderer::render_frame_sequence(IFrameRenderer
     }
 }
 
-IRendererController::Status MasterRenderer::render_frame(IFrameRenderer* frame_renderer)
+IRendererController::Status MasterRenderer::render_frame(IFrameRenderer* frame_renderer) const
 {
     frame_renderer->start_rendering();
 

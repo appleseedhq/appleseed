@@ -60,8 +60,8 @@ class RENDERERDLL MasterRenderer
     ParamArray& get_parameters();
     const ParamArray& get_parameters() const;
 
-    // Render the project.
-    void render();
+    // Render the project. Return true on success, false otherwise.
+    bool render() const;
 
   private:
     Project&                    m_project;
@@ -70,16 +70,16 @@ class RENDERERDLL MasterRenderer
     ITileCallbackFactory*       m_tile_callback_factory;
 
     // Render frame sequences, each time reinitializing the rendering components.
-    void do_render();
+    void do_render() const;
 
     // Initialize the rendering components and render a frame sequence.
-    IRendererController::Status initialize_and_render_frame_sequence();
+    IRendererController::Status initialize_and_render_frame_sequence() const;
 
     // Render a frame sequence until the sequence is completed or rendering is aborted.
-    IRendererController::Status render_frame_sequence(IFrameRenderer* frame_renderer);
+    IRendererController::Status render_frame_sequence(IFrameRenderer* frame_renderer) const;
 
     // Render a frame until until the frame is completed or rendering is aborted.
-    IRendererController::Status render_frame(IFrameRenderer* frame_renderer);
+    IRendererController::Status render_frame(IFrameRenderer* frame_renderer) const;
 
     // Bind all scene entities inputs. Return true on success, false otherwise.
     bool bind_scene_entities_inputs() const;
