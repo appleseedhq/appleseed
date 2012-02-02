@@ -283,7 +283,7 @@ namespace
         }
     }
 
-    void apply_resolution_command_line_option(Project* project)
+    void apply_resolution_command_line_option(Project& project)
     {
         if (g_cl.m_resolution.is_set())
         {
@@ -291,7 +291,7 @@ namespace
                   g_cl.m_resolution.string_values()[0] + ' ' +
                   g_cl.m_resolution.string_values()[1];
 
-            const Frame* frame = project->get_frame();
+            const Frame* frame = project.get_frame();
             assert(frame);
 
             ParamArray new_frame_params = frame->get_parameters();
@@ -300,7 +300,7 @@ namespace
             auto_release_ptr<Frame> new_frame(
                 FrameFactory::create(frame->get_name(), new_frame_params));
 
-            project->set_frame(new_frame);
+            project.set_frame(new_frame);
         }
     }
 
@@ -325,16 +325,84 @@ namespace
 
 #endif
 
-    void render_frame(
-        Project&            project,
-        const ParamArray&   params)
+    auto_release_ptr<Project> load_project(const string& project_filename)
     {
+        const string builtin_prefix = "builtin:";
+
+        if (project_filename.substr(0, builtin_prefix.size()) == builtin_prefix)
+        {
+            // Load the built-in project.
+            ProjectFileReader reader;
+            const string name = project_filename.substr(builtin_prefix.size());
+            return reader.load_builtin(name.c_str());
+        }
+        else
+        {
+            // Construct the schema filename.
+            const filesystem::path schema_path =
+                  filesystem::path(Application::get_root_path())
+                / "schemas/project.xsd";
+
+            // Load the project from disk.
+            ProjectFileReader reader;
+            return
+                reader.read(
+                    project_filename.c_str(),
+                    schema_path.file_string().c_str());
+        }
+    }
+
+    bool configure_project(Project& project, ParamArray& params)
+    {
+        // Retrieve the name of the configuration to use.
+        const string config_name = g_cl.m_configuration.is_set()
+            ? g_cl.m_configuration.values()[0]
+            : "final";
+
+        // Retrieve the configuration.
+        const Configuration* configuration =
+            project.configurations().get_by_name(config_name.c_str());
+        if (configuration == 0)
+        {
+            RENDERER_LOG_ERROR(
+                "the configuration \"%s\" does not exist.",
+                config_name.c_str());
+            return false;
+        }
+
+        // Retrieve the parameters from the configuration.
+        if (configuration->get_base())
+            params = configuration->get_base()->get_parameters();
+        params.merge(g_settings);
+        params.merge(configuration->get_parameters());
+
+        // Apply command line options.
+        apply_command_line_options(params);
+        apply_resolution_command_line_option(project);
+
+        return true;
+    }
+
+    void render(const string& project_filename, SuperLogger& logger)
+    {
+        global_logger().add_target(&logger.get_log_target());
+
+        // Load the project.
+        auto_release_ptr<Project> project = load_project(project_filename);
+        if (project.get() == 0)
+            return;
+
+        // Figure out the rendering parameters.
+        ParamArray params;
+        if (!configure_project(project.ref(), params))
+            return;
+
         RENDERER_LOG_INFO("rendering frame...");
 
         // Create the master renderer.
         DefaultRendererController renderer_controller;
         MasterRenderer renderer(
-            project,
+            project.ref(),
             params,
             &renderer_controller);
 
@@ -358,7 +426,7 @@ namespace
         // Archive the frame to disk.
         RENDERER_LOG_INFO("archiving frame to disk...");
         char* archive_path;
-        project.get_frame()->archive(
+        project->get_frame()->archive(
             autosave_path.directory_string().c_str(),
             &archive_path);
 
@@ -366,7 +434,7 @@ namespace
         if (g_cl.m_output.is_set())
         {
             RENDERER_LOG_INFO("writing frame to disk...");
-            project.get_frame()->write(g_cl.m_output.values()[0].c_str());
+            project->get_frame()->write(g_cl.m_output.values()[0].c_str());
         }
 
 #if defined __APPLE__ || defined _WIN32
@@ -381,66 +449,70 @@ namespace
         free_string(archive_path);
     }
 
-    void render_project(const string& project_filename)
+    void benchmark_render(const string& project_filename, SuperLogger& logger)
     {
-        auto_release_ptr<Project> project;
+        LogTargetBase& log_target = logger.get_log_target();
 
-        const string builtin_prefix = "builtin:";
-        if (project_filename.substr(0, builtin_prefix.size()) == builtin_prefix)
-        {
-            // Load the built-in project.
-            ProjectFileReader reader;
-            const string name = project_filename.substr(builtin_prefix.size());
-            project = reader.load_builtin(name.c_str());
-        }
-        else
-        {
-            // Construct the schema filename.
-            const filesystem::path schema_path =
-                  filesystem::path(Application::get_root_path())
-                / "schemas/project.xsd";
+        // Save the log target's formatting flags.
+        int old_flags[LogMessage::NumMessageCategories];
+        log_target.save_formatting_flags(old_flags);
 
-            // Load the project from disk.
-            ProjectFileReader reader;
-            project =
-                reader.read(
-                    project_filename.c_str(),
-                    schema_path.file_string().c_str());
-        }
+        // Only display error messages.
+        log_target.set_formatting_flags(LogMessage::DisplayNothing);
+        log_target.set_formatting_flags(LogMessage::Error, LogMessage::DefaultFormattingFlags);
+        log_target.set_formatting_flags(LogMessage::Fatal, LogMessage::DefaultFormattingFlags);
 
-        // Skip this project if loading failed.
+        global_logger().add_target(&log_target);
+
+        // Load the project.
+        auto_release_ptr<Project> project = load_project(project_filename);
         if (project.get() == 0)
             return;
 
-        // Retrieve the name of the configuration to use.
-        const string config_name = g_cl.m_configuration.is_set()
-            ? g_cl.m_configuration.values()[0]
-            : "final";
-
-        // Retrieve the configuration.
-        const Configuration* configuration =
-            project->configurations().get_by_name(config_name.c_str());
-        if (configuration == 0)
-        {
-            RENDERER_LOG_ERROR(
-                "the configuration \"%s\" does not exist.",
-                config_name.c_str());
-            return;
-        }
-
-        // Retrieve the parameters from the configuration.
+        // Figure out the rendering parameters.
         ParamArray params;
-        if (configuration->get_base())
-            params = configuration->get_base()->get_parameters();
-        params.merge(g_settings);
-        params.merge(configuration->get_parameters());
+        if (!configure_project(project.ref(), params))
+            return;
 
-        // Apply command line options.
-        apply_command_line_options(params);
-        apply_resolution_command_line_option(project.get());
+        // Create the master renderer.
+        DefaultRendererController renderer_controller;
+        MasterRenderer renderer(
+            project.ref(),
+            params,
+            &renderer_controller);
 
-        // Render one frame of the project.
-        render_frame(*project, params);
+        // Start the stopwatch.
+        Stopwatch<DefaultWallclockTimer> stopwatch;
+        stopwatch.start();
+
+        // Render a first time.
+        if (!renderer.render())
+            return;
+        stopwatch.measure();
+        const double total_time_seconds = stopwatch.get_seconds();
+
+        // Render a second time.
+        if (!renderer.render())
+            return;
+        stopwatch.measure();
+        const double render_time_seconds = stopwatch.get_seconds() - total_time_seconds;
+
+        // Write the frame to disk.
+        if (g_cl.m_output.is_set())
+            project->get_frame()->write(g_cl.m_output.values()[0].c_str());
+
+        // Force-unload the project.
+        project.reset();
+
+        // Print benchmark results.
+        log_target.set_formatting_flags(LogMessage::Info, LogMessage::DisplayMessage);
+        RENDERER_LOG_INFO("result=success");
+        RENDERER_LOG_INFO("setup_time=%.6f", total_time_seconds - render_time_seconds);
+        RENDERER_LOG_INFO("render_time=%.6f", render_time_seconds);
+        RENDERER_LOG_INFO("total_time=%.6f", total_time_seconds);
+
+        // Restore the log target's formatting flags.
+        log_target.restore_formatting_flags(old_flags);
     }
 }
 
@@ -473,11 +545,14 @@ int main(int argc, const char* argv[])
     if (g_cl.m_run_unit_benchmarks.is_set())
         run_unit_benchmarks(logger);
 
-    global_logger().add_target(&logger.get_log_target());
-
     // Render the specified project.
     if (!g_cl.m_filenames.values().empty())
-        render_project(g_cl.m_filenames.values().front());
+    {
+        const string project_filename = g_cl.m_filenames.values().front();
+        if (g_cl.m_benchmark_mode.is_set())
+            benchmark_render(project_filename, logger);
+        else render(project_filename, logger);
+    }
 
     return 0;
 }

@@ -86,6 +86,10 @@ CommandLineHandler::CommandLineHandler()
     m_filenames.set_max_value_count(1);
     parser().set_default_option_handler(&m_filenames);
 
+    m_benchmark_mode.add_name("--benchmark-mode");
+    m_benchmark_mode.set_description("enable benchmark mode");
+    parser().add_option_handler(&m_benchmark_mode);
+
     m_rendering_threads.add_name("--threads");
     m_rendering_threads.add_name("-t");
     m_rendering_threads.set_description("set the number of rendering threads");
@@ -134,7 +138,7 @@ void CommandLineHandler::print_program_usage(
 {
     LogTargetBase& log_target = logger.get_log_target();
 
-    const LogMessage::FormattingFlags old_flags =
+    const int old_flags =
         log_target.set_formatting_flags(LogMessage::Info, LogMessage::DisplayMessage);
 
     LOG_INFO(logger, "usage: %s [options] project.appleseed", program_name);

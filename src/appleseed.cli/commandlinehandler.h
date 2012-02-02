@@ -64,6 +64,8 @@ class CommandLineHandler
     foundation::ValueOptionHandler<std::string>     m_params;
     foundation::ValueOptionHandler<std::string>     m_filenames;
 
+    foundation::FlagOptionHandler                   m_benchmark_mode;
+
     // Aliases for rendering options.
     foundation::ValueOptionHandler<int>             m_rendering_threads;
     foundation::ValueOptionHandler<std::string>     m_output;
