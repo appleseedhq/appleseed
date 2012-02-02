@@ -27,55 +27,108 @@
 # THE SOFTWARE.
 #
 
+# Settings.
+VersionString = "1.0"
+
+# Imports.
+import datetime
 import os
 import re
 import subprocess
 import sys
 
+
+#
+# Utility functions.
+#
+
 def safe_make_directory(path):
     if not os.path.isdir(path):
         os.makedirs(path)
 
-def print_configuration(appleseed_path, appleseed_args):
-    print("Configuration:")
-    print("  Path to appleseed      : {0}".format(appleseed_path))
-    print("  appleseed command line : {0}".format(" ".join(appleseed_args)))
-    print
 
-def benchmark_project(project_path, appleseed_path, appleseed_args):
+#
+# Logger.
+#
+
+class Logger:
+    def __init__(self, directory):
+        now = datetime.datetime.now()
+        self.filename = now.strftime("benchmark.%Y%m%d.%H%M%S.txt")
+        self.filepath = os.path.join(directory, self.filename)
+        self.file = open(self.filepath, "w", 0)     # 0: no buffering
+
+    def get_log_file_path(self):
+        return self.filepath
+
+    def write(self, s = ""):
+        self.file.write(s + "\n")
+        print(s)
+
+
+#
+# Benchmarking and reporting code.
+#
+
+def benchmark_projects(appleseed_path, appleseed_args, logger):
+    for dirpath, dirnames, filenames in os.walk("."):
+        if dirpath.endswith(".skip"):
+            continue
+
+        for filename in filenames:
+            if os.path.splitext(filename)[1] == ".appleseed":
+                benchmark_project(os.path.join(dirpath, filename), appleseed_path, appleseed_args, logger)
+
+def benchmark_project(project_path, appleseed_path, appleseed_args, logger):
     project_name = os.path.splitext(os.path.split(project_path)[1])[0]
 
-    print("Benchmarking {0} scene...".format(project_name))
+    logger.write("Benchmarking {0} scene...".format(project_name))
 
     command_line = [appleseed_path, project_path] + appleseed_args
+    command_line += [ "--benchmark-mode" ]
     command_line += [ "-o", os.path.join("renders", project_name + ".png") ]
 
     output = subprocess.check_output(command_line, stderr=subprocess.STDOUT)
 
     if was_successful(output):
-        process_output(output)
+        process_output(output, logger)
     else:
-        print(output)
+        logger.write(output)
 
 def was_successful(output):
     return get_value(output, "result") == "success"
 
-def process_output(output):
+def process_output(output, logger):
     setup_time = float(get_value(output, "setup_time"))
     render_time = float(get_value(output, "render_time"))
     total_time = float(get_value(output, "total_time"))
 
-    print("  Setup Time  : {0} seconds".format(setup_time))
-    print("  Render Time : {0} seconds".format(render_time))
-    print("  Total Time  : {0} seconds".format(total_time))
-    print
+    logger.write("  Setup Time  : {0} seconds".format(setup_time))
+    logger.write("  Render Time : {0} seconds".format(render_time))
+    logger.write("  Total Time  : {0} seconds".format(total_time))
+    logger.write()
 
 def get_value(output, key):
     pattern = r"^{0}=(.*)[\r\n]+$".format(key)
     match = re.search(pattern, output, re.MULTILINE)
     return match.group(1) if match else None
 
+
+#
+# Entry point.
+#
+
+def print_configuration(appleseed_path, appleseed_args, logger):
+    logger.write("Configuration:")
+    logger.write("  Log file               : {0}".format(logger.get_log_file_path()))
+    logger.write("  Path to appleseed      : {0}".format(appleseed_path))
+    logger.write("  appleseed command line : {0}".format(" ".join(appleseed_args)))
+    logger.write()
+
 def main():
+    print("appleseed.benchmark version " + VersionString)
+    print
+
     if len(sys.argv) < 2:
         print("Usage: {0} <path-to-appleseed.cli> [arguments]".format(sys.argv[0]))
         sys.exit(1)
@@ -83,16 +136,17 @@ def main():
     appleseed_path = sys.argv[1]
     appleseed_args = sys.argv[2:]
 
-    print_configuration(appleseed_path, appleseed_args)
+    safe_make_directory("logs")
+    logger = Logger("logs")
+
+    print_configuration(appleseed_path, appleseed_args, logger)
 
     safe_make_directory("renders")
 
-    for dirpath, dirnames, filenames in os.walk("."):
-        if dirpath.endswith(".skip"):
-            continue
+    start_time = datetime.datetime.now()
+    benchmark_projects(appleseed_path, appleseed_args, logger)
+    elapsed_time = datetime.datetime.now() - start_time
 
-        for filename in filenames:
-            if os.path.splitext(filename)[1] == ".appleseed":
-                benchmark_project(os.path.join(dirpath, filename), appleseed_path, appleseed_args)
+    logger.write("\nTotal suite time: {0}\n".format(elapsed_time))
 
 main()
