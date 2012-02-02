@@ -32,13 +32,23 @@ import re
 import subprocess
 import sys
 
-def run(project_path, appleseed_path, appleseed_args):
-    project_name = os.path.splitext(os.path.split(project_path)[1])[0]
-    
-    command_line = [appleseed_path, project_path] + appleseed_args
-    command_line += [ "-o", project_name + ".png" ]
+def safe_make_directory(path):
+    if not os.path.isdir(path):
+        os.makedirs(path)
 
-    print("Running {0}".format(" ".join(command_line)))
+def print_configuration(appleseed_path, appleseed_args):
+    print("Configuration:")
+    print("  Path to appleseed      : {0}".format(appleseed_path))
+    print("  appleseed command line : {0}".format(" ".join(appleseed_args)))
+    print
+
+def benchmark_project(project_path, appleseed_path, appleseed_args):
+    project_name = os.path.splitext(os.path.split(project_path)[1])[0]
+
+    print("Benchmarking {0} scene...".format(project_name))
+
+    command_line = [appleseed_path, project_path] + appleseed_args
+    command_line += [ "-o", os.path.join("renders", project_name + ".png") ]
 
     output = subprocess.check_output(command_line, stderr=subprocess.STDOUT)
 
@@ -55,9 +65,9 @@ def process_output(output):
     render_time = float(get_value(output, "render_time"))
     total_time = float(get_value(output, "total_time"))
 
-    print("  Setup Time: {0} seconds".format(setup_time))
-    print("  Render Time: {0} seconds".format(render_time))
-    print("  Total Time: {0} seconds".format(total_time))
+    print("  Setup Time  : {0} seconds".format(setup_time))
+    print("  Render Time : {0} seconds".format(render_time))
+    print("  Total Time  : {0} seconds".format(total_time))
     print
 
 def get_value(output, key):
@@ -73,13 +83,16 @@ def main():
     appleseed_path = sys.argv[1]
     appleseed_args = sys.argv[2:]
 
+    print_configuration(appleseed_path, appleseed_args)
+
+    safe_make_directory("renders")
+
     for dirpath, dirnames, filenames in os.walk("."):
         if dirpath.endswith(".skip"):
-            print("Skipping {0}...\n".format(dirpath))
             continue
 
         for filename in filenames:
             if os.path.splitext(filename)[1] == ".appleseed":
-                run(os.path.join(dirpath, filename), appleseed_path, appleseed_args)
+                benchmark_project(os.path.join(dirpath, filename), appleseed_path, appleseed_args)
 
 main()
