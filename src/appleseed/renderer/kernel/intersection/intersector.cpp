@@ -171,7 +171,8 @@ void Intersector::offset(
 
     // Offset parameters.
     const double Threshold = 1.0e-25;
-    const int EpsLut[2] = { 8, -8 };
+    const int EpsMag = 8;
+    const int EpsLut[2] = { EpsMag, -EpsMag };
 
     // Check which components of p are close to the origin.
     const bool is_small[3] =
@@ -202,6 +203,71 @@ void Intersector::offset(
             back[i] = binary_cast<double>(pi - shift);
         }
     }
+}
+
+namespace
+{
+    Vector3d offset_point(
+        const Vector3d&                 p,
+        const Vector3d&                 n,
+        const int64                     mag)
+    {
+        const double Threshold = 1.0e-25;
+        const int64 eps_lut[2] = { mag, -mag };
+
+        Vector3d result;
+
+        for (size_t i = 0; i < 3; ++i)
+        {
+            if (abs(p[i]) < Threshold)
+                result[i] = p[i] + n[i] * Threshold;
+            else
+            {
+                const uint64 pi = binary_cast<uint64>(p[i]);
+                const int64 shift = eps_lut[(pi ^ binary_cast<uint64>(n[i])) >> 63];
+                result[i] = binary_cast<double>(pi + shift);
+            }
+        }
+
+        return result;
+    }
+
+    Vector3d adaptive_offset_point(
+        const TriangleSupportPlaneType& support_plane,
+        const Vector3d&                 p,
+        const Vector3d&                 n,
+        const int64                     initial_mag)
+    {
+        int64 mag = initial_mag;
+        Vector3d result = p;
+
+        for (size_t i = 0; i < 64; ++i)
+        {
+            result = offset_point(result, n, mag);
+
+            if (support_plane.intersect(result, n) < 0.0)
+                break;
+
+            mag *= 2;
+        }
+
+        return result;
+    }
+}
+
+void Intersector::adaptive_offset(
+    const TriangleSupportPlaneType& support_plane,
+    const Vector3d&                 p,
+    Vector3d                        n,
+    Vector3d&                       front,
+    Vector3d&                       back)
+{
+    const int64 InitialMag = 8;
+
+    n = normalize(n);
+
+    front = adaptive_offset_point(support_plane, p, n, InitialMag);
+    back = adaptive_offset_point(support_plane, p, -n, InitialMag);
 }
 
 bool Intersector::trace(

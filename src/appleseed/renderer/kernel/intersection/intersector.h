@@ -77,6 +77,12 @@ class Intersector
         foundation::Vector3d            n,
         foundation::Vector3d&           front,
         foundation::Vector3d&           back);
+    static void adaptive_offset(
+        const TriangleSupportPlaneType& support_plane,
+        const foundation::Vector3d&     p,
+        foundation::Vector3d            n,
+        foundation::Vector3d&           front,
+        foundation::Vector3d&           back);
 
     // Trace a world space ray through the scene.
     bool trace(
