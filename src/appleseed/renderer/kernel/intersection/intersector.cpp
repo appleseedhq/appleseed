@@ -54,8 +54,8 @@ namespace
 {
     // Return true if two shading points reference the same triangle.
     inline bool same_triangle(
-        const ShadingPoint&     lhs,
-        const ShadingPoint&     rhs)
+        const ShadingPoint&         lhs,
+        const ShadingPoint&         rhs)
     {
         assert(lhs.hit());
         assert(rhs.hit());
@@ -69,8 +69,8 @@ namespace
 
     // Print a message if a self-intersection situation is detected.
     void report_self_intersection(
-        const ShadingPoint&     shading_point,
-        const ShadingPoint*     parent_shading_point)
+        const ShadingPoint&         shading_point,
+        const ShadingPoint*         parent_shading_point)
     {
         if (shading_point.hit() &&
             parent_shading_point &&
@@ -84,9 +84,9 @@ namespace
 }
 
 Intersector::Intersector(
-    const TraceContext& trace_context,
-    const bool          print_statistics,
-    const bool          report_self_intersections)
+    const TraceContext&             trace_context,
+    const bool                      print_statistics,
+    const bool                      report_self_intersections)
   : m_trace_context(trace_context)
   , m_print_statistics(print_statistics)
   , m_report_self_intersections(report_self_intersections)
@@ -157,10 +157,10 @@ Vector3d Intersector::refine(
 }
 
 void Intersector::offset(
-    const Vector3d&     p,
-    Vector3d            n,
-    Vector3d&           front,
-    Vector3d&           back)
+    const Vector3d&                 p,
+    Vector3d                        n,
+    Vector3d&                       front,
+    Vector3d&                       back)
 {
     //
     // Reference:
@@ -271,9 +271,9 @@ void Intersector::adaptive_offset(
 }
 
 bool Intersector::trace(
-    const ShadingRay&   ray,
-    ShadingPoint&       shading_point,
-    const ShadingPoint* parent_shading_point) const
+    const ShadingRay&               ray,
+    ShadingPoint&                   shading_point,
+    const ShadingPoint*             parent_shading_point) const
 {
     assert(shading_point.m_scene == 0);
     assert(shading_point.hit() == false);
@@ -331,8 +331,8 @@ bool Intersector::trace(
 }
 
 bool Intersector::trace_probe(
-    const ShadingRay&   ray,
-    const ShadingPoint* parent_shading_point) const
+    const ShadingRay&               ray,
+    const ShadingPoint*             parent_shading_point) const
 {
     assert(parent_shading_point == 0 || parent_shading_point->hit());
 
