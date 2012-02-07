@@ -51,7 +51,7 @@ typedef foundation::TriangleMTSupportPlane<double> TriangleSupportPlaneType;
 
 
 //
-// Region tree statistics.
+// Region tree settings.
 //
 
 // Maximum region duplication rate.
@@ -68,13 +68,13 @@ const size_t RegionTreeAccessCacheSize = 16;
 
 
 //
-// Triangle tree statistics.
+// Triangle tree settings.
 //
 
-// If defined, leaves of the triangle tree get split along their
-// longest dimension only. If left undefined, all three dimensions
-// are considered for splitting, resulting in better trees (faster
-// intersection, but slower construction).
+// If defined, leaves of the triangle tree get split along their longest
+// dimension only. If left undefined, all three dimensions are considered
+// for splitting, resulting in better trees (faster intersection, but slower
+// construction).
 #undef RENDERER_TRIANGLE_TREE_SPLIT_LONGEST_AXIS
 
 // Maximum number of triangles per leaf.
@@ -100,6 +100,17 @@ const size_t TriangleTreeAccessCacheSize = 16;
 
 // Enable/disable construction tracing.
 const bool TriangleTreeTraceConstruction = false;
+
+
+//
+// Miscellaneous settings.
+//
+
+// If defined, an adaptive procedure is used to offset intersection points.
+// If left undefined, a fixed, constant-time procedure is used. The adaptive
+// procedure handles degenerate cases better but is slightly slower. It must
+// be used when the triangle model is set to Moller-Trumbore (MT).
+#define RENDERER_ADAPTIVE_OFFSET
 
 }       // namespace renderer
 
