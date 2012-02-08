@@ -59,7 +59,9 @@ class SAHPartitioner
 
     // Constructor.
     explicit SAHPartitioner(
-        const size_t            max_leaf_size);
+        const size_t            max_leaf_size,
+        const ValueType         interior_node_traversal_cost = ValueType(2.0),
+        const ValueType         triangle_intersection_cost = ValueType(1.0));
 
     // Partition a set of items into two distinct sets.
     size_t partition(
@@ -71,6 +73,8 @@ class SAHPartitioner
 
   private:
     const size_t                m_max_leaf_size;
+    const ValueType             m_interior_node_traversal_cost;
+    const ValueType             m_triangle_intersection_cost;
     std::vector<ValueType>      m_left_areas;
 };
 
@@ -81,8 +85,12 @@ class SAHPartitioner
 
 template <typename Tree>
 inline SAHPartitioner<Tree>::SAHPartitioner(
-    const size_t                max_leaf_size)
+    const size_t                max_leaf_size,
+    const ValueType             interior_node_traversal_cost,
+    const ValueType             triangle_intersection_cost)
   : m_max_leaf_size(max_leaf_size)
+  , m_interior_node_traversal_cost(interior_node_traversal_cost)
+  , m_triangle_intersection_cost(triangle_intersection_cost)
 {
 }
 
@@ -147,8 +155,11 @@ size_t SAHPartitioner<Tree>::partition(
     }
 
     // Don't split if it's cheaper to make a leaf.
-    const ValueType leaf_cost = bbox.half_surface_area() * count;
-    if (best_split_cost >= leaf_cost)
+    const ValueType split_cost =
+        m_interior_node_traversal_cost +  
+        best_split_cost / bbox.half_surface_area() * m_triangle_intersection_cost;
+    const ValueType leaf_cost = count * m_triangle_intersection_cost;
+    if (leaf_cost <= split_cost)
         return end;
 
     // Sort again the items according to the chosen dimension.
