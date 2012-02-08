@@ -78,13 +78,16 @@ const size_t RegionTreeAccessCacheSize = 16;
 #undef RENDERER_TRIANGLE_TREE_SPLIT_LONGEST_AXIS
 
 // Maximum number of triangles per leaf.
-const size_t TriangleTreeMaxLeafSize = 4;
+const size_t TriangleTreeMaxLeafSize = 8;
+
+// Relative cost of traversing an interior node.
+const GScalar TriangleTreeInteriorNodeTraversalCost = GScalar(2.0);
+
+// Relative cost of intersecting a triangle.
+const GScalar TriangleTreeTriangleIntersectionCost = GScalar(1.0);
 
 // Number of bins used in the construction of the approximate SAH function.
 const size_t TriangleTreeApproxSAHBinCount = 32;
-
-// Multiplier for the cost of keeping a leaf unsplit.
-const GScalar TriangleTreeLeafCostMultiplier = GScalar(0.99);
 
 // Leaf size threshold for O1 optimization level (approximate SAH).
 const size_t TriangleTreeO1Threshold = 1024 * 1024;
@@ -98,8 +101,11 @@ const size_t TriangleTreeSubtreeDepth = 3;
 // Size of the triangle tree access cache.
 const size_t TriangleTreeAccessCacheSize = 16;
 
-// Enable/disable construction tracing.
-const bool TriangleTreeTraceConstruction = false;
+// Size of the stack (in number of nodes) used during traversal.
+const size_t TriangleTreeStackSize = 64;
+
+// Number of stack levels to keep sorted during traversal.
+const size_t TriangleTreeSortSize = 0;
 
 
 //

@@ -211,13 +211,17 @@ class TriangleLeafProbeVisitor
 typedef foundation::bvh::Intersector<
     double,
     TriangleTree,
-    TriangleLeafVisitor
+    TriangleLeafVisitor,
+    TriangleTreeStackSize,
+    TriangleTreeSortSize
 > TriangleLeafIntersector;
 
 typedef foundation::bvh::Intersector<
     double,
     TriangleTree,
-    TriangleLeafProbeVisitor
+    TriangleLeafProbeVisitor,
+    TriangleTreeStackSize,
+    TriangleTreeSortSize
 > TriangleLeafProbeIntersector;
 
 

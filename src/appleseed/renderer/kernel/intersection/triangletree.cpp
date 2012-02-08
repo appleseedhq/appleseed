@@ -104,7 +104,10 @@ TriangleTree::TriangleTree(const Arguments& arguments)
         plural(size(), "triangle").c_str());
 
     // Build the triangle tree.
-    TriangleTreePartitioner partitioner(TriangleTreeMaxLeafSize);
+    TriangleTreePartitioner partitioner(
+        TriangleTreeMaxLeafSize,
+        TriangleTreeInteriorNodeTraversalCost,
+        TriangleTreeTriangleIntersectionCost);
     TriangleTreeBuilder builder;
     builder.build<DefaultWallclockTimer>(*this, partitioner);
 
