@@ -61,6 +61,7 @@ class TreeStatistics
 
   private:
     typedef typename Tree::ValueType ValueType;
+    typedef typename Tree::AABBType AABBType;
     typedef typename Tree::NodeType NodeType;
 
     const double            m_build_time;           // construction time in seconds
@@ -71,6 +72,7 @@ class TreeStatistics
     size_t                  m_leaf_count;           // number of leaf nodes
     Population<size_t>      m_leaf_depth;           // leaf depth statistics
     Population<size_t>      m_leaf_size;            // leaf size statistics
+    Population<double>      m_sibling_overlap;      // amount of overlap between sibling nodes
 
     // Helper method to recursively traverse the tree and collect statistics.
     void collect_stats_recurse(
@@ -89,8 +91,10 @@ class TraversalStatistics
 {
   public:
     size_t                  m_traversal_count;      // number of times the tree was traversed
-    Population<size_t>      m_fetched_nodes;        // number of nodes fetched from memory
-    Population<size_t>      m_visited_leaves;       // number of leaves actually visited
+    Population<size_t>      m_visited_nodes;        // number of visited nodes
+    Population<size_t>      m_visited_leaves;       // number of visited leaves
+    Population<size_t>      m_culled_nodes;         // number of culled nodes
+    Population<size_t>      m_intersected_nodes;    // number of intersected nodes
     Population<size_t>      m_intersected_items;    // number of items tested for intersection
 
     // Constructor.
@@ -118,9 +122,11 @@ TreeStatistics<Tree, Builder>::TreeStatistics(
 {
     assert(!tree.m_nodes.empty());
 
-    // Recursively traverse the tree and collect statistics.
     if (tree.m_bbox.is_valid())
         collect_stats_recurse(tree, tree.m_nodes.front(), 0);
+
+    if (m_leaf_volume > m_volume)
+        m_leaf_volume = m_volume;
 }
 
 template <typename Tree, typename Builder>
@@ -133,7 +139,8 @@ void TreeStatistics<Tree, Builder>::print(Logger& logger)
         "  nodes            total %s  interior %s  leaves %s\n"
         "  leaf volume      %s\n"
         "  leaf depth       avg %.1f  min %s  max %s  dev %.1f\n"
-        "  leaf size        avg %.1f  min %s  max %s  dev %.1f",
+        "  leaf size        avg %.1f  min %s  max %s  dev %.1f\n"
+        "  sibling overlap  avg %s  min %s  max %s  dev %s",
         pretty_time(m_build_time).c_str(),
         pretty_size(m_memory_size).c_str(),
         pretty_uint(m_node_count).c_str(),
@@ -147,7 +154,11 @@ void TreeStatistics<Tree, Builder>::print(Logger& logger)
         m_leaf_size.get_avg(),
         pretty_uint(m_leaf_size.get_min()).c_str(),
         pretty_uint(m_leaf_size.get_max()).c_str(),
-        m_leaf_size.get_dev());
+        m_leaf_size.get_dev(),
+        pretty_percent(m_sibling_overlap.get_avg(), 1.0).c_str(),
+        pretty_percent(m_sibling_overlap.get_min(), 1.0).c_str(),
+        pretty_percent(m_sibling_overlap.get_max(), 1.0).c_str(),
+        pretty_percent(m_sibling_overlap.get_dev(), 1.0).c_str());
 }
 
 template <typename Tree, typename Builder>
@@ -166,10 +177,18 @@ void TreeStatistics<Tree, Builder>::collect_stats_recurse(
     }
     else
     {
-        // Recurse into the child nodes.
+        // Fetch left and right children.
         const size_t child_index = node.get_child_node_index();
-        collect_stats_recurse(tree, tree.m_nodes[child_index], depth + 1);
-        collect_stats_recurse(tree, tree.m_nodes[child_index + 1], depth + 1);
+        const NodeType& left_node = tree.m_nodes[child_index];
+        const NodeType& right_node = tree.m_nodes[child_index + 1];
+
+        // Keep track of the amount of overlap between children.
+        m_sibling_overlap.insert(
+            AABBType::overlap_ratio(left_node.get_bbox(), right_node.get_bbox()));
+
+        // Recurse into the child nodes.
+        collect_stats_recurse(tree, left_node, depth + 1);
+        collect_stats_recurse(tree, right_node, depth + 1);
     }
 }
 

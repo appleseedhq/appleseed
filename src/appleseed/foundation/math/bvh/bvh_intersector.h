@@ -153,8 +153,10 @@ void Intersector<T, Tree, Visitor, StackSize, SortSize>::intersect(
 
     // Initialize traversal statistics.
     FOUNDATION_BVH_TRAVERSAL_STATS(++stats.m_traversal_count);
-    FOUNDATION_BVH_TRAVERSAL_STATS(size_t fetched_nodes = 0);
+    FOUNDATION_BVH_TRAVERSAL_STATS(size_t visited_nodes = 0);
     FOUNDATION_BVH_TRAVERSAL_STATS(size_t visited_leaves = 0);
+    FOUNDATION_BVH_TRAVERSAL_STATS(size_t culled_nodes = 0);
+    FOUNDATION_BVH_TRAVERSAL_STATS(size_t intersected_nodes = 0);
     FOUNDATION_BVH_TRAVERSAL_STATS(size_t intersected_items = 0);
 
     // Initialize the node stack.
@@ -196,10 +198,13 @@ void Intersector<T, Tree, Visitor, StackSize, SortSize>::intersect(
 
         // Skip nodes that are farther than the closest intersection found so far.
         if (tmin >= tfar)
+        {
+            FOUNDATION_BVH_TRAVERSAL_STATS(++culled_nodes);
             continue;
+        }
 
         // Fetch the node.
-        FOUNDATION_BVH_TRAVERSAL_STATS(++fetched_nodes);
+        FOUNDATION_BVH_TRAVERSAL_STATS(++visited_nodes);
         const NodeType& node = tree.m_nodes[stack_ptr->m_index];
 
         if (node.is_leaf())
@@ -208,10 +213,9 @@ void Intersector<T, Tree, Visitor, StackSize, SortSize>::intersect(
             const size_t item_end = item_begin + node.get_item_count();
             assert(item_begin < item_end);
 
+            // Visit the leaf.
             FOUNDATION_BVH_TRAVERSAL_STATS(++visited_leaves);
             FOUNDATION_BVH_TRAVERSAL_STATS(intersected_items += item_end - item_begin);
-
-            // Visit the leaf.
             ValueType distance;
 #ifndef NDEBUG
             distance = ValueType(-1.0);
@@ -244,11 +248,11 @@ void Intersector<T, Tree, Visitor, StackSize, SortSize>::intersect(
             for (size_t i = 0; i < 2; ++i, ++child_index)
             {
                 // Fetch the bounding box of the child node.
-                FOUNDATION_BVH_TRAVERSAL_STATS(++fetched_nodes);
                 const NodeType& child_node = tree.m_nodes[child_index];
                 const AABBType child_bbox = AABBType(child_node.get_bbox());
 
                 // Discard the child node if it isn't intersected by the ray.
+                FOUNDATION_BVH_TRAVERSAL_STATS(++intersected_nodes);
                 ValueType tmin, tmax;
                 if (!foundation::intersect(ray, ray_info, child_bbox, tmin, tmax))
                     continue;
@@ -256,7 +260,10 @@ void Intersector<T, Tree, Visitor, StackSize, SortSize>::intersect(
 
                 // Discard the child node if it is farther than the closest intersection so far.
                 if (tmin >= tfar)
+                {
+                    FOUNDATION_BVH_TRAVERSAL_STATS(++culled_nodes);
                     continue;
+                }
 
                 // Push the child node to the stack.
                 stack_ptr->m_tmin = tmin;
@@ -268,8 +275,10 @@ void Intersector<T, Tree, Visitor, StackSize, SortSize>::intersect(
     }
 
     // Store traversal statistics.
-    FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_fetched_nodes.insert(fetched_nodes));
+    FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_visited_nodes.insert(visited_nodes));
     FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_visited_leaves.insert(visited_leaves));
+    FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_culled_nodes.insert(culled_nodes));
+    FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_nodes.insert(intersected_nodes));
     FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(intersected_items));
 }
 
