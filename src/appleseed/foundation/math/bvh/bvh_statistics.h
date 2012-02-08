@@ -93,7 +93,8 @@ class TraversalStatistics
     size_t                  m_traversal_count;      // number of times the tree was traversed
     Population<size_t>      m_visited_nodes;        // number of visited nodes
     Population<size_t>      m_visited_leaves;       // number of visited leaves
-    Population<size_t>      m_culled_nodes;         // number of culled nodes
+    Population<size_t>      m_culled_nodes;         // number of culled nodes (too far away)
+    Population<size_t>      m_discarded_nodes;      // number of discarded nodes (not hit by the ray)
     Population<size_t>      m_intersected_nodes;    // number of intersected nodes
     Population<size_t>      m_intersected_items;    // number of items tested for intersection
 

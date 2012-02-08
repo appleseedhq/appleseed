@@ -50,6 +50,7 @@ void TraversalStatistics::print(Logger& logger)
         "  visited leaves   avg %.1f  min %s  max %s  dev %.1f\n"
         "  culled nodes     avg %.1f  min %s  max %s  dev %.1f\n"
         "  intersect. nodes avg %.1f  min %s  max %s  dev %.1f\n"
+        "  discarded nodes  avg %.1f  min %s  max %s  dev %.1f\n"
         "  intersect. items avg %.1f  min %s  max %s  dev %.1f\n",
         pretty_uint(m_traversal_count).c_str(),
         m_visited_nodes.get_avg(),
@@ -68,6 +69,10 @@ void TraversalStatistics::print(Logger& logger)
         pretty_uint(m_intersected_nodes.get_min()).c_str(),
         pretty_uint(m_intersected_nodes.get_max()).c_str(),
         m_intersected_nodes.get_dev(),
+        m_discarded_nodes.get_avg(),
+        pretty_uint(m_discarded_nodes.get_min()).c_str(),
+        pretty_uint(m_discarded_nodes.get_max()).c_str(),
+        m_discarded_nodes.get_dev(),
         m_intersected_items.get_avg(),
         pretty_uint(m_intersected_items.get_min()).c_str(),
         pretty_uint(m_intersected_items.get_max()).c_str(),

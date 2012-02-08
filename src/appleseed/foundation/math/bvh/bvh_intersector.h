@@ -156,6 +156,7 @@ void Intersector<T, Tree, Visitor, StackSize, SortSize>::intersect(
     FOUNDATION_BVH_TRAVERSAL_STATS(size_t visited_nodes = 0);
     FOUNDATION_BVH_TRAVERSAL_STATS(size_t visited_leaves = 0);
     FOUNDATION_BVH_TRAVERSAL_STATS(size_t culled_nodes = 0);
+    FOUNDATION_BVH_TRAVERSAL_STATS(size_t discarded_nodes = 0);
     FOUNDATION_BVH_TRAVERSAL_STATS(size_t intersected_nodes = 0);
     FOUNDATION_BVH_TRAVERSAL_STATS(size_t intersected_items = 0);
 
@@ -255,8 +256,10 @@ void Intersector<T, Tree, Visitor, StackSize, SortSize>::intersect(
                 FOUNDATION_BVH_TRAVERSAL_STATS(++intersected_nodes);
                 ValueType tmin, tmax;
                 if (!foundation::intersect(ray, ray_info, child_bbox, tmin, tmax))
+                {
+                    FOUNDATION_BVH_TRAVERSAL_STATS(++discarded_nodes);
                     continue;
-                assert(tmin <= tmax);
+                }
 
                 // Discard the child node if it is farther than the closest intersection so far.
                 if (tmin >= tfar)
@@ -278,6 +281,7 @@ void Intersector<T, Tree, Visitor, StackSize, SortSize>::intersect(
     FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_visited_nodes.insert(visited_nodes));
     FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_visited_leaves.insert(visited_leaves));
     FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_culled_nodes.insert(culled_nodes));
+    FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_discarded_nodes.insert(discarded_nodes));
     FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_nodes.insert(intersected_nodes));
     FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(intersected_items));
 }
