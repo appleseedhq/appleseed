@@ -36,13 +36,11 @@ namespace bsp {
 // TraversalStatistics class implementation.
 //
 
-// Constructor.
 TraversalStatistics::TraversalStatistics()
   : m_traversal_count(0)
 {
 }
 
-// Print traversal statistics.
 void TraversalStatistics::print(Logger& logger)
 {
     LOG_DEBUG(
