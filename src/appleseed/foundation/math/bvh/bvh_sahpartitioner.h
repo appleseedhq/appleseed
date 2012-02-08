@@ -58,9 +58,9 @@ class SAHPartitioner
     typedef typename Tree::AABBType AABBType;
 
     // Constructor.
-    explicit SAHPartitioner(
+    SAHPartitioner(
         const size_t            max_leaf_size,
-        const ValueType         interior_node_traversal_cost = ValueType(2.0),
+        const ValueType         interior_node_traversal_cost = ValueType(1.0),
         const ValueType         triangle_intersection_cost = ValueType(1.0));
 
     // Partition a set of items into two distinct sets.
