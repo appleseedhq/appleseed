@@ -373,7 +373,7 @@ namespace
 
             // Log a progress message.
             RENDERER_LOG_INFO(
-                "building region bsp tree for assembly #" FMT_UNIQUE_ID " (%s %s)...", 
+                "building region tree for assembly #" FMT_UNIQUE_ID " (%s %s)...", 
                 arguments.m_assembly_uid,
                 pretty_int(root_leaf->get_size()).c_str(),
                 plural(root_leaf->get_size(), "region").c_str());
@@ -391,7 +391,7 @@ namespace
             // Collect and print triangle tree statistics.
             IntermRegionTreeStatistics tree_stats(*this, builder);
             RENDERER_LOG_DEBUG(
-                "region bsp tree #" FMT_UNIQUE_ID " statistics:",
+                "region tree #" FMT_UNIQUE_ID " statistics:",
                 arguments.m_assembly_uid);
             tree_stats.print(global_logger());
         }
@@ -458,7 +458,7 @@ RegionTree::~RegionTree()
 {
     // Log a progress message.
     RENDERER_LOG_INFO(
-        "deleting region bsp tree for assembly #" FMT_UNIQUE_ID "...", 
+        "deleting region tree for assembly #" FMT_UNIQUE_ID "...", 
         m_assembly_uid);
 
     // Delete triangle trees.
@@ -511,8 +511,8 @@ double RegionLeafVisitor::visit(
             ray,
             ray_info,
             visitor
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-            , m_triangle_bsp_stats
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+            , m_triangle_tree_stats
 #endif
             );
         visitor.read_hit_triangle_data();
@@ -550,8 +550,8 @@ double RegionLeafProbeVisitor::visit(
             ray,
             ray_info,
             visitor
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-            , m_triangle_bsp_stats
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+            , m_triangle_tree_stats
 #endif
             );
 

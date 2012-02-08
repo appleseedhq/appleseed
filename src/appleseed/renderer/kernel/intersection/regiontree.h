@@ -38,6 +38,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/bsp.h"
+#include "foundation/math/bvh.h"
 #include "foundation/utility/lazy.h"
 #include "foundation/utility/poolallocator.h"
 
@@ -165,8 +166,8 @@ class RegionLeafVisitor
     RegionLeafVisitor(
         ShadingPoint&                           shading_point,
         TriangleTreeAccessCache&                triangle_tree_cache
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-        , foundation::bsp::TraversalStatistics& triangle_bsp_stats
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+        , foundation::bvh::TraversalStatistics& triangle_tree_stats
 #endif
         );
 
@@ -179,8 +180,8 @@ class RegionLeafVisitor
   private:
     ShadingPoint&                               m_shading_point;
     TriangleTreeAccessCache&                    m_triangle_tree_cache;
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-    foundation::bsp::TraversalStatistics&       m_triangle_bsp_stats;
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+    foundation::bvh::TraversalStatistics&       m_triangle_tree_stats;
 #endif
 };
 
@@ -197,8 +198,8 @@ class RegionLeafProbeVisitor
     // Constructor.
     RegionLeafProbeVisitor(
         TriangleTreeAccessCache&                triangle_tree_cache
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-        , foundation::bsp::TraversalStatistics& triangle_bsp_stats
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+        , foundation::bvh::TraversalStatistics& triangle_tree_stats
 #endif
         );
 
@@ -210,8 +211,8 @@ class RegionLeafProbeVisitor
 
   private:
     TriangleTreeAccessCache&                    m_triangle_tree_cache;
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-    foundation::bsp::TraversalStatistics&       m_triangle_bsp_stats;
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+    foundation::bvh::TraversalStatistics&       m_triangle_tree_stats;
 #endif
 };
 
@@ -267,14 +268,14 @@ inline foundation::UniqueID RegionLeaf::get_triangle_tree_uid() const
 inline RegionLeafVisitor::RegionLeafVisitor(
     ShadingPoint&                               shading_point,
     TriangleTreeAccessCache&                    triangle_tree_cache
-  #ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-    , foundation::bsp::TraversalStatistics&     triangle_bsp_stats
+  #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+    , foundation::bvh::TraversalStatistics&     triangle_tree_stats
 #endif
     )
   : m_shading_point(shading_point)
   , m_triangle_tree_cache(triangle_tree_cache)
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-  , m_triangle_bsp_stats(triangle_bsp_stats)
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+  , m_triangle_tree_stats(triangle_tree_stats)
 #endif
 {
 }
@@ -287,13 +288,13 @@ inline RegionLeafVisitor::RegionLeafVisitor(
 // Constructor.
 inline RegionLeafProbeVisitor::RegionLeafProbeVisitor(
     TriangleTreeAccessCache&                    triangle_tree_cache
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-    , foundation::bsp::TraversalStatistics&     triangle_bsp_stats
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+    , foundation::bvh::TraversalStatistics&     triangle_tree_stats
 #endif
     )
   : m_triangle_tree_cache(triangle_tree_cache)
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-  , m_triangle_bsp_stats(triangle_bsp_stats)
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+  , m_triangle_tree_stats(triangle_tree_stats)
 #endif
 {
 }

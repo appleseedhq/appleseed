@@ -41,7 +41,6 @@
 #include "renderer/modeling/scene/scene.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/bsp.h"
 #include "foundation/math/bvh.h"
 #include "foundation/utility/lazy.h"
 #include "foundation/utility/version.h"
@@ -139,8 +138,8 @@ class AssemblyLeafVisitor
         RegionTreeAccessCache&                      region_tree_cache,
         TriangleTreeAccessCache&                    triangle_tree_cache,
         const ShadingPoint*                         parent_shading_point
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-        , foundation::bsp::TraversalStatistics&     triangle_bsp_stats
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+        , foundation::bvh::TraversalStatistics&     triangle_tree_stats
 #endif
         );
 
@@ -162,8 +161,8 @@ class AssemblyLeafVisitor
     RegionTreeAccessCache&                          m_region_tree_cache;
     TriangleTreeAccessCache&                        m_triangle_tree_cache;
     const ShadingPoint*                             m_parent_shading_point;
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-    foundation::bsp::TraversalStatistics&           m_triangle_bsp_stats;
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+    foundation::bvh::TraversalStatistics&           m_triangle_tree_stats;
 #endif
 };
 
@@ -184,8 +183,8 @@ class AssemblyLeafProbeVisitor
         RegionTreeAccessCache&                      region_tree_cache,
         TriangleTreeAccessCache&                    triangle_tree_cache,
         const ShadingPoint*                         parent_shading_point
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-        , foundation::bsp::TraversalStatistics&     triangle_bsp_stats
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+        , foundation::bvh::TraversalStatistics&     triangle_tree_stats
 #endif
         );
 
@@ -206,8 +205,8 @@ class AssemblyLeafProbeVisitor
     RegionTreeAccessCache&                          m_region_tree_cache;
     TriangleTreeAccessCache&                        m_triangle_tree_cache;
     const ShadingPoint*                             m_parent_shading_point;
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-    foundation::bsp::TraversalStatistics&           m_triangle_bsp_stats;
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+    foundation::bvh::TraversalStatistics&           m_triangle_tree_stats;
 #endif
 };
 
@@ -239,8 +238,8 @@ inline AssemblyLeafVisitor::AssemblyLeafVisitor(
     RegionTreeAccessCache&                          region_tree_cache,
     TriangleTreeAccessCache&                        triangle_tree_cache,
     const ShadingPoint*                             parent_shading_point
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-    , foundation::bsp::TraversalStatistics&         triangle_bsp_stats
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+    , foundation::bvh::TraversalStatistics&         triangle_tree_stats
 #endif
     )
   : m_shading_point(shading_point)
@@ -248,8 +247,8 @@ inline AssemblyLeafVisitor::AssemblyLeafVisitor(
   , m_region_tree_cache(region_tree_cache)
   , m_triangle_tree_cache(triangle_tree_cache)
   , m_parent_shading_point(parent_shading_point)
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-  , m_triangle_bsp_stats(triangle_bsp_stats)
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+  , m_triangle_tree_stats(triangle_tree_stats)
 #endif
 {
 }
@@ -264,16 +263,16 @@ inline AssemblyLeafProbeVisitor::AssemblyLeafProbeVisitor(
     RegionTreeAccessCache&                          region_tree_cache,
     TriangleTreeAccessCache&                        triangle_tree_cache,
     const ShadingPoint*                             parent_shading_point
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-    , foundation::bsp::TraversalStatistics&         triangle_bsp_stats
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+    , foundation::bvh::TraversalStatistics&         triangle_tree_stats
 #endif
     )
   : m_tree(tree)
   , m_region_tree_cache(region_tree_cache)
   , m_triangle_tree_cache(triangle_tree_cache)
   , m_parent_shading_point(parent_shading_point)
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-  , m_triangle_bsp_stats(triangle_bsp_stats)
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+  , m_triangle_tree_stats(triangle_tree_stats)
 #endif
 {
 }

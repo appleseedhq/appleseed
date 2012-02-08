@@ -85,7 +85,7 @@ AssemblyTree::AssemblyTree(const Scene& scene)
 AssemblyTree::~AssemblyTree()
 {
     // Log a progress message.
-    RENDERER_LOG_INFO("deleting assembly bvh...");
+    RENDERER_LOG_INFO("deleting assembly tree...");
 
     // Delete region trees.
     for (each<RegionTreeContainer> i = m_region_trees; i; ++i)
@@ -218,7 +218,7 @@ void AssemblyTree::build_assembly_tree()
 
     // Log a progress message.
     RENDERER_LOG_INFO(
-        "building assembly bvh (%s %s)...",
+        "building assembly tree (%s %s)...",
         pretty_int(size()).c_str(),
         plural(size(), "assembly instance").c_str());
 
@@ -229,7 +229,7 @@ void AssemblyTree::build_assembly_tree()
 
     // Collect and print assembly tree statistics.
     AssemblyTreeStatistics tree_stats(*this, builder);
-    RENDERER_LOG_DEBUG("assembly bvh statistics:");
+    RENDERER_LOG_DEBUG("assembly tree statistics:");
     tree_stats.print(global_logger());
 }
 
@@ -381,26 +381,16 @@ bool AssemblyLeafVisitor::visit(
         RegionLeafVisitor visitor(
             result,
             m_triangle_tree_cache
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-            , m_triangle_bsp_stats
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+            , m_triangle_tree_stats
 #endif
             );
         RegionLeafIntersector intersector;
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-        bsp::TraversalStatistics stats;
-        intersector.intersect(
-            region_tree,
-            result.m_ray,
-            ray_info,
-            visitor,
-            stats);
-#else
         intersector.intersect(
             region_tree,
             result.m_ray,
             ray_info,
             visitor);
-#endif
     }
     else
     {
@@ -420,8 +410,8 @@ bool AssemblyLeafVisitor::visit(
                 result.m_ray,
                 ray_info,
                 visitor
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-                , m_triangle_bsp_stats
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+                , m_triangle_tree_stats
 #endif
                 );
             visitor.read_hit_triangle_data();
@@ -494,26 +484,16 @@ bool AssemblyLeafProbeVisitor::visit(
         // Check the intersection between the ray and the region tree.
         RegionLeafProbeVisitor visitor(
             m_triangle_tree_cache
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-            , m_triangle_bsp_stats
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+            , m_triangle_tree_stats
 #endif
             );
         RegionLeafProbeIntersector intersector;
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-        bsp::TraversalStatistics stats;
-        intersector.intersect(
-            region_tree,
-            local_ray,
-            local_ray_info,
-            visitor,
-            stats);
-#else
         intersector.intersect(
             region_tree,
             local_ray,
             local_ray_info,
             visitor);
-#endif
         
         // Terminate traversal if there was a hit.
         if (visitor.hit())
@@ -540,8 +520,8 @@ bool AssemblyLeafProbeVisitor::visit(
                 local_ray,
                 local_ray_info,
                 visitor
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-                , m_triangle_bsp_stats
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+                , m_triangle_tree_stats
 #endif
                 );
 

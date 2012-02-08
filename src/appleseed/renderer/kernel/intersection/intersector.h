@@ -127,10 +127,8 @@ class Intersector
     mutable foundation::uint64                      m_ray_count;
     mutable foundation::uint64                      m_probe_ray_count;
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
-    mutable foundation::bvh::TraversalStatistics    m_assembly_bvh_traversal_stats;
-#endif
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-    mutable foundation::bsp::TraversalStatistics    m_triangle_bsp_traversal_stats;
+    mutable foundation::bvh::TraversalStatistics    m_assembly_tree_traversal_stats;
+    mutable foundation::bvh::TraversalStatistics    m_triangle_tree_traversal_stats;
 #endif
 };
 

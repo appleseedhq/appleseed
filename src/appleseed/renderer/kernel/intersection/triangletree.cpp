@@ -98,7 +98,7 @@ TriangleTree::TriangleTree(const Arguments& arguments)
 
     // Log a progress message.
     RENDERER_LOG_INFO(
-        "building triangle bvh #" FMT_UNIQUE_ID " (%s %s)...",
+        "building triangle tree #" FMT_UNIQUE_ID " (%s %s)...",
         arguments.m_triangle_tree_uid,
         pretty_int(size()).c_str(),
         plural(size(), "triangle").c_str());
@@ -122,7 +122,7 @@ TriangleTree::TriangleTree(const Arguments& arguments)
     // Collect and print triangle tree statistics.
     TriangleTreeStatistics tree_stats(*this, builder);
     RENDERER_LOG_DEBUG(
-        "triangle bvh #" FMT_UNIQUE_ID " statistics:",
+        "triangle tree #" FMT_UNIQUE_ID " statistics:",
         arguments.m_triangle_tree_uid);
     tree_stats.print(global_logger());
 }
@@ -130,7 +130,7 @@ TriangleTree::TriangleTree(const Arguments& arguments)
 TriangleTree::~TriangleTree()
 {
     RENDERER_LOG_INFO(
-        "deleting triangle bvh tree #" FMT_UNIQUE_ID "...",
+        "deleting triangle tree #" FMT_UNIQUE_ID "...",
         m_triangle_tree_uid);
 }
 

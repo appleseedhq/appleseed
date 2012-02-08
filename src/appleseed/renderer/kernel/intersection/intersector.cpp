@@ -122,13 +122,11 @@ Intersector::~Intersector()
             pretty_percent(m_probe_ray_count, total_ray_count).c_str());
 
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
-        RENDERER_LOG_DEBUG("assembly bvh intersection statistics:");
-        m_assembly_bvh_traversal_stats.print(global_logger());
-#endif
+        RENDERER_LOG_DEBUG("assembly tree intersection statistics:");
+        m_assembly_tree_traversal_stats.print(global_logger());
 
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-        RENDERER_LOG_DEBUG("triangle bsp trees intersection statistics:");
-        m_triangle_bsp_traversal_stats.print(global_logger());
+        RENDERER_LOG_DEBUG("triangle tree intersection statistics:");
+        m_triangle_tree_traversal_stats.print(global_logger());
 #endif
 
         print_dual_stage_cache_stats(m_region_tree_cache, "region tree access cache statistics");
@@ -308,8 +306,8 @@ bool Intersector::trace(
         m_region_tree_cache,
         m_triangle_tree_cache,
         parent_shading_point
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-        , m_triangle_bsp_traversal_stats
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+        , m_triangle_tree_traversal_stats
 #endif
         );
     AssemblyLeafIntersector intersector;
@@ -319,7 +317,7 @@ bool Intersector::trace(
         ray_info,
         visitor
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
-        , m_assembly_bvh_traversal_stats
+        , m_assembly_tree_traversal_stats
 #endif
         );
 
@@ -357,8 +355,8 @@ bool Intersector::trace_probe(
         m_region_tree_cache,
         m_triangle_tree_cache,
         parent_shading_point
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-        , m_triangle_bsp_traversal_stats
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+        , m_triangle_tree_traversal_stats
 #endif
         );
     AssemblyLeafProbeIntersector intersector;
@@ -368,7 +366,7 @@ bool Intersector::trace_probe(
         ray_info,
         visitor
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
-        , m_assembly_bvh_traversal_stats
+        , m_assembly_tree_traversal_stats
 #endif
         );
 
