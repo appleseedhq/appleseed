@@ -161,7 +161,7 @@ namespace
         // Return whether the item intersect a given bounding box.
         bool intersect(const GAABB3& bbox) const
         {
-            if (m_triangle_bbox.overlaps(bbox))
+            if (GAABB3::overlap(m_triangle_bbox, bbox))
                 return foundation::intersect(bbox, m_v0, m_v1, m_v2);
             else return false;
         }

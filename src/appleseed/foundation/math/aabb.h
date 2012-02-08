@@ -95,6 +95,14 @@ class AABB
     // Return an invalidated bounding box.
     static AABBType invalid();
 
+    // Return true if two bounding boxes overlap.
+    static bool overlap(const AABBType& a, const AABBType& b);
+
+    // Return the amount of overlapping between two bounding boxes.
+    // Returns 0.0 if the bounding boxes are disjoint, 1.0 if one
+    // is contained in the other.
+    static ValueType overlap_ratio(const AABBType& a, const AABBType& b);
+
     // Return the ratio of the extent of a to the extent of b.
     static ValueType extent_ratio(const AABBType& a, const AABBType& b);
 
@@ -141,9 +149,6 @@ class AABB
 
     // Return true if the bounding box contains a given point.
     bool contains(const VectorType& v) const;
-
-    // Return true if the bounding box overlaps another given bounding box.
-    bool overlaps(const AABBType& b) const;
 };
 
 // Exact inequality and equality tests.
@@ -230,15 +235,62 @@ inline AABB<T, N> AABB<T, N>::invalid()
 }
 
 template <typename T, size_t N>
+inline bool AABB<T, N>::overlap(const AABBType& a, const AABBType& b)
+{
+    assert(a.is_valid());
+    assert(b.is_valid());
+
+    for (size_t i = 0; i < N; ++i)
+    {
+        if (a.min[i] > b.max[i] || a.max[i] < b.min[i])
+            return false;
+    }
+
+    return true;
+}
+
+template <typename T, size_t N>
+inline T AABB<T, N>::overlap_ratio(const AABBType& a, const AABBType& b)
+{
+    assert(a.is_valid());
+    assert(b.is_valid());
+
+    T ratio = T(1.0);
+
+    for (size_t i = 0; i < N; ++i)
+    {
+        const T amin = a.min[i];
+        const T amax = a.max[i];
+        const T bmin = b.min[i];
+        const T bmax = b.max[i];
+
+        const T overlap = std::min(amax, bmax) - std::max(amin, bmin);
+
+        if (overlap <= T(0.0))
+            return T(0.0);
+
+        ratio *= overlap / std::min(amax - amin, bmax - bmin);
+    }
+
+    return ratio;
+}
+
+template <typename T, size_t N>
 inline T AABB<T, N>::extent_ratio(const AABBType& a, const AABBType& b)
 {
+    assert(a.is_valid());
+    assert(b.is_valid());
+
     const VectorType ea = a.extent();
     const VectorType eb = b.extent();
 
     T ratio = T(1.0);
 
     for (size_t i = 0; i < N; ++i)
-        ratio *= (ea[i] == eb[i]) ? T(1.0) : ea[i] / eb[i];
+    {
+        if (ea[i] != eb[i])
+            ratio *= ea[i] / eb[i];
+    }
 
     return ratio;
 }
@@ -416,20 +468,6 @@ inline bool AABB<T, N>::contains(const VectorType& v) const
     for (size_t i = 0; i < N; ++i)
     {
         if (v[i] < min[i] || v[i] > max[i])
-            return false;
-    }
-
-    return true;
-}
-
-template <typename T, size_t N>
-inline bool AABB<T, N>::overlaps(const AABBType& b) const
-{
-    assert(is_valid());
-
-    for (size_t i = 0; i < N; ++i)
-    {
-        if (min[i] > b.max[i] || max[i] < b.min[i])
             return false;
     }
 

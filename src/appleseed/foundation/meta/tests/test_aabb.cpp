@@ -122,6 +122,95 @@ TEST_SUITE(Foundation_Math_AABB)
         EXPECT_FALSE(bbox.is_valid());
     }
 
+    TEST_CASE(VerifyThatRank0AABBOverlapsWithItself)
+    {
+        const AABB3d bbox(
+            Vector3d(1.0, 2.0, 3.0),
+            Vector3d(1.0, 2.0, 3.0));
+
+        EXPECT_TRUE(AABB3d::overlap(bbox, bbox));
+    }
+
+    TEST_CASE(VerifyThatRank3AABBOverlapsWithItself)
+    {
+        const AABB3d bbox(
+            Vector3d(1.0, 2.0, 3.0),
+            Vector3d(4.0, 5.0, 6.0));
+
+        EXPECT_TRUE(AABB3d::overlap(bbox, bbox));
+    }
+
+    TEST_CASE(TestOverlapWithOverlappingRank3AABB)
+    {
+        const AABB3d bbox1(
+            Vector3d(1.0, 2.0, 3.0),
+            Vector3d(4.0, 5.0, 6.0));
+
+        const AABB3d bbox2(
+            Vector3d(0.0, 1.0, 5.0),
+            Vector3d(5.0, 3.0, 7.0));
+
+        EXPECT_TRUE(AABB3d::overlap(bbox1, bbox2));
+        EXPECT_TRUE(AABB3d::overlap(bbox2, bbox1));
+    }
+
+    TEST_CASE(TestOverlapWithNonOverlappingRank3AABB)
+    {
+        const AABB3d bbox1(
+            Vector3d(1.0, 2.0, 3.0),
+            Vector3d(4.0, 5.0, 6.0));
+
+        const AABB3d bbox2(
+            Vector3d(0.0, 1.0, 5.0),
+            Vector3d(5.0, 3.0, 7.0));
+
+        EXPECT_TRUE(AABB3d::overlap(bbox1, bbox2));
+        EXPECT_TRUE(AABB3d::overlap(bbox2, bbox1));
+    }
+
+    TEST_CASE(TestOverlapRatio)
+    {
+        EXPECT_FEQ(0.0,
+            AABB2d::overlap_ratio(
+                AABB2d(Vector2d(0.0, 0.0), Vector2d(1.0, 1.0)),
+                AABB2d(Vector2d(2.0, 0.0), Vector2d(3.0, 1.0))));
+
+        EXPECT_FEQ(0.0,
+            AABB2d::overlap_ratio(
+                AABB2d(Vector2d(2.0, 0.0), Vector2d(3.0, 1.0)),
+                AABB2d(Vector2d(0.0, 0.0), Vector2d(1.0, 1.0))));
+
+        EXPECT_FEQ(1.0,
+            AABB2d::overlap_ratio(
+                AABB2d(Vector2d(1.0, 1.0), Vector2d(2.0, 2.0)),
+                AABB2d(Vector2d(1.0, 1.0), Vector2d(2.0, 2.0))));
+
+        EXPECT_FEQ(1.0,
+            AABB2d::overlap_ratio(
+                AABB2d(Vector2d(1.0, 1.0), Vector2d(2.0, 2.0)),
+                AABB2d(Vector2d(0.0, 0.0), Vector2d(3.0, 3.0))));
+
+        EXPECT_FEQ(1.0,
+            AABB2d::overlap_ratio(
+                AABB2d(Vector2d(0.0, 0.0), Vector2d(3.0, 3.0)),
+                AABB2d(Vector2d(1.0, 1.0), Vector2d(2.0, 2.0))));
+
+        EXPECT_FEQ(0.5,
+            AABB2d::overlap_ratio(
+                AABB2d(Vector2d(0.0, 0.0), Vector2d(2.0, 2.0)),
+                AABB2d(Vector2d(1.0, 0.0), Vector2d(3.0, 2.0))));
+
+        EXPECT_FEQ(0.5,
+            AABB2d::overlap_ratio(
+                AABB2d(Vector2d(1.0, 0.0), Vector2d(3.0, 2.0)),
+                AABB2d(Vector2d(0.0, 0.0), Vector2d(2.0, 2.0))));
+
+        EXPECT_FEQ(0.25,
+            AABB2d::overlap_ratio(
+                AABB2d(Vector2d(0.0, 0.0), Vector2d(2.0, 2.0)),
+                AABB2d(Vector2d(1.0, 1.0), Vector2d(3.0, 3.0))));
+    }
+
     TEST_CASE(TestExtentRatio)
     {
         EXPECT_FEQ(1.0,
@@ -357,52 +446,6 @@ TEST_SUITE(Foundation_Math_AABB)
 
         EXPECT_TRUE(bbox.contains(Vector3d(2.0, 3.0, 4.0)));
         EXPECT_FALSE(bbox.contains(Vector3d(2.0, 6.0, 4.0)));
-    }
-
-    TEST_CASE(VerifyThatRank0AABBOverlapsWithItself)
-    {
-        const AABB3d bbox(
-            Vector3d(1.0, 2.0, 3.0),
-            Vector3d(1.0, 2.0, 3.0));
-
-        EXPECT_TRUE(bbox.overlaps(bbox));
-    }
-
-    TEST_CASE(VerifyThatRank3AABBOverlapsWithItself)
-    {
-        const AABB3d bbox(
-            Vector3d(1.0, 2.0, 3.0),
-            Vector3d(4.0, 5.0, 6.0));
-
-        EXPECT_TRUE(bbox.overlaps(bbox));
-    }
-
-    TEST_CASE(TestOverlapsWithOverlappingRank3AABB)
-    {
-        const AABB3d bbox1(
-            Vector3d(1.0, 2.0, 3.0),
-            Vector3d(4.0, 5.0, 6.0));
-
-        const AABB3d bbox2(
-            Vector3d(0.0, 1.0, 5.0),
-            Vector3d(5.0, 3.0, 7.0));
-
-        EXPECT_TRUE(bbox1.overlaps(bbox2));
-        EXPECT_TRUE(bbox2.overlaps(bbox1));
-    }
-
-    TEST_CASE(TestOverlapsWithNonOverlappingRank3AABB)
-    {
-        const AABB3d bbox1(
-            Vector3d(1.0, 2.0, 3.0),
-            Vector3d(4.0, 5.0, 6.0));
-
-        const AABB3d bbox2(
-            Vector3d(0.0, 1.0, 5.0),
-            Vector3d(5.0, 3.0, 7.0));
-
-        EXPECT_TRUE(bbox1.overlaps(bbox2));
-        EXPECT_TRUE(bbox2.overlaps(bbox1));
     }
 
     TEST_CASE(TestEquality)
