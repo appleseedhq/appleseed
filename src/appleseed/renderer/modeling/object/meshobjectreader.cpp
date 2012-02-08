@@ -85,12 +85,24 @@ namespace
           , m_face_material(0)
           , m_face_count(0)
           , m_triangulation_error_count(0)
+          , m_total_vertex_count(0)
+          , m_total_triangle_count(0)
         {
         }
 
         const MeshObjectVector& get_objects() const
         {
             return m_objects;
+        }
+
+        size_t get_total_vertex_count() const
+        {
+            return m_total_vertex_count;
+        }
+
+        size_t get_total_triangle_count() const
+        {
+            return m_total_triangle_count;
         }
 
         virtual void begin_mesh(const string& name)
@@ -115,22 +127,16 @@ namespace
             if (m_triangulation_error_count > 0)
             {
                 RENDERER_LOG_WARNING(
-                    "%s polygonal %s (out of %s) could not be triangulated.",
+                    "while loading mesh object \"%s\": %s polygonal %s (out of %s) could not be triangulated.",
+                    m_objects.back()->get_name(),
                     pretty_int(m_triangulation_error_count).c_str(),
                     plural(m_triangulation_error_count, "face").c_str(),
                     pretty_int(m_face_count).c_str());
             }
 
-            // Print the number of vertices and triangles in the mesh.
-            const size_t vertex_count = m_objects.back()->get_vertex_count();
-            const size_t triangle_count = m_objects.back()->get_triangle_count();
-            RENDERER_LOG_INFO(
-                "loaded mesh object \"%s\" (%s %s, %s %s).",
-                m_objects.back()->get_name(),
-                pretty_int(vertex_count).c_str(),
-                plural(vertex_count, "vertex", "vertices").c_str(),
-                pretty_int(triangle_count).c_str(),
-                plural(triangle_count, "triangle").c_str());
+            // Keep track of the total number of vertices and triangles that were loaded.
+            m_total_vertex_count += m_objects.back()->get_vertex_count();
+            m_total_triangle_count += m_objects.back()->get_triangle_count();
         }
 
         virtual size_t push_vertex(const Vector3d& v)
@@ -206,20 +212,26 @@ namespace
 
         virtual void set_face_vertices(const size_t vertices[])
         {
+            m_face_vertices.resize(m_vertex_count);
+
             for (size_t i = 0; i < m_vertex_count; ++i)
-                m_face_vertices.push_back(static_cast<uint32>(vertices[i]));
+                m_face_vertices[i] = static_cast<uint32>(vertices[i]);
         }
 
         virtual void set_face_vertex_normals(const size_t vertex_normals[])
         {
+            m_face_normals.resize(m_vertex_count);
+
             for (size_t i = 0; i < m_vertex_count; ++i)
-                m_face_normals.push_back(static_cast<uint32>(vertex_normals[i]));
+                m_face_normals[i] = static_cast<uint32>(vertex_normals[i]);
         }
 
         virtual void set_face_vertex_tex_coords(const size_t tex_coords[])
         {
+            m_face_tex_coords.resize(m_vertex_count);
+
             for (size_t i = 0; i < m_vertex_count; ++i)
-                m_face_tex_coords.push_back(static_cast<uint32>(tex_coords[i]));
+                m_face_tex_coords[i] = static_cast<uint32>(tex_coords[i]);
         }
 
         virtual void set_face_material(const size_t material)
@@ -247,6 +259,9 @@ namespace
 
         size_t                  m_face_count;
         size_t                  m_triangulation_error_count;
+
+        size_t                  m_total_vertex_count;
+        size_t                  m_total_triangle_count;
 
         void insert_triangle(
             const size_t        v0_index,
@@ -369,10 +384,14 @@ MeshObjectArray MeshObjectReader::read(
 
     // Print the number of loaded objects.
     RENDERER_LOG_INFO(
-        "loaded mesh file %s (%s %s) in %s.",
+        "loaded mesh file %s (%s %s, %s %s, %s %s) in %s.",
         filename,
         pretty_int(objects.size()).c_str(),
         plural(objects.size(), "object").c_str(),
+        pretty_int(builder.get_total_vertex_count()).c_str(),
+        plural(builder.get_total_vertex_count(), "vertex", "vertices").c_str(),
+        pretty_int(builder.get_total_triangle_count()).c_str(),
+        plural(builder.get_total_triangle_count(), "triangle").c_str(),
         pretty_time(stopwatch.get_seconds()).c_str());
 
     return objects;
