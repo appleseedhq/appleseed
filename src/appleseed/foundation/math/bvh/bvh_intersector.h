@@ -151,15 +151,6 @@ void Intersector<T, Tree, Visitor, StackSize, SortSize>::intersect(
     if (!foundation::intersect(ray, ray_info, root_bbox, tmin, tmax))
         return;
 
-    // Initialize traversal statistics.
-    FOUNDATION_BVH_TRAVERSAL_STATS(++stats.m_traversal_count);
-    FOUNDATION_BVH_TRAVERSAL_STATS(size_t visited_nodes = 0);
-    FOUNDATION_BVH_TRAVERSAL_STATS(size_t visited_leaves = 0);
-    FOUNDATION_BVH_TRAVERSAL_STATS(size_t culled_nodes = 0);
-    FOUNDATION_BVH_TRAVERSAL_STATS(size_t discarded_nodes = 0);
-    FOUNDATION_BVH_TRAVERSAL_STATS(size_t intersected_nodes = 0);
-    FOUNDATION_BVH_TRAVERSAL_STATS(size_t intersected_items = 0);
-
     // Initialize the node stack.
     NodeEntry stack[StackSize];
     NodeEntry* stack_ptr = stack;
@@ -170,38 +161,43 @@ void Intersector<T, Tree, Visitor, StackSize, SortSize>::intersect(
     stack_ptr->m_index = 0;
     ++stack_ptr;
 
+    // Initialize traversal statistics.
+    FOUNDATION_BVH_TRAVERSAL_STATS(++stats.m_traversal_count);
+    FOUNDATION_BVH_TRAVERSAL_STATS(size_t visited_nodes = 0);
+    FOUNDATION_BVH_TRAVERSAL_STATS(size_t visited_leaves = 0);
+    FOUNDATION_BVH_TRAVERSAL_STATS(size_t culled_nodes = 0);
+    FOUNDATION_BVH_TRAVERSAL_STATS(size_t discarded_nodes = 0);
+    FOUNDATION_BVH_TRAVERSAL_STATS(size_t intersected_nodes = 0);
+    FOUNDATION_BVH_TRAVERSAL_STATS(size_t intersected_items = 0);
+
     // Traverse the tree and intersect leaf nodes.
     ValueType tfar = ray.m_tmax;
     while (stack_ptr > stack)
     {
-        // Move the closest node to the top of the stack.
-        const size_t stack_size = stack_ptr - stack;
-        if (stack_size > 1)
-        {
-            const size_t n = stack_size < SortSize ? stack_size : SortSize;
-            NodeEntry* ptr = stack_ptr - n;
-            NodeEntry* top = stack_ptr - 1;
-            for (; ptr < top; ++ptr)
-            {
-                if (ptr->m_tmin < top->m_tmin)
-                {
-                    const NodeEntry tmp = *ptr;
-                    *ptr = *top;
-                    *top = tmp;
-                }
-            }
-        }
-
         // Pop a node from the stack.
         --stack_ptr;
 
-        const double tmin = stack_ptr->m_tmin;
-
-        // Skip nodes that are farther than the closest intersection found so far.
-        if (tmin >= tfar)
+        // Cull nodes that are farther than the closest intersection so far.
+        if (stack_ptr->m_tmin >= tfar)
         {
             FOUNDATION_BVH_TRAVERSAL_STATS(++culled_nodes);
             continue;
+        }
+
+        // Move the closest node to the top of the stack.
+        const size_t stack_size = stack_ptr - stack;
+        if (stack_size > 0)
+        {
+            const size_t n = stack_size < SortSize ? stack_size : SortSize;
+            for (NodeEntry* ptr = stack_ptr - n; ptr < stack_ptr; ++ptr)
+            {
+                if (ptr->m_tmin < stack_ptr->m_tmin)
+                {
+                    const NodeEntry tmp = *stack_ptr;
+                    *stack_ptr = *ptr;
+                    *ptr = tmp;
+                }
+            }
         }
 
         // Fetch the node.
@@ -229,7 +225,7 @@ void Intersector<T, Tree, Visitor, StackSize, SortSize>::intersect(
                     item_end,
                     ray,
                     ray_info,
-                    tmin,
+                    stack_ptr->m_tmin,
                     stack_ptr->m_tmax,
                     distance);
             assert(!proceed || distance >= ValueType(0.0));
