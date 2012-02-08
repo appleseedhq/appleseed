@@ -32,6 +32,7 @@
 // Interface headers.
 #include "foundation/math/bvh/bvh_builder.h"
 #include "foundation/math/bvh/bvh_intersector.h"
+#include "foundation/math/bvh/bvh_medianpartitioner.h"
 #include "foundation/math/bvh/bvh_sahpartitioner.h"
 #include "foundation/math/bvh/bvh_statistics.h"
 #include "foundation/math/bvh/bvh_tree.h"

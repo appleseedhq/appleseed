@@ -31,6 +31,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/math/bvh/bvh_bboxsortpredicate.h"
 #include "foundation/utility/memory.h"
 
 // Standard headers.
@@ -58,34 +59,19 @@ class SAHPartitioner
 
     // Constructor.
     explicit SAHPartitioner(
-        const size_t                        max_leaf_size);
+        const size_t            max_leaf_size);
 
     // Partition a set of items into two distinct sets.
-    // Return end if the set is not to be partitioned.
     size_t partition(
-        std::vector<size_t>&                indices,
-        std::vector<AABBType>&              bboxes,
-        const size_t                        begin,
-        const size_t                        end,
-        const AABBType&                     bbox);
+        std::vector<size_t>&    indices,
+        std::vector<AABBType>&  bboxes,
+        const size_t            begin,
+        const size_t            end,
+        const AABBType&         bbox);
 
   private:
-    class BboxSortPredicate
-    {
-      public:
-        BboxSortPredicate(
-            const std::vector<AABBType>&    bboxes,
-            const size_t                    dim);
-
-        bool operator()(const size_t lhs, const size_t rhs) const;
-
-      private:
-        const std::vector<AABBType>&        m_bboxes;
-        const size_t                        m_dim;
-    };
-
-    const size_t            m_max_leaf_size;
-    std::vector<AABBType>   m_left_bboxes;
+    const size_t                m_max_leaf_size;
+    std::vector<ValueType>      m_left_areas;
 };
 
 
@@ -95,18 +81,18 @@ class SAHPartitioner
 
 template <typename Tree>
 inline SAHPartitioner<Tree>::SAHPartitioner(
-    const size_t                    max_leaf_size)
+    const size_t                max_leaf_size)
   : m_max_leaf_size(max_leaf_size)
 {
 }
 
 template <typename Tree>
 size_t SAHPartitioner<Tree>::partition(
-    std::vector<size_t>&            indices,
-    std::vector<AABBType>&          bboxes,
-    const size_t                    begin,
-    const size_t                    end,
-    const AABBType&                 bbox)
+    std::vector<size_t>&        indices,
+    std::vector<AABBType>&      bboxes,
+    const size_t                begin,
+    const size_t                end,
+    const AABBType&             bbox)
 {
     const size_t count = end - begin;
     assert(count > 1);
@@ -116,38 +102,38 @@ size_t SAHPartitioner<Tree>::partition(
         return end;
 
     // Ensure that enough memory is allocated for the working arrays.
-    ensure_minimum_size(m_left_bboxes, count);
+    ensure_minimum_size(m_left_areas, count - 1);
 
     ValueType best_split_cost = std::numeric_limits<ValueType>::max();
     size_t best_split_dim = 0;
     size_t best_split_pivot = 0;
-    AABBType group_bbox;
 
     for (size_t dim = 0; dim < Tree::Dimension; ++dim)
     {
         // Sort the items according to their bounding boxes.
-        BboxSortPredicate predicate(bboxes, dim);
+        BboxSortPredicate<AABBType> predicate(bboxes, dim);
         std::sort(&indices[begin], &indices[begin] + count, predicate);
 
-        // Left-to-right sweep to accumulate bounding boxes.
-        group_bbox.invalidate();
-        for (size_t i = 0; i < count; ++i)
+        AABBType bbox_accumulator;
+
+        // Left-to-right sweep to accumulate bounding boxes and compute their surface area.
+        bbox_accumulator.invalidate();
+        for (size_t i = 0; i < count - 1; ++i)
         {
-            group_bbox.insert(bboxes[indices[begin + i]]);
-            m_left_bboxes[i] = group_bbox;
+            bbox_accumulator.insert(bboxes[indices[begin + i]]);
+            m_left_areas[i] = bbox_accumulator.half_surface_area();
         }
 
-        // Right-to-left sweep to accumulate bounding boxes and evaluate SAH.
-        group_bbox.invalidate();
+        // Right-to-left sweep to accumulate bounding boxes, compute their surface area find the best partition.
+        bbox_accumulator.invalidate();
         for (size_t i = count - 1; i > 0; --i)
         {
-            // Get left and right bounding boxes.
-            const AABBType& left_bbox = m_left_bboxes[i - 1];
-            group_bbox.insert(bboxes[indices[begin + i]]);
+            // Compute right bounding box.
+            bbox_accumulator.insert(bboxes[indices[begin + i]]);
 
             // Compute the cost of this partition.
-            const ValueType left_cost = left_bbox.half_surface_area() * i;
-            const ValueType right_cost = group_bbox.half_surface_area() * (count - i);
+            const ValueType left_cost = m_left_areas[i - 1] * i;
+            const ValueType right_cost = bbox_accumulator.half_surface_area() * (count - i);
             const ValueType split_cost = left_cost + right_cost;
 
             // Keep track of the partition with the lowest cost.
@@ -160,40 +146,20 @@ size_t SAHPartitioner<Tree>::partition(
         }
     }
 
-    // Just split in half if the cost of the best partition is too high.
-    // todo: we need to sort the triangles!
+    // Don't split if it's cheaper to make a leaf.
     const ValueType leaf_cost = bbox.half_surface_area() * count;
     if (best_split_cost >= leaf_cost)
-        return (begin + end) / 2;
+        return end;
 
     // Sort again the items according to the chosen dimension.
     if (best_split_dim < Tree::Dimension - 1)
     {
-        BboxSortPredicate predicate(bboxes, best_split_dim);
+        BboxSortPredicate<AABBType> predicate(bboxes, best_split_dim);
         std::sort(&indices[begin], &indices[begin] + count, predicate);
     }
 
     assert(begin + best_split_pivot < end);
     return begin + best_split_pivot;
-}
-
-template <typename Tree>
-inline SAHPartitioner<Tree>::BboxSortPredicate::BboxSortPredicate(
-    const std::vector<AABBType>&    bboxes,
-    const size_t                    dim)
-  : m_bboxes(bboxes)
-  , m_dim(dim)
-{
-}
-
-template <typename Tree>
-inline bool SAHPartitioner<Tree>::BboxSortPredicate::operator()(
-    const size_t                    lhs,
-    const size_t                    rhs) const
-{
-    return
-          m_bboxes[lhs].min[m_dim] + m_bboxes[lhs].max[m_dim]
-        < m_bboxes[rhs].min[m_dim] + m_bboxes[rhs].max[m_dim];
 }
 
 }       // namespace bvh

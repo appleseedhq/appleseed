@@ -37,7 +37,6 @@
 #include "foundation/math/ray.h"
 
 // Standard headers.
-#include <algorithm>
 #include <cassert>
 #include <cstddef>
 
@@ -172,11 +171,28 @@ void Intersector<T, Tree, Visitor, StackSize, SortSize>::intersect(
     ValueType tfar = ray.m_tmax;
     while (stack_ptr > stack)
     {
+        // Move the closest node to the top of the stack.
+        const size_t stack_size = stack_ptr - stack;
+        if (stack_size > 1)
+        {
+            const size_t n = stack_size < SortSize ? stack_size : SortSize;
+            NodeEntry* ptr = stack_ptr - n;
+            NodeEntry* top = stack_ptr - 1;
+            for (; ptr < top; ++ptr)
+            {
+                if (ptr->m_tmin < top->m_tmin)
+                {
+                    const NodeEntry tmp = *ptr;
+                    *ptr = *top;
+                    *top = tmp;
+                }
+            }
+        }
+
         // Pop a node from the stack.
         --stack_ptr;
 
         const double tmin = stack_ptr->m_tmin;
-        const double tmax = stack_ptr->m_tmax;
 
         // Skip nodes that are farther than the closest intersection found so far.
         if (tmin >= tfar)
@@ -209,7 +225,7 @@ void Intersector<T, Tree, Visitor, StackSize, SortSize>::intersect(
                     ray,
                     ray_info,
                     tmin,
-                    tmax,
+                    stack_ptr->m_tmax,
                     distance);
             assert(!proceed || distance >= ValueType(0.0));
 
@@ -236,6 +252,7 @@ void Intersector<T, Tree, Visitor, StackSize, SortSize>::intersect(
                 ValueType tmin, tmax;
                 if (!foundation::intersect(ray, ray_info, child_bbox, tmin, tmax))
                     continue;
+                assert(tmin <= tmax);
 
                 // Discard the child node if it is farther than the closest intersection so far.
                 if (tmin >= tfar)
@@ -246,20 +263,6 @@ void Intersector<T, Tree, Visitor, StackSize, SortSize>::intersect(
                 stack_ptr->m_tmax = tmax;
                 stack_ptr->m_index = child_index;
                 ++stack_ptr;
-            }
-        }
-
-        // Move the closest node to the top of the stack.
-        const size_t stack_size = stack_ptr - stack;
-        if (stack_size > 1)
-        {
-            const size_t n = stack_size < SortSize ? stack_size : SortSize;
-            NodeEntry* ptr = stack_ptr - n;
-            NodeEntry* top = stack_ptr - 1;
-            for (; ptr < top; ++ptr)
-            {
-                if (ptr->m_tmin < top->m_tmin)
-                    std::swap(*ptr, *top);
             }
         }
     }
