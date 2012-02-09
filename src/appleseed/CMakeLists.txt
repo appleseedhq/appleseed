@@ -139,6 +139,7 @@ source_group ("foundation\\math\\bsp" FILES
 set (foundation_math_bvh_sources
     foundation/math/bvh/bvh_bboxsortpredicate.h
     foundation/math/bvh/bvh_builder.h
+    foundation/math/bvh/bvh_intersector.cpp
     foundation/math/bvh/bvh_intersector.h
     foundation/math/bvh/bvh_medianpartitioner.h
     foundation/math/bvh/bvh_node.h

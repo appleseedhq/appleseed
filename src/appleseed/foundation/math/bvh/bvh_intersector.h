@@ -35,6 +35,9 @@
 #include "foundation/math/aabb.h"
 #include "foundation/math/intersection.h"
 #include "foundation/math/ray.h"
+#ifdef APPLESEED_FOUNDATION_USE_SSE
+#include "foundation/platform/compiler.h"
+#endif
 
 // Standard headers.
 #include <cassert>
@@ -114,6 +117,21 @@ class Intersector
 //
 // Intersector class implementation.
 //
+
+#ifdef APPLESEED_FOUNDATION_USE_SSE
+
+namespace impl
+{
+    int intersect_bvh_nodes(
+        const Ray3d&        ray,
+        const RayInfo3d&    ray_info,
+        const AABB3f&       left_bbox,
+        const AABB3f&       right_bbox,
+        double              tmin[2],
+        double              tmax[2]);
+}
+
+#endif
 
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
 #define FOUNDATION_BVH_TRAVERSAL_STATS(x) x
@@ -240,6 +258,44 @@ void Intersector<T, Tree, Visitor, StackSize, SortSize>::intersect(
         }
         else
         {
+#ifdef APPLESEED_FOUNDATION_USE_SSE
+
+            const size_t left_child_index = node.get_child_node_index();
+            const size_t right_child_index = left_child_index + 1;
+
+            ALIGN_SSE_VARIABLE ValueType tmin[2], tmax[2];
+ 
+            const int hits =
+                impl::intersect_bvh_nodes(
+                    ray,
+                    ray_info,
+                    tree.m_nodes[left_child_index].get_bbox(),
+                    tree.m_nodes[right_child_index].get_bbox(),
+                    tmin,
+                    tmax);
+
+            if (hits & 1)
+            {
+                // Push the child node to the stack.
+                stack_ptr->m_tmin = tmin[0];
+                stack_ptr->m_tmax = tmax[0];
+                stack_ptr->m_index = left_child_index;
+                ++stack_ptr;
+            }
+            else FOUNDATION_BVH_TRAVERSAL_STATS(++discarded_nodes);
+
+            if (hits & 2)
+            {
+                // Push the child node to the stack.
+                stack_ptr->m_tmin = tmin[1];
+                stack_ptr->m_tmax = tmax[1];
+                stack_ptr->m_index = right_child_index;
+                ++stack_ptr;
+            }
+            else FOUNDATION_BVH_TRAVERSAL_STATS(++discarded_nodes);
+
+#else
+
             // Push child nodes to the stack.
             size_t child_index = node.get_child_node_index();
             for (size_t i = 0; i < 2; ++i, ++child_index)
@@ -270,6 +326,8 @@ void Intersector<T, Tree, Visitor, StackSize, SortSize>::intersect(
                 stack_ptr->m_index = child_index;
                 ++stack_ptr;
             }
+
+#endif  // APPLESEED_FOUNDATION_USE_SSE
         }
     }
 
