@@ -52,6 +52,8 @@ class BboxSortPredicate
     bool operator()(const size_t lhs, const size_t rhs) const;
 
   private:
+    typedef typename AABBType::ValueType ValueType;
+
     const std::vector<AABBType>&        m_bboxes;
     const size_t                        m_dim;
 };
@@ -75,23 +77,7 @@ inline bool BboxSortPredicate<AABBType>::operator()(
     const size_t                        lhs,
     const size_t                        rhs) const
 {
-    typedef typename AABBType::VectorType VectorType;
-
-    const VectorType lhs_center = m_bboxes[lhs].center();
-    const VectorType rhs_center = m_bboxes[rhs].center();
-
-    for (size_t i = 0; i < AABBType::Dimension; ++i)
-    {
-        const size_t d = (m_dim + i) % AABBType::Dimension;
-
-        if (lhs_center[d] < rhs_center[d])
-            return true;
-
-        if (lhs_center[d] > rhs_center[d])
-            return false;
-    }
-
-    return false;
+    return m_bboxes[lhs].center(m_dim) < m_bboxes[rhs].center(m_dim);
 }
 
 }       // namespace bvh

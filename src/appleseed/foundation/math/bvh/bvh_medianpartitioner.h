@@ -32,6 +32,7 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/bvh/bvh_bboxsortpredicate.h"
+#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <algorithm>
@@ -60,7 +61,9 @@ class MedianPartitioner
         const size_t                    max_leaf_size);
 
     // Initialize the partitioner for a given number of items.
-    void initialize(const size_t size);
+    void initialize(
+        const std::vector<AABBType>&    bboxes,
+        const size_t                    size);
 
     // Compute the bounding box of a given set of items.
     AABBType compute_bbox(
@@ -80,7 +83,9 @@ class MedianPartitioner
 
   private:
     const size_t            m_max_leaf_size;
-    std::vector<size_t>     m_indices;
+    std::vector<size_t>     m_indices[Tree::Dimension];
+    std::vector<uint8>      m_tags;
+    std::vector<size_t>     m_tmp;
 };
 
 
@@ -96,12 +101,26 @@ inline MedianPartitioner<Tree>::MedianPartitioner(
 }
 
 template <typename Tree>
-void MedianPartitioner<Tree>::initialize(const size_t size)
+void MedianPartitioner<Tree>::initialize(
+    const std::vector<AABBType>&        bboxes,
+    const size_t                        size)
 {
-    m_indices.resize(size);
+    for (size_t d = 0; d < Tree::Dimension; ++d)
+    {
+        std::vector<size_t>& indices = m_indices[d];
 
-    for (size_t i = 0; i < size; ++i)
-        m_indices[i] = i;
+        // Identity ordering.
+        indices.resize(size);
+        for (size_t i = 0; i < size; ++i)
+            indices[i] = i;
+
+        // Sort the items according to their bounding boxes.
+        BboxSortPredicate<AABBType> predicate(bboxes, d);
+        std::sort(indices.begin(), indices.end(), predicate);
+    }
+
+    m_tags.resize(size);
+    m_tmp.resize(size);
 }
 
 template <typename Tree>
@@ -110,11 +129,13 @@ inline typename Tree::AABBType MedianPartitioner<Tree>::compute_bbox(
     const size_t                        begin,
     const size_t                        end) const
 {
+    const std::vector<size_t>& indices = m_indices[0];
+
     AABBType bbox;
     bbox.invalidate();
 
     for (size_t i = begin; i < end; ++i)
-        bbox.insert(bboxes[m_indices[i]]);
+        bbox.insert(bboxes[indices[i]]);
 
     return bbox;
 }
@@ -133,18 +154,60 @@ inline size_t MedianPartitioner<Tree>::partition(
     if (count <= m_max_leaf_size)
         return end;
 
-    // Sort the items according to their bounding boxes.
-    BboxSortPredicate<AABBType> predicate(bboxes, max_index(bbox.extent()));
-    std::sort(&m_indices[begin], &m_indices[begin] + count, predicate);
-
     // Split the items in two sets of roughly equal size.
-    return (begin + end) / 2;
+    const size_t pivot = (begin + end) / 2;
+
+    const size_t split_dim = max_index(bbox.extent());
+    const std::vector<size_t>& split_indices = m_indices[split_dim];
+
+    static const uint8 Left = 0;
+    static const uint8 Right = 1;
+
+    for (size_t i = begin; i < pivot; ++i)
+        m_tags[split_indices[i]] = Left;
+
+    for (size_t i = pivot; i < end; ++i)
+        m_tags[split_indices[i]] = Right;
+
+    for (size_t d = 0; d < Tree::Dimension; ++d)
+    {
+        if (d != split_dim)
+        {
+            std::vector<size_t>& indices = m_indices[d];
+
+            size_t left = begin;
+            size_t right = pivot;
+
+            for (size_t i = begin; i < end; ++i)
+            {
+                const size_t index = indices[i];
+                if (m_tags[index] == Left)
+                {
+                    assert(left < pivot);
+                    m_tmp[left++] = index;
+                }
+                else
+                {
+                    assert(right < end);
+                    m_tmp[right++] = index;
+                }
+            }
+
+            assert(left == pivot);
+            assert(right == end);
+
+            for (size_t i = begin; i < end; ++i)
+                indices[i] = m_tmp[i];
+        }
+    }
+
+    return pivot;
 }
 
 template <typename Tree>
 inline const std::vector<size_t>& MedianPartitioner<Tree>::get_item_ordering() const
 {
-    return m_indices;
+    return m_indices[0];
 }
 
 }       // namespace bvh

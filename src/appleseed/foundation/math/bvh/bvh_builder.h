@@ -55,7 +55,9 @@ namespace bvh {
 //        : public foundation::NonCopyable
 //      {
 //          // Initialize the partitioner for a given number of items.
-//          void initialize(const size_t size);
+//          void initialize(
+//              const std::vector<AABBType>&    bboxes,
+//              const size_t                    size);
 //
 //          // Compute the bounding box of a given set of items.
 //          AABBType compute_bbox(
@@ -140,7 +142,7 @@ void Builder<Tree, Partitioner>::build(
     const size_t size = tree.m_items.size();
 
     // Initialize the partitioner.
-    partitioner.initialize(size);
+    partitioner.initialize(tree.m_bboxes, size);
 
     // Clear the tree.
     tree.m_nodes.clear();
