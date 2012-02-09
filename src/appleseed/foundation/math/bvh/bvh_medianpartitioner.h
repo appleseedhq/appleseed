@@ -196,8 +196,23 @@ inline size_t MedianPartitioner<Tree>::partition(
             assert(left == pivot);
             assert(right == end);
 
-            for (size_t i = begin; i < end; ++i)
-                indices[i] = m_tmp[i];
+            const size_t size = indices.size();
+
+            if (end - begin > size / 2)
+            {
+                for (size_t i = 0; i < begin; ++i)
+                    m_tmp[i] = indices[i];
+
+                for (size_t i = end; i < size; ++i)
+                    m_tmp[i] = indices[i];
+
+                m_tmp.swap(indices);
+            }
+            else
+            {
+                for (size_t i = begin; i < end; ++i)
+                    indices[i] = m_tmp[i];
+            }
         }
     }
 
