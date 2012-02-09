@@ -504,8 +504,8 @@ double RegionLeafVisitor::visit(
     if (triangle_tree)
     {
         // Check the intersection between the ray and the triangle tree.
+        TriangleTreeIntersector intersector;
         TriangleLeafVisitor visitor(*triangle_tree, m_shading_point);
-        TriangleLeafIntersector intersector;
         intersector.intersect(
             *triangle_tree,
             ray,
@@ -543,8 +543,8 @@ double RegionLeafProbeVisitor::visit(
     if (triangle_tree)
     {
         // Check the intersection between the ray and the triangle tree.
+        TriangleTreeProbeIntersector intersector;
         TriangleLeafProbeVisitor visitor(*triangle_tree);
-        TriangleLeafProbeIntersector intersector;
         intersector.intersect(
             *triangle_tree,
             ray,

@@ -214,7 +214,7 @@ typedef foundation::bvh::Intersector<
     TriangleLeafVisitor,
     TriangleTreeStackSize,
     TriangleTreeSortSize
-> TriangleLeafIntersector;
+> TriangleTreeIntersector;
 
 typedef foundation::bvh::Intersector<
     double,
@@ -222,7 +222,7 @@ typedef foundation::bvh::Intersector<
     TriangleLeafProbeVisitor,
     TriangleTreeStackSize,
     TriangleTreeSortSize
-> TriangleLeafProbeIntersector;
+> TriangleTreeProbeIntersector;
 
 
 //

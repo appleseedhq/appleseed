@@ -219,13 +219,13 @@ typedef foundation::bvh::Intersector<
     double,
     AssemblyTree,
     AssemblyLeafVisitor
-> AssemblyLeafIntersector;
+> AssemblyTreeIntersector;
 
 typedef foundation::bvh::Intersector<
     double,
     AssemblyTree,
     AssemblyLeafProbeVisitor
-> AssemblyLeafProbeIntersector;
+> AssemblyTreeProbeIntersector;
 
 
 //

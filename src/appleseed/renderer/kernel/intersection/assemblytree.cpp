@@ -403,8 +403,8 @@ bool AssemblyLeafVisitor::visit(
         if (triangle_tree)
         {
             // Check the intersection between the ray and the triangle tree.
+            TriangleTreeIntersector intersector;
             TriangleLeafVisitor visitor(*triangle_tree, result);
-            TriangleLeafIntersector intersector;
             intersector.intersect(
                 *triangle_tree,
                 result.m_ray,
@@ -513,8 +513,8 @@ bool AssemblyLeafProbeVisitor::visit(
         if (triangle_tree)
         {
             // Check the intersection between the ray and the triangle tree.
+            TriangleTreeProbeIntersector intersector;
             TriangleLeafProbeVisitor visitor(*triangle_tree);
-            TriangleLeafProbeIntersector intersector;
             intersector.intersect(
                 *triangle_tree,
                 local_ray,

@@ -300,6 +300,7 @@ bool Intersector::trace(
     const AssemblyTree& assembly_tree = m_trace_context.get_assembly_tree();
 
     // Check the intersection between the ray and the assembly tree.
+    AssemblyTreeIntersector intersector;
     AssemblyLeafVisitor visitor(
         shading_point,
         assembly_tree,
@@ -310,7 +311,6 @@ bool Intersector::trace(
         , m_triangle_tree_traversal_stats
 #endif
         );
-    AssemblyLeafIntersector intersector;
     intersector.intersect(
         assembly_tree,
         shading_point.m_ray,
@@ -350,6 +350,7 @@ bool Intersector::trace_probe(
     const AssemblyTree& assembly_tree = m_trace_context.get_assembly_tree();
 
     // Check the intersection between the ray and the assembly tree.
+    AssemblyTreeProbeIntersector intersector;
     AssemblyLeafProbeVisitor visitor(
         assembly_tree,
         m_region_tree_cache,
@@ -359,7 +360,6 @@ bool Intersector::trace_probe(
         , m_triangle_tree_traversal_stats
 #endif
         );
-    AssemblyLeafProbeIntersector intersector;
     intersector.intersect(
         assembly_tree,
         ray,
