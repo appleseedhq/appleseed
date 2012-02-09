@@ -133,9 +133,11 @@ class AABB
 
     // Compute the center of the bounding box.
     VectorType center() const;
+    ValueType center(const size_t dim) const;
 
     // Compute the extent of the bounding box.
     VectorType extent() const;
+    ValueType extent(const size_t dim) const;
 
     // Return the volume of the bounding box.
     T volume() const;
@@ -409,11 +411,27 @@ inline Vector<T, N> AABB<T, N>::center() const
 }
 
 template <typename T, size_t N>
+inline T AABB<T, N>::center(const size_t dim) const
+{
+    assert(is_valid());
+
+    return ValueType(0.5) * (min[dim] + max[dim]);
+}
+
+template <typename T, size_t N>
 inline Vector<T, N> AABB<T, N>::extent() const
 {
     assert(is_valid());
 
     return max - min;
+}
+
+template <typename T, size_t N>
+inline T AABB<T, N>::extent(const size_t dim) const
+{
+    assert(is_valid());
+
+    return max[dim] - min[dim];
 }
 
 template <typename T, size_t N>
