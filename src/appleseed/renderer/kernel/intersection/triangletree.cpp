@@ -114,7 +114,7 @@ TriangleTree::TriangleTree(const Arguments& arguments)
     // Reorder the triangles according to the BVH ordering.
     if (!m_triangles.empty())
     {
-        vector<size_t> item_ordering(builder.get_item_ordering());
+        vector<size_t> item_ordering(partitioner.get_item_ordering());
         assert(m_triangles.size() == item_ordering.size());
         large_item_reorder(
             &m_triangles[0],

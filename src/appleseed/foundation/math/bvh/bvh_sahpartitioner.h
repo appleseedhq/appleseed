@@ -59,23 +59,35 @@ class SAHPartitioner
 
     // Constructor.
     SAHPartitioner(
-        const size_t            max_leaf_size,
-        const ValueType         interior_node_traversal_cost = ValueType(1.0),
-        const ValueType         triangle_intersection_cost = ValueType(1.0));
+        const size_t                    max_leaf_size,
+        const ValueType                 interior_node_traversal_cost = ValueType(1.0),
+        const ValueType                 triangle_intersection_cost = ValueType(1.0));
+
+    // Initialize the partitioner for a given number of items.
+    void initialize(const size_t size);
+
+    // Compute the bounding box of a given set of items.
+    AABBType compute_bbox(
+        const std::vector<AABBType>&    bboxes,
+        const size_t                    begin,
+        const size_t                    end) const;
 
     // Partition a set of items into two distinct sets.
     size_t partition(
-        std::vector<size_t>&    indices,
-        std::vector<AABBType>&  bboxes,
-        const size_t            begin,
-        const size_t            end,
-        const AABBType&         bbox);
+        const std::vector<AABBType>&    bboxes,
+        const size_t                    begin,
+        const size_t                    end,
+        const AABBType&                 bbox);
+
+    // Return the items ordering.
+    const std::vector<size_t>& get_item_ordering() const;
 
   private:
-    const size_t                m_max_leaf_size;
-    const ValueType             m_interior_node_traversal_cost;
-    const ValueType             m_triangle_intersection_cost;
-    std::vector<ValueType>      m_left_areas;
+    const size_t                        m_max_leaf_size;
+    const ValueType                     m_interior_node_traversal_cost;
+    const ValueType                     m_triangle_intersection_cost;
+    std::vector<size_t>                 m_indices;
+    std::vector<ValueType>              m_left_areas;
 };
 
 
@@ -85,9 +97,9 @@ class SAHPartitioner
 
 template <typename Tree>
 inline SAHPartitioner<Tree>::SAHPartitioner(
-    const size_t                max_leaf_size,
-    const ValueType             interior_node_traversal_cost,
-    const ValueType             triangle_intersection_cost)
+    const size_t                        max_leaf_size,
+    const ValueType                     interior_node_traversal_cost,
+    const ValueType                     triangle_intersection_cost)
   : m_max_leaf_size(max_leaf_size)
   , m_interior_node_traversal_cost(interior_node_traversal_cost)
   , m_triangle_intersection_cost(triangle_intersection_cost)
@@ -95,12 +107,35 @@ inline SAHPartitioner<Tree>::SAHPartitioner(
 }
 
 template <typename Tree>
+void SAHPartitioner<Tree>::initialize(const size_t size)
+{
+    m_indices.resize(size);
+
+    for (size_t i = 0; i < size; ++i)
+        m_indices[i] = i;
+}
+
+template <typename Tree>
+inline typename Tree::AABBType SAHPartitioner<Tree>::compute_bbox(
+    const std::vector<AABBType>&        bboxes,
+    const size_t                        begin,
+    const size_t                        end) const
+{
+    AABBType bbox;
+    bbox.invalidate();
+
+    for (size_t i = begin; i < end; ++i)
+        bbox.insert(bboxes[m_indices[i]]);
+
+    return bbox;
+}
+
+template <typename Tree>
 size_t SAHPartitioner<Tree>::partition(
-    std::vector<size_t>&        indices,
-    std::vector<AABBType>&      bboxes,
-    const size_t                begin,
-    const size_t                end,
-    const AABBType&             bbox)
+    const std::vector<AABBType>&        bboxes,
+    const size_t                        begin,
+    const size_t                        end,
+    const AABBType&                     bbox)
 {
     const size_t count = end - begin;
     assert(count > 1);
@@ -120,7 +155,7 @@ size_t SAHPartitioner<Tree>::partition(
     {
         // Sort the items according to their bounding boxes.
         BboxSortPredicate<AABBType> predicate(bboxes, dim);
-        std::sort(&indices[begin], &indices[begin] + count, predicate);
+        std::sort(&m_indices[begin], &m_indices[begin] + count, predicate);
 
         AABBType bbox_accumulator;
 
@@ -128,7 +163,7 @@ size_t SAHPartitioner<Tree>::partition(
         bbox_accumulator.invalidate();
         for (size_t i = 0; i < count - 1; ++i)
         {
-            bbox_accumulator.insert(bboxes[indices[begin + i]]);
+            bbox_accumulator.insert(bboxes[m_indices[begin + i]]);
             m_left_areas[i] = bbox_accumulator.half_surface_area();
         }
 
@@ -137,7 +172,7 @@ size_t SAHPartitioner<Tree>::partition(
         for (size_t i = count - 1; i > 0; --i)
         {
             // Compute right bounding box.
-            bbox_accumulator.insert(bboxes[indices[begin + i]]);
+            bbox_accumulator.insert(bboxes[m_indices[begin + i]]);
 
             // Compute the cost of this partition.
             const ValueType left_cost = m_left_areas[i - 1] * i;
@@ -166,11 +201,17 @@ size_t SAHPartitioner<Tree>::partition(
     if (best_split_dim < Tree::Dimension - 1)
     {
         BboxSortPredicate<AABBType> predicate(bboxes, best_split_dim);
-        std::sort(&indices[begin], &indices[begin] + count, predicate);
+        std::sort(&m_indices[begin], &m_indices[begin] + count, predicate);
     }
 
     assert(begin + best_split_pivot < end);
     return begin + best_split_pivot;
+}
+
+template <typename Tree>
+inline const std::vector<size_t>& SAHPartitioner<Tree>::get_item_ordering() const
+{
+    return m_indices;
 }
 
 }       // namespace bvh

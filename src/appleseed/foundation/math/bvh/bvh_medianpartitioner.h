@@ -57,18 +57,30 @@ class MedianPartitioner
 
     // Constructor.
     explicit MedianPartitioner(
-        const size_t            max_leaf_size);
+        const size_t                    max_leaf_size);
+
+    // Initialize the partitioner for a given number of items.
+    void initialize(const size_t size);
+
+    // Compute the bounding box of a given set of items.
+    AABBType compute_bbox(
+        const std::vector<AABBType>&    bboxes,
+        const size_t                    begin,
+        const size_t                    end) const;
 
     // Partition a set of items into two distinct sets.
     size_t partition(
-        std::vector<size_t>&    indices,
-        std::vector<AABBType>&  bboxes,
-        const size_t            begin,
-        const size_t            end,
-        const AABBType&         bbox) const;
+        const std::vector<AABBType>&    bboxes,
+        const size_t                    begin,
+        const size_t                    end,
+        const AABBType&                 bbox);
+
+    // Return the items ordering.
+    const std::vector<size_t>& get_item_ordering() const;
 
   private:
-    const size_t m_max_leaf_size;
+    const size_t            m_max_leaf_size;
+    std::vector<size_t>     m_indices;
 };
 
 
@@ -78,18 +90,41 @@ class MedianPartitioner
 
 template <typename Tree>
 inline MedianPartitioner<Tree>::MedianPartitioner(
-    const size_t                max_leaf_size)
+    const size_t                        max_leaf_size)
   : m_max_leaf_size(max_leaf_size)
 {
 }
 
 template <typename Tree>
+void MedianPartitioner<Tree>::initialize(const size_t size)
+{
+    m_indices.resize(size);
+
+    for (size_t i = 0; i < size; ++i)
+        m_indices[i] = i;
+}
+
+template <typename Tree>
+inline typename Tree::AABBType MedianPartitioner<Tree>::compute_bbox(
+    const std::vector<AABBType>&        bboxes,
+    const size_t                        begin,
+    const size_t                        end) const
+{
+    AABBType bbox;
+    bbox.invalidate();
+
+    for (size_t i = begin; i < end; ++i)
+        bbox.insert(bboxes[m_indices[i]]);
+
+    return bbox;
+}
+
+template <typename Tree>
 inline size_t MedianPartitioner<Tree>::partition(
-    std::vector<size_t>&        indices,
-    std::vector<AABBType>&      bboxes,
-    const size_t                begin,
-    const size_t                end,
-    const AABBType&             bbox) const
+    const std::vector<AABBType>&        bboxes,
+    const size_t                        begin,
+    const size_t                        end,
+    const AABBType&                     bbox)
 {
     const size_t count = end - begin;
     assert(count > 1);
@@ -100,10 +135,16 @@ inline size_t MedianPartitioner<Tree>::partition(
 
     // Sort the items according to their bounding boxes.
     BboxSortPredicate<AABBType> predicate(bboxes, max_index(bbox.extent()));
-    std::sort(&indices[begin], &indices[begin] + count, predicate);
+    std::sort(&m_indices[begin], &m_indices[begin] + count, predicate);
 
     // Split the items in two sets of roughly equal size.
     return (begin + end) / 2;
+}
+
+template <typename Tree>
+inline const std::vector<size_t>& MedianPartitioner<Tree>::get_item_ordering() const
+{
+    return m_indices;
 }
 
 }       // namespace bvh
