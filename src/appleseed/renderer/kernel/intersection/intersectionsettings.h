@@ -71,12 +71,6 @@ const size_t RegionTreeAccessCacheSize = 16;
 // Triangle tree settings.
 //
 
-// If defined, leaves of the triangle tree get split along their longest
-// dimension only. If left undefined, all three dimensions are considered
-// for splitting, resulting in better trees (faster intersection, but slower
-// construction).
-#undef RENDERER_TRIANGLE_TREE_SPLIT_LONGEST_AXIS
-
 // Maximum number of triangles per leaf.
 const size_t TriangleTreeMaxLeafSize = 8;
 
@@ -84,7 +78,7 @@ const size_t TriangleTreeMaxLeafSize = 8;
 const GScalar TriangleTreeInteriorNodeTraversalCost = GScalar(1.0);
 
 // Relative cost of intersecting a triangle.
-const GScalar TriangleTreeTriangleIntersectionCost = GScalar(1.4);
+const GScalar TriangleTreeTriangleIntersectionCost = GScalar(2.0);
 
 // Number of bins used in the construction of the approximate SAH function.
 const size_t TriangleTreeApproxSAHBinCount = 32;

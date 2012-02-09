@@ -274,7 +274,7 @@ void Intersector<T, Tree, Visitor, StackSize, SortSize>::intersect(
                     tmin,
                     tmax);
 
-            if (hits & 1)
+            if ((hits & 1) && tmin[0] < tfar)
             {
                 // Push the child node to the stack.
                 stack_ptr->m_tmin = tmin[0];
@@ -284,7 +284,7 @@ void Intersector<T, Tree, Visitor, StackSize, SortSize>::intersect(
             }
             else FOUNDATION_BVH_TRAVERSAL_STATS(++discarded_nodes);
 
-            if (hits & 2)
+            if ((hits & 2) && tmin[1] < tfar)
             {
                 // Push the child node to the stack.
                 stack_ptr->m_tmin = tmin[1];
