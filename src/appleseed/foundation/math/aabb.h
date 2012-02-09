@@ -147,7 +147,7 @@ class AABB
     T surface_area() const;
 
     // Compute the 2^N corner points of the bounding box.
-    void compute_corners(VectorType* corners) const;
+    void compute_corners(VectorType corners[]) const;
 
     // Return true if the bounding box contains a given point.
     bool contains(const VectorType& v) const;
@@ -462,19 +462,17 @@ inline T AABB<T, N>::surface_area() const
 }
 
 template <typename T, size_t N>
-void AABB<T, N>::compute_corners(VectorType* corners) const
+void AABB<T, N>::compute_corners(VectorType corners[]) const
 {
     assert(is_valid());
     assert(corners);
 
     for (size_t i = 0; i < 1 << N; ++i)
     {
-        VectorType p;
+        VectorType& p = corners[i];
 
         for (size_t d = 0; d < N; ++d)
             p[d] = i & (1 << d) ? max[d] : min[d];
-
-        corners[i] = p;
     }
 }
 
