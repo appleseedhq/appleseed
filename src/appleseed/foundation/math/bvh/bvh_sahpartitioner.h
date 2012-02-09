@@ -30,12 +30,9 @@
 #define APPLESEED_FOUNDATION_MATH_BVH_BVH_SAHPARTITIONER_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
-#include "foundation/math/bvh/bvh_bboxsortpredicate.h"
-#include "foundation/platform/types.h"
+#include "foundation/math/bvh/bvh_partitionerbase.h"
 
 // Standard headers.
-#include <algorithm>
 #include <cassert>
 #include <cstddef>
 #include <limits>
@@ -50,13 +47,9 @@ namespace bvh {
 
 template <typename Tree>
 class SAHPartitioner
-  : public NonCopyable
+  : public PartitionerBase<Tree>
 {
   public:
-    // Types.
-    typedef typename Tree::ValueType ValueType;
-    typedef typename Tree::AABBType AABBType;
-
     // Constructor.
     SAHPartitioner(
         const size_t                    max_leaf_size,
@@ -68,12 +61,6 @@ class SAHPartitioner
         const std::vector<AABBType>&    bboxes,
         const size_t                    size);
 
-    // Compute the bounding box of a given set of items.
-    AABBType compute_bbox(
-        const std::vector<AABBType>&    bboxes,
-        const size_t                    begin,
-        const size_t                    end) const;
-
     // Partition a set of items into two distinct sets.
     size_t partition(
         const std::vector<AABBType>&    bboxes,
@@ -81,17 +68,11 @@ class SAHPartitioner
         const size_t                    end,
         const AABBType&                 bbox);
 
-    // Return the items ordering.
-    const std::vector<size_t>& get_item_ordering() const;
-
   private:
-    const size_t            m_max_leaf_size;
-    const ValueType         m_interior_node_traversal_cost;
-    const ValueType         m_triangle_intersection_cost;
-    std::vector<size_t>     m_indices[Tree::Dimension];
-    std::vector<uint8>      m_tags;
-    std::vector<size_t>     m_tmp;
-    std::vector<ValueType>  m_left_areas;
+    const size_t                        m_max_leaf_size;
+    const ValueType                     m_interior_node_traversal_cost;
+    const ValueType                     m_triangle_intersection_cost;
+    std::vector<ValueType>              m_left_areas;
 };
 
 
@@ -115,40 +96,9 @@ void SAHPartitioner<Tree>::initialize(
     const std::vector<AABBType>&        bboxes,
     const size_t                        size)
 {
-    for (size_t d = 0; d < Tree::Dimension; ++d)
-    {
-        std::vector<size_t>& indices = m_indices[d];
+    PartitionerBase<Tree>::initialize(bboxes, size);
 
-        // Identity ordering.
-        indices.resize(size);
-        for (size_t i = 0; i < size; ++i)
-            indices[i] = i;
-
-        // Sort the items according to their bounding boxes.
-        BboxSortPredicate<AABBType> predicate(bboxes, d);
-        std::sort(indices.begin(), indices.end(), predicate);
-    }
-
-    m_tags.resize(size);
-    m_tmp.resize(size);
     m_left_areas.resize(size);
-}
-
-template <typename Tree>
-inline typename Tree::AABBType SAHPartitioner<Tree>::compute_bbox(
-    const std::vector<AABBType>&        bboxes,
-    const size_t                        begin,
-    const size_t                        end) const
-{
-    const std::vector<size_t>& indices = m_indices[0];
-
-    AABBType bbox;
-    bbox.invalidate();
-
-    for (size_t i = begin; i < end; ++i)
-        bbox.insert(bboxes[indices[i]]);
-
-    return bbox;
 }
 
 template <typename Tree>
@@ -215,71 +165,9 @@ size_t SAHPartitioner<Tree>::partition(
     const size_t pivot = begin + best_split_pivot;
     assert(pivot < end);
 
-    const std::vector<size_t>& split_indices = m_indices[best_split_dim];
-
-    static const uint8 Left = 0;
-    static const uint8 Right = 1;
-
-    for (size_t i = begin; i < pivot; ++i)
-        m_tags[split_indices[i]] = Left;
-
-    for (size_t i = pivot; i < end; ++i)
-        m_tags[split_indices[i]] = Right;
-
-    for (size_t d = 0; d < Tree::Dimension; ++d)
-    {
-        if (d != best_split_dim)
-        {
-            std::vector<size_t>& indices = m_indices[d];
-
-            size_t left = begin;
-            size_t right = pivot;
-
-            for (size_t i = begin; i < end; ++i)
-            {
-                const size_t index = indices[i];
-                if (m_tags[index] == Left)
-                {
-                    assert(left < pivot);
-                    m_tmp[left++] = index;
-                }
-                else
-                {
-                    assert(right < end);
-                    m_tmp[right++] = index;
-                }
-            }
-
-            assert(left == pivot);
-            assert(right == end);
-
-            const size_t size = indices.size();
-
-            if (end - begin > size / 2)
-            {
-                for (size_t i = 0; i < begin; ++i)
-                    m_tmp[i] = indices[i];
-
-                for (size_t i = end; i < size; ++i)
-                    m_tmp[i] = indices[i];
-
-                m_tmp.swap(indices);
-            }
-            else
-            {
-                for (size_t i = begin; i < end; ++i)
-                    indices[i] = m_tmp[i];
-            }
-        }
-    }
+    sort_indices(best_split_dim, begin, end, pivot);
 
     return pivot;
-}
-
-template <typename Tree>
-inline const std::vector<size_t>& SAHPartitioner<Tree>::get_item_ordering() const
-{
-    return m_indices[0];
 }
 
 }       // namespace bvh
