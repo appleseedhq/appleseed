@@ -160,8 +160,6 @@ class TriangleLeafVisitor
         const size_t                        end,
         const ShadingRay::RayType&          ray,
         const ShadingRay::RayInfoType&      ray_info,
-        const double                        tmin,
-        const double                        tmax,
         double&                             distance);
 
     // Read additional data about the triangle that was hit, if any.
@@ -195,8 +193,6 @@ class TriangleLeafProbeVisitor
         const size_t                        end,
         const ShadingRay::RayType&          ray,
         const ShadingRay::RayInfoType&      ray_info,
-        const double                        tmin,
-        const double                        tmax,
         double&                             distance);
 
   private:

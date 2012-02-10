@@ -293,40 +293,39 @@ void AssemblyTree::update_child_trees()
 
 
 //
-// AssemblyLeafVisitorBase class implementation.
+// Utility function to transform a ray to the space of an assembly instance.
 //
 
-void AssemblyLeafVisitorBase::transform_ray_to_assembly_instance_space(
-    const AssemblyInstance*             assembly_instance,
-    const ShadingPoint*                 parent_shading_point,
-    const ShadingRay::RayType&          input_ray,
-    ShadingRay::RayType&                output_ray)
+namespace
 {
-    assert(assembly_instance);
-
-    // Retrieve the transformation of the assembly instance.
-    const Transformd& transform = assembly_instance->get_transform();
-
-    if (parent_shading_point &&
-        parent_shading_point->m_assembly_instance == assembly_instance)
+    void transform_ray_to_assembly_instance_space(
+        const AssemblyInstance&         assembly_instance,
+        const ShadingPoint*             parent_shading_point,
+        const ShadingRay::RayType&      input_ray,
+        ShadingRay::RayType&            output_ray)
     {
-        // The caller provided the previous intersection, and we are about
-        // to intersect the assembly instance that contains the previous
-        // intersection. Use the properly offset intersection point as the
-        // origin of the child ray.
+        // Retrieve the transformation of the assembly instance.
+        const Transformd& transform = assembly_instance.get_transform();
+
+        // Transform the ray direction.
         output_ray.m_dir = transform.transform_vector_to_local(input_ray.m_dir);
-        output_ray.m_org =
-            dot(parent_shading_point->m_asm_geo_normal, output_ray.m_dir) > 0.0
-                ? parent_shading_point->m_front_point
-                : parent_shading_point->m_back_point;
-    }
-    else
-    {
-        // The caller didn't provide the previous intersection, or we are
-        // about to intersect an assembly instance that does not contain
-        // the previous intersection: proceed normally.
-        output_ray.m_org = transform.transform_point_to_local(input_ray.m_org);
-        output_ray.m_dir = transform.transform_vector_to_local(input_ray.m_dir);
+
+        if (parent_shading_point &&
+            parent_shading_point->get_assembly_instance_uid() == assembly_instance.get_uid())
+        {
+            // The caller provided the previous intersection, and we are about
+            // to intersect the assembly instance that contains the previous
+            // intersection. Use the properly offset intersection point as the
+            // origin of the child ray.
+            output_ray.m_org = parent_shading_point->get_offset_point(output_ray.m_dir);
+        }
+        else
+        {
+            // The caller didn't provide the previous intersection, or we are
+            // about to intersect an assembly instance that does not contain
+            // the previous intersection: proceed normally.
+            output_ray.m_org = transform.transform_point_to_local(input_ray.m_org);
+        }
     }
 }
 
@@ -341,40 +340,41 @@ bool AssemblyLeafVisitor::visit(
     const size_t                        begin,
     const size_t                        end,
     const ShadingRay::RayType&          ray,
-    const ShadingRay::RayInfoType&      /*ray_info*/,
-    const double                        tmin,
-    const double                        tmax,
+    const ShadingRay::RayInfoType&      ray_info,
     double&                             distance)
 {
     // A leaf must contain exactly one assembly.
     assert(begin + 1 == end);
 
     // Retrieve the assembly instance.
-    const AssemblyInstance* assembly_instance =
-        m_tree.m_scene.assembly_instances().get_by_uid(items[begin]);
-    assert(assembly_instance);
-
-    ShadingPoint result;
-    result.m_ray.m_tmin = tmin;
-    result.m_ray.m_tmax = tmax;
-    result.m_ray.m_time = m_shading_point.m_ray.m_time;
-    result.m_ray.m_flags = m_shading_point.m_ray.m_flags;
+    const AssemblyInstance& assembly_instance =
+        *m_tree.m_scene.assembly_instances().get_by_uid(items[begin]);
 
     // Transform the ray to assembly instance space.
+    ShadingPoint result;
+    result.m_ray.m_time = m_shading_point.m_ray.m_time;
+    result.m_ray.m_flags = m_shading_point.m_ray.m_flags;
     transform_ray_to_assembly_instance_space(
         assembly_instance,
         m_parent_shading_point,
         ray,
         result.m_ray);
+    const RayInfo3d transformed_ray_info(result.m_ray);
 
-    const RayInfo3d ray_info(result.m_ray);
+    // Compute result.m_ray.m_tmin and result.m_ray.m_tmax.
+    intersect(
+        ray,
+        ray_info,
+        AABB3d(bboxes[begin]),
+        result.m_ray.m_tmin,
+        result.m_ray.m_tmax);
 
-    if (assembly_instance->get_assembly().is_flushable())
+    if (assembly_instance.get_assembly().is_flushable())
     {
         // Retrieve the region tree of this assembly.
         const RegionTree& region_tree =
             *m_region_tree_cache.access(
-                assembly_instance->get_assembly_uid(),
+                assembly_instance.get_assembly_uid(),
                 m_tree.m_region_trees);
 
         // Check the intersection between the ray and the region tree.
@@ -389,7 +389,7 @@ bool AssemblyLeafVisitor::visit(
         intersector.intersect(
             region_tree,
             result.m_ray,
-            ray_info,
+            transformed_ray_info,
             visitor);
     }
     else
@@ -397,7 +397,7 @@ bool AssemblyLeafVisitor::visit(
         // Retrieve the triangle tree of this assembly.
         const TriangleTree* triangle_tree =
             m_triangle_tree_cache.access(
-                assembly_instance->get_assembly_uid(),
+                assembly_instance.get_assembly_uid(),
                 m_tree.m_triangle_trees);
 
         if (triangle_tree)
@@ -408,7 +408,7 @@ bool AssemblyLeafVisitor::visit(
             intersector.intersect(
                 *triangle_tree,
                 result.m_ray,
-                ray_info,
+                transformed_ray_info,
                 visitor
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
                 , m_triangle_tree_stats
@@ -424,7 +424,7 @@ bool AssemblyLeafVisitor::visit(
         m_shading_point.m_ray.m_tmax = result.m_ray.m_tmax;
         m_shading_point.m_hit = true;
         m_shading_point.m_bary = result.m_bary;
-        m_shading_point.m_asm_instance_uid = assembly_instance->get_uid();
+        m_shading_point.m_asm_instance_uid = assembly_instance.get_uid();
         m_shading_point.m_object_instance_index = result.m_object_instance_index;
         m_shading_point.m_region_index = result.m_region_index;
         m_shading_point.m_triangle_index = result.m_triangle_index;
@@ -447,38 +447,39 @@ bool AssemblyLeafProbeVisitor::visit(
     const size_t                        begin,
     const size_t                        end,
     const ShadingRay::RayType&          ray,
-    const ShadingRay::RayInfoType&      /*ray_info*/,
-    const double                        tmin,
-    const double                        tmax,
+    const ShadingRay::RayInfoType&      ray_info,
     double&                             distance)
 {
     // A leaf must contain exactly one assembly.
     assert(begin + 1 == end);
 
     // Retrieve the assembly instance.
-    const AssemblyInstance* assembly_instance =
-        m_tree.m_scene.assembly_instances().get_by_uid(items[begin]);
-    assert(assembly_instance);
-
-    ShadingRay::RayType local_ray;
-    local_ray.m_tmin = tmin;
-    local_ray.m_tmax = tmax;
+    const AssemblyInstance& assembly_instance =
+        *m_tree.m_scene.assembly_instances().get_by_uid(items[begin]);
 
     // Transform the ray to assembly instance space.
+    ShadingRay::RayType transformed_ray;
     transform_ray_to_assembly_instance_space(
         assembly_instance,
         m_parent_shading_point,
         ray,
-        local_ray);
+        transformed_ray);
+    const RayInfo3d transformed_ray_info(transformed_ray);
 
-    const RayInfo3d local_ray_info(local_ray);
+    // Compute transformed_ray.m_tmin and transformed_ray.m_tmax.
+    intersect(
+        ray,
+        ray_info,
+        AABB3d(bboxes[begin]),
+        transformed_ray.m_tmin,
+        transformed_ray.m_tmax);
 
-    if (assembly_instance->get_assembly().is_flushable())
+    if (assembly_instance.get_assembly().is_flushable())
     {
         // Retrieve the region tree of this assembly.
         const RegionTree& region_tree =
             *m_region_tree_cache.access(
-                assembly_instance->get_assembly_uid(),
+                assembly_instance.get_assembly_uid(),
                 m_tree.m_region_trees);
 
         // Check the intersection between the ray and the region tree.
@@ -491,8 +492,8 @@ bool AssemblyLeafProbeVisitor::visit(
         RegionLeafProbeIntersector intersector;
         intersector.intersect(
             region_tree,
-            local_ray,
-            local_ray_info,
+            transformed_ray,
+            transformed_ray_info,
             visitor);
         
         // Terminate traversal if there was a hit.
@@ -507,7 +508,7 @@ bool AssemblyLeafProbeVisitor::visit(
         // Retrieve the triangle tree of this leaf.
         const TriangleTree* triangle_tree =
             m_triangle_tree_cache.access(
-                assembly_instance->get_assembly_uid(),
+                assembly_instance.get_assembly_uid(),
                 m_tree.m_triangle_trees);
 
         if (triangle_tree)
@@ -517,8 +518,8 @@ bool AssemblyLeafProbeVisitor::visit(
             TriangleLeafProbeVisitor visitor(*triangle_tree);
             intersector.intersect(
                 *triangle_tree,
-                local_ray,
-                local_ray_info,
+                transformed_ray,
+                transformed_ray_info,
                 visitor
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
                 , m_triangle_tree_stats

@@ -277,8 +277,6 @@ bool TriangleLeafVisitor::visit(
     const size_t                    end,
     const ShadingRay::RayType&      ray,
     const ShadingRay::RayInfoType&  ray_info,
-    const double                    tmin,
-    const double                    tmax,
     double&                         distance)
 {
     // Sequentially intersect all triangles of this leaf.
@@ -333,8 +331,6 @@ bool TriangleLeafProbeVisitor::visit(
     const size_t                    end,
     const ShadingRay::RayType&      ray,
     const ShadingRay::RayInfoType&  ray_info,
-    const double                    tmin,
-    const double                    tmax,
     double&                         distance)
 {
     // Sequentially intersect all triangles of this leaf.

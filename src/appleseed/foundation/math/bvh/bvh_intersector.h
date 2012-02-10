@@ -69,8 +69,6 @@ namespace bvh {
 //              const size_t                end,
 //              const RayType&              ray,
 //              const RayInfoType&          ray_info,
-//              const ValueType             tmin,
-//              const ValueType             tmax,
 //              ValueType&                  distance);
 //      };
 //
@@ -103,15 +101,6 @@ class Intersector
         , TraversalStatistics&  stats
 #endif
         ) const;
-
-  private:
-    // Entry of the node stack.
-    struct NodeEntry
-    {
-        ValueType   m_tmin;
-        ValueType   m_tmax;
-        size_t      m_index;
-    };
 };
 
 
@@ -125,13 +114,13 @@ namespace impl
 #ifdef APPLESEED_FOUNDATION_USE_SSE
 
     FORCE_INLINE int intersect_bvh_nodes(
-        const Ray3d&        ray,
-        const RayInfo3d&    ray_info,
-        const double        ray_tmax,
-        const AABB3f&       left_bbox,
-        const AABB3f&       right_bbox,
-        double              tmin[2],
-        double              tmax[2])
+        const Ray3d&            ray,
+        const RayInfo3d&        ray_info,
+        const double            ray_tmax,
+        const AABB3f&           left_bbox,
+        const AABB3f&           right_bbox,
+        double                  tmin[2],
+        double                  tmax[2])
     {
         const sse2d mposinf = set1pd(FP<double>::pos_inf());
         const sse2d mneginf = set1pd(FP<double>::neg_inf());
@@ -227,13 +216,13 @@ namespace impl
 #else
 
     FORCE_INLINE int intersect_bvh_nodes(
-        const Ray3d&        ray,
-        const RayInfo3d&    ray_info,
-        const double        ray_tmax,
-        const AABB3f&       left_bbox,
-        const AABB3f&       right_bbox,
-        double              tmin[2],
-        double              tmax[2])
+        const Ray3d&            ray,
+        const RayInfo3d&        ray_info,
+        const double            ray_tmax,
+        const AABB3f&           left_bbox,
+        const AABB3f&           right_bbox,
+        double                  tmin[2],
+        double                  tmax[2])
     {
         int hits = 0;
 
@@ -263,12 +252,12 @@ template <
     size_t StackSize
 >
 void Intersector<T, Tree, Visitor, StackSize>::intersect(
-    const Tree&             tree,
-    const RayType&          ray,
-    const RayInfoType&      ray_info,
-    Visitor&                visitor
+    const Tree&                 tree,
+    const RayType&              ray,
+    const RayInfoType&          ray_info,
+    Visitor&                    visitor
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
-    , TraversalStatistics&  stats
+    , TraversalStatistics&      stats
 #endif
     ) const
 {
@@ -279,21 +268,12 @@ void Intersector<T, Tree, Visitor, StackSize>::intersect(
     if (tree.size() == 0)
        return;
 
-    // Check the intersection between the ray and the bounding box of the tree.
-    const AABBType root_bbox = AABBType(tree.get_bbox());
-    ValueType tmin, tmax;
-    if (!foundation::intersect(ray, ray_info, root_bbox, tmin, tmax))
-        return;
+    // Node stack.
+    size_t stack[StackSize];
+    size_t* stack_ptr = stack;
 
-    // Initialize the node stack.
-    NodeEntry stack[StackSize];
-    NodeEntry* stack_ptr = stack;
-
-    // Push the root node to the stack.
-    stack_ptr->m_tmin = tmin;
-    stack_ptr->m_tmax = tmax;
-    stack_ptr->m_index = 0;
-    ++stack_ptr;
+    // Current node.
+    size_t node_index = 0;
 
     // Initialize traversal statistics.
     FOUNDATION_BVH_TRAVERSAL_STATS(++stats.m_traversal_count);
@@ -306,21 +286,11 @@ void Intersector<T, Tree, Visitor, StackSize>::intersect(
 
     // Traverse the tree and intersect leaf nodes.
     ValueType ray_tmax = ray.m_tmax;
-    while (stack_ptr > stack)
+    while (true)
     {
-        // Pop a node from the stack.
-        --stack_ptr;
-
-        // Cull nodes that are farther than the closest intersection so far.
-        if (stack_ptr->m_tmin >= ray_tmax)
-        {
-            FOUNDATION_BVH_TRAVERSAL_STATS(++culled_nodes);
-            continue;
-        }
-
         // Fetch the node.
         FOUNDATION_BVH_TRAVERSAL_STATS(++visited_nodes);
-        const NodeType& node = tree.m_nodes[stack_ptr->m_index];
+        const NodeType& node = tree.m_nodes[node_index];
 
         if (node.is_leaf())
         {
@@ -343,8 +313,6 @@ void Intersector<T, Tree, Visitor, StackSize>::intersect(
                     item_end,
                     ray,
                     ray_info,
-                    stack_ptr->m_tmin,
-                    stack_ptr->m_tmax,
                     distance);
             assert(!proceed || distance >= ValueType(0.0));
 
@@ -355,6 +323,15 @@ void Intersector<T, Tree, Visitor, StackSize>::intersect(
             // Keep track of the distance to the closest intersection.
             if (ray_tmax > distance)
                 ray_tmax = distance;
+
+            // Terminate traversal if the node stack is empty.
+            if (stack_ptr == stack)
+                break;
+
+            // Pop the top node from the stack.
+            node_index = *--stack_ptr;
+
+            continue;
         }
         else
         {
@@ -379,56 +356,43 @@ void Intersector<T, Tree, Visitor, StackSize>::intersect(
                 {
                     if (tmin[0] < tmin[1])
                     {
-                        // Push the right child node to the stack.
-                        stack_ptr->m_tmin = tmin[1];
-                        stack_ptr->m_tmax = tmax[1];
-                        stack_ptr->m_index = right_child_index;
-                        ++stack_ptr;
-
-                        // Push the left child node to the stack.
-                        stack_ptr->m_tmin = tmin[0];
-                        stack_ptr->m_tmax = tmax[0];
-                        stack_ptr->m_index = left_child_index;
-                        ++stack_ptr;
+                        // Push the right child node to the stack, continue with the left child node.
+                        *stack_ptr++ = right_child_index;
+                        node_index = left_child_index;
+                        continue;
                     }
                     else
                     {
-                        // Push the left child node to the stack.
-                        stack_ptr->m_tmin = tmin[0];
-                        stack_ptr->m_tmax = tmax[0];
-                        stack_ptr->m_index = left_child_index;
-                        ++stack_ptr;
-
-                        // Push the right child node to the stack.
-                        stack_ptr->m_tmin = tmin[1];
-                        stack_ptr->m_tmax = tmax[1];
-                        stack_ptr->m_index = right_child_index;
-                        ++stack_ptr;
+                        // Push the left child node to the stack, continue with the right child node.
+                        *stack_ptr++ = left_child_index;
+                        node_index = right_child_index;
+                        continue;
                     }
                 }
                 else
                 {
-                    // Push the left child node to the stack.
+                    // Continue with the left child node.
                     FOUNDATION_BVH_TRAVERSAL_STATS(++discarded_nodes);
-                    stack_ptr->m_tmin = tmin[0];
-                    stack_ptr->m_tmax = tmax[0];
-                    stack_ptr->m_index = left_child_index;
-                    ++stack_ptr;
+                    node_index = left_child_index;
+                    continue;
                 }
             }
             else if (hits & 2)
             {
                 // Push the right child node to the stack.
                 FOUNDATION_BVH_TRAVERSAL_STATS(++discarded_nodes);
-                stack_ptr->m_tmin = tmin[1];
-                stack_ptr->m_tmax = tmax[1];
-                stack_ptr->m_index = right_child_index;
-                ++stack_ptr;
+                node_index = right_child_index;
+                continue;
             }
             else FOUNDATION_BVH_TRAVERSAL_STATS(discarded_nodes += 2);
-
-
         }
+
+        // Terminate traversal if the node stack is empty.
+        if (stack_ptr == stack)
+            break;
+
+        // Pop the top node from the stack.
+        node_index = *--stack_ptr;
     }
 
     // Store traversal statistics.

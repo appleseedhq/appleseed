@@ -107,28 +107,11 @@ class AssemblyTree
 
 
 //
-// Base class for assembly leaf visitors.
-//
-
-class AssemblyLeafVisitorBase
-  : public foundation::NonCopyable
-{
-  protected:
-    // Transform a ray to the space of an assembly instance.
-    void transform_ray_to_assembly_instance_space(
-        const AssemblyInstance*                     assembly_instance,
-        const ShadingPoint*                         parent_shading_point,
-        const ShadingRay::RayType&                  input_ray,
-        ShadingRay::RayType&                        output_ray);
-};
-
-
-//
 // Assembly leaf visitor, used during tree intersection.
 //
 
 class AssemblyLeafVisitor
-  : public AssemblyLeafVisitorBase
+  : public foundation::NonCopyable
 {
   public:
     // Constructor.
@@ -151,8 +134,6 @@ class AssemblyLeafVisitor
         const size_t                                end,
         const ShadingRay::RayType&                  ray,
         const ShadingRay::RayInfoType&              ray_info,
-        const double                                tmin,
-        const double                                tmax,
         double&                                     distance);
 
   private:
@@ -173,8 +154,7 @@ class AssemblyLeafVisitor
 //
 
 class AssemblyLeafProbeVisitor
-  : public AssemblyLeafVisitorBase
-  , public ProbeVisitorBase
+  : public ProbeVisitorBase
 {
   public:
     // Constructor.
@@ -196,8 +176,6 @@ class AssemblyLeafProbeVisitor
         const size_t                                end,
         const ShadingRay::RayType&                  ray,
         const ShadingRay::RayInfoType&              ray_info,
-        const double                                tmin,
-        const double                                tmax,
         double&                                     distance);
 
   private:
