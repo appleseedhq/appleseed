@@ -358,8 +358,6 @@ void Intersector<T, Tree, Visitor, StackSize>::intersect(
         }
         else
         {
-#ifdef APPLESEED_FOUNDATION_USE_SSE
-
             const size_t left_child_index = node.get_child_node_index();
             const size_t right_child_index = left_child_index + 1;
 
@@ -429,40 +427,7 @@ void Intersector<T, Tree, Visitor, StackSize>::intersect(
             }
             else FOUNDATION_BVH_TRAVERSAL_STATS(discarded_nodes += 2);
 
-#else
 
-            // Push child nodes to the stack.
-            size_t child_index = node.get_child_node_index();
-            for (size_t i = 0; i < 2; ++i, ++child_index)
-            {
-                // Fetch the bounding box of the child node.
-                const NodeType& child_node = tree.m_nodes[child_index];
-                const AABBType child_bbox = AABBType(child_node.get_bbox());
-
-                // Discard the child node if it isn't intersected by the ray.
-                FOUNDATION_BVH_TRAVERSAL_STATS(++intersected_nodes);
-                ValueType tmin, tmax;
-                if (!foundation::intersect(ray, ray_info, child_bbox, tmin, tmax))
-                {
-                    FOUNDATION_BVH_TRAVERSAL_STATS(++discarded_nodes);
-                    continue;
-                }
-
-                // Discard the child node if it is farther than the closest intersection so far.
-                if (tmin >= ray_tmax)
-                {
-                    FOUNDATION_BVH_TRAVERSAL_STATS(++culled_nodes);
-                    continue;
-                }
-
-                // Push the child node to the stack.
-                stack_ptr->m_tmin = tmin;
-                stack_ptr->m_tmax = tmax;
-                stack_ptr->m_index = child_index;
-                ++stack_ptr;
-            }
-
-#endif  // APPLESEED_FOUNDATION_USE_SSE
         }
     }
 
