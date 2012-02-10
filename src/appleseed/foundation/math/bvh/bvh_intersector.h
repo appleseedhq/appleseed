@@ -235,15 +235,15 @@ namespace impl
         double              tmin[2],
         double              tmax[2])
     {
-        int result = 0;
+        int hits = 0;
 
         if (intersect(ray, ray_info, AABB3d(left_bbox), tmin[0], tmax[0]) && tmin[0] < ray_tmax)
-            result |= 1;
+            hits |= 1;
 
         if (intersect(ray, ray_info, AABB3d(right_bbox), tmin[1], tmax[1]) && tmin[1] < ray_tmax)
-            result |= 2;
+            hits |= 2;
 
-        return result;
+        return hits;
     }
 
 #endif  // APPLESEED_FOUNDATION_USE_SSE
