@@ -89,8 +89,7 @@ class Tree
         typename T_,
         typename Tree,
         typename Visitor,
-        size_t StackSize,
-        size_t SortSize
+        size_t StackSize
     >
     friend class Intersector;
 

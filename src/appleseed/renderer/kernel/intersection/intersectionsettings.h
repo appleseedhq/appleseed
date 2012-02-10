@@ -98,9 +98,6 @@ const size_t TriangleTreeAccessCacheSize = 16;
 // Size of the stack (in number of nodes) used during traversal.
 const size_t TriangleTreeStackSize = 64;
 
-// Number of stack levels to inspect to find the next closest node during traversal.
-const size_t TriangleTreeSortSize = 1;
-
 
 //
 // Miscellaneous settings.
