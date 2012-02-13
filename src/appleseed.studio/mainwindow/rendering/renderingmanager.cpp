@@ -225,6 +225,8 @@ void RenderingManager::timerEvent(QTimerEvent* event)
 
 void RenderingManager::print_final_rendering_time()
 {
+    m_rendering_timer.measure();
+
     const double rendering_time = m_rendering_timer.get_seconds();
     const string rendering_time_string = pretty_time(rendering_time, 3);
 
