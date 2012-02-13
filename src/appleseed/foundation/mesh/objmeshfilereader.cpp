@@ -57,7 +57,7 @@ namespace
 
 struct OBJMeshFileReader::Impl
 {
-    const Options           m_options;
+    const int               m_options;
     OBJMeshFileLexer        m_lexer;
     IOBJMeshBuilder*        m_builder;
 
@@ -80,8 +80,12 @@ struct OBJMeshFileReader::Impl
     string                  m_mesh_name;
 
     // Constructor.
-    explicit Impl(const Options options)
+    explicit Impl(const int options)
       : m_options(options)
+      , m_lexer(
+            (options & FavorSpeedOverPrecision)
+                ? OBJMeshFileLexer::Fast
+                : OBJMeshFileLexer::Precise)
     {
     }
 
@@ -500,7 +504,7 @@ struct OBJMeshFileReader::Impl
     }
 };
 
-OBJMeshFileReader::OBJMeshFileReader(const Options options)
+OBJMeshFileReader::OBJMeshFileReader(const int options)
   : impl(new Impl(options))
 {
 }

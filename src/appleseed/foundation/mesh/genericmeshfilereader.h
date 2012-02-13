@@ -31,6 +31,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/mesh/imeshfilereader.h"
+#include "foundation/mesh/objmeshfilereader.h"
 
 // Standard headers.
 #include <string>
@@ -49,10 +50,20 @@ class GenericMeshFileReader
   : public IMeshFileReader
 {
   public:
+    // Constructor.
+    GenericMeshFileReader();
+
+    // Get/set options for the Wavefront OBJ mesh file reader.
+    int get_obj_options() const;
+    void set_obj_options(const int obj_options);
+
     // Read a mesh file.
     virtual void read(
         const std::string&  filename,
         IMeshBuilder&       builder);
+
+  private:
+    int m_obj_options;
 };
 
 }       // namespace foundation

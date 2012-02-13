@@ -61,6 +61,7 @@ class OBJMeshFileReader
       : public Exception
     {
         const size_t m_line;                    // the line at which the parse error occurred
+
         explicit ExceptionParseError(const size_t line)
           : m_line(line)
         {
@@ -80,12 +81,13 @@ class OBJMeshFileReader
     // Reading options.
     enum Options
     {
-        Defaults                = 0,
-        StopOnInvalidFaceDef    = 1 << 0        // stop parsing on invalid face definitions
+        Default                 = 0,
+        FavorSpeedOverPrecision = 1 << 0,       // use approximate algorithm for parsing floating-point values
+        StopOnInvalidFaceDef    = 1 << 1        // stop parsing on invalid face definitions
     };
 
     // Constructor.
-    explicit OBJMeshFileReader(const Options options = Defaults);
+    explicit OBJMeshFileReader(const int options = Default);
 
     // Destructor.
     virtual ~OBJMeshFileReader();

@@ -32,7 +32,6 @@
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exceptionunsupportedfileformat.h"
 #include "foundation/mesh/alembicmeshfilereader.h"
-#include "foundation/mesh/objmeshfilereader.h"
 #include "foundation/utility/string.h"
 
 // boost headers.
@@ -44,6 +43,21 @@ using namespace std;
 namespace foundation
 {
 
+GenericMeshFileReader::GenericMeshFileReader()
+  : m_obj_options(OBJMeshFileReader::Default)
+{
+}
+
+int GenericMeshFileReader::get_obj_options() const
+{
+    return m_obj_options;
+}
+
+void GenericMeshFileReader::set_obj_options(const int obj_options)
+{
+    m_obj_options = obj_options;
+}
+
 void GenericMeshFileReader::read(
     const string&   filename,
     IMeshBuilder&   builder)
@@ -53,7 +67,7 @@ void GenericMeshFileReader::read(
 
     if (extension == ".obj")
     {
-        OBJMeshFileReader reader;
+        OBJMeshFileReader reader(m_obj_options);
         reader.read(filename, builder);
     }
     else if (extension == ".abc")

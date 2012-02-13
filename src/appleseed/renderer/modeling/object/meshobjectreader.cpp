@@ -335,6 +335,30 @@ MeshObjectArray MeshObjectReader::read(
     assert(base_object_name);
 
     GenericMeshFileReader reader;
+
+    const string obj_parsing_mode = params.get_optional<string>("obj_parsing_mode", "fast");
+
+    if (obj_parsing_mode == "fast")
+    {
+        reader.set_obj_options(
+            reader.get_obj_options() | OBJMeshFileReader::FavorSpeedOverPrecision);
+    }
+    else if (obj_parsing_mode == "precise")
+    {
+        // This is the default in foundation::OBJMeshFileReader.
+    }
+    else
+    {
+        RENDERER_LOG_WARNING(
+            "while reading geometry for object \"%s\": invalid OBJ parsing mode: \"%s\"; "
+            "valid values are \"precise\" and \"fast\", using default value \"fast\".",
+            base_object_name,
+            obj_parsing_mode.c_str());
+
+        reader.set_obj_options(
+            reader.get_obj_options() | OBJMeshFileReader::FavorSpeedOverPrecision);
+    }
+
     MeshObjectBuilder builder(params, base_object_name);
 
     Stopwatch<DefaultWallclockTimer> stopwatch;
