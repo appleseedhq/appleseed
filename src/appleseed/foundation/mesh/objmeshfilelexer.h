@@ -189,25 +189,6 @@ class OBJMeshFileLexer
         read_next_line();
     }
 
-    // Eat until the end-of-line character (eat the remaining of the line).
-    void eat_until_newline()
-    {
-        assert(m_file.is_open());
-
-        while (true)
-        {
-            if (is_eof())
-                break;
-
-            const unsigned char c = get_char();
-
-            if (c == '\n')
-                break;
-
-            next_char();
-        }
-    }
-
     // Accept a end-of-line character, or generate a parse error.
     void accept_newline()
     {
