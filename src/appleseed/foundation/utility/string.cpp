@@ -30,6 +30,7 @@
 #include "string.h"
 
 // Standard headers.
+#include <cstdlib>
 #include <cstring>
 
 using namespace std;
@@ -63,6 +64,132 @@ char* duplicate_string(const char* s)
 void free_string(const char* s)
 {
     delete [] s;
+}
+
+
+//
+// Fast string-to-number functions implementation.
+//
+
+namespace
+{
+    inline bool is_digit(const char c)
+    {
+        return c >= '0' && c <= '9';
+    }
+}
+
+long fast_strtol_base10(const char* str, const char** end_ptr)
+{
+    const char* p = str;
+
+    // Handle sign, if any.
+    bool positive = true;
+    if (*p == '-')
+    {
+        positive = false;
+        ++p;
+    }
+    else if (*p == '+')
+        ++p;
+
+    // Get digits.
+    long value = 0;
+    while (is_digit(*p))
+    {
+        value = value * 10 + (*p - '0');
+        ++p;
+    }
+
+    // Optionally return a pointer to the next character after the value.
+    if (end_ptr)
+        *end_ptr = p;
+
+    return positive ? value : -value;
+}
+
+double fast_strtod(const char* str, const char** end_ptr)
+{
+    const char* p = str;
+
+    // Handle sign, if any.
+    bool positive = true;
+    if (*p == '-')
+    {
+        positive = false;
+        ++p;
+    }
+    else if (*p == '+')
+        ++p;
+
+    // Get digits before decimal point or exponent, if any.
+    double value = 0.0;
+    while (is_digit(*p))
+    {
+        value = value * 10.0 + (*p - '0');
+        ++p;
+    }
+
+    // Get digits after decimal point, if any.
+    if (*p == '.')
+    {
+        ++p;
+
+        double power = 1.0;
+
+        while (is_digit(*p))
+        {
+            value = value * 10.0 + (*p - '0');
+            power *= 10.0;
+            ++p;
+        }
+
+        value /= power;
+    }
+
+    // Handle exponent, if any.
+    if (*p == 'e' || *p == 'E')
+    {
+        ++p;
+
+        // Handle exponent sign, if any.
+        bool exponent_positive = true;
+        if (*p == '-')
+        {
+            exponent_positive = false;
+            ++p;
+        }
+        else if (*p == '+')
+            ++p;
+
+        // Get exponent digits.
+        long exponent = 0;
+        while (is_digit(*p))
+        {
+            exponent = exponent * 10 + (*p - '0');
+            ++p;
+        }
+
+        // Apply exponent.
+        if (exponent_positive)
+        {
+            while (exponent >= 64) { value *= 1.0e64; exponent -= 64; }
+            while (exponent >= 8) { value *= 1.0e8; exponent -= 8; }
+            while (exponent > 0) { value *= 1.0e1; exponent -= 1; }
+        }
+        else
+        {
+            while (exponent >= 64) { value *= 1.0e-64; exponent -= 64; }
+            while (exponent >= 8) { value *= 1.0e-8; exponent -= 8; }
+            while (exponent > 0) { value *= 1.0e-1; exponent -= 1; }
+        }
+    }
+
+    // Optionally return a pointer to the next character after the value.
+    if (end_ptr)
+        *end_ptr = p;
+
+    return positive ? value : -value;
 }
 
 }   // namespace foundation

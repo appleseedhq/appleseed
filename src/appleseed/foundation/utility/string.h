@@ -190,6 +190,43 @@ std::string replace_special_xml_characters(const std::string& s);
 
 
 //
+// Fast alternative to std::strtol().
+//
+// Compared to std::strtol(), this function:
+//
+//   * assumes base 10
+//   * does not skip leading white space characters
+//   * does not consider the current locale
+//
+// Reference:
+//
+//   http://pubs.opengroup.org/onlinepubs/000095399/functions/strtol.html
+//
+
+long fast_strtol_base10(const char* str, const char** end_ptr);
+long fast_strtol_base10(char* str, char** end_ptr);
+
+
+//
+// Fast alternative to std::strtod().
+//
+// Compared to std::strtod(), this function:
+//
+//   * is potentially less accurate
+//   * does not skip leading white space characters
+//   * does no error checking
+//   * does not consider the current locale
+//
+// Reference:
+//
+//   http://pubs.opengroup.org/onlinepubs/000095399/functions/strtod.html
+//
+
+double fast_strtod(const char* str, const char** end_ptr);
+double fast_strtod(char* str, char** end_ptr);
+
+
+//
 // Filename manipulation functions.
 //
 
@@ -683,6 +720,27 @@ inline std::string replace_special_xml_characters(const std::string& s)
     }
 
     return result;
+}
+
+
+//
+// Fast string-to-number functions implementation.
+//
+
+inline long fast_strtol_base10(char* str, char** end_ptr)
+{
+    return
+        fast_strtol_base10(
+            const_cast<const char*>(str),
+            const_cast<const char**>(end_ptr));
+}
+
+inline double fast_strtod(char* str, char** end_ptr)
+{
+    return
+        fast_strtod(
+            const_cast<const char*>(str),
+            const_cast<const char**>(end_ptr));
 }
 
 
