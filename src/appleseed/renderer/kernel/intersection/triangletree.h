@@ -35,10 +35,12 @@
 #include "renderer/kernel/intersection/probevisitorbase.h"
 #include "renderer/kernel/intersection/regioninfo.h"
 #include "renderer/kernel/intersection/trianglekey.h"
+#include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/math/aabb.h"
 #include "foundation/math/bvh.h"
 #include "foundation/utility/lazy.h"
 #include "foundation/utility/poolallocator.h"
@@ -52,7 +54,6 @@
 
 // Forward declarations.
 namespace renderer  { class Assembly; }
-namespace renderer  { class ShadingPoint; }
 
 namespace renderer
 {
@@ -220,16 +221,103 @@ typedef foundation::bvh::Intersector<
 
 
 //
+// Utility class to convert a triangle to the desired precision if necessary,
+// but avoid any work (in particular, no copy) if the source triangle already
+// has the desired precision and can be used in-place.
+//
+
+namespace impl
+{
+    template <bool CompatibleTypes> struct TriangleReaderImpl;
+
+    // Compatible types: no conversion or copy.
+    template <> struct TriangleReaderImpl<true>
+    {
+        const TriangleType& m_triangle;
+
+        explicit TriangleReaderImpl(const TriangleType& triangle)
+          : m_triangle(triangle)
+        {
+        }
+    };
+
+    // Incompatible types: perform a conversion.
+    template <> struct TriangleReaderImpl<false>
+    {
+        const TriangleType m_triangle;
+
+        explicit TriangleReaderImpl(const GTriangleType& triangle)
+          : m_triangle(triangle)
+        {
+        }
+    };
+
+    typedef TriangleReaderImpl<
+        sizeof(GTriangleType::ValueType) == sizeof(TriangleType::ValueType)
+    > TriangleReader;
+}
+
+
+//
 // TriangleLeafVisitor class implementation.
 //
 
 inline TriangleLeafVisitor::TriangleLeafVisitor(
-    const TriangleTree&     tree,
-    ShadingPoint&           shading_point)
+    const TriangleTree&                     tree,
+    ShadingPoint&                           shading_point)
   : m_tree(tree)
   , m_shading_point(shading_point)
   , m_hit_triangle_index(~0)
 {
+}
+
+inline bool TriangleLeafVisitor::visit(
+    const std::vector<TriangleKey>&         items,
+    const std::vector<foundation::AABB3d>&  bboxes,
+    const size_t                            begin,
+    const size_t                            end,
+    const ShadingRay::RayType&              ray,
+    const ShadingRay::RayInfoType&          ray_info,
+    double&                                 distance)
+{
+    // Sequentially intersect all triangles of this leaf.
+    for (size_t i = begin; i < end; ++i)
+    {
+        const impl::TriangleReader reader(m_tree.m_triangles[i]);
+
+        // Intersect the triangle.
+        double t, u, v;
+        if (reader.m_triangle.intersect(m_shading_point.m_ray, t, u, v))
+        {
+            m_hit_triangle_index = i;
+            m_shading_point.m_ray.m_tmax = t;
+            m_shading_point.m_bary[0] = u;
+            m_shading_point.m_bary[1] = v;
+        }
+    }
+
+    // Continue traversal.
+    distance = m_shading_point.m_ray.m_tmax;
+    return true;
+}
+
+inline void TriangleLeafVisitor::read_hit_triangle_data() const
+{
+    if (m_hit_triangle_index != ~0)
+    {
+        // Record a hit.
+        m_shading_point.m_hit = true;
+
+        // Copy the triangle key.
+        const TriangleKey& triangle_key = m_tree.m_items[m_hit_triangle_index];
+        m_shading_point.m_object_instance_index = triangle_key.get_object_instance_index();
+        m_shading_point.m_region_index = triangle_key.get_region_index();
+        m_shading_point.m_triangle_index = triangle_key.get_triangle_index();
+
+        // Compute and store the support plane of the hit triangle.
+        const impl::TriangleReader reader(m_tree.m_triangles[m_hit_triangle_index]);
+        m_shading_point.m_triangle_support_plane.initialize(reader.m_triangle);
+    }
 }
 
 
@@ -238,9 +326,36 @@ inline TriangleLeafVisitor::TriangleLeafVisitor(
 //
 
 inline TriangleLeafProbeVisitor::TriangleLeafProbeVisitor(
-    const TriangleTree&     tree)
+    const TriangleTree&                     tree)
   : m_tree(tree)
 {
+}
+
+inline bool TriangleLeafProbeVisitor::visit(
+    const std::vector<TriangleKey>&         items,
+    const std::vector<foundation::AABB3d>&  bboxes,
+    const size_t                            begin,
+    const size_t                            end,
+    const ShadingRay::RayType&              ray,
+    const ShadingRay::RayInfoType&          ray_info,
+    double&                                 distance)
+{
+    // Sequentially intersect all triangles of this leaf.
+    for (size_t i = begin; i < end; ++i)
+    {
+        const impl::TriangleReader reader(m_tree.m_triangles[i]);
+
+        // Intersect the triangle.
+        if (reader.m_triangle.intersect(ray))
+        {
+            m_hit = true;
+            return false;
+        }
+    }
+
+    // Continue traversal.
+    distance = ray.m_tmax;
+    return true;
 }
 
 }       // namespace renderer

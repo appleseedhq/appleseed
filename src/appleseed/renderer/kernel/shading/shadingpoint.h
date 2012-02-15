@@ -31,7 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
-#include "renderer/kernel/intersection/triangletree.h"
+#include "renderer/kernel/intersection/intersectionsettings.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/kernel/tessellation/statictessellation.h"
 #include "renderer/modeling/input/inputparams.h"
