@@ -614,19 +614,19 @@ inline Vector<T, N>& operator/=(Vector<T, N>& lhs, const T rhs)
 }
 
 template <size_t N>
-inline Vector<float, N>& operator/(Vector<float, N>& lhs, const float rhs)
+inline Vector<float, N>& operator/=(Vector<float, N>& lhs, const float rhs)
 {
     return lhs *= 1.0f / rhs;
 }
 
 template <size_t N>
-inline Vector<double, N>& operator/(Vector<double, N>& lhs, const double rhs)
+inline Vector<double, N>& operator/=(Vector<double, N>& lhs, const double rhs)
 {
     return lhs *= 1.0 / rhs;
 }
 
 template <size_t N>
-inline Vector<long double, N>& operator/(Vector<long double, N>& lhs, const long double rhs)
+inline Vector<long double, N>& operator/=(Vector<long double, N>& lhs, const long double rhs)
 {
     return lhs *= 1.0L / rhs;
 }
