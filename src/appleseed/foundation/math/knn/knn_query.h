@@ -217,9 +217,9 @@ inline void Query<T, N>::find_single_nearest_neighbor(
     }
 
     const size_t point_index = node->get_point_index();
-    const ValueType distance = square_distance(m_tree.m_points[point_index], query_point);
+    const ValueType square_dist = square_distance(m_tree.m_points[point_index], query_point);
 
-    m_answer.array_insert(m_tree.m_indices[point_index], distance);
+    m_answer.array_insert(m_tree.m_indices[point_index], square_dist);
 
     FOUNDATION_KNN_QUERY_STATS(stats.m_fetched_nodes.insert(fetched_node_count));
     FOUNDATION_KNN_QUERY_STATS(stats.m_visited_leaves.insert(1));
@@ -301,12 +301,12 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
         {
             FOUNDATION_KNN_QUERY_STATS(++tested_point_count);
 
-            const ValueType distance = square_distance(*point_ptr++, query_point);
+            const ValueType square_dist = square_distance(*point_ptr++, query_point);
 
-            m_answer.array_insert(point_index++, distance);
+            m_answer.array_insert(point_index++, square_dist);
 
-            if (max_square_distance < distance)
-                max_square_distance = distance;
+            if (max_square_distance < square_dist)
+                max_square_distance = square_dist;
         }
 
         // At this point the answer is full, so we transform it into a heap.
@@ -317,11 +317,11 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
         {
             FOUNDATION_KNN_QUERY_STATS(++tested_point_count);
 
-            const ValueType distance = square_distance(*point_ptr++, query_point);
+            const ValueType square_dist = square_distance(*point_ptr++, query_point);
 
-            if (distance < max_square_distance)
+            if (square_dist < max_square_distance)
             {
-                m_answer.heap_insert(point_index, distance);
+                m_answer.heap_insert(point_index, square_dist);
                 max_square_distance = m_answer.top().m_distance;
             }
 
@@ -470,11 +470,11 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
         {
             FOUNDATION_KNN_QUERY_STATS(++tested_point_count);
 
-            const ValueType distance = square_distance(*point_ptr++, query_point);
+            const ValueType square_dist = square_distance(*point_ptr++, query_point);
 
-            if (distance < max_square_distance)
+            if (square_dist < max_square_distance)
             {
-                m_answer.heap_insert(point_index, distance);
+                m_answer.heap_insert(point_index, square_dist);
                 max_square_distance = m_answer.top().m_distance;
             }
 
