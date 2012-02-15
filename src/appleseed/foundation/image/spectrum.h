@@ -81,8 +81,7 @@ class RegularSpectrum
     const ValueType& operator[](const size_t i) const;
 
   private:
-    ALIGN_SSE_VARIABLE
-    ValueType m_samples[StoredSamples];
+    SSE_ALIGN ValueType m_samples[StoredSamples];
 };
 
 // Exact inequality and equality tests.

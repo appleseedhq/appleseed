@@ -221,7 +221,7 @@ FORCE_INLINE bool TriangleSSK<float>::intersect(
 
     // Check that the intersection point lies inside the triangle.
 #ifdef APPLESEED_FOUNDATION_USE_SSE
-    ALIGN_SSE_VARIABLE float detarray[4] = { uprime, uprime, vprime, wprime };
+    SSE_ALIGN float detarray[4] = { uprime, uprime, vprime, wprime };
     const sse4f mu = loadps(detarray);
     const sse4f mv = shuffleps(mu, mu, _MM_SHUFFLE(2, 3, 3, 2));
     const sse4f product = mulps(mu, mv);
@@ -337,7 +337,7 @@ FORCE_INLINE bool TriangleSSK<float>::intersect(const RayType& ray) const
 
     // Check that the intersection point lies inside the triangle.
 #ifdef APPLESEED_FOUNDATION_USE_SSE
-    ALIGN_SSE_VARIABLE float detarray[4] = { uprime, uprime, vprime, wprime };
+    SSE_ALIGN float detarray[4] = { uprime, uprime, vprime, wprime };
     const sse4f mu = loadps(detarray);
     const sse4f mv = shuffleps(mu, mu, _MM_SHUFFLE(2, 3, 3, 2));
     const sse4f product = mulps(mu, mv);

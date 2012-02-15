@@ -107,24 +107,24 @@ class FOUNDATIONDLL Compiler
 
 
 //
-// A qualifier to specify the alignment of a local variable or a member of a data structure.
+// A qualifier to specify the alignment of a variable, a structure member or a structure.
 //
 
 // Visual C++.
 #if defined _MSC_VER
-    #define ALIGN_VARIABLE(n) __declspec(align(n))
+    #define ALIGN(n) __declspec(align(n))
 
 // gcc.
 #elif defined __GNUC__
-    #define ALIGN_VARIABLE(n) __attribute__((aligned(n)))
+    #define ALIGN(n) __attribute__((aligned(n)))
 
 // Other compilers: ignore the qualifier.
 #else
-    #define ALIGN_VARIABLE(n)
+    #define ALIGN(n)
 #endif
 
-// Align a variable or a member of a data structure to use with SSE.
-#define ALIGN_SSE_VARIABLE ALIGN_VARIABLE(16)
+// Specify an alignment compatible with SSE.
+#define SSE_ALIGN ALIGN(16)
 
 
 //

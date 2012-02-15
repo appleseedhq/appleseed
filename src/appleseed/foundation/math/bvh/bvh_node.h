@@ -46,7 +46,7 @@ namespace bvh {
 //
 
 template <typename T, size_t N>
-class ALIGN_SSE_VARIABLE Node
+class SSE_ALIGN Node
 {
   public:
     // Value type and dimension.

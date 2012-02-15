@@ -85,7 +85,7 @@ BENCHMARK_SUITE(Foundation_Math_VoxelGrid3)
     {
         for (size_t i = 0; i < LookupPointCount; ++i)
         { 
-            ALIGN_SSE_VARIABLE float values[ChannelCount];
+            SSE_ALIGN float values[ChannelCount];
             m_grid.nearest_lookup(m_lookup_points[i], values);
 
             for (size_t j = 0; j < ChannelCount; ++j)
@@ -97,7 +97,7 @@ BENCHMARK_SUITE(Foundation_Math_VoxelGrid3)
     {
         for (size_t i = 0; i < LookupPointCount; ++i)
         { 
-            ALIGN_SSE_VARIABLE float values[ChannelCount];
+            SSE_ALIGN float values[ChannelCount];
             m_grid.linear_lookup(m_lookup_points[i], values);
 
             for (size_t j = 0; j < ChannelCount; ++j)
@@ -109,7 +109,7 @@ BENCHMARK_SUITE(Foundation_Math_VoxelGrid3)
     {
         for (size_t i = 0; i < LookupPointCount; ++i)
         { 
-            ALIGN_SSE_VARIABLE float values[ChannelCount];
+            SSE_ALIGN float values[ChannelCount];
             m_grid.quadratic_lookup(m_lookup_points[i], values);
 
             for (size_t j = 0; j < ChannelCount; ++j)
