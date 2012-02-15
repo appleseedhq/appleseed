@@ -211,7 +211,7 @@ void Builder<T, N>::partition(
                 PartitionPredicate(m_tree.m_points, split));
 
         size_t pivot = bound - &m_tree.m_indices[0];
-        assert(pivot > begin);
+        assert(pivot >= begin);
         assert(pivot <= end);
 
         // Switch to median split if one of the two leaf is empty.
