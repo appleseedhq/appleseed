@@ -30,6 +30,7 @@
 #include "foundation/math/knn.h"
 #include "foundation/math/rng.h"
 #include "foundation/math/vector.h"
+#include "foundation/platform/timer.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"
 
@@ -63,7 +64,7 @@ TEST_SUITE(Foundation_Math_Knn_Builder)
         knn::Tree3d tree;
 
         knn::Builder3d builder(tree);
-        builder.build(0, 0);
+        builder.build<DefaultWallclockTimer>(0, 0);
 
         EXPECT_TRUE(tree.empty());
 
@@ -88,7 +89,7 @@ TEST_SUITE(Foundation_Math_Knn_Builder)
         knn::Tree3d tree;
 
         knn::Builder3d builder(tree);
-        builder.build(Points, 2);
+        builder.build<DefaultWallclockTimer>(Points, 2);
 
         ASSERT_EQ(2, tree.m_points.size());
         EXPECT_EQ(Points[0], tree.m_points[0]);
@@ -124,7 +125,7 @@ TEST_SUITE(Foundation_Math_Knn_Builder)
         knn::Tree3d tree;
 
         knn::Builder3d builder(tree);
-        builder.build(points, PointCount);
+        builder.build<DefaultWallclockTimer>(points, PointCount);
 
         EXPECT_EQ(8 + 4 + 2 + 1, tree.m_nodes.size());
     }
@@ -238,7 +239,7 @@ TEST_SUITE(Foundation_Math_Knn_Query)
 
         knn::Tree3d tree;
         knn::Builder3d builder(tree);
-        builder.build(points, PointCount);
+        builder.build<DefaultWallclockTimer>(points, PointCount);
 
         knn::Answer<double> answer(AnswerSize);
         knn::Query3d query(tree, answer);
@@ -268,7 +269,7 @@ TEST_SUITE(Foundation_Math_Knn_Query)
 
         knn::Tree3d tree;
         knn::Builder3d builder(tree);
-        builder.build(&points[0], PointCount);
+        builder.build<DefaultWallclockTimer>(&points[0], PointCount);
 
         sfcnn<foundation::Vector3d, 3, double> stann_tree(&points[0], PointCount);
 
