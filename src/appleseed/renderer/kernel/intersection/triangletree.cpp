@@ -202,7 +202,7 @@ void TriangleTree::collect_triangles(const Arguments& arguments)
                 triangle_bbox.insert(v1);
                 triangle_bbox.insert(v2);
 
-                insert(triangle_key, triangle_bbox);
+                insert(triangle_key, AABB3d(triangle_bbox));
 
                 const GTriangleType triangle(v0, v1, v2);
                 m_triangles.push_back(triangle);
@@ -272,7 +272,7 @@ namespace
 
 bool TriangleLeafVisitor::visit(
     const vector<TriangleKey>&      items,
-    const vector<GAABB3>&           bboxes,
+    const vector<AABB3d>&           bboxes,
     const size_t                    begin,
     const size_t                    end,
     const ShadingRay::RayType&      ray,
@@ -326,7 +326,7 @@ void TriangleLeafVisitor::read_hit_triangle_data() const
 
 bool TriangleLeafProbeVisitor::visit(
     const vector<TriangleKey>&      items,
-    const vector<GAABB3>&           bboxes,
+    const vector<AABB3d>&           bboxes,
     const size_t                    begin,
     const size_t                    end,
     const ShadingRay::RayType&      ray,

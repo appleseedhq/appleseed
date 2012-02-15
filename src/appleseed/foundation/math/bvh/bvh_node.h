@@ -31,6 +31,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/aabb.h"
+#include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
 
 // Standard headers.
@@ -45,7 +46,7 @@ namespace bvh {
 //
 
 template <typename T, size_t N>
-class Node
+class ALIGN_SSE_VARIABLE Node
 {
   public:
     // Value type and dimension.
@@ -66,15 +67,17 @@ class Node
     bool is_interior() const;
     bool is_leaf() const;
 
-    // Set/get the node bounding box.
-    void set_bbox(const AABBType& bbox);
-    const AABBType& get_bbox() const;
+    // Set/get the bounding boxes of the child nodes (interior nodes only).
+    void set_left_bbox(const AABBType& bbox);
+    void set_right_bbox(const AABBType& bbox);
+    AABBType get_left_bbox() const;
+    AABBType get_right_bbox() const;
 
-    // Set/get the child node index (interior nodes only).
+    // Set/get the index of the first child node (interior nodes only).
     void set_child_node_index(const size_t index);
     size_t get_child_node_index() const;
 
-    // Set/get the item index (leaf nodes only).
+    // Set/get the index of the first item (leaf nodes only).
     void set_item_index(const size_t index);
     size_t get_item_index() const;
 
@@ -83,6 +86,13 @@ class Node
     size_t get_item_count() const;
 
   private:
+    template <
+        typename T_,
+        typename Tree,
+        typename Visitor,
+        size_t StackSize
+    >
+    friend class Intersector;
 
     //
     // The info field of the node is organized as follow:
@@ -97,10 +107,10 @@ class Node
     //     bits 0-30    leaf index
     //     bit  31      node type (0 for leaf node)
     //
-    // The maximum size of a single BSP tree is 2^29 = 536,870,912 nodes.
+    // The maximum size of a single BVH is 2^29 = 536,870,912 nodes.
     //
 
-    AABBType    m_bbox;
+    ValueType   m_bbox_data[12];
     uint32      m_info;
     uint32      m_count;
 };
@@ -137,15 +147,51 @@ inline bool Node<T, N>::is_leaf() const
 }
 
 template <typename T, size_t N>
-inline void Node<T, N>::set_bbox(const AABBType& bbox)
+inline void Node<T, N>::set_left_bbox(const AABBType& bbox)
 {
-    m_bbox = bbox;
+    m_bbox_data[ 0] = bbox.min.x;
+    m_bbox_data[ 2] = bbox.max.x;
+    m_bbox_data[ 4] = bbox.min.y;
+    m_bbox_data[ 6] = bbox.max.y;
+    m_bbox_data[ 8] = bbox.min.z;
+    m_bbox_data[10] = bbox.max.z;
 }
 
 template <typename T, size_t N>
-inline const AABB<T, N>& Node<T, N>::get_bbox() const
+inline void Node<T, N>::set_right_bbox(const AABBType& bbox)
 {
-    return m_bbox;
+    m_bbox_data[ 1] = bbox.min.x;
+    m_bbox_data[ 3] = bbox.max.x;
+    m_bbox_data[ 5] = bbox.min.y;
+    m_bbox_data[ 7] = bbox.max.y;
+    m_bbox_data[ 9] = bbox.min.z;
+    m_bbox_data[11] = bbox.max.z;
+}
+
+template <typename T, size_t N>
+inline AABB<T, N> Node<T, N>::get_left_bbox() const
+{
+    AABBType bbox;
+    bbox.min.x = m_bbox_data[ 0];
+    bbox.min.y = m_bbox_data[ 4];
+    bbox.min.z = m_bbox_data[ 8];
+    bbox.max.x = m_bbox_data[ 2];
+    bbox.max.y = m_bbox_data[ 6];
+    bbox.max.z = m_bbox_data[10];
+    return bbox;
+}
+
+template <typename T, size_t N>
+inline AABB<T, N> Node<T, N>::get_right_bbox() const
+{
+    AABBType bbox;
+    bbox.min.x = m_bbox_data[ 1];
+    bbox.min.y = m_bbox_data[ 5];
+    bbox.min.z = m_bbox_data[ 9];
+    bbox.max.x = m_bbox_data[ 3];
+    bbox.max.y = m_bbox_data[ 7];
+    bbox.max.z = m_bbox_data[11];
+    return bbox;
 }
 
 template <typename T, size_t N>

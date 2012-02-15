@@ -213,7 +213,7 @@ void AssemblyTree::build_assembly_tree()
         // Insert the assembly instance into the root leaf.
         insert(
             assembly_instance.get_uid(),
-            assembly_instance.compute_parent_bbox());
+            AABB3d(assembly_instance.compute_parent_bbox()));
     }
 
     // Log a progress message.
@@ -336,7 +336,7 @@ namespace
 
 bool AssemblyLeafVisitor::visit(
     const vector<UniqueID>&             items,
-    const vector<GAABB3>&               bboxes,
+    const vector<AABB3d>&               bboxes,
     const size_t                        begin,
     const size_t                        end,
     const ShadingRay::RayType&          ray,
@@ -365,7 +365,7 @@ bool AssemblyLeafVisitor::visit(
     intersect(
         ray,
         ray_info,
-        AABB3d(bboxes[begin]),
+        bboxes[begin],
         result.m_ray.m_tmin,
         result.m_ray.m_tmax);
 
@@ -443,7 +443,7 @@ bool AssemblyLeafVisitor::visit(
 
 bool AssemblyLeafProbeVisitor::visit(
     const vector<UniqueID>&             items,
-    const vector<GAABB3>&               bboxes,
+    const vector<AABB3d>&               bboxes,
     const size_t                        begin,
     const size_t                        end,
     const ShadingRay::RayType&          ray,
@@ -470,7 +470,7 @@ bool AssemblyLeafProbeVisitor::visit(
     intersect(
         ray,
         ray_info,
-        AABB3d(bboxes[begin]),
+        bboxes[begin],
         transformed_ray.m_tmin,
         transformed_ray.m_tmax);
 

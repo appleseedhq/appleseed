@@ -108,137 +108,6 @@ class Intersector
 // Intersector class implementation.
 //
 
-namespace impl
-{
-
-#ifdef APPLESEED_FOUNDATION_USE_SSE
-
-    FORCE_INLINE int intersect_bvh_nodes(
-        const Ray3d&            ray,
-        const RayInfo3d&        ray_info,
-        const double            ray_tmax,
-        const AABB3f&           left_bbox,
-        const AABB3f&           right_bbox,
-        double                  tmin[2],
-        double                  tmax[2])
-    {
-        const sse2d mposinf = set1pd(FP<double>::pos_inf());
-        const sse2d mneginf = set1pd(FP<double>::neg_inf());
-
-        // X slabs.
-
-        ALIGN_SSE_VARIABLE const float bbx[4] =
-        {
-            left_bbox.min.x,
-            right_bbox.min.x,
-            left_bbox.max.x,
-            right_bbox.max.x
-        };
-
-        const sse4f mbbx4f = loadps(bbx);
-        const sse2d mbbminx2d = _mm_cvtps_pd(mbbx4f);
-        const sse2d mbbmaxx2d = _mm_cvtps_pd(shuffleps(mbbx4f, mbbx4f, _MM_SHUFFLE(0, 0, 3, 2)));
-
-        const sse2d mrox = set1pd(ray.m_org.x);
-        const sse2d mrrcpdx = set1pd(ray_info.m_rcp_dir.x);
-        const sse2d mx1 = mulpd(mrrcpdx, subpd(mbbminx2d, mrox));
-        const sse2d mx2 = mulpd(mrrcpdx, subpd(mbbmaxx2d, mrox));
-
-        sse2d mtmax = maxpd(minpd(mx1, mposinf), minpd(mx2, mposinf));
-        sse2d mtmin = minpd(maxpd(mx1, mneginf), maxpd(mx2, mneginf));
-
-        // Y slabs.
-
-        ALIGN_SSE_VARIABLE const float bby[4] =
-        {
-            left_bbox.min.y,
-            right_bbox.min.y,
-            left_bbox.max.y,
-            right_bbox.max.y
-        };
-
-        const sse4f mbby4f = loadps(bby);
-        const sse2d mbbminy2d = _mm_cvtps_pd(mbby4f);
-        const sse2d mbbmaxy2d = _mm_cvtps_pd(shuffleps(mbby4f, mbby4f, _MM_SHUFFLE(0, 0, 3, 2)));
-
-        const sse2d mroy = set1pd(ray.m_org.y);
-        const sse2d mrrcpdy = set1pd(ray_info.m_rcp_dir.y);
-        const sse2d my1 = mulpd(mrrcpdy, subpd(mbbminy2d, mroy));
-        const sse2d my2 = mulpd(mrrcpdy, subpd(mbbmaxy2d, mroy));
-
-        mtmax = minpd(mtmax, maxpd(minpd(my1, mposinf), minpd(my2, mposinf)));
-        mtmin = maxpd(mtmin, minpd(maxpd(my1, mneginf), maxpd(my2, mneginf)));
-
-        // Z slabs.
-
-        ALIGN_SSE_VARIABLE const float bbz[4] =
-        {
-            left_bbox.min.z,
-            right_bbox.min.z,
-            left_bbox.max.z,
-            right_bbox.max.z
-        };
-
-        const sse4f mbbz4f = loadps(bbz);
-        const sse2d mbbminz2d = _mm_cvtps_pd(mbbz4f);
-        const sse2d mbbmaxz2d = _mm_cvtps_pd(shuffleps(mbbz4f, mbbz4f, _MM_SHUFFLE(0, 0, 3, 2)));
-
-        const sse2d mroz = set1pd(ray.m_org.z);
-        const sse2d mrrcpdz = set1pd(ray_info.m_rcp_dir.z);
-        const sse2d mz1 = mulpd(mrrcpdz, subpd(mbbminz2d, mroz));
-        const sse2d mz2 = mulpd(mrrcpdz, subpd(mbbmaxz2d, mroz));
-
-        mtmax = minpd(mtmax, maxpd(minpd(mz1, mposinf), minpd(mz2, mposinf)));
-        mtmin = maxpd(mtmin, minpd(maxpd(mz1, mneginf), maxpd(mz2, mneginf)));
-
-        // Conclusion.
-
-        const sse2d mraytmin = set1pd(ray.m_tmin);
-        const sse2d mraytmax = set1pd(ray_tmax);
-
-        const int hits =
-            movemaskpd(
-                orpd(
-                    cmpgtpd(mtmin, mtmax),
-                    orpd(
-                        cmpltpd(mtmax, mraytmin),
-                        cmpgepd(mtmin, mraytmax)))) ^ 3;
-
-        if (hits)
-        {
-            storepd(tmin, maxpd(mraytmin, mtmin));
-            storepd(tmax, minpd(mraytmax, mtmax));
-        }
-
-        return hits;
-    }
-
-#else
-
-    FORCE_INLINE int intersect_bvh_nodes(
-        const Ray3d&            ray,
-        const RayInfo3d&        ray_info,
-        const double            ray_tmax,
-        const AABB3f&           left_bbox,
-        const AABB3f&           right_bbox,
-        double                  tmin[2],
-        double                  tmax[2])
-    {
-        int hits = 0;
-
-        if (intersect(ray, ray_info, AABB3d(left_bbox), tmin[0], tmax[0]) && tmin[0] < ray_tmax)
-            hits |= 1;
-
-        if (intersect(ray, ray_info, AABB3d(right_bbox), tmin[1], tmax[1]) && tmin[1] < ray_tmax)
-            hits |= 2;
-
-        return hits;
-    }
-
-#endif  // APPLESEED_FOUNDATION_USE_SSE
-
-}       // namespace impl
-
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
 #define FOUNDATION_BVH_TRAVERSAL_STATS(x) x
 #else
@@ -268,12 +137,25 @@ void Intersector<T, Tree, Visitor, StackSize>::intersect(
     if (tree.size() == 0)
        return;
 
+#ifdef APPLESEED_FOUNDATION_USE_SSE
+    const sse2d mrox = set1pd(ray.m_org.x);
+    const sse2d mroy = set1pd(ray.m_org.y);
+    const sse2d mroz = set1pd(ray.m_org.z);
+    const sse2d mrrcpdx = set1pd(ray_info.m_rcp_dir.x);
+    const sse2d mrrcpdy = set1pd(ray_info.m_rcp_dir.y);
+    const sse2d mrrcpdz = set1pd(ray_info.m_rcp_dir.z);
+    const sse2d mraytmin = set1pd(ray.m_tmin);
+
+    const sse2d mposinf = set1pd(FP<double>::pos_inf());
+    const sse2d mneginf = set1pd(FP<double>::neg_inf());
+#endif
+
     // Node stack.
-    size_t stack[StackSize];
-    size_t* stack_ptr = stack;
+    const NodeType* stack[StackSize];
+    const NodeType** stack_ptr = stack;
 
     // Current node.
-    size_t node_index = 0;
+    const NodeType* node_ptr = &tree.m_nodes[0];
 
     // Initialize traversal statistics.
     FOUNDATION_BVH_TRAVERSAL_STATS(++stats.m_traversal_count);
@@ -290,12 +172,98 @@ void Intersector<T, Tree, Visitor, StackSize>::intersect(
     {
         // Fetch the node.
         FOUNDATION_BVH_TRAVERSAL_STATS(++visited_nodes);
-        const NodeType& node = tree.m_nodes[node_index];
 
-        if (node.is_leaf())
+        if (node_ptr->is_interior())
         {
-            const size_t item_begin = node.get_item_index();
-            const size_t item_end = item_begin + node.get_item_count();
+#ifdef APPLESEED_FOUNDATION_USE_SSE
+            const sse2d mbbminx2d = loadpd(node_ptr->m_bbox_data + 0);
+            const sse2d mbbmaxx2d = loadpd(node_ptr->m_bbox_data + 2);
+            const sse2d mx1 = mulpd(mrrcpdx, subpd(mbbminx2d, mrox));
+            const sse2d mx2 = mulpd(mrrcpdx, subpd(mbbmaxx2d, mrox));
+
+            sse2d mtmax = maxpd(minpd(mx1, mposinf), minpd(mx2, mposinf));
+            sse2d mtmin = minpd(maxpd(mx1, mneginf), maxpd(mx2, mneginf));
+
+            const sse2d mbbminy2d = loadpd(node_ptr->m_bbox_data + 4);
+            const sse2d mbbmaxy2d = loadpd(node_ptr->m_bbox_data + 6);
+            const sse2d my1 = mulpd(mrrcpdy, subpd(mbbminy2d, mroy));
+            const sse2d my2 = mulpd(mrrcpdy, subpd(mbbmaxy2d, mroy));
+
+            mtmax = minpd(mtmax, maxpd(minpd(my1, mposinf), minpd(my2, mposinf)));
+            mtmin = maxpd(mtmin, minpd(maxpd(my1, mneginf), maxpd(my2, mneginf)));
+
+            const sse2d mbbminz2d = loadpd(node_ptr->m_bbox_data + 8);
+            const sse2d mbbmaxz2d = loadpd(node_ptr->m_bbox_data + 10);
+            const sse2d mz1 = mulpd(mrrcpdz, subpd(mbbminz2d, mroz));
+            const sse2d mz2 = mulpd(mrrcpdz, subpd(mbbmaxz2d, mroz));
+
+            mtmax = minpd(mtmax, maxpd(minpd(mz1, mposinf), minpd(mz2, mposinf)));
+            mtmin = maxpd(mtmin, minpd(maxpd(mz1, mneginf), maxpd(mz2, mneginf)));
+
+            const sse2d mraytmax = set1pd(ray_tmax);
+            const int hits =
+                movemaskpd(
+                    orpd(
+                        cmpgtpd(mtmin, mtmax),
+                        orpd(
+                            cmpltpd(mtmax, mraytmin),
+                            cmpgepd(mtmin, mraytmax)))) ^ 3;
+#else
+            ValueType tmin[2];
+            int hits = 0;
+
+            if (foundation::intersect(ray, ray_info, node_ptr->get_left_bbox(), tmin[0]) && tmin[0] < ray_tmax)
+                hits |= 1;
+
+            if (foundation::intersect(ray, ray_info, node_ptr->get_right_bbox(), tmin[1]) && tmin[1] < ray_tmax)
+                hits |= 2;
+#endif
+
+            const size_t hit_left = hits & 1;
+            const size_t hit_right = hits >> 1;
+
+            node_ptr = &tree.m_nodes[node_ptr->get_child_node_index()];
+            node_ptr += hit_right;
+
+            if (hit_left ^ hit_right)
+            {
+                // Continue with the left or right child node.
+                FOUNDATION_BVH_TRAVERSAL_STATS(++discarded_nodes);
+                continue;
+            }
+
+            if (hits)
+            {
+#ifdef APPLESEED_FOUNDATION_USE_SSE
+                const int far =
+                    movemaskpd(
+                        cmpltpd(
+                            mtmin,
+                            shufflepd(mtmin, mtmin, _MM_SHUFFLE2(1, 1))));
+#else
+                const int far = tmin[0] < tmin[1] ? 1 : 0;
+#endif
+
+                // Push the far child node to the stack, continue with the near child node.
+                *stack_ptr++ = node_ptr + far - 1;
+                node_ptr -= far;
+                continue;
+            }
+
+            FOUNDATION_BVH_TRAVERSAL_STATS(discarded_nodes += 2);
+
+            // Terminate traversal if the node stack is empty.
+            if (stack_ptr == stack)
+                break;
+
+            // Pop the top node from the stack.
+            node_ptr = *--stack_ptr;
+            continue;
+        }
+        else
+        {
+            const size_t item_begin = node_ptr->get_item_index();
+            const size_t item_end = item_begin + node_ptr->get_item_count();
             assert(item_begin < item_end);
 
             // Visit the leaf.
@@ -329,70 +297,8 @@ void Intersector<T, Tree, Visitor, StackSize>::intersect(
                 break;
 
             // Pop the top node from the stack.
-            node_index = *--stack_ptr;
-
-            continue;
+            node_ptr = *--stack_ptr;
         }
-        else
-        {
-            const size_t left_child_index = node.get_child_node_index();
-            const size_t right_child_index = left_child_index + 1;
-
-            ALIGN_SSE_VARIABLE ValueType tmin[2], tmax[2];
- 
-            const int hits =
-                impl::intersect_bvh_nodes(
-                    ray,
-                    ray_info,
-                    ray_tmax,
-                    tree.m_nodes[left_child_index].get_bbox(),
-                    tree.m_nodes[right_child_index].get_bbox(),
-                    tmin,
-                    tmax);
-
-            if (hits & 1)
-            {
-                if (hits & 2)
-                {
-                    if (tmin[0] < tmin[1])
-                    {
-                        // Push the right child node to the stack, continue with the left child node.
-                        *stack_ptr++ = right_child_index;
-                        node_index = left_child_index;
-                        continue;
-                    }
-                    else
-                    {
-                        // Push the left child node to the stack, continue with the right child node.
-                        *stack_ptr++ = left_child_index;
-                        node_index = right_child_index;
-                        continue;
-                    }
-                }
-                else
-                {
-                    // Continue with the left child node.
-                    FOUNDATION_BVH_TRAVERSAL_STATS(++discarded_nodes);
-                    node_index = left_child_index;
-                    continue;
-                }
-            }
-            else if (hits & 2)
-            {
-                // Push the right child node to the stack.
-                FOUNDATION_BVH_TRAVERSAL_STATS(++discarded_nodes);
-                node_index = right_child_index;
-                continue;
-            }
-            else FOUNDATION_BVH_TRAVERSAL_STATS(discarded_nodes += 2);
-        }
-
-        // Terminate traversal if the node stack is empty.
-        if (stack_ptr == stack)
-            break;
-
-        // Pop the top node from the stack.
-        node_index = *--stack_ptr;
     }
 
     // Store traversal statistics.

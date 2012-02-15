@@ -78,6 +78,7 @@ class TreeStatistics
     void collect_stats_recurse(
         const Tree&         tree,
         const NodeType&     node,
+        const AABBType&     bbox,
         const size_t        depth);
 };
 
@@ -124,7 +125,7 @@ TreeStatistics<Tree, Builder>::TreeStatistics(
     assert(!tree.m_nodes.empty());
 
     if (tree.m_bbox.is_valid())
-        collect_stats_recurse(tree, tree.m_nodes.front(), 0);
+        collect_stats_recurse(tree, tree.m_nodes.front(), tree.get_bbox(), 0);
 
     if (m_leaf_volume > m_volume)
         m_leaf_volume = m_volume;
@@ -166,6 +167,7 @@ template <typename Tree, typename Builder>
 void TreeStatistics<Tree, Builder>::collect_stats_recurse(
     const Tree&             tree,
     const NodeType&         node,
+    const AABBType&         bbox,
     const size_t            depth)
 {
     if (node.get_type() == NodeType::Leaf)
@@ -174,22 +176,23 @@ void TreeStatistics<Tree, Builder>::collect_stats_recurse(
         m_leaf_depth.insert(depth);
         m_leaf_size.insert(node.get_item_count());
         ++m_leaf_count;
-        m_leaf_volume += node.get_bbox().volume();
+        m_leaf_volume += bbox.volume();
     }
     else
     {
         // Fetch left and right children.
         const size_t child_index = node.get_child_node_index();
+        const AABBType left_bbox = node.get_left_bbox();
+        const AABBType right_bbox = node.get_right_bbox();
         const NodeType& left_node = tree.m_nodes[child_index];
         const NodeType& right_node = tree.m_nodes[child_index + 1];
 
         // Keep track of the amount of overlap between children.
-        m_sibling_overlap.insert(
-            AABBType::overlap_ratio(left_node.get_bbox(), right_node.get_bbox()));
+        m_sibling_overlap.insert(AABBType::overlap_ratio(left_bbox, right_bbox));
 
         // Recurse into the child nodes.
-        collect_stats_recurse(tree, left_node, depth + 1);
-        collect_stats_recurse(tree, right_node, depth + 1);
+        collect_stats_recurse(tree, left_node, left_bbox, depth + 1);
+        collect_stats_recurse(tree, right_node, right_bbox, depth + 1);
     }
 }
 

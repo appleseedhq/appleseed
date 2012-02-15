@@ -62,7 +62,7 @@ namespace renderer
 //
 
 class TriangleTree
-  : public foundation::bvh::Tree<GScalar, 3, TriangleKey>
+  : public foundation::bvh::Tree<double, 3, TriangleKey>
 {
   public:
     // Construction arguments.
@@ -149,18 +149,18 @@ class TriangleLeafVisitor
   public:
     // Constructor.
     TriangleLeafVisitor(
-        const TriangleTree&                 tree,
-        ShadingPoint&                       shading_point);
+        const TriangleTree&                     tree,
+        ShadingPoint&                           shading_point);
 
     // Visit a leaf.
     bool visit(
-        const std::vector<TriangleKey>&     items,
-        const std::vector<GAABB3>&          bboxes,
-        const size_t                        begin,
-        const size_t                        end,
-        const ShadingRay::RayType&          ray,
-        const ShadingRay::RayInfoType&      ray_info,
-        double&                             distance);
+        const std::vector<TriangleKey>&         items,
+        const std::vector<foundation::AABB3d>&  bboxes,
+        const size_t                            begin,
+        const size_t                            end,
+        const ShadingRay::RayType&              ray,
+        const ShadingRay::RayInfoType&          ray_info,
+        double&                                 distance);
 
     // Read additional data about the triangle that was hit, if any.
     void read_hit_triangle_data() const;
@@ -183,17 +183,17 @@ class TriangleLeafProbeVisitor
   public:
     // Constructor.
     explicit TriangleLeafProbeVisitor(
-        const TriangleTree&                 tree);
+        const TriangleTree&                     tree);
 
     // Visit a leaf.
     bool visit(
-        const std::vector<TriangleKey>&     items,
-        const std::vector<GAABB3>&          bboxes,
-        const size_t                        begin,
-        const size_t                        end,
-        const ShadingRay::RayType&          ray,
-        const ShadingRay::RayInfoType&      ray_info,
-        double&                             distance);
+        const std::vector<TriangleKey>&         items,
+        const std::vector<foundation::AABB3d>&  bboxes,
+        const size_t                            begin,
+        const size_t                            end,
+        const ShadingRay::RayType&              ray,
+        const ShadingRay::RayInfoType&          ray_info,
+        double&                                 distance);
 
   private:
     const TriangleTree&     m_tree;
@@ -224,8 +224,8 @@ typedef foundation::bvh::Intersector<
 //
 
 inline TriangleLeafVisitor::TriangleLeafVisitor(
-    const TriangleTree&                     tree,
-    ShadingPoint&                           shading_point)
+    const TriangleTree&     tree,
+    ShadingPoint&           shading_point)
   : m_tree(tree)
   , m_shading_point(shading_point)
   , m_hit_triangle_index(~0)
@@ -238,7 +238,7 @@ inline TriangleLeafVisitor::TriangleLeafVisitor(
 //
 
 inline TriangleLeafProbeVisitor::TriangleLeafProbeVisitor(
-    const TriangleTree&                     tree)
+    const TriangleTree&     tree)
   : m_tree(tree)
 {
 }

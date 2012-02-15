@@ -61,7 +61,7 @@ namespace renderer
 //
 
 class AssemblyTree
-  : public foundation::bvh::Tree<GScalar, 3, foundation::UniqueID>
+  : public foundation::bvh::Tree<double, 3, foundation::UniqueID>
 {
   public:
     // Constructor, builds the tree for a given scene.
@@ -129,7 +129,7 @@ class AssemblyLeafVisitor
     // Visit a leaf.
     bool visit(
         const std::vector<foundation::UniqueID>&    items,
-        const std::vector<GAABB3>&                  bboxes,
+        const std::vector<foundation::AABB3d>&      bboxes,
         const size_t                                begin,
         const size_t                                end,
         const ShadingRay::RayType&                  ray,
@@ -171,7 +171,7 @@ class AssemblyLeafProbeVisitor
     // Visit a leaf.
     bool visit(
         const std::vector<foundation::UniqueID>&    items,
-        const std::vector<GAABB3>&                  bboxes,
+        const std::vector<foundation::AABB3d>&      bboxes,
         const size_t                                begin,
         const size_t                                end,
         const ShadingRay::RayType&                  ray,

@@ -113,6 +113,7 @@ class Builder
         const size_t    node_index,
         const size_t    begin,
         const size_t    end,
+        const AABBType& bbox,
         Partitioner&    partitioner);
 };
 
@@ -155,9 +156,10 @@ void Builder<Tree, Partitioner>::build(
     // Recursively subdivide the tree.
     subdivide_recurse(
         tree,
-        0,              // node index
-        0,              // begin
-        size,           // end
+        0,                  // node index
+        0,                  // begin
+        size,               // end
+        tree.get_bbox(),
         partitioner);
 
     if (size > 0)
@@ -192,12 +194,10 @@ void Builder<Tree, Partitioner>::subdivide_recurse(
     const size_t        node_index,
     const size_t        begin,
     const size_t        end,
+    const AABBType&     bbox,
     Partitioner&        partitioner)
 {
     assert(node_index < tree.m_nodes.size());
-
-    // Compute the bounding box of the items.
-    const AABBType bbox = partitioner.compute_bbox(tree.m_bboxes, begin, end);
 
     // Try to partition the set of items.
     size_t pivot = end;
@@ -218,12 +218,15 @@ void Builder<Tree, Partitioner>::subdivide_recurse(
         // Turn the parent node into a leaf node for this set of items.
         NodeType& node = tree.m_nodes[node_index];
         node.set_type(NodeType::Leaf);
-        node.set_bbox(bbox);
         node.set_item_index(begin);
         node.set_item_count(end - begin);
     }
     else
     {
+        // Compute the bounding box of the child nodes.
+        const AABBType left_bbox = partitioner.compute_bbox(tree.m_bboxes, begin, pivot);
+        const AABBType right_bbox = partitioner.compute_bbox(tree.m_bboxes, pivot, end);
+
         // Compute the indices of the child nodes.
         const size_t left_node_index = tree.m_nodes.size();
         const size_t right_node_index = left_node_index + 1;
@@ -231,7 +234,8 @@ void Builder<Tree, Partitioner>::subdivide_recurse(
         // Turn the parent node into an interior node.
         NodeType& node = tree.m_nodes[node_index];
         node.set_type(NodeType::Interior);
-        node.set_bbox(bbox);
+        node.set_left_bbox(left_bbox);
+        node.set_right_bbox(right_bbox);
         node.set_child_node_index(left_node_index);
 
         // Create the child nodes.
@@ -244,6 +248,7 @@ void Builder<Tree, Partitioner>::subdivide_recurse(
             left_node_index,
             begin,
             pivot,
+            left_bbox,
             partitioner);
 
         // Recurse into the right subtree.
@@ -252,6 +257,7 @@ void Builder<Tree, Partitioner>::subdivide_recurse(
             right_node_index,
             pivot,
             end,
+            right_bbox,
             partitioner);
     }
 }
