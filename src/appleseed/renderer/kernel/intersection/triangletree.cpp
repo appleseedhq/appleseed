@@ -44,6 +44,7 @@
 #include "foundation/math/area.h"
 #include "foundation/math/permutation.h"
 #include "foundation/platform/timer.h"
+#include "foundation/utility/memory.h"
 
 // Standard headers.
 #include <cassert>
@@ -110,15 +111,18 @@ TriangleTree::TriangleTree(const Arguments& arguments)
     TriangleTreeBuilder builder;
     builder.build<DefaultWallclockTimer>(*this, partitioner);
 
-    // Reorder the triangles according to the BVH ordering.
     if (!m_triangles.empty())
     {
+        // Reorder the triangles according to the BVH ordering.
         vector<size_t> item_ordering(partitioner.get_item_ordering());
         assert(m_triangles.size() == item_ordering.size());
         large_item_reorder(
             &m_triangles[0],
             &item_ordering[0],
             m_triangles.size());
+
+        // Get rid of the triangle bounding boxes as we no longer need them.
+        clear_release_memory(m_bboxes);
     }
 
     // Collect and print triangle tree statistics.
