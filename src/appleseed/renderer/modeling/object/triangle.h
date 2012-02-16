@@ -29,14 +29,19 @@
 #ifndef APPLESEED_RENDERER_MODELING_OBJECT_TRIANGLE_H
 #define APPLESEED_RENDERER_MODELING_OBJECT_TRIANGLE_H
 
-// appleseed.renderer headers.
-#include "renderer/global/global.h"
+// appleseed.foundation headers.
+#include "foundation/platform/types.h"
+
+// Standard headers.
+#include <cstddef>
 
 namespace renderer
 {
 
 //
-// Triangle primitive.
+// The Triangle class defines a triangle as a set of indices into feature arrays.
+// It doesn't *identify* a triangle, that's what the renderer::TriangleKey class
+// is for.
 //
 
 class Triangle
@@ -44,7 +49,7 @@ class Triangle
   public:
     // todo: indices could be stored as 16-bit integers if the number of
     // vertices / vertex normals / vertex attributes per region would be
-    // limited to 65536.
+    // limited to 65535 (one value is used to indicate an absent feature).
 
     // Special index value used to indicate that a feature is not present.
     static const foundation::uint32 None = ~0;
@@ -56,7 +61,7 @@ class Triangle
     foundation::uint32  m_pa;               // primitive attribute index
 
     // Constructors.
-    Triangle();
+    Triangle();                             // leave all fields uninitialized
     Triangle(
         const size_t v0,
         const size_t v1,
@@ -83,18 +88,18 @@ class Triangle
 // Triangle class implementation.
 //
 
-// Constructors.
 inline Triangle::Triangle()
 {
 }
+
 inline Triangle::Triangle(
-    const size_t v0,
-    const size_t v1,
-    const size_t v2,
-    const size_t n0,
-    const size_t n1,
-    const size_t n2,
-    const size_t pa)
+    const size_t    v0,
+    const size_t    v1,
+    const size_t    v2,
+    const size_t    n0,
+    const size_t    n1,
+    const size_t    n2,
+    const size_t    pa)
   : m_v0(static_cast<foundation::uint32>(v0))
   , m_v1(static_cast<foundation::uint32>(v1))
   , m_v2(static_cast<foundation::uint32>(v2))
@@ -107,17 +112,18 @@ inline Triangle::Triangle(
   , m_pa(static_cast<foundation::uint32>(pa))
 {
 }
+
 inline Triangle::Triangle(
-    const size_t v0,
-    const size_t v1,
-    const size_t v2,
-    const size_t n0,
-    const size_t n1,
-    const size_t n2,
-    const size_t a0,
-    const size_t a1,
-    const size_t a2,
-    const size_t pa)
+    const size_t    v0,
+    const size_t    v1,
+    const size_t    v2,
+    const size_t    n0,
+    const size_t    n1,
+    const size_t    n2,
+    const size_t    a0,
+    const size_t    a1,
+    const size_t    a2,
+    const size_t    pa)
   : m_v0(static_cast<foundation::uint32>(v0))
   , m_v1(static_cast<foundation::uint32>(v1))
   , m_v2(static_cast<foundation::uint32>(v2))
