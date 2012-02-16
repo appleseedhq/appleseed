@@ -63,7 +63,7 @@ namespace renderer
 //
 
 class TriangleTree
-  : public foundation::bvh::Tree<double, 3, TriangleKey>
+  : public foundation::bvh::Tree<double, 3>
 {
   public:
     // Construction arguments.
@@ -93,6 +93,7 @@ class TriangleTree
     friend class TriangleLeafProbeVisitor;
 
     const foundation::UniqueID          m_triangle_tree_uid;
+    std::vector<TriangleKey>            m_triangle_keys;
     std::vector<GTriangleType>          m_triangles;
 
     void collect_triangles(const Arguments& arguments);
@@ -155,7 +156,6 @@ class TriangleLeafVisitor
 
     // Visit a leaf.
     bool visit(
-        const std::vector<TriangleKey>&         items,
         const std::vector<foundation::AABB3d>&  bboxes,
         const size_t                            begin,
         const size_t                            end,
@@ -188,7 +188,6 @@ class TriangleLeafProbeVisitor
 
     // Visit a leaf.
     bool visit(
-        const std::vector<TriangleKey>&         items,
         const std::vector<foundation::AABB3d>&  bboxes,
         const size_t                            begin,
         const size_t                            end,
@@ -272,7 +271,6 @@ inline TriangleLeafVisitor::TriangleLeafVisitor(
 }
 
 inline bool TriangleLeafVisitor::visit(
-    const std::vector<TriangleKey>&         items,
     const std::vector<foundation::AABB3d>&  bboxes,
     const size_t                            begin,
     const size_t                            end,
@@ -309,7 +307,7 @@ inline void TriangleLeafVisitor::read_hit_triangle_data() const
         m_shading_point.m_hit = true;
 
         // Copy the triangle key.
-        const TriangleKey& triangle_key = m_tree.m_items[m_hit_triangle_index];
+        const TriangleKey& triangle_key = m_tree.m_triangle_keys[m_hit_triangle_index];
         m_shading_point.m_object_instance_index = triangle_key.get_object_instance_index();
         m_shading_point.m_region_index = triangle_key.get_region_index();
         m_shading_point.m_triangle_index = triangle_key.get_triangle_index();
@@ -332,7 +330,6 @@ inline TriangleLeafProbeVisitor::TriangleLeafProbeVisitor(
 }
 
 inline bool TriangleLeafProbeVisitor::visit(
-    const std::vector<TriangleKey>&         items,
     const std::vector<foundation::AABB3d>&  bboxes,
     const size_t                            begin,
     const size_t                            end,

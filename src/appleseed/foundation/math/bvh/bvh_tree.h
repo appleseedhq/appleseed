@@ -46,7 +46,7 @@ namespace bvh {
 // Bounding Volume Hierarchy (BVH).
 //
 
-template <typename T, size_t N, typename Item>
+template <typename T, size_t N>
 class Tree
   : public NonCopyable
 {
@@ -56,10 +56,9 @@ class Tree
     static const size_t Dimension = N;
 
     // Item, AABB, node and tree types.
-    typedef Item ItemType;
     typedef AABB<T, N> AABBType;
     typedef Node<T, N> NodeType;
-    typedef Tree<T, N, Item> TreeType;
+    typedef Tree<T, N> TreeType;
 
     // Constructor.
     Tree();
@@ -68,9 +67,7 @@ class Tree
     void clear();
 
     // Insert an item into the tree.
-    void insert(
-        const ItemType& item,
-        const AABBType& bbox);
+    void insert(const AABBType& bbox);
 
     // Return the number of items in the tree.
     size_t size() const;
@@ -97,10 +94,8 @@ class Tree
     friend class TreeStatistics;
 
     typedef std::vector<NodeType> NodeVector;
-    typedef std::vector<ItemType> ItemVector;
     typedef std::vector<AABBType> AABBVector;
 
-    ItemVector  m_items;        // items
     AABBVector  m_bboxes;       // bounding box of each item
     AABBType    m_bbox;         // bounding box of the tree
     NodeVector  m_nodes;        // nodes of the tree
@@ -116,55 +111,48 @@ template <typename U> U get_item_bbox_grow_eps();           // intentionally lef
 template <> inline float get_item_bbox_grow_eps<float>()    { return 1.0e-6f; }
 template <> inline double get_item_bbox_grow_eps<double>()  { return 1.0e-15;  }
 
-template <typename T, size_t N, typename Item>
-Tree<T, N, Item>::Tree()
+template <typename T, size_t N>
+Tree<T, N>::Tree()
 {
     clear();
 }
 
-template <typename T, size_t N, typename Item>
-void Tree<T, N, Item>::clear()
+template <typename T, size_t N>
+void Tree<T, N>::clear()
 {
-    m_items.clear();
     m_bboxes.clear();
     m_bbox.invalidate();
     m_nodes.clear();
 }
 
-template <typename T, size_t N, typename Item>
-void Tree<T, N, Item>::insert(
-    const ItemType& item,
-    const AABBType& bbox)
+template <typename T, size_t N>
+void Tree<T, N>::insert(const AABBType& bbox)
 {
     assert(bbox.is_valid());
 
     AABBType enlarged_bbox = bbox;
     enlarged_bbox.robust_grow(get_item_bbox_grow_eps<T>());
 
-    m_items.push_back(item);
     m_bboxes.push_back(enlarged_bbox);
     m_bbox.insert(enlarged_bbox);
-
-    assert(m_items.size() == m_bboxes.size());
 }
 
-template <typename T, size_t N, typename Item>
-inline size_t Tree<T, N, Item>::size() const
+template <typename T, size_t N>
+inline size_t Tree<T, N>::size() const
 {
-    return m_items.size();
+    return m_bboxes.size();
 }
 
-template <typename T, size_t N, typename Item>
-inline const AABB<T, N>& Tree<T, N, Item>::get_bbox() const
+template <typename T, size_t N>
+inline const AABB<T, N>& Tree<T, N>::get_bbox() const
 {
     return m_bbox;
 }
 
-template <typename T, size_t N, typename Item>
-size_t Tree<T, N, Item>::get_memory_size() const
+template <typename T, size_t N>
+size_t Tree<T, N>::get_memory_size() const
 {
     size_t mem_size = sizeof(*this);
-    mem_size += m_items.capacity() * sizeof(ItemType);
     mem_size += m_bboxes.capacity() * sizeof(AABBType);
     mem_size += m_nodes.capacity() * sizeof(NodeType);
     return mem_size;

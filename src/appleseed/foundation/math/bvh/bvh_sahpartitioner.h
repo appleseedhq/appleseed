@@ -58,8 +58,7 @@ class SAHPartitioner
 
     // Initialize the partitioner for a given number of items.
     void initialize(
-        const std::vector<AABBType>&    bboxes,
-        const size_t                    size);
+        const std::vector<AABBType>&    bboxes);
 
     // Partition a set of items into two distinct sets.
     size_t partition(
@@ -93,12 +92,11 @@ inline SAHPartitioner<Tree>::SAHPartitioner(
 
 template <typename Tree>
 void SAHPartitioner<Tree>::initialize(
-    const std::vector<AABBType>&        bboxes,
-    const size_t                        size)
+    const std::vector<AABBType>&        bboxes)
 {
-    PartitionerBase<Tree>::initialize(bboxes, size);
+    PartitionerBase<Tree>::initialize(bboxes);
 
-    m_left_areas.resize(size);
+    m_left_areas.resize(bboxes.size());
 }
 
 template <typename Tree>

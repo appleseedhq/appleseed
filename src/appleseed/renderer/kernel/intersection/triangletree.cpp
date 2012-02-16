@@ -114,13 +114,27 @@ TriangleTree::TriangleTree(const Arguments& arguments)
 
     if (!m_triangles.empty())
     {
-        // Reorder the triangles according to the BVH ordering.
-        vector<size_t> item_ordering(partitioner.get_item_ordering());
-        assert(m_triangles.size() == item_ordering.size());
+        const vector<size_t>& ordering = partitioner.get_item_ordering();
+
+        assert(m_triangle_keys.size() == ordering.size());
+        assert(m_triangles.size() == ordering.size());
+
+        // Reorder the triangle keys according to the tree ordering.
+        vector<TriangleKey> temp_triangle_keys(ordering.size());
+        small_item_reorder(
+            &m_triangle_keys[0],
+            &temp_triangle_keys[0],
+            &ordering[0],
+            ordering.size());
+        clear_release_memory(temp_triangle_keys);
+
+        // Reorder the triangles according to the tree ordering.
+        vector<size_t> tags(ordering.size());
         large_item_reorder(
             &m_triangles[0],
-            &item_ordering[0],
-            m_triangles.size());
+            &tags[0],
+            &ordering[0],
+            ordering.size());
 
         // Get rid of the triangle bounding boxes as we no longer need them.
         clear_release_memory(m_bboxes);
@@ -196,24 +210,26 @@ void TriangleTree::collect_triangles(const Arguments& arguments)
             if (triangle_square_area == GScalar(0.0))
                 continue;
 
-            // Insert this triangle into the root leaf if it intersects the bounding box of the tree.
+            // Insert this triangle into the tree if it intersects the tree's bounding box.
             if (intersect(arguments.m_bbox, v0, v1, v2))
             {
-                const TriangleKey triangle_key(
-                    region_info.get_object_instance_index(),
-                    region_info.get_region_index(),
-                    triangle_index);
-
+                // Insert the bounding box of the triangle into the tree's root leaf.
                 GAABB3 triangle_bbox;
                 triangle_bbox.invalidate();
                 triangle_bbox.insert(v0);
                 triangle_bbox.insert(v1);
                 triangle_bbox.insert(v2);
+                insert(AABB3d(triangle_bbox));
 
-                insert(triangle_key, AABB3d(triangle_bbox));
+                // Store the triangle key.
+                m_triangle_keys.push_back(
+                    TriangleKey(
+                        region_info.get_object_instance_index(),
+                        region_info.get_region_index(),
+                        triangle_index));
 
-                const GTriangleType triangle(v0, v1, v2);
-                m_triangles.push_back(triangle);
+                // Store the triangle.
+                m_triangles.push_back(GTriangleType(v0, v1, v2));
             }
         }
     }

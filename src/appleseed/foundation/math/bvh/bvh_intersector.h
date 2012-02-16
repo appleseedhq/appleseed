@@ -63,7 +63,6 @@ namespace bvh {
 //          // Return whether BVH traversal should continue or not.
 //          // 'distance' should be set to the distance to the closest hit so far.
 //          bool visit(
-//              const std::vector<Item>&    items,
 //              const std::vector<AABB>&    bboxes,
 //              const size_t                begin,
 //              const size_t                end,
@@ -85,7 +84,6 @@ class Intersector
   public:
     // Types.
     typedef T ValueType;
-    typedef typename Tree::ItemType ItemType;
     typedef typename Tree::NodeType NodeType;
     typedef AABB<T, Tree::Dimension> AABBType;
     typedef Ray<T, Tree::Dimension> RayType;
@@ -132,10 +130,6 @@ void Intersector<T, Tree, Visitor, StackSize>::intersect(
 {
     // Make sure the tree was built.
     assert(!tree.m_nodes.empty());
-
-    // Handle empty trees now so that no leaf is ever empty.
-    if (tree.size() == 0)
-       return;
 
 #ifdef APPLESEED_FOUNDATION_USE_SSE
     const sse2d mrox = set1pd(ray.m_org.x);
@@ -264,7 +258,7 @@ void Intersector<T, Tree, Visitor, StackSize>::intersect(
         {
             const size_t item_begin = node_ptr->get_item_index();
             const size_t item_end = item_begin + node_ptr->get_item_count();
-            assert(item_begin < item_end);
+            assert(item_begin <= item_end);
 
             // Visit the leaf.
             FOUNDATION_BVH_TRAVERSAL_STATS(++visited_leaves);
@@ -275,7 +269,6 @@ void Intersector<T, Tree, Visitor, StackSize>::intersect(
 #endif
             const bool proceed =
                 visitor.visit(
-                    tree.m_items,
                     tree.m_bboxes,
                     item_begin,
                     item_end,

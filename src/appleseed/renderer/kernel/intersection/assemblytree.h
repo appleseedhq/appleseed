@@ -61,7 +61,7 @@ namespace renderer
 //
 
 class AssemblyTree
-  : public foundation::bvh::Tree<double, 3, foundation::UniqueID>
+  : public foundation::bvh::Tree<double, 3>
 {
   public:
     // Constructor, builds the tree for a given scene.
@@ -78,13 +78,13 @@ class AssemblyTree
     friend class AssemblyLeafProbeVisitor;
     friend class Intersector;
 
-    const Scene&            m_scene;
-    RegionTreeContainer     m_region_trees;
-    TriangleTreeContainer   m_triangle_trees;
-
     typedef std::map<foundation::UniqueID, foundation::VersionID> AssemblyVersionMap;
 
-    AssemblyVersionMap      m_assembly_versions;
+    const Scene&                        m_scene;
+    RegionTreeContainer                 m_region_trees;
+    TriangleTreeContainer               m_triangle_trees;
+    std::vector<foundation::UniqueID>   m_assembly_instances;
+    AssemblyVersionMap                  m_assembly_versions;
 
     // Collect all assemblies of the scene.
     void collect_assemblies(std::vector<foundation::UniqueID>& assemblies) const;
@@ -97,6 +97,9 @@ class AssemblyTree
 
     // Create a region tree for a given assembly.
     foundation::Lazy<RegionTree>* create_region_tree(const Assembly& assembly) const;
+
+    // Clear the assembly tree.
+    void clear();
 
     // Build the assembly tree.
     void build_assembly_tree();
@@ -128,7 +131,6 @@ class AssemblyLeafVisitor
 
     // Visit a leaf.
     bool visit(
-        const std::vector<foundation::UniqueID>&    items,
         const std::vector<foundation::AABB3d>&      bboxes,
         const size_t                                begin,
         const size_t                                end,
@@ -170,7 +172,6 @@ class AssemblyLeafProbeVisitor
 
     // Visit a leaf.
     bool visit(
-        const std::vector<foundation::UniqueID>&    items,
         const std::vector<foundation::AABB3d>&      bboxes,
         const size_t                                begin,
         const size_t                                end,

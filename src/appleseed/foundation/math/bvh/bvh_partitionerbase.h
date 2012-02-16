@@ -58,8 +58,7 @@ class PartitionerBase
 
     // Initialize the partitioner for a given number of items.
     void initialize(
-        const std::vector<AABBType>&    bboxes,
-        const size_t                    size);
+        const std::vector<AABBType>&    bboxes);
 
     // Compute the bounding box of a given set of items.
     AABBType compute_bbox(
@@ -91,9 +90,10 @@ class PartitionerBase
 
 template <typename Tree>
 void PartitionerBase<Tree>::initialize(
-    const std::vector<AABBType>&        bboxes,
-    const size_t                        size)
+    const std::vector<AABBType>&        bboxes)
 {
+    const size_t size = bboxes.size();
+
     for (size_t d = 0; d < Tree::Dimension; ++d)
     {
         std::vector<size_t>& indices = m_indices[d];

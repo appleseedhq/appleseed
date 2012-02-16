@@ -40,6 +40,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/intersection.h"
+#include "foundation/math/permutation.h"
 #include "foundation/platform/timer.h"
 #include "foundation/utility/string.h"
 
@@ -195,6 +196,12 @@ Lazy<RegionTree>* AssemblyTree::create_region_tree(const Assembly& assembly) con
     return new Lazy<RegionTree>(region_tree_factory);
 }
 
+void AssemblyTree::clear()
+{
+    TreeType::clear();
+    m_assembly_instances.clear();
+}
+
 void AssemblyTree::build_assembly_tree()
 {
     // Insert all assembly instances of the scene into the tree.
@@ -210,10 +217,11 @@ void AssemblyTree::build_assembly_tree()
         if (assembly.object_instances().empty())
             continue;
 
-        // Insert the assembly instance into the root leaf.
-        insert(
-            assembly_instance.get_uid(),
-            AABB3d(assembly_instance.compute_parent_bbox()));
+        // Insert the bounding box of the assembly instance into the tree's root leaf.
+        insert(AABB3d(assembly_instance.compute_parent_bbox()));
+
+        // Store the assembly instance.
+        m_assembly_instances.push_back(assembly_instance.get_uid());
     }
 
     // Log a progress message.
@@ -226,6 +234,21 @@ void AssemblyTree::build_assembly_tree()
     AssemblyTreePartitioner partitioner(1);
     AssemblyTreeBuilder builder;
     builder.build<DefaultWallclockTimer>(*this, partitioner);
+
+    if (!m_assembly_instances.empty())
+    {
+        const vector<size_t>& ordering = partitioner.get_item_ordering();
+
+        assert(m_assembly_instances.size() == ordering.size());
+
+        // Reorder the assembly instances according to the tree ordering.
+        vector<UniqueID> temp_assembly_instances(ordering.size());
+        small_item_reorder(
+            &m_assembly_instances[0],
+            &temp_assembly_instances[0],
+            &ordering[0],
+            ordering.size());
+    }
 
     // Collect and print assembly tree statistics.
     AssemblyTreeStatistics tree_stats(*this, builder);
@@ -335,7 +358,6 @@ namespace
 //
 
 bool AssemblyLeafVisitor::visit(
-    const vector<UniqueID>&             items,
     const vector<AABB3d>&               bboxes,
     const size_t                        begin,
     const size_t                        end,
@@ -343,12 +365,18 @@ bool AssemblyLeafVisitor::visit(
     const ShadingRay::RayInfoType&      ray_info,
     double&                             distance)
 {
-    // A leaf must contain exactly one assembly.
-    assert(begin + 1 == end);
+    // Skip this leaf if it's empty. This will happen when the tree is empty.
+    if (begin == end)
+    {
+        // Continue traversal.
+        distance = m_shading_point.m_ray.m_tmax;
+        return true;
+    }
 
     // Retrieve the assembly instance.
+    const UniqueID assembly_instance_uid = m_tree.m_assembly_instances[begin];
     const AssemblyInstance& assembly_instance =
-        *m_tree.m_scene.assembly_instances().get_by_uid(items[begin]);
+        *m_tree.m_scene.assembly_instances().get_by_uid(assembly_instance_uid);
 
     // Transform the ray to assembly instance space.
     ShadingPoint result;
@@ -361,13 +389,23 @@ bool AssemblyLeafVisitor::visit(
         result.m_ray);
     const RayInfo3d transformed_ray_info(result.m_ray);
 
-    // Compute result.m_ray.m_tmin and result.m_ray.m_tmax.
-    intersect(
-        ray,
-        ray_info,
-        bboxes[begin],
-        result.m_ray.m_tmin,
-        result.m_ray.m_tmax);
+    // Find the intersection between the ray and the bounding box of this leaf.
+    const bool hit_bbox =
+        intersect(
+            ray,
+            ray_info,
+            bboxes[begin],
+            result.m_ray.m_tmin,
+            result.m_ray.m_tmax);
+
+    // Skip this leaf if the ray doesn't intersect its bounding box.
+    // This will happen when the tree contains a single assembly instance.
+    if (!hit_bbox)
+    {
+        // Continue traversal.
+        distance = m_shading_point.m_ray.m_tmax;
+        return true;
+    }
 
     if (assembly_instance.get_assembly().is_flushable())
     {
@@ -424,7 +462,7 @@ bool AssemblyLeafVisitor::visit(
         m_shading_point.m_ray.m_tmax = result.m_ray.m_tmax;
         m_shading_point.m_hit = true;
         m_shading_point.m_bary = result.m_bary;
-        m_shading_point.m_asm_instance_uid = assembly_instance.get_uid();
+        m_shading_point.m_asm_instance_uid = assembly_instance_uid;
         m_shading_point.m_object_instance_index = result.m_object_instance_index;
         m_shading_point.m_region_index = result.m_region_index;
         m_shading_point.m_triangle_index = result.m_triangle_index;
@@ -442,7 +480,6 @@ bool AssemblyLeafVisitor::visit(
 //
 
 bool AssemblyLeafProbeVisitor::visit(
-    const vector<UniqueID>&             items,
     const vector<AABB3d>&               bboxes,
     const size_t                        begin,
     const size_t                        end,
@@ -450,12 +487,18 @@ bool AssemblyLeafProbeVisitor::visit(
     const ShadingRay::RayInfoType&      ray_info,
     double&                             distance)
 {
-    // A leaf must contain exactly one assembly.
-    assert(begin + 1 == end);
+    // Skip this leaf if it's empty. This will happen when the tree is empty.
+    if (begin == end)
+    {
+        // Continue traversal.
+        distance = ray.m_tmax;
+        return true;
+    }
 
     // Retrieve the assembly instance.
+    const UniqueID assembly_instance_uid = m_tree.m_assembly_instances[begin];
     const AssemblyInstance& assembly_instance =
-        *m_tree.m_scene.assembly_instances().get_by_uid(items[begin]);
+        *m_tree.m_scene.assembly_instances().get_by_uid(assembly_instance_uid);
 
     // Transform the ray to assembly instance space.
     ShadingRay::RayType transformed_ray;
@@ -466,13 +509,23 @@ bool AssemblyLeafProbeVisitor::visit(
         transformed_ray);
     const RayInfo3d transformed_ray_info(transformed_ray);
 
-    // Compute transformed_ray.m_tmin and transformed_ray.m_tmax.
-    intersect(
-        ray,
-        ray_info,
-        bboxes[begin],
-        transformed_ray.m_tmin,
-        transformed_ray.m_tmax);
+    // Find the intersection between the ray and the bounding box of this leaf.
+    const bool hit_bbox =
+        intersect(
+            ray,
+            ray_info,
+            bboxes[begin],
+            transformed_ray.m_tmin,
+            transformed_ray.m_tmax);
+
+    // Skip this leaf if the ray doesn't intersect its bounding box.
+    // This will happen when the tree contains a single assembly instance.
+    if (!hit_bbox)
+    {
+        // Continue traversal.
+        distance = ray.m_tmax;
+        return true;
+    }
 
     if (assembly_instance.get_assembly().is_flushable())
     {

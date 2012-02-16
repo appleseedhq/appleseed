@@ -35,7 +35,6 @@
 #include "foundation/math/permutation.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
-#include "foundation/utility/memory.h"
 #include "foundation/utility/stopwatch.h"
 
 // Standard headers.
@@ -89,7 +88,6 @@ class Builder
     typedef typename Tree::ValueType ValueType;
     typedef typename Tree::AABBType AABBType;
     typedef typename Tree::NodeType NodeType;
-    typedef typename Tree::ItemType ItemType;
     typedef Tree TreeType;
 
     // Constructor.
@@ -134,16 +132,12 @@ void Builder<Tree, Partitioner>::build(
     TreeType&           tree,
     Partitioner&        partitioner)
 {
-    assert(tree.m_items.size() == tree.m_bboxes.size());
-
     // Start stopwatch.
     Stopwatch<Timer> stopwatch;
     stopwatch.start();
 
-    const size_t size = tree.m_items.size();
-
     // Initialize the partitioner.
-    partitioner.initialize(tree.m_bboxes, size);
+    partitioner.initialize(tree.m_bboxes);
 
     // Clear the tree.
     tree.m_nodes.clear();
@@ -151,7 +145,9 @@ void Builder<Tree, Partitioner>::build(
     // Create the root node of the tree.
     tree.m_nodes.push_back(NodeType());
 
-    // todo: preallocate memory.
+    const size_t size = tree.m_bboxes.size();
+
+    // todo: preallocate node memory?
 
     // Recursively subdivide the tree.
     subdivide_recurse(
@@ -164,17 +160,13 @@ void Builder<Tree, Partitioner>::build(
 
     if (size > 0)
     {
-        const std::vector<size_t>& indices = partitioner.get_item_ordering();
-
-        // Reorder the items.
-        std::vector<ItemType> temp_items(size);
-        small_item_reorder(&tree.m_items[0], &temp_items[0], &indices[0], size);
-        clear_release_memory(temp_items);
-
-        // Reorder their bounding boxes.
+        // Reorder item bounding boxes.
         std::vector<AABBType> temp_bboxes(size);
-        small_item_reorder(&tree.m_bboxes[0], &temp_bboxes[0], &indices[0], size);
-        clear_release_memory(temp_bboxes);
+        small_item_reorder(
+            &tree.m_bboxes[0],
+            &temp_bboxes[0],
+            &partitioner.get_item_ordering()[0],
+            size);
     }
 
     // Measure and save construction time.
