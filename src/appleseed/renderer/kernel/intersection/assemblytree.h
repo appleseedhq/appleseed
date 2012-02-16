@@ -73,6 +73,9 @@ class AssemblyTree
     // Update the assembly tree and all the child trees.
     void update();
 
+    // Return the size (in bytes) of this object in memory.
+    size_t get_memory_size() const;
+
   private:
     friend class AssemblyLeafVisitor;
     friend class AssemblyLeafProbeVisitor;
@@ -132,11 +135,14 @@ class AssemblyLeafVisitor
     // Visit a leaf.
     bool visit(
         const std::vector<foundation::AABB3d>&      bboxes,
-        const size_t                                begin,
-        const size_t                                end,
+        const AssemblyTree::NodeType&               node,
         const ShadingRay::RayType&                  ray,
         const ShadingRay::RayInfoType&              ray_info,
-        double&                                     distance);
+        double&                                     distance
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+        , foundation::bvh::TraversalStatistics&     stats
+#endif
+        );
 
   private:
     ShadingPoint&                                   m_shading_point;
@@ -173,11 +179,14 @@ class AssemblyLeafProbeVisitor
     // Visit a leaf.
     bool visit(
         const std::vector<foundation::AABB3d>&      bboxes,
-        const size_t                                begin,
-        const size_t                                end,
+        const AssemblyTree::NodeType&               node,
         const ShadingRay::RayType&                  ray,
         const ShadingRay::RayInfoType&              ray_info,
-        double&                                     distance);
+        double&                                     distance
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+        , foundation::bvh::TraversalStatistics&     stats
+#endif
+        );
 
   private:
     const AssemblyTree&                             m_tree;

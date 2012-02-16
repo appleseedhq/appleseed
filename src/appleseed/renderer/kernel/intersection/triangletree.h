@@ -88,6 +88,9 @@ class TriangleTree
     // Destructor.
     ~TriangleTree();
 
+    // Return the size (in bytes) of this object in memory.
+    size_t get_memory_size() const;
+
   private:
     friend class TriangleLeafVisitor;
     friend class TriangleLeafProbeVisitor;
@@ -157,11 +160,14 @@ class TriangleLeafVisitor
     // Visit a leaf.
     bool visit(
         const std::vector<foundation::AABB3d>&  bboxes,
-        const size_t                            begin,
-        const size_t                            end,
+        const TriangleTree::NodeType&           node,
         const ShadingRay::RayType&              ray,
         const ShadingRay::RayInfoType&          ray_info,
-        double&                                 distance);
+        double&                                 distance
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+        , foundation::bvh::TraversalStatistics& stats
+#endif
+        );
 
     // Read additional data about the triangle that was hit, if any.
     void read_hit_triangle_data() const;
@@ -189,11 +195,14 @@ class TriangleLeafProbeVisitor
     // Visit a leaf.
     bool visit(
         const std::vector<foundation::AABB3d>&  bboxes,
-        const size_t                            begin,
-        const size_t                            end,
+        const TriangleTree::NodeType&           node,
         const ShadingRay::RayType&              ray,
         const ShadingRay::RayInfoType&          ray_info,
-        double&                                 distance);
+        double&                                 distance
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+        , foundation::bvh::TraversalStatistics& stats
+#endif
+        );
 
   private:
     const TriangleTree&     m_tree;
@@ -272,12 +281,20 @@ inline TriangleLeafVisitor::TriangleLeafVisitor(
 
 inline bool TriangleLeafVisitor::visit(
     const std::vector<foundation::AABB3d>&  bboxes,
-    const size_t                            begin,
-    const size_t                            end,
+    const TriangleTree::NodeType&           node,
     const ShadingRay::RayType&              ray,
     const ShadingRay::RayInfoType&          ray_info,
-    double&                                 distance)
+    double&                                 distance
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+    , foundation::bvh::TraversalStatistics& stats
+#endif
+    )
 {
+    // Find the range of triangles for this leaf node.
+    const size_t begin = node.get_item_index();
+    const size_t end = begin + node.get_item_count();
+    assert(begin <= end);
+
     // Sequentially intersect all triangles of this leaf.
     for (size_t i = begin; i < end; ++i)
     {
@@ -293,6 +310,10 @@ inline bool TriangleLeafVisitor::visit(
             m_shading_point.m_bary[1] = v;
         }
     }
+
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+    stats.m_intersected_items.insert(end - begin);
+#endif
 
     // Continue traversal.
     distance = m_shading_point.m_ray.m_tmax;
@@ -331,24 +352,48 @@ inline TriangleLeafProbeVisitor::TriangleLeafProbeVisitor(
 
 inline bool TriangleLeafProbeVisitor::visit(
     const std::vector<foundation::AABB3d>&  bboxes,
-    const size_t                            begin,
-    const size_t                            end,
+    const TriangleTree::NodeType&           node,
     const ShadingRay::RayType&              ray,
     const ShadingRay::RayInfoType&          ray_info,
-    double&                                 distance)
+    double&                                 distance
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+    , foundation::bvh::TraversalStatistics& stats
+#endif
+    )
 {
+    // Find the range of triangles for this leaf node.
+    const size_t begin = node.get_item_index();
+    const size_t end = begin + node.get_item_count();
+    assert(begin <= end);
+
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+    size_t intersected_items = 0;
+#endif
+
     // Sequentially intersect all triangles of this leaf.
     for (size_t i = begin; i < end; ++i)
     {
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+        ++intersected_items;
+#endif
+
         const impl::TriangleReader reader(m_tree.m_triangles[i]);
 
         // Intersect the triangle.
         if (reader.m_triangle.intersect(ray))
         {
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+            stats.m_intersected_items.insert(intersected_items);
+#endif
+
             m_hit = true;
             return false;
         }
     }
+
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+    stats.m_intersected_items.insert(intersected_items);
+#endif
 
     // Continue traversal.
     distance = ray.m_tmax;

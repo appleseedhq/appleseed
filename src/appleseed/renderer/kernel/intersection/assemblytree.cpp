@@ -106,6 +106,15 @@ void AssemblyTree::update()
     update_child_trees();
 }
 
+size_t AssemblyTree::get_memory_size() const
+{
+    return
+          TreeType::get_memory_size()
+        - sizeof(*static_cast<const TreeType*>(this))
+        + sizeof(*this)
+        + m_assembly_instances.capacity() * sizeof(foundation::UniqueID);
+}
+
 void AssemblyTree::collect_assemblies(vector<UniqueID>& assemblies) const
 {
     assert(assemblies.empty());
@@ -359,14 +368,19 @@ namespace
 
 bool AssemblyLeafVisitor::visit(
     const vector<AABB3d>&               bboxes,
-    const size_t                        begin,
-    const size_t                        end,
+    const AssemblyTree::NodeType&       node,
     const ShadingRay::RayType&          ray,
     const ShadingRay::RayInfoType&      ray_info,
-    double&                             distance)
+    double&                             distance
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+    , bvh::TraversalStatistics&         stats
+#endif
+    )
 {
+    assert(node.get_item_count() <= 1);
+
     // Skip this leaf if it's empty. This will happen when the tree is empty.
-    if (begin == end)
+    if (node.get_item_count() == 0)
     {
         // Continue traversal.
         distance = m_shading_point.m_ray.m_tmax;
@@ -374,38 +388,28 @@ bool AssemblyLeafVisitor::visit(
     }
 
     // Retrieve the assembly instance.
-    const UniqueID assembly_instance_uid = m_tree.m_assembly_instances[begin];
+    const size_t assembly_instance_index = node.get_item_index();
+    const UniqueID assembly_instance_uid =
+        m_tree.m_assembly_instances[assembly_instance_index];
     const AssemblyInstance& assembly_instance =
         *m_tree.m_scene.assembly_instances().get_by_uid(assembly_instance_uid);
 
     // Transform the ray to assembly instance space.
-    ShadingPoint result;
-    result.m_ray.m_time = m_shading_point.m_ray.m_time;
-    result.m_ray.m_flags = m_shading_point.m_ray.m_flags;
+    ShadingPoint local_shading_point;
     transform_ray_to_assembly_instance_space(
         assembly_instance,
         m_parent_shading_point,
         ray,
-        result.m_ray);
-    const RayInfo3d transformed_ray_info(result.m_ray);
+        local_shading_point.m_ray);
+    local_shading_point.m_ray.m_tmin = ray.m_tmin;
+    local_shading_point.m_ray.m_tmax = ray.m_tmax;
+    local_shading_point.m_ray.m_time = m_shading_point.m_ray.m_time;
+    local_shading_point.m_ray.m_flags = m_shading_point.m_ray.m_flags;
+    const RayInfo3d local_ray_info(local_shading_point.m_ray);
 
-    // Find the intersection between the ray and the bounding box of this leaf.
-    const bool hit_bbox =
-        intersect(
-            ray,
-            ray_info,
-            bboxes[begin],
-            result.m_ray.m_tmin,
-            result.m_ray.m_tmax);
-
-    // Skip this leaf if the ray doesn't intersect its bounding box.
-    // This will happen when the tree contains a single assembly instance.
-    if (!hit_bbox)
-    {
-        // Continue traversal.
-        distance = m_shading_point.m_ray.m_tmax;
-        return true;
-    }
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+    stats.m_intersected_items.insert(1);
+#endif
 
     if (assembly_instance.get_assembly().is_flushable())
     {
@@ -417,7 +421,7 @@ bool AssemblyLeafVisitor::visit(
 
         // Check the intersection between the ray and the region tree.
         RegionLeafVisitor visitor(
-            result,
+            local_shading_point,
             m_triangle_tree_cache
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
             , m_triangle_tree_stats
@@ -426,8 +430,8 @@ bool AssemblyLeafVisitor::visit(
         RegionLeafIntersector intersector;
         intersector.intersect(
             region_tree,
-            result.m_ray,
-            transformed_ray_info,
+            local_shading_point.m_ray,
+            local_ray_info,
             visitor);
     }
     else
@@ -442,11 +446,11 @@ bool AssemblyLeafVisitor::visit(
         {
             // Check the intersection between the ray and the triangle tree.
             TriangleTreeIntersector intersector;
-            TriangleLeafVisitor visitor(*triangle_tree, result);
+            TriangleLeafVisitor visitor(*triangle_tree, local_shading_point);
             intersector.intersect(
                 *triangle_tree,
-                result.m_ray,
-                transformed_ray_info,
+                local_shading_point.m_ray,
+                local_ray_info,
                 visitor
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
                 , m_triangle_tree_stats
@@ -457,16 +461,16 @@ bool AssemblyLeafVisitor::visit(
     }
 
     // Keep track of the closest hit.
-    if (result.m_hit && result.m_ray.m_tmax < m_shading_point.m_ray.m_tmax)
+    if (local_shading_point.m_hit && local_shading_point.m_ray.m_tmax < m_shading_point.m_ray.m_tmax)
     {
-        m_shading_point.m_ray.m_tmax = result.m_ray.m_tmax;
+        m_shading_point.m_ray.m_tmax = local_shading_point.m_ray.m_tmax;
         m_shading_point.m_hit = true;
-        m_shading_point.m_bary = result.m_bary;
+        m_shading_point.m_bary = local_shading_point.m_bary;
         m_shading_point.m_asm_instance_uid = assembly_instance_uid;
-        m_shading_point.m_object_instance_index = result.m_object_instance_index;
-        m_shading_point.m_region_index = result.m_region_index;
-        m_shading_point.m_triangle_index = result.m_triangle_index;
-        m_shading_point.m_triangle_support_plane = result.m_triangle_support_plane;
+        m_shading_point.m_object_instance_index = local_shading_point.m_object_instance_index;
+        m_shading_point.m_region_index = local_shading_point.m_region_index;
+        m_shading_point.m_triangle_index = local_shading_point.m_triangle_index;
+        m_shading_point.m_triangle_support_plane = local_shading_point.m_triangle_support_plane;
     }
 
     // Continue traversal.
@@ -481,14 +485,19 @@ bool AssemblyLeafVisitor::visit(
 
 bool AssemblyLeafProbeVisitor::visit(
     const vector<AABB3d>&               bboxes,
-    const size_t                        begin,
-    const size_t                        end,
+    const AssemblyTree::NodeType&       node,
     const ShadingRay::RayType&          ray,
     const ShadingRay::RayInfoType&      ray_info,
-    double&                             distance)
+    double&                             distance
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+    , bvh::TraversalStatistics&         stats
+#endif
+    )
 {
+    assert(node.get_item_count() <= 1);
+
     // Skip this leaf if it's empty. This will happen when the tree is empty.
-    if (begin == end)
+    if (node.get_item_count() == 0)
     {
         // Continue traversal.
         distance = ray.m_tmax;
@@ -496,36 +505,26 @@ bool AssemblyLeafProbeVisitor::visit(
     }
 
     // Retrieve the assembly instance.
-    const UniqueID assembly_instance_uid = m_tree.m_assembly_instances[begin];
+    const size_t assembly_instance_index = node.get_item_index();
+    const UniqueID assembly_instance_uid =
+        m_tree.m_assembly_instances[assembly_instance_index];
     const AssemblyInstance& assembly_instance =
         *m_tree.m_scene.assembly_instances().get_by_uid(assembly_instance_uid);
 
     // Transform the ray to assembly instance space.
-    ShadingRay::RayType transformed_ray;
+    ShadingRay::RayType local_ray;
     transform_ray_to_assembly_instance_space(
         assembly_instance,
         m_parent_shading_point,
         ray,
-        transformed_ray);
-    const RayInfo3d transformed_ray_info(transformed_ray);
+        local_ray);
+    local_ray.m_tmin = ray.m_tmin;
+    local_ray.m_tmax = ray.m_tmax;
+    const RayInfo3d local_ray_info(local_ray);
 
-    // Find the intersection between the ray and the bounding box of this leaf.
-    const bool hit_bbox =
-        intersect(
-            ray,
-            ray_info,
-            bboxes[begin],
-            transformed_ray.m_tmin,
-            transformed_ray.m_tmax);
-
-    // Skip this leaf if the ray doesn't intersect its bounding box.
-    // This will happen when the tree contains a single assembly instance.
-    if (!hit_bbox)
-    {
-        // Continue traversal.
-        distance = ray.m_tmax;
-        return true;
-    }
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+    stats.m_intersected_items.insert(1);
+#endif
 
     if (assembly_instance.get_assembly().is_flushable())
     {
@@ -545,8 +544,8 @@ bool AssemblyLeafProbeVisitor::visit(
         RegionLeafProbeIntersector intersector;
         intersector.intersect(
             region_tree,
-            transformed_ray,
-            transformed_ray_info,
+            local_ray,
+            local_ray_info,
             visitor);
         
         // Terminate traversal if there was a hit.
@@ -571,8 +570,8 @@ bool AssemblyLeafProbeVisitor::visit(
             TriangleLeafProbeVisitor visitor(*triangle_tree);
             intersector.intersect(
                 *triangle_tree,
-                transformed_ray,
-                transformed_ray_info,
+                local_ray,
+                local_ray_info,
                 visitor
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
                 , m_triangle_tree_stats

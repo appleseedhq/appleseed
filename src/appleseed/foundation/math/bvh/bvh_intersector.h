@@ -64,12 +64,14 @@ namespace bvh {
 //          // 'distance' should be set to the distance to the closest hit so far.
 //          bool visit(
 //              const std::vector<AABB>&    bboxes,
-//              const size_t                begin,
-//              const size_t                end,
+//              const NodeType&             node,
 //              const RayType&              ray,
 //              const RayInfoType&          ray_info,
-//              ValueType&                  distance);
-//      };
+//              ValueType&                  distance
+//      #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+//              , TraversalStatistics&      stats
+//      #endif
+//              );
 //
 
 template <
@@ -155,10 +157,8 @@ void Intersector<T, Tree, Visitor, StackSize>::intersect(
     FOUNDATION_BVH_TRAVERSAL_STATS(++stats.m_traversal_count);
     FOUNDATION_BVH_TRAVERSAL_STATS(size_t visited_nodes = 0);
     FOUNDATION_BVH_TRAVERSAL_STATS(size_t visited_leaves = 0);
-    FOUNDATION_BVH_TRAVERSAL_STATS(size_t culled_nodes = 0);
+    FOUNDATION_BVH_TRAVERSAL_STATS(size_t intersected_bboxes = 0);
     FOUNDATION_BVH_TRAVERSAL_STATS(size_t discarded_nodes = 0);
-    FOUNDATION_BVH_TRAVERSAL_STATS(size_t intersected_nodes = 0);
-    FOUNDATION_BVH_TRAVERSAL_STATS(size_t intersected_items = 0);
 
     // Traverse the tree and intersect leaf nodes.
     ValueType ray_tmax = ray.m_tmax;
@@ -169,6 +169,8 @@ void Intersector<T, Tree, Visitor, StackSize>::intersect(
 
         if (node_ptr->is_interior())
         {
+            FOUNDATION_BVH_TRAVERSAL_STATS(intersected_bboxes += 2);
+
 #ifdef APPLESEED_FOUNDATION_USE_SSE
             const sse2d mbbminx2d = loadpd(node_ptr->m_bbox_data + 0);
             const sse2d mbbmaxx2d = loadpd(node_ptr->m_bbox_data + 2);
@@ -256,13 +258,8 @@ void Intersector<T, Tree, Visitor, StackSize>::intersect(
         }
         else
         {
-            const size_t item_begin = node_ptr->get_item_index();
-            const size_t item_end = item_begin + node_ptr->get_item_count();
-            assert(item_begin <= item_end);
-
             // Visit the leaf.
             FOUNDATION_BVH_TRAVERSAL_STATS(++visited_leaves);
-            FOUNDATION_BVH_TRAVERSAL_STATS(intersected_items += item_end - item_begin);
             ValueType distance;
 #ifndef NDEBUG
             distance = ValueType(-1.0);
@@ -270,11 +267,14 @@ void Intersector<T, Tree, Visitor, StackSize>::intersect(
             const bool proceed =
                 visitor.visit(
                     tree.m_bboxes,
-                    item_begin,
-                    item_end,
+                    *node_ptr,
                     ray,
                     ray_info,
-                    distance);
+                    distance
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+                    , stats
+#endif
+                    );
             assert(!proceed || distance >= ValueType(0.0));
 
             // Terminate traversal if the visitor decided so.
@@ -297,10 +297,8 @@ void Intersector<T, Tree, Visitor, StackSize>::intersect(
     // Store traversal statistics.
     FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_visited_nodes.insert(visited_nodes));
     FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_visited_leaves.insert(visited_leaves));
-    FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_culled_nodes.insert(culled_nodes));
+    FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_bboxes.insert(intersected_bboxes));
     FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_discarded_nodes.insert(discarded_nodes));
-    FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_nodes.insert(intersected_nodes));
-    FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(intersected_items));
 }
 
 #undef FOUNDATION_BVH_TRAVERSAL_STATS

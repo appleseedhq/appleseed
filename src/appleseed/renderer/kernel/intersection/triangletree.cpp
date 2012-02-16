@@ -159,6 +159,16 @@ TriangleTree::~TriangleTree()
         m_triangle_tree_uid);
 }
 
+size_t TriangleTree::get_memory_size() const
+{
+    return
+          TreeType::get_memory_size()
+        - sizeof(*static_cast<const TreeType*>(this))
+        + sizeof(*this)
+        + m_triangle_keys.capacity() * sizeof(TriangleKey)
+        + m_triangles.capacity() * sizeof(GTriangleType);
+}
+
 void TriangleTree::collect_triangles(const Arguments& arguments)
 {
     const size_t region_count = arguments.m_regions.size();
