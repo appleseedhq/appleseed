@@ -31,8 +31,11 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/intersection/assemblytree.h"
+#include "renderer/kernel/intersection/regioninfo.h"
 #include "renderer/kernel/intersection/tracecontext.h"
+#include "renderer/kernel/intersection/trianglekey.h"
 #include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/modeling/object/triangle.h"
 #include "renderer/utility/cache.h"
 
 // appleseed.foundation headers.
@@ -98,9 +101,15 @@ Intersector::Intersector(
     {
         RENDERER_LOG_DEBUG(
             "data structures size:\n"
+            "  RegionInfo       %s\n"
+            "  TriangleKey      %s\n"
+            "  Triangle         %s\n"
             "  bvh::NodeType    %s\n"
             "  ShadingRay       %s\n"
             "  ShadingPoint     %s\n",
+            pretty_size(sizeof(RegionInfo)).c_str(),
+            pretty_size(sizeof(TriangleKey)).c_str(),
+            pretty_size(sizeof(Triangle)).c_str(),
             pretty_size(sizeof(TriangleTree::NodeType)).c_str(),
             pretty_size(sizeof(ShadingRay)).c_str(),
             pretty_size(sizeof(ShadingPoint)).c_str());
