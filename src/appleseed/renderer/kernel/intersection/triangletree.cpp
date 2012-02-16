@@ -43,6 +43,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/area.h"
 #include "foundation/math/permutation.h"
+#include "foundation/math/treeoptimizer.h"
 #include "foundation/platform/timer.h"
 #include "foundation/utility/memory.h"
 
@@ -123,6 +124,10 @@ TriangleTree::TriangleTree(const Arguments& arguments)
 
         // Get rid of the triangle bounding boxes as we no longer need them.
         clear_release_memory(m_bboxes);
+
+        // Optimize the tree layout in memory.
+        TreeOptimizer<NodeType> tree_optimizer;
+        tree_optimizer.optimize_node_layout(m_nodes, 4);
     }
 
     // Collect and print triangle tree statistics.

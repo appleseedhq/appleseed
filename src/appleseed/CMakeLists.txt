@@ -273,6 +273,7 @@ set (foundation_math_sources
     foundation/math/spline.h
     foundation/math/split.h
     foundation/math/transform.h
+    foundation/math/treeoptimizer.h
     foundation/math/triangulator.h
     foundation/math/vector.h
     foundation/math/voxel.h
