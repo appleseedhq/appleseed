@@ -29,6 +29,9 @@
 #ifndef APPLESEED_RENDERER_KERNEL_INTERSECTION_TRIANGLEKEY_H
 #define APPLESEED_RENDERER_KERNEL_INTERSECTION_TRIANGLEKEY_H
 
+// appleseed.foundation headers.
+#include "foundation/platform/types.h"
+
 // Standard headers.
 #include <cstddef>
 
@@ -59,9 +62,9 @@ class TriangleKey
     size_t get_triangle_index() const;
 
   private:
-    size_t                  m_object_instance_index;
-    size_t                  m_region_index;
-    size_t                  m_triangle_index;
+    foundation::uint32      m_object_instance_index;
+    foundation::uint32      m_region_index;
+    foundation::uint32      m_triangle_index;
 };
 
 
@@ -77,25 +80,25 @@ inline TriangleKey::TriangleKey(
     const size_t            object_instance_index,
     const size_t            region_index,
     const size_t            triangle_index)
-  : m_object_instance_index(object_instance_index)
-  , m_region_index(region_index)
-  , m_triangle_index(triangle_index)
+  : m_object_instance_index(static_cast<foundation::uint32>(object_instance_index))
+  , m_region_index(static_cast<foundation::uint32>(region_index))
+  , m_triangle_index(static_cast<foundation::uint32>(triangle_index))
 {
 }
 
 inline size_t TriangleKey::get_object_instance_index() const
 {
-    return m_object_instance_index;
+    return static_cast<size_t>(m_object_instance_index);
 }
 
 inline size_t TriangleKey::get_region_index() const
 {
-    return m_region_index;
+    return static_cast<size_t>(m_region_index);
 }
 
 inline size_t TriangleKey::get_triangle_index() const
 {
-    return m_triangle_index;
+    return static_cast<size_t>(m_triangle_index);
 }
 
 }       // namespace renderer
