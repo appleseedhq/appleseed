@@ -81,7 +81,7 @@ const GScalar TriangleTreeInteriorNodeTraversalCost = GScalar(1.0);
 const GScalar TriangleTreeTriangleIntersectionCost = GScalar(2.0);
 
 // Depth of a subtree in the van Emde Boas node layout.
-const size_t TriangleTreeSubtreeDepth = 3;
+const size_t TriangleTreeSubtreeDepth = 4;
 
 // Size of the triangle tree access cache.
 const size_t TriangleTreeAccessCacheSize = 16;
