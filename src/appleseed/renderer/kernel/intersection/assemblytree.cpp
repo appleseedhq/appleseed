@@ -115,59 +115,64 @@ size_t AssemblyTree::get_memory_size() const
         + m_assembly_instances.capacity() * sizeof(UniqueID);
 }
 
-void AssemblyTree::collect_assemblies(vector<UniqueID>& assemblies) const
+namespace
 {
-    assert(assemblies.empty());
-
-    assemblies.reserve(m_scene.assembly_instances().size());
-
-    for (const_each<AssemblyInstanceContainer> i = m_scene.assembly_instances(); i; ++i)
-        assemblies.push_back(i->get_assembly_uid());
-
-    sort(assemblies.begin(), assemblies.end());
-
-    const vector<UniqueID>::iterator new_end =
-        unique(assemblies.begin(), assemblies.end());
-
-    assemblies.erase(new_end, assemblies.end());
-}
-
-void AssemblyTree::collect_regions(const Assembly& assembly, RegionInfoVector& regions) const
-{
-    assert(regions.empty());
-
-    const ObjectInstanceContainer& object_instances = assembly.object_instances();
-    const size_t object_instance_count = object_instances.size();
-
-    // Collect all regions of all object instances of this assembly.
-    for (size_t obj_inst_index = 0; obj_inst_index < object_instance_count; ++obj_inst_index)
+    // Collect all assemblies from a given scene.
+    void collect_assemblies(const Scene& scene, vector<UniqueID>& assemblies)
     {
-        // Retrieve the object instance and its transformation.
-        const ObjectInstance* object_instance = object_instances.get_by_index(obj_inst_index);
-        assert(object_instance);
-        const Transformd& transform = object_instance->get_transform();
+        assert(assemblies.empty());
 
-        // Retrieve the object.
-        Object& object = object_instance->get_object();
+        assemblies.reserve(scene.assembly_instances().size());
 
-        // Retrieve the region kit of the object.
-        Access<RegionKit> region_kit(&object.get_region_kit());
+        for (const_each<AssemblyInstanceContainer> i = scene.assembly_instances(); i; ++i)
+            assemblies.push_back(i->get_assembly_uid());
 
-        // Collect all regions of the object.
-        for (size_t region_index = 0; region_index < region_kit->size(); ++region_index)
+        sort(assemblies.begin(), assemblies.end());
+
+        const vector<UniqueID>::iterator new_end =
+            unique(assemblies.begin(), assemblies.end());
+
+        assemblies.erase(new_end, assemblies.end());
+    }
+
+    // Collect all regions of all objects from a given assembly.
+    void collect_regions(const Assembly& assembly, RegionInfoVector& regions)
+    {
+        assert(regions.empty());
+
+        const ObjectInstanceContainer& object_instances = assembly.object_instances();
+        const size_t object_instance_count = object_instances.size();
+
+        // Collect all regions of all object instances of this assembly.
+        for (size_t obj_inst_index = 0; obj_inst_index < object_instance_count; ++obj_inst_index)
         {
-            // Retrieve the region.
-            const IRegion* region = (*region_kit)[region_index];
+            // Retrieve the object instance and its transformation.
+            const ObjectInstance* object_instance = object_instances.get_by_index(obj_inst_index);
+            assert(object_instance);
+            const Transformd& transform = object_instance->get_transform();
 
-            // Compute the assembly space bounding box of the region.
-            const GAABB3 region_bbox =
-                transform.transform_to_parent(region->get_local_bbox());
+            // Retrieve the object.
+            Object& object = object_instance->get_object();
 
-            regions.push_back(
-                RegionInfo(
-                    obj_inst_index,
-                    region_index,
-                    region_bbox));
+            // Retrieve the region kit of the object.
+            Access<RegionKit> region_kit(&object.get_region_kit());
+
+            // Collect all regions of the object.
+            for (size_t region_index = 0; region_index < region_kit->size(); ++region_index)
+            {
+                // Retrieve the region.
+                const IRegion* region = (*region_kit)[region_index];
+
+                // Compute the assembly space bounding box of the region.
+                const GAABB3 region_bbox =
+                    transform.transform_to_parent(region->get_local_bbox());
+
+                regions.push_back(
+                    RegionInfo(
+                        obj_inst_index,
+                        region_index,
+                        region_bbox));
+            }
         }
     }
 }
@@ -269,7 +274,7 @@ void AssemblyTree::update_child_trees()
 {
     // Collect all assemblies in the scene.
     vector<UniqueID> assemblies;
-    collect_assemblies(assemblies);
+    collect_assemblies(m_scene, assemblies);
 
     // Create or update the child tree of each assembly.
     for (const_each<vector<UniqueID> > i = assemblies; i; ++i)

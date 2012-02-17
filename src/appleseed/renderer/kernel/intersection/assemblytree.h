@@ -89,12 +89,6 @@ class AssemblyTree
     std::vector<foundation::UniqueID>   m_assembly_instances;
     AssemblyVersionMap                  m_assembly_versions;
 
-    // Collect all assemblies of the scene.
-    void collect_assemblies(std::vector<foundation::UniqueID>& assemblies) const;
-
-    // Collect all regions of all objects in a given assembly.
-    void collect_regions(const Assembly& assembly, RegionInfoVector& regions) const;
-
     // Create a triangle tree for a given assembly.
     foundation::Lazy<TriangleTree>* create_triangle_tree(const Assembly& assembly) const;
 
