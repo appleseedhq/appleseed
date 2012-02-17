@@ -46,7 +46,7 @@
 #include <cstddef>
 
 // Enable or disable BVH traversal statistics.
-#define FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+#undef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
 
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
 #define FOUNDATION_BVH_TRAVERSAL_STATS(x) x
