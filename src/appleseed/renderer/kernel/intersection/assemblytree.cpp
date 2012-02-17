@@ -112,7 +112,7 @@ size_t AssemblyTree::get_memory_size() const
           TreeType::get_memory_size()
         - sizeof(*static_cast<const TreeType*>(this))
         + sizeof(*this)
-        + m_assembly_instances.capacity() * sizeof(foundation::UniqueID);
+        + m_assembly_instances.capacity() * sizeof(UniqueID);
 }
 
 void AssemblyTree::collect_assemblies(vector<UniqueID>& assemblies) const
