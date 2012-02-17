@@ -80,15 +80,6 @@ const GScalar TriangleTreeInteriorNodeTraversalCost = GScalar(1.0);
 // Relative cost of intersecting a triangle.
 const GScalar TriangleTreeTriangleIntersectionCost = GScalar(2.0);
 
-// Number of bins used in the construction of the approximate SAH function.
-const size_t TriangleTreeApproxSAHBinCount = 32;
-
-// Leaf size threshold for O1 optimization level (approximate SAH).
-const size_t TriangleTreeO1Threshold = 1024 * 1024;
-
-// Leaf size threshold for O2 optimization level (exact SAH).
-const size_t TriangleTreeO2Threshold = 32;
-
 // Depth of a subtree in the van Emde Boas node layout.
 const size_t TriangleTreeSubtreeDepth = 3;
 
