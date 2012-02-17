@@ -73,6 +73,12 @@ class SSE_ALIGN Node
     AABBType get_left_bbox() const;
     AABBType get_right_bbox() const;
 
+    // Get user data (leaf nodes only).
+    static const size_t MaxUserDataSize = 12 * sizeof(ValueType);
+    template <typename U> void set_user_data(const U& data);
+    template <typename U> const U& get_user_data() const;
+    template <typename U> U& get_user_data();
+
     // Set/get the index of the first child node (interior nodes only).
     void set_child_node_index(const size_t index);
     size_t get_child_node_index() const;
@@ -192,6 +198,29 @@ inline AABB<T, N> Node<T, N>::get_right_bbox() const
     bbox.max.y = m_bbox_data[ 7];
     bbox.max.z = m_bbox_data[11];
     return bbox;
+}
+
+template <typename T, size_t N>
+template <typename U>
+inline void Node<T, N>::set_user_data(const U& data)
+{
+    get_user_data<U>() = data;
+}
+
+template <typename T, size_t N>
+template <typename U>
+inline const U& Node<T, N>::get_user_data() const
+{
+    assert(sizeof(U) <= MaxUserDataSize);               // todo: use static_assert<>
+    return *reinterpret_cast<const U*>(m_bbox_data);
+}
+
+template <typename T, size_t N>
+template <typename U>
+inline U& Node<T, N>::get_user_data()
+{
+    assert(sizeof(U) <= MaxUserDataSize);               // todo: use static_assert<>
+    return *reinterpret_cast<U*>(m_bbox_data);
 }
 
 template <typename T, size_t N>
