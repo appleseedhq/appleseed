@@ -107,7 +107,7 @@ class SSE_ALIGN Node
     //     bits 0-30    leaf index
     //     bit  31      node type (0 for leaf node)
     //
-    // The maximum size of a single BVH is 2^29 = 536,870,912 nodes.
+    // The maximum size of a single BVH is 2^31 = 2,147,483,648 nodes.
     //
 
     ValueType   m_bbox_data[12];
