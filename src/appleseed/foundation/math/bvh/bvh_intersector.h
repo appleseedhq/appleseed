@@ -46,7 +46,13 @@
 #include <cstddef>
 
 // Enable or disable BVH traversal statistics.
-#undef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+#define FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+#define FOUNDATION_BVH_TRAVERSAL_STATS(x) x
+#else
+#define FOUNDATION_BVH_TRAVERSAL_STATS(x)
+#endif
 
 namespace foundation {
 namespace bvh {
@@ -107,12 +113,6 @@ class Intersector
 //
 // Intersector class implementation.
 //
-
-#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
-#define FOUNDATION_BVH_TRAVERSAL_STATS(x) x
-#else
-#define FOUNDATION_BVH_TRAVERSAL_STATS(x)
-#endif
 
 template <
     typename T,
@@ -300,8 +300,6 @@ void Intersector<T, Tree, Visitor, StackSize>::intersect(
     FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_bboxes.insert(intersected_bboxes));
     FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_discarded_nodes.insert(discarded_nodes));
 }
-
-#undef FOUNDATION_BVH_TRAVERSAL_STATS
 
 }       // namespace bvh
 }       // namespace foundation
