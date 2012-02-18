@@ -101,8 +101,7 @@ AssemblyTree::~AssemblyTree()
 
 void AssemblyTree::update()
 {
-    clear();
-    build_assembly_tree();
+    rebuild_assembly_tree();
     update_child_trees();
 }
 
@@ -210,14 +209,12 @@ Lazy<RegionTree>* AssemblyTree::create_region_tree(const Assembly& assembly) con
     return new Lazy<RegionTree>(region_tree_factory);
 }
 
-void AssemblyTree::clear()
+void AssemblyTree::rebuild_assembly_tree()
 {
-    TreeType::clear();
+    // Clear the current tree.
+    clear();
     m_assembly_instances.clear();
-}
 
-void AssemblyTree::build_assembly_tree()
-{
     // Insert all assembly instances of the scene into the tree.
     for (const_each<AssemblyInstanceContainer> i = m_scene.assembly_instances(); i; ++i)
     {
@@ -262,12 +259,50 @@ void AssemblyTree::build_assembly_tree()
             &temp_assembly_instances[0],
             &ordering[0],
             ordering.size());
+
+        // Store assembly instances in the tree leaves whenever possible.
+        store_assembly_instances_in_leaves();
     }
 
     // Collect and print assembly tree statistics.
     AssemblyTreeStatistics tree_stats(*this, builder);
     RENDERER_LOG_DEBUG("assembly tree statistics:");
     tree_stats.print(global_logger());
+}
+
+void AssemblyTree::store_assembly_instances_in_leaves()
+{
+    size_t leaf_count = 0;
+    size_t small_leaf_count = 0;
+
+    const size_t node_count = m_nodes.size();
+
+    for (size_t i = 0; i < node_count; ++i)
+    {
+        NodeType& node = m_nodes[i];
+
+        if (node.is_leaf())
+        {
+            ++leaf_count;
+
+            const size_t item_count = node.get_item_count();
+
+            if (item_count <= NodeType::MaxUserDataSize / sizeof(UniqueID))
+            {
+                ++small_leaf_count;
+
+                const size_t item_begin = node.get_item_index();
+                UniqueID* user_data = &node.get_user_data<UniqueID>();
+
+                for (size_t j = 0; j < item_count; ++j)
+                    user_data[j] = m_assembly_instances[item_begin + j];
+            }
+        }
+    }
+
+    RENDERER_LOG_DEBUG(
+        "small assembly tree leaves: %s",
+        pretty_percent(small_leaf_count, leaf_count).c_str());
 }
 
 void AssemblyTree::update_child_trees()
@@ -382,100 +417,97 @@ bool AssemblyLeafVisitor::visit(
 #endif
     )
 {
-    assert(node.get_item_count() <= 1);
-
-    // Skip this leaf if it's empty. This will happen when the tree is empty.
-    if (node.get_item_count() == 0)
-    {
-        // Continue traversal.
-        distance = m_shading_point.m_ray.m_tmax;
-        return true;
-    }
-
-    // Retrieve the assembly instance.
+    // Retrieve the assembly instances for this leaf.
     const size_t assembly_instance_index = node.get_item_index();
-    const UniqueID assembly_instance_uid =
-        m_tree.m_assembly_instances[assembly_instance_index];
-    const AssemblyInstance& assembly_instance =
-        *m_tree.m_scene.assembly_instances().get_by_uid(assembly_instance_uid);
+    const size_t assembly_instance_count = node.get_item_count();
+    const UniqueID* assembly_instance_uids =
+        assembly_instance_count <= AssemblyTree::NodeType::MaxUserDataSize / sizeof(UniqueID)
+            ? &node.get_user_data<UniqueID>()                           // items are stored in the leaf node
+            : &m_tree.m_assembly_instances[assembly_instance_index];    // items are stored in the tree
 
-    // Transform the ray to assembly instance space.
-    ShadingPoint local_shading_point;
-    transform_ray_to_assembly_instance_space(
-        assembly_instance,
-        m_parent_shading_point,
-        ray,
-        local_shading_point.m_ray);
-    local_shading_point.m_ray.m_tmin = ray.m_tmin;
-    local_shading_point.m_ray.m_tmax = ray.m_tmax;
-    local_shading_point.m_ray.m_time = m_shading_point.m_ray.m_time;
-    local_shading_point.m_ray.m_flags = m_shading_point.m_ray.m_flags;
-    const RayInfo3d local_ray_info(local_shading_point.m_ray);
-
-#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
-    stats.m_intersected_items.insert(1);
-#endif
-
-    if (assembly_instance.get_assembly().is_flushable())
+    for (size_t i = 0; i < assembly_instance_count; ++i)
     {
-        // Retrieve the region tree of this assembly.
-        const RegionTree& region_tree =
-            *m_region_tree_cache.access(
-                assembly_instance.get_assembly_uid(),
-                m_tree.m_region_trees);
+        // Retrieve the assembly instance.
+        const UniqueID assembly_instance_uid = assembly_instance_uids[i];
+        const AssemblyInstance& assembly_instance =
+            *m_tree.m_scene.assembly_instances().get_by_uid(assembly_instance_uid);
 
-        // Check the intersection between the ray and the region tree.
-        RegionLeafVisitor visitor(
-            local_shading_point,
-            m_triangle_tree_cache
-#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
-            , m_triangle_tree_stats
-#endif
-            );
-        RegionLeafIntersector intersector;
-        intersector.intersect(
-            region_tree,
-            local_shading_point.m_ray,
-            local_ray_info,
-            visitor);
-    }
-    else
-    {
-        // Retrieve the triangle tree of this assembly.
-        const TriangleTree* triangle_tree =
-            m_triangle_tree_cache.access(
-                assembly_instance.get_assembly_uid(),
-                m_tree.m_triangle_trees);
+        // Transform the ray to assembly instance space.
+        ShadingPoint local_shading_point;
+        transform_ray_to_assembly_instance_space(
+            assembly_instance,
+            m_parent_shading_point,
+            ray,
+            local_shading_point.m_ray);
+        local_shading_point.m_ray.m_tmin = ray.m_tmin;
+        local_shading_point.m_ray.m_tmax = ray.m_tmax;
+        local_shading_point.m_ray.m_time = m_shading_point.m_ray.m_time;
+        local_shading_point.m_ray.m_flags = m_shading_point.m_ray.m_flags;
+        const RayInfo3d local_ray_info(local_shading_point.m_ray);
 
-        if (triangle_tree)
+        FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(1));
+
+        if (assembly_instance.get_assembly().is_flushable())
         {
-            // Check the intersection between the ray and the triangle tree.
-            TriangleTreeIntersector intersector;
-            TriangleLeafVisitor visitor(*triangle_tree, local_shading_point);
-            intersector.intersect(
-                *triangle_tree,
-                local_shading_point.m_ray,
-                local_ray_info,
-                visitor
+            // Retrieve the region tree of this assembly.
+            const RegionTree& region_tree =
+                *m_region_tree_cache.access(
+                    assembly_instance.get_assembly_uid(),
+                    m_tree.m_region_trees);
+
+            // Check the intersection between the ray and the region tree.
+            RegionLeafVisitor visitor(
+                local_shading_point,
+                m_triangle_tree_cache
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
                 , m_triangle_tree_stats
 #endif
                 );
-            visitor.read_hit_triangle_data();
+            RegionLeafIntersector intersector;
+            intersector.intersect(
+                region_tree,
+                local_shading_point.m_ray,
+                local_ray_info,
+                visitor);
         }
-    }
+        else
+        {
+            // Retrieve the triangle tree of this assembly.
+            const TriangleTree* triangle_tree =
+                m_triangle_tree_cache.access(
+                    assembly_instance.get_assembly_uid(),
+                    m_tree.m_triangle_trees);
 
-    // Keep track of the closest hit.
-    if (local_shading_point.m_hit && local_shading_point.m_ray.m_tmax < m_shading_point.m_ray.m_tmax)
-    {
-        m_shading_point.m_ray.m_tmax = local_shading_point.m_ray.m_tmax;
-        m_shading_point.m_hit = true;
-        m_shading_point.m_bary = local_shading_point.m_bary;
-        m_shading_point.m_asm_instance_uid = assembly_instance_uid;
-        m_shading_point.m_object_instance_index = local_shading_point.m_object_instance_index;
-        m_shading_point.m_region_index = local_shading_point.m_region_index;
-        m_shading_point.m_triangle_index = local_shading_point.m_triangle_index;
-        m_shading_point.m_triangle_support_plane = local_shading_point.m_triangle_support_plane;
+            if (triangle_tree)
+            {
+                // Check the intersection between the ray and the triangle tree.
+                TriangleTreeIntersector intersector;
+                TriangleLeafVisitor visitor(*triangle_tree, local_shading_point);
+                intersector.intersect(
+                    *triangle_tree,
+                    local_shading_point.m_ray,
+                    local_ray_info,
+                    visitor
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+                    , m_triangle_tree_stats
+#endif
+                    );
+                visitor.read_hit_triangle_data();
+            }
+        }
+
+        // Keep track of the closest hit.
+        if (local_shading_point.m_hit && local_shading_point.m_ray.m_tmax < m_shading_point.m_ray.m_tmax)
+        {
+            m_shading_point.m_ray.m_tmax = local_shading_point.m_ray.m_tmax;
+            m_shading_point.m_hit = true;
+            m_shading_point.m_bary = local_shading_point.m_bary;
+            m_shading_point.m_asm_instance_uid = assembly_instance_uid;
+            m_shading_point.m_object_instance_index = local_shading_point.m_object_instance_index;
+            m_shading_point.m_region_index = local_shading_point.m_region_index;
+            m_shading_point.m_triangle_index = local_shading_point.m_triangle_index;
+            m_shading_point.m_triangle_support_plane = local_shading_point.m_triangle_support_plane;
+        }
     }
 
     // Continue traversal.
@@ -499,95 +531,91 @@ bool AssemblyLeafProbeVisitor::visit(
 #endif
     )
 {
-    assert(node.get_item_count() <= 1);
+    // Retrieve the assembly instances for this leaf.
+    const size_t assembly_instance_count = node.get_item_count();
+    const UniqueID* assembly_instance_uids =
+        assembly_instance_count <= AssemblyTree::NodeType::MaxUserDataSize / sizeof(UniqueID)
+            ? &node.get_user_data<UniqueID>()                           // items are stored in the leaf node
+            : &m_tree.m_assembly_instances[node.get_item_index()];      // items are stored in the tree
 
-    // Skip this leaf if it's empty. This will happen when the tree is empty.
-    if (node.get_item_count() == 0)
+    for (size_t i = 0; i < assembly_instance_count; ++i)
     {
-        // Continue traversal.
-        distance = ray.m_tmax;
-        return true;
-    }
+        // Retrieve the assembly instance.
+        const UniqueID assembly_instance_uid = assembly_instance_uids[i];
+        const AssemblyInstance& assembly_instance =
+            *m_tree.m_scene.assembly_instances().get_by_uid(assembly_instance_uid);
 
-    // Retrieve the assembly instance.
-    const size_t assembly_instance_index = node.get_item_index();
-    const UniqueID assembly_instance_uid =
-        m_tree.m_assembly_instances[assembly_instance_index];
-    const AssemblyInstance& assembly_instance =
-        *m_tree.m_scene.assembly_instances().get_by_uid(assembly_instance_uid);
+        // Transform the ray to assembly instance space.
+        ShadingRay::RayType local_ray;
+        transform_ray_to_assembly_instance_space(
+            assembly_instance,
+            m_parent_shading_point,
+            ray,
+            local_ray);
+        local_ray.m_tmin = ray.m_tmin;
+        local_ray.m_tmax = ray.m_tmax;
+        const RayInfo3d local_ray_info(local_ray);
 
-    // Transform the ray to assembly instance space.
-    ShadingRay::RayType local_ray;
-    transform_ray_to_assembly_instance_space(
-        assembly_instance,
-        m_parent_shading_point,
-        ray,
-        local_ray);
-    local_ray.m_tmin = ray.m_tmin;
-    local_ray.m_tmax = ray.m_tmax;
-    const RayInfo3d local_ray_info(local_ray);
+        FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(1));
 
-#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
-    stats.m_intersected_items.insert(1);
-#endif
-
-    if (assembly_instance.get_assembly().is_flushable())
-    {
-        // Retrieve the region tree of this assembly.
-        const RegionTree& region_tree =
-            *m_region_tree_cache.access(
-                assembly_instance.get_assembly_uid(),
-                m_tree.m_region_trees);
-
-        // Check the intersection between the ray and the region tree.
-        RegionLeafProbeVisitor visitor(
-            m_triangle_tree_cache
-#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
-            , m_triangle_tree_stats
-#endif
-            );
-        RegionLeafProbeIntersector intersector;
-        intersector.intersect(
-            region_tree,
-            local_ray,
-            local_ray_info,
-            visitor);
-        
-        // Terminate traversal if there was a hit.
-        if (visitor.hit())
+        if (assembly_instance.get_assembly().is_flushable())
         {
-            m_hit = true;
-            return false;
-        }
-    }
-    else
-    {
-        // Retrieve the triangle tree of this leaf.
-        const TriangleTree* triangle_tree =
-            m_triangle_tree_cache.access(
-                assembly_instance.get_assembly_uid(),
-                m_tree.m_triangle_trees);
+            // Retrieve the region tree of this assembly.
+            const RegionTree& region_tree =
+                *m_region_tree_cache.access(
+                    assembly_instance.get_assembly_uid(),
+                    m_tree.m_region_trees);
 
-        if (triangle_tree)
-        {
-            // Check the intersection between the ray and the triangle tree.
-            TriangleTreeProbeIntersector intersector;
-            TriangleLeafProbeVisitor visitor(*triangle_tree);
-            intersector.intersect(
-                *triangle_tree,
-                local_ray,
-                local_ray_info,
-                visitor
+            // Check the intersection between the ray and the region tree.
+            RegionLeafProbeVisitor visitor(
+                m_triangle_tree_cache
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
                 , m_triangle_tree_stats
 #endif
                 );
-
+            RegionLeafProbeIntersector intersector;
+            intersector.intersect(
+                region_tree,
+                local_ray,
+                local_ray_info,
+                visitor);
+        
             // Terminate traversal if there was a hit.
             if (visitor.hit())
             {
                 m_hit = true;
                 return false;
+            }
+        }
+        else
+        {
+            // Retrieve the triangle tree of this leaf.
+            const TriangleTree* triangle_tree =
+                m_triangle_tree_cache.access(
+                    assembly_instance.get_assembly_uid(),
+                    m_tree.m_triangle_trees);
+
+            if (triangle_tree)
+            {
+                // Check the intersection between the ray and the triangle tree.
+                TriangleTreeProbeIntersector intersector;
+                TriangleLeafProbeVisitor visitor(*triangle_tree);
+                intersector.intersect(
+                    *triangle_tree,
+                    local_ray,
+                    local_ray_info,
+                    visitor
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+                    , m_triangle_tree_stats
+#endif
+                    );
+
+                // Terminate traversal if there was a hit.
+                if (visitor.hit())
+                {
+                    m_hit = true;
+                    return false;
+                }
             }
         }
     }

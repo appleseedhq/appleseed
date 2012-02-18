@@ -95,11 +95,10 @@ class AssemblyTree
     // Create a region tree for a given assembly.
     foundation::Lazy<RegionTree>* create_region_tree(const Assembly& assembly) const;
 
-    // Clear the assembly tree.
-    void clear();
+    // Rebuild the assembly tree from scratch.
+    void rebuild_assembly_tree();
 
-    // Build the assembly tree.
-    void build_assembly_tree();
+    void store_assembly_instances_in_leaves();
 
     // Create or update the child trees (one per assembly).
     void update_child_trees();

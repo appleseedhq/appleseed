@@ -112,6 +112,9 @@ TriangleTree::TriangleTree(const Arguments& arguments)
     TriangleTreeBuilder builder;
     builder.build<DefaultWallclockTimer>(*this, partitioner);
 
+    // Get rid of the triangle bounding boxes as we no longer need them.
+    clear_release_memory(m_bboxes);
+
     if (!m_triangles.empty())
     {
         const vector<size_t>& ordering = partitioner.get_item_ordering();
@@ -136,8 +139,8 @@ TriangleTree::TriangleTree(const Arguments& arguments)
             &ordering[0],
             ordering.size());
 
-        // Get rid of the triangle bounding boxes as we no longer need them.
-        clear_release_memory(m_bboxes);
+        // Store triangles in the tree leaves whenever possible.
+        store_triangles_in_leaves();
 
         // Optimize the tree layout in memory.
         TreeOptimizer<NodeType> tree_optimizer;
@@ -243,6 +246,41 @@ void TriangleTree::collect_triangles(const Arguments& arguments)
             }
         }
     }
+}
+
+void TriangleTree::store_triangles_in_leaves()
+{
+    size_t leaf_count = 0;
+    size_t small_leaf_count = 0;
+
+    const size_t node_count = m_nodes.size();
+
+    for (size_t i = 0; i < node_count; ++i)
+    {
+        NodeType& node = m_nodes[i];
+
+        if (node.is_leaf())
+        {
+            ++leaf_count;
+
+            const size_t item_count = node.get_item_count();
+
+            if (item_count <= NodeType::MaxUserDataSize / sizeof(GTriangleType))
+            {
+                ++small_leaf_count;
+
+                const size_t item_begin = node.get_item_index();
+                GTriangleType* user_data = &node.get_user_data<GTriangleType>();
+
+                for (size_t j = 0; j < item_count; ++j)
+                    user_data[j] = m_triangles[item_begin + j];
+            }
+        }
+    }
+
+    RENDERER_LOG_DEBUG(
+        "small triangle tree leaves: %s",
+        pretty_percent(small_leaf_count, leaf_count).c_str());
 }
 
 

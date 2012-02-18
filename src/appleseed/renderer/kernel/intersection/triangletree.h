@@ -100,6 +100,8 @@ class TriangleTree
     std::vector<GTriangleType>          m_triangles;
 
     void collect_triangles(const Arguments& arguments);
+
+    void store_triangles_in_leaves();
 };
 
 
@@ -290,30 +292,32 @@ inline bool TriangleLeafVisitor::visit(
 #endif
     )
 {
-    // Find the range of triangles for this leaf node.
-    const size_t begin = node.get_item_index();
-    const size_t end = begin + node.get_item_count();
-    assert(begin <= end);
+    // Retrieve the triangles for this leaf.
+    const size_t triangle_index = node.get_item_index();
+    const size_t triangle_count = node.get_item_count();
+    const GTriangleType* triangles =
+        triangle_count <= TriangleTree::NodeType::MaxUserDataSize / sizeof(GTriangleType)
+            ? &node.get_user_data<GTriangleType>()          // triangles are stored in the leaf node
+            : &m_tree.m_triangles[triangle_index];          // triangles are stored in the tree
 
-    // Sequentially intersect all triangles of this leaf.
-    for (size_t i = begin; i < end; ++i)
+    // Sequentially intersect all triangles of the leaf.
+    for (size_t i = 0; i < triangle_count; ++i)
     {
-        const impl::TriangleReader reader(m_tree.m_triangles[i]);
+        // Load the triangle, converting it to the right format if necessary.
+        const impl::TriangleReader reader(triangles[i]);
 
         // Intersect the triangle.
         double t, u, v;
         if (reader.m_triangle.intersect(m_shading_point.m_ray, t, u, v))
         {
-            m_hit_triangle_index = i;
+            m_hit_triangle_index = triangle_index + i;
             m_shading_point.m_ray.m_tmax = t;
             m_shading_point.m_bary[0] = u;
             m_shading_point.m_bary[1] = v;
         }
     }
 
-#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
-    stats.m_intersected_items.insert(end - begin);
-#endif
+    FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(triangle_count));
 
     // Continue traversal.
     distance = m_shading_point.m_ray.m_tmax;
@@ -361,39 +365,29 @@ inline bool TriangleLeafProbeVisitor::visit(
 #endif
     )
 {
-    // Find the range of triangles for this leaf node.
-    const size_t begin = node.get_item_index();
-    const size_t end = begin + node.get_item_count();
-    assert(begin <= end);
+    // Retrieve the triangles for this leaf.
+    const size_t triangle_count = node.get_item_count();
+    const GTriangleType* triangles =
+        triangle_count <= TriangleTree::NodeType::MaxUserDataSize / sizeof(GTriangleType)
+            ? &node.get_user_data<GTriangleType>()          // triangles are stored in the leaf node
+            : &m_tree.m_triangles[node.get_item_index()];   // triangles are stored in the tree
 
-#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
-    size_t intersected_items = 0;
-#endif
-
-    // Sequentially intersect all triangles of this leaf.
-    for (size_t i = begin; i < end; ++i)
+    // Sequentially intersect triangles until a hit is found.
+    for (size_t i = 0; i < triangle_count; ++i)
     {
-#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
-        ++intersected_items;
-#endif
-
-        const impl::TriangleReader reader(m_tree.m_triangles[i]);
+        // Load the triangle, converting it to the right format if necessary.
+        const impl::TriangleReader reader(triangles[i]);
 
         // Intersect the triangle.
         if (reader.m_triangle.intersect(ray))
         {
-#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
-            stats.m_intersected_items.insert(intersected_items);
-#endif
-
+            FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(i + 1));
             m_hit = true;
             return false;
         }
     }
 
-#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
-    stats.m_intersected_items.insert(intersected_items);
-#endif
+    FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(triangle_count));
 
     // Continue traversal.
     distance = ray.m_tmax;
