@@ -84,13 +84,13 @@ void aligned_free(void* aligned_ptr);
 //
 
 // Ensure that a container has a minimum given size.
-template <typename Vector>
+template <typename Container>
 void ensure_minimum_size(
-    Vector&         vector,
+    Container&      container,
     const size_t    minimum_size);
-template <typename Vector, typename T>
+template <typename Container, typename T>
 void ensure_minimum_size(
-    Vector&         vector,
+    Container&      container,
     const size_t    minimum_size,
     const T&        value);
 
@@ -101,6 +101,10 @@ void clear_release_memory(Container& container);
 // Clear a container but keep memory allocated.
 template <typename Container>
 void clear_keep_memory(Container& container);
+
+// Shrink the capacity of a container to its size.
+template <typename Container>
+void shrink_to_fit(Container& container);
 
 
 //
@@ -166,23 +170,23 @@ inline bool is_aligned(const T ptr, const size_t alignment)
 // STL containers related functions implementation.
 //
 
-template <typename Vector>
+template <typename Container>
 inline void ensure_minimum_size(
-    Vector&         vector,
+    Container&      container,
     const size_t    minimum_size)
 {
-    if (vector.size() < minimum_size)
-        vector.resize(minimum_size);
+    if (container.size() < minimum_size)
+        container.resize(minimum_size);
 }
 
-template <typename Vector, typename T>
+template <typename Container, typename T>
 inline void ensure_minimum_size(
-    Vector&         vector,
+    Container&      container,
     const size_t    minimum_size,
     const T&        value)
 {
-    if (vector.size() < minimum_size)
-        vector.resize(minimum_size, value);
+    if (container.size() < minimum_size)
+        container.resize(minimum_size, value);
 }
 
 template <typename Container>
@@ -203,6 +207,12 @@ inline void clear_keep_memory(Container& container)
     container.erase(container.begin(), container.end());
 
     assert(container.capacity() == old_capacity);
+}
+
+template <typename Container>
+inline void shrink_to_fit(Container& container)
+{
+    Container(container).swap(container);
 }
 
 }       // namespace foundation
