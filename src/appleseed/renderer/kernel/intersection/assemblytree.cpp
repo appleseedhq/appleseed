@@ -273,7 +273,7 @@ void AssemblyTree::rebuild_assembly_tree()
 void AssemblyTree::store_assembly_instances_in_leaves()
 {
     size_t leaf_count = 0;
-    size_t small_leaf_count = 0;
+    size_t fat_leaf_count = 0;
 
     const size_t node_count = m_nodes.size();
 
@@ -289,7 +289,7 @@ void AssemblyTree::store_assembly_instances_in_leaves()
 
             if (item_count <= NodeType::MaxUserDataSize / sizeof(UniqueID))
             {
-                ++small_leaf_count;
+                ++fat_leaf_count;
 
                 const size_t item_begin = node.get_item_index();
                 UniqueID* user_data = &node.get_user_data<UniqueID>();
@@ -301,8 +301,8 @@ void AssemblyTree::store_assembly_instances_in_leaves()
     }
 
     RENDERER_LOG_DEBUG(
-        "small assembly tree leaves: %s",
-        pretty_percent(small_leaf_count, leaf_count).c_str());
+        "fat assembly tree leaves: %s",
+        pretty_percent(fat_leaf_count, leaf_count).c_str());
 }
 
 void AssemblyTree::update_child_trees()

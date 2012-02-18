@@ -101,7 +101,7 @@ class TriangleTree
 
     void collect_triangles(const Arguments& arguments);
 
-    void store_triangles_in_leaves();
+    void move_triangles_to_leaves();
 };
 
 

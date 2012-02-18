@@ -140,7 +140,7 @@ TriangleTree::TriangleTree(const Arguments& arguments)
             ordering.size());
 
         // Store triangles in the tree leaves whenever possible.
-        store_triangles_in_leaves();
+        move_triangles_to_leaves();
 
         // Optimize the tree layout in memory.
         TreeOptimizer<NodeType> tree_optimizer;
@@ -248,10 +248,12 @@ void TriangleTree::collect_triangles(const Arguments& arguments)
     }
 }
 
-void TriangleTree::store_triangles_in_leaves()
+void TriangleTree::move_triangles_to_leaves()
 {
     size_t leaf_count = 0;
-    size_t small_leaf_count = 0;
+    size_t fat_leaf_count = 0;
+
+    size_t tree_triangle_count = 0;
 
     const size_t node_count = m_nodes.size();
 
@@ -263,24 +265,34 @@ void TriangleTree::store_triangles_in_leaves()
         {
             ++leaf_count;
 
+            const size_t item_begin = node.get_item_index();
             const size_t item_count = node.get_item_count();
 
             if (item_count <= NodeType::MaxUserDataSize / sizeof(GTriangleType))
             {
-                ++small_leaf_count;
+                ++fat_leaf_count;
 
-                const size_t item_begin = node.get_item_index();
                 GTriangleType* user_data = &node.get_user_data<GTriangleType>();
 
                 for (size_t j = 0; j < item_count; ++j)
                     user_data[j] = m_triangles[item_begin + j];
             }
+            else
+            {
+                node.set_item_index(tree_triangle_count);
+
+                for (size_t j = 0; j < item_count; ++j)
+                    m_triangles[tree_triangle_count++] = m_triangles[item_begin + j];
+            }
         }
     }
 
+    m_triangles.resize(tree_triangle_count);
+    shrink_to_fit(m_triangles);
+
     RENDERER_LOG_DEBUG(
-        "small triangle tree leaves: %s",
-        pretty_percent(small_leaf_count, leaf_count).c_str());
+        "fat triangle tree leaves: %s",
+        pretty_percent(fat_leaf_count, leaf_count).c_str());
 }
 
 
