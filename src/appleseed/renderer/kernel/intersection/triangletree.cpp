@@ -250,12 +250,45 @@ void TriangleTree::collect_triangles(const Arguments& arguments)
 
 void TriangleTree::move_triangles_to_leaves()
 {
+    const size_t node_count = m_nodes.size();
+
+    //
+    // Step 1: Gather statistics.
+    //
+
     size_t leaf_count = 0;
     size_t fat_leaf_count = 0;
+    size_t external_triangle_count = 0;
 
-    size_t tree_triangle_count = 0;
+    for (size_t i = 0; i < node_count; ++i)
+    {
+        const NodeType& node = m_nodes[i];
 
-    const size_t node_count = m_nodes.size();
+        if (node.is_leaf())
+        {
+            ++leaf_count;
+
+            const size_t item_count = node.get_item_count();
+
+            if (item_count <= NodeType::MaxUserDataSize / sizeof(GTriangleType))
+                ++fat_leaf_count;
+            else external_triangle_count += item_count;
+        }
+    }
+
+    //
+    // Step 2: Allocate new arrays.
+    //
+
+    vector<TriangleKey> new_triangle_keys;
+    vector<GTriangleType> new_triangles;
+
+    new_triangle_keys.reserve(m_triangle_keys.size());
+    new_triangles.reserve(external_triangle_count);
+
+    //
+    // Step 3: Handle slim leaves.
+    //
 
     for (size_t i = 0; i < node_count; ++i)
     {
@@ -263,32 +296,56 @@ void TriangleTree::move_triangles_to_leaves()
 
         if (node.is_leaf())
         {
-            ++leaf_count;
+            const size_t item_begin = node.get_item_index();
+            const size_t item_count = node.get_item_count();
 
+            if (item_count > NodeType::MaxUserDataSize / sizeof(GTriangleType))
+            {
+                node.set_item_index(new_triangle_keys.size());
+
+                for (size_t j = 0; j < item_count; ++j)
+                {
+                    new_triangle_keys.push_back(m_triangle_keys[item_begin + j]);
+                    new_triangles.push_back(m_triangles[item_begin + j]);
+                }
+            }
+        }
+    }
+
+    assert(new_triangle_keys.size() == new_triangles.size());
+
+    //
+    // Step 4: Handle fat leaves.
+    //
+
+    for (size_t i = 0; i < node_count; ++i)
+    {
+        NodeType& node = m_nodes[i];
+
+        if (node.is_leaf())
+        {
             const size_t item_begin = node.get_item_index();
             const size_t item_count = node.get_item_count();
 
             if (item_count <= NodeType::MaxUserDataSize / sizeof(GTriangleType))
             {
-                ++fat_leaf_count;
+                node.set_item_index(new_triangle_keys.size());
 
                 GTriangleType* user_data = &node.get_user_data<GTriangleType>();
 
                 for (size_t j = 0; j < item_count; ++j)
+                {
+                    new_triangle_keys.push_back(m_triangle_keys[item_begin + j]);
                     user_data[j] = m_triangles[item_begin + j];
-            }
-            else
-            {
-                node.set_item_index(tree_triangle_count);
-
-                for (size_t j = 0; j < item_count; ++j)
-                    m_triangles[tree_triangle_count++] = m_triangles[item_begin + j];
+                }
             }
         }
     }
 
-    m_triangles.resize(tree_triangle_count);
-    shrink_to_fit(m_triangles);
+    assert(new_triangle_keys.size() == m_triangle_keys.size());
+
+    m_triangle_keys.swap(new_triangle_keys);
+    m_triangles.swap(new_triangles);
 
     RENDERER_LOG_DEBUG(
         "fat triangle tree leaves: %s",

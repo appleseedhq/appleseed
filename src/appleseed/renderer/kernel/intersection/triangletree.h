@@ -177,6 +177,7 @@ class TriangleLeafVisitor
   private:
     const TriangleTree&     m_tree;
     ShadingPoint&           m_shading_point;
+    const GTriangleType*    m_hit_triangle;
     size_t                  m_hit_triangle_index;
 };
 
@@ -277,7 +278,7 @@ inline TriangleLeafVisitor::TriangleLeafVisitor(
     ShadingPoint&                           shading_point)
   : m_tree(tree)
   , m_shading_point(shading_point)
-  , m_hit_triangle_index(~0)
+  , m_hit_triangle(0)
 {
 }
 
@@ -310,6 +311,7 @@ inline bool TriangleLeafVisitor::visit(
         double t, u, v;
         if (reader.m_triangle.intersect(m_shading_point.m_ray, t, u, v))
         {
+            m_hit_triangle = triangles + i;
             m_hit_triangle_index = triangle_index + i;
             m_shading_point.m_ray.m_tmax = t;
             m_shading_point.m_bary[0] = u;
@@ -326,7 +328,7 @@ inline bool TriangleLeafVisitor::visit(
 
 inline void TriangleLeafVisitor::read_hit_triangle_data() const
 {
-    if (m_hit_triangle_index != ~0)
+    if (m_hit_triangle)
     {
         // Record a hit.
         m_shading_point.m_hit = true;
@@ -338,7 +340,7 @@ inline void TriangleLeafVisitor::read_hit_triangle_data() const
         m_shading_point.m_triangle_index = triangle_key.get_triangle_index();
 
         // Compute and store the support plane of the hit triangle.
-        const impl::TriangleReader reader(m_tree.m_triangles[m_hit_triangle_index]);
+        const impl::TriangleReader reader(*m_hit_triangle);
         m_shading_point.m_triangle_support_plane.initialize(reader.m_triangle);
     }
 }
