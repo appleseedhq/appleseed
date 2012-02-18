@@ -72,16 +72,16 @@ const size_t RegionTreeAccessCacheSize = 16;
 //
 
 // Maximum number of triangles per leaf.
-const size_t TriangleTreeMaxLeafSize = 8;
+const size_t TriangleTreeMaxLeafSize = 2;
 
 // Relative cost of traversing an interior node.
 const GScalar TriangleTreeInteriorNodeTraversalCost = GScalar(1.0);
 
 // Relative cost of intersecting a triangle.
-const GScalar TriangleTreeTriangleIntersectionCost = GScalar(2.0);
+const GScalar TriangleTreeTriangleIntersectionCost = GScalar(1.0);
 
 // Depth of a subtree in the van Emde Boas node layout.
-const size_t TriangleTreeSubtreeDepth = 4;
+const size_t TriangleTreeSubtreeDepth = 2;
 
 // Size of the triangle tree access cache.
 const size_t TriangleTreeAccessCacheSize = 16;
