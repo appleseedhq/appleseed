@@ -41,7 +41,6 @@ namespace foundation
 // Memory-alignment related functions implementation.
 //
 
-// Allocate memory on a specified alignment boundary.
 void* aligned_malloc(const size_t size, const size_t alignment)
 {
     assert(size > 0);
@@ -65,7 +64,6 @@ void* aligned_malloc(const size_t size, const size_t alignment)
     return aligned_ptr;
 }
 
-// Free a block of memory that was allocated with aligned_malloc().
 void aligned_free(void* aligned_ptr)
 {
     assert(aligned_ptr);
