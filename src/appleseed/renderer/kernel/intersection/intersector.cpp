@@ -101,18 +101,18 @@ Intersector::Intersector(
     {
         RENDERER_LOG_DEBUG(
             "data structures size:\n"
-            "  RegionInfo       %s\n"
-            "  TriangleKey      %s\n"
-            "  Triangle         %s\n"
             "  bvh::NodeType    %s\n"
+            "  GTriangleType    %s\n"
+            "  RegionInfo       %s\n"
+            "  ShadingPoint     %s\n"
             "  ShadingRay       %s\n"
-            "  ShadingPoint     %s\n",
-            pretty_size(sizeof(RegionInfo)).c_str(),
-            pretty_size(sizeof(TriangleKey)).c_str(),
-            pretty_size(sizeof(Triangle)).c_str(),
+            "  TriangleKey      %s\n",
             pretty_size(sizeof(TriangleTree::NodeType)).c_str(),
+            pretty_size(sizeof(GTriangleType)).c_str(),
+            pretty_size(sizeof(RegionInfo)).c_str(),
+            pretty_size(sizeof(ShadingPoint)).c_str(),
             pretty_size(sizeof(ShadingRay)).c_str(),
-            pretty_size(sizeof(ShadingPoint)).c_str());
+            pretty_size(sizeof(TriangleKey)).c_str());
     }
 }
 
