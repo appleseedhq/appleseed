@@ -28,6 +28,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
+#include "foundation/utility/alignedallocator.h"
 #include "foundation/utility/poolallocator.h"
 #include "foundation/utility/test.h"
 
@@ -1443,16 +1444,19 @@ TEST_SUITE(Foundation_Utility_PoolAllocator)
         #undef USED
 
         #pragma warning( pop )
+    }
 
-    }   // namespace StlAllocatorTestbed
-
-    TEST_CASE(STLAllocatorTestbedByPeteInsee)
+    TEST_CASE(STLAllocatorTestbed_PoolAllocator)
     {
-        // Although some allocator type must be specified (like int), the
-        // testing functions internally use allocator::rebind to test a wide
-        // variety of other types.
+        PoolAllocator<int, 2> allocator;
+        StlAllocatorTestbed::TestAlloc(allocator);
+    }
 
-        PoolAllocator<int, 2> a;
-        StlAllocatorTestbed::TestAlloc( a );
+    SET_DEFAULT_CONSTRUCTABLE_OFF(AlignedAllocator);
+
+    TEST_CASE(STLAllocatorTestbed_AlignedAllocator)
+    {
+        AlignedAllocator<int> allocator(32);
+        StlAllocatorTestbed::TestAlloc(allocator);
     }
 }
