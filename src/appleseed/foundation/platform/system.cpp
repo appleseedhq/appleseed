@@ -162,18 +162,6 @@ size_t System::get_l3_cache_line_size()
     return get_cache_descriptor(3, cache) ? cache.LineSize : 0;
 }
 
-uint64 System::get_total_ram_size()
-{
-    // todo: implement.
-    return 1571564 * 1024;
-}
-
-uint64 System::get_available_ram_size()
-{
-    // todo: implement.
-    return 1571564 * 1024;
-}
-
 // ------------------------------------------------------------------------------------------------
 // Mac OS X.
 // ------------------------------------------------------------------------------------------------
@@ -182,62 +170,42 @@ uint64 System::get_available_ram_size()
 
 namespace
 {
-    //
-    // This code is based on a code snippet by Nick Strupat (http://stackoverflow.com/a/4049562).
-    //
-
-    size_t get_cache_line_size(const size_t level)
+    size_t get_system_value(const char* name)
     {
-        size_t line_size = 0;
-        size_t sizeof_line_size = sizeof(line_size);
-        sysctlbyname("hw.cachelinesize", &line_size, &sizeof_line_size, 0, 0);
-        return line_size;
+        size_t value = 0;
+        size_t value_size = sizeof(value);
+        return sysctlbyname(name, &value, &value_size, 0, 0) == 0 ? value : 0;
     }
 }
 
 size_t System::get_l1_data_cache_size()
 {
-    // todo: implement.
-    return 8 * 1024;
+    return get_system_value("hw.l1dcachesize");
 }
 
 size_t System::get_l1_data_cache_line_size()
 {
-    return get_cache_line_size(1);
+    return get_l1_data_cache_size() > 0 ? get_system_value("hw.cachelinesize") : 0;
 }
 
 size_t System::get_l2_cache_size()
 {
-    // todo: implement.
-    return 512 * 1024;
+    return get_system_value("hw.l2cachesize");
 }
 
 size_t System::get_l2_cache_line_size()
 {
-    return get_cache_line_size(2);
+    return get_l2_cache_size() > 0 ? get_system_value("hw.cachelinesize") : 0;
 }
 
 size_t System::get_l3_cache_size()
 {
-    // todo: implement.
-    return 512 * 1024;
+    return get_system_value("hw.l3cachesize");
 }
 
 size_t System::get_l3_cache_line_size()
 {
-    return get_cache_line_size(3);
-}
-
-uint64 System::get_total_ram_size()
-{
-    // todo: implement.
-    return 1571564 * 1024;
-}
-
-uint64 System::get_available_ram_size()
-{
-    // todo: implement.
-    return 1571564 * 1024;
+    return get_l3_cache_size() > 0 ? get_system_value("hw.cachelinesize") : 0;
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -274,18 +242,6 @@ size_t System::get_l3_cache_size()
 size_t System::get_l3_cache_line_size()
 {
     return sysconf(_SC_LEVEL3_CACHE_LINESIZE);
-}
-
-uint64 System::get_total_ram_size()
-{
-    // todo: implement.
-    return 1571564 * 1024;
-}
-
-uint64 System::get_available_ram_size()
-{
-    // todo: implement.
-    return 1571564 * 1024;
 }
 
 #endif

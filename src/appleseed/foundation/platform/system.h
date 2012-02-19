@@ -59,7 +59,7 @@ namespace foundation
 {
 
 //
-// The System class provides general low-level functionalities.
+// The System class provides information about the system.
 //
 
 class FOUNDATIONDLL System
@@ -97,16 +97,6 @@ class FOUNDATIONDLL System
 
     // Return the size in bytes of a L3 cache line, or 0 if there's no L3 cache.
     static size_t get_l3_cache_line_size();
-
-    //
-    // Physical memory.
-    //
-
-    // Return the size in bytes of the total physical memory in the system.
-    static uint64 get_total_ram_size();
-
-    // Return the size in bytes of the available physical memory in the system.
-    static uint64 get_available_ram_size();
 };
 
 }       // namespace foundation
