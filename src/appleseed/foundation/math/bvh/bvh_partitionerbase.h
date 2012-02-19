@@ -52,8 +52,6 @@ class PartitionerBase
   : public NonCopyable
 {
   public:
-    // Types.
-    typedef typename Tree::ValueType ValueType;
     typedef typename Tree::AABBType AABBType;
 
     // Initialize the partitioner for a given number of items.

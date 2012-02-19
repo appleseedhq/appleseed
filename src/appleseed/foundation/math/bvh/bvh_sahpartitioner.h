@@ -50,6 +50,9 @@ class SAHPartitioner
   : public PartitionerBase<Tree>
 {
   public:
+    typedef typename Tree::ValueType ValueType;
+    typedef typename Tree::AABBType AABBType;
+
     // Constructor.
     SAHPartitioner(
         const size_t                    max_leaf_size,
@@ -119,7 +122,7 @@ size_t SAHPartitioner<Tree>::partition(
 
     for (size_t d = 0; d < Tree::Dimension; ++d)
     {
-        const std::vector<size_t>& indices = m_indices[d];
+        const std::vector<size_t>& indices = PartitionerBase<Tree>::m_indices[d];
         AABBType bbox_accumulator;
 
         // Left-to-right sweep to accumulate bounding boxes and compute their surface area.
@@ -163,7 +166,7 @@ size_t SAHPartitioner<Tree>::partition(
     const size_t pivot = begin + best_split_pivot;
     assert(pivot < end);
 
-    sort_indices(best_split_dim, begin, end, pivot);
+    PartitionerBase<Tree>::sort_indices(best_split_dim, begin, end, pivot);
 
     return pivot;
 }

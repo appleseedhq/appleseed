@@ -49,6 +49,8 @@ class MedianPartitioner
   : public PartitionerBase<Tree>
 {
   public:
+    typedef typename Tree::AABBType AABBType;
+
     // Constructor.
     explicit MedianPartitioner(
         const size_t                    max_leaf_size);
@@ -97,7 +99,7 @@ inline size_t MedianPartitioner<Tree>::partition(
     const size_t pivot = (begin + end) / 2;
     assert(pivot < end);
 
-    sort_indices(split_dim, begin, end, pivot);
+    PartitionerBase<Tree>::sort_indices(split_dim, begin, end, pivot);
 
     return pivot;
 }

@@ -36,6 +36,7 @@
 
 // Standard headers.
 #include <cmath>
+#include <cstdio>
 #include <cstdlib>
 #include <string>
 #include <vector>
