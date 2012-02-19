@@ -33,12 +33,39 @@
 #include "foundation/platform/thread.h"
 #include "foundation/platform/x86timer.h"
 
+// Windows.
+#if defined _WIN32
+
+    // appleseed.foundation headers.
+    #include "foundation/platform/windows.h"
+
+    // Standard headers.
+    #include <cassert>
+    #include <cstdlib>
+
+// Mac OS X.
+#elif defined __APPLE__
+
+    // Platform headers.
+    #include <sys/sysctl.h>
+
+// Linux.
+#elif defined __linux__
+
+    // Standard headers.
+    #include <cstdio>
+
+// Unsupported platform.
+#else
+#error Unsupported platform.
+#endif
+
 namespace foundation
 {
 
-//
-// System class implementation.
-//
+// ------------------------------------------------------------------------------------------------
+// Common code.
+// ------------------------------------------------------------------------------------------------
 
 size_t System::get_logical_cpu_core_count()
 {
@@ -48,45 +75,219 @@ size_t System::get_logical_cpu_core_count()
     return concurrency > 1 ? concurrency : 1;
 }
 
-uint64 System::get_cpu_core_frequency(const size_t /*cpu_id*/, const uint32 calibration_time_ms)
+uint64 System::get_cpu_core_frequency(const uint32 calibration_time_ms)
 {
     return X86Timer(calibration_time_ms).frequency();
 }
 
-size_t System::get_l1_data_cache_size(const size_t /*cpu_id*/)
+// ------------------------------------------------------------------------------------------------
+// Windows.
+// ------------------------------------------------------------------------------------------------
+
+#if defined _WIN32
+
+namespace
+{
+    //
+    // This code is based on a code snippet by Nick Strupat (http://stackoverflow.com/a/4049562).
+    //
+
+    bool get_cache_descriptor(const size_t level, CACHE_DESCRIPTOR& result)
+    {
+        assert(level >= 1 && level <= 3);
+
+        DWORD buffer_size;
+        GetLogicalProcessorInformation(0, &buffer_size);
+
+        SYSTEM_LOGICAL_PROCESSOR_INFORMATION* buffer =
+            (SYSTEM_LOGICAL_PROCESSOR_INFORMATION*)malloc(buffer_size);
+        GetLogicalProcessorInformation(buffer, &buffer_size);
+
+        bool found = false;
+
+        for (size_t i = 0; i < buffer_size / sizeof(SYSTEM_LOGICAL_PROCESSOR_INFORMATION); ++i)
+        {
+            if (buffer[i].Relationship == RelationCache)
+            {
+                const CACHE_DESCRIPTOR& cache = buffer[i].Cache;
+
+                if (cache.Level == level && (cache.Type == CacheData || cache.Type == CacheUnified))
+                {
+                    found = true;
+                    result = cache;
+                    break;
+                }
+            }
+        }
+
+        free(buffer);
+
+        return found;
+    }
+}
+
+size_t System::get_l1_data_cache_size()
+{
+    CACHE_DESCRIPTOR cache;
+    return get_cache_descriptor(1, cache) ? cache.Size : 0;
+}
+
+size_t System::get_l1_data_cache_line_size()
+{
+    CACHE_DESCRIPTOR cache;
+    return get_cache_descriptor(1, cache) ? cache.LineSize : 0;
+}
+
+size_t System::get_l2_cache_size()
+{
+    CACHE_DESCRIPTOR cache;
+    return get_cache_descriptor(2, cache) ? cache.Size : 0;
+}
+
+size_t System::get_l2_cache_line_size()
+{
+    CACHE_DESCRIPTOR cache;
+    return get_cache_descriptor(2, cache) ? cache.LineSize : 0;
+}
+
+size_t System::get_l3_cache_size()
+{
+    CACHE_DESCRIPTOR cache;
+    return get_cache_descriptor(3, cache) ? cache.Size : 0;
+}
+
+size_t System::get_l3_cache_line_size()
+{
+    CACHE_DESCRIPTOR cache;
+    return get_cache_descriptor(3, cache) ? cache.LineSize : 0;
+}
+
+uint64 System::get_total_ram_size()
+{
+    // todo: implement.
+    return 1571564 * 1024;
+}
+
+uint64 System::get_available_ram_size()
+{
+    // todo: implement.
+    return 1571564 * 1024;
+}
+
+// ------------------------------------------------------------------------------------------------
+// Mac OS X.
+// ------------------------------------------------------------------------------------------------
+
+#elif defined __APPLE__
+
+namespace
+{
+    //
+    // This code is based on a code snippet by Nick Strupat (http://stackoverflow.com/a/4049562).
+    //
+
+    size_t get_cache_line_size(const size_t level)
+    {
+        size_t line_size = 0;
+        size_t sizeof_line_size = sizeof(line_size);
+        sysctlbyname("hw.cachelinesize", &line_size, &sizeof_line_size, 0, 0);
+        return line_size;
+    }
+}
+
+size_t System::get_l1_data_cache_size()
 {
     // todo: implement.
     return 8 * 1024;
 }
 
-size_t System::get_l1_data_cache_line_size(const size_t /*cpu_id*/)
+size_t System::get_l1_data_cache_line_size()
 {
-    // todo: implement.
-    return 64;
+    return get_cache_line_size(1);
 }
 
-size_t System::get_l2_data_cache_size(const size_t /*cpu_id*/)
+size_t System::get_l2_cache_size()
 {
     // todo: implement.
     return 512 * 1024;
 }
 
-size_t System::get_l2_data_cache_line_size(const size_t /*cpu_id*/)
+size_t System::get_l2_cache_line_size()
 {
-    // todo: implement.
-    return 64;
+    return get_cache_line_size(2);
 }
 
-size_t System::get_total_ram_size()
+size_t System::get_l3_cache_size()
+{
+    // todo: implement.
+    return 512 * 1024;
+}
+
+size_t System::get_l3_cache_line_size()
+{
+    return get_cache_line_size(3);
+}
+
+uint64 System::get_total_ram_size()
 {
     // todo: implement.
     return 1571564 * 1024;
 }
 
-size_t System::get_available_ram_size()
+uint64 System::get_available_ram_size()
 {
     // todo: implement.
     return 1571564 * 1024;
 }
+
+// ------------------------------------------------------------------------------------------------
+// Linux.
+// ------------------------------------------------------------------------------------------------
+
+#elif defined __linux__
+
+size_t System::get_l1_data_cache_size()
+{
+    return sysconf(_SC_LEVEL1_DCACHE_SIZE);
+}
+
+size_t System::get_l1_data_cache_line_size()
+{
+    return sysconf(_SC_LEVEL1_DCACHE_LINESIZE);
+}
+
+size_t System::get_l2_cache_size()
+{
+    return sysconf(_SC_LEVEL2_CACHE_SIZE);
+}
+
+size_t System::get_l2_cache_line_size()
+{
+    return sysconf(_SC_LEVEL2_CACHE_LINESIZE);
+}
+
+size_t System::get_l3_cache_size()
+{
+    return sysconf(_SC_LEVEL3_CACHE_SIZE);
+}
+
+size_t System::get_l3_cache_line_size()
+{
+    return sysconf(_SC_LEVEL3_CACHE_LINESIZE);
+}
+
+uint64 System::get_total_ram_size()
+{
+    // todo: implement.
+    return 1571564 * 1024;
+}
+
+uint64 System::get_available_ram_size()
+{
+    // todo: implement.
+    return 1571564 * 1024;
+}
+
+#endif
 
 }   // namespace foundation

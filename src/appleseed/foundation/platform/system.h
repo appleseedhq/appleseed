@@ -74,35 +74,39 @@ class FOUNDATIONDLL System
     static size_t get_logical_cpu_core_count();
 
     // Return the frequency, in Hz, of a given CPU core at this instant.
-    static uint64 get_cpu_core_frequency(
-        const size_t    cpu_id,
-        const uint32    calibration_time_ms = 10);
+    static uint64 get_cpu_core_frequency(const uint32 calibration_time_ms = 10);
 
     //
     // CPU caches.
     //
 
-    // Return the size in bytes of the L1 data cache of a given CPU.
-    static size_t get_l1_data_cache_size(const size_t cpu_id);
+    // Return the size in bytes of the L1 data cache.
+    static size_t get_l1_data_cache_size();
 
-    // Return the size in bytes of a L1 data cache line of a given CPU.
-    static size_t get_l1_data_cache_line_size(const size_t cpu_id);
+    // Return the size in bytes of a L1 data cache line.
+    static size_t get_l1_data_cache_line_size();
 
-    // Return the size in bytes of the L2 data cache of a given CPU.
-    static size_t get_l2_data_cache_size(const size_t cpu_id);
+    // Return the size in bytes of the L2 cache.
+    static size_t get_l2_cache_size();
 
-    // Return the size in bytes of a L2 data cache line of a given CPU.
-    static size_t get_l2_data_cache_line_size(const size_t cpu_id);
+    // Return the size in bytes of a L2 cache line.
+    static size_t get_l2_cache_line_size();
+
+    // Return the size in bytes of the L3 cache, or 0 if there's no L3 cache.
+    static size_t get_l3_cache_size();
+
+    // Return the size in bytes of a L3 cache line, or 0 if there's no L3 cache.
+    static size_t get_l3_cache_line_size();
 
     //
     // Physical memory.
     //
 
     // Return the size in bytes of the total physical memory in the system.
-    static size_t get_total_ram_size();
+    static uint64 get_total_ram_size();
 
     // Return the size in bytes of the available physical memory in the system.
-    static size_t get_available_ram_size();
+    static uint64 get_available_ram_size();
 };
 
 }       // namespace foundation

@@ -40,6 +40,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/intersection.h"
+#include "foundation/platform/system.h"
 #include "foundation/utility/casts.h"
 #include "foundation/utility/string.h"
 
@@ -99,6 +100,18 @@ Intersector::Intersector(
 {
     if (m_print_statistics)
     {
+        RENDERER_LOG_DEBUG(
+            "system information:\n"
+            "  L1 data cache    size %s, line size %s\n"
+            "  L2 cache         size %s, line size %s\n"
+            "  L3 cache         size %s, line size %s\n",
+            pretty_size(System::get_l1_data_cache_size()).c_str(),
+            pretty_size(System::get_l1_data_cache_line_size()).c_str(),
+            pretty_size(System::get_l2_cache_size()).c_str(),
+            pretty_size(System::get_l2_cache_line_size()).c_str(),
+            pretty_size(System::get_l3_cache_size()).c_str(),
+            pretty_size(System::get_l3_cache_line_size()).c_str());
+
         RENDERER_LOG_DEBUG(
             "data structures size:\n"
             "  bvh::NodeType    %s\n"
