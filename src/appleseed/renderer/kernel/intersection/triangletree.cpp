@@ -145,6 +145,10 @@ TriangleTree::TriangleTree(const Arguments& arguments)
         // Optimize the tree layout in memory.
         TreeOptimizer<NodeType> tree_optimizer;
         tree_optimizer.optimize_node_layout(m_nodes, TriangleTreeSubtreeDepth);
+
+        RENDERER_LOG_DEBUG(
+            "triangle tree node array alignment: %s",
+            pretty_size(alignment(&m_nodes[0])).c_str());
     }
 
     // Collect and print triangle tree statistics.
