@@ -56,14 +56,14 @@ class Tree
     typedef Allocator AllocatorType;
     typedef AABB<T, N> AABBType;
     typedef Node<T, N> NodeType;
-    typedef Tree<T, N> TreeType;
+    typedef Tree<T, N, Allocator> TreeType;
     typedef std::vector<NodeType, AllocatorType> NodeVector;
     typedef std::vector<AABBType, AllocatorType> AABBVector;
 
     static const size_t Dimension = N;
 
-    // Constructor.
-    Tree();
+    // Constructors.
+    explicit Tree(const Allocator& allocator = Allocator());
 
     // Clear the tree.
     void clear();
@@ -111,7 +111,9 @@ template <> inline float get_item_bbox_grow_eps<float>()    { return 1.0e-6f; }
 template <> inline double get_item_bbox_grow_eps<double>()  { return 1.0e-15;  }
 
 template <typename T, size_t N, typename Allocator>
-Tree<T, N, Allocator>::Tree()
+Tree<T, N, Allocator>::Tree(const Allocator& allocator)
+  : m_bboxes(allocator)
+  , m_nodes(allocator)
 {
     clear();
 }
