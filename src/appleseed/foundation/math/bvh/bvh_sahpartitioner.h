@@ -52,29 +52,30 @@ class SAHPartitioner
   public:
     typedef typename Tree::ValueType ValueType;
     typedef typename Tree::AABBType AABBType;
+    typedef typename Tree::AABBVector AABBVector;
 
     // Constructor.
     SAHPartitioner(
-        const size_t                    max_leaf_size,
-        const ValueType                 interior_node_traversal_cost = ValueType(1.0),
-        const ValueType                 triangle_intersection_cost = ValueType(1.0));
+        const size_t        max_leaf_size,
+        const ValueType     interior_node_traversal_cost = ValueType(1.0),
+        const ValueType     triangle_intersection_cost = ValueType(1.0));
 
     // Initialize the partitioner for a given number of items.
     void initialize(
-        const std::vector<AABBType>&    bboxes);
+        const AABBVector&   bboxes);
 
     // Partition a set of items into two distinct sets.
     size_t partition(
-        const std::vector<AABBType>&    bboxes,
-        const size_t                    begin,
-        const size_t                    end,
-        const AABBType&                 bbox);
+        const AABBVector&   bboxes,
+        const size_t        begin,
+        const size_t        end,
+        const AABBType&     bbox);
 
   private:
-    const size_t                        m_max_leaf_size;
-    const ValueType                     m_interior_node_traversal_cost;
-    const ValueType                     m_triangle_intersection_cost;
-    std::vector<ValueType>              m_left_areas;
+    const size_t            m_max_leaf_size;
+    const ValueType         m_interior_node_traversal_cost;
+    const ValueType         m_triangle_intersection_cost;
+    std::vector<ValueType>  m_left_areas;
 };
 
 
@@ -84,9 +85,9 @@ class SAHPartitioner
 
 template <typename Tree>
 inline SAHPartitioner<Tree>::SAHPartitioner(
-    const size_t                        max_leaf_size,
-    const ValueType                     interior_node_traversal_cost,
-    const ValueType                     triangle_intersection_cost)
+    const size_t            max_leaf_size,
+    const ValueType         interior_node_traversal_cost,
+    const ValueType         triangle_intersection_cost)
   : m_max_leaf_size(max_leaf_size)
   , m_interior_node_traversal_cost(interior_node_traversal_cost)
   , m_triangle_intersection_cost(triangle_intersection_cost)
@@ -95,7 +96,7 @@ inline SAHPartitioner<Tree>::SAHPartitioner(
 
 template <typename Tree>
 void SAHPartitioner<Tree>::initialize(
-    const std::vector<AABBType>&        bboxes)
+    const AABBVector&       bboxes)
 {
     PartitionerBase<Tree>::initialize(bboxes);
 
@@ -104,10 +105,10 @@ void SAHPartitioner<Tree>::initialize(
 
 template <typename Tree>
 size_t SAHPartitioner<Tree>::partition(
-    const std::vector<AABBType>&        bboxes,
-    const size_t                        begin,
-    const size_t                        end,
-    const AABBType&                     bbox)
+    const AABBVector&       bboxes,
+    const size_t            begin,
+    const size_t            end,
+    const AABBType&         bbox)
 {
     const size_t count = end - begin;
     assert(count > 1);

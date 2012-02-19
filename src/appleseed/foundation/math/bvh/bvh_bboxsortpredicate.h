@@ -31,7 +31,6 @@
 
 // Standard headers.
 #include <cstddef>
-#include <vector>
 
 namespace foundation {
 namespace bvh {
@@ -41,21 +40,19 @@ namespace bvh {
 // along a given dimension.
 //
 
-template <typename AABBType>
+template <typename AABBVector>
 class BboxSortPredicate
 {
   public:
     BboxSortPredicate(
-        const std::vector<AABBType>&    bboxes,
-        const size_t                    dim);
+        const AABBVector&   bboxes,
+        const size_t        dim);
 
     bool operator()(const size_t lhs, const size_t rhs) const;
 
   private:
-    typedef typename AABBType::ValueType ValueType;
-
-    const std::vector<AABBType>&        m_bboxes;
-    const size_t                        m_dim;
+    const AABBVector&       m_bboxes;
+    const size_t            m_dim;
 };
 
 
@@ -63,19 +60,19 @@ class BboxSortPredicate
 // BboxSortPredicate class implementation.
 //
 
-template <typename AABBType>
-inline BboxSortPredicate<AABBType>::BboxSortPredicate(
-    const std::vector<AABBType>&        bboxes,
-    const size_t                        dim)
+template <typename AABBVector>
+inline BboxSortPredicate<AABBVector>::BboxSortPredicate(
+    const AABBVector&       bboxes,
+    const size_t            dim)
   : m_bboxes(bboxes)
   , m_dim(dim)
 {
 }
 
-template <typename AABBType>
-inline bool BboxSortPredicate<AABBType>::operator()(
-    const size_t                        lhs,
-    const size_t                        rhs) const
+template <typename AABBVector>
+inline bool BboxSortPredicate<AABBVector>::operator()(
+    const size_t            lhs,
+    const size_t            rhs) const
 {
     return m_bboxes[lhs].center(m_dim) < m_bboxes[rhs].center(m_dim);
 }

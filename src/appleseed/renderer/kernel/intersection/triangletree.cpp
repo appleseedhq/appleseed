@@ -143,7 +143,7 @@ TriangleTree::TriangleTree(const Arguments& arguments)
         move_triangles_to_leaves();
 
         // Optimize the tree layout in memory.
-        TreeOptimizer<NodeType> tree_optimizer;
+        TreeOptimizer<NodeVector> tree_optimizer;
         tree_optimizer.optimize_node_layout(m_nodes, TriangleTreeSubtreeDepth);
 
         RENDERER_LOG_DEBUG(

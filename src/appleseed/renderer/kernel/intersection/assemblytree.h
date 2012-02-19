@@ -127,7 +127,7 @@ class AssemblyLeafVisitor
 
     // Visit a leaf.
     bool visit(
-        const std::vector<foundation::AABB3d>&      bboxes,
+        const AssemblyTree::AABBVector&             bboxes,
         const AssemblyTree::NodeType&               node,
         const ShadingRay::RayType&                  ray,
         const ShadingRay::RayInfoType&              ray_info,
@@ -171,7 +171,7 @@ class AssemblyLeafProbeVisitor
 
     // Visit a leaf.
     bool visit(
-        const std::vector<foundation::AABB3d>&      bboxes,
+        const AssemblyTree::AABBVector&             bboxes,
         const AssemblyTree::NodeType&               node,
         const ShadingRay::RayType&                  ray,
         const ShadingRay::RayInfoType&              ray_info,

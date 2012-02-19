@@ -36,7 +36,6 @@
 #include <cassert>
 #include <cstddef>
 #include <stack>
-#include <vector>
 
 namespace foundation
 {
@@ -45,22 +44,22 @@ namespace foundation
 // Rearrange an array of nodes to follow the van Emde Boas layout.
 //
 
-template <typename Node>
+template <typename NodeVector>
 class TreeOptimizer
 {
   public:
     void optimize_node_layout(
-        std::vector<Node>&          nodes,
-        const size_t                subtree_depth);
+        NodeVector&         nodes,
+        const size_t        subtree_depth);
 
   private:
-    std::stack<size_t>              m_roots;
-    std::vector<Node>               m_optimized_nodes;
+    std::stack<size_t>      m_roots;
+    NodeVector              m_optimized_nodes;
 
     void optimize_subtree(
-        const std::vector<Node>&    nodes,
-        const size_t                node_index,
-        const size_t                subtree_depth);
+        const NodeVector&   nodes,
+        const size_t        node_index,
+        const size_t        subtree_depth);
 };
 
 
@@ -68,10 +67,10 @@ class TreeOptimizer
 // TreeOptimizer class implementation.
 //
 
-template <typename Node>
-void TreeOptimizer<Node>::optimize_node_layout(
-    std::vector<Node>&              nodes,
-    const size_t                    subtree_depth)
+template <typename NodeVector>
+void TreeOptimizer<NodeVector>::optimize_node_layout(
+    NodeVector&             nodes,
+    const size_t            subtree_depth)
 {
     assert(m_roots.empty());
     assert(m_optimized_nodes.empty());
@@ -99,15 +98,15 @@ void TreeOptimizer<Node>::optimize_node_layout(
     clear_release_memory(m_optimized_nodes);
 }
 
-template <typename Node>
-void TreeOptimizer<Node>::optimize_subtree(
-    const std::vector<Node>&        nodes,
-    const size_t                    node_index,
-    const size_t                    subtree_depth)
+template <typename NodeVector>
+void TreeOptimizer<NodeVector>::optimize_subtree(
+    const NodeVector&       nodes,
+    const size_t            node_index,
+    const size_t            subtree_depth)
 {
-    Node& node = m_optimized_nodes[node_index];
+    typename NodeVector::value_type& node = m_optimized_nodes[node_index];
 
-    if (node.get_type() == Node::Leaf)
+    if (node.is_leaf())
         return;
 
     const size_t old_child_index = node.get_child_node_index();

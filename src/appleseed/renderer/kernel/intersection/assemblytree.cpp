@@ -407,7 +407,7 @@ namespace
 //
 
 bool AssemblyLeafVisitor::visit(
-    const vector<AABB3d>&               bboxes,
+    const AssemblyTree::AABBVector&     bboxes,
     const AssemblyTree::NodeType&       node,
     const ShadingRay::RayType&          ray,
     const ShadingRay::RayInfoType&      ray_info,
@@ -521,7 +521,7 @@ bool AssemblyLeafVisitor::visit(
 //
 
 bool AssemblyLeafProbeVisitor::visit(
-    const vector<AABB3d>&               bboxes,
+    const AssemblyTree::AABBVector&     bboxes,
     const AssemblyTree::NodeType&       node,
     const ShadingRay::RayType&          ray,
     const ShadingRay::RayInfoType&      ray_info,

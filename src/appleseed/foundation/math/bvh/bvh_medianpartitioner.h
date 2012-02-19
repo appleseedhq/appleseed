@@ -35,7 +35,6 @@
 // Standard headers.
 #include <cassert>
 #include <cstddef>
-#include <vector>
 
 namespace foundation {
 namespace bvh {
@@ -50,20 +49,21 @@ class MedianPartitioner
 {
   public:
     typedef typename Tree::AABBType AABBType;
+    typedef typename Tree::AABBVector AABBVector;
 
     // Constructor.
     explicit MedianPartitioner(
-        const size_t                    max_leaf_size);
+        const size_t        max_leaf_size);
 
     // Partition a set of items into two distinct sets.
     size_t partition(
-        const std::vector<AABBType>&    bboxes,
-        const size_t                    begin,
-        const size_t                    end,
-        const AABBType&                 bbox);
+        const AABBVector&   bboxes,
+        const size_t        begin,
+        const size_t        end,
+        const AABBType&     bbox);
 
   private:
-    const size_t                        m_max_leaf_size;
+    const size_t            m_max_leaf_size;
 };
 
 
@@ -73,17 +73,17 @@ class MedianPartitioner
 
 template <typename Tree>
 inline MedianPartitioner<Tree>::MedianPartitioner(
-    const size_t                        max_leaf_size)
+    const size_t            max_leaf_size)
   : m_max_leaf_size(max_leaf_size)
 {
 }
 
 template <typename Tree>
 inline size_t MedianPartitioner<Tree>::partition(
-    const std::vector<AABBType>&        bboxes,
-    const size_t                        begin,
-    const size_t                        end,
-    const AABBType&                     bbox)
+    const AABBVector&       bboxes,
+    const size_t            begin,
+    const size_t            end,
+    const AABBType&         bbox)
 {
     const size_t count = end - begin;
     assert(count > 1);

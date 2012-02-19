@@ -161,7 +161,7 @@ class TriangleLeafVisitor
 
     // Visit a leaf.
     bool visit(
-        const std::vector<foundation::AABB3d>&  bboxes,
+        const TriangleTree::AABBVector&         bboxes,
         const TriangleTree::NodeType&           node,
         const ShadingRay::RayType&              ray,
         const ShadingRay::RayInfoType&          ray_info,
@@ -197,7 +197,7 @@ class TriangleLeafProbeVisitor
 
     // Visit a leaf.
     bool visit(
-        const std::vector<foundation::AABB3d>&  bboxes,
+        const TriangleTree::AABBVector&         bboxes,
         const TriangleTree::NodeType&           node,
         const ShadingRay::RayType&              ray,
         const ShadingRay::RayInfoType&          ray_info,
@@ -283,7 +283,7 @@ inline TriangleLeafVisitor::TriangleLeafVisitor(
 }
 
 inline bool TriangleLeafVisitor::visit(
-    const std::vector<foundation::AABB3d>&  bboxes,
+    const TriangleTree::AABBVector&         bboxes,
     const TriangleTree::NodeType&           node,
     const ShadingRay::RayType&              ray,
     const ShadingRay::RayInfoType&          ray_info,
@@ -357,7 +357,7 @@ inline TriangleLeafProbeVisitor::TriangleLeafProbeVisitor(
 }
 
 inline bool TriangleLeafProbeVisitor::visit(
-    const std::vector<foundation::AABB3d>&  bboxes,
+    const TriangleTree::AABBVector&         bboxes,
     const TriangleTree::NodeType&           node,
     const ShadingRay::RayType&              ray,
     const ShadingRay::RayInfoType&          ray_info,

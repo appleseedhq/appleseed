@@ -53,32 +53,33 @@ class PartitionerBase
 {
   public:
     typedef typename Tree::AABBType AABBType;
+    typedef typename Tree::AABBVector AABBVector;
 
     // Initialize the partitioner for a given number of items.
     void initialize(
-        const std::vector<AABBType>&    bboxes);
+        const AABBVector&       bboxes);
 
     // Compute the bounding box of a given set of items.
     AABBType compute_bbox(
-        const std::vector<AABBType>&    bboxes,
-        const size_t                    begin,
-        const size_t                    end) const;
+        const AABBVector&       bboxes,
+        const size_t            begin,
+        const size_t            end) const;
 
     // Return the items ordering.
     const std::vector<size_t>& get_item_ordering() const;
 
   protected:
-    std::vector<size_t>                 m_indices[Tree::Dimension];
+    std::vector<size_t>         m_indices[Tree::Dimension];
 
     void sort_indices(
-        const size_t                    dimension,
-        const size_t                    begin,
-        const size_t                    end,
-        const size_t                    pivot);
+        const size_t            dimension,
+        const size_t            begin,
+        const size_t            end,
+        const size_t            pivot);
 
   private:
-    std::vector<size_t>                 m_tmp;
-    std::vector<uint8>                  m_tags;
+    std::vector<size_t>         m_tmp;
+    std::vector<uint8>          m_tags;
 };
 
 
@@ -88,7 +89,7 @@ class PartitionerBase
 
 template <typename Tree>
 void PartitionerBase<Tree>::initialize(
-    const std::vector<AABBType>&        bboxes)
+    const AABBVector&           bboxes)
 {
     const size_t size = bboxes.size();
 
@@ -102,7 +103,7 @@ void PartitionerBase<Tree>::initialize(
             indices[i] = i;
 
         // Sort the items according to their bounding boxes.
-        BboxSortPredicate<AABBType> predicate(bboxes, d);
+        BboxSortPredicate<AABBVector> predicate(bboxes, d);
         std::sort(indices.begin(), indices.end(), predicate);
     }
 
@@ -112,9 +113,9 @@ void PartitionerBase<Tree>::initialize(
 
 template <typename Tree>
 inline typename Tree::AABBType PartitionerBase<Tree>::compute_bbox(
-    const std::vector<AABBType>&        bboxes,
-    const size_t                        begin,
-    const size_t                        end) const
+    const AABBVector&           bboxes,
+    const size_t                begin,
+    const size_t                end) const
 {
     const std::vector<size_t>& indices = m_indices[0];
 
@@ -129,10 +130,10 @@ inline typename Tree::AABBType PartitionerBase<Tree>::compute_bbox(
 
 template <typename Tree>
 void PartitionerBase<Tree>::sort_indices(
-    const size_t                        dimension,
-    const size_t                        begin,
-    const size_t                        end,
-    const size_t                        pivot)
+    const size_t                dimension,
+    const size_t                begin,
+    const size_t                end,
+    const size_t                pivot)
 {
     const std::vector<size_t>& split_indices = m_indices[dimension];
 
