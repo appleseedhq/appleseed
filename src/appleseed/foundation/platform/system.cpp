@@ -96,7 +96,7 @@ namespace
     {
         assert(level >= 1 && level <= 3);
 
-        DWORD buffer_size;
+        DWORD buffer_size = 0;
         GetLogicalProcessorInformation(0, &buffer_size);
 
         SYSTEM_LOGICAL_PROCESSOR_INFORMATION* buffer =
