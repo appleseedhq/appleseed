@@ -31,6 +31,7 @@
 #include "foundation/utility/test.h"
 
 // Standard headers.
+#include <cstddef>
 #include <vector>
 
 using namespace foundation;
@@ -187,7 +188,7 @@ TEST_SUITE(Foundation_Utility_Memory)
         EXPECT_TRUE(v.empty());
     }
 
-    TEST_CASE(ClearReleaseMemory_GivenVectorWithThousandElements_RetainsVectorCapacity)
+    TEST_CASE(ClearKeepMemory_GivenVectorWithThousandElements_RetainsVectorCapacity)
     {
         vector<int> v(1000);
 
