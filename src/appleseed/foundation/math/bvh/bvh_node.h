@@ -63,7 +63,6 @@ class ALIGN(64) Node
 
     // Set/get the node type.
     void set_type(const Type type);
-    Type get_type() const;
     bool is_interior() const;
     bool is_leaf() const;
 
@@ -130,26 +129,19 @@ template <typename T, size_t N>
 inline void Node<T, N>::set_type(const Type type)
 {
     assert(type == Leaf || type == Interior);
-    m_info &= 0x7FFFFFFFUL;
-    m_info |= type;
-}
-
-template <typename T, size_t N>
-inline typename Node<T, N>::Type Node<T, N>::get_type() const
-{
-    return static_cast<Type>(m_info & 0x80000000UL);
+    m_count = type == Leaf ? 0 : ~0;
 }
 
 template <typename T, size_t N>
 inline bool Node<T, N>::is_interior() const
 {
-    return (m_info & 0x80000000UL) != 0;
+    return m_count == ~0;
 }
 
 template <typename T, size_t N>
 inline bool Node<T, N>::is_leaf() const
 {
-    return (m_info & 0x80000000UL) == 0;
+    return m_count != ~0;
 }
 
 template <typename T, size_t N>
@@ -229,35 +221,33 @@ inline U& Node<T, N>::get_user_data()
 template <typename T, size_t N>
 inline void Node<T, N>::set_child_node_index(const size_t index)
 {
-    assert(index < (1UL << 31));
-    m_info &= 0x80000000UL;
-    m_info |= static_cast<uint32>(index);
+    assert(index <= 0xFFFFFFFFUL);
+    m_info = static_cast<uint32>(index);
 }
 
 template <typename T, size_t N>
 inline size_t Node<T, N>::get_child_node_index() const
 {
-    return static_cast<size_t>(m_info & 0x7FFFFFFFUL);
+    return static_cast<size_t>(m_info);
 }
 
 template <typename T, size_t N>
 inline void Node<T, N>::set_item_index(const size_t index)
 {
-    assert(index < (1UL << 31));
-    m_info &= 0x80000000UL;
-    m_info |= static_cast<uint32>(index);
+    assert(index <= 0xFFFFFFFFUL);
+    m_info = static_cast<uint32>(index);
 }
 
 template <typename T, size_t N>
 inline size_t Node<T, N>::get_item_index() const
 {
-    return static_cast<size_t>(m_info & 0x7FFFFFFFUL);
+    return static_cast<size_t>(m_info);
 }
 
 template <typename T, size_t N>
 inline void Node<T, N>::set_item_count(const size_t count)
 {
-    assert(count <= 0xFFFFFFFFUL);
+    assert(count < 0xFFFFFFFFUL);
     m_count = static_cast<uint32>(count);
 }
 

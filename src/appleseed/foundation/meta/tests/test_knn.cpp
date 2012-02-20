@@ -73,7 +73,7 @@ TEST_SUITE(Foundation_Math_Knn_Builder)
 
         ASSERT_EQ(1, tree.m_nodes.size());
 
-        EXPECT_EQ(knn::Node<double>::Leaf, tree.m_nodes[0].get_type());
+        EXPECT_TRUE(tree.m_nodes[0].is_leaf());
         EXPECT_EQ(0, tree.m_nodes[0].get_point_count());
         EXPECT_EQ(0, tree.m_nodes[0].get_point_index());
     }
@@ -101,15 +101,15 @@ TEST_SUITE(Foundation_Math_Knn_Builder)
 
         ASSERT_EQ(3, tree.m_nodes.size());
 
-        ASSERT_EQ(knn::Node<double>::Interior, tree.m_nodes[0].get_type());
+        ASSERT_TRUE(tree.m_nodes[0].is_interior());
         EXPECT_EQ(2, tree.m_nodes[0].get_point_count());
         EXPECT_EQ(0, tree.m_nodes[0].get_point_index());
 
-        ASSERT_EQ(knn::Node<double>::Leaf, tree.m_nodes[1].get_type());
+        ASSERT_TRUE(tree.m_nodes[1].is_leaf());
         EXPECT_EQ(1, tree.m_nodes[1].get_point_count());
         EXPECT_EQ(0, tree.m_nodes[1].get_point_index());
 
-        ASSERT_EQ(knn::Node<double>::Leaf, tree.m_nodes[2].get_type());
+        ASSERT_TRUE(tree.m_nodes[2].is_leaf());
         EXPECT_EQ(1, tree.m_nodes[2].get_point_count());
         EXPECT_EQ(1, tree.m_nodes[2].get_point_index());
     }

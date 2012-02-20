@@ -54,12 +54,11 @@ class Node
 
     // Node types.
     typedef uint32 Type;
-    static const Type Leaf;
-    static const Type Interior;
+    static const Type Leaf     = 0x00000000UL;
+    static const Type Interior = 0x80000000UL;
 
     // Set/get the node type.
     void set_type(const Type type);
-    Type get_type() const;
     bool is_interior() const;
     bool is_leaf() const;
 
@@ -113,36 +112,25 @@ class Node
 //
 
 template <typename T>
-const typename Node<T>::Type Node<T>::Leaf = 0x00000000UL;
-
-template <typename T>
-const typename Node<T>::Type Node<T>::Interior = 0x80000000UL;
-
-// Set/get the node type.
-template <typename T>
 inline void Node<T>::set_type(const Type type)
 {
     assert(type == Leaf || type == Interior);
     m_info &= 0x7FFFFFFFUL;
     m_info |= type;
 }
-template <typename T>
-inline typename Node<T>::Type Node<T>::get_type() const
-{
-    return static_cast<Type>(m_info & 0x80000000UL);
-}
+
 template <typename T>
 inline bool Node<T>::is_interior() const
 {
     return (m_info & 0x80000000UL) != 0;
 }
+
 template <typename T>
 inline bool Node<T>::is_leaf() const
 {
     return (m_info & 0x80000000UL) == 0;
 }
 
-// Set/get the child node index (interior nodes only).
 template <typename T>
 inline void Node<T>::set_child_node_index(const size_t index)
 {
@@ -150,13 +138,13 @@ inline void Node<T>::set_child_node_index(const size_t index)
     m_info &= 0x80000003UL;
     m_info |= static_cast<uint32>(index) << 2;
 }
+
 template <typename T>
 inline size_t Node<T>::get_child_node_index() const
 {
     return static_cast<size_t>((m_info & 0x7FFFFFFFUL) >> 2);
 }
 
-// Set/get the splitting dimension (interior nodes only).
 template <typename T>
 inline void Node<T>::set_split_dim(const size_t dim)
 {
@@ -164,25 +152,25 @@ inline void Node<T>::set_split_dim(const size_t dim)
     m_info &= 0xFFFFFFFCUL;
     m_info |= static_cast<uint32>(dim);
 }
+
 template <typename T>
 inline size_t Node<T>::get_split_dim() const
 {
     return static_cast<size_t>(m_info & 0x00000003UL);
 }
 
-// Set/get the splitting abscissa (interior nodes only).
 template <typename T>
 inline void Node<T>::set_split_abs(const ValueType abscissa)
 {
     m_abscissa = abscissa;
 }
+
 template <typename T>
 inline T Node<T>::get_split_abs() const
 {
     return m_abscissa;
 }
 
-// Set/get the leaf index (leaf nodes only).
 template <typename T>
 inline void Node<T>::set_leaf_index(const size_t index)
 {
@@ -190,19 +178,20 @@ inline void Node<T>::set_leaf_index(const size_t index)
     m_info &= 0x80000000UL;
     m_info |= static_cast<uint32>(index);
 }
+
 template <typename T>
 inline size_t Node<T>::get_leaf_index() const
 {
     return static_cast<size_t>(m_info & 0x7FFFFFFFUL);
 }
 
-// Set/get the leaf size (leaf nodes only).
 template <typename T>
 inline void Node<T>::set_leaf_size(const size_t size)
 {
     typedef typename TypeConv<T>::UInt UInt;
     m_abscissa = binary_cast<T>(static_cast<UInt>(size));
 }
+
 template <typename T>
 inline size_t Node<T>::get_leaf_size() const
 {

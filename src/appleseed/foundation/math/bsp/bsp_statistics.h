@@ -171,7 +171,7 @@ void TreeStatistics<Tree, Builder>::collect_stats_recurse(
     const AABBType&         bbox,
     const size_t            depth)
 {
-    if (node.get_type() == NodeType::Leaf)
+    if (node.is_leaf())
     {
         // Gather leaf statistics.
         const size_t leaf_size = node.get_leaf_size();

@@ -52,16 +52,16 @@ TEST_SUITE(Foundation_Math_BSP_Node)
         NodeType node;
 
         node.set_type(NodeType::Leaf);
-        EXPECT_EQ(NodeType::Leaf, node.get_type());
+        EXPECT_TRUE(node.is_leaf());
         EXPECT_TRUE(node.is_leaf());
 
         node.set_leaf_index(42);
-        EXPECT_EQ(NodeType::Leaf, node.get_type());
+        EXPECT_TRUE(node.is_leaf());
         EXPECT_EQ(42, node.get_leaf_index());
 
         const size_t LeafIndex = (size_t(1) << 31) - 1;
         node.set_leaf_index(LeafIndex);
-        EXPECT_EQ(NodeType::Leaf, node.get_type());
+        EXPECT_TRUE(node.is_leaf());
         EXPECT_EQ(LeafIndex, node.get_leaf_index());
     }
 
@@ -70,31 +70,31 @@ TEST_SUITE(Foundation_Math_BSP_Node)
         NodeType node;
 
         node.set_type(NodeType::Interior);
-        EXPECT_EQ(NodeType::Interior, node.get_type());
+        EXPECT_TRUE(node.is_interior());
         EXPECT_TRUE(node.is_interior());
 
         node.set_child_node_index(42);
-        EXPECT_EQ(NodeType::Interior, node.get_type());
+        EXPECT_TRUE(node.is_interior());
         EXPECT_EQ(42, node.get_child_node_index());
 
         const size_t ChildIndex = (size_t(1) << 29) - 1;
         node.set_child_node_index(ChildIndex);
-        EXPECT_EQ(NodeType::Interior, node.get_type());
+        EXPECT_TRUE(node.is_interior());
         EXPECT_EQ(ChildIndex, node.get_child_node_index());
 
         node.set_split_dim(1);
-        EXPECT_EQ(NodeType::Interior, node.get_type());
+        EXPECT_TRUE(node.is_interior());
         EXPECT_EQ(ChildIndex, node.get_child_node_index());
         EXPECT_EQ(1, node.get_split_dim());
 
         node.set_split_abs(66.0);
-        EXPECT_EQ(NodeType::Interior, node.get_type());
+        EXPECT_TRUE(node.is_interior());
         EXPECT_EQ(ChildIndex, node.get_child_node_index());
         EXPECT_EQ(1, node.get_split_dim());
         EXPECT_EQ(66.0, node.get_split_abs());
 
         node.set_leaf_size(33);
-        EXPECT_EQ(NodeType::Interior, node.get_type());
+        EXPECT_TRUE(node.is_interior());
         EXPECT_EQ(ChildIndex, node.get_child_node_index());
         EXPECT_EQ(1, node.get_split_dim());
         EXPECT_EQ(33, node.get_leaf_size());

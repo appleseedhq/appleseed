@@ -460,7 +460,7 @@ void Builder<Tree, LeafFactory, LeafSplitter, Timer>::subdivide(
 
         // Get leaf node.
         NodeType& node = tree.m_nodes[leaf_record.get_node_index()];
-        assert(node.get_type() == NodeType::Leaf);
+        assert(node.is_leaf());
 
         // Get leaf.
         const size_t leaf_index = node.get_leaf_index();

@@ -149,7 +149,7 @@ void TreeStatistics<Tree, Builder>::collect_stats_recurse(
     const NodeType&         node,
     const size_t            depth)
 {
-    if (node.get_type() == NodeType::Leaf)
+    if (node.is_leaf())
     {
         m_leaf_depth.insert(depth);
         m_leaf_size.insert(node.get_point_count());
