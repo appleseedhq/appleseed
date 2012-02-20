@@ -46,7 +46,7 @@ namespace bvh {
 //
 
 template <typename T, size_t N>
-class SSE_ALIGN Node
+class ALIGN(64) Node
 {
   public:
     // Value type and dimension.
@@ -74,7 +74,7 @@ class SSE_ALIGN Node
     AABBType get_right_bbox() const;
 
     // Get user data (leaf nodes only).
-    static const size_t MaxUserDataSize = 12 * sizeof(ValueType);
+    static const size_t MaxUserDataSize;
     template <typename U> void set_user_data(const U& data);
     template <typename U> const U& get_user_data() const;
     template <typename U> U& get_user_data();
@@ -116,9 +116,9 @@ class SSE_ALIGN Node
     // The maximum size of a single BVH is 2^31 = 2,147,483,648 nodes.
     //
 
-    ValueType   m_bbox_data[12];
-    uint32      m_info;
-    uint32      m_count;
+    uint32              m_info;
+    uint32              m_count;
+    SSE_ALIGN ValueType m_bbox_data[12];
 };
 
 
@@ -199,6 +199,9 @@ inline AABB<T, N> Node<T, N>::get_right_bbox() const
     bbox.max.z = m_bbox_data[11];
     return bbox;
 }
+
+template <typename T, size_t N>
+const size_t Node<T, N>::MaxUserDataSize = sizeof(Node<T, N>) - 8;
 
 template <typename T, size_t N>
 template <typename U>
