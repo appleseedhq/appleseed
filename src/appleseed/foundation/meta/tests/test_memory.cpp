@@ -27,6 +27,7 @@
 //
 
 // appleseed.foundation headers.
+#include "foundation/utility/alignedallocator.h"
 #include "foundation/utility/memory.h"
 #include "foundation/utility/test.h"
 
@@ -170,6 +171,20 @@ TEST_SUITE(Foundation_Utility_Memory)
     TEST_CASE(ClearReleaseMemory_GivenVectorWithThousandElements_ResetsVectorCapacityToDefaultValue)
     {
         vector<int> v;
+        const size_t default_capacity = v.capacity();
+
+        v.resize(1000);
+
+        clear_release_memory(v);
+
+        EXPECT_EQ(default_capacity, v.capacity());
+    }
+
+    TEST_CASE(ClearReleaseMemory_GivenVectorWithThousandElements_UsingAlignedAllocator_ResetsVectorCapacityToDefaultValue)
+    {
+        typedef AlignedAllocator<int> Allocator;
+
+        vector<int, AlignedAllocator<int> > v(Allocator(32));
         const size_t default_capacity = v.capacity();
 
         v.resize(1000);

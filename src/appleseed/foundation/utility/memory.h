@@ -192,7 +192,7 @@ inline void ensure_minimum_size(
 template <typename Container>
 inline void clear_release_memory(Container& container)
 {
-    Container().swap(container);
+    Container(container.get_allocator()).swap(container);
 
     assert(container.empty());
 }
