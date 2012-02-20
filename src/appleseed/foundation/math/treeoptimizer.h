@@ -48,16 +48,16 @@ template <typename NodeVector>
 class TreeOptimizer
 {
   public:
-    void optimize_node_layout(
-        NodeVector&         nodes,
-        const size_t        subtree_depth);
+    explicit TreeOptimizer(NodeVector& nodes);
+
+    void optimize_node_layout(const size_t subtree_depth);
 
   private:
-    std::stack<size_t>      m_roots;
+    NodeVector&             m_nodes;
     NodeVector              m_optimized_nodes;
+    std::stack<size_t>      m_roots;
 
     void optimize_subtree(
-        const NodeVector&   nodes,
         const size_t        node_index,
         const size_t        subtree_depth);
 };
@@ -68,39 +68,43 @@ class TreeOptimizer
 //
 
 template <typename NodeVector>
-void TreeOptimizer<NodeVector>::optimize_node_layout(
-    NodeVector&             nodes,
-    const size_t            subtree_depth)
+TreeOptimizer<NodeVector>::TreeOptimizer(NodeVector& nodes)
+  : m_nodes(nodes)
+  , m_optimized_nodes(nodes.get_allocator())
 {
-    assert(m_roots.empty());
+}
+
+template <typename NodeVector>
+void TreeOptimizer<NodeVector>::optimize_node_layout(const size_t subtree_depth)
+{
+    assert(!m_nodes.empty());
     assert(m_optimized_nodes.empty());
-    assert(!nodes.empty());
+    assert(m_roots.empty());
     assert(subtree_depth > 0);
 
-    m_optimized_nodes.reserve(nodes.size());
+    m_optimized_nodes.reserve(m_nodes.size());
 
     m_roots.push(0);
-    m_optimized_nodes.push_back(nodes[0]);
+    m_optimized_nodes.push_back(m_nodes[0]);
 
     while (!m_roots.empty())
     {
         const size_t root_index = m_roots.top();
         m_roots.pop();
 
-        optimize_subtree(nodes, root_index, subtree_depth);
+        optimize_subtree(root_index, subtree_depth);
     }
 
     assert(m_roots.empty());
-    assert(m_optimized_nodes.size() == nodes.size());
+    assert(m_optimized_nodes.size() == m_nodes.size());
 
-    m_optimized_nodes.swap(nodes);
+    m_optimized_nodes.swap(m_nodes);
 
     clear_release_memory(m_optimized_nodes);
 }
 
 template <typename NodeVector>
 void TreeOptimizer<NodeVector>::optimize_subtree(
-    const NodeVector&       nodes,
     const size_t            node_index,
     const size_t            subtree_depth)
 {
@@ -114,13 +118,13 @@ void TreeOptimizer<NodeVector>::optimize_subtree(
 
     node.set_child_node_index(new_child_index);
 
-    m_optimized_nodes.push_back(nodes[old_child_index + 0]);
-    m_optimized_nodes.push_back(nodes[old_child_index + 1]);
+    m_optimized_nodes.push_back(m_nodes[old_child_index + 0]);
+    m_optimized_nodes.push_back(m_nodes[old_child_index + 1]);
 
     if (subtree_depth > 1)
     {
-        optimize_subtree(nodes, new_child_index + 0, subtree_depth - 1);
-        optimize_subtree(nodes, new_child_index + 1, subtree_depth - 1);
+        optimize_subtree(new_child_index + 0, subtree_depth - 1);
+        optimize_subtree(new_child_index + 1, subtree_depth - 1);
     }
     else
     {

@@ -145,8 +145,9 @@ TriangleTree::TriangleTree(const Arguments& arguments)
         move_triangles_to_leaves();
 
         // Optimize the tree layout in memory.
-        TreeOptimizer<NodeVector> tree_optimizer;
-        tree_optimizer.optimize_node_layout(m_nodes, TriangleTreeSubtreeDepth);
+        TreeOptimizer<NodeVector> tree_optimizer(m_nodes);
+        tree_optimizer.optimize_node_layout(TriangleTreeSubtreeDepth);
+        assert(m_nodes.size() == m_nodes.capacity());
 
         RENDERER_LOG_DEBUG(
             "triangle tree node array alignment: %s",
