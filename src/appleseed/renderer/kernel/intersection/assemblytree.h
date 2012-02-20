@@ -42,6 +42,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/bvh.h"
+#include "foundation/utility/alignedallocator.h"
 #include "foundation/utility/lazy.h"
 #include "foundation/utility/version.h"
 
@@ -61,7 +62,7 @@ namespace renderer
 //
 
 class AssemblyTree
-  : public foundation::bvh::Tree<double, 3>
+  : public foundation::bvh::Tree<double, 3, foundation::AlignedAllocator<void> >
 {
   public:
     // Constructor, builds the tree for a given scene.

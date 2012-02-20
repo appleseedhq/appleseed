@@ -44,6 +44,7 @@
 #include "foundation/math/area.h"
 #include "foundation/math/permutation.h"
 #include "foundation/math/treeoptimizer.h"
+#include "foundation/platform/system.h"
 #include "foundation/platform/timer.h"
 #include "foundation/utility/memory.h"
 
@@ -92,7 +93,8 @@ TriangleTree::Arguments::Arguments(
 }
 
 TriangleTree::TriangleTree(const Arguments& arguments)
-  : m_triangle_tree_uid(arguments.m_triangle_tree_uid)
+  : TreeType(AlignedAllocator<void>(System::get_l1_data_cache_line_size()))
+  , m_triangle_tree_uid(arguments.m_triangle_tree_uid)
 {
     // Collect triangles intersecting the bounding box of this tree.
     collect_triangles(arguments);

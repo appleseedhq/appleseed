@@ -41,6 +41,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/intersection.h"
 #include "foundation/math/permutation.h"
+#include "foundation/platform/system.h"
 #include "foundation/platform/timer.h"
 #include "foundation/utility/string.h"
 
@@ -78,7 +79,8 @@ typedef bvh::TreeStatistics<
 //
 
 AssemblyTree::AssemblyTree(const Scene& scene)
-  : m_scene(scene)
+  : TreeType(AlignedAllocator<void>(System::get_l1_data_cache_line_size()))
+  , m_scene(scene)
 {
     update();
 }
