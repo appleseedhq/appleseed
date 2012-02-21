@@ -209,7 +209,7 @@ void Builder<Tree, Partitioner>::subdivide_recurse(
     {
         // Turn the parent node into a leaf node for this set of items.
         NodeType& node = tree.m_nodes[node_index];
-        node.set_type(NodeType::Leaf);
+        node.make_leaf();
         node.set_item_index(begin);
         node.set_item_count(end - begin);
     }
@@ -225,7 +225,7 @@ void Builder<Tree, Partitioner>::subdivide_recurse(
 
         // Turn the parent node into an interior node.
         NodeType& node = tree.m_nodes[node_index];
-        node.set_type(NodeType::Interior);
+        node.make_interior();
         node.set_left_bbox(left_bbox);
         node.set_right_bbox(right_bbox);
         node.set_child_node_index(left_node_index);

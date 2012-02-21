@@ -52,13 +52,9 @@ class Node
     // Value type.
     typedef T ValueType;
 
-    // Node types.
-    typedef uint32 Type;
-    static const Type Leaf     = 0x00000003UL;
-    static const Type Interior = 0x00000000UL;
-
     // Set/get the node type.
-    void set_type(const Type type);
+    void make_interior();
+    void make_leaf();
     bool is_interior() const;
     bool is_leaf() const;
 
@@ -110,26 +106,31 @@ class Node
 // Node class implementation.
 //
 
-// Set/get the node type.
 template <typename T>
-inline void Node<T>::set_type(const Type type)
+inline void Node<T>::make_interior()
 {
-    assert(type == Leaf || type == Interior);
-    m_info &= 0xFFFFFFFCUL;
-    m_info |= type;
+    if ((m_info & 0x00000003UL) == 0x00000003UL)
+        m_info &= 0xFFFFFFFCUL;
 }
+
+template <typename T>
+inline void Node<T>::make_leaf()
+{
+    m_info |= 0x00000003UL;
+}
+
 template <typename T>
 inline bool Node<T>::is_interior() const
 {
-    return (m_info & 0x00000003UL) != Leaf;
+    return (m_info & 0x00000003UL) != 0x00000003UL;
 }
+
 template <typename T>
 inline bool Node<T>::is_leaf() const
 {
-    return (m_info & 0x00000003UL) == Leaf;
+    return (m_info & 0x00000003UL) == 0x00000003UL;
 }
 
-// Set/get the solid bit.
 template <typename T>
 inline void Node<T>::set_solid_bit(const bool solid)
 {
@@ -137,18 +138,19 @@ inline void Node<T>::set_solid_bit(const bool solid)
          m_info |= 0x80000000UL;
     else m_info &= 0x7FFFFFFFUL;
 }
+
 template <typename T>
 inline bool Node<T>::is_empty() const
 {
     return (m_info & 0x80000000UL) == 0;
 }
+
 template <typename T>
 inline bool Node<T>::is_solid() const
 {
     return (m_info & 0x80000000UL) != 0;
 }
 
-// Set/get the child node index (interior nodes only).
 template <typename T>
 inline void Node<T>::set_child_node_index(const size_t index)
 {
@@ -156,13 +158,13 @@ inline void Node<T>::set_child_node_index(const size_t index)
     m_info &= 0x80000003UL;
     m_info |= static_cast<uint32>(index) << 2;
 }
+
 template <typename T>
 inline size_t Node<T>::get_child_node_index() const
 {
     return static_cast<size_t>((m_info & 0x7FFFFFFCUL) >> 2);
 }
 
-// Set/get the splitting dimension (interior nodes only).
 template <typename T>
 inline void Node<T>::set_split_dim(const size_t dim)
 {
@@ -170,18 +172,19 @@ inline void Node<T>::set_split_dim(const size_t dim)
     m_info &= 0xFFFFFFFCUL;
     m_info |= static_cast<uint32>(dim);
 }
+
 template <typename T>
 inline size_t Node<T>::get_split_dim() const
 {
     return static_cast<size_t>(m_info & 0x00000003UL);
 }
 
-// Set/get the splitting abscissa (interior nodes only).
 template <typename T>
 inline void Node<T>::set_split_abs(const ValueType abscissa)
 {
     m_abscissa = abscissa;
 }
+
 template <typename T>
 inline T Node<T>::get_split_abs() const
 {

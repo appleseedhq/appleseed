@@ -52,7 +52,7 @@ TEST_SUITE(Foundation_Math_BSP_Node)
     {
         NodeType node;
 
-        node.set_type(NodeType::Leaf);
+        node.make_leaf();
         EXPECT_TRUE(node.is_leaf());
 
         node.set_leaf_index(42);
@@ -69,7 +69,7 @@ TEST_SUITE(Foundation_Math_BSP_Node)
     {
         NodeType node;
 
-        node.set_type(NodeType::Interior);
+        node.make_interior();
         EXPECT_TRUE(node.is_interior());
 
         node.set_child_node_index(42);

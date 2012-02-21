@@ -56,13 +56,9 @@ class ALIGN(64) Node
     // AABB type.
     typedef AABB<T, N> AABBType;
 
-    // Node types.
-    typedef uint32 Type;
-    static const Type Leaf     = 0x00000000UL;
-    static const Type Interior = 0x80000000UL;
-
     // Set/get the node type.
-    void set_type(const Type type);
+    void make_interior();
+    void make_leaf();
     bool is_interior() const;
     bool is_leaf() const;
 
@@ -126,10 +122,16 @@ class ALIGN(64) Node
 //
 
 template <typename T, size_t N>
-inline void Node<T, N>::set_type(const Type type)
+inline void Node<T, N>::make_interior()
 {
-    assert(type == Leaf || type == Interior);
-    m_count = type == Leaf ? 0 : ~0;
+    m_count = ~0;
+}
+
+template <typename T, size_t N>
+inline void Node<T, N>::make_leaf()
+{
+    if (m_count == ~0)
+        m_count = 0;
 }
 
 template <typename T, size_t N>

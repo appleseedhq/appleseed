@@ -195,7 +195,7 @@ void Builder<T, N>::partition(
     if (count <= 1)
     {
         NodeType& parent_node = m_tree.m_nodes[parent_node_index];
-        parent_node.set_type(NodeType::Leaf);
+        parent_node.make_leaf();
         parent_node.set_point_index(begin);
         parent_node.set_point_count(count);
     }
@@ -229,7 +229,7 @@ void Builder<T, N>::partition(
         m_tree.m_nodes.push_back(NodeType());
 
         NodeType& parent_node = m_tree.m_nodes[parent_node_index];
-        parent_node.set_type(NodeType::Interior);
+        parent_node.make_interior();
         parent_node.set_split_dim(split.m_dimension);
         parent_node.set_split_abs(split.m_abscissa);
         parent_node.set_child_node_index(left_node_index);
