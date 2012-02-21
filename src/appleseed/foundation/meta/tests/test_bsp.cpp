@@ -41,10 +41,11 @@
 #include <memory>
 #include <vector>
 
+using namespace foundation;
+using namespace std;
+
 TEST_SUITE(Foundation_Math_BSP_Node)
 {
-    using namespace foundation;
-
     typedef bsp::Node<double> NodeType;
 
     TEST_CASE(TestLeafNode)
@@ -52,7 +53,6 @@ TEST_SUITE(Foundation_Math_BSP_Node)
         NodeType node;
 
         node.set_type(NodeType::Leaf);
-        EXPECT_TRUE(node.is_leaf());
         EXPECT_TRUE(node.is_leaf());
 
         node.set_leaf_index(42);
@@ -70,7 +70,6 @@ TEST_SUITE(Foundation_Math_BSP_Node)
         NodeType node;
 
         node.set_type(NodeType::Interior);
-        EXPECT_TRUE(node.is_interior());
         EXPECT_TRUE(node.is_interior());
 
         node.set_child_node_index(42);
@@ -103,9 +102,6 @@ TEST_SUITE(Foundation_Math_BSP_Node)
 
 TEST_SUITE(Foundation_Math_BSP_Intersector)
 {
-    using namespace foundation;
-    using namespace std;
-
     class Leaf
       : public NonCopyable
     {
