@@ -115,9 +115,9 @@ class ALIGN(64) Node
     // The maximum size of a single BVH is 2^31 = 2,147,483,648 nodes.
     //
 
-    uint32              m_info;
-    uint32              m_count;
-    SSE_ALIGN ValueType m_bbox_data[12];
+    uint32                  m_info;
+    uint32                  m_count;
+    SSE_ALIGN ValueType     m_bbox_data[4 * N];
 };
 
 
@@ -147,35 +147,34 @@ inline bool Node<T, N>::is_leaf() const
 template <typename T, size_t N>
 inline void Node<T, N>::set_left_bbox(const AABBType& bbox)
 {
-    m_bbox_data[ 0] = bbox.min.x;
-    m_bbox_data[ 2] = bbox.max.x;
-    m_bbox_data[ 4] = bbox.min.y;
-    m_bbox_data[ 6] = bbox.max.y;
-    m_bbox_data[ 8] = bbox.min.z;
-    m_bbox_data[10] = bbox.max.z;
+    for (size_t i = 0; i < N; ++i)
+    {
+        m_bbox_data[i * 4 + 0] = bbox.min[i];
+        m_bbox_data[i * 4 + 2] = bbox.max[i];
+    }
 }
 
 template <typename T, size_t N>
 inline void Node<T, N>::set_right_bbox(const AABBType& bbox)
 {
-    m_bbox_data[ 1] = bbox.min.x;
-    m_bbox_data[ 3] = bbox.max.x;
-    m_bbox_data[ 5] = bbox.min.y;
-    m_bbox_data[ 7] = bbox.max.y;
-    m_bbox_data[ 9] = bbox.min.z;
-    m_bbox_data[11] = bbox.max.z;
+    for (size_t i = 0; i < N; ++i)
+    {
+        m_bbox_data[i * 4 + 1] = bbox.min[i];
+        m_bbox_data[i * 4 + 3] = bbox.max[i];
+    }
 }
 
 template <typename T, size_t N>
 inline AABB<T, N> Node<T, N>::get_left_bbox() const
 {
     AABBType bbox;
-    bbox.min.x = m_bbox_data[ 0];
-    bbox.min.y = m_bbox_data[ 4];
-    bbox.min.z = m_bbox_data[ 8];
-    bbox.max.x = m_bbox_data[ 2];
-    bbox.max.y = m_bbox_data[ 6];
-    bbox.max.z = m_bbox_data[10];
+
+    for (size_t i = 0; i < N; ++i)
+    {
+        bbox.min[i] = m_bbox_data[i * 4 + 0];
+        bbox.max[i] = m_bbox_data[i * 4 + 2];
+    }
+
     return bbox;
 }
 
@@ -183,12 +182,13 @@ template <typename T, size_t N>
 inline AABB<T, N> Node<T, N>::get_right_bbox() const
 {
     AABBType bbox;
-    bbox.min.x = m_bbox_data[ 1];
-    bbox.min.y = m_bbox_data[ 5];
-    bbox.min.z = m_bbox_data[ 9];
-    bbox.max.x = m_bbox_data[ 3];
-    bbox.max.y = m_bbox_data[ 7];
-    bbox.max.z = m_bbox_data[11];
+
+    for (size_t i = 0; i < N; ++i)
+    {
+        bbox.min[i] = m_bbox_data[i * 4 + 1];
+        bbox.max[i] = m_bbox_data[i * 4 + 3];
+    }
+
     return bbox;
 }
 
