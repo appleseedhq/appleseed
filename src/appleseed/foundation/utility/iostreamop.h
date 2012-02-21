@@ -32,6 +32,7 @@
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
 #include "foundation/image/spectrum.h"
+#include "foundation/math/aabb.h"
 #include "foundation/math/matrix.h"
 #include "foundation/math/quaternion.h"
 #include "foundation/math/ray.h"
@@ -74,6 +75,12 @@ template <typename T, size_t N>
 std::ostream& operator<<(std::ostream& s, const Vector<T, N>& vector);
 template <typename T, size_t N>
 std::istream& operator>>(std::istream& s, Vector<T, N>& vector);
+
+// foundation::AABB.
+template <typename T, size_t N>
+std::ostream& operator<<(std::ostream& s, const AABB<T, N>& aabb);
+template <typename T, size_t N>
+std::istream& operator>>(std::istream& s, AABB<T, N>& aabb);
 
 // foundation::Matrix.
 template <typename T, size_t M, size_t N>
@@ -224,6 +231,20 @@ template <typename T, size_t N>
 std::istream& operator>>(std::istream& s, Vector<T, N>& vector)
 {
     return iostreamop_impl::read_sequence(s, vector, N);
+}
+
+template <typename T, size_t N>
+std::ostream& operator<<(std::ostream& s, const AABB<T, N>& aabb)
+{
+    return s << aabb.min << ' ' << aabb.max;
+}
+
+template <typename T, size_t N>
+std::istream& operator>>(std::istream& s, AABB<T, N>& aabb)
+{
+    s >> aabb.min;
+    s >> aabb.max;
+    return s;
 }
 
 template <typename T, size_t M, size_t N>

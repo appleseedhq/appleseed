@@ -27,11 +27,14 @@
 //
 
 // appleseed.foundation headers.
+#include "foundation/math/aabb.h"
+#include "foundation/math/vector.h"
 #include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.
+#include <iomanip>
 #include <sstream>
 
 using namespace foundation;
@@ -150,5 +153,25 @@ TEST_SUITE(Foundation_Utility_IOStreamOp)
         {
             sstr >> array;
         });
+    }
+
+    TEST_CASE(Write3DAABBToStream)
+    {
+        stringstream sstr;
+        sstr << fixed << setprecision(1);
+        sstr << AABB3d(Vector3d(-1.0, -2.0, -3.0), Vector3d(1.0, 2.0, 3.0));
+
+        EXPECT_EQ("-1.0 -2.0 -3.0 1.0 2.0 3.0", sstr.str());
+    }
+
+    TEST_CASE(Read3DAABBFromStream)
+    {
+        stringstream sstr;
+        sstr << "-1.0 -2.0 -3.0 1.0 2.0 3.0";
+
+        AABB3d aabb;
+        sstr >> aabb;
+
+        EXPECT_EQ(AABB3d(Vector3d(-1.0, -2.0, -3.0), Vector3d(1.0, 2.0, 3.0)), aabb);
     }
 }
