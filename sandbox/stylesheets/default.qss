@@ -516,7 +516,8 @@ QHeaderView::section
     padding: 3px 11px 4px 11px;
 }
 
-QHeaderView::section:first
+QHeaderView::section:first,
+QHeaderView::section:only-one
 {
     border-left: 0px;
 }
