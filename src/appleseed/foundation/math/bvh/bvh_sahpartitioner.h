@@ -92,7 +92,7 @@ inline SAHPartitioner<AABBVector>::SAHPartitioner(
   , m_interior_node_traversal_cost(interior_node_traversal_cost)
   , m_triangle_intersection_cost(triangle_intersection_cost)
 {
-    m_left_areas.resize(m_bboxes.size());
+    m_left_areas.resize(bboxes.size());
 }
 
 template <typename AABBVector>

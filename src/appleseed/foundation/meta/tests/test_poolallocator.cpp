@@ -296,7 +296,7 @@ TEST_SUITE(Foundation_Utility_PoolAllocator)
 
         #define SET_DEFAULT_CONSTRUCTABLE_OFF( x )              \
         template< typename T >                                  \
-        struct StlAllocatorTestbed::Policy< x<T> >              \
+        struct Policy< x<T> >                                   \
         {                                                       \
             static x<T> Construct( const x<T>& a )              \
             {                                                   \
@@ -1452,7 +1452,10 @@ TEST_SUITE(Foundation_Utility_PoolAllocator)
         StlAllocatorTestbed::TestAlloc(allocator);
     }
 
-    SET_DEFAULT_CONSTRUCTABLE_OFF(AlignedAllocator);
+    namespace StlAllocatorTestbed
+    {
+        SET_DEFAULT_CONSTRUCTABLE_OFF(AlignedAllocator);
+    }
 
     TEST_CASE(STLAllocatorTestbed_AlignedAllocator)
     {
