@@ -340,6 +340,7 @@ source_group ("foundation\\meta\\benchmarks" FILES
 
 set (foundation_meta_tests_sources
     foundation/meta/tests/test_aabb.cpp
+    foundation/meta/tests/test_allocators.cpp
     foundation/meta/tests/test_analysis.cpp
     foundation/meta/tests/test_attributeset.cpp
     foundation/meta/tests/test_autoreleaseptr.cpp
@@ -386,7 +387,6 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_path.cpp
     foundation/meta/tests/test_permutation.cpp
     foundation/meta/tests/test_pointcloudsampling.cpp
-    foundation/meta/tests/test_poolallocator.cpp
     foundation/meta/tests/test_population.cpp
     foundation/meta/tests/test_preprocessor.cpp
     foundation/meta/tests/test_qmc.cpp
