@@ -94,7 +94,6 @@ Intersector::Intersector(
   : m_trace_context(trace_context)
   , m_print_statistics(print_statistics)
   , m_report_self_intersections(report_self_intersections)
-  , m_assembly_tree_aabb(m_trace_context.get_assembly_tree().get_bbox())
   , m_ray_count(0)
   , m_probe_ray_count(0)
 {

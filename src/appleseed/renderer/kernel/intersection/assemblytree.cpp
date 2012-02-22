@@ -56,25 +56,6 @@ namespace renderer
 {
 
 //
-// Specializations.
-//
-
-typedef bvh::SAHPartitioner<
-    AssemblyTree
-> AssemblyTreePartitioner;
-
-typedef bvh::Builder<
-    AssemblyTree,
-    AssemblyTreePartitioner
-> AssemblyTreeBuilder;
-
-typedef bvh::TreeStatistics<
-    AssemblyTree,
-    AssemblyTreeBuilder
-> AssemblyTreeStatistics;
-
-
-//
 // AssemblyTree class implementation.
 //
 
@@ -116,9 +97,120 @@ size_t AssemblyTree::get_memory_size() const
         + m_assembly_instances.capacity() * sizeof(UniqueID);
 }
 
+void AssemblyTree::collect_assembly_instances(AABBVector& assembly_instance_bboxes)
+{
+    for (const_each<AssemblyInstanceContainer> i = m_scene.assembly_instances(); i; ++i)
+    {
+        // Retrieve the assembly instance.
+        const AssemblyInstance& assembly_instance = *i;
+
+        // Retrieve the assembly.
+        const Assembly& assembly = assembly_instance.get_assembly();
+
+        // Skip empty assemblies.
+        if (assembly.object_instances().empty())
+            continue;
+
+        // Store the assembly instance.
+        m_assembly_instances.push_back(assembly_instance.get_uid());
+
+        // Compute and store the assembly instance bounding box.
+        AABB3d assembly_instance_bbox(assembly_instance.compute_parent_bbox());
+        assembly_instance_bbox.robust_grow(1.0e-15);
+        assembly_instance_bboxes.push_back(assembly_instance_bbox);
+    }
+}
+
+void AssemblyTree::rebuild_assembly_tree()
+{
+    // Clear the current tree.
+    clear();
+    m_assembly_instances.clear();
+
+    // Collect all assembly instances of the scene.
+    AABBVector assembly_instance_bboxes;
+    collect_assembly_instances(assembly_instance_bboxes);
+
+    // Log a progress message.
+    RENDERER_LOG_INFO(
+        "building assembly tree (%s %s)...",
+        pretty_int(m_assembly_instances.size()).c_str(),
+        plural(m_assembly_instances.size(), "assembly instance").c_str());
+
+    // Build the assembly tree.
+    typedef bvh::SAHPartitioner<AABBVector> Partitioner;
+    typedef bvh::Builder<AssemblyTree, Partitioner> Builder;
+    Partitioner partitioner(assembly_instance_bboxes, 1);
+    Builder builder;
+    builder.build<DefaultWallclockTimer>(
+        *this,
+        m_assembly_instances.size(),
+        partitioner);
+
+    if (!m_assembly_instances.empty())
+    {
+        const vector<size_t>& ordering = partitioner.get_item_ordering();
+
+        assert(m_assembly_instances.size() == ordering.size());
+
+        // Reorder the assembly instances according to the tree ordering.
+        vector<UniqueID> temp_assembly_instances(ordering.size());
+        small_item_reorder(
+            &m_assembly_instances[0],
+            &temp_assembly_instances[0],
+            &ordering[0],
+            ordering.size());
+
+        // Store assembly instances in the tree leaves whenever possible.
+        store_assembly_instances_in_leaves();
+    }
+
+    // Collect and print assembly tree statistics.
+    bvh::TreeStatistics<AssemblyTree, Builder> statistics(
+        *this,
+        AABB3d(m_scene.compute_bbox()),
+        builder);
+    RENDERER_LOG_DEBUG("assembly tree statistics:");
+    statistics.print(global_logger());
+}
+
+void AssemblyTree::store_assembly_instances_in_leaves()
+{
+    size_t leaf_count = 0;
+    size_t fat_leaf_count = 0;
+
+    const size_t node_count = m_nodes.size();
+
+    for (size_t i = 0; i < node_count; ++i)
+    {
+        NodeType& node = m_nodes[i];
+
+        if (node.is_leaf())
+        {
+            ++leaf_count;
+
+            const size_t item_count = node.get_item_count();
+
+            if (item_count <= NodeType::MaxUserDataSize / sizeof(UniqueID))
+            {
+                ++fat_leaf_count;
+
+                const size_t item_begin = node.get_item_index();
+                UniqueID* user_data = &node.get_user_data<UniqueID>();
+
+                for (size_t j = 0; j < item_count; ++j)
+                    user_data[j] = m_assembly_instances[item_begin + j];
+            }
+        }
+    }
+
+    RENDERER_LOG_DEBUG(
+        "fat assembly tree leaves: %s",
+        pretty_percent(fat_leaf_count, leaf_count).c_str());
+}
+
 namespace
 {
-    // Collect all assemblies from a given scene.
     void collect_assemblies(const Scene& scene, vector<UniqueID>& assemblies)
     {
         assert(assemblies.empty());
@@ -136,7 +228,6 @@ namespace
         assemblies.erase(new_end, assemblies.end());
     }
 
-    // Collect all regions of all objects from a given assembly.
     void collect_regions(const Assembly& assembly, RegionInfoVector& regions)
     {
         assert(regions.empty());
@@ -176,135 +267,39 @@ namespace
             }
         }
     }
-}
 
-Lazy<TriangleTree>* AssemblyTree::create_triangle_tree(const Assembly& assembly) const
-{
-    // Compute the assembly space bounding box of the assembly.
-    const GAABB3 assembly_bbox =
-        get_parent_bbox<GAABB3>(
-            assembly.object_instances().begin(),
-            assembly.object_instances().end());
-
-    RegionInfoVector regions;
-    collect_regions(assembly, regions);
-
-    auto_ptr<ILazyFactory<TriangleTree> > triangle_tree_factory(
-        new TriangleTreeFactory(
-            TriangleTree::Arguments(
-                assembly.get_uid(),
-                assembly_bbox,
-                assembly,
-                regions)));
-
-    return new Lazy<TriangleTree>(triangle_tree_factory);
-}
-
-Lazy<RegionTree>* AssemblyTree::create_region_tree(const Assembly& assembly) const
-{
-    auto_ptr<ILazyFactory<RegionTree> > region_tree_factory(
-        new RegionTreeFactory(
-            RegionTree::Arguments(
-                assembly.get_uid(),
-                assembly)));
-
-    return new Lazy<RegionTree>(region_tree_factory);
-}
-
-void AssemblyTree::rebuild_assembly_tree()
-{
-    // Clear the current tree.
-    clear();
-    m_assembly_instances.clear();
-
-    // Insert all assembly instances of the scene into the tree.
-    for (const_each<AssemblyInstanceContainer> i = m_scene.assembly_instances(); i; ++i)
+    Lazy<TriangleTree>* create_triangle_tree(const Assembly& assembly)
     {
-        // Retrieve the assembly instance.
-        const AssemblyInstance& assembly_instance = *i;
+        // Compute the assembly space bounding box of the assembly.
+        const GAABB3 assembly_bbox =
+            get_parent_bbox<GAABB3>(
+                assembly.object_instances().begin(),
+                assembly.object_instances().end());
 
-        // Retrieve the assembly.
-        const Assembly& assembly = assembly_instance.get_assembly();
+        RegionInfoVector regions;
+        collect_regions(assembly, regions);
 
-        // Skip empty assemblies.
-        if (assembly.object_instances().empty())
-            continue;
+        auto_ptr<ILazyFactory<TriangleTree> > triangle_tree_factory(
+            new TriangleTreeFactory(
+                TriangleTree::Arguments(
+                    assembly.get_uid(),
+                    assembly_bbox,
+                    assembly,
+                    regions)));
 
-        // Insert the bounding box of the assembly instance into the tree's root leaf.
-        insert(AABB3d(assembly_instance.compute_parent_bbox()));
-
-        // Store the assembly instance.
-        m_assembly_instances.push_back(assembly_instance.get_uid());
+        return new Lazy<TriangleTree>(triangle_tree_factory);
     }
 
-    // Log a progress message.
-    RENDERER_LOG_INFO(
-        "building assembly tree (%s %s)...",
-        pretty_int(size()).c_str(),
-        plural(size(), "assembly instance").c_str());
-
-    // Build the assembly tree.
-    AssemblyTreePartitioner partitioner(1);
-    AssemblyTreeBuilder builder;
-    builder.build<DefaultWallclockTimer>(*this, partitioner);
-
-    if (!m_assembly_instances.empty())
+    Lazy<RegionTree>* create_region_tree(const Assembly& assembly)
     {
-        const vector<size_t>& ordering = partitioner.get_item_ordering();
+        auto_ptr<ILazyFactory<RegionTree> > region_tree_factory(
+            new RegionTreeFactory(
+                RegionTree::Arguments(
+                    assembly.get_uid(),
+                    assembly)));
 
-        assert(m_assembly_instances.size() == ordering.size());
-
-        // Reorder the assembly instances according to the tree ordering.
-        vector<UniqueID> temp_assembly_instances(ordering.size());
-        small_item_reorder(
-            &m_assembly_instances[0],
-            &temp_assembly_instances[0],
-            &ordering[0],
-            ordering.size());
-
-        // Store assembly instances in the tree leaves whenever possible.
-        store_assembly_instances_in_leaves();
+        return new Lazy<RegionTree>(region_tree_factory);
     }
-
-    // Collect and print assembly tree statistics.
-    AssemblyTreeStatistics tree_stats(*this, builder);
-    RENDERER_LOG_DEBUG("assembly tree statistics:");
-    tree_stats.print(global_logger());
-}
-
-void AssemblyTree::store_assembly_instances_in_leaves()
-{
-    size_t leaf_count = 0;
-    size_t fat_leaf_count = 0;
-
-    const size_t node_count = m_nodes.size();
-
-    for (size_t i = 0; i < node_count; ++i)
-    {
-        NodeType& node = m_nodes[i];
-
-        if (node.is_leaf())
-        {
-            ++leaf_count;
-
-            const size_t item_count = node.get_item_count();
-
-            if (item_count <= NodeType::MaxUserDataSize / sizeof(UniqueID))
-            {
-                ++fat_leaf_count;
-
-                const size_t item_begin = node.get_item_index();
-                UniqueID* user_data = &node.get_user_data<UniqueID>();
-
-                for (size_t j = 0; j < item_count; ++j)
-                    user_data[j] = m_assembly_instances[item_begin + j];
-            }
-        }
-    }
-
-    RENDERER_LOG_DEBUG(
-        "fat assembly tree leaves: %s",
-        pretty_percent(fat_leaf_count, leaf_count).c_str());
 }
 
 void AssemblyTree::update_child_trees()
@@ -409,7 +404,6 @@ namespace
 //
 
 bool AssemblyLeafVisitor::visit(
-    const AssemblyTree::AABBVector&     bboxes,
     const AssemblyTree::NodeType&       node,
     const ShadingRay::RayType&          ray,
     const ShadingRay::RayInfoType&      ray_info,
@@ -523,7 +517,6 @@ bool AssemblyLeafVisitor::visit(
 //
 
 bool AssemblyLeafProbeVisitor::visit(
-    const AssemblyTree::AABBVector&     bboxes,
     const AssemblyTree::NodeType&       node,
     const ShadingRay::RayType&          ray,
     const ShadingRay::RayInfoType&      ray_info,

@@ -51,18 +51,20 @@ class TreeStatistics
   : public NonCopyable
 {
   public:
+    typedef typename Tree::NodeType NodeType;
+    typedef typename NodeType::AABBType AABBType;
+
     // Constructor, collects statistics for a given tree.
     TreeStatistics(
         const Tree&         tree,
+        const AABBType&     tree_bbox,
         const Builder&      builder);
 
     // Print tree statistics.
     void print(Logger& logger);
 
   private:
-    typedef typename Tree::ValueType ValueType;
-    typedef typename Tree::AABBType AABBType;
-    typedef typename Tree::NodeType NodeType;
+    typedef typename AABBType::ValueType ValueType;
 
     const double            m_build_time;           // construction time in seconds
     const size_t            m_memory_size;          // size of the tree in memory
@@ -113,18 +115,18 @@ class TraversalStatistics
 template <typename Tree, typename Builder>
 TreeStatistics<Tree, Builder>::TreeStatistics(
     const Tree&         tree,
+    const AABBType&     tree_bbox,
     const Builder&      builder)
   : m_build_time(builder.get_build_time())
   , m_memory_size(tree.get_memory_size())
   , m_node_count(tree.m_nodes.size())
-  , m_volume(tree.m_bbox.is_valid() ? tree.m_bbox.volume() : ValueType(0.0))
+  , m_volume(tree_bbox.is_valid() ? tree_bbox.volume() : ValueType(0.0))
   , m_leaf_volume(ValueType(0.0))
   , m_leaf_count(0)
 {
     assert(!tree.m_nodes.empty());
 
-    if (tree.m_bbox.is_valid())
-        collect_stats_recurse(tree, tree.m_nodes.front(), tree.get_bbox(), 0);
+    collect_stats_recurse(tree, tree.m_nodes.front(), tree_bbox, 0);
 
     if (m_leaf_volume > m_volume)
         m_leaf_volume = m_volume;
@@ -175,7 +177,8 @@ void TreeStatistics<Tree, Builder>::collect_stats_recurse(
         m_leaf_depth.insert(depth);
         m_leaf_size.insert(node.get_item_count());
         ++m_leaf_count;
-        m_leaf_volume += bbox.volume();
+        if (bbox.is_valid())
+            m_leaf_volume += bbox.volume();
     }
     else
     {

@@ -64,7 +64,10 @@ namespace renderer
 //
 
 class TriangleTree
-  : public foundation::bvh::Tree<double, 3, foundation::AlignedAllocator<void> >
+  : public foundation::bvh::Tree<
+               foundation::bvh::Node<foundation::AABB3d>,
+               foundation::AlignedAllocator<void>
+           >
 {
   public:
     // Construction arguments.
@@ -96,11 +99,15 @@ class TriangleTree
     friend class TriangleLeafVisitor;
     friend class TriangleLeafProbeVisitor;
 
-    const foundation::UniqueID          m_triangle_tree_uid;
-    std::vector<TriangleKey>            m_triangle_keys;
-    std::vector<GTriangleType>          m_triangles;
+    typedef std::vector<foundation::AABB3d> AABBVector;
 
-    void collect_triangles(const Arguments& arguments);
+    const foundation::UniqueID          m_triangle_tree_uid;
+    std::vector<GTriangleType>          m_triangles;
+    std::vector<TriangleKey>            m_triangle_keys;
+
+    void collect_triangles(
+        const Arguments&                arguments,
+        AABBVector&                     triangle_bboxes);
 
     void move_triangles_to_leaves();
 };
@@ -162,7 +169,6 @@ class TriangleLeafVisitor
 
     // Visit a leaf.
     bool visit(
-        const TriangleTree::AABBVector&         bboxes,
         const TriangleTree::NodeType&           node,
         const ShadingRay::RayType&              ray,
         const ShadingRay::RayInfoType&          ray_info,
@@ -198,7 +204,6 @@ class TriangleLeafProbeVisitor
 
     // Visit a leaf.
     bool visit(
-        const TriangleTree::AABBVector&         bboxes,
         const TriangleTree::NodeType&           node,
         const ShadingRay::RayType&              ray,
         const ShadingRay::RayInfoType&          ray_info,
@@ -218,14 +223,12 @@ class TriangleLeafProbeVisitor
 //
 
 typedef foundation::bvh::Intersector<
-    double,
     TriangleTree,
     TriangleLeafVisitor,
     TriangleTreeStackSize
 > TriangleTreeIntersector;
 
 typedef foundation::bvh::Intersector<
-    double,
     TriangleTree,
     TriangleLeafProbeVisitor,
     TriangleTreeStackSize
@@ -284,7 +287,6 @@ inline TriangleLeafVisitor::TriangleLeafVisitor(
 }
 
 inline bool TriangleLeafVisitor::visit(
-    const TriangleTree::AABBVector&         bboxes,
     const TriangleTree::NodeType&           node,
     const ShadingRay::RayType&              ray,
     const ShadingRay::RayInfoType&          ray_info,
@@ -358,7 +360,6 @@ inline TriangleLeafProbeVisitor::TriangleLeafProbeVisitor(
 }
 
 inline bool TriangleLeafProbeVisitor::visit(
-    const TriangleTree::AABBVector&         bboxes,
     const TriangleTree::NodeType&           node,
     const ShadingRay::RayType&              ray,
     const ShadingRay::RayInfoType&          ray_info,

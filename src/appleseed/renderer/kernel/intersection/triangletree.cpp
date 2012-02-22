@@ -58,25 +58,6 @@ namespace renderer
 {
 
 //
-// Specializations.
-//
-
-typedef bvh::SAHPartitioner<
-    TriangleTree
-> TriangleTreePartitioner;
-
-typedef bvh::Builder<
-    TriangleTree,
-    TriangleTreePartitioner
-> TriangleTreeBuilder;
-
-typedef bvh::TreeStatistics<
-    TriangleTree,
-    TriangleTreeBuilder
-> TriangleTreeStatistics;
-
-
-//
 // TriangleTree class implementation.
 //
 
@@ -97,25 +78,26 @@ TriangleTree::TriangleTree(const Arguments& arguments)
   , m_triangle_tree_uid(arguments.m_triangle_tree_uid)
 {
     // Collect triangles intersecting the bounding box of this tree.
-    collect_triangles(arguments);
+    AABBVector triangle_bboxes;
+    collect_triangles(arguments, triangle_bboxes);
 
     // Log a progress message.
     RENDERER_LOG_INFO(
         "building triangle tree #" FMT_UNIQUE_ID " (%s %s)...",
         arguments.m_triangle_tree_uid,
-        pretty_int(size()).c_str(),
-        plural(size(), "triangle").c_str());
+        pretty_int(m_triangles.size()).c_str(),
+        plural(m_triangles.size(), "triangle").c_str());
 
     // Build the triangle tree.
-    TriangleTreePartitioner partitioner(
+    typedef bvh::SAHPartitioner<AABBVector> Partitioner;
+    typedef bvh::Builder<TriangleTree, Partitioner> Builder;
+    Partitioner partitioner(
+        triangle_bboxes,
         TriangleTreeMaxLeafSize,
         TriangleTreeInteriorNodeTraversalCost,
         TriangleTreeTriangleIntersectionCost);
-    TriangleTreeBuilder builder;
-    builder.build<DefaultWallclockTimer>(*this, partitioner);
-
-    // Get rid of the triangle bounding boxes as we no longer need them.
-    clear_release_memory(m_bboxes);
+    Builder builder;
+    builder.build<DefaultWallclockTimer>(*this, m_triangles.size(), partitioner);
 
     if (!m_triangles.empty())
     {
@@ -123,6 +105,15 @@ TriangleTree::TriangleTree(const Arguments& arguments)
 
         assert(m_triangle_keys.size() == ordering.size());
         assert(m_triangles.size() == ordering.size());
+
+        // Reorder the triangles according to the tree ordering.
+        vector<size_t> tags(ordering.size());
+        large_item_reorder(
+            &m_triangles[0],
+            &tags[0],
+            &ordering[0],
+            ordering.size());
+        clear_release_memory(tags);
 
         // Reorder the triangle keys according to the tree ordering.
         vector<TriangleKey> temp_triangle_keys(ordering.size());
@@ -132,14 +123,6 @@ TriangleTree::TriangleTree(const Arguments& arguments)
             &ordering[0],
             ordering.size());
         clear_release_memory(temp_triangle_keys);
-
-        // Reorder the triangles according to the tree ordering.
-        vector<size_t> tags(ordering.size());
-        large_item_reorder(
-            &m_triangles[0],
-            &tags[0],
-            &ordering[0],
-            ordering.size());
 
         // Store triangles in the tree leaves whenever possible.
         move_triangles_to_leaves();
@@ -155,11 +138,14 @@ TriangleTree::TriangleTree(const Arguments& arguments)
     }
 
     // Collect and print triangle tree statistics.
-    TriangleTreeStatistics tree_stats(*this, builder);
+    bvh::TreeStatistics<TriangleTree, Builder> statistics(
+        *this,
+        AABB3d(arguments.m_bbox),
+        builder);
     RENDERER_LOG_DEBUG(
         "triangle tree #" FMT_UNIQUE_ID " statistics:",
         arguments.m_triangle_tree_uid);
-    tree_stats.print(global_logger());
+    statistics.print(global_logger());
 }
 
 TriangleTree::~TriangleTree()
@@ -179,7 +165,9 @@ size_t TriangleTree::get_memory_size() const
         + m_triangles.capacity() * sizeof(GTriangleType);
 }
 
-void TriangleTree::collect_triangles(const Arguments& arguments)
+void TriangleTree::collect_triangles(
+    const Arguments&    arguments,
+    AABBVector&         triangle_bboxes)
 {
     const size_t region_count = arguments.m_regions.size();
     for (size_t region_index = 0; region_index < region_count; ++region_index)
@@ -233,13 +221,8 @@ void TriangleTree::collect_triangles(const Arguments& arguments)
             // Insert this triangle into the tree if it intersects the tree's bounding box.
             if (intersect(arguments.m_bbox, v0, v1, v2))
             {
-                // Insert the bounding box of the triangle into the tree's root leaf.
-                GAABB3 triangle_bbox;
-                triangle_bbox.invalidate();
-                triangle_bbox.insert(v0);
-                triangle_bbox.insert(v1);
-                triangle_bbox.insert(v2);
-                insert(AABB3d(triangle_bbox));
+                // Store the triangle.
+                m_triangles.push_back(GTriangleType(v0, v1, v2));
 
                 // Store the triangle key.
                 m_triangle_keys.push_back(
@@ -248,8 +231,14 @@ void TriangleTree::collect_triangles(const Arguments& arguments)
                         region_info.get_region_index(),
                         triangle_index));
 
-                // Store the triangle.
-                m_triangles.push_back(GTriangleType(v0, v1, v2));
+                // Compute and store the triangle bounding box.
+                AABB3d triangle_bbox;
+                triangle_bbox.invalidate();
+                triangle_bbox.insert(Vector3d(v0));
+                triangle_bbox.insert(Vector3d(v1));
+                triangle_bbox.insert(Vector3d(v2));
+                triangle_bbox.robust_grow(1.0e-15);
+                triangle_bboxes.push_back(triangle_bbox);
             }
         }
     }

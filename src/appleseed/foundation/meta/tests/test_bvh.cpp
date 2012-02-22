@@ -42,7 +42,7 @@ TEST_SUITE(Foundation_Math_BVH_Node)
         static const AABB2d LeftBBox(Vector2d(1.0, 2.0), Vector2d(3.0, 4.0));
         static const AABB2d RightBBox(Vector2d(5.0, 6.0), Vector2d(7.0, 8.0));
 
-        bvh::Node<double, 2> node;
+        bvh::Node<AABB2d> node;
 
         node.set_left_bbox(LeftBBox);
         node.set_right_bbox(RightBBox);
@@ -56,7 +56,7 @@ TEST_SUITE(Foundation_Math_BVH_Node)
         static const AABB3d LeftBBox(Vector3d(1.0, 2.0, 3.0), Vector3d(4.0, 5.0, 6.0));
         static const AABB3d RightBBox(Vector3d(7.0, 8.0, 9.0), Vector3d(10.0, 11.0, 12.0));
 
-        bvh::Node<double, 3> node;
+        bvh::Node<AABB3d> node;
 
         node.set_left_bbox(LeftBBox);
         node.set_right_bbox(RightBBox);

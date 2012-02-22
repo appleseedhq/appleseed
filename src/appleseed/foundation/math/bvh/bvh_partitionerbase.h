@@ -47,21 +47,20 @@ namespace bvh {
 // A base class for BVH partitioners.
 //
 
-template <typename Tree>
+template <typename AABBVector>
 class PartitionerBase
   : public NonCopyable
 {
   public:
-    typedef typename Tree::AABBType AABBType;
-    typedef typename Tree::AABBVector AABBVector;
+    typedef AABBVector AABBVectorType;
+    typedef typename AABBVectorType::value_type AABBType;
 
-    // Initialize the partitioner for a given number of items.
-    void initialize(
-        const AABBVector&       bboxes);
+    // Constructor.
+    explicit PartitionerBase(
+        const AABBVectorType&   bboxes);
 
     // Compute the bounding box of a given set of items.
     AABBType compute_bbox(
-        const AABBVector&       bboxes,
         const size_t            begin,
         const size_t            end) const;
 
@@ -69,7 +68,10 @@ class PartitionerBase
     const std::vector<size_t>& get_item_ordering() const;
 
   protected:
-    std::vector<size_t>         m_indices[Tree::Dimension];
+    static const size_t Dimension = AABBType::Dimension;
+
+    const AABBVectorType&       m_bboxes;
+    std::vector<size_t>         m_indices[Dimension];
 
     void sort_indices(
         const size_t            dimension,
@@ -87,13 +89,14 @@ class PartitionerBase
 // PartitionerBase class implementation.
 //
 
-template <typename Tree>
-void PartitionerBase<Tree>::initialize(
-    const AABBVector&           bboxes)
+template <typename AABBVector>
+PartitionerBase<AABBVector>::PartitionerBase(
+    const AABBVectorType&       bboxes)
+  : m_bboxes(bboxes)
 {
-    const size_t size = bboxes.size();
+    const size_t size = m_bboxes.size();
 
-    for (size_t d = 0; d < Tree::Dimension; ++d)
+    for (size_t d = 0; d < Dimension; ++d)
     {
         std::vector<size_t>& indices = m_indices[d];
 
@@ -103,7 +106,7 @@ void PartitionerBase<Tree>::initialize(
             indices[i] = i;
 
         // Sort the items according to their bounding boxes.
-        BboxSortPredicate<AABBVector> predicate(bboxes, d);
+        BboxSortPredicate<AABBVectorType> predicate(m_bboxes, d);
         std::sort(indices.begin(), indices.end(), predicate);
     }
 
@@ -111,9 +114,8 @@ void PartitionerBase<Tree>::initialize(
     m_tags.resize(size);
 }
 
-template <typename Tree>
-inline typename Tree::AABBType PartitionerBase<Tree>::compute_bbox(
-    const AABBVector&           bboxes,
+template <typename AABBVector>
+inline typename AABBVector::value_type PartitionerBase<AABBVector>::compute_bbox(
     const size_t                begin,
     const size_t                end) const
 {
@@ -123,13 +125,13 @@ inline typename Tree::AABBType PartitionerBase<Tree>::compute_bbox(
     bbox.invalidate();
 
     for (size_t i = begin; i < end; ++i)
-        bbox.insert(bboxes[indices[i]]);
+        bbox.insert(m_bboxes[indices[i]]);
 
     return bbox;
 }
 
-template <typename Tree>
-void PartitionerBase<Tree>::sort_indices(
+template <typename AABBVector>
+void PartitionerBase<AABBVector>::sort_indices(
     const size_t                dimension,
     const size_t                begin,
     const size_t                end,
@@ -145,7 +147,7 @@ void PartitionerBase<Tree>::sort_indices(
     for (size_t i = pivot; i < end; ++i)
         m_tags[split_indices[i]] = Right;
 
-    for (size_t d = 0; d < Tree::Dimension; ++d)
+    for (size_t d = 0; d < Dimension; ++d)
     {
         if (d != dimension)
         {

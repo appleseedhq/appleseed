@@ -31,11 +31,8 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/math/bvh/bvh_node.h"
-#include "foundation/math/aabb.h"
 
 // Standard headers.
-#include <cassert>
 #include <cstddef>
 #include <memory>
 #include <vector>
@@ -47,35 +44,21 @@ namespace bvh {
 // Bounding Volume Hierarchy (BVH).
 //
 
-template <typename T, size_t N, typename Allocator = std::allocator<void> >
+template <typename Node, typename Allocator = std::allocator<void> >
 class Tree
   : public NonCopyable
 {
   public:
-    typedef T ValueType;
+    typedef Node NodeType;
     typedef Allocator AllocatorType;
-    typedef AABB<T, N> AABBType;
-    typedef Node<T, N> NodeType;
-    typedef Tree<T, N, Allocator> TreeType;
+    typedef Tree<NodeType, AllocatorType> TreeType;
     typedef std::vector<NodeType, AllocatorType> NodeVector;
-    typedef std::vector<AABBType, AllocatorType> AABBVector;
 
-    static const size_t Dimension = N;
-
-    // Constructors.
-    explicit Tree(const Allocator& allocator = Allocator());
+    // Constructor.
+    explicit Tree(const AllocatorType& allocator = AllocatorType());
 
     // Clear the tree.
     void clear();
-
-    // Insert an item into the tree.
-    void insert(const AABBType& bbox);
-
-    // Return the number of items in the tree.
-    size_t size() const;
-
-    // Return the bounding box of the tree.
-    const AABBType& get_bbox() const;
 
     // Return the size (in bytes) of this object in memory.
     size_t get_memory_size() const;
@@ -84,20 +67,13 @@ class Tree
     template <typename Tree, typename Partitioner>
     friend class Builder;
 
-    template <
-        typename T_,
-        typename Tree,
-        typename Visitor,
-        size_t StackSize
-    >
-    friend class Intersector;
-
     template <typename Tree, typename Builder>
     friend class TreeStatistics;
 
-    AABBVector  m_bboxes;       // bounding box of each item
-    AABBType    m_bbox;         // bounding box of the tree
-    NodeVector  m_nodes;        // nodes of the tree
+    template <typename Tree, typename Visitor, size_t StackSize>
+    friend class Intersector;
+
+    NodeVector m_nodes;
 };
 
 
@@ -105,58 +81,25 @@ class Tree
 // Tree class implementation.
 //
 
-// Return the appropriate epsilon factor for enlarging an item bounding box.
-template <typename U> U get_item_bbox_grow_eps();           // intentionally left unimplemented
-template <> inline float get_item_bbox_grow_eps<float>()    { return 1.0e-6f; }
-template <> inline double get_item_bbox_grow_eps<double>()  { return 1.0e-15;  }
-
-template <typename T, size_t N, typename Allocator>
-Tree<T, N, Allocator>::Tree(const Allocator& allocator)
-  : m_bboxes(allocator)
-  , m_nodes(allocator)
+template <typename Node, typename Allocator>
+Tree<Node, Allocator>::Tree(const AllocatorType& allocator)
+  : m_nodes(allocator)
 {
     clear();
 }
 
-template <typename T, size_t N, typename Allocator>
-void Tree<T, N, Allocator>::clear()
+template <typename Node, typename Allocator>
+void Tree<Node, Allocator>::clear()
 {
-    m_bboxes.clear();
-    m_bbox.invalidate();
     m_nodes.clear();
 }
 
-template <typename T, size_t N, typename Allocator>
-void Tree<T, N, Allocator>::insert(const AABBType& bbox)
+template <typename Node, typename Allocator>
+size_t Tree<Node, Allocator>::get_memory_size() const
 {
-    assert(bbox.is_valid());
-
-    AABBType enlarged_bbox = bbox;
-    enlarged_bbox.robust_grow(get_item_bbox_grow_eps<T>());
-
-    m_bboxes.push_back(enlarged_bbox);
-    m_bbox.insert(enlarged_bbox);
-}
-
-template <typename T, size_t N, typename Allocator>
-inline size_t Tree<T, N, Allocator>::size() const
-{
-    return m_bboxes.size();
-}
-
-template <typename T, size_t N, typename Allocator>
-inline const AABB<T, N>& Tree<T, N, Allocator>::get_bbox() const
-{
-    return m_bbox;
-}
-
-template <typename T, size_t N, typename Allocator>
-size_t Tree<T, N, Allocator>::get_memory_size() const
-{
-    size_t mem_size = sizeof(*this);
-    mem_size += m_bboxes.capacity() * sizeof(AABBType);
-    mem_size += m_nodes.capacity() * sizeof(NodeType);
-    return mem_size;
+    return
+          sizeof(*this)
+        + m_nodes.capacity() * sizeof(NodeType);
 }
 
 }       // namespace bvh

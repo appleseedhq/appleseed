@@ -32,7 +32,6 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/bvh/bvh_statistics.h"
-#include "foundation/math/aabb.h"
 #include "foundation/math/intersection.h"
 #include "foundation/math/ray.h"
 #ifdef APPLESEED_FOUNDATION_USE_SSE
@@ -69,7 +68,6 @@ namespace bvh {
 //          // Return whether BVH traversal should continue or not.
 //          // 'distance' should be set to the distance to the closest hit so far.
 //          bool visit(
-//              const std::vector<AABB>&    bboxes,
 //              const NodeType&             node,
 //              const RayType&              ray,
 //              const RayInfoType&          ray_info,
@@ -78,10 +76,10 @@ namespace bvh {
 //              , TraversalStatistics&      stats
 //      #endif
 //              );
+//      };
 //
 
 template <
-    typename T,
     typename Tree,
     typename Visitor,
     size_t StackSize = 64
@@ -90,12 +88,10 @@ class Intersector
   : public NonCopyable
 {
   public:
-    // Types.
-    typedef T ValueType;
     typedef typename Tree::NodeType NodeType;
-    typedef AABB<T, Tree::Dimension> AABBType;
-    typedef Ray<T, Tree::Dimension> RayType;
-    typedef RayInfo<T, Tree::Dimension> RayInfoType;
+    typedef typename NodeType::ValueType ValueType;
+    typedef Ray<ValueType, NodeType::Dimension> RayType;
+    typedef RayInfo<ValueType, NodeType::Dimension> RayInfoType;
 
     // Intersect a ray with a given BVH.
     void intersect(
@@ -115,12 +111,11 @@ class Intersector
 //
 
 template <
-    typename T,
     typename Tree,
     typename Visitor,
     size_t StackSize
 >
-void Intersector<T, Tree, Visitor, StackSize>::intersect(
+void Intersector<Tree, Visitor, StackSize>::intersect(
     const Tree&                 tree,
     const RayType&              ray,
     const RayInfoType&          ray_info,
@@ -266,7 +261,6 @@ void Intersector<T, Tree, Visitor, StackSize>::intersect(
 #endif
             const bool proceed =
                 visitor.visit(
-                    tree.m_bboxes,
                     *node_ptr,
                     ray,
                     ray_info,

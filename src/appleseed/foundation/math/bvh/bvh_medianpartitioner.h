@@ -43,27 +43,27 @@ namespace bvh {
 // A BVH partitioner that use median splitting.
 //
 
-template <typename Tree>
+template <typename AABBVector>
 class MedianPartitioner
-  : public PartitionerBase<Tree>
+  : public PartitionerBase<AABBVector>
 {
   public:
-    typedef typename Tree::AABBType AABBType;
-    typedef typename Tree::AABBVector AABBVector;
+    typedef AABBVector AABBVectorType;
+    typedef typename AABBVectorType::value_type AABBType;
 
     // Constructor.
-    explicit MedianPartitioner(
-        const size_t        max_leaf_size);
+    MedianPartitioner(
+        const AABBVectorType&   bboxes,
+        const size_t            max_leaf_size);
 
     // Partition a set of items into two distinct sets.
     size_t partition(
-        const AABBVector&   bboxes,
-        const size_t        begin,
-        const size_t        end,
-        const AABBType&     bbox);
+        const size_t            begin,
+        const size_t            end,
+        const AABBType&         bbox);
 
   private:
-    const size_t            m_max_leaf_size;
+    const size_t                m_max_leaf_size;
 };
 
 
@@ -71,19 +71,20 @@ class MedianPartitioner
 // MedianPartitioner class implementation.
 //
 
-template <typename Tree>
-inline MedianPartitioner<Tree>::MedianPartitioner(
-    const size_t            max_leaf_size)
-  : m_max_leaf_size(max_leaf_size)
+template <typename AABBVector>
+inline MedianPartitioner<AABBVector>::MedianPartitioner(
+    const AABBVectorType&       bboxes,
+    const size_t                max_leaf_size)
+  : PartitionerBase<AABBVectorType>(bboxes)
+  , m_max_leaf_size(max_leaf_size)
 {
 }
 
-template <typename Tree>
-inline size_t MedianPartitioner<Tree>::partition(
-    const AABBVector&       bboxes,
-    const size_t            begin,
-    const size_t            end,
-    const AABBType&         bbox)
+template <typename AABBVector>
+inline size_t MedianPartitioner<AABBVector>::partition(
+    const size_t                begin,
+    const size_t                end,
+    const AABBType&             bbox)
 {
     const size_t count = end - begin;
     assert(count > 1);
@@ -99,7 +100,7 @@ inline size_t MedianPartitioner<Tree>::partition(
     const size_t pivot = (begin + end) / 2;
     assert(pivot < end);
 
-    PartitionerBase<Tree>::sort_indices(split_dim, begin, end, pivot);
+    PartitionerBase<AABBVector>::sort_indices(split_dim, begin, end, pivot);
 
     return pivot;
 }

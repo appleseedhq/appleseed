@@ -115,7 +115,6 @@ class Intersector
     const TraceContext&                             m_trace_context;
     const bool                                      m_print_statistics;
     const bool                                      m_report_self_intersections;
-    const foundation::AABB3d                        m_assembly_tree_aabb;
 
     // Access caches.
     mutable RegionTreeAccessCache                   m_region_tree_cache;

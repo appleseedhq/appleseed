@@ -45,37 +45,35 @@ namespace bvh {
 // A BVH partitioner based on the Surface Area Heuristic (SAH).
 //
 
-template <typename Tree>
+template <typename AABBVector>
 class SAHPartitioner
-  : public PartitionerBase<Tree>
+  : public PartitionerBase<AABBVector>
 {
   public:
-    typedef typename Tree::ValueType ValueType;
-    typedef typename Tree::AABBType AABBType;
-    typedef typename Tree::AABBVector AABBVector;
+    typedef AABBVector AABBVectorType;
+    typedef typename AABBVectorType::value_type AABBType;
+    typedef typename AABBType::ValueType ValueType;
 
     // Constructor.
     SAHPartitioner(
-        const size_t        max_leaf_size,
-        const ValueType     interior_node_traversal_cost = ValueType(1.0),
-        const ValueType     triangle_intersection_cost = ValueType(1.0));
-
-    // Initialize the partitioner for a given number of items.
-    void initialize(
-        const AABBVector&   bboxes);
+        const AABBVectorType&   bboxes,
+        const size_t            max_leaf_size,
+        const ValueType         interior_node_traversal_cost = ValueType(1.0),
+        const ValueType         triangle_intersection_cost = ValueType(1.0));
 
     // Partition a set of items into two distinct sets.
     size_t partition(
-        const AABBVector&   bboxes,
-        const size_t        begin,
-        const size_t        end,
-        const AABBType&     bbox);
+        const size_t            begin,
+        const size_t            end,
+        const AABBType&         bbox);
 
   private:
-    const size_t            m_max_leaf_size;
-    const ValueType         m_interior_node_traversal_cost;
-    const ValueType         m_triangle_intersection_cost;
-    std::vector<ValueType>  m_left_areas;
+    static const size_t Dimension = AABBType::Dimension;
+
+    const size_t                m_max_leaf_size;
+    const ValueType             m_interior_node_traversal_cost;
+    const ValueType             m_triangle_intersection_cost;
+    std::vector<ValueType>      m_left_areas;
 };
 
 
@@ -83,32 +81,25 @@ class SAHPartitioner
 // SAHPartitioner class implementation.
 //
 
-template <typename Tree>
-inline SAHPartitioner<Tree>::SAHPartitioner(
-    const size_t            max_leaf_size,
-    const ValueType         interior_node_traversal_cost,
-    const ValueType         triangle_intersection_cost)
-  : m_max_leaf_size(max_leaf_size)
+template <typename AABBVector>
+inline SAHPartitioner<AABBVector>::SAHPartitioner(
+    const AABBVectorType&       bboxes,
+    const size_t                max_leaf_size,
+    const ValueType             interior_node_traversal_cost,
+    const ValueType             triangle_intersection_cost)
+  : PartitionerBase<AABBVectorType>(bboxes)
+  , m_max_leaf_size(max_leaf_size)
   , m_interior_node_traversal_cost(interior_node_traversal_cost)
   , m_triangle_intersection_cost(triangle_intersection_cost)
 {
+    m_left_areas.resize(m_bboxes.size());
 }
 
-template <typename Tree>
-void SAHPartitioner<Tree>::initialize(
-    const AABBVector&       bboxes)
-{
-    PartitionerBase<Tree>::initialize(bboxes);
-
-    m_left_areas.resize(bboxes.size());
-}
-
-template <typename Tree>
-size_t SAHPartitioner<Tree>::partition(
-    const AABBVector&       bboxes,
-    const size_t            begin,
-    const size_t            end,
-    const AABBType&         bbox)
+template <typename AABBVector>
+size_t SAHPartitioner<AABBVector>::partition(
+    const size_t                begin,
+    const size_t                end,
+    const AABBType&             bbox)
 {
     const size_t count = end - begin;
     assert(count > 1);
@@ -121,9 +112,11 @@ size_t SAHPartitioner<Tree>::partition(
     size_t best_split_dim = 0;
     size_t best_split_pivot = 0;
 
-    for (size_t d = 0; d < Tree::Dimension; ++d)
+    for (size_t d = 0; d < Dimension; ++d)
     {
-        const std::vector<size_t>& indices = PartitionerBase<Tree>::m_indices[d];
+        const AABBVectorType& bboxes = PartitionerBase<AABBVector>::m_bboxes;
+        const std::vector<size_t>& indices = PartitionerBase<AABBVector>::m_indices[d];
+
         AABBType bbox_accumulator;
 
         // Left-to-right sweep to accumulate bounding boxes and compute their surface area.
@@ -167,7 +160,7 @@ size_t SAHPartitioner<Tree>::partition(
     const size_t pivot = begin + best_split_pivot;
     assert(pivot < end);
 
-    PartitionerBase<Tree>::sort_indices(best_split_dim, begin, end, pivot);
+    PartitionerBase<AABBVector>::sort_indices(best_split_dim, begin, end, pivot);
 
     return pivot;
 }

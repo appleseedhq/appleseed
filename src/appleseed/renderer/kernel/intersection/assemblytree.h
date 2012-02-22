@@ -41,6 +41,7 @@
 #include "renderer/modeling/scene/scene.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/aabb.h"
 #include "foundation/math/bvh.h"
 #include "foundation/utility/alignedallocator.h"
 #include "foundation/utility/lazy.h"
@@ -62,7 +63,10 @@ namespace renderer
 //
 
 class AssemblyTree
-  : public foundation::bvh::Tree<double, 3, foundation::AlignedAllocator<void> >
+  : public foundation::bvh::Tree<
+               foundation::bvh::Node<foundation::AABB3d>,
+               foundation::AlignedAllocator<void>
+           >
 {
   public:
     // Constructor, builds the tree for a given scene.
@@ -82,6 +86,7 @@ class AssemblyTree
     friend class AssemblyLeafProbeVisitor;
     friend class Intersector;
 
+    typedef std::vector<foundation::AABB3d> AABBVector;
     typedef std::map<foundation::UniqueID, foundation::VersionID> AssemblyVersionMap;
 
     const Scene&                        m_scene;
@@ -90,18 +95,9 @@ class AssemblyTree
     std::vector<foundation::UniqueID>   m_assembly_instances;
     AssemblyVersionMap                  m_assembly_versions;
 
-    // Create a triangle tree for a given assembly.
-    foundation::Lazy<TriangleTree>* create_triangle_tree(const Assembly& assembly) const;
-
-    // Create a region tree for a given assembly.
-    foundation::Lazy<RegionTree>* create_region_tree(const Assembly& assembly) const;
-
-    // Rebuild the assembly tree from scratch.
+    void collect_assembly_instances(AABBVector& assembly_instance_bboxes);
     void rebuild_assembly_tree();
-
     void store_assembly_instances_in_leaves();
-
-    // Create or update the child trees (one per assembly).
     void update_child_trees();
 };
 
@@ -128,7 +124,6 @@ class AssemblyLeafVisitor
 
     // Visit a leaf.
     bool visit(
-        const AssemblyTree::AABBVector&             bboxes,
         const AssemblyTree::NodeType&               node,
         const ShadingRay::RayType&                  ray,
         const ShadingRay::RayInfoType&              ray_info,
@@ -172,7 +167,6 @@ class AssemblyLeafProbeVisitor
 
     // Visit a leaf.
     bool visit(
-        const AssemblyTree::AABBVector&             bboxes,
         const AssemblyTree::NodeType&               node,
         const ShadingRay::RayType&                  ray,
         const ShadingRay::RayInfoType&              ray_info,
@@ -198,13 +192,11 @@ class AssemblyLeafProbeVisitor
 //
 
 typedef foundation::bvh::Intersector<
-    double,
     AssemblyTree,
     AssemblyLeafVisitor
 > AssemblyTreeIntersector;
 
 typedef foundation::bvh::Intersector<
-    double,
     AssemblyTree,
     AssemblyLeafProbeVisitor
 > AssemblyTreeProbeIntersector;
