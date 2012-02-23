@@ -81,7 +81,7 @@ class ALIGN(64) Node
     size_t get_item_count() const;
 
   private:
-    template <typename Tree, typename Visitor, size_t StackSize>
+    template <typename Tree, typename Visitor, size_t StackSize, size_t N>
     friend class Intersector;
 
     typedef typename AABBType::ValueType ValueType;

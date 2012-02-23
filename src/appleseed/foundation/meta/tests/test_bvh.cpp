@@ -30,6 +30,7 @@
 #include "foundation/math/aabb.h"
 #include "foundation/math/bvh.h"
 #include "foundation/math/vector.h"
+#include "foundation/utility/alignedvector.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"
 
@@ -63,5 +64,34 @@ TEST_SUITE(Foundation_Math_BVH_Node)
 
         EXPECT_EQ(LeftBBox, node.get_left_bbox());
         EXPECT_EQ(RightBBox, node.get_right_bbox());
+    }
+}
+
+TEST_SUITE(Foundation_Math_BVH_Intersector_2D)
+{
+    typedef bvh::Node<AABB2d> NodeType;
+
+    struct Visitor
+    {
+        bool visit(
+            const NodeType&         node,
+            const Ray2d&            ray,
+            const RayInfo2d&        ray_info,
+            double&                 distance
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+            , TraversalStatistics&  stats
+#endif
+            )
+        {
+            return false;
+        }
+    };
+
+    TEST_CASE(TryToInstantiateIntersectorIn2DCase)
+    {
+        bvh::Intersector<
+            bvh::Tree<AlignedVector<NodeType> >,
+            Visitor
+        > intersector;
     }
 }
