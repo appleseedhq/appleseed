@@ -617,6 +617,7 @@ source_group ("foundation\\utility\\test" FILES
 
 set (foundation_utility_sources
     foundation/utility/alignedallocator.h
+    foundation/utility/alignedvector.h
     foundation/utility/attributeset.cpp
     foundation/utility/attributeset.h
     foundation/utility/autoreleaseptr.h
