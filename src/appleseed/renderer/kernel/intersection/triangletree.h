@@ -42,7 +42,7 @@
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/bvh.h"
-#include "foundation/utility/alignedallocator.h"
+#include "foundation/utility/alignedvector.h"
 #include "foundation/utility/lazy.h"
 #include "foundation/utility/poolallocator.h"
 #include "foundation/utility/uid.h"
@@ -65,8 +65,9 @@ namespace renderer
 
 class TriangleTree
   : public foundation::bvh::Tree<
-               foundation::bvh::Node<foundation::AABB3d>,
-               foundation::AlignedAllocator<void>
+               foundation::AlignedVector<
+                   foundation::bvh::Node<foundation::AABB3d>
+               >
            >
 {
   public:
