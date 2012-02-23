@@ -80,51 +80,66 @@ struct VectorElementWrapper : public T
 template <typename T>
 struct AlignedVector : public ALIGNED_VECTOR_BASE
 {
+    typedef ALIGNED_VECTOR_BASE Base;
+
     AlignedVector()
     {
     }
 
-    explicit AlignedVector(const allocator_type& allocator)
-      : ALIGNED_VECTOR_BASE(allocator)
+    explicit AlignedVector(const typename Base::allocator_type& allocator)
+      : Base(allocator)
     {
     }
 
-    explicit AlignedVector(const size_type count)
-      : ALIGNED_VECTOR_BASE(count)
+    explicit AlignedVector(const typename Base::size_type count)
+      : Base(count)
     {
     }
 
-    AlignedVector(const size_type count, const value_type& value)
-      : ALIGNED_VECTOR_BASE(count, value)
+    AlignedVector(
+        const typename Base::size_type          count,
+        const typename Base::value_type&        value)
+      : Base(count, value)
     {
     }
 
-    AlignedVector(const size_type count, const value_type& value, const allocator_type& allocator)
-      : ALIGNED_VECTOR_BASE(count, value, allocator)
+    AlignedVector(
+        const typename Base::size_type          count,
+        const typename Base::value_type&        value,
+        const typename Base::allocator_type&    allocator)
+      : Base(count, value, allocator)
     {
     }
 
-    AlignedVector(const ALIGNED_VECTOR_BASE& rhs)
-      : ALIGNED_VECTOR_BASE(rhs)
+    AlignedVector(const Base& rhs)
+      : Base(rhs)
     {
     }
 
     template <class Iterator>
     AlignedVector(Iterator first, Iterator last)
-      : ALIGNED_VECTOR_BASE(first, last)
+      : Base(first, last)
     {
     }
 
     template <class Iterator>
-    AlignedVector(Iterator first, Iterator last, const allocator_type& allocator)
-      : ALIGNED_VECTOR_BASE(first, last, allocator)
+    AlignedVector(
+        Iterator                                first,
+        Iterator                                last,
+        const typename Base::allocator_type&    allocator)
+      : Base(first, last, allocator)
     {
     }
 
-    AlignedVector(ALIGNED_VECTOR_BASE&& rhs)
-      : ALIGNED_VECTOR_BASE(rhs)
+#if (defined __GNUC__ && defined __GXX_EXPERIMENTAL_CXX0X__) || \
+    (defined _MSC_VER && _MSC_VER >= 1600)
+
+    AlignedVector(Base&& rhs)
+      : Base(rhs)
     {
     }
+
+#endif
 };
 
 #undef ALIGNED_VECTOR_BASE
