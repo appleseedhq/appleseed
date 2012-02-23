@@ -34,8 +34,6 @@
 
 // Standard headers.
 #include <cstddef>
-#include <memory>
-#include <vector>
 
 namespace foundation {
 namespace bvh {
@@ -44,15 +42,15 @@ namespace bvh {
 // Bounding Volume Hierarchy (BVH).
 //
 
-template <typename Node, typename Allocator = std::allocator<void> >
+template <typename NodeVector>
 class Tree
   : public NonCopyable
 {
   public:
-    typedef Node NodeType;
-    typedef Allocator AllocatorType;
-    typedef Tree<NodeType, AllocatorType> TreeType;
-    typedef std::vector<NodeType, AllocatorType> NodeVector;
+    typedef NodeVector NodeVectorType;
+    typedef Tree<NodeVectorType> TreeType;
+    typedef typename NodeVectorType::value_type NodeType;
+    typedef typename NodeVectorType::allocator_type AllocatorType;
 
     // Constructor.
     explicit Tree(const AllocatorType& allocator = AllocatorType());
@@ -81,21 +79,21 @@ class Tree
 // Tree class implementation.
 //
 
-template <typename Node, typename Allocator>
-Tree<Node, Allocator>::Tree(const AllocatorType& allocator)
+template <typename NodeVector>
+Tree<NodeVector>::Tree(const AllocatorType& allocator)
   : m_nodes(allocator)
 {
     clear();
 }
 
-template <typename Node, typename Allocator>
-void Tree<Node, Allocator>::clear()
+template <typename NodeVector>
+void Tree<NodeVector>::clear()
 {
     m_nodes.clear();
 }
 
-template <typename Node, typename Allocator>
-size_t Tree<Node, Allocator>::get_memory_size() const
+template <typename NodeVector>
+size_t Tree<NodeVector>::get_memory_size() const
 {
     return
           sizeof(*this)
