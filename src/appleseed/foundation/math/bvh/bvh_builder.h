@@ -61,9 +61,6 @@ namespace bvh {
 //              const size_t        begin,
 //              const size_t        end,
 //              const AABBType&     bbox);
-//
-//          // Return the items ordering.
-//          const std::vector<size_t>& get_item_ordering() const;
 //      };
 //
 
@@ -176,7 +173,7 @@ void Builder<Tree, Partitioner>::subdivide_recurse(
 
     if (pivot == end)
     {
-        // Turn the parent node into a leaf node for this set of items.
+        // Turn the current node into a leaf node.
         NodeType& node = tree.m_nodes[node_index];
         node.make_leaf();
         node.set_item_index(begin);
@@ -192,7 +189,7 @@ void Builder<Tree, Partitioner>::subdivide_recurse(
         const size_t left_node_index = tree.m_nodes.size();
         const size_t right_node_index = left_node_index + 1;
 
-        // Turn the parent node into an interior node.
+        // Turn the current node into an interior node.
         NodeType& node = tree.m_nodes[node_index];
         node.make_interior();
         node.set_left_bbox(left_bbox);
