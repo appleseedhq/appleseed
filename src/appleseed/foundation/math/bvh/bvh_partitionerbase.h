@@ -115,7 +115,7 @@ PartitionerBase<AABBVector>::PartitionerBase(
 }
 
 template <typename AABBVector>
-inline typename AABBVector::value_type PartitionerBase<AABBVector>::compute_bbox(
+typename AABBVector::value_type PartitionerBase<AABBVector>::compute_bbox(
     const size_t                begin,
     const size_t                end) const
 {

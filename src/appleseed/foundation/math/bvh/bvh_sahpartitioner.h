@@ -57,7 +57,7 @@ class SAHPartitioner
     // Constructor.
     SAHPartitioner(
         const AABBVectorType&   bboxes,
-        const size_t            max_leaf_size,
+        const size_t            max_leaf_size = 1,
         const ValueType         interior_node_traversal_cost = ValueType(1.0),
         const ValueType         triangle_intersection_cost = ValueType(1.0));
 
@@ -91,8 +91,8 @@ inline SAHPartitioner<AABBVector>::SAHPartitioner(
   , m_max_leaf_size(max_leaf_size)
   , m_interior_node_traversal_cost(interior_node_traversal_cost)
   , m_triangle_intersection_cost(triangle_intersection_cost)
+  , m_left_areas(bboxes.size() > 1 ? bboxes.size() - 1 : 0)
 {
-    m_left_areas.resize(bboxes.size());
 }
 
 template <typename AABBVector>

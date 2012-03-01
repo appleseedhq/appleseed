@@ -54,7 +54,7 @@ class MedianPartitioner
     // Constructor.
     MedianPartitioner(
         const AABBVectorType&   bboxes,
-        const size_t            max_leaf_size);
+        const size_t            max_leaf_size = 1);
 
     // Partition a set of items into two distinct sets.
     size_t partition(

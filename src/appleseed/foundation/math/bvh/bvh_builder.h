@@ -48,6 +48,7 @@ namespace bvh {
 //      class Partitioner
 //        : public foundation::NonCopyable
 //      {
+//        public:
 //          // Compute the bounding box of a given set of items.
 //          AABBType compute_bbox(
 //              const size_t        begin,

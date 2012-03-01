@@ -87,7 +87,7 @@ TEST_SUITE(Foundation_Math_BVH_Intersector_2D)
         }
     };
 
-    TEST_CASE(TryToInstantiateIntersectorIn2DCase)
+    TEST_CASE(InstantiateIntersectorIn2DCase)
     {
         bvh::Intersector<
             bvh::Tree<AlignedVector<NodeType> >,
