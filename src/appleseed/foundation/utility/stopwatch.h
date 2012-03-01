@@ -64,6 +64,9 @@ class Stopwatch
     // The stopwatch keeps running.
     void measure();
 
+    // Return true if the stopwatch is running, i.e. if start() has been called at least once.
+    bool is_running() const;
+
     // Read the number of timer ticks elapsed since the last call to start().
     // measure() must have been called prior to calling this method.
     uint64 get_ticks() const;
@@ -76,11 +79,9 @@ class Stopwatch
     Timer   m_timer;        // internal timer
     uint64  m_timer_freq;   // frequency of the internal timer
     uint64  m_overhead;     // measured overhead of calling start() + measure()
+    bool    m_is_running;   // true if start() was called at least once
     uint64  m_start;        // timer value when start() is called
     uint64  m_elapsed;      // elapsed time when measure() is called, adjusted for overhead
-#ifndef NDEBUG
-    bool    m_is_running;   // true if start() was called at least once
-#endif
 
     // Measure the overhead of calling start() + measure().
     uint64 measure_overhead(const size_t measures);
@@ -107,12 +108,9 @@ Stopwatch<Timer>::Stopwatch(const size_t overhead_measures)
         m_overhead = measure_overhead(overhead_measures);
     }
 
+    m_is_running = false;
     m_start = 0;
     m_elapsed = 0;
-
-#ifndef NDEBUG
-    m_is_running = false;
-#endif
 }
 
 template <typename Timer>
@@ -124,12 +122,8 @@ inline Timer& Stopwatch<Timer>::get_timer()
 template <typename Timer>
 inline void Stopwatch<Timer>::start()
 {
-    // Read start time.
-    m_start = m_timer.read();
-
-#ifndef NDEBUG
     m_is_running = true;
-#endif
+    m_start = m_timer.read();
 }
 
 template <typename Timer>
@@ -148,6 +142,12 @@ inline void Stopwatch<Timer>::measure()
 }
 
 template <typename Timer>
+bool Stopwatch<Timer>::is_running() const
+{
+    return m_is_running;
+}
+
+template <typename Timer>
 inline uint64 Stopwatch<Timer>::get_ticks() const
 {
     return m_elapsed;
@@ -162,6 +162,7 @@ inline double Stopwatch<Timer>::get_seconds() const
 template <typename Timer>
 uint64 Stopwatch<Timer>::measure_overhead(const size_t measures)
 {
+    assert(m_overhead == 0);
     assert(measures > 0);
 
     uint64 measured_overhead = std::numeric_limits<uint64>::max();
