@@ -55,7 +55,6 @@
 #include "renderer/modeling/scene/scene.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/exceptions/exception.h"
 #include "foundation/core/exceptions/stringexception.h"
 
 // Standard headers.
@@ -106,16 +105,17 @@ bool MasterRenderer::render() const
         RENDERER_LOG_ERROR("rendering failed (%s: %s).", e.what(), e.string());
         return false;
     }
-    catch (const Exception& e)
-    {
-        m_renderer_controller->on_rendering_abort();
-        RENDERER_LOG_ERROR("rendering failed (%s).", e.what());
-        return false;
-    }
     catch (const bad_alloc&)
     {
         m_renderer_controller->on_rendering_abort();
         RENDERER_LOG_ERROR("rendering failed (ran out of memory).");
+        return false;
+    }
+#ifdef NDEBUG
+    catch (const exception& e)
+    {
+        m_renderer_controller->on_rendering_abort();
+        RENDERER_LOG_ERROR("rendering failed (%s).", e.what());
         return false;
     }
     catch (...)
@@ -124,6 +124,7 @@ bool MasterRenderer::render() const
         RENDERER_LOG_ERROR("rendering failed (unknown exception).");
         return false;
     }
+#endif
 }
 
 void MasterRenderer::do_render() const

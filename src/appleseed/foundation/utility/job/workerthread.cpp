@@ -30,7 +30,6 @@
 #include "workerthread.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/exceptions/exception.h"
 #include "foundation/core/exceptions/stringexception.h"
 #include "foundation/platform/thread.h"
 #include "foundation/platform/types.h"
@@ -142,20 +141,21 @@ void WorkerThread::execute_job(IJob& job)
             e.what(),
             e.string());
     }
-    catch (const Exception& e)
-    {
-        LOG_ERROR(
-            m_logger,
-            "worker thread " FMT_SIZE_T ": job was terminated (%s).",
-            m_thread_index,
-            e.what());
-    }
     catch (const bad_alloc&)
     {
         LOG_ERROR(
             m_logger,
             "worker thread " FMT_SIZE_T ": job was terminated (ran out of memory).",
             m_thread_index);
+    }
+#ifdef NDEBUG
+    catch (const std::exception& e)
+    {
+        LOG_ERROR(
+            m_logger,
+            "worker thread " FMT_SIZE_T ": job was terminated (%s).",
+            m_thread_index,
+            e.what());
     }
     catch (...)
     {
@@ -164,6 +164,7 @@ void WorkerThread::execute_job(IJob& job)
             "worker thread " FMT_SIZE_T ": job was terminated (unknown exception).",
             m_thread_index);
     }
+#endif
 }
 
 }   // namespace foundation

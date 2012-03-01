@@ -208,6 +208,7 @@ void TestSuite::run_case(
     {
         test_case_result.signal_case_failure();
     }
+#ifdef NDEBUG
     catch (const exception& e)
     {
         TestListenerHelper::write(
@@ -235,6 +236,7 @@ void TestSuite::run_case(
 
         test_case_result.signal_case_failure();
     }
+#endif
 }
 
 }   // namespace foundation
