@@ -225,14 +225,17 @@ void RenderingManager::timerEvent(QTimerEvent* event)
 
 void RenderingManager::print_final_rendering_time()
 {
-    m_rendering_timer.measure();
+    if (m_rendering_timer.is_running())
+    {
+        m_rendering_timer.measure();
 
-    const double rendering_time = m_rendering_timer.get_seconds();
-    const string rendering_time_string = pretty_time(rendering_time, 3);
+        const double rendering_time = m_rendering_timer.get_seconds();
+        const string rendering_time_string = pretty_time(rendering_time, 3);
 
-    RENDERER_LOG_INFO("rendering finished in %s.", rendering_time_string.c_str());
+        RENDERER_LOG_INFO("rendering finished in %s.", rendering_time_string.c_str());
 
-    m_status_bar.set_text("Rendering finished in " + rendering_time_string);
+        m_status_bar.set_text("Rendering finished in " + rendering_time_string);
+    }
 }
 
 void RenderingManager::print_average_luminance()
