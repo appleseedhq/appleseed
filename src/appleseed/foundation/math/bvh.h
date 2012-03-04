@@ -37,6 +37,8 @@
 #include "foundation/math/bvh/bvh_node.h"
 #include "foundation/math/bvh/bvh_partitionerbase.h"
 #include "foundation/math/bvh/bvh_sahpartitioner.h"
+#include "foundation/math/bvh/bvh_sbvhpartitioner.h"
+#include "foundation/math/bvh/bvh_spatialbuilder.h"
 #include "foundation/math/bvh/bvh_statistics.h"
 #include "foundation/math/bvh/bvh_tree.h"
 

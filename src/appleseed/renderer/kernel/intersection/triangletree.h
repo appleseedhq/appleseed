@@ -100,17 +100,22 @@ class TriangleTree
     friend class TriangleLeafVisitor;
     friend class TriangleLeafProbeVisitor;
 
-    typedef std::vector<foundation::AABB3d> AABBVector;
-
     const foundation::UniqueID          m_triangle_tree_uid;
     std::vector<GTriangleType>          m_triangles;
     std::vector<TriangleKey>            m_triangle_keys;
 
-    void collect_triangles(
-        const Arguments&                arguments,
-        AABBVector&                     triangle_bboxes);
+    void build_bvh(const Arguments& arguments);
+    void build_sbvh(const Arguments& arguments);
 
-    void move_triangles_to_leaves();
+    void store_triangles(
+        const std::vector<size_t>&      triangle_indices,
+        std::vector<GVector3>&          triangle_vertices,
+        std::vector<TriangleKey>&       triangle_keys);
+
+    void store_triangles(
+        const std::vector<size_t>&      triangle_indices,
+        std::vector<GTriangleType>&     triangles,
+        std::vector<TriangleKey>&       triangle_keys);
 };
 
 

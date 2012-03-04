@@ -36,8 +36,7 @@ namespace foundation {
 namespace bvh {
 
 //
-// A predicate to sort items according to the centroid of their bounding box
-// along a given dimension.
+// A predicate to sort items according to the centroid of their bounding box in a given dimension.
 //
 
 template <typename AABBVector>
@@ -45,6 +44,26 @@ class BboxSortPredicate
 {
   public:
     BboxSortPredicate(
+        const AABBVector&   bboxes,
+        const size_t        dim);
+
+    bool operator()(const size_t lhs, const size_t rhs) const;
+
+  private:
+    const AABBVector&       m_bboxes;
+    const size_t            m_dim;
+};
+
+
+//
+// Same as BboxSortPredicate but provides a stable sort.
+//
+
+template <typename AABBVector>
+class StableBboxSortPredicate
+{
+  public:
+    StableBboxSortPredicate(
         const AABBVector&   bboxes,
         const size_t        dim);
 
@@ -75,6 +94,39 @@ inline bool BboxSortPredicate<AABBVector>::operator()(
     const size_t            rhs) const
 {
     return m_bboxes[lhs].center(m_dim) < m_bboxes[rhs].center(m_dim);
+}
+
+
+//
+// StableBboxSortPredicate class implementation.
+//
+
+template <typename AABBVector>
+inline StableBboxSortPredicate<AABBVector>::StableBboxSortPredicate(
+    const AABBVector&       bboxes,
+    const size_t            dim)
+  : m_bboxes(bboxes)
+  , m_dim(dim)
+{
+}
+
+template <typename AABBVector>
+inline bool StableBboxSortPredicate<AABBVector>::operator()(
+    const size_t            lhs,
+    const size_t            rhs) const
+{
+    for (size_t i = 0; i < AABBVector::value_type::Dimension; ++i)
+    {
+        const size_t d = (m_dim + i) % AABBVector::value_type::Dimension;
+
+        if (m_bboxes[lhs].center(d) < m_bboxes[rhs].center(d))
+            return true;
+
+        if (m_bboxes[lhs].center(d) > m_bboxes[rhs].center(d))
+            return false;
+    }
+
+    return false;
 }
 
 }       // namespace bvh

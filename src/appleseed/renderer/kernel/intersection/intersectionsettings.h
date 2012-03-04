@@ -74,6 +74,9 @@ const size_t RegionTreeAccessCacheSize = 16;
 // Maximum number of triangles per leaf.
 const size_t TriangleTreeMaxLeafSize = 2;
 
+// Number of bins used during SBVH construction.
+const size_t TriangleTreeBinCount = 256;
+
 // Relative cost of traversing an interior node.
 const GScalar TriangleTreeInteriorNodeTraversalCost = GScalar(1.0);
 

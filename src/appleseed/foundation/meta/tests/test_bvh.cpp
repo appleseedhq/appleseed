@@ -30,11 +30,17 @@
 #include "foundation/math/aabb.h"
 #include "foundation/math/bvh.h"
 #include "foundation/math/vector.h"
+#include "foundation/platform/defaulttimers.h"
 #include "foundation/utility/alignedvector.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"
 
+// Standard headers.
+#include <cstddef>
+#include <vector>
+
 using namespace foundation;
+using namespace std;
 
 TEST_SUITE(Foundation_Math_BVH_Node)
 {
@@ -64,6 +70,51 @@ TEST_SUITE(Foundation_Math_BVH_Node)
 
         EXPECT_EQ(LeftBBox, node.get_left_bbox());
         EXPECT_EQ(RightBBox, node.get_right_bbox());
+    }
+}
+
+TEST_SUITE(Foundation_Math_BVH_SpatialBuilder)
+{
+    struct ItemHandler
+    {
+        double get_bbox_grow_eps() const
+        {
+            return 1.0e-9;
+        }
+
+        AABB3d clip(
+            const size_t    item_index,
+            const size_t    dimension,
+            const double    bin_min,
+            const double    bin_max) const
+        {
+            return AABB3d();
+        }
+
+        bool intersect(
+            const size_t    item_index,
+            const AABB3d&   bbox) const
+        {
+            return false;
+        }
+    };
+
+    TEST_CASE(InstantiateSpatialBuilderAndSBVHPartitioner)
+    {
+        typedef AlignedVector<bvh::Node<AABB3d> > NodeVector;
+        typedef vector<AABB3d> AABBVector;
+
+        typedef bvh::Tree<NodeVector> Tree;
+        typedef bvh::SBVHPartitioner<ItemHandler, AABBVector> Partitioner;
+
+        AABBVector bboxes;
+        bboxes.push_back(AABB3d(Vector3d(0.0), Vector3d(1.0)));
+
+        ItemHandler item_handler;
+        Partitioner partitioner(item_handler, bboxes);
+
+        Tree tree;
+        bvh::SpatialBuilder<Tree, Partitioner> builder;
     }
 }
 

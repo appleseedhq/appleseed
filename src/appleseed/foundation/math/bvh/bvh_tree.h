@@ -65,6 +65,9 @@ class Tree
     template <typename Tree, typename Partitioner>
     friend class Builder;
 
+    template <typename Tree, typename Partitioner>
+    friend class SpatialBuilder;
+
     template <typename Tree, typename Builder>
     friend class TreeStatistics;
 
