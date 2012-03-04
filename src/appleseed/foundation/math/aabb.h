@@ -326,8 +326,10 @@ inline void AABB<T, N>::insert(const VectorType& v)
 {
     for (size_t i = 0; i < N; ++i)
     {
-        min[i] = std::min(min[i], v[i]);
-        max[i] = std::max(max[i], v[i]);
+        if (min[i] > v[i])
+            min[i] = v[i];
+        if (max[i] < v[i])
+            max[i] = v[i];
     }
 }
 
@@ -336,8 +338,10 @@ inline void AABB<T, N>::insert(const AABBType& b)
 {
     for (size_t i = 0; i < N; ++i)
     {
-        min[i] = std::min(min[i], b.min[i]);
-        max[i] = std::max(max[i], b.max[i]);
+        if (min[i] > b.min[i])
+            min[i] = b.min[i];
+        if (max[i] < b.max[i])
+            max[i] = b.max[i];
     }
 }
 
