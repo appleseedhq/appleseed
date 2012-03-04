@@ -95,6 +95,9 @@ class AABB
     // Return an invalidated bounding box.
     static AABBType invalid();
 
+    // Compute the intersection between two bounding boxes.
+    static AABBType intersect(const AABBType& a, const AABBType& b);
+
     // Return true if two bounding boxes overlap.
     static bool overlap(const AABBType& a, const AABBType& b);
 
@@ -234,6 +237,23 @@ inline AABB<T, N> AABB<T, N>::invalid()
     AABB<T, N> bbox;
     bbox.invalidate();
     return bbox;
+}
+
+template <typename T, size_t N>
+inline AABB<T, N> AABB<T, N>::intersect(const AABBType& a, const AABBType& b)
+{
+    assert(a.is_valid());
+    assert(b.is_valid());
+
+    AABBType intersection;
+
+    for (size_t i = 0; i < N; ++i)
+    {
+        intersection.min[i] = std::max(a.min[i], b.min[i]);
+        intersection.max[i] = std::min(a.max[i], b.max[i]);
+    }
+
+    return intersection;
 }
 
 template <typename T, size_t N>
