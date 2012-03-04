@@ -101,6 +101,8 @@ size_t SAHPartitioner<AABBVector>::partition(
     const size_t                end,
     const AABBType&             bbox)
 {
+    assert(bbox.rank() >= Dimension - 1);
+
     const size_t count = end - begin;
     assert(count > 1);
 
