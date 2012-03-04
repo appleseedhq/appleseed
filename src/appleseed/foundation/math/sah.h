@@ -93,7 +93,7 @@ class ExactSAHFunction
     struct Event
     {
         // Event type.
-        enum Type { Enter, Leave };
+        enum Type { Entry, Exit };
 
         ValueType       m_abscissa;
         Type            m_type;
@@ -118,8 +118,8 @@ class ExactSAHFunction
             else
             {
                 // When two events have the same abscissa,
-                // put Enter events before Leave events.
-                return m_type == Enter && rhs.m_type == Leave;
+                // put Entry events before Exit events.
+                return m_type == Entry && rhs.m_type == Exit;
             }
         }
     };
@@ -180,8 +180,8 @@ class ApproxSAHFunction
     // Event.
     struct Event
     {
-        size_t  m_enter;
-        size_t  m_leave;
+        size_t  m_entry;
+        size_t  m_exit;
     };
 
     const ValueType     m_domain_begin;
@@ -289,14 +289,14 @@ inline void ExactSAHFunction<T>::insert(
     if (interval_begin >= m_domain_end || interval_end <= m_domain_begin)
         return;
 
-    // Create Enter event.
+    // Create Entry event.
     if (interval_begin > m_domain_begin)
-        m_events.push_back(Event(interval_begin, Event::Enter));
+        m_events.push_back(Event(interval_begin, Event::Entry));
     else ++m_initial_left_count;
 
-    // Create Leave event.
+    // Create Exit event.
     if (interval_end < m_domain_end)
-        m_events.push_back(Event(interval_end, Event::Leave));
+        m_events.push_back(Event(interval_end, Event::Exit));
 
     ++m_interval_count;
 }
@@ -332,7 +332,7 @@ void ExactSAHFunction<T>::minimize(
         assert(right_length > ValueType(0.0));
 
         // Update the item counters.
-        if (i->m_type == Event::Enter)
+        if (i->m_type == Event::Entry)
             ++left_count;
         else --right_count;
 
@@ -384,7 +384,7 @@ void ExactSAHFunction<T>::visit(
         assert(right_length < m_domain_end - m_domain_begin);
 
         // Update the item counters.
-        if (i->m_type == Event::Enter)
+        if (i->m_type == Event::Entry)
             ++left_count;
         else --right_count;
 
@@ -428,8 +428,8 @@ ApproxSAHFunction<T, BinCount>::ApproxSAHFunction(
     assert(m_domain_begin < m_domain_end);
     for (size_t i = 0; i < BinCount; ++i)
     {
-        m_events[i].m_enter = 0;
-        m_events[i].m_leave = 0;
+        m_events[i].m_entry = 0;
+        m_events[i].m_exit = 0;
     }
 }
 
@@ -445,23 +445,23 @@ inline void ApproxSAHFunction<T, BinCount>::insert(
     if (interval_begin >= m_domain_end || interval_end <= m_domain_begin)
         return;
 
-    // Create Enter event.
+    // Create Entry event.
     if (interval_begin > m_domain_begin)
     {
         const ValueType x = interval_begin - m_domain_begin;
         const size_t bin = truncate<size_t>(x * m_domain_scale);
         if (bin < BinCount)
-            ++m_events[bin].m_enter;
+            ++m_events[bin].m_entry;
     }
     else ++m_initial_left_count;
 
-    // Create Leave event.
+    // Create Exit event.
     if (interval_end < m_domain_end)
     {
         const ValueType x = interval_end - m_domain_begin;
         const size_t bin = truncate<size_t>(x * m_domain_scale);
         if (bin < BinCount)
-            ++m_events[bin].m_leave;
+            ++m_events[bin].m_exit;
     }
 
     ++m_interval_count;
@@ -497,8 +497,8 @@ void ApproxSAHFunction<T, BinCount>::minimize(
         assert(right_length < m_domain_length);
 
         // Update the item counters.
-        left_count += m_events[i].m_enter;
-        right_count -= m_events[i].m_leave;
+        left_count += m_events[i].m_entry;
+        right_count -= m_events[i].m_exit;
 
         // Evaluate the cost function at this abscissa.
         const ValueType cost =
@@ -548,8 +548,8 @@ void ApproxSAHFunction<T, BinCount>::visit(
         assert(right_length < m_domain_length);
 
         // Update the item counters.
-        left_count += m_events[i].m_enter;
-        right_count -= m_events[i].m_leave;
+        left_count += m_events[i].m_entry;
+        right_count -= m_events[i].m_exit;
 
         // Evaluate the cost function at this abscissa.
         const ValueType cost =
