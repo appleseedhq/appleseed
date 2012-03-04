@@ -127,7 +127,7 @@ TreeStatistics<Tree, Builder>::TreeStatistics(
 {
     assert(!tree.m_nodes.empty());
 
-    collect_stats_recurse(tree, tree.m_nodes.front(), tree.m_bbox, 0);
+    collect_stats_recurse(tree, tree.m_nodes.front(), tree.m_bbox, 1);
 
     if (m_empty_volume > m_volume)
         m_empty_volume = m_volume;

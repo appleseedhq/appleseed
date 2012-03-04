@@ -113,7 +113,7 @@ TreeStatistics<Tree, Builder>::TreeStatistics(
 {
     assert(!tree.empty());
 
-    collect_stats_recurse(tree, tree.m_nodes.front(), 0);
+    collect_stats_recurse(tree, tree.m_nodes.front(), 1);
 }
 
 template <typename Tree, typename Builder>

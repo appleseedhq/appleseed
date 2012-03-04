@@ -109,7 +109,6 @@ class TraversalStatistics
 // TreeStatistics class implementation.
 //
 
-// Constructor, collects statistics for a given tree.
 template <typename Tree, typename Builder>
 TreeStatistics<Tree, Builder>::TreeStatistics(
     const Tree&         tree,
@@ -125,10 +124,9 @@ TreeStatistics<Tree, Builder>::TreeStatistics(
     assert(!tree.m_nodes.empty());
 
     // Recursively traverse the tree and collect statistics.
-    collect_stats_recurse(tree, tree.m_nodes.front(), tree.m_bbox, 0);
+    collect_stats_recurse(tree, tree.m_nodes.front(), tree.m_bbox, 1);
 }
 
-// Print tree statistics.
 template <typename Tree, typename Builder>
 void TreeStatistics<Tree, Builder>::print(Logger& logger)
 {
@@ -152,7 +150,6 @@ void TreeStatistics<Tree, Builder>::print(Logger& logger)
         m_leaf_depth.get_dev());
 }
 
-// Helper method to recursively traverse the tree and collect statistics.
 template <typename Tree, typename Builder>
 void TreeStatistics<Tree, Builder>::collect_stats_recurse(
     const Tree&             tree,
