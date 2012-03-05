@@ -48,9 +48,6 @@
 namespace foundation
 {
 
-// todo: replace most methods of AABB, like surface_area(), by free functions?
-
-
 //
 // N-dimensional axis-aligned bounding box [min, max] class and operations.
 // The boundary of the bounding box is considered to belong to the bounding box.
@@ -145,10 +142,6 @@ class AABB
     // Return the volume of the bounding box.
     T volume() const;
 
-    // Return the surface area of the bounding box.
-    T half_surface_area() const;
-    T surface_area() const;
-
     // Compute the 2^N corner points of the bounding box.
     void compute_corners(VectorType corners[]) const;
 
@@ -159,6 +152,10 @@ class AABB
 // Exact inequality and equality tests.
 template <typename T, size_t N> bool operator!=(const AABB<T, N>& lhs, const AABB<T, N>& rhs);
 template <typename T, size_t N> bool operator==(const AABB<T, N>& lhs, const AABB<T, N>& rhs);
+
+// Compute the surface area of a 3D bounding box.
+template <typename T> T half_surface_area(const AABB<T, 3>& bbox);
+template <typename T> T surface_area(const AABB<T, 3>& bbox);
 
 
 //
@@ -472,23 +469,6 @@ T AABB<T, N>::volume() const
 }
 
 template <typename T, size_t N>
-inline T AABB<T, N>::half_surface_area() const
-{
-    assert(is_valid());
-
-    const VectorType e = max - min;
-
-    return e[0] * e[1] + e[0] * e[2] + e[1] * e[2];
-}
-
-template <typename T, size_t N>
-inline T AABB<T, N>::surface_area() const
-{
-    const T h = half_surface_area();
-    return h + h;
-}
-
-template <typename T, size_t N>
 void AABB<T, N>::compute_corners(VectorType corners[]) const
 {
     assert(is_valid());
@@ -527,6 +507,24 @@ template <typename T, size_t N>
 inline bool operator==(const AABB<T, N>& lhs, const AABB<T, N>& rhs)
 {
     return !(lhs != rhs);
+}
+
+template <typename T>
+inline T half_surface_area(const AABB<T, 3>& bbox)
+{
+    assert(bbox.is_valid());
+
+    const Vector<T, 3> e = bbox.max - bbox.min;
+
+    return e[0] * e[1] + e[0] * e[2] + e[1] * e[2];
+}
+
+template <typename T>
+inline T surface_area(const AABB<T, 3>& bbox)
+{
+    const T h = half_surface_area(bbox);
+
+    return h + h;
 }
 
 }       // namespace foundation

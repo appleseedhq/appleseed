@@ -126,7 +126,7 @@ size_t SAHPartitioner<AABBVector>::partition(
         for (size_t i = 0; i < count - 1; ++i)
         {
             bbox_accumulator.insert(bboxes[indices[begin + i]]);
-            m_left_areas[i] = bbox_accumulator.half_surface_area();
+            m_left_areas[i] = half_surface_area(bbox_accumulator);
         }
 
         // Right-to-left sweep to accumulate bounding boxes, compute their surface area find the best partition.
@@ -138,7 +138,7 @@ size_t SAHPartitioner<AABBVector>::partition(
 
             // Compute the cost of this partition.
             const ValueType left_cost = m_left_areas[i - 1] * i;
-            const ValueType right_cost = bbox_accumulator.half_surface_area() * (count - i);
+            const ValueType right_cost = half_surface_area(bbox_accumulator) * (count - i);
             const ValueType split_cost = left_cost + right_cost;
 
             // Keep track of the partition with the lowest cost.
@@ -154,7 +154,7 @@ size_t SAHPartitioner<AABBVector>::partition(
     // Don't split if it's cheaper to make a leaf.
     const ValueType split_cost =
         m_interior_node_traversal_cost +  
-        best_split_cost / bbox.half_surface_area() * m_triangle_intersection_cost;
+        best_split_cost / half_surface_area(bbox) * m_triangle_intersection_cost;
     const ValueType leaf_cost = count * m_triangle_intersection_cost;
     if (leaf_cost <= split_cost)
         return end;

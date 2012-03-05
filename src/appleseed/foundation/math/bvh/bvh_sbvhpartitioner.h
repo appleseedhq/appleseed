@@ -270,7 +270,7 @@ bool SBVHPartitioner<ItemHandler, AABBVector>::partition(
             do_find_spatial_split = false;
         else
         {
-            const ValueType overlap_sa = overlap_bbox.surface_area();
+            const ValueType overlap_sa = surface_area(overlap_bbox);
             const ValueType overlap_factor = overlap_sa * m_root_bbox_rcp_sa;
             const ValueType Alpha = ValueType(1.0e-5);
             if (overlap_factor <= Alpha)
@@ -345,7 +345,7 @@ void SBVHPartitioner<ItemHandler, AABBVector>::compute_root_bbox_surface_area()
     for (size_t i = 0; i < size; ++i)
         root_bbox.insert(m_bboxes[i]);
 
-    m_root_bbox_rcp_sa = ValueType(1.0) / root_bbox.surface_area();
+    m_root_bbox_rcp_sa = ValueType(1.0) / surface_area(root_bbox);
 }
 
 template <typename ItemHandler, typename AABBVector>
@@ -358,7 +358,7 @@ inline typename AABBVector::value_type::ValueType SBVHPartitioner<ItemHandler, A
     if (!(cost < std::numeric_limits<ValueType>::max()))
         return cost;
 
-    const ValueType bbox_half_surface_area = bbox.half_surface_area();
+    const ValueType bbox_half_surface_area = half_surface_area(bbox);
 
     assert(bbox_half_surface_area > ValueType(0.0));
 
@@ -411,8 +411,8 @@ void SBVHPartitioner<ItemHandler, AABBVector>::find_object_split(
             bbox_accumulator.insert(clipped_item_bbox);
 
             // Compute the cost of this partition.
-            const ValueType left_cost = m_left_bboxes[i - 1].half_surface_area() * i;
-            const ValueType right_cost = bbox_accumulator.half_surface_area() * (item_count - i);
+            const ValueType left_cost = half_surface_area(m_left_bboxes[i - 1]) * i;
+            const ValueType right_cost = half_surface_area(bbox_accumulator) * (item_count - i);
             const ValueType split_cost = left_cost + right_cost;
 
             // Keep track of the partition with the lowest cost.
@@ -540,8 +540,8 @@ void SBVHPartitioner<ItemHandler, AABBVector>::find_spatial_split(
             right_item_count += bin.m_exit_counter;
 
             // Compute the cost of this split.
-            const ValueType left_cost = bin.m_left_bbox.half_surface_area() * left_item_count;
-            const ValueType right_cost = bbox_accumulator.half_surface_area() * right_item_count;
+            const ValueType left_cost = half_surface_area(bin.m_left_bbox) * left_item_count;
+            const ValueType right_cost = half_surface_area(bbox_accumulator) * right_item_count;
             const ValueType split_cost = left_cost + right_cost;
 
             // Keep track of the partition with the lowest cost.
