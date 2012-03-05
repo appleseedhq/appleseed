@@ -463,7 +463,12 @@ T AABB<T, N>::volume() const
 
     const VectorType e = max - min;
 
-    return e[0] * e[1] * e[2];
+    ValueType volume = e[0];
+
+    for (size_t i = 1; i < N; ++i)
+        volume *= e[i];
+
+    return volume;
 }
 
 template <typename T, size_t N>
