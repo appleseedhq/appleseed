@@ -413,8 +413,6 @@ inline bool AABB<T, N>::is_valid() const
 template <typename T, size_t N>
 inline size_t AABB<T, N>::rank() const
 {
-    assert(is_valid());
-
     size_t r = 0;
     
     for (size_t i = 0; i < N; ++i)
