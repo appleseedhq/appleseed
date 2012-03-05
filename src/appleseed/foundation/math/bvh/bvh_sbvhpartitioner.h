@@ -53,6 +53,28 @@ namespace bvh {
 //
 //   http://www.nvidia.com/docs/IO/77714/sbvh.pdf
 //
+// The ItemHandler class must conform to the following prototype:
+//
+//      class ItemHandler
+//        : public foundation::NonCopyable
+//      {
+//        public:
+//          ValueType get_bbox_grow_eps() const;
+//
+//          AABBType clip(
+//              const size_t        item_index,
+//              const size_t        dimension,
+//              const ValueType     slab_min,
+//              const ValueType     slab_max) const;
+//
+//          bool intersect(
+//              const size_t        item_index,
+//              const AABBType&     bbox) const;
+//      };
+//
+
+// When defined, additional costly correctness checks are enabled (only in Debug).
+#define FOUNDATION_SBVH_DEEPCHECK
 
 template <typename ItemHandler, typename AABBVector>
 class SBVHPartitioner
@@ -111,13 +133,12 @@ class SBVHPartitioner
     const ValueType                 m_interior_node_traversal_cost;
     const ValueType                 m_triangle_intersection_cost;
 
+    ValueType                       m_root_bbox_rcp_sa;
     std::vector<AABBType>           m_left_bboxes;
     std::vector<Bin>                m_bins;
     std::vector<size_t>             m_indices;
 
-    static bool node_bbox_overlap(
-        const AABBType&             a,
-        const AABBType&             b);
+    void compute_root_bbox_surface_area();
 
     ValueType compute_final_split_cost(
         const AABBType&             bbox,
@@ -185,6 +206,7 @@ SBVHPartitioner<ItemHandler, AABBVector>::SBVHPartitioner(
   , m_left_bboxes(bboxes.size() > 1 ? bboxes.size() - 1 : 0)
   , m_bins(bin_count)
 {
+    compute_root_bbox_surface_area();
 }
 
 template <typename ItemHandler, typename AABBVector>
@@ -213,12 +235,22 @@ bool SBVHPartitioner<ItemHandler, AABBVector>::partition(
 {
     assert(bbox.rank() >= Dimension - 1);
 
+#ifdef FOUNDATION_SBVH_DEEPCHECK
+    // Make sure every item intersects the leaf it belongs to.
+    for (size_t i = 0; i < indices.size(); ++i)
+    {
+        const size_t item_index = indices[i];
+        const AABBType& item_bbox = m_bboxes[item_index];
+        assert(AABBType::overlap(item_bbox, bbox));
+    }
+#endif
+
     // Find the best object split.
     AABBType object_split_left_bbox;
     AABBType object_split_right_bbox;
     size_t object_split_dim;
     size_t object_split_pivot;
-    ValueType object_split_cost;
+    ValueType object_split_cost = std::numeric_limits<ValueType>::max();
     find_object_split(
         indices,
         bbox,
@@ -228,16 +260,31 @@ bool SBVHPartitioner<ItemHandler, AABBVector>::partition(
         object_split_pivot,
         object_split_cost);
 
+    // Don't try to find a spatial split if the object split is good enough.
+    bool do_find_spatial_split = true;
+    if (object_split_cost < std::numeric_limits<ValueType>::max())
+    {
+        const AABBType overlap_bbox =
+            AABBType::intersect(object_split_left_bbox, object_split_right_bbox);
+        if (!overlap_bbox.is_valid())
+            do_find_spatial_split = false;
+        else
+        {
+            const ValueType overlap_sa = overlap_bbox.surface_area();
+            const ValueType overlap_factor = overlap_sa * m_root_bbox_rcp_sa;
+            const ValueType Alpha = ValueType(1.0e-5);
+            if (overlap_factor <= Alpha)
+                do_find_spatial_split = false;
+        }
+    }
+
     // Find the best spatial split.
     AABBType spatial_split_left_bbox;
     AABBType spatial_split_right_bbox;
     SplitType spatial_split;
-    ValueType spatial_split_cost;
-    if (object_split_cost == std::numeric_limits<ValueType>::max() ||
-        node_bbox_overlap(object_split_left_bbox, object_split_right_bbox))
+    ValueType spatial_split_cost = std::numeric_limits<ValueType>::max();
+    if (do_find_spatial_split)
     {
-        // Only look for a spatial split if either no object split could be found
-        // or the best object split produced overlapping child nodes.
         find_spatial_split(
             indices,
             bbox,
@@ -246,16 +293,19 @@ bool SBVHPartitioner<ItemHandler, AABBVector>::partition(
             spatial_split,
             spatial_split_cost);
     }
-    else spatial_split_cost = std::numeric_limits<ValueType>::max();
 
-    // Don't split if it's cheaper to make a leaf.
+    // Compute the cost of keeping the leaf unsplit.
     const ValueType leaf_cost = indices.size() * m_triangle_intersection_cost;
-    if (leaf_cost <= object_split_cost && leaf_cost <= spatial_split_cost)
-        return false;
 
-    if (object_split_cost <= spatial_split_cost)
+    // Select the cheapest option.
+    if (leaf_cost <= object_split_cost && leaf_cost <= spatial_split_cost)
     {
-        // Object split.
+        // Don't split, make a leaf.
+        return false;
+    }
+    else if (object_split_cost <= spatial_split_cost)
+    {
+        // Perform the object split.
         left_bbox = object_split_left_bbox;
         right_bbox = object_split_right_bbox;
         object_sort(
@@ -266,10 +316,11 @@ bool SBVHPartitioner<ItemHandler, AABBVector>::partition(
             right_bbox,
             left_indices,
             right_indices);
+        return true;
     }
     else
     {
-        // Spatial split.
+        // Perform the spatial split.
         left_bbox = spatial_split_left_bbox;
         right_bbox = spatial_split_right_bbox;
         spatial_sort(
@@ -279,26 +330,22 @@ bool SBVHPartitioner<ItemHandler, AABBVector>::partition(
             right_bbox,
             left_indices,
             right_indices);
+        return true;
     }
-
-    return true;
 }
 
 template <typename ItemHandler, typename AABBVector>
-inline bool SBVHPartitioner<ItemHandler, AABBVector>::node_bbox_overlap(
-    const AABBType&                 a,
-    const AABBType&                 b)
+void SBVHPartitioner<ItemHandler, AABBVector>::compute_root_bbox_surface_area()
 {
-    assert(a.is_valid());
-    assert(b.is_valid());
+    AABBType root_bbox;
+    root_bbox.invalidate();
 
-    for (size_t i = 0; i < Dimension; ++i)
-    {
-        if (a.min[i] >= b.max[i] || a.max[i] <= b.min[i])
-            return false;
-    }
+    const size_t size = m_bboxes.size();
 
-    return true;
+    for (size_t i = 0; i < size; ++i)
+        root_bbox.insert(m_bboxes[i]);
+
+    m_root_bbox_rcp_sa = ValueType(1.0) / root_bbox.surface_area();
 }
 
 template <typename ItemHandler, typename AABBVector>
@@ -330,8 +377,6 @@ void SBVHPartitioner<ItemHandler, AABBVector>::find_object_split(
     size_t&                         best_split_pivot,
     ValueType&                      best_split_cost)
 {
-    best_split_cost = std::numeric_limits<ValueType>::max();
-
     const size_t item_count = indices.size();
 
     for (size_t d = 0; d < Dimension; ++d)
@@ -394,8 +439,6 @@ void SBVHPartitioner<ItemHandler, AABBVector>::find_spatial_split(
     SplitType&                      best_split,
     ValueType&                      best_split_cost)
 {
-    best_split_cost = std::numeric_limits<ValueType>::max();
-
     const size_t item_count = indices.size();
 
     for (size_t d = 0; d < Dimension; ++d)
@@ -427,10 +470,7 @@ void SBVHPartitioner<ItemHandler, AABBVector>::find_spatial_split(
             const AABBType& item_bbox = m_bboxes[item_index];
             const ValueType item_bbox_min = item_bbox.min[d];
             const ValueType item_bbox_max = item_bbox.max[d];
-
-            // Reject items entirely outside the leaf.
-            if (item_bbox_min >= bbox_max || item_bbox_max <= bbox_min)
-                continue;
+            assert(item_bbox_min <= bbox_max && item_bbox_max >= bbox_min);
 
             // Find the range of bins covered by this item.
             const size_t begin_bin =
@@ -457,6 +497,7 @@ void SBVHPartitioner<ItemHandler, AABBVector>::find_spatial_split(
                         d,
                         bin_min,
                         bin_max);
+                assert(item_clipped_bbox.is_valid());
 
                 // Grow the bounding box associated with this bin.
                 m_bins[b].m_bin_bbox.insert(item_clipped_bbox);
@@ -515,10 +556,13 @@ void SBVHPartitioner<ItemHandler, AABBVector>::find_spatial_split(
         }
     }
 
-    // In the case of a spatial split, the bounding boxes of the child nodes should be disjoint.
-    assert(!node_bbox_overlap(left_bbox, right_bbox));
-
     best_split_cost = compute_final_split_cost(bbox, best_split_cost);
+
+    if (best_split_cost < std::numeric_limits<ValueType>::max())
+    {
+        // In the case of a spatial split, the bounding boxes of the child nodes must be disjoint.
+        assert(AABBType::intersect(left_bbox, right_bbox).rank() < Dimension);
+    }
 }
 
 template <typename ItemHandler, typename AABBVector>
@@ -544,7 +588,9 @@ void SBVHPartitioner<ItemHandler, AABBVector>::object_sort(
     {
         const size_t item_index = indices[i];
         const AABBType& item_bbox = m_bboxes[item_index];
+#ifdef FOUNDATION_SBVH_DEEPCHECK
         assert(AABBType::overlap(item_bbox, left_bbox));
+#endif
         left_indices[i] = item_index;
     }
 
@@ -552,7 +598,9 @@ void SBVHPartitioner<ItemHandler, AABBVector>::object_sort(
     {
         const size_t item_index = indices[i];
         const AABBType& item_bbox = m_bboxes[item_index];
+#ifdef FOUNDATION_SBVH_DEEPCHECK
         assert(AABBType::overlap(item_bbox, right_bbox));
+#endif
         right_indices[i - split_pivot] = item_index;
     }
 }
@@ -581,9 +629,19 @@ void SBVHPartitioner<ItemHandler, AABBVector>::spatial_sort(
         const AABBType& item_bbox = m_bboxes[item_index];
 
         if (item_bbox.max[split.m_dimension] <= split.m_abscissa)
+        {
+#ifdef FOUNDATION_SBVH_DEEPCHECK
+            assert(AABBType::overlap(item_bbox, left_bbox));
+#endif
             left_indices.push_back(item_index);
+        }
         else if (item_bbox.min[split.m_dimension] >= split.m_abscissa)
+        {
+#ifdef FOUNDATION_SBVH_DEEPCHECK
+            assert(AABBType::overlap(item_bbox, right_bbox));
+#endif
             right_indices.push_back(item_index);
+        }
         else
         {
             const bool in_left = m_item_handler.intersect(item_index, enlarged_left_bbox);

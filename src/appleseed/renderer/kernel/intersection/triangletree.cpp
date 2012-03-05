@@ -140,17 +140,15 @@ namespace
                     triangle_bbox.insert(Vector3d(v0));
                     triangle_bbox.insert(Vector3d(v1));
                     triangle_bbox.insert(Vector3d(v2));
-                    triangle_bbox.robust_grow(1.0e-15);
                     triangle_bboxes.push_back(triangle_bbox);
                 }
             }
         }
     }
 
-    struct TriangleItemHandler
+    class TriangleItemHandler
     {
-        const vector<GVector3>& m_triangle_vertices;
-
+      public:
         explicit TriangleItemHandler(const vector<GVector3>& triangle_vertices)
           : m_triangle_vertices(triangle_vertices)
         {
@@ -164,20 +162,49 @@ namespace
         AABB3d clip(
             const size_t    item_index,
             const size_t    dimension,
-            const double    bin_min,
-            const double    bin_max) const
+            const double    slab_min,
+            const double    slab_max) const
         {
-            // todo: implement properly.
-
             AABB3d bbox;
             bbox.invalidate();
 
-            bbox.insert(Vector3d(m_triangle_vertices[item_index * 3 + 0]));
-            bbox.insert(Vector3d(m_triangle_vertices[item_index * 3 + 1]));
-            bbox.insert(Vector3d(m_triangle_vertices[item_index * 3 + 2]));
+            const Vector3d v0(m_triangle_vertices[item_index * 3 + 0]);
+            const Vector3d v1(m_triangle_vertices[item_index * 3 + 1]);
+            const Vector3d v2(m_triangle_vertices[item_index * 3 + 2]);
 
-            bbox.min[dimension] = max(bbox.min[dimension], bin_min);
-            bbox.max[dimension] = min(bbox.max[dimension], bin_max);
+            const bool v0_ge_min = v0[dimension] >= slab_min;
+            const bool v0_le_max = v0[dimension] <= slab_max;
+            const bool v1_ge_min = v1[dimension] >= slab_min;
+            const bool v1_le_max = v1[dimension] <= slab_max;
+            const bool v2_ge_min = v2[dimension] >= slab_min;
+            const bool v2_le_max = v2[dimension] <= slab_max;
+
+            if (v0_ge_min && v0_le_max)
+                bbox.insert(v0);
+
+            if (v1_ge_min && v1_le_max)
+                bbox.insert(v1);
+
+            if (v2_ge_min && v2_le_max)
+                bbox.insert(v2);
+
+            if (v0_ge_min != v1_ge_min)
+                bbox.insert(segment_plane_intersection(v0, v1, dimension, slab_min));
+
+            if (v0_le_max != v1_le_max)
+                bbox.insert(segment_plane_intersection(v0, v1, dimension, slab_max));
+
+            if (v1_ge_min != v2_ge_min)
+                bbox.insert(segment_plane_intersection(v1, v2, dimension, slab_min));
+
+            if (v1_le_max != v2_le_max)
+                bbox.insert(segment_plane_intersection(v1, v2, dimension, slab_max));
+
+            if (v2_ge_min != v0_ge_min)
+                bbox.insert(segment_plane_intersection(v2, v0, dimension, slab_min));
+
+            if (v2_le_max != v0_le_max)
+                bbox.insert(segment_plane_intersection(v2, v0, dimension, slab_max));
 
             return bbox;
         }
@@ -192,6 +219,31 @@ namespace
                     Vector3d(m_triangle_vertices[item_index * 3 + 0]),
                     Vector3d(m_triangle_vertices[item_index * 3 + 1]),
                     Vector3d(m_triangle_vertices[item_index * 3 + 2]));
+        }
+
+      private:
+        const vector<GVector3>& m_triangle_vertices;
+
+        static Vector3d segment_plane_intersection(
+            const Vector3d& a,
+            const Vector3d& b,
+            const size_t    d,
+            const double    x)
+        {
+            const double ab = b[d] - a[d];
+
+            if (ab == 0.0)
+                return a;
+
+            const double t = (x - a[d]) / ab;
+
+            assert(t >= 0.0 && t <= 1.0);
+
+            Vector3d result;
+            result = a * (1.0 - t) + b * t;
+            result[d] = x;
+
+            return result;
         }
     };
 }
