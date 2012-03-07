@@ -30,6 +30,7 @@
 #include "console.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/thread.h"
 #ifdef _WIN32
 #include "foundation/platform/windows.h"
 #endif
@@ -37,15 +38,37 @@
 // Standard headers.
 #include <cassert>
 #include <cstdio>
+#include <iostream>
 
 using namespace std;
 
 namespace foundation
 {
 
-//
-// Console class implementation (Windows).
-//
+// ------------------------------------------------------------------------------------------------
+// Common code.
+// ------------------------------------------------------------------------------------------------
+
+Console& console()
+{
+    return Console::instance();
+}
+
+void Console::wait_for_enter_keypress()
+{
+    while (fgetc(stdin) != '\n')
+        yield();
+}
+
+void Console::pause()
+{
+    cout << "Press Enter to continue..." << endl;
+    wait_for_enter_keypress();
+}
+
+// ------------------------------------------------------------------------------------------------
+// Windows.
+// ------------------------------------------------------------------------------------------------
 
 #ifdef _WIN32
 
@@ -132,10 +155,9 @@ void Console::reset_text_color(
     set_text_color(device, DefaultColor);
 }
 
-
-//
-// Console class implementation (other platforms).
-//
+// ------------------------------------------------------------------------------------------------
+// Other platforms.
+// ------------------------------------------------------------------------------------------------
 
 #else
 
@@ -201,10 +223,5 @@ void Console::reset_text_color(
 }
 
 #endif
-
-Console& console()
-{
-    return Console::instance();
-}
 
 }   // namespace foundation
