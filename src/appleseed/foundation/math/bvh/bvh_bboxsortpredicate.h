@@ -50,6 +50,9 @@ class BboxSortPredicate
     bool operator()(const size_t lhs, const size_t rhs) const;
 
   private:
+    typedef typename AABBVector::value_type AABBType;
+    typedef typename AABBType::ValueType ValueType;
+
     const AABBVector&       m_bboxes;
     const size_t            m_dim;
 };
@@ -70,6 +73,9 @@ class StableBboxSortPredicate
     bool operator()(const size_t lhs, const size_t rhs) const;
 
   private:
+    typedef typename AABBVector::value_type AABBType;
+    typedef typename AABBType::ValueType ValueType;
+
     const AABBVector&       m_bboxes;
     const size_t            m_dim;
 };
@@ -93,7 +99,13 @@ inline bool BboxSortPredicate<AABBVector>::operator()(
     const size_t            lhs,
     const size_t            rhs) const
 {
-    return m_bboxes[lhs].center(m_dim) < m_bboxes[rhs].center(m_dim);
+    const AABBType& lhs_bbox = m_bboxes[lhs];
+    const AABBType& rhs_bbox = m_bboxes[rhs];
+
+    const ValueType lhs_center = lhs_bbox.min[m_dim] + lhs_bbox.max[m_dim];
+    const ValueType rhs_center = rhs_bbox.min[m_dim] + rhs_bbox.max[m_dim];
+
+    return lhs_center < rhs_center;
 }
 
 
@@ -115,14 +127,27 @@ inline bool StableBboxSortPredicate<AABBVector>::operator()(
     const size_t            lhs,
     const size_t            rhs) const
 {
+    const AABBType& lhs_bbox = m_bboxes[lhs];
+    const AABBType& rhs_bbox = m_bboxes[rhs];
+
+    const ValueType lhs_center = lhs_bbox.min[m_dim] + lhs_bbox.max[m_dim];
+    const ValueType rhs_center = rhs_bbox.min[m_dim] + rhs_bbox.max[m_dim];
+
+    if (lhs_center < rhs_center)
+        return true;
+
+    if (lhs_center > rhs_center)
+        return false;
+
     for (size_t i = 0; i < AABBVector::value_type::Dimension; ++i)
     {
-        const size_t d = (m_dim + i) % AABBVector::value_type::Dimension;
+        const ValueType lhs_center = lhs_bbox.min[i] + lhs_bbox.max[i];
+        const ValueType rhs_center = rhs_bbox.min[i] + rhs_bbox.max[i];
 
-        if (m_bboxes[lhs].center(d) < m_bboxes[rhs].center(d))
+        if (lhs_center < rhs_center)
             return true;
 
-        if (m_bboxes[lhs].center(d) > m_bboxes[rhs].center(d))
+        if (lhs_center > rhs_center)
             return false;
     }
 
