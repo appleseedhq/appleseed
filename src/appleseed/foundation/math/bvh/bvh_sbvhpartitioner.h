@@ -345,7 +345,10 @@ void SBVHPartitioner<ItemHandler, AABBVector>::compute_root_bbox_surface_area()
     for (size_t i = 0; i < size; ++i)
         root_bbox.insert(m_bboxes[i]);
 
-    m_root_bbox_rcp_sa = ValueType(1.0) / surface_area(root_bbox);
+    m_root_bbox_rcp_sa =
+        size > 0
+            ? ValueType(1.0) / surface_area(root_bbox)
+            : ValueType(0.0);
 }
 
 template <typename ItemHandler, typename AABBVector>
