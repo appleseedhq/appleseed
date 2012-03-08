@@ -53,7 +53,7 @@ using namespace std;
 TEST_SUITE(EWAFilteringExploration)
 {
     //---------------------------------------------------------------------------------------------
-    //--- Drawing Primitives Used For Debugging ---------------------------------------------------
+    // Drawing Primitives Used For Debugging
     //---------------------------------------------------------------------------------------------
 
     void draw_checkerboard(
@@ -180,8 +180,8 @@ TEST_SUITE(EWAFilteringExploration)
     }
 
     //---------------------------------------------------------------------------------------------
-    //--- Reference EWA Filter Implementation -----------------------------------------------------
-    //--- http://www.cs.cmu.edu/~ph/texfund/texfund.pdf -------------------------------------------
+    // Reference EWA Filter Implementation with debugging aids
+    // http://www.cs.cmu.edu/~ph/texfund/texfund.pdf
     //---------------------------------------------------------------------------------------------
 
     class EWAFilterRef
@@ -396,7 +396,7 @@ TEST_SUITE(EWAFilteringExploration)
     };
 
     //---------------------------------------------------------------------------------------------
-    //--- Test Code -------------------------------------------------------------------------------
+    // Test Code
     //---------------------------------------------------------------------------------------------
 
     TEST_CASE(EWAFiltering)
@@ -490,7 +490,7 @@ TEST_SUITE(EWAFilteringExploration)
         const size_t Width = 64;
         const size_t Height = 64;
         Image texture(Width, Height, Width, Height, 3, PixelFormatFloat);
-        draw_checkerboard(texture, 2, Color3f(0.3f, 0.6f, 0.1f), Color3f(1.0f, 0.8f, 0.5f));
+        draw_checkerboard(texture, 8, Color3f(0.3f, 0.6f, 0.1f), Color3f(1.0f, 0.8f, 0.5f));
 
         // Create the filters.
         Image debug_image(texture);
