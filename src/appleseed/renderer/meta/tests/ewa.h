@@ -53,6 +53,33 @@ class EWAFilterAK
     }
 
     // The lookup point is expressed in [0,width)x[0,height) (note: open on the right).
+    void filter_nearest(
+        const float     texture[],
+        const int       texture_width,
+        const int       texture_height,
+        const int       texture_channels,
+        const float     texture_gamma,
+        const float     x,
+        const float     y,
+        float           result[]) const
+    {
+        const int ix = std::min(static_cast<int>(x), texture_width - 1);
+        const int iy = std::min(static_cast<int>(y), texture_height - 1);
+        const int index = (ix + iy * texture_width) * texture_channels;
+
+        if (texture_gamma != 1.0f)
+        {
+            for (int c = 0; c < texture_channels; ++c)
+                result[c] = std::pow(texture[index + c], texture_gamma);
+        }
+        else
+        {
+            for (int c = 0; c < texture_channels; ++c)
+                result[c] = texture[index + c];
+        }
+    }
+
+    // The lookup point is expressed in [0,width)x[0,height) (note: open on the right).
     void filter_bilinear(
         const float     texture[],
         const int       texture_width,
@@ -63,7 +90,6 @@ class EWAFilterAK
         const float     y,
         float           result[]) const
     {
-        // Fetch neighboring texels.
         const float px = x * (texture_width - 1) / texture_width;
         const float py = y * (texture_height - 1) / texture_height;
         const int ix0 = static_cast<int>(px);
@@ -71,7 +97,6 @@ class EWAFilterAK
         const int ix1 = std::min(ix0 + 1, texture_width - 1);
         const int iy1 = std::min(iy0 + 1, texture_height - 1);
 
-        // Compute weights.
         const float wx1 = px - ix0;
         const float wy1 = py - iy0;
         const float wx0 = 1.0f - wx1;
@@ -141,26 +166,14 @@ class EWAFilterAK
         const float dv_x = m_01_11_x - center_x;
         const float dv_y = m_01_11_y - center_y;
 
-        // Compute the inclusion threshold.
-        const float F = static_cast<float>(WeightCount);
-
+        // Trapezoid with a zero area: fallback to bilinear filtering.
         float K_den = du_x * dv_y - dv_x * du_y;
         K_den *= K_den;
-
         if (K_den == 0.0f)
-        {
-            filter_bilinear(
-                texture,
-                texture_width,
-                texture_height,
-                texture_channels,
-                texture_gamma,
-                center_x,
-                center_y,
-                result);
+            goto fallback;
 
-            return;
-        }
+        // Compute the inclusion threshold.
+        const float F = static_cast<float>(WeightCount);
 
         // Compute the ellipse coefficients.
         const float K = F / K_den;
@@ -168,9 +181,9 @@ class EWAFilterAK
         const float B = K * (-2.0f * (du_x * du_y + dv_x * dv_y));
         const float C = K * (du_x * du_x + dv_x * dv_x);
 
-        // Make sure we have an elliptical paraboloid, concave upward.
-        assert(A > 0.0f);
-        assert(A * C - B * B / 4.0f > 0.0f);
+        // Not an elliptical paraboloid, concave upward: fallback to bilinear filtering.
+        if (A <= 0.0f || A * C - B * B / 4.0f <= 0.0f)
+            goto fallback;
 
         // Compute the bounding box of the ellipse.
         const float ku = 2.0f * C * sqrt(F / (4.0f * A * C * C - C * B * B));
@@ -226,7 +239,7 @@ class EWAFilterAK
         }
         else
         {
-            filter_bilinear(
+            filter_nearest(
                 texture,
                 texture_width,
                 texture_height,
@@ -236,6 +249,20 @@ class EWAFilterAK
                 center_y,
                 result);
         }
+
+        return;
+
+      fallback:
+
+        filter_bilinear(
+            texture,
+            texture_width,
+            texture_height,
+            texture_channels,
+            texture_gamma,
+            center_x,
+            center_y,
+            result);
     }
 
   private:

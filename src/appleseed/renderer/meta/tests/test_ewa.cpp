@@ -46,6 +46,7 @@
 #include <cmath>
 #include <cstddef>
 #include <cstring>
+#include <iostream>
 
 using namespace foundation;
 using namespace std;
@@ -187,18 +188,37 @@ TEST_SUITE(EWAFilteringExploration)
     class EWAFilterRef
     {
       public:
-        explicit EWAFilterRef(
-            Image&          debug_image)
+        explicit EWAFilterRef(Image& debug_image)
           : m_debug_image(debug_image)
         {
             compute_weights();
         }
 
         // The lookup point is expressed in [0,width)x[0,height) (note: open on the right).
+        Color3f filter_nearest(
+            const Image&        texture,
+            const float         texture_gamma,
+            const Vector2f&     point) const
+        {
+            // Fetch texel.
+            const CanvasProperties& props = texture.properties();
+            const int ix = min(truncate<int>(point.x), static_cast<int>(props.m_canvas_width - 1));
+            const int iy = min(truncate<int>(point.y), static_cast<int>(props.m_canvas_height - 1));
+            Color3f c;
+            texture.get_pixel(ix, iy, c);
+
+            // Ungamma texel.
+            if (texture_gamma != 1.0f)
+                c = pow(c, texture_gamma);
+
+            return c;
+        }
+
+        // The lookup point is expressed in [0,width)x[0,height) (note: open on the right).
         Color3f filter_bilinear(
-            const Image&    texture,
-            const float     texture_gamma,
-            const Vector2f& point) const
+            const Image&        texture,
+            const float         texture_gamma,
+            const Vector2f&     point) const
         {
             // Fetch neighboring texels.
             const CanvasProperties& props = texture.properties();
@@ -246,12 +266,12 @@ TEST_SUITE(EWAFilteringExploration)
 
         // Trapezoid vertices are expressed in [0,width)x[0,height) (note: open on the right).
         Color3f filter_trapezoid(
-            const Image&    texture,
-            const float     texture_gamma,
-            const Vector2f& v00,
-            const Vector2f& v10,
-            const Vector2f& v01,
-            const Vector2f& v11) const
+            const Image&        texture,
+            const float         texture_gamma,
+            const Vector2f&     v00,
+            const Vector2f&     v10,
+            const Vector2f&     v01,
+            const Vector2f&     v11) const
         {
             // Draw the input trapezoid.
             const Color3f TrapezoidColor(1.0f, 0.0f, 1.0f);
@@ -268,12 +288,13 @@ TEST_SUITE(EWAFilteringExploration)
             draw_line(m_debug_image, f2i(center), f2i(center + du), Color3f(1.0f, 0.0f, 0.0f));
             draw_line(m_debug_image, f2i(center), f2i(center + dv), Color3f(0.0f, 1.0f, 0.0f));
 
-            // Compute the inclusion threshold.
-            const float F = static_cast<float>(WeightCount);
-
+            // Trapezoid with a zero area: fallback to bilinear filtering.
             const float K_den = square(du.x * dv.y - dv.x * du.y);
             if (K_den == 0.0f)
                 return filter_bilinear(texture, texture_gamma, center);
+
+            // Compute the inclusion threshold.
+            const float F = static_cast<float>(WeightCount);
 
             // Compute the ellipse coefficients.
             const float K = F / K_den;
@@ -281,9 +302,9 @@ TEST_SUITE(EWAFilteringExploration)
             const float B = K * (-2.0f * (du.x * du.y + dv.x * dv.y));
             const float C = K * (du.x * du.x + dv.x * dv.x);
 
-            // Make sure we have an elliptical paraboloid, concave upward.
-            assert(A > 0.0f);
-            assert(A * C - B * B / 4.0f > 0.0f);
+            // Not an elliptical paraboloid, concave upward: fallback to bilinear filtering.
+            if (A <= 0.0f || A * C - B * B / 4.0f <= 0.0f)
+                return filter_bilinear(texture, texture_gamma, center);
 
             // Compute the bounding box of the ellipse.
             const CanvasProperties& props = texture.properties();
@@ -345,9 +366,10 @@ TEST_SUITE(EWAFilteringExploration)
                 }
             }
 
-            return den > 0.0f
-                ? num / den
-                : filter_bilinear(texture, texture_gamma, center);
+            return
+                den > 0.0f
+                    ? num / den
+                    : filter_nearest(texture, texture_gamma, center);
         }
 
       private:
@@ -367,13 +389,13 @@ TEST_SUITE(EWAFilteringExploration)
         }
 
         static void trapezoid_to_ellipse(
-            const Vector2f& v00,
-            const Vector2f& v10,
-            const Vector2f& v01,
-            const Vector2f& v11,
-            Vector2f&       center,
-            Vector2f&       du,
-            Vector2f&       dv)
+            const Vector2f&     v00,
+            const Vector2f&     v10,
+            const Vector2f&     v01,
+            const Vector2f&     v11,
+            Vector2f&           center,
+            Vector2f&           du,
+            Vector2f&           dv)
         {
             const Vector2f middle_00_10 = 0.5f * (v00 + v10);
             const Vector2f middle_01_11 = 0.5f * (v01 + v11);
@@ -440,7 +462,7 @@ TEST_SUITE(EWAFilteringExploration)
         EXPECT_FEQ(ref_result, ak_result);
     }
 
-    TEST_CASE(BilinearFilteringFallback)
+    TEST_CASE(GivenSmallTrapezoid_FallsBackToNearestFiltering)
     {
         // Generate a 2x2 checkerboard texture.
         Image texture(2, 2, 2, 2, 3, PixelFormatFloat);
@@ -457,7 +479,7 @@ TEST_SUITE(EWAFilteringExploration)
         EWAFilterRef ref_filter(debug_image);
         const Color3f ref_result =
             ref_filter.filter_trapezoid(texture, 1.0f, V00, V10, V01, V11);
-        EXPECT_FEQ(Color3f(0.5f), ref_result);
+        EXPECT_FEQ(Color3f(1.0f), ref_result);
 
         // Run the AK filter.
         EWAFilterAK ak_filter;
@@ -473,7 +495,63 @@ TEST_SUITE(EWAFilteringExploration)
             V01.x, V01.y,
             V11.x, V11.y,
             &ak_result[0]);
-        EXPECT_FEQ(Color3f(0.5f), ak_result);
+        EXPECT_FEQ(Color3f(1.0f), ak_result);
+    }
+
+    TEST_CASE(GivenSmallEllipse_NoDiscontinuitiesAsPixelCentersFallOrNotInsideEllipse)
+    {
+        // Generate a 2x2 checkerboard texture.
+        Image texture(2, 2, 2, 2, 3, PixelFormatFloat);
+        draw_checkerboard(texture, 1, Color3f(0.0f), Color3f(1.0f));
+
+        // Create the filters.
+        Image debug_image(texture);
+        EWAFilterRef ref_filter(debug_image);
+        EWAFilterAK ak_filter;
+
+        const float BugX = 1.454546f;
+        const float BugY = 0.484848f;
+        const float Sz = 0.06066f;
+
+        for (float t = BugY - Sz; t <= BugY + Sz; t += Sz)
+        {
+            for (float l = BugX - Sz; l <= BugX + Sz; l += Sz)
+            {
+                const float r = l + Sz;
+                const float b = t + Sz;
+
+                // Run the reference filter.
+                const Color3f ref_result =
+                    ref_filter.filter_trapezoid(
+                        texture,
+                        1.0f,
+                        Vector2f(l, t),
+                        Vector2f(r, t),
+                        Vector2f(l, b),
+                        Vector2f(r, b));
+
+                // Run the AK filter.
+                Color3f ak_result;
+                ak_filter.filter_trapezoid(
+                    reinterpret_cast<const float*>(texture.tile(0, 0).get_storage()),
+                    texture.properties().m_canvas_width,
+                    texture.properties().m_canvas_height,
+                    texture.properties().m_channel_count,
+                    1.0f,
+                    l, t,
+                    r, t,
+                    l, b,
+                    r, b,
+                    &ak_result[0]);
+
+                // Verify that the results match.
+                EXPECT_FEQ(ref_result, ak_result);
+
+                //cerr << "pos={" << l << "," << t << "} result={"
+                //     << ak_result[0] << "," << ak_result[1] << "," << ak_result[2] << "}"
+                //     << endl;
+            }
+        }
     }
 
     Vector2f random_point(MersenneTwister& rng, const AABB2f& bbox)
@@ -500,6 +578,7 @@ TEST_SUITE(EWAFilteringExploration)
         const AABB2f domain(
             Vector2f(0.0f, 0.0f),
             Vector2f(static_cast<float>(Width), static_cast<float>(Height)));
+
         MersenneTwister rng;
 
         for (size_t i = 0; i < 1000; ++i)
