@@ -655,7 +655,6 @@ set (foundation_utility_sources
     foundation/utility/registrar.h
     foundation/utility/searchpaths.cpp
     foundation/utility/searchpaths.h
-    foundation/utility/serialization.h
     foundation/utility/settings.h
     foundation/utility/stopwatch.h
     foundation/utility/string.cpp
