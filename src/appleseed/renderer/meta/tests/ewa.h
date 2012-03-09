@@ -35,7 +35,7 @@
 #include <cstring>
 
 //---------------------------------------------------------------------------------------------
-// EWA Filter Implementation for AtomKraft
+// EWA filter implementation for AtomKraft.
 // http://www.cs.cmu.edu/~ph/texfund/texfund.pdf
 //---------------------------------------------------------------------------------------------
 

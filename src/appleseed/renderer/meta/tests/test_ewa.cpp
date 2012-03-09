@@ -54,7 +54,7 @@ using namespace std;
 TEST_SUITE(EWAFilteringExploration)
 {
     //---------------------------------------------------------------------------------------------
-    // Drawing Primitives Used For Debugging
+    // Drawing primitives used for debugging.
     //---------------------------------------------------------------------------------------------
 
     void draw_checkerboard(
@@ -181,7 +181,7 @@ TEST_SUITE(EWAFilteringExploration)
     }
 
     //---------------------------------------------------------------------------------------------
-    // Reference EWA Filter Implementation with debugging aids
+    // Reference EWA filter implementation with debugging aids.
     // http://www.cs.cmu.edu/~ph/texfund/texfund.pdf
     //---------------------------------------------------------------------------------------------
 
@@ -418,10 +418,10 @@ TEST_SUITE(EWAFilteringExploration)
     };
 
     //---------------------------------------------------------------------------------------------
-    // Test Code
+    // Tests.
     //---------------------------------------------------------------------------------------------
 
-    TEST_CASE(EWAFiltering)
+    TEST_CASE(FilterTrapezoid)
     {
         // Generate a checkerboard texture.
         Image texture(512, 512, 512, 512, 3, PixelFormatFloat);
@@ -462,7 +462,7 @@ TEST_SUITE(EWAFilteringExploration)
         EXPECT_FEQ(ref_result, ak_result);
     }
 
-    TEST_CASE(GivenSmallTrapezoid_FallsBackToNearestFiltering)
+    TEST_CASE(FilterTrapezoid_GivenSmallTrapezoid_FallsBackToNearestFiltering)
     {
         // Generate a 2x2 checkerboard texture.
         Image texture(2, 2, 2, 2, 3, PixelFormatFloat);
@@ -498,7 +498,7 @@ TEST_SUITE(EWAFilteringExploration)
         EXPECT_FEQ(Color3f(1.0f), ak_result);
     }
 
-    TEST_CASE(GivenSmallEllipse_NoDiscontinuitiesAsPixelCentersFallOrNotInsideEllipse)
+    TEST_CASE(FilterTrapezoid_GivenSmallEllipse_NoDiscontinuitiesAsPixelCentersFallOrNotInsideEllipse)
     {
         // Generate a 2x2 checkerboard texture.
         Image texture(2, 2, 2, 2, 3, PixelFormatFloat);
