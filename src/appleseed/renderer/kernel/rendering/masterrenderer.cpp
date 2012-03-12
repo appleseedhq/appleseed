@@ -36,6 +36,7 @@
 #include "renderer/kernel/lighting/pathtracing/pathtracing.h"
 #include "renderer/kernel/rendering/debug/blanktilerenderer.h"
 #include "renderer/kernel/rendering/debug/debugtilerenderer.h"
+#include "renderer/kernel/rendering/debug/ewatesttilerenderer.h"
 #include "renderer/kernel/rendering/generic/genericframerenderer.h"
 #include "renderer/kernel/rendering/generic/genericsamplegenerator.h"
 #include "renderer/kernel/rendering/generic/genericsamplerenderer.h"
@@ -256,6 +257,14 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     else if (tile_renderer_param == "debug")
     {
         tile_renderer_factory.reset(new DebugTileRendererFactory());
+    }
+    else if (tile_renderer_param == "ewatest")
+    {
+        tile_renderer_factory.reset(
+            new EWATestTileRendererFactory(
+                scene,
+                m_project.get_trace_context(),
+                m_params.child("ewatest_tile_renderer")));
     }
     else
     {

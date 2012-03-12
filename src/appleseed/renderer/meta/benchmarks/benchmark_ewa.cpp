@@ -27,7 +27,7 @@
 //
 
 // EWA filter implementation for AtomKraft.
-#include "../tests/ewa.h"
+#include "renderer/kernel/texturing/ewa.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
