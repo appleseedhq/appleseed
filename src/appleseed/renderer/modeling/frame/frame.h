@@ -156,17 +156,10 @@ inline foundation::Vector2d Frame::get_sample_position(
     const double    sample_x,
     const double    sample_y) const
 {
-    assert(sample_x >= 0.0 && sample_x < static_cast<double>(m_props.m_canvas_width));
-    assert(sample_y >= 0.0 && sample_y < static_cast<double>(m_props.m_canvas_height));
-
-    const foundation::Vector2d p(
-        sample_x * m_props.m_rcp_canvas_width,
-        sample_y * m_props.m_rcp_canvas_height);
-
-    assert(p.x >= 0.0 && p.x < 1.0);
-    assert(p.y >= 0.0 && p.y < 1.0);
-
-    return p;
+    return
+        foundation::Vector2d(
+            sample_x * m_props.m_rcp_canvas_width,
+            sample_y * m_props.m_rcp_canvas_height);
 }
 
 inline foundation::Vector2d Frame::get_sample_position(
@@ -175,11 +168,6 @@ inline foundation::Vector2d Frame::get_sample_position(
     const double    sample_x,
     const double    sample_y) const
 {
-    assert(pixel_x < m_props.m_canvas_width);
-    assert(pixel_y < m_props.m_canvas_height);
-    assert(sample_x >= 0.0 && sample_x < 1.0);
-    assert(sample_y >= 0.0 && sample_y < 1.0);
-
     return
         get_sample_position(
             pixel_x + sample_x,
@@ -196,10 +184,6 @@ inline foundation::Vector2d Frame::get_sample_position(
 {
     assert(tile_x < m_props.m_tile_count_x);
     assert(tile_y < m_props.m_tile_count_y);
-    assert(pixel_x < m_props.m_tile_width);
-    assert(pixel_y < m_props.m_tile_height);
-    assert(sample_x >= 0.0 && sample_x < 1.0);
-    assert(sample_y >= 0.0 && sample_y < 1.0);
 
     return
         get_sample_position(
