@@ -36,7 +36,7 @@
                 </values>
             </color>
             <texture name="checkerboard_texture" model="disk_texture_2d">
-                <parameter name="color_space" value="linear_rgb" />
+                <parameter name="color_space" value="srgb" />
                 <parameter name="filename" value="colored checkerboard 3x3 tiled.exr" />
             </texture>
             <texture_instance name="checkerboard_texture_inst" texture="checkerboard_texture">
@@ -102,7 +102,7 @@
     <output>
         <frame name="beauty">
             <parameter name="camera" value="camera" />
-            <parameter name="color_space" value="linear_rgb" />
+            <parameter name="color_space" value="srgb" />
             <parameter name="resolution" value="512 512" />
         </frame>
     </output>
