@@ -817,6 +817,8 @@ set (renderer_kernel_rendering_debug_sources
     renderer/kernel/rendering/debug/blanktilerenderer.h
     renderer/kernel/rendering/debug/debugtilerenderer.cpp
     renderer/kernel/rendering/debug/debugtilerenderer.h
+    renderer/kernel/rendering/debug/ewatesttilerenderer.cpp
+    renderer/kernel/rendering/debug/ewatesttilerenderer.h
 )
 list (APPEND appleseed_sources
     ${renderer_kernel_rendering_debug_sources}
@@ -939,6 +941,7 @@ source_group ("renderer\\kernel\\tessellation" FILES
 )
 
 set (renderer_kernel_texturing_sources
+    renderer/kernel/texturing/ewa.h
     renderer/kernel/texturing/texturecache.cpp
     renderer/kernel/texturing/texturecache.h
 )
