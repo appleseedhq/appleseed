@@ -119,6 +119,8 @@ typedef __m128d sse2d;
 //
 //   http://www.masm32.com/board/index.php?topic=9515.msg78719#msg78719
 //
+// Note: SSE 4.1 has an _mm_floor_ps() intrinsic (see smmintrin.h).
+//
 
 inline sse4f floorps(const sse4f x)
 {
