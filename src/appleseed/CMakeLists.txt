@@ -942,6 +942,8 @@ source_group ("renderer\\kernel\\tessellation" FILES
 
 set (renderer_kernel_texturing_sources
     renderer/kernel/texturing/ewa.h
+    renderer/kernel/texturing/ewa_texturesampler.cpp
+    renderer/kernel/texturing/ewa_texturesampler.h
     renderer/kernel/texturing/texturecache.cpp
     renderer/kernel/texturing/texturecache.h
 )

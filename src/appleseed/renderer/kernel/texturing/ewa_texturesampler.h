@@ -26,50 +26,62 @@
 // THE SOFTWARE.
 //
 
-// appleseed.renderer headers.
-#include "renderer/kernel/texturing/ewa.h"
-#include "renderer/kernel/texturing/ewa_texturesampler.h"
+#ifndef APPLESEED_RENDERER_KERNEL_TEXTURING_EWA_TEXTURESAMPLER_H
+#define APPLESEED_RENDERER_KERNEL_TEXTURING_EWA_TEXTURESAMPLER_H
 
 // appleseed.foundation headers.
-#include "foundation/image/color.h"
-#include "foundation/image/image.h"
-#include "foundation/utility/benchmark.h"
+#include "foundation/core/concepts/noncopyable.h"
 
 // Standard headers.
 #include <cstddef>
+#include <vector>
 
-using namespace foundation;
-using namespace renderer;
+// Forward declarations.
+namespace foundation    { class Image; }
 
-BENCHMARK_SUITE(EWAFilteringExploration)
+namespace renderer
 {
-    struct Fixture
-    {
-        static const size_t TextureWidth = 2048;
-        static const size_t TextureHeight = 2048;
 
-        Image                           m_texture;
-        TextureSampler                  m_texture_sampler;
-        EWAFilterAK<4, TextureSampler>  m_filter;
-        Color4f                         m_result;
+//
+// Texture sampler to use with EWAFilterAK defined in ewa.h.
+//
 
-        Fixture()
-          : m_texture(TextureWidth, TextureHeight, TextureWidth, TextureHeight, 4, PixelFormatFloat)
-          , m_texture_sampler(m_texture)
-        {
-        }
-    };
+class TextureSampler
+  : public foundation::NonCopyable
+{
+  public:
+    explicit TextureSampler(const foundation::Image& texture);
 
-    BENCHMARK_CASE_F(FilterEllipse, Fixture)
-    {
-        m_filter.filter_ellipse(
-            m_texture_sampler,
-            1020.0f,
-            1020.0f,
-            10.0f,
-            0.0f,
-            0.0f,
-            10.0f,
-            &m_result[0]);
-    }
+    int width() const;
+    int height() const;
+
+    void get(
+        const int   x,
+        const int   y,
+        float       texel[]) const;
+
+  private:
+    const size_t        m_width;
+    const size_t        m_height;
+    const size_t        m_channel_count;
+    std::vector<float>  m_texels;
+};
+
+
+//
+// TextureSampler class implementation.
+//
+
+inline int TextureSampler::width() const
+{
+    return static_cast<int>(m_width);
 }
+
+inline int TextureSampler::height() const
+{
+    return static_cast<int>(m_height);
+}
+
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_KERNEL_TEXTURING_EWA_TEXTURESAMPLER_H

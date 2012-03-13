@@ -29,13 +29,12 @@
 // Interface header.
 #include "ewatesttilerenderer.h"
 
-// EWA filter implementation for AtomKraft.
-#include "renderer/kernel/texturing/ewa.h"
-
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/kernel/texturing/ewa.h"
+#include "renderer/kernel/texturing/ewa_texturesampler.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/scene/scene.h"
 
@@ -77,16 +76,17 @@ namespace
           , m_texture_height(params.get_optional<size_t>("texture_height", 256))
           , m_checkerboard_scale(params.get_optional<size_t>("checkerboard_scale", 16))
         {
-            m_texture.reset(
-                new Image(
-                    m_texture_width,
-                    m_texture_height,
-                    m_texture_width,
-                    m_texture_height,
-                    4,
-                    PixelFormatFloat));
+            Image texture(
+                m_texture_width,
+                m_texture_height,
+                m_texture_width,
+                m_texture_height,
+                4,
+                PixelFormatFloat);
 
-            draw_checkerboard(*m_texture.get(), m_checkerboard_scale);
+            draw_checkerboard(texture, m_checkerboard_scale);
+
+            m_texture_sampler.reset(new TextureSampler(texture));
         }
 
         // Delete this instance.
@@ -154,11 +154,7 @@ namespace
                         Color4f result;
 
                         m_filter.filter_ellipse(
-                            reinterpret_cast<const float*>(m_texture->tile(0, 0).get_storage()),
-                            m_texture_width,
-                            m_texture_height,
-                            4,
-                            1.0f,
+                            *m_texture_sampler.get(),
                             static_cast<float>(center.x * m_texture_width),
                             static_cast<float>(center.y * m_texture_height),
                             static_cast<float>((v10.x - center.x) * m_texture_width),
@@ -184,14 +180,14 @@ namespace
         }
 
       private:
-        const Scene&                m_scene;
-        Intersector                 m_intersector;
-        const size_t                m_texture_width;
-        const size_t                m_texture_height;
-        const size_t                m_checkerboard_scale;
-        auto_ptr<Image>             m_texture;
-        SamplingContext::RNGType    m_rng;
-        EWAFilterAK                 m_filter;
+        const Scene&                    m_scene;
+        Intersector                     m_intersector;
+        const size_t                    m_texture_width;
+        const size_t                    m_texture_height;
+        const size_t                    m_checkerboard_scale;
+        auto_ptr<TextureSampler>        m_texture_sampler;
+        EWAFilterAK<4, TextureSampler>  m_filter;
+        SamplingContext::RNGType        m_rng;
 
         // todo: move to foundation/image/drawing.h.
         void draw_checkerboard(

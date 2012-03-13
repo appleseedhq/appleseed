@@ -29,20 +29,36 @@
 #ifndef EWA_H
 #define EWA_H
 
-// todo: remove all appleseed dependencies.
-#include "foundation/math/fastmath.h"
-#include "foundation/platform/compiler.h"
-
-#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <cstring>
+
+//---------------------------------------------------------------------------------------------
+// A qualifier to specify the alignment of a variable, a structure member or a structure.
+//---------------------------------------------------------------------------------------------
+
+// Visual C++.
+#if defined _MSC_VER
+    #define ALIGN(n) __declspec(align(n))
+
+// gcc.
+#elif defined __GNUC__
+    #define ALIGN(n) __attribute__((aligned(n)))
+
+// Other compilers: ignore the qualifier.
+#else
+    #define ALIGN(n)
+#endif
+
+// Specify an alignment compatible with SSE.
+#define SSE_ALIGN ALIGN(16)
 
 //---------------------------------------------------------------------------------------------
 // EWA filter implementation for AtomKraft.
 // http://www.cs.cmu.edu/~ph/texfund/texfund.pdf
 //---------------------------------------------------------------------------------------------
 
+template <int NumChannels, typename Texture>
 class EWAFilterAK
 {
   public:
@@ -58,11 +74,7 @@ class EWAFilterAK
 
     // Coordinates are expressed in [0,texture_width)x[0,texture_height) (note: open on the right).
     void filter_ellipse(
-        const float     texture[],
-        const int       texture_width,
-        const int       texture_height,
-        const int       texture_channels,
-        const float     texture_gamma,
+        const Texture&  texture,
         const float     center_x,
         const float     center_y,
         const float     dudx,
@@ -86,12 +98,12 @@ class EWAFilterAK
         // Compute the bounding box of the ellipse.
         const float ku = 2.0f * C * sqrt(F / (4.0f * A * C * C - C * B * B));
         const float kv = 2.0f * A * sqrt(F / (4.0f * A * A * C - A * B * B));
-        const int min_x = std::max(static_cast<int>(center_x - ku), 0);
-        const int min_y = std::max(static_cast<int>(center_y - kv), 0);
-        const int max_x = std::min(static_cast<int>(std::ceil(center_x + ku)), texture_width);
-        const int max_y = std::min(static_cast<int>(std::ceil(center_y + kv)), texture_height);
+        const int min_x = static_cast<int>(center_x - ku);
+        const int min_y = static_cast<int>(center_y - kv);
+        const int max_x = static_cast<int>(std::ceil(center_x + ku));
+        const int max_y = static_cast<int>(std::ceil(center_y + kv));
 
-        std::memset(result, 0, texture_channels * sizeof(float));
+        std::memset(result, 0, NumChannels * sizeof(float));
         float den = 0.0f;
 
         const float u = (min_x + 0.5f) - center_x;
@@ -107,32 +119,13 @@ class EWAFilterAK
             {
                 if (q < F)
                 {
+                    SSE_ALIGN float texel[NumChannels];
+                    texture.get(x, y, texel);
+
                     const float w = m_weights[q <= 0.0f ? 0 : static_cast<size_t>(q)];
-                    const int texture_index = (y * texture_width + x) * texture_channels;
 
-                    if (texture_gamma != 1.0f)
-                    {
-                        for (int c = 0; c < texture_channels; ++c)
-                            m_scratch[c] = texture[texture_index + c];
-
-                        const int blocks = texture_channels / 4;
-
-                        for (int b = 0; b < blocks; ++b)
-                            foundation::fast_pow_refined(m_scratch + b * 4, texture_gamma);
-
-                        const int done = blocks * 4;
-
-                        for (int c = done; c < texture_channels; ++c)
-                            m_scratch[c] = foundation::fast_pow_refined(m_scratch[c], texture_gamma);
-
-                        for (int c = 0; c < texture_channels; ++c)
-                            result[c] += w * m_scratch[c];
-                    }
-                    else
-                    {
-                        for (int c = 0; c < texture_channels; ++c)
-                            result[c] += w * texture[texture_index + c]; 
-                    }
+                    for (int c = 0; c < NumChannels; ++c)
+                        result[c] += w * texel[c];
 
                     den += w;
                 }
@@ -146,62 +139,13 @@ class EWAFilterAK
 
         const float rcp_den = 1.0f / den;
 
-        for (int c = 0; c < texture_channels; ++c)
+        for (int c = 0; c < NumChannels; ++c)
             result[c] *= rcp_den;
-    }
-
-    // Trapezoid vertices are in [0,texture_width)x[0,texture_height) (note: open on the right).
-    void filter_trapezoid(
-        const float     texture[],
-        const int       texture_width,
-        const int       texture_height,
-        const int       texture_channels,
-        const float     texture_gamma,
-        const float     v00x,
-        const float     v00y,
-        const float     v10x,
-        const float     v10y,
-        const float     v01x,
-        const float     v01y,
-        const float     v11x,
-        const float     v11y,
-        float           result[])
-    {
-        // Compute the parameters of the inscribed ellipse.
-        const float m_00_10_x = 0.5f * (v00x + v10x);
-        const float m_00_10_y = 0.5f * (v00y + v10y);
-        const float m_01_11_x = 0.5f * (v01x + v11x);
-        const float m_01_11_y = 0.5f * (v01y + v11y);
-        const float m_10_11_x = 0.5f * (v10x + v11x);
-        const float m_10_11_y = 0.5f * (v10y + v11y);
-        const float center_x  = 0.5f * (m_00_10_x + m_01_11_x);
-        const float center_y  = 0.5f * (m_00_10_y + m_01_11_y);
-        const float du_x = m_10_11_x - center_x;
-        const float du_y = m_10_11_y - center_y;
-        const float dv_x = m_01_11_x - center_x;
-        const float dv_y = m_01_11_y - center_y;
-
-        filter_ellipse(
-            texture,
-            texture_width,
-            texture_height,
-            texture_channels,
-            texture_gamma,
-            center_x,
-            center_y,
-            du_x,
-            dv_x,
-            du_y,
-            dv_y,
-            result);
     }
 
   private:
     enum { WeightCount = 256 };
-    enum { MaxChannelCount = 8 };
-
-    float           m_weights[WeightCount];
-    SSE_ALIGN float m_scratch[MaxChannelCount];
+    float m_weights[WeightCount];
 };
 
 #endif
