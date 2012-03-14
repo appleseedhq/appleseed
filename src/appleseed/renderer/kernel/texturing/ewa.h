@@ -32,6 +32,7 @@
 #include <cassert>
 #include <cmath>
 #include <cstring>
+#include <xmmintrin.h>
 
 //---------------------------------------------------------------------------------------------
 // A qualifier to specify the alignment of a variable, a structure member or a structure.
@@ -55,7 +56,11 @@
 
 //---------------------------------------------------------------------------------------------
 // EWA filter implementation for AtomKraft.
-// http://www.cs.cmu.edu/~ph/texfund/texfund.pdf
+//
+// References:
+//
+//   http://www.cs.cmu.edu/~ph/texfund/texfund.pdf
+//   http://www.pmavridis.com/data/I3D11_EllipticalFiltering.pdf
 //---------------------------------------------------------------------------------------------
 
 template <int NumChannels, typename Texture>
@@ -73,7 +78,7 @@ class EWAFilterAK
     }
 
     // Coordinates are expressed in [0,texture_width)x[0,texture_height) (note: open on the right).
-    void filter_ellipse(
+    void filter(
         const Texture&  texture,
         const float     center_x,
         const float     center_y,
@@ -81,39 +86,77 @@ class EWAFilterAK
         const float     dudy,
         const float     dvdx,
         const float     dvdy,
+        const float     max_radius,
         float           result[])
     {
-        // Compute the inclusion threshold.
-        const float F = static_cast<float>(WeightCount);
+        // Compute the coefficients of the original ellipse.
+        float a = dvdx * dvdx + dvdy * dvdy + 1.0f;
+        float b = -2.0f * (dudx * dvdx + dudy * dvdy);
+        float c = dudx * dudx + dudy * dudy + 1.0f;
 
-        // Compute the ellipse coefficients.
-        float A = dvdx * dvdx + dvdy * dvdy + 1.0f;
-        float B = -2.0f * (dudx * dvdx + dudy * dvdy);
-        float C = dudx * dudx + dudy * dudy + 1.0f;
-        const float K = F / (A * C - B * B * 0.25f);
-        A *= K;
-        B *= K;
-        C *= K;
+        // Rescale the coefficients so that F = WeightCount.
+        const float F = static_cast<float>(WeightCount);
+        const float k = F / (a * c - b * b * 0.25f);
+        a *= k;
+        b *= k;
+        c *= k;
+
+        // Compute the coefficients of the orthogonal ellipse.
+        const float r_2 = (a - c) * (a - c) + b * b;
+        const float r = std::sqrt(r_2);
+        const float a_prime = (a + c + r) * 0.5f;
+        const float c_prime = (a + c - r) * 0.5f;
+
+        // Compute the radii of the ellipse.
+        float r1 = std::sqrt(F / a_prime);
+        float r2 = std::sqrt(F / c_prime);
+
+        // Bound the amount of work by clamping the radii the ellipse.
+        if (r1 > max_radius || r2 > max_radius)
+        {
+            // Clamp the radii.
+            if (r1 > max_radius) r1 = max_radius;
+            if (r2 > max_radius) r2 = max_radius;
+
+            // Compute the angle of the original ellipse.
+            const float theta = 0.5f * std::atan(b / (a - c));
+
+            // Compute the coefficients of the new ellipse.
+            const float r1_2 = r1 * r1;
+            const float r2_2 = r2 * r2;
+            const float cos_theta = std::cos(theta);
+            const float cos_theta_2 = cos_theta * cos_theta;
+            const float sin_theta_2 = 1.0f - cos_theta_2;
+            a = r1_2 * cos_theta_2 + r2_2 * sin_theta_2;
+            b = (r2_2 - r1_2) * std::sin(theta + theta);
+            c = r1_2 * sin_theta_2 + r2_2 * cos_theta_2;
+
+            // Rescale the coefficients so that F = WeightCount.
+            const float k = F / (r1_2 * r2_2);
+            a *= k;
+            b *= k;
+            c *= k;
+        }
 
         // Compute the bounding box of the ellipse.
-        const float ku = 2.0f * C * sqrt(F / (4.0f * A * C * C - C * B * B));
-        const float kv = 2.0f * A * sqrt(F / (4.0f * A * A * C - A * B * B));
-        const int min_x = static_cast<int>(center_x - ku);
-        const int min_y = static_cast<int>(center_y - kv);
-        const int max_x = static_cast<int>(std::ceil(center_x + ku));
-        const int max_y = static_cast<int>(std::ceil(center_y + kv));
+        const float half_width = 2.0f * c * std::sqrt(F / (4.0f * a * c * c - c * b * b));
+        const float half_height = 2.0f * a * std::sqrt(F / (4.0f * a * a * c - a * b * b));
+        const int min_x = truncate<int>(center_x - half_width);
+        const int min_y = truncate<int>(center_y - half_height);
+        const int max_x = truncate<int>(std::ceil(center_x + half_width));
+        const int max_y = truncate<int>(std::ceil(center_y + half_height));
 
         std::memset(result, 0, NumChannels * sizeof(float));
         float den = 0.0f;
 
         const float u = (min_x + 0.5f) - center_x;
-        const float Ddq = 2.0f * A;
+        const float ddq = 2.0f * a;
 
         for (int y = min_y; y < max_y; ++y)
         {
             const float v = (y + 0.5f) - center_y;
-            float dq = A * (2.0f * u + 1.0f) + B * v;
-            float q = (C * v + B * u) * v + A * u * u;
+            float dq = a * (2.0f * u + 1.0f) + b * v;
+            float q = (c * v + b * u) * v + a * u * u;
 
             for (int x = min_x; x < max_x; ++x)
             {
@@ -122,7 +165,7 @@ class EWAFilterAK
                     SSE_ALIGN float texel[NumChannels];
                     texture.get(x, y, texel);
 
-                    const float w = m_weights[q <= 0.0f ? 0 : static_cast<size_t>(q)];
+                    const float w = m_weights[q <= 0.0f ? 0 : truncate<size_t>(q)];
 
                     for (int c = 0; c < NumChannels; ++c)
                         result[c] += w * texel[c];
@@ -131,7 +174,7 @@ class EWAFilterAK
                 }
 
                 q += dq;
-                dq += Ddq;
+                dq += ddq;
             }
         }
 
@@ -146,6 +189,13 @@ class EWAFilterAK
   private:
     enum { WeightCount = 256 };
     float m_weights[WeightCount];
+
+    // Fast floating point-to-integer truncation using SSE. Equivalent to static_cast<Int>(x).
+    template <typename Int>
+    static Int truncate(const float x)
+    {
+        return static_cast<Int>(_mm_cvttss_si32(_mm_load_ss(&x)));
+    }
 };
 
 #endif

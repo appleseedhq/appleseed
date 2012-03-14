@@ -265,7 +265,11 @@ TEST_SUITE(EWAFilteringExploration)
 
     //---------------------------------------------------------------------------------------------
     // Reference EWA filter implementation with debugging aids.
-    // http://www.cs.cmu.edu/~ph/texfund/texfund.pdf
+    //
+    // References:
+    //
+    //   http://www.cs.cmu.edu/~ph/texfund/texfund.pdf
+    //   http://www.pmavridis.com/data/I3D11_EllipticalFiltering.pdf
     //---------------------------------------------------------------------------------------------
 
     void trapezoid_to_ellipse(
@@ -300,7 +304,12 @@ TEST_SUITE(EWAFilteringExploration)
         explicit EWAFilterRef(Image& debug_image)
           : m_debug_image(debug_image)
         {
-            compute_weights();
+            for (int i = 0; i < WeightCount; ++i)
+            {
+                const float Alpha = 2.0f;
+                const float q = static_cast<float>(i) / (WeightCount - 1);
+                m_weights[i] = exp(-Alpha * q);
+            }
         }
 
 #define CONV(v)                                     \
@@ -311,48 +320,84 @@ TEST_SUITE(EWAFilteringExploration)
         m_debug_image.properties().m_canvas_height, \
         v)
 
-        // Coordinates are expressed in [0,width)x[0,height) (note: open on the right).
-        void filter_ellipse(
-            const Texture&  texture,
-            const float     center_x,
-            const float     center_y,
-            const float     dudx,
-            const float     dudy,
-            const float     dvdx,
-            const float     dvdy,
-            float           result[])
+        // Coordinates are expressed in [0,texture_width)x[0,texture_height) (note: open on the right).
+        void filter(
+            const Texture&      texture,
+            const float         center_x,
+            const float         center_y,
+            const float         dudx,
+            const float         dudy,
+            const float         dvdx,
+            const float         dvdy,
+            const float         max_radius,
+            float               result[])
         {
-            // Compute the inclusion threshold.
-            const float F = static_cast<float>(WeightCount);
+            // Compute the coefficients of the original ellipse.
+            float a = dvdx * dvdx + dvdy * dvdy + 1.0f;
+            float b = -2.0f * (dudx * dvdx + dudy * dvdy);
+            float c = dudx * dudx + dudy * dudy + 1.0f;
 
-            // Compute the ellipse coefficients.
-            float A = dvdx * dvdx + dvdy * dvdy + 1.0f;
-            float B = -2.0f * (dudx * dvdx + dudy * dvdy);
-            float C = dudx * dudx + dudy * dudy + 1.0f;
-            const float K = F / (A * C - B * B * 0.25f);
-            A *= K;
-            B *= K;
-            C *= K;
+            // Rescale the coefficients so that F = WeightCount.
+            const float F = static_cast<float>(WeightCount);
+            const float k = F / (a * c - b * b * 0.25f);
+            a *= k;
+            b *= k;
+            c *= k;
+
+            // Compute the coefficients of the orthogonal ellipse.
+            const float r = sqrt(square(a - c) + b * b);
+            const float a_prime = (a + c + r) * 0.5f;
+            const float c_prime = (a + c - r) * 0.5f;
+
+            // Compute the radii of the ellipse.
+            float r1 = sqrt(F / a_prime);
+            float r2 = sqrt(F / c_prime);
+
+            // Bound the amount of work by clamping the radii the ellipse.
+            if (r1 > max_radius || r2 > max_radius)
+            {
+                // Clamp the radii.
+                if (r1 > max_radius) r1 = max_radius;
+                if (r2 > max_radius) r2 = max_radius;
+
+                // Compute the angle of the original ellipse.
+                const float theta = 0.5f * atan(b / (a - c));
+
+                // Compute the coefficients of the new ellipse.
+                const float r1_2 = r1 * r1;
+                const float r2_2 = r2 * r2;
+                const float cos_theta_2 = square(cos(theta));
+                const float sin_theta_2 = 1.0f - cos_theta_2;
+                a = r1_2 * cos_theta_2 + r2_2 * sin_theta_2;
+                b = (r2_2 - r1_2) * sin(theta + theta);
+                c = r1_2 * sin_theta_2 + r2_2 * cos_theta_2;
+
+                // Rescale the coefficients so that F = WeightCount.
+                const float k = F / (r1_2 * r2_2);
+                a *= k;
+                b *= k;
+                c *= k;
+            }
 
             // Compute the bounding box of the ellipse.
-            const float ku = 2.0f * C * sqrt(F / (4.0f * A * C * C - C * B * B));
-            const float kv = 2.0f * A * sqrt(F / (4.0f * A * A * C - A * B * B));
-            const int min_x = static_cast<int>(center_x - ku);
-            const int min_y = static_cast<int>(center_y - kv);
-            const int max_x = static_cast<int>(ceil(center_x + ku));
-            const int max_y = static_cast<int>(ceil(center_y + kv));
+            const float half_width = 2.0f * c * sqrt(F / (4.0f * a * c * c - c * b * b));
+            const float half_height = 2.0f * a * sqrt(F / (4.0f * a * a * c - a * b * b));
+            const int min_x = truncate<int>(center_x - half_width);
+            const int min_y = truncate<int>(center_y - half_height);
+            const int max_x = truncate<int>(ceil(center_x + half_width));
+            const int max_y = truncate<int>(ceil(center_y + half_height));
 
             memset(result, 0, NumChannels * sizeof(float));
             float den = 0.0f;
 
             const float u = (min_x + 0.5f) - center_x;
-            const float Ddq = 2.0f * A;
+            const float ddq = 2.0f * a;
 
             for (int y = min_y; y < max_y; ++y)
             {
                 const float v = (y + 0.5f) - center_y;
-                float dq = A * (2.0f * u + 1.0f) + B * v;
-                float q = (C * v + B * u) * v + A * u * u;
+                float dq = a * (2.0f * u + 1.0f) + b * v;
+                float q = (c * v + b * u) * v + a * u * u;
 
                 for (int x = min_x; x < max_x; ++x)
                 {
@@ -386,7 +431,7 @@ TEST_SUITE(EWAFilteringExploration)
                     }
 
                     q += dq;
-                    dq += Ddq;
+                    dq += ddq;
                 }
             }
 
@@ -406,7 +451,7 @@ TEST_SUITE(EWAFilteringExploration)
             draw_rectangle(
                 m_debug_image,
                 CONV(Vector2i(min_x, min_y)),
-                CONV(Vector2i(max_x - 1, max_y - 1)),
+                CONV(Vector2i(max_x, max_y)),
                 Color3f(1.0f, 1.0f, 0.0f));
 
             assert(den > 0.0f);
@@ -424,23 +469,13 @@ TEST_SUITE(EWAFilteringExploration)
 
         enum { WeightCount = 256 };
         float m_weights[WeightCount];
-
-        void compute_weights()
-        {
-            for (int i = 0; i < WeightCount; ++i)
-            {
-                const float Alpha = 2.0f;
-                const float q = static_cast<float>(i) / (WeightCount - 1);
-                m_weights[i] = exp(-Alpha * q);
-            }
-        }
     };
 
     //---------------------------------------------------------------------------------------------
     // Tests.
     //---------------------------------------------------------------------------------------------
 
-    TEST_CASE(FilterEllipse)
+    TEST_CASE(Filter)
     {
         // Generate a checkerboard texture.
         Image texture(512, 512, 512, 512, 3, PixelFormatFloat);
@@ -464,7 +499,7 @@ TEST_SUITE(EWAFilteringExploration)
         // Run the reference filter.
         EWAFilterRef<3, TextureSampler> ref_filter(debug_image);
         Color3f ref_result;
-        ref_filter.filter_ellipse(
+        ref_filter.filter(
             texture_sampler,
             center_x,
             center_y,
@@ -472,6 +507,7 @@ TEST_SUITE(EWAFilteringExploration)
             dudy,
             dvdx,
             dvdy,
+            1000.0f,
             &ref_result[0]);
 
         // Draw the input trapezoid.
@@ -486,7 +522,7 @@ TEST_SUITE(EWAFilteringExploration)
         // Run the AK filter.
         EWAFilterAK<3, TextureSampler> ak_filter;
         Color3f ak_result;
-        ak_filter.filter_ellipse(
+        ak_filter.filter(
             texture_sampler,
             center_x,
             center_y,
@@ -494,6 +530,7 @@ TEST_SUITE(EWAFilteringExploration)
             dudy,
             dvdx,
             dvdy,
+            1000.0f,
             &ak_result[0]);
 
         // Verify that the results match.
@@ -501,7 +538,7 @@ TEST_SUITE(EWAFilteringExploration)
 
         // Write the debug image to disk.
         GenericImageFileWriter writer;
-        writer.write("unit tests/outputs/test_ewa_filterellipse.png", debug_image);
+        writer.write("unit tests/outputs/test_ewa_filter.png", debug_image);
     }
 
     void small_ellipse_test(
@@ -527,7 +564,7 @@ TEST_SUITE(EWAFilteringExploration)
         // Run the reference filter.
         EWAFilterRef<3, TextureSampler> filter(debug_image);
         Color3f result;
-        filter.filter_ellipse(
+        filter.filter(
             texture_sampler,
             center_x,
             center_y,
@@ -535,6 +572,7 @@ TEST_SUITE(EWAFilteringExploration)
             dudy,
             dvdx,
             dvdy,
+            1000.0f,
             &result[0]);
 
         // Draw the input trapezoid.
@@ -551,27 +589,27 @@ TEST_SUITE(EWAFilteringExploration)
         writer.write(filepath, debug_image);
     }
 
-    TEST_CASE(FilterEllipse_SmallEllipse)
+    TEST_CASE(Filter_SmallEllipse)
     {
         small_ellipse_test(
-            "unit tests/outputs/test_ewa_filterellipse_smallellipse.png",
+            "unit tests/outputs/test_ewa_filter_smallellipse.png",
             Vector2f(3.1f, 3.1f),
             Vector2f(4.9f, 3.1f),
             Vector2f(3.1f, 4.9f),
             Vector2f(4.9f, 4.9f));
     }
 
-    TEST_CASE(FilterEllipse_SubTexelEllipse)
+    TEST_CASE(Filter_SubTexelEllipse)
     {
         small_ellipse_test(
-            "unit tests/outputs/test_ewa_filterellipse_subtexelellipse.png",
+            "unit tests/outputs/test_ewa_filter_subtexelellipse.png",
             Vector2f(3.1f, 3.1f),
             Vector2f(3.4f, 3.1f),
             Vector2f(3.1f, 3.4f),
             Vector2f(3.4f, 3.4f));
     }
 
-    TEST_CASE(FilterEllipse_Magnification)
+    TEST_CASE(Filter_Magnification)
     {
         // Load the input texture.
         GenericImageFileReader reader;
@@ -599,14 +637,14 @@ TEST_SUITE(EWAFilteringExploration)
                 // Compute the parameters of the ellipse.
                 const float center_x = (x + 0.5f) / output_width * texture_width;
                 const float center_y = (y + 0.5f) / output_height * texture_height;
-                const float dudx = 1.0f / output_width;
-                const float dudy = 0.0f;
+                const float dudx = 1.0f / output_width * texture_width;
                 const float dvdx = 0.0f;
-                const float dvdy = 1.0f / output_height;
+                const float dudy = 0.0f;
+                const float dvdy = 1.0f / output_height * texture_height;
 
                 // Run the filter.
                 Color3f result;
-                filter.filter_ellipse(
+                filter.filter(
                     texture_sampler,
                     center_x,
                     center_y,
@@ -614,6 +652,7 @@ TEST_SUITE(EWAFilteringExploration)
                     dudy,
                     dvdx,
                     dvdy,
+                    1000.0f,
                     &result[0]);
 
                 // Store the result.
@@ -623,10 +662,10 @@ TEST_SUITE(EWAFilteringExploration)
 
         // Write the output image to disk.
         GenericImageFileWriter writer;
-        writer.write("unit tests/outputs/test_ewa_filterellipse_magnification.png", output_image);
+        writer.write("unit tests/outputs/test_ewa_filter_magnification.png", output_image);
     }
 
-    TEST_CASE(StressTest)
+    TEST_CASE(Filter_StressTest)
     {
         // Generate a checkerboard texture.
         const size_t Width = 64;
@@ -635,14 +674,17 @@ TEST_SUITE(EWAFilteringExploration)
         draw_checkerboard(texture, 8, Color3f(0.3f, 0.6f, 0.1f), Color3f(1.0f, 0.8f, 0.5f));
         TextureSampler texture_sampler(texture);
 
+        // Create the debug image.
+        Image debug_image(512, 512, 512, 512, 3, PixelFormatFloat);
+        draw_image(debug_image, texture);
+
         // Create the filters.
-        Image debug_image(texture);
         EWAFilterRef<3, TextureSampler> ref_filter(debug_image);
         EWAFilterAK<3, TextureSampler> ak_filter;
 
         MersenneTwister rng;
 
-        for (size_t i = 0; i < 1000; ++i)
+        for (size_t i = 0; i < 100; ++i)
         {
             // Generate a random ellipse.
             const float center_x = rand_float2(rng, 0.0f, static_cast<float>(Width));
@@ -654,7 +696,7 @@ TEST_SUITE(EWAFilteringExploration)
 
             // Run the reference filter.
             Color3f ref_result;
-            ref_filter.filter_ellipse(
+            ref_filter.filter(
                 texture_sampler,
                 center_x,
                 center_y,
@@ -662,11 +704,12 @@ TEST_SUITE(EWAFilteringExploration)
                 dudy,
                 dvdx,
                 dvdy,
+                1000.0f,
                 &ref_result[0]);
 
             // Run the AK filter.
             Color3f ak_result;
-            ak_filter.filter_ellipse(
+            ak_filter.filter(
                 texture_sampler,
                 center_x,
                 center_y,
@@ -674,10 +717,18 @@ TEST_SUITE(EWAFilteringExploration)
                 dudy,
                 dvdx,
                 dvdy,
+                1000.0f,
                 &ak_result[0]);
 
             // Verify that the results match.
             EXPECT_FEQ(ref_result, ak_result);
+
+            if (i == 10)
+            {
+                // Write the debug image to disk.
+                GenericImageFileWriter writer;
+                writer.write("unit tests/outputs/test_ewa_filter_stresstest.png", debug_image);
+            }
         }
     }
 }

@@ -75,6 +75,7 @@ namespace
           , m_texture_width(params.get_optional<size_t>("texture_width", 256))
           , m_texture_height(params.get_optional<size_t>("texture_height", 256))
           , m_checkerboard_scale(params.get_optional<size_t>("checkerboard_scale", 16))
+          , m_max_radius(params.get_optional<float>("max_radius", 16.0f))
         {
             Image texture(
                 m_texture_width,
@@ -125,48 +126,45 @@ namespace
                         0,              // number of samples
                         instance);      // initial instance number
 
-                    const Vector2d s10 =
-                        frame.get_sample_position(
-                            tile_x, tile_y,
-                            px, py,
-                            1.0, 0.0);
+                    const Vector2d sample_dx = frame.get_sample_position(tile_x, tile_y, px, py, 1.0, 0.0);
+                    const Vector2d sample_dy = frame.get_sample_position(tile_x, tile_y, px, py, 0.0, 1.0);
 
-                    const Vector2d s01 =
-                        frame.get_sample_position(
-                            tile_x, tile_y,
-                            px, py,
-                            0.0, 1.0);
+                    ShadingRay ray_dx, ray_dy;
+                    m_scene.get_camera()->generate_ray(sampling_context, sample_dx, ray_dx);
+                    m_scene.get_camera()->generate_ray(sampling_context, sample_dy, ray_dy);
 
-                    ShadingRay r10, r01;
-                    m_scene.get_camera()->generate_ray(sampling_context, s10, r10);
-                    m_scene.get_camera()->generate_ray(sampling_context, s01, r01);
+                    ShadingPoint hit_dx, hit_dy;
+                    m_intersector.trace(ray_dx, hit_dx);
+                    m_intersector.trace(ray_dy, hit_dy);
 
-                    ShadingPoint sp10, sp01;
-                    m_intersector.trace(r10, sp10);
-                    m_intersector.trace(r01, sp01);
-
-                    if (sp10.hit() && sp01.hit())
+                    if (hit_dx.hit() && hit_dy.hit())
                     {
-                        const Vector2d& v10 = sp10.get_uv(0);
-                        const Vector2d& v01 = sp01.get_uv(0);
-                        const Vector2d center = 0.5 * (v10 + v01);
+                        const Vector2d& uv_dx = hit_dx.get_uv(0);
+                        const Vector2d& uv_dy = hit_dy.get_uv(0);
+
+                        const Vector2d center = 0.5 * (uv_dx + uv_dy);
+                        const double dudx = uv_dx.x - center.x;
+                        const double dudy = uv_dy.x - center.x;
+                        const double dvdx = uv_dx.y - center.y;
+                        const double dvdy = uv_dy.y - center.y;
 
                         Color4f result;
 
-                        m_filter.filter_ellipse(
+                        m_filter.filter(
                             *m_texture_sampler.get(),
                             static_cast<float>(center.x * m_texture_width),
                             static_cast<float>(center.y * m_texture_height),
-                            static_cast<float>((v10.x - center.x) * m_texture_width),
-                            static_cast<float>((v01.x - center.x) * m_texture_height),
-                            static_cast<float>((v10.y - center.y) * m_texture_width),
-                            static_cast<float>((v01.y - center.y) * m_texture_height),
+                            static_cast<float>(dudx * m_texture_width),
+                            static_cast<float>(dudy * m_texture_height),
+                            static_cast<float>(dvdx * m_texture_width),
+                            static_cast<float>(dvdy * m_texture_height),
+                            m_max_radius,
                             &result[0]);
 
                         tile.set_pixel(px, py, result);
                     }
 #if 0
-                    else if (sp10.hit() || sp01.hit())
+                    else if (hit_dx.hit() || hit_dy.hit())
                     {
                         tile.set_pixel(px, py, Color4f(1.0f, 0.0f, 0.0f, 1.0f));
                     }
@@ -185,6 +183,7 @@ namespace
         const size_t                    m_texture_width;
         const size_t                    m_texture_height;
         const size_t                    m_checkerboard_scale;
+        const float                     m_max_radius;
         auto_ptr<TextureSampler>        m_texture_sampler;
         EWAFilterAK<4, TextureSampler>  m_filter;
         SamplingContext::RNGType        m_rng;

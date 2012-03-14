@@ -60,16 +60,31 @@ BENCHMARK_SUITE(EWAFilteringExploration)
         }
     };
 
-    BENCHMARK_CASE_F(FilterEllipse, Fixture)
+    BENCHMARK_CASE_F(Filter_NoClamping, Fixture)
     {
-        m_filter.filter_ellipse(
+        m_filter.filter(
             m_texture_sampler,
-            1020.0f,
-            1020.0f,
-            10.0f,
-            0.0f,
-            0.0f,
-            10.0f,
+            1020.0f,                    // center x
+            1020.0f,                    // center y
+            10.0f,                      // du/dx
+            0.0f,                       // du/dy
+            0.0f,                       // dv/dx
+            10.0f,                      // dv/dy
+            100.0f,                     // max radius
+            &m_result[0]);
+    }
+
+    BENCHMARK_CASE_F(Filter_Clamping, Fixture)
+    {
+        m_filter.filter(
+            m_texture_sampler,
+            1020.0f,                    // center x
+            1020.0f,                    // center y
+            10.0f,                      // du/dx
+            0.0f,                       // du/dy
+            0.0f,                       // dv/dx
+            10.0f,                      // dv/dy
+            5.0f,                       // max radius
             &m_result[0]);
     }
 }

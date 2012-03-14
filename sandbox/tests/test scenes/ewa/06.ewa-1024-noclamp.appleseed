@@ -73,6 +73,7 @@
                 <parameter name="texture_width" value="1024" />
                 <parameter name="texture_height" value="1024" />
                 <parameter name="checkerboard_scale" value="16" />
+                <parameter name="max_radius" value="1000000" />
             </parameters>
         </configuration>
         <configuration name="interactive" base="base_interactive" />
