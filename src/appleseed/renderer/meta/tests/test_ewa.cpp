@@ -307,8 +307,8 @@ TEST_SUITE(EWAFilteringExploration)
             for (int i = 0; i < WeightCount; ++i)
             {
                 const float Alpha = 2.0f;
-                const float q = static_cast<float>(i) / (WeightCount - 1);
-                m_weights[i] = exp(-Alpha * q);
+                const float r2 = static_cast<float>(i) / (WeightCount - 1);
+                m_weights[i] = exp(-Alpha * r2);
             }
         }
 
@@ -332,6 +332,8 @@ TEST_SUITE(EWAFilteringExploration)
             const float         max_radius,
             float               result[])
         {
+            std::memset(result, 0, NumChannels * sizeof(float));
+
             // Compute the coefficients of the original ellipse.
             float a = dvdx * dvdx + dvdy * dvdy + 1.0f;
             float b = -2.0f * (dudx * dvdx + dudy * dvdy);
@@ -379,87 +381,143 @@ TEST_SUITE(EWAFilteringExploration)
                 c *= k;
             }
 
-            // Compute the bounding box of the ellipse.
-            const float half_width = 2.0f * c * sqrt(F / (4.0f * a * c * c - c * b * b));
-            const float half_height = 2.0f * a * sqrt(F / (4.0f * a * a * c - a * b * b));
-            const int min_x = truncate<int>(center_x - half_width);
-            const int min_y = truncate<int>(center_y - half_height);
-            const int max_x = truncate<int>(ceil(center_x + half_width));
-            const int max_y = truncate<int>(ceil(center_y + half_height));
+            // Compute the area in pixels covered by the ellipse.
+            const float Pi = 3.14159265f;
+            const float area = Pi * r1 * r2;
 
-            memset(result, 0, NumChannels * sizeof(float));
-            float den = 0.0f;
+            // Compute the EWA filter and bilinear filter weights.
+            const float AreaThreshold = 4.0f;
+            const float ewa_weight = (area - Pi) / (AreaThreshold - Pi);
+            const float bilinear_weight = 1.0f - ewa_weight;
 
-            const float u = (min_x + 0.5f) - center_x;
-            const float ddq = 2.0f * a;
-
-            for (int y = min_y; y < max_y; ++y)
+            // EWA filtering.
+            if (ewa_weight > 0.0f)
             {
-                const float v = (y + 0.5f) - center_y;
-                float dq = a * (2.0f * u + 1.0f) + b * v;
-                float q = (c * v + b * u) * v + a * u * u;
+                // Compute the bounding box of the ellipse.
+                const float half_width = 2.0f * c * sqrt(F / (4.0f * a * c * c - c * b * b));
+                const float half_height = 2.0f * a * sqrt(F / (4.0f * a * a * c - a * b * b));
+                const int min_x = truncate<int>(center_x - half_width);
+                const int min_y = truncate<int>(center_y - half_height);
+                const int max_x = truncate<int>(ceil(center_x + half_width));
+                const int max_y = truncate<int>(ceil(center_y + half_height));
 
-                for (int x = min_x; x < max_x; ++x)
+                const float u = (min_x + 0.5f) - center_x;
+                const float ddq = 2.0f * a;
+                float den = 0.0f;
+
+                for (int y = min_y; y < max_y; ++y)
                 {
-                    if (q < F)
+                    const float v = (y + 0.5f) - center_y;
+                    float dq = a * (2.0f * u + 1.0f) + b * v;
+                    float q = (c * v + b * u) * v + a * u * u;
+
+                    for (int x = min_x; x < max_x; ++x)
                     {
-                        float texel[NumChannels];
-                        texture.get(x, y, texel);
+                        if (q < F)
+                        {
+                            float texel[NumChannels];
+                            texture.get(x, y, texel);
 
-                        const float w = m_weights[q <= 0.0f ? 0 : truncate<size_t>(q)];
+                            const float w = m_weights[q <= 0.0f ? 0 : truncate<size_t>(q)];
+                            assert(w >= 0.0f);
 
-                        for (int c = 0; c < NumChannels; ++c)
-                            result[c] += w * texel[c];
+                            for (int c = 0; c < NumChannels; ++c)
+                                result[c] += w * texel[c];
 
-                        den += w;
+                            den += w;
 
-                        tint_solid_rectangle(
-                            m_debug_image,
-                            CONV(Vector2i(x, y)),
-                            CONV(Vector2i(x + 1, y + 1)) - Vector2i(1, 1),
-                            Color3f(0.0f, 0.0f, 1.0f),
-                            w);
+                            tint_solid_rectangle(
+                                m_debug_image,
+                                CONV(Vector2i(x, y)),
+                                CONV(Vector2i(x + 1, y + 1)) - Vector2i(1, 1),
+                                Color3f(0.0f, 0.0f, 1.0f),
+                                w);
+                        }
+                        else
+                        {
+                            tint_solid_rectangle(
+                                m_debug_image,
+                                CONV(Vector2i(x, y)),
+                                CONV(Vector2i(x + 1, y + 1)) - Vector2i(1, 1),
+                                Color3f(1.0f, 0.0f, 0.0f),
+                                0.4f);
+                        }
+
+                        q += dq;
+                        dq += ddq;
                     }
-                    else
-                    {
-                        tint_solid_rectangle(
-                            m_debug_image,
-                            CONV(Vector2i(x, y)),
-                            CONV(Vector2i(x + 1, y + 1)) - Vector2i(1, 1),
-                            Color3f(1.0f, 0.0f, 0.0f),
-                            0.4f);
-                    }
-
-                    q += dq;
-                    dq += ddq;
                 }
+
+                if (den > 0.0f)
+                {
+                    const float rcp_den = 1.0f / den;
+                    for (int c = 0; c < NumChannels; ++c)
+                        result[c] *= rcp_den;
+                }
+
+                // Draw the axes of the ellipse.
+                draw_line(
+                    m_debug_image,
+                    CONV(Vector2f(center_x, center_y)),
+                    CONV(Vector2f(center_x + dudx, center_y + dvdx)),
+                    Color3f(1.0f, 0.0f, 0.0f));
+                draw_line(
+                    m_debug_image,
+                    CONV(Vector2f(center_x, center_y)),
+                    CONV(Vector2f(center_x + dudy, center_y + dvdy)),
+                    Color3f(0.0f, 1.0f, 0.0f));
+
+                // Draw the bounding box of the ellipse.
+                draw_rectangle(
+                    m_debug_image,
+                    CONV(Vector2i(min_x, min_y)),
+                    CONV(Vector2i(max_x, max_y)),
+                    Color3f(1.0f, 1.0f, 0.0f));
             }
 
-            // Draw the axes of the ellipse.
-            draw_line(
-                m_debug_image,
-                CONV(Vector2f(center_x, center_y)),
-                CONV(Vector2f(center_x + dudx, center_y + dvdx)),
-                Color3f(1.0f, 0.0f, 0.0f));
-            draw_line(
-                m_debug_image,
-                CONV(Vector2f(center_x, center_y)),
-                CONV(Vector2f(center_x + dudy, center_y + dvdy)),
-                Color3f(0.0f, 1.0f, 0.0f));
+            // Bilinear filtering.
+            if (bilinear_weight > 0.0f)
+            {
+                const int texture_width = texture.width();
+                const int texture_height = texture.height();
+                const float px = center_x * (texture_width - 1) / texture_width;
+                const float py = center_y * (texture_height - 1) / texture_height;
+                const int ix0 = truncate<int>(px);
+                const int iy0 = truncate<int>(py);
+                const int ix1 = ix0 + 1;
+                const int iy1 = iy0 + 1;
 
-            // Draw the bounding box of the ellipse.
-            draw_rectangle(
-                m_debug_image,
-                CONV(Vector2i(min_x, min_y)),
-                CONV(Vector2i(max_x, max_y)),
-                Color3f(1.0f, 1.0f, 0.0f));
+                const float wx1 = px - ix0;
+                const float wy1 = py - iy0;
+                const float wx0 = 1.0f - wx1;
+                const float wy0 = 1.0f - wy1;
+                const float w00 = wx0 * wy0;
+                const float w10 = wx1 * wy0;
+                const float w01 = wx0 * wy1;
+                const float w11 = wx1 * wy1;
 
-            assert(den > 0.0f);
+                float texel00[NumChannels];
+                float texel10[NumChannels];
+                float texel01[NumChannels];
+                float texel11[NumChannels];
 
-            const float rcp_den = 1.0f / den;
+                texture.get(ix0, iy0, texel00);
+                texture.get(ix1, iy0, texel10);
+                texture.get(ix0, iy1, texel01);
+                texture.get(ix1, iy1, texel11);
 
-            for (int c = 0; c < NumChannels; ++c)
-                result[c] *= rcp_den;
+                for (int c = 0; c < NumChannels; ++c)
+                {
+                    const float bilinear_result =
+                        w00 * texel00[c] +
+                        w10 * texel10[c] +
+                        w01 * texel01[c] +
+                        w11 * texel11[c];
+
+                    result[c] *= ewa_weight;
+                    result[c] += bilinear_weight * bilinear_result;
+                }
+            }
         }
 
 #undef CONV
@@ -609,7 +667,9 @@ TEST_SUITE(EWAFilteringExploration)
             Vector2f(3.4f, 3.4f));
     }
 
-    TEST_CASE(Filter_Magnification)
+    void magnification_test(
+        const char*         filepath,
+        const float         max_radius)
     {
         // Load the input texture.
         GenericImageFileReader reader;
@@ -652,7 +712,7 @@ TEST_SUITE(EWAFilteringExploration)
                     dudy,
                     dvdx,
                     dvdy,
-                    1000.0f,
+                    max_radius,
                     &result[0]);
 
                 // Store the result.
@@ -662,7 +722,17 @@ TEST_SUITE(EWAFilteringExploration)
 
         // Write the output image to disk.
         GenericImageFileWriter writer;
-        writer.write("unit tests/outputs/test_ewa_filter_magnification.png", output_image);
+        writer.write(filepath, output_image);
+    }
+
+    TEST_CASE(Filter_Magnification_NoClamping)
+    {
+        magnification_test("unit tests/outputs/test_ewa_filter_magnification_noclamping.png", 1000.0f);
+    }
+
+    TEST_CASE(Filter_Magnification_Clamping)
+    {
+        magnification_test("unit tests/outputs/test_ewa_filter_magnification_clamping.png", 1.0f);
     }
 
     TEST_CASE(Filter_StressTest)

@@ -126,34 +126,43 @@ namespace
                         0,              // number of samples
                         instance);      // initial instance number
 
-                    const Vector2d sample_dx = frame.get_sample_position(tile_x, tile_y, px, py, 1.0, 0.0);
-                    const Vector2d sample_dy = frame.get_sample_position(tile_x, tile_y, px, py, 0.0, 1.0);
+                    //
+                    // We're lazy so we just cast three rays: one at the center of the pixel
+                    // and two rays offset by half a pixel in the X and Y directions.
+                    //
 
-                    ShadingRay ray_dx, ray_dy;
+                    const Vector2d sample_center = frame.get_sample_position(tile_x, tile_y, px, py, 0.5, 0.5);
+                    const Vector2d sample_dx = frame.get_sample_position(tile_x, tile_y, px, py, 1.0, 0.5);
+                    const Vector2d sample_dy = frame.get_sample_position(tile_x, tile_y, px, py, 0.5, 1.0);
+
+                    ShadingRay ray_center, ray_dx, ray_dy;
+                    m_scene.get_camera()->generate_ray(sampling_context, sample_center, ray_center);
                     m_scene.get_camera()->generate_ray(sampling_context, sample_dx, ray_dx);
                     m_scene.get_camera()->generate_ray(sampling_context, sample_dy, ray_dy);
 
-                    ShadingPoint hit_dx, hit_dy;
+                    ShadingPoint hit_center, hit_dx, hit_dy;
+                    m_intersector.trace(ray_center, hit_center);
                     m_intersector.trace(ray_dx, hit_dx);
                     m_intersector.trace(ray_dy, hit_dy);
 
-                    if (hit_dx.hit() && hit_dy.hit())
+                    if (hit_center.hit() && hit_dx.hit() && hit_dy.hit())
                     {
+                        const Vector2d& uv_center = hit_center.get_uv(0);
                         const Vector2d& uv_dx = hit_dx.get_uv(0);
                         const Vector2d& uv_dy = hit_dy.get_uv(0);
 
-                        const Vector2d center = 0.5 * (uv_dx + uv_dy);
-                        const double dudx = uv_dx.x - center.x;
-                        const double dudy = uv_dy.x - center.x;
-                        const double dvdx = uv_dx.y - center.y;
-                        const double dvdy = uv_dy.y - center.y;
+                        // Multiply by 2 since dx and dy are half a pixel.
+                        const double dudx = 2.0 * (uv_dx.x - uv_center.x);
+                        const double dudy = 2.0 * (uv_dy.x - uv_center.x);
+                        const double dvdx = 2.0 * (uv_dx.y - uv_center.y);
+                        const double dvdy = 2.0 * (uv_dy.y - uv_center.y);
 
                         Color4f result;
 
                         m_filter.filter(
                             *m_texture_sampler.get(),
-                            static_cast<float>(center.x * m_texture_width),
-                            static_cast<float>(center.y * m_texture_height),
+                            static_cast<float>(uv_center.x * m_texture_width),
+                            static_cast<float>(uv_center.y * m_texture_height),
                             static_cast<float>(dudx * m_texture_width),
                             static_cast<float>(dudy * m_texture_height),
                             static_cast<float>(dvdx * m_texture_width),
@@ -164,7 +173,7 @@ namespace
                         tile.set_pixel(px, py, result);
                     }
 #if 0
-                    else if (hit_dx.hit() || hit_dy.hit())
+                    else if (hit_center.hit() || hit_dx.hit() || hit_dy.hit())
                     {
                         tile.set_pixel(px, py, Color4f(1.0f, 0.0f, 0.0f, 1.0f));
                     }

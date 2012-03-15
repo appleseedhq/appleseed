@@ -35,6 +35,13 @@
 #include <xmmintrin.h>
 
 //---------------------------------------------------------------------------------------------
+// If enabled, EWAFilterAK::filter() will return a color representative of the weights of the
+// EWA and bilinear filters (red = EWA, blue = bilinear).
+//---------------------------------------------------------------------------------------------
+
+#undef EWA_DEBUG_DISPLAY_WEIGHTS
+
+//---------------------------------------------------------------------------------------------
 // A qualifier to specify the alignment of a variable, a structure member or a structure.
 //---------------------------------------------------------------------------------------------
 
@@ -72,8 +79,8 @@ class EWAFilterAK
         for (int i = 0; i < WeightCount; ++i)
         {
             const float Alpha = 2.0f;
-            const float q = static_cast<float>(i) / (WeightCount - 1);
-            m_weights[i] = std::exp(-Alpha * q);
+            const float r2 = static_cast<float>(i) / (WeightCount - 1);
+            m_weights[i] = std::exp(-Alpha * r2);
         }
     }
 
@@ -89,6 +96,8 @@ class EWAFilterAK
         const float     max_radius,
         float           result[])
     {
+        std::memset(result, 0, NumChannels * sizeof(float));
+
         // Compute the coefficients of the original ellipse.
         float a = dvdx * dvdx + dvdy * dvdy + 1.0f;
         float b = -2.0f * (dudx * dvdx + dudy * dvdy);
@@ -138,52 +147,120 @@ class EWAFilterAK
             c *= k;
         }
 
-        // Compute the bounding box of the ellipse.
-        const float half_width = 2.0f * c * std::sqrt(F / (4.0f * a * c * c - c * b * b));
-        const float half_height = 2.0f * a * std::sqrt(F / (4.0f * a * a * c - a * b * b));
-        const int min_x = truncate<int>(center_x - half_width);
-        const int min_y = truncate<int>(center_y - half_height);
-        const int max_x = truncate<int>(std::ceil(center_x + half_width));
-        const int max_y = truncate<int>(std::ceil(center_y + half_height));
+        // Compute the area in pixels covered by the ellipse.
+        const float Pi = 3.14159265f;
+        const float area = Pi * r1 * r2;
 
-        std::memset(result, 0, NumChannels * sizeof(float));
-        float den = 0.0f;
+        // Compute the EWA filter and bilinear filter weights.
+        const float AreaThreshold = 4.0f;
+        const float ewa_weight = (area - Pi) / (AreaThreshold - Pi);
+        const float bilinear_weight = 1.0f - ewa_weight;
 
-        const float u = (min_x + 0.5f) - center_x;
-        const float ddq = 2.0f * a;
+#ifdef EWA_DEBUG_DISPLAY_WEIGHTS
 
-        for (int y = min_y; y < max_y; ++y)
+        result[0] = ewa_weight;
+        result[1] = 0.0f;
+        result[2] = bilinear_weight;
+
+        for (int c = 3; c < NumChannels; ++c)
+            result[c] = 1.0f;
+
+        return;
+
+#endif
+        // EWA filtering.
+        if (ewa_weight > 0.0f)
         {
-            const float v = (y + 0.5f) - center_y;
-            float dq = a * (2.0f * u + 1.0f) + b * v;
-            float q = (c * v + b * u) * v + a * u * u;
+            // Compute the bounding box of the ellipse.
+            const float half_width = 2.0f * c * std::sqrt(F / (4.0f * a * c * c - c * b * b));
+            const float half_height = 2.0f * a * std::sqrt(F / (4.0f * a * a * c - a * b * b));
+            const int min_x = truncate<int>(center_x - half_width);
+            const int min_y = truncate<int>(center_y - half_height);
+            const int max_x = truncate<int>(std::ceil(center_x + half_width));
+            const int max_y = truncate<int>(std::ceil(center_y + half_height));
 
-            for (int x = min_x; x < max_x; ++x)
+            const float u = (min_x + 0.5f) - center_x;
+            const float ddq = 2.0f * a;
+            float den = 0.0f;
+
+            for (int y = min_y; y < max_y; ++y)
             {
-                if (q < F)
+                const float v = (y + 0.5f) - center_y;
+                float dq = a * (2.0f * u + 1.0f) + b * v;
+                float q = (c * v + b * u) * v + a * u * u;
+
+                for (int x = min_x; x < max_x; ++x)
                 {
-                    SSE_ALIGN float texel[NumChannels];
-                    texture.get(x, y, texel);
+                    if (q < F)
+                    {
+                        SSE_ALIGN float texel[NumChannels];
+                        texture.get(x, y, texel);
 
-                    const float w = m_weights[q <= 0.0f ? 0 : truncate<size_t>(q)];
+                        const float w = m_weights[q <= 0.0f ? 0 : truncate<size_t>(q)];
+                        assert(w >= 0.0f);
 
-                    for (int c = 0; c < NumChannels; ++c)
-                        result[c] += w * texel[c];
+                        for (int c = 0; c < NumChannels; ++c)
+                            result[c] += w * texel[c];
 
-                    den += w;
+                        den += w;
+                    }
+
+                    q += dq;
+                    dq += ddq;
                 }
+            }
 
-                q += dq;
-                dq += ddq;
+            if (den > 0.0f)
+            {
+                const float rcp_den = 1.0f / den;
+                for (int c = 0; c < NumChannels; ++c)
+                    result[c] *= rcp_den;
             }
         }
 
-        assert(den > 0.0f);
+        // Bilinear filtering.
+        if (bilinear_weight > 0.0f)
+        {
+            const int texture_width = texture.width();
+            const int texture_height = texture.height();
+            const float px = center_x * (texture_width - 1) / texture_width;
+            const float py = center_y * (texture_height - 1) / texture_height;
+            const int ix0 = truncate<int>(px);
+            const int iy0 = truncate<int>(py);
+            const int ix1 = ix0 + 1;
+            const int iy1 = iy0 + 1;
 
-        const float rcp_den = 1.0f / den;
+            const float wx1 = px - ix0;
+            const float wy1 = py - iy0;
+            const float wx0 = 1.0f - wx1;
+            const float wy0 = 1.0f - wy1;
+            const float w00 = wx0 * wy0;
+            const float w10 = wx1 * wy0;
+            const float w01 = wx0 * wy1;
+            const float w11 = wx1 * wy1;
 
-        for (int c = 0; c < NumChannels; ++c)
-            result[c] *= rcp_den;
+            SSE_ALIGN float texel00[NumChannels];
+            SSE_ALIGN float texel10[NumChannels];
+            SSE_ALIGN float texel01[NumChannels];
+            SSE_ALIGN float texel11[NumChannels];
+
+            texture.get(ix0, iy0, texel00);
+            texture.get(ix1, iy0, texel10);
+            texture.get(ix0, iy1, texel01);
+            texture.get(ix1, iy1, texel11);
+
+            for (int c = 0; c < NumChannels; ++c)
+            {
+                const float bilinear_result =
+                    w00 * texel00[c] +
+                    w10 * texel10[c] +
+                    w01 * texel01[c] +
+                    w11 * texel11[c];
+
+                result[c] *= ewa_weight;
+                result[c] += bilinear_weight * bilinear_result;
+            }
+        }
     }
 
   private:
