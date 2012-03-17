@@ -70,8 +70,8 @@ class OBJMeshFileLexer
       , m_line_index(0)
     {
         // Precompute the value of std::isspace(c) for all c.
-        for (size_t i = 0; i < 256; ++i)
-            m_is_space[i] = std::isspace(static_cast<int>(i)) != 0;
+        for (int i = 0; i < 256; ++i)
+            m_is_space[i] = std::isspace(i) != 0;
     }
 
     // Open an input file.

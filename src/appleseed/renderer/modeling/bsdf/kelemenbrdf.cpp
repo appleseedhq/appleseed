@@ -640,11 +640,11 @@ namespace
             {
                 const double cos_angle = static_cast<double>(i) / (PointCount - 1);
 
-                Spectrum albedo;
-                evaluate_a_spec(a_spec, cos_angle, albedo);
+                Spectrum rec_albedo;
+                evaluate_a_spec(a_spec, cos_angle, rec_albedo);
 
                 reconstruction_angle[i] = acos(cos_angle);
-                reconstruction_albedo[i] = average_value(albedo);
+                reconstruction_albedo[i] = average_value(rec_albedo);
             }
 
             file.define(name, AlbedoTableSize, angle, albedo);

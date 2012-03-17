@@ -130,14 +130,16 @@ inline bool StableBboxSortPredicate<AABBVector>::operator()(
     const AABBType& lhs_bbox = m_bboxes[lhs];
     const AABBType& rhs_bbox = m_bboxes[rhs];
 
-    const ValueType lhs_center = lhs_bbox.min[m_dim] + lhs_bbox.max[m_dim];
-    const ValueType rhs_center = rhs_bbox.min[m_dim] + rhs_bbox.max[m_dim];
+    {
+        const ValueType lhs_center = lhs_bbox.min[m_dim] + lhs_bbox.max[m_dim];
+        const ValueType rhs_center = rhs_bbox.min[m_dim] + rhs_bbox.max[m_dim];
 
-    if (lhs_center < rhs_center)
-        return true;
+        if (lhs_center < rhs_center)
+            return true;
 
-    if (lhs_center > rhs_center)
-        return false;
+        if (lhs_center > rhs_center)
+            return false;
+    }
 
     for (size_t i = 0; i < AABBVector::value_type::Dimension; ++i)
     {

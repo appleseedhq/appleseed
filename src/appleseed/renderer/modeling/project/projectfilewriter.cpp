@@ -293,8 +293,8 @@ namespace
             element.write(true);
 
             {
-                Element element("matrix", m_file, m_indenter);
-                element.write(true);
+                Element child_element("matrix", m_file, m_indenter);
+                child_element.write(true);
 
                 write_vector(
                     transform.get_local_to_parent(),
@@ -312,8 +312,8 @@ namespace
             element.write(true);
 
             {
-                Element element("matrix", m_file, m_indenter);
-                element.write(true);
+                Element child_element("matrix", m_file, m_indenter);
+                child_element.write(true);
 
                 write_vector(
                     transform.get_local_to_parent(),

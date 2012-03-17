@@ -162,8 +162,8 @@ class EWAFilterAK
         result[1] = 0.0f;
         result[2] = bilinear_weight;
 
-        for (int c = 3; c < NumChannels; ++c)
-            result[c] = 1.0f;
+        for (int i = 3; i < NumChannels; ++i)
+            result[i] = 1.0f;
 
         return;
 
@@ -199,8 +199,8 @@ class EWAFilterAK
                         const float w = m_weights[q <= 0.0f ? 0 : truncate<size_t>(q)];
                         assert(w >= 0.0f);
 
-                        for (int c = 0; c < NumChannels; ++c)
-                            result[c] += w * texel[c];
+                        for (int i = 0; i < NumChannels; ++i)
+                            result[i] += w * texel[i];
 
                         den += w;
                     }
@@ -213,8 +213,9 @@ class EWAFilterAK
             if (den > 0.0f)
             {
                 const float rcp_den = 1.0f / den;
-                for (int c = 0; c < NumChannels; ++c)
-                    result[c] *= rcp_den;
+
+                for (int i = 0; i < NumChannels; ++i)
+                    result[i] *= rcp_den;
             }
         }
 
@@ -249,16 +250,16 @@ class EWAFilterAK
             texture.get(ix0, iy1, texel01);
             texture.get(ix1, iy1, texel11);
 
-            for (int c = 0; c < NumChannels; ++c)
+            for (int i = 0; i < NumChannels; ++i)
             {
                 const float bilinear_result =
-                    w00 * texel00[c] +
-                    w10 * texel10[c] +
-                    w01 * texel01[c] +
-                    w11 * texel11[c];
+                    w00 * texel00[i] +
+                    w10 * texel10[i] +
+                    w01 * texel01[i] +
+                    w11 * texel11[i];
 
-                result[c] *= ewa_weight;
-                result[c] += bilinear_weight * bilinear_result;
+                result[i] *= ewa_weight;
+                result[i] += bilinear_weight * bilinear_result;
             }
         }
     }

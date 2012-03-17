@@ -97,11 +97,17 @@ namespace
         assert(level >= 1 && level <= 3);
 
         DWORD buffer_size = 0;
-        GetLogicalProcessorInformation(0, &buffer_size);
+        BOOL success = GetLogicalProcessorInformation(0, &buffer_size);
+
+        if (success == TRUE || GetLastError() != ERROR_INSUFFICIENT_BUFFER)
+            return false;
 
         SYSTEM_LOGICAL_PROCESSOR_INFORMATION* buffer =
             (SYSTEM_LOGICAL_PROCESSOR_INFORMATION*)malloc(buffer_size);
-        GetLogicalProcessorInformation(buffer, &buffer_size);
+        success = GetLogicalProcessorInformation(buffer, &buffer_size);
+
+        if (success == FALSE)
+            return false;
 
         bool found = false;
 

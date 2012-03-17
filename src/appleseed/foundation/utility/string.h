@@ -783,7 +783,7 @@ inline std::string capitalize(const std::string& s)
 
     for (std::string::iterator i = result.begin(); i != result.end(); ++i)
     {
-        if (std::isspace(*i))
+        if (std::isspace(static_cast<unsigned char>(*i)))
             cap = true;
         else
         {

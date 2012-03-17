@@ -190,10 +190,10 @@ void AOVoxelTree::build(
         const Assembly& assembly = assembly_instance.get_assembly();
 
         // Loop over the object instances of the assembly.
-        for (const_each<ObjectInstanceContainer> i = assembly.object_instances(); i; ++i)
+        for (const_each<ObjectInstanceContainer> j = assembly.object_instances(); j; ++j)
         {
             // Retrieve the object instance.
-            const ObjectInstance& object_instance = *i;
+            const ObjectInstance& object_instance = *j;
 
             // Compute the object space to world space transformation.
             const Transformd& transform =

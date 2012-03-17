@@ -320,9 +320,9 @@ struct Preprocessor::Impl
         m_symbols[symbol] = value;
     }
 
-    void parse_ifdef_directive(const string& arguments)
+    void parse_ifdef_directive(const string& ifdef_arguments)
     {
-        const bool condition_value = evaluate_condition(arguments);
+        const bool condition_value = evaluate_condition(ifdef_arguments);
 
         while (true)
         {
