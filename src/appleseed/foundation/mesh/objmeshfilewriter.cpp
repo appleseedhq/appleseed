@@ -234,9 +234,9 @@ namespace
             const IOBJMeshWalker::Face face = walker.get_face(i);
             fprintf(
                 file,
-                "f " FMT_SIZE_T "/"
-                 " " FMT_SIZE_T "/"
-                 " " FMT_SIZE_T "/" "\n",
+                "f " FMT_SIZE_T "/" FMT_SIZE_T
+                 " " FMT_SIZE_T "/" FMT_SIZE_T
+                 " " FMT_SIZE_T "/" FMT_SIZE_T "\n",
                 face.m_v0 + 1, face.m_t0 + 1,
                 face.m_v1 + 1, face.m_t1 + 1,
                 face.m_v2 + 1, face.m_t2 + 1);
