@@ -285,7 +285,6 @@ class FOUNDATIONDLL Dictionary
 
     // Insert an item into the dictionary.
     Dictionary& insert(const char* key, const char* value);
-    Dictionary& insert(const char* key, const Dictionary& value);
     template <typename T> Dictionary& insert(const char* key, const T& value);
     template <typename T> Dictionary& insert(const std::string& key, const T& value);
 
@@ -431,12 +430,6 @@ inline Dictionary& Dictionary::insert(const char* key, const char* value)
     return *this;
 }
 
-inline Dictionary& Dictionary::insert(const char* key, const Dictionary& value)
-{
-    m_dictionaries.insert(key, value);
-    return *this;
-}
-
 template <typename T>
 inline Dictionary& Dictionary::insert(const char* key, const T& value)
 {
@@ -446,7 +439,8 @@ inline Dictionary& Dictionary::insert(const char* key, const T& value)
 template <>
 inline Dictionary& Dictionary::insert(const char* key, const Dictionary& value)
 {
-    return insert(key, value);
+    m_dictionaries.insert(key, value);
+    return *this;
 }
 
 template <typename T>
