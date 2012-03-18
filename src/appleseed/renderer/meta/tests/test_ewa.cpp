@@ -270,6 +270,7 @@ TEST_SUITE(EWAFilteringExploration)
     //
     //   http://www.cs.cmu.edu/~ph/texfund/texfund.pdf
     //   http://www.pmavridis.com/data/I3D11_EllipticalFiltering.pdf
+    //   http://www.paulinternet.nl/?page=bicubic
     //---------------------------------------------------------------------------------------------
 
     void trapezoid_to_ellipse(
