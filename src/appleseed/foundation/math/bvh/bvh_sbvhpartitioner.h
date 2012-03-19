@@ -113,6 +113,10 @@ class SBVHPartitioner
     // Return the items ordering.
     const std::vector<size_t>& get_item_ordering() const;
 
+    // Split counters.
+    size_t get_spatial_split_count() const;
+    size_t get_object_split_count() const;
+
   private:
     typedef Split<ValueType> SplitType;
     static const size_t Dimension = AABBType::Dimension;
@@ -137,6 +141,9 @@ class SBVHPartitioner
     std::vector<AABBType>           m_left_bboxes;
     std::vector<Bin>                m_bins;
     std::vector<size_t>             m_indices;
+
+    size_t                          m_spatial_split_count;
+    size_t                          m_object_split_count;
 
     void compute_root_bbox_surface_area();
 
@@ -205,6 +212,8 @@ SBVHPartitioner<ItemHandler, AABBVector>::SBVHPartitioner(
   , m_triangle_intersection_cost(triangle_intersection_cost)
   , m_left_bboxes(bboxes.size() > 1 ? bboxes.size() - 1 : 0)
   , m_bins(bin_count)
+  , m_spatial_split_count(0)
+  , m_object_split_count(0)
 {
     compute_root_bbox_surface_area();
 }
@@ -316,6 +325,7 @@ bool SBVHPartitioner<ItemHandler, AABBVector>::partition(
             right_bbox,
             left_indices,
             right_indices);
+        ++m_object_split_count;
         return true;
     }
     else
@@ -330,6 +340,7 @@ bool SBVHPartitioner<ItemHandler, AABBVector>::partition(
             right_bbox,
             left_indices,
             right_indices);
+        ++m_spatial_split_count;
         return true;
     }
 }
@@ -674,6 +685,18 @@ template <typename ItemHandler, typename AABBVector>
 inline const std::vector<size_t>& SBVHPartitioner<ItemHandler, AABBVector>::get_item_ordering() const
 {
     return m_indices;
+}
+
+template <typename ItemHandler, typename AABBVector>
+inline size_t SBVHPartitioner<ItemHandler, AABBVector>::get_spatial_split_count() const
+{
+    return m_spatial_split_count;
+}
+
+template <typename ItemHandler, typename AABBVector>
+inline size_t SBVHPartitioner<ItemHandler, AABBVector>::get_object_split_count() const
+{
+    return m_object_split_count;
 }
 
 }       // namespace bvh

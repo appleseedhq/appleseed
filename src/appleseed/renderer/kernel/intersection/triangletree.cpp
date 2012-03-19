@@ -396,6 +396,15 @@ void TriangleTree::build_sbvh(
     builder.build<DefaultWallclockTimer>(*this, triangle_keys.size(), partitioner);
     statistics.add_time("build_time", "build time", builder.get_build_time());
 
+    // Add splits statistics.
+    const size_t spatial_splits = partitioner.get_spatial_split_count();
+    const size_t object_splits = partitioner.get_object_split_count();
+    const size_t total_splits = spatial_splits + object_splits; 
+    statistics.add<string>(
+        "splits", "splits",
+        "spatial " + pretty_uint(spatial_splits) + " (" + pretty_percent(spatial_splits, total_splits) + ")  "
+        "object " + pretty_uint(object_splits) + " (" + pretty_percent(object_splits, total_splits) + ")");
+
     // Bounding boxes are no longer needed.
     clear_release_memory(triangle_bboxes);
 
