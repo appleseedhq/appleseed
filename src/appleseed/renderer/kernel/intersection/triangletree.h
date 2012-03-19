@@ -54,7 +54,8 @@
 #include <vector>
 
 // Forward declarations.
-namespace renderer  { class Assembly; }
+namespace foundation    { class Statistics; }
+namespace renderer      { class Assembly; }
 
 namespace renderer
 {
@@ -104,8 +105,13 @@ class TriangleTree
     std::vector<GTriangleType>          m_triangles;
     std::vector<TriangleKey>            m_triangle_keys;
 
-    void build_bvh(const Arguments& arguments);
-    void build_sbvh(const Arguments& arguments);
+    void build_bvh(
+        const Arguments&                arguments,
+        foundation::Statistics&         statistics);
+
+    void build_sbvh(
+        const Arguments&                arguments,
+        foundation::Statistics&         statistics);
 
     void store_triangles(
         const std::vector<size_t>&      triangle_indices,

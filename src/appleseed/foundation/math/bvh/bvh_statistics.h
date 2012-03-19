@@ -33,6 +33,7 @@
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/population.h"
 #include "foundation/utility/log.h"
+#include "foundation/utility/statistics.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
@@ -46,7 +47,7 @@ namespace bvh {
 // BVH tree statistics.
 //
 
-template <typename Tree, typename Builder>
+template <typename Tree>
 class TreeStatistics
   : public NonCopyable
 {
@@ -56,9 +57,9 @@ class TreeStatistics
 
     // Constructor, collects statistics for a given tree.
     TreeStatistics(
+        Statistics&         statistics,
         const Tree&         tree,
-        const AABBType&     tree_bbox,
-        const Builder&      builder);
+        const AABBType&     tree_bbox);
 
     // Print tree statistics.
     void print(Logger& logger);
@@ -66,10 +67,6 @@ class TreeStatistics
   private:
     typedef typename AABBType::ValueType ValueType;
 
-    const double            m_build_time;           // construction time in seconds
-    const size_t            m_memory_size;          // size of the tree in memory
-    const size_t            m_node_count;           // total number of nodes (leaf and interior nodes)
-    const ValueType         m_volume;               // volume of the tree
     ValueType               m_leaf_volume;          // total volume of the leaves
     size_t                  m_leaf_count;           // number of leaf nodes
     Population<size_t>      m_leaf_depth;           // leaf depth statistics
@@ -112,60 +109,38 @@ class TraversalStatistics
 // TreeStatistics class implementation.
 //
 
-template <typename Tree, typename Builder>
-TreeStatistics<Tree, Builder>::TreeStatistics(
-    const Tree&         tree,
-    const AABBType&     tree_bbox,
-    const Builder&      builder)
-  : m_build_time(builder.get_build_time())
-  , m_memory_size(tree.get_memory_size())
-  , m_node_count(tree.m_nodes.size())
-  , m_volume(tree_bbox.is_valid() ? tree_bbox.volume() : ValueType(0.0))
-  , m_leaf_volume(ValueType(0.0))
+template <typename Tree>
+TreeStatistics<Tree>::TreeStatistics(
+    Statistics&             statistics,
+    const Tree&             tree,
+    const AABBType&         tree_bbox)
+  : m_leaf_volume(ValueType(0.0))
   , m_leaf_count(0)
 {
     assert(!tree.m_nodes.empty());
 
     collect_stats_recurse(tree, tree.m_nodes.front(), tree_bbox, 1);
 
-    if (m_leaf_volume > m_volume)
-        m_leaf_volume = m_volume;
+    const ValueType tree_volume =
+        tree_bbox.is_valid() ? tree_bbox.volume() : ValueType(0.0);
+
+    if (m_leaf_volume > tree_volume)
+        m_leaf_volume = tree_volume;
+
+    statistics.add_size("memory_size", "size", tree.get_memory_size());
+    statistics.add<string>(
+        "nodes", "nodes",
+        "total " + pretty_uint(tree.m_nodes.size()) +
+        "  interior " + pretty_uint(tree.m_nodes.size() - m_leaf_count) +
+        "  leaves " + pretty_uint(m_leaf_count));
+    statistics.add_percent("leaf_volume", "leaf volume", m_leaf_volume, tree_volume);
+    statistics.add<Population<size_t> >("leaf_depth", "leaf depth", m_leaf_depth);
+    statistics.add<Population<size_t> >("leaf_size", "leaf size", m_leaf_size);
+    statistics.add<Population<double> >("sibling_overlap", "sibling overlap", m_sibling_overlap);
 }
 
-template <typename Tree, typename Builder>
-void TreeStatistics<Tree, Builder>::print(Logger& logger)
-{
-    LOG_DEBUG(
-        logger,
-        "  build time       %s\n"
-        "  size             %s\n"
-        "  nodes            total %s  interior %s  leaves %s\n"
-        "  leaf volume      %s\n"
-        "  leaf depth       avg %.1f  min %s  max %s  dev %.1f\n"
-        "  leaf size        avg %.1f  min %s  max %s  dev %.1f\n"
-        "  sibling overlap  avg %s  min %s  max %s  dev %s",
-        pretty_time(m_build_time).c_str(),
-        pretty_size(m_memory_size).c_str(),
-        pretty_uint(m_node_count).c_str(),
-        pretty_uint(m_node_count - m_leaf_count).c_str(),
-        pretty_uint(m_leaf_count).c_str(),
-        pretty_percent(m_leaf_volume, m_volume, 1).c_str(),
-        m_leaf_depth.get_avg(),
-        pretty_uint(m_leaf_depth.get_min()).c_str(),
-        pretty_uint(m_leaf_depth.get_max()).c_str(),
-        m_leaf_depth.get_dev(),
-        m_leaf_size.get_avg(),
-        pretty_uint(m_leaf_size.get_min()).c_str(),
-        pretty_uint(m_leaf_size.get_max()).c_str(),
-        m_leaf_size.get_dev(),
-        pretty_percent(m_sibling_overlap.get_avg(), 1.0).c_str(),
-        pretty_percent(m_sibling_overlap.get_min(), 1.0).c_str(),
-        pretty_percent(m_sibling_overlap.get_max(), 1.0).c_str(),
-        pretty_percent(m_sibling_overlap.get_dev(), 1.0).c_str());
-}
-
-template <typename Tree, typename Builder>
-void TreeStatistics<Tree, Builder>::collect_stats_recurse(
+template <typename Tree>
+void TreeStatistics<Tree>::collect_stats_recurse(
     const Tree&             tree,
     const NodeType&         node,
     const AABBType&         bbox,

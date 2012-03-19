@@ -68,7 +68,7 @@ class Tree
     template <typename Tree, typename Partitioner>
     friend class SpatialBuilder;
 
-    template <typename Tree, typename Builder>
+    template <typename Tree>
     friend class TreeStatistics;
 
     template <typename Tree, typename Visitor, size_t StackSize, size_t N>

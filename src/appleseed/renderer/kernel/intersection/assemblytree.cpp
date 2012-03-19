@@ -43,6 +43,7 @@
 #include "foundation/math/permutation.h"
 #include "foundation/platform/system.h"
 #include "foundation/platform/timer.h"
+#include "foundation/utility/statistics.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
@@ -166,12 +167,13 @@ void AssemblyTree::rebuild_assembly_tree()
     }
 
     // Collect and print assembly tree statistics.
-    bvh::TreeStatistics<AssemblyTree, Builder> statistics(
+    Statistics statistics("assembly tree statistics");
+    statistics.add_time("build_time", "build time", builder.get_build_time());
+    bvh::TreeStatistics<AssemblyTree> collect_statistics(
+        statistics,
         *this,
-        AABB3d(m_scene.compute_bbox()),
-        builder);
-    RENDERER_LOG_DEBUG("assembly tree statistics:");
-    statistics.print(global_logger());
+        AABB3d(m_scene.compute_bbox()));
+    RENDERER_LOG_DEBUG("%s", statistics.to_string().c_str());
 }
 
 void AssemblyTree::store_assembly_instances_in_leaves()

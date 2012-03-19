@@ -402,6 +402,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_snprintf.cpp
     foundation/meta/tests/test_spectrum.cpp
     foundation/meta/tests/test_spline.cpp
+    foundation/meta/tests/test_statistics.cpp
     foundation/meta/tests/test_string.cpp
     foundation/meta/tests/test_test.cpp
     foundation/meta/tests/test_tile.cpp
@@ -656,6 +657,8 @@ set (foundation_utility_sources
     foundation/utility/searchpaths.cpp
     foundation/utility/searchpaths.h
     foundation/utility/settings.h
+    foundation/utility/statistics.cpp
+    foundation/utility/statistics.h
     foundation/utility/stopwatch.h
     foundation/utility/string.cpp
     foundation/utility/string.h

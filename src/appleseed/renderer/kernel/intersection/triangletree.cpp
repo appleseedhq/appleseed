@@ -47,6 +47,7 @@
 #include "foundation/platform/system.h"
 #include "foundation/platform/timer.h"
 #include "foundation/utility/memory.h"
+#include "foundation/utility/statistics.h"
 
 // Standard headers.
 #include <algorithm>
@@ -264,13 +265,15 @@ TriangleTree::TriangleTree(const Arguments& arguments)
   : TreeType(AlignedAllocator<void>(System::get_l1_data_cache_line_size()))
   , m_triangle_tree_uid(arguments.m_triangle_tree_uid)
 {
+    Statistics statistics("triangle tree #" + to_string(arguments.m_triangle_tree_uid) + " statistics");
+
     const string acceleration_structure =
         arguments.m_assembly.get_parameters().get_optional<string>("acceleration_structure", "sbvh");
 
     if (acceleration_structure == "bvh")
-        build_bvh(arguments);
+        build_bvh(arguments, statistics);
     else if (acceleration_structure == "sbvh")
-        build_sbvh(arguments);
+        build_sbvh(arguments, statistics);
     else
     {
         RENDERER_LOG_DEBUG(
@@ -279,12 +282,21 @@ TriangleTree::TriangleTree(const Arguments& arguments)
             arguments.m_assembly.get_name(),
             acceleration_structure.c_str());
 
-        build_sbvh(arguments);
+        build_sbvh(arguments, statistics);
     }
 
-    RENDERER_LOG_DEBUG(
-        "triangle tree node array alignment: %s",
-        pretty_size(alignment(&m_nodes[0])).c_str());
+    // Optimize the tree layout in memory.
+    TreeOptimizer<NodeVectorType> tree_optimizer(m_nodes);
+    tree_optimizer.optimize_node_layout(TriangleTreeSubtreeDepth);
+    assert(m_nodes.size() == m_nodes.capacity());
+
+    // Collect and print triangle tree statistics.
+    statistics.add_size("node_array_alignment", "nodes alignment", alignment(&m_nodes[0]));
+    bvh::TreeStatistics<TriangleTree> collect_statistics(
+        statistics,
+        *this,
+        AABB3d(arguments.m_bbox));
+    RENDERER_LOG_DEBUG("%s", statistics.to_string().c_str());
 }
 
 TriangleTree::~TriangleTree()
@@ -304,7 +316,9 @@ size_t TriangleTree::get_memory_size() const
         + m_triangle_keys.capacity() * sizeof(TriangleKey);
 }
 
-void TriangleTree::build_bvh(const Arguments& arguments)
+void TriangleTree::build_bvh(
+    const Arguments&    arguments,
+    Statistics&         statistics)
 {
     // Collect triangles intersecting the bounding box of this tree.
     vector<GVector3> triangle_vertices;
@@ -332,6 +346,7 @@ void TriangleTree::build_bvh(const Arguments& arguments)
         TriangleTreeTriangleIntersectionCost);
     Builder builder;
     builder.build<DefaultWallclockTimer>(*this, triangle_keys.size(), partitioner);
+    statistics.add_time("build_time", "build time", builder.get_build_time());
 
     // Bounding boxes are no longer needed.
     clear_release_memory(triangle_bboxes);
@@ -344,24 +359,11 @@ void TriangleTree::build_bvh(const Arguments& arguments)
             triangle_vertices,
             triangle_keys);
     }
-
-    // Optimize the tree layout in memory.
-    TreeOptimizer<NodeVectorType> tree_optimizer(m_nodes);
-    tree_optimizer.optimize_node_layout(TriangleTreeSubtreeDepth);
-    assert(m_nodes.size() == m_nodes.capacity());
-
-    // Collect and print triangle tree statistics.
-    bvh::TreeStatistics<TriangleTree, Builder> statistics(
-        *this,
-        AABB3d(arguments.m_bbox),
-        builder);
-    RENDERER_LOG_DEBUG(
-        "triangle tree #" FMT_UNIQUE_ID " statistics:",
-        arguments.m_triangle_tree_uid);
-    statistics.print(global_logger());
 }
 
-void TriangleTree::build_sbvh(const Arguments& arguments)
+void TriangleTree::build_sbvh(
+    const Arguments&    arguments,
+    Statistics&         statistics)
 {
     // Collect triangles intersecting the bounding box of this tree.
     vector<GVector3> triangle_vertices;
@@ -392,6 +394,7 @@ void TriangleTree::build_sbvh(const Arguments& arguments)
         TriangleTreeTriangleIntersectionCost);
     Builder builder;
     builder.build<DefaultWallclockTimer>(*this, triangle_keys.size(), partitioner);
+    statistics.add_time("build_time", "build time", builder.get_build_time());
 
     // Bounding boxes are no longer needed.
     clear_release_memory(triangle_bboxes);
@@ -404,21 +407,6 @@ void TriangleTree::build_sbvh(const Arguments& arguments)
             triangle_vertices,
             triangle_keys);
     }
-
-    // Optimize the tree layout in memory.
-    TreeOptimizer<NodeVectorType> tree_optimizer(m_nodes);
-    tree_optimizer.optimize_node_layout(TriangleTreeSubtreeDepth);
-    assert(m_nodes.size() == m_nodes.capacity());
-
-    // Collect and print triangle tree statistics.
-    bvh::TreeStatistics<TriangleTree, Builder> statistics(
-        *this,
-        AABB3d(arguments.m_bbox),
-        builder);
-    RENDERER_LOG_DEBUG(
-        "triangle tree #" FMT_UNIQUE_ID " statistics:",
-        arguments.m_triangle_tree_uid);
-    statistics.print(global_logger());
 }
 
 void TriangleTree::store_triangles(
