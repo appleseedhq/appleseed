@@ -75,7 +75,7 @@ namespace bvh {
 //
 
 // When defined, additional costly correctness checks are enabled (only in Debug).
-#define FOUNDATION_SBVH_DEEPCHECK
+#undef FOUNDATION_SBVH_DEEPCHECK
 
 template <typename ItemHandler, typename AABBVector>
 class SBVHPartitioner
