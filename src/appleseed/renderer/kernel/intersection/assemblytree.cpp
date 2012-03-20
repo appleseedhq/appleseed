@@ -145,8 +145,8 @@ void AssemblyTree::rebuild_assembly_tree()
     Builder builder;
     builder.build<DefaultWallclockTimer>(
         *this,
-        m_assembly_instances.size(),
-        partitioner);
+        partitioner,
+        m_assembly_instances.size());
 
     if (!m_assembly_instances.empty())
     {

@@ -31,7 +31,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/math/permutation.h"
 #include "foundation/utility/stopwatch.h"
 
 // Standard headers.
@@ -51,21 +50,19 @@ namespace bvh {
 //        : public foundation::NonCopyable
 //      {
 //        public:
-//          // Compute the bounding box of a given set of items.
-//          AABBType compute_bbox(const std::vector<size_t>& indices) const;
+//          typedef ... LeafType;
 //
-//          // Partition a set of items into two distinct sets.
-//          // Return true if the partition must occur, false if the set should be kept unsplit.
-//          bool partition(
-//              const std::vector<size_t>&  indices,
-//              const AABBType&             bbox,
-//              std::vector<size_t>&        left_indices,
-//              AABBType&                   left_bbox,
-//              std::vector<size_t>&        right_indices,
-//              AABBType&                   right_bbox);
+//          // Split a leaf. Return true if the split should be split or false if it should be kept unsplit.
+//          bool split(
+//              const LeafType&     leaf,
+//              const AABBType&     bbox,
+//              LeafType&           left_leaf,
+//              AABBType&           left_left_bbox,
+//              LeafType&           right_leaf,
+//              AABBType&           right_leaf_bbox);
 //
-//          // Store references and return the index of the first reference.
-//          size_t store_indices(const std::vector<size_t>& indices);
+//          // Store a leaf. Return the index of the first stored item.
+//          size_t store(const LeafType& leaf);
 //      };
 //
 
@@ -74,6 +71,10 @@ class SpatialBuilder
   : public NonCopyable
 {
   public:
+    typedef typename Tree::NodeType NodeType;
+    typedef typename NodeType::AABBType AABBType;
+    typedef typename Partitioner::LeafType LeafType;
+
     // Constructor.
     SpatialBuilder();
 
@@ -81,30 +82,27 @@ class SpatialBuilder
     template <typename Timer>
     void build(
         Tree&               tree,
-        const size_t        size,
-        Partitioner&        partitioner);
+        Partitioner&        partitioner,
+        LeafType*           root_leaf,
+        const AABBType&     root_leaf_bbox);
 
     // Return the construction time.
     double get_build_time() const;
 
   private:
-    typedef typename Tree::NodeType NodeType;
-    typedef typename NodeType::AABBType AABBType;
-
-    typedef std::vector<size_t> IndexVector;
-    typedef std::vector<const IndexVector*> LeafVector;
+    typedef std::vector<const LeafType*> LeafVector;
 
     double m_build_time;
 
     // Recursively subdivide the tree.
     void subdivide_recurse(
         Tree&               tree,
+        Partitioner&        partitioner,
         LeafVector&         leaves,
-        const size_t        depth,
-        const size_t        node_index,
-        IndexVector*        indices,
-        const AABBType&     bbox,
-        Partitioner&        partitioner);
+        LeafType*           leaf,
+        const AABBType&     leaf_bbox,
+        const size_t        leaf_node_index,
+        const size_t        depth);
 };
 
 
@@ -122,8 +120,9 @@ template <typename Tree, typename Partitioner>
 template <typename Timer>
 void SpatialBuilder<Tree, Partitioner>::build(
     Tree&                   tree,
-    const size_t            size,
-    Partitioner&            partitioner)
+    Partitioner&            partitioner,
+    LeafType*               root_leaf,
+    const AABBType&         root_leaf_bbox)
 {
     // Start stopwatch.
     Stopwatch<Timer> stopwatch;
@@ -135,35 +134,29 @@ void SpatialBuilder<Tree, Partitioner>::build(
     // Create the root node of the tree.
     tree.m_nodes.push_back(NodeType());
 
-    // Create the root leaf.
-    IndexVector* root_indices = new IndexVector(size);
-    if (size > 0)
-        identity_permutation(size, &root_indices->front());
-    const AABBType root_bbox = partitioner.compute_bbox(*root_indices);
-
     // todo: preallocate node memory?
 
     // Recursively subdivide the tree.
     LeafVector leaves;
     subdivide_recurse(
         tree,
+        partitioner,
         leaves,
+        root_leaf,
+        root_leaf_bbox,
         0,
-        0,
-        root_indices,
-        root_bbox,
-        partitioner);
+        0);
 
-    // Store leaf indices.
+    // Store the leaves.
     const size_t node_count = tree.m_nodes.size();
     for (size_t i = 0; i < node_count; ++i)
     {
         NodeType& node = tree.m_nodes[i];
         if (node.is_leaf())
         {
-            const IndexVector* indices = leaves[node.get_item_index()];
-            node.set_item_index(partitioner.store_indices(*indices));
-            delete indices;
+            const LeafType* leaf = leaves[node.get_item_index()];
+            node.set_item_index(partitioner.store(*leaf));
+            delete leaf;
         }
     }
 
@@ -181,47 +174,47 @@ inline double SpatialBuilder<Tree, Partitioner>::get_build_time() const
 template <typename Tree, typename Partitioner>
 void SpatialBuilder<Tree, Partitioner>::subdivide_recurse(
     Tree&                   tree,
+    Partitioner&            partitioner,
     LeafVector&             leaves,
-    const size_t            depth,
-    const size_t            node_index,
-    IndexVector*            indices,
-    const AABBType&         bbox,
-    Partitioner&            partitioner)
+    LeafType*               leaf,
+    const AABBType&         leaf_bbox,
+    const size_t            leaf_node_index,
+    const size_t            depth)
 {
-    assert(node_index < tree.m_nodes.size());
+    assert(leaf_node_index < tree.m_nodes.size());
 
-    IndexVector* left_indices = new IndexVector();
-    IndexVector* right_indices = new IndexVector();
+    LeafType* left_leaf = new LeafType();
+    LeafType* right_leaf = new LeafType();
     AABBType left_bbox, right_bbox;
     bool split = false;
 
-    // Try to partition the set of items.
-    if (indices->size() > 1)
+    // Try to split the leaf.
+    if (leaf->size() > 1)
     {
         split =
-            partitioner.partition(
-                *indices,
-                bbox,
-                *left_indices,
+            partitioner.split(
+                *leaf,
+                leaf_bbox,
+                *left_leaf,
                 left_bbox,
-                *right_indices,
+                *right_leaf,
                 right_bbox);
     }
 
     if (split)
     {
         // Basic check to make sure we didn't loose any items.
-        assert(left_indices->size() + right_indices->size() >= indices->size());
+        assert(left_leaf->size() + right_leaf->size() >= leaf->size());
 
-        // Get rid of the current node.
-        delete indices;
+        // Get rid of the current leaf.
+        delete leaf;
 
         // Compute the indices of the child nodes.
         const size_t left_node_index = tree.m_nodes.size();
         const size_t right_node_index = left_node_index + 1;
 
         // Turn the current node into an interior node.
-        NodeType& node = tree.m_nodes[node_index];
+        NodeType& node = tree.m_nodes[leaf_node_index];
         node.make_interior();
         node.set_left_bbox(left_bbox);
         node.set_right_bbox(right_bbox);
@@ -234,35 +227,35 @@ void SpatialBuilder<Tree, Partitioner>::subdivide_recurse(
         // Recurse into the left subtree.
         subdivide_recurse(
             tree,
+            partitioner,
             leaves,
-            depth + 1,
-            left_node_index,
-            left_indices,
+            left_leaf,
             left_bbox,
-            partitioner);
+            left_node_index,
+            depth + 1);
 
         // Recurse into the right subtree.
         subdivide_recurse(
             tree,
+            partitioner,
             leaves,
-            depth + 1,
-            right_node_index,
-            right_indices,
+            right_leaf,
             right_bbox,
-            partitioner);
+            right_node_index,
+            depth + 1);
     }
     else
     {
         // Get rid of the child nodes.
-        delete left_indices;
-        delete right_indices;
+        delete left_leaf;
+        delete right_leaf;
 
         // Turn the current node into a leaf node.
-        NodeType& node = tree.m_nodes[node_index];
+        NodeType& node = tree.m_nodes[leaf_node_index];
         node.make_leaf();
         node.set_item_index(leaves.size());
-        node.set_item_count(indices->size());
-        leaves.push_back(indices);
+        node.set_item_count(leaf->size());
+        leaves.push_back(leaf);
     }
 }
 

@@ -77,8 +77,8 @@ class Builder
     template <typename Timer>
     void build(
         Tree&           tree,
-        const size_t    size,
-        Partitioner&    partitioner);
+        Partitioner&    partitioner,
+        const size_t    size);
 
     // Return the construction time.
     double get_build_time() const;
@@ -92,11 +92,11 @@ class Builder
     // Recursively subdivide the tree.
     void subdivide_recurse(
         Tree&           tree,
+        Partitioner&    partitioner,
         const size_t    node_index,
         const size_t    begin,
         const size_t    end,
-        const AABBType& bbox,
-        Partitioner&    partitioner);
+        const AABBType& bbox);
 };
 
 
@@ -114,8 +114,8 @@ template <typename Tree, typename Partitioner>
 template <typename Timer>
 void Builder<Tree, Partitioner>::build(
     Tree&               tree,
-    const size_t        size,
-    Partitioner&        partitioner)
+    Partitioner&        partitioner,
+    const size_t        size)
 {
     // Start stopwatch.
     Stopwatch<Timer> stopwatch;
@@ -135,11 +135,11 @@ void Builder<Tree, Partitioner>::build(
     // Recursively subdivide the tree.
     subdivide_recurse(
         tree,
+        partitioner,
         0,              // node index
         0,              // begin
         size,           // end
-        root_bbox,
-        partitioner);
+        root_bbox);
 
     // Measure and save construction time.
     stopwatch.measure();
@@ -155,11 +155,11 @@ inline double Builder<Tree, Partitioner>::get_build_time() const
 template <typename Tree, typename Partitioner>
 void Builder<Tree, Partitioner>::subdivide_recurse(
     Tree&               tree,
+    Partitioner&        partitioner,
     const size_t        node_index,
     const size_t        begin,
     const size_t        end,
-    const AABBType&     bbox,
-    Partitioner&        partitioner)
+    const AABBType&     bbox)
 {
     assert(node_index < tree.m_nodes.size());
 
@@ -204,20 +204,20 @@ void Builder<Tree, Partitioner>::subdivide_recurse(
         // Recurse into the left subtree.
         subdivide_recurse(
             tree,
+            partitioner,
             left_node_index,
             begin,
             pivot,
-            left_bbox,
-            partitioner);
+            left_bbox);
 
         // Recurse into the right subtree.
         subdivide_recurse(
             tree,
+            partitioner,
             right_node_index,
             pivot,
             end,
-            right_bbox,
-            partitioner);
+            right_bbox);
     }
 }
 

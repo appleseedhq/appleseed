@@ -32,6 +32,7 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/bvh/bvh_bboxsortpredicate.h"
+#include "foundation/math/permutation.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/split.h"
 
@@ -85,6 +86,8 @@ class SBVHPartitioner
     typedef typename AABBVectorType::value_type AABBType;
     typedef typename AABBType::ValueType ValueType;
 
+    typedef std::vector<size_t> LeafType;
+
     // Constructor.
     SBVHPartitioner(
         ItemHandler&                item_handler,
@@ -94,21 +97,23 @@ class SBVHPartitioner
         const ValueType             interior_node_traversal_cost = ValueType(1.0),
         const ValueType             triangle_intersection_cost = ValueType(1.0));
 
-    // Compute the bounding box of a given set of items.
-    AABBType compute_bbox(const std::vector<size_t>& indices) const;
+    // Create the root leaf of the tree. Ownership of the leaf is passed to the caller.
+    LeafType* create_root_leaf() const;
 
-    // Partition a set of items into two distinct sets.
-    // Return true if the partition must occur, false if the set should be kept unsplit.
-    bool partition(
-        std::vector<size_t>&        indices,
+    // Compute the bounding box of a given leaf.
+    AABBType compute_leaf_bbox(const LeafType& leaf) const;
+
+    // Split a leaf. Return true if the split should be split or false if it should be kept unsplit.
+    bool split(
+        LeafType&                   indices,
         const AABBType&             bbox,
-        std::vector<size_t>&        left_indices,
+        LeafType&                   left_indices,
         AABBType&                   left_bbox,
-        std::vector<size_t>&        right_indices,
+        LeafType&                   right_indices,
         AABBType&                   right_bbox);
 
-    // Store references and return the index of the first reference.
-    size_t store_indices(const std::vector<size_t>& indices);
+    // Store a leaf. Return the index of the first stored item.
+    size_t store(const LeafType& leaf);
 
     // Return the items ordering.
     const std::vector<size_t>& get_item_ordering() const;
@@ -153,7 +158,7 @@ class SBVHPartitioner
 
     // Find the best object split for a given set of items.
     void find_object_split(
-        std::vector<size_t>&        indices,
+        LeafType&                   indices,
         const AABBType&             bbox,
         AABBType&                   left_bbox,
         AABBType&                   right_bbox,
@@ -163,7 +168,7 @@ class SBVHPartitioner
 
     // Find the best spatial split for a given set of items.
     void find_spatial_split(
-        const std::vector<size_t>&  indices,
+        const LeafType&             indices,
         const AABBType&             bbox,
         AABBType&                   left_bbox,
         AABBType&                   right_bbox,
@@ -172,22 +177,22 @@ class SBVHPartitioner
 
     // Sort a set of items into two subsets according to a given object split.
     void object_sort(
-        std::vector<size_t>&        indices,
+        LeafType&                   indices,
         const size_t                split_dim,
         const size_t                split_pivot,
         const AABBType&             left_bbox,
         const AABBType&             right_bbox,
-        std::vector<size_t>&        left_indices,
-        std::vector<size_t>&        right_indices) const;
+        LeafType&                   left_indices,
+        LeafType&                   right_indices) const;
 
     // Sort a set of items into two subsets according to a given spatial split.
     void spatial_sort(
-        const std::vector<size_t>&  indices,
+        const LeafType&             indices,
         const SplitType&            split,
         const AABBType&             left_bbox,
         const AABBType&             right_bbox,
-        std::vector<size_t>&        left_indices,
-        std::vector<size_t>&        right_indices) const;
+        LeafType&                   left_indices,
+        LeafType&                   right_indices) const;
 };
 
 
@@ -219,27 +224,37 @@ SBVHPartitioner<ItemHandler, AABBVector>::SBVHPartitioner(
 }
 
 template <typename ItemHandler, typename AABBVector>
-typename AABBVector::value_type SBVHPartitioner<ItemHandler, AABBVector>::compute_bbox(
-    const std::vector<size_t>&      indices) const
+typename SBVHPartitioner<ItemHandler, AABBVector>::LeafType* SBVHPartitioner<ItemHandler, AABBVector>::create_root_leaf() const
+{
+    LeafType* root_leaf = new LeafType(m_bboxes.size());
+
+    if (!m_bboxes.empty())
+        identity_permutation(m_bboxes.size(), &root_leaf->front());
+
+    return root_leaf;
+}
+
+template <typename ItemHandler, typename AABBVector>
+typename AABBVector::value_type SBVHPartitioner<ItemHandler, AABBVector>::compute_leaf_bbox(const LeafType& leaf) const
 {
     AABBType bbox;
     bbox.invalidate();
 
-    const size_t size = indices.size();
+    const size_t size = leaf.size();
 
     for (size_t i = 0; i < size; ++i)
-        bbox.insert(m_bboxes[indices[i]]);
+        bbox.insert(m_bboxes[leaf[i]]);
 
     return bbox;
 }
 
 template <typename ItemHandler, typename AABBVector>
-bool SBVHPartitioner<ItemHandler, AABBVector>::partition(
-    std::vector<size_t>&            indices,
+bool SBVHPartitioner<ItemHandler, AABBVector>::split(
+    LeafType&                       indices,
     const AABBType&                 bbox,
-    std::vector<size_t>&            left_indices,
+    LeafType&                       left_indices,
     AABBType&                       left_bbox,
-    std::vector<size_t>&            right_indices,
+    LeafType&                       right_indices,
     AABBType&                       right_bbox)
 {
     assert(bbox.rank() >= Dimension - 1);
@@ -383,7 +398,7 @@ inline typename AABBVector::value_type::ValueType SBVHPartitioner<ItemHandler, A
 
 template <typename ItemHandler, typename AABBVector>
 void SBVHPartitioner<ItemHandler, AABBVector>::find_object_split(
-    std::vector<size_t>&            indices,
+    LeafType&                       indices,
     const AABBType&                 bbox,
     AABBType&                       left_bbox,
     AABBType&                       right_bbox,
@@ -446,7 +461,7 @@ void SBVHPartitioner<ItemHandler, AABBVector>::find_object_split(
 
 template <typename ItemHandler, typename AABBVector>
 void SBVHPartitioner<ItemHandler, AABBVector>::find_spatial_split(
-    const std::vector<size_t>&      indices,
+    const LeafType&                 indices,
     const AABBType&                 bbox,
     AABBType&                       left_bbox,
     AABBType&                       right_bbox,
@@ -581,13 +596,13 @@ void SBVHPartitioner<ItemHandler, AABBVector>::find_spatial_split(
 
 template <typename ItemHandler, typename AABBVector>
 void SBVHPartitioner<ItemHandler, AABBVector>::object_sort(
-    std::vector<size_t>&            indices,
+    LeafType&                       indices,
     const size_t                    split_dim,
     const size_t                    split_pivot,
     const AABBType&                 left_bbox,
     const AABBType&                 right_bbox,
-    std::vector<size_t>&            left_indices,
-    std::vector<size_t>&            right_indices) const
+    LeafType&                       left_indices,
+    LeafType&                       right_indices) const
 {
     // Sort items according to the centroid of their bounding box.
     StableBboxSortPredicate<AABBVectorType> predicate(m_bboxes, split_dim);
@@ -621,12 +636,12 @@ void SBVHPartitioner<ItemHandler, AABBVector>::object_sort(
 
 template <typename ItemHandler, typename AABBVector>
 void SBVHPartitioner<ItemHandler, AABBVector>::spatial_sort(
-    const std::vector<size_t>&      indices,
+    const LeafType&                 indices,
     const SplitType&                split,
     const AABBType&                 left_bbox,
     const AABBType&                 right_bbox,
-    std::vector<size_t>&            left_indices,
-    std::vector<size_t>&            right_indices) const
+    LeafType&                       left_indices,
+    LeafType&                       right_indices) const
 {
     // Prevent numerical instabilities by slightly enlarging the left and right bounding boxes.
     const ValueType eps = m_item_handler.get_bbox_grow_eps();
@@ -673,11 +688,10 @@ void SBVHPartitioner<ItemHandler, AABBVector>::spatial_sort(
 }
 
 template <typename ItemHandler, typename AABBVector>
-inline size_t SBVHPartitioner<ItemHandler, AABBVector>::store_indices(
-    const std::vector<size_t>&      indices)
+inline size_t SBVHPartitioner<ItemHandler, AABBVector>::store(const LeafType& leaf)
 {
     const size_t first = m_indices.size();
-    m_indices.insert(m_indices.end(), indices.begin(), indices.end());
+    m_indices.insert(m_indices.end(), leaf.begin(), leaf.end());
     return first;
 }
 

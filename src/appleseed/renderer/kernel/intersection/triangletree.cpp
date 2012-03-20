@@ -336,16 +336,18 @@ void TriangleTree::build_bvh(
         pretty_int(triangle_keys.size()).c_str(),
         plural(triangle_keys.size(), "triangle").c_str());
 
-    // Build the tree.
+    // Create the partitioner.
     typedef bvh::SAHPartitioner<vector<AABB3d> > Partitioner;
-    typedef bvh::Builder<TriangleTree, Partitioner> Builder;
     Partitioner partitioner(
         triangle_bboxes,
         TriangleTreeMaxLeafSize,
         TriangleTreeInteriorNodeTraversalCost,
         TriangleTreeTriangleIntersectionCost);
+
+    // Build the tree.
+    typedef bvh::Builder<TriangleTree, Partitioner> Builder;
     Builder builder;
-    builder.build<DefaultWallclockTimer>(*this, triangle_keys.size(), partitioner);
+    builder.build<DefaultWallclockTimer>(*this, partitioner, triangle_keys.size());
     statistics.add_time("build_time", "build time", builder.get_build_time());
 
     // Bounding boxes are no longer needed.
@@ -381,9 +383,8 @@ void TriangleTree::build_sbvh(
         pretty_int(triangle_keys.size()).c_str(),
         plural(triangle_keys.size(), "triangle").c_str());
 
-    // Build the tree.
+    // Create the partitioner.
     typedef bvh::SBVHPartitioner<TriangleItemHandler, vector<AABB3d> > Partitioner;
-    typedef bvh::SpatialBuilder<TriangleTree, Partitioner> Builder;
     TriangleItemHandler triangle_handler(triangle_vertices);
     Partitioner partitioner(
         triangle_handler,
@@ -392,8 +393,19 @@ void TriangleTree::build_sbvh(
         TriangleTreeBinCount,
         TriangleTreeInteriorNodeTraversalCost,
         TriangleTreeTriangleIntersectionCost);
+
+    // Create the root leaf.
+    Partitioner::LeafType* root_leaf = partitioner.create_root_leaf();
+    const AABB3d root_leaf_bbox = partitioner.compute_leaf_bbox(*root_leaf);
+
+    // Build the tree.
+    typedef bvh::SpatialBuilder<TriangleTree, Partitioner> Builder;
     Builder builder;
-    builder.build<DefaultWallclockTimer>(*this, triangle_keys.size(), partitioner);
+    builder.build<DefaultWallclockTimer>(
+        *this,
+        partitioner,
+        root_leaf,
+        root_leaf_bbox);
     statistics.add_time("build_time", "build time", builder.get_build_time());
 
     // Add splits statistics.
