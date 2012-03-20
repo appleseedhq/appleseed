@@ -74,6 +74,19 @@ class Statistics
         const T                     denominator,
         const std::streamsize       precision = 1);
 
+    template <typename T>
+    void add_population(
+        const std::string&          name,
+        const std::string&          title,
+        const Population<T>&        value);
+
+    template <typename T>
+    void add_population(
+        const std::string&          name,
+        const std::string&          title,
+        const std::string&          unit,
+        const Population<T>&        value);
+
     std::string to_string(const size_t max_title_length = 16) const;
 
   private:
@@ -90,6 +103,7 @@ class Statistics
 
         const std::string           m_name;
         const std::string           m_title;
+        const std::string           m_unit;
         const Type                  m_type;
         const size_t                m_index;
 
@@ -106,6 +120,20 @@ class Statistics
             const size_t            index)
           : m_name(name)
           , m_title(title)
+          , m_type(type)
+          , m_index(index)
+        {
+        }
+
+        Record(
+            const std::string&      name,
+            const std::string&      title,
+            const std::string&      unit,
+            const Type              type,
+            const size_t            index)
+          : m_name(name)
+          , m_title(title)
+          , m_unit(unit)
           , m_type(type)
           , m_index(index)
         {
@@ -141,17 +169,6 @@ inline void Statistics::add<size_t>(
 }
 
 template <>
-inline void Statistics::add<Population<size_t> >(
-    const std::string&              name,
-    const std::string&              title,
-    const Population<size_t>&       value)
-{
-    const size_t index = m_uint_pop_values.size();
-    m_uint_pop_values.push_back(value);
-    m_records.push_back(Record(name, title, Record::UnsignedIntegerPopulation, index));
-}
-
-template <>
 inline void Statistics::add<double>(
     const std::string&              name,
     const std::string&              title,
@@ -160,17 +177,6 @@ inline void Statistics::add<double>(
     const size_t index = m_fp_values.size();
     m_fp_values.push_back(value);
     m_records.push_back(Record(name, title, Record::FloatingPoint, index));
-}
-
-template <>
-inline void Statistics::add<Population<double> >(
-    const std::string&              name,
-    const std::string&              title,
-    const Population<double>&       value)
-{
-    const size_t index = m_fp_pop_values.size();
-    m_fp_pop_values.push_back(value);
-    m_records.push_back(Record(name, title, Record::FloatingPointPopulation, index));
 }
 
 template <>
@@ -211,6 +217,39 @@ inline void Statistics::add_percent(
     const std::streamsize           precision)
 {
     add<std::string>(name, title, pretty_percent(numerator, denominator, precision));
+}
+
+template <typename T>
+inline void Statistics::add_population(
+    const std::string&              name,
+    const std::string&              title,
+    const Population<T>&            value)
+{
+    add_population<T>(name, title, "", value);
+}
+
+template <>
+inline void Statistics::add_population<size_t>(
+    const std::string&              name,
+    const std::string&              title,
+    const std::string&              unit,
+    const Population<size_t>&       value)
+{
+    const size_t index = m_uint_pop_values.size();
+    m_uint_pop_values.push_back(value);
+    m_records.push_back(Record(name, title, unit, Record::UnsignedIntegerPopulation, index));
+}
+
+template <>
+inline void Statistics::add_population<double>(
+    const std::string&              name,
+    const std::string&              title,
+    const std::string&              unit,
+    const Population<double>&       value)
+{
+    const size_t index = m_fp_pop_values.size();
+    m_fp_pop_values.push_back(value);
+    m_records.push_back(Record(name, title, unit, Record::FloatingPointPopulation, index));
 }
 
 }       // namespace foundation

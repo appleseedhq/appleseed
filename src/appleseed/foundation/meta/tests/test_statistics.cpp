@@ -91,8 +91,22 @@ TEST_SUITE(Foundation_Utility_Statistics)
         pop.insert(2);
         pop.insert(3);
 
-        stats.add<Population<size_t> >("some_value", "some value", pop);
+        stats.add_population<size_t>("some_value", "some value", pop);
 
         EXPECT_EQ("title:\n  some value       avg 2.0  min 1  max 3  dev 0.8\n", stats.to_string());
+    }
+
+    TEST_CASE(SingleUnsignedIntegerPopulationStatisticWithUnit)
+    {
+        Statistics stats("title");
+
+        Population<size_t> pop;
+        pop.insert(1);
+        pop.insert(2);
+        pop.insert(3);
+
+        stats.add_population<size_t>("some_value", "some value", "%", pop);
+
+        EXPECT_EQ("title:\n  some value       avg 2.0%  min 1%  max 3%  dev 0.8%\n", stats.to_string());
     }
 }

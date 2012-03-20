@@ -50,15 +50,15 @@ Statistics::Statistics(const string& title)
 namespace
 {
     template <typename T>
-    string pop_to_string(const Population<T>& pop)
+    string pop_to_string(const Population<T>& pop, const string& unit)
     {
         stringstream sstr;
         sstr << fixed << setprecision(1);
 
-        sstr <<   "avg " << pop.get_avg();
-        sstr << "  min " << pop.get_min();
-        sstr << "  max " << pop.get_max();
-        sstr << "  dev " << pop.get_dev();
+        sstr <<   "avg " << pop.get_avg() << unit;
+        sstr << "  min " << pop.get_min() << unit;
+        sstr << "  max " << pop.get_max() << unit;
+        sstr << "  dev " << pop.get_dev() << unit;
 
         return sstr.str();
     }
@@ -90,7 +90,7 @@ string Statistics::to_string(const size_t max_title_length) const
                 break;
 
               case Record::UnsignedIntegerPopulation:
-                sstr << pop_to_string(m_uint_pop_values[i->m_index]);
+                sstr << pop_to_string(m_uint_pop_values[i->m_index], i->m_unit);
                 break;
 
               case Record::FloatingPoint:
@@ -98,12 +98,13 @@ string Statistics::to_string(const size_t max_title_length) const
                 break;
 
               case Record::FloatingPointPopulation:
-                sstr << pop_to_string(m_fp_pop_values[i->m_index]);
+                sstr << pop_to_string(m_fp_pop_values[i->m_index], i->m_unit);
                 break;
 
               case Record::String:
                 sstr << m_string_values[i->m_index];
                 break;
+
               assert_otherwise;
             }
 
