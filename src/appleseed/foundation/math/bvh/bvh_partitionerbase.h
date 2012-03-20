@@ -159,6 +159,7 @@ void PartitionerBase<AABBVector>::sort_indices(
             for (size_t i = begin; i < end; ++i)
             {
                 const size_t index = indices[i];
+
                 if (m_tags[index] == Left)
                 {
                     assert(left < pivot);
