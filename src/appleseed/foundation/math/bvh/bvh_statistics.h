@@ -134,9 +134,9 @@ TreeStatistics<Tree>::TreeStatistics(
         "  interior " + pretty_uint(tree.m_nodes.size() - m_leaf_count) +
         "  leaves " + pretty_uint(m_leaf_count));
     statistics.add_percent("leaf_volume", "leaf volume", m_leaf_volume, tree_volume);
-    statistics.add<Population<size_t> >("leaf_depth", "leaf depth", m_leaf_depth);
-    statistics.add<Population<size_t> >("leaf_size", "leaf size", m_leaf_size);
-    statistics.add<Population<double> >("sibling_overlap", "sibling overlap", m_sibling_overlap);
+    statistics.add_population<size_t>("leaf_depth", "leaf depth", m_leaf_depth);
+    statistics.add_population<size_t>("leaf_size", "leaf size", m_leaf_size);
+    statistics.add_population<double>("sibling_overlap", "sibling overlap", "%", m_sibling_overlap);
 }
 
 template <typename Tree>
@@ -165,7 +165,7 @@ void TreeStatistics<Tree>::collect_stats_recurse(
         const NodeType& right_node = tree.m_nodes[child_index + 1];
 
         // Keep track of the amount of overlap between children.
-        m_sibling_overlap.insert(AABBType::overlap_ratio(left_bbox, right_bbox));
+        m_sibling_overlap.insert(AABBType::overlap_ratio(left_bbox, right_bbox) * ValueType(100.0));
 
         // Recurse into the child nodes.
         collect_stats_recurse(tree, left_node, left_bbox, depth + 1);
