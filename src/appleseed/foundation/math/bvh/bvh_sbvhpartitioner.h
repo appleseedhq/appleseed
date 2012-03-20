@@ -32,9 +32,9 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/bvh/bvh_bboxsortpredicate.h"
-#include "foundation/math/permutation.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/split.h"
+#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <algorithm>
@@ -85,8 +85,17 @@ class SBVHPartitioner
     typedef AABBVector AABBVectorType;
     typedef typename AABBVectorType::value_type AABBType;
     typedef typename AABBType::ValueType ValueType;
+    static const size_t Dimension = AABBType::Dimension;
 
-    typedef std::vector<size_t> LeafType;
+    struct LeafType
+    {
+        std::vector<size_t> m_indices[Dimension];
+
+        size_t size() const
+        {
+            return m_indices[0].size();
+        }
+    };
 
     // Constructor.
     SBVHPartitioner(
@@ -105,12 +114,12 @@ class SBVHPartitioner
 
     // Split a leaf. Return true if the split should be split or false if it should be kept unsplit.
     bool split(
-        LeafType&                   indices,
-        const AABBType&             bbox,
-        LeafType&                   left_indices,
-        AABBType&                   left_bbox,
-        LeafType&                   right_indices,
-        AABBType&                   right_bbox);
+        LeafType&                   leaf,
+        const AABBType&             leaf_bbox,
+        LeafType&                   left_leaf,
+        AABBType&                   left_leaf_bbox,
+        LeafType&                   right_leaf,
+        AABBType&                   right_leaf_bbox);
 
     // Store a leaf. Return the index of the first stored item.
     size_t store(const LeafType& leaf);
@@ -124,7 +133,6 @@ class SBVHPartitioner
 
   private:
     typedef Split<ValueType> SplitType;
-    static const size_t Dimension = AABBType::Dimension;
 
     struct Bin
     {
@@ -145,7 +153,8 @@ class SBVHPartitioner
     ValueType                       m_root_bbox_rcp_sa;
     std::vector<AABBType>           m_left_bboxes;
     std::vector<Bin>                m_bins;
-    std::vector<size_t>             m_indices;
+    std::vector<uint8>              m_tags;
+    std::vector<size_t>             m_final_indices;
 
     size_t                          m_spatial_split_count;
     size_t                          m_object_split_count;
@@ -158,41 +167,41 @@ class SBVHPartitioner
 
     // Find the best object split for a given set of items.
     void find_object_split(
-        LeafType&                   indices,
-        const AABBType&             bbox,
-        AABBType&                   left_bbox,
-        AABBType&                   right_bbox,
+        LeafType&                   leaf,
+        const AABBType&             leaf_bbox,
+        AABBType&                   left_leaf_bbox,
+        AABBType&                   right_leaf_bbox,
         size_t&                     best_split_dim,
         size_t&                     best_split_pivot,
         ValueType&                  best_split_cost);
 
     // Find the best spatial split for a given set of items.
     void find_spatial_split(
-        const LeafType&             indices,
-        const AABBType&             bbox,
-        AABBType&                   left_bbox,
-        AABBType&                   right_bbox,
+        const LeafType&             leaf,
+        const AABBType&             leaf_bbox,
+        AABBType&                   left_leaf_bbox,
+        AABBType&                   right_leaf_bbox,
         SplitType&                  best_split,
         ValueType&                  best_split_cost);
 
     // Sort a set of items into two subsets according to a given object split.
     void object_sort(
-        LeafType&                   indices,
+        LeafType&                   leaf,
         const size_t                split_dim,
         const size_t                split_pivot,
-        const AABBType&             left_bbox,
-        const AABBType&             right_bbox,
-        LeafType&                   left_indices,
-        LeafType&                   right_indices) const;
+        const AABBType&             left_leaf_bbox,
+        const AABBType&             right_leaf_bbox,
+        LeafType&                   left_leaf,
+        LeafType&                   right_leaf);
 
     // Sort a set of items into two subsets according to a given spatial split.
     void spatial_sort(
-        const LeafType&             indices,
+        const LeafType&             leaf,
         const SplitType&            split,
-        const AABBType&             left_bbox,
-        const AABBType&             right_bbox,
-        LeafType&                   left_indices,
-        LeafType&                   right_indices) const;
+        const AABBType&             left_leaf_bbox,
+        const AABBType&             right_leaf_bbox,
+        LeafType&                   left_leaf,
+        LeafType&                   right_leaf) const;
 };
 
 
@@ -217,6 +226,7 @@ SBVHPartitioner<ItemHandler, AABBVector>::SBVHPartitioner(
   , m_triangle_intersection_cost(triangle_intersection_cost)
   , m_left_bboxes(bboxes.size() > 1 ? bboxes.size() - 1 : 0)
   , m_bins(bin_count)
+  , m_tags(bboxes.size())
   , m_spatial_split_count(0)
   , m_object_split_count(0)
 {
@@ -226,12 +236,25 @@ SBVHPartitioner<ItemHandler, AABBVector>::SBVHPartitioner(
 template <typename ItemHandler, typename AABBVector>
 typename SBVHPartitioner<ItemHandler, AABBVector>::LeafType* SBVHPartitioner<ItemHandler, AABBVector>::create_root_leaf() const
 {
-    LeafType* root_leaf = new LeafType(m_bboxes.size());
+    LeafType* leaf = new LeafType();
 
-    if (!m_bboxes.empty())
-        identity_permutation(m_bboxes.size(), &root_leaf->front());
+    const size_t size = m_bboxes.size();
 
-    return root_leaf;
+    for (size_t d = 0; d < Dimension; ++d)
+    {
+        std::vector<size_t>& indices = leaf->m_indices[d];
+
+        // Identity ordering.
+        indices.resize(size);
+        for (size_t i = 0; i < size; ++i)
+            indices[i] = i;
+
+        // Sort the items according to their bounding boxes.
+        StableBboxSortPredicate<AABBVectorType> predicate(m_bboxes, d);
+        std::sort(indices.begin(), indices.end(), predicate);
+    }
+
+    return leaf;
 }
 
 template <typename ItemHandler, typename AABBVector>
@@ -240,34 +263,39 @@ typename AABBVector::value_type SBVHPartitioner<ItemHandler, AABBVector>::comput
     AABBType bbox;
     bbox.invalidate();
 
-    const size_t size = leaf.size();
+    const std::vector<size_t>& indices = leaf.m_indices[0];
+    const size_t size = indices.size();
 
     for (size_t i = 0; i < size; ++i)
-        bbox.insert(m_bboxes[leaf[i]]);
+        bbox.insert(m_bboxes[indices[i]]);
 
     return bbox;
 }
 
 template <typename ItemHandler, typename AABBVector>
 bool SBVHPartitioner<ItemHandler, AABBVector>::split(
-    LeafType&                       indices,
-    const AABBType&                 bbox,
-    LeafType&                       left_indices,
-    AABBType&                       left_bbox,
-    LeafType&                       right_indices,
-    AABBType&                       right_bbox)
+    LeafType&                       leaf,
+    const AABBType&                 leaf_bbox,
+    LeafType&                       left_leaf,
+    AABBType&                       left_leaf_bbox,
+    LeafType&                       right_leaf,
+    AABBType&                       right_leaf_bbox)
 {
-    assert(bbox.rank() >= Dimension - 1);
+    assert(leaf_bbox.rank() >= Dimension - 1);
 
 #ifdef FOUNDATION_SBVH_DEEPCHECK
     // Make sure every item intersects the leaf it belongs to.
-    for (size_t i = 0; i < indices.size(); ++i)
+    for (size_t i = 0; i < leaf.m_indices[0].size(); ++i)
     {
-        const size_t item_index = indices[i];
+        const size_t item_index = leaf.m_indices[0][i];
         const AABBType& item_bbox = m_bboxes[item_index];
-        assert(AABBType::overlap(item_bbox, bbox));
+        assert(AABBType::overlap(item_bbox, leaf_bbox));
     }
 #endif
+
+    // Don't split leaves with a single item.
+    if (leaf.m_indices[0].size() <= 1)
+        return false;
 
     // Find the best object split.
     AABBType object_split_left_bbox;
@@ -276,8 +304,8 @@ bool SBVHPartitioner<ItemHandler, AABBVector>::split(
     size_t object_split_pivot;
     ValueType object_split_cost = std::numeric_limits<ValueType>::max();
     find_object_split(
-        indices,
-        bbox,
+        leaf,
+        leaf_bbox,
         object_split_left_bbox,
         object_split_right_bbox,
         object_split_dim,
@@ -310,8 +338,8 @@ bool SBVHPartitioner<ItemHandler, AABBVector>::split(
     if (do_find_spatial_split)
     {
         find_spatial_split(
-            indices,
-            bbox,
+            leaf,
+            leaf_bbox,
             spatial_split_left_bbox,
             spatial_split_right_bbox,
             spatial_split,
@@ -319,7 +347,7 @@ bool SBVHPartitioner<ItemHandler, AABBVector>::split(
     }
 
     // Compute the cost of keeping the leaf unsplit.
-    const ValueType leaf_cost = indices.size() * m_triangle_intersection_cost;
+    const ValueType leaf_cost = leaf.size() * m_triangle_intersection_cost;
 
     // Select the cheapest option.
     if (leaf_cost <= object_split_cost && leaf_cost <= spatial_split_cost)
@@ -330,31 +358,31 @@ bool SBVHPartitioner<ItemHandler, AABBVector>::split(
     else if (object_split_cost <= spatial_split_cost)
     {
         // Perform the object split.
-        left_bbox = object_split_left_bbox;
-        right_bbox = object_split_right_bbox;
+        left_leaf_bbox = object_split_left_bbox;
+        right_leaf_bbox = object_split_right_bbox;
         object_sort(
-            indices,
+            leaf,
             object_split_dim,
             object_split_pivot,
-            left_bbox,
-            right_bbox,
-            left_indices,
-            right_indices);
+            left_leaf_bbox,
+            right_leaf_bbox,
+            left_leaf,
+            right_leaf);
         ++m_object_split_count;
         return true;
     }
     else
     {
         // Perform the spatial split.
-        left_bbox = spatial_split_left_bbox;
-        right_bbox = spatial_split_right_bbox;
+        left_leaf_bbox = spatial_split_left_bbox;
+        right_leaf_bbox = spatial_split_right_bbox;
         spatial_sort(
-            indices,
+            leaf,
             spatial_split,
-            left_bbox,
-            right_bbox,
-            left_indices,
-            right_indices);
+            left_leaf_bbox,
+            right_leaf_bbox,
+            left_leaf,
+            right_leaf);
         ++m_spatial_split_count;
         return true;
     }
@@ -398,21 +426,18 @@ inline typename AABBVector::value_type::ValueType SBVHPartitioner<ItemHandler, A
 
 template <typename ItemHandler, typename AABBVector>
 void SBVHPartitioner<ItemHandler, AABBVector>::find_object_split(
-    LeafType&                       indices,
-    const AABBType&                 bbox,
-    AABBType&                       left_bbox,
-    AABBType&                       right_bbox,
+    LeafType&                       leaf,
+    const AABBType&                 leaf_bbox,
+    AABBType&                       left_leaf_bbox,
+    AABBType&                       right_leaf_bbox,
     size_t&                         best_split_dim,
     size_t&                         best_split_pivot,
     ValueType&                      best_split_cost)
 {
-    const size_t item_count = indices.size();
-
     for (size_t d = 0; d < Dimension; ++d)
     {
-        // Sort items according to the centroid of their bounding box.
-        StableBboxSortPredicate<AABBVectorType> predicate(m_bboxes, d);
-        std::sort(indices.begin(), indices.end(), predicate);
+        const std::vector<size_t>& indices = leaf.m_indices[d];
+        const size_t item_count = indices.size();
 
         AABBType bbox_accumulator;
 
@@ -422,7 +447,7 @@ void SBVHPartitioner<ItemHandler, AABBVector>::find_object_split(
         {
             const size_t item_index = indices[i];
             const AABBType& item_bbox = m_bboxes[item_index];
-            const AABBType clipped_item_bbox = AABBType::intersect(item_bbox, bbox);
+            const AABBType clipped_item_bbox = AABBType::intersect(item_bbox, leaf_bbox);
             assert(clipped_item_bbox.is_valid());
             bbox_accumulator.insert(clipped_item_bbox);
             m_left_bboxes[i] = bbox_accumulator;
@@ -435,7 +460,7 @@ void SBVHPartitioner<ItemHandler, AABBVector>::find_object_split(
             // Compute right bounding box.
             const size_t item_index = indices[i];
             const AABBType& item_bbox = m_bboxes[item_index];
-            const AABBType clipped_item_bbox = AABBType::intersect(item_bbox, bbox);
+            const AABBType clipped_item_bbox = AABBType::intersect(item_bbox, leaf_bbox);
             assert(clipped_item_bbox.is_valid());
             bbox_accumulator.insert(clipped_item_bbox);
 
@@ -450,31 +475,32 @@ void SBVHPartitioner<ItemHandler, AABBVector>::find_object_split(
                 best_split_cost = split_cost;
                 best_split_dim = d;
                 best_split_pivot = i;
-                left_bbox = m_left_bboxes[i - 1];
-                right_bbox = bbox_accumulator;
+                left_leaf_bbox = m_left_bboxes[i - 1];
+                right_leaf_bbox = bbox_accumulator;
             }
         }
     }
 
-    best_split_cost = compute_final_split_cost(bbox, best_split_cost);
+    best_split_cost = compute_final_split_cost(leaf_bbox, best_split_cost);
 }
 
 template <typename ItemHandler, typename AABBVector>
 void SBVHPartitioner<ItemHandler, AABBVector>::find_spatial_split(
-    const LeafType&                 indices,
-    const AABBType&                 bbox,
-    AABBType&                       left_bbox,
-    AABBType&                       right_bbox,
+    const LeafType&                 leaf,
+    const AABBType&                 leaf_bbox,
+    AABBType&                       left_leaf_bbox,
+    AABBType&                       right_leaf_bbox,
     SplitType&                      best_split,
     ValueType&                      best_split_cost)
 {
-    const size_t item_count = indices.size();
-
     for (size_t d = 0; d < Dimension; ++d)
     {
+        const std::vector<size_t>& indices = leaf.m_indices[d];
+        const size_t item_count = indices.size();
+
         // Compute the extent of the leaf in the splitting dimension.
-        const ValueType bbox_min = bbox.min[d];
-        const ValueType bbox_max = bbox.max[d];
+        const ValueType bbox_min = leaf_bbox.min[d];
+        const ValueType bbox_max = leaf_bbox.max[d];
         const ValueType bbox_extent = bbox_max - bbox_min;
         const ValueType rcp_bin_size = m_bin_count / bbox_extent;
 
@@ -579,97 +605,134 @@ void SBVHPartitioner<ItemHandler, AABBVector>::find_spatial_split(
                 best_split_cost = split_cost;
                 best_split.m_dimension = d;
                 best_split.m_abscissa = bbox_accumulator.min[d];
-                left_bbox = bin.m_left_bbox;
-                right_bbox = bbox_accumulator;
+                left_leaf_bbox = bin.m_left_bbox;
+                right_leaf_bbox = bbox_accumulator;
             }
         }
     }
 
-    best_split_cost = compute_final_split_cost(bbox, best_split_cost);
+    best_split_cost = compute_final_split_cost(leaf_bbox, best_split_cost);
 
     if (best_split_cost < std::numeric_limits<ValueType>::max())
     {
         // In the case of a spatial split, the bounding boxes of the child nodes must be disjoint.
-        assert(AABBType::intersect(left_bbox, right_bbox).rank() < Dimension);
+        assert(AABBType::intersect(left_leaf_bbox, right_leaf_bbox).rank() < Dimension);
     }
 }
 
 template <typename ItemHandler, typename AABBVector>
 void SBVHPartitioner<ItemHandler, AABBVector>::object_sort(
-    LeafType&                       indices,
+    LeafType&                       leaf,
     const size_t                    split_dim,
     const size_t                    split_pivot,
-    const AABBType&                 left_bbox,
-    const AABBType&                 right_bbox,
-    LeafType&                       left_indices,
-    LeafType&                       right_indices) const
+    const AABBType&                 left_leaf_bbox,
+    const AABBType&                 right_leaf_bbox,
+    LeafType&                       left_leaf,
+    LeafType&                       right_leaf)
 {
-    // Sort items according to the centroid of their bounding box.
-    StableBboxSortPredicate<AABBVectorType> predicate(m_bboxes, split_dim);
-    std::sort(indices.begin(), indices.end(), predicate);
+    const std::vector<size_t>& split_indices = leaf.m_indices[split_dim];
+    const size_t size = split_indices.size();
 
-    const size_t item_count = indices.size();
-
-    left_indices.resize(split_pivot);
-    right_indices.resize(item_count - split_pivot);
+    enum { Left = 0, Right = 1 };
 
     for (size_t i = 0; i < split_pivot; ++i)
-    {
-        const size_t item_index = indices[i];
-        const AABBType& item_bbox = m_bboxes[item_index];
-#ifdef FOUNDATION_SBVH_DEEPCHECK
-        assert(AABBType::overlap(item_bbox, left_bbox));
-#endif
-        left_indices[i] = item_index;
-    }
+        m_tags[split_indices[i]] = Left;
 
-    for (size_t i = split_pivot; i < item_count; ++i)
+    for (size_t i = split_pivot; i < size; ++i)
+        m_tags[split_indices[i]] = Right;
+
+    for (size_t d = 0; d < Dimension; ++d)
     {
-        const size_t item_index = indices[i];
-        const AABBType& item_bbox = m_bboxes[item_index];
+        left_leaf.m_indices[d].resize(split_pivot);
+        right_leaf.m_indices[d].resize(size - split_pivot);
+
+        if (d == split_dim)
+        {
+            for (size_t i = 0; i < split_pivot; ++i)
+            {
+                const size_t item_index = leaf.m_indices[d][i];
+
 #ifdef FOUNDATION_SBVH_DEEPCHECK
-        assert(AABBType::overlap(item_bbox, right_bbox));
+                assert(AABBType::overlap(m_bboxes[item_index], left_leaf_bbox));
 #endif
-        right_indices[i - split_pivot] = item_index;
+
+                left_leaf.m_indices[d][i] = item_index;
+            }
+
+            for (size_t i = split_pivot; i < size; ++i)
+            {
+                const size_t item_index = leaf.m_indices[d][i];
+
+#ifdef FOUNDATION_SBVH_DEEPCHECK
+                assert(AABBType::overlap(m_bboxes[item_index], right_leaf_bbox));
+#endif
+
+                right_leaf.m_indices[d][i - split_pivot] = item_index;
+            }
+        }
+        else
+        {
+            size_t left = 0;
+            size_t right = 0;
+
+            for (size_t i = 0; i < size; ++i)
+            {
+                const size_t item_index = leaf.m_indices[d][i];
+
+                if (m_tags[item_index] == Left)
+                {
+                    assert(left < split_pivot);
+                    left_leaf.m_indices[d][left++] = item_index;
+                }
+                else
+                {
+                    assert(right < size - split_pivot);
+                    right_leaf.m_indices[d][right++] = item_index;
+                }
+            }
+
+            assert(left == split_pivot);
+            assert(right == size - split_pivot);
+        }
     }
 }
 
 template <typename ItemHandler, typename AABBVector>
 void SBVHPartitioner<ItemHandler, AABBVector>::spatial_sort(
-    const LeafType&                 indices,
+    const LeafType&                 leaf,
     const SplitType&                split,
-    const AABBType&                 left_bbox,
-    const AABBType&                 right_bbox,
-    LeafType&                       left_indices,
-    LeafType&                       right_indices) const
+    const AABBType&                 left_leaf_bbox,
+    const AABBType&                 right_leaf_bbox,
+    LeafType&                       left_leaf,
+    LeafType&                       right_leaf) const
 {
     // Prevent numerical instabilities by slightly enlarging the left and right bounding boxes.
     const ValueType eps = m_item_handler.get_bbox_grow_eps();
-    AABBType enlarged_left_bbox(left_bbox);
-    AABBType enlarged_right_bbox(right_bbox);
+    AABBType enlarged_left_bbox(left_leaf_bbox);
+    AABBType enlarged_right_bbox(right_leaf_bbox);
     enlarged_left_bbox.robust_grow(eps);
     enlarged_right_bbox.robust_grow(eps);
 
-    const size_t item_count = indices.size();
+    const size_t item_count = leaf.size();
 
     for (size_t i = 0; i < item_count; ++i)
     {
-        const size_t item_index = indices[i];
+        const size_t item_index = leaf.m_indices[split.m_dimension][i];
         const AABBType& item_bbox = m_bboxes[item_index];
 
         if (item_bbox.max[split.m_dimension] <= split.m_abscissa)
         {
 #ifdef FOUNDATION_SBVH_DEEPCHECK
-            assert(AABBType::overlap(item_bbox, left_bbox));
+            assert(AABBType::overlap(item_bbox, left_leaf_bbox));
 #endif
-            left_indices.push_back(item_index);
+            left_leaf.m_indices[split.m_dimension].push_back(item_index);
         }
         else if (item_bbox.min[split.m_dimension] >= split.m_abscissa)
         {
 #ifdef FOUNDATION_SBVH_DEEPCHECK
-            assert(AABBType::overlap(item_bbox, right_bbox));
+            assert(AABBType::overlap(item_bbox, right_leaf_bbox));
 #endif
-            right_indices.push_back(item_index);
+            right_leaf.m_indices[split.m_dimension].push_back(item_index);
         }
         else
         {
@@ -679,10 +742,27 @@ void SBVHPartitioner<ItemHandler, AABBVector>::spatial_sort(
             assert(in_left || in_right);
 
             if (in_left)
-                left_indices.push_back(item_index);
+                left_leaf.m_indices[split.m_dimension].push_back(item_index);
 
             if (in_right)
-                right_indices.push_back(item_index);
+                right_leaf.m_indices[split.m_dimension].push_back(item_index);
+        }
+    }
+
+    // Basic check to make sure we didn't loose any items.
+    assert(left_leaf.m_indices[split.m_dimension].size() + right_leaf.m_indices[split.m_dimension].size() >= leaf.m_indices[split.m_dimension].size());
+
+    for (size_t d = 0; d < Dimension; ++d)
+    {
+        if (d != split.m_dimension)
+        {
+            left_leaf.m_indices[d] = left_leaf.m_indices[split.m_dimension];
+            right_leaf.m_indices[d] = right_leaf.m_indices[split.m_dimension];
+
+            // Sort the items according to their bounding boxes.
+            StableBboxSortPredicate<AABBVectorType> predicate(m_bboxes, d);
+            std::sort(left_leaf.m_indices[d].begin(), left_leaf.m_indices[d].end(), predicate);
+            std::sort(right_leaf.m_indices[d].begin(), right_leaf.m_indices[d].end(), predicate);
         }
     }
 }
@@ -690,15 +770,21 @@ void SBVHPartitioner<ItemHandler, AABBVector>::spatial_sort(
 template <typename ItemHandler, typename AABBVector>
 inline size_t SBVHPartitioner<ItemHandler, AABBVector>::store(const LeafType& leaf)
 {
-    const size_t first = m_indices.size();
-    m_indices.insert(m_indices.end(), leaf.begin(), leaf.end());
+    const size_t first = m_final_indices.size();
+
+    const std::vector<size_t>& indices = leaf.m_indices[0];
+    const size_t size = indices.size();
+
+    for (size_t i = 0; i < size; ++i)
+        m_final_indices.push_back(indices[i]);
+
     return first;
 }
 
 template <typename ItemHandler, typename AABBVector>
 inline const std::vector<size_t>& SBVHPartitioner<ItemHandler, AABBVector>::get_item_ordering() const
 {
-    return m_indices;
+    return m_final_indices;
 }
 
 template <typename ItemHandler, typename AABBVector>

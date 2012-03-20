@@ -55,7 +55,7 @@ namespace bvh {
 //          // Split a leaf. Return true if the split should be split or false if it should be kept unsplit.
 //          bool split(
 //              const LeafType&     leaf,
-//              const AABBType&     bbox,
+//              const AABBType&     leaf_bbox,
 //              LeafType&           left_leaf,
 //              AABBType&           left_left_bbox,
 //              LeafType&           right_leaf,
@@ -183,29 +183,21 @@ void SpatialBuilder<Tree, Partitioner>::subdivide_recurse(
 {
     assert(leaf_node_index < tree.m_nodes.size());
 
+    // Try to split the leaf.
     LeafType* left_leaf = new LeafType();
     LeafType* right_leaf = new LeafType();
-    AABBType left_bbox, right_bbox;
-    bool split = false;
-
-    // Try to split the leaf.
-    if (leaf->size() > 1)
-    {
-        split =
-            partitioner.split(
-                *leaf,
-                leaf_bbox,
-                *left_leaf,
-                left_bbox,
-                *right_leaf,
-                right_bbox);
-    }
+    AABBType left_leaf_bbox, right_leaf_bbox;
+    const bool split =
+        partitioner.split(
+            *leaf,
+            leaf_bbox,
+            *left_leaf,
+            left_leaf_bbox,
+            *right_leaf,
+            right_leaf_bbox);
 
     if (split)
     {
-        // Basic check to make sure we didn't loose any items.
-        assert(left_leaf->size() + right_leaf->size() >= leaf->size());
-
         // Get rid of the current leaf.
         delete leaf;
 
@@ -216,8 +208,8 @@ void SpatialBuilder<Tree, Partitioner>::subdivide_recurse(
         // Turn the current node into an interior node.
         NodeType& node = tree.m_nodes[leaf_node_index];
         node.make_interior();
-        node.set_left_bbox(left_bbox);
-        node.set_right_bbox(right_bbox);
+        node.set_left_bbox(left_leaf_bbox);
+        node.set_right_bbox(right_leaf_bbox);
         node.set_child_node_index(left_node_index);
 
         // Create the child nodes.
@@ -230,7 +222,7 @@ void SpatialBuilder<Tree, Partitioner>::subdivide_recurse(
             partitioner,
             leaves,
             left_leaf,
-            left_bbox,
+            left_leaf_bbox,
             left_node_index,
             depth + 1);
 
@@ -240,7 +232,7 @@ void SpatialBuilder<Tree, Partitioner>::subdivide_recurse(
             partitioner,
             leaves,
             right_leaf,
-            right_bbox,
+            right_leaf_bbox,
             right_node_index,
             depth + 1);
     }
