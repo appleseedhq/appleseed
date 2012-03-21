@@ -98,6 +98,7 @@ RenderingManager::RenderingManager(StatusBar& status_bar)
   , m_project(0)
   , m_render_widget(0)
   , m_override_shading(false)
+  , m_camera_changed(false)
 {
     //
     // The connections below are using the Qt::BlockingQueuedConnection connection type.
@@ -154,6 +155,7 @@ void RenderingManager::start_rendering(
 {
     m_project = project;
     m_render_widget = render_widget;
+    m_camera_changed = false;
 
     m_camera_controller.reset(
         new CameraController(
@@ -288,8 +290,6 @@ void RenderingManager::slot_rendering_end()
 {
     m_render_widget_update_timer.stop();
 
-    m_render_widget->update();
-
     print_final_rendering_time();
     print_average_luminance();
 
@@ -303,7 +303,11 @@ void RenderingManager::slot_frame_begin()
 {
     m_renderer_controller.set_status(IRendererController::ContinueRendering);
 
-    m_camera_controller->update_camera_transform();
+    if (m_camera_changed)
+    {
+        m_camera_controller->update_camera_transform();
+        m_camera_changed = false;
+    }
 
     m_rendering_timer.start();
     m_status_bar.start_rendering_time_display(&m_rendering_timer);
@@ -336,6 +340,8 @@ void RenderingManager::slot_set_shading_override()
 
 void RenderingManager::slot_camera_changed()
 {
+    m_camera_changed = true;
+
     restart_rendering();
 }
 

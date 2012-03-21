@@ -107,6 +107,7 @@ class RenderingManager
 
     bool                                        m_override_shading;
     std::string                                 m_override_shading_mode;
+    bool                                        m_camera_changed;
 
     std::auto_ptr<QtTileCallbackFactory>        m_tile_callback_factory;
     std::auto_ptr<renderer::MasterRenderer>     m_master_renderer;
