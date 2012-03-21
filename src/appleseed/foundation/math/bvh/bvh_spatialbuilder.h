@@ -42,7 +42,7 @@ namespace foundation {
 namespace bvh {
 
 //
-// BVH builder supporting spatial splits (with reference duplication).
+// BVH builder supporting spatial splits (with possible reference duplication).
 //
 // The Partitioner class must conform to the following prototype:
 //
@@ -50,7 +50,11 @@ namespace bvh {
 //        : public foundation::NonCopyable
 //      {
 //        public:
-//          typedef ... LeafType;
+//          struct LeafType
+//          {
+//              // Return the number of items in the leaf.
+//              size_t size();
+//          };
 //
 //          // Split a leaf. Return true if the split should be split or false if it should be kept unsplit.
 //          bool split(

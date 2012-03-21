@@ -750,7 +750,10 @@ void SBVHPartitioner<ItemHandler, AABBVector>::spatial_sort(
     }
 
     // Basic check to make sure we didn't loose any items.
-    assert(left_leaf.m_indices[split.m_dimension].size() + right_leaf.m_indices[split.m_dimension].size() >= leaf.m_indices[split.m_dimension].size());
+    assert(
+        left_leaf.m_indices[split.m_dimension].size() +
+        right_leaf.m_indices[split.m_dimension].size() >=
+        leaf.m_indices[split.m_dimension].size());
 
     for (size_t d = 0; d < Dimension; ++d)
     {
