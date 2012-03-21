@@ -44,6 +44,9 @@
 #include "foundation/math/area.h"
 #include "foundation/math/permutation.h"
 #include "foundation/math/treeoptimizer.h"
+#ifndef APPLESEED_FOUNDATION_USE_SSE
+#include "foundation/platform/sse.h"
+#endif
 #include "foundation/platform/system.h"
 #include "foundation/platform/timer.h"
 #include "foundation/utility/memory.h"
@@ -160,33 +163,228 @@ namespace
             return 2.0e-9;
         }
 
+#ifdef APPLESEED_FOUNDATION_USE_SSE
+
         AABB3d clip(
             const size_t    item_index,
             const size_t    dimension,
             const double    slab_min,
             const double    slab_max) const
         {
-            AABB3d bbox;
-            bbox.invalidate();
+            SSE_ALIGN const Vector3d v0(m_triangle_vertices[item_index * 3 + 0]);
+            SSE_ALIGN const Vector3d v1(m_triangle_vertices[item_index * 3 + 1]);
+            SSE_ALIGN const Vector3d v2(m_triangle_vertices[item_index * 3 + 2]);
 
+            const double v0d = v0[dimension];
+            const double v1d = v1[dimension];
+            const double v2d = v2[dimension];
+
+            const int v0_ge_min = v0d >= slab_min ? 1 : 0;
+            const int v0_le_max = v0d <= slab_max ? 1 : 0;
+            const int v1_ge_min = v1d >= slab_min ? 1 : 0;
+            const int v1_le_max = v1d <= slab_max ? 1 : 0;
+            const int v2_ge_min = v2d >= slab_min ? 1 : 0;
+            const int v2_le_max = v2d <= slab_max ? 1 : 0;
+
+            sse2d bbox_min_xy = set1pd(+numeric_limits<double>::max());
+            sse2d bbox_min_zz = set1pd(+numeric_limits<double>::max());
+            sse2d bbox_max_xy = set1pd(-numeric_limits<double>::max());
+            sse2d bbox_max_zz = set1pd(-numeric_limits<double>::max());
+
+            const sse2d v0_xy = loadpd(&v0.x);
+            const sse2d v0_zz = set1pd(v0.z);
+            const sse2d v1_xy = loadpd(&v1.x);
+            const sse2d v1_zz = set1pd(v1.z);
+            const sse2d v2_xy = loadpd(&v2.x);
+            const sse2d v2_zz = set1pd(v2.z);
+
+            if (v0_ge_min & v0_le_max)
+            {
+                bbox_min_xy = minpd(bbox_min_xy, v0_xy);
+                bbox_max_xy = maxpd(bbox_max_xy, v0_xy);
+                bbox_min_zz = minpd(bbox_min_zz, v0_zz);
+                bbox_max_zz = maxpd(bbox_max_zz, v0_zz);
+            }
+
+            if (v1_ge_min & v1_le_max)
+            {
+                bbox_min_xy = minpd(bbox_min_xy, v1_xy);
+                bbox_max_xy = maxpd(bbox_max_xy, v1_xy);
+                bbox_min_zz = minpd(bbox_min_zz, v1_zz);
+                bbox_max_zz = maxpd(bbox_max_zz, v1_zz);
+            }
+
+            if (v2_ge_min & v2_le_max)
+            {
+                bbox_min_xy = minpd(bbox_min_xy, v2_xy);
+                bbox_max_xy = maxpd(bbox_max_xy, v2_xy);
+                bbox_min_zz = minpd(bbox_min_zz, v2_zz);
+                bbox_max_zz = maxpd(bbox_max_zz, v2_zz);
+            }
+
+            const int v0v1_cross_min = v0_ge_min ^ v1_ge_min;
+            const int v0v1_cross_max = v0_le_max ^ v1_le_max;
+            const int v1v2_cross_min = v1_ge_min ^ v2_ge_min;
+            const int v1v2_cross_max = v1_le_max ^ v2_le_max;
+            const int v2v0_cross_min = v2_ge_min ^ v0_ge_min;
+            const int v2v0_cross_max = v2_le_max ^ v0_le_max;
+
+            if (v0v1_cross_min | v0v1_cross_max)
+            {
+                const double rcp_v0v1 = 1.0 / (v1[dimension] - v0[dimension]);
+
+                if (v0v1_cross_min)
+                {
+                    const double t = (slab_min - v0[dimension]) * rcp_v0v1;
+                    assert(t >= 0.0 && t <= 1.0);
+
+                    const sse2d mt = set1pd(t);
+                    const sse2d mt1 = set1pd(1.0 - t);
+                    const sse2d p_xy = addpd(mulpd(v0_xy, mt1), mulpd(v1_xy, mt));
+                    const sse2d p_zz = addpd(mulpd(v0_zz, mt1), mulpd(v1_zz, mt));
+
+                    bbox_min_xy = minpd(bbox_min_xy, p_xy);
+                    bbox_max_xy = maxpd(bbox_max_xy, p_xy);
+                    bbox_min_zz = minpd(bbox_min_zz, p_zz);
+                    bbox_max_zz = maxpd(bbox_max_zz, p_zz);
+                }
+
+                if (v0v1_cross_max)
+                {
+                    const double t = (slab_max - v0[dimension]) * rcp_v0v1;
+                    assert(t >= 0.0 && t <= 1.0);
+
+                    const sse2d mt = set1pd(t);
+                    const sse2d mt1 = set1pd(1.0 - t);
+                    const sse2d p_xy = addpd(mulpd(v0_xy, mt1), mulpd(v1_xy, mt));
+                    const sse2d p_zz = addpd(mulpd(v0_zz, mt1), mulpd(v1_zz, mt));
+
+                    bbox_min_xy = minpd(bbox_min_xy, p_xy);
+                    bbox_max_xy = maxpd(bbox_max_xy, p_xy);
+                    bbox_min_zz = minpd(bbox_min_zz, p_zz);
+                    bbox_max_zz = maxpd(bbox_max_zz, p_zz);
+                }
+            }
+
+            if (v1v2_cross_min | v1v2_cross_max)
+            {
+                const double rcp_v1v2 = 1.0 / (v2[dimension] - v1[dimension]);
+
+                if (v1v2_cross_min)
+                {
+                    const double t = (slab_min - v1[dimension]) * rcp_v1v2;
+                    assert(t >= 0.0 && t <= 1.0);
+
+                    const sse2d mt = set1pd(t);
+                    const sse2d mt1 = set1pd(1.0 - t);
+                    const sse2d p_xy = addpd(mulpd(v1_xy, mt1), mulpd(v2_xy, mt));
+                    const sse2d p_zz = addpd(mulpd(v1_zz, mt1), mulpd(v2_zz, mt));
+
+                    bbox_min_xy = minpd(bbox_min_xy, p_xy);
+                    bbox_max_xy = maxpd(bbox_max_xy, p_xy);
+                    bbox_min_zz = minpd(bbox_min_zz, p_zz);
+                    bbox_max_zz = maxpd(bbox_max_zz, p_zz);
+                }
+
+                if (v1v2_cross_max)
+                {
+                    const double t = (slab_max - v1[dimension]) * rcp_v1v2;
+                    assert(t >= 0.0 && t <= 1.0);
+
+                    const sse2d mt = set1pd(t);
+                    const sse2d mt1 = set1pd(1.0 - t);
+                    const sse2d p_xy = addpd(mulpd(v1_xy, mt1), mulpd(v2_xy, mt));
+                    const sse2d p_zz = addpd(mulpd(v1_zz, mt1), mulpd(v2_zz, mt));
+
+                    bbox_min_xy = minpd(bbox_min_xy, p_xy);
+                    bbox_max_xy = maxpd(bbox_max_xy, p_xy);
+                    bbox_min_zz = minpd(bbox_min_zz, p_zz);
+                    bbox_max_zz = maxpd(bbox_max_zz, p_zz);
+                }
+            }
+
+            if (v2v0_cross_min | v2v0_cross_max)
+            {
+                const double rcp_v2v0 = 1.0 / (v0[dimension] - v2[dimension]);
+
+                if (v2v0_cross_min)
+                {
+                    const double t = (slab_min - v2[dimension]) * rcp_v2v0;
+                    assert(t >= 0.0 && t <= 1.0);
+
+                    const sse2d mt = set1pd(t);
+                    const sse2d mt1 = set1pd(1.0 - t);
+                    const sse2d p_xy = addpd(mulpd(v2_xy, mt1), mulpd(v0_xy, mt));
+                    const sse2d p_zz = addpd(mulpd(v2_zz, mt1), mulpd(v0_zz, mt));
+
+                    bbox_min_xy = minpd(bbox_min_xy, p_xy);
+                    bbox_max_xy = maxpd(bbox_max_xy, p_xy);
+                    bbox_min_zz = minpd(bbox_min_zz, p_zz);
+                    bbox_max_zz = maxpd(bbox_max_zz, p_zz);
+                }
+
+                if (v2v0_cross_max)
+                {
+                    const double t = (slab_max - v2[dimension]) * rcp_v2v0;
+                    assert(t >= 0.0 && t <= 1.0);
+
+                    const sse2d mt = set1pd(t);
+                    const sse2d mt1 = set1pd(1.0 - t);
+                    const sse2d p_xy = addpd(mulpd(v2_xy, mt1), mulpd(v0_xy, mt));
+                    const sse2d p_zz = addpd(mulpd(v2_zz, mt1), mulpd(v0_zz, mt));
+
+                    bbox_min_xy = minpd(bbox_min_xy, p_xy);
+                    bbox_max_xy = maxpd(bbox_max_xy, p_xy);
+                    bbox_min_zz = minpd(bbox_min_zz, p_zz);
+                    bbox_max_zz = maxpd(bbox_max_zz, p_zz);
+                }
+            }
+
+            SSE_ALIGN AABB3d bbox;
+
+            storepd(&bbox.min.x, bbox_min_xy);
+            storesd(&bbox.min.z, bbox_min_zz);
+            storeupd(&bbox.max.x, bbox_max_xy);
+            storesd(&bbox.max.z, bbox_max_zz);
+
+            if (bbox.min[dimension] < slab_min)
+                bbox.min[dimension] = slab_min;
+
+            if (bbox.max[dimension] > slab_max)
+                bbox.max[dimension] = slab_max;
+
+            return bbox;
+        }
+
+#else
+
+        AABB3d clip(
+            const size_t    item_index,
+            const size_t    dimension,
+            const double    slab_min,
+            const double    slab_max) const
+        {
             const Vector3d v0(m_triangle_vertices[item_index * 3 + 0]);
             const Vector3d v1(m_triangle_vertices[item_index * 3 + 1]);
             const Vector3d v2(m_triangle_vertices[item_index * 3 + 2]);
 
-            const bool v0_ge_min = v0[dimension] >= slab_min;
-            const bool v0_le_max = v0[dimension] <= slab_max;
-            const bool v1_ge_min = v1[dimension] >= slab_min;
-            const bool v1_le_max = v1[dimension] <= slab_max;
-            const bool v2_ge_min = v2[dimension] >= slab_min;
-            const bool v2_le_max = v2[dimension] <= slab_max;
+            const int v0_ge_min = v0[dimension] >= slab_min ? 1 : 0;
+            const int v0_le_max = v0[dimension] <= slab_max ? 1 : 0;
+            const int v1_ge_min = v1[dimension] >= slab_min ? 1 : 0;
+            const int v1_le_max = v1[dimension] <= slab_max ? 1 : 0;
+            const int v2_ge_min = v2[dimension] >= slab_min ? 1 : 0;
+            const int v2_le_max = v2[dimension] <= slab_max ? 1 : 0;
 
-            if (v0_ge_min && v0_le_max)
+            AABB3d bbox;
+            bbox.invalidate();
+
+            if (v0_ge_min & v0_le_max)
                 bbox.insert(v0);
 
-            if (v1_ge_min && v1_le_max)
+            if (v1_ge_min & v1_le_max)
                 bbox.insert(v1);
 
-            if (v2_ge_min && v2_le_max)
+            if (v2_ge_min & v2_le_max)
                 bbox.insert(v2);
 
             if (v0_ge_min != v1_ge_min)
@@ -209,6 +407,8 @@ namespace
 
             return bbox;
         }
+
+#endif
 
         bool intersect(
             const size_t    item_index,
