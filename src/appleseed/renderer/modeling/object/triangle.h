@@ -65,6 +65,15 @@ class Triangle
     Triangle(
         const size_t v0,
         const size_t v1,
+        const size_t v2);
+    Triangle(
+        const size_t v0,
+        const size_t v1,
+        const size_t v2,
+        const size_t pa);
+    Triangle(
+        const size_t v0,
+        const size_t v1,
         const size_t v2,
         const size_t n0,
         const size_t n1,
@@ -89,6 +98,41 @@ class Triangle
 //
 
 inline Triangle::Triangle()
+{
+}
+
+inline Triangle::Triangle(
+    const size_t    v0,
+    const size_t    v1,
+    const size_t    v2)
+  : m_v0(static_cast<foundation::uint32>(v0))
+  , m_v1(static_cast<foundation::uint32>(v1))
+  , m_v2(static_cast<foundation::uint32>(v2))
+  , m_n0(None)
+  , m_n1(None)
+  , m_n2(None)
+  , m_a0(None)
+  , m_a1(None)
+  , m_a2(None)
+  , m_pa(None)
+{
+}
+
+inline Triangle::Triangle(
+    const size_t    v0,
+    const size_t    v1,
+    const size_t    v2,
+    const size_t    pa)
+  : m_v0(static_cast<foundation::uint32>(v0))
+  , m_v1(static_cast<foundation::uint32>(v1))
+  , m_v2(static_cast<foundation::uint32>(v2))
+  , m_n0(None)
+  , m_n1(None)
+  , m_n2(None)
+  , m_a0(None)
+  , m_a1(None)
+  , m_a2(None)
+  , m_pa(static_cast<foundation::uint32>(pa))
 {
 }
 
