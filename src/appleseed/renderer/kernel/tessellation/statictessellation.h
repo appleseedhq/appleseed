@@ -64,8 +64,10 @@ class StaticTessellation
     VectorArray                 m_vertices;                 // vertex array
     VectorArray                 m_vertex_normals;           // vertex normal array
     PrimitiveArray              m_primitives;               // primitive array
-    foundation::AttributeSet    m_vertex_attributes;        // vertex attributes
+
+    foundation::AttributeSet    m_tess_attributes;          // tessellation attributes
     foundation::AttributeSet    m_primitive_attributes;     // primitive attributes
+    foundation::AttributeSet    m_vertex_attributes;        // vertex attributes
 };
 
 // Specialization of the StaticTessellation class for triangles.
