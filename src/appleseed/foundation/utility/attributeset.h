@@ -71,16 +71,16 @@ class AttributeSet
     // the cost of constructing a std::string object.
     ChannelID find_channel(const char* name) const;
 
+    // Return the number of attributes in a given attribute channel.
+    size_t get_attribute_count(
+        const ChannelID     channel_id) const;
+
     // Insert a new attribute at the end of a given attribute channel.
     // Return the index of the attribute in the attribute channel.
     template <typename T>
     size_t push_attribute(
         const ChannelID     channel_id,
         const T&            value);
-
-    // Return the number of attributes in a given attribute channel.
-    size_t get_attribute_count(
-        const ChannelID     channel_id) const;
 
     // Set a given attribute.
     template <typename T>
@@ -114,6 +114,16 @@ class AttributeSet
 // AttributeSet class implementation.
 //
 
+inline size_t AttributeSet::get_attribute_count(
+    const ChannelID         channel_id) const
+{
+    // Get the channel descriptor.
+    assert(channel_id < m_channels.size());
+    Channel* channel = m_channels[channel_id];
+
+    return channel->m_storage.size() / channel->m_value_size;
+}
+
 template <typename T>
 inline size_t AttributeSet::push_attribute(
     const ChannelID         channel_id,
@@ -138,16 +148,6 @@ inline size_t AttributeSet::push_attribute(
 
     // Return the index of the new attribute.
     return index;
-}
-
-inline size_t AttributeSet::get_attribute_count(
-    const ChannelID         channel_id) const
-{
-    // Get the channel descriptor.
-    assert(channel_id < m_channels.size());
-    Channel* channel = m_channels[channel_id];
-
-    return channel->m_storage.size() / channel->m_value_size;
 }
 
 template <typename T>
