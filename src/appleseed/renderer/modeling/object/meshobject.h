@@ -69,7 +69,7 @@ class RENDERERDLL MeshObject
 
     // Set/get the number of motion segments (the number of motion vectors per vertex).
     void set_motion_segment_count(const size_t count);
-    size_t get_motion_segment_count();
+    size_t get_motion_segment_count() const;
 
     // Insert and access motion vectors. All vertices must have been inserted before
     // motion vectors can be pushed. Conversely, no vertices must be inserted after

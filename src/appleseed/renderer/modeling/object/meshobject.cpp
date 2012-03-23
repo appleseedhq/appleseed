@@ -189,7 +189,7 @@ void MeshObject::set_motion_segment_count(const size_t count)
     impl->m_ms_count = count;
 }
 
-size_t MeshObject::get_motion_segment_count()
+size_t MeshObject::get_motion_segment_count() const
 {
     return impl->m_ms_count;
 }
