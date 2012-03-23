@@ -63,21 +63,21 @@ TEST_SUITE(MotionVectorsExploration)
             tess.m_vertices.push_back(GVector3(0.0f, 1.0f, 0.0f));
             tess.m_primitives.push_back(Triangle(0, 1, 2));
 
-            // Create a tessellation attribute to store motion times.
-            const AttributeSet::ChannelID motion_times =
-                tess.m_tess_attributes.create_channel("motion_times", NumericTypeDouble, 1);
+            // Create a tessellation attribute to store the number of motion segments.
+            const AttributeSet::ChannelID motion_segment_count_cid =
+                tess.m_tess_attributes.create_channel("motion_segment_count", NumericTypeUInt32, 1);
 
-            // We'll have a single motion vector per vertex defining the motion from t=0 to t=1.
-            tess.m_tess_attributes.push_attribute(motion_times, 1.0);
+            // We'll have one motion segment (a single motion vector per vertex) defining the motion from t=0 to t=1.
+            tess.m_tess_attributes.push_attribute(motion_segment_count_cid, 1);
 
             // Create a vertex attribute to store motion vectors.
-            const AttributeSet::ChannelID motion_vectors =
-                tess.m_vertex_attributes.create_channel("motion_vectors", NumericType::id<GVector3::ValueType>(), 3 * 1);
+            const AttributeSet::ChannelID motion_vectors_cid =
+                tess.m_vertex_attributes.create_channel("motion_vectors", NumericType::id<GVector3::ValueType>(), 3);
 
             // Insert motion vectors.
-            tess.m_vertex_attributes.push_attribute(motion_vectors, GVector3(0.5f, 0.5f, 0.0f));
-            tess.m_vertex_attributes.push_attribute(motion_vectors, GVector3(0.5f, 0.0f, 0.0f));
-            tess.m_vertex_attributes.push_attribute(motion_vectors, GVector3(0.0f, 0.5f, 0.0f));
+            tess.m_vertex_attributes.push_attribute(motion_vectors_cid, GVector3(0.5f, 0.5f, 0.0f));
+            tess.m_vertex_attributes.push_attribute(motion_vectors_cid, GVector3(0.5f, 0.0f, 0.0f));
+            tess.m_vertex_attributes.push_attribute(motion_vectors_cid, GVector3(0.0f, 0.5f, 0.0f));
         }
 
         //
@@ -85,27 +85,30 @@ TEST_SUITE(MotionVectorsExploration)
         //
 
         {
-            // Retrieve the motion times channel ID.
-            const AttributeSet::ChannelID motion_times = tess.m_tess_attributes.find_channel("motion_times");
-            ASSERT_NEQ(AttributeSet::InvalidChannelID, motion_times);
+            // Retrieve the motion segment count channel ID.
+            const AttributeSet::ChannelID motion_segment_count_cid =
+                tess.m_tess_attributes.find_channel("motion_segment_count");
+            ASSERT_NEQ(AttributeSet::InvalidChannelID, motion_segment_count_cid);
 
             // Retrieve the motion vectors channel ID.
-            const AttributeSet::ChannelID motion_vectors = tess.m_vertex_attributes.find_channel("motion_vectors");
-            ASSERT_NEQ(AttributeSet::InvalidChannelID, motion_vectors);
+            const AttributeSet::ChannelID motion_vectors_cid =
+                tess.m_vertex_attributes.find_channel("motion_vectors");
+            ASSERT_NEQ(AttributeSet::InvalidChannelID, motion_vectors_cid);
 
-            // Retrieve the number of motion vectors.
-            const size_t motion_vector_count = tess.m_tess_attributes.get_attribute_count(motion_times);
-            ASSERT_EQ(1, motion_vector_count);
+            // Retrieve the number of motion segments.
+            const size_t motion_segment_count =
+                tess.m_tess_attributes.get_attribute_count(motion_segment_count_cid);
+            ASSERT_EQ(1, motion_segment_count);
 
             // Enumerate the key frames.
             const size_t vertex_count = tess.m_vertices.size();
             TessellationType::VectorArray v = tess.m_vertices;
-            for (size_t i = 0; i < motion_vector_count; ++i)
+            for (size_t i = 0; i < motion_segment_count; ++i)
             {
                 for (size_t j = 0; j < vertex_count; ++j)
                 {
                     GVector3 mv;
-                    tess.m_vertex_attributes.get_attribute(motion_vectors, i * vertex_count + j, &mv);
+                    tess.m_vertex_attributes.get_attribute(motion_vectors_cid, i * vertex_count + j, &mv);
                     v[j] += mv;
                 }
             }
