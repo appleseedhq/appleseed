@@ -94,12 +94,20 @@ struct MeshObject::Impl
     RegionKit                   m_region_kit;
     mutable Lazy<RegionKit>     m_lazy_region_kit;
 
-    AttributeSet::ChannelID     m_uv0_channel_id;
+    AttributeSet::ChannelID     m_uv_0_cid;
+    AttributeSet::ChannelID     m_ms_count_cid;
+    AttributeSet::ChannelID     m_mv_cid;
+
+    // Cache the number of motion segments locally.
+    size_t                      m_ms_count;
 
     Impl()
       : m_region(&m_bbox, &m_tess)
       , m_lazy_region_kit(&m_region_kit)
-      , m_uv0_channel_id(AttributeSet::InvalidChannelID)
+      , m_uv_0_cid(AttributeSet::InvalidChannelID)
+      , m_ms_count_cid(AttributeSet::InvalidChannelID)
+      , m_mv_cid(AttributeSet::InvalidChannelID)
+      , m_ms_count(0)
     {
         m_bbox.invalidate();
         m_region_kit.push_back(&m_region);
@@ -157,9 +165,69 @@ size_t MeshObject::get_vertex_count() const
     return impl->m_tess.m_vertices.size();
 }
 
-const GVector3& MeshObject::get_vertex(const size_t index) const
+GVector3 MeshObject::get_vertex(const size_t index) const
 {
     return impl->m_tess.m_vertices[index];
+}
+
+void MeshObject::set_motion_segment_count(const size_t count)
+{
+    if (impl->m_ms_count_cid == AttributeSet::InvalidChannelID)
+    {
+        impl->m_ms_count_cid =
+            impl->m_tess.m_tess_attributes.create_channel(
+                "motion_segment_count",
+                NumericTypeUInt32,
+                1);
+    }
+
+    impl->m_tess.m_tess_attributes.set_attribute(
+        impl->m_ms_count_cid,
+        0,
+        static_cast<uint32>(count));
+
+    impl->m_ms_count = count;
+}
+
+size_t MeshObject::get_motion_segment_count()
+{
+    return impl->m_ms_count;
+}
+
+void MeshObject::set_motion_vector(
+    const size_t    vertex_index,
+    const size_t    motion_segment_index,
+    const GVector3& mv)
+{
+    if (impl->m_mv_cid == AttributeSet::InvalidChannelID)
+    {
+        impl->m_mv_cid =
+            impl->m_tess.m_vertex_attributes.create_channel(
+                "motion_vectors",
+                NumericType::id<GVector3::ValueType>(),
+                3);
+    }
+
+    impl->m_tess.m_vertex_attributes.set_attribute(
+        impl->m_mv_cid,
+        vertex_index * impl->m_ms_count + motion_segment_index,
+        mv);
+}
+
+GVector3 MeshObject::get_motion_vector(
+    const size_t    vertex_index,
+    const size_t    motion_segment_index) const
+{
+    if (impl->m_mv_cid == AttributeSet::InvalidChannelID)
+        return GVector3(0.0);
+
+    GVector3 mv;
+    impl->m_tess.m_vertex_attributes.get_attribute(
+        impl->m_mv_cid,
+        vertex_index * impl->m_ms_count + motion_segment_index,
+        &mv);
+
+    return mv;
 }
 
 void MeshObject::reserve_vertex_normals(const size_t count)
@@ -179,20 +247,16 @@ size_t MeshObject::get_vertex_normal_count() const
     return impl->m_tess.m_vertex_normals.size();
 }
 
-const GVector3& MeshObject::get_vertex_normal(const size_t index) const
+GVector3 MeshObject::get_vertex_normal(const size_t index) const
 {
     return impl->m_tess.m_vertex_normals[index];
 }
 
-void MeshObject::reserve_tex_coords(const size_t count)
-{
-}
-
 size_t MeshObject::push_tex_coords(const GVector2& tex_coords)
 {
-    if (impl->m_uv0_channel_id == AttributeSet::InvalidChannelID)
+    if (impl->m_uv_0_cid == AttributeSet::InvalidChannelID)
     {
-        impl->m_uv0_channel_id =
+        impl->m_uv_0_cid =
             impl->m_tess.m_vertex_attributes.create_channel(
                 "uv0",
                 NumericType::id<GVector2::ValueType>(),
@@ -201,34 +265,30 @@ size_t MeshObject::push_tex_coords(const GVector2& tex_coords)
 
     return
         impl->m_tess.m_vertex_attributes.push_attribute(
-            impl->m_uv0_channel_id,
+            impl->m_uv_0_cid,
             tex_coords);
 }
 
 size_t MeshObject::get_tex_coords_count() const
 {
-    if (impl->m_uv0_channel_id == AttributeSet::InvalidChannelID)
+    if (impl->m_uv_0_cid == AttributeSet::InvalidChannelID)
         return 0;
-    else
-    {
-        return impl->m_tess.m_vertex_attributes.get_attribute_count(
-            impl->m_uv0_channel_id);
-    }
+
+    return impl->m_tess.m_vertex_attributes.get_attribute_count(impl->m_uv_0_cid);
 }
 
 GVector2 MeshObject::get_tex_coords(const size_t index) const
 {
-    if (impl->m_uv0_channel_id == AttributeSet::InvalidChannelID)
+    if (impl->m_uv_0_cid == AttributeSet::InvalidChannelID)
         return GVector2(0.0);
-    else
-    {
-        GVector2 tex_coords;
-        impl->m_tess.m_vertex_attributes.get_attribute(
-            impl->m_uv0_channel_id,
-            index,
-            &tex_coords);
-        return tex_coords;
-    }
+
+    GVector2 tex_coords;
+    impl->m_tess.m_vertex_attributes.get_attribute(
+        impl->m_uv_0_cid,
+        index,
+        &tex_coords);
+
+    return tex_coords;
 }
 
 void MeshObject::reserve_triangles(const size_t count)
@@ -248,7 +308,7 @@ size_t MeshObject::get_triangle_count() const
     return impl->m_tess.m_primitives.size();
 }
 
-const Triangle& MeshObject::get_triangle(const size_t index) const
+Triangle MeshObject::get_triangle(const size_t index) const
 {
     return impl->m_tess.m_primitives[index];
 }
