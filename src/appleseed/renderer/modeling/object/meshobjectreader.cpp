@@ -42,10 +42,12 @@
 #include "foundation/mesh/objmeshfilereader.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/memory.h"
+#include "foundation/utility/searchpaths.h"
 #include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
+#include <algorithm>
 #include <exception>
 #include <vector>
 
@@ -324,6 +326,225 @@ namespace
             m_objects.back()->push_triangle(triangle);
         }
     };
+
+    MeshObjectArray read_mesh_object(
+        const char*             filename,
+        const char*             base_object_name,
+        const ParamArray&       params)
+    {
+        GenericMeshFileReader reader;
+
+        const string obj_parsing_mode = params.get_optional<string>("obj_parsing_mode", "fast");
+
+        if (obj_parsing_mode == "fast")
+        {
+            reader.set_obj_options(
+                reader.get_obj_options() | OBJMeshFileReader::FavorSpeedOverPrecision);
+        }
+        else if (obj_parsing_mode == "precise")
+        {
+            // This is the default in foundation::OBJMeshFileReader.
+        }
+        else
+        {
+            RENDERER_LOG_WARNING(
+                "while reading geometry for object \"%s\" from mesh file %s: "
+                "invalid OBJ parsing mode: \"%s\"; valid values are \"precise\" and \"fast\", "
+                "using default value \"fast\".",
+                base_object_name,
+                filename,
+                obj_parsing_mode.c_str());
+
+            reader.set_obj_options(
+                reader.get_obj_options() | OBJMeshFileReader::FavorSpeedOverPrecision);
+        }
+
+        MeshObjectBuilder builder(params, base_object_name);
+
+        Stopwatch<DefaultWallclockTimer> stopwatch;
+        stopwatch.start();
+
+        try
+        {
+            reader.read(filename, builder);
+        }
+        catch (const OBJMeshFileReader::ExceptionInvalidFaceDef& e)
+        {
+            RENDERER_LOG_ERROR(
+                "failed to load mesh file %s: invalid face definition on line " FMT_SIZE_T ".",
+                filename,
+                e.m_line);
+
+            return MeshObjectArray();
+        }
+        catch (const OBJMeshFileReader::ExceptionParseError& e)
+        {
+            RENDERER_LOG_ERROR(
+                "failed to load mesh file %s: parse error on line " FMT_SIZE_T ".",
+                filename,
+                e.m_line);
+
+            return MeshObjectArray();
+        }
+        catch (const ExceptionIOError&)
+        {
+            RENDERER_LOG_ERROR(
+                "failed to load mesh file %s: i/o error.",
+                filename);
+
+            return MeshObjectArray();
+        }
+        catch (const exception& e)
+        {
+            RENDERER_LOG_ERROR(
+                "failed to load mesh file %s: %s.",
+                filename,
+                e.what());
+
+            return MeshObjectArray();
+        }
+
+        stopwatch.measure();
+
+        MeshObjectArray objects;
+
+        for (const_each<vector<MeshObject*> > i = builder.get_objects(); i; ++i)
+            objects.push_back(*i);
+
+        RENDERER_LOG_INFO(
+            "loaded mesh file %s (%s %s, %s %s, %s %s) in %s.",
+            filename,
+            pretty_int(objects.size()).c_str(),
+            plural(objects.size(), "object").c_str(),
+            pretty_int(builder.get_total_vertex_count()).c_str(),
+            plural(builder.get_total_vertex_count(), "vertex", "vertices").c_str(),
+            pretty_int(builder.get_total_triangle_count()).c_str(),
+            plural(builder.get_total_triangle_count(), "triangle").c_str(),
+            pretty_time(stopwatch.get_seconds()).c_str());
+
+        return objects;
+    }
+
+    bool add_motion_vectors(
+        const MeshObjectArray&  objects,
+        const MeshObjectArray&  objects_next,
+        const size_t            motion_segment_index,
+        const char*             filename,
+        const char*             base_object_name)
+    {
+        if (objects.size() != objects_next.size())
+        {
+            RENDERER_LOG_ERROR(
+                "while reading key frame for object \"%s\" from mesh file %s: "
+                "expected " FMT_SIZE_T " object%s, got " FMT_SIZE_T ".",
+                base_object_name,
+                filename,
+                objects.size(),
+                objects.size() > 1 ? "s" : "",
+                objects_next.size());
+
+            return false;
+        }
+
+        for (size_t i = 0; i < objects.size(); ++i)
+        {
+            MeshObject* object = objects[i];
+            const MeshObject* object_next = objects_next[i];
+
+            if (object->get_vertex_count() != object_next->get_vertex_count())
+            {
+                RENDERER_LOG_ERROR(
+                    "while reading key frame for object \"%s\" from mesh file %s: "
+                    "expected " FMT_SIZE_T " %s, got " FMT_SIZE_T ".",
+                    object->get_name(),
+                    filename,
+                    object->get_vertex_count(),
+                    object->get_vertex_count() > 1 ? "vertices" : "vertex",
+                    object_next->get_vertex_count());
+
+                return false;
+            }
+
+            const size_t vertex_count = object->get_vertex_count();
+
+            for (size_t j = 0; j < vertex_count; ++j)
+            {
+                GVector3 v = object->get_vertex(j);
+
+                for (size_t k = 0; k < motion_segment_index; ++k)
+                    v += object->get_motion_vector(j, k);
+
+                const GVector3 mv = object_next->get_vertex(j) - v;
+
+                object->set_motion_vector(j, motion_segment_index, mv);
+            }
+        }
+
+        return true;
+    }
+
+    struct MeshObjectKeyFrame
+    {
+        size_t  m_index;
+        string  m_filename;
+
+        MeshObjectKeyFrame()
+        {
+        }
+
+        MeshObjectKeyFrame(const size_t index, const string& filename)
+          : m_index(index)
+          , m_filename(filename)
+        {
+        }
+
+        bool operator<(const MeshObjectKeyFrame& rhs) const
+        {
+            return m_index < rhs.m_index;
+        }
+    };
+
+    MeshObjectArray read_key_framed_mesh_object(
+        const SearchPaths&      search_paths,
+        const StringDictionary& filenames,
+        const char*             base_object_name,
+        const ParamArray&       params)
+    {
+        vector<MeshObjectKeyFrame> key_frames;
+
+        for (const_each<StringDictionary> i = filenames; i; ++i)
+            key_frames.push_back(MeshObjectKeyFrame(from_string<size_t>(i->name()), i->value<string>()));
+
+        sort(key_frames.begin(), key_frames.end());
+
+        const MeshObjectArray objects =
+            read_mesh_object(
+                search_paths.qualify(key_frames[0].m_filename).c_str(),
+                base_object_name,
+                params);
+
+        for (size_t i = 0; i < objects.size(); ++i)
+            objects[i]->set_motion_segment_count(key_frames.size() - 1);
+
+        for (size_t i = 1; i < key_frames.size(); ++i)
+        {
+            const string& filename = key_frames[i].m_filename;
+
+            const MeshObjectArray key_frame =
+                read_mesh_object(
+                    search_paths.qualify(filename).c_str(),
+                    base_object_name,
+                    params);
+
+            const bool success =
+                add_motion_vectors(objects, key_frame, i - 1, filename.c_str(), base_object_name);
+
+            if (!success)
+                break;
+        }
+
+        return objects;
+    }
 }
 
 MeshObjectArray MeshObjectReader::read(
@@ -334,91 +555,58 @@ MeshObjectArray MeshObjectReader::read(
     assert(filename);
     assert(base_object_name);
 
-    GenericMeshFileReader reader;
+    return read_mesh_object(filename, base_object_name, params);
+}
 
-    const string obj_parsing_mode = params.get_optional<string>("obj_parsing_mode", "fast");
+MeshObjectArray MeshObjectReader::read(
+    const SearchPaths&  search_paths,
+    const char*         base_object_name,
+    const ParamArray&   params)
+{
+    assert(base_object_name);
 
-    if (obj_parsing_mode == "fast")
+    if (params.strings().exist("filename"))
     {
-        reader.set_obj_options(
-            reader.get_obj_options() | OBJMeshFileReader::FavorSpeedOverPrecision);
-    }
-    else if (obj_parsing_mode == "precise")
-    {
-        // This is the default in foundation::OBJMeshFileReader.
-    }
-    else
-    {
-        RENDERER_LOG_WARNING(
-            "while reading geometry for object \"%s\": invalid OBJ parsing mode: \"%s\"; "
-            "valid values are \"precise\" and \"fast\", using default value \"fast\".",
-            base_object_name,
-            obj_parsing_mode.c_str());
+        if (params.dictionaries().exist("filename"))
+        {
+            RENDERER_LOG_ERROR(
+                "while reading geometry for object \"%s\": conflicting presence "
+                "of both a \"filename\" parameter and a \"filename\" parameter group.",
+                base_object_name);
 
-        reader.set_obj_options(
-            reader.get_obj_options() | OBJMeshFileReader::FavorSpeedOverPrecision);
+            return MeshObjectArray();
+        }
+
+        return
+            read_mesh_object(
+                search_paths.qualify(params.strings().get<string>("filename")).c_str(),
+                base_object_name,
+                params);
     }
 
-    MeshObjectBuilder builder(params, base_object_name);
-
-    Stopwatch<DefaultWallclockTimer> stopwatch;
-    stopwatch.start();
-
-    try
-    {
-        reader.read(filename, builder);
-    }
-    catch (const OBJMeshFileReader::ExceptionInvalidFaceDef& e)
+    if (!params.dictionaries().exist("filename"))
     {
         RENDERER_LOG_ERROR(
-            "failed to load mesh file %s: invalid face definition on line " FMT_SIZE_T ".",
-            filename,
-            e.m_line);
-        return MeshObjectArray();
-    }
-    catch (const OBJMeshFileReader::ExceptionParseError& e)
-    {
-        RENDERER_LOG_ERROR(
-            "failed to load mesh file %s: parse error on line " FMT_SIZE_T ".",
-            filename,
-            e.m_line);
-        return MeshObjectArray();
-    }
-    catch (const ExceptionIOError&)
-    {
-        RENDERER_LOG_ERROR(
-            "failed to load mesh file %s: i/o error.",
-            filename);
-        return MeshObjectArray();
-    }
-    catch (const exception& e)
-    {
-        RENDERER_LOG_ERROR(
-            "failed to load mesh file %s: %s.",
-            filename,
-            e.what());
+            "while reading geometry for object \"%s\": no \"filename\" parameter or "
+            "\"filename\" parameter group found.",
+            base_object_name);
+
         return MeshObjectArray();
     }
 
-    stopwatch.measure();
+    const StringDictionary& filenames = params.dictionaries().get("filename").strings();
 
-    MeshObjectArray objects;
-    for (const_each<vector<MeshObject*> > i = builder.get_objects(); i; ++i)
-        objects.push_back(*i);
+    if (filenames.empty())
+    {
+        RENDERER_LOG_ERROR(
+            "while reading geometry for object \"%s\": missing at least one parameter "
+            "in \"filename\" parameter group.",
+            base_object_name);
 
-    // Print the number of loaded objects.
-    RENDERER_LOG_INFO(
-        "loaded mesh file %s (%s %s, %s %s, %s %s) in %s.",
-        filename,
-        pretty_int(objects.size()).c_str(),
-        plural(objects.size(), "object").c_str(),
-        pretty_int(builder.get_total_vertex_count()).c_str(),
-        plural(builder.get_total_vertex_count(), "vertex", "vertices").c_str(),
-        pretty_int(builder.get_total_triangle_count()).c_str(),
-        plural(builder.get_total_triangle_count(), "triangle").c_str(),
-        pretty_time(stopwatch.get_seconds()).c_str());
+        return MeshObjectArray();
+    }
 
-    return objects;
+    return read_key_framed_mesh_object(search_paths, filenames, base_object_name, params);
 }
 
 }   // namespace renderer

@@ -36,6 +36,7 @@
 #include "foundation/utility/containers/array.h"
 
 // Forward declarations.
+namespace foundation    { class SearchPaths; }
 namespace renderer      { class MeshObject; }
 
 namespace renderer
@@ -55,11 +56,17 @@ DECLARE_ARRAY(MeshObjectArray, MeshObject*);
 class RENDERERDLL MeshObjectReader
 {
   public:
-    // Read mesh objects from disk.
+    // Read mesh objects from a single mesh file on disk.
     static MeshObjectArray read(
-        const char*         filename,
-        const char*         base_object_name,
-        const ParamArray&   params);
+        const char*                     filename,
+        const char*                     base_object_name,
+        const ParamArray&               params);
+
+    // Read mesh objects from multiple mesh files on disk.
+    static MeshObjectArray read(
+        const foundation::SearchPaths&  search_paths,
+        const char*                     base_object_name,
+        const ParamArray&               params);
 };
 
 }       // namespace renderer
