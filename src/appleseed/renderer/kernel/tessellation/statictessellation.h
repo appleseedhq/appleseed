@@ -36,6 +36,7 @@
 // appleseed.foundation headers.
 #include "foundation/utility/attributeset.h"
 #include "foundation/utility/lazy.h"
+#include "foundation/utility/numerictype.h"
 #include "foundation/utility/poolallocator.h"
 
 // Standard headers.
@@ -61,13 +62,63 @@ class StaticTessellation
     typedef std::vector<GVector3> VectorArray;
     typedef std::vector<PrimitiveType> PrimitiveArray;
 
-    VectorArray                 m_vertices;                 // vertex array
-    VectorArray                 m_vertex_normals;           // vertex normal array
-    PrimitiveArray              m_primitives;               // primitive array
+    // Primary features.
+    VectorArray                         m_vertices;                 // vertex array
+    VectorArray                         m_vertex_normals;           // vertex normal array
+    PrimitiveArray                      m_primitives;               // primitive array
 
-    foundation::AttributeSet    m_tess_attributes;          // tessellation attributes
-    foundation::AttributeSet    m_primitive_attributes;     // primitive attributes
-    foundation::AttributeSet    m_vertex_attributes;        // vertex attributes
+    // Arbitrary attributes.
+    foundation::AttributeSet            m_tess_attributes;          // tessellation attributes
+    foundation::AttributeSet            m_primitive_attributes;     // primitive attributes
+    foundation::AttributeSet            m_vertex_attributes;        // vertex attributes
+
+    // Constructor.
+    StaticTessellation();
+
+    // Append a UV vertex to this tessellation.
+    size_t push_uv_vertex(const GVector2& uv);
+
+    // Retrieve the number of UV vertices stored in this tessellation.
+    size_t get_uv_vertex_count() const;
+
+    // Retrieve a given UV vertex.
+    GVector2 get_uv_vertex(const size_t index) const;
+
+    // Set the number of motion segments for this tessellation.
+    void set_motion_segment_count(const size_t count);
+
+    // Get the number of motion segments for this tessellation.
+    size_t get_motion_segment_count() const;
+
+    // Set a motion vector for a given motion segment of a given vertex.
+    // Must be called after all vertices have been inserted.
+    // Conversely, no vertex can be inserted after this method has been called.
+    void set_motion_vector(
+        const size_t    vertex_index,
+        const size_t    motion_segment_index,
+        const GVector3& mv);
+
+    // Get the motion vector for a given motion segment of a given vertex.
+    GVector3 get_motion_vector(
+        const size_t    vertex_index,
+        const size_t    motion_segment_index) const;
+
+    // Compute the local space bounding box of the tessellation over the shutter interval.
+    GAABB3 compute_local_bbox() const;
+
+  private:
+    foundation::AttributeSet::ChannelID m_uv_0_cid;                 // UV coordinates set #0
+    foundation::AttributeSet::ChannelID m_ms_count_cid;             // motion segment count
+    foundation::AttributeSet::ChannelID m_mv_cid;                   // motion vectors
+
+    // Create a vertex attribute to store the UV coordinates set #0.
+    void create_uv_0_attribute();
+
+    // Create a tessellation attribute to store the number of motion segments used in this tessellation.
+    void create_motion_segment_count_attribute();
+
+    // Create a vertex attribute to store motion vectors.
+    void create_motion_vectors_attribute();
 };
 
 // Specialization of the StaticTessellation class for triangles.
@@ -84,6 +135,166 @@ typedef foundation::AccessCache<
     1,
     foundation::PoolAllocator<void, 16>
 > StaticTriangleTessAccessCache;
+
+
+//
+// StaticTessellation class implementation.
+//
+
+template <typename Primitive>
+inline StaticTessellation<Primitive>::StaticTessellation()
+  : m_uv_0_cid(foundation::AttributeSet::InvalidChannelID)
+  , m_ms_count_cid(foundation::AttributeSet::InvalidChannelID)
+  , m_mv_cid(foundation::AttributeSet::InvalidChannelID)
+{
+}
+
+template <typename Primitive>
+inline size_t StaticTessellation<Primitive>::push_uv_vertex(const GVector2& uv)
+{
+    if (m_uv_0_cid == foundation::AttributeSet::InvalidChannelID)
+        create_uv_0_attribute();
+
+    return m_vertex_attributes.push_attribute(m_uv_0_cid, uv);
+}
+
+template <typename Primitive>
+inline size_t StaticTessellation<Primitive>::get_uv_vertex_count() const
+{
+    if (m_uv_0_cid == foundation::AttributeSet::InvalidChannelID)
+        return 0;
+
+    return m_vertex_attributes.get_attribute_count(m_uv_0_cid);
+}
+
+template <typename Primitive>
+inline GVector2 StaticTessellation<Primitive>::get_uv_vertex(const size_t index) const
+{
+    if (m_uv_0_cid == foundation::AttributeSet::InvalidChannelID)
+        return GVector2(0.0);
+
+    GVector2 uv;
+    m_vertex_attributes.get_attribute(m_uv_0_cid, index, &uv);
+
+    return uv;
+}
+
+template <typename Primitive>
+inline void StaticTessellation<Primitive>::set_motion_segment_count(const size_t count)
+{
+    if (m_ms_count_cid == foundation::AttributeSet::InvalidChannelID)
+        create_motion_segment_count_attribute();
+
+    m_tess_attributes.set_attribute(m_ms_count_cid, 0, static_cast<foundation::uint32>(count));
+}
+
+template <typename Primitive>
+inline size_t StaticTessellation<Primitive>::get_motion_segment_count() const
+{
+    if (m_ms_count_cid == foundation::AttributeSet::InvalidChannelID)
+        return 0;
+
+    foundation::uint32 count;
+    m_tess_attributes.get_attribute(m_ms_count_cid, 0, &count);
+
+    return count;
+}
+
+template <typename Primitive>
+inline void StaticTessellation<Primitive>::set_motion_vector(
+    const size_t    vertex_index,
+    const size_t    motion_segment_index,
+    const GVector3& mv)
+{
+    const size_t motion_segment_count = get_motion_segment_count();
+
+    assert(vertex_index < m_vertices.size());
+    assert(motion_segment_index < motion_segment_count);
+
+    if (m_mv_cid == foundation::AttributeSet::InvalidChannelID)
+        create_motion_vectors_attribute();
+
+    m_vertex_attributes.set_attribute(
+        m_mv_cid,
+        vertex_index * motion_segment_count + motion_segment_index,
+        mv);
+}
+
+template <typename Primitive>
+inline GVector3 StaticTessellation<Primitive>::get_motion_vector(
+    const size_t    vertex_index,
+    const size_t    motion_segment_index) const
+{
+    const size_t motion_segment_count = get_motion_segment_count();
+
+    assert(vertex_index < m_vertices.size());
+    assert(motion_segment_index < motion_segment_count);
+
+    if (m_mv_cid == foundation::AttributeSet::InvalidChannelID)
+        return GVector3(0.0);
+
+    GVector3 mv;
+    m_vertex_attributes.get_attribute(
+        m_mv_cid,
+        vertex_index * motion_segment_count + motion_segment_index,
+        &mv);
+
+    return mv;
+}
+
+template <typename Primitive>
+GAABB3 StaticTessellation<Primitive>::compute_local_bbox() const
+{
+    GAABB3 bbox;
+    bbox.invalidate();
+
+    const size_t vertex_count = m_vertices.size();
+    const size_t motion_segment_count = get_motion_segment_count();
+
+    for (size_t i = 0; i < vertex_count; ++i)
+    {
+        GVector3 v = m_vertices[i];
+        bbox.insert(v);
+
+        for (size_t j = 0; j < motion_segment_count; ++j)
+        {
+            v += get_motion_vector(i, j);
+            bbox.insert(v);
+        }
+    }
+
+    return bbox;
+}
+
+template <typename Primitive>
+void StaticTessellation<Primitive>::create_uv_0_attribute()
+{
+    m_uv_0_cid =
+        m_vertex_attributes.create_channel(
+            "uv_0",
+            foundation::NumericType::id<GVector2::ValueType>(),
+            2);
+}
+
+template <typename Primitive>
+void StaticTessellation<Primitive>::create_motion_segment_count_attribute()
+{
+    m_ms_count_cid = 
+        m_tess_attributes.create_channel(
+            "motion_segment_count",
+            foundation::NumericTypeUInt32,
+            1);
+}
+
+template <typename Primitive>
+void StaticTessellation<Primitive>::create_motion_vectors_attribute()
+{
+    m_mv_cid =
+        m_vertex_attributes.create_channel(
+            "motion_vectors",
+            foundation::NumericType::id<GVector3::ValueType>(),
+            3);
+}
 
 }       // namespace renderer
 

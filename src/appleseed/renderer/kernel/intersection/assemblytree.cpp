@@ -259,7 +259,7 @@ namespace
 
                 // Compute the assembly space bounding box of the region.
                 const GAABB3 region_bbox =
-                    transform.transform_to_parent(region->get_local_bbox());
+                    transform.transform_to_parent(region->compute_local_bbox());
 
                 regions.push_back(
                     RegionInfo(

@@ -90,24 +90,14 @@ void ShadingPoint::fetch_source_geometry() const
     m_triangle_pa = triangle.m_pa;
 
     // Copy the texture coordinates from UV set #0.
-    AttributeSet::ChannelID uv0_channel_id;
     if (triangle.m_a0 != Triangle::None &&
         triangle.m_a1 != Triangle::None &&
         triangle.m_a2 != Triangle::None &&
-        (uv0_channel_id = tess.m_vertex_attributes.find_channel("uv0")) != AttributeSet::InvalidChannelID)
+        tess.get_uv_vertex_count() > 0)
     {
-        tess.m_vertex_attributes.get_attribute(
-            uv0_channel_id,
-            triangle.m_a0,
-            &m_v0_uv);
-        tess.m_vertex_attributes.get_attribute(
-            uv0_channel_id,
-            triangle.m_a1,
-            &m_v1_uv);
-        tess.m_vertex_attributes.get_attribute(
-            uv0_channel_id,
-            triangle.m_a2,
-            &m_v2_uv);
+        m_v0_uv = tess.get_uv_vertex(triangle.m_a0);
+        m_v1_uv = tess.get_uv_vertex(triangle.m_a1);
+        m_v2_uv = tess.get_uv_vertex(triangle.m_a2);
     }
     else
     {

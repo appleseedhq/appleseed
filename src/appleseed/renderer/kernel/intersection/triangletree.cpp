@@ -116,36 +116,64 @@ namespace
                 const GVector3 v1 = transform.transform_point_to_parent(v1_os);
                 const GVector3 v2 = transform.transform_point_to_parent(v2_os);
 
-                // Calculate the (square of the) area of this triangle.
-                const GScalar triangle_square_area = square_area(v0, v1, v2);
+                // Compute the bounding box of the triangle in assembly space.
+                GAABB3 triangle_bbox;
+                triangle_bbox.invalidate();
+                triangle_bbox.insert(v0);
+                triangle_bbox.insert(v1);
+                triangle_bbox.insert(v2);
 
-                // Ignore degenerate triangles.
-                if (triangle_square_area == GScalar(0.0))
-                    continue;
+                const size_t motion_segment_count = tess->get_motion_segment_count();
 
-                // Insert this triangle into the tree if it intersects the tree's bounding box.
-                if (intersect(arguments.m_bbox, v0, v1, v2))
+                if (motion_segment_count > 0)
                 {
-                    // Store the triangle.
-                    triangle_vertices.push_back(v0);
-                    triangle_vertices.push_back(v1);
-                    triangle_vertices.push_back(v2);
+                    // Update the bounding of the triangle to enclose its full motion over the shutter interval.
+                    GVector3 mv0 = v0;
+                    GVector3 mv1 = v1;
+                    GVector3 mv2 = v2;
+                    for (size_t ms_index = 0; ms_index < motion_segment_count; ++ms_index)
+                    {
+                        mv0 += transform.transform_vector_to_parent(tess->get_motion_vector(triangle.m_v0, ms_index));
+                        mv1 += transform.transform_vector_to_parent(tess->get_motion_vector(triangle.m_v1, ms_index));
+                        mv2 += transform.transform_vector_to_parent(tess->get_motion_vector(triangle.m_v2, ms_index));
+                        triangle_bbox.insert(mv0);
+                        triangle_bbox.insert(mv1);
+                        triangle_bbox.insert(mv2);
+                    }
 
-                    // Store the triangle key.
-                    triangle_keys.push_back(
-                        TriangleKey(
-                            region_info.get_object_instance_index(),
-                            region_info.get_region_index(),
-                            triangle_index));
+                    // Ignore triangles that are degenerate over the entire shutter interval.
+                    if (triangle_bbox.rank() < 2)
+                        continue;
 
-                    // Compute and store the triangle bounding box.
-                    AABB3d triangle_bbox;
-                    triangle_bbox.invalidate();
-                    triangle_bbox.insert(Vector3d(v0));
-                    triangle_bbox.insert(Vector3d(v1));
-                    triangle_bbox.insert(Vector3d(v2));
-                    triangle_bboxes.push_back(triangle_bbox);
+                    // Ignore triangles that don't intersect the tree.
+                    if (!GAABB3::overlap(arguments.m_bbox, triangle_bbox))
+                        continue;
                 }
+                else
+                {
+                    // Ignore degenerate triangles.
+                    if (square_area(v0, v1, v2) == GScalar(0.0))
+                        continue;
+
+                    // Ignore triangles that don't intersect the tree.
+                    if (!intersect(arguments.m_bbox, v0, v1, v2))
+                        continue;
+                }
+
+                // Store the triangle vertices.
+                triangle_vertices.push_back(v0);
+                triangle_vertices.push_back(v1);
+                triangle_vertices.push_back(v2);
+
+                // Store the triangle key.
+                triangle_keys.push_back(
+                    TriangleKey(
+                        region_info.get_object_instance_index(),
+                        region_info.get_region_index(),
+                        triangle_index));
+
+                // Store the triangle bounding box.
+                triangle_bboxes.push_back(AABB3d(triangle_bbox));
             }
         }
     }
@@ -425,6 +453,8 @@ namespace
       private:
         const vector<GVector3>& m_triangle_vertices;
 
+#ifndef APPLESEED_FOUNDATION_USE_SSE
+
         static Vector3d segment_plane_intersection(
             const Vector3d& a,
             const Vector3d& b,
@@ -446,6 +476,8 @@ namespace
 
             return result;
         }
+
+#endif
     };
 }
 

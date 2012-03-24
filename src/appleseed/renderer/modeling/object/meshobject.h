@@ -55,8 +55,8 @@ class RENDERERDLL MeshObject
     // Return a string identifying the model of this object.
     virtual const char* get_model() const;
 
-    // Return the local space bounding box of the object.
-    virtual const GAABB3& get_local_bbox() const;
+    // Compute the local space bounding box of the object over the shutter interval.
+    virtual GAABB3 compute_local_bbox() const;
 
     // Return the region kit of the object.
     virtual foundation::Lazy<RegionKit>& get_region_kit();
