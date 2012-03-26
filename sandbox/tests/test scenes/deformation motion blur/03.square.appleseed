@@ -38,8 +38,8 @@
             </material>
             <object name="square" model="mesh_object">
                 <parameters name="filename">
-                    <parameter name="0" value="square.001.obj" />
-                    <parameter name="1" value="square.002.obj" />
+                    <parameter name="0" value="square.0.obj" />
+                    <parameter name="1" value="square.1.obj" />
                 </parameters>
             </object>
             <object_instance name="square.square_inst" object="square.square">

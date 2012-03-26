@@ -37,7 +37,7 @@
                 <parameter name="surface_shader" value="white_surface_shader" />
             </material>
             <object name="square" model="mesh_object">
-                <parameter name="filename" value="square.001.obj" />
+                <parameter name="filename" value="square.0.obj" />
             </object>
             <object_instance name="square.square_inst" object="square.square">
                 <transform>
