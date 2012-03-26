@@ -70,8 +70,9 @@ namespace
 {
     void collect_triangles(
         const TriangleTree::Arguments&  arguments,
-        vector<GVector3>&               triangle_vertices,
         vector<TriangleKey>&            triangle_keys,
+        vector<TriangleVertexInfo>&     triangle_vertex_infos,
+        vector<GVector3>&               triangle_vertices,
         vector<AABB3d>&                 triangle_bboxes)
     {
         const size_t region_count = arguments.m_regions.size();
@@ -98,6 +99,7 @@ namespace
 
             // Retrieve the tessellation of the region.
             Access<StaticTriangleTess> tess(&region->get_static_triangle_tess());
+            const size_t motion_segment_count = tess->get_motion_segment_count();
 
             // Collect all triangles of the region that intersect the bounding box of the tree.
             const size_t triangle_count = tess->m_primitives.size();
@@ -122,8 +124,6 @@ namespace
                 triangle_bbox.insert(v0);
                 triangle_bbox.insert(v1);
                 triangle_bbox.insert(v2);
-
-                const size_t motion_segment_count = tess->get_motion_segment_count();
 
                 if (motion_segment_count > 0)
                 {
@@ -160,17 +160,35 @@ namespace
                         continue;
                 }
 
-                // Store the triangle vertices.
-                triangle_vertices.push_back(v0);
-                triangle_vertices.push_back(v1);
-                triangle_vertices.push_back(v2);
-
                 // Store the triangle key.
                 triangle_keys.push_back(
                     TriangleKey(
                         region_info.get_object_instance_index(),
                         region_info.get_region_index(),
                         triangle_index));
+
+                // Store the index of the first triangle vertex and the number of motion segments.
+                triangle_vertex_infos.push_back(
+                    TriangleVertexInfo(
+                        triangle_vertices.size(),
+                        motion_segment_count));
+
+                // Store the triangle vertices.
+                triangle_vertices.push_back(v0);
+                triangle_vertices.push_back(v1);
+                triangle_vertices.push_back(v2);
+                GVector3 mv0 = v0;
+                GVector3 mv1 = v1;
+                GVector3 mv2 = v2;
+                for (size_t ms_index = 0; ms_index < motion_segment_count; ++ms_index)
+                {
+                    mv0 += transform.transform_vector_to_parent(tess->get_motion_vector(triangle.m_v0, ms_index));
+                    mv1 += transform.transform_vector_to_parent(tess->get_motion_vector(triangle.m_v1, ms_index));
+                    mv2 += transform.transform_vector_to_parent(tess->get_motion_vector(triangle.m_v2, ms_index));
+                    triangle_vertices.push_back(mv0);
+                    triangle_vertices.push_back(mv1);
+                    triangle_vertices.push_back(mv2);
+                }
 
                 // Store the triangle bounding box.
                 triangle_bboxes.push_back(AABB3d(triangle_bbox));
@@ -181,8 +199,11 @@ namespace
     class TriangleItemHandler
     {
       public:
-        explicit TriangleItemHandler(const vector<GVector3>& triangle_vertices)
-          : m_triangle_vertices(triangle_vertices)
+        TriangleItemHandler(
+            const vector<TriangleVertexInfo>&   triangle_vertex_infos,
+            const vector<GVector3>&             triangle_vertices)
+          : m_triangle_vertex_infos(triangle_vertex_infos)
+          , m_triangle_vertices(triangle_vertices)
         {
         }
 
@@ -199,9 +220,29 @@ namespace
             const double    slab_min,
             const double    slab_max) const
         {
-            SSE_ALIGN const Vector3d v0(m_triangle_vertices[item_index * 3 + 0]);
-            SSE_ALIGN const Vector3d v1(m_triangle_vertices[item_index * 3 + 1]);
-            SSE_ALIGN const Vector3d v2(m_triangle_vertices[item_index * 3 + 2]);
+            const TriangleVertexInfo& vertex_info = m_triangle_vertex_infos[item_index];
+
+            // todo: hack!
+            if (vertex_info.m_motion_segment_count > 0)
+            {
+                AABB3d triangle_bbox;
+                triangle_bbox.invalidate();
+
+                for (size_t i = 0; i < 3 * (1 + vertex_info.m_motion_segment_count); ++i)
+                    triangle_bbox.insert(Vector3d(m_triangle_vertices[vertex_info.m_vertex_index + i]));
+
+                if (triangle_bbox.min[dimension] < slab_min)
+                    triangle_bbox.min[dimension] = slab_min;
+
+                if (triangle_bbox.max[dimension] > slab_max)
+                    triangle_bbox.max[dimension] = slab_max;
+
+                return triangle_bbox;
+            }
+
+            SSE_ALIGN const Vector3d v0(m_triangle_vertices[vertex_info.m_vertex_index + 0]);
+            SSE_ALIGN const Vector3d v1(m_triangle_vertices[vertex_info.m_vertex_index + 1]);
+            SSE_ALIGN const Vector3d v2(m_triangle_vertices[vertex_info.m_vertex_index + 2]);
 
             const double v0d = v0[dimension];
             const double v1d = v1[dimension];
@@ -392,9 +433,11 @@ namespace
             const double    slab_min,
             const double    slab_max) const
         {
-            const Vector3d v0(m_triangle_vertices[item_index * 3 + 0]);
-            const Vector3d v1(m_triangle_vertices[item_index * 3 + 1]);
-            const Vector3d v2(m_triangle_vertices[item_index * 3 + 2]);
+            const TriangleVertexInfo& vertex_info = m_triangle_vertex_infos[item_index];
+
+            const Vector3d v0(m_triangle_vertices[vertex_info.m_vertex_index + 0]);
+            const Vector3d v1(m_triangle_vertices[vertex_info.m_vertex_index + 1]);
+            const Vector3d v2(m_triangle_vertices[vertex_info.m_vertex_index + 2]);
 
             const int v0_ge_min = v0[dimension] >= slab_min ? 1 : 0;
             const int v0_le_max = v0[dimension] <= slab_max ? 1 : 0;
@@ -442,16 +485,32 @@ namespace
             const size_t    item_index,
             const AABB3d&   bbox) const
         {
-            return
-                foundation::intersect(
-                    bbox,
-                    Vector3d(m_triangle_vertices[item_index * 3 + 0]),
-                    Vector3d(m_triangle_vertices[item_index * 3 + 1]),
-                    Vector3d(m_triangle_vertices[item_index * 3 + 2]));
+            const TriangleVertexInfo& vertex_info = m_triangle_vertex_infos[item_index];
+
+            if (vertex_info.m_motion_segment_count > 0)
+            {
+                GAABB3 triangle_bbox;
+                triangle_bbox.invalidate();
+
+                for (size_t i = 0; i < 3 * (1 + vertex_info.m_motion_segment_count); ++i)
+                    triangle_bbox.insert(m_triangle_vertices[vertex_info.m_vertex_index + i]);
+
+                return AABB3d::overlap(bbox, AABB3d(triangle_bbox));
+            }
+            else
+            {
+                return
+                    foundation::intersect(
+                        bbox,
+                        Vector3d(m_triangle_vertices[vertex_info.m_vertex_index + 0]),
+                        Vector3d(m_triangle_vertices[vertex_info.m_vertex_index + 1]),
+                        Vector3d(m_triangle_vertices[vertex_info.m_vertex_index + 2]));
+            }
         }
 
       private:
-        const vector<GVector3>& m_triangle_vertices;
+        const vector<TriangleVertexInfo>&   m_triangle_vertex_infos;
+        const vector<GVector3>&             m_triangle_vertices;
 
 #ifndef APPLESEED_FOUNDATION_USE_SSE
 
@@ -478,6 +537,64 @@ namespace
         }
 
 #endif
+    };
+
+    struct LeafEncoder
+    {
+        static size_t compute_size(
+            const vector<TriangleVertexInfo>&   triangle_vertex_infos,
+            const vector<size_t>&               triangle_indices,
+            const size_t                        item_begin,
+            const size_t                        item_count)
+        {
+            size_t size = 0;
+
+            for (size_t i = 0; i < item_count; ++i)
+            {
+                const size_t triangle_index = triangle_indices[item_begin + i];
+                const TriangleVertexInfo& vertex_info = triangle_vertex_infos[triangle_index];
+
+                size += sizeof(uint32);         // motion segment count
+
+                if (vertex_info.m_motion_segment_count == 0)
+                    size += sizeof(GTriangleType);
+                else size += (vertex_info.m_motion_segment_count + 1) * 3 * sizeof(GVector3);
+            }
+
+            return size;
+        }
+
+        static void encode(
+            const vector<TriangleVertexInfo>&   triangle_vertex_infos,
+            const vector<GVector3>&             triangle_vertices,
+            const vector<size_t>&               triangle_indices,
+            const size_t                        item_begin,
+            const size_t                        item_count,
+            MemoryWriter&                       writer)
+        {
+            for (size_t i = 0; i < item_count; ++i)
+            {
+                const size_t triangle_index = triangle_indices[item_begin + i];
+                const TriangleVertexInfo& vertex_info = triangle_vertex_infos[triangle_index];
+
+                writer.write(static_cast<uint32>(vertex_info.m_motion_segment_count));
+
+                if (vertex_info.m_motion_segment_count == 0)
+                {
+                    writer.write(
+                        GTriangleType(
+                            triangle_vertices[vertex_info.m_vertex_index + 0],
+                            triangle_vertices[vertex_info.m_vertex_index + 1],
+                            triangle_vertices[vertex_info.m_vertex_index + 2]));
+                }
+                else
+                {
+                    writer.write(
+                        &triangle_vertices[vertex_info.m_vertex_index],
+                        (vertex_info.m_motion_segment_count + 1) * 3 * sizeof(GVector3));
+                }
+            }
+        }
     };
 }
 
@@ -544,8 +661,8 @@ size_t TriangleTree::get_memory_size() const
           TreeType::get_memory_size()
         - sizeof(*static_cast<const TreeType*>(this))
         + sizeof(*this)
-        + m_triangles.capacity() * sizeof(GTriangleType)
-        + m_triangle_keys.capacity() * sizeof(TriangleKey);
+        + m_triangle_keys.capacity() * sizeof(TriangleKey)
+        + m_leaf_data.capacity() * sizeof(uint8);
 }
 
 void TriangleTree::build_bvh(
@@ -553,13 +670,15 @@ void TriangleTree::build_bvh(
     Statistics&         statistics)
 {
     // Collect triangles intersecting the bounding box of this tree.
-    vector<GVector3> triangle_vertices;
     vector<TriangleKey> triangle_keys;
+    vector<TriangleVertexInfo> triangle_vertex_infos;
+    vector<GVector3> triangle_vertices;
     vector<AABB3d> triangle_bboxes;
     collect_triangles(
         arguments,
-        triangle_vertices,
         triangle_keys,
+        triangle_vertex_infos,
+        triangle_vertices,
         triangle_bboxes);
 
     RENDERER_LOG_INFO(
@@ -590,6 +709,7 @@ void TriangleTree::build_bvh(
     {
         store_triangles(
             partitioner.get_item_ordering(),
+            triangle_vertex_infos,
             triangle_vertices,
             triangle_keys);
     }
@@ -600,13 +720,15 @@ void TriangleTree::build_sbvh(
     Statistics&         statistics)
 {
     // Collect triangles intersecting the bounding box of this tree.
-    vector<GVector3> triangle_vertices;
     vector<TriangleKey> triangle_keys;
+    vector<TriangleVertexInfo> triangle_vertex_infos;
+    vector<GVector3> triangle_vertices;
     vector<AABB3d> triangle_bboxes;
     collect_triangles(
         arguments,
-        triangle_vertices,
         triangle_keys,
+        triangle_vertex_infos,
+        triangle_vertices,
         triangle_bboxes);
 
     RENDERER_LOG_INFO(
@@ -617,7 +739,7 @@ void TriangleTree::build_sbvh(
 
     // Create the partitioner.
     typedef bvh::SBVHPartitioner<TriangleItemHandler, vector<AABB3d> > Partitioner;
-    TriangleItemHandler triangle_handler(triangle_vertices);
+    TriangleItemHandler triangle_handler(triangle_vertex_infos, triangle_vertices);
     Partitioner partitioner(
         triangle_handler,
         triangle_bboxes,
@@ -657,50 +779,25 @@ void TriangleTree::build_sbvh(
     {
         store_triangles(
             partitioner.get_item_ordering(),
+            triangle_vertex_infos,
             triangle_vertices,
             triangle_keys);
     }
 }
 
 void TriangleTree::store_triangles(
-    const vector<size_t>&   triangle_indices,
-    vector<GVector3>&       triangle_vertices,
-    vector<TriangleKey>&    triangle_keys)
-{
-    // Build triangles out of the vertices.
-    const size_t triangle_count = triangle_keys.size();
-    vector<GTriangleType> triangles;
-    triangles.reserve(triangle_count);
-    for (size_t i = 0; i < triangle_count; ++i)
-    {
-        triangles.push_back(
-            GTriangleType(
-                triangle_vertices[i * 3 + 0],
-                triangle_vertices[i * 3 + 1],
-                triangle_vertices[i * 3 + 2]));
-    }
-
-    // Triangle vertices are no longer needed.
-    clear_release_memory(triangle_vertices);
-
-    // Store triangle and triangle keys into the tree.
-    store_triangles(triangle_indices, triangles, triangle_keys);
-}
-
-void TriangleTree::store_triangles(
-    const vector<size_t>&   triangle_indices,
-    vector<GTriangleType>&  triangles,
-    vector<TriangleKey>&    triangle_keys)
+    const vector<size_t>&               triangle_indices,
+    const vector<TriangleVertexInfo>&   triangle_vertex_infos,
+    const vector<GVector3>&             triangle_vertices,
+    const vector<TriangleKey>&          triangle_keys)
 {
     const size_t node_count = m_nodes.size();
 
-    //
-    // Step 1: Gather statistics.
-    //
+    // Gather statistics.
 
     size_t leaf_count = 0;
     size_t fat_leaf_count = 0;
-    size_t external_triangle_count = 0;
+    size_t leaf_data_size = 0;
 
     for (size_t i = 0; i < node_count; ++i)
     {
@@ -710,24 +807,28 @@ void TriangleTree::store_triangles(
         {
             ++leaf_count;
 
+            const size_t item_begin = node.get_item_index();
             const size_t item_count = node.get_item_count();
 
-            if (item_count <= NodeType::MaxUserDataSize / sizeof(GTriangleType))
+            const size_t leaf_size =
+                LeafEncoder::compute_size(
+                    triangle_vertex_infos,
+                    triangle_indices,
+                    item_begin,
+                    item_count);
+
+            if (leaf_size < NodeType::MaxUserDataSize)
                 ++fat_leaf_count;
-            else external_triangle_count += item_count;
+            else leaf_data_size += leaf_size;
         }
     }
 
-    //
-    // Step 2: Allocate new arrays.
-    //
+    // Store triangle keys and triangles.
 
     m_triangle_keys.reserve(triangle_indices.size());
-    m_triangles.reserve(external_triangle_count);
+    m_leaf_data.resize(leaf_data_size);
 
-    //
-    // Step 3: Handle slim leaves.
-    //
+    MemoryWriter leaf_data_writer(m_leaf_data.empty() ? 0 : &m_leaf_data[0]);
 
     for (size_t i = 0; i < node_count; ++i)
     {
@@ -738,47 +839,46 @@ void TriangleTree::store_triangles(
             const size_t item_begin = node.get_item_index();
             const size_t item_count = node.get_item_count();
 
-            if (item_count > NodeType::MaxUserDataSize / sizeof(GTriangleType))
-            {
-                node.set_item_index(m_triangle_keys.size());
+            node.set_item_index(m_triangle_keys.size());
 
-                for (size_t j = 0; j < item_count; ++j)
-                {
-                    const size_t triangle_index = triangle_indices[item_begin + j];
-                    m_triangle_keys.push_back(triangle_keys[triangle_index]);
-                    m_triangles.push_back(triangles[triangle_index]);
-                }
+            for (size_t j = 0; j < item_count; ++j)
+            {
+                const size_t triangle_index = triangle_indices[item_begin + j];
+                m_triangle_keys.push_back(triangle_keys[triangle_index]);
             }
-        }
-    }
 
-    assert(m_triangle_keys.size() == m_triangles.size());
+            const size_t leaf_size =
+                LeafEncoder::compute_size(
+                    triangle_vertex_infos,
+                    triangle_indices,
+                    item_begin,
+                    item_count);
 
-    //
-    // Step 4: Handle fat leaves.
-    //
+            MemoryWriter user_data_writer(&node.get_user_data<uint8>());
 
-    for (size_t i = 0; i < node_count; ++i)
-    {
-        NodeType& node = m_nodes[i];
-
-        if (node.is_leaf())
-        {
-            const size_t item_begin = node.get_item_index();
-            const size_t item_count = node.get_item_count();
-
-            if (item_count <= NodeType::MaxUserDataSize / sizeof(GTriangleType))
+            if (leaf_size <= NodeType::MaxUserDataSize - 4)
             {
-                node.set_item_index(m_triangle_keys.size());
+                user_data_writer.write<uint32>(~0);
 
-                GTriangleType* user_data = &node.get_user_data<GTriangleType>();
+                LeafEncoder::encode(
+                    triangle_vertex_infos,
+                    triangle_vertices,
+                    triangle_indices,
+                    item_begin,
+                    item_count,
+                    user_data_writer);
+            }
+            else
+            {
+                user_data_writer.write<uint32>(leaf_data_writer.offset());
 
-                for (size_t j = 0; j < item_count; ++j)
-                {
-                    const size_t triangle_index = triangle_indices[item_begin + j];
-                    m_triangle_keys.push_back(triangle_keys[triangle_index]);
-                    user_data[j] = triangles[triangle_index];
-                }
+                LeafEncoder::encode(
+                    triangle_vertex_infos,
+                    triangle_vertices,
+                    triangle_indices,
+                    item_begin,
+                    item_count,
+                    leaf_data_writer);
             }
         }
     }
