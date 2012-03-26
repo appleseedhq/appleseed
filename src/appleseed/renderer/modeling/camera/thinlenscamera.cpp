@@ -133,10 +133,11 @@ namespace
             const Vector2d&         point,
             ShadingRay&             ray) const
         {
-            // Create the ray.
+            // Initialize the ray.
+            sampling_context.split_in_place(1, 1);
+            ray.m_time = sampling_context.next_double2();
             ray.m_tmin = 0.0;
             ray.m_tmax = numeric_limits<double>::max();
-            ray.m_time = 0.0;
             ray.m_flags = ~0;
 
             // Sample the surface of the lens.
