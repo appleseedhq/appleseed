@@ -36,6 +36,7 @@
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <cstring>
 
 namespace foundation
 {
@@ -105,6 +106,28 @@ void clear_keep_memory(Container& container);
 // Shrink the capacity of a container to its size.
 template <typename Container>
 void shrink_to_fit(Container& container);
+
+
+//
+// Utility class to write typed data to an unstructured memory block.
+//
+
+class MemoryWriter
+{
+  public:
+    explicit MemoryWriter(void* dest);
+
+    void write(const void* src, const size_t size);
+
+    template <typename T>
+    void write(const T& value);
+
+    size_t offset() const;
+
+  private:
+    const uint8* const  m_base;
+    uint8*              m_ptr;
+};
 
 
 //
@@ -213,6 +236,34 @@ template <typename Container>
 inline void shrink_to_fit(Container& container)
 {
     Container(container).swap(container);
+}
+
+
+//
+// MemoryWriter class implementation.
+//
+
+inline MemoryWriter::MemoryWriter(void* dest)
+  : m_base(reinterpret_cast<uint8*>(dest))
+  , m_ptr(reinterpret_cast<uint8*>(dest))
+{
+}
+
+inline void MemoryWriter::write(const void* src, const size_t size)
+{
+    std::memcpy(m_ptr, src, size);
+    m_ptr += size;
+}
+
+template <typename T>
+inline void MemoryWriter::write(const T& value)
+{
+    write(&value, sizeof(T));
+}
+
+inline size_t MemoryWriter::offset() const
+{
+    return m_ptr - m_base;
 }
 
 }       // namespace foundation
