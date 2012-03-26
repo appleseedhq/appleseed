@@ -182,7 +182,7 @@ class TriangleLeafVisitor
     // Visit a leaf.
     bool visit(
         const TriangleTree::NodeType&           node,
-        const ShadingRay::RayType&              ray,
+        const ShadingRay&                       ray,
         const ShadingRay::RayInfoType&          ray_info,
         double&                                 distance
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
@@ -217,7 +217,7 @@ class TriangleLeafProbeVisitor
     // Visit a leaf.
     bool visit(
         const TriangleTree::NodeType&           node,
-        const ShadingRay::RayType&              ray,
+        const ShadingRay&                       ray,
         const ShadingRay::RayInfoType&          ray_info,
         double&                                 distance
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
@@ -237,12 +237,14 @@ class TriangleLeafProbeVisitor
 typedef foundation::bvh::Intersector<
     TriangleTree,
     TriangleLeafVisitor,
+    ShadingRay,
     TriangleTreeStackSize
 > TriangleTreeIntersector;
 
 typedef foundation::bvh::Intersector<
     TriangleTree,
     TriangleLeafProbeVisitor,
+    ShadingRay,
     TriangleTreeStackSize
 > TriangleTreeProbeIntersector;
 
@@ -300,7 +302,7 @@ inline TriangleLeafVisitor::TriangleLeafVisitor(
 
 inline bool TriangleLeafVisitor::visit(
     const TriangleTree::NodeType&           node,
-    const ShadingRay::RayType&              ray,
+    const ShadingRay&                       ray,
     const ShadingRay::RayInfoType&          ray_info,
     double&                                 distance
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
@@ -373,7 +375,7 @@ inline TriangleLeafProbeVisitor::TriangleLeafProbeVisitor(
 
 inline bool TriangleLeafProbeVisitor::visit(
     const TriangleTree::NodeType&           node,
-    const ShadingRay::RayType&              ray,
+    const ShadingRay&                       ray,
     const ShadingRay::RayInfoType&          ray_info,
     double&                                 distance
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS

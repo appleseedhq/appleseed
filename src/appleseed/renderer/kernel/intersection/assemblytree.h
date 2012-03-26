@@ -126,7 +126,7 @@ class AssemblyLeafVisitor
     // Visit a leaf.
     bool visit(
         const AssemblyTree::NodeType&               node,
-        const ShadingRay::RayType&                  ray,
+        const ShadingRay&                           ray,
         const ShadingRay::RayInfoType&              ray_info,
         double&                                     distance
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
@@ -169,7 +169,7 @@ class AssemblyLeafProbeVisitor
     // Visit a leaf.
     bool visit(
         const AssemblyTree::NodeType&               node,
-        const ShadingRay::RayType&                  ray,
+        const ShadingRay&                           ray,
         const ShadingRay::RayInfoType&              ray_info,
         double&                                     distance
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
@@ -194,12 +194,14 @@ class AssemblyLeafProbeVisitor
 
 typedef foundation::bvh::Intersector<
     AssemblyTree,
-    AssemblyLeafVisitor
+    AssemblyLeafVisitor,
+    ShadingRay
 > AssemblyTreeIntersector;
 
 typedef foundation::bvh::Intersector<
     AssemblyTree,
-    AssemblyLeafProbeVisitor
+    AssemblyLeafProbeVisitor,
+    ShadingRay
 > AssemblyTreeProbeIntersector;
 
 

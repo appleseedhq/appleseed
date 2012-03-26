@@ -65,7 +65,7 @@ namespace bsp {
 // for tracking this distance across calls to visit().
 //
 
-template <typename T, typename Tree, typename Visitor, size_t S = 64>
+template <typename T, typename Tree, typename Visitor, typename Ray, size_t S = 64>
 class Intersector
   : public NonCopyable
 {
@@ -74,7 +74,7 @@ class Intersector
     typedef T ValueType;
     typedef typename Tree::NodeType NodeType;
     typedef typename Tree::LeafType LeafType;
-    typedef Ray<T, Tree::Dimension> RayType;
+    typedef Ray RayType;
     typedef RayInfo<T, Tree::Dimension> RayInfoType;
 
     // Intersect a ray with a given BSP tree.
@@ -111,9 +111,8 @@ class Intersector
 #define FOUNDATION_BSP_TRAVERSAL_STATS(x)
 #endif
 
-// Intersect a ray with a given BSP tree.
-template <typename T, typename Tree, typename Visitor, size_t S>
-void Intersector<T, Tree, Visitor, S>::intersect(
+template <typename T, typename Tree, typename Visitor, typename Ray, size_t S>
+void Intersector<T, Tree, Visitor, Ray, S>::intersect(
     const Tree&             tree,
     const RayType&          ray,
     const RayInfoType&      ray_info,

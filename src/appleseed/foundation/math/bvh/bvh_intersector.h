@@ -82,6 +82,7 @@ namespace bvh {
 template <
     typename Tree,
     typename Visitor,
+    typename Ray,
     size_t StackSize = 64,
     size_t N = Tree::NodeType::AABBType::Dimension
 >
@@ -91,7 +92,7 @@ class Intersector
   public:
     typedef typename Tree::NodeType NodeType;
     typedef typename NodeType::ValueType ValueType;
-    typedef Ray<ValueType, NodeType::Dimension> RayType;
+    typedef Ray RayType;
     typedef RayInfo<ValueType, NodeType::Dimension> RayInfoType;
 
     // Intersect a ray with a given BVH.
@@ -114,10 +115,11 @@ class Intersector
 template <
     typename Tree,
     typename Visitor,
+    typename Ray,
     size_t StackSize,
     size_t N
 >
-void Intersector<Tree, Visitor, StackSize, N>::intersect(
+void Intersector<Tree, Visitor, Ray, StackSize, N>::intersect(
     const Tree&                 tree,
     const RayType&              ray,
     const RayInfoType&          ray_info,
@@ -247,15 +249,16 @@ void Intersector<Tree, Visitor, StackSize, N>::intersect(
 template <
     typename Tree,
     typename Visitor,
+    typename Ray,
     size_t StackSize
 >
-class Intersector<Tree, Visitor, StackSize, 3>
+class Intersector<Tree, Visitor, Ray, StackSize, 3>
   : public NonCopyable
 {
   public:
     typedef typename Tree::NodeType NodeType;
     typedef typename NodeType::ValueType ValueType;
-    typedef Ray<ValueType, NodeType::Dimension> RayType;
+    typedef Ray RayType;
     typedef RayInfo<ValueType, NodeType::Dimension> RayInfoType;
 
     // Intersect a ray with a given BVH.
@@ -273,9 +276,10 @@ class Intersector<Tree, Visitor, StackSize, 3>
 template <
     typename Tree,
     typename Visitor,
+    typename Ray,
     size_t StackSize
 >
-void Intersector<Tree, Visitor, StackSize, 3>::intersect(
+void Intersector<Tree, Visitor, Ray, StackSize, 3>::intersect(
     const Tree&                 tree,
     const RayType&              ray,
     const RayInfoType&          ray_info,

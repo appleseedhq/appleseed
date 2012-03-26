@@ -407,7 +407,7 @@ namespace
 
 bool AssemblyLeafVisitor::visit(
     const AssemblyTree::NodeType&       node,
-    const ShadingRay::RayType&          ray,
+    const ShadingRay&                   ray,
     const ShadingRay::RayInfoType&      ray_info,
     double&                             distance
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
@@ -520,7 +520,7 @@ bool AssemblyLeafVisitor::visit(
 
 bool AssemblyLeafProbeVisitor::visit(
     const AssemblyTree::NodeType&       node,
-    const ShadingRay::RayType&          ray,
+    const ShadingRay&                   ray,
     const ShadingRay::RayInfoType&      ray_info,
     double&                             distance
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
@@ -543,7 +543,7 @@ bool AssemblyLeafProbeVisitor::visit(
             *m_tree.m_scene.assembly_instances().get_by_uid(assembly_instance_uid);
 
         // Transform the ray to assembly instance space.
-        ShadingRay::RayType local_ray;
+        ShadingRay local_ray;
         transform_ray_to_assembly_instance_space(
             assembly_instance,
             m_parent_shading_point,
@@ -551,6 +551,8 @@ bool AssemblyLeafProbeVisitor::visit(
             local_ray);
         local_ray.m_tmin = ray.m_tmin;
         local_ray.m_tmax = ray.m_tmax;
+        local_ray.m_time = ray.m_time;
+        local_ray.m_flags = ray.m_flags;
         const RayInfo3d local_ray_info(local_ray);
 
         FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(1));

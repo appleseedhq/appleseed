@@ -490,7 +490,7 @@ auto_ptr<RegionTree> RegionTreeFactory::create()
 
 double RegionLeafVisitor::visit(
     const RegionLeaf*               leaf,
-    const ShadingRay::RayType&      ray,
+    const ShadingRay&               ray,
     const ShadingRay::RayInfoType&  ray_info)
 {
     assert(leaf);
@@ -529,7 +529,7 @@ double RegionLeafVisitor::visit(
 
 double RegionLeafProbeVisitor::visit(
     const RegionLeaf*               leaf,
-    const ShadingRay::RayType&      ray,
+    const ShadingRay&               ray,
     const ShadingRay::RayInfoType&  ray_info)
 {
     assert(leaf);

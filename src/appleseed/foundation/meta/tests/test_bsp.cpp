@@ -265,7 +265,7 @@ TEST_SUITE(Foundation_Math_BSP_Intersector)
     struct Fixture
     {
         typedef bsp::Tree<double, 3, Leaf> Tree;
-        typedef bsp::Intersector<double, Tree, LeafVisitor> Intersector;
+        typedef bsp::Intersector<double, Tree, LeafVisitor, Ray3d> Intersector;
 
         Tree                        m_tree;
         LeafVisitor                 m_leaf_visitor;     // todo: Visitor or LeafVisitor?

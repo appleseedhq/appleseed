@@ -29,6 +29,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/aabb.h"
 #include "foundation/math/bvh.h"
+#include "foundation/math/ray.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/defaulttimers.h"
 #include "foundation/utility/alignedvector.h"
@@ -142,6 +143,7 @@ TEST_SUITE(Foundation_Math_BVH_Intersector_2D)
     {
         bvh::Intersector<
             bvh::Tree<AlignedVector<NodeType> >,
+            Ray2d,
             Visitor
         > intersector;
     }

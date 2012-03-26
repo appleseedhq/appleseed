@@ -71,7 +71,7 @@ class Tree
     template <typename Tree>
     friend class TreeStatistics;
 
-    template <typename Tree, typename Visitor, size_t StackSize, size_t N>
+    template <typename Tree, typename Visitor, typename Ray, size_t StackSize, size_t N>
     friend class Intersector;
 
     NodeVector m_nodes;

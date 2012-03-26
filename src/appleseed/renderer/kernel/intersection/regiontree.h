@@ -174,7 +174,7 @@ class RegionLeafVisitor
     // Visit a leaf.
     double visit(
         const RegionLeaf*                       leaf,
-        const ShadingRay::RayType&              ray,
+        const ShadingRay&                       ray,
         const ShadingRay::RayInfoType&          ray_info);
 
   private:
@@ -206,7 +206,7 @@ class RegionLeafProbeVisitor
     // Visit a leaf.
     double visit(
         const RegionLeaf*                       leaf,
-        const ShadingRay::RayType&              ray,
+        const ShadingRay&                       ray,
         const ShadingRay::RayInfoType&          ray_info);
 
   private:
@@ -224,13 +224,15 @@ class RegionLeafProbeVisitor
 typedef foundation::bsp::Intersector<
     double,
     RegionTree,
-    RegionLeafVisitor
+    RegionLeafVisitor,
+    ShadingRay
 > RegionLeafIntersector;
 
 typedef foundation::bsp::Intersector<
     double,
     RegionTree,
-    RegionLeafProbeVisitor
+    RegionLeafProbeVisitor,
+    ShadingRay
 > RegionLeafProbeIntersector;
 
 
