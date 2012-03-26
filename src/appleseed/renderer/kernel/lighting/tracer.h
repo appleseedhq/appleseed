@@ -61,6 +61,7 @@ class Tracer
         SamplingContext&                sampling_context,
         const foundation::Vector3d&     origin,
         const foundation::Vector3d&     direction,
+        const double                    time,
         double&                         transmission,
         const ShadingPoint*             parent_shading_point = 0);
 
@@ -72,6 +73,7 @@ class Tracer
         SamplingContext&                sampling_context,
         const foundation::Vector3d&     origin,
         const foundation::Vector3d&     target,
+        const double                    time,
         double&                         transmission,
         const ShadingPoint*             parent_shading_point = 0);
 

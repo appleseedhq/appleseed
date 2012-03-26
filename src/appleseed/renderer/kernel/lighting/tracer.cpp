@@ -48,6 +48,7 @@ const ShadingPoint& Tracer::trace(
     SamplingContext&        sampling_context,
     const Vector3d&         origin,
     const Vector3d&         direction,
+    const double            time,
     double&                 transmission,
     const ShadingPoint*     parent_shading_point)
 {
@@ -63,7 +64,7 @@ const ShadingPoint& Tracer::trace(
         const ShadingRay ray(
             point,
             direction,
-            0.0f,           // ray time
+            time,
             ~0);            // ray flags
 
         // Trace the ray.
@@ -117,6 +118,7 @@ const ShadingPoint& Tracer::trace_between(
     SamplingContext&        sampling_context,
     const Vector3d&         origin,
     const Vector3d&         target,
+    const double            time,
     double&                 transmission,
     const ShadingPoint*     parent_shading_point)
 {
@@ -138,7 +140,7 @@ const ShadingPoint& Tracer::trace_between(
             target - point,
             0.0,                    // ray tmin
             SafeMaxDistance,        // ray tmax
-            0.0f,                   // ray time
+            time,
             ~0);                    // ray flags
 
         // Trace the ray.

@@ -465,19 +465,10 @@ namespace
                 return false;
             }
 
-            const size_t vertex_count = object->get_vertex_count();
+            const size_t vertex_count = object_next->get_vertex_count();
 
             for (size_t j = 0; j < vertex_count; ++j)
-            {
-                GVector3 v = object->get_vertex(j);
-
-                for (size_t k = 0; k < motion_segment_index; ++k)
-                    v += object->get_motion_vector(j, k);
-
-                const GVector3 mv = object_next->get_vertex(j) - v;
-
-                object->set_motion_vector(j, motion_segment_index, mv);
-            }
+                object->set_vertex_pose(j, motion_segment_index, object_next->get_vertex(j));
         }
 
         return true;
@@ -536,10 +527,7 @@ namespace
                     base_object_name,
                     params);
 
-            const bool success =
-                add_motion_vectors(objects, key_frame, i - 1, filename.c_str(), base_object_name);
-
-            if (!success)
+            if (!add_motion_vectors(objects, key_frame, i - 1, filename.c_str(), base_object_name))
                 break;
         }
 

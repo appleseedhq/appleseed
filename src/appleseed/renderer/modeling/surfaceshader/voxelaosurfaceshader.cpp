@@ -217,6 +217,7 @@ namespace
                         shading_point.get_point(),
                         shading_point.get_geometric_normal(),
                         shading_point.get_shading_basis(),
+                        shading_point.get_ray().m_time,
                         m_max_distance,
                         m_samples,
                         &shading_point);
@@ -242,6 +243,7 @@ namespace
                         shading_point.get_point(),
                         shading_point.get_geometric_normal(),
                         shading_point.get_shading_basis(),
+                        shading_point.get_ray().m_time,
                         m_max_distance,
                         m_half_samples,
                         &shading_point);

@@ -67,21 +67,6 @@ class RENDERERDLL MeshObject
     size_t get_vertex_count() const;
     GVector3 get_vertex(const size_t index) const;
 
-    // Set/get the number of motion segments (the number of motion vectors per vertex).
-    void set_motion_segment_count(const size_t count);
-    size_t get_motion_segment_count() const;
-
-    // Insert and access motion vectors. All vertices must have been inserted before
-    // motion vectors can be pushed. Conversely, no vertices must be inserted after
-    // motion vectors have been pushed.
-    void set_motion_vector(
-        const size_t    vertex_index,
-        const size_t    motion_segment_index,
-        const GVector3& mv);
-    GVector3 get_motion_vector(
-        const size_t    vertex_index,
-        const size_t    motion_segment_index) const;
-
     // Insert and access vertex normals.
     void reserve_vertex_normals(const size_t count);
     size_t push_vertex_normal(const GVector3& normal);
@@ -98,6 +83,23 @@ class RENDERERDLL MeshObject
     size_t push_triangle(const Triangle& triangle);
     size_t get_triangle_count() const;
     Triangle get_triangle(const size_t index) const;
+
+    // Set/get the number of motion segments (the number of motion vectors per vertex).
+    void set_motion_segment_count(const size_t count);
+    size_t get_motion_segment_count() const;
+
+    // Set the position of a given vertex for a given motion segment.
+    // All vertices must have been inserted before this method can be called.
+    // Conversely, no vertex can be inserted after this method has been called.
+    void set_vertex_pose(
+        const size_t    vertex_index,
+        const size_t    motion_segment_index,
+        const GVector3& v);
+
+    // Get the position of a given vertex for a given motion segment.
+    GVector3 get_vertex_pose(
+        const size_t    vertex_index,
+        const size_t    motion_segment_index) const;
 
   private:
     friend class MeshObjectFactory;

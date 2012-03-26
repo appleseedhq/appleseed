@@ -78,6 +78,7 @@ DirectLightingIntegrator::DirectLightingIntegrator(
     const Vector3d&         point,
     const Vector3d&         geometric_normal,
     const Basis3d&          shading_basis,
+    const double            time,
     const Vector3d&         outgoing,
     const BSDF&             bsdf,
     const void*             bsdf_data,
@@ -88,6 +89,7 @@ DirectLightingIntegrator::DirectLightingIntegrator(
   , m_point(point)
   , m_geometric_normal(geometric_normal)
   , m_shading_basis(shading_basis)
+  , m_time(time)
   , m_outgoing(outgoing)
   , m_bsdf(bsdf)
   , m_bsdf_data(bsdf_data)
@@ -242,6 +244,7 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
             sampling_context,
             m_point,
             incoming,
+            m_time,
             weight,
             m_parent_shading_point);
 
@@ -497,6 +500,7 @@ bool DirectLightingIntegrator::check_visibility(
             sampling_context,
             m_point,
             sample.m_input_params.m_point,
+            m_time,
             transmission,
             m_parent_shading_point);
 

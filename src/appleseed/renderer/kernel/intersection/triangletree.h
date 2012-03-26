@@ -329,11 +329,10 @@ inline bool TriangleLeafVisitor::visit(
 #endif
     )
 {
+    // Retrieve the pointer to the data of this leaf.
     const foundation::uint8* user_data = &node.get_user_data<foundation::uint8>();
-
     const size_t leaf_data_index =
         *reinterpret_cast<const foundation::uint32*>(user_data);
-
     const foundation::uint8* leaf_data =
         leaf_data_index == ~0
             ? user_data + sizeof(foundation::uint32*)   // triangles are stored in the leaf node
@@ -370,22 +369,19 @@ inline bool TriangleLeafVisitor::visit(
         }
         else
         {
+            // Retrieve the vertices of the triangle at the two keyframes surrounding the ray time.
             const size_t prev_index = foundation::truncate<size_t>(ray.m_time * motion_segment_count);
-            const size_t next_index = prev_index + 1;
-
-            const GVector3* prev_verts = reinterpret_cast<const GVector3*>(leaf_data + prev_index * 3 * sizeof(GVector3));
-            const GVector3* next_verts = reinterpret_cast<const GVector3*>(leaf_data + next_index * 3 * sizeof(GVector3));
-
-            const double motion_segment_length = 1.0 / motion_segment_count;
-            const GScalar k = static_cast<GScalar>((ray.m_time - prev_index * motion_segment_length) / motion_segment_length);
-            const GScalar one_minus_k = GScalar(1.0) - k;
-
-            const GVector3 vert0 = one_minus_k * prev_verts[0] + k * next_verts[0];
-            const GVector3 vert1 = one_minus_k * prev_verts[1] + k * next_verts[1];
-            const GVector3 vert2 = one_minus_k * prev_verts[2] + k * next_verts[2];
-
+            const GVector3* prev_vertices = reinterpret_cast<const GVector3*>(leaf_data) + prev_index * 3;
+            const GVector3* next_vertices = prev_vertices + 3;
             leaf_data += (motion_segment_count + 1) * 3 * sizeof(GVector3);
 
+            // Interpolate triangle vertices.
+            const GScalar k = static_cast<GScalar>((ray.m_time * motion_segment_count - prev_index));
+            const GVector3 vert0 = (GScalar(1.0) - k) * prev_vertices[0] + k * next_vertices[0];
+            const GVector3 vert1 = (GScalar(1.0) - k) * prev_vertices[1] + k * next_vertices[1];
+            const GVector3 vert2 = (GScalar(1.0) - k) * prev_vertices[2] + k * next_vertices[2];
+
+            // Load the triangle, converting it to the right format if necessary.
             const GTriangleType triangle(vert0, vert1, vert2);
             const impl::TriangleReader reader(triangle);
 
@@ -450,31 +446,69 @@ inline bool TriangleLeafProbeVisitor::visit(
 #endif
     )
 {
-#if 0
-    // Retrieve the triangles for this leaf.
+    // Retrieve the pointer to the data of this leaf.
+    const foundation::uint8* user_data = &node.get_user_data<foundation::uint8>();
+    const size_t leaf_data_index =
+        *reinterpret_cast<const foundation::uint32*>(user_data);
+    const foundation::uint8* leaf_data =
+        leaf_data_index == ~0
+            ? user_data + sizeof(foundation::uint32*)   // triangles are stored in the leaf node
+            : &m_tree.m_leaf_data[leaf_data_index];     // triangles are stored in the tree
+
     const size_t triangle_count = node.get_item_count();
-    const GTriangleType* triangles =
-        triangle_count <= TriangleTree::NodeType::MaxUserDataSize / sizeof(GTriangleType)
-            ? &node.get_user_data<GTriangleType>()          // triangles are stored in the leaf node
-            : &m_tree.m_triangles[node.get_item_index()];   // triangles are stored in the tree
 
     // Sequentially intersect triangles until a hit is found.
     for (size_t i = 0; i < triangle_count; ++i)
     {
-        // Load the triangle, converting it to the right format if necessary.
-        const impl::TriangleReader reader(triangles[i]);
+        // Retrieve the number of motion segments for this triangle.
+        const size_t motion_segment_count =
+            *reinterpret_cast<const foundation::uint32*>(leaf_data);
+        leaf_data += sizeof(foundation::uint32);
 
-        // Intersect the triangle.
-        if (reader.m_triangle.intersect(ray))
+        if (motion_segment_count == 0)
         {
-            FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(i + 1));
-            m_hit = true;
-            return false;
+            // Load the triangle, converting it to the right format if necessary.
+            const GTriangleType* triangle_ptr = reinterpret_cast<const GTriangleType*>(leaf_data);
+            const impl::TriangleReader reader(*triangle_ptr);
+            leaf_data += sizeof(GTriangleType);
+
+            // Intersect the triangle.
+            if (reader.m_triangle.intersect(ray))
+            {
+                FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(i + 1));
+                m_hit = true;
+                return false;
+            }
+        }
+        else
+        {
+            // Retrieve the vertices of the triangle at the two keyframes surrounding the ray time.
+            const size_t prev_index = foundation::truncate<size_t>(ray.m_time * motion_segment_count);
+            const GVector3* prev_vertices = reinterpret_cast<const GVector3*>(leaf_data) + prev_index * 3;
+            const GVector3* next_vertices = prev_vertices + 3;
+            leaf_data += (motion_segment_count + 1) * 3 * sizeof(GVector3);
+
+            // Interpolate triangle vertices.
+            const GScalar k = static_cast<GScalar>((ray.m_time * motion_segment_count - prev_index));
+            const GVector3 vert0 = (GScalar(1.0) - k) * prev_vertices[0] + k * next_vertices[0];
+            const GVector3 vert1 = (GScalar(1.0) - k) * prev_vertices[1] + k * next_vertices[1];
+            const GVector3 vert2 = (GScalar(1.0) - k) * prev_vertices[2] + k * next_vertices[2];
+
+            // Load the triangle, converting it to the right format if necessary.
+            const GTriangleType triangle(vert0, vert1, vert2);
+            const impl::TriangleReader reader(triangle);
+
+            // Intersect the triangle.
+            if (reader.m_triangle.intersect(ray))
+            {
+                FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(i + 1));
+                m_hit = true;
+                return false;
+            }
         }
     }
 
     FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(triangle_count));
-#endif
 
     // Continue traversal.
     distance = ray.m_tmax;

@@ -57,6 +57,7 @@ double compute_ambient_occlusion(
     const foundation::Vector3d&     point,              // world space point
     const foundation::Vector3d&     geometric_normal,   // world space geometric normal, unit-length
     const foundation::Basis3d&      shading_basis,      // world space orthonormal basis around shading normal
+    const double                    time,
     const double                    max_distance,
     const size_t                    sample_count,
     const ShadingPoint*             parent_shading_point = 0)
@@ -69,7 +70,7 @@ double compute_ambient_occlusion(
     ao_ray.m_org = point;
     ao_ray.m_tmin = 0.0;
     ao_ray.m_tmax = max_distance;
-    ao_ray.m_time = 0.0;
+    ao_ray.m_time = time;
     ao_ray.m_flags = ~0;
 
     size_t computed_samples = 0;

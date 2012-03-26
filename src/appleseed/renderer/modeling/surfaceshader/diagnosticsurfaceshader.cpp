@@ -284,6 +284,7 @@ void DiagnosticSurfaceShader::evaluate(
                     shading_point.get_point(),
                     shading_point.get_geometric_normal(),
                     shading_point.get_shading_basis(),
+                    shading_point.get_ray().m_time,
                     impl->m_ao_max_distance,
                     impl->m_ao_samples,
                     &shading_point);

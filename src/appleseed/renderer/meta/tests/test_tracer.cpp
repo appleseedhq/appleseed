@@ -216,6 +216,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 m_sampling_context,
                 Vector3d(0.0),
                 Vector3d(1.0, 0.0, 0.0),
+                0.0,
                 transmission);
 
         EXPECT_FALSE(shading_point.hit());
@@ -230,6 +231,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 m_sampling_context,
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
+                0.0,
                 transmission);
 
         EXPECT_FALSE(shading_point.hit());
@@ -253,6 +255,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 m_sampling_context,
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(1.0, 0.0, 0.0),
+                0.0,
                 transmission);
 
         ASSERT_TRUE(shading_point.hit());
@@ -268,6 +271,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 m_sampling_context,
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
+                0.0,
                 transmission);
 
         ASSERT_TRUE(shading_point.hit());
@@ -292,6 +296,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 m_sampling_context,
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(1.0, 0.0, 0.0),
+                0.0,
                 transmission);
 
         ASSERT_FALSE(shading_point.hit());
@@ -306,6 +311,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 m_sampling_context,
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
+                0.0,
                 transmission);
 
         ASSERT_FALSE(shading_point.hit());
@@ -330,6 +336,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 m_sampling_context,
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(1.0, 0.0, 0.0),
+                0.0,
                 transmission);
 
         ASSERT_TRUE(shading_point.hit());
@@ -345,6 +352,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 m_sampling_context,
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
+                0.0,
                 transmission);
 
         ASSERT_TRUE(shading_point.hit());
@@ -360,6 +368,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 m_sampling_context,
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(4.0, 0.0, 0.0),
+                0.0,
                 transmission);
 
         ASSERT_FALSE(shading_point.hit());

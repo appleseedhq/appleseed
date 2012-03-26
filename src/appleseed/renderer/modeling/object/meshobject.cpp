@@ -150,31 +150,6 @@ GVector3 MeshObject::get_vertex(const size_t index) const
     return impl->m_tess.m_vertices[index];
 }
 
-void MeshObject::set_motion_segment_count(const size_t count)
-{
-    impl->m_tess.set_motion_segment_count(count);
-}
-
-size_t MeshObject::get_motion_segment_count() const
-{
-    return impl->m_tess.get_motion_segment_count();
-}
-
-void MeshObject::set_motion_vector(
-    const size_t    vertex_index,
-    const size_t    motion_segment_index,
-    const GVector3& mv)
-{
-    impl->m_tess.set_motion_vector(vertex_index, motion_segment_index, mv);
-}
-
-GVector3 MeshObject::get_motion_vector(
-    const size_t    vertex_index,
-    const size_t    motion_segment_index) const
-{
-    return impl->m_tess.get_motion_vector(vertex_index, motion_segment_index);
-}
-
 void MeshObject::reserve_vertex_normals(const size_t count)
 {
     impl->m_tess.m_vertex_normals.reserve(count);
@@ -232,6 +207,31 @@ size_t MeshObject::get_triangle_count() const
 Triangle MeshObject::get_triangle(const size_t index) const
 {
     return impl->m_tess.m_primitives[index];
+}
+
+void MeshObject::set_motion_segment_count(const size_t count)
+{
+    impl->m_tess.set_motion_segment_count(count);
+}
+
+size_t MeshObject::get_motion_segment_count() const
+{
+    return impl->m_tess.get_motion_segment_count();
+}
+
+void MeshObject::set_vertex_pose(
+    const size_t    vertex_index,
+    const size_t    motion_segment_index,
+    const GVector3& v)
+{
+    impl->m_tess.set_vertex_pose(vertex_index, motion_segment_index, v);
+}
+
+GVector3 MeshObject::get_vertex_pose(
+    const size_t    vertex_index,
+    const size_t    motion_segment_index) const
+{
+    return impl->m_tess.get_vertex_pose(vertex_index, motion_segment_index);
 }
 
 

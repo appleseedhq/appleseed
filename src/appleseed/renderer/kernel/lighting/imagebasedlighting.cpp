@@ -59,6 +59,7 @@ namespace
         const Vector3d&             point,
         const Vector3d&             geometric_normal,
         const Basis3d&              shading_basis,
+        const double                time,
         const Vector3d&             outgoing,
         const BSDF&                 bsdf,
         const void*                 bsdf_data,
@@ -114,6 +115,7 @@ namespace
                     sampling_context,
                     point,
                     incoming,
+                    time,
                     transmission,
                     parent_shading_point);
 
@@ -161,6 +163,7 @@ namespace
         const Vector3d&             point,
         const Vector3d&             geometric_normal,
         const Basis3d&              shading_basis,
+        const double                time,
         const Vector3d&             outgoing,
         const BSDF&                 bsdf,
         const void*                 bsdf_data,
@@ -207,6 +210,7 @@ namespace
                     child_sampling_context,
                     point,
                     incoming,
+                    time,
                     transmission,
                     parent_shading_point);
 
@@ -260,6 +264,7 @@ void compute_image_based_lighting(
     const Vector3d&             point,
     const Vector3d&             geometric_normal,
     const Basis3d&              shading_basis,
+    const double                time,
     const Vector3d&             outgoing,
     const BSDF&                 bsdf,
     const void*                 bsdf_data,
@@ -279,6 +284,7 @@ void compute_image_based_lighting(
         point,
         geometric_normal,
         shading_basis,
+        time,
         outgoing,
         bsdf,
         bsdf_data,
@@ -296,6 +302,7 @@ void compute_image_based_lighting(
         point,
         geometric_normal,
         shading_basis,
+        time,
         outgoing,
         bsdf,
         bsdf_data,

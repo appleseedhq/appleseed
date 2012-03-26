@@ -55,6 +55,7 @@ void compute_image_based_lighting(
     const foundation::Vector3d&     point,              // world space point
     const foundation::Vector3d&     geometric_normal,   // world space geometric normal, unit-length
     const foundation::Basis3d&      shading_basis,      // world space orthonormal basis around shading normal
+    const double                    time,
     const foundation::Vector3d&     outgoing,           // world space outgoing direction, unit-length
     const BSDF&                     bsdf,
     const void*                     bsdf_data,

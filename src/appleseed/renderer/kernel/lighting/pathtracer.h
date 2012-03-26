@@ -185,7 +185,7 @@ size_t PathTracer<PathVisitor, ScatteringModesMask, Adjoint>::trace(
                 const ShadingRay cutoff_ray(
                     shading_point_ptr->get_point(),
                     ray.m_dir,
-                    0.0f,           // ray time
+                    ray.m_time,
                     ~0);            // ray flags
 
                 // Trace the ray.
@@ -295,7 +295,7 @@ size_t PathTracer<PathVisitor, ScatteringModesMask, Adjoint>::trace(
         const ShadingRay scattered_ray(
             shading_point_ptr->get_point(),
             incoming,
-            0.0f,           // ray time
+            ray.m_time,
             ~0);            // ray flags
 
         // Trace the ray.

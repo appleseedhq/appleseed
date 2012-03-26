@@ -128,17 +128,11 @@ namespace
                 if (motion_segment_count > 0)
                 {
                     // Update the bounding of the triangle to enclose its full motion over the shutter interval.
-                    GVector3 mv0 = v0;
-                    GVector3 mv1 = v1;
-                    GVector3 mv2 = v2;
                     for (size_t ms_index = 0; ms_index < motion_segment_count; ++ms_index)
                     {
-                        mv0 += transform.transform_vector_to_parent(tess->get_motion_vector(triangle.m_v0, ms_index));
-                        mv1 += transform.transform_vector_to_parent(tess->get_motion_vector(triangle.m_v1, ms_index));
-                        mv2 += transform.transform_vector_to_parent(tess->get_motion_vector(triangle.m_v2, ms_index));
-                        triangle_bbox.insert(mv0);
-                        triangle_bbox.insert(mv1);
-                        triangle_bbox.insert(mv2);
+                        triangle_bbox.insert(transform.transform_point_to_parent(tess->get_vertex_pose(triangle.m_v0, ms_index)));
+                        triangle_bbox.insert(transform.transform_point_to_parent(tess->get_vertex_pose(triangle.m_v1, ms_index)));
+                        triangle_bbox.insert(transform.transform_point_to_parent(tess->get_vertex_pose(triangle.m_v2, ms_index)));
                     }
 
                     // Ignore triangles that are degenerate over the entire shutter interval.
@@ -177,17 +171,11 @@ namespace
                 triangle_vertices.push_back(v0);
                 triangle_vertices.push_back(v1);
                 triangle_vertices.push_back(v2);
-                GVector3 mv0 = v0;
-                GVector3 mv1 = v1;
-                GVector3 mv2 = v2;
                 for (size_t ms_index = 0; ms_index < motion_segment_count; ++ms_index)
                 {
-                    mv0 += transform.transform_vector_to_parent(tess->get_motion_vector(triangle.m_v0, ms_index));
-                    mv1 += transform.transform_vector_to_parent(tess->get_motion_vector(triangle.m_v1, ms_index));
-                    mv2 += transform.transform_vector_to_parent(tess->get_motion_vector(triangle.m_v2, ms_index));
-                    triangle_vertices.push_back(mv0);
-                    triangle_vertices.push_back(mv1);
-                    triangle_vertices.push_back(mv2);
+                    triangle_vertices.push_back(transform.transform_point_to_parent(tess->get_vertex_pose(triangle.m_v0, ms_index)));
+                    triangle_vertices.push_back(transform.transform_point_to_parent(tess->get_vertex_pose(triangle.m_v1, ms_index)));
+                    triangle_vertices.push_back(transform.transform_point_to_parent(tess->get_vertex_pose(triangle.m_v2, ms_index)));
                 }
 
                 // Store the triangle bounding box.
@@ -201,9 +189,11 @@ namespace
       public:
         TriangleItemHandler(
             const vector<TriangleVertexInfo>&   triangle_vertex_infos,
-            const vector<GVector3>&             triangle_vertices)
+            const vector<GVector3>&             triangle_vertices,
+            const vector<AABB3d>&               triangle_bboxes)
           : m_triangle_vertex_infos(triangle_vertex_infos)
           , m_triangle_vertices(triangle_vertices)
+          , m_triangle_bboxes(triangle_bboxes)
         {
         }
 
@@ -211,8 +201,6 @@ namespace
         {
             return 2.0e-9;
         }
-
-#ifdef APPLESEED_FOUNDATION_USE_SSE
 
         AABB3d clip(
             const size_t    item_index,
@@ -222,14 +210,9 @@ namespace
         {
             const TriangleVertexInfo& vertex_info = m_triangle_vertex_infos[item_index];
 
-            // todo: hack!
             if (vertex_info.m_motion_segment_count > 0)
             {
-                AABB3d triangle_bbox;
-                triangle_bbox.invalidate();
-
-                for (size_t i = 0; i < 3 * (1 + vertex_info.m_motion_segment_count); ++i)
-                    triangle_bbox.insert(Vector3d(m_triangle_vertices[vertex_info.m_vertex_index + i]));
+                AABB3d triangle_bbox = m_triangle_bboxes[item_index];
 
                 if (triangle_bbox.min[dimension] < slab_min)
                     triangle_bbox.min[dimension] = slab_min;
@@ -239,6 +222,8 @@ namespace
 
                 return triangle_bbox;
             }
+
+#ifdef APPLESEED_FOUNDATION_USE_SSE
 
             SSE_ALIGN const Vector3d v0(m_triangle_vertices[vertex_info.m_vertex_index + 0]);
             SSE_ALIGN const Vector3d v1(m_triangle_vertices[vertex_info.m_vertex_index + 1]);
@@ -422,18 +407,7 @@ namespace
             if (bbox.max[dimension] > slab_max)
                 bbox.max[dimension] = slab_max;
 
-            return bbox;
-        }
-
 #else
-
-        AABB3d clip(
-            const size_t    item_index,
-            const size_t    dimension,
-            const double    slab_min,
-            const double    slab_max) const
-        {
-            const TriangleVertexInfo& vertex_info = m_triangle_vertex_infos[item_index];
 
             const Vector3d v0(m_triangle_vertices[vertex_info.m_vertex_index + 0]);
             const Vector3d v1(m_triangle_vertices[vertex_info.m_vertex_index + 1]);
@@ -476,43 +450,30 @@ namespace
             if (v2_le_max != v0_le_max)
                 bbox.insert(segment_plane_intersection(v2, v0, dimension, slab_max));
 
+#endif
+
             return bbox;
         }
-
-#endif
 
         bool intersect(
             const size_t    item_index,
             const AABB3d&   bbox) const
         {
             const TriangleVertexInfo& vertex_info = m_triangle_vertex_infos[item_index];
-
-            if (vertex_info.m_motion_segment_count > 0)
-            {
-                GAABB3 triangle_bbox;
-                triangle_bbox.invalidate();
-
-                for (size_t i = 0; i < 3 * (1 + vertex_info.m_motion_segment_count); ++i)
-                    triangle_bbox.insert(m_triangle_vertices[vertex_info.m_vertex_index + i]);
-
-                return AABB3d::overlap(bbox, AABB3d(triangle_bbox));
-            }
-            else
-            {
-                return
-                    foundation::intersect(
-                        bbox,
-                        Vector3d(m_triangle_vertices[vertex_info.m_vertex_index + 0]),
-                        Vector3d(m_triangle_vertices[vertex_info.m_vertex_index + 1]),
-                        Vector3d(m_triangle_vertices[vertex_info.m_vertex_index + 2]));
-            }
+            return
+                vertex_info.m_motion_segment_count > 0
+                    ? AABB3d::overlap(bbox, m_triangle_bboxes[item_index])
+                    : foundation::intersect(
+                          bbox,
+                          Vector3d(m_triangle_vertices[vertex_info.m_vertex_index + 0]),
+                          Vector3d(m_triangle_vertices[vertex_info.m_vertex_index + 1]),
+                          Vector3d(m_triangle_vertices[vertex_info.m_vertex_index + 2]));
         }
 
       private:
         const vector<TriangleVertexInfo>&   m_triangle_vertex_infos;
         const vector<GVector3>&             m_triangle_vertices;
-
-#ifndef APPLESEED_FOUNDATION_USE_SSE
+        const vector<AABB3d>&               m_triangle_bboxes;
 
         static Vector3d segment_plane_intersection(
             const Vector3d& a,
@@ -535,8 +496,6 @@ namespace
 
             return result;
         }
-
-#endif
     };
 
     struct LeafEncoder
@@ -739,7 +698,10 @@ void TriangleTree::build_sbvh(
 
     // Create the partitioner.
     typedef bvh::SBVHPartitioner<TriangleItemHandler, vector<AABB3d> > Partitioner;
-    TriangleItemHandler triangle_handler(triangle_vertex_infos, triangle_vertices);
+    TriangleItemHandler triangle_handler(
+        triangle_vertex_infos,
+        triangle_vertices,
+        triangle_bboxes);
     Partitioner partitioner(
         triangle_handler,
         triangle_bboxes,

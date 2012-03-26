@@ -95,12 +95,6 @@ class Intersector
         const ShadingRay&               ray,
         const ShadingPoint*             parent_shading_point = 0) const;
 
-    // Return true if a given point is occluded from another given point.
-    bool occluded(
-        const foundation::Vector3d&     origin,
-        const foundation::Vector3d&     target,
-        const ShadingPoint*             parent_shading_point = 0) const;
-
     // Manufacture a hit "by hand".
     void manufacture_hit(
         ShadingPoint&                   shading_point,
@@ -130,30 +124,6 @@ class Intersector
     mutable foundation::bvh::TraversalStatistics    m_triangle_tree_traversal_stats;
 #endif
 };
-
-
-//
-// Intersector class implementation.
-//
-
-inline bool Intersector::occluded(
-    const foundation::Vector3d&     origin,
-    const foundation::Vector3d&     target,
-    const ShadingPoint*             parent_shading_point) const
-{
-    // todo: get rid of this epsilon.
-    const double Eps = 1.0e-6;
-
-    const ShadingRay visibility_ray(
-        origin,
-        target - origin,
-        0.0,                // ray tmin
-        1.0 - Eps,          // ray tmax
-        0.0f,               // ray time
-        ~0);                // ray flags
-
-    return trace_probe(visibility_ray, parent_shading_point);
-}
 
 }       // namespace renderer
 

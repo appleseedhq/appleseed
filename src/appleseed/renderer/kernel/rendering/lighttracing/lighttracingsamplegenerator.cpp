@@ -227,7 +227,8 @@ namespace
             void visit_light_vertex(
                 SamplingContext&            sampling_context,
                 const LightSample&          light_sample,
-                const Spectrum&             light_particle_flux)
+                const Spectrum&             light_particle_flux,
+                const double                time)
             {
                 Vector2d sample_position_ndc;
                 double transmission;
@@ -238,6 +239,7 @@ namespace
                     vertex_visible_to_camera(
                         sampling_context,    
                         light_sample.m_input_params.m_point,
+                        time,
                         sample_position_ndc,
                         transmission,
                         vertex_to_camera,
@@ -293,6 +295,7 @@ namespace
                     vertex_visible_to_camera(
                         sampling_context,
                         shading_point.get_point(),
+                        shading_point.get_ray().m_time,
                         sample_position_ndc,
                         transmission,
                         vertex_to_camera,
@@ -371,6 +374,7 @@ namespace
             bool vertex_visible_to_camera(
                 SamplingContext&            sampling_context,
                 const Vector3d&             vertex_position_world,
+                const double                time,
                 Vector2d&                   sample_position_ndc,
                 double&                     transmission,
                 Vector3d&                   vertex_to_camera,
@@ -402,6 +406,7 @@ namespace
                         sampling_context,
                         m_camera_position,
                         vertex_position_world,
+                        time,
                         transmission);
 
                 // Reject vertices not directly visible from the camera.
@@ -551,10 +556,11 @@ namespace
                 light_sample.m_triangle->m_triangle_support_plane);
 
             // Build the light ray.
+            sampling_context.split_in_place(1, 1);
             const ShadingRay light_ray(
                 light_sample.m_input_params.m_point,
                 emission_direction,
-                0.0f,
+                sampling_context.next_double2(),
                 ~0);
 
             // Build the path tracer.
@@ -576,7 +582,8 @@ namespace
             path_visitor.visit_light_vertex<true>(
                 sampling_context,
                 light_sample,
-                light_particle_flux);
+                light_particle_flux,
+                light_ray.m_time);
 
             // Trace the light path.
             const size_t path_length =
@@ -624,10 +631,11 @@ namespace
             initial_alpha /= static_cast<float>(light_sample.m_probability * light_prob);
 
             // Build the light ray.
+            sampling_context.split_in_place(1, 1);
             const ShadingRay light_ray(
                 light_sample.m_input_params.m_point,
                 emission_direction,
-                0.0f,
+                sampling_context.next_double2(),
                 ~0);
 
             // Build the path tracer.
@@ -649,7 +657,8 @@ namespace
             path_visitor.visit_light_vertex<false>(
                 sampling_context,
                 light_sample,
-                light_particle_flux);
+                light_particle_flux,
+                light_ray.m_time);
 
             // Trace the light path.
             const size_t path_length =
