@@ -67,9 +67,13 @@ namespace
     //   http://keithp.com/~keithp/porterduff/p253-porter.pdf
     //
 
+#ifndef NDEBUG
+
     // Define this symbol to break execution into the debugger
     // when a specific pixel is about to be rendered.
     // #define DEBUG_BREAK_AT_PIXEL Vector<size_t, 2>(0, 0)
+
+#endif
 
     class GenericTileRenderer
       : public ITileRenderer
