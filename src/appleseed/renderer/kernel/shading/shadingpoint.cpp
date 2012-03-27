@@ -82,6 +82,7 @@ void ShadingPoint::fetch_source_geometry() const
     const StaticTriangleTess& tess =
         *m_tess_cache->access(
             region->get_uid(), region->get_static_triangle_tess());
+    const size_t motion_segment_count = tess.get_motion_segment_count();
 
     // Retrieve the triangle.
     const Triangle& triangle = tess.m_primitives[m_triangle_index];
@@ -111,9 +112,42 @@ void ShadingPoint::fetch_source_geometry() const
     assert(triangle.m_v0 != Triangle::None);
     assert(triangle.m_v1 != Triangle::None);
     assert(triangle.m_v2 != Triangle::None);
-    m_v0 = tess.m_vertices[triangle.m_v0];
-    m_v1 = tess.m_vertices[triangle.m_v1];
-    m_v2 = tess.m_vertices[triangle.m_v2];
+
+    if (motion_segment_count > 0)
+    {
+        // Fetch triangle vertices from the previous pose.
+        const size_t prev_index = truncate<size_t>(m_ray.m_time * motion_segment_count);
+        GVector3 prev_v0, prev_v1, prev_v2;
+        if (prev_index == 0)
+        {
+            prev_v0 = tess.m_vertices[triangle.m_v0];
+            prev_v1 = tess.m_vertices[triangle.m_v1];
+            prev_v2 = tess.m_vertices[triangle.m_v2];
+        }
+        else
+        {
+            prev_v0 = tess.get_vertex_pose(triangle.m_v0, prev_index - 1);
+            prev_v1 = tess.get_vertex_pose(triangle.m_v1, prev_index - 1);
+            prev_v2 = tess.get_vertex_pose(triangle.m_v2, prev_index - 1);
+        }
+
+        // Fetch triangle vertices from the next pose.
+        const GVector3 next_v0 = tess.get_vertex_pose(triangle.m_v0, prev_index);
+        const GVector3 next_v1 = tess.get_vertex_pose(triangle.m_v1, prev_index);
+        const GVector3 next_v2 = tess.get_vertex_pose(triangle.m_v2, prev_index);
+
+        // Interpolate triangle vertices.
+        const GScalar k = static_cast<GScalar>(m_ray.m_time * motion_segment_count - prev_index);
+        m_v0 = (GScalar(1.0) - k) * prev_v0 + k * next_v0;
+        m_v1 = (GScalar(1.0) - k) * prev_v1 + k * next_v1;
+        m_v2 = (GScalar(1.0) - k) * prev_v2 + k * next_v2;
+    }
+    else
+    {
+        m_v0 = tess.m_vertices[triangle.m_v0];
+        m_v1 = tess.m_vertices[triangle.m_v1];
+        m_v2 = tess.m_vertices[triangle.m_v2];
+    }
 
     // Copy the object instance space triangle vertex normals.
     assert(triangle.m_n0 != Triangle::None);
