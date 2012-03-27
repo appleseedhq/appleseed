@@ -376,7 +376,7 @@ inline bool TriangleLeafVisitor::visit(
             leaf_data += (motion_segment_count + 1) * 3 * sizeof(GVector3);
 
             // Interpolate triangle vertices.
-            const GScalar k = static_cast<GScalar>((ray.m_time * motion_segment_count - prev_index));
+            const GScalar k = static_cast<GScalar>(ray.m_time * motion_segment_count - prev_index);
             const GVector3 vert0 = (GScalar(1.0) - k) * prev_vertices[0] + k * next_vertices[0];
             const GVector3 vert1 = (GScalar(1.0) - k) * prev_vertices[1] + k * next_vertices[1];
             const GVector3 vert2 = (GScalar(1.0) - k) * prev_vertices[2] + k * next_vertices[2];
@@ -489,7 +489,7 @@ inline bool TriangleLeafProbeVisitor::visit(
             leaf_data += (motion_segment_count + 1) * 3 * sizeof(GVector3);
 
             // Interpolate triangle vertices.
-            const GScalar k = static_cast<GScalar>((ray.m_time * motion_segment_count - prev_index));
+            const GScalar k = static_cast<GScalar>(ray.m_time * motion_segment_count - prev_index);
             const GVector3 vert0 = (GScalar(1.0) - k) * prev_vertices[0] + k * next_vertices[0];
             const GVector3 vert1 = (GScalar(1.0) - k) * prev_vertices[1] + k * next_vertices[1];
             const GVector3 vert2 = (GScalar(1.0) - k) * prev_vertices[2] + k * next_vertices[2];
