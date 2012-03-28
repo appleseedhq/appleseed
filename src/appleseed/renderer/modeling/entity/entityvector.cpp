@@ -238,6 +238,10 @@ size_t EntityVector::insert(auto_release_ptr<Entity> entity)
     Entity* entity_ptr = entity.release();
     assert(entity_ptr);
 
+    // The entity shouldn't already be in the container.
+    assert(impl->m_id_index.find(entity_ptr->get_uid()) == impl->m_id_index.end());
+    assert(impl->m_name_index.find(entity_ptr->get_name()) == impl->m_name_index.end());
+
     // Insert the entity into the container.
     const size_t entity_index = impl->m_storage.size();
     impl->m_storage.push_back(entity_ptr);

@@ -233,6 +233,10 @@ void EntityMap::insert(auto_release_ptr<Entity> entity)
     Entity* entity_ptr = entity.release();
     assert(entity_ptr);
 
+    // The entity shouldn't already be in the container.
+    assert(impl->m_storage.find(entity_ptr->get_uid()) == impl->m_storage.end());
+    assert(impl->m_index.find(entity_ptr->get_name()) == impl->m_index.end());
+
     // Insert the entity into the container.
     impl->m_storage[entity_ptr->get_uid()] = entity_ptr;
     impl->m_index[entity_ptr->get_name()] = entity_ptr;
