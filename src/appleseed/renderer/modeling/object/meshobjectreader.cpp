@@ -49,6 +49,7 @@
 // Standard headers.
 #include <algorithm>
 #include <exception>
+#include <map>
 #include <vector>
 
 using namespace foundation;
@@ -107,13 +108,10 @@ namespace
             return m_total_triangle_count;
         }
 
-        virtual void begin_mesh(const string& name)
+        virtual void begin_mesh(const string& mesh_name)
         {
-            // If the mesh has no name, assign it a number (starting with 0).
-            const string mesh_name = name.empty() ? to_string(m_untitled_mesh_counter++) : name;
-
-            // Construct the final object name from the base object name and the mesh name.
-            const string object_name = m_base_object_name + "." + mesh_name;
+            // Construct the object name.
+            const string object_name = m_base_object_name + "." + make_unique_mesh_name(mesh_name);
 
             // Create an empty mesh object.
             m_objects.push_back(
@@ -247,6 +245,8 @@ namespace
         const string            m_base_object_name;
 
         size_t                  m_untitled_mesh_counter;
+        map<string, size_t>     m_mesh_counters;
+
         MeshObjectVector        m_objects;
 
         size_t                  m_vertex_count;
@@ -264,6 +264,20 @@ namespace
 
         size_t                  m_total_vertex_count;
         size_t                  m_total_triangle_count;
+
+        string make_unique_mesh_name(string mesh_name)
+        {
+            if (mesh_name.empty())
+                mesh_name = to_string(m_untitled_mesh_counter++);
+
+            if (m_mesh_counters.find(mesh_name) == m_mesh_counters.end())
+            {
+                m_mesh_counters[mesh_name] = 0;
+                return mesh_name;
+            }
+
+            return mesh_name + "." + to_string(m_mesh_counters[mesh_name]++);
+        }
 
         void insert_triangle(
             const size_t        v0_index,
