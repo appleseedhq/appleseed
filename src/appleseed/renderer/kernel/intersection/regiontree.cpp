@@ -360,7 +360,7 @@ namespace
 
                     // Compute the assembly space bounding box of the region.
                     const GAABB3 region_bbox =
-                        transform.transform_to_parent(region->get_local_bbox());
+                        transform.transform_to_parent(region->compute_local_bbox());
 
                     // Insert the region into the root leaf.
                     root_leaf->insert(
@@ -373,7 +373,7 @@ namespace
 
             // Log a progress message.
             RENDERER_LOG_INFO(
-                "building region bsp tree for assembly #" FMT_UNIQUE_ID " (%s %s)...", 
+                "building region tree for assembly #" FMT_UNIQUE_ID " (%s %s)...", 
                 arguments.m_assembly_uid,
                 pretty_int(root_leaf->get_size()).c_str(),
                 plural(root_leaf->get_size(), "region").c_str());
@@ -391,7 +391,7 @@ namespace
             // Collect and print triangle tree statistics.
             IntermRegionTreeStatistics tree_stats(*this, builder);
             RENDERER_LOG_DEBUG(
-                "region bsp tree #" FMT_UNIQUE_ID " statistics:",
+                "region tree #" FMT_UNIQUE_ID " statistics:",
                 arguments.m_assembly_uid);
             tree_stats.print(global_logger());
         }
@@ -458,7 +458,7 @@ RegionTree::~RegionTree()
 {
     // Log a progress message.
     RENDERER_LOG_INFO(
-        "deleting region bsp tree for assembly #" FMT_UNIQUE_ID "...", 
+        "deleting region tree for assembly #" FMT_UNIQUE_ID "...", 
         m_assembly_uid);
 
     // Delete triangle trees.
@@ -490,7 +490,7 @@ auto_ptr<RegionTree> RegionTreeFactory::create()
 
 double RegionLeafVisitor::visit(
     const RegionLeaf*               leaf,
-    const ShadingRay::RayType&      ray,
+    const ShadingRay&               ray,
     const ShadingRay::RayInfoType&  ray_info)
 {
     assert(leaf);
@@ -504,15 +504,15 @@ double RegionLeafVisitor::visit(
     if (triangle_tree)
     {
         // Check the intersection between the ray and the triangle tree.
-        TriangleLeafVisitor visitor(m_shading_point);
-        TriangleLeafIntersector intersector;
+        TriangleTreeIntersector intersector;
+        TriangleLeafVisitor visitor(*triangle_tree, m_shading_point);
         intersector.intersect(
             *triangle_tree,
             ray,
             ray_info,
             visitor
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-            , m_triangle_bsp_stats
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+            , m_triangle_tree_stats
 #endif
             );
         visitor.read_hit_triangle_data();
@@ -529,7 +529,7 @@ double RegionLeafVisitor::visit(
 
 double RegionLeafProbeVisitor::visit(
     const RegionLeaf*               leaf,
-    const ShadingRay::RayType&      ray,
+    const ShadingRay&               ray,
     const ShadingRay::RayInfoType&  ray_info)
 {
     assert(leaf);
@@ -543,15 +543,15 @@ double RegionLeafProbeVisitor::visit(
     if (triangle_tree)
     {
         // Check the intersection between the ray and the triangle tree.
-        TriangleLeafProbeVisitor visitor;
-        TriangleLeafProbeIntersector intersector;
+        TriangleTreeProbeIntersector intersector;
+        TriangleLeafProbeVisitor visitor(*triangle_tree);
         intersector.intersect(
             *triangle_tree,
             ray,
             ray_info,
             visitor
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-            , m_triangle_bsp_stats
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+            , m_triangle_tree_stats
 #endif
             );
 

@@ -92,7 +92,7 @@ TEST_SUITE(Foundation_Utility_Cache_DualStageCache)
     typedef size_t MyKey;
     typedef int MyElement;
 
-    const MyKey MyInvalidKey = ~MyKey(0);
+    const MyKey MyInvalidKey = ~0;
 
     struct MyKeyHasher
     {

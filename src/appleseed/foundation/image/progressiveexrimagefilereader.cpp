@@ -247,7 +247,7 @@ void ProgressiveEXRImageFileReader::open(const char* filename)
         }
 
         // No tile previously accessed.
-        impl->m_last_tile_y = ~size_t(0);
+        impl->m_last_tile_y = ~0;
     }
     catch (const BaseExc& e)
     {

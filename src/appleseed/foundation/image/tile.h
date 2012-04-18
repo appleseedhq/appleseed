@@ -30,10 +30,10 @@
 #define APPLESEED_FOUNDATION_IMAGE_TILE_H
 
 // appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/image/pixel.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/memory.h"
-#include "foundation/utility/serialization.h"
 
 // Standard headers.
 #include <cassert>
@@ -67,7 +67,7 @@ namespace foundation
 //
 
 class FOUNDATIONDLL Tile
-  : public ISerializable
+  : public NonCopyable
 {
   public:
     // Construct a new tile. The content of the tile is left undefined.
@@ -93,14 +93,10 @@ class FOUNDATIONDLL Tile
         uint8*              storage = 0);           // if provided, use this memory for pixel storage
 
     // Copy constructor.
-    Tile(const Tile&        rhs);
+    Tile(const Tile& rhs);
 
     // Destructor.
-    virtual ~Tile();
-
-    // Implements the foundation::ISerializable interface.
-    virtual Serializer* serialize(Serializer* serializer);
-    virtual Deserializer* deserialize(Deserializer* deserializer);
+    ~Tile();
 
     // Tile properties.
     PixelFormat get_pixel_format() const;
@@ -177,7 +173,11 @@ class FOUNDATIONDLL Tile
 
     // Set all pixels to a given color.
     template <typename T>
-    void clear(const T&     val);                   // pixel value
+    void clear(const T& val);                       // pixel value
+
+    // Copy the contents of another tile of equal dimensions and number of channels
+    // (but possibly using a different pixel format).
+    void copy(const Tile& rhs);
 
   private:
     const size_t    m_width;                        // tile width, in pixels
@@ -190,9 +190,6 @@ class FOUNDATIONDLL Tile
     size_t          m_array_size;                   // size in bytes of the pixel array
     uint8*          m_pixel_array;                  // pixel array
     bool            m_own_storage;                  // does the tile own the memory used for pixel storage?
-
-    // Forbid usage of assignment operator.
-    Tile& operator=(const Tile&);                   // intentionally left unimplemented
 };
 
 // Return the size of a tile, including the dynamically allocated memory.
@@ -419,8 +416,7 @@ inline T Tile::get_component(
 }
 
 template <typename T>
-inline void Tile::clear(
-    const T&        val)
+inline void Tile::clear(const T& val)
 {
     FOUNDATION_CHECK_PIXEL_SIZE(val);
 

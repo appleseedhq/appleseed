@@ -55,7 +55,6 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
       public:
         BoundingBoxObject()
           : Object("boundingbox_object", ParamArray())
-          , m_bbox(GAABB3::VectorType(-1.0), GAABB3::VectorType(1.0))
           , m_lazy_region_kit(&m_region_kit)
         {
         }
@@ -70,9 +69,9 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
             return "boundingbox_object";
         }
 
-        virtual const GAABB3& get_local_bbox() const
+        virtual GAABB3 compute_local_bbox() const
         {
-            return m_bbox;
+            return GAABB3(GAABB3::VectorType(-1.0), GAABB3::VectorType(1.0));
         }
 
         virtual Lazy<RegionKit>& get_region_kit()
@@ -81,7 +80,6 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
         }
 
       private:
-        const GAABB3    m_bbox;
         RegionKit       m_region_kit;
         Lazy<RegionKit> m_lazy_region_kit;
     };

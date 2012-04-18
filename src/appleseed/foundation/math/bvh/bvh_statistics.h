@@ -33,6 +33,7 @@
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/population.h"
 #include "foundation/utility/log.h"
+#include "foundation/utility/statistics.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
@@ -46,37 +47,37 @@ namespace bvh {
 // BVH tree statistics.
 //
 
-template <typename Tree, typename Builder>
+template <typename Tree>
 class TreeStatistics
   : public NonCopyable
 {
   public:
-    // Node type.
-    typedef typename Tree::ValueType ValueType;
     typedef typename Tree::NodeType NodeType;
+    typedef typename NodeType::AABBType AABBType;
 
     // Constructor, collects statistics for a given tree.
     TreeStatistics(
+        Statistics&         statistics,
         const Tree&         tree,
-        const Builder&      builder);
+        const AABBType&     tree_bbox);
 
     // Print tree statistics.
     void print(Logger& logger);
 
   private:
-    const double            m_build_time;           // construction time in seconds
-    const size_t            m_memory_size;          // size of the tree in memory
-    const size_t            m_node_count;           // total number of nodes (leaf and interior nodes)
-    const ValueType         m_volume;               // volume of the tree
+    typedef typename AABBType::ValueType ValueType;
+
     ValueType               m_leaf_volume;          // total volume of the leaves
     size_t                  m_leaf_count;           // number of leaf nodes
     Population<size_t>      m_leaf_depth;           // leaf depth statistics
     Population<size_t>      m_leaf_size;            // leaf size statistics
+    Population<double>      m_sibling_overlap;      // amount of overlap between sibling nodes
 
     // Helper method to recursively traverse the tree and collect statistics.
     void collect_stats_recurse(
         const Tree&         tree,
         const NodeType&     node,
+        const AABBType&     bbox,
         const size_t        depth);
 };
 
@@ -89,10 +90,11 @@ class TraversalStatistics
   : public NonCopyable
 {
   public:
-    // Public members.
     size_t                  m_traversal_count;      // number of times the tree was traversed
-    Population<size_t>      m_fetched_nodes;        // number of nodes fetched from memory
-    Population<size_t>      m_visited_leaves;       // number of leaves actually visited
+    Population<size_t>      m_visited_nodes;        // number of visited nodes
+    Population<size_t>      m_visited_leaves;       // number of visited leaves
+    Population<size_t>      m_intersected_bboxes;   // number of bounding boxes intersected
+    Population<size_t>      m_discarded_nodes;      // number of discarded nodes (not hit by the ray)
     Population<size_t>      m_intersected_items;    // number of items tested for intersection
 
     // Constructor.
@@ -107,74 +109,67 @@ class TraversalStatistics
 // TreeStatistics class implementation.
 //
 
-// Constructor, collects statistics for a given tree.
-template <typename Tree, typename Builder>
-TreeStatistics<Tree, Builder>::TreeStatistics(
-    const Tree&         tree,
-    const Builder&      builder)
-  : m_build_time(builder.get_build_time())
-  , m_memory_size(tree.get_memory_size())
-  , m_node_count(tree.m_nodes.size())
-  , m_volume(tree.m_bbox.is_valid() ? tree.m_bbox.volume() : ValueType(0.0))
-  , m_leaf_volume(ValueType(0.0))
+template <typename Tree>
+TreeStatistics<Tree>::TreeStatistics(
+    Statistics&             statistics,
+    const Tree&             tree,
+    const AABBType&         tree_bbox)
+  : m_leaf_volume(ValueType(0.0))
   , m_leaf_count(0)
 {
     assert(!tree.m_nodes.empty());
 
-    // Recursively traverse the tree and collect statistics.
-    if (tree.m_bbox.is_valid())
-        collect_stats_recurse(tree, tree.m_nodes.front(), 0);
+    collect_stats_recurse(tree, tree.m_nodes.front(), tree_bbox, 1);
+
+    const ValueType tree_volume =
+        tree_bbox.is_valid() ? tree_bbox.volume() : ValueType(0.0);
+
+    if (m_leaf_volume > tree_volume)
+        m_leaf_volume = tree_volume;
+
+    statistics.add_size("memory_size", "size", tree.get_memory_size());
+    statistics.add<string>(
+        "nodes", "nodes",
+        "total " + pretty_uint(tree.m_nodes.size()) +
+        "  interior " + pretty_uint(tree.m_nodes.size() - m_leaf_count) +
+        "  leaves " + pretty_uint(m_leaf_count));
+    statistics.add_percent("leaf_volume", "leaf volume", m_leaf_volume, tree_volume);
+    statistics.add_population<size_t>("leaf_depth", "leaf depth", m_leaf_depth);
+    statistics.add_population<size_t>("leaf_size", "leaf size", m_leaf_size);
+    statistics.add_population<double>("sibling_overlap", "sibling overlap", "%", m_sibling_overlap);
 }
 
-// Print tree statistics.
-template <typename Tree, typename Builder>
-void TreeStatistics<Tree, Builder>::print(Logger& logger)
-{
-    LOG_DEBUG(
-        logger,
-        "  build time       %s\n"
-        "  size             %s\n"
-        "  nodes            total %s  interior %s  leaves %s\n"
-        "  leaf volume      %s\n"
-        "  leaf depth       avg %.1f  min %s  max %s  dev %.1f\n"
-        "  leaf size        avg %.1f  min %s  max %s  dev %.1f",
-        pretty_time(m_build_time).c_str(),
-        pretty_size(m_memory_size).c_str(),
-        pretty_uint(m_node_count).c_str(),
-        pretty_uint(m_node_count - m_leaf_count).c_str(),
-        pretty_uint(m_leaf_count).c_str(),
-        pretty_percent(m_leaf_volume, m_volume, 1).c_str(),
-        m_leaf_depth.get_avg(),
-        pretty_uint(m_leaf_depth.get_min()).c_str(),
-        pretty_uint(m_leaf_depth.get_max()).c_str(),
-        m_leaf_depth.get_dev(),
-        m_leaf_size.get_avg(),
-        pretty_uint(m_leaf_size.get_min()).c_str(),
-        pretty_uint(m_leaf_size.get_max()).c_str(),
-        m_leaf_size.get_dev());
-}
-
-// Helper method to recursively traverse the tree and collect statistics.
-template <typename Tree, typename Builder>
-void TreeStatistics<Tree, Builder>::collect_stats_recurse(
+template <typename Tree>
+void TreeStatistics<Tree>::collect_stats_recurse(
     const Tree&             tree,
     const NodeType&         node,
+    const AABBType&         bbox,
     const size_t            depth)
 {
-    if (node.get_type() == NodeType::Leaf)
+    if (node.is_leaf())
     {
         // Gather leaf statistics.
         m_leaf_depth.insert(depth);
         m_leaf_size.insert(node.get_item_count());
         ++m_leaf_count;
-        m_leaf_volume += node.get_bbox().volume();
+        if (bbox.is_valid())
+            m_leaf_volume += bbox.volume();
     }
     else
     {
-        // Recurse into the child nodes.
+        // Fetch left and right children.
         const size_t child_index = node.get_child_node_index();
-        collect_stats_recurse(tree, tree.m_nodes[child_index], depth + 1);
-        collect_stats_recurse(tree, tree.m_nodes[child_index + 1], depth + 1);
+        const AABBType left_bbox = node.get_left_bbox();
+        const AABBType right_bbox = node.get_right_bbox();
+        const NodeType& left_node = tree.m_nodes[child_index];
+        const NodeType& right_node = tree.m_nodes[child_index + 1];
+
+        // Keep track of the amount of overlap between children.
+        m_sibling_overlap.insert(AABBType::overlap_ratio(left_bbox, right_bbox) * ValueType(100.0));
+
+        // Recurse into the child nodes.
+        collect_stats_recurse(tree, left_node, left_bbox, depth + 1);
+        collect_stats_recurse(tree, right_node, right_bbox, depth + 1);
     }
 }
 

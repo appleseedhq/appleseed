@@ -88,9 +88,12 @@ struct TriangleMTSupportPlane
     typedef Vector<T, 3> VectorType;
     typedef Ray<T, 3> RayType;
 
-    // Triangle plane.
-    VectorType  m_n;
-    ValueType   m_d;
+    // First vertex.
+    VectorType  m_v0;
+
+    // Two edges.
+    VectorType  m_e0;
+    VectorType  m_e1;
 
     // Constructors.
     TriangleMTSupportPlane();
@@ -274,8 +277,9 @@ inline TriangleMTSupportPlane<T>::TriangleMTSupportPlane(const TriangleMT<T>& tr
 template <typename T>
 inline void TriangleMTSupportPlane<T>::initialize(const TriangleMT<T>& triangle)
 {
-    m_n = cross(triangle.m_e0, triangle.m_e1);
-    m_d = dot(triangle.m_v0, m_n);
+    m_v0 = triangle.m_v0;
+    m_e0 = triangle.m_e0;
+    m_e1 = triangle.m_e1;
 }
 
 template <typename T>
@@ -283,7 +287,10 @@ inline T TriangleMTSupportPlane<T>::intersect(
     const VectorType&       org,
     const VectorType&       dir) const
 {
-    return (m_d - dot(org, m_n)) / dot(dir, m_n);
+    const VectorType tvec = org - m_v0;
+    const VectorType qvec = cross(tvec, m_e0);
+    const VectorType pvec = cross(dir, m_e1);
+    return dot(m_e1, qvec) / dot(m_e0, pvec);
 }
 
 }       // namespace foundation

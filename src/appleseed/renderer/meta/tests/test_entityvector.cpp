@@ -146,8 +146,8 @@ TEST_SUITE(Renderer_Modeling_Entity_EntityVector)
 
         v.remove(dummy_ptr);
 
-        EXPECT_EQ(~size_t(0), v.get_index(dummy_id));
-        EXPECT_EQ(~size_t(0), v.get_index("dummy"));
+        EXPECT_EQ(~0, v.get_index(dummy_id));
+        EXPECT_EQ(~0, v.get_index("dummy"));
     }
 
     TEST_CASE(GetIndex_GivenID_ReturnsIndex)

@@ -31,7 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
-#include "renderer/kernel/intersection/triangletree.h"
+#include "renderer/kernel/intersection/intersectionsettings.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/kernel/tessellation/statictessellation.h"
 #include "renderer/modeling/input/inputparams.h"
@@ -91,6 +91,9 @@ class ShadingPoint
     // Return the intersection point in world space.
     const foundation::Vector3d& get_point() const;
 
+    // Return the intersection point in world space, properly offset to avoid self-intersections.
+    const foundation::Vector3d& get_offset_point(const foundation::Vector3d& direction) const;
+
     // Return the world space geometric normal at the intersection point.
     const foundation::Vector3d& get_geometric_normal() const;
 
@@ -142,7 +145,6 @@ class ShadingPoint
   private:
     friend class AssemblyLeafProbeVisitor;
     friend class AssemblyLeafVisitor;
-    friend class AssemblyLeafVisitorBase;
     friend class Intersector;
     friend class RegionLeafVisitor;
     friend class TriangleLeafVisitor;
@@ -312,6 +314,14 @@ inline const foundation::Vector3d& ShadingPoint::get_point() const
     }
 
     return m_input_params.m_point;
+}
+
+inline const foundation::Vector3d& ShadingPoint::get_offset_point(const foundation::Vector3d& direction) const
+{
+    assert(hit());
+    assert(m_members & HasRefinedPoints);
+
+    return dot(m_asm_geo_normal, direction) > 0.0 ? m_front_point : m_back_point;
 }
 
 inline const foundation::Vector3d& ShadingPoint::get_geometric_normal() const

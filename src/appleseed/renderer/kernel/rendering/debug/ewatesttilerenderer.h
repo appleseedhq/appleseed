@@ -26,72 +26,45 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_SERIALIZATION_H
-#define APPLESEED_FOUNDATION_UTILITY_SERIALIZATION_H
+#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_DEBUG_EWATESTTILERENDERER_H
+#define APPLESEED_RENDERER_KERNEL_RENDERING_DEBUG_EWATESTTILERENDERER_H
 
-// appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
+// appleseed.renderer headers.
+#include "renderer/kernel/rendering/itilerenderer.h"
+#include "renderer/utility/paramarray.h"
 
-//
-// On Windows, define FOUNDATIONDLL to __declspec(dllexport) when building the DLL
-// and to __declspec(dllimport) when building an application using the DLL.
-// Other platforms don't use this export mechanism and the symbol FOUNDATIONDLL is
-// defined to evaluate to nothing.
-//
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
-#ifndef FOUNDATIONDLL
-#ifdef _WIN32
-#ifdef APPLESEED_FOUNDATION_EXPORTS
-#define FOUNDATIONDLL __declspec(dllexport)
-#else
-#define FOUNDATIONDLL __declspec(dllimport)
-#endif
-#else
-#define FOUNDATIONDLL
-#endif
-#endif
+// Forward declarations.
+namespace renderer  { class Scene; }
+namespace renderer  { class TraceContext; }
 
-namespace foundation
+namespace renderer
 {
 
-//
-// Serializer
-//
-
-class Serializer
-{
-};
-
-
-//
-// Deserializer
-//
-
-class Deserializer
-{
-};
-
-
-//
-// ISerializable interface.
-//
-
-class FOUNDATIONDLL ISerializable
-  : public NonCopyable
+class DLLSYMBOL EWATestTileRendererFactory
+  : public ITileRendererFactory
 {
   public:
-    // Destructor.
-    virtual ~ISerializable() {}
+    // Constructor.
+    EWATestTileRendererFactory(
+        const Scene&        scene,
+        const TraceContext& trace_context,
+        const ParamArray&   params);
 
-    // Serialization method.
-    virtual Serializer* serialize(
-        Serializer*     serializer) = 0;
+    // Delete this instance.
+    virtual void release();
 
-    // Deserialization method.
-    virtual Deserializer* deserialize(
-        Deserializer*   deserializer) = 0;
+    // Return a new blank tile renderer instance.
+    virtual ITileRenderer* create();
+
+  private:
+    const Scene&            m_scene;
+    const TraceContext&     m_trace_context;
+    ParamArray              m_params;
 };
 
-}       // namespace foundation
+}       // namespace renderer
 
-#endif  // !APPLESEED_FOUNDATION_UTILITY_SERIALIZATION_H
+#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_DEBUG_EWATESTTILERENDERER_H

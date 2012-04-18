@@ -41,8 +41,9 @@
 #include "renderer/modeling/scene/scene.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/bsp.h"
+#include "foundation/math/aabb.h"
 #include "foundation/math/bvh.h"
+#include "foundation/utility/alignedvector.h"
 #include "foundation/utility/lazy.h"
 #include "foundation/utility/version.h"
 
@@ -62,7 +63,11 @@ namespace renderer
 //
 
 class AssemblyTree
-  : public foundation::bvh::Tree<GScalar, 3, foundation::UniqueID>
+  : public foundation::bvh::Tree<
+               foundation::AlignedVector<
+                   foundation::bvh::Node<foundation::AABB3d>
+               >
+           >
 {
   public:
     // Constructor, builds the tree for a given scene.
@@ -74,53 +79,27 @@ class AssemblyTree
     // Update the assembly tree and all the child trees.
     void update();
 
+    // Return the size (in bytes) of this object in memory.
+    size_t get_memory_size() const;
+
   private:
     friend class AssemblyLeafVisitor;
     friend class AssemblyLeafProbeVisitor;
     friend class Intersector;
 
-    const Scene&            m_scene;
-    RegionTreeContainer     m_region_trees;
-    TriangleTreeContainer   m_triangle_trees;
-
+    typedef std::vector<foundation::AABB3d> AABBVector;
     typedef std::map<foundation::UniqueID, foundation::VersionID> AssemblyVersionMap;
 
-    AssemblyVersionMap      m_assembly_versions;
+    const Scene&                        m_scene;
+    RegionTreeContainer                 m_region_trees;
+    TriangleTreeContainer               m_triangle_trees;
+    std::vector<foundation::UniqueID>   m_assembly_instances;
+    AssemblyVersionMap                  m_assembly_versions;
 
-    // Collect all assemblies of the scene.
-    void collect_assemblies(std::vector<foundation::UniqueID>& assemblies) const;
-
-    // Collect all regions of all objects in a given assembly.
-    void collect_regions(const Assembly& assembly, RegionInfoVector& regions) const;
-
-    // Create a triangle tree for a given assembly.
-    foundation::Lazy<TriangleTree>* create_triangle_tree(const Assembly& assembly) const;
-
-    // Create a region tree for a given assembly.
-    foundation::Lazy<RegionTree>* create_region_tree(const Assembly& assembly) const;
-
-    // Build the assembly tree.
-    void build_assembly_tree();
-
-    // Create or update the child trees (one per assembly).
+    void collect_assembly_instances(AABBVector& assembly_instance_bboxes);
+    void rebuild_assembly_tree();
+    void store_assembly_instances_in_leaves();
     void update_child_trees();
-};
-
-
-//
-// Base class for assembly leaf visitors.
-//
-
-class AssemblyLeafVisitorBase
-  : public foundation::NonCopyable
-{
-  protected:
-    // Transform a ray to the space of an assembly instance.
-    void transform_ray_to_assembly_instance_space(
-        const AssemblyInstance*                     assembly_instance,
-        const ShadingPoint*                         parent_shading_point,
-        const ShadingRay::RayType&                  input_ray,
-        ShadingRay::RayType&                        output_ray);
 };
 
 
@@ -129,7 +108,7 @@ class AssemblyLeafVisitorBase
 //
 
 class AssemblyLeafVisitor
-  : public AssemblyLeafVisitorBase
+  : public foundation::NonCopyable
 {
   public:
     // Constructor.
@@ -139,22 +118,21 @@ class AssemblyLeafVisitor
         RegionTreeAccessCache&                      region_tree_cache,
         TriangleTreeAccessCache&                    triangle_tree_cache,
         const ShadingPoint*                         parent_shading_point
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-        , foundation::bsp::TraversalStatistics&     triangle_bsp_stats
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+        , foundation::bvh::TraversalStatistics&     triangle_tree_stats
 #endif
         );
 
     // Visit a leaf.
     bool visit(
-        const std::vector<foundation::UniqueID>&    items,
-        const std::vector<GAABB3>&                  bboxes,
-        const size_t                                begin,
-        const size_t                                end,
-        const ShadingRay::RayType&                  ray,
+        const AssemblyTree::NodeType&               node,
+        const ShadingRay&                           ray,
         const ShadingRay::RayInfoType&              ray_info,
-        const double                                tmin,
-        const double                                tmax,
-        double&                                     distance);
+        double&                                     distance
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+        , foundation::bvh::TraversalStatistics&     stats
+#endif
+        );
 
   private:
     ShadingPoint&                                   m_shading_point;
@@ -162,8 +140,8 @@ class AssemblyLeafVisitor
     RegionTreeAccessCache&                          m_region_tree_cache;
     TriangleTreeAccessCache&                        m_triangle_tree_cache;
     const ShadingPoint*                             m_parent_shading_point;
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-    foundation::bsp::TraversalStatistics&           m_triangle_bsp_stats;
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+    foundation::bvh::TraversalStatistics&           m_triangle_tree_stats;
 #endif
 };
 
@@ -174,8 +152,7 @@ class AssemblyLeafVisitor
 //
 
 class AssemblyLeafProbeVisitor
-  : public AssemblyLeafVisitorBase
-  , public ProbeVisitorBase
+  : public ProbeVisitorBase
 {
   public:
     // Constructor.
@@ -184,30 +161,29 @@ class AssemblyLeafProbeVisitor
         RegionTreeAccessCache&                      region_tree_cache,
         TriangleTreeAccessCache&                    triangle_tree_cache,
         const ShadingPoint*                         parent_shading_point
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-        , foundation::bsp::TraversalStatistics&     triangle_bsp_stats
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+        , foundation::bvh::TraversalStatistics&     triangle_tree_stats
 #endif
         );
 
     // Visit a leaf.
     bool visit(
-        const std::vector<foundation::UniqueID>&    items,
-        const std::vector<GAABB3>&                  bboxes,
-        const size_t                                begin,
-        const size_t                                end,
-        const ShadingRay::RayType&                  ray,
+        const AssemblyTree::NodeType&               node,
+        const ShadingRay&                           ray,
         const ShadingRay::RayInfoType&              ray_info,
-        const double                                tmin,
-        const double                                tmax,
-        double&                                     distance);
+        double&                                     distance
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+        , foundation::bvh::TraversalStatistics&     stats
+#endif
+        );
 
   private:
     const AssemblyTree&                             m_tree;
     RegionTreeAccessCache&                          m_region_tree_cache;
     TriangleTreeAccessCache&                        m_triangle_tree_cache;
     const ShadingPoint*                             m_parent_shading_point;
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-    foundation::bsp::TraversalStatistics&           m_triangle_bsp_stats;
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+    foundation::bvh::TraversalStatistics&           m_triangle_tree_stats;
 #endif
 };
 
@@ -217,16 +193,16 @@ class AssemblyLeafProbeVisitor
 //
 
 typedef foundation::bvh::Intersector<
-    double,
     AssemblyTree,
-    AssemblyLeafVisitor
-> AssemblyLeafIntersector;
+    AssemblyLeafVisitor,
+    ShadingRay
+> AssemblyTreeIntersector;
 
 typedef foundation::bvh::Intersector<
-    double,
     AssemblyTree,
-    AssemblyLeafProbeVisitor
-> AssemblyLeafProbeIntersector;
+    AssemblyLeafProbeVisitor,
+    ShadingRay
+> AssemblyTreeProbeIntersector;
 
 
 //
@@ -239,8 +215,8 @@ inline AssemblyLeafVisitor::AssemblyLeafVisitor(
     RegionTreeAccessCache&                          region_tree_cache,
     TriangleTreeAccessCache&                        triangle_tree_cache,
     const ShadingPoint*                             parent_shading_point
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-    , foundation::bsp::TraversalStatistics&         triangle_bsp_stats
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+    , foundation::bvh::TraversalStatistics&         triangle_tree_stats
 #endif
     )
   : m_shading_point(shading_point)
@@ -248,8 +224,8 @@ inline AssemblyLeafVisitor::AssemblyLeafVisitor(
   , m_region_tree_cache(region_tree_cache)
   , m_triangle_tree_cache(triangle_tree_cache)
   , m_parent_shading_point(parent_shading_point)
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-  , m_triangle_bsp_stats(triangle_bsp_stats)
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+  , m_triangle_tree_stats(triangle_tree_stats)
 #endif
 {
 }
@@ -264,16 +240,16 @@ inline AssemblyLeafProbeVisitor::AssemblyLeafProbeVisitor(
     RegionTreeAccessCache&                          region_tree_cache,
     TriangleTreeAccessCache&                        triangle_tree_cache,
     const ShadingPoint*                             parent_shading_point
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-    , foundation::bsp::TraversalStatistics&         triangle_bsp_stats
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+    , foundation::bvh::TraversalStatistics&         triangle_tree_stats
 #endif
     )
   : m_tree(tree)
   , m_region_tree_cache(region_tree_cache)
   , m_triangle_tree_cache(triangle_tree_cache)
   , m_parent_shading_point(parent_shading_point)
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-  , m_triangle_bsp_stats(triangle_bsp_stats)
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+  , m_triangle_tree_stats(triangle_tree_stats)
 #endif
 {
 }

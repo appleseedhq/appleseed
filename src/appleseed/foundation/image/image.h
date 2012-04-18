@@ -81,7 +81,7 @@ class FOUNDATIONDLL Image
     explicit Image(const CanvasProperties& props);
 
     // Copy constructor.
-    Image(const Image&      rhs);
+    Image(const Image& rhs);
 
     // Destructor.
     virtual ~Image();
@@ -106,7 +106,11 @@ class FOUNDATIONDLL Image
 
     // Set all pixels of all tiles to a given color.
     template <typename T>
-    void clear(const T&     val);               // pixel value
+    void clear(const T& val);                   // pixel value
+
+    // Copy the contents of another image of equal resolution, tile dimensions
+    // and number of channels (but possibly using a different pixel format).
+    void copy(const Image& rhs);
 
   protected:
     CanvasProperties        m_props;            // canvas properties

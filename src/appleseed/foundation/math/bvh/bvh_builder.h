@@ -31,16 +31,11 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/math/aabb.h"
-#include "foundation/math/scalar.h"
-#include "foundation/math/vector.h"
-#include "foundation/platform/timer.h"
 #include "foundation/utility/stopwatch.h"
 
 // Standard headers.
 #include <cassert>
 #include <cstddef>
-#include <vector>
 
 namespace foundation {
 namespace bvh {
@@ -53,69 +48,55 @@ namespace bvh {
 //      class Partitioner
 //        : public foundation::NonCopyable
 //      {
+//        public:
+//          // Compute the bounding box of a given set of items.
+//          AABBType compute_bbox(
+//              const size_t        begin,
+//              const size_t        end) const;
+//
 //          // Partition a set of items into two distinct sets.
-//          // bbox is the bounding box of the items in [begin, end).
+//          // 'bbox' is the bounding box of the items in [begin, end).
 //          // Return the index of the first item in the right
-//          // partition, or end if the set is not to be partitioned.
+//          // partition, or 'end' if the set is not to be partitioned.
 //          size_t partition(
-//              std::vector<Item>&      items,
-//              std::vector<AABB>&      bboxes,
-//              const size_t            begin,
-//              const size_t            end,
-//              const AABB&             bbox);
+//              const size_t        begin,
+//              const size_t        end,
+//              const AABBType&     bbox);
 //      };
 //
 
-template <
-    typename Tree,
-    typename Partitioner,
-    typename Timer = DefaultWallclockTimer
->
+template <typename Tree, typename Partitioner>
 class Builder
   : public NonCopyable
 {
   public:
-    // Types.
-    typedef typename Tree::ValueType ValueType;
-    typedef typename Tree::AABBType AABBType;
-    typedef typename Tree::NodeType NodeType;
-    typedef typename Tree::ItemType ItemType;
-    typedef Tree TreeType;
-
     // Constructor.
     Builder();
 
-    // Build a BVH for a given set of items.
+    // Build a tree.
+    template <typename Timer>
     void build(
-        TreeType&       tree,
-        Partitioner&    partitioner);
+        Tree&           tree,
+        Partitioner&    partitioner,
+        const size_t    size);
 
     // Return the construction time.
     double get_build_time() const;
 
   private:
-    double m_build_time;
+    typedef typename Tree::NodeType NodeType;
+    typedef typename NodeType::AABBType AABBType;
 
-    // Compute the bounding box of a set of bounding boxes.
-    static AABBType compute_bbox(
-        const std::vector<AABBType>&    bboxes,
-        const size_t                    begin,
-        const size_t                    end)
-    {
-        AABBType bbox;
-        bbox.invalidate();
-        for (size_t i = begin; i < end; ++i)
-            bbox.insert(bboxes[i]);
-        return bbox;
-    }
+    double  m_build_time;
 
     // Recursively subdivide the tree.
     void subdivide_recurse(
-        TreeType&       tree,
+        Tree&           tree,
+        Partitioner&    partitioner,
         const size_t    node_index,
         const size_t    begin,
         const size_t    end,
-        Partitioner&    partitioner);
+        const AABBType& bbox);
 };
 
 
@@ -123,117 +104,97 @@ class Builder
 // Builder class implementation.
 //
 
-// Constructor.
-template <
-    typename Tree,
-    typename Partitioner,
-    typename Timer
->
-Builder<Tree, Partitioner, Timer>::Builder()
+template <typename Tree, typename Partitioner>
+Builder<Tree, Partitioner>::Builder()
   : m_build_time(0.0)
 {
 }
 
-// Build a BVH for a given set of items.
-template <
-    typename Tree,
-    typename Partitioner,
-    typename Timer
->
-void Builder<Tree, Partitioner, Timer>::build(
-    TreeType&           tree,
-    Partitioner&        partitioner)
+template <typename Tree, typename Partitioner>
+template <typename Timer>
+void Builder<Tree, Partitioner>::build(
+    Tree&               tree,
+    Partitioner&        partitioner,
+    const size_t        size)
 {
-    assert(tree.m_items.size() == tree.m_bboxes.size());
-
     // Start stopwatch.
     Stopwatch<Timer> stopwatch;
     stopwatch.start();
 
-    // Clear the BVH.
+    // Clear the tree.
     tree.m_nodes.clear();
 
     // Create the root node of the tree.
     tree.m_nodes.push_back(NodeType());
 
-    // todo: preallocate memory.
+    // Compute the bounding box of the tree.
+    const AABBType root_bbox = partitioner.compute_bbox(0, size);
+
+    // todo: preallocate node memory?
 
     // Recursively subdivide the tree.
     subdivide_recurse(
         tree,
-        0,                      // node index
-        0,                      // begin
-        tree.m_items.size(),    // end
-        partitioner);
+        partitioner,
+        0,              // node index
+        0,              // begin
+        size,           // end
+        root_bbox);
 
     // Measure and save construction time.
     stopwatch.measure();
     m_build_time = stopwatch.get_seconds();
 }
 
-// Return the construction time.
-template <
-    typename Tree,
-    typename Partitioner,
-    typename Timer
->
-double Builder<Tree, Partitioner, Timer>::get_build_time() const
+template <typename Tree, typename Partitioner>
+inline double Builder<Tree, Partitioner>::get_build_time() const
 {
     return m_build_time;
 }
 
-// Recursively subdivide the tree.
-template <
-    typename Tree,
-    typename Partitioner,
-    typename Timer
->
-void Builder<Tree, Partitioner, Timer>::subdivide_recurse(
-    TreeType&           tree,
+template <typename Tree, typename Partitioner>
+void Builder<Tree, Partitioner>::subdivide_recurse(
+    Tree&               tree,
+    Partitioner&        partitioner,
     const size_t        node_index,
     const size_t        begin,
     const size_t        end,
-    Partitioner&        partitioner)
+    const AABBType&     bbox)
 {
     assert(node_index < tree.m_nodes.size());
-
-    // Compute the bounding box of the items.
-    const AABBType bbox = compute_bbox(tree.m_bboxes, begin, end);
 
     // Try to partition the set of items.
     size_t pivot = end;
     if (end - begin > 1)
     {
-        pivot =
-            partitioner.partition(
-                tree.m_items,
-                tree.m_bboxes,
-                begin,
-                end,
-                bbox);
+        pivot = partitioner.partition(begin, end, bbox);
         assert(pivot > begin);
         assert(pivot <= end);
     }
 
     if (pivot == end)
     {
-        // Turn the parent node into a leaf node for this set of items.
+        // Turn the current node into a leaf node.
         NodeType& node = tree.m_nodes[node_index];
-        node.set_type(NodeType::Leaf);
-        node.set_bbox(bbox);
+        node.make_leaf();
         node.set_item_index(begin);
         node.set_item_count(end - begin);
     }
     else
     {
+        // Compute the bounding box of the child nodes.
+        const AABBType left_bbox = partitioner.compute_bbox(begin, pivot);
+        const AABBType right_bbox = partitioner.compute_bbox(pivot, end);
+
         // Compute the indices of the child nodes.
         const size_t left_node_index = tree.m_nodes.size();
         const size_t right_node_index = left_node_index + 1;
 
-        // Turn the parent node into an interior node.
+        // Turn the current node into an interior node.
         NodeType& node = tree.m_nodes[node_index];
-        node.set_type(NodeType::Interior);
-        node.set_bbox(bbox);
+        node.make_interior();
+        node.set_left_bbox(left_bbox);
+        node.set_right_bbox(right_bbox);
         node.set_child_node_index(left_node_index);
 
         // Create the child nodes.
@@ -243,18 +204,20 @@ void Builder<Tree, Partitioner, Timer>::subdivide_recurse(
         // Recurse into the left subtree.
         subdivide_recurse(
             tree,
+            partitioner,
             left_node_index,
             begin,
             pivot,
-            partitioner);
+            left_bbox);
 
         // Recurse into the right subtree.
         subdivide_recurse(
             tree,
+            partitioner,
             right_node_index,
             pivot,
             end,
-            partitioner);
+            right_bbox);
     }
 }
 

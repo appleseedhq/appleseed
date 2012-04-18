@@ -30,9 +30,13 @@
 #define APPLESEED_RENDERER_KERNEL_INTERSECTION_REGIONINFO_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/global/globaltypes.h"
+
+// appleseed.foundation headers.
+#include "foundation/platform/types.h"
 
 // Standard headers.
+#include <cstddef>
 #include <vector>
 
 namespace renderer
@@ -61,8 +65,8 @@ class RegionInfo
     const GAABB3& get_region_parent_bbox() const;
 
   private:
-    size_t              m_object_instance_index;
-    size_t              m_region_index;
+    foundation::uint32  m_object_instance_index;
+    foundation::uint32  m_region_index;
     GAABB3              m_region_parent_bbox;
 };
 
@@ -74,30 +78,26 @@ typedef std::vector<RegionInfo> RegionInfoVector;
 // RegionInfo class implementation.
 //
 
-// Constructor.
 inline RegionInfo::RegionInfo(
     const size_t        object_instance_index,
     const size_t        region_index,
     const GAABB3&       region_parent_bbox)
-  : m_object_instance_index(object_instance_index)
-  , m_region_index(region_index)
+  : m_object_instance_index(static_cast<foundation::uint32>(object_instance_index))
+  , m_region_index(static_cast<foundation::uint32>(region_index))
   , m_region_parent_bbox(region_parent_bbox)
 {
 }
 
-// Return the index of the object instance within the assembly.
 inline size_t RegionInfo::get_object_instance_index() const
 {
-    return m_object_instance_index;
+    return static_cast<size_t>(m_object_instance_index);
 }
 
-// Return the index of the region within the region kit of the object.
 inline size_t RegionInfo::get_region_index() const
 {
-    return m_region_index;
+    return static_cast<size_t>(m_region_index);
 }
 
-// Return the parent space bounding box of the region.
 inline const GAABB3& RegionInfo::get_region_parent_bbox() const
 {
     return m_region_parent_bbox;

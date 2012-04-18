@@ -137,9 +137,15 @@ source_group ("foundation\\math\\bsp" FILES
 )
 
 set (foundation_math_bvh_sources
+    foundation/math/bvh/bvh_bboxsortpredicate.h
     foundation/math/bvh/bvh_builder.h
     foundation/math/bvh/bvh_intersector.h
+    foundation/math/bvh/bvh_medianpartitioner.h
     foundation/math/bvh/bvh_node.h
+    foundation/math/bvh/bvh_partitionerbase.h
+    foundation/math/bvh/bvh_sahpartitioner.h
+    foundation/math/bvh/bvh_sbvhpartitioner.h
+    foundation/math/bvh/bvh_spatialbuilder.h
     foundation/math/bvh/bvh_statistics.cpp
     foundation/math/bvh/bvh_statistics.h
     foundation/math/bvh/bvh_tree.h
@@ -269,6 +275,7 @@ set (foundation_math_sources
     foundation/math/spline.h
     foundation/math/split.h
     foundation/math/transform.h
+    foundation/math/treeoptimizer.h
     foundation/math/triangulator.h
     foundation/math/vector.h
     foundation/math/voxel.h
@@ -290,7 +297,6 @@ set (foundation_mesh_sources
     foundation/mesh/imeshfilereader.h
     foundation/mesh/imeshfilewriter.h
     foundation/mesh/imeshwalker.h
-    foundation/mesh/iobjmeshbuilder.h
     foundation/mesh/meshbuilderbase.h
     foundation/mesh/objmeshfilelexer.h
     foundation/mesh/objmeshfilereader.cpp
@@ -323,6 +329,7 @@ set (foundation_meta_benchmarks_sources
     foundation/meta/benchmarks/benchmark_samesign.cpp
     foundation/meta/benchmarks/benchmark_sampling.cpp
     foundation/meta/benchmarks/benchmark_spectrum.cpp
+    foundation/meta/benchmarks/benchmark_string.cpp
     foundation/meta/benchmarks/benchmark_voxelgrid.cpp
 )
 list (APPEND appleseed_sources
@@ -334,6 +341,7 @@ source_group ("foundation\\meta\\benchmarks" FILES
 
 set (foundation_meta_tests_sources
     foundation/meta/tests/test_aabb.cpp
+    foundation/meta/tests/test_allocators.cpp
     foundation/meta/tests/test_analysis.cpp
     foundation/meta/tests/test_attributeset.cpp
     foundation/meta/tests/test_autoreleaseptr.cpp
@@ -342,6 +350,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_boost_regex.cpp
     foundation/meta/tests/test_bsp.cpp
     foundation/meta/tests/test_bufferedfile.cpp
+    foundation/meta/tests/test_bvh.cpp
     foundation/meta/tests/test_cache.cpp
     foundation/meta/tests/test_cameracontroller.cpp
     foundation/meta/tests/test_casts.cpp
@@ -375,11 +384,11 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_minmax.cpp
     foundation/meta/tests/test_noise.cpp
     foundation/meta/tests/test_objmeshfilereader.cpp
+    foundation/meta/tests/test_objmeshfilewriter.cpp
     foundation/meta/tests/test_otherwise.cpp
     foundation/meta/tests/test_path.cpp
     foundation/meta/tests/test_permutation.cpp
     foundation/meta/tests/test_pointcloudsampling.cpp
-    foundation/meta/tests/test_poolallocator.cpp
     foundation/meta/tests/test_population.cpp
     foundation/meta/tests/test_preprocessor.cpp
     foundation/meta/tests/test_qmc.cpp
@@ -393,6 +402,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_snprintf.cpp
     foundation/meta/tests/test_spectrum.cpp
     foundation/meta/tests/test_spline.cpp
+    foundation/meta/tests/test_statistics.cpp
     foundation/meta/tests/test_string.cpp
     foundation/meta/tests/test_test.cpp
     foundation/meta/tests/test_tile.cpp
@@ -609,6 +619,8 @@ source_group ("foundation\\utility\\test" FILES
 )
 
 set (foundation_utility_sources
+    foundation/utility/alignedallocator.h
+    foundation/utility/alignedvector.h
     foundation/utility/attributeset.cpp
     foundation/utility/attributeset.h
     foundation/utility/autoreleaseptr.h
@@ -644,8 +656,9 @@ set (foundation_utility_sources
     foundation/utility/registrar.h
     foundation/utility/searchpaths.cpp
     foundation/utility/searchpaths.h
-    foundation/utility/serialization.h
     foundation/utility/settings.h
+    foundation/utility/statistics.cpp
+    foundation/utility/statistics.h
     foundation/utility/stopwatch.h
     foundation/utility/string.cpp
     foundation/utility/string.h
@@ -737,7 +750,7 @@ set (renderer_kernel_intersection_sources
     renderer/kernel/intersection/regiontree.h
     renderer/kernel/intersection/tracecontext.cpp
     renderer/kernel/intersection/tracecontext.h
-    renderer/kernel/intersection/triangleinfo.h
+    renderer/kernel/intersection/trianglekey.h
     renderer/kernel/intersection/triangletree.cpp
     renderer/kernel/intersection/triangletree.h
 )
@@ -807,6 +820,8 @@ set (renderer_kernel_rendering_debug_sources
     renderer/kernel/rendering/debug/blanktilerenderer.h
     renderer/kernel/rendering/debug/debugtilerenderer.cpp
     renderer/kernel/rendering/debug/debugtilerenderer.h
+    renderer/kernel/rendering/debug/ewatesttilerenderer.cpp
+    renderer/kernel/rendering/debug/ewatesttilerenderer.h
 )
 list (APPEND appleseed_sources
     ${renderer_kernel_rendering_debug_sources}
@@ -929,6 +944,9 @@ source_group ("renderer\\kernel\\tessellation" FILES
 )
 
 set (renderer_kernel_texturing_sources
+    renderer/kernel/texturing/ewa.h
+    renderer/kernel/texturing/ewa_texturesampler.cpp
+    renderer/kernel/texturing/ewa_texturesampler.h
     renderer/kernel/texturing/texturecache.cpp
     renderer/kernel/texturing/texturecache.h
 )
@@ -953,6 +971,7 @@ source_group ("renderer\\kernel\\volume" FILES
 )
 
 set (renderer_meta_benchmarks_sources
+    renderer/meta/benchmarks/benchmark_ewa.cpp
 )
 list (APPEND appleseed_sources
     ${renderer_meta_benchmarks_sources}
@@ -966,6 +985,7 @@ set (renderer_meta_tests_sources
     renderer/meta/tests/test_entitymap.cpp
     renderer/meta/tests/test_entityvector.cpp
     renderer/meta/tests/test_environmentedf.cpp
+    renderer/meta/tests/test_ewa.cpp
     renderer/meta/tests/test_frame.cpp
     renderer/meta/tests/test_imagebasedlighting.cpp
     renderer/meta/tests/test_imageimportancesampler.cpp

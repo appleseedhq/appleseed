@@ -54,14 +54,10 @@ class TreeStatistics
     typedef typename Tree::ValueType ValueType;
     typedef typename Tree::NodeType NodeType;
 
-    // Constructors, collect statistics for a given tree.
+    // Constructor, collects statistics for a given tree.
     TreeStatistics(
         const Tree&         tree,
         const Builder&      builder);
-    TreeStatistics(
-        const Tree&         tree,
-        const Builder&      builder,
-        const double        build_time);            // construction time in seconds
 
     void print(Logger& logger);
 
@@ -109,7 +105,7 @@ template <typename Tree, typename Builder>
 TreeStatistics<Tree, Builder>::TreeStatistics(
     const Tree&         tree,
     const Builder&      builder)
-  : m_build_time(-1.0)
+  : m_build_time(builder.get_build_time())
   , m_point_count(tree.m_points.size())
   , m_memory_size(tree.get_memory_size())
   , m_node_count(tree.m_nodes.size())
@@ -117,23 +113,7 @@ TreeStatistics<Tree, Builder>::TreeStatistics(
 {
     assert(!tree.empty());
 
-    collect_stats_recurse(tree, tree.m_nodes.front(), 0);
-}
-
-template <typename Tree, typename Builder>
-TreeStatistics<Tree, Builder>::TreeStatistics(
-    const Tree&         tree,
-    const Builder&      builder,
-    const double        build_time)
-  : m_build_time(build_time)
-  , m_point_count(tree.m_points.size())
-  , m_memory_size(tree.get_memory_size())
-  , m_node_count(tree.m_nodes.size())
-  , m_leaf_count(0)
-{
-    assert(!tree.empty());
-
-    collect_stats_recurse(tree, tree.m_nodes.front(), 0);
+    collect_stats_recurse(tree, tree.m_nodes.front(), 1);
 }
 
 template <typename Tree, typename Builder>
@@ -141,13 +121,13 @@ void TreeStatistics<Tree, Builder>::print(Logger& logger)
 {
     LOG_DEBUG(
         logger,
-        "%s"
+        "  build time       %s\n"
         "  points           %s\n"
         "  size             %s\n"
         "  nodes            total %s  interior %s  leaves %s\n"
         "  leaf depth       avg %.1f  min %s  max %s  dev %.1f\n"
         "  leaf size        avg %.1f  min %s  max %s  dev %.1f",
-        m_build_time >= 0.0 ? ("  build time       " + pretty_time(m_build_time) + "\n").c_str() : "",
+        pretty_time(m_build_time).c_str(),
         pretty_uint(m_point_count).c_str(),
         pretty_size(m_memory_size).c_str(),
         pretty_uint(m_node_count).c_str(),
@@ -169,7 +149,7 @@ void TreeStatistics<Tree, Builder>::collect_stats_recurse(
     const NodeType&         node,
     const size_t            depth)
 {
-    if (node.get_type() == NodeType::Leaf)
+    if (node.is_leaf())
     {
         m_leaf_depth.insert(depth);
         m_leaf_size.insert(node.get_point_count());

@@ -81,8 +81,7 @@ class RegularSpectrum
     const ValueType& operator[](const size_t i) const;
 
   private:
-    ALIGN_SSE_VARIABLE
-    ValueType m_samples[StoredSamples];
+    SSE_ALIGN ValueType m_samples[StoredSamples];
 };
 
 // Exact inequality and equality tests.
@@ -492,19 +491,19 @@ inline RegularSpectrum<T, N>& operator/=(RegularSpectrum<T, N>& lhs, const T rhs
 }
 
 template <size_t N>
-inline RegularSpectrum<float, N>& operator/(RegularSpectrum<float, N>& lhs, const float rhs)
+inline RegularSpectrum<float, N>& operator/=(RegularSpectrum<float, N>& lhs, const float rhs)
 {
     return lhs *= 1.0f / rhs;
 }
 
 template <size_t N>
-inline RegularSpectrum<double, N>& operator/(RegularSpectrum<double, N>& lhs, const double rhs)
+inline RegularSpectrum<double, N>& operator/=(RegularSpectrum<double, N>& lhs, const double rhs)
 {
     return lhs *= 1.0 / rhs;
 }
 
 template <size_t N>
-inline RegularSpectrum<long double, N>& operator/(RegularSpectrum<long double, N>& lhs, const long double rhs)
+inline RegularSpectrum<long double, N>& operator/=(RegularSpectrum<long double, N>& lhs, const long double rhs)
 {
     return lhs *= 1.0L / rhs;
 }

@@ -30,7 +30,7 @@
 #define APPLESEED_FOUNDATION_MATH_BVH_BVH_NODE_H
 
 // appleseed.foundation headers.
-#include "foundation/math/aabb.h"
+#include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
 
 // Standard headers.
@@ -44,37 +44,35 @@ namespace bvh {
 // Node (leaf node or interior node) of a BVH.
 //
 
-template <typename T, size_t N>
-class Node
+template <typename AABB>
+class ALIGN(64) Node
 {
   public:
-    // Value type and dimension.
-    typedef T ValueType;
-    static const size_t Dimension = N;
-
-    // AABB type.
-    typedef AABB<T, N> AABBType;
-
-    // Node types.
-    typedef uint32 Type;
-    static const Type Leaf     = 0x00000000UL;
-    static const Type Interior = 0x80000000UL;
+    typedef AABB AABBType;
 
     // Set/get the node type.
-    void set_type(const Type type);
-    Type get_type() const;
+    void make_interior();
+    void make_leaf();
     bool is_interior() const;
     bool is_leaf() const;
 
-    // Set/get the node bounding box.
-    void set_bbox(const AABBType& bbox);
-    const AABBType& get_bbox() const;
+    // Set/get the bounding boxes of the child nodes (interior nodes only).
+    void set_left_bbox(const AABBType& bbox);
+    void set_right_bbox(const AABBType& bbox);
+    AABBType get_left_bbox() const;
+    AABBType get_right_bbox() const;
 
-    // Set/get the child node index (interior nodes only).
+    // Get user data (leaf nodes only).
+    static const size_t MaxUserDataSize;
+    template <typename U> void set_user_data(const U& data);
+    template <typename U> const U& get_user_data() const;
+    template <typename U> U& get_user_data();
+
+    // Set/get the index of the first child node (interior nodes only).
     void set_child_node_index(const size_t index);
     size_t get_child_node_index() const;
 
-    // Set/get the item index (leaf nodes only).
+    // Set/get the index of the first item (leaf nodes only).
     void set_item_index(const size_t index);
     size_t get_item_index() const;
 
@@ -83,6 +81,11 @@ class Node
     size_t get_item_count() const;
 
   private:
+    template <typename Tree, typename Visitor, typename Ray, size_t StackSize, size_t N>
+    friend class Intersector;
+
+    typedef typename AABBType::ValueType ValueType;
+    static const size_t Dimension = AABBType::Dimension;
 
     //
     // The info field of the node is organized as follow:
@@ -97,12 +100,12 @@ class Node
     //     bits 0-30    leaf index
     //     bit  31      node type (0 for leaf node)
     //
-    // The maximum size of a single BSP tree is 2^29 = 536,870,912 nodes.
+    // The maximum size of a single BVH is 2^31 = 2,147,483,648 nodes.
     //
 
-    AABBType    m_bbox;
-    uint32      m_info;
-    uint32      m_count;
+    uint32                  m_info;
+    uint32                  m_count;
+    SSE_ALIGN ValueType     m_bbox_data[4 * Dimension];
 };
 
 
@@ -110,79 +113,140 @@ class Node
 // Node class implementation.
 //
 
-// Set/get the node type.
-template <typename T, size_t N>
-inline void Node<T, N>::set_type(const Type type)
+template <typename AABB>
+inline void Node<AABB>::make_interior()
 {
-    assert(type == Leaf || type == Interior);
-    m_info &= 0x7FFFFFFFUL;
-    m_info |= type;
-}
-template <typename T, size_t N>
-inline typename Node<T, N>::Type Node<T, N>::get_type() const
-{
-    return static_cast<Type>(m_info & 0x80000000UL);
-}
-template <typename T, size_t N>
-inline bool Node<T, N>::is_interior() const
-{
-    return (m_info & 0x80000000UL) != 0;
-}
-template <typename T, size_t N>
-inline bool Node<T, N>::is_leaf() const
-{
-    return (m_info & 0x80000000UL) == 0;
+    m_count = ~0;
 }
 
-// Set/get the node bounding box.
-template <typename T, size_t N>
-inline void Node<T, N>::set_bbox(const AABBType& bbox)
+template <typename AABB>
+inline void Node<AABB>::make_leaf()
 {
-    m_bbox = bbox;
-}
-template <typename T, size_t N>
-inline const AABB<T, N>& Node<T, N>::get_bbox() const
-{
-    return m_bbox;
+    if (m_count == ~0)
+        m_count = 0;
 }
 
-// Set/get the child node index (interior nodes only).
-template <typename T, size_t N>
-inline void Node<T, N>::set_child_node_index(const size_t index)
+template <typename AABB>
+inline bool Node<AABB>::is_interior() const
 {
-    assert(index < (1UL << 31));
-    m_info &= 0x80000000UL;
-    m_info |= static_cast<uint32>(index);
-}
-template <typename T, size_t N>
-inline size_t Node<T, N>::get_child_node_index() const
-{
-    return static_cast<size_t>(m_info & 0x7FFFFFFFUL);
+    return m_count == ~0;
 }
 
-// Set/get the item index (leaf nodes only).
-template <typename T, size_t N>
-inline void Node<T, N>::set_item_index(const size_t index)
+template <typename AABB>
+inline bool Node<AABB>::is_leaf() const
 {
-    assert(index < (1UL << 31));
-    m_info &= 0x80000000UL;
-    m_info |= static_cast<uint32>(index);
-}
-template <typename T, size_t N>
-inline size_t Node<T, N>::get_item_index() const
-{
-    return static_cast<size_t>(m_info & 0x7FFFFFFFUL);
+    return m_count != ~0;
 }
 
-// Set/get the item count (leaf nodes only).
-template <typename T, size_t N>
-inline void Node<T, N>::set_item_count(const size_t count)
+template <typename AABB>
+inline void Node<AABB>::set_left_bbox(const AABBType& bbox)
 {
-    assert(count <= 0xFFFFFFFFUL);
+    for (size_t i = 0; i < Dimension; ++i)
+    {
+        m_bbox_data[i * 4 + 0] = bbox.min[i];
+        m_bbox_data[i * 4 + 2] = bbox.max[i];
+    }
+}
+
+template <typename AABB>
+inline void Node<AABB>::set_right_bbox(const AABBType& bbox)
+{
+    for (size_t i = 0; i < Dimension; ++i)
+    {
+        m_bbox_data[i * 4 + 1] = bbox.min[i];
+        m_bbox_data[i * 4 + 3] = bbox.max[i];
+    }
+}
+
+template <typename AABB>
+inline AABB Node<AABB>::get_left_bbox() const
+{
+    AABBType bbox;
+
+    for (size_t i = 0; i < Dimension; ++i)
+    {
+        bbox.min[i] = m_bbox_data[i * 4 + 0];
+        bbox.max[i] = m_bbox_data[i * 4 + 2];
+    }
+
+    return bbox;
+}
+
+template <typename AABB>
+inline AABB Node<AABB>::get_right_bbox() const
+{
+    AABBType bbox;
+
+    for (size_t i = 0; i < Dimension; ++i)
+    {
+        bbox.min[i] = m_bbox_data[i * 4 + 1];
+        bbox.max[i] = m_bbox_data[i * 4 + 3];
+    }
+
+    return bbox;
+}
+
+template <typename AABB>
+const size_t Node<AABB>::MaxUserDataSize = sizeof(Node<AABB>) - 8;
+
+template <typename AABB>
+template <typename U>
+inline void Node<AABB>::set_user_data(const U& data)
+{
+    get_user_data<U>() = data;
+}
+
+template <typename AABB>
+template <typename U>
+inline const U& Node<AABB>::get_user_data() const
+{
+    assert(sizeof(U) <= MaxUserDataSize);               // todo: use static_assert<>
+    return *reinterpret_cast<const U*>(m_bbox_data);
+}
+
+template <typename AABB>
+template <typename U>
+inline U& Node<AABB>::get_user_data()
+{
+    assert(sizeof(U) <= MaxUserDataSize);               // todo: use static_assert<>
+    return *reinterpret_cast<U*>(m_bbox_data);
+}
+
+template <typename AABB>
+inline void Node<AABB>::set_child_node_index(const size_t index)
+{
+    assert(index <= 0xFFFFFFFFUL);
+    m_info = static_cast<uint32>(index);
+}
+
+template <typename AABB>
+inline size_t Node<AABB>::get_child_node_index() const
+{
+    return static_cast<size_t>(m_info);
+}
+
+template <typename AABB>
+inline void Node<AABB>::set_item_index(const size_t index)
+{
+    assert(index <= 0xFFFFFFFFUL);
+    m_info = static_cast<uint32>(index);
+}
+
+template <typename AABB>
+inline size_t Node<AABB>::get_item_index() const
+{
+    return static_cast<size_t>(m_info);
+}
+
+template <typename AABB>
+inline void Node<AABB>::set_item_count(const size_t count)
+{
+    assert(count < 0xFFFFFFFFUL);
     m_count = static_cast<uint32>(count);
 }
-template <typename T, size_t N>
-inline size_t Node<T, N>::get_item_count() const
+
+template <typename AABB>
+inline size_t Node<AABB>::get_item_count() const
 {
     return static_cast<size_t>(m_count);
 }

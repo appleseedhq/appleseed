@@ -151,7 +151,7 @@ class DLLSYMBOL EntityVector
     void remove(Entity* entity);
 
     // Return the index of a given entity in the container.
-    // Return ~size_t(0) if the requested entity does not exist.
+    // Return ~0 if the requested entity does not exist.
     size_t get_index(const foundation::UniqueID id) const;
     size_t get_index(const char* name) const;
 

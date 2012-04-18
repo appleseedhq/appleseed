@@ -51,7 +51,7 @@ typedef foundation::TriangleMTSupportPlane<double> TriangleSupportPlaneType;
 
 
 //
-// Region BSP tree statistics.
+// Region tree settings.
 //
 
 // Maximum region duplication rate.
@@ -68,47 +68,40 @@ const size_t RegionTreeAccessCacheSize = 16;
 
 
 //
-// Triangle BSP tree statistics.
+// Triangle tree settings.
 //
 
-// If defined, leaves of the triangle tree get split along their
-// longest dimension only. If left undefined, all three dimensions
-// are considered for splitting, resulting in better trees (faster
-// intersection, but slower construction).
-#undef RENDERER_TRIANGLE_TREE_SPLIT_LONGEST_AXIS
-
-// Maximum triangle duplication rate.
-const double TriangleTreeMaxDuplication = 2.0;
-
 // Maximum number of triangles per leaf.
-const size_t TriangleTreeMaxLeafSize = 1;
+const size_t TriangleTreeMaxLeafSize = 2;
 
-// Maximum depth of the tree.
-const size_t TriangleTreeMaxDepth = 64;
+// Number of bins used during SBVH construction.
+const size_t TriangleTreeBinCount = 256;
 
-// Number of bins used in the construction of the approximate SAH function.
-const size_t TriangleTreeApproxSAHBinCount = 32;
+// Relative cost of traversing an interior node.
+const GScalar TriangleTreeInteriorNodeTraversalCost = GScalar(1.0);
 
-// Multiplier for the cost of keeping a leaf unsplit.
-const GScalar TriangleTreeLeafCostMultiplier = GScalar(0.99);
-
-// Leaf size threshold for O1 optimization level (approximate SAH).
-const size_t TriangleTreeO1Threshold = 1024 * 1024;
-
-// Leaf size threshold for O2 optimization level (exact SAH).
-const size_t TriangleTreeO2Threshold = 32;
+// Relative cost of intersecting a triangle.
+const GScalar TriangleTreeTriangleIntersectionCost = GScalar(1.0);
 
 // Depth of a subtree in the van Emde Boas node layout.
-const size_t TriangleTreeSubtreeDepth = 3;
-
-// Minimum size in bytes of one page of leaves.
-const size_t TriangleTreeMinLeafPageSize = 1024 * 1024;
+const size_t TriangleTreeSubtreeDepth = 2;
 
 // Size of the triangle tree access cache.
 const size_t TriangleTreeAccessCacheSize = 16;
 
-// Enable/disable construction tracing.
-const bool TriangleTreeTraceConstruction = false;
+// Size of the stack (in number of nodes) used during traversal.
+const size_t TriangleTreeStackSize = 64;
+
+
+//
+// Miscellaneous settings.
+//
+
+// If defined, an adaptive procedure is used to offset intersection points.
+// If left undefined, a fixed, constant-time procedure is used. The adaptive
+// procedure handles degenerate cases better but is slightly slower. It must
+// be used when the triangle model is set to Moller-Trumbore (MT).
+#define RENDERER_ADAPTIVE_OFFSET
 
 }       // namespace renderer
 

@@ -190,6 +190,43 @@ std::string replace_special_xml_characters(const std::string& s);
 
 
 //
+// Fast alternative to std::strtol().
+//
+// Compared to std::strtol(), this function:
+//
+//   * assumes base 10
+//   * does not skip leading white space characters
+//   * does not consider the current locale
+//
+// Reference:
+//
+//   http://pubs.opengroup.org/onlinepubs/000095399/functions/strtol.html
+//
+
+long fast_strtol_base10(const char* str, const char** end_ptr);
+long fast_strtol_base10(char* str, char** end_ptr);
+
+
+//
+// Fast alternative to std::strtod().
+//
+// Compared to std::strtod(), this function:
+//
+//   * is potentially less accurate
+//   * does not skip leading white space characters
+//   * does no error checking
+//   * does not consider the current locale
+//
+// Reference:
+//
+//   http://pubs.opengroup.org/onlinepubs/000095399/functions/strtod.html
+//
+
+double fast_strtod(const char* str, const char** end_ptr);
+double fast_strtod(char* str, char** end_ptr);
+
+
+//
 // Filename manipulation functions.
 //
 
@@ -231,32 +268,34 @@ std::string pretty_scalar(
     const double                value,
     const std::streamsize       precision = 1);
 
-// Pretty-print the ratio n/d.
-// Returns the string "infinite" if n is greater than zero and d equals zero.
-// Returns the string "n/a" if n and d are zero.
+// Pretty-print the ratio numerator/denominator.
+// Returns the string "infinite" if the numerator is greater than zero
+// and the denominator is equal to zero.
+// Returns the string "n/a" if both the numerator and the denominator are zero.
 template <typename T>
 std::string pretty_ratio(
-    const T                     n,
-    const T                     d,
+    const T                     numerator,
+    const T                     denominator,
     const std::streamsize       precision = 1);
 
-// Pretty-print the ratio n/d as a percentage.
-// Returns the string "infinite" if n is greater than zero and d equals zero.
-// Returns the string "n/a" if n and d are zero.
+// Pretty-print the ratio numerator/denominator as a percentage.
+// Returns the string "infinite" if the numerator is greater than zero
+// and the denominator is equal to zero.
+// Returns the string "n/a" if both the numerator and the denominator are zero.
 template <typename T>
 std::string pretty_percent(
-    const T                     n,
-    const T                     d,
+    const T                     numerator,
+    const T                     denominator,
     const std::streamsize       precision = 1);
 
 // Pretty-print a time value, given in seconds.
 std::string pretty_time(
-    const double                time,
+    const double                seconds,
     const std::streamsize       precision = 1);
 
 // Pretty-print a size, given in bytes.
 std::string pretty_size(
-    const uint64                size,
+    const uint64                bytes,
     const std::streamsize       precision = 1);
 
 
@@ -687,6 +726,27 @@ inline std::string replace_special_xml_characters(const std::string& s)
 
 
 //
+// Fast string-to-number functions implementation.
+//
+
+inline long fast_strtol_base10(char* str, char** end_ptr)
+{
+    return
+        fast_strtol_base10(
+            const_cast<const char*>(str),
+            const_cast<const char**>(end_ptr));
+}
+
+inline double fast_strtod(char* str, char** end_ptr)
+{
+    return
+        fast_strtod(
+            const_cast<const char*>(str),
+            const_cast<const char**>(end_ptr));
+}
+
+
+//
 // Filename manipulation functions implementation.
 //
 
@@ -725,7 +785,7 @@ inline std::string capitalize(const std::string& s)
 
     for (std::string::iterator i = result.begin(); i != result.end(); ++i)
     {
-        if (std::isspace(*i))
+        if (std::isspace(static_cast<unsigned char>(*i)))
             cap = true;
         else
         {
@@ -767,6 +827,7 @@ inline std::string pretty_uint(const uint64 value)
             result += ',';
             digits = 0;
         }
+
         result += *i;
         ++digits;
     }
@@ -798,56 +859,53 @@ inline std::string pretty_scalar(
 
 template <typename T>
 inline std::string pretty_ratio(
-    const T                     n,
-    const T                     d,
+    const T                     numerator,
+    const T                     denominator,
     const std::streamsize       precision)
 {
-    assert(n >= 0);
-    assert(d >= 0);
+    assert(numerator >= 0);
+    assert(denominator >= 0);
     assert(precision >= 0);
 
-    // Handle special cases.
-    if (d == 0)
-        return n == 0 ? "n/a" : "infinite";
+    if (denominator == 0)
+        return numerator == 0 ? "n/a" : "infinite";
 
-    // Pretty-print.
-    return pretty_scalar(static_cast<double>(n) / d, precision);
+    return pretty_scalar(static_cast<double>(numerator) / denominator, precision);
 }
 
 template <typename T>
 inline std::string pretty_percent(
-    const T                     n,
-    const T                     d,
+    const T                     numerator,
+    const T                     denominator,
     const std::streamsize       precision)
 {
-    assert(n >= 0);
-    assert(d >= 0);
+    assert(numerator >= 0);
+    assert(denominator >= 0);
     assert(precision >= 0);
 
-    // Handle special cases.
-    if (d == 0)
-        return n == 0 ? "n/a" : "infinite";
+    if (denominator == 0)
+        return numerator == 0 ? "n/a" : "infinite";
 
-    // Pretty-print.
-    return pretty_ratio(
-        static_cast<double>(n * 100.0),
-        static_cast<double>(d),
-        precision) + "%";
+    return
+        pretty_ratio(
+            static_cast<double>(numerator * 100.0),
+            static_cast<double>(denominator),
+            precision) + "%";
 }
 
 inline std::string pretty_time(
-    const double                time,
+    const double                seconds,
     const std::streamsize       precision)
 {
-    assert(time >= 0.0);
+    assert(seconds >= 0.0);
     assert(precision >= 0);
 
     std::string result;
 
     // Handle the case where the input time is less than 1 second.
-    if (time < 1.0)
+    if (seconds < 1.0)
     {
-        const double ms = 1000.0 * time;
+        const double ms = 1000.0 * seconds;
         result += pretty_scalar(ms, precision > 3 ? precision - 3 : 0);
         result += " ms";
         return result;
@@ -859,11 +917,11 @@ inline std::string pretty_time(
     const size_t Day    = 24 * Hour;
     const size_t Week   = 7  * Day;
 
-    const size_t seconds = static_cast<size_t>(time);
-    size_t s = seconds;
+    const size_t integral_seconds = static_cast<size_t>(seconds);
+    size_t s = integral_seconds;
 
     // Compute and print the number of weeks.
-    if (seconds >= Week)
+    if (integral_seconds >= Week)
     {
         const size_t w = s / Week;
         s -= w * Week;
@@ -873,7 +931,7 @@ inline std::string pretty_time(
     }
 
     // Compute and print the number of days.
-    if (seconds >= Day)
+    if (integral_seconds >= Day)
     {
         const size_t d = s / Day;
         s -= d * Day;
@@ -883,7 +941,7 @@ inline std::string pretty_time(
     }
 
     // Compute and print the number of hours.
-    if (seconds >= Hour)
+    if (integral_seconds >= Hour)
     {
         const size_t h = s / Hour;
         s -= h * Hour;
@@ -893,7 +951,7 @@ inline std::string pretty_time(
     }
 
     // Compute and print the number of minutes.
-    if (seconds >= Minute)
+    if (integral_seconds >= Minute)
     {
         const size_t m = s / Minute;
         s -= m * Minute;
@@ -904,14 +962,14 @@ inline std::string pretty_time(
 
     // Print the number of seconds.
     result += to_string(s);
-    result += pretty_scalar(time - seconds, precision).substr(1);
+    result += pretty_scalar(seconds - integral_seconds, precision).substr(1);
     result += plural(s, " second");
 
     return result;
 }
 
 inline std::string pretty_size(
-    const uint64                size,
+    const uint64                bytes,
     const std::streamsize       precision)
 {
     assert(precision >= 0);
@@ -923,33 +981,33 @@ inline std::string pretty_size(
     const uint64 TB = 1024 * GB;
 
     // Pretty-print.
-    if (size == 0)
+    if (bytes == 0)
     {
         return "0 byte";
     }
-    else if (size == 1)
+    else if (bytes == 1)
     {
         return "1 byte";
     }
-    else if (size < KB)
+    else if (bytes < KB)
     {
-        return pretty_uint(size) + " bytes";
+        return pretty_uint(bytes) + " bytes";
     }
-    else if (size < MB)
+    else if (bytes < MB)
     {
-        return pretty_ratio(size, KB, precision) + " KB";
+        return pretty_ratio(bytes, KB, precision) + " KB";
     }
-    else if (size < GB)
+    else if (bytes < GB)
     {
-        return pretty_ratio(size, MB, precision) + " MB";
+        return pretty_ratio(bytes, MB, precision) + " MB";
     }
-    else if (size < TB)
+    else if (bytes < TB)
     {
-        return pretty_ratio(size, GB, precision) + " GB";
+        return pretty_ratio(bytes, GB, precision) + " GB";
     }
     else
     {
-        return pretty_ratio(size, TB, precision) + " TB";
+        return pretty_ratio(bytes, TB, precision) + " TB";
     }
 }
 

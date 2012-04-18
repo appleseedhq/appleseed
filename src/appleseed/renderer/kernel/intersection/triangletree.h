@@ -30,33 +30,56 @@
 #define APPLESEED_RENDERER_KERNEL_INTERSECTION_TRIANGLETREE_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/intersection/intersectionsettings.h"
 #include "renderer/kernel/intersection/probevisitorbase.h"
 #include "renderer/kernel/intersection/regioninfo.h"
+#include "renderer/kernel/intersection/trianglekey.h"
+#include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/bsp.h"
+#include "foundation/core/concepts/noncopyable.h"
+#include "foundation/math/aabb.h"
+#include "foundation/math/bvh.h"
+#include "foundation/math/intersection.h"
+#include "foundation/utility/alignedvector.h"
 #include "foundation/utility/lazy.h"
 #include "foundation/utility/poolallocator.h"
+#include "foundation/utility/uid.h"
 
 // Standard headers.
+#include <cstddef>
 #include <map>
+#include <memory>
 #include <vector>
 
 // Forward declarations.
-namespace renderer  { class Assembly; }
-namespace renderer  { class ShadingPoint; }
+namespace foundation    { class Statistics; }
+namespace renderer      { class Assembly; }
 
 namespace renderer
 {
 
 //
-// Leaf of a triangle tree.
+// A helper structure to locate all the vertices that belong to a triangle.
 //
 
-typedef foundation::uint32 TriangleLeaf;
+struct TriangleVertexInfo
+{
+    size_t  m_vertex_index;             // index of the first vertex in the vertex array
+    size_t  m_motion_segment_count;     // number of motion segments for this triangle
+
+    TriangleVertexInfo() {}
+
+    TriangleVertexInfo(
+        const size_t    vertex_index,
+        const size_t    motion_segment_count)
+      : m_vertex_index(vertex_index)
+      , m_motion_segment_count(motion_segment_count)
+    {
+    }
+};
 
 
 //
@@ -64,23 +87,27 @@ typedef foundation::uint32 TriangleLeaf;
 //
 
 class TriangleTree
-  : public foundation::bsp::Tree<GScalar, 3, TriangleLeaf>
+  : public foundation::bvh::Tree<
+               foundation::AlignedVector<
+                   foundation::bvh::Node<foundation::AABB3d>
+               >
+           >
 {
   public:
     // Construction arguments.
     struct Arguments
     {
-        const foundation::UniqueID      m_triangle_tree_uid;
-        const GAABB3                    m_bbox;
-        const Assembly&                 m_assembly;
-        const RegionInfoVector          m_regions;
+        const foundation::UniqueID              m_triangle_tree_uid;
+        const GAABB3                            m_bbox;
+        const Assembly&                         m_assembly;
+        const RegionInfoVector                  m_regions;
 
         // Constructor.
         Arguments(
-            const foundation::UniqueID  triangle_tree_uid,
-            const GAABB3&               bbox,
-            const Assembly&             assembly,
-            const RegionInfoVector&     regions);
+            const foundation::UniqueID          triangle_tree_uid,
+            const GAABB3&                       bbox,
+            const Assembly&                     assembly,
+            const RegionInfoVector&             regions);
     };
 
     // Constructor, builds the tree for a given set of regions.
@@ -89,9 +116,30 @@ class TriangleTree
     // Destructor.
     ~TriangleTree();
 
+    // Return the size (in bytes) of this object in memory.
+    size_t get_memory_size() const;
+
   private:
-    const foundation::UniqueID          m_triangle_tree_uid;
-    std::vector<foundation::uint32*>    m_leaf_page_array;
+    friend class TriangleLeafVisitor;
+    friend class TriangleLeafProbeVisitor;
+
+    const foundation::UniqueID                  m_triangle_tree_uid;
+    std::vector<TriangleKey>                    m_triangle_keys;
+    std::vector<foundation::uint8>              m_leaf_data;
+
+    void build_bvh(
+        const Arguments&                        arguments,
+        foundation::Statistics&                 statistics);
+
+    void build_sbvh(
+        const Arguments&                        arguments,
+        foundation::Statistics&                 statistics);
+
+    void store_triangles(
+        const std::vector<size_t>&              triangle_indices,
+        const std::vector<TriangleVertexInfo>&  triangle_vertex_infos,
+        const std::vector<GVector3>&            triangle_vertices,
+        const std::vector<TriangleKey>&         triangle_keys);
 };
 
 
@@ -105,7 +153,7 @@ class TriangleTreeFactory
   public:
     // Constructor.
     explicit TriangleTreeFactory(
-        const TriangleTree::Arguments& arguments);
+        const TriangleTree::Arguments&  arguments);
 
     // Create the triangle tree.
     virtual std::auto_ptr<TriangleTree> create();
@@ -121,69 +169,19 @@ class TriangleTreeFactory
 
 // Triangle tree container and iterator types.
 typedef std::map<
-            foundation::UniqueID,
-            foundation::Lazy<TriangleTree>*
-        > TriangleTreeContainer;
+    foundation::UniqueID,
+    foundation::Lazy<TriangleTree>*
+> TriangleTreeContainer;
 typedef TriangleTreeContainer::iterator TriangleTreeIterator;
 typedef TriangleTreeContainer::const_iterator TriangleTreeConstIterator;
 
 // Triangle tree access cache type.
 typedef foundation::AccessCacheMap<
-            TriangleTreeContainer,
-            TriangleTreeAccessCacheSize,
-            1,
-            foundation::PoolAllocator<void, TriangleTreeAccessCacheSize>
-        > TriangleTreeAccessCache;
-
-
-//
-// Utility class to load a triangle from a given memory address,
-// converting the triangle to the desired precision if necessary,
-// but avoiding any work (in particular, no copy) if the triangle
-// is stored with the desired precision and can be used in-place.
-//
-
-namespace impl
-{
-    template <bool CompatibleTypes>
-    struct TriangleGeometryReader;
-
-    // The triangle is stored with a different precision than the
-    // required one, perform a conversion.
-    template <>
-    struct TriangleGeometryReader<false>
-    {
-        const TriangleType m_triangle;
-
-        explicit TriangleGeometryReader(const GTriangleType& triangle)
-          : m_triangle(triangle)
-        {
-        }
-        explicit TriangleGeometryReader(const foundation::uint32* ptr)
-          : m_triangle(*reinterpret_cast<const GTriangleType*>(ptr))
-        {
-        }
-    };
-
-    // The triangle is stored with the same precision as required,
-    // use it directly, without any conversion or copy.
-    template <>
-    struct TriangleGeometryReader<true>
-    {
-        const TriangleType& m_triangle;
-
-        explicit TriangleGeometryReader(const TriangleType& triangle)
-          : m_triangle(triangle)
-        {
-        }
-        explicit TriangleGeometryReader(const foundation::uint32* ptr)
-          : m_triangle(*reinterpret_cast<const TriangleType*>(ptr))
-        {
-        }
-    };
-}
-
-typedef impl::TriangleGeometryReader<sizeof(GScalar) == sizeof(double)> TriangleGeometryReader;
+    TriangleTreeContainer,
+    TriangleTreeAccessCacheSize,
+    1,
+    foundation::PoolAllocator<void, TriangleTreeAccessCacheSize>
+> TriangleTreeAccessCache;
 
 
 //
@@ -195,21 +193,30 @@ class TriangleLeafVisitor
 {
   public:
     // Constructor.
-    explicit TriangleLeafVisitor(ShadingPoint& shading_point);
+    TriangleLeafVisitor(
+        const TriangleTree&                     tree,
+        ShadingPoint&                           shading_point);
 
     // Visit a leaf.
-    double visit(
-        const TriangleLeaf*             leaf,
-        const ShadingRay::RayType&      ray,
-        const ShadingRay::RayInfoType&  ray_info);
+    bool visit(
+        const TriangleTree::NodeType&           node,
+        const ShadingRay&                       ray,
+        const ShadingRay::RayInfoType&          ray_info,
+        double&                                 distance
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+        , foundation::bvh::TraversalStatistics& stats
+#endif
+        );
 
     // Read additional data about the triangle that was hit, if any.
     void read_hit_triangle_data() const;
 
   private:
-    ShadingPoint&               m_shading_point;
-    const foundation::uint32*   m_triangle_ptr;
-    size_t                      m_cold_data_index;
+    const TriangleTree&     m_tree;
+    ShadingPoint&           m_shading_point;
+    GTriangleType           m_interpolated_triangle;
+    const GTriangleType*    m_hit_triangle;
+    size_t                  m_hit_triangle_index;
 };
 
 
@@ -222,11 +229,23 @@ class TriangleLeafProbeVisitor
   : public ProbeVisitorBase
 {
   public:
+    // Constructor.
+    explicit TriangleLeafProbeVisitor(
+        const TriangleTree&                     tree);
+
     // Visit a leaf.
-    double visit(
-        const TriangleLeaf*             leaf,
-        const ShadingRay::RayType&      ray,
-        const ShadingRay::RayInfoType&  ray_info);
+    bool visit(
+        const TriangleTree::NodeType&           node,
+        const ShadingRay&                       ray,
+        const ShadingRay::RayInfoType&          ray_info,
+        double&                                 distance
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+        , foundation::bvh::TraversalStatistics& stats
+#endif
+        );
+
+  private:
+    const TriangleTree&     m_tree;
 };
 
 
@@ -234,27 +253,266 @@ class TriangleLeafProbeVisitor
 // Triangle tree intersectors.
 //
 
-typedef foundation::bsp::Intersector<
-    double,
+typedef foundation::bvh::Intersector<
     TriangleTree,
-    TriangleLeafVisitor
-> TriangleLeafIntersector;
+    TriangleLeafVisitor,
+    ShadingRay,
+    TriangleTreeStackSize
+> TriangleTreeIntersector;
 
-typedef foundation::bsp::Intersector<
-    double,
+typedef foundation::bvh::Intersector<
     TriangleTree,
-    TriangleLeafProbeVisitor
-> TriangleLeafProbeIntersector;
+    TriangleLeafProbeVisitor,
+    ShadingRay,
+    TriangleTreeStackSize
+> TriangleTreeProbeIntersector;
+
+
+//
+// Utility class to convert a triangle to the desired precision if necessary,
+// but avoid any work (in particular, no copy) if the source triangle already
+// has the desired precision and can be used in-place.
+//
+
+namespace impl
+{
+    template <bool CompatibleTypes> struct TriangleReaderImpl;
+
+    // Compatible types: no conversion or copy.
+    template <> struct TriangleReaderImpl<true>
+    {
+        const TriangleType& m_triangle;
+
+        explicit TriangleReaderImpl(const TriangleType& triangle)
+          : m_triangle(triangle)
+        {
+        }
+    };
+
+    // Incompatible types: perform a conversion.
+    template <> struct TriangleReaderImpl<false>
+    {
+        const TriangleType m_triangle;
+
+        explicit TriangleReaderImpl(const GTriangleType& triangle)
+          : m_triangle(triangle)
+        {
+        }
+    };
+
+    typedef TriangleReaderImpl<
+        sizeof(GTriangleType::ValueType) == sizeof(TriangleType::ValueType)
+    > TriangleReader;
+}
 
 
 //
 // TriangleLeafVisitor class implementation.
 //
 
-inline TriangleLeafVisitor::TriangleLeafVisitor(ShadingPoint& shading_point)
-  : m_shading_point(shading_point)
-  , m_triangle_ptr(0)
+inline TriangleLeafVisitor::TriangleLeafVisitor(
+    const TriangleTree&                     tree,
+    ShadingPoint&                           shading_point)
+  : m_tree(tree)
+  , m_shading_point(shading_point)
+  , m_hit_triangle(0)
 {
+}
+
+inline bool TriangleLeafVisitor::visit(
+    const TriangleTree::NodeType&           node,
+    const ShadingRay&                       ray,
+    const ShadingRay::RayInfoType&          ray_info,
+    double&                                 distance
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+    , foundation::bvh::TraversalStatistics& stats
+#endif
+    )
+{
+    // Retrieve the pointer to the data of this leaf.
+    const foundation::uint8* user_data = &node.get_user_data<foundation::uint8>();
+    const size_t leaf_data_index =
+        *reinterpret_cast<const foundation::uint32*>(user_data);
+    const foundation::uint8* leaf_data =
+        leaf_data_index == ~0
+            ? user_data + sizeof(foundation::uint32*)   // triangles are stored in the leaf node
+            : &m_tree.m_leaf_data[leaf_data_index];     // triangles are stored in the tree
+
+    const size_t triangle_index = node.get_item_index();
+    const size_t triangle_count = node.get_item_count();
+
+    // Sequentially intersect all triangles of the leaf.
+    for (size_t i = 0; i < triangle_count; ++i)
+    {
+        // Retrieve the number of motion segments for this triangle.
+        const size_t motion_segment_count =
+            *reinterpret_cast<const foundation::uint32*>(leaf_data);
+        leaf_data += sizeof(foundation::uint32);
+
+        if (motion_segment_count == 0)
+        {
+            // Load the triangle, converting it to the right format if necessary.
+            const GTriangleType* triangle_ptr = reinterpret_cast<const GTriangleType*>(leaf_data);
+            const impl::TriangleReader reader(*triangle_ptr);
+            leaf_data += sizeof(GTriangleType);
+
+            // Intersect the triangle.
+            double t, u, v;
+            if (reader.m_triangle.intersect(m_shading_point.m_ray, t, u, v))
+            {
+                m_hit_triangle = triangle_ptr;
+                m_hit_triangle_index = triangle_index + i;
+                m_shading_point.m_ray.m_tmax = t;
+                m_shading_point.m_bary[0] = u;
+                m_shading_point.m_bary[1] = v;
+            }
+        }
+        else
+        {
+            // Retrieve the vertices of the triangle at the two keyframes surrounding the ray time.
+            const size_t prev_index = foundation::truncate<size_t>(ray.m_time * motion_segment_count);
+            const GVector3* prev_vertices = reinterpret_cast<const GVector3*>(leaf_data) + prev_index * 3;
+            const GVector3* next_vertices = prev_vertices + 3;
+            leaf_data += (motion_segment_count + 1) * 3 * sizeof(GVector3);
+
+            // Interpolate triangle vertices.
+            const GScalar k = static_cast<GScalar>(ray.m_time * motion_segment_count - prev_index);
+            const GVector3 vert0 = (GScalar(1.0) - k) * prev_vertices[0] + k * next_vertices[0];
+            const GVector3 vert1 = (GScalar(1.0) - k) * prev_vertices[1] + k * next_vertices[1];
+            const GVector3 vert2 = (GScalar(1.0) - k) * prev_vertices[2] + k * next_vertices[2];
+
+            // Load the triangle, converting it to the right format if necessary.
+            const GTriangleType triangle(vert0, vert1, vert2);
+            const impl::TriangleReader reader(triangle);
+
+            // Intersect the triangle.
+            double t, u, v;
+            if (reader.m_triangle.intersect(m_shading_point.m_ray, t, u, v))
+            {
+                m_interpolated_triangle = triangle;
+                m_hit_triangle = &m_interpolated_triangle;
+                m_hit_triangle_index = triangle_index + i;
+                m_shading_point.m_ray.m_tmax = t;
+                m_shading_point.m_bary[0] = u;
+                m_shading_point.m_bary[1] = v;
+            }
+        }
+    }
+
+    FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(triangle_count));
+
+    // Continue traversal.
+    distance = m_shading_point.m_ray.m_tmax;
+    return true;
+}
+
+inline void TriangleLeafVisitor::read_hit_triangle_data() const
+{
+    if (m_hit_triangle)
+    {
+        // Record a hit.
+        m_shading_point.m_hit = true;
+
+        // Copy the triangle key.
+        const TriangleKey& triangle_key = m_tree.m_triangle_keys[m_hit_triangle_index];
+        m_shading_point.m_object_instance_index = triangle_key.get_object_instance_index();
+        m_shading_point.m_region_index = triangle_key.get_region_index();
+        m_shading_point.m_triangle_index = triangle_key.get_triangle_index();
+
+        // Compute and store the support plane of the hit triangle.
+        const impl::TriangleReader reader(*m_hit_triangle);
+        m_shading_point.m_triangle_support_plane.initialize(reader.m_triangle);
+    }
+}
+
+
+//
+// TriangleLeafProbeVisitor class implementation.
+//
+
+inline TriangleLeafProbeVisitor::TriangleLeafProbeVisitor(
+    const TriangleTree&                     tree)
+  : m_tree(tree)
+{
+}
+
+inline bool TriangleLeafProbeVisitor::visit(
+    const TriangleTree::NodeType&           node,
+    const ShadingRay&                       ray,
+    const ShadingRay::RayInfoType&          ray_info,
+    double&                                 distance
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+    , foundation::bvh::TraversalStatistics& stats
+#endif
+    )
+{
+    // Retrieve the pointer to the data of this leaf.
+    const foundation::uint8* user_data = &node.get_user_data<foundation::uint8>();
+    const size_t leaf_data_index =
+        *reinterpret_cast<const foundation::uint32*>(user_data);
+    const foundation::uint8* leaf_data =
+        leaf_data_index == ~0
+            ? user_data + sizeof(foundation::uint32*)   // triangles are stored in the leaf node
+            : &m_tree.m_leaf_data[leaf_data_index];     // triangles are stored in the tree
+
+    const size_t triangle_count = node.get_item_count();
+
+    // Sequentially intersect triangles until a hit is found.
+    for (size_t i = 0; i < triangle_count; ++i)
+    {
+        // Retrieve the number of motion segments for this triangle.
+        const size_t motion_segment_count =
+            *reinterpret_cast<const foundation::uint32*>(leaf_data);
+        leaf_data += sizeof(foundation::uint32);
+
+        if (motion_segment_count == 0)
+        {
+            // Load the triangle, converting it to the right format if necessary.
+            const GTriangleType* triangle_ptr = reinterpret_cast<const GTriangleType*>(leaf_data);
+            const impl::TriangleReader reader(*triangle_ptr);
+            leaf_data += sizeof(GTriangleType);
+
+            // Intersect the triangle.
+            if (reader.m_triangle.intersect(ray))
+            {
+                FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(i + 1));
+                m_hit = true;
+                return false;
+            }
+        }
+        else
+        {
+            // Retrieve the vertices of the triangle at the two keyframes surrounding the ray time.
+            const size_t prev_index = foundation::truncate<size_t>(ray.m_time * motion_segment_count);
+            const GVector3* prev_vertices = reinterpret_cast<const GVector3*>(leaf_data) + prev_index * 3;
+            const GVector3* next_vertices = prev_vertices + 3;
+            leaf_data += (motion_segment_count + 1) * 3 * sizeof(GVector3);
+
+            // Interpolate triangle vertices.
+            const GScalar k = static_cast<GScalar>(ray.m_time * motion_segment_count - prev_index);
+            const GVector3 vert0 = (GScalar(1.0) - k) * prev_vertices[0] + k * next_vertices[0];
+            const GVector3 vert1 = (GScalar(1.0) - k) * prev_vertices[1] + k * next_vertices[1];
+            const GVector3 vert2 = (GScalar(1.0) - k) * prev_vertices[2] + k * next_vertices[2];
+
+            // Load the triangle, converting it to the right format if necessary.
+            const GTriangleType triangle(vert0, vert1, vert2);
+            const impl::TriangleReader reader(triangle);
+
+            // Intersect the triangle.
+            if (reader.m_triangle.intersect(ray))
+            {
+                FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(i + 1));
+                m_hit = true;
+                return false;
+            }
+        }
+    }
+
+    FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(triangle_count));
+
+    // Continue traversal.
+    distance = ray.m_tmax;
+    return true;
 }
 
 }       // namespace renderer

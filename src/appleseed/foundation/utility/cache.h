@@ -492,7 +492,8 @@ class LRUCache
     // Queue: stores cache lines ordered from MRU to LRU.
     typedef std::list<
         Line,
-        typename AllocatorType::template rebind<Line>::other> Queue;
+        typename AllocatorType::template rebind<Line>::other
+    > Queue;
     typedef typename Queue::iterator QueueIterator;
 
     // Index: given a key, find the cache line in the queue.
@@ -501,7 +502,9 @@ class LRUCache
         QueueIterator,
         std::less<KeyType>,
         typename AllocatorType::template rebind<
-            std::pair<const KeyType, QueueIterator> >::other> Index;
+            std::pair<const KeyType, QueueIterator>
+        >::other
+    > Index;
 
     Index                   m_index;
     Queue                   m_queue;
@@ -609,7 +612,8 @@ class DualStageCache
         ElementType,
         S0ElementSwapper,
         Lines,
-        Ways> S0Cache;
+        Ways
+    > S0Cache;
 
     // Stage-1 cache type.
     class S1ElementSwapper;
@@ -617,7 +621,8 @@ class DualStageCache
         KeyType,
         ElementType,
         S1ElementSwapper,
-        AllocatorType> S1Cache;
+        AllocatorType
+    > S1Cache;
 
     // Stage-0 cache element swapper.
     class S0ElementSwapper

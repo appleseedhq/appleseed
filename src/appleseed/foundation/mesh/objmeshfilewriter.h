@@ -30,24 +30,19 @@
 #define APPLESEED_FOUNDATION_MESH_OBJMESHFILEWRITER_H
 
 // appleseed.foundation headers.
+#include "foundation/math/vector.h"
 #include "foundation/mesh/imeshfilewriter.h"
-#include "foundation/mesh/imeshwalker.h"
 
 // Standard headers.
+#include <cstddef>
+#include <cstdio>
 #include <string>
+
+// Forward declarations.
+namespace foundation    { class IMeshWalker; }
 
 namespace foundation
 {
-
-//
-// Wavefront OBJ mesh walker.
-//
-
-class IOBJMeshWalker
-  : public IMeshWalker
-{
-};
-
 
 //
 // Wavefront OBJ mesh file writer.
@@ -61,13 +56,35 @@ class OBJMeshFileWriter
   : public IMeshFileWriter
 {
   public:
-    // Write an OBJ mesh file.
-    virtual void write(
-        const std::string&      filename,
-        const IMeshWalker&      walker);
-    void write(
-        const std::string&      filename,
-        const IOBJMeshWalker&   walker);
+    // Constructor.
+    explicit OBJMeshFileWriter(const std::string& filename);
+
+    // Destructor, closes the file.
+    virtual ~OBJMeshFileWriter();
+
+    // Write a mesh.
+    virtual void write(const IMeshWalker& walker);
+
+    // Close the file.
+    void close();
+
+  private:
+    const std::string   m_filename;
+    FILE*               m_file;
+    size_t              m_base_vertex_index;
+    size_t              m_base_vertex_normal_index;
+    size_t              m_base_tex_coords_index;
+
+    void write_vertices(const IMeshWalker& walker);
+    void write_vertex_normals(const IMeshWalker& walker);
+    void write_texture_coordinates(const IMeshWalker& walker);
+    void write_faces(const IMeshWalker& walker);
+    void write_faces_no_vn_no_vt(const IMeshWalker& walker);
+    void write_faces_vn_no_vt(const IMeshWalker& walker);
+    void write_faces_no_vn_vt(const IMeshWalker& walker);
+    void write_faces_vn_vt(const IMeshWalker& walker);
+    void write_vector(const char* prefix, const Vector2d& v);
+    void write_vector(const char* prefix, const Vector3d& v);
 };
 
 }       // namespace foundation

@@ -43,7 +43,7 @@ struct Entity::Impl
 Entity::Entity(const UniqueID class_uid)
   : impl(new Impl())
   , m_class_uid(class_uid)
-  , m_render_layer(~size_t(0))
+  , m_render_layer(~0)
 {
 }
 
@@ -53,7 +53,7 @@ Entity::Entity(
   : impl(new Impl())
   , m_class_uid(class_uid)
   , m_params(params)
-  , m_render_layer(~size_t(0))
+  , m_render_layer(~0)
 {
 }
 

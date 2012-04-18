@@ -119,12 +119,17 @@ typedef __m128d sse2d;
 //
 //   http://www.masm32.com/board/index.php?topic=9515.msg78719#msg78719
 //
+// Note: SSE 4.1 has an _mm_floor_ps() intrinsic (see smmintrin.h).
+//
 
-#define FLOOR_SSE(x)                                    \
-    _mm_cvtepi32_ps(                                    \
-        _mm_sub_epi32(                                  \
-            _mm_cvttps_epi32(x),                        \
-            _mm_srli_epi32(_mm_castps_si128(x), 31)))
+inline sse4f floorps(const sse4f x)
+{
+    return
+        _mm_cvtepi32_ps(
+            _mm_sub_epi32(
+                _mm_cvttps_epi32(x),
+                _mm_srli_epi32(_mm_castps_si128(x), 31)));
+}
 
 }       // namespace foundation
 

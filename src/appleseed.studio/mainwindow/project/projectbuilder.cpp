@@ -179,18 +179,20 @@ void ProjectBuilder::insert_objects(
 {
     const string base_object_name = filesystem::path(path).replace_extension().filename();
 
+    ParamArray params;
+    params.insert("filename", path);
+
+    SearchPaths search_paths;
+
     const MeshObjectArray mesh_objects =
         MeshObjectReader().read(
-            path.c_str(),
+            search_paths,
             base_object_name.c_str(),
-            ParamArray());
+            params);
 
     for (size_t i = 0; i < mesh_objects.size(); ++i)
     {
         MeshObject* object = mesh_objects[i];
-
-        object->get_parameters().insert("filename", path);
-        object->get_parameters().insert("__base_object_name", base_object_name);
 
         m_project_tree.get_assembly_collection_item().get_item(assembly).add_item(object);
 
@@ -298,11 +300,13 @@ namespace
         texture_params.insert("color_space", "srgb");
 
         SearchPaths search_paths;
-        return auto_release_ptr<Texture>(
-            DiskTexture2dFactory().create(
-                texture_name.c_str(),
-                texture_params,
-                search_paths));
+
+        return
+            auto_release_ptr<Texture>(
+                DiskTexture2dFactory().create(
+                    texture_name.c_str(),
+                    texture_params,
+                    search_paths));
     }
 
     auto_release_ptr<TextureInstance> create_texture_instance(
@@ -315,11 +319,12 @@ namespace
         texture_instance_params.insert("addressing_mode", "clamp");
         texture_instance_params.insert("filtering_mode", "bilinear");
 
-        return auto_release_ptr<TextureInstance>(
-            TextureInstanceFactory::create(
-                texture_instance_name.c_str(),
-                texture_instance_params,
-                texture_index));
+        return
+            auto_release_ptr<TextureInstance>(
+                TextureInstanceFactory::create(
+                    texture_instance_name.c_str(),
+                    texture_instance_params,
+                    texture_index));
     }
 }
 

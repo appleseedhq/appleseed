@@ -30,8 +30,15 @@
 #define APPLESEED_FOUNDATION_MATH_BVH_H
 
 // Interface headers.
+#include "foundation/math/bvh/bvh_bboxsortpredicate.h"
 #include "foundation/math/bvh/bvh_builder.h"
 #include "foundation/math/bvh/bvh_intersector.h"
+#include "foundation/math/bvh/bvh_medianpartitioner.h"
+#include "foundation/math/bvh/bvh_node.h"
+#include "foundation/math/bvh/bvh_partitionerbase.h"
+#include "foundation/math/bvh/bvh_sahpartitioner.h"
+#include "foundation/math/bvh/bvh_sbvhpartitioner.h"
+#include "foundation/math/bvh/bvh_spatialbuilder.h"
 #include "foundation/math/bvh/bvh_statistics.h"
 #include "foundation/math/bvh/bvh_tree.h"
 

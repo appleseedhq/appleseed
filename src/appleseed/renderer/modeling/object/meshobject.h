@@ -55,8 +55,8 @@ class RENDERERDLL MeshObject
     // Return a string identifying the model of this object.
     virtual const char* get_model() const;
 
-    // Return the local space bounding box of the object.
-    virtual const GAABB3& get_local_bbox() const;
+    // Compute the local space bounding box of the object over the shutter interval.
+    virtual GAABB3 compute_local_bbox() const;
 
     // Return the region kit of the object.
     virtual foundation::Lazy<RegionKit>& get_region_kit();
@@ -65,16 +65,15 @@ class RENDERERDLL MeshObject
     void reserve_vertices(const size_t count);
     size_t push_vertex(const GVector3& vertex);
     size_t get_vertex_count() const;
-    const GVector3& get_vertex(const size_t index) const;
+    GVector3 get_vertex(const size_t index) const;
 
     // Insert and access vertex normals.
     void reserve_vertex_normals(const size_t count);
     size_t push_vertex_normal(const GVector3& normal);
     size_t get_vertex_normal_count() const;
-    const GVector3& get_vertex_normal(const size_t index) const;
+    GVector3 get_vertex_normal(const size_t index) const;
 
     // Insert and access texture coordinates.
-    void reserve_tex_coords(const size_t count);
     size_t push_tex_coords(const GVector2& tex_coords);
     size_t get_tex_coords_count() const;
     GVector2 get_tex_coords(const size_t index) const;
@@ -83,7 +82,24 @@ class RENDERERDLL MeshObject
     void reserve_triangles(const size_t count);
     size_t push_triangle(const Triangle& triangle);
     size_t get_triangle_count() const;
-    const Triangle& get_triangle(const size_t index) const;
+    Triangle get_triangle(const size_t index) const;
+
+    // Set/get the number of motion segments (the number of motion vectors per vertex).
+    void set_motion_segment_count(const size_t count);
+    size_t get_motion_segment_count() const;
+
+    // Set the position of a given vertex for a given motion segment.
+    // All vertices must have been inserted before this method can be called.
+    // Conversely, no vertex can be inserted after this method has been called.
+    void set_vertex_pose(
+        const size_t    vertex_index,
+        const size_t    motion_segment_index,
+        const GVector3& v);
+
+    // Get the position of a given vertex for a given motion segment.
+    GVector3 get_vertex_pose(
+        const size_t    vertex_index,
+        const size_t    motion_segment_index) const;
 
   private:
     friend class MeshObjectFactory;

@@ -82,7 +82,7 @@ class FOUNDATIONDLL LogMessage
     };
 
     // Default message formatting flags.
-    static const FormattingFlags DefaultFormattingFlags;
+    static const int DefaultFormattingFlags;
 
     // Return a string identifying a given message category.
     static const char* get_category_name(const Category c);

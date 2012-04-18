@@ -143,4 +143,18 @@ void Image::set_tile(
     m_tiles[tile_index] = tile;
 }
 
+void Image::copy(const Image& rhs)
+{
+    assert(m_props.m_canvas_width == rhs.m_props.m_canvas_width);
+    assert(m_props.m_canvas_height == rhs.m_props.m_canvas_height);
+    assert(m_props.m_tile_count_x == rhs.m_props.m_tile_count_x);
+    assert(m_props.m_tile_count_y == rhs.m_props.m_tile_count_y);
+
+    for (size_t ty = 0; ty < m_props.m_tile_count_y; ++ty)
+    {
+        for (size_t tx = 0; tx < m_props.m_tile_count_x; ++tx)
+            tile(tx, ty).copy(rhs.tile(tx, ty));
+    }
+}
+
 }   // namespace foundation

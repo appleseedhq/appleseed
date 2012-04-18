@@ -98,7 +98,7 @@ inline Split<T> Split<T>::middle(const AABB<T, N>& bbox)
 {
     Split<T> split;
     split.m_dimension = max_index(bbox.extent());
-    split.m_abscissa = T(0.5) * (bbox.min[split.m_dimension] + bbox.max[split.m_dimension]);
+    split.m_abscissa = bbox.center(split.m_dimension);
     return split;
 }
 

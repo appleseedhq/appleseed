@@ -407,7 +407,7 @@ void InputBinder::bind_scene_entity_to_input(
         bind_texture_instance_to_input(
             scene.textures(),
             scene.texture_instances(),
-            ~UniqueID(0),           // the parent is the scene, not an assembly,
+            ~0,                     // the parent is the scene, not an assembly
             entity_type,
             entity_name,
             param_value,
@@ -520,7 +520,7 @@ void InputBinder::bind_texture_instance_to_input(
     assert(texture_instance);
 
     const size_t texture_index = texture_instance->get_texture_index();
-    assert(texture_index != ~size_t(0));
+    assert(texture_index != ~0);
 
     Texture* texture = textures.get_by_index(texture_index);
     assert(texture);

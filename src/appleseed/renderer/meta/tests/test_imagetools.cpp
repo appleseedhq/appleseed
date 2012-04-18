@@ -65,7 +65,7 @@ TEST_SUITE(ImageTools)
         {
             const size_t x = rand_int1(rng, 0, W - 1);
             const size_t y = rand_int1(rng, 0, H - 1);
-            output->set_pixel(x, y, saturate(i % 2 ? IsoLumRed : IsoLumBlue));
+            output->set_pixel(x, y, saturate((i % 2) ? IsoLumRed : IsoLumBlue));
         }
 
         GenericImageFileWriter writer;

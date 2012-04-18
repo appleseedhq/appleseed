@@ -150,8 +150,6 @@ void MersenneTwister::update_state()
     }
     y = (mt[N-1]&UPPER_MASK)|(mt[0]&LOWER_MASK);
     mt[N-1] = mt[M-1] ^ (y >> 1) ^ mag01[y & 0x1UL];
-
-    mti = 0;
 }
 
 /*

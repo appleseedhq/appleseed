@@ -31,12 +31,16 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/intersection/assemblytree.h"
+#include "renderer/kernel/intersection/regioninfo.h"
 #include "renderer/kernel/intersection/tracecontext.h"
+#include "renderer/kernel/intersection/trianglekey.h"
 #include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/modeling/object/triangle.h"
 #include "renderer/utility/cache.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/intersection.h"
+#include "foundation/platform/system.h"
 #include "foundation/utility/casts.h"
 #include "foundation/utility/string.h"
 
@@ -54,8 +58,8 @@ namespace
 {
     // Return true if two shading points reference the same triangle.
     inline bool same_triangle(
-        const ShadingPoint&     lhs,
-        const ShadingPoint&     rhs)
+        const ShadingPoint&         lhs,
+        const ShadingPoint&         rhs)
     {
         assert(lhs.hit());
         assert(rhs.hit());
@@ -69,8 +73,8 @@ namespace
 
     // Print a message if a self-intersection situation is detected.
     void report_self_intersection(
-        const ShadingPoint&     shading_point,
-        const ShadingPoint*     parent_shading_point)
+        const ShadingPoint&         shading_point,
+        const ShadingPoint*         parent_shading_point)
     {
         if (shading_point.hit() &&
             parent_shading_point &&
@@ -84,26 +88,43 @@ namespace
 }
 
 Intersector::Intersector(
-    const TraceContext& trace_context,
-    const bool          print_statistics,
-    const bool          report_self_intersections)
+    const TraceContext&             trace_context,
+    const bool                      print_statistics,
+    const bool                      report_self_intersections)
   : m_trace_context(trace_context)
   , m_print_statistics(print_statistics)
   , m_report_self_intersections(report_self_intersections)
-  , m_assembly_tree_aabb(m_trace_context.get_assembly_tree().get_bbox())
   , m_ray_count(0)
   , m_probe_ray_count(0)
 {
     if (m_print_statistics)
     {
         RENDERER_LOG_DEBUG(
+            "system information:\n"
+            "  L1 data cache    size %s, line size %s\n"
+            "  L2 cache         size %s, line size %s\n"
+            "  L3 cache         size %s, line size %s\n",
+            pretty_size(System::get_l1_data_cache_size()).c_str(),
+            pretty_size(System::get_l1_data_cache_line_size()).c_str(),
+            pretty_size(System::get_l2_cache_size()).c_str(),
+            pretty_size(System::get_l2_cache_line_size()).c_str(),
+            pretty_size(System::get_l3_cache_size()).c_str(),
+            pretty_size(System::get_l3_cache_line_size()).c_str());
+
+        RENDERER_LOG_DEBUG(
             "data structures size:\n"
-            "  bsp::NodeType    %s\n"
+            "  bvh::NodeType    %s\n"
+            "  GTriangleType    %s\n"
+            "  RegionInfo       %s\n"
+            "  ShadingPoint     %s\n"
             "  ShadingRay       %s\n"
-            "  ShadingPoint     %s\n",
+            "  TriangleKey      %s\n",
             pretty_size(sizeof(TriangleTree::NodeType)).c_str(),
+            pretty_size(sizeof(GTriangleType)).c_str(),
+            pretty_size(sizeof(RegionInfo)).c_str(),
+            pretty_size(sizeof(ShadingPoint)).c_str(),
             pretty_size(sizeof(ShadingRay)).c_str(),
-            pretty_size(sizeof(ShadingPoint)).c_str());
+            pretty_size(sizeof(TriangleKey)).c_str());
     }
 }
 
@@ -122,13 +143,11 @@ Intersector::~Intersector()
             pretty_percent(m_probe_ray_count, total_ray_count).c_str());
 
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
-        RENDERER_LOG_DEBUG("assembly bvh intersection statistics:");
-        m_assembly_bvh_traversal_stats.print(global_logger());
-#endif
+        RENDERER_LOG_DEBUG("assembly tree intersection statistics:");
+        m_assembly_tree_traversal_stats.print(global_logger());
 
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-        RENDERER_LOG_DEBUG("triangle bsp trees intersection statistics:");
-        m_triangle_bsp_traversal_stats.print(global_logger());
+        RENDERER_LOG_DEBUG("triangle tree intersection statistics:");
+        m_triangle_tree_traversal_stats.print(global_logger());
 #endif
 
         print_dual_stage_cache_stats(m_region_tree_cache, "region tree access cache statistics");
@@ -157,10 +176,10 @@ Vector3d Intersector::refine(
 }
 
 void Intersector::offset(
-    const Vector3d&     p,
-    Vector3d            n,
-    Vector3d&           front,
-    Vector3d&           back)
+    const Vector3d&                 p,
+    Vector3d                        n,
+    Vector3d&                       front,
+    Vector3d&                       back)
 {
     //
     // Reference:
@@ -171,7 +190,8 @@ void Intersector::offset(
 
     // Offset parameters.
     const double Threshold = 1.0e-25;
-    const int EpsLut[2] = { 8, -8 };
+    const int EpsMag = 8;
+    const int EpsLut[2] = { EpsMag, -EpsMag };
 
     // Check which components of p are close to the origin.
     const bool is_small[3] =
@@ -204,10 +224,75 @@ void Intersector::offset(
     }
 }
 
+namespace
+{
+    Vector3d offset_point(
+        const Vector3d&                 p,
+        const Vector3d&                 n,
+        const int64                     mag)
+    {
+        const double Threshold = 1.0e-25;
+        const int64 eps_lut[2] = { mag, -mag };
+
+        Vector3d result;
+
+        for (size_t i = 0; i < 3; ++i)
+        {
+            if (abs(p[i]) < Threshold)
+                result[i] = p[i] + n[i] * Threshold;
+            else
+            {
+                const uint64 pi = binary_cast<uint64>(p[i]);
+                const int64 shift = eps_lut[(pi ^ binary_cast<uint64>(n[i])) >> 63];
+                result[i] = binary_cast<double>(pi + shift);
+            }
+        }
+
+        return result;
+    }
+
+    Vector3d adaptive_offset_point(
+        const TriangleSupportPlaneType& support_plane,
+        const Vector3d&                 p,
+        const Vector3d&                 n,
+        const int64                     initial_mag)
+    {
+        int64 mag = initial_mag;
+        Vector3d result = p;
+
+        for (size_t i = 0; i < 64; ++i)
+        {
+            result = offset_point(result, n, mag);
+
+            if (support_plane.intersect(result, n) < 0.0)
+                break;
+
+            mag *= 2;
+        }
+
+        return result;
+    }
+}
+
+void Intersector::adaptive_offset(
+    const TriangleSupportPlaneType& support_plane,
+    const Vector3d&                 p,
+    Vector3d                        n,
+    Vector3d&                       front,
+    Vector3d&                       back)
+{
+    const int64 InitialMag = 8;
+
+    n = normalize(n);
+
+    front = adaptive_offset_point(support_plane, p, n, InitialMag);
+    back = adaptive_offset_point(support_plane, p, -n, InitialMag);
+}
+
 bool Intersector::trace(
-    const ShadingRay&   ray,
-    ShadingPoint&       shading_point,
-    const ShadingPoint* parent_shading_point) const
+    const ShadingRay&               ray,
+    ShadingPoint&                   shading_point,
+    const ShadingPoint*             parent_shading_point) const
 {
     assert(shading_point.m_scene == 0);
     assert(shading_point.hit() == false);
@@ -236,24 +321,24 @@ bool Intersector::trace(
     const AssemblyTree& assembly_tree = m_trace_context.get_assembly_tree();
 
     // Check the intersection between the ray and the assembly tree.
+    AssemblyTreeIntersector intersector;
     AssemblyLeafVisitor visitor(
         shading_point,
         assembly_tree,
         m_region_tree_cache,
         m_triangle_tree_cache,
         parent_shading_point
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-        , m_triangle_bsp_traversal_stats
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+        , m_triangle_tree_traversal_stats
 #endif
         );
-    AssemblyLeafIntersector intersector;
     intersector.intersect(
         assembly_tree,
         shading_point.m_ray,
         ray_info,
         visitor
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
-        , m_assembly_bvh_traversal_stats
+        , m_assembly_tree_traversal_stats
 #endif
         );
 
@@ -265,8 +350,8 @@ bool Intersector::trace(
 }
 
 bool Intersector::trace_probe(
-    const ShadingRay&   ray,
-    const ShadingPoint* parent_shading_point) const
+    const ShadingRay&               ray,
+    const ShadingPoint*             parent_shading_point) const
 {
     assert(parent_shading_point == 0 || parent_shading_point->hit());
 
@@ -286,23 +371,23 @@ bool Intersector::trace_probe(
     const AssemblyTree& assembly_tree = m_trace_context.get_assembly_tree();
 
     // Check the intersection between the ray and the assembly tree.
+    AssemblyTreeProbeIntersector intersector;
     AssemblyLeafProbeVisitor visitor(
         assembly_tree,
         m_region_tree_cache,
         m_triangle_tree_cache,
         parent_shading_point
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-        , m_triangle_bsp_traversal_stats
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+        , m_triangle_tree_traversal_stats
 #endif
         );
-    AssemblyLeafProbeIntersector intersector;
     intersector.intersect(
         assembly_tree,
         ray,
         ray_info,
         visitor
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
-        , m_assembly_bvh_traversal_stats
+        , m_assembly_tree_traversal_stats
 #endif
         );
 

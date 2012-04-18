@@ -29,9 +29,6 @@
 // Interface header.
 #include "tile.h"
 
-// appleseed.foundation headers.
-#include "foundation/core/exceptions/exceptionnotimplemented.h"
-
 namespace foundation
 {
 
@@ -54,19 +51,11 @@ Tile::Tile(
     assert(m_height > 0);
     assert(m_channel_count > 0);
 
-    // Compute the total number of pixels.
     m_pixel_count = m_width * m_height;
-
-    // Compute the size in bytes of one channel.
     m_channel_size = Pixel::size(m_pixel_format);
-
-    // Compute the size in bytes of one pixel.
     m_pixel_size = m_channel_size * m_channel_count;
-
-    // Compute the size in bytes of the pixel array.
     m_array_size = m_pixel_size * m_pixel_count;
 
-    // Allocate the pixel array.
     if (storage)
     {
          m_pixel_array = storage;
@@ -89,16 +78,10 @@ Tile::Tile(
   , m_pixel_format(pixel_format)
   , m_pixel_count(tile.m_pixel_count)
 {
-    // Compute the size in bytes of one channel.
     m_channel_size = Pixel::size(m_pixel_format);
-
-    // Compute the size in bytes of one pixel.
     m_pixel_size = m_channel_size * m_channel_count;
-
-    // Compute the size in bytes of the pixel array.
     m_array_size = m_pixel_size * m_pixel_count;
 
-    // Allocate pixel array.
     if (storage)
     {
          m_pixel_array = storage;
@@ -110,7 +93,6 @@ Tile::Tile(
         m_own_storage = true;
     }
 
-    // Convert pixels.
     Pixel::convert(
         tile.m_pixel_format,                        // source format
         tile.m_pixel_array,                         // source begin
@@ -131,22 +113,15 @@ Tile::Tile(
   , m_pixel_format(pixel_format)
   , m_pixel_count(tile.m_pixel_count)
 {
-    // Compute the new number of channels.
     m_channel_count =
         Pixel::get_dest_channel_count(
             tile.m_channel_count,
             shuffle_table);
 
-    // Compute the size in bytes of one channel.
     m_channel_size = Pixel::size(m_pixel_format);
-
-    // Compute the size in bytes of one pixel.
     m_pixel_size = m_channel_size * m_channel_count;
-
-    // Compute the size in bytes of the pixel array.
     m_array_size = m_pixel_size * m_pixel_count;
 
-    // Allocate pixel array.
     if (storage)
     {
          m_pixel_array = storage;
@@ -158,7 +133,6 @@ Tile::Tile(
         m_own_storage = true;
     }
 
-    // Convert pixels.
     Pixel::convert_and_shuffle(
         tile.m_pixel_format,                        // source format
         tile.m_channel_count,                       // source channels
@@ -170,7 +144,7 @@ Tile::Tile(
         shuffle_table);                             // channel shuffling table
 }
 
-Tile::Tile(const Tile&  rhs)
+Tile::Tile(const Tile& rhs)
   : m_width(rhs.m_width)
   , m_height(rhs.m_height)
   , m_channel_count(rhs.m_channel_count)
@@ -180,31 +154,32 @@ Tile::Tile(const Tile&  rhs)
   , m_pixel_size(rhs.m_pixel_size)
   , m_array_size(rhs.m_array_size)
 {
-    // Allocate pixel array.
     m_pixel_array = new uint8[m_array_size];
     m_own_storage = true;
 
-    // Copy pixels from source tile.
     std::memcpy(m_pixel_array, rhs.m_pixel_array, m_array_size);
 }
 
 Tile::~Tile()
 {
-    // Deallocate pixel array.
     if (m_own_storage)
         delete [] m_pixel_array;
 }
 
-Serializer* Tile::serialize(Serializer* serializer)
+void Tile::copy(const Tile& rhs)
 {
-    throw ExceptionNotImplemented();
-    return serializer;
-}
+    assert(m_width == rhs.m_width);
+    assert(m_height == rhs.m_height);
+    assert(m_channel_count == rhs.m_channel_count);
 
-Deserializer* Tile::deserialize(Deserializer* deserializer)
-{
-    throw ExceptionNotImplemented();
-    return deserializer;
+    Pixel::convert(
+        rhs.m_pixel_format,                         // source format
+        rhs.m_pixel_array,                          // source begin
+        rhs.m_pixel_array + rhs.m_array_size,       // source end
+        1,                                          // source stride
+        m_pixel_format,                             // destination format
+        m_pixel_array,                              // destination
+        1);                                         // destination stride
 }
 
 size_t dynamic_sizeof(const Tile& tile)

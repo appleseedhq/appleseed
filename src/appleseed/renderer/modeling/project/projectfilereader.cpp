@@ -1082,7 +1082,7 @@ namespace
             assert(m_textures);
             const size_t texture_index = m_textures->get_index(m_texture.c_str());
 
-            if (texture_index != ~size_t(0))
+            if (texture_index != ~0)
             {
                 try
                 {
@@ -1435,24 +1435,11 @@ namespace
             {
                 if (m_model == MeshObjectFactory::get_model())
                 {
-                    // Retrieve the name of the mesh file.
-                    const string filename = m_params.get<string>("filename");
-                    const string filepath = m_context.get_project().get_search_paths().qualify(filename);
-
-                    // Read the mesh file.
                     MeshObjectArray object_array =
                         MeshObjectReader::read(
-                            filepath.c_str(),
+                            m_context.get_project().get_search_paths(),
                             m_name.c_str(),
                             m_params);
-
-                    // Add a few parameters to the freshly loaded mesh objects.
-                    for (size_t i = 0; i < object_array.size(); ++i)
-                    {
-                        MeshObject* object = object_array[i];
-                        object->get_parameters().insert("filename", filepath);
-                        object->get_parameters().insert("__base_object_name", m_name);
-                    }
 
                     m_objects = array_vector<ObjectVector>(object_array);
                 }
@@ -1641,7 +1628,7 @@ namespace
 
                     if (material_slot < MaxMaterialSlots)
                     {
-                        ensure_size(material_names, material_slot + 1);
+                        ensure_minimum_size(material_names, material_slot + 1);
                         material_names.set(material_slot, material_name.c_str());
                     }
                     else

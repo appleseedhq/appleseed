@@ -86,7 +86,7 @@ ObjectInstance::ObjectInstance(
     set_name(name);
 
     impl->m_transform = transform;
-    impl->m_parent_bbox = transform.transform_to_parent(object.get_local_bbox());
+    impl->m_parent_bbox = transform.transform_to_parent(object.compute_local_bbox());
     impl->m_front_material_names = front_materials;
     impl->m_back_material_names = back_materials;
 }
@@ -138,7 +138,7 @@ void ObjectInstance::assign_material(
             ? impl->m_front_material_names
             : impl->m_back_material_names;
 
-    ensure_size(material_names, slot + 1);
+    ensure_minimum_size(material_names, slot + 1);
     material_names.set(slot, material_name);
 }
 

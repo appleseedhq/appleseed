@@ -36,6 +36,7 @@
 #include "renderer/kernel/lighting/pathtracing/pathtracing.h"
 #include "renderer/kernel/rendering/debug/blanktilerenderer.h"
 #include "renderer/kernel/rendering/debug/debugtilerenderer.h"
+#include "renderer/kernel/rendering/debug/ewatesttilerenderer.h"
 #include "renderer/kernel/rendering/generic/genericframerenderer.h"
 #include "renderer/kernel/rendering/generic/genericsamplegenerator.h"
 #include "renderer/kernel/rendering/generic/genericsamplerenderer.h"
@@ -55,7 +56,6 @@
 #include "renderer/modeling/scene/scene.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/exceptions/exception.h"
 #include "foundation/core/exceptions/stringexception.h"
 
 // Standard headers.
@@ -93,35 +93,42 @@ const ParamArray& MasterRenderer::get_parameters() const
     return m_params;
 }
 
-void MasterRenderer::render()
+bool MasterRenderer::render() const
 {
     try
     {
         do_render();
+        return true;
     }
     catch (const StringException& e)
     {
         m_renderer_controller->on_rendering_abort();
         RENDERER_LOG_ERROR("rendering failed (%s: %s).", e.what(), e.string());
-    }
-    catch (const Exception& e)
-    {
-        m_renderer_controller->on_rendering_abort();
-        RENDERER_LOG_ERROR("rendering failed (%s).", e.what());
+        return false;
     }
     catch (const bad_alloc&)
     {
         m_renderer_controller->on_rendering_abort();
         RENDERER_LOG_ERROR("rendering failed (ran out of memory).");
+        return false;
+    }
+#ifdef NDEBUG
+    catch (const exception& e)
+    {
+        m_renderer_controller->on_rendering_abort();
+        RENDERER_LOG_ERROR("rendering failed (%s).", e.what());
+        return false;
     }
     catch (...)
     {
         m_renderer_controller->on_rendering_abort();
         RENDERER_LOG_ERROR("rendering failed (unknown exception).");
+        return false;
     }
+#endif
 }
 
-void MasterRenderer::do_render()
+void MasterRenderer::do_render() const
 {
     while (true)
     {
@@ -147,7 +154,7 @@ void MasterRenderer::do_render()
     }
 }
 
-IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence()
+IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence() const
 {
     assert(m_project.get_scene());
     assert(m_project.get_frame());
@@ -251,6 +258,14 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     {
         tile_renderer_factory.reset(new DebugTileRendererFactory());
     }
+    else if (tile_renderer_param == "ewatest")
+    {
+        tile_renderer_factory.reset(
+            new EWATestTileRendererFactory(
+                scene,
+                m_project.get_trace_context(),
+                m_params.child("ewatest_tile_renderer")));
+    }
     else
     {
         RENDERER_LOG_ERROR(
@@ -332,7 +347,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     return render_frame_sequence(frame_renderer.get());
 }
 
-IRendererController::Status MasterRenderer::render_frame_sequence(IFrameRenderer* frame_renderer)
+IRendererController::Status MasterRenderer::render_frame_sequence(IFrameRenderer* frame_renderer) const
 {
     while (true) 
     {
@@ -362,7 +377,7 @@ IRendererController::Status MasterRenderer::render_frame_sequence(IFrameRenderer
     }
 }
 
-IRendererController::Status MasterRenderer::render_frame(IFrameRenderer* frame_renderer)
+IRendererController::Status MasterRenderer::render_frame(IFrameRenderer* frame_renderer) const
 {
     frame_renderer->start_rendering();
 

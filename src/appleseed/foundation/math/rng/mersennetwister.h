@@ -93,7 +93,10 @@ class FOUNDATIONDLL MersenneTwister
 inline uint32 MersenneTwister::rand_uint32()
 {
     if (mti >= N)
+    {
         update_state();
+        mti = 0;
+    }
 
     uint32 y = mt[mti++];
 

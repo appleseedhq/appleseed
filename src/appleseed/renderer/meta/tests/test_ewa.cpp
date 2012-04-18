@@ -26,11 +26,14 @@
 // THE SOFTWARE.
 //
 
-// EWA filter implementation for AtomKraft.
-#include "ewa.h"
+// appleseed.renderer headers.
+#include "renderer/kernel/texturing/ewa.h"
+#include "renderer/kernel/texturing/ewa_texturesampler.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
+#include "foundation/image/genericimagefilereader.h"
 #include "foundation/image/genericimagefilewriter.h"
 #include "foundation/image/image.h"
 #include "foundation/image/pixel.h"
@@ -48,37 +51,19 @@
 #include <cstring>
 
 using namespace foundation;
+using namespace renderer;
 using namespace std;
 
 TEST_SUITE(EWAFilteringExploration)
 {
     //---------------------------------------------------------------------------------------------
-    //--- Drawing Primitives Used For Debugging ---------------------------------------------------
+    // Drawing primitives used for debugging.
     //---------------------------------------------------------------------------------------------
 
-    void draw_checkerboard(
-        Image&          image,
-        const size_t    scale = 16,
-        const Color3f&  color1 = Color3f(0.0f),
-        const Color3f&  color2 = Color3f(1.0f))
-    {
-        const size_t width = image.properties().m_canvas_width;
-        const size_t height = image.properties().m_canvas_height;
-
-        for (size_t y = 0; y < height; ++y)
-        {
-            for (size_t x = 0; x < width; ++x)
-            {
-                const size_t b = ((x / scale) ^ (y / scale)) & 1;
-                image.set_pixel(x, y, b ? color1 : color2);
-            }
-        }
-    }
-
     bool is_inside(
-        const Image&    image, 
-        const int       x,
-        const int       y)
+        const Image&            image, 
+        const int               x,
+        const int               y)
     {
         const CanvasProperties& props = image.properties();
 
@@ -90,10 +75,10 @@ TEST_SUITE(EWAFilteringExploration)
     }
 
     void draw_line(
-        Image&          image,
-        const Vector2i& v0,
-        const Vector2i& v1,
-        const Color3f&  color)
+        Image&                  image,
+        const Vector2i&         v0,
+        const Vector2i&         v1,
+        const Color3f&          color)
     {
         const int dx = v1.x - v0.x;
         const int dy = v1.y - v0.y;
@@ -153,210 +138,172 @@ TEST_SUITE(EWAFilteringExploration)
         }
     }
 
-    void draw_box(
-        Image&          image,
-        const AABB2i&   bbox,
-        const Color3f&  color)
+    void draw_rectangle(
+        Image&                  image,
+        const Vector2i&         v0,
+        const Vector2i&         v1,
+        const Color3f&          color)
     {
-        draw_line(image, Vector2i(bbox.min.x, bbox.min.y), Vector2i(bbox.max.x, bbox.min.y), color);
-        draw_line(image, Vector2i(bbox.max.x, bbox.min.y), Vector2i(bbox.max.x, bbox.max.y), color);
-        draw_line(image, Vector2i(bbox.max.x, bbox.max.y), Vector2i(bbox.min.x, bbox.max.y), color);
-        draw_line(image, Vector2i(bbox.min.x, bbox.max.y), Vector2i(bbox.min.x, bbox.min.y), color);
+        draw_line(image, Vector2i(v0.x, v0.y), Vector2i(v1.x, v0.y), color);
+        draw_line(image, Vector2i(v1.x, v0.y), Vector2i(v1.x, v1.y), color);
+        draw_line(image, Vector2i(v1.x, v1.y), Vector2i(v0.x, v1.y), color);
+        draw_line(image, Vector2i(v0.x, v1.y), Vector2i(v0.x, v0.y), color);
+    }
+
+    void draw_trapezoid(
+        Image&                  image,
+        const Vector2i&         v00,
+        const Vector2i&         v10,
+        const Vector2i&         v01,
+        const Vector2i&         v11,
+        const Color3f&          color)
+    {
+        draw_line(image, v00, v10, color);
+        draw_line(image, v10, v11, color);
+        draw_line(image, v11, v01, color);
+        draw_line(image, v01, v00, color);
     }
 
     void tint_pixel(
-        Image&          image,
-        const int       x,
-        const int       y,
-        const Color3f&  color,
-        const float     intensity)
+        Image&                  image,
+        const Vector2i&         p,
+        const Color3f&          color,
+        const float             intensity)
     {
-        if (is_inside(image, x, y))
+        if (is_inside(image, p.x, p.y))
         {
             Color3f base;
-            image.get_pixel(x, y, base);
-            image.set_pixel(x, y, lerp(base, color, intensity));
+            image.get_pixel(p.x, p.y, base);
+            image.set_pixel(p.x, p.y, lerp(base, color, intensity));
         }
     }
 
+    void tint_solid_rectangle(
+        Image&                  image,
+        const Vector2i&         v0,
+        const Vector2i&         v1,
+        const Color3f&          color,
+        const float             intensity)
+    {
+        for (int y = v0.y; y <= v1.y; ++y)
+        {
+            for (int x = v0.x; x <= v1.x; ++x)
+                tint_pixel(image, Vector2i(x, y), color, intensity);
+        }
+    }
+
+    void draw_checkerboard(
+        Image&                  image,
+        const size_t            scale = 16,
+        const Color3f&          color1 = Color3f(0.0f),
+        const Color3f&          color2 = Color3f(1.0f))
+    {
+        const size_t width = image.properties().m_canvas_width;
+        const size_t height = image.properties().m_canvas_height;
+
+        for (size_t y = 0; y < height; ++y)
+        {
+            for (size_t x = 0; x < width; ++x)
+            {
+                const size_t b = ((x / scale) ^ (y / scale)) & 1;
+                image.set_pixel(x, y, b ? color1 : color2);
+            }
+        }
+    }
+
+    void draw_image(
+        Image&                  dest,
+        const Image&            source)
+    {
+        const size_t dest_width = dest.properties().m_canvas_width;
+        const size_t dest_height = dest.properties().m_canvas_height;
+        const size_t source_width = source.properties().m_canvas_width;
+        const size_t source_height = source.properties().m_canvas_height;
+
+        for (size_t y = 0; y < dest_height; ++y)
+        {
+            for (size_t x = 0; x < dest_width; ++x)
+            {
+                Color3f color;
+                source.get_pixel(
+                    truncate<size_t>(static_cast<float>(x) / dest_width * source_width),
+                    truncate<size_t>(static_cast<float>(y) / dest_height * source_height),
+                    color);
+                dest.set_pixel(x, y, color);
+            }
+        }
+    }
+
+    template <typename T>
+    Vector2i convert(
+        const size_t            source_width,
+        const size_t            source_height,
+        const size_t            dest_width,
+        const size_t            dest_height,
+        const Vector<T, 2>&     v)
+    {
+        return
+            Vector2i(
+                truncate<int>(static_cast<float>(v[0]) / source_width * dest_width),
+                truncate<int>(static_cast<float>(v[1]) / source_height * dest_height));
+    }
+
+    template <typename T>
+    Vector2i convert(
+        const CanvasProperties& source,
+        const CanvasProperties& dest,
+        const Vector<T, 2>&     v)
+    {
+        return
+            convert(
+                source.m_canvas_width,
+                source.m_canvas_height,
+                dest.m_canvas_width,
+                dest.m_canvas_height,
+                v);
+    }
+
     //---------------------------------------------------------------------------------------------
-    //--- Reference EWA Filter Implementation -----------------------------------------------------
-    //--- http://www.cs.cmu.edu/~ph/texfund/texfund.pdf -------------------------------------------
+    // Reference EWA filter implementation with debugging aids.
+    //
+    // References:
+    //
+    //   http://www.cs.cmu.edu/~ph/texfund/texfund.pdf
+    //   http://www.pmavridis.com/data/I3D11_EllipticalFiltering.pdf
+    //   http://www.paulinternet.nl/?page=bicubic
     //---------------------------------------------------------------------------------------------
 
+    void trapezoid_to_ellipse(
+        const Vector2f&         v00,
+        const Vector2f&         v10,
+        const Vector2f&         v01,
+        const Vector2f&         v11,
+        float&                  center_x,
+        float&                  center_y,
+        float&                  dudx,
+        float&                  dudy,
+        float&                  dvdx,
+        float&                  dvdy)
+    {
+        const Vector2f middle_00_10 = 0.5f * (v00 + v10);
+        const Vector2f middle_01_11 = 0.5f * (v01 + v11);
+        const Vector2f middle_10_11 = 0.5f * (v10 + v11);
+
+        center_x = 0.5f * (middle_00_10.x + middle_01_11.x);
+        center_y = 0.5f * (middle_00_10.y + middle_01_11.y);
+
+        dudx = middle_10_11.x - center_x;
+        dudy = middle_01_11.x - center_x;
+        dvdx = middle_10_11.y - center_y;
+        dvdy = middle_01_11.y - center_y;
+    }
+
+    template <int NumChannels, typename Texture>
     class EWAFilterRef
     {
       public:
-        explicit EWAFilterRef(
-            Image&          debug_image)
+        explicit EWAFilterRef(Image& debug_image)
           : m_debug_image(debug_image)
-        {
-            compute_weights();
-        }
-
-        // The lookup point is expressed in [0,width)x[0,height) (note: open on the right).
-        Color3f filter_bilinear(
-            const Image&    texture,
-            const float     texture_gamma,
-            const Vector2f& point) const
-        {
-            // Fetch neighboring texels.
-            const CanvasProperties& props = texture.properties();
-            const Vector2f p(
-                point.x / props.m_canvas_width * (props.m_canvas_width - 1),
-                point.y / props.m_canvas_height * (props.m_canvas_height - 1));
-            const int ix0 = truncate<int>(p.x);
-            const int iy0 = truncate<int>(p.y);
-            const int ix1 = min(ix0 + 1, static_cast<int>(props.m_canvas_width - 1));
-            const int iy1 = min(iy0 + 1, static_cast<int>(props.m_canvas_height - 1));
-            Color3f c00, c10, c01, c11;
-            texture.get_pixel(ix0, iy0, c00);
-            texture.get_pixel(ix1, iy0, c10);
-            texture.get_pixel(ix0, iy1, c01);
-            texture.get_pixel(ix1, iy1, c11);
-
-            // Ungamma texels.
-            if (texture_gamma != 1.0f)
-            {
-                c00 = pow(c00, texture_gamma);
-                c10 = pow(c10, texture_gamma);
-                c01 = pow(c01, texture_gamma);
-                c11 = pow(c11, texture_gamma);
-            }
-
-            // Compute weights.
-            const float wx1 = p.x - ix0;
-            const float wy1 = p.y - iy0;
-            const float wx0 = 1.0f - wx1;
-            const float wy0 = 1.0f - wy1;
-
-            // Apply weights.
-            c00 *= wx0 * wy0;
-            c10 *= wx1 * wy0;
-            c01 *= wx0 * wy1;
-            c11 *= wx1 * wy1;
-
-            // Accumulate.
-            c00 += c10;
-            c00 += c01;
-            c00 += c11;
-
-            return c00;
-        }
-
-        // Trapezoid vertices are expressed in [0,width)x[0,height) (note: open on the right).
-        Color3f filter_trapezoid(
-            const Image&    texture,
-            const float     texture_gamma,
-            const Vector2f& v00,
-            const Vector2f& v10,
-            const Vector2f& v01,
-            const Vector2f& v11) const
-        {
-            // Draw the input trapezoid.
-            const Color3f TrapezoidColor(1.0f, 0.0f, 1.0f);
-            draw_line(m_debug_image, f2i(v00), f2i(v10), TrapezoidColor);
-            draw_line(m_debug_image, f2i(v10), f2i(v11), TrapezoidColor);
-            draw_line(m_debug_image, f2i(v11), f2i(v01), TrapezoidColor);
-            draw_line(m_debug_image, f2i(v01), f2i(v00), TrapezoidColor);
-
-            // Compute the parameters of the inscribed ellipse.
-            Vector2f center, du, dv;
-            trapezoid_to_ellipse(v00, v10, v01, v11, center, du, dv);
-
-            // Draw the axes of the ellipse.
-            draw_line(m_debug_image, f2i(center), f2i(center + du), Color3f(1.0f, 0.0f, 0.0f));
-            draw_line(m_debug_image, f2i(center), f2i(center + dv), Color3f(0.0f, 1.0f, 0.0f));
-
-            // Compute the inclusion threshold.
-            const float F = static_cast<float>(WeightCount);
-
-            const float K_den = square(du.x * dv.y - dv.x * du.y);
-            if (K_den == 0.0f)
-                return filter_bilinear(texture, texture_gamma, center);
-
-            // Compute the ellipse coefficients.
-            const float K = F / K_den;
-            const float A = K * (du.y * du.y + dv.y * dv.y);
-            const float B = K * (-2.0f * (du.x * du.y + dv.x * dv.y));
-            const float C = K * (du.x * du.x + dv.x * dv.x);
-
-            // Make sure we have an elliptical paraboloid, concave upward.
-            assert(A > 0.0f);
-            assert(A * C - B * B / 4.0f > 0.0f);
-
-            // Compute the bounding box of the ellipse.
-            const CanvasProperties& props = texture.properties();
-            const float ku = 2.0f * C * sqrt(F / (4.0f * A * C * C - C * B * B));
-            const float kv = 2.0f * A * sqrt(F / (4.0f * A * A * C - A * B * B));
-            AABB2i bbox;
-            bbox.min.x = max(truncate<int>(center.x - ku), 0);
-            bbox.min.y = max(truncate<int>(center.y - kv), 0);
-            bbox.max.x = min(truncate<int>(ceil(center.x + ku)), static_cast<int>(props.m_canvas_width - 1));
-            bbox.max.y = min(truncate<int>(ceil(center.y + kv)), static_cast<int>(props.m_canvas_height - 1));
-
-            // Draw the bounding box of the ellipse.
-            draw_box(m_debug_image, bbox, Color3f(1.0f, 1.0f, 0.0f));
-
-            Color3f num(0.0f);
-            float den = 0.0f;
-
-            const float u = (bbox.min.x + 0.5f) - center.x;
-            const float Ddq = 2.0f * A;
-
-            for (int y = bbox.min.y; y <= bbox.max.y; ++y)
-            {
-                const float v = (y + 0.5f) - center.y;
-                float dq = A * (2.0f * u + 1.0f) + B * v;
-                float q = (C * v + B * u) * v + A * u * u;
-
-                for (int x = bbox.min.x; x <= bbox.max.x; ++x)
-                {
-                    if (q < F)
-                    {
-                        const float w = m_weights[truncate<int>(q)];
-
-                        Color3f texel;
-                        texture.get_pixel(x, y, texel);
-
-                        if (texture_gamma != 1.0f)
-                            texel = pow(texel, texture_gamma);
-
-                        num += texel * w;
-                        den += w;
-
-                        tint_pixel(
-                            m_debug_image,
-                            x, y,
-                            Color3f(0.0f, 1.0f, 0.0f),
-                            w);
-                    }
-                    else
-                    {
-                        tint_pixel(
-                            m_debug_image,
-                            x, y,
-                            Color3f(0.0f, 0.0f, 1.0f),
-                            0.2f);
-                    }
-
-                    q += dq;
-                    dq += Ddq;
-                }
-            }
-
-            return den > 0.0f
-                ? num / den
-                : filter_bilinear(texture, texture_gamma, center);
-        }
-
-      private:
-        Image& m_debug_image;
-
-        enum { WeightCount = 256 };
-        float m_weights[WeightCount];
-
-        void compute_weights()
         {
             for (int i = 0; i < WeightCount; ++i)
             {
@@ -366,44 +313,269 @@ TEST_SUITE(EWAFilteringExploration)
             }
         }
 
-        static void trapezoid_to_ellipse(
-            const Vector2f& v00,
-            const Vector2f& v10,
-            const Vector2f& v01,
-            const Vector2f& v11,
-            Vector2f&       center,
-            Vector2f&       du,
-            Vector2f&       dv)
-        {
-            const Vector2f middle_00_10 = 0.5f * (v00 + v10);
-            const Vector2f middle_01_11 = 0.5f * (v01 + v11);
-            const Vector2f middle_10_11 = 0.5f * (v10 + v11);
+#define CONV(v)                                     \
+    convert(                                        \
+        texture.width(),                            \
+        texture.height(),                           \
+        m_debug_image.properties().m_canvas_width,  \
+        m_debug_image.properties().m_canvas_height, \
+        v)
 
-            center = 0.5f * (middle_00_10 + middle_01_11);
-            du = middle_10_11 - center;
-            dv = middle_01_11 - center;
+        // Coordinates are expressed in [0,texture_width)x[0,texture_height) (note: open on the right).
+        void filter(
+            const Texture&      texture,
+            const float         center_x,
+            const float         center_y,
+            const float         dudx,
+            const float         dudy,
+            const float         dvdx,
+            const float         dvdy,
+            const float         max_radius,
+            float               result[])
+        {
+            std::memset(result, 0, NumChannels * sizeof(float));
+
+            // Compute the coefficients of the original ellipse.
+            float a = dvdx * dvdx + dvdy * dvdy + 1.0f;
+            float b = -2.0f * (dudx * dvdx + dudy * dvdy);
+            float c = dudx * dudx + dudy * dudy + 1.0f;
+
+            // Rescale the coefficients so that F = WeightCount.
+            const float F = static_cast<float>(WeightCount);
+            const float k = F / (a * c - b * b * 0.25f);
+            a *= k;
+            b *= k;
+            c *= k;
+
+            // Compute the coefficients of the orthogonal ellipse.
+            const float r = sqrt(square(a - c) + b * b);
+            const float a_prime = (a + c + r) * 0.5f;
+            const float c_prime = (a + c - r) * 0.5f;
+
+            // Compute the radii of the ellipse.
+            float r1 = sqrt(F / a_prime);
+            float r2 = sqrt(F / c_prime);
+
+            // Bound the amount of work by clamping the radii the ellipse.
+            if (r1 > max_radius || r2 > max_radius)
+            {
+                // Clamp the radii.
+                if (r1 > max_radius) r1 = max_radius;
+                if (r2 > max_radius) r2 = max_radius;
+
+                // Compute the angle of the original ellipse.
+                const float theta = 0.5f * atan(b / (a - c));
+
+                // Compute the coefficients of the new ellipse.
+                const float r1_2 = r1 * r1;
+                const float r2_2 = r2 * r2;
+                const float cos_theta_2 = square(cos(theta));
+                const float sin_theta_2 = 1.0f - cos_theta_2;
+                a = r1_2 * cos_theta_2 + r2_2 * sin_theta_2;
+                b = (r2_2 - r1_2) * sin(theta + theta);
+                c = r1_2 * sin_theta_2 + r2_2 * cos_theta_2;
+
+                // Rescale the coefficients so that F = WeightCount.
+                const float k = F / (r1_2 * r2_2);
+                a *= k;
+                b *= k;
+                c *= k;
+            }
+
+            // Compute the area in pixels covered by the ellipse.
+            const float Pi = 3.14159265f;
+            const float area = Pi * r1 * r2;
+
+            // Compute the EWA filter and reconstruction filter weights.
+            const float AreaThreshold = 4.0f;
+            const float ewa_weight = (area - Pi) / (AreaThreshold - Pi);
+            const float rec_weight = 1.0f - ewa_weight;
+
+            //
+            // EWA filtering.
+            //
+
+            if (ewa_weight > 0.0f)
+            {
+                // Compute the bounding box of the ellipse.
+                const float half_width = 2.0f * c * sqrt(F / (4.0f * a * c * c - c * b * b));
+                const float half_height = 2.0f * a * sqrt(F / (4.0f * a * a * c - a * b * b));
+                const int min_x = truncate<int>(center_x - half_width);
+                const int min_y = truncate<int>(center_y - half_height);
+                const int max_x = truncate<int>(ceil(center_x + half_width));
+                const int max_y = truncate<int>(ceil(center_y + half_height));
+
+                const float u = (min_x + 0.5f) - center_x;
+                const float ddq = 2.0f * a;
+                float den = 0.0f;
+
+                for (int y = min_y; y < max_y; ++y)
+                {
+                    const float v = (y + 0.5f) - center_y;
+                    float dq = a * (2.0f * u + 1.0f) + b * v;
+                    float q = (c * v + b * u) * v + a * u * u;
+
+                    for (int x = min_x; x < max_x; ++x)
+                    {
+                        if (q < F)
+                        {
+                            SSE_ALIGN float texel[NumChannels];
+                            texture.get(x, y, texel);
+
+                            const float w = m_weights[q <= 0.0f ? 0 : truncate<size_t>(q)];
+                            assert(w >= 0.0f);
+
+                            for (int i = 0; i < NumChannels; ++i)
+                                result[i] += w * texel[i];
+
+                            den += w;
+
+                            tint_solid_rectangle(
+                                m_debug_image,
+                                CONV(Vector2i(x, y)),
+                                CONV(Vector2i(x + 1, y + 1)) - Vector2i(1, 1),
+                                Color3f(0.0f, 0.0f, 1.0f),
+                                w);
+                        }
+                        else
+                        {
+                            tint_solid_rectangle(
+                                m_debug_image,
+                                CONV(Vector2i(x, y)),
+                                CONV(Vector2i(x + 1, y + 1)) - Vector2i(1, 1),
+                                Color3f(1.0f, 0.0f, 0.0f),
+                                0.4f);
+                        }
+
+                        q += dq;
+                        dq += ddq;
+                    }
+                }
+
+                if (den > 0.0f)
+                {
+                    const float rcp_den = 1.0f / den;
+
+                    for (int i = 0; i < NumChannels; ++i)
+                        result[i] *= rcp_den;
+                }
+
+                // Draw the axes of the ellipse.
+                draw_line(
+                    m_debug_image,
+                    CONV(Vector2f(center_x, center_y)),
+                    CONV(Vector2f(center_x + dudx, center_y + dvdx)),
+                    Color3f(1.0f, 0.0f, 0.0f));
+                draw_line(
+                    m_debug_image,
+                    CONV(Vector2f(center_x, center_y)),
+                    CONV(Vector2f(center_x + dudy, center_y + dvdy)),
+                    Color3f(0.0f, 1.0f, 0.0f));
+
+                // Draw the bounding box of the ellipse.
+                draw_rectangle(
+                    m_debug_image,
+                    CONV(Vector2i(min_x, min_y)),
+                    CONV(Vector2i(max_x, max_y)),
+                    Color3f(1.0f, 1.0f, 0.0f));
+            }
+
+            //
+            // Reconstruction.
+            //
+
+            if (rec_weight > 0.0f)
+            {
+                const int texture_width = texture.width();
+                const int texture_height = texture.height();
+
+                const float px = center_x / texture_width * (texture_width - 1);
+                const float py = center_y / texture_height * (texture_height - 1);
+                const int ix = truncate<int>(px);
+                const int iy = truncate<int>(py);
+
+                const float wx = px - ix;
+                const float wy = py - iy;
+
+                SSE_ALIGN float texel00[NumChannels];
+                SSE_ALIGN float texel10[NumChannels];
+                SSE_ALIGN float texel20[NumChannels];
+                SSE_ALIGN float texel30[NumChannels];
+                SSE_ALIGN float texel01[NumChannels];
+                SSE_ALIGN float texel11[NumChannels];
+                SSE_ALIGN float texel21[NumChannels];
+                SSE_ALIGN float texel31[NumChannels];
+                SSE_ALIGN float texel02[NumChannels];
+                SSE_ALIGN float texel12[NumChannels];
+                SSE_ALIGN float texel22[NumChannels];
+                SSE_ALIGN float texel32[NumChannels];
+                SSE_ALIGN float texel03[NumChannels];
+                SSE_ALIGN float texel13[NumChannels];
+                SSE_ALIGN float texel23[NumChannels];
+                SSE_ALIGN float texel33[NumChannels];
+
+                texture.get(ix - 1, iy - 1, texel00);
+                texture.get(ix + 0, iy - 1, texel10);
+                texture.get(ix + 1, iy - 1, texel20);
+                texture.get(ix + 2, iy - 1, texel30);
+                texture.get(ix - 1, iy + 0, texel01);
+                texture.get(ix + 0, iy + 0, texel11);
+                texture.get(ix + 1, iy + 0, texel21);
+                texture.get(ix + 2, iy + 0, texel31);
+                texture.get(ix - 1, iy + 1, texel02);
+                texture.get(ix + 0, iy + 1, texel12);
+                texture.get(ix + 1, iy + 1, texel22);
+                texture.get(ix + 2, iy + 1, texel32);
+                texture.get(ix - 1, iy + 2, texel03);
+                texture.get(ix + 0, iy + 2, texel13);
+                texture.get(ix + 1, iy + 2, texel23);
+                texture.get(ix + 2, iy + 2, texel33);
+
+                for (int i = 0; i < NumChannels; ++i)
+                {
+                    const float rec_result =
+                        cubic_interpolation(
+                            cubic_interpolation(texel00[i], texel10[i], texel20[i], texel30[i], wx),
+                            cubic_interpolation(texel01[i], texel11[i], texel21[i], texel31[i], wx),
+                            cubic_interpolation(texel02[i], texel12[i], texel22[i], texel32[i], wx),
+                            cubic_interpolation(texel03[i], texel13[i], texel23[i], texel33[i], wx),
+                            wy);
+
+                    result[i] *= ewa_weight;
+                    result[i] += rec_weight * rec_result;
+                }
+            }
         }
 
-        static Color3f pow(const Color3f& c, const float e)
-        {
-            return Color3f(std::pow(c[0], e), std::pow(c[1], e), std::pow(c[2], e));
-        }
+#undef CONV
 
-        static Vector2i f2i(const Vector2f& v)
+      private:
+        Image& m_debug_image;
+
+        enum { WeightCount = 256 };
+        float m_weights[WeightCount];
+
+        static float cubic_interpolation(
+            const float         v0,
+            const float         v1,
+            const float         v2,
+            const float         v3,
+            const float         x)
         {
-            return Vector2i(truncate<int>(v[0]), truncate<int>(v[1]));
+            return v1 + 0.5f * x * (v2 - v0 + x * (2.0f * v0 - 5.0f * v1 + 4.0f * v2 - v3 + x * (3.0f * (v1 - v2) + v3 - v0)));
         }
     };
 
     //---------------------------------------------------------------------------------------------
-    //--- Test Code -------------------------------------------------------------------------------
+    // Tests.
     //---------------------------------------------------------------------------------------------
 
-    TEST_CASE(EWAFiltering)
+    TEST_CASE(Filter)
     {
         // Generate a checkerboard texture.
         Image texture(512, 512, 512, 512, 3, PixelFormatFloat);
         draw_checkerboard(texture, 32, Color3f(0.3f), Color3f(1.0f));
+        TextureSampler texture_sampler(texture);
 
         // Corners of the input trapezoid.
         const Vector2f V00(130.0f, 400.0f);
@@ -411,131 +583,259 @@ TEST_SUITE(EWAFilteringExploration)
         const Vector2f V01(200.0f,  60.0f);
         const Vector2f V11(480.0f, 230.0f);
 
-        // Run the reference filter.
-        Image debug_image(texture);
-        EWAFilterRef ref_filter(debug_image);
-        const Color3f ref_result =
-            ref_filter.filter_trapezoid(texture, 1.0f, V00, V10, V01, V11);
+        // Convert the trapezoid into an ellipse.
+        float center_x, center_y, dudx, dudy, dvdx, dvdy;
+        trapezoid_to_ellipse(V00, V10, V01, V11, center_x, center_y, dudx, dudy, dvdx, dvdy);
 
-        // Write the debug image to disk.
-        GenericImageFileWriter writer;
-        writer.write("unit tests/outputs/test_ewa.png", debug_image);
+        // Create the debug image.
+        Image debug_image(512, 512, 512, 512, 3, PixelFormatFloat);
+        draw_image(debug_image, texture);
+
+        // Run the reference filter.
+        EWAFilterRef<3, TextureSampler> ref_filter(debug_image);
+        Color3f ref_result;
+        ref_filter.filter(
+            texture_sampler,
+            center_x,
+            center_y,
+            dudx,
+            dudy,
+            dvdx,
+            dvdy,
+            1000.0f,
+            &ref_result[0]);
+
+        // Draw the input trapezoid.
+        draw_trapezoid(
+            debug_image,
+            convert(texture.properties(), debug_image.properties(), V00),
+            convert(texture.properties(), debug_image.properties(), V10),
+            convert(texture.properties(), debug_image.properties(), V01),
+            convert(texture.properties(), debug_image.properties(), V11),
+            Color3f(1.0f, 0.0f, 1.0f));
 
         // Run the AK filter.
-        EWAFilterAK ak_filter;
+        EWAFilterAK<3, TextureSampler> ak_filter;
         Color3f ak_result;
-        ak_filter.filter_trapezoid(
-            reinterpret_cast<const float*>(texture.tile(0, 0).get_storage()),
-            texture.properties().m_canvas_width,
-            texture.properties().m_canvas_height,
-            texture.properties().m_channel_count,
-            1.0f,
-            V00.x, V00.y,
-            V10.x, V10.y,
-            V01.x, V01.y,
-            V11.x, V11.y,
+        ak_filter.filter(
+            texture_sampler,
+            center_x,
+            center_y,
+            dudx,
+            dudy,
+            dvdx,
+            dvdy,
+            1000.0f,
             &ak_result[0]);
 
         // Verify that the results match.
         EXPECT_FEQ(ref_result, ak_result);
+
+        // Write the debug image to disk.
+        GenericImageFileWriter writer;
+        writer.write("unit tests/outputs/test_ewa_filter.png", debug_image);
     }
 
-    TEST_CASE(BilinearFilteringFallback)
+    void small_ellipse_test(
+        const char*         filepath,
+        const Vector2f&     v00,
+        const Vector2f&     v10,
+        const Vector2f&     v01,
+        const Vector2f&     v11)
     {
-        // Generate a 2x2 checkerboard texture.
-        Image texture(2, 2, 2, 2, 3, PixelFormatFloat);
-        draw_checkerboard(texture, 1, Color3f(0.0f), Color3f(1.0f));
+        // Generate a 8x8 checkerboard texture.
+        Image texture(8, 8, 8, 8, 3, PixelFormatFloat);
+        draw_checkerboard(texture, 1, Color3f(0.3f), Color3f(1.0f));
+        TextureSampler texture_sampler(texture);
 
-        // Corners of the input trapezoid.
-        const Vector2f V00(0.99f, 0.99f);
-        const Vector2f V10(1.01f, 0.99f);
-        const Vector2f V01(0.99f, 1.01f);
-        const Vector2f V11(1.01f, 1.01f);
+        // Convert the trapezoid into an ellipse.
+        float center_x, center_y, dudx, dudy, dvdx, dvdy;
+        trapezoid_to_ellipse(v00, v10, v01, v11, center_x, center_y, dudx, dudy, dvdx, dvdy);
+
+        // Create the debug image.
+        Image debug_image(512, 512, 512, 512, 3, PixelFormatFloat);
+        draw_image(debug_image, texture);
 
         // Run the reference filter.
-        Image debug_image(texture);
-        EWAFilterRef ref_filter(debug_image);
-        const Color3f ref_result =
-            ref_filter.filter_trapezoid(texture, 1.0f, V00, V10, V01, V11);
-        EXPECT_FEQ(Color3f(0.5f), ref_result);
+        EWAFilterRef<3, TextureSampler> filter(debug_image);
+        Color3f result;
+        filter.filter(
+            texture_sampler,
+            center_x,
+            center_y,
+            dudx,
+            dudy,
+            dvdx,
+            dvdy,
+            1000.0f,
+            &result[0]);
 
-        // Run the AK filter.
-        EWAFilterAK ak_filter;
-        Color3f ak_result;
-        ak_filter.filter_trapezoid(
-            reinterpret_cast<const float*>(texture.tile(0, 0).get_storage()),
-            texture.properties().m_canvas_width,
-            texture.properties().m_canvas_height,
-            texture.properties().m_channel_count,
-            1.0f,
-            V00.x, V00.y,
-            V10.x, V10.y,
-            V01.x, V01.y,
-            V11.x, V11.y,
-            &ak_result[0]);
-        EXPECT_FEQ(Color3f(0.5f), ak_result);
+        // Draw the input trapezoid.
+        draw_trapezoid(
+            debug_image,
+            convert(texture.properties(), debug_image.properties(), v00),
+            convert(texture.properties(), debug_image.properties(), v10),
+            convert(texture.properties(), debug_image.properties(), v01),
+            convert(texture.properties(), debug_image.properties(), v11),
+            Color3f(1.0f, 0.0f, 1.0f));
+
+        // Write the debug image to disk.
+        GenericImageFileWriter writer;
+        writer.write(filepath, debug_image);
     }
 
-    Vector2f random_point(MersenneTwister& rng, const AABB2f& bbox)
+    TEST_CASE(Filter_SmallEllipse)
     {
-        Vector2f v;
-        v.x = rand_float2(rng, bbox.min.x, bbox.max.x);
-        v.y = rand_float2(rng, bbox.min.y, bbox.max.y);
-        return v;
+        small_ellipse_test(
+            "unit tests/outputs/test_ewa_filter_smallellipse.png",
+            Vector2f(3.1f, 3.1f),
+            Vector2f(4.9f, 3.1f),
+            Vector2f(3.1f, 4.9f),
+            Vector2f(4.9f, 4.9f));
     }
 
-    TEST_CASE(StressTest)
+    TEST_CASE(Filter_SubTexelEllipse)
+    {
+        small_ellipse_test(
+            "unit tests/outputs/test_ewa_filter_subtexelellipse.png",
+            Vector2f(3.1f, 3.1f),
+            Vector2f(3.4f, 3.1f),
+            Vector2f(3.1f, 3.4f),
+            Vector2f(3.4f, 3.4f));
+    }
+
+    void magnification_test(
+        const char*         filepath,
+        const float         max_radius)
+    {
+        // Load the input texture.
+        GenericImageFileReader reader;
+        auto_ptr<Image> texture(reader.read("unit tests/inputs/test_ewa_texture_3x3.exr"));
+        assert(texture->properties().m_channel_count == 3);
+
+        // Output image.
+        Image output_image(512, 512, 512, 512, 3, PixelFormatFloat);
+
+        const size_t texture_width = texture->properties().m_canvas_width;
+        const size_t texture_height = texture->properties().m_canvas_height;
+        const size_t output_width = output_image.properties().m_canvas_width;
+        const size_t output_height = output_image.properties().m_canvas_height;
+        const float scale_x = static_cast<float>(texture_width) / output_width;
+        const float scale_y = static_cast<float>(texture_height) / output_height;
+
+        // Create the filter.
+        TextureSampler texture_sampler(*texture.get());
+        EWAFilterAK<3, TextureSampler> filter;
+
+        for (size_t y = 0; y < output_height; ++y)
+        {
+            for (size_t x = 0; x < output_width; ++x)
+            {
+                // Compute the parameters of the ellipse.
+                const float center_x = (x + 0.5f) / output_width * texture_width;
+                const float center_y = (y + 0.5f) / output_height * texture_height;
+                const float dudx = 1.0f / output_width * texture_width;
+                const float dvdx = 0.0f;
+                const float dudy = 0.0f;
+                const float dvdy = 1.0f / output_height * texture_height;
+
+                // Run the filter.
+                Color3f result;
+                filter.filter(
+                    texture_sampler,
+                    center_x,
+                    center_y,
+                    dudx,
+                    dudy,
+                    dvdx,
+                    dvdy,
+                    max_radius,
+                    &result[0]);
+
+                // Store the result.
+                output_image.set_pixel(x, y, result);
+            }
+        }
+
+        // Write the output image to disk.
+        GenericImageFileWriter writer;
+        writer.write(filepath, output_image);
+    }
+
+    TEST_CASE(Filter_Magnification_NoClamping)
+    {
+        magnification_test("unit tests/outputs/test_ewa_filter_magnification_noclamping.png", 1000.0f);
+    }
+
+    TEST_CASE(Filter_Magnification_Clamping)
+    {
+        magnification_test("unit tests/outputs/test_ewa_filter_magnification_clamping.png", 1.0f);
+    }
+
+    TEST_CASE(Filter_StressTest)
     {
         // Generate a checkerboard texture.
         const size_t Width = 64;
         const size_t Height = 64;
         Image texture(Width, Height, Width, Height, 3, PixelFormatFloat);
-        draw_checkerboard(texture, 2, Color3f(0.3f, 0.6f, 0.1f), Color3f(1.0f, 0.8f, 0.5f));
+        draw_checkerboard(texture, 8, Color3f(0.3f, 0.6f, 0.1f), Color3f(1.0f, 0.8f, 0.5f));
+        TextureSampler texture_sampler(texture);
+
+        // Create the debug image.
+        Image debug_image(512, 512, 512, 512, 3, PixelFormatFloat);
+        draw_image(debug_image, texture);
 
         // Create the filters.
-        Image debug_image(texture);
-        EWAFilterRef ref_filter(debug_image);
-        EWAFilterAK ak_filter;
+        EWAFilterRef<3, TextureSampler> ref_filter(debug_image);
+        EWAFilterAK<3, TextureSampler> ak_filter;
 
-        const AABB2f domain(
-            Vector2f(0.0f, 0.0f),
-            Vector2f(static_cast<float>(Width), static_cast<float>(Height)));
         MersenneTwister rng;
 
-        for (size_t i = 0; i < 1000; ++i)
+        for (size_t i = 0; i < 100; ++i)
         {
-            // Corners of the input trapezoid.
-            const Vector2f v00 = random_point(rng, domain);
-            const Vector2f v10 = random_point(rng, domain);
-            const Vector2f v01 = random_point(rng, domain);
-            const Vector2f v11 = random_point(rng, domain);
-
-            // Draw a random gamma value.
-            const float texture_gamma = rand_float1(rng, 0.1f, 10.0f);
+            // Generate a random ellipse.
+            const float center_x = rand_float2(rng, 0.0f, static_cast<float>(Width));
+            const float center_y = rand_float2(rng, 0.0f, static_cast<float>(Height));
+            const float dudx = rand_float1(rng, -10.0f, +10.0f);
+            const float dudy = rand_float1(rng, -10.0f, +10.0f);
+            const float dvdx = rand_float1(rng, -10.0f, +10.0f);
+            const float dvdy = rand_float1(rng, -10.0f, +10.0f);
 
             // Run the reference filter.
-            const Color3f ref_result =
-                ref_filter.filter_trapezoid(
-                    texture,
-                    texture_gamma,
-                    v00, v10, v01, v11);
+            Color3f ref_result;
+            ref_filter.filter(
+                texture_sampler,
+                center_x,
+                center_y,
+                dudx,
+                dudy,
+                dvdx,
+                dvdy,
+                1000.0f,
+                &ref_result[0]);
 
             // Run the AK filter.
             Color3f ak_result;
-            ak_filter.filter_trapezoid(
-                reinterpret_cast<const float*>(texture.tile(0, 0).get_storage()),
-                texture.properties().m_canvas_width,
-                texture.properties().m_canvas_height,
-                texture.properties().m_channel_count,
-                texture_gamma,
-                v00.x, v00.y,
-                v10.x, v10.y,
-                v01.x, v01.y,
-                v11.x, v11.y,
+            ak_filter.filter(
+                texture_sampler,
+                center_x,
+                center_y,
+                dudx,
+                dudy,
+                dvdx,
+                dvdy,
+                1000.0f,
                 &ak_result[0]);
 
             // Verify that the results match.
             EXPECT_FEQ(ref_result, ak_result);
+
+            if (i == 10)
+            {
+                // Write the debug image to disk.
+                GenericImageFileWriter writer;
+                writer.write("unit tests/outputs/test_ewa_filter_stresstest.png", debug_image);
+            }
         }
     }
 }

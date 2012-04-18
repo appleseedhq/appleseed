@@ -101,6 +101,12 @@ class FOUNDATIONDLL Console
     void reset_text_color(
         const Device    device);
 
+    // Wait until the Enter key is pressed.
+    static void wait_for_enter_keypress();
+
+    // Print a message to stdout and wait until Enter is pressed.
+    static void pause();
+
   private:
     friend class Singleton<Console>;
 

@@ -145,11 +145,11 @@ TEST_SUITE(Foundation_Math_FastMath)
         const T         high,
         const size_t    step_count)
     {
-        T max_error = 0.0;
+        T max_error = T(0.0);
 
         for (size_t i = 0; i < step_count; i += 4)
         {
-            ALIGN_SSE_VARIABLE T x[4];
+            SSE_ALIGN T x[4];
 
             for (size_t j = 0; j < 4; ++j)
             {

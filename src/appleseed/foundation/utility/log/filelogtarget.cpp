@@ -91,7 +91,6 @@ bool FileLogTarget::is_open() const
     return m_file != 0;
 }
 
-// Create an instance of a log target that outputs to a file.
 FileLogTarget* create_file_log_target()
 {
     return new FileLogTarget();

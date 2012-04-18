@@ -142,7 +142,7 @@ BENCHMARK_SUITE(SameSign)
 
     NO_INLINE bool same_sign_multiplication_sse(const float a, const float b, const float c)
     {
-        ALIGN_SSE_VARIABLE float u[4] = { a, a, b, c };
+        SSE_ALIGN float u[4] = { a, a, b, c };
 
         const sse4f mu = loadps(u);
         const sse4f mv = shuffleps(mu, mu, _MM_SHUFFLE(2, 3, 3, 2));

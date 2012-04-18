@@ -145,7 +145,7 @@ Builder<Tree, Timer>::Builder(
 
     // Create the root node.
     NodeType root;
-    root.set_type(NodeType::Leaf);
+    root.make_leaf();
     root.set_solid_bit(false);
     m_tree.m_nodes.push_back(root);
 }
@@ -221,18 +221,18 @@ void Builder<Tree, Timer>::push_recurse(
 
             // Create the left node.
             NodeType left_node;
-            left_node.set_type(NodeType::Leaf);
+            left_node.make_leaf();
             left_node.set_solid_bit(false);
             m_tree.m_nodes.push_back(left_node);
 
             // Create the right node.
             NodeType right_node;
-            right_node.set_type(NodeType::Leaf);
+            right_node.make_leaf();
             right_node.set_solid_bit(false);
             m_tree.m_nodes.push_back(right_node);
 
             // Convert the parent node to an interior node.
-            m_tree.m_nodes[node_index].set_type(NodeType::Interior);
+            m_tree.m_nodes[node_index].make_interior();
             m_tree.m_nodes[node_index].set_child_node_index(left_node_index);
             m_tree.m_nodes[node_index].set_split_dim(split.m_dimension);
             m_tree.m_nodes[node_index].set_split_abs(split.m_abscissa);
@@ -294,7 +294,7 @@ bool Builder<Tree, Timer>::trim_recurse(
         if (trim_recurse(left_node_index) &&
             trim_recurse(right_node_index))
         {
-            node.set_type(NodeType::Leaf);
+            node.make_leaf();
             node.set_solid_bit(true);
         }
     }

@@ -27,10 +27,12 @@
 //
 
 // appleseed.foundation headers.
+#include "foundation/utility/alignedallocator.h"
 #include "foundation/utility/memory.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.
+#include <cstddef>
 #include <vector>
 
 using namespace foundation;
@@ -128,31 +130,31 @@ TEST_SUITE(Foundation_Utility_Memory)
         EXPECT_FALSE(is_aligned((void*)65, 32));
     }
 
-    TEST_CASE(EnsureSize_GivenEmptyVector_ResizesVectorByInsertingDefaultValue)
+    TEST_CASE(EnsureMinimumSize_GivenEmptyVector_ResizesVectorByInsertingDefaultValue)
     {
         vector<int> v;
 
-        ensure_size(v, 2);
+        ensure_minimum_size(v, 2);
 
         EXPECT_EQ(2, v.size());
     }
 
-    TEST_CASE(EnsureSize_GivenEmptyVector_ResizesVectorByInsertingProvidedValue)
+    TEST_CASE(EnsureMinimumSize_GivenEmptyVector_ResizesVectorByInsertingProvidedValue)
     {
         vector<int> v;
 
-        ensure_size(v, 2, 42);
+        ensure_minimum_size(v, 2, 42);
 
         ASSERT_EQ(2, v.size());
         EXPECT_EQ(42, v[0]);
         EXPECT_EQ(42, v[1]);
     }
 
-    TEST_CASE(EnsureSize_GivenMinimumSizeSmallerThanCurrentVectorSize_DoesNothing)
+    TEST_CASE(EnsureMinimumSize_GivenMinimumSizeSmallerThanCurrentVectorSize_DoesNothing)
     {
         vector<int> v(12);
 
-        ensure_size(v, 3);
+        ensure_minimum_size(v, 3);
 
         EXPECT_EQ(12, v.size());
     }
@@ -178,6 +180,20 @@ TEST_SUITE(Foundation_Utility_Memory)
         EXPECT_EQ(default_capacity, v.capacity());
     }
 
+    TEST_CASE(ClearReleaseMemory_GivenVectorWithThousandElements_UsingAlignedAllocator_ResetsVectorCapacityToDefaultValue)
+    {
+        typedef AlignedAllocator<int> Allocator;
+
+        vector<int, AlignedAllocator<int> > v(Allocator(32));
+        const size_t default_capacity = v.capacity();
+
+        v.resize(1000);
+
+        clear_release_memory(v);
+
+        EXPECT_EQ(default_capacity, v.capacity());
+    }
+
     TEST_CASE(ClearKeepMemory_GivenVectorWithThousandElements_ClearsVector)
     {
         vector<int> v(1000);
@@ -187,7 +203,7 @@ TEST_SUITE(Foundation_Utility_Memory)
         EXPECT_TRUE(v.empty());
     }
 
-    TEST_CASE(ClearReleaseMemory_GivenVectorWithThousandElements_RetainsVectorCapacity)
+    TEST_CASE(ClearKeepMemory_GivenVectorWithThousandElements_RetainsVectorCapacity)
     {
         vector<int> v(1000);
 

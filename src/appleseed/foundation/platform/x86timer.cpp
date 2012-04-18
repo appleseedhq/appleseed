@@ -55,26 +55,23 @@ namespace
     }
 }
 
-// Constructor.
 X86Timer::X86Timer(const uint32 calibration_time_ms)
   : m_frequency(measure_timer_frequency(*this, calibration_time_ms))
 {
     assert(m_frequency > 0);
 }
 
-// Get the timer frequency, in Hz.
 uint64 X86Timer::frequency()
 {
     return m_frequency;
 }
 
-// Read the timer value.
 uint64 X86Timer::read()
 {
     uint32 h, l;
 
-// Visual C++.
-#if defined _MSC_VER
+// Visual C++, 32-bit mode.
+#if defined _MSC_VER && !defined _WIN64
 
     __asm
     {
@@ -88,9 +85,8 @@ uint64 X86Timer::read()
 #elif defined __GNUC__
 
     asm volatile
-    ("                                                                          \
-        rdtsc;                                                                  \
-        mov %%edx, %0;                                                          \
+    ("  rdtsc;                  \
+        mov %%edx, %0;          \
         mov %%eax, %1"
         : "=rm" (h), "=rm" (l)  // outputs
         :                       // inputs
@@ -99,7 +95,7 @@ uint64 X86Timer::read()
 
 // Unsupported platform.
 #else
-#error This timer is not supported on this platform.
+#error The x86 timer is not supported on this platform.
 #endif
 
     return (static_cast<uint64>(h) << 32) | l;

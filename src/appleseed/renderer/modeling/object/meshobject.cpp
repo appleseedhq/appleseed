@@ -36,9 +36,7 @@
 #include "renderer/modeling/object/triangle.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/attributeset.h"
 #include "foundation/utility/lazy.h"
-#include "foundation/utility/numerictype.h"
 
 using namespace foundation;
 using namespace std;
@@ -52,25 +50,22 @@ namespace renderer
 
 namespace
 {
-    // A dummy region that simply wraps the tessellation stored in the object.
+    // A dummy region that simply wraps a tessellation.
     class MeshRegion
       : public IRegion
     {
       public:
         // Constructor.
-        MeshRegion(
-            const GAABB3*               local_bbox,
-            const StaticTriangleTess*   tess)
-          : m_uid(new_guid())
-          , m_local_bbox(local_bbox)
+        explicit MeshRegion(const StaticTriangleTess* tess)
+          : m_tess(tess)
           , m_lazy_tess(tess)
         {
         }
 
-        // Return the local space bounding box of the region.
-        virtual const GAABB3& get_local_bbox() const
+        // Compute the local space bounding box of the region over the shutter interval.
+        virtual GAABB3 compute_local_bbox() const
         {
-            return *m_local_bbox;
+            return m_tess->compute_local_bbox();
         }
 
         // Return the static triangle tessellation of the region.
@@ -80,28 +75,22 @@ namespace
         }
 
       private:
-        const UniqueID                      m_uid;
-        const GAABB3*                       m_local_bbox;
+        const StaticTriangleTess*           m_tess;
         mutable Lazy<StaticTriangleTess>    m_lazy_tess;
     };
 }
 
 struct MeshObject::Impl
 {
-    GAABB3                      m_bbox;
     StaticTriangleTess          m_tess;
     MeshRegion                  m_region;
     RegionKit                   m_region_kit;
     mutable Lazy<RegionKit>     m_lazy_region_kit;
 
-    AttributeSet::ChannelID     m_uv0_channel_id;
-
     Impl()
-      : m_region(&m_bbox, &m_tess)
+      : m_region(&m_tess)
       , m_lazy_region_kit(&m_region_kit)
-      , m_uv0_channel_id(AttributeSet::InvalidChannelID)
     {
-        m_bbox.invalidate();
         m_region_kit.push_back(&m_region);
     }
 };
@@ -129,9 +118,9 @@ const char* MeshObject::get_model() const
     return MeshObjectFactory::get_model();
 }
 
-const GAABB3& MeshObject::get_local_bbox() const
+GAABB3 MeshObject::compute_local_bbox() const
 {
-    return impl->m_bbox;
+    return impl->m_tess.compute_local_bbox();
 }
 
 Lazy<RegionKit>& MeshObject::get_region_kit()
@@ -148,7 +137,6 @@ size_t MeshObject::push_vertex(const GVector3& vertex)
 {
     const size_t index = impl->m_tess.m_vertices.size();
     impl->m_tess.m_vertices.push_back(vertex);
-    impl->m_bbox.insert(vertex);
     return index;
 }
 
@@ -157,7 +145,7 @@ size_t MeshObject::get_vertex_count() const
     return impl->m_tess.m_vertices.size();
 }
 
-const GVector3& MeshObject::get_vertex(const size_t index) const
+GVector3 MeshObject::get_vertex(const size_t index) const
 {
     return impl->m_tess.m_vertices[index];
 }
@@ -179,56 +167,24 @@ size_t MeshObject::get_vertex_normal_count() const
     return impl->m_tess.m_vertex_normals.size();
 }
 
-const GVector3& MeshObject::get_vertex_normal(const size_t index) const
+GVector3 MeshObject::get_vertex_normal(const size_t index) const
 {
     return impl->m_tess.m_vertex_normals[index];
 }
 
-void MeshObject::reserve_tex_coords(const size_t count)
-{
-}
-
 size_t MeshObject::push_tex_coords(const GVector2& tex_coords)
 {
-    if (impl->m_uv0_channel_id == AttributeSet::InvalidChannelID)
-    {
-        impl->m_uv0_channel_id =
-            impl->m_tess.m_vertex_attributes.create_channel(
-                "uv0",
-                NumericType::id<GVector2::ValueType>(),
-                2);
-    }
-
-    return
-        impl->m_tess.m_vertex_attributes.push_attribute(
-            impl->m_uv0_channel_id,
-            tex_coords);
+    return impl->m_tess.push_uv_vertex(tex_coords);
 }
 
 size_t MeshObject::get_tex_coords_count() const
 {
-    if (impl->m_uv0_channel_id == AttributeSet::InvalidChannelID)
-        return 0;
-    else
-    {
-        return impl->m_tess.m_vertex_attributes.get_attribute_count(
-            impl->m_uv0_channel_id);
-    }
+    return impl->m_tess.get_uv_vertex_count();
 }
 
 GVector2 MeshObject::get_tex_coords(const size_t index) const
 {
-    if (impl->m_uv0_channel_id == AttributeSet::InvalidChannelID)
-        return GVector2(0.0);
-    else
-    {
-        GVector2 tex_coords;
-        impl->m_tess.m_vertex_attributes.get_attribute(
-            impl->m_uv0_channel_id,
-            index,
-            &tex_coords);
-        return tex_coords;
-    }
+    return impl->m_tess.get_uv_vertex(index);
 }
 
 void MeshObject::reserve_triangles(const size_t count)
@@ -248,9 +204,34 @@ size_t MeshObject::get_triangle_count() const
     return impl->m_tess.m_primitives.size();
 }
 
-const Triangle& MeshObject::get_triangle(const size_t index) const
+Triangle MeshObject::get_triangle(const size_t index) const
 {
     return impl->m_tess.m_primitives[index];
+}
+
+void MeshObject::set_motion_segment_count(const size_t count)
+{
+    impl->m_tess.set_motion_segment_count(count);
+}
+
+size_t MeshObject::get_motion_segment_count() const
+{
+    return impl->m_tess.get_motion_segment_count();
+}
+
+void MeshObject::set_vertex_pose(
+    const size_t    vertex_index,
+    const size_t    motion_segment_index,
+    const GVector3& v)
+{
+    impl->m_tess.set_vertex_pose(vertex_index, motion_segment_index, v);
+}
+
+GVector3 MeshObject::get_vertex_pose(
+    const size_t    vertex_index,
+    const size_t    motion_segment_index) const
+{
+    return impl->m_tess.get_vertex_pose(vertex_index, motion_segment_index);
 }
 
 

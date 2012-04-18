@@ -520,8 +520,8 @@ inline bool feq(const T lhs, const T rhs, const T eps)
 
     // There is equality if the ratio lhs/rhs is close enough to 1.
     return
-        (lhs / rhs) > (T(1.0) - eps) &&
-        (lhs / rhs) < (T(1.0) + eps);
+        (lhs / rhs) >= (T(1.0) - eps) &&
+        (lhs / rhs) <= (T(1.0) + eps);
 }
 
 inline bool feq(const int lhs, const int rhs)

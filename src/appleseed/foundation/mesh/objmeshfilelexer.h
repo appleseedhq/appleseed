@@ -34,7 +34,7 @@
 #include "foundation/mesh/objmeshfilereader.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/bufferedfile.h"
-#include "foundation/utility/memory.h"
+#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <cassert>
@@ -42,6 +42,7 @@
 #include <cstddef>
 #include <cstdlib>
 #include <string>
+#include <vector>
 
 namespace foundation
 {
@@ -53,15 +54,24 @@ namespace foundation
 class OBJMeshFileLexer
 {
   public:
+    // Available modes for parsing floating-point values.
+    enum ParsingMode
+    {
+        Fast, Precise
+    };
+
     // Constructor.
-    OBJMeshFileLexer()
-      : m_eof(false)
+    explicit OBJMeshFileLexer(const ParsingMode parsing_mode = Precise)
+      : m_parsing_mode(parsing_mode)
+      , m_eof(false)
       , m_line_number(0)
+      , m_line(4096)
+      , m_line_size(0)
       , m_line_index(0)
     {
         // Precompute the value of std::isspace(c) for all c.
-        for (size_t i = 0; i < 256; ++i)
-            m_is_space[i] = std::isspace(static_cast<int>(i)) != 0;
+        for (int i = 0; i < 256; ++i)
+            m_is_space[i] = std::isspace(i) != 0;
     }
 
     // Open an input file.
@@ -70,6 +80,7 @@ class OBJMeshFileLexer
     {
         m_eof = false;
         m_line_number = 0;
+        m_line_size = 0;
         m_line_index = 0;
 
         m_file.open(
@@ -81,6 +92,7 @@ class OBJMeshFileLexer
             return false;
 
         read_next_line();
+
         return true;
     }
 
@@ -103,7 +115,7 @@ class OBJMeshFileLexer
     {
         assert(m_file.is_open());
 
-        return m_line_index == m_line.size() ? '\n' : m_line[m_line_index];
+        return m_line_index == m_line_size ? '\n' : m_line[m_line_index];
     }
 
     // Advance to the next character in the line.
@@ -111,7 +123,7 @@ class OBJMeshFileLexer
     {
         assert(m_file.is_open());
 
-        if (m_line_index < m_line.size())
+        if (m_line_index < m_line_size)
             ++m_line_index;
         else
         {
@@ -131,7 +143,7 @@ class OBJMeshFileLexer
     {
         assert(m_file.is_open());
 
-        return m_line_index == m_line.size();
+        return m_line_index == m_line_size;
     }
 
     // Return true if the end of the file has been reached.
@@ -139,7 +151,7 @@ class OBJMeshFileLexer
     {
         assert(m_file.is_open());
 
-        return m_eof && m_line_index == m_line.size();
+        return m_eof && is_eol();
     }
 
     // Eat blank characters and comments.
@@ -159,7 +171,7 @@ class OBJMeshFileLexer
 
             if (c == '#')
             {
-                m_line_index = m_line.size();
+                m_line_index = m_line_size;
                 break;
             }
 
@@ -175,25 +187,6 @@ class OBJMeshFileLexer
     {
         m_line_index = 0;
         read_next_line();
-    }
-
-    // Eat until the end-of-line character (eat the remaining of the line).
-    void eat_until_newline()
-    {
-        assert(m_file.is_open());
-
-        while (true)
-        {
-            if (is_eof())
-                break;
-
-            const unsigned char c = get_char();
-
-            if (c == '\n')
-                break;
-
-            next_char();
-        }
     }
 
     // Accept a end-of-line character, or generate a parse error.
@@ -246,18 +239,17 @@ class OBJMeshFileLexer
         assert(m_file.is_open());
 
         // Read an integer value at the current position in the line.
-        const char* base_ptr = m_line.c_str();
-        char* end_ptr;
-        const long n =
-            std::strtol(
+        const char* base_ptr = &m_line[0];
+        const char* end_ptr;
+        const long value =
+            fast_strtol_base10(
                 base_ptr + m_line_index,
-                &end_ptr,
-                10);        // base
+                &end_ptr);
 
         // Move the cursor to the first character that isn't part of the value.
         m_line_index = end_ptr - base_ptr;
 
-        return n;
+        return value;
     }
 
     // Accept a double-precision floating point number, or generate a parse error.
@@ -266,26 +258,32 @@ class OBJMeshFileLexer
         assert(m_file.is_open());
 
         // Read a floating-point value at the current position in the line.
-        const char* base_ptr = m_line.c_str();
+        char* base_ptr = &m_line[0];
         char* end_ptr;
-        const double d =
-            std::strtod(
-                base_ptr + m_line_index,
-                &end_ptr);
+        const double value =
+            m_parsing_mode == Fast
+                ? fast_strtod(
+                    base_ptr + m_line_index,
+                    &end_ptr)
+                : std::strtod(
+                    base_ptr + m_line_index,
+                    &end_ptr);
 
         // Move the cursor to the first character that isn't part of the value.
         m_line_index = end_ptr - base_ptr;
 
-        return d;
+        return value;
     }
 
   private:
-    bool            m_is_space[256];    // precomputed values of std::isspace(c) for all c
-    BufferedFile    m_file;
-    bool            m_eof;              // has the end of the file been reached?
-    std::string     m_line;             // current line
-    size_t          m_line_number;      // position of the current line in the file
-    size_t          m_line_index;       // position of the cursor in the current line
+    const ParsingMode   m_parsing_mode;     // parsing mode for floating-point values
+    bool                m_is_space[256];    // precomputed values of std::isspace(c) for all c
+    BufferedFile        m_file;
+    bool                m_eof;              // has the end of the file been reached?
+    size_t              m_line_number;      // position of the current line in the file
+    std::vector<char>   m_line;             // current line
+    size_t              m_line_size;        // size of the current line (not counting the zero terminator)
+    size_t              m_line_index;       // position of the cursor in the current line
 
     // Close the input file and throw an ExceptionParseError exception.
     void parse_error()
@@ -299,31 +297,34 @@ class OBJMeshFileLexer
     {
         assert(m_file.is_open());
 
-        clear_keep_memory(m_line);
+        m_line_size = 0;
 
-        if (m_eof)
-            return;
-
-        ++m_line_number;
-
-        while (true)
+        if (!m_eof)
         {
-            // Read one character from the file.
-            unsigned char c;
-            if (m_file.read(&c) < 1)
+            ++m_line_number;
+
+            while (m_line_size < m_line.size() - 1)
             {
-                // Reached the end of the file.
-                m_eof = true;
-                break;
+                // Read one character from the file.
+                char c;
+                if (m_file.read(&c) < 1)
+                {
+                    // Reached the end of the file.
+                    m_eof = true;
+                    break;
+                }
+
+                // Stop as soon as the end of the line is reached.
+                if (c == '\n')
+                    break;
+
+                // Append the character to the line.
+                m_line[m_line_size++] = c;
             }
-
-            // Stop as soon as the end of the line is reached.
-            if (c == '\n')
-                break;
-
-            // Append the character to the line.
-            m_line += c;
         }
+
+        // Append a null terminator.
+        m_line[m_line_size] = 0;
     }
 };
 

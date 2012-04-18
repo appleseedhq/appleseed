@@ -407,7 +407,7 @@ void Builder<Tree, LeafFactory, LeafSplitter, Timer>::create_root(
 
     // Create the root node.
     NodeType root_node;
-    root_node.set_type(NodeType::Leaf);
+    root_node.make_leaf();
     root_node.set_leaf_index(0);
     root_node.set_leaf_size(tree.m_leaves.front()->get_size());
     tree.m_nodes.push_back(root_node);
@@ -460,7 +460,7 @@ void Builder<Tree, LeafFactory, LeafSplitter, Timer>::subdivide(
 
         // Get leaf node.
         NodeType& node = tree.m_nodes[leaf_record.get_node_index()];
-        assert(node.get_type() == NodeType::Leaf);
+        assert(node.is_leaf());
 
         // Get leaf.
         const size_t leaf_index = node.get_leaf_index();
@@ -526,21 +526,21 @@ void Builder<Tree, LeafFactory, LeafSplitter, Timer>::subdivide(
             right_leaf = factory.create_leaf();
 
             // Transform the leaf node to an interior node.
-            node.set_type(NodeType::Interior);
+            node.make_interior();
             node.set_child_node_index(left_node_index);
             node.set_split_dim(split.m_dimension);
             node.set_split_abs(split.m_abscissa);
 
             // Create the left node.
             NodeType left_node;
-            left_node.set_type(NodeType::Leaf);
+            left_node.make_leaf();
             left_node.set_leaf_index(left_leaf_index);
             left_node.set_leaf_size(left_leaf_size);
             tree.m_nodes.push_back(left_node);
 
             // Create the right node.
             NodeType right_node;
-            right_node.set_type(NodeType::Leaf);
+            right_node.make_leaf();
             right_node.set_leaf_index(right_leaf_index);
             right_node.set_leaf_size(right_leaf_size);
             tree.m_nodes.push_back(right_node);

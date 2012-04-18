@@ -185,7 +185,7 @@ namespace
 
                 m_mesh_builder.begin_face(face_size);
 
-                ensure_size(indices, face_size);
+                ensure_minimum_size(indices, face_size);
 
                 // Collect face vertex indices and push them to the builder.
                 for (size_t j = 0; j < face_size; ++j)
@@ -215,51 +215,35 @@ namespace
         }
     };
 
-    class AlembicMeshFileReaderImpl
-      : public NonCopyable
+    void read_object(const IObject& object, IMeshBuilder& builder)
     {
-      public:
-        explicit AlembicMeshFileReaderImpl(IMeshBuilder& mesh_builder)
-          : m_mesh_builder(mesh_builder)
+        const size_t children_count = object.getNumChildren();
+
+        for (size_t i = 0; i < children_count; ++i)
         {
-        }
+            const ObjectHeader& child_header = object.getChildHeader(i);
 
-        void read(const string& filename)
-        {
-            const IArchive archive(AbcCoreHDF5::ReadArchive(), filename);
-
-            read_object(IObject(archive, kTop));
-        }
-
-      private:
-        IMeshBuilder& m_mesh_builder;
-
-        void read_object(const IObject& object)
-        {
-            const size_t children_count = object.getNumChildren();
-
-            for (size_t i = 0; i < children_count; ++i)
+            if (IPolyMesh::matches(child_header))
             {
-                const ObjectHeader& child_header = object.getChildHeader(i);
-
-                if (IPolyMesh::matches(child_header))
-                {
-                    MeshObjectReader mesh_reader(m_mesh_builder);
-                    mesh_reader.read(IPolyMesh(object, child_header.getName()));
-                }
-
-                read_object(object.getChild(i));
+                MeshObjectReader mesh_reader(builder);
+                mesh_reader.read(IPolyMesh(object, child_header.getName()));
             }
+
+            read_object(object.getChild(i), builder);
         }
-    };
+    }
 }
 
-void AlembicMeshFileReader::read(
-    const string&   filename,
-    IMeshBuilder&   builder)
+AlembicMeshFileReader::AlembicMeshFileReader(const string& filename)
+  : m_filename(filename)
 {
-    AlembicMeshFileReaderImpl impl(builder);
-    impl.read(filename);
+}
+
+void AlembicMeshFileReader::read(IMeshBuilder& builder)
+{
+    const IArchive archive(AbcCoreHDF5::ReadArchive(), m_filename);
+
+    read_object(IObject(archive, kTop), builder);
 }
 
 }   // namespace foundation

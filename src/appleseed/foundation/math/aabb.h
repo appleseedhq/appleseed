@@ -48,9 +48,6 @@
 namespace foundation
 {
 
-// todo: replace most methods of AABB, like surface_area(), by free functions?
-
-
 //
 // N-dimensional axis-aligned bounding box [min, max] class and operations.
 // The boundary of the bounding box is considered to belong to the bounding box.
@@ -95,6 +92,17 @@ class AABB
     // Return an invalidated bounding box.
     static AABBType invalid();
 
+    // Compute the intersection between two bounding boxes.
+    static AABBType intersect(const AABBType& a, const AABBType& b);
+
+    // Return true if two bounding boxes overlap.
+    static bool overlap(const AABBType& a, const AABBType& b);
+
+    // Return the amount of overlapping between two bounding boxes.
+    // Returns 0.0 if the bounding boxes are disjoint, 1.0 if one
+    // is contained in the other.
+    static ValueType overlap_ratio(const AABBType& a, const AABBType& b);
+
     // Return the ratio of the extent of a to the extent of b.
     static ValueType extent_ratio(const AABBType& a, const AABBType& b);
 
@@ -125,30 +133,29 @@ class AABB
 
     // Compute the center of the bounding box.
     VectorType center() const;
+    ValueType center(const size_t dim) const;
 
     // Compute the extent of the bounding box.
     VectorType extent() const;
+    ValueType extent(const size_t dim) const;
 
     // Return the volume of the bounding box.
     T volume() const;
 
-    // Return the surface area of the bounding box.
-    T half_surface_area() const;
-    T surface_area() const;
-
     // Compute the 2^N corner points of the bounding box.
-    void compute_corners(VectorType* corners) const;
+    void compute_corners(VectorType corners[]) const;
 
     // Return true if the bounding box contains a given point.
     bool contains(const VectorType& v) const;
-
-    // Return true if the bounding box overlaps another given bounding box.
-    bool overlaps(const AABBType& b) const;
 };
 
 // Exact inequality and equality tests.
 template <typename T, size_t N> bool operator!=(const AABB<T, N>& lhs, const AABB<T, N>& rhs);
 template <typename T, size_t N> bool operator==(const AABB<T, N>& lhs, const AABB<T, N>& rhs);
+
+// Compute the surface area of a 3D bounding box.
+template <typename T> T half_surface_area(const AABB<T, 3>& bbox);
+template <typename T> T surface_area(const AABB<T, 3>& bbox);
 
 
 //
@@ -230,15 +237,79 @@ inline AABB<T, N> AABB<T, N>::invalid()
 }
 
 template <typename T, size_t N>
+inline AABB<T, N> AABB<T, N>::intersect(const AABBType& a, const AABBType& b)
+{
+    assert(a.is_valid());
+    assert(b.is_valid());
+
+    AABBType intersection;
+
+    for (size_t i = 0; i < N; ++i)
+    {
+        intersection.min[i] = std::max(a.min[i], b.min[i]);
+        intersection.max[i] = std::min(a.max[i], b.max[i]);
+    }
+
+    return intersection;
+}
+
+template <typename T, size_t N>
+inline bool AABB<T, N>::overlap(const AABBType& a, const AABBType& b)
+{
+    assert(a.is_valid());
+    assert(b.is_valid());
+
+    for (size_t i = 0; i < N; ++i)
+    {
+        if (a.min[i] > b.max[i] || a.max[i] < b.min[i])
+            return false;
+    }
+
+    return true;
+}
+
+template <typename T, size_t N>
+inline T AABB<T, N>::overlap_ratio(const AABBType& a, const AABBType& b)
+{
+    assert(a.is_valid());
+    assert(b.is_valid());
+
+    T ratio = T(1.0);
+
+    for (size_t i = 0; i < N; ++i)
+    {
+        const T amin = a.min[i];
+        const T amax = a.max[i];
+        const T bmin = b.min[i];
+        const T bmax = b.max[i];
+
+        const T overlap = std::min(amax, bmax) - std::max(amin, bmin);
+
+        if (overlap <= T(0.0))
+            return T(0.0);
+
+        ratio *= overlap / std::min(amax - amin, bmax - bmin);
+    }
+
+    return ratio;
+}
+
+template <typename T, size_t N>
 inline T AABB<T, N>::extent_ratio(const AABBType& a, const AABBType& b)
 {
+    assert(a.is_valid());
+    assert(b.is_valid());
+
     const VectorType ea = a.extent();
     const VectorType eb = b.extent();
 
     T ratio = T(1.0);
 
     for (size_t i = 0; i < N; ++i)
-        ratio *= (ea[i] == eb[i]) ? T(1.0) : ea[i] / eb[i];
+    {
+        if (ea[i] != eb[i])
+            ratio *= ea[i] / eb[i];
+    }
 
     return ratio;
 }
@@ -272,8 +343,10 @@ inline void AABB<T, N>::insert(const VectorType& v)
 {
     for (size_t i = 0; i < N; ++i)
     {
-        min[i] = std::min(min[i], v[i]);
-        max[i] = std::max(max[i], v[i]);
+        if (min[i] > v[i])
+            min[i] = v[i];
+        if (max[i] < v[i])
+            max[i] = v[i];
     }
 }
 
@@ -282,8 +355,10 @@ inline void AABB<T, N>::insert(const AABBType& b)
 {
     for (size_t i = 0; i < N; ++i)
     {
-        min[i] = std::min(min[i], b.min[i]);
-        max[i] = std::max(max[i], b.max[i]);
+        if (min[i] > b.min[i])
+            min[i] = b.min[i];
+        if (max[i] < b.max[i])
+            max[i] = b.max[i];
     }
 }
 
@@ -335,8 +410,6 @@ inline bool AABB<T, N>::is_valid() const
 template <typename T, size_t N>
 inline size_t AABB<T, N>::rank() const
 {
-    assert(is_valid());
-
     size_t r = 0;
     
     for (size_t i = 0; i < N; ++i)
@@ -357,11 +430,27 @@ inline Vector<T, N> AABB<T, N>::center() const
 }
 
 template <typename T, size_t N>
+inline T AABB<T, N>::center(const size_t dim) const
+{
+    assert(is_valid());
+
+    return ValueType(0.5) * (min[dim] + max[dim]);
+}
+
+template <typename T, size_t N>
 inline Vector<T, N> AABB<T, N>::extent() const
 {
     assert(is_valid());
 
     return max - min;
+}
+
+template <typename T, size_t N>
+inline T AABB<T, N>::extent(const size_t dim) const
+{
+    assert(is_valid());
+
+    return max[dim] - min[dim];
 }
 
 template <typename T, size_t N>
@@ -371,40 +460,26 @@ T AABB<T, N>::volume() const
 
     const VectorType e = max - min;
 
-    return e[0] * e[1] * e[2];
+    ValueType volume = e[0];
+
+    for (size_t i = 1; i < N; ++i)
+        volume *= e[i];
+
+    return volume;
 }
 
 template <typename T, size_t N>
-inline T AABB<T, N>::half_surface_area() const
-{
-    assert(is_valid());
-
-    const VectorType e = max - min;
-
-    return e[0] * e[1] + e[0] * e[2] + e[1] * e[2];
-}
-
-template <typename T, size_t N>
-inline T AABB<T, N>::surface_area() const
-{
-    const T h = half_surface_area();
-    return h + h;
-}
-
-template <typename T, size_t N>
-void AABB<T, N>::compute_corners(VectorType* corners) const
+void AABB<T, N>::compute_corners(VectorType corners[]) const
 {
     assert(is_valid());
     assert(corners);
 
     for (size_t i = 0; i < 1 << N; ++i)
     {
-        VectorType p;
+        VectorType& p = corners[i];
 
         for (size_t d = 0; d < N; ++d)
             p[d] = i & (1 << d) ? max[d] : min[d];
-
-        corners[i] = p;
     }
 }
 
@@ -423,20 +498,6 @@ inline bool AABB<T, N>::contains(const VectorType& v) const
 }
 
 template <typename T, size_t N>
-inline bool AABB<T, N>::overlaps(const AABBType& b) const
-{
-    assert(is_valid());
-
-    for (size_t i = 0; i < N; ++i)
-    {
-        if (min[i] > b.max[i] || max[i] < b.min[i])
-            return false;
-    }
-
-    return true;
-}
-
-template <typename T, size_t N>
 inline bool operator!=(const AABB<T, N>& lhs, const AABB<T, N>& rhs)
 {
     return lhs.min != rhs.min || lhs.max != rhs.max;
@@ -446,6 +507,24 @@ template <typename T, size_t N>
 inline bool operator==(const AABB<T, N>& lhs, const AABB<T, N>& rhs)
 {
     return !(lhs != rhs);
+}
+
+template <typename T>
+inline T half_surface_area(const AABB<T, 3>& bbox)
+{
+    assert(bbox.is_valid());
+
+    const Vector<T, 3> e = bbox.max - bbox.min;
+
+    return e[0] * e[1] + e[0] * e[2] + e[1] * e[2];
+}
+
+template <typename T>
+inline T surface_area(const AABB<T, 3>& bbox)
+{
+    const T h = half_surface_area(bbox);
+
+    return h + h;
 }
 
 }       // namespace foundation

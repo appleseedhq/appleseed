@@ -36,6 +36,7 @@
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <cstring>
 
 namespace foundation
 {
@@ -84,13 +85,13 @@ void aligned_free(void* aligned_ptr);
 //
 
 // Ensure that a container has a minimum given size.
-template <typename Vector>
-void ensure_size(
-    Vector&         vector,
+template <typename Container>
+void ensure_minimum_size(
+    Container&      container,
     const size_t    minimum_size);
-template <typename Vector, typename T>
-void ensure_size(
-    Vector&         vector,
+template <typename Container, typename T>
+void ensure_minimum_size(
+    Container&      container,
     const size_t    minimum_size,
     const T&        value);
 
@@ -101,6 +102,32 @@ void clear_release_memory(Container& container);
 // Clear a container but keep memory allocated.
 template <typename Container>
 void clear_keep_memory(Container& container);
+
+// Shrink the capacity of a container to its size.
+template <typename Container>
+void shrink_to_fit(Container& container);
+
+
+//
+// Utility class to write typed data to an unstructured memory block.
+//
+
+class MemoryWriter
+{
+  public:
+    explicit MemoryWriter(void* dest);
+
+    void write(const void* src, const size_t size);
+
+    template <typename T>
+    void write(const T& value);
+
+    size_t offset() const;
+
+  private:
+    const uint8* const  m_base;
+    uint8*              m_ptr;
+};
 
 
 //
@@ -166,29 +193,29 @@ inline bool is_aligned(const T ptr, const size_t alignment)
 // STL containers related functions implementation.
 //
 
-template <typename Vector>
-inline void ensure_size(
-    Vector&         vector,
+template <typename Container>
+inline void ensure_minimum_size(
+    Container&      container,
     const size_t    minimum_size)
 {
-    if (vector.size() < minimum_size)
-        vector.resize(minimum_size);
+    if (container.size() < minimum_size)
+        container.resize(minimum_size);
 }
 
-template <typename Vector, typename T>
-inline void ensure_size(
-    Vector&         vector,
+template <typename Container, typename T>
+inline void ensure_minimum_size(
+    Container&      container,
     const size_t    minimum_size,
     const T&        value)
 {
-    if (vector.size() < minimum_size)
-        vector.resize(minimum_size, value);
+    if (container.size() < minimum_size)
+        container.resize(minimum_size, value);
 }
 
 template <typename Container>
 inline void clear_release_memory(Container& container)
 {
-    Container().swap(container);
+    Container(container.get_allocator()).swap(container);
 
     assert(container.empty());
 }
@@ -203,6 +230,40 @@ inline void clear_keep_memory(Container& container)
     container.erase(container.begin(), container.end());
 
     assert(container.capacity() == old_capacity);
+}
+
+template <typename Container>
+inline void shrink_to_fit(Container& container)
+{
+    Container(container).swap(container);
+}
+
+
+//
+// MemoryWriter class implementation.
+//
+
+inline MemoryWriter::MemoryWriter(void* dest)
+  : m_base(reinterpret_cast<uint8*>(dest))
+  , m_ptr(reinterpret_cast<uint8*>(dest))
+{
+}
+
+inline void MemoryWriter::write(const void* src, const size_t size)
+{
+    std::memcpy(m_ptr, src, size);
+    m_ptr += size;
+}
+
+template <typename T>
+inline void MemoryWriter::write(const T& value)
+{
+    write(&value, sizeof(T));
+}
+
+inline size_t MemoryWriter::offset() const
+{
+    return m_ptr - m_base;
 }
 
 }       // namespace foundation

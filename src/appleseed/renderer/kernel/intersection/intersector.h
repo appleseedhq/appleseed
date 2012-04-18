@@ -77,6 +77,12 @@ class Intersector
         foundation::Vector3d            n,
         foundation::Vector3d&           front,
         foundation::Vector3d&           back);
+    static void adaptive_offset(
+        const TriangleSupportPlaneType& support_plane,
+        const foundation::Vector3d&     p,
+        foundation::Vector3d            n,
+        foundation::Vector3d&           front,
+        foundation::Vector3d&           back);
 
     // Trace a world space ray through the scene.
     bool trace(
@@ -87,12 +93,6 @@ class Intersector
     // Trace a world space probe ray through the scene.
     bool trace_probe(
         const ShadingRay&               ray,
-        const ShadingPoint*             parent_shading_point = 0) const;
-
-    // Return true if a given point is occluded from another given point.
-    bool occluded(
-        const foundation::Vector3d&     origin,
-        const foundation::Vector3d&     target,
         const ShadingPoint*             parent_shading_point = 0) const;
 
     // Manufacture a hit "by hand".
@@ -109,7 +109,6 @@ class Intersector
     const TraceContext&                             m_trace_context;
     const bool                                      m_print_statistics;
     const bool                                      m_report_self_intersections;
-    const foundation::AABB3d                        m_assembly_tree_aabb;
 
     // Access caches.
     mutable RegionTreeAccessCache                   m_region_tree_cache;
@@ -121,36 +120,10 @@ class Intersector
     mutable foundation::uint64                      m_ray_count;
     mutable foundation::uint64                      m_probe_ray_count;
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
-    mutable foundation::bvh::TraversalStatistics    m_assembly_bvh_traversal_stats;
-#endif
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-    mutable foundation::bsp::TraversalStatistics    m_triangle_bsp_traversal_stats;
+    mutable foundation::bvh::TraversalStatistics    m_assembly_tree_traversal_stats;
+    mutable foundation::bvh::TraversalStatistics    m_triangle_tree_traversal_stats;
 #endif
 };
-
-
-//
-// Intersector class implementation.
-//
-
-inline bool Intersector::occluded(
-    const foundation::Vector3d&     origin,
-    const foundation::Vector3d&     target,
-    const ShadingPoint*             parent_shading_point) const
-{
-    // todo: get rid of this epsilon.
-    const double Eps = 1.0e-6;
-
-    const ShadingRay visibility_ray(
-        origin,
-        target - origin,
-        0.0,                // ray tmin
-        1.0 - Eps,          // ray tmax
-        0.0f,               // ray time
-        ~0);                // ray flags
-
-    return trace_probe(visibility_ray, parent_shading_point);
-}
 
 }       // namespace renderer
 

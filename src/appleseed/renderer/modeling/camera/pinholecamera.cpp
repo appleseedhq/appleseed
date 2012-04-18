@@ -107,33 +107,31 @@ namespace
             const Vector2d&         point,
             ShadingRay&             ray) const
         {
+            // Initialize the ray.
+            sampling_context.split_in_place(1, 1);
+            ray.m_time = sampling_context.next_double2();
+            ray.m_tmin = 0.0;
+            ray.m_tmax = numeric_limits<double>::max();
+            ray.m_flags = ~0;
+
             // Transform the film point from NDC to camera space.
             const Vector3d target(
                 (point.x - 0.5) * m_film_dimensions[0],
                 (0.5 - point.y) * m_film_dimensions[1],
                 -m_focal_length);
 
+            // Compute the origin and direction of the ray.
             if (m_transform_sequence.size() > 1)
             {
-                sampling_context.split_in_place(1, 1);
-
-                const double time = sampling_context.next_double2();
-                const Transformd transform = m_transform_sequence.evaluate(time);
-
+                const Transformd transform = m_transform_sequence.evaluate(ray.m_time);
                 ray.m_org = transform.get_local_to_parent().extract_translation();
                 ray.m_dir = transform.transform_vector_to_parent(target);
-                ray.m_time = time;
             }
             else
             {
                 ray.m_org = m_ray_org;
                 ray.m_dir = m_transform_sequence.evaluate(0.0).transform_vector_to_parent(target);
-                ray.m_time = 0.0;
             }
-
-            ray.m_tmin = 0.0;
-            ray.m_tmax = numeric_limits<double>::max();
-            ray.m_flags = ~0;
         }
 
         virtual Vector2d project(const Vector3d& point) const

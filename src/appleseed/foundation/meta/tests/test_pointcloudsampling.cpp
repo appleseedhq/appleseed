@@ -39,6 +39,7 @@
 #include "foundation/math/sampling.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
+#include "foundation/platform/timer.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.
@@ -194,7 +195,7 @@ TEST_SUITE(Exploration_PointCloudSampling)
 
         knn::Tree2d tree;
         knn::Builder2d builder(tree);
-        builder.build(&initial_points[0], initial_points.size());
+        builder.build<DefaultWallclockTimer>(&initial_points[0], initial_points.size());
 
         knn::Answer<double> answer(NeighborCount);
         knn::Query2d query(tree, answer);

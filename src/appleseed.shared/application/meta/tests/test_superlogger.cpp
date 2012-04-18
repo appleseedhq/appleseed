@@ -42,7 +42,7 @@ TEST_SUITE(Application_SuperLogger)
     {
         SuperLogger super_logger;
 
-        const LogMessage::FormattingFlags flags =
+        const int flags =
             super_logger.get_log_target().get_formatting_flags(LogMessage::Info);
 
         EXPECT_EQ(LogMessage::DisplayCategory | LogMessage::DisplayMessage, flags);
@@ -54,12 +54,11 @@ TEST_SUITE(Application_SuperLogger)
 
         super_logger.get_log_target().set_formatting_flags(
             LogMessage::Info,
-            static_cast<LogMessage::FormattingFlags>(
-                LogMessage::DisplayDate | LogMessage::DisplayTime));
+            LogMessage::DisplayDate | LogMessage::DisplayTime);
 
         super_logger.enable_message_coloring();
 
-        const LogMessage::FormattingFlags flags =
+        const int flags =
             super_logger.get_log_target().get_formatting_flags(LogMessage::Info);
 
         EXPECT_EQ(LogMessage::DisplayDate | LogMessage::DisplayTime, flags);

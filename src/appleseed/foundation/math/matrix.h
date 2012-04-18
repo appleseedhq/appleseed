@@ -391,8 +391,7 @@ class Matrix<T, 4, 4>
     const ValueType& operator()(const size_t row, const size_t col) const;
 
   private:
-    ALIGN_SSE_VARIABLE
-    ValueType m_comp[Components];
+    SSE_ALIGN ValueType m_comp[Components];
 };
 
 

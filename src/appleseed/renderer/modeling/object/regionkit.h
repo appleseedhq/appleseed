@@ -57,11 +57,11 @@ typedef std::vector<const IRegion*> RegionKit;
 //
 
 typedef foundation::AccessCache<
-        RegionKit,
-        16,
-        1,
-        foundation::PoolAllocator<void, 16>
-    > RegionKitAccessCache;
+    RegionKit,
+    16,
+    1,
+    foundation::PoolAllocator<void, 16>
+> RegionKitAccessCache;
 
 }       // namespace renderer
 

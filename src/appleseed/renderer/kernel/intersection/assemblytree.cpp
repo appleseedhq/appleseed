@@ -41,8 +41,9 @@
 // appleseed.foundation headers.
 #include "foundation/math/intersection.h"
 #include "foundation/math/permutation.h"
-#include "foundation/math/sah.h"
-#include "foundation/utility/memory.h"
+#include "foundation/platform/system.h"
+#include "foundation/platform/timer.h"
+#include "foundation/utility/statistics.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
@@ -56,157 +57,12 @@ namespace renderer
 {
 
 //
-// Assembly tree partitioner.
-//
-
-namespace
-{
-    class BboxSortPredicate
-    {
-      public:
-        BboxSortPredicate(
-            const vector<GAABB3>&   bboxes,
-            const size_t            begin,
-            const size_t            dim)
-          : m_bboxes(bboxes)
-          , m_begin(begin)
-          , m_dim(dim)
-        {
-        }
-
-        bool operator()(const size_t lhs, const size_t rhs) const
-        {
-            return
-                  m_bboxes[m_begin + lhs].min[m_dim] + m_bboxes[m_begin + lhs].max[m_dim]
-                < m_bboxes[m_begin + rhs].min[m_dim] + m_bboxes[m_begin + rhs].max[m_dim];
-        }
-
-      private:
-        const vector<GAABB3>&   m_bboxes;
-        const size_t            m_begin;
-        const size_t            m_dim;
-    };
-}
-
-class AssemblyTreePartitioner
-  : public NonCopyable
-{
-  public:
-    // Partition a set of items into two distinct sets.
-    // Return end if the set is not to be partitioned.
-    size_t partition(
-        vector<UniqueID>&   items,
-        vector<GAABB3>&     bboxes,
-        const size_t        begin,
-        const size_t        end,
-        const GAABB3&       bbox)
-    {
-        const size_t count = end - begin;
-        assert(count > 1);
-
-        // Ensure that sufficient memory is allocated for the working arrays.
-        ensure_size(m_indices, count);
-        ensure_size(m_left_bboxes, count);
-        ensure_size(m_temp_items, count);
-        ensure_size(m_temp_bboxes, count);
-
-        // Create the set of indices.
-        for (size_t i = 0; i < count; ++i)
-            m_indices[i] = i;
-
-        GScalar best_split_cost = numeric_limits<GScalar>::max();
-        size_t best_split_dim = 0;
-        size_t best_split_pivot = 0;
-        GAABB3 group_bbox;
-
-        for (size_t dim = 0; dim < 3; ++dim)
-        {
-            // Sort the items according to their bounding boxes.
-            BboxSortPredicate predicate(bboxes, begin, dim);
-            sort(&m_indices[0], &m_indices[0] + count, predicate);
-
-            // Left-to-right sweep to accumulate bounding boxes.
-            group_bbox.invalidate();
-            for (size_t i = 0; i < count; ++i)
-            {
-                group_bbox.insert(bboxes[begin + m_indices[i]]);
-                m_left_bboxes[i] = group_bbox;
-            }
-
-            // Right-to-left sweep to accumulate bounding boxes and evaluate SAH.
-            group_bbox.invalidate();
-            for (size_t i = count - 1; i > 0; --i)
-            {
-                // Get left and right bounding boxes.
-                const GAABB3& left_bbox = m_left_bboxes[i - 1];
-                group_bbox.insert(bboxes[begin + m_indices[i]]);
-
-                // Compute the cost of this partition.
-                const GScalar left_cost = left_bbox.half_surface_area() * i;
-                const GScalar right_cost = group_bbox.half_surface_area() * (count - i);
-                const GScalar split_cost = left_cost + right_cost;
-
-                // Keep track of the partition with the lowest cost.
-                if (best_split_cost > split_cost)
-                {
-                    best_split_cost = split_cost;
-                    best_split_dim = dim;
-                    best_split_pivot = i;
-                }
-            }
-        }
-
-        // Just split in half if the cost of the best partition is too high.
-        const GScalar leaf_cost = bbox.half_surface_area() * count;
-        if (best_split_cost >= leaf_cost)
-            return (begin + end) / 2;
-
-        // Sort the indices according to the item bounding boxes.
-        BboxSortPredicate predicate(bboxes, begin, best_split_dim);
-        sort(&m_indices[0], &m_indices[0] + count, predicate);
-
-        // Reorder the items.
-        small_item_reorder(&items[begin], &m_temp_items[0], &m_indices[0], count);
-        small_item_reorder(&bboxes[begin], &m_temp_bboxes[0], &m_indices[0], count);
-
-        assert(begin + best_split_pivot < end);
-        return begin + best_split_pivot;
-    }
-
-  private:
-    vector<size_t>      m_indices;
-    vector<GAABB3>      m_left_bboxes;
-    vector<UniqueID>    m_temp_items;
-    vector<GAABB3>      m_temp_bboxes;
-};
-
-
-//
-// Assembly tree builder.
-//
-
-typedef bvh::Builder<
-        AssemblyTree,
-        AssemblyTreePartitioner
-    > AssemblyTreeBuilder;
-
-
-//
-// Assembly tree statistics.
-//
-
-typedef bvh::TreeStatistics<
-        AssemblyTree,
-        AssemblyTreeBuilder
-    > AssemblyTreeStatistics;
-
-
-//
 // AssemblyTree class implementation.
 //
 
 AssemblyTree::AssemblyTree(const Scene& scene)
-  : m_scene(scene)
+  : TreeType(AlignedAllocator<void>(System::get_l1_data_cache_line_size()))
+  , m_scene(scene)
 {
     update();
 }
@@ -214,7 +70,7 @@ AssemblyTree::AssemblyTree(const Scene& scene)
 AssemblyTree::~AssemblyTree()
 {
     // Log a progress message.
-    RENDERER_LOG_INFO("deleting assembly bvh...");
+    RENDERER_LOG_INFO("deleting assembly tree...");
 
     // Delete region trees.
     for (each<RegionTreeContainer> i = m_region_trees; i; ++i)
@@ -229,104 +85,21 @@ AssemblyTree::~AssemblyTree()
 
 void AssemblyTree::update()
 {
-    clear();
-    build_assembly_tree();
+    rebuild_assembly_tree();
     update_child_trees();
 }
 
-void AssemblyTree::collect_assemblies(vector<UniqueID>& assemblies) const
+size_t AssemblyTree::get_memory_size() const
 {
-    assert(assemblies.empty());
-
-    assemblies.reserve(m_scene.assembly_instances().size());
-
-    for (const_each<AssemblyInstanceContainer> i = m_scene.assembly_instances(); i; ++i)
-        assemblies.push_back(i->get_assembly_uid());
-
-    sort(assemblies.begin(), assemblies.end());
-
-    const vector<UniqueID>::iterator new_end =
-        unique(assemblies.begin(), assemblies.end());
-
-    assemblies.erase(new_end, assemblies.end());
+    return
+          TreeType::get_memory_size()
+        - sizeof(*static_cast<const TreeType*>(this))
+        + sizeof(*this)
+        + m_assembly_instances.capacity() * sizeof(UniqueID);
 }
 
-void AssemblyTree::collect_regions(const Assembly& assembly, RegionInfoVector& regions) const
+void AssemblyTree::collect_assembly_instances(AABBVector& assembly_instance_bboxes)
 {
-    assert(regions.empty());
-
-    const ObjectInstanceContainer& object_instances = assembly.object_instances();
-    const size_t object_instance_count = object_instances.size();
-
-    // Collect all regions of all object instances of this assembly.
-    for (size_t obj_inst_index = 0; obj_inst_index < object_instance_count; ++obj_inst_index)
-    {
-        // Retrieve the object instance and its transformation.
-        const ObjectInstance* object_instance = object_instances.get_by_index(obj_inst_index);
-        assert(object_instance);
-        const Transformd& transform = object_instance->get_transform();
-
-        // Retrieve the object.
-        Object& object = object_instance->get_object();
-
-        // Retrieve the region kit of the object.
-        Access<RegionKit> region_kit(&object.get_region_kit());
-
-        // Collect all regions of the object.
-        for (size_t region_index = 0; region_index < region_kit->size(); ++region_index)
-        {
-            // Retrieve the region.
-            const IRegion* region = (*region_kit)[region_index];
-
-            // Compute the assembly space bounding box of the region.
-            const GAABB3 region_bbox =
-                transform.transform_to_parent(region->get_local_bbox());
-
-            regions.push_back(
-                RegionInfo(
-                    obj_inst_index,
-                    region_index,
-                    region_bbox));
-        }
-    }
-}
-
-Lazy<TriangleTree>* AssemblyTree::create_triangle_tree(const Assembly& assembly) const
-{
-    // Compute the assembly space bounding box of the assembly.
-    const GAABB3 assembly_bbox =
-        get_parent_bbox<GAABB3>(
-            assembly.object_instances().begin(),
-            assembly.object_instances().end());
-
-    RegionInfoVector regions;
-    collect_regions(assembly, regions);
-
-    auto_ptr<ILazyFactory<TriangleTree> > triangle_tree_factory(
-        new TriangleTreeFactory(
-            TriangleTree::Arguments(
-                assembly.get_uid(),
-                assembly_bbox,
-                assembly,
-                regions)));
-
-    return new Lazy<TriangleTree>(triangle_tree_factory);
-}
-
-Lazy<RegionTree>* AssemblyTree::create_region_tree(const Assembly& assembly) const
-{
-    auto_ptr<ILazyFactory<RegionTree> > region_tree_factory(
-        new RegionTreeFactory(
-            RegionTree::Arguments(
-                assembly.get_uid(),
-                assembly)));
-
-    return new Lazy<RegionTree>(region_tree_factory);
-}
-
-void AssemblyTree::build_assembly_tree()
-{
-    // Insert all assembly instances of the scene into the tree.
     for (const_each<AssemblyInstanceContainer> i = m_scene.assembly_instances(); i; ++i)
     {
         // Retrieve the assembly instance.
@@ -339,34 +112,203 @@ void AssemblyTree::build_assembly_tree()
         if (assembly.object_instances().empty())
             continue;
 
-        // Insert the assembly instance into the root leaf.
-        insert(
-            assembly_instance.get_uid(),
-            assembly_instance.compute_parent_bbox());
+        // Store the assembly instance.
+        m_assembly_instances.push_back(assembly_instance.get_uid());
+
+        // Compute and store the assembly instance bounding box.
+        AABB3d assembly_instance_bbox(assembly_instance.compute_parent_bbox());
+        assembly_instance_bbox.robust_grow(1.0e-15);
+        assembly_instance_bboxes.push_back(assembly_instance_bbox);
     }
+}
+
+void AssemblyTree::rebuild_assembly_tree()
+{
+    // Clear the current tree.
+    clear();
+    m_assembly_instances.clear();
+
+    // Collect all assembly instances of the scene.
+    AABBVector assembly_instance_bboxes;
+    collect_assembly_instances(assembly_instance_bboxes);
 
     // Log a progress message.
     RENDERER_LOG_INFO(
-        "building assembly bvh (%s %s)...",
-        pretty_int(size()).c_str(),
-        plural(size(), "assembly instance").c_str());
+        "building assembly tree (%s %s)...",
+        pretty_int(m_assembly_instances.size()).c_str(),
+        plural(m_assembly_instances.size(), "assembly instance").c_str());
 
     // Build the assembly tree.
-    AssemblyTreePartitioner partitioner;
-    AssemblyTreeBuilder builder;
-    builder.build(*this, partitioner);
+    typedef bvh::SAHPartitioner<AABBVector> Partitioner;
+    typedef bvh::Builder<AssemblyTree, Partitioner> Builder;
+    Partitioner partitioner(assembly_instance_bboxes, 1);
+    Builder builder;
+    builder.build<DefaultWallclockTimer>(
+        *this,
+        partitioner,
+        m_assembly_instances.size());
+
+    if (!m_assembly_instances.empty())
+    {
+        const vector<size_t>& ordering = partitioner.get_item_ordering();
+
+        assert(m_assembly_instances.size() == ordering.size());
+
+        // Reorder the assembly instances according to the tree ordering.
+        vector<UniqueID> temp_assembly_instances(ordering.size());
+        small_item_reorder(
+            &m_assembly_instances[0],
+            &temp_assembly_instances[0],
+            &ordering[0],
+            ordering.size());
+
+        // Store assembly instances in the tree leaves whenever possible.
+        store_assembly_instances_in_leaves();
+    }
 
     // Collect and print assembly tree statistics.
-    AssemblyTreeStatistics tree_stats(*this, builder);
-    RENDERER_LOG_DEBUG("assembly bvh statistics:");
-    tree_stats.print(global_logger());
+    Statistics statistics("assembly tree statistics");
+    statistics.add_time("build_time", "build time", builder.get_build_time());
+    bvh::TreeStatistics<AssemblyTree> collect_statistics(
+        statistics,
+        *this,
+        AABB3d(m_scene.compute_bbox()));
+    RENDERER_LOG_DEBUG("%s", statistics.to_string().c_str());
+}
+
+void AssemblyTree::store_assembly_instances_in_leaves()
+{
+    size_t leaf_count = 0;
+    size_t fat_leaf_count = 0;
+
+    const size_t node_count = m_nodes.size();
+
+    for (size_t i = 0; i < node_count; ++i)
+    {
+        NodeType& node = m_nodes[i];
+
+        if (node.is_leaf())
+        {
+            ++leaf_count;
+
+            const size_t item_count = node.get_item_count();
+
+            if (item_count <= NodeType::MaxUserDataSize / sizeof(UniqueID))
+            {
+                ++fat_leaf_count;
+
+                const size_t item_begin = node.get_item_index();
+                UniqueID* user_data = &node.get_user_data<UniqueID>();
+
+                for (size_t j = 0; j < item_count; ++j)
+                    user_data[j] = m_assembly_instances[item_begin + j];
+            }
+        }
+    }
+
+    RENDERER_LOG_DEBUG(
+        "fat assembly tree leaves: %s",
+        pretty_percent(fat_leaf_count, leaf_count).c_str());
+}
+
+namespace
+{
+    void collect_assemblies(const Scene& scene, vector<UniqueID>& assemblies)
+    {
+        assert(assemblies.empty());
+
+        assemblies.reserve(scene.assembly_instances().size());
+
+        for (const_each<AssemblyInstanceContainer> i = scene.assembly_instances(); i; ++i)
+            assemblies.push_back(i->get_assembly_uid());
+
+        sort(assemblies.begin(), assemblies.end());
+
+        const vector<UniqueID>::iterator new_end =
+            unique(assemblies.begin(), assemblies.end());
+
+        assemblies.erase(new_end, assemblies.end());
+    }
+
+    void collect_regions(const Assembly& assembly, RegionInfoVector& regions)
+    {
+        assert(regions.empty());
+
+        const ObjectInstanceContainer& object_instances = assembly.object_instances();
+        const size_t object_instance_count = object_instances.size();
+
+        // Collect all regions of all object instances of this assembly.
+        for (size_t obj_inst_index = 0; obj_inst_index < object_instance_count; ++obj_inst_index)
+        {
+            // Retrieve the object instance and its transformation.
+            const ObjectInstance* object_instance = object_instances.get_by_index(obj_inst_index);
+            assert(object_instance);
+            const Transformd& transform = object_instance->get_transform();
+
+            // Retrieve the object.
+            Object& object = object_instance->get_object();
+
+            // Retrieve the region kit of the object.
+            Access<RegionKit> region_kit(&object.get_region_kit());
+
+            // Collect all regions of the object.
+            for (size_t region_index = 0; region_index < region_kit->size(); ++region_index)
+            {
+                // Retrieve the region.
+                const IRegion* region = (*region_kit)[region_index];
+
+                // Compute the assembly space bounding box of the region.
+                const GAABB3 region_bbox =
+                    transform.transform_to_parent(region->compute_local_bbox());
+
+                regions.push_back(
+                    RegionInfo(
+                        obj_inst_index,
+                        region_index,
+                        region_bbox));
+            }
+        }
+    }
+
+    Lazy<TriangleTree>* create_triangle_tree(const Assembly& assembly)
+    {
+        // Compute the assembly space bounding box of the assembly.
+        const GAABB3 assembly_bbox =
+            get_parent_bbox<GAABB3>(
+                assembly.object_instances().begin(),
+                assembly.object_instances().end());
+
+        RegionInfoVector regions;
+        collect_regions(assembly, regions);
+
+        auto_ptr<ILazyFactory<TriangleTree> > triangle_tree_factory(
+            new TriangleTreeFactory(
+                TriangleTree::Arguments(
+                    assembly.get_uid(),
+                    assembly_bbox,
+                    assembly,
+                    regions)));
+
+        return new Lazy<TriangleTree>(triangle_tree_factory);
+    }
+
+    Lazy<RegionTree>* create_region_tree(const Assembly& assembly)
+    {
+        auto_ptr<ILazyFactory<RegionTree> > region_tree_factory(
+            new RegionTreeFactory(
+                RegionTree::Arguments(
+                    assembly.get_uid(),
+                    assembly)));
+
+        return new Lazy<RegionTree>(region_tree_factory);
+    }
 }
 
 void AssemblyTree::update_child_trees()
 {
     // Collect all assemblies in the scene.
     vector<UniqueID> assemblies;
-    collect_assemblies(assemblies);
+    collect_assemblies(m_scene, assemblies);
 
     // Create or update the child tree of each assembly.
     for (const_each<vector<UniqueID> > i = assemblies; i; ++i)
@@ -422,40 +364,39 @@ void AssemblyTree::update_child_trees()
 
 
 //
-// AssemblyLeafVisitorBase class implementation.
+// Utility function to transform a ray to the space of an assembly instance.
 //
 
-void AssemblyLeafVisitorBase::transform_ray_to_assembly_instance_space(
-    const AssemblyInstance*             assembly_instance,
-    const ShadingPoint*                 parent_shading_point,
-    const ShadingRay::RayType&          input_ray,
-    ShadingRay::RayType&                output_ray)
+namespace
 {
-    assert(assembly_instance);
-
-    // Retrieve the transformation of the assembly instance.
-    const Transformd& transform = assembly_instance->get_transform();
-
-    if (parent_shading_point &&
-        parent_shading_point->m_assembly_instance == assembly_instance)
+    void transform_ray_to_assembly_instance_space(
+        const AssemblyInstance&         assembly_instance,
+        const ShadingPoint*             parent_shading_point,
+        const ShadingRay::RayType&      input_ray,
+        ShadingRay::RayType&            output_ray)
     {
-        // The caller provided the previous intersection, and we are about
-        // to intersect the assembly instance that contains the previous
-        // intersection. Use the properly offset intersection point as the
-        // origin of the child ray.
+        // Retrieve the transformation of the assembly instance.
+        const Transformd& transform = assembly_instance.get_transform();
+
+        // Transform the ray direction.
         output_ray.m_dir = transform.transform_vector_to_local(input_ray.m_dir);
-        output_ray.m_org =
-            dot(parent_shading_point->m_asm_geo_normal, output_ray.m_dir) > 0.0
-                ? parent_shading_point->m_front_point
-                : parent_shading_point->m_back_point;
-    }
-    else
-    {
-        // The caller didn't provide the previous intersection, or we are
-        // about to intersect an assembly instance that does not contain
-        // the previous intersection: proceed normally.
-        output_ray.m_org = transform.transform_point_to_local(input_ray.m_org);
-        output_ray.m_dir = transform.transform_vector_to_local(input_ray.m_dir);
+
+        if (parent_shading_point &&
+            parent_shading_point->get_assembly_instance_uid() == assembly_instance.get_uid())
+        {
+            // The caller provided the previous intersection, and we are about
+            // to intersect the assembly instance that contains the previous
+            // intersection. Use the properly offset intersection point as the
+            // origin of the child ray.
+            output_ray.m_org = parent_shading_point->get_offset_point(output_ray.m_dir);
+        }
+        else
+        {
+            // The caller didn't provide the previous intersection, or we are
+            // about to intersect an assembly instance that does not contain
+            // the previous intersection: proceed normally.
+            output_ray.m_org = transform.transform_point_to_local(input_ray.m_org);
+        }
     }
 }
 
@@ -465,108 +406,106 @@ void AssemblyLeafVisitorBase::transform_ray_to_assembly_instance_space(
 //
 
 bool AssemblyLeafVisitor::visit(
-    const vector<UniqueID>&             items,
-    const vector<GAABB3>&               bboxes,
-    const size_t                        begin,
-    const size_t                        end,
-    const ShadingRay::RayType&          ray,
-    const ShadingRay::RayInfoType&      /*ray_info*/,
-    const double                        tmin,
-    const double                        tmax,
-    double&                             distance)
+    const AssemblyTree::NodeType&       node,
+    const ShadingRay&                   ray,
+    const ShadingRay::RayInfoType&      ray_info,
+    double&                             distance
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+    , bvh::TraversalStatistics&         stats
+#endif
+    )
 {
-    assert(begin + 1 == end);
+    // Retrieve the assembly instances for this leaf.
+    const size_t assembly_instance_index = node.get_item_index();
+    const size_t assembly_instance_count = node.get_item_count();
+    const UniqueID* assembly_instance_uids =
+        assembly_instance_count <= AssemblyTree::NodeType::MaxUserDataSize / sizeof(UniqueID)
+            ? &node.get_user_data<UniqueID>()                           // items are stored in the leaf node
+            : &m_tree.m_assembly_instances[assembly_instance_index];    // items are stored in the tree
 
-    // Retrieve the assembly instance.
-    const AssemblyInstance* assembly_instance =
-        m_tree.m_scene.assembly_instances().get_by_uid(items[begin]);
-    assert(assembly_instance);
-
-    ShadingPoint result;
-    result.m_ray.m_tmin = tmin;
-    result.m_ray.m_tmax = tmax;
-    result.m_ray.m_time = m_shading_point.m_ray.m_time;
-    result.m_ray.m_flags = m_shading_point.m_ray.m_flags;
-
-    // Transform the ray to assembly instance space.
-    transform_ray_to_assembly_instance_space(
-        assembly_instance,
-        m_parent_shading_point,
-        ray,
-        result.m_ray);
-
-    const RayInfo3d ray_info(result.m_ray);
-
-    if (assembly_instance->get_assembly().is_flushable())
+    for (size_t i = 0; i < assembly_instance_count; ++i)
     {
-        // Retrieve the region tree of this assembly.
-        const RegionTree& region_tree =
-            *m_region_tree_cache.access(
-                assembly_instance->get_assembly_uid(),
-                m_tree.m_region_trees);
+        // Retrieve the assembly instance.
+        const UniqueID assembly_instance_uid = assembly_instance_uids[i];
+        const AssemblyInstance& assembly_instance =
+            *m_tree.m_scene.assembly_instances().get_by_uid(assembly_instance_uid);
 
-        // Check the intersection between the ray and the region tree.
-        RegionLeafVisitor visitor(
-            result,
-            m_triangle_tree_cache
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-            , m_triangle_bsp_stats
-#endif
-            );
-        RegionLeafIntersector intersector;
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-        bsp::TraversalStatistics stats;
-        intersector.intersect(
-            region_tree,
-            result.m_ray,
-            ray_info,
-            visitor,
-            stats);
-#else
-        intersector.intersect(
-            region_tree,
-            result.m_ray,
-            ray_info,
-            visitor);
-#endif
-    }
-    else
-    {
-        // Retrieve the triangle tree of this assembly.
-        const TriangleTree* triangle_tree =
-            m_triangle_tree_cache.access(
-                assembly_instance->get_assembly_uid(),
-                m_tree.m_triangle_trees);
+        // Transform the ray to assembly instance space.
+        ShadingPoint local_shading_point;
+        transform_ray_to_assembly_instance_space(
+            assembly_instance,
+            m_parent_shading_point,
+            ray,
+            local_shading_point.m_ray);
+        local_shading_point.m_ray.m_tmin = ray.m_tmin;
+        local_shading_point.m_ray.m_tmax = ray.m_tmax;
+        local_shading_point.m_ray.m_time = m_shading_point.m_ray.m_time;
+        local_shading_point.m_ray.m_flags = m_shading_point.m_ray.m_flags;
+        const RayInfo3d local_ray_info(local_shading_point.m_ray);
 
-        if (triangle_tree)
+        FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(1));
+
+        if (assembly_instance.get_assembly().is_flushable())
         {
-            // Check the intersection between the ray and the triangle tree.
-            TriangleLeafVisitor visitor(result);
-            TriangleLeafIntersector intersector;
-            intersector.intersect(
-                *triangle_tree,
-                result.m_ray,
-                ray_info,
-                visitor
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-                , m_triangle_bsp_stats
+            // Retrieve the region tree of this assembly.
+            const RegionTree& region_tree =
+                *m_region_tree_cache.access(
+                    assembly_instance.get_assembly_uid(),
+                    m_tree.m_region_trees);
+
+            // Check the intersection between the ray and the region tree.
+            RegionLeafVisitor visitor(
+                local_shading_point,
+                m_triangle_tree_cache
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+                , m_triangle_tree_stats
 #endif
                 );
-            visitor.read_hit_triangle_data();
+            RegionLeafIntersector intersector;
+            intersector.intersect(
+                region_tree,
+                local_shading_point.m_ray,
+                local_ray_info,
+                visitor);
         }
-    }
+        else
+        {
+            // Retrieve the triangle tree of this assembly.
+            const TriangleTree* triangle_tree =
+                m_triangle_tree_cache.access(
+                    assembly_instance.get_assembly_uid(),
+                    m_tree.m_triangle_trees);
 
-    // Keep track of the closest hit.
-    if (result.m_hit && result.m_ray.m_tmax < m_shading_point.m_ray.m_tmax)
-    {
-        m_shading_point.m_ray.m_tmax = result.m_ray.m_tmax;
-        m_shading_point.m_hit = true;
-        m_shading_point.m_bary = result.m_bary;
-        m_shading_point.m_asm_instance_uid = assembly_instance->get_uid();
-        m_shading_point.m_object_instance_index = result.m_object_instance_index;
-        m_shading_point.m_region_index = result.m_region_index;
-        m_shading_point.m_triangle_index = result.m_triangle_index;
-        m_shading_point.m_triangle_support_plane = result.m_triangle_support_plane;
+            if (triangle_tree)
+            {
+                // Check the intersection between the ray and the triangle tree.
+                TriangleTreeIntersector intersector;
+                TriangleLeafVisitor visitor(*triangle_tree, local_shading_point);
+                intersector.intersect(
+                    *triangle_tree,
+                    local_shading_point.m_ray,
+                    local_ray_info,
+                    visitor
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+                    , m_triangle_tree_stats
+#endif
+                    );
+                visitor.read_hit_triangle_data();
+            }
+        }
+
+        // Keep track of the closest hit.
+        if (local_shading_point.m_hit && local_shading_point.m_ray.m_tmax < m_shading_point.m_ray.m_tmax)
+        {
+            m_shading_point.m_ray.m_tmax = local_shading_point.m_ray.m_tmax;
+            m_shading_point.m_hit = true;
+            m_shading_point.m_bary = local_shading_point.m_bary;
+            m_shading_point.m_asm_instance_uid = assembly_instance_uid;
+            m_shading_point.m_object_instance_index = local_shading_point.m_object_instance_index;
+            m_shading_point.m_region_index = local_shading_point.m_region_index;
+            m_shading_point.m_triangle_index = local_shading_point.m_triangle_index;
+            m_shading_point.m_triangle_support_plane = local_shading_point.m_triangle_support_plane;
+        }
     }
 
     // Continue traversal.
@@ -580,103 +519,102 @@ bool AssemblyLeafVisitor::visit(
 //
 
 bool AssemblyLeafProbeVisitor::visit(
-    const vector<UniqueID>&             items,
-    const vector<GAABB3>&               bboxes,
-    const size_t                        begin,
-    const size_t                        end,
-    const ShadingRay::RayType&          ray,
-    const ShadingRay::RayInfoType&      /*ray_info*/,
-    const double                        tmin,
-    const double                        tmax,
-    double&                             distance)
+    const AssemblyTree::NodeType&       node,
+    const ShadingRay&                   ray,
+    const ShadingRay::RayInfoType&      ray_info,
+    double&                             distance
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+    , bvh::TraversalStatistics&         stats
+#endif
+    )
 {
-    assert(begin + 1 == end);
+    // Retrieve the assembly instances for this leaf.
+    const size_t assembly_instance_count = node.get_item_count();
+    const UniqueID* assembly_instance_uids =
+        assembly_instance_count <= AssemblyTree::NodeType::MaxUserDataSize / sizeof(UniqueID)
+            ? &node.get_user_data<UniqueID>()                           // items are stored in the leaf node
+            : &m_tree.m_assembly_instances[node.get_item_index()];      // items are stored in the tree
 
-    // Retrieve the assembly instance.
-    const AssemblyInstance* assembly_instance =
-        m_tree.m_scene.assembly_instances().get_by_uid(items[begin]);
-    assert(assembly_instance);
-
-    ShadingRay::RayType local_ray;
-    local_ray.m_tmin = tmin;
-    local_ray.m_tmax = tmax;
-
-    // Transform the ray to assembly instance space.
-    transform_ray_to_assembly_instance_space(
-        assembly_instance,
-        m_parent_shading_point,
-        ray,
-        local_ray);
-
-    const RayInfo3d local_ray_info(local_ray);
-
-    if (assembly_instance->get_assembly().is_flushable())
+    for (size_t i = 0; i < assembly_instance_count; ++i)
     {
-        // Retrieve the region tree of this assembly.
-        const RegionTree& region_tree =
-            *m_region_tree_cache.access(
-                assembly_instance->get_assembly_uid(),
-                m_tree.m_region_trees);
+        // Retrieve the assembly instance.
+        const UniqueID assembly_instance_uid = assembly_instance_uids[i];
+        const AssemblyInstance& assembly_instance =
+            *m_tree.m_scene.assembly_instances().get_by_uid(assembly_instance_uid);
 
-        // Check the intersection between the ray and the region tree.
-        RegionLeafProbeVisitor visitor(
-            m_triangle_tree_cache
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-            , m_triangle_bsp_stats
-#endif
-            );
-        RegionLeafProbeIntersector intersector;
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-        bsp::TraversalStatistics stats;
-        intersector.intersect(
-            region_tree,
-            local_ray,
-            local_ray_info,
-            visitor,
-            stats);
-#else
-        intersector.intersect(
-            region_tree,
-            local_ray,
-            local_ray_info,
-            visitor);
-#endif
-        
-        // Terminate traversal if there was a hit.
-        if (visitor.hit())
-        {
-            m_hit = true;
-            return false;
-        }
-    }
-    else
-    {
-        // Retrieve the triangle tree of this leaf.
-        const TriangleTree* triangle_tree =
-            m_triangle_tree_cache.access(
-                assembly_instance->get_assembly_uid(),
-                m_tree.m_triangle_trees);
+        // Transform the ray to assembly instance space.
+        ShadingRay local_ray;
+        transform_ray_to_assembly_instance_space(
+            assembly_instance,
+            m_parent_shading_point,
+            ray,
+            local_ray);
+        local_ray.m_tmin = ray.m_tmin;
+        local_ray.m_tmax = ray.m_tmax;
+        local_ray.m_time = ray.m_time;
+        local_ray.m_flags = ray.m_flags;
+        const RayInfo3d local_ray_info(local_ray);
 
-        if (triangle_tree)
+        FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(1));
+
+        if (assembly_instance.get_assembly().is_flushable())
         {
-            // Check the intersection between the ray and the triangle tree.
-            TriangleLeafProbeVisitor visitor;
-            TriangleLeafProbeIntersector intersector;
-            intersector.intersect(
-                *triangle_tree,
-                local_ray,
-                local_ray_info,
-                visitor
-#ifdef FOUNDATION_BSP_ENABLE_TRAVERSAL_STATS
-                , m_triangle_bsp_stats
+            // Retrieve the region tree of this assembly.
+            const RegionTree& region_tree =
+                *m_region_tree_cache.access(
+                    assembly_instance.get_assembly_uid(),
+                    m_tree.m_region_trees);
+
+            // Check the intersection between the ray and the region tree.
+            RegionLeafProbeVisitor visitor(
+                m_triangle_tree_cache
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+                , m_triangle_tree_stats
 #endif
                 );
-
+            RegionLeafProbeIntersector intersector;
+            intersector.intersect(
+                region_tree,
+                local_ray,
+                local_ray_info,
+                visitor);
+        
             // Terminate traversal if there was a hit.
             if (visitor.hit())
             {
                 m_hit = true;
                 return false;
+            }
+        }
+        else
+        {
+            // Retrieve the triangle tree of this leaf.
+            const TriangleTree* triangle_tree =
+                m_triangle_tree_cache.access(
+                    assembly_instance.get_assembly_uid(),
+                    m_tree.m_triangle_trees);
+
+            if (triangle_tree)
+            {
+                // Check the intersection between the ray and the triangle tree.
+                TriangleTreeProbeIntersector intersector;
+                TriangleLeafProbeVisitor visitor(*triangle_tree);
+                intersector.intersect(
+                    *triangle_tree,
+                    local_ray,
+                    local_ray_info,
+                    visitor
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+                    , m_triangle_tree_stats
+#endif
+                    );
+
+                // Terminate traversal if there was a hit.
+                if (visitor.hit())
+                {
+                    m_hit = true;
+                    return false;
+                }
             }
         }
     }

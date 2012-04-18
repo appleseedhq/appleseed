@@ -70,7 +70,7 @@ struct CommandLineHandlerBase::Impl
     {
         LogTargetBase& log_target = logger.get_log_target();
 
-        const LogMessage::FormattingFlags old_flags =
+        const int old_flags =
             log_target.set_formatting_flags(LogMessage::Info, LogMessage::DisplayMessage);
 
         LOG_INFO(

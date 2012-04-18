@@ -107,6 +107,7 @@ class Tree
         typename T_,
         typename Tree,
         typename Visitor,
+        typename Ray,
         size_t S
     >
     friend class Intersector;
@@ -127,21 +128,18 @@ class Tree
 // Tree class implementation.
 //
 
-// Constructor.
 template <typename T, size_t N, typename Leaf>
 Tree<T, N, Leaf>::Tree()
 {
     m_bbox.invalidate();
 }
 
-// Destructor.
 template <typename T, size_t N, typename Leaf>
 Tree<T, N, Leaf>::~Tree()
 {
     clear();
 }
 
-// Clear the tree.
 template <typename T, size_t N, typename Leaf>
 void Tree<T, N, Leaf>::clear()
 {
@@ -157,14 +155,12 @@ void Tree<T, N, Leaf>::clear()
     m_leaves.clear();
 }
 
-// Return the bounding box of the tree.
 template <typename T, size_t N, typename Leaf>
 inline const AABB<T, N>& Tree<T, N, Leaf>::get_bbox() const
 {
     return m_bbox;
 }
 
-// Return the size (in bytes) of this object in memory.
 template <typename T, size_t N, typename Leaf>
 size_t Tree<T, N, Leaf>::get_memory_size() const
 {

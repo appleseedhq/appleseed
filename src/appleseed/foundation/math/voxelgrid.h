@@ -307,6 +307,12 @@ void VoxelGrid3<ValueType, CoordType>::quadratic_lookup(
     //   b = v1 - v0
     //   c = 1/2 * (v0 + v1)
     //
+    // And the weights for v0, v1 and v2:
+    //
+    //   w0 = 1/2 * (t^2 - 2.t + 1)
+    //   w1 = -t^2 + t + 1/2
+    //   w2 = 1/2 * t^2
+    //
 
     // Compute the coordinates of the voxel containing the lookup point.
     const CoordType x = saturate(point.x) * m_max_x;
@@ -321,14 +327,14 @@ void VoxelGrid3<ValueType, CoordType>::quadratic_lookup(
     const ValueType ty = static_cast<ValueType>(y - iy) + ValueType(0.5);
     const ValueType tz = static_cast<ValueType>(z - iz) + ValueType(0.5);
     const ValueType tx2 = tx * tx;
+    const ValueType ty2 = ty * ty;
+    const ValueType tz2 = tz * tz;
     const ValueType wx2 = ValueType(0.5) * tx2;
     const ValueType wx1 = tx - tx2 + ValueType(0.5);
     const ValueType wx0 = wx2 - tx + ValueType(0.5);
-    const ValueType ty2 = ty * ty;
     const ValueType wy2 = ValueType(0.5) * ty2;
     const ValueType wy1 = ty - ty2 + ValueType(0.5);
     const ValueType wy0 = wy2 - ty + ValueType(0.5);
-    const ValueType tz2 = tz * tz;
     const ValueType wz2 = ValueType(0.5) * tz2;
     const ValueType wz1 = tz - tz2 + ValueType(0.5);
     const ValueType wz0 = wz2 - tz + ValueType(0.5);

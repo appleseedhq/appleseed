@@ -50,8 +50,8 @@ class IRegion
     // Destructor.
     virtual ~IRegion() {}
 
-    // Return the local space bounding box of the region.
-    virtual const GAABB3& get_local_bbox() const = 0;
+    // Compute the local space bounding box of the region over the shutter interval.
+    virtual GAABB3 compute_local_bbox() const = 0;
 
     // Return the static triangle tessellation of the region.
     virtual foundation::Lazy<StaticTriangleTess>& get_static_triangle_tess() const = 0;

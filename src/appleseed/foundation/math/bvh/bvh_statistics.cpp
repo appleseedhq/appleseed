@@ -36,30 +36,38 @@ namespace bvh {
 // TraversalStatistics class implementation.
 //
 
-// Constructor.
 TraversalStatistics::TraversalStatistics()
   : m_traversal_count(0)
 {
 }
 
-// Print traversal statistics.
 void TraversalStatistics::print(Logger& logger)
 {
     LOG_DEBUG(
         logger,
         "  traversals       %s\n"
-        "  fetched nodes    avg %.1f  min %s  max %s  dev %.1f\n"
+        "  visited nodes    avg %.1f  min %s  max %s  dev %.1f\n"
         "  visited leaves   avg %.1f  min %s  max %s  dev %.1f\n"
-        "  tested items     avg %.1f  min %s  max %s  dev %.1f\n",
+        "  inter. bboxes    avg %.1f  min %s  max %s  dev %.1f\n"
+        "  discarded nodes  avg %.1f  min %s  max %s  dev %.1f\n"
+        "  inter. items     avg %.1f  min %s  max %s  dev %.1f\n",
         pretty_uint(m_traversal_count).c_str(),
-        m_fetched_nodes.get_avg(),
-        pretty_uint(m_fetched_nodes.get_min()).c_str(),
-        pretty_uint(m_fetched_nodes.get_max()).c_str(),
-        m_fetched_nodes.get_dev(),
+        m_visited_nodes.get_avg(),
+        pretty_uint(m_visited_nodes.get_min()).c_str(),
+        pretty_uint(m_visited_nodes.get_max()).c_str(),
+        m_visited_nodes.get_dev(),
         m_visited_leaves.get_avg(),
         pretty_uint(m_visited_leaves.get_min()).c_str(),
         pretty_uint(m_visited_leaves.get_max()).c_str(),
         m_visited_leaves.get_dev(),
+        m_intersected_bboxes.get_avg(),
+        pretty_uint(m_intersected_bboxes.get_min()).c_str(),
+        pretty_uint(m_intersected_bboxes.get_max()).c_str(),
+        m_intersected_bboxes.get_dev(),
+        m_discarded_nodes.get_avg(),
+        pretty_uint(m_discarded_nodes.get_min()).c_str(),
+        pretty_uint(m_discarded_nodes.get_max()).c_str(),
+        m_discarded_nodes.get_dev(),
         m_intersected_items.get_avg(),
         pretty_uint(m_intersected_items.get_min()).c_str(),
         pretty_uint(m_intersected_items.get_max()).c_str(),

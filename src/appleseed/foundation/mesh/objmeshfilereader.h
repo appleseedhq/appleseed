@@ -39,7 +39,6 @@
 
 // Forward declarations.
 namespace foundation    { class IMeshBuilder; }
-namespace foundation    { class IOBJMeshBuilder; }
 
 namespace foundation
 {
@@ -61,6 +60,7 @@ class OBJMeshFileReader
       : public Exception
     {
         const size_t m_line;                    // the line at which the parse error occurred
+
         explicit ExceptionParseError(const size_t line)
           : m_line(line)
         {
@@ -80,27 +80,24 @@ class OBJMeshFileReader
     // Reading options.
     enum Options
     {
-        Defaults                = 0,
-        StopOnInvalidFaceDef    = 1 << 0        // stop parsing on invalid face definitions
+        Default                 = 0,
+        FavorSpeedOverPrecision = 1 << 0,       // use approximate algorithm for parsing floating-point values
+        StopOnInvalidFaceDef    = 1 << 1        // stop parsing on invalid face definitions
     };
 
     // Constructor.
-    explicit OBJMeshFileReader(const Options options = Defaults);
-
-    // Destructor.
-    virtual ~OBJMeshFileReader();
-
-    // Read an OBJ mesh file.
-    virtual void read(
+    OBJMeshFileReader(
         const std::string&  filename,
-        IMeshBuilder&       builder);
-    void read(
-        const std::string&  filename,
-        IOBJMeshBuilder&    builder);
+        const int           options = Default);
+
+    // Read a mesh.
+    virtual void read(IMeshBuilder& builder);
 
   private:
     struct Impl;
-    Impl* impl;
+
+    const std::string       m_filename;
+    const int               m_options;
 };
 
 }       // namespace foundation

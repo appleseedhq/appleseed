@@ -258,7 +258,9 @@ void BenchmarkSuite::run(
         // Tell the listeners that a benchmark case is about to be executed.
         suite_result.begin_case(*this, *benchmark.get());
 
+#ifdef NDEBUG
         try
+#endif
         {
             suite_result.signal_case_execution();
 
@@ -295,6 +297,7 @@ void BenchmarkSuite::run(
                 __LINE__,
                 timing_result);
         }
+#ifdef NDEBUG
         catch (const exception& e)
         {
             suite_result.write(
@@ -318,6 +321,7 @@ void BenchmarkSuite::run(
 
             suite_result.signal_case_failure();
         }
+#endif
 
         // Tell the listeners that the benchmark case execution has ended.
         suite_result.end_case(*this, *benchmark.get());

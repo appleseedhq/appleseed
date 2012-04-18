@@ -320,9 +320,9 @@ struct Preprocessor::Impl
         m_symbols[symbol] = value;
     }
 
-    void parse_ifdef_directive(const string& arguments)
+    void parse_ifdef_directive(const string& ifdef_arguments)
     {
-        const bool condition_value = evaluate_condition(arguments);
+        const bool condition_value = evaluate_condition(ifdef_arguments);
 
         while (true)
         {
@@ -475,7 +475,7 @@ const char* Preprocessor::get_error_message() const
 
 size_t Preprocessor::get_error_location() const
 {
-    return failed() ? impl->m_error_location : ~size_t(0);
+    return failed() ? impl->m_error_location : ~0;
 }
 
 }   // namespace foundation

@@ -46,14 +46,9 @@ class Node
     // Value type.
     typedef T ValueType;
 
-    // Node types.
-    typedef uint32 Type;
-    static const Type Leaf;
-    static const Type Interior;
-
     // Set/get the node type.
-    void set_type(const Type type);
-    Type get_type() const;
+    void make_interior();
+    void make_leaf();
     bool is_interior() const;
     bool is_leaf() const;
 
@@ -106,23 +101,15 @@ class Node
 //
 
 template <typename T>
-const typename Node<T>::Type Node<T>::Leaf = 0x00000000UL;
-
-template <typename T>
-const typename Node<T>::Type Node<T>::Interior = 0x80000000UL;
-
-template <typename T>
-inline void Node<T>::set_type(const Type type)
+inline void Node<T>::make_interior()
 {
-    assert(type == Leaf || type == Interior);
-    m_info &= 0x7FFFFFFFUL;
-    m_info |= type;
+    m_info |= 0x80000000UL;
 }
 
 template <typename T>
-inline typename Node<T>::Type Node<T>::get_type() const
+inline void Node<T>::make_leaf()
 {
-    return static_cast<Type>(m_info & 0x80000000UL);
+    m_info &= 0x7FFFFFFFUL;
 }
 
 template <typename T>
