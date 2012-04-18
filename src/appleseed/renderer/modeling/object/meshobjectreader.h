@@ -56,13 +56,7 @@ DECLARE_ARRAY(MeshObjectArray, MeshObject*);
 class RENDERERDLL MeshObjectReader
 {
   public:
-    // Read mesh objects from a single mesh file on disk.
-    static MeshObjectArray read(
-        const char*                     filename,
-        const char*                     base_object_name,
-        const ParamArray&               params);
-
-    // Read mesh objects from multiple mesh files on disk.
+    // Read mesh objects from disk. The filenames are defined in params.
     static MeshObjectArray read(
         const foundation::SearchPaths&  search_paths,
         const char*                     base_object_name,

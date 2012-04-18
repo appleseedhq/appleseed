@@ -73,6 +73,7 @@
 #include <cstring>
 #include <exception>
 #include <map>
+#include <set>
 #include <utility>
 #include <vector>
 
@@ -220,7 +221,7 @@ namespace
         Indenter                                m_indenter;
         filesystem::path                        m_project_root_path;
 
-        static void safe_copy_file(
+        static void copy_file_if_not_exists(
             const filesystem::path& source_path,
             const filesystem::path& dest_path)
         {
@@ -404,9 +405,9 @@ namespace
                 const filesystem::path filename = source_filepath.filename();
                 const filesystem::path dest_filepath = m_project_root_path / filename;
 
-                safe_copy_file(source_filepath, dest_filepath);
-
                 params.insert("filename", filename.string());
+
+                copy_file_if_not_exists(source_filepath, dest_filepath);
             }
 
             write(params);
@@ -504,134 +505,117 @@ namespace
             }
         }
 
+        // Write a collection of <object> elements.
         void write(const ObjectContainer& objects)
         {
-            FilenameToObjectIndices objects_with_file;
-            ObjectIndices objects_without_file;
+            set<string> groups;
 
-            classify_mesh_objects(
-                objects,
-                objects_with_file,
-                objects_without_file);
-
-            write_mesh_objects_with_file(objects_with_file, objects);
-            write_mesh_objects_without_file(objects_without_file, objects);
-        }
-
-        //
-        // Classify mesh objects into two groups:
-        //
-        // - those objects for which a mesh file already exists on disk in the
-        //   destination directory;
-        //
-        // - those objects for which a mesh file doesn't already exist on disk,
-        //   either because they were procedurally generated, or the mesh file
-        //   is not present in the target directory.
-        //
-
-        typedef vector<size_t> ObjectIndices;
-        typedef map<string, ObjectIndices> FilenameToObjectIndices;
-
-        void classify_mesh_objects(
-            const ObjectContainer&          objects,
-            FilenameToObjectIndices&        objects_with_file,
-            ObjectIndices&                  objects_without_file)
-        {
             for (size_t i = 0; i < objects.size(); ++i)
             {
-                const Object* object = objects.get_by_index(i);
-                assert(object);
+                const Object& object = *objects.get_by_index(i);
 
-                // Only consider mesh objects.
-                if (strcmp(object->get_model(), MeshObjectFactory::get_model()))
-                    continue;
-
-                const ParamArray& params = object->get_parameters();
-
-                if (params.strings().exist("filename"))
+                if (strcmp(object.get_model(), MeshObjectFactory::get_model()) == 0)
                 {
-                    const filesystem::path source_filepath = params.get<string>("filename");
-                    const filesystem::path filename = source_filepath.filename();
-                    const filesystem::path dest_filepath = m_project_root_path / filename;
+                    const ParamArray& params = object.get_parameters();
 
-                    safe_copy_file(source_filepath, dest_filepath);
-
-                    objects_with_file[filename.string()].push_back(i);
+                    if (params.strings().exist("__base_object_name"))
+                    {
+                        // Mesh object group.
+                        const string base_object_name = params.get<string>("__base_object_name");
+                        if (groups.find(base_object_name) == groups.end())
+                        {
+                            groups.insert(base_object_name);
+                            write_mesh_object_group(base_object_name, params);
+                        }
+                    }
+                    else
+                    {
+                        // Orphan mesh object.
+                        write_orphan_mesh_object(object);
+                    }
                 }
                 else
                 {
-                    objects_without_file.push_back(i);
+                    // Non-mesh object.
+                    write(object);
                 }
             }
         }
 
-        // Write mesh objects for which a mesh file already exists on disk.
-        void write_mesh_objects_with_file(
-            const FilenameToObjectIndices&  objects_with_file,
-            const ObjectContainer&          objects)
+        // Object name mapping established by write_orphan_mesh_object().
+        typedef map<string, string> ObjectNameMapping;
+        ObjectNameMapping m_object_name_mapping;
+
+        // Get the new name of an object, given its old name.
+        string translate_object_name(const string& old_name) const
         {
-            for (const_each<FilenameToObjectIndices> i = objects_with_file; i; ++i)
+            const ObjectNameMapping::const_iterator i = m_object_name_mapping.find(old_name);
+            return i == m_object_name_mapping.end() ? old_name : i->second;
+        }
+
+        void write_orphan_mesh_object(const Object& object)
+        {
+            const string name = object.get_name();
+            const string filename = name + ".obj";
+
+            if (!(m_options & ProjectFileWriter::OmitMeshFiles))
             {
-                const vector<size_t>& object_indices = i->second;
-                assert(!object_indices.empty());
+                // Write the mesh object to disk.
+                const string filepath = (m_project_root_path / filename).file_string();
+                MeshObjectWriter::write(
+                    static_cast<const MeshObject&>(object),
+                    name.c_str(),
+                    filepath.c_str());
+            }
 
-                ParamArray params = objects.get_by_index(object_indices[0])->get_parameters();
+            // Add a "filename" parameter to the parameters of the object.
+            ParamArray params = object.get_parameters();
+            params.insert("filename", filename);
 
-                // At this point the "filename" parameter must contain a filename, not a path.
+            // Write an <object> element.
+            write_mesh_object(name, params);
+
+            // Update the object name mapping.
+            m_object_name_mapping[name] = name + "." + name;
+        }
+
+        void write_mesh_object_group(const string& base_object_name, ParamArray params)
+        {
+            // Iterate over file paths, convert them to file names, and write mesh files to output directory.
+            if (params.strings().exist("filename"))
+            {
+                // Transform "filename" from a file path to a file name.
                 const string filepath = params.get<string>("filename");
                 const string filename = filesystem::path(filepath).filename();
                 params.insert("filename", filename);
 
-                // Extract the base object name common to all the mesh objects of this set.
-                const string base_object_name = params.get<string>("__base_object_name");
-                params.strings().remove("__base_object_name");
-
-                // Write a single <object> element for this set of mesh objects.
-                write_mesh_object(base_object_name, params);
+                // Copy the mesh file to the output directory.
+                copy_file_if_not_exists(filepath, m_project_root_path / filename);
             }
-        }
-
-        // Write mesh objects that don't have their geometry already stored on disk.
-        void write_mesh_objects_without_file(
-            const ObjectIndices&            objects_without_geom,
-            const ObjectContainer&          objects)
-        {
-            for (const_each<ObjectIndices> i = objects_without_geom; i; ++i)
+            else if (params.dictionaries().exist("filename"))
             {
-                const Object* object = objects.get_by_index(*i);
-                assert(object);
-
-                string name = object->get_name();
-                ParamArray params = object->get_parameters();
-
-                // Strip the base object name from the object name.
-                if (params.strings().exist("__base_object_name"))
+                StringDictionary& filepaths = params.dictionaries().get("filename").strings();
+                for (const_each<StringDictionary> i = filepaths; i; ++i)
                 {
-                    const string base_object_name = params.get<string>("__base_object_name");
-                    const string prefix = base_object_name + ".";
-                    if (name.substr(0, prefix.size()) == prefix)
-                        name = name.substr(prefix.size());
-                    params.strings().remove("__base_object_name");
+                    // Transform the value of this key from a file path to a file name.
+                    const string key = i->name();
+                    const string filepath = i->value<string>();
+                    const string filename = filesystem::path(filepath).filename();
+                    filepaths.insert(key, filename);
+
+                    // Copy the mesh file to the output directory.
+                    copy_file_if_not_exists(filepath, m_project_root_path / filename);
                 }
-
-                // Write the mesh object to disk.
-                const string filename = name + ".obj";
-                const string filepath = (m_project_root_path / filename).file_string();
-                if (!(m_options & ProjectFileWriter::OmitMeshFiles))
-                {
-                    const MeshObject* mesh_object = static_cast<const MeshObject*>(object);
-                    MeshObjectWriter::write(*mesh_object, name.c_str(), filepath.c_str());
-                }
-
-                // Add a "filename" parameter to the parameters of the object.
-                params.insert("filename", filename);
-
-                // Write an <object> element.
-                write_mesh_object(name, params);
             }
+
+            // Remove hidden parameters.
+            params.strings().remove("__base_object_name");
+
+            // Write a single <object> element for this group of mesh objects.
+            write_mesh_object(base_object_name, params);
         }
 
-        // Write a mesh object.
+        // Write an <object> element for a mesh object.
         void write_mesh_object(const string& name, const ParamArray& params)
         {
             Element element("object", m_file, m_indenter);
@@ -639,6 +623,12 @@ namespace
             element.add_attribute("model", MeshObjectFactory::get_model());
             element.write(!params.empty());
             write(params);
+        }
+
+        // Write an <object> element.
+        void write(const Object& object)
+        {
+            write_entity("object", object);
         }
 
         // Write an <assign_material> element.
@@ -670,7 +660,7 @@ namespace
         {
             Element element("object_instance", m_file, m_indenter);
             element.add_attribute("name", object_instance.get_name());
-            element.add_attribute("object", object_instance.get_object().get_name());
+            element.add_attribute("object", translate_object_name(object_instance.get_object().get_name()));
             element.write(true);
 
             write(object_instance.get_parameters());

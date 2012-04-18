@@ -1435,25 +1435,11 @@ namespace
             {
                 if (m_model == MeshObjectFactory::get_model())
                 {
-                    // Read the mesh file.
                     MeshObjectArray object_array =
                         MeshObjectReader::read(
                             m_context.get_project().get_search_paths(),
                             m_name.c_str(),
                             m_params);
-
-                    // Insert a hidden parameter so that child objects remember the name of their parent.
-                    for (size_t i = 0; i < object_array.size(); ++i)
-                        object_array[i]->get_parameters().insert("__base_object_name", m_name);
-
-                    // For objects loaded from a single file, remember the name of this file.
-                    if (m_params.strings().exist("filename"))
-                    {
-                        const string filename = m_params.get<string>("filename");
-                        const string filepath = m_context.get_project().get_search_paths().qualify(filename);
-                        for (size_t i = 0; i < object_array.size(); ++i)
-                            object_array[i]->get_parameters().insert("filename", filepath);
-                    }
 
                     m_objects = array_vector<ObjectVector>(object_array);
                 }

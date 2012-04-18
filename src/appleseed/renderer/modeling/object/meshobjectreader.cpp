@@ -420,23 +420,18 @@ namespace
 
         stopwatch.measure();
 
-        MeshObjectArray objects;
-
-        for (const_each<vector<MeshObject*> > i = builder.get_objects(); i; ++i)
-            objects.push_back(*i);
-
         RENDERER_LOG_INFO(
             "loaded mesh file %s (%s %s, %s %s, %s %s) in %s.",
             filename,
-            pretty_int(objects.size()).c_str(),
-            plural(objects.size(), "object").c_str(),
+            pretty_int(builder.get_objects().size()).c_str(),
+            plural(builder.get_objects().size(), "object").c_str(),
             pretty_int(builder.get_total_vertex_count()).c_str(),
             plural(builder.get_total_vertex_count(), "vertex", "vertices").c_str(),
             pretty_int(builder.get_total_triangle_count()).c_str(),
             plural(builder.get_total_triangle_count(), "triangle").c_str(),
             pretty_time(stopwatch.get_seconds()).c_str());
 
-        return objects;
+        return array_vector<MeshObjectArray>(builder.get_objects());
     }
 
     bool set_vertex_poses(
@@ -493,9 +488,7 @@ namespace
         size_t  m_index;
         string  m_filename;
 
-        MeshObjectKeyFrame()
-        {
-        }
+        MeshObjectKeyFrame() {}
 
         MeshObjectKeyFrame(const size_t index, const string& filename)
           : m_index(index)
@@ -547,17 +540,35 @@ namespace
 
         return objects;
     }
-}
 
-MeshObjectArray MeshObjectReader::read(
-    const char*         filename,
-    const char*         base_object_name,
-    const ParamArray&   params)
-{
-    assert(filename);
-    assert(base_object_name);
+    ParamArray complete_mesh_objects_params(
+        ParamArray              params,
+        const SearchPaths&      search_paths,
+        const char*             base_object_name)
+    {
+        // Tag objects with the name of their parent.
+        params.insert("__base_object_name", base_object_name);
 
-    return read_mesh_object(filename, base_object_name, params);
+        // Qualify all filenames.
+        if (params.strings().exist("filename"))
+        {
+            const string filename = params.get<string>("filename");
+            const string filepath = search_paths.qualify(filename);
+            params.insert("filename", filepath);
+        }
+        else if (params.dictionaries().exist("filename"))
+        {
+            StringDictionary& filepaths = params.dictionaries().get("filename").strings();
+            for (const_each<StringDictionary> i = filepaths; i; ++i)
+            {
+                const string filename = i->value<string>();
+                const string filepath = search_paths.qualify(filename);
+                filepaths.insert(i->name(), filepath);
+            }
+        }
+
+        return params;
+    }
 }
 
 MeshObjectArray MeshObjectReader::read(
@@ -567,6 +578,11 @@ MeshObjectArray MeshObjectReader::read(
 {
     assert(base_object_name);
 
+    const ParamArray completed_params =
+        complete_mesh_objects_params(params, search_paths, base_object_name);
+
+    MeshObjectArray objects;
+
     if (params.strings().exist("filename"))
     {
         if (params.dictionaries().exist("filename"))
@@ -575,40 +591,48 @@ MeshObjectArray MeshObjectReader::read(
                 "while reading geometry for object \"%s\": conflicting presence "
                 "of both a \"filename\" parameter and a \"filename\" parameter group.",
                 base_object_name);
-
-            return MeshObjectArray();
         }
-
-        return
-            read_mesh_object(
-                search_paths.qualify(params.strings().get<string>("filename")).c_str(),
-                base_object_name,
-                params);
+        else
+        {
+            objects =
+                read_mesh_object(
+                    search_paths.qualify(params.strings().get<string>("filename")).c_str(),
+                    base_object_name,
+                    completed_params);
+        }
     }
-
-    if (!params.dictionaries().exist("filename"))
+    else
     {
-        RENDERER_LOG_ERROR(
-            "while reading geometry for object \"%s\": no \"filename\" parameter or "
-            "\"filename\" parameter group found.",
-            base_object_name);
-
-        return MeshObjectArray();
+        if (params.dictionaries().exist("filename"))
+        {
+            const StringDictionary& filenames = params.dictionaries().get("filename").strings();
+            if (filenames.empty())
+            {
+                RENDERER_LOG_ERROR(
+                    "while reading geometry for object \"%s\": missing at least one parameter "
+                    "in \"filename\" parameter group.",
+                    base_object_name);
+            }
+            else
+            {
+                objects =
+                    read_key_framed_mesh_object(
+                        search_paths,
+                        filenames,
+                        base_object_name,
+                        completed_params);
+            }
+        }
+        else
+        {
+            RENDERER_LOG_ERROR(
+                "while reading geometry for object \"%s\": no \"filename\" parameter or "
+                "\"filename\" parameter group found.",
+                base_object_name);
+        }
     }
 
-    const StringDictionary& filenames = params.dictionaries().get("filename").strings();
-
-    if (filenames.empty())
-    {
-        RENDERER_LOG_ERROR(
-            "while reading geometry for object \"%s\": missing at least one parameter "
-            "in \"filename\" parameter group.",
-            base_object_name);
-
-        return MeshObjectArray();
-    }
-
-    return read_key_framed_mesh_object(search_paths, filenames, base_object_name, params);
+    return objects;
 }
 
 }   // namespace renderer
