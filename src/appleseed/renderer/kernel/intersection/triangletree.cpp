@@ -1185,53 +1185,6 @@ auto_ptr<TriangleTree> TriangleTreeFactory::create()
 
 
 //
-// Utility class to load a triangle from a given memory address,
-// converting the triangle to the desired precision if necessary,
-// but avoiding any work (in particular, no copy) if the triangle
-// is stored with the desired precision and can be used in-place.
-//
-
-namespace
-{
-    template <bool CompatibleTypes> struct TriangleGeometryReaderImpl;
-
-    // Incompatible types: perform a conversion.
-    template <> struct TriangleGeometryReaderImpl<false>
-    {
-        const TriangleType m_triangle;
-
-        explicit TriangleGeometryReaderImpl(const GTriangleType& triangle)
-          : m_triangle(triangle)
-        {
-        }
-
-        explicit TriangleGeometryReaderImpl(const foundation::uint32* ptr)
-          : m_triangle(*reinterpret_cast<const GTriangleType*>(ptr))
-        {
-        }
-    };
-
-    // Compatible types: no conversion or copy.
-    template <> struct TriangleGeometryReaderImpl<true>
-    {
-        const TriangleType& m_triangle;
-
-        explicit TriangleGeometryReaderImpl(const TriangleType& triangle)
-          : m_triangle(triangle)
-        {
-        }
-
-        explicit TriangleGeometryReaderImpl(const foundation::uint32* ptr)
-          : m_triangle(*reinterpret_cast<const TriangleType*>(ptr))
-        {
-        }
-    };
-
-    typedef TriangleGeometryReaderImpl<sizeof(GScalar) == sizeof(double)> TriangleGeometryReader;
-}
-
-
-//
 // TriangleLeafVisitor class implementation.
 //
 
