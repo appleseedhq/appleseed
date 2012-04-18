@@ -281,7 +281,7 @@ bool SBVHPartitioner<ItemHandler, AABBVector>::split(
     LeafType&                       right_leaf,
     AABBType&                       right_leaf_bbox)
 {
-    assert(leaf_bbox.rank() >= Dimension - 1);
+    assert(!leaf_bbox.is_valid() || leaf_bbox.rank() >= Dimension - 1);
 
 #ifdef FOUNDATION_SBVH_DEEPCHECK
     // Make sure every item intersects the leaf it belongs to.
@@ -293,8 +293,8 @@ bool SBVHPartitioner<ItemHandler, AABBVector>::split(
     }
 #endif
 
-    // Don't split leaves with a single item.
-    if (leaf.m_indices[0].size() <= 1)
+    // Don't split leaves with less than two items.
+    if (leaf.m_indices[0].size() < 2)
         return false;
 
     // Find the best object split.

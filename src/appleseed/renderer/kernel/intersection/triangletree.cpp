@@ -664,14 +664,11 @@ void TriangleTree::build_bvh(
     clear_release_memory(triangle_bboxes);
 
     // Store triangles and triangle keys into the tree.
-    if (!partitioner.get_item_ordering().empty())
-    {
-        store_triangles(
-            partitioner.get_item_ordering(),
-            triangle_vertex_infos,
-            triangle_vertices,
-            triangle_keys);
-    }
+    store_triangles(
+        partitioner.get_item_ordering(),
+        triangle_vertex_infos,
+        triangle_vertices,
+        triangle_keys);
 }
 
 void TriangleTree::build_sbvh(
@@ -737,14 +734,11 @@ void TriangleTree::build_sbvh(
     clear_release_memory(triangle_bboxes);
 
     // Store triangles and triangle keys into the tree.
-    if (!partitioner.get_item_ordering().empty())
-    {
-        store_triangles(
-            partitioner.get_item_ordering(),
-            triangle_vertex_infos,
-            triangle_vertices,
-            triangle_keys);
-    }
+    store_triangles(
+        partitioner.get_item_ordering(),
+        triangle_vertex_infos,
+        triangle_vertices,
+        triangle_keys);
 }
 
 void TriangleTree::store_triangles(
