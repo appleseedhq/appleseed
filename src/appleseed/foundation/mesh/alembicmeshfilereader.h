@@ -54,10 +54,14 @@ class AlembicMeshFileReader
   : public IMeshFileReader
 {
   public:
-    // Read an Alembic mesh file.
-    virtual void read(
-        const std::string&  filename,
-        IMeshBuilder&       builder);
+    // Constructor.
+    explicit AlembicMeshFileReader(const std::string& filename);
+
+    // Read a mesh.
+    virtual void read(IMeshBuilder& builder);
+
+  private:
+    const std::string m_filename;
 };
 
 }       // namespace foundation

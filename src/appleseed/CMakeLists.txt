@@ -297,7 +297,6 @@ set (foundation_mesh_sources
     foundation/mesh/imeshfilereader.h
     foundation/mesh/imeshfilewriter.h
     foundation/mesh/imeshwalker.h
-    foundation/mesh/iobjmeshbuilder.h
     foundation/mesh/meshbuilderbase.h
     foundation/mesh/objmeshfilelexer.h
     foundation/mesh/objmeshfilereader.cpp
@@ -385,6 +384,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_minmax.cpp
     foundation/meta/tests/test_noise.cpp
     foundation/meta/tests/test_objmeshfilereader.cpp
+    foundation/meta/tests/test_objmeshfilewriter.cpp
     foundation/meta/tests/test_otherwise.cpp
     foundation/meta/tests/test_path.cpp
     foundation/meta/tests/test_permutation.cpp

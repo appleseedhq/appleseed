@@ -156,15 +156,14 @@ bool MeshObjectWriter::write(
 {
     assert(filename);
 
-    OBJMeshFileWriter writer;
-    MeshObjectWalker walker(object, object_name);
-
     Stopwatch<DefaultWallclockTimer> stopwatch;
     stopwatch.start();
 
     try
     {
-        writer.write(filename, walker);
+        OBJMeshFileWriter writer(filename);
+        MeshObjectWalker walker(object, object_name);
+        writer.write(walker);
     }
     catch (const ExceptionIOError&)
     {

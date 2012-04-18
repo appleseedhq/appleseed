@@ -346,7 +346,7 @@ namespace
         const char*             base_object_name,
         const ParamArray&       params)
     {
-        GenericMeshFileReader reader;
+        GenericMeshFileReader reader(filename);
 
         const string obj_parsing_mode = params.get_optional<string>("obj_parsing_mode", "fast");
 
@@ -380,7 +380,7 @@ namespace
 
         try
         {
-            reader.read(filename, builder);
+            reader.read(builder);
         }
         catch (const OBJMeshFileReader::ExceptionInvalidFaceDef& e)
         {
@@ -439,7 +439,7 @@ namespace
         return objects;
     }
 
-    bool add_motion_vectors(
+    bool set_vertex_poses(
         const MeshObjectArray&  objects,
         const MeshObjectArray&  objects_next,
         const size_t            motion_segment_index,
@@ -541,7 +541,7 @@ namespace
                     base_object_name,
                     params);
 
-            if (!add_motion_vectors(objects, key_frame, i - 1, filename.c_str(), base_object_name))
+            if (!set_vertex_poses(objects, key_frame, i - 1, filename.c_str(), base_object_name))
                 break;
         }
 

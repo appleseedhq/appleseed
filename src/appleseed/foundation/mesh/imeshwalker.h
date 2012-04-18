@@ -50,7 +50,7 @@ class IMeshWalker
   public:
     struct Face
     {
-        // Special index value used to indicate that a feature is not present.
+        // Special index value indicating that a feature is not present.
         static const size_t None = ~0;
 
         size_t  m_v0, m_v1, m_v2;

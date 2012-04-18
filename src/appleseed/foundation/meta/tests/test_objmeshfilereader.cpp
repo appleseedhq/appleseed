@@ -37,18 +37,12 @@
 #include <string>
 #include <vector>
 
+using namespace foundation;
+using namespace std;
+
 TEST_SUITE(Foundation_Mesh_OBJMeshFileReader)
 {
-    using namespace foundation;
-    using namespace std;
-
-    struct Face
-    {
-        vector<size_t>      m_vertices;
-        vector<size_t>      m_vertex_normals;
-        vector<size_t>      m_tex_coords;
-        size_t              m_material;
-    };
+    struct Face {};
 
     struct Mesh
     {
@@ -64,90 +58,45 @@ TEST_SUITE(Foundation_Mesh_OBJMeshFileReader)
     {
         vector<Mesh>        m_meshes;
 
-        // Begin the definition of a mesh.
         virtual void begin_mesh(const string& name)
         {
             m_meshes.push_back(Mesh());
             m_meshes.back().m_name = name;
         }
 
-        // Append a vertex to the mesh.
         virtual size_t push_vertex(const Vector3d& v)
         {
             m_meshes.back().m_vertices.push_back(v);
             return m_meshes.back().m_vertices.size() - 1;
         }
 
-        // Append a vertex normal to the mesh. The normal is unit-length.
         virtual size_t push_vertex_normal(const Vector3d& v)
         {
             m_meshes.back().m_vertex_normals.push_back(v);
             return m_meshes.back().m_vertex_normals.size() - 1;
         }
 
-        // Append a texture coordinate to the mesh.
         virtual size_t push_tex_coords(const Vector2d& v)
         {
             m_meshes.back().m_tex_coords.push_back(v);
             return m_meshes.back().m_tex_coords.size() - 1;
         }
 
-        // Begin the definition of a face.
         virtual void begin_face(const size_t vertex_count)
         {
-            Face face;
-            face.m_vertices.resize(vertex_count);
-            face.m_vertex_normals.resize(vertex_count);
-            face.m_tex_coords.resize(vertex_count);
-            face.m_material = ~0;
-            m_meshes.back().m_faces.push_back(face);
-        }
-
-        // Assign vertices to the face.
-        virtual void set_face_vertices(const size_t vertices[])
-        {
-            Face& face = m_meshes.back().m_faces.back();
-            for (size_t i = 0; i < face.m_vertices.size(); ++i)
-                face.m_vertices[i] = vertices[i];
-        }
-
-        // Assign vertex normals to the face.
-        virtual void set_face_vertex_normals(const size_t vertex_normals[])
-        {
-            Face& face = m_meshes.back().m_faces.back();
-            for (size_t i = 0; i < face.m_vertex_normals.size(); ++i)
-                face.m_vertex_normals[i] = vertex_normals[i];
-        }
-
-        // Assign texture coordinates to the face.
-        virtual void set_face_vertex_tex_coords(const size_t tex_coords[])
-        {
-            Face& face = m_meshes.back().m_faces.back();
-            for (size_t i = 0; i < face.m_tex_coords.size(); ++i)
-                face.m_tex_coords[i] = tex_coords[i];
-        }
-
-        // Assign a material to the face.
-        virtual void set_face_material(const size_t material)
-        {
-            m_meshes.back().m_faces.back().m_material = material;
+            m_meshes.back().m_faces.push_back(Face());
         }
     };
 
-    struct Fixture
+    TEST_CASE(ReadCubeMeshFile)
     {
-        OBJMeshFileReader   m_reader;
-        MeshBuilder         m_builder;
-    };
+        OBJMeshFileReader reader("unit tests/inputs/cube.obj");
+        MeshBuilder builder;
+        reader.read(builder);
 
-    TEST_CASE_F(ReadCubeMeshFile, Fixture)
-    {
-        m_reader.read("unit tests/inputs/cube.obj", m_builder);
+        EXPECT_EQ(1, builder.m_meshes.size());
 
-        EXPECT_EQ(1, m_builder.m_meshes.size());
-
-        Mesh& mesh = m_builder.m_meshes.front();
-
+        Mesh& mesh = builder.m_meshes.front();
         EXPECT_EQ("", mesh.m_name);
         EXPECT_EQ(20, mesh.m_vertices.size());
         EXPECT_EQ(6, mesh.m_vertex_normals.size());
@@ -155,15 +104,15 @@ TEST_SUITE(Foundation_Mesh_OBJMeshFileReader)
         EXPECT_EQ(12, mesh.m_faces.size());
     }
 
-    TEST_CASE_F(ReadQuadMeshFile, Fixture)
+    TEST_CASE(ReadQuadMeshFile)
     {
-        m_reader.read("unit tests/inputs/quad.obj", m_builder);
+        OBJMeshFileReader reader("unit tests/inputs/quad.obj");
+        MeshBuilder builder;
+        reader.read(builder);
 
-        EXPECT_EQ(1, m_builder.m_meshes.size());
+        EXPECT_EQ(1, builder.m_meshes.size());
 
-        Mesh& mesh = m_builder.m_meshes.front();
-
-        EXPECT_EQ(1, m_builder.m_meshes.size());
+        Mesh& mesh = builder.m_meshes.front();
         EXPECT_EQ("quad", mesh.m_name);
         EXPECT_EQ(4, mesh.m_vertices.size());
         EXPECT_EQ(0, mesh.m_vertex_normals.size());

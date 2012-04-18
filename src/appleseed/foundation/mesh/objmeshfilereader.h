@@ -39,7 +39,6 @@
 
 // Forward declarations.
 namespace foundation    { class IMeshBuilder; }
-namespace foundation    { class IOBJMeshBuilder; }
 
 namespace foundation
 {
@@ -87,22 +86,18 @@ class OBJMeshFileReader
     };
 
     // Constructor.
-    explicit OBJMeshFileReader(const int options = Default);
-
-    // Destructor.
-    virtual ~OBJMeshFileReader();
-
-    // Read an OBJ mesh file.
-    virtual void read(
+    OBJMeshFileReader(
         const std::string&  filename,
-        IMeshBuilder&       builder);
-    void read(
-        const std::string&  filename,
-        IOBJMeshBuilder&    builder);
+        const int           options = Default);
+
+    // Read a mesh.
+    virtual void read(IMeshBuilder& builder);
 
   private:
     struct Impl;
-    Impl* impl;
+
+    const std::string       m_filename;
+    const int               m_options;
 };
 
 }       // namespace foundation

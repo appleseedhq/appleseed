@@ -32,9 +32,6 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 
-// Standard headers.
-#include <string>
-
 // Forward declarations.
 namespace foundation    { class IMeshBuilder; }
 
@@ -52,10 +49,8 @@ class IMeshFileReader
     // Destructor.
     virtual ~IMeshFileReader() {}
 
-    // Read a mesh file.
-    virtual void read(
-        const std::string&  filename,
-        IMeshBuilder&       builder) = 0;
+    // Read a mesh.
+    virtual void read(IMeshBuilder& builder) = 0;
 };
 
 }       // namespace foundation

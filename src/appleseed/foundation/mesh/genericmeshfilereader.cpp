@@ -43,8 +43,9 @@ using namespace std;
 namespace foundation
 {
 
-GenericMeshFileReader::GenericMeshFileReader()
-  : m_obj_options(OBJMeshFileReader::Default)
+GenericMeshFileReader::GenericMeshFileReader(const string& filename)
+  : m_filename(filename)
+  , m_obj_options(OBJMeshFileReader::Default)
 {
 }
 
@@ -58,26 +59,24 @@ void GenericMeshFileReader::set_obj_options(const int obj_options)
     m_obj_options = obj_options;
 }
 
-void GenericMeshFileReader::read(
-    const string&   filename,
-    IMeshBuilder&   builder)
+void GenericMeshFileReader::read(IMeshBuilder& builder)
 {
-    const filesystem::path filepath(filename);
+    const filesystem::path filepath(m_filename);
     const string extension = lower_case(filepath.extension());
 
     if (extension == ".obj")
     {
-        OBJMeshFileReader reader(m_obj_options);
-        reader.read(filename, builder);
+        OBJMeshFileReader reader(m_filename, m_obj_options);
+        reader.read(builder);
     }
     else if (extension == ".abc")
     {
-        AlembicMeshFileReader reader;
-        reader.read(filename, builder);
+        AlembicMeshFileReader reader(m_filename);
+        reader.read(builder);
     }
     else
     {
-        throw ExceptionUnsupportedFileFormat(filename.c_str());
+        throw ExceptionUnsupportedFileFormat(m_filename.c_str());
     }
 }
 

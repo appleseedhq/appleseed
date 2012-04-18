@@ -33,7 +33,7 @@
 #include "foundation/core/exceptions/exceptionioerror.h"
 #include "foundation/core/exceptions/exceptionnotimplemented.h"
 #include "foundation/math/vector.h"
-#include "foundation/mesh/iobjmeshbuilder.h"
+#include "foundation/mesh/imeshbuilder.h"
 #include "foundation/mesh/objmeshfilelexer.h"
 #include "foundation/utility/memory.h"
 
@@ -58,8 +58,10 @@ namespace
 struct OBJMeshFileReader::Impl
 {
     const int               m_options;
+    IMeshBuilder&           m_builder;
     OBJMeshFileLexer        m_lexer;
-    IOBJMeshBuilder*        m_builder;
+    bool                    m_inside_mesh_def;          // currently inside a mesh definition?
+    string                  m_mesh_name;
 
     // Features defined in the file.
     vector<Vector3d>        m_vertices;
@@ -76,45 +78,27 @@ struct OBJMeshFileReader::Impl
     vector<size_t>          m_face_tex_coord_indices;
     vector<size_t>          m_face_normal_indices;
 
-    bool                    m_inside_mesh_def;          // currently inside a mesh definition?
-    string                  m_mesh_name;
-
     // Constructor.
-    explicit Impl(const int options)
+    Impl(
+        const int           options,
+        IMeshBuilder&       builder)
       : m_options(options)
+      , m_builder(builder)
       , m_lexer(
             (options & FavorSpeedOverPrecision)
                 ? OBJMeshFileLexer::Fast
                 : OBJMeshFileLexer::Precise)
+      , m_inside_mesh_def(false)
     {
-    }
-
-    // Reset the parser to its initial state.
-    void reset()
-    {
-        m_builder = 0;
-
-        clear_release_memory(m_vertices);
-        clear_release_memory(m_tex_coords);
-        clear_release_memory(m_normals);
-
-        clear_release_memory(m_vertex_index_mapping);
-        clear_release_memory(m_tex_coord_index_mapping);
-        clear_release_memory(m_normal_index_mapping);
-
-        clear_release_memory(m_face_vertex_indices);
-        clear_release_memory(m_face_tex_coord_indices);
-        clear_release_memory(m_face_normal_indices);
-
-        m_inside_mesh_def = false;
-        m_mesh_name.clear();
     }
 
     // Close the input file and throw an ExceptionParseError exception.
     void parse_error()
     {
         const size_t line_number = m_lexer.get_line_number();
+
         m_lexer.close();
+
         throw ExceptionParseError(line_number);
     }
 
@@ -194,7 +178,7 @@ struct OBJMeshFileReader::Impl
 
         // End the definition of the last object.
         if (m_inside_mesh_def)
-            m_builder->end_mesh();
+            m_builder.end_mesh();
     }
 
     // Convert 1-based indices (including negative indices) to 0-based indices.
@@ -293,7 +277,7 @@ struct OBJMeshFileReader::Impl
                 else parse_error();
             }
 
-        terminate:
+          terminate:
 
             //
             // Recognized n//
@@ -346,7 +330,7 @@ struct OBJMeshFileReader::Impl
             const size_t vertex_index = m_face_vertex_indices[i];
             ensure_minimum_size(m_vertex_index_mapping, vertex_index + 1, Undefined);
             if (m_vertex_index_mapping[vertex_index] == Undefined)
-                m_vertex_index_mapping[vertex_index] = m_builder->push_vertex(m_vertices[vertex_index]);
+                m_vertex_index_mapping[vertex_index] = m_builder.push_vertex(m_vertices[vertex_index]);
         }
     }
 
@@ -359,7 +343,7 @@ struct OBJMeshFileReader::Impl
             const size_t normal_index = m_face_normal_indices[i];
             ensure_minimum_size(m_normal_index_mapping, normal_index + 1, Undefined);
             if (m_normal_index_mapping[normal_index] == Undefined)
-                m_normal_index_mapping[normal_index] = m_builder->push_vertex_normal(m_normals[normal_index]);
+                m_normal_index_mapping[normal_index] = m_builder.push_vertex_normal(m_normals[normal_index]);
         }
     }
 
@@ -372,7 +356,7 @@ struct OBJMeshFileReader::Impl
             const size_t tex_coord_index = m_face_tex_coord_indices[i];
             ensure_minimum_size(m_tex_coord_index_mapping, tex_coord_index + 1, Undefined);
             if (m_tex_coord_index_mapping[tex_coord_index] == Undefined)
-                m_tex_coord_index_mapping[tex_coord_index] = m_builder->push_tex_coords(m_tex_coords[tex_coord_index]);
+                m_tex_coord_index_mapping[tex_coord_index] = m_builder.push_tex_coords(m_tex_coords[tex_coord_index]);
         }
     }
 
@@ -381,7 +365,7 @@ struct OBJMeshFileReader::Impl
         if (!m_inside_mesh_def)
         {
             // Begin the definition of the new mesh.
-            m_builder->begin_mesh(m_mesh_name);
+            m_builder.begin_mesh(m_mesh_name);
             m_inside_mesh_def = true;
         }
 
@@ -398,21 +382,21 @@ struct OBJMeshFileReader::Impl
         const size_t n = m_face_vertex_indices.size();
 
         // Begin defining a new face.
-        m_builder->begin_face(n); 
+        m_builder.begin_face(n); 
 
         // Set face vertices.
-        m_builder->set_face_vertices(&m_face_vertex_indices.front());
+        m_builder.set_face_vertices(&m_face_vertex_indices.front());
 
         // Set face vertex normals (if any).
         if (m_face_normal_indices.size() == n)
-            m_builder->set_face_vertex_normals(&m_face_normal_indices.front());
+            m_builder.set_face_vertex_normals(&m_face_normal_indices.front());
 
         // Set face vertex texture coordinates (if any).
         if (m_face_tex_coord_indices.size() == n)
-            m_builder->set_face_vertex_tex_coords(&m_face_tex_coord_indices.front());
+            m_builder.set_face_vertex_tex_coords(&m_face_tex_coord_indices.front());
 
         // End defining the face.
-        m_builder->end_face();
+        m_builder.end_face();
     }
 
     void parse_o_g_statement()
@@ -422,7 +406,7 @@ struct OBJMeshFileReader::Impl
         // End the current mesh.
         if (m_inside_mesh_def)
         {
-            m_builder->end_mesh();
+            m_builder.end_mesh();
             m_inside_mesh_def = false;
         }
 
@@ -504,43 +488,27 @@ struct OBJMeshFileReader::Impl
     }
 };
 
-OBJMeshFileReader::OBJMeshFileReader(const int options)
-  : impl(new Impl(options))
+OBJMeshFileReader::OBJMeshFileReader(
+    const string&   filename,
+    const int       options)
+  : m_filename(filename)
+  , m_options(options)
 {
 }
 
-OBJMeshFileReader::~OBJMeshFileReader()
+void OBJMeshFileReader::read(IMeshBuilder& builder)
 {
-    delete impl;
-}
-
-void OBJMeshFileReader::read(
-    const string&       filename,
-    IMeshBuilder&       builder)
-{
-    OBJMeshBuilderAdaptor adaptor(builder);
-    read(filename, adaptor);
-}
-
-void OBJMeshFileReader::read(
-    const string&       filename,
-    IOBJMeshBuilder&    builder)
-{
-    // Reset the parser to its initial state.
-    impl->reset();
-
-    // Store a pointer to the mesh builder.
-    impl->m_builder = &builder;
+    Impl impl(m_options, builder);
 
     // Open the input file.
-    if (!impl->m_lexer.open(filename))
+    if (!impl.m_lexer.open(m_filename))
         throw ExceptionIOError();
 
     // Parse the file.
-    impl->parse_file();
+    impl.parse_file();
 
     // Close the input file.
-    impl->m_lexer.close();
+    impl.m_lexer.close();
 }
 
 }   // namespace foundation

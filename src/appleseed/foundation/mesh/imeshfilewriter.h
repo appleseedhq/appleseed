@@ -32,9 +32,6 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 
-// Standard headers.
-#include <string>
-
 // Forward declarations.
 namespace foundation    { class IMeshWalker; }
 
@@ -52,10 +49,8 @@ class IMeshFileWriter
     // Destructor.
     virtual ~IMeshFileWriter() {}
 
-    // Write a mesh file.
-    virtual void write(
-        const std::string&  filename,
-        const IMeshWalker&  walker) = 0;
+    // Write a mesh.
+    virtual void write(const IMeshWalker& walker) = 0;
 };
 
 }       // namespace foundation
