@@ -892,7 +892,19 @@ get(const KeyType& key)
         // The key was not found in the index: cache miss.
         ++m_miss_count;
 
-        if (m_element_swapper.is_full(m_queue_size))
+        // Load the new element.
+        Line line;
+        line.m_key = key;
+        m_element_swapper.load(line.m_key, line.m_element);
+
+        // Insert the new element into the queue.
+        m_queue.push_front(line);
+        ++m_queue_size;
+
+        // Insert the new element into the index.
+        m_index[key] = m_queue.begin();
+
+        while (m_queue_size > 1 && m_element_swapper.is_full(m_queue_size))
         {
             // Locate the least recently used element.
             Line& line = m_queue.back();
@@ -907,18 +919,6 @@ get(const KeyType& key)
             m_queue.pop_back();
             --m_queue_size;
         }
-
-        // Load the new element.
-        Line line;
-        line.m_key = key;
-        m_element_swapper.load(line.m_key, line.m_element);
-
-        // Insert the new element into the queue.
-        m_queue.push_front(line);
-        ++m_queue_size;
-
-        // Insert the new element into the index.
-        m_index[key] = m_queue.begin();
 
         // Return the element.
         return m_queue.front().m_element;

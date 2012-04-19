@@ -41,49 +41,113 @@ using namespace std;
 
 TEST_SUITE(Foundation_Utility_Cache_LRUCache)
 {
-    typedef size_t MyKey;
-    typedef int MyElement;
-
-    struct MyElementSwapper
+    namespace case1
     {
-        size_t m_unloaded_element_count;
+        typedef size_t MyKey;
+        typedef int MyElement;
 
-        MyElementSwapper()
-          : m_unloaded_element_count(0)
+        struct MyElementSwapper
         {
-        }
+            size_t m_unloaded_element_count;
 
-        void load(const MyKey key, MyElement*& element) const
+            MyElementSwapper()
+              : m_unloaded_element_count(0)
+            {
+            }
+
+            void load(const MyKey key, MyElement*& element) const
+            {
+                element = new MyElement(key);
+            }
+
+            void unload(const MyKey key, MyElement*& element)
+            {
+                delete element;
+                element = 0;
+                ++m_unloaded_element_count;
+            }
+
+            bool is_full(const size_t element_count) const
+            {
+                return false;
+            }
+        };
+
+        TEST_CASE(Destructor_UnloadsElementsStillInCache)
         {
-            element = new MyElement(key * 10);
-        }
+            MyElementSwapper element_swapper;
 
-        void unload(const MyKey key, MyElement*& element)
-        {
-            delete element;
-            element = 0;
-            ++m_unloaded_element_count;
-        }
+            {
+                LRUCache<MyKey, MyElement*, MyElementSwapper> cache(element_swapper);
 
-        bool is_full(const size_t element_count) const
-        {
-            return false;
-        }
-    };
+                cache.get(1);
+                cache.get(2);
+                cache.get(3);
+            }
 
-    TEST_CASE(Destructor_UnloadsElementsStillInCache)
+            EXPECT_EQ(3, element_swapper.m_unloaded_element_count);
+        }
+    }
+
+    namespace case2
     {
-        MyElementSwapper element_swapper;
+        typedef size_t MyKey;
+        typedef int MyElement;
 
+        struct MyElementSwapper
         {
+            size_t m_memory_size;
+
+            MyElementSwapper()
+              : m_memory_size(0)
+            {
+            }
+
+            void load(const MyKey key, MyElement*& element)
+            {
+                element = new MyElement(key);
+                m_memory_size += *element * 1000;
+            }
+
+            void unload(const MyKey key, MyElement*& element)
+            {
+                m_memory_size -= *element * 1000;
+                delete element;
+                element = 0;
+            }
+
+            bool is_full(const size_t element_count) const
+            {
+                return m_memory_size >= 8 * 1000;
+            }
+        };
+
+        TEST_CASE(MemoryLimitIsHonored)
+        {
+            MyElementSwapper element_swapper;
             LRUCache<MyKey, MyElement*, MyElementSwapper> cache(element_swapper);
 
             cache.get(1);
-            cache.get(2);
-            cache.get(3);
-        }
+            ASSERT_EQ(1000, element_swapper.m_memory_size);
 
-        EXPECT_EQ(3, element_swapper.m_unloaded_element_count);
+            cache.get(2);
+            ASSERT_EQ(3000, element_swapper.m_memory_size);
+
+            cache.get(3);
+            ASSERT_EQ(6000, element_swapper.m_memory_size);
+
+            cache.get(4);   // flushes 1 and 2, cache contains 3 and 4
+            ASSERT_EQ(7000, element_swapper.m_memory_size);
+
+            cache.get(5);   // flushes 3 and 4, cache contains 5
+            ASSERT_EQ(5000, element_swapper.m_memory_size);
+
+            cache.get(6);   // flushes 5, cache contains 6
+            ASSERT_EQ(6000, element_swapper.m_memory_size);
+
+            cache.get(9);   // flushes 6, cache contains 9
+            ASSERT_EQ(9000, element_swapper.m_memory_size);
+        }
     }
 }
 
