@@ -165,7 +165,8 @@ TEST_SUITE(Foundation_Mesh_OBJMeshFileWriter)
         const Mesh mesh = create_mesh("mesh");
 
         OBJMeshFileWriter writer("unit tests/outputs/test_objmeshfilewriter_oneobject.obj");
-        writer.write(MeshWalker(mesh));
+        MeshWalker walker(mesh);
+        writer.write(walker);
         writer.close();
 
         OBJMeshFileReader reader("unit tests/outputs/test_objmeshfilewriter_oneobject.obj");
@@ -186,8 +187,10 @@ TEST_SUITE(Foundation_Mesh_OBJMeshFileWriter)
         const Mesh mesh2 = create_mesh("mesh2");
 
         OBJMeshFileWriter writer("unit tests/outputs/test_objmeshfilewriter_twoobjects.obj");
-        writer.write(MeshWalker(mesh1));
-        writer.write(MeshWalker(mesh2));
+        MeshWalker walker1(mesh1);
+        writer.write(walker1);
+        MeshWalker walker2(mesh2);
+        writer.write(walker2);
         writer.close();
 
         OBJMeshFileReader reader("unit tests/outputs/test_objmeshfilewriter_twoobjects.obj");
