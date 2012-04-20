@@ -47,6 +47,7 @@
 // Standard headers.
 #include <cassert>
 #include <cmath>
+#include <memory>
 #include <cstddef>
 #include <cstring>
 

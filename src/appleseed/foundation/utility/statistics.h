@@ -101,11 +101,11 @@ class Statistics
             String
         };
 
-        const std::string           m_name;
-        const std::string           m_title;
-        const std::string           m_unit;
-        const Type                  m_type;
-        const size_t                m_index;
+        std::string     m_name;
+        std::string     m_title;
+        std::string     m_unit;
+        Type            m_type;
+        size_t          m_index;
 
         Record()
           : m_type(Type())
