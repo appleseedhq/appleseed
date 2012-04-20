@@ -39,6 +39,7 @@
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <string>
 
 namespace foundation {
 namespace bvh {
@@ -128,7 +129,7 @@ TreeStatistics<Tree>::TreeStatistics(
         m_leaf_volume = tree_volume;
 
     statistics.add_size("memory_size", "size", tree.get_memory_size());
-    statistics.add<string>(
+    statistics.add<std::string>(
         "nodes", "nodes",
         "total " + pretty_uint(tree.m_nodes.size()) +
         "  interior " + pretty_uint(tree.m_nodes.size() - m_leaf_count) +
