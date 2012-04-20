@@ -52,8 +52,8 @@
 // Linux.
 #elif defined __linux__
 
-    // Standard headers.
-    #include <cstdio>
+    // Platform headers.
+    #include <unistd.h>
 
 // Unsupported platform.
 #else
