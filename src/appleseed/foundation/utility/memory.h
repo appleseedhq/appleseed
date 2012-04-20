@@ -74,7 +74,7 @@ template <typename T>
 bool is_aligned(const T ptr, const size_t alignment);
 
 // Allocate memory on a specified alignment boundary.
-void* aligned_malloc(const size_t size, const size_t alignment);
+void* aligned_malloc(const size_t size, size_t alignment);
 
 // Free a block of memory that was allocated with aligned_malloc().
 void aligned_free(void* aligned_ptr);

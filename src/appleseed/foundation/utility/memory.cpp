@@ -41,10 +41,17 @@ namespace foundation
 // Memory-alignment related functions implementation.
 //
 
-void* aligned_malloc(const size_t size, const size_t alignment)
+void* aligned_malloc(const size_t size, size_t alignment)
 {
+    // Often, the value of alignment is set to the line size of the L1 data cache as
+    // reported by foundation::System::get_l1_data_cache_line_size().  It may happen
+    // that this function returns 0 if the CPU cache information cannot be retrieved.
+    // For convenience we handle this situation here by using a reasonable alignment
+    // value when this happens.
+    if (alignment == 0)
+        alignment = 16;
+
     assert(size > 0);
-    assert(alignment > 0);
     assert(is_pow2(alignment));
 
     // Compute the total number of bytes of memory we need to allocate.
