@@ -331,11 +331,11 @@ inline bool TriangleLeafVisitor::visit(
 {
     // Retrieve the pointer to the data of this leaf.
     const foundation::uint8* user_data = &node.get_user_data<foundation::uint8>();
-    const size_t leaf_data_index =
+    const foundation::uint32 leaf_data_index =
         *reinterpret_cast<const foundation::uint32*>(user_data);
     const foundation::uint8* leaf_data =
         leaf_data_index == ~0
-            ? user_data + sizeof(foundation::uint32*)   // triangles are stored in the leaf node
+            ? user_data + sizeof(foundation::uint32)    // triangles are stored in the leaf node
             : &m_tree.m_leaf_data[leaf_data_index];     // triangles are stored in the tree
 
     const size_t triangle_index = node.get_item_index();
@@ -345,7 +345,7 @@ inline bool TriangleLeafVisitor::visit(
     for (size_t i = 0; i < triangle_count; ++i)
     {
         // Retrieve the number of motion segments for this triangle.
-        const size_t motion_segment_count =
+        const foundation::uint32 motion_segment_count =
             *reinterpret_cast<const foundation::uint32*>(leaf_data);
         leaf_data += sizeof(foundation::uint32);
 
@@ -448,11 +448,11 @@ inline bool TriangleLeafProbeVisitor::visit(
 {
     // Retrieve the pointer to the data of this leaf.
     const foundation::uint8* user_data = &node.get_user_data<foundation::uint8>();
-    const size_t leaf_data_index =
+    const foundation::uint32 leaf_data_index =
         *reinterpret_cast<const foundation::uint32*>(user_data);
     const foundation::uint8* leaf_data =
         leaf_data_index == ~0
-            ? user_data + sizeof(foundation::uint32*)   // triangles are stored in the leaf node
+            ? user_data + sizeof(foundation::uint32)    // triangles are stored in the leaf node
             : &m_tree.m_leaf_data[leaf_data_index];     // triangles are stored in the tree
 
     const size_t triangle_count = node.get_item_count();
@@ -461,7 +461,7 @@ inline bool TriangleLeafProbeVisitor::visit(
     for (size_t i = 0; i < triangle_count; ++i)
     {
         // Retrieve the number of motion segments for this triangle.
-        const size_t motion_segment_count =
+        const foundation::uint32 motion_segment_count =
             *reinterpret_cast<const foundation::uint32*>(leaf_data);
         leaf_data += sizeof(foundation::uint32);
 
