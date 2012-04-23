@@ -71,12 +71,22 @@ set (preprocessor_definitions_release
 # All configurations.
 set (compiler_flags_common
     /MP                                     # Multi-processor Compilation
-    /WX                                     # Treat Warnings As Errors
     /GF                                     # Enable String Pooling
     /wd4290                                 # Disable warning C4290: C++ exception specification ignored except to indicate a function is not __declspec(nothrow)
     /wd4355                                 # Disable warning C4355: 'this' : used in base member initializer list
     /wd4503                                 # Disable warning C4503: decorated name length exceeded, name was truncated
 )
+if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set (compiler_flags_common
+        ${compiler_flags_common}
+        /bigobj                             # Increase Number of Sections in .Obj file
+    )
+else ()
+    set (compiler_flags_common
+        ${compiler_flags_common}
+        /WX                                 # Treat Warnings As Errors
+    )
+endif ()
 set (exe_linker_flags_common
     /WX                                     # Treat Warnings As Errors
 )
@@ -85,8 +95,17 @@ set (shared_lib_linker_flags_common
 )
 
 # Debug configuration.
+if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set (compiler_flags_debug
+        /Zi                                 # set Debug Information Format to Program Database
+    )
+else ()
+    set (compiler_flags_debug
+        /ZI                                 # set Debug Information Format to Program Database for Edit & Continue
+    )
+endif ()
 set (compiler_flags_debug
-    /ZI                                     # set Debug Information Format to Program Database for Edit & Continue
+    ${compiler_flags_debug}
     /MDd                                    # set Runtime Library to Multi-threaded Debug DLL
 )
 
