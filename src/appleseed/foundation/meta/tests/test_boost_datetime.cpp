@@ -27,6 +27,7 @@
 //
 
 // appleseed.foundation headers.
+#include "foundation/platform/datetime.h"
 #include "foundation/utility/string.h"
 #include "foundation/utility/test.h"
 
@@ -54,9 +55,7 @@ TEST_SUITE(Boost_DateTime)
 
     TEST_CASE(TimeDurationToString)
     {
-        using namespace posix_time;
-
-        const string result = to_string(time_duration(17, 45, 31));
+        const string result = to_string(posix_time::time_duration(17, 45, 31));
 
         EXPECT_EQ("17:45:31", result);
     }

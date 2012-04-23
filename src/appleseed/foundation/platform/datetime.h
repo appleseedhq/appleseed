@@ -34,9 +34,12 @@
 #include "foundation/utility/string.h"
 
 // boost headers.
+#include "boost/date_time/gregorian/gregorian.hpp"
 #include "boost/date_time/posix_time/posix_time.hpp"
 
 // Standard headers.
+#include <iterator>
+#include <sstream>
 #include <string>
 
 namespace foundation
@@ -44,8 +47,9 @@ namespace foundation
 
 boost::posix_time::time_duration microseconds_to_time_duration(uint64 microseconds);
 
-template <>
-std::string to_string(const boost::posix_time::ptime& time);
+template <> std::string to_string(const boost::posix_time::ptime& time);
+template <> std::string to_string(const boost::posix_time::time_duration& td);
+template <> std::string to_string(const boost::gregorian::date& date);
 
 
 //
@@ -77,6 +81,30 @@ template <>
 inline std::string to_string(const boost::posix_time::ptime& time)
 {
     return boost::posix_time::to_iso_string(time);
+}
+
+template <>
+inline std::string to_string(const boost::posix_time::time_duration& td)
+{
+    std::stringstream sstr;
+    std::ostreambuf_iterator<char> oitr(sstr);
+
+    boost::posix_time::time_facet facet;
+    facet.put(oitr, sstr, sstr.fill(), td);
+
+    return sstr.str();
+}
+
+template <>
+inline std::string to_string(const boost::gregorian::date& date)
+{
+    std::stringstream sstr;
+    std::ostreambuf_iterator<char> oitr(sstr);
+
+    boost::gregorian::date_facet facet;
+    facet.put(oitr, sstr, sstr.fill(), date);
+
+    return sstr.str();
 }
 
 }       // namespace foundation
