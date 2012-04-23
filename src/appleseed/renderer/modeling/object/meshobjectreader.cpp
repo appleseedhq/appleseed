@@ -309,8 +309,8 @@ namespace
                 const Vector3d geometric_normal = normalize(cross(v1 - v0, v2 - v0));
 
                 // Insert the geometric normal into the mesh.
-                const size_t geometric_normal_index =
-                    m_objects.back()->push_vertex_normal(GVector3(geometric_normal));
+                const uint32 geometric_normal_index =
+                    static_cast<uint32>(m_objects.back()->push_vertex_normal(GVector3(geometric_normal)));
 
                 // Assign the geometric normal to all vertices of the triangle.
                 triangle.m_n0 = geometric_normal_index;

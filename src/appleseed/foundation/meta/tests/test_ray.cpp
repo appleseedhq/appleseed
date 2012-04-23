@@ -55,9 +55,9 @@ TEST_SUITE(Foundation_Math_RayInfo)
 
         const RayInfo3d ray_info(ray);
 
-        EXPECT_FEQ(0, ray_info.m_sgn_dir[0]);
-        EXPECT_FEQ(1, ray_info.m_sgn_dir[1]);
-        EXPECT_FEQ(1, ray_info.m_sgn_dir[2]);
+        EXPECT_EQ(0, ray_info.m_sgn_dir[0]);
+        EXPECT_EQ(1, ray_info.m_sgn_dir[1]);
+        EXPECT_EQ(1, ray_info.m_sgn_dir[2]);
     }
 
 #pragma warning (pop)

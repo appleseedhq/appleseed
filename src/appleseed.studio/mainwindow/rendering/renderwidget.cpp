@@ -91,7 +91,7 @@ namespace
         const size_t    x,
         const size_t    y)
     {
-        uint8* scanline = static_cast<uint8*>(image.scanLine(y));
+        uint8* scanline = static_cast<uint8*>(image.scanLine(static_cast<int>(y)));
         return scanline + x * image.depth() / 8;
     }
 }

@@ -44,7 +44,7 @@ TEST_SUITE(Foundation_Utility_Cache_LRUCache)
     namespace case1
     {
         typedef size_t MyKey;
-        typedef int MyElement;
+        typedef size_t MyElement;
 
         struct MyElementSwapper
         {
@@ -92,7 +92,7 @@ TEST_SUITE(Foundation_Utility_Cache_LRUCache)
     namespace case2
     {
         typedef size_t MyKey;
-        typedef int MyElement;
+        typedef size_t MyElement;
 
         struct MyElementSwapper
         {
@@ -154,7 +154,7 @@ TEST_SUITE(Foundation_Utility_Cache_LRUCache)
 TEST_SUITE(Foundation_Utility_Cache_DualStageCache)
 {
     typedef size_t MyKey;
-    typedef int MyElement;
+    typedef size_t MyElement;
 
     const MyKey MyInvalidKey = ~0;
 

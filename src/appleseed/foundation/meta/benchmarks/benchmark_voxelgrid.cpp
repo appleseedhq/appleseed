@@ -71,9 +71,9 @@ BENCHMARK_SUITE(Foundation_Math_VoxelGrid3)
             for (size_t i = 0; i < LookupPointCount; ++i)
             {
                 Vector3d& p = m_lookup_points[i];
-                p[0] = rand_double1(rng, 0.0, m_grid.get_xres());
-                p[1] = rand_double1(rng, 0.0, m_grid.get_yres());
-                p[2] = rand_double1(rng, 0.0, m_grid.get_zres());
+                p[0] = rand_double1(rng, 0.0, static_cast<double>(m_grid.get_xres()));
+                p[1] = rand_double1(rng, 0.0, static_cast<double>(m_grid.get_yres()));
+                p[2] = rand_double1(rng, 0.0, static_cast<double>(m_grid.get_zres()));
             }
 
             for (size_t i = 0; i < ChannelCount; ++i)
