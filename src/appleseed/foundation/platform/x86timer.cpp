@@ -32,6 +32,11 @@
 // appleseed.foundation headers.
 #include "foundation/platform/thread.h"
 
+// Platform headers.
+#if defined _MSC_VER && defined _WIN64
+#include <intrin.h>
+#endif
+
 // Standard headers.
 #include <cassert>
 
@@ -68,21 +73,33 @@ uint64 X86Timer::frequency()
 
 uint64 X86Timer::read()
 {
-    uint32 h, l;
-
 // Visual C++, 32-bit mode.
 #if defined _MSC_VER && !defined _WIN64
 
+    uint32 h, l;
+
     __asm
     {
-        cpuid       // force in-order execution of the RDTSC instruction
+        cpuid                   // force in-order execution of the RDTSC instruction
         rdtsc
         mov h, edx
         mov l, eax
     }
 
+    return (static_cast<uint64>(h) << 32) | l;
+
+// Visual C++, 64-bit mode.
+#elif defined _MSC_VER && defined _WIN64
+
+    int cpu_info[4];
+    __cpuid(cpu_info, 0);       // force in-order execution of the RDTSC instruction
+
+    return __rdtsc();
+
 // gcc.
 #elif defined __GNUC__
+
+    uint32 h, l;
 
     asm volatile
     ("  rdtsc;                  \
@@ -93,12 +110,12 @@ uint64 X86Timer::read()
         : "%eax", "%edx"        // clobbered registers
     );
 
+    return (static_cast<uint64>(h) << 32) | l;
+
 // Unsupported platform.
 #else
 #error The x86 timer is not supported on this platform.
 #endif
-
-    return (static_cast<uint64>(h) << 32) | l;
 }
 
 }   // namespace foundation
