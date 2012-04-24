@@ -45,7 +45,7 @@ project (alembic)
 # This must come after project () otherwise CMAKE_SYSTEM_NAME is undefined.
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     set (WINDOWS TRUE)
-    include (../cmake/config/win32-vs100.txt)
+    include (../cmake/config/win-vs100.txt)
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     set (DARWIN TRUE)
     include (../cmake/config/mac-gcc4.txt)

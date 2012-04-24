@@ -479,7 +479,7 @@ void AABB<T, N>::compute_corners(VectorType corners[]) const
         VectorType& p = corners[i];
 
         for (size_t d = 0; d < N; ++d)
-            p[d] = i & (1 << d) ? max[d] : min[d];
+            p[d] = i & (size_t(1) << d) ? max[d] : min[d];
     }
 }
 

@@ -826,7 +826,7 @@ void TriangleTree::store_triangles(
             }
             else
             {
-                user_data_writer.write<uint32>(leaf_data_writer.offset());
+                user_data_writer.write(static_cast<uint32>(leaf_data_writer.offset()));
 
                 LeafEncoder::encode(
                     triangle_vertex_infos,
