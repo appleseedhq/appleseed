@@ -187,8 +187,8 @@ namespace
           , m_image_sampler(m_frame_props.m_canvas_width, m_frame_props.m_canvas_height, m_pixel_sampler)
           , m_sample_count(0)
 #else
-          , m_frame_width_next_pow2(next_power<double>(m_frame_props.m_canvas_width, 2))
-          , m_frame_height_next_pow3(next_power<double>(m_frame_props.m_canvas_height, 3))
+          , m_frame_width_next_pow2(next_power(static_cast<double>(m_frame_props.m_canvas_width), 2.0))
+          , m_frame_height_next_pow3(next_power(static_cast<double>(m_frame_props.m_canvas_height), 3.0))
           , m_scale_x(m_frame_width_next_pow2 / m_frame_props.m_canvas_width)
           , m_scale_y(m_frame_height_next_pow3 / m_frame_props.m_canvas_height)
 #endif

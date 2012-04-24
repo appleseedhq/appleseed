@@ -61,7 +61,7 @@ project (appleseed)
 
 # This must come after project () otherwise CMAKE_SYSTEM_NAME is undefined.
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    include (cmake/config/win32-vs100.txt)
+    include (cmake/config/win-vs100.txt)
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     include (cmake/config/mac-gcc4.txt)
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Linux")

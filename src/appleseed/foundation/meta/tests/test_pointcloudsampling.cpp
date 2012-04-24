@@ -238,9 +238,9 @@ TEST_SUITE(Exploration_PointCloudSampling)
                 else if (method == 3)
                 {
                     Vector2d v[3];
-                    v[0] = initial_points[rand_int1(rng, 0, initial_points.size() - 1)];
-                    v[1] = initial_points[rand_int1(rng, 0, initial_points.size() - 1)];
-                    v[2] = initial_points[rand_int1(rng, 0, initial_points.size() - 1)];
+                    v[0] = initial_points[rand_int1(rng, 0, static_cast<int32>(initial_points.size() - 1))];
+                    v[1] = initial_points[rand_int1(rng, 0, static_cast<int32>(initial_points.size() - 1))];
+                    v[2] = initial_points[rand_int1(rng, 0, static_cast<int32>(initial_points.size() - 1))];
 
                     Vector2d s;
                     s[0] = rand_double2(rng);

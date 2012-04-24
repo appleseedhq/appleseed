@@ -94,9 +94,9 @@ float OccupancyGrid::get_density_sum(
         {
             for (int dz = -1; dz <= +1; ++dz)
             {
-                const int ix = x + dx;
-                const int iy = y + dy;
-                const int iz = z + dz;
+                const int ix = static_cast<int>(x) + dx;
+                const int iy = static_cast<int>(y) + dy;
+                const int iz = static_cast<int>(z) + dz;
 
                 if (ix < 0 ||
                     iy < 0 ||

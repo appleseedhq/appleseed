@@ -120,7 +120,7 @@ TEST_SUITE(Foundation_Math_Knn_Builder)
 
         Vector3d points[PointCount];
         for (size_t i = 0; i < PointCount; ++i)
-            points[i] = Vector3d(PointCount - i - 1, 0.0, 0.0);
+            points[i] = Vector3d(static_cast<double>(PointCount - i - 1), 0.0, 0.0);
 
         knn::Tree3d tree;
 
@@ -235,7 +235,7 @@ TEST_SUITE(Foundation_Math_Knn_Query)
 
         Vector3d points[PointCount];
         for (size_t i = 0; i < PointCount; ++i)
-            points[i] = Vector3d(PointCount - i, 0.0, 0.0);
+            points[i] = Vector3d(static_cast<double>(PointCount - i), 0.0, 0.0);
 
         knn::Tree3d tree;
         knn::Builder3d builder(tree);

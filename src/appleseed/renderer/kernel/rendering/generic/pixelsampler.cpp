@@ -51,7 +51,7 @@ void PixelSampler::initialize(const size_t subpixel_grid_size)
     if (m_log_period > 16)
         m_log_period = 16;
 
-    m_period = 1 << m_log_period;
+    m_period = size_t(1) << m_log_period;
     m_sigma.resize(m_period);
 
     // Precompute the first N values of 2^N * radical_inverse_base2(0..N-1).

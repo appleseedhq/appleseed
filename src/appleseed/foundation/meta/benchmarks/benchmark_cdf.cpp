@@ -33,15 +33,16 @@
 
 // Standard headers.
 #include <cassert>
+#include <cstddef>
+
+using namespace foundation;
+using namespace std;
 
 BENCHMARK_SUITE(Foundation_Math_CDF)
 {
-    using namespace foundation;
-    using namespace std;
-
     struct Fixture
     {
-        typedef CDF<int, double> CDFType;
+        typedef CDF<size_t, double> CDFType;
 
         CDFType m_cdf;
         double  m_x;

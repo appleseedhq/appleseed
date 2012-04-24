@@ -185,7 +185,10 @@ TEST_SUITE(Foundation_Math_Microfacet)
 
         for (size_t i = 0; i < point_count; ++i)
         {
-            const double angle = fit<double>(i, 0, point_count - 1, -HalfPi, +HalfPi);
+            const double angle =
+                fit(
+                    static_cast<double>(i), 0.0, static_cast<double>(point_count - 1),
+                    -HalfPi, +HalfPi);
             const double cos_angle = cos(angle);
 
             angles[i] = rad_to_deg(angle);
