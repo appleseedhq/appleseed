@@ -44,8 +44,8 @@ bl_info = {
     "name": "appleseed project format",
     "description": "Exports a scene to the appleseed project file format.",
     "author": "Franz Beaune",
-    "version": (1, 1, 4),
-    "blender": (2, 5, 8),   # we really need Blender 2.58 or newer
+    "version": (1, 1, 5),
+    "blender": (2, 6, 2),   # we really need Blender 2.62 or newer
     "api": 36339,
     "location": "File > Export",
     "warning": "",
@@ -453,9 +453,9 @@ class AppleseedExportOperator(bpy.types.Operator):
         focal_length = camera.data.lens / 1000.0                # Blender's camera focal length is expressed in mm
 
         camera_matrix = self.global_matrix * camera.matrix_world
-        origin = camera_matrix[3]
-        forward = -camera_matrix[2]
-        up = camera_matrix[1]
+        origin = camera_matrix.col[3]
+        forward = -camera_matrix.col[2]
+        up = camera_matrix.col[1]
         target = origin + forward
 
         self.__open_element('camera name="' + camera.name + '" model="pinhole_camera"')
@@ -954,7 +954,7 @@ class AppleseedExportOperator(bpy.types.Operator):
         #   Both Blender and appleseed use right-hand coordinate systems.
         #   Both Blender and appleseed use column-major matrices.
         #   Both Blender and appleseed use pre-multiplication.
-        #   In Blender, given a matrix m, m[i] is the i'th column.
+        #   In Blender, given a matrix m, m[i][j] is the element at the i'th row, j'th column.
         #
         # The only difference between the coordinate systems of Blender and appleseed is the up vector:
         # in Blender, up is Z+; in appleseed, up is Y+. We can go from Blender's coordinate system to
@@ -964,10 +964,10 @@ class AppleseedExportOperator(bpy.types.Operator):
 
         self.__open_element("transform")
         self.__open_element("matrix")
-        self.__emit_line("{0} {1} {2} {3}".format( m[0][0],  m[1][0],  m[2][0],  m[3][0]))
-        self.__emit_line("{0} {1} {2} {3}".format( m[0][2],  m[1][2],  m[2][2],  m[3][2]))
-        self.__emit_line("{0} {1} {2} {3}".format(-m[0][1], -m[1][1], -m[2][1], -m[3][1]))
-        self.__emit_line("{0} {1} {2} {3}".format( m[0][3],  m[1][3],  m[2][3],  m[3][3]))
+        self.__emit_line("{0} {1} {2} {3}".format( m[0][0],  m[0][1],  m[0][2],  m[0][3]))
+        self.__emit_line("{0} {1} {2} {3}".format( m[2][0],  m[2][1],  m[2][2],  m[2][3]))
+        self.__emit_line("{0} {1} {2} {3}".format(-m[1][0], -m[1][1], -m[1][2], -m[1][3]))
+        self.__emit_line("{0} {1} {2} {3}".format( m[3][0],  m[3][1],  m[3][2],  m[3][3]))
         self.__close_element("matrix")
         self.__close_element("transform")
 
