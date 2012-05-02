@@ -8,7 +8,6 @@
     </scene>
     <output>
         <frame name="beauty">
-            <parameter name="camera" value="camera" />
             <parameter name="resolution" value="512 512" />
         </frame>
     </output>
