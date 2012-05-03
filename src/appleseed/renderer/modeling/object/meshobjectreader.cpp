@@ -485,20 +485,26 @@ namespace
 
     struct MeshObjectKeyFrame
     {
-        size_t  m_index;
+        double  m_key;
         string  m_filename;
 
         MeshObjectKeyFrame() {}
 
-        MeshObjectKeyFrame(const size_t index, const string& filename)
-          : m_index(index)
+        MeshObjectKeyFrame(const double key, const string& filename)
+          : m_key(key)
+          , m_filename(filename)
+        {
+        }
+
+        MeshObjectKeyFrame(const string& key, const string& filename)
+          : m_key(from_string<double>(key))
           , m_filename(filename)
         {
         }
 
         bool operator<(const MeshObjectKeyFrame& rhs) const
         {
-            return m_index < rhs.m_index;
+            return m_key < rhs.m_key;
         }
     };
 
@@ -511,7 +517,7 @@ namespace
         vector<MeshObjectKeyFrame> key_frames;
 
         for (const_each<StringDictionary> i = filenames; i; ++i)
-            key_frames.push_back(MeshObjectKeyFrame(from_string<size_t>(i->name()), i->value<string>()));
+            key_frames.push_back(MeshObjectKeyFrame(i->name(), i->value<string>()));
 
         sort(key_frames.begin(), key_frames.end());
 
