@@ -56,8 +56,9 @@ namespace renderer
 // Light-emitting triangle.
 //
 
-struct EmittingTriangle
+class EmittingTriangle
 {
+  public:
     foundation::UniqueID        m_assembly_instance_uid;
     size_t                      m_object_instance_index;
     size_t                      m_region_index;
@@ -75,13 +76,12 @@ struct EmittingTriangle
 // Light sample.
 //
 
-struct LightSample
+class LightSample
 {
+  public:
     const EmittingTriangle*     m_triangle;
     InputParams                 m_input_params;                 // parameters for input evaluation
-
     const Light*                m_light;
-
     double                      m_probability;                  // probability of this sample to be chosen
 };
 

@@ -44,7 +44,7 @@
 // Forward declarations.
 namespace renderer      { class AOVCollection; }
 namespace renderer      { class BSDF; }
-namespace renderer      { struct LightSample; }
+namespace renderer      { class LightSample; }
 namespace renderer      { class LightSampler; }
 namespace renderer      { class ShadingContext; }
 namespace renderer      { class ShadingPoint; }
