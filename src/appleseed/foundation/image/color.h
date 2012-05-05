@@ -108,11 +108,14 @@ template <typename T, size_t N> Color<T, N>& operator*=(Color<T, N>& lhs, const 
 template <typename T, size_t N> Color<T, N>& operator/=(Color<T, N>& lhs, const T rhs);
 template <typename T, size_t N> Color<T, N>& operator/=(Color<T, N>& lhs, const Color<T, N>& rhs);
 
-// Clamp the argument to [min, max].
-template <typename T, size_t N> Color<T, N> clamp(const Color<T, N>& c, const T min, const T max);
+// Return whether all components of a color are in [0,1].
+template <typename T, size_t N> bool is_saturated(const Color<T, N>& c);
 
 // Clamp the argument to [0,1].
 template <typename T, size_t N> Color<T, N> saturate(const Color<T, N>& c);
+
+// Clamp the argument to [min, max].
+template <typename T, size_t N> Color<T, N> clamp(const Color<T, N>& c, const T min, const T max);
 
 // Return the smallest or largest signed component of a color.
 template <typename T, size_t N> T min_value(const Color<T, N>& c);
@@ -539,14 +542,15 @@ inline Color<T, N>& operator/=(Color<T, N>& lhs, const Color<T, N>& rhs)
 }
 
 template <typename T, size_t N>
-inline Color<T, N> clamp(const Color<T, N>& c, const T min, const T max)
+inline bool is_saturated(const Color<T, N>& c)
 {
-    Color<T, N> result;
-
     for (size_t i = 0; i < N; ++i)
-        result[i] = clamp(c[i], min, max);
+    {
+        if (c[i] < T(0.0) || c[i] > T(1.0))
+            return false;
+    }
 
-    return result;
+    return true;
 }
 
 template <typename T, size_t N>
@@ -556,6 +560,17 @@ inline Color<T, N> saturate(const Color<T, N>& c)
 
     for (size_t i = 0; i < N; ++i)
         result[i] = saturate(c[i]);
+
+    return result;
+}
+
+template <typename T, size_t N>
+inline Color<T, N> clamp(const Color<T, N>& c, const T min, const T max)
+{
+    Color<T, N> result;
+
+    for (size_t i = 0; i < N; ++i)
+        result[i] = clamp(c[i], min, max);
 
     return result;
 }
