@@ -64,17 +64,17 @@ class TextureSource
     virtual void evaluate(
         TextureCache&                       texture_cache,
         const InputParams&                  params,
-        double&                             scalar);
+        double&                             scalar) const override;
     virtual void evaluate(
         TextureCache&                       texture_cache,
         const InputParams&                  params,
         foundation::Color3f&                linear_rgb,
-        Alpha&                              alpha);
+        Alpha&                              alpha) const override;
     virtual void evaluate(
         TextureCache&                       texture_cache,
         const InputParams&                  params,
         Spectrum&                           spectrum,
-        Alpha&                              alpha);
+        Alpha&                              alpha) const override;
 
   private:
     const foundation::UniqueID              m_assembly_uid;
@@ -119,7 +119,7 @@ class TextureSource
 inline void TextureSource::evaluate(
     TextureCache&                           texture_cache,
     const InputParams&                      params,
-    double&                                 scalar)
+    double&                                 scalar) const
 {
     foundation::Color4f color =
         sample_texture(texture_cache, params);
@@ -133,7 +133,7 @@ inline void TextureSource::evaluate(
     TextureCache&                           texture_cache,
     const InputParams&                      params,
     foundation::Color3f&                    linear_rgb,
-    Alpha&                                  alpha)
+    Alpha&                                  alpha) const
 {
     const foundation::Color4f color =
         sample_texture(texture_cache, params);
@@ -148,7 +148,7 @@ inline void TextureSource::evaluate(
     TextureCache&                           texture_cache,
     const InputParams&                      params,
     Spectrum&                               spectrum,
-    Alpha&                                  alpha)
+    Alpha&                                  alpha) const
 {
     const foundation::Color4f color =
         sample_texture(texture_cache, params);

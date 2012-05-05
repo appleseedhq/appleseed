@@ -59,27 +59,27 @@ class Source
     virtual void evaluate(
         TextureCache&           texture_cache,
         const InputParams&      params,
-        double&                 scalar);
+        double&                 scalar) const;
     virtual void evaluate(
         TextureCache&           texture_cache,
         const InputParams&      params,
         foundation::Color3f&    linear_rgb,
-        Alpha&                  alpha);
+        Alpha&                  alpha) const;
     virtual void evaluate(
         TextureCache&           texture_cache,
         const InputParams&      params,
         Spectrum&               spectrum,
-        Alpha&                  alpha);
+        Alpha&                  alpha) const;
 
     // Evaluate the source as a uniform source.
     virtual void evaluate_uniform(
-        double&                 scalar);
+        double&                 scalar) const;
     virtual void evaluate_uniform(
         foundation::Color3f&    linear_rgb,
-        Alpha&                  alpha);
+        Alpha&                  alpha) const;
     virtual void evaluate_uniform(
         Spectrum&               spectrum,
-        Alpha&                  alpha);
+        Alpha&                  alpha) const;
 
   private:
     const bool  m_uniform;
@@ -103,7 +103,7 @@ inline bool Source::is_uniform() const
 inline void Source::evaluate(
     TextureCache&               texture_cache,
     const InputParams&          params,
-    double&                     scalar)
+    double&                     scalar) const
 {
     evaluate_uniform(scalar);
 }
@@ -112,7 +112,7 @@ inline void Source::evaluate(
     TextureCache&               texture_cache,
     const InputParams&          params,
     foundation::Color3f&        linear_rgb,
-    Alpha&                      alpha)
+    Alpha&                      alpha) const
 {
     evaluate_uniform(linear_rgb, alpha);
 }
@@ -121,20 +121,20 @@ inline void Source::evaluate(
     TextureCache&               texture_cache,
     const InputParams&          params,
     Spectrum&                   spectrum,
-    Alpha&                      alpha)
+    Alpha&                      alpha) const
 {
     evaluate_uniform(spectrum, alpha);
 }
 
 inline void Source::evaluate_uniform(
-    double&                     scalar)
+    double&                     scalar) const
 {
     scalar = 0.0;
 }
 
 inline void Source::evaluate_uniform(
     foundation::Color3f&        linear_rgb,
-    Alpha&                      alpha)
+    Alpha&                      alpha) const
 {
     linear_rgb.set(0.0f);
     alpha.set(0.0f);
@@ -142,7 +142,7 @@ inline void Source::evaluate_uniform(
 
 inline void Source::evaluate_uniform(
     Spectrum&                   spectrum,
-    Alpha&                      alpha)
+    Alpha&                      alpha) const
 {
     spectrum.set(0.0f);
     alpha.set(0.0f);

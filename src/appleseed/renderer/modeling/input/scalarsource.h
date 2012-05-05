@@ -49,10 +49,10 @@ class ScalarSource
 
     // Evaluate the source.
     virtual void evaluate_uniform(
-        double&     scalar);
+        double&     scalar) const override;
     virtual void evaluate_uniform(
         Spectrum&   spectrum,
-        Alpha&      alpha);
+        Alpha&      alpha) const override;
 
   private:
     double          m_scalar;
@@ -63,22 +63,21 @@ class ScalarSource
 // ScalarSource class implementation.
 //
 
-// Constructor.
 inline ScalarSource::ScalarSource(const double scalar)
   : Source(true)
   , m_scalar(scalar)
 {
 }
 
-// Evaluate the source.
 inline void ScalarSource::evaluate_uniform(
-    double&         scalar)
+    double&         scalar) const
 {
     scalar = m_scalar;
 }
+
 inline void ScalarSource::evaluate_uniform(
     Spectrum&       spectrum,
-    Alpha&          alpha)
+    Alpha&          alpha) const
 {
     spectrum.set(static_cast<float>(m_scalar));
     alpha.set(1.0f);

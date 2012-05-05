@@ -55,13 +55,13 @@ class ColorSource
 
     // Evaluate the source.
     virtual void evaluate_uniform(
-        double&                 scalar);
+        double&                 scalar) const override;
     virtual void evaluate_uniform(
         foundation::Color3f&    linear_rgb,
-        Alpha&                  alpha);
+        Alpha&                  alpha) const override;
     virtual void evaluate_uniform(
         Spectrum&               spectrum,
-        Alpha&                  alpha);
+        Alpha&                  alpha) const override;
 
   private:
     const foundation::LightingConditions    m_lighting_conditions;
@@ -77,26 +77,27 @@ class ColorSource
 //
 
 inline void ColorSource::evaluate_uniform(
-    double&                 scalar)
+    double&                 scalar) const
 {
     scalar = m_scalar;
 }
 
 inline void ColorSource::evaluate_uniform(
     foundation::Color3f&    linear_rgb,
-    Alpha&                  alpha)
+    Alpha&                  alpha) const
 {
     linear_rgb =
         foundation::ciexyz_to_linear_rgb(
             foundation::spectrum_to_ciexyz<float>(
                 m_lighting_conditions,
                 m_spectrum));
+
     alpha = m_alpha;
 }
 
 inline void ColorSource::evaluate_uniform(
     Spectrum&               spectrum,
-    Alpha&                  alpha)
+    Alpha&                  alpha) const
 {
     spectrum = m_spectrum;
     alpha = m_alpha;
