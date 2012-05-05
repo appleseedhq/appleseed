@@ -265,6 +265,16 @@ void InputBinder::bind_assembly_entities_inputs(
     // Bind materials inputs.
     for (each<MaterialContainer> i = assembly.materials(); i; ++i)
     {
+        bind_assembly_entity_inputs(
+            scene,
+            scene_symbols,
+            assembly,
+            assembly_symbols,
+            SymbolTable::symbol_name(SymbolTable::SymbolMaterial),
+            i->get_name(),
+            i->get_parameters(),
+            i->get_inputs());
+
         i->bind_entities(
             assembly.surface_shaders(),
             assembly.bsdfs(),

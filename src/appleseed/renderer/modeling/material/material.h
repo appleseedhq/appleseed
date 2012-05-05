@@ -31,7 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
-#include "renderer/modeling/entity/entity.h"
+#include "renderer/modeling/entity/connectableentity.h"
 #include "renderer/modeling/scene/containers.h"
 
 // Forward declarations.
@@ -48,7 +48,7 @@ namespace renderer
 //
 
 class RENDERERDLL Material
-  : public Entity
+  : public ConnectableEntity
 {
   public:
     // Delete this instance.

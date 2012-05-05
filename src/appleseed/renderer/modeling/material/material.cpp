@@ -51,7 +51,7 @@ namespace
 Material::Material(
     const char*                     name,
     const ParamArray&               params)
-  : Entity(g_class_uid, params)
+  : ConnectableEntity(g_class_uid, params)
   , m_surface_shader(0)
   , m_bsdf(0)
   , m_edf(0)
