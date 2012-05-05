@@ -85,6 +85,18 @@ void Material::bind_entities(
     m_edf = get_optional_entity<EDF>(edfs, m_params, "edf");
 }
 
+void Material::on_frame_begin(
+    const Project&                  project,
+    const Assembly&                 assembly)
+{
+}
+
+void Material::on_frame_end(
+    const Project&                  project,
+    const Assembly&                 assembly)
+{
+}
+
 
 //
 // MaterialFactory class implementation.

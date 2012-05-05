@@ -36,8 +36,10 @@
 
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
+namespace renderer      { class Assembly; }
 namespace renderer      { class BSDF; }
 namespace renderer      { class EDF; }
+namespace renderer      { class Project; }
 namespace renderer      { class SurfaceShader; }
 
 namespace renderer
@@ -62,6 +64,16 @@ class RENDERERDLL Material
         const SurfaceShaderContainer&   surface_shaders,
         const BSDFContainer&            bsdfs,
         const EDFContainer&             edfs);
+
+    // This method is called once before rendering each frame.
+    void on_frame_begin(
+        const Project&                  project,
+        const Assembly&                 assembly);
+
+    // This method is called once after rendering each frame.
+    void on_frame_end(
+        const Project&                  project,
+        const Assembly&                 assembly);
 
     // Return the surface shader of this material, or 0 if the material doesn't have one.
     const SurfaceShader* get_surface_shader() const;
