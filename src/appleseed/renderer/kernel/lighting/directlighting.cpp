@@ -36,6 +36,7 @@
 #include "renderer/modeling/aov/aovcollection.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/edf/edf.h"
+#include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/input/inputparams.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/material/material.h"
@@ -85,7 +86,8 @@ DirectLightingIntegrator::DirectLightingIntegrator(
     const size_t            bsdf_sample_count,
     const size_t            light_sample_count,
     const ShadingPoint*     parent_shading_point)
-  : m_light_sampler(light_sampler)
+  : m_shading_context(shading_context)
+  , m_light_sampler(light_sampler)
   , m_point(point)
   , m_geometric_normal(geometric_normal)
   , m_shading_basis(shading_basis)
@@ -98,8 +100,6 @@ DirectLightingIntegrator::DirectLightingIntegrator(
   , m_parent_shading_point(parent_shading_point)
   , m_tracer(
         shading_context.get_intersector(),
-        shading_context.get_texture_cache())
-  , m_input_evaluator(
         shading_context.get_texture_cache())
 {
     assert(is_normalized(geometric_normal));
@@ -263,8 +263,9 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
         return;
 
     // Evaluate the input values of the EDF.
+    InputEvaluator edf_input_evaluator(m_shading_context.get_texture_cache());
     const void* edf_data =
-        m_input_evaluator.evaluate(
+        edf_input_evaluator.evaluate(
             edf->get_inputs(),
             light_shading_point.get_input_params());
 
@@ -395,8 +396,9 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     const EDF* edf = sample.m_triangle->m_edf;
 
     // Evaluate the input values of the EDF.
+    InputEvaluator edf_input_evaluator(m_shading_context.get_texture_cache());
     const void* edf_data =
-        m_input_evaluator.evaluate(
+        edf_input_evaluator.evaluate(
             edf->get_inputs(),
             sample.m_input_params);
 
@@ -473,8 +475,9 @@ void DirectLightingIntegrator::add_light_sample_contribution(
     const Light* light = sample.m_light;
 
     // Evaluate the input values of the light.
+    InputEvaluator light_input_evaluator(m_shading_context.get_texture_cache());
     const void* light_data =
-        m_input_evaluator.evaluate(
+        light_input_evaluator.evaluate(
             light->get_inputs(),
             sample.m_input_params);
 

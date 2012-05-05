@@ -32,7 +32,6 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/lighting/tracer.h"
-#include "renderer/modeling/input/inputevaluator.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
@@ -89,6 +88,7 @@ class DirectLightingIntegrator
         AOVCollection&                  aovs);
 
   private:
+    const ShadingContext&               m_shading_context;
     const LightSampler&                 m_light_sampler;
     const foundation::Vector3d&         m_point;
     const foundation::Vector3d&         m_geometric_normal;
@@ -101,7 +101,6 @@ class DirectLightingIntegrator
     const size_t                        m_light_sample_count;
     const ShadingPoint*                 m_parent_shading_point;
     Tracer                              m_tracer;
-    InputEvaluator                      m_input_evaluator;
 
     void take_single_bsdf_or_light_sample(
         SamplingContext&                sampling_context,
