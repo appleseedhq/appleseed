@@ -30,6 +30,8 @@
 #include "bsdfmix.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
+#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/bsdf/brdfwrapper.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/input/inputevaluator.h"
@@ -38,11 +40,12 @@
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
 
 // Standard headers.
+#include <cassert>
 #include <cstddef>
 #include <string>
 
@@ -85,10 +88,9 @@ namespace
 
         virtual void on_frame_begin(
             const Project&      project,
-            const Assembly&     assembly,
-            const void*         uniform_data) override
+            const Assembly&     assembly) override
         {
-            BSDF::on_frame_begin(project, assembly, uniform_data);
+            BSDF::on_frame_begin(project, assembly);
 
             m_bsdf[0] = retrieve_bsdf(assembly, "bsdf0");
             m_bsdf[1] = retrieve_bsdf(assembly, "bsdf1");

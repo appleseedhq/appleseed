@@ -35,7 +35,6 @@
 #include "renderer/modeling/input/inputbinder.h"
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/input/inputparams.h"
-#include "renderer/modeling/input/uniforminputevaluator.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/containers.h"
@@ -118,13 +117,8 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
         InputBinder input_binder;
         input_binder.bind(scene);
 
-        UniformInputEvaluator uniform_input_evaluator;
         for (each<BSDFContainer> i = assembly.bsdfs(); i; ++i)
-        {
-            const void* uniform_data =
-                uniform_input_evaluator.evaluate(i->get_inputs());
-            i->on_frame_begin(project.ref(), assembly, uniform_data);
-        }
+            i->on_frame_begin(project.ref(), assembly);
 
         TextureCache texture_cache(scene, 16 * 1024);
         InputEvaluator input_evaluator(texture_cache);
@@ -133,21 +127,21 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
         BSDF& parent_bsdf = *assembly.bsdfs().get_by_name("parent_bsdf");
         parent_bsdf.evaluate_inputs(input_evaluator, input_params);
 
-        // 'parent_bsdf' mixing weights.
+        // parent_bsdf mixing weights.
         EXPECT_EQ(0.6, get_value<double>(input_evaluator, 0));
         EXPECT_EQ(0.4, get_value<double>(input_evaluator, 8));
 
-        // 'child0_bsdf' mixing weights.
+        // child0_bsdf mixing weights.
         EXPECT_EQ(0.2, get_value<double>(input_evaluator, 16));
         EXPECT_EQ(0.8, get_value<double>(input_evaluator, 24));
 
-        // 'child0_child0_bsdf' reflectance.
+        // child0_child0_bsdf reflectance.
         EXPECT_EQ(Spectrum(0.5f), get_value<Spectrum>(input_evaluator, 32));
 
-        // 'child0_child1_bsdf' reflectance.
+        // child0_child1_bsdf reflectance.
         EXPECT_EQ(Spectrum(0.1f), get_value<Spectrum>(input_evaluator, 176));
 
-        // 'child1_bsdf' reflectance.
+        // child1_bsdf reflectance.
         EXPECT_EQ(Spectrum(1.0f), get_value<Spectrum>(input_evaluator, 320));
 
         for (each<BSDFContainer> i = assembly.bsdfs(); i; ++i)

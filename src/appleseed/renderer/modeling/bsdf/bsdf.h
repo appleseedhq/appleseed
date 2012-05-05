@@ -37,6 +37,9 @@
 #include "foundation/math/basis.h"
 #include "foundation/math/vector.h"
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // Standard headers.
 #include <cstddef>
 
@@ -65,7 +68,7 @@ namespace renderer
 //   * The incoming direction is always the "sampled" direction.
 //
 
-class RENDERERDLL BSDF
+class DLLSYMBOL BSDF
   : public ConnectableEntity
 {
   public:
@@ -80,8 +83,7 @@ class RENDERERDLL BSDF
     // This method is called once before rendering each frame.
     virtual void on_frame_begin(
         const Project&              project,
-        const Assembly&             assembly,
-        const void*                 uniform_data);              // input values
+        const Assembly&             assembly);
 
     // This method is called once after rendering each frame.
     virtual void on_frame_end(

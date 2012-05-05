@@ -75,8 +75,7 @@ const Transformd& Light::get_transform() const
 
 void Light::on_frame_begin(
     const Project&      project,
-    const Assembly&     assembly,
-    const void*         uniform_data)
+    const Assembly&     assembly)
 {
 }
 

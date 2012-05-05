@@ -35,6 +35,7 @@
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/source.h"
+#include "renderer/modeling/input/uniforminputevaluator.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
@@ -43,7 +44,6 @@
 #include "foundation/math/qmc.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/compiler.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/makevector.h"
@@ -109,10 +109,9 @@ namespace
 
         virtual void on_frame_begin(
             const Project&      project,
-            const Assembly&     assembly,
-            const void*         uniform_data) override
+            const Assembly&     assembly) override
         {
-            BSDF::on_frame_begin(project, assembly, uniform_data);
+            BSDF::on_frame_begin(project, assembly);
 
             // todo: implement proper error handling.
             assert(m_inputs.source("specular_reflectance"));
@@ -120,7 +119,9 @@ namespace
             assert(m_inputs.source("roughness"));
             assert(m_inputs.source("roughness")->is_uniform());
 
-            const InputValues* uniform_values = static_cast<const InputValues*>(uniform_data);
+            UniformInputEvaluator uniform_input_evaluator;
+            const InputValues* uniform_values =
+                static_cast<const InputValues*>(uniform_input_evaluator.evaluate(m_inputs));
 
             // Construct the Microfacet Distribution Function.
             m_mdf = new WardMDF<double>(uniform_values->m_roughness);

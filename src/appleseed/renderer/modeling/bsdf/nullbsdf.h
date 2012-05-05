@@ -49,12 +49,12 @@ class NullBSDF
     {
     }
 
-    virtual void release()
+    virtual void release() override
     {
         delete this;
     }
 
-    virtual const char* get_model() const
+    virtual const char* get_model() const override
     {
         return "null_bsdf";
     }
@@ -63,13 +63,14 @@ class NullBSDF
         SamplingContext&                sampling_context,
         const void*                     data,
         const bool                      adjoint,
+        const bool                      cosine_mult,
         const foundation::Vector3d&     geometric_normal,
         const foundation::Basis3d&      shading_basis,
         const foundation::Vector3d&     outgoing,
         foundation::Vector3d&           incoming,
         Spectrum&                       value,
         double&                         probability,
-        Mode&                           mode) const
+        Mode&                           mode) const override
     {
         mode = None;
     }
@@ -77,12 +78,13 @@ class NullBSDF
     virtual bool evaluate(
         const void*                     data,
         const bool                      adjoint,
+        const bool                      cosine_mult,
         const foundation::Vector3d&     geometric_normal,
         const foundation::Basis3d&      shading_basis,
         const foundation::Vector3d&     outgoing,
         const foundation::Vector3d&     incoming,
         Spectrum&                       value,
-        double*                         probability) const
+        double*                         probability) const override
     {
         return false;
     }
@@ -92,7 +94,7 @@ class NullBSDF
         const foundation::Vector3d&     geometric_normal,
         const foundation::Basis3d&      shading_basis,
         const foundation::Vector3d&     outgoing,
-        const foundation::Vector3d&     incoming) const
+        const foundation::Vector3d&     incoming) const override
     {
         return 0.0;
     }

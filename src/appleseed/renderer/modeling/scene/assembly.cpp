@@ -33,7 +33,7 @@
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/light/light.h"
-#include "renderer/modeling/input/uniforminputevaluator.h"
+#include "renderer/modeling/material/material.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 
 // appleseed.foundation headers.
@@ -152,21 +152,6 @@ namespace
     }
 
     template <typename EntityCollection>
-    void invoke_on_frame_begin(
-        const Project&          project,
-        const Assembly&         assembly,
-        EntityCollection&       entities,
-        UniformInputEvaluator&  uniform_input_evaluator)
-    {
-        for (each<EntityCollection> i = entities; i; ++i)
-        {
-            const void* uniform_data =
-                uniform_input_evaluator.evaluate(i->get_inputs());
-            i->on_frame_begin(project, assembly, uniform_data);
-        }
-    }
-
-    template <typename EntityCollection>
     void invoke_on_frame_end(
         const Project&          project,
         const Assembly&         assembly,
@@ -179,12 +164,10 @@ namespace
 
 void Assembly::on_frame_begin(const Project& project)
 {
-    UniformInputEvaluator uniform_input_evaluator;
-
     invoke_on_frame_begin(project, *this, surface_shaders());
-    invoke_on_frame_begin(project, *this, bsdfs(), uniform_input_evaluator);
-    invoke_on_frame_begin(project, *this, edfs(), uniform_input_evaluator);
-    invoke_on_frame_begin(project, *this, lights(), uniform_input_evaluator);
+    invoke_on_frame_begin(project, *this, bsdfs());
+    invoke_on_frame_begin(project, *this, edfs());
+    invoke_on_frame_begin(project, *this, lights());
 }
 
 void Assembly::on_frame_end(const Project& project)

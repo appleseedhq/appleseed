@@ -30,14 +30,18 @@
 #include "lambertianbrdf.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/bsdf/brdfwrapper.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/source.h"
+#include "renderer/modeling/input/uniforminputevaluator.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
 #include "foundation/math/sampling.h"
+#include "foundation/math/vector.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
 
 // Forward declarations.
@@ -71,29 +75,31 @@ namespace
             m_inputs.declare("reflectance", InputFormatSpectrum);
         }
 
-        virtual void release()
+        virtual void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const
+        virtual const char* get_model() const override
         {
             return Model;
         }
 
         virtual void on_frame_begin(
             const Project&      project,
-            const Assembly&     assembly,
-            const void*         uniform_data)
+            const Assembly&     assembly) override
         {
-            BSDF::on_frame_begin(project, assembly, uniform_data);
+            BSDF::on_frame_begin(project, assembly);
 
             if (m_inputs.source("reflectance")->is_uniform())
             {
                 m_uniform_reflectance = true;
 
-                const InputValues* values = static_cast<const InputValues*>(uniform_data);
-                m_brdf_value = values->m_reflectance;
+                UniformInputEvaluator uniform_input_evaluator;
+                const InputValues* uniform_values =
+                    static_cast<const InputValues*>(uniform_input_evaluator.evaluate(m_inputs));
+
+                m_brdf_value = uniform_values->m_reflectance;
                 m_brdf_value *= static_cast<float>(RcpPi);
             }
         }

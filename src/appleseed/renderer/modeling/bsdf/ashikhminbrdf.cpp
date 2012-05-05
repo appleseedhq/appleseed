@@ -30,16 +30,25 @@
 #include "ashikhminbrdf.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/bsdf/brdfwrapper.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/source.h"
+#include "renderer/modeling/input/uniforminputevaluator.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
 #include "foundation/math/fresnel.h"
 #include "foundation/math/sampling.h"
+#include "foundation/math/vector.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
+
+// Standard headers.
+#include <algorithm>
+#include <cassert>
+#include <cmath>
 
 // Forward declarations.
 namespace renderer  { class Assembly; }
@@ -81,24 +90,25 @@ namespace
             m_inputs.declare("shininess_v", InputFormatScalar);
         }
 
-        virtual void release()
+        virtual void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const
+        virtual const char* get_model() const override
         {
             return Model;
         }
 
         virtual void on_frame_begin(
             const Project&      project,
-            const Assembly&     assembly,
-            const void*         uniform_data)
+            const Assembly&     assembly) override
         {
-            BSDF::on_frame_begin(project, assembly, uniform_data);
+            BSDF::on_frame_begin(project, assembly);
 
-            const InputValues* values = static_cast<const InputValues*>(uniform_data);
+            UniformInputEvaluator uniform_input_evaluator;
+            const InputValues* uniform_values =
+                static_cast<const InputValues*>(uniform_input_evaluator.evaluate(m_inputs));
 
             m_uniform_reflectance =
                 m_inputs.source("diffuse_reflectance")->is_uniform() &&
@@ -107,7 +117,7 @@ namespace
             if (m_uniform_reflectance)
             {
                 m_compute_rval_return_value =
-                    compute_rval(values->m_rd, values->m_rg, m_uniform_rval);
+                    compute_rval(uniform_values->m_rd, uniform_values->m_rg, m_uniform_rval);
             }
 
             m_uniform_shininess =
@@ -116,7 +126,7 @@ namespace
             
             if (m_uniform_shininess)
             {
-                compute_sval(values->m_nu, values->m_nv, m_uniform_sval);
+                compute_sval(uniform_values->m_nu, uniform_values->m_nv, m_uniform_sval);
             }
         }
 

@@ -32,9 +32,17 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/bsdf/ibsdffactory.h"
 
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
+#include "foundation/utility/autoreleaseptr.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
 namespace renderer      { class BSDF; }
+namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
@@ -43,23 +51,23 @@ namespace renderer
 // Specular BTDF factory.
 //
 
-class RENDERERDLL SpecularBTDFFactory
+class DLLSYMBOL SpecularBTDFFactory
   : public IBSDFFactory
 {
   public:
     // Return a string identifying this BSDF model.
-    virtual const char* get_model() const;
+    virtual const char* get_model() const override;
 
     // Return a human-readable string identifying this BSDF model.
-    virtual const char* get_human_readable_model() const;
+    virtual const char* get_human_readable_model() const override;
 
     // Return a set of widget definitions for this BSDF model.
-    virtual foundation::DictionaryArray get_widget_definitions() const;
+    virtual foundation::DictionaryArray get_widget_definitions() const override;
 
     // Create a new BSDF instance.
     virtual foundation::auto_release_ptr<BSDF> create(
         const char*         name,
-        const ParamArray&   params) const;
+        const ParamArray&   params) const override;
 };
 
 }       // namespace renderer

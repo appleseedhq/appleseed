@@ -66,8 +66,7 @@ class RENDERERDLL EDF
     // This method is called once before rendering each frame.
     virtual void on_frame_begin(
         const Project&              project,
-        const Assembly&             assembly,
-        const void*                 uniform_data);              // input values
+        const Assembly&             assembly);
 
     // This method is called once after rendering each frame.
     virtual void on_frame_end(

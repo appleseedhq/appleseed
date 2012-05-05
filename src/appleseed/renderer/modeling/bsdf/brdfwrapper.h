@@ -65,7 +65,7 @@ class BRDFWrapper
         foundation::Vector3d&           incoming,
         Spectrum&                       value,
         double&                         probability,
-        Mode&                           mode) const;
+        Mode&                           mode) const override;
 
     virtual bool evaluate(
         const void*                     data,
@@ -76,14 +76,14 @@ class BRDFWrapper
         const foundation::Vector3d&     outgoing,
         const foundation::Vector3d&     incoming,
         Spectrum&                       value,
-        double*                         probability = 0) const;
+        double*                         probability = 0) const override;
 
     virtual double evaluate_pdf(
         const void*                     data,
         const foundation::Vector3d&     geometric_normal,
         const foundation::Basis3d&      shading_basis,
         const foundation::Vector3d&     outgoing,
-        const foundation::Vector3d&     incoming) const;
+        const foundation::Vector3d&     incoming) const override;
 };
 
 
