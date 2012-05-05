@@ -522,7 +522,7 @@ inline bool is_saturated(const RegularSpectrum<T, N>& s)
 {
     for (size_t i = 0; i < N; ++i)
     {
-        if (s[i] < 0.0f || s[i] > 1.0f)
+        if (s[i] < T(0.0) || s[i] > T(1.0))
             return false;
     }
 
