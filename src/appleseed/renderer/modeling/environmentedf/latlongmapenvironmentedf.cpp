@@ -456,7 +456,6 @@ DictionaryArray LatLongMapEnvironmentEDFFactory::get_widget_definitions() const
             .insert("widget", "entity_picker")
             .insert("entity_types",
                 Dictionary()
-                    .insert("color", "Colors")
                     .insert("texture_instance", "Textures"))
             .insert("use", "required")
             .insert("default", ""));
