@@ -359,7 +359,7 @@ namespace
             const size_t texel_count = m_importance_map_width * m_importance_map_height;
             m_probability_scale = texel_count / (2.0 * Pi * Pi);
 
-            TextureCache texture_cache(scene, 1024 * 1024);
+            TextureCache texture_cache(scene);
             ImageSampler sampler(
                 texture_cache,
                 exitance,

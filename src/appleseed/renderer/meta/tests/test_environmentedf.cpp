@@ -146,7 +146,7 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
 
             env_edf.on_frame_begin(m_project);
 
-            TextureCache texture_cache(m_scene, 64 * 1024);
+            TextureCache texture_cache(m_scene);
             InputEvaluator input_evaluator(texture_cache);
 
             Vector3d outgoing;

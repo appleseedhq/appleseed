@@ -53,7 +53,7 @@ class TextureCache
     // Constructor.
     TextureCache(
         const Scene&                scene,
-        const size_t                memory_limit);
+        const size_t                memory_limit = 1024 * 1024);
 
     // Destructor.
     ~TextureCache();

@@ -185,16 +185,16 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
       : public Base
     {
         TraceContext        m_trace_context;
-        Intersector         m_intersector;
         TextureCache        m_texture_cache;
+        Intersector         m_intersector;
         MersenneTwister     m_rng;
         SamplingContext     m_sampling_context;
         Tracer              m_tracer;
 
         Fixture()
           : m_trace_context(Base::m_scene.ref())
+          , m_texture_cache(Base::m_scene.ref())
           , m_intersector(m_trace_context)
-          , m_texture_cache(Base::m_scene.ref(), 1024 * 16)
           , m_sampling_context(m_rng, 0, 0, 0)
           , m_tracer(m_intersector, m_texture_cache)
         {

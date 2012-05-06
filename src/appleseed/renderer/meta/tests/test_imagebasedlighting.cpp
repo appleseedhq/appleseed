@@ -65,7 +65,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_ImageBasedLighting)
         Fixture()
           : m_intersector(m_project.get_trace_context(), false)
           , m_sampling_context(m_rng)
-          , m_texture_cache(m_scene, 1)
+          , m_texture_cache(m_scene)
           , m_shading_context(m_intersector, m_texture_cache)
         {
         }

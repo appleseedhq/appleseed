@@ -120,7 +120,7 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
         for (each<BSDFContainer> i = assembly.bsdfs(); i; ++i)
             i->on_frame_begin(project.ref(), assembly);
 
-        TextureCache texture_cache(scene, 16 * 1024);
+        TextureCache texture_cache(scene);
         InputEvaluator input_evaluator(texture_cache);
         InputParams input_params;
 
