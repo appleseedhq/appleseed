@@ -74,7 +74,7 @@ class RENDERERDLL TextureInstance
     // Delete this instance.
     virtual void release();
 
-    // Return the index in the assembly of the instantiated texture.
+    // Return the index the instantiated texture in the parent scene or assembly.
     size_t get_texture_index() const;
 
     // Return the texture mapping modes.
