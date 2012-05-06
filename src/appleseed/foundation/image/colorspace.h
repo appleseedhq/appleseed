@@ -41,6 +41,9 @@
 #endif
 #include "foundation/utility/otherwise.h"
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // Standard headers.
 #include <cassert>
 #include <cmath>
@@ -159,6 +162,9 @@ enum ColorSpace
     ColorSpaceCIEXYZ,           // CIE XYZ
     ColorSpaceSpectral          // spectral
 };
+
+// Return a string identifying a color space.
+DLLSYMBOL const char* color_space_name(const ColorSpace color_space);
 
 
 //

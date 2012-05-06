@@ -32,6 +32,19 @@
 namespace foundation
 {
 
+const char* color_space_name(const ColorSpace color_space)
+{
+    switch (color_space)
+    {
+      case ColorSpaceLinearRGB: return "linear_rgb";
+      case ColorSpaceSRGB:      return "srgb";
+      case ColorSpaceCIEXYZ:    return "ciexyz";
+      case ColorSpaceSpectral:  return "spectral";
+      default:                  return "";
+    }
+}
+
+
 //
 // Standard illuminants.
 //
@@ -792,10 +805,9 @@ const Spectrum31f RGBCMFStilesBurch195910Def[3] =
 // Lighting conditions class implementation.
 //
 
-// Constructor.
 LightingConditions::LightingConditions(
-    const Spectrum31f&  illuminant,                     // illuminant
-    const Spectrum31f   cmf[3])                         // color matching functions
+    const Spectrum31f&  illuminant,
+    const Spectrum31f   cmf[3])
 {
     // Precompute convolution of color matching functions and illuminant.
     for (size_t w = 0; w < 31; ++w)

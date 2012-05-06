@@ -46,31 +46,19 @@ namespace renderer
 // ColorEntity class implementation.
 //
 
-struct ColorEntity::Impl
-{
-    ColorValueArray     m_values;
-    ColorValueArray     m_alpha;
-    ColorSpace          m_color_space;
-    Vector2f            m_wavelength_range;
-    float               m_multiplier;
-};
-
 namespace
 {
     const UniqueID g_class_uid = new_guid();
-
-    const char* color_space_name(const ColorSpace color_space)
-    {
-        switch (color_space)
-        {
-          case ColorSpaceLinearRGB:     return "linear_rgb";
-          case ColorSpaceSRGB:          return "srgb";
-          case ColorSpaceCIEXYZ:        return "ciexyz";
-          case ColorSpaceSpectral:      return "spectral";
-          default:                      return "";
-        }
-    }
 }
+
+struct ColorEntity::Impl
+{
+    ColorValueArray         m_values;
+    ColorValueArray         m_alpha;
+    ColorSpace              m_color_space;
+    Vector2f                m_wavelength_range;
+    float                   m_multiplier;
+};
 
 ColorEntity::ColorEntity(
     const char*             name,
