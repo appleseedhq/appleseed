@@ -56,10 +56,18 @@ class Basis3
 
     // Constructors.
     Basis3();                                       // leave all components uninitialized
-    explicit Basis3(const VectorType& normal);      // construct a basis around 'normal'
+    explicit Basis3(const VectorType& normal);
+    Basis3(
+        const VectorType&   normal,
+        const VectorType&   tangent);
 
-    // Construct an orthonormal basis for a given unit-length normal vector.
+    // Rebuild the basis for a given unit-length normal vector.
     void build(const VectorType& normal);
+
+    // Rebuild the basis for a given unit-length normal and tangent vector.
+    void build(
+        const VectorType&   normal,
+        const VectorType&   tangent);
 
     // Transform a 3D vector. The vector is not required to be unit-length,
     // and is not normalized after transformation. However the length of the
@@ -101,6 +109,14 @@ inline Basis3<T>::Basis3(const VectorType& normal)
 }
 
 template <typename T>
+inline Basis3<T>::Basis3(
+    const VectorType&   normal,
+    const VectorType&   tangent)
+{
+    build(normal, tangent);
+}
+
+template <typename T>
 inline void Basis3<T>::build(const VectorType& normal)
 {
     //
@@ -111,7 +127,6 @@ inline void Basis3<T>::build(const VectorType& normal)
     //   http://www.cs.brown.edu/research/pubs/pdfs/1999/Hughes-1999-BAO.pdf
     //
 
-    // Make sure the input vector is unit-length.
     assert(is_normalized(normal));
 
     // n is simply the input vector.
@@ -171,6 +186,33 @@ inline void Basis3<T>::build(const VectorType& normal)
     assert(feq(cross(m_n, m_v), m_u));
     assert(feq(cross(m_v, m_u), m_n));
     assert(feq(cross(m_u, m_n), m_v));
+}
+
+template <typename T>
+inline void Basis3<T>::build(
+    const VectorType&   normal,
+    const VectorType&   tangent)
+{
+    assert(is_normalized(normal));
+    assert(is_normalized(tangent));
+
+    m_n = normal;
+    m_v = normalize(cross(tangent, m_n));
+    m_u = cross(m_n, m_v);
+
+    // Make sure (m_u, m_n, m_v) forms an orthonormal basis.
+    assert(is_normalized(m_u));
+    assert(is_normalized(m_n));
+    assert(is_normalized(m_v));
+    assert(fz(dot(m_u, m_n)));
+    assert(fz(dot(m_u, m_v)));
+    assert(fz(dot(m_n, m_v)));
+
+    // Make sure (m_u, m_n, m_v) is right-handed.
+    const T eps = make_eps<T>(1.0e-4f, 1.0e-9);
+    assert(feq(cross(m_n, m_v), m_u, eps));
+    assert(feq(cross(m_v, m_u), m_n, eps));
+    assert(feq(cross(m_u, m_n), m_v, eps));
 }
 
 template <typename T>
