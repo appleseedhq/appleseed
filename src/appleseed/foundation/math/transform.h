@@ -517,7 +517,7 @@ void TransformInterpolator<T>::set_transforms(
     m_t1 = to_matrix.extract_translation();
     m_q1 = to_matrix.extract_unit_quaternion();
 
-    if (m_q0.s * m_q1.s < T(0.0))
+    if (dot(m_q0, m_q1) < T(0.0))
         m_q1 = -m_q1;
 }
 
