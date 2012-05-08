@@ -29,7 +29,11 @@
 // Interface header.
 #include "environmentedf.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/uid.h"
+
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/source.h"
 

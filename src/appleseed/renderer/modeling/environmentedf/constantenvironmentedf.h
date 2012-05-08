@@ -34,9 +34,14 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/autoreleaseptr.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Forward declarations.
 namespace renderer      { class EnvironmentEDF; }
+namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
@@ -45,7 +50,7 @@ namespace renderer
 // Constant-emittance environment EDF factory.
 //
 
-class RENDERERDLL ConstantEnvironmentEDFFactory
+class DLLSYMBOL ConstantEnvironmentEDFFactory
   : public IEnvironmentEDFFactory
 {
   public:

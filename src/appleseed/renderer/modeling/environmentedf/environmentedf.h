@@ -30,11 +30,18 @@
 #define APPLESEED_RENDERER_MODELING_ENVIRONMENTEDF_ENVIRONMENTEDF_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/entity/connectableentity.h"
+
+// appleseed.foundation headers.
+#include "foundation/math/vector.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Forward declarations.
 namespace renderer      { class InputEvaluator; }
+namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 
 namespace renderer
@@ -48,7 +55,7 @@ namespace renderer
 // All probability densities are measured with respect to solid angle.
 //
 
-class RENDERERDLL EnvironmentEDF
+class DLLSYMBOL EnvironmentEDF
   : public ConnectableEntity
 {
   public:

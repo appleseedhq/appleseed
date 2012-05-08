@@ -29,14 +29,17 @@
 #ifndef APPLESEED_RENDERER_MODELING_ENVIRONMENTEDF_IENVIRONMENTEDFFACTORY_H
 #define APPLESEED_RENDERER_MODELING_ENVIRONMENTEDF_IENVIRONMENTEDFFACTORY_H
 
-// appleseed.renderer headers.
-#include "renderer/global/global.h"
-
 // appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/autoreleaseptr.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Forward declarations.
 namespace renderer      { class EnvironmentEDF; }
+namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
@@ -45,7 +48,7 @@ namespace renderer
 // Environment EDF factory interface.
 //
 
-class RENDERERDLL IEnvironmentEDFFactory
+class DLLSYMBOL IEnvironmentEDFFactory
   : public foundation::NonCopyable
 {
   public:
