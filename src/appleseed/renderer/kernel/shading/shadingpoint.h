@@ -187,7 +187,10 @@ class ShadingPoint
     mutable GVector2                m_v0_uv, m_v1_uv, m_v2_uv;  // texture coordinates from UV set #0 at triangle vertices
     mutable GVector3                m_v0, m_v1, m_v2;           // object instance space triangle vertices
     mutable GVector3                m_n0, m_n1, m_n2;           // object instance space triangle vertex normals
+    mutable foundation::Vector3d    m_point;                    // world space point
     mutable InputParams             m_input_params;             // parameters for input evaluation
+    mutable foundation::Vector3d    m_geometric_normal;         // world space geometric normal, unit-length
+    mutable foundation::Vector3d    m_shading_normal;           // world space perturbed shading normal, unit-length
     mutable ObjectInstance::Side    m_side;                     // side of the surface that was hit
     mutable foundation::Basis3d     m_shading_basis;            // world space orthonormal basis around shading normal
     mutable foundation::Vector3d    m_v0_w, m_v1_w, m_v2_w;     // world space triangle vertices
@@ -259,18 +262,7 @@ inline const foundation::Vector2d& ShadingPoint::get_bary() const
 inline const InputParams& ShadingPoint::get_input_params() const
 {
     assert(hit());
-
-    get_uv(0);
-
-/*
-    At the moment, only UV coordinates are needed by the input sources
-    (see renderer/input/source.h and derivates).
-
-    get_point();
-    get_geometric_normal();
-    get_shading_normal();
-*/
-
+    get_uv(0);              // todo: support multiple UV sets
     return m_input_params;
 }
 
@@ -284,9 +276,9 @@ inline const foundation::Vector2d& ShadingPoint::get_uv(const size_t uvset) cons
         cache_source_geometry();
 
         // Compute the texture coordinates.
-        const foundation::Vector2d v0_uv = foundation::Vector2d(m_v0_uv);
-        const foundation::Vector2d v1_uv = foundation::Vector2d(m_v1_uv);
-        const foundation::Vector2d v2_uv = foundation::Vector2d(m_v2_uv);
+        const foundation::Vector2d v0_uv(m_v0_uv);
+        const foundation::Vector2d v1_uv(m_v1_uv);
+        const foundation::Vector2d v2_uv(m_v2_uv);
         const double w = 1.0 - m_bary[0] - m_bary[1];
         m_input_params.m_uv =
               v0_uv * w
@@ -306,14 +298,11 @@ inline const foundation::Vector3d& ShadingPoint::get_point() const
 
     if (!(m_members & HasPoint))
     {
-        // Compute the intersection point.
-        m_input_params.m_point = m_ray.point_at(m_ray.m_tmax);
-
-        // The intersection point is now available.
+        m_point = m_ray.point_at(m_ray.m_tmax);
         m_members |= HasPoint;
     }
 
-    return m_input_params.m_point;
+    return m_point;
 }
 
 inline const foundation::Vector3d& ShadingPoint::get_offset_point(const foundation::Vector3d& direction) const
@@ -321,7 +310,7 @@ inline const foundation::Vector3d& ShadingPoint::get_offset_point(const foundati
     assert(hit());
     assert(m_members & HasRefinedPoints);
 
-    return dot(m_asm_geo_normal, direction) > 0.0 ? m_front_point : m_back_point;
+    return foundation::dot(m_asm_geo_normal, direction) > 0.0 ? m_front_point : m_back_point;
 }
 
 inline const foundation::Vector3d& ShadingPoint::get_geometric_normal() const
@@ -334,46 +323,35 @@ inline const foundation::Vector3d& ShadingPoint::get_geometric_normal() const
         {
             // We already have the world space vertices of the hit triangle.
             // Use them to compute the geometric normal directly in world space.
-            m_input_params.m_geometric_normal =
-                foundation::cross(m_v1_w - m_v0_w, m_v2_w - m_v0_w);
+            m_geometric_normal = foundation::cross(m_v1_w - m_v0_w, m_v2_w - m_v0_w);
         }
         else
         {
             cache_source_geometry();
 
-            // Retrieve object instance space to assembly instance space transform.
-            const foundation::Transformd& obj_instance_transform =
-                m_object_instance->get_transform();
-
-            // Retrieve assembly instance space to world space transform.
-            const foundation::Transformd& asm_instance_transform =
-                m_assembly_instance->get_transform();
-
             // Compute the object instance space geometric normal.
-            const foundation::Vector3d v0 = foundation::Vector3d(m_v0);
-            const foundation::Vector3d v1 = foundation::Vector3d(m_v1);
-            const foundation::Vector3d v2 = foundation::Vector3d(m_v2);
-            m_input_params.m_geometric_normal = foundation::cross(v1 - v0, v2 - v0);
+            const foundation::Vector3d v0(m_v0);
+            const foundation::Vector3d v1(m_v1);
+            const foundation::Vector3d v2(m_v2);
+            m_geometric_normal = foundation::cross(v1 - v0, v2 - v0);
 
             // Transform the geometric normal to world space.
-            m_input_params.m_geometric_normal =
-                asm_instance_transform.transform_normal_to_parent(
-                    obj_instance_transform.transform_normal_to_parent(m_input_params.m_geometric_normal));
+            m_geometric_normal =
+                m_assembly_instance->get_transform().transform_normal_to_parent(
+                    m_object_instance->get_transform().transform_normal_to_parent(m_geometric_normal));
         }
 
         // Normalize the geometric normal.
-        m_input_params.m_geometric_normal =
-            foundation::normalize(m_input_params.m_geometric_normal);
+        m_geometric_normal = foundation::normalize(m_geometric_normal);
 
         // Make the geometric normal face the direction of the incoming ray.
-        m_input_params.m_geometric_normal =
-            foundation::faceforward(m_input_params.m_geometric_normal, m_ray.m_dir);
+        m_geometric_normal = foundation::faceforward(m_geometric_normal, m_ray.m_dir);
 
         // The geometric normal is now available.
         m_members |= HasGeometricNormal;
     }
 
-    return m_input_params.m_geometric_normal;
+    return m_geometric_normal;
 }
 
 inline const foundation::Vector3d& ShadingPoint::get_shading_normal() const
@@ -387,7 +365,7 @@ inline const foundation::Vector3d& ShadingPoint::get_shading_normal() const
             // We already have the world space vertex normals of the hit triangle.
             // Use them to compute the shading normal directly in world space.
             const double w = 1.0 - m_bary[0] - m_bary[1];
-            m_input_params.m_shading_normal =
+            m_shading_normal =
                   m_n0_w * w
                 + m_n1_w * m_bary[0]
                 + m_n2_w * m_bary[1];
@@ -396,48 +374,40 @@ inline const foundation::Vector3d& ShadingPoint::get_shading_normal() const
         {
             cache_source_geometry();
 
-            // Retrieve object instance space to assembly instance space transform.
-            const foundation::Transformd& obj_instance_transform =
-                m_object_instance->get_transform();
-
-            // Retrieve assembly instance space to world space transform.
-            const foundation::Transformd& asm_instance_transform =
-                m_assembly_instance->get_transform();
-
             // Compute the object instance space shading normal.
-            const foundation::Vector3d n0 = foundation::Vector3d(m_n0);
-            const foundation::Vector3d n1 = foundation::Vector3d(m_n1);
-            const foundation::Vector3d n2 = foundation::Vector3d(m_n2);
+            const foundation::Vector3d n0(m_n0);
+            const foundation::Vector3d n1(m_n1);
+            const foundation::Vector3d n2(m_n2);
             const double w = 1.0 - m_bary[0] - m_bary[1];
-            m_input_params.m_shading_normal =
+            m_shading_normal =
                   n0 * w
                 + n1 * m_bary[0]
                 + n2 * m_bary[1];
 
             // Transform the shading normal to world space.
-            m_input_params.m_shading_normal =
-                asm_instance_transform.transform_normal_to_parent(
-                    obj_instance_transform.transform_normal_to_parent(m_input_params.m_shading_normal));
+            m_shading_normal =
+                m_assembly_instance->get_transform().transform_normal_to_parent(
+                    m_object_instance->get_transform().transform_normal_to_parent(m_shading_normal));
         }
 
         // Remember which side of the surface we hit.
         m_side =
-            dot(m_ray.m_dir, m_input_params.m_shading_normal) > 0.0
+            dot(m_ray.m_dir, m_shading_normal) > 0.0
                 ? ObjectInstance::BackSide
                 : ObjectInstance::FrontSide;
 
         // Normalize the shading normal.
-        m_input_params.m_shading_normal = foundation::normalize(m_input_params.m_shading_normal);
+        m_shading_normal = foundation::normalize(m_shading_normal);
 
         // Make the shading normal face the direction of the incoming ray.
         if (m_side == ObjectInstance::BackSide)
-            m_input_params.m_shading_normal = -m_input_params.m_shading_normal;
+            m_shading_normal = -m_shading_normal;
 
         // The shading normal is now available.
         m_members |= HasShadingNormal;
     }
 
-    return m_input_params.m_shading_normal;
+    return m_shading_normal;
 }
 
 inline const foundation::Basis3d& ShadingPoint::get_shading_basis() const
@@ -459,7 +429,6 @@ inline const foundation::Basis3d& ShadingPoint::get_shading_basis() const
 inline ObjectInstance::Side ShadingPoint::get_side() const
 {
     get_shading_normal();
-
     return m_side;
 }
 
@@ -481,9 +450,9 @@ inline const foundation::Vector3d& ShadingPoint::get_vertex(const size_t i) cons
             m_assembly_instance->get_transform();
 
         // Transform triangle vertices to world space.
-        const foundation::Vector3d v0 = foundation::Vector3d(m_v0);
-        const foundation::Vector3d v1 = foundation::Vector3d(m_v1);
-        const foundation::Vector3d v2 = foundation::Vector3d(m_v2);
+        const foundation::Vector3d v0(m_v0);
+        const foundation::Vector3d v1(m_v1);
+        const foundation::Vector3d v2(m_v2);
         m_v0_w = obj_instance_transform.transform_point_to_parent(v0);
         m_v1_w = obj_instance_transform.transform_point_to_parent(v1);
         m_v2_w = obj_instance_transform.transform_point_to_parent(v2);
@@ -516,9 +485,9 @@ inline const foundation::Vector3d& ShadingPoint::get_vertex_normal(const size_t 
             m_assembly_instance->get_transform();
 
         // Transform vertex normals to world space.
-        const foundation::Vector3d n0 = foundation::Vector3d(m_n0);
-        const foundation::Vector3d n1 = foundation::Vector3d(m_n1);
-        const foundation::Vector3d n2 = foundation::Vector3d(m_n2);
+        const foundation::Vector3d n0(m_n0);
+        const foundation::Vector3d n1(m_n1);
+        const foundation::Vector3d n2(m_n2);
         m_n0_w = obj_instance_transform.transform_normal_to_parent(n0);
         m_n1_w = obj_instance_transform.transform_normal_to_parent(n1);
         m_n2_w = obj_instance_transform.transform_normal_to_parent(n2);
@@ -567,36 +536,28 @@ inline const Material* ShadingPoint::get_material() const
 inline const AssemblyInstance& ShadingPoint::get_assembly_instance() const
 {
     assert(hit());
-
     cache_source_geometry();
-
     return *m_assembly_instance;
 }
 
 inline const Assembly& ShadingPoint::get_assembly() const
 {
     assert(hit());
-
     cache_source_geometry();
-
     return *m_assembly;
 }
 
 inline const ObjectInstance& ShadingPoint::get_object_instance() const
 {
     assert(hit());
-
     cache_source_geometry();
-
     return *m_object_instance;
 }
 
 inline const Object& ShadingPoint::get_object() const
 {
     assert(hit());
-
     cache_source_geometry();
-
     return *m_object;
 }
 
@@ -627,9 +588,7 @@ inline size_t ShadingPoint::get_triangle_index() const
 inline size_t ShadingPoint::get_primitive_attribute_index() const
 {
     assert(hit());
-
     cache_source_geometry();
-
     return static_cast<size_t>(m_triangle_pa);
 }
 
@@ -638,8 +597,6 @@ inline void ShadingPoint::cache_source_geometry() const
     if (!(m_members & HasSourceGeometry))
     {
         fetch_source_geometry();
-
-        // Source geometry is now available.
         m_members |= HasSourceGeometry;
     }
 }

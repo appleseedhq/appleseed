@@ -396,7 +396,7 @@ void LightSampler::sample_light(
 
     // Compute the world space position of the light.
     const Transformd::MatrixType& mat = light->get_transform().get_local_to_parent();
-    sample.m_input_params.m_point = Vector3d(mat[3], mat[7], mat[11]);
+    sample.m_point = Vector3d(mat[3], mat[7], mat[11]);
 
     // Store the probability of choosing this light.
     sample.m_probability = light_prob;
@@ -420,21 +420,20 @@ void LightSampler::sample_emitting_triangle(
     sample.m_input_params.m_uv[1] = bary[1];
 
     // Compute the world space position of the sample.
-    sample.m_input_params.m_point =
+    sample.m_point =
           bary[0] * triangle.m_v0
         + bary[1] * triangle.m_v1
         + bary[2] * triangle.m_v2;
 
     // Compute the world space shading normal at the position of the sample.
-    sample.m_input_params.m_shading_normal =
+    sample.m_shading_normal =
           bary[0] * triangle.m_n0
         + bary[1] * triangle.m_n1
         + bary[2] * triangle.m_n2;
-    sample.m_input_params.m_shading_normal =
-        normalize(sample.m_input_params.m_shading_normal);
+    sample.m_shading_normal = normalize(sample.m_shading_normal);
 
     // Set the world space geometric normal.
-    sample.m_input_params.m_geometric_normal = triangle.m_geometric_normal;
+    sample.m_geometric_normal = triangle.m_geometric_normal;
 
     // Compute the probability of choosing this sample.
 //  assert(feq(triangle_prob * triangle.m_rcp_area, m_rcp_total_emissive_area));    // subject to numerical instability

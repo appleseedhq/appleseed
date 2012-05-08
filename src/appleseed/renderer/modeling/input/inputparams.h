@@ -29,8 +29,8 @@
 #ifndef APPLESEED_RENDERER_MODELING_INPUT_INPUTPARAMS_H
 #define APPLESEED_RENDERER_MODELING_INPUT_INPUTPARAMS_H
 
-// appleseed.renderer headers.
-#include "renderer/global/global.h"
+// appleseed.foundation headers.
+#include "foundation/math/vector.h"
 
 namespace renderer
 {
@@ -42,10 +42,7 @@ namespace renderer
 class InputParams
 {
   public:
-    foundation::Vector2d    m_uv;                   // UV coordinates
-    foundation::Vector3d    m_point;                // world space point
-    foundation::Vector3d    m_geometric_normal;     // world space geometric normal, unit-length
-    foundation::Vector3d    m_shading_normal;       // world space shading normal, unit-length
+    foundation::Vector2d m_uv;      // UV coordinates
 };
 
 }       // namespace renderer

@@ -238,7 +238,7 @@ namespace
                 const bool visible =
                     vertex_visible_to_camera(
                         sampling_context,    
-                        light_sample.m_input_params.m_point,
+                        light_sample.m_point,
                         time,
                         sample_position_ndc,
                         transmission,
@@ -252,7 +252,7 @@ namespace
                 if (IsAreaLight)
                 {
                     // Area lights are one-sided.
-                    cos_alpha = dot(vertex_to_camera, light_sample.m_input_params.m_shading_normal);
+                    cos_alpha = dot(vertex_to_camera, light_sample.m_shading_normal);
                     if (cos_alpha <= 0.0)
                         return;
                 }
@@ -508,10 +508,10 @@ namespace
             SampleVector&               samples)
         {
             // Make sure the geometric normal of the light sample is in the same hemisphere as the shading normal.
-            light_sample.m_input_params.m_geometric_normal =
+            light_sample.m_geometric_normal =
                 flip_to_same_hemisphere(
-                    light_sample.m_input_params.m_geometric_normal,
-                    light_sample.m_input_params.m_shading_normal);
+                    light_sample.m_geometric_normal,
+                    light_sample.m_shading_normal);
 
             const EDF* edf = light_sample.m_triangle->m_edf;
 
@@ -529,8 +529,8 @@ namespace
             double edf_prob;
             edf->sample(
                 edf_data,
-                light_sample.m_input_params.m_geometric_normal,
-                Basis3d(light_sample.m_input_params.m_shading_normal),
+                light_sample.m_geometric_normal,
+                Basis3d(light_sample.m_shading_normal),
                 sampling_context.next_vector2<2>(),
                 emission_direction,
                 edf_value,
@@ -540,7 +540,7 @@ namespace
             Spectrum initial_alpha = edf_value;
             initial_alpha *=
                 static_cast<float>(
-                    dot(emission_direction, light_sample.m_input_params.m_shading_normal)
+                    dot(emission_direction, light_sample.m_shading_normal)
                         / (light_sample.m_probability * edf_prob));
 
             // Manufacture a shading point at the position of the light sample.
@@ -548,7 +548,7 @@ namespace
             ShadingPoint parent_shading_point;
             m_intersector.manufacture_hit(
                 parent_shading_point,
-                ShadingRay(light_sample.m_input_params.m_point, emission_direction, 0.0, 0.0, 0.0f, ~0),
+                ShadingRay(light_sample.m_point, emission_direction, 0.0, 0.0, 0.0f, ~0),
                 light_sample.m_triangle->m_assembly_instance_uid,
                 light_sample.m_triangle->m_object_instance_index,
                 light_sample.m_triangle->m_region_index,
@@ -558,7 +558,7 @@ namespace
             // Build the light ray.
             sampling_context.split_in_place(1, 1);
             const ShadingRay light_ray(
-                light_sample.m_input_params.m_point,
+                light_sample.m_point,
                 emission_direction,
                 sampling_context.next_double2(),
                 ~0);
@@ -633,7 +633,7 @@ namespace
             // Build the light ray.
             sampling_context.split_in_place(1, 1);
             const ShadingRay light_ray(
-                light_sample.m_input_params.m_point,
+                light_sample.m_point,
                 emission_direction,
                 sampling_context.next_double2(),
                 ~0);

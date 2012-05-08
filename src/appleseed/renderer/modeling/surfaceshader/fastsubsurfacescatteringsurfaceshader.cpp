@@ -177,7 +177,7 @@ namespace
             {
                 // Fetch the light sample.
                 const LightSample& light_sample = *i;
-                const Vector3d light_vec = normalize(light_sample.m_input_params.m_point - point);                          // toward light
+                const Vector3d light_vec = normalize(light_sample.m_point - point);                                         // toward light
 
                 // Compute the contribution of this light sample.
                 const Vector3d distorted_light_vec = normalize(light_vec + values.m_distortion * inv_shading_normal);       // normalize() not strictly necessary
@@ -199,8 +199,8 @@ namespace
                 Spectrum edf_value;
                 light_sample.m_triangle->m_edf->evaluate(
                     edf_data,
-                    light_sample.m_input_params.m_geometric_normal,
-                    Basis3d(light_sample.m_input_params.m_shading_normal),
+                    light_sample.m_geometric_normal,
+                    Basis3d(light_sample.m_shading_normal),
                     -light_vec,
                     edf_value);
 

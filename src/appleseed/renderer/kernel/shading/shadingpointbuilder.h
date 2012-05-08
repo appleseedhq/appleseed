@@ -60,7 +60,7 @@ class ShadingPointBuilder
     void set_shading_basis(const foundation::Basis3d& basis);
 
   private:
-    ShadingPoint&   m_shading_point;
+    ShadingPoint& m_shading_point;
 };
 
 }       // namespace renderer

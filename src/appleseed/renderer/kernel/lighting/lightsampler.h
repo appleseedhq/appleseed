@@ -81,7 +81,12 @@ class LightSample
   public:
     const EmittingTriangle*     m_triangle;
     InputParams                 m_input_params;                 // parameters for input evaluation
+    foundation::Vector3d        m_shading_normal;               // world space shading normal, unit-length
+    foundation::Vector3d        m_geometric_normal;             // world space geometric normal, unit-length
+
     const Light*                m_light;
+
+    foundation::Vector3d        m_point;                        // world space point
     double                      m_probability;                  // probability of this sample to be chosen
 };
 

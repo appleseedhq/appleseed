@@ -352,7 +352,7 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     AOVCollection&          aovs)
 {
     // Compute the incoming direction in world space.
-    Vector3d incoming = sample.m_input_params.m_point - m_point;
+    Vector3d incoming = sample.m_point - m_point;
 
     // Cull light samples behind the shading surface.
     double cos_in = dot(incoming, m_shading_basis.get_normal());
@@ -360,7 +360,7 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
         return;
 
     // Cull samples on lights emitting in the wrong direction.
-    double cos_on = dot(-incoming, sample.m_input_params.m_shading_normal);
+    double cos_on = dot(-incoming, sample.m_shading_normal);
     if (cos_on <= 0.0)
         return;
 
@@ -406,8 +406,8 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     Spectrum edf_value;
     edf->evaluate(
         edf_data,
-        sample.m_input_params.m_geometric_normal,
-        Basis3d(sample.m_input_params.m_shading_normal),
+        sample.m_geometric_normal,
+        Basis3d(sample.m_shading_normal),
         -incoming,
         edf_value);
 
@@ -437,7 +437,7 @@ void DirectLightingIntegrator::add_light_sample_contribution(
     AOVCollection&          aovs)
 {
     // Compute the incoming direction in world space.
-    Vector3d incoming = sample.m_input_params.m_point - m_point;
+    Vector3d incoming = sample.m_point - m_point;
 
     // Cull light samples behind the shading surface.
     double cos_in = dot(incoming, m_shading_basis.get_normal());
@@ -502,7 +502,7 @@ bool DirectLightingIntegrator::check_visibility(
         m_tracer.trace_between(
             sampling_context,
             m_point,
-            sample.m_input_params.m_point,
+            sample.m_point,
             m_time,
             transmission,
             m_parent_shading_point);

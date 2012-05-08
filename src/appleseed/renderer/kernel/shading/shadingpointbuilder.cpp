@@ -49,19 +49,19 @@ void ShadingPointBuilder::set_scene(const Scene* scene)
 
 void ShadingPointBuilder::set_point(const Vector3d& point)
 {
-    m_shading_point.m_input_params.m_point = point;
+    m_shading_point.m_point = point;
     m_shading_point.m_members |= ShadingPoint::HasPoint;
 }
 
 void ShadingPointBuilder::set_geometric_normal(const Vector3d& n)
 {
-    m_shading_point.m_input_params.m_geometric_normal = n;
+    m_shading_point.m_geometric_normal = n;
     m_shading_point.m_members |= ShadingPoint::HasGeometricNormal;
 }
 
 void ShadingPointBuilder::set_shading_normal(const Vector3d& n)
 {
-    m_shading_point.m_input_params.m_shading_normal = n;
+    m_shading_point.m_shading_normal = n;
     m_shading_point.m_members |= ShadingPoint::HasShadingNormal;
 }
 
