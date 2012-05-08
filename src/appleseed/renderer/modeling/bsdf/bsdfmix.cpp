@@ -113,13 +113,13 @@ namespace
 
         virtual void evaluate_inputs(
             InputEvaluator&     input_evaluator,
-            const InputParams&  input_params,
+            const Vector2d&     uv,
             const size_t        offset) const override
         {
-            input_evaluator.evaluate(get_inputs(), input_params, offset);
+            input_evaluator.evaluate(get_inputs(), uv, offset);
 
-            m_bsdf[0]->evaluate_inputs(input_evaluator, input_params, offset + m_bsdf_data_offset[0]);
-            m_bsdf[1]->evaluate_inputs(input_evaluator, input_params, offset + m_bsdf_data_offset[1]);
+            m_bsdf[0]->evaluate_inputs(input_evaluator, uv, offset + m_bsdf_data_offset[0]);
+            m_bsdf[1]->evaluate_inputs(input_evaluator, uv, offset + m_bsdf_data_offset[1]);
         }
 
         FORCE_INLINE virtual void sample(

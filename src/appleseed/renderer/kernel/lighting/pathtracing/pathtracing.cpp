@@ -54,7 +54,6 @@
 
 // Forward declarations.
 namespace renderer  { class EnvironmentEDF; }
-namespace renderer  { class InputParams; }
 
 using namespace foundation;
 using namespace std;
@@ -232,7 +231,6 @@ namespace
                 const Vector3d& shading_normal = shading_point.get_shading_normal();
                 const Basis3d& shading_basis = shading_point.get_shading_basis();
                 const Material* material = shading_point.get_material();
-                const InputParams& input_params = shading_point.get_input_params();
 
                 const EDF* edf = material->get_edf();
                 const double cos_on = dot(outgoing, shading_normal);
@@ -242,7 +240,7 @@ namespace
                 const void* edf_data = edf
                     ? edf_input_evaluator.evaluate(
                         edf->get_inputs(),
-                        input_params)
+                        shading_point.get_uv(0))
                     : 0;
 
                 if (m_params.m_next_event_estimation)

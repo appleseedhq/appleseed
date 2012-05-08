@@ -54,7 +54,6 @@
 
 // Forward declarations.
 namespace renderer  { class EnvironmentEDF; }
-namespace renderer  { class InputParams; }
 
 using namespace foundation;
 using namespace std;
@@ -225,7 +224,6 @@ namespace
                 const Vector3d& shading_normal = shading_point.get_shading_normal();
                 const Basis3d& shading_basis = shading_point.get_shading_basis();
                 const Material* material = shading_point.get_material();
-                const InputParams& input_params = shading_point.get_input_params();
 
                 // Compute direct lighting. We're sampling both the lights and the BSDF,
                 // unlike in the path tracer where we're only sampling the lights.
@@ -288,7 +286,7 @@ namespace
                     const void* edf_data =
                         edf_input_evaluator.evaluate(
                             edf->get_inputs(),
-                            input_params);
+                            shading_point.get_uv(0));
 
                     // Compute the emitted radiance.
                     Spectrum emitted_radiance;

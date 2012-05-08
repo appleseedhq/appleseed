@@ -37,7 +37,6 @@
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/input/inputevaluator.h"
-#include "renderer/modeling/input/inputparams.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/material/material.h"
 
@@ -267,7 +266,7 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     const void* edf_data =
         edf_input_evaluator.evaluate(
             edf->get_inputs(),
-            light_shading_point.get_input_params());
+            light_shading_point.get_uv(0));
 
     // Evaluate emitted radiance.
     Spectrum edf_value;
@@ -397,10 +396,7 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
 
     // Evaluate the input values of the EDF.
     InputEvaluator edf_input_evaluator(m_shading_context.get_texture_cache());
-    const void* edf_data =
-        edf_input_evaluator.evaluate(
-            edf->get_inputs(),
-            sample.m_input_params);
+    const void* edf_data = edf_input_evaluator.evaluate(edf->get_inputs(), sample.m_uv);
 
     // Evaluate the EDF.
     Spectrum edf_value;
@@ -476,10 +472,7 @@ void DirectLightingIntegrator::add_light_sample_contribution(
 
     // Evaluate the input values of the light.
     InputEvaluator light_input_evaluator(m_shading_context.get_texture_cache());
-    const void* light_data =
-        light_input_evaluator.evaluate(
-            light->get_inputs(),
-            sample.m_input_params);
+    const void* light_data = light_input_evaluator.evaluate(light->get_inputs(), sample.m_uv);
 
     // Evaluate the light.
     Spectrum light_value;

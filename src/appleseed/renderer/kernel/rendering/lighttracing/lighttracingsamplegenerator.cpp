@@ -518,9 +518,7 @@ namespace
             // Evaluate the EDF inputs.
             InputEvaluator input_evaluator(m_texture_cache);
             const void* edf_data =
-                input_evaluator.evaluate(
-                    edf->get_inputs(),
-                    light_sample.m_input_params);
+                input_evaluator.evaluate(edf->get_inputs(), light_sample.m_uv);
 
             // Sample the EDF.
             sampling_context.split_in_place(2, 1);
@@ -612,7 +610,7 @@ namespace
             const void* light_data =
                 input_evaluator.evaluate(
                     light_sample.m_light->get_inputs(),
-                    light_sample.m_input_params);
+                    light_sample.m_uv);
 
             // Sample the light.
             sampling_context.split_in_place(2, 1);

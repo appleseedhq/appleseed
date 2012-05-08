@@ -34,7 +34,6 @@
 #include "renderer/modeling/input/inputarray.h"
 
 // Forward declarations.
-namespace renderer      { class InputParams; }
 namespace renderer      { class TextureCache; }
 
 namespace renderer
@@ -52,14 +51,14 @@ class InputEvaluator
 
     // Evaluate a set of inputs, and return the values as an opaque block of memory.
     const void* evaluate(
-        const InputArray&   inputs,
-        const InputParams&  params,
-        const size_t        offset = 0);
+        const InputArray&           inputs,
+        const foundation::Vector2d& uv,
+        const size_t                offset = 0);
     template <typename T>
     const T* evaluate(
-        const InputArray&   inputs,
-        const InputParams&  params,
-        const size_t        offset = 0);
+        const InputArray&           inputs,
+        const foundation::Vector2d& uv,
+        const size_t                offset = 0);
 
     // Access the values stored by the evaluate() methods.
     const void* data() const;
@@ -67,8 +66,8 @@ class InputEvaluator
   private:
     static const size_t DataSize = 16 * 1024;   // bytes
 
-    SSE_ALIGN foundation::uint8 m_data[DataSize];
-    TextureCache&               m_texture_cache;
+    SSE_ALIGN foundation::uint8     m_data[DataSize];
+    TextureCache&                   m_texture_cache;
 };
 
 
@@ -82,21 +81,21 @@ inline InputEvaluator::InputEvaluator(TextureCache& texture_cache)
 }
 
 inline const void* InputEvaluator::evaluate(
-    const InputArray&   inputs,
-    const InputParams&  params,
-    const size_t        offset)
+    const InputArray&               inputs,
+    const foundation::Vector2d&     uv,
+    const size_t                    offset)
 {
-    inputs.evaluate(m_texture_cache, params, m_data, offset);
+    inputs.evaluate(m_texture_cache, uv, m_data, offset);
     return m_data + offset;
 }
 
 template <typename T>
 inline const T* InputEvaluator::evaluate(
-    const InputArray&   inputs,
-    const InputParams&  params,
-    const size_t        offset)
+    const InputArray&               inputs,
+    const foundation::Vector2d&     uv,
+    const size_t                    offset)
 {
-    inputs.evaluate(m_texture_cache, params, m_data, offset);
+    inputs.evaluate(m_texture_cache, uv, m_data, offset);
     return reinterpret_cast<const T*>(m_data + offset);
 }
 

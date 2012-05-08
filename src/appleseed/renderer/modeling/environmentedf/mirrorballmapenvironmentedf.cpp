@@ -34,10 +34,10 @@
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/inputevaluator.h"
-#include "renderer/modeling/input/inputparams.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/sampling.h"
+#include "foundation/math/vector.h"
 
 using namespace foundation;
 using namespace std;
@@ -133,15 +133,12 @@ namespace
             Spectrum&           value) const
         {
             // Compute the texture coordinates corresponding to this direction.
-            InputParams input_params;
             const double d = sqrt(square(direction[0]) + square(direction[1]));
             const double r = (0.5 / Pi) * acos(direction[2]) / d;
-            input_params.m_uv[0] = 0.5 + direction[0] * r;
-            input_params.m_uv[1] = 0.5 + direction[1] * r;
+            const Vector2d uv(0.5 + direction[0] * r, 0.5 + direction[1] * r);
 
             // Evaluate the input.
-            const InputValues* values =
-                input_evaluator.evaluate<InputValues>(m_inputs, input_params);
+            const InputValues* values = input_evaluator.evaluate<InputValues>(m_inputs, uv);
             value = values->m_exitance;
         }
     };

@@ -34,7 +34,6 @@
 #include "renderer/kernel/intersection/intersectionsettings.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/kernel/tessellation/statictessellation.h"
-#include "renderer/modeling/input/inputparams.h"
 #include "renderer/modeling/object/regionkit.h"
 #include "renderer/modeling/object/triangle.h"
 #include "renderer/modeling/scene/assembly.h"
@@ -82,9 +81,6 @@ class ShadingPoint
 
     // Return the barycentric coordinates of the intersection point.
     const foundation::Vector2d& get_bary() const;
-
-    // Return parameters for input evaluation.
-    const InputParams& get_input_params() const;
 
     // Return the texture coordinates from a given UV set at the intersection point.
     const foundation::Vector2d& get_uv(const size_t uvset) const;
@@ -190,8 +186,8 @@ class ShadingPoint
     mutable GVector2                m_v0_uv, m_v1_uv, m_v2_uv;  // texture coordinates from UV set #0 at triangle vertices
     mutable GVector3                m_v0, m_v1, m_v2;           // object instance space triangle vertices
     mutable GVector3                m_n0, m_n1, m_n2;           // object instance space triangle vertex normals
+    mutable foundation::Vector2d    m_uv;                       // texture coordinates from UV set #0
     mutable foundation::Vector3d    m_point;                    // world space point
-    mutable InputParams             m_input_params;             // parameters for input evaluation
     mutable foundation::Vector3d    m_geometric_normal;         // world space geometric normal, unit-length
     mutable foundation::Vector3d    m_shading_normal;           // world space perturbed shading normal, unit-length
     mutable ObjectInstance::Side    m_side;                     // side of the surface that was hit
@@ -263,13 +259,6 @@ inline const foundation::Vector2d& ShadingPoint::get_bary() const
     return m_bary;
 }
 
-inline const InputParams& ShadingPoint::get_input_params() const
-{
-    assert(hit());
-    get_uv(0);              // todo: support multiple UV sets
-    return m_input_params;
-}
-
 inline const foundation::Vector2d& ShadingPoint::get_uv(const size_t uvset) const
 {
     assert(hit());
@@ -284,7 +273,7 @@ inline const foundation::Vector2d& ShadingPoint::get_uv(const size_t uvset) cons
         const foundation::Vector2d v1_uv(m_v1_uv);
         const foundation::Vector2d v2_uv(m_v2_uv);
         const double w = 1.0 - m_bary[0] - m_bary[1];
-        m_input_params.m_uv =
+        m_uv =
               v0_uv * w
             + v1_uv * m_bary[0]
             + v2_uv * m_bary[1];
@@ -293,7 +282,7 @@ inline const foundation::Vector2d& ShadingPoint::get_uv(const size_t uvset) cons
         m_members |= HasUV0;
     }
 
-    return m_input_params.m_uv;
+    return m_uv;
 }
 
 inline const foundation::Vector3d& ShadingPoint::get_point() const

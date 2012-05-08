@@ -42,7 +42,6 @@
 #include "foundation/image/colorspace.h"
 
 // Forward declarations.
-namespace renderer      { class InputParams; }
 namespace renderer      { class Texture; }
 namespace renderer      { class TextureCache; }
 
@@ -69,16 +68,16 @@ class TextureSource
     // Evaluate the source at a given shading point.
     virtual void evaluate(
         TextureCache&                       texture_cache,
-        const InputParams&                  params,
+        const foundation::Vector2d&         uv,
         double&                             scalar) const override;
     virtual void evaluate(
         TextureCache&                       texture_cache,
-        const InputParams&                  params,
+        const foundation::Vector2d&         uv,
         foundation::Color3f&                linear_rgb,
         Alpha&                              alpha) const override;
     virtual void evaluate(
         TextureCache&                       texture_cache,
-        const InputParams&                  params,
+        const foundation::Vector2d&         uv,
         Spectrum&                           spectrum,
         Alpha&                              alpha) const override;
 
@@ -114,7 +113,7 @@ class TextureSource
     // Sample the texture. Return a color in the linear RGB color space.
     foundation::Color4f sample_texture(
         TextureCache&                       texture_cache,
-        const InputParams&                  params) const;
+        const foundation::Vector2d&         uv) const;
 };
 
 
@@ -136,25 +135,21 @@ inline Texture& TextureSource::get_texture(const Scene& scene) const
 
 inline void TextureSource::evaluate(
     TextureCache&                           texture_cache,
-    const InputParams&                      params,
+    const foundation::Vector2d&             uv,
     double&                                 scalar) const
 {
-    foundation::Color4f color =
-        sample_texture(texture_cache, params);
+    const foundation::Color4f color = sample_texture(texture_cache, uv);
 
-    color[0] *= m_multiplier;
-
-    scalar = static_cast<double>(color[0]);
+    scalar = static_cast<double>(color[0] * m_multiplier);
 }
 
 inline void TextureSource::evaluate(
     TextureCache&                           texture_cache,
-    const InputParams&                      params,
+    const foundation::Vector2d&             uv,
     foundation::Color3f&                    linear_rgb,
     Alpha&                                  alpha) const
 {
-    const foundation::Color4f color =
-        sample_texture(texture_cache, params);
+    const foundation::Color4f color = sample_texture(texture_cache, uv);
 
     linear_rgb = color.rgb();
     linear_rgb *= m_multiplier;
@@ -164,12 +159,11 @@ inline void TextureSource::evaluate(
 
 inline void TextureSource::evaluate(
     TextureCache&                           texture_cache,
-    const InputParams&                      params,
+    const foundation::Vector2d&             uv,
     Spectrum&                               spectrum,
     Alpha&                                  alpha) const
 {
-    const foundation::Color4f color =
-        sample_texture(texture_cache, params);
+    const foundation::Color4f color = sample_texture(texture_cache, uv);
 
     foundation::linear_rgb_to_spectrum(
         m_lighting_conditions,

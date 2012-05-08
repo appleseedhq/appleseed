@@ -46,7 +46,6 @@
 // Forward declarations.
 namespace renderer      { class Assembly; }
 namespace renderer      { class InputEvaluator; }
-namespace renderer      { class InputParams; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 
@@ -100,7 +99,7 @@ class DLLSYMBOL BSDF
     // once per shading point and pair of incoming/outgoing directions.
     virtual void evaluate_inputs(
         InputEvaluator&             input_evaluator,
-        const InputParams&          input_params,
+        const foundation::Vector2d& uv,
         const size_t                offset = 0) const;
 
     // Scattering modes.

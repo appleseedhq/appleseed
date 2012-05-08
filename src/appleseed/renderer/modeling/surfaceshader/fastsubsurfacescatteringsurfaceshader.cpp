@@ -134,7 +134,7 @@ namespace
             InputValues values;
             m_inputs.evaluate(
                 shading_context.get_texture_cache(),
-                shading_point.get_input_params(),
+                shading_point.get_uv(0),
                 &values);
             
             // Retrieve intersection point and shading normal.
@@ -193,7 +193,7 @@ namespace
                 const void* edf_data =
                     edf_input_evaluator.evaluate(
                         light_sample.m_triangle->m_edf->get_inputs(),
-                        light_sample.m_input_params);
+                        light_sample.m_uv);
 
                 // Evaluate the EDF.
                 Spectrum edf_value;

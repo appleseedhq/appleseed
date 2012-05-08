@@ -34,7 +34,6 @@
 #include "renderer/modeling/bsdf/lambertianbrdf.h"
 #include "renderer/modeling/input/inputbinder.h"
 #include "renderer/modeling/input/inputevaluator.h"
-#include "renderer/modeling/input/inputparams.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/containers.h"
@@ -42,6 +41,7 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/foreach.h"
@@ -122,10 +122,9 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
 
         TextureCache texture_cache(scene);
         InputEvaluator input_evaluator(texture_cache);
-        InputParams input_params;
 
         BSDF& parent_bsdf = *assembly.bsdfs().get_by_name("parent_bsdf");
-        parent_bsdf.evaluate_inputs(input_evaluator, input_params);
+        parent_bsdf.evaluate_inputs(input_evaluator, Vector2d(0.0));
 
         // parent_bsdf mixing weights.
         EXPECT_EQ(0.6, get_value<double>(input_evaluator, 0));

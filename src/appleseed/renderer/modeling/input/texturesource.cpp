@@ -31,7 +31,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/texturing/texturecache.h"
-#include "renderer/modeling/input/inputparams.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/hash.h"
@@ -375,10 +374,10 @@ void TextureSource::get_texels_2x2(
 
 Color4f TextureSource::sample_texture(
     TextureCache&               texture_cache,
-    const InputParams&          params) const
+    const Vector2d&             uv) const
 {
-    // Fetch the texture coordinates.
-    Vector2d p = params.m_uv;
+    // Start with the input texture coordinates.
+    Vector2d p = uv;
     p.y = 1.0 - p.y;
 
     // Apply the texture addressing mode.

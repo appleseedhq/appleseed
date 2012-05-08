@@ -79,10 +79,10 @@ size_t BSDF::compute_input_data_size(
 
 void BSDF::evaluate_inputs(
     InputEvaluator&     input_evaluator,
-    const InputParams&  input_params,
+    const Vector2d&     uv,
     const size_t        offset) const
 {
-    input_evaluator.evaluate(get_inputs(), input_params, offset);
+    input_evaluator.evaluate(get_inputs(), uv, offset);
 }
 
 }   // namespace renderer

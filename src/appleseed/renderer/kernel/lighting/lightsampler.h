@@ -32,7 +32,6 @@
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
 #include "renderer/kernel/intersection/intersectionsettings.h"
-#include "renderer/modeling/input/inputparams.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/cdf.h"
@@ -80,7 +79,7 @@ class LightSample
 {
   public:
     const EmittingTriangle*     m_triangle;
-    InputParams                 m_input_params;                 // parameters for input evaluation
+    foundation::Vector2d        m_uv;                           // UV coordinates
     foundation::Vector3d        m_shading_normal;               // world space shading normal, unit-length
     foundation::Vector3d        m_geometric_normal;             // world space geometric normal, unit-length
 

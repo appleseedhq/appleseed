@@ -35,7 +35,6 @@
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/inputevaluator.h"
-#include "renderer/modeling/input/inputparams.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/input/texturesource.h"
 #include "renderer/modeling/project/project.h"
@@ -46,6 +45,7 @@
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/colorspace.h"
 #include "foundation/math/sampling.h"
+#include "foundation/math/vector.h"
 
 using namespace foundation;
 using namespace std;
@@ -94,16 +94,16 @@ namespace
             if (m_source == 0)
                 return 0.0;
 
-            InputParams input_params;
-            input_params.m_uv[0] = x * m_rcp_width + m_u_shift;
-            input_params.m_uv[1] = 1.0 - y * m_rcp_height + m_v_shift;
+            const Vector2d uv(
+                x * m_rcp_width + m_u_shift,
+                1.0 - y * m_rcp_height + m_v_shift);
 
             Color3f linear_rgb;
             Alpha alpha;
 
             m_source->evaluate(
                 m_texture_cache,
-                input_params,
+                uv,
                 linear_rgb,
                 alpha);
 
@@ -382,12 +382,10 @@ namespace
             const double        v,
             Spectrum&           value) const
         {
-            InputParams input_params;
-            input_params.m_uv[0] = u + m_u_shift;
-            input_params.m_uv[1] = 1.0 - v + m_v_shift;
+            const Vector2d uv(u + m_u_shift, 1.0 - v + m_v_shift);
 
             const InputValues* values =
-                input_evaluator.evaluate<InputValues>(m_inputs, input_params);
+                input_evaluator.evaluate<InputValues>(m_inputs, uv);
 
             value = values->m_exitance;
         }

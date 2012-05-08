@@ -89,7 +89,7 @@ namespace
             InputValues values;
             m_inputs.evaluate(
                 shading_context.get_texture_cache(),
-                shading_point.get_input_params(),
+                shading_point.get_uv(0),
                 &values);
 
             shading_result.m_color_space = ColorSpaceSpectral;
@@ -106,7 +106,7 @@ namespace
             InputValues values;
             m_inputs.evaluate(
                 texture_cache,
-                shading_point.get_input_params(),
+                shading_point.get_uv(0),
                 &values);
 
             alpha = values.m_alpha;

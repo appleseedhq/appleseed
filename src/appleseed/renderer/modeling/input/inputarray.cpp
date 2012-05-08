@@ -187,7 +187,7 @@ size_t InputArray::compute_data_size() const
 
 void InputArray::evaluate(
     TextureCache&       texture_cache,
-    const InputParams&  params,
+    const Vector2d&     uv,
     void*               values,
     const size_t        offset) const
 {
@@ -206,7 +206,7 @@ void InputArray::evaluate(
             {
                 i->m_source->evaluate(
                     texture_cache,
-                    params,
+                    uv,
                     *reinterpret_cast<double*>(ptr));
             }
             ptr += sizeof(double);
@@ -218,7 +218,7 @@ void InputArray::evaluate(
             {
                 i->m_source->evaluate(
                     texture_cache,
-                    params,
+                    uv,
                     *reinterpret_cast<Spectrum*>(ptr),
                     *reinterpret_cast<Alpha*>(ptr + sizeof(Spectrum)));
             }

@@ -31,6 +31,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/math/vector.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -39,7 +40,6 @@
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer      { class InputParams; }
 namespace renderer      { class Source; }
 namespace renderer      { class TextureCache; }
 
@@ -184,16 +184,16 @@ class DLLSYMBOL InputArray
     // Evaluate all inputs into a preallocated block of memory.
     // The address 'values + offset' must be 16-byte aligned.
     void evaluate(
-        TextureCache&       texture_cache,
-        const InputParams&  params,
-        void*               values,
-        const size_t        offset = 0) const;
+        TextureCache&               texture_cache,
+        const foundation::Vector2d& uv,
+        void*                       values,
+        const size_t                offset = 0) const;
 
     // Evaluate all uniform inputs into a preallocated block of memory.
     // The address 'values + offset' must be 16-byte aligned.
     void evaluate_uniforms(
-        void*               values,
-        const size_t        offset = 0) const;
+        void*                       values,
+        const size_t                offset = 0) const;
 
   private:
     struct Impl;

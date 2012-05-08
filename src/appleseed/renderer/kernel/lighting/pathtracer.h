@@ -212,7 +212,7 @@ size_t PathTracer<PathVisitor, ScatteringModesMask, Adjoint>::trace(
         InputEvaluator bsdf_input_evaluator(texture_cache);
         bsdf->evaluate_inputs(
             bsdf_input_evaluator,
-            shading_point_ptr->get_input_params());
+            shading_point_ptr->get_uv(0));
         const void* bsdf_data = bsdf_input_evaluator.data();
 
         // Compute the outgoing direction.

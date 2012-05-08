@@ -38,7 +38,6 @@
 #include "renderer/modeling/environmentedf/constantenvironmentedf.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/input/inputevaluator.h"
-#include "renderer/modeling/input/inputparams.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/containers.h"
@@ -96,8 +95,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_ImageBasedLighting)
         env_edf_ref.on_frame_begin(m_project);
 
         InputEvaluator input_evaluator(m_texture_cache);
-        InputParams input_params;
-        specular_brdf_ref.evaluate_inputs(input_evaluator, input_params);
+        specular_brdf_ref.evaluate_inputs(input_evaluator, Vector2d(0.0));
         const void* specular_brdf_data = input_evaluator.data();
 
         Spectrum radiance;

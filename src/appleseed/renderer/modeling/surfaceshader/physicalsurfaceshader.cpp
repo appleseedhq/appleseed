@@ -164,7 +164,7 @@ namespace
                     InputValues values;
                     m_inputs.evaluate(
                         shading_context.get_texture_cache(),
-                        shading_point.get_input_params(),
+                        shading_point.get_uv(0),
                         &values);
                     sky_color = values.m_aerial_persp_sky_color;
                 }
@@ -218,7 +218,7 @@ namespace
                 InputValues values;
                 m_inputs.evaluate(
                     texture_cache,
-                    shading_point.get_input_params(),
+                    shading_point.get_uv(0),
                     &values);
 
                 // Set alpha channel.

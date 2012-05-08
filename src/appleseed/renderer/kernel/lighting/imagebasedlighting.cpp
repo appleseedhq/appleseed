@@ -36,7 +36,6 @@
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/input/inputevaluator.h"
-#include "renderer/modeling/input/inputparams.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/mis.h"

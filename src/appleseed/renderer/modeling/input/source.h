@@ -33,7 +33,6 @@
 #include "renderer/global/global.h"
 
 // Forward declarations.
-namespace renderer      { class InputParams; }
 namespace renderer      { class TextureCache; }
 
 namespace renderer
@@ -57,29 +56,29 @@ class Source
 
     // Evaluate the source at a given shading point.
     virtual void evaluate(
-        TextureCache&           texture_cache,
-        const InputParams&      params,
-        double&                 scalar) const;
+        TextureCache&               texture_cache,
+        const foundation::Vector2d& uv,
+        double&                     scalar) const;
     virtual void evaluate(
-        TextureCache&           texture_cache,
-        const InputParams&      params,
-        foundation::Color3f&    linear_rgb,
-        Alpha&                  alpha) const;
+        TextureCache&               texture_cache,
+        const foundation::Vector2d& uv,
+        foundation::Color3f&        linear_rgb,
+        Alpha&                      alpha) const;
     virtual void evaluate(
-        TextureCache&           texture_cache,
-        const InputParams&      params,
-        Spectrum&               spectrum,
-        Alpha&                  alpha) const;
+        TextureCache&               texture_cache,
+        const foundation::Vector2d& uv,
+        Spectrum&                   spectrum,
+        Alpha&                      alpha) const;
 
     // Evaluate the source as a uniform source.
     virtual void evaluate_uniform(
-        double&                 scalar) const;
+        double&                     scalar) const;
     virtual void evaluate_uniform(
-        foundation::Color3f&    linear_rgb,
-        Alpha&                  alpha) const;
+        foundation::Color3f&        linear_rgb,
+        Alpha&                      alpha) const;
     virtual void evaluate_uniform(
-        Spectrum&               spectrum,
-        Alpha&                  alpha) const;
+        Spectrum&                   spectrum,
+        Alpha&                      alpha) const;
 
   private:
     const bool  m_uniform;
@@ -102,7 +101,7 @@ inline bool Source::is_uniform() const
 
 inline void Source::evaluate(
     TextureCache&               texture_cache,
-    const InputParams&          params,
+    const foundation::Vector2d& uv,
     double&                     scalar) const
 {
     evaluate_uniform(scalar);
@@ -110,7 +109,7 @@ inline void Source::evaluate(
 
 inline void Source::evaluate(
     TextureCache&               texture_cache,
-    const InputParams&          params,
+    const foundation::Vector2d& uv,
     foundation::Color3f&        linear_rgb,
     Alpha&                      alpha) const
 {
@@ -119,7 +118,7 @@ inline void Source::evaluate(
 
 inline void Source::evaluate(
     TextureCache&               texture_cache,
-    const InputParams&          params,
+    const foundation::Vector2d& uv,
     Spectrum&                   spectrum,
     Alpha&                      alpha) const
 {
