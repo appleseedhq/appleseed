@@ -416,8 +416,8 @@ void LightSampler::sample_emitting_triangle(
     const Vector3d bary = sample_triangle_uniform(s);
 
     // Set the barycentric coordinates.
-    sample.m_uv[0] = bary[0];
-    sample.m_uv[1] = bary[1];
+    sample.m_bary[0] = bary[0];
+    sample.m_bary[1] = bary[1];
 
     // Compute the world space position of the sample.
     sample.m_point =

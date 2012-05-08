@@ -79,7 +79,7 @@ class LightSample
 {
   public:
     const EmittingTriangle*     m_triangle;
-    foundation::Vector2d        m_uv;                           // UV coordinates
+    foundation::Vector2d        m_bary;                         // barycentric coordinates
     foundation::Vector3d        m_shading_normal;               // world space shading normal, unit-length
     foundation::Vector3d        m_geometric_normal;             // world space geometric normal, unit-length
 
