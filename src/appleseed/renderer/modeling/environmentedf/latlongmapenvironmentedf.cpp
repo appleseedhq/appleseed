@@ -39,7 +39,6 @@
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/input/texturesource.h"
 #include "renderer/modeling/project/project.h"
-#include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/texture/texture.h"
 
@@ -75,7 +74,7 @@ namespace
       public:
         ImageSampler(
             TextureCache&   texture_cache,
-            TextureSource*  source,
+            Source*         source,
             const size_t    width,
             const size_t    height,
             const double    u_shift,
@@ -134,7 +133,7 @@ namespace
 
       private:
         TextureCache&   m_texture_cache;
-        TextureSource*  m_source;
+        Source*         m_source;
         const double    m_rcp_width;
         const double    m_rcp_height;
         const double    m_u_shift;
@@ -320,40 +319,19 @@ namespace
 
         void build_importance_map(const Scene& scene)
         {
-            TextureSource* exitance =
-                dynamic_cast<TextureSource*>(m_inputs.source("exitance"));
+            const TextureSource* exitance_source =
+                dynamic_cast<const TextureSource*>(m_inputs.source("exitance"));
 
-            if (exitance == 0)
+            if (exitance_source)
             {
-                m_importance_map_width = 512;
-                m_importance_map_height = 256;
-
-                RENDERER_LOG_ERROR(
-                    "while building importance map for environment edf \"%s\": "
-                    "the input \"%s\" is not bound to a texture, using default "
-                    "importance map resolution " FMT_SIZE_T "x" FMT_SIZE_T ".",
-                    get_name(),
-                    "exitance",
-                    m_importance_map_width,
-                    m_importance_map_height);
+                const CanvasProperties& texture_props = exitance_source->get_texture(scene).properties();
+                m_importance_map_width = texture_props.m_canvas_width;
+                m_importance_map_height = texture_props.m_canvas_height;
             }
             else
             {
-                const TextureInstance* texture_instance =
-                    get_required_entity<TextureInstance>(
-                        scene.texture_instances(),
-                        m_params,
-                        "exitance");
-
-                assert(texture_instance);
-
-                Texture* texture =
-                    scene.textures().get_by_index(texture_instance->get_texture_index());
-
-                const CanvasProperties& texture_props = texture->properties();
-
-                m_importance_map_width = texture_props.m_canvas_width;
-                m_importance_map_height = texture_props.m_canvas_height;
+                m_importance_map_width = 1;
+                m_importance_map_height = 1;
             }
 
             const size_t texel_count = m_importance_map_width * m_importance_map_height;
@@ -362,7 +340,7 @@ namespace
             TextureCache texture_cache(scene);
             ImageSampler sampler(
                 texture_cache,
-                exitance,
+                m_inputs.source("exitance"),
                 m_importance_map_width,
                 m_importance_map_height,
                 m_u_shift,
