@@ -32,7 +32,6 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/modeling/input/inputparams.h"
-#include "renderer/modeling/scene/textureinstance.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/hash.h"

@@ -32,6 +32,9 @@
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
 #include "renderer/modeling/input/source.h"
+#include "renderer/modeling/scene/assembly.h"
+#include "renderer/modeling/scene/containers.h"
+#include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/scene/textureinstance.h"
 
 // appleseed.foundation headers.
@@ -40,8 +43,8 @@
 
 // Forward declarations.
 namespace renderer      { class InputParams; }
+namespace renderer      { class Texture; }
 namespace renderer      { class TextureCache; }
-namespace renderer      { class TextureInstance; }
 
 namespace renderer
 {
@@ -59,6 +62,9 @@ class TextureSource
         const foundation::UniqueID          assembly_uid,
         const TextureInstance&              texture_instance,
         const foundation::CanvasProperties& texture_props);
+
+    // A convenient function to retrieve the texture used by this source.
+    Texture& get_texture(const Scene& scene) const;
 
     // Evaluate the source at a given shading point.
     virtual void evaluate(
@@ -115,6 +121,18 @@ class TextureSource
 //
 // TextureSource class implementation.
 //
+
+inline Texture& TextureSource::get_texture(const Scene& scene) const
+{
+    const TextureContainer& textures =
+        m_assembly_uid == ~0
+            ? scene.textures()
+            : scene.assemblies().get_by_uid(m_assembly_uid)->textures();
+
+    assert(m_texture_index < textures.size());
+
+    return *textures.get_by_index(m_texture_index);
+}
 
 inline void TextureSource::evaluate(
     TextureCache&                           texture_cache,
