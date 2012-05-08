@@ -30,6 +30,8 @@
 #include "latlongmapenvironmentedf.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
+#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/lighting/imageimportancesampler.h"
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
@@ -40,12 +42,23 @@
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/texture/texture.h"
+#include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
+#include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
 #include "foundation/math/sampling.h"
+#include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
+#include "foundation/platform/types.h"
+#include "foundation/utility/containers/dictionary.h"
+
+// Standard headers.
+#include <cassert>
+#include <cmath>
+#include <cstddef>
+#include <memory>
 
 using namespace foundation;
 using namespace std;
@@ -260,7 +273,7 @@ namespace
         struct InputValues
         {
             Spectrum    m_exitance;
-            Alpha       m_exitance_alpha;   // unused
+            Alpha       m_exitance_alpha;       // unused
         };
 
         typedef ImageImportanceSampler<double> ImageImportanceSamplerType;
@@ -275,9 +288,9 @@ namespace
 
         // Compute the spherical coordinates of a given direction.
         static void unit_vector_to_angles(
-            const Vector3d&     v,          // unit length
-            double&             theta,      // in [0, Pi]
-            double&             phi)        // in [-Pi, Pi]
+            const Vector3d&     v,              // unit length
+            double&             theta,          // in [0, Pi]
+            double&             phi)            // in [-Pi, Pi]
         {
             assert(is_normalized(v));
 
@@ -287,10 +300,10 @@ namespace
 
         // Convert a given direction from spherical coordinates to [0,1]^2.
         static void angles_to_unit_square(
-            const double        theta,      // in [0, Pi]
-            const double        phi,        // in [-Pi, Pi]
-            double&             u,          // in [0, 1]
-            double&             v)          // in [0, 1]
+            const double        theta,          // in [0, Pi]
+            const double        phi,            // in [-Pi, Pi]
+            double&             u,              // in [0, 1]
+            double&             v)              // in [0, 1]
         {
             assert(theta >= 0.0);
             assert(theta <= Pi);
