@@ -40,6 +40,7 @@ namespace renderer      { class Assembly; }
 namespace renderer      { class BSDF; }
 namespace renderer      { class EDF; }
 namespace renderer      { class Project; }
+namespace renderer      { class Source; }
 namespace renderer      { class SurfaceShader; }
 
 namespace renderer
@@ -75,14 +76,17 @@ class RENDERERDLL Material
         const Project&                  project,
         const Assembly&                 assembly);
 
-    // Return the surface shader of this material, or 0 if the material doesn't have one.
+    // Return the surface shader of the material, or 0 if the material doesn't have one.
     const SurfaceShader* get_surface_shader() const;
 
-    // Return the BSDF of this material, or 0 if the material doesn't have one.
+    // Return the BSDF of the material, or 0 if the material doesn't have one.
     const BSDF* get_bsdf() const;
 
-    // Return the EDF of this material, or 0 if the material doesn't have one.
+    // Return the EDF of the material, or 0 if the material doesn't have one.
     const EDF* get_edf() const;
+
+    // Return the source bound to the normal map input, or 0 if the material doesn't have a normal map.
+    const Source* get_normal_map() const;
 
   private:
     friend class MaterialFactory;
@@ -90,6 +94,7 @@ class RENDERERDLL Material
     const SurfaceShader*    m_surface_shader;
     const BSDF*             m_bsdf;
     const EDF*              m_edf;
+    const Source*           m_normal_map;
 
     // Constructor.
     Material(
@@ -135,6 +140,11 @@ inline const BSDF* Material::get_bsdf() const
 inline const EDF* Material::get_edf() const
 {
     return m_edf;
+}
+
+inline const Source* Material::get_normal_map() const
+{
+    return m_normal_map;
 }
 
 }       // namespace renderer

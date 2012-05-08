@@ -29,7 +29,15 @@
 // Interface header.
 #include "material.h"
 
+// appleseed.renderer headers.
+#include "renderer/modeling/input/inputarray.h"
+#include "renderer/modeling/input/source.h"
+#include "renderer/modeling/input/texturesource.h"
+#include "renderer/modeling/project/project.h"
+#include "renderer/modeling/texture/texture.h"
+
 // appleseed.foundation headers.
+#include "foundation/image/colorspace.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
 
@@ -55,8 +63,11 @@ Material::Material(
   , m_surface_shader(0)
   , m_bsdf(0)
   , m_edf(0)
+  , m_normal_map(0)
 {
     set_name(name);
+
+    m_inputs.declare("normal_map", InputFormatSpectrum, true);
 }
 
 void Material::release()
@@ -89,6 +100,22 @@ void Material::on_frame_begin(
     const Project&                  project,
     const Assembly&                 assembly)
 {
+    m_normal_map = m_inputs.source("normal_map");
+
+    if (dynamic_cast<const TextureSource*>(m_normal_map))
+    {
+        const Texture& texture =
+            static_cast<const TextureSource*>(m_normal_map)->get_texture(*project.get_scene());
+
+        if (texture.get_color_space() != ColorSpaceLinearRGB)
+        {
+            RENDERER_LOG_WARNING(
+                "color space for normal map \"%s\" should be \"%s\" but is \"%s\" instead; expect artifacts.",
+                texture.get_name(),
+                color_space_name(ColorSpaceLinearRGB),
+                color_space_name(texture.get_color_space()));
+        }
+    }
 }
 
 void Material::on_frame_end(
@@ -135,6 +162,15 @@ DictionaryArray MaterialFactory::get_widget_definitions()
             .insert("entity_types",
                 Dictionary().insert("surface_shader", "Surface Shaders"))
             .insert("use", "required"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "normal_map")
+            .insert("label", "Normal Map")
+            .insert("widget", "entity_picker")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "optional"));
 
     return definitions;
 }
