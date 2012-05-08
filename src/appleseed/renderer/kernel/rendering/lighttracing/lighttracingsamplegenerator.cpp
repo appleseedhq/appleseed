@@ -107,8 +107,8 @@ namespace
           , m_safe_scene_radius(scene.compute_radius() * (1.0 + 1.0e-3))
           , m_disk_point_prob(1.0 / (Pi * square(m_safe_scene_radius)))
           , m_light_sampler(light_sampler)
-          , m_intersector(trace_context, true, m_params.m_report_self_intersections)
           , m_texture_cache(scene, m_params.m_texture_cache_size)
+          , m_intersector(trace_context, m_texture_cache, true, m_params.m_report_self_intersections)
         {
             RENDERER_LOG_INFO(
                 "light tracing settings:\n"
@@ -455,8 +455,8 @@ namespace
         const double                    m_disk_point_prob;
 
         const LightSampler&             m_light_sampler;
-        Intersector                     m_intersector;
         TextureCache                    m_texture_cache;
+        Intersector                     m_intersector;
 
         MersenneTwister                 m_rng;
 

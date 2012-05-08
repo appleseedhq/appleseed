@@ -194,7 +194,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         Fixture()
           : m_trace_context(Base::m_scene.ref())
           , m_texture_cache(Base::m_scene.ref())
-          , m_intersector(m_trace_context)
+          , m_intersector(m_trace_context, m_texture_cache)
           , m_sampling_context(m_rng, 0, 0, 0)
           , m_tracer(m_intersector, m_texture_cache)
         {

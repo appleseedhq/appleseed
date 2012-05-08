@@ -49,6 +49,7 @@
 
 // Forward declarations.
 namespace renderer  { class Material; }
+namespace renderer  { class TextureCache; }
 
 namespace renderer
 {
@@ -152,6 +153,8 @@ class ShadingPoint
 
     RegionKitAccessCache*           m_region_kit_cache;
     StaticTriangleTessAccessCache*  m_tess_cache;
+    TextureCache*                   m_texture_cache;
+
     const Scene*                    m_scene;                    // scene
     ShadingRay                      m_ray;                      // world space ray (m_tmax = distance to intersection)
 
@@ -226,6 +229,7 @@ FORCE_INLINE void ShadingPoint::clear()
 {
     m_region_kit_cache = 0;
     m_tess_cache = 0;
+    m_texture_cache = 0;
     m_scene = 0;
     m_hit = false;
     m_members = 0;

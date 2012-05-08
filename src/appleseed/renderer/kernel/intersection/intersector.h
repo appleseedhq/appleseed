@@ -43,6 +43,7 @@
 
 // Forward declarations.
 namespace renderer  { class ShadingPoint; }
+namespace renderer  { class TextureCache; }
 namespace renderer  { class TraceContext; }
 
 namespace renderer
@@ -59,6 +60,7 @@ class Intersector
     // Constructor, binds the intersector to a given trace context.
     Intersector(
         const TraceContext&             trace_context,
+        TextureCache&                   texture_cache,
         const bool                      print_statistics = false,
         const bool                      report_self_intersections = false);
 
@@ -107,6 +109,7 @@ class Intersector
 
   private:
     const TraceContext&                             m_trace_context;
+    TextureCache&                                   m_texture_cache;
     const bool                                      m_print_statistics;
     const bool                                      m_report_self_intersections;
 

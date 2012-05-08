@@ -35,6 +35,7 @@
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/texturing/ewa.h"
 #include "renderer/kernel/texturing/ewa_texturesampler.h"
+#include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/scene/scene.h"
 
@@ -71,7 +72,8 @@ namespace
             const TraceContext&     trace_context,
             const ParamArray&       params)
           : m_scene(scene)
-          , m_intersector(trace_context)
+          , m_texture_cache(m_scene)
+          , m_intersector(trace_context, m_texture_cache)
           , m_texture_width(params.get_optional<size_t>("texture_width", 256))
           , m_texture_height(params.get_optional<size_t>("texture_height", 256))
           , m_checkerboard_scale(params.get_optional<size_t>("checkerboard_scale", 16))
@@ -188,6 +190,7 @@ namespace
 
       private:
         const Scene&                    m_scene;
+        TextureCache                    m_texture_cache;
         Intersector                     m_intersector;
         const size_t                    m_texture_width;
         const size_t                    m_texture_height;

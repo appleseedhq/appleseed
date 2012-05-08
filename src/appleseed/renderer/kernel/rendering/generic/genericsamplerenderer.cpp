@@ -74,8 +74,8 @@ namespace
           : m_params(params)
           , m_scene(scene)
           , m_lighting_conditions(frame.get_lighting_conditions())
-          , m_intersector(trace_context, true, m_params.m_report_self_intersections)
           , m_texture_cache(scene, m_params.m_texture_cache_size)
+          , m_intersector(trace_context, m_texture_cache, true, m_params.m_report_self_intersections)
           , m_lighting_engine(lighting_engine_factory->create())
           , m_shading_engine(shading_engine)
         {
@@ -219,8 +219,9 @@ namespace
         const Parameters            m_params;
         const Scene&                m_scene;
         const LightingConditions&   m_lighting_conditions;
-        Intersector                 m_intersector;
+
         TextureCache                m_texture_cache;
+        Intersector                 m_intersector;
         ILightingEngine*            m_lighting_engine;
         ShadingEngine&              m_shading_engine;
     };

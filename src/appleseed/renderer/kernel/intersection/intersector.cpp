@@ -50,48 +50,13 @@ using namespace std;
 namespace renderer
 {
 
-//
-// Intersector class implementation.
-//
-
-namespace
-{
-    // Return true if two shading points reference the same triangle.
-    inline bool same_triangle(
-        const ShadingPoint&         lhs,
-        const ShadingPoint&         rhs)
-    {
-        assert(lhs.hit());
-        assert(rhs.hit());
-
-        return
-            lhs.get_triangle_index() == rhs.get_triangle_index() &&
-            lhs.get_region_index() == rhs.get_region_index() &&
-            lhs.get_object_instance_index() == rhs.get_object_instance_index() &&
-            lhs.get_assembly_instance_uid() == rhs.get_assembly_instance_uid();
-    }
-
-    // Print a message if a self-intersection situation is detected.
-    void report_self_intersection(
-        const ShadingPoint&         shading_point,
-        const ShadingPoint*         parent_shading_point)
-    {
-        if (shading_point.hit() &&
-            parent_shading_point &&
-            same_triangle(*parent_shading_point, shading_point))
-        {
-            RENDERER_LOG_WARNING(
-                "self-intersection detected, distance %e.",
-                shading_point.get_distance());
-        }
-    }
-}
-
 Intersector::Intersector(
     const TraceContext&             trace_context,
+    TextureCache&                   texture_cache,
     const bool                      print_statistics,
     const bool                      report_self_intersections)
   : m_trace_context(trace_context)
+  , m_texture_cache(texture_cache)
   , m_print_statistics(print_statistics)
   , m_report_self_intersections(report_self_intersections)
   , m_ray_count(0)
@@ -289,6 +254,39 @@ void Intersector::adaptive_offset(
     back = adaptive_offset_point(support_plane, p, -n, InitialMag);
 }
 
+namespace
+{
+    // Return true if two shading points reference the same triangle.
+    inline bool same_triangle(
+        const ShadingPoint&         lhs,
+        const ShadingPoint&         rhs)
+    {
+        assert(lhs.hit());
+        assert(rhs.hit());
+
+        return
+            lhs.get_triangle_index() == rhs.get_triangle_index() &&
+            lhs.get_region_index() == rhs.get_region_index() &&
+            lhs.get_object_instance_index() == rhs.get_object_instance_index() &&
+            lhs.get_assembly_instance_uid() == rhs.get_assembly_instance_uid();
+    }
+
+    // Print a message if a self-intersection situation is detected.
+    void report_self_intersection(
+        const ShadingPoint&         shading_point,
+        const ShadingPoint*         parent_shading_point)
+    {
+        if (shading_point.hit() &&
+            parent_shading_point &&
+            same_triangle(*parent_shading_point, shading_point))
+        {
+            RENDERER_LOG_WARNING(
+                "self-intersection detected, distance %e.",
+                shading_point.get_distance());
+        }
+    }
+}
+
 bool Intersector::trace(
     const ShadingRay&               ray,
     ShadingPoint&                   shading_point,
@@ -305,6 +303,7 @@ bool Intersector::trace(
     // Initialize the shading point.
     shading_point.m_region_kit_cache = &m_region_kit_cache;
     shading_point.m_tess_cache = &m_tess_cache;
+    shading_point.m_texture_cache = &m_texture_cache;
     shading_point.m_scene = &m_trace_context.get_scene();
     shading_point.m_ray = ray;
 

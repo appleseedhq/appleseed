@@ -56,16 +56,16 @@ TEST_SUITE(Renderer_Kernel_Lighting_ImageBasedLighting)
     struct Fixture
       : public TestFixtureBase
     {
-        const Intersector   m_intersector;
         MersenneTwister     m_rng;
         SamplingContext     m_sampling_context;
         TextureCache        m_texture_cache;
+        const Intersector   m_intersector;
         ShadingContext      m_shading_context;
 
         Fixture()
-          : m_intersector(m_project.get_trace_context(), false)
-          , m_sampling_context(m_rng)
+          : m_sampling_context(m_rng)
           , m_texture_cache(m_scene)
+          , m_intersector(m_project.get_trace_context(), m_texture_cache, false)
           , m_shading_context(m_intersector, m_texture_cache)
         {
         }
