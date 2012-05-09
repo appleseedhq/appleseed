@@ -315,6 +315,10 @@ void DirectLightingIntegrator::take_single_light_sample(
     Spectrum&               radiance,
     AOVCollection&          aovs)
 {
+    // todo: if we had a way to know that a BSDF is purely specular, we could
+    // immediately return black here since there will be no contribution from
+    // such a BSDF.
+
     const Vector3d s = sampling_context.next_vector2<3>();
 
     LightSample sample;
