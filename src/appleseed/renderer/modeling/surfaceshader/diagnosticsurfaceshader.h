@@ -57,21 +57,24 @@ class RENDERERDLL DiagnosticSurfaceShader
     // Available shading modes.
     enum ShadingMode
     {
-        Coverage = 0,           // shade according to pixel coverage
-        Barycentric,            // shade according to barycentric coordinates
-        UV,                     // shade according to UV coordinates
-        GeometricNormal,        // shade according to the geometric normal
-        ShadingNormal,          // shade according to the shading normal
-        Sides,                  // shade according to the surface side
-        Depth,                  // shade according to distance from camera
-        Wireframe,              // wireframe
-        AmbientOcclusion,       // ambient occlusion
-        AssemblyInstances,      // assign a unique color to each assembly instance
-        ObjectInstances,        // assign a unique color to each object instance
-        Regions,                // assign a unique color to each region
-        Triangles,              // assign a unique color to each triangle
-        Materials,              // assign a unique color to each material
-        ShadingModeCount        // number of shading modes -- keep last
+        Coverage = 0,               // shade according to pixel coverage
+        Barycentric,                // shade according to barycentric coordinates
+        UV,                         // shade according to UV coordinates
+        Tangent,                    // shade according to the tangent vector
+        Bitangent,                  // shade according to the bitangent vector
+        ShadingNormal,              // shade according to the (possibly modified) shading normal
+        UnmodifiedShadingNormal,    // shade according to the unmodified shading normal
+        GeometricNormal,            // shade according to the geometric normal
+        Sides,                      // shade according to the surface side
+        Depth,                      // shade according to distance from camera
+        Wireframe,                  // wireframe
+        AmbientOcclusion,           // ambient occlusion
+        AssemblyInstances,          // assign a unique color to each assembly instance
+        ObjectInstances,            // assign a unique color to each object instance
+        Regions,                    // assign a unique color to each region
+        Triangles,                  // assign a unique color to each triangle
+        Materials,                  // assign a unique color to each material
+        ShadingModeCount            // number of shading modes -- keep last
     };
 
     static const foundation::KeyValuePair<const char*, ShadingMode> ShadingModeValues[];

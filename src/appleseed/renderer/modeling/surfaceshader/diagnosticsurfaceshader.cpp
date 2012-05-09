@@ -56,87 +56,56 @@ using namespace std;
 namespace renderer
 {
 
-namespace
-{
-    // Utility function to compute a color from a given normal vector.
-    inline Color3f normal_to_color(const Vector3d& n)
-    {
-        assert(abs(n[0]) <= 1.0);
-        assert(abs(n[1]) <= 1.0);
-        assert(abs(n[2]) <= 1.0);
-
-        return Color3f(
-            static_cast<float>((n[0] + 1.0) * 0.5),
-            static_cast<float>((n[1] + 1.0) * 0.5),
-            static_cast<float>((n[2] + 1.0) * 0.5));
-    }
-
-    // Utility function to compute a color from a given integer value.
-    template <typename T>
-    inline Color3f integer_to_color(const T i)
-    {
-        const uint32 u = static_cast<uint32>(i);    // keep the low 32 bits
-
-        const uint32 x = hashint32(u);
-        const uint32 y = hashint32(u + 1);
-        const uint32 z = hashint32(u + 2);
-
-        return Color3f(
-            static_cast<float>(x) * (1.0f / 4294967295.0f),
-            static_cast<float>(y) * (1.0f / 4294967295.0f),
-            static_cast<float>(z) * (1.0f / 4294967295.0f));
-    }
-}
-
-
-//
-// Diagnostic surface shader.
-//
-
 const char* Model = "diagnostic_surface_shader";
 
 struct DiagnosticSurfaceShader::Impl
 {
-    ShadingMode                 m_shading_mode;
-    double                      m_ao_max_distance;
-    size_t                      m_ao_samples;
+    ShadingMode m_shading_mode;
+    double      m_ao_max_distance;
+    size_t      m_ao_samples;
 };
 
 const KeyValuePair<const char*, DiagnosticSurfaceShader::ShadingMode>
     DiagnosticSurfaceShader::ShadingModeValues[] =
 {
-    { "coverage",               Coverage },
-    { "barycentric",            Barycentric },
-    { "uv",                     UV },
-    { "geometric_normal",       GeometricNormal },
-    { "shading_normal",         ShadingNormal },
-    { "sides",                  Sides },
-    { "depth",                  Depth },
-    { "wireframe" ,             Wireframe },
-    { "ambient_occlusion",      AmbientOcclusion },
-    { "assembly_instances",     AssemblyInstances },
-    { "object_instances",       ObjectInstances },
-    { "regions",                Regions },
-    { "triangles",              Triangles },
-    { "materials",              Materials }
+    { "coverage",                   Coverage },
+    { "barycentric",                Barycentric },
+    { "uv",                         UV },
+    { "tangent",                    Tangent },
+    { "bitangent",                  Bitangent },
+    { "shading_normal",             ShadingNormal },
+    { "unmodified_shading_normal",  UnmodifiedShadingNormal },
+    { "geometric_normal",           GeometricNormal },
+    { "sides",                      Sides },
+    { "depth",                      Depth },
+    { "wireframe" ,                 Wireframe },
+    { "ambient_occlusion",          AmbientOcclusion },
+    { "assembly_instances",         AssemblyInstances },
+    { "object_instances",           ObjectInstances },
+    { "regions",                    Regions },
+    { "triangles",                  Triangles },
+    { "materials",                  Materials }
 };
 
 const KeyValuePair<const char*, const char*> DiagnosticSurfaceShader::ShadingModeNames[] =
 {
-    { "coverage",               "Coverage" },
-    { "barycentric",            "Barycentric Coordinates" },
-    { "uv",                     "UV Coordinates" },
-    { "geometric_normal",       "Geometric Normals" },
-    { "shading_normal",         "Shading Normals" },
-    { "sides",                  "Sides" },
-    { "depth",                  "Depth" },
-    { "wireframe" ,             "Wireframe" },
-    { "ambient_occlusion",      "Ambient Occlusion" },
-    { "assembly_instances",     "Assembly Instances" },
-    { "object_instances",       "Object Instances" },
-    { "regions",                "Regions" },
-    { "triangles",              "Triangles" },
-    { "materials",              "Materials" }
+    { "coverage",                   "Coverage" },
+    { "barycentric",                "Barycentric Coordinates" },
+    { "uv",                         "UV Coordinates" },
+    { "tangent",                    "Tangents" },
+    { "bitangent",                  "Bitangents" },
+    { "shading_normal",             "Shading Normals" },
+    { "unmodified_shading_normal",  "Unmodified Shading Normals" },
+    { "geometric_normal",           "Geometric Normals" },
+    { "sides",                      "Sides" },
+    { "depth",                      "Depth" },
+    { "wireframe" ,                 "Wireframe" },
+    { "ambient_occlusion",          "Ambient Occlusion" },
+    { "assembly_instances",         "Assembly Instances" },
+    { "object_instances",           "Object Instances" },
+    { "regions",                    "Regions" },
+    { "triangles",                  "Triangles" },
+    { "materials",                  "Materials" }
 };
 
 DiagnosticSurfaceShader::DiagnosticSurfaceShader(
@@ -161,6 +130,35 @@ void DiagnosticSurfaceShader::release()
 const char* DiagnosticSurfaceShader::get_model() const
 {
     return Model;
+}
+
+namespace
+{
+    // Compute a color from a given unit-length vector.
+    inline Color3f vector_to_color(const Vector3d& v)
+    {
+        assert(is_normalized(v));
+
+        return Color3f(
+            static_cast<float>((v[0] + 1.0) * 0.5),
+            static_cast<float>((v[1] + 1.0) * 0.5),
+            static_cast<float>((v[2] + 1.0) * 0.5));
+    }
+
+    // Compute a color from a given integer.
+    template <typename T>
+    inline Color3f integer_to_color(const T i)
+    {
+        const uint32 u = static_cast<uint32>(i);    // keep the low 32 bits
+        const uint32 x = hashint32(u);
+        const uint32 y = hashint32(u + 1);
+        const uint32 z = hashint32(u + 2);
+
+        return Color3f(
+            static_cast<float>(x) * (1.0f / 4294967295.0f),
+            static_cast<float>(y) * (1.0f / 4294967295.0f),
+            static_cast<float>(z) * (1.0f / 4294967295.0f));
+    }
 }
 
 void DiagnosticSurfaceShader::evaluate(
@@ -197,21 +195,36 @@ void DiagnosticSurfaceShader::evaluate(
         }
         break;
 
-      case GeometricNormal:
+      case Tangent:
         shading_result.set_to_linear_rgb(
-            normal_to_color(shading_point.get_geometric_normal()));
+            vector_to_color(shading_point.get_dpdu(0)));
+        break;
+
+      case Bitangent:
+        shading_result.set_to_linear_rgb(
+            vector_to_color(shading_point.get_dpdv(0)));
         break;
 
       case ShadingNormal:
         shading_result.set_to_linear_rgb(
-            normal_to_color(shading_point.get_shading_normal()));
+            vector_to_color(shading_point.get_shading_normal()));
+        break;
+
+      case UnmodifiedShadingNormal:
+        shading_result.set_to_linear_rgb(
+            vector_to_color(shading_point.get_unmodified_shading_normal()));
+        break;
+
+      case GeometricNormal:
+        shading_result.set_to_linear_rgb(
+            vector_to_color(shading_point.get_geometric_normal()));
         break;
 
       case Sides:
         shading_result.set_to_linear_rgb(
             shading_point.get_side() == ObjectInstance::FrontSide
-                ? Color3f(1.0f, 0.0f, 0.0f)
-                : Color3f(0.0f, 0.0f, 1.0f));
+                ? Color3f(0.0f, 0.0f, 1.0f)
+                : Color3f(1.0f, 0.0f, 0.0f));
         break;
 
       case Depth:
