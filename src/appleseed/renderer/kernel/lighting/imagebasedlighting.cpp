@@ -75,7 +75,7 @@ namespace
             Vector3d incoming;
             Spectrum bsdf_value;
             double bsdf_prob;
-            BSDF::Mode mode;
+            BSDF::Mode bsdf_mode;
             bsdf.sample(
                 sampling_context,
                 bsdf_data,
@@ -87,10 +87,11 @@ namespace
                 incoming,
                 bsdf_value,
                 bsdf_prob,
-                mode);
+                bsdf_mode);
 
-            // Handle absorption.
-            if (mode == BSDF::None)
+            // Ignore glossy/specular components: they must be handled by the parent.
+            // See Physically Based Rendering vol. 1 page 732.
+            if (bsdf_mode != BSDF::Diffuse)
                 continue;
 
             if (bsdf_prob > 0.0)
@@ -164,6 +165,10 @@ namespace
         const ShadingPoint*         parent_shading_point)
     {
         radiance.set(0.0f);
+
+        // todo: if we had a way to know that a BSDF is purely specular, we could
+        // immediately return black here since there will be no contribution from
+        // such a BSDF.
 
         sampling_context.split_in_place(2, env_sample_count);
 

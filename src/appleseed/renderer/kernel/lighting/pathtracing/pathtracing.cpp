@@ -367,21 +367,36 @@ namespace
                 if (m_env_edf == 0)
                     return;
 
+                //
+                // When should we add the contribution of the environment here?
+                //
+                // When next event estimation is enabled:
+                //
+                //   Mode               IBL     Contribute?     Rationale
+                //   ---------------------------------------------------------------------------------------------
+                //   Diffuse            Yes     No              Already accounted for as IBL during path tracing
+                //   Diffuse            No      No              Not wanted since IBL is disabled
+                //   Specular/Glossy    Yes     Yes             Deliberately not accounted for during path tracing
+                //   Specular/Glossy    No      Yes             Specular/glossy reflections are not IBL
+                //
+                // When next event estimation is disabled:
+                //
+                //   Mode               IBL     Contribute?     Rationale
+                //   ---------------------------------------------------------------------------------------------
+                //   Diffuse            Yes     Yes             IBL not computed during path tracing
+                //   Diffuse            No      No              Not wanted since IBL is disabled
+                //   Specular/Glossy    Yes     Yes             IBL not computed during path tracing
+                //   Specular/Glossy    No      Yes             Specular/glossy reflections are not IBL
+                //
+
                 if (m_params.m_next_event_estimation)
                 {
-                    // If IBL is enabled, we already computed it at the path's vertices.
-                    if (m_params.m_enable_ibl)
-                        return;
-
-                    // If IBL is disabled, only specular surfaces should reflect the environment.
-                    if (prev_bsdf_mode != BSDF::Specular)
+                    if (prev_bsdf_mode == BSDF::Diffuse)
                         return;
                 }
                 else
                 {
-                    // If IBL is disabled, only specular surfaces should reflect the environment.
-                    // If IBL is enabled, all surfaces reflect the environment.
-                    if (!m_params.m_enable_ibl && prev_bsdf_mode != BSDF::Specular)
+                    if (prev_bsdf_mode == BSDF::Diffuse && !m_params.m_enable_ibl)
                         return;
                 }
 
