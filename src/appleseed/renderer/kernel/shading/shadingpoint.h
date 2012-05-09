@@ -30,7 +30,7 @@
 #define APPLESEED_RENDERER_KERNEL_SHADING_SHADINGPOINT_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/intersection/intersectionsettings.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/kernel/tessellation/statictessellation.h"
@@ -45,10 +45,21 @@
 #include "renderer/modeling/scene/scene.h"
 
 // appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
+#include "foundation/image/color.h"
 #include "foundation/math/basis.h"
 #include "foundation/math/transform.h"
+#include "foundation/math/vector.h"
+#include "foundation/platform/compiler.h"
+#include "foundation/platform/types.h"
+#include "foundation/utility/uid.h"
+
+// Standard headers.
+#include <cassert>
+#include <cstddef>
 
 // Forward declarations.
+namespace renderer  { class Object; }
 namespace renderer  { class TextureCache; }
 
 namespace renderer
@@ -159,11 +170,11 @@ class ShadingPoint
     StaticTriangleTessAccessCache*      m_tess_cache;
     TextureCache*                       m_texture_cache;
 
-    const Scene*                        m_scene;                        // scene
+    const Scene*                        m_scene;
     ShadingRay                          m_ray;                          // world space ray (m_tmax = distance to intersection)
 
     // Intersection results.
-    bool                                m_hit;                          // intersection?
+    bool                                m_hit;                          // true if there was a hit, false otherwise
     foundation::Vector2d                m_bary;                         // barycentric coordinates of intersection point
     foundation::UniqueID                m_asm_instance_uid;             // unique ID of the assembly instance that was hit
     size_t                              m_object_instance_index;        // index of the object instance that was hit
