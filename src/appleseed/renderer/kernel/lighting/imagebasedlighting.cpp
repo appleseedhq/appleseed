@@ -96,14 +96,6 @@ namespace
             if (bsdf_prob > 0.0)
                 bsdf_value /= static_cast<float>(bsdf_prob);
 
-            // todo: deliberately ignore specular mode to avoid double contribution?
-
-            // Cull samples behind the shading surface.
-            assert(is_normalized(incoming));
-            const double cos_in = dot(incoming, shading_basis.get_normal());
-            if (cos_in < 0.0)
-                continue;
-
             // Compute the transmission factor toward the incoming direction.
             Tracer tracer(
                 shading_context.get_intersector(),
