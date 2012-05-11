@@ -62,9 +62,9 @@ class RENDERERDLL DiagnosticSurfaceShader
         UV,                         // shade according to UV coordinates
         Tangent,                    // shade according to the tangent vector
         Bitangent,                  // shade according to the bitangent vector
-        ShadingNormal,              // shade according to the (possibly modified) shading normal
-        UnmodifiedShadingNormal,    // shade according to the unmodified shading normal
         GeometricNormal,            // shade according to the geometric normal
+        ShadingNormal,              // shade according to the (possibly modified) shading normal
+        OriginalShadingNormal,      // shade according to the original shading normal
         Sides,                      // shade according to the surface side
         Depth,                      // shade according to distance from camera
         Wireframe,                  // wireframe

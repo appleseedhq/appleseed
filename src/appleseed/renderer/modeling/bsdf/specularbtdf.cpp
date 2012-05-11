@@ -135,7 +135,7 @@ namespace
                     // Compute the reflected direction.
                     incoming = reflect(outgoing, shading_normal);
 
-                    // Force the incoming direction to be above the geometric surface.
+                    // Force the reflected direction to be above the geometric surface.
                     incoming = force_above_surface(incoming, geometric_normal);
 
                     // Compute the reflected radiance.

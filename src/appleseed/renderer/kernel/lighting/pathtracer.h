@@ -250,7 +250,7 @@ size_t PathTracer<PathVisitor, ScatteringModesMask, Adjoint>::trace(
         if (!(bsdf_mode & ScatteringModesMask))
             break;
 
-        if (bsdf_prob > 0.0)
+        if (bsdf_prob != BSDF::DiracDelta)
             bsdf_value /= static_cast<float>(bsdf_prob);
 
         // Update the path throughput.

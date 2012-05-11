@@ -99,15 +99,8 @@ namespace
             // Force the incoming direction to be above the geometric surface.
             incoming = force_above_surface(incoming, geometric_normal);
 
-            // No reflection in or below the shading surface.
-            const double cos_in = dot(incoming, shading_normal);
-            if (cos_in <= 0.0)
-            {
-                mode = None;
-                return;
-            }
-
             // Compute the BRDF value.
+            const double cos_in = abs(dot(incoming, shading_normal));
             const InputValues* values = static_cast<const InputValues*>(data);
             value = values->m_reflectance;
             value *= static_cast<float>(1.0 / cos_in);

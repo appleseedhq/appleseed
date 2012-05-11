@@ -115,23 +115,7 @@ void BRDFWrapper<BRDFImpl>::sample(
 {
     assert(foundation::is_normalized(geometric_normal));
     assert(foundation::is_normalized(outgoing));
-
-    // No reflection for back faces.
-    const foundation::Vector3d& shading_normal = shading_basis.get_normal();
-    const double cos_ng = foundation::dot(shading_normal, geometric_normal);
-    if (cos_ng <= 0.0)
-    {
-        mode = BRDFImpl::None;
-        return;
-    }
-
-    // No reflection in or below the geometric surface.
-    const double cos_og = foundation::dot(outgoing, geometric_normal);
-    if (cos_og <= 0.0)
-    {
-        mode = BRDFImpl::None;
-        return;
-    }
+    assert(foundation::dot(outgoing, geometric_normal) >= 0.0);
 
     BRDFImpl::sample(
         sampling_context,
@@ -146,17 +130,25 @@ void BRDFWrapper<BRDFImpl>::sample(
         probability,
         mode);
 
+    if (mode == None)
+        return;
+
+    assert(foundation::is_normalized(incoming));
+    assert(foundation::dot(incoming, geometric_normal) >= 0.0);
+    assert(probability == DiracDelta || probability > 0.0);
+
     if (cosine_mult)
     {
         if (adjoint)
         {
-            const double cos_on = std::abs(foundation::dot(outgoing, shading_normal));
+            const double cos_on = std::abs(foundation::dot(outgoing, shading_basis.get_normal()));
             const double cos_ig = foundation::dot(incoming, geometric_normal);
+            const double cos_og = foundation::dot(outgoing, geometric_normal);
             value *= static_cast<float>(cos_on * cos_ig / cos_og);
         }
         else
         {
-            const double cos_in = std::abs(foundation::dot(incoming, shading_normal));
+            const double cos_in = std::abs(foundation::dot(incoming, shading_basis.get_normal()));
             value *= static_cast<float>(cos_in);
         }
     }
@@ -178,15 +170,10 @@ bool BRDFWrapper<BRDFImpl>::evaluate(
     assert(foundation::is_normalized(outgoing));
     assert(foundation::is_normalized(incoming));
 
-    // No reflection for back faces.
-    const foundation::Vector3d& shading_normal = shading_basis.get_normal();
-    const double cos_ng = foundation::dot(shading_normal, geometric_normal);
-    if (cos_ng <= 0.0)
-        return false;
-
-    // No reflection in or below the geometric surface.
     const double cos_ig = foundation::dot(incoming, geometric_normal);
     const double cos_og = foundation::dot(outgoing, geometric_normal);
+
+    // No reflection in or below the geometric surface.
     if (cos_ig <= 0.0 || cos_og <= 0.0)
         return false;
 
@@ -211,12 +198,12 @@ bool BRDFWrapper<BRDFImpl>::evaluate(
     {
         if (adjoint)
         {
-            const double cos_on = std::abs(foundation::dot(outgoing, shading_normal));
+            const double cos_on = std::abs(foundation::dot(outgoing, shading_basis.get_normal()));
             value *= static_cast<float>(cos_on * cos_ig / cos_og);
         }
         else
         {
-            const double cos_in = std::abs(foundation::dot(incoming, shading_normal));
+            const double cos_in = std::abs(foundation::dot(incoming, shading_basis.get_normal()));
             value *= static_cast<float>(cos_in);
         }
     }
@@ -236,15 +223,10 @@ double BRDFWrapper<BRDFImpl>::evaluate_pdf(
     assert(foundation::is_normalized(outgoing));
     assert(foundation::is_normalized(incoming));
 
-    // No reflection for back faces.
-    const foundation::Vector3d& shading_normal = shading_basis.get_normal();
-    const double cos_ng = foundation::dot(shading_normal, geometric_normal);
-    if (cos_ng <= 0.0)
-        return 0.0;
-
-    // No reflection in or below the geometric surface.
     const double cos_ig = foundation::dot(incoming, geometric_normal);
     const double cos_og = foundation::dot(outgoing, geometric_normal);
+
+    // No reflection in or below the geometric surface.
     if (cos_ig <= 0.0 || cos_og <= 0.0)
         return 0.0;
 

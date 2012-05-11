@@ -70,7 +70,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_ImageBasedLighting)
         }
     };
 
-    TEST_CASE_F(ComputeImageBasedLighting_GivenSpecularBRDFAndUniformWhiteEnrironmentEDF, Fixture)
+    TEST_CASE_F(ComputeImageBasedLighting_GivenUniformWhiteEnrironmentEDF_IgnoresSpecularContributions, Fixture)
     {
         create_color_entity("gray", Spectrum(0.5f));
         create_color_entity("white", Spectrum(1.0f));
@@ -117,6 +117,6 @@ TEST_SUITE(Renderer_Kernel_Lighting_ImageBasedLighting)
         env_edf_ref.on_frame_end(m_project);
         specular_brdf_ref.on_frame_end(m_project, m_assembly);
 
-        EXPECT_EQ(Spectrum(0.5f), radiance);
+        EXPECT_EQ(Spectrum(0.0f), radiance);
     }
 }

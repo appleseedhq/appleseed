@@ -107,16 +107,19 @@ class ShadingPoint
     const foundation::Vector3d& get_dpdu(const size_t uvset) const;
     const foundation::Vector3d& get_dpdv(const size_t uvset) const;
 
-    // Return the world space geometric normal at the intersection point.
+    // Return the world space geometric normal at the intersection point. The geometric normal
+    // always faces the incoming ray, i.e. dot(ray_dir, geometric_normal) is always positive or null.
     const foundation::Vector3d& get_geometric_normal() const;
 
-    // Return the world space unmodified shading normal at the intersection point.
-    const foundation::Vector3d& get_unmodified_shading_normal() const;
-
     // Return the world space (possibly modified) shading normal at the intersection point.
+    // The shading normal is always in the same hemisphere as the geometric normal, but it is
+    // not always facing the incoming ray, i.e. dot(ray_dir, shading_normal) may be negative.
     const foundation::Vector3d& get_shading_normal() const;
 
-    // Return a world space orthonormal basis around the shading normal.
+    // Return the original world space shading normal at the intersection point.
+    const foundation::Vector3d& get_original_shading_normal() const;
+
+    // Return a world space orthonormal basis around the (possibly modified) shading normal.
     const foundation::Basis3d& get_shading_basis() const;
 
     // Return the side of the surface that was hit.
@@ -191,8 +194,8 @@ class ShadingPoint
         HasRefinedPoints                = 1 << 3,
         HasPartialDerivatives           = 1 << 4,
         HasGeometricNormal              = 1 << 5,
-        HasUnmodifiedShadingNormal      = 1 << 6,
-        HasShadingNormal                = 1 << 7,
+        HasShadingNormal                = 1 << 6,
+        HasOriginalShadingNormal        = 1 << 7,
         HasShadingBasis                 = 1 << 8,
         HasWorldSpaceVertices           = 1 << 9,
         HasWorldSpaceVertexNormals      = 1 << 10,
@@ -212,8 +215,8 @@ class ShadingPoint
     mutable foundation::Vector3d        m_dpdu;                         // world space partial derivative of the intersection point wrt. U
     mutable foundation::Vector3d        m_dpdv;                         // world space partial derivative of the intersection point wrt. V
     mutable foundation::Vector3d        m_geometric_normal;             // world space geometric normal, unit-length
-    mutable foundation::Vector3d        m_unmodified_shading_normal;    // world space unmodified shading normal, unit-length
     mutable foundation::Vector3d        m_shading_normal;               // world space (possibly modified) shading normal, unit-length
+    mutable foundation::Vector3d        m_original_shading_normal;      // original world space shading normal, unit-length
     mutable ObjectInstance::Side        m_side;                         // side of the surface that was hit
     mutable foundation::Basis3d         m_shading_basis;                // world space orthonormal basis around shading normal
     mutable foundation::Vector3d        m_v0_w, m_v1_w, m_v2_w;         // world space triangle vertices
@@ -392,8 +395,8 @@ inline const foundation::Vector3d& ShadingPoint::get_geometric_normal() const
         // Normalize the geometric normal.
         m_geometric_normal = foundation::normalize(m_geometric_normal);
 
-        // Place the geometric normal in the same hemisphere as the shading normal.
-        if (foundation::dot(m_geometric_normal, get_unmodified_shading_normal()) < 0.0)
+        // Place the geometric normal in the same hemisphere as the original shading normal.
+        if (foundation::dot(m_geometric_normal, get_original_shading_normal()) < 0.0)
             m_geometric_normal = -m_geometric_normal;
 
         // Remember which side of the geometric surface we hit.
@@ -402,7 +405,7 @@ inline const foundation::Vector3d& ShadingPoint::get_geometric_normal() const
                 ? ObjectInstance::BackSide
                 : ObjectInstance::FrontSide;
 
-        // Make the geometric normal face the direction of the incoming ray.
+        // Finally make the geometric normal face the direction of the incoming ray.
         if (m_side == ObjectInstance::BackSide)
             m_geometric_normal = -m_geometric_normal;
 
@@ -413,57 +416,14 @@ inline const foundation::Vector3d& ShadingPoint::get_geometric_normal() const
     return m_geometric_normal;
 }
 
-inline const foundation::Vector3d& ShadingPoint::get_unmodified_shading_normal() const
-{
-    assert(hit());
-
-    if (!(m_members & HasUnmodifiedShadingNormal))
-    {
-        const double w = 1.0 - m_bary[0] - m_bary[1];
-
-        if (m_members & HasWorldSpaceVertexNormals)
-        {
-            // We already have the world space vertex normals of the hit triangle.
-            // Use them to compute the shading normal directly in world space.
-            m_unmodified_shading_normal =
-                  m_n0_w * w
-                + m_n1_w * m_bary[0]
-                + m_n2_w * m_bary[1];
-        }
-        else
-        {
-            cache_source_geometry();
-
-            // Compute the object instance space shading normal.
-            m_unmodified_shading_normal =
-                  foundation::Vector3d(m_n0) * w
-                + foundation::Vector3d(m_n1) * m_bary[0]
-                + foundation::Vector3d(m_n2) * m_bary[1];
-
-            // Transform the shading normal to world space.
-            m_unmodified_shading_normal =
-                m_assembly_instance->get_transform().transform_normal_to_parent(
-                    m_object_instance->get_transform().transform_normal_to_parent(m_unmodified_shading_normal));
-        }
-
-        // Normalize the shading normal.
-        m_unmodified_shading_normal = foundation::normalize(m_unmodified_shading_normal);
-
-        // The shading normal is now available.
-        m_members |= HasUnmodifiedShadingNormal;
-    }
-
-    return m_unmodified_shading_normal;
-}
-
 inline const foundation::Vector3d& ShadingPoint::get_shading_normal() const
 {
     assert(hit());
 
     if (!(m_members & HasShadingNormal))
     {
-        // Start with the unmodified shading normal.
-        m_shading_normal = get_unmodified_shading_normal();
+        // Start with the original shading normal.
+        m_shading_normal = get_original_shading_normal();
 
         // Apply normal mapping if the material carries a normal map.
         const Material* material = get_material();
@@ -493,11 +453,58 @@ inline const foundation::Vector3d& ShadingPoint::get_shading_normal() const
             m_shading_normal = foundation::normalize(m_shading_normal);
         }
 
+        // Place the shading normal in the same hemisphere as the geometric normal.
+        if (m_side == ObjectInstance::BackSide)
+            m_shading_normal = -m_shading_normal;
+
         // The shading normal is now available.
         m_members |= HasShadingNormal;
     }
 
     return m_shading_normal;
+}
+
+inline const foundation::Vector3d& ShadingPoint::get_original_shading_normal() const
+{
+    assert(hit());
+
+    if (!(m_members & HasOriginalShadingNormal))
+    {
+        const double w = 1.0 - m_bary[0] - m_bary[1];
+
+        if (m_members & HasWorldSpaceVertexNormals)
+        {
+            // We already have the world space vertex normals of the hit triangle.
+            // Use them to compute the shading normal directly in world space.
+            m_original_shading_normal =
+                  m_n0_w * w
+                + m_n1_w * m_bary[0]
+                + m_n2_w * m_bary[1];
+        }
+        else
+        {
+            cache_source_geometry();
+
+            // Compute the object instance space shading normal.
+            m_original_shading_normal =
+                  foundation::Vector3d(m_n0) * w
+                + foundation::Vector3d(m_n1) * m_bary[0]
+                + foundation::Vector3d(m_n2) * m_bary[1];
+
+            // Transform the shading normal to world space.
+            m_original_shading_normal =
+                m_assembly_instance->get_transform().transform_normal_to_parent(
+                    m_object_instance->get_transform().transform_normal_to_parent(m_original_shading_normal));
+        }
+
+        // Normalize the shading normal.
+        m_original_shading_normal = foundation::normalize(m_original_shading_normal);
+
+        // The shading normal is now available.
+        m_members |= HasOriginalShadingNormal;
+    }
+
+    return m_original_shading_normal;
 }
 
 inline const foundation::Basis3d& ShadingPoint::get_shading_basis() const
@@ -705,7 +712,7 @@ inline void ShadingPoint::compute_partial_derivatives() const
 
     if (det == 0.0)
     {
-        const foundation::Basis3d basis(get_unmodified_shading_normal());
+        const foundation::Basis3d basis(get_original_shading_normal());
 
         m_dpdu = basis.get_tangent_u();
         m_dpdv = basis.get_tangent_v();

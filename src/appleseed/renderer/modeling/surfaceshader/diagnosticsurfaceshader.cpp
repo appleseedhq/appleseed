@@ -73,9 +73,9 @@ const KeyValuePair<const char*, DiagnosticSurfaceShader::ShadingMode>
     { "uv",                         UV },
     { "tangent",                    Tangent },
     { "bitangent",                  Bitangent },
-    { "shading_normal",             ShadingNormal },
-    { "unmodified_shading_normal",  UnmodifiedShadingNormal },
     { "geometric_normal",           GeometricNormal },
+    { "shading_normal",             ShadingNormal },
+    { "original_shading_normal",    OriginalShadingNormal },
     { "sides",                      Sides },
     { "depth",                      Depth },
     { "wireframe" ,                 Wireframe },
@@ -94,9 +94,9 @@ const KeyValuePair<const char*, const char*> DiagnosticSurfaceShader::ShadingMod
     { "uv",                         "UV Coordinates" },
     { "tangent",                    "Tangents" },
     { "bitangent",                  "Bitangents" },
-    { "shading_normal",             "Shading Normals" },
-    { "unmodified_shading_normal",  "Unmodified Shading Normals" },
     { "geometric_normal",           "Geometric Normals" },
+    { "shading_normal",             "Shading Normals" },
+    { "original_shading_normal",    "Original Shading Normals" },
     { "sides",                      "Sides" },
     { "depth",                      "Depth" },
     { "wireframe" ,                 "Wireframe" },
@@ -205,19 +205,19 @@ void DiagnosticSurfaceShader::evaluate(
             vector_to_color(shading_point.get_dpdv(0)));
         break;
 
+      case GeometricNormal:
+        shading_result.set_to_linear_rgb(
+            vector_to_color(shading_point.get_geometric_normal()));
+        break;
+
       case ShadingNormal:
         shading_result.set_to_linear_rgb(
             vector_to_color(shading_point.get_shading_normal()));
         break;
 
-      case UnmodifiedShadingNormal:
+      case OriginalShadingNormal:
         shading_result.set_to_linear_rgb(
-            vector_to_color(shading_point.get_unmodified_shading_normal()));
-        break;
-
-      case GeometricNormal:
-        shading_result.set_to_linear_rgb(
-            vector_to_color(shading_point.get_geometric_normal()));
+            vector_to_color(shading_point.get_original_shading_normal()));
         break;
 
       case Sides:

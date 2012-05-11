@@ -277,7 +277,7 @@ namespace
             }
 
             // Compute dot products.
-            const double cos_on = max(dot(outgoing, shading_normal), 1.0e-3);
+            const double cos_on = max(dot(outgoing, shading_normal), 0.0);
             const double cos_oh = max(dot(outgoing, h), 1.0e-3);
             const double cos_hn = max(dot(h, shading_normal), 0.0);
 
