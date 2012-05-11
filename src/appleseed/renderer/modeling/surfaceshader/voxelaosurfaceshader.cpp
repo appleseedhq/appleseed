@@ -224,7 +224,7 @@ namespace
 
                 if (m_enable_diagnostics)
                 {
-                    shading_result.set_to_linear_rgb(Color3f(1.0f, 1.0f, 0.0f));
+                    shading_result.set_to_linear_rgb(Color3f(1.0f, 0.0f, 0.0f));
                     return;
                 }
             }
