@@ -1,3 +1,5 @@
-appleseed by /*jupiter jazz*/ is a modern, open source photorealistic rendering platform available under the MIT license.
+appleseed by Jupiter Jazz is a modern, open source photorealistic production renderer.
 
-more information at http://appleseedhq.net/ and http://www.jupiter-jazz.com/.
+More information at http://appleseedhq.net/ and http://www.jupiter-jazz.com/.
+
+Build instructions are available on our development wiki: http://appleseedhq.net/wiki/dev-wiki.
