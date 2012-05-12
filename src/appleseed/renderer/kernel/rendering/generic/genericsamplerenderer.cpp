@@ -123,9 +123,20 @@ namespace
             ShadingPoint shading_points[2];
             size_t shading_point_index = 0;
             const ShadingPoint* shading_point_ptr = 0;
+            size_t iterations = 0;
 
             while (true)
             {
+                // Put a hard limit on the number of iterations.
+                const size_t MaxIterations = 10000;
+                if (++iterations >= MaxIterations)
+                {
+                    RENDERER_LOG_WARNING(
+                        "reached hard iteration limit (%s), breaking primary ray trace loop.",
+                        pretty_int(MaxIterations).c_str());
+                    break;
+                }
+
                 // Trace the ray.
                 shading_points[shading_point_index].clear();
                 m_intersector.trace(

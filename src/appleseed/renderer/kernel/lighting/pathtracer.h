@@ -132,13 +132,24 @@ size_t PathTracer<PathVisitor, ScatteringModesMask, Adjoint>::trace(
     size_t shading_point_index = 0;
     const ShadingPoint* shading_point_ptr = &shading_point;
 
-    // Trace one path.
     Spectrum throughput(1.0f);
-    size_t path_length = 1;
     BSDF::Mode bsdf_mode = BSDF::Specular;
     double bsdf_prob = BSDF::DiracDelta;
+    size_t path_length = 1;
+    size_t iterations = 0;
+
     while (true)
     {
+        // Put a hard limit on the number of iterations.
+        const size_t MaxIterations = 10000;
+        if (++iterations >= MaxIterations)
+        {
+            RENDERER_LOG_WARNING(
+                "reached hard iteration limit (%s), breaking path trace loop.",
+                foundation::pretty_int(MaxIterations).c_str());
+            break;
+        }
+
         // Retrieve the ray.
         const ShadingRay& ray = shading_point_ptr->get_ray();
 
@@ -279,16 +290,7 @@ size_t PathTracer<PathVisitor, ScatteringModesMask, Adjoint>::trace(
         if (m_max_path_length > 0 && path_length >= m_max_path_length)
             break;
 
-        // Put a hard limit on the number of bounces.
-        const size_t HardPathLengthLimit = 10000;
-        if (path_length >= HardPathLengthLimit)
-        {
-            RENDERER_LOG_WARNING(
-                "reached hard path length limit (%s), terminating path.",
-                foundation::pretty_int(path_length).c_str());
-            break;
-        }
-
+        // Keep track of the number of bounces.
         ++path_length;
 
         // Construct the scattered ray.

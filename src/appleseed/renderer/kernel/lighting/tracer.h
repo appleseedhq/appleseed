@@ -37,6 +37,9 @@
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/vector.h"
 
+// Standard headers.
+#include <cstddef>
+
 // Forward declarations.
 namespace renderer      { class Intersector; }
 namespace renderer      { class TextureCache; }
@@ -51,7 +54,8 @@ class Tracer
     // Constructor.
     Tracer(
         const Intersector&              intersector,
-        TextureCache&                   texture_cache);
+        TextureCache&                   texture_cache,
+        const size_t                    max_iterations = 10000);
 
     // Compute the transmission in a given direction. Returns the intersection
     // with the closest fully opaque occluder and the transmission factor up
@@ -80,6 +84,7 @@ class Tracer
   private:
     const Intersector&                  m_intersector;
     TextureCache&                       m_texture_cache;
+    const size_t                        m_max_iterations;
     ShadingPoint                        m_shading_points[2];
 };
 
@@ -90,9 +95,11 @@ class Tracer
 
 inline Tracer::Tracer(
     const Intersector&                  intersector,
-    TextureCache&                       texture_cache)
+    TextureCache&                       texture_cache,
+    const size_t                        max_iterations)
   : m_intersector(intersector)
   , m_texture_cache(texture_cache)
+  , m_max_iterations(max_iterations)
 {
 }
 

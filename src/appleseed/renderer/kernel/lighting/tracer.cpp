@@ -57,9 +57,19 @@ const ShadingPoint& Tracer::trace(
     const ShadingPoint* shading_point_ptr = parent_shading_point;
     size_t shading_point_index = 0;
     Vector3d point = origin;
+    size_t iterations = 0;
 
     while (true)
     {
+        // Put a hard limit on the number of iterations.
+        if (++iterations >= m_max_iterations)
+        {
+            RENDERER_LOG_WARNING(
+                "reached hard iteration limit (%s), breaking trace loop.",
+                pretty_int(m_max_iterations).c_str());
+            break;
+        }
+
         // Construct the visibility ray.
         const ShadingRay ray(
             point,
@@ -131,9 +141,19 @@ const ShadingPoint& Tracer::trace_between(
     const ShadingPoint* shading_point_ptr = parent_shading_point;
     size_t shading_point_index = 0;
     Vector3d point = origin;
+    size_t iterations = 0;
 
     while (true)
     {
+        // Put a hard limit on the number of iterations.
+        if (++iterations >= m_max_iterations)
+        {
+            RENDERER_LOG_WARNING(
+                "reached hard iteration limit (%s), breaking trace_between loop.",
+                pretty_int(m_max_iterations).c_str());
+            break;
+        }
+
         // Construct the visibility ray.
         const ShadingRay ray(
             point,
