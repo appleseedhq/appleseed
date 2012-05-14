@@ -991,7 +991,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         camera->transform_sequence().set_transform(
             0.0,
             Transformd(
-                  Matrix4d::translation(Vector3d(0.278f, 0.273f, -0.800f))
+                  Matrix4d::translation(Vector3d(0.278, 0.273, -0.800))
                 * Matrix4d::rotation_y(Pi)));
 
         // Attach the camera to the scene.
