@@ -11,6 +11,7 @@ rd /S /Q lib 2>nul
 rd /S /Q sample\Debug 2>nul
 rd /S /Q sample\ipch 2>nul
 rd /S /Q sample\Release 2>nul
+rd /S /Q sample\x64 2>nul
 del /Q sample\sample.opensdf 2>nul
 del /Q sample\sample.sdf 2>nul
 del /Q sample\sample.suo 2>nul
