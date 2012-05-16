@@ -387,8 +387,8 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
 
     // Evaluate the BSDF.
     Spectrum bsdf_value;
-    double bsdf_prob;
-    if (!m_bsdf.evaluate(
+    const double bsdf_prob =
+        m_bsdf.evaluate(
             m_bsdf_data,
             false,          // not adjoint
             true,           // multiply by |cos(incoming, normal)|
@@ -396,8 +396,8 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
             m_shading_basis,
             m_outgoing,
             incoming,
-            bsdf_value,
-            &bsdf_prob))
+            bsdf_value);
+    if (bsdf_prob == 0.0)
         return;
 
     const EDF* edf = sample.m_triangle->m_edf;
@@ -463,7 +463,8 @@ void DirectLightingIntegrator::add_light_sample_contribution(
 
     // Evaluate the BSDF.
     Spectrum bsdf_value;
-    if (!m_bsdf.evaluate(
+    const double bsdf_prob =
+        m_bsdf.evaluate(
             m_bsdf_data,
             false,              // not adjoint
             true,               // multiply by |cos(incoming, normal)|
@@ -471,7 +472,8 @@ void DirectLightingIntegrator::add_light_sample_contribution(
             m_shading_basis,
             m_outgoing,
             incoming,
-            bsdf_value))
+            bsdf_value);
+    if (bsdf_prob == 0.0)
         return;
 
     const Light* light = sample.m_light;

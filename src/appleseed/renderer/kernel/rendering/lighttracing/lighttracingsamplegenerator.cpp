@@ -302,7 +302,7 @@ namespace
                         square_distance);
 
                 if (!visible)
-                    return true;    // proceed with this path
+                    return true;            // proceed with this path
 
                 // Retrieve the shading and geometric normals at the vertex.
                 const Vector3d& shading_normal = shading_point.get_shading_normal();
@@ -313,7 +313,7 @@ namespace
 
                 // Evaluate the BSDF at the vertex position.
                 Spectrum bsdf_value;
-                const bool bsdf_defined =
+                const double bsdf_prob =
                     bsdf->evaluate(
                         bsdf_data,
                         true,                               // adjoint
@@ -323,8 +323,8 @@ namespace
                         outgoing,                           // outgoing
                         vertex_to_camera,                   // incoming
                         bsdf_value);
-                if (!bsdf_defined)
-                    return true;    // proceed with this path
+                if (bsdf_prob == 0.0)
+                    return true;            // proceed with this path
 
                 // Compute the flux-to-radiance conversion factor.
                 const double cos_theta = abs(dot(vertex_to_camera, m_camera_direction));

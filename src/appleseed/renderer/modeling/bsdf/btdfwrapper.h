@@ -67,7 +67,7 @@ class BTDFWrapper
         double&                         probability,
         Mode&                           mode) const override;
 
-    virtual bool evaluate(
+    virtual double evaluate(
         const void*                     data,
         const bool                      adjoint,
         const bool                      cosine_mult,
@@ -75,8 +75,7 @@ class BTDFWrapper
         const foundation::Basis3d&      shading_basis,
         const foundation::Vector3d&     outgoing,
         const foundation::Vector3d&     incoming,
-        Spectrum&                       value,
-        double*                         probability = 0) const override;
+        Spectrum&                       value) const override;
 
     virtual double evaluate_pdf(
         const void*                     data,
@@ -153,7 +152,7 @@ void BTDFWrapper<BTDFImpl>::sample(
 }
 
 template <typename BTDFImpl>
-bool BTDFWrapper<BTDFImpl>::evaluate(
+double BTDFWrapper<BTDFImpl>::evaluate(
     const void*                         data,
     const bool                          adjoint,
     const bool                          cosine_mult,
@@ -161,14 +160,13 @@ bool BTDFWrapper<BTDFImpl>::evaluate(
     const foundation::Basis3d&          shading_basis,
     const foundation::Vector3d&         outgoing,
     const foundation::Vector3d&         incoming,
-    Spectrum&                           value,
-    double*                             probability) const
+    Spectrum&                           value) const
 {
     assert(foundation::is_normalized(geometric_normal));
     assert(foundation::is_normalized(outgoing));
     assert(foundation::is_normalized(incoming));
 
-    const bool defined =
+    const double probability =
         BTDFImpl::evaluate(
             data,
             adjoint,
@@ -177,15 +175,11 @@ bool BTDFWrapper<BTDFImpl>::evaluate(
             shading_basis,
             outgoing,
             incoming,
-            value,
-            probability);
+            value);
 
-    if (!defined)
-        return false;
+    assert(probability >= 0.0);
 
-    assert(probability == 0 || *probability >= 0.0);
-
-    if (cosine_mult)
+    if (probability > 0.0 && cosine_mult)
     {
         if (adjoint)
         {
@@ -201,7 +195,7 @@ bool BTDFWrapper<BTDFImpl>::evaluate(
         }
     }
 
-    return true;
+    return probability;
 }
 
 template <typename BTDFImpl>

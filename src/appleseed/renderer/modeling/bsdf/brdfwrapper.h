@@ -67,7 +67,7 @@ class BRDFWrapper
         double&                         probability,
         Mode&                           mode) const override;
 
-    virtual bool evaluate(
+    virtual double evaluate(
         const void*                     data,
         const bool                      adjoint,
         const bool                      cosine_mult,
@@ -75,8 +75,7 @@ class BRDFWrapper
         const foundation::Basis3d&      shading_basis,
         const foundation::Vector3d&     outgoing,
         const foundation::Vector3d&     incoming,
-        Spectrum&                       value,
-        double*                         probability = 0) const override;
+        Spectrum&                       value) const override;
 
     virtual double evaluate_pdf(
         const void*                     data,
@@ -155,7 +154,7 @@ void BRDFWrapper<BRDFImpl>::sample(
 }
 
 template <typename BRDFImpl>
-bool BRDFWrapper<BRDFImpl>::evaluate(
+double BRDFWrapper<BRDFImpl>::evaluate(
     const void*                         data,
     const bool                          adjoint,
     const bool                          cosine_mult,
@@ -163,8 +162,7 @@ bool BRDFWrapper<BRDFImpl>::evaluate(
     const foundation::Basis3d&          shading_basis,
     const foundation::Vector3d&         outgoing,
     const foundation::Vector3d&         incoming,
-    Spectrum&                           value,
-    double*                             probability) const
+    Spectrum&                           value) const
 {
     assert(foundation::is_normalized(geometric_normal));
     assert(foundation::is_normalized(outgoing));
@@ -175,9 +173,9 @@ bool BRDFWrapper<BRDFImpl>::evaluate(
 
     // No reflection in or below the geometric surface.
     if (cos_ig <= 0.0 || cos_og <= 0.0)
-        return false;
+        return 0.0;
 
-    const bool defined =
+    const double probability =
         BRDFImpl::evaluate(
             data,
             adjoint,
@@ -186,15 +184,11 @@ bool BRDFWrapper<BRDFImpl>::evaluate(
             shading_basis,
             outgoing,
             incoming,
-            value,
-            probability);
+            value);
 
-    if (!defined)
-        return false;
+    assert(probability >= 0.0);
 
-    assert(probability == 0 || *probability >= 0.0);
-
-    if (cosine_mult)
+    if (probability > 0.0 && cosine_mult)
     {
         if (adjoint)
         {
@@ -208,7 +202,7 @@ bool BRDFWrapper<BRDFImpl>::evaluate(
         }
     }
 
-    return true;
+    return probability;
 }
 
 template <typename BRDFImpl>

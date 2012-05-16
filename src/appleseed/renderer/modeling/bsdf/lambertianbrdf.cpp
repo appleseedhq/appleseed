@@ -151,7 +151,7 @@ namespace
             mode = Diffuse;
         }
 
-        FORCE_INLINE virtual bool evaluate(
+        FORCE_INLINE virtual double evaluate(
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
@@ -159,8 +159,7 @@ namespace
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
             const Vector3d&     incoming,
-            Spectrum&           value,
-            double*             probability) const
+            Spectrum&           value) const
         {
             const Vector3d& n = shading_basis.get_normal();
             const double cos_in = dot(incoming, n);
@@ -168,7 +167,7 @@ namespace
 
             // No reflection in or below the shading surface.
             if (cos_in <= 0.0 || cos_on <= 0.0)
-                return false;
+                return 0.0;
 
             // Compute the BRDF value.
             if (m_uniform_reflectance)
@@ -180,11 +179,8 @@ namespace
                 value *= static_cast<float>(RcpPi);
             }
 
-            // Compute the probability density of the sampled direction.
-            if (probability)
-                *probability = cos_in * RcpPi;
-
-            return true;
+            // Return the probability density of the sampled direction.
+            return cos_in * RcpPi;
         }
 
         FORCE_INLINE virtual double evaluate_pdf(

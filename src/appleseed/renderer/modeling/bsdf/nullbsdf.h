@@ -75,7 +75,7 @@ class NullBSDF
         mode = None;
     }
 
-    virtual bool evaluate(
+    virtual double evaluate(
         const void*                     data,
         const bool                      adjoint,
         const bool                      cosine_mult,
@@ -83,10 +83,9 @@ class NullBSDF
         const foundation::Basis3d&      shading_basis,
         const foundation::Vector3d&     outgoing,
         const foundation::Vector3d&     incoming,
-        Spectrum&                       value,
-        double*                         probability) const override
+        Spectrum&                       value) const override
     {
-        return false;
+        return 0.0;
     }
 
     virtual double evaluate_pdf(

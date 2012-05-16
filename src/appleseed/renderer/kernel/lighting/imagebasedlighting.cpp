@@ -214,8 +214,7 @@ namespace
 
             // Evaluate the BSDF.
             Spectrum bsdf_value;
-            double bsdf_prob;
-            const bool bsdf_defined =
+            const double bsdf_prob =
                 bsdf.evaluate(
                     bsdf_data,
                     false,              // not adjoint
@@ -224,9 +223,8 @@ namespace
                     shading_basis,
                     outgoing,
                     incoming,
-                    bsdf_value,
-                    &bsdf_prob);
-            if (!bsdf_defined)
+                    bsdf_value);
+            if (bsdf_prob == 0.0)
                 continue;
 
             // Compute MIS weight.

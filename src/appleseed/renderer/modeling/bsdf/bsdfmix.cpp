@@ -177,14 +177,13 @@ namespace
 
             if (bsdf0_mode == BSDF::None)
             {
-                bsdf0_value.set(0.0f);
-                bsdf0_prob = 0.0;
+                mode = BSDF::None;
+                return;
             }
 
             // Evaluate the other BSDF.
             Spectrum bsdf1_value;
-            double bsdf1_prob;
-            const bool defined =
+            const double bsdf1_prob =
                 m_bsdf[bsdf1_index]->evaluate(
                     get_bsdf_data(data, bsdf1_index),
                     adjoint,
@@ -193,20 +192,20 @@ namespace
                     shading_basis,
                     outgoing,
                     incoming,
-                    bsdf1_value,
-                    &bsdf1_prob);
-
-            if (!defined)
-            {
-                bsdf1_value.set(0.0f);
-                bsdf1_prob = 0.0;
-            }
+                    bsdf1_value);
 
             // Blend BSDF values.
-            bsdf0_value *= static_cast<float>(w[bsdf0_index]);
-            bsdf1_value *= static_cast<float>(w[bsdf1_index]);
-            value = bsdf0_value;
-            value += bsdf1_value;
+            value.set(0.0f);
+            if (bsdf0_prob > 0.0)
+            {
+                bsdf0_value *= static_cast<float>(w[bsdf0_index]);
+                value += bsdf0_value;
+            }
+            if (bsdf1_prob > 0.0)
+            {
+                bsdf1_value *= static_cast<float>(w[bsdf1_index]);
+                value += bsdf1_value;
+            }
 
             // Blend PDF values.
             probability = bsdf0_prob * w[bsdf0_index] + bsdf1_prob * w[bsdf1_index];
@@ -215,7 +214,7 @@ namespace
             mode = bsdf0_mode;
         }
 
-        FORCE_INLINE virtual bool evaluate(
+        FORCE_INLINE virtual double evaluate(
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
@@ -223,8 +222,7 @@ namespace
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
             const Vector3d&     incoming,
-            Spectrum&           value,
-            double*             probability) const
+            Spectrum&           value) const
         {
             // Retrieve the blending weights.
             const InputValues* values = static_cast<const InputValues*>(data);
@@ -234,7 +232,7 @@ namespace
 
             // Handle absorption.
             if (total_weight == 0.0)
-                return false;
+                return 0.0;
 
             // Normalize the blending weights.
             const double rcp_total_weight = 1.0 / total_weight;
@@ -243,8 +241,8 @@ namespace
 
             // Evaluate the first BSDF.
             Spectrum bsdf0_value;
-            double bsdf0_prob;
-            if (!m_bsdf[0]->evaluate(
+            const double bsdf0_prob =
+                m_bsdf[0]->evaluate(
                     get_bsdf_data(data, 0),
                     adjoint,
                     false,      // do not multiply by |cos(incoming, normal)|
@@ -252,17 +250,12 @@ namespace
                     shading_basis,
                     outgoing,
                     incoming,
-                    bsdf0_value,
-                    &bsdf0_prob))
-            {
-                bsdf0_value.set(0.0f);
-                bsdf0_prob = 0.0;
-            }
+                    bsdf0_value);
 
             // Evaluate the second BSDF.
             Spectrum bsdf1_value;
-            double bsdf1_prob;
-            if (!m_bsdf[1]->evaluate(
+            const double bsdf1_prob =
+                m_bsdf[1]->evaluate(
                     get_bsdf_data(data, 1),
                     adjoint,
                     false,      // do not multiply by |cos(incoming, normal)|
@@ -270,24 +263,23 @@ namespace
                     shading_basis,
                     outgoing,
                     incoming,
-                    bsdf1_value,
-                    &bsdf1_prob))
-            {
-                bsdf1_value.set(0.0f);
-                bsdf1_prob = 0.0;
-            }
+                    bsdf1_value);
 
             // Blend BSDF values.
-            bsdf0_value *= static_cast<float>(w0);
-            bsdf1_value *= static_cast<float>(w1);
-            value = bsdf0_value;
-            value += bsdf1_value;
+            value.set(0.0f);
+            if (bsdf0_prob > 0.0)
+            {
+                bsdf0_value *= static_cast<float>(w0);
+                value += bsdf0_value;
+            }
+            if (bsdf1_prob > 0.0)
+            {
+                bsdf1_value *= static_cast<float>(w1);
+                value += bsdf1_value;
+            }
 
             // Blend PDF values.
-            if (probability)
-                *probability = bsdf0_prob * w0 + bsdf1_prob * w1;
-
-            return true;
+            return bsdf0_prob * w0 + bsdf1_prob * w1;
         }
 
         FORCE_INLINE virtual double evaluate_pdf(

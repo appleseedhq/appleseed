@@ -303,10 +303,9 @@ namespace
 
             // Evaluate the final PDF.
             probability = rval.m_pd * pdf_diffuse + rval.m_pg * pdf_glossy;
-            assert(probability > 0.0);
         }
 
-        FORCE_INLINE virtual bool evaluate(
+        FORCE_INLINE virtual double evaluate(
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
@@ -314,8 +313,7 @@ namespace
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
             const Vector3d&     incoming,
-            Spectrum&           value,
-            double*             probability) const
+            Spectrum&           value) const
         {
             const Vector3d& shading_normal = shading_basis.get_normal();
 
@@ -323,14 +321,14 @@ namespace
             const double cos_in = dot(incoming, shading_normal);
             const double cos_on = dot(outgoing, shading_normal);
             if (cos_in <= 0.0 || cos_on <= 0.0)
-                return false;
+                return 0.0;
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
             // Compute (or retrieve precomputed) reflectance-related values.
             RVal rval;
             if (!get_rval(rval, values))
-                return false;
+                return 0.0;
 
             // Compute (or retrieve precomputed) shininess-related values.
             SVal sval;
@@ -365,25 +363,20 @@ namespace
             value = glossy;
             value += diffuse;
 
-            if (probability)
-            {
-                // Evaluate the PDF of the glossy component (equation 8).
-                const double pdf_glossy = num / cos_oh;
-                assert(pdf_glossy >= 0.0);
+            // Evaluate the PDF of the glossy component (equation 8).
+            const double pdf_glossy = num / cos_oh;
+            assert(pdf_glossy >= 0.0);
 
-                // Evaluate the PDF of the diffuse component.
-                const double pdf_diffuse = cos_in * RcpPi;
-                assert(pdf_diffuse >= 0.0);
+            // Evaluate the PDF of the diffuse component.
+            const double pdf_diffuse = cos_in * RcpPi;
+            assert(pdf_diffuse >= 0.0);
 
-                // Evaluate the final PDF. Note that the probability might be zero,
-                // e.g. if m_pd is zero (the BSDF has no diffuse component) and
-                // pdf_glossy is also zero (because of numerical imprecision: the
-                // value of pdf_glossy depends on the value of pdf_h, which might
-                // end up being zero if cos_hn is small and exp is very high).
-                *probability = rval.m_pd * pdf_diffuse + rval.m_pg * pdf_glossy;
-            }
-
-            return true;
+            // Evaluate the final PDF. Note that the probability might be zero,
+            // e.g. if m_pd is zero (the BSDF has no diffuse component) and
+            // pdf_glossy is also zero (because of numerical imprecision: the
+            // value of pdf_glossy depends on the value of pdf_h, which might
+            // end up being zero if cos_hn is small and exp is very high).
+            return rval.m_pd * pdf_diffuse + rval.m_pg * pdf_glossy;
         }
 
         FORCE_INLINE virtual double evaluate_pdf(

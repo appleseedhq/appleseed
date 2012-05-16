@@ -117,7 +117,8 @@ class DLLSYMBOL BSDF
 
     // Given an outgoing direction, sample the BSDF and compute the incoming
     // direction, the probability density with which it was chosen, the value
-    // of the BSDF divided by the probability density and the scattering mode.
+    // of the BSDF for this pair of directions and the scattering mode.
+    // If the scattering mode is None, the BSDF and PDF values are undefined.
     virtual void sample(
         SamplingContext&            sampling_context,
         const void*                 data,                       // input values
@@ -131,11 +132,10 @@ class DLLSYMBOL BSDF
         double&                     probability,                // PDF value
         Mode&                       mode) const = 0;            // scattering mode
 
-    // Evaluate the BSDF for a given pair of directions.
-    // Return true if the BSDF is defined for the given pair of directions,
-    // false otherwise. If false is returned, the BSDF and PDF values
-    // returned by this function are undefined.
-    virtual bool evaluate(
+    // Evaluate the BSDF for a given pair of directions. Return the PDF value
+    // for this pair of directions. If the returned probability is zero, the
+    // BSDF value is undefined.
+    virtual double evaluate(
         const void*                 data,                       // input values
         const bool                  adjoint,                    // if true, use the adjoint scattering kernel
         const bool                  cosine_mult,                // if true, multiply by |cos(incoming, normal)|
@@ -143,8 +143,7 @@ class DLLSYMBOL BSDF
         const foundation::Basis3d&  shading_basis,              // world space orthonormal basis around shading normal
         const foundation::Vector3d& outgoing,                   // world space outgoing direction, unit-length
         const foundation::Vector3d& incoming,                   // world space incoming direction, unit-length
-        Spectrum&                   value,                      // BSDF value * |cos(incoming, normal)|
-        double*                     probability = 0) const = 0; // PDF value
+        Spectrum&                   value) const = 0;           // BSDF value, or BSDF value * |cos(incoming, normal)|
 
     // Evaluate the PDF for a given pair of directions.
     virtual double evaluate_pdf(

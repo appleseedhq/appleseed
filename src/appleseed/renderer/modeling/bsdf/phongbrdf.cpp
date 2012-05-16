@@ -92,7 +92,7 @@ namespace
             throw ExceptionNotImplemented();
         }
 
-        FORCE_INLINE virtual bool evaluate(
+        FORCE_INLINE virtual double evaluate(
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
@@ -100,11 +100,10 @@ namespace
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
             const Vector3d&     incoming,
-            Spectrum&           value,
-            double*             probability) const
+            Spectrum&           value) const
         {
             throw ExceptionNotImplemented();
-            return false;
+            return 0.0;
         }
 
         FORCE_INLINE virtual double evaluate_pdf(

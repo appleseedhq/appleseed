@@ -285,7 +285,7 @@ namespace
             assert(probability >= 0.0);
         }
 
-        FORCE_INLINE virtual bool evaluate(
+        FORCE_INLINE virtual double evaluate(
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
@@ -293,8 +293,7 @@ namespace
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
             const Vector3d&     incoming,
-            Spectrum&           value,
-            double*             probability) const
+            Spectrum&           value) const
         {
             const InputValues* values = static_cast<const InputValues*>(data);
 
@@ -308,7 +307,7 @@ namespace
 
             // No reflection in or below the shading surface.
             if (dot_LN <= 0.0 || dot_VN <= 0.0)
-                return false;
+                return 0.0;
 
             // Compute the halfway vector.
             const Vector3d H = normalize(L + V);
@@ -338,29 +337,23 @@ namespace
             // The final value of the BRDF is the sum of the specular and matte components.
             value += fr_spec;
 
-            if (probability)
-            {
-                // Compute the probability of a specular bounce.
-                const double specular_prob = average_value(specular_albedo_V);
+            // Compute the probability of a specular bounce.
+            const double specular_prob = average_value(specular_albedo_V);
 
-                // Compute the probability of a matte bounce.
-                const double matte_prob = average_value(matte_albedo);
+            // Compute the probability of a matte bounce.
+            const double matte_prob = average_value(matte_albedo);
 
-                // Compute the PDF of the incoming direction for the specular component.
-                const double pdf_H = m_mdf->evaluate_pdf(dot_HN);
-                const double pdf_specular = pdf_H / (4.0 * dot_HL);
-                assert(pdf_specular >= 0.0);
+            // Compute the PDF of the incoming direction for the specular component.
+            const double pdf_H = m_mdf->evaluate_pdf(dot_HN);
+            const double pdf_specular = pdf_H / (4.0 * dot_HL);
+            assert(pdf_specular >= 0.0);
 
-                // Compute the PDF of the incoming direction for the matte component.
-                const double pdf_matte = dot_LN * RcpPi;
-                assert(pdf_matte >= 0.0);
+            // Compute the PDF of the incoming direction for the matte component.
+            const double pdf_matte = dot_LN * RcpPi;
+            assert(pdf_matte >= 0.0);
 
-                // Evaluate the final PDF.
-                *probability = specular_prob * pdf_specular + matte_prob * pdf_matte;
-                assert(*probability >= 0.0);
-            }
-
-            return true;
+            // Evaluate the final PDF.
+            return specular_prob * pdf_specular + matte_prob * pdf_matte;
         }
 
         FORCE_INLINE virtual double evaluate_pdf(
