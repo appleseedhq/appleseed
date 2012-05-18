@@ -138,8 +138,7 @@ namespace
                 value = m_brdf_value;
             else
             {
-                const InputValues* values = static_cast<const InputValues*>(data);
-                value = values->m_reflectance;
+                value = static_cast<const InputValues*>(data)->m_reflectance;
                 value *= static_cast<float>(RcpPi);
             }
 
@@ -163,19 +162,13 @@ namespace
         {
             const Vector3d& n = shading_basis.get_normal();
             const double cos_in = dot(incoming, n);
-            const double cos_on = dot(outgoing, n);
-
-            // No reflection in or below the shading surface.
-            if (cos_in <= 0.0 || cos_on <= 0.0)
-                return 0.0;
 
             // Compute the BRDF value.
             if (m_uniform_reflectance)
                 value = m_brdf_value;
             else
             {
-                const InputValues* values = static_cast<const InputValues*>(data);
-                value = values->m_reflectance;
+                value = static_cast<const InputValues*>(data)->m_reflectance;
                 value *= static_cast<float>(RcpPi);
             }
 
@@ -192,12 +185,6 @@ namespace
         {
             const Vector3d& n = shading_basis.get_normal();
             const double cos_in = dot(incoming, n);
-            const double cos_on = dot(outgoing, n);
-
-            // No reflection in or below the shading surface.
-            if (cos_in <= 0.0 || cos_on <= 0.0)
-                return 0.0;
-
             return cos_in * RcpPi;
         }
 

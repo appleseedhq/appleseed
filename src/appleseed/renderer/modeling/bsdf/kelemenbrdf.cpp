@@ -302,12 +302,8 @@ namespace
             const Vector3d& L = incoming;
             const Vector3d& N = shading_basis.get_normal();
 
-            const double dot_VN = dot(V, N);
-            const double dot_LN = dot(L, N);
-
-            // No reflection in or below the shading surface.
-            if (dot_LN <= 0.0 || dot_VN <= 0.0)
-                return 0.0;
+            const double dot_VN = abs(dot(V, N));
+            const double dot_LN = abs(dot(L, N));
 
             // Compute the halfway vector.
             const Vector3d H = normalize(L + V);
@@ -370,12 +366,8 @@ namespace
             const Vector3d& L = incoming;
             const Vector3d& N = shading_basis.get_normal();
 
-            const double dot_VN = dot(V, N);
-            const double dot_LN = dot(L, N);
-
-            // No reflection in or below the shading surface.
-            if (dot_LN <= 0.0 || dot_VN <= 0.0)
-                return 0.0;
+            const double dot_VN = abs(dot(V, N));
+            const double dot_LN = abs(dot(L, N));
 
             // Compute the halfway vector.
             const Vector3d H = normalize(L + V);

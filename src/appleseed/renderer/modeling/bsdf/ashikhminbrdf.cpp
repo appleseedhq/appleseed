@@ -315,14 +315,6 @@ namespace
             const Vector3d&     incoming,
             Spectrum&           value) const
         {
-            const Vector3d& shading_normal = shading_basis.get_normal();
-
-            // No reflection in or below the shading surface.
-            const double cos_in = dot(incoming, shading_normal);
-            const double cos_on = dot(outgoing, shading_normal);
-            if (cos_in <= 0.0 || cos_on <= 0.0)
-                return 0.0;
-
             const InputValues* values = static_cast<const InputValues*>(data);
 
             // Compute (or retrieve precomputed) reflectance-related values.
@@ -338,8 +330,11 @@ namespace
             const Vector3d h = normalize(incoming + outgoing);
 
             // Compute dot products.
+            const Vector3d& shading_normal = shading_basis.get_normal();
+            const double cos_in = abs(dot(incoming, shading_normal));
+            const double cos_on = abs(dot(outgoing, shading_normal));
             const double cos_oh = max(dot(outgoing, h), 1.0e-3);
-            const double cos_hn = max(dot(h, shading_basis.get_normal()), 0.0);
+            const double cos_hn = max(dot(h, shading_normal), 0.0);
             const double cos_hu = dot(h, shading_basis.get_tangent_u());
             const double cos_hv = dot(h, shading_basis.get_tangent_v());
 
@@ -386,14 +381,6 @@ namespace
             const Vector3d&     outgoing,
             const Vector3d&     incoming) const
         {
-            const Vector3d& shading_normal = shading_basis.get_normal();
-
-            // No reflection in or below the shading surface.
-            const double cos_in = dot(incoming, shading_normal);
-            const double cos_on = dot(outgoing, shading_normal);
-            if (cos_in <= 0.0 || cos_on <= 0.0)
-                return 0.0;
-
             const InputValues* values = static_cast<const InputValues*>(data);
 
             // Compute (or retrieve precomputed) reflectance-related values.
@@ -409,8 +396,11 @@ namespace
             const Vector3d h = normalize(incoming + outgoing);
 
             // Compute dot products.
+            const Vector3d& shading_normal = shading_basis.get_normal();
+            const double cos_in = abs(dot(incoming, shading_normal));
+            const double cos_on = abs(dot(outgoing, shading_normal));
             const double cos_oh = max(dot(outgoing, h), 1.0e-3);
-            const double cos_hn = max(dot(h, shading_basis.get_normal()), 0.0);
+            const double cos_hn = max(dot(h, shading_normal), 0.0);
             const double cos_hu = dot(h, shading_basis.get_tangent_u());
             const double cos_hv = dot(h, shading_basis.get_tangent_v());
 
