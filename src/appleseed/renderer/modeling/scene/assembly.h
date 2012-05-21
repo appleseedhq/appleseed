@@ -128,7 +128,6 @@ class RENDERERDLL AssemblyFactory
 // Assembly class implementation.
 //
 
-// Return true if this assembly is tagged as flushable.
 inline bool Assembly::is_flushable() const
 {
     return m_flushable;
