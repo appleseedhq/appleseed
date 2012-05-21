@@ -59,7 +59,7 @@ namespace foundation
 {
 
 //
-// A convenient base class for log targets.
+// The base class for log targets.
 //
 
 class FOUNDATIONDLL LogTargetBase
