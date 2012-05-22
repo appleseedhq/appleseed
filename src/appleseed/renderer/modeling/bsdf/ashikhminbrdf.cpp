@@ -46,7 +46,6 @@
 #include "foundation/utility/containers/specializedarrays.h"
 
 // Standard headers.
-#include <algorithm>
 #include <cassert>
 #include <cmath>
 
@@ -277,9 +276,9 @@ namespace
             }
 
             // Compute dot products.
-            const double cos_on = max(dot(outgoing, shading_normal), 0.0);
-            const double cos_oh = max(dot(outgoing, h), 1.0e-3);
-            const double cos_hn = max(dot(h, shading_normal), 0.0);
+            const double cos_on = abs(dot(outgoing, shading_normal));
+            const double cos_oh = abs(dot(outgoing, h));
+            const double cos_hn = abs(dot(h, shading_normal));
 
             // Evaluate the glossy component of the BRDF (equation 4).
             const double num = pow(cos_hn, exp);
@@ -333,8 +332,8 @@ namespace
             const Vector3d& shading_normal = shading_basis.get_normal();
             const double cos_in = abs(dot(incoming, shading_normal));
             const double cos_on = abs(dot(outgoing, shading_normal));
-            const double cos_oh = max(dot(outgoing, h), 1.0e-3);
-            const double cos_hn = max(dot(h, shading_normal), 0.0);
+            const double cos_oh = abs(dot(outgoing, h));
+            const double cos_hn = abs(dot(h, shading_normal));
             const double cos_hu = dot(h, shading_basis.get_tangent_u());
             const double cos_hv = dot(h, shading_basis.get_tangent_v());
 
@@ -399,8 +398,8 @@ namespace
             const Vector3d& shading_normal = shading_basis.get_normal();
             const double cos_in = abs(dot(incoming, shading_normal));
             const double cos_on = abs(dot(outgoing, shading_normal));
-            const double cos_oh = max(dot(outgoing, h), 1.0e-3);
-            const double cos_hn = max(dot(h, shading_normal), 0.0);
+            const double cos_oh = abs(dot(outgoing, h));
+            const double cos_hn = abs(dot(h, shading_normal));
             const double cos_hu = dot(h, shading_basis.get_tangent_u());
             const double cos_hv = dot(h, shading_basis.get_tangent_v());
 
