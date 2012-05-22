@@ -55,10 +55,10 @@ class WorkerThread
   public:
     // Constructor.
     WorkerThread(
-        const size_t    thread_index,       // index of this worker thread
-        Logger&         logger,             // logger
-        JobQueue&       job_queue,          // job queue
-        const bool      keep_running);      // keep this worker thread running even if the job queue is empty
+        const size_t    index,
+        Logger&         logger,
+        JobQueue&       job_queue,
+        const int       flags);     // see foundation::JobManager::Flags
 
     // Destructor.
     ~WorkerThread();
@@ -87,10 +87,10 @@ class WorkerThread
         }
     };
 
-    const size_t        m_thread_index;
+    const size_t        m_index;
     Logger&             m_logger;
     JobQueue&           m_job_queue;
-    const bool          m_keep_running;
+    const int           m_flags;
 
     AbortSwitch         m_abort_switch;
     ThreadFunc          m_thread_func;
@@ -99,8 +99,8 @@ class WorkerThread
     // Main line of the worker thread.
     void run();
 
-    // Execute a job.
-    void execute_job(IJob& job);
+    // Execute a job. Return true on success, false on failure.
+    bool execute_job(IJob& job);
 };
 
 }       // namespace foundation

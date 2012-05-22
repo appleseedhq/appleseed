@@ -56,7 +56,7 @@ struct JobManager::Impl
     Logger&             m_logger;
     JobQueue&           m_job_queue;
     size_t              m_thread_count;
-    const bool          m_keep_running;
+    const int           m_flags;
     WorkerThreads       m_worker_threads;
 
     // Constructor.
@@ -64,11 +64,11 @@ struct JobManager::Impl
         Logger&         logger,
         JobQueue&       job_queue,
         const size_t    thread_count,
-        const bool      keep_running)
+        const int       flags)
       : m_logger(logger)
       , m_job_queue(job_queue)
       , m_thread_count(thread_count)
-      , m_keep_running(keep_running)
+      , m_flags(flags)
     {
     }
 };
@@ -77,13 +77,8 @@ JobManager::JobManager(
     Logger&             logger,
     JobQueue&           job_queue,
     const size_t        thread_count,
-    const bool          keep_running)
-  : impl(
-        new Impl(
-            logger,
-            job_queue,
-            thread_count,
-            keep_running))
+    const int           flags)
+  : impl(new Impl(logger, job_queue, thread_count, flags))
 {
 }
 
@@ -114,7 +109,7 @@ void JobManager::start()
                     i,
                     impl->m_logger,
                     impl->m_job_queue,
-                    impl->m_keep_running));
+                    impl->m_flags));
         }
     }
 

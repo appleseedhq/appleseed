@@ -44,6 +44,35 @@
 using namespace foundation;
 using namespace std;
 
+namespace
+{
+    struct EmptyJob
+      : public IJob
+    {
+        virtual void execute(const size_t thread_index)
+        {
+        }
+    };
+
+    class JobNotifyingAboutExecution
+      : public IJob
+    {
+      public:
+        explicit JobNotifyingAboutExecution(volatile size_t& execution_count)
+          : m_execution_count(execution_count)
+        {
+        }
+
+        virtual void execute(const size_t thread_index)
+        {
+            ++m_execution_count;
+        }
+
+      private:
+        volatile size_t& m_execution_count;
+    };
+}
+
 TEST_SUITE(Foundation_Utility_Job_AbortSwitch)
 {
     TEST_CASE(Constructor_ClearsAbortFlag)
@@ -75,14 +104,6 @@ TEST_SUITE(Foundation_Utility_Job_AbortSwitch)
 
 TEST_SUITE(Foundation_Utility_Job_JobQueue)
 {
-    struct EmptyJob
-      : public IJob
-    {
-        virtual void execute(const size_t thread_index)
-        {
-        }
-    };
-
     class JobNotifyingAboutDestruction
       : public IJob
     {
@@ -286,32 +307,6 @@ TEST_SUITE(Foundation_Utility_Job_JobManager)
         }
     };
 
-    struct EmptyJob
-      : public IJob
-    {
-        virtual void execute(const size_t thread_index)
-        {
-        }
-    };
-
-    class JobNotifyingAboutExecution
-      : public IJob
-    {
-      public:
-        explicit JobNotifyingAboutExecution(volatile size_t& execution_count)
-          : m_execution_count(execution_count)
-        {
-        }
-
-        virtual void execute(const size_t thread_index)
-        {
-            ++m_execution_count;
-        }
-
-      private:
-        volatile size_t&    m_execution_count;
-    };
-
     class JobCreatingAnotherJob
       : public IJob
     {
@@ -379,15 +374,6 @@ TEST_SUITE(Foundation_Utility_Job_JobManager)
 
 TEST_SUITE(Foundation_Utility_Job_WorkerThread)
 {
-    struct JobThrowingBadAllocException
-      : public IJob
-    {
-        virtual void execute(const size_t thread_index)
-        {
-            throw bad_alloc();
-        }
-    };
-
     class TimeoutChecker
     {
       public:
@@ -415,13 +401,22 @@ TEST_SUITE(Foundation_Utility_Job_WorkerThread)
         const uint64                    m_start_ticks;
     };
 
-    TEST_CASE(Run_MemoryFailureDuingJobExecution_RetiresJob)
+    struct JobThrowingBadAllocException
+      : public IJob
+    {
+        virtual void execute(const size_t thread_index)
+        {
+            throw bad_alloc();
+        }
+    };
+
+    TEST_CASE(Run_MemoryFailureDuingJobExecution_RetiresFailedJob)
     {
         JobQueue job_queue;
         job_queue.schedule(new JobThrowingBadAllocException());
 
         Logger logger;
-        WorkerThread worker(0, logger, job_queue, false);
+        WorkerThread worker(0, logger, job_queue, 0);
 
         worker.start();
 
@@ -434,5 +429,54 @@ TEST_SUITE(Foundation_Utility_Job_WorkerThread)
         }
 
         EXPECT_FALSE(job_queue.has_scheduled_or_running_jobs());
+    }
+
+    TEST_CASE(Run_MemoryFailureDuingJobExecution_FlagKeepRunningOnJobFailureIsCleared_DoesNotExecuteRemainingJobAndClearsJobQueue)
+    {
+        JobQueue job_queue;
+        job_queue.schedule(new JobThrowingBadAllocException());
+
+        volatile size_t execution_count = 0;
+        job_queue.schedule(new JobNotifyingAboutExecution(execution_count));
+
+        Logger logger;
+        WorkerThread worker(0, logger, job_queue, 0);
+
+        worker.start();
+
+        TimeoutChecker timeout_checker(5.0);
+
+        while (job_queue.has_scheduled_or_running_jobs())
+        {
+            if (timeout_checker.timeout())
+                break;
+        }
+
+        EXPECT_EQ(0, execution_count);
+        EXPECT_FALSE(job_queue.has_scheduled_or_running_jobs());
+    }
+
+    TEST_CASE(Run_MemoryFailureDuingJobExecution_FlagKeepRunningOnJobFailureIsSet_ExecutesRemainingJob)
+    {
+        JobQueue job_queue;
+        job_queue.schedule(new JobThrowingBadAllocException());
+
+        volatile size_t execution_count = 0;
+        job_queue.schedule(new JobNotifyingAboutExecution(execution_count));
+
+        Logger logger;
+        WorkerThread worker(0, logger, job_queue, JobManager::KeepRunningOnJobFailure);
+
+        worker.start();
+
+        TimeoutChecker timeout_checker(5.0);
+
+        while (job_queue.has_scheduled_or_running_jobs())
+        {
+            if (timeout_checker.timeout())
+                break;
+        }
+
+        EXPECT_EQ(1, execution_count);
     }
 }

@@ -76,8 +76,7 @@ namespace
                 new JobManager(
                     global_logger(),
                     m_job_queue,
-                    m_params.m_thread_count,
-                    false));        // don't keep threads alive if there's no more jobs
+                    m_params.m_thread_count));
 
             // Instantiate tile renderers, one per rendering thread.
             for (size_t i = 0; i < m_params.m_thread_count; ++i)

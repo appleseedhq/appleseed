@@ -34,6 +34,7 @@
 #include "foundation/platform/thread.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/job/ijob.h"
+#include "foundation/utility/job/jobmanager.h"
 #include "foundation/utility/job/jobqueue.h"
 #include "foundation/utility/log.h"
 
@@ -51,14 +52,14 @@ namespace foundation
 //
 
 WorkerThread::WorkerThread(
-    const size_t    thread_index,
+    const size_t    index,
     Logger&         logger,
     JobQueue&       job_queue,
-    const bool      keep_running)
-  : m_thread_index(thread_index)
+    const int       flags)
+  : m_index(index)
   , m_logger(logger)
   , m_job_queue(job_queue)
-  , m_keep_running(keep_running)
+  , m_flags(flags)
   , m_thread_func(*this)
   , m_thread(0)
 {
@@ -103,7 +104,7 @@ void WorkerThread::run()
         // Handle the case where the job queue is empty.
         if (running_job_info.first.m_job == 0)
         {
-            if (m_keep_running)
+            if (m_flags & JobManager::KeepRunningOnEmptyQueue)
             {
                 // Give up time slice.
                 yield();
@@ -119,34 +120,45 @@ void WorkerThread::run()
         }
 
         // Execute the job.
-        execute_job(*running_job_info.first.m_job);
+        const bool success = execute_job(*running_job_info.first.m_job);
 
         // Retire the job.
         m_job_queue.retire_running_job(running_job_info);
+
+        // Handle job execution failures.
+        if (!success && !(m_flags & JobManager::KeepRunningOnJobFailure))
+        {
+            m_job_queue.clear_scheduled_jobs();
+            break;
+        }
     }
 }
 
-void WorkerThread::execute_job(IJob& job)
+bool WorkerThread::execute_job(IJob& job)
 {
     try
     {
-        job.execute(m_thread_index);
+        job.execute(m_index);
     }
     catch (const StringException& e)
     {
         LOG_ERROR(
             m_logger,
             "worker thread " FMT_SIZE_T ": job was terminated (%s: %s).",
-            m_thread_index,
+            m_index,
             e.what(),
             e.string());
+
+        return false;
     }
     catch (const bad_alloc&)
     {
         LOG_ERROR(
             m_logger,
             "worker thread " FMT_SIZE_T ": job was terminated (ran out of memory).",
-            m_thread_index);
+            m_index);
+
+        return false;
     }
 #ifdef NDEBUG
     catch (const std::exception& e)
@@ -154,17 +166,23 @@ void WorkerThread::execute_job(IJob& job)
         LOG_ERROR(
             m_logger,
             "worker thread " FMT_SIZE_T ": job was terminated (%s).",
-            m_thread_index,
+            m_index,
             e.what());
+
+        return false;
     }
     catch (...)
     {
         LOG_ERROR(
             m_logger,
             "worker thread " FMT_SIZE_T ": job was terminated (unknown exception).",
-            m_thread_index);
+            m_index);
+
+        return false;
     }
 #endif
+
+    return true;
 }
 
 }   // namespace foundation

@@ -103,7 +103,7 @@ namespace
                     global_logger(),
                     m_job_queue,
                     m_params.m_thread_count,
-                    true));         // keep threads alive, even if there's no more jobs
+                    JobManager::KeepRunningOnEmptyQueue));
 
             // Instantiate sample generators, one per rendering thread.
             for (size_t i = 0; i < m_params.m_thread_count; ++i)
