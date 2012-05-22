@@ -303,10 +303,8 @@ namespace
                     // todo: detect invalid sample values (NaN, infinity, etc.), set
                     // them to black and mark them as faulty in the diagnostic map.
 
-                    // Transform the sample to the linear RGB color space.
-                    shading_result.transform_to_linear_rgb(m_lighting_conditions);
-
                     // Accumulate the sample.
+                    assert(shading_result.m_color_space == ColorSpaceLinearRGB);
                     pixel_color[0] += shading_result.m_color[0];
                     pixel_color[1] += shading_result.m_color[1];
                     pixel_color[2] += shading_result.m_color[2];
