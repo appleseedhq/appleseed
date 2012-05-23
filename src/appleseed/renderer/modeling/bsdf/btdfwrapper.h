@@ -128,7 +128,7 @@ void BTDFWrapper<BTDFImpl>::sample(
         probability,
         mode);
 
-    if (mode == None)
+    if (mode == BTDFImpl::None)
         return;
 
     assert(foundation::is_normalized(incoming));
