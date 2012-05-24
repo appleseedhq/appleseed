@@ -52,6 +52,7 @@ namespace ak
         const int output_width = std::max(1, input_width >> level);
         const int output_height = std::max(1, input_height >> level);
         const int half_size = 1 << (level - 1);
+        const float rcp_filter_radius = 1.0f / filter_radius;
 
         for (int oy = 0; oy < output_height; ++oy)
         {
@@ -69,20 +70,22 @@ namespace ak
                 {
                     for (int wx = -filter_radius; wx < filter_radius; ++wx)
                     {
-                        const int ix = cx + wx;
-                        const int iy = cy + wy;
-
-                        if (ix < 0 || iy < 0 || ix >= input_width || iy >= input_height)
-                            continue;
-
-                        const float dx = wx + 0.5f;
-                        const float dy = wy + 0.5f;
+                        const float dx = static_cast<float>(wx) + 0.5f;
+                        const float dy = static_cast<float>(wy) + 0.5f;
                         const float r2 = dx * dx + dy * dy;
-                        const float r = std::sqrt(r2) / filter_radius;
+                        const float r = std::sqrt(r2) * rcp_filter_radius;
                         const float w = details::mitchell_netravali_filter(r, filter_sharpness);
 
                         if (w == 0.0f)
                             continue;
+
+                        int ix = cx + wx;
+                        int iy = cy + wy;
+
+                        if (ix < 0) ix = 0;
+                        if (iy < 0) iy = 0;
+                        if (ix > input_width - 1) ix = input_width - 1;
+                        if (iy > input_height - 1) iy = input_height - 1;
 
                         for (int c = 0; c < 4; ++c)
                         {

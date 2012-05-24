@@ -87,10 +87,10 @@ void TextureObject::get(
 {
     const int clamped_x = clamp(x, 0, static_cast<int>(m_width) - 1);
     const int clamped_y = clamp(y, 0, static_cast<int>(m_height) - 1);
-    const size_t index = clamped_y * m_width + clamped_x;
+    const size_t base_index = (clamped_y * m_width + clamped_x) * m_channel_count;
 
-    for (size_t c = 0; c < m_channel_count; ++c)
-        texel[c] = m_texels[index * m_channel_count + c];
+    for (size_t i = 0; i < m_channel_count; ++i)
+        texel[i] = m_texels[base_index + i];
 }
 
 void TextureObject::put(
@@ -98,6 +98,9 @@ void TextureObject::put(
     const int   y,
     const float texel[])
 {
+    assert(x >= 0 && x < static_cast<int>(m_width));
+    assert(y >= 0 && y < static_cast<int>(m_height));
+
     memcpy(m_texture.pixel(x, y), texel, m_channel_count * sizeof(float));
 }
 

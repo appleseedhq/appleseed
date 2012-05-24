@@ -121,6 +121,7 @@ void generate_mipmap_level(
     const int output_width = std::max(1, input.width() >> level);
     const int output_height = std::max(1, input.height() >> level);
     const int half_size = 1 << (level - 1);
+    const float rcp_filter_radius = 1.0f / filter_radius;
 
     for (int oy = 0; oy < output_height; ++oy)
     {
@@ -138,23 +139,17 @@ void generate_mipmap_level(
             {
                 for (int wx = -filter_radius; wx < filter_radius; ++wx)
                 {
-                    const int ix = cx + wx;
-                    const int iy = cy + wy;
-
-                    if (ix < 0 || iy < 0 || ix >= input.width() || iy >= input.height())
-                        continue;
-
-                    const float dx = wx + 0.5f;
-                    const float dy = wy + 0.5f;
+                    const float dx = static_cast<float>(wx) + 0.5f;
+                    const float dy = static_cast<float>(wy) + 0.5f;
                     const float r2 = dx * dx + dy * dy;
-                    const float r = std::sqrt(r2) / filter_radius;
+                    const float r = std::sqrt(r2) * rcp_filter_radius;
                     const float w = details::mitchell_netravali_filter(r, filter_sharpness);
 
                     if (w == 0.0f)
                         continue;
 
                     SSE_ALIGN float input_texel[NumChannels];
-                    input.get(ix, iy, input_texel);
+                    input.get(cx + wx, cy + wy, input_texel);
 
                     for (int c = 0; c < NumChannels; ++c)
                         output_texel[c] += w * input_texel[c];
