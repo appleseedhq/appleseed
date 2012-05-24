@@ -55,7 +55,7 @@ using namespace foundation;
 using namespace renderer;
 using namespace std;
 
-TEST_SUITE(EWAFilteringExploration)
+TEST_SUITE(AtomKraft_EWA)
 {
     //---------------------------------------------------------------------------------------------
     // Drawing primitives used for debugging.

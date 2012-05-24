@@ -41,7 +41,7 @@
 using namespace foundation;
 using namespace renderer;
 
-BENCHMARK_SUITE(EWAFilteringExploration)
+BENCHMARK_SUITE(AtomKraft_EWA)
 {
     struct Fixture
     {
