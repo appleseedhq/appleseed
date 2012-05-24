@@ -43,13 +43,6 @@ namespace ak
 // Fast mipmap generation for AtomKraft.
 //---------------------------------------------------------------------------------------------
 
-enum AddressingMode
-{
-    Black,
-    Periodic,
-    Clamp
-};
-
 template <int NumChannels, typename Texture>
 void generate_mipmap_level(
     Texture&                    output,
