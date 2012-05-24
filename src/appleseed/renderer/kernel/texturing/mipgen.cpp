@@ -46,7 +46,7 @@ namespace
     {
         x += x;
 
-        const float xabs = fabs(x);
+        const float xabs = std::abs(x);
 
         if (xabs > 2.0f)
             return 0.0f;
