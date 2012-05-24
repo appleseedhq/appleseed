@@ -129,7 +129,7 @@ TEST_SUITE(MipmapGenerationExploration)
     auto_ptr<Image> generate_mipmap_level(
         const Image&        source,
         const size_t        level,
-        const float         filter_radius = 2.0f,
+        const size_t        filter_radius = 2,
         const float         filter_sharpness = 0.5f)
     {
         const CanvasProperties& source_props = source.properties();
@@ -152,7 +152,9 @@ TEST_SUITE(MipmapGenerationExploration)
             static_cast<int>(source_props.m_canvas_width),
             static_cast<int>(source_props.m_canvas_height),
             static_cast<int>(source_props.m_channel_count),
-            static_cast<int>(level));
+            static_cast<int>(level),
+            static_cast<int>(filter_radius),
+            filter_sharpness);
 
         return result;
     }
@@ -203,7 +205,7 @@ TEST_SUITE(MipmapGenerationExploration)
 
         for (size_t i = 1; i < 10; ++i)
         {
-            auto_ptr<Image> output(generate_mipmap_level(*input.get(), i));
+            auto_ptr<Image> output(generate_mipmap_level(*input.get(), i, 2));
 
             const string filepath =
                 "unit tests/outputs/test_mipmapgenerationexploration_" + to_string(i) + ".png";

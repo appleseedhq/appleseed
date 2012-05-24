@@ -42,9 +42,9 @@ namespace
         return (x & (x - 1)) == 0;
     }
 
-    inline float filter_mitchell_netravali(float x, const float radius, const float sharpness)
+    inline float mitchell_netravali_filter(float x, const float sharpness)
     {
-        x = 2.0f * x / radius;
+        x += x;
 
         const float xabs = fabs(x);
 
@@ -61,7 +61,6 @@ namespace
                    (xabs * xx * (12.0f - 9.0f * b - 6.0f * c) +
                     xx * (-18.0f + 12.0f * b + 6.0f * c) +
                     (6.0f - 2.0f * b));
-
         }
         else
         {
@@ -81,7 +80,7 @@ void generate_mipmap_level(
     const int                   input_height,
     const int                   input_channels,
     const int                   level,
-    const float                 filter_radius,
+    const int                   filter_radius,
     const float                 filter_sharpness)
 {
     assert(output);
@@ -93,11 +92,9 @@ void generate_mipmap_level(
     assert(input_channels > 0);
     assert(level > 0);
 
-    const int size = 1 << level;
-    const int half_size = size / 2;
-
     const int output_width = std::max(1, input_width >> level);
     const int output_height = std::max(1, input_height >> level);
+    const int half_size = 1 << (level - 1);
 
     for (int oy = 0; oy < output_height; ++oy)
     {
@@ -111,9 +108,9 @@ void generate_mipmap_level(
 
             float weight = 0.0f;
 
-            for (int wy = -half_size; wy < half_size; ++wy)
+            for (int wy = -filter_radius; wy < filter_radius; ++wy)
             {
-                for (int wx = -half_size; wx < half_size; ++wx)
+                for (int wx = -filter_radius; wx < filter_radius; ++wx)
                 {
                     const int ix = cx + wx;
                     const int iy = cy + wy;
@@ -121,22 +118,36 @@ void generate_mipmap_level(
                     if (ix < 0 || iy < 0 || ix >= input_width || iy >= input_height)
                         continue;
 
+                    const float dx = wx + 0.5f;
+                    const float dy = wy + 0.5f;
+                    const float r2 = dx * dx + dy * dy;
+                    const float r = std::sqrt(r2) / filter_radius;
+                    const float w = mitchell_netravali_filter(r, filter_sharpness);
+
+                    if (w == 0.0f)
+                        continue;
+
                     for (int c = 0; c < input_channels; ++c)
                     {
                         output[(oy * output_width + ox) * input_channels + c] +=
-                            input[(iy * input_width + ix) * input_channels + c];
+                            w * input[(iy * input_width + ix) * input_channels + c];
                     }
 
-                    weight += 1.0f;
+                    weight += w;
                 }
             }
 
-            if (weight > 0.0f)
+            if (weight != 0.0f)
             {
                 const float rcp_weight = 1.0f / weight;
 
                 for (int c = 0; c < input_channels; ++c)
-                    output[(oy * output_width + ox) * input_channels + c] *= rcp_weight;
+                {
+                    float& component = output[(oy * output_width + ox) * input_channels + c];
+                    component *= rcp_weight;
+                    if (component < 0.0f)
+                        component = 0.0f;
+                }
             }
         }
     }

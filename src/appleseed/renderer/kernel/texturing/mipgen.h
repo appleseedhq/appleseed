@@ -40,7 +40,7 @@ void generate_mipmap_level(
     const int                   input_height,
     const int                   input_channels,
     const int                   level,
-    const float                 filter_radius = 2.0f,
+    const int                   filter_radius = 2,
     const float                 filter_sharpness = 0.5f);
 
 #endif
