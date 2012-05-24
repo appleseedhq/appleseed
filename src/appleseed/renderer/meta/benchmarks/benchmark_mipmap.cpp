@@ -32,6 +32,6 @@
 // appleseed.foundation headers.
 #include "foundation/utility/benchmark.h"
 
-BENCHMARK_SUITE(MipmapGenerationExploration)
+BENCHMARK_SUITE(AtomKraft_MipMap)
 {
 }
