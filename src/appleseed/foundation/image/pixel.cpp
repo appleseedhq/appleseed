@@ -32,10 +32,6 @@
 namespace foundation
 {
 
-// The convert_and_shuffle() method allow conversion of a given range of pixels,
-// with a given number of channels in a given pixel format, to a new set of
-// pixels with potentially a different number of channels, in different order,
-// in a different pixel format.
 void Pixel::convert_and_shuffle(
     const PixelFormat   src_format,         // source format
     const size_t        src_channels,       // number of source channels
@@ -85,7 +81,6 @@ void Pixel::convert_and_shuffle(
     }
 }
 
-// Return the number of destination channels specified by a channel shuffling table.
 size_t Pixel::get_dest_channel_count(
     const size_t        src_channels,       // number of source channels
     const size_t*       shuffle_table)      // channel shuffling table
