@@ -27,7 +27,7 @@
 //
 
 // Interface header.
-#include "ewa_texturesampler.h"
+#include "textureobject.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
@@ -38,6 +38,7 @@
 
 // Standard headers.
 #include <cassert>
+#include <cstring>
 
 using namespace foundation;
 using namespace std;
@@ -45,8 +46,9 @@ using namespace std;
 namespace renderer
 {
 
-TextureSampler::TextureSampler(const Image& texture)
-  : m_width(texture.properties().m_canvas_width)
+TextureObject::TextureObject(Image& texture)
+  : m_texture(texture)
+  , m_width(texture.properties().m_canvas_width)
   , m_height(texture.properties().m_canvas_height)
   , m_channel_count(texture.properties().m_channel_count)
 {
@@ -78,7 +80,7 @@ TextureSampler::TextureSampler(const Image& texture)
     }
 }
 
-void TextureSampler::get(
+void TextureObject::get(
     const int   x,
     const int   y,
     float       texel[]) const
@@ -89,6 +91,14 @@ void TextureSampler::get(
 
     for (size_t c = 0; c < m_channel_count; ++c)
         texel[c] = m_texels[index * m_channel_count + c];
+}
+
+void TextureObject::put(
+    const int   x,
+    const int   y,
+    const float texel[])
+{
+    memcpy(m_texture.pixel(x, y), texel, m_channel_count * sizeof(float));
 }
 
 }   // namespace renderer

@@ -29,37 +29,21 @@
 #ifndef EWA_H
 #define EWA_H
 
+#include "common.h"
+
 #include <cassert>
 #include <cmath>
 #include <cstring>
-#include <xmmintrin.h>
+
+namespace ak
+{
 
 //---------------------------------------------------------------------------------------------
-// If enabled, EWAFilterAK::filter() will return a color representative of the weights of the
+// If enabled, ak::EWAFilter::filter() will return a color representative of the weights of the
 // EWA and reconstruction filters (red = EWA, blue = reconstruction).
 //---------------------------------------------------------------------------------------------
 
 #undef EWA_DEBUG_DISPLAY_WEIGHTS
-
-//---------------------------------------------------------------------------------------------
-// A qualifier to specify the alignment of a variable, a structure member or a structure.
-//---------------------------------------------------------------------------------------------
-
-// Visual C++.
-#if defined _MSC_VER
-    #define ALIGN(n) __declspec(align(n))
-
-// gcc.
-#elif defined __GNUC__
-    #define ALIGN(n) __attribute__((aligned(n)))
-
-// Other compilers: ignore the qualifier.
-#else
-    #define ALIGN(n)
-#endif
-
-// Specify an alignment compatible with SSE.
-#define SSE_ALIGN ALIGN(16)
 
 //---------------------------------------------------------------------------------------------
 // EWA filter implementation for AtomKraft.
@@ -72,10 +56,10 @@
 //---------------------------------------------------------------------------------------------
 
 template <int NumChannels, typename Texture>
-class EWAFilterAK
+class EWAFilter
 {
   public:
-    EWAFilterAK()
+    EWAFilter()
     {
         for (int i = 0; i < WeightCount; ++i)
         {
@@ -149,7 +133,6 @@ class EWAFilterAK
         }
 
         // Compute the area in pixels covered by the ellipse.
-        const float Pi = 3.14159265f;
         const float area = Pi * r1 * r2;
 
         // Compute the EWA filter and reconstruction filter weights.
@@ -295,13 +278,6 @@ class EWAFilterAK
     enum { WeightCount = 256 };
     float m_weights[WeightCount];
 
-    // Fast floating point-to-integer truncation using SSE. Equivalent to static_cast<Int>(x).
-    template <typename Int>
-    static Int truncate(const float x)
-    {
-        return static_cast<Int>(_mm_cvttss_si32(_mm_load_ss(&x)));
-    }
-
     static float cubic_interpolation(
         const float     v0,
         const float     v1,
@@ -312,5 +288,7 @@ class EWAFilterAK
         return v1 + 0.5f * x * (v2 - v0 + x * (2.0f * v0 - 5.0f * v1 + 4.0f * v2 - v3 + x * (3.0f * (v1 - v2) + v3 - v0)));
     }
 };
+
+}   // namespace ak
 
 #endif

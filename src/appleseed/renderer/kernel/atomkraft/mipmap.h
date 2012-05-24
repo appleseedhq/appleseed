@@ -26,22 +26,53 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "mipgen.h"
+#ifndef MIPMAP_H
+#define MIPMAP_H
 
-// Standard headers.
+#include "common.h"
+
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <cstring>
 
-namespace
+namespace ak
 {
-    template <typename T>
-    inline bool is_pow2(const T x)
-    {
-        return (x & (x - 1)) == 0;
-    }
 
+//---------------------------------------------------------------------------------------------
+// Fast mipmap generation for AtomKraft.
+//---------------------------------------------------------------------------------------------
+
+enum AddressingMode
+{
+    Black,
+    Periodic,
+    Clamp
+};
+
+template <int NumChannels, typename Texture>
+void generate_mipmap_level(
+    Texture&                    output,
+    const Texture&              input,
+    const int                   level,
+    const int                   filter_radius = 2,
+    const float                 filter_sharpness = 0.5f);
+
+void generate_mipmap_level_float_clamp_linear_rgba(
+    float* __restrict           output,
+    const float* __restrict     input,
+    const int                   input_width,
+    const int                   input_height,
+    const int                   level,
+    const int                   filter_radius = 2,
+    const float                 filter_sharpness = 0.5f);
+
+//---------------------------------------------------------------------------------------------
+// Implementation.
+//---------------------------------------------------------------------------------------------
+
+namespace details
+{
     inline float mitchell_netravali_filter(float x, const float sharpness)
     {
         x += x;
@@ -73,27 +104,22 @@ namespace
     }
 }
 
+template <int NumChannels, typename Texture>
 void generate_mipmap_level(
-    float* __restrict           output,
-    const float* __restrict     input,
-    const int                   input_width,
-    const int                   input_height,
-    const int                   input_channels,
+    Texture&                    output,
+    const Texture&              input,
     const int                   level,
     const int                   filter_radius,
     const float                 filter_sharpness)
 {
-    assert(output);
-    assert(input);
-    assert(input_width > 0);
-    assert(input_height > 0);
-    assert(is_pow2(input_width));
-    assert(is_pow2(input_height));
-    assert(input_channels > 0);
+    assert(is_pow2(input.width()));
+    assert(is_pow2(input.height()));
     assert(level > 0);
+    assert(filter_radius > 0);
+    assert(filter_sharpness >= 0.0f && filter_sharpness <= 1.0f);
 
-    const int output_width = std::max(1, input_width >> level);
-    const int output_height = std::max(1, input_height >> level);
+    const int output_width = std::max(1, input.width() >> level);
+    const int output_height = std::max(1, input.height() >> level);
     const int half_size = 1 << (level - 1);
 
     for (int oy = 0; oy < output_height; ++oy)
@@ -103,8 +129,8 @@ void generate_mipmap_level(
             const int cx = (ox << level) + half_size;
             const int cy = (oy << level) + half_size;
 
-            for (int c = 0; c < input_channels; ++c)
-                output[(oy * output_width + ox) * input_channels + c] = 0.0f;
+            SSE_ALIGN float output_texel[NumChannels];
+            std::memset(output_texel, 0, NumChannels * sizeof(float));
 
             float weight = 0.0f;
 
@@ -115,23 +141,23 @@ void generate_mipmap_level(
                     const int ix = cx + wx;
                     const int iy = cy + wy;
 
-                    if (ix < 0 || iy < 0 || ix >= input_width || iy >= input_height)
+                    if (ix < 0 || iy < 0 || ix >= input.width() || iy >= input.height())
                         continue;
 
                     const float dx = wx + 0.5f;
                     const float dy = wy + 0.5f;
                     const float r2 = dx * dx + dy * dy;
                     const float r = std::sqrt(r2) / filter_radius;
-                    const float w = mitchell_netravali_filter(r, filter_sharpness);
+                    const float w = details::mitchell_netravali_filter(r, filter_sharpness);
 
                     if (w == 0.0f)
                         continue;
 
-                    for (int c = 0; c < input_channels; ++c)
-                    {
-                        output[(oy * output_width + ox) * input_channels + c] +=
-                            w * input[(iy * input_width + ix) * input_channels + c];
-                    }
+                    SSE_ALIGN float input_texel[NumChannels];
+                    input.get(ix, iy, input_texel);
+
+                    for (int c = 0; c < NumChannels; ++c)
+                        output_texel[c] += w * input_texel[c];
 
                     weight += w;
                 }
@@ -141,14 +167,20 @@ void generate_mipmap_level(
             {
                 const float rcp_weight = 1.0f / weight;
 
-                for (int c = 0; c < input_channels; ++c)
+                for (int c = 0; c < NumChannels; ++c)
                 {
-                    float& component = output[(oy * output_width + ox) * input_channels + c];
-                    component *= rcp_weight;
-                    if (component < 0.0f)
-                        component = 0.0f;
+                    output_texel[c] *= rcp_weight;
+
+                    if (output_texel[c] < 0.0f)
+                        output_texel[c] = 0.0f;
                 }
+
+                output.put(ox, oy, output_texel);
             }
         }
     }
 }
+
+}   // namespace ak
+
+#endif

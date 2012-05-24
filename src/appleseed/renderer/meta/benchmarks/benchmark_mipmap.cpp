@@ -26,21 +26,12 @@
 // THE SOFTWARE.
 //
 
-#ifndef MIPGEN_H
-#define MIPGEN_H
+// appleseed.renderer headers.
+#include "renderer/kernel/atomkraft/mipmap.h"
 
-//---------------------------------------------------------------------------------------------
-// Fast mipmap generation for AtomKraft.
-//---------------------------------------------------------------------------------------------
+// appleseed.foundation headers.
+#include "foundation/utility/benchmark.h"
 
-void generate_mipmap_level(
-    float* __restrict           output,
-    const float* __restrict     input,
-    const int                   input_width,
-    const int                   input_height,
-    const int                   input_channels,
-    const int                   level,
-    const int                   filter_radius = 2,
-    const float                 filter_sharpness = 0.5f);
-
-#endif
+BENCHMARK_SUITE(MipmapGenerationExploration)
+{
+}

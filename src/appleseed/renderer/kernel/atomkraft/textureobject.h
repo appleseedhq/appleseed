@@ -43,24 +43,30 @@ namespace renderer
 {
 
 //
-// Texture sampler to use with EWAFilterAK defined in ewa.h.
+// The interface between appleseed.foundation and AtomKraft-specific code.
 //
 
-class TextureSampler
+class TextureObject
   : public foundation::NonCopyable
 {
   public:
-    explicit TextureSampler(const foundation::Image& texture);
+    explicit TextureObject(foundation::Image& texture);
 
     int width() const;
     int height() const;
 
     void get(
-        const int   x,
-        const int   y,
-        float       texel[]) const;
+        const int       x,
+        const int       y,
+        float           texel[]) const;
+
+    void put(
+        const int       x,
+        const int       y,
+        const float     texel[]);
 
   private:
+    foundation::Image&  m_texture;
     const size_t        m_width;
     const size_t        m_height;
     const size_t        m_channel_count;
@@ -69,15 +75,15 @@ class TextureSampler
 
 
 //
-// TextureSampler class implementation.
+// TextureObject class implementation.
 //
 
-inline int TextureSampler::width() const
+inline int TextureObject::width() const
 {
     return static_cast<int>(m_width);
 }
 
-inline int TextureSampler::height() const
+inline int TextureObject::height() const
 {
     return static_cast<int>(m_height);
 }

@@ -27,8 +27,8 @@
 //
 
 // appleseed.renderer headers.
-#include "renderer/kernel/texturing/ewa.h"
-#include "renderer/kernel/texturing/ewa_texturesampler.h"
+#include "renderer/kernel/atomkraft/ewa.h"
+#include "renderer/kernel/atomkraft/textureobject.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
@@ -48,14 +48,14 @@ BENCHMARK_SUITE(EWAFilteringExploration)
         static const size_t TextureWidth = 2048;
         static const size_t TextureHeight = 2048;
 
-        Image                           m_texture;
-        TextureSampler                  m_texture_sampler;
-        EWAFilterAK<4, TextureSampler>  m_filter;
-        Color4f                         m_result;
+        Image                               m_texture;
+        TextureObject                       m_texture_object;
+        ak::EWAFilter<4, TextureObject>     m_filter;
+        Color4f                             m_result;
 
         Fixture()
           : m_texture(TextureWidth, TextureHeight, TextureWidth, TextureHeight, 4, PixelFormatFloat)
-          , m_texture_sampler(m_texture)
+          , m_texture_object(m_texture)
         {
         }
     };
@@ -63,7 +63,7 @@ BENCHMARK_SUITE(EWAFilteringExploration)
     BENCHMARK_CASE_F(Filter_NoClamping, Fixture)
     {
         m_filter.filter(
-            m_texture_sampler,
+            m_texture_object,
             1020.0f,                    // center x
             1020.0f,                    // center y
             10.0f,                      // du/dx
@@ -77,7 +77,7 @@ BENCHMARK_SUITE(EWAFilteringExploration)
     BENCHMARK_CASE_F(Filter_Clamping, Fixture)
     {
         m_filter.filter(
-            m_texture_sampler,
+            m_texture_object,
             1020.0f,                    // center x
             1020.0f,                    // center y
             10.0f,                      // du/dx

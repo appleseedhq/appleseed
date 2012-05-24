@@ -27,8 +27,8 @@
 //
 
 // appleseed.renderer headers.
-#include "renderer/kernel/texturing/ewa.h"
-#include "renderer/kernel/texturing/ewa_texturesampler.h"
+#include "renderer/kernel/atomkraft/ewa.h"
+#include "renderer/kernel/atomkraft/textureobject.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
@@ -576,7 +576,7 @@ TEST_SUITE(EWAFilteringExploration)
         // Generate a checkerboard texture.
         Image texture(512, 512, 512, 512, 3, PixelFormatFloat);
         draw_checkerboard(texture, 32, Color3f(0.3f), Color3f(1.0f));
-        TextureSampler texture_sampler(texture);
+        TextureObject texture_object(texture);
 
         // Corners of the input trapezoid.
         const Vector2f V00(130.0f, 400.0f);
@@ -593,10 +593,10 @@ TEST_SUITE(EWAFilteringExploration)
         draw_image(debug_image, texture);
 
         // Run the reference filter.
-        EWAFilterRef<3, TextureSampler> ref_filter(debug_image);
+        EWAFilterRef<3, TextureObject> ref_filter(debug_image);
         Color3f ref_result;
         ref_filter.filter(
-            texture_sampler,
+            texture_object,
             center_x,
             center_y,
             dudx,
@@ -616,10 +616,10 @@ TEST_SUITE(EWAFilteringExploration)
             Color3f(1.0f, 0.0f, 1.0f));
 
         // Run the AK filter.
-        EWAFilterAK<3, TextureSampler> ak_filter;
+        ak::EWAFilter<3, TextureObject> ak_filter;
         Color3f ak_result;
         ak_filter.filter(
-            texture_sampler,
+            texture_object,
             center_x,
             center_y,
             dudx,
@@ -647,7 +647,7 @@ TEST_SUITE(EWAFilteringExploration)
         // Generate a 8x8 checkerboard texture.
         Image texture(8, 8, 8, 8, 3, PixelFormatFloat);
         draw_checkerboard(texture, 1, Color3f(0.3f), Color3f(1.0f));
-        TextureSampler texture_sampler(texture);
+        TextureObject texture_object(texture);
 
         // Convert the trapezoid into an ellipse.
         float center_x, center_y, dudx, dudy, dvdx, dvdy;
@@ -658,10 +658,10 @@ TEST_SUITE(EWAFilteringExploration)
         draw_image(debug_image, texture);
 
         // Run the reference filter.
-        EWAFilterRef<3, TextureSampler> filter(debug_image);
+        EWAFilterRef<3, TextureObject> filter(debug_image);
         Color3f result;
         filter.filter(
-            texture_sampler,
+            texture_object,
             center_x,
             center_y,
             dudx,
@@ -725,8 +725,8 @@ TEST_SUITE(EWAFilteringExploration)
         const float scale_y = static_cast<float>(texture_height) / output_height;
 
         // Create the filter.
-        TextureSampler texture_sampler(*texture.get());
-        EWAFilterAK<3, TextureSampler> filter;
+        TextureObject texture_object(*texture.get());
+        ak::EWAFilter<3, TextureObject> filter;
 
         for (size_t y = 0; y < output_height; ++y)
         {
@@ -743,7 +743,7 @@ TEST_SUITE(EWAFilteringExploration)
                 // Run the filter.
                 Color3f result;
                 filter.filter(
-                    texture_sampler,
+                    texture_object,
                     center_x,
                     center_y,
                     dudx,
@@ -780,15 +780,15 @@ TEST_SUITE(EWAFilteringExploration)
         const size_t Height = 64;
         Image texture(Width, Height, Width, Height, 3, PixelFormatFloat);
         draw_checkerboard(texture, 8, Color3f(0.3f, 0.6f, 0.1f), Color3f(1.0f, 0.8f, 0.5f));
-        TextureSampler texture_sampler(texture);
+        TextureObject texture_object(texture);
 
         // Create the debug image.
         Image debug_image(512, 512, 512, 512, 3, PixelFormatFloat);
         draw_image(debug_image, texture);
 
         // Create the filters.
-        EWAFilterRef<3, TextureSampler> ref_filter(debug_image);
-        EWAFilterAK<3, TextureSampler> ak_filter;
+        EWAFilterRef<3, TextureObject> ref_filter(debug_image);
+        ak::EWAFilter<3, TextureObject> ak_filter;
 
         MersenneTwister rng;
 
@@ -805,7 +805,7 @@ TEST_SUITE(EWAFilteringExploration)
             // Run the reference filter.
             Color3f ref_result;
             ref_filter.filter(
-                texture_sampler,
+                texture_object,
                 center_x,
                 center_y,
                 dudx,
@@ -818,7 +818,7 @@ TEST_SUITE(EWAFilteringExploration)
             // Run the AK filter.
             Color3f ak_result;
             ak_filter.filter(
-                texture_sampler,
+                texture_object,
                 center_x,
                 center_y,
                 dudx,

@@ -31,10 +31,10 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/atomkraft/ewa.h"
+#include "renderer/kernel/atomkraft/textureobject.h"
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/kernel/texturing/ewa.h"
-#include "renderer/kernel/texturing/ewa_texturesampler.h"
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/scene/scene.h"
@@ -89,7 +89,7 @@ namespace
 
             draw_checkerboard(texture, m_checkerboard_scale);
 
-            m_texture_sampler.reset(new TextureSampler(texture));
+            m_texture_object.reset(new TextureObject(texture));
         }
 
         // Delete this instance.
@@ -162,7 +162,7 @@ namespace
                         Color4f result;
 
                         m_filter.filter(
-                            *m_texture_sampler.get(),
+                            *m_texture_object.get(),
                             static_cast<float>(uv_center.x * m_texture_width),
                             static_cast<float>(uv_center.y * m_texture_height),
                             static_cast<float>(dudx * m_texture_width),
@@ -189,16 +189,16 @@ namespace
         }
 
       private:
-        const Scene&                    m_scene;
-        TextureCache                    m_texture_cache;
-        Intersector                     m_intersector;
-        const size_t                    m_texture_width;
-        const size_t                    m_texture_height;
-        const size_t                    m_checkerboard_scale;
-        const float                     m_max_radius;
-        auto_ptr<TextureSampler>        m_texture_sampler;
-        EWAFilterAK<4, TextureSampler>  m_filter;
-        SamplingContext::RNGType        m_rng;
+        const Scene&                        m_scene;
+        TextureCache                        m_texture_cache;
+        Intersector                         m_intersector;
+        const size_t                        m_texture_width;
+        const size_t                        m_texture_height;
+        const size_t                        m_checkerboard_scale;
+        const float                         m_max_radius;
+        auto_ptr<TextureObject>             m_texture_object;
+        ak::EWAFilter<4, TextureObject>     m_filter;
+        SamplingContext::RNGType            m_rng;
 
         // todo: move to foundation/image/drawing.h.
         void draw_checkerboard(

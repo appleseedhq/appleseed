@@ -739,6 +739,21 @@ source_group ("renderer\\global" FILES
     ${renderer_global_sources}
 )
 
+set (renderer_kernel_atomkraft_sources
+    renderer/kernel/atomkraft/common.h
+    renderer/kernel/atomkraft/ewa.h
+    renderer/kernel/atomkraft/mipmap.cpp
+    renderer/kernel/atomkraft/mipmap.h
+    renderer/kernel/atomkraft/textureobject.cpp
+    renderer/kernel/atomkraft/textureobject.h
+)
+list (APPEND appleseed_sources
+    ${renderer_kernel_atomkraft_sources}
+)
+source_group ("renderer\\kernel\\atomkraft" FILES
+    ${renderer_kernel_atomkraft_sources}
+)
+
 set (renderer_kernel_intersection_sources
     renderer/kernel/intersection/assemblytree.cpp
     renderer/kernel/intersection/assemblytree.h
@@ -945,11 +960,6 @@ source_group ("renderer\\kernel\\tessellation" FILES
 )
 
 set (renderer_kernel_texturing_sources
-    renderer/kernel/texturing/ewa.h
-    renderer/kernel/texturing/ewa_texturesampler.cpp
-    renderer/kernel/texturing/ewa_texturesampler.h
-    renderer/kernel/texturing/mipgen.cpp
-    renderer/kernel/texturing/mipgen.h
     renderer/kernel/texturing/texturecache.cpp
     renderer/kernel/texturing/texturecache.h
 )
@@ -975,6 +985,7 @@ source_group ("renderer\\kernel\\volume" FILES
 
 set (renderer_meta_benchmarks_sources
     renderer/meta/benchmarks/benchmark_ewa.cpp
+    renderer/meta/benchmarks/benchmark_mipmap.cpp
 )
 list (APPEND appleseed_sources
     ${renderer_meta_benchmarks_sources}
@@ -996,7 +1007,7 @@ set (renderer_meta_tests_sources
     renderer/meta/tests/test_inputarray.cpp
     renderer/meta/tests/test_intersector.cpp
     renderer/meta/tests/test_lightsampler.cpp
-    renderer/meta/tests/test_mipgen.cpp
+    renderer/meta/tests/test_mipmap.cpp
     renderer/meta/tests/test_paramarray.cpp
     renderer/meta/tests/test_pinholecamera.cpp
     renderer/meta/tests/test_pixelsampler.cpp
