@@ -948,6 +948,8 @@ set (renderer_kernel_texturing_sources
     renderer/kernel/texturing/ewa.h
     renderer/kernel/texturing/ewa_texturesampler.cpp
     renderer/kernel/texturing/ewa_texturesampler.h
+    renderer/kernel/texturing/mipgen.cpp
+    renderer/kernel/texturing/mipgen.h
     renderer/kernel/texturing/texturecache.cpp
     renderer/kernel/texturing/texturecache.h
 )
@@ -994,6 +996,7 @@ set (renderer_meta_tests_sources
     renderer/meta/tests/test_inputarray.cpp
     renderer/meta/tests/test_intersector.cpp
     renderer/meta/tests/test_lightsampler.cpp
+    renderer/meta/tests/test_mipgen.cpp
     renderer/meta/tests/test_paramarray.cpp
     renderer/meta/tests/test_pinholecamera.cpp
     renderer/meta/tests/test_pixelsampler.cpp
