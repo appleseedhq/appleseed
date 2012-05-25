@@ -241,8 +241,10 @@ inline uint8* Tile::pixel(
 {
     assert(x < m_width);
     assert(y < m_height);
+
     const size_t index = (y * m_width + x) * m_pixel_size;
     assert(index < m_array_size);
+
     return m_pixel_array + index;
 }
 
@@ -250,8 +252,10 @@ inline uint8* Tile::pixel(
     const size_t    i) const
 {
     assert(i < m_pixel_count);
+
     const size_t index = i * m_pixel_size;
     assert(index < m_array_size);
+
     return m_pixel_array + index;
 }
 
