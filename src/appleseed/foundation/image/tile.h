@@ -270,8 +270,7 @@ inline uint8* Tile::component(
     return pixel(i) + c * m_channel_size;
 }
 
-// Check that the number of channels in a pixel value matches
-// the number of channels in the tile.
+// Check that the number of channels in a pixel value matches the number of channels in the tile.
 #define FOUNDATION_CHECK_PIXEL_SIZE(val) \
     assert(sizeof(T) == m_channel_count * sizeof(val[0]))
 

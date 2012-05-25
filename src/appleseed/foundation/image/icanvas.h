@@ -176,6 +176,10 @@ inline const uint8* ICanvas::pixel(
     return t.pixel(pixel_x, pixel_y);
 }
 
+// Check that the number of channels in a pixel value matches the number of channels in the tile.
+#define FOUNDATION_CHECK_PIXEL_SIZE(val) \
+    assert(sizeof(T) == props.m_channel_count * sizeof(val[0]))
+
 template <typename T>
 inline void ICanvas::set_pixel(
     const size_t        x,
@@ -183,6 +187,8 @@ inline void ICanvas::set_pixel(
     const T&            val)
 {
     const CanvasProperties& props = properties();
+
+    FOUNDATION_CHECK_PIXEL_SIZE(val);
 
     Pixel::convert_to_format(
         &val[0],                            // source begin
@@ -200,6 +206,9 @@ inline void ICanvas::get_pixel(
     T&                  val) const
 {
     const CanvasProperties& props = properties();
+
+    FOUNDATION_CHECK_PIXEL_SIZE(val);
+
     const uint8* src = pixel(x, y);
 
     Pixel::convert_from_format(
@@ -216,12 +225,16 @@ inline void ICanvas::clear(const T& val)
 {
     const CanvasProperties& props = properties();
 
+    FOUNDATION_CHECK_PIXEL_SIZE(val);
+
     for (size_t ty = 0; ty < props.m_tile_count_y; ++ty)
     {
         for (size_t tx = 0; tx < props.m_tile_count_x; ++tx)
             tile(tx, ty).clear(val);
     }
 }
+
+#undef FOUNDATION_CHECK_PIXEL_SIZE
 
 }       // namespace foundation
 
