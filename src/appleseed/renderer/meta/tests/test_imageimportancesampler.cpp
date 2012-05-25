@@ -34,6 +34,7 @@
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
 #include "foundation/image/drawing.h"
+#include "foundation/image/genericimagefilereader.h"
 #include "foundation/image/genericimagefilewriter.h"
 #include "foundation/image/image.h"
 #include "foundation/math/qmc.h"
@@ -106,12 +107,14 @@ TEST_SUITE(Renderer_Kernel_Lighting_ImageImportanceSampler)
 
     void generate_image(
         const char*     input_filename,
-        const size_t    width,
-        const size_t    height,
         const char*     output_image,
         const size_t    sample_count)
     {
-        auto_ptr<Image> image = load_raw_image(input_filename, width, height);
+        GenericImageFileReader reader;
+        auto_ptr<Image> image(reader.read(input_filename));
+
+        const size_t width = image->properties().m_canvas_width;
+        const size_t height = image->properties().m_canvas_height;
 
         ImageSampler sampler(*image.get());
 
@@ -151,9 +154,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_ImageImportanceSampler)
     TEST_CASE(ImportanceSampleWhiteImage)
     {
         generate_image(
-            "unit tests/inputs/white.raw",
-            512,
-            512,
+            "unit tests/inputs/test_imageimportancesampler_white.exr",
             "unit tests/outputs/test_imageimportancesampler_white.png",
             256);
     }
@@ -161,9 +162,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_ImageImportanceSampler)
     TEST_CASE(ImportanceSampleBlackImage)
     {
         generate_image(
-            "unit tests/inputs/black.raw",
-            512,
-            512,
+            "unit tests/inputs/test_imageimportancesampler_black.exr",
             "unit tests/outputs/test_imageimportancesampler_black.png",
             256);
     }
@@ -171,9 +170,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_ImageImportanceSampler)
     TEST_CASE(ImportanceSampleCheckerboardImage)
     {
         generate_image(
-            "unit tests/inputs/checkerboard.raw",
-            512,
-            512,
+            "unit tests/inputs/test_imageimportancesampler_checkerboard.exr",
             "unit tests/outputs/test_imageimportancesampler_checkerboard.png",
             256);
     }
@@ -181,9 +178,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_ImageImportanceSampler)
     TEST_CASE(ImportanceSampleGradientImage)
     {
         generate_image(
-            "unit tests/inputs/gradient.raw",
-            512,
-            512,
+            "unit tests/inputs/test_imageimportancesampler_gradient.exr",
             "unit tests/outputs/test_imageimportancesampler_gradient.png",
             256);
     }
@@ -191,9 +186,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_ImageImportanceSampler)
     TEST_CASE(ImportanceSampleLightProbe)
     {
         generate_image(
-            "unit tests/inputs/lightprobe.raw",
-            1024,
-            512,
+            "unit tests/inputs/test_imageimportancesampler_lightprobe.exr",
             "unit tests/outputs/test_imageimportancesampler_lightprobe.png",
             256);
     }

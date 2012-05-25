@@ -38,14 +38,6 @@
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/scene/textureinstance.h"
 
-// appleseed.foundation headers.
-#include "foundation/image/canvasproperties.h"
-#include "foundation/image/image.h"
-#include "foundation/image/pixel.h"
-
-// Standard headers.
-#include <cstdio>
-
 using namespace foundation;
 using namespace std;
 
@@ -144,55 +136,6 @@ void DummyEntity::release()
 auto_release_ptr<DummyEntity> DummyEntityFactory::create(const char* name)
 {
     return auto_release_ptr<DummyEntity>(new DummyEntity(name));
-}
-
-
-//
-// RAW image I/O function implementation.
-//
-
-auto_ptr<Image> load_raw_image(
-    const string&   filename,
-    const size_t    width,
-    const size_t    height)
-{
-    auto_ptr<Image> image(
-        new Image(
-            width,
-            height,
-            width,
-            height,
-            3,
-            PixelFormatUInt8));
-
-    FILE* file = fopen(filename.c_str(), "rb");
-
-    if (file == 0)
-        return auto_ptr<Image>(0);
-
-    const size_t pixel_count = width * height;
-    const size_t read = fread(image->pixel(0, 0), 3, pixel_count, file);
-
-    fclose(file);
-
-    return read == pixel_count ? image : auto_ptr<Image>(0);
-}
-
-bool save_raw_image(
-    const string&   filename,
-    const Image&    image)
-{
-    FILE* file = fopen(filename.c_str(), "wb");
-
-    if (file == 0)
-        return false;
-
-    const CanvasProperties& props = image.properties();
-    const size_t written = fwrite(image.pixel(0, 0), 3, props.m_pixel_count, file);
-
-    fclose(file);
-
-    return written == props.m_pixel_count;
 }
 
 }   // namespace renderer

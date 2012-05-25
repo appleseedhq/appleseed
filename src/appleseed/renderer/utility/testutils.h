@@ -51,7 +51,7 @@ class TestFixtureBaseProjectHolder
     Project& get_project();
 
   private:
-    foundation::auto_release_ptr<Project>   m_project;
+    foundation::auto_release_ptr<Project> m_project;
 };
 
 class TestFixtureBase
@@ -96,15 +96,6 @@ class RENDERERDLL DummyEntityFactory
   public:
     static foundation::auto_release_ptr<DummyEntity> create(const char* name);
 };
-
-std::auto_ptr<foundation::Image> load_raw_image(
-    const std::string&          filename,
-    const size_t                width,
-    const size_t                height);
-
-bool save_raw_image(
-    const std::string&          filename,
-    const foundation::Image&    image);
 
 }       // namespace renderer
 

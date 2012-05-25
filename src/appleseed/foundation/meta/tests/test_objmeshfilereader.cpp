@@ -90,7 +90,7 @@ TEST_SUITE(Foundation_Mesh_OBJMeshFileReader)
 
     TEST_CASE(ReadCubeMeshFile)
     {
-        OBJMeshFileReader reader("unit tests/inputs/cube.obj");
+        OBJMeshFileReader reader("unit tests/inputs/test_objmeshfilereader_cube.obj");
         MeshBuilder builder;
         reader.read(builder);
 
@@ -106,7 +106,7 @@ TEST_SUITE(Foundation_Mesh_OBJMeshFileReader)
 
     TEST_CASE(ReadQuadMeshFile)
     {
-        OBJMeshFileReader reader("unit tests/inputs/quad.obj");
+        OBJMeshFileReader reader("unit tests/inputs/test_objmeshfilereader_quad.obj");
         MeshBuilder builder;
         reader.read(builder);
 
