@@ -54,41 +54,6 @@ using namespace std;
 
 TEST_SUITE(AtomKraft_MipMap)
 {
-    auto_ptr<Image> copy_image(
-        const Image&                source,
-        const size_t                new_tile_width,
-        const size_t                new_tile_height,
-        const PixelFormat           new_pixel_format)
-    {
-        const CanvasProperties& props = source.properties();
-
-        auto_ptr<Image> result(
-            new Image(
-                props.m_canvas_width,
-                props.m_canvas_height,
-                new_tile_width,
-                new_tile_height,
-                props.m_channel_count,
-                new_pixel_format));
-
-        for (size_t y = 0; y < props.m_canvas_height; ++y)
-        {
-            for (size_t x = 0; x < props.m_canvas_width; ++x)
-            {
-                Pixel::convert(
-                    props.m_pixel_format,
-                    source.pixel(x, y),
-                    source.pixel(x, y) + props.m_pixel_size,
-                    1,
-                    new_pixel_format,
-                    result->pixel(x, y),
-                    1);
-            }
-        }
-
-        return result;
-    }
-
     auto_ptr<Image> create_image(
         const size_t                input_width,
         const size_t                input_height,
@@ -110,14 +75,13 @@ TEST_SUITE(AtomKraft_MipMap)
         GenericImageFileReader reader;
         auto_ptr<Image> image(reader.read(filepath.c_str()));
 
-        const CanvasProperties& props = image->properties();
-
         return
-            copy_image(
-                *image.get(),
-                props.m_canvas_width,
-                props.m_canvas_height,
-                PixelFormatFloat);
+            auto_ptr<Image>(
+                new Image(
+                    *image.get(),
+                    image->properties().m_canvas_width,
+                    image->properties().m_canvas_height,
+                    PixelFormatFloat));
     }
 
     void write_image(
