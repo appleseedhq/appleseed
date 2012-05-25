@@ -53,33 +53,28 @@ struct BenchmarkSuiteRepository::Impl
     vector<BenchmarkSuite*> m_suites;
 };
 
-// Constructor.
 BenchmarkSuiteRepository::BenchmarkSuiteRepository()
   : impl(new Impl())
 {
 }
 
-// Destructor.
 BenchmarkSuiteRepository::~BenchmarkSuiteRepository()
 {
     delete impl;
 }
 
-// Register a benchmark suite.
 void BenchmarkSuiteRepository::register_suite(BenchmarkSuite* suite)
 {
     assert(suite);
     impl->m_suites.push_back(suite);
 }
 
-// Run all the registered benchmark suites.
 void BenchmarkSuiteRepository::run(BenchmarkResult& result) const
 {
     LetThroughFilter filter;
     run(filter, result);
 }
 
-// Run those benchmark suites whose name pass a given filter.
 void BenchmarkSuiteRepository::run(
     const IFilter&      filter,
     BenchmarkResult&    result) const
@@ -93,14 +88,9 @@ void BenchmarkSuiteRepository::run(
         suite_result.add_listeners(result);
 
         // Run the benchmark suite.
-        suite_result.signal_suite_execution();
         if (filter.accepts(suite.get_name()))
             suite.run(suite_result);
         else suite.run(filter, suite_result);
-
-        // Report a benchmark suite failure if one or more benchmark cases failed.
-        if (suite_result.get_case_failure_count() > 0)
-            suite_result.signal_suite_failure();
 
         // Merge the benchmark suite result into the final benchmark result.
         result.merge(suite_result);

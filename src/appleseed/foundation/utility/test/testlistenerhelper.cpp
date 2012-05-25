@@ -45,7 +45,6 @@ namespace foundation
 // TestListenerHelper class implementation.
 //
 
-// Write a message with formatting to a test listener.
 void TestListenerHelper::write(
     ITestListener&          test_listener,
     const TestSuite&        test_suite,

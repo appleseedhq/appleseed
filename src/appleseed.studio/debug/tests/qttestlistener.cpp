@@ -54,7 +54,6 @@ namespace studio {
 // QtTestListener class implementation.
 //
 
-// Constructor.
 QtTestListener::QtTestListener(
     TestOutputWidgetDecorator*  output_widget,
     TestResultWidgetDecorator*  result_widget)
@@ -70,13 +69,11 @@ QtTestListener::QtTestListener(
         result_widget, SLOT(slot_update(const int, const int)));
 }
 
-// Delete this instance.
 void QtTestListener::release()
 {
     delete this;
 }
 
-// Called before each test suite is run.
 void QtTestListener::begin_suite(
     const TestSuite&        test_suite)
 {
@@ -85,7 +82,6 @@ void QtTestListener::begin_suite(
     m_suite_stopwatch.start();
 }
 
-// Called after each test suite is run.
 void QtTestListener::end_suite(
     const TestSuite&        test_suite,
     const TestResult&       test_suite_result,
@@ -103,7 +99,6 @@ void QtTestListener::end_suite(
     m_suite_item = 0;
 }
 
-// Called before each test case is run.
 void QtTestListener::begin_case(
     const TestSuite&        test_suite,
     const ITestCase&        test_case)
@@ -113,7 +108,6 @@ void QtTestListener::begin_case(
     m_case_stopwatch.start();
 }
 
-// Called after each test case is run.
 void QtTestListener::end_case(
     const TestSuite&        test_suite,
     const ITestCase&        test_case,
@@ -170,7 +164,6 @@ namespace
     }
 }
 
-// Write a message.
 void QtTestListener::write(
     const TestSuite&        test_suite,
     const ITestCase&        test_case,

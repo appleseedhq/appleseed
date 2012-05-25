@@ -62,7 +62,6 @@ struct TestSuite::Impl
     vector<ITestCaseFactory*>   m_factories;
 };
 
-// Constructor.
 TestSuite::TestSuite(const char* name)
   : impl(new Impl())
 {
@@ -70,39 +69,33 @@ TestSuite::TestSuite(const char* name)
     impl->m_name = name;
 }
 
-// Destructor.
 TestSuite::~TestSuite()
 {
     delete impl;
 }
 
-// Return the name of the test suite.
 const char* TestSuite::get_name() const
 {
     return impl->m_name.c_str();
 }
 
-// Register a test case (via its factory).
 void TestSuite::register_case(ITestCaseFactory* factory)
 {
     assert(factory);
     impl->m_factories.push_back(factory);
 }
 
-// Retrieve the number of registered test cases.
 size_t TestSuite::get_case_count() const
 {
     return impl->m_factories.size();
 }
 
-// Retrieve a given registered test case factory.
 ITestCaseFactory* TestSuite::get_case_factory(const size_t index) const
 {
     assert(index < impl->m_factories.size());
     return impl->m_factories[index];
 }
 
-// Run all the registered test cases.
 void TestSuite::run(
     ITestListener&  test_listener,
     TestResult&     cumulated_result) const
@@ -111,15 +104,11 @@ void TestSuite::run(
     run(filter, test_listener, cumulated_result);
 }
 
-// Run those test cases whose name pass a given filter.
 void TestSuite::run(
     const IFilter&  filter,
     ITestListener&  test_listener,
     TestResult&     cumulated_result) const
 {
-    // Tell the listener that a test suite is about to be executed.
-    test_listener.begin_suite(*this);
-
     // Run the test suite.
     TestResult test_suite_result;
     run_suite(
@@ -130,12 +119,6 @@ void TestSuite::run(
 
     // Accumulate the results.
     cumulated_result.merge(test_suite_result);
-
-    // Tell the listener that the test suite execution has ended.
-    test_listener.end_suite(
-        *this,
-        test_suite_result,
-        cumulated_result);
 }
 
 void TestSuite::run_suite(
@@ -144,10 +127,10 @@ void TestSuite::run_suite(
     TestResult&     test_suite_result,
     TestResult&     cumulated_result) const
 {
-    test_suite_result.signal_suite_execution();
-
-    TestResult local_cumulated_result = cumulated_result;
+    TestResult local_cumulated_result(cumulated_result);
     local_cumulated_result.merge(test_suite_result);
+
+    bool has_begun_suite = false;
 
     for (size_t i = 0; i < impl->m_factories.size(); ++i)
     {
@@ -156,6 +139,14 @@ void TestSuite::run_suite(
         // Skip test cases that aren't let through by the filter.
         if (!filter.accepts(factory->get_name()))
             continue;
+
+        if (!has_begun_suite)
+        {
+            // Tell the listener that a test suite is about to be executed.
+            test_listener.begin_suite(*this);
+            test_suite_result.signal_suite_execution();
+            has_begun_suite = true;
+        }
 
         // Instantiate the test case.
         auto_ptr<ITestCase> test_case(factory->create());
@@ -183,9 +174,18 @@ void TestSuite::run_suite(
             local_cumulated_result);
     }
 
-    // Report a test suite failure if one or more test cases failed.
-    if (test_suite_result.get_case_failure_count() > 0)
-        test_suite_result.signal_suite_failure();
+    if (has_begun_suite)
+    {
+        // Report a test suite failure if one or more test cases failed.
+        if (test_suite_result.get_case_failure_count() > 0)
+            test_suite_result.signal_suite_failure();
+
+        // Tell the listener that the test suite execution has ended.
+        test_listener.end_suite(
+            *this,
+            test_suite_result,
+            cumulated_result);
+    }
 }
 
 void TestSuite::run_case(

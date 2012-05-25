@@ -27,6 +27,7 @@
 //
 
 // appleseed.foundation headers.
+#include "foundation/utility/filter/ifilter.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.
@@ -51,8 +52,31 @@ namespace
       : public TestSuite
     {
         FakeTestSuite()
-          : TestSuite("FakeTestSuite")
+          : TestSuite("FakeTestSuite") {}
+    };
+
+    struct FakeTestCase
+      : public ITestCase
+    {
+        virtual const char* get_name() const
         {
+            return "FakeTestCase";
+        }
+
+        virtual void run(ITestListener& test_listener, TestResult& case_result) {}
+    };
+
+    struct FakeTestCaseFactory
+      : public ITestCaseFactory
+    {
+        virtual const char* get_name() const
+        {
+            return "FakeTestCase";
+        }
+
+        virtual FakeTestCase* create()
+        {
+            return new FakeTestCase();
         }
     };
 }
@@ -157,10 +181,28 @@ TEST_SUITE(Foundation_Utility_Test_TestSuiteRepository)
         EXPECT_EQ(&expected_suite, suite);
     }
 
-    TEST_CASE(Run_GivenTestSuiteRepositoryWithOneTestSuite_RunsTestSuite)
+    TEST_CASE(Run_GivenTestSuiteRepositoryWithOneEmptyTestSuite_DoesNotReportTestSuiteExecution)
     {
-        TestSuiteRepository repository;
         FakeTestSuite suite;
+
+        TestSuiteRepository repository;
+        repository.register_suite(&suite);
+
+        FakeTestListener listener;
+        TestResult result;
+        repository.run(listener, result);
+
+        EXPECT_EQ(0, result.get_suite_execution_count());
+    }
+
+    TEST_CASE(Run_GivenTestSuiteRepositoryWithOneNonEmptyTestSuite_ReportsTestSuiteExecution)
+    {
+        FakeTestSuite suite;
+
+        FakeTestCaseFactory test_case_factory;
+        suite.register_case(&test_case_factory);
+
+        TestSuiteRepository repository;
         repository.register_suite(&suite);
 
         FakeTestListener listener;
@@ -168,60 +210,53 @@ TEST_SUITE(Foundation_Utility_Test_TestSuiteRepository)
         repository.run(listener, result);
 
         EXPECT_EQ(1, result.get_suite_execution_count());
-        EXPECT_EQ(0, result.get_suite_failure_count());
     }
 }
 
 TEST_SUITE(Foundation_Utility_Test_TestSuite)
 {
-    struct FakeTestCase
+    struct PassingTestCase
       : public ITestCase
     {
         size_t& m_run_count;
 
-        explicit FakeTestCase(size_t& run_count)
-          : m_run_count(run_count)
-        {
-        }
+        explicit PassingTestCase(size_t& run_count)
+          : m_run_count(run_count) {}
 
         virtual const char* get_name() const
         {
-            return "FakeTestCase";
+            return "PassingTestCase";
         }
 
-        virtual void run(
-            ITestListener&  test_listener,
-            TestResult&     case_result)
+        virtual void run(ITestListener& test_listener, TestResult& case_result)
         {
             ++m_run_count;
         }
     };
 
-    struct FakeTestCaseFactory
+    struct PassingTestCaseFactory
       : public ITestCaseFactory
     {
         size_t& m_run_count;
 
-        explicit FakeTestCaseFactory(size_t& run_count)
-          : m_run_count(run_count)
-        {
-        }
+        explicit PassingTestCaseFactory(size_t& run_count)
+          : m_run_count(run_count) {}
 
         virtual const char* get_name() const
         {
-            return "FakeTestCase";
+            return "PassingTestCase";
         }
 
-        virtual FakeTestCase* create()
+        virtual PassingTestCase* create()
         {
-            return new FakeTestCase(m_run_count);
+            return new PassingTestCase(m_run_count);
         }
     };
 
     TEST_CASE(Run_GivenTestSuiteWithOneCase_RunsCase)
     {
         size_t run_count = 0;
-        FakeTestCaseFactory test_case_factory(run_count);
+        PassingTestCaseFactory test_case_factory(run_count);
 
         FakeTestSuite test_suite;
         test_suite.register_case(&test_case_factory);
@@ -231,6 +266,88 @@ TEST_SUITE(Foundation_Utility_Test_TestSuite)
         test_suite.run(listener, result);
 
         EXPECT_EQ(1, run_count);
+    }
+
+    struct FailingTestCase
+      : public ITestCase
+    {
+        virtual const char* get_name() const
+        {
+            return "FailingTestCase";
+        }
+
+        virtual void run(ITestListener& test_listener, TestResult& case_result)
+        {
+            case_result.signal_assertion_failure();
+        }
+    };
+
+    struct FailingTestCaseFactory
+      : public ITestCaseFactory
+    {
+        virtual const char* get_name() const
+        {
+            return "FailingTestCase";
+        }
+
+        virtual FailingTestCase* create()
+        {
+            return new FailingTestCase();
+        }
+    };
+
+    struct TestListenerCapturingTestSuiteResults
+      : public TestListenerBase
+    {
+        TestResult m_test_suite_result;
+
+        virtual void release()
+        {
+            delete this;
+        }
+
+        virtual void end_suite(
+            const TestSuite&    test_suite,
+            const TestResult&   test_suite_result,
+            const TestResult&   cumulated_result)
+        {
+            m_test_suite_result = test_suite_result;
+        }
+    };
+
+    TEST_CASE(Run_GivenFailingTestCase_ReportsTestSuiteFailure)
+    {
+        FailingTestCaseFactory test_case_factory;
+
+        FakeTestSuite test_suite;
+        test_suite.register_case(&test_case_factory);
+
+        TestListenerCapturingTestSuiteResults listener;
+        TestResult result;
+        test_suite.run(listener, result);
+
+        EXPECT_EQ(1, listener.m_test_suite_result.get_suite_failure_count());
+    }
+
+    struct RejectAllFilter
+      : public IFilter
+    {
+        virtual bool accepts(const char* name) const
+        {
+            return false;
+        }
+    };
+
+    TEST_CASE(Run_GivenTestSuiteRejectedByFilter_DoesNotReportTestSuiteExecution)
+    {
+        FakeTestSuite test_suite;
+        RejectAllFilter filter;
+        FakeTestListener listener;
+        TestResult result;
+
+        test_suite.run(filter, listener, result);
+
+        EXPECT_EQ(0, result.get_suite_execution_count());
     }
 }
 

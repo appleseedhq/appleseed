@@ -234,9 +234,7 @@ void BenchmarkSuite::run(
     BenchmarkResult&    suite_result) const
 {
     BenchmarkingThreadContext benchmarking_context;
-
-    // Tell the listeners that a benchmark suite is about to be executed.
-    suite_result.begin_suite(*this);
+    bool has_begun_suite = false;
 
     for (size_t i = 0; i < impl->m_factories.size(); ++i)
     {
@@ -245,6 +243,14 @@ void BenchmarkSuite::run(
         // Skip benchmark cases that aren't let through by the filter.
         if (!filter.accepts(factory->get_name()))
             continue;
+
+        if (!has_begun_suite)
+        {
+            // Tell the listeners that a benchmark suite is about to be executed.
+            suite_result.begin_suite(*this);
+            suite_result.signal_suite_execution();
+            has_begun_suite = true;
+        }
 
         // Instantiate the benchmark case.
         auto_ptr<IBenchmarkCase> benchmark(factory->create());
@@ -327,8 +333,15 @@ void BenchmarkSuite::run(
         suite_result.end_case(*this, *benchmark.get());
     }
 
-    // Tell the listeners that the benchmark suite execution has ended.
-    suite_result.end_suite(*this);
+    if (has_begun_suite)
+    {
+        // Report a benchmark suite failure if one or more benchmark cases failed.
+        if (suite_result.get_case_failure_count() > 0)
+            suite_result.signal_suite_failure();
+
+        // Tell the listeners that the benchmark suite execution has ended.
+        suite_result.end_suite(*this);
+    }
 }
 
 }   // namespace foundation
