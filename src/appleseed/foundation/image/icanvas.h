@@ -94,23 +94,23 @@ class FOUNDATIONDLL ICanvas
         const size_t    y) const;
 
     // Structured write access to a given pixel, with conversion if necessary.
-    template <typename T>
+    template <typename Color>
     void set_pixel(
         const size_t    x,
         const size_t    y,
-        const T&        val);               // pixel value
+        const Color&    color);
 
     // Structured read access to a given pixel, with conversion if necessary.
-    template <typename T>
+    template <typename Color>
     void get_pixel(
         const size_t    x,
         const size_t    y,
-        T&              val) const;         // [out] pixel value
+        Color&          val) const;
 
     // Set all pixels to a given color.
     // This causes all tiles to be accessed, and created if necessary.
-    template <typename T>
-    void clear(const T& val);               // pixel value
+    template <typename Color>
+    void clear(const Color& val);
 };
 
 
@@ -178,13 +178,13 @@ inline const uint8* ICanvas::pixel(
 
 // Check that the number of channels in a pixel value matches the number of channels in the tile.
 #define FOUNDATION_CHECK_PIXEL_SIZE(val) \
-    assert(sizeof(T) == props.m_channel_count * sizeof(val[0]))
+    assert(sizeof(Color) == props.m_channel_count * sizeof(val[0]))
 
-template <typename T>
+template <typename Color>
 inline void ICanvas::set_pixel(
     const size_t        x,
     const size_t        y,
-    const T&            val)
+    const Color&        val)
 {
     const CanvasProperties& props = properties();
 
@@ -199,11 +199,11 @@ inline void ICanvas::set_pixel(
         1);                                 // destination stride
 }
 
-template <typename T>
+template <typename Color>
 inline void ICanvas::get_pixel(
     const size_t        x,
     const size_t        y,
-    T&                  val) const
+    Color&              val) const
 {
     const CanvasProperties& props = properties();
 
@@ -220,8 +220,8 @@ inline void ICanvas::get_pixel(
         1);                                 // destination stride
 }
 
-template <typename T>
-inline void ICanvas::clear(const T& val)
+template <typename Color>
+inline void ICanvas::clear(const Color& val)
 {
     const CanvasProperties& props = properties();
 

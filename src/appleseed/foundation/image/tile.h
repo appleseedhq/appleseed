@@ -126,15 +126,15 @@ class FOUNDATIONDLL Tile
         const size_t        c) const;
 
     // Structured write access to a given pixel, with automatic pixel format conversion.
-    template <typename T>
+    template <typename Color>
     void set_pixel(
         const size_t        x,
         const size_t        y,
-        const T&            val);                   // pixel value
-    template <typename T>
+        const Color&        val);
+    template <typename Color>
     void set_pixel(
         const size_t        i,
-        const T&            val);                   // pixel value
+        const Color&        val);
 
     // Structured write access to a given component of a given pixel.
     template <typename T>
@@ -142,23 +142,23 @@ class FOUNDATIONDLL Tile
         const size_t        x,
         const size_t        y,
         const size_t        c,
-        const T             val);                   // component value
+        const T             val);
     template <typename T>
     void set_component(
         const size_t        i,
         const size_t        c,
-        const T             val);                   // component value
+        const T             val);
 
     // Structured read access to a given pixel, with automatic pixel format conversion.
-    template <typename T>
+    template <typename Color>
     void get_pixel(
         const size_t        x,
         const size_t        y,
-        T&                  val) const;             // [out] pixel value
-    template <typename T>
+        Color&              val) const;
+    template <typename Color>
     void get_pixel(
         const size_t        i,
-        T&                  val) const;             // [out] pixel value
+        Color&              val) const;
 
     // Structured read access to a given component of a given pixel.
     template <typename T>
@@ -172,8 +172,8 @@ class FOUNDATIONDLL Tile
         const size_t        c) const;
 
     // Set all pixels to a given color.
-    template <typename T>
-    void clear(const T& val);                       // pixel value
+    template <typename Color>
+    void clear(const Color& val);
 
     // Copy the contents of another tile of equal dimensions and number of channels
     // (but possibly using a different pixel format).
@@ -276,13 +276,13 @@ inline uint8* Tile::component(
 
 // Check that the number of channels in a pixel value matches the number of channels in the tile.
 #define FOUNDATION_CHECK_PIXEL_SIZE(val) \
-    assert(sizeof(T) == m_channel_count * sizeof(val[0]))
+    assert(sizeof(Color) == m_channel_count * sizeof(val[0]))
 
-template <typename T>
+template <typename Color>
 inline void Tile::set_pixel(
     const size_t    x,
     const size_t    y,
-    const T&        val)
+    const Color&    val)
 {
     FOUNDATION_CHECK_PIXEL_SIZE(val);
 
@@ -295,10 +295,10 @@ inline void Tile::set_pixel(
         1);                                     // destination stride
 }
 
-template <typename T>
+template <typename Color>
 inline void Tile::set_pixel(
     const size_t    i,
-    const T&        val)
+    const Color&    val)
 {
     FOUNDATION_CHECK_PIXEL_SIZE(val);
 
@@ -342,11 +342,11 @@ inline void Tile::set_component(
         1);                                     // destination stride
 }
 
-template <typename T>
+template <typename Color>
 inline void Tile::get_pixel(
     const size_t    x,
     const size_t    y,
-    T&              val) const
+    Color&          val) const
 {
     FOUNDATION_CHECK_PIXEL_SIZE(val);
 
@@ -361,10 +361,10 @@ inline void Tile::get_pixel(
         1);                                     // destination stride
 }
 
-template <typename T>
+template <typename Color>
 inline void Tile::get_pixel(
     const size_t    i,
-    T&              val) const
+    Color&          val) const
 {
     FOUNDATION_CHECK_PIXEL_SIZE(val);
 
@@ -418,8 +418,8 @@ inline T Tile::get_component(
     return val;
 }
 
-template <typename T>
-inline void Tile::clear(const T& val)
+template <typename Color>
+inline void Tile::clear(const Color& val)
 {
     FOUNDATION_CHECK_PIXEL_SIZE(val);
 
