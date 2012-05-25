@@ -28,44 +28,74 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/atomkraft/mipmap.h"
+#include "renderer/kernel/atomkraft/textureobject.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/genericimagefilereader.h"
 #include "foundation/image/image.h"
 #include "foundation/image/tile.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/benchmark.h"
 
 // Standard headers.
 #include <cassert>
-#include <cstddef>
 #include <memory>
-#include <vector>
 
 using namespace foundation;
+using namespace renderer;
 using namespace std;
 
 BENCHMARK_SUITE(AtomKraft_MipMap)
 {
     struct FixtureBase
     {
-        auto_ptr<Image> m_input;
-        vector<uint8>   m_dummy;
+        auto_ptr<Image> m_level0;
+        auto_ptr<Image> m_level1;
+        auto_ptr<Image> m_level6;
+        auto_ptr<Image> m_level7;
 
         explicit FixtureBase(const char* filepath)
         {
             GenericImageFileReader reader;
             auto_ptr<Image> source(reader.read(filepath));
 
-            m_input.reset(
+            const size_t width = source->properties().m_canvas_width;
+            const size_t height = source->properties().m_canvas_height;
+            const size_t channel_count = source->properties().m_channel_count;
+
+            m_level0.reset(
                 new Image(
                     *source.get(),
-                    source->properties().m_canvas_width,
-                    source->properties().m_canvas_height,
+                    width,
+                    height,
                     PixelFormatFloat));
 
-            m_dummy.resize(m_input->properties().m_pixel_count * m_input->properties().m_pixel_size);
+            m_level1.reset(
+                new Image(
+                    width  / 2,
+                    height / 2,
+                    width  / 2,
+                    height / 2,
+                    channel_count,
+                    PixelFormatFloat));
+
+            m_level6.reset(
+                new Image(
+                    width  / 64,
+                    height / 64,
+                    width  / 64,
+                    height / 64,
+                    channel_count,
+                    PixelFormatFloat));
+
+            m_level7.reset(
+                new Image(
+                    width  / 128,
+                    height / 128,
+                    width  / 128,
+                    height / 128,
+                    channel_count,
+                    PixelFormatFloat));
         }
     };
 
@@ -75,9 +105,42 @@ BENCHMARK_SUITE(AtomKraft_MipMap)
         FixtureRGB()
           : FixtureBase("unit benchmarks/inputs/test_mipmap_rgb.exr")
         {
-            assert(m_input->properties().m_channel_count == 3);
+            assert(m_level0->properties().m_channel_count == 3);
+
+            TextureObject level0_texture(*m_level0.get());
+            TextureObject level6_texture(*m_level6.get());
+
+            ak::generate_mipmap_level<3, TextureObject>(
+                level6_texture,
+                level0_texture,
+                6,
+                4);
         }
     };
+
+    BENCHMARK_CASE_F(GenerateMipmapLevel_Level0ToLevel1, FixtureRGB)
+    {
+        TextureObject level0_texture(*m_level0.get());
+        TextureObject level1_texture(*m_level1.get());
+
+        ak::generate_mipmap_level<3, TextureObject>(
+            level1_texture,
+            level0_texture,
+            1,
+            4);
+    }
+
+    BENCHMARK_CASE_F(GenerateMipmapLevel_Level6ToLevel7, FixtureRGB)
+    {
+        TextureObject level6_texture(*m_level6.get());
+        TextureObject level7_texture(*m_level7.get());
+
+        ak::generate_mipmap_level<3, TextureObject>(
+            level7_texture,
+            level6_texture,
+            1,
+            4);
+    }
 
     struct FixtureRGBA
       : public FixtureBase
@@ -85,23 +148,41 @@ BENCHMARK_SUITE(AtomKraft_MipMap)
         FixtureRGBA()
           : FixtureBase("unit benchmarks/inputs/test_mipmap_rgba.exr")
         {
-            assert(m_input->properties().m_channel_count == 4);
+            assert(m_level0->properties().m_channel_count == 4);
+
+            ak::generate_mipmap_level_float_clamp_linear_rgba(
+                reinterpret_cast<float*>(m_level6->tile(0, 0).get_storage()),
+                reinterpret_cast<const float*>(m_level0->tile(0, 0).get_storage()),
+                static_cast<int>(m_level0->properties().m_canvas_width),
+                static_cast<int>(m_level0->properties().m_canvas_height),
+                6,
+                4);
         }
     };
 
-    BENCHMARK_CASE_F(GenerateMipmapLevelFloatClampLinearRGBA, FixtureRGBA)
+    BENCHMARK_CASE_F(GenerateMipmapLevelFloatClampLinearRGBA_Level0ToLevel1, FixtureRGBA)
     {
-        const CanvasProperties& input_props = m_input->properties();
+        const CanvasProperties& level0_props = m_level0->properties();
 
-        for (size_t i = 1; i <= 10; ++i)
-        {
-            ak::generate_mipmap_level_float_clamp_linear_rgba(
-                reinterpret_cast<float*>(&m_dummy[0]),
-                reinterpret_cast<const float*>(m_input->tile(0, 0).get_storage()),
-                static_cast<int>(input_props.m_canvas_width),
-                static_cast<int>(input_props.m_canvas_height),
-                static_cast<int>(i),
-                4);
-        }
+        ak::generate_mipmap_level_float_clamp_linear_rgba(
+            reinterpret_cast<float*>(m_level1->tile(0, 0).get_storage()),
+            reinterpret_cast<const float*>(m_level0->tile(0, 0).get_storage()),
+            static_cast<int>(level0_props.m_canvas_width),
+            static_cast<int>(level0_props.m_canvas_height),
+            1,
+            4);
+    }
+
+    BENCHMARK_CASE_F(GenerateMipmapLevelFloatClampLinearRGBA_Level6ToLevel7, FixtureRGBA)
+    {
+        const CanvasProperties& level6_props = m_level6->properties();
+
+        ak::generate_mipmap_level_float_clamp_linear_rgba(
+            reinterpret_cast<float*>(m_level7->tile(0, 0).get_storage()),
+            reinterpret_cast<const float*>(m_level6->tile(0, 0).get_storage()),
+            static_cast<int>(level6_props.m_canvas_width),
+            static_cast<int>(level6_props.m_canvas_height),
+            1,
+            4);
     }
 }
