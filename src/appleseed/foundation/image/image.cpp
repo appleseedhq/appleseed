@@ -87,8 +87,65 @@ Image::Image(const Image& rhs)
     {
         for (size_t tx = 0; tx < m_props.m_tile_count_x; ++tx)
         {
-            const size_t tile_index = ty * m_props.m_tile_count_x + tx;
-            m_tiles[tile_index] = new Tile(rhs.tile(tx, ty));
+            m_tiles[ty * m_props.m_tile_count_x + tx] = new Tile(rhs.tile(tx, ty));
+        }
+    }
+}
+
+Image::Image(
+    const Image&        source,
+    const size_t        tile_width,
+    const size_t        tile_height,
+    const PixelFormat   pixel_format)
+  : m_props(
+        source.properties().m_canvas_width,
+        source.properties().m_canvas_height,
+        tile_width,
+        tile_height,
+        source.properties().m_channel_count,
+        pixel_format)
+{
+    assert(tile_width > 0);
+    assert(tile_height > 0);
+
+    const CanvasProperties& source_props = source.properties();
+
+    m_tiles = new Tile*[m_props.m_tile_count];
+
+    for (size_t ty = 0; ty < m_props.m_tile_count_y; ++ty)
+    {
+        for (size_t tx = 0; tx < m_props.m_tile_count_x; ++tx)
+        {
+            const size_t tile_width = m_props.get_tile_width(tx);
+            const size_t tile_height = m_props.get_tile_height(ty);
+
+            Tile* tile =
+                new Tile(
+                    tile_width,
+                    tile_height,
+                    m_props.m_channel_count,
+                    m_props.m_pixel_format);
+
+            m_tiles[ty * m_props.m_tile_count_x + tx] = tile;
+
+            for (size_t py = 0; py < tile_height; ++py)
+            {
+                for (size_t px = 0; px < tile_width; ++px)
+                {
+                    const size_t ix = tx * m_props.m_tile_width + px;
+                    const size_t iy = ty * m_props.m_tile_height + py;
+                    const uint8* source_pixel = source.pixel(ix, iy);
+
+                    Pixel::convert(
+                        source_props.m_pixel_format,
+                        source_pixel,
+                        source_pixel + source_props.m_pixel_size,
+                        1,
+                        m_props.m_pixel_format,
+                        tile->pixel(px, py),
+                        1);
+                }
+            }
         }
     }
 }
@@ -141,20 +198,6 @@ void Image::set_tile(
     delete m_tiles[tile_index];
 
     m_tiles[tile_index] = tile;
-}
-
-void Image::copy(const Image& rhs)
-{
-    assert(m_props.m_canvas_width == rhs.m_props.m_canvas_width);
-    assert(m_props.m_canvas_height == rhs.m_props.m_canvas_height);
-    assert(m_props.m_tile_count_x == rhs.m_props.m_tile_count_x);
-    assert(m_props.m_tile_count_y == rhs.m_props.m_tile_count_y);
-
-    for (size_t ty = 0; ty < m_props.m_tile_count_y; ++ty)
-    {
-        for (size_t tx = 0; tx < m_props.m_tile_count_x; ++tx)
-            tile(tx, ty).copy(rhs.tile(tx, ty));
-    }
 }
 
 }   // namespace foundation

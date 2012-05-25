@@ -70,18 +70,27 @@ class FOUNDATIONDLL Image
   : public ICanvas
 {
   public:
-    // Constructors.
+    // Construct an empty image.
     Image(
         const size_t        image_width,        // image width, in pixels
         const size_t        image_height,       // image height, in pixels
         const size_t        tile_width,         // tile width, in pixels
         const size_t        tile_height,        // tile height, in pixels
-        const size_t        channel_count,      // number of channels
-        const PixelFormat   pixel_format);      // pixel format
+        const size_t        channel_count,
+        const PixelFormat   pixel_format);
+
+    // An alternative way to construct an empty image.
     explicit Image(const CanvasProperties& props);
 
-    // Copy constructor.
+    // Copy constructor, duplicates both the layout and the data of the source image.
     Image(const Image& rhs);
+
+    // Copy image data but allow to tweak the layout.
+    Image(
+        const Image&        source,
+        const size_t        tile_width,         // tile width, in pixels
+        const size_t        tile_height,        // tile height, in pixels
+        const PixelFormat   pixel_format);
 
     // Destructor.
     virtual ~Image();
@@ -104,17 +113,9 @@ class FOUNDATIONDLL Image
         const size_t        tile_y,
         Tile*               tile);
 
-    // Set all pixels of all tiles to a given color.
-    template <typename T>
-    void clear(const T& val);                   // pixel value
-
-    // Copy the contents of another image of equal resolution, tile dimensions
-    // and number of channels (but possibly using a different pixel format).
-    void copy(const Image& rhs);
-
   protected:
-    CanvasProperties        m_props;            // canvas properties
-    Tile**                  m_tiles;            // tile array
+    CanvasProperties        m_props;
+    Tile**                  m_tiles;
 };
 
 
@@ -125,16 +126,6 @@ class FOUNDATIONDLL Image
 inline const CanvasProperties& Image::properties() const
 {
     return m_props;
-}
-
-template <typename T>
-void Image::clear(const T& val)
-{
-    for (size_t ty = 0; ty < m_props.m_tile_count_y; ++ty)
-    {
-        for (size_t tx = 0; tx < m_props.m_tile_count_x; ++tx)
-            tile(tx, ty).clear(val);
-    }
 }
 
 }       // namespace foundation

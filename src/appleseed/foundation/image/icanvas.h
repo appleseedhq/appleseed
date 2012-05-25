@@ -98,20 +98,19 @@ class FOUNDATIONDLL ICanvas
     void set_pixel(
         const size_t    x,
         const size_t    y,
-        const T&        val);                       // pixel value
+        const T&        val);               // pixel value
 
     // Structured read access to a given pixel, with conversion if necessary.
     template <typename T>
     void get_pixel(
         const size_t    x,
         const size_t    y,
-        T&              val) const;                 // [out] pixel value
+        T&              val) const;         // [out] pixel value
 
     // Set all pixels to a given color.
     // This causes all tiles to be accessed, and created if necessary.
     template <typename T>
-    void clear(
-        const T&        val);                       // pixel value
+    void clear(const T& val);               // pixel value
 };
 
 
@@ -119,7 +118,6 @@ class FOUNDATIONDLL ICanvas
 // ICanvas class implementation.
 //
 
-// Direct access to a given pixel.
 inline uint8* ICanvas::pixel(
     const size_t        x,
     const size_t        y)
@@ -148,6 +146,7 @@ inline uint8* ICanvas::pixel(
     // Access the pixel.
     return t.pixel(pixel_x, pixel_y);
 }
+
 inline const uint8* ICanvas::pixel(
     const size_t        x,
     const size_t        y) const
@@ -177,59 +176,50 @@ inline const uint8* ICanvas::pixel(
     return t.pixel(pixel_x, pixel_y);
 }
 
-// Structured write access to a given pixel, with conversion if necessary.
 template <typename T>
 inline void ICanvas::set_pixel(
     const size_t        x,
     const size_t        y,
-    const T&            val)                        // pixel value
+    const T&            val)
 {
-    // Retrieve canvas properties.
     const CanvasProperties& props = properties();
 
     Pixel::convert_to_format(
-        &val[0],                                    // source begin
-        &val[0] + props.m_channel_count,            // source end
-        1,                                          // source stride
-        props.m_pixel_format,                       // destination format
-        pixel(x, y),                                // destination
-        1);                                         // destination stride
+        &val[0],                            // source begin
+        &val[0] + props.m_channel_count,    // source end
+        1,                                  // source stride
+        props.m_pixel_format,               // destination format
+        pixel(x, y),                        // destination
+        1);                                 // destination stride
 }
 
-// Structured read access to a given pixel, with conversion if necessary.
 template <typename T>
 inline void ICanvas::get_pixel(
     const size_t        x,
     const size_t        y,
-    T&                  val) const                  // [out] pixel value
+    T&                  val) const
 {
-    // Retrieve canvas properties.
     const CanvasProperties& props = properties();
-
     const uint8* src = pixel(x, y);
 
     Pixel::convert_from_format(
-        props.m_pixel_format,                       // source format
-        src,                                        // source begin
-        src + props.m_pixel_size,                   // source end
-        1,                                          // source stride
-        &val[0],                                    // destination
-        1);                                         // destination stride
+        props.m_pixel_format,               // source format
+        src,                                // source begin
+        src + props.m_pixel_size,           // source end
+        1,                                  // source stride
+        &val[0],                            // destination
+        1);                                 // destination stride
 }
 
-// Set all pixels to a given color.
 template <typename T>
-inline void ICanvas::clear(
-    const T&            val)                        // pixel value
+inline void ICanvas::clear(const T& val)
 {
-    // Retrieve canvas properties.
     const CanvasProperties& props = properties();
 
-    // Clear all tiles.
-    for (size_t tile_y = 0; tile_y < props.m_tile_count_y; ++tile_y)
+    for (size_t ty = 0; ty < props.m_tile_count_y; ++ty)
     {
-        for (size_t tile_x = 0; tile_x < props.m_tile_count_x; ++tile_x)
-            tile(tile_x, tile_y).clear(val);
+        for (size_t tx = 0; tx < props.m_tile_count_x; ++tx)
+            tile(tx, ty).clear(val);
     }
 }
 
