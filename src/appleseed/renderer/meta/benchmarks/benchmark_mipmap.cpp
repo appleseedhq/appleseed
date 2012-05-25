@@ -30,8 +30,78 @@
 #include "renderer/kernel/atomkraft/mipmap.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/canvasproperties.h"
+#include "foundation/image/genericimagefilereader.h"
+#include "foundation/image/image.h"
+#include "foundation/image/tile.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/benchmark.h"
+
+// Standard headers.
+#include <cassert>
+#include <cstddef>
+#include <memory>
+#include <vector>
+
+using namespace foundation;
+using namespace std;
 
 BENCHMARK_SUITE(AtomKraft_MipMap)
 {
+    struct FixtureBase
+    {
+        auto_ptr<Image> m_input;
+        vector<uint8>   m_dummy;
+
+        explicit FixtureBase(const char* filepath)
+        {
+            GenericImageFileReader reader;
+            auto_ptr<Image> source(reader.read(filepath));
+
+            m_input.reset(
+                new Image(
+                    *source.get(),
+                    source->properties().m_canvas_width,
+                    source->properties().m_canvas_height,
+                    PixelFormatFloat));
+
+            m_dummy.resize(m_input->properties().m_pixel_count * m_input->properties().m_pixel_size);
+        }
+    };
+
+    struct FixtureRGB
+      : public FixtureBase
+    {
+        FixtureRGB()
+          : FixtureBase("unit benchmarks/inputs/test_mipmap_rgb.exr")
+        {
+            assert(m_input->properties().m_channel_count == 3);
+        }
+    };
+
+    struct FixtureRGBA
+      : public FixtureBase
+    {
+        FixtureRGBA()
+          : FixtureBase("unit benchmarks/inputs/test_mipmap_rgba.exr")
+        {
+            assert(m_input->properties().m_channel_count == 4);
+        }
+    };
+
+    BENCHMARK_CASE_F(GenerateMipmapLevelFloatClampLinearRGBA, FixtureRGBA)
+    {
+        const CanvasProperties& input_props = m_input->properties();
+
+        for (size_t i = 1; i <= 10; ++i)
+        {
+            ak::generate_mipmap_level_float_clamp_linear_rgba(
+                reinterpret_cast<float*>(&m_dummy[0]),
+                reinterpret_cast<const float*>(m_input->tile(0, 0).get_storage()),
+                static_cast<int>(input_props.m_canvas_width),
+                static_cast<int>(input_props.m_canvas_height),
+                static_cast<int>(i),
+                4);
+        }
+    }
 }
