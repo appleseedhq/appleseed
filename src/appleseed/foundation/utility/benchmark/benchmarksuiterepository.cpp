@@ -71,7 +71,7 @@ void BenchmarkSuiteRepository::register_suite(BenchmarkSuite* suite)
 
 void BenchmarkSuiteRepository::run(BenchmarkResult& result) const
 {
-    LetThroughFilter filter;
+    PassThroughFilter filter;
     run(filter, result);
 }
 

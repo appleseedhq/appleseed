@@ -31,7 +31,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/filter/ifilter.h"
-#include "foundation/utility/filter/letthroughfilter.h"
+#include "foundation/utility/filter/passthroughfilter.h"
 #include "foundation/utility/test/testsuite.h"
 
 // Standard headers.
@@ -95,7 +95,7 @@ void TestSuiteRepository::run(
     ITestListener&  test_listener,
     TestResult&     cumulated_result) const
 {
-    LetThroughFilter filter;
+    PassThroughFilter filter;
     run(filter, test_listener, cumulated_result);
 }
 

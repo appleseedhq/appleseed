@@ -26,13 +26,29 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_FILTER_H
-#define APPLESEED_FOUNDATION_UTILITY_FILTER_H
+#ifndef APPLESEED_FOUNDATION_UTILITY_FILTER_PASSTHROUGHFILTER_H
+#define APPLESEED_FOUNDATION_UTILITY_FILTER_PASSTHROUGHFILTER_H
 
-// Interface headers.
+// appleseed.foundation headers.
 #include "foundation/utility/filter/ifilter.h"
-#include "foundation/utility/filter/passthroughfilter.h"
-#include "foundation/utility/filter/regexfilter.h"
-#include "foundation/utility/filter/rejectallfilter.h"
 
-#endif  // !APPLESEED_FOUNDATION_UTILITY_FILTER_H
+namespace foundation
+{
+
+//
+// A trivial filter that let everything through.
+//
+
+class PassThroughFilter
+  : public IFilter
+{
+  public:
+    virtual bool accepts(const char*) const
+    {
+        return true;
+    }
+};
+
+}       // namespace foundation
+
+#endif  // !APPLESEED_FOUNDATION_UTILITY_FILTER_PASSTHROUGHFILTER_H

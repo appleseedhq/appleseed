@@ -225,7 +225,7 @@ void BenchmarkSuite::register_case(IBenchmarkCaseFactory* factory)
 
 void BenchmarkSuite::run(BenchmarkResult& suite_result) const
 {
-    LetThroughFilter filter;
+    PassThroughFilter filter;
     run(filter, suite_result);
 }
 

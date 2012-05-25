@@ -30,8 +30,6 @@
 #include "testsuite.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/filter/ifilter.h"
-#include "foundation/utility/filter/letthroughfilter.h"
 #include "foundation/utility/test/exceptionassertionfailure.h"
 #include "foundation/utility/test/itestcase.h"
 #include "foundation/utility/test/itestcasefactory.h"
@@ -39,6 +37,7 @@
 #include "foundation/utility/test/testlistenerhelper.h"
 #include "foundation/utility/test/testmessage.h"
 #include "foundation/utility/test/testresult.h"
+#include "foundation/utility/filter.h"
 
 // Standard headers.
 #include <cassert>
@@ -100,7 +99,7 @@ void TestSuite::run(
     ITestListener&  test_listener,
     TestResult&     cumulated_result) const
 {
-    LetThroughFilter filter;
+    PassThroughFilter filter;
     run(filter, test_listener, cumulated_result);
 }
 

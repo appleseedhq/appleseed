@@ -524,9 +524,10 @@ source_group ("foundation\\utility\\containers" FILES
 
 set (foundation_utility_filter_sources
     foundation/utility/filter/ifilter.h
-    foundation/utility/filter/letthroughfilter.h
+    foundation/utility/filter/passthroughfilter.h
     foundation/utility/filter/regexfilter.cpp
     foundation/utility/filter/regexfilter.h
+    foundation/utility/filter/rejectallfilter.h
 )
 list (APPEND appleseed_sources
     ${foundation_utility_filter_sources}

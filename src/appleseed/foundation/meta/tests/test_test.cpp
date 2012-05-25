@@ -27,7 +27,7 @@
 //
 
 // appleseed.foundation headers.
-#include "foundation/utility/filter/ifilter.h"
+#include "foundation/utility/filter.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.
@@ -328,15 +328,6 @@ TEST_SUITE(Foundation_Utility_Test_TestSuite)
 
         EXPECT_EQ(1, listener.m_test_suite_result.get_suite_failure_count());
     }
-
-    struct RejectAllFilter
-      : public IFilter
-    {
-        virtual bool accepts(const char* name) const
-        {
-            return false;
-        }
-    };
 
     TEST_CASE(Run_GivenTestSuiteRejectedByFilter_DoesNotReportTestSuiteExecution)
     {

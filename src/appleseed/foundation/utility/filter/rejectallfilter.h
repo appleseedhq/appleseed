@@ -26,48 +26,29 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_FILTER_LETTHROUGHFILTER_H
-#define APPLESEED_FOUNDATION_UTILITY_FILTER_LETTHROUGHFILTER_H
+#ifndef APPLESEED_FOUNDATION_UTILITY_FILTER_REJECTALLFILTER_H
+#define APPLESEED_FOUNDATION_UTILITY_FILTER_REJECTALLFILTER_H
 
 // appleseed.foundation headers.
 #include "foundation/utility/filter/ifilter.h"
-
-//
-// On Windows, define FOUNDATIONDLL to __declspec(dllexport) when building the DLL
-// and to __declspec(dllimport) when building an application using the DLL.
-// Other platforms don't use this export mechanism and the symbol FOUNDATIONDLL is
-// defined to evaluate to nothing.
-//
-
-#ifndef FOUNDATIONDLL
-#ifdef _WIN32
-#ifdef APPLESEED_FOUNDATION_EXPORTS
-#define FOUNDATIONDLL __declspec(dllexport)
-#else
-#define FOUNDATIONDLL __declspec(dllimport)
-#endif
-#else
-#define FOUNDATIONDLL
-#endif
-#endif
 
 namespace foundation
 {
 
 //
-// A trivial filter that let everything through.
+// A trivial filter that rejects everything.
 //
 
-class FOUNDATIONDLL LetThroughFilter
+class RejectAllFilter
   : public IFilter
 {
   public:
     virtual bool accepts(const char*) const
     {
-        return true;
+        return false;
     }
 };
 
 }       // namespace foundation
 
-#endif  // !APPLESEED_FOUNDATION_UTILITY_FILTER_LETTHROUGHFILTER_H
+#endif  // !APPLESEED_FOUNDATION_UTILITY_FILTER_REJECTALLFILTER_H
