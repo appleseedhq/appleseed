@@ -64,13 +64,13 @@ BENCHMARK_SUITE(AtomKraft_EWA)
     {
         m_filter.filter(
             m_texture_object,
-            1020.0f,                    // center x
-            1020.0f,                    // center y
-            10.0f,                      // du/dx
-            0.0f,                       // du/dy
-            0.0f,                       // dv/dx
-            10.0f,                      // dv/dy
-            100.0f,                     // max radius
+            1020.0f,                        // center x
+            1020.0f,                        // center y
+            10.0f,                          // du/dx
+            0.0f,                           // du/dy
+            0.0f,                           // dv/dx
+            10.0f,                          // dv/dy
+            100.0f,                         // max radius
             &m_result[0]);
     }
 
@@ -78,13 +78,13 @@ BENCHMARK_SUITE(AtomKraft_EWA)
     {
         m_filter.filter(
             m_texture_object,
-            1020.0f,                    // center x
-            1020.0f,                    // center y
-            10.0f,                      // du/dx
-            0.0f,                       // du/dy
-            0.0f,                       // dv/dx
-            10.0f,                      // dv/dy
-            5.0f,                       // max radius
+            1020.0f,                        // center x
+            1020.0f,                        // center y
+            10.0f,                          // du/dx
+            0.0f,                           // du/dy
+            0.0f,                           // dv/dx
+            10.0f,                          // dv/dy
+            5.0f,                           // max radius
             &m_result[0]);
     }
 }
