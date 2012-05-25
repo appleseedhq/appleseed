@@ -150,13 +150,13 @@ struct BenchmarkSuite::Impl
         StopwatchType&          stopwatch,
         BenchmarkParams&        params)
     {
-        const size_t InitialIterationCount = 100;
-        const size_t InitialMeasurementCount = 100;
-        const double TargetMeasurementRuntime = 1.0e-4;     // seconds
-        const double TargetTotalRuntime = 0.2;              // seconds
+        const size_t InitialIterationCount = 1;
+        const size_t InitialMeasurementCount = 3;
+        const double TargetMeasurementTime = 1.0e-3;    // seconds
+        const double TargetTotalTime = 0.5;             // seconds
 
-        // Measure the runtime for this initial number of iterations.
-        const double runtime =
+        // Measure the runtime for the initial number of iterations.
+        const double time =
             measure_runtime(
                 benchmark,
                 stopwatch,
@@ -165,14 +165,12 @@ struct BenchmarkSuite::Impl
                 InitialMeasurementCount);
 
         // Compute the number of iterations.
-        params.m_iteration_count =
-            static_cast<size_t>(InitialIterationCount * (TargetMeasurementRuntime / runtime));
-        params.m_iteration_count = max<size_t>(1, params.m_iteration_count);
+        const double iteration_time = time / InitialIterationCount;
+        params.m_iteration_count = max(1u, static_cast<size_t>(TargetMeasurementTime / iteration_time));
 
         // Compute the number of measurements.
-        params.m_measurement_count =
-            static_cast<size_t>(TargetTotalRuntime / TargetMeasurementRuntime);
-        params.m_measurement_count = max<size_t>(1, params.m_measurement_count);
+        const double measurement_time = iteration_time * params.m_iteration_count;
+        params.m_measurement_count = max(1u, static_cast<size_t>(TargetTotalTime / measurement_time));
     }
 
     static double measure_iteration_runtime(
