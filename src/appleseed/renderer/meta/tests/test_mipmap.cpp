@@ -41,6 +41,7 @@
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/string.h"
 #include "foundation/utility/test.h"
+#include "foundation/utility/testutils.h"
 
 // Standard headers.
 #include <algorithm>
@@ -241,10 +242,14 @@ TEST_SUITE(AtomKraft_MipMap)
     TEST_CASE(GenerateMipmapLevel_WriteMipMapPyramidToDisk)
     {
         auto_ptr<Image> input(read_image("unit tests/inputs/test_mipmap_rgb.exr"));
+        auto_ptr<Image> expected_level1(read_image("unit tests/inputs/test_mipmap_rgb_expected_level1.exr"));
 
         for (size_t i = 1; i < 10; ++i)
         {
             auto_ptr<Image> output(generate_mipmap_level(*input.get(), i, 4));
+
+            if (i == 1)
+                EXPECT_TRUE(are_images_feq(*expected_level1.get(), *output.get(), 1.0e-6f));
 
             const string filepath =
                 "unit tests/outputs/test_mipmap_rgb_" + to_string(i) + ".png";
@@ -256,10 +261,14 @@ TEST_SUITE(AtomKraft_MipMap)
     TEST_CASE(GenerateMipmapLevelFloatClampLinearRGBA_WriteMipMapPyramidToDisk)
     {
         auto_ptr<Image> input(read_image("unit tests/inputs/test_mipmap_rgba.exr"));
+        auto_ptr<Image> expected_level1(read_image("unit tests/inputs/test_mipmap_rgba_expected_level1.exr"));
 
         for (size_t i = 1; i < 10; ++i)
         {
             auto_ptr<Image> output(generate_mipmap_level_float_clamp_linear_rgba(*input.get(), i, 4));
+
+            if (i == 1)
+                EXPECT_TRUE(are_images_feq(*expected_level1.get(), *output.get(), 1.0e-6f));
 
             const string filepath =
                 "unit tests/outputs/test_mipmap_rgba_" + to_string(i) + ".png";
