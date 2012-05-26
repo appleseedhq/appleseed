@@ -37,6 +37,9 @@
 #include <string>
 #include <vector>
 
+// Forward declarations.
+namespace foundation    { class Image; }
+
 namespace foundation
 {
 
@@ -51,6 +54,15 @@ bool load_text_file(
 bool compare_text_files(
     const std::string&              filename1,
     const std::string&              filename2);
+
+// Compare the contents of two images. The layout of the two images
+// (the tile size and exact pixel format) are excluded from the
+// comparison. Return true if they are equal (within a per-component
+// epsilon), false otherwise.
+bool are_images_feq(
+    const Image&                    image1,
+    const Image&                    image2,
+    const float                     eps);
 
 // Write a 2D point cloud to an image file.
 void write_point_cloud_image(

@@ -30,10 +30,13 @@
 #include "testutils.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
 #include "foundation/image/drawing.h"
 #include "foundation/image/genericimagefilewriter.h"
 #include "foundation/image/image.h"
+#include "foundation/image/pixel.h"
+#include "foundation/math/scalar.h"
 
 // Standard headers.
 #include <fstream>
@@ -71,6 +74,45 @@ bool compare_text_files(const string& filename1, const string& filename2)
         return false;
 
     return contents1 == contents2;
+}
+
+bool are_images_feq(
+    const Image&                image1,
+    const Image&                image2,
+    const float                 eps)
+{
+    const CanvasProperties& image1_props = image1.properties();
+
+    const size_t width = image1_props.m_canvas_width;
+    const size_t height = image1_props.m_canvas_height;
+    const size_t channel_count = image1_props.m_channel_count;
+
+    if (image2.properties().m_canvas_width != width ||
+        image2.properties().m_canvas_height != height ||
+        image2.properties().m_channel_count != channel_count)
+        return false;
+
+    assert(channel_count <= 4);
+
+    for (size_t y = 0; y < height; ++y)
+    {
+        for (size_t x = 0; x < width; ++x)
+        {
+            float color1[4];
+            image1.get_pixel(x, y, color1);
+
+            float color2[4];
+            image2.get_pixel(x, y, color2);
+
+            for (size_t c = 0; c < channel_count; ++c)
+            {
+                if (!feq(color1[c], color2[c], eps))
+                    return false;
+            }
+        }
+    }
+
+    return true;
 }
 
 void write_point_cloud_image(
