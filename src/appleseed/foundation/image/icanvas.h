@@ -93,24 +93,34 @@ class FOUNDATIONDLL ICanvas
         const size_t    x,
         const size_t    y) const;
 
-    // Structured write access to a given pixel, with conversion if necessary.
+    // Structured write access to a given pixel, with automatic pixel format conversion.
     template <typename Color>
     void set_pixel(
         const size_t    x,
         const size_t    y,
         const Color&    color);
+    template <typename T>
+    void set_pixel(
+        const size_t    x,
+        const size_t    y,
+        const T         components[]);
 
-    // Structured read access to a given pixel, with conversion if necessary.
+    // Structured read access to a given pixel, with automatic pixel format conversion.
     template <typename Color>
     void get_pixel(
         const size_t    x,
         const size_t    y,
-        Color&          val) const;
+        Color&          color) const;
+    template <typename T>
+    void get_pixel(
+        const size_t    x,
+        const size_t    y,
+        T               components[]) const;
 
     // Set all pixels to a given color.
     // This causes all tiles to be accessed, and created if necessary.
     template <typename Color>
-    void clear(const Color& val);
+    void clear(const Color& color);
 };
 
 
@@ -177,22 +187,39 @@ inline const uint8* ICanvas::pixel(
 }
 
 // Check that the number of channels in a pixel value matches the number of channels in the tile.
-#define FOUNDATION_CHECK_PIXEL_SIZE(val) \
-    assert(sizeof(Color) == props.m_channel_count * sizeof(val[0]))
+#define FOUNDATION_CHECK_PIXEL_SIZE(color) \
+    assert(sizeof(Color) == props.m_channel_count * sizeof(color[0]))
 
 template <typename Color>
 inline void ICanvas::set_pixel(
     const size_t        x,
     const size_t        y,
-    const Color&        val)
+    const Color&        color)
 {
     const CanvasProperties& props = properties();
 
-    FOUNDATION_CHECK_PIXEL_SIZE(val);
+    FOUNDATION_CHECK_PIXEL_SIZE(color);
 
     Pixel::convert_to_format(
-        &val[0],                            // source begin
-        &val[0] + props.m_channel_count,    // source end
+        &color[0],                          // source begin
+        &color[0] + props.m_channel_count,  // source end
+        1,                                  // source stride
+        props.m_pixel_format,               // destination format
+        pixel(x, y),                        // destination
+        1);                                 // destination stride
+}
+
+template <typename T>
+inline void ICanvas::set_pixel(
+    const size_t        x,
+    const size_t        y,
+    const T             components[])
+{
+    const CanvasProperties& props = properties();
+
+    Pixel::convert_to_format(
+        components,                         // source begin
+        components + props.m_channel_count, // source end
         1,                                  // source stride
         props.m_pixel_format,               // destination format
         pixel(x, y),                        // destination
@@ -203,11 +230,11 @@ template <typename Color>
 inline void ICanvas::get_pixel(
     const size_t        x,
     const size_t        y,
-    Color&              val) const
+    Color&              color) const
 {
     const CanvasProperties& props = properties();
 
-    FOUNDATION_CHECK_PIXEL_SIZE(val);
+    FOUNDATION_CHECK_PIXEL_SIZE(color);
 
     const uint8* src = pixel(x, y);
 
@@ -216,21 +243,39 @@ inline void ICanvas::get_pixel(
         src,                                // source begin
         src + props.m_pixel_size,           // source end
         1,                                  // source stride
-        &val[0],                            // destination
+        &color[0],                          // destination
+        1);                                 // destination stride
+}
+
+template <typename T>
+inline void ICanvas::get_pixel(
+    const size_t        x,
+    const size_t        y,
+    T                   components[]) const
+{
+    const CanvasProperties& props = properties();
+    const uint8* src = pixel(x, y);
+
+    Pixel::convert_from_format(
+        props.m_pixel_format,               // source format
+        src,                                // source begin
+        src + props.m_pixel_size,           // source end
+        1,                                  // source stride
+        components,                         // destination
         1);                                 // destination stride
 }
 
 template <typename Color>
-inline void ICanvas::clear(const Color& val)
+inline void ICanvas::clear(const Color& color)
 {
     const CanvasProperties& props = properties();
 
-    FOUNDATION_CHECK_PIXEL_SIZE(val);
+    FOUNDATION_CHECK_PIXEL_SIZE(color);
 
     for (size_t ty = 0; ty < props.m_tile_count_y; ++ty)
     {
         for (size_t tx = 0; tx < props.m_tile_count_x; ++tx)
-            tile(tx, ty).clear(val);
+            tile(tx, ty).clear(color);
     }
 }
 
