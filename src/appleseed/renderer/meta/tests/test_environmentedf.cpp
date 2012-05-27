@@ -43,6 +43,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
+#include "foundation/image/tile.h"
 #include "foundation/utility/test.h"
 
 using namespace foundation;

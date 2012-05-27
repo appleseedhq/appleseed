@@ -33,6 +33,7 @@
 #include "renderer/kernel/texturing/texturecache.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/tile.h"
 #include "foundation/math/hash.h"
 #include "foundation/math/scalar.h"
 
