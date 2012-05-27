@@ -764,7 +764,8 @@ get(const KeyType& key)
         entry = line.find_eviction_candidate();
 
         // Unload the old element.
-        m_element_swapper.unload(entry->m_key, entry->m_element);
+        if (entry->m_key != m_invalid_key)
+            m_element_swapper.unload(entry->m_key, entry->m_element);
 
         // Load the new element.
         entry->m_key = key;

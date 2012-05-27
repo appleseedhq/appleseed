@@ -39,6 +39,58 @@
 using namespace foundation;
 using namespace std;
 
+TEST_SUITE(Foundation_Utility_Cache_SACache)
+{
+    typedef size_t MyKey;
+    typedef size_t MyElement;
+
+    const MyKey MyInvalidKey = ~0;
+
+    struct MyKeyHasher
+    {
+        size_t operator()(const MyKey key) const
+        {
+            return static_cast<size_t>(key);
+        }
+    };
+
+    struct MyElementSwapper
+    {
+        bool& m_unload_called;
+
+        explicit MyElementSwapper(bool& unload_called)
+          : m_unload_called(unload_called)
+        {
+        }
+
+        void load(const MyKey key, MyElement& element) const
+        {
+        }
+
+        void unload(const MyKey key, MyElement& element) const
+        {
+            m_unload_called = true;
+        }
+    };
+
+    TEST_CASE(Get_DoesNotCallUnloadOnEmptyCacheLine)
+    {
+        MyKeyHasher key_hasher;
+
+        bool unload_called = false;
+        MyElementSwapper element_swapper(unload_called);
+
+        SACache<MyKey, MyKeyHasher, MyElement, MyElementSwapper, 4, 1> cache(
+            key_hasher,
+            element_swapper,
+            MyInvalidKey);
+
+        cache.get(0);
+
+        EXPECT_FALSE(unload_called);
+    }
+}
+
 TEST_SUITE(Foundation_Utility_Cache_LRUCache)
 {
     namespace case1
