@@ -94,6 +94,38 @@ namespace
         uint8* scanline = static_cast<uint8*>(image.scanLine(static_cast<int>(y)));
         return scanline + x * image.depth() / 8;
     }
+
+    void draw_bracket(
+        uint8*          dest,
+        const size_t    dest_width,
+        const size_t    dest_height,
+        const size_t    dest_stride,
+        const size_t    bracket_extent,
+        const uint8*    pixel,
+        const size_t    pixel_size)
+    {
+        const int w = static_cast<int>(min(bracket_extent, dest_width));
+        const int h = static_cast<int>(min(bracket_extent, dest_height));
+
+        const size_t right = (dest_width - 1) * pixel_size;
+        const size_t bottom = (dest_height - 1) * dest_stride;
+
+        // Top-left corner.
+        NativeDrawing::draw_hline(dest, w, pixel, pixel_size);
+        NativeDrawing::draw_vline(dest, dest_stride, h, pixel, pixel_size);
+
+        // Top-right corner.
+        NativeDrawing::draw_hline(dest + right, -w, pixel, pixel_size);
+        NativeDrawing::draw_vline(dest + right, dest_stride, h, pixel, pixel_size);
+
+        // Bottom-left corner.
+        NativeDrawing::draw_hline(dest + bottom, w, pixel, pixel_size);
+        NativeDrawing::draw_vline(dest + bottom, dest_stride, -h, pixel, pixel_size);
+
+        // Bottom-right corner.
+        NativeDrawing::draw_hline(dest + bottom + right, -w, pixel, pixel_size);
+        NativeDrawing::draw_vline(dest + bottom + right, dest_stride, -h, pixel, pixel_size);
+    }
 }
 
 void RenderWidget::highlight_region(
@@ -105,53 +137,42 @@ void RenderWidget::highlight_region(
     m_image_mutex.lock();
 
     // Retrieve destination image information.
-    const size_t dest_width = static_cast<size_t>(m_image.width());
-    const size_t dest_height = static_cast<size_t>(m_image.height());
+    const size_t image_width = static_cast<size_t>(m_image.width());
+    const size_t image_height = static_cast<size_t>(m_image.height());
     const size_t dest_stride = static_cast<size_t>(m_image.bytesPerLine());
 
     // Clipping is not supported.
-    assert(x < dest_width);
-    assert(y < dest_height);
-    assert(x + width <= dest_width);
-    assert(y + height <= dest_height);
+    assert(x < image_width);
+    assert(y < image_height);
+    assert(x + width <= image_width);
+    assert(y + height <= image_height);
 
     // Get a pointer to the first destination pixel.
     uint8* dest = get_image_pointer(m_image, x, y);
 
-    // Clear the tile in black.
-    const uint8 Black[3] = { 0, 0, 0 };
+/*
+    // Clear the tile.
+    const uint8 ClearColor[3] = { 0, 0, 0 };
     NativeDrawing::clear(
         dest,
         width,
         height,
         dest_stride,
-        Black,
-        sizeof(Black));
+        ClearColor,
+        sizeof(ClearColor));
+*/
 
-    // Draw a white rectangle around the tile.
-    const uint8 White[3] = { 255, 255, 255 };
-    NativeDrawing::draw_hline(
+    // Draw a bracket around the tile.
+    const uint8 BracketColor[3] = { 255, 255, 255 };
+    const size_t BracketExtent = 5;
+    draw_bracket(
         dest,
         width,
-        White,
-        sizeof(White));
-    NativeDrawing::draw_hline(
-        dest + (height - 1) * dest_stride,
-        width,
-        White,
-        sizeof(White));
-    NativeDrawing::draw_vline(
-        dest,
-        dest_stride,
         height,
-        White,
-        sizeof(White));
-    NativeDrawing::draw_vline(
-        dest + (width - 1) * sizeof(White),
         dest_stride,
-        height,
-        White,
-        sizeof(White));
+        BracketExtent,
+        BracketColor,
+        sizeof(BracketColor));
 
     m_image_mutex.unlock();
 }
@@ -162,7 +183,9 @@ void RenderWidget::blit_tile(
     const size_t    tile_y)
 {
     m_image_mutex.lock();
+
     blit_tile_no_lock(frame, tile_x, tile_y);
+
     m_image_mutex.unlock();
 }
 
@@ -229,8 +252,8 @@ void RenderWidget::blit_tile_no_lock(
         uint8_tile_storage);
 
     // Retrieve destination image information.
-    const size_t dest_width = static_cast<size_t>(m_image.width());
-    const size_t dest_height = static_cast<size_t>(m_image.height());
+    const size_t image_width = static_cast<size_t>(m_image.width());
+    const size_t image_height = static_cast<size_t>(m_image.height());
     const size_t dest_stride = static_cast<size_t>(m_image.bytesPerLine());
 
     // Compute the coordinates of the first destination pixel.
@@ -239,10 +262,10 @@ void RenderWidget::blit_tile_no_lock(
     const size_t y = tile_y * frame_props.m_tile_height;
 
     // Clipping is not supported.
-    assert(x < dest_width);
-    assert(y < dest_height);
-    assert(x + tile.get_width() <= dest_width);
-    assert(y + tile.get_height() <= dest_height);
+    assert(x < image_width);
+    assert(y < image_height);
+    assert(x + tile.get_width() <= image_width);
+    assert(y + tile.get_height() <= image_height);
 
     // Get a pointer to the first destination pixel.
     uint8* dest = get_image_pointer(m_image, x, y);
