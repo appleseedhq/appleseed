@@ -150,7 +150,6 @@ void RenderWidget::highlight_region(
     // Get a pointer to the first destination pixel.
     uint8* dest = get_image_pointer(m_image, x, y);
 
-/*
     // Clear the tile.
     const uint8 ClearColor[3] = { 0, 0, 0 };
     NativeDrawing::clear(
@@ -160,7 +159,6 @@ void RenderWidget::highlight_region(
         dest_stride,
         ClearColor,
         sizeof(ClearColor));
-*/
 
     // Draw a bracket around the tile.
     const uint8 BracketColor[3] = { 255, 255, 255 };
