@@ -38,6 +38,7 @@ namespace renderer  { class Frame; }
 namespace renderer  { class ILightingEngineFactory; }
 namespace renderer  { class Scene; }
 namespace renderer  { class ShadingEngine; }
+namespace renderer  { class TextureStore; }
 namespace renderer  { class TraceContext; }
 
 namespace renderer
@@ -56,6 +57,7 @@ class RENDERERDLL GenericSampleRendererFactory
         const Scene&            scene,
         const Frame&            frame,
         const TraceContext&     trace_context,
+        TextureStore&           texture_store,
         ILightingEngineFactory* lighting_engine_factory,
         ShadingEngine&          shading_engine,
         const ParamArray&       params);
@@ -71,6 +73,7 @@ class RENDERERDLL GenericSampleRendererFactory
         const Scene&            scene,
         const Frame&            frame,
         const TraceContext&     trace_context,
+        TextureStore&           texture_store,
         ILightingEngineFactory* lighting_engine_factory,
         ShadingEngine&          shading_engine,
         const ParamArray&       params);
@@ -79,6 +82,7 @@ class RENDERERDLL GenericSampleRendererFactory
     const Scene&                m_scene;
     const Frame&                m_frame;
     const TraceContext&         m_trace_context;
+    TextureStore&               m_texture_store;
     ILightingEngineFactory*     m_lighting_engine_factory;
     ShadingEngine&              m_shading_engine;
     const ParamArray            m_params;

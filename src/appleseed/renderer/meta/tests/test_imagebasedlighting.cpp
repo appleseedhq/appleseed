@@ -33,6 +33,7 @@
 #include "renderer/kernel/lighting/imagebasedlighting.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/texturing/texturecache.h"
+#include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/specularbrdf.h"
 #include "renderer/modeling/environmentedf/constantenvironmentedf.h"
@@ -57,13 +58,15 @@ TEST_SUITE(Renderer_Kernel_Lighting_ImageBasedLighting)
     {
         MersenneTwister     m_rng;
         SamplingContext     m_sampling_context;
+        TextureStore        m_texture_store;
         TextureCache        m_texture_cache;
         const Intersector   m_intersector;
         ShadingContext      m_shading_context;
 
         Fixture()
           : m_sampling_context(m_rng)
-          , m_texture_cache(m_scene)
+          , m_texture_store(m_scene)
+          , m_texture_cache(m_texture_store)
           , m_intersector(m_project.get_trace_context(), m_texture_cache, false)
           , m_shading_context(m_intersector, m_texture_cache)
         {

@@ -30,15 +30,22 @@
 #define APPLESEED_RENDERER_KERNEL_TEXTURING_TEXTURECACHE_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/global/globallogger.h"
+#include "renderer/kernel/texturing/texturestore.h"
 
 // appleseed.foundation headers.
-#include "foundation/image/tile.h"
+#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/hash.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/cache.h"
+#include "foundation/utility/uid.h"
+
+// Standard headers.
+#include <cstddef>
+#include <string>
 
 // Forward declarations.
-namespace renderer      { class Scene; }
+namespace foundation    { class Tile; }
 
 namespace renderer
 {
@@ -48,12 +55,11 @@ namespace renderer
 //
 
 class TextureCache
+  : public foundation::NonCopyable
 {
   public:
     // Constructor.
-    TextureCache(
-        const Scene&                scene,
-        const size_t                memory_limit = 1024 * 1024);
+    explicit TextureCache(TextureStore& store);
 
     // Destructor.
     ~TextureCache();
@@ -65,29 +71,14 @@ class TextureCache
         const size_t                tile_x,
         const size_t                tile_y);
 
-    // Return the number of cache hits/misses in stage-0.
-    foundation::uint64 get_stage0_hit_count() const;
-    foundation::uint64 get_stage0_miss_count() const;
-
-    // Return the number of cache hits/misses in stage-1.
-    foundation::uint64 get_stage1_hit_count() const;
-    foundation::uint64 get_stage1_miss_count() const;
+    // Return cache performance statistics.
+    foundation::uint64 get_hit_count() const;
+    foundation::uint64 get_miss_count() const;
 
   private:
-    struct TileKey
-    {
-        foundation::UniqueID        m_assembly_uid;
-        size_t                      m_texture_index;
-        size_t                      m_tile_x;
-        size_t                      m_tile_y;
-
-        // Return an invalid key.
-        static TileKey invalid();
-
-        // Comparison operators.
-        bool operator==(const TileKey& rhs) const;
-        bool operator<(const TileKey& rhs) const;
-    };
+    typedef TextureStore::TileKey TileKey;
+    typedef TextureStore::TileRecord TileRecord;
+    typedef TileRecord* TileRecordPtr;
 
     struct TileKeyHasher
       : public foundation::NonCopyable
@@ -96,44 +87,35 @@ class TextureCache
         size_t operator()(const TileKey& key) const;
     };
 
-    typedef foundation::Tile* TilePtr;
-
-    class TileSwapper
+    class TileRecordSwapper
       : public foundation::NonCopyable
     {
       public:
         // Constructor.
-        TileSwapper(
-            const Scene&            scene,
-            const size_t            memory_limit);
+        explicit TileRecordSwapper(TextureStore& store);
 
         // Load a cache line.
-        void load(const TileKey& key, TilePtr& tile);
+        void load(const TileKey& key, TileRecordPtr& record);
 
         // Unload a cache line.
-        void unload(const TileKey& key, TilePtr& tile);
+        void unload(const TileKey& key, TileRecordPtr& record);
 
-        // Return true if the cache is full, false otherwise.
-        bool is_full(const size_t element_count) const;
-            
       private:
-        const Scene&                m_scene;
-        const size_t                m_memory_limit;
-        size_t                      m_memory_size;
+        TextureStore& m_store;
     };
 
-    typedef foundation::DualStageCache<
+    typedef foundation::SACache<
         TileKey,
         TileKeyHasher,
-        TilePtr,
-        TileSwapper,
-        512,            // number of cache lines
-        2               // number of ways
+        TileRecordPtr,
+        TileRecordSwapper,
+        512,                // number of cache lines
+        4                   // number of ways
     > TileCache;
 
-    TileKeyHasher       m_tile_key_hasher;
-    TileSwapper         m_tile_swapper;
-    TileCache           m_tile_cache;
+    TileKeyHasher           m_tile_key_hasher;
+    TileRecordSwapper       m_tile_record_swapper;
+    TileCache               m_tile_cache;
 };
 
 
@@ -141,80 +123,43 @@ class TextureCache
 //  TextureCache class implementation.
 //
 
-inline foundation::Tile& TextureCache::get(
-    const foundation::UniqueID      assembly_uid,
-    const size_t                    texture_index,
-    const size_t                    tile_x,
-    const size_t                    tile_y)
+inline TextureCache::TextureCache(TextureStore& store)
+  : m_tile_record_swapper(store)
+  , m_tile_cache(m_tile_key_hasher, m_tile_record_swapper, TileKey::invalid())
 {
-    // Construct the tile key.
+}
+
+inline TextureCache::~TextureCache()
+{
+    RENDERER_LOG_DEBUG(
+        "texture cache statistics:\n"
+        "  cache            %s\n",
+        foundation::format_cache_stats(m_tile_cache).c_str());
+}
+
+inline foundation::Tile& TextureCache::get(
+    const foundation::UniqueID  assembly_uid,
+    const size_t                texture_index,
+    const size_t                tile_x,
+    const size_t                tile_y)
+{
     TileKey key;
     key.m_assembly_uid = assembly_uid;
     key.m_texture_index = texture_index;
     key.m_tile_x = tile_x;
     key.m_tile_y = tile_y;
 
-    // Lookup the tile cache.
-    TilePtr tile = m_tile_cache.get(key);
-    assert(tile);
-
-    return *tile;
+    return *m_tile_cache.get(key)->m_tile;
 }
 
-inline foundation::uint64 TextureCache::get_stage0_hit_count() const
+inline foundation::uint64 TextureCache::get_hit_count() const
 {
-    return m_tile_cache.get_stage0_hit_count();
+    return m_tile_cache.get_hit_count();
 }
 
-inline foundation::uint64 TextureCache::get_stage0_miss_count() const
+inline foundation::uint64 TextureCache::get_miss_count() const
 {
-    return m_tile_cache.get_stage0_miss_count();
-}
-
-inline foundation::uint64 TextureCache::get_stage1_hit_count() const
-{
-    return m_tile_cache.get_stage1_hit_count();
-}
-
-inline foundation::uint64 TextureCache::get_stage1_miss_count() const
-{
-    return m_tile_cache.get_stage1_miss_count();
-}
-
-
-//
-// TextureCache::TileKey class implementation.
-//
-
-inline TextureCache::TileKey TextureCache::TileKey::invalid()
-{
-    TileKey key;
-    key.m_assembly_uid = ~0;
-    key.m_texture_index = ~0;
-    key.m_tile_x = ~0;
-    key.m_tile_y = ~0;
-    return key;
-}
-
-inline bool TextureCache::TileKey::operator==(const TileKey& rhs) const
-{
-    return
-        m_assembly_uid == rhs.m_assembly_uid &&
-        m_texture_index == rhs.m_texture_index &&
-        m_tile_x == rhs.m_tile_x &&
-        m_tile_y == rhs.m_tile_y;
-}
-
-inline bool TextureCache::TileKey::operator<(const TileKey& rhs) const
-{
-    return
-        m_assembly_uid < rhs.m_assembly_uid ? true :
-        m_assembly_uid > rhs.m_assembly_uid ? false :
-        m_texture_index < rhs.m_texture_index ? true :
-        m_texture_index > rhs.m_texture_index ? false :
-        m_tile_y < rhs.m_tile_y ? true :
-        m_tile_y > rhs.m_tile_y ? false :
-        m_tile_x < rhs.m_tile_x;
+    return m_tile_cache.get_miss_count();
 }
 
 
@@ -229,6 +174,26 @@ inline size_t TextureCache::TileKeyHasher::operator()(const TileKey& key) const
         static_cast<foundation::uint32>(key.m_texture_index),
         static_cast<foundation::uint32>(key.m_tile_x),
         static_cast<foundation::uint32>(key.m_tile_y));
+}
+
+
+//
+// TextureCache::TileRecordSwapper class implementation.
+//
+
+inline TextureCache::TileRecordSwapper::TileRecordSwapper(TextureStore& store)
+  : m_store(store)
+{
+}
+
+inline void TextureCache::TileRecordSwapper::load(const TileKey& key, TileRecordPtr& record)
+{
+    record = &m_store.acquire(key);
+}
+
+inline void TextureCache::TileRecordSwapper::unload(const TileKey& key, TileRecordPtr& record)
+{
+    m_store.release(*record);
 }
 
 }       // namespace renderer

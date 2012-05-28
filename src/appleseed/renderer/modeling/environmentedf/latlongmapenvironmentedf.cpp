@@ -34,6 +34,7 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/lighting/imageimportancesampler.h"
 #include "renderer/kernel/texturing/texturecache.h"
+#include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/inputevaluator.h"
@@ -350,7 +351,8 @@ namespace
             const size_t texel_count = m_importance_map_width * m_importance_map_height;
             m_probability_scale = texel_count / (2.0 * Pi * Pi);
 
-            TextureCache texture_cache(scene);
+            TextureStore texture_store(scene);
+            TextureCache texture_cache(texture_store);
             ImageSampler sampler(
                 texture_cache,
                 m_inputs.source("exitance"),

@@ -33,6 +33,7 @@
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/kernel/texturing/texturecache.h"
+#include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/object/regionkit.h"
 #include "renderer/modeling/scene/assembly.h"
@@ -123,12 +124,14 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
       : public TestScene
     {
         TraceContext    m_trace_context;
+        TextureStore    m_texture_store;
         TextureCache    m_texture_cache;
         Intersector     m_intersector;
 
         Fixture()
           : m_trace_context(m_scene.ref())
-          , m_texture_cache(m_scene.ref())
+          , m_texture_store(m_scene.ref())
+          , m_texture_cache(m_texture_store)
           , m_intersector(m_trace_context, m_texture_cache)
         {
         }

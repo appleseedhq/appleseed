@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2012 Francois Beaune, Jupiter Jazz
+// Copyright (c) 2010-2012 Francois Beaune
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,28 +27,36 @@
 //
 
 // Interface header.
-#include "texturecache.h"
+#include "texturestore.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/texture/texture.h"
-#include "renderer/utility/cache.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/color.h"
+#include "foundation/image/colorspace.h"
+#include "foundation/image/tile.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/memory.h"
 #include "foundation/utility/string.h"
+
+// Standard headers.
+#include <algorithm>
+#include <string>
 
 using namespace foundation;
 using namespace std;
 
+#undef TRACK_TILE_LOADING
+#undef TRACK_TILE_UNLOADING
+#undef TRACK_CACHE_SIZE
+
 namespace renderer
 {
-
-//
-//  TextureCache class implementation.
-//
 
 namespace
 {
@@ -57,6 +65,7 @@ namespace
     {
         const size_t pixel_count = tile.get_pixel_count();
         const size_t channel_count = tile.get_channel_count();
+
         assert(channel_count == 3 || channel_count == 4);
 
         if (channel_count == 3)
@@ -85,6 +94,7 @@ namespace
     {
         const size_t pixel_count = tile.get_pixel_count();
         const size_t channel_count = tile.get_channel_count();
+
         assert(channel_count == 3 || channel_count == 4);
 
         if (channel_count == 3)
@@ -109,35 +119,36 @@ namespace
     }
 }
 
-TextureCache::TextureCache(
+TextureStore::TextureStore(
     const Scene&    scene,
     const size_t    memory_limit)
   : m_tile_swapper(scene, memory_limit)
-  , m_tile_cache(m_tile_key_hasher, m_tile_swapper, TileKey::invalid())
+  , m_tile_cache(m_tile_swapper)
 {
 }
 
-TextureCache::~TextureCache()
+TextureStore::~TextureStore()
 {
-    print_dual_stage_cache_stats(m_tile_cache, "texture cache statistics");
+    RENDERER_LOG_DEBUG(
+        "texture store statistics:\n"
+        "  cache            %s\n"
+        "  peak size        %s\n",
+        format_cache_stats(m_tile_cache).c_str(),
+        pretty_size(m_tile_swapper.m_max_memory_size).c_str());
 }
 
-
-//
-// TextureCache::TileSwapper class implementation.
-//
-
-TextureCache::TileSwapper::TileSwapper(
+TextureStore::TileSwapper::TileSwapper(
     const Scene&    scene,
     const size_t    memory_limit)
   : m_scene(scene)
   , m_memory_limit(memory_limit)
   , m_memory_size(0)
+  , m_max_memory_size(0)
 {
     assert(m_memory_limit > 0);
 }
 
-void TextureCache::TileSwapper::load(const TileKey& key, TilePtr& tile)
+void TextureStore::TileSwapper::load(const TileKey& key, TileRecord& record)
 {
     // Fetch the texture container.
     const TextureContainer& textures =
@@ -149,17 +160,18 @@ void TextureCache::TileSwapper::load(const TileKey& key, TilePtr& tile)
     assert(key.m_texture_index < textures.size());
     Texture* texture = textures.get_by_index(key.m_texture_index);
 
-/*
+#ifdef TRACK_TILE_LOADING
     RENDERER_LOG_DEBUG(
         "loading tile (" FMT_SIZE_T ", " FMT_SIZE_T ") "
-        "from texture \"%s\"",
+        "from texture \"%s\"...",
         key.m_tile_x,
         key.m_tile_y,
         texture->get_name());
-*/
+#endif
 
     // Load the tile.
-    tile = texture->load_tile(key.m_tile_x, key.m_tile_y);
+    record.m_tile = texture->load_tile(key.m_tile_x, key.m_tile_y);
+    record.m_owners = 0;
 
     // Convert the tile to the linear RGB color space.
     switch (texture->get_color_space())
@@ -168,24 +180,48 @@ void TextureCache::TileSwapper::load(const TileKey& key, TilePtr& tile)
         break;
 
       case ColorSpaceSRGB:
-        convert_tile_srgb_to_linear_rgb(*tile);
+        convert_tile_srgb_to_linear_rgb(*record.m_tile);
         break;
 
       case ColorSpaceCIEXYZ:
-        convert_tile_ciexyz_to_linear_rgb(*tile);
+        convert_tile_ciexyz_to_linear_rgb(*record.m_tile);
         break;
 
       assert_otherwise;
     }
 
     // Track the amount of memory used by the tile cache.
-    m_memory_size += dynamic_sizeof(*tile);
+    m_memory_size += dynamic_sizeof(*record.m_tile);
+    m_max_memory_size = max(m_max_memory_size, m_memory_size);
+
+#ifdef TRACK_CACHE_SIZE
+    if (m_memory_size > m_memory_limit)
+    {
+        RENDERER_LOG_DEBUG(
+            "texture store size is %s, exceeding capacity %s by %s",
+            pretty_size(m_memory_size).c_str(),
+            pretty_size(m_memory_limit).c_str(),
+            pretty_size(m_memory_size - m_memory_limit).c_str());
+    }
+    else
+    {
+        RENDERER_LOG_DEBUG(
+            "texture store size is %s, below capacity %s by %s",
+            pretty_size(m_memory_size).c_str(),
+            pretty_size(m_memory_limit).c_str(),
+            pretty_size(m_memory_size - m_memory_limit).c_str());
+    }
+#endif
 }
 
-void TextureCache::TileSwapper::unload(const TileKey& key, TilePtr& tile)
+bool TextureStore::TileSwapper::unload(const TileKey& key, TileRecord& record)
 {
+    // Cannot unload tiles that are still in use.
+    if (boost::interprocess::detail::atomic_read32(&record.m_owners) > 0)
+        return false;
+
     // Track the amount of memory used by the tile cache.
-    const size_t tile_memory_size = dynamic_sizeof(*tile);
+    const size_t tile_memory_size = dynamic_sizeof(*record.m_tile);
     assert(m_memory_size >= tile_memory_size);
     m_memory_size -= tile_memory_size;
 
@@ -199,30 +235,20 @@ void TextureCache::TileSwapper::unload(const TileKey& key, TilePtr& tile)
     assert(key.m_texture_index < textures.size());
     Texture* texture = textures.get_by_index(key.m_texture_index);
 
-/*
+#ifdef TRACK_TILE_UNLOADING
     RENDERER_LOG_DEBUG(
         "unloading tile (" FMT_SIZE_T ", " FMT_SIZE_T ") "
-        "from texture \"%s\"",
+        "from texture \"%s\"...",
         key.m_tile_x,
         key.m_tile_y,
         texture->get_name());
-*/
+#endif
 
     // Unload the tile.
-    texture->unload_tile(key.m_tile_x, key.m_tile_y, tile);
-}
+    texture->unload_tile(key.m_tile_x, key.m_tile_y, record.m_tile);
 
-bool TextureCache::TileSwapper::is_full(const size_t element_count) const
-{
-/*
-    RENDERER_LOG_DEBUG(
-        "texture cache contains %s %s (%s).",
-        pretty_uint(element_count).c_str(),
-        plural(element_count, "tile").c_str(),
-        pretty_size(m_memory_size).c_str());
-*/
-
-    return m_memory_size >= m_memory_limit;
+    // Successfully unloaded the tile.
+    return true;
 }
 
 }   // namespace renderer

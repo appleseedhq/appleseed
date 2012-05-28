@@ -38,6 +38,7 @@
 
 // Forward declarations.
 namespace renderer  { class Scene; }
+namespace renderer  { class TextureStore; }
 namespace renderer  { class TraceContext; }
 
 namespace renderer
@@ -51,6 +52,7 @@ class DLLSYMBOL EWATestTileRendererFactory
     EWATestTileRendererFactory(
         const Scene&        scene,
         const TraceContext& trace_context,
+        TextureStore&       texture_store,
         const ParamArray&   params);
 
     // Delete this instance.
@@ -62,6 +64,7 @@ class DLLSYMBOL EWATestTileRendererFactory
   private:
     const Scene&            m_scene;
     const TraceContext&     m_trace_context;
+    TextureStore&           m_texture_store;
     ParamArray              m_params;
 };
 

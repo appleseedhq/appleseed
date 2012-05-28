@@ -68,13 +68,14 @@ namespace
             const Scene&            scene,
             const Frame&            frame,
             const TraceContext&     trace_context,
+            TextureStore&           texture_store,
             ILightingEngineFactory* lighting_engine_factory,
             ShadingEngine&          shading_engine,
             const ParamArray&       params)
           : m_params(params)
           , m_scene(scene)
           , m_lighting_conditions(frame.get_lighting_conditions())
-          , m_texture_cache(scene, m_params.m_texture_cache_size)
+          , m_texture_cache(texture_store)
           , m_intersector(trace_context, m_texture_cache, true, m_params.m_report_self_intersections)
           , m_lighting_engine(lighting_engine_factory->create())
           , m_shading_engine(shading_engine)
@@ -215,13 +216,11 @@ namespace
       private:
         struct Parameters
         {
-            const size_t    m_texture_cache_size;           // size in bytes of the texture cache
             const float     m_transparency_threshold;
             const bool      m_report_self_intersections;
 
             explicit Parameters(const ParamArray& params)
-              : m_texture_cache_size(params.get_optional<size_t>("texture_cache_size", 16 * 1024 * 1024))
-              , m_transparency_threshold(1.0f - params.get_optional<float>("opacity_threshold", 1.0e-5f))
+              : m_transparency_threshold(1.0f - params.get_optional<float>("opacity_threshold", 1.0e-5f))
               , m_report_self_intersections(params.get_optional<bool>("report_self_intersections", false))
             {
             }
@@ -247,12 +246,14 @@ GenericSampleRendererFactory::GenericSampleRendererFactory(
     const Scene&            scene,
     const Frame&            frame,
     const TraceContext&     trace_context,
+    TextureStore&           texture_store,
     ILightingEngineFactory* lighting_engine_factory,
     ShadingEngine&          shading_engine,
     const ParamArray&       params)
   : m_scene(scene)
   , m_frame(frame)
   , m_trace_context(trace_context)
+  , m_texture_store(texture_store)
   , m_lighting_engine_factory(lighting_engine_factory)
   , m_shading_engine(shading_engine)
   , m_params(params)
@@ -271,6 +272,7 @@ ISampleRenderer* GenericSampleRendererFactory::create()
             m_scene,
             m_frame,
             m_trace_context,
+            m_texture_store,
             m_lighting_engine_factory,
             m_shading_engine,
             m_params);
@@ -280,6 +282,7 @@ ISampleRenderer* GenericSampleRendererFactory::create(
     const Scene&            scene,
     const Frame&            frame,
     const TraceContext&     trace_context,
+    TextureStore&           texture_store,
     ILightingEngineFactory* lighting_engine_factory,
     ShadingEngine&          shading_engine,
     const ParamArray&       params)
@@ -289,6 +292,7 @@ ISampleRenderer* GenericSampleRendererFactory::create(
             scene,
             frame,
             trace_context,
+            texture_store,
             lighting_engine_factory,
             shading_engine,
             params);

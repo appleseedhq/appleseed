@@ -50,6 +50,7 @@
 #include "renderer/kernel/rendering/itilerenderer.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingengine.h"
+#include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/input/inputbinder.h"
 #include "renderer/modeling/project/project.h"
@@ -168,6 +169,11 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     const Scene& scene = *m_project.get_scene();
     Frame& frame = *m_project.get_frame();
 
+    // Create the texture store.
+    TextureStore texture_store(
+        scene,
+        m_params.get_optional<size_t>("texture_cache_size", 256 * 1024 * 1024));
+
     // Create the light sampler.
     LightSampler light_sampler(scene);
 
@@ -221,6 +227,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
                 scene,
                 frame,
                 m_project.get_trace_context(),
+                texture_store,
                 lighting_engine_factory.get(),
                 shading_engine,
                 m_params.child("generic_sample_renderer")));
@@ -264,6 +271,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
             new EWATestTileRendererFactory(
                 scene,
                 m_project.get_trace_context(),
+                texture_store,
                 m_params.child("ewatest_tile_renderer")));
     }
     else
@@ -297,6 +305,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
                 scene,
                 frame,
                 m_project.get_trace_context(),
+                texture_store,
                 light_sampler,
                 m_params.child("lighttracing_sample_generator")));
     }

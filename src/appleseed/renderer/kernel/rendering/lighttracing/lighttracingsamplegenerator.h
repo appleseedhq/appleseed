@@ -44,6 +44,7 @@ namespace renderer      { class AccumulationFramebuffer; }
 namespace renderer      { class Frame; }
 namespace renderer      { class LightSampler; }
 namespace renderer      { class Scene; }
+namespace renderer      { class TextureStore; }
 namespace renderer      { class TraceContext; }
 
 namespace renderer
@@ -58,6 +59,7 @@ class DLLSYMBOL LightTracingSampleGeneratorFactory
         const Scene&            scene,
         const Frame&            frame,
         const TraceContext&     trace_context,
+        TextureStore&           texture_store,
         const LightSampler&     light_sampler,
         const ParamArray&       params);
 
@@ -78,6 +80,7 @@ class DLLSYMBOL LightTracingSampleGeneratorFactory
     const Scene&                m_scene;
     const Frame&                m_frame;
     const TraceContext&         m_trace_context;
+    TextureStore&               m_texture_store;
     const LightSampler&         m_light_sampler;
     const ParamArray            m_params;
 };

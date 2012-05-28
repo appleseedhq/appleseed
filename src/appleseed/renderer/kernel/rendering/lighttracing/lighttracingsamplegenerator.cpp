@@ -95,6 +95,7 @@ namespace
             const Scene&                scene,
             const Frame&                frame,
             const TraceContext&         trace_context,
+            TextureStore&               texture_store,
             const LightSampler&         light_sampler,
             const size_t                generator_index,
             const size_t                generator_count,
@@ -107,7 +108,7 @@ namespace
           , m_safe_scene_radius(scene.compute_radius() * (1.0 + 1.0e-3))
           , m_disk_point_prob(1.0 / (Pi * square(m_safe_scene_radius)))
           , m_light_sampler(light_sampler)
-          , m_texture_cache(scene, m_params.m_texture_cache_size)
+          , m_texture_cache(texture_store)
           , m_intersector(trace_context, m_texture_cache, true, m_params.m_report_self_intersections)
         {
             RENDERER_LOG_INFO(
@@ -158,14 +159,12 @@ namespace
       private:
         struct Parameters
         {
-            const size_t    m_texture_cache_size;           // size in bytes of the texture cache
             const bool      m_report_self_intersections;
             const size_t    m_rr_min_path_length;           // minimum path length before Russian Roulette is used, 0 for unlimited
             const size_t    m_max_path_length;              // maximum path length, 0 for unlimited
 
             explicit Parameters(const ParamArray& params)
-              : m_texture_cache_size(params.get_optional<size_t>("texture_cache_size", 16 * 1024 * 1024))
-              , m_report_self_intersections(params.get_optional<bool>("report_self_intersections", false))
+              : m_report_self_intersections(params.get_optional<bool>("report_self_intersections", false))
               , m_rr_min_path_length(params.get_optional<size_t>("rr_min_path_length", 3))
               , m_max_path_length(params.get_optional<size_t>("max_path_length", 0))
             {
@@ -754,11 +753,13 @@ LightTracingSampleGeneratorFactory::LightTracingSampleGeneratorFactory(
     const Scene&            scene,
     const Frame&            frame,
     const TraceContext&     trace_context,
+    TextureStore&           texture_store,
     const LightSampler&     light_sampler,
     const ParamArray&       params)
   : m_scene(scene)
   , m_frame(frame)
   , m_trace_context(trace_context)
+  , m_texture_store(texture_store)
   , m_light_sampler(light_sampler)
   , m_params(params)
 {
@@ -778,6 +779,7 @@ ISampleGenerator* LightTracingSampleGeneratorFactory::create(
             m_scene,
             m_frame,
             m_trace_context,
+            m_texture_store,
             m_light_sampler,
             generator_index,
             generator_count,

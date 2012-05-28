@@ -29,6 +29,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/texturing/texturecache.h"
+#include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfmix.h"
 #include "renderer/modeling/bsdf/lambertianbrdf.h"
@@ -120,7 +121,8 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
         for (each<BSDFContainer> i = assembly.bsdfs(); i; ++i)
             i->on_frame_begin(project.ref(), assembly);
 
-        TextureCache texture_cache(scene);
+        TextureStore texture_store(scene);
+        TextureCache texture_cache(texture_store);
         InputEvaluator input_evaluator(texture_cache);
 
         BSDF& parent_bsdf = *assembly.bsdfs().get_by_name("parent_bsdf");

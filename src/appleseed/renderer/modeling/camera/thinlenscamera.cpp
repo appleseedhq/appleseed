@@ -33,6 +33,7 @@
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/texturing/texturecache.h"
+#include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/utility/transformsequence.h"
@@ -119,7 +120,8 @@ namespace
             // Perform autofocus, if enabled.
             if (m_autofocus_enabled)
             {
-                TextureCache texture_cache(*project.get_scene());
+                TextureStore texture_store(*project.get_scene());
+                TextureCache texture_cache(texture_store);
                 Intersector intersector(project.get_trace_context(), texture_cache, false);
                 m_focal_distance = get_autofocus_focal_distance(intersector);
             }

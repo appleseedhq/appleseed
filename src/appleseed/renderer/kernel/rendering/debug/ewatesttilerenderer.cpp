@@ -70,9 +70,10 @@ namespace
         EWATestTileRenderer(
             const Scene&            scene,
             const TraceContext&     trace_context,
+            TextureStore&           texture_store,
             const ParamArray&       params)
           : m_scene(scene)
-          , m_texture_cache(m_scene)
+          , m_texture_cache(texture_store)
           , m_intersector(trace_context, m_texture_cache)
           , m_texture_width(params.get_optional<size_t>("texture_width", 256))
           , m_texture_height(params.get_optional<size_t>("texture_height", 256))
@@ -230,9 +231,11 @@ namespace
 EWATestTileRendererFactory::EWATestTileRendererFactory(
     const Scene&            scene,
     const TraceContext&     trace_context,
+    TextureStore&           texture_store,
     const ParamArray&       params)
   : m_scene(scene)
   , m_trace_context(trace_context)
+  , m_texture_store(texture_store)
   , m_params(params)
 {
 }
@@ -244,7 +247,12 @@ void EWATestTileRendererFactory::release()
 
 ITileRenderer* EWATestTileRendererFactory::create()
 {
-    return new EWATestTileRenderer(m_scene, m_trace_context, m_params);
+    return
+        new EWATestTileRenderer(
+            m_scene,
+            m_trace_context,
+            m_texture_store,
+            m_params);
 }
 
 }   // namespace renderer

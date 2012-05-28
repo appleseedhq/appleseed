@@ -33,6 +33,7 @@
 #include "renderer/kernel/lighting/tracer.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/texturing/texturecache.h"
+#include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/color/colorentity.h"
 #include "renderer/modeling/input/inputbinder.h"
 #include "renderer/modeling/material/material.h"
@@ -185,6 +186,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
       : public Base
     {
         TraceContext        m_trace_context;
+        TextureStore        m_texture_store;
         TextureCache        m_texture_cache;
         Intersector         m_intersector;
         MersenneTwister     m_rng;
@@ -193,7 +195,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 
         Fixture()
           : m_trace_context(Base::m_scene.ref())
-          , m_texture_cache(Base::m_scene.ref())
+          , m_texture_store(Base::m_scene.ref())
+          , m_texture_cache(m_texture_store)
           , m_intersector(m_trace_context, m_texture_cache)
           , m_sampling_context(m_rng, 0, 0, 0)
           , m_tracer(m_intersector, m_texture_cache)

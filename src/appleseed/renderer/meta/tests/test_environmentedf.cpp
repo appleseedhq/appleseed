@@ -29,6 +29,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
 #include "renderer/kernel/texturing/texturecache.h"
+#include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/environmentedf/constantenvironmentedf.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/environmentedf/gradientenvironmentedf.h"
@@ -147,7 +148,8 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
 
             env_edf.on_frame_begin(m_project);
 
-            TextureCache texture_cache(m_scene);
+            TextureStore texture_store(m_scene);
+            TextureCache texture_cache(texture_store);
             InputEvaluator input_evaluator(texture_cache);
 
             Vector3d outgoing;
