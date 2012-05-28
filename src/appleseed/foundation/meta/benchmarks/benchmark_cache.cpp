@@ -53,8 +53,9 @@ BENCHMARK_SUITE(Foundation_Utility_Cache_LRUCache)
                 element = static_cast<MyElement>(key);
             }
 
-            void unload(const MyKey key, MyElement& element)
+            bool unload(const MyKey key, MyElement& element)
             {
+                return true;
             }
 
             bool is_full(const size_t element_count) const

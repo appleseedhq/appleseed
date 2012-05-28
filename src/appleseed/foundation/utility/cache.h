@@ -34,6 +34,7 @@
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/foreach.h"
+#include "foundation/utility/iterators.h"
 
 // Standard headers.
 #include <cassert>
@@ -99,31 +100,6 @@ namespace cache_impl
 
 
     //
-    // Timestamp source.
-    //
-
-    class Timestamper
-      : public NonCopyable
-    {
-      public:
-        // Constructor.
-        Timestamper()
-          : m_timestamp(0)
-        {
-        }
-
-        // Return the next timestamp value.
-        Timestamp next()
-        {
-            return m_timestamp++;
-        }
-
-      private:
-        Timestamp m_timestamp;
-    };
-
-
-    //
     // Single cache entry for set associative caches.
     //
 
@@ -152,15 +128,27 @@ namespace cache_impl
     // Single cache line for a generic N-way set associative cache.
     //
 
-    template <typename Key, typename Element, size_t Ways>
+    template <typename Key, typename Element, size_t Ways_>
     class SACacheLine
       : public NonCopyable
     {
       public:
-        // Types.
         typedef Key KeyType;
         typedef Element ElementType;
         typedef SACacheEntry<Key, Element, true> EntryType;
+        static const size_t Ways = Ways_;
+
+        // Return a given entry.
+        EntryType& get_entry(const size_t i)
+        {
+            assert(i < Ways);
+            return m_entries[i];
+        }
+        const EntryType& get_entry(const size_t i) const
+        {
+            assert(i < Ways);
+            return m_entries[i];
+        }
 
         // Invalidate all entries of the cache line.
         void invalidate(const KeyType& invalid_key)
@@ -185,9 +173,9 @@ namespace cache_impl
         }
 
         // Update the timestamp of a given entry in this cache line.
-        void touch_entry(EntryType* entry, Timestamper& timestamper)
+        void touch_entry(EntryType* entry, const Timestamp timestamp)
         {
-            entry->m_timestamp = timestamper.next();
+            entry->m_timestamp = timestamp;
         }
 
         // Find an entry to replace in this cache line.
@@ -208,14 +196,6 @@ namespace cache_impl
             return &m_entries[oldest_index];
         }
 
-        // Check the integrity of the cache line. For debug purposes only.
-        template <typename IntegrityChecker>
-        void check_integrity(IntegrityChecker& checker) const
-        {
-            for (size_t i = 0; i < Ways; ++i)
-                checker(m_entries[i].m_key, m_entries[i].m_element);
-        }
-
       private:
         EntryType m_entries[Ways];
     };
@@ -230,10 +210,22 @@ namespace cache_impl
       : public NonCopyable
     {
       public:
-        // Types.
         typedef Key KeyType;
         typedef Element ElementType;
         typedef SACacheEntry<Key, Element, false> EntryType;
+        static const size_t Ways = 1;
+
+        // Return a given entry.
+        EntryType& get_entry(const size_t i)
+        {
+            assert(i < Ways);
+            return m_entry;
+        }
+        const EntryType& get_entry(const size_t i) const
+        {
+            assert(i < Ways);
+            return m_entry;
+        }
 
         // Invalidate all entries of the cache line.
         void invalidate(const KeyType& invalid_key)
@@ -248,7 +240,7 @@ namespace cache_impl
         }
 
         // Update the timestamp of a given entry in this cache line.
-        void touch_entry(EntryType* entry, Timestamper& timestamper)
+        void touch_entry(EntryType* entry, const Timestamp timestamp)
         {
         }
 
@@ -256,13 +248,6 @@ namespace cache_impl
         EntryType* find_eviction_candidate()
         {
             return &m_entry;
-        }
-
-        // Check the integrity of the cache line. For debug purposes only.
-        template <typename IntegrityChecker>
-        void check_integrity(IntegrityChecker& checker) const
-        {
-            checker(m_entry.m_key, m_entry.m_element);
         }
 
       private:
@@ -279,10 +264,22 @@ namespace cache_impl
       : public NonCopyable
     {
       public:
-        // Types.
         typedef Key KeyType;
         typedef Element ElementType;
         typedef SACacheEntry<Key, Element, false> EntryType;
+        static const size_t Ways = 2;
+
+        // Return a given entry.
+        EntryType& get_entry(const size_t i)
+        {
+            assert(i < Ways);
+            return m_entries[i];
+        }
+        const EntryType& get_entry(const size_t i) const
+        {
+            assert(i < Ways);
+            return m_entries[i];
+        }
 
         // Invalidate all entries of the cache line.
         void invalidate(const KeyType& invalid_key)
@@ -301,7 +298,7 @@ namespace cache_impl
         }
 
         // Update the timestamp of a given entry in this cache line.
-        void touch_entry(EntryType* entry, Timestamper& timestamper)
+        void touch_entry(EntryType* entry, const Timestamp timestamp)
         {
             m_oldest = 1 - (entry - m_entries);
         }
@@ -310,14 +307,6 @@ namespace cache_impl
         EntryType* find_eviction_candidate()
         {
             return &m_entries[m_oldest];
-        }
-
-        // Check the integrity of the cache line. For debug purposes only.
-        template <typename IntegrityChecker>
-        void check_integrity(IntegrityChecker& checker) const
-        {
-            checker(m_entries[0].m_key, m_entries[0].m_element);
-            checker(m_entries[1].m_key, m_entries[1].m_element);
         }
 
       private:
@@ -385,6 +374,9 @@ class SACache
         ElementSwapperType& element_swapper,
         const KeyType&      invalid_key);
 
+    // Destructor.
+    ~SACache();
+
     // Clear the cache.
     void clear();
 
@@ -415,7 +407,7 @@ class SACache
     KeyHasherType&          m_key_hasher;
     ElementSwapperType&     m_element_swapper;
     const KeyType           m_invalid_key;
-    cache_impl::Timestamper m_timestamper;
+    cache_impl::Timestamp   m_timestamp;
     LineType                m_lines[Lines];             // cache storage
 };
 
@@ -432,8 +424,9 @@ class SACache
 //          // Load a cache line.
 //          void load(const Key key, Element& element);
 //
-//          // Unload a cache line.
-//          void unload(const Key key, Element& element);
+//          // Unload a cache line. Return true if unloading succeeded,
+//          // false if the element could not be unloaded.
+//          bool unload(const Key key, Element& element);
 //
 //          // Return true if the cache is full, false otherwise.
 //          // If true is returned, the least recently used element
@@ -536,8 +529,9 @@ class LRUCache
 //          // Load a cache line.
 //          void load(const Key key, Element& element);
 //
-//          // Unload a cache line.
-//          void unload(const Key key, Element& element);
+//          // Unload a cache line. Return true if unloading succeeded,
+//          // false if the element could not be unloaded.
+//          bool unload(const Key key, Element& element);
 //
 //          // Return true if the cache is full, false otherwise.
 //          // If true is returned, the least recently used element
@@ -661,11 +655,14 @@ class DualStageCache
             m_swapper.load(key, element);
         }
 
-        void unload(const KeyType& key, ElementType& element)
+        bool unload(const KeyType& key, ElementType& element)
         {
-            m_s0_cache.invalidate(key);
-
-            m_swapper.unload(key, element);
+            if (m_swapper.unload(key, element))
+            {
+                m_s0_cache.invalidate(key);
+                return true;
+            }
+            else return false;
         }
 
         bool is_full(const size_t element_count) const
@@ -729,8 +726,23 @@ SACache(
   : m_key_hasher(key_hasher)
   , m_element_swapper(element_swapper)
   , m_invalid_key(invalid_key)
+  , m_timestamp(0)
 {
     clear();
+}
+
+FOUNDATION_SACACHE_TEMPLATE_DEF(FOUNDATION_EMPTY)
+~SACache()
+{
+    for (size_t i = 0; i < Lines; ++i)
+    {
+        for (size_t j = 0; j < LineType::Ways; ++j)
+        {
+            EntryType& entry = m_lines[i].get_entry(j);
+            if (entry.m_key != m_invalid_key)
+                m_element_swapper.unload(entry.m_key, entry.m_element);
+        }
+    }
 }
 
 FOUNDATION_SACACHE_TEMPLATE_DEF(void)
@@ -773,7 +785,7 @@ get(const KeyType& key)
     }
 
     // Update the timestamp of this entry.
-    line.touch_entry(entry, m_timestamper);
+    line.touch_entry(entry, m_timestamp++);
 
     // Return the corresponding element.
     return entry->m_element;
@@ -809,7 +821,13 @@ FOUNDATION_SACACHE_TEMPLATE_DEF(template <typename IntegrityChecker> void)
 check_integrity(IntegrityChecker& checker) const
 {
     for (size_t i = 0; i < Lines; ++i)
-        m_lines[i].check_integrity(checker);
+    {
+        for (size_t j = 0; j < LineType::Ways; ++j)
+        {
+            const EntryType& entry = m_lines[i].get_entry(j);
+            checker(entry.m_key, entry.m_element);
+        }
+    }
 }
 
 #undef FOUNDATION_SACACHE_TEMPLATE_DEF
@@ -855,7 +873,13 @@ FOUNDATION_LRUCACHE_TEMPLATE_DEF(void)
 clear()
 {
     for (each<Queue> i = m_queue; i; ++i)
+    {
+#ifndef NDEBUG
+        const bool success =
+#endif
         m_element_swapper.unload(i->m_key, i->m_element);
+        assert(success);
+    }
 
     m_index.clear();
     m_queue.clear();
@@ -905,20 +929,26 @@ get(const KeyType& key)
         // Insert the new element into the index.
         m_index[key] = m_queue.begin();
 
-        while (m_queue_size > 1 && m_element_swapper.is_full(m_queue_size))
+        Queue::reverse_iterator i = m_queue.rbegin();
+
+        while (m_element_swapper.is_full(m_queue_size) && i != pred(m_queue.rend()))
         {
-            // Locate the least recently used element.
-            Line& line = m_queue.back();
+            // Try to unload this element.
+            if (m_element_swapper.unload(i->m_key, i->m_element))
+            {
+                // Remove this element from the index.
+                m_index.erase(i->m_key);
 
-            // Unload the least recently used element.
-            m_element_swapper.unload(line.m_key, line.m_element);
-
-            // Remove the least recently used element from the index.
-            m_index.erase(line.m_key);
-
-            // Remove the least recently used element from the queue.
-            m_queue.pop_back();
-            --m_queue_size;
+                // Remove this element from the queue.
+                // http://stackoverflow.com/questions/1830158/how-to-call-erase-with-a-reverse-iterator
+                m_queue.erase(succ(i).base());
+                --m_queue_size;
+            }
+            else
+            {
+                // Unloading this element failed, try the next one.
+                ++i;
+            }
         }
 
         // Return the element.

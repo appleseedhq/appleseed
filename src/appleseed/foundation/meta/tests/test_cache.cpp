@@ -39,203 +39,174 @@
 using namespace foundation;
 using namespace std;
 
-TEST_SUITE(Foundation_Utility_Cache_SACache)
+namespace
 {
-    typedef size_t MyKey;
-    typedef size_t MyElement;
+    typedef size_t Key;
+    typedef size_t Element;
 
-    const MyKey MyInvalidKey = ~0;
+    const Key InvalidKey = ~0;
 
-    struct MyKeyHasher
+    struct KeyHasher
     {
-        size_t operator()(const MyKey key) const
+        size_t operator()(const Key key) const
         {
             return static_cast<size_t>(key);
         }
     };
 
-    struct MyElementSwapper
+    struct ElementSwapperCountingUnloads
     {
-        bool& m_unload_called;
+        size_t m_unload_count;
 
-        explicit MyElementSwapper(bool& unload_called)
-          : m_unload_called(unload_called)
+        ElementSwapperCountingUnloads()
+          : m_unload_count(0)
         {
         }
 
-        void load(const MyKey key, MyElement& element) const
+        void load(const Key key, Element& element) const
         {
         }
 
-        void unload(const MyKey key, MyElement& element) const
+        bool unload(const Key key, Element& element)
         {
-            m_unload_called = true;
+            ++m_unload_count;
+            return true;
+        }
+
+        bool is_full(const size_t element_count) const
+        {
+            return false;
         }
     };
+}
+
+TEST_SUITE(Foundation_Utility_Cache_SACache)
+{
+    TEST_CASE(Destructor_UnloadsElementsStillInCache)
+    {
+        ElementSwapperCountingUnloads element_swapper;
+
+        {
+            KeyHasher key_hasher;
+            SACache<Key, KeyHasher, Element, ElementSwapperCountingUnloads, 4, 1> cache(
+                key_hasher,
+                element_swapper,
+                InvalidKey);
+
+            cache.get(1);
+            cache.get(2);
+            cache.get(3);
+        }
+
+        EXPECT_EQ(3, element_swapper.m_unload_count);
+    }
 
     TEST_CASE(Get_DoesNotCallUnloadOnEmptyCacheLine)
     {
-        MyKeyHasher key_hasher;
-
-        bool unload_called = false;
-        MyElementSwapper element_swapper(unload_called);
-
-        SACache<MyKey, MyKeyHasher, MyElement, MyElementSwapper, 4, 1> cache(
+        KeyHasher key_hasher;
+        ElementSwapperCountingUnloads element_swapper;
+        SACache<Key, KeyHasher, Element, ElementSwapperCountingUnloads, 4, 1> cache(
             key_hasher,
             element_swapper,
-            MyInvalidKey);
+            InvalidKey);
 
         cache.get(0);
 
-        EXPECT_FALSE(unload_called);
+        EXPECT_EQ(0, element_swapper.m_unload_count);
     }
 }
 
 TEST_SUITE(Foundation_Utility_Cache_LRUCache)
 {
-    namespace case1
+    TEST_CASE(Destructor_UnloadsElementsStillInCache)
     {
-        typedef size_t MyKey;
-        typedef size_t MyElement;
+        ElementSwapperCountingUnloads element_swapper;
 
-        struct MyElementSwapper
         {
-            size_t m_unloaded_element_count;
-
-            MyElementSwapper()
-              : m_unloaded_element_count(0)
-            {
-            }
-
-            void load(const MyKey key, MyElement*& element) const
-            {
-                element = new MyElement(key);
-            }
-
-            void unload(const MyKey key, MyElement*& element)
-            {
-                delete element;
-                element = 0;
-                ++m_unloaded_element_count;
-            }
-
-            bool is_full(const size_t element_count) const
-            {
-                return false;
-            }
-        };
-
-        TEST_CASE(Destructor_UnloadsElementsStillInCache)
-        {
-            MyElementSwapper element_swapper;
-
-            {
-                LRUCache<MyKey, MyElement*, MyElementSwapper> cache(element_swapper);
-
-                cache.get(1);
-                cache.get(2);
-                cache.get(3);
-            }
-
-            EXPECT_EQ(3, element_swapper.m_unloaded_element_count);
-        }
-    }
-
-    namespace case2
-    {
-        typedef size_t MyKey;
-        typedef size_t MyElement;
-
-        struct MyElementSwapper
-        {
-            size_t m_memory_size;
-
-            MyElementSwapper()
-              : m_memory_size(0)
-            {
-            }
-
-            void load(const MyKey key, MyElement*& element)
-            {
-                element = new MyElement(key);
-                m_memory_size += *element * 1000;
-            }
-
-            void unload(const MyKey key, MyElement*& element)
-            {
-                m_memory_size -= *element * 1000;
-                delete element;
-                element = 0;
-            }
-
-            bool is_full(const size_t element_count) const
-            {
-                return m_memory_size >= 8 * 1000;
-            }
-        };
-
-        TEST_CASE(MemoryLimitIsHonored)
-        {
-            MyElementSwapper element_swapper;
-            LRUCache<MyKey, MyElement*, MyElementSwapper> cache(element_swapper);
+            LRUCache<Key, Element, ElementSwapperCountingUnloads> cache(element_swapper);
 
             cache.get(1);
-            ASSERT_EQ(1000, element_swapper.m_memory_size);
-
             cache.get(2);
-            ASSERT_EQ(3000, element_swapper.m_memory_size);
-
             cache.get(3);
-            ASSERT_EQ(6000, element_swapper.m_memory_size);
-
-            cache.get(4);   // flushes 1 and 2, cache contains 3 and 4
-            ASSERT_EQ(7000, element_swapper.m_memory_size);
-
-            cache.get(5);   // flushes 3 and 4, cache contains 5
-            ASSERT_EQ(5000, element_swapper.m_memory_size);
-
-            cache.get(6);   // flushes 5, cache contains 6
-            ASSERT_EQ(6000, element_swapper.m_memory_size);
-
-            cache.get(9);   // flushes 6, cache contains 9
-            ASSERT_EQ(9000, element_swapper.m_memory_size);
         }
+
+        EXPECT_EQ(3, element_swapper.m_unload_count);
+    }
+
+    struct ElementSwapperTrackingSize
+    {
+        size_t m_memory_size;
+
+        ElementSwapperTrackingSize()
+          : m_memory_size(0)
+        {
+        }
+
+        void load(const Key key, Element& element)
+        {
+            m_memory_size += key * 1000;
+        }
+
+        bool unload(const Key key, Element& element)
+        {
+            m_memory_size -= key * 1000;
+            return true;
+        }
+
+        bool is_full(const size_t element_count) const
+        {
+            return m_memory_size >= 8 * 1000;
+        }
+    };
+
+    TEST_CASE(MemoryLimitIsHonored)
+    {
+        ElementSwapperTrackingSize element_swapper;
+        LRUCache<Key, Element, ElementSwapperTrackingSize> cache(element_swapper);
+
+        cache.get(1);
+        ASSERT_EQ(1000, element_swapper.m_memory_size);
+
+        cache.get(2);
+        ASSERT_EQ(3000, element_swapper.m_memory_size);
+
+        cache.get(3);
+        ASSERT_EQ(6000, element_swapper.m_memory_size);
+
+        cache.get(4);   // flushes 1 and 2, cache contains 3 and 4
+        ASSERT_EQ(7000, element_swapper.m_memory_size);
+
+        cache.get(5);   // flushes 3 and 4, cache contains 5
+        ASSERT_EQ(5000, element_swapper.m_memory_size);
+
+        cache.get(6);   // flushes 5, cache contains 6
+        ASSERT_EQ(6000, element_swapper.m_memory_size);
+
+        cache.get(9);   // flushes 6, cache contains 9
+        ASSERT_EQ(9000, element_swapper.m_memory_size);
     }
 }
 
 TEST_SUITE(Foundation_Utility_Cache_DualStageCache)
 {
-    typedef size_t MyKey;
-    typedef size_t MyElement;
-
-    const MyKey MyInvalidKey = ~0;
-
-    struct MyKeyHasher
-    {
-        size_t operator()(const MyKey key) const
-        {
-            return static_cast<size_t>(key);
-        }
-    };
-
-    struct MyElementSwapper
+    struct ElementSwapper
     {
         const size_t m_cache_size;
 
-        explicit MyElementSwapper(const size_t cache_size)
+        explicit ElementSwapper(const size_t cache_size)
           : m_cache_size(cache_size)
         {
         }
 
-        void load(const MyKey key, MyElement*& element) const
+        void load(const Key key, Element& element) const
         {
-            element = new MyElement(key * 10);
+            element = static_cast<Element>(key * 10);
         }
 
-        void unload(const MyKey key, MyElement*& element) const
+        bool unload(const Key key, Element& element) const
         {
-            delete element;
             element = 0;
+            return true;
         }
 
         bool is_full(const size_t element_count) const
@@ -245,15 +216,15 @@ TEST_SUITE(Foundation_Utility_Cache_DualStageCache)
         }
     };
 
-    struct MyIntegrityChecker
+    struct IntegrityChecker
     {
-        void operator()(const MyKey key, const MyElement* const & element) const
+        void operator()(const Key key, const Element element) const
         {
-            if (key != MyInvalidKey)
+            if (key != InvalidKey)
             {
-                const MyElement expected = 10 * key;
+                const Element expected = 10 * key;
 
-                if (expected != *element)
+                if (expected != element)
                     throw Exception("cache integrity check failed");
             }
         }
@@ -265,30 +236,29 @@ TEST_SUITE(Foundation_Utility_Cache_DualStageCache)
         const size_t Stage0WayCount = 1;
         const size_t Stage1LineCount = 4;
 
-        MyKeyHasher key_hasher;
-        MyElementSwapper element_swapper(Stage1LineCount);
+        KeyHasher key_hasher;
+        ElementSwapper element_swapper(Stage1LineCount);
 
         DualStageCache<
-            MyKey,
-            MyKeyHasher,
-            MyElement*,
-            MyElementSwapper,
+            Key,
+            KeyHasher,
+            Element,
+            ElementSwapper,
             Stage0LineCount,
-            Stage0WayCount> cache(key_hasher, element_swapper, MyInvalidKey);
+            Stage0WayCount> cache(key_hasher, element_swapper, InvalidKey);
 
-        MyIntegrityChecker checker;
-
+        IntegrityChecker checker;
         cache.check_integrity(checker);
 
         LCG rng;
 
         for (size_t i = 0; i < 1000; ++i)
         {
-            const MyKey key = rand_int1(rng, 0, 1000);
-            const MyElement expected = key * 10;
+            const Key key = rand_int1(rng, 1, 1000);
+            const Element expected = key * 10;
 
-            const MyElement* value = cache.get(key);
-            EXPECT_EQ(expected, *value);
+            const Element value = cache.get(key);
+            EXPECT_EQ(expected, value);
 
             cache.check_integrity(checker);
         }

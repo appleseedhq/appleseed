@@ -214,7 +214,7 @@ class AccessCache
             AccessType&     access);
 
         // Unload a cache line.
-        void unload(
+        bool unload(
             const KeyType&  key,
             AccessType&     access);
 
@@ -304,7 +304,7 @@ class AccessCacheMap
             AccessType&     access);
 
         // Unload a cache line.
-        void unload(
+        bool unload(
             const KeyType&  key,
             AccessType&     access);
 
@@ -527,11 +527,12 @@ inline void AccessCache<Object, Lines, Ways, Allocator>::ObjectSwapper::load(
 }
 
 template <typename Object, size_t Lines, size_t Ways, typename Allocator>
-inline void AccessCache<Object, Lines, Ways, Allocator>::ObjectSwapper::unload(
+inline bool AccessCache<Object, Lines, Ways, Allocator>::ObjectSwapper::unload(
     const KeyType&      key,
     AccessType&         access)
 {
     access.reset(0);
+    return true;
 }
 
 template <typename Object, size_t Lines, size_t Ways, typename Allocator>
@@ -628,11 +629,12 @@ inline void AccessCacheMap<ObjectMap, Lines, Ways, Allocator>::ObjectSwapper::lo
 }
 
 template <typename ObjectMap, size_t Lines, size_t Ways, typename Allocator>
-inline void AccessCacheMap<ObjectMap, Lines, Ways, Allocator>::ObjectSwapper::unload(
+inline bool AccessCacheMap<ObjectMap, Lines, Ways, Allocator>::ObjectSwapper::unload(
     const KeyType&      key,
     AccessType&         access)
 {
     access.reset(0);
+    return true;
 }
 
 template <typename ObjectMap, size_t Lines, size_t Ways, typename Allocator>
