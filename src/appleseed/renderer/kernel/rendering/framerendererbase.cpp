@@ -45,29 +45,39 @@ namespace renderer
 
 size_t FrameRendererBase::get_rendering_thread_count(const ParamArray& params)
 {
-    static const char* ParameterName = "rendering_threads";
+    const size_t core_count = System::get_logical_cpu_core_count();
 
-    size_t thread_count = System::get_logical_cpu_core_count();
+    static const char* ThreadCountParameterName = "rendering_threads";
 
-    if (params.strings().exist(ParameterName))
+    if (!params.strings().exist(ThreadCountParameterName))
+        return core_count;
+
+    const string thread_count_str = params.strings().get<string>(ThreadCountParameterName);
+
+    if (thread_count_str == "auto")
+        return core_count;
+
+    bool conversion_failed = false;
+    size_t thread_count;
+
+    try
     {
-        const string rendering_threads_str = params.strings().get<string>(ParameterName);
+        thread_count = from_string<size_t>(thread_count_str);
+    }
+    catch (const ExceptionStringConversionError&)
+    {
+        conversion_failed = true;
+    }
 
-        if (rendering_threads_str != "auto")
-        {
-            try
-            {
-                thread_count = from_string<size_t>(rendering_threads_str);
-            }
-            catch (const ExceptionStringConversionError&)
-            {
-                RENDERER_LOG_ERROR(
-                    "invalid value \"%s\" for parameter \"%s\", using default value \"%s\".",
-                    rendering_threads_str.c_str(),
-                    ParameterName,
-                    "auto");
-            }
-        }
+    if (conversion_failed || thread_count == 0)
+    {
+        RENDERER_LOG_ERROR(
+            "invalid value \"%s\" for parameter \"%s\", using default value \"%s\".",
+            thread_count_str.c_str(),
+            ThreadCountParameterName,
+            "auto");
+
+        return core_count;
     }
 
     return thread_count;
