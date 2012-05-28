@@ -83,7 +83,7 @@ class FOUNDATIONDLL NativeDrawing
     // dest must point to the first destination pixel.
     static void draw_hline(
         uint8*          dest,
-        const size_t    length,
+        const int       span,
         const uint8*    pixel,
         const size_t    pixel_size);
 
@@ -92,7 +92,7 @@ class FOUNDATIONDLL NativeDrawing
     static void draw_vline(
         uint8*          dest,
         const size_t    dest_stride,
-        const size_t    length,
+        const int       span,
         const uint8*    pixel,
         const size_t    pixel_size);
 

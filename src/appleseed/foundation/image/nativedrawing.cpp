@@ -46,7 +46,6 @@ namespace foundation
 // NativeDrawing class implementation.
 //
 
-// Clear an image buffer with a given pixel color.
 void NativeDrawing::clear(
     uint8*          dest,
     const size_t    dest_width,
@@ -68,10 +67,9 @@ void NativeDrawing::clear(
         memcpy(&dest[i * dest_stride], dest, pixel_size * dest_width);
 }
 
-// Draw an horizontal line segment into an image buffer.
 void NativeDrawing::draw_hline(
     uint8*          dest,
-    const size_t    length,
+    const int       span,
     const uint8*    pixel,
     const size_t    pixel_size)
 {
@@ -79,20 +77,20 @@ void NativeDrawing::draw_hline(
     assert(pixel);
     assert(pixel_size > 0);
 
-    // Draw the line.
-    size_t i = length;
-    while (i--)
+    const uint8* end = dest + span * pixel_size;
+    const int step = span < 0 ? -static_cast<int>(pixel_size) : static_cast<int>(pixel_size);
+
+    while (dest != end)
     {
         memcpy(dest, pixel, pixel_size);
-        dest += pixel_size;
+        dest += step;
     }
 }
 
-// Draw a vertical line segment into an image buffer.
 void NativeDrawing::draw_vline(
     uint8*          dest,
     const size_t    dest_stride,
-    const size_t    length,
+    const int       span,
     const uint8*    pixel,
     const size_t    pixel_size)
 {
@@ -100,16 +98,16 @@ void NativeDrawing::draw_vline(
     assert(pixel);
     assert(pixel_size > 0);
 
-    // Draw the line.
-    size_t i = length;
-    while (i--)
+    const uint8* end = dest + span * dest_stride;
+    const int step = span < 0 ? -static_cast<int>(dest_stride) : static_cast<int>(dest_stride);
+
+    while (dest != end)
     {
         memcpy(dest, pixel, pixel_size);
-        dest += dest_stride;
+        dest += step;
     }
 }
 
-// Blit a tile to an image buffer.
 void NativeDrawing::blit(
     uint8*          dest,
     const size_t    dest_stride,
