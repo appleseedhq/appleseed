@@ -575,23 +575,28 @@ TriangleTree::TriangleTree(const Arguments& arguments)
 {
     Statistics statistics("triangle tree #" + to_string(arguments.m_triangle_tree_uid) + " statistics");
 
-    const string acceleration_structure =
-        arguments.m_assembly.get_parameters().get_optional<string>("acceleration_structure", "sbvh");
+    const string DefaultAccelerationStructure = "bvh";
 
-    if (acceleration_structure == "bvh")
-        build_bvh(arguments, statistics);
-    else if (acceleration_structure == "sbvh")
-        build_sbvh(arguments, statistics);
-    else
+    string acceleration_structure =
+        arguments.m_assembly.get_parameters().get_optional<string>(
+            "acceleration_structure",
+            DefaultAccelerationStructure);
+
+    if (acceleration_structure != "bvh" && acceleration_structure != "sbvh")
     {
         RENDERER_LOG_DEBUG(
             "while building acceleration structure for assembly \"%s\": "
-            "invalid acceleration structure \"%s\", using default value \"sbvh\".",
+            "invalid acceleration structure \"%s\", using default value \"%s\".",
             arguments.m_assembly.get_name(),
-            acceleration_structure.c_str());
+            acceleration_structure.c_str(),
+            DefaultAccelerationStructure.c_str());
 
-        build_sbvh(arguments, statistics);
+        acceleration_structure = DefaultAccelerationStructure;
     }
+
+    if (acceleration_structure == "bvh")
+        build_bvh(arguments, statistics);
+    else build_sbvh(arguments, statistics);
 
     // Optimize the tree layout in memory.
     TreeOptimizer<NodeVectorType> tree_optimizer(m_nodes);
