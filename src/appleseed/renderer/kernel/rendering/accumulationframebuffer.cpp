@@ -29,6 +29,7 @@
 // Interface header.
 #include "accumulationframebuffer.h"
 
+using namespace boost;
 using namespace foundation;
 
 namespace renderer
@@ -45,7 +46,7 @@ AccumulationFramebuffer::AccumulationFramebuffer(
 
 void AccumulationFramebuffer::render_to_frame(Frame& frame)
 {
-    Spinlock::ScopedLock lock(m_spinlock);
+    mutex::scoped_lock lock(m_mutex);
 
     develop_to_frame(frame);
 }

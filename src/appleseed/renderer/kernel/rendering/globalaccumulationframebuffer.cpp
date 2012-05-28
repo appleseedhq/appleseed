@@ -65,7 +65,7 @@ GlobalAccumulationFramebuffer::GlobalAccumulationFramebuffer(
 
 void GlobalAccumulationFramebuffer::clear()
 {
-    Spinlock::ScopedLock lock(m_spinlock);
+    mutex::scoped_lock lock(m_mutex);
 
     AccumulationFramebuffer::clear_no_lock();
 
@@ -76,7 +76,7 @@ void GlobalAccumulationFramebuffer::store_samples(
     const size_t    sample_count,
     const Sample    samples[])
 {
-    Spinlock::ScopedLock lock(m_spinlock);
+    mutex::scoped_lock lock(m_mutex);
 
     const double fb_width = static_cast<double>(m_width);
     const double fb_height = static_cast<double>(m_height);
@@ -100,7 +100,8 @@ void GlobalAccumulationFramebuffer::store_samples(
 
 void GlobalAccumulationFramebuffer::increment_sample_count(const uint64 delta_sample_count)
 {
-    Spinlock::ScopedLock lock(m_spinlock);
+    mutex::scoped_lock lock(m_mutex);
+
     m_sample_count += delta_sample_count;
 }
 

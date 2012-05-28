@@ -112,7 +112,7 @@ LocalAccumulationFramebuffer::~LocalAccumulationFramebuffer()
 
 void LocalAccumulationFramebuffer::clear()
 {
-    Spinlock::ScopedLock lock(m_spinlock);
+    mutex::scoped_lock lock(m_mutex);
 
     AccumulationFramebuffer::clear_no_lock();
 
@@ -139,7 +139,7 @@ void LocalAccumulationFramebuffer::store_samples(
     const size_t    sample_count,
     const Sample    samples[])
 {
-    Spinlock::ScopedLock lock(m_spinlock);
+    mutex::scoped_lock lock(m_mutex);
 
     const Sample* RESTRICT sample_ptr = samples;
     const Sample* RESTRICT sample_end = samples + sample_count;
