@@ -75,12 +75,12 @@ class AccumulationFramebuffer
     void render_to_frame(Frame& frame);
 
   protected:
-    const size_t        m_width;
-    const size_t        m_height;
-    const size_t        m_pixel_count;
+    const size_t            m_width;
+    const size_t            m_height;
+    const size_t            m_pixel_count;
 
-    boost::mutex        m_mutex;
-    foundation::uint64  m_sample_count;
+    mutable boost::mutex    m_mutex;
+    foundation::uint64      m_sample_count;
 
     void clear_no_lock();
 
@@ -104,6 +104,8 @@ inline size_t AccumulationFramebuffer::get_height() const
 
 inline foundation::uint64 AccumulationFramebuffer::get_sample_count() const
 {
+    boost::mutex::scoped_lock lock(m_mutex);
+
     return m_sample_count;
 }
 
