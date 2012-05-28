@@ -110,7 +110,6 @@ namespace
 // QtTileCallbackFactory factory.
 //
 
-// Constructor.
 QtTileCallbackFactory::QtTileCallbackFactory(
     IRenderWidget*  render_widget,
     const bool      highlight_tiles)
@@ -119,13 +118,11 @@ QtTileCallbackFactory::QtTileCallbackFactory(
 {
 }
 
-// Delete this instance.
 void QtTileCallbackFactory::release()
 {
     delete this;
 }
 
-// Return a new instance of the class.
 ITileCallback* QtTileCallbackFactory::create()
 {
     return new QtTileCallback(m_render_widget, m_highlight_tiles);
