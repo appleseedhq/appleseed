@@ -157,20 +157,21 @@ void TextureStore::TileSwapper::load(const TileKey& key, TileRecord& record)
             : m_scene.assemblies().get_by_uid(key.m_assembly_uid)->textures();
 
     // Fetch the texture.
-    assert(key.m_texture_index < textures.size());
-    Texture* texture = textures.get_by_index(key.m_texture_index);
+    const size_t texture_index = key.get_texture_index();
+    assert(texture_index < textures.size());
+    Texture* texture = textures.get_by_index(texture_index);
 
 #ifdef TRACK_TILE_LOADING
     RENDERER_LOG_DEBUG(
         "loading tile (" FMT_SIZE_T ", " FMT_SIZE_T ") "
         "from texture \"%s\"...",
-        key.m_tile_x,
-        key.m_tile_y,
+        key.get_tile_x(),
+        key.get_tile_y(),
         texture->get_name());
 #endif
 
     // Load the tile.
-    record.m_tile = texture->load_tile(key.m_tile_x, key.m_tile_y);
+    record.m_tile = texture->load_tile(key.get_tile_x(), key.get_tile_y());
     record.m_owners = 0;
 
     // Convert the tile to the linear RGB color space.
@@ -232,20 +233,21 @@ bool TextureStore::TileSwapper::unload(const TileKey& key, TileRecord& record)
             : m_scene.assemblies().get_by_uid(key.m_assembly_uid)->textures();
 
     // Fetch the texture.
-    assert(key.m_texture_index < textures.size());
-    Texture* texture = textures.get_by_index(key.m_texture_index);
+    const size_t texture_index = key.get_texture_index();
+    assert(texture_index < textures.size());
+    Texture* texture = textures.get_by_index(texture_index);
 
 #ifdef TRACK_TILE_UNLOADING
     RENDERER_LOG_DEBUG(
         "unloading tile (" FMT_SIZE_T ", " FMT_SIZE_T ") "
         "from texture \"%s\"...",
-        key.m_tile_x,
-        key.m_tile_y,
+        key.get_tile_x(),
+        key.get_tile_y(),
         texture->get_name());
 #endif
 
     // Unload the tile.
-    texture->unload_tile(key.m_tile_x, key.m_tile_y, record.m_tile);
+    texture->unload_tile(key.get_tile_x(), key.get_tile_y(), record.m_tile);
 
     // Successfully unloaded the tile.
     return true;

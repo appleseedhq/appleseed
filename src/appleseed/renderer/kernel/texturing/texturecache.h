@@ -143,12 +143,7 @@ inline foundation::Tile& TextureCache::get(
     const size_t                tile_x,
     const size_t                tile_y)
 {
-    TileKey key;
-    key.m_assembly_uid = assembly_uid;
-    key.m_texture_index = texture_index;
-    key.m_tile_x = tile_x;
-    key.m_tile_y = tile_y;
-
+    const TileKey key(assembly_uid, texture_index, tile_x, tile_y);
     return *m_tile_cache.get(key)->m_tile;
 }
 
@@ -172,8 +167,7 @@ inline size_t TextureCache::TileKeyHasher::operator()(const TileKey& key) const
     return foundation::mix32(
         static_cast<foundation::uint32>(key.m_assembly_uid),
         static_cast<foundation::uint32>(key.m_texture_index),
-        static_cast<foundation::uint32>(key.m_tile_x),
-        static_cast<foundation::uint32>(key.m_tile_y));
+        static_cast<foundation::uint32>(key.m_tile_xy));
 }
 
 

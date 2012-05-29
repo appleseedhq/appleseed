@@ -32,6 +32,7 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/platform/thread.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/cache.h"
 #include "foundation/utility/uid.h"
 
@@ -59,10 +60,28 @@ class TextureStore
   public:
     struct TileKey
     {
-        foundation::UniqueID        m_assembly_uid;
-        size_t                      m_texture_index;
-        size_t                      m_tile_x;
-        size_t                      m_tile_y;
+        foundation::UniqueID            m_assembly_uid;
+        foundation::uint32              m_texture_index;
+        foundation::uint32              m_tile_xy;
+
+        TileKey();
+
+        TileKey(
+            const foundation::UniqueID  assembly_uid,
+            const size_t                texture_index,
+            const size_t                tile_x,
+            const size_t                tile_y);
+
+        TileKey(
+            const foundation::UniqueID  assembly_uid,
+            const foundation::uint32    texture_index,
+            const foundation::uint32    tile_xy);
+
+        TileKey(const TileKey& rhs);
+
+        size_t get_texture_index() const;
+        size_t get_tile_x() const;
+        size_t get_tile_y() const;
 
         // Return an invalid key.
         static TileKey invalid();
@@ -133,23 +152,67 @@ class TextureStore
 // TextureStore::TileKey class implementation.
 //
 
+inline TextureStore::TileKey::TileKey()
+{
+}
+
+inline TextureStore::TileKey::TileKey(
+    const foundation::UniqueID  assembly_uid,
+    const size_t                texture_index,
+    const size_t                tile_x,
+    const size_t                tile_y)
+  : m_assembly_uid(assembly_uid)
+  , m_texture_index(static_cast<foundation::uint32>(texture_index))
+  , m_tile_xy(static_cast<foundation::uint32>((tile_y << 16) | tile_x))
+{
+    assert(texture_index == static_cast<foundation::uint32>(texture_index));
+    assert(tile_x < (1UL << 16));
+    assert(tile_y < (1UL << 16));
+}
+
+inline TextureStore::TileKey::TileKey(
+    const foundation::UniqueID  assembly_uid,
+    const foundation::uint32    texture_index,
+    const foundation::uint32    tile_xy)
+  : m_assembly_uid(assembly_uid)
+  , m_texture_index(texture_index)
+  , m_tile_xy(tile_xy)
+{
+}
+
+inline TextureStore::TileKey::TileKey(const TileKey& rhs)
+  : m_assembly_uid(rhs.m_assembly_uid)
+  , m_texture_index(rhs.m_texture_index)
+  , m_tile_xy(rhs.m_tile_xy)
+{
+}
+
+inline size_t TextureStore::TileKey::get_texture_index() const
+{
+    return static_cast<size_t>(m_texture_index);
+}
+
+inline size_t TextureStore::TileKey::get_tile_x() const
+{
+    return static_cast<size_t>(m_tile_xy & 0x0000FFFFUL);
+}
+
+inline size_t TextureStore::TileKey::get_tile_y() const
+{
+    return static_cast<size_t>(m_tile_xy >> 16);
+}
+
 inline TextureStore::TileKey TextureStore::TileKey::invalid()
 {
-    TileKey key;
-    key.m_assembly_uid = ~0;
-    key.m_texture_index = ~0;
-    key.m_tile_x = ~0;
-    key.m_tile_y = ~0;
-    return key;
+    return TileKey(~0, ~0, ~0);
 }
 
 inline bool TextureStore::TileKey::operator==(const TileKey& rhs) const
 {
     return
-        m_assembly_uid == rhs.m_assembly_uid &&
+        m_tile_xy == rhs.m_tile_xy &&
         m_texture_index == rhs.m_texture_index &&
-        m_tile_x == rhs.m_tile_x &&
-        m_tile_y == rhs.m_tile_y;
+        m_assembly_uid == rhs.m_assembly_uid;
 }
 
 inline bool TextureStore::TileKey::operator!=(const TileKey& rhs) const
@@ -160,13 +223,11 @@ inline bool TextureStore::TileKey::operator!=(const TileKey& rhs) const
 inline bool TextureStore::TileKey::operator<(const TileKey& rhs) const
 {
     return
-        m_assembly_uid < rhs.m_assembly_uid ? true :
-        m_assembly_uid > rhs.m_assembly_uid ? false :
-        m_texture_index < rhs.m_texture_index ? true :
-        m_texture_index > rhs.m_texture_index ? false :
-        m_tile_y < rhs.m_tile_y ? true :
-        m_tile_y > rhs.m_tile_y ? false :
-        m_tile_x < rhs.m_tile_x;
+        m_assembly_uid == rhs.m_assembly_uid ?
+            m_texture_index == rhs.m_texture_index ?
+                m_tile_xy < rhs.m_tile_xy :
+            m_texture_index < rhs.m_texture_index :
+        m_assembly_uid < rhs.m_assembly_uid;
 }
 
 
