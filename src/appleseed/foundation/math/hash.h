@@ -52,14 +52,14 @@ namespace foundation
 //   http://www.concentric.net/~Ttwang/tech/inthash.htm
 //
 
-// Hash a 32-bit integer to a 32-bit integer.
+// Hash a 32-bit integer into a 32-bit integer.
 uint32 hashint32(uint32 key);
 uint32 hashint32alt(uint32 key);                // same as hashint32(), alternative algorithm
 
-// Hash a 64-bit integer to a 64-bit integer.
+// Hash a 64-bit integer into a 64-bit integer.
 uint64 hashint64(uint64 key);
 
-// Hash a 64-bit integer to a 32-bit integer.
+// Hash a 64-bit integer into a 32-bit integer.
 uint32 hashint64to32(uint64 key);
 
 // Mix multiple 32-bit integers into one 32-bit integer.
@@ -75,6 +75,20 @@ uint32 mix32(
     const uint32 b,
     const uint32 c,
     const uint32 d);
+
+// Mix multiple 64-bit integers into one 64-bit integer.
+uint64 mix64(
+    const uint64 a,
+    const uint64 b);
+uint64 mix64(
+    const uint64 a,
+    const uint64 b,
+    const uint64 c);
+uint64 mix64(
+    const uint64 a,
+    const uint64 b,
+    const uint64 c,
+    const uint64 d);
 
 
 //
@@ -129,8 +143,8 @@ inline uint32 mix32(
     const uint32 a,
     const uint32 b)
 {
-    const uint32 h0 = hashint32(a);             // h0 = h( a )
-    const uint32 h1 = h0 + b;                   // h1 = h( a ) + b
+    const uint32 h0 = hashint32(     a);        // h0 =    h( a )
+    const uint32 h1 = hashint32(h0 + b);        // h1 = h( h( a ) + b )
     return h1;
 }
 
@@ -139,9 +153,9 @@ inline uint32 mix32(
     const uint32 b,
     const uint32 c)
 {
-    const uint32 h0 = hashint32(a);             // h0 = h( a )
-    const uint32 h1 = hashint32(b + h0);        // h1 = h( b + h( a ) )
-    const uint32 h2 = h1 + c;                   // h2 = h( b + h( a ) ) + c
+    const uint32 h0 = hashint32(     a);        // h0 =       h( a )
+    const uint32 h1 = hashint32(h0 + b);        // h1 =    h( h( a ) + b )
+    const uint32 h2 = hashint32(h1 + c);        // h2 = h( h( h( a ) + b ) + c )
     return h2;
 }
 
@@ -151,10 +165,43 @@ inline uint32 mix32(
     const uint32 c,
     const uint32 d)
 {
-    const uint32 h0 = hashint32(a);             // h0 = h( a )
-    const uint32 h1 = hashint32(b + h0);        // h1 = h( b + h( a ) )
-    const uint32 h2 = hashint32(c + h1);        // h2 = h( c + h( b + h( a ) ) )
-    const uint32 h3 = h2 + d;                   // h3 = h( c + h( b + h( a ) ) ) + d
+    const uint32 h0 = hashint32(     a);        // h0 =          h( a )
+    const uint32 h1 = hashint32(h0 + b);        // h1 =       h( h( a ) + b )
+    const uint32 h2 = hashint32(h1 + c);        // h2 =    h( h( h( a ) + b ) + c )
+    const uint32 h3 = hashint32(h2 + d);        // h3 = h( h( h( h( a ) + b ) + c ) + d )
+    return h3;
+}
+
+inline uint64 mix64(
+    const uint64 a,
+    const uint64 b)
+{
+    const uint64 h0 = hashint64(     a);        // h0 =    h( a )
+    const uint64 h1 = hashint64(h0 + b);        // h1 = h( h( a ) + b )
+    return h1;
+}
+
+inline uint64 mix64(
+    const uint64 a,
+    const uint64 b,
+    const uint64 c)
+{
+    const uint64 h0 = hashint64(     a);        // h0 =       h( a )
+    const uint64 h1 = hashint64(h0 + b);        // h1 =    h( h( a ) + b )
+    const uint64 h2 = hashint64(h1 + c);        // h2 = h( h( h( a ) + b ) + c )
+    return h2;
+}
+
+inline uint64 mix64(
+    const uint64 a,
+    const uint64 b,
+    const uint64 c,
+    const uint64 d)
+{
+    const uint64 h0 = hashint64(     a);        // h0 =          h( a )
+    const uint64 h1 = hashint64(h0 + b);        // h1 =       h( h( a ) + b )
+    const uint64 h2 = hashint64(h1 + c);        // h2 =    h( h( h( a ) + b ) + c )
+    const uint64 h3 = hashint64(h2 + d);        // h3 = h( h( h( h( a ) + b ) + c ) + d )
     return h3;
 }
 
