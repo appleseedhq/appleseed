@@ -255,9 +255,10 @@ namespace
                 "%s",
                 "@echo off\n"
                 "\n"
+                "set cmdoptions=/WAIT /BELOWNORMAL /MIN\n"
                 "set bin=\"%1\"\n"
                 "set outputpath=\"%2\"\n"
-                "set options=/WAIT /BELOWNORMAL /MIN\n"
+                "set options=\n"
                 "\n"
                 "if %outputpath% == \"\" (\n"
                 "    set outputpath=frames\n"
@@ -298,7 +299,7 @@ namespace
                     fprintf(script_file, "    echo Rendering %s to %s...\n", project_filename.c_str(), image_filepath.c_str());
                     fprintf(
                         script_file,
-                        "    start \"Rendering %s to %s...\" %%options%% %%bin%% %s -o \"%s\"\n",
+                        "    start \"Rendering %s to %s...\" %%cmdoptions%% %%bin%% %s -o \"%s\" %%options%%\n",
                         project_filename.c_str(),
                         image_filepath.c_str(),
                         project_filename.c_str(),
