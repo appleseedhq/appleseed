@@ -235,8 +235,8 @@ namespace
                 {
                     RENDERER_LOG_ERROR(
                         "failed to copy %s to %s: %s.",
-                        source_path.native_file_string().c_str(),
-                        dest_path.native_file_string().c_str(),
+                        source_path.file_string().c_str(),
+                        dest_path.file_string().c_str(),
                         e.what());
                 }
             }
