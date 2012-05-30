@@ -47,14 +47,12 @@ namespace shared {
 // Application class implementation.
 //
 
-// Return true if the application is correctly installed, false otherwise.
 bool Application::is_correctly_installed()
 {
     const char* root_path = get_root_path();
     return strlen(root_path) > 0;
 }
 
-// Check if the application is correctly installed.
 void Application::check_installation(Logger& logger)
 {
     if (!is_correctly_installed())
@@ -66,13 +64,14 @@ void Application::check_installation(Logger& logger)
         LOG_FATAL(
             logger,
             "The application failed to start because it is not properly installed. "
-            "Please reinstall the application.\n\n"
-            "Specifically, it was expected that %s would reside in a bin/ subdirectory "
+            "Please reinstall the application.\n"
+            "Specifically, it was expected that %s would reside in a %s subdirectory "
             "inside the main directory of the application, but it appears not to be "
             "the case (%s seems to be located in %s).",
-            executable_path.filename().c_str(),
-            executable_path.filename().c_str(),
-            executable_path.parent_path().directory_string().c_str());
+            executable_path.filename().string().c_str(),
+            filesystem::path("bin/").make_preferred().string().c_str(),
+            executable_path.filename().string().c_str(),
+            executable_path.parent_path().string().c_str());
     }
 }
 
@@ -104,7 +103,7 @@ namespace
 
     void copy_directory_path_to_buffer(const filesystem::path& path, char* output)
     {
-        const string path_string = path.directory_string();
+        const string path_string = path.string();
 
         assert(path_string.size() <= FOUNDATION_MAX_PATH_LENGTH);
 
@@ -113,7 +112,6 @@ namespace
     }
 }
 
-// Return the root path of the application.
 const char* Application::get_root_path()
 {
     static char root_path_buffer[FOUNDATION_MAX_PATH_LENGTH + 1];
@@ -138,7 +136,6 @@ const char* Application::get_root_path()
     return root_path_buffer;
 }
 
-// Return the root path of the application's tests.
 const char* Application::get_tests_root_path()
 {
     static char tests_root_path_buffer[FOUNDATION_MAX_PATH_LENGTH + 1];
@@ -150,7 +147,7 @@ const char* Application::get_tests_root_path()
 
         if (compute_root_path(root_path))
         {
-            root_path = root_path / filesystem::path("tests/");
+            root_path = root_path / filesystem::path("tests");
             copy_directory_path_to_buffer(root_path, tests_root_path_buffer);
         }
         else

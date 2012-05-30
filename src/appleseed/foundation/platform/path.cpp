@@ -110,8 +110,8 @@ const char* Path::get_executable_directory()
         assert(executable_path.has_filename());
         executable_path.remove_filename();
 
-        assert(executable_path.directory_string().size() <= FOUNDATION_MAX_PATH_LENGTH);
-        strcpy(path, executable_path.directory_string().c_str());
+        assert(executable_path.string().size() <= FOUNDATION_MAX_PATH_LENGTH);
+        strcpy(path, executable_path.string().c_str());
 
         path_initialized = true;
     }

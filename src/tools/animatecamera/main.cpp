@@ -202,7 +202,7 @@ namespace
             auto_release_ptr<Project> project(
                 reader.read(
                     g_cl.m_filenames.values()[0].c_str(),
-                    schema_path.file_string().c_str()));
+                    schema_path.string().c_str()));
 
             // Bail out if the master project file couldn't be read.
             if (project.get() == 0)
@@ -526,7 +526,7 @@ int main(int argc, const char* argv[])
     global_logger().add_target(&logger.get_log_target());
 
     const string base_output_filename =
-        filesystem::path(g_cl.m_filenames.values()[1]).stem();
+        filesystem::path(g_cl.m_filenames.values()[1]).stem().string();
 
     auto_ptr<AnimationGenerator> generator;
 

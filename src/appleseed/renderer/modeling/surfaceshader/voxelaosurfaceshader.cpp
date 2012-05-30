@@ -117,7 +117,7 @@ namespace
                     const boost::filesystem::path obj_file_path(m_output_filename);
                     const boost::filesystem::path bin_file_path =
                         boost::filesystem::change_extension(obj_file_path, ".bin");
-                    m_voxel_tree->dump_tree_to_disk(bin_file_path.file_string());
+                    m_voxel_tree->dump_tree_to_disk(bin_file_path.string());
 */
                 }
 

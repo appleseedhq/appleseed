@@ -121,7 +121,6 @@ include_directories (
 # All configurations.
 set (preprocessor_definitions_common
     ${preprocessor_definitions_common}
-    BOOST_FILESYSTEM_VERSION=2              # TODO: port code to Boost.Filesystem version 3 (Boost >= 1.44)
     APPLESEED_VERSION_STRING="${git_tag}"
 )
 if (CMAKE_SIZEOF_VOID_P MATCHES 4)

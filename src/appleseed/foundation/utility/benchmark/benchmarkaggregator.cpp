@@ -255,7 +255,7 @@ bool BenchmarkAggregator::scan_file(const char* path)
     if (!filesystem::is_regular_file(path))
         return false;
 
-    const string filename = filesystem::path(path).filename();
+    const string filename = filesystem::path(path).filename().string();
 
     smatch match;
 

@@ -132,7 +132,7 @@ string ProjectManager::get_project_display_name() const
     if (m_project->has_path())
     {
         const filesystem::path filepath(m_project->get_path());
-        return filepath.filename();
+        return filepath.filename().string();
     }
     else
     {
@@ -161,7 +161,7 @@ string ProjectManager::get_project_schema_filepath()
           filesystem::path(Application::get_root_path())
         / "schemas/project.xsd";
 
-    return schema_path.file_string();
+    return schema_path.string();
 }
 
 bool ProjectManager::try_set_project(auto_release_ptr<Project> project)

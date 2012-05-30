@@ -74,7 +74,7 @@ int main(int argc, const char* argv[])
     auto_release_ptr<Project> project(
         reader.read(
             cl.m_filename.values()[0].c_str(),
-            schema_path.file_string().c_str()));
+            schema_path.string().c_str()));
 
     // Bail out if the project couldn't be loaded.
     if (project.get() == 0)

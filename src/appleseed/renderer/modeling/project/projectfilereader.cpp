@@ -179,10 +179,10 @@ namespace
         {
             // Extract the root path of the project.
             const boost::filesystem::path project_root_path =
-                boost::filesystem::path(project.get_path()).branch_path();
+                boost::filesystem::path(project.get_path()).parent_path();
 
             // Add the root path of the project to the search path collection.
-            m_project.get_search_paths().push_back(project_root_path.directory_string());
+            m_project.get_search_paths().push_back(project_root_path.string());
         }
 
         Project& get_project()

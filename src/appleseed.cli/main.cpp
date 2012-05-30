@@ -85,8 +85,8 @@ namespace
 
         SettingsFileReader reader(logger);
         reader.read(
-            settings_file_path.file_string().c_str(),
-            schema_file_path.file_string().c_str(),
+            settings_file_path.string().c_str(),
+            schema_file_path.string().c_str(),
             g_settings);
     }
 
@@ -194,7 +194,7 @@ namespace
         {
             RENDERER_LOG_WARNING(
                 "automatic benchmark results archiving to %s failed: i/o error.",
-                xmlfile_path.file_string().c_str());
+                xmlfile_path.string().c_str());
         }
 
         const filesystem::path old_current_path =
@@ -348,7 +348,7 @@ namespace
             return
                 reader.read(
                     project_filename.c_str(),
-                    schema_path.file_string().c_str());
+                    schema_path.string().c_str());
         }
     }
 
@@ -427,7 +427,7 @@ namespace
         RENDERER_LOG_INFO("archiving frame to disk...");
         char* archive_path;
         project->get_frame()->archive(
-            autosave_path.directory_string().c_str(),
+            autosave_path.string().c_str(),
             &archive_path);
 
         // Write the frame to disk.

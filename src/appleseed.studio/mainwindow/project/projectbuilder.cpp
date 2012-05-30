@@ -177,7 +177,8 @@ void ProjectBuilder::insert_objects(
     Assembly&           assembly,
     const string&       path) const
 {
-    const string base_object_name = filesystem::path(path).replace_extension().filename();
+    const string base_object_name =
+        filesystem::path(path).replace_extension().filename().string();
 
     ParamArray params;
     params.insert("filename", path);
@@ -293,7 +294,8 @@ namespace
     auto_release_ptr<Texture> create_texture(
         const string&   path)
     {
-        const string texture_name = filesystem::path(path).replace_extension().filename();
+        const string texture_name =
+            filesystem::path(path).replace_extension().filename().string();
 
         ParamArray texture_params;
         texture_params.insert("filename", path);

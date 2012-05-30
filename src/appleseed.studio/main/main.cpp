@@ -72,10 +72,11 @@ namespace
 
         // Construct the error message.
         const string informative_text =
-            "Specifically, it was expected that " + executable_path.filename() + " would "
-            "reside in a bin/ subdirectory inside the main directory of the application, "
-            "but it appears not to be the case (" + executable_path.filename() +
-            " seems to be located in " + executable_path.parent_path().directory_string() + ").";
+            "Specifically, it was expected that " + executable_path.filename().string() + " would "
+            "reside in a " + filesystem::path("bin/").make_preferred().string() + " subdirectory "
+            "inside the main directory of the application, but it appears not to be the case "
+            "(" + executable_path.filename().string() +
+            " seems to be located in " + executable_path.parent_path().string() + ").";
 
         // Display a message box.
         QMessageBox msgbox;
@@ -192,7 +193,7 @@ namespace
 
             // Load and apply the stylesheet.
             string stylesheet;
-            if (load_stylesheet(stylesheet_path.file_string(), stylesheet))
+            if (load_stylesheet(stylesheet_path.string(), stylesheet))
                 application.setStyleSheet(QString::fromStdString(stylesheet));
         }
     }

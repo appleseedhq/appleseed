@@ -30,17 +30,14 @@
 #include "foundation/platform/path.h"
 #include "foundation/utility/test.h"
 
-// boost headers.
-#include "boost/filesystem/path.hpp"
-
 // Standard headers.
 #include <string>
 
+using namespace foundation;
+using namespace std;
+
 TEST_SUITE(Foundation_Platform_Path)
 {
-    using namespace foundation;
-    using namespace std;
-
     TEST_CASE(GetExecutablePath_GivenRunningApplication_ReturnsNonEmptyString)
     {
         const string executable_path = Path::get_executable_path();
@@ -53,29 +50,5 @@ TEST_SUITE(Foundation_Platform_Path)
         const string executable_dir = Path::get_executable_directory();
 
         EXPECT_FALSE(executable_dir.empty());
-    }
-}
-
-TEST_SUITE(Boost_Filesystem_Path)
-{
-    using namespace boost;
-
-    TEST_CASE(Constructor_GivenPathWithFilenameEndingWithDot_ConstructsValidPath)
-    {
-        const filesystem::path path("/directory/filename.");
-
-        EXPECT_EQ("filename.", path.filename());
-        EXPECT_EQ("filename", path.stem());
-        EXPECT_EQ(".", path.extension());
-    }
-
-    TEST_CASE(Constructor_GivenPathWithDirectoryEndingWithDot_ConstructsValidPath)
-    {
-        const filesystem::path path("/directory./");
-        const filesystem::path parent = path.parent_path();
-
-        EXPECT_EQ("directory.", parent.filename());
-        EXPECT_EQ("directory", parent.stem());
-        EXPECT_EQ(".", parent.extension());
     }
 }

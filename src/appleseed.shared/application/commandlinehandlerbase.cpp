@@ -135,7 +135,7 @@ void CommandLineHandlerBase::parse(
 
     if (impl->m_help.is_set())
     {
-        const string program_name = filesystem::path(argv[0]).filename();
+        const string program_name = filesystem::path(argv[0]).filename().string();
         print_program_usage(program_name.c_str(), logger);
         exit(0);
     }

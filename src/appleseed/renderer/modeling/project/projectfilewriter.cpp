@@ -197,7 +197,7 @@ namespace
             assert(m_file);
 
             // Extract the root path of the project.
-            m_project_root_path = filesystem::path(project.get_path()).branch_path();
+            m_project_root_path = filesystem::path(project.get_path()).parent_path();
 
             // Write the file header.
             fprintf(m_file, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
@@ -235,8 +235,8 @@ namespace
                 {
                     RENDERER_LOG_ERROR(
                         "failed to copy %s to %s: %s.",
-                        source_path.file_string().c_str(),
-                        dest_path.file_string().c_str(),
+                        source_path.string().c_str(),
+                        dest_path.string().c_str(),
                         e.what());
                 }
             }
@@ -565,7 +565,7 @@ namespace
             if (!(m_options & ProjectFileWriter::OmitMeshFiles))
             {
                 // Write the mesh object to disk.
-                const string filepath = (m_project_root_path / filename).file_string();
+                const string filepath = (m_project_root_path / filename).string();
                 MeshObjectWriter::write(
                     static_cast<const MeshObject&>(object),
                     name.c_str(),
@@ -590,7 +590,7 @@ namespace
             {
                 // Transform "filename" from a file path to a file name.
                 const string filepath = params.get<string>("filename");
-                const string filename = filesystem::path(filepath).filename();
+                const string filename = filesystem::path(filepath).filename().string();
                 params.insert("filename", filename);
 
                 // Copy the mesh file to the output directory.
@@ -604,7 +604,7 @@ namespace
                     // Transform the value of this key from a file path to a file name.
                     const string key = i->name();
                     const string filepath = i->value<string>();
-                    const string filename = filesystem::path(filepath).filename();
+                    const string filename = filesystem::path(filepath).filename().string();
                     filepaths.insert(key, filename);
 
                     // Copy the mesh file to the output directory.

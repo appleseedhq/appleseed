@@ -62,7 +62,7 @@ void GenericMeshFileReader::set_obj_options(const int obj_options)
 void GenericMeshFileReader::read(IMeshBuilder& builder)
 {
     const filesystem::path filepath(m_filename);
-    const string extension = lower_case(filepath.extension());
+    const string extension = lower_case(filepath.extension().string());
 
     if (extension == ".obj")
     {

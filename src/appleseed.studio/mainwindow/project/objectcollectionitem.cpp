@@ -39,6 +39,7 @@
 #include "foundation/utility/uid.h"
 
 // Qt headers.
+#include <QDir>
 #include <QFileDialog>
 #include <QMenu>
 #include <QString>
@@ -102,17 +103,18 @@ void ObjectCollectionItem::slot_import_objects()
     if (filepaths.empty())
         return;
 
-    const filesystem::path path(filepaths.first().toStdString());
+    const filesystem::path path(
+        QDir::toNativeSeparators(filepaths.first()).toStdString());
 
     m_settings.insert_path(
         LAST_DIRECTORY_SETTINGS_KEY,
-        path.parent_path().external_directory_string());
+        path.parent_path().string());
 
     for (int i = 0; i < filepaths.size(); ++i)
     {
         m_project_builder.insert_objects(
             m_assembly,
-            filepaths[i].toStdString());
+            QDir::toNativeSeparators(filepaths[i]).toStdString());
     }
 }
 

@@ -41,6 +41,7 @@
 #include "foundation/utility/uid.h"
 
 // Qt headers.
+#include <QDir>
 #include <QFileDialog>
 #include <QMenu>
 #include <QString>
@@ -118,15 +119,16 @@ void TextureCollectionItem::slot_import_textures()
     if (filepaths.empty())
         return;
 
-    const filesystem::path path(filepaths.first().toStdString());
+    const filesystem::path path(
+        QDir::toNativeSeparators(filepaths.first()).toStdString());
 
     m_settings.insert_path(
         LAST_DIRECTORY_SETTINGS_KEY,
-        path.parent_path().external_directory_string());
+        path.parent_path().string());
 
     for (int i = 0; i < filepaths.size(); ++i)
     {
-        const string filepath = filepaths[i].toStdString();
+        const string filepath = QDir::toNativeSeparators(filepaths[i]).toStdString();
 
         if (m_assembly)
             m_project_builder.insert_textures(*m_assembly, filepath);

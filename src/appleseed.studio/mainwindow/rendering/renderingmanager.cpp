@@ -258,10 +258,10 @@ void RenderingManager::archive_frame_to_disk()
 
     const filesystem::path autosave_path =
           filesystem::path(Application::get_root_path())
-        / "images/autosave/";
+        / "images"
+        / "autosave";
 
-    m_project->get_frame()->archive(
-        autosave_path.directory_string().c_str());
+    m_project->get_frame()->archive(autosave_path.string().c_str());
 }
 
 void RenderingManager::slot_rendering_begin()

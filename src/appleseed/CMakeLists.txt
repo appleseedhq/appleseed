@@ -346,6 +346,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_autoreleaseptr.cpp
     foundation/meta/tests/test_benchmarkaggregator.cpp
     foundation/meta/tests/test_boost_datetime.cpp
+    foundation/meta/tests/test_boost_path.cpp
     foundation/meta/tests/test_boost_regex.cpp
     foundation/meta/tests/test_bsp.cpp
     foundation/meta/tests/test_bufferedfile.cpp

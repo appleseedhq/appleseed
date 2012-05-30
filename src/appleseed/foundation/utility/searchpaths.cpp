@@ -80,7 +80,7 @@ bool SearchPaths::exist(const char* filepath) const
 
     const filesystem::path fp(filepath);
 
-    if (fp.is_complete())
+    if (fp.is_absolute())
         return filesystem::exists(fp);
 
     for (const_each<Impl::PathCollection> i = impl->m_paths; i; ++i)
@@ -100,9 +100,9 @@ char* SearchPaths::qualify(const char* filepath) const
 
     const filesystem::path fp(filepath);
 
-    string result = fp.file_string();
+    string result = fp.string();
 
-    if (!fp.is_complete())
+    if (!fp.is_absolute())
     {
         for (const_each<Impl::PathCollection> i = impl->m_paths; i; ++i)
         {
@@ -110,7 +110,7 @@ char* SearchPaths::qualify(const char* filepath) const
 
             if (filesystem::exists(qualified_fp))
             {
-                result = qualified_fp.file_string();
+                result = qualified_fp.string();
                 break;
             }
         }

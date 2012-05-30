@@ -106,7 +106,7 @@ void GenericProgressiveImageFileReader::open(const char* filename)
     assert(!is_open());
 
     const filesystem::path filepath(filename);
-    const string extension = lower_case(filepath.extension());
+    const string extension = lower_case(filepath.extension().string());
 
     if (extension == ".exr")
     {

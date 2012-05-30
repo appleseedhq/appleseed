@@ -188,9 +188,9 @@ bool Frame::write(const char* file_path) const
     if (!impl->m_aov_images->empty())
     {
         const filesystem::path boost_file_path(file_path);
-        const filesystem::path directory = boost_file_path.branch_path();
-        const string base_file_name = boost_file_path.stem();
-        const string extension = boost_file_path.extension();
+        const filesystem::path directory = boost_file_path.parent_path();
+        const string base_file_name = boost_file_path.stem().string();
+        const string extension = boost_file_path.extension().string();
 
         for (size_t i = 0; i < impl->m_aov_images->size(); ++i)
         {
@@ -220,7 +220,7 @@ bool Frame::archive(
         "autosave." + get_time_stamp_string() + ".exr";
 
     // Construct the path to the image file.
-    const string file_path = (filesystem::path(directory) / filename).file_string();
+    const string file_path = (filesystem::path(directory) / filename).string();
 
     // Return the path to the image file.
     if (output_path)
@@ -414,7 +414,7 @@ bool Frame::write_image(
         }
         catch (const ExceptionUnsupportedFileFormat&)
         {
-            const string extension = lower_case(filesystem::path(file_path).extension());
+            const string extension = lower_case(filesystem::path(file_path).extension().string());
 
             RENDERER_LOG_ERROR(
                 "file format '%s' not supported, writing the image in OpenEXR format "

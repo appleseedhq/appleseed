@@ -62,6 +62,7 @@
 #include <QAction>
 #include <QActionGroup>
 #include <QApplication>
+#include <QDir>
 #include <QFileDialog>
 #include <QGridLayout>
 #include <QIcon>
@@ -706,15 +707,15 @@ void MainWindow::slot_open_project()
             &selected_filter,
             options);
 
-    const filesystem::path path(filepath.toStdString());
-
-    filepath = QString::fromStdString(path.file_string());
+    filepath = QDir::toNativeSeparators(filepath);
 
     if (!filepath.isEmpty())
     {
+        const filesystem::path path(filepath.toStdString());
+
         m_settings.insert_path(
             LAST_DIRECTORY_SETTINGS_KEY,
-            path.parent_path().external_directory_string());
+            path.parent_path().string());
 
         const bool successful =
             m_project_manager.load_project(filepath.toAscii().constData());
@@ -800,15 +801,15 @@ void MainWindow::slot_save_project_as()
             &selected_filter,
             options);
 
-    const filesystem::path path(filepath.toStdString());
-
-    filepath = QString::fromStdString(path.file_string());
+    filepath = QDir::toNativeSeparators(filepath);
 
     if (!filepath.isEmpty())
     {
+        const filesystem::path path(filepath.toStdString());
+
         m_settings.insert_path(
             LAST_DIRECTORY_SETTINGS_KEY,
-            path.parent_path().external_directory_string());
+            path.parent_path().string());
 
         m_project_manager.save_project_as(filepath.toAscii().constData());
     }
@@ -889,8 +890,8 @@ void MainWindow::slot_load_settings()
 
     const bool success =
         reader.read(
-            settings_file_path.file_string().c_str(),
-            schema_file_path.file_string().c_str(),
+            settings_file_path.string().c_str(),
+            schema_file_path.string().c_str(),
             settings);
 
     if (success)
@@ -905,7 +906,7 @@ void MainWindow::slot_save_settings()
     SettingsFileWriter writer;
 
     writer.write(
-        settings_file_path.file_string().c_str(),
+        settings_file_path.string().c_str(),
         m_settings);
 }
 
@@ -975,9 +976,7 @@ void MainWindow::slot_save_frame()
             &selected_filter,
             options);
 
-    const filesystem::path path(filepath.toStdString());
-
-    filepath = QString::fromStdString(path.file_string());
+    filepath = QDir::toNativeSeparators(filepath);
 
     if (!filepath.isEmpty())
     {

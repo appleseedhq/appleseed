@@ -32,18 +32,18 @@
 // boost headers.
 #include "boost/regex.hpp"
 
-TEST_SUITE(Boost_RegEx)
+TEST_SUITE(Boost_Regex)
 {
     using namespace boost;
 
-    TEST_CASE(RegExSearch_GivenExistingPatternInInputString_ReturnsTrue)
+    TEST_CASE(RegexSearch_GivenExistingPatternInInputString_ReturnsTrue)
     {
         const bool result = regex_search("hello world", regex("hello"));
 
         EXPECT_TRUE(result);
     }
 
-    TEST_CASE(RegExSearch_GivenNonExistingPatternInInputString_ReturnsFalse)
+    TEST_CASE(RegexSearch_GivenNonExistingPatternInInputString_ReturnsFalse)
     {
         const bool result = regex_search("hello world", regex("planet"));
 

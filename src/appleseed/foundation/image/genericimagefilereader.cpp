@@ -53,7 +53,7 @@ Image* GenericImageFileReader::read(
     ImageAttributes*    image_attributes)
 {
     const filesystem::path filepath(filename);
-    const string extension = lower_case(filepath.extension());
+    const string extension = lower_case(filepath.extension().string());
 
     if (extension == ".exr")
     {
