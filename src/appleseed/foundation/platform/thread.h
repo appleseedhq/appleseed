@@ -34,12 +34,21 @@
 #include "foundation/platform/types.h"
 
 // boost headers.
+#include "boost/interprocess/detail/atomic.hpp"
 #include "boost/smart_ptr/detail/spinlock.hpp"
 #include "boost/thread/mutex.hpp"
 #pragma warning (push)
 #pragma warning (disable : 4244)    // conversion from '__int64' to 'long', possible loss of data
 #include "boost/thread/thread.hpp"
 #pragma warning (pop)
+#include "boost/version.hpp"
+
+// Starting with Boost 1.48, the atomic primitives are defined in boost::interprocess::ipcdetail.
+#if BOOST_VERSION >= 104800
+namespace boost_atomic = boost::interprocess::ipcdetail;
+#else
+namespace boost_atomic = boost::interprocess::detail;
+#endif
 
 //
 // On Windows, define FOUNDATIONDLL to __declspec(dllexport) when building the DLL

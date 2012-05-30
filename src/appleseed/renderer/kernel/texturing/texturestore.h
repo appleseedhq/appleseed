@@ -36,9 +36,6 @@
 #include "foundation/utility/cache.h"
 #include "foundation/utility/uid.h"
 
-// boost headers.
-#include "boost/interprocess/detail/atomic.hpp"
-
 // Standard headers.
 #include <cassert>
 #include <cstddef>
@@ -241,16 +238,16 @@ inline TextureStore::TileRecord& TextureStore::acquire(const TileKey& key)
 
     TileRecord& record = m_tile_cache.get(key);
 
-    boost::interprocess::detail::atomic_inc32(&record.m_owners);
+    boost_atomic::atomic_inc32(&record.m_owners);
 
     return record;
 }
 
 inline void TextureStore::release(TileRecord& record) const
 {
-    assert(boost::interprocess::detail::atomic_read32(&record.m_owners) > 0);
+    assert(boost_atomic::atomic_read32(&record.m_owners) > 0);
 
-    boost::interprocess::detail::atomic_dec32(&record.m_owners);
+    boost_atomic::atomic_dec32(&record.m_owners);
 }
 
 
