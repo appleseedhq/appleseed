@@ -92,7 +92,7 @@ exec_program (
 set (Boost_MULTITHREADED TRUE)
 set (Boost_USE_STATIC_LIBS TRUE)
 
-find_package (Boost 1.44 REQUIRED date_time filesystem regex system thread)
+find_package (Boost 1.46 REQUIRED date_time filesystem regex system thread)
 
 include_directories (${Boost_INCLUDE_DIRS})
 link_directories (${Boost_LIBRARY_DIRS})
