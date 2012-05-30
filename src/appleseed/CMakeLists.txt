@@ -1018,6 +1018,7 @@ set (renderer_meta_tests_sources
     renderer/meta/tests/test_samplecounter.cpp
     renderer/meta/tests/test_scene.cpp
     renderer/meta/tests/test_shadingresult.cpp
+    renderer/meta/tests/test_texturestore.cpp
     renderer/meta/tests/test_tracer.cpp
     renderer/meta/tests/test_transformsequence.cpp
 )
