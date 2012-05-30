@@ -343,6 +343,7 @@ namespace
             element.add_attribute("name", entity.get_name());
             element.add_attribute("model", entity.get_model());
             element.write(!entity.get_parameters().empty());
+
             write(entity.get_parameters());
         }
 
@@ -384,7 +385,9 @@ namespace
             Element element("color", m_file, m_indenter);
             element.add_attribute("name", color_entity.get_name());
             element.write(true);
+
             write(color_entity.get_parameters());
+
             write("values", color_entity.get_values());
             write("alpha", color_entity.get_alpha());
         }
@@ -480,6 +483,7 @@ namespace
             element.add_attribute("name", light.get_name());
             element.add_attribute("model", light.get_model());
             element.write(true);
+
             write(light.get_parameters());
             write(light.get_transform());
         }
@@ -622,6 +626,7 @@ namespace
             element.add_attribute("name", name);
             element.add_attribute("model", MeshObjectFactory::get_model());
             element.write(!params.empty());
+
             write(params);
         }
 
@@ -677,6 +682,7 @@ namespace
             Element element("assembly", m_file, m_indenter);
             element.add_attribute("name", assembly.get_name());
             element.write(
+                !assembly.get_parameters().empty() ||
                 !assembly.colors().empty() ||
                 !assembly.textures().empty() ||
                 !assembly.texture_instances().empty() ||
@@ -687,6 +693,8 @@ namespace
                 !assembly.lights().empty() ||
                 !assembly.objects().empty() ||
                 !assembly.object_instances().empty());
+
+            write(assembly.get_parameters());
 
             write(assembly.colors());
             write(assembly.textures());
