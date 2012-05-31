@@ -182,10 +182,10 @@ namespace
             const filesystem::path path(filename);
 
             stringstream sstr;
-            sstr << path.stem();
+            sstr << path.stem().string();
             sstr << '.';
             sstr << setw(digits) << setfill('0') << number;
-            sstr << path.extension();
+            sstr << path.extension().string();
 
             return sstr.str();
         }
