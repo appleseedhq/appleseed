@@ -224,10 +224,9 @@ namespace
 
         sort(assemblies.begin(), assemblies.end());
 
-        const vector<UniqueID>::iterator new_end =
-            unique(assemblies.begin(), assemblies.end());
-
-        assemblies.erase(new_end, assemblies.end());
+        assemblies.erase(
+            unique(assemblies.begin(), assemblies.end()),
+            assemblies.end());
     }
 
     void collect_regions(const Assembly& assembly, RegionInfoVector& regions)
