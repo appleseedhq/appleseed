@@ -39,6 +39,7 @@
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/triangle.h"
+#include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/objectinstance.h"
@@ -69,34 +70,65 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 {
     struct SceneBase
     {
-        auto_release_ptr<Scene> m_scene;
+        auto_release_ptr<Project>   m_project;
+        Scene*                      m_scene;
+        const Assembly*             m_assembly;
 
         SceneBase()
-          : m_scene(SceneFactory::create())
+          : m_project(ProjectFactory::create("project"))
         {
-            create_assembly();
-            create_assembly_instance();
-            create_plane_object();
-            create_opaque_material();
-            create_transparent_material();
-        }
+            m_project->set_scene(SceneFactory::create());
+            m_scene = m_project->get_scene();
 
-        void create_assembly()
-        {
             m_scene->assemblies().insert(
                 AssemblyFactory::create("assembly", ParamArray()));
-        }
-
-        void create_assembly_instance()
-        {
-            const Assembly* assembly = m_scene->assemblies().get_by_name("assembly");
+            m_assembly = m_scene->assemblies().get_by_name("assembly");
 
             m_scene->assembly_instances().insert(
                 AssemblyInstanceFactory::create(
                     "assembly_inst",
                     ParamArray(),
-                    *assembly,
+                    *m_assembly,
                     Transformd(Matrix4d::identity())));
+
+            create_color("white", Color4f(1.0f));
+            create_constant_surface_shader("constant_white_surface_shader", "white");
+            create_material("opaque_material", "constant_white_surface_shader", 1.0f);
+            create_material("transparent_material", "constant_white_surface_shader", 0.5f);
+
+            create_plane_object();
+        }
+
+        void create_color(const char* name, const Color4f& color)
+        {
+            ParamArray params;
+            params.insert("color_space", "linear_rgb");
+
+            const ColorValueArray color_values(3, &color[0]);
+            const ColorValueArray alpha_values(1, &color[3]);
+
+            m_assembly->colors().insert(
+                ColorEntityFactory::create(name, params, color_values, alpha_values));
+        }
+
+        void create_constant_surface_shader(const char* surface_shader_name, const char* color_name)
+        {
+            ParamArray params;
+            params.insert("color", color_name);
+
+            ConstantSurfaceShaderFactory factory;
+            auto_release_ptr<SurfaceShader> surface_shader(factory.create(surface_shader_name, params));
+            m_assembly->surface_shaders().insert(surface_shader);
+        }
+
+        void create_material(const char* material_name, const char* surface_shader_name, const float alpha)
+        {
+            ParamArray params;
+            params.insert("surface_shader", surface_shader_name);
+            params.insert("alpha_map", alpha);
+
+            m_assembly->materials().insert(
+                MaterialFactory::create(material_name, params));
         }
 
         void create_plane_object()
@@ -115,69 +147,23 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             mesh_object->push_triangle(Triangle(2, 3, 0, 0, 0, 0, 0));
 
             auto_release_ptr<Object> object(mesh_object.release());
-            m_scene->assemblies().get_by_name("assembly")->objects().insert(object);
+            m_assembly->objects().insert(object);
         }
 
         void create_plane_object_instance(const char* name, const Vector3d& position, const char* material_name)
         {
-            const Assembly* assembly = m_scene->assemblies().get_by_name("assembly");
-            Object* object = assembly->objects().get_by_name("plane");
+            Object* object = m_assembly->objects().get_by_name("plane");
             
             StringArray material_names;
             material_names.push_back(material_name);
 
-            assembly->object_instances().insert(
+            m_assembly->object_instances().insert(
                 ObjectInstanceFactory::create(
                     name,
                     ParamArray(),
                     *object,
                     Transformd(Matrix4d::translation(position)),
                     material_names));
-        }
-
-        void create_color(const char* name, const Color4f& color)
-        {
-            ParamArray params;
-            params.insert("color_space", "linear_rgb");
-
-            const ColorValueArray color_values(3, &color[0]);
-            const ColorValueArray alpha_values(1, &color[3]);
-
-            m_scene->assemblies().get_by_name("assembly")->colors().insert(
-                ColorEntityFactory::create(name, params, color_values, alpha_values));
-        }
-
-        void create_constant_surface_shader(const char* surface_shader_name, const char* color_name)
-        {
-            ParamArray params;
-            params.insert("color", color_name);
-
-            ConstantSurfaceShaderFactory factory;
-            auto_release_ptr<SurfaceShader> surface_shader(factory.create(surface_shader_name, params));
-            m_scene->assemblies().get_by_name("assembly")->surface_shaders().insert(surface_shader);
-        }
-
-        void create_material(const char* material_name, const char* surface_shader_name)
-        {
-            ParamArray params;
-            params.insert("surface_shader", surface_shader_name);
-
-            m_scene->assemblies().get_by_name("assembly")->materials().insert(
-                MaterialFactory::create(material_name, params));
-        }
-
-        void create_opaque_material()
-        {
-            create_color("opaque_color", Color4f(1.0f, 1.0f, 1.0f, 1.0f));
-            create_constant_surface_shader("opaque_surface_shader", "opaque_color");
-            create_material("opaque_material", "opaque_surface_shader");
-        }
-
-        void create_transparent_material()
-        {
-            create_color("transparent_color", Color4f(1.0f, 1.0f, 1.0f, 0.5f));
-            create_constant_surface_shader("transparent_surface_shader", "transparent_color");
-            create_material("transparent_material", "transparent_surface_shader");
         }
     };
 
@@ -194,15 +180,22 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         Tracer              m_tracer;
 
         Fixture()
-          : m_trace_context(Base::m_scene.ref())
-          , m_texture_store(Base::m_scene.ref())
+          : m_trace_context(*Base::m_scene)
+          , m_texture_store(*Base::m_scene)
           , m_texture_cache(m_texture_store)
           , m_intersector(m_trace_context, m_texture_cache)
           , m_sampling_context(m_rng, 0, 0, 0)
           , m_tracer(m_intersector, m_texture_cache)
         {
             InputBinder input_binder;
-            input_binder.bind(Base::m_scene.ref());
+            input_binder.bind(*Base::m_scene);
+
+            Base::m_scene->on_frame_begin(Base::m_project.ref());
+        }
+
+        ~Fixture()
+        {
+            Base::m_scene->on_frame_end(Base::m_project.ref());
         }
     };
 

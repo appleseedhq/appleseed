@@ -32,8 +32,8 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/shading/shadingray.h"
+#include "renderer/modeling/input/source.h"
 #include "renderer/modeling/material/material.h"
-#include "renderer/modeling/surfaceshader/surfaceshader.h"
 
 // Standard headers.
 #include <cstddef>
@@ -97,25 +97,24 @@ const ShadingPoint& Tracer::trace(
         if (material == 0)
             break;
 
-        // Retrieve the surface shader.
-        const SurfaceShader* surface_shader = material->get_surface_shader();
-        if (surface_shader == 0)
+        // Retrieve the alpha map at the shading point.
+        const Source* alpha_map = material->get_alpha_map();
+        if (alpha_map == 0)
             break;
 
-        // Evaluate the alpha mask at the shading point.
-        Alpha alpha_mask;
-        surface_shader->evaluate_alpha_mask(
-            sampling_context,
+        // Evaluate the alpha map at the shading point.
+        Alpha alpha;
+        alpha_map->evaluate(
             m_texture_cache,
-            *shading_point_ptr,
-            alpha_mask);
+            shading_point_ptr->get_uv(0),
+            alpha);
 
         // Stop as soon as we reach a fully opaque occluder.
-        if (alpha_mask[0] == 1.0f)
+        if (alpha[0] == 1.0f)
             break;
 
         // Update the transmission factor.
-        transmission *= 1.0 - static_cast<double>(alpha_mask[0]);
+        transmission *= 1.0 - static_cast<double>(alpha[0]);
 
         // Move past this partial occluder.
         point = shading_point_ptr->get_point();
@@ -183,25 +182,24 @@ const ShadingPoint& Tracer::trace_between(
         if (material == 0)
             break;
 
-        // Retrieve the surface shader.
-        const SurfaceShader* surface_shader = material->get_surface_shader();
-        if (surface_shader == 0)
+        // Retrieve the alpha map at the shading point.
+        const Source* alpha_map = material->get_alpha_map();
+        if (alpha_map == 0)
             break;
 
-        // Evaluate the alpha mask at the shading point.
-        Alpha alpha_mask;
-        surface_shader->evaluate_alpha_mask(
-            sampling_context,
+        // Evaluate the alpha map at the shading point.
+        Alpha alpha;
+        alpha_map->evaluate(
             m_texture_cache,
-            *shading_point_ptr,
-            alpha_mask);
+            shading_point_ptr->get_uv(0),
+            alpha);
 
         // Stop as soon as we reach a fully opaque occluder.
-        if (alpha_mask[0] == 1.0f)
+        if (alpha[0] == 1.0f)
             break;
 
         // Update the transmission factor.
-        transmission *= 1.0 - static_cast<double>(alpha_mask[0]);
+        transmission *= 1.0 - static_cast<double>(alpha[0]);
 
         // Move past this partial occluder.
         point = shading_point_ptr->get_point();

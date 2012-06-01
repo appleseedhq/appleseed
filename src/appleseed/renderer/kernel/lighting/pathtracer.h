@@ -37,8 +37,8 @@
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/input/inputevaluator.h"
+#include "renderer/modeling/input/source.h"
 #include "renderer/modeling/material/material.h"
-#include "renderer/modeling/surfaceshader/surfaceshader.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
@@ -170,47 +170,44 @@ size_t PathTracer<PathVisitor, ScatteringModesMask, Adjoint>::trace(
         if (material == 0)
             break;
 
-        // Retrieve the surface shader.
-        const SurfaceShader* surface_shader = material->get_surface_shader();
-        if (surface_shader == 0)
-            break;
-
-        // Evaluate the alpha mask at the shading point.
-        Alpha alpha_mask;
-        surface_shader->evaluate_alpha_mask(
-            sampling_context,
-            texture_cache,
-            *shading_point_ptr,
-            alpha_mask);
-
-        // Handle alpha masking.
-        if (alpha_mask[0] < 1.0)
+        // Handle alpha mapping.
+        if (material->get_alpha_map())
         {
-            // Generate a uniform sample in [0,1).
-            sampling_context.split_in_place(1, 1);
-            const double s = sampling_context.next_double2();
+            // Evaluate the alpha map at the shading point.
+            Alpha alpha;
+            material->get_alpha_map()->evaluate(
+                texture_cache, 
+                shading_point_ptr->get_uv(0),
+                alpha);
 
-            if (s >= alpha_mask[0])
+            if (alpha[0] < 1.0)
             {
-                // Construct a ray that continues in the same direction as the incoming ray.
-                const ShadingRay cutoff_ray(
-                    shading_point_ptr->get_point(),
-                    ray.m_dir,
-                    ray.m_time,
-                    ~0);            // ray flags
+                // Generate a uniform sample in [0,1).
+                sampling_context.split_in_place(1, 1);
+                const double s = sampling_context.next_double2();
 
-                // Trace the ray.
-                shading_points[shading_point_index].clear();
-                intersector.trace(
-                    cutoff_ray,
-                    shading_points[shading_point_index],
-                    shading_point_ptr);
+                if (s >= alpha[0])
+                {
+                    // Construct a ray that continues in the same direction as the incoming ray.
+                    const ShadingRay cutoff_ray(
+                        shading_point_ptr->get_point(),
+                        ray.m_dir,
+                        ray.m_time,
+                        ~0);            // ray flags
 
-                // Update the pointers to the shading points.
-                shading_point_ptr = &shading_points[shading_point_index];
-                shading_point_index = 1 - shading_point_index;
+                    // Trace the ray.
+                    shading_points[shading_point_index].clear();
+                    intersector.trace(
+                        cutoff_ray,
+                        shading_points[shading_point_index],
+                        shading_point_ptr);
 
-                continue;
+                    // Update the pointers to the shading points.
+                    shading_point_ptr = &shading_points[shading_point_index];
+                    shading_point_index = 1 - shading_point_index;
+
+                    continue;
+                }
             }
         }
 
