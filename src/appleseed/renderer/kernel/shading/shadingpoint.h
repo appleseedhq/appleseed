@@ -431,12 +431,7 @@ inline const foundation::Vector3d& ShadingPoint::get_shading_normal() const
         {
             // Lookup the normal map.
             foundation::Color3f normal_rgb;
-            Alpha alpha;
-            material->get_normal_map()->evaluate(
-                *m_texture_cache,
-                get_uv(0),
-                normal_rgb,
-                alpha);
+            material->get_normal_map()->evaluate(*m_texture_cache, get_uv(0), normal_rgb);
 
             // Reconstruct the shading normal from the texel value.
             assert(is_saturated(normal_rgb));
