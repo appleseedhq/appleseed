@@ -30,6 +30,7 @@
 #include "constantsurfaceshader.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingresult.h"
@@ -39,10 +40,8 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
-
-// Forward declarations.
-namespace renderer  { class TextureCache; }
 
 using namespace foundation;
 using namespace std;
@@ -95,21 +94,6 @@ namespace
             shading_result.m_color_space = ColorSpaceSpectral;
             shading_result.m_color = values.m_color;
             shading_result.m_alpha = values.m_alpha;
-        }
-
-        virtual void evaluate_alpha_mask(
-            SamplingContext&        sampling_context,
-            TextureCache&           texture_cache,
-            const ShadingPoint&     shading_point,
-            Alpha&                  alpha) const override
-        {
-            InputValues values;
-            m_inputs.evaluate(
-                texture_cache,
-                shading_point.get_uv(0),
-                &values);
-
-            alpha = values.m_alpha;
         }
 
       private:

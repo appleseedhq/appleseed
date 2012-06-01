@@ -30,16 +30,19 @@
 #define APPLESEED_RENDERER_MODELING_SURFACESHADER_SURFACESHADER_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/entity/connectableentity.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Forward declarations.
 namespace renderer      { class Assembly; }
+namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 namespace renderer      { class ShadingContext; }
 namespace renderer      { class ShadingPoint; }
 namespace renderer      { class ShadingResult; }
-namespace renderer      { class TextureCache; }
 
 namespace renderer
 {
@@ -48,7 +51,7 @@ namespace renderer
 // Surface shader.
 //
 
-class RENDERERDLL SurfaceShader
+class DLLSYMBOL SurfaceShader
   : public ConnectableEntity
 {
   public:
@@ -76,28 +79,7 @@ class RENDERERDLL SurfaceShader
         const ShadingContext&   shading_context,
         const ShadingPoint&     shading_point,
         ShadingResult&          shading_result) const = 0;
-
-    // Evaluate the alpha mask at a given point.
-    virtual void evaluate_alpha_mask(
-        SamplingContext&        sampling_context,
-        TextureCache&           texture_cache,
-        const ShadingPoint&     shading_point,
-        Alpha&                  alpha) const;
 };
-
-
-//
-// SurfaceShader class implementation.
-//
-
-inline void SurfaceShader::evaluate_alpha_mask(
-    SamplingContext&        sampling_context,
-    TextureCache&           texture_cache,
-    const ShadingPoint&     shading_point,
-    Alpha&                  alpha) const
-{
-    alpha.set(1.0f);
-}
 
 }       // namespace renderer
 

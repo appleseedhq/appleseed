@@ -34,9 +34,14 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
+#include "foundation/utility/autoreleaseptr.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
+namespace renderer      { class ParamArray; }
 namespace renderer      { class SurfaceShader; }
 
 namespace renderer
@@ -46,7 +51,7 @@ namespace renderer
 // Constant color surface shader factory.
 //
 
-class RENDERERDLL ConstantSurfaceShaderFactory
+class DLLSYMBOL ConstantSurfaceShaderFactory
   : public ISurfaceShaderFactory
 {
   public:

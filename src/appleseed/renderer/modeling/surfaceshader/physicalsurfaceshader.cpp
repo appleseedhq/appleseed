@@ -30,6 +30,7 @@
 #include "physicalsurfaceshader.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/lighting/ilightingengine.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
@@ -37,11 +38,13 @@
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentshader/environmentshader.h"
+#include "renderer/modeling/material/material.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
+#include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
@@ -56,7 +59,6 @@
 // Forward declarations.
 namespace renderer  { class Assembly; }
 namespace renderer  { class Project; }
-namespace renderer  { class TextureCache; }
 
 using namespace foundation;
 using namespace std;
@@ -81,9 +83,7 @@ namespace
             const ParamArray&       params)
           : SurfaceShader(name, params)
           , m_lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg)
-          , m_has_alpha_mask(false)
         {
-            m_inputs.declare("alpha_mask", InputFormatSpectrum, true);
             m_inputs.declare("aerial_persp_sky_color", InputFormatSpectrum, true);
 
             const string aerial_persp_mode = m_params.get_optional<string>("aerial_persp_mode", "none");
@@ -116,15 +116,6 @@ namespace
             return Model;
         }
 
-        virtual void on_frame_begin(
-            const Project&          project,
-            const Assembly&         assembly) override
-        {
-            SurfaceShader::on_frame_begin(project, assembly);
-
-            m_has_alpha_mask = m_inputs.source("alpha_mask") != 0;
-        }
-
         virtual void evaluate(
             SamplingContext&        sampling_context,
             const ShadingContext&   shading_context,
@@ -147,13 +138,22 @@ namespace
                 shading_result.m_color,
                 shading_result.m_aovs);
 
-            // Evaluate alpha mask.
-            evaluate_alpha_mask(
-                sampling_context,
-                shading_context.get_texture_cache(),
-                shading_point,
-                shading_result.m_alpha);
+            // Handle alpha mapping.
+            shading_result.m_alpha = Alpha(1.0);
+            const Material* material = shading_point.get_material();
+            if (material)
+            {
+                if (material->get_alpha_map())
+                {
+                    // Evaluate the alpha map at the shading point.
+                    material->get_alpha_map()->evaluate(
+                        shading_context.get_texture_cache(),
+                        shading_point.get_uv(0),
+                        shading_result.m_alpha);
+                }
+            }
 
+            // Handle aerial perspective.
             if (m_aerial_persp_mode != AerialPerspNone)
             {
                 Spectrum sky_color;
@@ -201,37 +201,9 @@ namespace
             }
         }
 
-        virtual void evaluate_alpha_mask(
-            SamplingContext&        sampling_context,
-            TextureCache&           texture_cache,
-            const ShadingPoint&     shading_point,
-            Alpha&                  alpha) const override
-        {
-            if (!m_has_alpha_mask)
-            {
-                // Set alpha channel to full opacity.
-                alpha = Alpha(1.0);
-            }
-            else
-            {
-                // Evaluate the inputs.
-                InputValues values;
-                m_inputs.evaluate(
-                    texture_cache,
-                    shading_point.get_uv(0),
-                    &values);
-
-                // Set alpha channel.
-                alpha = values.m_alpha_mask_alpha;
-            }
-        }
-
       private:
         struct InputValues
         {
-            Spectrum    m_alpha_mask_color;             // unused
-            Alpha       m_alpha_mask_alpha;
-
             Spectrum    m_aerial_persp_sky_color;
             Alpha       m_aerial_persp_sky_alpha;       // unused
         };
@@ -244,8 +216,6 @@ namespace
         };
 
         const LightingConditions    m_lighting_conditions;
-
-        bool                        m_has_alpha_mask;
 
         AerialPerspMode             m_aerial_persp_mode;
         double                      m_aerial_persp_rcp_distance;
@@ -271,18 +241,6 @@ const char* PhysicalSurfaceShaderFactory::get_human_readable_model() const
 DictionaryArray PhysicalSurfaceShaderFactory::get_widget_definitions() const
 {
     DictionaryArray definitions;
-
-    definitions.push_back(
-        Dictionary()
-            .insert("name", "alpha_mask")
-            .insert("label", "Alpha Mask")
-            .insert("widget", "entity_picker")
-            .insert("entity_types",
-                Dictionary()
-                    .insert("color", "Colors")
-                    .insert("texture_instance", "Textures"))
-            .insert("use", "optional")
-            .insert("default", ""));
 
     definitions.push_back(
         Dictionary()
