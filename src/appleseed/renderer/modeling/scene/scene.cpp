@@ -205,7 +205,8 @@ namespace
 
 void Scene::on_frame_begin(const Project& project)
 {
-    impl->m_camera->on_frame_begin(project);
+    if (impl->m_camera.get())
+        impl->m_camera->on_frame_begin(project);
 
     invoke_on_frame_begin(project, environment_edfs());
     invoke_on_frame_begin(project, environment_shaders());
@@ -218,7 +219,8 @@ void Scene::on_frame_end(const Project& project)
     invoke_on_frame_end(project, environment_shaders());
     invoke_on_frame_end(project, environment_edfs());
 
-    impl->m_camera->on_frame_end(project);
+    if (impl->m_camera.get())
+        impl->m_camera->on_frame_end(project);
 }
 
 

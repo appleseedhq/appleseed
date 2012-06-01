@@ -45,7 +45,6 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/autoreleaseptr.h"
-#include "foundation/utility/foreach.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.
@@ -118,8 +117,7 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
         InputBinder input_binder;
         input_binder.bind(scene);
 
-        for (each<BSDFContainer> i = assembly.bsdfs(); i; ++i)
-            i->on_frame_begin(project.ref(), assembly);
+        scene.on_frame_begin(project.ref());
 
         TextureStore texture_store(scene);
         TextureCache texture_cache(texture_store);
@@ -145,7 +143,6 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
         // child1_bsdf reflectance.
         EXPECT_EQ(Spectrum(1.0f), get_value<Spectrum>(input_evaluator, 320));
 
-        for (each<BSDFContainer> i = assembly.bsdfs(); i; ++i)
-            i->on_frame_end(project.ref(), assembly);
+        scene.on_frame_end(project.ref());
     }
 }
