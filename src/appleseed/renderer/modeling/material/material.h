@@ -30,15 +30,21 @@
 #define APPLESEED_RENDERER_MODELING_MATERIAL_MATERIAL_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
 #include "renderer/modeling/entity/connectableentity.h"
 #include "renderer/modeling/scene/containers.h"
+
+// appleseed.foundation headers.
+#include "foundation/utility/autoreleaseptr.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
 namespace renderer      { class Assembly; }
 namespace renderer      { class BSDF; }
 namespace renderer      { class EDF; }
+namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 namespace renderer      { class Source; }
 namespace renderer      { class SurfaceShader; }
@@ -50,7 +56,7 @@ namespace renderer
 // Material.
 //
 
-class RENDERERDLL Material
+class DLLSYMBOL Material
   : public ConnectableEntity
 {
   public:
@@ -85,6 +91,9 @@ class RENDERERDLL Material
     // Return the EDF of the material, or 0 if the material doesn't have one.
     const EDF* get_edf() const;
 
+    // Return the source bound to the alpha map input, or 0 if the material doesn't have an alpha map.
+    const Source* get_alpha_map() const;
+
     // Return the source bound to the normal map input, or 0 if the material doesn't have a normal map.
     const Source* get_normal_map() const;
 
@@ -94,12 +103,13 @@ class RENDERERDLL Material
     const SurfaceShader*    m_surface_shader;
     const BSDF*             m_bsdf;
     const EDF*              m_edf;
+    const Source*           m_alpha_map;
     const Source*           m_normal_map;
 
     // Constructor.
     Material(
-        const char*                     name,
-        const ParamArray&               params);
+        const char*         name,
+        const ParamArray&   params);
 };
 
 
@@ -118,8 +128,8 @@ class RENDERERDLL MaterialFactory
 
     // Create a new material.
     static foundation::auto_release_ptr<Material> create(
-        const char*                     name,
-        const ParamArray&               params);
+        const char*         name,
+        const ParamArray&   params);
 };
 
 
@@ -140,6 +150,11 @@ inline const BSDF* Material::get_bsdf() const
 inline const EDF* Material::get_edf() const
 {
     return m_edf;
+}
+
+inline const Source* Material::get_alpha_map() const
+{
+    return m_alpha_map;
 }
 
 inline const Source* Material::get_normal_map() const
