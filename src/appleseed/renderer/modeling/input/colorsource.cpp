@@ -34,9 +34,13 @@
 #include "renderer/modeling/color/wavelengths.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/colorspace.h"
 #include "foundation/math/scalar.h"
+#include "foundation/math/vector.h"
 
 // Standard headers.
+#include <cassert>
+#include <cstddef>
 #include <vector>
 
 using namespace foundation;
@@ -105,62 +109,65 @@ namespace
 
 ColorSource::ColorSource(const ColorEntity& color_entity)
   : Source(true)
-  , m_lighting_conditions(          // todo: this should be user-settable
-        IlluminantCIED65,
-        XYZCMFCIE196410Deg)
 {
+    // todo: this should be user-settable.
+    const LightingConditions lighting_conditions(
+        IlluminantCIED65,
+        XYZCMFCIE196410Deg);
+
     // Retrieve the color values.
     const ColorSpace color_space = color_entity.get_color_space();
     const ColorValueArray& values = color_entity.get_values();
-    const size_t value_count = values.size();
     if (color_space == ColorSpaceSpectral)
     {
-        if (value_count > 0)
+        if (values.size() > 0)
         {
             m_scalar = static_cast<double>(values[0]);
             m_spectrum =
                 spectral_values_to_spectrum(
                     color_entity.get_wavelength_range(),
                     values);
+            m_linear_rgb =
+                ciexyz_to_linear_rgb(
+                    spectrum_to_ciexyz<float>(lighting_conditions, m_spectrum));
         }
         else
         {
             m_scalar = 0.0;
+            m_linear_rgb.set(0.0f);
             m_spectrum.set(0.0f);
         }
     }
     else
     {
-        Color3f color;
+        if (values.size() == 1)
+            m_linear_rgb.set(values[0]);
+        else if (values.size() == 3)
+            m_linear_rgb = Color3f(values[0], values[1], values[2]);
+        else m_linear_rgb.set(0.0f);
 
-        if (value_count == 1)
-            color = Color3f(values[0]);
-        else if (value_count == 3)
-            color = Color3f(values[0], values[1], values[2]);
-        else color = Color3f(0.0f);
-
-        m_scalar = static_cast<double>(color[0]);
+        m_scalar = static_cast<double>(m_linear_rgb[0]);
 
         switch (color_space)
         {
           case ColorSpaceLinearRGB:
             linear_rgb_to_spectrum(
-                m_lighting_conditions,
-                color,
+                lighting_conditions,
+                m_linear_rgb,
                 m_spectrum);
             break;
 
           case ColorSpaceSRGB:
             linear_rgb_to_spectrum(
-                m_lighting_conditions,
-                srgb_to_linear_rgb(color),
+                lighting_conditions,
+                srgb_to_linear_rgb(m_linear_rgb),
                 m_spectrum);
             break;
 
           case ColorSpaceCIEXYZ:
             linear_rgb_to_spectrum(
-                m_lighting_conditions,
-                ciexyz_to_linear_rgb(color),
+                lighting_conditions,
+                ciexyz_to_linear_rgb(m_linear_rgb),
                 m_spectrum);
             break;
 
@@ -173,6 +180,7 @@ ColorSource::ColorSource(const ColorEntity& color_entity)
     // Apply the multiplier to the color values.
     const float multiplier = color_entity.get_multiplier();
     m_scalar *= multiplier;
+    m_linear_rgb *= multiplier;
     m_spectrum *= multiplier;
 
     // Store the alpha values.

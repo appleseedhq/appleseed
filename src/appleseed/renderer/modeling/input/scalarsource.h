@@ -30,8 +30,12 @@
 #define APPLESEED_RENDERER_MODELING_INPUT_SCALARSOURCE_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/input/source.h"
+
+// appleseed.foundation headers.
+#include "foundation/image/color.h"
+#include "foundation/platform/compiler.h"
 
 namespace renderer
 {
@@ -49,13 +53,22 @@ class ScalarSource
 
     // Evaluate the source.
     virtual void evaluate_uniform(
-        double&     scalar) const override;
+        double&                     scalar) const override;
     virtual void evaluate_uniform(
-        Spectrum&   spectrum,
-        Alpha&      alpha) const override;
+        foundation::Color3f&        linear_rgb) const override;
+    virtual void evaluate_uniform(
+        Spectrum&                   spectrum) const override;
+    virtual void evaluate_uniform(
+        Alpha&                      alpha) const override;
+    virtual void evaluate_uniform(
+        foundation::Color3f&        linear_rgb,
+        Alpha&                      alpha) const override;
+    virtual void evaluate_uniform(
+        Spectrum&                   spectrum,
+        Alpha&                      alpha) const override;
 
   private:
-    double          m_scalar;
+    const double    m_scalar;
 };
 
 
@@ -70,14 +83,40 @@ inline ScalarSource::ScalarSource(const double scalar)
 }
 
 inline void ScalarSource::evaluate_uniform(
-    double&         scalar) const
+    double&                         scalar) const
 {
     scalar = m_scalar;
 }
 
 inline void ScalarSource::evaluate_uniform(
-    Spectrum&       spectrum,
-    Alpha&          alpha) const
+    foundation::Color3f&            linear_rgb) const
+{
+    linear_rgb.set(static_cast<float>(m_scalar));
+}
+
+inline void ScalarSource::evaluate_uniform(
+    Spectrum&                       spectrum) const
+{
+    spectrum.set(static_cast<float>(m_scalar));
+}
+
+inline void ScalarSource::evaluate_uniform(
+    Alpha&                          alpha) const
+{
+    alpha.set(static_cast<float>(m_scalar));
+}
+
+inline void ScalarSource::evaluate_uniform(
+    foundation::Color3f&            linear_rgb,
+    Alpha&                          alpha) const
+{
+    linear_rgb.set(static_cast<float>(m_scalar));
+    alpha.set(1.0f);
+}
+
+inline void ScalarSource::evaluate_uniform(
+    Spectrum&                       spectrum,
+    Alpha&                          alpha) const
 {
     spectrum.set(static_cast<float>(m_scalar));
     alpha.set(1.0f);

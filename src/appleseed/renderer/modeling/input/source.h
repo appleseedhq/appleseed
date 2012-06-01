@@ -30,7 +30,11 @@
 #define APPLESEED_RENDERER_MODELING_INPUT_SOURCE_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/global/globaltypes.h"
+
+// appleseed.foundation headers.
+#include "foundation/image/color.h"
+#include "foundation/math/vector.h"
 
 // Forward declarations.
 namespace renderer      { class TextureCache; }
@@ -49,7 +53,7 @@ class Source
     explicit Source(const bool uniform);
 
     // Destructor.
-    virtual ~Source() {}
+    virtual ~Source() = 0 {}
 
     // Return true if the source is uniform, false if it is varying.
     bool is_uniform() const;
@@ -59,6 +63,18 @@ class Source
         TextureCache&               texture_cache,
         const foundation::Vector2d& uv,
         double&                     scalar) const;
+    virtual void evaluate(
+        TextureCache&               texture_cache,
+        const foundation::Vector2d& uv,
+        foundation::Color3f&        linear_rgb) const;
+    virtual void evaluate(
+        TextureCache&               texture_cache,
+        const foundation::Vector2d& uv,
+        Spectrum&                   spectrum) const;
+    virtual void evaluate(
+        TextureCache&               texture_cache,
+        const foundation::Vector2d& uv,
+        Alpha&                      alpha) const;
     virtual void evaluate(
         TextureCache&               texture_cache,
         const foundation::Vector2d& uv,
@@ -73,6 +89,12 @@ class Source
     // Evaluate the source as a uniform source.
     virtual void evaluate_uniform(
         double&                     scalar) const;
+    virtual void evaluate_uniform(
+        foundation::Color3f&        linear_rgb) const;
+    virtual void evaluate_uniform(
+        Spectrum&                   spectrum) const;
+    virtual void evaluate_uniform(
+        Alpha&                      alpha) const;
     virtual void evaluate_uniform(
         foundation::Color3f&        linear_rgb,
         Alpha&                      alpha) const;
@@ -100,51 +122,95 @@ inline bool Source::is_uniform() const
 }
 
 inline void Source::evaluate(
-    TextureCache&               texture_cache,
-    const foundation::Vector2d& uv,
-    double&                     scalar) const
+    TextureCache&                   texture_cache,
+    const foundation::Vector2d&     uv,
+    double&                         scalar) const
 {
     evaluate_uniform(scalar);
 }
 
 inline void Source::evaluate(
-    TextureCache&               texture_cache,
-    const foundation::Vector2d& uv,
-    foundation::Color3f&        linear_rgb,
-    Alpha&                      alpha) const
+    TextureCache&                   texture_cache,
+    const foundation::Vector2d&     uv,
+    foundation::Color3f&            linear_rgb) const
 {
-    evaluate_uniform(linear_rgb, alpha);
+    evaluate_uniform(linear_rgb);
 }
 
 inline void Source::evaluate(
-    TextureCache&               texture_cache,
-    const foundation::Vector2d& uv,
-    Spectrum&                   spectrum,
-    Alpha&                      alpha) const
+    TextureCache&                   texture_cache,
+    const foundation::Vector2d&     uv,
+    Spectrum&                       spectrum) const
 {
-    evaluate_uniform(spectrum, alpha);
+    evaluate_uniform(spectrum);
+}
+
+inline void Source::evaluate(
+    TextureCache&                   texture_cache,
+    const foundation::Vector2d&     uv,
+    Alpha&                          alpha) const
+{
+    evaluate_uniform(alpha);
+}
+
+inline void Source::evaluate(
+    TextureCache&                   texture_cache,
+    const foundation::Vector2d&     uv,
+    foundation::Color3f&            linear_rgb,
+    Alpha&                          alpha) const
+{
+    evaluate(texture_cache, uv, linear_rgb);
+    evaluate(texture_cache, uv, alpha);
+}
+
+inline void Source::evaluate(
+    TextureCache&                   texture_cache,
+    const foundation::Vector2d&     uv,
+    Spectrum&                       spectrum,
+    Alpha&                          alpha) const
+{
+    evaluate(texture_cache, uv, spectrum);
+    evaluate(texture_cache, uv, alpha);
 }
 
 inline void Source::evaluate_uniform(
-    double&                     scalar) const
+    double&                         scalar) const
 {
     scalar = 0.0;
 }
 
 inline void Source::evaluate_uniform(
-    foundation::Color3f&        linear_rgb,
-    Alpha&                      alpha) const
+    foundation::Color3f&            linear_rgb) const
 {
     linear_rgb.set(0.0f);
+}
+
+inline void Source::evaluate_uniform(
+    Spectrum&                       spectrum) const
+{
+    spectrum.set(0.0f);
+}
+
+inline void Source::evaluate_uniform(
+    Alpha&                          alpha) const
+{
     alpha.set(0.0f);
 }
 
 inline void Source::evaluate_uniform(
-    Spectrum&                   spectrum,
-    Alpha&                      alpha) const
+    foundation::Color3f&            linear_rgb,
+    Alpha&                          alpha) const
 {
-    spectrum.set(0.0f);
-    alpha.set(0.0f);
+    evaluate_uniform(linear_rgb);
+    evaluate_uniform(alpha);
+}
+
+inline void Source::evaluate_uniform(
+    Spectrum&                       spectrum,
+    Alpha&                          alpha) const
+{
+    evaluate_uniform(spectrum);
+    evaluate_uniform(alpha);
 }
 
 }       // namespace renderer

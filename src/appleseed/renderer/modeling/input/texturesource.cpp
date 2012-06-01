@@ -36,6 +36,7 @@
 #include "foundation/image/tile.h"
 #include "foundation/math/hash.h"
 #include "foundation/math/scalar.h"
+#include "foundation/platform/types.h"
 
 using namespace foundation;
 using namespace std;

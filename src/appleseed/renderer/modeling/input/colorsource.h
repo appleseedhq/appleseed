@@ -30,11 +30,12 @@
 #define APPLESEED_RENDERER_MODELING_INPUT_COLORSOURCE_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/input/source.h"
 
 // appleseed.foundation headers.
-#include "foundation/image/colorspace.h"
+#include "foundation/image/color.h"
+#include "foundation/platform/compiler.h"
 
 // Forward declarations.
 namespace renderer      { class ColorEntity; }
@@ -55,20 +56,25 @@ class ColorSource
 
     // Evaluate the source.
     virtual void evaluate_uniform(
-        double&                 scalar) const override;
+        double&                     scalar) const override;
     virtual void evaluate_uniform(
-        foundation::Color3f&    linear_rgb,
-        Alpha&                  alpha) const override;
+        foundation::Color3f&        linear_rgb) const override;
     virtual void evaluate_uniform(
-        Spectrum&               spectrum,
-        Alpha&                  alpha) const override;
+        Spectrum&                   spectrum) const override;
+    virtual void evaluate_uniform(
+        Alpha&                      alpha) const override;
+    virtual void evaluate_uniform(
+        foundation::Color3f&        linear_rgb,
+        Alpha&                      alpha) const override;
+    virtual void evaluate_uniform(
+        Spectrum&                   spectrum,
+        Alpha&                      alpha) const override;
 
   private:
-    const foundation::LightingConditions    m_lighting_conditions;
-
-    double                                  m_scalar;
-    Spectrum                                m_spectrum;
-    Alpha                                   m_alpha;
+    double                          m_scalar;
+    foundation::Color3f             m_linear_rgb;
+    Spectrum                        m_spectrum;
+    Alpha                           m_alpha;
 };
 
 
@@ -77,27 +83,40 @@ class ColorSource
 //
 
 inline void ColorSource::evaluate_uniform(
-    double&                 scalar) const
+    double&                         scalar) const
 {
     scalar = m_scalar;
 }
 
 inline void ColorSource::evaluate_uniform(
-    foundation::Color3f&    linear_rgb,
-    Alpha&                  alpha) const
+    foundation::Color3f&            linear_rgb) const
 {
-    linear_rgb =
-        foundation::ciexyz_to_linear_rgb(
-            foundation::spectrum_to_ciexyz<float>(
-                m_lighting_conditions,
-                m_spectrum));
+    linear_rgb = m_linear_rgb;
+}
 
+inline void ColorSource::evaluate_uniform(
+    Spectrum&                       spectrum) const
+{
+    spectrum = m_spectrum;
+}
+
+inline void ColorSource::evaluate_uniform(
+    Alpha&                          alpha) const
+{
     alpha = m_alpha;
 }
 
 inline void ColorSource::evaluate_uniform(
-    Spectrum&               spectrum,
-    Alpha&                  alpha) const
+    foundation::Color3f&            linear_rgb,
+    Alpha&                          alpha) const
+{
+    linear_rgb = m_linear_rgb;
+    alpha = m_alpha;
+}
+
+inline void ColorSource::evaluate_uniform(
+    Spectrum&                       spectrum,
+    Alpha&                          alpha) const
 {
     spectrum = m_spectrum;
     alpha = m_alpha;
