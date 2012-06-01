@@ -30,16 +30,22 @@
 #include "disktexture2d.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
 #include "renderer/modeling/texture/texture.h"
+#include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/colorspace.h"
 #include "foundation/image/genericprogressiveimagefilereader.h"
-#include "foundation/image/pixel.h"
 #include "foundation/image/tile.h"
+#include "foundation/platform/compiler.h"
 #include "foundation/platform/thread.h"
 #include "foundation/utility/searchpaths.h"
+
+// Standard headers.
+#include <cstddef>
+#include <string>
 
 using namespace boost;
 using namespace foundation;
@@ -68,22 +74,22 @@ namespace
             extract_parameters(search_paths);
         }
 
-        virtual void release()
+        virtual void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const
+        virtual const char* get_model() const override
         {
             return DiskTexture2dFactory::get_model();
         }
 
-        virtual ColorSpace get_color_space() const
+        virtual ColorSpace get_color_space() const override
         {
             return m_color_space;
         }
 
-        virtual const CanvasProperties& properties()
+        virtual const CanvasProperties& properties() override
         {
             mutex::scoped_lock lock(m_mutex);
             open_image_file();
@@ -91,8 +97,8 @@ namespace
         }
 
         virtual Tile* load_tile(
-            const size_t    tile_x,
-            const size_t    tile_y)
+            const size_t        tile_x,
+            const size_t        tile_y) override
         {
             mutex::scoped_lock lock(m_mutex);
             open_image_file();
@@ -100,9 +106,9 @@ namespace
         }
 
         virtual void unload_tile(
-            const size_t    tile_x,
-            const size_t    tile_y,
-            Tile*           tile)
+            const size_t        tile_x,
+            const size_t        tile_y,
+            const Tile*         tile) override
         {
             delete tile;
         }

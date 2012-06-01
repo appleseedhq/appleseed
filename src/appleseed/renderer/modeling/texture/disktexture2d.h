@@ -32,8 +32,15 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/texture/itexturefactory.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/autoreleaseptr.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // Forward declarations.
 namespace foundation    { class SearchPaths; }
+namespace renderer      { class ParamArray; }
 namespace renderer      { class Texture; }
 
 namespace renderer
@@ -43,7 +50,7 @@ namespace renderer
 // 2D disk texture factory.
 //
 
-class RENDERERDLL DiskTexture2dFactory
+class DLLSYMBOL DiskTexture2dFactory
   : public ITextureFactory
 {
   public:

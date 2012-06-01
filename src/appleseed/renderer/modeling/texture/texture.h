@@ -30,15 +30,21 @@
 #define APPLESEED_RENDERER_MODELING_TEXTURE_TEXTURE_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
 #include "renderer/modeling/entity/entity.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+// Standard headers.
+#include <cstddef>
+
 // Forward declarations.
 namespace foundation    { class CanvasProperties; }
 namespace foundation    { class Tile; }
+namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
@@ -47,14 +53,14 @@ namespace renderer
 // Texture.
 //
 
-class RENDERERDLL Texture
+class DLLSYMBOL Texture
   : public Entity
 {
   public:
     // Constructor.
     Texture(
-        const char*         name,
-        const ParamArray&   params);
+        const char*             name,
+        const ParamArray&       params);
 
     // Return a string identifying the model of this entity.
     virtual const char* get_model() const = 0;
@@ -67,14 +73,14 @@ class RENDERERDLL Texture
 
     // Load a given tile.
     virtual foundation::Tile* load_tile(
-        const size_t        tile_x,
-        const size_t        tile_y) = 0;
+        const size_t            tile_x,
+        const size_t            tile_y) = 0;
 
     // Unload a given tile.
     virtual void unload_tile(
-        const size_t        tile_x,
-        const size_t        tile_y,
-        foundation::Tile*   tile) = 0;
+        const size_t            tile_x,
+        const size_t            tile_y,
+        const foundation::Tile* tile) = 0;
 };
 
 }       // namespace renderer
