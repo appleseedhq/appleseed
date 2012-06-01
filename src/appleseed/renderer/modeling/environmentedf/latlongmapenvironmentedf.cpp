@@ -88,7 +88,7 @@ namespace
       public:
         ImageSampler(
             TextureCache&   texture_cache,
-            Source*         source,
+            const Source*   source,
             const size_t    width,
             const size_t    height,
             const double    u_shift,
@@ -147,7 +147,7 @@ namespace
 
       private:
         TextureCache&   m_texture_cache;
-        Source*         m_source;
+        const Source*   m_source;
         const double    m_rcp_width;
         const double    m_rcp_height;
         const double    m_u_shift;
@@ -333,12 +333,13 @@ namespace
 
         void build_importance_map(const Scene& scene)
         {
-            const TextureSource* exitance_source =
-                dynamic_cast<const TextureSource*>(m_inputs.source("exitance"));
+            const Source* exitance_source = m_inputs.source("exitance");
+            assert(exitance_source);
 
-            if (exitance_source)
+            if (dynamic_cast<const TextureSource*>(exitance_source))
             {
-                const CanvasProperties& texture_props = exitance_source->get_texture(scene).properties();
+                const CanvasProperties& texture_props =
+                    static_cast<const TextureSource*>(exitance_source)->get_texture(scene).properties();
                 m_importance_map_width = texture_props.m_canvas_width;
                 m_importance_map_height = texture_props.m_canvas_height;
             }
@@ -355,7 +356,7 @@ namespace
             TextureCache texture_cache(texture_store);
             ImageSampler sampler(
                 texture_cache,
-                m_inputs.source("exitance"),
+                exitance_source,
                 m_importance_map_width,
                 m_importance_map_height,
                 m_u_shift,
