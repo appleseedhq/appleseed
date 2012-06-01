@@ -113,13 +113,7 @@ namespace
                 1.0 - y * m_rcp_height + m_v_shift);
 
             Color3f linear_rgb;
-            Alpha alpha;
-
-            m_source->evaluate(
-                m_texture_cache,
-                uv,
-                linear_rgb,
-                alpha);
+            m_source->evaluate(m_texture_cache, uv, linear_rgb);
 
             const double MaxLuminance = 1.0e4;
 
