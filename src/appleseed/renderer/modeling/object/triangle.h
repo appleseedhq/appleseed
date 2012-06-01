@@ -90,6 +90,9 @@ class Triangle
         const size_t a1,
         const size_t a2,
         const size_t pa);
+
+    // Return true if all three vertices of this triangle have vertex attributes.
+    bool has_vertex_attributes() const;
 };
 
 
@@ -179,6 +182,11 @@ inline Triangle::Triangle(
   , m_a2(static_cast<foundation::uint32>(a2))
   , m_pa(static_cast<foundation::uint32>(pa))
 {
+}
+
+inline bool Triangle::has_vertex_attributes() const
+{
+    return m_a0 != None && m_a1 != None && m_a2 != None;
 }
 
 }       // namespace renderer
