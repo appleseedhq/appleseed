@@ -919,7 +919,6 @@ set (renderer_kernel_rendering_sources
     renderer/kernel/rendering/sample.h
     renderer/kernel/rendering/samplegeneratorbase.cpp
     renderer/kernel/rendering/samplegeneratorbase.h
-    renderer/kernel/rendering/tilecallbackbase.cpp
     renderer/kernel/rendering/tilecallbackbase.h
 )
 list (APPEND appleseed_sources

@@ -30,11 +30,19 @@
 #define APPLESEED_RENDERER_KERNEL_RENDERING_TILECALLBACKBASE_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
 #include "renderer/kernel/rendering/itilecallback.h"
 
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+// Standard headers.
+#include <cstddef>
+
 // Forward declarations.
-namespace renderer      { class Frame; }
+namespace renderer  { class Frame; }
 
 namespace renderer
 {
@@ -43,7 +51,7 @@ namespace renderer
 // A convenient base class for tile callbacks.
 //
 
-class RENDERERDLL TileCallbackBase
+class DLLSYMBOL TileCallbackBase
   : public ITileCallback
 {
   public:
@@ -52,19 +60,21 @@ class RENDERERDLL TileCallbackBase
         const size_t    x,
         const size_t    y,
         const size_t    width,
-        const size_t    height)
+        const size_t    height) override
     {
     }
-
-    // This method is called after a whole frame is rendered (at once).
-    virtual void post_render(
-        const Frame&    frame);
 
     // This method is called after a tile is rendered.
     virtual void post_render(
         const Frame&    frame,
         const size_t    tile_x,
-        const size_t    tile_y)
+        const size_t    tile_y) override
+    {
+    }
+
+    // This method is called after a whole frame is rendered.
+    virtual void post_render(
+        const Frame&    frame) override
     {
     }
 };
