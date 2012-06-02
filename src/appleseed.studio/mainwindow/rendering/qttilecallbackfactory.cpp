@@ -79,15 +79,6 @@ namespace
                 m_render_widget->highlight_region(x, y, width, height);
         }
 
-        // This method is called after a whole frame is rendered (at once).
-        virtual void post_render(
-            const Frame&    frame)
-        {
-            assert(m_render_widget);
-
-            m_render_widget->blit_frame(frame);
-        }
-
         // This method is called after a tile is rendered.
         virtual void post_render(
             const Frame&    frame,
@@ -97,6 +88,15 @@ namespace
             assert(m_render_widget);
 
             m_render_widget->blit_tile(frame, tile_x, tile_y);
+        }
+
+        // This method is called after a whole frame is rendered.
+        virtual void post_render(
+            const Frame&    frame)
+        {
+            assert(m_render_widget);
+
+            m_render_widget->blit_frame(frame);
         }
 
       private:
