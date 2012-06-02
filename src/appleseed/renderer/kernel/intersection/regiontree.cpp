@@ -407,9 +407,11 @@ namespace
 //
 
 RegionTree::Arguments::Arguments(
+    const Scene&    scene,
     const UniqueID  assembly_uid,
     const Assembly& assembly)
-  : m_assembly_uid(assembly_uid)
+  : m_scene(scene)
+  , m_assembly_uid(assembly_uid)
   , m_assembly(assembly)
 {
 }
@@ -440,6 +442,7 @@ RegionTree::RegionTree(const Arguments& arguments)
         auto_ptr<ILazyFactory<TriangleTree> > triangle_tree_factory(
             new TriangleTreeFactory(
                 TriangleTree::Arguments(
+                    arguments.m_scene,
                     triangle_tree_uid,
                     interm_leaf->m_extent,
                     interm_leaf->m_assembly,

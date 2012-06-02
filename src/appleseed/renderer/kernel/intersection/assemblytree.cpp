@@ -269,7 +269,7 @@ namespace
         }
     }
 
-    Lazy<TriangleTree>* create_triangle_tree(const Assembly& assembly)
+    Lazy<TriangleTree>* create_triangle_tree(const Scene& scene, const Assembly& assembly)
     {
         // Compute the assembly space bounding box of the assembly.
         const GAABB3 assembly_bbox =
@@ -283,6 +283,7 @@ namespace
         auto_ptr<ILazyFactory<TriangleTree> > triangle_tree_factory(
             new TriangleTreeFactory(
                 TriangleTree::Arguments(
+                    scene,
                     assembly.get_uid(),
                     assembly_bbox,
                     assembly,
@@ -291,11 +292,12 @@ namespace
         return new Lazy<TriangleTree>(triangle_tree_factory);
     }
 
-    Lazy<RegionTree>* create_region_tree(const Assembly& assembly)
+    Lazy<RegionTree>* create_region_tree(const Scene& scene, const Assembly& assembly)
     {
         auto_ptr<ILazyFactory<RegionTree> > region_tree_factory(
             new RegionTreeFactory(
                 RegionTree::Arguments(
+                    scene,
                     assembly.get_uid(),
                     assembly)));
 
@@ -329,12 +331,12 @@ void AssemblyTree::update_child_trees()
             if (assembly.is_flushable())
             {
                 m_region_trees.insert(
-                    make_pair(assembly_uid, create_region_tree(assembly)));
+                    make_pair(assembly_uid, create_region_tree(m_scene, assembly)));
             }
             else
             {
                 m_triangle_trees.insert(
-                    make_pair(assembly_uid, create_triangle_tree(assembly)));
+                    make_pair(assembly_uid, create_triangle_tree(m_scene, assembly)));
             }
         }
         else if (current_version_id != stored_version_it->second)
@@ -345,14 +347,14 @@ void AssemblyTree::update_child_trees()
                 const RegionTreeContainer::iterator region_tree_it =
                     m_region_trees.find(assembly_uid);
                 delete region_tree_it->second;
-                region_tree_it->second = create_region_tree(assembly);
+                region_tree_it->second = create_region_tree(m_scene, assembly);
             }
             else
             {
                 const TriangleTreeContainer::iterator triangle_tree_it =
                     m_triangle_trees.find(assembly_uid);
                 delete triangle_tree_it->second;
-                triangle_tree_it->second = create_triangle_tree(assembly);
+                triangle_tree_it->second = create_triangle_tree(m_scene, assembly);
             }
         }
 

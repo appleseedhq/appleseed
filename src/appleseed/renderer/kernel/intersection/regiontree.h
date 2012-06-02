@@ -48,6 +48,7 @@
 // Forward declarations.
 namespace renderer  { class Assembly; }
 namespace renderer  { class RegionTree; }
+namespace renderer  { class Scene; }
 namespace renderer  { class ShadingPoint; }
 
 namespace renderer
@@ -89,11 +90,13 @@ class RegionTree
     // Construction arguments.
     struct Arguments
     {
+        const Scene&                    m_scene;
         const foundation::UniqueID      m_assembly_uid;
         const Assembly&                 m_assembly;
 
         // Constructor.
         Arguments(
+            const Scene&                scene,
             const foundation::UniqueID  assembly_uid,
             const Assembly&             assembly);
     };

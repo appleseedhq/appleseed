@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/intersection/intersectionfilter.h"
 #include "renderer/kernel/intersection/intersectionsettings.h"
 #include "renderer/kernel/intersection/probevisitorbase.h"
 #include "renderer/kernel/intersection/regioninfo.h"
@@ -57,6 +58,7 @@
 // Forward declarations.
 namespace foundation    { class Statistics; }
 namespace renderer      { class Assembly; }
+namespace renderer      { class Scene; }
 
 namespace renderer
 {
@@ -97,6 +99,7 @@ class TriangleTree
     // Construction arguments.
     struct Arguments
     {
+        const Scene&                            m_scene;
         const foundation::UniqueID              m_triangle_tree_uid;
         const GAABB3                            m_bbox;
         const Assembly&                         m_assembly;
@@ -104,6 +107,7 @@ class TriangleTree
 
         // Constructor.
         Arguments(
+            const Scene&                        scene,
             const foundation::UniqueID          triangle_tree_uid,
             const GAABB3&                       bbox,
             const Assembly&                     assembly,
@@ -127,6 +131,9 @@ class TriangleTree
     std::vector<TriangleKey>                    m_triangle_keys;
     std::vector<foundation::uint8>              m_leaf_data;
 
+    bool                                        m_has_intersection_filters;
+    std::vector<const IntersectionFilter*>      m_intersection_filters;
+
     void build_bvh(
         const Arguments&                        arguments,
         foundation::Statistics&                 statistics);
@@ -140,6 +147,8 @@ class TriangleTree
         const std::vector<TriangleVertexInfo>&  triangle_vertex_infos,
         const std::vector<GVector3>&            triangle_vertices,
         const std::vector<TriangleKey>&         triangle_keys);
+
+    void create_intersection_filters(const Arguments& arguments);
 };
 
 
@@ -360,6 +369,16 @@ inline bool TriangleLeafVisitor::visit(
             double t, u, v;
             if (reader.m_triangle.intersect(m_shading_point.m_ray, t, u, v))
             {
+                // Optionally filter intersections.
+                if (m_tree.m_has_intersection_filters)
+                {
+                    const TriangleKey& triangle_key = m_tree.m_triangle_keys[triangle_index + i];
+                    const IntersectionFilter* filter =
+                        m_tree.m_intersection_filters[triangle_key.get_object_instance_index()];
+                    if (filter && !filter->accept(triangle_key, u, v))
+                        continue;
+                }
+
                 m_hit_triangle = triangle_ptr;
                 m_hit_triangle_index = triangle_index + i;
                 m_shading_point.m_ray.m_tmax = t;
@@ -389,6 +408,16 @@ inline bool TriangleLeafVisitor::visit(
             double t, u, v;
             if (reader.m_triangle.intersect(m_shading_point.m_ray, t, u, v))
             {
+                // Optionally filter intersections.
+                if (m_tree.m_has_intersection_filters)
+                {
+                    const TriangleKey& triangle_key = m_tree.m_triangle_keys[triangle_index + i];
+                    const IntersectionFilter* filter =
+                        m_tree.m_intersection_filters[triangle_key.get_object_instance_index()];
+                    if (filter && !filter->accept(triangle_key, u, v))
+                        continue;
+                }
+
                 m_interpolated_triangle = triangle;
                 m_hit_triangle = &m_interpolated_triangle;
                 m_hit_triangle_index = triangle_index + i;

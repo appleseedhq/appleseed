@@ -32,6 +32,8 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/kernel/tessellation/statictessellation.h"
+#include "renderer/modeling/input/source.h"
+#include "renderer/modeling/material/material.h"
 #include "renderer/modeling/object/iregion.h"
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/object/regionkit.h"
@@ -39,6 +41,7 @@
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/objectinstance.h"
+#include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/area.h"
@@ -558,11 +561,13 @@ namespace
 }
 
 TriangleTree::Arguments::Arguments(
-    const UniqueID      triangle_tree_uid,
-    const GAABB3&       bbox,
-    const Assembly&     assembly,
+    const Scene&            scene,
+    const UniqueID          triangle_tree_uid,
+    const GAABB3&           bbox,
+    const Assembly&         assembly,
     const RegionInfoVector& regions)
-  : m_triangle_tree_uid(triangle_tree_uid)
+  : m_scene(scene)
+  , m_triangle_tree_uid(triangle_tree_uid)
   , m_bbox(bbox)
   , m_assembly(assembly)
   , m_regions(regions)
@@ -610,6 +615,11 @@ TriangleTree::TriangleTree(const Arguments& arguments)
         *this,
         AABB3d(arguments.m_bbox));
     RENDERER_LOG_DEBUG("%s", statistics.to_string().c_str());
+
+    // Create intersection filters.
+    if (arguments.m_assembly.get_parameters().get_optional<bool>("enable_intersection_filters", true))
+        create_intersection_filters(arguments);
+    m_has_intersection_filters = !m_intersection_filters.empty();
 }
 
 TriangleTree::~TriangleTree()
@@ -617,6 +627,10 @@ TriangleTree::~TriangleTree()
     RENDERER_LOG_INFO(
         "deleting triangle tree #" FMT_UNIQUE_ID "...",
         m_triangle_tree_uid);
+
+    // Delete intersection filters.
+    for (size_t i = 0; i < m_intersection_filters.size(); ++i)
+        delete m_intersection_filters[i];
 }
 
 size_t TriangleTree::get_memory_size() const
@@ -847,6 +861,55 @@ void TriangleTree::store_triangles(
     RENDERER_LOG_DEBUG(
         "fat triangle tree leaves: %s",
         pretty_percent(fat_leaf_count, leaf_count).c_str());
+}
+
+void TriangleTree::create_intersection_filters(const Arguments& arguments)
+{
+    RENDERER_LOG_INFO(
+        "creating intersection filters for triangle tree #" FMT_UNIQUE_ID "...",
+        arguments.m_triangle_tree_uid);
+
+    // Collect object instances.
+    vector<size_t> object_instance_indices;
+    object_instance_indices.reserve(arguments.m_regions.size());
+    for (const_each<RegionInfoVector> i = arguments.m_regions; i; ++i)
+        object_instance_indices.push_back(i->get_object_instance_index());
+
+    // Unique the list of object instances.
+    sort(object_instance_indices.begin(), object_instance_indices.end());
+    object_instance_indices.erase(
+        unique(object_instance_indices.begin(), object_instance_indices.end()),
+        object_instance_indices.end());
+
+    for (const_each<vector<size_t> > i = object_instance_indices; i; ++i)
+    {
+        // Retrieve the object instance.
+        const size_t object_instance_index = *i;
+        const ObjectInstance* object_instance =
+            arguments.m_assembly.object_instances().get_by_index(object_instance_index);
+        assert(object_instance);
+
+        // Skip this object instance if it doesn't have any front materials.
+        if (object_instance->get_front_materials().empty())
+            continue;
+
+        // Skip this object instance if its first front material doesn't have an alpha map.
+        const Material* material = object_instance->get_front_materials()[0];
+        const Source* alpha_map = material->get_alpha_map();
+        if (alpha_map == 0)
+            continue;
+
+        // Allocate intersection filters.
+        if (m_intersection_filters.empty())
+            m_intersection_filters.resize(object_instance_indices.back() + 1);
+
+        // Create an intersection filter for this object instance.
+        m_intersection_filters[object_instance_index] =
+            new IntersectionFilter(
+                arguments.m_scene,
+                arguments.m_assembly,
+                object_instance_index);
+    }
 }
 
 

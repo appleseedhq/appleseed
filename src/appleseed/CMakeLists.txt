@@ -759,6 +759,8 @@ source_group ("renderer\\kernel\\atomkraft" FILES
 set (renderer_kernel_intersection_sources
     renderer/kernel/intersection/assemblytree.cpp
     renderer/kernel/intersection/assemblytree.h
+    renderer/kernel/intersection/intersectionfilter.cpp
+    renderer/kernel/intersection/intersectionfilter.h
     renderer/kernel/intersection/intersectionsettings.h
     renderer/kernel/intersection/intersector.cpp
     renderer/kernel/intersection/intersector.h
