@@ -35,9 +35,6 @@
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 // Standard headers.
 #include <cstddef>
 
@@ -51,7 +48,7 @@ namespace renderer
 // A convenient base class for tile callbacks.
 //
 
-class DLLSYMBOL TileCallbackBase
+class TileCallbackBase
   : public ITileCallback
 {
   public:
