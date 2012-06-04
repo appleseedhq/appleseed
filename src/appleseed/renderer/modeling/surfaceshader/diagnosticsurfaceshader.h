@@ -35,10 +35,18 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
+#include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/kvpair.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+// Standard headers.
+#include <cstddef>
 
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
+namespace renderer      { class ParamArray; }
 namespace renderer      { class ShadingContext; }
 namespace renderer      { class ShadingPoint; }
 namespace renderer      { class ShadingResult; }
@@ -50,7 +58,7 @@ namespace renderer
 // A shader offering a variety of diagnostic modes.
 //
 
-class RENDERERDLL DiagnosticSurfaceShader
+class DLLSYMBOL DiagnosticSurfaceShader
   : public SurfaceShader
 {
   public:
@@ -99,11 +107,9 @@ class RENDERERDLL DiagnosticSurfaceShader
         ShadingResult&          shading_result) const override;
 
   private:
-    struct Impl;
-    Impl* impl;
-
-    // Destructor.
-    ~DiagnosticSurfaceShader();
+    ShadingMode m_shading_mode;
+    double      m_ao_max_distance;
+    size_t      m_ao_samples;
 
     void extract_parameters();
 };

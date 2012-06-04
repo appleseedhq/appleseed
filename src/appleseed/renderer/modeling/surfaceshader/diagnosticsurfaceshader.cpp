@@ -48,7 +48,11 @@
 #include "foundation/math/hash.h"
 #include "foundation/math/minmax.h"
 #include "foundation/math/scalar.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/containers/specializedarrays.h"
+
+// Standard headers.
+#include <cassert>
 
 using namespace foundation;
 using namespace std;
@@ -56,14 +60,10 @@ using namespace std;
 namespace renderer
 {
 
-const char* Model = "diagnostic_surface_shader";
-
-struct DiagnosticSurfaceShader::Impl
+namespace
 {
-    ShadingMode m_shading_mode;
-    double      m_ao_max_distance;
-    size_t      m_ao_samples;
-};
+    const char* Model = "diagnostic_surface_shader";
+}
 
 const KeyValuePair<const char*, DiagnosticSurfaceShader::ShadingMode>
     DiagnosticSurfaceShader::ShadingModeValues[] =
@@ -112,14 +112,8 @@ DiagnosticSurfaceShader::DiagnosticSurfaceShader(
     const char*             name,
     const ParamArray&       params)
   : SurfaceShader(name, params)
-  , impl(new Impl())
 {
     extract_parameters();
-}
-
-DiagnosticSurfaceShader::~DiagnosticSurfaceShader()
-{
-    delete impl;
 }
 
 void DiagnosticSurfaceShader::release()
@@ -167,7 +161,7 @@ void DiagnosticSurfaceShader::evaluate(
     const ShadingPoint&     shading_point,
     ShadingResult&          shading_result) const
 {
-    switch (impl->m_shading_mode)
+    switch (m_shading_mode)
     {
       case Coverage:
         shading_result.set_to_linear_rgb(Color3f(1.0f));
@@ -298,8 +292,8 @@ void DiagnosticSurfaceShader::evaluate(
                     shading_point.get_geometric_normal(),
                     shading_point.get_shading_basis(),
                     shading_point.get_ray().m_time,
-                    impl->m_ao_max_distance,
-                    impl->m_ao_samples,
+                    m_ao_max_distance,
+                    m_ao_samples,
                     &shading_point);
 
             // Return a gray scale value proportional to the accessibility.
@@ -362,23 +356,21 @@ void DiagnosticSurfaceShader::extract_parameters()
     const KeyValuePair<const char*, ShadingMode>* mode_pair =
         lookup_kvpair_array(ShadingModeValues, ShadingModeCount, mode_string);
     if (mode_pair)
-    {
-        impl->m_shading_mode = mode_pair->m_value;
-    }
+        m_shading_mode = mode_pair->m_value;
     else
     {
         RENDERER_LOG_ERROR(
             "invalid shading mode \"%s\", using default value \"coverage\".",
             mode_string.c_str());
-        impl->m_shading_mode = Coverage;
+        m_shading_mode = Coverage;
     }
 
     // Retrieve ambient occlusion parameters.
-    if (impl->m_shading_mode == AmbientOcclusion)
+    if (m_shading_mode == AmbientOcclusion)
     {
         const ParamArray& ao_params = m_params.child("ambient_occlusion");
-        impl->m_ao_max_distance = ao_params.get_optional<double>("max_distance", 1.0);
-        impl->m_ao_samples = ao_params.get_optional<size_t>("samples", 16);
+        m_ao_max_distance = ao_params.get_optional<double>("max_distance", 1.0);
+        m_ao_samples = ao_params.get_optional<size_t>("samples", 16);
     }
 }
 
