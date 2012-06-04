@@ -52,7 +52,7 @@
                 <parameter name="color" value="blue" />
             </surface_shader>
             <surface_shader name="front_square_surface_shader" model="constant_surface_shader">
-                <parameter name="alpha_source" value="matderial" />
+                <parameter name="alpha_source" value="material" />
                 <parameter name="color" value="red" />
             </surface_shader>
             <material name="back_square_material" model="generic_material">
