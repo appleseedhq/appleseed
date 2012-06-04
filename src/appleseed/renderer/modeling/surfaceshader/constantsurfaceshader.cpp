@@ -67,6 +67,20 @@ namespace
           : SurfaceShader(name, params)
         {
             m_inputs.declare("color", InputFormatSpectrum);
+
+            const string alpha_source = m_params.get_optional<string>("alpha_source", "color");
+            if (alpha_source == "color")
+                m_alpha_source = AlphaSourceColor;
+            else if (alpha_source == "material")
+                m_alpha_source = AlphaSourceMaterial;
+            else 
+            {
+                RENDERER_LOG_ERROR(
+                    "invalid value \"%s\" for parameter \"alpha_source\", "
+                    "using default value \"color\".",
+                    alpha_source.c_str());
+                m_alpha_source = AlphaSourceColor;
+            }
         }
 
         virtual void release() override
@@ -93,7 +107,23 @@ namespace
 
             shading_result.m_color_space = ColorSpaceSpectral;
             shading_result.m_color = values.m_color;
-            shading_result.m_alpha = values.m_alpha;
+
+            // Handle alpha mapping.
+            if (m_alpha_source == AlphaSourceColor)
+                shading_result.m_alpha = values.m_alpha;
+            else
+            {
+                const Material* material = shading_point.get_material();
+                if (material && material->get_alpha_map())
+                {
+                    // Evaluate the alpha map at the shading point.
+                    material->get_alpha_map()->evaluate(
+                        shading_context.get_texture_cache(),
+                        shading_point.get_uv(0),
+                        shading_result.m_alpha);
+                }
+                else shading_result.m_alpha = Alpha(1.0f);
+            }
         }
 
       private:
@@ -102,6 +132,14 @@ namespace
             Spectrum    m_color;
             Alpha       m_alpha;
         };
+
+        enum AlphaSource
+        {
+            AlphaSourceColor,
+            AlphaSourceMaterial
+        };
+
+        AlphaSource     m_alpha_source;
     };
 }
 
@@ -135,6 +173,18 @@ DictionaryArray ConstantSurfaceShaderFactory::get_widget_definitions() const
                     .insert("texture_instance", "Textures"))
             .insert("use", "required")
             .insert("default", ""));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "alpha_source")
+            .insert("label", "Alpha Source")
+            .insert("widget", "dropdown_list")
+            .insert("dropdown_items",
+                Dictionary()
+                    .insert("Alpha channel of the color", "color")
+                    .insert("Alpha map of the material", "material"))
+            .insert("use", "optional")
+            .insert("default", "color"));
 
     return definitions;
 }
