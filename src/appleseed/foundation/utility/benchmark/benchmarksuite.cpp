@@ -166,11 +166,11 @@ struct BenchmarkSuite::Impl
 
         // Compute the number of iterations.
         const double iteration_time = time / InitialIterationCount;
-        params.m_iteration_count = max(1u, static_cast<size_t>(TargetMeasurementTime / iteration_time));
+        params.m_iteration_count = max<size_t>(1, static_cast<size_t>(TargetMeasurementTime / iteration_time));
 
         // Compute the number of measurements.
         const double measurement_time = iteration_time * params.m_iteration_count;
-        params.m_measurement_count = max(1u, static_cast<size_t>(TargetTotalTime / measurement_time));
+        params.m_measurement_count = max<size_t>(1, static_cast<size_t>(TargetTotalTime / measurement_time));
     }
 
     static double measure_iteration_runtime(
