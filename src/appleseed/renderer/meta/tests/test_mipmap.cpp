@@ -103,8 +103,8 @@ TEST_SUITE(AtomKraft_MipMap)
 
         assert(input_props.m_channel_count == 3 || input_props.m_channel_count == 4);
 
-        const size_t output_width = max(1u, input_props.m_canvas_width >> level);
-        const size_t output_height = max(1u, input_props.m_canvas_height >> level);
+        const size_t output_width = max<size_t>(1, input_props.m_canvas_width >> level);
+        const size_t output_height = max<size_t>(1, input_props.m_canvas_height >> level);
 
         auto_ptr<Image> result(
             new Image(
@@ -151,8 +151,8 @@ TEST_SUITE(AtomKraft_MipMap)
         assert(input_props.m_channel_count == 4);
         assert(input_props.m_pixel_format == PixelFormatFloat);
 
-        const size_t output_width = max(1u, input_props.m_canvas_width >> level);
-        const size_t output_height = max(1u, input_props.m_canvas_height >> level);
+        const size_t output_width = max<size_t>(1, input_props.m_canvas_width >> level);
+        const size_t output_height = max<size_t>(1, input_props.m_canvas_height >> level);
 
         auto_ptr<Image> result(
             new Image(
