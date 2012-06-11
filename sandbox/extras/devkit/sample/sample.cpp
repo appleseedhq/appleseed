@@ -31,6 +31,8 @@
 #include "renderer/api/camera.h"
 #include "renderer/api/color.h"
 #include "renderer/api/environment.h"
+#include "renderer/api/environmentedf.h"
+#include "renderer/api/environmentshader.h"
 #include "renderer/api/frame.h"
 #include "renderer/api/light.h"
 #include "renderer/api/log.h"
@@ -61,17 +63,11 @@
 namespace asf = foundation;
 namespace asr = renderer;
 
-// Set the root path of the sample program. If the working directory is set to bin\Debug
-// or bin\Release (i.e. where the appleseed DLL is located for the current configuration),
-// you don't need to change anything. Otherwise you will need to set this variable to the
-// root path of the sample program (the path to the sample.cpp file).
-static const std::string root_path = "../../sample";
-
 asf::auto_release_ptr<asr::Project> build_project()
 {
     // Create an empty project.
     asf::auto_release_ptr<asr::Project> project(asr::ProjectFactory::create("test project"));
-    project->set_path((root_path + "/output/test.appleseed").c_str());
+    project->set_path("output/test.appleseed");
 
     // Add default configurations to the project.
     project->add_default_configurations();
@@ -91,6 +87,10 @@ asf::auto_release_ptr<asr::Project> build_project()
         asr::AssemblyFactory::create(
             "assembly",
             asr::ParamArray()));
+
+    //------------------------------------------------------------------------
+    // Materials
+    //------------------------------------------------------------------------
 
     // Create a color called "gray" and insert it into the assembly.
     static const float GrayReflectance[] = { 0.5f, 0.5f, 0.5f };
@@ -122,9 +122,13 @@ asf::auto_release_ptr<asr::Project> build_project()
                 .insert("surface_shader", "physical_surface_shader")
                 .insert("bsdf", "diffuse_gray_brdf")));
 
+    //------------------------------------------------------------------------
+    // Geometry
+    //------------------------------------------------------------------------
+
     // Load the scene geometry from disk.
     asf::SearchPaths search_paths;
-    search_paths.push_back(root_path + "/data");
+    search_paths.push_back("data");
     asr::MeshObjectArray objects =
         asr::MeshObjectReader::read(
             search_paths,
@@ -153,6 +157,10 @@ asf::auto_release_ptr<asr::Project> build_project()
                 asf::Transformd(asf::Matrix4d::identity()),
                 material_names));
     }
+
+    //------------------------------------------------------------------------
+    // Light
+    //------------------------------------------------------------------------
 
     // Create a color called "light_exitance" and insert it into the assembly.
     static const float LightExitance[] = { 1.0f, 1.0f, 1.0f };
@@ -185,6 +193,46 @@ asf::auto_release_ptr<asr::Project> build_project()
     // Insert the assembly into the scene.
     scene->assemblies().insert(assembly);
 
+    //------------------------------------------------------------------------
+    // Environment
+    //------------------------------------------------------------------------
+
+    // Create a color called "sky_exitance" and insert it into the scene.
+    static const float SkyExitance[] = { 0.75f, 0.80f, 1.0f };
+    scene->colors().insert(
+        asr::ColorEntityFactory::create(
+            "sky_exitance",
+            asr::ParamArray()
+                .insert("color_space", "srgb")
+                .insert("multiplier", "0.5"),
+            asr::ColorValueArray(3, SkyExitance)));
+
+    // Create an environment EDF called "sky_edf" and insert it into the scene.
+    scene->environment_edfs().insert(
+        asr::ConstantEnvironmentEDFFactory().create(
+            "sky_edf",
+            asr::ParamArray()
+                .insert("exitance", "sky_exitance")));
+
+    // Create an environment shader called "sky_shader" and insert it into the scene.
+    scene->environment_shaders().insert(
+        asr::EDFEnvironmentShaderFactory().create(
+            "sky_shader",
+            asr::ParamArray()
+                .insert("environment_edf", "sky_edf")));
+
+    // Create an environment called "sky" and bind it to the scene.
+    scene->set_environment(
+        asr::EnvironmentFactory::create(
+            "sky",
+            asr::ParamArray()
+                .insert("environment_edf", "sky_edf")
+                .insert("environment_shader", "sky_shader")));
+
+    //------------------------------------------------------------------------
+    // Camera
+    //------------------------------------------------------------------------
+
     // Create a pinhole camera with film dimensions 0.980 x 0.735 in (24.892 x 18.669 mm).
     asf::auto_release_ptr<asr::Camera> camera(
         asr::PinholeCameraFactory().create(
@@ -204,6 +252,10 @@ asf::auto_release_ptr<asr::Project> build_project()
     // Bind the camera to the scene.
     scene->set_camera(camera);
 
+    //------------------------------------------------------------------------
+    // Frame
+    //------------------------------------------------------------------------
+
     // Create a frame and bind it to the project.
     project->set_frame(
         asr::FrameFactory::create(
@@ -212,12 +264,6 @@ asf::auto_release_ptr<asr::Project> build_project()
                 .insert("camera", scene->get_camera()->get_name())
                 .insert("resolution", "640 480")
                 .insert("color_space", "srgb")));
-
-    // Create an environment and bind it to the scene.
-    scene->set_environment(
-        asr::EnvironmentFactory::create(
-            "environment",
-            asr::ParamArray()));
 
     // Bind the scene to the project.
     project->set_scene(scene);
@@ -247,7 +293,7 @@ int main()
     renderer.render();
 
     // Save the frame to disk.
-    project->get_frame()->write((root_path + "/output/test.png").c_str());
+    project->get_frame()->write("output/test.png");
 
     // Save the project to disk.
     asr::ProjectFileWriter::write(project.ref());
