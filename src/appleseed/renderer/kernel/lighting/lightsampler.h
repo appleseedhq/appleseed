@@ -89,8 +89,6 @@ class LightSample
     double                      m_probability;                  // probability of this sample to be chosen
 };
 
-typedef std::vector<LightSample> LightSampleVector;
-
 
 //
 // Light sampler.
@@ -118,7 +116,7 @@ class LightSampler
     bool sample(
         SamplingContext&                sampling_context,
         const size_t                    sample_count,
-        LightSampleVector&              samples) const;
+        LightSample                     samples[]) const;
 
     // Compute the probability density in area measure of a given light sample.
     double evaluate_pdf(const ShadingPoint& result) const;

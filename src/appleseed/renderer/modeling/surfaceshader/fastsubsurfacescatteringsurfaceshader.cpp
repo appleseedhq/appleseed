@@ -167,19 +167,19 @@ namespace
             shading_result.m_color.set(0.0f);
             shading_result.m_alpha.set(1.0f);
 
-            // Sample the light sources.
-            LightSampleVector light_samples;
-            m_light_sampler->sample(sampling_context, m_light_samples, light_samples);
-
             const Vector3d camera_vec = normalize(-shading_point.get_ray().m_dir);                                          // toward camera
 
-            for (const_each<LightSampleVector> i = light_samples; i; ++i)
+            sampling_context.split_in_place(3, m_light_samples);
+
+            for (size_t i = 0; i < m_light_samples; ++i)
             {
-                // Fetch the light sample.
-                const LightSample& light_sample = *i;
-                const Vector3d light_vec = normalize(light_sample.m_point - point);                                         // toward light
+                // Sample the light sources.
+                LightSample light_sample;
+                if (!m_light_sampler->sample(sampling_context.next_vector2<3>(), light_sample))
+                    break;
 
                 // Compute the contribution of this light sample.
+                const Vector3d light_vec = normalize(light_sample.m_point - point);                                         // toward light
                 const Vector3d distorted_light_vec = normalize(light_vec + values.m_distortion * inv_shading_normal);       // normalize() not strictly necessary
                 const double dot_nl = saturate(dot(shading_normal, light_vec));                                             // dot(N, L): diffuse lighting
                 const double dot_vl = saturate(dot(camera_vec, -distorted_light_vec));                                      // dot(V, -L): view-dependent SSS
@@ -212,8 +212,8 @@ namespace
             }
 
             // Normalize the result.
-            if (light_samples.size() > 1)
-                shading_result.m_color /= static_cast<float>(light_samples.size());
+            if (m_light_samples > 1)
+                shading_result.m_color /= static_cast<float>(m_light_samples);
         }
 
       private:

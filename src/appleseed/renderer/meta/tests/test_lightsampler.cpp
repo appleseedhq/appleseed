@@ -27,33 +27,31 @@
 //
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
 #include "renderer/kernel/lighting/lightsampler.h"
 #include "renderer/modeling/scene/scene.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/rng.h"
+#include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/test.h"
+
+using namespace foundation;
+using namespace renderer;
 
 TEST_SUITE(Renderer_Kernel_Lighting_LightSampler)
 {
-    using namespace foundation;
-    using namespace renderer;
-
-    TEST_CASE(Sample_GivenSceneWithoutLights_ReturnsZeroSample)
+    TEST_CASE(Sample_GivenSceneWithoutLights_ReturnsFalse)
     {
         auto_release_ptr<Scene> scene(SceneFactory::create());
         LightSampler light_sampler(scene.ref());
 
         MersenneTwister rng;
         SamplingContext sampling_context(rng);
-        LightSampleVector samples;
 
-        light_sampler.sample(
-            sampling_context,
-            1,                          // number of samples
-            samples);
+        LightSample samples[1];
+        const bool successful =
+            light_sampler.sample(sampling_context, 1, samples);
 
-        EXPECT_EQ(0, samples.size());
+        EXPECT_FALSE(successful);
     }
 }

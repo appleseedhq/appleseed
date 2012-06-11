@@ -332,7 +332,7 @@ bool LightSampler::sample(
 bool LightSampler::sample(
     SamplingContext&        sampling_context,
     const size_t            sample_count,
-    LightSampleVector&      samples) const
+    LightSample             samples[]) const
 {
     // No light source in the scene.
     if (!m_light_cdf.valid())
@@ -341,11 +341,7 @@ bool LightSampler::sample(
     sampling_context.split_in_place(3, sample_count);
 
     for (size_t i = 0; i < sample_count; ++i)
-    {
-        LightSample sample;
-        sample_emitters(sampling_context.next_vector2<3>(), sample);
-        samples.push_back(sample);
-    }
+        sample_emitters(sampling_context.next_vector2<3>(), samples[i]);
 
     return true;
 }
