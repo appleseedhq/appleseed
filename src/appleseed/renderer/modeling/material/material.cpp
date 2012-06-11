@@ -135,7 +135,6 @@ void Material::on_frame_begin(
     m_alpha_map = m_inputs.source("alpha_map");
     m_normal_map = m_inputs.source("normal_map");
 
-    check_texture_source_color_space_is_linear_rgb(*project.get_scene(), "alpha map", m_alpha_map);
     check_texture_source_color_space_is_linear_rgb(*project.get_scene(), "normal map", m_normal_map);
 }
 
