@@ -1055,6 +1055,8 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/bsdfmix.h
     renderer/modeling/bsdf/bsdftraits.h
     renderer/modeling/bsdf/btdfwrapper.h
+    renderer/modeling/bsdf/diffusebtdf.cpp
+    renderer/modeling/bsdf/diffusebtdf.h
     renderer/modeling/bsdf/ibsdffactory.h
     renderer/modeling/bsdf/kelemenbrdf.cpp
     renderer/modeling/bsdf/kelemenbrdf.h
