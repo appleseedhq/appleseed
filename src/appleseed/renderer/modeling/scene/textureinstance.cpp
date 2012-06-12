@@ -48,7 +48,8 @@ struct TextureInstance::Impl
     size_t                  m_texture_index;
     TextureAddressingMode   m_addressing_mode;
     TextureFilteringMode    m_filtering_mode;
-    float                   m_multiplier;
+    float                   m_color_multiplier;
+    float                   m_alpha_multiplier;
 };
 
 namespace
@@ -97,8 +98,9 @@ TextureInstance::TextureInstance(
         impl->m_filtering_mode = TextureFilteringBilinear;
     }
 
-    // Retrieve multiplier.
-    impl->m_multiplier = m_params.get_optional<float>("multiplier", 1.0f);
+    // Retrieve the multipliers.
+    impl->m_color_multiplier = m_params.get_optional<float>("color_multiplier", 1.0f);
+    impl->m_alpha_multiplier = m_params.get_optional<float>("alpha_multiplier", 1.0f);
 }
 
 TextureInstance::~TextureInstance()
@@ -126,9 +128,14 @@ TextureFilteringMode TextureInstance::get_filtering_mode() const
     return impl->m_filtering_mode;
 }
 
-float TextureInstance::get_multiplier() const
+float TextureInstance::get_color_multiplier() const
 {
-    return impl->m_multiplier;
+    return impl->m_color_multiplier;
+}
+
+float TextureInstance::get_alpha_multiplier() const
+{
+    return impl->m_alpha_multiplier;
 }
 
 
@@ -166,8 +173,16 @@ DictionaryArray TextureInstanceFactory::get_widget_definitions()
 
     definitions.push_back(
         Dictionary()
-            .insert("name", "multiplier")
-            .insert("label", "Multiplier")
+            .insert("name", "color_multiplier")
+            .insert("label", "Color Multiplier")
+            .insert("widget", "text_box")
+            .insert("default", "1.0")
+            .insert("use", "optional"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "alpha_multiplier")
+            .insert("label", "Alpha Multiplier")
             .insert("widget", "text_box")
             .insert("default", "1.0")
             .insert("use", "optional"));

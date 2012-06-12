@@ -110,7 +110,7 @@ const ShadingPoint& Tracer::trace(
             alpha);
 
         // Stop as soon as we reach a fully opaque occluder.
-        if (alpha[0] == 1.0f)
+        if (alpha[0] >= 1.0f)
             break;
 
         // Update the transmission factor.
@@ -195,7 +195,7 @@ const ShadingPoint& Tracer::trace_between(
             alpha);
 
         // Stop as soon as we reach a fully opaque occluder.
-        if (alpha[0] == 1.0f)
+        if (alpha[0] >= 1.0f)
             break;
 
         // Update the transmission factor.

@@ -161,7 +161,6 @@ size_t PathTracer<PathVisitor, ScatteringModesMask, Adjoint>::trace(
                 normalize(-ray.m_dir),
                 bsdf_mode,
                 throughput);
-
             break;
         }
 
@@ -171,7 +170,7 @@ size_t PathTracer<PathVisitor, ScatteringModesMask, Adjoint>::trace(
             break;
 
         // Handle alpha mapping.
-        if (material->get_alpha_map())
+        if (path_length > 1 && material->get_alpha_map())
         {
             // Evaluate the alpha map at the shading point.
             Alpha alpha;

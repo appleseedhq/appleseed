@@ -45,7 +45,7 @@ class NullBSDF
 {
   public:
     NullBSDF()
-      : BSDF("null_bsdf", ParamArray())
+      : BSDF("null_bsdf", ParamArray(), Reflective)
     {
     }
 

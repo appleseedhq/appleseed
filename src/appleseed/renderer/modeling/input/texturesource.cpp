@@ -172,7 +172,8 @@ TextureSource::TextureSource(
   , m_texture_index(texture_instance.get_texture_index())
   , m_addressing_mode(texture_instance.get_addressing_mode())
   , m_filtering_mode(texture_instance.get_filtering_mode())
-  , m_multiplier(texture_instance.get_multiplier())
+  , m_color_multiplier(texture_instance.get_color_multiplier())
+  , m_alpha_multiplier(texture_instance.get_alpha_multiplier())
   , m_lighting_conditions(      // todo: this should be user-settable
         IlluminantCIED65,
         XYZCMFCIE196410Deg)

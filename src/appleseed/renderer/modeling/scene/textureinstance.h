@@ -43,14 +43,12 @@ namespace renderer
 // Texture mapping modes.
 //
 
-// Texture addressing modes.
 enum TextureAddressingMode
 {
     TextureAddressingClamp = 0,
     TextureAddressingWrap
 };
 
-// Texture filtering modes.
 enum TextureFilteringMode
 {
     TextureFilteringNearest = 0,
@@ -81,8 +79,9 @@ class RENDERERDLL TextureInstance
     TextureAddressingMode get_addressing_mode() const;
     TextureFilteringMode get_filtering_mode() const;
 
-    // Retrieve the multiplier value.
-    float get_multiplier() const;
+    // Retrieve the multipliers.
+    float get_color_multiplier() const;
+    float get_alpha_multiplier() const;
 
   private:
     friend class TextureInstanceFactory;

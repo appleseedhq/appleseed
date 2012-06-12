@@ -30,7 +30,6 @@
 #include "physicalsurfaceshader.h"
 
 // appleseed.renderer headers.
-#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/lighting/ilightingengine.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
@@ -38,12 +37,11 @@
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentshader/environmentshader.h"
-#include "renderer/modeling/material/material.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/input/source.h"
+#include "renderer/modeling/material/material.h"
 #include "renderer/modeling/scene/scene.h"
-#include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
@@ -68,159 +66,147 @@ namespace renderer
 
 namespace
 {
-    //
-    // Physical surface shader.
-    //
-
     const char* Model = "physical_surface_shader";
+}
 
-    class PhysicalSurfaceShader
-      : public SurfaceShader
+struct PhysicalSurfaceShader::Impl
+{
+    const LightingConditions m_lighting_conditions;
+
+    Impl()
+      : m_lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg)
     {
-      public:
-        PhysicalSurfaceShader(
-            const char*             name,
-            const ParamArray&       params)
-          : SurfaceShader(name, params)
-          , m_lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg)
-        {
-            m_inputs.declare("aerial_persp_sky_color", InputFormatSpectrum, true);
+    }
+};
 
-            const string aerial_persp_mode = m_params.get_optional<string>("aerial_persp_mode", "none");
-            if (aerial_persp_mode == "none")
-                m_aerial_persp_mode = AerialPerspNone;
-            else if (aerial_persp_mode == "environment_shader")
-                m_aerial_persp_mode = AerialPerspEnvironmentShader;
-            else if (aerial_persp_mode == "sky_color")
-                m_aerial_persp_mode = AerialPerspSkyColor;
-            else 
+PhysicalSurfaceShader::PhysicalSurfaceShader(
+    const char*             name,
+    const ParamArray&       params)
+    : SurfaceShader(name, params)
+    , impl(new Impl())
+{
+    m_color_multiplier = m_params.get_optional<float>("color_multiplier", 1.0f);
+    m_alpha_multiplier = m_params.get_optional<float>("alpha_multiplier", 1.0f);
+
+    m_inputs.declare("aerial_persp_sky_color", InputFormatSpectrum, true);
+
+    const string aerial_persp_mode = m_params.get_optional<string>("aerial_persp_mode", "none");
+    if (aerial_persp_mode == "none")
+        m_aerial_persp_mode = AerialPerspNone;
+    else if (aerial_persp_mode == "environment_shader")
+        m_aerial_persp_mode = AerialPerspEnvironmentShader;
+    else if (aerial_persp_mode == "sky_color")
+        m_aerial_persp_mode = AerialPerspSkyColor;
+    else 
+    {
+        RENDERER_LOG_ERROR(
+            "invalid value \"%s\" for parameter \"aerial_persp_mode\", "
+            "using default value \"none\".",
+            aerial_persp_mode.c_str());
+        m_aerial_persp_mode = AerialPerspNone;
+    }
+
+    m_aerial_persp_rcp_distance = 1.0 / m_params.get_optional<double>("aerial_persp_distance", 1000.0);
+    m_aerial_persp_intensity = m_params.get_optional<double>("aerial_persp_intensity", 0.01);
+}
+
+PhysicalSurfaceShader::~PhysicalSurfaceShader()
+{
+    delete impl;
+}
+
+void PhysicalSurfaceShader::release()
+{
+    delete this;
+}
+
+const char* PhysicalSurfaceShader::get_model() const
+{
+    return Model;
+}
+
+void PhysicalSurfaceShader::evaluate(
+    SamplingContext&        sampling_context,
+    const ShadingContext&   shading_context,
+    const ShadingPoint&     shading_point,
+    ShadingResult&          shading_result) const
+{
+    // Retrieve the lighting engine.
+    ILightingEngine* lighting_engine =
+        shading_context.get_lighting_engine();
+    assert(lighting_engine);
+
+    // Compute the lighting.
+    shading_result.m_color_space = ColorSpaceSpectral;
+    lighting_engine->compute_lighting(
+        sampling_context,
+        shading_context,
+        shading_point,
+        shading_result.m_color,
+        shading_result.m_aovs);
+
+    // Handle alpha mapping.
+    const Material* material = shading_point.get_material();
+    if (material && material->get_alpha_map())
+    {
+        // Evaluate the alpha map at the shading point.
+        material->get_alpha_map()->evaluate(
+            shading_context.get_texture_cache(),
+            shading_point.get_uv(0),
+            shading_result.m_alpha);
+    }
+    else shading_result.m_alpha = Alpha(1.0);
+
+    shading_result.m_color *= m_color_multiplier;
+    shading_result.m_aovs *= m_color_multiplier;
+    shading_result.m_alpha *= m_alpha_multiplier;
+
+    // Handle aerial perspective.
+    if (m_aerial_persp_mode != AerialPerspNone)
+    {
+        Spectrum sky_color;
+
+        if (m_aerial_persp_mode == AerialPerspSkyColor)
+        {
+            // Evaluate the inputs to obtain the sky color.
+            InputValues values;
+            m_inputs.evaluate(
+                shading_context.get_texture_cache(),
+                shading_point.get_uv(0),
+                &values);
+            sky_color = values.m_aerial_persp_sky_color;
+        }
+        else
+        {
+            // Retrieve the environment shader of the scene.
+            const Scene& scene = shading_point.get_scene();
+            const EnvironmentShader* environment_shader =
+                scene.get_environment()->get_environment_shader();
+
+            if (environment_shader)
             {
-                RENDERER_LOG_ERROR(
-                    "invalid value \"%s\" for parameter \"aerial_persp_mode\", "
-                    "using default value \"none\".",
-                    aerial_persp_mode.c_str());
-                m_aerial_persp_mode = AerialPerspNone;
+                // Execute the environment shader to obtain the sky color in the direction of the ray.
+                InputEvaluator input_evaluator(shading_context.get_texture_cache());
+                const ShadingRay& ray = shading_point.get_ray();
+                const Vector3d direction = normalize(ray.m_dir);
+                ShadingResult sky;
+                environment_shader->evaluate(input_evaluator, direction, sky);
+                sky.transform_to_spectrum(impl->m_lighting_conditions);
+                sky_color = sky.m_color;
             }
-
-            m_aerial_persp_rcp_distance = 1.0 / m_params.get_optional<double>("aerial_persp_distance", 1000.0);
-            m_aerial_persp_intensity = m_params.get_optional<double>("aerial_persp_intensity", 0.01);
+            else sky_color.set(0.0f);
         }
 
-        virtual void release() override
-        {
-            delete this;
-        }
+        // Compute the blend factor.
+        const double d = shading_point.get_distance() * m_aerial_persp_rcp_distance;
+        const double k = m_aerial_persp_intensity * exp(d);
+        const double blend = min(k, 1.0);
 
-        virtual const char* get_model() const override
-        {
-            return Model;
-        }
-
-        virtual void evaluate(
-            SamplingContext&        sampling_context,
-            const ShadingContext&   shading_context,
-            const ShadingPoint&     shading_point,
-            ShadingResult&          shading_result) const override
-        {
-            // Set color space to spectral.
-            shading_result.m_color_space = ColorSpaceSpectral;
-
-            // Retrieve the lighting engine.
-            ILightingEngine* lighting_engine =
-                shading_context.get_lighting_engine();
-            assert(lighting_engine);
-
-            // Compute the lighting.
-            lighting_engine->compute_lighting(
-                sampling_context,
-                shading_context,
-                shading_point,
-                shading_result.m_color,
-                shading_result.m_aovs);
-
-            // Handle alpha mapping.
-            shading_result.m_alpha = Alpha(1.0);
-            const Material* material = shading_point.get_material();
-            if (material)
-            {
-                if (material->get_alpha_map())
-                {
-                    // Evaluate the alpha map at the shading point.
-                    material->get_alpha_map()->evaluate(
-                        shading_context.get_texture_cache(),
-                        shading_point.get_uv(0),
-                        shading_result.m_alpha);
-                }
-            }
-
-            // Handle aerial perspective.
-            if (m_aerial_persp_mode != AerialPerspNone)
-            {
-                Spectrum sky_color;
-
-                if (m_aerial_persp_mode == AerialPerspSkyColor)
-                {
-                    // Evaluate the inputs to obtain the sky color.
-                    InputValues values;
-                    m_inputs.evaluate(
-                        shading_context.get_texture_cache(),
-                        shading_point.get_uv(0),
-                        &values);
-                    sky_color = values.m_aerial_persp_sky_color;
-                }
-                else
-                {
-                    // Retrieve the environment shader of the scene.
-                    const Scene& scene = shading_point.get_scene();
-                    const EnvironmentShader* environment_shader =
-                        scene.get_environment()->get_environment_shader();
-
-                    if (environment_shader)
-                    {
-                        // Execute the environment shader to obtain the sky color in the direction of the ray.
-                        InputEvaluator input_evaluator(shading_context.get_texture_cache());
-                        const ShadingRay& ray = shading_point.get_ray();
-                        const Vector3d direction = normalize(ray.m_dir);
-                        ShadingResult sky;
-                        environment_shader->evaluate(input_evaluator, direction, sky);
-                        sky.transform_to_spectrum(m_lighting_conditions);
-                        sky_color = sky.m_color;
-                    }
-                    else sky_color.set(0.0f);
-                }
-
-                // Compute the blend factor.
-                const double d = shading_point.get_distance() * m_aerial_persp_rcp_distance;
-                const double k = m_aerial_persp_intensity * exp(d);
-                const double blend = min(k, 1.0);
-
-                // Blend the shading result and the sky color.
-                sky_color *= static_cast<float>(blend);
-                shading_result.m_color *= static_cast<float>(1.0 - blend);
-                shading_result.m_color += sky_color;
-            }
-        }
-
-      private:
-        struct InputValues
-        {
-            Spectrum    m_aerial_persp_sky_color;
-            Alpha       m_aerial_persp_sky_alpha;       // unused
-        };
-
-        enum AerialPerspMode
-        {
-            AerialPerspNone,
-            AerialPerspEnvironmentShader,
-            AerialPerspSkyColor
-        };
-
-        const LightingConditions    m_lighting_conditions;
-
-        AerialPerspMode             m_aerial_persp_mode;
-        double                      m_aerial_persp_rcp_distance;
-        double                      m_aerial_persp_intensity;
-    };
+        // Blend the shading result and the sky color.
+        sky_color *= static_cast<float>(blend);
+        shading_result.m_color *= static_cast<float>(1.0 - blend);
+        shading_result.m_color += sky_color;
+    }
 }
 
 
@@ -241,6 +227,22 @@ const char* PhysicalSurfaceShaderFactory::get_human_readable_model() const
 DictionaryArray PhysicalSurfaceShaderFactory::get_widget_definitions() const
 {
     DictionaryArray definitions;
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "color_multiplier")
+            .insert("label", "Color Multiplier")
+            .insert("widget", "text_box")
+            .insert("default", "1.0")
+            .insert("use", "optional"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "alpha_multiplier")
+            .insert("label", "Alpha Multiplier")
+            .insert("widget", "text_box")
+            .insert("default", "1.0")
+            .insert("use", "optional"));
 
     definitions.push_back(
         Dictionary()

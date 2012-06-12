@@ -69,7 +69,7 @@ namespace
         LambertianBRDFImpl(
             const char*         name,
             const ParamArray&   params)
-          : BSDF(name, params)
+          : BSDF(name, params, Reflective)
           , m_uniform_reflectance(false)
         {
             m_inputs.declare("reflectance", InputFormatSpectrum);
@@ -192,7 +192,7 @@ namespace
         struct InputValues
         {
             Spectrum    m_reflectance;          // diffuse reflectance (albedo, technically)
-            Alpha       m_reflectance_alpha;    // alpha channel of diffuse reflectance
+            Alpha       m_reflectance_alpha;    // unused
         };
 
         bool            m_uniform_reflectance;

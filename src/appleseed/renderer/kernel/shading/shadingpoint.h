@@ -45,7 +45,6 @@
 #include "renderer/modeling/scene/scene.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/image/color.h"
 #include "foundation/math/basis.h"
 #include "foundation/math/transform.h"
@@ -70,14 +69,18 @@ namespace renderer
 //
 
 class ShadingPoint
-  : public foundation::NonCopyable
 {
   public:
     // Constructor, calls clear().
     ShadingPoint();
 
+    // Copy constructor.
+    explicit ShadingPoint(const ShadingPoint& rhs);
+
     // Reset the shading point to its initial state (no intersection).
     void clear();
+
+    void set_ray(const ShadingRay& ray);
 
     // Return the scene that was tested for intersection.
     const Scene& get_scene() const;
@@ -251,6 +254,23 @@ FORCE_INLINE ShadingPoint::ShadingPoint()
     clear();
 }
 
+inline ShadingPoint::ShadingPoint(const ShadingPoint& rhs)
+  : m_region_kit_cache(rhs.m_region_kit_cache)
+  , m_tess_cache(rhs.m_tess_cache)
+  , m_texture_cache(rhs.m_texture_cache)
+  , m_scene(rhs.m_scene)
+  , m_ray(rhs.m_ray)
+  , m_hit(rhs.m_hit)
+  , m_bary(rhs.m_bary)
+  , m_asm_instance_uid(rhs.m_asm_instance_uid)
+  , m_object_instance_index(rhs.m_object_instance_index)
+  , m_region_index(rhs.m_region_index)
+  , m_triangle_index(rhs.m_triangle_index)
+  , m_triangle_support_plane(rhs.m_triangle_support_plane)
+  , m_members(0)
+{
+}
+
 FORCE_INLINE void ShadingPoint::clear()
 {
     m_region_kit_cache = 0;
@@ -259,6 +279,11 @@ FORCE_INLINE void ShadingPoint::clear()
     m_scene = 0;
     m_hit = false;
     m_members = 0;
+}
+
+inline void ShadingPoint::set_ray(const ShadingRay& ray)
+{
+    m_ray = ray;
 }
 
 inline const Scene& ShadingPoint::get_scene() const

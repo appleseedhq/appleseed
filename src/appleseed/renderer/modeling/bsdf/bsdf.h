@@ -71,13 +71,36 @@ class DLLSYMBOL BSDF
   : public ConnectableEntity
 {
   public:
+    // BSDF types.
+    enum Type
+    {
+        Reflective = 0,
+        Transmissive
+    };
+
+    // Scattering modes.
+    enum Mode
+    {
+        None        = 0,            // absorption
+        Diffuse     = 1 << 0,       // diffuse reflection
+        Glossy      = 1 << 1,       // glossy reflection
+        Specular    = 1 << 2        // specular reflection
+    };
+
+    // Use a particular (negative) value as the probability density
+    // of the Dirac Delta in order to detect incorrect usages.
+    static const double DiracDelta;
+
     // Constructor.
     BSDF(
         const char*                 name,
-        const ParamArray&           params);
+        const ParamArray&           params,
+        const Type                  type);
 
     // Return a string identifying the model of this entity.
     virtual const char* get_model() const = 0;
+
+    Type get_type() const;
 
     // This method is called once before rendering each frame.
     virtual void on_frame_begin(
@@ -101,19 +124,6 @@ class DLLSYMBOL BSDF
         InputEvaluator&             input_evaluator,
         const foundation::Vector2d& uv,
         const size_t                offset = 0) const;
-
-    // Scattering modes.
-    enum Mode
-    {
-        None        = 0,            // absorption
-        Diffuse     = 1 << 0,       // diffuse reflection
-        Glossy      = 1 << 1,       // glossy reflection
-        Specular    = 1 << 2        // specular reflection
-    };
-
-    // Assign a particular (negative) value to the probability density of
-    // the Dirac Delta in order to detect incorrect usages.
-    static const double DiracDelta;
 
     // Given an outgoing direction, sample the BSDF and compute the incoming
     // direction, the probability density with which it was chosen, the value
@@ -158,12 +168,20 @@ class DLLSYMBOL BSDF
     static foundation::Vector3d force_above_surface(
         const foundation::Vector3d& direction,
         const foundation::Vector3d& normal);
+
+  private:
+    const Type m_type;
 };
 
 
 //
 // BSDF class implementation.
 //
+
+inline BSDF::Type BSDF::get_type() const
+{
+    return m_type;
+}
 
 inline foundation::Vector3d BSDF::force_above_surface(
     const foundation::Vector3d& direction,

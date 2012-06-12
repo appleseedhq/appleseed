@@ -27,22 +27,28 @@
 //
 
 // Interface header.
-#include "phongbrdf.h"
+#include "diffusebtdf.h"
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/modeling/bsdf/brdfwrapper.h"
 #include "renderer/modeling/bsdf/bsdf.h"
+#include "renderer/modeling/bsdf/btdfwrapper.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/source.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/exceptions/exceptionnotimplemented.h"
 #include "foundation/math/basis.h"
+#include "foundation/math/fresnel.h"
 #include "foundation/math/vector.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
 
+// Standard headers.
+#include <algorithm>
+#include <cmath>
+
 using namespace foundation;
+using namespace std;
 
 namespace renderer
 {
@@ -50,20 +56,21 @@ namespace renderer
 namespace
 {
     //
-    // Phong BRDF.
+    // Diffuse BTDF.
     //
 
-    const char* Model = "phong_brdf";
+    const char* Model = "diffuse_btdf";
 
-    class PhongBRDFImpl
+    class DiffuseBTDFImpl
       : public BSDF
     {
       public:
-        PhongBRDFImpl(
+        DiffuseBTDFImpl(
             const char*         name,
             const ParamArray&   params)
-          : BSDF(name, params, Reflective)
+          : BSDF(name, params, Transmissive)
         {
+            m_inputs.declare("reflectance", InputFormatSpectrum);
         }
 
         virtual void release() override
@@ -89,7 +96,24 @@ namespace
             double&             probability,
             Mode&               mode) const
         {
-            throw ExceptionNotImplemented();
+            // Compute the incoming direction in local space.
+            sampling_context.split_in_place(2, 1);
+            const Vector2d s = sampling_context.next_vector2<2>();
+            const Vector3d wi = sample_hemisphere_cosine(s);
+
+            // Transform the incoming direction to parent space.
+            incoming = -shading_basis.transform_to_parent(wi);
+
+            // Compute the BRDF value.
+            value = static_cast<const InputValues*>(data)->m_reflectance;
+            value *= static_cast<float>(RcpPi);
+
+            // Compute the probability density of the sampled direction.
+            probability = wi.y * RcpPi;
+            assert(probability > 0.0);
+
+            // Set the scattering mode.
+            mode = Diffuse;
         }
 
         FORCE_INLINE virtual double evaluate(
@@ -102,8 +126,15 @@ namespace
             const Vector3d&     incoming,
             Spectrum&           value) const
         {
-            throw ExceptionNotImplemented();
-            return 0.0;
+            const Vector3d& n = shading_basis.get_normal();
+            const double cos_in = abs(dot(incoming, n));
+
+            // Compute the BRDF value.
+            value = static_cast<const InputValues*>(data)->m_reflectance;
+            value *= static_cast<float>(RcpPi);
+
+            // Return the probability density of the sampled direction.
+            return cos_in * RcpPi;
         }
 
         FORCE_INLINE virtual double evaluate_pdf(
@@ -113,45 +144,63 @@ namespace
             const Vector3d&     outgoing,
             const Vector3d&     incoming) const
         {
-            throw ExceptionNotImplemented();
-            return 0.0;
+            const Vector3d& n = shading_basis.get_normal();
+            const double cos_in = abs(dot(incoming, n));
+            return cos_in * RcpPi;
         }
 
       private:
         struct InputValues
         {
+            Spectrum    m_reflectance;          // diffuse reflectance (albedo, technically)
+            Alpha       m_reflectance_alpha;    // unused
         };
+
+        Spectrum        m_brdf_value;           // precomputed value of the BRDF (albedo/Pi)
     };
 
-    typedef BRDFWrapper<PhongBRDFImpl> PhongBRDF;
+    typedef BTDFWrapper<DiffuseBTDFImpl> DiffuseBTDF;
 }
 
 
 //
-// PhongBRDFFactory class implementation.
+// DiffuseBTDFFactory class implementation.
 //
 
-const char* PhongBRDFFactory::get_model() const
+const char* DiffuseBTDFFactory::get_model() const
 {
     return Model;
 }
 
-const char* PhongBRDFFactory::get_human_readable_model() const
+const char* DiffuseBTDFFactory::get_human_readable_model() const
 {
-    return "Phong BRDF";
+    return "Diffuse BTDF";
 }
 
-DictionaryArray PhongBRDFFactory::get_widget_definitions() const
+DictionaryArray DiffuseBTDFFactory::get_widget_definitions() const
 {
     DictionaryArray definitions;
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "reflectance")
+            .insert("label", "Reflectance")
+            .insert("widget", "entity_picker")
+            .insert("entity_types",
+                Dictionary()
+                    .insert("color", "Colors")
+                    .insert("texture_instance", "Textures"))
+            .insert("use", "required")
+            .insert("default", ""));
+
     return definitions;
 }
 
-auto_release_ptr<BSDF> PhongBRDFFactory::create(
+auto_release_ptr<BSDF> DiffuseBTDFFactory::create(
     const char*         name,
     const ParamArray&   params) const
 {
-    return auto_release_ptr<BSDF>(new PhongBRDF(name, params));
+    return auto_release_ptr<BSDF>(new DiffuseBTDF(name, params));
 }
 
 }   // namespace renderer

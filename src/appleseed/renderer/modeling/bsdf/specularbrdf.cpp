@@ -63,7 +63,7 @@ namespace
         SpecularBRDFImpl(
             const char*         name,
             const ParamArray&   params)
-          : BSDF(name, params)
+          : BSDF(name, params, Reflective)
         {
             m_inputs.declare("reflectance", InputFormatSpectrum);
         }

@@ -26,16 +26,13 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_SURFACESHADER_PHYSICALSURFACESHADER_H
-#define APPLESEED_RENDERER_MODELING_SURFACESHADER_PHYSICALSURFACESHADER_H
+#ifndef APPLESEED_RENDERER_MODELING_SURFACESHADER_LEAFSURFACESHADER_H
+#define APPLESEED_RENDERER_MODELING_SURFACESHADER_LEAFSURFACESHADER_H
 
 // appleseed.renderer headers.
-#include "renderer/global/globaltypes.h"
-#include "renderer/modeling/surfaceshader/isurfaceshaderfactory.h"
-#include "renderer/modeling/surfaceshader/surfaceshader.h"
+#include "renderer/modeling/surfaceshader/physicalsurfaceshader.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
@@ -44,74 +41,16 @@
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
 namespace renderer      { class ParamArray; }
-namespace renderer      { class ShadingContext; }
-namespace renderer      { class ShadingPoint; }
-namespace renderer      { class ShadingResult; }
 
 namespace renderer
 {
 
 //
-// Physical surface shader for physically-based rendering.
+// Leaf surface shader factory.
 //
 
-class DLLSYMBOL PhysicalSurfaceShader
-  : public SurfaceShader
-{
-  public:
-    // Constructor.
-    PhysicalSurfaceShader(
-        const char*             name,
-        const ParamArray&       params);
-
-    // Delete this instance.
-    virtual void release() override;
-
-    // Return a string identifying the model of this surface shader.
-    virtual const char* get_model() const override;
-
-    // Evaluate the shading at a given point.
-    virtual void evaluate(
-        SamplingContext&        sampling_context,
-        const ShadingContext&   shading_context,
-        const ShadingPoint&     shading_point,
-        ShadingResult&          shading_result) const override;
-
-  protected:
-    // Destructor.
-    ~PhysicalSurfaceShader();
-
-  private:
-    struct InputValues
-    {
-        Spectrum    m_aerial_persp_sky_color;
-        Alpha       m_aerial_persp_sky_alpha;       // unused
-    };
-
-    enum AerialPerspMode
-    {
-        AerialPerspNone,
-        AerialPerspEnvironmentShader,
-        AerialPerspSkyColor
-    };
-
-    struct Impl;
-    Impl* impl;
-
-    float                       m_color_multiplier;
-    float                       m_alpha_multiplier;
-    AerialPerspMode             m_aerial_persp_mode;
-    double                      m_aerial_persp_rcp_distance;
-    double                      m_aerial_persp_intensity;
-};
-
-
-//
-// Physical surface shader factory.
-//
-
-class DLLSYMBOL PhysicalSurfaceShaderFactory
-  : public ISurfaceShaderFactory
+class DLLSYMBOL LeafSurfaceShaderFactory
+  : public PhysicalSurfaceShaderFactory
 {
   public:
     // Return a string identifying this surface shader model.
@@ -131,4 +70,4 @@ class DLLSYMBOL PhysicalSurfaceShaderFactory
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_SURFACESHADER_PHYSICALSURFACESHADER_H
+#endif  // !APPLESEED_RENDERER_MODELING_SURFACESHADER_LEAFSURFACESHADER_H

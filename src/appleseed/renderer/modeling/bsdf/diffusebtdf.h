@@ -26,65 +26,50 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "bsdf.h"
+#ifndef APPLESEED_RENDERER_MODELING_BSDF_DIFFUSEBTDF_H
+#define APPLESEED_RENDERER_MODELING_BSDF_DIFFUSEBTDF_H
 
 // appleseed.renderer headers.
-#include "renderer/modeling/input/inputevaluator.h"
+#include "renderer/modeling/bsdf/ibsdffactory.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/uid.h"
+#include "foundation/platform/compiler.h"
+#include "foundation/utility/autoreleaseptr.h"
 
-using namespace foundation;
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+// Forward declarations.
+namespace foundation    { class DictionaryArray; }
+namespace renderer      { class BSDF; }
+namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
 
 //
-// BSDF class implementation.
+// Diffuse BTDF factory.
 //
 
-const double BSDF::DiracDelta = -1.0;
-
-namespace
+class DLLSYMBOL DiffuseBTDFFactory
+  : public IBSDFFactory
 {
-    const UniqueID g_class_uid = new_guid();
-}
+  public:
+    // Return a string identifying this BSDF model.
+    virtual const char* get_model() const override;
 
-BSDF::BSDF(
-    const char*         name,
-    const ParamArray&   params,
-    const Type          type)
-  : ConnectableEntity(g_class_uid, params)
-  , m_type(type)
-{
-    set_name(name);
-}
+    // Return a human-readable string identifying this BSDF model.
+    virtual const char* get_human_readable_model() const override;
 
-void BSDF::on_frame_begin(
-    const Project&      project,
-    const Assembly&     assembly)
-{
-}
+    // Return a set of widget definitions for this BSDF model.
+    virtual foundation::DictionaryArray get_widget_definitions() const override;
 
-void BSDF::on_frame_end(
-    const Project&      project,
-    const Assembly&     assembly)
-{
-}
+    // Create a new BSDF instance.
+    virtual foundation::auto_release_ptr<BSDF> create(
+        const char*         name,
+        const ParamArray&   params) const override;
+};
 
-size_t BSDF::compute_input_data_size(
-    const Assembly&     assembly) const
-{
-    return get_inputs().compute_data_size();
-}
+}       // namespace renderer
 
-void BSDF::evaluate_inputs(
-    InputEvaluator&     input_evaluator,
-    const Vector2d&     uv,
-    const size_t        offset) const
-{
-    input_evaluator.evaluate(get_inputs(), uv, offset);
-}
-
-}   // namespace renderer
+#endif  // !APPLESEED_RENDERER_MODELING_BSDF_DIFFUSEBTDF_H
