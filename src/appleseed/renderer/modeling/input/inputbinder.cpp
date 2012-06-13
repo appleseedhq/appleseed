@@ -311,25 +311,29 @@ void InputBinder::bind_scene_entity_inputs(
     for (each<InputArray> i = entity_inputs; i; ++i)
     {
         InputArray::iterator& input = *i;
-
-        // Retrieve the value assigned to this input in the parameter array.
         string param_value;
-        try
+
+        if (entity_params.strings().exist(input.name()))
         {
+            // A value is assigned to this input, retrieve it.
             param_value = entity_params.get<string>(input.name());
         }
-        catch (const ExceptionDictionaryItemNotFound&)
+        else if (input.default_value())
         {
-            // Couldn't find an assignment to this input.
-            if (!input.is_optional())
-            {
-                RENDERER_LOG_ERROR(
-                    "while defining %s \"%s\": required parameter \"%s\" missing.",
-                    entity_type,
-                    entity_name,
-                    input.name());
-                ++m_error_count;
-            }
+            // A default value is assigned to this input, use it.
+            param_value = input.default_value();
+            if (param_value.empty())
+                continue;
+        }
+        else
+        {
+            // No value or default value, this is an error.
+            RENDERER_LOG_ERROR(
+                "while defining %s \"%s\": required parameter \"%s\" missing.",
+                entity_type,
+                entity_name,
+                input.name());
+            ++m_error_count;
             continue;
         }
 
@@ -359,25 +363,29 @@ void InputBinder::bind_assembly_entity_inputs(
     for (each<InputArray> i = entity_inputs; i; ++i)
     {
         InputArray::iterator& input = *i;
-
-        // Retrieve the value assigned to this input in the parameter array.
         string param_value;
-        try
+
+        if (entity_params.strings().exist(input.name()))
         {
+            // A value is assigned to this input, retrieve it.
             param_value = entity_params.get<string>(input.name());
         }
-        catch (const ExceptionDictionaryItemNotFound&)
+        else if (input.default_value())
         {
-            // Couldn't find an assignment to this input.
-            if (!input.is_optional())
-            {
-                RENDERER_LOG_ERROR(
-                    "while defining %s \"%s\": required parameter \"%s\" missing.",
-                    entity_type,
-                    entity_name,
-                    input.name());
-                ++m_error_count;
-            }
+            // A default value is assigned to this input, use it.
+            param_value = input.default_value();
+            if (param_value.empty())
+                continue;
+        }
+        else
+        {
+            // No value or default value, this is an error.
+            RENDERER_LOG_ERROR(
+                "while defining %s \"%s\": required parameter \"%s\" missing.",
+                entity_type,
+                entity_name,
+                input.name());
+            ++m_error_count;
             continue;
         }
 

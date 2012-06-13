@@ -39,6 +39,7 @@
 
 // Standard headers.
 #include <cassert>
+#include <cstring>
 #include <string>
 #include <vector>
 
@@ -58,7 +59,8 @@ struct InputArray::Impl
     {
         string          m_name;
         InputFormat     m_format;
-        bool            m_is_optional;
+        bool            m_has_default_value;
+        string          m_default_value;
         Source*         m_source;
     };
 
@@ -83,14 +85,16 @@ InputArray::~InputArray()
 void InputArray::declare(
     const char*         name,
     const InputFormat   format,
-    const bool          is_optional)
+    const char*         default_value)
 {
     assert(name);
 
     Impl::InputDecl decl;
     decl.m_name = name;
     decl.m_format = format;
-    decl.m_is_optional = is_optional;
+    decl.m_has_default_value = default_value != 0;
+    if (default_value)
+        decl.m_default_value = default_value;
     decl.m_source = 0;
 
     impl->m_input_decls.push_back(decl);
@@ -124,7 +128,7 @@ InputArray::iterator InputArray::find(const char* name)
 
     for (size_t i = 0; i < input_count; ++i)
     {
-        if (impl->m_input_decls[i].m_name == name)
+        if (strcmp(impl->m_input_decls[i].m_name.c_str(), name) == 0)
             return iterator(this, i);
     }
 
@@ -139,7 +143,7 @@ InputArray::const_iterator InputArray::find(const char* name) const
 
     for (size_t i = 0; i < input_count; ++i)
     {
-        if (impl->m_input_decls[i].m_name == name)
+        if (strcmp(impl->m_input_decls[i].m_name.c_str(), name) == 0)
             return const_iterator(this, i);
     }
 
@@ -152,7 +156,7 @@ Source* InputArray::source(const char* name) const
 
     for (const_each<Impl::InputDeclVector> i = impl->m_input_decls; i; ++i)
     {
-        if (i->m_name == name)
+        if (strcmp(i->m_name.c_str(), name) == 0)
             return i->m_source;
     }
 
@@ -335,9 +339,10 @@ InputFormat InputArray::const_iterator::format() const
     return m_input_array->impl->m_input_decls[m_input_index].m_format;
 }
 
-bool InputArray::const_iterator::is_optional() const
+const char* InputArray::const_iterator::default_value() const
 {
-    return m_input_array->impl->m_input_decls[m_input_index].m_is_optional;
+    const Impl::InputDecl& decl = m_input_array->impl->m_input_decls[m_input_index];
+    return decl.m_has_default_value ? decl.m_default_value.c_str() : 0;
 }
 
 Source* InputArray::const_iterator::source() const
@@ -386,9 +391,9 @@ InputArray::iterator& InputArray::iterator::operator*()
 
 void InputArray::iterator::bind(Source* source)
 {
-    Impl::InputDecl& input_decl = m_input_array->impl->m_input_decls[m_input_index];
-    delete input_decl.m_source;
-    input_decl.m_source = source;
+    Impl::InputDecl& decl = m_input_array->impl->m_input_decls[m_input_index];
+    delete decl.m_source;
+    decl.m_source = source;
 }
 
 }   // namespace renderer

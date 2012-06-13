@@ -73,8 +73,8 @@ Material::Material(
 {
     set_name(name);
 
-    m_inputs.declare("alpha_map", InputFormatScalar, true);
-    m_inputs.declare("normal_map", InputFormatSpectrum, true);
+    m_inputs.declare("alpha_map", InputFormatScalar, "");
+    m_inputs.declare("normal_map", InputFormatSpectrum, "");
 }
 
 void Material::release()

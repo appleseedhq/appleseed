@@ -88,7 +88,7 @@ PhysicalSurfaceShader::PhysicalSurfaceShader(
     m_color_multiplier = m_params.get_optional<float>("color_multiplier", 1.0f);
     m_alpha_multiplier = m_params.get_optional<float>("alpha_multiplier", 1.0f);
 
-    m_inputs.declare("aerial_persp_sky_color", InputFormatSpectrum, true);
+    m_inputs.declare("aerial_persp_sky_color", InputFormatSpectrum, "");
 
     const string aerial_persp_mode = m_params.get_optional<string>("aerial_persp_mode", "none");
     if (aerial_persp_mode == "none")

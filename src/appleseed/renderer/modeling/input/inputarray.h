@@ -94,16 +94,16 @@ class DLLSYMBOL InputArray
         // Dereference operator.
         const const_iterator& operator*() const;
 
-        // Get the name of the input.
+        // Get the name of this input.
         const char* name() const;
 
-        // Get the format of the input.
+        // Get the format of this input.
         InputFormat format() const;
 
-        // Return true if the input is optional, false otherwise.
-        bool is_optional() const;
+        // Get the default value of this input, or 0 if this input has no default value.
+        const char* default_value() const;
 
-        // Get the source bound to this input (or 0 if no source is bound).
+        // Get the source bound to this input, or 0 if no source is bound to this input.
         Source* source() const;
 
       protected:
@@ -157,9 +157,9 @@ class DLLSYMBOL InputArray
 
     // Declare an input.
     void declare(
-        const char*         name,
-        const InputFormat   format,
-        const bool          is_optional = false);
+        const char*                 name,
+        const InputFormat           format,
+        const char*                 default_value = 0);
 
     // Return mutable begin and end input iterators.
     iterator begin();
