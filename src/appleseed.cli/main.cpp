@@ -80,8 +80,8 @@ namespace
     void load_settings(Logger& logger)
     {
         const filesystem::path root_path(Application::get_root_path());
-        const filesystem::path settings_file_path = root_path / "settings/appleseed.cli.xml";
-        const filesystem::path schema_file_path = root_path / "schemas/settings.xsd";
+        const filesystem::path settings_file_path = root_path / "settings" / "appleseed.cli.xml";
+        const filesystem::path schema_file_path = root_path / "schemas" / "settings.xsd";
 
         SettingsFileReader reader(logger);
         reader.read(
@@ -341,7 +341,8 @@ namespace
             // Construct the schema filename.
             const filesystem::path schema_path =
                   filesystem::path(Application::get_root_path())
-                / "schemas/project.xsd";
+                / "schemas"
+                / "project.xsd";
 
             // Load the project from disk.
             ProjectFileReader reader;

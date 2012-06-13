@@ -195,7 +195,8 @@ namespace
             // Construct the schema filename.
             const filesystem::path schema_path =
                   filesystem::path(Application::get_root_path())
-                / "schemas/project.xsd";
+                / "schemas"
+                / "project.xsd";
 
             // Read the master project file.
             ProjectFileReader reader;

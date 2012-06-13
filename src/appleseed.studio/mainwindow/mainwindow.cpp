@@ -881,8 +881,8 @@ void MainWindow::slot_show_about_window()
 void MainWindow::slot_load_settings()
 {
     const filesystem::path root_path(Application::get_root_path());
-    const filesystem::path settings_file_path = root_path / "settings/appleseed.studio.xml";
-    const filesystem::path schema_file_path = root_path / "schemas/settings.xsd";
+    const filesystem::path settings_file_path = root_path / "settings" / "appleseed.studio.xml";
+    const filesystem::path schema_file_path = root_path / "schemas" / "settings.xsd";
 
     SettingsFileReader reader(global_logger());
 

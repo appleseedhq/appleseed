@@ -159,7 +159,8 @@ string ProjectManager::get_project_schema_filepath()
 {
     const filesystem::path schema_path =
           filesystem::path(Application::get_root_path())
-        / "schemas/project.xsd";
+        / "schemas"
+        / "project.xsd";
 
     return schema_path.string();
 }
