@@ -73,6 +73,7 @@ namespace
           , m_uniform_reflectance(false)
         {
             m_inputs.declare("reflectance", InputFormatSpectrum);
+            m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
         }
 
         virtual void release() override
@@ -91,16 +92,17 @@ namespace
         {
             BSDF::on_frame_begin(project, assembly);
 
-            if (m_inputs.source("reflectance")->is_uniform())
+            if (m_inputs.source("reflectance")->is_uniform() &&
+                m_inputs.source("reflectance_multiplier")->is_uniform())
             {
                 m_uniform_reflectance = true;
 
-                UniformInputEvaluator uniform_input_evaluator;
-                const InputValues* uniform_values =
-                    static_cast<const InputValues*>(uniform_input_evaluator.evaluate(m_inputs));
+                UniformInputEvaluator input_evaluator;
+                const InputValues* values =
+                    static_cast<const InputValues*>(input_evaluator.evaluate(m_inputs));
 
-                m_brdf_value = uniform_values->m_reflectance;
-                m_brdf_value *= static_cast<float>(RcpPi);
+                m_brdf_value = values->m_reflectance;
+                m_brdf_value *= static_cast<float>(values->m_reflectance_multiplier * RcpPi);
             }
         }
 
@@ -138,8 +140,9 @@ namespace
                 value = m_brdf_value;
             else
             {
-                value = static_cast<const InputValues*>(data)->m_reflectance;
-                value *= static_cast<float>(RcpPi);
+                const InputValues* values = static_cast<const InputValues*>(data);
+                value = values->m_reflectance;
+                value *= static_cast<float>(values->m_reflectance_multiplier * RcpPi);
             }
 
             // Compute the probability density of the sampled direction.
@@ -168,8 +171,9 @@ namespace
                 value = m_brdf_value;
             else
             {
-                value = static_cast<const InputValues*>(data)->m_reflectance;
-                value *= static_cast<float>(RcpPi);
+                const InputValues* values = static_cast<const InputValues*>(data);
+                value = values->m_reflectance;
+                value *= static_cast<float>(values->m_reflectance_multiplier * RcpPi);
             }
 
             // Return the probability density of the sampled direction.
@@ -191,12 +195,13 @@ namespace
       private:
         struct InputValues
         {
-            Spectrum    m_reflectance;          // diffuse reflectance (albedo, technically)
-            Alpha       m_reflectance_alpha;    // unused
+            Spectrum    m_reflectance;              // diffuse reflectance (albedo, technically)
+            Alpha       m_reflectance_alpha;        // unused
+            double      m_reflectance_multiplier;
         };
 
         bool            m_uniform_reflectance;
-        Spectrum        m_brdf_value;           // precomputed value of the BRDF (albedo/Pi)
+        Spectrum        m_brdf_value;               // precomputed value of the BRDF (albedo/Pi)
     };
 
     typedef BRDFWrapper<LambertianBRDFImpl> LambertianBRDF;
@@ -232,6 +237,16 @@ DictionaryArray LambertianBRDFFactory::get_widget_definitions() const
                     .insert("texture_instance", "Textures"))
             .insert("use", "required")
             .insert("default", ""));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "reflectance_multiplier")
+            .insert("label", "Reflectance Multiplier")
+            .insert("widget", "entity_picker")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "optional")
+            .insert("default", "1.0"));
 
     return definitions;
 }

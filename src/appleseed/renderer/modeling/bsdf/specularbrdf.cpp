@@ -66,6 +66,7 @@ namespace
           : BSDF(name, params, Reflective)
         {
             m_inputs.declare("reflectance", InputFormatSpectrum);
+            m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
         }
 
         virtual void release() override
@@ -103,7 +104,7 @@ namespace
             const double cos_in = abs(dot(incoming, shading_normal));
             const InputValues* values = static_cast<const InputValues*>(data);
             value = values->m_reflectance;
-            value *= static_cast<float>(1.0 / cos_in);
+            value *= static_cast<float>(values->m_reflectance_multiplier / cos_in);
 
             // The probability density of the sampled direction is the Dirac delta.
             probability = DiracDelta;
@@ -138,8 +139,9 @@ namespace
       private:
         struct InputValues
         {
-            Spectrum    m_reflectance;          // specular reflectance
-            Alpha       m_reflectance_alpha;    // alpha channel of specular reflectance
+            Spectrum    m_reflectance;              // specular reflectance
+            Alpha       m_reflectance_alpha;        // unused
+            double      m_reflectance_multiplier;   // specular reflectance multiplier
         };
     };
 
@@ -163,22 +165,29 @@ const char* SpecularBRDFFactory::get_human_readable_model() const
 
 DictionaryArray SpecularBRDFFactory::get_widget_definitions() const
 {
-    Dictionary entity_types;
-    entity_types.insert("color", "Colors");
-    entity_types.insert("texture_instance", "Textures");
-
     DictionaryArray definitions;
 
-    {
-        Dictionary widget;
-        widget.insert("name", "reflectance");
-        widget.insert("label", "Reflectance");
-        widget.insert("widget", "entity_picker");
-        widget.insert("entity_types", entity_types);
-        widget.insert("use", "required");
-        widget.insert("default", "");
-        definitions.push_back(widget);
-    }
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "reflectance")
+            .insert("label", "Reflectance")
+            .insert("widget", "entity_picker")
+            .insert("entity_types",
+                Dictionary()
+                    .insert("color", "Colors")
+                    .insert("texture_instance", "Textures"))
+            .insert("use", "required")
+            .insert("default", ""));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "reflectance_multiplier")
+            .insert("label", "Reflectance Multiplier")
+            .insert("widget", "entity_picker")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "optional")
+            .insert("default", "1.0"));
 
     return definitions;
 }
