@@ -84,7 +84,9 @@ namespace
           , m_uniform_shininess(false)
         {
             m_inputs.declare("diffuse_reflectance", InputFormatSpectrum);
+            m_inputs.declare("diffuse_reflectance_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("glossy_reflectance", InputFormatSpectrum);
+            m_inputs.declare("glossy_reflectance_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("shininess_u", InputFormatScalar);
             m_inputs.declare("shininess_v", InputFormatScalar);
         }
@@ -105,18 +107,25 @@ namespace
         {
             BSDF::on_frame_begin(project, assembly);
 
-            UniformInputEvaluator uniform_input_evaluator;
-            const InputValues* uniform_values =
-                static_cast<const InputValues*>(uniform_input_evaluator.evaluate(m_inputs));
+            UniformInputEvaluator input_evaluator;
+            const InputValues* values =
+                static_cast<const InputValues*>(input_evaluator.evaluate(m_inputs));
 
             m_uniform_reflectance =
                 m_inputs.source("diffuse_reflectance")->is_uniform() &&
-                m_inputs.source("glossy_reflectance")->is_uniform();
+                m_inputs.source("diffuse_reflectance_multiplier")->is_uniform() &&
+                m_inputs.source("glossy_reflectance")->is_uniform() &&
+                m_inputs.source("glossy_reflectance_multiplier")->is_uniform();
 
             if (m_uniform_reflectance)
             {
                 m_compute_rval_return_value =
-                    compute_rval(uniform_values->m_rd, uniform_values->m_rg, m_uniform_rval);
+                    compute_rval(
+                        values->m_rd,
+                        values->m_rd_multiplier,
+                        values->m_rg,
+                        values->m_rg_multiplier,
+                        m_uniform_rval);
             }
 
             m_uniform_shininess =
@@ -125,7 +134,7 @@ namespace
             
             if (m_uniform_shininess)
             {
-                compute_sval(uniform_values->m_nu, uniform_values->m_nv, m_uniform_sval);
+                compute_sval(values->m_nu, values->m_nv, m_uniform_sval);
             }
         }
 
@@ -429,12 +438,14 @@ namespace
       private:
         struct InputValues
         {
-            Spectrum    m_rd;           // diffuse reflectance of the substrate
-            Alpha       m_rd_alpha;     // alpha channel of diffuse reflectance
-            Spectrum    m_rg;           // glossy reflectance at normal incidence
-            Alpha       m_rg_alpha;     // alpha channel of glossy reflectance
-            double      m_nu;           // Phong-like exponent in first tangent direction
-            double      m_nv;           // Phong-like exponent in second tangent direction
+            Spectrum    m_rd;               // diffuse reflectance of the substrate
+            Alpha       m_rd_alpha;         // unused
+            double      m_rd_multiplier;    // diffuse reflectance multiplier
+            Spectrum    m_rg;               // glossy reflectance at normal incidence
+            Alpha       m_rg_alpha;         // unused
+            double      m_rg_multiplier;    // glossy reflectance multiplier
+            double      m_nu;               // Phong-like exponent in first tangent direction
+            double      m_nv;               // Phong-like exponent in second tangent direction
         };
 
         // Precomputed reflectance-related values.
@@ -465,8 +476,19 @@ namespace
             return x2 * x2 * x;
         }
 
-        static bool compute_rval(const Spectrum& rd, const Spectrum& rg, RVal& rval)
+        static bool compute_rval(
+            const Spectrum&     rd_unmultiplied,
+            const double        rd_multiplier,
+            const Spectrum&     rg_unmultiplied,
+            const double        rg_multiplier,
+            RVal&               rval)
         {
+            // Apply multipliers.
+            Spectrum rd(rd_unmultiplied);
+            rd *= static_cast<float>(rd_multiplier);
+            Spectrum rg(rg_unmultiplied);
+            rg *= static_cast<float>(rg_multiplier);
+
             // Compute average diffuse and glossy reflectances.
             const double rd_avg = average_value(rd);
             const double rg_avg = average_value(rg);
@@ -510,7 +532,16 @@ namespace
                 rval = m_uniform_rval;
                 return m_compute_rval_return_value;
             }
-            else return compute_rval(values->m_rd, values->m_rg, rval);
+            else
+            {
+                return
+                    compute_rval(
+                        values->m_rd,
+                        values->m_rd_multiplier,
+                        values->m_rg,
+                        values->m_rg_multiplier,
+                        rval);
+            }
         }
 
         void get_sval(SVal& sval, const InputValues* values) const
@@ -557,6 +588,16 @@ DictionaryArray AshikhminBRDFFactory::get_widget_definitions() const
 
     definitions.push_back(
         Dictionary()
+            .insert("name", "diffuse_reflectance_multiplier")
+            .insert("label", "Diffuse Reflectance Multiplier")
+            .insert("widget", "entity_picker")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "optional")
+            .insert("default", "1.0"));
+
+    definitions.push_back(
+        Dictionary()
             .insert("name", "glossy_reflectance")
             .insert("label", "Glossy Reflectance")
             .insert("widget", "entity_picker")
@@ -566,6 +607,16 @@ DictionaryArray AshikhminBRDFFactory::get_widget_definitions() const
                     .insert("texture_instance", "Textures"))
             .insert("use", "required")
             .insert("default", ""));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "glossy_reflectance_multiplier")
+            .insert("label", "Glossy Reflectance Multiplier")
+            .insert("widget", "entity_picker")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "optional")
+            .insert("default", "1.0"));
 
     definitions.push_back(
         Dictionary()
