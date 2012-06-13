@@ -70,7 +70,8 @@ namespace
             const ParamArray&   params)
           : BSDF(name, params, Transmissive)
         {
-            m_inputs.declare("reflectance", InputFormatSpectrum);
+            m_inputs.declare("transmittance", InputFormatSpectrum);
+            m_inputs.declare("transmittance_multiplier", InputFormatScalar, "1.0");
         }
 
         virtual void release() override
@@ -105,8 +106,9 @@ namespace
             incoming = -shading_basis.transform_to_parent(wi);
 
             // Compute the BRDF value.
-            value = static_cast<const InputValues*>(data)->m_reflectance;
-            value *= static_cast<float>(RcpPi);
+            const InputValues* values = static_cast<const InputValues*>(data);
+            value = values->m_transmittance;
+            value *= static_cast<float>(values->m_transmittance_multiplier * RcpPi);
 
             // Compute the probability density of the sampled direction.
             probability = wi.y * RcpPi;
@@ -130,8 +132,9 @@ namespace
             const double cos_in = abs(dot(incoming, n));
 
             // Compute the BRDF value.
-            value = static_cast<const InputValues*>(data)->m_reflectance;
-            value *= static_cast<float>(RcpPi);
+            const InputValues* values = static_cast<const InputValues*>(data);
+            value = values->m_transmittance;
+            value *= static_cast<float>(values->m_transmittance_multiplier * RcpPi);
 
             // Return the probability density of the sampled direction.
             return cos_in * RcpPi;
@@ -152,11 +155,10 @@ namespace
       private:
         struct InputValues
         {
-            Spectrum    m_reflectance;          // diffuse reflectance (albedo, technically)
-            Alpha       m_reflectance_alpha;    // unused
+            Spectrum    m_transmittance;                // diffuse transmittance
+            Alpha       m_transmittance_alpha;          // unused
+            double      m_transmittance_multiplier;     // diffuse transmittance multiplier
         };
-
-        Spectrum        m_brdf_value;           // precomputed value of the BRDF (albedo/Pi)
     };
 
     typedef BTDFWrapper<DiffuseBTDFImpl> DiffuseBTDF;
@@ -183,8 +185,8 @@ DictionaryArray DiffuseBTDFFactory::get_widget_definitions() const
 
     definitions.push_back(
         Dictionary()
-            .insert("name", "reflectance")
-            .insert("label", "Reflectance")
+            .insert("name", "transmittance")
+            .insert("label", "Transmittance")
             .insert("widget", "entity_picker")
             .insert("entity_types",
                 Dictionary()
@@ -192,6 +194,16 @@ DictionaryArray DiffuseBTDFFactory::get_widget_definitions() const
                     .insert("texture_instance", "Textures"))
             .insert("use", "required")
             .insert("default", ""));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "transmittance_multiplier")
+            .insert("label", "Transmittance Multiplier")
+            .insert("widget", "entity_picker")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "optional")
+            .insert("default", "1.0"));
 
     return definitions;
 }
