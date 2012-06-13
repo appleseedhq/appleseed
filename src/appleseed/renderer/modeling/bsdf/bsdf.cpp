@@ -53,8 +53,8 @@ namespace
 
 BSDF::BSDF(
     const char*         name,
-    const ParamArray&   params,
-    const Type          type)
+    const Type          type,
+    const ParamArray&   params)
   : ConnectableEntity(g_class_uid, params)
   , m_type(type)
 {

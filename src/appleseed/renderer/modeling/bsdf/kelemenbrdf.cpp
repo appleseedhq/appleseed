@@ -84,7 +84,7 @@ namespace
         KelemenBRDFImpl(
             const char*         name,
             const ParamArray&   params)
-          : BSDF(name, params, Reflective)
+          : BSDF(name, Reflective, params)
         {
             m_inputs.declare("matte_reflectance", InputFormatSpectrum);
             m_inputs.declare("matte_reflectance_multiplier", InputFormatScalar, "1.0");

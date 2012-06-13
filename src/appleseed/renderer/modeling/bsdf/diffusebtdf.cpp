@@ -68,7 +68,7 @@ namespace
         DiffuseBTDFImpl(
             const char*         name,
             const ParamArray&   params)
-          : BSDF(name, params, Transmissive)
+          : BSDF(name, Transmissive, params)
         {
             m_inputs.declare("transmittance", InputFormatSpectrum);
             m_inputs.declare("transmittance_multiplier", InputFormatScalar, "1.0");

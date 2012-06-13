@@ -94,8 +94,8 @@ class DLLSYMBOL BSDF
     // Constructor.
     BSDF(
         const char*                 name,
-        const ParamArray&           params,
-        const Type                  type);
+        const Type                  type,
+        const ParamArray&           params);
 
     // Return a string identifying the model of this entity.
     virtual const char* get_model() const = 0;

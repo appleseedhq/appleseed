@@ -62,7 +62,7 @@ namespace
         PhongBRDFImpl(
             const char*         name,
             const ParamArray&   params)
-          : BSDF(name, params, Reflective)
+          : BSDF(name, Reflective, params)
         {
         }
 

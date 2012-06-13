@@ -70,7 +70,7 @@ namespace
         BSDFMixImpl(
             const char*         name,
             const ParamArray&   params)
-          : BSDF(name, params, Reflective)
+          : BSDF(name, Reflective, params)
         {
             m_inputs.declare("weight0", InputFormatScalar);
             m_inputs.declare("weight1", InputFormatScalar);
