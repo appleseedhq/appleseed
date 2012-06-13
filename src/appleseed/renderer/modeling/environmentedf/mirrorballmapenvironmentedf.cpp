@@ -76,6 +76,7 @@ namespace
           : EnvironmentEDF(name, params)
         {
             m_inputs.declare("exitance", InputFormatSpectrum);
+            m_inputs.declare("exitance_multiplier", InputFormatScalar, "1.0");
         }
 
         virtual void release() override
@@ -133,6 +134,7 @@ namespace
         {
             Spectrum    m_exitance;
             Alpha       m_exitance_alpha;       // unused
+            double      m_exitance_multiplier;
         };
 
         void lookup_envmap(
@@ -148,6 +150,7 @@ namespace
             // Evaluate the input.
             const InputValues* values = input_evaluator.evaluate<InputValues>(m_inputs, uv);
             value = values->m_exitance;
+            value *= static_cast<float>(values->m_exitance_multiplier);
         }
     };
 }
@@ -182,6 +185,16 @@ DictionaryArray MirrorBallMapEnvironmentEDFFactory::get_widget_definitions() con
                     .insert("texture_instance", "Textures"))
             .insert("use", "required")
             .insert("default", ""));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "exitance_multiplier")
+            .insert("label", "Exitance Multiplier")
+            .insert("widget", "entity_picker")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "optional")
+            .insert("default", "1.0"));
 
     return definitions;
 }

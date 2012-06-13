@@ -72,7 +72,9 @@ namespace
           : EnvironmentEDF(name, params)
         {
             m_inputs.declare("upper_hemi_exitance", InputFormatSpectrum);
+            m_inputs.declare("upper_hemi_exitance_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("lower_hemi_exitance", InputFormatSpectrum);
+            m_inputs.declare("lower_hemi_exitance_multiplier", InputFormatScalar, "1.0");
         }
 
         virtual void release() override
@@ -89,13 +91,16 @@ namespace
         {
             EnvironmentEDF::on_frame_begin(project);
 
-            assert(m_inputs.source("upper_hemi_exitance"));
-            assert(m_inputs.source("lower_hemi_exitance"));
-
+            // todo: what happens if these are not uniform?
             check_uniform("upper_hemi_exitance");
+            check_uniform("upper_hemi_exitance_multiplier");
             check_uniform("lower_hemi_exitance");
+            check_uniform("lower_hemi_exitance_multiplier");
 
             m_inputs.evaluate_uniforms(&m_values);
+
+            m_values.m_upper_hemi_exitance *= static_cast<float>(m_values.m_upper_hemi_exitance_multiplier);
+            m_values.m_lower_hemi_exitance *= static_cast<float>(m_values.m_lower_hemi_exitance_multiplier);
         }
 
         virtual void sample(
@@ -150,10 +155,12 @@ namespace
       private:
         struct InputValues
         {
-            Spectrum    m_upper_hemi_exitance;
-            Alpha       m_upper_hemi_exitance_alpha;    // unused
-            Spectrum    m_lower_hemi_exitance;
-            Alpha       m_lower_hemi_exitance_alpha;    // unused
+            Spectrum    m_upper_hemi_exitance;              // premultiplied by m_upper_hemi_exitance_multiplier
+            Alpha       m_upper_hemi_exitance_alpha;        // unused
+            double      m_upper_hemi_exitance_multiplier;
+            Spectrum    m_lower_hemi_exitance;              // premultiplied by m_lower_hemi_exitance_multiplier
+            Alpha       m_lower_hemi_exitance_alpha;        // unused
+            double      m_lower_hemi_exitance_multiplier;
         };
 
         InputValues     m_values;
@@ -177,10 +184,6 @@ const char* ConstantHemisphereEnvironmentEDFFactory::get_human_readable_model() 
 
 DictionaryArray ConstantHemisphereEnvironmentEDFFactory::get_widget_definitions() const
 {
-    Dictionary entity_types;
-    entity_types.insert("color", "Colors");
-    entity_types.insert("texture_instance", "Textures");
-
     DictionaryArray definitions;
 
     definitions.push_back(
@@ -188,18 +191,36 @@ DictionaryArray ConstantHemisphereEnvironmentEDFFactory::get_widget_definitions(
             .insert("name", "upper_hemi_exitance")
             .insert("label", "Upper Hemisphere Exitance")
             .insert("widget", "entity_picker")
-            .insert("entity_types", entity_types)
+            .insert("entity_types",
+                Dictionary().insert("color", "Colors"))
             .insert("use", "required")
             .insert("default", ""));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "upper_hemi_exitance_multiplier")
+            .insert("label", "Upper Hemisphere Exitance Multiplier")
+            .insert("widget", "text_box")
+            .insert("use", "optional")
+            .insert("default", "1.0"));
 
     definitions.push_back(
         Dictionary()
             .insert("name", "lower_hemi_exitance")
             .insert("label", "Lower Hemisphere Exitance")
             .insert("widget", "entity_picker")
-            .insert("entity_types", entity_types)
+            .insert("entity_types",
+                Dictionary().insert("color", "Colors"))
             .insert("use", "required")
             .insert("default", ""));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "lower_hemi_exitance_multiplier")
+            .insert("label", "Lower Hemisphere Exitance Multiplier")
+            .insert("widget", "text_box")
+            .insert("use", "optional")
+            .insert("default", "1.0"));
 
     return definitions;
 }

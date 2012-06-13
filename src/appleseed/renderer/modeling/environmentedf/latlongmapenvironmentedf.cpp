@@ -165,6 +165,7 @@ namespace
           , m_probability_scale(0.0)
         {
             m_inputs.declare("exitance", InputFormatSpectrum);
+            m_inputs.declare("exitance_multiplier", InputFormatScalar, "1.0");
 
             m_u_shift = m_params.get_optional<double>("horizontal_shift", 0.0) / 360.0;
             m_v_shift = m_params.get_optional<double>("vertical_shift", 0.0) / 360.0;
@@ -270,6 +271,7 @@ namespace
         {
             Spectrum    m_exitance;
             Alpha       m_exitance_alpha;       // unused
+            double      m_exitance_multiplier;
         };
 
         typedef ImageImportanceSampler<double> ImageImportanceSamplerType;
@@ -399,6 +401,7 @@ namespace
                 input_evaluator.evaluate<InputValues>(m_inputs, uv);
 
             value = values->m_exitance;
+            value *= static_cast<float>(values->m_exitance_multiplier);
         }
 
         double compute_pdf(
@@ -446,6 +449,16 @@ DictionaryArray LatLongMapEnvironmentEDFFactory::get_widget_definitions() const
                     .insert("texture_instance", "Textures"))
             .insert("use", "required")
             .insert("default", ""));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "exitance_multiplier")
+            .insert("label", "Exitance Multiplier")
+            .insert("widget", "entity_picker")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "optional")
+            .insert("default", "1.0"));
 
     definitions.push_back(
         Dictionary()
