@@ -30,11 +30,26 @@
 #include "edfenvironmentshader.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/environmentshader/environmentshader.h"
 #include "renderer/modeling/project/project.h"
+#include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/scene.h"
+#include "renderer/utility/paramarray.h"
+
+// appleseed.foundation headers.
+#include "foundation/math/vector.h"
+#include "foundation/image/colorspace.h"
+#include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/containers/specializedarrays.h"
+
+// Standard headers.
+#include <string>
+
+// Forward declarations.
+namespace renderer  { class InputEvaluator; }
 
 using namespace foundation;
 using namespace std;
@@ -103,9 +118,9 @@ namespace
         {
             if (m_env_edf)
             {
+                // Evaluate the environment EDF.
                 shading_result.m_color_space = ColorSpaceSpectral;
                 shading_result.m_alpha.set(1.0f);
-
                 m_env_edf->evaluate(
                     input_evaluator,
                     direction,

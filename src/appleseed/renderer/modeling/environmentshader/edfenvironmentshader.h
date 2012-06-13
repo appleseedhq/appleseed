@@ -33,10 +33,16 @@
 #include "renderer/modeling/environmentshader/ienvironmentshaderfactory.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/platform/compiler.h"
+#include "foundation/utility/autoreleaseptr.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Forward declarations.
+namespace foundation    { class DictionaryArray; }
 namespace renderer      { class EnvironmentShader; }
+namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
@@ -45,23 +51,23 @@ namespace renderer
 // Factory for an environment shader that wraps an environment EDF.
 //
 
-class RENDERERDLL EDFEnvironmentShaderFactory
+class DLLSYMBOL EDFEnvironmentShaderFactory
   : public IEnvironmentShaderFactory
 {
   public:
     // Return a string identifying this environment shader model.
-    virtual const char* get_model() const;
+    virtual const char* get_model() const override;
 
     // Return a human-readable string identifying this environment shader model.
-    virtual const char* get_human_readable_model() const;
+    virtual const char* get_human_readable_model() const override;
 
     // Return a set of widget definitions for this environment shader model.
-    virtual foundation::DictionaryArray get_widget_definitions() const;
+    virtual foundation::DictionaryArray get_widget_definitions() const override;
 
     // Create a new environment shader instance.
     virtual foundation::auto_release_ptr<EnvironmentShader> create(
         const char*         name,
-        const ParamArray&   params) const;
+        const ParamArray&   params) const override;
 };
 
 }       // namespace renderer
