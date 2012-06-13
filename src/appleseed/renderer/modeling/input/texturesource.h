@@ -106,8 +106,6 @@ class TextureSource
     const size_t                            m_texture_index;
     const TextureAddressingMode             m_addressing_mode;
     const TextureFilteringMode              m_filtering_mode;
-    const float                             m_color_multiplier;
-    const float                             m_alpha_multiplier;
     const foundation::LightingConditions    m_lighting_conditions;
     const foundation::CanvasProperties      m_texture_props;
     const double                            m_scalar_canvas_width;
@@ -161,7 +159,7 @@ inline void TextureSource::evaluate(
 {
     const foundation::Color4f color = sample_texture(texture_cache, uv);
 
-    scalar = static_cast<double>(color[0] * m_color_multiplier);
+    scalar = static_cast<double>(color[0]);
 }
 
 inline void TextureSource::evaluate(
@@ -171,7 +169,7 @@ inline void TextureSource::evaluate(
 {
     const foundation::Color4f color = sample_texture(texture_cache, uv);
 
-    linear_rgb = color.rgb() * m_color_multiplier;
+    linear_rgb = color.rgb();
 }
 
 inline void TextureSource::evaluate(
@@ -185,8 +183,6 @@ inline void TextureSource::evaluate(
         m_lighting_conditions,
         color.rgb(),
         spectrum);
-
-    spectrum *= m_color_multiplier;
 }
 
 inline void TextureSource::evaluate(
@@ -196,7 +192,7 @@ inline void TextureSource::evaluate(
 {
     const foundation::Color4f color = sample_texture(texture_cache, uv);
 
-    alpha.set(color.a * m_alpha_multiplier);
+    alpha.set(color.a);
 }
 
 inline void TextureSource::evaluate(
@@ -207,9 +203,9 @@ inline void TextureSource::evaluate(
 {
     const foundation::Color4f color = sample_texture(texture_cache, uv);
 
-    linear_rgb = color.rgb() * m_color_multiplier;
+    linear_rgb = color.rgb();
 
-    alpha.set(color.a * m_alpha_multiplier);
+    alpha.set(color.a);
 }
 
 inline void TextureSource::evaluate(
@@ -225,9 +221,7 @@ inline void TextureSource::evaluate(
         color.rgb(),
         spectrum);
 
-    spectrum *= m_color_multiplier;
-
-    alpha.set(color.a * m_alpha_multiplier);
+    alpha.set(color.a);
 }
 
 }       // namespace renderer

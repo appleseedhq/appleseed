@@ -30,11 +30,20 @@
 #define APPLESEED_RENDERER_MODELING_SCENE_TEXTUREINSTANCE_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
 #include "renderer/modeling/entity/entity.h"
+
+// appleseed.foundation headers.
+#include "foundation/utility/autoreleaseptr.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+// Standard headers.
+#include <cstddef>
 
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
+namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
@@ -65,7 +74,7 @@ enum TextureFilteringMode
 // todo: allow to specify the lighting conditions of a texture.
 //
 
-class RENDERERDLL TextureInstance
+class DLLSYMBOL TextureInstance
   : public Entity
 {
   public:
@@ -78,10 +87,6 @@ class RENDERERDLL TextureInstance
     // Return the texture mapping modes.
     TextureAddressingMode get_addressing_mode() const;
     TextureFilteringMode get_filtering_mode() const;
-
-    // Retrieve the multipliers.
-    float get_color_multiplier() const;
-    float get_alpha_multiplier() const;
 
   private:
     friend class TextureInstanceFactory;
@@ -104,7 +109,7 @@ class RENDERERDLL TextureInstance
 // Texture instance factory.
 //
 
-class RENDERERDLL TextureInstanceFactory
+class DLLSYMBOL TextureInstanceFactory
 {
   public:
     // Return a set of widget definitions for this texture instance entity model.
