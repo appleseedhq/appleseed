@@ -84,6 +84,8 @@ class DLLSYMBOL PhysicalSurfaceShader
   private:
     struct InputValues
     {
+        double      m_color_multiplier;
+        double      m_alpha_multiplier;
         Spectrum    m_aerial_persp_sky_color;
         Alpha       m_aerial_persp_sky_alpha;       // unused
     };
@@ -98,8 +100,6 @@ class DLLSYMBOL PhysicalSurfaceShader
     struct Impl;
     Impl* impl;
 
-    float                       m_color_multiplier;
-    float                       m_alpha_multiplier;
     AerialPerspMode             m_aerial_persp_mode;
     double                      m_aerial_persp_rcp_distance;
     double                      m_aerial_persp_intensity;

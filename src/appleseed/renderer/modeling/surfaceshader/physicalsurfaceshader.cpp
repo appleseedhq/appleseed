@@ -85,9 +85,8 @@ PhysicalSurfaceShader::PhysicalSurfaceShader(
     : SurfaceShader(name, params)
     , impl(new Impl())
 {
-    m_color_multiplier = m_params.get_optional<float>("color_multiplier", 1.0f);
-    m_alpha_multiplier = m_params.get_optional<float>("alpha_multiplier", 1.0f);
-
+    m_inputs.declare("color_multiplier", InputFormatScalar, "1.0");
+    m_inputs.declare("alpha_multiplier", InputFormatScalar, "1.0");
     m_inputs.declare("aerial_persp_sky_color", InputFormatSpectrum, "");
 
     const string aerial_persp_mode = m_params.get_optional<string>("aerial_persp_mode", "none");
@@ -131,6 +130,13 @@ void PhysicalSurfaceShader::evaluate(
     const ShadingPoint&     shading_point,
     ShadingResult&          shading_result) const
 {
+    // Evaluate the shader inputs.
+    InputValues values;
+    m_inputs.evaluate(
+        shading_context.get_texture_cache(),
+        shading_point.get_uv(0),
+        &values);
+
     // Retrieve the lighting engine.
     ILightingEngine* lighting_engine =
         shading_context.get_lighting_engine();
@@ -157,9 +163,10 @@ void PhysicalSurfaceShader::evaluate(
     }
     else shading_result.m_alpha = Alpha(1.0);
 
-    shading_result.m_color *= m_color_multiplier;
-    shading_result.m_aovs *= m_color_multiplier;
-    shading_result.m_alpha *= m_alpha_multiplier;
+    // Apply multipliers.
+    shading_result.m_color *= static_cast<float>(values.m_color_multiplier);
+    shading_result.m_aovs *= static_cast<float>(values.m_color_multiplier);
+    shading_result.m_alpha *= static_cast<float>(values.m_alpha_multiplier);
 
     // Handle aerial perspective.
     if (m_aerial_persp_mode != AerialPerspNone)
@@ -167,15 +174,7 @@ void PhysicalSurfaceShader::evaluate(
         Spectrum sky_color;
 
         if (m_aerial_persp_mode == AerialPerspSkyColor)
-        {
-            // Evaluate the inputs to obtain the sky color.
-            InputValues values;
-            m_inputs.evaluate(
-                shading_context.get_texture_cache(),
-                shading_point.get_uv(0),
-                &values);
             sky_color = values.m_aerial_persp_sky_color;
-        }
         else
         {
             // Retrieve the environment shader of the scene.
@@ -232,7 +231,9 @@ DictionaryArray PhysicalSurfaceShaderFactory::get_widget_definitions() const
         Dictionary()
             .insert("name", "color_multiplier")
             .insert("label", "Color Multiplier")
-            .insert("widget", "text_box")
+            .insert("widget", "entity_picker")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
             .insert("default", "1.0")
             .insert("use", "optional"));
 
@@ -240,7 +241,9 @@ DictionaryArray PhysicalSurfaceShaderFactory::get_widget_definitions() const
         Dictionary()
             .insert("name", "alpha_multiplier")
             .insert("label", "Alpha Multiplier")
-            .insert("widget", "text_box")
+            .insert("widget", "entity_picker")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
             .insert("default", "1.0")
             .insert("use", "optional"));
 
@@ -254,8 +257,8 @@ DictionaryArray PhysicalSurfaceShaderFactory::get_widget_definitions() const
                     .insert("None", "none")
                     .insert("Use Environment Shader", "environment_shader")
                     .insert("Use Sky Color", "sky_color"))
-            .insert("use", "optional")
-            .insert("default", "none"));
+            .insert("default", "none")
+            .insert("use", "optional"));
 
     definitions.push_back(
         Dictionary()
@@ -263,8 +266,8 @@ DictionaryArray PhysicalSurfaceShaderFactory::get_widget_definitions() const
             .insert("label", "Aerial Perspective Sky Color")
             .insert("widget", "entity_picker")
             .insert("entity_types", Dictionary().insert("color", "Colors"))
-            .insert("use", "optional")
-            .insert("default", ""));
+            .insert("default", "")
+            .insert("use", "optional"));
 
     definitions.push_back(
         Dictionary()

@@ -67,6 +67,8 @@ namespace
           : SurfaceShader(name, params)
         {
             m_inputs.declare("color", InputFormatSpectrum);
+            m_inputs.declare("color_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("alpha_multiplier", InputFormatScalar, "1.0");
 
             const string alpha_source = m_params.get_optional<string>("alpha_source", "color");
             if (alpha_source == "color")
@@ -99,6 +101,7 @@ namespace
             const ShadingPoint&     shading_point,
             ShadingResult&          shading_result) const override
         {
+            // Evaluate the shader inputs.
             InputValues values;
             m_inputs.evaluate(
                 shading_context.get_texture_cache(),
@@ -124,6 +127,10 @@ namespace
                 }
                 else shading_result.m_alpha = Alpha(1.0f);
             }
+
+            // Apply multipliers.
+            shading_result.m_color *= static_cast<float>(values.m_color_multiplier);
+            shading_result.m_alpha *= static_cast<float>(values.m_alpha_multiplier);
         }
 
       private:
@@ -131,6 +138,8 @@ namespace
         {
             Spectrum    m_color;
             Alpha       m_alpha;
+            double      m_color_multiplier;
+            double      m_alpha_multiplier;
         };
 
         enum AlphaSource
@@ -185,6 +194,26 @@ DictionaryArray ConstantSurfaceShaderFactory::get_widget_definitions() const
                     .insert("Alpha map of the material", "material"))
             .insert("use", "optional")
             .insert("default", "color"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "color_multiplier")
+            .insert("label", "Color Multiplier")
+            .insert("widget", "entity_picker")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("default", "1.0")
+            .insert("use", "optional"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "alpha_multiplier")
+            .insert("label", "Alpha Multiplier")
+            .insert("widget", "entity_picker")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("default", "1.0")
+            .insert("use", "optional"));
 
     return definitions;
 }
