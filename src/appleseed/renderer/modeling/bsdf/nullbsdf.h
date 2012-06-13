@@ -72,7 +72,7 @@ class NullBSDF
         double&                         probability,
         Mode&                           mode) const override
     {
-        mode = None;
+        mode = Absorption;
     }
 
     virtual double evaluate(

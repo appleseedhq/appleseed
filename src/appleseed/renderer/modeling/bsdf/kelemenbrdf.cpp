@@ -238,13 +238,13 @@ namespace
                 // No reflection in or below the shading surface.
                 if (dot_LN <= 0.0)
                 {
-                    mode = None;
+                    mode = Absorption;
                     return;
                 }
             }
             else
             {
-                mode = None;
+                mode = Absorption;
                 return;
             }
 
@@ -252,7 +252,7 @@ namespace
             const double cos_ig = dot(incoming, geometric_normal);
             if (cos_ig <= 0.0)
             {
-                mode = None;
+                mode = Absorption;
                 return;
             }
 

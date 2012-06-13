@@ -129,7 +129,7 @@ void BRDFWrapper<BRDFImpl>::sample(
         probability,
         mode);
 
-    if (mode == BRDFImpl::None)
+    if (mode == BRDFImpl::Absorption)
         return;
 
     assert(foundation::is_normalized(incoming));

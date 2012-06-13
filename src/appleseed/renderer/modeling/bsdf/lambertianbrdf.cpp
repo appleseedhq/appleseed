@@ -131,7 +131,7 @@ namespace
             const double cos_ig = dot(incoming, geometric_normal);
             if (cos_ig <= 0.0)
             {
-                mode = None;
+                mode = Absorption;
                 return;
             }
 

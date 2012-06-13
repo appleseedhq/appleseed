@@ -143,7 +143,7 @@ namespace
             const double total_weight = w[0] + w[1];
             if (total_weight == 0.0)
             {
-                mode = None;
+                mode = Absorption;
                 return;
             }
 
@@ -175,9 +175,9 @@ namespace
                 bsdf0_prob,
                 bsdf0_mode);
 
-            if (bsdf0_mode == BSDF::None)
+            if (bsdf0_mode == BSDF::Absorption)
             {
-                mode = BSDF::None;
+                mode = BSDF::Absorption;
                 return;
             }
 

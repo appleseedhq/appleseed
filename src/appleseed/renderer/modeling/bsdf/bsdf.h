@@ -74,17 +74,17 @@ class DLLSYMBOL BSDF
     // BSDF types.
     enum Type
     {
-        Reflective = 0,
-        Transmissive
+        Reflective      = 1 << 0,
+        Transmissive    = 1 << 1
     };
 
     // Scattering modes.
     enum Mode
     {
-        None        = 0,            // absorption
-        Diffuse     = 1 << 0,       // diffuse reflection
-        Glossy      = 1 << 1,       // glossy reflection
-        Specular    = 1 << 2        // specular reflection
+        Absorption      = 0,
+        Diffuse         = 1 << 0,
+        Glossy          = 1 << 1,
+        Specular        = 1 << 2
     };
 
     // Use a particular (negative) value as the probability density
@@ -128,7 +128,7 @@ class DLLSYMBOL BSDF
     // Given an outgoing direction, sample the BSDF and compute the incoming
     // direction, the probability density with which it was chosen, the value
     // of the BSDF for this pair of directions and the scattering mode.
-    // If the scattering mode is None, the BSDF and PDF values are undefined.
+    // If the scattering mode is Absorption, the BSDF and PDF values are undefined.
     virtual void sample(
         SamplingContext&            sampling_context,
         const void*                 data,                       // input values

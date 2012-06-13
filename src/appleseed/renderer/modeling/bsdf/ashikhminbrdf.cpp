@@ -157,7 +157,7 @@ namespace
             RVal rval;
             if (!get_rval(rval, values))
             {
-                mode = None;
+                mode = Absorption;
                 return;
             }
 
@@ -187,7 +187,7 @@ namespace
                 const double cos_ig = dot(incoming, geometric_normal);
                 if (cos_ig <= 0.0)
                 {
-                    mode = None;
+                    mode = Absorption;
                     return;
                 }
 
@@ -280,7 +280,7 @@ namespace
             const double cos_in = dot(incoming, shading_normal);
             if (cos_in <= 0.0)
             {
-                mode = None;
+                mode = Absorption;
                 return;
             }
 
