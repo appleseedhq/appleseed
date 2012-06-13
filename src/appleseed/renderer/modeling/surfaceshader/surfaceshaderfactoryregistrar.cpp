@@ -35,7 +35,6 @@
 #include "renderer/modeling/surfaceshader/diagnosticsurfaceshader.h"
 #include "renderer/modeling/surfaceshader/fastsubsurfacescatteringsurfaceshader.h"
 #include "renderer/modeling/surfaceshader/isurfaceshaderfactory.h"
-#include "renderer/modeling/surfaceshader/leafsurfaceshader.h"
 #include "renderer/modeling/surfaceshader/physicalsurfaceshader.h"
 #include "renderer/modeling/surfaceshader/smokesurfaceshader.h"
 #include "renderer/modeling/surfaceshader/voxelaosurfaceshader.h"
@@ -63,7 +62,6 @@ SurfaceShaderFactoryRegistrar::SurfaceShaderFactoryRegistrar()
     register_factory(auto_ptr<FactoryType>(new ConstantSurfaceShaderFactory()));
     register_factory(auto_ptr<FactoryType>(new DiagnosticSurfaceShaderFactory()));
     register_factory(auto_ptr<FactoryType>(new FastSubSurfaceScatteringSurfaceShaderFactory()));
-    register_factory(auto_ptr<FactoryType>(new LeafSurfaceShaderFactory()));
     register_factory(auto_ptr<FactoryType>(new PhysicalSurfaceShaderFactory()));
     register_factory(auto_ptr<FactoryType>(new SmokeSurfaceShaderFactory()));
     register_factory(auto_ptr<FactoryType>(new VoxelAOSurfaceShaderFactory()));

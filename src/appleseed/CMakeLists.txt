@@ -1344,8 +1344,6 @@ set (renderer_modeling_surfaceshader_sources
     renderer/modeling/surfaceshader/fastsubsurfacescatteringsurfaceshader.cpp
     renderer/modeling/surfaceshader/fastsubsurfacescatteringsurfaceshader.h
     renderer/modeling/surfaceshader/isurfaceshaderfactory.h
-    renderer/modeling/surfaceshader/leafsurfaceshader.cpp
-    renderer/modeling/surfaceshader/leafsurfaceshader.h
     renderer/modeling/surfaceshader/physicalsurfaceshader.cpp
     renderer/modeling/surfaceshader/physicalsurfaceshader.h
     renderer/modeling/surfaceshader/smokesurfaceshader.cpp
