@@ -115,7 +115,7 @@ namespace
         struct InputValues
         {
             Spectrum    m_exitance;         // radiant exitance, in W.m^-2
-            Alpha       m_exitance_alpha;   // alpha channel of radiant exitance
+            Alpha       m_exitance_alpha;   // unused
         };
     };
 }
