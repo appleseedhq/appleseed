@@ -114,6 +114,10 @@ EntityEditorWindow::EntityEditorWindow(
         this, SLOT(slot_accept()));
 
     connect(
+        create_window_local_shortcut(this, Qt::Key_Enter), SIGNAL(activated()),
+        this, SLOT(slot_accept()));
+
+    connect(
         create_window_local_shortcut(this, Qt::Key_Escape), SIGNAL(activated()),
         this, SLOT(close()));
 }
