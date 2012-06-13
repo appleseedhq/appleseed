@@ -39,6 +39,7 @@
 #include "foundation/math/sampling.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/containers/dictionary.h"
 
 // Standard headers.
@@ -75,17 +76,17 @@ namespace
             m_inputs.declare("zenith_exitance", InputFormatSpectrum);
         }
 
-        virtual void release()
+        virtual void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const
+        virtual const char* get_model() const override
         {
             return Model;
         }
 
-        virtual void on_frame_begin(const Project& project)
+        virtual void on_frame_begin(const Project& project) override
         {
             EnvironmentEDF::on_frame_begin(project);
 
@@ -103,7 +104,7 @@ namespace
             const Vector2d&     s,
             Vector3d&           outgoing,
             Spectrum&           value,
-            double&             probability) const
+            double&             probability) const override
         {
             outgoing = sample_sphere_uniform(s);
             compute_gradient(outgoing.y, value);
@@ -113,7 +114,7 @@ namespace
         virtual void evaluate(
             InputEvaluator&     input_evaluator,
             const Vector3d&     outgoing,
-            Spectrum&           value) const
+            Spectrum&           value) const override
         {
             assert(is_normalized(outgoing));
             compute_gradient(outgoing.y, value);
@@ -123,7 +124,7 @@ namespace
             InputEvaluator&     input_evaluator,
             const Vector3d&     outgoing,
             Spectrum&           value,
-            double&             probability) const
+            double&             probability) const override
         {
             assert(is_normalized(outgoing));
             compute_gradient(outgoing.y, value);
@@ -132,7 +133,7 @@ namespace
 
         virtual double evaluate_pdf(
             InputEvaluator&     input_evaluator,
-            const Vector3d&     outgoing) const
+            const Vector3d&     outgoing) const override
         {
             assert(is_normalized(outgoing));
             return 1.0 / (4.0 * Pi);
