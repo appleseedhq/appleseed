@@ -804,7 +804,7 @@ const char* SmokeSurfaceShaderFactory::get_model() const
 
 const char* SmokeSurfaceShaderFactory::get_human_readable_model() const
 {
-    return "Smoke";
+    return "Smoke (experimental)";
 }
 
 DictionaryArray SmokeSurfaceShaderFactory::get_widget_definitions() const
