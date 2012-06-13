@@ -30,9 +30,7 @@
 #define APPLESEED_RENDERER_MODELING_SURFACESHADER_PHYSICALSURFACESHADER_H
 
 // appleseed.renderer headers.
-#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/surfaceshader/isurfaceshaderfactory.h"
-#include "renderer/modeling/surfaceshader/surfaceshader.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -44,67 +42,10 @@
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
 namespace renderer      { class ParamArray; }
-namespace renderer      { class ShadingContext; }
-namespace renderer      { class ShadingPoint; }
-namespace renderer      { class ShadingResult; }
+namespace renderer      { class SurfaceShader; }
 
 namespace renderer
 {
-
-//
-// Physical surface shader for physically-based rendering.
-//
-
-class DLLSYMBOL PhysicalSurfaceShader
-  : public SurfaceShader
-{
-  public:
-    // Constructor.
-    PhysicalSurfaceShader(
-        const char*             name,
-        const ParamArray&       params);
-
-    // Delete this instance.
-    virtual void release() override;
-
-    // Return a string identifying the model of this surface shader.
-    virtual const char* get_model() const override;
-
-    // Evaluate the shading at a given point.
-    virtual void evaluate(
-        SamplingContext&        sampling_context,
-        const ShadingContext&   shading_context,
-        const ShadingPoint&     shading_point,
-        ShadingResult&          shading_result) const override;
-
-  protected:
-    // Destructor.
-    ~PhysicalSurfaceShader();
-
-  private:
-    struct InputValues
-    {
-        double      m_color_multiplier;
-        double      m_alpha_multiplier;
-        Spectrum    m_aerial_persp_sky_color;
-        Alpha       m_aerial_persp_sky_alpha;       // unused
-    };
-
-    enum AerialPerspMode
-    {
-        AerialPerspNone,
-        AerialPerspEnvironmentShader,
-        AerialPerspSkyColor
-    };
-
-    struct Impl;
-    Impl* impl;
-
-    AerialPerspMode             m_aerial_persp_mode;
-    double                      m_aerial_persp_rcp_distance;
-    double                      m_aerial_persp_intensity;
-};
-
 
 //
 // Physical surface shader factory.
