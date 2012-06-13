@@ -71,6 +71,9 @@ namespace
           : BSDF(name, params, Transmissive)
         {
             m_inputs.declare("reflectance", InputFormatSpectrum);
+            m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("transmittance", InputFormatSpectrum);
+            m_inputs.declare("transmittance_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("from_ior", InputFormatScalar);
             m_inputs.declare("to_ior", InputFormatScalar);
         }
@@ -101,7 +104,6 @@ namespace
             const InputValues* values = static_cast<const InputValues*>(data);
 
             const Vector3d& shading_normal = shading_basis.get_normal();
-
             const double eta = values->m_from_ior / values->m_to_ior;
             const double cos_theta_i = dot(outgoing, shading_normal);
             const double sin_theta_i2 = 1.0 - cos_theta_i * cos_theta_i;
@@ -111,13 +113,13 @@ namespace
             {
                 // Total internal reflection.
                 incoming = reflect(outgoing, shading_normal);
-                value = values->m_reflectance;
+                value = values->m_transmittance;
+                value *= static_cast<float>(values->m_transmittance_multiplier);
             }
             else
             {
-                const double cos_theta_t = sqrt(cos_theta_t2);
-
                 // Compute the Fresnel reflection factor.
+                const double cos_theta_t = sqrt(cos_theta_t2);
                 const Spectrum fresnel_reflection =
                     fresnel_reflection_no_polarization(
                         Spectrum(static_cast<Spectrum::ValueType>(values->m_from_ior)),
@@ -127,7 +129,6 @@ namespace
 
                 sampling_context.split_in_place(1, 1);
                 const double s = sampling_context.next_double2();
-
                 const float reflection_prob = min(max_value(fresnel_reflection), 1.0f);
 
                 if (s < static_cast<double>(reflection_prob))
@@ -141,7 +142,7 @@ namespace
                     // Compute the reflected radiance.
                     value = values->m_reflectance;
                     value *= fresnel_reflection;
-                    value /= reflection_prob;
+                    value *= static_cast<float>(values->m_reflectance_multiplier) / reflection_prob;
                 }
                 else
                 {
@@ -152,14 +153,14 @@ namespace
                             : (eta * cos_theta_i + cos_theta_t) * shading_normal - eta * outgoing;
 
                     // Compute the refracted radiance.
-                    value = values->m_reflectance;
+                    value = values->m_transmittance;
                     value *= Spectrum(1.0f) - fresnel_reflection;
-                    value /= 1.0f - reflection_prob;
+                    value *= static_cast<float>(values->m_transmittance_multiplier) / (1.0f - reflection_prob);
                 }
             }
 
             const double cos_in = abs(dot(incoming, shading_normal));
-            value *= static_cast<float>(1.0 / cos_in);
+            value /= static_cast<float>(cos_in);
 
             // The probability density of the sampled direction is the Dirac delta.
             probability = DiracDelta;
@@ -194,10 +195,14 @@ namespace
       private:
         struct InputValues
         {
-            Spectrum    m_reflectance;          // specular transmittance
-            Alpha       m_reflectance_alpha;    // alpha channel of specular transmittance
-            double      m_from_ior;             // from this index of refraction
-            double      m_to_ior;               // to this index of refraction
+            Spectrum    m_reflectance;                  // specular reflectance
+            Alpha       m_reflectance_alpha;            // unused
+            double      m_reflectance_multiplier;       // specular reflectance multiplier
+            Spectrum    m_transmittance;                // specular transmittance
+            Alpha       m_transmittance_alpha;          // unused
+            double      m_transmittance_multiplier;     // specular transmittance multiplier
+            double      m_from_ior;                     // from this index of refraction
+            double      m_to_ior;                       // to this index of refraction
         };
     };
 
@@ -234,6 +239,38 @@ DictionaryArray SpecularBTDFFactory::get_widget_definitions() const
                     .insert("texture_instance", "Textures"))
             .insert("use", "required")
             .insert("default", ""));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "reflectance_multiplier")
+            .insert("label", "Reflectance Multiplier")
+            .insert("widget", "entity_picker")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "optional")
+            .insert("default", "1.0"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "transmittance")
+            .insert("label", "Transmittance")
+            .insert("widget", "entity_picker")
+            .insert("entity_types",
+                Dictionary()
+                    .insert("color", "Colors")
+                    .insert("texture_instance", "Textures"))
+            .insert("use", "required")
+            .insert("default", ""));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "transmittance_multiplier")
+            .insert("label", "Transmittance Multiplier")
+            .insert("widget", "entity_picker")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "optional")
+            .insert("default", "1.0"));
 
     definitions.push_back(
         Dictionary()
