@@ -32,6 +32,8 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/kernel/tessellation/statictessellation.h"
+#include "renderer/kernel/texturing/texturecache.h"
+#include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/object/iregion.h"
@@ -865,10 +867,6 @@ void TriangleTree::store_triangles(
 
 void TriangleTree::create_intersection_filters(const Arguments& arguments)
 {
-    RENDERER_LOG_INFO(
-        "creating intersection filters for triangle tree #" FMT_UNIQUE_ID "...",
-        arguments.m_triangle_tree_uid);
-
     // Collect object instances.
     vector<size_t> object_instance_indices;
     object_instance_indices.reserve(arguments.m_regions.size());
@@ -881,6 +879,11 @@ void TriangleTree::create_intersection_filters(const Arguments& arguments)
         unique(object_instance_indices.begin(), object_instance_indices.end()),
         object_instance_indices.end());
 
+    TextureStore texture_store(arguments.m_scene);
+    TextureCache texture_cache(texture_store);
+
+    size_t intersection_filter_count = 0;
+
     for (const_each<vector<size_t> > i = object_instance_indices; i; ++i)
     {
         // Retrieve the object instance.
@@ -889,27 +892,42 @@ void TriangleTree::create_intersection_filters(const Arguments& arguments)
             arguments.m_assembly.object_instances().get_by_index(object_instance_index);
         assert(object_instance);
 
-        // Skip this object instance if it doesn't have any front materials.
+        // No intersection filter for this object instance if it doesn't have any front materials.
         if (object_instance->get_front_materials().empty())
             continue;
 
-        // Skip this object instance if its first front material doesn't have an alpha map.
+        // No intersection filter for this object instance if its first front material doesn't have an alpha map.
         const Material* material = object_instance->get_front_materials()[0];
         const Source* alpha_map = material->get_alpha_map();
         if (alpha_map == 0)
             continue;
 
-        // Allocate intersection filters.
-        if (m_intersection_filters.empty())
-            m_intersection_filters.resize(object_instance_indices.back() + 1);
-
         // Create an intersection filter for this object instance.
-        m_intersection_filters[object_instance_index] =
+        auto_ptr<IntersectionFilter> intersection_filter(
             new IntersectionFilter(
                 arguments.m_scene,
                 arguments.m_assembly,
-                object_instance_index);
+                object_instance_index,
+                texture_cache));
+
+        // No intersection filter for this object instance if its alpha map is mostly opaque or semi-transparent.
+        if (intersection_filter->get_transparent_pixel_ratio() < 5.0 / 100)
+            continue;
+
+        // Allocate the array of intersection filters.
+        if (m_intersection_filters.empty())
+            m_intersection_filters.resize(object_instance_indices.back() + 1);
+
+        // Store the intersection filter.
+        m_intersection_filters[object_instance_index] = intersection_filter.release();
+        ++intersection_filter_count;
     }
+
+    RENDERER_LOG_INFO(
+        "created " FMT_SIZE_T " intersection filter%s for triangle tree #" FMT_UNIQUE_ID ".",
+        intersection_filter_count,
+        intersection_filter_count > 1 ? "s" : "",
+        arguments.m_triangle_tree_uid);
 }
 
 

@@ -31,8 +31,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/tessellation/statictessellation.h"
-#include "renderer/kernel/texturing/texturecache.h"
-#include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/input/texturesource.h"
 #include "renderer/modeling/material/material.h"
@@ -66,21 +64,28 @@ namespace renderer
 IntersectionFilter::IntersectionFilter(
     const Scene&            scene,
     const Assembly&         assembly,
-    const size_t            object_instance_index)
+    const size_t            object_instance_index,
+    TextureCache&           texture_cache)
 {
     // Retrieve the object instance.
     const ObjectInstance* object_instance =
         assembly.object_instances().get_by_index(object_instance_index);
     assert(object_instance);
 
-    copy_alpha_mask(scene, assembly, object_instance);
+    copy_alpha_mask(scene, assembly, object_instance, texture_cache);
     copy_uv_coordinates(assembly, object_instance);
+}
+
+double IntersectionFilter::get_transparent_pixel_ratio() const
+{
+    return m_transparent_texel_ratio;
 }
 
 void IntersectionFilter::copy_alpha_mask(
     const Scene&            scene,
     const Assembly&         assembly,
-    const ObjectInstance*   object_instance)
+    const ObjectInstance*   object_instance,
+    TextureCache&           texture_cache)
 {
     // Retrieve the first front material of this object instance.
     assert(!object_instance->get_front_materials().empty());
@@ -104,12 +109,15 @@ void IntersectionFilter::copy_alpha_mask(
         m_alpha_mask_height = 1;
     }
 
-    // Compute the alpha mask.
-    TextureStore texture_store(scene);
-    TextureCache texture_cache(texture_store);
-    m_alpha_mask.resize(m_alpha_mask_width * m_alpha_mask_height);
     const double rcp_alpha_mask_width = 1.0 / m_alpha_mask_width;
     const double rcp_alpha_mask_height = 1.0 / m_alpha_mask_height;
+    const size_t texel_count = m_alpha_mask_width * m_alpha_mask_height;
+    size_t transparent_texel_count = 0;
+
+    // Allocate the alpha mask.
+    m_alpha_mask.resize(texel_count);
+
+    // Compute the alpha mask.
     for (size_t y = 0; y < m_alpha_mask_height; ++y)
     {
         for (size_t x = 0; x < m_alpha_mask_width; ++x)
@@ -118,13 +126,20 @@ void IntersectionFilter::copy_alpha_mask(
             const Vector2d uv(
                 (x + 0.5) * rcp_alpha_mask_width,
                 1.0 - (y + 0.5) * rcp_alpha_mask_height);
-
             Alpha alpha;
             alpha_map->evaluate(texture_cache, uv, alpha);
 
-            m_alpha_mask[y * m_alpha_mask_width + x] = alpha[0] > 0.0 ? 255 : 0;
+            // Mark this texel as opaque or transparent in the alpha mask.
+            const uint8 opaque = alpha[0] > 0.0f ? ~0 : 0;
+            m_alpha_mask[y * m_alpha_mask_width + x] = opaque;
+
+            // Keep track of the number of opaque texels.
+            transparent_texel_count += (~opaque) & 1;
         }
     }
+
+    // Compute the ratio of transparent texels to the total number of texels.
+    m_transparent_texel_ratio = static_cast<double>(transparent_texel_count) / texel_count;
 
     // Precompute some values used during lookup.
     m_max_x = static_cast<float>(m_alpha_mask_width) - 1.0f;

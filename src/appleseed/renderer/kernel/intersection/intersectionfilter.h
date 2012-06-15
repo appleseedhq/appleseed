@@ -47,6 +47,7 @@
 namespace renderer  { class Assembly; }
 namespace renderer  { class ObjectInstance; }
 namespace renderer  { class Scene; }
+namespace renderer  { class TextureCache; }
 
 namespace renderer
 {
@@ -58,7 +59,10 @@ class IntersectionFilter
     IntersectionFilter(
         const Scene&            scene,
         const Assembly&         assembly,
-        const size_t            object_instance_index);
+        const size_t            object_instance_index,
+        TextureCache&           texture_cache);
+
+    double get_transparent_pixel_ratio() const;
 
     bool accept(
         const TriangleKey&      triangle_key,
@@ -72,11 +76,13 @@ class IntersectionFilter
     float                               m_max_y;
     std::vector<foundation::uint8>      m_alpha_mask;
     std::vector<foundation::Vector2f>   m_uv;
+    double                              m_transparent_texel_ratio;
 
     void copy_alpha_mask(
         const Scene&            scene,
         const Assembly&         assembly,
-        const ObjectInstance*   object_instance);
+        const ObjectInstance*   object_instance,
+        TextureCache&           texture_cache);
 
     void copy_uv_coordinates(
         const Assembly&         assembly,
