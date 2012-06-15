@@ -33,7 +33,6 @@
 #include "mainwindow/project/assemblycollectionitem.h"
 #include "mainwindow/project/assemblyitem.h"
 #include "mainwindow/project/multimodelentityeditorformfactory.h"
-#include "mainwindow/project/projecttree.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/bsdf.h"
@@ -46,8 +45,10 @@
 #include "renderer/api/environmentshader.h"
 #include "renderer/api/light.h"
 #include "renderer/api/material.h"
+#include "renderer/api/project.h"
 #include "renderer/api/scene.h"
 #include "renderer/api/surfaceshader.h"
+#include "renderer/api/texture.h"
 #include "renderer/api/utility.h"
 
 // appleseed.foundation headers.
@@ -65,10 +66,7 @@
 
 // Forward declarations.
 namespace appleseed { namespace studio { class ProjectTree; } }
-namespace renderer  { class Assembly; }
-namespace renderer  { class AssemblyInstance; }
-namespace renderer  { class Project; }
-namespace renderer  { class Scene; }
+namespace appleseed { namespace studio { class TextureCollectionItem; } }
 
 namespace appleseed {
 namespace studio {
@@ -139,11 +137,20 @@ class ProjectBuilder
         const foundation::UniqueID          object_instance_id) const;
 
     void insert_textures(
-        renderer::Assembly&                 assembly,
+        renderer::Scene&                    scene,
         const std::string&                  path) const;
 
     void insert_textures(
+        renderer::Assembly&                 assembly,
         const std::string&                  path) const;
+
+    void remove_texture(
+        renderer::Assembly&                 assembly,
+        const foundation::UniqueID          texture_id) const;
+
+    void remove_texture(
+        renderer::Scene&                    scene,
+        const foundation::UniqueID          texture_id) const;
 
   signals:
     void signal_project_modified() const;
@@ -159,6 +166,7 @@ class ProjectBuilder
     renderer::EnvironmentShaderFactoryRegistrar     m_environment_shader_factory_registrar;
     renderer::LightFactoryRegistrar                 m_light_factory_registrar;
     renderer::SurfaceShaderFactoryRegistrar         m_surface_shader_factory_registrar;
+    renderer::TextureFactoryRegistrar               m_texture_factory_registrar;
 
     static std::string get_entity_name(const foundation::Dictionary& values);
 
@@ -231,6 +239,13 @@ inline const renderer::EntityTraits<renderer::SurfaceShader>::FactoryRegistrarTy
 ProjectBuilder::get_factory_registrar<renderer::SurfaceShader>() const
 {
     return m_surface_shader_factory_registrar;
+}
+
+template <>
+inline const renderer::EntityTraits<renderer::Texture>::FactoryRegistrarType&
+ProjectBuilder::get_factory_registrar<renderer::Texture>() const
+{
+    return m_texture_factory_registrar;
 }
 
 template <typename Entity, typename ParentEntity>
@@ -379,6 +394,28 @@ inline foundation::auto_release_ptr<renderer::ColorEntity> ProjectBuilder::creat
     clean_values.strings().remove(EntityEditorFormFactoryBase::NameParameter);
 
     return renderer::ColorEntityFactory::create(name.c_str(), clean_values);
+}
+
+template <>
+inline foundation::auto_release_ptr<renderer::Texture> ProjectBuilder::create_entity(
+    const foundation::Dictionary&       values) const
+{
+    typedef renderer::EntityTraits<renderer::Texture>::FactoryRegistrarType FactoryRegistrarType;
+    typedef FactoryRegistrarType::FactoryType FactoryType;
+    typedef MultiModelEntityEditorFormFactory<FactoryRegistrarType> EntityEditorFormFactoryType;
+
+    const std::string name = get_entity_name(values);
+    const std::string model = values.get<std::string>(EntityEditorFormFactoryType::ModelParameter);
+
+    foundation::Dictionary clean_values(values);
+    clean_values.strings().remove(EntityEditorFormFactoryType::NameParameter);
+    clean_values.strings().remove(EntityEditorFormFactoryType::ModelParameter);
+
+    const FactoryRegistrarType& factory_registrar = get_factory_registrar<renderer::Texture>();
+    const FactoryType* factory = factory_registrar.lookup(model.c_str());
+    assert(factory);
+
+    return factory->create(name.c_str(), clean_values, m_project.get_search_paths());
 }
 
 template <>

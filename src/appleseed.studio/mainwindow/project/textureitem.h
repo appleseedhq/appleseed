@@ -26,52 +26,58 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_TEXTURE_DISKTEXTURE2D_H
-#define APPLESEED_RENDERER_MODELING_TEXTURE_DISKTEXTURE2D_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_TEXTUREITEM_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_TEXTUREITEM_H
+
+// appleseed.studio headers.
+#include "mainwindow/project/entityitembase.h"
+#include "mainwindow/project/multimodelentityitem.h"
+#include "mainwindow/project/projectbuilder.h"
 
 // appleseed.renderer headers.
-#include "renderer/modeling/texture/itexturefactory.h"
+#include "renderer/api/texture.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
-#include "foundation/utility/autoreleaseptr.h"
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
+namespace appleseed {
+namespace studio {
 
-// Forward declarations.
-namespace foundation    { class DictionaryArray; }
-namespace foundation    { class SearchPaths; }
-namespace renderer      { class ParamArray; }
-namespace renderer      { class Texture; }
-
-namespace renderer
-{
-
-//
-// 2D disk texture factory.
-//
-
-class DLLSYMBOL DiskTexture2dFactory
-  : public ITextureFactory
+template <typename ParentEntity>
+class TextureItem
+  : public MultiModelEntityItem<renderer::Texture, ParentEntity>
 {
   public:
-    // Return a string identifying this texture model.
-    virtual const char* get_model() const override;
+    TextureItem(
+        renderer::Texture*  texture,
+        ParentEntity&       parent,
+        ProjectBuilder&     project_builder);
 
-    // Return a human-readable string identifying this texture model.
-    virtual const char* get_human_readable_model() const override;
-
-    // Return a set of widget definitions for this texture model.
-    virtual foundation::DictionaryArray get_widget_definitions() const override;
-
-    // Create a new texture instance.
-    virtual foundation::auto_release_ptr<Texture> create(
-        const char*                     name,
-        const ParamArray&               params,
-        const foundation::SearchPaths&  search_paths) const override;
+  private:
+    virtual void slot_delete() override;
 };
 
-}       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_TEXTURE_DISKTEXTURE2D_H
+//
+// Implementation.
+//
+
+template <typename ParentEntity>
+TextureItem<ParentEntity>::TextureItem(
+    renderer::Texture*      texture,
+    ParentEntity&           parent,
+    ProjectBuilder&         project_builder)
+  : MultiModelEntityItem<renderer::Texture, ParentEntity>(texture, parent, project_builder)
+{
+}
+
+template <typename ParentEntity>
+void TextureItem<ParentEntity>::slot_delete()
+{
+    m_project_builder.remove_texture(m_parent, m_entity->get_uid());
+}
+
+}       // namespace studio
+}       // namespace appleseed
+
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_TEXTUREITEM_H

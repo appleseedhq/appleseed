@@ -31,10 +31,16 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/texture/disktexture2d.h"
+#include "renderer/modeling/texture/itexturefactory.h"
 #include "renderer/modeling/texture/writabletexture2d.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/foreach.h"
 #include "foundation/utility/registrar.h"
+
+// Standard headers.
+#include <cassert>
+#include <string>
 
 using namespace foundation;
 using namespace std;
@@ -42,9 +48,7 @@ using namespace std;
 namespace renderer
 {
 
-//
-// TextureFactoryRegistrar class implementation.
-//
+DEFINE_ARRAY(TextureFactoryArray);
 
 struct TextureFactoryRegistrar::Impl
 {
@@ -54,18 +58,29 @@ struct TextureFactoryRegistrar::Impl
 TextureFactoryRegistrar::TextureFactoryRegistrar()
   : impl(new Impl())
 {
-    impl->m_registrar.insert(
-        DiskTexture2dFactory::get_model(),
-        auto_ptr<ITextureFactory>(new DiskTexture2dFactory()));
-
-    impl->m_registrar.insert(
-        WritableTexture2dFactory::get_model(),
-        auto_ptr<ITextureFactory>(new WritableTexture2dFactory()));
+    register_factory(auto_ptr<FactoryType>(new DiskTexture2dFactory()));
+    register_factory(auto_ptr<FactoryType>(new WritableTexture2dFactory()));
 }
 
 TextureFactoryRegistrar::~TextureFactoryRegistrar()
 {
     delete impl;
+}
+
+void TextureFactoryRegistrar::register_factory(auto_ptr<FactoryType> factory)
+{
+    const string model = factory->get_model();
+    impl->m_registrar.insert(model, factory);
+}
+
+TextureFactoryArray TextureFactoryRegistrar::get_factories() const
+{
+    FactoryArrayType factories;
+
+    for (const_each<Registrar<FactoryType>::Items> i = impl->m_registrar.items(); i; ++i)
+        factories.push_back(i->second);
+
+    return factories;
 }
 
 const TextureFactoryRegistrar::FactoryType* TextureFactoryRegistrar::lookup(const char* name) const

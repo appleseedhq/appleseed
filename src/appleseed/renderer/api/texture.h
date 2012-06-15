@@ -34,6 +34,7 @@
 #include "renderer/modeling/texture/itexturefactory.h"
 #include "renderer/modeling/texture/texture.h"
 #include "renderer/modeling/texture/texturefactoryregistrar.h"
+#include "renderer/modeling/texture/texturetraits.h"
 #include "renderer/modeling/texture/writabletexture2d.h"
 
 #endif  // !APPLESEED_RENDERER_API_TEXTURE_H

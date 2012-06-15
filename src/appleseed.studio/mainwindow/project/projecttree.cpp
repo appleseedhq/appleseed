@@ -33,7 +33,6 @@
 #include "mainwindow/project/assemblycollectionitem.h"
 #include "mainwindow/project/assemblyinstancecollectionitem.h"
 #include "mainwindow/project/cameraitem.h"
-#include "mainwindow/project/collectionitem.h"
 #include "mainwindow/project/environmentitem.h"
 #include "mainwindow/project/itemtypemap.h"
 #include "mainwindow/project/multimodelcollectionitem.h"
@@ -285,6 +284,16 @@ void ProjectTree::add_item(Assembly* assembly)
 void ProjectTree::add_item(AssemblyInstance* assembly_instance)
 {
     impl->m_assembly_instance_collection_item->add_item(assembly_instance);
+}
+
+TextureCollectionItem& ProjectTree::get_texture_collection_item() const
+{
+    return *impl->m_texture_collection_item;
+}
+
+CollectionItem<TextureInstance, Scene>& ProjectTree::get_texture_instance_collection_item() const
+{
+    return *impl->m_texture_instance_collection_item;
 }
 
 AssemblyCollectionItem& ProjectTree::get_assembly_collection_item() const

@@ -33,12 +33,14 @@
 #include "renderer/modeling/texture/itexturefactory.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
 // Forward declarations.
+namespace foundation    { class DictionaryArray; }
 namespace foundation    { class SearchPaths; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Texture; }
@@ -55,13 +57,19 @@ class DLLSYMBOL WritableTexture2dFactory
 {
   public:
     // Return a string identifying this texture model.
-    static const char* get_model();
+    virtual const char* get_model() const override;
+
+    // Return a human-readable string identifying this texture model.
+    virtual const char* get_human_readable_model() const override;
+
+    // Return a set of widget definitions for this texture model.
+    virtual foundation::DictionaryArray get_widget_definitions() const override;
 
     // Create a new texture instance.
     virtual foundation::auto_release_ptr<Texture> create(
         const char*                     name,
         const ParamArray&               params,
-        const foundation::SearchPaths&  search_paths) const;
+        const foundation::SearchPaths&  search_paths) const override;
 };
 
 }       // namespace renderer

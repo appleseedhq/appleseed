@@ -31,6 +31,7 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/projectbuilder.h"
+#include "mainwindow/project/textureitem.h"
 #include "utility/interop.h"
 #include "utility/settingskeys.h"
 
@@ -72,6 +73,7 @@ TextureCollectionItem::TextureCollectionItem(
     ProjectBuilder&     project_builder,
     ParamArray&         settings)
   : CollectionItemBase<Texture>(g_class_uid, "Textures")
+  , m_scene(&scene)
   , m_assembly(0)
   , m_project_builder(project_builder)
   , m_settings(settings)
@@ -85,6 +87,7 @@ TextureCollectionItem::TextureCollectionItem(
     ProjectBuilder&     project_builder,
     ParamArray&         settings)
   : CollectionItemBase<Texture>(g_class_uid, "Textures")
+  , m_scene(0)
   , m_assembly(&assembly)
   , m_project_builder(project_builder)
   , m_settings(settings)
@@ -130,10 +133,17 @@ void TextureCollectionItem::slot_import_textures()
     {
         const string filepath = QDir::toNativeSeparators(filepaths[i]).toStdString();
 
-        if (m_assembly)
-            m_project_builder.insert_textures(*m_assembly, filepath);
-        else m_project_builder.insert_textures(filepath);
+        if (m_scene)
+            m_project_builder.insert_textures(*m_scene, filepath);
+        else m_project_builder.insert_textures(*m_assembly, filepath);
     }
+}
+
+ItemBase* TextureCollectionItem::create_item(Texture* texture) const
+{
+    assert(texture);
+
+    return new TextureItem<Assembly>(texture, *m_assembly, m_project_builder);
 }
 
 }   // namespace studio

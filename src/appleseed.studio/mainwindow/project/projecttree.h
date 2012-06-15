@@ -29,6 +29,9 @@
 #ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTTREE_H
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTTREE_H
 
+// appleseed.studio headers.
+#include "mainwindow/project/collectionitem.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 
@@ -36,6 +39,7 @@
 namespace appleseed { namespace studio { class AssemblyCollectionItem; } }
 namespace appleseed { namespace studio { class AssemblyInstanceCollectionItem; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
+namespace appleseed { namespace studio { class TextureCollectionItem; } }
 namespace renderer  { class Assembly; }
 namespace renderer  { class AssemblyInstance; }
 namespace renderer  { class ColorEntity; }
@@ -43,6 +47,7 @@ namespace renderer  { class EnvironmentEDF; }
 namespace renderer  { class EnvironmentShader; }
 namespace renderer  { class ParamArray; }
 namespace renderer  { class Project; }
+namespace renderer  { class Scene; }
 namespace renderer  { class Texture; }
 namespace renderer  { class TextureInstance; }
 class QTreeWidget;
@@ -70,6 +75,11 @@ class ProjectTree
     void add_item(renderer::EnvironmentShader* environment_shader);
     void add_item(renderer::Assembly* assembly);
     void add_item(renderer::AssemblyInstance* assembly_instance);
+
+    TextureCollectionItem& get_texture_collection_item() const;
+    CollectionItem<
+        renderer::TextureInstance,
+        renderer::Scene>& get_texture_instance_collection_item() const;
 
     AssemblyCollectionItem& get_assembly_collection_item() const;
     AssemblyInstanceCollectionItem& get_assembly_instance_collection_item() const;

@@ -33,7 +33,6 @@
 #include "mainwindow/project/collectionitembase.h"
 #include "mainwindow/project/entitycreatorbase.h"
 #include "mainwindow/project/itembase.h"
-#include "mainwindow/project/projectbuilder.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/entity.h"
@@ -47,6 +46,9 @@
 #include <QObject>
 #include <QString>
 #include <QWidget>
+
+// Forward declarations.
+namespace appleseed { namespace studio { class ProjectBuilder; } }
 
 namespace appleseed {
 namespace studio {

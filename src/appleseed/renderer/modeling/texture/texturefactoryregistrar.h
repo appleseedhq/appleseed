@@ -29,8 +29,15 @@
 #ifndef APPLESEED_RENDERER_MODELING_TEXTURE_TEXTUREFACTORYREGISTRAR_H
 #define APPLESEED_RENDERER_MODELING_TEXTURE_TEXTUREFACTORYREGISTRAR_H
 
-// appleseed.renderer headers.
-#include "renderer/global/global.h"
+// appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
+#include "foundation/utility/containers/array.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+// Standard headers.
+#include <memory>
 
 // Forward declarations.
 namespace renderer      { class ITextureFactory; }
@@ -39,20 +46,34 @@ namespace renderer
 {
 
 //
+// An array of texture factories.
+//
+
+DECLARE_ARRAY(TextureFactoryArray, ITextureFactory*);
+
+
+//
 // Texture factory registrar.
 //
 
-class RENDERERDLL TextureFactoryRegistrar
+class DLLSYMBOL TextureFactoryRegistrar
   : public foundation::NonCopyable
 {
   public:
     typedef ITextureFactory FactoryType;
+    typedef TextureFactoryArray FactoryArrayType;
 
     // Constructor.
     TextureFactoryRegistrar();
 
     // Destructor.
     ~TextureFactoryRegistrar();
+
+    // Register a texture factory.
+    void register_factory(std::auto_ptr<FactoryType> factory);
+
+    // Retrieve the registered factories.
+    FactoryArrayType get_factories() const;
 
     // Lookup a factory by name.
     const FactoryType* lookup(const char* name) const;

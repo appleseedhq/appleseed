@@ -30,7 +30,6 @@
 #include "assemblyitem.h"
 
 // appleseed.studio headers.
-#include "mainwindow/project/collectionitem.h"
 #include "mainwindow/project/itemtypemap.h"
 #include "mainwindow/project/multimodelcollectionitem.h"
 #include "mainwindow/project/objectcollectionitem.h"
@@ -271,6 +270,16 @@ void AssemblyItem::add_item(Object* object)
 void AssemblyItem::add_item(ObjectInstance* object_instance)
 {
     impl->m_object_instance_collection_item->add_item(object_instance);
+}
+
+TextureCollectionItem& AssemblyItem::get_texture_collection_item() const
+{
+    return *impl->m_texture_collection_item;
+}
+
+CollectionItem<TextureInstance, Assembly>& AssemblyItem::get_texture_instance_collection_item() const
+{
+    return *impl->m_texture_instance_collection_item;
 }
 
 ObjectCollectionItem& AssemblyItem::get_object_collection_item() const

@@ -37,8 +37,8 @@
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/colorspace.h"
 #include "foundation/image/tile.h"
-#include "foundation/platform/compiler.h"
 #include "foundation/platform/thread.h"
+#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/searchpaths.h"
 
 using namespace boost;
@@ -53,6 +53,8 @@ namespace
     //
     // 2D writable texture.
     //
+
+    const char* Model = "writable_texture_2d";
 
     class WritableTexture2d
       : public Texture
@@ -74,7 +76,7 @@ namespace
 
         virtual const char* get_model() const override
         {
-            return WritableTexture2dFactory::get_model();
+            return Model;
         }
 
         virtual ColorSpace get_color_space() const override
@@ -138,9 +140,21 @@ namespace
 // WritableTexture2dFactory class implementation.
 //
 
-const char* WritableTexture2dFactory::get_model()
+const char* WritableTexture2dFactory::get_model() const
 {
-    return "writable_texture_2d";
+    return Model;
+}
+
+const char* WritableTexture2dFactory::get_human_readable_model() const
+{
+    return "Writable 2D Texture";
+}
+
+DictionaryArray WritableTexture2dFactory::get_widget_definitions() const
+{
+    DictionaryArray definitions;
+
+    return definitions;
 }
 
 auto_release_ptr<Texture> WritableTexture2dFactory::create(

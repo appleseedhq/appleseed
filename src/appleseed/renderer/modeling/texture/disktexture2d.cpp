@@ -39,8 +39,9 @@
 #include "foundation/image/colorspace.h"
 #include "foundation/image/genericprogressiveimagefilereader.h"
 #include "foundation/image/tile.h"
-#include "foundation/platform/compiler.h"
 #include "foundation/platform/thread.h"
+#include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/searchpaths.h"
 
 // Standard headers.
@@ -59,6 +60,8 @@ namespace
     //
     // 2D disk texture.
     //
+
+    const char* Model = "disk_texture_2d";
 
     class DiskTexture2d
       : public Texture
@@ -81,7 +84,7 @@ namespace
 
         virtual const char* get_model() const override
         {
-            return DiskTexture2dFactory::get_model();
+            return Model;
         }
 
         virtual ColorSpace get_color_space() const override
@@ -167,9 +170,43 @@ namespace
 // DiskTexture2dFactory class implementation.
 //
 
-const char* DiskTexture2dFactory::get_model()
+const char* DiskTexture2dFactory::get_model() const
 {
-    return "disk_texture_2d";
+    return Model;
+}
+
+const char* DiskTexture2dFactory::get_human_readable_model() const
+{
+    return "2D Texture File";
+}
+
+DictionaryArray DiskTexture2dFactory::get_widget_definitions() const
+{
+    DictionaryArray definitions;
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "filename")
+            .insert("label", "File Path")
+            .insert("widget", "text_box")
+            .insert("default", "")
+            .insert("use", "required"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "color_space")
+            .insert("label", "Color Space")
+            .insert("widget", "dropdown_list")
+            .insert("dropdown_items",
+                Dictionary()
+                    .insert("Linear RGB", "linear_rgb")
+                    .insert("sRGB", "srgb")
+                    .insert("CIE XYZ", "ciexyz")
+                    .insert("Spectral", "spectral"))
+            .insert("use", "required")
+            .insert("default", "srgb"));
+
+    return definitions;
 }
 
 auto_release_ptr<Texture> DiskTexture2dFactory::create(

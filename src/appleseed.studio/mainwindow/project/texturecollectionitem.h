@@ -36,10 +36,14 @@
 #include "renderer/api/scene.h"
 #include "renderer/api/texture.h"
 
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
+
 // Qt headers.
 #include <QObject>
 
 // Forward declarations.
+namespace appleseed { namespace studio { class ItemBase; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace renderer  { class ParamArray; }
 class QMenu;
@@ -65,15 +69,18 @@ class TextureCollectionItem
         ProjectBuilder&             project_builder,
         renderer::ParamArray&       settings);
 
-    virtual QMenu* get_single_item_context_menu() const;
+    virtual QMenu* get_single_item_context_menu() const override;
 
   public slots:
     void slot_import_textures();
 
   private:
+    renderer::Scene*                m_scene;
     renderer::Assembly*             m_assembly;
     ProjectBuilder&                 m_project_builder;
     renderer::ParamArray&           m_settings;
+
+    virtual ItemBase* create_item(renderer::Texture* texture) const override;
 };
 
 }       // namespace studio

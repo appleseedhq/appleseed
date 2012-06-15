@@ -35,9 +35,6 @@
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 
-// Qt headers.
-#include <QObject>
-
 // Forward declarations.
 namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace renderer  { class Assembly; }
@@ -49,8 +46,6 @@ namespace studio {
 class ObjectItem
   : public EntityItemBase<renderer::Object>
 {
-    Q_OBJECT
-
   public:
     ObjectItem(
         renderer::Object*   object,

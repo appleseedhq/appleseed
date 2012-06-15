@@ -29,14 +29,17 @@
 #ifndef APPLESEED_RENDERER_MODELING_LIGHT_ILIGHTFACTORY_H
 #define APPLESEED_RENDERER_MODELING_LIGHT_ILIGHTFACTORY_H
 
-// appleseed.renderer headers.
-#include "renderer/global/global.h"
-
 // appleseed.foundation headers.
-#include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/core/concepts/noncopyable.h"
+#include "foundation/utility/autoreleaseptr.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Forward declarations.
+namespace foundation    { class DictionaryArray; }
 namespace renderer      { class Light; }
+namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
@@ -45,7 +48,7 @@ namespace renderer
 // Light factory interface.
 //
 
-class RENDERERDLL ILightFactory
+class DLLSYMBOL ILightFactory
   : public foundation::NonCopyable
 {
   public:

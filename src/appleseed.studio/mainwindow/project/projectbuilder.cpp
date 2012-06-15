@@ -34,12 +34,11 @@
 #include "mainwindow/project/exceptioninvalidentityname.h"
 #include "mainwindow/project/objectcollectionitem.h"
 #include "mainwindow/project/objectinstancecollectionitem.h"
+#include "mainwindow/project/projecttree.h"
 #include "mainwindow/project/texturecollectionitem.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/object.h"
-#include "renderer/api/project.h"
-#include "renderer/api/texture.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/matrix.h"
@@ -94,15 +93,15 @@ namespace
 {
     vector<UniqueID> collect_assembly_instances(const Scene& scene, const UniqueID assembly_id)
     {
-        vector<UniqueID> assembly_instances;
+        vector<UniqueID> collected;
 
         for (const_each<AssemblyInstanceContainer> i = scene.assembly_instances(); i; ++i)
         {
             if (i->get_assembly().get_uid() == assembly_id)
-                assembly_instances.push_back(i->get_uid());
+                collected.push_back(i->get_uid());
         }
 
-        return assembly_instances;
+        return collected;
     }
 }
 
@@ -224,15 +223,15 @@ namespace
 {
     vector<UniqueID> collect_object_instances(const Assembly& assembly, const UniqueID object_id)
     {
-        vector<UniqueID> object_instances;
+        vector<UniqueID> collected;
 
         for (const_each<ObjectInstanceContainer> i = assembly.object_instances(); i; ++i)
         {
             if (i->get_object().get_uid() == object_id)
-                object_instances.push_back(i->get_uid());
+                collected.push_back(i->get_uid());
         }
 
-        return object_instances;
+        return collected;
     }
 }
 
@@ -331,6 +330,27 @@ namespace
 }
 
 void ProjectBuilder::insert_textures(
+    Scene&              scene,
+    const string&       path) const
+{
+    auto_release_ptr<Texture> texture = create_texture(path);
+    const string texture_name = texture->get_name();
+
+    m_project_tree.add_item(texture.get());
+
+    const size_t texture_index = scene.textures().insert(texture);
+
+    auto_release_ptr<TextureInstance> texture_instance =
+        create_texture_instance(texture_name, texture_index);
+
+    m_project_tree.add_item(texture_instance.get());
+
+    scene.texture_instances().insert(texture_instance);
+
+    notify_project_modification();
+}
+
+void ProjectBuilder::insert_textures(
     Assembly&           assembly,
     const string&       path) const
 {
@@ -351,24 +371,86 @@ void ProjectBuilder::insert_textures(
     notify_project_modification();
 }
 
-void ProjectBuilder::insert_textures(
-    const string&       path) const
+namespace
 {
-    const Scene& scene = *m_project.get_scene();
+    vector<UniqueID> collect_texture_instances(
+        const TextureContainer&             textures,
+        const TextureInstanceContainer&     texture_instances,
+        const UniqueID                      texture_id)
+    {
+        vector<UniqueID> collected;
 
-    auto_release_ptr<Texture> texture = create_texture(path);
-    const string texture_name = texture->get_name();
+        for (const_each<TextureInstanceContainer> i = texture_instances; i; ++i)
+        {
+            const size_t texture_index = i->get_texture_index();
+            const Texture* texture = textures.get_by_index(texture_index);
 
-    m_project_tree.add_item(texture.get());
+            if (texture->get_uid() == texture_id)
+                collected.push_back(i->get_uid());
+        }
 
-    const size_t texture_index = scene.textures().insert(texture);
+        return collected;
+    }
 
-    auto_release_ptr<TextureInstance> texture_instance =
-        create_texture_instance(texture_name, texture_index);
+    template <typename ParentEntity>
+    void do_remove_texture(
+        TextureContainer&           textures,
+        TextureInstanceContainer&   texture_instances,
+        TextureCollectionItem&      texture_collection_item,
+        CollectionItem<
+            TextureInstance,
+            ParentEntity>&          texture_instance_collection_item,
+        const UniqueID              texture_id)
+    {
+        const vector<UniqueID> remove_list =
+            collect_texture_instances(textures, texture_instances, texture_id);
 
-    m_project_tree.add_item(texture_instance.get());
+        for (const_each<vector<UniqueID> > i = remove_list; i; ++i)
+        {
+            const UniqueID texture_instance_id = *i;
 
-    scene.texture_instances().insert(texture_instance);
+            // Remove the project item corresponding to this texture instance.
+            texture_instance_collection_item.remove_item(texture_instance_id);
+
+            // Remove this texture instance.
+            texture_instances.remove(texture_instances.get_by_uid(texture_instance_id));
+        }
+
+        // Remove the project item corresponding to the texture itself.
+        texture_collection_item.remove_item(texture_id);
+
+        // Remove the texture itself.
+        textures.remove(textures.get_by_uid(texture_id));
+    }
+}
+
+void ProjectBuilder::remove_texture(
+    Assembly&           assembly,
+    const UniqueID      texture_id) const
+{
+    const AssemblyItem& assembly_item =
+        m_project_tree.get_assembly_collection_item().get_item(assembly);
+
+    do_remove_texture(
+        assembly.textures(),
+        assembly.texture_instances(),
+        assembly_item.get_texture_collection_item(),
+        assembly_item.get_texture_instance_collection_item(),
+        texture_id);
+
+    notify_project_modification();
+}
+
+void ProjectBuilder::remove_texture(
+    Scene&              scene,
+    const UniqueID      texture_id) const
+{
+    do_remove_texture(
+        scene.textures(),
+        scene.texture_instances(),
+        m_project_tree.get_texture_collection_item(),
+        m_project_tree.get_texture_instance_collection_item(),
+        texture_id);
 
     notify_project_modification();
 }

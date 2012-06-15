@@ -160,6 +160,7 @@ set (mainwindow_project_sources
     mainwindow/project/singlemodelentityitem.h
     mainwindow/project/texturecollectionitem.cpp
     mainwindow/project/texturecollectionitem.h
+    mainwindow/project/textureitem.h
     mainwindow/project/tools.cpp
     mainwindow/project/tools.h
 )

@@ -29,11 +29,17 @@
 #ifndef APPLESEED_RENDERER_MODELING_TEXTURE_ITEXTUREFACTORY_H
 #define APPLESEED_RENDERER_MODELING_TEXTURE_ITEXTUREFACTORY_H
 
-// appleseed.renderer headers.
-#include "renderer/global/global.h"
+// appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
+#include "foundation/utility/autoreleaseptr.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Forward declarations.
+namespace foundation    { class DictionaryArray; }
 namespace foundation    { class SearchPaths; }
+namespace renderer      { class ParamArray; }
 namespace renderer      { class Texture; }
 
 namespace renderer
@@ -43,12 +49,21 @@ namespace renderer
 // Texture factory interface.
 //
 
-class RENDERERDLL ITextureFactory
+class DLLSYMBOL ITextureFactory
   : public foundation::NonCopyable
 {
   public:
     // Destructor.
     virtual ~ITextureFactory() {}
+
+    // Return a string identifying this texture model.
+    virtual const char* get_model() const = 0;
+
+    // Return a human-readable string identifying this texture model.
+    virtual const char* get_human_readable_model() const = 0;
+
+    // Return a set of widget definitions for this texture model.
+    virtual foundation::DictionaryArray get_widget_definitions() const = 0;
 
     // Create a new texture instance.
     virtual foundation::auto_release_ptr<Texture> create(

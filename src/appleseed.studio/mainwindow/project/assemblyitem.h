@@ -30,6 +30,7 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYITEM_H
 
 // appleseed.studio headers.
+#include "mainwindow/project/collectionitem.h"
 #include "mainwindow/project/entityitembase.h"
 
 // appleseed.foundation headers.
@@ -42,6 +43,7 @@
 namespace appleseed { namespace studio { class ObjectCollectionItem; } }
 namespace appleseed { namespace studio { class ObjectInstanceCollectionItem; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
+namespace appleseed { namespace studio { class TextureCollectionItem; } }
 namespace renderer  { class Assembly; }
 namespace renderer  { class ColorEntity; }
 namespace renderer  { class BSDF; }
@@ -86,6 +88,11 @@ class AssemblyItem
     void add_item(renderer::Light* light);
     void add_item(renderer::Object* object);
     void add_item(renderer::ObjectInstance* object_instance);
+
+    TextureCollectionItem& get_texture_collection_item() const;
+    CollectionItem<
+        renderer::TextureInstance,
+        renderer::Assembly>& get_texture_instance_collection_item() const;
 
     ObjectCollectionItem& get_object_collection_item() const;
     ObjectInstanceCollectionItem& get_object_instance_collection_item() const;

@@ -1371,6 +1371,7 @@ set (renderer_modeling_texture_sources
     renderer/modeling/texture/texture.h
     renderer/modeling/texture/texturefactoryregistrar.cpp
     renderer/modeling/texture/texturefactoryregistrar.h
+    renderer/modeling/texture/texturetraits.h
     renderer/modeling/texture/writabletexture2d.cpp
     renderer/modeling/texture/writabletexture2d.h
 )
