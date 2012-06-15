@@ -336,7 +336,7 @@ namespace
             if (dynamic_cast<const TextureSource*>(exitance_source))
             {
                 const CanvasProperties& texture_props =
-                    static_cast<const TextureSource*>(exitance_source)->get_texture(scene).properties();
+                    static_cast<const TextureSource*>(exitance_source)->get_texture_instance().get_texture()->properties();
                 m_importance_map_width = texture_props.m_canvas_width;
                 m_importance_map_height = texture_props.m_canvas_height;
             }

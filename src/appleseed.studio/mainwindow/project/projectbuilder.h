@@ -62,6 +62,7 @@
 
 // Standard headers.
 #include <cassert>
+#include <cstddef>
 #include <string>
 
 // Forward declarations.
@@ -115,14 +116,14 @@ class ProjectBuilder
         const std::string&                  name) const;
 
     void remove_assembly(
-        const foundation::UniqueID          assembly_id) const;
+        const foundation::UniqueID          assembly_uid) const;
 
     void insert_assembly_instance(
         const std::string&                  name,
         renderer::Assembly&                 assembly) const;
 
     void remove_assembly_instance(
-        const foundation::UniqueID          assembly_instance_id) const;
+        const foundation::UniqueID          assembly_instance_uid) const;
 
     void insert_objects(
         renderer::Assembly&                 assembly,
@@ -134,23 +135,23 @@ class ProjectBuilder
 
     void remove_object_instance(
         renderer::Assembly&                 assembly,
-        const foundation::UniqueID          object_instance_id) const;
+        const foundation::UniqueID          object_instance_uid) const;
 
-    void insert_textures(
+    void insert_texture(
         renderer::Scene&                    scene,
         const std::string&                  path) const;
 
-    void insert_textures(
+    void insert_texture(
         renderer::Assembly&                 assembly,
         const std::string&                  path) const;
 
     void remove_texture(
-        renderer::Assembly&                 assembly,
-        const foundation::UniqueID          texture_id) const;
+        renderer::Scene&                    scene,
+        const foundation::UniqueID          texture_uid) const;
 
     void remove_texture(
-        renderer::Scene&                    scene,
-        const foundation::UniqueID          texture_id) const;
+        renderer::Assembly&                 assembly,
+        const foundation::UniqueID          texture_uid) const;
 
   signals:
     void signal_project_modified() const;
@@ -322,7 +323,7 @@ inline renderer::TextureInstance* ProjectBuilder::edit_entity(
     ParentEntity&                       parent,
     const foundation::Dictionary&       values) const
 {
-    const size_t texture_index = old_entity->get_texture_index();
+    const std::string texture_name = old_entity->get_texture_name();
     const std::string name = get_entity_name(values);
 
     foundation::Dictionary clean_values(values);
@@ -332,7 +333,7 @@ inline renderer::TextureInstance* ProjectBuilder::edit_entity(
         renderer::TextureInstanceFactory::create(
             name.c_str(),
             clean_values,
-            texture_index));
+            texture_name.c_str()));
     renderer::TextureInstance* new_entity_ptr = new_entity.get();
 
     renderer::EntityTraits<renderer::TextureInstance>::remove_entity(old_entity, parent);
@@ -422,20 +423,20 @@ template <>
 inline foundation::auto_release_ptr<renderer::TextureInstance> ProjectBuilder::create_entity(
     const foundation::Dictionary&       values) const
 {
-    static const char* TextureIndexParameter = "__texture_index";
+    static const char* TextureNameParameter = "__texture_name";
 
     const std::string name = get_entity_name(values);
-    const size_t texture_index = values.get<size_t>(TextureIndexParameter);
+    const std::string texture_name = values.get<std::string>(TextureNameParameter);
 
     foundation::Dictionary clean_values(values);
     clean_values.strings().remove(EntityEditorFormFactoryBase::NameParameter);
-    clean_values.strings().remove(TextureIndexParameter);
+    clean_values.strings().remove(TextureNameParameter);
 
     return
         renderer::TextureInstanceFactory::create(
             name.c_str(),
             clean_values,
-            texture_index);
+            texture_name.c_str());
 }
 
 template <>

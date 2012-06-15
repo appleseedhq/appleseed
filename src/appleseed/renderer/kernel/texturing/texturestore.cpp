@@ -157,9 +157,7 @@ void TextureStore::TileSwapper::load(const TileKey& key, TileRecord& record)
             : m_scene.assemblies().get_by_uid(key.m_assembly_uid)->textures();
 
     // Fetch the texture.
-    const size_t texture_index = key.get_texture_index();
-    assert(texture_index < textures.size());
-    Texture* texture = textures.get_by_index(texture_index);
+    Texture* texture = textures.get_by_uid(key.m_texture_uid);
 
 #ifdef TRACK_TILE_LOADING
     RENDERER_LOG_DEBUG(
@@ -233,9 +231,7 @@ bool TextureStore::TileSwapper::unload(const TileKey& key, TileRecord& record)
             : m_scene.assemblies().get_by_uid(key.m_assembly_uid)->textures();
 
     // Fetch the texture.
-    const size_t texture_index = key.get_texture_index();
-    assert(texture_index < textures.size());
-    Texture* texture = textures.get_by_index(texture_index);
+    Texture* texture = textures.get_by_uid(key.m_texture_uid);
 
 #ifdef TRACK_TILE_UNLOADING
     RENDERER_LOG_DEBUG(

@@ -31,19 +31,19 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entity.h"
+#include "renderer/modeling/scene/containers.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// Standard headers.
-#include <cstddef>
-
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
 namespace renderer      { class ParamArray; }
+namespace renderer      { class Texture; }
 
 namespace renderer
 {
@@ -79,14 +79,20 @@ class DLLSYMBOL TextureInstance
 {
   public:
     // Delete this instance.
-    virtual void release();
+    virtual void release() override;
 
-    // Return the index the instantiated texture in the parent scene or assembly.
-    size_t get_texture_index() const;
+    // Return the name of the instantiated texture in the parent scene or assembly.
+    const char* get_texture_name() const;
 
     // Return the texture mapping modes.
     TextureAddressingMode get_addressing_mode() const;
     TextureFilteringMode get_filtering_mode() const;
+
+    // Perform entity binding.
+    void bind_entities(const TextureContainer& textures);
+
+    // Return the instantiated texture.
+    Texture* get_texture() const;
 
   private:
     friend class TextureInstanceFactory;
@@ -96,9 +102,9 @@ class DLLSYMBOL TextureInstance
 
     // Constructor.
     TextureInstance(
-        const char*         name,
-        const ParamArray&   params,
-        const size_t        texture_index);
+        const char*                 name,
+        const ParamArray&           params,
+        const char*                 texture_name);
 
     // Destructor.
     ~TextureInstance();
@@ -117,9 +123,9 @@ class DLLSYMBOL TextureInstanceFactory
 
     // Create a new texture instance.
     static foundation::auto_release_ptr<TextureInstance> create(
-        const char*         name,
-        const ParamArray&   params,
-        const size_t        texture_index);
+        const char*                 name,
+        const ParamArray&           params,
+        const char*                 texture_name);
 };
 
 }       // namespace renderer

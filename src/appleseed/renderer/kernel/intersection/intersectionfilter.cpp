@@ -43,6 +43,7 @@
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/objectinstance.h"
+#include "renderer/modeling/scene/textureinstance.h"
 #include "renderer/modeling/texture/texture.h"
 
 // appleseed.foundation headers.
@@ -93,7 +94,7 @@ void IntersectionFilter::copy_alpha_mask(
     if (dynamic_cast<const TextureSource*>(alpha_map))
     {
         const CanvasProperties& texture_props =
-            static_cast<const TextureSource*>(alpha_map)->get_texture(scene).properties();
+            static_cast<const TextureSource*>(alpha_map)->get_texture_instance().get_texture()->properties();
         m_alpha_mask_width = texture_props.m_canvas_width;
         m_alpha_mask_height = texture_props.m_canvas_height;
     }

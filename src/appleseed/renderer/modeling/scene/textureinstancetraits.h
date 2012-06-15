@@ -61,7 +61,7 @@ struct EntityTraits<TextureInstance>
     static foundation::Dictionary get_entity_values(const TextureInstance* entity)
     {
         foundation::Dictionary values = entity->get_parameters();
-        values.insert("__texture_index", entity->get_texture_index());
+        values.insert("__texture_name", entity->get_texture_name());
         return values;
     }
 

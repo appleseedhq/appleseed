@@ -134,8 +134,8 @@ void TextureCollectionItem::slot_import_textures()
         const string filepath = QDir::toNativeSeparators(filepaths[i]).toStdString();
 
         if (m_scene)
-            m_project_builder.insert_textures(*m_scene, filepath);
-        else m_project_builder.insert_textures(*m_assembly, filepath);
+            m_project_builder.insert_texture(*m_scene, filepath);
+        else m_project_builder.insert_texture(*m_assembly, filepath);
     }
 }
 

@@ -179,6 +179,10 @@ void InputBinder::bind_scene_entities_inputs(
     const Scene&                    scene,
     const SymbolTable&              scene_symbols)
 {
+    // Bind textures to texture instances.
+    for (each<TextureInstanceContainer> i = scene.texture_instances(); i; ++i)
+        i->bind_entities(scene.textures());
+
     // Bind environment EDFs inputs.
     for (each<EnvironmentEDFContainer> i = scene.environment_edfs(); i; ++i)
     {
@@ -220,6 +224,10 @@ void InputBinder::bind_assembly_entities_inputs(
     const Assembly&                 assembly,
     const SymbolTable&              assembly_symbols)
 {
+    // Bind textures to texture instances.
+    for (each<TextureInstanceContainer> i = assembly.texture_instances(); i; ++i)
+        i->bind_entities(assembly.textures());
+
     // Bind BSDFs inputs.
     for (each<BSDFContainer> i = assembly.bsdfs(); i; ++i)
     {
@@ -423,7 +431,6 @@ void InputBinder::bind_scene_entity_to_input(
 
       case SymbolTable::SymbolTextureInstance:
         bind_texture_instance_to_input(
-            scene.textures(),
             scene.texture_instances(),
             ~0,                     // the parent is the scene, not an assembly
             entity_type,
@@ -465,7 +472,6 @@ void InputBinder::bind_assembly_entity_to_input(
 
       case SymbolTable::SymbolTextureInstance:
         bind_texture_instance_to_input(
-            assembly.textures(),
             assembly.texture_instances(),
             assembly.get_uid(),
             entity_type,
@@ -526,7 +532,6 @@ void InputBinder::bind_color_to_input(
 }
 
 void InputBinder::bind_texture_instance_to_input(
-    const TextureContainer&         textures,
     const TextureInstanceContainer& texture_instances,
     const UniqueID                  assembly_uid,
     const char*                     entity_type,
@@ -537,10 +542,8 @@ void InputBinder::bind_texture_instance_to_input(
     const TextureInstance* texture_instance = texture_instances.get_by_name(param_value);
     assert(texture_instance);
 
-    const size_t texture_index = texture_instance->get_texture_index();
-    assert(texture_index != ~0);
-
-    Texture* texture = textures.get_by_index(texture_index);
+    // Textures must have been bound to texture instances already.
+    Texture* texture = texture_instance->get_texture();
     assert(texture);
 
     try

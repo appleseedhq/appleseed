@@ -30,13 +30,13 @@
 #include "testutils.h"
 
 // appleseed.renderer headers.
-#include "renderer/modeling/input/inputbinder.h"
 #include "renderer/modeling/color/colorentity.h"
-#include "renderer/modeling/project/project.h"
+#include "renderer/modeling/input/inputbinder.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/scene/textureinstance.h"
+#include "renderer/utility/paramarray.h"
 
 using namespace foundation;
 using namespace std;
@@ -96,14 +96,14 @@ void TestFixtureBase::create_color_entity(const char* name, const Spectrum& spec
         ColorEntityFactory::create(name, params, values));
 }
 
-void TestFixtureBase::create_texture_instance(const char* name, const size_t texture_index)
+void TestFixtureBase::create_texture_instance(const char* name, const char* texture_name)
 {
     ParamArray params;
     params.insert("addressing_mode", "clamp");
     params.insert("filtering_mode", "bilinear");
 
     m_scene.texture_instances().insert(
-        TextureInstanceFactory::create(name, params, texture_index));
+        TextureInstanceFactory::create(name, params, texture_name));
 }
 
 void TestFixtureBase::bind_inputs()

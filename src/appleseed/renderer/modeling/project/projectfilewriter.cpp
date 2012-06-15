@@ -421,7 +421,7 @@ namespace
             const TextureInstance&  texture_instance,
             const TextureContainer& textures)
         {
-            const Texture* texture = textures.get_by_index(texture_instance.get_texture_index());
+            const Texture* texture = textures.get_by_name(texture_instance.get_texture_name());
 
             if (texture == 0)
                 return;

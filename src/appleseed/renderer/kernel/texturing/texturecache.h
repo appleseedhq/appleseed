@@ -67,7 +67,7 @@ class TextureCache
     // Get a tile from the cache.
     foundation::Tile& get(
         const foundation::UniqueID  assembly_uid,
-        const size_t                texture_index,
+        const foundation::UniqueID  texture_uid,
         const size_t                tile_x,
         const size_t                tile_y);
 
@@ -138,12 +138,12 @@ inline TextureCache::~TextureCache()
 }
 
 inline foundation::Tile& TextureCache::get(
-    const foundation::UniqueID  assembly_uid,
-    const size_t                texture_index,
-    const size_t                tile_x,
-    const size_t                tile_y)
+    const foundation::UniqueID      assembly_uid,
+    const foundation::UniqueID      texture_uid,
+    const size_t                    tile_x,
+    const size_t                    tile_y)
 {
-    const TileKey key(assembly_uid, texture_index, tile_x, tile_y);
+    const TileKey key(assembly_uid, texture_uid, tile_x, tile_y);
     return *m_tile_cache.get(key)->m_tile;
 }
 
@@ -166,7 +166,7 @@ inline size_t TextureCache::TileKeyHasher::operator()(const TileKey& key) const
 {
     return foundation::mix32(
         static_cast<foundation::uint32>(key.m_assembly_uid),
-        static_cast<foundation::uint32>(key.m_texture_index),
+        static_cast<foundation::uint32>(key.m_texture_uid),
         static_cast<foundation::uint32>(key.m_tile_xy));
 }
 

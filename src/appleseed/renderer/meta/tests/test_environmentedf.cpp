@@ -27,7 +27,7 @@
 //
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/environmentedf/constantenvironmentedf.h"
@@ -36,16 +36,27 @@
 #include "renderer/modeling/environmentedf/latlongmapenvironmentedf.h"
 #include "renderer/modeling/environmentedf/mirrorballmapenvironmentedf.h"
 #include "renderer/modeling/input/inputevaluator.h"
-#include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/texture/texture.h"
+#include "renderer/utility/paramarray.h"
 #include "renderer/utility/testutils.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
+#include "foundation/image/color.h"
+#include "foundation/image/colorspace.h"
+#include "foundation/image/pixel.h"
 #include "foundation/image/tile.h"
+#include "foundation/math/scalar.h"
+#include "foundation/math/vector.h"
+#include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/test.h"
+
+// Standard headers.
+#include <cassert>
+#include <cstddef>
+#include <memory>
 
 using namespace foundation;
 using namespace renderer;
@@ -134,12 +145,11 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
     struct Fixture
       : public TestFixtureBase
     {
-        size_t create_horizontal_gradient_texture(const char* name)
+        void create_horizontal_gradient_texture(const char* name)
         {
-            return
-                m_scene.textures().insert(
-                    auto_release_ptr<Texture>(
-                        new HorizontalGradientTexture(name)));
+            m_scene.textures().insert(
+                auto_release_ptr<Texture>(
+                    new HorizontalGradientTexture(name)));
         }
 
         bool check_consistency(EnvironmentEDF& env_edf)
@@ -222,10 +232,8 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
 
     TEST_CASE_F(CheckLatLongMapEnvironmentEDFConsistency, Fixture)
     {
-        const size_t texture_index =
-            create_horizontal_gradient_texture("horiz_gradient_texture");
-
-        create_texture_instance("horiz_gradient_texture_inst", texture_index);
+        create_horizontal_gradient_texture("horiz_gradient_texture");
+        create_texture_instance("horiz_gradient_texture_inst", "horiz_gradient_texture");
 
         auto_release_ptr<EnvironmentEDF> env_edf(
             LatLongMapEnvironmentEDFFactory().create(
@@ -241,10 +249,8 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
 
     TEST_CASE_F(CheckMirrorBallMapEnvironmentEDFConsistency, Fixture)
     {
-        const size_t texture_index =
-            create_horizontal_gradient_texture("horiz_gradient_texture");
-
-        create_texture_instance("horiz_gradient_texture_inst", texture_index);
+        create_horizontal_gradient_texture("horiz_gradient_texture");
+        create_texture_instance("horiz_gradient_texture_inst", "horiz_gradient_texture");
 
         auto_release_ptr<EnvironmentEDF> env_edf(
             MirrorBallMapEnvironmentEDFFactory().create(

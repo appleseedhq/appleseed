@@ -30,13 +30,20 @@
 #define APPLESEED_RENDERER_UTILITY_TESTUTILS_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/entity/entity.h"
+#include "renderer/modeling/project/project.h"
+
+// appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
+#include "foundation/image/color.h"
+#include "foundation/utility/autoreleaseptr.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Forward declarations.
-namespace foundation    { class Image; }
 namespace renderer      { class Assembly; }
-namespace renderer      { class Project; }
 namespace renderer      { class Scene; }
 
 namespace renderer
@@ -74,12 +81,12 @@ class TestFixtureBase
 
     void create_texture_instance(
         const char*                 name,
-        const size_t                texture_index);
+        const char*                 texture_name);
 
     void bind_inputs();
 };
 
-class RENDERERDLL DummyEntity
+class DLLSYMBOL DummyEntity
   : public Entity
 {
   public:
@@ -91,7 +98,7 @@ class RENDERERDLL DummyEntity
     explicit DummyEntity(const char* name);
 };
 
-class RENDERERDLL DummyEntityFactory
+class DLLSYMBOL DummyEntityFactory
 {
   public:
     static foundation::auto_release_ptr<DummyEntity> create(const char* name);

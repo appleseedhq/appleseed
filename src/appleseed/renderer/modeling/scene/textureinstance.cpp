@@ -53,9 +53,10 @@ namespace renderer
 
 struct TextureInstance::Impl
 {
-    size_t                  m_texture_index;
+    string                  m_texture_name;
     TextureAddressingMode   m_addressing_mode;
     TextureFilteringMode    m_filtering_mode;
+    Texture*                m_texture;
 };
 
 namespace
@@ -66,13 +67,13 @@ namespace
 TextureInstance::TextureInstance(
     const char*             name,
     const ParamArray&       params,
-    const size_t            texture_index)
+    const char*             texture_name)
   : Entity(g_class_uid, params)
   , impl(new Impl())
 {
     set_name(name);
 
-    impl->m_texture_index = texture_index;
+    impl->m_texture_name = texture_name;
 
     // Retrieve the texture addressing mode.
     const string addressing_mode = m_params.get_required<string>("addressing_mode", "wrap");
@@ -103,6 +104,8 @@ TextureInstance::TextureInstance(
             filtering_mode.c_str());
         impl->m_filtering_mode = TextureFilteringBilinear;
     }
+
+    impl->m_texture = 0;
 }
 
 TextureInstance::~TextureInstance()
@@ -115,9 +118,9 @@ void TextureInstance::release()
     delete this;
 }
 
-size_t TextureInstance::get_texture_index() const
+const char* TextureInstance::get_texture_name() const
 {
-    return impl->m_texture_index;
+    return impl->m_texture_name.c_str();
 }
 
 TextureAddressingMode TextureInstance::get_addressing_mode() const
@@ -128,6 +131,19 @@ TextureAddressingMode TextureInstance::get_addressing_mode() const
 TextureFilteringMode TextureInstance::get_filtering_mode() const
 {
     return impl->m_filtering_mode;
+}
+
+void TextureInstance::bind_entities(const TextureContainer& textures)
+{
+    impl->m_texture = textures.get_by_name(impl->m_texture_name.c_str());
+
+    if (impl->m_texture == 0)
+        throw ExceptionUnknownEntity(impl->m_texture_name.c_str());
+}
+
+Texture* TextureInstance::get_texture() const
+{
+    return impl->m_texture;
 }
 
 
@@ -169,11 +185,11 @@ DictionaryArray TextureInstanceFactory::get_widget_definitions()
 auto_release_ptr<TextureInstance> TextureInstanceFactory::create(
     const char*             name,
     const ParamArray&       params,
-    const size_t            texture_index)
+    const char*             texture_name)
 {
     return
         auto_release_ptr<TextureInstance>(
-            new TextureInstance(name, params, texture_index));
+            new TextureInstance(name, params, texture_name));
 }
 
 }   // namespace renderer

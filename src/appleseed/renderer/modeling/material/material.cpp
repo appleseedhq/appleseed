@@ -35,6 +35,7 @@
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/input/texturesource.h"
 #include "renderer/modeling/project/project.h"
+#include "renderer/modeling/scene/textureinstance.h"
 #include "renderer/modeling/texture/texture.h"
 
 // appleseed.foundation headers.
@@ -42,9 +43,6 @@
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/uid.h"
-
-// Forward declarations.
-namespace renderer  { class Scene; }
 
 using namespace foundation;
 using namespace std;
@@ -106,23 +104,22 @@ void Material::bind_entities(
 namespace
 {
     void check_texture_source_color_space_is_linear_rgb(
-        const Scene&                scene,
         const char*                 map_type,
         const Source*               source)
     {
         if (dynamic_cast<const TextureSource*>(source))
         {
-            const Texture& texture =
-                static_cast<const TextureSource*>(source)->get_texture(scene);
+            const Texture* texture =
+                static_cast<const TextureSource*>(source)->get_texture_instance().get_texture();
 
-            if (texture.get_color_space() != ColorSpaceLinearRGB)
+            if (texture->get_color_space() != ColorSpaceLinearRGB)
             {
                 RENDERER_LOG_WARNING(
                     "color space for %s \"%s\" should be \"%s\" but is \"%s\" instead; expect artifacts and/or slowdowns.",
                     map_type,
-                    texture.get_name(),
+                    texture->get_name(),
                     color_space_name(ColorSpaceLinearRGB),
-                    color_space_name(texture.get_color_space()));
+                    color_space_name(texture->get_color_space()));
             }
         }
     }
@@ -135,7 +132,7 @@ void Material::on_frame_begin(
     m_alpha_map = m_inputs.source("alpha_map");
     m_normal_map = m_inputs.source("normal_map");
 
-    check_texture_source_color_space_is_linear_rgb(*project.get_scene(), "normal map", m_normal_map);
+    check_texture_source_color_space_is_linear_rgb("normal map", m_normal_map);
 }
 
 void Material::on_frame_end(

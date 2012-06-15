@@ -41,7 +41,7 @@ TEST_SUITE(Renderer_Kernel_Texturing_TextureStore_TileKey)
         const TextureStore::TileKey key(123, 12345, 32323, 56565);
 
         EXPECT_EQ(123, key.m_assembly_uid);
-        EXPECT_EQ(12345, key.get_texture_index());
+        EXPECT_EQ(12345, key.m_texture_uid);
         EXPECT_EQ(32323, key.get_tile_x());
         EXPECT_EQ(56565, key.get_tile_y());
     }

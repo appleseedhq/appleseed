@@ -138,7 +138,6 @@ class InputBinder
 
     // Bind a texture instance to a given input.
     void bind_texture_instance_to_input(
-        const TextureContainer&         textures,
         const TextureInstanceContainer& texture_instances,
         const foundation::UniqueID      assembly_uid,           // unique ID of parent assembly, or ~0 for scene
         const char*                     entity_type,

@@ -1080,9 +1080,9 @@ namespace
         virtual void end_element()
         {
             assert(m_textures);
-            const size_t texture_index = m_textures->get_index(m_texture.c_str());
+            const Texture* texture = m_textures->get_by_name(m_texture.c_str());
 
-            if (texture_index != ~0)
+            if (texture)
             {
                 try
                 {
@@ -1090,7 +1090,7 @@ namespace
                         TextureInstanceFactory::create(
                             m_name.c_str(),
                             m_params,
-                            texture_index);
+                            texture->get_name());
                 }
                 catch (const ExceptionDictionaryItemNotFound& e)
                 {

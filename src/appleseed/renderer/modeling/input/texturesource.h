@@ -32,9 +32,6 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/input/source.h"
-#include "renderer/modeling/scene/assembly.h"
-#include "renderer/modeling/scene/containers.h"
-#include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/scene/textureinstance.h"
 
 // appleseed.foundation headers.
@@ -46,11 +43,9 @@
 #include "foundation/utility/uid.h"
 
 // Standard headers.
-#include <cassert>
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer      { class Texture; }
 namespace renderer      { class TextureCache; }
 
 namespace renderer
@@ -70,8 +65,8 @@ class TextureSource
         const TextureInstance&              texture_instance,
         const foundation::CanvasProperties& texture_props);
 
-    // A convenient function to retrieve the texture used by this source.
-    Texture& get_texture(const Scene& scene) const;
+    // Retrieve the texture instance used by this source.
+    const TextureInstance& get_texture_instance() const;
 
     // Evaluate the source at a given shading point.
     virtual void evaluate(
@@ -103,7 +98,8 @@ class TextureSource
 
   private:
     const foundation::UniqueID              m_assembly_uid;
-    const size_t                            m_texture_index;
+    const TextureInstance&                  m_texture_instance;
+    const foundation::UniqueID              m_texture_uid;
     const TextureAddressingMode             m_addressing_mode;
     const TextureFilteringMode              m_filtering_mode;
     const foundation::LightingConditions    m_lighting_conditions;
@@ -140,16 +136,9 @@ class TextureSource
 // TextureSource class implementation.
 //
 
-inline Texture& TextureSource::get_texture(const Scene& scene) const
+inline const TextureInstance& TextureSource::get_texture_instance() const
 {
-    const TextureContainer& textures =
-        m_assembly_uid == ~0
-            ? scene.textures()
-            : scene.assemblies().get_by_uid(m_assembly_uid)->textures();
-
-    assert(m_texture_index < textures.size());
-
-    return *textures.get_by_index(m_texture_index);
+    return m_texture_instance;
 }
 
 inline void TextureSource::evaluate(
