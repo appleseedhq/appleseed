@@ -91,6 +91,13 @@ namespace renderer
 namespace
 {
     //
+    // Revision number of the project file format.
+    //
+
+    const size_t ProjectFileFormatRevision = 2;
+
+
+    //
     // A class representing a XML element.
     //
 
@@ -799,6 +806,7 @@ namespace
         void write(const Project& project)
         {
             Element element("project", m_file, m_indenter);
+            element.add_attribute("revision", ProjectFileFormatRevision);
             element.write(true);
 
             if (project.get_scene())
