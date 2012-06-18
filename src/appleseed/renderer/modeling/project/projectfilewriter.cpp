@@ -806,7 +806,7 @@ namespace
         void write(const Project& project)
         {
             Element element("project", m_file, m_indenter);
-            element.add_attribute("revision", ProjectFileFormatRevision);
+            element.add_attribute("format_revision", ProjectFileFormatRevision);
             element.write(true);
 
             if (project.get_scene())

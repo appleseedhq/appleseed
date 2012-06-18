@@ -273,7 +273,7 @@
                     </xsd:complexType>
                 </xsd:element>
             </xsd:all>
-            <xsd:attribute name="revision" type="xsd:positiveInteger" use="optional"/>
+            <xsd:attribute name="format_revision" type="xsd:positiveInteger" use="optional"/>
         </xsd:complexType>
     </xsd:element>
     <xsd:element name="color">
