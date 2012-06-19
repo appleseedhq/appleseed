@@ -36,6 +36,7 @@
 #include "renderer/kernel/intersection/trianglekey.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/object/triangle.h"
+#include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/utility/cache.h"
 
 // appleseed.foundation headers.
@@ -268,7 +269,7 @@ namespace
             lhs.get_triangle_index() == rhs.get_triangle_index() &&
             lhs.get_region_index() == rhs.get_region_index() &&
             lhs.get_object_instance_index() == rhs.get_object_instance_index() &&
-            lhs.get_assembly_instance_uid() == rhs.get_assembly_instance_uid();
+            lhs.get_assembly_instance().get_uid() == rhs.get_assembly_instance().get_uid();
     }
 
     // Print a message if a self-intersection situation is detected.
@@ -396,7 +397,7 @@ bool Intersector::trace_probe(
 void Intersector::manufacture_hit(
     ShadingPoint&                   shading_point,
     const ShadingRay&               shading_ray,
-    const UniqueID                  assembly_instance_uid,
+    const AssemblyInstance*         assembly_instance,
     const size_t                    object_instance_index,
     const size_t                    region_index,
     const size_t                    triangle_index,
@@ -407,7 +408,7 @@ void Intersector::manufacture_hit(
     shading_point.m_scene = &m_trace_context.get_scene();
     shading_point.m_ray = shading_ray;
     shading_point.m_hit = true;
-    shading_point.m_asm_instance_uid = assembly_instance_uid;
+    shading_point.m_assembly_instance = assembly_instance;
     shading_point.m_object_instance_index = object_instance_index;
     shading_point.m_region_index = region_index;
     shading_point.m_triangle_index = triangle_index;

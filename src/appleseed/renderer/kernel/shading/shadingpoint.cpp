@@ -50,15 +50,8 @@ namespace renderer
 
 void ShadingPoint::fetch_source_geometry() const
 {
-    assert(m_region_kit_cache);
-    assert(m_tess_cache);
-    assert(m_scene);
     assert(hit());
     assert(!(m_members & HasSourceGeometry));
-
-    // Retrieve the assembly instance.
-    m_assembly_instance = m_scene->assembly_instances().get_by_uid(m_asm_instance_uid);
-    assert(m_assembly_instance);
 
     // Retrieve the assembly.
     m_assembly = &m_assembly_instance->get_assembly();
@@ -71,6 +64,7 @@ void ShadingPoint::fetch_source_geometry() const
     m_object = &m_object_instance->get_object();
 
     // Retrieve the region kit of the object.
+    assert(m_region_kit_cache);
     const RegionKit& region_kit =
         *m_region_kit_cache->access(
             m_object->get_uid(), m_object->get_region_kit());
@@ -79,6 +73,7 @@ void ShadingPoint::fetch_source_geometry() const
     const IRegion* region = region_kit[m_region_index];
 
     // Retrieve the tessellation of the region.
+    assert(m_tess_cache);
     const StaticTriangleTess& tess =
         *m_tess_cache->access(
             region->get_uid(), region->get_static_triangle_tess());

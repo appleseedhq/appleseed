@@ -95,7 +95,7 @@ size_t AssemblyTree::get_memory_size() const
           TreeType::get_memory_size()
         - sizeof(*static_cast<const TreeType*>(this))
         + sizeof(*this)
-        + m_assembly_instances.capacity() * sizeof(UniqueID);
+        + m_assembly_instances.capacity() * sizeof(AssemblyInstance*);
 }
 
 void AssemblyTree::collect_assembly_instances(AABBVector& assembly_instance_bboxes)
@@ -113,7 +113,7 @@ void AssemblyTree::collect_assembly_instances(AABBVector& assembly_instance_bbox
             continue;
 
         // Store the assembly instance.
-        m_assembly_instances.push_back(assembly_instance.get_uid());
+        m_assembly_instances.push_back(&assembly_instance);
 
         // Compute and store the assembly instance bounding box.
         AABB3d assembly_instance_bbox(assembly_instance.compute_parent_bbox());
@@ -159,7 +159,7 @@ void AssemblyTree::rebuild_assembly_tree()
         assert(m_assembly_instances.size() == ordering.size());
 
         // Reorder the assembly instances according to the tree ordering.
-        vector<UniqueID> temp_assembly_instances(ordering.size());
+        vector<const AssemblyInstance*> temp_assembly_instances(ordering.size());
         small_item_reorder(
             &m_assembly_instances[0],
             &temp_assembly_instances[0],
@@ -202,7 +202,7 @@ void AssemblyTree::store_assembly_instances_in_leaves()
                 ++fat_leaf_count;
 
                 const size_t item_begin = node.get_item_index();
-                UniqueID* user_data = &node.get_user_data<UniqueID>();
+                const AssemblyInstance** user_data = &node.get_user_data<const AssemblyInstance*>();
 
                 for (size_t j = 0; j < item_count; ++j)
                     user_data[j] = m_assembly_instances[item_begin + j];
@@ -375,19 +375,19 @@ void AssemblyTree::update_child_trees()
 namespace
 {
     void transform_ray_to_assembly_instance_space(
-        const AssemblyInstance&         assembly_instance,
+        const AssemblyInstance*         assembly_instance,
         const ShadingPoint*             parent_shading_point,
         const ShadingRay::RayType&      input_ray,
         ShadingRay::RayType&            output_ray)
     {
         // Retrieve the transformation of the assembly instance.
-        const Transformd& transform = assembly_instance.get_transform();
+        const Transformd& transform = assembly_instance->get_transform();
 
         // Transform the ray direction.
         output_ray.m_dir = transform.transform_vector_to_local(input_ray.m_dir);
 
         if (parent_shading_point &&
-            parent_shading_point->get_assembly_instance_uid() == assembly_instance.get_uid())
+            &parent_shading_point->get_assembly_instance() == assembly_instance)
         {
             // The caller provided the previous intersection, and we are about
             // to intersect the assembly instance that contains the previous
@@ -423,17 +423,15 @@ bool AssemblyLeafVisitor::visit(
     // Retrieve the assembly instances for this leaf.
     const size_t assembly_instance_index = node.get_item_index();
     const size_t assembly_instance_count = node.get_item_count();
-    const UniqueID* assembly_instance_uids =
-        assembly_instance_count <= AssemblyTree::NodeType::MaxUserDataSize / sizeof(UniqueID)
-            ? &node.get_user_data<UniqueID>()                           // items are stored in the leaf node
+    const AssemblyInstance* const* assembly_instances =
+        assembly_instance_count <= AssemblyTree::NodeType::MaxUserDataSize / sizeof(AssemblyInstance*)
+            ? &node.get_user_data<const AssemblyInstance*>()            // items are stored in the leaf node
             : &m_tree.m_assembly_instances[assembly_instance_index];    // items are stored in the tree
 
     for (size_t i = 0; i < assembly_instance_count; ++i)
     {
         // Retrieve the assembly instance.
-        const UniqueID assembly_instance_uid = assembly_instance_uids[i];
-        const AssemblyInstance& assembly_instance =
-            *m_tree.m_scene.assembly_instances().get_by_uid(assembly_instance_uid);
+        const AssemblyInstance* assembly_instance = assembly_instances[i];
 
         // Transform the ray to assembly instance space.
         ShadingPoint local_shading_point;
@@ -450,12 +448,12 @@ bool AssemblyLeafVisitor::visit(
 
         FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(1));
 
-        if (assembly_instance.get_assembly().is_flushable())
+        if (assembly_instance->get_assembly().is_flushable())
         {
             // Retrieve the region tree of this assembly.
             const RegionTree& region_tree =
                 *m_region_tree_cache.access(
-                    assembly_instance.get_assembly_uid(),
+                    assembly_instance->get_assembly_uid(),
                     m_tree.m_region_trees);
 
             // Check the intersection between the ray and the region tree.
@@ -478,7 +476,7 @@ bool AssemblyLeafVisitor::visit(
             // Retrieve the triangle tree of this assembly.
             const TriangleTree* triangle_tree =
                 m_triangle_tree_cache.access(
-                    assembly_instance.get_assembly_uid(),
+                    assembly_instance->get_assembly_uid(),
                     m_tree.m_triangle_trees);
 
             if (triangle_tree)
@@ -505,7 +503,7 @@ bool AssemblyLeafVisitor::visit(
             m_shading_point.m_ray.m_tmax = local_shading_point.m_ray.m_tmax;
             m_shading_point.m_hit = true;
             m_shading_point.m_bary = local_shading_point.m_bary;
-            m_shading_point.m_asm_instance_uid = assembly_instance_uid;
+            m_shading_point.m_assembly_instance = assembly_instance;
             m_shading_point.m_object_instance_index = local_shading_point.m_object_instance_index;
             m_shading_point.m_region_index = local_shading_point.m_region_index;
             m_shading_point.m_triangle_index = local_shading_point.m_triangle_index;
@@ -535,17 +533,15 @@ bool AssemblyLeafProbeVisitor::visit(
 {
     // Retrieve the assembly instances for this leaf.
     const size_t assembly_instance_count = node.get_item_count();
-    const UniqueID* assembly_instance_uids =
-        assembly_instance_count <= AssemblyTree::NodeType::MaxUserDataSize / sizeof(UniqueID)
-            ? &node.get_user_data<UniqueID>()                           // items are stored in the leaf node
+    const AssemblyInstance* const* assembly_instances =
+        assembly_instance_count <= AssemblyTree::NodeType::MaxUserDataSize / sizeof(AssemblyInstance*)
+            ? &node.get_user_data<const AssemblyInstance*>()            // items are stored in the leaf node
             : &m_tree.m_assembly_instances[node.get_item_index()];      // items are stored in the tree
 
     for (size_t i = 0; i < assembly_instance_count; ++i)
     {
         // Retrieve the assembly instance.
-        const UniqueID assembly_instance_uid = assembly_instance_uids[i];
-        const AssemblyInstance& assembly_instance =
-            *m_tree.m_scene.assembly_instances().get_by_uid(assembly_instance_uid);
+        const AssemblyInstance* assembly_instance = assembly_instances[i];
 
         // Transform the ray to assembly instance space.
         ShadingRay local_ray;
@@ -562,12 +558,12 @@ bool AssemblyLeafProbeVisitor::visit(
 
         FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(1));
 
-        if (assembly_instance.get_assembly().is_flushable())
+        if (assembly_instance->get_assembly().is_flushable())
         {
             // Retrieve the region tree of this assembly.
             const RegionTree& region_tree =
                 *m_region_tree_cache.access(
-                    assembly_instance.get_assembly_uid(),
+                    assembly_instance->get_assembly_uid(),
                     m_tree.m_region_trees);
 
             // Check the intersection between the ray and the region tree.
@@ -596,7 +592,7 @@ bool AssemblyLeafProbeVisitor::visit(
             // Retrieve the triangle tree of this leaf.
             const TriangleTree* triangle_tree =
                 m_triangle_tree_cache.access(
-                    assembly_instance.get_assembly_uid(),
+                    assembly_instance->get_assembly_uid(),
                     m_tree.m_triangle_trees);
 
             if (triangle_tree)

@@ -42,7 +42,6 @@
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/objectinstance.h"
-#include "renderer/modeling/scene/scene.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
@@ -51,7 +50,6 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
-#include "foundation/utility/uid.h"
 
 // Standard headers.
 #include <cassert>
@@ -59,6 +57,7 @@
 
 // Forward declarations.
 namespace renderer  { class Object; }
+namespace renderer  { class Scene; }
 namespace renderer  { class TextureCache; }
 
 namespace renderer
@@ -149,9 +148,6 @@ class ShadingPoint
     // Return the object that was hit.
     const Object& get_object() const;
 
-    // Return the unique ID of the assembly instance that was hit.
-    foundation::UniqueID get_assembly_instance_uid() const;
-
     // Return the index, within the assembly, of the object instance that was hit.
     size_t get_object_instance_index() const;
 
@@ -182,7 +178,7 @@ class ShadingPoint
     // Intersection results.
     bool                                m_hit;                          // true if there was a hit, false otherwise
     foundation::Vector2d                m_bary;                         // barycentric coordinates of intersection point
-    foundation::UniqueID                m_asm_instance_uid;             // unique ID of the assembly instance that was hit
+    const AssemblyInstance*             m_assembly_instance;            // hit assembly instance
     size_t                              m_object_instance_index;        // index of the object instance that was hit
     size_t                              m_region_index;                 // index of the region containing the hit triangle
     size_t                              m_triangle_index;               // index of the hit triangle
@@ -205,7 +201,6 @@ class ShadingPoint
         HasMaterial                     = 1 << 11
     };
     mutable foundation::uint32          m_members;                      // which members have already been computed
-    mutable const AssemblyInstance*     m_assembly_instance;            // hit assembly instance
     mutable const Assembly*             m_assembly;                     // hit assembly
     mutable const ObjectInstance*       m_object_instance;              // hit object instance
     mutable Object*                     m_object;                       // hit object
@@ -262,7 +257,7 @@ inline ShadingPoint::ShadingPoint(const ShadingPoint& rhs)
   , m_ray(rhs.m_ray)
   , m_hit(rhs.m_hit)
   , m_bary(rhs.m_bary)
-  , m_asm_instance_uid(rhs.m_asm_instance_uid)
+  , m_assembly_instance(rhs.m_assembly_instance)
   , m_object_instance_index(rhs.m_object_instance_index)
   , m_region_index(rhs.m_region_index)
   , m_triangle_index(rhs.m_triangle_index)
@@ -654,7 +649,6 @@ inline const Material* ShadingPoint::get_material() const
 inline const AssemblyInstance& ShadingPoint::get_assembly_instance() const
 {
     assert(hit());
-    cache_source_geometry();
     return *m_assembly_instance;
 }
 
@@ -677,12 +671,6 @@ inline const Object& ShadingPoint::get_object() const
     assert(hit());
     cache_source_geometry();
     return *m_object;
-}
-
-inline foundation::UniqueID ShadingPoint::get_assembly_instance_uid() const
-{
-    assert(hit());
-    return m_asm_instance_uid;
 }
 
 inline size_t ShadingPoint::get_object_instance_index() const

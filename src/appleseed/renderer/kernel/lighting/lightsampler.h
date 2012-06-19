@@ -58,7 +58,7 @@ namespace renderer
 class EmittingTriangle
 {
   public:
-    foundation::UniqueID        m_assembly_instance_uid;
+    const AssemblyInstance*     m_assembly_instance;
     size_t                      m_object_instance_index;
     size_t                      m_region_index;
     size_t                      m_triangle_index;

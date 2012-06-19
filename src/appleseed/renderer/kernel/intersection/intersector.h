@@ -42,6 +42,7 @@
 #include "foundation/math/bvh.h"
 
 // Forward declarations.
+namespace renderer  { class AssemblyInstance; }
 namespace renderer  { class ShadingPoint; }
 namespace renderer  { class TextureCache; }
 namespace renderer  { class TraceContext; }
@@ -101,7 +102,7 @@ class Intersector
     void manufacture_hit(
         ShadingPoint&                   shading_point,
         const ShadingRay&               shading_ray,
-        const foundation::UniqueID      assembly_instance_uid,
+        const AssemblyInstance*         assembly_instance,
         const size_t                    object_instance_index,
         const size_t                    region_index,
         const size_t                    triangle_index,

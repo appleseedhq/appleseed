@@ -271,7 +271,7 @@ void LightSampler::collect_emitting_triangles(
 
                     // Create a light-emitting triangle.
                     EmittingTriangle emitting_triangle;
-                    emitting_triangle.m_assembly_instance_uid = assembly_instance.get_uid();
+                    emitting_triangle.m_assembly_instance = &assembly_instance;
                     emitting_triangle.m_object_instance_index = object_instance_index;
                     emitting_triangle.m_region_index = region_index;
                     emitting_triangle.m_triangle_index = triangle_index;

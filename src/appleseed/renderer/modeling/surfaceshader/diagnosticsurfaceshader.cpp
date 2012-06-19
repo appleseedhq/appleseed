@@ -304,7 +304,7 @@ void DiagnosticSurfaceShader::evaluate(
 
       case AssemblyInstances:
         shading_result.set_to_linear_rgb(
-            integer_to_color(shading_point.get_assembly_instance_uid()));
+            integer_to_color(shading_point.get_assembly_instance().get_uid()));
         break;
 
       case ObjectInstances:
