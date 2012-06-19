@@ -52,6 +52,7 @@
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/light/light.h"
+#include "renderer/modeling/scene/scene.h"
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
