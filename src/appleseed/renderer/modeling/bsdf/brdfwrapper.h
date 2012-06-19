@@ -134,7 +134,7 @@ void BRDFWrapper<BRDFImpl>::sample(
 
     assert(foundation::is_normalized(incoming));
     assert(foundation::dot(incoming, geometric_normal) >= 0.0);
-    assert(probability == DiracDelta || probability > 0.0);
+    assert(probability == BRDFImpl::DiracDelta || probability > 0.0);
 
     if (cosine_mult)
     {

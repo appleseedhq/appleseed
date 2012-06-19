@@ -53,7 +53,7 @@ class Source
     explicit Source(const bool uniform);
 
     // Destructor.
-    virtual ~Source() = 0 {}
+    virtual ~Source() = 0;
 
     // Return true if the source is uniform, false if it is varying.
     bool is_uniform() const;
@@ -113,6 +113,10 @@ class Source
 
 inline Source::Source(const bool uniform)
   : m_uniform(uniform)
+{
+}
+
+inline Source::~Source()
 {
 }
 

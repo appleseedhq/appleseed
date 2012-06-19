@@ -132,7 +132,7 @@ void BTDFWrapper<BTDFImpl>::sample(
         return;
 
     assert(foundation::is_normalized(incoming));
-    assert(probability == DiracDelta || probability > 0.0);
+    assert(probability == BTDFImpl::DiracDelta || probability > 0.0);
 
     if (cosine_mult)
     {

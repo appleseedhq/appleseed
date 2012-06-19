@@ -929,7 +929,7 @@ get(const KeyType& key)
         // Insert the new element into the index.
         m_index[key] = m_queue.begin();
 
-        Queue::reverse_iterator i = m_queue.rbegin();
+        typename Queue::reverse_iterator i = m_queue.rbegin();
 
         while (m_element_swapper.is_full(m_queue_size) && i != pred(m_queue.rend()))
         {

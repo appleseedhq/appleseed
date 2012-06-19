@@ -253,7 +253,7 @@ void PNGImageFileWriter::write(
             &text_chunks[0],
             static_cast<int>(text_chunks.size()));
     }
-    
+
     // Write the file header information.
     png_write_info(png_ptr, info_ptr);
 

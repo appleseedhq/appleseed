@@ -231,7 +231,7 @@ void ProgressiveEXRImageFileReader::open(const char* filename)
         impl->m_props.m_rcp_tile_height = 1.0 / impl->m_props.m_tile_height;
         impl->m_props.m_tile_count_x = tile_count_x;
         impl->m_props.m_tile_count_y = tile_count_y;
-        impl->m_props.m_tile_count = impl->m_props.m_tile_count_x * impl->m_props.m_tile_count_y;    
+        impl->m_props.m_tile_count = impl->m_props.m_tile_count_x * impl->m_props.m_tile_count_y;
         impl->m_props.m_pixel_format = pixel_format;
         impl->m_props.m_channel_count = impl->m_alpha ? 4 : 3;
         impl->m_props.m_pixel_size = impl->m_props.m_channel_count * Pixel::size(impl->m_props.m_pixel_format);
