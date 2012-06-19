@@ -40,14 +40,14 @@
 #include "foundation/utility/memory.h"
 
 // OpenEXR headers.
-#include "openexr/ImathBox.h"
-#include "openexr/ImfChannelList.h"
-#include "openexr/ImfFrameBuffer.h"
-#include "openexr/ImfHeader.h"
-#include "openexr/ImfInputFile.h"
-#include "openexr/ImfPixelType.h"
-#include "openexr/ImfTileDescription.h"
-#include "openexr/ImfTiledInputFile.h"
+#include "OpenEXR/ImathBox.h"
+#include "OpenEXR/ImfChannelList.h"
+#include "OpenEXR/ImfFrameBuffer.h"
+#include "OpenEXR/ImfHeader.h"
+#include "OpenEXR/ImfInputFile.h"
+#include "OpenEXR/ImfPixelType.h"
+#include "OpenEXR/ImfTileDescription.h"
+#include "OpenEXR/ImfTiledInputFile.h"
 
 // Standard headers.
 #include <algorithm>

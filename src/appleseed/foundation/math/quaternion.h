@@ -35,7 +35,7 @@
 
 // Imath headers.
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
-#include "openexr/ImathQuat.h"
+#include "OpenEXR/ImathQuat.h"
 #endif
 
 // Standard headers.

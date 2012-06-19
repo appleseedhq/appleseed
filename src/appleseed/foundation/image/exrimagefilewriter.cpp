@@ -37,14 +37,14 @@
 #include "foundation/image/pixel.h"
 
 // OpenEXR headers.
-#include "openexr/IexBaseExc.h"
-#include "openexr/ImathBox.h"
-#include "openexr/ImfChannelList.h"
-#include "openexr/ImfFrameBuffer.h"
-#include "openexr/ImfHeader.h"
-#include "openexr/ImfPixelType.h"
-#include "openexr/ImfTileDescription.h"
-#include "openexr/ImfTiledOutputFile.h"
+#include "OpenEXR/IexBaseExc.h"
+#include "OpenEXR/ImathBox.h"
+#include "OpenEXR/ImfChannelList.h"
+#include "OpenEXR/ImfFrameBuffer.h"
+#include "OpenEXR/ImfHeader.h"
+#include "OpenEXR/ImfPixelType.h"
+#include "OpenEXR/ImfTileDescription.h"
+#include "OpenEXR/ImfTiledOutputFile.h"
 
 // Standard headers.
 #include <cassert>

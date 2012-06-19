@@ -34,8 +34,8 @@
 
 // Imath headers.
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
-#include "openexr/ImathQuat.h"
-#include "openexr/ImathVec.h"
+#include "OpenEXR/ImathQuat.h"
+#include "OpenEXR/ImathVec.h"
 #endif
 
 using namespace foundation;

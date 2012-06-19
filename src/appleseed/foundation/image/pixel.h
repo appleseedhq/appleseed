@@ -35,7 +35,7 @@
 #include "foundation/utility/otherwise.h"
 
 // OpenEXR headers.
-#include "openexr/half.h"
+#include "OpenEXR/half.h"
 
 // Standard headers.
 #include <cassert>

@@ -33,7 +33,7 @@
 
 // Imath headers.
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
-#include "openexr/ImathColor.h"
+#include "OpenEXR/ImathColor.h"
 #endif
 
 using namespace foundation;

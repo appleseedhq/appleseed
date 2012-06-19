@@ -47,7 +47,7 @@
 #include "Alembic/AbcGeom/IPolyMesh.h"
 
 // OpenEXR headers.
-#include "openexr/ImathVec.h"
+#include "OpenEXR/ImathVec.h"
 
 // Standard headers.
 #include <cstddef>

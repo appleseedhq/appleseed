@@ -35,7 +35,7 @@
 #include "foundation/image/iprogressiveimagefilewriter.h"
 
 // OpenEXR headers.
-#include "openexr/ImfTiledOutputFile.h"
+#include "OpenEXR/ImfTiledOutputFile.h"
 
 // Standard headers.
 #include <cstddef>
