@@ -329,8 +329,8 @@ namespace
 
                     // Update the path radiance.
                     vertex_radiance *= throughput;
-                    m_path_radiance += vertex_radiance;
                     vertex_aovs *= throughput;
+                    m_path_radiance += vertex_radiance;
                     m_path_aovs += vertex_aovs;
                 }
                 else
