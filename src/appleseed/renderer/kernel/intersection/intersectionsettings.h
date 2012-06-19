@@ -30,10 +30,13 @@
 #define APPLESEED_RENDERER_KERNEL_INTERSECTION_INTERSECTIONSETTINGS_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/global/globaltypes.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/intersection.h"
+
+// Standard headers.
+#include <cstddef>
 
 namespace renderer
 {
@@ -48,6 +51,20 @@ typedef foundation::TriangleMT<GScalar> GTriangleType;
 // Triangle format used for intersection.
 typedef foundation::TriangleMT<double> TriangleType;
 typedef foundation::TriangleMTSupportPlane<double> TriangleSupportPlaneType;
+
+
+//
+// Assembly tree settings.
+//
+
+// Maximum number of assemblies per leaf.
+const size_t AssemblyTreeMaxLeafSize = 1;
+
+// Relative cost of traversing an interior node.
+const double AssemblyTreeInteriorNodeTraversalCost = 1.0;
+
+// Relative cost of intersecting an assembly.
+const double AssemblyTreeTriangleIntersectionCost = 10.0;
 
 
 //
@@ -74,14 +91,14 @@ const size_t RegionTreeAccessCacheSize = 16;
 // Maximum number of triangles per leaf.
 const size_t TriangleTreeMaxLeafSize = 2;
 
-// Number of bins used during SBVH construction.
-const size_t TriangleTreeBinCount = 256;
-
 // Relative cost of traversing an interior node.
-const GScalar TriangleTreeInteriorNodeTraversalCost = GScalar(1.0);
+const double TriangleTreeInteriorNodeTraversalCost = 1.0;
 
 // Relative cost of intersecting a triangle.
-const GScalar TriangleTreeTriangleIntersectionCost = GScalar(1.0);
+const double TriangleTreeTriangleIntersectionCost = 1.0;
+
+// Number of bins used during SBVH construction.
+const size_t TriangleTreeBinCount = 256;
 
 // Depth of a subtree in the van Emde Boas node layout.
 const size_t TriangleTreeSubtreeDepth = 2;

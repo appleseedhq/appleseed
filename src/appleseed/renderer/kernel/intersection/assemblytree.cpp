@@ -141,7 +141,11 @@ void AssemblyTree::rebuild_assembly_tree()
     // Build the assembly tree.
     typedef bvh::SAHPartitioner<AABBVector> Partitioner;
     typedef bvh::Builder<AssemblyTree, Partitioner> Builder;
-    Partitioner partitioner(assembly_instance_bboxes, 1);
+    Partitioner partitioner(
+        assembly_instance_bboxes,
+        AssemblyTreeMaxLeafSize,
+        AssemblyTreeInteriorNodeTraversalCost,
+        AssemblyTreeTriangleIntersectionCost);
     Builder builder;
     builder.build<DefaultWallclockTimer>(
         *this,
