@@ -35,6 +35,7 @@
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/aov/aovcollection.h"
 #include "renderer/modeling/aov/aovimagecollection.h"
+#include "renderer/modeling/aov/aovtilecollection.h"
 #include "renderer/modeling/frame/frame.h"
 
 // appleseed.foundation headers.
@@ -87,7 +88,6 @@ namespace
           , m_sample_renderer(factory->create())
           , m_frame_properties(frame.image().properties())
           , m_lighting_conditions(frame.get_lighting_conditions())
-          , m_aov_images(frame.aov_images())
         {
             // Retrieve frame properties.
             const CanvasProperties& properties = frame.image().properties();
@@ -126,9 +126,6 @@ namespace
             m_pixel_sampler.initialize(m_sqrt_max_samples);
 
             // Precompute some stuff.
-            m_aov_image_count = m_aov_images.size();
-            m_rcp_sample_canvas_width = 1.0 / (properties.m_canvas_width * m_sqrt_max_samples);
-            m_rcp_sample_canvas_height = 1.0 / (properties.m_canvas_height * m_sqrt_max_samples);
             m_rcp_sample_count = 1.0f / (m_sqrt_max_samples * m_sqrt_max_samples);
         }
 
@@ -146,8 +143,10 @@ namespace
             assert(tile_x < m_frame_properties.m_tile_count_x);
             assert(tile_y < m_frame_properties.m_tile_count_y);
 
-            // Access the tile.
+            // Retrieve the tile and tile information.
             Tile& tile = frame.image().tile(tile_x, tile_y);
+            AOVTileCollection aov_tiles(frame.aov_images().tiles(tile_x, tile_y));
+            const size_t aov_count = frame.aov_images().size();
             const size_t tile_width = tile.get_width();
             const size_t tile_height = tile.get_height();
             const size_t tile_origin_x = m_frame_properties.m_tile_width * tile_x;
@@ -167,7 +166,7 @@ namespace
 
                 // Initialize the pixel values.
                 Color4f pixel_color(0.0f);
-                AOVCollection pixel_aovs(m_aov_image_count);
+                AOVCollection pixel_aovs(aov_count);
                 pixel_aovs.set(0.0f);
 
                 // Compute the coordinates of the pixel in the image.
@@ -194,7 +193,7 @@ namespace
 
                 // Store the pixel values.
                 tile.set_pixel(tx, ty, pixel_color);
-                m_aov_images.set_pixel(ix, iy, pixel_aovs);
+                aov_tiles.set_pixel(tx, ty, pixel_aovs);
             }
         }
 
@@ -231,8 +230,6 @@ namespace
 
         const CanvasProperties&             m_frame_properties;
         const LightingConditions&           m_lighting_conditions;
-        const AOVImageCollection&           m_aov_images;
-        size_t                              m_aov_image_count;
 
         vector<Pixel>                       m_pixel_ordering;
         PixelSampler                        m_pixel_sampler;

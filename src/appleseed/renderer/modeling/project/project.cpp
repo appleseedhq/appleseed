@@ -179,7 +179,7 @@ namespace
         }
 
         const size_t aov_image_index = aov_images.size();
-        aov_images.insert(render_layer_name.c_str(), format);
+        aov_images.append(render_layer_name.c_str(), format);
         mapping[render_layer_name] = aov_image_index;
 
         entity.set_render_layer_index(aov_image_index);

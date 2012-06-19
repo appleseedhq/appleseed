@@ -43,7 +43,7 @@ namespace renderer
 {
 
 //
-// This is nothing more than an array of spectra.
+// A small array of spectral values.
 //
 
 class AOVCollection
@@ -103,6 +103,12 @@ inline size_t AOVCollection::size() const
     return m_size;
 }
 
+inline void AOVCollection::set(const float val)
+{
+    for (size_t i = 0; i < m_size; ++i)
+        m_aovs[i].set(val);
+}
+
 inline Spectrum& AOVCollection::operator[](const size_t index)
 {
     assert(index < m_size);
@@ -113,6 +119,42 @@ inline const Spectrum& AOVCollection::operator[](const size_t index) const
 {
     assert(index < m_size);
     return m_aovs[index];
+}
+
+inline AOVCollection& AOVCollection::operator+=(const AOVCollection& rhs)
+{
+    assert(m_size == rhs.m_size);
+
+    for (size_t i = 0; i < m_size; ++i)
+        m_aovs[i] += rhs.m_aovs[i];
+
+    return *this;
+}
+
+inline AOVCollection& AOVCollection::operator*=(const Spectrum& rhs)
+{
+    for (size_t i = 0; i < m_size; ++i)
+        m_aovs[i] *= rhs;
+
+    return *this;
+}
+
+inline AOVCollection& AOVCollection::operator*=(const float rhs)
+{
+    for (size_t i = 0; i < m_size; ++i)
+        m_aovs[i] *= rhs;
+
+    return *this;
+}
+
+inline AOVCollection& AOVCollection::operator/=(const float rhs)
+{
+    const float rcp_rhs = 1.0f / rhs;
+
+    for (size_t i = 0; i < m_size; ++i)
+        m_aovs[i] *= rcp_rhs;
+
+    return *this;
 }
 
 inline void AOVCollection::set(const size_t index, const Spectrum& rhs)

@@ -40,7 +40,7 @@
 
 // Forward declarations.
 namespace foundation    { class Image; }
-namespace renderer      { class AOVCollection; }
+namespace renderer      { class AOVTileCollection; }
 
 namespace renderer
 {
@@ -66,14 +66,13 @@ class DLLSYMBOL AOVImageCollection
 
     void clear();
 
-    void insert(
+    void append(
         const char*                     name,
         const foundation::PixelFormat   format);
 
-    void set_pixel(
-        const size_t                    x,
-        const size_t                    y,
-        const AOVCollection&            aovs) const;
+    AOVTileCollection tiles(
+        const size_t                    tile_x,
+        const size_t                    tile_y) const;
 
   private:
     struct Impl;

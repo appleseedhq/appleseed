@@ -30,11 +30,9 @@
 #include "aovimagecollection.h"
 
 // appleseed.renderer headers.
-#include "renderer/global/globaltypes.h"
-#include "renderer/modeling/aov/aovcollection.h"
+#include "renderer/modeling/aov/aovtilecollection.h"
 
 // appleseed.foundation headers.
-#include "foundation/image/color.h"
 #include "foundation/image/image.h"
 
 // Standard headers.
@@ -50,25 +48,25 @@ namespace renderer
 
 struct AOVImageCollection::Impl
 {
-    size_t              m_canvas_width;
-    size_t              m_canvas_height;
-    size_t              m_tile_width;
-    size_t              m_tile_height;
+    size_t                  m_canvas_width;
+    size_t                  m_canvas_height;
+    size_t                  m_tile_width;
+    size_t                  m_tile_height;
 
     struct NamedImage
     {
-        string          m_name;
-        Image*          m_image;
+        string              m_name;
+        Image*              m_image;
     };
 
-    vector<NamedImage>  m_images;
+    vector<NamedImage>      m_images;
 };
 
 AOVImageCollection::AOVImageCollection(
-    const size_t    canvas_width,
-    const size_t    canvas_height,
-    const size_t    tile_width,
-    const size_t    tile_height)
+    const size_t            canvas_width,
+    const size_t            canvas_height,
+    const size_t            tile_width,
+    const size_t            tile_height)
   : impl(new Impl())
 {
     impl->m_canvas_width = canvas_width;
@@ -108,13 +106,15 @@ const Image& AOVImageCollection::get_image(const size_t index) const
 
 void AOVImageCollection::clear()
 {
-    for (size_t i = 0; i < impl->m_images.size(); ++i)
+    const size_t size = impl->m_images.size();
+
+    for (size_t i = 0; i < size; ++i)
         delete impl->m_images[i].m_image;
 
     impl->m_images.clear();
 }
 
-void AOVImageCollection::insert(
+void AOVImageCollection::append(
     const char*             name,
     const PixelFormat       format)
 {
@@ -133,22 +133,18 @@ void AOVImageCollection::insert(
     impl->m_images.push_back(named_image);
 }
 
-void AOVImageCollection::set_pixel(
-    const size_t            x,
-    const size_t            y,
-    const AOVCollection&    aovs) const
+AOVTileCollection AOVImageCollection::tiles(
+    const size_t            tile_x,
+    const size_t            tile_y) const
 {
-    const size_t size = aovs.size();
+    AOVTileCollection tile_collection;
 
-    assert(size == impl->m_images.size());
+    const size_t size = impl->m_images.size();
 
     for (size_t i = 0; i < size; ++i)
-    {
-        const Spectrum& spectrum = aovs[i];
-        const Color4f linear_rgb(spectrum[0], spectrum[1], spectrum[2], 1.0f);
+        tile_collection.append(&impl->m_images[i].m_image->tile(tile_x, tile_y));
 
-        impl->m_images[i].m_image->set_pixel(x, y, linear_rgb);
-    }
+    return tile_collection;
 }
 
 }   // namespace renderer
