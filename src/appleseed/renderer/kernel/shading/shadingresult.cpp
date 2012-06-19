@@ -62,7 +62,7 @@ namespace
 void ShadingResult::transform_to_linear_rgb(
     const LightingConditions&   lighting)
 {
-    const size_t aov_size = m_aovs.size();
+    const size_t aov_count = m_aovs.size();
 
     switch (m_color_space)
     {
@@ -71,19 +71,19 @@ void ShadingResult::transform_to_linear_rgb(
 
       case ColorSpaceSRGB:
         transform_srgb_to_linear_rgb(m_color);
-        for (size_t i = 0; i < aov_size; ++i)
+        for (size_t i = 0; i < aov_count; ++i)
             transform_srgb_to_linear_rgb(m_aovs[i]);
         break;
 
       case ColorSpaceCIEXYZ:
         transform_ciexyz_to_linear_rgb(m_color);
-        for (size_t i = 0; i < aov_size; ++i)
+        for (size_t i = 0; i < aov_count; ++i)
             transform_ciexyz_to_linear_rgb(m_aovs[i]);
         break;
 
       case ColorSpaceSpectral:
         transform_spectrum_to_linear_rgb(lighting, m_color);
-        for (size_t i = 0; i < aov_size; ++i)
+        for (size_t i = 0; i < aov_count; ++i)
             transform_spectrum_to_linear_rgb(lighting, m_aovs[i]);
         break;
 
@@ -114,25 +114,25 @@ namespace
 void ShadingResult::transform_to_spectrum(
     const LightingConditions&   lighting)
 {
-    const size_t aov_size = m_aovs.size();
+    const size_t aov_count = m_aovs.size();
 
     switch (m_color_space)
     {
       case ColorSpaceLinearRGB:
         transform_linear_rgb_to_spectrum(lighting, m_color);
-        for (size_t i = 0; i < aov_size; ++i)
+        for (size_t i = 0; i < aov_count; ++i)
             transform_linear_rgb_to_spectrum(lighting, m_aovs[i]);
         break;
 
       case ColorSpaceSRGB:
         transform_srgb_to_spectrum(lighting, m_color);
-        for (size_t i = 0; i < aov_size; ++i)
+        for (size_t i = 0; i < aov_count; ++i)
             transform_srgb_to_spectrum(lighting, m_aovs[i]);
         break;
 
       case ColorSpaceCIEXYZ:
         transform_ciexyz_to_spectrum(lighting, m_color);
-        for (size_t i = 0; i < aov_size; ++i)
+        for (size_t i = 0; i < aov_count; ++i)
             transform_ciexyz_to_spectrum(lighting, m_aovs[i]);
         break;
 
@@ -157,7 +157,9 @@ void ShadingResult::composite_over(const ShadingResult& other)
     m_color[1] += color_contrib[0] * other.m_color[1];
     m_color[2] += color_contrib[0] * other.m_color[2];
 
-    for (size_t i = 0; i < m_aovs.size(); ++i)
+    const size_t aov_count = m_aovs.size();
+
+    for (size_t i = 0; i < aov_count; ++i)
     {
         const Spectrum& other_aov_color = other.m_aovs[i];
         Spectrum& aov_color = m_aovs[i];
