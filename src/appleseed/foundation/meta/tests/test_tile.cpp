@@ -28,63 +28,75 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
+#include "foundation/image/pixel.h"
 #include "foundation/image/tile.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"
+
+// Standard headers.
+#include <cstddef>
 
 using namespace foundation;
 
 TEST_SUITE(Foundation_Image_Tile)
 {
     const PixelFormat TilePixelFormat = PixelFormatFloat;
-    const size_t TileWidth = 32;
-    const size_t TileHeight = 32;
+    const size_t TileWidth = 2;
+    const size_t TileHeight = 2;
     const size_t TileChannels = 3;
 
-    struct FixtureTile
+    struct Fixture
     {
-        Tile tile;
+        Tile m_tile;
 
-        FixtureTile()
-          : tile(
-                TileWidth,
-                TileHeight,
-                TileChannels,
-                TilePixelFormat)
+        Fixture()
+          : m_tile(TileWidth, TileHeight, TileChannels, TilePixelFormat)
         {
         }
     };
 
-    TEST_CASE_F(TestProperties, FixtureTile)
+    TEST_CASE_F(TestProperties, Fixture)
     {
-        EXPECT_EQ(TilePixelFormat, tile.get_pixel_format());
-        EXPECT_EQ(TileWidth, tile.get_width());
-        EXPECT_EQ(TileHeight, tile.get_height());
-        EXPECT_EQ(TileChannels, tile.get_channel_count());
-        EXPECT_EQ(TileWidth * TileHeight, tile.get_pixel_count());
+        EXPECT_EQ(TilePixelFormat, m_tile.get_pixel_format());
+        EXPECT_EQ(TileWidth, m_tile.get_width());
+        EXPECT_EQ(TileHeight, m_tile.get_height());
+        EXPECT_EQ(TileChannels, m_tile.get_channel_count());
+        EXPECT_EQ(TileWidth * TileHeight, m_tile.get_pixel_count());
     }
 
-    TEST_CASE_F(TestSetAndGetPixel, FixtureTile)
+    TEST_CASE_F(TestCopyConstructor, Fixture)
     {
-        const Color3f PixelColor(0.3f, 0.5f, 0.7f);
-        tile.set_pixel(7, 9, PixelColor);
+        const Color3f ClearColor(0.2f, 0.4f, 0.6f);
+        m_tile.clear(ClearColor);
+
+        const Tile copy(m_tile);
 
         Color3f c;
-        tile.get_pixel(7, 9, c);
+        copy.get_pixel(TileWidth - 1, TileHeight - 1, c);
+        EXPECT_FEQ(ClearColor, c);
+    }
 
+    TEST_CASE_F(TestSetAndGetPixel, Fixture)
+    {
+        const Color3f PixelColor(0.3f, 0.5f, 0.7f);
+        m_tile.set_pixel(0, 0, PixelColor);
+
+        Color3f c;
+        m_tile.get_pixel(0, 0, c);
         EXPECT_FEQ(PixelColor, c);
     }
 
-    TEST_CASE_F(TestClear, FixtureTile)
+    TEST_CASE_F(TestClear, Fixture)
     {
         const Color3f ClearColor(0.2f, 0.4f, 0.6f);
-        tile.clear(ClearColor);
+        m_tile.clear(ClearColor);
 
-        Color3f c1, c2;
-        tile.get_pixel(0, 0, c1);
-        tile.get_pixel(TileWidth - 1, TileHeight - 1, c2);
-
+        Color3f c1;
+        m_tile.get_pixel(0, 0, c1);
         EXPECT_FEQ(ClearColor, c1);
+
+        Color3f c2;
+        m_tile.get_pixel(TileWidth - 1, TileHeight - 1, c2);
         EXPECT_FEQ(ClearColor, c2);
     }
 }
