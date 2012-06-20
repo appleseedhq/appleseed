@@ -26,12 +26,12 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_AOV_TILESTACK_H
-#define APPLESEED_RENDERER_MODELING_AOV_TILESTACK_H
+#ifndef APPLESEED_RENDERER_KERNEL_AOV_TILESTACK_H
+#define APPLESEED_RENDERER_KERNEL_AOV_TILESTACK_H
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/modeling/aov/spectrumstack.h"
+#include "renderer/kernel/aov/spectrumstack.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
@@ -107,4 +107,4 @@ inline void TileStack::set_pixel(
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_AOV_TILESTACK_H
+#endif  // !APPLESEED_RENDERER_KERNEL_AOV_TILESTACK_H

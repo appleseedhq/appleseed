@@ -30,13 +30,13 @@
 #include "drt.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/aov/spectrumstack.h"
 #include "renderer/kernel/lighting/directlightingintegrator.h"
 #include "renderer/kernel/lighting/imagebasedlighting.h"
 #include "renderer/kernel/lighting/lightsampler.h"
 #include "renderer/kernel/lighting/pathtracer.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/modeling/aov/spectrumstack.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/environment/environment.h"

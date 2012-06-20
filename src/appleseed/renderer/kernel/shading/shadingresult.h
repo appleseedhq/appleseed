@@ -31,7 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
-#include "renderer/modeling/aov/spectrumstack.h"
+#include "renderer/kernel/aov/spectrumstack.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"

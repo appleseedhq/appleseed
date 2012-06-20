@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_AOV_SPECTRUMSTACK_H
-#define APPLESEED_RENDERER_MODELING_AOV_SPECTRUMSTACK_H
+#ifndef APPLESEED_RENDERER_KERNEL_AOV_SPECTRUMSTACK_H
+#define APPLESEED_RENDERER_KERNEL_AOV_SPECTRUMSTACK_H
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -171,4 +171,4 @@ inline void SpectrumStack::add(const size_t index, const Spectrum& rhs)
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_AOV_SPECTRUMSTACK_H
+#endif  // !APPLESEED_RENDERER_KERNEL_AOV_SPECTRUMSTACK_H

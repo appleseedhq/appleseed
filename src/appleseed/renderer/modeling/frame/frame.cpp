@@ -30,7 +30,7 @@
 #include "frame.h"
 
 // appleseed.renderer headers.
-#include "renderer/modeling/aov/imagestack.h"
+#include "renderer/kernel/aov/imagestack.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"

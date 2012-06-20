@@ -30,9 +30,9 @@
 #include "project.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/aov/imagestack.h"
+#include "renderer/kernel/aov/spectrumstack.h"
 #include "renderer/kernel/intersection/tracecontext.h"
-#include "renderer/modeling/aov/imagestack.h"
-#include "renderer/modeling/aov/spectrumstack.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"

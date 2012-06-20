@@ -30,12 +30,12 @@
 #include "generictilerenderer.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/aov/imagestack.h"
+#include "renderer/kernel/aov/spectrumstack.h"
+#include "renderer/kernel/aov/tilestack.h"
 #include "renderer/kernel/rendering/generic/pixelsampler.h"
 #include "renderer/kernel/rendering/isamplerenderer.h"
 #include "renderer/kernel/shading/shadingresult.h"
-#include "renderer/modeling/aov/imagestack.h"
-#include "renderer/modeling/aov/spectrumstack.h"
-#include "renderer/modeling/aov/tilestack.h"
 #include "renderer/modeling/frame/frame.h"
 
 // appleseed.foundation headers.

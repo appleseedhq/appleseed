@@ -741,6 +741,19 @@ source_group ("renderer\\global" FILES
     ${renderer_global_sources}
 )
 
+set (renderer_kernel_aov_sources
+    renderer/kernel/aov/imagestack.cpp
+    renderer/kernel/aov/imagestack.h
+    renderer/kernel/aov/spectrumstack.h
+    renderer/kernel/aov/tilestack.h
+)
+list (APPEND appleseed_sources
+    ${renderer_kernel_aov_sources}
+)
+source_group ("renderer\\kernel\\aov" FILES
+    ${renderer_kernel_aov_sources}
+)
+
 set (renderer_kernel_atomkraft_sources
     renderer/kernel/atomkraft/common.h
     renderer/kernel/atomkraft/ewa.h
@@ -1028,19 +1041,6 @@ list (APPEND appleseed_sources
 )
 source_group ("renderer\\meta\\tests" FILES
     ${renderer_meta_tests_sources}
-)
-
-set (renderer_modeling_aov_sources
-    renderer/modeling/aov/imagestack.cpp
-    renderer/modeling/aov/imagestack.h
-    renderer/modeling/aov/spectrumstack.h
-    renderer/modeling/aov/tilestack.h
-)
-list (APPEND appleseed_sources
-    ${renderer_modeling_aov_sources}
-)
-source_group ("renderer\\modeling\\aov" FILES
-    ${renderer_modeling_aov_sources}
 )
 
 set (renderer_modeling_bsdf_sources
