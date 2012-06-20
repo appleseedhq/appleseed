@@ -33,9 +33,9 @@
 #include "renderer/global/global.h"
 
 // Forward declarations.
-namespace renderer      { class AOVCollection; }
 namespace renderer      { class ShadingContext; }
 namespace renderer      { class ShadingPoint; }
+namespace renderer      { class SpectrumStack; }
 
 namespace renderer
 {
@@ -54,7 +54,7 @@ class RENDERERDLL ILightingEngine
         const ShadingContext&   shading_context,
         const ShadingPoint&     shading_point,
         Spectrum&               radiance,           // output radiance, in W.sr^-1.m^-2
-        AOVCollection&          aovs) = 0;
+        SpectrumStack&          aovs) = 0;
 };
 
 

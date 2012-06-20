@@ -74,7 +74,7 @@ DirectLightingIntegrator::DirectLightingIntegrator(
 void DirectLightingIntegrator::sample_bsdf_and_lights(
     SamplingContext&            sampling_context,
     Spectrum&                   radiance,
-    AOVCollection&              aovs)
+    SpectrumStack&              aovs)
 {
     if (m_bsdf_sample_count + m_light_sample_count == 0)
         take_single_bsdf_or_light_sample(sampling_context, radiance, aovs);
@@ -90,7 +90,7 @@ void DirectLightingIntegrator::sample_bsdf_and_lights(
 void DirectLightingIntegrator::sample_bsdf_and_lights_low_variance(
     SamplingContext&            sampling_context,
     Spectrum&                   radiance,
-    AOVCollection&              aovs)
+    SpectrumStack&              aovs)
 {
     if (m_bsdf_sample_count + m_light_sample_count == 0)
         take_single_bsdf_or_light_sample(sampling_context, radiance, aovs);
@@ -106,7 +106,7 @@ void DirectLightingIntegrator::sample_bsdf_and_lights_low_variance(
 void DirectLightingIntegrator::take_single_bsdf_or_light_sample(
     SamplingContext&            sampling_context,
     Spectrum&                   radiance,
-    AOVCollection&              aovs)
+    SpectrumStack&              aovs)
 {
     radiance.set(0.0f);
     aovs.set(0.0f);
@@ -137,7 +137,7 @@ void DirectLightingIntegrator::add_light_sample_contribution(
     SamplingContext&            sampling_context,
     const LightSample&          sample,
     Spectrum&                   radiance,
-    AOVCollection&              aovs)
+    SpectrumStack&              aovs)
 {
     // Compute the incoming direction in world space.
     Vector3d incoming = sample.m_point - m_point;

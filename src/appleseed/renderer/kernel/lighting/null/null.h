@@ -34,9 +34,9 @@
 #include "renderer/kernel/lighting/ilightingengine.h"
 
 // Forward declarations.
-namespace renderer  { class AOVCollection; }
 namespace renderer  { class ShadingContext; }
 namespace renderer  { class ShadingPoint; }
+namespace renderer  { class SpectrumStack; }
 
 namespace renderer
 {
@@ -61,7 +61,7 @@ class NullLightingEngine
         const ShadingContext&   shading_context,
         const ShadingPoint&     shading_point,
         Spectrum&               radiance,
-        AOVCollection&          aovs)
+        SpectrumStack&          aovs)
     {
         radiance.set(0.0f);
     }

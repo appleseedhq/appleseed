@@ -33,9 +33,9 @@
 #include "renderer/kernel/rendering/generic/pixelsampler.h"
 #include "renderer/kernel/rendering/isamplerenderer.h"
 #include "renderer/kernel/shading/shadingresult.h"
-#include "renderer/modeling/aov/aovcollection.h"
-#include "renderer/modeling/aov/aovimagecollection.h"
-#include "renderer/modeling/aov/aovtilecollection.h"
+#include "renderer/modeling/aov/imagestack.h"
+#include "renderer/modeling/aov/spectrumstack.h"
+#include "renderer/modeling/aov/tilestack.h"
 #include "renderer/modeling/frame/frame.h"
 
 // appleseed.foundation headers.
@@ -145,7 +145,7 @@ namespace
 
             // Retrieve the tile and tile information.
             Tile& tile = frame.image().tile(tile_x, tile_y);
-            AOVTileCollection aov_tiles(frame.aov_images().tiles(tile_x, tile_y));
+            TileStack aov_tiles(frame.aov_images().tiles(tile_x, tile_y));
             const size_t aov_count = frame.aov_images().size();
             const size_t tile_width = tile.get_width();
             const size_t tile_height = tile.get_height();
@@ -166,7 +166,7 @@ namespace
 
                 // Initialize the pixel values.
                 Color4f pixel_color(0.0f);
-                AOVCollection pixel_aovs(aov_count);
+                SpectrumStack pixel_aovs(aov_count);
                 pixel_aovs.set(0.0f);
 
                 // Compute the coordinates of the pixel in the image.
@@ -257,7 +257,7 @@ namespace
             const size_t                ix,
             const size_t                iy,
             Color4f&                    pixel_color,
-            AOVCollection&              pixel_aovs)
+            SpectrumStack&              pixel_aovs)
         {
             const size_t base_sx = ix * m_sqrt_max_samples;
             const size_t base_sy = iy * m_sqrt_max_samples;

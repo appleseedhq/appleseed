@@ -1031,10 +1031,10 @@ source_group ("renderer\\meta\\tests" FILES
 )
 
 set (renderer_modeling_aov_sources
-    renderer/modeling/aov/aovcollection.h
-    renderer/modeling/aov/aovimagecollection.cpp
-    renderer/modeling/aov/aovimagecollection.h
-    renderer/modeling/aov/aovtilecollection.h
+    renderer/modeling/aov/imagestack.cpp
+    renderer/modeling/aov/imagestack.h
+    renderer/modeling/aov/spectrumstack.h
+    renderer/modeling/aov/tilestack.h
 )
 list (APPEND appleseed_sources
     ${renderer_modeling_aov_sources}

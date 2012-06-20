@@ -27,10 +27,10 @@
 //
 
 // Interface header.
-#include "aovimagecollection.h"
+#include "imagestack.h"
 
 // appleseed.renderer headers.
-#include "renderer/modeling/aov/aovtilecollection.h"
+#include "renderer/modeling/aov/tilestack.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/image.h"
@@ -46,7 +46,7 @@ using namespace std;
 namespace renderer
 {
 
-struct AOVImageCollection::Impl
+struct ImageStack::Impl
 {
     size_t                  m_canvas_width;
     size_t                  m_canvas_height;
@@ -62,7 +62,7 @@ struct AOVImageCollection::Impl
     vector<NamedImage>      m_images;
 };
 
-AOVImageCollection::AOVImageCollection(
+ImageStack::ImageStack(
     const size_t            canvas_width,
     const size_t            canvas_height,
     const size_t            tile_width,
@@ -75,36 +75,36 @@ AOVImageCollection::AOVImageCollection(
     impl->m_tile_height = tile_height;
 }
 
-AOVImageCollection::~AOVImageCollection()
+ImageStack::~ImageStack()
 {
     clear();
 
     delete impl;
 }
 
-bool AOVImageCollection::empty() const
+bool ImageStack::empty() const
 {
     return impl->m_images.empty();
 }
 
-size_t AOVImageCollection::size() const
+size_t ImageStack::size() const
 {
     return impl->m_images.size();
 }
 
-const char* AOVImageCollection::get_name(const size_t index) const
+const char* ImageStack::get_name(const size_t index) const
 {
     assert(index < impl->m_images.size());
     return impl->m_images[index].m_name.c_str();
 }
 
-const Image& AOVImageCollection::get_image(const size_t index) const
+const Image& ImageStack::get_image(const size_t index) const
 {
     assert(index < impl->m_images.size());
     return *impl->m_images[index].m_image;
 }
 
-void AOVImageCollection::clear()
+void ImageStack::clear()
 {
     const size_t size = impl->m_images.size();
 
@@ -114,7 +114,7 @@ void AOVImageCollection::clear()
     impl->m_images.clear();
 }
 
-void AOVImageCollection::append(
+void ImageStack::append(
     const char*             name,
     const PixelFormat       format)
 {
@@ -133,18 +133,18 @@ void AOVImageCollection::append(
     impl->m_images.push_back(named_image);
 }
 
-AOVTileCollection AOVImageCollection::tiles(
+TileStack ImageStack::tiles(
     const size_t            tile_x,
     const size_t            tile_y) const
 {
-    AOVTileCollection tile_collection;
+    TileStack tile_stack;
 
     const size_t size = impl->m_images.size();
 
     for (size_t i = 0; i < size; ++i)
-        tile_collection.append(&impl->m_images[i].m_image->tile(tile_x, tile_y));
+        tile_stack.append(&impl->m_images[i].m_image->tile(tile_x, tile_y));
 
-    return tile_collection;
+    return tile_stack;
 }
 
 }   // namespace renderer

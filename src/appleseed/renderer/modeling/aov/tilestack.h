@@ -26,12 +26,12 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_AOV_AOVTILECOLLECTION_H
-#define APPLESEED_RENDERER_MODELING_AOV_AOVTILECOLLECTION_H
+#ifndef APPLESEED_RENDERER_MODELING_AOV_TILESTACK_H
+#define APPLESEED_RENDERER_MODELING_AOV_TILESTACK_H
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/modeling/aov/aovcollection.h"
+#include "renderer/modeling/aov/spectrumstack.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
@@ -45,56 +45,56 @@ namespace renderer
 {
 
 //
-// A small array of image tiles.
+// A small stack of image tiles.
 //
 
-class AOVTileCollection
+class TileStack
 {
   public:
-    static const size_t MaxSize = AOVCollection::MaxSize;
+    static const size_t MaxSize = SpectrumStack::MaxSize;
 
-    AOVTileCollection();
-    AOVTileCollection(const AOVTileCollection& rhs);
+    TileStack();
+    TileStack(const TileStack& rhs);
 
     void append(foundation::Tile* tile);
 
     void set_pixel(
        const size_t             x,
        const size_t             y,
-       const AOVCollection&     aovs) const;
+       const SpectrumStack&     aovs) const;
 
   private:
-    foundation::Tile*   m_tiles[MaxSize];
-    size_t              m_size;
+    foundation::Tile*           m_tiles[MaxSize];
+    size_t                      m_size;
 };
 
 
 //
-// AOVTileCollection class implementation.
+// TileStack class implementation.
 //
 
-inline AOVTileCollection::AOVTileCollection()
+inline TileStack::TileStack()
   : m_size(0)
 {
 }
 
-inline AOVTileCollection::AOVTileCollection(const AOVTileCollection& rhs)
+inline TileStack::TileStack(const TileStack& rhs)
   : m_size(rhs.m_size)
 {
     for (size_t i = 0; i < m_size; ++i)
         m_tiles[i] = rhs.m_tiles[i];
 }
 
-inline void AOVTileCollection::append(foundation::Tile* tile)
+inline void TileStack::append(foundation::Tile* tile)
 {
     assert(m_size < MaxSize);
     m_tiles[m_size++] = tile;
 }
 
-inline void AOVTileCollection::set_pixel(
+inline void TileStack::set_pixel(
     const size_t                x,
     const size_t                y,
-    const AOVCollection&        aovs) const
+    const SpectrumStack&        aovs) const
 {
     for (size_t i = 0; i < m_size; ++i)
     {
@@ -107,4 +107,4 @@ inline void AOVTileCollection::set_pixel(
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_AOV_AOVTILECOLLECTION_H
+#endif  // !APPLESEED_RENDERER_MODELING_AOV_TILESTACK_H

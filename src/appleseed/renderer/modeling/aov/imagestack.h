@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_AOV_AOVIMAGECOLLECTION_H
-#define APPLESEED_RENDERER_MODELING_AOV_AOVIMAGECOLLECTION_H
+#ifndef APPLESEED_RENDERER_MODELING_AOV_IMAGESTACK_H
+#define APPLESEED_RENDERER_MODELING_AOV_IMAGESTACK_H
 
 // appleseed.foundation headers.
 #include "foundation/image/pixel.h"
@@ -40,21 +40,25 @@
 
 // Forward declarations.
 namespace foundation    { class Image; }
-namespace renderer      { class AOVTileCollection; }
+namespace renderer      { class TileStack; }
 
 namespace renderer
 {
 
-class DLLSYMBOL AOVImageCollection
+//
+// A stack of named images.
+//
+
+class DLLSYMBOL ImageStack
 {
   public:
-    AOVImageCollection(
+    ImageStack(
         const size_t                    canvas_width,
         const size_t                    canvas_height,
         const size_t                    tile_width,
         const size_t                    tile_height);
 
-    ~AOVImageCollection();
+    ~ImageStack();
 
     bool empty() const;
 
@@ -70,7 +74,7 @@ class DLLSYMBOL AOVImageCollection
         const char*                     name,
         const foundation::PixelFormat   format);
 
-    AOVTileCollection tiles(
+    TileStack tiles(
         const size_t                    tile_x,
         const size_t                    tile_y) const;
 
@@ -81,4 +85,4 @@ class DLLSYMBOL AOVImageCollection
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_AOV_AOVIMAGECOLLECTION_H
+#endif  // !APPLESEED_RENDERER_MODELING_AOV_IMAGESTACK_H

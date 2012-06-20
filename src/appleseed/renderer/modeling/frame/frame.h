@@ -41,7 +41,7 @@ namespace foundation    { class Image; }
 namespace foundation    { class ImageAttributes; }
 namespace foundation    { class LightingConditions; }
 namespace foundation    { class Tile; }
-namespace renderer      { class AOVImageCollection; }
+namespace renderer      { class ImageStack; }
 
 namespace renderer
 {
@@ -63,7 +63,7 @@ class RENDERERDLL Frame
     foundation::Image& image() const;
 
     // Access the AOV images.
-    AOVImageCollection& aov_images() const;
+    ImageStack& aov_images() const;
 
     // Return the normalized device coordinates of a given sample.
     foundation::Vector2d get_sample_position(

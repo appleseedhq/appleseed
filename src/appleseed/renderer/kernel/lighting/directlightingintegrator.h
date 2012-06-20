@@ -35,7 +35,7 @@
 #include "renderer/kernel/lighting/tracer.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/modeling/aov/aovcollection.h"
+#include "renderer/modeling/aov/spectrumstack.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/input/inputevaluator.h"
@@ -107,7 +107,7 @@ class DirectLightingIntegrator
         SamplingContext&                sampling_context,
         WeightingFunction&              weighting_function,
         Spectrum&                       radiance,
-        AOVCollection&                  aovs);
+        SpectrumStack&                  aovs);
 
     // Evaluate direct lighting by sampling the lights only.
     template <typename WeightingFunction>
@@ -115,7 +115,7 @@ class DirectLightingIntegrator
         SamplingContext&                sampling_context,
         WeightingFunction&              weighting_function,
         Spectrum&                       radiance,
-        AOVCollection&                  aovs);
+        SpectrumStack&                  aovs);
 
     // A low-variance but more expensive variant of sample_lights().
     template <typename WeightingFunction>
@@ -123,19 +123,19 @@ class DirectLightingIntegrator
         SamplingContext&                sampling_context,
         WeightingFunction&              weighting_function,
         Spectrum&                       radiance,
-        AOVCollection&                  aovs);
+        SpectrumStack&                  aovs);
 
     // Evaluate direct lighting by sampling both the BSDF and the lights.
     void sample_bsdf_and_lights(
         SamplingContext&                sampling_context,
         Spectrum&                       radiance,
-        AOVCollection&                  aovs);
+        SpectrumStack&                  aovs);
 
     // A low-variance but more expensive variant of sample_bsdf_and_lights().
     void sample_bsdf_and_lights_low_variance(
         SamplingContext&                sampling_context,
         Spectrum&                       radiance,
-        AOVCollection&                  aovs);
+        SpectrumStack&                  aovs);
 
   private:
     const ShadingContext&               m_shading_context;
@@ -160,21 +160,21 @@ class DirectLightingIntegrator
     void take_single_bsdf_or_light_sample(
         SamplingContext&                sampling_context,
         Spectrum&                       radiance,
-        AOVCollection&                  aovs);
+        SpectrumStack&                  aovs);
 
     template <typename WeightingFunction>
     void take_single_bsdf_sample(
         SamplingContext&                sampling_context,
         WeightingFunction&              weighting_function,
         Spectrum&                       radiance,
-        AOVCollection&                  aovs);
+        SpectrumStack&                  aovs);
 
     template <typename WeightingFunction>
     void take_single_light_sample(
         SamplingContext&                sampling_context,
         WeightingFunction&              weighting_function,
         Spectrum&                       radiance,
-        AOVCollection&                  aovs);
+        SpectrumStack&                  aovs);
 
     template <typename WeightingFunction>
     void add_emitting_triangle_sample_contribution(
@@ -182,13 +182,13 @@ class DirectLightingIntegrator
         const LightSample&              sample,
         WeightingFunction&              weighting_function,
         Spectrum&                       radiance,
-        AOVCollection&                  aovs);
+        SpectrumStack&                  aovs);
 
     void add_light_sample_contribution(
         SamplingContext&                sampling_context,
         const LightSample&              sample,
         Spectrum&                       radiance,
-        AOVCollection&                  aovs);
+        SpectrumStack&                  aovs);
 };
 
 
@@ -262,7 +262,7 @@ void DirectLightingIntegrator::sample_bsdf(
     SamplingContext&                    sampling_context,
     WeightingFunction&                  weighting_function,
     Spectrum&                           radiance,
-    AOVCollection&                      aovs)
+    SpectrumStack&                      aovs)
 {
     radiance.set(0.0f);
     aovs.set(0.0f);
@@ -289,7 +289,7 @@ void DirectLightingIntegrator::sample_lights(
     SamplingContext&                    sampling_context,
     WeightingFunction&                  weighting_function,
     Spectrum&                           radiance,
-    AOVCollection&                      aovs)
+    SpectrumStack&                      aovs)
 {
     radiance.set(0.0f);
     aovs.set(0.0f);
@@ -318,7 +318,7 @@ void DirectLightingIntegrator::sample_lights_low_variance(
     SamplingContext&                    sampling_context,
     WeightingFunction&                  weighting_function,
     Spectrum&                           radiance,
-    AOVCollection&                      aovs)
+    SpectrumStack&                      aovs)
 {
     radiance.set(0.0f);
     aovs.set(0.0f);
@@ -404,7 +404,7 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     SamplingContext&                    sampling_context,
     WeightingFunction&                  weighting_function,
     Spectrum&                           radiance,
-    AOVCollection&                      aovs)
+    SpectrumStack&                      aovs)
 {
     // Sample the BSDF.
     foundation::Vector3d incoming;
@@ -513,7 +513,7 @@ void DirectLightingIntegrator::take_single_light_sample(
     SamplingContext&                    sampling_context,
     WeightingFunction&                  weighting_function,
     Spectrum&                           radiance,
-    AOVCollection&                      aovs)
+    SpectrumStack&                      aovs)
 {
     // todo: if we had a way to know that a BSDF is purely specular, we could
     // immediately return black here since there will be no contribution from
@@ -554,7 +554,7 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     const LightSample&                  sample,
     WeightingFunction&                  weighting_function,
     Spectrum&                           radiance,
-    AOVCollection&                      aovs)
+    SpectrumStack&                      aovs)
 {
     // Compute the incoming direction in world space.
     foundation::Vector3d incoming = sample.m_point - m_point;

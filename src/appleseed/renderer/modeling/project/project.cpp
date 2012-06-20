@@ -31,8 +31,8 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/intersection/tracecontext.h"
-#include "renderer/modeling/aov/aovcollection.h"
-#include "renderer/modeling/aov/aovimagecollection.h"
+#include "renderer/modeling/aov/imagestack.h"
+#include "renderer/modeling/aov/spectrumstack.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
@@ -143,7 +143,7 @@ namespace
     typedef map<string, size_t> RenderLayerMapping;
 
     void assign_entity_to_render_layer(
-        AOVImageCollection&     aov_images,
+        ImageStack&             aov_images,
         RenderLayerMapping&     mapping,
         const PixelFormat       format,
         Entity&                 entity)
@@ -164,16 +164,16 @@ namespace
             return;
         }
 
-        assert(mapping.size() <= AOVCollection::MaxSize);
+        assert(mapping.size() <= SpectrumStack::MaxSize);
 
-        if (mapping.size() == AOVCollection::MaxSize)
+        if (mapping.size() == SpectrumStack::MaxSize)
         {
             RENDERER_LOG_ERROR(
                 "while assigning entity \"%s\" to render layer \"%s\": "
                 "could not create render layer, maximum number of AOVs (" FMT_SIZE_T ") reached.",
                 entity.get_name(),
                 render_layer_name.c_str(),
-                AOVCollection::MaxSize);
+                SpectrumStack::MaxSize);
             entity.set_render_layer_index(~0);
             return;
         }
@@ -187,7 +187,7 @@ namespace
 
     template <typename EntityCollection>
     void assign_entities_to_render_layers(
-        AOVImageCollection&     aov_images,
+        ImageStack&             aov_images,
         RenderLayerMapping&     mapping,
         const PixelFormat       format,
         EntityCollection&       entities)
@@ -197,7 +197,7 @@ namespace
     }
 
     void assign_entities_to_render_layers(
-        AOVImageCollection&     aov_images,
+        ImageStack&             aov_images,
         const PixelFormat       format,
         const Scene&            scene)
     {
@@ -228,7 +228,7 @@ void Project::create_aov_images()
     const PixelFormat format =
         impl->m_frame->image().properties().m_pixel_format;
 
-    AOVImageCollection& aov_images = impl->m_frame->aov_images();
+    ImageStack& aov_images = impl->m_frame->aov_images();
 
     aov_images.clear();
 

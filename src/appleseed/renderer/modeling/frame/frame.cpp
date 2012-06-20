@@ -30,7 +30,7 @@
 #include "frame.h"
 
 // appleseed.renderer headers.
-#include "renderer/modeling/aov/aovimagecollection.h"
+#include "renderer/modeling/aov/imagestack.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
@@ -63,20 +63,20 @@ namespace renderer
 
 struct Frame::Impl
 {
-    size_t                          m_frame_width;
-    size_t                          m_frame_height;
-    size_t                          m_tile_width;
-    size_t                          m_tile_height;
-    PixelFormat                     m_pixel_format;
-    ColorSpace                      m_color_space;
-    bool                            m_clamping;
-    bool                            m_gamma_correct;
-    float                           m_target_gamma;
-    float                           m_rcp_target_gamma;
-    LightingConditions              m_lighting_conditions;
+    size_t                  m_frame_width;
+    size_t                  m_frame_height;
+    size_t                  m_tile_width;
+    size_t                  m_tile_height;
+    PixelFormat             m_pixel_format;
+    ColorSpace              m_color_space;
+    bool                    m_clamping;
+    bool                    m_gamma_correct;
+    float                   m_target_gamma;
+    float                   m_rcp_target_gamma;
+    LightingConditions      m_lighting_conditions;
 
-    auto_ptr<Image>                 m_image;
-    auto_ptr<AOVImageCollection>    m_aov_images;
+    auto_ptr<Image>         m_image;
+    auto_ptr<ImageStack>    m_aov_images;
 
     Impl()
       : m_lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg)
@@ -111,9 +111,9 @@ Frame::Frame(
     // Retrieve the image properties.
     m_props = impl->m_image->properties();
 
-    // Create the AOV image collection.
+    // Create the image stack for AOVs.
     impl->m_aov_images.reset(
-        new AOVImageCollection(
+        new ImageStack(
             impl->m_frame_width,
             impl->m_frame_height,
             impl->m_tile_width,
@@ -135,7 +135,7 @@ Image& Frame::image() const
     return *impl->m_image.get();
 }
 
-AOVImageCollection& Frame::aov_images() const
+ImageStack& Frame::aov_images() const
 {
     return *impl->m_aov_images.get();
 }

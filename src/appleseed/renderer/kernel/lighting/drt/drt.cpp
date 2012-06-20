@@ -36,7 +36,7 @@
 #include "renderer/kernel/lighting/pathtracer.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/modeling/aov/aovcollection.h"
+#include "renderer/modeling/aov/spectrumstack.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/environment/environment.h"
@@ -118,7 +118,7 @@ namespace
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
             Spectrum&               radiance,   // output radiance, in W.sr^-1.m^-2
-            AOVCollection&          aovs)
+            SpectrumStack&          aovs)
         {
             typedef PathTracer<
                 PathVisitor,
@@ -196,7 +196,7 @@ namespace
                 const ShadingContext&   shading_context,
                 const Scene&            scene,
                 Spectrum&               path_radiance,
-                AOVCollection&          path_aovs)
+                SpectrumStack&          path_aovs)
               : m_params(params)
               , m_light_sampler(light_sampler)
               , m_shading_context(shading_context)
@@ -247,7 +247,7 @@ namespace
                     m_params.m_dl_light_sample_count,
                     &shading_point);
                 Spectrum vertex_radiance;
-                AOVCollection vertex_aovs(m_path_aovs.size());
+                SpectrumStack vertex_aovs(m_path_aovs.size());
                 integrator.sample_bsdf_and_lights_low_variance(sampling_context, vertex_radiance, vertex_aovs);
 
                 if (m_env_edf && m_params.m_enable_ibl)
@@ -375,7 +375,7 @@ namespace
             TextureCache&           m_texture_cache;
             const EnvironmentEDF*   m_env_edf;
             Spectrum&               m_path_radiance;
-            AOVCollection&          m_path_aovs;
+            SpectrumStack&          m_path_aovs;
         };
 
         const Parameters        m_params;
