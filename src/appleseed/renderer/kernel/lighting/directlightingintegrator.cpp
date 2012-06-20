@@ -87,6 +87,22 @@ void DirectLightingIntegrator::sample_bsdf_and_lights(
     }
 }
 
+void DirectLightingIntegrator::sample_bsdf_and_lights_low_variance(
+    SamplingContext&            sampling_context,
+    Spectrum&                   radiance,
+    AOVCollection&              aovs)
+{
+    if (m_bsdf_sample_count + m_light_sample_count == 0)
+        take_single_bsdf_or_light_sample(sampling_context, radiance, aovs);
+    else
+    {
+        Spectrum radiance_light_sampling;
+        sample_bsdf(sampling_context, mis_power2, radiance, aovs);
+        sample_lights_low_variance(sampling_context, mis_power2, radiance_light_sampling, aovs);
+        radiance += radiance_light_sampling;
+    }
+}
+
 void DirectLightingIntegrator::take_single_bsdf_or_light_sample(
     SamplingContext&            sampling_context,
     Spectrum&                   radiance,

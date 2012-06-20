@@ -248,7 +248,7 @@ namespace
                     &shading_point);
                 Spectrum vertex_radiance;
                 AOVCollection vertex_aovs(m_path_aovs.size());
-                integrator.sample_bsdf_and_lights(sampling_context, vertex_radiance, vertex_aovs);
+                integrator.sample_bsdf_and_lights_low_variance(sampling_context, vertex_radiance, vertex_aovs);
 
                 if (m_env_edf && m_params.m_enable_ibl)
                 {

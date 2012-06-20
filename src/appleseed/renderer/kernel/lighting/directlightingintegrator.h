@@ -57,36 +57,16 @@ namespace renderer
 //
 // The direct lighting integrator allows to estimate direct lighting at a given point in the scene.
 //
-// Call Graph
-// ----------
+// Note about the methods ending with *_low_variance():
 //
-//   sample_bsdf  -->  take_single_bsdf_sample
+//   The sample_lights() and sample_bsdf_and_lights() methods have "low variance" counterparts
+//   respectively called sample_lights_low_variance() and sample_bsdf_and_lights_low_variance().
+//   These methods treat non-physical light sources (such as point lights) and light-emitting
+//   triangles differently: every light source of the scene is sampled individually, while the
+//   set of light-emitting triangles is sampled as a whole.
 //
-//
-//                                                   .-->  add_emitting_triangle_sample_contribution
-//                                                   |
-//   sample_lights  -->  take_single_light_sample  --+
-//                                                   |
-//                                                   `-->  add_light_sample_contribution
-//
-//
-//                     .-->  add_emitting_triangle_sample_contribution
-//                     |
-//   sample_lights2  --+
-//                     |
-//                     `-->  add_light_sample_contribution
-//
-//
-//                                                                       .-->  take_single_bsdf_sample
-//                                                                       |     (Balance MIS)
-//                             .-->  take_single_bsdf_or_light_sample  --+                                 .-->  add_emitting_triangle_sample_contribution
-//                             |                                         |                                 |     (Balance MIS)
-//                             |                                         `-->  take_single_light_sample  --+
-//                             |                                               (Balance MIS)               |
-//                             |                                                                           `-->  add_light_sample_contribution
-//   sample_bsdf_and_lights  --+-->  sample_bsdf
-//                             |
-//                             `-->  sample_lights
+//   The number of shadow rays cast by these functions may be as high as the number of light
+//   samples passed to the constructor plus the number of non-physical lights in the scene.
 //
 
 class DirectLightingIntegrator
@@ -137,11 +117,7 @@ class DirectLightingIntegrator
         Spectrum&                       radiance,
         AOVCollection&                  aovs);
 
-    // A low-variance variant of sample_lights() that separately samples every
-    // non-physical light sources and the set of light-emitting triangles. The
-    // number of shadow rays cast by this function may be as high as the number
-    // of light samples passed to the constructor plus the number of non-physical
-    // lights in the scene.
+    // A low-variance but more expensive variant of sample_lights().
     template <typename WeightingFunction>
     void sample_lights_low_variance(
         SamplingContext&                sampling_context,
@@ -151,6 +127,12 @@ class DirectLightingIntegrator
 
     // Evaluate direct lighting by sampling both the BSDF and the lights.
     void sample_bsdf_and_lights(
+        SamplingContext&                sampling_context,
+        Spectrum&                       radiance,
+        AOVCollection&                  aovs);
+
+    // A low-variance but more expensive variant of sample_bsdf_and_lights().
+    void sample_bsdf_and_lights_low_variance(
         SamplingContext&                sampling_context,
         Spectrum&                       radiance,
         AOVCollection&                  aovs);
@@ -212,6 +194,49 @@ class DirectLightingIntegrator
 
 //
 // DirectLightingIntegrator class implementation.
+//
+// Call Graph
+// ----------
+//
+//   sample_bsdf  -->  take_single_bsdf_sample
+//
+//
+//                                                   .-->  add_emitting_triangle_sample_contribution
+//                                                   |
+//   sample_lights  -->  take_single_light_sample  --+
+//                                                   |
+//                                                   `-->  add_light_sample_contribution
+//
+//
+//                                 .-->  add_emitting_triangle_sample_contribution
+//                                 |
+//   sample_lights_low_variance  --+
+//                                 |
+//                                 `-->  add_light_sample_contribution
+//
+//
+//                                                                       .-->  take_single_bsdf_sample
+//                                                                       |     (Balance MIS)
+//                             .-->  take_single_bsdf_or_light_sample  --+                                 .-->  add_emitting_triangle_sample_contribution
+//                             |                                         |                                 |     (Balance MIS)
+//                             |                                         `-->  take_single_light_sample  --+
+//                             |                                               (Balance MIS)               |
+//                             |                                                                           `-->  add_light_sample_contribution
+//   sample_bsdf_and_lights  --+-->  sample_bsdf
+//                             |
+//                             `-->  sample_lights
+//
+//
+//                                                                                    .-->  take_single_bsdf_sample
+//                                                                                    |     (Balance MIS)
+//                                          .-->  take_single_bsdf_or_light_sample  --+                                 .-->  add_emitting_triangle_sample_contribution
+//                                          |                                         |                                 |     (Balance MIS)
+//                                          |                                         `-->  take_single_light_sample  --+
+//                                          |                                               (Balance MIS)               |
+//                                          |                                                                           `-->  add_light_sample_contribution
+//   sample_bsdf_and_lights_low_variance  --+-->  sample_bsdf
+//                                          |
+//                                          `-->  sample_lights
 //
 
 inline double DirectLightingIntegrator::mis_balance(
