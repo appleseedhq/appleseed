@@ -18,5 +18,8 @@
     <ClCompile Include="sample.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="half.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
