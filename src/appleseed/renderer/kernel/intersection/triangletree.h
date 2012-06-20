@@ -146,7 +146,8 @@ class TriangleTree
         const std::vector<size_t>&              triangle_indices,
         const std::vector<TriangleVertexInfo>&  triangle_vertex_infos,
         const std::vector<GVector3>&            triangle_vertices,
-        const std::vector<TriangleKey>&         triangle_keys);
+        const std::vector<TriangleKey>&         triangle_keys,
+        foundation::Statistics&                 statistics);
 
     void create_intersection_filters(const Arguments& arguments);
 };

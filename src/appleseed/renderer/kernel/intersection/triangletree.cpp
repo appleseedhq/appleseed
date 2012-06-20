@@ -689,7 +689,8 @@ void TriangleTree::build_bvh(
         partitioner.get_item_ordering(),
         triangle_vertex_infos,
         triangle_vertices,
-        triangle_keys);
+        triangle_keys,
+        statistics);
 }
 
 void TriangleTree::build_sbvh(
@@ -759,14 +760,16 @@ void TriangleTree::build_sbvh(
         partitioner.get_item_ordering(),
         triangle_vertex_infos,
         triangle_vertices,
-        triangle_keys);
+        triangle_keys,
+        statistics);
 }
 
 void TriangleTree::store_triangles(
     const vector<size_t>&               triangle_indices,
     const vector<TriangleVertexInfo>&   triangle_vertex_infos,
     const vector<GVector3>&             triangle_vertices,
-    const vector<TriangleKey>&          triangle_keys)
+    const vector<TriangleKey>&          triangle_keys,
+    Statistics&                         statistics)
 {
     const size_t node_count = m_nodes.size();
 
@@ -860,9 +863,7 @@ void TriangleTree::store_triangles(
         }
     }
 
-    RENDERER_LOG_DEBUG(
-        "fat triangle tree leaves: %s",
-        pretty_percent(fat_leaf_count, leaf_count).c_str());
+    statistics.add_percent("fat_leaves", "fat leaves", fat_leaf_count, leaf_count);
 }
 
 void TriangleTree::create_intersection_filters(const Arguments& arguments)

@@ -128,34 +128,34 @@ void AssemblyTree::rebuild_assembly_tree()
     clear();
     m_assembly_instances.clear();
 
+    Statistics statistics("assembly tree statistics");
+
     // Collect all assembly instances of the scene.
     AABBVector assembly_instance_bboxes;
     collect_assembly_instances(assembly_instance_bboxes);
 
-    // Log a progress message.
     RENDERER_LOG_INFO(
         "building assembly tree (%s %s)...",
         pretty_int(m_assembly_instances.size()).c_str(),
         plural(m_assembly_instances.size(), "assembly instance").c_str());
 
-    // Build the assembly tree.
+    // Create the partitioner.
     typedef bvh::SAHPartitioner<AABBVector> Partitioner;
-    typedef bvh::Builder<AssemblyTree, Partitioner> Builder;
     Partitioner partitioner(
         assembly_instance_bboxes,
         AssemblyTreeMaxLeafSize,
         AssemblyTreeInteriorNodeTraversalCost,
         AssemblyTreeTriangleIntersectionCost);
+
+    // Build the assembly tree.
+    typedef bvh::Builder<AssemblyTree, Partitioner> Builder;
     Builder builder;
-    builder.build<DefaultWallclockTimer>(
-        *this,
-        partitioner,
-        m_assembly_instances.size());
+    builder.build<DefaultWallclockTimer>(*this, partitioner, m_assembly_instances.size());
+    statistics.add_time("build_time", "build time", builder.get_build_time());
 
     if (!m_assembly_instances.empty())
     {
         const vector<size_t>& ordering = partitioner.get_item_ordering();
-
         assert(m_assembly_instances.size() == ordering.size());
 
         // Reorder the assembly instances according to the tree ordering.
@@ -167,12 +167,10 @@ void AssemblyTree::rebuild_assembly_tree()
             ordering.size());
 
         // Store assembly instances in the tree leaves whenever possible.
-        store_assembly_instances_in_leaves();
+        store_assembly_instances_in_leaves(statistics);
     }
 
     // Collect and print assembly tree statistics.
-    Statistics statistics("assembly tree statistics");
-    statistics.add_time("build_time", "build time", builder.get_build_time());
     bvh::TreeStatistics<AssemblyTree> collect_statistics(
         statistics,
         *this,
@@ -180,7 +178,7 @@ void AssemblyTree::rebuild_assembly_tree()
     RENDERER_LOG_DEBUG("%s", statistics.to_string().c_str());
 }
 
-void AssemblyTree::store_assembly_instances_in_leaves()
+void AssemblyTree::store_assembly_instances_in_leaves(Statistics& statistics)
 {
     size_t leaf_count = 0;
     size_t fat_leaf_count = 0;
@@ -210,9 +208,7 @@ void AssemblyTree::store_assembly_instances_in_leaves()
         }
     }
 
-    RENDERER_LOG_DEBUG(
-        "fat assembly tree leaves: %s",
-        pretty_percent(fat_leaf_count, leaf_count).c_str());
+    statistics.add_percent("fat_leaves", "fat leaves", fat_leaf_count, leaf_count);
 }
 
 namespace

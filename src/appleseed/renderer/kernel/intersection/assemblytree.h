@@ -52,8 +52,9 @@
 #include <vector>
 
 // Forward declarations.
-namespace renderer  { class AssemblyInstance; }
-namespace renderer  { class ShadingPoint; }
+namespace foundation    { class Statistics; }
+namespace renderer      { class AssemblyInstance; }
+namespace renderer      { class ShadingPoint; }
 
 namespace renderer
 {
@@ -98,7 +99,7 @@ class AssemblyTree
 
     void collect_assembly_instances(AABBVector& assembly_instance_bboxes);
     void rebuild_assembly_tree();
-    void store_assembly_instances_in_leaves();
+    void store_assembly_instances_in_leaves(foundation::Statistics& statistics);
     void update_child_trees();
 };
 
