@@ -52,11 +52,13 @@
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
 #include "foundation/platform/compiler.h"
+#include "foundation/platform/system.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/settings.h"
+#include "foundation/utility/string.h"
 
 // Qt headers.
 #include <QAction>
@@ -106,7 +108,7 @@ MainWindow::MainWindow(QWidget* parent)
     build_connections();
 
     slot_load_settings();
-    print_library_information();
+    print_startup_information();
 
     update_workspace();
     update_project_explorer();
@@ -322,7 +324,7 @@ void MainWindow::build_connections()
         this, SLOT(slot_camera_changed()));
 }
 
-void MainWindow::print_library_information()
+void MainWindow::print_startup_information()
 {
     RENDERER_LOG_INFO(
         "%s, %s configuration\n"
@@ -333,6 +335,18 @@ void MainWindow::print_library_information()
         Appleseed::get_lib_compilation_time(),
         Compiler::get_compiler_name(),
         Compiler::get_compiler_version());
+
+    RENDERER_LOG_INFO(
+        "system information:\n"
+        "  L1 data cache    size %s, line size %s\n"
+        "  L2 cache         size %s, line size %s\n"
+        "  L3 cache         size %s, line size %s\n",
+        pretty_size(System::get_l1_data_cache_size()).c_str(),
+        pretty_size(System::get_l1_data_cache_line_size()).c_str(),
+        pretty_size(System::get_l2_cache_size()).c_str(),
+        pretty_size(System::get_l2_cache_line_size()).c_str(),
+        pretty_size(System::get_l3_cache_size()).c_str(),
+        pretty_size(System::get_l3_cache_line_size()).c_str());
 }
 
 ParamArray MainWindow::get_project_params(const char* configuration_name) const

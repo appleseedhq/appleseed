@@ -151,7 +151,7 @@ class MainWindow
 
     void build_connections();
 
-    void print_library_information();
+    void print_startup_information();
 
     renderer::ParamArray get_project_params(const char* configuration_name) const;
 
