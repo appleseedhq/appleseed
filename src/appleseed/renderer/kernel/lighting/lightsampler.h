@@ -102,21 +102,30 @@ class LightSampler
     explicit LightSampler(
         const Scene&                    scene);
 
-    // Return true if the scene has at least one light or emitting triangle.
-    bool has_lights() const;
+    // Return the number of lights in the scene.
+    size_t get_light_count() const;
 
-    // Sample the set of emitters.
-    // Return true if one or more samples could be taken, false otherwise.
-    bool sample(
+    // Return the number of emitting triangles in the scene.
+    size_t get_emitting_triangle_count() const;
+
+    // Return true if the scene contains at least one light or emitting triangle.
+    bool has_lights_or_emitting_triangles() const;
+
+    // Sample a single light.
+    void sample_single_light(
+        const size_t                    light_index,
+        const foundation::Vector2d&     s,
+        LightSample&                    sample) const;
+
+    // Sample the set of emitting triangles.
+    void sample_emitting_triangles(
         const foundation::Vector3d&     s,
         LightSample&                    sample) const;
-    bool sample(
-        SamplingContext&                sampling_context,
+
+    // Sample the set of lights and emitting triangles.
+    void sample(
+        const foundation::Vector3d&     s,
         LightSample&                    sample) const;
-    bool sample(
-        SamplingContext&                sampling_context,
-        const size_t                    sample_count,
-        LightSample                     samples[]) const;
 
     // Compute the probability density in area measure of a given light sample.
     double evaluate_pdf(const ShadingPoint& result) const;
@@ -124,16 +133,17 @@ class LightSampler
   private:
     typedef std::vector<const Light*> LightVector;
     typedef std::vector<EmittingTriangle> EmittingTriangleVector;
-    typedef foundation::CDF<size_t, double> LightCDF;
+    typedef foundation::CDF<size_t, double> EmitterCDF;
 
-    LightVector                 m_lights;
-    size_t                      m_light_count;
+    LightVector                         m_lights;
+    size_t                              m_light_count;
 
-    EmittingTriangleVector      m_emitting_triangles;
-    double                      m_total_emissive_area;
-    double                      m_rcp_total_emissive_area;
+    EmittingTriangleVector              m_emitting_triangles;
+    double                              m_total_emissive_area;
+    double                              m_rcp_total_emissive_area;
 
-    LightCDF                    m_light_cdf;
+    EmitterCDF                          m_emitter_cdf;
+    EmitterCDF                          m_emitting_triangle_cdf;
 
     // Collect all lights from a given scene.
     void collect_lights(const Scene& scene);
@@ -148,11 +158,6 @@ class LightSampler
     void collect_emitting_triangles(
         const AssemblyInstance&         assembly_instance,
         const Assembly&                 assembly);
-
-    // Sample the set of emitters.
-    void sample_emitters(
-        const foundation::Vector3d&     s,
-        LightSample&                    sample) const;
 
     // Sample a given light.
     void sample_light(
@@ -174,9 +179,19 @@ class LightSampler
 // LightSampler class implementation.
 //
 
-inline bool LightSampler::has_lights() const
+inline size_t LightSampler::get_light_count() const
 {
-    return m_light_cdf.valid();
+    return m_light_count;
+}
+
+inline size_t LightSampler::get_emitting_triangle_count() const
+{
+    return m_emitting_triangles.size();
+}
+
+inline bool LightSampler::has_lights_or_emitting_triangles() const
+{
+    return m_emitter_cdf.valid();
 }
 
 inline double LightSampler::evaluate_pdf(const ShadingPoint& /*result*/) const

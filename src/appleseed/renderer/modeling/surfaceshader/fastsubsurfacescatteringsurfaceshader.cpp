@@ -130,17 +130,27 @@ namespace
             const ShadingPoint&     shading_point,
             ShadingResult&          shading_result) const override
         {
-            // Evaluate the inputs.
+            // Initialize the shading result to opaque black.
+            shading_result.m_color_space = ColorSpaceSpectral;
+            shading_result.m_color.set(0.0f);
+            shading_result.m_alpha.set(1.0f);
+
+            // Return black if there is no light in the scene.
+            if (!m_light_sampler->has_lights_or_emitting_triangles())
+                return;
+
+            // Evaluate the shader inputs.
             InputValues values;
             m_inputs.evaluate(
                 shading_context.get_texture_cache(),
                 shading_point.get_uv(0),
                 &values);
-            
-            // Retrieve intersection point and shading normal.
+
+            // Retrieve the intersection point, the shading normal and the camera direction.
             const Vector3d& point = shading_point.get_point();
             const Vector3d& shading_normal = shading_point.get_shading_normal();
             const Vector3d inv_shading_normal = -shading_normal;
+            const Vector3d camera_vec = normalize(-shading_point.get_ray().m_dir);                                          // toward camera
 
             // todo: there are possible correlation artifacts since the sampling_context
             // object is forked twice from there: once to compute the average occluder
@@ -162,21 +172,13 @@ namespace
             const double K = 2.99573227;                                                                                    // -ln(0.05)
             const double sss_contrib = exp(-(avg_distance / values.m_scale) * K);
 
-            // Initialize the shading result to opaque black.
-            shading_result.m_color_space = ColorSpaceSpectral;
-            shading_result.m_color.set(0.0f);
-            shading_result.m_alpha.set(1.0f);
-
-            const Vector3d camera_vec = normalize(-shading_point.get_ray().m_dir);                                          // toward camera
-
             sampling_context.split_in_place(3, m_light_samples);
 
             for (size_t i = 0; i < m_light_samples; ++i)
             {
                 // Sample the light sources.
                 LightSample light_sample;
-                if (!m_light_sampler->sample(sampling_context.next_vector2<3>(), light_sample))
-                    break;
+                m_light_sampler->sample(sampling_context.next_vector2<3>(), light_sample);
 
                 // Compute the contribution of this light sample.
                 const Vector3d light_vec = normalize(light_sample.m_point - point);                                         // toward light

@@ -1,0 +1,614 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2010-2012 Francois Beaune, Jupiter Jazz Limited
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_DIRECTLIGHTINGINTEGRATOR_H
+#define APPLESEED_RENDERER_KERNEL_LIGHTING_DIRECTLIGHTINGINTEGRATOR_H
+
+// appleseed.renderer headers.
+#include "renderer/global/globaltypes.h"
+#include "renderer/kernel/lighting/lightsampler.h"
+#include "renderer/kernel/lighting/tracer.h"
+#include "renderer/kernel/shading/shadingcontext.h"
+#include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/modeling/aov/aovcollection.h"
+#include "renderer/modeling/bsdf/bsdf.h"
+#include "renderer/modeling/edf/edf.h"
+#include "renderer/modeling/input/inputevaluator.h"
+#include "renderer/modeling/material/material.h"
+
+// appleseed.foundation headers.
+#include "foundation/math/basis.h"
+#include "foundation/math/mis.h"
+#include "foundation/math/vector.h"
+
+// Standard headers.
+#include <cassert>
+#include <cmath>
+#include <cstddef>
+
+namespace renderer
+{
+
+//
+// The direct lighting integrator allows to estimate direct lighting at a given point in the scene.
+//
+// Call Graph
+// ----------
+//
+//   sample_bsdf  -->  take_single_bsdf_sample
+//
+//
+//                                                   .-->  add_emitting_triangle_sample_contribution
+//                                                   |
+//   sample_lights  -->  take_single_light_sample  --+
+//                                                   |
+//                                                   `-->  add_light_sample_contribution
+//
+//
+//                     .-->  add_emitting_triangle_sample_contribution
+//                     |
+//   sample_lights2  --+
+//                     |
+//                     `-->  add_light_sample_contribution
+//
+//
+//                                                                       .-->  take_single_bsdf_sample
+//                                                                       |     (Balance MIS)
+//                             .-->  take_single_bsdf_or_light_sample  --+                                 .-->  add_emitting_triangle_sample_contribution
+//                             |                                         |                                 |     (Balance MIS)
+//                             |                                         `-->  take_single_light_sample  --+
+//                             |                                               (Balance MIS)               |
+//                             |                                                                           `-->  add_light_sample_contribution
+//   sample_bsdf_and_lights  --+-->  sample_bsdf
+//                             |
+//                             `-->  sample_lights
+//
+
+class DirectLightingIntegrator
+{
+  public:
+    // Balance MIS weighting function.
+    static double mis_balance(
+        const size_t    n1,
+        const size_t    n2,
+        const double    q1,
+        const double    q2);
+
+    // Power-2 MIS weighting function.
+    static double mis_power2(
+        const size_t    n1,
+        const size_t    n2,
+        const double    q1,
+        const double    q2);
+
+    // Constructor.
+    DirectLightingIntegrator(
+        const ShadingContext&           shading_context,
+        const LightSampler&             light_sampler,
+        const foundation::Vector3d&     point,              // world space point
+        const foundation::Vector3d&     geometric_normal,   // world space geometric normal, unit-length
+        const foundation::Basis3d&      shading_basis,      // world space orthonormal basis around shading normal
+        const double                    time,
+        const foundation::Vector3d&     outgoing,           // world space outgoing direction, unit-length
+        const BSDF&                     bsdf,
+        const void*                     bsdf_data,
+        const size_t                    bsdf_sample_count,
+        const size_t                    light_sample_count,
+        const ShadingPoint*             parent_shading_point = 0);
+
+    // Evaluate direct lighting by sampling the BSDF only.
+    template <typename WeightingFunction>
+    void sample_bsdf(
+        SamplingContext&                sampling_context,
+        WeightingFunction&              weighting_function,
+        Spectrum&                       radiance,
+        AOVCollection&                  aovs);
+
+    // Evaluate direct lighting by sampling the lights only.
+    template <typename WeightingFunction>
+    void sample_lights(
+        SamplingContext&                sampling_context,
+        WeightingFunction&              weighting_function,
+        Spectrum&                       radiance,
+        AOVCollection&                  aovs);
+
+    // A low-variance variant of sample_lights() that separately samples every
+    // non-physical light sources and the set of light-emitting triangles. The
+    // number of shadow rays cast by this function may be as high as the number
+    // of light samples passed to the constructor plus the number of non-physical
+    // lights in the scene.
+    template <typename WeightingFunction>
+    void sample_lights_low_variance(
+        SamplingContext&                sampling_context,
+        WeightingFunction&              weighting_function,
+        Spectrum&                       radiance,
+        AOVCollection&                  aovs);
+
+    // Evaluate direct lighting by sampling both the BSDF and the lights.
+    void sample_bsdf_and_lights(
+        SamplingContext&                sampling_context,
+        Spectrum&                       radiance,
+        AOVCollection&                  aovs);
+
+  private:
+    const ShadingContext&               m_shading_context;
+    const LightSampler&                 m_light_sampler;
+    const foundation::Vector3d&         m_point;
+    const foundation::Vector3d&         m_geometric_normal;
+    const foundation::Basis3d&          m_shading_basis;
+    const double                        m_time;
+    const foundation::Vector3d&         m_outgoing;
+    const BSDF&                         m_bsdf;
+    const void*                         m_bsdf_data;
+    const size_t                        m_bsdf_sample_count;
+    const size_t                        m_light_sample_count;
+    const ShadingPoint*                 m_parent_shading_point;
+    Tracer                              m_tracer;
+
+    bool check_visibility(
+        SamplingContext&                sampling_context,
+        const LightSample&              sample,
+        double&                         transmission);
+
+    void take_single_bsdf_or_light_sample(
+        SamplingContext&                sampling_context,
+        Spectrum&                       radiance,
+        AOVCollection&                  aovs);
+
+    template <typename WeightingFunction>
+    void take_single_bsdf_sample(
+        SamplingContext&                sampling_context,
+        WeightingFunction&              weighting_function,
+        Spectrum&                       radiance,
+        AOVCollection&                  aovs);
+
+    template <typename WeightingFunction>
+    void take_single_light_sample(
+        SamplingContext&                sampling_context,
+        WeightingFunction&              weighting_function,
+        Spectrum&                       radiance,
+        AOVCollection&                  aovs);
+
+    template <typename WeightingFunction>
+    void add_emitting_triangle_sample_contribution(
+        SamplingContext&                sampling_context,
+        const LightSample&              sample,
+        WeightingFunction&              weighting_function,
+        Spectrum&                       radiance,
+        AOVCollection&                  aovs);
+
+    void add_light_sample_contribution(
+        SamplingContext&                sampling_context,
+        const LightSample&              sample,
+        Spectrum&                       radiance,
+        AOVCollection&                  aovs);
+};
+
+
+//
+// DirectLightingIntegrator class implementation.
+//
+
+inline double DirectLightingIntegrator::mis_balance(
+    const size_t                        n1,
+    const size_t                        n2,
+    const double                        q1,
+    const double                        q2)
+{
+    return q1 / (0.5 * (q1 + q2));
+}
+
+inline double DirectLightingIntegrator::mis_power2(
+    const size_t                        n1,
+    const size_t                        n2,
+    const double                        q1,
+    const double                        q2)
+{
+    return foundation::mis_power2(n1 * q1, n2 * q2);
+}
+
+template <typename WeightingFunction>
+void DirectLightingIntegrator::sample_bsdf(
+    SamplingContext&                    sampling_context,
+    WeightingFunction&                  weighting_function,
+    Spectrum&                           radiance,
+    AOVCollection&                      aovs)
+{
+    radiance.set(0.0f);
+    aovs.set(0.0f);
+
+    for (size_t i = 0; i < m_bsdf_sample_count; ++i)
+    {
+        take_single_bsdf_sample(
+            sampling_context,
+            weighting_function,
+            radiance,
+            aovs);
+    }
+
+    if (m_bsdf_sample_count > 1)
+    {
+        const float rcp_bsdf_sample_count = 1.0f / m_bsdf_sample_count;
+        radiance *= rcp_bsdf_sample_count;
+        aovs *= rcp_bsdf_sample_count;
+    }
+}
+
+template <typename WeightingFunction>
+void DirectLightingIntegrator::sample_lights(
+    SamplingContext&                    sampling_context,
+    WeightingFunction&                  weighting_function,
+    Spectrum&                           radiance,
+    AOVCollection&                      aovs)
+{
+    radiance.set(0.0f);
+    aovs.set(0.0f);
+
+    sampling_context.split_in_place(3, m_light_sample_count);
+
+    for (size_t i = 0; i < m_light_sample_count; ++i)
+    {
+        take_single_light_sample(
+            sampling_context,
+            weighting_function,
+            radiance,
+            aovs);
+    }
+
+    if (m_light_sample_count > 1)
+    {
+        const float rcp_light_sample_count = 1.0f / m_light_sample_count;
+        radiance *= rcp_light_sample_count;
+        aovs *= rcp_light_sample_count;
+    }
+}
+
+template <typename WeightingFunction>
+void DirectLightingIntegrator::sample_lights_low_variance(
+    SamplingContext&                    sampling_context,
+    WeightingFunction&                  weighting_function,
+    Spectrum&                           radiance,
+    AOVCollection&                      aovs)
+{
+    radiance.set(0.0f);
+    aovs.set(0.0f);
+
+    // todo: if we had a way to know that a BSDF is purely specular, we could
+    // immediately return black here since there will be no contribution from
+    // such a BSDF.
+
+    if (!m_light_sampler.has_lights_or_emitting_triangles())
+        return;
+
+    // Sample emitting triangles.
+    if (m_light_sampler.get_emitting_triangle_count() > 0)
+    {
+        sampling_context.split_in_place(3, m_light_sample_count);
+
+        for (size_t i = 0; i < m_light_sample_count; ++i)
+        {
+            const foundation::Vector3d s = sampling_context.next_vector2<3>();
+
+            LightSample sample;
+            m_light_sampler.sample_emitting_triangles(s, sample);
+
+            SamplingContext child_sampling_context(sampling_context);
+            add_emitting_triangle_sample_contribution(
+                child_sampling_context,
+                sample,
+                weighting_function,
+                radiance,
+                aovs);
+        }
+
+        if (m_light_sample_count > 1)
+        {
+            const float rcp_light_sample_count = 1.0f / m_light_sample_count;
+            radiance *= rcp_light_sample_count;
+            aovs *= rcp_light_sample_count;
+        }
+    }
+
+    // Sample light sources.
+    const size_t light_count = m_light_sampler.get_light_count();
+    if (light_count > 0)
+    {
+        sampling_context.split_in_place(2, light_count);
+
+        for (size_t i = 0; i < light_count; ++i)
+        {
+            const foundation::Vector2d s = sampling_context.next_vector2<2>();
+
+            LightSample sample;
+            m_light_sampler.sample_single_light(i, s, sample);
+
+            SamplingContext child_sampling_context(sampling_context);
+            add_light_sample_contribution(
+                child_sampling_context,
+                sample,
+                radiance,
+                aovs);
+        }
+    }
+}
+
+inline bool DirectLightingIntegrator::check_visibility(
+    SamplingContext&                    sampling_context,
+    const LightSample&                  sample,
+    double&                             transmission)
+{
+    const ShadingPoint& shading_point =
+        m_tracer.trace_between(
+            sampling_context,
+            m_point,
+            sample.m_point,
+            m_time,
+            transmission,
+            m_parent_shading_point);
+
+    return !shading_point.hit();
+}
+
+template <typename WeightingFunction>
+void DirectLightingIntegrator::take_single_bsdf_sample(
+    SamplingContext&                    sampling_context,
+    WeightingFunction&                  weighting_function,
+    Spectrum&                           radiance,
+    AOVCollection&                      aovs)
+{
+    // Sample the BSDF.
+    foundation::Vector3d incoming;
+    Spectrum bsdf_value;
+    double bsdf_prob;
+    BSDF::Mode bsdf_mode;
+    m_bsdf.sample(
+        sampling_context,
+        m_bsdf_data,
+        false,                          // not adjoint
+        true,                           // multiply by |cos(incoming, normal)|
+        m_geometric_normal,
+        m_shading_basis,
+        m_outgoing,
+        incoming,
+        bsdf_value,
+        bsdf_prob,
+        bsdf_mode);
+
+    // Ignore glossy/specular components: they must be handled by the parent.
+    // See Physically Based Rendering vol. 1 page 732.
+    if (bsdf_mode != BSDF::Diffuse)
+        return;
+
+    // Since we're limiting ourselves to the diffuse case, the BSDF should not be a Dirac delta.
+    assert(bsdf_prob != BSDF::DiracDelta);
+
+    // Trace a ray in the direction of the reflection.
+    double weight;
+    const ShadingPoint& light_shading_point =
+        m_tracer.trace(
+            sampling_context,
+            m_point,
+            incoming,
+            m_time,
+            weight,
+            m_parent_shading_point);
+
+    // todo: wouldn't it be more efficient to look the environment up at this point?
+    if (!light_shading_point.hit())
+        return;
+
+    // Retrieve the material at the intersection point.
+    const Material* material = light_shading_point.get_material();
+    if (material == 0)
+        return;
+
+    // Retrieve the EDF at the intersection point.
+    const EDF* edf = material->get_edf();
+    if (edf == 0)
+        return;
+
+    // Cull the samples on the back side of the lights' shading surface.
+    const double cos_on = foundation::dot(-incoming, light_shading_point.get_shading_normal());
+    if (cos_on <= 0.0)
+        return;
+
+    // Evaluate the input values of the EDF.
+    InputEvaluator edf_input_evaluator(m_shading_context.get_texture_cache());
+    const void* edf_data =
+        edf_input_evaluator.evaluate(
+            edf->get_inputs(),
+            light_shading_point.get_uv(0));
+
+    // Evaluate emitted radiance.
+    Spectrum edf_value;
+    double edf_prob;
+    edf->evaluate(
+        edf_data,
+        light_shading_point.get_geometric_normal(),
+        light_shading_point.get_shading_basis(),
+        -incoming,
+        edf_value,
+        edf_prob);
+    if (edf_prob == 0.0)
+        return;
+
+    const double square_distance = foundation::square(light_shading_point.get_distance());
+
+    if (square_distance > 0.0)
+    {
+        // Transform bsdf_prob to surface area measure (Veach: 8.2.2.2 eq. 8.10).
+        const double bsdf_point_prob = bsdf_prob * cos_on / square_distance;
+
+        // Compute the probability density wrt. surface area mesure of the light sample.
+        const double light_point_prob = m_light_sampler.evaluate_pdf(light_shading_point);
+
+        // Apply the weighting function.
+        weight *=
+            weighting_function(
+                m_bsdf_sample_count,
+                m_light_sample_count,
+                bsdf_point_prob,
+                light_point_prob);
+    }
+
+    // Add the contribution of this sample to the illumination.
+    edf_value *= static_cast<float>(weight / bsdf_prob);
+    edf_value *= bsdf_value;
+    radiance += edf_value;
+    aovs.add(edf->get_render_layer_index(), radiance);
+}
+
+template <typename WeightingFunction>
+void DirectLightingIntegrator::take_single_light_sample(
+    SamplingContext&                    sampling_context,
+    WeightingFunction&                  weighting_function,
+    Spectrum&                           radiance,
+    AOVCollection&                      aovs)
+{
+    // todo: if we had a way to know that a BSDF is purely specular, we could
+    // immediately return black here since there will be no contribution from
+    // such a BSDF.
+
+    if (!m_light_sampler.has_lights_or_emitting_triangles())
+        return;
+
+    const foundation::Vector3d s = sampling_context.next_vector2<3>();
+
+    LightSample sample;
+    m_light_sampler.sample(s, sample);
+
+    SamplingContext child_sampling_context(sampling_context);
+
+    if (sample.m_triangle)
+    {
+        add_emitting_triangle_sample_contribution(
+            child_sampling_context,
+            sample,
+            weighting_function,
+            radiance,
+            aovs);
+    }
+    else
+    {
+        add_light_sample_contribution(
+            child_sampling_context,
+            sample,
+            radiance,
+            aovs);
+    }
+}
+
+template <typename WeightingFunction>
+void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
+    SamplingContext&                    sampling_context,
+    const LightSample&                  sample,
+    WeightingFunction&                  weighting_function,
+    Spectrum&                           radiance,
+    AOVCollection&                      aovs)
+{
+    // Compute the incoming direction in world space.
+    foundation::Vector3d incoming = sample.m_point - m_point;
+
+    // Cull light samples behind the shading surface.
+    double cos_in = foundation::dot(incoming, m_shading_basis.get_normal());
+    if (m_bsdf.get_type() == BSDF::Transmissive)
+        cos_in = -cos_in;
+    if (cos_in <= 0.0)
+        return;
+
+    // Cull samples on lights emitting in the wrong direction.
+    double cos_on = foundation::dot(-incoming, sample.m_shading_normal);
+    if (cos_on <= 0.0)
+        return;
+
+    // Compute the transmission factor between the light sample and the shading point.
+    double transmission;
+    if (!check_visibility(sampling_context, sample, transmission))
+        return;
+
+    // Compute the square distance between the light sample and the shading point.
+    const double rcp_sample_square_distance = 1.0 / foundation::square_norm(incoming);
+    const double rcp_sample_distance = std::sqrt(rcp_sample_square_distance);
+
+    // Normalize the incoming direction.
+    incoming *= rcp_sample_distance;
+    cos_in *= rcp_sample_distance;
+    cos_on *= rcp_sample_distance;
+
+    // Evaluate the BSDF.
+    Spectrum bsdf_value;
+    const double bsdf_prob =
+        m_bsdf.evaluate(
+            m_bsdf_data,
+            false,                      // not adjoint
+            true,                       // multiply by |cos(incoming, normal)|
+            m_geometric_normal,
+            m_shading_basis,
+            m_outgoing,
+            incoming,
+            bsdf_value);
+    if (bsdf_prob == 0.0)
+        return;
+
+    const EDF* edf = sample.m_triangle->m_edf;
+
+    // Evaluate the input values of the EDF.
+    InputEvaluator edf_input_evaluator(m_shading_context.get_texture_cache());
+    const void* edf_data = edf_input_evaluator.evaluate(edf->get_inputs(), sample.m_bary);
+
+    // Evaluate the EDF.
+    Spectrum edf_value;
+    edf->evaluate(
+        edf_data,
+        sample.m_geometric_normal,
+        foundation::Basis3d(sample.m_shading_normal),
+        -incoming,
+        edf_value);
+
+    // Transform bsdf_prob to surface area measure (Veach: 8.2.2.2 eq. 8.10).
+    const double bsdf_point_prob = bsdf_prob * cos_on * rcp_sample_square_distance;
+
+    // Evaluate the weighting function.
+    const double mis_weight =
+        weighting_function(
+            m_light_sample_count,
+            m_bsdf_sample_count,
+            sample.m_probability,
+            bsdf_point_prob);
+
+    // Add the contribution of this sample to the illumination.
+    const double weight = mis_weight * transmission * cos_on * rcp_sample_square_distance / sample.m_probability;
+    edf_value *= static_cast<float>(weight);
+    edf_value *= bsdf_value;
+    radiance += edf_value;
+    aovs.add(edf->get_render_layer_index(), radiance);
+}
+
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_DIRECTLIGHTINGINTEGRATOR_H

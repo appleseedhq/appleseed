@@ -92,9 +92,7 @@ namespace
 }
 
 LightSampler::LightSampler(const Scene& scene)
-  : m_light_count(0)
-  , m_total_emissive_area(0.0)
-  , m_rcp_total_emissive_area(0.0)
+  : m_total_emissive_area(0.0)
 {
     RENDERER_LOG_INFO("collecting light emitters...");
 
@@ -106,9 +104,11 @@ LightSampler::LightSampler(const Scene& scene)
     m_light_count = m_lights.size();
     m_rcp_total_emissive_area = 1.0 / m_total_emissive_area;
 
-    // Prepare the CDF for sampling.
-    if (m_light_cdf.valid())
-        m_light_cdf.prepare();
+    // Prepare the CDFs for sampling.
+    if (m_emitter_cdf.valid())
+        m_emitter_cdf.prepare();
+    if (m_emitting_triangle_cdf.valid())
+        m_emitting_triangle_cdf.prepare();
 
     RENDERER_LOG_INFO(
         "found %s %s, %s emitting %s.",
@@ -141,7 +141,7 @@ void LightSampler::collect_lights(const AssemblyInstance& assembly_instance)
         const double importance = 1.0;
 
         // Insert the light into the CDF.
-        m_light_cdf.insert(light_index, importance);
+        m_emitter_cdf.insert(light_index, importance);
     }
 }
 
@@ -287,11 +287,12 @@ void LightSampler::collect_emitting_triangles(
                     emitting_triangle.m_edf = material->get_edf();
 
                     // Store the light-emitting triangle.
-                    const size_t emitting_triangle_index = m_lights.size() + m_emitting_triangles.size();
+                    const size_t emitting_triangle_index = m_emitting_triangles.size();
                     m_emitting_triangles.push_back(emitting_triangle);
 
-                    // Insert the light-emitting triangle into the CDF.
-                    m_light_cdf.insert(emitting_triangle_index, area);
+                    // Insert the light-emitting triangle into the CDFs.
+                    m_emitter_cdf.insert(emitting_triangle_index + m_lights.size(), area);
+                    m_emitting_triangle_cdf.insert(emitting_triangle_index, area);
 
                     // Keep track of the total area of the light-emitting triangles.
                     m_total_emissive_area += area;
@@ -301,61 +302,50 @@ void LightSampler::collect_emitting_triangles(
     }
 }
 
-bool LightSampler::sample(
+void LightSampler::sample_single_light(
+    const size_t            light_index,
+    const Vector2d&         s,
+    LightSample&            sample) const
+{
+    sample.m_triangle = 0;
+    sample_light(s, light_index, 1.0, sample);
+
+    assert(sample.m_light);
+    assert(sample.m_probability == 1.0);
+}
+
+void LightSampler::sample_emitting_triangles(
     const Vector3d&         s,
     LightSample&            sample) const
 {
-    // No light source in the scene.
-    if (!m_light_cdf.valid())
-        return false;
+    assert(m_emitting_triangle_cdf.valid());
 
-    sample_emitters(s, sample);
-
-    return true;
-}
-
-bool LightSampler::sample(
-    SamplingContext&        sampling_context,
-    LightSample&            sample) const
-{
-    // No light source in the scene.
-    if (!m_light_cdf.valid())
-        return false;
-
-    sampling_context.split_in_place(3, 1);
-
-    sample_emitters(sampling_context.next_vector2<3>(), sample);
-
-    return true;
-}
-
-bool LightSampler::sample(
-    SamplingContext&        sampling_context,
-    const size_t            sample_count,
-    LightSample             samples[]) const
-{
-    // No light source in the scene.
-    if (!m_light_cdf.valid())
-        return false;
-
-    sampling_context.split_in_place(3, sample_count);
-
-    for (size_t i = 0; i < sample_count; ++i)
-        sample_emitters(sampling_context.next_vector2<3>(), samples[i]);
-
-    return true;
-}
-
-void LightSampler::sample_emitters(
-    const Vector3d&         s,
-    LightSample&            sample) const
-{
-    // Sample the set of emitters (lights and emitting triangles).
-    const LightCDF::ItemWeightPair result = m_light_cdf.sample(s[0]);
+    const EmitterCDF::ItemWeightPair result = m_emitting_triangle_cdf.sample(s[0]);
     const size_t emitter_index = result.first;
     const double emitter_prob = result.second;
 
-    // Generate one sample on the chosen emitter.
+    sample.m_light = 0;
+    sample_emitting_triangle(
+        Vector2d(s[1], s[2]),
+        emitter_index,
+        emitter_prob,
+        sample);
+
+    assert(sample.m_triangle);
+    assert(sample.m_triangle->m_edf);
+    assert(sample.m_probability > 0.0);
+}
+
+void LightSampler::sample(
+    const Vector3d&         s,
+    LightSample&            sample) const
+{
+    assert(m_emitter_cdf.valid());
+
+    const EmitterCDF::ItemWeightPair result = m_emitter_cdf.sample(s[0]);
+    const size_t emitter_index = result.first;
+    const double emitter_prob = result.second;
+
     if (emitter_index < m_light_count)
     {
         sample.m_triangle = 0;
@@ -375,8 +365,8 @@ void LightSampler::sample_emitters(
             sample);
     }
 
-    assert(sample.m_triangle != 0 || sample.m_light != 0);
-    assert(sample.m_triangle == 0 || sample.m_triangle->m_edf != 0);
+    assert(sample.m_triangle || sample.m_light);
+    assert(sample.m_triangle == 0 || sample.m_triangle->m_edf);
     assert(sample.m_probability > 0.0);
 }
 

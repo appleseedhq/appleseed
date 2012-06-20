@@ -30,7 +30,7 @@
 #include "drt.h"
 
 // appleseed.renderer headers.
-#include "renderer/kernel/lighting/directlighting.h"
+#include "renderer/kernel/lighting/directlightingintegrator.h"
 #include "renderer/kernel/lighting/imagebasedlighting.h"
 #include "renderer/kernel/lighting/lightsampler.h"
 #include "renderer/kernel/lighting/pathtracer.h"

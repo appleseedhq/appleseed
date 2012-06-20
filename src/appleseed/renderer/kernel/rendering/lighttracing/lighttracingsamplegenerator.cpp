@@ -474,7 +474,7 @@ namespace
 
             size_t stored_sample_count = 0;
 
-            if (m_light_sampler.has_lights())
+            if (m_light_sampler.has_lights_or_emitting_triangles())
                 stored_sample_count += generate_light_sample(sampling_context, samples);
 
             if (m_env_edf)
@@ -492,9 +492,7 @@ namespace
             // Sample the light sources.
             sampling_context.split_in_place(3, 1);
             LightSample light_sample;
-            const bool got_sample =
-                m_light_sampler.sample(sampling_context.next_vector2<3>(), light_sample);
-            assert(got_sample);
+            m_light_sampler.sample(sampling_context.next_vector2<3>(), light_sample);
 
             return
                 light_sample.m_triangle

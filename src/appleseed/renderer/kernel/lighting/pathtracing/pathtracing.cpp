@@ -30,7 +30,7 @@
 #include "pathtracing.h"
 
 // appleseed.renderer headers.
-#include "renderer/kernel/lighting/directlighting.h"
+#include "renderer/kernel/lighting/directlightingintegrator.h"
 #include "renderer/kernel/lighting/imagebasedlighting.h"
 #include "renderer/kernel/lighting/lightsampler.h"
 #include "renderer/kernel/lighting/pathtracer.h"
@@ -264,7 +264,11 @@ namespace
                         &shading_point);
                     Spectrum vertex_radiance;
                     AOVCollection vertex_aovs(m_path_aovs.size());
-                    integrator.sample_lights(sampling_context, vertex_radiance, vertex_aovs);
+                    integrator.sample_lights_low_variance(
+                        sampling_context,
+                        DirectLightingIntegrator::mis_power2,
+                        vertex_radiance,
+                        vertex_aovs);
 
                     if (m_env_edf && m_params.m_enable_ibl)
                     {

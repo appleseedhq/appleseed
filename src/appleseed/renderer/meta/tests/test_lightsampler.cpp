@@ -31,7 +31,6 @@
 #include "renderer/modeling/scene/scene.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/rng.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/test.h"
 
@@ -40,18 +39,11 @@ using namespace renderer;
 
 TEST_SUITE(Renderer_Kernel_Lighting_LightSampler)
 {
-    TEST_CASE(Sample_GivenSceneWithoutLights_ReturnsFalse)
+    TEST_CASE(HasLightsOrEmittingTriangles_GivenEmptyScene_ReturnsFalse)
     {
         auto_release_ptr<Scene> scene(SceneFactory::create());
         LightSampler light_sampler(scene.ref());
 
-        MersenneTwister rng;
-        SamplingContext sampling_context(rng);
-
-        LightSample samples[1];
-        const bool successful =
-            light_sampler.sample(sampling_context, 1, samples);
-
-        EXPECT_FALSE(successful);
+        EXPECT_FALSE(light_sampler.has_lights_or_emitting_triangles());
     }
 }
