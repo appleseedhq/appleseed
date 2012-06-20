@@ -94,6 +94,8 @@ set (Boost_USE_STATIC_LIBS TRUE)
 
 find_package (Boost 1.46 REQUIRED date_time filesystem regex system thread)
 
+add_definitions (-DBOOST_FILESYSTEM_VERSION=3 -DBOOST_FILESYSTEM_NO_DEPRECATED)
+
 include_directories (${Boost_INCLUDE_DIRS})
 link_directories (${Boost_LIBRARY_DIRS})
 
