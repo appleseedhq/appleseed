@@ -71,12 +71,12 @@ TEST_SUITE(Boost_Path)
 
     TEST_CASE(Native_GivenPathWithSlashes)
     {
-        const wstring s = filesystem::path("dir/file.txt").native();
+        const filesystem::path::string_type s = filesystem::path("dir/file.txt").native();
     }
 
     TEST_CASE(Native_GivenPathWithBackSlashes)
     {
-        const wstring s = filesystem::path("dir\\file.txt").native();
+        const filesystem::path::string_type s = filesystem::path("dir\\file.txt").native();
     }
 
     TEST_CASE(GenericString_GivenPathWithSlashes)
