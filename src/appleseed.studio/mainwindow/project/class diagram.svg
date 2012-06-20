@@ -1,2226 +1,601 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="5919.0811"
-   height="2647.1978"
-   viewBox="-94132 -43386 3331.8807 1488.0555"
-   id="svg3875"
-   version="1.1"
-   inkscape:version="0.48.0 r9654"
-   sodipodi:docname="class diagram.svg">
-  <metadata
-     id="metadata4771">
-    <rdf:RDF>
-      <cc:Work
-         rdf:about="">
-        <dc:format>image/svg+xml</dc:format>
-        <dc:type
-           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-      </cc:Work>
-    </rdf:RDF>
-  </metadata>
-  <defs
-     id="defs4769" />
-  <sodipodi:namedview
-     pagecolor="#ffffff"
-     bordercolor="#666666"
-     borderopacity="1"
-     objecttolerance="10"
-     gridtolerance="10"
-     guidetolerance="10"
-     inkscape:pageopacity="1"
-     inkscape:pageshadow="2"
-     inkscape:window-width="1920"
-     inkscape:window-height="1150"
-     id="namedview4767"
-     showgrid="false"
-     fit-margin-top="40"
-     fit-margin-left="40"
-     fit-margin-bottom="40"
-     fit-margin-right="40"
-     inkscape:zoom="0.087232325"
-     inkscape:cx="2959.8206"
-     inkscape:cy="1331.4933"
-     inkscape:window-x="-8"
-     inkscape:window-y="-8"
-     inkscape:window-maximized="1"
-     inkscape:current-layer="svg3875" />
-  <g
-     id="g3877"
-     transform="translate(20.598018,12.607531)">
-    <rect
-       style="fill:#f8eecd"
-       x="-93217.703"
-       y="-42257.398"
-       width="207.55"
-       height="38"
-       id="rect3879" />
-    <rect
-       style="fill:none;stroke:#000000;stroke-width:1"
-       x="-93217.703"
-       y="-42257.398"
-       width="207.55"
-       height="38"
-       id="rect3881" />
-    <text
-       style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif"
-       x="-93114"
-       y="-42233.602"
-       id="text3883">
-      <tspan
-         x="-93114"
-         y="-42233.602"
-         id="tspan3885">EntityItem&lt;Entity, ParentEntity&gt;</tspan>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/PR-SVG-20010719/DTD/svg10.dtd">
+<svg width="127cm" height="73cm" viewBox="-93589 -43373 2540 1443" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <g>
+    <rect style="fill: #f8eecd" x="-93217.8" y="-42257.4" width="207.55" height="38"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="-93217.8" y="-42257.4" width="207.55" height="38"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="-93114" y="-42233.6">
+      <tspan x="-93114" y="-42233.6">EntityItem&lt;Entity, ParentEntity&gt;</tspan>
     </text>
   </g>
-  <g
-     id="g3887"
-     transform="translate(20.598018,12.607531)">
-    <rect
-       style="fill:#ffffff"
-       x="-92608.102"
-       y="-42383.398"
-       width="122.6"
-       height="38"
-       id="rect3889" />
-    <rect
-       style="fill:none;stroke:#000000;stroke-width:1"
-       x="-92608.102"
-       y="-42383.398"
-       width="122.6"
-       height="38"
-       id="rect3891" />
-    <text
-       style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif"
-       x="-92546.797"
-       y="-42359.602"
-       id="text3893">
-      <tspan
-         x="-92546.797"
-         y="-42359.602"
-         id="tspan3895">EntityCreatorBase</tspan>
+  <g>
+    <rect style="fill: #ffffff" x="-92608.2" y="-42383.4" width="122.6" height="38"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="-92608.2" y="-42383.4" width="122.6" height="38"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="-92546.9" y="-42359.6">
+      <tspan x="-92546.9" y="-42359.6">EntityCreatorBase</tspan>
     </text>
   </g>
-  <g
-     id="g3897"
-     transform="translate(20.598018,12.607531)">
-    <line
-       style="fill:none;stroke:#000000;stroke-width:1"
-       x1="-93710.602"
-       y1="-42878.602"
-       x2="-93710.602"
-       y2="-42801.398"
-       id="line3899" />
-    <polygon
-       style="fill:#000000"
-       points="-93705.6,-42803.9 -93710.6,-42793.9 -93715.6,-42803.9 -93710.6,-42801.4 "
-       id="polygon3901" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:1"
-       points="-93705.6,-42803.9 -93710.6,-42793.9 -93715.6,-42803.9 -93710.6,-42801.4 "
-       id="polygon3903" />
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="-92969.4" y1="-42878.6" x2="-92969.5" y2="-42801.4"/>
+    <polygon style="fill: #000000" points="-92969.5,-42793.9 -92974.5,-42803.9 -92969.5,-42801.4 -92964.5,-42803.9 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-92969.5,-42793.9 -92974.5,-42803.9 -92969.5,-42801.4 -92964.5,-42803.9 "/>
   </g>
-  <text
-     style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:sanserif"
-     x="-93690"
-     y="-42761.191"
-     id="text3905">
-    <tspan
-       x="-93690"
-       y="-42761.191"
-       id="tspan3907" />
+  <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="-92969.5" y="-42773.8">
+    <tspan x="-92969.5" y="-42773.8"></tspan>
   </text>
-  <text
-     style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:sanserif"
-     x="-93093.398"
-     y="-42225.789"
-     id="text3909">
-    <tspan
-       x="-93093.398"
-       y="-42225.789"
-       id="tspan3911" />
+  <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="-93114" y="-42238.4">
+    <tspan x="-93114" y="-42238.4"></tspan>
   </text>
-  <g
-     id="g3913"
-     transform="translate(20.598018,12.607531)">
-    <rect
-       style="fill:#f8eecd"
-       x="-93519.102"
-       y="-42116.199"
-       width="324.64999"
-       height="38"
-       id="rect3915" />
-    <rect
-       style="fill:none;stroke:#000000;stroke-width:1"
-       x="-93519.102"
-       y="-42116.199"
-       width="324.64999"
-       height="38"
-       id="rect3917" />
-    <text
-       style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif"
-       x="-93356.797"
-       y="-42092.398"
-       id="text3919">
-      <tspan
-         x="-93356.797"
-         y="-42092.398"
-         id="tspan3921">SingleModelEntityItem&lt;Entity, ParentEntity, Factory&gt;</tspan>
+  <g>
+    <rect style="fill: #f8eecd" x="-93569.4" y="-42116.2" width="324.65" height="38"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="-93569.4" y="-42116.2" width="324.65" height="38"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="-93407.1" y="-42092.4">
+      <tspan x="-93407.1" y="-42092.4">SingleModelEntityItem&lt;Entity, ParentEntity, Factory&gt;</tspan>
     </text>
   </g>
-  <g
-     id="g3923"
-     transform="translate(20.598018,12.607531)">
-    <rect
-       style="fill:#f8eecd"
-       x="-93017.703"
-       y="-42116.199"
-       width="268.35001"
-       height="38"
-       id="rect3925" />
-    <rect
-       style="fill:none;stroke:#000000;stroke-width:1"
-       x="-93017.703"
-       y="-42116.199"
-       width="268.35001"
-       height="38"
-       id="rect3927" />
-    <text
-       style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif"
-       x="-92883.602"
-       y="-42092.398"
-       id="text3929">
-      <tspan
-         x="-92883.602"
-         y="-42092.398"
-         id="tspan3931">MultiModelEntityItem&lt;Entity, ParentEntity&gt;</tspan>
+  <g>
+    <rect style="fill: #f8eecd" x="-92967.6" y="-42116.2" width="268.35" height="38"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="-92967.6" y="-42116.2" width="268.35" height="38"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="-92833.4" y="-42092.4">
+      <tspan x="-92833.4" y="-42092.4">MultiModelEntityItem&lt;Entity, ParentEntity&gt;</tspan>
     </text>
   </g>
-  <text
-     style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:sanserif"
-     x="-93336.195"
-     y="-42084.59"
-     id="text3933">
-    <tspan
-       x="-93336.195"
-       y="-42084.59"
-       id="tspan3935" />
+  <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="-93407.1" y="-42097.2">
+    <tspan x="-93407.1" y="-42097.2"></tspan>
   </text>
-  <text
-     style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:sanserif"
-     x="-92863"
-     y="-42084.59"
-     id="text3937">
-    <tspan
-       x="-92863"
-       y="-42084.59"
-       id="tspan3939" />
+  <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="-92833.4" y="-42097.2">
+    <tspan x="-92833.4" y="-42097.2"></tspan>
   </text>
-  <g
-     id="g3941"
-     transform="translate(20.598018,12.607531)">
-    <path
-       style="fill:none;stroke:#000000;stroke-width:1"
-       d="m -92539.6,-43168 c -85.2,113.1 -1170,26.9 -1170.9,242.8"
-       id="path3943"
-       inkscape:connector-curvature="0" />
-    <polygon
-       style="fill:#000000"
-       points="-93705.5,-42927.7 -93710.6,-42917.7 -93715.5,-42927.7 -93710.5,-42925.2 "
-       id="polygon3945" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:1"
-       points="-93705.5,-42927.7 -93710.6,-42917.7 -93715.5,-42927.7 -93710.5,-42925.2 "
-       id="polygon3947" />
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -92539.6 -43168 C -92624.8,-43055 -92968.4,-43141 -92969.4,-42925.2"/>
+    <polygon style="fill: #000000" points="-92969.4,-42917.7 -92974.4,-42927.7 -92969.4,-42925.2 -92964.4,-42927.7 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-92969.4,-42917.7 -92974.4,-42927.7 -92969.4,-42925.2 -92964.4,-42927.7 "/>
   </g>
-  <g
-     id="g3949"
-     transform="translate(20.598018,12.607531)">
-    <path
-       style="fill:none;stroke:#000000;stroke-width:1"
-       d="m -92546.8,-42345.4 c 1.2,82.2 -363.6,106.8 -454.8,107"
-       id="path3951"
-       inkscape:connector-curvature="0" />
-    <polygon
-       style="fill:#000000"
-       points="-92999.1,-42233.4 -93009.1,-42238.4 -92999.1,-42243.4 -93001.6,-42238.4 "
-       id="polygon3953" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:1"
-       points="-92999.1,-42233.4 -93009.1,-42238.4 -92999.1,-42243.4 -93001.6,-42238.4 "
-       id="polygon3955" />
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -92546.8 -42345.4 C -92545.6,-42263.2 -92910.4,-42238.6 -93001.6,-42238.4"/>
+    <polygon style="fill: #000000" points="-93009.1,-42238.4 -92999.1,-42243.4 -93001.6,-42238.4 -92999.1,-42233.4 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-93009.1,-42238.4 -92999.1,-42243.4 -93001.6,-42238.4 -92999.1,-42233.4 "/>
   </g>
-  <g
-     id="g3957"
-     transform="translate(20.598018,12.607531)">
-    <path
-       style="fill:none;stroke:#000000;stroke-width:1"
-       d="m -93114,-42219.4 c -0.2,59 -241,36.6 -242.6,94.6"
-       id="path3959"
-       inkscape:connector-curvature="0" />
-    <polygon
-       style="fill:#000000"
-       points="-93351.5,-42127.2 -93356.8,-42117.3 -93361.5,-42127.4 -93356.6,-42124.8 "
-       id="polygon3961" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:1"
-       points="-93351.5,-42127.2 -93356.8,-42117.3 -93361.5,-42127.4 -93356.6,-42124.8 "
-       id="polygon3963" />
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -93114 -42219.4 C -93114.2,-42160.4 -93405.3,-42182.8 -93406.9,-42124.8"/>
+    <polygon style="fill: #000000" points="-93407.1,-42117.3 -93411.8,-42127.4 -93406.9,-42124.8 -93401.8,-42127.2 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-93407.1,-42117.3 -93411.8,-42127.4 -93406.9,-42124.8 -93401.8,-42127.2 "/>
   </g>
-  <g
-     id="g3965"
-     transform="translate(20.598018,12.607531)">
-    <path
-       style="fill:none;stroke:#000000;stroke-width:1"
-       d="m -93114,-42219.4 c 0.8,65 229.2,33.6 230.3,94.6"
-       id="path3967"
-       inkscape:connector-curvature="0" />
-    <polygon
-       style="fill:#000000"
-       points="-92878.8,-42127.4 -92883.6,-42117.3 -92888.8,-42127.2 -92883.7,-42124.8 "
-       id="polygon3969" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:1"
-       points="-92878.8,-42127.4 -92883.6,-42117.3 -92888.8,-42127.2 -92883.7,-42124.8 "
-       id="polygon3971" />
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -93114 -42219.4 C -93113.2,-42154.4 -92834.6,-42185.8 -92833.5,-42124.8"/>
+    <polygon style="fill: #000000" points="-92833.4,-42117.3 -92838.6,-42127.2 -92833.5,-42124.8 -92828.6,-42127.4 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-92833.4,-42117.3 -92838.6,-42127.2 -92833.5,-42124.8 -92828.6,-42127.4 "/>
   </g>
-  <text
-     style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:sanserif"
-     x="-91767.602"
-     y="-42225.789"
-     id="text3973">
-    <tspan
-       x="-91767.602"
-       y="-42225.789"
-       id="tspan3975" />
+  <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="-91788.2" y="-42238.4">
+    <tspan x="-91788.2" y="-42238.4"></tspan>
   </text>
-  <g
-     id="g3977"
-     transform="translate(20.598018,12.607531)">
-    <path
-       style="fill:none;stroke:#000000;stroke-width:1"
-       d="m -92546.8,-42345.4 c 3.4,72.6 538.2,108.6 634.5,107.1"
-       id="path3979"
-       inkscape:connector-curvature="0" />
-    <polygon
-       style="fill:#000000"
-       points="-91914.8,-42243.2 -91904.8,-42238.4 -91914.7,-42233.2 -91912.3,-42238.3 "
-       id="polygon3981" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:1"
-       points="-91914.8,-42243.2 -91904.8,-42238.4 -91914.7,-42233.2 -91912.3,-42238.3 "
-       id="polygon3983" />
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -92546.8 -42345.4 C -92543.4,-42272.8 -92008.6,-42236.8 -91912.2,-42238.3"/>
+    <polygon style="fill: #000000" points="-91904.7,-42238.4 -91914.6,-42233.2 -91912.2,-42238.3 -91914.8,-42243.2 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-91904.7,-42238.4 -91914.6,-42233.2 -91912.2,-42238.3 -91914.8,-42243.2 "/>
   </g>
-  <g
-     id="g3985"
-     transform="translate(20.598018,12.607531)">
-    <path
-       style="fill:none;stroke:#000000;stroke-width:1"
-       d="m -93710.6,-42754.8 c 27.6,57.5 121.8,130.5 155.9,158.8"
-       id="path3987"
-       inkscape:connector-curvature="0" />
-    <polygon
-       style="fill:#000000"
-       points="-93553.4,-42601.4 -93549,-42591.2 -93559.8,-42593.7 -93554.7,-42596 "
-       id="polygon3989" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:1"
-       points="-93553.4,-42601.4 -93549,-42591.2 -93559.8,-42593.7 -93554.7,-42596 "
-       id="polygon3991" />
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -92969.5 -42754.8 C -92983.2,-42694.7 -92994.1,-42628.1 -93005.9,-42598.4"/>
+    <polygon style="fill: #000000" points="-93008.7,-42591.4 -93009.6,-42602.6 -93005.9,-42598.4 -93000.4,-42598.9 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-93008.7,-42591.4 -93009.6,-42602.6 -93005.9,-42598.4 -93000.4,-42598.9 "/>
   </g>
-  <g
-     id="g3993"
-     transform="translate(20.598018,12.607531)">
-    <path
-       style="fill:none;stroke:#000000;stroke-width:1"
-       d="m -93710.6,-42754.8 c -30.2,52.4 -114.3,130.5 -141.5,158.2"
-       id="path3995"
-       inkscape:connector-curvature="0" />
-    <polygon
-       style="fill:#000000"
-       points="-93846.8,-42594.9 -93857.4,-42591.3 -93854,-42601.9 -93852.1,-42596.6 "
-       id="polygon3997" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:1"
-       points="-93846.8,-42594.9 -93857.4,-42591.3 -93854,-42601.9 -93852.1,-42596.6 "
-       id="polygon3999" />
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -92969.5 -42754.8 C -92959.6,-42707.9 -92929.4,-42644.7 -92909.8,-42598.3"/>
+    <polygon style="fill: #000000" points="-92906.9,-42591.4 -92915.4,-42598.7 -92909.8,-42598.3 -92906.2,-42602.6 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-92906.9,-42591.4 -92915.4,-42598.7 -92909.8,-42598.3 -92906.2,-42602.6 "/>
   </g>
-  <g
-     id="g4001"
-     transform="translate(20.598018,12.607531)">
-    <path
-       style="fill:none;stroke:#000000;stroke-width:1"
-       d="m -92883.6,-42078.2 c -43,41 -212.8,81.2 -257.8,108.7"
-       id="path4003"
-       inkscape:connector-curvature="0" />
-    <polygon
-       style="fill:#000000"
-       points="-93136.7,-41966.5 -93147.8,-41965.6 -93141.9,-41975.1 -93141.4,-41969.5 "
-       id="polygon4005" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:1"
-       points="-93136.7,-41966.5 -93147.8,-41965.6 -93141.9,-41975.1 -93141.4,-41969.5 "
-       id="polygon4007" />
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -92833.4 -42078.2 C -92876.4,-42037.2 -93076.3,-41995.6 -93121.4,-41968.1"/>
+    <polygon style="fill: #000000" points="-93127.8,-41964.2 -93121.8,-41973.6 -93121.4,-41968.1 -93116.6,-41965.1 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-93127.8,-41964.2 -93121.8,-41973.6 -93121.4,-41968.1 -93116.6,-41965.1 "/>
   </g>
-  <g
-     id="g4009"
-     transform="translate(20.598018,12.607531)">
-    <path
-       style="fill:none;stroke:#000000;stroke-width:1"
-       d="m -92883.6,-42078.2 c -18.6,46.6 -80.8,82.2 -105.6,107.1"
-       id="path4011"
-       inkscape:connector-curvature="0" />
-    <polygon
-       style="fill:#000000"
-       points="-92983.8,-41969.4 -92994.4,-41965.8 -92990.9,-41976.4 -92989.2,-41971.1 "
-       id="polygon4013" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:1"
-       points="-92983.8,-41969.4 -92994.4,-41965.8 -92990.9,-41976.4 -92989.2,-41971.1 "
-       id="polygon4015" />
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -92833.4 -42078.2 C -92852,-42031.6 -92944.5,-41994.6 -92969.2,-41969.7"/>
+    <polygon style="fill: #000000" points="-92974.5,-41964.4 -92971,-41975 -92969.2,-41969.7 -92963.9,-41967.9 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-92974.5,-41964.4 -92971,-41975 -92969.2,-41969.7 -92963.9,-41967.9 "/>
   </g>
-  <g
-     id="g4017"
-     transform="translate(20.598018,12.607531)">
-    <path
-       style="fill:none;stroke:#000000;stroke-width:1"
-       d="m -92883.6,-42078.2 c 54.6,46.4 215.2,79.4 290.6,110"
-       id="path4019"
-       inkscape:connector-curvature="0" />
-    <polygon
-       style="fill:#000000"
-       points="-92593.4,-41973.8 -92586,-41965.4 -92597.2,-41964.5 -92593,-41968.2 "
-       id="polygon4021" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:1"
-       points="-92593.4,-41973.8 -92586,-41965.4 -92597.2,-41964.5 -92593,-41968.2 "
-       id="polygon4023" />
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -92833.4 -42078.2 C -92778.8,-42031.8 -92648.5,-41997.4 -92573.1,-41966.8"/>
+    <polygon style="fill: #000000" points="-92566.2,-41964 -92577.3,-41963.1 -92573.1,-41966.8 -92573.6,-41972.4 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-92566.2,-41964 -92577.3,-41963.1 -92573.1,-41966.8 -92573.6,-41972.4 "/>
   </g>
-  <g
-     id="g4025"
-     transform="translate(20.598018,12.607531)">
-    <path
-       style="fill:none;stroke:#000000;stroke-width:1"
-       d="m -92883.6,-42078.2 c -2.6,45.6 -10.6,74.6 -16.6,104.7"
-       id="path4027"
-       inkscape:connector-curvature="0" />
-    <polygon
-       style="fill:#000000"
-       points="-92894.8,-41974.9 -92901.6,-41966.1 -92904.6,-41976.9 -92900.2,-41973.5 "
-       id="polygon4029" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:1"
-       points="-92894.8,-41974.9 -92901.6,-41966.1 -92904.6,-41976.9 -92900.2,-41973.5 "
-       id="polygon4031" />
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -92833.4 -42078.2 C -92836,-42032.6 -92874.3,-42002.2 -92880.3,-41972"/>
+    <polygon style="fill: #000000" points="-92881.7,-41964.7 -92884.7,-41975.5 -92880.3,-41972 -92874.9,-41973.5 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-92881.7,-41964.7 -92884.7,-41975.5 -92880.3,-41972 -92874.9,-41973.5 "/>
   </g>
-  <g
-     id="g4033"
-     transform="translate(20.598018,12.607531)">
-    <path
-       style="fill:none;stroke:#000000;stroke-width:1"
-       d="m -91251.7,-42754.8 c -84,58.4 -199,129.9 -265.6,160.7"
-       id="path4035"
-       inkscape:connector-curvature="0" />
-    <polygon
-       style="fill:#000000"
-       points="-91513,-42590.6 -91524.1,-42590.9 -91517.2,-42599.7 -91517.3,-42594.1 "
-       id="polygon4037" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:1"
-       points="-91513,-42590.6 -91524.1,-42590.9 -91517.2,-42599.7 -91517.3,-42594.1 "
-       id="polygon4039" />
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -92075.7 -42754.8 C -92159.7,-42696.4 -92274.7,-42624.8 -92341.3,-42594"/>
+    <polygon style="fill: #000000" points="-92348.1,-42590.9 -92341.1,-42599.6 -92341.3,-42594 -92336.9,-42590.5 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-92348.1,-42590.9 -92341.1,-42599.6 -92341.3,-42594 -92336.9,-42590.5 "/>
   </g>
-  <g
-     id="g4041"
-     transform="translate(20.598018,12.607531)">
-    <path
-       style="fill:none;stroke:#000000;stroke-width:1"
-       d="m -91477.7,-42078.2 c -95.6,31.4 -236.5,88.6 -325.6,111.1"
-       id="path4043"
-       inkscape:connector-curvature="0" />
-    <polygon
-       style="fill:#000000"
-       points="-91799.6,-41962.9 -91810.6,-41965.3 -91802.1,-41972.6 -91803.3,-41967.1 "
-       id="polygon4045" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:1"
-       points="-91799.6,-41962.9 -91810.6,-41965.3 -91802.1,-41972.6 -91803.3,-41967.1 "
-       id="polygon4047" />
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -91477.8 -42078.2 C -91573.4,-42046.8 -91714.2,-41988.2 -91803.2,-41965.7"/>
+    <polygon style="fill: #000000" points="-91810.5,-41963.9 -91802,-41971.2 -91803.2,-41965.7 -91799.6,-41961.5 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-91810.5,-41963.9 -91802,-41971.2 -91803.2,-41965.7 -91799.6,-41961.5 "/>
   </g>
-  <g
-     id="g4049"
-     transform="translate(20.598018,12.607531)">
-    <path
-       style="fill:none;stroke:#000000;stroke-width:1"
-       d="m -91251.7,-42754.8 c 25,53.6 112.2,132.9 139.5,158.4"
-       id="path4051"
-       inkscape:connector-curvature="0" />
-    <polygon
-       style="fill:#000000"
-       points="-91110.7,-42601.7 -91106.8,-42591.2 -91117.5,-42594.4 -91112.2,-42596.4 "
-       id="polygon4053" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:1"
-       points="-91110.7,-42601.7 -91106.8,-42591.2 -91117.5,-42594.4 -91112.2,-42596.4 "
-       id="polygon4055" />
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -92075.7 -42754.8 C -92050.7,-42701.2 -91963.5,-42621.8 -91936.2,-42596.3"/>
+    <polygon style="fill: #000000" points="-91930.7,-42591.2 -91941.4,-42594.3 -91936.2,-42596.3 -91934.6,-42601.6 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-91930.7,-42591.2 -91941.4,-42594.3 -91936.2,-42596.3 -91934.6,-42601.6 "/>
   </g>
-  <g
-     id="g4057"
-     transform="translate(20.598018,12.607531)">
-    <path
-       style="fill:none;stroke:#000000;stroke-width:1"
-       d="m -91477.7,-42078.2 c 94.4,51.4 273.4,87.8 351.6,110.8"
-       id="path4059"
-       inkscape:connector-curvature="0" />
-    <polygon
-       style="fill:#000000"
-       points="-91127.1,-41972.9 -91118.9,-41965.3 -91129.9,-41963.3 -91126.1,-41967.4 "
-       id="polygon4061" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:1"
-       points="-91127.1,-41972.9 -91118.9,-41965.3 -91129.9,-41963.3 -91126.1,-41967.4 "
-       id="polygon4063" />
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -91477.8 -42078.2 C -91383.4,-42026.8 -91204.2,-41989 -91126.1,-41966"/>
+    <polygon style="fill: #000000" points="-91118.9,-41963.9 -91129.9,-41961.9 -91126.1,-41966 -91127.1,-41971.5 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-91118.9,-41963.9 -91129.9,-41961.9 -91126.1,-41966 -91127.1,-41971.5 "/>
   </g>
-  <g
-     id="g4065"
-     transform="translate(20.598018,12.607531)">
-    <path
-       style="fill:none;stroke:#000000;stroke-width:1"
-       d="m -91251.7,-42754.8 c 68.6,68 222.8,138.1 274.3,160.9"
-       id="path4067"
-       inkscape:connector-curvature="0" />
-    <polygon
-       style="fill:#000000"
-       points="-90977.7,-42599.5 -90970.6,-42590.9 -90981.7,-42590.4 -90977.4,-42593.9 "
-       id="polygon4069" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:1"
-       points="-90977.7,-42599.5 -90970.6,-42590.9 -90981.7,-42590.4 -90977.4,-42593.9 "
-       id="polygon4071" />
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -92075.7 -42754.8 C -92007.1,-42686.8 -91852.9,-42616.6 -91801.4,-42593.9"/>
+    <polygon style="fill: #000000" points="-91794.6,-42590.9 -91805.7,-42590.3 -91801.4,-42593.9 -91801.7,-42599.5 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-91794.6,-42590.9 -91805.7,-42590.3 -91801.4,-42593.9 -91801.7,-42599.5 "/>
   </g>
-  <g
-     id="g4073"
-     transform="translate(20.598018,12.607531)">
-    <path
-       style="fill:none;stroke:#000000;stroke-width:1"
-       d="m -91251.7,-42754.8 c -2.2,46.4 2.6,113.5 10.3,155.8"
-       id="path4075"
-       inkscape:connector-curvature="0" />
-    <polygon
-       style="fill:#000000"
-       points="-91237,-42602.3 -91240.1,-42591.6 -91246.8,-42600.5 -91241.4,-42599 "
-       id="polygon4077" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:1"
-       points="-91237,-42602.3 -91240.1,-42591.6 -91246.8,-42600.5 -91241.4,-42599 "
-       id="polygon4079" />
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -92075.7 -42754.8 C -92077.9,-42708.4 -92073.1,-42641.2 -92065.4,-42598.9"/>
+    <polygon style="fill: #000000" points="-92064.1,-42591.5 -92070.8,-42600.4 -92065.4,-42598.9 -92060.9,-42602.2 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-92064.1,-42591.5 -92070.8,-42600.4 -92065.4,-42598.9 -92060.9,-42602.2 "/>
   </g>
-  <g
-     id="g4081"
-     transform="translate(20.598018,12.607531)">
-    <path
-       style="fill:none;stroke:#000000;stroke-width:1"
-       d="m -92074,-42078.2 c -11.2,37.2 -113.4,81.4 -145.6,107.7"
-       id="path4083"
-       inkscape:connector-curvature="0" />
-    <polygon
-       style="fill:#000000"
-       points="-92214.5,-41968.2 -92225.4,-41965.7 -92220.8,-41975.9 -92219.6,-41970.5 "
-       id="polygon4085" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:1"
-       points="-92214.5,-41968.2 -92225.4,-41965.7 -92220.8,-41975.9 -92219.6,-41970.5 "
-       id="polygon4087" />
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -92074 -42078.2 C -92102.3,-42039.9 -92187.4,-41995.4 -92219.5,-41969"/>
+    <polygon style="fill: #000000" points="-92225.3,-41964.3 -92220.8,-41974.5 -92219.5,-41969 -92214.4,-41966.8 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-92225.3,-41964.3 -92220.8,-41974.5 -92219.5,-41969 -92214.4,-41966.8 "/>
   </g>
-  <g
-     id="g4089"
-     transform="translate(20.598018,12.607531)">
-    <path
-       style="fill:none;stroke:#000000;stroke-width:1"
-       d="m -91251.7,-42754.8 c -46.4,57.2 -91.5,121.1 -122.5,157.8"
-       id="path4091"
-       inkscape:connector-curvature="0" />
-    <polygon
-       style="fill:#000000"
-       points="-91368.8,-42595.7 -91379.1,-42591.3 -91376.4,-42602.2 -91374.2,-42597 "
-       id="polygon4093" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:1"
-       points="-91368.8,-42595.7 -91379.1,-42591.3 -91376.4,-42602.2 -91374.2,-42597 "
-       id="polygon4095" />
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -92075.7 -42754.8 C -92122.1,-42697.6 -92167,-42633.6 -92198.1,-42597"/>
+    <polygon style="fill: #000000" points="-92202.9,-42591.3 -92200.3,-42602.1 -92198.1,-42597 -92192.6,-42595.7 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-92202.9,-42591.3 -92200.3,-42602.1 -92198.1,-42597 -92192.6,-42595.7 "/>
   </g>
-  <g
-     id="g4097"
-     transform="translate(20.598018,12.607531)">
-    <path
-       style="fill:none;stroke:#000000;stroke-width:1"
-       d="m -92539.6,-43168 c 1.2,41 -33.1,110 -51.9,154.2"
-       id="path4099"
-       inkscape:connector-curvature="0" />
-    <polygon
-       style="fill:#000000"
-       points="-92586,-43014.2 -92594.5,-43006.9 -92595.2,-43018.1 -92591.5,-43013.8 "
-       id="polygon4101" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:1"
-       points="-92586,-43014.2 -92594.5,-43006.9 -92595.2,-43018.1 -92591.5,-43013.8 "
-       id="polygon4103" />
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -92833.4 -42078.2 C -92773.9,-42042.2 -92545.4,-41994.8 -92476.7,-41967.4"/>
+    <polygon style="fill: #000000" points="-92469.7,-41964.7 -92480.9,-41963.7 -92476.7,-41967.4 -92477.2,-41973 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-92469.7,-41964.7 -92480.9,-41963.7 -92476.7,-41967.4 -92477.2,-41973 "/>
   </g>
-  <g
-     id="g4105"
-     transform="translate(20.598018,12.607531)">
-    <path
-       style="fill:none;stroke:#000000;stroke-width:1"
-       d="m -92539.6,-43168 c 4.4,35.8 24.4,112 39.8,154"
-       id="path4107"
-       inkscape:connector-curvature="0" />
-    <polygon
-       style="fill:#000000"
-       points="-92495.9,-43018.1 -92497.2,-43007 -92505.3,-43014.6 -92499.8,-43014 "
-       id="polygon4109" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:1"
-       points="-92495.9,-43018.1 -92497.2,-43007 -92505.3,-43014.6 -92499.8,-43014 "
-       id="polygon4111" />
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -93407.1 -42078.2 C -93390.1,-42043.6 -93308.7,-41996.4 -93286,-41970.1"/>
+    <polygon style="fill: #000000" points="-93281.1,-41964.4 -93291.4,-41968.7 -93286,-41970.1 -93283.9,-41975.3 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-93281.1,-41964.4 -93291.4,-41968.7 -93286,-41970.1 -93283.9,-41975.3 "/>
   </g>
-  <g
-     id="g4113"
-     transform="translate(20.598018,12.607531)">
-    <path
-       style="fill:none;stroke:#000000;stroke-width:1"
-       d="m -93710.6,-42754.8 c -5.9,54.5 -31.2,116.3 -47.1,156.3"
-       id="path4115"
-       inkscape:connector-curvature="0" />
-    <polygon
-       style="fill:#000000"
-       points="-93752.1,-42599 -93760.4,-42591.5 -93761.4,-42602.6 -93757.7,-42598.5 "
-       id="polygon4117" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:1"
-       points="-93752.1,-42599 -93760.4,-42591.5 -93761.4,-42602.6 -93757.7,-42598.5 "
-       id="polygon4119" />
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -92969.5 -42754.8 C -92930.6,-42707 -92850.9,-42630.7 -92815.7,-42596.4"/>
+    <polygon style="fill: #000000" points="-92810.3,-42591.2 -92821,-42594.6 -92815.7,-42596.4 -92814,-42601.7 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-92810.3,-42591.2 -92821,-42594.6 -92815.7,-42596.4 -92814,-42601.7 "/>
   </g>
-  <text
-     style="font-size:10.15999985px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:Consolas"
-     x="-93552.898"
-     y="-42223.992"
-     id="text4121">
-    <tspan
-       x="-93552.898"
-       y="-42223.992"
-       id="tspan4123">Base class for entity items with generic edition &amp; deletion</tspan>
+  <text font-size="10.16" style="fill: #000000;text-anchor:start;font-family:Consolas;font-style:normal;font-weight:normal" x="-93573.6" y="-42236.6">
+    <tspan x="-93573.6" y="-42236.6">Base class for entity items with generic edition &amp; deletion</tspan>
   </text>
-  <text
-     style="font-size:10.15999985px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:Consolas"
-     x="-92139.398"
-     y="-42281.992"
-     id="text4125">
-    <tspan
-       x="-92139.398"
-       y="-42281.992"
-       id="tspan4127">Base class for collections of entity items with generic creation</tspan>
-    <tspan
-       x="-92139.398"
-       y="-42269.289"
-       id="tspan4129">- Built from a collection of entities</tspan>
-    <tspan
-       x="-92139.398"
-       y="-42256.59"
-       id="tspan4131">- Provides an overload of add_item()</tspan>
+  <text font-size="10.16" style="fill: #000000;text-anchor:start;font-family:Consolas;font-style:normal;font-weight:normal" x="-92160" y="-42294.6">
+    <tspan x="-92160" y="-42294.6">Base class for collections of entity items with generic creation</tspan>
+    <tspan x="-92160" y="-42281.9">  - Built from a collection of entities</tspan>
+    <tspan x="-92160" y="-42269.2">  - Provides an overload of add_item()</tspan>
   </text>
-  <g
-     id="g4133"
-     transform="translate(20.598018,12.607531)">
-    <path
-       style="fill:none;stroke:#000000;stroke-width:1"
-       d="m -93710.6,-42754.8 c 10.3,53.5 33.5,106.6 50.5,156.2"
-       id="path4135"
-       inkscape:connector-curvature="0" />
-    <polygon
-       style="fill:#000000"
-       points="-93656.2,-42602.6 -93657.7,-42591.5 -93665.7,-42599.4 -93660.1,-42598.6 "
-       id="polygon4137" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:1"
-       points="-93656.2,-42602.6 -93657.7,-42591.5 -93665.7,-42599.4 -93660.1,-42598.6 "
-       id="polygon4139" />
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -92969.5 -42754.8 C -93000.8,-42706.1 -93073.5,-42635.1 -93111.9,-42596.5"/>
+    <polygon style="fill: #000000" points="-93117.2,-42591.2 -93113.7,-42601.8 -93111.9,-42596.5 -93106.6,-42594.8 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-93117.2,-42591.2 -93113.7,-42601.8 -93111.9,-42596.5 -93106.6,-42594.8 "/>
   </g>
-  <g
-     id="g4141"
-     transform="translate(20.598018,12.607531)">
-    <path
-       style="fill:none;stroke:#000000;stroke-width:1"
-       d="m -92602.5,-43334.3 c 13.5,45.8 35.8,84.3 58.4,121"
-       id="path4143"
-       inkscape:connector-curvature="0" />
-    <polygon
-       style="fill:#000000"
-       points="-92541.2,-43218.1 -92540.2,-43207 -92549.7,-43212.8 -92544.1,-43213.3 "
-       id="polygon4145" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:1"
-       points="-92541.2,-43218.1 -92540.2,-43207 -92549.7,-43212.8 -92544.1,-43213.3 "
-       id="polygon4147" />
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -92602.4 -43334.4 C -92589,-43288.6 -92566.6,-43250 -92544.1,-43213.3"/>
+    <polygon style="fill: #000000" points="-92540.2,-43207 -92549.7,-43212.9 -92544.1,-43213.3 -92541.2,-43218.1 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-92540.2,-43207 -92549.7,-43212.9 -92544.1,-43213.3 -92541.2,-43218.1 "/>
   </g>
-  <g
-     id="g4149"
-     transform="translate(20.598018,12.607531)">
-    <path
-       style="fill:none;stroke:#000000;stroke-width:1"
-       d="m -92494.1,-43334.3 c -8.7,34.6 -23.9,83.3 -41.8,120.5"
-       id="path4151"
-       inkscape:connector-curvature="0" />
-    <polygon
-       style="fill:#000000"
-       points="-92530.3,-43213.9 -92539.1,-43207 -92539.3,-43218.2 -92535.9,-43213.8 "
-       id="polygon4153" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:1"
-       points="-92530.3,-43213.9 -92539.1,-43207 -92539.3,-43218.2 -92535.9,-43213.8 "
-       id="polygon4155" />
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -92494 -43334.4 C -92502.8,-43299.6 -92518,-43251 -92535.9,-43213.8"/>
+    <polygon style="fill: #000000" points="-92539.1,-43207 -92539.3,-43218.2 -92535.9,-43213.8 -92530.3,-43213.9 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-92539.1,-43207 -92539.3,-43218.2 -92535.9,-43213.8 -92530.3,-43213.9 "/>
   </g>
-  <g
-     id="g4157"
-     transform="translate(20.598018,12.607531)">
-    <path
-       style="fill:none;stroke:#000000;stroke-width:1"
-       d="m -92539.6,-43168 c 87.6,102.6 1283.6,45.2 1287.8,242.8"
-       id="path4159"
-       inkscape:connector-curvature="0" />
-    <polygon
-       style="fill:#000000"
-       points="-91246.9,-42927.8 -91251.7,-42917.7 -91256.9,-42927.6 -91251.8,-42925.2 "
-       id="polygon4161" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:1"
-       points="-91246.9,-42927.8 -91251.7,-42917.7 -91256.9,-42927.6 -91251.8,-42925.2 "
-       id="polygon4163" />
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -92539.6 -43168 C -92452,-43065.4 -92080,-43122.8 -92075.8,-42925.2"/>
+    <polygon style="fill: #000000" points="-92075.7,-42917.7 -92080.9,-42927.6 -92075.8,-42925.2 -92070.9,-42927.8 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-92075.7,-42917.7 -92080.9,-42927.6 -92075.8,-42925.2 -92070.9,-42927.8 "/>
   </g>
-  <text
-     style="font-size:28.22220039px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:sanserif"
-     x="-94110.5"
-     y="-43344.289"
-     id="text4165">
-    <tspan
-       x="-94110.5"
-       y="-43344.289"
-       id="tspan4167">appleseed.studio Project Explorer</tspan>
-    <tspan
-       x="-94110.5"
-       y="-43308.992"
-       id="tspan4169">Class Inheritance Diagram</tspan>
+  <text font-size="28.2222" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="-93553.5" y="-43321.7">
+    <tspan x="-93553.5" y="-43321.7">appleseed.studio Project Explorer</tspan>
+    <tspan x="-93553.5" y="-43286.5">Class Inheritance Diagram</tspan>
   </text>
-  <g
-     id="g4171"
-     transform="translate(20.598018,12.607531)">
-    <rect
-       style="fill:#f8eecd"
-       x="-92247.398"
-       y="-42116.199"
-       width="346.89999"
-       height="38"
-       id="rect4173" />
-    <rect
-       style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:4"
-       x="-92247.398"
-       y="-42116.199"
-       width="346.89999"
-       height="38"
-       id="rect4175" />
-    <text
-       style="font-size:12.80000019px;font-style:oblique;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif"
-       x="-92074"
-       y="-42092.398"
-       id="text4177">
-      <tspan
-         x="-92074"
-         y="-42092.398"
-         id="tspan4179">SingleModelCollectionItem&lt;Entity, ParentEntity, Factory&gt;</tspan>
+  <g>
+    <rect style="fill: #f8eecd" x="-92247.4" y="-42116.2" width="346.9" height="38"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke-dasharray: 4; stroke: #000000" x="-92247.4" y="-42116.2" width="346.9" height="38"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:oblique;font-weight:normal" x="-92073.9" y="-42092.4">
+      <tspan x="-92073.9" y="-42092.4">SingleModelCollectionItem&lt;Entity, ParentEntity, Factory&gt;</tspan>
     </text>
   </g>
-  <g
-     id="g4181"
-     transform="translate(20.598018,12.607531)">
-    <rect
-       style="fill:#f8eecd"
-       x="-91623"
-       y="-42116.199"
-       width="290.60001"
-       height="38"
-       id="rect4183" />
-    <rect
-       style="fill:none;stroke:#000000;stroke-width:1"
-       x="-91623"
-       y="-42116.199"
-       width="290.60001"
-       height="38"
-       id="rect4185" />
-    <text
-       style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif"
-       x="-91477.703"
-       y="-42092.398"
-       id="text4187">
-      <tspan
-         x="-91477.703"
-         y="-42092.398"
-         id="tspan4189">MultiModelCollectionItem&lt;Entity, ParentEntity&gt;</tspan>
+  <g>
+    <rect style="fill: #f8eecd" x="-91623" y="-42116.2" width="290.6" height="38"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="-91623" y="-42116.2" width="290.6" height="38"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="-91477.7" y="-42092.4">
+      <tspan x="-91477.7" y="-42092.4">MultiModelCollectionItem&lt;Entity, ParentEntity&gt;</tspan>
     </text>
   </g>
-  <g
-     id="g4191"
-     transform="translate(20.598018,12.607531)">
-    <path
-       style="fill:none;stroke:#000000;stroke-width:1"
-       d="m -91788.2,-42219.4 c -1,54.2 -286.2,51.6 -285.9,94.6"
-       id="path4193"
-       inkscape:connector-curvature="0" />
-    <polygon
-       style="fill:#000000"
-       points="-92069.1,-42127.4 -92074,-42117.3 -92079.1,-42127.3 -92074.1,-42124.8 "
-       id="polygon4195" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:1"
-       points="-92069.1,-42127.4 -92074,-42117.3 -92079.1,-42127.3 -92074.1,-42124.8 "
-       id="polygon4197" />
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -91788.2 -42219.4 C -91789.2,-42165.2 -92074.4,-42167.8 -92074.1,-42124.8"/>
+    <polygon style="fill: #000000" points="-92074,-42117.3 -92079.1,-42127.3 -92074.1,-42124.8 -92069.1,-42127.4 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-92074,-42117.3 -92079.1,-42127.3 -92074.1,-42124.8 -92069.1,-42127.4 "/>
   </g>
-  <g
-     id="g4199"
-     transform="translate(20.598018,12.607531)">
-    <path
-       style="fill:none;stroke:#000000;stroke-width:1"
-       d="m -91788.2,-42219.4 c -1,54.2 310.1,51.6 310.4,94.6"
-       id="path4201"
-       inkscape:connector-curvature="0" />
-    <polygon
-       style="fill:#000000"
-       points="-91472.8,-42127.4 -91477.7,-42117.3 -91482.8,-42127.3 -91477.8,-42124.8 "
-       id="polygon4203" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:1"
-       points="-91472.8,-42127.4 -91477.7,-42117.3 -91482.8,-42127.3 -91477.8,-42124.8 "
-       id="polygon4205" />
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -91788.2 -42219.4 C -91789.2,-42165.2 -91478.2,-42167.8 -91477.9,-42124.8"/>
+    <polygon style="fill: #000000" points="-91477.8,-42117.3 -91482.9,-42127.3 -91477.9,-42124.8 -91472.9,-42127.4 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-91477.8,-42117.3 -91482.9,-42127.3 -91477.9,-42124.8 -91472.9,-42127.4 "/>
   </g>
-  <g
-     id="g4207"
-     transform="translate(20.598018,12.607531)">
-    <path
-       style="fill:none;stroke:#000000;stroke-width:1"
-       d="m -91251.7,-42754.8 c -82.6,36.4 -355.5,63 -429.3,165.6 -73.9,102.6 -40.4,163.6 -104.1,323.8"
-       id="path4209"
-       inkscape:connector-curvature="0" />
-    <polygon
-       style="fill:#000000"
-       points="-91779.5,-42265.9 -91787.8,-42258.4 -91788.8,-42269.6 -91785.1,-42265.4 "
-       id="polygon4211" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:1"
-       points="-91779.5,-42265.9 -91787.8,-42258.4 -91788.8,-42269.6 -91785.1,-42265.4 "
-       id="polygon4213" />
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -92075.7 -42754.8 C -91896.2,-42677 -91696.9,-42710.4 -91681,-42589.2 C -91665.1,-42468 -91719.4,-42387.6 -91784.2,-42265"/>
+    <polygon style="fill: #000000" points="-91787.7,-42258.4 -91787.4,-42269.6 -91784.2,-42265 -91778.6,-42264.9 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-91787.7,-42258.4 -91787.4,-42269.6 -91784.2,-42265 -91778.6,-42264.9 "/>
   </g>
-  <g
-     id="g4215"
-     transform="translate(20.598018,12.607531)">
-    <path
-       style="fill:none;stroke:#000000;stroke-width:1"
-       d="m -91477.7,-42078.2 c -57.2,43.8 -142.8,74.8 -212.9,109.4"
-       id="path4217"
-       inkscape:connector-curvature="0" />
-    <polygon
-       style="fill:#000000"
-       points="-91686.1,-41965.4 -91697.3,-41965.5 -91690.5,-41974.4 -91690.6,-41968.8 "
-       id="polygon4219" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:1"
-       points="-91686.1,-41965.4 -91697.3,-41965.5 -91690.5,-41974.4 -91690.6,-41968.8 "
-       id="polygon4221" />
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -91477.8 -42078.2 C -91535,-42034.4 -91620.4,-42002 -91690.5,-41967.4"/>
+    <polygon style="fill: #000000" points="-91697.2,-41964.1 -91690.5,-41973 -91690.5,-41967.4 -91686.1,-41964 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-91697.2,-41964.1 -91690.5,-41973 -91690.5,-41967.4 -91686.1,-41964 "/>
   </g>
-  <g
-     id="g4223"
-     transform="translate(20.598018,12.607531)">
-    <path
-       style="fill:none;stroke:#000000;stroke-width:1"
-       d="m -91477.7,-42078.2 c 26,56.8 55.1,80.2 77,106.6"
-       id="path4225"
-       inkscape:connector-curvature="0" />
-    <polygon
-       style="fill:#000000"
-       points="-91398.4,-41976.7 -91395.9,-41965.9 -91406.1,-41970.4 -91400.7,-41971.6 "
-       id="polygon4227" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:1"
-       points="-91398.4,-41976.7 -91395.9,-41965.9 -91406.1,-41970.4 -91400.7,-41971.6 "
-       id="polygon4229" />
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -91477.8 -42078.2 C -91451.8,-42021.4 -91422.5,-41996.6 -91400.6,-41970.2"/>
+    <polygon style="fill: #000000" points="-91395.8,-41964.4 -91406.1,-41968.9 -91400.6,-41970.2 -91398.4,-41975.3 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-91395.8,-41964.4 -91406.1,-41968.9 -91400.6,-41970.2 -91398.4,-41975.3 "/>
   </g>
-  <g
-     id="g4231"
-     transform="translate(20.598018,12.607531)">
-    <rect
-       style="fill:#f8eecd"
-       x="-91903.602"
-       y="-42257.398"
-       width="230.8"
-       height="38"
-       id="rect4233" />
-    <rect
-       style="fill:none;stroke:#000000;stroke-width:1"
-       x="-91903.602"
-       y="-42257.398"
-       width="230.8"
-       height="38"
-       id="rect4235" />
-    <text
-       style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif"
-       x="-91788.203"
-       y="-42233.602"
-       id="text4237">
-      <tspan
-         x="-91788.203"
-         y="-42233.602"
-         id="tspan4239">CollectionItem&lt;Entity, ParentEntity&gt;</tspan>
+  <g>
+    <rect style="fill: #f8eecd" x="-91903.6" y="-42257.4" width="230.8" height="38"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="-91903.6" y="-42257.4" width="230.8" height="38"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="-91788.2" y="-42233.6">
+      <tspan x="-91788.2" y="-42233.6">CollectionItem&lt;Entity, ParentEntity&gt;</tspan>
     </text>
   </g>
-  <g
-     id="g4241"
-     transform="translate(20.598018,12.607531)">
-    <rect
-       style="fill:#ffffff"
-       x="-93777.898"
-       y="-42916.602"
-       width="134.64999"
-       height="38"
-       id="rect4243" />
-    <rect
-       style="fill:none;stroke:#000000;stroke-width:1"
-       x="-93777.898"
-       y="-42916.602"
-       width="134.64999"
-       height="38"
-       id="rect4245" />
-    <text
-       style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif"
-       x="-93710.602"
-       y="-42892.801"
-       id="text4247">
-      <tspan
-         x="-93710.602"
-         y="-42892.801"
-         id="tspan4249">EntityItemBaseSlots</tspan>
+  <g>
+    <rect style="fill: #ffffff" x="-93036.8" y="-42916.6" width="134.65" height="38"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="-93036.8" y="-42916.6" width="134.65" height="38"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="-92969.4" y="-42892.8">
+      <tspan x="-92969.4" y="-42892.8">EntityItemBaseSlots</tspan>
     </text>
   </g>
-  <g
-     id="g4251"
-     transform="translate(20.598018,12.607531)">
-    <rect
-       style="fill:#ffc0cb"
-       x="-92555.602"
-       y="-43372.301"
-       width="123"
-       height="38"
-       id="rect4253" />
-    <rect
-       style="fill:none;stroke:#000000;stroke-width:1"
-       x="-92555.602"
-       y="-43372.301"
-       width="123"
-       height="38"
-       id="rect4255" />
-    <text
-       style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif"
-       x="-92494.102"
-       y="-43348.5"
-       id="text4257">
-      <tspan
-         x="-92494.102"
-         y="-43348.5"
-         id="tspan4259">QTreeWidgetItem</tspan>
+  <g>
+    <rect style="fill: #ffc0cb" x="-92555.6" y="-43372.4" width="123" height="38"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="-92555.6" y="-43372.4" width="123" height="38"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="-92494.1" y="-43348.6">
+      <tspan x="-92494.1" y="-43348.6">QTreeWidgetItem</tspan>
     </text>
   </g>
-  <g
-     id="g4261"
-     transform="translate(20.598018,12.607531)">
-    <rect
-       style="fill:#ffc0cb"
-       x="-92635.797"
-       y="-43372.301"
-       width="66.75"
-       height="38"
-       id="rect4263" />
-    <rect
-       style="fill:none;stroke:#000000;stroke-width:1"
-       x="-92635.797"
-       y="-43372.301"
-       width="66.75"
-       height="38"
-       id="rect4265" />
-    <text
-       style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif"
-       x="-92602.5"
-       y="-43348.5"
-       id="text4267">
-      <tspan
-         x="-92602.5"
-         y="-43348.5"
-         id="tspan4269">QObject</tspan>
+  <g>
+    <rect style="fill: #ffc0cb" x="-92635.8" y="-43372.4" width="66.75" height="38"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="-92635.8" y="-43372.4" width="66.75" height="38"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="-92602.4" y="-43348.6">
+      <tspan x="-92602.4" y="-43348.6">QObject</tspan>
     </text>
   </g>
-  <g
-     id="g4271"
-     transform="translate(20.598018,12.607531)">
-    <rect
-       style="fill:#ffffff"
-       x="-91329.602"
-       y="-42916.602"
-       width="155.89999"
-       height="38"
-       id="rect4273" />
-    <rect
-       style="fill:none;stroke:#000000;stroke-width:1"
-       x="-91329.602"
-       y="-42916.602"
-       width="155.89999"
-       height="38"
-       id="rect4275" />
-    <text
-       style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif"
-       x="-91251.602"
-       y="-42892.801"
-       id="text4277">
-      <tspan
-         x="-91251.602"
-         y="-42892.801"
-         id="tspan4279">CollectionItemBaseSlots</tspan>
+  <g>
+    <rect style="fill: #ffffff" x="-92153.6" y="-42916.6" width="155.9" height="38"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="-92153.6" y="-42916.6" width="155.9" height="38"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="-92075.6" y="-42892.8">
+      <tspan x="-92075.6" y="-42892.8">CollectionItemBaseSlots</tspan>
     </text>
   </g>
-  <g
-     id="g4281"
-     transform="translate(20.598018,12.607531)">
-    <path
-       style="fill:none;stroke:#000000;stroke-width:1"
-       d="m -92883.6,-42078.2 c 23.8,48 63.5,85 99.1,108.5"
-       id="path4283"
-       inkscape:connector-curvature="0" />
-    <polygon
-       style="fill:#000000"
-       points="-92783.8,-41975.3 -92778.2,-41965.6 -92789.3,-41966.9 -92784.5,-41969.7 "
-       id="polygon4285" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:1"
-       points="-92783.8,-41975.3 -92778.2,-41965.6 -92789.3,-41966.9 -92784.5,-41969.7 "
-       id="polygon4287" />
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -92833.4 -42078.2 C -92809.6,-42030.2 -92800.2,-41991.8 -92764.6,-41968.3"/>
+    <polygon style="fill: #000000" points="-92758.3,-41964.2 -92769.4,-41965.5 -92764.6,-41968.3 -92763.9,-41973.9 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-92758.3,-41964.2 -92769.4,-41965.5 -92764.6,-41968.3 -92763.9,-41973.9 "/>
   </g>
-  <g
-     id="g4289"
-     transform="translate(20.598018,12.607531)">
-    <path
-       style="fill:none;stroke:#000000;stroke-width:1"
-       d="m -92883.6,-42078.2 c -39.2,51 -143.4,83 -179.9,108.3"
-       id="path4291"
-       inkscape:connector-curvature="0" />
-    <polygon
-       style="fill:#000000"
-       points="-93058.6,-41967.2 -93069.7,-41965.6 -93064.3,-41975.4 -93063.5,-41969.9 "
-       id="polygon4293" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:1"
-       points="-93058.6,-41967.2 -93069.7,-41965.6 -93064.3,-41975.4 -93063.5,-41969.9 "
-       id="polygon4295" />
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -92833.4 -42078.2 C -92872.6,-42027.2 -93007.1,-41993.8 -93043.6,-41968.5"/>
+    <polygon style="fill: #000000" points="-93049.8,-41964.2 -93044.4,-41974 -93043.6,-41968.5 -93038.7,-41965.8 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-93049.8,-41964.2 -93044.4,-41974 -93043.6,-41968.5 -93038.7,-41965.8 "/>
   </g>
-  <g
-     id="g4297"
-     transform="translate(20.598018,12.607531)">
-    <path
-       style="fill:none;stroke:#000000;stroke-width:1"
-       d="m -93356.8,-42078.2 c -0.4,39.8 -3.6,78.4 -6,104.8"
-       id="path4299"
-       inkscape:connector-curvature="0" />
-    <polygon
-       style="fill:#000000"
-       points="-93357.6,-41975.4 -93363.5,-41965.9 -93367.6,-41976.3 -93362.8,-41973.4 "
-       id="polygon4301" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:1"
-       points="-93357.6,-41975.4 -93363.5,-41965.9 -93367.6,-41976.3 -93362.8,-41973.4 "
-       id="polygon4303" />
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -93407.1 -42078.2 C -93419.2,-42035.6 -93446.6,-42004.4 -93467.1,-41970.9"/>
+    <polygon style="fill: #000000" points="-93471,-41964.5 -93470,-41975.7 -93467.1,-41970.9 -93461.5,-41970.5 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-93471,-41964.5 -93470,-41975.7 -93467.1,-41970.9 -93461.5,-41970.5 "/>
   </g>
-  <g
-     id="g4305"
-     transform="translate(20.598018,12.607531)">
-    <path
-       style="fill:none;stroke:#000000;stroke-width:1"
-       d="m -93356.8,-42078.2 c -0.4,39.8 55.8,79.2 78.9,106.8"
-       id="path4307"
-       inkscape:connector-curvature="0" />
-    <polygon
-       style="fill:#000000"
-       points="-93275.7,-41976.5 -93273.1,-41965.7 -93283.4,-41970.1 -93277.9,-41971.4 "
-       id="polygon4309" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:1"
-       points="-93275.7,-41976.5 -93273.1,-41965.7 -93283.4,-41970.1 -93277.9,-41971.4 "
-       id="polygon4311" />
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -93407.1 -42078.2 C -93399.2,-42030.6 -93391.6,-42010.5 -93381.7,-41971.9"/>
+    <polygon style="fill: #000000" points="-93379.8,-41964.7 -93387.2,-41973.1 -93381.7,-41971.9 -93377.5,-41975.6 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-93379.8,-41964.7 -93387.2,-41973.1 -93381.7,-41971.9 -93377.5,-41975.6 "/>
   </g>
-  <g
-     id="g4313"
-     transform="translate(20.598018,12.607531)">
-    <path
-       style="fill:none;stroke:#000000;stroke-width:1"
-       d="m -92074,-42078.2 c -7.8,41.2 -21.7,62.6 -35.1,105"
-       id="path4315"
-       inkscape:connector-curvature="0" />
-    <polygon
-       style="fill:#000000"
-       points="-92103.5,-41974.1 -92111.3,-41966.1 -92113.1,-41977.1 -92109.1,-41973.2 "
-       id="polygon4317" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:1"
-       points="-92103.5,-41974.1 -92111.3,-41966.1 -92113.1,-41977.1 -92109.1,-41973.2 "
-       id="polygon4319" />
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -92074 -42078.2 C -92081.8,-42037 -92086.6,-42008.4 -92107.4,-41971.1"/>
+    <polygon style="fill: #000000" points="-92111.1,-41964.6 -92110.6,-41975.7 -92107.4,-41971.1 -92101.8,-41970.8 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-92111.1,-41964.6 -92110.6,-41975.7 -92107.4,-41971.1 -92101.8,-41970.8 "/>
   </g>
-  <text
-     style="font-size:9.03110981px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:sanserif"
-     x="-93428.797"
-     y="-41936.09"
-     id="text4321">
-    <tspan
-       x="-93428.797"
-       y="-41936.09"
-       id="tspan4323" />
+  <text font-size="9.03111" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="-93557.9" y="-41947.4">
+    <tspan x="-93557.9" y="-41947.4"></tspan>
   </text>
-  <g
-     id="g4325"
-     transform="translate(20.598018,12.607531)">
-    <path
-       style="fill:none;stroke:#000000;stroke-width:1"
-       d="m -93356.8,-42078.2 c -0.4,39.8 -66.6,85 -86.8,107"
-       id="path4327"
-       inkscape:connector-curvature="0" />
-    <polygon
-       style="fill:#000000"
-       points="-93438.2,-41969.6 -93448.6,-41965.6 -93445.6,-41976.4 -93443.6,-41971.2 "
-       id="polygon4329" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:1"
-       points="-93438.2,-41969.6 -93448.6,-41965.6 -93445.6,-41976.4 -93443.6,-41971.2 "
-       id="polygon4331" />
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -93407.1 -42078.2 C -93439.3,-42038.6 -93526.6,-41990.4 -93551.4,-41969.2"/>
+    <polygon style="fill: #000000" points="-93557.1,-41964.3 -93552.7,-41974.6 -93551.4,-41969.2 -93546.2,-41967 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-93557.1,-41964.3 -93552.7,-41974.6 -93551.4,-41969.2 -93546.2,-41967 "/>
   </g>
-  <g
-     id="g4333"
-     transform="translate(20.598018,12.607531)">
-    <g
-       id="g4335">
-      <rect
-         style="fill:#f3f3f3"
-         x="-93308.102"
-         y="-41964.801"
-         width="71.5"
-         height="32.288898"
-         id="rect4337" />
-      <rect
-         style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:4"
-         x="-93308.102"
-         y="-41964.801"
-         width="71.5"
-         height="32.288898"
-         id="rect4339" />
-      <text
-         style="font-size:9.03110981px;font-style:oblique;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif"
-         x="-93272.398"
-         y="-41945.199"
-         id="text4341">
-        <tspan
-           x="-93272.398"
-           y="-41945.199"
-           id="tspan4343">MaterialItem</tspan>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -92833.4 -42078.2 C -92793.4,-42026.4 -92705.6,-41983.4 -92664.2,-41966.8"/>
+    <polygon style="fill: #000000" points="-92657.3,-41964 -92668.4,-41963.1 -92664.2,-41966.8 -92664.7,-41972.4 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-92657.3,-41964 -92668.4,-41963.1 -92664.2,-41966.8 -92664.7,-41972.4 "/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -91477.8 -42078.2 C -91434.2,-42037.6 -91330.4,-41989 -91259.6,-41966.2"/>
+    <polygon style="fill: #000000" points="-91252.5,-41963.9 -91263.5,-41962.2 -91259.6,-41966.2 -91260.5,-41971.7 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-91252.5,-41963.9 -91263.5,-41962.2 -91259.6,-41966.2 -91260.5,-41971.7 "/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -91477.8 -42078.2 C -91506.4,-42030.6 -91524.3,-41999.6 -91556,-41969.5"/>
+    <polygon style="fill: #000000" points="-91561.5,-41964.3 -91557.6,-41974.9 -91556,-41969.5 -91550.8,-41967.6 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-91561.5,-41964.3 -91557.6,-41974.9 -91556,-41969.5 -91550.8,-41967.6 "/>
+  </g>
+  <g>
+    <g>
+      <rect style="fill: #f3f3f3" x="-91473.5" y="-41963.6" width="156.7" height="32.2889"/>
+      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke-dasharray: 4; stroke: #000000" x="-91473.5" y="-41963.6" width="156.7" height="32.2889"/>
+      <text font-size="9.03111" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:oblique;font-weight:normal" x="-91395.1" y="-41944">
+        <tspan x="-91395.1" y="-41944">EnvironmentShaderCollectionItem</tspan>
       </text>
     </g>
-    <g
-       id="g4345">
-      <rect
-         style="fill:#f3f3f3"
-         x="-93408.703"
-         y="-41964.801"
-         width="90.25"
-         height="32.288898"
-         id="rect4347" />
-      <rect
-         style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:4"
-         x="-93408.703"
-         y="-41964.801"
-         width="90.25"
-         height="32.288898"
-         id="rect4349" />
-      <text
-         style="font-size:9.03110981px;font-style:oblique;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif"
-         x="-93363.602"
-         y="-41945.199"
-         id="text4351">
-        <tspan
-           x="-93363.602"
-           y="-41945.199"
-           id="tspan4353">EnvironmentItem</tspan>
+    <g>
+      <rect style="fill: #f3f3f3" x="-91634.7" y="-41963.6" width="144.8" height="32.2889"/>
+      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke-dasharray: 4; stroke: #000000" x="-91634.7" y="-41963.6" width="144.8" height="32.2889"/>
+      <text font-size="9.03111" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:oblique;font-weight:normal" x="-91562.3" y="-41944">
+        <tspan x="-91562.3" y="-41944">EnvironmentEDFCollectionItem</tspan>
       </text>
     </g>
-    <g
-       id="g4355">
-      <rect
-         style="fill:#f3f3f3"
-         x="-93479.5"
-         y="-41964.801"
-         width="60.349998"
-         height="32.288898"
-         id="rect4357" />
-      <rect
-         style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:4"
-         x="-93479.5"
-         y="-41964.801"
-         width="60.349998"
-         height="32.288898"
-         id="rect4359" />
-      <text
-         style="font-size:9.03110981px;font-style:oblique;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif"
-         x="-93449.398"
-         y="-41945.199"
-         id="text4361">
-        <tspan
-           x="-93449.398"
-           y="-41945.199"
-           id="tspan4363">ColorItem</tspan>
+    <g>
+      <rect style="fill: #f3f3f3" x="-91861.5" y="-41963.6" width="99.75" height="32.2889"/>
+      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke-dasharray: 4; stroke: #000000" x="-91861.5" y="-41963.6" width="99.75" height="32.2889"/>
+      <text font-size="9.03111" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:oblique;font-weight:normal" x="-91811.6" y="-41944">
+        <tspan x="-91811.6" y="-41944">BSDFCollectionItem</tspan>
+      </text>
+    </g>
+    <g>
+      <rect style="fill: #f3f3f3" x="-91745.5" y="-41963.6" width="94.45" height="32.2889"/>
+      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke-dasharray: 4; stroke: #000000" x="-91745.5" y="-41963.6" width="94.45" height="32.2889"/>
+      <text font-size="9.03111" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:oblique;font-weight:normal" x="-91698.2" y="-41944">
+        <tspan x="-91698.2" y="-41944">EDFCollectionItem</tspan>
+      </text>
+    </g>
+    <g>
+      <rect style="fill: #f3f3f3" x="-91186.1" y="-41963.6" width="136.5" height="32.2889"/>
+      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke-dasharray: 4; stroke: #000000" x="-91186.1" y="-41963.6" width="136.5" height="32.2889"/>
+      <text font-size="9.03111" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:oblique;font-weight:normal" x="-91117.8" y="-41944">
+        <tspan x="-91117.8" y="-41944">SurfaceShaderCollectionItem</tspan>
+      </text>
+    </g>
+    <g>
+      <rect style="fill: #f3f3f3" x="-91300.5" y="-41963.6" width="98.15" height="32.2889"/>
+      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke-dasharray: 4; stroke: #000000" x="-91300.5" y="-41963.6" width="98.15" height="32.2889"/>
+      <text font-size="9.03111" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:oblique;font-weight:normal" x="-91251.4" y="-41944">
+        <tspan x="-91251.4" y="-41944">LightCollectionItem</tspan>
       </text>
     </g>
   </g>
-  <g
-     id="g4365"
-     transform="translate(20.598018,12.607531)">
-    <path
-       style="fill:none;stroke:#000000;stroke-width:1"
-       d="m -92883.6,-42078.2 c 40,51.8 158,93.4 199.4,110"
-       id="path4367"
-       inkscape:connector-curvature="0" />
-    <polygon
-       style="fill:#000000"
-       points="-92684.6,-41973.8 -92677.2,-41965.4 -92688.4,-41964.5 -92684.2,-41968.2 "
-       id="polygon4369" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:1"
-       points="-92684.6,-41973.8 -92677.2,-41965.4 -92688.4,-41964.5 -92684.2,-41968.2 "
-       id="polygon4371" />
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x1="-92075.6" y1="-42878.6" x2="-92075.7" y2="-42801.4"/>
+    <polygon style="fill: #000000" points="-92075.7,-42793.9 -92080.7,-42803.9 -92075.7,-42801.4 -92070.7,-42803.9 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-92075.7,-42793.9 -92080.7,-42803.9 -92075.7,-42801.4 -92070.7,-42803.9 "/>
   </g>
-  <g
-     id="g4373"
-     transform="translate(20.598018,12.607531)">
-    <g
-       id="g4375">
-      <rect
-         style="fill:#f3f3f3"
-         x="-93179.297"
-         y="-41965"
-         width="61.150002"
-         height="32.288898"
-         id="rect4377" />
-      <rect
-         style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:4"
-         x="-93179.297"
-         y="-41965"
-         width="61.150002"
-         height="32.288898"
-         id="rect4379" />
-      <text
-         style="font-size:9.03110981px;font-style:oblique;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif"
-         x="-93148.797"
-         y="-41945.398"
-         id="text4381">
-        <tspan
-           x="-93148.797"
-           y="-41945.398"
-           id="tspan4383">BSDFItem</tspan>
-      </text>
-    </g>
-    <g
-       id="g4385">
-      <rect
-         style="fill:#f3f3f3"
-         x="-93023.102"
-         y="-41965"
-         width="55.849998"
-         height="32.288898"
-         id="rect4387" />
-      <rect
-         style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:4"
-         x="-93023.102"
-         y="-41965"
-         width="55.849998"
-         height="32.288898"
-         id="rect4389" />
-      <text
-         style="font-size:9.03110981px;font-style:oblique;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif"
-         x="-92995.203"
-         y="-41945.398"
-         id="text4391">
-        <tspan
-           x="-92995.203"
-           y="-41945.398"
-           id="tspan4393">EDFItem</tspan>
-      </text>
-    </g>
-    <g
-       id="g4395">
-      <rect
-         style="fill:#f3f3f3"
-         x="-92954.898"
-         y="-41965"
-         width="106.2"
-         height="32.288898"
-         id="rect4397" />
-      <rect
-         style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:4"
-         x="-92954.898"
-         y="-41965"
-         width="106.2"
-         height="32.288898"
-         id="rect4399" />
-      <text
-         style="font-size:9.03110981px;font-style:oblique;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif"
-         x="-92901.797"
-         y="-41945.398"
-         id="text4401">
-        <tspan
-           x="-92901.797"
-           y="-41945.398"
-           id="tspan4403">EnvironmentEDFItem</tspan>
-      </text>
-    </g>
-    <g
-       id="g4405">
-      <rect
-         style="fill:#f3f3f3"
-         x="-92633.898"
-         y="-41965"
-         width="97.900002"
-         height="32.288898"
-         id="rect4407" />
-      <rect
-         style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:4"
-         x="-92633.898"
-         y="-41965"
-         width="97.900002"
-         height="32.288898"
-         id="rect4409" />
-      <text
-         style="font-size:9.03110981px;font-style:oblique;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif"
-         x="-92585"
-         y="-41945.398"
-         id="text4411">
-        <tspan
-           x="-92585"
-           y="-41945.398"
-           id="tspan4413">SurfaceShaderItem</tspan>
-      </text>
-    </g>
-    <g
-       id="g4415">
-      <rect
-         style="fill:#f3f3f3"
-         x="-92836.297"
-         y="-41965"
-         width="118.1"
-         height="32.288898"
-         id="rect4417" />
-      <rect
-         style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:4"
-         x="-92836.297"
-         y="-41965"
-         width="118.1"
-         height="32.288898"
-         id="rect4419" />
-      <text
-         style="font-size:9.03110981px;font-style:oblique;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif"
-         x="-92777.297"
-         y="-41945.398"
-         id="text4421">
-        <tspan
-           x="-92777.297"
-           y="-41945.398"
-           id="tspan4423">EnvironmentShaderItem</tspan>
-      </text>
-    </g>
-    <g
-       id="g4425">
-      <rect
-         style="fill:#f3f3f3"
-         x="-93105.703"
-         y="-41965"
-         width="70.349998"
-         height="32.288898"
-         id="rect4427" />
-      <rect
-         style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:4"
-         x="-93105.703"
-         y="-41965"
-         width="70.349998"
-         height="32.288898"
-         id="rect4429" />
-      <text
-         style="font-size:9.03110981px;font-style:oblique;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif"
-         x="-93070.602"
-         y="-41945.398"
-         id="text4431">
-        <tspan
-           x="-93070.602"
-           y="-41945.398"
-           id="tspan4433">CameraItem</tspan>
-      </text>
-    </g>
-    <g
-       id="g4435">
-      <rect
-         style="fill:#f3f3f3"
-         x="-92705.898"
-         y="-41965"
-         width="59.549999"
-         height="32.288898"
-         id="rect4437" />
-      <rect
-         style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:4"
-         x="-92705.898"
-         y="-41965"
-         width="59.549999"
-         height="32.288898"
-         id="rect4439" />
-      <text
-         style="font-size:9.03110981px;font-style:oblique;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif"
-         x="-92676.203"
-         y="-41945.398"
-         id="text4441">
-        <tspan
-           x="-92676.203"
-           y="-41945.398"
-           id="tspan4443">LightItem</tspan>
-      </text>
-    </g>
-  </g>
-  <g
-     id="g4445"
-     transform="translate(20.598018,12.607531)">
-    <path
-       style="fill:none;stroke:#000000;stroke-width:1"
-       d="m -91477.7,-42078.2 c 43.6,40.6 147.3,87.8 218.1,110.6"
-       id="path4447"
-       inkscape:connector-curvature="0" />
-    <polygon
-       style="fill:#000000"
-       points="-91260.5,-41973.2 -91252.5,-41965.3 -91263.6,-41963.6 -91259.6,-41967.6 "
-       id="polygon4449" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:1"
-       points="-91260.5,-41973.2 -91252.5,-41965.3 -91263.6,-41963.6 -91259.6,-41967.6 "
-       id="polygon4451" />
-  </g>
-  <g
-     id="g4453"
-     transform="translate(20.598018,12.607531)">
-    <path
-       style="fill:none;stroke:#000000;stroke-width:1"
-       d="m -91477.7,-42078.2 c -28.6,47.6 -46.6,77.2 -78.4,107.3"
-       id="path4455"
-       inkscape:connector-curvature="0" />
-    <polygon
-       style="fill:#000000"
-       points="-91550.8,-41969 -91561.5,-41965.8 -91557.7,-41976.3 -91556.1,-41970.9 "
-       id="polygon4457" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:1"
-       points="-91550.8,-41969 -91561.5,-41965.8 -91557.7,-41976.3 -91556.1,-41970.9 "
-       id="polygon4459" />
-  </g>
-  <g
-     id="g4461"
-     transform="translate(20.598018,12.607531)">
-    <g
-       id="g4463">
-      <rect
-         style="fill:#f3f3f3"
-         x="-91473.398"
-         y="-41965"
-         width="156.55"
-         height="32.288898"
-         id="rect4465" />
-      <rect
-         style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:4"
-         x="-91473.398"
-         y="-41965"
-         width="156.55"
-         height="32.288898"
-         id="rect4467" />
-      <text
-         style="font-size:9.03110981px;font-style:oblique;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif"
-         x="-91395.203"
-         y="-41945.398"
-         id="text4469">
-        <tspan
-           x="-91395.203"
-           y="-41945.398"
-           id="tspan4471">EnvironmentShaderCollectionItem</tspan>
-      </text>
-    </g>
-    <g
-       id="g4473">
-      <rect
-         style="fill:#f3f3f3"
-         x="-91634.602"
-         y="-41965"
-         width="144.64999"
-         height="32.288898"
-         id="rect4475" />
-      <rect
-         style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:4"
-         x="-91634.602"
-         y="-41965"
-         width="144.64999"
-         height="32.288898"
-         id="rect4477" />
-      <text
-         style="font-size:9.03110981px;font-style:oblique;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif"
-         x="-91562.297"
-         y="-41945.398"
-         id="text4479">
-        <tspan
-           x="-91562.297"
-           y="-41945.398"
-           id="tspan4481">EnvironmentEDFCollectionItem</tspan>
-      </text>
-    </g>
-    <g
-       id="g4483">
-      <rect
-         style="fill:#f3f3f3"
-         x="-91861.398"
-         y="-41965"
-         width="99.599998"
-         height="32.288898"
-         id="rect4485" />
-      <rect
-         style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:4"
-         x="-91861.398"
-         y="-41965"
-         width="99.599998"
-         height="32.288898"
-         id="rect4487" />
-      <text
-         style="font-size:9.03110981px;font-style:oblique;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif"
-         x="-91811.602"
-         y="-41945.398"
-         id="text4489">
-        <tspan
-           x="-91811.602"
-           y="-41945.398"
-           id="tspan4491">BSDFCollectionItem</tspan>
-      </text>
-    </g>
-    <g
-       id="g4493">
-      <rect
-         style="fill:#f3f3f3"
-         x="-91745.398"
-         y="-41965"
-         width="94.300003"
-         height="32.288898"
-         id="rect4495" />
-      <rect
-         style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:4"
-         x="-91745.398"
-         y="-41965"
-         width="94.300003"
-         height="32.288898"
-         id="rect4497" />
-      <text
-         style="font-size:9.03110981px;font-style:oblique;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif"
-         x="-91698.297"
-         y="-41945.398"
-         id="text4499">
-        <tspan
-           x="-91698.297"
-           y="-41945.398"
-           id="tspan4501">EDFCollectionItem</tspan>
-      </text>
-    </g>
-    <g
-       id="g4503">
-      <rect
-         style="fill:#f3f3f3"
-         x="-91186"
-         y="-41965"
-         width="136.35001"
-         height="32.288898"
-         id="rect4505" />
-      <rect
-         style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:4"
-         x="-91186"
-         y="-41965"
-         width="136.35001"
-         height="32.288898"
-         id="rect4507" />
-      <text
-         style="font-size:9.03110981px;font-style:oblique;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif"
-         x="-91117.898"
-         y="-41945.398"
-         id="text4509">
-        <tspan
-           x="-91117.898"
-           y="-41945.398"
-           id="tspan4511">SurfaceShaderCollectionItem</tspan>
-      </text>
-    </g>
-    <g
-       id="g4513">
-      <rect
-         style="fill:#f3f3f3"
-         x="-91300.398"
-         y="-41965"
-         width="98"
-         height="32.288898"
-         id="rect4515" />
-      <rect
-         style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:4"
-         x="-91300.398"
-         y="-41965"
-         width="98"
-         height="32.288898"
-         id="rect4517" />
-      <text
-         style="font-size:9.03110981px;font-style:oblique;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif"
-         x="-91251.398"
-         y="-41945.398"
-         id="text4519">
-        <tspan
-           x="-91251.398"
-           y="-41945.398"
-           id="tspan4521">LightCollectionItem</tspan>
-      </text>
-    </g>
-  </g>
-  <g
-     id="g4523"
-     transform="translate(20.598018,12.607531)">
-    <line
-       style="fill:none;stroke:#000000;stroke-width:1"
-       x1="-91251.602"
-       y1="-42878.602"
-       x2="-91251.703"
-       y2="-42801.398"
-       id="line4525" />
-    <polygon
-       style="fill:#000000"
-       points="-91246.7,-42803.9 -91251.7,-42793.9 -91256.7,-42803.9 -91251.7,-42801.4 "
-       id="polygon4527" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:1"
-       points="-91246.7,-42803.9 -91251.7,-42793.9 -91256.7,-42803.9 -91251.7,-42801.4 "
-       id="polygon4529" />
-  </g>
-  <text
-     style="font-size:9.03110981px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:sanserif"
-     x="-91231"
-     y="-42884.992"
-     id="text4531">
-    <tspan
-       x="-91231"
-       y="-42884.992"
-       id="tspan4533" />
+  <text font-size="9.03111" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="-92075.6" y="-42897.6">
+    <tspan x="-92075.6" y="-42897.6"></tspan>
   </text>
-  <g
-     id="g4535"
-     transform="translate(20.598018,12.607531)">
-    <path
-       style="fill:none;stroke:#000000;stroke-width:1"
-       d="m -92074,-42078.2 c 13.4,37.4 67.6,75 93.7,106.6"
-       id="path4537"
-       inkscape:connector-curvature="0" />
-    <polygon
-       style="fill:#000000"
-       points="-91978.1,-41976.8 -91975.6,-41965.9 -91985.8,-41970.4 -91980.3,-41971.6 "
-       id="polygon4539" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:1"
-       points="-91978.1,-41976.8 -91975.6,-41965.9 -91985.8,-41970.4 -91980.3,-41971.6 "
-       id="polygon4541" />
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -92074 -42078.2 C -92044.5,-42029.4 -92013.6,-41997.5 -91981.3,-41969.2"/>
+    <polygon style="fill: #000000" points="-91975.6,-41964.3 -91986.5,-41967.1 -91981.3,-41969.2 -91979.9,-41974.7 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-91975.6,-41964.3 -91986.5,-41967.1 -91981.3,-41969.2 -91979.9,-41974.7 "/>
   </g>
-  <g
-     id="g4543"
-     transform="translate(20.598018,12.607531)">
-    <g
-       id="g4545">
-      <rect
-         style="fill:#f3f3f3"
-         x="-92166.602"
-         y="-41965"
-         width="109.95"
-         height="32.288898"
-         id="rect4547" />
-      <rect
-         style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:4"
-         x="-92166.602"
-         y="-41965"
-         width="109.95"
-         height="32.288898"
-         id="rect4549" />
-      <text
-         style="font-size:9.03110981px;font-style:oblique;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif"
-         x="-92111.703"
-         y="-41945.398"
-         id="text4551">
-        <tspan
-           x="-92111.703"
-           y="-41945.398"
-           id="tspan4553">MaterialCollectionItem</tspan>
+  <g>
+    <g>
+      <rect style="fill: #f3f3f3" x="-92166.7" y="-41963.6" width="110.1" height="32.2889"/>
+      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke-dasharray: 4; stroke: #000000" x="-92166.7" y="-41963.6" width="110.1" height="32.2889"/>
+      <text font-size="9.03111" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:oblique;font-weight:normal" x="-92111.6" y="-41944">
+        <tspan x="-92111.6" y="-41944">MaterialCollectionItem</tspan>
       </text>
     </g>
-    <g
-       id="g4555">
-      <rect
-         style="fill:#f3f3f3"
-         x="-92275.602"
-         y="-41965"
-         width="98.800003"
-         height="32.288898"
-         id="rect4557" />
-      <rect
-         style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:4"
-         x="-92275.602"
-         y="-41965"
-         width="98.800003"
-         height="32.288898"
-         id="rect4559" />
-      <text
-         style="font-size:9.03110981px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif"
-         x="-92226.203"
-         y="-41945.398"
-         id="text4561">
-        <tspan
-           x="-92226.203"
-           y="-41945.398"
-           id="tspan4563">ColorCollectionItem</tspan>
+    <g>
+      <rect style="fill: #f3f3f3" x="-92275.6" y="-41963.6" width="98.8" height="32.2889"/>
+      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke-dasharray: 4; stroke: #000000" x="-92275.6" y="-41963.6" width="98.8" height="32.2889"/>
+      <text font-size="9.03111" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="-92226.2" y="-41944">
+        <tspan x="-92226.2" y="-41944">ColorCollectionItem</tspan>
       </text>
     </g>
-    <g
-       id="g4565">
-      <rect
-         style="fill:#f3f3f3"
-         x="-92046.398"
-         y="-41965"
-         width="143.2"
-         height="32.288898"
-         id="rect4567" />
-      <rect
-         style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:4"
-         x="-92046.398"
-         y="-41965"
-         width="143.2"
-         height="32.288898"
-         id="rect4569" />
-      <text
-         style="font-size:9.03110981px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif"
-         x="-91974.797"
-         y="-41945.398"
-         id="text4571">
-        <tspan
-           x="-91974.797"
-           y="-41945.398"
-           id="tspan4573">TextureInstanceCollectionItem</tspan>
+    <g>
+      <rect style="fill: #f3f3f3" x="-92046.4" y="-41963.6" width="143.2" height="32.2889"/>
+      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke-dasharray: 4; stroke: #000000" x="-92046.4" y="-41963.6" width="143.2" height="32.2889"/>
+      <text font-size="9.03111" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="-91974.8" y="-41944">
+        <tspan x="-91974.8" y="-41944">TextureInstanceCollectionItem</tspan>
       </text>
     </g>
   </g>
-  <g
-     id="g4575"
-     transform="translate(20.598018,12.607531)">
-    <g
-       id="g4577">
-      <rect
-         style="fill:#f3f3f3"
-         x="-91454.797"
-         y="-42590.5"
-         width="150"
-         height="32.288898"
-         id="rect4579" />
-      <rect
-         style="fill:none;stroke:#000000;stroke-width:1"
-         x="-91454.797"
-         y="-42590.5"
-         width="150"
-         height="32.288898"
-         id="rect4581" />
-      <text
-         style="font-size:9.03110981px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif"
-         x="-91379.797"
-         y="-42570.898"
-         id="text4583">
-        <tspan
-           x="-91379.797"
-           y="-42570.898"
-           id="tspan4585">AssemblyInstanceCollectionItem</tspan>
-      </text>
-    </g>
-    <g
-       id="g4587">
-      <rect
-         style="fill:#f3f3f3"
-         x="-91583"
-         y="-42590.5"
-         width="115.7"
-         height="32.288898"
-         id="rect4589" />
-      <rect
-         style="fill:none;stroke:#000000;stroke-width:1"
-         x="-91583"
-         y="-42590.5"
-         width="115.7"
-         height="32.288898"
-         id="rect4591" />
-      <text
-         style="font-size:9.03110981px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif"
-         x="-91525.102"
-         y="-42570.898"
-         id="text4593">
-        <tspan
-           x="-91525.102"
-           y="-42570.898"
-           id="tspan4595">AssemblyCollectionItem</tspan>
-      </text>
-    </g>
-    <g
-       id="g4597">
-      <rect
-         style="fill:#f3f3f3"
-         x="-91175.203"
-         y="-42590.5"
-         width="138.5"
-         height="32.288898"
-         id="rect4599" />
-      <rect
-         style="fill:none;stroke:#000000;stroke-width:1"
-         x="-91175.203"
-         y="-42590.5"
-         width="138.5"
-         height="32.288898"
-         id="rect4601" />
-      <text
-         style="font-size:9.03110981px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif"
-         x="-91105.898"
-         y="-42570.898"
-         id="text4603">
-        <tspan
-           x="-91105.898"
-           y="-42570.898"
-           id="tspan4605">ObjectInstanceCollectionItem</tspan>
-      </text>
-    </g>
-    <g
-       id="g4607">
-      <rect
-         style="fill:#f3f3f3"
-         x="-91024"
-         y="-42590.5"
-         width="108.9"
-         height="32.288898"
-         id="rect4609" />
-      <rect
-         style="fill:none;stroke:#000000;stroke-width:1"
-         x="-91024"
-         y="-42590.5"
-         width="108.9"
-         height="32.288898"
-         id="rect4611" />
-      <text
-         style="font-size:9.03110981px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif"
-         x="-90969.5"
-         y="-42570.898"
-         id="text4613">
-        <tspan
-           x="-90969.5"
-           y="-42570.898"
-           id="tspan4615">TextureCollectionItem</tspan>
-      </text>
-    </g>
-    <g
-       id="g4617">
-      <rect
-         style="fill:#f3f3f3"
-         x="-91292"
-         y="-42590.5"
-         width="104.2"
-         height="32.288898"
-         id="rect4619" />
-      <rect
-         style="fill:none;stroke:#000000;stroke-width:1"
-         x="-91292"
-         y="-42590.5"
-         width="104.2"
-         height="32.288898"
-         id="rect4621" />
-      <text
-         style="font-size:9.03110981px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif"
-         x="-91239.898"
-         y="-42570.898"
-         id="text4623">
-        <tspan
-           x="-91239.898"
-           y="-42570.898"
-           id="tspan4625">ObjectCollectionItem</tspan>
-      </text>
-    </g>
-  </g>
-  <g
-     id="g4627"
-     transform="translate(20.598018,12.607531)">
-    <text
-       style="font-size:10.15999985px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:Consolas"
-       x="-91132.203"
-       y="-42794.5"
-       id="text4629">
-      <tspan
-         x="-91132.203"
-         y="-42794.5"
-         id="tspan4631">Base class for all collections of items:</tspan>
-      <tspan
-         x="-91132.203"
-         y="-42781.801"
-         id="tspan4633">- Built from class_uid &amp; title</tspan>
-      <tspan
-         x="-91132.203"
-         y="-42769.102"
-         id="tspan4635">- Renders the title in bold</tspan>
-      <tspan
-         x="-91132.203"
-         y="-42756.398"
-         id="tspan4637">- Provides add_item() and add_items()</tspan>
-      <tspan
-         x="-91132.203"
-         y="-42743.699"
-         id="tspan4639">The name is a shortcut for EntityCollectionItemBase.</tspan>
+  <g>
+    <text font-size="10.16" style="fill: #000000;text-anchor:start;font-family:Consolas;font-style:normal;font-weight:normal" x="-91956.2" y="-42794.6">
+      <tspan x="-91956.2" y="-42794.6">Base class for all collections of items:</tspan>
+      <tspan x="-91956.2" y="-42781.9">  - Built from class_uid &amp; title</tspan>
+      <tspan x="-91956.2" y="-42769.2">  - Renders the title in bold</tspan>
+      <tspan x="-91956.2" y="-42756.5">  - Provides add_item() and add_items()</tspan>
+      <tspan x="-91956.2" y="-42743.8">The name is a shortcut for EntityCollectionItemBase.</tspan>
     </text>
-    <g
-       id="g4641">
-      <rect
-         style="fill:#f8eecd"
-         x="-91341.602"
-         y="-42792.801"
-         width="179.75"
-         height="38"
-         id="rect4643" />
-      <rect
-         style="fill:none;stroke:#000000;stroke-width:1"
-         x="-91341.602"
-         y="-42792.801"
-         width="179.75"
-         height="38"
-         id="rect4645" />
-      <text
-         style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif"
-         x="-91251.703"
-         y="-42769"
-         id="text4647">
-        <tspan
-           x="-91251.703"
-           y="-42769"
-           id="tspan4649">CollectionItemBase&lt;Entity&gt;</tspan>
+    <g>
+      <rect style="fill: #f8eecd" x="-92165.6" y="-42792.8" width="179.75" height="38"/>
+      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="-92165.6" y="-42792.8" width="179.75" height="38"/>
+      <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="-92075.7" y="-42769">
+        <tspan x="-92075.7" y="-42769">CollectionItemBase&lt;Entity&gt;</tspan>
       </text>
     </g>
   </g>
-  <g
-     id="g4651"
-     transform="translate(20.598018,12.607531)">
-    <text
-       style="font-size:10.15999985px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:Consolas"
-       x="-94129.102"
-       y="-42792.398"
-       id="text4653">
-      <tspan
-         x="-94129.102"
-         y="-42792.398"
-         id="tspan4655">Base class for all entity items:</tspan>
-      <tspan
-         x="-94129.102"
-         y="-42779.699"
-         id="tspan4657">- Built from an entity</tspan>
-      <tspan
-         x="-94129.102"
-         y="-42767"
-         id="tspan4659">- Provides update_title()</tspan>
-      <tspan
-         x="-94129.102"
-         y="-42754.301"
-         id="tspan4661">- Provide context menu items for edition &amp; deletion</tspan>
+  <g>
+    <text font-size="10.16" style="fill: #000000;text-anchor:start;font-family:Consolas;font-style:normal;font-weight:normal" x="-93388.2" y="-42792.4">
+      <tspan x="-93388.2" y="-42792.4">Base class for all entity items:</tspan>
+      <tspan x="-93388.2" y="-42779.7">  - Built from an entity</tspan>
+      <tspan x="-93388.2" y="-42767">  - Provides update_title()</tspan>
+      <tspan x="-93388.2" y="-42754.3">  - Provide context menu items for edition &amp; deletion</tspan>
     </text>
-    <g
-       id="g4663">
-      <rect
-         style="fill:#f8eecd"
-         x="-93789.898"
-         y="-42792.801"
-         width="158.5"
-         height="38"
-         id="rect4665" />
-      <rect
-         style="fill:none;stroke:#000000;stroke-width:1"
-         x="-93789.898"
-         y="-42792.801"
-         width="158.5"
-         height="38"
-         id="rect4667" />
-      <text
-         style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif"
-         x="-93710.602"
-         y="-42769"
-         id="text4669">
-        <tspan
-           x="-93710.602"
-           y="-42769"
-           id="tspan4671">EntityItemBase&lt;Entity&gt;</tspan>
+    <g>
+      <rect style="fill: #f8eecd" x="-93048.8" y="-42792.8" width="158.5" height="38"/>
+      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="-93048.8" y="-42792.8" width="158.5" height="38"/>
+      <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="-92969.5" y="-42769">
+        <tspan x="-92969.5" y="-42769">EntityItemBase&lt;Entity&gt;</tspan>
       </text>
     </g>
   </g>
-  <g
-     id="g4673"
-     transform="translate(20.598018,12.607531)">
-    <path
-       style="fill:none;stroke:#000000;stroke-width:1"
-       d="m -93710.6,-42754.8 c 124.5,83 196.9,96 300.2,175.1 103.4,79.1 147,155.1 290.7,315.9"
-       id="path4675"
-       inkscape:connector-curvature="0" />
-    <polygon
-       style="fill:#000000"
-       points="-93117.7,-42269 -93114.7,-42258.2 -93125.1,-42262.4 -93119.7,-42263.8 "
-       id="polygon4677" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:1"
-       points="-93117.7,-42269 -93114.7,-42258.2 -93125.1,-42262.4 -93119.7,-42263.8 "
-       id="polygon4679" />
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" d="M -92969.5 -42754.8 C -93142.8,-42664.9 -93242.8,-42687 -93248.8,-42576.5 C -93254.8,-42466 -93182.5,-42361.5 -93118.7,-42264.6"/>
+    <polygon style="fill: #000000" points="-93114.6,-42258.3 -93124.3,-42263.9 -93118.7,-42264.6 -93115.9,-42269.4 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="-93114.6,-42258.3 -93124.3,-42263.9 -93118.7,-42264.6 -93115.9,-42269.4 "/>
   </g>
-  <g
-     id="g4681"
-     transform="translate(20.598018,12.607531)">
-    <g
-       id="g4683">
-      <rect
-         style="fill:#f3f3f3"
-         x="-92630.203"
-         y="-43005.898"
-         width="70.449997"
-         height="32.288898"
-         id="rect4685" />
-      <rect
-         style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:4"
-         x="-92630.203"
-         y="-43005.898"
-         width="70.449997"
-         height="32.288898"
-         id="rect4687" />
-      <text
-         style="font-size:9.03110981px;font-style:oblique;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif"
-         x="-92594.898"
-         y="-42986.398"
-         id="text4689">
-        <tspan
-           x="-92594.898"
-           y="-42986.398"
-           id="tspan4691">TextureItem</tspan>
+  <g>
+    <g>
+      <rect style="fill: #f8eecd" x="-92577.2" y="-43206" width="75.3" height="38"/>
+      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="-92577.2" y="-43206" width="75.3" height="38"/>
+      <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="-92539.5" y="-43182.2">
+        <tspan x="-92539.5" y="-43182.2">ItemBase</tspan>
       </text>
     </g>
-    <g
-       id="g4693">
-      <rect
-         style="fill:#f3f3f3"
-         x="-92549.203"
-         y="-43005.898"
-         width="104.75"
-         height="32.288898"
-         id="rect4695" />
-      <rect
-         style="fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:4"
-         x="-92549.203"
-         y="-43005.898"
-         width="104.75"
-         height="32.288898"
-         id="rect4697" />
-      <text
-         style="font-size:9.03110981px;font-style:oblique;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif"
-         x="-92496.797"
-         y="-42986.398"
-         id="text4699">
-        <tspan
-           x="-92496.797"
-           y="-42986.398"
-           id="tspan4701">TextureInstanceItem</tspan>
-      </text>
-    </g>
-  </g>
-  <g
-     id="g4703"
-     transform="translate(20.598018,12.607531)">
-    <g
-       id="g4705">
-      <rect
-         style="fill:#f8eecd"
-         x="-92577.203"
-         y="-43206"
-         width="75.300003"
-         height="38"
-         id="rect4707" />
-      <rect
-         style="fill:none;stroke:#000000;stroke-width:1"
-         x="-92577.203"
-         y="-43206"
-         width="75.300003"
-         height="38"
-         id="rect4709" />
-      <text
-         style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif"
-         x="-92539.5"
-         y="-43182.199"
-         id="text4711">
-        <tspan
-           x="-92539.5"
-           y="-43182.199"
-           id="tspan4713">ItemBase</tspan>
-      </text>
-    </g>
-    <text
-       style="font-size:10.15999985px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:Consolas"
-       x="-92480"
-       y="-43202.602"
-       id="text4715">
-      <tspan
-         x="-92480"
-         y="-43202.602"
-         id="tspan4717">Base class for all items:</tspan>
-      <tspan
-         x="-92480"
-         y="-43189.898"
-         id="tspan4719">- Built from class_uid or class_uid &amp; title</tspan>
-      <tspan
-         x="-92480"
-         y="-43177.199"
-         id="tspan4721">- Provides set_title()</tspan>
-      <tspan
-         x="-92480"
-         y="-43164.5"
-         id="tspan4723">- Defines empty virtual functions for context menus</tspan>
+    <text font-size="10.16" style="fill: #000000;text-anchor:start;font-family:Consolas;font-style:normal;font-weight:normal" x="-92480" y="-43202.6">
+      <tspan x="-92480" y="-43202.6">Base class for all items:</tspan>
+      <tspan x="-92480" y="-43189.9">  - Built from class_uid or class_uid &amp; title</tspan>
+      <tspan x="-92480" y="-43177.2">  - Provides set_title()</tspan>
+      <tspan x="-92480" y="-43164.5">  - Defines empty virtual functions for context menus</tspan>
     </text>
   </g>
-  <g
-     id="g4725"
-     transform="translate(20.598018,12.607531)">
-    <g
-       id="g4727">
-      <rect
-         style="fill:#f3f3f3"
-         x="-93586.703"
-         y="-42590.5"
-         width="77.25"
-         height="32.288898"
-         id="rect4729" />
-      <rect
-         style="fill:none;stroke:#000000;stroke-width:1"
-         x="-93586.703"
-         y="-42590.5"
-         width="77.25"
-         height="32.288898"
-         id="rect4731" />
-      <text
-         style="font-size:9.03110981px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif"
-         x="-93548.102"
-         y="-42570.898"
-         id="text4733">
-        <tspan
-           x="-93548.102"
-           y="-42570.898"
-           id="tspan4735">AssemblyItem</tspan>
+  <g>
+    <g>
+      <rect style="fill: #f3f3f3" x="-93047.7" y="-42590.4" width="77.25" height="32.2889"/>
+      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="-93047.7" y="-42590.4" width="77.25" height="32.2889"/>
+      <text font-size="9.03111" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="-93009.1" y="-42570.8">
+        <tspan x="-93009.1" y="-42570.8">AssemblyItem</tspan>
       </text>
     </g>
-    <g
-       id="g4737">
-      <rect
-         style="fill:#f3f3f3"
-         x="-93908.203"
-         y="-42590.5"
-         width="100.05"
-         height="32.288898"
-         id="rect4739" />
-      <rect
-         style="fill:none;stroke:#000000;stroke-width:1"
-         x="-93908.203"
-         y="-42590.5"
-         width="100.05"
-         height="32.288898"
-         id="rect4741" />
-      <text
-         style="font-size:9.03110981px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif"
-         x="-93858.203"
-         y="-42570.898"
-         id="text4743">
-        <tspan
-           x="-93858.203"
-           y="-42570.898"
-           id="tspan4745">ObjectInstanceItem</tspan>
+    <g>
+      <rect style="fill: #f3f3f3" x="-92956.5" y="-42590.4" width="100.05" height="32.2889"/>
+      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="-92956.5" y="-42590.4" width="100.05" height="32.2889"/>
+      <text font-size="9.03111" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="-92906.4" y="-42570.8">
+        <tspan x="-92906.4" y="-42570.8">ObjectInstanceItem</tspan>
       </text>
     </g>
-    <g
-       id="g4747">
-      <rect
-         style="fill:#f3f3f3"
-         x="-93793.703"
-         y="-42590.5"
-         width="65.75"
-         height="32.288898"
-         id="rect4749" />
-      <rect
-         style="fill:none;stroke:#000000;stroke-width:1"
-         x="-93793.703"
-         y="-42590.5"
-         width="65.75"
-         height="32.288898"
-         id="rect4751" />
-      <text
-         style="font-size:9.03110981px;font-style:oblique;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif"
-         x="-93760.797"
-         y="-42570.898"
-         id="text4753">
-        <tspan
-           x="-93760.797"
-           y="-42570.898"
-           id="tspan4755">ObjectItem</tspan>
+    <g>
+      <rect style="fill: #f3f3f3" x="-92842.4" y="-42590.4" width="65.75" height="32.2889"/>
+      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="-92842.4" y="-42590.4" width="65.75" height="32.2889"/>
+      <text font-size="9.03111" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:oblique;font-weight:normal" x="-92809.5" y="-42570.8">
+        <tspan x="-92809.5" y="-42570.8">ObjectItem</tspan>
       </text>
     </g>
-    <g
-       id="g4757">
-      <rect
-         style="fill:#f3f3f3"
-         x="-93713.5"
-         y="-42590.5"
-         width="112.35"
-         height="32.288898"
-         id="rect4759" />
-      <rect
-         style="fill:none;stroke:#000000;stroke-width:1"
-         x="-93713.5"
-         y="-42590.5"
-         width="112.35"
-         height="32.288898"
-         id="rect4761" />
-      <text
-         style="font-size:9.03110981px;font-style:oblique;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif"
-         x="-93657.297"
-         y="-42570.898"
-         id="text4763">
-        <tspan
-           x="-93657.297"
-           y="-42570.898"
-           id="tspan4765">AssemblyInstanceItem</tspan>
+    <g>
+      <rect style="fill: #f3f3f3" x="-93174.2" y="-42590.4" width="112.5" height="32.2889"/>
+      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="-93174.2" y="-42590.4" width="112.5" height="32.2889"/>
+      <text font-size="9.03111" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:oblique;font-weight:normal" x="-93118" y="-42570.8">
+        <tspan x="-93118" y="-42570.8">AssemblyInstanceItem</tspan>
+      </text>
+    </g>
+  </g>
+  <g>
+    <g>
+      <rect style="fill: #f3f3f3" x="-92278.6" y="-42590.4" width="150" height="32.2889"/>
+      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="-92278.6" y="-42590.4" width="150" height="32.2889"/>
+      <text font-size="9.03111" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="-92203.6" y="-42570.8">
+        <tspan x="-92203.6" y="-42570.8">AssemblyInstanceCollectionItem</tspan>
+      </text>
+    </g>
+    <g>
+      <rect style="fill: #f3f3f3" x="-92407" y="-42590.4" width="115.7" height="32.2889"/>
+      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="-92407" y="-42590.4" width="115.7" height="32.2889"/>
+      <text font-size="9.03111" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="-92349.1" y="-42570.8">
+        <tspan x="-92349.1" y="-42570.8">AssemblyCollectionItem</tspan>
+      </text>
+    </g>
+    <g>
+      <rect style="fill: #f3f3f3" x="-91999.1" y="-42590.4" width="138.5" height="32.2889"/>
+      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="-91999.1" y="-42590.4" width="138.5" height="32.2889"/>
+      <text font-size="9.03111" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="-91929.9" y="-42570.8">
+        <tspan x="-91929.9" y="-42570.8">ObjectInstanceCollectionItem</tspan>
+      </text>
+    </g>
+    <g>
+      <rect style="fill: #f3f3f3" x="-91848" y="-42590.4" width="108.9" height="32.2889"/>
+      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="-91848" y="-42590.4" width="108.9" height="32.2889"/>
+      <text font-size="9.03111" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="-91793.5" y="-42570.8">
+        <tspan x="-91793.5" y="-42570.8">TextureCollectionItem</tspan>
+      </text>
+    </g>
+    <g>
+      <rect style="fill: #f3f3f3" x="-92116" y="-42590.4" width="104.2" height="32.2889"/>
+      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="-92116" y="-42590.4" width="104.2" height="32.2889"/>
+      <text font-size="9.03111" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="-92063.9" y="-42570.8">
+        <tspan x="-92063.9" y="-42570.8">ObjectCollectionItem</tspan>
+      </text>
+    </g>
+  </g>
+  <g>
+    <g>
+      <rect style="fill: #f3f3f3" x="-93159.4" y="-41963.6" width="61.3" height="32.2889"/>
+      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke-dasharray: 4; stroke: #000000" x="-93159.4" y="-41963.6" width="61.3" height="32.2889"/>
+      <text font-size="9.03111" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:oblique;font-weight:normal" x="-93128.7" y="-41944">
+        <tspan x="-93128.7" y="-41944">BSDFItem</tspan>
+      </text>
+    </g>
+    <g>
+      <rect style="fill: #f3f3f3" x="-93003.3" y="-41963.6" width="56" height="32.2889"/>
+      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke-dasharray: 4; stroke: #000000" x="-93003.3" y="-41963.6" width="56" height="32.2889"/>
+      <text font-size="9.03111" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:oblique;font-weight:normal" x="-92975.3" y="-41944">
+        <tspan x="-92975.3" y="-41944">EDFItem</tspan>
+      </text>
+    </g>
+    <g>
+      <rect style="fill: #f3f3f3" x="-92935.1" y="-41963.6" width="106.35" height="32.2889"/>
+      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke-dasharray: 4; stroke: #000000" x="-92935.1" y="-41963.6" width="106.35" height="32.2889"/>
+      <text font-size="9.03111" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:oblique;font-weight:normal" x="-92881.9" y="-41944">
+        <tspan x="-92881.9" y="-41944">EnvironmentEDFItem</tspan>
+      </text>
+    </g>
+    <g>
+      <rect style="fill: #f3f3f3" x="-92614.2" y="-41963.6" width="98.05" height="32.2889"/>
+      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke-dasharray: 4; stroke: #000000" x="-92614.2" y="-41963.6" width="98.05" height="32.2889"/>
+      <text font-size="9.03111" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:oblique;font-weight:normal" x="-92565.1" y="-41944">
+        <tspan x="-92565.1" y="-41944">SurfaceShaderItem</tspan>
+      </text>
+    </g>
+    <g>
+      <rect style="fill: #f3f3f3" x="-92816.5" y="-41963.6" width="118.25" height="32.2889"/>
+      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke-dasharray: 4; stroke: #000000" x="-92816.5" y="-41963.6" width="118.25" height="32.2889"/>
+      <text font-size="9.03111" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:oblique;font-weight:normal" x="-92757.4" y="-41944">
+        <tspan x="-92757.4" y="-41944">EnvironmentShaderItem</tspan>
+      </text>
+    </g>
+    <g>
+      <rect style="fill: #f3f3f3" x="-93085.9" y="-41963.6" width="70.35" height="32.2889"/>
+      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke-dasharray: 4; stroke: #000000" x="-93085.9" y="-41963.6" width="70.35" height="32.2889"/>
+      <text font-size="9.03111" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:oblique;font-weight:normal" x="-93050.7" y="-41944">
+        <tspan x="-93050.7" y="-41944">CameraItem</tspan>
+      </text>
+    </g>
+    <g>
+      <rect style="fill: #f3f3f3" x="-92686.1" y="-41963.6" width="59.7" height="32.2889"/>
+      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke-dasharray: 4; stroke: #000000" x="-92686.1" y="-41963.6" width="59.7" height="32.2889"/>
+      <text font-size="9.03111" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:oblique;font-weight:normal" x="-92656.2" y="-41944">
+        <tspan x="-92656.2" y="-41944">LightItem</tspan>
+      </text>
+    </g>
+    <g>
+      <rect style="fill: #f3f3f3" x="-92503.9" y="-41964.2" width="70.45" height="32.2889"/>
+      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" x="-92503.9" y="-41964.2" width="70.45" height="32.2889"/>
+      <text font-size="9.03111" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:oblique;font-weight:normal" x="-92468.7" y="-41944.7">
+        <tspan x="-92468.7" y="-41944.7">TextureItem</tspan>
+      </text>
+    </g>
+  </g>
+  <g>
+    <g>
+      <rect style="fill: #f3f3f3" x="-93415.4" y="-41963.6" width="71.65" height="32.2889"/>
+      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke-dasharray: 4; stroke: #000000" x="-93415.4" y="-41963.6" width="71.65" height="32.2889"/>
+      <text font-size="9.03111" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:oblique;font-weight:normal" x="-93379.6" y="-41944">
+        <tspan x="-93379.6" y="-41944">MaterialItem</tspan>
+      </text>
+    </g>
+    <g>
+      <rect style="fill: #f3f3f3" x="-93516.8" y="-41963.6" width="90.4" height="32.2889"/>
+      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke-dasharray: 4; stroke: #000000" x="-93516.8" y="-41963.6" width="90.4" height="32.2889"/>
+      <text font-size="9.03111" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:oblique;font-weight:normal" x="-93471.6" y="-41944">
+        <tspan x="-93471.6" y="-41944">EnvironmentItem</tspan>
+      </text>
+    </g>
+    <g>
+      <rect style="fill: #f3f3f3" x="-93588.1" y="-41963.6" width="60.35" height="32.2889"/>
+      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke-dasharray: 4; stroke: #000000" x="-93588.1" y="-41963.6" width="60.35" height="32.2889"/>
+      <text font-size="9.03111" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:oblique;font-weight:normal" x="-93557.9" y="-41944">
+        <tspan x="-93557.9" y="-41944">ColorItem</tspan>
+      </text>
+    </g>
+    <g>
+      <rect style="fill: #f3f3f3" x="-93332.8" y="-41963.6" width="104.75" height="32.2889"/>
+      <rect style="fill: none; fill-opacity:0; stroke-width: 1; stroke-dasharray: 4; stroke: #000000" x="-93332.8" y="-41963.6" width="104.75" height="32.2889"/>
+      <text font-size="9.03111" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:oblique;font-weight:normal" x="-93280.4" y="-41944">
+        <tspan x="-93280.4" y="-41944">TextureInstanceItem</tspan>
       </text>
     </g>
   </g>
