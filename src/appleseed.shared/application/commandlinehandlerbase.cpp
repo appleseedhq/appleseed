@@ -35,8 +35,10 @@
 // appleseed.foundation headers.
 #include "foundation/core/appleseed.h"
 #include "foundation/platform/compiler.h"
+#include "foundation/platform/system.h"
 #include "foundation/utility/commandlineparser.h"
 #include "foundation/utility/log.h"
+#include "foundation/utility/string.h"
 
 // boost headers.
 #include "boost/filesystem/path.hpp"
@@ -58,38 +60,13 @@ struct CommandLineHandlerBase::Impl
     CommandLineParser   m_parser;
     FlagOptionHandler   m_help;
     FlagOptionHandler   m_version;
+    FlagOptionHandler   m_system;
     FlagOptionHandler   m_message_coloring;
     FlagOptionHandler   m_display_options;
 
     explicit Impl(const char* application_name)
       : m_application_name(application_name)
     {
-    }
-
-    void print_version_information(SuperLogger& logger) const
-    {
-        LogTargetBase& log_target = logger.get_log_target();
-
-        const int old_flags =
-            log_target.set_formatting_flags(LogMessage::Info, LogMessage::DisplayMessage);
-
-        LOG_INFO(
-            logger,
-            "%s, using %s version %s, %s configuration\n"
-            "compiled on %s at %s using %s version %s\n"
-            "copyright (c) 2010-2012 Francois Beaune, Jupiter Jazz.\n"
-            "this software is released under the MIT license (http://www.opensource.org/licenses/mit-license.php).\n"
-            "visit http://appleseedhq.net/ for additional information and resources.",
-            m_application_name.c_str(),
-            Appleseed::get_lib_name(),
-            Appleseed::get_lib_version(),
-            Appleseed::get_lib_configuration(),
-            Appleseed::get_lib_compilation_date(),
-            Appleseed::get_lib_compilation_time(),
-            Compiler::get_compiler_name(),
-            Compiler::get_compiler_version());
-
-        log_target.set_formatting_flags(LogMessage::Info, old_flags);
     }
 };
 
@@ -105,6 +82,10 @@ CommandLineHandlerBase::CommandLineHandlerBase(const char* application_name)
     impl->m_version.add_name("-v");
     impl->m_version.set_description("print program version");
     impl->m_parser.add_option_handler(&impl->m_version);
+
+    impl->m_system.add_name("--system");
+    impl->m_system.set_description("print system information");
+    impl->m_parser.add_option_handler(&impl->m_system);
 
     impl->m_message_coloring.add_name("--message-coloring");
     impl->m_message_coloring.set_description("enable message coloring");
@@ -131,7 +112,10 @@ void CommandLineHandlerBase::parse(
         logger.enable_message_coloring();
 
     if (impl->m_version.is_set())
-        impl->print_version_information(logger);
+        print_version_information(logger);
+
+    if (impl->m_system.is_set())
+        print_system_information(logger);
 
     if (impl->m_help.is_set())
     {
@@ -157,6 +141,48 @@ CommandLineParser& CommandLineHandlerBase::parser()
 const CommandLineParser& CommandLineHandlerBase::parser() const
 {
     return impl->m_parser;
+}
+
+void CommandLineHandlerBase::print_version_information(SuperLogger& logger) const
+{
+    LogTargetBase& log_target = logger.get_log_target();
+
+    const int old_flags =
+        log_target.set_formatting_flags(LogMessage::Info, LogMessage::DisplayMessage);
+
+    LOG_INFO(
+        logger,
+        "%s, using %s version %s, %s configuration\n"
+        "compiled on %s at %s using %s version %s\n"
+        "copyright (c) 2010-2012 Francois Beaune, Jupiter Jazz.\n"
+        "this software is released under the MIT license (http://www.opensource.org/licenses/mit-license.php).\n"
+        "visit http://appleseedhq.net/ for additional information and resources.",
+        impl->m_application_name.c_str(),
+        Appleseed::get_lib_name(),
+        Appleseed::get_lib_version(),
+        Appleseed::get_lib_configuration(),
+        Appleseed::get_lib_compilation_date(),
+        Appleseed::get_lib_compilation_time(),
+        Compiler::get_compiler_name(),
+        Compiler::get_compiler_version());
+
+    log_target.set_formatting_flags(LogMessage::Info, old_flags);
+}
+
+void CommandLineHandlerBase::print_system_information(SuperLogger& logger)
+{
+    LOG_INFO(
+        logger,
+        "system information:\n"
+        "  L1 data cache    size %s, line size %s\n"
+        "  L2 cache         size %s, line size %s\n"
+        "  L3 cache         size %s, line size %s\n",
+        pretty_size(System::get_l1_data_cache_size()).c_str(),
+        pretty_size(System::get_l1_data_cache_line_size()).c_str(),
+        pretty_size(System::get_l2_cache_size()).c_str(),
+        pretty_size(System::get_l2_cache_line_size()).c_str(),
+        pretty_size(System::get_l3_cache_size()).c_str(),
+        pretty_size(System::get_l3_cache_line_size()).c_str());
 }
 
 }   // namespace shared
