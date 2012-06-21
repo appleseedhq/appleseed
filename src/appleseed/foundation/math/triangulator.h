@@ -32,11 +32,16 @@
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
 #include "foundation/math/vector.h"
+#include "foundation/utility/memory.h"
+#include "foundation/utility/test.h"
 
 // Standard headers.
 #include <cassert>
 #include <cstddef>
 #include <vector>
+
+DECLARE_TEST_CASE(Foundation_Math_Triangulator, ComputePolygonOrientation_GivenLowestLeftmostTriangleIsValid_ReturnsCorrectOrientation);
+DECLARE_TEST_CASE(Foundation_Math_Triangulator, ComputePolygonOrientation_GivenLowestLeftmostTriangleIsDenerate_ReturnsCorrectOrientation);
 
 namespace foundation
 {
@@ -78,6 +83,9 @@ class Triangulator
         IndexArray&         triangles);
 
   private:
+    GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Triangulator, ComputePolygonOrientation_GivenLowestLeftmostTriangleIsValid_ReturnsCorrectOrientation);
+    GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Triangulator, ComputePolygonOrientation_GivenLowestLeftmostTriangleIsDenerate_ReturnsCorrectOrientation);
+
     enum Orientation
     {
         Degenerate = 0,     // degenerate polygon, no clear orientation
@@ -136,11 +144,10 @@ class Triangulator
 // Triangulator class implementation.
 //
 
-// Triangulate a polygon.
 template <typename T>
 bool Triangulator<T>::triangulate(
-    const Polygon3&     polygon,
-    IndexArray&         triangles)
+    const Polygon3&         polygon,
+    IndexArray&             triangles)
 {
     assert(polygon.size() >= 3);
 
@@ -223,10 +230,7 @@ bool Triangulator<T>::triangulate(
 
             // Continue with the vertex curr + 2 to avoid creating high valence triangles.
             curr = m_links[next].m_next;
-
-            // Reset the failed iteration counter.
             failed_iterations = 0;
-
             continue;
         }
 
@@ -245,10 +249,7 @@ bool Triangulator<T>::triangulate(
 
             // Continue with the vertex curr + 2 to avoid creating high valence triangles.
             curr = m_links[next].m_next;
-
-            // Reset the failed iteration counter.
             failed_iterations = 0;
-
             continue;
         }
 
@@ -264,7 +265,6 @@ bool Triangulator<T>::triangulate(
     return true;
 }
 
-// Compute the approximate normal of a 3D, nearly planar polygon.
 template <typename T>
 Vector<T, 3> Triangulator<T>::compute_polygon_normal(const Polygon3& polygon)
 {
@@ -300,11 +300,10 @@ Vector<T, 3> Triangulator<T>::compute_polygon_normal(const Polygon3& polygon)
     return normal;
 }
 
-// Project an approximately planar 3D polygon onto a plane.
 template <typename T>
 bool Triangulator<T>::project_polygon(
-    const Polygon3&     polygon3,
-    Polygon2&           polygon2)
+    const Polygon3&         polygon3,
+    Polygon2&               polygon2)
 {
     assert(polygon3.size() >= 3);
 
@@ -326,22 +325,18 @@ bool Triangulator<T>::project_polygon(
     const size_t n = polygon3.size();
     polygon2.reserve(n);
     for (size_t i = 0; i < n; ++i)
-    {
-        polygon2.push_back(
-            Vector2Type(dot(polygon3[i], u), dot(polygon3[i], v)));
-    }
+        polygon2.push_back(Vector2Type(dot(polygon3[i], u), dot(polygon3[i], v)));
 
     // Projection succeeded.
     return true;
 }
 
-// Compute the orientation of a 2D triangle.
 template <typename T>
 inline typename Triangulator<T>::Orientation
 Triangulator<T>::compute_triangle_orientation(
-    const Vector2Type&  v0,
-    const Vector2Type&  v1,
-    const Vector2Type&  v2)
+    const Vector2Type&      v0,
+    const Vector2Type&      v1,
+    const Vector2Type&      v2)
 {
     const Vector2Type e0 = v1 - v0;
     const Vector2Type e1 = v2 - v0;
@@ -352,48 +347,57 @@ Triangulator<T>::compute_triangle_orientation(
     else return det > ValueType(0.0) ? CCW : CW;
 }
 
-// Compute the orientation of a 2D polygon.
 template <typename T>
 typename Triangulator<T>::Orientation
-Triangulator<T>::compute_polygon_orientation(
-    const Polygon2&     polygon)
+Triangulator<T>::compute_polygon_orientation(const Polygon2& polygon)
 {
-    assert(polygon.size() >= 3);
-
-    // Find the rightmost, lowest vertex of the polygon.
-    size_t corner_index = 0;
-    Vector2Type corner_vertex = polygon[0];
     const size_t n = polygon.size();
+
+    assert(n >= 3);
+
+    // Find the lowest, leftmost vertex of the polygon.
+    size_t corner_index = 0;
     for (size_t i = 1; i < n; ++i)
     {
         const Vector2Type& v = polygon[i];
+        const Vector2Type& corner_vertex = polygon[corner_index];
+
         if ((v[1] <  corner_vertex[1]) ||
             (v[1] == corner_vertex[1] && v[0] < corner_vertex[0]))
         {
             // Found a better corner vertex.
             corner_index = i;
-            corner_vertex = v;
         }
     }
 
-    // Find the two neighbors of the corner vertex.
-    const size_t prev_index = corner_index > 0 ? corner_index - 1 : n - 1;
-    const size_t next_index = corner_index < n - 1 ? corner_index + 1 : 0;
+    for (size_t i = 0; i < n; ++i, ++corner_index)
+    {
+        // Find the two neighbors of the corner vertex.
+        const size_t prev_index = corner_index > 0 ? corner_index - 1 : n - 1;
+        const size_t next_index = corner_index < n - 1 ? corner_index + 1 : 0;
 
-    // Compute the orientation of the polygon.
-    return compute_triangle_orientation(
-        polygon[prev_index],
-        corner_vertex,
-        polygon[next_index]);
+        // Compute the orientation of this triangle.
+        const Orientation orientation =
+            compute_triangle_orientation(
+                polygon[prev_index],
+                polygon[corner_index],
+                polygon[next_index]);
+
+        // The first non-denegerate triangle determines the orientation of the polygon.
+        if (orientation != Degenerate)
+            return orientation;
+    }
+
+    // All triangles are degenerate thus the polygon is degenerate.
+    return Degenerate;
 }
 
-// Check whether a given point p is inside a given triangle (v0, v1, v2).
 template <typename T>
 inline bool Triangulator<T>::point_in_triangle(
-    const Vector2Type&  p,
-    const Vector2Type&  v0,
-    const Vector2Type&  v1,
-    const Vector2Type&  v2)
+    const Vector2Type&      p,
+    const Vector2Type&      v0,
+    const Vector2Type&      v1,
+    const Vector2Type&      v2)
 {
     assert(compute_triangle_orientation(v0, v1, v2) == CCW);
 
@@ -421,12 +425,11 @@ inline bool Triangulator<T>::point_in_triangle(
     return true;
 }
 
-// Check whether a given convex triangle is a valid ear.
 template <typename T>
 bool Triangulator<T>::is_ear(
-    const size_t        prev,
-    const size_t        curr,
-    const size_t        next) const
+    const size_t            prev,
+    const size_t            curr,
+    const size_t            next) const
 {
     // Fetch the vertices of the triangle (prev, curr, next).
     const Vector2Type& v0 = m_polygon2[prev];
@@ -441,6 +444,7 @@ bool Triangulator<T>::is_ear(
     {
         if (i == prev || i == next)
             continue;
+
         if (point_in_triangle(m_polygon2[i], v0, v1, v2))
             return false;
     }
