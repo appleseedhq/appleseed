@@ -86,6 +86,7 @@ namespace
           , m_untitled_mesh_counter(0)
           , m_vertex_count(0)
           , m_face_material(0)
+          , m_triangulator(Triangulator<double>::KeepDegenerateTriangles)
           , m_face_count(0)
           , m_triangulation_error_count(0)
           , m_total_vertex_count(0)
@@ -176,8 +177,10 @@ namespace
 
             if (m_vertex_count > 3)
             {
+                assert(m_polygon.empty());
+                assert(m_triangles.empty());
+
                 // Create the polygon to triangulate.
-                clear_keep_memory(m_polygon);
                 for (size_t i = 0; i < m_vertex_count; ++i)
                 {
                     m_polygon.push_back(
@@ -185,12 +188,14 @@ namespace
                 }
 
                 // Triangulate the polygon.
-                clear_keep_memory(m_triangles);
                 if (!m_triangulator.triangulate(m_polygon, m_triangles))
                 {
-                    // Skip problematic polygonal faces.
+                    // The polygon could not be triangulated.
                     ++m_triangulation_error_count;
-                    return;
+
+                    // Insert 0-area triangle to ensure the right number of triangles in the result mesh.
+                    for (size_t i = 0; i < m_vertex_count - 2; ++i)
+                        insert_triangle(0, 0, 0);
                 }
 
                 // Insert all triangles of the triangulation into the mesh.
@@ -202,6 +207,9 @@ namespace
                         m_triangles[i + 1],
                         m_triangles[i + 2]);
                 }
+
+                clear_keep_memory(m_polygon);
+                clear_keep_memory(m_triangles);
             }
             else
             {
