@@ -45,12 +45,11 @@ namespace renderer
 class RENDERERDLL ProjectFileWriter
 {
   public:
-    // Writing options.
     enum Options
     {
-        Defaults            = 0,
-        OmitHeaderComment   = 1 << 0,
-        OmitMeshFiles       = 1 << 1
+        Defaults            = 0,        // none of the flags below
+        OmitHeaderComment   = 1 << 0,   // do not write the header comment
+        OmitMeshFiles       = 1 << 1    // do not write mesh files to disk
     };
 
     // Write a project to disk. The project must be named.

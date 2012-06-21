@@ -77,10 +77,9 @@ class OBJMeshFileReader
         }
     };
 
-    // Reading options.
     enum Options
     {
-        Default                 = 0,
+        Default                 = 0,            // none of the flags below
         FavorSpeedOverPrecision = 1 << 0,       // use approximate algorithm for parsing floating-point values
         StopOnInvalidFaceDef    = 1 << 1        // stop parsing on invalid face definitions
     };
