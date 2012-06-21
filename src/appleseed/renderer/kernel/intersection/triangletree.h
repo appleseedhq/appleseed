@@ -59,30 +59,10 @@
 namespace foundation    { class Statistics; }
 namespace renderer      { class Assembly; }
 namespace renderer      { class Scene; }
+namespace renderer      { class TriangleVertexInfo; }
 
 namespace renderer
 {
-
-//
-// A helper structure to locate all the vertices that belong to a triangle.
-//
-
-struct TriangleVertexInfo
-{
-    size_t  m_vertex_index;             // index of the first vertex in the vertex array
-    size_t  m_motion_segment_count;     // number of motion segments for this triangle
-
-    TriangleVertexInfo() {}
-
-    TriangleVertexInfo(
-        const size_t    vertex_index,
-        const size_t    motion_segment_count)
-      : m_vertex_index(vertex_index)
-      , m_motion_segment_count(motion_segment_count)
-    {
-    }
-};
-
 
 //
 // Triangle tree.
