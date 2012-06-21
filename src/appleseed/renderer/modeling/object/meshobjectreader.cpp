@@ -482,6 +482,20 @@ namespace
                 return false;
             }
 
+            if (object->get_triangle_count() != object_next->get_triangle_count())
+            {
+                RENDERER_LOG_ERROR(
+                    "while reading key frame for object \"%s\" from mesh file %s: "
+                    "expected " FMT_SIZE_T " %s, got " FMT_SIZE_T ".",
+                    object->get_name(),
+                    filename,
+                    object->get_triangle_count(),
+                    object->get_triangle_count() > 1 ? "triangles" : "triangle",
+                    object_next->get_triangle_count());
+
+                return false;
+            }
+
             const size_t vertex_count = object_next->get_vertex_count();
 
             for (size_t j = 0; j < vertex_count; ++j)
