@@ -73,6 +73,40 @@ TEST_SUITE(Foundation_Math_Triangulator)
         EXPECT_EQ(TriangulatorType::CW, orientation);
     }
 
+    TEST_CASE_F(Triangulate_GivenQuadWithCoincidentVertices_KeepDegenerateTrianglesIsFalse_ReturnsOneTriangle, Fixture)
+    {
+        TriangulatorType::Polygon3 polygon;
+        polygon.push_back(Vector3Type(0.0, 0.0, 0.0));
+        polygon.push_back(Vector3Type(0.0, 1.0, 0.0));
+        polygon.push_back(Vector3Type(1.0, 1.0, 0.0));
+        polygon.push_back(Vector3Type(0.0, 0.0, 0.0));
+
+        TriangulatorType triangulator;
+        TriangulatorType::IndexArray triangles;
+
+        const bool success = triangulator.triangulate(polygon, triangles);
+
+        ASSERT_TRUE(success);
+        EXPECT_EQ(1 * 3, triangles.size());
+    }
+
+    TEST_CASE_F(Triangulate_GivenQuadWithCoincidentVertices_KeepDegenerateTrianglesIsTrue_ReturnsTwoTriangles, Fixture)
+    {
+        TriangulatorType::Polygon3 polygon;
+        polygon.push_back(Vector3Type(0.0, 0.0, 0.0));
+        polygon.push_back(Vector3Type(0.0, 1.0, 0.0));
+        polygon.push_back(Vector3Type(1.0, 1.0, 0.0));
+        polygon.push_back(Vector3Type(0.0, 0.0, 0.0));
+
+        TriangulatorType triangulator(TriangulatorType::KeepDegenerateTriangles);
+        TriangulatorType::IndexArray triangles;
+
+        const bool success = triangulator.triangulate(polygon, triangles);
+
+        ASSERT_TRUE(success);
+        EXPECT_EQ(2 * 3, triangles.size());
+    }
+
     TEST_CASE_F(Triangulate_GivenSelfCrossingTriangle_ReturnsFalse, Fixture)
     {
         TriangulatorType::Polygon3 polygon;

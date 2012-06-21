@@ -76,6 +76,15 @@ class Triangulator
     // Index array.
     typedef std::vector<size_t> IndexArray;
 
+    enum Options
+    {
+        Default                 = 0,        // none of the flags below
+        KeepDegenerateTriangles = 1 << 0    // insert degenerate triangles into triangulation
+    };
+
+    // Constructor.
+    explicit Triangulator(const int options = Default);
+
     // Triangulate a polygon.
     // Returns true if triangulation was successful, false otherwise.
     bool triangulate(
@@ -88,9 +97,9 @@ class Triangulator
 
     enum Orientation
     {
-        Degenerate = 0,     // degenerate polygon, no clear orientation
-        CCW,                // counterclockwise
-        CW                  // clockwise
+        Degenerate = 0,                     // degenerate polygon, no clear orientation
+        CCW,                                // counterclockwise orientation
+        CW                                  // clockwise orientation
     };
 
     struct Link
@@ -99,8 +108,9 @@ class Triangulator
         size_t  m_next;
     };
 
-    std::vector<Link>   m_links;
-    Polygon2            m_polygon2;
+    const int               m_options;
+    std::vector<Link>       m_links;
+    Polygon2                m_polygon2;
 
     // Compute the approximate normal of a 3D, nearly planar polygon.
     // The returned normal is not unit-length. It may also be a null
@@ -143,6 +153,12 @@ class Triangulator
 //
 // Triangulator class implementation.
 //
+
+template <typename T>
+Triangulator<T>::Triangulator(const int options)
+  : m_options(options)
+{
+}
 
 template <typename T>
 bool Triangulator<T>::triangulate(
@@ -220,45 +236,43 @@ bool Triangulator<T>::triangulate(
         const Vector2Type e1 = v2 - v0;
         const ValueType det = e0[0] * e1[1] - e1[0] * e0[1];
 
-        // Skip degenerate triangles.
-        if (det == ValueType(0.0))
+        // Only consider convex vertices.
+        if (det < ValueType(0.0))
         {
-            // Remove the current vertex from the list.
-            m_links[prev].m_next = next;
-            m_links[next].m_prev = prev;
-            --remaining_vertices;
+            // Update the failed iteration counter and detect infinite loop.
+            if (++failed_iterations >= remaining_vertices)
+                return false;
 
-            // Continue with the vertex curr + 2 to avoid creating high valence triangles.
-            curr = m_links[next].m_next;
-            failed_iterations = 0;
+            // Consider the next vertex.
+            curr = next;
             continue;
         }
 
-        // Test for convexity and earity.
-        if (det > ValueType(0.0) && is_ear(prev, curr, next))
+        // Insert the triangle into the triangulation.
+        if (det == ValueType(0.0))
         {
-            // Create a new triangle.
+            if (m_options & KeepDegenerateTriangles)
+            {
+                triangles.push_back(prev);
+                triangles.push_back(curr);
+                triangles.push_back(next);
+            }
+        }
+        else if (det > ValueType(0.0) && is_ear(prev, curr, next))
+        {
             triangles.push_back(prev);
             triangles.push_back(curr);
             triangles.push_back(next);
-
-            // Remove the current vertex from the list.
-            m_links[prev].m_next = next;
-            m_links[next].m_prev = prev;
-            --remaining_vertices;
-
-            // Continue with the vertex curr + 2 to avoid creating high valence triangles.
-            curr = m_links[next].m_next;
-            failed_iterations = 0;
-            continue;
         }
 
-        // Update the failed iteration counter and detect infinite loop.
-        if (++failed_iterations >= remaining_vertices)
-            return false;
+        // Remove the current vertex from the list.
+        m_links[prev].m_next = next;
+        m_links[next].m_prev = prev;
+        --remaining_vertices;
 
-        // Consider the next vertex.
-        curr = next;
+        // Continue with the vertex curr + 2 to avoid creating high valence triangles.
+        curr = m_links[next].m_next;
+        failed_iterations = 0;
     }
 
     // Triangulation succeeded.
