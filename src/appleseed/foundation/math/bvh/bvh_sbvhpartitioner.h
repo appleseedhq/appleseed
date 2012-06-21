@@ -104,7 +104,7 @@ class SBVHPartitioner
         const size_t                max_leaf_size = 1,
         const size_t                bin_count = 64,
         const ValueType             interior_node_traversal_cost = ValueType(1.0),
-        const ValueType             triangle_intersection_cost = ValueType(1.0));
+        const ValueType             item_intersection_cost = ValueType(1.0));
 
     // Create the root leaf of the tree. Ownership of the leaf is passed to the caller.
     LeafType* create_root_leaf() const;
@@ -138,8 +138,8 @@ class SBVHPartitioner
     {
         AABBType    m_bin_bbox;         // bbox of this bin
         AABBType    m_left_bbox;        // bbox of all the bins to the left of this one
-        size_t      m_entry_counter;    // number of triangles that begin in this bin
-        size_t      m_exit_counter;     // number of triangles that end in this bin
+        size_t      m_entry_counter;    // number of items that begin in this bin
+        size_t      m_exit_counter;     // number of items that end in this bin
     };
 
     ItemHandler&                    m_item_handler;
@@ -148,7 +148,7 @@ class SBVHPartitioner
     const size_t                    m_bin_count;
     const ValueType                 m_rcp_bin_count;
     const ValueType                 m_interior_node_traversal_cost;
-    const ValueType                 m_triangle_intersection_cost;
+    const ValueType                 m_item_intersection_cost;
 
     ValueType                       m_root_bbox_rcp_sa;
     std::vector<AABBType>           m_left_bboxes;
@@ -216,14 +216,14 @@ SBVHPartitioner<ItemHandler, AABBVector>::SBVHPartitioner(
     const size_t                    max_leaf_size,
     const size_t                    bin_count,
     const ValueType                 interior_node_traversal_cost,
-    const ValueType                 triangle_intersection_cost)
+    const ValueType                 item_intersection_cost)
   : m_item_handler(item_handler)
   , m_bboxes(bboxes)
   , m_max_leaf_size(max_leaf_size)
   , m_bin_count(bin_count)
   , m_rcp_bin_count(ValueType(1.0) / bin_count)
   , m_interior_node_traversal_cost(interior_node_traversal_cost)
-  , m_triangle_intersection_cost(triangle_intersection_cost)
+  , m_item_intersection_cost(item_intersection_cost)
   , m_left_bboxes(bboxes.size() > 1 ? bboxes.size() - 1 : 0)
   , m_bins(bin_count)
   , m_tags(bboxes.size())
@@ -347,7 +347,7 @@ bool SBVHPartitioner<ItemHandler, AABBVector>::split(
     }
 
     // Compute the cost of keeping the leaf unsplit.
-    const ValueType leaf_cost = leaf.size() * m_triangle_intersection_cost;
+    const ValueType leaf_cost = leaf.size() * m_item_intersection_cost;
 
     // Select the cheapest option.
     if (leaf_cost <= object_split_cost && leaf_cost <= spatial_split_cost)
@@ -421,7 +421,7 @@ inline typename AABBVector::value_type::ValueType SBVHPartitioner<ItemHandler, A
 
     return
         m_interior_node_traversal_cost +  
-        m_triangle_intersection_cost * (cost / bbox_half_surface_area);
+        m_item_intersection_cost * (cost / bbox_half_surface_area);
 }
 
 template <typename ItemHandler, typename AABBVector>
