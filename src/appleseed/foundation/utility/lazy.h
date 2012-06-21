@@ -139,6 +139,7 @@ class Access
 
     // Get the object pointer.
     const ObjectType* get() const;
+    const ObjectType& ref() const;
 
     // Access the object. The object must exist.
     const ObjectType* operator->() const;
@@ -430,6 +431,14 @@ inline const Object* Access<Object>::get() const
 {
     assert(m_lazy);
     return m_lazy->m_object;
+}
+
+template <typename Object>
+inline const Object& Access<Object>::ref() const
+{
+    assert(m_lazy);
+    assert(m_lazy->m_object);
+    return *m_lazy->m_object;
 }
 
 template <typename Object>
