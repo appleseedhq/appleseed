@@ -784,9 +784,14 @@ set (renderer_kernel_intersection_sources
     renderer/kernel/intersection/regiontree.h
     renderer/kernel/intersection/tracecontext.cpp
     renderer/kernel/intersection/tracecontext.h
+    renderer/kernel/intersection/triangleencoder.cpp
+    renderer/kernel/intersection/triangleencoder.h
+    renderer/kernel/intersection/triangleitemhandler.cpp
+    renderer/kernel/intersection/triangleitemhandler.h
     renderer/kernel/intersection/trianglekey.h
     renderer/kernel/intersection/triangletree.cpp
     renderer/kernel/intersection/triangletree.h
+    renderer/kernel/intersection/trianglevertexinfo.h
 )
 list (APPEND appleseed_sources
     ${renderer_kernel_intersection_sources}

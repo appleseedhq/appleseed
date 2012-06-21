@@ -31,6 +31,9 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/kernel/intersection/triangleencoder.h"
+#include "renderer/kernel/intersection/triangleitemhandler.h"
+#include "renderer/kernel/intersection/trianglevertexinfo.h"
 #include "renderer/kernel/tessellation/statictessellation.h"
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/kernel/texturing/texturestore.h"
@@ -49,9 +52,6 @@
 #include "foundation/math/area.h"
 #include "foundation/math/permutation.h"
 #include "foundation/math/treeoptimizer.h"
-#ifndef APPLESEED_FOUNDATION_USE_SSE
-#include "foundation/platform/sse.h"
-#endif
 #include "foundation/platform/system.h"
 #include "foundation/platform/timer.h"
 #include "foundation/utility/memory.h"
@@ -73,6 +73,146 @@ namespace renderer
 
 namespace
 {
+    void collect_static_triangles(
+        const GAABB3&                   tree_bbox,
+        const RegionInfo&               region_info,
+        const StaticTriangleTess&       tess,
+        const Transformd&               transform,
+        vector<TriangleKey>&            triangle_keys,
+        vector<TriangleVertexInfo>&     triangle_vertex_infos,
+        vector<GVector3>&               triangle_vertices,
+        vector<AABB3d>&                 triangle_bboxes)
+    {
+        const size_t triangle_count = tess.m_primitives.size();
+
+        for (size_t i = 0; i < triangle_count; ++i)
+        {
+            // Fetch the triangle.
+            const Triangle& triangle = tess.m_primitives[i];
+
+            // Retrieve object space vertices of the triangle.
+            const GVector3& v0_os = tess.m_vertices[triangle.m_v0];
+            const GVector3& v1_os = tess.m_vertices[triangle.m_v1];
+            const GVector3& v2_os = tess.m_vertices[triangle.m_v2];
+
+            // Transform triangle vertices to assembly space.
+            const GVector3 v0 = transform.transform_point_to_parent(v0_os);
+            const GVector3 v1 = transform.transform_point_to_parent(v1_os);
+            const GVector3 v2 = transform.transform_point_to_parent(v2_os);
+
+            // Compute the bounding box of the triangle in assembly space.
+            GAABB3 triangle_bbox;
+            triangle_bbox.invalidate();
+            triangle_bbox.insert(v0);
+            triangle_bbox.insert(v1);
+            triangle_bbox.insert(v2);
+
+            // Ignore degenerate triangles.
+            if (square_area(v0, v1, v2) == GScalar(0.0))
+                continue;
+
+            // Ignore triangles that don't intersect the tree.
+            if (!intersect(tree_bbox, v0, v1, v2))
+                continue;
+
+            // Store the triangle key.
+            triangle_keys.push_back(
+                TriangleKey(
+                    region_info.get_object_instance_index(),
+                    region_info.get_region_index(),
+                    i));
+
+            // Store the index of the first triangle vertex and the number of motion segments.
+            triangle_vertex_infos.push_back(TriangleVertexInfo(triangle_vertices.size(), 0));
+
+            // Store the triangle vertices.
+            triangle_vertices.push_back(v0);
+            triangle_vertices.push_back(v1);
+            triangle_vertices.push_back(v2);
+
+            // Store the triangle bounding box.
+            triangle_bboxes.push_back(AABB3d(triangle_bbox));
+        }
+    }
+
+    void collect_moving_triangles(
+        const GAABB3&                   tree_bbox,
+        const RegionInfo&               region_info,
+        const StaticTriangleTess&       tess,
+        const Transformd&               transform,
+        vector<TriangleKey>&            triangle_keys,
+        vector<TriangleVertexInfo>&     triangle_vertex_infos,
+        vector<GVector3>&               triangle_vertices,
+        vector<AABB3d>&                 triangle_bboxes)
+    {
+        const size_t motion_segment_count = tess.get_motion_segment_count();
+        const size_t triangle_count = tess.m_primitives.size();
+
+        for (size_t i = 0; i < triangle_count; ++i)
+        {
+            // Fetch the triangle.
+            const Triangle& triangle = tess.m_primitives[i];
+
+            // Retrieve object space vertices of the triangle.
+            const GVector3& v0_os = tess.m_vertices[triangle.m_v0];
+            const GVector3& v1_os = tess.m_vertices[triangle.m_v1];
+            const GVector3& v2_os = tess.m_vertices[triangle.m_v2];
+
+            // Transform triangle vertices to assembly space.
+            const GVector3 v0 = transform.transform_point_to_parent(v0_os);
+            const GVector3 v1 = transform.transform_point_to_parent(v1_os);
+            const GVector3 v2 = transform.transform_point_to_parent(v2_os);
+
+            // Compute the bounding box of the triangle in assembly space.
+            GAABB3 triangle_bbox;
+            triangle_bbox.invalidate();
+            triangle_bbox.insert(v0);
+            triangle_bbox.insert(v1);
+            triangle_bbox.insert(v2);
+            for (size_t m = 0; m < motion_segment_count; ++m)
+            {
+                triangle_bbox.insert(transform.transform_point_to_parent(tess.get_vertex_pose(triangle.m_v0, m)));
+                triangle_bbox.insert(transform.transform_point_to_parent(tess.get_vertex_pose(triangle.m_v1, m)));
+                triangle_bbox.insert(transform.transform_point_to_parent(tess.get_vertex_pose(triangle.m_v2, m)));
+            }
+
+            // Ignore triangles that are degenerate over the entire shutter interval.
+            if (triangle_bbox.rank() < 2)
+                continue;
+
+            // Ignore triangles that don't intersect the tree.
+            if (!GAABB3::overlap(tree_bbox, triangle_bbox))
+                continue;
+
+            // Store the triangle key.
+            triangle_keys.push_back(
+                TriangleKey(
+                    region_info.get_object_instance_index(),
+                    region_info.get_region_index(),
+                    i));
+
+            // Store the index of the first triangle vertex and the number of motion segments.
+            triangle_vertex_infos.push_back(
+                TriangleVertexInfo(
+                    triangle_vertices.size(),
+                    motion_segment_count));
+
+            // Store the triangle vertices.
+            triangle_vertices.push_back(v0);
+            triangle_vertices.push_back(v1);
+            triangle_vertices.push_back(v2);
+            for (size_t m = 0; m < motion_segment_count; ++m)
+            {
+                triangle_vertices.push_back(transform.transform_point_to_parent(tess.get_vertex_pose(triangle.m_v0, m)));
+                triangle_vertices.push_back(transform.transform_point_to_parent(tess.get_vertex_pose(triangle.m_v1, m)));
+                triangle_vertices.push_back(transform.transform_point_to_parent(tess.get_vertex_pose(triangle.m_v2, m)));
+            }
+
+            // Store the triangle bounding box.
+            triangle_bboxes.push_back(AABB3d(triangle_bbox));
+        }
+    }
+
     void collect_triangles(
         const TriangleTree::Arguments&  arguments,
         vector<TriangleKey>&            triangle_keys,
@@ -81,17 +221,17 @@ namespace
         vector<AABB3d>&                 triangle_bboxes)
     {
         const size_t region_count = arguments.m_regions.size();
-        for (size_t region_index = 0; region_index < region_count; ++region_index)
+
+        for (size_t i = 0; i < region_count; ++i)
         {
             // Fetch the region info.
-            const RegionInfo& region_info = arguments.m_regions[region_index];
+            const RegionInfo& region_info = arguments.m_regions[i];
 
             // Retrieve the object instance and its transformation.
             const ObjectInstance* object_instance =
                 arguments.m_assembly.object_instances().get_by_index(
                     region_info.get_object_instance_index());
             assert(object_instance);
-            const Transformd& transform = object_instance->get_transform();
 
             // Retrieve the object.
             Object& object = object_instance->get_object();
@@ -106,460 +246,33 @@ namespace
             Access<StaticTriangleTess> tess(&region->get_static_triangle_tess());
             const size_t motion_segment_count = tess->get_motion_segment_count();
 
-            // Collect all triangles of the region that intersect the bounding box of the tree.
-            const size_t triangle_count = tess->m_primitives.size();
-            for (size_t triangle_index = 0; triangle_index < triangle_count; ++triangle_index)
+            // Collect the triangles from this tessellation.
+            if (tess->get_motion_segment_count() > 0)
             {
-                // Fetch the triangle.
-                const Triangle& triangle = tess->m_primitives[triangle_index];
-
-                // Retrieve object space vertices of the triangle.
-                const GVector3& v0_os = tess->m_vertices[triangle.m_v0];
-                const GVector3& v1_os = tess->m_vertices[triangle.m_v1];
-                const GVector3& v2_os = tess->m_vertices[triangle.m_v2];
-
-                // Transform triangle vertices to assembly space.
-                const GVector3 v0 = transform.transform_point_to_parent(v0_os);
-                const GVector3 v1 = transform.transform_point_to_parent(v1_os);
-                const GVector3 v2 = transform.transform_point_to_parent(v2_os);
-
-                // Compute the bounding box of the triangle in assembly space.
-                GAABB3 triangle_bbox;
-                triangle_bbox.invalidate();
-                triangle_bbox.insert(v0);
-                triangle_bbox.insert(v1);
-                triangle_bbox.insert(v2);
-
-                if (motion_segment_count > 0)
-                {
-                    // Update the bounding of the triangle to enclose its full motion over the shutter interval.
-                    for (size_t ms_index = 0; ms_index < motion_segment_count; ++ms_index)
-                    {
-                        triangle_bbox.insert(transform.transform_point_to_parent(tess->get_vertex_pose(triangle.m_v0, ms_index)));
-                        triangle_bbox.insert(transform.transform_point_to_parent(tess->get_vertex_pose(triangle.m_v1, ms_index)));
-                        triangle_bbox.insert(transform.transform_point_to_parent(tess->get_vertex_pose(triangle.m_v2, ms_index)));
-                    }
-
-                    // Ignore triangles that are degenerate over the entire shutter interval.
-                    if (triangle_bbox.rank() < 2)
-                        continue;
-
-                    // Ignore triangles that don't intersect the tree.
-                    if (!GAABB3::overlap(arguments.m_bbox, triangle_bbox))
-                        continue;
-                }
-                else
-                {
-                    // Ignore degenerate triangles.
-                    if (square_area(v0, v1, v2) == GScalar(0.0))
-                        continue;
-
-                    // Ignore triangles that don't intersect the tree.
-                    if (!intersect(arguments.m_bbox, v0, v1, v2))
-                        continue;
-                }
-
-                // Store the triangle key.
-                triangle_keys.push_back(
-                    TriangleKey(
-                        region_info.get_object_instance_index(),
-                        region_info.get_region_index(),
-                        triangle_index));
-
-                // Store the index of the first triangle vertex and the number of motion segments.
-                triangle_vertex_infos.push_back(
-                    TriangleVertexInfo(
-                        triangle_vertices.size(),
-                        motion_segment_count));
-
-                // Store the triangle vertices.
-                triangle_vertices.push_back(v0);
-                triangle_vertices.push_back(v1);
-                triangle_vertices.push_back(v2);
-                for (size_t ms_index = 0; ms_index < motion_segment_count; ++ms_index)
-                {
-                    triangle_vertices.push_back(transform.transform_point_to_parent(tess->get_vertex_pose(triangle.m_v0, ms_index)));
-                    triangle_vertices.push_back(transform.transform_point_to_parent(tess->get_vertex_pose(triangle.m_v1, ms_index)));
-                    triangle_vertices.push_back(transform.transform_point_to_parent(tess->get_vertex_pose(triangle.m_v2, ms_index)));
-                }
-
-                // Store the triangle bounding box.
-                triangle_bboxes.push_back(AABB3d(triangle_bbox));
+                collect_moving_triangles(
+                    arguments.m_bbox,
+                    region_info,
+                    tess.ref(),
+                    object_instance->get_transform(),
+                    triangle_keys,
+                    triangle_vertex_infos,
+                    triangle_vertices,
+                    triangle_bboxes);
+            }
+            else
+            {
+                collect_static_triangles(
+                    arguments.m_bbox,
+                    region_info,
+                    tess.ref(),
+                    object_instance->get_transform(),
+                    triangle_keys,
+                    triangle_vertex_infos,
+                    triangle_vertices,
+                    triangle_bboxes);
             }
         }
     }
-
-    class TriangleItemHandler
-    {
-      public:
-        TriangleItemHandler(
-            const vector<TriangleVertexInfo>&   triangle_vertex_infos,
-            const vector<GVector3>&             triangle_vertices,
-            const vector<AABB3d>&               triangle_bboxes)
-          : m_triangle_vertex_infos(triangle_vertex_infos)
-          , m_triangle_vertices(triangle_vertices)
-          , m_triangle_bboxes(triangle_bboxes)
-        {
-        }
-
-        double get_bbox_grow_eps() const
-        {
-            return 2.0e-9;
-        }
-
-        AABB3d clip(
-            const size_t    item_index,
-            const size_t    dimension,
-            const double    slab_min,
-            const double    slab_max) const
-        {
-            const TriangleVertexInfo& vertex_info = m_triangle_vertex_infos[item_index];
-
-            if (vertex_info.m_motion_segment_count > 0)
-            {
-                AABB3d triangle_bbox = m_triangle_bboxes[item_index];
-
-                if (triangle_bbox.min[dimension] < slab_min)
-                    triangle_bbox.min[dimension] = slab_min;
-
-                if (triangle_bbox.max[dimension] > slab_max)
-                    triangle_bbox.max[dimension] = slab_max;
-
-                return triangle_bbox;
-            }
-
-#ifdef APPLESEED_FOUNDATION_USE_SSE
-
-            SSE_ALIGN const Vector3d v0(m_triangle_vertices[vertex_info.m_vertex_index + 0]);
-            SSE_ALIGN const Vector3d v1(m_triangle_vertices[vertex_info.m_vertex_index + 1]);
-            SSE_ALIGN const Vector3d v2(m_triangle_vertices[vertex_info.m_vertex_index + 2]);
-
-            const double v0d = v0[dimension];
-            const double v1d = v1[dimension];
-            const double v2d = v2[dimension];
-
-            const int v0_ge_min = v0d >= slab_min ? 1 : 0;
-            const int v0_le_max = v0d <= slab_max ? 1 : 0;
-            const int v1_ge_min = v1d >= slab_min ? 1 : 0;
-            const int v1_le_max = v1d <= slab_max ? 1 : 0;
-            const int v2_ge_min = v2d >= slab_min ? 1 : 0;
-            const int v2_le_max = v2d <= slab_max ? 1 : 0;
-
-            sse2d bbox_min_xy = set1pd(+numeric_limits<double>::max());
-            sse2d bbox_min_zz = set1pd(+numeric_limits<double>::max());
-            sse2d bbox_max_xy = set1pd(-numeric_limits<double>::max());
-            sse2d bbox_max_zz = set1pd(-numeric_limits<double>::max());
-
-            const sse2d v0_xy = loadpd(&v0.x);
-            const sse2d v0_zz = set1pd(v0.z);
-            const sse2d v1_xy = loadpd(&v1.x);
-            const sse2d v1_zz = set1pd(v1.z);
-            const sse2d v2_xy = loadpd(&v2.x);
-            const sse2d v2_zz = set1pd(v2.z);
-
-            if (v0_ge_min & v0_le_max)
-            {
-                bbox_min_xy = minpd(bbox_min_xy, v0_xy);
-                bbox_max_xy = maxpd(bbox_max_xy, v0_xy);
-                bbox_min_zz = minpd(bbox_min_zz, v0_zz);
-                bbox_max_zz = maxpd(bbox_max_zz, v0_zz);
-            }
-
-            if (v1_ge_min & v1_le_max)
-            {
-                bbox_min_xy = minpd(bbox_min_xy, v1_xy);
-                bbox_max_xy = maxpd(bbox_max_xy, v1_xy);
-                bbox_min_zz = minpd(bbox_min_zz, v1_zz);
-                bbox_max_zz = maxpd(bbox_max_zz, v1_zz);
-            }
-
-            if (v2_ge_min & v2_le_max)
-            {
-                bbox_min_xy = minpd(bbox_min_xy, v2_xy);
-                bbox_max_xy = maxpd(bbox_max_xy, v2_xy);
-                bbox_min_zz = minpd(bbox_min_zz, v2_zz);
-                bbox_max_zz = maxpd(bbox_max_zz, v2_zz);
-            }
-
-            const int v0v1_cross_min = v0_ge_min ^ v1_ge_min;
-            const int v0v1_cross_max = v0_le_max ^ v1_le_max;
-            const int v1v2_cross_min = v1_ge_min ^ v2_ge_min;
-            const int v1v2_cross_max = v1_le_max ^ v2_le_max;
-            const int v2v0_cross_min = v2_ge_min ^ v0_ge_min;
-            const int v2v0_cross_max = v2_le_max ^ v0_le_max;
-
-            if (v0v1_cross_min | v0v1_cross_max)
-            {
-                const double rcp_v0v1 = 1.0 / (v1[dimension] - v0[dimension]);
-
-                if (v0v1_cross_min)
-                {
-                    const double t = (slab_min - v0[dimension]) * rcp_v0v1;
-                    assert(t >= 0.0 && t <= 1.0);
-
-                    const sse2d mt = set1pd(t);
-                    const sse2d mt1 = set1pd(1.0 - t);
-                    const sse2d p_xy = addpd(mulpd(v0_xy, mt1), mulpd(v1_xy, mt));
-                    const sse2d p_zz = addpd(mulpd(v0_zz, mt1), mulpd(v1_zz, mt));
-
-                    bbox_min_xy = minpd(bbox_min_xy, p_xy);
-                    bbox_max_xy = maxpd(bbox_max_xy, p_xy);
-                    bbox_min_zz = minpd(bbox_min_zz, p_zz);
-                    bbox_max_zz = maxpd(bbox_max_zz, p_zz);
-                }
-
-                if (v0v1_cross_max)
-                {
-                    const double t = (slab_max - v0[dimension]) * rcp_v0v1;
-                    assert(t >= 0.0 && t <= 1.0);
-
-                    const sse2d mt = set1pd(t);
-                    const sse2d mt1 = set1pd(1.0 - t);
-                    const sse2d p_xy = addpd(mulpd(v0_xy, mt1), mulpd(v1_xy, mt));
-                    const sse2d p_zz = addpd(mulpd(v0_zz, mt1), mulpd(v1_zz, mt));
-
-                    bbox_min_xy = minpd(bbox_min_xy, p_xy);
-                    bbox_max_xy = maxpd(bbox_max_xy, p_xy);
-                    bbox_min_zz = minpd(bbox_min_zz, p_zz);
-                    bbox_max_zz = maxpd(bbox_max_zz, p_zz);
-                }
-            }
-
-            if (v1v2_cross_min | v1v2_cross_max)
-            {
-                const double rcp_v1v2 = 1.0 / (v2[dimension] - v1[dimension]);
-
-                if (v1v2_cross_min)
-                {
-                    const double t = (slab_min - v1[dimension]) * rcp_v1v2;
-                    assert(t >= 0.0 && t <= 1.0);
-
-                    const sse2d mt = set1pd(t);
-                    const sse2d mt1 = set1pd(1.0 - t);
-                    const sse2d p_xy = addpd(mulpd(v1_xy, mt1), mulpd(v2_xy, mt));
-                    const sse2d p_zz = addpd(mulpd(v1_zz, mt1), mulpd(v2_zz, mt));
-
-                    bbox_min_xy = minpd(bbox_min_xy, p_xy);
-                    bbox_max_xy = maxpd(bbox_max_xy, p_xy);
-                    bbox_min_zz = minpd(bbox_min_zz, p_zz);
-                    bbox_max_zz = maxpd(bbox_max_zz, p_zz);
-                }
-
-                if (v1v2_cross_max)
-                {
-                    const double t = (slab_max - v1[dimension]) * rcp_v1v2;
-                    assert(t >= 0.0 && t <= 1.0);
-
-                    const sse2d mt = set1pd(t);
-                    const sse2d mt1 = set1pd(1.0 - t);
-                    const sse2d p_xy = addpd(mulpd(v1_xy, mt1), mulpd(v2_xy, mt));
-                    const sse2d p_zz = addpd(mulpd(v1_zz, mt1), mulpd(v2_zz, mt));
-
-                    bbox_min_xy = minpd(bbox_min_xy, p_xy);
-                    bbox_max_xy = maxpd(bbox_max_xy, p_xy);
-                    bbox_min_zz = minpd(bbox_min_zz, p_zz);
-                    bbox_max_zz = maxpd(bbox_max_zz, p_zz);
-                }
-            }
-
-            if (v2v0_cross_min | v2v0_cross_max)
-            {
-                const double rcp_v2v0 = 1.0 / (v0[dimension] - v2[dimension]);
-
-                if (v2v0_cross_min)
-                {
-                    const double t = (slab_min - v2[dimension]) * rcp_v2v0;
-                    assert(t >= 0.0 && t <= 1.0);
-
-                    const sse2d mt = set1pd(t);
-                    const sse2d mt1 = set1pd(1.0 - t);
-                    const sse2d p_xy = addpd(mulpd(v2_xy, mt1), mulpd(v0_xy, mt));
-                    const sse2d p_zz = addpd(mulpd(v2_zz, mt1), mulpd(v0_zz, mt));
-
-                    bbox_min_xy = minpd(bbox_min_xy, p_xy);
-                    bbox_max_xy = maxpd(bbox_max_xy, p_xy);
-                    bbox_min_zz = minpd(bbox_min_zz, p_zz);
-                    bbox_max_zz = maxpd(bbox_max_zz, p_zz);
-                }
-
-                if (v2v0_cross_max)
-                {
-                    const double t = (slab_max - v2[dimension]) * rcp_v2v0;
-                    assert(t >= 0.0 && t <= 1.0);
-
-                    const sse2d mt = set1pd(t);
-                    const sse2d mt1 = set1pd(1.0 - t);
-                    const sse2d p_xy = addpd(mulpd(v2_xy, mt1), mulpd(v0_xy, mt));
-                    const sse2d p_zz = addpd(mulpd(v2_zz, mt1), mulpd(v0_zz, mt));
-
-                    bbox_min_xy = minpd(bbox_min_xy, p_xy);
-                    bbox_max_xy = maxpd(bbox_max_xy, p_xy);
-                    bbox_min_zz = minpd(bbox_min_zz, p_zz);
-                    bbox_max_zz = maxpd(bbox_max_zz, p_zz);
-                }
-            }
-
-            SSE_ALIGN AABB3d bbox;
-
-            storepd(&bbox.min.x, bbox_min_xy);
-            storesd(&bbox.min.z, bbox_min_zz);
-            storeupd(&bbox.max.x, bbox_max_xy);
-            storesd(&bbox.max.z, bbox_max_zz);
-
-            if (bbox.min[dimension] < slab_min)
-                bbox.min[dimension] = slab_min;
-
-            if (bbox.max[dimension] > slab_max)
-                bbox.max[dimension] = slab_max;
-
-#else
-
-            const Vector3d v0(m_triangle_vertices[vertex_info.m_vertex_index + 0]);
-            const Vector3d v1(m_triangle_vertices[vertex_info.m_vertex_index + 1]);
-            const Vector3d v2(m_triangle_vertices[vertex_info.m_vertex_index + 2]);
-
-            const int v0_ge_min = v0[dimension] >= slab_min ? 1 : 0;
-            const int v0_le_max = v0[dimension] <= slab_max ? 1 : 0;
-            const int v1_ge_min = v1[dimension] >= slab_min ? 1 : 0;
-            const int v1_le_max = v1[dimension] <= slab_max ? 1 : 0;
-            const int v2_ge_min = v2[dimension] >= slab_min ? 1 : 0;
-            const int v2_le_max = v2[dimension] <= slab_max ? 1 : 0;
-
-            AABB3d bbox;
-            bbox.invalidate();
-
-            if (v0_ge_min & v0_le_max)
-                bbox.insert(v0);
-
-            if (v1_ge_min & v1_le_max)
-                bbox.insert(v1);
-
-            if (v2_ge_min & v2_le_max)
-                bbox.insert(v2);
-
-            if (v0_ge_min != v1_ge_min)
-                bbox.insert(segment_plane_intersection(v0, v1, dimension, slab_min));
-
-            if (v0_le_max != v1_le_max)
-                bbox.insert(segment_plane_intersection(v0, v1, dimension, slab_max));
-
-            if (v1_ge_min != v2_ge_min)
-                bbox.insert(segment_plane_intersection(v1, v2, dimension, slab_min));
-
-            if (v1_le_max != v2_le_max)
-                bbox.insert(segment_plane_intersection(v1, v2, dimension, slab_max));
-
-            if (v2_ge_min != v0_ge_min)
-                bbox.insert(segment_plane_intersection(v2, v0, dimension, slab_min));
-
-            if (v2_le_max != v0_le_max)
-                bbox.insert(segment_plane_intersection(v2, v0, dimension, slab_max));
-
-#endif
-
-            return bbox;
-        }
-
-        bool intersect(
-            const size_t    item_index,
-            const AABB3d&   bbox) const
-        {
-            const TriangleVertexInfo& vertex_info = m_triangle_vertex_infos[item_index];
-            return
-                vertex_info.m_motion_segment_count > 0
-                    ? AABB3d::overlap(bbox, m_triangle_bboxes[item_index])
-                    : foundation::intersect(
-                          bbox,
-                          Vector3d(m_triangle_vertices[vertex_info.m_vertex_index + 0]),
-                          Vector3d(m_triangle_vertices[vertex_info.m_vertex_index + 1]),
-                          Vector3d(m_triangle_vertices[vertex_info.m_vertex_index + 2]));
-        }
-
-      private:
-        const vector<TriangleVertexInfo>&   m_triangle_vertex_infos;
-        const vector<GVector3>&             m_triangle_vertices;
-        const vector<AABB3d>&               m_triangle_bboxes;
-
-        static Vector3d segment_plane_intersection(
-            const Vector3d& a,
-            const Vector3d& b,
-            const size_t    d,
-            const double    x)
-        {
-            const double ab = b[d] - a[d];
-
-            if (ab == 0.0)
-                return a;
-
-            const double t = (x - a[d]) / ab;
-
-            assert(t >= 0.0 && t <= 1.0);
-
-            Vector3d result;
-            result = a * (1.0 - t) + b * t;
-            result[d] = x;
-
-            return result;
-        }
-    };
-
-    struct LeafEncoder
-    {
-        static size_t compute_size(
-            const vector<TriangleVertexInfo>&   triangle_vertex_infos,
-            const vector<size_t>&               triangle_indices,
-            const size_t                        item_begin,
-            const size_t                        item_count)
-        {
-            size_t size = 0;
-
-            for (size_t i = 0; i < item_count; ++i)
-            {
-                const size_t triangle_index = triangle_indices[item_begin + i];
-                const TriangleVertexInfo& vertex_info = triangle_vertex_infos[triangle_index];
-
-                size += sizeof(uint32);         // motion segment count
-
-                if (vertex_info.m_motion_segment_count == 0)
-                    size += sizeof(GTriangleType);
-                else size += (vertex_info.m_motion_segment_count + 1) * 3 * sizeof(GVector3);
-            }
-
-            return size;
-        }
-
-        static void encode(
-            const vector<TriangleVertexInfo>&   triangle_vertex_infos,
-            const vector<GVector3>&             triangle_vertices,
-            const vector<size_t>&               triangle_indices,
-            const size_t                        item_begin,
-            const size_t                        item_count,
-            MemoryWriter&                       writer)
-        {
-            for (size_t i = 0; i < item_count; ++i)
-            {
-                const size_t triangle_index = triangle_indices[item_begin + i];
-                const TriangleVertexInfo& vertex_info = triangle_vertex_infos[triangle_index];
-
-                writer.write(static_cast<uint32>(vertex_info.m_motion_segment_count));
-
-                if (vertex_info.m_motion_segment_count == 0)
-                {
-                    writer.write(
-                        GTriangleType(
-                            triangle_vertices[vertex_info.m_vertex_index + 0],
-                            triangle_vertices[vertex_info.m_vertex_index + 1],
-                            triangle_vertices[vertex_info.m_vertex_index + 2]));
-                }
-                else
-                {
-                    writer.write(
-                        &triangle_vertices[vertex_info.m_vertex_index],
-                        (vertex_info.m_motion_segment_count + 1) * 3 * sizeof(GVector3));
-                }
-            }
-        }
-    };
 }
 
 TriangleTree::Arguments::Arguments(
@@ -791,7 +504,7 @@ void TriangleTree::store_triangles(
             const size_t item_count = node.get_item_count();
 
             const size_t leaf_size =
-                LeafEncoder::compute_size(
+                TriangleEncoder::compute_size(
                     triangle_vertex_infos,
                     triangle_indices,
                     item_begin,
@@ -828,7 +541,7 @@ void TriangleTree::store_triangles(
             }
 
             const size_t leaf_size =
-                LeafEncoder::compute_size(
+                TriangleEncoder::compute_size(
                     triangle_vertex_infos,
                     triangle_indices,
                     item_begin,
@@ -840,7 +553,7 @@ void TriangleTree::store_triangles(
             {
                 user_data_writer.write<uint32>(~0);
 
-                LeafEncoder::encode(
+                TriangleEncoder::encode(
                     triangle_vertex_infos,
                     triangle_vertices,
                     triangle_indices,
@@ -852,7 +565,7 @@ void TriangleTree::store_triangles(
             {
                 user_data_writer.write(static_cast<uint32>(leaf_data_writer.offset()));
 
-                LeafEncoder::encode(
+                TriangleEncoder::encode(
                     triangle_vertex_infos,
                     triangle_vertices,
                     triangle_indices,
