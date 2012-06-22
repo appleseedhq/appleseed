@@ -101,7 +101,9 @@ size_t SAHPartitioner<AABBVector>::partition(
     const size_t                end,
     const AABBType&             bbox)
 {
-    assert(bbox.rank() >= Dimension - 1);
+    // Don't split leaves containing only degenerate triangles.
+    if (bbox.rank() < Dimension - 1)
+        return end;
 
     const size_t count = end - begin;
     assert(count > 1);
