@@ -87,23 +87,7 @@ class ALIGN(64) Node
     typedef typename AABBType::ValueType ValueType;
     static const size_t Dimension = AABBType::Dimension;
 
-    //
-    // The info field of the node is organized as follow:
-    //
-    //   interior node:
-    //
-    //     bits 0-30    child node index
-    //     bit  31      node type (1 for interior node)
-    //
-    //   leaf node:
-    //
-    //     bits 0-30    leaf index
-    //     bit  31      node type (0 for leaf node)
-    //
-    // The maximum size of a single BVH is 2^31 = 2,147,483,648 nodes.
-    //
-
-    uint32                  m_info;
+    uint32                  m_index;
     uint32                  m_count;
     SSE_ALIGN ValueType     m_bbox_data[4 * Dimension];
 };
@@ -216,26 +200,26 @@ template <typename AABB>
 inline void Node<AABB>::set_child_node_index(const size_t index)
 {
     assert(index <= 0xFFFFFFFFUL);
-    m_info = static_cast<uint32>(index);
+    m_index = static_cast<uint32>(index);
 }
 
 template <typename AABB>
 inline size_t Node<AABB>::get_child_node_index() const
 {
-    return static_cast<size_t>(m_info);
+    return static_cast<size_t>(m_index);
 }
 
 template <typename AABB>
 inline void Node<AABB>::set_item_index(const size_t index)
 {
     assert(index <= 0xFFFFFFFFUL);
-    m_info = static_cast<uint32>(index);
+    m_index = static_cast<uint32>(index);
 }
 
 template <typename AABB>
 inline size_t Node<AABB>::get_item_index() const
 {
-    return static_cast<size_t>(m_info);
+    return static_cast<size_t>(m_index);
 }
 
 template <typename AABB>
