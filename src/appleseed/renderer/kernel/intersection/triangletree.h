@@ -44,6 +44,7 @@
 #include "foundation/math/aabb.h"
 #include "foundation/math/bvh.h"
 #include "foundation/math/intersection.h"
+#include "foundation/math/scalar.h"
 #include "foundation/utility/alignedvector.h"
 #include "foundation/utility/lazy.h"
 #include "foundation/utility/poolallocator.h"
@@ -377,9 +378,9 @@ inline bool TriangleLeafVisitor::visit(
 
             // Interpolate triangle vertices.
             const GScalar k = static_cast<GScalar>(ray.m_time * motion_segment_count - prev_index);
-            const GVector3 vert0 = (GScalar(1.0) - k) * prev_vertices[0] + k * next_vertices[0];
-            const GVector3 vert1 = (GScalar(1.0) - k) * prev_vertices[1] + k * next_vertices[1];
-            const GVector3 vert2 = (GScalar(1.0) - k) * prev_vertices[2] + k * next_vertices[2];
+            const GVector3 vert0 = foundation::lerp(prev_vertices[0], next_vertices[0], k);
+            const GVector3 vert1 = foundation::lerp(prev_vertices[1], next_vertices[1], k);
+            const GVector3 vert2 = foundation::lerp(prev_vertices[2], next_vertices[2], k);
 
             // Load the triangle, converting it to the right format if necessary.
             const GTriangleType triangle(vert0, vert1, vert2);
@@ -500,9 +501,9 @@ inline bool TriangleLeafProbeVisitor::visit(
 
             // Interpolate triangle vertices.
             const GScalar k = static_cast<GScalar>(ray.m_time * motion_segment_count - prev_index);
-            const GVector3 vert0 = (GScalar(1.0) - k) * prev_vertices[0] + k * next_vertices[0];
-            const GVector3 vert1 = (GScalar(1.0) - k) * prev_vertices[1] + k * next_vertices[1];
-            const GVector3 vert2 = (GScalar(1.0) - k) * prev_vertices[2] + k * next_vertices[2];
+            const GVector3 vert0 = foundation::lerp(prev_vertices[0], next_vertices[0], k);
+            const GVector3 vert1 = foundation::lerp(prev_vertices[1], next_vertices[1], k);
+            const GVector3 vert2 = foundation::lerp(prev_vertices[2], next_vertices[2], k);
 
             // Load the triangle, converting it to the right format if necessary.
             const GTriangleType triangle(vert0, vert1, vert2);
