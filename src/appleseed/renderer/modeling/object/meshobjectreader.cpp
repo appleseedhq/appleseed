@@ -486,7 +486,7 @@ namespace
 
             if (object->get_triangle_count() != object_next->get_triangle_count())
             {
-                RENDERER_LOG_ERROR(
+                RENDERER_LOG_WARNING(
                     "while reading key frame for object \"%s\" from mesh file %s: "
                     "expected " FMT_SIZE_T " %s, got " FMT_SIZE_T ".",
                     object->get_name(),
@@ -494,8 +494,6 @@ namespace
                     object->get_triangle_count(),
                     object->get_triangle_count() > 1 ? "triangles" : "triangle",
                     object_next->get_triangle_count());
-
-                return false;
             }
 
             const size_t vertex_count = object_next->get_vertex_count();
