@@ -86,7 +86,7 @@ ObjectInstance::ObjectInstance(
     set_name(name);
 
     impl->m_transform = transform;
-    impl->m_parent_bbox = transform.transform_to_parent(object.compute_local_bbox());
+    impl->m_parent_bbox = transform.to_parent(object.compute_local_bbox());
     impl->m_front_material_names = front_materials;
     impl->m_back_material_names = back_materials;
 }

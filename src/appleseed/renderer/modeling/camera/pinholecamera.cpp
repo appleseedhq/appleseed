@@ -125,12 +125,12 @@ namespace
             {
                 const Transformd transform = m_transform_sequence.evaluate(ray.m_time);
                 ray.m_org = transform.get_local_to_parent().extract_translation();
-                ray.m_dir = transform.transform_vector_to_parent(target);
+                ray.m_dir = transform.vector_to_parent(target);
             }
             else
             {
                 ray.m_org = m_ray_org;
-                ray.m_dir = m_transform_sequence.evaluate(0.0).transform_vector_to_parent(target);
+                ray.m_dir = m_transform_sequence.evaluate(0.0).vector_to_parent(target);
             }
         }
 

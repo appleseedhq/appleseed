@@ -89,7 +89,7 @@ const Transformd& AssemblyInstance::get_transform() const
 GAABB3 AssemblyInstance::compute_parent_bbox() const
 {
     return
-        impl->m_transform.transform_to_parent(
+        impl->m_transform.to_parent(
             get_parent_bbox<GAABB3>(
                 m_assembly.object_instances().begin(),
                 m_assembly.object_instances().end()));

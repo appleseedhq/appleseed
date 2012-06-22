@@ -228,9 +228,9 @@ void AOVoxelTree::build(
                     const GVector3& v2_os = tess->m_vertices[triangle.m_v2];
 
                     // Transform triangle vertices to world space.
-                    const GVector3 v0(transform.transform_point_to_parent(v0_os));
-                    const GVector3 v1(transform.transform_point_to_parent(v1_os));
-                    const GVector3 v2(transform.transform_point_to_parent(v2_os));
+                    const GVector3 v0(transform.point_to_parent(v0_os));
+                    const GVector3 v1(transform.point_to_parent(v1_os));
+                    const GVector3 v2(transform.point_to_parent(v2_os));
 
                     // Push the triangle into the tree.
                     TriangleIntersector intersector(v0, v1, v2);

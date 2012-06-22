@@ -96,9 +96,9 @@ namespace
             const GVector3& v2_os = tess.m_vertices[triangle.m_v2];
 
             // Transform triangle vertices to assembly space.
-            const GVector3 v0 = transform.transform_point_to_parent(v0_os);
-            const GVector3 v1 = transform.transform_point_to_parent(v1_os);
-            const GVector3 v2 = transform.transform_point_to_parent(v2_os);
+            const GVector3 v0 = transform.point_to_parent(v0_os);
+            const GVector3 v1 = transform.point_to_parent(v1_os);
+            const GVector3 v2 = transform.point_to_parent(v2_os);
 
             // Compute the bounding box of the triangle.
             GAABB3 triangle_bbox;
@@ -159,9 +159,9 @@ namespace
             const GVector3& v2_os = tess.m_vertices[triangle.m_v2];
 
             // Transform triangle vertices to assembly space.
-            const GVector3 v0 = transform.transform_point_to_parent(v0_os);
-            const GVector3 v1 = transform.transform_point_to_parent(v1_os);
-            const GVector3 v2 = transform.transform_point_to_parent(v2_os);
+            const GVector3 v0 = transform.point_to_parent(v0_os);
+            const GVector3 v1 = transform.point_to_parent(v1_os);
+            const GVector3 v2 = transform.point_to_parent(v2_os);
 
             // Compute the bounding box of the triangle in assembly space.
             GAABB3 triangle_bbox;
@@ -203,9 +203,9 @@ namespace
             triangle_vertices.push_back(v2);
             for (size_t m = 0; m < motion_segment_count; ++m)
             {
-                triangle_vertices.push_back(transform.transform_point_to_parent(tess.get_vertex_pose(triangle.m_v0, m)));
-                triangle_vertices.push_back(transform.transform_point_to_parent(tess.get_vertex_pose(triangle.m_v1, m)));
-                triangle_vertices.push_back(transform.transform_point_to_parent(tess.get_vertex_pose(triangle.m_v2, m)));
+                triangle_vertices.push_back(transform.point_to_parent(tess.get_vertex_pose(triangle.m_v0, m)));
+                triangle_vertices.push_back(transform.point_to_parent(tess.get_vertex_pose(triangle.m_v1, m)));
+                triangle_vertices.push_back(transform.point_to_parent(tess.get_vertex_pose(triangle.m_v2, m)));
             }
 
             // Store the triangle bounding box.

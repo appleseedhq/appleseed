@@ -204,8 +204,8 @@ namespace
                 // todo: add support for camera motion blur.
                 // todo: do this outside the performance-sensitive code path.
                 m_camera_transform = m_camera.transform_sequence().evaluate(0.0);
-                m_camera_position = m_camera_transform.transform_point_to_parent(Vector3d(0.0));
-                m_camera_direction = m_camera_transform.transform_vector_to_parent(Vector3d(0.0, 0.0, -1.0));
+                m_camera_position = m_camera_transform.point_to_parent(Vector3d(0.0));
+                m_camera_direction = m_camera_transform.vector_to_parent(Vector3d(0.0, 0.0, -1.0));
                 assert(is_normalized(m_camera_direction));
 
                 // Compute the reciprocal of the area of a single pixel.
@@ -382,7 +382,7 @@ namespace
             {
                 // Transform the vertex position to camera space.
                 const Vector3d vertex_position_camera =
-                    m_camera_transform.transform_point_to_local(vertex_position_world);
+                    m_camera_transform.point_to_local(vertex_position_world);
 
                 // Reject vertices behind the image plane.
                 if (vertex_position_camera.z > -m_camera.get_focal_length())

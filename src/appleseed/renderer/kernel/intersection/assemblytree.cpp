@@ -258,7 +258,7 @@ namespace
 
                 // Compute the assembly space bounding box of the region.
                 const GAABB3 region_bbox =
-                    transform.transform_to_parent(region->compute_local_bbox());
+                    transform.to_parent(region->compute_local_bbox());
 
                 regions.push_back(
                     RegionInfo(
@@ -380,7 +380,7 @@ namespace
         const Transformd& transform = assembly_instance->get_transform();
 
         // Transform the ray direction.
-        output_ray.m_dir = transform.transform_vector_to_local(input_ray.m_dir);
+        output_ray.m_dir = transform.vector_to_local(input_ray.m_dir);
 
         if (parent_shading_point &&
             &parent_shading_point->get_assembly_instance() == assembly_instance)
@@ -396,7 +396,7 @@ namespace
             // The caller didn't provide the previous intersection, or we are
             // about to intersect an assembly instance that does not contain
             // the previous intersection: proceed normally.
-            output_ray.m_org = transform.transform_point_to_local(input_ray.m_org);
+            output_ray.m_org = transform.point_to_local(input_ray.m_org);
         }
     }
 }

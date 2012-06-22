@@ -222,9 +222,9 @@ void LightSampler::collect_emitting_triangles(
                 const GVector3& v2_os = tess->m_vertices[triangle.m_v2];
 
                 // Transform triangle vertices to assembly space.
-                const GVector3 v0_as = object_instance_transform.transform_point_to_parent(v0_os);
-                const GVector3 v1_as = object_instance_transform.transform_point_to_parent(v1_os);
-                const GVector3 v2_as = object_instance_transform.transform_point_to_parent(v2_os);
+                const GVector3 v0_as = object_instance_transform.point_to_parent(v0_os);
+                const GVector3 v1_as = object_instance_transform.point_to_parent(v1_os);
+                const GVector3 v2_as = object_instance_transform.point_to_parent(v2_os);
 
                 // Compute the support plane of the hit triangle in assembly space.
                 const GTriangleType triangle_geometry(v0_as, v1_as, v2_as);
@@ -232,9 +232,9 @@ void LightSampler::collect_emitting_triangles(
                 triangle_support_plane.initialize(TriangleType(triangle_geometry));
 
                 // Transform triangle vertices to world space.
-                const Vector3d v0(assembly_instance_transform.transform_point_to_parent(v0_as));
-                const Vector3d v1(assembly_instance_transform.transform_point_to_parent(v1_as));
-                const Vector3d v2(assembly_instance_transform.transform_point_to_parent(v2_as));
+                const Vector3d v0(assembly_instance_transform.point_to_parent(v0_as));
+                const Vector3d v1(assembly_instance_transform.point_to_parent(v1_as));
+                const Vector3d v2(assembly_instance_transform.point_to_parent(v2_as));
 
                 // Compute the geometric normal to the triangle and the area of the triangle.
                 Vector3d geometric_normal = cross(v1 - v0, v2 - v0);
@@ -253,9 +253,9 @@ void LightSampler::collect_emitting_triangles(
                 const GVector3& n2_os = tess->m_vertex_normals[triangle.m_n2];
 
                 // Transform vertex normals to world space.
-                const Vector3d n0(normalize(global_transform.transform_normal_to_parent(n0_os)));
-                const Vector3d n1(normalize(global_transform.transform_normal_to_parent(n1_os)));
-                const Vector3d n2(normalize(global_transform.transform_normal_to_parent(n2_os)));
+                const Vector3d n0(normalize(global_transform.normal_to_parent(n0_os)));
+                const Vector3d n1(normalize(global_transform.normal_to_parent(n1_os)));
+                const Vector3d n2(normalize(global_transform.normal_to_parent(n2_os)));
 
                 for (size_t side = 0; side < 2; ++side)
                 {

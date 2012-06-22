@@ -243,14 +243,14 @@ void DiagnosticSurfaceShader::evaluate(
 
             // Compute the film space coordinates of the intersection point.
             const Vector3d& point = shading_point.get_point();
-            const Vector3d point_cs = camera_transform.transform_point_to_local(point);
+            const Vector3d point_cs = camera_transform.point_to_local(point);
             const Vector2d point_fs = camera.project(point_cs);
 
             // Compute the camera space coordinates of the triangle vertices.
             Vector3d v_cs[3];
-            v_cs[0] = camera_transform.transform_point_to_local(shading_point.get_vertex(0));
-            v_cs[1] = camera_transform.transform_point_to_local(shading_point.get_vertex(1));
-            v_cs[2] = camera_transform.transform_point_to_local(shading_point.get_vertex(2));
+            v_cs[0] = camera_transform.point_to_local(shading_point.get_vertex(0));
+            v_cs[1] = camera_transform.point_to_local(shading_point.get_vertex(1));
+            v_cs[2] = camera_transform.point_to_local(shading_point.get_vertex(2));
 
             // Loop over the triangle edges.
             for (size_t i = 0; i < 3; ++i)

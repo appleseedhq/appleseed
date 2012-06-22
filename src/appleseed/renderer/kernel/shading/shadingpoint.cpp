@@ -160,7 +160,7 @@ void ShadingPoint::refine_and_offset() const
 
     // Compute the location of the intersection point in assembly instance space.
     ShadingRay::RayType local_ray =
-        m_assembly_instance->get_transform().transform_to_local(m_ray);
+        m_assembly_instance->get_transform().to_local(m_ray);
     local_ray.m_org += local_ray.m_tmax * local_ray.m_dir;
 
     // Refine the location of the intersection point.
@@ -173,7 +173,7 @@ void ShadingPoint::refine_and_offset() const
     // Compute the geometric normal to the hit triangle in assembly instance space.
     // Note that it doesn't need to be normalized at this point.
     m_asm_geo_normal = Vector3d(cross(m_v1 - m_v0, m_v2 - m_v0));
-    m_asm_geo_normal = m_object_instance->get_transform().transform_normal_to_parent(m_asm_geo_normal);
+    m_asm_geo_normal = m_object_instance->get_transform().normal_to_parent(m_asm_geo_normal);
     m_asm_geo_normal = faceforward(m_asm_geo_normal, local_ray.m_dir);
 
     // Compute the offset points in assembly instance space.

@@ -202,7 +202,7 @@ namespace
             ray.m_dir = focus_point;
             ray.m_dir.x -= lens_point.x;
             ray.m_dir.y -= lens_point.y;
-            ray.m_dir = transform.transform_vector_to_parent(ray.m_dir);
+            ray.m_dir = transform.vector_to_parent(ray.m_dir);
         }
 
         virtual Vector2d project(const Vector3d& point) const
@@ -284,7 +284,7 @@ namespace
                 -m_focal_length);
 
             // Set the ray direction.
-            ray.m_dir = transform.transform_vector_to_parent(target);
+            ray.m_dir = transform.vector_to_parent(target);
 
             // Trace the ray.
             ShadingPoint shading_point;
@@ -295,7 +295,7 @@ namespace
                 // Hit: compute the focal distance.
                 const Vector3d v = shading_point.get_point() - ray.m_org;
                 const Vector3d camera_direction =
-                    transform.transform_vector_to_parent(Vector3d(0.0, 0.0, -1.0));
+                    transform.vector_to_parent(Vector3d(0.0, 0.0, -1.0));
                 const double af_focal_distance = dot(v, camera_direction);
 
                 RENDERER_LOG_INFO(

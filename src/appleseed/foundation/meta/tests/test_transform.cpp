@@ -64,24 +64,24 @@ TEST_SUITE(Foundation_Math_Transform)
     {
         const Vector3d v(1.0, 2.0, 3.0);
 
-        EXPECT_FEQ(v, transform.transform_point_to_parent(v));
-        EXPECT_FEQ(v, transform.transform_point_to_local(v));
+        EXPECT_FEQ(v, transform.point_to_parent(v));
+        EXPECT_FEQ(v, transform.point_to_local(v));
     }
 
     TEST_CASE_F(TransformVectorByIdentity, FixtureTransformByIdentity)
     {
         const Vector3d v(1.0, 2.0, 3.0);
 
-        EXPECT_FEQ(v, transform.transform_vector_to_parent(v));
-        EXPECT_FEQ(v, transform.transform_vector_to_local(v));
+        EXPECT_FEQ(v, transform.vector_to_parent(v));
+        EXPECT_FEQ(v, transform.vector_to_local(v));
     }
 
     TEST_CASE_F(TransformNormalByIdentity, FixtureTransformByIdentity)
     {
         const Vector3d v(1.0, 2.0, 3.0);
 
-        EXPECT_FEQ(v, transform.transform_normal_to_parent(v));
-        EXPECT_FEQ(v, transform.transform_normal_to_local(v));
+        EXPECT_FEQ(v, transform.normal_to_parent(v));
+        EXPECT_FEQ(v, transform.normal_to_local(v));
     }
 
     TEST_CASE_F(TransformRayByIdentity, FixtureTransformByIdentity)
@@ -92,8 +92,8 @@ TEST_SUITE(Foundation_Math_Transform)
             0.1,
             1000.0);
 
-        EXPECT_FEQ(r, transform.transform_to_parent(r));
-        EXPECT_FEQ(r, transform.transform_to_local(r));
+        EXPECT_FEQ(r, transform.to_parent(r));
+        EXPECT_FEQ(r, transform.to_local(r));
     }
 
     struct FixtureTransformByTranslation
@@ -110,24 +110,24 @@ TEST_SUITE(Foundation_Math_Transform)
     {
         const Vector3d v(1.0, 2.0, 3.0);
 
-        EXPECT_FEQ(Vector3d(11.0, 22.0, 33.0), transform.transform_point_to_parent(v));
-        EXPECT_FEQ(Vector3d(-9.0, -18.0, -27.0), transform.transform_point_to_local(v));
+        EXPECT_FEQ(Vector3d(11.0, 22.0, 33.0), transform.point_to_parent(v));
+        EXPECT_FEQ(Vector3d(-9.0, -18.0, -27.0), transform.point_to_local(v));
     }
 
     TEST_CASE_F(TransformVectorByTranslation, FixtureTransformByTranslation)
     {
         const Vector3d v(1.0, 2.0, 3.0);
 
-        EXPECT_FEQ(v, transform.transform_vector_to_parent(v));
-        EXPECT_FEQ(v, transform.transform_vector_to_local(v));
+        EXPECT_FEQ(v, transform.vector_to_parent(v));
+        EXPECT_FEQ(v, transform.vector_to_local(v));
     }
 
     TEST_CASE_F(TransformNormalByTranslation, FixtureTransformByTranslation)
     {
         const Vector3d v(1.0, 2.0, 3.0);
 
-        EXPECT_FEQ(v, transform.transform_normal_to_parent(v));
-        EXPECT_FEQ(v, transform.transform_normal_to_local(v));
+        EXPECT_FEQ(v, transform.normal_to_parent(v));
+        EXPECT_FEQ(v, transform.normal_to_local(v));
     }
 
     TEST_CASE_F(TransformRayByTranslation, FixtureTransformByTranslation)
@@ -138,8 +138,8 @@ TEST_SUITE(Foundation_Math_Transform)
             0.1,
             1000.0);
 
-        EXPECT_FEQ(Ray3d(Vector3d(11.0, 22.0, 33.0), r.m_dir, r.m_tmin, r.m_tmax), transform.transform_to_parent(r));
-        EXPECT_FEQ(Ray3d(Vector3d(-9.0, -18.0, -27.0), r.m_dir, r.m_tmin, r.m_tmax), transform.transform_to_local(r));
+        EXPECT_FEQ(Ray3d(Vector3d(11.0, 22.0, 33.0), r.m_dir, r.m_tmin, r.m_tmax), transform.to_parent(r));
+        EXPECT_FEQ(Ray3d(Vector3d(-9.0, -18.0, -27.0), r.m_dir, r.m_tmin, r.m_tmax), transform.to_local(r));
     }
 
     struct FixtureTransformByRotation
@@ -156,24 +156,24 @@ TEST_SUITE(Foundation_Math_Transform)
     {
         const Vector3d v(2.0, 2.0, 3.0);
 
-        EXPECT_FEQ(Vector3d(-2.0, 2.0, 3.0), transform.transform_point_to_parent(v));
-        EXPECT_FEQ(Vector3d(2.0, -2.0, 3.0), transform.transform_point_to_local(v));
+        EXPECT_FEQ(Vector3d(-2.0, 2.0, 3.0), transform.point_to_parent(v));
+        EXPECT_FEQ(Vector3d(2.0, -2.0, 3.0), transform.point_to_local(v));
     }
 
     TEST_CASE_F(TransformVectorByRotation, FixtureTransformByRotation)
     {
         const Vector3d v(2.0, 2.0, 3.0);
 
-        EXPECT_FEQ(Vector3d(-2.0, 2.0, 3.0), transform.transform_vector_to_parent(v));
-        EXPECT_FEQ(Vector3d(2.0, -2.0, 3.0), transform.transform_vector_to_local(v));
+        EXPECT_FEQ(Vector3d(-2.0, 2.0, 3.0), transform.vector_to_parent(v));
+        EXPECT_FEQ(Vector3d(2.0, -2.0, 3.0), transform.vector_to_local(v));
     }
 
     TEST_CASE_F(TransformNormalByRotation, FixtureTransformByRotation)
     {
         const Vector3d v(2.0, 2.0, 3.0);
 
-        EXPECT_FEQ(Vector3d(-2.0, 2.0, 3.0), transform.transform_normal_to_parent(v));
-        EXPECT_FEQ(Vector3d(2.0, -2.0, 3.0), transform.transform_normal_to_local(v));
+        EXPECT_FEQ(Vector3d(-2.0, 2.0, 3.0), transform.normal_to_parent(v));
+        EXPECT_FEQ(Vector3d(2.0, -2.0, 3.0), transform.normal_to_local(v));
     }
 
     TEST_CASE_F(TransformRayByRotation, FixtureTransformByRotation)
@@ -184,8 +184,8 @@ TEST_SUITE(Foundation_Math_Transform)
             0.1,
             1000.0);
 
-        EXPECT_FEQ(Ray3d(Vector3d(-2.0, 2.0, 3.0), Vector3d(-4.0, 4.0, 6.0), r.m_tmin, r.m_tmax), transform.transform_to_parent(r));
-        EXPECT_FEQ(Ray3d(Vector3d(2.0, -2.0, 3.0), Vector3d(4.0, -4.0, 6.0), r.m_tmin, r.m_tmax), transform.transform_to_local(r));
+        EXPECT_FEQ(Ray3d(Vector3d(-2.0, 2.0, 3.0), Vector3d(-4.0, 4.0, 6.0), r.m_tmin, r.m_tmax), transform.to_parent(r));
+        EXPECT_FEQ(Ray3d(Vector3d(2.0, -2.0, 3.0), Vector3d(4.0, -4.0, 6.0), r.m_tmin, r.m_tmax), transform.to_local(r));
     }
 
     TEST_CASE(MultiplicationOperator_GivenTwoIdentityTransforms_ReturnsIdentityTransform)
@@ -244,8 +244,8 @@ TEST_SUITE(Foundation_Math_TransformInterpolator)
             const double t = static_cast<double>(i) / (FrameCount - 1);
             const Transformd transform = interpolator.evaluate(t);
 
-            const Vector3d origin = transform.transform_point_to_parent(Vector3d(0.0, 0.0, 0.0));
-            const Vector3d axis = transform.transform_vector_to_parent(Vector3d(0.0, 1.0, 0.0));
+            const Vector3d origin = transform.point_to_parent(Vector3d(0.0, 0.0, 0.0));
+            const Vector3d axis = transform.vector_to_parent(Vector3d(0.0, 1.0, 0.0));
 
             file.draw_arrow(origin, origin + axis);
         }
