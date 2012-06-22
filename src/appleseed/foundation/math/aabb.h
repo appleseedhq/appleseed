@@ -153,6 +153,13 @@ class AABB
 template <typename T, size_t N> bool operator!=(const AABB<T, N>& lhs, const AABB<T, N>& rhs);
 template <typename T, size_t N> bool operator==(const AABB<T, N>& lhs, const AABB<T, N>& rhs);
 
+// Bounding box arithmetic.
+template <typename T, size_t N> AABB<T, N>  operator+ (const AABB<T, N>& lhs, const AABB<T, N>& rhs);
+template <typename T, size_t N> AABB<T, N>  operator* (const AABB<T, N>& lhs, const T rhs);
+template <typename T, size_t N> AABB<T, N>  operator* (const T lhs, const AABB<T, N>& rhs);
+template <typename T, size_t N> AABB<T, N>& operator+=(AABB<T, N>& lhs, const AABB<T, N>& rhs);
+template <typename T, size_t N> AABB<T, N>& operator*=(AABB<T, N>& lhs, const T rhs);
+
 // Compute the surface area of a 3D bounding box.
 template <typename T> T half_surface_area(const AABB<T, 3>& bbox);
 template <typename T> T surface_area(const AABB<T, 3>& bbox);
@@ -509,6 +516,40 @@ inline bool operator==(const AABB<T, N>& lhs, const AABB<T, N>& rhs)
     return !(lhs != rhs);
 }
 
+template <typename T, size_t N>
+inline AABB<T, N> operator+(const AABB<T, N>& lhs, const AABB<T, N>& rhs)
+{
+    return AABB<T, N>(lhs.min + rhs.min, lhs.max + rhs.max);
+}
+
+template <typename T, size_t N>
+inline AABB<T, N> operator*(const AABB<T, N>& lhs, const T rhs)
+{
+    return AABB<T, N>(lhs.min * rhs, lhs.max * rhs);
+}
+
+template <typename T, size_t N>
+inline AABB<T, N> operator*(const T lhs, const AABB<T, N>& rhs)
+{
+    return AABB<T, N>(lhs * rhs.min, lhs * rhs.max);
+}
+
+template <typename T, size_t N>
+inline AABB<T, N>& operator+=(AABB<T, N>& lhs, const AABB<T, N>& rhs)
+{
+    lhs.min += rhs.min;
+    lhs.max += rhs.max;
+    return lhs;
+}
+
+template <typename T, size_t N>
+inline AABB<T, N>& operator*=(AABB<T, N>& lhs, const T rhs)
+{
+    lhs.min *= rhs;
+    lhs.max *= rhs;
+    return lhs;
+}
+
 template <typename T>
 inline T half_surface_area(const AABB<T, 3>& bbox)
 {
@@ -523,7 +564,6 @@ template <typename T>
 inline T surface_area(const AABB<T, 3>& bbox)
 {
     const T h = half_surface_area(bbox);
-
     return h + h;
 }
 
