@@ -714,6 +714,7 @@ inline Vector<T, N> reflect(
     assert(is_normalized(n));
 
     const T dot_in = dot(i, n);
+
     return (dot_in + dot_in) * n - i;
 }
 
@@ -1037,10 +1038,12 @@ inline Vector<T, 3> Vector<T, 3>::unit_vector(
     const ValueType phi)
 {
     const ValueType sin_theta = std::sin(theta);
-    return Vector<T, 3>(
-        std::cos(phi) * sin_theta,
-        std::cos(theta),
-        std::sin(phi) * sin_theta);
+
+    return
+        Vector<T, 3>(
+            std::cos(phi) * sin_theta,
+            std::cos(theta),
+            std::sin(phi) * sin_theta);
 }
 
 template <typename T>
@@ -1050,10 +1053,11 @@ inline Vector<T, 3> Vector<T, 3>::unit_vector(
     const ValueType cos_phi,
     const ValueType sin_phi)
 {
-    return Vector<T, 3>(
-        cos_phi * sin_theta,
-        cos_theta,
-        sin_phi * sin_theta);
+    return
+        Vector<T, 3>(
+            cos_phi * sin_theta,
+            cos_theta,
+            sin_phi * sin_theta);
 }
 
 template <typename T>
