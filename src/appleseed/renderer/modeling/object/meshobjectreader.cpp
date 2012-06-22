@@ -188,7 +188,19 @@ namespace
                 }
 
                 // Triangulate the polygon.
-                if (!m_triangulator.triangulate(m_polygon, m_triangles))
+                if (m_triangulator.triangulate(m_polygon, m_triangles))
+                {
+                    // Insert all triangles of the triangulation into the mesh.
+                    const size_t m_triangle_count = m_triangles.size();
+                    for (size_t i = 0; i < m_triangle_count; i += 3)
+                    {
+                        insert_triangle(
+                            m_triangles[i + 0],
+                            m_triangles[i + 1],
+                            m_triangles[i + 2]);
+                    }
+                }
+                else
                 {
                     // The polygon could not be triangulated.
                     ++m_triangulation_error_count;
@@ -196,16 +208,6 @@ namespace
                     // Insert 0-area triangle to ensure the right number of triangles in the result mesh.
                     for (size_t i = 0; i < m_vertex_count - 2; ++i)
                         insert_triangle(0, 0, 0);
-                }
-
-                // Insert all triangles of the triangulation into the mesh.
-                const size_t m_triangle_count = m_triangles.size();
-                for (size_t i = 0; i < m_triangle_count; i += 3)
-                {
-                    insert_triangle(
-                        m_triangles[i + 0],
-                        m_triangles[i + 1],
-                        m_triangles[i + 2]);
                 }
 
                 clear_keep_memory(m_polygon);
