@@ -90,7 +90,7 @@ namespace
             // Fetch the triangle.
             const Triangle& triangle = tess.m_primitives[i];
 
-            // Retrieve object space vertices of the triangle.
+            // Retrieve the object space vertices of the triangle.
             const GVector3& v0_os = tess.m_vertices[triangle.m_v0];
             const GVector3& v1_os = tess.m_vertices[triangle.m_v1];
             const GVector3& v2_os = tess.m_vertices[triangle.m_v2];
@@ -100,7 +100,7 @@ namespace
             const GVector3 v1 = transform.transform_point_to_parent(v1_os);
             const GVector3 v2 = transform.transform_point_to_parent(v2_os);
 
-            // Compute the bounding box of the triangle in assembly space.
+            // Compute the bounding box of the triangle.
             GAABB3 triangle_bbox;
             triangle_bbox.invalidate();
             triangle_bbox.insert(v0);
@@ -153,7 +153,7 @@ namespace
             // Fetch the triangle.
             const Triangle& triangle = tess.m_primitives[i];
 
-            // Retrieve object space vertices of the triangle.
+            // Retrieve the object space vertices of the triangle.
             const GVector3& v0_os = tess.m_vertices[triangle.m_v0];
             const GVector3& v1_os = tess.m_vertices[triangle.m_v1];
             const GVector3& v2_os = tess.m_vertices[triangle.m_v2];
