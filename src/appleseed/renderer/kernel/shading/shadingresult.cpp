@@ -29,6 +29,13 @@
 // Interface header.
 #include "shadingresult.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/otherwise.h"
+
+// Standard headers.
+#include <cassert>
+#include <cstddef>
+
 using namespace foundation;
 
 namespace renderer
@@ -59,8 +66,7 @@ namespace
     }
 }
 
-void ShadingResult::transform_to_linear_rgb(
-    const LightingConditions&   lighting)
+void ShadingResult::transform_to_linear_rgb(const LightingConditions& lighting)
 {
     const size_t aov_count = m_aovs.size();
 
@@ -111,8 +117,7 @@ namespace
     }
 }
 
-void ShadingResult::transform_to_spectrum(
-    const LightingConditions&   lighting)
+void ShadingResult::transform_to_spectrum(const LightingConditions& lighting)
 {
     const size_t aov_count = m_aovs.size();
 
