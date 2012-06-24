@@ -123,18 +123,18 @@ class TriangleTree
         const Arguments&                        arguments,
         foundation::Statistics&                 statistics);
 
+    std::vector<GAABB3> compute_motion_bboxes(
+        const std::vector<size_t>&              triangle_indices,
+        const std::vector<TriangleVertexInfo>&  triangle_vertex_infos,
+        const std::vector<GVector3>&            triangle_vertices,
+        const size_t                            node_index);
+
     void store_triangles(
         const std::vector<size_t>&              triangle_indices,
         const std::vector<TriangleVertexInfo>&  triangle_vertex_infos,
         const std::vector<GVector3>&            triangle_vertices,
         const std::vector<TriangleKey>&         triangle_keys,
         foundation::Statistics&                 statistics);
-
-    std::vector<GAABB3> compute_motion_bboxes(
-        const std::vector<size_t>&              triangle_indices,
-        const std::vector<TriangleVertexInfo>&  triangle_vertex_infos,
-        const std::vector<GVector3>&            triangle_vertices,
-        const size_t                            node_index);
 
     void create_intersection_filters(const Arguments& arguments);
 };

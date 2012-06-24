@@ -410,6 +410,7 @@ void TriangleTree::build_bvh(
     // Bounding boxes are no longer needed.
     clear_release_memory(triangle_bboxes);
 
+    // Compute and propagate motion bounding boxes.
     compute_motion_bboxes(
         partitioner.get_item_ordering(),
         triangle_vertex_infos,
@@ -488,6 +489,7 @@ void TriangleTree::build_sbvh(
     // Bounding boxes are no longer needed.
     clear_release_memory(triangle_bboxes);
 
+    // Compute and propagate motion bounding boxes.
     compute_motion_bboxes(
         partitioner.get_item_ordering(),
         triangle_vertex_infos,
@@ -501,108 +503,6 @@ void TriangleTree::build_sbvh(
         triangle_vertices,
         triangle_keys,
         statistics);
-}
-
-void TriangleTree::store_triangles(
-    const vector<size_t>&               triangle_indices,
-    const vector<TriangleVertexInfo>&   triangle_vertex_infos,
-    const vector<GVector3>&             triangle_vertices,
-    const vector<TriangleKey>&          triangle_keys,
-    Statistics&                         statistics)
-{
-    const size_t node_count = m_nodes.size();
-
-    // Gather statistics.
-
-    size_t leaf_count = 0;
-    size_t fat_leaf_count = 0;
-    size_t leaf_data_size = 0;
-
-    for (size_t i = 0; i < node_count; ++i)
-    {
-        const NodeType& node = m_nodes[i];
-
-        if (node.is_leaf())
-        {
-            ++leaf_count;
-
-            const size_t item_begin = node.get_item_index();
-            const size_t item_count = node.get_item_count();
-
-            const size_t leaf_size =
-                TriangleEncoder::compute_size(
-                    triangle_vertex_infos,
-                    triangle_indices,
-                    item_begin,
-                    item_count);
-
-            if (leaf_size < NodeType::MaxUserDataSize)
-                ++fat_leaf_count;
-            else leaf_data_size += leaf_size;
-        }
-    }
-
-    // Store triangle keys and triangles.
-
-    m_triangle_keys.reserve(triangle_indices.size());
-    m_leaf_data.resize(leaf_data_size);
-
-    MemoryWriter leaf_data_writer(m_leaf_data.empty() ? 0 : &m_leaf_data[0]);
-
-    for (size_t i = 0; i < node_count; ++i)
-    {
-        NodeType& node = m_nodes[i];
-
-        if (node.is_leaf())
-        {
-            const size_t item_begin = node.get_item_index();
-            const size_t item_count = node.get_item_count();
-
-            node.set_item_index(m_triangle_keys.size());
-
-            for (size_t j = 0; j < item_count; ++j)
-            {
-                const size_t triangle_index = triangle_indices[item_begin + j];
-                m_triangle_keys.push_back(triangle_keys[triangle_index]);
-            }
-
-            const size_t leaf_size =
-                TriangleEncoder::compute_size(
-                    triangle_vertex_infos,
-                    triangle_indices,
-                    item_begin,
-                    item_count);
-
-            MemoryWriter user_data_writer(&node.get_user_data<uint8>());
-
-            if (leaf_size <= NodeType::MaxUserDataSize - 4)
-            {
-                user_data_writer.write<uint32>(~0);
-
-                TriangleEncoder::encode(
-                    triangle_vertex_infos,
-                    triangle_vertices,
-                    triangle_indices,
-                    item_begin,
-                    item_count,
-                    user_data_writer);
-            }
-            else
-            {
-                user_data_writer.write(static_cast<uint32>(leaf_data_writer.offset()));
-
-                TriangleEncoder::encode(
-                    triangle_vertex_infos,
-                    triangle_vertices,
-                    triangle_indices,
-                    item_begin,
-                    item_count,
-                    leaf_data_writer);
-            }
-        }
-    }
-
-    statistics.add_percent("fat_leaves", "fat leaves", fat_leaf_count, leaf_count);
 }
 
 vector<GAABB3> TriangleTree::compute_motion_bboxes(
@@ -722,6 +622,108 @@ vector<GAABB3> TriangleTree::compute_motion_bboxes(
 
         return bboxes;
     }
+}
+
+void TriangleTree::store_triangles(
+    const vector<size_t>&               triangle_indices,
+    const vector<TriangleVertexInfo>&   triangle_vertex_infos,
+    const vector<GVector3>&             triangle_vertices,
+    const vector<TriangleKey>&          triangle_keys,
+    Statistics&                         statistics)
+{
+    const size_t node_count = m_nodes.size();
+
+    // Gather statistics.
+
+    size_t leaf_count = 0;
+    size_t fat_leaf_count = 0;
+    size_t leaf_data_size = 0;
+
+    for (size_t i = 0; i < node_count; ++i)
+    {
+        const NodeType& node = m_nodes[i];
+
+        if (node.is_leaf())
+        {
+            ++leaf_count;
+
+            const size_t item_begin = node.get_item_index();
+            const size_t item_count = node.get_item_count();
+
+            const size_t leaf_size =
+                TriangleEncoder::compute_size(
+                    triangle_vertex_infos,
+                    triangle_indices,
+                    item_begin,
+                    item_count);
+
+            if (leaf_size < NodeType::MaxUserDataSize)
+                ++fat_leaf_count;
+            else leaf_data_size += leaf_size;
+        }
+    }
+
+    // Store triangle keys and triangles.
+
+    m_triangle_keys.reserve(triangle_indices.size());
+    m_leaf_data.resize(leaf_data_size);
+
+    MemoryWriter leaf_data_writer(m_leaf_data.empty() ? 0 : &m_leaf_data[0]);
+
+    for (size_t i = 0; i < node_count; ++i)
+    {
+        NodeType& node = m_nodes[i];
+
+        if (node.is_leaf())
+        {
+            const size_t item_begin = node.get_item_index();
+            const size_t item_count = node.get_item_count();
+
+            node.set_item_index(m_triangle_keys.size());
+
+            for (size_t j = 0; j < item_count; ++j)
+            {
+                const size_t triangle_index = triangle_indices[item_begin + j];
+                m_triangle_keys.push_back(triangle_keys[triangle_index]);
+            }
+
+            const size_t leaf_size =
+                TriangleEncoder::compute_size(
+                    triangle_vertex_infos,
+                    triangle_indices,
+                    item_begin,
+                    item_count);
+
+            MemoryWriter user_data_writer(&node.get_user_data<uint8>());
+
+            if (leaf_size <= NodeType::MaxUserDataSize - 4)
+            {
+                user_data_writer.write<uint32>(~0);
+
+                TriangleEncoder::encode(
+                    triangle_vertex_infos,
+                    triangle_vertices,
+                    triangle_indices,
+                    item_begin,
+                    item_count,
+                    user_data_writer);
+            }
+            else
+            {
+                user_data_writer.write(static_cast<uint32>(leaf_data_writer.offset()));
+
+                TriangleEncoder::encode(
+                    triangle_vertex_infos,
+                    triangle_vertices,
+                    triangle_indices,
+                    item_begin,
+                    item_count,
+                    leaf_data_writer);
+            }
+        }
+    }
+
+    statistics.add_percent("fat_leaves", "fat leaves", fat_leaf_count, leaf_count);
 }
 
 void TriangleTree::create_intersection_filters(const Arguments& arguments)
