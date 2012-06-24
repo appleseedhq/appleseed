@@ -484,6 +484,7 @@ bool AssemblyLeafVisitor::visit(
                     *triangle_tree,
                     local_shading_point.m_ray,
                     local_ray_info,
+                    local_shading_point.m_ray.m_time,
                     visitor
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
                     , m_triangle_tree_stats
@@ -600,6 +601,7 @@ bool AssemblyLeafProbeVisitor::visit(
                     *triangle_tree,
                     local_ray,
                     local_ray_info,
+                    local_ray.m_time,
                     visitor
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
                     , m_triangle_tree_stats

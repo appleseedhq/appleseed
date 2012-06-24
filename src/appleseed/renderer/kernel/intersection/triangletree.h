@@ -130,6 +130,12 @@ class TriangleTree
         const std::vector<TriangleKey>&         triangle_keys,
         foundation::Statistics&                 statistics);
 
+    std::vector<foundation::AABB3d> compute_motion_bboxes(
+        const std::vector<size_t>&              triangle_indices,
+        const std::vector<TriangleVertexInfo>&  triangle_vertex_infos,
+        const std::vector<GVector3>&            triangle_vertices,
+        const size_t                            node_index);
+
     void create_intersection_filters(const Arguments& arguments);
 };
 

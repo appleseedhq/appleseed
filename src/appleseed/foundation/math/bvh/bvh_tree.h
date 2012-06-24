@@ -74,7 +74,11 @@ class Tree
     template <typename Tree, typename Visitor, typename Ray, size_t StackSize, size_t N>
     friend class Intersector;
 
-    NodeVector m_nodes;
+    typedef typename NodeType::AABBType AABBType;
+    typedef std::vector<AABBType> AABBVector;
+
+    NodeVector  m_nodes;
+    AABBVector  m_node_bboxes;
 };
 
 

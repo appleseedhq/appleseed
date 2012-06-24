@@ -166,7 +166,7 @@ void TreeStatistics<Tree>::collect_stats_recurse(
         const NodeType& right_node = tree.m_nodes[child_index + 1];
 
         // Keep track of the amount of overlap between children.
-        m_sibling_overlap.insert(AABBType::overlap_ratio(left_bbox, right_bbox) * ValueType(100.0));
+        //m_sibling_overlap.insert(AABBType::overlap_ratio(left_bbox, right_bbox) * ValueType(100.0));
 
         // Recurse into the child nodes.
         collect_stats_recurse(tree, left_node, left_bbox, depth + 1);

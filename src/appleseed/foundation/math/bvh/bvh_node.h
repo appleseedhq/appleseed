@@ -56,13 +56,21 @@ class ALIGN(64) Node
     bool is_interior() const;
     bool is_leaf() const;
 
-    // Set/get the bounding boxes of the child nodes (interior nodes only).
+    // Set/get the bounding boxes of the child nodes (interior nodes only, static case).
     void set_left_bbox(const AABBType& bbox);
     void set_right_bbox(const AABBType& bbox);
     AABBType get_left_bbox() const;
     AABBType get_right_bbox() const;
 
-    // Get user data (leaf nodes only).
+    // Set/get the left and right bounding boxes (interior nodes only, motion case).
+    void set_left_bbox(const size_t index, const size_t count);
+    void set_right_bbox(const size_t index, const size_t count);
+    size_t get_left_bbox_index() const;
+    size_t get_right_bbox_index() const;
+    size_t get_left_bbox_count() const;
+    size_t get_right_bbox_count() const;
+
+    // Access user data (leaf nodes only).
     static const size_t MaxUserDataSize;
     template <typename U> void set_user_data(const U& data);
     template <typename U> const U& get_user_data() const;
@@ -87,8 +95,9 @@ class ALIGN(64) Node
     typedef typename AABBType::ValueType ValueType;
     static const size_t Dimension = AABBType::Dimension;
 
+    uint32                  m_item_count;
     uint32                  m_index;
-    uint32                  m_count;
+    uint32                  m_bbox_ranges[4];
     SSE_ALIGN ValueType     m_bbox_data[4 * Dimension];
 };
 
@@ -100,26 +109,26 @@ class ALIGN(64) Node
 template <typename AABB>
 inline void Node<AABB>::make_interior()
 {
-    m_count = ~0;
+    m_item_count = ~0;
 }
 
 template <typename AABB>
 inline void Node<AABB>::make_leaf()
 {
-    if (m_count == ~0)
-        m_count = 0;
+    if (m_item_count == ~0)
+        m_item_count = 0;
 }
 
 template <typename AABB>
 inline bool Node<AABB>::is_interior() const
 {
-    return m_count == ~0;
+    return m_item_count == ~0;
 }
 
 template <typename AABB>
 inline bool Node<AABB>::is_leaf() const
 {
-    return m_count != ~0;
+    return m_item_count != ~0;
 }
 
 template <typename AABB>
@@ -171,7 +180,51 @@ inline AABB Node<AABB>::get_right_bbox() const
 }
 
 template <typename AABB>
-const size_t Node<AABB>::MaxUserDataSize = sizeof(Node<AABB>) - 8;
+inline void Node<AABB>::set_left_bbox(const size_t index, const size_t count)
+{
+    assert(index <= 0xFFFFFFFFUL);
+    assert(count <= 0xFFFFFFFFUL);
+
+    m_bbox_ranges[0] = static_cast<uint32>(index);
+    m_bbox_ranges[1] = static_cast<uint32>(count);
+}
+
+template <typename AABB>
+inline void Node<AABB>::set_right_bbox(const size_t index, const size_t count)
+{
+    assert(index <= 0xFFFFFFFFUL);
+    assert(count <= 0xFFFFFFFFUL);
+
+    m_bbox_ranges[2] = static_cast<uint32>(index);
+    m_bbox_ranges[3] = static_cast<uint32>(count);
+}
+
+template <typename AABB>
+inline size_t Node<AABB>::get_left_bbox_index() const
+{
+    return static_cast<uint32>(m_bbox_ranges[0]);
+}
+
+template <typename AABB>
+inline size_t Node<AABB>::get_right_bbox_index() const
+{
+    return static_cast<uint32>(m_bbox_ranges[2]);
+}
+
+template <typename AABB>
+inline size_t Node<AABB>::get_left_bbox_count() const
+{
+    return static_cast<uint32>(m_bbox_ranges[1]);
+}
+
+template <typename AABB>
+inline size_t Node<AABB>::get_right_bbox_count() const
+{
+    return static_cast<uint32>(m_bbox_ranges[3]);
+}
+
+template <typename AABB>
+const size_t Node<AABB>::MaxUserDataSize = 4 * Node<AABB>::Dimension * sizeof(typename AABB::ValueType);
 
 template <typename AABB>
 template <typename U>
@@ -226,13 +279,13 @@ template <typename AABB>
 inline void Node<AABB>::set_item_count(const size_t count)
 {
     assert(count < 0xFFFFFFFFUL);
-    m_count = static_cast<uint32>(count);
+    m_item_count = static_cast<uint32>(count);
 }
 
 template <typename AABB>
 inline size_t Node<AABB>::get_item_count() const
 {
-    return static_cast<size_t>(m_count);
+    return static_cast<size_t>(m_item_count);
 }
 
 }       // namespace bvh

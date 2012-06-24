@@ -46,6 +46,7 @@
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/objectinstance.h"
+#include "renderer/utility/bbox.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
@@ -140,6 +141,7 @@ namespace
         const RegionInfo&               region_info,
         const StaticTriangleTess&       tess,
         const Transformd&               transform,
+        const double                    time,
         vector<TriangleKey>&            triangle_keys,
         vector<TriangleVertexInfo>&     triangle_vertex_infos,
         vector<GVector3>&               triangle_vertices,
@@ -147,6 +149,8 @@ namespace
     {
         const size_t motion_segment_count = tess.get_motion_segment_count();
         const size_t triangle_count = tess.m_primitives.size();
+
+        vector<GAABB3> tri_pose_bboxes(motion_segment_count + 1);
 
         for (size_t i = 0; i < triangle_count; ++i)
         {
@@ -163,25 +167,29 @@ namespace
             const GVector3 v1 = transform.point_to_parent(v1_os);
             const GVector3 v2 = transform.point_to_parent(v2_os);
 
-            // Compute the bounding box of the triangle in assembly space.
-            GAABB3 triangle_bbox;
-            triangle_bbox.invalidate();
-            triangle_bbox.insert(v0);
-            triangle_bbox.insert(v1);
-            triangle_bbox.insert(v2);
+            // Compute the bounding box of the triangle for each of its pose.
+            tri_pose_bboxes[0].invalidate();
+            tri_pose_bboxes[0].insert(v0);
+            tri_pose_bboxes[0].insert(v1);
+            tri_pose_bboxes[0].insert(v2);
             for (size_t m = 0; m < motion_segment_count; ++m)
             {
-                triangle_bbox.insert(transform.transform_point_to_parent(tess.get_vertex_pose(triangle.m_v0, m)));
-                triangle_bbox.insert(transform.transform_point_to_parent(tess.get_vertex_pose(triangle.m_v1, m)));
-                triangle_bbox.insert(transform.transform_point_to_parent(tess.get_vertex_pose(triangle.m_v2, m)));
+                tri_pose_bboxes[m + 1].invalidate();
+                tri_pose_bboxes[m + 1].insert(transform.point_to_parent(tess.get_vertex_pose(triangle.m_v0, m)));
+                tri_pose_bboxes[m + 1].insert(transform.point_to_parent(tess.get_vertex_pose(triangle.m_v1, m)));
+                tri_pose_bboxes[m + 1].insert(transform.point_to_parent(tess.get_vertex_pose(triangle.m_v2, m)));
             }
 
-            // Ignore triangles that are degenerate over the entire shutter interval.
-            if (triangle_bbox.rank() < 2)
+            // Compute the bounding box of the triangle over its entire motion.
+            const GAABB3 triangle_motion_bbox =
+                compute_union<GAABB3>(tri_pose_bboxes.begin(), tri_pose_bboxes.end());
+
+            // Ignore triangles that are degenerate over their entire motion.
+            if (triangle_motion_bbox.rank() < 2)
                 continue;
 
-            // Ignore triangles that don't intersect the tree.
-            if (!GAABB3::overlap(tree_bbox, triangle_bbox))
+            // Ignore triangles that don't ever intersect the tree.
+            if (!GAABB3::overlap(tree_bbox, triangle_motion_bbox))
                 continue;
 
             // Store the triangle key.
@@ -208,13 +216,16 @@ namespace
                 triangle_vertices.push_back(transform.point_to_parent(tess.get_vertex_pose(triangle.m_v2, m)));
             }
 
-            // Store the triangle bounding box.
-            triangle_bboxes.push_back(AABB3d(triangle_bbox));
+            // Compute and store the bounding box of the triangle for the time value passed in argument.
+            const GAABB3 triangle_midtime_bbox =
+                interpolate<GAABB3>(tri_pose_bboxes.begin(), tri_pose_bboxes.end(), time);
+            triangle_bboxes.push_back(AABB3d(triangle_midtime_bbox));
         }
     }
 
     void collect_triangles(
         const TriangleTree::Arguments&  arguments,
+        const double                    time,
         vector<TriangleKey>&            triangle_keys,
         vector<TriangleVertexInfo>&     triangle_vertex_infos,
         vector<GVector3>&               triangle_vertices,
@@ -244,7 +255,6 @@ namespace
 
             // Retrieve the tessellation of the region.
             Access<StaticTriangleTess> tess(&region->get_static_triangle_tess());
-            const size_t motion_segment_count = tess->get_motion_segment_count();
 
             // Collect the triangles from this tessellation.
             if (tess->get_motion_segment_count() > 0)
@@ -254,6 +264,7 @@ namespace
                     region_info,
                     tess.ref(),
                     object_instance->get_transform(),
+                    time,
                     triangle_keys,
                     triangle_vertex_infos,
                     triangle_vertices,
@@ -314,6 +325,7 @@ TriangleTree::TriangleTree(const Arguments& arguments)
         acceleration_structure = DefaultAccelerationStructure;
     }
 
+    // Build the tree.
     if (acceleration_structure == "bvh")
         build_bvh(arguments, statistics);
     else build_sbvh(arguments, statistics);
@@ -369,6 +381,7 @@ void TriangleTree::build_bvh(
     vector<AABB3d> triangle_bboxes;
     collect_triangles(
         arguments,
+        0.5,
         triangle_keys,
         triangle_vertex_infos,
         triangle_vertices,
@@ -397,6 +410,12 @@ void TriangleTree::build_bvh(
     // Bounding boxes are no longer needed.
     clear_release_memory(triangle_bboxes);
 
+    compute_motion_bboxes(
+        partitioner.get_item_ordering(),
+        triangle_vertex_infos,
+        triangle_vertices,
+        0);
+
     // Store triangles and triangle keys into the tree.
     store_triangles(
         partitioner.get_item_ordering(),
@@ -417,6 +436,7 @@ void TriangleTree::build_sbvh(
     vector<AABB3d> triangle_bboxes;
     collect_triangles(
         arguments,
+        0.5,
         triangle_keys,
         triangle_vertex_infos,
         triangle_vertices,
@@ -467,6 +487,12 @@ void TriangleTree::build_sbvh(
 
     // Bounding boxes are no longer needed.
     clear_release_memory(triangle_bboxes);
+
+    compute_motion_bboxes(
+        partitioner.get_item_ordering(),
+        triangle_vertex_infos,
+        triangle_vertices,
+        0);
 
     // Store triangles and triangle keys into the tree.
     store_triangles(
@@ -577,6 +603,124 @@ void TriangleTree::store_triangles(
     }
 
     statistics.add_percent("fat_leaves", "fat leaves", fat_leaf_count, leaf_count);
+}
+
+vector<AABB3d> TriangleTree::compute_motion_bboxes(
+    const vector<size_t>&               triangle_indices,
+    const vector<TriangleVertexInfo>&   triangle_vertex_infos,
+    const vector<GVector3>&             triangle_vertices,
+    const size_t                        node_index)
+{
+    NodeType& node = m_nodes[node_index];
+
+    if (node.is_interior())
+    {
+        const vector<AABB3d> left_bboxes =
+            compute_motion_bboxes(
+                triangle_indices,
+                triangle_vertex_infos,
+                triangle_vertices,
+                node.get_child_node_index() + 0);
+
+        if (left_bboxes.size() > 1)
+        {
+            node.set_left_bbox(m_node_bboxes.size(), left_bboxes.size());
+            m_node_bboxes.insert(m_node_bboxes.end(), left_bboxes.begin(), left_bboxes.end());
+        }
+        else node.set_left_bbox(0, 1);
+
+        const vector<AABB3d> right_bboxes =
+            compute_motion_bboxes(
+                triangle_indices,
+                triangle_vertex_infos,
+                triangle_vertices,
+                node.get_child_node_index() + 1);
+
+        if (right_bboxes.size() > 1)
+        {
+            node.set_right_bbox(m_node_bboxes.size(), right_bboxes.size());
+            m_node_bboxes.insert(m_node_bboxes.end(), right_bboxes.begin(), right_bboxes.end());
+        }
+        else node.set_right_bbox(0, 1);
+
+        const size_t bbox_count = max(left_bboxes.size(), right_bboxes.size());
+        vector<AABB3d> bboxes(bbox_count);
+
+        for (size_t i = 0; i < bbox_count; ++i)
+        {
+            bboxes[i] = left_bboxes[i * left_bboxes.size() / bbox_count];
+            bboxes[i].insert(right_bboxes[i * right_bboxes.size() / bbox_count]);
+        }
+
+        return bboxes;
+    }
+    else
+    {
+        const size_t item_begin = node.get_item_index();
+        const size_t item_count = node.get_item_count();
+
+        size_t max_motion_segment_count = 0;
+
+        AABB3d base_pose_bbox;
+        base_pose_bbox.invalidate();
+
+        for (size_t i = 0; i < item_count; ++i)
+        {
+            const size_t triangle_index = triangle_indices[item_begin + i];
+            const TriangleVertexInfo& vertex_info = triangle_vertex_infos[triangle_index];
+
+            assert(is_pow2(vertex_info.m_motion_segment_count + 1));
+
+            if (max_motion_segment_count < vertex_info.m_motion_segment_count)
+                max_motion_segment_count = vertex_info.m_motion_segment_count;
+
+            base_pose_bbox.insert(Vector3d(triangle_vertices[vertex_info.m_vertex_index + 0]));
+            base_pose_bbox.insert(Vector3d(triangle_vertices[vertex_info.m_vertex_index + 1]));
+            base_pose_bbox.insert(Vector3d(triangle_vertices[vertex_info.m_vertex_index + 2]));
+        }
+
+        vector<AABB3d> bboxes(max_motion_segment_count + 1);
+        bboxes[0] = base_pose_bbox;
+
+        if (max_motion_segment_count > 0)
+        {
+            for (size_t m = 0; m < max_motion_segment_count - 1; ++m)
+            {
+                bboxes[m + 1].invalidate();
+
+                const double time = static_cast<double>(m + 1) / max_motion_segment_count;
+
+                for (size_t i = 0; i < item_count; ++i)
+                {
+                    const size_t triangle_index = triangle_indices[item_begin + i];
+                    const TriangleVertexInfo& vertex_info = triangle_vertex_infos[triangle_index];
+
+                    const size_t prev_pose_index = truncate<size_t>(time * vertex_info.m_motion_segment_count);
+                    const size_t base_vertex_index = vertex_info.m_vertex_index + prev_pose_index * 3;
+                    const double k = static_cast<double>(time * vertex_info.m_motion_segment_count - prev_pose_index);
+
+                    bboxes[m + 1].insert(lerp(Vector3d(triangle_vertices[base_vertex_index + 0]), Vector3d(triangle_vertices[base_vertex_index + 3]), k));
+                    bboxes[m + 1].insert(lerp(Vector3d(triangle_vertices[base_vertex_index + 1]), Vector3d(triangle_vertices[base_vertex_index + 4]), k));
+                    bboxes[m + 1].insert(lerp(Vector3d(triangle_vertices[base_vertex_index + 2]), Vector3d(triangle_vertices[base_vertex_index + 5]), k));
+                }
+            }
+
+            bboxes[max_motion_segment_count].invalidate();
+
+            for (size_t i = 0; i < item_count; ++i)
+            {
+                const size_t triangle_index = triangle_indices[item_begin + i];
+                const TriangleVertexInfo& vertex_info = triangle_vertex_infos[triangle_index];
+                const size_t base_vertex_index = vertex_info.m_vertex_index + vertex_info.m_motion_segment_count * 3;
+
+                bboxes[max_motion_segment_count].insert(Vector3d(triangle_vertices[base_vertex_index + 0]));
+                bboxes[max_motion_segment_count].insert(Vector3d(triangle_vertices[base_vertex_index + 1]));
+                bboxes[max_motion_segment_count].insert(Vector3d(triangle_vertices[base_vertex_index + 2]));
+            }
+        }
+
+        return bboxes;
+    }
 }
 
 void TriangleTree::create_intersection_filters(const Arguments& arguments)

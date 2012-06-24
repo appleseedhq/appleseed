@@ -31,6 +31,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/minmax.h"
+#include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 
 // Imath headers.
@@ -152,6 +153,10 @@ class AABB
 // Exact inequality and equality tests.
 template <typename T, size_t N> bool operator!=(const AABB<T, N>& lhs, const AABB<T, N>& rhs);
 template <typename T, size_t N> bool operator==(const AABB<T, N>& lhs, const AABB<T, N>& rhs);
+
+// Approximate equality tests.
+template <typename T, size_t N> bool feq(const AABB<T, N>& lhs, const AABB<T, N>& rhs);
+template <typename T, size_t N> bool feq(const AABB<T, N>& lhs, const AABB<T, N>& rhs, const T eps);
 
 // Bounding box arithmetic.
 template <typename T, size_t N> AABB<T, N>  operator+ (const AABB<T, N>& lhs, const AABB<T, N>& rhs);
@@ -514,6 +519,18 @@ template <typename T, size_t N>
 inline bool operator==(const AABB<T, N>& lhs, const AABB<T, N>& rhs)
 {
     return !(lhs != rhs);
+}
+
+template <typename T, size_t N>
+inline bool feq(const AABB<T, N>& lhs, const AABB<T, N>& rhs)
+{
+    return feq(lhs.min, rhs.min) && feq(lhs.max, rhs.max);
+}
+
+template <typename T, size_t N>
+inline bool feq(const AABB<T, N>& lhs, const AABB<T, N>& rhs, const T eps)
+{
+    return feq(lhs.min, rhs.min, eps) && feq(lhs.max, rhs.max, eps);
 }
 
 template <typename T, size_t N>

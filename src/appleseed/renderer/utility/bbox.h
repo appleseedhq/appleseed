@@ -29,20 +29,35 @@
 #ifndef APPLESEED_RENDERER_UTILITY_BBOX_H
 #define APPLESEED_RENDERER_UTILITY_BBOX_H
 
-// appleseed.renderer headers.
-#include "renderer/global/global.h"
+// appleseed.foundation headers.
+#include "foundation/math/scalar.h"
+
+// Standard headers.
+#include <cassert>
+#include <cstddef>
 
 namespace renderer
 {
 
+// Compute the bounding box of a set of objects using their get_parent_bbox() method.
+template <typename BBox, typename Iterator>
+BBox get_parent_bbox(const Iterator begin, const Iterator end);
+
+// Compute the bounding box of a set of objects using their compute_parent_bbox() method.
+template <typename BBox, typename Iterator>
+BBox compute_parent_bbox(const Iterator begin, const Iterator end);
+
+// Compute the union of a set of bounding boxes.
+template <typename BBox, typename Iterator>
+BBox compute_union(const Iterator begin, const Iterator end);
+
+// Evaluate a path of equidistant bounding boxes for a given time value in [0,1).
+template <typename BBox, typename Iterator>
+BBox interpolate(const Iterator begin, const Iterator end, const double time);
+
+
 //
-// Compute the bounding box of a set of objects.
-//
-// The first method requires that the objects implement a get_parent_bbox() method
-// that return their bounding box in parent space.
-//
-// The second method requires that the objects implement a compute_parent_bbox() method
-// that return their bounding box in parent space.
+// Implementation.
 //
 
 template <typename BBox, typename Iterator>
@@ -67,6 +82,37 @@ BBox compute_parent_bbox(const Iterator begin, const Iterator end)
         bbox.insert(i->compute_parent_bbox());
 
     return bbox;
+}
+
+template <typename BBox, typename Iterator>
+BBox compute_union(const Iterator begin, const Iterator end)
+{
+    assert(begin != end);
+
+    Iterator i = begin;
+    BBox result = *i++;
+
+    while (i != end)
+        result.insert(*i++);
+
+    return result;
+}
+
+template <typename BBox, typename Iterator>
+BBox interpolate(const Iterator begin, const Iterator end, const double time)
+{
+    assert(begin != end);
+    assert(time >= 0.0 && time < 1.0);
+
+    typedef typename BBox::ValueType ValueType;
+
+    const BBox* first = &(*begin);
+    const size_t bbox_count = end - begin;
+    const size_t motion_segment_count = bbox_count - 1;
+    const size_t prev_index = foundation::truncate<size_t>(time * motion_segment_count);
+    const ValueType k = static_cast<ValueType>(time * motion_segment_count - prev_index);
+
+    return foundation::lerp(first[prev_index], first[prev_index + 1], k);
 }
 
 }       // namespace renderer
