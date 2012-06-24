@@ -605,7 +605,7 @@ void TriangleTree::store_triangles(
     statistics.add_percent("fat_leaves", "fat leaves", fat_leaf_count, leaf_count);
 }
 
-vector<AABB3d> TriangleTree::compute_motion_bboxes(
+vector<GAABB3> TriangleTree::compute_motion_bboxes(
     const vector<size_t>&               triangle_indices,
     const vector<TriangleVertexInfo>&   triangle_vertex_infos,
     const vector<GVector3>&             triangle_vertices,
@@ -615,7 +615,7 @@ vector<AABB3d> TriangleTree::compute_motion_bboxes(
 
     if (node.is_interior())
     {
-        const vector<AABB3d> left_bboxes =
+        const vector<GAABB3> left_bboxes =
             compute_motion_bboxes(
                 triangle_indices,
                 triangle_vertex_infos,
@@ -629,7 +629,7 @@ vector<AABB3d> TriangleTree::compute_motion_bboxes(
         }
         else node.set_left_bbox(0, 1);
 
-        const vector<AABB3d> right_bboxes =
+        const vector<GAABB3> right_bboxes =
             compute_motion_bboxes(
                 triangle_indices,
                 triangle_vertex_infos,
@@ -644,7 +644,7 @@ vector<AABB3d> TriangleTree::compute_motion_bboxes(
         else node.set_right_bbox(0, 1);
 
         const size_t bbox_count = max(left_bboxes.size(), right_bboxes.size());
-        vector<AABB3d> bboxes(bbox_count);
+        vector<GAABB3> bboxes(bbox_count);
 
         for (size_t i = 0; i < bbox_count; ++i)
         {
@@ -661,7 +661,7 @@ vector<AABB3d> TriangleTree::compute_motion_bboxes(
 
         size_t max_motion_segment_count = 0;
 
-        AABB3d base_pose_bbox;
+        GAABB3 base_pose_bbox;
         base_pose_bbox.invalidate();
 
         for (size_t i = 0; i < item_count; ++i)
@@ -674,12 +674,12 @@ vector<AABB3d> TriangleTree::compute_motion_bboxes(
             if (max_motion_segment_count < vertex_info.m_motion_segment_count)
                 max_motion_segment_count = vertex_info.m_motion_segment_count;
 
-            base_pose_bbox.insert(Vector3d(triangle_vertices[vertex_info.m_vertex_index + 0]));
-            base_pose_bbox.insert(Vector3d(triangle_vertices[vertex_info.m_vertex_index + 1]));
-            base_pose_bbox.insert(Vector3d(triangle_vertices[vertex_info.m_vertex_index + 2]));
+            base_pose_bbox.insert(triangle_vertices[vertex_info.m_vertex_index + 0]);
+            base_pose_bbox.insert(triangle_vertices[vertex_info.m_vertex_index + 1]);
+            base_pose_bbox.insert(triangle_vertices[vertex_info.m_vertex_index + 2]);
         }
 
-        vector<AABB3d> bboxes(max_motion_segment_count + 1);
+        vector<GAABB3> bboxes(max_motion_segment_count + 1);
         bboxes[0] = base_pose_bbox;
 
         if (max_motion_segment_count > 0)
@@ -697,11 +697,11 @@ vector<AABB3d> TriangleTree::compute_motion_bboxes(
 
                     const size_t prev_pose_index = truncate<size_t>(time * vertex_info.m_motion_segment_count);
                     const size_t base_vertex_index = vertex_info.m_vertex_index + prev_pose_index * 3;
-                    const double k = static_cast<double>(time * vertex_info.m_motion_segment_count - prev_pose_index);
+                    const GScalar k = static_cast<GScalar>(time * vertex_info.m_motion_segment_count - prev_pose_index);
 
-                    bboxes[m + 1].insert(lerp(Vector3d(triangle_vertices[base_vertex_index + 0]), Vector3d(triangle_vertices[base_vertex_index + 3]), k));
-                    bboxes[m + 1].insert(lerp(Vector3d(triangle_vertices[base_vertex_index + 1]), Vector3d(triangle_vertices[base_vertex_index + 4]), k));
-                    bboxes[m + 1].insert(lerp(Vector3d(triangle_vertices[base_vertex_index + 2]), Vector3d(triangle_vertices[base_vertex_index + 5]), k));
+                    bboxes[m + 1].insert(lerp(triangle_vertices[base_vertex_index + 0], triangle_vertices[base_vertex_index + 3], k));
+                    bboxes[m + 1].insert(lerp(triangle_vertices[base_vertex_index + 1], triangle_vertices[base_vertex_index + 4], k));
+                    bboxes[m + 1].insert(lerp(triangle_vertices[base_vertex_index + 2], triangle_vertices[base_vertex_index + 5], k));
                 }
             }
 
@@ -713,9 +713,9 @@ vector<AABB3d> TriangleTree::compute_motion_bboxes(
                 const TriangleVertexInfo& vertex_info = triangle_vertex_infos[triangle_index];
                 const size_t base_vertex_index = vertex_info.m_vertex_index + vertex_info.m_motion_segment_count * 3;
 
-                bboxes[max_motion_segment_count].insert(Vector3d(triangle_vertices[base_vertex_index + 0]));
-                bboxes[max_motion_segment_count].insert(Vector3d(triangle_vertices[base_vertex_index + 1]));
-                bboxes[max_motion_segment_count].insert(Vector3d(triangle_vertices[base_vertex_index + 2]));
+                bboxes[max_motion_segment_count].insert(triangle_vertices[base_vertex_index + 0]);
+                bboxes[max_motion_segment_count].insert(triangle_vertices[base_vertex_index + 1]);
+                bboxes[max_motion_segment_count].insert(triangle_vertices[base_vertex_index + 2]);
             }
         }
 
