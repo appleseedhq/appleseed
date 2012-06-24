@@ -120,7 +120,7 @@ namespace
             {
                 // Evaluate the environment EDF.
                 shading_result.m_color_space = ColorSpaceSpectral;
-                shading_result.m_alpha.set(1.0f);
+                shading_result.m_alpha.set(0.0f);
                 m_env_edf->evaluate(
                     input_evaluator,
                     direction,
