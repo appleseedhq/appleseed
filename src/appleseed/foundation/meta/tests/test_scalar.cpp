@@ -35,11 +35,11 @@
 #include <cstddef>
 #include <limits>
 
+using namespace foundation;
+using namespace std;
+
 TEST_SUITE(Foundation_Math_Scalar)
 {
-    using namespace foundation;
-    using namespace std;
-
     TEST_CASE(TestDegToRad)
     {
         EXPECT_FEQ(0.0,      deg_to_rad(0.0));
