@@ -622,13 +622,6 @@ vector<GAABB3> TriangleTree::compute_motion_bboxes(
                 triangle_vertices,
                 node.get_child_node_index() + 0);
 
-        if (left_bboxes.size() > 1)
-        {
-            node.set_left_bbox(m_node_bboxes.size(), left_bboxes.size());
-            m_node_bboxes.insert(m_node_bboxes.end(), left_bboxes.begin(), left_bboxes.end());
-        }
-        else node.set_left_bbox(0, 1);
-
         const vector<GAABB3> right_bboxes =
             compute_motion_bboxes(
                 triangle_indices,
@@ -636,12 +629,20 @@ vector<GAABB3> TriangleTree::compute_motion_bboxes(
                 triangle_vertices,
                 node.get_child_node_index() + 1);
 
+        node.set_left_bbox_count(left_bboxes.size());
+        node.set_right_bbox_count(right_bboxes.size());
+
+        if (left_bboxes.size() > 1)
+        {
+            node.set_left_bbox_index(m_node_bboxes.size());
+            m_node_bboxes.insert(m_node_bboxes.end(), left_bboxes.begin(), left_bboxes.end());
+        }
+
         if (right_bboxes.size() > 1)
         {
-            node.set_right_bbox(m_node_bboxes.size(), right_bboxes.size());
+            node.set_right_bbox_index(m_node_bboxes.size());
             m_node_bboxes.insert(m_node_bboxes.end(), right_bboxes.begin(), right_bboxes.end());
         }
-        else node.set_right_bbox(0, 1);
 
         const size_t bbox_count = max(left_bboxes.size(), right_bboxes.size());
         vector<GAABB3> bboxes(bbox_count);

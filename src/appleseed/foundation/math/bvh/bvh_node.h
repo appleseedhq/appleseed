@@ -62,12 +62,14 @@ class ALIGN(64) Node
     AABBType get_left_bbox() const;
     AABBType get_right_bbox() const;
 
-    // Set/get the left and right bounding boxes (interior nodes only, motion case).
-    void set_left_bbox(const size_t index, const size_t count);
-    void set_right_bbox(const size_t index, const size_t count);
+    // Set/get the bounding boxes of the child nodes (interior nodes only, motion case).
+    void set_left_bbox_index(const size_t index);
+    void set_left_bbox_count(const size_t count);
+    void set_right_bbox_index(const size_t index);
+    void set_right_bbox_count(const size_t count);
     size_t get_left_bbox_index() const;
-    size_t get_right_bbox_index() const;
     size_t get_left_bbox_count() const;
+    size_t get_right_bbox_index() const;
     size_t get_right_bbox_count() const;
 
     // Access user data (leaf nodes only).
@@ -97,7 +99,11 @@ class ALIGN(64) Node
 
     uint32                  m_item_count;
     uint32                  m_index;
-    uint32                  m_bbox_ranges[4];
+    uint32                  m_left_bbox_index;
+    uint32                  m_left_bbox_count;
+    uint32                  m_right_bbox_index;
+    uint32                  m_right_bbox_count;
+
     SSE_ALIGN ValueType     m_bbox_data[4 * Dimension];
 };
 
@@ -180,47 +186,55 @@ inline AABB Node<AABB>::get_right_bbox() const
 }
 
 template <typename AABB>
-inline void Node<AABB>::set_left_bbox(const size_t index, const size_t count)
+inline void Node<AABB>::set_left_bbox_index(const size_t index)
 {
     assert(index <= 0xFFFFFFFFUL);
-    assert(count <= 0xFFFFFFFFUL);
-
-    m_bbox_ranges[0] = static_cast<uint32>(index);
-    m_bbox_ranges[1] = static_cast<uint32>(count);
+    m_left_bbox_index = static_cast<uint32>(index);
 }
 
 template <typename AABB>
-inline void Node<AABB>::set_right_bbox(const size_t index, const size_t count)
+inline void Node<AABB>::set_left_bbox_count(const size_t count)
+{
+    assert(count <= 0xFFFFFFFFUL);
+    m_left_bbox_count = static_cast<uint32>(count);
+}
+
+template <typename AABB>
+inline void Node<AABB>::set_right_bbox_index(const size_t index)
 {
     assert(index <= 0xFFFFFFFFUL);
-    assert(count <= 0xFFFFFFFFUL);
+    m_right_bbox_index = static_cast<uint32>(index);
+}
 
-    m_bbox_ranges[2] = static_cast<uint32>(index);
-    m_bbox_ranges[3] = static_cast<uint32>(count);
+template <typename AABB>
+inline void Node<AABB>::set_right_bbox_count(const size_t count)
+{
+    assert(count <= 0xFFFFFFFFUL);
+    m_right_bbox_count = static_cast<uint32>(count);
 }
 
 template <typename AABB>
 inline size_t Node<AABB>::get_left_bbox_index() const
 {
-    return static_cast<uint32>(m_bbox_ranges[0]);
-}
-
-template <typename AABB>
-inline size_t Node<AABB>::get_right_bbox_index() const
-{
-    return static_cast<uint32>(m_bbox_ranges[2]);
+    return static_cast<uint32>(m_left_bbox_index);
 }
 
 template <typename AABB>
 inline size_t Node<AABB>::get_left_bbox_count() const
 {
-    return static_cast<uint32>(m_bbox_ranges[1]);
+    return static_cast<uint32>(m_left_bbox_count);
+}
+
+template <typename AABB>
+inline size_t Node<AABB>::get_right_bbox_index() const
+{
+    return static_cast<uint32>(m_right_bbox_index);
 }
 
 template <typename AABB>
 inline size_t Node<AABB>::get_right_bbox_count() const
 {
-    return static_cast<uint32>(m_bbox_ranges[3]);
+    return static_cast<uint32>(m_right_bbox_count);
 }
 
 template <typename AABB>
