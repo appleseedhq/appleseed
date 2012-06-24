@@ -118,9 +118,6 @@ namespace
                 image_point,
                 primary_ray);
 
-            // Initialize the result to linear RGB transparent black.
-            shading_result.clear();
-
             ShadingPoint shading_points[2];
             size_t shading_point_index = 0;
             const ShadingPoint* shading_point_ptr = 0;
@@ -149,20 +146,35 @@ namespace
                 shading_point_ptr = &shading_points[shading_point_index];
                 shading_point_index = 1 - shading_point_index;
 
-                // Shade the intersection point.
-                ShadingResult local_result;
-                local_result.m_aovs.set_size(shading_result.m_aovs.size());
-                m_shading_engine.shade(
-                    sampling_context,
-                    shading_context,
-                    *shading_point_ptr,
-                    local_result);
+                if (iterations == 1)
+                {
+                    // Shade the intersection point.
+                    m_shading_engine.shade(
+                        sampling_context,
+                        shading_context,
+                        *shading_point_ptr,
+                        shading_result);
 
-                // Transform the result to the linear RGB color space.
-                local_result.transform_to_linear_rgb(m_lighting_conditions);
+                    // Transform the result to the linear RGB color space.
+                    shading_result.transform_to_linear_rgb(m_lighting_conditions);
+                }
+                else
+                {
+                    // Shade the intersection point.
+                    ShadingResult local_result;
+                    local_result.m_aovs.set_size(shading_result.m_aovs.size());
+                    m_shading_engine.shade(
+                        sampling_context,
+                        shading_context,
+                        *shading_point_ptr,
+                        local_result);
 
-                // "Over" alpha compositing.
-                shading_result.composite_over(local_result);
+                    // Transform the result to the linear RGB color space.
+                    local_result.transform_to_linear_rgb(m_lighting_conditions);
+
+                    // "Over" alpha compositing.
+                    shading_result.composite_over(local_result);
+                }
 
                 // Stop once we hit the environment.
                 if (!shading_point_ptr->hit())
