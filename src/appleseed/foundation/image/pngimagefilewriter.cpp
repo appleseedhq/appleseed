@@ -40,7 +40,10 @@
 
 // libpng header.
 #include "png.h"
-#include "pngstruct.h"
+
+#if PNG_LIBPNG_VER_DLLNUM >= 15
+    #include "pngstruct.h"
+#endif
 
 // Standard headers.
 #include <cassert>

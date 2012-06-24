@@ -318,9 +318,9 @@ add_executable (appleseed.studio
 )
 
 set_target_properties (appleseed.studio PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/../build/${platform}/appleseed.studio
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/../build/${platform}/appleseed.studio
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/../build/${platform}/appleseed.studio
+    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/appleseed.studio
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/appleseed.studio
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/appleseed.studio
 )
 
 if (WIN32)

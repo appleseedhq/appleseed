@@ -53,9 +53,9 @@ add_executable (normalizeprojectfile
 )
 
 set_target_properties (normalizeprojectfile PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/../build/${platform}/normalizeprojectfile
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/../build/${platform}/normalizeprojectfile
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/../build/${platform}/normalizeprojectfile
+    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/normalizeprojectfile
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/normalizeprojectfile
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/normalizeprojectfile
 )
 
 
