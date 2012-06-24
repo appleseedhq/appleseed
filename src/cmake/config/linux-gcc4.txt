@@ -97,44 +97,68 @@ macro (link_against_platform target)
 endmacro ()
 
 macro (link_against_openexr target)
-    target_link_libraries (${target}
-        ${CMAKE_BINARY_DIR}/${platform}/openexr/libHalf.a
-        ${CMAKE_BINARY_DIR}/${platform}/openexr/libIex.a
-        ${CMAKE_BINARY_DIR}/${platform}/openexr/libIlmImf.a
-        ${CMAKE_BINARY_DIR}/${platform}/openexr/libIlmThread.a
-        ${CMAKE_BINARY_DIR}/${platform}/openexr/libImath.a
-    )
+    if (USE_EXTERNAL_ALEMBIC)
+		target_link_libraries (${target} ${IMATH_LIBRARIES} ${OPENEXR_LIBRARIES})
+    else ()
+        target_link_libraries (${target}
+            ${CMAKE_BINARY_DIR}/${platform}/openexr/libHalf.a
+            ${CMAKE_BINARY_DIR}/${platform}/openexr/libIex.a
+            ${CMAKE_BINARY_DIR}/${platform}/openexr/libIlmImf.a
+            ${CMAKE_BINARY_DIR}/${platform}/openexr/libIlmThread.a
+            ${CMAKE_BINARY_DIR}/${platform}/openexr/libImath.a
+        )
+    endif ()
 endmacro ()
 
 macro (link_against_zlib target)
-    target_link_libraries (${target}
-        ${CMAKE_BINARY_DIR}/${platform}/zlib/libz.a
-    )
+    if (USE_EXTERNAL_ALEMBIC)
+		target_link_libraries (${target} ${ZLIB_LIBRARIES})
+    else ()
+        target_link_libraries (${target}
+            ${CMAKE_BINARY_DIR}/${platform}/zlib/libz.a
+        )
+    endif ()
 endmacro ()
 
 macro (link_against_libpng target)
-    target_link_libraries (${target}
-        ${CMAKE_BINARY_DIR}/${platform}/libpng/libpng.a
-    )
+    if (USE_EXTERNAL_PNG)
+		target_link_libraries (${target} ${PNG_LIBRARIES})
+    else ()
+        target_link_libraries (${target}
+            ${CMAKE_BINARY_DIR}/${platform}/libpng/libpng.a
+)
+    endif ()
 endmacro ()
 
 macro (link_against_xercesc target)
-    target_link_libraries (${target}
-        ${CMAKE_BINARY_DIR}/${platform}/xerces-c/libxerces-c.a
-    )
+    if (USE_EXTERNAL_XERCES)
+		target_link_libraries (${target} ${XERCES_LIBRARIES})
+    else ()
+        target_link_libraries (${target}
+            ${CMAKE_BINARY_DIR}/${platform}/xerces-c/libxerces-c.a
+        )
+    endif ()
 endmacro ()
 
 macro (link_against_hdf5 target)
-    target_link_libraries (${target}
-        ${CMAKE_BINARY_DIR}/${platform}/hdf5/libhdf5.a
-        ${CMAKE_BINARY_DIR}/${platform}/hdf5/libhdf5_hl.a
-    )
+    if (USE_EXTERNAL_ALEMBIC)
+		target_link_libraries (${target} ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
+    else ()
+        target_link_libraries (${target}
+            ${CMAKE_BINARY_DIR}/${platform}/hdf5/libhdf5.a
+            ${CMAKE_BINARY_DIR}/${platform}/hdf5/libhdf5_hl.a
+        )
+    endif ()
 endmacro ()
 
 macro (link_against_alembic target)
-    target_link_libraries (${target}
-        ${CMAKE_BINARY_DIR}/${platform}/alembic/libalembic.a
-    )
+    if (USE_EXTERNAL_ALEMBIC)
+		target_link_libraries (${target} ${ALEMBIC_LIBRARIES})
+    else ()
+        target_link_libraries (${target}
+            ${CMAKE_BINARY_DIR}/${platform}/alembic/libalembic.a
+        )
+    endif ()
 endmacro ()
 
 
