@@ -325,10 +325,15 @@ TriangleTree::TriangleTree(const Arguments& arguments)
         acceleration_structure = DefaultAccelerationStructure;
     }
 
+    // We're going to build the BVH for the geometry as it is in the middle of the shutter interval:
+    // the topology of the tree will be optimal for this time and will hopefully be good enough for
+    // all the shutter interval.
+    const double Time = 0.5;
+
     // Build the tree.
     if (acceleration_structure == "bvh")
-        build_bvh(arguments, statistics);
-    else build_sbvh(arguments, statistics);
+        build_bvh(arguments, Time, statistics);
+    else build_sbvh(arguments, Time, statistics);
 
     // Optimize the tree layout in memory.
     TreeOptimizer<NodeVectorType> tree_optimizer(m_nodes);
@@ -372,6 +377,7 @@ size_t TriangleTree::get_memory_size() const
 
 void TriangleTree::build_bvh(
     const Arguments&    arguments,
+    const double        time,
     Statistics&         statistics)
 {
     // Collect triangles intersecting the bounding box of this tree.
@@ -381,7 +387,7 @@ void TriangleTree::build_bvh(
     vector<AABB3d> triangle_bboxes;
     collect_triangles(
         arguments,
-        0.5,
+        time,
         triangle_keys,
         triangle_vertex_infos,
         triangle_vertices,
@@ -428,6 +434,7 @@ void TriangleTree::build_bvh(
 
 void TriangleTree::build_sbvh(
     const Arguments&    arguments,
+    const double        time,
     Statistics&         statistics)
 {
     // Collect triangles intersecting the bounding box of this tree.
@@ -437,7 +444,7 @@ void TriangleTree::build_sbvh(
     vector<AABB3d> triangle_bboxes;
     collect_triangles(
         arguments,
-        0.5,
+        time,
         triangle_keys,
         triangle_vertex_infos,
         triangle_vertices,

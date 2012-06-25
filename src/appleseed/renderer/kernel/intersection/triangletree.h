@@ -117,10 +117,12 @@ class TriangleTree
 
     void build_bvh(
         const Arguments&                        arguments,
+        const double                            time,
         foundation::Statistics&                 statistics);
 
     void build_sbvh(
         const Arguments&                        arguments,
+        const double                            time,
         foundation::Statistics&                 statistics);
 
     std::vector<GAABB3> compute_motion_bboxes(
