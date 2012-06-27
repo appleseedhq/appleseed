@@ -30,13 +30,13 @@
 #define APPLESEED_FOUNDATION_UTILITY_TEST_TESTLISTENERBASE_H
 
 // appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/test/itestlistener.h"
 
 // Standard headers.
 #include <cstddef>
 
 // Forward declarations.
-namespace foundation    { class ITestCase; }
 namespace foundation    { class TestResult; }
 namespace foundation    { class TestSuite; }
 
@@ -72,7 +72,7 @@ class FOUNDATIONDLL TestListenerBase
   public:
     // Called before each test suite is run.
     virtual void begin_suite(
-        const TestSuite&        test_suite)
+        const TestSuite&        test_suite) override
     {
     }
 
@@ -80,35 +80,35 @@ class FOUNDATIONDLL TestListenerBase
     virtual void end_suite(
         const TestSuite&        test_suite,
         const TestResult&       test_suite_result,
-        const TestResult&       cumulated_result)
+        const TestResult&       cumulated_result) override
     {
     }
 
     // Called before each test case is run.
     virtual void begin_case(
         const TestSuite&        test_suite,
-        const ITestCase&        test_case)
+        const char*             test_case_name) override
     {
     }
 
     // Called after each test case is run.
     virtual void end_case(
         const TestSuite&        test_suite,
-        const ITestCase&        test_case,
+        const char*             test_case_name,
         const TestResult&       test_suite_result,
         const TestResult&       test_case_result,
-        const TestResult&       cumulated_result)
+        const TestResult&       cumulated_result) override
     {
     }
 
     // Write a message.
     virtual void write(
         const TestSuite&        test_suite,
-        const ITestCase&        test_case,
+        const char*             test_case_name,
         const char*             file,
         const size_t            line,
         const TestMessage::Type message_type,
-        const char*             message)
+        const char*             message) override
     {
     }
 };

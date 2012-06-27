@@ -96,35 +96,34 @@ ITestCaseFactory* TestSuite::get_case_factory(const size_t index) const
 }
 
 void TestSuite::run(
-    ITestListener&  test_listener,
-    TestResult&     cumulated_result) const
+    ITestListener&      test_listener,
+    TestResult&         cumulated_result) const
 {
     PassThroughFilter filter;
     run(filter, test_listener, cumulated_result);
 }
 
 void TestSuite::run(
-    const IFilter&  filter,
-    ITestListener&  test_listener,
-    TestResult&     cumulated_result) const
+    const IFilter&      filter,
+    ITestListener&      test_listener,
+    TestResult&         cumulated_result) const
 {
-    // Run the test suite.
     TestResult test_suite_result;
+
     run_suite(
         filter,
         test_listener,
         test_suite_result,
         cumulated_result);
 
-    // Accumulate the results.
     cumulated_result.merge(test_suite_result);
 }
 
 void TestSuite::run_suite(
-    const IFilter&  filter,
-    ITestListener&  test_listener,
-    TestResult&     test_suite_result,
-    TestResult&     cumulated_result) const
+    const IFilter&      filter,
+    ITestListener&      test_listener,
+    TestResult&         test_suite_result,
+    TestResult&         cumulated_result) const
 {
     TestResult local_cumulated_result(cumulated_result);
     local_cumulated_result.merge(test_suite_result);
@@ -133,10 +132,10 @@ void TestSuite::run_suite(
 
     for (size_t i = 0; i < impl->m_factories.size(); ++i)
     {
-        ITestCaseFactory* factory = impl->m_factories[i];
+        ITestCaseFactory& factory = *impl->m_factories[i];
 
         // Skip test cases that aren't let through by the filter.
-        if (!filter.accepts(factory->get_name()))
+        if (!filter.accepts(factory.get_name()))
             continue;
 
         if (!has_begun_suite)
@@ -147,18 +146,12 @@ void TestSuite::run_suite(
             has_begun_suite = true;
         }
 
-        // Instantiate the test case.
-        auto_ptr<ITestCase> test_case(factory->create());
-
         // Tell the listener that a test case is about to be executed.
-        test_listener.begin_case(*this, *test_case.get());
+        test_listener.begin_case(*this, factory.get_name());
 
-        // Run the test case.
+        // Instantiate and run the test case.
         TestResult test_case_result;
-        run_case(
-            *test_case.get(),
-            test_listener,
-            test_case_result);
+        run_case(factory, test_listener, test_case_result);
 
         // Accumulate the test results.
         test_suite_result.merge(test_case_result);
@@ -167,7 +160,7 @@ void TestSuite::run_suite(
         // Tell the listener that the test case execution has ended.
         test_listener.end_case(
             *this,
-            *test_case.get(),
+            factory.get_name(),
             test_suite_result,
             test_case_result,
             local_cumulated_result);
@@ -188,18 +181,18 @@ void TestSuite::run_suite(
 }
 
 void TestSuite::run_case(
-    ITestCase&      test_case,
-    ITestListener&  test_listener,
-    TestResult&     test_case_result) const
+    ITestCaseFactory&   test_case_factory,
+    ITestListener&      test_listener,
+    TestResult&         test_case_result) const
 {
     test_case_result.signal_case_execution();
 
     try
     {
-        // Run the test case.
-        test_case.run(test_listener, test_case_result);
+        auto_ptr<ITestCase> test_case(test_case_factory.create());
 
-        // Report a test case failure if one or more assertions failed.
+        test_case->run(test_listener, test_case_result);
+
         if (test_case_result.get_assertion_failure_count() > 0)
             test_case_result.signal_case_failure();
     }
@@ -213,7 +206,7 @@ void TestSuite::run_case(
         TestListenerHelper::write(
             test_listener,
             *this,
-            test_case,
+            test_case_factory.get_name(),
             __FILE__,
             __LINE__,
             TestMessage::TestCaseFailure,
@@ -227,7 +220,7 @@ void TestSuite::run_case(
         TestListenerHelper::write(
             test_listener,
             *this,
-            test_case,
+            test_case_factory.get_name(),
             __FILE__,
             __LINE__,
             TestMessage::TestCaseFailure,

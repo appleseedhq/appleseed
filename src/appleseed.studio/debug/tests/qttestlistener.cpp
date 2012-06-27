@@ -101,7 +101,7 @@ void QtTestListener::end_suite(
 
 void QtTestListener::begin_case(
     const TestSuite&        test_suite,
-    const ITestCase&        test_case)
+    const char*             test_case_name)
 {
     m_case_item = new TestOutputItem();
 
@@ -110,7 +110,7 @@ void QtTestListener::begin_case(
 
 void QtTestListener::end_case(
     const TestSuite&        test_suite,
-    const ITestCase&        test_case,
+    const char*             test_case_name,
     const TestResult&       test_suite_result,
     const TestResult&       test_case_result,
     const TestResult&       cumulated_result)
@@ -118,7 +118,7 @@ void QtTestListener::end_case(
     m_case_stopwatch.measure();
 
     m_case_item->set(
-        test_case.get_name(),
+        test_case_name,
         test_case_result.get_case_failure_count() == 0,
         m_case_stopwatch.get_seconds());
 
@@ -136,7 +136,7 @@ namespace
 {
     string build_message_string(
         const TestSuite&        test_suite,
-        const ITestCase&        test_case,
+        const char*             test_case_name,
         const char*             file,
         const size_t            line,
         const TestMessage::Type message_type,
@@ -166,7 +166,7 @@ namespace
 
 void QtTestListener::write(
     const TestSuite&        test_suite,
-    const ITestCase&        test_case,
+    const char*             test_case_name,
     const char*             file,
     const size_t            line,
     const TestMessage::Type message_type,
@@ -175,7 +175,7 @@ void QtTestListener::write(
     const string message_string =
         build_message_string(
             test_suite,
-            test_case,
+            test_case_name,
             file,
             line,
             message_type,

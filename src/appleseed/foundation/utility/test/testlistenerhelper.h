@@ -36,7 +36,6 @@
 #include <cstddef>
 
 // Forward declarations.
-namespace foundation    { class ITestCase; }
 namespace foundation    { class ITestListener; }
 namespace foundation    { class TestResult; }
 namespace foundation    { class TestSuite; }
@@ -70,7 +69,7 @@ class FOUNDATIONDLL TestListenerHelper
     static void write(
         ITestListener&          test_listener,
         const TestSuite&        test_suite,
-        const ITestCase&        test_case,
+        const char*             test_case_name,
         const char*             file,
         const size_t            line,
         const TestMessage::Type message_type,

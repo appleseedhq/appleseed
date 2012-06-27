@@ -92,29 +92,29 @@ class FOUNDATIONDLL TestSuite
 
     // Run all the registered test cases.
     void run(
-        ITestListener&  test_listener,
-        TestResult&     cumulated_result) const;
+        ITestListener&      test_listener,
+        TestResult&         cumulated_result) const;
 
     // Run those test cases whose name pass a given filter.
     void run(
-        const IFilter&  filter,
-        ITestListener&  test_listener,
-        TestResult&     cumulated_result) const;
+        const IFilter&      filter,
+        ITestListener&      test_listener,
+        TestResult&         cumulated_result) const;
 
   private:
     struct Impl;
     Impl* impl;
 
     void run_suite(
-        const IFilter&  filter,
-        ITestListener&  test_listener,
-        TestResult&     test_suite_result,
-        TestResult&     cumulated_result) const;
+        const IFilter&      filter,
+        ITestListener&      test_listener,
+        TestResult&         test_suite_result,
+        TestResult&         cumulated_result) const;
 
     void run_case(
-        ITestCase&      test_case,
-        ITestListener&  test_listener,
-        TestResult&     test_case_result) const;
+        ITestCaseFactory&   test_case_factory,
+        ITestListener&      test_listener,
+        TestResult&         test_case_result) const;
 };
 
 }       // namespace foundation

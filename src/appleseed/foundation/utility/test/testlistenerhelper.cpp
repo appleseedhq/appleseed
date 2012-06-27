@@ -48,7 +48,7 @@ namespace foundation
 void TestListenerHelper::write(
     ITestListener&          test_listener,
     const TestSuite&        test_suite,
-    const ITestCase&        test_case,
+    const char*             test_case_name,
     const char*             file,
     const size_t            line,
     const TestMessage::Type message_type,
@@ -66,7 +66,7 @@ void TestListenerHelper::write(
     // Forward the message to the test listener.
     test_listener.write(
         test_suite,
-        test_case,
+        test_case_name,
         file,
         line,
         message_type,

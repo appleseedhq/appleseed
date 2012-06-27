@@ -55,7 +55,7 @@ namespace foundation
         foundation::TestListenerHelper::write(                                          \
             test_listener,                                                              \
             current_test_suite__(),                                                     \
-            *this,                                                                      \
+            get_name(),                                                                 \
             __FILE__,                                                                   \
             __LINE__,                                                                   \
             foundation::TestMessage::AssertionFailure,                                  \
@@ -154,7 +154,7 @@ namespace foundation
             foundation::TestListenerHelper::write(                                      \
                 test_listener,                                                          \
                 current_test_suite__(),                                                 \
-                *this,                                                                  \
+                get_name(),                                                             \
                 __FILE__,                                                               \
                 __LINE__,                                                               \
                 foundation::TestMessage::AssertionFailure,                              \
@@ -200,7 +200,7 @@ namespace foundation
             foundation::TestListenerHelper::write(                                      \
                 test_listener,                                                          \
                 current_test_suite__(),                                                 \
-                *this,                                                                  \
+                get_name(),                                                             \
                 __FILE__,                                                               \
                 __LINE__,                                                               \
                 foundation::TestMessage::AssertionFailure,                              \
@@ -325,7 +325,7 @@ namespace foundation
             foundation::TestListenerHelper::write(                                      \
                 test_listener,                                                          \
                 current_test_suite__(),                                                 \
-                *this,                                                                  \
+                get_name(),                                                             \
                 __FILE__,                                                               \
                 __LINE__,                                                               \
                 foundation::TestMessage::AssertionFailure,                              \
@@ -371,7 +371,7 @@ namespace foundation
             foundation::TestListenerHelper::write(                                      \
                 test_listener,                                                          \
                 current_test_suite__(),                                                 \
-                *this,                                                                  \
+                get_name(),                                                             \
                 __FILE__,                                                               \
                 __LINE__,                                                               \
                 foundation::TestMessage::AssertionFailure,                              \
@@ -442,7 +442,7 @@ namespace foundation
             foundation::TestListenerHelper::write(                                      \
                 test_listener,                                                          \
                 current_test_suite__(),                                                 \
-                *this,                                                                  \
+                get_name(),                                                             \
                 __FILE__,                                                               \
                 __LINE__,                                                               \
                 foundation::TestMessage::AssertionFailure,                              \
@@ -488,7 +488,7 @@ namespace foundation
             foundation::TestListenerHelper::write(                                      \
                 test_listener,                                                          \
                 current_test_suite__(),                                                 \
-                *this,                                                                  \
+                get_name(),                                                             \
                 __FILE__,                                                               \
                 __LINE__,                                                               \
                 foundation::TestMessage::AssertionFailure,                              \
@@ -572,7 +572,7 @@ namespace foundation
             foundation::TestListenerHelper::write(                                      \
                 test_listener,                                                          \
                 current_test_suite__(),                                                 \
-                *this,                                                                  \
+                get_name(),                                                             \
                 __FILE__,                                                               \
                 __LINE__,                                                               \
                 foundation::TestMessage::AssertionFailure,                              \

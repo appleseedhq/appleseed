@@ -30,7 +30,7 @@
 #include "loggertestlistener.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/test/itestcase.h"
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/test/testlistenerbase.h"
 #include "foundation/utility/test/testsuite.h"
 #include "foundation/utility/foreach.h"
@@ -67,30 +67,30 @@ namespace
         {
         }
 
-        virtual void release()
+        virtual void release() override
         {
             delete this;
         }
 
         virtual void begin_suite(
-            const TestSuite&        test_suite)
+            const TestSuite&        test_suite) override
         {
             m_suite_name_printed = false;
         }
 
         virtual void begin_case(
             const TestSuite&        test_suite,
-            const ITestCase&        test_case)
+            const char*             test_case_name) override
         {
             m_case_name_printed = false;
         }
 
         virtual void end_case(
             const TestSuite&        test_suite,
-            const ITestCase&        test_case,
+            const char*             test_case_name,
             const TestResult&       test_suite_result,
             const TestResult&       test_case_result,
-            const TestResult&       cumulated_result)
+            const TestResult&       cumulated_result) override
         {
             if (m_verbose)
             {
@@ -102,7 +102,7 @@ namespace
                         m_suite_name_printed = true;
                     }
 
-                    LOG_INFO(m_logger, "  [passed] %s", test_case.get_name());
+                    LOG_INFO(m_logger, "  [passed] %s", test_case_name);
                     m_case_name_printed = true;
                 }
             }
@@ -110,11 +110,11 @@ namespace
 
         virtual void write(
             const TestSuite&        test_suite,
-            const ITestCase&        test_case,
+            const char*             test_case_name,
             const char*             file,
             const size_t            line,
             const TestMessage::Type message_type,
-            const char*             message)
+            const char*             message) override
         {
             if (!m_case_name_printed)
             {
@@ -128,7 +128,7 @@ namespace
                     m_suite_name_printed = true;
                 }
 
-                LOG_ERROR(m_logger, "  [failed] %s", test_case.get_name());
+                LOG_ERROR(m_logger, "  [failed] %s", test_case_name);
                 m_case_name_printed = true;
             }
 

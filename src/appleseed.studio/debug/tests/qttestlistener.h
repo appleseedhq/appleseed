@@ -30,6 +30,7 @@
 #define APPLESEED_STUDIO_DEBUG_TESTS_QTTESTLISTENER_H
 
 // appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 #include "foundation/platform/timer.h"
 #include "foundation/utility/stopwatch.h"
 #include "foundation/utility/test.h"
@@ -62,39 +63,39 @@ class QtTestListener
         TestResultWidgetDecorator*          result_widget);
 
     // Delete this instance.
-    virtual void release();
+    virtual void release() override;
 
     // Called before each test suite is run.
     virtual void begin_suite(
-        const foundation::TestSuite&        test_suite);
+        const foundation::TestSuite&        test_suite) override;
 
     // Called after each test suite is run.
     virtual void end_suite(
         const foundation::TestSuite&        test_suite,
         const foundation::TestResult&       test_suite_result,
-        const foundation::TestResult&       cumulated_result);
+        const foundation::TestResult&       cumulated_result) override;
 
     // Called before each test case is run.
     virtual void begin_case(
         const foundation::TestSuite&        test_suite,
-        const foundation::ITestCase&        test_case);
+        const char*                         test_case_name) override;
 
     // Called after each test case is run.
     virtual void end_case(
         const foundation::TestSuite&        test_suite,
-        const foundation::ITestCase&        test_case,
+        const char*                         test_case_name,
         const foundation::TestResult&       test_suite_result,
         const foundation::TestResult&       test_case_result,
-        const foundation::TestResult&       cumulated_result);
+        const foundation::TestResult&       cumulated_result) override;
 
     // Write a message.
     virtual void write(
         const foundation::TestSuite&        test_suite,
-        const foundation::ITestCase&        test_case,
+        const char*                         test_case_name,
         const char*                         file,
         const size_t                        line,
         const foundation::TestMessage::Type message_type,
-        const char*                         message);
+        const char*                         message) override;
 
   signals:
     void signal_add_top_level_item(TestOutputItem* item);

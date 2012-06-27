@@ -37,7 +37,6 @@
 #include <cstddef>
 
 // Forward declarations.
-namespace foundation    { class ITestCase; }
 namespace foundation    { class TestResult; }
 namespace foundation    { class TestSuite; }
 
@@ -84,12 +83,12 @@ class FOUNDATIONDLL ITestListener
     // Called before each test case is run.
     virtual void begin_case(
         const TestSuite&        test_suite,
-        const ITestCase&        test_case) = 0;
+        const char*             test_case_name) = 0;
 
     // Called after each test case is run.
     virtual void end_case(
         const TestSuite&        test_suite,
-        const ITestCase&        test_case,
+        const char*             test_case_name,
         const TestResult&       test_suite_result,
         const TestResult&       test_case_result,
         const TestResult&       cumulated_result) = 0;
@@ -97,7 +96,7 @@ class FOUNDATIONDLL ITestListener
     // Write a message.
     virtual void write(
         const TestSuite&        test_suite,
-        const ITestCase&        test_case,
+        const char*             test_case_name,
         const char*             file,
         const size_t            line,
         const TestMessage::Type message_type,

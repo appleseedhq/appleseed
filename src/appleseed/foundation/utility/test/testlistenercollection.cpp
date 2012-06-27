@@ -53,26 +53,22 @@ struct TestListenerCollection::Impl
     TestListenerContainer m_listeners;
 };
 
-// Constructor.
 TestListenerCollection::TestListenerCollection()
   : impl(new Impl())
 {
 }
 
-// Destructor.
 TestListenerCollection::~TestListenerCollection()
 {
     delete impl;
 }
 
-// Insert a test listener into the collection.
 void TestListenerCollection::insert(ITestListener* listener)
 {
     assert(listener);
     impl->m_listeners.push_back(listener);
 }
 
-// Called before each test suite is run.
 void TestListenerCollection::begin_suite(
     const TestSuite&        test_suite)
 {
@@ -80,7 +76,6 @@ void TestListenerCollection::begin_suite(
         (*i)->begin_suite(test_suite);
 }
 
-// Called after each test suite is run.
 void TestListenerCollection::end_suite(
     const TestSuite&        test_suite,
     const TestResult&       test_suite_result,
@@ -95,19 +90,17 @@ void TestListenerCollection::end_suite(
     }
 }
 
-// Called before each test case is run.
 void TestListenerCollection::begin_case(
     const TestSuite&        test_suite,
-    const ITestCase&        test_case)
+    const char*             test_case_name)
 {
     for (each<Impl::TestListenerContainer> i = impl->m_listeners; i; ++i)
-        (*i)->begin_case(test_suite, test_case);
+        (*i)->begin_case(test_suite, test_case_name);
 }
 
-// Called after each test case is run.
 void TestListenerCollection::end_case(
     const TestSuite&        test_suite,
-    const ITestCase&        test_case,
+    const char*             test_case_name,
     const TestResult&       test_suite_result,
     const TestResult&       test_case_result,
     const TestResult&       cumulated_result)
@@ -116,17 +109,16 @@ void TestListenerCollection::end_case(
     {
         (*i)->end_case(
             test_suite,
-            test_case,
+            test_case_name,
             test_suite_result,
             test_case_result,
             cumulated_result);
     }
 }
 
-// Write a message.
 void TestListenerCollection::write(
     const TestSuite&        test_suite,
-    const ITestCase&        test_case,
+    const char*             test_case_name,
     const char*             file,
     const size_t            line,
     const TestMessage::Type message_type,
@@ -136,7 +128,7 @@ void TestListenerCollection::write(
     {
         (*i)->write(
             test_suite,
-            test_case,
+            test_case_name,
             file,
             line,
             message_type,
