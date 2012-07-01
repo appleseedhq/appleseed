@@ -542,13 +542,17 @@ vector<GAABB3> TriangleTree::compute_motion_bboxes(
         if (left_bboxes.size() > 1)
         {
             node.set_left_bbox_index(m_node_bboxes.size());
-            m_node_bboxes.insert(m_node_bboxes.end(), left_bboxes.begin(), left_bboxes.end());
+
+            for (vector<GAABB3>::const_iterator i = left_bboxes.begin(); i != left_bboxes.end(); ++i)
+                m_node_bboxes.push_back(AABB3d(*i));
         }
 
         if (right_bboxes.size() > 1)
         {
             node.set_right_bbox_index(m_node_bboxes.size());
-            m_node_bboxes.insert(m_node_bboxes.end(), right_bboxes.begin(), right_bboxes.end());
+
+            for (vector<GAABB3>::const_iterator i = right_bboxes.begin(); i != right_bboxes.end(); ++i)
+                m_node_bboxes.push_back(AABB3d(*i));
         }
 
         const size_t bbox_count = max(left_bboxes.size(), right_bboxes.size());
