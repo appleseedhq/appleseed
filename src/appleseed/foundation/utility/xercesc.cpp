@@ -150,22 +150,26 @@ void ErrorLogger::fatalError(const SAXParseException& e)
 {
     ++m_fatal_error_count;
 
-    switch (e.getOriginalExceptionCode())
-    {
-      // Using our modified version of Xerces-C++, we can catch the case where
-      // it failed to open the input file, and print a reasonable error message.
-      case XMLExcepts::Scan_CouldNotOpenSource:
-        LOG_ERROR(
-            m_logger,
-            "failed to open %s for reading.",
-            m_input_filename.c_str());
-        break;
+    #ifndef WITH_EXTERNAL_XERCES
+        switch (e.getOriginalExceptionCode())
+        {
+          // Using our modified version of Xerces-C++, we can catch the case where
+          // it failed to open the input file, and print a reasonable error message.
+          case XMLExcepts::Scan_CouldNotOpenSource:
+            LOG_ERROR(
+                m_logger,
+                "failed to open %s for reading.",
+                m_input_filename.c_str());
+            break;
 
-      // For now, all other errors will be reported as is.
-      default:
+          // For now, all other errors will be reported as is.
+          default:
+            print(LogMessage::Error, e);
+            break;
+        }
+    #else
         print(LogMessage::Error, e);
-        break;
-    }
+    #endif
 }
 
 size_t ErrorLogger::get_warning_count() const

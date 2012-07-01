@@ -73,9 +73,9 @@ namespace
         {
         }
 
-        void read(const IPolyMesh& mesh)
+        void read(IPolyMesh mesh)
         {
-            const IPolyMeshSchema& mesh_schema = mesh.getSchema();
+            IPolyMeshSchema& mesh_schema = mesh.getSchema();
 
             // todo: pass as parameter.
             const size_t sample_index = 0;
@@ -122,7 +122,7 @@ namespace
             }
         }
 
-        void read_vertex_normals(const IPolyMeshSchema& mesh_schema)
+        void read_vertex_normals(IPolyMeshSchema& mesh_schema)
         {
             IN3fGeomParam normal_param = mesh_schema.getNormalsParam();
             if (!normal_param.valid())
@@ -144,7 +144,7 @@ namespace
             m_has_vertex_normals = normal_count > 0;
         }
 
-        void read_uv(const IPolyMeshSchema& mesh_schema)
+        void read_uv(IPolyMeshSchema& mesh_schema)
         {
             IV2fGeomParam uv_param = mesh_schema.getUVsParam();
             if (!uv_param.valid())
@@ -215,7 +215,7 @@ namespace
         }
     };
 
-    void read_object(const IObject& object, IMeshBuilder& builder)
+    void read_object(IObject object, IMeshBuilder& builder)
     {
         const size_t children_count = object.getNumChildren();
 
