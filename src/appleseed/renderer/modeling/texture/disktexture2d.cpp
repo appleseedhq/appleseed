@@ -126,10 +126,8 @@ namespace
 
         void extract_parameters(const SearchPaths& search_paths)
         {
-            // Retrieve the texture filename.
-            const string filename = m_params.get_required<string>("filename", "");
-            m_filepath = search_paths.qualify(filename);
-            m_params.insert("filename", m_filepath);
+            // Establish and store the qualified path to the texture file.
+            m_filepath = search_paths.qualify(m_params.get_required<string>("filename", ""));
 
             // Retrieve the color space.
             const string color_space = m_params.get_required<string>("color_space", "linear_rgb");

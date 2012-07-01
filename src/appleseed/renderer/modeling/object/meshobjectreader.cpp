@@ -568,35 +568,6 @@ namespace
 
         return objects;
     }
-
-    ParamArray complete_mesh_objects_params(
-        ParamArray              params,
-        const SearchPaths&      search_paths,
-        const char*             base_object_name)
-    {
-        // Tag objects with the name of their parent.
-        params.insert("__base_object_name", base_object_name);
-
-        // Qualify all filenames.
-        if (params.strings().exist("filename"))
-        {
-            const string filename = params.get<string>("filename");
-            const string filepath = search_paths.qualify(filename);
-            params.insert("filename", filepath);
-        }
-        else if (params.dictionaries().exist("filename"))
-        {
-            StringDictionary& filepaths = params.dictionaries().get("filename").strings();
-            for (const_each<StringDictionary> i = filepaths; i; ++i)
-            {
-                const string filename = i->value<string>();
-                const string filepath = search_paths.qualify(filename);
-                filepaths.insert(i->name(), filepath);
-            }
-        }
-
-        return params;
-    }
 }
 
 MeshObjectArray MeshObjectReader::read(
@@ -606,8 +577,9 @@ MeshObjectArray MeshObjectReader::read(
 {
     assert(base_object_name);
 
-    const ParamArray completed_params =
-        complete_mesh_objects_params(params, search_paths, base_object_name);
+    // Tag objects with the name of their parent.
+    ParamArray completed_params(params);
+    completed_params.insert("__base_object_name", base_object_name);
 
     MeshObjectArray objects;
 

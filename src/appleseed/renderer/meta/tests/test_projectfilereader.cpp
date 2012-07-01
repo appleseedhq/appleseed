@@ -27,12 +27,12 @@
 //
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/project/projectfilereader.h"
 #include "renderer/modeling/project/projectfilewriter.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/test.h"
 #include "foundation/utility/testutils.h"
 
@@ -51,9 +51,10 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileReader)
 
         ASSERT_NEQ(0, project.get());
 
-        project->set_path("unit tests/outputs/test_projectfilereader_configurationblocks.appleseed");
-
-        ProjectFileWriter::write(project.ref(), ProjectFileWriter::OmitHeaderComment);
+        ProjectFileWriter::write(
+            project.ref(),
+            "unit tests/outputs/test_projectfilereader_configurationblocks.appleseed",
+            ProjectFileWriter::OmitHeaderComment);
 
         const bool identical =
             compare_text_files(

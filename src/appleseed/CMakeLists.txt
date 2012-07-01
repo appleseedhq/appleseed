@@ -1035,6 +1035,7 @@ set (renderer_meta_tests_sources
     renderer/meta/tests/test_pinholecamera.cpp
     renderer/meta/tests/test_pixelsampler.cpp
     renderer/meta/tests/test_projectfilereader.cpp
+    renderer/meta/tests/test_projectfilewriter.cpp
     renderer/meta/tests/test_samplecounter.cpp
     renderer/meta/tests/test_scene.cpp
     renderer/meta/tests/test_shadingresult.cpp

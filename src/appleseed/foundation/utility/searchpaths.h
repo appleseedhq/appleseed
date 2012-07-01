@@ -75,6 +75,9 @@ class FOUNDATIONDLL SearchPaths
     // Destructor.
     ~SearchPaths();
 
+    // Remove all search paths.
+    void clear();
+
     // Insert a search path at the end of the collection.
     void push_back(const char* path);
     template <typename T> void push_back(const std::basic_string<T>& path);

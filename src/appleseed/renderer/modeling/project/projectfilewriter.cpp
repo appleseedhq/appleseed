@@ -62,6 +62,7 @@
 #include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/indenter.h"
+#include "foundation/utility/searchpaths.h"
 #include "foundation/utility/string.h"
 
 // boost headers.
@@ -195,16 +196,17 @@ namespace
         // Constructor.
         Writer(
             const Project&                      project,
+            const char*                         filepath,
             FILE*                               file,
             const ProjectFileWriter::Options    options)
-          : m_options(options)
+          : m_project_search_paths(project.get_search_paths())
+          , m_project_old_root_path(filesystem::path(project.get_path()).parent_path())
+          , m_project_new_root_path(filesystem::path(filepath).parent_path())
           , m_file(file)
+          , m_options(options)
           , m_indenter(4)
         {
             assert(m_file);
-
-            // Extract the root path of the project.
-            m_project_root_path = filesystem::path(project.get_path()).parent_path();
 
             // Write the file header.
             fprintf(m_file, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
@@ -219,32 +221,100 @@ namespace
             }
 
             // Write the project.
-            write(project);
+            write_project(project);
         }
 
       private:
-        const ProjectFileWriter::Options        m_options;
+        const SearchPaths&                      m_project_search_paths;
+        const filesystem::path                  m_project_old_root_path;
+        const filesystem::path                  m_project_new_root_path;
         FILE*                                   m_file;
+        const ProjectFileWriter::Options        m_options;
         Indenter                                m_indenter;
-        filesystem::path                        m_project_root_path;
 
-        static void copy_file_if_not_exists(
+        static bool copy_file_if_not_exists(
             const filesystem::path& source_path,
             const filesystem::path& dest_path)
         {
-            if (!filesystem::exists(dest_path))
+            if (filesystem::exists(dest_path))
+                return false;
+
+            try
             {
-                try
+                filesystem::create_directories(dest_path.parent_path());
+                filesystem::copy_file(source_path, dest_path);
+                return true;
+            }
+            catch (const std::exception& e)
+            {
+                RENDERER_LOG_ERROR(
+                    "failed to copy %s to %s: %s.",
+                    source_path.string().c_str(),
+                    dest_path.string().c_str(),
+                    e.what());
+            }
+
+            return false;
+        }
+
+        //
+        //  Project Directory   Old Parameter Value         Target Directory    Copy Assets?    New Parameter Value                 Changes
+        //  -------------------------------------------------------------------------------------------------------------------------------------
+        //
+        //  c:\appleseed        bunny.exr                   c:\appleseed        yes             bunny.exr                           none
+        //  c:\appleseed        textures/bunny.exr          c:\appleseed        yes             textures/bunny.exr                  none
+        //  c:\appleseed        c:\textures\bunny.exr       c:\appleseed        yes             bunny.exr                           copy, param
+        //
+        //  c:\appleseed        bunny.exr                   c:\temp             yes             bunny.exr                           copy
+        //  c:\appleseed        textures/bunny.exr          c:\temp             yes             textures/bunny.exr                  copy
+        //  c:\appleseed        c:\textures\bunny.exr       c:\temp             yes             bunny.exr                           copy, param
+        //
+        //  c:\appleseed        bunny.exr                   c:\appleseed        no              bunny.exr                           none
+        //  c:\appleseed        textures/bunny.exr          c:\appleseed        no              textures/bunny.exr                  none
+        //  c:\appleseed        c:\textures\bunny.exr       c:\appleseed        no              c:\textures\bunny.exr               none
+        //  
+        //  c:\appleseed        bunny.exr                   c:\temp             no              c:\appleseed\bunny.exr              param
+        //  c:\appleseed        textures/bunny.exr          c:\temp             no              c:\appleseed\textures\bunny.exr     param
+        //  c:\appleseed        c:\textures\bunny.exr       c:\temp             no              c:\textures\bunny.exr               none
+        //
+
+        void handle_link_to_asset(Dictionary& params, const char* param_name) const
+        {
+            if (!params.strings().exist(param_name))
+                return;
+
+            const filesystem::path original_filepath = params.get<string>(param_name);
+            const filesystem::path qualified_filepath = m_project_search_paths.qualify(original_filepath.string());
+
+            if (m_options & ProjectFileWriter::OmitCopyingAssets)
+            {
+                if (m_project_old_root_path == m_project_new_root_path)
+                    return;
+
+                if (original_filepath.is_absolute())
+                    return;
+
+                const filesystem::path new_filepath = absolute(qualified_filepath, m_project_old_root_path);
+
+                params.insert(param_name, new_filepath.string());
+            }
+            else
+            {
+                if (original_filepath.is_absolute())
                 {
-                    filesystem::copy_file(source_path, dest_path);
+                    const filesystem::path filename = original_filepath.filename();
+
+                    copy_file_if_not_exists(
+                        qualified_filepath,
+                        m_project_new_root_path / filename);
+
+                    params.insert(param_name, filename.string());
                 }
-                catch (const std::exception& e)
+                else
                 {
-                    RENDERER_LOG_ERROR(
-                        "failed to copy %s to %s: %s.",
-                        source_path.string().c_str(),
-                        dest_path.string().c_str(),
-                        e.what());
+                    copy_file_if_not_exists(
+                        qualified_filepath,
+                        m_project_new_root_path / original_filepath);
                 }
             }
         }
@@ -275,7 +345,7 @@ namespace
         }
 
         // Write a (possibly hierarchical) set of parameters.
-        void write(const Dictionary& params)
+        void write_params(const Dictionary& params)
         {
             for (const_each<StringDictionary> i = params.strings(); i; ++i)
             {
@@ -290,12 +360,12 @@ namespace
                 Element element("parameters", m_file, m_indenter);
                 element.add_attribute("name", i->name());
                 element.write(true);
-                write(i->value());
+                write_params(i->value());
             }
         }
 
         // Write a <transform> element.
-        void write(const Transformd& transform)
+        void write_transform(const Transformd& transform)
         {
             Element element("transform", m_file, m_indenter);
             element.write(true);
@@ -313,7 +383,7 @@ namespace
         }
 
         // Write a <transform> element with a "time" attribute.
-        void write(const Transformd& transform, const double time)
+        void write_transform(const Transformd& transform, const double time)
         {
             Element element("transform", m_file, m_indenter);
             element.add_attribute("time", time);
@@ -332,7 +402,7 @@ namespace
         }
 
         // Write an array of color values.
-        void write(const char* element_name, const ColorValueArray& values)
+        void write_value_array(const char* element_name, const ColorValueArray& values)
         {
             Element element(element_name, m_file, m_indenter);
             element.write(true);
@@ -351,36 +421,36 @@ namespace
             element.add_attribute("model", entity.get_model());
             element.write(!entity.get_parameters().empty());
 
-            write(entity.get_parameters());
+            write_params(entity.get_parameters());
         }
 
         template <typename T>
-        void write(const TypedEntityVector<T>& collection)
+        void write_collection(TypedEntityVector<T>& collection)
         {
-            for (const_each<TypedEntityVector<T> > i = collection; i; ++i)
+            for (each<TypedEntityVector<T> > i = collection; i; ++i)
                 write(*i);
         }
 
         template <typename T>
-        void write(const TypedEntityMap<T>& collection)
+        void write_collection(const TypedEntityMap<T>& collection)
         {
             for (const_each<TypedEntityMap<T> > i = collection; i; ++i)
                 write(*i);
         }
 
-        void write(const TextureInstanceContainer& texture_instances, const TextureContainer& textures)
+        void write_collection(const TextureInstanceContainer& texture_instances, const TextureContainer& textures)
         {
             for (const_each<TextureInstanceContainer> i = texture_instances; i; ++i)
                 write(*i, textures);
         }
 
-        void write(const ObjectInstanceContainer& object_instances, const Assembly& assembly)
+        void write_collection(const ObjectInstanceContainer& object_instances, const Assembly& assembly)
         {
             for (const_each<ObjectInstanceContainer> i = object_instances; i; ++i)
                 write(*i, assembly);
         }
 
-        void write(const AssemblyInstanceContainer& assembly_instances, const Scene& scene)
+        void write_collection(const AssemblyInstanceContainer& assembly_instances, const Scene& scene)
         {
             for (const_each<AssemblyInstanceContainer> i = assembly_instances; i; ++i)
                 write(*i, scene);
@@ -393,34 +463,23 @@ namespace
             element.add_attribute("name", color_entity.get_name());
             element.write(true);
 
-            write(color_entity.get_parameters());
+            write_params(color_entity.get_parameters());
 
-            write("values", color_entity.get_values());
-            write("alpha", color_entity.get_alpha());
+            write_value_array("values", color_entity.get_values());
+            write_value_array("alpha", color_entity.get_alpha());
         }
 
         // Write a <texture> element.
-        void write(const Texture& texture)
+        void write(Texture& texture)
         {
             Element element("texture", m_file, m_indenter);
             element.add_attribute("name", texture.get_name());
             element.add_attribute("model", texture.get_model());
             element.write(!texture.get_parameters().empty());
 
-            ParamArray params = texture.get_parameters();
-
-            if (params.strings().exist("filename"))
-            {
-                const filesystem::path source_filepath = params.get<string>("filename");
-                const filesystem::path filename = source_filepath.filename();
-                const filesystem::path dest_filepath = m_project_root_path / filename;
-
-                params.insert("filename", filename.string());
-
-                copy_file_if_not_exists(source_filepath, dest_filepath);
-            }
-
-            write(params);
+            ParamArray& params = texture.get_parameters();
+            handle_link_to_asset(params, "filename");
+            write_params(params);
         }
 
         // Write a <texture_instance> element.
@@ -438,7 +497,7 @@ namespace
             element.add_attribute("texture", texture->get_name());
             element.write(!texture_instance.get_parameters().empty());
 
-            write(texture_instance.get_parameters());
+            write_params(texture_instance.get_parameters());
         }
 
         // Write a <bsdf> element.
@@ -491,8 +550,8 @@ namespace
             element.add_attribute("model", light.get_model());
             element.write(true);
 
-            write(light.get_parameters());
-            write(light.get_transform());
+            write_params(light.get_parameters());
+            write_transform(light.get_transform());
         }
 
         // Write a <camera> element.
@@ -503,7 +562,7 @@ namespace
             element.add_attribute("model", camera.get_model());
             element.write(true);
 
-            write(camera.get_parameters());
+            write_params(camera.get_parameters());
 
             const TransformSequence& transform_sequence = camera.transform_sequence();
 
@@ -512,22 +571,22 @@ namespace
                 double time;
                 Transformd transform;
                 transform_sequence.get_transform(i, time, transform);
-                write(transform, time);
+                write_transform(transform, time);
             }
         }
 
         // Write a collection of <object> elements.
-        void write(const ObjectContainer& objects)
+        void write_object_collection(ObjectContainer& objects)
         {
             set<string> groups;
 
             for (size_t i = 0; i < objects.size(); ++i)
             {
-                const Object& object = *objects.get_by_index(i);
+                Object& object = *objects.get_by_index(i);
 
                 if (strcmp(object.get_model(), MeshObjectFactory::get_model()) == 0)
                 {
-                    const ParamArray& params = object.get_parameters();
+                    ParamArray& params = object.get_parameters();
 
                     if (params.strings().exist("__base_object_name"))
                     {
@@ -569,10 +628,10 @@ namespace
             const string name = object.get_name();
             const string filename = name + ".obj";
 
-            if (!(m_options & ProjectFileWriter::OmitMeshFiles))
+            if (!(m_options & ProjectFileWriter::OmitWritingMeshFiles))
             {
                 // Write the mesh object to disk.
-                const string filepath = (m_project_root_path / filename).string();
+                const string filepath = (m_project_new_root_path / filename).string();
                 MeshObjectWriter::write(
                     static_cast<const MeshObject&>(object),
                     name.c_str(),
@@ -590,40 +649,25 @@ namespace
             m_object_name_mapping[name] = name + "." + name;
         }
 
-        void write_mesh_object_group(const string& base_object_name, ParamArray params)
+        void write_mesh_object_group(const string& base_object_name, ParamArray& params)
         {
-            // Iterate over file paths, convert them to file names, and write mesh files to output directory.
-            if (params.strings().exist("filename"))
-            {
-                // Transform "filename" from a file path to a file name.
-                const string filepath = params.get<string>("filename");
-                const string filename = filesystem::path(filepath).filename().string();
-                params.insert("filename", filename);
+            handle_link_to_asset(params, "filename");
 
-                // Copy the mesh file to the output directory.
-                copy_file_if_not_exists(filepath, m_project_root_path / filename);
-            }
-            else if (params.dictionaries().exist("filename"))
+            if (params.dictionaries().exist("filename"))
             {
-                StringDictionary& filepaths = params.dictionaries().get("filename").strings();
-                for (const_each<StringDictionary> i = filepaths; i; ++i)
-                {
-                    // Transform the value of this key from a file path to a file name.
-                    const string key = i->name();
-                    const string filepath = i->value<string>();
-                    const string filename = filesystem::path(filepath).filename().string();
-                    filepaths.insert(key, filename);
+                Dictionary& filepaths = params.dictionaries().get("filename");
 
-                    // Copy the mesh file to the output directory.
-                    copy_file_if_not_exists(filepath, m_project_root_path / filename);
-                }
+                for (const_each<StringDictionary> i = filepaths.strings(); i; ++i)
+                    handle_link_to_asset(filepaths, i->name());
             }
+
+            ParamArray params_copy(params);
 
             // Remove hidden parameters.
-            params.strings().remove("__base_object_name");
+            params_copy.strings().remove("__base_object_name");
 
             // Write a single <object> element for this group of mesh objects.
-            write_mesh_object(base_object_name, params);
+            write_mesh_object(base_object_name, params_copy);
         }
 
         // Write an <object> element for a mesh object.
@@ -634,7 +678,7 @@ namespace
             element.add_attribute("model", MeshObjectFactory::get_model());
             element.write(!params.empty());
 
-            write(params);
+            write_params(params);
         }
 
         // Write an <object> element.
@@ -675,8 +719,8 @@ namespace
             element.add_attribute("object", translate_object_name(object_instance.get_object().get_name()));
             element.write(true);
 
-            write(object_instance.get_parameters());
-            write(object_instance.get_transform());
+            write_params(object_instance.get_parameters());
+            write_transform(object_instance.get_transform());
 
             // Write the <assign_material> elements.
             write_assign_materials(ObjectInstance::FrontSide, object_instance.get_front_material_names());
@@ -701,18 +745,18 @@ namespace
                 !assembly.objects().empty() ||
                 !assembly.object_instances().empty());
 
-            write(assembly.get_parameters());
+            write_params(assembly.get_parameters());
 
-            write(assembly.colors());
-            write(assembly.textures());
-            write(assembly.texture_instances(), assembly.textures());
-            write(assembly.bsdfs());
-            write(assembly.edfs());
-            write(assembly.surface_shaders());
-            write(assembly.materials());
-            write(assembly.lights());
-            write(assembly.objects());
-            write(assembly.object_instances(), assembly);
+            write_collection(assembly.colors());
+            write_collection(assembly.textures());
+            write_collection(assembly.texture_instances(), assembly.textures());
+            write_collection(assembly.bsdfs());
+            write_collection(assembly.edfs());
+            write_collection(assembly.surface_shaders());
+            write_collection(assembly.materials());
+            write_collection(assembly.lights());
+            write_object_collection(assembly.objects());
+            write_collection(assembly.object_instances(), assembly);
         }
 
         // Write an <assembly_instance> element.
@@ -725,11 +769,11 @@ namespace
             element.add_attribute("assembly", assembly_instance.get_assembly().get_name());
             element.write(true);
 
-            write(assembly_instance.get_transform());
+            write_transform(assembly_instance.get_transform());
         }
 
         // Write a <scene> element.
-        void write(const Scene& scene)
+        void write_scene(const Scene& scene)
         {
             Element element("scene", m_file, m_indenter);
             element.write(
@@ -746,51 +790,64 @@ namespace
             if (scene.get_camera())
                 write(*scene.get_camera());
 
-            write(scene.colors());
-            write(scene.textures());
-            write(scene.texture_instances(), scene.textures());
-            write(scene.environment_edfs());
-            write(scene.environment_shaders());
+            write_collection(scene.colors());
+            write_collection(scene.textures());
+            write_collection(scene.texture_instances(), scene.textures());
+            write_collection(scene.environment_edfs());
+            write_collection(scene.environment_shaders());
 
             if (scene.get_environment())
                 write(*scene.get_environment());
 
-            write(scene.assemblies());
-            write(scene.assembly_instances(), scene);
+            write_collection(scene.assemblies());
+            write_collection(scene.assembly_instances(), scene);
         }
 
         // Write a <frame> element.
-        void write(const Frame& frame)
+        void write_frame(const Frame& frame)
         {
             Element element("frame", m_file, m_indenter);
             element.add_attribute("name", frame.get_name());
             element.write(!frame.get_parameters().empty());
-            write(frame.get_parameters());
+            write_params(frame.get_parameters());
         }
 
         // Write a <configuration> element.
-        void write(const Configuration& configuration)
+        void write_configuration(const Configuration& configuration)
         {
             Element element("configuration", m_file, m_indenter);
             element.add_attribute("name", configuration.get_name());
             if (configuration.get_base())
                 element.add_attribute("base", configuration.get_base()->get_name());
             element.write(!configuration.get_parameters().empty());
-            write(configuration.get_parameters());
+            write_params(configuration.get_parameters());
+        }
+
+        size_t count_non_base_configurations(const ConfigurationContainer& configurations)
+        {
+            size_t count = 0;
+
+            for (const_each<ConfigurationContainer> i = configurations; i; ++i)
+            {
+                if (!BaseConfigurationFactory::is_base_configuration(i->get_name()))
+                    ++count;
+            }
+
+            return count;
         }
 
         // Write a <configurations> element.
         void write_configurations(const Project& project)
         {
             Element element("configurations", m_file, m_indenter);
-            element.write(!project.configurations().empty());
+            element.write(count_non_base_configurations(project.configurations()) > 0);
 
             // Write configurations.
             for (const_each<ConfigurationContainer> i = project.configurations(); i; ++i)
             {
                 const Configuration& configuration = *i;
                 if (!BaseConfigurationFactory::is_base_configuration(configuration.get_name()))
-                    write(configuration);
+                    write_configuration(configuration);
             }
         }
 
@@ -799,18 +856,20 @@ namespace
         {
             Element element("output", m_file, m_indenter);
             element.write(project.get_frame() != 0);
-            write(*project.get_frame());
+
+            if (project.get_frame())
+                write_frame(*project.get_frame());
         }
 
         // Write a <project> element.
-        void write(const Project& project)
+        void write_project(const Project& project)
         {
             Element element("project", m_file, m_indenter);
             element.add_attribute("format_revision", ProjectFileFormatRevision);
             element.write(true);
 
             if (project.get_scene())
-                write(*project.get_scene());
+                write_scene(*project.get_scene());
 
             write_output(project);
             write_configurations(project);
@@ -820,28 +879,27 @@ namespace
 
 bool ProjectFileWriter::write(
     const Project&  project,
+    const char*     filepath,
     const Options   options)
 {
-    if (!project.has_path())
-        return false;
-
-    RENDERER_LOG_INFO("writing project file %s...", project.get_path());
+    RENDERER_LOG_INFO("writing project file %s...", filepath);
 
     // Open the file for writing.
-    FILE* file = fopen(project.get_path(), "wt");
+    FILE* file = fopen(filepath, "wt");
     if (file == 0)
         return false;
 
     // Write the project.
     Writer writer(
         project,
+        filepath,
         file,
         options);
 
     // Close the file.
     fclose(file);
 
-    RENDERER_LOG_INFO("wrote project file %s.", project.get_path());
+    RENDERER_LOG_INFO("wrote project file %s.", filepath);
 
     return true;
 }

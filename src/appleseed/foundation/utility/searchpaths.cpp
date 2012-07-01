@@ -67,6 +67,11 @@ SearchPaths::~SearchPaths()
     delete impl;
 }
 
+void SearchPaths::clear()
+{
+    impl->m_paths.clear();
+}
+
 void SearchPaths::push_back(const char* path)
 {
     assert(path);

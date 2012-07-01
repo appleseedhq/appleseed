@@ -412,10 +412,11 @@ namespace
 
                 // Write the project file for this frame.
                 const string new_path = make_numbered_filename(m_base_output_filename + ".appleseed", frame);
+                ProjectFileWriter::write(
+                    project.ref(),
+                    new_path.c_str(),
+                    i == 0 ? ProjectFileWriter::Defaults : ProjectFileWriter::OmitWritingMeshFiles);
                 project->set_path(new_path.c_str());
-                if (i == 0)
-                    ProjectFileWriter::write(project.ref());
-                else ProjectFileWriter::write(project.ref(), ProjectFileWriter::OmitMeshFiles);
 
                 frames.push_back(frame);
             }
@@ -496,10 +497,11 @@ namespace
                 // Write the project file for this frame.
                 const size_t frame = static_cast<size_t>(i + 1);
                 const string new_path = make_numbered_filename(m_base_output_filename + ".appleseed", frame);
+                ProjectFileWriter::write(
+                    project.ref(),
+                    new_path.c_str(),
+                    i == 0 ? ProjectFileWriter::Defaults : ProjectFileWriter::OmitWritingMeshFiles);
                 project->set_path(new_path.c_str());
-                if (i == 0)
-                    ProjectFileWriter::write(project.ref());
-                else ProjectFileWriter::write(project.ref(), ProjectFileWriter::OmitMeshFiles);
 
                 frames.push_back(frame);
             }

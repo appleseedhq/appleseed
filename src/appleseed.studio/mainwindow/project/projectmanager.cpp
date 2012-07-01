@@ -92,21 +92,21 @@ bool ProjectManager::save_project()
 {
     assert(m_project.get());
 
-    if (!ProjectFileWriter::write(m_project.ref()))
-        return false;
-
-    m_dirty_flag = false;
-
-    return true;
+    return save_project_as(m_project->get_path());
 }
 
 bool ProjectManager::save_project_as(const string& filepath)
 {
     assert(m_project.get());
 
+    if (!ProjectFileWriter::write(m_project.ref(), filepath.c_str()))
+        return false;
+
     m_project->set_path(filepath.c_str());
 
-    return save_project();
+    m_dirty_flag = false;
+
+    return true;
 }
 
 void ProjectManager::close_project()
