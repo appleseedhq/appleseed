@@ -30,6 +30,7 @@
 #include "assemblyitem.h"
 
 // appleseed.studio headers.
+#include "mainwindow/project/collectionitem.h"
 #include "mainwindow/project/itemtypemap.h"
 #include "mainwindow/project/multimodelcollectionitem.h"
 #include "mainwindow/project/objectcollectionitem.h"

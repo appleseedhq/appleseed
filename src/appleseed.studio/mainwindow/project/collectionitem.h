@@ -33,6 +33,7 @@
 #include "mainwindow/project/collectionitembase.h"
 #include "mainwindow/project/entitycreatorbase.h"
 #include "mainwindow/project/itembase.h"
+#include "mainwindow/project/projectbuilder.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/entity.h"

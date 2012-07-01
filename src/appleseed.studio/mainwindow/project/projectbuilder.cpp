@@ -31,10 +31,10 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/assemblyinstancecollectionitem.h"
+#include "mainwindow/project/collectionitem.h"
 #include "mainwindow/project/exceptioninvalidentityname.h"
 #include "mainwindow/project/objectcollectionitem.h"
 #include "mainwindow/project/objectinstancecollectionitem.h"
-#include "mainwindow/project/projecttree.h"
 #include "mainwindow/project/texturecollectionitem.h"
 
 // appleseed.renderer headers.

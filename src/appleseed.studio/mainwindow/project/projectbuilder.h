@@ -33,6 +33,7 @@
 #include "mainwindow/project/assemblycollectionitem.h"
 #include "mainwindow/project/assemblyitem.h"
 #include "mainwindow/project/multimodelentityeditorformfactory.h"
+#include "mainwindow/project/projecttree.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/bsdf.h"
@@ -66,7 +67,6 @@
 #include <string>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class ProjectTree; } }
 namespace appleseed { namespace studio { class TextureCollectionItem; } }
 
 namespace appleseed {

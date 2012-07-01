@@ -29,15 +29,13 @@
 #ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTTREE_H
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTTREE_H
 
-// appleseed.studio headers.
-#include "mainwindow/project/collectionitem.h"
-
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 
 // Forward declarations.
 namespace appleseed { namespace studio { class AssemblyCollectionItem; } }
 namespace appleseed { namespace studio { class AssemblyInstanceCollectionItem; } }
+namespace appleseed { namespace studio { template <typename Entity, typename ParentEntity> class CollectionItem; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace appleseed { namespace studio { class TextureCollectionItem; } }
 namespace renderer  { class Assembly; }

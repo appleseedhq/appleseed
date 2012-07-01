@@ -30,7 +30,6 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYITEM_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/collectionitem.h"
 #include "mainwindow/project/entityitembase.h"
 
 // appleseed.foundation headers.
@@ -40,6 +39,7 @@
 #include <QObject>
 
 // Forward declarations.
+namespace appleseed { namespace studio { template <typename Entity, typename ParentEntity> class CollectionItem; } }
 namespace appleseed { namespace studio { class ObjectCollectionItem; } }
 namespace appleseed { namespace studio { class ObjectInstanceCollectionItem; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }

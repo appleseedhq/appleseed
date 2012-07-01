@@ -33,6 +33,7 @@
 #include "mainwindow/project/assemblycollectionitem.h"
 #include "mainwindow/project/assemblyinstancecollectionitem.h"
 #include "mainwindow/project/cameraitem.h"
+#include "mainwindow/project/collectionitem.h"
 #include "mainwindow/project/environmentitem.h"
 #include "mainwindow/project/itemtypemap.h"
 #include "mainwindow/project/multimodelcollectionitem.h"
