@@ -249,7 +249,7 @@ TEST_SUITE(AtomKraft_MipMap)
             auto_ptr<Image> output(generate_mipmap_level(*input.get(), i, 4));
 
             if (i == 1)
-                EXPECT_TRUE(are_images_feq(*expected_level1.get(), *output.get(), 1.0e-6f));
+                EXPECT_TRUE(are_images_feq(*expected_level1.get(), *output.get(), 1.0e-3f));
 
             const string filepath =
                 "unit tests/outputs/test_mipmap_rgb_" + to_string(i) + ".png";
@@ -268,7 +268,7 @@ TEST_SUITE(AtomKraft_MipMap)
             auto_ptr<Image> output(generate_mipmap_level_float_clamp_linear_rgba(*input.get(), i, 4));
 
             if (i == 1)
-                EXPECT_TRUE(are_images_feq(*expected_level1.get(), *output.get(), 1.0e-6f));
+                EXPECT_TRUE(are_images_feq(*expected_level1.get(), *output.get(), 1.0e-3f));
 
             const string filepath =
                 "unit tests/outputs/test_mipmap_rgba_" + to_string(i) + ".png";
