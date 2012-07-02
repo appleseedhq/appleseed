@@ -67,7 +67,6 @@ asf::auto_release_ptr<asr::Project> build_project()
 {
     // Create an empty project.
     asf::auto_release_ptr<asr::Project> project(asr::ProjectFactory::create("test project"));
-    project->set_path("output/test.appleseed");
 
     // Add default configurations to the project.
     project->add_default_configurations();
@@ -296,7 +295,7 @@ int main()
     project->get_frame()->write("output/test.png");
 
     // Save the project to disk.
-    asr::ProjectFileWriter::write(project.ref());
+    asr::ProjectFileWriter::write(project.ref(), "output/test.appleseed");
 
     return 0;
 }
