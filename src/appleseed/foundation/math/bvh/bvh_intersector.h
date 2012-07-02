@@ -313,7 +313,7 @@ void Intersector<Tree, Visitor, Ray, StackSize, N>::intersect(
                 const size_t prev_index = truncate<size_t>(ray_time * left_motion_segment_count);
                 const size_t base_index = node_ptr->get_left_bbox_index() + prev_index;
 
-                const NodeType::AABBType left_bbox =
+                const typename NodeType::AABBType left_bbox =
                     lerp(
                         tree.m_node_bboxes[base_index],
                         tree.m_node_bboxes[base_index + 1],
@@ -335,7 +335,7 @@ void Intersector<Tree, Visitor, Ray, StackSize, N>::intersect(
                 const size_t prev_index = truncate<size_t>(ray_time * right_motion_segment_count);
                 const size_t base_index = node_ptr->get_right_bbox_index() + prev_index;
 
-                const NodeType::AABBType right_bbox =
+                const typename NodeType::AABBType right_bbox =
                     lerp(
                         tree.m_node_bboxes[base_index],
                         tree.m_node_bboxes[base_index + 1],

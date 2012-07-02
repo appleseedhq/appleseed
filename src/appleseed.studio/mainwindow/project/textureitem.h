@@ -30,7 +30,6 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_TEXTUREITEM_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/entityitembase.h"
 #include "mainwindow/project/multimodelentityitem.h"
 #include "mainwindow/project/projectbuilder.h"
 
@@ -74,7 +73,8 @@ TextureItem<ParentEntity>::TextureItem(
 template <typename ParentEntity>
 void TextureItem<ParentEntity>::slot_delete()
 {
-    m_project_builder.remove_texture(m_parent, m_entity->get_uid());
+    typedef MultiModelEntityItem<renderer::Texture, ParentEntity> Base;
+    Base::m_project_builder.remove_texture(Base::m_parent, Base::m_entity->get_uid());
 }
 
 }       // namespace studio
