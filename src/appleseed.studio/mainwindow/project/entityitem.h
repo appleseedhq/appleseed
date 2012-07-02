@@ -33,6 +33,7 @@
 #include "mainwindow/project/entitycreatorbase.h"
 #include "mainwindow/project/entityitembase.h"
 #include "mainwindow/project/projectbuilder.h"
+#include "utility/treewidget.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/entity.h"
@@ -58,6 +59,9 @@ class EntityItem
         ParentEntity&       parent,
         ProjectBuilder&     project_builder);
 
+    void set_fixed_position(const bool fixed);
+    bool is_fixed_position() const;
+
   protected:
     typedef EntityItemBase<Entity> EntityItemBaseType;
 
@@ -71,6 +75,8 @@ class EntityItem
 
   private:
     friend class EntityCreatorBase;
+
+    bool                    m_fixed_position;
 };
 
 
@@ -86,7 +92,20 @@ EntityItem<Entity, ParentEntity>::EntityItem(
   : EntityItemBaseType(entity)
   , m_parent(parent)
   , m_project_builder(project_builder)
+  , m_fixed_position(false)
 {
+}
+
+template <typename Entity, typename ParentEntity>
+void EntityItem<Entity, ParentEntity>::set_fixed_position(const bool fixed)
+{
+    m_fixed_position = fixed;
+}
+
+template <typename Entity, typename ParentEntity>
+bool EntityItem<Entity, ParentEntity>::is_fixed_position() const
+{
+    return m_fixed_position;
 }
 
 template <typename Entity, typename ParentEntity>
@@ -119,6 +138,9 @@ void EntityItem<Entity, ParentEntity>::edit(const foundation::Dictionary& values
             values);
 
     EntityItemBaseType::update();
+
+    if (!m_fixed_position)
+        move_to_sorted_position(this);
 
     qobject_cast<QWidget*>(QObject::sender())->close();
 }

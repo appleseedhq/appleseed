@@ -149,6 +149,7 @@ struct ProjectTree::Impl
                 project_builder);
 
         item->set_allow_deletion(false);
+        item->set_fixed_position(true);
 
         m_tree_widget->addTopLevelItem(item);
 
@@ -167,6 +168,7 @@ struct ProjectTree::Impl
                 project_builder);
 
         item->set_allow_deletion(false);
+        item->set_fixed_position(true);
 
         m_tree_widget->addTopLevelItem(item);
 

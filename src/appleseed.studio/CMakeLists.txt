@@ -231,6 +231,8 @@ set (utility_sources
     utility/scrollareapanhandler.cpp
     utility/scrollareapanhandler.h
     utility/settingskeys.h
+    utility/treewidget.cpp
+    utility/treewidget.h
     utility/tweaks.cpp
     utility/tweaks.h
     utility/widgetzoomhandler.cpp

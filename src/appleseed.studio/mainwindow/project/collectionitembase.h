@@ -31,6 +31,7 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/itembase.h"
+#include "utility/treewidget.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
@@ -140,34 +141,7 @@ void CollectionItemBase<Entity>::add_item(Entity* entity)
 {
     assert(entity);
 
-    //
-    // Insert the entity's item such that the list of items stays sorted.
-    //
-    // Unfortunately, QTreeWidgetItem::sortChildren() only works if a model
-    // is bound to the tree view, so we can't use this method.
-    //
-    // Equally unfortunately, we can't easily use qLowerBound() either since
-    // the QTreeWidgetItem class doesn't expose an iterator-based interface.
-    //
-
-    const QString entity_name(entity->get_name());
-    int index = 0;
-
-    if (childCount() > 0)
-    {
-        int end = childCount();
-
-        while (end - index > 0)
-        {
-            const int middle = (index + end) / 2;
-
-            if (QString::localeAwareCompare(child(middle)->text(0), entity_name) > 0)
-                end = middle;
-            else index = middle + 1;
-        }
-    }
-
-    add_item(index, entity);
+    add_item(find_sorted_position(this, entity->get_name()), entity);
 }
 
 template <typename Entity>
