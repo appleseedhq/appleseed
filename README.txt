@@ -14,4 +14,4 @@ appleseed is a modern, physically-based renderer developed by the VFX and render
 
 More information at http://appleseedhq.net/ and http://www.jupiter-jazz.com/.
 
-Build instructions are available on our development wiki: http://appleseedhq.net/wiki/dev-wiki.
+Build instructions are available on our development wiki: http://appleseedhq.net/dev/wiki.
