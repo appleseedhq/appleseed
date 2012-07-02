@@ -394,7 +394,7 @@ void TriangleTree::build_bvh(
         triangle_bboxes);
 
     RENDERER_LOG_INFO(
-        "building BVH triangle tree #" FMT_UNIQUE_ID " (%s %s)...",
+        "building bvh triangle tree #" FMT_UNIQUE_ID " (%s %s)...",
         arguments.m_triangle_tree_uid,
         pretty_int(triangle_keys.size()).c_str(),
         plural(triangle_keys.size(), "triangle").c_str());
@@ -451,7 +451,7 @@ void TriangleTree::build_sbvh(
         triangle_bboxes);
 
     RENDERER_LOG_INFO(
-        "building SBVH triangle tree #" FMT_UNIQUE_ID " (%s %s)...",
+        "building sbvh triangle tree #" FMT_UNIQUE_ID " (%s %s)...",
         arguments.m_triangle_tree_uid,
         pretty_int(triangle_keys.size()).c_str(),
         plural(triangle_keys.size(), "triangle").c_str());
