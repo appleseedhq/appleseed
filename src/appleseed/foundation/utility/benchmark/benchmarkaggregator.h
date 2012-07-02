@@ -76,6 +76,8 @@ class FOUNDATIONDLL BenchmarkAggregator
 
     void scan_directory(const char* path);
 
+    void sort_series();
+
     const Dictionary& get_benchmarks() const;
 
     const BenchmarkSerie& get_serie(const UniqueID case_uid) const;

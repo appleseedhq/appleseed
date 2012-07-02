@@ -33,6 +33,7 @@
 #include "foundation/utility/benchmark/benchmarkdatapoint.h"
 #include "foundation/utility/benchmark/benchmarkserie.h"
 #include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/foreach.h"
 #include "foundation/utility/string.h"
 #include "foundation/utility/xercesc.h"
 
@@ -48,9 +49,10 @@
 #include "xercesc/util/XMLException.hpp"
 
 // Standard headers.
+#include <algorithm>
 #include <cassert>
-#include <string>
 #include <map>
+#include <string>
 #include <vector>
 
 using namespace boost;
@@ -304,6 +306,17 @@ void BenchmarkAggregator::scan_directory(const char* path)
             continue;
 
         scan_file(i->path().string().c_str());
+    }
+}
+
+void BenchmarkAggregator::sort_series()
+{
+    for (each<Impl::SerieMap> i = impl->m_series; i; ++i)
+    {
+        if (i->second.empty())
+            continue;
+
+        sort(&i->second[0], &i->second[0] + i->second.size());
     }
 }
 

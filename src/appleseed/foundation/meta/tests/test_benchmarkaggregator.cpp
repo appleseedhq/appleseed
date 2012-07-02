@@ -40,15 +40,14 @@
 #include "boost/date_time/posix_time/posix_time.hpp"
 
 using namespace boost;
+using namespace boost::gregorian;
+using namespace boost::posix_time;
 using namespace foundation;
 
 TEST_SUITE(Foundation_Utility_Benchmark_BenchmarkDataPoint)
 {
     TEST_CASE(GetDate_ReturnsDatePassedToConstructor)
     {
-        using namespace gregorian;
-        using namespace posix_time;
-
         const ptime ExpectedDate(date(2010, 6, 22), time_duration(17, 45, 31));
         const double ExpectedTicks = 1234.5678;
         const BenchmarkDataPoint data_point(ExpectedDate, ExpectedTicks);
@@ -60,9 +59,6 @@ TEST_SUITE(Foundation_Utility_Benchmark_BenchmarkDataPoint)
 
     TEST_CASE(GetTicks_ReturnsTicksPassedToConstructor)
     {
-        using namespace gregorian;
-        using namespace posix_time;
-
         const ptime ExpectedDate(date(2010, 6, 22), time_duration(17, 45, 31));
         const double ExpectedTicks = 1234.5678;
         const BenchmarkDataPoint data_point(ExpectedDate, ExpectedTicks);
@@ -79,6 +75,7 @@ TEST_SUITE(Foundation_Utility_Benchmark_BenchmarkAggregator)
     {
         BenchmarkAggregator aggregator;
         aggregator.scan_directory("unit tests/inputs/test_benchmarkaggregator/empty directory");
+        aggregator.sort_series();
 
         EXPECT_TRUE(aggregator.get_benchmarks().empty());
     }
@@ -87,6 +84,7 @@ TEST_SUITE(Foundation_Utility_Benchmark_BenchmarkAggregator)
     {
         BenchmarkAggregator aggregator;
         aggregator.scan_directory("unit tests/inputs/test_benchmarkaggregator/incomplete benchmark file/");
+        aggregator.sort_series();
 
         const Dictionary& benchmarks = aggregator.get_benchmarks();
 
@@ -104,17 +102,16 @@ TEST_SUITE(Foundation_Utility_Benchmark_BenchmarkAggregator)
     {
         BenchmarkAggregator aggregator;
         aggregator.scan_directory("unit tests/inputs/test_benchmarkaggregator/non benchmark file/");
+        aggregator.sort_series();
 
         EXPECT_TRUE(aggregator.get_benchmarks().empty());
     }
 
     TEST_CASE(SingleBenchmarkFile)
     {
-        using namespace gregorian;
-        using namespace posix_time;
-
         BenchmarkAggregator aggregator;
         aggregator.scan_directory("unit tests/inputs/test_benchmarkaggregator/single benchmark file/");
+        aggregator.sort_series();
 
         const ptime Date(date(2010, 6, 22), time_duration(17, 45, 31));
 
@@ -145,11 +142,9 @@ TEST_SUITE(Foundation_Utility_Benchmark_BenchmarkAggregator)
 
     TEST_CASE(MultipleBenchmarkFiles)
     {
-        using namespace gregorian;
-        using namespace posix_time;
-
         BenchmarkAggregator aggregator;
         aggregator.scan_directory("unit tests/inputs/test_benchmarkaggregator/multiple benchmark files/");
+        aggregator.sort_series();
 
         const Dictionary& benchmarks = aggregator.get_benchmarks();
 
@@ -173,6 +168,7 @@ TEST_SUITE(Foundation_Utility_Benchmark_BenchmarkAggregator)
     {
         BenchmarkAggregator aggregator;
         aggregator.scan_directory("unit tests/inputs/test_benchmarkaggregator/single benchmark file/");
+        aggregator.sort_series();
 
         aggregator.clear();
 

@@ -58,7 +58,7 @@
 #include <QVariant>
 
 // Standard headers.
-#include <algorithm>
+#include <string>
 
 using namespace appleseed::shared;
 using namespace boost;
@@ -182,6 +182,7 @@ void BenchmarkWindow::reload_benchmarks()
 
     m_benchmark_aggregator.clear();
     m_benchmark_aggregator.scan_directory(benchmarks_path.string().c_str());
+    m_benchmark_aggregator.sort_series();
 
     populate_benchmarks_treeview();
 }
@@ -243,10 +244,7 @@ auto_ptr<ChartBase> BenchmarkWindow::create_chart(
     auto_ptr<IToolTipFormatter> formatter(new ToolTipFormatter());
     chart->set_tooltip_formatter(formatter);
 
-    BenchmarkSerie serie = m_benchmark_aggregator.get_serie(case_uid);
-
-    if (!serie.empty())
-        sort(&serie[0], &serie[0] + serie.size());
+    const BenchmarkSerie serie = m_benchmark_aggregator.get_serie(case_uid);
 
     for (size_t i = 0; i < serie.size(); ++i)
     {
