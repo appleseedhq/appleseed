@@ -29,8 +29,8 @@
 #ifndef APPLESEED_RENDERER_KERNEL_INTERSECTION_PROBEVISITORBASE_H
 #define APPLESEED_RENDERER_KERNEL_INTERSECTION_PROBEVISITORBASE_H
 
-// appleseed.renderer headers.
-#include "renderer/global/global.h"
+// appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
 
 namespace renderer
 {
@@ -58,13 +58,11 @@ class ProbeVisitorBase
 // ProbeVisitorBase class implementation.
 //
 
-// Constructor.
 inline ProbeVisitorBase::ProbeVisitorBase()
   : m_hit(false)
 {
 }
 
-// Return whether a hit was found.
 inline bool ProbeVisitorBase::hit() const
 {
     return m_hit;
