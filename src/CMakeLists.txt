@@ -66,6 +66,7 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
 	option ( USE_EXTERNAL_PNG       "Use external Png lib"      OFF)
 	option ( USE_EXTERNAL_ALEMBIC   "Use external Alembic libs" OFF)
 	option ( USE_EXTERNAL_XERCES    "Use external Xerces lib"   OFF)
+	option ( WITH_PYTHON            "Build Python module"       ON)
 endif ()
 
 #--------------------------------------------------------------------------------------------------
@@ -97,6 +98,19 @@ exec_program (
     OUTPUT_VARIABLE git_tag
 )
 
+#--------------------------------------------------------------------------------------------------
+# Python.
+#--------------------------------------------------------------------------------------------------
+
+if (WITH_PYTHON)
+    find_package (PythonLibs)
+
+    if (PythonLibs_FOUND)
+        set (WITH_PYTHON ON)
+    else ()
+        set (WITH_PYTHON OFF)
+    endif ()
+endif ()
 
 #--------------------------------------------------------------------------------------------------
 # Boost libraries.
@@ -108,7 +122,13 @@ if (USE_STATIC_BOOST)
     set (Boost_USE_STATIC_LIBS TRUE)
 endif ()
 
-find_package (Boost 1.46 REQUIRED date_time filesystem regex system thread)
+set (BOOST_NEEDED_LIBS date_time filesystem regex system thread)
+
+if (WITH_PYTHON)
+    set (BOOST_NEEDED_LIBS ${BOOST_NEEDED_LIBS} python)
+endif ()
+
+find_package (Boost 1.46 REQUIRED ${BOOST_NEEDED_LIBS})
 
 add_definitions (-DBOOST_FILESYSTEM_VERSION=3 -DBOOST_FILESYSTEM_NO_DEPRECATED)
 
@@ -146,6 +166,7 @@ endif ()
 include_directories (
     appleseed
     STANN/include
+    ${PYTHON_INCLUDE_DIRS}
 )
 
 if (USE_EXTERNAL_PNG)
@@ -370,3 +391,7 @@ add_subdirectory (appleseed.studio)
 add_subdirectory (tools/animatecamera)
 add_subdirectory (tools/maketiledexr)
 add_subdirectory (tools/normalizeprojectfile)
+
+if (WITH_PYTHON)
+    add_subdirectory (python)
+endif ()
