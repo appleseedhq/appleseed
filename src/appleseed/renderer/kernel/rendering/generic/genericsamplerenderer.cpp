@@ -109,7 +109,9 @@ namespace
             ShadingContext shading_context(
                 m_intersector,
                 m_texture_cache,
-                m_lighting_engine);
+                m_lighting_engine,
+                m_params.m_opacity_threshold,
+                m_params.m_max_iterations);
 
             // Construct a primary ray.
             ShadingRay primary_ray;
@@ -126,12 +128,11 @@ namespace
             while (true)
             {
                 // Put a hard limit on the number of iterations.
-                const size_t MaxIterations = 10000;
-                if (++iterations >= MaxIterations)
+                if (++iterations >= m_params.m_max_iterations)
                 {
                     RENDERER_LOG_WARNING(
                         "reached hard iteration limit (%s), breaking primary ray trace loop.",
-                        pretty_int(MaxIterations).c_str());
+                        pretty_int(m_params.m_max_iterations).c_str());
                     break;
                 }
 
@@ -181,7 +182,7 @@ namespace
                     break;
 
                 // Stop once we hit full opacity.
-                if (max_value(shading_result.m_alpha) > m_params.m_transparency_threshold)
+                if (max_value(shading_result.m_alpha) > m_params.m_opacity_threshold)
                     break;
 
                 // Move the ray origin to the intersection point.
@@ -228,11 +229,13 @@ namespace
       private:
         struct Parameters
         {
-            const float     m_transparency_threshold;
+            const float     m_opacity_threshold;
+            const size_t    m_max_iterations;
             const bool      m_report_self_intersections;
 
             explicit Parameters(const ParamArray& params)
-              : m_transparency_threshold(1.0f - params.get_optional<float>("opacity_threshold", 1.0e-5f))
+              : m_opacity_threshold(params.get_optional<float>("opacity_threshold", 0.999f))
+              , m_max_iterations(params.get_optional<size_t>("max_iterations", 10000))
               , m_report_self_intersections(params.get_optional<bool>("report_self_intersections", false))
             {
             }

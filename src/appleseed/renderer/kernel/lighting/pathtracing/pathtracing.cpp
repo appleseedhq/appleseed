@@ -144,7 +144,8 @@ namespace
             PathTracer path_tracer(
                 path_visitor,
                 m_params.m_rr_min_path_length,
-                m_params.m_max_path_length);
+                m_params.m_max_path_length,
+                shading_context.get_max_iterations());
 
             const size_t path_length =
                 path_tracer.trace(

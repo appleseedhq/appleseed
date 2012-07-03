@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 
 // appleseed.foundation headers.
@@ -51,11 +52,13 @@ class Tracer
   : public foundation::NonCopyable
 {
   public:
-    // Constructor.
+    // Constructors.
     Tracer(
         const Intersector&              intersector,
         TextureCache&                   texture_cache,
+        const float                     opacity_threshold = 0.999f,
         const size_t                    max_iterations = 10000);
+    explicit Tracer(const ShadingContext& shading_context);
 
     // Compute the transmission in a given direction. Returns the intersection
     // with the closest fully opaque occluder and the transmission factor up
@@ -84,6 +87,7 @@ class Tracer
   private:
     const Intersector&                  m_intersector;
     TextureCache&                       m_texture_cache;
+    const double                        m_transmission_threshold;
     const size_t                        m_max_iterations;
     ShadingPoint                        m_shading_points[2];
 };
@@ -96,10 +100,20 @@ class Tracer
 inline Tracer::Tracer(
     const Intersector&                  intersector,
     TextureCache&                       texture_cache,
+    const float                         opacity_threshold,
     const size_t                        max_iterations)
   : m_intersector(intersector)
   , m_texture_cache(texture_cache)
+  , m_transmission_threshold(1.0 - static_cast<double>(opacity_threshold))
   , m_max_iterations(max_iterations)
+{
+}
+
+inline Tracer::Tracer(const ShadingContext& shading_context)
+  : m_intersector(shading_context.get_intersector())
+  , m_texture_cache(shading_context.get_texture_cache())
+  , m_transmission_threshold(1.0 - static_cast<double>(shading_context.get_opacity_threshold()))
+  , m_max_iterations(shading_context.get_max_iterations())
 {
 }
 

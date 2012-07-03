@@ -111,6 +111,7 @@ namespace
           , m_light_sampler(light_sampler)
           , m_texture_cache(texture_store)
           , m_intersector(trace_context, m_texture_cache, true, m_params.m_report_self_intersections)
+          , m_shading_context(m_intersector, m_texture_cache, 0, m_params.m_opacity_threshold, m_params.m_max_iterations)
         {
             RENDERER_LOG_INFO(
                 "light tracing settings:\n"
@@ -160,12 +161,16 @@ namespace
       private:
         struct Parameters
         {
+            const float     m_opacity_threshold;
+            const size_t    m_max_iterations;
             const bool      m_report_self_intersections;
             const size_t    m_rr_min_path_length;           // minimum path length before Russian Roulette is used, 0 for unlimited
             const size_t    m_max_path_length;              // maximum path length, 0 for unlimited
 
             explicit Parameters(const ParamArray& params)
-              : m_report_self_intersections(params.get_optional<bool>("report_self_intersections", false))
+              : m_opacity_threshold(params.get_optional<float>("opacity_threshold", 0.999f))
+              , m_max_iterations(params.get_optional<size_t>("max_iterations", 10000))
+              , m_report_self_intersections(params.get_optional<bool>("report_self_intersections", false))
               , m_rr_min_path_length(params.get_optional<size_t>("rr_min_path_length", 3))
               , m_max_path_length(params.get_optional<size_t>("max_path_length", 0))
             {
@@ -189,13 +194,12 @@ namespace
             PathVisitor(
                 const Scene&                scene,
                 const Frame&                frame,
-                const Intersector&          intersector,
-                TextureCache&               texture_cache,
+                const ShadingContext&       shading_context,
                 SampleVector&               samples,
                 const Spectrum&             initial_alpha)
               : m_camera(*scene.get_camera())
               , m_lighting_conditions(frame.get_lighting_conditions())
-              , m_shading_context(intersector, texture_cache)
+              , m_shading_context(shading_context)
               , m_samples(samples)
               , m_sample_count(0)
               , m_initial_alpha(initial_alpha)
@@ -360,7 +364,7 @@ namespace
           private:
             const Camera&                   m_camera;
             const LightingConditions&       m_lighting_conditions;
-            const ShadingContext            m_shading_context;
+            const ShadingContext&           m_shading_context;
 
             const Spectrum                  m_initial_alpha;        // initial particle flux (in W)
             Transformd                      m_camera_transform;     // camera transform at selected time
@@ -398,9 +402,7 @@ namespace
 
                 // Compute the transmission factor between this vertex and the camera.
                 // Prevent self-intersections by letting the ray originate from the camera.
-                Tracer tracer(
-                    m_shading_context.get_intersector(),
-                    m_shading_context.get_texture_cache());
+                Tracer tracer(m_shading_context);
                 const ShadingPoint& shading_point =
                     tracer.trace_between(
                         sampling_context,
@@ -457,6 +459,7 @@ namespace
         const LightSampler&             m_light_sampler;
         TextureCache                    m_texture_cache;
         Intersector                     m_intersector;
+        const ShadingContext            m_shading_context;
 
         MersenneTwister                 m_rng;
 
@@ -563,14 +566,14 @@ namespace
             PathVisitor path_visitor(
                 m_scene,
                 m_frame,
-                m_intersector,
-                m_texture_cache,
+                m_shading_context,
                 samples,
                 initial_alpha);
             PathTracerType path_tracer(
                 path_visitor,
                 m_params.m_rr_min_path_length,
-                m_params.m_max_path_length);
+                m_params.m_max_path_length,
+                m_params.m_max_iterations);
 
             // Handle the light vertex separately.
             Spectrum light_particle_flux = edf_value;       // todo: only works for diffuse EDF? What we need is the light exitance
@@ -638,14 +641,14 @@ namespace
             PathVisitor path_visitor(
                 m_scene,
                 m_frame,
-                m_intersector,
-                m_texture_cache,
+                m_shading_context,
                 samples,
                 initial_alpha);
             PathTracerType path_tracer(
                 path_visitor,
                 m_params.m_rr_min_path_length,
-                m_params.m_max_path_length);
+                m_params.m_max_path_length,
+                m_params.m_max_iterations);
 
             // Handle the light vertex separately.
             Spectrum light_particle_flux = light_value;
@@ -716,14 +719,14 @@ namespace
             PathVisitor path_visitor(
                 m_scene,
                 m_frame,
-                m_intersector,
-                m_texture_cache,
+                m_shading_context,
                 samples,
                 initial_alpha);
             PathTracerType path_tracer(
                 path_visitor,
                 m_params.m_rr_min_path_length,
-                m_params.m_max_path_length);
+                m_params.m_max_path_length,
+                m_params.m_max_iterations);
 
             // Trace the light path.
             const size_t path_length =

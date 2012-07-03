@@ -65,7 +65,8 @@ class PathTracer
     PathTracer(
         PathVisitor&            path_visitor,
         const size_t            rr_min_path_length,
-        const size_t            max_path_length);
+        const size_t            max_path_length,
+        const size_t            max_iterations = 10000);
 
     size_t trace(
         SamplingContext&        sampling_context,
@@ -84,6 +85,7 @@ class PathTracer
     PathVisitor&                m_path_visitor;
     const size_t                m_rr_min_path_length;
     const size_t                m_max_path_length;
+    const size_t                m_max_iterations;
 };
 
 
@@ -95,10 +97,12 @@ template <typename PathVisitor, int ScatteringModesMask, bool Adjoint>
 inline PathTracer<PathVisitor, ScatteringModesMask, Adjoint>::PathTracer(
     PathVisitor&                path_visitor,
     const size_t                rr_min_path_length,
-    const size_t                max_path_length)
+    const size_t                max_path_length,
+    const size_t                max_iterations)
   : m_path_visitor(path_visitor)
   , m_rr_min_path_length(rr_min_path_length)
   , m_max_path_length(max_path_length)
+  , m_max_iterations(max_iterations)
 {
 }
 
@@ -141,12 +145,11 @@ size_t PathTracer<PathVisitor, ScatteringModesMask, Adjoint>::trace(
     while (true)
     {
         // Put a hard limit on the number of iterations.
-        const size_t MaxIterations = 10000;
-        if (++iterations >= MaxIterations)
+        if (++iterations >= m_max_iterations)
         {
             RENDERER_LOG_WARNING(
                 "reached hard iteration limit (%s), breaking path trace loop.",
-                foundation::pretty_int(MaxIterations).c_str());
+                foundation::pretty_int(m_max_iterations).c_str());
             break;
         }
 

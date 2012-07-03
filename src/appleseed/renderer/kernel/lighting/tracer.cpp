@@ -109,12 +109,12 @@ const ShadingPoint& Tracer::trace(
             shading_point_ptr->get_uv(0),
             alpha);
 
-        // Stop as soon as we reach a fully opaque occluder.
-        if (alpha[0] >= 1.0f)
-            break;
-
         // Update the transmission factor.
         transmission *= 1.0 - static_cast<double>(alpha[0]);
+
+        // Stop once we hit full opacity.
+        if (transmission < m_transmission_threshold)
+            break;
 
         // Move past this partial occluder.
         point = shading_point_ptr->get_point();
@@ -194,12 +194,12 @@ const ShadingPoint& Tracer::trace_between(
             shading_point_ptr->get_uv(0),
             alpha);
 
-        // Stop as soon as we reach a fully opaque occluder.
-        if (alpha[0] >= 1.0f)
-            break;
-
         // Update the transmission factor.
         transmission *= 1.0 - static_cast<double>(alpha[0]);
+
+        // Stop once we hit full opacity.
+        if (transmission < m_transmission_threshold)
+            break;
 
         // Move past this partial occluder.
         point = shading_point_ptr->get_point();

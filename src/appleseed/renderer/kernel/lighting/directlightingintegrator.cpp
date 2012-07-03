@@ -63,9 +63,7 @@ DirectLightingIntegrator::DirectLightingIntegrator(
   , m_bsdf_sample_count(bsdf_sample_count)
   , m_light_sample_count(light_sample_count)
   , m_parent_shading_point(parent_shading_point)
-  , m_tracer(
-        shading_context.get_intersector(),
-        shading_context.get_texture_cache())
+  , m_tracer(shading_context)
 {
     assert(is_normalized(geometric_normal));
     assert(is_normalized(outgoing));

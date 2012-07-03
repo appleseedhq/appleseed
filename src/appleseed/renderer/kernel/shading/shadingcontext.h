@@ -29,8 +29,11 @@
 #ifndef APPLESEED_RENDERER_KERNEL_SHADING_SHADINGCONTEXT_H
 #define APPLESEED_RENDERER_KERNEL_SHADING_SHADINGCONTEXT_H
 
-// appleseed.renderer headers.
-#include "renderer/global/global.h"
+// appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
+
+// Standard headers.
+#include <cstddef>
 
 // Forward declarations.
 namespace renderer      { class ILightingEngine; }
@@ -52,7 +55,9 @@ class ShadingContext
     ShadingContext(
         const Intersector&      intersector,
         TextureCache&           texture_cache,
-        ILightingEngine*        lighting_engine = 0);
+        ILightingEngine*        lighting_engine = 0,
+        const float             opacity_threshold = 0.999f,
+        const size_t            max_iterations = 10000);
 
     // Return the intersector.
     const Intersector& get_intersector() const;
@@ -63,7 +68,13 @@ class ShadingContext
     // Return the light transport solver.
     ILightingEngine* get_lighting_engine() const;
 
+    float get_opacity_threshold() const;
+
+    size_t get_max_iterations() const;
+
   private:
+    const float                 m_opacity_threshold;
+    const size_t                m_max_iterations;
     const Intersector&          m_intersector;
     TextureCache&               m_texture_cache;
     ILightingEngine*            m_lighting_engine;
@@ -77,10 +88,14 @@ class ShadingContext
 inline ShadingContext::ShadingContext(
     const Intersector&          intersector,
     TextureCache&               texture_cache,
-    ILightingEngine*            lighting_engine)
+    ILightingEngine*            lighting_engine,
+    const float                 opacity_threshold,
+    const size_t                max_iterations)
   : m_intersector(intersector)
   , m_texture_cache(texture_cache)
   , m_lighting_engine(lighting_engine)
+  , m_opacity_threshold(opacity_threshold)
+  , m_max_iterations(max_iterations)
 {
 }
 
@@ -97,6 +112,16 @@ inline TextureCache& ShadingContext::get_texture_cache() const
 inline ILightingEngine* ShadingContext::get_lighting_engine() const
 {
     return m_lighting_engine;
+}
+
+inline float ShadingContext::get_opacity_threshold() const
+{
+    return m_opacity_threshold;
+}
+
+inline size_t ShadingContext::get_max_iterations() const
+{
+    return m_max_iterations;
 }
 
 }       // namespace renderer
