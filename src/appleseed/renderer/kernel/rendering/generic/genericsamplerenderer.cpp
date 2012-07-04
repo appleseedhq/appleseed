@@ -75,6 +75,7 @@ namespace
           : m_params(params)
           , m_scene(scene)
           , m_lighting_conditions(frame.get_lighting_conditions())
+          , m_opacity_threshold(1.0f - m_params.m_transparency_threshold)
           , m_texture_cache(texture_store)
           , m_intersector(trace_context, m_texture_cache, true, m_params.m_report_self_intersections)
           , m_lighting_engine(lighting_engine_factory->create())
@@ -110,7 +111,7 @@ namespace
                 m_intersector,
                 m_texture_cache,
                 m_lighting_engine,
-                m_params.m_opacity_threshold,
+                m_params.m_transparency_threshold,
                 m_params.m_max_iterations);
 
             // Construct a primary ray.
@@ -182,7 +183,7 @@ namespace
                     break;
 
                 // Stop once we hit full opacity.
-                if (max_value(shading_result.m_alpha) > m_params.m_opacity_threshold)
+                if (max_value(shading_result.m_alpha) > m_opacity_threshold)
                     break;
 
                 // Move the ray origin to the intersection point.
@@ -229,12 +230,12 @@ namespace
       private:
         struct Parameters
         {
-            const float     m_opacity_threshold;
+            const float     m_transparency_threshold;
             const size_t    m_max_iterations;
             const bool      m_report_self_intersections;
 
             explicit Parameters(const ParamArray& params)
-              : m_opacity_threshold(params.get_optional<float>("opacity_threshold", 0.999f))
+              : m_transparency_threshold(params.get_optional<float>("transparency_threshold", 0.001f))
               , m_max_iterations(params.get_optional<size_t>("max_iterations", 10000))
               , m_report_self_intersections(params.get_optional<bool>("report_self_intersections", false))
             {
@@ -244,6 +245,7 @@ namespace
         const Parameters            m_params;
         const Scene&                m_scene;
         const LightingConditions&   m_lighting_conditions;
+        const float                 m_opacity_threshold;
 
         TextureCache                m_texture_cache;
         Intersector                 m_intersector;

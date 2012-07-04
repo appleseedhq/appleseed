@@ -56,7 +56,7 @@ class Tracer
     Tracer(
         const Intersector&              intersector,
         TextureCache&                   texture_cache,
-        const float                     opacity_threshold = 0.999f,
+        const float                     transparency_threshold = 0.001f,
         const size_t                    max_iterations = 10000);
     explicit Tracer(const ShadingContext& shading_context);
 
@@ -100,11 +100,11 @@ class Tracer
 inline Tracer::Tracer(
     const Intersector&                  intersector,
     TextureCache&                       texture_cache,
-    const float                         opacity_threshold,
+    const float                         transparency_threshold,
     const size_t                        max_iterations)
   : m_intersector(intersector)
   , m_texture_cache(texture_cache)
-  , m_transmission_threshold(1.0 - static_cast<double>(opacity_threshold))
+  , m_transmission_threshold(static_cast<double>(transparency_threshold))
   , m_max_iterations(max_iterations)
 {
 }
@@ -112,7 +112,7 @@ inline Tracer::Tracer(
 inline Tracer::Tracer(const ShadingContext& shading_context)
   : m_intersector(shading_context.get_intersector())
   , m_texture_cache(shading_context.get_texture_cache())
-  , m_transmission_threshold(1.0 - static_cast<double>(shading_context.get_opacity_threshold()))
+  , m_transmission_threshold(static_cast<double>(shading_context.get_transparency_threshold()))
   , m_max_iterations(shading_context.get_max_iterations())
 {
 }

@@ -111,7 +111,7 @@ namespace
           , m_light_sampler(light_sampler)
           , m_texture_cache(texture_store)
           , m_intersector(trace_context, m_texture_cache, true, m_params.m_report_self_intersections)
-          , m_shading_context(m_intersector, m_texture_cache, 0, m_params.m_opacity_threshold, m_params.m_max_iterations)
+          , m_shading_context(m_intersector, m_texture_cache, 0, m_params.m_transparency_threshold, m_params.m_max_iterations)
         {
             RENDERER_LOG_INFO(
                 "light tracing settings:\n"
@@ -161,14 +161,14 @@ namespace
       private:
         struct Parameters
         {
-            const float     m_opacity_threshold;
+            const float     m_transparency_threshold;
             const size_t    m_max_iterations;
             const bool      m_report_self_intersections;
             const size_t    m_rr_min_path_length;           // minimum path length before Russian Roulette is used, 0 for unlimited
             const size_t    m_max_path_length;              // maximum path length, 0 for unlimited
 
             explicit Parameters(const ParamArray& params)
-              : m_opacity_threshold(params.get_optional<float>("opacity_threshold", 0.999f))
+              : m_transparency_threshold(params.get_optional<float>("transparency_threshold", 0.001f))
               , m_max_iterations(params.get_optional<size_t>("max_iterations", 10000))
               , m_report_self_intersections(params.get_optional<bool>("report_self_intersections", false))
               , m_rr_min_path_length(params.get_optional<size_t>("rr_min_path_length", 3))
