@@ -190,7 +190,10 @@ void LocalAccumulationFramebuffer::store_samples(
                 {
                     if (++m_set_pixels[level_index] == level->get_pixel_count())
                     {
+                        // We just completed this level: make it the new active level.
                         m_active_level = level_index;
+
+                        // No need to fill the coarser levels anymore.
                         break;
                     }
                 }
