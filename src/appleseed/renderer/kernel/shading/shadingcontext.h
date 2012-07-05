@@ -56,7 +56,7 @@ class ShadingContext
         const Intersector&      intersector,
         TextureCache&           texture_cache,
         ILightingEngine*        lighting_engine = 0,
-        const float             opacity_threshold = 0.999f,
+        const float             transparency_threshold = 0.001f,
         const size_t            max_iterations = 10000);
 
     // Return the intersector.
@@ -68,16 +68,16 @@ class ShadingContext
     // Return the light transport solver.
     ILightingEngine* get_lighting_engine() const;
 
-    float get_opacity_threshold() const;
+    float get_transparency_threshold() const;
 
     size_t get_max_iterations() const;
 
   private:
-    const float                 m_opacity_threshold;
-    const size_t                m_max_iterations;
     const Intersector&          m_intersector;
     TextureCache&               m_texture_cache;
     ILightingEngine*            m_lighting_engine;
+    const float                 m_transparency_threshold;
+    const size_t                m_max_iterations;
 };
 
 
@@ -89,12 +89,12 @@ inline ShadingContext::ShadingContext(
     const Intersector&          intersector,
     TextureCache&               texture_cache,
     ILightingEngine*            lighting_engine,
-    const float                 opacity_threshold,
+    const float                 transparency_threshold,
     const size_t                max_iterations)
   : m_intersector(intersector)
   , m_texture_cache(texture_cache)
   , m_lighting_engine(lighting_engine)
-  , m_opacity_threshold(opacity_threshold)
+  , m_transparency_threshold(transparency_threshold)
   , m_max_iterations(max_iterations)
 {
 }
@@ -114,9 +114,9 @@ inline ILightingEngine* ShadingContext::get_lighting_engine() const
     return m_lighting_engine;
 }
 
-inline float ShadingContext::get_opacity_threshold() const
+inline float ShadingContext::get_transparency_threshold() const
 {
-    return m_opacity_threshold;
+    return m_transparency_threshold;
 }
 
 inline size_t ShadingContext::get_max_iterations() const

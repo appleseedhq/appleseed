@@ -512,6 +512,35 @@ void TriangleTree::build_sbvh(
         statistics);
 }
 
+namespace
+{
+    //
+    // If the bounding box is seen as a flat array of scalars, the swizzle() function converts
+    // the bounding box from
+    //
+    //   min.x  min.y  min.z  max.x  max.y  max.z
+    //
+    // to
+    //
+    //   min.x  max.x  min.y  max.y  min.z  max.z
+    //
+
+    template <typename T, size_t N>
+    AABB<T, N> swizzle(const AABB<T, N>& bbox)
+    {
+        AABB<T, N> result;
+        T* flat_result = &result[0][0];
+
+        for (size_t i = 0; i < N; ++i)
+        {
+            flat_result[i * 2 + 0] = bbox[0][i];
+            flat_result[i * 2 + 1] = bbox[1][i];
+        }
+
+        return result;
+    }
+}
+
 vector<GAABB3> TriangleTree::compute_motion_bboxes(
     const vector<size_t>&               triangle_indices,
     const vector<TriangleVertexInfo>&   triangle_vertex_infos,
@@ -544,7 +573,7 @@ vector<GAABB3> TriangleTree::compute_motion_bboxes(
             node.set_left_bbox_index(m_node_bboxes.size());
 
             for (vector<GAABB3>::const_iterator i = left_bboxes.begin(); i != left_bboxes.end(); ++i)
-                m_node_bboxes.push_back(AABB3d(*i));
+                m_node_bboxes.push_back(swizzle(AABB3d(*i)));
         }
 
         if (right_bboxes.size() > 1)
@@ -552,7 +581,7 @@ vector<GAABB3> TriangleTree::compute_motion_bboxes(
             node.set_right_bbox_index(m_node_bboxes.size());
 
             for (vector<GAABB3>::const_iterator i = right_bboxes.begin(); i != right_bboxes.end(); ++i)
-                m_node_bboxes.push_back(AABB3d(*i));
+                m_node_bboxes.push_back(swizzle(AABB3d(*i)));
         }
 
         const size_t bbox_count = max(left_bboxes.size(), right_bboxes.size());

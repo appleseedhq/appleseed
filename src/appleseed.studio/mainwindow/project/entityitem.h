@@ -45,6 +45,9 @@
 #include <QObject>
 #include <QWidget>
 
+// Standard headers.
+#include <string>
+
 namespace appleseed {
 namespace studio {
 
@@ -131,15 +134,19 @@ void EntityItem<Entity, ParentEntity>::slot_delete()
 template <typename Entity, typename ParentEntity>
 void EntityItem<Entity, ParentEntity>::edit(const foundation::Dictionary& values)
 {
+    const std::string old_entity_name = EntityItemBaseType::m_entity->get_name();
+
     EntityItemBaseType::m_entity =
         m_project_builder.edit_entity(
             EntityItemBaseType::m_entity,
             m_parent,
             values);
 
+    const std::string new_entity_name = EntityItemBaseType::m_entity->get_name();
+
     EntityItemBaseType::update();
 
-    if (!m_fixed_position)
+    if (!m_fixed_position && old_entity_name != new_entity_name)
         move_to_sorted_position(this);
 
     qobject_cast<QWidget*>(QObject::sender())->close();
