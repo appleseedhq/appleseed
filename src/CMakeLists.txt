@@ -99,20 +99,6 @@ exec_program (
 )
 
 #--------------------------------------------------------------------------------------------------
-# Python.
-#--------------------------------------------------------------------------------------------------
-
-if (WITH_PYTHON)
-    find_package (PythonLibs)
-
-    if (PythonLibs_FOUND)
-        set (WITH_PYTHON ON)
-    else ()
-        set (WITH_PYTHON OFF)
-    endif ()
-endif ()
-
-#--------------------------------------------------------------------------------------------------
 # Boost libraries.
 #--------------------------------------------------------------------------------------------------
 
@@ -122,13 +108,7 @@ if (USE_STATIC_BOOST)
     set (Boost_USE_STATIC_LIBS TRUE)
 endif ()
 
-set (BOOST_NEEDED_LIBS date_time filesystem regex system thread)
-
-if (WITH_PYTHON)
-    set (BOOST_NEEDED_LIBS ${BOOST_NEEDED_LIBS} python)
-endif ()
-
-find_package (Boost 1.46 REQUIRED ${BOOST_NEEDED_LIBS})
+find_package (Boost 1.46 REQUIRED date_time filesystem regex system thread)
 
 add_definitions (-DBOOST_FILESYSTEM_VERSION=3 -DBOOST_FILESYSTEM_NO_DEPRECATED)
 
@@ -393,5 +373,5 @@ add_subdirectory (tools/maketiledexr)
 add_subdirectory (tools/normalizeprojectfile)
 
 if (WITH_PYTHON)
-    add_subdirectory (python)
+    add_subdirectory (appleseed.py)
 endif ()
