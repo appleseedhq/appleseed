@@ -99,7 +99,7 @@ LocalAccumulationFramebuffer::LocalAccumulationFramebuffer(
         level_width /= 2;
         level_height /= 2;
     }
-    while (level_width > MinSize && level_height > MinSize);
+    while (level_width >= MinSize && level_height >= MinSize);
 
     clear();
 }
