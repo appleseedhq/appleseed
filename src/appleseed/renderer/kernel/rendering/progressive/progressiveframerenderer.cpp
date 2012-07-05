@@ -178,11 +178,11 @@ namespace
             m_sample_counter.clear();
 
             // Reset sample generators.
-            for (size_t i = 0; i < m_params.m_thread_count; ++i)
+            for (size_t i = 0; i < m_sample_generators.size(); ++i)
                 m_sample_generators[i]->reset();
 
             // Schedule the first batch of jobs.
-            for (size_t i = 0; i < m_params.m_thread_count; ++i)
+            for (size_t i = 0; i < m_sample_generators.size(); ++i)
             {
                 m_job_queue.schedule(
                     new SampleGeneratorJob(
@@ -193,7 +193,7 @@ namespace
                         m_tile_callbacks[i],
                         m_job_queue,
                         i,                              // job index
-                        m_params.m_thread_count,        // job count
+                        m_sample_generators.size(),     // job count
                         0,                              // pass number
                         m_abort_switch));
             }
