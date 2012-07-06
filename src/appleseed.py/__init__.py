@@ -27,7 +27,7 @@
 
 import sys
 
-if sys.version_info[0] == 2:
+if sys.hexversion < 0x030000F0:
     from _appleseed import * # Python 2.X
 else:
     from ._appleseed import * # Python 3.X

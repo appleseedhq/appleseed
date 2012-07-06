@@ -51,11 +51,17 @@ find_package (Boost 1.46 REQUIRED date_time filesystem regex system thread pytho
 
 set (sources
     module.cpp
+
+    foundation/bind_foundation.cpp
+
+    renderer/bind_renderer.cpp
+    renderer/bind_entity.cpp
+    renderer/bind_project.cpp
 )
 list (APPEND appleseed.py_sources
     ${sources}
 )
-source_group ("" FILES
+source_group ("python" FILES
     ${sources}
 )
 

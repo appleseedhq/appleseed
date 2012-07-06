@@ -25,18 +25,45 @@
 // THE SOFTWARE.
 //
 
-// Has to be first, to avoid redifinition warnings.
-#include <Python.h>
+#include "foundation/bind_auto_release_ptr.h"
 
-#include <boost/python.hpp>
+#include <string>
 
-// Prototypes
-void bind_foundation();
-void bind_renderer();
+#include "renderer/modeling/entity/entity.h"
 
-// appleseed python module
-BOOST_PYTHON_MODULE( _appleseed)
+namespace bpy = boost::python;
+using namespace foundation;
+using namespace renderer;
+
+namespace
 {
-    bind_foundation();
-    bind_renderer();
+
+std::string entity_get_name( const Entity *e)
+{
+    return std::string( e->get_name());
+}
+
+std::string entity_get_render_layer_name( const Entity *e)
+{
+    return std::string( e->get_render_layer_name());
+}
+
+} // unnamed
+
+void bind_entity()
+{
+    bpy::class_<Entity, auto_release_ptr<Entity>, boost::noncopyable>( "Entity", "doc string", bpy::no_init)
+        .def( "get_class_uid", &Entity::get_class_uid)
+        .def( "get_name", entity_get_name)
+
+        .def( "get_render_layer_name", entity_get_render_layer_name)
+
+        .def( "set_render_layer_index", &Entity::set_render_layer_index)
+        .def( "get_render_layer_index", &Entity::get_render_layer_index)
+        ;
+
+	// register smart pointer conversion to / from python
+	//auto_release_ptr_to_python<Entity>();
+	//auto_release_ptr_from_python<Entity>();
+	bpy::implicitly_convertible<auto_release_ptr<Entity> , auto_release_ptr<const Entity> >();
 }

@@ -26,17 +26,27 @@
 //
 
 // Has to be first, to avoid redifinition warnings.
-#include <Python.h>
+#include "foundation/bind_auto_release_ptr.h"
 
-#include <boost/python.hpp>
+#include "renderer/api/project.h"
 
-// Prototypes
-void bind_foundation();
-void bind_renderer();
+namespace bpy = boost::python;
+using namespace foundation;
+using namespace renderer;
 
-// appleseed python module
-BOOST_PYTHON_MODULE( _appleseed)
+namespace
 {
-    bind_foundation();
-    bind_renderer();
+
+auto_release_ptr<Project> create_project( const std::string& name)
+{
+    return ProjectFactory::create( name.c_str());
+}
+
+} // unnamed
+
+void bind_project()
+{
+    bpy::class_<Project, auto_release_ptr<Project>, bpy::bases<Entity>, boost::noncopyable>( "Project", "doc string", bpy::no_init)
+        .def( "create", create_project).staticmethod( "create")
+        ;
 }

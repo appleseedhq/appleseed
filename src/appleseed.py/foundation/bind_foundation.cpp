@@ -29,14 +29,12 @@
 #include <Python.h>
 
 #include <boost/python.hpp>
+namespace bpy = boost::python;
 
-// Prototypes
-void bind_foundation();
-void bind_renderer();
-
-// appleseed python module
-BOOST_PYTHON_MODULE( _appleseed)
+void bind_foundation()
 {
-    bind_foundation();
-    bind_renderer();
+	bpy::object foundation_module( bpy::handle<>( bpy::borrowed( PyImport_AddModule( "_appleseed.foundation"))));
+	bpy::scope().attr( "foundation") = foundation_module;
+	bpy::scope foundation_scope = foundation_module;
+
 }
