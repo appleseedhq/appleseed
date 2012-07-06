@@ -36,6 +36,7 @@
 #endif
 #include "foundation/platform/types.h"
 #include "foundation/utility/casts.h"
+#include "foundation/utility/memory.h"
 
 // Standard headers.
 #include <cassert>
@@ -59,11 +60,11 @@ float fast_pow2(const float x);
 
 // Fast approximation of a^b.
 float fast_pow(const float a, const float b);
-void fast_pow(float a[4], const float b);
+void fast_pow(float a[4], const float b);               // a must be 16-byte aligned if APPLESEED_FOUNDATION_USE_SSE is defined
 
 // Fast approximation of a^b, more accurate than fast_pow().
 float fast_pow_refined(const float a, const float b);
-void fast_pow_refined(float a[4], const float b);
+void fast_pow_refined(float a[4], const float b);       // a must be 16-byte aligned if APPLESEED_FOUNDATION_USE_SSE is defined
 
 // Fast approximation of the square root.
 float fast_sqrt(const float x);
@@ -132,6 +133,8 @@ inline float fast_pow(const float a, const float b)
 
 inline void fast_pow(float a[4], const float b)
 {
+    assert(is_aligned(a, 16));
+
     sse4f x = _mm_cvtepi32_ps(_mm_load_si128((__m128i*)a));
 
     const sse4f K = set1ps(127.0f);
@@ -170,6 +173,8 @@ inline float fast_pow_refined(const float a, const float b)
 
 inline void fast_pow_refined(float a[4], const float b)
 {
+    assert(is_aligned(a, 16));
+
     sse4f x = _mm_cvtepi32_ps(_mm_load_si128((__m128i*)a));
 
     const sse4f K = set1ps(127.0f);
