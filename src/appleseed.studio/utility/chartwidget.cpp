@@ -183,6 +183,8 @@ AABB2d ChartBase::compute_points_bbox() const
     AABB2d bbox;
     bbox.invalidate();
 
+    bbox.insert(Vector2d(0.0));
+
     for (size_t i = 0; i < m_points.size(); ++i)
         bbox.insert(m_points[i]);
 
