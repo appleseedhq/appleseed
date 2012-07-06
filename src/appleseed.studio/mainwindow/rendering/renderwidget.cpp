@@ -40,6 +40,7 @@
 #include "foundation/image/image.h"
 #include "foundation/image/nativedrawing.h"
 #include "foundation/image/tile.h"
+#include "foundation/platform/types.h"
 
 // Qt headers.
 #include <Qt>
@@ -79,9 +80,11 @@ RenderWidget::RenderWidget(
 
 void RenderWidget::clear(const Color4f& color)
 {
-    m_image_mutex.lock();
+    m_mutex.lock();
+
     m_image.fill(color_to_qcolor(color).rgba());
-    m_image_mutex.unlock();
+
+    m_mutex.unlock();
 }
 
 namespace
@@ -134,7 +137,7 @@ void RenderWidget::highlight_region(
     const size_t    width,
     const size_t    height)
 {
-    m_image_mutex.lock();
+    m_mutex.lock();
 
     // Retrieve destination image information.
     const size_t image_width = static_cast<size_t>(m_image.width());
@@ -172,7 +175,7 @@ void RenderWidget::highlight_region(
         BracketColor,
         sizeof(BracketColor));
 
-    m_image_mutex.unlock();
+    m_mutex.unlock();
 }
 
 void RenderWidget::blit_tile(
@@ -180,54 +183,70 @@ void RenderWidget::blit_tile(
     const size_t    tile_x,
     const size_t    tile_y)
 {
-    m_image_mutex.lock();
+    m_mutex.lock();
+
+    allocate_working_storage(frame.image().properties());
 
     blit_tile_no_lock(frame, tile_x, tile_y);
 
-    m_image_mutex.unlock();
+    m_mutex.unlock();
 }
 
-void RenderWidget::blit_frame(
-    const Frame&    frame)
+void RenderWidget::blit_frame(const Frame& frame)
 {
+    m_mutex.lock();
+
     const CanvasProperties& frame_props = frame.image().properties();
 
-    Tile float_tile_storage(
-        frame_props.m_tile_width,
-        frame_props.m_tile_height,
-        frame_props.m_channel_count,
-        PixelFormatFloat);
-
-    Tile uint8_tile_storage(
-        frame_props.m_tile_width,
-        frame_props.m_tile_height,
-        frame_props.m_channel_count,
-        PixelFormatUInt8);
-
-    m_image_mutex.lock();
+    allocate_working_storage(frame_props);
 
     for (size_t ty = 0; ty < frame_props.m_tile_count_y; ++ty)
     {
         for (size_t tx = 0; tx < frame_props.m_tile_count_x; ++tx)
-        {
-            blit_tile_no_lock(
-                frame,
-                tx,
-                ty,
-                float_tile_storage.get_storage(),
-                uint8_tile_storage.get_storage());
-        }
+            blit_tile_no_lock(frame, tx, ty);
     }
 
-    m_image_mutex.unlock();
+    m_mutex.unlock();
+}
+
+namespace
+{
+    bool is_compatible(const Tile& tile, const CanvasProperties& props)
+    {
+        return
+            tile.get_width() == props.m_tile_width &&
+            tile.get_height() == props.m_tile_height &&
+            tile.get_channel_count() == props.m_channel_count;
+    }
+}
+
+void RenderWidget::allocate_working_storage(const CanvasProperties& frame_props)
+{
+    if (!m_float_tile_storage.get() || !is_compatible(*m_float_tile_storage.get(), frame_props))
+    {
+        m_float_tile_storage.reset(
+            new Tile(
+                frame_props.m_tile_width,
+                frame_props.m_tile_height,
+                frame_props.m_channel_count,
+                PixelFormatFloat));
+    }
+
+    if (!m_uint8_tile_storage.get() || !is_compatible(*m_uint8_tile_storage.get(), frame_props))
+    {
+        m_uint8_tile_storage.reset(
+            new Tile(
+                frame_props.m_tile_width,
+                frame_props.m_tile_height,
+                frame_props.m_channel_count,
+                PixelFormatUInt8));
+    }
 }
 
 void RenderWidget::blit_tile_no_lock(
     const Frame&    frame,
     const size_t    tile_x,
-    const size_t    tile_y,
-    uint8*          float_tile_storage,
-    uint8*          uint8_tile_storage)
+    const size_t    tile_y)
 {
     // Retrieve the source tile.
     const Tile& tile = frame.image().tile(tile_x, tile_y);
@@ -236,7 +255,7 @@ void RenderWidget::blit_tile_no_lock(
     Tile fp_rgb_tile(
         tile,
         PixelFormatFloat,
-        float_tile_storage);
+        m_float_tile_storage->get_storage());
 
     // Transform the tile to the color space of the frame.
     frame.transform_to_output_color_space(fp_rgb_tile);
@@ -247,7 +266,7 @@ void RenderWidget::blit_tile_no_lock(
         fp_rgb_tile,
         PixelFormatUInt8,
         ShuffleTable,
-        uint8_tile_storage);
+        m_uint8_tile_storage->get_storage());
 
     // Retrieve destination image information.
     const size_t image_width = static_cast<size_t>(m_image.width());
@@ -274,13 +293,13 @@ void RenderWidget::blit_tile_no_lock(
 
 void RenderWidget::paintEvent(QPaintEvent* event)
 {
-    m_image_mutex.lock();
+    m_mutex.lock();
 
     m_painter.begin(this);
     m_painter.drawImage(rect(), m_image);
     m_painter.end();
 
-    m_image_mutex.unlock();
+    m_mutex.unlock();
 }
 
 }   // namespace studio
