@@ -37,8 +37,8 @@
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
 #include "foundation/image/pixel.h"
+#include "foundation/image/tile.h"
 #include "foundation/math/scalar.h"
-#include "foundation/platform/compiler.h"
 #include "foundation/platform/thread.h"
 
 // Standard headers.
@@ -99,7 +99,7 @@ LocalAccumulationFramebuffer::LocalAccumulationFramebuffer(
         level_width /= 2;
         level_height /= 2;
     }
-    while (level_width > MinSize && level_height > MinSize);
+    while (level_width >= MinSize && level_height >= MinSize);
 
     clear();
 }
@@ -190,7 +190,10 @@ void LocalAccumulationFramebuffer::store_samples(
                 {
                     if (++m_set_pixels[level_index] == level->get_pixel_count())
                     {
+                        // We just completed this level: make it the new active level.
                         m_active_level = level_index;
+
+                        // No need to fill the coarser levels anymore.
                         break;
                     }
                 }
@@ -212,6 +215,14 @@ void LocalAccumulationFramebuffer::develop_to_frame(Frame& frame) const
     assert(frame_props.m_canvas_height == m_height);
     assert(frame_props.m_channel_count == 4);
 
+    // Find the first (the highest resolution) level that has all its pixels set.
+    size_t display_level = 0;
+    while (display_level < m_levels.size() - 1 &&
+           m_set_pixels[display_level] < m_levels[display_level]->get_pixel_count())
+        ++display_level;
+
+    const Tile& level = *m_levels[display_level];
+
     for (size_t ty = 0; ty < frame_props.m_tile_count_y; ++ty)
     {
         for (size_t tx = 0; tx < frame_props.m_tile_count_x; ++tx)
@@ -221,12 +232,13 @@ void LocalAccumulationFramebuffer::develop_to_frame(Frame& frame) const
             const size_t origin_x = tx * frame_props.m_tile_width;
             const size_t origin_y = ty * frame_props.m_tile_height;
 
-            develop_to_tile(tile, origin_x, origin_y, tx, ty);
+            develop_to_tile(level, tile, origin_x, origin_y, tx, ty);
         }
     }
 }
 
 void LocalAccumulationFramebuffer::develop_to_tile(
+    const Tile&     level,
     Tile&           tile,
     const size_t    origin_x,
     const size_t    origin_y,
@@ -258,7 +270,8 @@ void LocalAccumulationFramebuffer::develop_to_tile(
 
 #else
 
-    const Tile* level = m_levels[m_active_level];
+    const size_t level_width = level.get_width();
+    const size_t level_height = level.get_height();
 
     for (size_t y = 0; y < tile_height; ++y)
     {
@@ -266,9 +279,9 @@ void LocalAccumulationFramebuffer::develop_to_tile(
         {
             const AccumulationPixel* pixel =
                 reinterpret_cast<const AccumulationPixel*>(
-                    level->pixel(
-                        (origin_x + x) * level->get_width() / m_width,
-                        (origin_y + y) * level->get_height() / m_height));
+                    level.pixel(
+                        (origin_x + x) * level_width / m_width,
+                        (origin_y + y) * level_height / m_height));
 
             const Color4f color =
                 pixel->m_count > 0

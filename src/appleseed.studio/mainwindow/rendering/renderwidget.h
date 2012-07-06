@@ -34,7 +34,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
-#include "foundation/platform/types.h"
 
 // Qt headers.
 #include <QImage>
@@ -44,11 +43,13 @@
 
 // Standard headers.
 #include <cstddef>
+#include <memory>
 
 // Forward declarations.
+namespace foundation    { class CanvasProperties; }
+namespace foundation    { class Tile; }
 namespace renderer      { class Frame; }
 class QPaintEvent;
-class QWidget;
 
 namespace appleseed {
 namespace studio {
@@ -90,16 +91,20 @@ class RenderWidget
         const renderer::Frame&      frame);
 
   private:
+    QMutex      m_mutex;
     QImage      m_image;
-    QMutex      m_image_mutex;
     QPainter    m_painter;
+
+    std::auto_ptr<foundation::Tile> m_float_tile_storage;
+    std::auto_ptr<foundation::Tile> m_uint8_tile_storage;
+
+    void allocate_working_storage(
+        const foundation::CanvasProperties& frame_props);
 
     void blit_tile_no_lock(
         const renderer::Frame&      frame,
         const size_t                tile_x,
-        const size_t                tile_y,
-        foundation::uint8*          float_tile_storage = 0,
-        foundation::uint8*          uint8_tile_storage = 0);
+        const size_t                tile_y);
 
     virtual void paintEvent(QPaintEvent* event);
 };

@@ -159,6 +159,10 @@ namespace
 
                     // Transform the result to the linear RGB color space.
                     shading_result.transform_to_linear_rgb(m_lighting_conditions);
+
+                    // Apply alpha.
+                    if (shading_point_ptr->hit())
+                        shading_result.m_color *= shading_result.m_alpha[0];
                 }
                 else
                 {

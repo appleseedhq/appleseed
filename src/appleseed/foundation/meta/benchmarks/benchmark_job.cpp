@@ -55,14 +55,14 @@ BENCHMARK_SUITE(Foundation_Utility_Job)
         JobManager  m_job_manager;
 
         Fixture()
-          : m_job_manager(m_logger, m_job_queue, ThreadCount)
+          : m_job_manager(m_logger, m_job_queue, ThreadCount, JobManager::KeepRunningOnEmptyQueue)
         {
             m_job_manager.start();
         }
 
         void payload()
         {
-            const size_t JobCount = 10;
+            const size_t JobCount = 256;
             EmptyJob jobs[JobCount];
 
             for (size_t i = 0; i < JobCount; ++i)
