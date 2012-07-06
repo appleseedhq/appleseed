@@ -282,8 +282,9 @@ void RenderingManager::slot_rendering_begin()
             .dictionaries().remove("override_shading");
     }
 
-    const int UpdateRate = 3;   // hertz
-    m_render_widget_update_timer.start(1000 / UpdateRate, this);
+    const int IdleUpdateRate = 15;  // hertz
+
+    m_render_widget_update_timer.start(1000 / IdleUpdateRate, this);
 }
 
 void RenderingManager::slot_rendering_end()
