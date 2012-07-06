@@ -124,11 +124,13 @@ void SampleGeneratorJob::execute(const size_t thread_index)
             m_abort_switch);
     }
 
-    if (m_pass == 0 || m_job_index == 0)
+    if (m_job_index == 0)
+    {
         m_framebuffer.render_to_frame(m_frame);
 
-    if (m_tile_callback && m_job_index == 0)
-        m_tile_callback->post_render(m_frame);
+        if (m_tile_callback)
+            m_tile_callback->post_render(m_frame);
+    }
 
     if (!m_abort_switch.is_aborted())
     {

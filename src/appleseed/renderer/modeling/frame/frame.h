@@ -30,11 +30,20 @@
 #define APPLESEED_RENDERER_MODELING_FRAME_FRAME_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
 #include "renderer/modeling/entity/entity.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
+#include "foundation/math/vector.h"
+#include "foundation/platform/compiler.h"
+#include "foundation/utility/autoreleaseptr.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+// Standard headers.
+#include <cassert>
+#include <cstddef>
 
 // Forward declarations.
 namespace foundation    { class Image; }
@@ -42,6 +51,7 @@ namespace foundation    { class ImageAttributes; }
 namespace foundation    { class LightingConditions; }
 namespace foundation    { class Tile; }
 namespace renderer      { class ImageStack; }
+namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
@@ -52,12 +62,12 @@ namespace renderer
 // Pixels in a frame are always expressed in the linear RGB color space.
 //
 
-class RENDERERDLL Frame
+class DLLSYMBOL Frame
   : public Entity
 {
   public:
     // Delete this instance.
-    virtual void release();
+    virtual void release() override;
 
     // Access the main underlying image.
     foundation::Image& image() const;
@@ -121,10 +131,6 @@ class RENDERERDLL Frame
 
     void extract_parameters();
 
-    // Transform a linear RGB color to the color space of the frame.
-    foundation::Color4f linear_rgb_to_frame(
-        const foundation::Color4f&          linear_rgb) const;
-
     // Write an image to disk after transformation to the frame's color space.
     // Return true if successful, false otherwise.
     bool write_image(
@@ -138,7 +144,7 @@ class RENDERERDLL Frame
 // FrameFactory class implementation.
 //
 
-class RENDERERDLL FrameFactory
+class DLLSYMBOL FrameFactory
 {
   public:
     // Create a new frame.
