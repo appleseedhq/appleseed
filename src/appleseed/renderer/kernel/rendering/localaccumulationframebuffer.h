@@ -34,7 +34,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
-#include "foundation/image/tile.h"
+#include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
 
 // Standard headers.
@@ -42,6 +42,7 @@
 #include <vector>
 
 // Forward declarations.
+namespace foundation    { class Tile; }
 namespace renderer      { class Frame; }
 namespace renderer      { class Sample; }
 
@@ -61,12 +62,12 @@ class LocalAccumulationFramebuffer
     ~LocalAccumulationFramebuffer();
 
     // Reset the framebuffer to its initial state. Thread-safe.
-    virtual void clear();
+    virtual void clear() override;
 
     // Store @samples into the framebuffer. Thread-safe.
     virtual void store_samples(
         const size_t    sample_count,
-        const Sample    samples[]);
+        const Sample    samples[]) override;
 
   private:
     struct AccumulationPixel
@@ -79,9 +80,10 @@ class LocalAccumulationFramebuffer
     std::vector<size_t>                 m_set_pixels;
     size_t                              m_active_level;
 
-    virtual void develop_to_frame(Frame& frame) const;
+    virtual void develop_to_frame(Frame& frame) const override;
 
     void develop_to_tile(
+        const foundation::Tile&         level,
         foundation::Tile&               tile,
         const size_t                    origin_x,
         const size_t                    origin_y,
