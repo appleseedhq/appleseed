@@ -30,12 +30,15 @@
 #include "frame.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
 #include "renderer/kernel/aov/imagestack.h"
+#include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
 #include "foundation/core/exceptions/exceptionioerror.h"
 #include "foundation/core/exceptions/exceptionunsupportedfileformat.h"
+#include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
 #include "foundation/image/exrimagefilewriter.h"
 #include "foundation/image/genericimagefilewriter.h"
@@ -44,11 +47,23 @@
 #include "foundation/image/pixel.h"
 #include "foundation/image/tile.h"
 #include "foundation/math/scalar.h"
+#ifdef APPLESEED_FOUNDATION_USE_SSE
+#include "foundation/platform/sse.h"
+#endif
+#include "foundation/platform/timer.h"
+#include "foundation/utility/iostreamop.h"
+#include "foundation/utility/otherwise.h"
 #include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
+#include "foundation/utility/uid.h"
 
 // boost headers.
 #include "boost/filesystem/path.hpp"
+
+// Standard headers.
+#include <cmath>
+#include <memory>
+#include <string>
 
 using namespace boost;
 using namespace foundation;
@@ -69,8 +84,7 @@ struct Frame::Impl
     size_t                  m_tile_height;
     PixelFormat             m_pixel_format;
     ColorSpace              m_color_space;
-    bool                    m_clamping;
-    bool                    m_gamma_correct;
+    bool                    m_clamp;
     float                   m_target_gamma;
     float                   m_rcp_target_gamma;
     LightingConditions      m_lighting_conditions;
@@ -145,29 +159,276 @@ const LightingConditions& Frame::get_lighting_conditions() const
     return impl->m_lighting_conditions;
 }
 
-void Frame::transform_to_output_color_space(Tile& tile) const
+namespace
 {
-    assert(tile.get_channel_count() == 4);
-
-    const size_t tile_width = tile.get_width();
-    const size_t tile_height = tile.get_height();
-
-    for (size_t y = 0; y < tile_height; ++y)
+    template <typename T, size_t N>
+    Color<T, N> clamp_to_zero(Color<T, N> c)
     {
-        for (size_t x = 0; x < tile_width; ++x)
+        for (size_t i = 0; i < N; ++i)
         {
-            Color4f linear_rgb;
-            tile.get_pixel(x, y, linear_rgb);
-            tile.set_pixel(x, y, linear_rgb_to_frame(linear_rgb));
+            if (c[i] < 0.0)
+                c[i] = 0.0;
+        }
+
+        return c;
+    }
+
+    template <
+        int  ColorSpace,
+        bool Clamp,
+        bool GammaCorrect
+    >
+    void transform_generic_tile(Tile& tile, const float rcp_target_gamma)
+    {
+        assert(tile.get_channel_count() == 4);
+
+        const size_t pixel_count = tile.get_pixel_count();
+
+        for (size_t i = 0; i < pixel_count; ++i)
+        {
+            // Load the pixel color.
+            Color4f color;
+            tile.get_pixel(i, color);
+
+            // Apply color space conversion.
+            switch (ColorSpace)
+            {
+              case ColorSpaceSRGB:
+                color.rgb() = fast_linear_rgb_to_srgb(color.rgb());
+                break;
+
+              case ColorSpaceCIEXYZ:
+                color.rgb() = linear_rgb_to_ciexyz(color.rgb());
+                break;
+            }
+
+            // Apply clamping.
+            // todo: mark clamped pixels in the diagnostic map.
+            color = Clamp ? saturate(color) : clamp_to_zero(color);
+
+            // Apply gamma correction.
+            if (GammaCorrect)
+            {
+                const float old_alpha = color[3];
+                fast_pow_refined(&color[0], rcp_target_gamma);
+                color[3] = old_alpha;
+            }
+
+            // Store the pixel color.
+            tile.set_pixel(i, color);
         }
     }
+
+#ifdef APPLESEED_FOUNDATION_USE_SSE
+
+    template <
+        int  ColorSpace,
+        bool Clamp,
+        bool GammaCorrect
+    >
+    void transform_float_tile(Tile& tile, const float rcp_target_gamma)
+    {
+        assert(tile.get_channel_count() == 4);
+
+        float* pixel_ptr = reinterpret_cast<float*>(tile.pixel(0));
+        float* pixel_end = pixel_ptr + tile.get_pixel_count() * 4;
+
+        for (; pixel_ptr < pixel_end; pixel_ptr += 4)
+        {
+            // Load the pixel color.
+            sse4f color = loadps(pixel_ptr);
+            sse4f original_color = color;
+
+            // Apply color space conversion.
+            if (ColorSpace == ColorSpaceSRGB)
+            {
+                sse4f x = _mm_cvtepi32_ps(_mm_castps_si128(color));
+
+                const sse4f K = set1ps(127.0f);
+                x = mulps(x, set1ps(0.1192092896e-6f));     // x *= pow(2.0f, -23)
+                x = subps(x, K);
+
+                // One Newton-Raphson refinement step.
+                sse4f z = subps(x, floorps(x));
+                z = subps(z, mulps(z, z));
+                z = mulps(z, set1ps(0.346607f));
+                x = addps(x, z);
+
+                x = mulps(x, set1ps(1.0f / 2.4f));
+
+                sse4f y = subps(x, floorps(x));
+                y = subps(y, mulps(y, y));
+                y = mulps(y, set1ps(0.33971f));
+                y = subps(addps(x, K), y);
+                y = mulps(y, set1ps(8388608.0f));           // y *= pow(2.0f, 23)
+
+                y = _mm_castsi128_ps(_mm_cvtps_epi32(y));
+
+                // Compute both outcomes of the branch.
+                const sse4f a = mulps(set1ps(12.92f), color);
+                const sse4f b = subps(mulps(set1ps(1.055f), y), set1ps(0.055f));
+
+                // Interleave them based on the actual comparison.
+                const sse4f mask = cmpleps(color, set1ps(0.0031308f));
+                color = addps(andps(mask, a), andnotps(mask, b));
+            }
+
+            // Apply clamping.
+            // todo: mark clamped pixels in the diagnostic map.
+            if (Clamp)
+                color = minps(maxps(color, set1ps(0.0f)), set1ps(1.0f));
+            else color = maxps(color, set1ps(0.0f));
+
+            // Apply gamma correction.
+            if (GammaCorrect)
+            {
+                sse4f x = _mm_cvtepi32_ps(_mm_castps_si128(color));
+
+                const sse4f K = set1ps(127.0f);
+                x = mulps(x, set1ps(0.1192092896e-6f));     // x *= pow(2.0f, -23)
+                x = subps(x, K);
+
+                // One Newton-Raphson refinement step.
+                sse4f z = subps(x, floorps(x));
+                z = subps(z, mulps(z, z));
+                z = mulps(z, set1ps(0.346607f));
+                x = addps(x, z);
+
+                x = mulps(x, set1ps(rcp_target_gamma));
+
+                sse4f y = subps(x, floorps(x));
+                y = subps(y, mulps(y, y));
+                y = mulps(y, set1ps(0.33971f));
+                y = subps(addps(x, K), y);
+                y = mulps(y, set1ps(8388608.0f));           // y *= pow(2.0f, 23)
+
+                color = _mm_castsi128_ps(_mm_cvtps_epi32(y));
+            }
+
+            // Store the pixel color (leave the alpha channel unmodified).
+            storeps(pixel_ptr, shuffleps(color, _mm_unpackhi_ps(color, original_color), _MM_SHUFFLE(3, 0, 1, 0)));
+        }
+    }
+
+#else
+
+    template <
+        int  ColorSpace,
+        bool Clamp,
+        bool GammaCorrect
+    >
+    void transform_float_tile(Tile& tile, const float rcp_target_gamma)
+    {
+        assert(tile.get_channel_count() == 4);
+
+        Color4f* pixel_ptr = reinterpret_cast<Color4f*>(tile.pixel(0));
+        Color4f* pixel_end = pixel_ptr + tile.get_pixel_count();
+
+        for (; pixel_ptr < pixel_end; ++pixel_ptr)
+        {
+            // Load the pixel color.
+            Color4f color(*pixel_ptr);
+
+            // Apply color space conversion.
+            if (ColorSpace == ColorSpaceSRGB)
+                color.rgb() = fast_linear_rgb_to_srgb(color.rgb());
+
+            // Apply clamping.
+            // todo: mark clamped pixels in the diagnostic map.
+            color = Clamp ? saturate(color) : clamp_to_zero(color);
+
+            // Apply gamma correction.
+            if (GammaCorrect)
+            {
+                const float old_alpha = color[3];
+                fast_pow_refined(&color[0], rcp_target_gamma);
+                color[3] = old_alpha;
+            }
+
+            // Store the pixel color.
+            *pixel_ptr = color;
+        }
+    }
+
+#endif
+}
+
+void Frame::transform_to_output_color_space(Tile& tile) const
+{
+    #define TRANSFORM_GENERIC_TILE(ColorSpace)                                                      \
+        if (impl->m_clamp)                                                                          \
+        {                                                                                           \
+            if (impl->m_target_gamma != 1.0f)                                                       \
+                transform_generic_tile<ColorSpace, true, true>(tile, impl->m_rcp_target_gamma);     \
+            else transform_generic_tile<ColorSpace, true, false>(tile, impl->m_rcp_target_gamma);   \
+        }                                                                                           \
+        else                                                                                        \
+        {                                                                                           \
+            if (impl->m_target_gamma != 1.0f)                                                       \
+                transform_generic_tile<ColorSpace, false, true>(tile, impl->m_rcp_target_gamma);    \
+            else transform_generic_tile<ColorSpace, false, false>(tile, impl->m_rcp_target_gamma);  \
+        }
+
+    #define TRANSFORM_FLOAT_TILE(ColorSpace)                                                        \
+        if (impl->m_clamp)                                                                          \
+        {                                                                                           \
+            if (impl->m_target_gamma != 1.0f)                                                       \
+                transform_float_tile<ColorSpace, true, true>(tile, impl->m_rcp_target_gamma);       \
+            else transform_float_tile<ColorSpace, true, false>(tile, impl->m_rcp_target_gamma);     \
+        }                                                                                           \
+        else                                                                                        \
+        {                                                                                           \
+            if (impl->m_target_gamma != 1.0f)                                                       \
+                transform_float_tile<ColorSpace, false, true>(tile, impl->m_rcp_target_gamma);      \
+            else transform_float_tile<ColorSpace, false, false>(tile, impl->m_rcp_target_gamma);    \
+        }
+
+    if (impl->m_pixel_format == PixelFormatFloat)
+    {
+        switch (impl->m_color_space)
+        {
+          case ColorSpaceLinearRGB:
+            TRANSFORM_FLOAT_TILE(ColorSpaceLinearRGB);
+            break;
+
+          case ColorSpaceSRGB:
+            TRANSFORM_FLOAT_TILE(ColorSpaceSRGB);
+            break;
+
+          case ColorSpaceCIEXYZ:
+            TRANSFORM_GENERIC_TILE(ColorSpaceCIEXYZ);
+            break;
+
+          assert_otherwise;
+        }
+    }
+    else
+    {
+        switch (impl->m_color_space)
+        {
+          case ColorSpaceLinearRGB:
+            TRANSFORM_GENERIC_TILE(ColorSpaceLinearRGB);
+            break;
+
+          case ColorSpaceSRGB:
+            TRANSFORM_GENERIC_TILE(ColorSpaceSRGB);
+            break;
+
+          case ColorSpaceCIEXYZ:
+            TRANSFORM_GENERIC_TILE(ColorSpaceCIEXYZ);
+            break;
+
+          assert_otherwise;
+        }
+    }
+
+    #undef TRANSFORM_FLOAT_TILE
+    #undef TRANSFORM_GENERIC_TILE
 }
 
 void Frame::transform_to_output_color_space(Image& image) const
 {
     const CanvasProperties& image_props = image.properties();
-
-    assert(image_props.m_channel_count == 4);
 
     for (size_t ty = 0; ty < image_props.m_tile_count_y; ++ty)
     {
@@ -322,74 +583,11 @@ void Frame::extract_parameters()
     }
 
     // Retrieve clamping parameter.
-    impl->m_clamping = m_params.get_optional<bool>("clamping", false);
+    impl->m_clamp = m_params.get_optional<bool>("clamping", false);
 
     // Retrieve gamma correction parameter.
-    impl->m_gamma_correct = m_params.strings().exist("gamma_correction");
-    impl->m_target_gamma =
-        impl->m_gamma_correct
-            ? m_params.get_required<float>("gamma_correction", 2.2f)
-            : 1.0f;
+    impl->m_target_gamma = m_params.get_optional<float>("gamma_correction", 1.0f);
     impl->m_rcp_target_gamma = 1.0f / impl->m_target_gamma;
-}
-
-namespace
-{
-    template <typename T, size_t N>
-    Color<T, N> clamp_to_zero(Color<T, N> c)
-    {
-        for (size_t i = 0; i < N; ++i)
-        {
-            if (c[i] < T(0.0))
-                c[i] = T(0.0);
-        }
-
-        return c;
-    }
-}
-
-Color4f Frame::linear_rgb_to_frame(const Color4f& linear_rgb) const
-{
-    Color4f result;
-
-    // Transform the input color to the color space of the frame.
-    switch (impl->m_color_space)
-    {
-      case ColorSpaceLinearRGB:
-        result = linear_rgb;
-        break;
-
-      case ColorSpaceSRGB:
-        result.rgb() = fast_linear_rgb_to_srgb(linear_rgb.rgb());
-        result.a = linear_rgb.a;
-        break;
-
-      case ColorSpaceCIEXYZ:
-        result.rgb() = linear_rgb_to_ciexyz(linear_rgb.rgb());
-        result.a = linear_rgb.a;
-        break;
-
-      default:
-        assert(!"Invalid target color space.");
-        result = linear_rgb;
-        break;
-    }
-
-    // Clamp the color.
-    // todo: mark clamped pixels in the diagnostic map.
-    result = impl->m_clamping ? saturate(result) : clamp_to_zero(result);
-
-    // Gamma-correct color.
-    if (impl->m_gamma_correct)
-    {
-        // todo: investigate the usage of fast_pow() for gamma correction.
-        const float rcp_target_gamma = impl->m_rcp_target_gamma;
-        result[0] = pow(result[0], rcp_target_gamma);
-        result[1] = pow(result[1], rcp_target_gamma);
-        result[2] = pow(result[2], rcp_target_gamma);
-    }
-
-    return result;
 }
 
 bool Frame::write_image(
