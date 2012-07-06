@@ -55,8 +55,13 @@ set (sources
     foundation/bind_foundation.cpp
 
     renderer/bind_renderer.cpp
+    renderer/bind_camera.cpp
     renderer/bind_entity.cpp
     renderer/bind_project.cpp
+    renderer/bind_utility.cpp
+
+    renderer/py_utility.hpp
+    renderer/py_utility.cpp
 )
 list (APPEND appleseed.py_sources
     ${sources}
