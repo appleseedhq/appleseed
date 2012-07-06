@@ -165,6 +165,7 @@ namespace
         virtual void render()
         {
             start_rendering();
+
             m_job_queue.wait_until_completion();
         }
 
@@ -216,22 +217,24 @@ namespace
 
         virtual void stop_rendering()
         {
+            // First, delete scheduled jobs to prevent worker threads from picking them up.
+            m_job_queue.clear_scheduled_jobs();
+
             // Tell rendering jobs and the statistics printing thread to stop.
             m_abort_switch.abort();
 
-            // Stop job execution.
-            m_job_manager->stop();
-
-            // Delete all non-executed jobs.
-            m_job_queue.clear_scheduled_jobs();
-
-            // Wait until the statistics printing thread is terminated.
+            // Wait until the statistics printing thread has stopped.
             m_statistics_thread->join();
+
+            // Wait until rendering jobs have effectively stopped.
+            m_job_queue.wait_until_completion();
         }
 
         virtual void terminate_rendering()
         {
             stop_rendering();
+
+            m_job_manager->stop();
 
             m_statistics_func->write_rms_deviation_file();
         }
