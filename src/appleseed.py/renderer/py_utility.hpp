@@ -1,10 +1,11 @@
+
 //
 // This source file is part of appleseed.
 // Visit http://appleseedhq.net/ for additional information and resources.
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2012 Esteban Tovagliari.
+// Copyright (c) 2012 Esteban Tovagliari
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -25,26 +26,22 @@
 // THE SOFTWARE.
 //
 
-// Has to be first, to avoid redifinition warnings.
-#include <Python.h>
+#ifndef APPLESEED_PY_RENDERER_UTILITY_H
+#define APPLESEED_PY_RENDERER_UTILITY_H
+
+// Has to be first.
+#include "Python.h"
 
 #include <boost/python.hpp>
-namespace bpy = boost::python;
 
-// Prototypes
-void bind_entity();
-void bind_camera();
-void bind_project();
-void bind_utility();
+#include "renderer/utility/paramarray.h"
 
-void bind_renderer()
+namespace renderer
 {
-	bpy::object renderer_module( bpy::handle<>( bpy::borrowed( PyImport_AddModule( "_appleseed.renderer"))));
-	bpy::scope().attr( "renderer") = renderer_module;
-	bpy::scope renderer_scope = renderer_module;
 
-    bind_entity();
-    bind_camera();
-	bind_project();
-	bind_utility();
-}
+ParamArray bpy_dict_to_param_array( const boost::python::dict& d);
+boost::python::dict param_array_to_bpy_dict( const ParamArray& array);
+
+}       // namespace renderer
+
+#endif  // !APPLESEED_PY_RENDERER_UTILITY_H

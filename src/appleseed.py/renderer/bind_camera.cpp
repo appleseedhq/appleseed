@@ -26,25 +26,45 @@
 //
 
 // Has to be first, to avoid redifinition warnings.
-#include <Python.h>
+#include "foundation/bind_auto_release_ptr.h"
 
-#include <boost/python.hpp>
+#include "renderer/api/camera.h"
+
+#include "renderer/py_utility.hpp"
+
 namespace bpy = boost::python;
+using namespace foundation;
+using namespace renderer;
 
-// Prototypes
-void bind_entity();
-void bind_camera();
-void bind_project();
-void bind_utility();
-
-void bind_renderer()
+namespace
 {
-	bpy::object renderer_module( bpy::handle<>( bpy::borrowed( PyImport_AddModule( "_appleseed.renderer"))));
-	bpy::scope().attr( "renderer") = renderer_module;
-	bpy::scope renderer_scope = renderer_module;
 
-    bind_entity();
-    bind_camera();
-	bind_project();
-	bind_utility();
+auto_release_ptr<Camera> create_camera( const std::string& camera_type, const std::string& name, const bpy::dict& params)
+{
+    CameraFactoryRegistrar factories;
+    const ICameraFactory *f = factories.lookup( camera_type.c_str());
+
+    if( !f)
+    {
+        std::string error = "Camera type ";
+        error += camera_type;
+        error += " not found";
+        PyErr_SetString( PyExc_RuntimeError, error.c_str() );
+        bpy::throw_error_already_set();
+    }
+
+    return f->create( name.c_str(), bpy_dict_to_param_array( params));
+}
+
+} // unnamed
+
+void bind_camera()
+{
+    bpy::class_<Camera, auto_release_ptr<Camera>, bpy::bases<Entity>, boost::noncopyable>( "Camera", "doc string", bpy::no_init)
+        .def( "create", create_camera).staticmethod( "create")
+
+        .def( "get_focal_length", &Camera::get_focal_length)
+        ;
+
+	bpy::implicitly_convertible<auto_release_ptr<Camera> , auto_release_ptr<const Camera> >();
 }

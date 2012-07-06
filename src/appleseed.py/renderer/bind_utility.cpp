@@ -25,26 +25,6 @@
 // THE SOFTWARE.
 //
 
-// Has to be first, to avoid redifinition warnings.
-#include <Python.h>
-
-#include <boost/python.hpp>
-namespace bpy = boost::python;
-
-// Prototypes
-void bind_entity();
-void bind_camera();
-void bind_project();
-void bind_utility();
-
-void bind_renderer()
+void bind_utility()
 {
-	bpy::object renderer_module( bpy::handle<>( bpy::borrowed( PyImport_AddModule( "_appleseed.renderer"))));
-	bpy::scope().attr( "renderer") = renderer_module;
-	bpy::scope renderer_scope = renderer_module;
-
-    bind_entity();
-    bind_camera();
-	bind_project();
-	bind_utility();
 }
