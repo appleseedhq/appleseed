@@ -191,28 +191,14 @@ AABB2d ChartBase::compute_points_bbox() const
 
 Vector2d ChartBase::convert_to_frame(const Vector2d& point) const
 {
+    const Vector2d window_size = m_window_size - 2.0 * m_margin;
+    const Vector2d window_origin = m_window_origin + m_margin;
+
     Vector2d u = (point - m_points_bbox.min) * m_rcp_points_bbox_extent;
 
     u.y = 1.0 - u.y;
 
-    return u * m_window_size + m_window_origin;
-}
-
-Vector2d ChartBase::convert_to_inner_frame(const Vector2d& point) const
-{
-    Vector2d u = (point - m_points_bbox.min) * m_rcp_points_bbox_extent;
-
-    u.y = 1.0 - u.y;
-
-    const Vector2d window_size(
-        m_window_size.x - 2.0 * m_margin.x,
-        m_window_size.y - 2.0 * m_margin.y);
-
-    const Vector2d window_origin(
-        m_window_origin.x + m_margin.x,
-        m_window_origin.y + m_margin.y);
-
-    return u * window_size + window_origin;
+    return window_origin + u * window_size;
 }
 
 Vector2d ChartBase::convert_to_data(const Vector2d& point) const
@@ -243,7 +229,7 @@ void ChartBase::draw_horizontal_grid(QPainter& painter) const
         const double k = static_cast<double>(i) / (Subdivisions - 1);
         const double y = mix(m_points_bbox.min.y, m_points_bbox.max.y, k);
 
-        const Vector2d p = convert_to_inner_frame(Vector2d(0.0, y));
+        const Vector2d p = convert_to_frame(Vector2d(0.0, y));
 
         painter.drawLine(
             m_window_origin.x, p.y,
@@ -257,7 +243,7 @@ void ChartBase::draw_vertical_grid(QPainter& painter) const
     {
         for (size_t i = 0; i < m_points.size(); ++i)
         {
-            const Vector2d p = convert_to_inner_frame(m_points[i]);
+            const Vector2d p = convert_to_frame(m_points[i]);
 
             painter.drawLine(
                 p.x, m_window_origin.y,
@@ -292,8 +278,8 @@ void LineChart::draw_chart(QPainter& painter) const
 
         for (size_t i = 0; i < m_points.size() - 1; ++i)
         {
-            const Vector2d from = convert_to_inner_frame(m_points[i]);
-            const Vector2d to = convert_to_inner_frame(m_points[i + 1]);
+            const Vector2d from = convert_to_frame(m_points[i]);
+            const Vector2d to = convert_to_frame(m_points[i + 1]);
             painter.drawLine(from.x, from.y, to.x, to.y);
         }
     }
@@ -310,7 +296,7 @@ bool LineChart::on_chart(const QPoint& mouse_position, size_t& point_index) cons
 
     for (size_t i = 0; i < m_points.size(); ++i)
     {
-        const Vector2d p = convert_to_inner_frame(m_points[i]);
+        const Vector2d p = convert_to_frame(m_points[i]);
         const double d = square_distance(mp, p);
 
         if (closest_square_distance > d)
@@ -344,7 +330,7 @@ void LineChart::draw_point_highlight(QPainter& painter, const QPoint& mouse_posi
         const QColor DiskColor(140, 200, 255); 
         const qreal DiskRadius = 3.0;
 
-        const Vector2d p = convert_to_inner_frame(m_points[point_index]);
+        const Vector2d p = convert_to_frame(m_points[point_index]);
 
         painter.setPen(DiskColor);
         painter.setBrush(QBrush(DiskColor));

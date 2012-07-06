@@ -128,9 +128,6 @@ class ChartBase
     foundation::Vector2d convert_to_frame(
         const foundation::Vector2d&     point) const;
 
-    foundation::Vector2d convert_to_inner_frame(
-        const foundation::Vector2d&     point) const;
-
     foundation::Vector2d convert_to_data(
         const foundation::Vector2d&     point) const;
 
