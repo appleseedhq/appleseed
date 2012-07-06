@@ -501,22 +501,26 @@ inline Color3f fast_linear_rgb_to_srgb(const Color3f& linear_rgb)
     };
 
     sse4f c = loadps(transfer);
-
-    // Compute y = pow(c, 1.0f / 2.4f), see foundation/math/fastmath.h for details.
-    const sse4f K = set1ps(127.0f);
     sse4f x = _mm_cvtepi32_ps(_mm_castps_si128(c));
-    x = mulps(x, set1ps(0.1192092896e-6f));
+
+    const sse4f K = set1ps(127.0f);
+    x = mulps(x, set1ps(0.1192092896e-6f));     // x *= pow(2.0f, -23)
     x = subps(x, K);
+
+    // One Newton-Raphson refinement step.
     sse4f z = subps(x, floorps(x));
     z = subps(z, mulps(z, z));
     z = mulps(z, set1ps(0.346607f));
     x = addps(x, z);
+
     x = mulps(x, set1ps(1.0f / 2.4f));
+
     sse4f y = subps(x, floorps(x));
     y = subps(y, mulps(y, y));
     y = mulps(y, set1ps(0.33971f));
     y = subps(addps(x, K), y);
-    y = mulps(y, set1ps(8388608.0f));
+    y = mulps(y, set1ps(8388608.0f));           // y *= pow(2.0f, 23)
+
     y = _mm_castsi128_ps(_mm_cvtps_epi32(y));
 
     // Compute both outcomes of the branch.
