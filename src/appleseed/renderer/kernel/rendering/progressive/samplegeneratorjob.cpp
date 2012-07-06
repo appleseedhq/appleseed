@@ -50,11 +50,10 @@ namespace renderer
 
 namespace
 {
-    const size_t MinSampleCount     = 1024 * 4;     // minimum number of samples in one pass
+    const size_t MinSamplePassCount = 1;            // number of passes that will stick to MinSampleCount
+    const size_t MinSampleCount     = 1024 * 2;     // minimum number of samples in one pass
     const size_t MaxSampleCount     = 1024 * 256;   // maximum number of samples in one pass
-    const size_t MinSamplePassCount = 1;            // number of passes that will stick to the minimum number of samples
     const size_t SampleIncrement    = 1024 * 4;     // number of samples added at each pass
-    const bool RoundRobinRender     = false;        // enable/disable Round Robin rendering
 
     size_t compute_sample_count(const size_t pass)
     {
@@ -109,6 +108,8 @@ void SampleGeneratorJob::execute(const size_t thread_index)
 
     if (m_pass == 0)
     {
+        // The first pass is uninterruptible in order to always get something
+        // on screen during navigation.
         AbortSwitch no_abort;
         m_sample_generator->generate_samples(
             sample_count,
@@ -123,10 +124,10 @@ void SampleGeneratorJob::execute(const size_t thread_index)
             m_abort_switch);
     }
 
-    if (!RoundRobinRender || m_pass % m_job_count == m_job_index)
+    if (m_pass == 0 || m_job_index == 0)
         m_framebuffer.render_to_frame(m_frame);
 
-    if (m_tile_callback)
+    if (m_tile_callback && m_job_index == 0)
         m_tile_callback->post_render(m_frame);
 
     if (!m_abort_switch.is_aborted())
