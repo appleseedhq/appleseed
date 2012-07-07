@@ -26,29 +26,51 @@
 //
 
 // Has to be first, to avoid redifinition warnings.
-#include <Python.h>
+#include "Python.h"
+
+#include <memory>
 
 #include <boost/python.hpp>
 
-// Prototypes
-void bind_camera();
-void bind_entity();
-void bind_frame();
-void bind_master_renderer();
-void bind_project();
-void bind_renderer_controller();
-void bind_scene();
-void bind_utility();
+#include "renderer/kernel/rendering/masterrenderer.h"
+#include "renderer/modeling/project/project.h"
 
-// appleseed python module
-BOOST_PYTHON_MODULE( _appleseed)
+#include "py_utility.hpp"
+
+namespace bpy = boost::python;
+using namespace foundation;
+using namespace renderer;
+
+namespace
 {
-	bind_utility();
-    bind_entity();
-    bind_camera();
-    bind_frame();
-    bind_scene();
-	bind_project();
-	bind_renderer_controller();
-    bind_master_renderer();
+
+std::auto_ptr<MasterRenderer> create_master_renderer( Project* project,
+                                                        const bpy::dict& params,
+                                                        IRendererController* render_controller)
+{
+    return std::auto_ptr<MasterRenderer>( new MasterRenderer( *project, bpy_dict_to_param_array( params), render_controller));
+}
+
+bpy::dict master_renderer_get_parameters( const MasterRenderer *m)
+{
+    return param_array_to_bpy_dict( m->get_parameters());
+}
+
+void master_renderer_set_parameters( MasterRenderer *m, const bpy::dict& params)
+{
+    m->get_parameters() = bpy_dict_to_param_array( params);
+}
+
+} // unnamed
+
+void bind_master_renderer()
+{
+    bpy::class_<MasterRenderer, std::auto_ptr<MasterRenderer>, boost::noncopyable>( "MasterRenderer", bpy::no_init)
+        .def( "__init__", bpy::make_constructor( create_master_renderer))
+
+        .def( "get_parameters", master_renderer_get_parameters)
+        .def( "set_parameters", master_renderer_set_parameters)
+
+        .def( "render", &MasterRenderer::render)
+        ;
 }

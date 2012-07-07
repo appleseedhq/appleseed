@@ -55,7 +55,9 @@ set (sources
     bind_camera.cpp
     bind_entity.cpp
     bind_frame.cpp
+    bind_master_renderer.cpp
     bind_project.cpp
+    bind_renderer_controller.cpp
     bind_scene.cpp
     bind_utility.cpp
 
