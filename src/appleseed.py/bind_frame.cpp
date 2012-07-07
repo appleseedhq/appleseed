@@ -25,30 +25,48 @@
 // THE SOFTWARE.
 //
 
-#include "foundation/bind_auto_release_ptr.h"
+// Has to be first, to avoid redifinition warnings.
+#include "bind_auto_release_ptr.h"
 
-#include <string>
+#include "renderer/api/frame.h"
 
-#include "renderer/modeling/entity/entity.h"
+#include "py_utility.hpp"
 
 namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 
-void bind_entity()
+namespace
 {
-    bpy::class_<Entity, auto_release_ptr<Entity>, boost::noncopyable>( "Entity", "doc string", bpy::no_init)
-        .def( "get_class_uid", &Entity::get_class_uid)
 
-        .def( "get_name", &Entity::get_name)
-        .def( "set_name", &Entity::set_name)
+auto_release_ptr<Frame> create_frame( const std::string& name, const bpy::dict& params)
+{
+    return FrameFactory::create( name.c_str(), bpy_dict_to_param_array( params));
+}
 
-        .def( "get_render_layer_name", &Entity::get_render_layer_name)
-        .def( "set_render_layer_name", &Entity::set_render_layer_name)
+bpy::object archive( const Frame *f, const char *directory)
+{
+    char *output = 0;
 
-        .def( "set_render_layer_index", &Entity::set_render_layer_index)
-        .def( "get_render_layer_index", &Entity::get_render_layer_index)
+    if( f->archive( directory, &output))
+    {
+        bpy::str path( output);
+        foundation::free_string( output);
+        return path;
+    }
+
+    // return None
+    return bpy::object();
+}
+
+} // unnamed
+
+void bind_frame()
+{
+    bpy::class_<Frame, auto_release_ptr<Frame>, bpy::bases<Entity>, boost::noncopyable>( "Frame", bpy::no_init)
+        .def( "__init__", bpy::make_constructor( create_frame))
+
+        .def( "write", &Frame::write)
+        .def( "archive", archive)
         ;
-
-	bpy::implicitly_convertible<auto_release_ptr<Entity> , auto_release_ptr<const Entity> >();
 }

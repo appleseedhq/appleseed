@@ -25,46 +25,33 @@
 // THE SOFTWARE.
 //
 
-// Has to be first, to avoid redifinition warnings.
-#include "foundation/bind_auto_release_ptr.h"
+#include "bind_auto_release_ptr.h"
 
-#include "renderer/api/camera.h"
+#include <string>
 
-#include "renderer/py_utility.hpp"
+#include "renderer/modeling/entity/entity.h"
 
 namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 
-namespace
+void bind_entity()
 {
+    bpy::class_<Entity, auto_release_ptr<Entity>, boost::noncopyable>( "Entity", bpy::no_init)
+        .def( "get_uid", &Identifiable::get_uid)
 
-auto_release_ptr<Camera> create_camera( const std::string& camera_type, const std::string& name, const bpy::dict& params)
-{
-    CameraFactoryRegistrar factories;
-    const ICameraFactory *f = factories.lookup( camera_type.c_str());
+        .def( "get_version_id", &Versionable::get_version_id)
+        .def( "bump_version_id", &Versionable::bump_version_id)
 
-    if( !f)
-    {
-        std::string error = "Camera type ";
-        error += camera_type;
-        error += " not found";
-        PyErr_SetString( PyExc_RuntimeError, error.c_str() );
-        bpy::throw_error_already_set();
-    }
+        .def( "get_class_uid", &Entity::get_class_uid)
 
-    return f->create( name.c_str(), bpy_dict_to_param_array( params));
-}
+        .def( "get_name", &Entity::get_name)
+        .def( "set_name", &Entity::set_name)
 
-} // unnamed
+        .def( "get_render_layer_name", &Entity::get_render_layer_name)
+        .def( "set_render_layer_name", &Entity::set_render_layer_name)
 
-void bind_camera()
-{
-    bpy::class_<Camera, auto_release_ptr<Camera>, bpy::bases<Entity>, boost::noncopyable>( "Camera", "doc string", bpy::no_init)
-        .def( "create", create_camera).staticmethod( "create")
-
-        .def( "get_focal_length", &Camera::get_focal_length)
+        .def( "set_render_layer_index", &Entity::set_render_layer_index)
+        .def( "get_render_layer_index", &Entity::get_render_layer_index)
         ;
-
-	bpy::implicitly_convertible<auto_release_ptr<Camera> , auto_release_ptr<const Camera> >();
 }

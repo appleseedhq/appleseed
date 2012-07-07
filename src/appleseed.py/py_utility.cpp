@@ -26,7 +26,7 @@
 // THE SOFTWARE.
 //
 
-#include "renderer/py_utility.hpp"
+#include "py_utility.hpp"
 
 namespace bpy = boost::python;
 
@@ -45,8 +45,8 @@ ParamArray bpy_dict_to_param_array( const bpy::dict& d)
         bpy::object key( keys[i] );
         bpy::object value( values[i] );
 
-        bpy::extract<const char*> key_check( key );
-        if( !key_check.check() )
+        bpy::extract<const char*> key_extractor( key );
+        if( !key_extractor.check() )
         {
             PyErr_SetString( PyExc_TypeError, "Incompatible key type. Only strings accepted." );
             bpy::throw_error_already_set();
@@ -57,7 +57,7 @@ ParamArray bpy_dict_to_param_array( const bpy::dict& d)
             bpy::extract<const char*> extractor( value );
             if( extractor.check())
             {
-                result.insert( key_check(), extractor());
+                result.insert( key_extractor(), extractor());
                 continue;
             }
         }
@@ -67,7 +67,7 @@ ParamArray bpy_dict_to_param_array( const bpy::dict& d)
             bpy::extract<int> extractor( value );
             if( extractor.check())
             {
-                result.insert( key_check(), extractor());
+                result.insert( key_extractor(), extractor());
                 continue;
             }
         }
@@ -77,7 +77,7 @@ ParamArray bpy_dict_to_param_array( const bpy::dict& d)
             bpy::extract<double> extractor( value );
             if( extractor.check())
             {
-                result.insert( key_check(), extractor());
+                result.insert( key_extractor(), extractor());
                 continue;
             }
         }
@@ -91,8 +91,7 @@ ParamArray bpy_dict_to_param_array( const bpy::dict& d)
             if( extractor.check())
             {
                 // recurse
-                result.push( key_check()) = bpy_dict_to_param_array( extractor());
-                continue;
+                result.push( key_extractor()) = bpy_dict_to_param_array( extractor());
             }
         }
 

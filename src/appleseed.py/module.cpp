@@ -31,12 +31,20 @@
 #include <boost/python.hpp>
 
 // Prototypes
-void bind_foundation();
-void bind_renderer();
+void bind_camera();
+void bind_entity();
+void bind_frame();
+void bind_project();
+void bind_scene();
+void bind_utility();
 
 // appleseed python module
 BOOST_PYTHON_MODULE( _appleseed)
 {
-    bind_foundation();
-    bind_renderer();
+    bind_entity();
+    bind_camera();
+    bind_frame();
+    bind_scene();
+	bind_project();
+	bind_utility();
 }

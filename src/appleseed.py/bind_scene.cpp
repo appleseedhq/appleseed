@@ -26,15 +26,34 @@
 //
 
 // Has to be first, to avoid redifinition warnings.
-#include <Python.h>
+#include "bind_auto_release_ptr.h"
 
-#include <boost/python.hpp>
+#include "renderer/api/scene.h"
+
 namespace bpy = boost::python;
+using namespace foundation;
+using namespace renderer;
 
-void bind_foundation()
+namespace
 {
-	bpy::object foundation_module( bpy::handle<>( bpy::borrowed( PyImport_AddModule( "_appleseed.foundation"))));
-	bpy::scope().attr( "foundation") = foundation_module;
-	bpy::scope foundation_scope = foundation_module;
 
+auto_release_ptr<Scene> create_scene() { return SceneFactory::create();}
+
+} // unnamed
+
+void bind_scene()
+{
+    bpy::class_<Scene, auto_release_ptr<Scene>, boost::noncopyable>( "Scene", bpy::no_init)
+        .def( "__init__", bpy::make_constructor( create_scene))
+
+        .def( "get_uid", &Identifiable::get_uid)
+
+        .def( "get_geometry_version_id", &Scene::get_geometry_version_id)
+        .def( "bump_geometry_version_id", &Scene::bump_geometry_version_id)
+
+        .def( "set_camera", &Scene::set_camera)
+        .def( "get_camera", &Scene::get_camera, bpy::return_value_policy<bpy::reference_existing_object>())
+
+        .def( "compute_radius", &Scene::compute_radius)
+        ;
 }

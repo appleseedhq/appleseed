@@ -26,25 +26,40 @@
 //
 
 // Has to be first, to avoid redifinition warnings.
-#include <Python.h>
+#include "bind_auto_release_ptr.h"
 
-#include <boost/python.hpp>
+#include "renderer/api/project.h"
+#include "renderer/api/scene.h"
+#include "renderer/api/frame.h"
+
 namespace bpy = boost::python;
+using namespace foundation;
+using namespace renderer;
 
-// Prototypes
-void bind_entity();
-void bind_camera();
-void bind_project();
-void bind_utility();
-
-void bind_renderer()
+namespace
 {
-	bpy::object renderer_module( bpy::handle<>( bpy::borrowed( PyImport_AddModule( "_appleseed.renderer"))));
-	bpy::scope().attr( "renderer") = renderer_module;
-	bpy::scope renderer_scope = renderer_module;
 
-    bind_entity();
-    bind_camera();
-	bind_project();
-	bind_utility();
+auto_release_ptr<Project> create_project( const std::string& name)
+{
+    return ProjectFactory::create( name.c_str());
+}
+
+} // unnamed
+
+void bind_project()
+{
+    bpy::class_<Project, auto_release_ptr<Project>, bpy::bases<Entity>, boost::noncopyable>( "Project", bpy::no_init)
+        .def( "__init__", bpy::make_constructor( create_project))
+
+        .def( "has_path", &Project::has_path)
+        .def( "set_path", &Project::set_path)
+        .def( "get_path", &Project::get_path)
+
+        .def( "set_scene", &Project::set_scene)
+        .def( "get_scene", &Project::get_scene, bpy::return_value_policy<bpy::reference_existing_object>())
+
+        .def( "set_frame", &Project::set_frame)
+        .def( "get_frame", &Project::get_frame, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def( "create_aov_images", &Project::create_aov_images)
+        ;
 }
