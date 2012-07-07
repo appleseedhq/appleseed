@@ -1,6 +1,10 @@
-# ##### BEGIN MIT LICENSE BLOCK #####
 #
-# Copyright (c) 2012 Est.
+# This source file is part of appleseed.
+# Visit http://appleseedhq.net/ for additional information and resources.
+#
+# This software is released under the MIT license.
+#
+# Copyright (c) 2012 Esteban Tovagliari.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,8 +24,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
-#
-# ##### END MIT LICENSE BLOCK #####
 
 import bpy
 
@@ -42,15 +44,39 @@ class AppleseedSceneSettings(bpy.types.PropertyGroup):
 										 default=32,
 										 subtype='UNSIGNED')
 
+class AppleseedWorldSettings(bpy.types.PropertyGroup):
+	pass
+
 class AppleseedObjectSettings(bpy.types.PropertyGroup):
+	pass
+
+class AppleseedLampSettings(bpy.types.PropertyGroup):
+	pass
+
+class AppleseedMaterialSettings(bpy.types.PropertyGroup):
+	pass
+
+class AppleseedTextureSettings(bpy.types.PropertyGroup):
 	pass
 
 def register():
 	bpy.utils.register_class( AppleseedSceneSettings)
 	bpy.types.Scene.appleseed = PointerProperty( type=AppleseedSceneSettings, name="Appleseed Scene Settings")
 
+	bpy.utils.register_class( AppleseedWorldSettings)
+	bpy.types.World.appleseed = PointerProperty( type=AppleseedWorldSettings, name="Appleseed World Settings")
+
 	bpy.utils.register_class( AppleseedObjectSettings)
 	bpy.types.Object.appleseed = PointerProperty( type=AppleseedObjectSettings, name="Appleseed Object Settings")
+
+	bpy.utils.register_class( AppleseedLampSettings)
+	bpy.types.Lamp.appleseed = PointerProperty( type=AppleseedLampSettings, name="Appleseed Lamp Settings")
+
+	bpy.utils.register_class( AppleseedMaterialSettings)
+	bpy.types.Material.appleseed = PointerProperty( type=AppleseedMaterialSettings, name="Appleseed Material Settings")
+
+	bpy.utils.register_class( AppleseedTextureSettings)
+	bpy.types.Texture.appleseed = PointerProperty( type=AppleseedTextureSettings, name="Appleseed Texture Settings")
 
 def unregister():
 	bpy.utils.unregister_module( __name__)

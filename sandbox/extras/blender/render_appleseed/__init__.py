@@ -1,6 +1,10 @@
-# ##### BEGIN MIT LICENSE BLOCK #####
 #
-# Copyright (c) 2012 Esteban Tovagliari
+# This source file is part of appleseed.
+# Visit http://appleseedhq.net/ for additional information and resources.
+#
+# This software is released under the MIT license.
+#
+# Copyright (c) 2012 Esteban Tovagliari.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,79 +24,78 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
-#
-# ##### END MIT LICENSE BLOCK #####
 
 bl_info = {
-	"name": "Appleseed",
-	"author": "Est.",
-	"version": (0, 1, 0),
-	"blender": (2, 6, 3),
-	"location": "Info Header (engine dropdown)",
-	"description": "Appleseed integration",
-	"warning": "",
-	"wiki_url": "",
-	"tracker_url": "",
-	"category": "Render"}
+    "name": "Appleseed",
+    "author": "Est.",
+    "version": (0, 1, 0),
+    "blender": (2, 6, 3),
+    "location": "Info Header (engine dropdown)",
+    "description": "Appleseed integration",
+    "warning": "",
+    "wiki_url": "",
+    "tracker_url": "",
+    "category": "Render"}
+
+import appleseed
 
 if "bpy" in locals():
-	import imp
-	imp.reload(properties)
-	#imp.reload(ui)
-	#imp.reload(operators)
-	#imp.reload(export)
+    import imp
+    imp.reload( properties)
+    imp.reload( ui)
+    imp.reload( exporter)
 else:
-	import bpy
-	from . import properties
-	#from . import ui
-	#from . import operators
-	#from . import export
+    import bpy
+    from . import properties
+    from . import ui
+    from . import exporter
 
-class RenderAppleseed(bpy.types.RenderEngine):
-	bl_idname = 'APPLESEED_RENDER'
-	bl_label = "Appleseed"
-	bl_use_preview = True
+class RenderAppleseed( bpy.types.RenderEngine):
+    bl_idname = 'APPLESEED_RENDER'
+    bl_label = "Appleseed"
+    bl_use_preview = True
 
-	def __init__(self):
-		pass #export.init(self)
+    def __init__( self):
+        exporter.init( self)
 
-	def __del__(self):
-		pass #export.free(self)
+    def __del__( self):
+        exporter.free( self)
 
-	# main scene render
-	def update(self, data, scene):
-		pass #export.update(self, data, scene)
+    # final
+    def update( self, data, scene):
+        print( "RenderEngine.update called.")
+        exporter.update( self, data, scene)
 
-	def render(self, scene):
-		pass #export.render(self)
+    def render( self, scene):
+        print( "RenderEngine.render called.")
+        exporter.render( self, scene)
 
-	# preview render - nonexistent yet
-	#def preview_update(self, context, id):
-	#    export.update_preview(self, data, scene)
-	#
-	#def preview_render(self):
-	#    export.render_preview(self)
+    # preview
+    def preview_update( self, context, id):
+        print( "RenderEngine.preview_update called.")
+        pass
 
-	# viewport render
-	# def view_update(self, context):
-	#    pass
-	# def view_draw(self, context):
-	#    pass
+    def preview_render( self):
+        print( "RenderEngine.preview_render called.")
+        pass
 
+    # viewport
+    def view_update( self, context):
+        print( "RenderEngine.view_update called.")
+
+    def view_draw( self, context):
+        print( "RenderEngine.view_draw called.")
 
 def register():
-	properties.register()
-	#operators.register()
-	#export.register()
-	bpy.utils.register_module(__name__)
-
+    properties.register()
+    exporter.register()
+    bpy.utils.register_module(__name__)
 
 def unregister():
-	properties.unregister()
-	#ui.unregister()
-	#operators.unregister()
-	#export.unregister()
-	bpy.utils.unregister_module(__name__)
+    properties.unregister()
+    ui.unregister()
+    exporter.unregister()
+    bpy.utils.unregister_module(__name__)
 
 if __name__ == "__main__":
-	register()
+    register()
