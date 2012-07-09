@@ -38,6 +38,7 @@
 #include "mainwindow/rendering/renderingmanager.h"
 #include "mainwindow/rendering/renderwidget.h"
 #include "mainwindow/qtlogtarget.h"
+#include "mainwindow/rendersettingswindow.h"
 #include "mainwindow/statusbar.h"
 #include "utility/scrollareapanhandler.h"
 #include "utility/widgetzoomhandler.h"
@@ -101,6 +102,7 @@ class MainWindow
 
     renderer::ParamArray                m_settings;
 
+    std::auto_ptr<RenderSettingsWindow> m_render_settings_window;
     std::auto_ptr<TestWindow>           m_test_window;
     std::auto_ptr<BenchmarkWindow>      m_benchmark_window;
 
@@ -194,6 +196,7 @@ class MainWindow
 
     void slot_camera_changed();
 
+    void slot_show_render_settings_window();
     void slot_show_test_window();
     void slot_show_benchmark_window();
     void slot_show_about_window();

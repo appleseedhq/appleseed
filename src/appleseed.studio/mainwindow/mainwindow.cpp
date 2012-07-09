@@ -138,6 +138,7 @@ void MainWindow::build_menus()
     connect(m_ui->action_rendering_start_interactive_rendering, SIGNAL(triggered()), this, SLOT(slot_start_interactive_rendering()));
     connect(m_ui->action_rendering_start_final_rendering, SIGNAL(triggered()), this, SLOT(slot_start_final_rendering()));
     connect(m_ui->action_rendering_stop_rendering, SIGNAL(triggered()), this, SLOT(slot_stop_rendering()));
+    connect(m_ui->action_rendering_render_settings, SIGNAL(triggered()), this, SLOT(slot_show_render_settings_window()));
 
     // Diagnostics menu.
     build_override_shading_menu_item();
@@ -863,6 +864,15 @@ void MainWindow::slot_rendering_end()
 void MainWindow::slot_camera_changed()
 {
     m_project_manager.set_project_dirty_flag();
+}
+
+void MainWindow::slot_show_render_settings_window()
+{
+    if (m_render_settings_window.get() == 0)
+        m_render_settings_window.reset(new RenderSettingsWindow(this));
+
+    m_render_settings_window->showNormal();
+    m_render_settings_window->activateWindow();
 }
 
 void MainWindow::slot_show_test_window()
