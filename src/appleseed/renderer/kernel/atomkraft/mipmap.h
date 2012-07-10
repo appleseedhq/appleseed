@@ -57,8 +57,6 @@ template <typename TiledTexture>
 void generate_mipmap_level_float_clamp_linear_rgba(
     TiledTexture&               output,
     const TiledTexture&         input,
-    const int                   input_width,
-    const int                   input_height,
     const int                   level,
     const int                   tile_x,
     const int                   tile_y,
