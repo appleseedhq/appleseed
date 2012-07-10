@@ -279,7 +279,14 @@ LogWidget* MainWindow::create_log_widget() const
     log_widget->setStyleSheet("QTextEdit { border: 0px; }");
 
     QFont font;
+    font.setStyleHint(QFont::TypeWriter);
+#if defined _WIN32
     font.setFamily(QString::fromUtf8("Consolas"));
+#elif defined __APPLE__
+    font.setFamily(QString::fromUtf8("Monaco"));
+#else
+    font.setFamily(QString::fromUtf8("Courier New"));
+#endif
     font.setPixelSize(11);
     log_widget->setFont(font);
 
