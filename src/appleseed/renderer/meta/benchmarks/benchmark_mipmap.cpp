@@ -34,11 +34,13 @@
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/genericimagefilereader.h"
 #include "foundation/image/image.h"
+#include "foundation/image/pixel.h"
 #include "foundation/image/tile.h"
 #include "foundation/utility/benchmark.h"
 
 // Standard headers.
 #include <cassert>
+#include <cstddef>
 #include <memory>
 
 using namespace foundation;
@@ -49,154 +51,208 @@ BENCHMARK_SUITE(AtomKraft_MipMap)
 {
     struct FixtureBase
     {
-        auto_ptr<Image> m_level0;
-        auto_ptr<Image> m_level1;
-        auto_ptr<Image> m_level6;
-        auto_ptr<Image> m_level7;
+        auto_ptr<Image>                 m_level0;
+        auto_ptr<Image>                 m_level1;
+        auto_ptr<Image>                 m_level6;
+        auto_ptr<Image>                 m_level7;
+
+        auto_ptr<TiledTextureObject>    m_level0_texture;
+        auto_ptr<TiledTextureObject>    m_level1_texture;
+        auto_ptr<TiledTextureObject>    m_level6_texture;
+        auto_ptr<TiledTextureObject>    m_level7_texture;
 
         explicit FixtureBase(const char* filepath)
         {
             GenericImageFileReader reader;
             auto_ptr<Image> source(reader.read(filepath));
 
-            const size_t width = source->properties().m_canvas_width;
-            const size_t height = source->properties().m_canvas_height;
-            const size_t channel_count = source->properties().m_channel_count;
+            const CanvasProperties& props = source->properties();
+            const size_t image_width = props.m_canvas_width;
+            const size_t image_height = props.m_canvas_height;
+            const size_t tile_width = props.m_tile_width;
+            const size_t tile_height = props.m_tile_height;
+            const size_t channel_count = props.m_channel_count;
 
             m_level0.reset(
                 new Image(
                     *source.get(),
-                    width,
-                    height,
+                    tile_width,
+                    tile_height,
                     PixelFormatFloat));
 
             m_level1.reset(
                 new Image(
-                    width  / 2,
-                    height / 2,
-                    width  / 2,
-                    height / 2,
+                    image_width >> 1,
+                    image_height >> 1,
+                    tile_width,
+                    tile_height,
                     channel_count,
                     PixelFormatFloat));
 
             m_level6.reset(
                 new Image(
-                    width  / 64,
-                    height / 64,
-                    width  / 64,
-                    height / 64,
+                    image_width >> 6,
+                    image_height >> 6,
+                    tile_width,
+                    tile_height,
                     channel_count,
                     PixelFormatFloat));
 
             m_level7.reset(
                 new Image(
-                    width  / 128,
-                    height / 128,
-                    width  / 128,
-                    height / 128,
+                    image_width >> 7,
+                    image_height >> 7,
+                    tile_width,
+                    tile_height,
                     channel_count,
                     PixelFormatFloat));
+
+            m_level0_texture.reset(new TiledTextureObject(*m_level0.get()));
+            m_level1_texture.reset(new TiledTextureObject(*m_level1.get()));
+            m_level6_texture.reset(new TiledTextureObject(*m_level6.get()));
+            m_level7_texture.reset(new TiledTextureObject(*m_level7.get()));
         }
     };
 
-    struct FixtureRGB
+    class FixtureRGB
       : public FixtureBase
     {
+      public:
         FixtureRGB()
           : FixtureBase("unit benchmarks/inputs/test_mipmap_rgb.exr")
         {
             assert(m_level0->properties().m_channel_count == 3);
 
-            TiledTextureObject level0_texture(*m_level0.get());
-            TiledTextureObject level6_texture(*m_level6.get());
+            initialize_level6();
+        }
 
-            ak::generate_mipmap_level<3, TiledTextureObject>(
-                level6_texture,
-                level0_texture,
-                6,
-                0,  // fix
-                0,  // fix
-                4);
+      private:
+        void initialize_level6()
+        {
+            for (int ty = 0; ty < m_level6_texture->tile_count_y(); ++ty)
+            {
+                for (int tx = 0; tx < m_level6_texture->tile_count_x(); ++tx)
+                {
+                    ak::generate_mipmap_level<3, TiledTextureObject>(
+                        *m_level6_texture.get(),    // output
+                        *m_level0_texture.get(),    // input
+                        6,
+                        tx,
+                        ty,
+                        4);
+                }
+            }
         }
     };
 
     BENCHMARK_CASE_F(GenerateMipmapLevel_Level0ToLevel1, FixtureRGB)
     {
-        // todo: move out of benchmark.
-        TiledTextureObject level0_texture(*m_level0.get());
-        TiledTextureObject level1_texture(*m_level1.get());
+        const int tile_count_x = m_level1_texture->tile_count_x();
+        const int tile_count_y = m_level1_texture->tile_count_y();
 
-        ak::generate_mipmap_level<3, TiledTextureObject>(
-            level1_texture,
-            level0_texture,
-            1,
-            0,  // fix
-            0,  // fix
-            4);
+        for (int ty = 0; ty < tile_count_y; ++ty)
+        {
+            for (int tx = 0; tx < tile_count_x; ++tx)
+            {
+                ak::generate_mipmap_level<3, TiledTextureObject>(
+                    *m_level1_texture.get(),    // output
+                    *m_level0_texture.get(),    // input
+                    1,
+                    tx,
+                    ty,
+                    4);
+            }
+        }
     }
 
     BENCHMARK_CASE_F(GenerateMipmapLevel_Level6ToLevel7, FixtureRGB)
     {
-        // todo: move out of benchmark.
-        TiledTextureObject level6_texture(*m_level6.get());
-        TiledTextureObject level7_texture(*m_level7.get());
+        const int tile_count_x = m_level7_texture->tile_count_x();
+        const int tile_count_y = m_level7_texture->tile_count_y();
 
-        ak::generate_mipmap_level<3, TiledTextureObject>(
-            level7_texture,
-            level6_texture,
-            1,
-            0,  // fix
-            0,  // fix
-            4);
+        for (int ty = 0; ty < tile_count_y; ++ty)
+        {
+            for (int tx = 0; tx < tile_count_x; ++tx)
+            {
+                ak::generate_mipmap_level<3, TiledTextureObject>(
+                    *m_level7_texture.get(),    // output
+                    *m_level6_texture.get(),    // input
+                    1,
+                    tx,
+                    ty,
+                    4);
+            }
+        }
     }
 
-    struct FixtureRGBA
+    class FixtureRGBA
       : public FixtureBase
     {
+      public:
         FixtureRGBA()
           : FixtureBase("unit benchmarks/inputs/test_mipmap_rgba.exr")
         {
             assert(m_level0->properties().m_channel_count == 4);
 
-            //ak::generate_mipmap_level_float_clamp_linear_rgba(
-            //    reinterpret_cast<float*>(m_level6->tile(0, 0).get_storage()),
-            //    reinterpret_cast<const float*>(m_level0->tile(0, 0).get_storage()),
-            //    static_cast<int>(m_level0->properties().m_canvas_width),
-            //    static_cast<int>(m_level0->properties().m_canvas_height),
-            //    6,
-            //    0,  // fix
-            //    0,  // fix
-            //    4);
+            initialize_level6();
+        }
+
+      private:
+        void initialize_level6()
+        {
+            for (int ty = 0; ty < m_level6_texture->tile_count_y(); ++ty)
+            {
+                for (int tx = 0; tx < m_level6_texture->tile_count_x(); ++tx)
+                {
+                    ak::generate_mipmap_level_float_clamp_linear_rgba<TiledTextureObject>(
+                        *m_level6_texture.get(),    // output
+                        *m_level0_texture.get(),    // input
+                        6,
+                        tx,
+                        ty,
+                        4);
+                }
+            }
         }
     };
 
     BENCHMARK_CASE_F(GenerateMipmapLevelFloatClampLinearRGBA_Level0ToLevel1, FixtureRGBA)
     {
-        const CanvasProperties& level0_props = m_level0->properties();
+        const int tile_count_x = m_level1_texture->tile_count_x();
+        const int tile_count_y = m_level1_texture->tile_count_y();
 
-        //ak::generate_mipmap_level_float_clamp_linear_rgba(
-        //    reinterpret_cast<float*>(m_level1->tile(0, 0).get_storage()),
-        //    reinterpret_cast<const float*>(m_level0->tile(0, 0).get_storage()),
-        //    static_cast<int>(level0_props.m_canvas_width),
-        //    static_cast<int>(level0_props.m_canvas_height),
-        //    1,
-        //    0,  // fix
-        //    0,  // fix
-        //    4);
+        for (int ty = 0; ty < tile_count_y; ++ty)
+        {
+            for (int tx = 0; tx < tile_count_x; ++tx)
+            {
+                ak::generate_mipmap_level_float_clamp_linear_rgba<TiledTextureObject>(
+                    *m_level1_texture.get(),    // output
+                    *m_level0_texture.get(),    // input
+                    1,
+                    tx,
+                    ty,
+                    4);
+            }
+        }
     }
 
     BENCHMARK_CASE_F(GenerateMipmapLevelFloatClampLinearRGBA_Level6ToLevel7, FixtureRGBA)
     {
-        const CanvasProperties& level6_props = m_level6->properties();
+        const int tile_count_x = m_level7_texture->tile_count_x();
+        const int tile_count_y = m_level7_texture->tile_count_y();
 
-        //ak::generate_mipmap_level_float_clamp_linear_rgba(
-        //    reinterpret_cast<float*>(m_level7->tile(0, 0).get_storage()),
-        //    reinterpret_cast<const float*>(m_level6->tile(0, 0).get_storage()),
-        //    static_cast<int>(level6_props.m_canvas_width),
-        //    static_cast<int>(level6_props.m_canvas_height),
-        //    1,
-        //    0,  // fix
-        //    0,  // fix
-        //    4);
+        for (int ty = 0; ty < tile_count_y; ++ty)
+        {
+            for (int tx = 0; tx < tile_count_x; ++tx)
+            {
+                ak::generate_mipmap_level_float_clamp_linear_rgba<TiledTextureObject>(
+                    *m_level7_texture.get(),    // output
+                    *m_level6_texture.get(),    // input
+                    1,
+                    tx,
+                    ty,
+                    4);
+            }
+        }
     }
 }
