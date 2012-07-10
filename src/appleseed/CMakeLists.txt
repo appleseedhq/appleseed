@@ -758,7 +758,6 @@ source_group ("renderer\\kernel\\aov" FILES
 set (renderer_kernel_atomkraft_sources
     renderer/kernel/atomkraft/common.h
     renderer/kernel/atomkraft/ewa.h
-    renderer/kernel/atomkraft/mipmap.cpp
     renderer/kernel/atomkraft/mipmap.h
     renderer/kernel/atomkraft/textureobject.cpp
     renderer/kernel/atomkraft/textureobject.h

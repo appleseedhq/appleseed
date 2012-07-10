@@ -107,38 +107,46 @@ BENCHMARK_SUITE(AtomKraft_MipMap)
         {
             assert(m_level0->properties().m_channel_count == 3);
 
-            TextureObject level0_texture(*m_level0.get());
-            TextureObject level6_texture(*m_level6.get());
+            TiledTextureObject level0_texture(*m_level0.get());
+            TiledTextureObject level6_texture(*m_level6.get());
 
-            ak::generate_mipmap_level<3, TextureObject>(
+            ak::generate_mipmap_level<3, TiledTextureObject>(
                 level6_texture,
                 level0_texture,
                 6,
+                0,  // fix
+                0,  // fix
                 4);
         }
     };
 
     BENCHMARK_CASE_F(GenerateMipmapLevel_Level0ToLevel1, FixtureRGB)
     {
-        TextureObject level0_texture(*m_level0.get());
-        TextureObject level1_texture(*m_level1.get());
+        // todo: move out of benchmark.
+        TiledTextureObject level0_texture(*m_level0.get());
+        TiledTextureObject level1_texture(*m_level1.get());
 
-        ak::generate_mipmap_level<3, TextureObject>(
+        ak::generate_mipmap_level<3, TiledTextureObject>(
             level1_texture,
             level0_texture,
             1,
+            0,  // fix
+            0,  // fix
             4);
     }
 
     BENCHMARK_CASE_F(GenerateMipmapLevel_Level6ToLevel7, FixtureRGB)
     {
-        TextureObject level6_texture(*m_level6.get());
-        TextureObject level7_texture(*m_level7.get());
+        // todo: move out of benchmark.
+        TiledTextureObject level6_texture(*m_level6.get());
+        TiledTextureObject level7_texture(*m_level7.get());
 
-        ak::generate_mipmap_level<3, TextureObject>(
+        ak::generate_mipmap_level<3, TiledTextureObject>(
             level7_texture,
             level6_texture,
             1,
+            0,  // fix
+            0,  // fix
             4);
     }
 
@@ -150,13 +158,15 @@ BENCHMARK_SUITE(AtomKraft_MipMap)
         {
             assert(m_level0->properties().m_channel_count == 4);
 
-            ak::generate_mipmap_level_float_clamp_linear_rgba(
-                reinterpret_cast<float*>(m_level6->tile(0, 0).get_storage()),
-                reinterpret_cast<const float*>(m_level0->tile(0, 0).get_storage()),
-                static_cast<int>(m_level0->properties().m_canvas_width),
-                static_cast<int>(m_level0->properties().m_canvas_height),
-                6,
-                4);
+            //ak::generate_mipmap_level_float_clamp_linear_rgba(
+            //    reinterpret_cast<float*>(m_level6->tile(0, 0).get_storage()),
+            //    reinterpret_cast<const float*>(m_level0->tile(0, 0).get_storage()),
+            //    static_cast<int>(m_level0->properties().m_canvas_width),
+            //    static_cast<int>(m_level0->properties().m_canvas_height),
+            //    6,
+            //    0,  // fix
+            //    0,  // fix
+            //    4);
         }
     };
 
@@ -164,25 +174,29 @@ BENCHMARK_SUITE(AtomKraft_MipMap)
     {
         const CanvasProperties& level0_props = m_level0->properties();
 
-        ak::generate_mipmap_level_float_clamp_linear_rgba(
-            reinterpret_cast<float*>(m_level1->tile(0, 0).get_storage()),
-            reinterpret_cast<const float*>(m_level0->tile(0, 0).get_storage()),
-            static_cast<int>(level0_props.m_canvas_width),
-            static_cast<int>(level0_props.m_canvas_height),
-            1,
-            4);
+        //ak::generate_mipmap_level_float_clamp_linear_rgba(
+        //    reinterpret_cast<float*>(m_level1->tile(0, 0).get_storage()),
+        //    reinterpret_cast<const float*>(m_level0->tile(0, 0).get_storage()),
+        //    static_cast<int>(level0_props.m_canvas_width),
+        //    static_cast<int>(level0_props.m_canvas_height),
+        //    1,
+        //    0,  // fix
+        //    0,  // fix
+        //    4);
     }
 
     BENCHMARK_CASE_F(GenerateMipmapLevelFloatClampLinearRGBA_Level6ToLevel7, FixtureRGBA)
     {
         const CanvasProperties& level6_props = m_level6->properties();
 
-        ak::generate_mipmap_level_float_clamp_linear_rgba(
-            reinterpret_cast<float*>(m_level7->tile(0, 0).get_storage()),
-            reinterpret_cast<const float*>(m_level6->tile(0, 0).get_storage()),
-            static_cast<int>(level6_props.m_canvas_width),
-            static_cast<int>(level6_props.m_canvas_height),
-            1,
-            4);
+        //ak::generate_mipmap_level_float_clamp_linear_rgba(
+        //    reinterpret_cast<float*>(m_level7->tile(0, 0).get_storage()),
+        //    reinterpret_cast<const float*>(m_level6->tile(0, 0).get_storage()),
+        //    static_cast<int>(level6_props.m_canvas_width),
+        //    static_cast<int>(level6_props.m_canvas_height),
+        //    1,
+        //    0,  // fix
+        //    0,  // fix
+        //    4);
     }
 }
