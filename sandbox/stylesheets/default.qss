@@ -802,72 +802,72 @@ QComboBox QAbstractItemView
 
 
 /*
- * QSpinBox.
+ * QAbstractSpinBox.
  */
 
-QSpinBox
+QAbstractSpinBox
 {
     border: BORDER_STYLE;
 }
 
-QSpinBox::up-button,
-QSpinBox::down-button
+QAbstractSpinBox::up-button,
+QAbstractSpinBox::down-button
 {
     background-color: ACTIVE_BACKGROUND_COLOR;
     border-left: BORDER_STYLE;
 }
 
-QSpinBox::up-button
+QAbstractSpinBox::up-button
 {
     border-bottom: BORDER_STYLE;
 }
 
-QSpinBox::down-button
+QAbstractSpinBox::down-button
 {
     border-top: BORDER_STYLE;
 }
 
-QSpinBox::up-button:hover,
-QSpinBox::down-button:hover
+QAbstractSpinBox::up-button:hover,
+QAbstractSpinBox::down-button:hover
 {
     background-color: HOVER_BACKGROUND_COLOR;
     color: HOVER_TEXT_COLOR;
 }
 
-QSpinBox::up-button:pressed,
-QSpinBox::down-button:pressed
+QAbstractSpinBox::up-button:pressed,
+QAbstractSpinBox::down-button:pressed
 {
     background-color: SELECTED_BACKGROUND_COLOR;
     color: SELECTED_TEXT_COLOR;
 }
 
-QSpinBox::up-button:disabled,
-QSpinBox::down-button:disabled
+QAbstractSpinBox::up-button:disabled,
+QAbstractSpinBox::down-button:disabled
 {
     color: DISABLED_TEXT_COLOR;
 }
 
-QSpinBox::up-arrow
+QAbstractSpinBox::up-arrow
 {
     image: url(":/widgets/spinbox_arrow_up_enabled.png");
 }
 
-QSpinBox::down-arrow
+QAbstractSpinBox::down-arrow
 {
     image: url(":/widgets/spinbox_arrow_down_enabled.png");
 }
 
 
 /*
- * FoldablePanel.
+ * appleseed::studio::FoldablePanelWidget.
  */
 
-FoldablePanel > QPushButton
+appleseed--studio--FoldablePanelWidget > QPushButton
 {
     border-radius: 0px;
 }
 
-FoldablePanel > QFrame[hasFrame="true"]
+appleseed--studio--FoldablePanelWidget > QFrame[hasFrame="true"]
 {
     border-top: 0px;
 }

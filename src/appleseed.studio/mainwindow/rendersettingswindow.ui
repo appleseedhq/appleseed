@@ -6,19 +6,19 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>410</width>
+    <width>430</width>
     <height>500</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>410</width>
+    <width>430</width>
     <height>500</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>410</width>
+    <width>430</width>
     <height>16777215</height>
    </size>
   </property>
@@ -45,7 +45,7 @@
       <widget class="QComboBox" name="combobox_configurations"/>
      </item>
      <item>
-      <widget class="QPushButton" name="pushbutton_delete">
+      <widget class="QPushButton" name="pushbutton_manage">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -53,20 +53,7 @@
         </sizepolicy>
        </property>
        <property name="text">
-        <string>Delete</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="pushbutton_new">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>New</string>
+        <string>Manage</string>
        </property>
       </widget>
      </item>
@@ -82,7 +69,7 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>390</width>
+        <width>410</width>
         <height>420</height>
        </rect>
       </property>
@@ -90,6 +77,19 @@
        <property name="sizeConstraint">
         <enum>QLayout::SetFixedSize</enum>
        </property>
+       <item>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>360</width>
+           <height>0</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
       </layout>
      </widget>
     </widget>

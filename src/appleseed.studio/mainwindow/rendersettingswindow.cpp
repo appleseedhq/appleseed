@@ -32,63 +32,26 @@
 // UI definition header.
 #include "ui_rendersettingswindow.h"
 
+// appleseed.studio headers.
+#include "mainwindow/configurationmanagerwindow.h"
+#include "utility/foldablepanelwidget.h"
+
 // Qt headers.
 #include <QCheckBox>
 #include <QComboBox>
-#include <QDoubleValidator>
+#include <QDoubleSpinBox>
 #include <QFormLayout>
-#include <QFrame>
 #include <QGroupBox>
 #include <QHBoxLayout>
-#include <QIntValidator>
 #include <QLabel>
 #include <QLayout>
-#include <QLineEdit>
-#include <QPushButton>
+#include <QSpinBox>
 #include <QString>
 #include <Qt>
 #include <QVBoxLayout>
 
 // Standard headers.
 #include <cassert>
-
-class FoldablePanel
-  : public QWidget
-{
-    Q_OBJECT
-
-  public:
-    FoldablePanel(const QString& title, QWidget* parent = 0)
-      : QWidget(parent)
-      , m_button(new QPushButton(title))
-      , m_container(new QFrame())
-    {
-        setLayout(new QVBoxLayout());
-
-        layout()->setSpacing(0);
-        layout()->addWidget(m_button);
-        layout()->addWidget(m_container);
-
-        m_container->setProperty("hasFrame", true);
-
-        connect(m_button, SIGNAL(clicked()), this, SLOT(slot_toggle_container_visibility()));
-    }
-
-    QFrame* container()
-    {
-        return m_container;
-    }
-
-  private:
-    QPushButton*    m_button;
-    QFrame*         m_container;
-
-  private slots:
-    void slot_toggle_container_visibility()
-    {
-        m_container->setVisible(!m_container->isVisible());
-    }
-};
 
 namespace appleseed {
 namespace studio {
@@ -108,6 +71,8 @@ RenderSettingsWindow::RenderSettingsWindow(QWidget* parent)
     m_ui->scrollarea->setProperty("hasFrame", true);
 
     create_panels();
+
+    connect(m_ui->pushbutton_manage, SIGNAL(clicked()), this, SLOT(slot_open_configuration_manager_window()));
 }
 
 RenderSettingsWindow::~RenderSettingsWindow()
@@ -123,6 +88,7 @@ void RenderSettingsWindow::create_panels() const
     create_image_plane_sampling_panel(root);
     create_lighting_panel(root);
     create_shading_panel(root);
+    create_advanced_panel(root);
 }
 
 //---------------------------------------------------------------------------------------------
@@ -131,7 +97,7 @@ void RenderSettingsWindow::create_panels() const
 
 void RenderSettingsWindow::create_image_plane_sampling_panel(QLayout* parent) const
 {
-    FoldablePanel* panel = new FoldablePanel("Image Plane Sampling");
+    FoldablePanelWidget* panel = new FoldablePanelWidget("Image Plane Sampling");
     parent->addWidget(panel);
 
     QVBoxLayout* layout = new QVBoxLayout();
@@ -153,7 +119,7 @@ void RenderSettingsWindow::create_image_plane_sampling_general_settings(QVBoxLay
     layout->addLayout(sublayout);
 
     sublayout->addLayout(create_form_layout("Filter Type:", new QComboBox()));
-    sublayout->addLayout(create_form_layout("Filter Size:", create_integer_line_edit(1, 999)));
+    sublayout->addLayout(create_form_layout("Filter Size:", create_integer_input(1, 64)));
 
     layout->addLayout(create_form_layout("Sampler:", new QComboBox()));
 }
@@ -175,7 +141,7 @@ void RenderSettingsWindow::create_image_plane_sampling_uniform_sampler_settings(
     QVBoxLayout* layout = create_vertical_layout();
     groupbox->setLayout(layout);
 
-    layout->addLayout(create_form_layout("Min Samples:", create_integer_line_edit(1, 999999)));
+    layout->addLayout(create_form_layout("Min Samples:", create_integer_input(1, 1000000)));
 }
 
 void RenderSettingsWindow::create_image_plane_sampling_adaptive_sampler_settings(QHBoxLayout* parent) const
@@ -189,9 +155,9 @@ void RenderSettingsWindow::create_image_plane_sampling_adaptive_sampler_settings
     QFormLayout* sublayout = create_form_layout();
     layout->addLayout(sublayout);
 
-    sublayout->addRow("Min Samples:", create_integer_line_edit(1, 999999));
-    sublayout->addRow("Max Samples:", create_integer_line_edit(1, 999999));
-    sublayout->addRow("Max Error:", create_floating_point_line_edit());
+    sublayout->addRow("Min Samples:", create_integer_input(1, 1000000));
+    sublayout->addRow("Max Samples:", create_integer_input(1, 1000000));
+    sublayout->addRow("Max Error:", create_floating_point_input(0.0, 1000000.0));
 }
 
 //---------------------------------------------------------------------------------------------
@@ -200,18 +166,14 @@ void RenderSettingsWindow::create_image_plane_sampling_adaptive_sampler_settings
 
 void RenderSettingsWindow::create_lighting_panel(QLayout* parent) const
 {
-    FoldablePanel* panel = new FoldablePanel("Lighting");
+    FoldablePanelWidget* panel = new FoldablePanelWidget("Lighting");
     parent->addWidget(panel);
 
     QVBoxLayout* layout = new QVBoxLayout();
     panel->container()->setLayout(layout);
 
     create_lighting_general_settings(layout);
-    create_lighting_distribution_ray_tracer_settings(layout);
-    create_lighting_path_tracer_settings(layout);
-    create_lighting_direct_lighting_settings(layout);
-    create_lighting_image_based_lighting_settings(layout);
-    create_lighting_caustics_settings(layout);
+    create_lighting_components_settings(layout);
 }
 
 void RenderSettingsWindow::create_lighting_general_settings(QVBoxLayout* parent) const
@@ -223,58 +185,21 @@ void RenderSettingsWindow::create_lighting_general_settings(QVBoxLayout* parent)
     groupbox->setLayout(layout);
 
     layout->addRow("Engine:", new QComboBox());
-    layout->addRow("Max Bounces:", create_integer_line_edit(0, 9999));
-    layout->addRow("Russian Roulette Start Bounce:", create_integer_line_edit(1, 9999));
+    layout->addRow("Max Bounces:", create_integer_input(0, 10000));
+    layout->addRow("Russian Roulette Start Bounce:", create_integer_input(1, 10000));
 }
 
-void RenderSettingsWindow::create_lighting_distribution_ray_tracer_settings(QVBoxLayout* layout) const
+void RenderSettingsWindow::create_lighting_components_settings(QVBoxLayout* parent) const
 {
-}
-
-void RenderSettingsWindow::create_lighting_path_tracer_settings(QVBoxLayout* layout) const
-{
-}
-
-void RenderSettingsWindow::create_lighting_direct_lighting_settings(QLayout* parent) const
-{
-    QGroupBox* groupbox = new QGroupBox("Direct Lighting");
-    groupbox->setCheckable(true);
+    QGroupBox* groupbox = new QGroupBox("Components");
     parent->addWidget(groupbox);
 
-    QVBoxLayout* layout = create_vertical_layout();
+    QVBoxLayout* layout = new QVBoxLayout();
     groupbox->setLayout(layout);
 
-    QHBoxLayout* sublayout = create_horizontal_layout();
-    layout->addLayout(sublayout);
-
-    sublayout->addLayout(create_form_layout("Light Samples:", create_integer_line_edit(1, 999999)));
-    sublayout->addLayout(create_form_layout("BSDF Samples:", create_integer_line_edit(1, 999999)));
-}
-
-void RenderSettingsWindow::create_lighting_image_based_lighting_settings(QLayout* parent) const
-{
-    QGroupBox* groupbox = new QGroupBox("Image-Based Lighting");
-    groupbox->setCheckable(true);
-    parent->addWidget(groupbox);
-
-    QVBoxLayout* layout = create_vertical_layout();
-    groupbox->setLayout(layout);
-
-    QHBoxLayout* sublayout = create_horizontal_layout();
-    layout->addLayout(sublayout);
-
-    sublayout->addLayout(create_form_layout("Light Samples:", create_integer_line_edit(1, 999999)));
-    sublayout->addLayout(create_form_layout("BSDF Samples:", create_integer_line_edit(1, 999999)));
-}
-
-void RenderSettingsWindow::create_lighting_caustics_settings(QLayout* parent) const
-{
-    QGroupBox* groupbox = new QGroupBox("Caustics");
-    groupbox->setCheckable(true);
-    parent->addWidget(groupbox);
-
-    QVBoxLayout* layout = create_vertical_layout();
-    groupbox->setLayout(layout);
+    layout->addWidget(new QCheckBox("Direct Lighting"));
+    layout->addWidget(new QCheckBox("Image-Based Lighting"));
+    layout->addWidget(new QCheckBox("Caustics"));
 }
 
 //---------------------------------------------------------------------------------------------
@@ -283,7 +208,7 @@ void RenderSettingsWindow::create_lighting_caustics_settings(QLayout* parent) co
 
 void RenderSettingsWindow::create_shading_panel(QLayout* parent) const
 {
-    FoldablePanel* panel = new FoldablePanel("Shading");
+    FoldablePanelWidget* panel = new FoldablePanelWidget("Shading");
     parent->addWidget(panel);
 
     QVBoxLayout* layout = new QVBoxLayout();
@@ -294,7 +219,76 @@ void RenderSettingsWindow::create_shading_panel(QLayout* parent) const
 
 void RenderSettingsWindow::create_shading_texture_cache_settings(QVBoxLayout* parent) const
 {
-    parent->addLayout(create_form_layout("Texture Cache Size:", create_integer_line_edit(1, 99999, "MB")));
+    parent->addLayout(create_form_layout("Texture Cache Size:", create_integer_input(1, 1024 * 1024, "MB")));
+}
+
+//---------------------------------------------------------------------------------------------
+// Advanced panel.
+//---------------------------------------------------------------------------------------------
+
+void RenderSettingsWindow::create_advanced_panel(QLayout* parent) const
+{
+    FoldablePanelWidget* panel = new FoldablePanelWidget("Advanced");
+    parent->addWidget(panel);
+    panel->fold();
+
+    QVBoxLayout* layout = new QVBoxLayout();
+    panel->container()->setLayout(layout);
+
+    create_advanced_direct_lighting_settings(layout);
+    create_advanced_image_based_lighting_settings(layout);
+    create_advanced_distribution_ray_tracer_settings(layout);
+    create_advanced_path_tracer_settings(layout);
+}
+
+void RenderSettingsWindow::create_advanced_direct_lighting_settings(QVBoxLayout* parent) const
+{
+    QGroupBox* groupbox = new QGroupBox("Direct Lighting");
+    parent->addWidget(groupbox);
+
+    QVBoxLayout* layout = create_vertical_layout();
+    groupbox->setLayout(layout);
+
+    QHBoxLayout* sublayout = create_horizontal_layout();
+    layout->addLayout(sublayout);
+
+    sublayout->addLayout(create_form_layout("Light Samples:", create_integer_input(0, 1000000)));
+    sublayout->addLayout(create_form_layout("BSDF Samples:", create_integer_input(0, 1000000)));
+}
+
+void RenderSettingsWindow::create_advanced_image_based_lighting_settings(QVBoxLayout* parent) const
+{
+    QGroupBox* groupbox = new QGroupBox("Image-Based Lighting");
+    parent->addWidget(groupbox);
+
+    QVBoxLayout* layout = create_vertical_layout();
+    groupbox->setLayout(layout);
+
+    QHBoxLayout* sublayout = create_horizontal_layout();
+    layout->addLayout(sublayout);
+
+    sublayout->addLayout(create_form_layout("Light Samples:", create_integer_input(0, 1000000)));
+    sublayout->addLayout(create_form_layout("BSDF Samples:", create_integer_input(0, 1000000)));
+}
+
+void RenderSettingsWindow::create_advanced_distribution_ray_tracer_settings(QVBoxLayout* parent) const
+{
+    QGroupBox* groupbox = new QGroupBox("Distribution Ray Tracer");
+    parent->addWidget(groupbox);
+
+    QVBoxLayout* layout = new QVBoxLayout();
+    groupbox->setLayout(layout);
+}
+
+void RenderSettingsWindow::create_advanced_path_tracer_settings(QVBoxLayout* parent) const
+{
+    QGroupBox* groupbox = new QGroupBox("Path Tracer");
+    parent->addWidget(groupbox);
+
+    QVBoxLayout* layout = new QVBoxLayout();
+    groupbox->setLayout(layout);
+
+    layout->addWidget(new QCheckBox("Next Event Estimation"));
 }
 
 //---------------------------------------------------------------------------------------------
@@ -329,15 +323,15 @@ QFormLayout* RenderSettingsWindow::create_form_layout(const QString& label, QWid
     return layout;
 }
 
-QLineEdit* RenderSettingsWindow::create_integer_line_edit(int min, int max) const
+QWidget* RenderSettingsWindow::create_integer_input(const int min, const int max) const
 {
-    QLineEdit* lineedit = new QLineEdit();
-    lineedit->setMaximumWidth(50);
-    lineedit->setValidator(new QIntValidator(min, max));
-    return lineedit;
+    QSpinBox* spinbox = new QSpinBox();
+    spinbox->setMaximumWidth(60);
+    spinbox->setRange(min, max);
+    return spinbox;
 }
 
-QWidget* RenderSettingsWindow::create_integer_line_edit(int min, int max, const QString& suffix) const
+QWidget* RenderSettingsWindow::create_integer_input(const int min, const int max, const QString& suffix) const
 {
     QWidget* group = new QWidget();
 
@@ -348,21 +342,28 @@ QWidget* RenderSettingsWindow::create_integer_line_edit(int min, int max, const 
     layout->setSpacing(10);
     layout->setSizeConstraint(QLayout::SetFixedSize);
 
-    layout->addWidget(create_integer_line_edit(min, max));
+    layout->addWidget(create_integer_input(min, max));
     layout->addWidget(new QLabel(suffix));
 
     return group;
 }
 
-QLineEdit* RenderSettingsWindow::create_floating_point_line_edit() const
+QWidget* RenderSettingsWindow::create_floating_point_input(const double min, const double max) const
 {
-    QLineEdit* lineedit = new QLineEdit();
-    lineedit->setMaximumWidth(50);
-    lineedit->setValidator(new QDoubleValidator());
-    return lineedit;
+    QDoubleSpinBox* spinbox = new QDoubleSpinBox();
+    spinbox->setMaximumWidth(60);
+    spinbox->setRange(min, max);
+    return spinbox;
+}
+
+void RenderSettingsWindow::slot_open_configuration_manager_window()
+{
+    ConfigurationManagerWindow* config_manager_window = new ConfigurationManagerWindow(this);
+
+//    config_manager_window->center();
+    config_manager_window->showNormal();
+    config_manager_window->activateWindow();
 }
 
 }   // namespace studio
 }   // namespace appleseed
-
-#include "mainwindow/moc_cpp_rendersettingswindow.cxx"

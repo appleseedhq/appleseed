@@ -195,6 +195,9 @@ source_group ("mainwindow\\rendering" FILES
 )
 
 set (mainwindow_sources
+    mainwindow/configurationmanagerwindow.cpp
+    mainwindow/configurationmanagerwindow.h
+    mainwindow/configurationmanagerwindow.ui
     mainwindow/logwidget.cpp
     mainwindow/logwidget.h
     mainwindow/mainwindow.cpp
@@ -230,6 +233,8 @@ source_group ("meta\\tests" FILES
 set (utility_sources
     utility/chartwidget.cpp
     utility/chartwidget.h
+    utility/foldablepanelwidget.cpp
+    utility/foldablepanelwidget.h
     utility/interop.h
     utility/scrollareapanhandler.cpp
     utility/scrollareapanhandler.h

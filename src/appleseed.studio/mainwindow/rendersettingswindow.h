@@ -38,7 +38,6 @@ namespace Ui    { class RenderSettingsWindow; }
 class QFormLayout;
 class QHBoxLayout;
 class QLayout;
-class QLineEdit;
 class QString;
 class QVBoxLayout;
 
@@ -75,24 +74,27 @@ class RenderSettingsWindow
 
     void create_lighting_panel(QLayout* parent) const;
     void create_lighting_general_settings(QVBoxLayout* parent) const;
-    void create_lighting_distribution_ray_tracer_settings(QVBoxLayout* parent) const;
-    void create_lighting_path_tracer_settings(QVBoxLayout* parent) const;
-    void create_lighting_direct_lighting_settings(QLayout* parent) const;
-    void create_lighting_image_based_lighting_settings(QLayout* parent) const;
-    void create_lighting_caustics_settings(QLayout* parent) const;
+    void create_lighting_components_settings(QVBoxLayout* parent) const;
 
     void create_shading_panel(QLayout* parent) const;
     void create_shading_texture_cache_settings(QVBoxLayout* parent) const;
+
+    void create_advanced_panel(QLayout* parent) const;
+    void create_advanced_direct_lighting_settings(QVBoxLayout* parent) const;
+    void create_advanced_image_based_lighting_settings(QVBoxLayout* parent) const;
+    void create_advanced_distribution_ray_tracer_settings(QVBoxLayout* parent) const;
+    void create_advanced_path_tracer_settings(QVBoxLayout* parent) const;
 
     QHBoxLayout* create_horizontal_layout() const;
     QVBoxLayout* create_vertical_layout() const;
     QFormLayout* create_form_layout() const;
     QFormLayout* create_form_layout(const QString& label, QWidget* widget) const;
-    QLineEdit* create_integer_line_edit(int min, int max) const;
-    QWidget* create_integer_line_edit(int min, int max, const QString& suffix) const;
-    QLineEdit* create_floating_point_line_edit() const;
+    QWidget* create_integer_input(const int min, const int max) const;
+    QWidget* create_integer_input(const int min, const int max, const QString& suffix) const;
+    QWidget* create_floating_point_input(const double min, const double max) const;
 
   private slots:
+    void slot_open_configuration_manager_window();
 };
 
 }       // namespace studio
