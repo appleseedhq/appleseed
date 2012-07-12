@@ -430,6 +430,9 @@ void MainWindow::on_project_change()
     update_project_explorer();
     update_override_shading_menu_item();
 
+    if (m_render_settings_window.get())
+        m_render_settings_window->reload();
+
     m_ui->lineedit_filter->clear();
     m_status_bar.clear();
 }
@@ -495,9 +498,6 @@ void MainWindow::enable_disable_menu_items(const bool rendering)
     const bool is_project_open = m_project_manager.is_project_open();
 
     const bool allow_replacing_project = !rendering;
-    const bool allow_saving_project = is_project_open && !rendering;
-    const bool allow_starting_rendering = is_project_open && !rendering;
-    const bool allow_stopping_rendering = is_project_open && rendering;
 
     // File -> New Project.
     m_ui->action_file_new_project->setEnabled(allow_replacing_project);
@@ -516,12 +516,17 @@ void MainWindow::enable_disable_menu_items(const bool rendering)
         m_project_manager.get_project()->has_path() &&
         !rendering);
 
+    const bool allow_saving_project = is_project_open && !rendering;
+
     // File -> Save Project.
     m_ui->action_file_save_project->setEnabled(allow_saving_project);
     m_action_save_project->setEnabled(allow_saving_project);
 
     // File -> Save Project As.
     m_ui->action_file_save_project_as->setEnabled(allow_saving_project);
+
+    const bool allow_starting_rendering = is_project_open && !rendering;
+    const bool allow_stopping_rendering = is_project_open && rendering;
 
     // Rendering -> Start Interactive Rendering.
     m_ui->action_rendering_start_interactive_rendering->setEnabled(allow_starting_rendering);
@@ -534,6 +539,9 @@ void MainWindow::enable_disable_menu_items(const bool rendering)
     // Rendering -> Stop Rendering.
     m_ui->action_rendering_stop_rendering->setEnabled(allow_stopping_rendering);
     m_action_stop_rendering->setEnabled(allow_stopping_rendering);
+
+    // Rendering -> Render Settings.
+    m_ui->action_rendering_render_settings->setEnabled(is_project_open && !rendering);
 }
 
 void MainWindow::recreate_render_widgets()
@@ -875,8 +883,10 @@ void MainWindow::slot_camera_changed()
 
 void MainWindow::slot_show_render_settings_window()
 {
+    assert(m_project_manager.is_project_open());
+
     if (m_render_settings_window.get() == 0)
-        m_render_settings_window.reset(new RenderSettingsWindow(this));
+        m_render_settings_window.reset(new RenderSettingsWindow(m_project_manager, this));
 
     m_render_settings_window->showNormal();
     m_render_settings_window->activateWindow();

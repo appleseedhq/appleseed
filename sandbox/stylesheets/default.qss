@@ -712,9 +712,13 @@ QGroupBox::indicator:indeterminate:disabled
 
 /*
  * QLineEdit.
+ * QAbstractSpinBox.
+ * QComboBox.
  */
  
-QLineEdit
+QLineEdit,
+QAbstractSpinBox,
+QComboBox
 {
     border: BORDER_STYLE;
     background-color: INPUT_BACKGROUND_COLOR;
@@ -729,6 +733,11 @@ QLineEdit
 QLabel[hasFrame="true"]
 {
     border: BORDER_STYLE;
+}
+
+QLabel:disabled
+{
+    color: DISABLED_TEXT_COLOR;
 }
 
 
@@ -768,9 +777,8 @@ QGroupBox::title
 
 QComboBox
 {
-    border: BORDER_STYLE;
-    background-color: INPUT_BACKGROUND_COLOR;
-    padding: 0px 4px 0px 4px;
+    padding-left: 4px;
+    padding-right: 4px;
 }
 
 QComboBox::drop-down
@@ -805,9 +813,9 @@ QComboBox QAbstractItemView
  * QAbstractSpinBox.
  */
 
-QAbstractSpinBox
+QAbstractSpinBox:disabled
 {
-    border: BORDER_STYLE;
+    color: DISABLED_TEXT_COLOR;
 }
 
 QAbstractSpinBox::up-button,
@@ -847,14 +855,24 @@ QAbstractSpinBox::down-button:disabled
     color: DISABLED_TEXT_COLOR;
 }
 
-QAbstractSpinBox::up-arrow
+QAbstractSpinBox::up-arrow:enabled
 {
     image: url(":/widgets/spinbox_arrow_up_enabled.png");
 }
 
-QAbstractSpinBox::down-arrow
+QAbstractSpinBox::up-arrow:disabled
+{
+    image: url(":/widgets/spinbox_arrow_up_disabled.png");
+}
+
+QAbstractSpinBox::down-arrow:enabled
 {
     image: url(":/widgets/spinbox_arrow_down_enabled.png");
+}
+
+QAbstractSpinBox::down-arrow:disabled
+{
+    image: url(":/widgets/spinbox_arrow_down_disabled.png");
 }
 
 
@@ -870,4 +888,14 @@ appleseed--studio--FoldablePanelWidget > QPushButton
 appleseed--studio--FoldablePanelWidget > QFrame[hasFrame="true"]
 {
     border-top: 0px;
+}
+
+
+/*
+ * Specific styles.
+ */
+
+QWidget#RenderSettingsWindow QWidget#scrollareawidget
+{
+    background-color: INPUT_BACKGROUND_COLOR;
 }
