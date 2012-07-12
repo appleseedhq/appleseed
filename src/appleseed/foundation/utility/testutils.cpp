@@ -94,6 +94,8 @@ bool are_images_feq(
 
     assert(channel_count <= 4);
 
+    size_t differing_pixels = 0;
+
     for (size_t y = 0; y < height; ++y)
     {
         for (size_t x = 0; x < width; ++x)
@@ -107,12 +109,15 @@ bool are_images_feq(
             for (size_t c = 0; c < channel_count; ++c)
             {
                 if (!feq(color1[c], color2[c], eps))
-                    return false;
+                {
+                    ++differing_pixels;
+                    break;
+                }
             }
         }
     }
 
-    return true;
+    return differing_pixels == 0;
 }
 
 void write_point_cloud_image(

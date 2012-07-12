@@ -51,22 +51,25 @@
 #include <string>
 
 using namespace foundation;
+using namespace renderer;
 using namespace std;
 
 TEST_SUITE(AtomKraft_MipMap)
 {
     auto_ptr<Image> create_image(
-        const size_t                input_width,
-        const size_t                input_height,
+        const size_t                image_width,
+        const size_t                image_height,
+        const size_t                tile_width,
+        const size_t                tile_height,
         const size_t                channel_count)
     {
         return
             auto_ptr<Image>(
                 new Image(
-                    input_width,
-                    input_height,
-                    input_width,
-                    input_height,
+                    image_width,
+                    image_height,
+                    tile_width,
+                    tile_height,
                     channel_count,
                     PixelFormatFloat));
     }
@@ -80,8 +83,8 @@ TEST_SUITE(AtomKraft_MipMap)
             auto_ptr<Image>(
                 new Image(
                     *image.get(),
-                    image->properties().m_canvas_width,
-                    image->properties().m_canvas_height,
+                    image->properties().m_tile_width,
+                    image->properties().m_tile_height,
                     PixelFormatFloat));
     }
 
@@ -95,6 +98,8 @@ TEST_SUITE(AtomKraft_MipMap)
 
     auto_ptr<Image> generate_mipmap_level(
         Image&                      input,
+        const size_t                output_tile_width,
+        const size_t                output_tile_height,
         const size_t                level,
         const size_t                filter_radius = 2,
         const float                 filter_sharpness = 0.5f)
@@ -103,45 +108,60 @@ TEST_SUITE(AtomKraft_MipMap)
 
         assert(input_props.m_channel_count == 3 || input_props.m_channel_count == 4);
 
-        const size_t output_width = max<size_t>(1, input_props.m_canvas_width >> level);
-        const size_t output_height = max<size_t>(1, input_props.m_canvas_height >> level);
-
-        auto_ptr<Image> result(
+        auto_ptr<Image> output(
             new Image(
-                output_width,
-                output_height,
-                output_width,
-                output_height,
+                max<size_t>(input_props.m_canvas_width >> level, 1),
+                max<size_t>(input_props.m_canvas_height >> level, 1),
+                output_tile_width,
+                output_tile_height,
                 input_props.m_channel_count,
                 input_props.m_pixel_format));
 
-        renderer::TextureObject input_texture(input);
-        renderer::TextureObject output_texture(*result.get());
+        TiledTextureObject input_texture(input);
+        TiledTextureObject output_texture(*output.get());
 
         if (input_props.m_channel_count == 3)
         {
-            ak::generate_mipmap_level<3, renderer::TextureObject>(
-                output_texture,
-                input_texture,
-                static_cast<int>(level),
-                static_cast<int>(filter_radius),
-                filter_sharpness);
+            for (int ty = 0; ty < output_texture.tile_count_y(); ++ty)
+            {
+                for (int tx = 0; tx < output_texture.tile_count_x(); ++tx)
+                {
+                    ak::generate_mipmap_level<3, TiledTextureObject>(
+                        output_texture,
+                        input_texture,
+                        static_cast<int>(level),
+                        tx,
+                        ty,
+                        static_cast<int>(filter_radius),
+                        filter_sharpness);
+                }
+            }
         }
         else
         {
-            ak::generate_mipmap_level<4, renderer::TextureObject>(
-                output_texture,
-                input_texture,
-                static_cast<int>(level),
-                static_cast<int>(filter_radius),
-                filter_sharpness);
+            for (int ty = 0; ty < output_texture.tile_count_y(); ++ty)
+            {
+                for (int tx = 0; tx < output_texture.tile_count_x(); ++tx)
+                {
+                    ak::generate_mipmap_level<4, TiledTextureObject>(
+                        output_texture,
+                        input_texture,
+                        static_cast<int>(level),
+                        tx,
+                        ty,
+                        static_cast<int>(filter_radius),
+                        filter_sharpness);
+                }
+            }
         }
 
-        return result;
+        return output;
     }
 
     auto_ptr<Image> generate_mipmap_level_float_clamp_linear_rgba(
         Image&                      input,
+        const size_t                output_tile_width,
+        const size_t                output_tile_height,
         const size_t                level,
         const size_t                filter_radius = 2,
         const float                 filter_sharpness = 0.5f)
@@ -151,39 +171,45 @@ TEST_SUITE(AtomKraft_MipMap)
         assert(input_props.m_channel_count == 4);
         assert(input_props.m_pixel_format == PixelFormatFloat);
 
-        const size_t output_width = max<size_t>(1, input_props.m_canvas_width >> level);
-        const size_t output_height = max<size_t>(1, input_props.m_canvas_height >> level);
-
-        auto_ptr<Image> result(
+        auto_ptr<Image> output(
             new Image(
-                output_width,
-                output_height,
-                output_width,
-                output_height,
+                max<size_t>(1, input_props.m_canvas_width >> level),
+                max<size_t>(1, input_props.m_canvas_height >> level),
+                output_tile_width,
+                output_tile_height,
                 4,
                 PixelFormatFloat));
 
-        ak::generate_mipmap_level_float_clamp_linear_rgba(
-            reinterpret_cast<float*>(result->tile(0, 0).get_storage()),
-            reinterpret_cast<const float*>(input.tile(0, 0).get_storage()),
-            static_cast<int>(input_props.m_canvas_width),
-            static_cast<int>(input_props.m_canvas_height),
-            static_cast<int>(level),
-            static_cast<int>(filter_radius),
-            filter_sharpness);
+        TiledTextureObject input_texture(input);
+        TiledTextureObject output_texture(*output.get());
 
-        return result;
+        for (int ty = 0; ty < output_texture.tile_count_y(); ++ty)
+        {
+            for (int tx = 0; tx < output_texture.tile_count_x(); ++tx)
+            {
+                ak::generate_mipmap_level_float_clamp_linear_rgba(
+                    output_texture,
+                    input_texture,
+                    static_cast<int>(level),
+                    tx,
+                    ty,
+                    static_cast<int>(filter_radius),
+                    filter_sharpness);
+            }
+        }
+
+        return output;
     }
 
-    #define EXPECT_IMAGE_EQ(expected, actual)                                                   \
-        EXPECT_SEQUENCE_EQ(                                                                     \
-            (expected).properties().m_pixel_count * (expected).properties().m_channel_count,    \
-            reinterpret_cast<const float*>((expected).tile(0, 0).get_storage()),                \
-            reinterpret_cast<const float*>((actual).tile(0, 0).get_storage()))
+#define EXPECT_IMAGE_EQ(expected, actual)                                                   \
+    EXPECT_SEQUENCE_EQ(                                                                     \
+        (expected).properties().m_pixel_count * (expected).properties().m_channel_count,    \
+        reinterpret_cast<const float*>((expected).tile(0, 0).get_storage()),                \
+        reinterpret_cast<const float*>((actual).tile(0, 0).get_storage()))
 
     TEST_CASE(ExpectImageEq_GivenIdenticalImages_ReturnsTrue)
     {
-        auto_ptr<Image> input(create_image(4, 4, 3));
+        auto_ptr<Image> input(create_image(4, 4, 32, 32, 3));
         input->clear(Color3f(0.5f));
 
         EXPECT_IMAGE_EQ(*input.get(), *input.get());
@@ -191,32 +217,32 @@ TEST_SUITE(AtomKraft_MipMap)
 
     TEST_CASE(GenerateMipmapLevel_Given1x1Input_LevelIs1_Generates1x1OutputWithIdenticalContent)
     {
-        auto_ptr<Image> input(create_image(1, 1, 3));
+        auto_ptr<Image> input(create_image(1, 1, 32, 32, 3));
         input->clear(Color3f(0.5f));
 
-        auto_ptr<Image> output(generate_mipmap_level(*input.get(), 1));
+        auto_ptr<Image> output(generate_mipmap_level(*input.get(), 32, 32, 1));
 
         EXPECT_IMAGE_EQ(*input.get(), *output.get());
     }
 
     TEST_CASE(GenerateMipmapLevelFloatClampLinearRGBA_Given1x1Input_LevelIs1_Generates1x1OutputWithIdenticalContent)
     {
-        auto_ptr<Image> input(create_image(1, 1, 4));
+        auto_ptr<Image> input(create_image(1, 1, 32, 32, 4));
         input->clear(Color4f(0.5f));
 
-        auto_ptr<Image> output(generate_mipmap_level_float_clamp_linear_rgba(*input.get(), 1));
+        auto_ptr<Image> output(generate_mipmap_level_float_clamp_linear_rgba(*input.get(), 32, 32, 1));
 
         EXPECT_IMAGE_EQ(*input.get(), *output.get());
     }
 
-    #undef EXPECT_IMAGE_EQ
+#undef EXPECT_IMAGE_EQ
 
     TEST_CASE(GenerateMipmapLevel_Given8x8BlackInput_LevelIs2_Generates2x2BlackOutput)
     {
-        auto_ptr<Image> input(create_image(8, 8, 3));
+        auto_ptr<Image> input(create_image(8, 8, 32, 32, 3));
         input->clear(Color3f(0.0f));
 
-        auto_ptr<Image> output(generate_mipmap_level(*input.get(), 2));
+        auto_ptr<Image> output(generate_mipmap_level(*input.get(), 32, 32, 2));
 
         Color3f c;
         output->get_pixel(0, 0, c); EXPECT_EQ(Color3f(0.0), c);
@@ -227,16 +253,36 @@ TEST_SUITE(AtomKraft_MipMap)
 
     TEST_CASE(GenerateMipmapLevelFloatClampLinearRGBA_Given8x8BlackInput_LevelIs2_Generates2x2BlackOutput)
     {
-        auto_ptr<Image> input(create_image(8, 8, 4));
+        auto_ptr<Image> input(create_image(8, 8, 32, 32, 4));
         input->clear(Color4f(0.0f));
 
-        auto_ptr<Image> output(generate_mipmap_level_float_clamp_linear_rgba(*input.get(), 2));
+        auto_ptr<Image> output(generate_mipmap_level_float_clamp_linear_rgba(*input.get(), 32, 32, 2));
 
         Color4f c;
         output->get_pixel(0, 0, c); EXPECT_EQ(Color4f(0.0), c);
         output->get_pixel(1, 0, c); EXPECT_EQ(Color4f(0.0), c);
         output->get_pixel(0, 1, c); EXPECT_EQ(Color4f(0.0), c);
         output->get_pixel(1, 1, c); EXPECT_EQ(Color4f(0.0), c);
+    }
+
+    TEST_CASE(GenerateMipmapLevel_InputAndOutputTilesDimensionsAreDifferent)
+    {
+        auto_ptr<Image> input(read_image("unit tests/inputs/test_mipmap_rgb.exr"));
+        auto_ptr<Image> expected_level1(read_image("unit tests/inputs/test_mipmap_rgb_expected_level1.exr"));
+
+        auto_ptr<Image> output(generate_mipmap_level(*input.get(), 17, 17, 1, 8));
+
+        EXPECT_TRUE(are_images_feq(*expected_level1.get(), *output.get(), 1.0e-3f));
+    }
+
+    TEST_CASE(GenerateMipmapLevel_InputIsRectangularWithPrimeDimensions)
+    {
+        auto_ptr<Image> input(read_image("unit tests/inputs/test_mipmap_rgb_prime_rectangle.exr"));
+        auto_ptr<Image> expected_level1(read_image("unit tests/inputs/test_mipmap_rgb_prime_rectangle_expected_level1.exr"));
+
+        auto_ptr<Image> output(generate_mipmap_level(*input.get(), 32, 32, 1, 8));
+
+        EXPECT_TRUE(are_images_feq(*expected_level1.get(), *output.get(), 1.0e-3f));
     }
 
     TEST_CASE(GenerateMipmapLevel_WriteMipMapPyramidToDisk)
@@ -246,15 +292,12 @@ TEST_SUITE(AtomKraft_MipMap)
 
         for (size_t i = 1; i < 10; ++i)
         {
-            auto_ptr<Image> output(generate_mipmap_level(*input.get(), i, 4));
+            auto_ptr<Image> output(generate_mipmap_level(*input.get(), 32, 32, i, 8));
 
             if (i == 1)
                 EXPECT_TRUE(are_images_feq(*expected_level1.get(), *output.get(), 1.0e-3f));
 
-            const string filepath =
-                "unit tests/outputs/test_mipmap_rgb_" + to_string(i) + ".png";
-
-            write_image(*output.get(), filepath);
+            write_image(*output.get(), "unit tests/outputs/test_mipmap_rgb_" + to_string(i) + ".png");
         }
     }
 
@@ -265,15 +308,12 @@ TEST_SUITE(AtomKraft_MipMap)
 
         for (size_t i = 1; i < 10; ++i)
         {
-            auto_ptr<Image> output(generate_mipmap_level_float_clamp_linear_rgba(*input.get(), i, 4));
+            auto_ptr<Image> output(generate_mipmap_level_float_clamp_linear_rgba(*input.get(), 32, 32, i, 8));
 
             if (i == 1)
                 EXPECT_TRUE(are_images_feq(*expected_level1.get(), *output.get(), 1.0e-3f));
 
-            const string filepath =
-                "unit tests/outputs/test_mipmap_rgba_" + to_string(i) + ".png";
-
-            write_image(*output.get(), filepath);
+            write_image(*output.get(), "unit tests/outputs/test_mipmap_rgba_" + to_string(i) + ".png");
         }
     }
 }

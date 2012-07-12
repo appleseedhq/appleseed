@@ -33,6 +33,7 @@
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
 #include "foundation/image/image.h"
+#include "foundation/image/pixel.h"
 #include "foundation/image/tile.h"
 #include "foundation/math/scalar.h"
 
@@ -45,6 +46,142 @@ using namespace std;
 
 namespace renderer
 {
+
+//
+// TileObject class implementation.
+//
+
+TileObject::TileObject(Tile& tile)
+  : m_tile(tile)
+{
+    assert(m_tile.get_pixel_format() == PixelFormatFloat);
+}
+
+int TileObject::width() const
+{
+    return m_tile.get_width();
+}
+
+int TileObject::height() const
+{
+    return m_tile.get_height();
+}
+
+void* TileObject::pixels()
+{
+    return m_tile.get_storage();
+}
+
+const void* TileObject::pixels() const
+{
+    return m_tile.get_storage();
+}
+
+void TileObject::get(
+    const int   x,
+    const int   y,
+    float       texel[]) const
+{
+    const int clamped_x = clamp(x, 0, static_cast<int>(m_tile.get_width()) - 1);
+    const int clamped_y = clamp(y, 0, static_cast<int>(m_tile.get_height()) - 1);
+
+    memcpy(
+        texel,
+        m_tile.pixel(clamped_x, clamped_y),
+        m_tile.get_channel_count() * sizeof(float));
+}
+
+void TileObject::put(
+    const int   x,
+    const int   y,
+    const float texel[])
+{
+    assert(x >= 0 && x < static_cast<int>(m_tile.get_width()));
+    assert(y >= 0 && y < static_cast<int>(m_tile.get_height()));
+
+    memcpy(m_tile.pixel(x, y), texel, m_tile.get_channel_count() * sizeof(float));
+}
+
+
+//
+// TiledTextureObject class implementation.
+//
+
+TiledTextureObject::TiledTextureObject(Image& texture)
+  : m_texture(texture)
+  , m_props(texture.properties())
+{
+    m_tile_objects.resize(m_props.m_tile_count);
+
+    for (size_t ty = 0; ty < m_props.m_tile_count_y; ++ty)
+    {
+        for (size_t tx = 0; tx < m_props.m_tile_count_x; ++tx)
+        {
+            m_tile_objects[ty * m_props.m_tile_count_x + tx] = new TileObject(m_texture.tile(tx, ty));
+        }
+    }
+}
+
+TiledTextureObject::~TiledTextureObject()
+{
+    for (size_t i = 0; i < m_tile_objects.size(); ++i)
+        delete m_tile_objects[i];
+}
+
+int TiledTextureObject::width() const
+{
+    return m_props.m_canvas_width;
+}
+
+int TiledTextureObject::height() const
+{
+    return m_props.m_canvas_height;
+}
+
+int TiledTextureObject::tile_width() const
+{
+    return m_props.m_tile_width;
+}
+
+int TiledTextureObject::tile_height() const
+{
+    return m_props.m_tile_height;
+}
+
+int TiledTextureObject::tile_count_x() const
+{
+    return m_props.m_tile_count_x;
+}
+
+int TiledTextureObject::tile_count_y() const
+{
+    return m_props.m_tile_count_y;
+}
+
+TileObject& TiledTextureObject::tile(
+    const int   tile_x,
+    const int   tile_y)
+{
+    assert(tile_x >= 0 && tile_x < static_cast<int>(m_props.m_tile_count_x));
+    assert(tile_y >= 0 && tile_y < static_cast<int>(m_props.m_tile_count_y));
+
+    return *m_tile_objects[tile_y * m_props.m_tile_count_x + tile_x];
+}
+
+const TileObject& TiledTextureObject::tile(
+    const int   tile_x,
+    const int   tile_y) const
+{
+    assert(tile_x >= 0 && tile_x < static_cast<int>(m_props.m_tile_count_x));
+    assert(tile_y >= 0 && tile_y < static_cast<int>(m_props.m_tile_count_y));
+
+    return *m_tile_objects[tile_y * m_props.m_tile_count_x + tile_x];
+}
+
+
+//
+// TextureObject class implementation.
+//
 
 TextureObject::TextureObject(Image& texture)
   : m_texture(texture)

@@ -37,7 +37,9 @@
 #include <vector>
 
 // Forward declarations.
+namespace foundation    { class CanvasProperties; }
 namespace foundation    { class Image; }
+namespace foundation    { class Tile; }
 
 namespace renderer
 {
@@ -45,6 +47,63 @@ namespace renderer
 //
 // The interface between appleseed.foundation and AtomKraft-specific code.
 //
+
+class TileObject
+  : public foundation::NonCopyable
+{
+  public:
+    explicit TileObject(foundation::Tile& tile);
+
+    int width() const;
+    int height() const;
+
+    void* pixels();
+    const void* pixels() const;
+
+    void get(
+        const int       x,
+        const int       y,
+        float           texel[]) const;
+
+    void put(
+        const int       x,
+        const int       y,
+        const float     texel[]);
+
+  private:
+    foundation::Tile&   m_tile;
+};
+
+class TiledTextureObject
+  : public foundation::NonCopyable
+{
+  public:
+    typedef TileObject TileType;
+
+    explicit TiledTextureObject(foundation::Image& texture);
+
+    ~TiledTextureObject();
+
+    int width() const;
+    int height() const;
+    int tile_width() const;
+    int tile_height() const;
+    int tile_count_x() const;
+    int tile_count_y() const;
+
+    TileType& tile(
+        const int       tile_x,
+        const int       tile_y);
+
+    const TileType& tile(
+        const int       tile_x,
+        const int       tile_y) const;
+
+  private:
+    foundation::Image&                  m_texture;
+    const foundation::CanvasProperties& m_props;
+    std::vector<TileType*>              m_tile_objects;
+};
 
 class TextureObject
   : public foundation::NonCopyable

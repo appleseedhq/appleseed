@@ -189,7 +189,8 @@ namespace
             // Build the path to the default stylesheet file.
             const filesystem::path stylesheet_path =
                   filesystem::path(Application::get_root_path())
-                / "stylesheets/default.qss";
+                / "stylesheets"
+                / "default.qss";
 
             // Load and apply the stylesheet.
             string stylesheet;

@@ -243,6 +243,11 @@ QAbstractScrollArea::corner
     background-color: transparent;
 }
 
+QAbstractScrollArea[hasFrame="true"]
+{
+    border: BORDER_STYLE;
+}
+
 
 /*
  * QMenuBar.
@@ -644,53 +649,62 @@ QAbstractItemView::item
 /*
  * QCheckBox.
  * QAbstractItemView.
+ * QGroupBox.
  */
 
 QCheckBox::indicator,
-QAbstractItemView::indicator
+QAbstractItemView::indicator,
+QGroupBox::indicator
 {
     background-color: ACTIVE_BACKGROUND_COLOR;
 }
 
 QCheckBox::indicator:hover,
-QAbstractItemView::indicator:hover
+QAbstractItemView::indicator:hover,
+QGroupBox::indicator:hover
 {
     background-color: HOVER_BACKGROUND_COLOR;
     color: HOVER_TEXT_COLOR;
 }
 
 QCheckBox::indicator:checked:enabled,
-QAbstractItemView::indicator:checked:enabled
+QAbstractItemView::indicator:checked:enabled,
+QGroupBox::indicator:checked:enabled
 {
     image: url(":/widgets/checkbox_checked_enabled.png");
 }
 
 QCheckBox::indicator:unchecked:enabled,
-QAbstractItemView::indicator:unchecked:enabled
+QAbstractItemView::indicator:unchecked:enabled,
+QGroupBox::indicator:unchecked:enabled
 {
     image: url(":/widgets/checkbox_unchecked_enabled.png");
 }
 
 QCheckBox::indicator:indeterminate:enabled,
-QAbstractItemView::indicator:indeterminate:enabled
+QAbstractItemView::indicator:indeterminate:enabled,
+QGroupBox::indicator:indeterminate:enabled
 {
     image: url(":/widgets/checkbox_indeterminate_enabled.png");
 }
 
 QCheckBox::indicator:checked:disabled,
-QAbstractItemView::indicator:checked:disabled
+QAbstractItemView::indicator:checked:disabled,
+QGroupBox::indicator:checked:disabled
 {
     image: url(":/widgets/checkbox_checked_disabled.png");
 }
 
 QCheckBox::indicator:unchecked:disabled,
-QAbstractItemView::indicator:unchecked:disabled
+QAbstractItemView::indicator:unchecked:disabled,
+QGroupBox::indicator:unchecked:disabled
 {
     image: url(":/widgets/checkbox_unchecked_disabled.png");
 }
 
 QCheckBox::indicator:indeterminate:disabled,
-QAbstractItemView::indicator:indeterminate:disabled
+QAbstractItemView::indicator:indeterminate:disabled,
+QGroupBox::indicator:indeterminate:disabled
 {
     image: url(":/widgets/checkbox_indeterminate_disabled.png");
 }
@@ -725,6 +739,26 @@ QLabel[hasFrame="true"]
 QFrame[hasFrame="true"]
 {
     border: BORDER_STYLE;
+}
+
+
+/*
+ * QGroupBox.
+ */
+
+QGroupBox
+{
+    border: BORDER_STYLE;
+    padding-top: 8px;
+    margin-top: 10px;
+}
+
+QGroupBox::title
+{
+    top: -7px;
+    left: 8px;
+    padding-left: 3px;
+    padding-right: 3px;
 }
 
 
@@ -768,57 +802,72 @@ QComboBox QAbstractItemView
 
 
 /*
- * QSpinBox.
+ * QAbstractSpinBox.
  */
 
-QSpinBox
+QAbstractSpinBox
 {
     border: BORDER_STYLE;
 }
 
-QSpinBox::up-button,
-QSpinBox::down-button
+QAbstractSpinBox::up-button,
+QAbstractSpinBox::down-button
 {
     background-color: ACTIVE_BACKGROUND_COLOR;
     border-left: BORDER_STYLE;
 }
 
-QSpinBox::up-button
+QAbstractSpinBox::up-button
 {
     border-bottom: BORDER_STYLE;
 }
 
-QSpinBox::down-button
+QAbstractSpinBox::down-button
 {
     border-top: BORDER_STYLE;
 }
 
-QSpinBox::up-button:hover,
-QSpinBox::down-button:hover
+QAbstractSpinBox::up-button:hover,
+QAbstractSpinBox::down-button:hover
 {
     background-color: HOVER_BACKGROUND_COLOR;
     color: HOVER_TEXT_COLOR;
 }
 
-QSpinBox::up-button:pressed,
-QSpinBox::down-button:pressed
+QAbstractSpinBox::up-button:pressed,
+QAbstractSpinBox::down-button:pressed
 {
     background-color: SELECTED_BACKGROUND_COLOR;
     color: SELECTED_TEXT_COLOR;
 }
 
-QSpinBox::up-button:disabled,
-QSpinBox::down-button:disabled
+QAbstractSpinBox::up-button:disabled,
+QAbstractSpinBox::down-button:disabled
 {
     color: DISABLED_TEXT_COLOR;
 }
 
-QSpinBox::up-arrow
+QAbstractSpinBox::up-arrow
 {
     image: url(":/widgets/spinbox_arrow_up_enabled.png");
 }
 
-QSpinBox::down-arrow
+QAbstractSpinBox::down-arrow
 {
     image: url(":/widgets/spinbox_arrow_down_enabled.png");
+}
+
+
+/*
+ * appleseed::studio::FoldablePanelWidget.
+ */
+
+appleseed--studio--FoldablePanelWidget > QPushButton
+{
+    border-radius: 0px;
+}
+
+appleseed--studio--FoldablePanelWidget > QFrame[hasFrame="true"]
+{
+    border-top: 0px;
 }
