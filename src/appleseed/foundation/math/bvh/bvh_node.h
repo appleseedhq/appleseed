@@ -45,7 +45,7 @@ namespace bvh {
 //
 
 template <typename AABB>
-class ALIGN(64) Node
+class FOUNDATION_ALIGN(64) Node
 {
   public:
     typedef AABB AABBType;
