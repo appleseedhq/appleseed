@@ -37,9 +37,7 @@
 #include "foundation/platform/compiler.h"
 
 // Qt headers.
-#include <QDesktopWidget>
 #include <QKeySequence>
-#include <QRect>
 #include <QShortcut>
 #include <QString>
 #include <Qt>
@@ -76,13 +74,6 @@ AboutWindow::AboutWindow(QWidget* parent)
 AboutWindow::~AboutWindow()
 {
     delete m_ui;
-}
-
-void AboutWindow::center()
-{
-    QRect frect = frameGeometry();
-    frect.moveCenter(QDesktopWidget().availableGeometry().center());
-    move(frect.topLeft());
 }
 
 void AboutWindow::set_version_string()

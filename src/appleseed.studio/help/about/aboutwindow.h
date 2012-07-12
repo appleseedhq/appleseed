@@ -49,8 +49,6 @@ class AboutWindow
 
     ~AboutWindow();
 
-    void center();
-
   private:
     // Not wrapped in std::auto_ptr<> to avoid pulling in the UI definition code.
     Ui::AboutWindow* m_ui;

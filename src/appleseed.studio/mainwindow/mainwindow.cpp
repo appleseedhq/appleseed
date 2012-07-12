@@ -903,8 +903,6 @@ void MainWindow::slot_show_benchmark_window()
 void MainWindow::slot_show_about_window()
 {
     AboutWindow* about_window = new AboutWindow(this);
-
-    about_window->center();
     about_window->showNormal();
     about_window->activateWindow();
 }
