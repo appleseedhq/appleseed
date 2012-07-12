@@ -39,10 +39,12 @@ void bind_project();
 void bind_renderer_controller();
 void bind_scene();
 void bind_utility();
+void bind_vector();
 
 // appleseed python module
 BOOST_PYTHON_MODULE( _appleseed)
 {
+    bind_vector();
 	bind_utility();
     bind_entity();
     bind_camera();

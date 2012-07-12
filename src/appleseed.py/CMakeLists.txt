@@ -60,6 +60,7 @@ set (sources
     bind_renderer_controller.cpp
     bind_scene.cpp
     bind_utility.cpp
+    bind_vector.cpp
 
     py_utility.hpp
     py_utility.cpp
