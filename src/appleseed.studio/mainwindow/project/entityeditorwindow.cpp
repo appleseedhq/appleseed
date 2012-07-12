@@ -101,13 +101,8 @@ EntityEditorWindow::EntityEditorWindow(
         m_color_picker_signal_mapper, SIGNAL(mapped(const QString&)),
         this, SLOT(slot_open_color_picker(const QString&)));
 
-    connect(
-        m_ui->buttonbox->button(QDialogButtonBox::Ok), SIGNAL(clicked()),
-        this, SLOT(slot_accept()));
-
-    connect(
-        m_ui->buttonbox->button(QDialogButtonBox::Cancel), SIGNAL(clicked()),
-        this, SLOT(close()));
+    connect(m_ui->buttonbox, SIGNAL(accepted()), this, SLOT(slot_accept()));
+    connect(m_ui->buttonbox, SIGNAL(rejected()), this, SLOT(close()));
 
     connect(
         create_window_local_shortcut(this, Qt::Key_Return), SIGNAL(activated()),
