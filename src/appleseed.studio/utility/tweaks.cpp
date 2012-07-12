@@ -40,9 +40,9 @@
 namespace appleseed {
 namespace studio {
 
-void disable_mac_focus_rect(QWidget& widget)
+void disable_mac_focus_rect(QWidget* widget)
 {
-    widget.setAttribute(Qt::WA_MacShowFocusRect, false);
+    widget->setAttribute(Qt::WA_MacShowFocusRect, false);
 }
 
 void set_minimum_width(QMessageBox& msgbox, const int minimum_width)

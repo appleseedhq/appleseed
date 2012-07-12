@@ -307,8 +307,8 @@ void MainWindow::build_project_explorer()
     m_ui->treewidget_project_explorer_scene->setColumnWidth(0, 220);    // name
     m_ui->treewidget_project_explorer_scene->setColumnWidth(1, 75);     // render layer
 
-    disable_mac_focus_rect(*m_ui->treewidget_project_explorer_scene);
-    disable_mac_focus_rect(*m_ui->treewidget_project_explorer_renders);
+    disable_mac_focus_rect(m_ui->treewidget_project_explorer_scene);
+    disable_mac_focus_rect(m_ui->treewidget_project_explorer_renders);
 
     connect(
         m_ui->lineedit_filter, SIGNAL(textChanged(const QString&)),
