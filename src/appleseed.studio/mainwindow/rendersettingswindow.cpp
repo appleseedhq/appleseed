@@ -112,12 +112,20 @@ RenderSettingsWindow::RenderSettingsWindow(ProjectManager& project_manager, QWid
         create_window_local_shortcut(this, Qt::Key_Escape), SIGNAL(activated()),
         this, SLOT(close()));
 
-    reload();
+    update();
 }
 
 RenderSettingsWindow::~RenderSettingsWindow()
 {
     delete m_ui;
+}
+
+void RenderSettingsWindow::update() const
+{
+    m_ui->combobox_configurations->clear();
+
+    for (const_each<ConfigurationContainer> i = m_project_manager.get_project()->configurations(); i; ++i)
+        m_ui->combobox_configurations->addItem(i->get_name());
 }
 
 void RenderSettingsWindow::create_panels()
@@ -132,6 +140,12 @@ void RenderSettingsWindow::create_panels()
     create_system_panel(root);
 }
 
+void RenderSettingsWindow::set_panels_enabled(const bool enabled)
+{
+    for (const_each<PanelCollection> i = m_panels; i; ++i)
+        (*i)->container()->setEnabled(enabled);
+}
+
 //---------------------------------------------------------------------------------------------
 // Image Plane Sampling panel.
 //---------------------------------------------------------------------------------------------
@@ -140,6 +154,7 @@ void RenderSettingsWindow::create_image_plane_sampling_panel(QLayout* parent)
 {
     FoldablePanelWidget* panel = new FoldablePanelWidget("Image Plane Sampling");
     parent->addWidget(panel);
+    m_panels.push_back(panel);
 
     QVBoxLayout* layout = new QVBoxLayout();
     panel->container()->setLayout(layout);
@@ -209,6 +224,7 @@ void RenderSettingsWindow::create_lighting_panel(QLayout* parent)
 {
     FoldablePanelWidget* panel = new FoldablePanelWidget("Lighting");
     parent->addWidget(panel);
+    m_panels.push_back(panel);
 
     QFormLayout* layout = create_form_layout();
     panel->container()->setLayout(layout);
@@ -227,6 +243,8 @@ void RenderSettingsWindow::create_drt_panel(QLayout* parent)
 {
     FoldablePanelWidget* panel = new FoldablePanelWidget("Distribution Ray Tracer");
     parent->addWidget(panel);
+    m_panels.push_back(panel);
+
     panel->fold();
 
     QVBoxLayout* layout = new QVBoxLayout();
@@ -287,6 +305,8 @@ void RenderSettingsWindow::create_pt_panel(QLayout* parent)
 {
     FoldablePanelWidget* panel = new FoldablePanelWidget("Unidirectional Path Tracer");
     parent->addWidget(panel);
+    m_panels.push_back(panel);
+
     panel->fold();
 
     QVBoxLayout* layout = new QVBoxLayout();
@@ -341,6 +361,47 @@ void RenderSettingsWindow::create_pt_advanced_ibl_settings(QVBoxLayout* parent)
 }
 
 //---------------------------------------------------------------------------------------------
+// System panel.
+//---------------------------------------------------------------------------------------------
+
+void RenderSettingsWindow::create_system_panel(QLayout* parent)
+{
+    FoldablePanelWidget* panel = new FoldablePanelWidget("System");
+    parent->addWidget(panel);
+    m_panels.push_back(panel);
+
+    panel->fold();
+
+    QVBoxLayout* layout = new QVBoxLayout();
+    panel->container()->setLayout(layout);
+
+    create_system_override_rendering_threads_settings(layout);
+    create_system_override_texture_cache_size_settings(layout);
+}
+
+void RenderSettingsWindow::create_system_override_rendering_threads_settings(QVBoxLayout* parent)
+{
+    QGroupBox* groupbox = create_checkable_groupbox("system.rendering_threads.override", "Override");
+    parent->addWidget(groupbox);
+
+    QFormLayout* layout = create_form_layout();
+    groupbox->setLayout(layout);
+
+    layout->addRow("Rendering Threads:", create_integer_input("system.rendering_threads.value", 1, 65536));
+}
+
+void RenderSettingsWindow::create_system_override_texture_cache_size_settings(QVBoxLayout* parent)
+{
+    QGroupBox* groupbox = create_checkable_groupbox("system.texture_cache_size.override", "Override");
+    parent->addWidget(groupbox);
+
+    QFormLayout* layout = create_form_layout();
+    groupbox->setLayout(layout);
+
+    layout->addRow("Texture Cache Size:", create_integer_input("system.texture_cache_size.value", 1, 1024 * 1024, "MB"));
+}
+
+//---------------------------------------------------------------------------------------------
 // Reusable settings.
 //---------------------------------------------------------------------------------------------
 
@@ -375,45 +436,6 @@ void RenderSettingsWindow::create_bounce_settings(QVBoxLayout* parent, const str
     connect(unlimited_bounces, SIGNAL(toggled(bool)), max_bounces, SLOT(setDisabled(bool)));
 
     layout->addRow("Russian Roulette Start Bounce:", create_integer_input(widget_base_key + "rr_start_bounce", 1, 10000));
-}
-
-//---------------------------------------------------------------------------------------------
-// System panel.
-//---------------------------------------------------------------------------------------------
-
-void RenderSettingsWindow::create_system_panel(QLayout* parent)
-{
-    FoldablePanelWidget* panel = new FoldablePanelWidget("System");
-    parent->addWidget(panel);
-    panel->fold();
-
-    QVBoxLayout* layout = new QVBoxLayout();
-    panel->container()->setLayout(layout);
-
-    create_system_override_rendering_threads_settings(layout);
-    create_system_override_texture_cache_size_settings(layout);
-}
-
-void RenderSettingsWindow::create_system_override_rendering_threads_settings(QVBoxLayout* parent)
-{
-    QGroupBox* groupbox = create_checkable_groupbox("system.rendering_threads.override", "Override");
-    parent->addWidget(groupbox);
-
-    QFormLayout* layout = create_form_layout();
-    groupbox->setLayout(layout);
-
-    layout->addRow("Rendering Threads:", create_integer_input("system.rendering_threads.value", 1, 65536));
-}
-
-void RenderSettingsWindow::create_system_override_texture_cache_size_settings(QVBoxLayout* parent)
-{
-    QGroupBox* groupbox = create_checkable_groupbox("system.texture_cache_size.override", "Override");
-    parent->addWidget(groupbox);
-
-    QFormLayout* layout = create_form_layout();
-    groupbox->setLayout(layout);
-
-    layout->addRow("Texture Cache Size:", create_integer_input("system.texture_cache_size.value", 1, 1024 * 1024, "MB"));
 }
 
 //---------------------------------------------------------------------------------------------
@@ -585,18 +607,15 @@ void RenderSettingsWindow::create_direct_link(
     m_direct_links.push_back(direct_link);
 }
 
-void RenderSettingsWindow::reload() const
-{
-    m_ui->combobox_configurations->clear();
-
-    for (const_each<ConfigurationContainer> i = m_project_manager.get_project()->configurations(); i; ++i)
-        m_ui->combobox_configurations->addItem(i->get_name());
-}
-
 void RenderSettingsWindow::load_configuration(const QString& name)
 {
     if (!name.isEmpty())
+    {
         load_configuration(get_configuration(name));
+
+        set_panels_enabled(
+            !BaseConfigurationFactory::is_base_configuration(name.toAscii().constData()));
+    }
 
     m_current_configuration_name = name;
 }

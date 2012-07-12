@@ -431,7 +431,7 @@ void MainWindow::on_project_change()
     update_override_shading_menu_item();
 
     if (m_render_settings_window.get())
-        m_render_settings_window->reload();
+        m_render_settings_window->update();
 
     m_ui->lineedit_filter->clear();
     m_status_bar.clear();

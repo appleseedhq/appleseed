@@ -40,6 +40,7 @@
 #include <vector>
 
 // Forward declarations.
+namespace appleseed { namespace studio { class FoldablePanelWidget; } }
 namespace appleseed { namespace studio { class IInputWidgetProxy; } }
 namespace appleseed { namespace studio { class ProjectManager; } }
 namespace renderer  { class Configuration; }
@@ -73,9 +74,11 @@ class RenderSettingsWindow
     // Destructor.
     ~RenderSettingsWindow();
 
-    void reload() const;
+    // Load the configurations of the currently open project.
+    void update() const;
 
   private:
+    typedef std::vector<FoldablePanelWidget*> PanelCollection;
     typedef std::map<std::string, IInputWidgetProxy*> WidgetProxyCollection;
 
     struct DirectLink
@@ -88,16 +91,18 @@ class RenderSettingsWindow
     typedef std::vector<DirectLink> DirectLinkCollection;
 
     // Not wrapped in std::auto_ptr<> to avoid pulling in the UI definition code.
-    Ui::RenderSettingsWindow* m_ui;
+    Ui::RenderSettingsWindow*   m_ui;
 
-    ProjectManager&                     m_project_manager;
+    ProjectManager&             m_project_manager;
 
-    WidgetProxyCollection               m_widget_proxies;
-    DirectLinkCollection                m_direct_links;
+    PanelCollection             m_panels;
+    WidgetProxyCollection       m_widget_proxies;
+    DirectLinkCollection        m_direct_links;
 
-    QString                             m_current_configuration_name;
+    QString                     m_current_configuration_name;
 
     void create_panels();
+    void set_panels_enabled(const bool enabled);
 
     void create_image_plane_sampling_panel(QLayout* parent);
     void create_image_plane_sampling_general_settings(QVBoxLayout* parent);
@@ -117,12 +122,12 @@ class RenderSettingsWindow
     void create_pt_advanced_dl_settings(QVBoxLayout* parent);
     void create_pt_advanced_ibl_settings(QVBoxLayout* parent);
 
-    void create_lighting_components_settings(QVBoxLayout* parent, const std::string& lighting_engine);
-    void create_bounce_settings(QVBoxLayout* parent, const std::string& lighting_engine);
-
     void create_system_panel(QLayout* parent);
     void create_system_override_rendering_threads_settings(QVBoxLayout* parent);
     void create_system_override_texture_cache_size_settings(QVBoxLayout* parent);
+
+    void create_lighting_components_settings(QVBoxLayout* parent, const std::string& lighting_engine);
+    void create_bounce_settings(QVBoxLayout* parent, const std::string& lighting_engine);
 
     static QHBoxLayout* create_horizontal_layout();
     static QVBoxLayout* create_vertical_layout();
