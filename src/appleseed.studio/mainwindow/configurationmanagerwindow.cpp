@@ -32,6 +32,13 @@
 // UI definition header.
 #include "ui_configurationmanagerwindow.h"
 
+// appleseed.studio headers.
+#include "utility/tweaks.h"
+
+// Qt headers.
+#include <QShortcut>
+#include <Qt>
+
 namespace appleseed {
 namespace studio {
 
@@ -46,6 +53,21 @@ ConfigurationManagerWindow::ConfigurationManagerWindow(QWidget* parent)
     m_ui->setupUi(this);
 
     setWindowFlags(Qt::Window);
+
+    connect(m_ui->buttonbox, SIGNAL(accepted()), this, SLOT(close()));
+    connect(m_ui->buttonbox, SIGNAL(rejected()), this, SLOT(close()));
+
+    connect(
+        create_window_local_shortcut(this, Qt::Key_Return), SIGNAL(activated()),
+        this, SLOT(close()));
+
+    connect(
+        create_window_local_shortcut(this, Qt::Key_Enter), SIGNAL(activated()),
+        this, SLOT(close()));
+
+    connect(
+        create_window_local_shortcut(this, Qt::Key_Escape), SIGNAL(activated()),
+        this, SLOT(close()));
 }
 
 ConfigurationManagerWindow::~ConfigurationManagerWindow()
