@@ -31,7 +31,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
-#include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/entity/entity.h"
 #include "renderer/utility/transformsequence.h"
 
@@ -41,6 +40,7 @@
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
 namespace renderer      { class Project; }
+namespace renderer      { class ShadingRay; }
 
 namespace renderer
 {
@@ -70,6 +70,12 @@ class RENDERERDLL Camera
 
     // Get the focal length (in meters).
     double get_focal_length() const;
+
+    // Get the shutter open time.
+    double get_shutter_open_time() const;
+
+    // Get the shutter close time.
+    double get_shutter_close_time() const;
 
     // Get the view pyramid of the camera.
     const foundation::Pyramid3d& get_view_pyramid() const;
@@ -117,6 +123,11 @@ class RENDERERDLL Camera
         bool&                           autofocus_enabled,
         foundation::Vector2d&           autofocus_target,
         double&                         focal_distance) const;
+
+    // Initialize a ray but does not set its origin or direction.
+    void initialize_ray(
+        SamplingContext&                sampling_context,
+        ShadingRay&                     ray) const;
 
   private:
     bool has_param(const char* name) const;

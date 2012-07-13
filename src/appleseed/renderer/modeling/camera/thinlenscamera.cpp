@@ -32,6 +32,7 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/kernel/shading/shadingray.h"
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/camera/camera.h"
@@ -138,11 +139,7 @@ namespace
             ShadingRay&             ray) const
         {
             // Initialize the ray.
-            sampling_context.split_in_place(1, 1);
-            ray.m_time = sampling_context.next_double2();
-            ray.m_tmin = 0.0;
-            ray.m_tmax = numeric_limits<double>::max();
-            ray.m_flags = ~0;
+            initialize_ray(sampling_context, ray);
 
             // Sample the surface of the lens.
             Vector2d lens_point;
@@ -259,11 +256,11 @@ namespace
 
         double get_autofocus_focal_distance(const Intersector& intersector) const
         {
-            // Create a ray.
+            // Create a ray. The autofocus considers the scene in the middle of the shutter interval.
             ShadingRay ray;
             ray.m_tmin = 0.0;
             ray.m_tmax = numeric_limits<double>::max();
-            ray.m_time = 0.0;
+            ray.m_time = 0.5 * (get_shutter_open_time() + get_shutter_close_time());
             ray.m_flags = ~0;
 
             // Set the ray origin.

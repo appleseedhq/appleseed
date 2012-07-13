@@ -30,6 +30,7 @@
 #include "pinholecamera.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/utility/transformsequence.h"
 
@@ -108,11 +109,7 @@ namespace
             ShadingRay&             ray) const
         {
             // Initialize the ray.
-            sampling_context.split_in_place(1, 1);
-            ray.m_time = sampling_context.next_double2();
-            ray.m_tmin = 0.0;
-            ray.m_tmax = numeric_limits<double>::max();
-            ray.m_flags = ~0;
+            initialize_ray(sampling_context, ray);
 
             // Transform the film point from NDC to camera space.
             const Vector3d target(
