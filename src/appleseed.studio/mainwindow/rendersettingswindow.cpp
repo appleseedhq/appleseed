@@ -43,6 +43,7 @@
 #include "renderer/api/project.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/system.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/string.h"
 
@@ -394,10 +395,10 @@ void RenderSettingsWindow::create_system_override_rendering_threads_settings(QVB
     QGroupBox* groupbox = create_checkable_groupbox("system.rendering_threads.override", "Override");
     parent->addWidget(groupbox);
 
-    QFormLayout* layout = create_form_layout();
-    groupbox->setLayout(layout);
-
-    layout->addRow("Rendering Threads:", create_integer_input("system.rendering_threads.value", 1, 65536));
+    QSpinBox* rendering_threads = create_integer_input("system.rendering_threads.value", 1, 65536);
+    QCheckBox* auto_rendering_threads = create_checkbox("system.rendering_threads.auto", "Auto");
+    groupbox->setLayout(create_form_layout("Rendering Threads:", create_horizontal_group(rendering_threads, auto_rendering_threads)));
+    connect(auto_rendering_threads, SIGNAL(toggled(bool)), rendering_threads, SLOT(setDisabled(bool)));
 }
 
 void RenderSettingsWindow::create_system_override_texture_cache_size_settings(QVBoxLayout* parent)
@@ -405,10 +406,10 @@ void RenderSettingsWindow::create_system_override_texture_cache_size_settings(QV
     QGroupBox* groupbox = create_checkable_groupbox("system.texture_cache_size.override", "Override");
     parent->addWidget(groupbox);
 
-    QFormLayout* layout = create_form_layout();
-    groupbox->setLayout(layout);
-
-    layout->addRow("Texture Cache Size:", create_integer_input("system.texture_cache_size.value", 1, 1024 * 1024, "MB"));
+    groupbox->setLayout(
+        create_form_layout(
+            "Texture Cache Size:",
+            create_integer_input("system.texture_cache_size.value", 1, 1024 * 1024, "MB")));
 }
 
 //---------------------------------------------------------------------------------------------
@@ -440,7 +441,7 @@ void RenderSettingsWindow::create_bounce_settings(QVBoxLayout* parent, const str
     QFormLayout* layout = new QFormLayout();
     groupbox->setLayout(layout);
 
-    QSpinBox* max_bounces = create_integer_input(widget_base_key + "max_bounces", 1, 10000);
+    QSpinBox* max_bounces = create_integer_input(widget_base_key + "max_bounces", 0, 10000);
     QCheckBox* unlimited_bounces = create_checkbox(widget_base_key + "unlimited_bounces", "Unlimited");
     layout->addRow("Max Bounces:", create_horizontal_group(max_bounces, unlimited_bounces));
     connect(unlimited_bounces, SIGNAL(toggled(bool)), max_bounces, SLOT(setDisabled(bool)));
@@ -699,16 +700,32 @@ void RenderSettingsWindow::load_configuration(const Configuration& config)
     set_widget("image_plane_sampling.adaptive_sampler.max_samples", get_config<size_t>(config, "generic_tile_renderer.max_samples", 64));
 
     // Distribution Ray Tracer.
-    set_widget("drt.bounces.unlimited_bounces", get_config<size_t>(config, "drt.max_path_length", 0) == 0);
-    set_widget("drt.bounces.max_bounces", get_config<size_t>(config, "drt.max_path_length", 8));
+    {
+        const size_t DefaultMaxBounces = 8;
+        const size_t drt_max_path_length = get_config<size_t>(config, "drt.max_path_length", 0);
+        set_widget("drt.bounces.unlimited_bounces", drt_max_path_length == 0);
+        set_widget("drt.bounces.max_bounces", drt_max_path_length == 0 ? DefaultMaxBounces : drt_max_path_length - 1);
+    }
 
     // Unidirectional Path Tracer.
-    set_widget("pt.bounces.unlimited_bounces", get_config<size_t>(config, "pt.max_path_length", 0) == 0);
-    set_widget("pt.bounces.max_bounces", get_config<size_t>(config, "pt.max_path_length", 3));
+    {
+        const size_t DefaultMaxBounces = 3;
+        const size_t pt_max_path_length = get_config<size_t>(config, "pt.max_path_length", 0);
+        set_widget("pt.bounces.unlimited_bounces", pt_max_path_length == 0);
+        set_widget("pt.bounces.max_bounces", pt_max_path_length == 0 ? DefaultMaxBounces : pt_max_path_length - 1);
+    }
 
-    // System.
-    set_widget("system.rendering_threads.override", config.get_inherited_parameters().strings().exist("rendering_threads"));
-    set_widget("system.rendering_threads.value", get_config<size_t>(config, "rendering_threads", 0));
+    // System / Rendering Threads.
+    {
+        set_widget("system.rendering_threads.override", config.get_parameters().strings().exist("rendering_threads"));
+        
+        const size_t default_rendering_threads = System::get_logical_cpu_core_count();
+        const size_t rendering_threads = get_config<size_t>(config, "rendering_threads", 0);
+        set_widget("system.rendering_threads.value", rendering_threads == 0 ? default_rendering_threads : rendering_threads);
+        set_widget("system.rendering_threads.auto", rendering_threads == 0);
+    }
+
+    // System / Texture Cache Size.
     set_widget("system.texture_cache_size.override", config.get_inherited_parameters().strings().exist("texture_cache_size"));
     set_widget("system.texture_cache_size.value", get_config<size_t>(config, "texture_cache_size", 256 * 1024 * 1024) / (1024 * 1024));
 }
@@ -733,16 +750,21 @@ void RenderSettingsWindow::save_configuration(Configuration& config)
 
     // Distribution Ray Tracer.
     set_config(config, "drt.max_path_length",
-        get_widget<bool>("drt.bounces.unlimited_bounces") ? 0 : get_widget<size_t>("drt.bounces.max_bounces"));
+        get_widget<bool>("drt.bounces.unlimited_bounces") ? 0 : get_widget<size_t>("drt.bounces.max_bounces") + 1);
 
     // Unidirectional Path Tracer.
     set_config(config, "pt.max_path_length",
-        get_widget<bool>("pt.bounces.unlimited_bounces") ? 0 : get_widget<size_t>("pt.bounces.max_bounces"));
+        get_widget<bool>("pt.bounces.unlimited_bounces") ? 0 : get_widget<size_t>("pt.bounces.max_bounces") + 1);
 
-    // System.
+    // System / Rendering Threads.
     if (get_widget<bool>("system.rendering_threads.override"))
-        set_config(config, "rendering_threads", get_widget<size_t>("system.rendering_threads.value"));
+    {
+        set_config(config, "rendering_threads",
+            get_widget<bool>("system.rendering_threads.auto") ? 0 : get_widget<size_t>("system.rendering_threads.value"));
+    }
     else config.get_parameters().strings().remove("rendering_threads");
+
+    // System / Texture Cache Size.
     if (get_widget<bool>("system.texture_cache_size.override"))
         set_config(config, "texture_cache_size", get_widget<size_t>("system.texture_cache_size.value") * 1024 * 1024);
     else config.get_parameters().strings().remove("texture_cache_size");
