@@ -50,6 +50,7 @@
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDoubleSpinBox>
+#include <QFontMetrics>
 #include <QFormLayout>
 #include <QGroupBox>
 #include <QHBoxLayout>
@@ -61,6 +62,7 @@
 #include <QVBoxLayout>
 
 // Standard headers.
+#include <algorithm>
 #include <cassert>
 #include <cstddef>
 
@@ -213,7 +215,7 @@ void RenderSettingsWindow::create_image_plane_sampling_adaptive_sampler_settings
 
     sublayout->addRow("Min Samples:", create_integer_input("image_plane_sampling.adaptive_sampler.min_samples", 1, 1000000));
     sublayout->addRow("Max Samples:", create_integer_input("image_plane_sampling.adaptive_sampler.max_samples", 1, 1000000));
-    sublayout->addRow("Max Error:", create_double_input("image_plane_sampling.adaptive_sampler.max_error", 0.0, 1000000.0));
+    sublayout->addRow("Max Error:", create_double_input("image_plane_sampling.adaptive_sampler.max_error", 0.0, 1000000.0, 3, 0.01));
 }
 
 //---------------------------------------------------------------------------------------------
@@ -430,7 +432,7 @@ void RenderSettingsWindow::create_bounce_settings(QVBoxLayout* parent, const str
     QFormLayout* layout = new QFormLayout();
     groupbox->setLayout(layout);
 
-    QWidget* max_bounces = create_integer_input(widget_base_key + "max_bounces", 1, 10000);
+    QSpinBox* max_bounces = create_integer_input(widget_base_key + "max_bounces", 1, 10000);
     QCheckBox* unlimited_bounces = create_checkbox(widget_base_key + "unlimited_bounces", "Unlimited");
     layout->addRow("Max Bounces:", create_horizontal_group(max_bounces, unlimited_bounces));
     connect(unlimited_bounces, SIGNAL(toggled(bool)), max_bounces, SLOT(setDisabled(bool)));
@@ -487,7 +489,39 @@ QWidget* RenderSettingsWindow::create_horizontal_group(QWidget* widget1, QWidget
     return group;
 }
 
-QWidget* RenderSettingsWindow::create_integer_input(
+namespace
+{
+    void set_widget_width_for_text(
+        QWidget*            widget,
+        const QString&      text,
+        const int           margin = 0,
+        const int           min_width = 0)
+    {
+        const QFontMetrics metrics(widget->font());
+        const int text_width = metrics.boundingRect(text).width();
+        const int final_width = max(text_width + margin, min_width);
+
+        widget->setMinimumWidth(final_width);
+        widget->setMaximumWidth(final_width);
+    }
+
+    void set_widget_width_for_value(
+        QWidget*            widget,
+        const int           value,
+        const int           margin = 0,
+        const int           min_width = 0)
+    {
+        QString text;
+        text.setNum(value);
+
+        set_widget_width_for_text(widget, text, margin, min_width);
+    }
+
+    const int SpinBoxMargin = 28;
+    const int SpinBoxMinWidth = 40;
+}
+
+QSpinBox* RenderSettingsWindow::create_integer_input(
     const string&           widget_key,
     const int               min,
     const int               max)
@@ -495,34 +529,46 @@ QWidget* RenderSettingsWindow::create_integer_input(
     QSpinBox* spinbox = new QSpinBox();
     m_widget_proxies[widget_key] = new SpinBoxProxy(spinbox);
 
-    spinbox->setMaximumWidth(60);
     spinbox->setRange(min, max);
+    set_widget_width_for_value(spinbox, max, SpinBoxMargin, SpinBoxMinWidth);
 
     return spinbox;
 }
 
-QWidget* RenderSettingsWindow::create_integer_input(
+QSpinBox* RenderSettingsWindow::create_integer_input(
     const string&           widget_key,
     const int               min,
     const int               max,
     const QString&          label)
 {
-    return
-        create_horizontal_group(
-            create_integer_input(widget_key, min, max),
-            new QLabel(label));
+    QSpinBox* spinbox = create_integer_input(widget_key, min, max);
+
+    const QString suffix = " " + label;
+    spinbox->setSuffix(suffix);
+
+    QString text;
+    text.setNum(max);
+    text.append(suffix);
+
+    set_widget_width_for_text(spinbox, text, SpinBoxMargin, SpinBoxMinWidth);
+
+    return spinbox;
 }
 
-QWidget* RenderSettingsWindow::create_double_input(
+QDoubleSpinBox* RenderSettingsWindow::create_double_input(
     const string&           widget_key,
     const double            min,
-    const double            max)
+    const double            max,
+    const int               decimals,
+    const double            step)
 {
     QDoubleSpinBox* spinbox = new QDoubleSpinBox();
     m_widget_proxies[widget_key] = new DoubleSpinBoxProxy(spinbox);
 
     spinbox->setMaximumWidth(60);
     spinbox->setRange(min, max);
+    spinbox->setDecimals(decimals);
+    spinbox->setSingleStep(step);
 
     return spinbox;
 }
@@ -569,7 +615,7 @@ void RenderSettingsWindow::create_direct_links()
     create_direct_link("image_plane_sampling.uniform_sampler.samples", "generic_tile_renderer.max_samples", 16);
     create_direct_link("image_plane_sampling.adaptive_sampler.min_samples", "generic_tile_renderer.min_samples", 4);
     create_direct_link("image_plane_sampling.adaptive_sampler.max_samples", "generic_tile_renderer.max_samples", 64);
-    create_direct_link("image_plane_sampling.adaptive_sampler.max_error", "generic_tile_renderer.max_error", 0.001);
+    create_direct_link("image_plane_sampling.adaptive_sampler.max_error", "generic_tile_renderer.max_error", 0.01);
 
     // Lighting.
     create_direct_link("lighting.engine", "lighting_engine", "pt");
@@ -578,6 +624,7 @@ void RenderSettingsWindow::create_direct_links()
     create_direct_link("drt.lighting_components.dl", "drt.enable_dl", true);
     create_direct_link("drt.lighting_components.ibl", "drt.enable_ibl", true);
     create_direct_link("drt.lighting_components.caustics", "drt.enable_caustics", true);
+    create_direct_link("drt.bounces.rr_start_bounce", "drt.rr_min_path_length", 3);
     create_direct_link("drt.advanced.dl.light_samples", "drt.dl_light_samples", 1);
     create_direct_link("drt.advanced.dl.bsdf_samples", "drt.dl_bsdf_samples", 1);
     create_direct_link("drt.advanced.ibl.env_samples", "drt.ibl_env_samples", 1);
@@ -587,6 +634,7 @@ void RenderSettingsWindow::create_direct_links()
     create_direct_link("pt.lighting_components.dl", "pt.enable_dl", true);
     create_direct_link("pt.lighting_components.ibl", "pt.enable_ibl", true);
     create_direct_link("pt.lighting_components.caustics", "pt.enable_caustics", true);
+    create_direct_link("pt.bounces.rr_start_bounce", "pt.rr_min_path_length", 3);
     create_direct_link("pt.advanced.next_event_estimation", "pt.next_event_estimation", true);
     create_direct_link("pt.advanced.dl.light_samples", "pt.dl_light_samples", 1);
     create_direct_link("pt.advanced.ibl.env_samples", "pt.ibl_env_samples", 1);

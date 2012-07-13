@@ -47,10 +47,12 @@ namespace renderer  { class Configuration; }
 namespace Ui        { class RenderSettingsWindow; }
 class QCheckBox;
 class QComboBox;
+class QDoubleSpinBox;
 class QFormLayout;
 class QHBoxLayout;
 class QGroupBox;
 class QLayout;
+class QSpinBox;
 class QVBoxLayout;
 
 namespace appleseed {
@@ -135,21 +137,23 @@ class RenderSettingsWindow
     static QFormLayout* create_form_layout(const QString& label, QWidget* widget);
     static QWidget* create_horizontal_group(QWidget* widget1, QWidget* widget2);
 
-    QWidget* create_integer_input(
+    QSpinBox* create_integer_input(
         const std::string&              widget_key,
         const int                       min,
         const int                       max);
 
-    QWidget* create_integer_input(
+    QSpinBox* create_integer_input(
         const std::string&              widget_key,
         const int                       min,
         const int                       max,
         const QString&                  label);
 
-    QWidget* create_double_input(
+    QDoubleSpinBox* create_double_input(
         const std::string&              widget_key,
         const double                    min,
-        const double                    max);
+        const double                    max,
+        const int                       decimals,
+        const double                    step);
 
     QCheckBox* create_checkbox(
         const std::string&              widget_key,
