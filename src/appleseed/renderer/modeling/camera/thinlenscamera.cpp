@@ -178,14 +178,10 @@ namespace
             }
 
             // Retrieve the camera transformation.
-            Transformd transform;
-            if (m_transform_sequence.size() > 1)
-            {
-                sampling_context.split_in_place(1, 1);
-                const double time = sampling_context.next_double2();
-                transform = m_transform_sequence.evaluate(time);
-            }
-            else transform = m_transform_sequence.evaluate(0.0);
+            const Transformd transform =
+                m_transform_sequence.size() > 1
+                    ? m_transform_sequence.evaluate(ray.m_time)
+                    : m_transform_sequence.evaluate(0.0);
 
             // Set the ray origin.
             const Transformd::MatrixType& mat = transform.get_local_to_parent();
