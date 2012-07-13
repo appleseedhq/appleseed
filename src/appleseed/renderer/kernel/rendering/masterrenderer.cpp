@@ -155,6 +155,18 @@ void MasterRenderer::do_render() const
     }
 }
 
+namespace
+{
+    void copy_param(
+        ParamArray&         dest,
+        const ParamArray&   source,
+        const char*         param_name)
+    {
+        if (source.strings().exist(param_name))
+            dest.strings().insert(param_name, source.strings().get(param_name));
+    }
+}
+
 IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence() const
 {
     assert(m_project.get_scene());
@@ -208,6 +220,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
         RENDERER_LOG_ERROR(
             "invalid value for \"lighting_engine\" parameter: \"%s\".",
             lighting_engine_param.c_str());
+
         return IRendererController::AbortRendering;
     }
 
@@ -237,6 +250,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
         RENDERER_LOG_ERROR(
             "invalid value for \"sample_renderer\" parameter: \"%s\".",
             sample_renderer_param.c_str());
+
         return IRendererController::AbortRendering;
     }
 
@@ -279,6 +293,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
         RENDERER_LOG_ERROR(
             "invalid value for \"tile_renderer\" parameter: \"%s\".",
             tile_renderer_param.c_str());
+
         return IRendererController::AbortRendering;
     }
 
@@ -314,6 +329,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
         RENDERER_LOG_ERROR(
             "invalid value for \"sample_generator\" parameter: \"%s\".",
             sample_generator_param.c_str());
+
         return IRendererController::AbortRendering;
     }
 
@@ -328,27 +344,34 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
 
     if (frame_renderer_param == "generic")
     {
+        ParamArray params = m_params.child("generic_frame_renderer");
+        copy_param(params, m_params, "rendering_threads");
+
         frame_renderer.reset(
             GenericFrameRendererFactory::create(
                 frame,
                 tile_renderer_factory.get(),
                 m_tile_callback_factory,
-                m_params.child("generic_frame_renderer")));
+                params));
     }
     else if (frame_renderer_param == "progressive")
     {
+        ParamArray params = m_params.child("progressive_frame_renderer");
+        copy_param(params, m_params, "rendering_threads");
+
         frame_renderer.reset(
             ProgressiveFrameRendererFactory::create(
                 m_project,
                 sample_generator_factory.get(),
                 m_tile_callback_factory,
-                m_params.child("progressive_frame_renderer")));
+                params));
     }
     else
     {
         RENDERER_LOG_ERROR(
             "invalid value for \"frame_renderer\" parameter: \"%s\".",
             frame_renderer_param.c_str());
+
         return IRendererController::AbortRendering;
     }
 
