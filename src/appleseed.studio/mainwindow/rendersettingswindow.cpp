@@ -176,10 +176,18 @@ void RenderSettingsWindow::create_image_plane_sampling_general_settings(QVBoxLay
     QHBoxLayout* sublayout = create_horizontal_layout();
     layout->addLayout(sublayout);
 
-    sublayout->addLayout(create_form_layout("Filter:", create_combobox("image_plane_sampling.general.filter")));
+    QComboBox* filter = create_combobox("image_plane_sampling.general.filter");
+    filter->addItem("Box", "box");
+    filter->addItem("Gaussian", "gaussian");
+    filter->addItem("Mitchell-Netravali", "mitchell");
+    sublayout->addLayout(create_form_layout("Filter:", filter));
+
     sublayout->addLayout(create_form_layout("Filter Size:", create_integer_input("image_plane_sampling.general.filter_size", 1, 64)));
 
-    layout->addLayout(create_form_layout("Sampler:", create_combobox("image_plane_sampling.general.sampler")));
+    QComboBox* sampler = create_combobox("image_plane_sampling.general.sampler");
+    sampler->addItem("Uniform", "uniform");
+    sampler->addItem("Adaptive", "adaptive");
+    layout->addLayout(create_form_layout("Sampler:", sampler));
 }
 
 void RenderSettingsWindow::create_image_plane_sampling_sampler_settings(QVBoxLayout* parent)
@@ -612,9 +620,6 @@ void RenderSettingsWindow::create_direct_links()
 {
     // Image Plane Sampling.
     create_direct_link("image_plane_sampling.general.filter_size", "generic_tile_renderer.filter_size", 2);
-    create_direct_link("image_plane_sampling.uniform_sampler.samples", "generic_tile_renderer.max_samples", 16);
-    create_direct_link("image_plane_sampling.adaptive_sampler.min_samples", "generic_tile_renderer.min_samples", 4);
-    create_direct_link("image_plane_sampling.adaptive_sampler.max_samples", "generic_tile_renderer.max_samples", 64);
     create_direct_link("image_plane_sampling.adaptive_sampler.max_error", "generic_tile_renderer.max_error", 0.01);
 
     // Lighting.
@@ -688,6 +693,11 @@ void RenderSettingsWindow::load_configuration(const Configuration& config)
 {
     load_directly_linked_values(config);
 
+    // Image Plane Sampling.
+    set_widget("image_plane_sampling.uniform_sampler.samples", get_config<size_t>(config, "generic_tile_renderer.max_samples", 16));
+    set_widget("image_plane_sampling.adaptive_sampler.min_samples", get_config<size_t>(config, "generic_tile_renderer.min_samples", 4));
+    set_widget("image_plane_sampling.adaptive_sampler.max_samples", get_config<size_t>(config, "generic_tile_renderer.max_samples", 64));
+
     // Distribution Ray Tracer.
     set_widget("drt.bounces.unlimited_bounces", get_config<size_t>(config, "drt.max_path_length", 0) == 0);
     set_widget("drt.bounces.max_bounces", get_config<size_t>(config, "drt.max_path_length", 8));
@@ -706,6 +716,20 @@ void RenderSettingsWindow::load_configuration(const Configuration& config)
 void RenderSettingsWindow::save_configuration(Configuration& config)
 {
     save_directly_linked_values(config);
+
+    // Image Plane Sampling.
+    if (get_widget<string>("image_plane_sampling.general.sampler") == "uniform")
+    {
+        const size_t samples = get_widget<size_t>("image_plane_sampling.uniform_sampler.samples");
+        set_config(config, "generic_tile_renderer.min_samples", samples);
+        set_config(config, "generic_tile_renderer.max_samples", samples);
+    }
+    else
+    {
+        assert(get_widget<string>("image_plane_sampling.general.sampler") == "adaptive");
+        set_config(config, "generic_tile_renderer.min_samples", get_widget<size_t>("image_plane_sampling.adaptive_sampler.min_samples"));
+        set_config(config, "generic_tile_renderer.max_samples", get_widget<size_t>("image_plane_sampling.adaptive_sampler.max_samples"));
+    }
 
     // Distribution Ray Tracer.
     set_config(config, "drt.max_path_length",
