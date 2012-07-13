@@ -30,6 +30,8 @@
 #include "thinlenscamera.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
+#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
@@ -37,13 +39,27 @@
 #include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/project/project.h"
+#include "renderer/utility/paramarray.h"
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/matrix.h"
 #include "foundation/math/sampling.h"
+#include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
+#include "foundation/math/vector.h"
+#include "foundation/platform/compiler.h"
+#include "foundation/platform/types.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/string.h"
+
+// Standard headers.
+#include <cassert>
+#include <cstddef>
+#include <limits>
+#include <vector>
 
 using namespace foundation;
 using namespace std;
@@ -104,17 +120,17 @@ namespace
             }
         }
 
-        virtual void release()
+        virtual void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const
+        virtual const char* get_model() const override
         {
             return Model;
         }
 
-        virtual void on_frame_begin(const Project& project)
+        virtual void on_frame_begin(const Project& project) override
         {
             Camera::on_frame_begin(project);
 
@@ -136,7 +152,7 @@ namespace
         virtual void generate_ray(
             SamplingContext&        sampling_context,
             const Vector2d&         point,
-            ShadingRay&             ray) const
+            ShadingRay&             ray) const override
         {
             // Initialize the ray.
             initialize_ray(sampling_context, ray);
@@ -202,7 +218,7 @@ namespace
             ray.m_dir = transform.vector_to_parent(ray.m_dir);
         }
 
-        virtual Vector2d project(const Vector3d& point) const
+        virtual Vector2d project(const Vector3d& point) const override
         {
             const double k = -m_focal_length / point.z;
             const double x = 0.5 + (point.x * k * m_rcp_film_width);

@@ -30,15 +30,20 @@
 #define APPLESEED_RENDERER_MODELING_CAMERA_CAMERA_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/entity/entity.h"
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/frustum.h"
+#include "foundation/math/vector.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
+namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 namespace renderer      { class ShadingRay; }
 
@@ -49,7 +54,7 @@ namespace renderer
 // Camera.
 //
 
-class RENDERERDLL Camera
+class DLLSYMBOL Camera
   : public Entity
 {
   public:
@@ -146,7 +151,7 @@ class RENDERERDLL Camera
 // common to all camera models.
 //
 
-class RENDERERDLL CameraFactory
+class DLLSYMBOL CameraFactory
 {
   public:
     // Return a set of widget definitions common to all camera models.

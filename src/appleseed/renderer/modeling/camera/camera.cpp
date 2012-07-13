@@ -30,14 +30,20 @@
 #include "camera.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
 #include "renderer/kernel/shading/shadingray.h"
+#include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/iostreamop.h"
+#include "foundation/utility/uid.h"
 
 // Standard headers.
+#include <cmath>
 #include <limits>
 
 using namespace foundation;
@@ -126,9 +132,7 @@ void Camera::on_frame_end(const Project& project)
 Vector2d Camera::extract_film_dimensions() const
 {
     const Vector2d DefaultFilmDimensions(0.025, 0.025);     // in meters
-
-    const double DefaultAspectRatio =
-        DefaultFilmDimensions[0] / DefaultFilmDimensions[1];
+    const double DefaultAspectRatio = DefaultFilmDimensions[0] / DefaultFilmDimensions[1];
 
     Vector2d film_dimensions;
 
