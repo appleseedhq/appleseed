@@ -431,7 +431,7 @@ void MainWindow::on_project_change()
     update_override_shading_menu_item();
 
     if (m_render_settings_window.get())
-        m_render_settings_window->update();
+        m_render_settings_window->reload();
 
     m_ui->lineedit_filter->clear();
     m_status_bar.clear();
@@ -886,7 +886,13 @@ void MainWindow::slot_show_render_settings_window()
     assert(m_project_manager.is_project_open());
 
     if (m_render_settings_window.get() == 0)
+    {
         m_render_settings_window.reset(new RenderSettingsWindow(m_project_manager, this));
+
+        QObject::connect(
+            m_render_settings_window.get(), SIGNAL(signal_settings_modified()),
+            this, SLOT(slot_project_modified()));
+    }
 
     m_render_settings_window->showNormal();
     m_render_settings_window->activateWindow();

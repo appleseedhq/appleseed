@@ -77,7 +77,10 @@ class RenderSettingsWindow
     ~RenderSettingsWindow();
 
     // Load the configurations of the currently open project.
-    void update() const;
+    void reload();
+
+  signals:
+    void signal_settings_modified() const;
 
   private:
     typedef std::vector<FoldablePanelWidget*> PanelCollection;

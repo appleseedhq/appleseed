@@ -115,7 +115,7 @@ RenderSettingsWindow::RenderSettingsWindow(ProjectManager& project_manager, QWid
         create_window_local_shortcut(this, Qt::Key_Escape), SIGNAL(activated()),
         this, SLOT(close()));
 
-    update();
+    reload();
 }
 
 RenderSettingsWindow::~RenderSettingsWindow()
@@ -123,8 +123,10 @@ RenderSettingsWindow::~RenderSettingsWindow()
     delete m_ui;
 }
 
-void RenderSettingsWindow::update() const
+void RenderSettingsWindow::reload()
 {
+    m_current_configuration_name.clear();
+
     m_ui->combobox_configurations->clear();
 
     for (const_each<ConfigurationContainer> i = m_project_manager.get_project()->configurations(); i; ++i)
@@ -676,8 +678,15 @@ void RenderSettingsWindow::load_configuration(const QString& name)
 
 void RenderSettingsWindow::save_current_configuration()
 {
-    if (!m_current_configuration_name.isEmpty())
-        save_configuration(get_configuration(m_current_configuration_name));
+    if (m_current_configuration_name.isEmpty())
+        return;
+
+    if (BaseConfigurationFactory::is_base_configuration(m_current_configuration_name.toAscii().constData()))
+        return;
+
+    save_configuration(get_configuration(m_current_configuration_name));
+
+    emit signal_settings_modified();
 }
 
 Configuration& RenderSettingsWindow::get_configuration(const QString& name) const
