@@ -54,17 +54,11 @@
 
 // Standard headers.
 #include <cstddef>
-#include <memory>
 
 using namespace appleseed::maketiledexr;
 using namespace appleseed::shared;
 using namespace foundation;
 using namespace std;
-
-namespace
-{
-    CommandLineHandler g_cl;
-}
 
 
 //
@@ -77,15 +71,16 @@ int main(int argc, const char* argv[])
 
     Application::check_installation(logger);
 
-    g_cl.parse(argc, argv, logger);
+    CommandLineHandler cl;
+    cl.parse(argc, argv, logger);
 
     // Retrieve the tile size.
     size_t tile_width = 32;
     size_t tile_height = 32;
-    if (g_cl.m_tile_size.is_set())
+    if (cl.m_tile_size.is_set())
     {
-        const int tw = g_cl.m_tile_size.values()[0];
-        const int th = g_cl.m_tile_size.values()[1];
+        const int tw = cl.m_tile_size.values()[0];
+        const int th = cl.m_tile_size.values()[1];
         if (tw > 0 && th > 0)
         {
             tile_width = static_cast<size_t>(tw);
@@ -105,7 +100,7 @@ int main(int argc, const char* argv[])
     {
         // Open the input file.
         GenericProgressiveImageFileReader reader(&logger, tile_width, tile_height);
-        reader.open(g_cl.m_filenames.values()[0].c_str());
+        reader.open(cl.m_filenames.values()[0].c_str());
 
         // Read canvas properties from the input file.
         CanvasProperties props;
@@ -117,13 +112,13 @@ int main(int argc, const char* argv[])
 
         // Open the output file.
         ProgressiveEXRImageFileWriter writer(&logger);
-        writer.open(g_cl.m_filenames.values()[1].c_str(), props, attrs);
+        writer.open(cl.m_filenames.values()[1].c_str(), props, attrs);
 
         // Copy the tiles.
         for (size_t y = 0; y < props.m_tile_count_y; ++y)
         {
             // Print a progress message.
-            if (g_cl.m_progress_messages.is_set())
+            if (cl.m_progress_messages.is_set())
             {
                 LOG_INFO(
                     logger,
@@ -135,7 +130,7 @@ int main(int argc, const char* argv[])
             for (size_t x = 0; x < props.m_tile_count_x; ++x)
             {
                 // Read the tile.
-                auto_ptr<Tile> tile(reader.read_tile(x, y));
+                auto_release_ptr<Tile> tile(reader.read_tile(x, y));
 
                 // Write the tile.
                 writer.write_tile(*tile.get(), x, y);
