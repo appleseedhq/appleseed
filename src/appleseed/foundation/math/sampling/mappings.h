@@ -78,6 +78,8 @@ Vector<T, 3> sample_hemisphere_cosine(const Vector<T, 2>& s);
 // with a cosine lobe probability density p(theta) = (n+1)/(2*Pi)*cos(theta)^n.
 template <typename T>
 Vector<T, 3> sample_hemisphere_cosine_power(const Vector<T, 2>& s, const T n);
+template <typename T>
+T sample_hemisphere_cosine_power_pdf(const T cos_theta, const T n);
 
 
 //
@@ -102,9 +104,9 @@ Vector<T, 2> sample_disk_uniform_alt(const Vector<T, 2>& s);
 // Other sampling functions.
 //
 
-// Map a uniform sample in [0,1)^2 to a direction over the cone with its apex at the origin and extending toward Y+.
-template <typename T> Vector<T, 3>
-sample_cone_uniform(const Vector<T, 2>& s, const T cos_theta_max);
+// Map a uniform sample in [0,1)^2 to a direction in the cone with its apex at the origin and extending toward Y+.
+template <typename T>
+Vector<T, 3> sample_cone_uniform(const Vector<T, 2>& s, const T cos_theta_max);
 template <typename T>
 T sample_cone_uniform_pdf(const T cos_theta_max);
 
@@ -145,17 +147,16 @@ inline Vector<T, 3> sample_sphere_uniform(const Vector<T, 2>& s)
     assert(s[0] >= T(0.0) && s[0] < T(1.0));
     assert(s[1] >= T(0.0) && s[1] < T(1.0));
 
-    const T u = T(TwoPi) * s[0];
-    const T v = T(2.0) * std::sqrt(s[1] * (T(1.0) - s[1]));
+    const T phi = T(TwoPi) * s[0];
+    const T cos_theta = T(1.0) - T(2.0) * s[1];
+    const T sin_theta = std::sqrt(T(1.0) - cos_theta * cos_theta);
 
-    Vector<T, 3> d;
-    d.x = std::cos(u) * v;
-    d.y = T(1.0) - T(2.0) * s[1];
-    d.z = std::sin(u) * v;
-
-    assert(is_normalized(d));
-
-    return d;
+    return
+        Vector<T, 3>::unit_vector(
+            cos_theta,
+            sin_theta,
+            std::cos(phi),
+            std::sin(phi));
 }
 
 template <typename T>
@@ -164,18 +165,16 @@ inline Vector<T, 3> sample_hemisphere_uniform(const Vector<T, 2>& s)
     assert(s[0] >= T(0.0) && s[0] < T(1.0));
     assert(s[1] >= T(0.0) && s[1] < T(1.0));
 
-    const T s1 = T(1.0) - s[1];
-    const T u = T(TwoPi) * s[0];
-    const T v = std::sqrt(T(1.0) - s1 * s1);
+    const T phi = T(TwoPi) * s[0];
+    const T cos_theta = T(1.0) - s[1];
+    const T sin_theta = std::sqrt(T(1.0) - cos_theta * cos_theta);
 
-    Vector<T, 3> d;
-    d.x = std::cos(u) * v;
-    d.y = s1;
-    d.z = std::sin(u) * v;
-
-    assert(is_normalized(d));
-
-    return d;
+    return
+        Vector<T, 3>::unit_vector(
+            cos_theta,
+            sin_theta,
+            std::cos(phi),
+            std::sin(phi));
 }
 
 template <typename T>
@@ -184,17 +183,16 @@ inline Vector<T, 3> sample_hemisphere_cosine(const Vector<T, 2>& s)
     assert(s[0] >= T(0.0) && s[0] < T(1.0));
     assert(s[1] >= T(0.0) && s[1] < T(1.0));
 
-    const T u = T(TwoPi) * s[0];
-    const T v = std::sqrt(s[1]);
+    const T phi = T(TwoPi) * s[0];
+    const T cos_theta = std::sqrt(T(1.0) - s[1]);
+    const T sin_theta = std::sqrt(s[1]);
 
-    Vector<T, 3> d;
-    d.x = std::cos(u) * v;
-    d.y = std::sqrt(T(1.0) - s[1]);
-    d.z = std::sin(u) * v;
-
-    assert(is_normalized(d));
-
-    return d;
+    return
+        Vector<T, 3>::unit_vector(
+            cos_theta,
+            sin_theta,
+            std::cos(phi),
+            std::sin(phi));
 }
 
 template <typename T>
@@ -204,19 +202,22 @@ inline Vector<T, 3> sample_hemisphere_cosine_power(const Vector<T, 2>& s, const 
     assert(s[1] >= T(0.0) && s[1] < T(1.0));
     assert(n >= T(0.0));
 
-    const T s1 = T(1.0) - s[1];
-    const T u = T(TwoPi) * s[0];
-    const T v = T(1.0) / (n + T(1.0));
-    const T w = std::sqrt(T(1.0) - std::pow(s1, T(2.0) * v));
+    const T phi = T(TwoPi) * s[0];
+    const T cos_theta = std::pow(T(1.0) - s[1], T(1.0) / (n + T(1.0)));
+    const T sin_theta = std::sqrt(T(1.0) - cos_theta * cos_theta);
 
-    Vector<T, 3> d;
-    d.x = std::cos(u) * w;
-    d.y = std::pow(s1, v);
-    d.z = std::sin(u) * w;
+    return
+        Vector<T, 3>::unit_vector(
+            cos_theta,
+            sin_theta,
+            std::cos(phi),
+            std::sin(phi));
+}
 
-    assert(is_normalized(d));
-
-    return d;
+template <typename T>
+inline T sample_hemisphere_cosine_power_pdf(const T cos_theta, const T n)
+{
+    return (n + T(1.0)) * T(RcpTwoPi) * std::pow(cos_theta, n);
 }
 
 template <typename T>
@@ -250,10 +251,10 @@ inline Vector<T, 2> sample_disk_uniform_alt(const Vector<T, 2>& s)
     assert(s[0] >= T(0.0) && s[0] < T(1.0));
     assert(s[1] >= T(0.0) && s[1] < T(1.0));
 
+    const T phi = T(TwoPi) * s[0];
     const T r = std::sqrt(T(1.0) - s[1]);
-    const T phi = s[0] * T(TwoPi);
 
-    return Vector<T, 2>(r * std::cos(phi), r * std::sin(phi));
+    return r * Vector<T, 2>(std::cos(phi), std::sin(phi));
 }
 
 template <typename T>
@@ -262,9 +263,9 @@ inline Vector<T, 3> sample_cone_uniform(const Vector<T, 2>& s, const T cos_theta
     assert(s[0] >= T(0.0) && s[0] < T(1.0));
     assert(s[1] >= T(0.0) && s[1] < T(1.0));
 
+    const T phi = T(TwoPi) * s[0];
     const T cos_theta = lerp(T(1.0), cos_theta_max, s[1]);
     const T sin_theta = std::sqrt(T(1.0) - cos_theta * cos_theta);
-    const T phi = s[0] * T(TwoPi);
 
     return
         Vector<T, 3>::unit_vector(
