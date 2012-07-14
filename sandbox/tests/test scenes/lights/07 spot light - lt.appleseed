@@ -74,7 +74,8 @@
                 <parameter name="surface_shader" value="physical_surface_shader" />
             </material>
             <light name="Lamp" model="spot_light">
-                <parameter name="angle" value="25.0" />
+                <parameter name="inner_angle" value="20.0" />
+                <parameter name="outer_angle" value="30.0" />
                 <parameter name="exitance" value="Lamp_exitance" />
                 <transform>
                     <matrix>

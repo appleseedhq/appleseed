@@ -67,7 +67,8 @@ namespace
             const char*         name,
             const ParamArray&   params)
           : Light(name, params)
-          , m_cos_theta_max(cos(deg_to_rad(params.get_required<double>("angle", 30.0))))
+          , m_cos_inner_angle(cos(deg_to_rad(params.get_required<double>("inner_angle", 20.0))))
+          , m_cos_outer_angle(cos(deg_to_rad(params.get_required<double>("outer_angle", 30.0))))
         {
             m_inputs.declare("exitance", InputFormatSpectrum);
         }
@@ -96,9 +97,10 @@ namespace
             Spectrum&           value,
             double&             probability) const override
         {
-            outgoing = get_transform().vector_to_parent(sample_cone_uniform(s, m_cos_theta_max));
-            value = static_cast<const InputValues*>(data)->m_exitance;
-            probability = sample_cone_uniform_pdf(m_cos_theta_max);
+            const Vector3d wo = sample_cone_uniform(s, m_cos_outer_angle);
+            outgoing = get_transform().vector_to_parent(wo);
+            compute_exitance(data, wo.y, value);
+            probability = sample_cone_uniform_pdf(m_cos_outer_angle);
         }
 
         virtual void evaluate(
@@ -108,8 +110,8 @@ namespace
         {
             const double cos_theta = dot(outgoing, m_axis);
 
-            if (cos_theta > m_cos_theta_max)
-                value = static_cast<const InputValues*>(data)->m_exitance;
+            if (cos_theta > m_cos_outer_angle)
+                compute_exitance(data, cos_theta, value);
             else value.set(0.0f);
         }
 
@@ -121,10 +123,10 @@ namespace
         {
             const double cos_theta = dot(outgoing, m_axis);
 
-            if (cos_theta > m_cos_theta_max)
+            if (cos_theta > m_cos_outer_angle)
             {
-                value = static_cast<const InputValues*>(data)->m_exitance;
-                probability = sample_cone_uniform_pdf(m_cos_theta_max);
+                compute_exitance(data, cos_theta, value);
+                probability = sample_cone_uniform_pdf(m_cos_outer_angle);
             }
             else
             {
@@ -140,8 +142,8 @@ namespace
             const double cos_theta = dot(outgoing, m_axis);
 
             return
-                cos_theta > m_cos_theta_max
-                    ? sample_cone_uniform_pdf(m_cos_theta_max)
+                cos_theta > m_cos_outer_angle
+                    ? sample_cone_uniform_pdf(m_cos_outer_angle)
                     : 0.0;
         }
 
@@ -152,8 +154,27 @@ namespace
             Alpha       m_exitance_alpha;   // unused
         };
 
-        const double    m_cos_theta_max;
+        const double    m_cos_inner_angle;
+        const double    m_cos_outer_angle;
+
         Vector3d        m_axis;
+
+        void compute_exitance(
+            const void*         data,
+            const double        cos_theta,
+            Spectrum&           exitance) const
+        {
+            assert(cos_theta > m_cos_outer_angle);
+
+            exitance = static_cast<const InputValues*>(data)->m_exitance;
+
+            if (cos_theta < m_cos_inner_angle)
+            {
+                exitance *=
+                    static_cast<float>(
+                        smoothstep(m_cos_outer_angle, m_cos_inner_angle, cos_theta));
+            }
+        }
     };
 }
 
@@ -189,8 +210,16 @@ DictionaryArray SpotLightFactory::get_widget_definitions() const
 
     definitions.push_back(
         Dictionary()
-            .insert("name", "angle")
-            .insert("label", "Angle")
+            .insert("name", "inner_angle")
+            .insert("label", "Inner Angle")
+            .insert("widget", "text_box")
+            .insert("use", "required")
+            .insert("default", "20.0"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "outer_angle")
+            .insert("label", "Outer Angle")
             .insert("widget", "text_box")
             .insert("use", "required")
             .insert("default", "30.0"));
