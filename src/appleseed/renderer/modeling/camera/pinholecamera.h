@@ -32,9 +32,16 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/camera/icamerafactory.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/autoreleaseptr.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
 namespace renderer      { class Camera; }
+namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
@@ -43,7 +50,7 @@ namespace renderer
 // Pinhole camera factory.
 //
 
-class RENDERERDLL PinholeCameraFactory
+class DLLSYMBOL PinholeCameraFactory
   : public ICameraFactory
 {
   public:

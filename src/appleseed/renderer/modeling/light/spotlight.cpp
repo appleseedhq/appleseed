@@ -27,18 +27,24 @@
 //
 
 // Interface header.
-#include "pointlight.h"
+#include "spotlight.h"
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/input/inputarray.h"
+#include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/sampling.h"
 #include "foundation/math/scalar.h"
+#include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
+
+// Forward declarations.
+namespace renderer  { class Assembly; }
+namespace renderer  { class Project; }
 
 using namespace foundation;
 
@@ -48,19 +54,21 @@ namespace renderer
 namespace
 {
     //
-    // Point light.
+    // Spot light.
     //
 
-    const char* Model = "point_light";
+    const char* Model = "spot_light";
 
-    class PointLight
+    class SpotLight
       : public Light
     {
       public:
-        PointLight(
+        SpotLight(
             const char*         name,
             const ParamArray&   params)
           : Light(name, params)
+          , m_cos_inner_angle(cos(deg_to_rad(params.get_required<double>("inner_angle", 20.0))))
+          , m_cos_outer_angle(cos(deg_to_rad(params.get_required<double>("outer_angle", 30.0))))
         {
             m_inputs.declare("exitance", InputFormatSpectrum);
         }
@@ -75,6 +83,13 @@ namespace
             return Model;
         }
 
+        virtual void on_frame_begin(
+            const Project&      project,
+            const Assembly&     assembly) override
+        {
+            m_axis = get_transform().vector_to_parent(Vector3d(0.0, 1.0, 0.0));
+        }
+ 
         virtual void sample(
             const void*         data,
             const Vector2d&     s,
@@ -82,9 +97,10 @@ namespace
             Spectrum&           value,
             double&             probability) const override
         {
-            outgoing = sample_sphere_uniform(s);
-            value = static_cast<const InputValues*>(data)->m_exitance;
-            probability = 1.0 / (4.0 * Pi);
+            const Vector3d wo = sample_cone_uniform(s, m_cos_outer_angle);
+            outgoing = get_transform().vector_to_parent(wo);
+            compute_exitance(data, wo.y, value);
+            probability = sample_cone_uniform_pdf(m_cos_outer_angle);
         }
 
         virtual void evaluate(
@@ -92,7 +108,11 @@ namespace
             const Vector3d&     outgoing,
             Spectrum&           value) const override
         {
-            value = static_cast<const InputValues*>(data)->m_exitance;
+            const double cos_theta = dot(outgoing, m_axis);
+
+            if (cos_theta > m_cos_outer_angle)
+                compute_exitance(data, cos_theta, value);
+            else value.set(0.0f);
         }
 
         virtual void evaluate(
@@ -101,15 +121,30 @@ namespace
             Spectrum&           value,
             double&             probability) const override
         {
-            value = static_cast<const InputValues*>(data)->m_exitance;
-            probability = 1.0 / (4.0 * Pi);
+            const double cos_theta = dot(outgoing, m_axis);
+
+            if (cos_theta > m_cos_outer_angle)
+            {
+                compute_exitance(data, cos_theta, value);
+                probability = sample_cone_uniform_pdf(m_cos_outer_angle);
+            }
+            else
+            {
+                value.set(0.0f);
+                probability = 0.0f;
+            }
         }
 
         virtual double evaluate_pdf(
             const void*         data,
             const Vector3d&     outgoing) const override
         {
-            return 1.0 / (4.0 * Pi);
+            const double cos_theta = dot(outgoing, m_axis);
+
+            return
+                cos_theta > m_cos_outer_angle
+                    ? sample_cone_uniform_pdf(m_cos_outer_angle)
+                    : 0.0;
         }
 
       private:
@@ -118,25 +153,47 @@ namespace
             Spectrum    m_exitance;         // radiant exitance, in W.m^-2
             Alpha       m_exitance_alpha;   // unused
         };
+
+        const double    m_cos_inner_angle;
+        const double    m_cos_outer_angle;
+
+        Vector3d        m_axis;
+
+        void compute_exitance(
+            const void*         data,
+            const double        cos_theta,
+            Spectrum&           exitance) const
+        {
+            assert(cos_theta > m_cos_outer_angle);
+
+            exitance = static_cast<const InputValues*>(data)->m_exitance;
+
+            if (cos_theta < m_cos_inner_angle)
+            {
+                exitance *=
+                    static_cast<float>(
+                        smoothstep(m_cos_outer_angle, m_cos_inner_angle, cos_theta));
+            }
+        }
     };
 }
 
 
 //
-// PointLightFactory class implementation.
+// SpotLightFactory class implementation.
 //
 
-const char* PointLightFactory::get_model() const
+const char* SpotLightFactory::get_model() const
 {
     return Model;
 }
 
-const char* PointLightFactory::get_human_readable_model() const
+const char* SpotLightFactory::get_human_readable_model() const
 {
-    return "Point Light";
+    return "Spot Light";
 }
 
-DictionaryArray PointLightFactory::get_widget_definitions() const
+DictionaryArray SpotLightFactory::get_widget_definitions() const
 {
     DictionaryArray definitions;
 
@@ -151,14 +208,30 @@ DictionaryArray PointLightFactory::get_widget_definitions() const
             .insert("use", "required")
             .insert("default", ""));
 
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "inner_angle")
+            .insert("label", "Inner Angle")
+            .insert("widget", "text_box")
+            .insert("use", "required")
+            .insert("default", "20.0"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "outer_angle")
+            .insert("label", "Outer Angle")
+            .insert("widget", "text_box")
+            .insert("use", "required")
+            .insert("default", "30.0"));
+
     return definitions;
 }
 
-auto_release_ptr<Light> PointLightFactory::create(
+auto_release_ptr<Light> SpotLightFactory::create(
     const char*         name,
     const ParamArray&   params) const
 {
-    return auto_release_ptr<Light>(new PointLight(name, params));
+    return auto_release_ptr<Light>(new SpotLight(name, params));
 }
 
 }   // namespace renderer

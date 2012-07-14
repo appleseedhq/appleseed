@@ -88,7 +88,7 @@ namespace
             RayType&            ray)
         {
             RayInfoType ray_info_unused;
-            get_random_ray(rng, radius, ray, ray_info_unused);
+            FixtureBase::get_random_ray(rng, radius, ray, ray_info_unused);
         }
     };
 }
@@ -119,7 +119,7 @@ BENCHMARK_SUITE(Foundation_Math_Intersection_RayAABB)
             MersenneTwister rng;
 
             for (size_t i = 0; i < RayCount; ++i)
-                get_random_ray(rng, T(10.0), m_ray[i], m_ray_info[i]);
+                FixtureBase<T>::get_random_ray(rng, T(10.0), m_ray[i], m_ray_info[i]);
         }
     };
 
@@ -213,7 +213,7 @@ namespace
         {
             do 
             {
-                get_random_ray(rng, T(10.0), ray);
+                FixtureBase<T>::get_random_ray(rng, T(10.0), ray);
             } while (!m_triangle.intersect(ray));
         }
 
@@ -221,7 +221,7 @@ namespace
         {
             do 
             {
-                get_random_ray(rng, T(10.0), ray);
+                FixtureBase<T>::get_random_ray(rng, T(10.0), ray);
             } while (m_triangle.intersect(ray));
         }
 

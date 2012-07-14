@@ -79,8 +79,8 @@ void DirectLightingIntegrator::sample_bsdf_and_lights(
     else
     {
         Spectrum radiance_light_sampling;
-        sample_bsdf(sampling_context, mis_power2, radiance, aovs);
-        sample_lights(sampling_context, mis_power2, radiance_light_sampling, aovs);
+        sample_bsdf(sampling_context, DirectLightingIntegrator::mis_power2, radiance, aovs);
+        sample_lights(sampling_context, DirectLightingIntegrator::mis_power2, radiance_light_sampling, aovs);
         radiance += radiance_light_sampling;
     }
 }
@@ -95,8 +95,8 @@ void DirectLightingIntegrator::sample_bsdf_and_lights_low_variance(
     else
     {
         Spectrum radiance_light_sampling;
-        sample_bsdf(sampling_context, mis_power2, radiance, aovs);
-        sample_lights_low_variance(sampling_context, mis_power2, radiance_light_sampling, aovs);
+        sample_bsdf(sampling_context, DirectLightingIntegrator::mis_power2, radiance, aovs);
+        sample_lights_low_variance(sampling_context, DirectLightingIntegrator::mis_power2, radiance_light_sampling, aovs);
         radiance += radiance_light_sampling;
     }
 }
@@ -117,7 +117,7 @@ void DirectLightingIntegrator::take_single_bsdf_or_light_sample(
 
         take_single_light_sample(
             sampling_context,
-            mis_balance,
+            DirectLightingIntegrator::mis_balance,
             radiance,
             aovs);
     }
@@ -125,7 +125,7 @@ void DirectLightingIntegrator::take_single_bsdf_or_light_sample(
     {
         take_single_bsdf_sample(
             sampling_context,
-            mis_balance,
+            DirectLightingIntegrator::mis_balance,
             radiance,
             aovs);
     }

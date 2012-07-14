@@ -235,6 +235,8 @@ set (utility_sources
     utility/chartwidget.h
     utility/foldablepanelwidget.cpp
     utility/foldablepanelwidget.h
+    utility/inputwidgetproxies.cpp
+    utility/inputwidgetproxies.h
     utility/interop.h
     utility/scrollareapanhandler.cpp
     utility/scrollareapanhandler.h

@@ -31,14 +31,28 @@
 
 // Qt headers.
 #include <QObject>
+#include <QString>
 #include <QWidget>
 
+// Standard headers.
+#include <map>
+#include <string>
+#include <vector>
+
 // Forward declarations.
-namespace Ui    { class RenderSettingsWindow; }
+namespace appleseed { namespace studio { class FoldablePanelWidget; } }
+namespace appleseed { namespace studio { class IInputWidgetProxy; } }
+namespace appleseed { namespace studio { class ProjectManager; } }
+namespace renderer  { class Configuration; }
+namespace Ui        { class RenderSettingsWindow; }
+class QCheckBox;
+class QComboBox;
+class QDoubleSpinBox;
 class QFormLayout;
 class QHBoxLayout;
+class QGroupBox;
 class QLayout;
-class QString;
+class QSpinBox;
 class QVBoxLayout;
 
 namespace appleseed {
@@ -55,46 +69,148 @@ class RenderSettingsWindow
 
   public:
     // Constructor.
-    explicit RenderSettingsWindow(QWidget* parent = 0);
+    RenderSettingsWindow(
+        ProjectManager&                 project_manager,
+        QWidget*                        parent = 0);
 
     // Destructor.
     ~RenderSettingsWindow();
 
+    // Load the configurations of the currently open project.
+    void reload();
+
+  signals:
+    void signal_settings_modified() const;
+
   private:
+    typedef std::vector<FoldablePanelWidget*> PanelCollection;
+    typedef std::map<std::string, IInputWidgetProxy*> WidgetProxyCollection;
+
+    struct DirectLink
+    {
+        std::string     m_widget_key;
+        std::string     m_param_path;
+        std::string     m_default_value;
+    };
+
+    typedef std::vector<DirectLink> DirectLinkCollection;
+
     // Not wrapped in std::auto_ptr<> to avoid pulling in the UI definition code.
-    Ui::RenderSettingsWindow* m_ui;
+    Ui::RenderSettingsWindow*   m_ui;
 
-    void create_panels() const;
+    ProjectManager&             m_project_manager;
 
-    void create_image_plane_sampling_panel(QLayout* parent) const;
-    void create_image_plane_sampling_general_settings(QVBoxLayout* parent) const;
-    void create_image_plane_sampling_sampler_settings(QVBoxLayout* parent) const;
-    void create_image_plane_sampling_uniform_sampler_settings(QHBoxLayout* parent) const;
-    void create_image_plane_sampling_adaptive_sampler_settings(QHBoxLayout* parent) const;
+    PanelCollection             m_panels;
+    WidgetProxyCollection       m_widget_proxies;
+    DirectLinkCollection        m_direct_links;
 
-    void create_lighting_panel(QLayout* parent) const;
-    void create_lighting_general_settings(QVBoxLayout* parent) const;
-    void create_lighting_components_settings(QVBoxLayout* parent) const;
+    QString                     m_current_configuration_name;
 
-    void create_shading_panel(QLayout* parent) const;
-    void create_shading_texture_cache_settings(QVBoxLayout* parent) const;
+    void create_panels();
+    void set_panels_enabled(const bool enabled);
 
-    void create_advanced_panel(QLayout* parent) const;
-    void create_advanced_direct_lighting_settings(QVBoxLayout* parent) const;
-    void create_advanced_image_based_lighting_settings(QVBoxLayout* parent) const;
-    void create_advanced_distribution_ray_tracer_settings(QVBoxLayout* parent) const;
-    void create_advanced_path_tracer_settings(QVBoxLayout* parent) const;
+    void create_image_plane_sampling_panel(QLayout* parent);
+    void create_image_plane_sampling_general_settings(QVBoxLayout* parent);
+    void create_image_plane_sampling_sampler_settings(QVBoxLayout* parent);
+    void create_image_plane_sampling_uniform_sampler_settings(QHBoxLayout* parent);
+    void create_image_plane_sampling_adaptive_sampler_settings(QHBoxLayout* parent);
 
-    QHBoxLayout* create_horizontal_layout() const;
-    QVBoxLayout* create_vertical_layout() const;
-    QFormLayout* create_form_layout() const;
-    QFormLayout* create_form_layout(const QString& label, QWidget* widget) const;
-    QWidget* create_integer_input(const int min, const int max) const;
-    QWidget* create_integer_input(const int min, const int max, const QString& suffix) const;
-    QWidget* create_floating_point_input(const double min, const double max) const;
+    void create_lighting_panel(QLayout* parent);
+
+    void create_drt_panel(QLayout* parent);
+    void create_drt_advanced_settings(QVBoxLayout* parent);
+    void create_drt_advanced_dl_settings(QVBoxLayout* parent);
+    void create_drt_advanced_ibl_settings(QVBoxLayout* parent);
+
+    void create_pt_panel(QLayout* parent);
+    void create_pt_advanced_settings(QVBoxLayout* parent);
+    void create_pt_advanced_dl_settings(QVBoxLayout* parent);
+    void create_pt_advanced_ibl_settings(QVBoxLayout* parent);
+
+    void create_system_panel(QLayout* parent);
+    void create_system_override_rendering_threads_settings(QVBoxLayout* parent);
+    void create_system_override_texture_cache_size_settings(QVBoxLayout* parent);
+
+    void create_lighting_components_settings(QVBoxLayout* parent, const std::string& lighting_engine);
+    void create_bounce_settings(QVBoxLayout* parent, const std::string& lighting_engine);
+
+    static QHBoxLayout* create_horizontal_layout();
+    static QVBoxLayout* create_vertical_layout();
+    static QFormLayout* create_form_layout();
+    static QFormLayout* create_form_layout(const QString& label, QWidget* widget);
+    static QWidget* create_horizontal_group(QWidget* widget1, QWidget* widget2);
+
+    QSpinBox* create_integer_input(
+        const std::string&              widget_key,
+        const int                       min,
+        const int                       max);
+
+    QSpinBox* create_integer_input(
+        const std::string&              widget_key,
+        const int                       min,
+        const int                       max,
+        const QString&                  label);
+
+    QDoubleSpinBox* create_double_input(
+        const std::string&              widget_key,
+        const double                    min,
+        const double                    max,
+        const int                       decimals,
+        const double                    step);
+
+    QCheckBox* create_checkbox(
+        const std::string&              widget_key,
+        const QString&                  label);
+
+    QGroupBox* create_checkable_groupbox(
+        const std::string&              widget_key,
+        const QString&                  label);
+
+    QComboBox* create_combobox(
+        const std::string&              widget_key);
+
+    void create_direct_links();
+
+    template <typename T>
+    void create_direct_link(
+        const std::string&              widget_key,
+        const std::string&              param_path,
+        const T&                        default_value);
+
+    void load_configuration(const QString& name);
+    void save_current_configuration();
+
+    void load_configuration(const renderer::Configuration& config);
+    void save_configuration(renderer::Configuration& config);
+    renderer::Configuration& get_configuration(const QString& name) const;
+
+    void load_directly_linked_values(const renderer::Configuration& config);
+    void save_directly_linked_values(renderer::Configuration& config);
+
+    template <typename T>
+    void set_widget(
+        const std::string&              widget_key,
+        const T&                        value);
+
+    template <typename T>
+    T get_widget(const std::string& widget_key);
+
+    template <typename T>
+    void set_config(
+        renderer::Configuration&        configuration,
+        const std::string&              param_path,
+        const T&                        value);
+
+    template <typename T>
+    T get_config(
+        const renderer::Configuration&  configuration,
+        const std::string&              param_path,
+        const T&                        default_value);
 
   private slots:
     void slot_open_configuration_manager_window();
+    void slot_change_active_configuration(const QString& configuration_name);
+    void slot_save_configuration_and_close();
 };
 
 }       // namespace studio

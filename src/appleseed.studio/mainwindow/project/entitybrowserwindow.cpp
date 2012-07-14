@@ -75,13 +75,8 @@ EntityBrowserWindow::EntityBrowserWindow(
         m_ui->tab_widget, SIGNAL(currentChanged(int)),
         this, SLOT(slot_current_tab_changed(int)));
 
-    connect(
-        m_ui->buttonbox->button(QDialogButtonBox::Ok), SIGNAL(clicked()),
-        this, SLOT(slot_accept()));
-
-    connect(
-        m_ui->buttonbox->button(QDialogButtonBox::Cancel), SIGNAL(clicked()),
-        this, SLOT(close()));
+    connect(m_ui->buttonbox, SIGNAL(accepted()), this, SLOT(slot_accept()));
+    connect(m_ui->buttonbox, SIGNAL(rejected()), this, SLOT(close()));
 
     connect(
         create_window_local_shortcut(this, Qt::Key_Return), SIGNAL(activated()),
@@ -127,7 +122,7 @@ void EntityBrowserWindow::add_items_page(
     QListWidget* list_widget = new QListWidget(tab);
     layout->addWidget(list_widget, 0, 0, 1, 1);
 
-    disable_mac_focus_rect(*list_widget);
+    disable_mac_focus_rect(list_widget);
 
     add_items_to_list_widget(list_widget, items);
 

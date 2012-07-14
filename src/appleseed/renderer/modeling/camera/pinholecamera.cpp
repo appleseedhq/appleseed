@@ -30,12 +30,21 @@
 #include "pinholecamera.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globaltypes.h"
+#include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/matrix.h"
 #include "foundation/math/transform.h"
+#include "foundation/math/vector.h"
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/autoreleaseptr.h"
+
+// Standard headers.
+#include <cassert>
 
 // Forward declarations.
 namespace renderer  { class Project; }
@@ -70,17 +79,17 @@ namespace
             m_rcp_film_height = 1.0 / m_film_dimensions[1];
         }
 
-        virtual void release()
+        virtual void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const
+        virtual const char* get_model() const override
         {
             return Model;
         }
 
-        virtual void on_frame_begin(const Project& project)
+        virtual void on_frame_begin(const Project& project) override
         {
             Camera::on_frame_begin(project);
 
@@ -105,14 +114,10 @@ namespace
         virtual void generate_ray(
             SamplingContext&        sampling_context,
             const Vector2d&         point,
-            ShadingRay&             ray) const
+            ShadingRay&             ray) const override
         {
             // Initialize the ray.
-            sampling_context.split_in_place(1, 1);
-            ray.m_time = sampling_context.next_double2();
-            ray.m_tmin = 0.0;
-            ray.m_tmax = numeric_limits<double>::max();
-            ray.m_flags = ~0;
+            initialize_ray(sampling_context, ray);
 
             // Transform the film point from NDC to camera space.
             const Vector3d target(
@@ -134,7 +139,7 @@ namespace
             }
         }
 
-        virtual Vector2d project(const Vector3d& point) const
+        virtual Vector2d project(const Vector3d& point) const override
         {
             const double k = -m_focal_length / point.z;
             const double x = 0.5 + (point.x * k * m_rcp_film_width);

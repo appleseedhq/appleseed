@@ -29,12 +29,17 @@
 #ifndef APPLESEED_RENDERER_MODELING_CAMERA_ICAMERAFACTORY_H
 #define APPLESEED_RENDERER_MODELING_CAMERA_ICAMERAFACTORY_H
 
-// appleseed.renderer headers.
-#include "renderer/global/global.h"
+// appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
+#include "foundation/utility/autoreleaseptr.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
 namespace renderer      { class Camera; }
+namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
@@ -43,7 +48,7 @@ namespace renderer
 // Camera factory interface.
 //
 
-class RENDERERDLL ICameraFactory
+class DLLSYMBOL ICameraFactory
   : public foundation::NonCopyable
 {
   public:

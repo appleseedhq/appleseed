@@ -32,11 +32,11 @@
      <property name="orientation">
       <enum>Qt::Vertical</enum>
      </property>
-     <widget class="QWidget" name="layoutWidget">
-      <layout class="QVBoxLayout" name="graphs_contents"/>
+     <widget class="QWidget" name="graphs_contents">
+      <layout class="QVBoxLayout" name="layout_graphs_contents"/>
      </widget>
-     <widget class="QWidget" name="layoutWidget">
-      <layout class="QVBoxLayout" name="benchmarks_contents">
+     <widget class="QWidget" name="benchmarks_contents">
+      <layout class="QVBoxLayout" name="layout_benchmarks_contents">
        <item>
         <widget class="QTreeWidget" name="treewidget_benchmarks">
          <property name="selectionMode">

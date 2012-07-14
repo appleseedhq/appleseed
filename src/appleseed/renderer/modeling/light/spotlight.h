@@ -26,31 +26,50 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_UTILITY_TWEAKS_H
-#define APPLESEED_STUDIO_UTILITY_TWEAKS_H
+#ifndef APPLESEED_RENDERER_MODELING_LIGHT_SPOTLIGHT_H
+#define APPLESEED_RENDERER_MODELING_LIGHT_SPOTLIGHT_H
 
-// Qt headers.
-#include <Qt>
+// appleseed.renderer headers.
+#include "renderer/modeling/light/ilightfactory.h"
+#include "renderer/modeling/light/light.h"
+
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
+#include "foundation/utility/autoreleaseptr.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Forward declarations.
-class QMessageBox;
-class QShortcut;
-class QWidget;
+namespace foundation    { class DictionaryArray; }
+namespace renderer      { class ParamArray; }
 
-namespace appleseed {
-namespace studio {
+namespace renderer
+{
 
-// Disable the blue focus rectangle of certain widgets. Mac OS X only.
-void disable_mac_focus_rect(QWidget* widget);
+//
+// Spot light factory.
+//
 
-// Set the minimum width of a QMessageBox.
-void set_minimum_width(QMessageBox& msgbox, const int minimum_width);
+class DLLSYMBOL SpotLightFactory
+  : public ILightFactory
+{
+  public:
+    // Return a string identifying this light model.
+    virtual const char* get_model() const override;
 
-// Create a keyboard shortcut that is active for a given window and its
-// child widgets, but not for its top-level children like subwindows.
-QShortcut* create_window_local_shortcut(QWidget* parent, const Qt::Key key);
+    // Return a human-readable string identifying this light model.
+    virtual const char* get_human_readable_model() const override;
 
-}       // namespace studio
-}       // namespace appleseed
+    // Return a set of widget definitions for this light model.
+    virtual foundation::DictionaryArray get_widget_definitions() const override;
 
-#endif  // !APPLESEED_STUDIO_UTILITY_TWEAKS_H
+    // Create a new light instance.
+    virtual foundation::auto_release_ptr<Light> create(
+        const char*         name,
+        const ParamArray&   params) const override;
+};
+
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_MODELING_LIGHT_SPOTLIGHT_H

@@ -30,17 +30,22 @@
 #define APPLESEED_RENDERER_MODELING_CAMERA_CAMERA_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
-#include "renderer/kernel/shading/shadingray.h"
+#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/entity/entity.h"
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/frustum.h"
+#include "foundation/math/vector.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
+namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
+namespace renderer      { class ShadingRay; }
 
 namespace renderer
 {
@@ -49,7 +54,7 @@ namespace renderer
 // Camera.
 //
 
-class RENDERERDLL Camera
+class DLLSYMBOL Camera
   : public Entity
 {
   public:
@@ -70,6 +75,12 @@ class RENDERERDLL Camera
 
     // Get the focal length (in meters).
     double get_focal_length() const;
+
+    // Get the shutter open time.
+    double get_shutter_open_time() const;
+
+    // Get the shutter close time.
+    double get_shutter_close_time() const;
 
     // Get the view pyramid of the camera.
     const foundation::Pyramid3d& get_view_pyramid() const;
@@ -118,6 +129,11 @@ class RENDERERDLL Camera
         foundation::Vector2d&           autofocus_target,
         double&                         focal_distance) const;
 
+    // Initialize a ray but does not set its origin or direction.
+    void initialize_ray(
+        SamplingContext&                sampling_context,
+        ShadingRay&                     ray) const;
+
   private:
     bool has_param(const char* name) const;
     bool has_params(const char* name1, const char* name2) const;
@@ -135,7 +151,7 @@ class RENDERERDLL Camera
 // common to all camera models.
 //
 
-class RENDERERDLL CameraFactory
+class DLLSYMBOL CameraFactory
 {
   public:
     // Return a set of widget definitions common to all camera models.

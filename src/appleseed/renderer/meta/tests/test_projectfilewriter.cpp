@@ -85,11 +85,13 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
 
         void create_texture_entity(const string& filepath)
         {
+            SearchPaths search_paths;
+
             m_project->get_scene()->textures().insert(
                 DiskTexture2dFactory().create(
                     "texture",
                     ParamArray().insert("filename", filepath),
-                    SearchPaths()));
+                    search_paths));
         }
 
         void create_texture_file(const filesystem::path& filepath)

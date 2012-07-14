@@ -29,10 +29,22 @@
 // Interface header.
 #include "camera.h"
 
+// appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
+#include "renderer/kernel/shading/shadingray.h"
+#include "renderer/utility/paramarray.h"
+
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/iostreamop.h"
+#include "foundation/utility/uid.h"
+
+// Standard headers.
+#include <cmath>
+#include <limits>
 
 using namespace foundation;
 using namespace std;
@@ -51,9 +63,11 @@ namespace
 
 struct Camera::Impl
 {
-    Vector2d    m_film_dimensions;      // film dimensions, in meters
-    double      m_focal_length;         // focal length, in meters
-    Pyramid3d   m_view_pyramid;
+    Vector2d            m_film_dimensions;      // film dimensions, in meters
+    double              m_focal_length;         // focal length, in meters
+    double              m_shutter_open_time;
+    double              m_shutter_close_time;
+    Pyramid3d           m_view_pyramid;
 };
 
 Camera::Camera(
@@ -69,6 +83,9 @@ Camera::Camera(
 
     impl->m_film_dimensions = extract_film_dimensions();
     impl->m_focal_length = extract_focal_length(impl->m_film_dimensions[0]);
+
+    impl->m_shutter_open_time = m_params.get_optional<double>("shutter_open_time", 0.0);
+    impl->m_shutter_close_time = m_params.get_optional<double>("shutter_close_time", 1.0);
 
     compute_view_pyramid();
 }
@@ -88,6 +105,16 @@ double Camera::get_focal_length() const
     return impl->m_focal_length;
 }
 
+double Camera::get_shutter_open_time() const
+{
+    return impl->m_shutter_open_time;
+}
+
+double Camera::get_shutter_close_time() const
+{
+    return impl->m_shutter_close_time;
+}
+
 const Pyramid3d& Camera::get_view_pyramid() const
 {
     return impl->m_view_pyramid;
@@ -105,9 +132,7 @@ void Camera::on_frame_end(const Project& project)
 Vector2d Camera::extract_film_dimensions() const
 {
     const Vector2d DefaultFilmDimensions(0.025, 0.025);     // in meters
-
-    const double DefaultAspectRatio =
-        DefaultFilmDimensions[0] / DefaultFilmDimensions[1];
+    const double DefaultAspectRatio = DefaultFilmDimensions[0] / DefaultFilmDimensions[1];
 
     Vector2d film_dimensions;
 
@@ -256,6 +281,28 @@ void Camera::extract_focal_distance(
     }
 }
 
+void Camera::initialize_ray(
+    SamplingContext&    sampling_context,
+    ShadingRay&         ray) const
+{
+    ray.m_tmin = 0.0;
+    ray.m_tmax = numeric_limits<double>::max();
+
+    if (impl->m_shutter_open_time == impl->m_shutter_close_time)
+        ray.m_time = impl->m_shutter_open_time;
+    else
+    {
+        sampling_context.split_in_place(1, 1);
+        ray.m_time =
+            fit(
+                sampling_context.next_double2(),
+                0.0, 1.0,
+                impl->m_shutter_open_time, impl->m_shutter_close_time);
+    }
+
+    ray.m_flags = ~0;
+}
+
 bool Camera::has_param(const char* name) const
 {
     return m_params.strings().exist(name);
@@ -356,6 +403,22 @@ DictionaryArray CameraFactory::get_widget_definitions()
             .insert("label", "Horizontal FOV")
             .insert("widget", "text_box")
             .insert("use", "required"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "shutter_open_time")
+            .insert("label", "Shutter Open Time")
+            .insert("widget", "text_box")
+            .insert("use", "optional")
+            .insert("default", "0.0"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "shutter_close_time")
+            .insert("label", "Shutter Close Time")
+            .insert("widget", "text_box")
+            .insert("use", "optional")
+            .insert("default", "1.0"));
 
     return definitions;
 }

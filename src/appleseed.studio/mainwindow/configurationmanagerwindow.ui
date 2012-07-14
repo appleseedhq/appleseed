@@ -23,7 +23,7 @@
       <widget class="QTreeWidget" name="treewidget_configurations">
        <column>
         <property name="text">
-         <string notr="true">1</string>
+         <string notr="true">Configurations</string>
         </property>
        </column>
       </widget>
@@ -33,7 +33,14 @@
        <item>
         <widget class="QPushButton" name="pushbutton_new">
          <property name="text">
-          <string>Create New Inherited</string>
+          <string>New</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushbutton_clone">
+         <property name="text">
+          <string>Clone</string>
          </property>
         </widget>
        </item>

@@ -127,7 +127,7 @@ void BenchmarkWindow::configure_chart_widget()
 {
     m_chart_widget.setProperty("hasFrame", true);
 
-    m_ui->graphs_contents->addWidget(&m_chart_widget);
+    m_ui->graphs_contents->layout()->addWidget(&m_chart_widget);
 }
 
 void BenchmarkWindow::configure_benchmarks_treeview()

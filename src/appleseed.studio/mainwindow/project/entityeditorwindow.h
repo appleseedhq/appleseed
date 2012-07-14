@@ -36,7 +36,6 @@
 
 // Qt headers.
 #include <QObject>
-#include <QString>
 #include <QWidget>
 
 // Standard headers.
@@ -46,9 +45,11 @@
 #include <vector>
 
 // Forward declarations.
-namespace Ui { class EntityEditorWindow; }
+namespace appleseed { namespace studio { class IInputWidgetProxy; } }
+namespace Ui        { class EntityEditorWindow; }
 class QFormLayout;
 class QSignalMapper;
+class QString;
 
 namespace appleseed {
 namespace studio {
@@ -108,20 +109,7 @@ class EntityEditorWindow
     void signal_accepted(foundation::Dictionary values);
 
   private:
-    class IWidgetProxy
-      : public foundation::NonCopyable
-    {
-      public:
-        virtual ~IWidgetProxy() {}
-
-        virtual void set(const std::string& value) = 0;
-
-        virtual std::string get() const = 0;
-    };
-
-    struct Impl;
-
-    typedef std::map<std::string, IWidgetProxy*> WidgetProxyCollection;
+    typedef std::map<std::string, IInputWidgetProxy*> WidgetProxyCollection;
 
     // Not wrapped in std::auto_ptr<> to avoid pulling in the UI definition code.
     Ui::EntityEditorWindow*             m_ui;

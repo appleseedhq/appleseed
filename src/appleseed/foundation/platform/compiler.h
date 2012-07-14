@@ -112,19 +112,19 @@ class FOUNDATIONDLL Compiler
 
 // Visual C++.
 #if defined _MSC_VER
-    #define ALIGN(n) __declspec(align(n))
+    #define FOUNDATION_ALIGN(n) __declspec(align(n))
 
 // gcc.
 #elif defined __GNUC__
-    #define ALIGN(n) __attribute__((aligned(n)))
+    #define FOUNDATION_ALIGN(n) __attribute__((aligned(n)))
 
 // Other compilers: ignore the qualifier.
 #else
-    #define ALIGN(n)
+    #define FOUNDATION_ALIGN(n)
 #endif
 
 // Specify an alignment compatible with SSE.
-#define SSE_ALIGN ALIGN(16)
+#define SSE_ALIGN FOUNDATION_ALIGN(16)
 
 
 //
