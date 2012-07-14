@@ -39,6 +39,7 @@
 #include "foundation/utility/vpythonfile.h"
 
 // Standard headers.
+#include <cmath>
 #include <cstddef>
 #include <vector>
 
@@ -207,7 +208,7 @@ TEST_SUITE(Foundation_Math_Sampling_Mappings)
     }
 
     template <typename SamplingFunction>
-    void visualize_2d_function(
+    void visualize_2d_function_as_image(
         const string&       filename,
         SamplingFunction&   sampling_function,
         const size_t        point_count)
@@ -225,7 +226,7 @@ TEST_SUITE(Foundation_Math_Sampling_Mappings)
     }
 
     template <typename SamplingFunction>
-    void visualize_3d_function(
+    void visualize_3d_function_as_vpython_program(
         const string&       filename,
         SamplingFunction&   sampling_function,
         const size_t        point_count)
@@ -245,17 +246,26 @@ TEST_SUITE(Foundation_Math_Sampling_Mappings)
 
     TEST_CASE(SampleSphereUniform_GenerateVPythonProgram)
     {
-        visualize_3d_function("unit tests/outputs/test_sampling_sample_sphere_uniform.py", sample_sphere_uniform<double>, 1024);
+        visualize_3d_function_as_vpython_program(
+            "unit tests/outputs/test_sampling_sample_sphere_uniform.py",
+            sample_sphere_uniform<double>,
+            1024);
     }
 
     TEST_CASE(SampleHemisphereUniform_GenerateVPythonProgram)
     {
-        visualize_3d_function("unit tests/outputs/test_sampling_sample_hemisphere_uniform.py", sample_hemisphere_uniform<double>, 512);
+        visualize_3d_function_as_vpython_program(
+            "unit tests/outputs/test_sampling_sample_hemisphere_uniform.py",
+            sample_hemisphere_uniform<double>,
+            512);
     }
 
     TEST_CASE(SampleHemisphereCosinePower1_GenerateVPythonProgram)
     {
-        visualize_3d_function("unit tests/outputs/test_sampling_sample_hemisphere_cosine_power_1.py", sample_hemisphere_cosine<double>, 512);
+        visualize_3d_function_as_vpython_program(
+            "unit tests/outputs/test_sampling_sample_hemisphere_cosine_power_1.py",
+            sample_hemisphere_cosine<double>,
+            512);
     }
 
     template <typename T>
@@ -266,22 +276,48 @@ TEST_SUITE(Foundation_Math_Sampling_Mappings)
 
     TEST_CASE(SampleHemisphereCosinePowerN_GenerateVPythonProgram)
     {
-        visualize_3d_function("unit tests/outputs/test_sampling_sample_hemisphere_cosine_power_10.py", sample_hemisphere_cosine_power_10<double>, 512);
+        visualize_3d_function_as_vpython_program(
+            "unit tests/outputs/test_sampling_sample_hemisphere_cosine_power_10.py",
+            sample_hemisphere_cosine_power_10<double>,
+            512);
     }
 
     TEST_CASE(SampleDiskUniform_GenerateImage)
     {
-        visualize_2d_function("unit tests/outputs/test_sampling_sample_disk_uniform.png", sample_disk_uniform<double>, 256);
+        visualize_2d_function_as_image(
+            "unit tests/outputs/test_sampling_sample_disk_uniform.png",
+            sample_disk_uniform<double>,
+            256);
     }
 
     TEST_CASE(SampleDiskUniformAlt_GenerateImage)
     {
-        visualize_2d_function("unit tests/outputs/test_sampling_sample_disk_uniform_alt.png", sample_disk_uniform_alt<double>, 256);
+        visualize_2d_function_as_image(
+            "unit tests/outputs/test_sampling_sample_disk_uniform_alt.png",
+            sample_disk_uniform_alt<double>,
+            256);
+    }
+
+    template <typename T>
+    Vector<T, 3> sample_cone_uniform(const Vector<T, 2>& s)
+    {
+        return sample_cone_uniform(s, cos(deg_to_rad(30.0)));
+    }
+
+    TEST_CASE(SampleConeUniform_GenerateVPythonProgram)
+    {
+        visualize_3d_function_as_vpython_program(
+            "unit tests/outputs/test_sampling_sample_cone_uniform.py",
+            sample_cone_uniform<double>,
+            256);
     }
 
     TEST_CASE(SampleTriangleUniform_GenerateVPythonProgram)
     {
-        visualize_3d_function("unit tests/outputs/test_sampling_sample_triangle_uniform.png", sample_triangle_uniform<double>, 256);
+        visualize_3d_function_as_vpython_program(
+            "unit tests/outputs/test_sampling_sample_triangle_uniform.py",
+            sample_triangle_uniform<double>,
+            256);
     }
 
     TEST_CASE(SampleRegularPolygonUniform_GenerateVPythonProgram)
@@ -302,6 +338,9 @@ TEST_SUITE(Foundation_Math_Sampling_Mappings)
             points[i] = to_unit_square(p);
         }
 
-        write_point_cloud_image("unit tests/outputs/test_sampling_sample_regular_polygon_uniform.png", 512, 512, points);
+        write_point_cloud_image(
+            "unit tests/outputs/test_sampling_sample_regular_polygon_uniform.png",
+            512, 512,
+            points);
     }
 }

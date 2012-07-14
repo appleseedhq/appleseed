@@ -81,13 +81,8 @@ Vector<T, 3> sample_hemisphere_cosine_power(const Vector<T, 2>& s, const T n);
 
 
 //
-// Other sampling functions.
+// Disk sampling functions.
 //
-
-// Map a uniform sample in [0,1) to a point on the unit circle with a uniform
-// probability density p(x) = 1/(2*Pi).
-template <typename T>
-Vector<T, 2> sample_circle_uniform(const T s);
 
 // Map a uniform sample in [0,1)^2 to a point on the surface of the unit disk
 // with a uniform probability density p(x) = 1/Pi.
@@ -101,6 +96,22 @@ Vector<T, 2> sample_disk_uniform(const Vector<T, 2>& s);
 // QMC sampling.
 template <typename T>
 Vector<T, 2> sample_disk_uniform_alt(const Vector<T, 2>& s);
+
+
+//
+// Other sampling functions.
+//
+
+// Map a uniform sample in [0,1)^2 to a direction over the cone with its apex at the origin and extending toward Y+.
+template <typename T> Vector<T, 3>
+sample_cone_uniform(const Vector<T, 2>& s, const T cos_theta_max);
+template <typename T>
+T sample_cone_uniform_pdf(const T cos_theta_max);
+
+// Map a uniform sample in [0,1) to a point on the unit circle with a uniform
+// probability density p(x) = 1/(2*Pi).
+template <typename T>
+Vector<T, 2> sample_circle_uniform(const T s);
 
 // Map a uniform sample in [0,1)^2 to a point on the surface of a triangle
 // with a uniform probability density p(x) = 1/A. Return the barycentric
@@ -209,16 +220,6 @@ inline Vector<T, 3> sample_hemisphere_cosine_power(const Vector<T, 2>& s, const 
 }
 
 template <typename T>
-inline Vector<T, 2> sample_circle_uniform(const T s)
-{
-    assert(s >= T(0.0) && s < T(1.0));
-
-    const T phi = s * T(TwoPi);
-
-    return Vector<T, 2>(std::cos(phi), std::sin(phi));
-}
-
-template <typename T>
 inline Vector<T, 2> sample_disk_uniform(const Vector<T, 2>& s)
 {
     assert(s[0] >= T(0.0) && s[0] < T(1.0));
@@ -253,6 +254,40 @@ inline Vector<T, 2> sample_disk_uniform_alt(const Vector<T, 2>& s)
     const T phi = s[0] * T(TwoPi);
 
     return Vector<T, 2>(r * std::cos(phi), r * std::sin(phi));
+}
+
+template <typename T>
+inline Vector<T, 3> sample_cone_uniform(const Vector<T, 2>& s, const T cos_theta_max)
+{
+    assert(s[0] >= T(0.0) && s[0] < T(1.0));
+    assert(s[1] >= T(0.0) && s[1] < T(1.0));
+
+    const T cos_theta = lerp(T(1.0), cos_theta_max, s[1]);
+    const T sin_theta = std::sqrt(T(1.0) - cos_theta * cos_theta);
+    const T phi = s[0] * T(TwoPi);
+
+    return
+        Vector<T, 3>::unit_vector(
+            cos_theta,
+            sin_theta,
+            std::cos(phi),
+            std::sin(phi));
+}
+
+template <typename T>
+inline T sample_cone_uniform_pdf(const T cos_theta_max)
+{
+    return T(1.0) / (T(TwoPi) * (T(1.0) - cos_theta_max));
+}
+
+template <typename T>
+inline Vector<T, 2> sample_circle_uniform(const T s)
+{
+    assert(s >= T(0.0) && s < T(1.0));
+
+    const T phi = s * T(TwoPi);
+
+    return Vector<T, 2>(std::cos(phi), std::sin(phi));
 }
 
 template <typename T>
