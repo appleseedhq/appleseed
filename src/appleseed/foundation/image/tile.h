@@ -98,6 +98,9 @@ class FOUNDATIONDLL Tile
     // Destructor.
     ~Tile();
 
+    // Like foundation::IUnknown::release() but without introducing a virtual function table.
+    void release();
+
     // Tile properties.
     PixelFormat get_pixel_format() const;
     size_t get_width() const;
