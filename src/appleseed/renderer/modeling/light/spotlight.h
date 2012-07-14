@@ -26,68 +26,50 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "lightfactoryregistrar.h"
+#ifndef APPLESEED_RENDERER_MODELING_LIGHT_SPOTLIGHT_H
+#define APPLESEED_RENDERER_MODELING_LIGHT_SPOTLIGHT_H
 
 // appleseed.renderer headers.
 #include "renderer/modeling/light/ilightfactory.h"
-#include "renderer/modeling/light/pointlight.h"
-#include "renderer/modeling/light/spotlight.h"
+#include "renderer/modeling/light/light.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/foreach.h"
-#include "foundation/utility/registrar.h"
+#include "foundation/platform/compiler.h"
+#include "foundation/utility/autoreleaseptr.h"
 
-// Standard headers.
-#include <cassert>
-#include <string>
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
-using namespace foundation;
-using namespace std;
+// Forward declarations.
+namespace foundation    { class DictionaryArray; }
+namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
 
-DEFINE_ARRAY(LightFactoryArray);
+//
+// Spot light factory.
+//
 
-struct LightFactoryRegistrar::Impl
+class DLLSYMBOL SpotLightFactory
+  : public ILightFactory
 {
-    Registrar<ILightFactory> m_registrar;
+  public:
+    // Return a string identifying this light model.
+    virtual const char* get_model() const override;
+
+    // Return a human-readable string identifying this light model.
+    virtual const char* get_human_readable_model() const override;
+
+    // Return a set of widget definitions for this light model.
+    virtual foundation::DictionaryArray get_widget_definitions() const override;
+
+    // Create a new light instance.
+    virtual foundation::auto_release_ptr<Light> create(
+        const char*         name,
+        const ParamArray&   params) const override;
 };
 
-LightFactoryRegistrar::LightFactoryRegistrar()
-  : impl(new Impl())
-{
-    register_factory(auto_ptr<FactoryType>(new PointLightFactory()));
-    register_factory(auto_ptr<FactoryType>(new SpotLightFactory()));
-}
+}       // namespace renderer
 
-LightFactoryRegistrar::~LightFactoryRegistrar()
-{
-    delete impl;
-}
-
-void LightFactoryRegistrar::register_factory(auto_ptr<FactoryType> factory)
-{
-    const string model = factory->get_model();
-    impl->m_registrar.insert(model, factory);
-}
-
-LightFactoryArray LightFactoryRegistrar::get_factories() const
-{
-    FactoryArrayType factories;
-
-    for (const_each<Registrar<FactoryType>::Items> i = impl->m_registrar.items(); i; ++i)
-        factories.push_back(i->second);
-
-    return factories;
-}
-
-const LightFactoryRegistrar::FactoryType* LightFactoryRegistrar::lookup(const char* name) const
-{
-    assert(name);
-
-    return impl->m_registrar.lookup(name);
-}
-
-}   // namespace renderer
+#endif  // !APPLESEED_RENDERER_MODELING_LIGHT_SPOTLIGHT_H
