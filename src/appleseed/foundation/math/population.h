@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_MATH_POPULATION_H
 #define APPLESEED_FOUNDATION_MATH_POPULATION_H
 
+// appleseed.foundation headers.
+#include "foundation/math/scalar.h"
+
 // Standard headers.
 #include <cmath>
 #include <cstddef>
@@ -55,6 +58,9 @@ class Population
     // Insert a new value into the population.
     void insert(const ValueType& val);
 
+    // Merge another population into this one.
+    void merge(const PopulationType& pop);
+
     // Return the size of the population.
     size_t get_size() const;
 
@@ -68,7 +74,7 @@ class Population
     size_t      m_size;                     // size of the population
     ValueType   m_min;                      // minimum value
     ValueType   m_max;                      // maximum value
-    double      m_avg;                      // average value
+    double      m_mean;                     // mean value
     double      m_s;                        // s = n*(standard deviation)^2
 };
 
@@ -82,7 +88,7 @@ inline Population<T>::Population()
   : m_size(0)
   , m_min(std::numeric_limits<ValueType>::max())
   , m_max(std::numeric_limits<ValueType>::min())
-  , m_avg(0.0)
+  , m_mean(0.0)
   , m_s(0.0)
 {
 }
@@ -126,25 +132,57 @@ inline void Population<T>::insert(const ValueType& val)
     if (m_max < val)
         m_max = val;
 
+    // Update the size of the population.
+    ++m_size;
+
+    // Compute the residual value.
     const double double_val = static_cast<double>(val);
-
-    // Compute residual value.
-    const double residual = double_val - m_avg;
-
-    // Compute the new size of the population.
-    const size_t new_size = m_size + 1;
-
-    // Compute the new mean value of the population.
-    const double new_avg = m_avg + residual / new_size;
-
-    // Update s.
-    m_s += residual * (double_val - new_avg);
+    const double residual = double_val - m_mean;
 
     // Update the mean value of the population.
-    m_avg = new_avg;
+    m_mean += residual / m_size;
+
+    // Update s.
+    m_s += residual * (double_val - m_mean);
+}
+
+template <typename T>
+void Population<T>::merge(const PopulationType& pop)
+{
+    //
+    // Reference:
+    //
+    //   Stack Overflow: Merging two statistical result sets
+    //   http://stackoverflow.com/questions/1480626/merging-two-statistical-result-sets
+    //
+
+    // Update the minimum value.
+    if (m_min > pop.m_min)
+        m_min = pop.m_min;
+
+    // Update the maximum value.
+    if (m_max < pop.m_max)
+        m_max = pop.m_max;
+
+    // Compute the new size of the population.
+    const size_t new_size = m_size + pop.m_size;
+
+    // Compute the new mean value of the population.
+    const double new_mean =
+        new_size > 0
+            ? (m_mean * m_size + pop.m_mean * pop.m_size) / new_size
+            : 0.0;
+
+    // Update s.
+    const double var1 = m_size > 0 ? m_s / m_size : 0.0;
+    const double var2 = pop.m_size > 0 ? pop.m_s / pop.m_size : 0.0;
+    m_s = (var1 + square(m_mean - new_mean)) * m_size + (var2 + square(pop.m_mean - new_mean)) * pop.m_size;
 
     // Update the size of the population.
     m_size = new_size;
+
+    // Update the mean value of the population.
+    m_mean = new_mean;
 }
 
 template <typename T>
@@ -168,7 +206,7 @@ inline T Population<T>::get_max() const
 template <typename T>
 inline double Population<T>::get_mean() const
 {
-    return m_avg;
+    return m_mean;
 }
 
 template <typename T>

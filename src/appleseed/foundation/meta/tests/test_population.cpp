@@ -34,9 +34,10 @@ using namespace foundation;
 
 TEST_SUITE(Foundation_Math_Population)
 {
-    TEST_CASE(TestEmptyPopulation)
+    TEST_CASE(EmptyPopulation)
     {
         Population<int> pop;
+
         EXPECT_EQ(0, pop.get_size());
         EXPECT_EQ(0, pop.get_min());
         EXPECT_EQ(0, pop.get_max());
@@ -44,7 +45,7 @@ TEST_SUITE(Foundation_Math_Population)
         EXPECT_EQ(0.0, pop.get_dev());
     }
 
-    TEST_CASE(TestNonEmptyPopulation)
+    TEST_CASE(NonEmptyPopulation)
     {
         Population<int> pop;
         pop.insert(2);
@@ -61,5 +62,100 @@ TEST_SUITE(Foundation_Math_Population)
         EXPECT_EQ(9, pop.get_max());
         EXPECT_EQ(5.0, pop.get_mean());
         EXPECT_EQ(2.0, pop.get_dev());
+    }
+
+    TEST_CASE(MergeEmptyPopulationIntoEmptyPopulation)
+    {
+        Population<int> pop;
+
+        Population<int> other_pop;
+        pop.merge(other_pop);
+
+        EXPECT_EQ(0, pop.get_size());
+        EXPECT_EQ(0, pop.get_min());
+        EXPECT_EQ(0, pop.get_max());
+        EXPECT_EQ(0.0, pop.get_mean());
+        EXPECT_EQ(0.0, pop.get_dev());
+    }
+
+    TEST_CASE(MergeEmptyPopulationIntoNonEmptyPopulation)
+    {
+        Population<int> pop;
+        pop.insert(2);
+        pop.insert(4);
+        pop.insert(4);
+        pop.insert(4);
+        pop.insert(5);
+        pop.insert(5);
+        pop.insert(7);
+        pop.insert(9);
+
+        Population<int> other_pop;
+        pop.merge(other_pop);
+
+        EXPECT_EQ(8, pop.get_size());
+        EXPECT_EQ(2, pop.get_min());
+        EXPECT_EQ(9, pop.get_max());
+        EXPECT_EQ(5.0, pop.get_mean());
+        EXPECT_EQ(2.0, pop.get_dev());
+    }
+
+    TEST_CASE(MergeNonEmptyPopulationIntoEmptyPopulation)
+    {
+        Population<int> other_pop;
+        other_pop.insert(2);
+        other_pop.insert(4);
+        other_pop.insert(4);
+        other_pop.insert(4);
+        other_pop.insert(5);
+        other_pop.insert(5);
+        other_pop.insert(7);
+        other_pop.insert(9);
+
+        Population<int> pop;
+        pop.merge(other_pop);
+
+        EXPECT_EQ(8, pop.get_size());
+        EXPECT_EQ(2, pop.get_min());
+        EXPECT_EQ(9, pop.get_max());
+        EXPECT_EQ(5.0, pop.get_mean());
+        EXPECT_EQ(2.0, pop.get_dev());
+    }
+
+    TEST_CASE(MergeNonPopulationIntoNonEmptyPopulation)
+    {
+        Population<int> pop;
+        pop.insert(2);
+        pop.insert(4);
+        pop.insert(4);
+        pop.insert(4);
+        pop.insert(5);
+        pop.insert(5);
+        pop.insert(7);
+        pop.insert(9);
+
+        Population<int> other_pop;
+        other_pop.insert(1);
+        other_pop.insert(11);
+
+        pop.merge(other_pop);
+
+        Population<int> expected;
+        expected.insert(2);
+        expected.insert(4);
+        expected.insert(4);
+        expected.insert(4);
+        expected.insert(5);
+        expected.insert(5);
+        expected.insert(7);
+        expected.insert(9);
+        expected.insert(1);
+        expected.insert(11);
+
+        EXPECT_EQ(expected.get_size(), pop.get_size());
+        EXPECT_EQ(expected.get_min(), pop.get_min());
+        EXPECT_EQ(expected.get_max(), pop.get_max());
+        EXPECT_FEQ(expected.get_mean(), pop.get_mean());
+        EXPECT_FEQ(expected.get_dev(), pop.get_dev());
     }
 }
