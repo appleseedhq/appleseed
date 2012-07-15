@@ -32,7 +32,6 @@
 #--------------------------------------------------------------------------------------------------
 
 set (foundation_core_concepts_sources
-    foundation/core/concepts/icloneable.h
     foundation/core/concepts/iunknown.h
     foundation/core/concepts/noncopyable.h
     foundation/core/concepts/singleton.h
