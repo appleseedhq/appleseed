@@ -30,10 +30,12 @@
 #define APPLESEED_FOUNDATION_IMAGE_IMAGE_H
 
 // appleseed.foundation headers.
+#include "foundation/core/concepts/iunknown.h"
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/icanvas.h"
 #include "foundation/image/pixel.h"
 #include "foundation/image/tile.h"
+#include "foundation/platform/compiler.h"
 
 // Standard headers.
 #include <cstddef>
@@ -68,6 +70,7 @@ namespace foundation
 
 class FOUNDATIONDLL Image
   : public ICanvas
+  , public IUnknown
 {
   public:
     // Construct an empty image.
@@ -95,16 +98,19 @@ class FOUNDATIONDLL Image
     // Destructor.
     virtual ~Image();
 
+    // Delete this instance.
+    virtual void release() override;
+
     // Access canvas properties.
-    virtual const CanvasProperties& properties() const;
+    virtual const CanvasProperties& properties() const override;
 
     // Direct access to a given tile.
     virtual Tile& tile(
         const size_t        tile_x,
-        const size_t        tile_y);
+        const size_t        tile_y) override;
     virtual const Tile& tile(
         const size_t        tile_x,
-        const size_t        tile_y) const;
+        const size_t        tile_y) const override;
 
     // Set a given tile. Ownership of the tile is transfered to the Image class.
     // If a tile already exists at the given coordinates, it gets replaced.

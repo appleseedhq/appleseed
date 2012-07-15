@@ -158,6 +158,11 @@ Image::~Image()
     delete [] m_tiles;
 }
 
+void Image::release()
+{
+    delete this;
+}
+
 Tile& Image::tile(
     const size_t        tile_x,
     const size_t        tile_y)

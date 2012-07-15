@@ -166,6 +166,11 @@ Tile::~Tile()
         delete [] m_pixel_array;
 }
 
+void Tile::release()
+{
+    delete this;
+}
+
 void Tile::copy(const Tile& rhs)
 {
     assert(m_width == rhs.m_width);
