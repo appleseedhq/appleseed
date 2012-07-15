@@ -197,7 +197,7 @@ namespace
                     "  paths            %s\n"
                     "  path length      avg %.1f  min %s  max %s  dev %.1f\n",
                     pretty_uint(m_path_count).c_str(),
-                    m_path_length.get_avg(),
+                    m_path_length.get_mean(),
                     pretty_uint(m_path_length.get_min()).c_str(),
                     pretty_uint(m_path_length.get_max()).c_str(),
                     m_path_length.get_dev());

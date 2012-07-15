@@ -144,7 +144,7 @@ void TreeStatistics<Tree, Builder>::print(Logger& logger)
         pretty_uint(m_leaf_count).c_str(),
         pretty_percent(m_empty_leaf_count, m_leaf_count, 1).c_str(),
         pretty_percent(m_empty_volume, m_volume, 1).c_str(),
-        m_leaf_depth.get_avg(),
+        m_leaf_depth.get_mean(),
         pretty_uint(m_leaf_depth.get_min()).c_str(),
         pretty_uint(m_leaf_depth.get_max()).c_str(),
         m_leaf_depth.get_dev());

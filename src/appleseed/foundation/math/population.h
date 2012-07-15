@@ -61,7 +61,7 @@ class Population
     // Return various properties of the population defined so far.
     ValueType get_min() const;              // minimum value
     ValueType get_max() const;              // maximum value
-    double get_avg() const;                 // average value
+    double get_mean() const;                // mean value
     double get_dev() const;                 // standard deviation
 
   private:
@@ -166,7 +166,7 @@ inline T Population<T>::get_max() const
 }
 
 template <typename T>
-inline double Population<T>::get_avg() const
+inline double Population<T>::get_mean() const
 {
     return m_avg;
 }

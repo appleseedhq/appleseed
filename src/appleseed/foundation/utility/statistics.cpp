@@ -55,7 +55,7 @@ namespace
         stringstream sstr;
         sstr << fixed << setprecision(1);
 
-        sstr <<   "avg " << pop.get_avg() << unit;
+        sstr <<   "avg " << pop.get_mean() << unit;
         sstr << "  min " << pop.get_min() << unit;
         sstr << "  max " << pop.get_max() << unit;
         sstr << "  dev " << pop.get_dev() << unit;

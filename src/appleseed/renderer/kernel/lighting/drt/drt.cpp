@@ -190,7 +190,7 @@ namespace
                     "  paths            %s\n"
                     "  ray tree depth   avg %.1f  min %s  max %s  dev %.1f\n",
                     pretty_uint(m_path_count).c_str(),
-                    m_ray_tree_depth.get_avg(),
+                    m_ray_tree_depth.get_mean(),
                     pretty_uint(m_ray_tree_depth.get_min()).c_str(),
                     pretty_uint(m_ray_tree_depth.get_max()).c_str(),
                     m_ray_tree_depth.get_dev());

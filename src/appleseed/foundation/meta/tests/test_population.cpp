@@ -40,7 +40,7 @@ TEST_SUITE(Foundation_Math_Population)
         EXPECT_EQ(0, pop.get_size());
         EXPECT_EQ(0, pop.get_min());
         EXPECT_EQ(0, pop.get_max());
-        EXPECT_EQ(0.0, pop.get_avg());
+        EXPECT_EQ(0.0, pop.get_mean());
         EXPECT_EQ(0.0, pop.get_dev());
     }
 
@@ -59,7 +59,7 @@ TEST_SUITE(Foundation_Math_Population)
         EXPECT_EQ(8, pop.get_size());
         EXPECT_EQ(2, pop.get_min());
         EXPECT_EQ(9, pop.get_max());
-        EXPECT_EQ(5.0, pop.get_avg());
+        EXPECT_EQ(5.0, pop.get_mean());
         EXPECT_EQ(2.0, pop.get_dev());
     }
 }

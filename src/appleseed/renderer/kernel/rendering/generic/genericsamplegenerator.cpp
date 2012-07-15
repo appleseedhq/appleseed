@@ -201,11 +201,11 @@ namespace
                 "generic sample generator statistics:\n"
                 "  max. samp. dim.  avg %.1f  min %s  max %s  dev %.1f\n"
                 "  max. samp. inst. avg %.1f  min %s  max %s  dev %.1f\n",
-                m_total_sampling_dim.get_avg(),
+                m_total_sampling_dim.get_mean(),
                 pretty_uint(m_total_sampling_dim.get_min()).c_str(),
                 pretty_uint(m_total_sampling_dim.get_max()).c_str(),
                 m_total_sampling_dim.get_dev(),
-                m_total_sampling_inst.get_avg(),
+                m_total_sampling_inst.get_mean(),
                 pretty_uint(m_total_sampling_inst.get_min()).c_str(),
                 pretty_uint(m_total_sampling_inst.get_max()).c_str(),
                 m_total_sampling_inst.get_dev());
