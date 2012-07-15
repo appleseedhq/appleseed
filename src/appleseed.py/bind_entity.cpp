@@ -30,10 +30,40 @@
 #include <string>
 
 #include "renderer/modeling/entity/entity.h"
+#include "renderer/modeling/entity/entityvector.h"
+#include "renderer/modeling/entity/entitymap.h"
+
+#include "renderer/modeling/scene/assembly.h"
+#include "renderer/modeling/scene/assemblyinstance.h"
+
+#include "renderer/modeling/project/configuration.h"
 
 namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
+
+namespace
+{
+
+Entity *get_item( EntityVector& vec, int index)
+{
+    if( index < 0)
+        index = vec.size() - index;
+
+    if( index < 0 || index >= vec.size())
+        throw std::out_of_range("");
+
+    return vec.get_by_index( index);
+}
+
+template<class T>
+void bind_typed_entity_name( const char *name)
+{
+    bpy::class_<TypedEntityMap<T>, bpy::bases<EntityMap>, boost::noncopyable> X( name)
+        ;
+}
+
+} // unnamed
 
 void bind_entity()
 {
@@ -54,4 +84,32 @@ void bind_entity()
         .def( "set_render_layer_index", &Entity::set_render_layer_index)
         .def( "get_render_layer_index", &Entity::get_render_layer_index)
         ;
+
+    bpy::class_<EntityVector, boost::noncopyable>( "EntityVector")
+        .def( "clear", &EntityVector::clear)
+        .def( "__len__", &EntityVector::size)
+        .def( "__getitem__", get_item, bpy::return_value_policy<bpy::reference_existing_object>())
+
+        .def( "insert", &EntityVector::insert)
+        .def( "remove", &EntityVector::remove)
+
+        .def( "__iter__", bpy::iterator<EntityVector>())
+        ;
+
+    bpy::class_<EntityMap, boost::noncopyable>( "EntityMap")
+        .def( "clear", &EntityMap::clear)
+        .def( "__len__", &EntityMap::size)
+
+        .def( "insert", &EntityMap::insert)
+        .def( "remove", &EntityMap::remove)
+
+        .def( "get_by_uid", &EntityMap::get_by_uid, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def( "get_by_name", &EntityMap::get_by_name, bpy::return_value_policy<bpy::reference_existing_object>())
+
+        //.def( "__iter__", bpy::iterator<EntityMap>())
+        ;
+
+    bind_typed_entity_name<Configuration>( "ConfigurationContainer");
+    bind_typed_entity_name<Assembly>( "AssemblyContainer");
+    bind_typed_entity_name<AssemblyInstance>( "AssemblyInstanceContainer");
 }

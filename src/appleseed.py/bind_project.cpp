@@ -60,6 +60,7 @@ void bind_project()
 
         .def( "set_frame", &Project::set_frame)
         .def( "get_frame", &Project::get_frame, bpy::return_value_policy<bpy::reference_existing_object>())
+
         .def( "create_aov_images", &Project::create_aov_images)
         ;
 }

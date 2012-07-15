@@ -36,12 +36,6 @@ find_package (PythonLibs)
 # Boost libraries.
 #--------------------------------------------------------------------------------------------------
 
-set (Boost_MULTITHREADED TRUE)
-
-if (USE_STATIC_BOOST)
-    set (Boost_USE_STATIC_LIBS TRUE)
-endif ()
-
 find_package (Boost 1.46 REQUIRED date_time filesystem regex system thread python)
 
 
