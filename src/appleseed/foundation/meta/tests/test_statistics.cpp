@@ -28,13 +28,16 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/population.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/statistics.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.
 #include <cstddef>
+#include <string>
 
 using namespace foundation;
+using namespace std;
 
 TEST_SUITE(Foundation_Utility_Statistics)
 {
@@ -49,7 +52,18 @@ TEST_SUITE(Foundation_Utility_Statistics)
     {
         Statistics stats("title");
 
-        stats.add<size_t>("some_value", "some value", 17);
+        stats.add<uint64>("some_value", "some value", 17);
+
+        EXPECT_EQ("title:\n  some value       17\n", stats.to_string());
+    }
+
+    TEST_CASE(SingleUnsignedIntegerStatistic_SetAfterDeclaration)
+    {
+        Statistics stats("title");
+
+        uint64* counter = stats.add<uint64>("some_value", "some value");
+
+        *counter = 17;
 
         EXPECT_EQ("title:\n  some value       17\n", stats.to_string());
     }
@@ -63,23 +77,13 @@ TEST_SUITE(Foundation_Utility_Statistics)
         EXPECT_EQ("title:\n  some value       42.6\n", stats.to_string());
     }
 
-    TEST_CASE(MultipleStatistics)
+    TEST_CASE(SingleStringStatistic)
     {
         Statistics stats("title");
 
-        stats.add<size_t>("first_value", "first value", 17);
-        stats.add<double>("second_value", "second value", 42.6);
+        stats.add<string>("some_value", "some value", "bunny");
 
-        EXPECT_EQ("title:\n  first value      17\n  second value     42.6\n", stats.to_string());
-    }
-
-    TEST_CASE(StatisticWithLongTitle)
-    {
-        Statistics stats("title");
-
-        stats.add<size_t>("some_value", "the title of this value is too long to fit", 17);
-
-        EXPECT_EQ("title:\n  the title of thi 17\n", stats.to_string());
+        EXPECT_EQ("title:\n  some value       bunny\n", stats.to_string());
     }
 
     TEST_CASE(SingleUnsignedIntegerPopulationStatistic)
@@ -108,5 +112,78 @@ TEST_SUITE(Foundation_Utility_Statistics)
         stats.add_population<size_t>("some_value", "some value", "%", pop);
 
         EXPECT_EQ("title:\n  some value       avg 2.0%  min 1%  max 3%  dev 0.8%\n", stats.to_string());
+    }
+
+    TEST_CASE(SingleFloatingPointPopulationStatistic)
+    {
+        Statistics stats("title");
+
+        Population<double> pop;
+        pop.insert(0.1);
+        pop.insert(0.2);
+        pop.insert(0.3);
+
+        stats.add_population<double>("some_value", "some value", pop);
+
+        EXPECT_EQ("title:\n  some value       avg 0.2  min 0.1  max 0.3  dev 0.1\n", stats.to_string());
+    }
+
+    TEST_CASE(SingleFloatingPointPopulationStatisticWithUnit)
+    {
+        Statistics stats("title");
+
+        Population<double> pop;
+        pop.insert(0.1);
+        pop.insert(0.2);
+        pop.insert(0.3);
+
+        stats.add_population<double>("some_value", "some value", "%", pop);
+
+        EXPECT_EQ("title:\n  some value       avg 0.2%  min 0.1%  max 0.3%  dev 0.1%\n", stats.to_string());
+    }
+
+    TEST_CASE(SingleStatisticWithLongTitle)
+    {
+        Statistics stats("title");
+
+        stats.add<uint64>("some_value", "the title of this value is too long to fit", 17);
+
+        EXPECT_EQ("title:\n  the title of thi 17\n", stats.to_string());
+    }
+
+    TEST_CASE(MultipleStatistics)
+    {
+        Statistics stats("title");
+
+        stats.add<uint64>("first_value", "first value", 17);
+        stats.add<double>("second_value", "second value", 42.6);
+
+        EXPECT_EQ("title:\n  first value      17\n  second value     42.6\n", stats.to_string());
+    }
+
+    TEST_CASE(Merge_GivenNewStatistic_InsertsIt)
+    {
+        Statistics stats("title");
+        stats.add<uint64>("existing_value", "existing value", 17);
+
+        Statistics other_stats("other title");
+        other_stats.add<uint64>("new_value", "new value", 42);
+
+        stats.merge(other_stats);
+
+        EXPECT_EQ("title:\n  existing value   17\n  new value        42\n", stats.to_string());
+    }
+
+    TEST_CASE(Merge_GivenExistingStatisticOfSameType_MergesIt)
+    {
+        Statistics stats("title");
+        stats.add<uint64>("existing_value", "existing value", 17);
+
+        Statistics other_stats("other title");
+        other_stats.add<uint64>("existing_value", "existing value", 42);
+
+        stats.merge(other_stats);
+
+        EXPECT_EQ("title:\n  existing value   59\n", stats.to_string());
     }
 }
