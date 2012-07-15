@@ -30,20 +30,25 @@
 #define APPLESEED_RENDERER_KERNEL_INTERSECTION_INTERSECTOR_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
 #include "renderer/kernel/intersection/intersectionsettings.h"
 #include "renderer/kernel/intersection/regiontree.h"
 #include "renderer/kernel/intersection/triangletree.h"
-#include "renderer/kernel/shading/shadingray.h"
 #include "renderer/kernel/tessellation/statictessellation.h"
 #include "renderer/modeling/object/regionkit.h"
 
 // appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/bvh.h"
+#include "foundation/math/vector.h"
+#include "foundation/platform/types.h"
+
+// Standard headers.
+#include <cstddef>
 
 // Forward declarations.
 namespace renderer  { class AssemblyInstance; }
 namespace renderer  { class ShadingPoint; }
+namespace renderer  { class ShadingRay; }
 namespace renderer  { class TextureCache; }
 namespace renderer  { class TraceContext; }
 

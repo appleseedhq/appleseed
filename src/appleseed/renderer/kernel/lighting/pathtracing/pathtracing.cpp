@@ -78,41 +78,61 @@ namespace
       : public ILightingEngine
     {
       public:
+        struct Parameters
+        {
+            const bool          m_next_event_estimation;    // use next event estimation?
+            const size_t        m_rr_min_path_length;       // minimum path length before Russian Roulette is used, 0 for unlimited
+            const size_t        m_max_path_length;          // maximum path length, 0 for unlimited
+
+            const size_t        m_dl_light_sample_count;    // number of light samples used to estimate direct illumination
+            
+            const bool          m_enable_ibl;               // IBL enabled?
+            const size_t        m_ibl_bsdf_sample_count;    // number of BSDF samples used to estimate IBL
+            const size_t        m_ibl_env_sample_count;     // number of environment samples used to estimate IBL
+
+            explicit Parameters(const ParamArray& params)
+              : m_next_event_estimation(params.get_optional<bool>("next_event_estimation", true))
+              , m_rr_min_path_length(params.get_optional<size_t>("rr_min_path_length", 3))
+              , m_max_path_length(params.get_optional<size_t>("max_path_length", 0))
+              , m_dl_light_sample_count(params.get_optional<size_t>("dl_light_samples", 1))
+              , m_enable_ibl(params.get_optional<bool>("enable_ibl", true))
+              , m_ibl_bsdf_sample_count(params.get_optional<size_t>("ibl_bsdf_samples", 1))
+              , m_ibl_env_sample_count(params.get_optional<size_t>("ibl_env_samples", 1))
+            {
+            }
+
+            void print() const
+            {
+                RENDERER_LOG_INFO(
+                    "path tracing settings:\n"
+                    "  next event est.  %s\n"
+                    "  rr min path len. %s\n"
+                    "  max path length  %s\n"
+                    "  dl light samples %s\n"
+                    "  ibl              %s\n"
+                    "  ibl bsdf samples %s\n"
+                    "  ibl env samples  %s",
+                    m_next_event_estimation ? "on" : "off",
+                    m_rr_min_path_length == 0 ? "infinite" : pretty_uint(m_rr_min_path_length).c_str(),
+                    m_max_path_length == 0 ? "infinite" : pretty_uint(m_max_path_length).c_str(),
+                    pretty_uint(m_dl_light_sample_count).c_str(),
+                    m_enable_ibl ? "on" : "off",
+                    pretty_uint(m_ibl_bsdf_sample_count).c_str(),
+                    pretty_uint(m_ibl_env_sample_count).c_str());
+            }
+        };
+
         PTLightingEngine(
             const LightSampler&     light_sampler,
             const ParamArray&       params)
           : m_params(params)
           , m_light_sampler(light_sampler)
         {
-            RENDERER_LOG_INFO(
-                "path tracing settings:\n"
-                "  next event est.  %s\n"
-                "  rr min path len. %s\n"
-                "  max path length  %s\n"
-                "  dl light samples %s\n"
-                "  ibl              %s\n"
-                "  ibl bsdf samples %s\n"
-                "  ibl env samples  %s",
-                m_params.m_next_event_estimation ? "on" : "off",
-                m_params.m_rr_min_path_length == 0 ? "infinite" : pretty_uint(m_params.m_rr_min_path_length).c_str(),
-                m_params.m_max_path_length == 0 ? "infinite" : pretty_uint(m_params.m_max_path_length).c_str(),
-                pretty_uint(m_params.m_dl_light_sample_count).c_str(),
-                m_params.m_enable_ibl ? "on" : "off",
-                pretty_uint(m_params.m_ibl_bsdf_sample_count).c_str(),
-                pretty_uint(m_params.m_ibl_env_sample_count).c_str());
         }
 
         ~PTLightingEngine()
         {
-            RENDERER_LOG_DEBUG(
-                "path tracing statistics:\n"
-                "  paths            %s\n"
-                "  path length      avg %.1f  min %s  max %s  dev %.1f\n",
-                pretty_uint(m_stats.m_path_count).c_str(),
-                m_stats.m_path_length.get_avg(),
-                pretty_uint(m_stats.m_path_length.get_min()).c_str(),
-                pretty_uint(m_stats.m_path_length.get_max()).c_str(),
-                m_stats.m_path_length.get_dev());
+            m_stats.print();
         }
 
         virtual void release()
@@ -124,13 +144,13 @@ namespace
             SamplingContext&        sampling_context,
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
-            Spectrum&               radiance,   // output radiance, in W.sr^-1.m^-2
+            Spectrum&               radiance,               // output radiance, in W.sr^-1.m^-2
             SpectrumStack&          aovs)
         {
             typedef PathTracer<
                 PathVisitor,
                 BSDF::Diffuse | BSDF::Glossy | BSDF::Specular,
-                false                           // not adjoint
+                false                                       // not adjoint
             > PathTracer;
 
             PathVisitor path_visitor(
@@ -160,30 +180,6 @@ namespace
         }
 
       private:
-        struct Parameters
-        {
-            const bool          m_next_event_estimation;    // use next event estimation?
-            const size_t        m_rr_min_path_length;       // minimum path length before Russian Roulette is used, 0 for unlimited
-            const size_t        m_max_path_length;          // maximum path length, 0 for unlimited
-
-            const size_t        m_dl_light_sample_count;    // number of light samples used to estimate direct illumination
-            
-            const bool          m_enable_ibl;               // IBL enabled?
-            const size_t        m_ibl_bsdf_sample_count;    // number of BSDF samples used to estimate IBL
-            const size_t        m_ibl_env_sample_count;     // number of environment samples used to estimate IBL
-
-            explicit Parameters(const ParamArray& params)
-              : m_next_event_estimation(params.get_optional<bool>("next_event_estimation", true))
-              , m_rr_min_path_length(params.get_optional<size_t>("rr_min_path_length", 3))
-              , m_max_path_length(params.get_optional<size_t>("max_path_length", 0))
-              , m_dl_light_sample_count(params.get_optional<size_t>("dl_light_samples", 1))
-              , m_enable_ibl(params.get_optional<bool>("enable_ibl", true))
-              , m_ibl_bsdf_sample_count(params.get_optional<size_t>("ibl_bsdf_samples", 1))
-              , m_ibl_env_sample_count(params.get_optional<size_t>("ibl_env_samples", 1))
-            {
-            }
-        };
-
         struct Statistics
         {
             uint64              m_path_count;
@@ -192,6 +188,19 @@ namespace
             Statistics()
               : m_path_count(0)
             {
+            }
+
+            void print() const
+            {
+                RENDERER_LOG_DEBUG(
+                    "path tracing statistics:\n"
+                    "  paths            %s\n"
+                    "  path length      avg %.1f  min %s  max %s  dev %.1f\n",
+                    pretty_uint(m_path_count).c_str(),
+                    m_path_length.get_avg(),
+                    pretty_uint(m_path_length.get_min()).c_str(),
+                    pretty_uint(m_path_length.get_max()).c_str(),
+                    m_path_length.get_dev());
             }
         };
 
@@ -446,6 +455,7 @@ PTLightingEngineFactory::PTLightingEngineFactory(
   : m_light_sampler(light_sampler)
   , m_params(params)
 {
+    PTLightingEngine::Parameters(params).print();
 }
 
 void PTLightingEngineFactory::release()
