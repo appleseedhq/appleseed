@@ -60,6 +60,9 @@ class DLLSYMBOL EntityMap
       public:
         // Value type.
         typedef Entity value_type;
+        typedef ptrdiff_t difference_type;
+        typedef value_type& reference;
+        typedef value_type* pointer;
 
         // Constructors.
         iterator();
@@ -79,9 +82,13 @@ class DLLSYMBOL EntityMap
         iterator& operator++();
         iterator& operator--();
 
+        // Postincrement and postdecrement operators.
+        iterator operator++(int);
+        iterator operator--(int);
+
         // Dereference operators.
-        value_type& operator*() const;
-        value_type* operator->() const;
+        reference operator*() const;
+        pointer operator->() const;
 
       private:
         friend class EntityMap;
@@ -96,6 +103,9 @@ class DLLSYMBOL EntityMap
       public:
         // Value type.
         typedef Entity value_type;
+        typedef ptrdiff_t difference_type;
+        typedef const value_type& reference;
+        typedef const value_type* pointer;
 
         // Constructors.
         const_iterator();
@@ -115,9 +125,13 @@ class DLLSYMBOL EntityMap
         const_iterator& operator++();
         const_iterator& operator--();
 
+        // Postincrement and postdecrement operators.
+        const_iterator operator++(int);
+        const_iterator operator--(int);
+
         // Dereference operators.
-        const value_type& operator*() const;
-        const value_type* operator->() const;
+        reference operator*() const;
+        pointer operator->() const;
 
       private:
         friend class EntityMap;
@@ -190,6 +204,8 @@ class TypedEntityMap
       public:
         // Value type.
         typedef T value_type;
+        typedef T& reference;
+        typedef T* pointer;
 
         // Constructor.
         iterator(const EntityMap::iterator& rhs);
@@ -206,6 +222,8 @@ class TypedEntityMap
       public:
         // Value type.
         typedef T value_type;
+        typedef const T& reference;
+        typedef const T* pointer;
 
         // Constructor.
         const_iterator(const EntityMap::const_iterator& rhs);
