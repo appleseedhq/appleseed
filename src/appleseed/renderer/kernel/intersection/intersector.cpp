@@ -128,7 +128,7 @@ void Intersector::offset(
     // Offset parameters.
     const double Threshold = 1.0e-25;
     const int EpsMag = 8;
-    const int EpsLut[2] = { EpsMag, -EpsMag };
+    static const int EpsLut[2] = { EpsMag, -EpsMag };
 
     // Check which components of p are close to the origin.
     const bool is_small[3] =
