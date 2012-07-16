@@ -27,8 +27,11 @@
 //
 
 // appleseed.renderer headers.
+#include "renderer/modeling/object/meshobject.h"
+#include "renderer/modeling/object/object.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/project/projectfilewriter.h"
+#include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/texture/disktexture2d.h"
@@ -111,8 +114,7 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
         const bool success =
             ProjectFileWriter::write(
                 m_project.ref(),
-                (m_base_output / "texturepathisfilename.appleseed").string().c_str(),
-                ProjectFileWriter::Defaults);
+                (m_base_output / "texturepathisfilename.appleseed").string().c_str());
 
         ASSERT_TRUE(success);
         EXPECT_EQ("texture.png", m_project->get_scene()->textures().get_by_name("texture")->get_parameters().get<string>("filename"));
@@ -127,8 +129,7 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
         const bool success =
             ProjectFileWriter::write(
                 m_project.ref(),
-                (m_base_output / "texturepathislocal.appleseed").string().c_str(),
-                ProjectFileWriter::Defaults);
+                (m_base_output / "texturepathislocal.appleseed").string().c_str());
 
         ASSERT_TRUE(success);
         EXPECT_EQ("tex/texture.png", m_project->get_scene()->textures().get_by_name("texture")->get_parameters().get<string>("filename"));
@@ -143,8 +144,7 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
         const bool success =
             ProjectFileWriter::write(
                 m_project.ref(),
-                (m_base_output / "texturepathisabsolute.appleseed").string().c_str(),
-                ProjectFileWriter::Defaults);
+                (m_base_output / "texturepathisabsolute.appleseed").string().c_str());
 
         ASSERT_TRUE(success);
         EXPECT_TRUE(filesystem::exists(m_base_output / "texture.png"));
@@ -160,8 +160,7 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
         const bool success =
             ProjectFileWriter::write(
                 m_project.ref(),
-                (m_alternate_output / "texturepathisfilename.appleseed").string().c_str(),
-                ProjectFileWriter::Defaults);
+                (m_alternate_output / "texturepathisfilename.appleseed").string().c_str());
 
         ASSERT_TRUE(success);
         EXPECT_TRUE(filesystem::exists(m_alternate_output / "texture.png"));
@@ -177,8 +176,7 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
         const bool success =
             ProjectFileWriter::write(
                 m_project.ref(),
-                (m_alternate_output / "texturepathislocal.appleseed").string().c_str(),
-                ProjectFileWriter::Defaults);
+                (m_alternate_output / "texturepathislocal.appleseed").string().c_str());
 
         ASSERT_TRUE(success);
         EXPECT_TRUE(filesystem::exists(m_alternate_output / "tex" / "texture.png"));
@@ -194,8 +192,7 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
         const bool success =
             ProjectFileWriter::write(
                 m_project.ref(),
-                (m_alternate_output / "texturepathisabsolute.appleseed").string().c_str(),
-                ProjectFileWriter::Defaults);
+                (m_alternate_output / "texturepathisabsolute.appleseed").string().c_str());
 
         ASSERT_TRUE(success);
         EXPECT_TRUE(filesystem::exists(m_alternate_output / "texture.png"));
@@ -299,5 +296,37 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
             filesystem::equivalent(
                 filesystem::absolute(m_base_output / "texture.png"),
                 m_project->get_scene()->textures().get_by_name("texture")->get_parameters().get<string>("filename")));
+    }
+
+    TEST_CASE_F(Write_GivenMeshObjectWithMultiValueFilenameParameter_DoesNotAddAnotherFilenameParameter, Fixture)
+    {
+        create_project();
+
+        ParamArray filenames;
+        filenames.insert("0", "bunny.0.obj");
+        filenames.insert("1", "bunny.1.obj");
+
+        ParamArray object_params;
+        object_params.insert("filename", filenames);
+
+        auto_release_ptr<Object> object(MeshObjectFactory::create("bunny", object_params));
+
+        auto_release_ptr<Assembly> assembly(AssemblyFactory::create("assembly", ParamArray()));
+        assembly->objects().insert(object);
+
+        m_project->get_scene()->assemblies().insert(assembly);
+
+        const bool success =
+            ProjectFileWriter::write(
+                m_project.ref(),
+                (m_base_output / "multivaluefilenameobject.appleseed").string().c_str());
+
+        ASSERT_TRUE(success);
+
+        EXPECT_FALSE(
+            m_project->get_scene()
+                ->assemblies().get_by_name("assembly")
+                ->objects().get_by_name("bunny")
+                    ->get_parameters().strings().exist("filename"));
     }
 }

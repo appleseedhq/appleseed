@@ -280,9 +280,6 @@ namespace
 
         void handle_link_to_asset(Dictionary& params, const char* param_name) const
         {
-            if (!params.strings().exist(param_name))
-                return;
-
             const filesystem::path original_filepath = params.get<string>(param_name);
             const filesystem::path qualified_filepath = m_project_search_paths.qualify(original_filepath.string());
 
@@ -478,7 +475,10 @@ namespace
             element.write(!texture.get_parameters().empty());
 
             ParamArray& params = texture.get_parameters();
-            handle_link_to_asset(params, "filename");
+
+            if (params.strings().exist("filename"))
+                handle_link_to_asset(params, "filename");
+
             write_params(params);
         }
 
@@ -590,17 +590,27 @@ namespace
 
                     if (params.strings().exist("__base_object_name"))
                     {
-                        // Mesh object group.
-                        const string base_object_name = params.get<string>("__base_object_name");
-                        if (groups.find(base_object_name) == groups.end())
+                        // This object belongs to a group of objects.
+                        const string group_name = params.get<string>("__base_object_name");
+                        if (groups.find(group_name) == groups.end())
                         {
-                            groups.insert(base_object_name);
-                            write_mesh_object_group(base_object_name, params);
+                            // This is the first time we encounter this group of objects.
+                            groups.insert(group_name);
+
+                            // Write the object group.
+                            params.strings().remove("__base_object_name");
+                            write_mesh_object(group_name, params);
+                            params.strings().insert("__base_object_name", group_name);
                         }
+                    }
+                    else if (params.strings().exist("filename") || params.dictionaries().exist("filename"))
+                    {
+                        // This object has a filename parameter.
+                        write_mesh_object(object.get_name(), params);
                     }
                     else
                     {
-                        // Orphan mesh object.
+                        // This object does not belong to a group and does not have a filename parameter.
                         write_orphan_mesh_object(object);
                     }
                 }
@@ -610,6 +620,30 @@ namespace
                     write(object);
                 }
             }
+        }
+
+        // Write an <object> element for a mesh with a filename.
+        void write_mesh_object(const string& name, ParamArray& params)
+        {
+            // The object must either have a scalar filename or a composite filename, but not both.
+            assert(params.strings().exist("filename") ^ params.dictionaries().exist("filename"));
+
+            if (params.strings().exist("filename"))
+                handle_link_to_asset(params, "filename");
+            else
+            {
+                Dictionary& filepaths = params.dictionaries().get("filename");
+
+                for (const_each<StringDictionary> i = filepaths.strings(); i; ++i)
+                    handle_link_to_asset(filepaths, i->name());
+            }
+
+            // Write an <object> element.
+            Element element("object", m_file, m_indenter);
+            element.add_attribute("name", name);
+            element.add_attribute("model", MeshObjectFactory::get_model());
+            element.write(true);
+            write_params(params);
         }
 
         // Object name mapping established by write_orphan_mesh_object().
@@ -623,14 +657,16 @@ namespace
             return i == m_object_name_mapping.end() ? old_name : i->second;
         }
 
-        void write_orphan_mesh_object(const Object& object)
+        // Write an <object> element for a mesh object without a filename.
+        void write_orphan_mesh_object(Object& object)
         {
+            // Construct the name of the mesh file.
             const string name = object.get_name();
             const string filename = name + ".obj";
 
+            // Generate the mesh file on disk.
             if (!(m_options & ProjectFileWriter::OmitWritingMeshFiles))
             {
-                // Write the mesh object to disk.
                 const string filepath = (m_project_new_root_path / filename).string();
                 MeshObjectWriter::write(
                     static_cast<const MeshObject&>(object),
@@ -638,47 +674,19 @@ namespace
                     filepath.c_str());
             }
 
-            // Add a "filename" parameter to the parameters of the object.
-            ParamArray params = object.get_parameters();
+            // Add a "filename" parameter to the object.
+            ParamArray& params = object.get_parameters();
             params.insert("filename", filename);
 
             // Write an <object> element.
-            write_mesh_object(name, params);
-
-            // Update the object name mapping.
-            m_object_name_mapping[name] = name + "." + name;
-        }
-
-        void write_mesh_object_group(const string& base_object_name, ParamArray& params)
-        {
-            handle_link_to_asset(params, "filename");
-
-            if (params.dictionaries().exist("filename"))
-            {
-                Dictionary& filepaths = params.dictionaries().get("filename");
-
-                for (const_each<StringDictionary> i = filepaths.strings(); i; ++i)
-                    handle_link_to_asset(filepaths, i->name());
-            }
-
-            ParamArray params_copy(params);
-
-            // Remove hidden parameters.
-            params_copy.strings().remove("__base_object_name");
-
-            // Write a single <object> element for this group of mesh objects.
-            write_mesh_object(base_object_name, params_copy);
-        }
-
-        // Write an <object> element for a mesh object.
-        void write_mesh_object(const string& name, const ParamArray& params)
-        {
             Element element("object", m_file, m_indenter);
             element.add_attribute("name", name);
             element.add_attribute("model", MeshObjectFactory::get_model());
-            element.write(!params.empty());
-
+            element.write(true);
             write_params(params);
+
+            // Update the object name mapping.
+            m_object_name_mapping[name] = name + "." + name;
         }
 
         // Write an <object> element.
