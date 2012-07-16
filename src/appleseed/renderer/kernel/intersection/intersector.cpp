@@ -30,19 +30,20 @@
 #include "intersector.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
 #include "renderer/kernel/intersection/assemblytree.h"
-#include "renderer/kernel/intersection/regioninfo.h"
 #include "renderer/kernel/intersection/tracecontext.h"
-#include "renderer/kernel/intersection/trianglekey.h"
 #include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/modeling/object/triangle.h"
+#include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/utility/cache.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/intersection.h"
 #include "foundation/utility/casts.h"
 #include "foundation/utility/string.h"
+
+// Standard headers.
+#include <cassert>
 
 using namespace foundation;
 using namespace std;
@@ -62,23 +63,6 @@ Intersector::Intersector(
   , m_ray_count(0)
   , m_probe_ray_count(0)
 {
-    if (m_print_statistics)
-    {
-        RENDERER_LOG_DEBUG(
-            "data structures size:\n"
-            "  bvh::NodeType    %s\n"
-            "  GTriangleType    %s\n"
-            "  RegionInfo       %s\n"
-            "  ShadingPoint     %s\n"
-            "  ShadingRay       %s\n"
-            "  TriangleKey      %s\n",
-            pretty_size(sizeof(TriangleTree::NodeType)).c_str(),
-            pretty_size(sizeof(GTriangleType)).c_str(),
-            pretty_size(sizeof(RegionInfo)).c_str(),
-            pretty_size(sizeof(ShadingPoint)).c_str(),
-            pretty_size(sizeof(ShadingRay)).c_str(),
-            pretty_size(sizeof(TriangleKey)).c_str());
-    }
 }
 
 Intersector::~Intersector()
@@ -144,7 +128,7 @@ void Intersector::offset(
     // Offset parameters.
     const double Threshold = 1.0e-25;
     const int EpsMag = 8;
-    const int EpsLut[2] = { EpsMag, -EpsMag };
+    static const int EpsLut[2] = { EpsMag, -EpsMag };
 
     // Check which components of p are close to the origin.
     const bool is_small[3] =

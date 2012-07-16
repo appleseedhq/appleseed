@@ -29,8 +29,11 @@
 #ifndef APPLESEED_RENDERER_KERNEL_INTERSECTION_TRACECONTEXT_H
 #define APPLESEED_RENDERER_KERNEL_INTERSECTION_TRACECONTEXT_H
 
-// appleseed.renderer headers.
-#include "renderer/global/global.h"
+// appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Forward declarations.
 namespace renderer  { class AssemblyTree; }
@@ -41,12 +44,12 @@ namespace renderer
 
 //
 // The main purpose of the trace context is to hold the root acceleration structures
-// needed for ray tracing,
+// needed for ray tracing.
 //
 // The trace context is shared amongst threads. All methods are thread-safe.
 //
 
-class RENDERERDLL TraceContext
+class DLLSYMBOL TraceContext
   : public foundation::NonCopyable
 {
   public:

@@ -32,7 +32,6 @@
 #--------------------------------------------------------------------------------------------------
 
 set (foundation_core_concepts_sources
-    foundation/core/concepts/icloneable.h
     foundation/core/concepts/iunknown.h
     foundation/core/concepts/noncopyable.h
     foundation/core/concepts/singleton.h
@@ -388,7 +387,6 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_otherwise.cpp
     foundation/meta/tests/test_path.cpp
     foundation/meta/tests/test_permutation.cpp
-    foundation/meta/tests/test_pointcloudsampling.cpp
     foundation/meta/tests/test_poolallocator.cpp
     foundation/meta/tests/test_population.cpp
     foundation/meta/tests/test_preprocessor.cpp

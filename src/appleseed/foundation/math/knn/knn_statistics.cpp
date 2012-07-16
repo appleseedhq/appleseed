@@ -50,15 +50,15 @@ void QueryStatistics::print(Logger& logger)
         "  visited leaves   avg %.1f  min %s  max %s  dev %.1f\n"
         "  tested points    avg %.1f  min %s  max %s  dev %.1f",
         pretty_uint(m_query_count).c_str(),
-        m_fetched_nodes.get_avg(),
+        m_fetched_nodes.get_mean(),
         pretty_uint(m_fetched_nodes.get_min()).c_str(),
         pretty_uint(m_fetched_nodes.get_max()).c_str(),
         m_fetched_nodes.get_dev(),
-        m_visited_leaves.get_avg(),
+        m_visited_leaves.get_mean(),
         pretty_uint(m_visited_leaves.get_min()).c_str(),
         pretty_uint(m_visited_leaves.get_max()).c_str(),
         m_visited_leaves.get_dev(),
-        m_tested_points.get_avg(),
+        m_tested_points.get_mean(),
         pretty_uint(m_tested_points.get_min()).c_str(),
         pretty_uint(m_tested_points.get_max()).c_str(),
         m_tested_points.get_dev());

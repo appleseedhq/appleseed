@@ -92,6 +92,34 @@ namespace
       : public SampleGeneratorBase
     {
       public:
+        struct Parameters
+        {
+            const float     m_transparency_threshold;
+            const size_t    m_max_iterations;
+            const bool      m_report_self_intersections;
+            const size_t    m_rr_min_path_length;           // minimum path length before Russian Roulette is used, 0 for unlimited
+            const size_t    m_max_path_length;              // maximum path length, 0 for unlimited
+
+            explicit Parameters(const ParamArray& params)
+              : m_transparency_threshold(params.get_optional<float>("transparency_threshold", 0.001f))
+              , m_max_iterations(params.get_optional<size_t>("max_iterations", 10000))
+              , m_report_self_intersections(params.get_optional<bool>("report_self_intersections", false))
+              , m_rr_min_path_length(params.get_optional<size_t>("rr_min_path_length", 3))
+              , m_max_path_length(params.get_optional<size_t>("max_path_length", 0))
+            {
+            }
+
+            void print() const
+            {
+                RENDERER_LOG_INFO(
+                    "light tracing settings:\n"
+                    "  rr min path len. %s\n"
+                    "  max path length  %s",
+                    m_rr_min_path_length == 0 ? "infinite" : pretty_uint(m_rr_min_path_length).c_str(),
+                    m_max_path_length == 0 ? "infinite" : pretty_uint(m_max_path_length).c_str());
+            }
+        };
+
         LightTracingSampleGenerator(
             const Scene&                scene,
             const Frame&                frame,
@@ -113,25 +141,11 @@ namespace
           , m_intersector(trace_context, m_texture_cache, true, m_params.m_report_self_intersections)
           , m_shading_context(m_intersector, m_texture_cache, 0, m_params.m_transparency_threshold, m_params.m_max_iterations)
         {
-            RENDERER_LOG_INFO(
-                "light tracing settings:\n"
-                "  rr min path len. %s\n"
-                "  max path length  %s",
-                m_params.m_rr_min_path_length == 0 ? "infinite" : pretty_uint(m_params.m_rr_min_path_length).c_str(),
-                m_params.m_max_path_length == 0 ? "infinite" : pretty_uint(m_params.m_max_path_length).c_str());
         }
 
         ~LightTracingSampleGenerator()
         {
-            RENDERER_LOG_DEBUG(
-                "light tracing statistics:\n"
-                "  paths            %s\n"
-                "  path length      avg %.1f  min %s  max %s  dev %.1f\n",
-                pretty_uint(m_stats.m_path_count).c_str(),
-                m_stats.m_path_length.get_avg(),
-                pretty_uint(m_stats.m_path_length.get_min()).c_str(),
-                pretty_uint(m_stats.m_path_length.get_max()).c_str(),
-                m_stats.m_path_length.get_dev());
+            m_stats.print();
         }
 
         virtual void release()
@@ -159,24 +173,6 @@ namespace
         }
 
       private:
-        struct Parameters
-        {
-            const float     m_transparency_threshold;
-            const size_t    m_max_iterations;
-            const bool      m_report_self_intersections;
-            const size_t    m_rr_min_path_length;           // minimum path length before Russian Roulette is used, 0 for unlimited
-            const size_t    m_max_path_length;              // maximum path length, 0 for unlimited
-
-            explicit Parameters(const ParamArray& params)
-              : m_transparency_threshold(params.get_optional<float>("transparency_threshold", 0.001f))
-              , m_max_iterations(params.get_optional<size_t>("max_iterations", 10000))
-              , m_report_self_intersections(params.get_optional<bool>("report_self_intersections", false))
-              , m_rr_min_path_length(params.get_optional<size_t>("rr_min_path_length", 3))
-              , m_max_path_length(params.get_optional<size_t>("max_path_length", 0))
-            {
-            }
-        };
-
         struct Statistics
         {
             uint64              m_path_count;
@@ -185,6 +181,19 @@ namespace
             Statistics()
               : m_path_count(0)
             {
+            }
+
+            void print() const
+            {
+                RENDERER_LOG_DEBUG(
+                    "light tracing statistics:\n"
+                    "  paths            %s\n"
+                    "  path length      avg %.1f  min %s  max %s  dev %.1f\n",
+                    pretty_uint(m_path_count).c_str(),
+                    m_path_length.get_mean(),
+                    pretty_uint(m_path_length.get_min()).c_str(),
+                    pretty_uint(m_path_length.get_max()).c_str(),
+                    m_path_length.get_dev());
             }
         };
 
@@ -765,6 +774,7 @@ LightTracingSampleGeneratorFactory::LightTracingSampleGeneratorFactory(
   , m_light_sampler(light_sampler)
   , m_params(params)
 {
+    LightTracingSampleGenerator::Parameters(params).print();
 }
 
 void LightTracingSampleGeneratorFactory::release()

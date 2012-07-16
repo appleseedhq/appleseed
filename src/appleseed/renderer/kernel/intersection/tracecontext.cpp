@@ -30,7 +30,19 @@
 #include "tracecontext.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
 #include "renderer/kernel/intersection/assemblytree.h"
+#include "renderer/kernel/intersection/intersectionsettings.h"
+#include "renderer/kernel/intersection/regioninfo.h"
+#include "renderer/kernel/intersection/trianglekey.h"
+#include "renderer/kernel/intersection/triangletree.h"
+#include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/kernel/shading/shadingray.h"
+
+// appleseed.foundation headers.
+#include "foundation/utility/string.h"
+
+using namespace foundation;
 
 namespace renderer
 {
@@ -43,6 +55,20 @@ TraceContext::TraceContext(const Scene& scene)
   : m_scene(scene)
   , m_assembly_tree(new AssemblyTree(scene))
 {
+    RENDERER_LOG_DEBUG(
+        "data structures size:\n"
+        "  bvh::NodeType    %s\n"
+        "  GTriangleType    %s\n"
+        "  RegionInfo       %s\n"
+        "  ShadingPoint     %s\n"
+        "  ShadingRay       %s\n"
+        "  TriangleKey      %s\n",
+        pretty_size(sizeof(TriangleTree::NodeType)).c_str(),
+        pretty_size(sizeof(GTriangleType)).c_str(),
+        pretty_size(sizeof(RegionInfo)).c_str(),
+        pretty_size(sizeof(ShadingPoint)).c_str(),
+        pretty_size(sizeof(ShadingRay)).c_str(),
+        pretty_size(sizeof(TriangleKey)).c_str());
 }
 
 TraceContext::~TraceContext()

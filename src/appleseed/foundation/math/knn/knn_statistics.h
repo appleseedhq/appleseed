@@ -133,11 +133,11 @@ void TreeStatistics<Tree, Builder>::print(Logger& logger)
         pretty_uint(m_node_count).c_str(),
         pretty_uint(m_node_count - m_leaf_count).c_str(),
         pretty_uint(m_leaf_count).c_str(),
-        m_leaf_depth.get_avg(),
+        m_leaf_depth.get_mean(),
         pretty_uint(m_leaf_depth.get_min()).c_str(),
         pretty_uint(m_leaf_depth.get_max()).c_str(),
         m_leaf_depth.get_dev(),
-        m_leaf_size.get_avg(),
+        m_leaf_size.get_mean(),
         pretty_uint(m_leaf_size.get_min()).c_str(),
         pretty_uint(m_leaf_size.get_max()).c_str(),
         m_leaf_size.get_dev());
