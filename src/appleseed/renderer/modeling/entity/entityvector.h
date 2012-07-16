@@ -58,12 +58,15 @@ class DLLSYMBOL EntityVector
     class DLLSYMBOL iterator
     {
       public:
+
+        // iterator category
+        typedef std::bidirectional_iterator_tag iterator_category;
+
         // Value type.
         typedef Entity value_type;
-        typedef std::random_access_iterator_tag iterator_category;
-        typedef ptrdiff_t difference_type;
         typedef value_type& reference;
         typedef value_type* pointer;
+        typedef ptrdiff_t difference_type;
 
         // Constructors.
         iterator();
@@ -102,12 +105,15 @@ class DLLSYMBOL EntityVector
     class DLLSYMBOL const_iterator
     {
       public:
+
+        // iterator category
+        typedef std::bidirectional_iterator_tag iterator_category;
+
         // Value type.
         typedef Entity value_type;
-        typedef std::random_access_iterator_tag iterator_category;
-        typedef ptrdiff_t difference_type;
         typedef const value_type& reference;
         typedef const value_type* pointer;
+        typedef ptrdiff_t difference_type;
 
         // Constructors.
         const_iterator();
