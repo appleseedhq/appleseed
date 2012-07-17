@@ -32,14 +32,12 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/population.h"
-#include "foundation/utility/log.h"
 #include "foundation/utility/statistics.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
 #include <cassert>
 #include <cstddef>
-#include <string>
 
 namespace foundation {
 namespace bvh {
@@ -50,7 +48,7 @@ namespace bvh {
 
 template <typename Tree>
 class TreeStatistics
-  : public NonCopyable
+  : public Statistics
 {
   public:
     typedef typename Tree::NodeType NodeType;
@@ -58,12 +56,8 @@ class TreeStatistics
 
     // Constructor, collects statistics for a given tree.
     TreeStatistics(
-        Statistics&         statistics,
         const Tree&         tree,
         const AABBType&     tree_bbox);
-
-    // Print tree statistics.
-    void print(Logger& logger);
 
   private:
     typedef typename AABBType::ValueType ValueType;
@@ -101,8 +95,8 @@ class TraversalStatistics
     // Constructor.
     TraversalStatistics();
 
-    // Print traversal statistics.
-    void print(Logger& logger);
+    // Retrieve performance statistics.
+    Statistics get_statistics() const;
 };
 
 
@@ -112,7 +106,6 @@ class TraversalStatistics
 
 template <typename Tree>
 TreeStatistics<Tree>::TreeStatistics(
-    Statistics&             statistics,
     const Tree&             tree,
     const AABBType&         tree_bbox)
   : m_leaf_volume(ValueType(0.0))
@@ -128,16 +121,16 @@ TreeStatistics<Tree>::TreeStatistics(
     if (m_leaf_volume > tree_volume)
         m_leaf_volume = tree_volume;
 
-    statistics.add_size("memory_size", "size", tree.get_memory_size());
-    statistics.add<std::string>(
-        "nodes", "nodes",
+    insert_size("size", tree.get_memory_size());
+    insert(
+        "nodes",
         "total " + pretty_uint(tree.m_nodes.size()) +
         "  interior " + pretty_uint(tree.m_nodes.size() - m_leaf_count) +
         "  leaves " + pretty_uint(m_leaf_count));
-    statistics.add_percent("leaf_volume", "leaf volume", m_leaf_volume, tree_volume);
-    statistics.add_population<size_t>("leaf_depth", "leaf depth", m_leaf_depth);
-    statistics.add_population<size_t>("leaf_size", "leaf size", m_leaf_size);
-    statistics.add_population<double>("sibling_overlap", "sibling overlap", "%", m_sibling_overlap);
+    insert_percent("leaf volume", m_leaf_volume, tree_volume);
+    insert("leaf depth", m_leaf_depth);
+    insert("leaf size", m_leaf_size);
+    insert("sibling overlap", m_sibling_overlap, "%");
 }
 
 template <typename Tree>

@@ -51,6 +51,7 @@
 #include "foundation/utility/job.h"
 #include "foundation/utility/maplefile.h"
 #include "foundation/utility/searchpaths.h"
+#include "foundation/utility/statistics.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
@@ -237,6 +238,8 @@ namespace
             m_job_manager->stop();
 
             m_statistics_func->write_rms_deviation_file();
+
+            print_sample_generators_stats();
         }
 
         virtual bool is_rendering() const
@@ -420,6 +423,18 @@ namespace
 
         auto_ptr<StatisticsFunc>            m_statistics_func;
         auto_ptr<thread>                    m_statistics_thread;
+
+        void print_sample_generators_stats() const
+        {
+            assert(!m_sample_generators.empty());
+
+            StatisticsVector stats;
+
+            for (size_t i = 0; i < m_sample_generators.size(); ++i)
+                stats.merge(m_sample_generators[i]->get_statistics());
+
+            RENDERER_LOG_DEBUG("%s", stats.to_string().c_str());
+        }
     };
 }
 

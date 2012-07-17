@@ -30,8 +30,13 @@
 #define APPLESEED_RENDERER_KERNEL_RENDERING_FRAMERENDERERBASE_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
 #include "renderer/kernel/rendering/iframerenderer.h"
+
+// Standard headers.
+#include <cstddef>
+
+// Forward declarations.
+namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
@@ -40,7 +45,7 @@ namespace renderer
 // A convenient base class for frame renderers.
 //
 
-class RENDERERDLL FrameRendererBase
+class FrameRendererBase
   : public IFrameRenderer
 {
   protected:

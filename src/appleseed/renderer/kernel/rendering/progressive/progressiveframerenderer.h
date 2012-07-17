@@ -45,7 +45,7 @@ namespace renderer
 // Progressive frame renderer factory.
 //
 
-class RENDERERDLL ProgressiveFrameRendererFactory
+class ProgressiveFrameRendererFactory
   : public IFrameRendererFactory
 {
   public:
@@ -57,10 +57,10 @@ class RENDERERDLL ProgressiveFrameRendererFactory
         const ParamArray&           params);
 
     // Delete this instance.
-    virtual void release();
+    virtual void release() override;
 
     // Return a new progressive frame renderer instance.
-    virtual IFrameRenderer* create();
+    virtual IFrameRenderer* create() override;
 
     // Return a new progressive frame renderer instance.
     static IFrameRenderer* create(

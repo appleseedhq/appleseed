@@ -36,14 +36,17 @@
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
-#include "renderer/utility/cache.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/casts.h"
+#include "foundation/utility/statistics.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
 #include <cassert>
+#include <memory>
+#include <string>
 
 using namespace foundation;
 using namespace std;
@@ -54,44 +57,13 @@ namespace renderer
 Intersector::Intersector(
     const TraceContext&             trace_context,
     TextureCache&                   texture_cache,
-    const bool                      print_statistics,
     const bool                      report_self_intersections)
   : m_trace_context(trace_context)
   , m_texture_cache(texture_cache)
-  , m_print_statistics(print_statistics)
   , m_report_self_intersections(report_self_intersections)
-  , m_ray_count(0)
+  , m_shading_ray_count(0)
   , m_probe_ray_count(0)
 {
-}
-
-Intersector::~Intersector()
-{
-    if (m_print_statistics)
-    {
-        const uint64 total_ray_count = m_ray_count + m_probe_ray_count;
-
-        RENDERER_LOG_DEBUG(
-            "general intersection statistics:\n"
-            "  total rays       %s\n"
-            "  probe rays       %s (%s)",
-            pretty_int(total_ray_count).c_str(),
-            pretty_int(m_probe_ray_count).c_str(),
-            pretty_percent(m_probe_ray_count, total_ray_count).c_str());
-
-#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
-        RENDERER_LOG_DEBUG("assembly tree intersection statistics:");
-        m_assembly_tree_traversal_stats.print(global_logger());
-
-        RENDERER_LOG_DEBUG("triangle tree intersection statistics:");
-        m_triangle_tree_traversal_stats.print(global_logger());
-#endif
-
-        print_dual_stage_cache_stats(m_region_tree_cache, "region tree access cache statistics");
-        print_dual_stage_cache_stats(m_triangle_tree_cache, "triangle tree access cache statistics");
-        print_dual_stage_cache_stats(m_region_kit_cache, "region kit access cache statistics");
-        print_dual_stage_cache_stats(m_tess_cache, "tessellation access cache statistics");
-    }
 }
 
 Vector3d Intersector::refine(
@@ -270,7 +242,7 @@ bool Intersector::trace(
     assert(parent_shading_point == 0 || parent_shading_point->hit());
 
     // Update ray casting statistics.
-    ++m_ray_count;
+    ++m_shading_ray_count;
 
     // Initialize the shading point.
     shading_point.m_region_kit_cache = &m_region_kit_cache;
@@ -384,6 +356,97 @@ void Intersector::manufacture_hit(
     shading_point.m_region_index = region_index;
     shading_point.m_triangle_index = triangle_index;
     shading_point.m_triangle_support_plane = triangle_support_plane;
+}
+
+namespace
+{
+    struct RayCountStatisticsEntry
+      : public Statistics::Entry
+    {
+        uint64  m_ray_count;
+        uint64  m_total_ray_count;
+
+        RayCountStatisticsEntry(
+            const string&   name,
+            const uint64    ray_count,
+            const uint64    total_ray_count)
+          : Entry(name)
+          , m_ray_count(ray_count)
+          , m_total_ray_count(total_ray_count)
+        {
+        }
+
+        virtual auto_ptr<Entry> clone() const override
+        {
+            return auto_ptr<Entry>(new RayCountStatisticsEntry(*this));
+        }
+
+        virtual void merge(const Entry* other) override
+        {
+            const RayCountStatisticsEntry* typed_other =
+                cast<RayCountStatisticsEntry>(other);
+
+            m_ray_count += typed_other->m_ray_count;
+            m_total_ray_count += typed_other->m_total_ray_count;
+        }
+
+        virtual string to_string() const override
+        {
+            return pretty_uint(m_ray_count) + " (" + pretty_percent(m_ray_count, m_total_ray_count) + ")";
+        }
+    };
+}
+
+StatisticsVector Intersector::get_statistics() const
+{
+    const uint64 total_ray_count = m_shading_ray_count + m_probe_ray_count;
+
+    Statistics intersection_stats;
+    intersection_stats.insert<uint64>("total rays", total_ray_count);
+    intersection_stats.insert(
+        auto_ptr<RayCountStatisticsEntry>(
+            new RayCountStatisticsEntry(
+                "shading rays",
+                m_shading_ray_count,
+                total_ray_count)));
+    intersection_stats.insert(
+        auto_ptr<RayCountStatisticsEntry>(
+            new RayCountStatisticsEntry(
+                "probe rays",
+                m_probe_ray_count,
+                total_ray_count)));
+
+    StatisticsVector vec;
+
+    vec.insert("intersection statistics", intersection_stats);
+
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+    vec.insert(
+        "assembly tree intersection statistics",
+        m_assembly_tree_traversal_stats.get_statistics());
+
+    vec.insert(
+        "triangle tree intersection statistics",
+        m_triangle_tree_traversal_stats.get_statistics());
+#endif
+
+    vec.insert(
+        "region tree access cache statistics",
+        make_dual_stage_cache_stats(m_region_tree_cache));
+
+    vec.insert(
+        "triangle tree access cache statistics",
+        make_dual_stage_cache_stats(m_triangle_tree_cache));
+
+    vec.insert(
+        "region kit access cache statistics",
+        make_dual_stage_cache_stats(m_region_kit_cache));
+
+    vec.insert(
+        "tessellation access cache statistics",
+        make_dual_stage_cache_stats(m_tess_cache));
+
+    return vec;
 }
 
 }   // namespace renderer

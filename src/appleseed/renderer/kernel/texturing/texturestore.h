@@ -41,6 +41,7 @@
 #include <cstddef>
 
 // Forward declarations.
+namespace foundation    { class Statistics; }
 namespace foundation    { class Tile; }
 namespace renderer      { class Scene; }
 
@@ -99,14 +100,14 @@ class TextureStore
         const Scene&        scene,
         const size_t        memory_limit = 16 * 1024 * 1024);
 
-    // Destructor.
-    ~TextureStore();
-
     // Acquire an element from the cache. Thread-safe.
     TileRecord& acquire(const TileKey& key);
 
     // Release a previously-acquired element. Thread-safe.
     void release(TileRecord& record) const;
+
+    // Retrieve performance statistics.
+    foundation::StatisticsVector get_statistics() const;
 
   private:
     struct TileSwapper

@@ -30,8 +30,11 @@
 #define APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_GENERICTILERENDERER_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
 #include "renderer/kernel/rendering/itilerenderer.h"
+#include "renderer/utility/paramarray.h"
+
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 
 // Forward declarations.
 namespace renderer  { class Frame; }
@@ -47,7 +50,7 @@ namespace renderer
 // and pixel filtering.
 //
 
-class RENDERERDLL GenericTileRendererFactory
+class GenericTileRendererFactory
   : public ITileRendererFactory
 {
   public:
@@ -58,10 +61,10 @@ class RENDERERDLL GenericTileRendererFactory
         const ParamArray&       params);
 
     // Delete this instance.
-    virtual void release();
+    virtual void release() override;
 
     // Return a new generic tile renderer instance.
-    virtual ITileRenderer* create();
+    virtual ITileRenderer* create() override;
 
     // Return a new generic tile renderer instance.
     static ITileRenderer* create(

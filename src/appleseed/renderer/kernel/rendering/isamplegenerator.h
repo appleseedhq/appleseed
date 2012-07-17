@@ -32,14 +32,12 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/iunknown.h"
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 // Standard headers.
 #include <cstddef>
 
 // Forward declarations.
 namespace foundation    { class AbortSwitch; }
+namespace foundation    { class StatisticsVector; }
 namespace renderer      { class AccumulationFramebuffer; }
 
 namespace renderer
@@ -49,7 +47,7 @@ namespace renderer
 // Sample generator interface.
 //
 
-class DLLSYMBOL ISampleGenerator
+class ISampleGenerator
   : public foundation::IUnknown
 {
   public:
@@ -61,6 +59,9 @@ class DLLSYMBOL ISampleGenerator
         const size_t                sample_count,
         AccumulationFramebuffer&    framebuffer,
         foundation::AbortSwitch&    abort_switch) = 0;
+
+    // Retrieve performance statistics.
+    virtual foundation::StatisticsVector get_statistics() const = 0;
 };
 
 
@@ -68,7 +69,7 @@ class DLLSYMBOL ISampleGenerator
 // Interface of a ISampleGenerator factory that can cross DLL boundaries.
 //
 
-class DLLSYMBOL ISampleGeneratorFactory
+class ISampleGeneratorFactory
   : public foundation::IUnknown
 {
   public:

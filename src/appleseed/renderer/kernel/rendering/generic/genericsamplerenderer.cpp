@@ -43,6 +43,9 @@
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/scene/scene.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/statistics.h"
+
 using namespace foundation;
 using namespace std;
 
@@ -56,8 +59,7 @@ namespace
     //
 
     // If defined, the texture cache returns solid tiles whose color depends on whether
-    // the requested tile could be found in the cache or not, and if it was found, at
-    // which level it was found.
+    // the requested tile could be found in the cache or not.
     #undef DEBUG_DISPLAY_TEXTURE_CACHE_PERFORMANCES
 
     class GenericSampleRenderer
@@ -77,7 +79,7 @@ namespace
           , m_lighting_conditions(frame.get_lighting_conditions())
           , m_opacity_threshold(1.0f - m_params.m_transparency_threshold)
           , m_texture_cache(texture_store)
-          , m_intersector(trace_context, m_texture_cache, true, m_params.m_report_self_intersections)
+          , m_intersector(trace_context, m_texture_cache, m_params.m_report_self_intersections)
           , m_lighting_engine(lighting_engine_factory->create())
           , m_shading_engine(shading_engine)
         {
@@ -88,7 +90,7 @@ namespace
             m_lighting_engine->release();
         }
 
-        virtual void release()
+        virtual void release() override
         {
             delete this;
         }
@@ -96,13 +98,12 @@ namespace
         virtual void render_sample(
             SamplingContext&        sampling_context,
             const Vector2d&         image_point,        // point in image plane, in NDC
-            ShadingResult&          shading_result)
+            ShadingResult&          shading_result) override
         {
 #ifdef DEBUG_DISPLAY_TEXTURE_CACHE_PERFORMANCES
 
-            const uint64 initial_texcache_s0_hit_count = m_texture_cache.get_stage0_hit_count();
-            const uint64 initial_texcache_s1_hit_count = m_texture_cache.get_stage1_hit_count();
-            const uint64 initial_texcache_s1_miss_count = m_texture_cache.get_stage1_miss_count();
+            const uint64 last_texture_cache_hit_count = m_texture_cache.get_hit_count();
+            const uint64 last_texture_cache_miss_count = m_texture_cache.get_miss_count();
 
 #endif
 
@@ -197,38 +198,38 @@ namespace
 
 #ifdef DEBUG_DISPLAY_TEXTURE_CACHE_PERFORMANCES
 
-            const Vector<uint64, 3> texcache_stats(
-                m_texture_cache.get_stage0_hit_count() - initial_texcache_s0_hit_count,
-                m_texture_cache.get_stage1_hit_count() - initial_texcache_s1_hit_count,
-                m_texture_cache.get_stage1_miss_count() - initial_texcache_s1_miss_count);
+            const uint64 delta_hit_count = m_texture_cache.get_hit_count() - last_texture_cache_hit_count;
+            const uint64 delta_miss_count = m_texture_cache.get_miss_count() - last_texture_cache_miss_count;
 
-            if (texcache_stats == Vector<uint64, 3>(0, 0, 0))
+            if (delta_hit_count + delta_miss_count == 0)
             {
                 // In black: no access to the texture cache.
                 shading_result.set_to_linear_rgb(Color3f(0.0f, 0.0f, 0.0f));
             }
             else
             {
-                switch (max_index(texcache_stats))
+                if (delta_hit_count > delta_miss_count)
                 {
-                  // In green: a majority of stage-0 cache hits.
-                  case 0:
+                    // In green: a majority of cache hits.
                     shading_result.set_to_linear_rgb(Color3f(0.0f, 1.0f, 0.0f));
-                    break;
-
-                  // In blue: a majority of stage-0 cache misses and stage-1 cache hits.
-                  case 1:
-                    shading_result.set_to_linear_rgb(Color3f(0.0f, 0.0f, 1.0f));
-                    break;
-
-                  // In red: a majority of stage-0 and stage-1 cache misses.
-                  case 2:
+                }
+                else
+                {
+                    // In red: a majority of cache misses.
                     shading_result.set_to_linear_rgb(Color3f(1.0f, 0.0f, 0.0f));
-                    break;
                 }
             }
 
 #endif
+        }
+
+        virtual StatisticsVector get_statistics() const override
+        {
+            StatisticsVector stats;
+            stats.merge(m_texture_cache.get_statistics());
+            stats.merge(m_intersector.get_statistics());
+            stats.merge(m_lighting_engine->get_statistics());
+            return stats;
         }
 
       private:

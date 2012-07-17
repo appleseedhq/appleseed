@@ -33,8 +33,8 @@
 #include "renderer/kernel/rendering/isamplegenerator.h"
 #include "renderer/utility/paramarray.h"
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 
 // Standard headers.
 #include <cstddef>
@@ -50,7 +50,7 @@ namespace renderer      { class TraceContext; }
 namespace renderer
 {
 
-class DLLSYMBOL LightTracingSampleGeneratorFactory
+class LightTracingSampleGeneratorFactory
   : public ISampleGeneratorFactory
 {
   public:
@@ -64,17 +64,17 @@ class DLLSYMBOL LightTracingSampleGeneratorFactory
         const ParamArray&       params);
 
     // Delete this instance.
-    virtual void release();
+    virtual void release() override;
 
     // Return a new sample generator instance.
     virtual ISampleGenerator* create(
         const size_t            generator_index,
-        const size_t            generator_count);
+        const size_t            generator_count) override;
 
     // Create an accumulation framebuffer that fit this sample generator.
     virtual AccumulationFramebuffer* create_accumulation_framebuffer(
         const size_t            canvas_width,
-        const size_t            canvas_height);
+        const size_t            canvas_height) override;
 
   private:
     const Scene&                m_scene;

@@ -48,7 +48,7 @@ namespace renderer
 // Generic sample renderer factory.
 //
 
-class RENDERERDLL GenericSampleRendererFactory
+class GenericSampleRendererFactory
   : public ISampleRendererFactory
 {
   public:
@@ -63,10 +63,10 @@ class RENDERERDLL GenericSampleRendererFactory
         const ParamArray&       params);
 
     // Delete this instance.
-    virtual void release();
+    virtual void release() override;
 
     // Return a new generic sample renderer instance.
-    virtual ISampleRenderer* create();
+    virtual ISampleRenderer* create() override;
 
     // Return a new generic sample renderer instance.
     static ISampleRenderer* create(

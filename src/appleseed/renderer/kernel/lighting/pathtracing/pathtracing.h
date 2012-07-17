@@ -43,7 +43,7 @@ namespace renderer
 // Path tracing lighting engine factory.
 //
 
-class RENDERERDLL PTLightingEngineFactory
+class PTLightingEngineFactory
   : public ILightingEngineFactory
 {
   public:
@@ -53,10 +53,10 @@ class RENDERERDLL PTLightingEngineFactory
         const ParamArray&   params);
 
     // Delete this instance.
-    virtual void release();
+    virtual void release() override;
 
     // Return a new path tracing lighting engine instance.
-    virtual ILightingEngine* create();
+    virtual ILightingEngine* create() override;
 
     // Return a new path tracing lighting engine instance.
     static ILightingEngine* create(

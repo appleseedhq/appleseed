@@ -126,12 +126,12 @@ TEST_SUITE(Foundation_Math_BVH_Intersector_2D)
     struct Visitor
     {
         bool visit(
-            const NodeType&         node,
-            const Ray2d&            ray,
-            const RayInfo2d&        ray_info,
-            double&                 distance
+            const NodeType&             node,
+            const Ray2d&                ray,
+            const RayInfo2d&            ray_info,
+            double&                     distance
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
-            , TraversalStatistics&  stats
+            , bvh::TraversalStatistics& stats
 #endif
             )
         {

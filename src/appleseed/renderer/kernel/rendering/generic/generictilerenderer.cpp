@@ -30,6 +30,8 @@
 #include "generictilerenderer.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
+#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/aov/imagestack.h"
 #include "renderer/kernel/aov/spectrumstack.h"
 #include "renderer/kernel/aov/tilestack.h"
@@ -40,16 +42,23 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
+#include "foundation/image/color.h"
 #include "foundation/image/image.h"
 #include "foundation/image/tile.h"
 #include "foundation/math/minmax.h"
 #include "foundation/math/ordering.h"
 #include "foundation/math/qmc.h"
 #include "foundation/math/scalar.h"
+#include "foundation/math/vector.h"
 #include "foundation/platform/breakpoint.h"
+#include "foundation/platform/types.h"
+#include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/job.h"
+#include "foundation/utility/statistics.h"
 
 // Standard headers.
+#include <cassert>
+#include <cstddef>
 #include <vector>
 
 using namespace foundation;
@@ -129,7 +138,7 @@ namespace
             m_rcp_sample_count = 1.0f / (m_sqrt_max_samples * m_sqrt_max_samples);
         }
 
-        virtual void release()
+        virtual void release() override
         {
             delete this;
         }
@@ -138,7 +147,7 @@ namespace
             const Frame&                frame,
             const size_t                tile_x,
             const size_t                tile_y,
-            AbortSwitch&                abort_switch)
+            AbortSwitch&                abort_switch) override
         {
             assert(tile_x < m_frame_properties.m_tile_count_x);
             assert(tile_y < m_frame_properties.m_tile_count_y);
@@ -197,6 +206,11 @@ namespace
             }
         }
 
+        virtual StatisticsVector get_statistics() const override
+        {
+            return m_sample_renderer->get_statistics();
+        }
+
       private:
         struct Parameters
         {
@@ -226,6 +240,7 @@ namespace
         typedef Vector<uint16, 2> Pixel;
 
         const Parameters                    m_params;
+
         auto_release_ptr<ISampleRenderer>   m_sample_renderer;
 
         const CanvasProperties&             m_frame_properties;

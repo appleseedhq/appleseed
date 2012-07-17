@@ -43,147 +43,163 @@ TEST_SUITE(Foundation_Utility_Statistics)
 {
     TEST_CASE(EmptyStatistics)
     {
-        Statistics stats("title");
+        Statistics stats;
 
-        EXPECT_EQ("title:\n  no statistics\n", stats.to_string());
+        EXPECT_EQ("  no statistics", stats.to_string());
     }
 
     TEST_CASE(SingleUnsignedIntegerStatistic)
     {
-        Statistics stats("title");
+        Statistics stats;
 
-        stats.add<uint64>("some_value", "some value", 17);
+        stats.insert<uint64>("some value", 17000);
 
-        EXPECT_EQ("title:\n  some value       17\n", stats.to_string());
-    }
-
-    TEST_CASE(SingleUnsignedIntegerStatistic_SetAfterDeclaration)
-    {
-        Statistics stats("title");
-
-        uint64* counter = stats.add<uint64>("some_value", "some value");
-
-        *counter = 17;
-
-        EXPECT_EQ("title:\n  some value       17\n", stats.to_string());
+        EXPECT_EQ("  some value       17,000", stats.to_string());
     }
 
     TEST_CASE(SingleFloatingPointStatistic)
     {
-        Statistics stats("title");
+        Statistics stats;
 
-        stats.add<double>("some_value", "some value", 42.6);
+        stats.insert("some value", 42.6);
 
-        EXPECT_EQ("title:\n  some value       42.6\n", stats.to_string());
+        EXPECT_EQ("  some value       42.6", stats.to_string());
     }
 
     TEST_CASE(SingleStringStatistic)
     {
-        Statistics stats("title");
+        Statistics stats;
 
-        stats.add<string>("some_value", "some value", "bunny");
+        stats.insert<string>("some value", "bunny");
 
-        EXPECT_EQ("title:\n  some value       bunny\n", stats.to_string());
+        EXPECT_EQ("  some value       bunny", stats.to_string());
+    }
+
+    TEST_CASE(SingleDefaultInitializedUnsignedIntegerPopulationStatistic)
+    {
+        Statistics stats;
+
+        stats.insert("some value", Population<size_t>());
+
+        EXPECT_EQ("  some value       avg 0.0  min 0  max 0  dev 0.0", stats.to_string());
     }
 
     TEST_CASE(SingleUnsignedIntegerPopulationStatistic)
     {
-        Statistics stats("title");
+        Statistics stats;
 
         Population<size_t> pop;
         pop.insert(1);
         pop.insert(2);
         pop.insert(3);
 
-        stats.add_population<size_t>("some_value", "some value", pop);
+        stats.insert("some value", pop);
 
-        EXPECT_EQ("title:\n  some value       avg 2.0  min 1  max 3  dev 0.8\n", stats.to_string());
+        EXPECT_EQ("  some value       avg 2.0  min 1  max 3  dev 0.8", stats.to_string());
     }
 
     TEST_CASE(SingleUnsignedIntegerPopulationStatisticWithUnit)
     {
-        Statistics stats("title");
+        Statistics stats;
 
         Population<size_t> pop;
         pop.insert(1);
         pop.insert(2);
         pop.insert(3);
 
-        stats.add_population<size_t>("some_value", "some value", "%", pop);
+        stats.insert("some value", pop, "%");
 
-        EXPECT_EQ("title:\n  some value       avg 2.0%  min 1%  max 3%  dev 0.8%\n", stats.to_string());
+        EXPECT_EQ("  some value       avg 2.0%  min 1%  max 3%  dev 0.8%", stats.to_string());
     }
 
     TEST_CASE(SingleFloatingPointPopulationStatistic)
     {
-        Statistics stats("title");
+        Statistics stats;
 
         Population<double> pop;
         pop.insert(0.1);
         pop.insert(0.2);
         pop.insert(0.3);
 
-        stats.add_population<double>("some_value", "some value", pop);
+        stats.insert("some value", pop);
 
-        EXPECT_EQ("title:\n  some value       avg 0.2  min 0.1  max 0.3  dev 0.1\n", stats.to_string());
+        EXPECT_EQ("  some value       avg 0.2  min 0.1  max 0.3  dev 0.1", stats.to_string());
     }
 
     TEST_CASE(SingleFloatingPointPopulationStatisticWithUnit)
     {
-        Statistics stats("title");
+        Statistics stats;
 
         Population<double> pop;
         pop.insert(0.1);
         pop.insert(0.2);
         pop.insert(0.3);
 
-        stats.add_population<double>("some_value", "some value", "%", pop);
+        stats.insert("some value", pop, "%");
 
-        EXPECT_EQ("title:\n  some value       avg 0.2%  min 0.1%  max 0.3%  dev 0.1%\n", stats.to_string());
+        EXPECT_EQ("  some value       avg 0.2%  min 0.1%  max 0.3%  dev 0.1%", stats.to_string());
     }
 
     TEST_CASE(SingleStatisticWithLongTitle)
     {
-        Statistics stats("title");
+        Statistics stats;
 
-        stats.add<uint64>("some_value", "the title of this value is too long to fit", 17);
+        stats.insert<uint64>("the name of this value is too long to fit", 17);
 
-        EXPECT_EQ("title:\n  the title of thi 17\n", stats.to_string());
+        EXPECT_EQ("  the name of this 17", stats.to_string());
     }
 
     TEST_CASE(MultipleStatistics)
     {
-        Statistics stats("title");
+        Statistics stats;
 
-        stats.add<uint64>("first_value", "first value", 17);
-        stats.add<double>("second_value", "second value", 42.6);
+        stats.insert<uint64>("first value", 17);
+        stats.insert("second value", 42.6);
 
-        EXPECT_EQ("title:\n  first value      17\n  second value     42.6\n", stats.to_string());
+        EXPECT_EQ("  first value      17\n  second value     42.6", stats.to_string());
     }
 
     TEST_CASE(Merge_GivenNewStatistic_InsertsIt)
     {
-        Statistics stats("title");
-        stats.add<uint64>("existing_value", "existing value", 17);
+        Statistics stats;
+        stats.insert<uint64>("existing value", 17);
 
-        Statistics other_stats("other title");
-        other_stats.add<uint64>("new_value", "new value", 42);
+        Statistics other_stats;
+        other_stats.insert<uint64>("new value", 42);
 
         stats.merge(other_stats);
 
-        EXPECT_EQ("title:\n  existing value   17\n  new value        42\n", stats.to_string());
+        EXPECT_EQ("  existing value   17\n  new value        42", stats.to_string());
     }
 
     TEST_CASE(Merge_GivenExistingStatisticOfSameType_MergesIt)
     {
-        Statistics stats("title");
-        stats.add<uint64>("existing_value", "existing value", 17);
+        Statistics stats;
+        stats.insert<uint64>("existing value", 17000);
 
-        Statistics other_stats("other title");
-        other_stats.add<uint64>("existing_value", "existing value", 42);
+        Statistics other_stats;
+        other_stats.insert<uint64>("existing value", 42);
 
         stats.merge(other_stats);
 
-        EXPECT_EQ("title:\n  existing value   59\n", stats.to_string());
+        EXPECT_EQ("  existing value   17,042", stats.to_string());
+    }
+}
+
+TEST_SUITE(Foundation_Utility_StatisticsVector)
+{
+    TEST_CASE(ToString_GivenTwoitems)
+    {
+        Statistics stats1;
+        stats1.insert<uint64>("counter 1", 17);
+
+        Statistics stats2;
+        stats2.insert<uint64>("counter 2", 42);
+
+        StatisticsVector vec;
+        vec.insert("stats 1", stats1);
+        vec.insert("stats 2", stats2);
+
+        EXPECT_EQ("stats 1:\n  counter 1        17\nstats 2:\n  counter 2        42", vec.to_string());
     }
 }

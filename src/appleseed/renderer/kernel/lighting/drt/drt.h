@@ -43,7 +43,7 @@ namespace renderer
 // Distribution Ray Tracing (DRT) lighting engine factory.
 //
 
-class RENDERERDLL DRTLightingEngineFactory
+class DRTLightingEngineFactory
   : public ILightingEngineFactory
 {
   public:
@@ -53,10 +53,10 @@ class RENDERERDLL DRTLightingEngineFactory
         const ParamArray&   params);
 
     // Delete this instance.
-    virtual void release();
+    virtual void release() override;
 
     // Return a new DRT lighting engine instance.
-    virtual ILightingEngine* create();
+    virtual ILightingEngine* create() override;
 
     // Return a new DRT lighting engine instance.
     static ILightingEngine* create(

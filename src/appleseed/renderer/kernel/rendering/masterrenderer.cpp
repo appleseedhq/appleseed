@@ -376,7 +376,12 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     }
 
     // Execute the main rendering loop.
-    return render_frame_sequence(frame_renderer.get());
+    const IRendererController::Status status = render_frame_sequence(frame_renderer.get());
+
+    // Print texture store performance statistics.
+    RENDERER_LOG_DEBUG("%s", texture_store.get_statistics().to_string().c_str());
+
+    return status;
 }
 
 IRendererController::Status MasterRenderer::render_frame_sequence(IFrameRenderer* frame_renderer) const

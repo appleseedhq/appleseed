@@ -27,7 +27,7 @@
 //
 
 //
-// Global header file, included by every other header file of appleseed.renderer.
+// This file is deprecated and will be removed in the future. Do not use it.
 //
 
 #ifndef APPLESEED_RENDERER_GLOBAL_GLOBAL_H

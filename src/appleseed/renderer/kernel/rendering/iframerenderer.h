@@ -29,8 +29,8 @@
 #ifndef APPLESEED_RENDERER_KERNEL_RENDERING_IFRAMERENDERER_H
 #define APPLESEED_RENDERER_KERNEL_RENDERING_IFRAMERENDERER_H
 
-// appleseed.renderer headers.
-#include "renderer/global/global.h"
+// appleseed.foundation headers.
+#include "foundation/core/concepts/iunknown.h"
 
 namespace renderer
 {
@@ -39,7 +39,7 @@ namespace renderer
 // Frame renderer interface.
 //
 
-class RENDERERDLL IFrameRenderer
+class IFrameRenderer
   : public foundation::IUnknown
 {
   public:
@@ -58,7 +58,7 @@ class RENDERERDLL IFrameRenderer
 // Interface of a IFrameRenderer factory that can cross DLL boundaries.
 //
 
-class RENDERERDLL IFrameRendererFactory
+class IFrameRendererFactory
   : public foundation::IUnknown
 {
   public:

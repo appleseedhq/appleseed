@@ -139,7 +139,7 @@ namespace
             {
                 TextureStore texture_store(*project.get_scene());
                 TextureCache texture_cache(texture_store);
-                Intersector intersector(project.get_trace_context(), texture_cache, false);
+                Intersector intersector(project.get_trace_context(), texture_cache);
                 m_focal_distance = get_autofocus_focal_distance(intersector);
             }
 

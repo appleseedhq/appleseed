@@ -30,9 +30,13 @@
 #define APPLESEED_RENDERER_KERNEL_LIGHTING_ILIGHTINGENGINE_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/global/globaltypes.h"
+
+// appleseed.foundation headers.
+#include "foundation/core/concepts/iunknown.h"
 
 // Forward declarations.
+namespace foundation    { class StatisticsVector; }
 namespace renderer      { class ShadingContext; }
 namespace renderer      { class ShadingPoint; }
 namespace renderer      { class SpectrumStack; }
@@ -44,7 +48,7 @@ namespace renderer
 // Lighting engine interface.
 //
 
-class RENDERERDLL ILightingEngine
+class ILightingEngine
   : public foundation::IUnknown
 {
   public:
@@ -55,16 +59,17 @@ class RENDERERDLL ILightingEngine
         const ShadingPoint&     shading_point,
         Spectrum&               radiance,           // output radiance, in W.sr^-1.m^-2
         SpectrumStack&          aovs) = 0;
+
+    // Retrieve performance statistics.
+    virtual foundation::StatisticsVector get_statistics() const = 0;
 };
 
 
 //
-// Interface of a ILightingEngine factory that can cross DLL boundaries.
-// This means that classes implementing the ILightingEngineFactory interface
-// must themselves be instantiated by a factory.
+// Interface of a ILightingEngine factory.
 //
 
-class RENDERERDLL ILightingEngineFactory
+class ILightingEngineFactory
   : public foundation::IUnknown
 {
   public:

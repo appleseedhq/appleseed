@@ -47,9 +47,10 @@
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/autoreleaseptr.h"
-#include "foundation/utility/string.h"
+#include "foundation/utility/statistics.h"
 
 // Standard headers.
+#include <cassert>
 #include <vector>
 
 // Forward declarations.
@@ -195,31 +196,28 @@ namespace
         {
         }
 
-        ~GenericSampleGenerator()
-        {
-            RENDERER_LOG_DEBUG(
-                "generic sample generator statistics:\n"
-                "  max. samp. dim.  avg %.1f  min %s  max %s  dev %.1f\n"
-                "  max. samp. inst. avg %.1f  min %s  max %s  dev %.1f\n",
-                m_total_sampling_dim.get_mean(),
-                pretty_uint(m_total_sampling_dim.get_min()).c_str(),
-                pretty_uint(m_total_sampling_dim.get_max()).c_str(),
-                m_total_sampling_dim.get_dev(),
-                m_total_sampling_inst.get_mean(),
-                pretty_uint(m_total_sampling_inst.get_min()).c_str(),
-                pretty_uint(m_total_sampling_inst.get_max()).c_str(),
-                m_total_sampling_inst.get_dev());
-        }
-
-        virtual void release()
+        virtual void release() override
         {
             delete this;
         }
 
-        virtual void reset()
+        virtual void reset() override
         {
             SampleGeneratorBase::reset();
             m_rng = MersenneTwister();
+        }
+
+        virtual StatisticsVector get_statistics() const override
+        {
+            Statistics stats;
+            stats.insert("max. samp. dim.", m_total_sampling_dim);
+            stats.insert("max. samp. inst.", m_total_sampling_inst);
+
+            StatisticsVector vec;
+            vec.insert("generic sample generator statistics", stats);
+            vec.merge(m_sample_renderer->get_statistics());
+
+            return vec;
         }
 
       private:
@@ -245,7 +243,7 @@ namespace
 
         virtual size_t generate_samples(
             const size_t                    sequence_index,
-            SampleVector&                   samples)
+            SampleVector&                   samples) override
         {
 #ifdef ADAPTIVE_IMAGE_SAMPLING
 

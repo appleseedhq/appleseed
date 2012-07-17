@@ -29,9 +29,16 @@
 // Interface header.
 #include "framerendererbase.h"
 
+// appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
+#include "renderer/utility/paramarray.h"
+
 // appleseed.foundation headers.
 #include "foundation/platform/system.h"
 #include "foundation/utility/string.h"
+
+// Standard headers.
+#include <string>
 
 using namespace foundation;
 using namespace std;

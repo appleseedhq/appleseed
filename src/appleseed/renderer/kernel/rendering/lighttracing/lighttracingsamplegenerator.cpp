@@ -30,6 +30,7 @@
 #include "lighttracingsamplegenerator.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/lighting/lightsampler.h"
 #include "renderer/kernel/lighting/pathtracer.h"
@@ -56,6 +57,7 @@
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/color.h"
 #include "foundation/image/image.h"
 #include "foundation/image/spectrum.h"
 #include "foundation/math/population.h"
@@ -64,6 +66,10 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/memory.h"
+#include "foundation/utility/statistics.h"
+
+// Standard headers.
+#include <cassert>
 
 // Forward declarations.
 namespace foundation    { class AbortSwitch; }
@@ -138,22 +144,18 @@ namespace
           , m_disk_point_prob(1.0 / (Pi * square(m_safe_scene_radius)))
           , m_light_sampler(light_sampler)
           , m_texture_cache(texture_store)
-          , m_intersector(trace_context, m_texture_cache, true, m_params.m_report_self_intersections)
+          , m_intersector(trace_context, m_texture_cache, m_params.m_report_self_intersections)
           , m_shading_context(m_intersector, m_texture_cache, 0, m_params.m_transparency_threshold, m_params.m_max_iterations)
+          , m_path_count(0)
         {
         }
 
-        ~LightTracingSampleGenerator()
-        {
-            m_stats.print();
-        }
-
-        virtual void release()
+        virtual void release() override
         {
             delete this;
         }
 
-        virtual void reset()
+        virtual void reset() override
         {
             SampleGeneratorBase::reset();
             m_rng = MersenneTwister();
@@ -162,7 +164,7 @@ namespace
         virtual void generate_samples(
             const size_t                sample_count,
             AccumulationFramebuffer&    framebuffer,
-            AbortSwitch&                abort_switch)
+            AbortSwitch&                abort_switch) override
         {
             m_light_sample_count = 0;
 
@@ -172,31 +174,16 @@ namespace
                 .increment_sample_count(m_light_sample_count);
         }
 
-      private:
-        struct Statistics
+        virtual StatisticsVector get_statistics() const override
         {
-            uint64              m_path_count;
-            Population<uint64>  m_path_length;
+            Statistics stats;
+            stats.insert("path count", m_path_count);
+            stats.insert("path length", m_path_length);
 
-            Statistics()
-              : m_path_count(0)
-            {
-            }
+            return StatisticsVector::make("light tracing statistics", stats);
+        }
 
-            void print() const
-            {
-                RENDERER_LOG_DEBUG(
-                    "light tracing statistics:\n"
-                    "  paths            %s\n"
-                    "  path length      avg %.1f  min %s  max %s  dev %.1f\n",
-                    pretty_uint(m_path_count).c_str(),
-                    m_path_length.get_mean(),
-                    pretty_uint(m_path_length.get_min()).c_str(),
-                    pretty_uint(m_path_length.get_max()).c_str(),
-                    m_path_length.get_dev());
-            }
-        };
-
+      private:
         class PathVisitor
         {
           public:
@@ -454,7 +441,6 @@ namespace
         > PathTracerType;
 
         const Parameters                m_params;
-        Statistics                      m_stats;
 
         const Scene&                    m_scene;
         const Frame&                    m_frame;
@@ -474,9 +460,12 @@ namespace
 
         uint64                          m_light_sample_count;
 
+        uint64                          m_path_count;
+        Population<size_t>              m_path_length;
+
         virtual size_t generate_samples(
             const size_t                sequence_index,
-            SampleVector&               samples)
+            SampleVector&               samples) override
         {
             SamplingContext sampling_context(
                 m_rng,
@@ -603,8 +592,8 @@ namespace
                     &parent_shading_point);
 
             // Update path statistics.
-            ++m_stats.m_path_count;
-            m_stats.m_path_length.insert(path_length);
+            ++m_path_count;
+            m_path_length.insert(path_length);
 
             // Return the number of samples generated when tracing this light path.
             return path_visitor.get_sample_count();
@@ -677,8 +666,8 @@ namespace
                     light_ray);
 
             // Update path statistics.
-            ++m_stats.m_path_count;
-            m_stats.m_path_length.insert(path_length);
+            ++m_path_count;
+            m_path_length.insert(path_length);
 
             // Return the number of samples generated when tracing this light path.
             return path_visitor.get_sample_count();
@@ -746,8 +735,8 @@ namespace
                     light_ray);
 
             // Update path statistics.
-            ++m_stats.m_path_count;
-            m_stats.m_path_length.insert(path_length);
+            ++m_path_count;
+            m_path_length.insert(path_length);
 
             // Return the number of samples generated when tracing this light path.
             return path_visitor.get_sample_count();

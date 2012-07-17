@@ -50,6 +50,7 @@
 #include "foundation/math/mis.h"
 #include "foundation/math/population.h"
 #include "foundation/utility/memory.h"
+#include "foundation/utility/statistics.h"
 #include "foundation/utility/string.h"
 
 // Forward declarations.
@@ -127,15 +128,11 @@ namespace
             const ParamArray&       params)
           : m_params(params)
           , m_light_sampler(light_sampler)
+          , m_path_count(0)
         {
         }
 
-        ~PTLightingEngine()
-        {
-            m_stats.print();
-        }
-
-        virtual void release()
+        virtual void release() override
         {
             delete this;
         }
@@ -145,7 +142,7 @@ namespace
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
             Spectrum&               radiance,               // output radiance, in W.sr^-1.m^-2
-            SpectrumStack&          aovs)
+            SpectrumStack&          aovs) override
         {
             typedef PathTracer<
                 PathVisitor,
@@ -175,35 +172,20 @@ namespace
                     shading_point);
 
             // Update statistics.
-            ++m_stats.m_path_count;
-            m_stats.m_path_length.insert(path_length);
+            ++m_path_count;
+            m_path_length.insert(path_length);
+        }
+
+        virtual StatisticsVector get_statistics() const override
+        {
+            Statistics stats;
+            stats.insert("path count", m_path_count);
+            stats.insert("path length", m_path_length);
+
+            return StatisticsVector::make("path tracing statistics", stats);
         }
 
       private:
-        struct Statistics
-        {
-            uint64              m_path_count;
-            Population<uint64>  m_path_length;
-
-            Statistics()
-              : m_path_count(0)
-            {
-            }
-
-            void print() const
-            {
-                RENDERER_LOG_DEBUG(
-                    "path tracing statistics:\n"
-                    "  paths            %s\n"
-                    "  path length      avg %.1f  min %s  max %s  dev %.1f\n",
-                    pretty_uint(m_path_count).c_str(),
-                    m_path_length.get_mean(),
-                    pretty_uint(m_path_length.get_min()).c_str(),
-                    pretty_uint(m_path_length.get_max()).c_str(),
-                    m_path_length.get_dev());
-            }
-        };
-
         class PathVisitor
         {
           public:
@@ -439,8 +421,10 @@ namespace
         };
 
         const Parameters        m_params;
-        Statistics              m_stats;
         const LightSampler&     m_light_sampler;
+
+        uint64                  m_path_count;
+        Population<size_t>      m_path_length;
     };
 }
 

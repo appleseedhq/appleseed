@@ -34,8 +34,14 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
+#include "foundation/image/color.h"
 #include "foundation/image/image.h"
 #include "foundation/image/tile.h"
+#include "foundation/utility/statistics.h"
+
+// Standard headers.
+#include <cassert>
+#include <cstddef>
 
 // Forward declarations.
 namespace foundation    { class AbortSwitch; }
@@ -56,18 +62,16 @@ namespace
       : public ITileRenderer
     {
       public:
-        // Delete this instance.
-        virtual void release()
+        virtual void release() override
         {
             delete this;
         }
 
-        // Render a tile.
         virtual void render_tile(
             const Frame&    frame,
             const size_t    tile_x,
             const size_t    tile_y,
-            AbortSwitch&    abort_switch)
+            AbortSwitch&    abort_switch) override
         {
             Image& image = frame.image();
 
@@ -96,6 +100,11 @@ namespace
             tile.set_pixel(max_x, 0,     Color4f(0.0f, 1.0f, 0.0f, 1.0f));      // top right pixel is green
             tile.set_pixel(0,     max_y, Color4f(1.0f, 1.0f, 1.0f, 1.0f));      // bottom left pixel is white
             tile.set_pixel(max_x, max_y, Color4f(0.0f, 0.0f, 1.0f, 1.0f));      // bottom right pixel is blue
+        }
+
+        virtual StatisticsVector get_statistics() const override
+        {
+            return StatisticsVector();
         }
     };
 }

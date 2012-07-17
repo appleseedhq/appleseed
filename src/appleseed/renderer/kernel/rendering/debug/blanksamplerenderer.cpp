@@ -30,7 +30,12 @@
 #include "blanksamplerenderer.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/shading/shadingresult.h"
+
+// appleseed.foundation headers.
+#include "foundation/math/vector.h"
+#include "foundation/utility/statistics.h"
 
 using namespace foundation;
 
@@ -47,19 +52,22 @@ namespace
       : public ISampleRenderer
     {
       public:
-        // Delete this instance.
-        virtual void release()
+        virtual void release() override
         {
             delete this;
         }
 
-        // Render a sample at a given point on the image plane.
         virtual void render_sample(
             SamplingContext&    sampling_context,
             const Vector2d&     image_point,
-            ShadingResult&      shading_result)
+            ShadingResult&      shading_result) override
         {
             shading_result.clear();
+        }
+
+        virtual StatisticsVector get_statistics() const override
+        {
+            return StatisticsVector();
         }
     };
 }
