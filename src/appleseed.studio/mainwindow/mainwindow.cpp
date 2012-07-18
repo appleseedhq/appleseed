@@ -737,10 +737,10 @@ void MainWindow::slot_open_project()
             &selected_filter,
             options);
 
-    filepath = QDir::toNativeSeparators(filepath);
-
     if (!filepath.isEmpty())
     {
+        filepath = QDir::toNativeSeparators(filepath);
+
         const filesystem::path path(filepath.toStdString());
 
         m_settings.insert_path(
@@ -831,10 +831,10 @@ void MainWindow::slot_save_project_as()
             &selected_filter,
             options);
 
-    filepath = QDir::toNativeSeparators(filepath);
-
     if (!filepath.isEmpty())
     {
+        filepath = QDir::toNativeSeparators(filepath);
+
         const filesystem::path path(filepath.toStdString());
 
         m_settings.insert_path(
@@ -1021,10 +1021,10 @@ void MainWindow::slot_save_frame()
             &selected_filter,
             options);
 
-    filepath = QDir::toNativeSeparators(filepath);
-
     if (!filepath.isEmpty())
     {
+        filepath = QDir::toNativeSeparators(filepath);
+
         const Project* project = m_project_manager.get_project();
         project->get_frame()->write(filepath.toAscii().constData());
     }
