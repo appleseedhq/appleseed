@@ -822,7 +822,8 @@ T RenderSettingsWindow::get_config(
     const string&           param_path,
     const T&                default_value)
 {
-    return configuration.get_inherited_parameters().get_path_optional<T>(param_path.c_str(), default_value);
+    return configuration.get_inherited_parameters().
+        template get_path_optional<T>(param_path.c_str(), default_value);
 }
 
 //---------------------------------------------------------------------------------------------
