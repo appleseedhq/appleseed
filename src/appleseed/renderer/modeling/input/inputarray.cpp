@@ -34,6 +34,7 @@
 #include "renderer/modeling/input/source.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/memory.h"
 
@@ -163,6 +164,30 @@ Source* InputArray::source(const char* name) const
     return 0;
 }
 
+namespace
+{
+    // Not the same as ALIGNOF(), see http://stackoverflow.com/q/11545153/393756.
+    template <typename Target>
+    size_t offset_of()
+    {
+        struct S { char c; Target t; };
+        return offsetof(S, t);
+    }
+
+    // Can't use offsetof() on non-POD types.
+    template <>
+    size_t offset_of<Spectrum>()
+    {
+        return ALIGNOF(Spectrum);
+    }
+
+    template <typename Target, typename T>
+    T align_to(const T x)
+    {
+        return align(x, offset_of<Target>());
+    }
+}
+
 size_t InputArray::compute_data_size() const
 {
     size_t size = 0;
@@ -172,12 +197,12 @@ size_t InputArray::compute_data_size() const
         switch (i->m_format)
         {
           case InputFormatScalar:
-            size = align(size, 8);
+            size = align_to<double>(size);
             size += sizeof(double);
             break;
 
           case InputFormatSpectrum:
-            size = align(size, 16);
+            size = align_to<Spectrum>(size);
             size += sizeof(Spectrum);
             size += sizeof(Alpha);
             break;
@@ -205,7 +230,7 @@ void InputArray::evaluate(
         switch (i->m_format)
         {
           case InputFormatScalar:
-            ptr = align(ptr, 8);
+            ptr = align_to<double>(ptr);
             if (i->m_source)
             {
                 i->m_source->evaluate(
@@ -217,7 +242,7 @@ void InputArray::evaluate(
             break;
 
           case InputFormatSpectrum:
-            ptr = align(ptr, 16);
+            ptr = align_to<Spectrum>(ptr);
             if (i->m_source)
             {
                 i->m_source->evaluate(
@@ -247,14 +272,14 @@ void InputArray::evaluate_uniforms(
         switch (i->m_format)
         {
           case InputFormatScalar:
-            ptr = align(ptr, 8);
+            ptr = align_to<double>(ptr);
             if (i->m_source && i->m_source->is_uniform())
                 i->m_source->evaluate_uniform(*reinterpret_cast<double*>(ptr));
             ptr += sizeof(double);
             break;
 
           case InputFormatSpectrum:
-            ptr = align(ptr, 16);
+            ptr = align_to<Spectrum>(ptr);
             if (i->m_source && i->m_source->is_uniform())
             {
                 i->m_source->evaluate_uniform(
