@@ -38,6 +38,9 @@
 #include "utility/interop.h"
 #include "utility/tweaks.h"
 
+// appleseed.renderer headers.
+#include "renderer/api/project.h"
+
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
 #include "foundation/utility/foreach.h"
@@ -49,6 +52,7 @@
 #include <QColorDialog>
 #include <QComboBox>
 #include <QDialogButtonBox>
+#include <QFileDialog>
 #include <QFormLayout>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -61,10 +65,16 @@
 #include <QToolButton>
 #include <QVariant>
 
+// boost headers.
+#include "boost/filesystem/operations.hpp"
+#include "boost/filesystem/path.hpp"
+
 // Standard headers.
 #include <cassert>
 
+using namespace boost;
 using namespace foundation;
+using namespace renderer;
 using namespace std;
 
 namespace appleseed {
@@ -73,16 +83,19 @@ namespace studio {
 EntityEditorWindow::EntityEditorWindow(
     QWidget*                    parent,
     const string&               window_title,
+    const Project&              project,
     auto_ptr<IFormFactory>      form_factory,
     auto_ptr<IEntityBrowser>    entity_browser,
     const Dictionary&           values)
   : QWidget(parent)
   , m_ui(new Ui::EntityEditorWindow())
+  , m_project(project)
   , m_form_factory(form_factory)
   , m_entity_browser(entity_browser)
   , m_form_layout(0)
   , m_entity_picker_signal_mapper(new QSignalMapper(this))
   , m_color_picker_signal_mapper(new QSignalMapper(this))
+  , m_file_picker_signal_mapper(new QSignalMapper(this))
 {
     m_ui->setupUi(this);
 
@@ -102,6 +115,10 @@ EntityEditorWindow::EntityEditorWindow(
     connect(
         m_color_picker_signal_mapper, SIGNAL(mapped(const QString&)),
         this, SLOT(slot_open_color_picker(const QString&)));
+
+    connect(
+        m_file_picker_signal_mapper, SIGNAL(mapped(const QString&)),
+        this, SLOT(slot_open_file_picker(const QString&)));
 
     connect(m_ui->buttonbox, SIGNAL(accepted()), this, SLOT(slot_accept()));
     connect(m_ui->buttonbox, SIGNAL(rejected()), this, SLOT(close()));
@@ -197,6 +214,10 @@ void EntityEditorWindow::create_input_widget(const Dictionary& definition)
     {
         create_color_picker_input_widget(definition);
     }
+    else if (widget_type == "file_picker")
+    {
+        create_file_picker_input_widget(definition);
+    }
     else
     {
         assert(!"Unknown widget type.");
@@ -259,8 +280,7 @@ void EntityEditorWindow::create_dropdown_list_input_widget(const Dictionary& def
 
     if (definition.strings().exist("on_change"))
     {
-        const string on_change_value = definition.strings().get<string>("on_change");
-        if (on_change_value == "rebuild_form")
+        if (definition.strings().get<string>("on_change") == "rebuild_form")
             connect(combo_box, SIGNAL(currentIndexChanged(int)), this, SLOT(slot_rebuild_form()));
     }
 
@@ -326,6 +346,35 @@ void EntityEditorWindow::create_color_picker_input_widget(const Dictionary& defi
     QHBoxLayout* layout = new QHBoxLayout();
     layout->addWidget(line_edit);
     layout->addWidget(picker_button);
+    m_form_layout->addRow(get_label_text(definition), layout);
+}
+
+void EntityEditorWindow::create_file_picker_input_widget(const Dictionary& definition)
+{
+    QLineEdit* line_edit = new QLineEdit(m_ui->scrollarea_contents);
+
+    QWidget* button = new QPushButton("Browse", m_ui->scrollarea_contents);
+    button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    connect(button, SIGNAL(clicked()), m_file_picker_signal_mapper, SLOT(map()));
+
+    const string name = definition.get<string>("name");
+    m_file_picker_signal_mapper->setMapping(button, QString::fromStdString(name));
+
+    IInputWidgetProxy* widget_proxy = new LineEditProxy(line_edit);
+    m_widget_proxies[name] = widget_proxy;
+
+    if (definition.strings().exist("default"))
+        widget_proxy->set(definition.strings().get<string>("default"));
+
+    if (should_be_focused(definition))
+    {
+        line_edit->selectAll();
+        line_edit->setFocus();
+    }
+
+    QHBoxLayout* layout = new QHBoxLayout();
+    layout->addWidget(line_edit);
+    layout->addWidget(button);
     m_form_layout->addRow(get_label_text(definition), layout);
 }
 
@@ -437,6 +486,35 @@ void EntityEditorWindow::slot_open_color_picker(const QString& widget_name)
 
     if (new_color.isValid())
         widget_proxy->set(to_string(qcolor_to_color<Color3d>(new_color)));
+}
+
+void EntityEditorWindow::slot_open_file_picker(const QString& widget_name)
+{
+    IInputWidgetProxy* widget_proxy = m_widget_proxies[widget_name.toStdString()];
+
+    const Dictionary widget_definition = get_widget_definition(widget_name.toStdString());
+
+    if (widget_definition.get<string>("file_picker_mode") == "open")
+    {
+        const filesystem::path project_root_path = filesystem::path(m_project.get_path()).parent_path();
+        const filesystem::path file_path = absolute(widget_proxy->get(), project_root_path);
+        const filesystem::path file_root_path = file_path.parent_path();
+
+        QFileDialog::Options options;
+        QString selected_filter;
+
+        QString filepath =
+            QFileDialog::getOpenFileName(
+                this,
+                "Open...",
+                QString::fromStdString(file_root_path.string()),
+                widget_definition.get<QString>("file_picker_filter"),
+                &selected_filter,
+                options);
+
+        if (!filepath.isEmpty())
+            widget_proxy->set(QDir::toNativeSeparators(filepath).toStdString());
+    }
 }
 
 void EntityEditorWindow::slot_accept()

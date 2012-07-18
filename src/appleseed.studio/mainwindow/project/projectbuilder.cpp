@@ -71,6 +71,16 @@ ProjectBuilder::ProjectBuilder(
 {
 }
 
+Project& ProjectBuilder::get_project()
+{
+    return m_project;
+}
+
+const Project& ProjectBuilder::get_project() const
+{
+    return m_project;
+}
+
 void ProjectBuilder::notify_project_modification() const
 {
     emit signal_project_modified();
