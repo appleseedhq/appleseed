@@ -82,7 +82,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <property name="elideMode">
        <enum>Qt::ElideLeft</enum>
@@ -194,7 +194,7 @@
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>-791</y>
+             <y>0</y>
              <width>607</width>
              <height>1169</height>
             </rect>
