@@ -594,6 +594,7 @@ MeshObjectArray MeshObjectReader::read(
         }
         else
         {
+            // Single-pose object.
             objects =
                 read_mesh_object(
                     search_paths.qualify(params.strings().get<string>("filename")).c_str(),
@@ -606,15 +607,25 @@ MeshObjectArray MeshObjectReader::read(
         if (params.dictionaries().exist("filename"))
         {
             const StringDictionary& filenames = params.dictionaries().get("filename").strings();
+
             if (filenames.empty())
             {
                 RENDERER_LOG_ERROR(
-                    "while reading geometry for object \"%s\": missing at least one parameter "
-                    "in \"filename\" parameter group.",
+                    "while reading geometry for object \"%s\": no pose defined "
+                    "(the \"filename\" parameter group is empty).",
                     base_object_name);
+            }
+            else if (!is_pow2(filenames.size()))
+            {
+                RENDERER_LOG_ERROR(
+                    "while reading geometry for object \"%s\": the number of poses must be a power of two, "
+                    "but " FMT_SIZE_T " poses were defined.",
+                    base_object_name,
+                    filenames.size());
             }
             else
             {
+                // Multi-pose (motion-blurred) object.
                 objects =
                     read_key_framed_mesh_object(
                         search_paths,
