@@ -194,11 +194,14 @@ void ProjectBuilder::insert_objects(
 
     SearchPaths search_paths;
 
-    const MeshObjectArray mesh_objects =
-        MeshObjectReader().read(
+    MeshObjectArray mesh_objects;
+
+    if (!MeshObjectReader().read(
             search_paths,
             base_object_name.c_str(),
-            params);
+            params,
+            mesh_objects))
+        return;
 
     for (size_t i = 0; i < mesh_objects.size(); ++i)
     {

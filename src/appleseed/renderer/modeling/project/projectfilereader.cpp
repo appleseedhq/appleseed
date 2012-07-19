@@ -1435,13 +1435,15 @@ namespace
             {
                 if (m_model == MeshObjectFactory::get_model())
                 {
-                    MeshObjectArray object_array =
-                        MeshObjectReader::read(
+                    MeshObjectArray object_array;
+
+                    if (MeshObjectReader::read(
                             m_context.get_project().get_search_paths(),
                             m_name.c_str(),
-                            m_params);
-
-                    m_objects = array_vector<ObjectVector>(object_array);
+                            m_params,
+                            object_array))
+                        m_objects = array_vector<ObjectVector>(object_array);
+                    else m_context.get_event_counters().signal_error();
                 }
                 else
                 {

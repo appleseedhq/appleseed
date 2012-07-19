@@ -29,15 +29,16 @@
 #ifndef APPLESEED_RENDERER_MODELING_OBJECT_MESHOBJECTREADER_H
 #define APPLESEED_RENDERER_MODELING_OBJECT_MESHOBJECTREADER_H
 
-// appleseed.renderer headers.
-#include "renderer/global/global.h"
-
 // appleseed.foundation headers.
 #include "foundation/utility/containers/array.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Forward declarations.
 namespace foundation    { class SearchPaths; }
 namespace renderer      { class MeshObject; }
+namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
@@ -53,14 +54,17 @@ DECLARE_ARRAY(MeshObjectArray, MeshObject*);
 // Mesh object reader.
 //
 
-class RENDERERDLL MeshObjectReader
+class DLLSYMBOL MeshObjectReader
 {
   public:
     // Read mesh objects from disk. The filenames are defined in params.
-    static MeshObjectArray read(
+    // Returns true on success, false otherwise. When false is returned,
+    // nothing should be assumed on the state of the objects parameter.
+    static bool read(
         const foundation::SearchPaths&  search_paths,
         const char*                     base_object_name,
-        const ParamArray&               params);
+        const ParamArray&               params,
+        MeshObjectArray&                objects);
 };
 
 }       // namespace renderer
