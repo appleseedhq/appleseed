@@ -154,7 +154,7 @@ void CommandLineHandlerBase::print_version_information(SuperLogger& logger) cons
         logger,
         "%s, using %s version %s, %s configuration\n"
         "compiled on %s at %s using %s version %s\n"
-        "copyright (c) 2010-2012 Francois Beaune, Jupiter Jazz.\n"
+        "copyright (c) 2010-2012 Francois Beaune, Jupiter Jazz Limited.\n"
         "this software is released under the MIT license (http://www.opensource.org/licenses/mit-license.php).\n"
         "visit http://appleseedhq.net/ for additional information and resources.",
         impl->m_application_name.c_str(),
