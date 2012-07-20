@@ -137,12 +137,6 @@ namespace
             Spectrum&               radiance,               // output radiance, in W.sr^-1.m^-2
             SpectrumStack&          aovs) override
         {
-            typedef PathTracer<
-                PathVisitor,
-                BSDF::Glossy | BSDF::Specular,
-                false                                       // not adjoint
-            > PathTracer;
-
             PathVisitor path_visitor(
                 m_params,
                 m_light_sampler,
@@ -151,7 +145,7 @@ namespace
                 radiance,
                 aovs);
 
-            PathTracer path_tracer(
+            PathTracer<PathVisitor, false> path_tracer(     // false = not adjoint
                 path_visitor,
                 m_params.m_rr_min_path_length,
                 m_params.m_max_path_length,
@@ -199,6 +193,13 @@ namespace
             {
                 m_path_radiance.set(0.0f);
                 m_path_aovs.set(0.0f);
+            }
+
+            bool accept_scattering_mode(
+                const BSDF::Mode        prev_bsdf_mode,
+                const BSDF::Mode        bsdf_mode) const
+            {
+                return (bsdf_mode & (BSDF::Glossy | BSDF::Specular)) != 0;
             }
 
             bool visit_vertex(

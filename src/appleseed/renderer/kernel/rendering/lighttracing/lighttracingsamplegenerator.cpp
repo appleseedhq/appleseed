@@ -223,6 +223,13 @@ namespace
                 return m_sample_count;
             }
 
+            bool accept_scattering_mode(
+                const BSDF::Mode            prev_bsdf_mode,
+                const BSDF::Mode            bsdf_mode) const
+            {
+                return (bsdf_mode & (BSDF::Diffuse | BSDF::Glossy | BSDF::Specular)) != 0;
+            }
+
             template <bool IsAreaLight>
             void visit_light_vertex(
                 SamplingContext&            sampling_context,
@@ -434,11 +441,7 @@ namespace
             }
         };
 
-        typedef PathTracer<
-            PathVisitor,
-            BSDF::Diffuse | BSDF::Glossy | BSDF::Specular,
-            true    // adjoint
-        > PathTracerType;
+        typedef PathTracer<PathVisitor, true> PathTracerType;   // true = adjoint
 
         const Parameters                m_params;
 
