@@ -51,11 +51,11 @@ class ISampleRenderer
   : public foundation::IUnknown
 {
   public:
-    // Render a sample at a given point on the image plane.
-    // See renderer::Camera class documentation for details.
+    // Render a sample at a given point on the image plane expressed in
+    // normalized device coordinates (http://appleseedhq.net/conventions).
     virtual void render_sample(
         SamplingContext&                sampling_context,
-        const foundation::Vector2d&     image_point,            // point in image plane, in NDC
+        const foundation::Vector2d&     image_point,
         ShadingResult&                  shading_result) = 0;
 
     // Retrieve performance statistics.

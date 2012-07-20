@@ -41,6 +41,9 @@
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/thread.h"
 
+// Standard headers.
+#include <algorithm>
+
 using namespace boost;
 using namespace foundation;
 using namespace std;
@@ -78,19 +81,21 @@ void GlobalAccumulationFramebuffer::store_samples(
 {
     mutex::scoped_lock lock(m_mutex);
 
-    const double fb_width = static_cast<double>(m_width);
-    const double fb_height = static_cast<double>(m_height);
+    const double fw = static_cast<double>(m_width);
+    const double fh = static_cast<double>(m_height);
+    const size_t max_x = m_width - 1;
+    const size_t max_y = m_height - 1;
 
     const Sample* RESTRICT sample_ptr = samples;
     const Sample* RESTRICT sample_end = samples + sample_count;
 
     while (sample_ptr < sample_end)
     {
-        const double fx = sample_ptr->m_position.x * fb_width;
-        const double fy = sample_ptr->m_position.y * fb_height;
+        const double fx = sample_ptr->m_position.x * fw;
+        const double fy = sample_ptr->m_position.y * fh;
 
-        const size_t x = truncate<size_t>(fx);
-        const size_t y = truncate<size_t>(fy);
+        const size_t x = min(truncate<size_t>(fx), max_x);
+        const size_t y = min(truncate<size_t>(fy), max_y);
 
         add_pixel(x, y, sample_ptr->m_color.rgb());
 

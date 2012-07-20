@@ -97,7 +97,7 @@ namespace
 
         virtual void render_sample(
             SamplingContext&        sampling_context,
-            const Vector2d&         image_point,        // point in image plane, in NDC
+            const Vector2d&         image_point,
             ShadingResult&          shading_result) override
         {
 #ifdef DEBUG_DISPLAY_TEXTURE_CACHE_PERFORMANCES

@@ -190,8 +190,6 @@ namespace
 #else
           , m_frame_width_next_pow2(next_power(static_cast<double>(m_frame_props.m_canvas_width), 2.0))
           , m_frame_height_next_pow3(next_power(static_cast<double>(m_frame_props.m_canvas_height), 3.0))
-          , m_scale_x(m_frame_width_next_pow2 / m_frame_props.m_canvas_width)
-          , m_scale_y(m_frame_height_next_pow3 / m_frame_props.m_canvas_height)
 #endif
         {
         }
@@ -234,8 +232,6 @@ namespace
 #else
         const double                        m_frame_width_next_pow2;
         const double                        m_frame_height_next_pow3;
-        const double                        m_scale_x;
-        const double                        m_scale_y;
 #endif
 
         Population<size_t>                  m_total_sampling_dim;
@@ -268,8 +264,8 @@ namespace
             sampling_context.split_in_place(2, 1);
             const Vector2d subpixel = sampling_context.next_vector2<2>();
             const Vector2d sample_position(
-                (pixel_x + subpixel.x) * m_frame_props.m_rcp_canvas_width,
-                (pixel_y + subpixel.y) * m_frame_props.m_rcp_canvas_height);
+                (pixel_x + subpixel.x) / m_frame_props.m_canvas_width,
+                (pixel_y + subpixel.y) / m_frame_props.m_canvas_height);
 
 #else
 
@@ -278,15 +274,19 @@ namespace
             const Vector2d s = halton_sequence<double, 2>(Bases, sequence_index);
 
             // Compute the coordinates of the pixel in the larger frame.
-            const size_t x = truncate<size_t>(s[0] * m_frame_width_next_pow2);
-            const size_t y = truncate<size_t>(s[1] * m_frame_height_next_pow3);
+            const Vector2d t(s[0] * m_frame_width_next_pow2, s[1] * m_frame_height_next_pow3);
+            const size_t x = truncate<size_t>(t[0]);
+            const size_t y = truncate<size_t>(t[1]);
 
             // Reject samples that fall outside the actual frame.
             if (x >= m_frame_props.m_canvas_width || y >= m_frame_props.m_canvas_height)
                 return 0;
 
-            // Transform back the pixel coordinates to NDC.
-            const Vector2d sample_position(s[0] * m_scale_x, s[1] * m_scale_y);
+            // Transform the sample position back to NDC. Full precision divisions are required
+            // to ensure that the sample position indeed lies in the [0,1)^2 interval.
+            const Vector2d sample_position(
+                t[0] / m_frame_props.m_canvas_width,
+                t[1] / m_frame_props.m_canvas_height);
 
             // Create a sampling context. We start with an initial dimension of 2,
             // corresponding to the Halton sequence used for the sample positions.
