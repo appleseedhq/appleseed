@@ -100,14 +100,20 @@ namespace
       public:
         struct Parameters
         {
+            const bool      m_enable_ibl;                   // image-based lighting enabled?
+            const bool      m_enable_caustics;              // caustics enabled?
+
             const float     m_transparency_threshold;
             const size_t    m_max_iterations;
             const bool      m_report_self_intersections;
-            const size_t    m_rr_min_path_length;           // minimum path length before Russian Roulette is used, 0 for unlimited
+
             const size_t    m_max_path_length;              // maximum path length, 0 for unlimited
+            const size_t    m_rr_min_path_length;           // minimum path length before Russian Roulette is used, 0 for unlimited
 
             explicit Parameters(const ParamArray& params)
-              : m_transparency_threshold(params.get_optional<float>("transparency_threshold", 0.001f))
+              : m_enable_ibl(params.get_optional<bool>("enable_ibl", true))
+              , m_enable_caustics(params.get_optional<bool>("enable_caustics", true))
+              , m_transparency_threshold(params.get_optional<float>("transparency_threshold", 0.001f))
               , m_max_iterations(params.get_optional<size_t>("max_iterations", 10000))
               , m_report_self_intersections(params.get_optional<bool>("report_self_intersections", false))
               , m_rr_min_path_length(params.get_optional<size_t>("rr_min_path_length", 3))
@@ -119,10 +125,14 @@ namespace
             {
                 RENDERER_LOG_INFO(
                     "light tracing settings:\n"
-                    "  rr min path len. %s\n"
-                    "  max path length  %s",
-                    m_rr_min_path_length == 0 ? "infinite" : pretty_uint(m_rr_min_path_length).c_str(),
-                    m_max_path_length == 0 ? "infinite" : pretty_uint(m_max_path_length).c_str());
+                    "  ibl              %s\n"
+                    "  caustics         %s\n"
+                    "  max path length  %s\n"
+                    "  rr min path len. %s",
+                    m_enable_ibl ? "on" : "off",
+                    m_enable_caustics ? "on" : "off",
+                    m_max_path_length == 0 ? "infinite" : pretty_uint(m_max_path_length).c_str(),
+                    m_rr_min_path_length == 0 ? "infinite" : pretty_uint(m_rr_min_path_length).c_str());
             }
         };
 
@@ -188,12 +198,14 @@ namespace
         {
           public:
             PathVisitor(
+                const Parameters&           params,
                 const Scene&                scene,
                 const Frame&                frame,
                 const ShadingContext&       shading_context,
                 SampleVector&               samples,
                 const Spectrum&             initial_alpha)
-              : m_camera(*scene.get_camera())
+              : m_params(params)
+              , m_camera(*scene.get_camera())
               , m_lighting_conditions(frame.get_lighting_conditions())
               , m_shading_context(shading_context)
               , m_samples(samples)
@@ -294,6 +306,14 @@ namespace
                 const double                prev_bsdf_prob,
                 const Spectrum&             throughput)
             {
+                if (!m_params.m_enable_caustics &&
+                    path_length > 1 &&
+                    (prev_bsdf_mode & (BSDF::Glossy | BSDF::Specular)) != 0)
+                {
+                    // This is a caustics path but caustics are disabled.
+                    return false;
+                }
+
                 Vector2d sample_position_ndc;
                 double transmission;
                 Vector3d vertex_to_camera;
@@ -366,6 +386,7 @@ namespace
             }
 
           private:
+            const Parameters&               m_params;
             const Camera&                   m_camera;
             const LightingConditions&       m_lighting_conditions;
             const ShadingContext&           m_shading_context;
@@ -482,7 +503,7 @@ namespace
             if (m_light_sampler.has_lights_or_emitting_triangles())
                 stored_sample_count += generate_light_sample(sampling_context, samples);
 
-            if (m_env_edf)
+            if (m_env_edf && m_params.m_enable_ibl)
                 stored_sample_count += generate_environment_sample(sampling_context, samples);
 
             ++m_light_sample_count;
@@ -566,6 +587,7 @@ namespace
 
             // Build the path tracer.
             PathVisitor path_visitor(
+                m_params,
                 m_scene,
                 m_frame,
                 m_shading_context,
@@ -641,6 +663,7 @@ namespace
 
             // Build the path tracer.
             PathVisitor path_visitor(
+                m_params,
                 m_scene,
                 m_frame,
                 m_shading_context,
@@ -719,6 +742,7 @@ namespace
 
             // Build the path tracer.
             PathVisitor path_visitor(
+                m_params,
                 m_scene,
                 m_frame,
                 m_shading_context,
