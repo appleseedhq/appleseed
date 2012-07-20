@@ -81,6 +81,7 @@ namespace
       public:
         struct Parameters
         {
+            const bool      m_enable_dl;                    // direct lighting enabled?
             const bool      m_enable_ibl;                   // image-based lighting enabled?
             const bool      m_enable_caustics;              // caustics enabled?
 
@@ -94,7 +95,8 @@ namespace
             const size_t    m_ibl_env_sample_count;         // number of environment samples used to estimate IBL
 
             explicit Parameters(const ParamArray& params)
-              : m_enable_ibl(params.get_optional<bool>("enable_ibl", true))
+              : m_enable_dl(params.get_optional<bool>("enable_dl", true))
+              , m_enable_ibl(params.get_optional<bool>("enable_ibl", true))
               , m_enable_caustics(params.get_optional<bool>("enable_caustics", true))
               , m_max_path_length(params.get_optional<size_t>("max_path_length", 0))
               , m_rr_min_path_length(params.get_optional<size_t>("rr_min_path_length", 3))
@@ -109,6 +111,7 @@ namespace
             {
                 RENDERER_LOG_INFO(
                     "path tracing settings:\n"
+                    "  direct lighting  %s\n"
                     "  ibl              %s\n"
                     "  caustics         %s\n"
                     "  max path length  %s\n"
@@ -117,6 +120,7 @@ namespace
                     "  dl light samples %s\n"
                     "  ibl bsdf samples %s\n"
                     "  ibl env samples  %s",
+                    m_enable_dl ? "on" : "off",
                     m_enable_ibl ? "on" : "off",
                     m_enable_caustics ? "on" : "off",
                     m_max_path_length == 0 ? "infinite" : pretty_uint(m_max_path_length).c_str(),
@@ -251,30 +255,39 @@ namespace
 
                 if (m_params.m_next_event_estimation)
                 {
-                    // Compute direct lighting. We're using light sampling only: direct lighting
-                    // via BSDF sampling will be taken into account when we'll extend the path.
-                    // The number of light samples is user-adjustable. The number of BSDF samples
-                    // is set to 1 since we'll extend the path via a single BSDF sample.
-                    DirectLightingIntegrator integrator(
-                        m_shading_context,
-                        m_light_sampler,
-                        point,
-                        geometric_normal,
-                        shading_basis,
-                        shading_point.get_ray().m_time,
-                        outgoing,
-                        *bsdf,
-                        bsdf_data,
-                        1,
-                        m_params.m_dl_light_sample_count,
-                        &shading_point);
                     Spectrum vertex_radiance;
                     SpectrumStack vertex_aovs(m_path_aovs.size());
-                    integrator.sample_lights_low_variance(
-                        sampling_context,
-                        DirectLightingIntegrator::mis_power2,
-                        vertex_radiance,
-                        vertex_aovs);
+
+                    if (m_params.m_enable_dl || path_length > 1)
+                    {
+                        // Compute direct lighting. We're using light sampling only: direct lighting
+                        // via BSDF sampling will be taken into account when we'll extend the path.
+                        // The number of light samples is user-adjustable. The number of BSDF samples
+                        // is set to 1 since we'll extend the path via a single BSDF sample.
+                        DirectLightingIntegrator integrator(
+                            m_shading_context,
+                            m_light_sampler,
+                            point,
+                            geometric_normal,
+                            shading_basis,
+                            shading_point.get_ray().m_time,
+                            outgoing,
+                            *bsdf,
+                            bsdf_data,
+                            1,
+                            m_params.m_dl_light_sample_count,
+                            &shading_point);
+                        integrator.sample_lights_low_variance(
+                            sampling_context,
+                            DirectLightingIntegrator::mis_power2,
+                            vertex_radiance,
+                            vertex_aovs);
+                    }
+                    else
+                    {
+                        vertex_radiance.set(0.0f);
+                        vertex_aovs.set(0.0f);
+                    }
 
                     if (m_env_edf && m_params.m_enable_ibl)
                     {
@@ -303,7 +316,7 @@ namespace
                         vertex_aovs.add(m_env_edf->get_render_layer_index(), ibl_radiance);
                     }
 
-                    if (edf && cos_on > 0.0)
+                    if (edf && cos_on > 0.0 && (m_params.m_enable_dl || path_length > 2))
                     {
                         // Compute the emitted radiance.
                         Spectrum emitted_radiance;
