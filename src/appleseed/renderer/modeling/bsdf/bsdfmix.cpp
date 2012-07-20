@@ -208,7 +208,10 @@ namespace
             }
 
             // Blend PDF values.
-            probability = bsdf0_prob * w[bsdf0_index] + bsdf1_prob * w[bsdf1_index];
+            probability =
+                bsdf0_prob == BSDF::DiracDelta
+                    ? BSDF::DiracDelta
+                    : bsdf0_prob * w[bsdf0_index] + bsdf1_prob * w[bsdf1_index];
 
             // Set the scattering mode.
             mode = bsdf0_mode;
