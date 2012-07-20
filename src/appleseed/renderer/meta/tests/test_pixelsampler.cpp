@@ -31,6 +31,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
+#include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.
@@ -42,18 +43,27 @@ using namespace std;
 
 TEST_SUITE(Rendering_Generic_PixelSampler)
 {
+    template <size_t SubpixelGridSize>
     struct Fixture
     {
         PixelSampler m_sampler;
 
         Fixture()
         {
-            // 2x2 samples per pixels.
-            m_sampler.initialize(2);
+            m_sampler.initialize(SubpixelGridSize);
         }
     };
 
-    TEST_CASE_F(Sample_SubPixelAtTopLeftCorner, Fixture)
+    TEST_CASE_F(Sample_SubpixelGridSizeIs1x1_ReturnsSampleAtCenterOfPixel, Fixture<1>)
+    {
+        Vector2d sample_position;
+        size_t initial_instance;
+        m_sampler.sample(13, 17, sample_position, initial_instance);
+
+        EXPECT_EQ(Vector2d(13.5, 17.5), sample_position);
+    }
+
+    TEST_CASE_F(Sample_SubpixelGridSizeIs2x2_SubpixelAtTopLeftCorner, Fixture<2>)
     {
         Vector2d sample_position;
         size_t initial_instance;
@@ -62,7 +72,7 @@ TEST_SUITE(Rendering_Generic_PixelSampler)
         EXPECT_EQ(Vector2d(0.0), sample_position);
     }
 
-    TEST_CASE_F(Sample_SubPixelAtBottomRightCorner, Fixture)
+    TEST_CASE_F(Sample_SubpixelGridSizeIs2x2_SubpixelAtBottomRightCorner, Fixture<2>)
     {
         // Assume a 32x32 pixels image with 2x2 samples per pixels.
         Vector2d sample_position;

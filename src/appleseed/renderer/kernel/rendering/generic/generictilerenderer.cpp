@@ -53,6 +53,7 @@
 #include "foundation/platform/breakpoint.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/autoreleaseptr.h"
+#include "foundation/utility/iostreamop.h"
 #include "foundation/utility/job.h"
 #include "foundation/utility/statistics.h"
 
