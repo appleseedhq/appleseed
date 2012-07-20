@@ -289,6 +289,7 @@ namespace
                 const Vector3d&             outgoing,           // in this context, toward the light
                 const BSDF*                 bsdf,
                 const void*                 bsdf_data,
+                const size_t                path_length,
                 const BSDF::Mode            prev_bsdf_mode,
                 const double                prev_bsdf_prob,
                 const Spectrum&             throughput)

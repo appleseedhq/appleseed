@@ -74,22 +74,23 @@ namespace
       public:
         struct Parameters
         {
-            const size_t        m_rr_min_path_length;       // minimum path length before Russian Roulette is used, 0 for unlimited
-            const size_t        m_max_path_length;          // maximum path length, 0 for unlimited
+            const bool      m_enable_ibl;                   // image-based lighting enabled?
 
-            const size_t        m_dl_bsdf_sample_count;     // number of BSDF samples used to estimate direct illumination
-            const size_t        m_dl_light_sample_count;    // number of light samples used to estimate direct illumination
+            const size_t    m_max_path_length;              // maximum path length, 0 for unlimited
+            const size_t    m_rr_min_path_length;           // minimum path length before Russian Roulette is used, 0 for unlimited
 
-            const bool          m_enable_ibl;               // IBL enabled?
-            const size_t        m_ibl_bsdf_sample_count;    // number of BSDF samples used to estimate IBL
-            const size_t        m_ibl_env_sample_count;     // number of environment samples used to estimate IBL
+            const size_t    m_dl_bsdf_sample_count;         // number of BSDF samples used to estimate direct illumination
+            const size_t    m_dl_light_sample_count;        // number of light samples used to estimate direct illumination
+
+            const size_t    m_ibl_bsdf_sample_count;        // number of BSDF samples used to estimate IBL
+            const size_t    m_ibl_env_sample_count;         // number of environment samples used to estimate IBL
 
             explicit Parameters(const ParamArray& params)
-              : m_rr_min_path_length(params.get_optional<size_t>("rr_min_path_length", 3))
+              : m_enable_ibl(params.get_optional<bool>("enable_ibl", true))
               , m_max_path_length(params.get_optional<size_t>("max_path_length", 0))
+              , m_rr_min_path_length(params.get_optional<size_t>("rr_min_path_length", 3))
               , m_dl_bsdf_sample_count(params.get_optional<size_t>("dl_bsdf_samples", 1))
               , m_dl_light_sample_count(params.get_optional<size_t>("dl_light_samples", 1))
-              , m_enable_ibl(params.get_optional<bool>("enable_ibl", true))
               , m_ibl_bsdf_sample_count(params.get_optional<size_t>("ibl_bsdf_samples", 1))
               , m_ibl_env_sample_count(params.get_optional<size_t>("ibl_env_samples", 1))
             {
@@ -99,18 +100,18 @@ namespace
             {
                 RENDERER_LOG_INFO(
                     "distribution ray tracing settings:\n"
-                    "  rr min path len. %s\n"
+                    "  ibl              %s\n"
                     "  max path length  %s\n"
+                    "  rr min path len. %s\n"
                     "  dl bsdf samples  %s\n"
                     "  dl light samples %s\n"
-                    "  ibl              %s\n"
                     "  ibl bsdf samples %s\n"
                     "  ibl env samples  %s",
-                    m_rr_min_path_length == 0 ? "infinite" : pretty_uint(m_rr_min_path_length).c_str(),
+                    m_enable_ibl ? "on" : "off",
                     m_max_path_length == 0 ? "infinite" : pretty_uint(m_max_path_length).c_str(),
+                    m_rr_min_path_length == 0 ? "infinite" : pretty_uint(m_rr_min_path_length).c_str(),
                     pretty_uint(m_dl_bsdf_sample_count).c_str(),
                     pretty_uint(m_dl_light_sample_count).c_str(),
-                    m_enable_ibl ? "on" : "off",
                     pretty_uint(m_ibl_bsdf_sample_count).c_str(),
                     pretty_uint(m_ibl_env_sample_count).c_str());
             }
@@ -208,6 +209,7 @@ namespace
                 const Vector3d&         outgoing,
                 const BSDF*             bsdf,
                 const void*             bsdf_data,
+                const size_t            path_length,
                 const BSDF::Mode        prev_bsdf_mode,
                 const double            prev_bsdf_prob,
                 const Spectrum&         throughput)

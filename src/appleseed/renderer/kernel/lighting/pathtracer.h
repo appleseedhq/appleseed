@@ -241,6 +241,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                 outgoing,
                 bsdf,
                 bsdf_data,
+                path_length,
                 prev_bsdf_mode,
                 prev_bsdf_prob,
                 throughput))
