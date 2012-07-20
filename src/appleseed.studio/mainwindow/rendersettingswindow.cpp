@@ -744,10 +744,10 @@ void RenderSettingsWindow::load_configuration(const Configuration& config)
     {
         set_widget("system.rendering_threads.override", config.get_parameters().strings().exist("rendering_threads"));
         
-        const size_t default_rendering_threads = System::get_logical_cpu_core_count();
-        const size_t rendering_threads = get_config<size_t>(config, "rendering_threads", 0);
-        set_widget("system.rendering_threads.value", rendering_threads == 0 ? default_rendering_threads : rendering_threads);
-        set_widget("system.rendering_threads.auto", rendering_threads == 0);
+        const string default_rendering_threads = to_string(System::get_logical_cpu_core_count());
+        const string rendering_threads = get_config<string>(config, "rendering_threads", "auto");
+        set_widget("system.rendering_threads.value", rendering_threads == "auto" ? default_rendering_threads : rendering_threads);
+        set_widget("system.rendering_threads.auto", rendering_threads == "auto");
     }
 
     // System / Texture Cache Size.
@@ -785,7 +785,7 @@ void RenderSettingsWindow::save_configuration(Configuration& config)
     if (get_widget<bool>("system.rendering_threads.override"))
     {
         set_config(config, "rendering_threads",
-            get_widget<bool>("system.rendering_threads.auto") ? 0 : get_widget<size_t>("system.rendering_threads.value"));
+            get_widget<bool>("system.rendering_threads.auto") ? "auto" : get_widget<string>("system.rendering_threads.value"));
     }
     else config.get_parameters().strings().remove("rendering_threads");
 
