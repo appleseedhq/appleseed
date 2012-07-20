@@ -863,7 +863,12 @@ appleseed--studio--FoldablePanelWidget > QFrame[hasFrame="true"]
  * Specific styles.
  */
 
-QWidget#RenderSettingsWindow QWidget#scrollareawidget
+QWidget#RenderSettingsWindow QWidget#scrollarea
 {
     background-color: INPUT_BACKGROUND_COLOR;
+}
+
+QWidget#RenderSettingsWindow QWidget#scrollareawidget
+{
+    background-color: transparent;
 }
