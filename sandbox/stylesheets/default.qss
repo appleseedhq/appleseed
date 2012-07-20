@@ -35,7 +35,7 @@
 #define BORDER_COLOR                    rgb(40, 40, 40)
 #define BORDER_STYLE                    1px solid BORDER_COLOR
 
-#define INPUT_BACKGROUND_COLOR          rgb(45, 45, 45)
+#define INPUT_BACKGROUND_COLOR          rgb(43, 43, 43)
 #define DEFAULT_BACKGROUND_COLOR        rgb(50, 50, 50)
 #define ACTIVE_BACKGROUND_COLOR         rgb(60, 60, 60)
 #define HOVER_BACKGROUND_COLOR          rgb(190, 140, 50)
