@@ -30,10 +30,10 @@
 #include "masterrenderer.h"
 
 // appleseed.renderer headers.
-#include "renderer/kernel/lighting/drt/drt.h"
+#include "renderer/kernel/lighting/drt/drtlightingengine.h"
+#include "renderer/kernel/lighting/pt/ptlightingengine.h"
 #include "renderer/kernel/lighting/ilightingengine.h"
 #include "renderer/kernel/lighting/lightsampler.h"
-#include "renderer/kernel/lighting/pathtracing/pathtracing.h"
 #include "renderer/kernel/rendering/debug/blanktilerenderer.h"
 #include "renderer/kernel/rendering/debug/debugtilerenderer.h"
 #include "renderer/kernel/rendering/debug/ewatesttilerenderer.h"

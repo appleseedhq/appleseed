@@ -798,8 +798,8 @@ source_group ("renderer\\kernel\\intersection" FILES
 )
 
 set (renderer_kernel_lighting_drt_sources
-    renderer/kernel/lighting/drt/drt.cpp
-    renderer/kernel/lighting/drt/drt.h
+    renderer/kernel/lighting/drt/drtlightingengine.cpp
+    renderer/kernel/lighting/drt/drtlightingengine.h
 )
 list (APPEND appleseed_sources
     ${renderer_kernel_lighting_drt_sources}
@@ -809,7 +809,7 @@ source_group ("renderer\\kernel\\lighting\\drt" FILES
 )
 
 set (renderer_kernel_lighting_null_sources
-    renderer/kernel/lighting/null/null.h
+    renderer/kernel/lighting/null/nulllightingengine.h
 )
 list (APPEND appleseed_sources
     ${renderer_kernel_lighting_null_sources}
@@ -818,15 +818,15 @@ source_group ("renderer\\kernel\\lighting\\null" FILES
     ${renderer_kernel_lighting_null_sources}
 )
 
-set (renderer_kernel_lighting_pathtracing_sources
-    renderer/kernel/lighting/pathtracing/pathtracing.cpp
-    renderer/kernel/lighting/pathtracing/pathtracing.h
+set (renderer_kernel_lighting_pt_sources
+    renderer/kernel/lighting/pt/ptlightingengine.cpp
+    renderer/kernel/lighting/pt/ptlightingengine.h
 )
 list (APPEND appleseed_sources
-    ${renderer_kernel_lighting_pathtracing_sources}
+    ${renderer_kernel_lighting_pt_sources}
 )
-source_group ("renderer\\kernel\\lighting\\pathtracing" FILES
-    ${renderer_kernel_lighting_pathtracing_sources}
+source_group ("renderer\\kernel\\lighting\\pt" FILES
+    ${renderer_kernel_lighting_pt_sources}
 )
 
 set (renderer_kernel_lighting_sources
