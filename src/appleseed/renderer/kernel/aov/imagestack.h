@@ -74,6 +74,10 @@ class DLLSYMBOL ImageStack
         const char*                     name,
         const foundation::PixelFormat   format);
 
+    size_t get_or_append(
+        const char*                     name,
+        const foundation::PixelFormat   format);
+
     TileStack tiles(
         const size_t                    tile_x,
         const size_t                    tile_y) const;

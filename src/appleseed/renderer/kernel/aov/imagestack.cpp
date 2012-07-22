@@ -37,6 +37,7 @@
 
 // Standard headers.
 #include <cassert>
+#include <cstring>
 #include <string>
 #include <vector>
 
@@ -131,6 +132,25 @@ void ImageStack::append(
             format);
 
     impl->m_images.push_back(named_image);
+}
+
+size_t ImageStack::get_or_append(
+    const char*             name,
+    const PixelFormat       format)
+{
+    const size_t size = impl->m_images.size();
+
+    for (size_t i = 0; i < size; ++i)
+    {
+        if (strcmp(impl->m_images[i].m_name.c_str(), name) == 0)
+            return i;
+    }
+
+    const size_t index = impl->m_images.size();
+
+    append(name, format);
+
+    return index;
 }
 
 TileStack ImageStack::tiles(
