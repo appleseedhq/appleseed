@@ -389,56 +389,45 @@ IRendererController::Status MasterRenderer::render_frame_sequence(IFrameRenderer
     while (true) 
     {
         assert(!frame_renderer->is_rendering());
-
         m_renderer_controller->on_frame_begin();
         m_project.get_scene()->on_frame_begin(m_project);
 
-        const IRendererController::Status status = render_frame(frame_renderer);
-        assert(!frame_renderer->is_rendering());
+        frame_renderer->start_rendering();
 
-        m_project.get_scene()->on_frame_end(m_project);
-        m_renderer_controller->on_frame_end();
+        const IRendererController::Status status = render_frame(frame_renderer);
 
         switch (status)
         {
           case IRendererController::TerminateRendering:
           case IRendererController::AbortRendering:
           case IRendererController::ReinitializeRendering:
-            return status;
+            frame_renderer->terminate_rendering();
+            break;
 
           case IRendererController::RestartRendering:
+            frame_renderer->stop_rendering();
             break;
 
           assert_otherwise;
         }
+
+        assert(!frame_renderer->is_rendering());
+        m_project.get_scene()->on_frame_end(m_project);
+        m_renderer_controller->on_frame_end();
+
+        if (status != IRendererController::RestartRendering)
+            return status;
     }
 }
 
 IRendererController::Status MasterRenderer::render_frame(IFrameRenderer* frame_renderer) const
 {
-    frame_renderer->start_rendering();
-
     while (frame_renderer->is_rendering())
     {
         const IRendererController::Status status = m_renderer_controller->on_progress();
 
-        switch (status)
-        {
-          case IRendererController::ContinueRendering:
-            break;
-
-          case IRendererController::TerminateRendering:
-          case IRendererController::AbortRendering:
-          case IRendererController::ReinitializeRendering:
-            frame_renderer->terminate_rendering();
+        if (status != IRendererController::ContinueRendering)
             return status;
-
-          case IRendererController::RestartRendering:
-            frame_renderer->stop_rendering();
-            return status;
-
-          assert_otherwise;
-        }
     }
 
     return IRendererController::TerminateRendering;
