@@ -64,6 +64,7 @@
 #include "foundation/utility/indenter.h"
 #include "foundation/utility/searchpaths.h"
 #include "foundation/utility/string.h"
+#include "foundation/utility/xmlelement.h"
 
 // boost headers.
 #include "boost/filesystem/operations.hpp"
@@ -91,99 +92,8 @@ namespace renderer
 
 namespace
 {
-    //
     // Revision number of the project file format.
-    //
-
     const size_t ProjectFileFormatRevision = 2;
-
-
-    //
-    // A class representing a XML element.
-    //
-
-    class Element
-    {
-      public:
-        // Constructor, opens the element.
-        Element(
-            const string&   name,
-            FILE*           file,
-            Indenter&       indenter)
-          : m_name(name)
-          , m_file(file)
-          , m_indenter(indenter)
-          , m_opened(false)
-          , m_closed(false)
-        {
-        }
-
-        // Destructor, closes the element.
-        ~Element()
-        {
-            assert(m_opened);
-
-            if (!m_closed)
-            {
-                --m_indenter;
-                fprintf(m_file, "%s</%s>\n", m_indenter.c_str(), m_name.c_str());
-            }
-        }
-
-        // Append an attribute to the element.
-        template <typename T>
-        void add_attribute(
-            const string&   name,
-            const T&        value)
-        {
-            assert(!m_opened);
-            m_attributes.push_back(make_pair(name, to_string(value)));
-        }
-
-        // Write the element.
-        void write(const bool has_content)
-        {
-            assert(!m_opened);
-
-            fprintf(m_file, "%s<%s", m_indenter.c_str(), m_name.c_str());
-
-            for (const_each<AttributeVector> i = m_attributes; i; ++i)
-            {
-                const string attribute_value = replace_special_xml_characters(i->second);
-                fprintf(m_file, " %s=\"%s\"", i->first.c_str(), attribute_value.c_str());
-            }
-
-            if (has_content)
-            {
-                fprintf(m_file, ">\n");
-                ++m_indenter;
-                m_closed = false;
-            }
-            else
-            {
-                fprintf(m_file, " />\n");
-                m_closed = true;
-            }
-
-            m_opened = true;
-        }
-
-      private:
-        typedef pair<string, string> Attribute;
-        typedef vector<Attribute> AttributeVector;
-
-        const string        m_name;
-        FILE*               m_file;
-        Indenter&           m_indenter;
-        AttributeVector     m_attributes;
-        bool                m_opened;
-        bool                m_closed;
-    };
-
-
-    //
-    // The actual project writer.
-    //
 
     // Floating-point formatting settings.
     const char* VectorFormat     = "%.15f";
@@ -346,7 +256,7 @@ namespace
         {
             for (const_each<StringDictionary> i = params.strings(); i; ++i)
             {
-                Element element("parameter", m_file, m_indenter);
+                XMLElement element("parameter", m_file, m_indenter);
                 element.add_attribute("name", i->name());
                 element.add_attribute("value", i->value<string>());
                 element.write(false);
@@ -354,7 +264,7 @@ namespace
 
             for (const_each<DictionaryDictionary> i = params.dictionaries(); i; ++i)
             {
-                Element element("parameters", m_file, m_indenter);
+                XMLElement element("parameters", m_file, m_indenter);
                 element.add_attribute("name", i->name());
                 element.write(true);
                 write_params(i->value());
@@ -364,11 +274,11 @@ namespace
         // Write a <transform> element.
         void write_transform(const Transformd& transform)
         {
-            Element element("transform", m_file, m_indenter);
+            XMLElement element("transform", m_file, m_indenter);
             element.write(true);
 
             {
-                Element child_element("matrix", m_file, m_indenter);
+                XMLElement child_element("matrix", m_file, m_indenter);
                 child_element.write(true);
 
                 write_vector(
@@ -382,12 +292,12 @@ namespace
         // Write a <transform> element with a "time" attribute.
         void write_transform(const Transformd& transform, const double time)
         {
-            Element element("transform", m_file, m_indenter);
+            XMLElement element("transform", m_file, m_indenter);
             element.add_attribute("time", time);
             element.write(true);
 
             {
-                Element child_element("matrix", m_file, m_indenter);
+                XMLElement child_element("matrix", m_file, m_indenter);
                 child_element.write(true);
 
                 write_vector(
@@ -401,7 +311,7 @@ namespace
         // Write an array of color values.
         void write_value_array(const char* element_name, const ColorValueArray& values)
         {
-            Element element(element_name, m_file, m_indenter);
+            XMLElement element(element_name, m_file, m_indenter);
             element.write(true);
             write_vector(
                 values,
@@ -413,7 +323,7 @@ namespace
         template <typename Entity>
         void write_entity(const char* entity_name, const Entity& entity)
         {
-            Element element(entity_name, m_file, m_indenter);
+            XMLElement element(entity_name, m_file, m_indenter);
             element.add_attribute("name", entity.get_name());
             element.add_attribute("model", entity.get_model());
             element.write(!entity.get_parameters().empty());
@@ -456,7 +366,7 @@ namespace
         // Write a <color> element.
         void write(const ColorEntity& color_entity)
         {
-            Element element("color", m_file, m_indenter);
+            XMLElement element("color", m_file, m_indenter);
             element.add_attribute("name", color_entity.get_name());
             element.write(true);
 
@@ -469,7 +379,7 @@ namespace
         // Write a <texture> element.
         void write(Texture& texture)
         {
-            Element element("texture", m_file, m_indenter);
+            XMLElement element("texture", m_file, m_indenter);
             element.add_attribute("name", texture.get_name());
             element.add_attribute("model", texture.get_model());
             element.write(!texture.get_parameters().empty());
@@ -492,7 +402,7 @@ namespace
             if (texture == 0)
                 return;
 
-            Element element("texture_instance", m_file, m_indenter);
+            XMLElement element("texture_instance", m_file, m_indenter);
             element.add_attribute("name", texture_instance.get_name());
             element.add_attribute("texture", texture->get_name());
             element.write(!texture_instance.get_parameters().empty());
@@ -545,7 +455,7 @@ namespace
         // Write a <light> element.
         void write(const Light& light)
         {
-            Element element("light", m_file, m_indenter);
+            XMLElement element("light", m_file, m_indenter);
             element.add_attribute("name", light.get_name());
             element.add_attribute("model", light.get_model());
             element.write(true);
@@ -557,7 +467,7 @@ namespace
         // Write a <camera> element.
         void write(const Camera& camera)
         {
-            Element element("camera", m_file, m_indenter);
+            XMLElement element("camera", m_file, m_indenter);
             element.add_attribute("name", camera.get_name());
             element.add_attribute("model", camera.get_model());
             element.write(true);
@@ -639,7 +549,7 @@ namespace
             }
 
             // Write an <object> element.
-            Element element("object", m_file, m_indenter);
+            XMLElement element("object", m_file, m_indenter);
             element.add_attribute("name", name);
             element.add_attribute("model", MeshObjectFactory::get_model());
             element.write(true);
@@ -679,7 +589,7 @@ namespace
             params.insert("filename", filename);
 
             // Write an <object> element.
-            Element element("object", m_file, m_indenter);
+            XMLElement element("object", m_file, m_indenter);
             element.add_attribute("name", name);
             element.add_attribute("model", MeshObjectFactory::get_model());
             element.write(true);
@@ -701,7 +611,7 @@ namespace
             const ObjectInstance::Side  side,
             const string&               material_name)
         {
-            Element element("assign_material", m_file, m_indenter);
+            XMLElement element("assign_material", m_file, m_indenter);
             element.add_attribute("slot", slot);
             element.add_attribute("side", side == ObjectInstance::FrontSide ? "front" : "back");
             element.add_attribute("material", material_name);
@@ -722,7 +632,7 @@ namespace
             const ObjectInstance&   object_instance,
             const Assembly&         assembly)
         {
-            Element element("object_instance", m_file, m_indenter);
+            XMLElement element("object_instance", m_file, m_indenter);
             element.add_attribute("name", object_instance.get_name());
             element.add_attribute("object", translate_object_name(object_instance.get_object().get_name()));
             element.write(true);
@@ -738,7 +648,7 @@ namespace
         // Write an <assembly> element.
         void write(const Assembly& assembly)
         {
-            Element element("assembly", m_file, m_indenter);
+            XMLElement element("assembly", m_file, m_indenter);
             element.add_attribute("name", assembly.get_name());
             element.write(
                 !assembly.get_parameters().empty() ||
@@ -772,7 +682,7 @@ namespace
             const AssemblyInstance& assembly_instance,
             const Scene&            scene)
         {
-            Element element("assembly_instance", m_file, m_indenter);
+            XMLElement element("assembly_instance", m_file, m_indenter);
             element.add_attribute("name", assembly_instance.get_name());
             element.add_attribute("assembly", assembly_instance.get_assembly().get_name());
             element.write(true);
@@ -783,7 +693,7 @@ namespace
         // Write a <scene> element.
         void write_scene(const Scene& scene)
         {
-            Element element("scene", m_file, m_indenter);
+            XMLElement element("scene", m_file, m_indenter);
             element.write(
                 scene.get_camera() != 0 ||
                 !scene.colors().empty() ||
@@ -814,7 +724,7 @@ namespace
         // Write a <frame> element.
         void write_frame(const Frame& frame)
         {
-            Element element("frame", m_file, m_indenter);
+            XMLElement element("frame", m_file, m_indenter);
             element.add_attribute("name", frame.get_name());
             element.write(!frame.get_parameters().empty());
             write_params(frame.get_parameters());
@@ -823,7 +733,7 @@ namespace
         // Write a <configuration> element.
         void write_configuration(const Configuration& configuration)
         {
-            Element element("configuration", m_file, m_indenter);
+            XMLElement element("configuration", m_file, m_indenter);
             element.add_attribute("name", configuration.get_name());
             if (configuration.get_base())
                 element.add_attribute("base", configuration.get_base()->get_name());
@@ -847,7 +757,7 @@ namespace
         // Write a <configurations> element.
         void write_configurations(const Project& project)
         {
-            Element element("configurations", m_file, m_indenter);
+            XMLElement element("configurations", m_file, m_indenter);
             element.write(count_non_base_configurations(project.configurations()) > 0);
 
             // Write configurations.
@@ -862,7 +772,7 @@ namespace
         // Write an <output> element.
         void write_output(const Project& project)
         {
-            Element element("output", m_file, m_indenter);
+            XMLElement element("output", m_file, m_indenter);
             element.write(project.get_frame() != 0);
 
             if (project.get_frame())
@@ -872,7 +782,7 @@ namespace
         // Write a <project> element.
         void write_project(const Project& project)
         {
-            Element element("project", m_file, m_indenter);
+            XMLElement element("project", m_file, m_indenter);
             element.add_attribute("format_revision", ProjectFileFormatRevision);
             element.write(true);
 
