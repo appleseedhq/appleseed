@@ -68,6 +68,10 @@ CommandLineHandler::CommandLineHandler()
     m_verbose_unit_tests.set_description("enable verbose mode while unit testing");
     parser().add_option_handler(&m_verbose_unit_tests);
 
+    m_dump_entity_definitions.add_name("--dump-entity-definitions");
+    m_dump_entity_definitions.set_description("dump the definitions of all known entities to stderr as xml");
+    parser().add_option_handler(&m_dump_entity_definitions);
+
     m_configuration.add_name("--configuration");
     m_configuration.add_name("-c");
     m_configuration.set_description("select the configuration");

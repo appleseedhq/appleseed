@@ -59,6 +59,7 @@ class CommandLineHandler
     foundation::ValueOptionHandler<std::string>     m_run_unit_tests;
     foundation::ValueOptionHandler<std::string>     m_run_unit_benchmarks;
     foundation::FlagOptionHandler                   m_verbose_unit_tests;
+    foundation::FlagOptionHandler                   m_dump_entity_definitions;
 
     foundation::ValueOptionHandler<std::string>     m_configuration;
     foundation::ValueOptionHandler<std::string>     m_params;
