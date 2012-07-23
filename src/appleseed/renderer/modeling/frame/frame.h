@@ -34,6 +34,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
+#include "foundation/image/colorspace.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
@@ -92,6 +93,9 @@ class DLLSYMBOL Frame
         const double    sample_x,               // x coordinate of the sample in the pixel, in [0,1)
         const double    sample_y) const;        // y coordinate of the sample in the pixel, in [0,1)
 
+    // Return the color space the frame should be converted to for display.
+    foundation::ColorSpace get_color_space() const;
+
     // Return the lighting conditions for spectral to RGB conversion.
     const foundation::LightingConditions& get_lighting_conditions() const;
 
@@ -117,9 +121,8 @@ class DLLSYMBOL Frame
     struct Impl;
     Impl* impl;
 
-    // Derogate to the private implementation rule: for performance reasons, we want
-    // get_sample_position() to be inline, but it needs the canvas properties.
-    foundation::CanvasProperties m_props;
+    foundation::CanvasProperties    m_props;
+    foundation::ColorSpace          m_color_space;
 
     // Constructor.
     Frame(
@@ -157,6 +160,11 @@ class DLLSYMBOL FrameFactory
 //
 // Frame class implementation.
 //
+
+inline foundation::ColorSpace Frame::get_color_space() const
+{
+    return m_color_space;
+}
 
 inline foundation::Vector2d Frame::get_sample_position(
     const double    sample_x,
