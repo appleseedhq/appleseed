@@ -76,8 +76,6 @@
 #include <exception>
 #include <map>
 #include <set>
-#include <utility>
-#include <vector>
 
 using namespace boost;
 using namespace foundation;
@@ -254,21 +252,7 @@ namespace
         // Write a (possibly hierarchical) set of parameters.
         void write_params(const Dictionary& params)
         {
-            for (const_each<StringDictionary> i = params.strings(); i; ++i)
-            {
-                XMLElement element("parameter", m_file, m_indenter);
-                element.add_attribute("name", i->name());
-                element.add_attribute("value", i->value<string>());
-                element.write(false);
-            }
-
-            for (const_each<DictionaryDictionary> i = params.dictionaries(); i; ++i)
-            {
-                XMLElement element("parameters", m_file, m_indenter);
-                element.add_attribute("name", i->name());
-                element.write(true);
-                write_params(i->value());
-            }
+            write_dictionary(params, m_file, m_indenter);
         }
 
         // Write a <transform> element.

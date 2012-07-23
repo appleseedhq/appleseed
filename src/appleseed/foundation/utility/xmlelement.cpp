@@ -30,6 +30,7 @@
 #include "xmlelement.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/indenter.h"
 
@@ -39,9 +40,9 @@ namespace foundation
 {
 
 XMLElement::XMLElement(
-    const string&   name,
-    FILE*           file,
-    Indenter&       indenter)
+    const string&       name,
+    FILE*               file,
+    Indenter&           indenter)
   : m_name(name)
   , m_file(file)
   , m_indenter(indenter)
@@ -86,6 +87,28 @@ void XMLElement::write(const bool has_content)
     }
 
     m_opened = true;
+}
+
+void write_dictionary(
+    const Dictionary&   dictionary,
+    FILE*               file,
+    Indenter&           indenter)
+{
+    for (const_each<StringDictionary> i = dictionary.strings(); i; ++i)
+    {
+        XMLElement element("parameter", file, indenter);
+        element.add_attribute("name", i->name());
+        element.add_attribute("value", i->value<string>());
+        element.write(false);
+    }
+
+    for (const_each<DictionaryDictionary> i = dictionary.dictionaries(); i; ++i)
+    {
+        XMLElement element("parameters", file, indenter);
+        element.add_attribute("name", i->name());
+        element.write(true);
+        write_dictionary(i->value(), file, indenter);
+    }
 }
 
 }   // namespace foundation

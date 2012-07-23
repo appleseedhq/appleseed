@@ -40,6 +40,7 @@
 #include <vector>
 
 // Forward declarations.
+namespace foundation    { class Dictionary; }
 namespace foundation    { class Indenter; }
 
 namespace foundation
@@ -81,6 +82,26 @@ class XMLElement
     bool                    m_opened;
     bool                    m_closed;
 };
+
+
+//
+// An utility function to write a dictionary to an XML file.
+//
+// Example: a dictionary containing two scalar values "x" and "y"
+// and a child dictionary "nested" containing a scalar value "z"
+// will be written as follow:
+//
+//   <parameter name="x" value="17" />
+//   <parameter name="y" value="42" />
+//   <parameters name="nested">
+//       <parameter name="z" value="66" />
+//   </parameters>
+//
+
+void write_dictionary(
+    const Dictionary&       dictionary,
+    std::FILE*              file,
+    Indenter&               indenter);
 
 
 //
