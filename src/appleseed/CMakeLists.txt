@@ -638,6 +638,7 @@ set (foundation_utility_sources
     foundation/utility/countof.h
     foundation/utility/filter.h
     foundation/utility/foreach.h
+    foundation/utility/indenter.cpp
     foundation/utility/indenter.h
     foundation/utility/iostreamop.h
     foundation/utility/iterators.h
