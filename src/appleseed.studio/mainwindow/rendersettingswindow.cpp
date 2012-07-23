@@ -281,7 +281,14 @@ void RenderSettingsWindow::create_drt_panel(QLayout* parent)
     QVBoxLayout* layout = new QVBoxLayout();
     panel->container()->setLayout(layout);
 
-    create_lighting_components_settings(layout, "drt");
+    QGroupBox* groupbox = new QGroupBox("Components");
+    layout->addWidget(groupbox);
+
+    QVBoxLayout* sublayout = new QVBoxLayout();
+    groupbox->setLayout(sublayout);
+
+    sublayout->addWidget(create_checkbox("drt.lighting_components.ibl", "Image-Based Lighting"));
+
     create_bounce_settings(layout, "drt");
     create_drt_advanced_settings(layout);
 }
@@ -343,7 +350,16 @@ void RenderSettingsWindow::create_pt_panel(QLayout* parent)
     QVBoxLayout* layout = new QVBoxLayout();
     panel->container()->setLayout(layout);
 
-    create_lighting_components_settings(layout, "pt");
+    QGroupBox* groupbox = new QGroupBox("Components");
+    layout->addWidget(groupbox);
+
+    QVBoxLayout* sublayout = new QVBoxLayout();
+    groupbox->setLayout(sublayout);
+
+    sublayout->addWidget(create_checkbox("pt.lighting_components.dl", "Direct Lighting"));
+    sublayout->addWidget(create_checkbox("pt.lighting_components.ibl", "Image-Based Lighting"));
+    sublayout->addWidget(create_checkbox("pt.lighting_components.caustics", "Caustics"));
+
     create_bounce_settings(layout, "pt");
     create_pt_advanced_settings(layout);
 }
@@ -436,21 +452,6 @@ void RenderSettingsWindow::create_system_override_texture_cache_size_settings(QV
 // Reusable settings.
 //---------------------------------------------------------------------------------------------
 
-void RenderSettingsWindow::create_lighting_components_settings(QVBoxLayout* parent, const string& lighting_engine)
-{
-    const string widget_base_key = lighting_engine + ".lighting_components.";
-
-    QGroupBox* groupbox = new QGroupBox("Components");
-    parent->addWidget(groupbox);
-
-    QVBoxLayout* layout = new QVBoxLayout();
-    groupbox->setLayout(layout);
-
-    layout->addWidget(create_checkbox(widget_base_key + "dl", "Direct Lighting"));
-    layout->addWidget(create_checkbox(widget_base_key + "ibl", "Image-Based Lighting"));
-    layout->addWidget(create_checkbox(widget_base_key + "caustics", "Caustics"));
-}
-
 void RenderSettingsWindow::create_bounce_settings(QVBoxLayout* parent, const string& lighting_engine)
 {
     const string widget_base_key = lighting_engine + ".bounces.";
@@ -458,7 +459,7 @@ void RenderSettingsWindow::create_bounce_settings(QVBoxLayout* parent, const str
     QGroupBox* groupbox = new QGroupBox("Bounces");
     parent->addWidget(groupbox);
 
-    QFormLayout* layout = new QFormLayout();
+    QFormLayout* layout = create_form_layout();
     groupbox->setLayout(layout);
 
     QSpinBox* max_bounces = create_integer_input(widget_base_key + "max_bounces", 0, 10000);
@@ -490,6 +491,7 @@ QVBoxLayout* RenderSettingsWindow::create_vertical_layout()
 QFormLayout* RenderSettingsWindow::create_form_layout()
 {
     QFormLayout* layout = new QFormLayout();
+    layout->setLabelAlignment(Qt::AlignRight);
     layout->setSpacing(10);
     return layout;
 }
@@ -650,9 +652,7 @@ void RenderSettingsWindow::create_direct_links()
     create_direct_link("lighting.engine", "lighting_engine", "pt");
 
     // Distribution Ray Tracer.
-    create_direct_link("drt.lighting_components.dl", "drt.enable_dl", true);
     create_direct_link("drt.lighting_components.ibl", "drt.enable_ibl", true);
-    create_direct_link("drt.lighting_components.caustics", "drt.enable_caustics", true);
     create_direct_link("drt.bounces.rr_start_bounce", "drt.rr_min_path_length", 3);
     create_direct_link("drt.advanced.dl.light_samples", "drt.dl_light_samples", 1);
     create_direct_link("drt.advanced.dl.bsdf_samples", "drt.dl_bsdf_samples", 1);
