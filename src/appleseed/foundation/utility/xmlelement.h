@@ -32,6 +32,9 @@
 // appleseed.foundation headers.
 #include "foundation/utility/string.h"
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // Standard headers.
 #include <cassert>
 #include <cstdio>
@@ -98,7 +101,7 @@ class XMLElement
 //   </parameters>
 //
 
-void write_dictionary(
+DLLSYMBOL void write_dictionary(
     const Dictionary&       dictionary,
     std::FILE*              file,
     Indenter&               indenter);
