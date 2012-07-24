@@ -30,67 +30,16 @@
 #include "settingsfilewriter.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/foreach.h"
 #include "foundation/utility/indenter.h"
-#include "foundation/utility/string.h"
+#include "foundation/utility/xmlelement.h"
 
 // Standard headers.
-#include <cassert>
 #include <cstdio>
-#include <string>
 
 using namespace std;
 
 namespace foundation
 {
-
-//
-// SettingsFileWriter class implementation.
-//
-
-namespace
-{
-    void write_dictionary(
-        FILE*               file,
-        Indenter&           indenter,
-        const Dictionary&   dictionary)
-    {
-        assert(file);
-
-        ++indenter;
-
-        for (const_each<StringDictionary> i = dictionary.strings(); i; ++i)
-        {
-            const string name = replace_special_xml_characters(i->name());
-            const string value = replace_special_xml_characters(i->value());
-
-            fprintf(
-                file,
-                "%s<parameter name=\"%s\" value=\"%s\" />\n",
-                indenter.c_str(),
-                name.c_str(),
-                value.c_str());
-        }
-
-        for (const_each<DictionaryDictionary> i = dictionary.dictionaries(); i; ++i)
-        {
-            const string name = replace_special_xml_characters(i->name());
-
-            fprintf(
-                file,
-                "%s<parameters name=\"%s\">\n",
-                indenter.c_str(),
-                name.c_str());
-
-            write_dictionary(file, indenter, i->value());
-
-            fprintf(file, "%s</parameters>\n", indenter.c_str());
-        }
-
-        --indenter;
-    }
-};
 
 bool SettingsFileWriter::write(
     const char*         filename,
@@ -102,12 +51,16 @@ bool SettingsFileWriter::write(
         return false;
 
     fprintf(file, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-    fprintf(file, "<settings>\n");
 
     Indenter indenter(4);
-    write_dictionary(file, indenter, settings);
 
-    fprintf(file, "</settings>\n");
+    XMLElement settings_element("settings", file, indenter);
+    settings_element.write(true);
+
+    write_dictionary(settings, file, indenter);
+
+    settings_element.close();
+
     fclose(file);
 
     return true;

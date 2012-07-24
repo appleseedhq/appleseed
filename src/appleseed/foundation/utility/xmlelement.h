@@ -70,6 +70,9 @@ class XMLElement
     // Write the element.
     void write(const bool has_content);
 
+    // Close the element.
+    void close();
+
   private:
     typedef std::pair<std::string, std::string> Attribute;
     typedef std::vector<Attribute> AttributeVector;
@@ -79,7 +82,6 @@ class XMLElement
     Indenter&               m_indenter;
     AttributeVector         m_attributes;
     bool                    m_opened;
-    bool                    m_closed;
 };
 
 
@@ -115,19 +117,12 @@ inline XMLElement::XMLElement(
   , m_file(file)
   , m_indenter(indenter)
   , m_opened(false)
-  , m_closed(false)
 {
 }
 
 inline XMLElement::~XMLElement()
 {
-    assert(m_opened);
-
-    if (!m_closed)
-    {
-        --m_indenter;
-        std::fprintf(m_file, "%s</%s>\n", m_indenter.c_str(), m_name.c_str());
-    }
+    close();
 }
 
 template <typename T>
@@ -136,6 +131,7 @@ void XMLElement::add_attribute(
     const T&                value)
 {
     assert(!m_opened);
+
     m_attributes.push_back(std::make_pair(name, to_string(value)));
 }
 
@@ -155,15 +151,22 @@ inline void XMLElement::write(const bool has_content)
     {
         std::fprintf(m_file, ">\n");
         ++m_indenter;
-        m_closed = false;
+        m_opened = true;
     }
     else
     {
         std::fprintf(m_file, " />\n");
-        m_closed = true;
     }
+}
 
-    m_opened = true;
+inline void XMLElement::close()
+{
+    if (m_opened)
+    {
+        --m_indenter;
+        std::fprintf(m_file, "%s</%s>\n", m_indenter.c_str(), m_name.c_str());
+        m_opened = false;
+    }
 }
 
 inline void write_dictionary(
