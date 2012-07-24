@@ -30,7 +30,6 @@
 #define APPLESEED_RENDERER_KERNEL_TEXTURING_TEXTURECACHE_H
 
 // appleseed.renderer headers.
-#include "renderer/global/globallogger.h"
 #include "renderer/kernel/texturing/texturestore.h"
 
 // appleseed.foundation headers.
@@ -38,11 +37,11 @@
 #include "foundation/math/hash.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/cache.h"
+#include "foundation/utility/statistics.h"
 #include "foundation/utility/uid.h"
 
 // Standard headers.
 #include <cstddef>
-#include <string>
 
 // Forward declarations.
 namespace foundation    { class Tile; }
@@ -61,9 +60,6 @@ class TextureCache
     // Constructor.
     explicit TextureCache(TextureStore& store);
 
-    // Destructor.
-    ~TextureCache();
-
     // Get a tile from the cache.
     foundation::Tile& get(
         const foundation::UniqueID  assembly_uid,
@@ -71,7 +67,8 @@ class TextureCache
         const size_t                tile_x,
         const size_t                tile_y);
 
-    // Return cache performance statistics.
+    // Retrieve performance statistics.
+    foundation::StatisticsVector get_statistics() const;
     foundation::uint64 get_hit_count() const;
     foundation::uint64 get_miss_count() const;
 
@@ -129,14 +126,6 @@ inline TextureCache::TextureCache(TextureStore& store)
 {
 }
 
-inline TextureCache::~TextureCache()
-{
-    RENDERER_LOG_DEBUG(
-        "texture cache statistics:\n"
-        "  cache            %s\n",
-        foundation::format_cache_stats(m_tile_cache).c_str());
-}
-
 inline foundation::Tile& TextureCache::get(
     const foundation::UniqueID      assembly_uid,
     const foundation::UniqueID      texture_uid,
@@ -145,6 +134,14 @@ inline foundation::Tile& TextureCache::get(
 {
     const TileKey key(assembly_uid, texture_uid, tile_x, tile_y);
     return *m_tile_cache.get(key)->m_tile;
+}
+
+inline foundation::StatisticsVector TextureCache::get_statistics() const
+{
+    return
+        foundation::StatisticsVector::make(
+            "texture cache statistics",
+            foundation::make_single_stage_cache_stats(m_tile_cache));
 }
 
 inline foundation::uint64 TextureCache::get_hit_count() const

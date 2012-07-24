@@ -186,7 +186,9 @@ DictionaryArray DiskTexture2dFactory::get_widget_definitions() const
         Dictionary()
             .insert("name", "filename")
             .insert("label", "File Path")
-            .insert("widget", "text_box")
+            .insert("widget", "file_picker")
+            .insert("file_picker_mode", "open")
+            .insert("file_picker_filter", "OpenEXR (*.exr);;PNG (*.png)")
             .insert("default", "")
             .insert("use", "required"));
 

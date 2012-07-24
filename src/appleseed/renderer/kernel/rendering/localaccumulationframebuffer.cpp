@@ -42,8 +42,8 @@
 #include "foundation/platform/thread.h"
 
 // Standard headers.
-#include <cassert>
 #include <algorithm>
+#include <cassert>
 
 using namespace boost;
 using namespace foundation;
@@ -148,15 +148,18 @@ void LocalAccumulationFramebuffer::store_samples(
     {
         Tile* level = m_levels[0];
 
-        const double fb_width = static_cast<double>(level->get_width());
-        const double fb_height = static_cast<double>(level->get_height());
+        const double fw = static_cast<double>(level->get_width());
+        const double fh = static_cast<double>(level->get_height());
+        const size_t max_x = level->get_width() - 1;
+        const size_t max_y = level->get_height() - 1;
 
         while (sample_ptr < sample_end)
         {
-            const double fx = sample_ptr->m_position.x * fb_width;
-            const double fy = sample_ptr->m_position.y * fb_height;
-            const size_t x = truncate<size_t>(fx);
-            const size_t y = truncate<size_t>(fy);
+            const double fx = sample_ptr->m_position.x * fw;
+            const double fy = sample_ptr->m_position.y * fh;
+
+            const size_t x = min(truncate<size_t>(fx), max_x);
+            const size_t y = min(truncate<size_t>(fy), max_y);
 
             AccumulationPixel* pixel =
                 reinterpret_cast<AccumulationPixel*>(level->pixel(x, y));
@@ -175,10 +178,14 @@ void LocalAccumulationFramebuffer::store_samples(
             {
                 Tile* level = m_levels[level_index];
 
-                const double fx = sample_ptr->m_position.x * level->get_width();
-                const double fy = sample_ptr->m_position.y * level->get_height();
-                const size_t x = truncate<size_t>(fx);
-                const size_t y = truncate<size_t>(fy);
+                const size_t level_width = level->get_width();
+                const size_t level_height = level->get_height();
+
+                const double fx = sample_ptr->m_position.x * level_width;
+                const double fy = sample_ptr->m_position.y * level_height;
+
+                const size_t x = min(truncate<size_t>(fx), level_width - 1);
+                const size_t y = min(truncate<size_t>(fy), level_height - 1);
 
                 AccumulationPixel* pixel =
                     reinterpret_cast<AccumulationPixel*>(level->pixel(x, y));

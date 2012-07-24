@@ -130,7 +130,10 @@ void RenderSettingsWindow::reload()
     m_ui->combobox_configurations->clear();
 
     for (const_each<ConfigurationContainer> i = m_project_manager.get_project()->configurations(); i; ++i)
-        m_ui->combobox_configurations->addItem(i->get_name());
+    {
+        if (!BaseConfigurationFactory::is_base_configuration(i->get_name()))
+            m_ui->combobox_configurations->addItem(i->get_name());
+    }
 }
 
 void RenderSettingsWindow::create_panels()
@@ -187,10 +190,22 @@ void RenderSettingsWindow::create_image_plane_sampling_general_settings(QVBoxLay
 
     sublayout->addLayout(create_form_layout("Filter Size:", create_integer_input("image_plane_sampling.general.filter_size", 1, 64)));
 
-    QComboBox* sampler = create_combobox("image_plane_sampling.general.sampler");
-    sampler->addItem("Uniform", "uniform");
-    sampler->addItem("Adaptive", "adaptive");
-    layout->addLayout(create_form_layout("Sampler:", sampler));
+    m_image_planer_sampler_combo = create_combobox("image_plane_sampling.general.sampler");
+    m_image_planer_sampler_combo->addItem("Uniform", "uniform");
+    m_image_planer_sampler_combo->addItem("Adaptive", "adaptive");
+    m_image_planer_sampler_combo->setCurrentIndex(-1);
+    layout->addLayout(create_form_layout("Sampler:", m_image_planer_sampler_combo));
+    connect(
+        m_image_planer_sampler_combo, SIGNAL(currentIndexChanged(int)),
+        this, SLOT(slot_changed_image_plane_sampler(int)));
+}
+
+void RenderSettingsWindow::slot_changed_image_plane_sampler(int index)
+{
+    const QString sampler = m_image_planer_sampler_combo->itemData(index).value<QString>();
+
+    m_uniform_image_plane_sampler->setEnabled(sampler == "uniform");
+    m_adaptive_image_plane_sampler->setEnabled(sampler == "adaptive");
 }
 
 void RenderSettingsWindow::create_image_plane_sampling_sampler_settings(QVBoxLayout* parent)
@@ -204,29 +219,32 @@ void RenderSettingsWindow::create_image_plane_sampling_sampler_settings(QVBoxLay
 
 void RenderSettingsWindow::create_image_plane_sampling_uniform_sampler_settings(QHBoxLayout* parent)
 {
-    QGroupBox* groupbox = new QGroupBox("Uniform Sampler");
-    parent->addWidget(groupbox);
+    m_uniform_image_plane_sampler = new QGroupBox("Uniform Sampler");
+    parent->addWidget(m_uniform_image_plane_sampler);
 
     QVBoxLayout* layout = create_vertical_layout();
-    groupbox->setLayout(layout);
+    m_uniform_image_plane_sampler->setLayout(layout);
 
     layout->addLayout(create_form_layout("Samples:", create_integer_input("image_plane_sampling.uniform_sampler.samples", 1, 1000000)));
 }
 
 void RenderSettingsWindow::create_image_plane_sampling_adaptive_sampler_settings(QHBoxLayout* parent)
 {
-    QGroupBox* groupbox = new QGroupBox("Adaptive Sampler");
-    parent->addWidget(groupbox);
+    m_adaptive_image_plane_sampler = new QGroupBox("Adaptive Sampler");
+    parent->addWidget(m_adaptive_image_plane_sampler);
 
     QVBoxLayout* layout = create_vertical_layout();
-    groupbox->setLayout(layout);
+    m_adaptive_image_plane_sampler->setLayout(layout);
 
     QFormLayout* sublayout = create_form_layout();
     layout->addLayout(sublayout);
 
     sublayout->addRow("Min Samples:", create_integer_input("image_plane_sampling.adaptive_sampler.min_samples", 1, 1000000));
     sublayout->addRow("Max Samples:", create_integer_input("image_plane_sampling.adaptive_sampler.max_samples", 1, 1000000));
-    sublayout->addRow("Max Error:", create_double_input("image_plane_sampling.adaptive_sampler.max_error", 0.0, 1000000.0, 3, 0.01));
+    sublayout->addRow("Max Contrast:", create_double_input("image_plane_sampling.adaptive_sampler.max_contrast", 0.0, 1000.0, 3, 0.005));
+    sublayout->addRow("Max Variation:", create_double_input("image_plane_sampling.adaptive_sampler.max_variation", 0.0, 1000.0, 3, 0.005));
+
+    layout->addWidget(create_checkbox("image_plane_sampling.adaptive_sampler.enable_diagnostics", "Enable Diagnostics"));
 }
 
 //---------------------------------------------------------------------------------------------
@@ -263,7 +281,14 @@ void RenderSettingsWindow::create_drt_panel(QLayout* parent)
     QVBoxLayout* layout = new QVBoxLayout();
     panel->container()->setLayout(layout);
 
-    create_lighting_components_settings(layout, "drt");
+    QGroupBox* groupbox = new QGroupBox("Components");
+    layout->addWidget(groupbox);
+
+    QVBoxLayout* sublayout = new QVBoxLayout();
+    groupbox->setLayout(sublayout);
+
+    sublayout->addWidget(create_checkbox("drt.lighting_components.ibl", "Image-Based Lighting"));
+
     create_bounce_settings(layout, "drt");
     create_drt_advanced_settings(layout);
 }
@@ -325,7 +350,16 @@ void RenderSettingsWindow::create_pt_panel(QLayout* parent)
     QVBoxLayout* layout = new QVBoxLayout();
     panel->container()->setLayout(layout);
 
-    create_lighting_components_settings(layout, "pt");
+    QGroupBox* groupbox = new QGroupBox("Components");
+    layout->addWidget(groupbox);
+
+    QVBoxLayout* sublayout = new QVBoxLayout();
+    groupbox->setLayout(sublayout);
+
+    sublayout->addWidget(create_checkbox("pt.lighting_components.dl", "Direct Lighting"));
+    sublayout->addWidget(create_checkbox("pt.lighting_components.ibl", "Image-Based Lighting"));
+    sublayout->addWidget(create_checkbox("pt.lighting_components.caustics", "Caustics"));
+
     create_bounce_settings(layout, "pt");
     create_pt_advanced_settings(layout);
 }
@@ -418,21 +452,6 @@ void RenderSettingsWindow::create_system_override_texture_cache_size_settings(QV
 // Reusable settings.
 //---------------------------------------------------------------------------------------------
 
-void RenderSettingsWindow::create_lighting_components_settings(QVBoxLayout* parent, const string& lighting_engine)
-{
-    const string widget_base_key = lighting_engine + ".lighting_components.";
-
-    QGroupBox* groupbox = new QGroupBox("Components");
-    parent->addWidget(groupbox);
-
-    QVBoxLayout* layout = new QVBoxLayout();
-    groupbox->setLayout(layout);
-
-    layout->addWidget(create_checkbox(widget_base_key + "dl", "Direct Lighting"));
-    layout->addWidget(create_checkbox(widget_base_key + "ibl", "Image-Based Lighting"));
-    layout->addWidget(create_checkbox(widget_base_key + "caustics", "Caustics"));
-}
-
 void RenderSettingsWindow::create_bounce_settings(QVBoxLayout* parent, const string& lighting_engine)
 {
     const string widget_base_key = lighting_engine + ".bounces.";
@@ -440,7 +459,7 @@ void RenderSettingsWindow::create_bounce_settings(QVBoxLayout* parent, const str
     QGroupBox* groupbox = new QGroupBox("Bounces");
     parent->addWidget(groupbox);
 
-    QFormLayout* layout = new QFormLayout();
+    QFormLayout* layout = create_form_layout();
     groupbox->setLayout(layout);
 
     QSpinBox* max_bounces = create_integer_input(widget_base_key + "max_bounces", 0, 10000);
@@ -472,6 +491,7 @@ QVBoxLayout* RenderSettingsWindow::create_vertical_layout()
 QFormLayout* RenderSettingsWindow::create_form_layout()
 {
     QFormLayout* layout = new QFormLayout();
+    layout->setLabelAlignment(Qt::AlignRight);
     layout->setSpacing(10);
     return layout;
 }
@@ -622,16 +642,17 @@ QComboBox* RenderSettingsWindow::create_combobox(
 void RenderSettingsWindow::create_direct_links()
 {
     // Image Plane Sampling.
+    create_direct_link("image_plane_sampling.general.sampler", "generic_tile_renderer.sampler", "uniform");
     create_direct_link("image_plane_sampling.general.filter_size", "generic_tile_renderer.filter_size", 2);
-    create_direct_link("image_plane_sampling.adaptive_sampler.max_error", "generic_tile_renderer.max_error", 0.01);
+    create_direct_link("image_plane_sampling.adaptive_sampler.max_contrast", "generic_tile_renderer.max_contrast", 1.0 / 256);
+    create_direct_link("image_plane_sampling.adaptive_sampler.max_variation", "generic_tile_renderer.max_variation", 0.15);
+    create_direct_link("image_plane_sampling.adaptive_sampler.enable_diagnostics", "generic_tile_renderer.enable_adaptive_sampler_diagnostics", false);
 
     // Lighting.
     create_direct_link("lighting.engine", "lighting_engine", "pt");
 
     // Distribution Ray Tracer.
-    create_direct_link("drt.lighting_components.dl", "drt.enable_dl", true);
     create_direct_link("drt.lighting_components.ibl", "drt.enable_ibl", true);
-    create_direct_link("drt.lighting_components.caustics", "drt.enable_caustics", true);
     create_direct_link("drt.bounces.rr_start_bounce", "drt.rr_min_path_length", 3);
     create_direct_link("drt.advanced.dl.light_samples", "drt.dl_light_samples", 1);
     create_direct_link("drt.advanced.dl.bsdf_samples", "drt.dl_bsdf_samples", 1);
@@ -728,10 +749,10 @@ void RenderSettingsWindow::load_configuration(const Configuration& config)
     {
         set_widget("system.rendering_threads.override", config.get_parameters().strings().exist("rendering_threads"));
         
-        const size_t default_rendering_threads = System::get_logical_cpu_core_count();
-        const size_t rendering_threads = get_config<size_t>(config, "rendering_threads", 0);
-        set_widget("system.rendering_threads.value", rendering_threads == 0 ? default_rendering_threads : rendering_threads);
-        set_widget("system.rendering_threads.auto", rendering_threads == 0);
+        const string default_rendering_threads = to_string(System::get_logical_cpu_core_count());
+        const string rendering_threads = get_config<string>(config, "rendering_threads", "auto");
+        set_widget("system.rendering_threads.value", rendering_threads == "auto" ? default_rendering_threads : rendering_threads);
+        set_widget("system.rendering_threads.auto", rendering_threads == "auto");
     }
 
     // System / Texture Cache Size.
@@ -769,7 +790,7 @@ void RenderSettingsWindow::save_configuration(Configuration& config)
     if (get_widget<bool>("system.rendering_threads.override"))
     {
         set_config(config, "rendering_threads",
-            get_widget<bool>("system.rendering_threads.auto") ? 0 : get_widget<size_t>("system.rendering_threads.value"));
+            get_widget<bool>("system.rendering_threads.auto") ? "auto" : get_widget<string>("system.rendering_threads.value"));
     }
     else config.get_parameters().strings().remove("rendering_threads");
 
@@ -822,7 +843,8 @@ T RenderSettingsWindow::get_config(
     const string&           param_path,
     const T&                default_value)
 {
-    return configuration.get_inherited_parameters().get_path_optional<T>(param_path.c_str(), default_value);
+    return configuration.get_inherited_parameters().
+        template get_path_optional<T>(param_path.c_str(), default_value);
 }
 
 //---------------------------------------------------------------------------------------------

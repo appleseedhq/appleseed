@@ -30,8 +30,10 @@
 #define APPLESEED_RENDERER_KERNEL_RENDERING_DEBUG_BLANKSAMPLERENDERER_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
 #include "renderer/kernel/rendering/isamplerenderer.h"
+
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 
 namespace renderer
 {
@@ -42,15 +44,15 @@ namespace renderer
 // The blank sample renderer invariably returns transparent black samples (as linear RGB).
 //
 
-class RENDERERDLL BlankSampleRendererFactory
+class BlankSampleRendererFactory
   : public ISampleRendererFactory
 {
   public:
     // Delete this instance.
-    virtual void release();
+    virtual void release() override;
 
     // Return a new blank sample renderer instance.
-    virtual ISampleRenderer* create();
+    virtual ISampleRenderer* create() override;
 };
 
 }       // namespace renderer

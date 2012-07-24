@@ -45,7 +45,7 @@ namespace renderer
 // Generic frame renderer factory.
 //
 
-class RENDERERDLL GenericFrameRendererFactory
+class GenericFrameRendererFactory
   : public IFrameRendererFactory
 {
   public:
@@ -57,10 +57,10 @@ class RENDERERDLL GenericFrameRendererFactory
         const ParamArray&       params);
 
     // Delete this instance.
-    virtual void release();
+    virtual void release() override;
 
     // Return a new generic frame renderer instance.
-    virtual IFrameRenderer* create();
+    virtual IFrameRenderer* create() override;
 
     // Return a new generic frame renderer instance.
     static IFrameRenderer* create(

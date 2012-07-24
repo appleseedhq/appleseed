@@ -41,37 +41,16 @@ TraversalStatistics::TraversalStatistics()
 {
 }
 
-void TraversalStatistics::print(Logger& logger)
+Statistics TraversalStatistics::get_statistics() const
 {
-    LOG_DEBUG(
-        logger,
-        "  traversals       %s\n"
-        "  visited nodes    avg %.1f  min %s  max %s  dev %.1f\n"
-        "  visited leaves   avg %.1f  min %s  max %s  dev %.1f\n"
-        "  inter. bboxes    avg %.1f  min %s  max %s  dev %.1f\n"
-        "  discarded nodes  avg %.1f  min %s  max %s  dev %.1f\n"
-        "  inter. items     avg %.1f  min %s  max %s  dev %.1f\n",
-        pretty_uint(m_traversal_count).c_str(),
-        m_visited_nodes.get_mean(),
-        pretty_uint(m_visited_nodes.get_min()).c_str(),
-        pretty_uint(m_visited_nodes.get_max()).c_str(),
-        m_visited_nodes.get_dev(),
-        m_visited_leaves.get_mean(),
-        pretty_uint(m_visited_leaves.get_min()).c_str(),
-        pretty_uint(m_visited_leaves.get_max()).c_str(),
-        m_visited_leaves.get_dev(),
-        m_intersected_bboxes.get_mean(),
-        pretty_uint(m_intersected_bboxes.get_min()).c_str(),
-        pretty_uint(m_intersected_bboxes.get_max()).c_str(),
-        m_intersected_bboxes.get_dev(),
-        m_discarded_nodes.get_mean(),
-        pretty_uint(m_discarded_nodes.get_min()).c_str(),
-        pretty_uint(m_discarded_nodes.get_max()).c_str(),
-        m_discarded_nodes.get_dev(),
-        m_intersected_items.get_mean(),
-        pretty_uint(m_intersected_items.get_min()).c_str(),
-        pretty_uint(m_intersected_items.get_max()).c_str(),
-        m_intersected_items.get_dev());
+    Statistics stats;
+    stats.insert<uint64>("traversals", m_traversal_count);
+    stats.insert("visited nodes", m_visited_nodes);
+    stats.insert("visited leaves", m_visited_leaves);
+    stats.insert("inter. bboxes", m_intersected_bboxes);
+    stats.insert("discarded nodes", m_discarded_nodes);
+    stats.insert("inter. items", m_intersected_items);
+    return stats;
 }
 
 }   // namespace bvh

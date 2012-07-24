@@ -37,19 +37,43 @@ using namespace std;
 namespace foundation
 {
 
-string format_cache_stats(const uint64 hits, const uint64 misses)
+namespace cache_impl
 {
-    const uint64 accesses = hits + misses;
-
-    if (accesses == 0)
-        return "n/a";
-    else
+    CacheStatisticsEntry::CacheStatisticsEntry(
+        const string&   name,
+        const uint64    hit_count,
+        const uint64    miss_count)
+      : Statistics::Entry(name)
     {
+        m_hit_count = hit_count;
+        m_miss_count = miss_count;
+    }
+
+    auto_ptr<Statistics::Entry> CacheStatisticsEntry::clone() const
+    {
+        return auto_ptr<Entry>(new CacheStatisticsEntry(*this));
+    }
+
+    void CacheStatisticsEntry::merge(const Entry* other)
+    {
+        const CacheStatisticsEntry* typed_other = cast<CacheStatisticsEntry>(other);
+
+        m_hit_count += typed_other->m_hit_count;
+        m_miss_count += typed_other->m_miss_count;
+    }
+
+    string CacheStatisticsEntry::to_string() const
+    {
+        const uint64 accesses = m_hit_count + m_miss_count;
+
+        if (accesses == 0)
+            return "n/a";
+
         return
-              "efficiency " + pretty_percent(hits, accesses)
+                "efficiency " + pretty_percent(m_hit_count, accesses)
             + "  accesses " + pretty_uint(accesses)
-            + "  hits " + pretty_uint(hits)
-            + "  misses " + pretty_uint(misses);
+            + "  hits " + pretty_uint(m_hit_count)
+            + "  misses " + pretty_uint(m_miss_count);
     }
 }
 

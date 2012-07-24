@@ -69,6 +69,7 @@ class Population
     ValueType get_max() const;              // maximum value
     double get_mean() const;                // mean value
     double get_dev() const;                 // standard deviation
+    double get_var() const;                 // coefficient of variation
 
   private:
     size_t      m_size;                     // size of the population
@@ -223,6 +224,13 @@ inline double Population<T>::get_dev() const
     //
 
     return m_size > 0 ? std::sqrt(m_s / m_size) : 0.0;
+}
+
+template <typename T>
+inline double Population<T>::get_var() const
+{
+    const double dev = get_dev();
+    return dev == 0.0 ? 0.0 : dev / m_mean;
 }
 
 }       // namespace foundation

@@ -83,6 +83,9 @@ class ProjectBuilder
         renderer::Project&                  project,
         ProjectTree&                        project_tree);
 
+    renderer::Project& get_project();
+    const renderer::Project& get_project() const;
+
     template <typename Entity>
     const typename renderer::EntityTraits<Entity>::FactoryRegistrarType&
         get_factory_registrar() const;

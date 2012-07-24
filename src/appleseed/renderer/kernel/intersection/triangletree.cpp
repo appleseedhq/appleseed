@@ -304,7 +304,7 @@ TriangleTree::TriangleTree(const Arguments& arguments)
   : TreeType(AlignedAllocator<void>(System::get_l1_data_cache_line_size()))
   , m_triangle_tree_uid(arguments.m_triangle_tree_uid)
 {
-    Statistics statistics("triangle tree #" + to_string(arguments.m_triangle_tree_uid) + " statistics");
+    Statistics statistics;
 
     const string DefaultAccelerationStructure = "bvh";
 
@@ -339,19 +339,18 @@ TriangleTree::TriangleTree(const Arguments& arguments)
     TreeOptimizer<NodeVectorType> tree_optimizer(m_nodes);
     tree_optimizer.optimize_node_layout(TriangleTreeSubtreeDepth);
     assert(m_nodes.size() == m_nodes.capacity());
-
-    // Collect and print triangle tree statistics.
-    statistics.add_size("node_array_alignment", "nodes alignment", alignment(&m_nodes[0]));
-    bvh::TreeStatistics<TriangleTree> collect_statistics(
-        statistics,
-        *this,
-        AABB3d(arguments.m_bbox));
-    RENDERER_LOG_DEBUG("%s", statistics.to_string().c_str());
+    statistics.insert_size("nodes alignment", alignment(&m_nodes[0]));
 
     // Create intersection filters.
     if (arguments.m_assembly.get_parameters().get_optional<bool>("enable_intersection_filters", true))
-        create_intersection_filters(arguments);
+        create_intersection_filters(arguments, statistics);
     m_has_intersection_filters = !m_intersection_filters.empty();
+
+    // Print triangle tree statistics.
+    RENDERER_LOG_DEBUG("%s",
+        StatisticsVector::make(
+            "triangle tree #" + to_string(arguments.m_triangle_tree_uid) + " statistics",
+            statistics).to_string().c_str());
 }
 
 TriangleTree::~TriangleTree()
@@ -411,7 +410,8 @@ void TriangleTree::build_bvh(
     typedef bvh::Builder<TriangleTree, Partitioner> Builder;
     Builder builder;
     builder.build<DefaultWallclockTimer>(*this, partitioner, triangle_keys.size());
-    statistics.add_time("build_time", "build time", builder.get_build_time());
+    statistics.insert_time("build time", builder.get_build_time());
+    statistics.merge(bvh::TreeStatistics<TriangleTree>(*this, AABB3d(arguments.m_bbox)));
 
     // Bounding boxes are no longer needed.
     clear_release_memory(triangle_bboxes);
@@ -482,14 +482,15 @@ void TriangleTree::build_sbvh(
         partitioner,
         root_leaf,
         root_leaf_bbox);
-    statistics.add_time("build_time", "build time", builder.get_build_time());
+    statistics.insert_time("build time", builder.get_build_time());
+    statistics.merge(bvh::TreeStatistics<TriangleTree>(*this, AABB3d(arguments.m_bbox)));
 
     // Add splits statistics.
     const size_t spatial_splits = partitioner.get_spatial_split_count();
     const size_t object_splits = partitioner.get_object_split_count();
     const size_t total_splits = spatial_splits + object_splits; 
-    statistics.add<string>(
-        "splits", "splits",
+    statistics.insert(
+        "splits",
         "spatial " + pretty_uint(spatial_splits) + " (" + pretty_percent(spatial_splits, total_splits) + ")  "
         "object " + pretty_uint(object_splits) + " (" + pretty_percent(object_splits, total_splits) + ")");
 
@@ -763,10 +764,12 @@ void TriangleTree::store_triangles(
         }
     }
 
-    statistics.add_percent("fat_leaves", "fat leaves", fat_leaf_count, leaf_count);
+    statistics.insert_percent("fat leaves", fat_leaf_count, leaf_count);
 }
 
-void TriangleTree::create_intersection_filters(const Arguments& arguments)
+void TriangleTree::create_intersection_filters(
+    const Arguments&    arguments,
+    Statistics&         statistics)
 {
     // Collect object instances.
     vector<size_t> object_instance_indices;
@@ -824,11 +827,7 @@ void TriangleTree::create_intersection_filters(const Arguments& arguments)
         ++intersection_filter_count;
     }
 
-    RENDERER_LOG_INFO(
-        "created " FMT_SIZE_T " intersection filter%s for triangle tree #" FMT_UNIQUE_ID ".",
-        intersection_filter_count,
-        intersection_filter_count > 1 ? "s" : "",
-        arguments.m_triangle_tree_uid);
+    statistics.insert<uint64>("inter. filters", intersection_filter_count);
 }
 
 

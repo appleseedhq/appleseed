@@ -29,27 +29,46 @@
 #ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_IMAGEIMPORTANCESAMPLER_H
 #define APPLESEED_RENDERER_KERNEL_LIGHTING_IMAGEIMPORTANCESAMPLER_H
 
-// appleseed.renderer headers.
-#include "renderer/global/global.h"
-
 // appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/cdf.h"
 #include "foundation/math/scalar.h"
+#include "foundation/math/vector.h"
+
+// Standard headers.
+#include <cstddef>
+#include <utility>
 
 namespace renderer
 {
 
-template <typename T>
+//
+// The ImageSampler type must conform to the following prototype:
+//
+//   class ImageSampler
+//   {
+//     public:
+//       void sample(
+//           const size_t   x,
+//           const size_t   y,
+//           Payload&       payload,
+//           Importance&    importance);
+//   };
+//
+
+template <typename Payload, typename Importance>
 class ImageImportanceSampler
   : public foundation::NonCopyable
 {
   public:
+    typedef foundation::Vector<Importance, 2> Vector2Type;
+
     // Constructor.
     template <typename ImageSampler>
     ImageImportanceSampler(
-        const size_t                    width,
-        const size_t                    height,
-        ImageSampler&                   sampler);
+        const size_t        width,
+        const size_t        height,
+        ImageSampler&       sampler);
 
     // Destructor.
     ~ImageImportanceSampler();
@@ -61,25 +80,26 @@ class ImageImportanceSampler
     // Sample the image and return the coordinates of the chosen pixel,
     // and the probability with which it was chosen.
     void sample(
-        const foundation::Vector<T, 2>& s,
-        size_t&                         x,
-        size_t&                         y,
-        T&                              probability) const;
+        const Vector2Type&  s,
+        Payload&            payload,
+        size_t&             y,
+        Importance&         probability) const;
 
     // Return the probability density function of a given pixel.
-    T get_pdf(
-        const size_t                    x,
-        const size_t                    y) const;
+    Importance get_pdf(
+        const size_t        x,
+        const size_t        y) const;
 
   private:
-    typedef foundation::CDF<size_t, T> CDF;
+    typedef foundation::CDF<size_t, Importance> YCDF;
+    typedef foundation::CDF<Payload, Importance> XCDF;
 
-    const size_t    m_width;
-    const size_t    m_height;
-    const T         m_rcp_pixel_count;
+    const size_t            m_width;
+    const size_t            m_height;
+    const Importance        m_rcp_pixel_count;
 
-    CDF*            m_cdf_x;
-    CDF             m_cdf_y;
+    XCDF*                   m_cdf_x;
+    YCDF                    m_cdf_y;
 };
 
 
@@ -87,30 +107,30 @@ class ImageImportanceSampler
 // ImageImportanceSampler class implementation.
 //
 
-template <typename T>
+template <typename Payload, typename Importance>
 template <typename ImageSampler>
-ImageImportanceSampler<T>::ImageImportanceSampler(
-    const size_t                    width,
-    const size_t                    height,
-    ImageSampler&                   sampler)
+ImageImportanceSampler<Payload, Importance>::ImageImportanceSampler(
+    const size_t            width,
+    const size_t            height,
+    ImageSampler&           sampler)
   : m_width(width)
   , m_height(height)
-  , m_rcp_pixel_count(T(1.0) / (width * height))
+  , m_rcp_pixel_count(Importance(1.0) / (width * height))
 {
-    m_cdf_x = new CDF[m_height];
+    m_cdf_x = new XCDF[m_height];
 
     rebuild(sampler);
 }
 
-template <typename T>
-ImageImportanceSampler<T>::~ImageImportanceSampler()
+template <typename Payload, typename Importance>
+ImageImportanceSampler<Payload, Importance>::~ImageImportanceSampler()
 {
     delete [] m_cdf_x;
 }
 
-template <typename T>
+template <typename Payload, typename Importance>
 template <typename ImageSampler>
-void ImageImportanceSampler<T>::rebuild(ImageSampler& sampler)
+void ImageImportanceSampler<Payload, Importance>::rebuild(ImageSampler& sampler)
 {
     m_cdf_y.clear();
 
@@ -120,8 +140,12 @@ void ImageImportanceSampler<T>::rebuild(ImageSampler& sampler)
 
         for (size_t x = 0; x < m_width; ++x)
         {
-            const T importance = sampler(x, y);
-            m_cdf_x[y].insert(x, importance);
+            Payload payload;
+            Importance importance;
+
+            sampler.sample(x, y, payload, importance);
+
+            m_cdf_x[y].insert(payload, importance);
         }
 
         if (m_cdf_x[y].valid())
@@ -134,49 +158,48 @@ void ImageImportanceSampler<T>::rebuild(ImageSampler& sampler)
         m_cdf_y.prepare();
 }
 
-template <typename T>
-inline void ImageImportanceSampler<T>::sample(
-    const foundation::Vector<T, 2>& s,
-    size_t&                         x,
-    size_t&                         y,
-    T&                              probability) const
+template <typename Payload, typename Importance>
+inline void ImageImportanceSampler<Payload, Importance>::sample(
+    const Vector2Type&      s,
+    Payload&                payload,
+    size_t&                 y,
+    Importance&             probability) const
 {
     if (m_cdf_y.valid())
     {
-        const typename CDF::ItemWeightPair ry = m_cdf_y.sample(s[1]);
-        const typename CDF::ItemWeightPair rx = m_cdf_x[ry.first].sample(s[0]);
+        const typename YCDF::ItemWeightPair ry = m_cdf_y.sample(s[1]);
+        const typename XCDF::ItemWeightPair rx = m_cdf_x[ry.first].sample(s[0]);
 
-        x = rx.first;
+        payload = rx.first;
         y = ry.first;
 
         probability = rx.second * ry.second;
     }
     else
     {
-        x = foundation::truncate<size_t>(s[0] * m_width);
         y = foundation::truncate<size_t>(s[1] * m_height);
 
         probability = m_rcp_pixel_count;
     }
 }
 
-template <typename T>
-inline T ImageImportanceSampler<T>::get_pdf(
-    const size_t                    x,
-    const size_t                    y) const
+template <typename Payload, typename Importance>
+inline Importance ImageImportanceSampler<Payload, Importance>::get_pdf(
+    const size_t            x,
+    const size_t            y) const
 {
     if (m_cdf_y.valid())
     {
         if (m_cdf_x[y].valid())
         {
-            const typename CDF::ItemWeightPair ry = m_cdf_y[y];
-            const typename CDF::ItemWeightPair rx = m_cdf_x[y][x];
+            const typename YCDF::ItemWeightPair ry = m_cdf_y[y];
+            const typename XCDF::ItemWeightPair rx = m_cdf_x[y][x];
 
             return rx.second * ry.second;
         }
         else
         {
-            return T(0.0);
+            return Importance(0.0);
         }
     }
     else

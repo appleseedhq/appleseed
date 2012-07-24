@@ -45,6 +45,7 @@
 #include "foundation/math/bvh.h"
 #include "foundation/math/intersection.h"
 #include "foundation/math/scalar.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/alignedvector.h"
 #include "foundation/utility/lazy.h"
 #include "foundation/utility/poolallocator.h"
@@ -138,7 +139,9 @@ class TriangleTree
         const std::vector<TriangleKey>&         triangle_keys,
         foundation::Statistics&                 statistics);
 
-    void create_intersection_filters(const Arguments& arguments);
+    void create_intersection_filters(
+        const Arguments&                        arguments,
+        foundation::Statistics&                 statistics);
 };
 
 

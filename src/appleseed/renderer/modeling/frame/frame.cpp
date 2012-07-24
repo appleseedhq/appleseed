@@ -39,7 +39,6 @@
 #include "foundation/core/exceptions/exceptionioerror.h"
 #include "foundation/core/exceptions/exceptionunsupportedfileformat.h"
 #include "foundation/image/color.h"
-#include "foundation/image/colorspace.h"
 #include "foundation/image/exrimagefilewriter.h"
 #include "foundation/image/genericimagefilewriter.h"
 #include "foundation/image/image.h"
@@ -83,7 +82,6 @@ struct Frame::Impl
     size_t                  m_tile_width;
     size_t                  m_tile_height;
     PixelFormat             m_pixel_format;
-    ColorSpace              m_color_space;
     bool                    m_clamp;
     float                   m_target_gamma;
     float                   m_rcp_target_gamma;
@@ -385,7 +383,7 @@ void Frame::transform_to_output_color_space(Tile& tile) const
 
     if (impl->m_pixel_format == PixelFormatFloat)
     {
-        switch (impl->m_color_space)
+        switch (m_color_space)
         {
           case ColorSpaceLinearRGB:
             TRANSFORM_FLOAT_TILE(ColorSpaceLinearRGB);
@@ -404,7 +402,7 @@ void Frame::transform_to_output_color_space(Tile& tile) const
     }
     else
     {
-        switch (impl->m_color_space)
+        switch (m_color_space)
         {
           case ColorSpaceLinearRGB:
             TRANSFORM_GENERIC_TILE(ColorSpaceLinearRGB);
@@ -566,11 +564,11 @@ void Frame::extract_parameters()
     const string color_space =
         m_params.get_optional<string>("color_space", DefaultColorSpaceString);
     if (color_space == "linear_rgb")
-        impl->m_color_space = ColorSpaceLinearRGB;
+        m_color_space = ColorSpaceLinearRGB;
     else if (color_space == "srgb")
-        impl->m_color_space = ColorSpaceSRGB;
+        m_color_space = ColorSpaceSRGB;
     else if (color_space == "ciexyz")
-        impl->m_color_space = ColorSpaceCIEXYZ;
+        m_color_space = ColorSpaceCIEXYZ;
     else
     {
         // Invalid value for color_space parameter, use default.
@@ -579,7 +577,7 @@ void Frame::extract_parameters()
             color_space.c_str(),
             "color_space",
             DefaultColorSpaceString);
-        impl->m_color_space = DefaultColorSpace;
+        m_color_space = DefaultColorSpace;
     }
 
     // Retrieve clamping parameter.

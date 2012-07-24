@@ -39,6 +39,7 @@
 #include "xercesc/util/XMLException.hpp"
 
 // Standard headers.
+#include <cassert>
 #include <memory>
 #include <string>
 
@@ -47,10 +48,6 @@ using namespace xercesc;
 
 namespace foundation
 {
-
-//
-// SettingsFileReader class implementation.
-//
 
 SettingsFileReader::SettingsFileReader(Logger& logger)
   : m_logger(logger)

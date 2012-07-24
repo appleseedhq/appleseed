@@ -32,11 +32,12 @@
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/stringexception.h"
 #include "foundation/math/population.h"
-#include "foundation/utility/string.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/string.h"
 
 // Standard headers.
+#include <cassert>
 #include <cstddef>
 #include <ios>
 #include <map>
@@ -46,6 +47,10 @@
 
 namespace foundation
 {
+
+//
+// A named collection of statistics.
+//
 
 class Statistics
 {
@@ -62,166 +67,204 @@ class Statistics
         explicit ExceptionTypeMismatch(const char* name);
     };
 
-    explicit Statistics(const std::string& title);
+    struct Entry
+    {
+        std::string     m_name;
+        std::string     m_unit;
+
+        explicit Entry(const std::string& name);
+
+        Entry(
+            const std::string&          name,
+            const std::string&          unit);
+
+        template <typename T>
+        const T* cast(const Entry* entry);
+
+        virtual std::auto_ptr<Entry> clone() const = 0;
+        virtual void merge(const Entry* other) = 0;
+        virtual std::string to_string() const = 0;
+    };
+
+    struct IntegerEntry
+      : public Entry
+    {
+        int64 m_value;
+
+        IntegerEntry(
+            const std::string&          name,
+            const std::string&          unit,
+            const int64                 value);
+
+        virtual std::auto_ptr<Entry> clone() const override;
+        virtual void merge(const Entry* other) override;
+        virtual std::string to_string() const override;
+    };
+
+    struct UnsignedIntegerEntry
+      : public Entry
+    {
+        uint64 m_value;
+
+        UnsignedIntegerEntry(
+            const std::string&          name,
+            const std::string&          unit,
+            const uint64                value);
+
+        virtual std::auto_ptr<Entry> clone() const override;
+        virtual void merge(const Entry* other) override;
+        virtual std::string to_string() const override;
+    };
+
+    struct FloatingPointEntry
+      : public Entry
+    {
+        double m_value;
+
+        FloatingPointEntry(
+            const std::string&          name,
+            const std::string&          unit,
+            const double                value);
+
+        virtual std::auto_ptr<Entry> clone() const override;
+        virtual void merge(const Entry* other) override;
+        virtual std::string to_string() const override;
+    };
+
+    struct StringEntry
+      : public Entry
+    {
+        std::string m_value;
+
+        StringEntry(
+            const std::string&          name,
+            const std::string&          unit,
+            const std::string&          value);
+
+        virtual std::auto_ptr<Entry> clone() const override;
+        virtual void merge(const Entry* other) override;
+        virtual std::string to_string() const override;
+    };
+
+    struct UnsignedIntegerPopulationEntry
+      : public Entry
+    {
+        Population<size_t> m_value;
+
+        UnsignedIntegerPopulationEntry(
+            const std::string&          name,
+            const std::string&          unit,
+            const Population<size_t>&   value);
+
+        virtual std::auto_ptr<Entry> clone() const override;
+        virtual void merge(const Entry* other) override;
+        virtual std::string to_string() const override;
+    };
+
+    struct FloatingPointPopulationEntry
+      : public Entry
+    {
+        Population<double> m_value;
+
+        FloatingPointPopulationEntry(
+            const std::string&          name,
+            const std::string&          unit,
+            const Population<double>&   value);
+
+        virtual std::auto_ptr<Entry> clone() const override;
+        virtual void merge(const Entry* other) override;
+        virtual std::string to_string() const override;
+    };
+
+    Statistics();
+    Statistics(const Statistics& rhs);
 
     ~Statistics();
 
-    template <typename T>
-    T* add(
-        const std::string&              name,
-        const std::string&              title,
-        const T&                        value = T());
+    Statistics& operator=(const Statistics& rhs);
+
+    void clear();
 
     template <typename T>
-    Population<T>* add_population(
-        const std::string&              name,
-        const std::string&              title,
-        const Population<T>&            value = Population<T>());
+    void insert(std::auto_ptr<T> entry);
 
     template <typename T>
-    Population<T>* add_population(
+    void insert(
         const std::string&              name,
-        const std::string&              title,
-        const std::string&              unit,
-        const Population<T>&            value = Population<T>());
+        const T&                        value);
 
-    void add_size(
+    template <typename T>
+    void insert(
         const std::string&              name,
-        const std::string&              title,
+        const T&                        value,
+        const std::string&              unit);
+
+    void insert_size(
+        const std::string&              name,
         const uint64                    bytes,
         const std::streamsize           precision = 1);
 
-    void add_time(
+    void insert_time(
         const std::string&              name,
-        const std::string&              title,
         const double                    seconds,
         const std::streamsize           precision = 1);
 
     template <typename T>
-    void add_percent(
+    void insert_percent(
         const std::string&              name,
-        const std::string&              title,
         const T                         numerator,
         const T                         denominator,
         const std::streamsize           precision = 1);
 
+    void insert(const Statistics& other);
+
     void merge(const Statistics& other);
 
-    std::string to_string(const size_t max_title_length = 16) const;
+    std::string to_string(const size_t max_header_length = 16) const;
 
   private:
-    struct RecordBase
+    typedef std::vector<Entry*> EntryVector;
+    typedef std::map<std::string, Entry*> EntryIndex;
+
+    EntryVector                         m_entries;
+    EntryIndex                          m_index;
+
+    template <typename T>
+    T* cast(const Entry* entry);
+};
+
+
+//
+// A vector of foundation::Statistics objects.
+//
+
+class StatisticsVector
+{
+  public:
+    static StatisticsVector make(
+        const std::string&              name,
+        const Statistics&               stats);
+
+    void insert(
+        const std::string&              name,
+        const Statistics&               stats);
+
+    void merge(const StatisticsVector& other);
+
+    std::string to_string(const size_t max_header_length = 16) const;
+
+  private:
+    struct NamedStatistics
     {
         std::string     m_name;
-        std::string     m_title;
-        std::string     m_unit;
-
-        RecordBase(
-            const std::string&          name,
-            const std::string&          title,
-            const std::string&          unit);
-
-        template <typename T>
-        const T* cast(const RecordBase* record);
-
-        virtual std::auto_ptr<RecordBase> clone() const = 0;
-        virtual void merge(const RecordBase* other) = 0;
-        virtual std::string to_string() const = 0;
+        Statistics      m_stats;
     };
 
-    struct UnsignedIntegerRecord
-      : public RecordBase
-    {
-        uint64 m_value;
+    typedef std::vector<NamedStatistics> NamedStatisticsVector;
 
-        UnsignedIntegerRecord(
-            const std::string&          name,
-            const std::string&          title,
-            const std::string&          unit,
-            const uint64                value);
+    NamedStatisticsVector               m_stats;
 
-        virtual std::auto_ptr<RecordBase> clone() const override;
-        virtual void merge(const RecordBase* other) override;
-        virtual std::string to_string() const override;
-    };
-
-    struct FloatingPointRecord
-      : public RecordBase
-    {
-        double m_value;
-
-        FloatingPointRecord(
-            const std::string&          name,
-            const std::string&          title,
-            const std::string&          unit,
-            const double                value);
-
-        virtual std::auto_ptr<RecordBase> clone() const override;
-        virtual void merge(const RecordBase* other) override;
-        virtual std::string to_string() const override;
-    };
-
-    struct StringRecord
-      : public RecordBase
-    {
-        std::string m_value;
-
-        StringRecord(
-            const std::string&          name,
-            const std::string&          title,
-            const std::string&          unit,
-            const std::string&          value);
-
-        virtual std::auto_ptr<RecordBase> clone() const override;
-        virtual void merge(const RecordBase* other) override;
-        virtual std::string to_string() const override;
-    };
-
-    struct UnsignedIntegerPopulationRecord
-      : public RecordBase
-    {
-        Population<size_t> m_value;
-
-        UnsignedIntegerPopulationRecord(
-            const std::string&          name,
-            const std::string&          title,
-            const std::string&          unit,
-            const Population<size_t>&   value);
-
-        virtual std::auto_ptr<RecordBase> clone() const override;
-        virtual void merge(const RecordBase* other) override;
-        virtual std::string to_string() const override;
-    };
-
-    struct FloatingPointPopulationRecord
-      : public RecordBase
-    {
-        Population<double> m_value;
-
-        FloatingPointPopulationRecord(
-            const std::string&          name,
-            const std::string&          title,
-            const std::string&          unit,
-            const Population<double>&   value);
-
-        virtual std::auto_ptr<RecordBase> clone() const override;
-        virtual void merge(const RecordBase* other) override;
-        virtual std::string to_string() const override;
-    };
-
-    typedef std::vector<RecordBase*> RecordVector;
-    typedef std::map<std::string, RecordBase*> RecordIndex;
-
-    const std::string                   m_title;
-
-    RecordVector                        m_records;
-    RecordIndex                         m_index;
-
-    template <typename T>
-    T* cast(const RecordBase* record);
-
-    template <typename T>
-    void insert(std::auto_ptr<T> record);
+    void merge(const NamedStatistics& other);
 };
 
 
@@ -229,136 +272,134 @@ class Statistics
 // Statistics class implementation.
 //
 
-template <>
-inline uint64* Statistics::add<uint64>(
-    const std::string&                  name,
-    const std::string&                  title,
-    const uint64&                       value)
+template <typename T>
+void Statistics::insert(std::auto_ptr<T> entry)
 {
-    std::auto_ptr<UnsignedIntegerRecord> record(
-        new UnsignedIntegerRecord(name, title, std::string(), value));
+    if (m_index.find(entry->m_name) != m_index.end())
+        throw ExceptionDuplicateName(entry->m_name.c_str());
 
-    uint64* value_ptr = &record->m_value;
+    T* entry_ptr = entry.release();
 
-    insert(record);
-
-    return value_ptr;
-}
-
-template <>
-inline double* Statistics::add<double>(
-    const std::string&                  name,
-    const std::string&                  title,
-    const double&                       value)
-{
-    std::auto_ptr<FloatingPointRecord> record(
-        new FloatingPointRecord(name, title, std::string(), value));
-
-    double* value_ptr = &record->m_value;
-
-    insert(record);
-
-    return value_ptr;
-}
-
-template <>
-inline std::string* Statistics::add<std::string>(
-    const std::string&                  name,
-    const std::string&                  title,
-    const std::string&                  value)
-{
-    std::auto_ptr<StringRecord> record(
-        new StringRecord(name, title, std::string(), value));
-
-    std::string* value_ptr = &record->m_value;
-
-    insert(record);
-
-    return value_ptr;
+    m_entries.push_back(entry_ptr);
+    m_index[entry_ptr->m_name] = entry_ptr;
 }
 
 template <typename T>
-Population<T>* Statistics::add_population(
+void Statistics::insert(
     const std::string&                  name,
-    const std::string&                  title,
-    const Population<T>&                value)
+    const T&                            value)
 {
-    return add_population<T>(name, title, std::string(), value);
+    insert(name, value, std::string());
 }
 
 template <>
-inline Population<size_t>* Statistics::add_population<size_t>(
+inline void Statistics::insert<int64>(
     const std::string&                  name,
-    const std::string&                  title,
-    const std::string&                  unit,
-    const Population<size_t>&           value)
+    const int64&                        value,
+    const std::string&                  unit)
 {
-    std::auto_ptr<UnsignedIntegerPopulationRecord> record(
-        new UnsignedIntegerPopulationRecord(name, title, unit, value));
-
-    Population<size_t>* value_ptr = &record->m_value;
-
-    insert(record);
-
-    return value_ptr;
+    insert(
+        std::auto_ptr<IntegerEntry>(
+            new IntegerEntry(name, unit, value)));
 }
 
 template <>
-inline Population<double>* Statistics::add_population<double>(
+inline void Statistics::insert<uint64>(
     const std::string&                  name,
-    const std::string&                  title,
-    const std::string&                  unit,
-    const Population<double>&           value)
+    const uint64&                       value,
+    const std::string&                  unit)
 {
-    std::auto_ptr<FloatingPointPopulationRecord> record(
-        new FloatingPointPopulationRecord(name, title, unit, value));
-
-    Population<double>* value_ptr = &record->m_value;
-
-    insert(record);
-
-    return value_ptr;
+    insert(
+        std::auto_ptr<UnsignedIntegerEntry>(
+            new UnsignedIntegerEntry(name, unit, value)));
 }
 
-inline void Statistics::add_size(
+template <>
+inline void Statistics::insert<double>(
     const std::string&                  name,
-    const std::string&                  title,
+    const double&                       value,
+    const std::string&                  unit)
+{
+    insert(
+        std::auto_ptr<FloatingPointEntry>(
+            new FloatingPointEntry(name, unit, value)));
+}
+
+template <>
+inline void Statistics::insert<std::string>(
+    const std::string&                  name,
+    const std::string&                  value,
+    const std::string&                  unit)
+{
+    insert(
+        std::auto_ptr<StringEntry>(
+            new StringEntry(name, unit, value)));
+}
+
+template <>
+inline void Statistics::insert<Population<size_t> >(
+    const std::string&                  name,
+    const Population<size_t>&           value,
+    const std::string&                  unit)
+{
+    insert(
+        std::auto_ptr<UnsignedIntegerPopulationEntry>(
+            new UnsignedIntegerPopulationEntry(name, unit, value)));
+}
+
+template <>
+inline void Statistics::insert<Population<double> >(
+    const std::string&                  name,
+    const Population<double>&           value,
+    const std::string&                  unit)
+{
+    insert(
+        std::auto_ptr<FloatingPointPopulationEntry>(
+            new FloatingPointPopulationEntry(name, unit, value)));
+}
+
+inline void Statistics::insert_size(
+    const std::string&                  name,
     const uint64                        bytes,
     const std::streamsize               precision)
 {
-    add<std::string>(name, title, pretty_size(bytes, precision));
+    insert(name, pretty_size(bytes, precision));
 }
 
-inline void Statistics::add_time(
+inline void Statistics::insert_time(
     const std::string&                  name,
-    const std::string&                  title,
     const double                        seconds,
     const std::streamsize               precision)
 {
-    add<std::string>(name, title, pretty_time(seconds, precision));
+    insert(name, pretty_time(seconds, precision));
 }
 
 template <typename T>
-void Statistics::add_percent(
+void Statistics::insert_percent(
     const std::string&                  name,
-    const std::string&                  title,
     const T                             numerator,
     const T                             denominator,
     const std::streamsize               precision)
 {
-    add<std::string>(name, title, pretty_percent(numerator, denominator, precision));
+    insert(name, pretty_percent(numerator, denominator, precision));
 }
 
+
+//
+// Statistics::Entry class implementation.
+//
+
 template <typename T>
-void Statistics::insert(std::auto_ptr<T> record)
+const T* Statistics::Entry::cast(const Entry* entry)
 {
-    if (m_index.find(record->m_name) != m_index.end())
-        throw ExceptionDuplicateName(record->m_name.c_str());
+    assert(entry);
 
-    T* record_ptr = record.release();
+    const T* typed_entry = dynamic_cast<const T*>(entry);
 
-    m_records.push_back(record_ptr);
-    m_index[record_ptr->m_name] = record_ptr;
+    if (typed_entry == 0)
+        throw ExceptionTypeMismatch(entry->m_name.c_str());
+
+    return typed_entry;
 }
 
 }       // namespace foundation

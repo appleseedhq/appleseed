@@ -29,10 +29,11 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_INDENTER_H
 #define APPLESEED_FOUNDATION_UTILITY_INDENTER_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // Standard headers.
-#include <cassert>
 #include <cstddef>
-#include <string>
 
 namespace foundation
 {
@@ -41,7 +42,7 @@ namespace foundation
 // Indenter.
 //
 
-class Indenter
+class DLLSYMBOL Indenter
 {
   public:
     // Constructor. 'tab_size' is the size of one level of indentation.
@@ -49,62 +50,22 @@ class Indenter
         const size_t    tab_size,
         const char      tab_char = ' ');
 
+    // Destructor.
+    ~Indenter();
+
     // Add one level of indentation.
-    Indenter& operator++();
+    void operator++();
 
     // Subtract one level of indentation.
-    Indenter& operator--();
+    void operator--();
 
     // Return the indentation string.
-    const std::string& str() const;
     const char* c_str() const;
 
   private:
-    const size_t        m_tab_size;
-    const char          m_tab_char;
-    std::string         m_str;
+    struct Impl;
+    Impl* impl;
 };
-
-
-//
-// Indenter class implementation.
-//
-
-// Constructor. 'tab_size' is the size of one level of indentation.
-inline Indenter::Indenter(
-    const size_t    tab_size,
-    const char      tab_char)
-  : m_tab_size(tab_size)
-  , m_tab_char(tab_char)
-{
-}
-
-// Add one level of indentation.
-inline Indenter& Indenter::operator++()
-{
-    m_str.resize(m_str.size() + m_tab_size, m_tab_char);
-    return *this;
-}
-
-// Subtract one level of indentation.
-inline Indenter& Indenter::operator--()
-{
-    assert(m_str.size() >= m_tab_size);
-    if (m_str.size() >= m_tab_size)
-        m_str.resize(m_str.size() - m_tab_size, m_tab_char);
-    else m_str.resize(0);
-    return *this;
-}
-
-// Return the indentation string.
-inline const std::string& Indenter::str() const
-{
-    return m_str;
-}
-inline const char* Indenter::c_str() const
-{
-    return m_str.c_str();
-}
 
 }       // namespace foundation
 

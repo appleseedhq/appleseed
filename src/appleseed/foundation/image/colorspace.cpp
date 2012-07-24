@@ -805,6 +805,10 @@ const Spectrum31f RGBCMFStilesBurch195910Def[3] =
 // Lighting conditions class implementation.
 //
 
+LightingConditions::LightingConditions()
+{
+}
+
 LightingConditions::LightingConditions(
     const Spectrum31f&  illuminant,
     const Spectrum31f   cmf[3])

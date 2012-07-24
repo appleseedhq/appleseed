@@ -27,18 +27,25 @@
 //
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
 #include "renderer/kernel/lighting/imageimportancesampler.h"
 #include "renderer/utility/testutils.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/canvasproperties.h"
+#include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
 #include "foundation/image/drawing.h"
 #include "foundation/image/genericimagefilereader.h"
 #include "foundation/image/genericimagefilewriter.h"
 #include "foundation/image/image.h"
 #include "foundation/math/qmc.h"
+#include "foundation/math/vector.h"
 #include "foundation/utility/test.h"
+
+// Standard headers.
+#include <cassert>
+#include <cstddef>
+#include <memory>
 
 using namespace foundation;
 using namespace renderer;
@@ -55,9 +62,10 @@ TEST_SUITE(Renderer_Kernel_Lighting_ImageImportanceSampler)
         {
         }
 
-        double operator()(const size_t x, const size_t y) const
+        void sample(const size_t x, const size_t y, size_t& payload, double& importance) const
         {
-            return static_cast<double>(x) / (m_width - 1);
+            payload = x;
+            importance = static_cast<double>(x) / (m_width - 1);
         }
 
       private:
@@ -71,7 +79,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_ImageImportanceSampler)
         const size_t Height = 5;
 
         HorizontalGradientSampler sampler(Width, Height);
-        ImageImportanceSampler<double>
+        ImageImportanceSampler<size_t, double>
             importance_sampler(
                 Width,
                 Height,
@@ -94,11 +102,13 @@ TEST_SUITE(Renderer_Kernel_Lighting_ImageImportanceSampler)
         {
         }
 
-        float operator()(const size_t x, const size_t y) const
+        void sample(const size_t x, const size_t y, size_t& payload, float& importance) const
         {
             Color3f color;
             m_image.get_pixel(x, y, color);
-            return luminance(color);
+
+            payload = x;
+            importance = luminance(color);
         }
 
       private:
@@ -117,11 +127,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_ImageImportanceSampler)
         const size_t height = image->properties().m_canvas_height;
 
         ImageSampler sampler(*image.get());
-
-        ImageImportanceSampler<float> importance_sampler(
-            width,
-            height,
-            sampler);
+        ImageImportanceSampler<size_t, float> importance_sampler(width, height, sampler);
 
         for (size_t i = 0; i < sample_count; ++i)
         {
@@ -193,16 +199,17 @@ TEST_SUITE(Renderer_Kernel_Lighting_ImageImportanceSampler)
 
     struct UniformBlackSampler
     {
-        double operator()(const size_t x, const size_t y) const
+        void sample(const size_t x, const size_t y, size_t& payload, double& importance) const
         {
-            return y == 0 ? 0.0 : 1.0;
+            payload = x;
+            importance = y == 0 ? 0.0 : 1.0;
         }
     };
 
     TEST_CASE(GetPDF_GivenBlackImage_ReturnsZeroDotFive)
     {
         UniformBlackSampler sampler;
-        ImageImportanceSampler<double> importance_sampler(2, 2, sampler);
+        ImageImportanceSampler<size_t, double> importance_sampler(2, 2, sampler);
 
         const double pdf = importance_sampler.get_pdf(0, 1);
 

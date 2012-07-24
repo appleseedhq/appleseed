@@ -30,9 +30,14 @@
 #define APPLESEED_RENDERER_KERNEL_RENDERING_ISAMPLERENDERER_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/global/globaltypes.h"
+
+// appleseed.foundation headers.
+#include "foundation/core/concepts/iunknown.h"
+#include "foundation/math/vector.h"
 
 // Forward declarations.
+namespace foundation    { class StatisticsVector; }
 namespace renderer      { class ShadingResult; }
 
 namespace renderer
@@ -42,24 +47,27 @@ namespace renderer
 // Sample renderer interface.
 //
 
-class RENDERERDLL ISampleRenderer
+class ISampleRenderer
   : public foundation::IUnknown
 {
   public:
-    // Render a sample at a given point on the image plane.
-    // See renderer::Camera class documentation for details.
+    // Render a sample at a given point on the image plane expressed in
+    // normalized device coordinates (http://appleseedhq.net/conventions).
     virtual void render_sample(
         SamplingContext&                sampling_context,
-        const foundation::Vector2d&     image_point,            // point in image plane, in NDC
+        const foundation::Vector2d&     image_point,
         ShadingResult&                  shading_result) = 0;
+
+    // Retrieve performance statistics.
+    virtual foundation::StatisticsVector get_statistics() const = 0;
 };
 
 
 //
-// Interface of a ISampleRenderer factory that can cross DLL boundaries.
+// Interface of a ISampleRenderer factory.
 //
 
-class RENDERERDLL ISampleRendererFactory
+class ISampleRendererFactory
   : public foundation::IUnknown
 {
   public:

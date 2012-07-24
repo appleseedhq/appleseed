@@ -40,6 +40,7 @@
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/job.h"
+#include "foundation/utility/statistics.h"
 
 // Standard headers.
 #include <vector>
@@ -154,6 +155,8 @@ namespace
         virtual void terminate_rendering()
         {
             stop_rendering();
+
+            print_tile_renderers_stats();
         }
 
         virtual bool is_rendering() const
@@ -218,6 +221,18 @@ namespace
         vector<ITileCallback*>      m_tile_callbacks;   // tile callbacks, none or one per thread
 
         TileJobFactory              m_tile_job_factory;
+
+        void print_tile_renderers_stats() const
+        {
+            assert(!m_tile_renderers.empty());
+
+            StatisticsVector stats;
+
+            for (size_t i = 0; i < m_tile_renderers.size(); ++i)
+                stats.merge(m_tile_renderers[i]->get_statistics());
+
+            RENDERER_LOG_DEBUG("%s", stats.to_string().c_str());
+        }
     };
 }
 

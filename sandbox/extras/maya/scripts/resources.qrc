@@ -1,0 +1,5 @@
+<RCC>
+  <qresource prefix="icon">
+    <file>mayaToAppleseedGraphic.png</file>
+  </qresource>
+</RCC>

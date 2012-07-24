@@ -128,7 +128,7 @@ void AssemblyTree::rebuild_assembly_tree()
     clear();
     m_assembly_instances.clear();
 
-    Statistics statistics("assembly tree statistics");
+    Statistics statistics;
 
     // Collect all assembly instances of the scene.
     AABBVector assembly_instance_bboxes;
@@ -151,7 +151,8 @@ void AssemblyTree::rebuild_assembly_tree()
     typedef bvh::Builder<AssemblyTree, Partitioner> Builder;
     Builder builder;
     builder.build<DefaultWallclockTimer>(*this, partitioner, m_assembly_instances.size());
-    statistics.add_time("build_time", "build time", builder.get_build_time());
+    statistics.insert_time("build time", builder.get_build_time());
+    statistics.merge(bvh::TreeStatistics<AssemblyTree>(*this, AABB3d(m_scene.compute_bbox())));
 
     if (!m_assembly_instances.empty())
     {
@@ -170,12 +171,11 @@ void AssemblyTree::rebuild_assembly_tree()
         store_assembly_instances_in_leaves(statistics);
     }
 
-    // Collect and print assembly tree statistics.
-    bvh::TreeStatistics<AssemblyTree> collect_statistics(
-        statistics,
-        *this,
-        AABB3d(m_scene.compute_bbox()));
-    RENDERER_LOG_DEBUG("%s", statistics.to_string().c_str());
+    // Print assembly tree statistics.
+    RENDERER_LOG_DEBUG("%s",
+        StatisticsVector::make(
+            "assembly tree statistics",
+            statistics).to_string().c_str());
 }
 
 void AssemblyTree::store_assembly_instances_in_leaves(Statistics& statistics)
@@ -208,7 +208,7 @@ void AssemblyTree::store_assembly_instances_in_leaves(Statistics& statistics)
         }
     }
 
-    statistics.add_percent("fat_leaves", "fat leaves", fat_leaf_count, leaf_count);
+    statistics.insert_percent("fat leaves", fat_leaf_count, leaf_count);
 }
 
 namespace

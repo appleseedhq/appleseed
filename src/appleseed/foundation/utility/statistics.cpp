@@ -33,7 +33,6 @@
 #include "foundation/utility/foreach.h"
 
 // Standard headers.
-#include <cassert>
 #include <iomanip>
 #include <sstream>
 
@@ -46,27 +45,56 @@ namespace foundation
 // Statistics class implementation.
 //
 
-Statistics::Statistics(const string& title)
-  : m_title(title)
+Statistics::Statistics()
 {
+}
+
+Statistics::Statistics(const Statistics& rhs)
+{
+    insert(rhs);
 }
 
 Statistics::~Statistics()
 {
-    for (const_each<RecordVector> i = m_records; i; ++i)
+    clear();
+}
+
+Statistics& Statistics::operator=(const Statistics& rhs)
+{
+    clear();
+    insert(rhs);
+
+    return *this;
+}
+
+void Statistics::clear()
+{
+    for (const_each<EntryVector> i = m_entries; i; ++i)
         delete *i;
+
+    m_entries.clear();
+    m_index.clear();
+}
+
+void Statistics::insert(const Statistics& other)
+{
+    for (const_each<EntryVector> i = other.m_entries; i; ++i)
+    {
+        const Entry* other_entry = *i;
+        insert(other_entry->clone());
+    }
 }
 
 void Statistics::merge(const Statistics& other)
 {
-    for (const_each<RecordVector> i = other.m_records; i; ++i)
+    for (const_each<EntryVector> i = other.m_entries; i; ++i)
     {
-        const RecordBase* other_record = *i;
-        const RecordIndex::iterator it = m_index.find(other_record->m_name);
+        const Entry* other_entry = *i;
+        const EntryIndex::iterator it = m_index.find(other_entry->m_name);
 
         if (it == m_index.end())
-            insert(other_record->clone());
-        else it->second->merge(other_record);
+            insert(other_entry->clone());
+        else it->second->merge(other_entry);
     }
 }
 
@@ -87,30 +115,27 @@ namespace
     }
 }
 
-string Statistics::to_string(const size_t max_title_length) const
+string Statistics::to_string(const size_t max_header_length) const
 {
+    if (m_entries.empty())
+        return "  no statistics";
+
     stringstream sstr;
 
-    sstr << m_title << ":" << endl;
-
-    if (m_records.empty())
+    for (const_each<EntryVector> i = m_entries; i; ++i)
     {
-        sstr << "  no statistics" << endl;
-    }
-    else
-    {
-        for (const_each<RecordVector> i = m_records; i; ++i)
-        {
-            const RecordBase* record = *i;
+        const Entry* entry = *i;
 
-            sstr << "  ";
+        if (i.it() > m_entries.begin())
+            sstr << endl;
 
-            if (record->m_title.size() > max_title_length)
-                sstr << record->m_title.substr(0, max_title_length);
-            else sstr << record->m_title << string(max_title_length - record->m_title.size(), ' ');
+        sstr << "  ";
 
-            sstr << ' ' << record->to_string() << endl;
-        }
+        if (entry->m_name.size() > max_header_length)
+            sstr << entry->m_name.substr(0, max_header_length);
+        else sstr << entry->m_name << string(max_header_length - entry->m_name.size(), ' ');
+
+        sstr << ' ' << entry->to_string();
     }
 
     return sstr.str();
@@ -138,180 +163,254 @@ Statistics::ExceptionTypeMismatch::ExceptionTypeMismatch(const char* name)
 
 
 //
-// Statistics::RecordBase class implementation.
+// Statistics::Entry class implementation.
 //
 
-Statistics::RecordBase::RecordBase(
+Statistics::Entry::Entry(const string& name)
+  : m_name(name)
+{
+}
+
+Statistics::Entry::Entry(
     const string&               name,
-    const string&               title,
     const string&               unit)
   : m_name(name)
-  , m_title(title)
   , m_unit(unit)
 {
 }
 
-template <typename T>
-const T* Statistics::RecordBase::cast(const RecordBase* record)
-{
-    assert(record);
-
-    const T* typed_record = dynamic_cast<const T*>(record);
-
-    if (typed_record == 0)
-        throw ExceptionTypeMismatch(record->m_name.c_str());
-
-    return typed_record;
-}
-
 
 //
-// Statistics::UnsignedIntegerRecord class implementation.
+// Statistics::IntegerEntry class implementation.
 //
 
-Statistics::UnsignedIntegerRecord::UnsignedIntegerRecord(
+Statistics::IntegerEntry::IntegerEntry(
     const string&               name,
-    const string&               title,
     const string&               unit,
-    const uint64                value)
-  : RecordBase(name, title, unit)
+    const int64                 value)
+  : Entry(name, unit)
   , m_value(value)
 {
 }
 
-auto_ptr<Statistics::RecordBase> Statistics::UnsignedIntegerRecord::clone() const
+auto_ptr<Statistics::Entry> Statistics::IntegerEntry::clone() const
 {
-    return auto_ptr<RecordBase>(new UnsignedIntegerRecord(*this));
+    return auto_ptr<Entry>(new IntegerEntry(*this));
 }
 
-void Statistics::UnsignedIntegerRecord::merge(const RecordBase* other)
+void Statistics::IntegerEntry::merge(const Entry* other)
 {
-    m_value += cast<UnsignedIntegerRecord>(other)->m_value;
+    m_value += cast<IntegerEntry>(other)->m_value;
 }
 
-string Statistics::UnsignedIntegerRecord::to_string() const
+string Statistics::IntegerEntry::to_string() const
+{
+    return pretty_int(m_value);
+}
+
+
+//
+// Statistics::UnsignedIntegerEntry class implementation.
+//
+
+Statistics::UnsignedIntegerEntry::UnsignedIntegerEntry(
+    const string&               name,
+    const string&               unit,
+    const uint64                value)
+  : Entry(name, unit)
+  , m_value(value)
+{
+}
+
+auto_ptr<Statistics::Entry> Statistics::UnsignedIntegerEntry::clone() const
+{
+    return auto_ptr<Entry>(new UnsignedIntegerEntry(*this));
+}
+
+void Statistics::UnsignedIntegerEntry::merge(const Entry* other)
+{
+    m_value += cast<UnsignedIntegerEntry>(other)->m_value;
+}
+
+string Statistics::UnsignedIntegerEntry::to_string() const
 {
     return pretty_uint(m_value);
 }
 
 
 //
-// Statistics::FloatingPointRecord class implementation.
+// Statistics::FloatingPointEntry class implementation.
 //
 
-Statistics::FloatingPointRecord::FloatingPointRecord(
+Statistics::FloatingPointEntry::FloatingPointEntry(
     const string&               name,
-    const string&               title,
     const string&               unit,
     const double                value)
-  : RecordBase(name, title, unit)
+  : Entry(name, unit)
   , m_value(value)
 {
 }
 
-auto_ptr<Statistics::RecordBase> Statistics::FloatingPointRecord::clone() const
+auto_ptr<Statistics::Entry> Statistics::FloatingPointEntry::clone() const
 {
-    return auto_ptr<RecordBase>(new FloatingPointRecord(*this));
+    return auto_ptr<Entry>(new FloatingPointEntry(*this));
 }
 
-void Statistics::FloatingPointRecord::merge(const RecordBase* other)
+void Statistics::FloatingPointEntry::merge(const Entry* other)
 {
-    m_value += cast<FloatingPointRecord>(other)->m_value;
+    m_value += cast<FloatingPointEntry>(other)->m_value;
 }
 
-string Statistics::FloatingPointRecord::to_string() const
+string Statistics::FloatingPointEntry::to_string() const
 {
     return pretty_scalar(m_value);
 }
 
 
 //
-// Statistics::StringRecord class implementation.
+// Statistics::StringEntry class implementation.
 //
 
-Statistics::StringRecord::StringRecord(
+Statistics::StringEntry::StringEntry(
     const string&               name,
-    const string&               title,
     const string&               unit,
     const string&               value)
-  : RecordBase(name, title, unit)
+  : Entry(name, unit)
   , m_value(value)
 {
 }
 
-auto_ptr<Statistics::RecordBase> Statistics::StringRecord::clone() const
+auto_ptr<Statistics::Entry> Statistics::StringEntry::clone() const
 {
-    return auto_ptr<RecordBase>(new StringRecord(*this));
+    return auto_ptr<Entry>(new StringEntry(*this));
 }
 
-void Statistics::StringRecord::merge(const RecordBase* other)
+void Statistics::StringEntry::merge(const Entry* other)
 {
     // String statistics are not merged.
 }
 
-string Statistics::StringRecord::to_string() const
+string Statistics::StringEntry::to_string() const
 {
     return m_value;
 }
 
 
 //
-// Statistics::UnsignedIntegerPopulationRecord class implementation.
+// Statistics::UnsignedIntegerPopulationEntry class implementation.
 //
 
-Statistics::UnsignedIntegerPopulationRecord::UnsignedIntegerPopulationRecord(
+Statistics::UnsignedIntegerPopulationEntry::UnsignedIntegerPopulationEntry(
     const string&               name,
-    const string&               title,
     const string&               unit,
     const Population<size_t>&   value)
-  : RecordBase(name, title, unit)
+  : Entry(name, unit)
   , m_value(value)
 {
 }
 
-auto_ptr<Statistics::RecordBase> Statistics::UnsignedIntegerPopulationRecord::clone() const
+auto_ptr<Statistics::Entry> Statistics::UnsignedIntegerPopulationEntry::clone() const
 {
-    return auto_ptr<RecordBase>(new UnsignedIntegerPopulationRecord(*this));
+    return auto_ptr<Statistics::Entry>(new UnsignedIntegerPopulationEntry(*this));
 }
 
-void Statistics::UnsignedIntegerPopulationRecord::merge(const RecordBase* other)
+void Statistics::UnsignedIntegerPopulationEntry::merge(const Entry* other)
 {
-    m_value.merge(cast<UnsignedIntegerPopulationRecord>(other)->m_value);
+    m_value.merge(cast<UnsignedIntegerPopulationEntry>(other)->m_value);
 }
 
-string Statistics::UnsignedIntegerPopulationRecord::to_string() const
+string Statistics::UnsignedIntegerPopulationEntry::to_string() const
 {
     return pop_to_string(m_value, m_unit);
 }
 
 
 //
-// Statistics::FloatingPointPopulationRecord class implementation.
+// Statistics::FloatingPointPopulationEntry class implementation.
 //
 
-Statistics::FloatingPointPopulationRecord::FloatingPointPopulationRecord(
+Statistics::FloatingPointPopulationEntry::FloatingPointPopulationEntry(
     const string&               name,
-    const string&               title,
     const string&               unit,
     const Population<double>&   value)
-  : RecordBase(name, title, unit)
+  : Entry(name, unit)
   , m_value(value)
 {
 }
 
-auto_ptr<Statistics::RecordBase> Statistics::FloatingPointPopulationRecord::clone() const
+auto_ptr<Statistics::Entry> Statistics::FloatingPointPopulationEntry::clone() const
 {
-    return auto_ptr<RecordBase>(new FloatingPointPopulationRecord(*this));
+    return auto_ptr<Statistics::Entry>(new FloatingPointPopulationEntry(*this));
 }
 
-void Statistics::FloatingPointPopulationRecord::merge(const RecordBase* other)
+void Statistics::FloatingPointPopulationEntry::merge(const Entry* other)
 {
-    m_value.merge(cast<FloatingPointPopulationRecord>(other)->m_value);
+    m_value.merge(cast<FloatingPointPopulationEntry>(other)->m_value);
 }
 
-string Statistics::FloatingPointPopulationRecord::to_string() const
+string Statistics::FloatingPointPopulationEntry::to_string() const
 {
     return pop_to_string(m_value, m_unit);
+}
+
+
+//
+// StatisticsVector class implementation.
+//
+
+StatisticsVector StatisticsVector::make(
+    const string&               name,
+    const Statistics&           stats)
+{
+    StatisticsVector vec;
+    vec.insert(name, stats);
+    return vec;
+}
+
+void StatisticsVector::insert(
+    const string&               name,
+    const Statistics&           stats)
+{
+    NamedStatistics named_stats;
+    named_stats.m_name = name;
+    named_stats.m_stats = stats;
+    m_stats.push_back(named_stats);
+}
+
+void StatisticsVector::merge(const StatisticsVector& other)
+{
+    for (const_each<NamedStatisticsVector> i = other.m_stats; i; ++i)
+        merge(*i);
+}
+
+void StatisticsVector::merge(const NamedStatistics& other)
+{
+    for (each<NamedStatisticsVector> i = m_stats; i; ++i)
+    {
+        if (i->m_name == other.m_name)
+        {
+            i->m_stats.merge(other.m_stats);
+            return;
+        }
+    }
+
+    m_stats.push_back(other);
+}
+
+string StatisticsVector::to_string(const size_t max_header_length) const
+{
+    stringstream sstr;
+
+    for (const_each<NamedStatisticsVector> i = m_stats; i; ++i)
+    {
+        if (i.it() > m_stats.begin())
+            sstr << endl;
+
+        sstr << i->m_name << ":" << endl;
+        sstr << i->m_stats.to_string(max_header_length);
+    }
+
+    return sstr.str();
 }
 
 }   // namespace foundation

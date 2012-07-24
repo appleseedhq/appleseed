@@ -35,6 +35,7 @@
 #include "foundation/platform/types.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/iterators.h"
+#include "foundation/utility/statistics.h"
 
 // Standard headers.
 #include <cassert>
@@ -687,12 +688,11 @@ class DualStageCache
 // Utility functions to query and format cache statistics.
 //
 
-// Format cache performance statistics into a string.
-std::string format_cache_stats(const uint64 hits, const uint64 misses);
-
-// Format performance statistics of a given cache into a string.
 template <typename Cache>
-std::string format_cache_stats(const Cache& cache);
+Statistics make_single_stage_cache_stats(const Cache& cache);
+
+template <typename Cache>
+Statistics make_dual_stage_cache_stats(const Cache& cache);
 
 
 //
@@ -1080,13 +1080,67 @@ check_integrity(IntegrityChecker& checker) const
 // Utility functions implementation.
 //
 
-template <typename Cache>
-std::string format_cache_stats(const Cache& cache)
+namespace cache_impl
 {
-    return
-        format_cache_stats(
-            cache.get_hit_count(),
-            cache.get_miss_count());
+    struct CacheStatisticsEntry
+      : public Statistics::Entry
+    {
+        uint64  m_hit_count;
+        uint64  m_miss_count;
+
+        CacheStatisticsEntry(
+            const std::string&  name,
+            const uint64        hit_count,
+            const uint64        miss_count);
+
+        virtual std::auto_ptr<Entry> clone() const override;
+        virtual void merge(const Entry* other) override;
+        virtual std::string to_string() const override;
+    };
+}
+
+template <typename Cache>
+Statistics make_single_stage_cache_stats(const Cache& cache)
+{
+    Statistics stats;
+
+    stats.insert(
+        std::auto_ptr<cache_impl::CacheStatisticsEntry>(
+            new cache_impl::CacheStatisticsEntry(
+                "performances",
+                cache.get_hit_count(),
+                cache.get_miss_count())));
+
+    return stats;
+}
+
+template <typename Cache>
+Statistics make_dual_stage_cache_stats(const Cache& cache)
+{
+    Statistics stats;
+
+    stats.insert(
+        std::auto_ptr<cache_impl::CacheStatisticsEntry>(
+            new cache_impl::CacheStatisticsEntry(
+                "combined",
+                cache.get_stage0_hit_count() + cache.get_stage1_hit_count(),
+                cache.get_stage1_miss_count())));
+
+    stats.insert(
+        std::auto_ptr<cache_impl::CacheStatisticsEntry>(
+            new cache_impl::CacheStatisticsEntry(
+                "stage-0",
+                cache.get_stage0_hit_count(),
+                cache.get_stage0_miss_count())));
+
+    stats.insert(
+        std::auto_ptr<cache_impl::CacheStatisticsEntry>(
+            new cache_impl::CacheStatisticsEntry(
+                "stage-1",
+                cache.get_stage1_hit_count(),
+                cache.get_stage1_miss_count())));
+
+    return stats;
 }
 
 }       // namespace foundation

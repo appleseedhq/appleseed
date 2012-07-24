@@ -45,6 +45,7 @@
 
 // Forward declarations.
 namespace foundation    { class Dictionary; }
+namespace renderer      { class Project; }
 class QObject;
 class QWidget;
 
@@ -65,6 +66,7 @@ std::string get_entity_name_dialog(
 void open_entity_editor(
     QWidget*                                            parent,
     const std::string&                                  window_title,
+    const renderer::Project&                            project,
     std::auto_ptr<EntityEditorWindow::IFormFactory>     form_factory,
     std::auto_ptr<EntityEditorWindow::IEntityBrowser>   entity_browser,
     const foundation::Dictionary&                       values,
@@ -74,6 +76,7 @@ void open_entity_editor(
 void open_entity_editor(
     QWidget*                                            parent,
     const std::string&                                  window_title,
+    const renderer::Project&                            project,
     std::auto_ptr<EntityEditorWindow::IFormFactory>     form_factory,
     std::auto_ptr<EntityEditorWindow::IEntityBrowser>   entity_browser,
     QObject*                                            receiver,

@@ -114,6 +114,7 @@ void MultiModelEntityItem<Entity, ParentEntity>::slot_edit()
     open_entity_editor(
         QTreeWidgetItem::treeWidget(),
         window_title,
+        EntityItemType::m_project_builder.get_project(),
         form_factory,
         entity_browser,
         values,

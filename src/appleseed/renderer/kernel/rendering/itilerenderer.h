@@ -29,11 +29,15 @@
 #ifndef APPLESEED_RENDERER_KERNEL_RENDERING_ITILERENDERER_H
 #define APPLESEED_RENDERER_KERNEL_RENDERING_ITILERENDERER_H
 
-// appleseed.renderer headers.
-#include "renderer/global/global.h"
+// appleseed.foundation headers.
+#include "foundation/core/concepts/iunknown.h"
+
+// Standard headers.
+#include <cstddef>
 
 // Forward declarations.
 namespace foundation    { class AbortSwitch; }
+namespace foundation    { class StatisticsVector; }
 namespace renderer      { class Frame; }
 
 namespace renderer
@@ -43,7 +47,7 @@ namespace renderer
 // Tile renderer interface.
 //
 
-class RENDERERDLL ITileRenderer
+class ITileRenderer
   : public foundation::IUnknown
 {
   public:
@@ -53,14 +57,17 @@ class RENDERERDLL ITileRenderer
         const size_t                tile_x,
         const size_t                tile_y,
         foundation::AbortSwitch&    abort_switch) = 0;
+
+    // Retrieve performance statistics.
+    virtual foundation::StatisticsVector get_statistics() const = 0;
 };
 
 
 //
-// Interface of a ITileRenderer factory that can cross DLL boundaries.
+// Interface of a ITileRenderer factory.
 //
 
-class RENDERERDLL ITileRendererFactory
+class ITileRendererFactory
   : public foundation::IUnknown
 {
   public:

@@ -27,7 +27,7 @@
 //
 
 // Interface header.
-#include "drt.h"
+#include "drtlightingengine.h"
 
 // appleseed.renderer headers.
 #include "renderer/kernel/aov/spectrumstack.h"
@@ -50,6 +50,7 @@
 #include "foundation/math/mis.h"
 #include "foundation/math/population.h"
 #include "foundation/utility/memory.h"
+#include "foundation/utility/statistics.h"
 #include "foundation/utility/string.h"
 
 // Forward declarations.
@@ -73,22 +74,23 @@ namespace
       public:
         struct Parameters
         {
-            const size_t        m_rr_min_path_length;       // minimum path length before Russian Roulette is used, 0 for unlimited
-            const size_t        m_max_path_length;          // maximum path length, 0 for unlimited
+            const bool      m_enable_ibl;                   // image-based lighting enabled?
 
-            const size_t        m_dl_bsdf_sample_count;     // number of BSDF samples used to estimate direct illumination
-            const size_t        m_dl_light_sample_count;    // number of light samples used to estimate direct illumination
+            const size_t    m_max_path_length;              // maximum path length, 0 for unlimited
+            const size_t    m_rr_min_path_length;           // minimum path length before Russian Roulette is used, 0 for unlimited
 
-            const bool          m_enable_ibl;               // IBL enabled?
-            const size_t        m_ibl_bsdf_sample_count;    // number of BSDF samples used to estimate IBL
-            const size_t        m_ibl_env_sample_count;     // number of environment samples used to estimate IBL
+            const size_t    m_dl_bsdf_sample_count;         // number of BSDF samples used to estimate direct illumination
+            const size_t    m_dl_light_sample_count;        // number of light samples used to estimate direct illumination
+
+            const size_t    m_ibl_bsdf_sample_count;        // number of BSDF samples used to estimate IBL
+            const size_t    m_ibl_env_sample_count;         // number of environment samples used to estimate IBL
 
             explicit Parameters(const ParamArray& params)
-              : m_rr_min_path_length(params.get_optional<size_t>("rr_min_path_length", 3))
+              : m_enable_ibl(params.get_optional<bool>("enable_ibl", true))
               , m_max_path_length(params.get_optional<size_t>("max_path_length", 0))
+              , m_rr_min_path_length(params.get_optional<size_t>("rr_min_path_length", 3))
               , m_dl_bsdf_sample_count(params.get_optional<size_t>("dl_bsdf_samples", 1))
               , m_dl_light_sample_count(params.get_optional<size_t>("dl_light_samples", 1))
-              , m_enable_ibl(params.get_optional<bool>("enable_ibl", true))
               , m_ibl_bsdf_sample_count(params.get_optional<size_t>("ibl_bsdf_samples", 1))
               , m_ibl_env_sample_count(params.get_optional<size_t>("ibl_env_samples", 1))
             {
@@ -98,18 +100,18 @@ namespace
             {
                 RENDERER_LOG_INFO(
                     "distribution ray tracing settings:\n"
-                    "  rr min path len. %s\n"
+                    "  ibl              %s\n"
                     "  max path length  %s\n"
+                    "  rr min path len. %s\n"
                     "  dl bsdf samples  %s\n"
                     "  dl light samples %s\n"
-                    "  ibl              %s\n"
                     "  ibl bsdf samples %s\n"
                     "  ibl env samples  %s",
-                    m_rr_min_path_length == 0 ? "infinite" : pretty_uint(m_rr_min_path_length).c_str(),
+                    m_enable_ibl ? "on" : "off",
                     m_max_path_length == 0 ? "infinite" : pretty_uint(m_max_path_length).c_str(),
+                    m_rr_min_path_length == 0 ? "infinite" : pretty_uint(m_rr_min_path_length).c_str(),
                     pretty_uint(m_dl_bsdf_sample_count).c_str(),
                     pretty_uint(m_dl_light_sample_count).c_str(),
-                    m_enable_ibl ? "on" : "off",
                     pretty_uint(m_ibl_bsdf_sample_count).c_str(),
                     pretty_uint(m_ibl_env_sample_count).c_str());
             }
@@ -120,15 +122,11 @@ namespace
             const ParamArray&       params)
           : m_params(params)
           , m_light_sampler(light_sampler)
+          , m_path_count(0)
         {
         }
 
-        ~DRTLightingEngine()
-        {
-            m_stats.print();
-        }
-
-        virtual void release()
+        virtual void release() override
         {
             delete this;
         }
@@ -138,14 +136,8 @@ namespace
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
             Spectrum&               radiance,               // output radiance, in W.sr^-1.m^-2
-            SpectrumStack&          aovs)
+            SpectrumStack&          aovs) override
         {
-            typedef PathTracer<
-                PathVisitor,
-                BSDF::Glossy | BSDF::Specular,
-                false                                       // not adjoint
-            > PathTracer;
-
             PathVisitor path_visitor(
                 m_params,
                 m_light_sampler,
@@ -154,7 +146,7 @@ namespace
                 radiance,
                 aovs);
 
-            PathTracer path_tracer(
+            PathTracer<PathVisitor, false> path_tracer(     // false = not adjoint
                 path_visitor,
                 m_params.m_rr_min_path_length,
                 m_params.m_max_path_length,
@@ -168,35 +160,20 @@ namespace
                     shading_point);
 
             // Update statistics.
-            ++m_stats.m_path_count;
-            m_stats.m_ray_tree_depth.insert(path_length);
+            ++m_path_count;
+            m_path_length.insert(path_length);
+        }
+
+        virtual StatisticsVector get_statistics() const override
+        {
+            Statistics stats;
+            stats.insert("path count", m_path_count);
+            stats.insert("path length", m_path_length);
+
+            return StatisticsVector::make("distribution ray tracing statistics", stats);
         }
 
       private:
-        struct Statistics
-        {
-            uint64              m_path_count;               // number of paths
-            Population<uint64>  m_ray_tree_depth;           // ray tree depth
-
-            Statistics()
-              : m_path_count(0)
-            {
-            }
-
-            void print() const
-            {
-                RENDERER_LOG_DEBUG(
-                    "distribution ray tracing statistics:\n"
-                    "  paths            %s\n"
-                    "  ray tree depth   avg %.1f  min %s  max %s  dev %.1f\n",
-                    pretty_uint(m_path_count).c_str(),
-                    m_ray_tree_depth.get_mean(),
-                    pretty_uint(m_ray_tree_depth.get_min()).c_str(),
-                    pretty_uint(m_ray_tree_depth.get_max()).c_str(),
-                    m_ray_tree_depth.get_dev());
-            }
-        };
-
         class PathVisitor
         {
           public:
@@ -219,12 +196,20 @@ namespace
                 m_path_aovs.set(0.0f);
             }
 
+            bool accept_scattering_mode(
+                const BSDF::Mode        prev_bsdf_mode,
+                const BSDF::Mode        bsdf_mode) const
+            {
+                return (bsdf_mode & (BSDF::Glossy | BSDF::Specular)) != 0;
+            }
+
             bool visit_vertex(
                 SamplingContext&        sampling_context,
                 const ShadingPoint&     shading_point,
                 const Vector3d&         outgoing,
                 const BSDF*             bsdf,
                 const void*             bsdf_data,
+                const size_t            path_length,
                 const BSDF::Mode        prev_bsdf_mode,
                 const double            prev_bsdf_prob,
                 const Spectrum&         throughput)
@@ -389,8 +374,10 @@ namespace
         };
 
         const Parameters        m_params;
-        Statistics              m_stats;
         const LightSampler&     m_light_sampler;
+
+        uint64                  m_path_count;
+        Population<size_t>      m_path_length;
     };
 }
 

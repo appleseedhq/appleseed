@@ -28,7 +28,7 @@
 #
 
 # Package builder settings.
-VersionString = "1.9"
+VersionString = "2.0"
 SettingsFileName = "appleseed.package.configuration.xml"
 
 # Imports.
@@ -213,6 +213,7 @@ class PackageBuilder:
         safe_delete_directory("appleseed/scenes/winosi/renders")
         safe_delete_file("appleseed/tests/unit benchmarks/inputs/test_knn_particles.bin")
         safe_delete_file("appleseed/tests/unit benchmarks/inputs/test_knn_photons.bin")
+        safe_delete_directory("appleseed/extras/devkit")
 
     def add_local_binaries_to_stage(self):
         progress("Adding local binaries to staging directory")

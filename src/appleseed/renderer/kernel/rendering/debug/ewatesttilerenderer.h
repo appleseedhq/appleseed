@@ -33,8 +33,8 @@
 #include "renderer/kernel/rendering/itilerenderer.h"
 #include "renderer/utility/paramarray.h"
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 
 // Forward declarations.
 namespace renderer  { class Scene; }
@@ -44,7 +44,7 @@ namespace renderer  { class TraceContext; }
 namespace renderer
 {
 
-class DLLSYMBOL EWATestTileRendererFactory
+class EWATestTileRendererFactory
   : public ITileRendererFactory
 {
   public:
@@ -56,10 +56,10 @@ class DLLSYMBOL EWATestTileRendererFactory
         const ParamArray&   params);
 
     // Delete this instance.
-    virtual void release();
+    virtual void release() override;
 
     // Return a new blank tile renderer instance.
-    virtual ITileRenderer* create();
+    virtual ITileRenderer* create() override;
 
   private:
     const Scene&            m_scene;

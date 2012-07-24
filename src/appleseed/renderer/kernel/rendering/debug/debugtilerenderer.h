@@ -30,8 +30,10 @@
 #define APPLESEED_RENDERER_KERNEL_RENDERING_DEBUG_DEBUGTILERENDERER_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
 #include "renderer/kernel/rendering/itilerenderer.h"
+
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 
 namespace renderer
 {
@@ -45,15 +47,15 @@ namespace renderer
 // These tile renderers do not rely on sample renderers.
 //
 
-class RENDERERDLL DebugTileRendererFactory
+class DebugTileRendererFactory
   : public ITileRendererFactory
 {
   public:
     // Delete this instance.
-    virtual void release();
+    virtual void release() override;
 
     // Return a new debug tile renderer instance.
-    virtual ITileRenderer* create();
+    virtual ITileRenderer* create() override;
 };
 
 }       // namespace renderer

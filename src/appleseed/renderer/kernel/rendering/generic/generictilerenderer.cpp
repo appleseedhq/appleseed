@@ -30,6 +30,8 @@
 #include "generictilerenderer.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
+#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/aov/imagestack.h"
 #include "renderer/kernel/aov/spectrumstack.h"
 #include "renderer/kernel/aov/tilestack.h"
@@ -40,16 +42,29 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
+#include "foundation/image/color.h"
+#include "foundation/image/colorspace.h"
 #include "foundation/image/image.h"
 #include "foundation/image/tile.h"
+#include "foundation/math/hash.h"
 #include "foundation/math/minmax.h"
 #include "foundation/math/ordering.h"
+#include "foundation/math/population.h"
 #include "foundation/math/qmc.h"
 #include "foundation/math/scalar.h"
+#include "foundation/math/vector.h"
 #include "foundation/platform/breakpoint.h"
+#include "foundation/platform/types.h"
+#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/utility/iostreamop.h"
 #include "foundation/utility/job.h"
+#include "foundation/utility/statistics.h"
 
 // Standard headers.
+#include <algorithm>
+#include <cassert>
+#include <cmath>
+#include <cstddef>
 #include <vector>
 
 using namespace foundation;
@@ -87,6 +102,7 @@ namespace
           : m_params(params)
           , m_sample_renderer(factory->create())
           , m_frame_properties(frame.image().properties())
+          , m_frame_color_space(frame.get_color_space())
           , m_lighting_conditions(frame.get_lighting_conditions())
         {
             // Retrieve frame properties.
@@ -96,10 +112,18 @@ namespace
             // Generate pixel ordering.
             vector<size_t> ordering;
             ordering.reserve(num_pixels);
-            hilbert_ordering(
-                ordering,
-                properties.m_tile_width,
-                properties.m_tile_height);
+            if (m_params.m_sampler_type == Parameters::AdaptiveSampler)
+            {
+                // A linear order allows to compute contrast with the left and top neighbors.
+                linear_ordering(ordering, num_pixels);
+            }
+            else
+            {
+                hilbert_ordering(
+                    ordering,
+                    properties.m_tile_width,
+                    properties.m_tile_height);
+            }
             assert(ordering.size() == num_pixels);
 
             // Convert pixel ordering to (x, y) representation.
@@ -114,22 +138,33 @@ namespace
                 m_pixel_ordering[i].y = static_cast<uint16>(y);
             }
 
-            // Compute the approximate size of one side of the subpixel grid inside a pixel.
-            m_sqrt_max_samples =
-                round<size_t>(sqrt(static_cast<double>(m_params.m_max_samples)));
-            RENDERER_LOG_INFO(
-                "effective subpixel grid size: " FMT_SIZE_T "x" FMT_SIZE_T,
-                m_sqrt_max_samples,
-                m_sqrt_max_samples);
+            if (m_params.m_sampler_type == Parameters::UniformSampler)
+            {
+                // Compute the approximate size of one side of the subpixel grid inside a pixel.
+                m_sqrt_sample_count = round<size_t>(sqrt(static_cast<double>(m_params.m_max_samples)));
+                RENDERER_LOG_INFO(
+                    "effective subpixel grid size: min: " FMT_SIZE_T "x" FMT_SIZE_T,
+                    m_sqrt_sample_count,
+                    m_sqrt_sample_count);
 
-            // Initialize the pixel sampler.
-            m_pixel_sampler.initialize(m_sqrt_max_samples);
+                // Precompute some stuff.
+                m_rcp_sample_count = 1.0f / (m_sqrt_sample_count * m_sqrt_sample_count);
 
-            // Precompute some stuff.
-            m_rcp_sample_count = 1.0f / (m_sqrt_max_samples * m_sqrt_max_samples);
+                // Initialize the pixel sampler.
+                m_pixel_sampler.initialize(m_sqrt_sample_count);
+            }
+            else if (m_params.m_sampler_type == Parameters::AdaptiveSampler)
+            {
+                if (m_params.m_adaptive_sampler_diagnostics)
+                {
+                    m_variation_aov_index = frame.aov_images().get_or_append("variation", PixelFormatFloat);
+                    m_contrast_aov_index = frame.aov_images().get_or_append("contrast", PixelFormatFloat);
+                    m_samples_aov_index = frame.aov_images().get_or_append("samples", PixelFormatFloat);
+                }
+            }
         }
 
-        virtual void release()
+        virtual void release() override
         {
             delete this;
         }
@@ -138,7 +173,7 @@ namespace
             const Frame&                frame,
             const size_t                tile_x,
             const size_t                tile_y,
-            AbortSwitch&                abort_switch)
+            AbortSwitch&                abort_switch) override
         {
             assert(tile_x < m_frame_properties.m_tile_count_x);
             assert(tile_y < m_frame_properties.m_tile_count_y);
@@ -187,7 +222,9 @@ namespace
                     if (!m_params.m_crop || is_pixel_inside_crop_window(ix, iy))
                     {
                         // Render, filter and accumulate samples.
-                        render_pixel(frame, ix, iy, pixel_color, pixel_aovs);
+                        if (m_params.m_sampler_type == Parameters::AdaptiveSampler)
+                            render_pixel_adaptive(frame, ix, iy, tile, tx, ty, pixel_color, pixel_aovs);
+                        else render_pixel(frame, ix, iy, pixel_color, pixel_aovs);
                     }
                 }
 
@@ -197,19 +234,54 @@ namespace
             }
         }
 
+        virtual StatisticsVector get_statistics() const override
+        {
+            return m_sample_renderer->get_statistics();
+        }
+
       private:
         struct Parameters
         {
+            enum SamplerType
+            {
+                UniformSampler,
+                AdaptiveSampler
+            };
+
+            SamplerType         m_sampler_type;
             const size_t        m_min_samples;          // minimum number of samples per pixel
             const size_t        m_max_samples;          // maximum number of samples per pixel
+            const float         m_max_contrast;
+            const double        m_max_variation;
+            const bool          m_adaptive_sampler_diagnostics;
+
             bool                m_crop;                 // is cropping enabled?
-            Vector4i            m_crop_window;          // crop window
+            Vector4i            m_crop_window;
 
             // Constructor, extract parameters.
             explicit Parameters(const ParamArray& params)
-              : m_min_samples   ( params.get_required<size_t>("min_samples", 1) )
-              , m_max_samples   ( params.get_required<size_t>("max_samples", 1) )
+              : m_min_samples(params.get_required<size_t>("min_samples", 1))
+              , m_max_samples(params.get_required<size_t>("max_samples", 1))
+              , m_max_contrast(params.get_optional<float>("max_contrast", 1.0f / 256))
+              , m_max_variation(params.get_optional<double>("max_variation", 0.15))
+              , m_adaptive_sampler_diagnostics(params.get_optional<bool>("enable_adaptive_sampler_diagnostics"))
             {
+                // Retrieve sampler parameter.
+                const string sampler_str = params.get_optional<string>("sampler", "uniform");
+                if (sampler_str == "uniform")
+                    m_sampler_type = UniformSampler;
+                else if (sampler_str == "adaptive")
+                    m_sampler_type = AdaptiveSampler;
+                else
+                {
+                    RENDERER_LOG_ERROR(
+                        "invalid value \"%s\" for parameter \"%s\", using default value \"%s\".",
+                        sampler_str.c_str(),
+                        "sampler",
+                        "uniform");
+                    m_sampler_type = UniformSampler;
+                }
+
                 // Retrieve crop window parameter.
                 m_crop = params.strings().exist("crop_window");
                 if (m_crop)
@@ -227,19 +299,21 @@ namespace
 
         const Parameters                    m_params;
         auto_release_ptr<ISampleRenderer>   m_sample_renderer;
-
         const CanvasProperties&             m_frame_properties;
+        const ColorSpace                    m_frame_color_space;
         const LightingConditions&           m_lighting_conditions;
-
         vector<Pixel>                       m_pixel_ordering;
+        SamplingContext::RNGType            m_rng;
+
+        // Uniform sampler only.
+        size_t                              m_sqrt_sample_count;
+        float                               m_rcp_sample_count;
         PixelSampler                        m_pixel_sampler;
 
-        size_t                              m_sqrt_max_samples;
-        double                              m_rcp_sample_canvas_width;
-        double                              m_rcp_sample_canvas_height;
-        float                               m_rcp_sample_count;
-
-        SamplingContext::RNGType            m_rng;
+        // Adaptive sampler only.
+        size_t                              m_variation_aov_index;
+        size_t                              m_contrast_aov_index;
+        size_t                              m_samples_aov_index;
 
         bool is_pixel_inside_crop_window(
             const size_t                ix,
@@ -259,12 +333,12 @@ namespace
             Color4f&                    pixel_color,
             SpectrumStack&              pixel_aovs)
         {
-            const size_t base_sx = ix * m_sqrt_max_samples;
-            const size_t base_sy = iy * m_sqrt_max_samples;
+            const size_t base_sx = ix * m_sqrt_sample_count;
+            const size_t base_sy = iy * m_sqrt_sample_count;
 
-            for (size_t sy = 0; sy < m_sqrt_max_samples; ++sy)
+            for (size_t sy = 0; sy < m_sqrt_sample_count; ++sy)
             {
-                for (size_t sx = 0; sx < m_sqrt_max_samples; ++sx)
+                for (size_t sx = 0; sx < m_sqrt_sample_count; ++sx)
                 {
                     // Compute the sample position in sample space and the instance number.
                     Vector2d s;
@@ -276,8 +350,7 @@ namespace
                         instance);
 
                     // Compute the sample position in NDC.
-                    const Vector2d sample_position =
-                        frame.get_sample_position(s.x, s.y);
+                    const Vector2d sample_position = frame.get_sample_position(s.x, s.y);
 
                     // Create a sampling context. We start with an initial dimension of 1,
                     // as this seems to give less correlation artifacts than when the
@@ -313,6 +386,170 @@ namespace
             // Finish computing the pixel values.
             pixel_color *= m_rcp_sample_count;
             pixel_aovs *= m_rcp_sample_count;
+        }
+
+        float contrast(const Color4f& c1_linear, const Color4f& c2_linear) const
+        {
+            const Color3f c1 = transform_color(c1_linear.rgb(), ColorSpaceLinearRGB, m_frame_color_space);
+            const Color3f c2 = transform_color(c2_linear.rgb(), ColorSpaceLinearRGB, m_frame_color_space);
+
+            return
+                max(
+                    abs(c1[0] - c2[0]),
+                    abs(c1[1] - c2[1]),
+                    abs(c1[2] - c2[2]),
+                    abs(c1_linear[3] - c2_linear[3]));
+        }
+
+        static void set_false_color_aov(
+            SpectrumStack&              pixel_aovs,
+            const size_t                aov_index,
+            const float                 value)
+        {
+            const Color3f color =
+                lerp(
+                    Color3f(0.0f, 0.0f, 1.0f),
+                    Color3f(1.0f, 0.0f, 0.0f),
+                    saturate(value));
+
+            pixel_aovs[aov_index][0] = color[0];
+            pixel_aovs[aov_index][1] = color[1];
+            pixel_aovs[aov_index][2] = color[2];
+        }
+
+        void render_pixel_adaptive(
+            const Frame&                frame,
+            const size_t                ix,
+            const size_t                iy,
+            Tile&                       tile,
+            const size_t                tx,
+            const size_t                ty,
+            Color4f&                    pixel_color,
+            SpectrumStack&              pixel_aovs)
+        {
+            // Get the color of the neighboring pixels.
+            Color4f left_pixel, top_pixel;
+            if (tx > 0) tile.get_pixel<Color4f>(tx - 1, ty, left_pixel);
+            if (ty > 0) tile.get_pixel<Color4f>(tx, ty - 1, top_pixel);
+
+            // Create a sampling context.
+            const size_t pixel_index = iy * frame.image().properties().m_canvas_width + ix;
+            const size_t instance = hashint32(pixel_index);
+            SamplingContext sampling_context(
+                m_rng,
+                2,                      // number of dimensions
+                0,                      // number of samples
+                instance);
+
+            Population<float> history;
+
+            while (true)
+            {
+                assert(history.get_size() <= m_params.m_max_samples);
+
+                const size_t remaining_samples = m_params.m_max_samples - history.get_size();
+
+                if (remaining_samples == 0)
+                    break;
+
+                const size_t batch_size = min(m_params.m_min_samples, remaining_samples);
+
+                for (size_t i = 0; i < batch_size; ++i)
+                {
+                    // Generate a uniform sample in [0,1)^2.
+                    const Vector2d s = sampling_context.next_vector2<2>();
+
+                    // Compute the sample position in NDC.
+                    const Vector2d sample_position =
+                        frame.get_sample_position(ix + s[0], iy + s[1]);
+
+                    // Render the sample.
+                    ShadingResult shading_result;
+                    shading_result.m_aovs.set_size(pixel_aovs.size());
+                    m_sample_renderer->render_sample(
+                        sampling_context.split(0, 0),
+                        sample_position,
+                        shading_result);
+
+                    // todo: implement proper sample filtering.
+                    // todo: detect invalid sample values (NaN, infinity, etc.), set
+                    // them to black and mark them as faulty in the diagnostic map.
+
+                    // Accumulate the sample.
+                    assert(shading_result.m_color_space == ColorSpaceLinearRGB);
+                    pixel_color[0] += shading_result.m_color[0];
+                    pixel_color[1] += shading_result.m_color[1];
+                    pixel_color[2] += shading_result.m_color[2];
+                    pixel_color[3] += shading_result.m_alpha[0];
+                    pixel_aovs += shading_result.m_aovs;            // todo: add the first 4 components only of each AOV
+
+                    // Update statistics for this pixel.
+                    history.insert(
+                        luminance(
+                            Color3f(
+                                shading_result.m_color[0],
+                                shading_result.m_color[1],
+                                shading_result.m_color[2])));
+                }
+
+                // Continue oversampling if we can't compute contrast because there are no neighboring pixels.
+                if (tx == 0 || ty == 0)
+                    continue;
+
+                // Compute the coefficient of variation.
+                const double variation = history.get_var();
+
+                // Compute the contrast with neighboring pixels.
+                const Color4f current_pixel = pixel_color / static_cast<float>(history.get_size());
+                const float hcontrast = contrast(current_pixel, left_pixel);
+                const float vcontrast = contrast(current_pixel, top_pixel);
+                const float contrast = max(hcontrast, vcontrast);
+
+                if (m_params.m_adaptive_sampler_diagnostics && history.get_size() == m_params.m_min_samples)
+                {
+                    // Output the variation diagnostic AOV.
+                    set_false_color_aov(
+                        pixel_aovs,
+                        m_variation_aov_index,
+                        variation > m_params.m_max_variation ? 1.0f : 0.0f);
+
+                    // Output the contrast diagnostic AOV.
+                    set_false_color_aov(
+                        pixel_aovs,
+                        m_contrast_aov_index,
+                        contrast > m_params.m_max_contrast ? 1.0f : 0.0f);
+                }
+
+                // Stop oversampling if quality criteria have been met.
+                if (variation <= m_params.m_max_variation && contrast <= m_params.m_max_contrast)
+                    break;
+            }
+
+            // Scale diagnostic AOV to cancel the division performed below.
+            const float sample_count = static_cast<float>(history.get_size());
+            if (m_params.m_adaptive_sampler_diagnostics)
+            {
+                pixel_aovs[m_variation_aov_index] *= sample_count;
+                pixel_aovs[m_contrast_aov_index] *= sample_count;
+            }
+
+            // Finish computing the pixel values.
+            const float rcp_sample_count = 1.0f / sample_count;
+            pixel_color *= rcp_sample_count;
+            pixel_aovs *= rcp_sample_count;
+
+            // Output the samples diagnostic AOV.
+            if (m_params.m_adaptive_sampler_diagnostics)
+            {
+                // Sample count AOV.
+                const float normalized_sample_count =
+                    fit(
+                        sample_count,
+                        static_cast<float>(m_params.m_min_samples),
+                        static_cast<float>(m_params.m_max_samples),
+                        0.0f, 1.0f);
+                set_false_color_aov(pixel_aovs, m_samples_aov_index, normalized_sample_count);
+            }
         }
     };
 }

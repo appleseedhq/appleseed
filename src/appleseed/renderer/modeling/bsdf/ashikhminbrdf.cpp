@@ -39,6 +39,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
+#include "foundation/math/fp.h"
 #include "foundation/math/fresnel.h"
 #include "foundation/math/sampling.h"
 #include "foundation/math/vector.h"
@@ -201,7 +202,7 @@ namespace
                 const double exp_den = 1.0 - cos_hn * cos_hn;
                 const double exp_u = values->m_nu * cos_hu * cos_hu;
                 const double exp_v = values->m_nv * cos_hv * cos_hv;
-                exp = (exp_u + exp_v) / exp_den;
+                exp = exp_den == 0.0 ? FP<double>::pos_inf() : (exp_u + exp_v) / exp_den;
             }
             else
             {
@@ -351,7 +352,7 @@ namespace
             const double exp_num_v = values->m_nv * cos_hv * cos_hv;
             const double exp_den = 1.0 - cos_hn * cos_hn;
             const double exp = (exp_num_u + exp_num_v) / exp_den;
-            const double num = sval.m_kg * pow(cos_hn, exp);
+            const double num = exp_den == 0.0 ? 0.0 : sval.m_kg * pow(cos_hn, exp);
             const double den = cos_oh * (cos_in + cos_on - cos_in * cos_on);
             Spectrum glossy = schlick_fresnel_reflection(values->m_rg, cos_oh);
             glossy *= static_cast<float>(num / den);
@@ -417,7 +418,7 @@ namespace
             const double exp_num_v = values->m_nv * cos_hv * cos_hv;
             const double exp_den = 1.0 - cos_hn * cos_hn;
             const double exp = (exp_num_u + exp_num_v) / exp_den;
-            const double pdf_h = sval.m_kg * pow(cos_hn, exp);
+            const double pdf_h = exp_den == 0.0 ? 0.0 : sval.m_kg * pow(cos_hn, exp);
 
             // Evaluate the PDF of the glossy component (equation 8).
             const double pdf_glossy = pdf_h / cos_oh;

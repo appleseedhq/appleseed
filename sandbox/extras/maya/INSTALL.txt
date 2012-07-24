@@ -10,11 +10,36 @@ https://github.com/jonathantopf/mayaseed
 
 INSTALLATION --------
 
-To start unzip the plugin contents to a directory of your choice, but make sure to remember it for later. Any time you see <mayaseed root> replace it with your install directory. For example if put the exporter files in the following directory:
+To install mayaseed just open 'open_me_to_install.ma' and it should guide you through the steps to install. If this doesnt work or you'd prefer to install in manually you just need to edit your userSetup.mel file which should be here:
 
-/projects/mayaseed
+Mac: /Users/<username>/Library/Preferences/Autodesk/maya/<maya version>/scripts
+Windows Vista and higher: C:\Users\<username>\Documents\maya\<maya version>\scripts (you may have My Documents instead of Documents)
+Windows XP and lower: C:\Documents and Settings\username\My Documents\maya\<maya version>\scripts
+Linux: /usr/aw/userconfig/maya/<maya version>/scripts
 
-i would replace the following line:
+If cou dont have one of these files thats ok, just create a plain text file with a .mel extention and edit that.
+
+So copy the following lines to your useSetup.mel file
+
+
+
+
+// mayaseed  -------------------------------------------------------------------------------
+
+$env_script_path = `getenv MAYA_SCRIPT_PATH`;
+$env_plugin_path = `getenv MAYA_PLUG_IN_PATH`;
+putenv MAYA_SCRIPT_PATH ($env_script_path + "<mayaseed_root>/scripts");
+$env_script_path = `getenv MAYA_SCRIPT_PATH`;
+putenv MAYA_SCRIPT_PATH ($env_script_path + "<mayaseed_root>/graphics");
+putenv MAYA_PLUG_IN_PATH ($env_plugin_path + "<mayaseed root>/plugins");
+
+
+// mayaseed  -------------------------------------------------------------------------------
+
+
+
+
+This just tells maya to search in your install directory for the mayaseed plugin when it starts up. You will also want to replace any occurences of <mayaseed_root> with the path to your mayaseed install directory, so for example I would replace the following line:
 
 putenv MAYA_SCRIPT_PATH ($env_script_path + ":<mayaseed root>/plugins");
 
@@ -23,51 +48,8 @@ with this:
 putenv MAYA_PLUG_IN_PATH ($env_plugin_path + ":/projects/mayaseed/plugins");
 
 
-Next you will first need to copy the following lines to your userSetup.mel file, usually located in your Maya scripts directory, if not just create it as a plain text file with the .mel extension.
+Finally you will want to start up Maya and enable the plugin, to do this choose window > settings preferences > plugin manager and load 'mayaseed.py', you will also want to click autoload so you don't have to do this step every time Maya loads.
 
-Mac: /Users/<username>/Library/Preferences/Autodesk/maya/<maya version>/scripts
-Windows Vista and higher: C:\Users\<username>\Documents\maya\<maya version>\scripts (you may have My Documents instead of Documents)
-Windows XP and lower: C:\Documents and Settings\username\My Documents\maya\<maya version>\scripts
-Linux: /usr/aw/userconfig/maya/<maya version>/scripts
-
-
-// mayaseed setup -----------------------------------------------
-
-$env_script_path = `getenv MAYA_SCRIPT_PATH`;
-$env_plugin_path = `getenv MAYA_PLUG_IN_PATH`;
-
-putenv MAYA_SCRIPT_PATH ($env_script_path + ":<mayaseed root>");
-getenv MAYA_SCRIPT_PATH;
-
-putenv MAYA_PLUG_IN_PATH ($env_plugin_path + ":<mayaseed root>/plugins");
-getenv MAYA_PLUG_IN_PATH;
-
-// mayaseed setup -----------------------------------------------
-
-
-
-Next you will want to start up Maya and enable the plugin, this isn't essential for the exporter to work but it will throw an error if the plugins aren't installed.
-
-To enable the plugin choose window > settings preferences > plugin manager and load 'ms_envNode.py', you will also want to click autoload so you don't have to do this step every time Maya loads.
-
-Last you will want to make a shelf button containing the following code to show the mayaseed dialogue.
-
-#*************************************************************************
-
-import sys
-
-sys.path.append('<mayaseed root>')
-
-import mayaseed
-
-reload(mayaseed)
-
-mayaseed.ms()
-
-#*************************************************************************
-
-The easiest way to do this is to open up the script editor and paste the following code into a python tab, highlight the code and middle mouse drag the code into the shelf. You may be asked whether you want to save the script as python or MEL, choose python. 
-
-That should be everything, just click the shelf button to show the UI and the rest should hopefully be obvious. This exporter is very much a work in progress and many improvements/features are planned for the future. Also please submit any bugs/feature requests as this is meant to be practical and usable software and I'd love to hear how it is being used.
+That should be everything, if everythign has gone to plan you shuld have a new menu called mayaseed where you can create new ms_renderSettings nodes. This exporter is very much a work in progress and many improvements/features are planned for the future. Also please submit any bugs/feature requests as this is meant to be practical and usable software and I'd love to hear how it is being used.
 
 jon

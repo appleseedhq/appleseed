@@ -72,6 +72,7 @@ string get_entity_name_dialog(
 void open_entity_editor(
     QWidget*                                        parent,
     const string&                                   window_title,
+    const Project&                                  project,
     auto_ptr<EntityEditorWindow::IFormFactory>      form_factory,
     auto_ptr<EntityEditorWindow::IEntityBrowser>    entity_browser,
     const Dictionary&                               values,
@@ -82,6 +83,7 @@ void open_entity_editor(
         new EntityEditorWindow(
             parent,
             window_title,
+            project,
             form_factory,
             entity_browser,
             values);
@@ -97,6 +99,7 @@ void open_entity_editor(
 void open_entity_editor(
     QWidget*                                        parent,
     const string&                                   window_title,
+    const Project&                                  project,
     auto_ptr<EntityEditorWindow::IFormFactory>      form_factory,
     auto_ptr<EntityEditorWindow::IEntityBrowser>    entity_browser,
     QObject*                                        receiver,
@@ -105,6 +108,7 @@ void open_entity_editor(
     open_entity_editor(
         parent,
         window_title,
+        project,
         form_factory,
         entity_browser,
         Dictionary(),

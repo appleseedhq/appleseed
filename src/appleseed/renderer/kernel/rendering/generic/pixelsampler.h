@@ -29,10 +29,13 @@
 #ifndef APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_PIXELSAMPLER_H
 #define APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_PIXELSAMPLER_H
 
-// appleseed.renderer headers.
-#include "renderer/global/global.h"
+// appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
+#include "foundation/math/vector.h"
+#include "foundation/platform/compiler.h"
 
 // Standard headers.
+#include <cstddef>
 #include <vector>
 
 namespace renderer
@@ -48,6 +51,7 @@ namespace renderer
 //
 
 class PixelSampler
+  : public foundation::NonCopyable
 {
   public:
     // Initialize the pixel sampler for a given subpixel grid size.
@@ -64,6 +68,7 @@ class PixelSampler
         size_t&                 initial_instance);
 
   private:
+    size_t                      m_subpixel_grid_size;
     double                      m_rcp_subpixel_grid_size;   // 1.0 / subpixel_grid_size
     double                      m_rcp_period;               // 1.0 / m_period
     size_t                      m_log_period;               // log2(m_period)
@@ -91,8 +96,16 @@ FORCE_INLINE void PixelSampler::sample(
     initial_instance = (j << m_log_period) + sigma_k;
 
     // Compute the sample coordinates in image space.
-    sample_position[0] = (sx + sigma_k * m_rcp_period) * m_rcp_subpixel_grid_size;
-    sample_position[1] = (sy + sigma_j * m_rcp_period) * m_rcp_subpixel_grid_size;
+    if (m_subpixel_grid_size == 1)
+    {
+        sample_position[0] = sx + 0.5;
+        sample_position[1] = sy + 0.5;
+    }
+    else
+    {
+        sample_position[0] = (sx + sigma_k * m_rcp_period) * m_rcp_subpixel_grid_size;
+        sample_position[1] = (sy + sigma_j * m_rcp_period) * m_rcp_subpixel_grid_size;
+    }
 }
 
 }       // namespace renderer

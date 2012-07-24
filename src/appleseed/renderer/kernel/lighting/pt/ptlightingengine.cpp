@@ -27,7 +27,7 @@
 //
 
 // Interface header.
-#include "pathtracing.h"
+#include "ptlightingengine.h"
 
 // appleseed.renderer headers.
 #include "renderer/kernel/aov/spectrumstack.h"
@@ -50,6 +50,7 @@
 #include "foundation/math/mis.h"
 #include "foundation/math/population.h"
 #include "foundation/utility/memory.h"
+#include "foundation/utility/statistics.h"
 #include "foundation/utility/string.h"
 
 // Forward declarations.
@@ -80,22 +81,27 @@ namespace
       public:
         struct Parameters
         {
-            const bool          m_next_event_estimation;    // use next event estimation?
-            const size_t        m_rr_min_path_length;       // minimum path length before Russian Roulette is used, 0 for unlimited
-            const size_t        m_max_path_length;          // maximum path length, 0 for unlimited
+            const bool      m_enable_dl;                    // direct lighting enabled?
+            const bool      m_enable_ibl;                   // image-based lighting enabled?
+            const bool      m_enable_caustics;              // caustics enabled?
 
-            const size_t        m_dl_light_sample_count;    // number of light samples used to estimate direct illumination
+            const size_t    m_max_path_length;              // maximum path length, 0 for unlimited
+            const size_t    m_rr_min_path_length;           // minimum path length before Russian Roulette is used, 0 for unlimited
+            const bool      m_next_event_estimation;        // use next event estimation?
+
+            const size_t    m_dl_light_sample_count;        // number of light samples used to estimate direct illumination
             
-            const bool          m_enable_ibl;               // IBL enabled?
-            const size_t        m_ibl_bsdf_sample_count;    // number of BSDF samples used to estimate IBL
-            const size_t        m_ibl_env_sample_count;     // number of environment samples used to estimate IBL
+            const size_t    m_ibl_bsdf_sample_count;        // number of BSDF samples used to estimate IBL
+            const size_t    m_ibl_env_sample_count;         // number of environment samples used to estimate IBL
 
             explicit Parameters(const ParamArray& params)
-              : m_next_event_estimation(params.get_optional<bool>("next_event_estimation", true))
-              , m_rr_min_path_length(params.get_optional<size_t>("rr_min_path_length", 3))
-              , m_max_path_length(params.get_optional<size_t>("max_path_length", 0))
-              , m_dl_light_sample_count(params.get_optional<size_t>("dl_light_samples", 1))
+              : m_enable_dl(params.get_optional<bool>("enable_dl", true))
               , m_enable_ibl(params.get_optional<bool>("enable_ibl", true))
+              , m_enable_caustics(params.get_optional<bool>("enable_caustics", true))
+              , m_max_path_length(params.get_optional<size_t>("max_path_length", 0))
+              , m_rr_min_path_length(params.get_optional<size_t>("rr_min_path_length", 3))
+              , m_next_event_estimation(params.get_optional<bool>("next_event_estimation", true))
+              , m_dl_light_sample_count(params.get_optional<size_t>("dl_light_samples", 1))
               , m_ibl_bsdf_sample_count(params.get_optional<size_t>("ibl_bsdf_samples", 1))
               , m_ibl_env_sample_count(params.get_optional<size_t>("ibl_env_samples", 1))
             {
@@ -105,18 +111,22 @@ namespace
             {
                 RENDERER_LOG_INFO(
                     "path tracing settings:\n"
-                    "  next event est.  %s\n"
-                    "  rr min path len. %s\n"
-                    "  max path length  %s\n"
-                    "  dl light samples %s\n"
+                    "  direct lighting  %s\n"
                     "  ibl              %s\n"
+                    "  caustics         %s\n"
+                    "  max path length  %s\n"
+                    "  rr min path len. %s\n"
+                    "  next event est.  %s\n"
+                    "  dl light samples %s\n"
                     "  ibl bsdf samples %s\n"
                     "  ibl env samples  %s",
-                    m_next_event_estimation ? "on" : "off",
-                    m_rr_min_path_length == 0 ? "infinite" : pretty_uint(m_rr_min_path_length).c_str(),
-                    m_max_path_length == 0 ? "infinite" : pretty_uint(m_max_path_length).c_str(),
-                    pretty_uint(m_dl_light_sample_count).c_str(),
+                    m_enable_dl ? "on" : "off",
                     m_enable_ibl ? "on" : "off",
+                    m_enable_caustics ? "on" : "off",
+                    m_max_path_length == 0 ? "infinite" : pretty_uint(m_max_path_length).c_str(),
+                    m_rr_min_path_length == 0 ? "infinite" : pretty_uint(m_rr_min_path_length).c_str(),
+                    m_next_event_estimation ? "on" : "off",
+                    pretty_uint(m_dl_light_sample_count).c_str(),
                     pretty_uint(m_ibl_bsdf_sample_count).c_str(),
                     pretty_uint(m_ibl_env_sample_count).c_str());
             }
@@ -127,15 +137,11 @@ namespace
             const ParamArray&       params)
           : m_params(params)
           , m_light_sampler(light_sampler)
+          , m_path_count(0)
         {
         }
 
-        ~PTLightingEngine()
-        {
-            m_stats.print();
-        }
-
-        virtual void release()
+        virtual void release() override
         {
             delete this;
         }
@@ -145,14 +151,8 @@ namespace
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
             Spectrum&               radiance,               // output radiance, in W.sr^-1.m^-2
-            SpectrumStack&          aovs)
+            SpectrumStack&          aovs) override
         {
-            typedef PathTracer<
-                PathVisitor,
-                BSDF::Diffuse | BSDF::Glossy | BSDF::Specular,
-                false                                       // not adjoint
-            > PathTracer;
-
             PathVisitor path_visitor(
                 m_params,
                 m_light_sampler,
@@ -161,7 +161,7 @@ namespace
                 radiance,
                 aovs);
 
-            PathTracer path_tracer(
+            PathTracer<PathVisitor, false> path_tracer(     // false = not adjoint
                 path_visitor,
                 m_params.m_rr_min_path_length,
                 m_params.m_max_path_length,
@@ -175,35 +175,20 @@ namespace
                     shading_point);
 
             // Update statistics.
-            ++m_stats.m_path_count;
-            m_stats.m_path_length.insert(path_length);
+            ++m_path_count;
+            m_path_length.insert(path_length);
+        }
+
+        virtual StatisticsVector get_statistics() const override
+        {
+            Statistics stats;
+            stats.insert("path count", m_path_count);
+            stats.insert("path length", m_path_length);
+
+            return StatisticsVector::make("path tracing statistics", stats);
         }
 
       private:
-        struct Statistics
-        {
-            uint64              m_path_count;
-            Population<uint64>  m_path_length;
-
-            Statistics()
-              : m_path_count(0)
-            {
-            }
-
-            void print() const
-            {
-                RENDERER_LOG_DEBUG(
-                    "path tracing statistics:\n"
-                    "  paths            %s\n"
-                    "  path length      avg %.1f  min %s  max %s  dev %.1f\n",
-                    pretty_uint(m_path_count).c_str(),
-                    m_path_length.get_mean(),
-                    pretty_uint(m_path_length.get_min()).c_str(),
-                    pretty_uint(m_path_length.get_max()).c_str(),
-                    m_path_length.get_dev());
-            }
-        };
-
         class PathVisitor
         {
           public:
@@ -226,12 +211,27 @@ namespace
                 m_path_aovs.set(0.0f);
             }
 
+            bool accept_scattering_mode(
+                const BSDF::Mode        prev_bsdf_mode,
+                const BSDF::Mode        bsdf_mode) const
+            {
+                if (!m_params.m_enable_caustics)
+                {
+                    if ((prev_bsdf_mode & BSDF::Diffuse) != 0 &&
+                        (bsdf_mode & (BSDF::Glossy | BSDF::Specular)) != 0)
+                        return false;
+                }
+
+                return (bsdf_mode & (BSDF::Diffuse | BSDF::Glossy | BSDF::Specular)) != 0;
+            }
+
             bool visit_vertex(
                 SamplingContext&        sampling_context,
                 const ShadingPoint&     shading_point,
                 const Vector3d&         outgoing,
                 const BSDF*             bsdf,
                 const void*             bsdf_data,
+                const size_t            path_length,
                 const BSDF::Mode        prev_bsdf_mode,
                 const double            prev_bsdf_prob,
                 const Spectrum&         throughput)
@@ -255,30 +255,39 @@ namespace
 
                 if (m_params.m_next_event_estimation)
                 {
-                    // Compute direct lighting. We're using light sampling only: direct lighting
-                    // via BSDF sampling will be taken into account when we'll extend the path.
-                    // The number of light samples is user-adjustable. The number of BSDF samples
-                    // is set to 1 since we'll extend the path via a single BSDF sample.
-                    DirectLightingIntegrator integrator(
-                        m_shading_context,
-                        m_light_sampler,
-                        point,
-                        geometric_normal,
-                        shading_basis,
-                        shading_point.get_ray().m_time,
-                        outgoing,
-                        *bsdf,
-                        bsdf_data,
-                        1,
-                        m_params.m_dl_light_sample_count,
-                        &shading_point);
                     Spectrum vertex_radiance;
                     SpectrumStack vertex_aovs(m_path_aovs.size());
-                    integrator.sample_lights_low_variance(
-                        sampling_context,
-                        DirectLightingIntegrator::mis_power2,
-                        vertex_radiance,
-                        vertex_aovs);
+
+                    if (m_params.m_enable_dl || path_length > 1)
+                    {
+                        // Compute direct lighting. We're using light sampling only: direct lighting
+                        // via BSDF sampling will be taken into account when we'll extend the path.
+                        // The number of light samples is user-adjustable. The number of BSDF samples
+                        // is set to 1 since we'll extend the path via a single BSDF sample.
+                        DirectLightingIntegrator integrator(
+                            m_shading_context,
+                            m_light_sampler,
+                            point,
+                            geometric_normal,
+                            shading_basis,
+                            shading_point.get_ray().m_time,
+                            outgoing,
+                            *bsdf,
+                            bsdf_data,
+                            1,
+                            m_params.m_dl_light_sample_count,
+                            &shading_point);
+                        integrator.sample_lights_low_variance(
+                            sampling_context,
+                            DirectLightingIntegrator::mis_power2,
+                            vertex_radiance,
+                            vertex_aovs);
+                    }
+                    else
+                    {
+                        vertex_radiance.set(0.0f);
+                        vertex_aovs.set(0.0f);
+                    }
 
                     if (m_env_edf && m_params.m_enable_ibl)
                     {
@@ -307,7 +316,7 @@ namespace
                         vertex_aovs.add(m_env_edf->get_render_layer_index(), ibl_radiance);
                     }
 
-                    if (edf && cos_on > 0.0)
+                    if (edf && cos_on > 0.0 && (m_params.m_enable_dl || path_length > 2))
                     {
                         // Compute the emitted radiance.
                         Spectrum emitted_radiance;
@@ -439,8 +448,10 @@ namespace
         };
 
         const Parameters        m_params;
-        Statistics              m_stats;
         const LightSampler&     m_light_sampler;
+
+        uint64                  m_path_count;
+        Population<size_t>      m_path_length;
     };
 }
 

@@ -67,8 +67,8 @@ namespace
             const char*         name,
             const ParamArray&   params)
           : Light(name, params)
-          , m_cos_inner_angle(cos(deg_to_rad(params.get_required<double>("inner_angle", 20.0))))
-          , m_cos_outer_angle(cos(deg_to_rad(params.get_required<double>("outer_angle", 30.0))))
+          , m_cos_inner_half_angle(cos(deg_to_rad(params.get_required<double>("inner_angle", 20.0) / 2.0)))
+          , m_cos_outer_half_angle(cos(deg_to_rad(params.get_required<double>("outer_angle", 30.0) / 2.0)))
         {
             m_inputs.declare("exitance", InputFormatSpectrum);
         }
@@ -87,7 +87,7 @@ namespace
             const Project&      project,
             const Assembly&     assembly) override
         {
-            m_axis = get_transform().vector_to_parent(Vector3d(0.0, 1.0, 0.0));
+            m_axis = normalize(get_transform().vector_to_parent(Vector3d(0.0, 1.0, 0.0)));
         }
  
         virtual void sample(
@@ -97,10 +97,12 @@ namespace
             Spectrum&           value,
             double&             probability) const override
         {
-            const Vector3d wo = sample_cone_uniform(s, m_cos_outer_angle);
+            const Vector3d wo = sample_cone_uniform(s, m_cos_outer_half_angle);
             outgoing = get_transform().vector_to_parent(wo);
+
             compute_exitance(data, wo.y, value);
-            probability = sample_cone_uniform_pdf(m_cos_outer_angle);
+
+            probability = sample_cone_uniform_pdf(m_cos_outer_half_angle);
         }
 
         virtual void evaluate(
@@ -110,7 +112,7 @@ namespace
         {
             const double cos_theta = dot(outgoing, m_axis);
 
-            if (cos_theta > m_cos_outer_angle)
+            if (cos_theta > m_cos_outer_half_angle)
                 compute_exitance(data, cos_theta, value);
             else value.set(0.0f);
         }
@@ -123,10 +125,10 @@ namespace
         {
             const double cos_theta = dot(outgoing, m_axis);
 
-            if (cos_theta > m_cos_outer_angle)
+            if (cos_theta > m_cos_outer_half_angle)
             {
                 compute_exitance(data, cos_theta, value);
-                probability = sample_cone_uniform_pdf(m_cos_outer_angle);
+                probability = sample_cone_uniform_pdf(m_cos_outer_half_angle);
             }
             else
             {
@@ -142,8 +144,8 @@ namespace
             const double cos_theta = dot(outgoing, m_axis);
 
             return
-                cos_theta > m_cos_outer_angle
-                    ? sample_cone_uniform_pdf(m_cos_outer_angle)
+                cos_theta > m_cos_outer_half_angle
+                    ? sample_cone_uniform_pdf(m_cos_outer_half_angle)
                     : 0.0;
         }
 
@@ -154,8 +156,8 @@ namespace
             Alpha       m_exitance_alpha;   // unused
         };
 
-        const double    m_cos_inner_angle;
-        const double    m_cos_outer_angle;
+        const double    m_cos_inner_half_angle;
+        const double    m_cos_outer_half_angle;
 
         Vector3d        m_axis;
 
@@ -164,15 +166,15 @@ namespace
             const double        cos_theta,
             Spectrum&           exitance) const
         {
-            assert(cos_theta > m_cos_outer_angle);
+            assert(cos_theta > m_cos_outer_half_angle);
 
             exitance = static_cast<const InputValues*>(data)->m_exitance;
 
-            if (cos_theta < m_cos_inner_angle)
+            if (cos_theta < m_cos_inner_half_angle)
             {
                 exitance *=
                     static_cast<float>(
-                        smoothstep(m_cos_outer_angle, m_cos_inner_angle, cos_theta));
+                        smoothstep(m_cos_outer_half_angle, m_cos_inner_half_angle, cos_theta));
             }
         }
     };

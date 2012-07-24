@@ -233,7 +233,7 @@ inline void QMCSamplingContext<RNG>::split_in_place(
     const size_t    dimension,
     const size_t    sample_count)
 {
-    assert(m_instance == m_sample_count);           // can't split in the middle of a sequence
+    assert(m_sample_count == 0 || m_instance == m_sample_count);    // can't split in the middle of a sequence
     assert(dimension <= VectorType::Dimension);
 
     m_base_dimension += m_dimension;                // dimension allocation

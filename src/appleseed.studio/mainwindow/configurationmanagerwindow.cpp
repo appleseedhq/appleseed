@@ -54,6 +54,8 @@ ConfigurationManagerWindow::ConfigurationManagerWindow(QWidget* parent)
 
     setWindowFlags(Qt::Window);
 
+    disable_mac_focus_rect(m_ui->treewidget_configurations);
+
     connect(m_ui->buttonbox, SIGNAL(accepted()), this, SLOT(close()));
     connect(m_ui->buttonbox, SIGNAL(rejected()), this, SLOT(close()));
 

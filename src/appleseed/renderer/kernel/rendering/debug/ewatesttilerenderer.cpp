@@ -45,6 +45,7 @@
 #include "foundation/image/image.h"
 #include "foundation/image/pixel.h"
 #include "foundation/image/tile.h"
+#include "foundation/utility/statistics.h"
 
 // Standard headers.
 #include <cassert>
@@ -66,7 +67,6 @@ namespace
       : public ITileRenderer
     {
       public:
-        // Constructor.
         EWATestTileRenderer(
             const Scene&            scene,
             const TraceContext&     trace_context,
@@ -93,18 +93,16 @@ namespace
             m_texture_object.reset(new TextureObject(texture));
         }
 
-        // Delete this instance.
-        virtual void release()
+        virtual void release() override
         {
             delete this;
         }
 
-        // Render a tile.
         virtual void render_tile(
             const Frame&            frame,
             const size_t            tile_x,
             const size_t            tile_y,
-            AbortSwitch&            abort_switch)
+            AbortSwitch&            abort_switch) override
         {
             Image& image = frame.image();
 
@@ -189,6 +187,11 @@ namespace
             }
         }
 
+        virtual StatisticsVector get_statistics() const override
+        {
+            return StatisticsVector();
+        }
+
       private:
         const Scene&                        m_scene;
         TextureCache                        m_texture_cache;
@@ -197,6 +200,7 @@ namespace
         const size_t                        m_texture_height;
         const size_t                        m_checkerboard_scale;
         const float                         m_max_radius;
+
         auto_ptr<TextureObject>             m_texture_object;
         ak::EWAFilter<4, TextureObject>     m_filter;
         SamplingContext::RNGType            m_rng;

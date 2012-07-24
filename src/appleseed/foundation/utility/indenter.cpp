@@ -26,52 +26,56 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_UTILITY_CACHE_H
-#define APPLESEED_RENDERER_UTILITY_CACHE_H
-
-// appleseed.renderer headers.
-#include "renderer/global/globallogger.h"
-
-// appleseed.foundation headers.
-#include "foundation/utility/cache.h"
+// Interface header.
+#include "indenter.h"
 
 // Standard headers.
+#include <cassert>
 #include <string>
 
-namespace renderer
+using namespace std;
+
+namespace foundation
 {
 
-template <typename DualStageCacheType>
-void print_dual_stage_cache_stats(
-    const DualStageCacheType&   cache,
-    const char*                 title)
+struct Indenter::Impl
 {
-    const std::string combined_stats =
-        foundation::format_cache_stats(
-            cache.get_stage0_hit_count() + cache.get_stage1_hit_count(),
-            cache.get_stage1_miss_count());
+    size_t          m_tab_size;
+    char            m_tab_char;
+    string          m_str;
+};
 
-    const std::string s0_stats =
-        foundation::format_cache_stats(
-            cache.get_stage0_hit_count(),
-            cache.get_stage0_miss_count());
-
-    const std::string s1_stats =
-        foundation::format_cache_stats(
-            cache.get_stage1_hit_count(),
-            cache.get_stage1_miss_count());
-
-    RENDERER_LOG_DEBUG(
-        "%s:\n"
-        "  combined         %s\n"
-        "  stage-0          %s\n"
-        "  stage-1          %s\n",
-        title,
-        combined_stats.c_str(),
-        s0_stats.c_str(),
-        s1_stats.c_str());
+Indenter::Indenter(
+    const size_t    tab_size,
+    const char      tab_char)
+  : impl(new Impl())
+{
+    impl->m_tab_size = tab_size;
+    impl->m_tab_char = tab_char;
 }
 
-}       // namespace renderer
+Indenter::~Indenter()
+{
+    delete impl;
+}
 
-#endif  // !APPLESEED_RENDERER_UTILITY_CACHE_H
+void Indenter::operator++()
+{
+    impl->m_str.resize(impl->m_str.size() + impl->m_tab_size, impl->m_tab_char);
+}
+
+void Indenter::operator--()
+{
+    assert(impl->m_str.size() >= impl->m_tab_size);
+
+    if (impl->m_str.size() >= impl->m_tab_size)
+        impl->m_str.resize(impl->m_str.size() - impl->m_tab_size, impl->m_tab_char);
+    else impl->m_str.resize(0);
+}
+
+const char* Indenter::c_str() const
+{
+    return impl->m_str.c_str();
+}
+
+}   // namespace foundation

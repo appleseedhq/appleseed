@@ -106,6 +106,10 @@ class RenderSettingsWindow
 
     QString                     m_current_configuration_name;
 
+    QComboBox*                  m_image_planer_sampler_combo;
+    QGroupBox*                  m_uniform_image_plane_sampler;
+    QGroupBox*                  m_adaptive_image_plane_sampler;
+
     void create_panels();
     void set_panels_enabled(const bool enabled);
 
@@ -131,7 +135,6 @@ class RenderSettingsWindow
     void create_system_override_rendering_threads_settings(QVBoxLayout* parent);
     void create_system_override_texture_cache_size_settings(QVBoxLayout* parent);
 
-    void create_lighting_components_settings(QVBoxLayout* parent, const std::string& lighting_engine);
     void create_bounce_settings(QVBoxLayout* parent, const std::string& lighting_engine);
 
     static QHBoxLayout* create_horizontal_layout();
@@ -211,6 +214,8 @@ class RenderSettingsWindow
     void slot_open_configuration_manager_window();
     void slot_change_active_configuration(const QString& configuration_name);
     void slot_save_configuration_and_close();
+
+    void slot_changed_image_plane_sampler(int index);
 };
 
 }       // namespace studio

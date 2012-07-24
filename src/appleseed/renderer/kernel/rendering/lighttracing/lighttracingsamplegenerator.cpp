@@ -30,6 +30,7 @@
 #include "lighttracingsamplegenerator.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/lighting/lightsampler.h"
 #include "renderer/kernel/lighting/pathtracer.h"
@@ -56,6 +57,7 @@
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/color.h"
 #include "foundation/image/image.h"
 #include "foundation/image/spectrum.h"
 #include "foundation/math/population.h"
@@ -64,6 +66,10 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/memory.h"
+#include "foundation/utility/statistics.h"
+
+// Standard headers.
+#include <cassert>
 
 // Forward declarations.
 namespace foundation    { class AbortSwitch; }
@@ -94,14 +100,20 @@ namespace
       public:
         struct Parameters
         {
+            const bool      m_enable_ibl;                   // image-based lighting enabled?
+            const bool      m_enable_caustics;              // caustics enabled?
+
             const float     m_transparency_threshold;
             const size_t    m_max_iterations;
             const bool      m_report_self_intersections;
-            const size_t    m_rr_min_path_length;           // minimum path length before Russian Roulette is used, 0 for unlimited
+
             const size_t    m_max_path_length;              // maximum path length, 0 for unlimited
+            const size_t    m_rr_min_path_length;           // minimum path length before Russian Roulette is used, 0 for unlimited
 
             explicit Parameters(const ParamArray& params)
-              : m_transparency_threshold(params.get_optional<float>("transparency_threshold", 0.001f))
+              : m_enable_ibl(params.get_optional<bool>("enable_ibl", true))
+              , m_enable_caustics(params.get_optional<bool>("enable_caustics", true))
+              , m_transparency_threshold(params.get_optional<float>("transparency_threshold", 0.001f))
               , m_max_iterations(params.get_optional<size_t>("max_iterations", 10000))
               , m_report_self_intersections(params.get_optional<bool>("report_self_intersections", false))
               , m_rr_min_path_length(params.get_optional<size_t>("rr_min_path_length", 3))
@@ -113,10 +125,14 @@ namespace
             {
                 RENDERER_LOG_INFO(
                     "light tracing settings:\n"
-                    "  rr min path len. %s\n"
-                    "  max path length  %s",
-                    m_rr_min_path_length == 0 ? "infinite" : pretty_uint(m_rr_min_path_length).c_str(),
-                    m_max_path_length == 0 ? "infinite" : pretty_uint(m_max_path_length).c_str());
+                    "  ibl              %s\n"
+                    "  caustics         %s\n"
+                    "  max path length  %s\n"
+                    "  rr min path len. %s",
+                    m_enable_ibl ? "on" : "off",
+                    m_enable_caustics ? "on" : "off",
+                    m_max_path_length == 0 ? "infinite" : pretty_uint(m_max_path_length).c_str(),
+                    m_rr_min_path_length == 0 ? "infinite" : pretty_uint(m_rr_min_path_length).c_str());
             }
         };
 
@@ -138,22 +154,18 @@ namespace
           , m_disk_point_prob(1.0 / (Pi * square(m_safe_scene_radius)))
           , m_light_sampler(light_sampler)
           , m_texture_cache(texture_store)
-          , m_intersector(trace_context, m_texture_cache, true, m_params.m_report_self_intersections)
+          , m_intersector(trace_context, m_texture_cache, m_params.m_report_self_intersections)
           , m_shading_context(m_intersector, m_texture_cache, 0, m_params.m_transparency_threshold, m_params.m_max_iterations)
+          , m_path_count(0)
         {
         }
 
-        ~LightTracingSampleGenerator()
-        {
-            m_stats.print();
-        }
-
-        virtual void release()
+        virtual void release() override
         {
             delete this;
         }
 
-        virtual void reset()
+        virtual void reset() override
         {
             SampleGeneratorBase::reset();
             m_rng = MersenneTwister();
@@ -162,7 +174,7 @@ namespace
         virtual void generate_samples(
             const size_t                sample_count,
             AccumulationFramebuffer&    framebuffer,
-            AbortSwitch&                abort_switch)
+            AbortSwitch&                abort_switch) override
         {
             m_light_sample_count = 0;
 
@@ -172,41 +184,28 @@ namespace
                 .increment_sample_count(m_light_sample_count);
         }
 
-      private:
-        struct Statistics
+        virtual StatisticsVector get_statistics() const override
         {
-            uint64              m_path_count;
-            Population<uint64>  m_path_length;
+            Statistics stats;
+            stats.insert("path count", m_path_count);
+            stats.insert("path length", m_path_length);
 
-            Statistics()
-              : m_path_count(0)
-            {
-            }
+            return StatisticsVector::make("light tracing statistics", stats);
+        }
 
-            void print() const
-            {
-                RENDERER_LOG_DEBUG(
-                    "light tracing statistics:\n"
-                    "  paths            %s\n"
-                    "  path length      avg %.1f  min %s  max %s  dev %.1f\n",
-                    pretty_uint(m_path_count).c_str(),
-                    m_path_length.get_mean(),
-                    pretty_uint(m_path_length.get_min()).c_str(),
-                    pretty_uint(m_path_length.get_max()).c_str(),
-                    m_path_length.get_dev());
-            }
-        };
-
+      private:
         class PathVisitor
         {
           public:
             PathVisitor(
+                const Parameters&           params,
                 const Scene&                scene,
                 const Frame&                frame,
                 const ShadingContext&       shading_context,
                 SampleVector&               samples,
                 const Spectrum&             initial_alpha)
-              : m_camera(*scene.get_camera())
+              : m_params(params)
+              , m_camera(*scene.get_camera())
               , m_lighting_conditions(frame.get_lighting_conditions())
               , m_shading_context(shading_context)
               , m_samples(samples)
@@ -234,6 +233,13 @@ namespace
             size_t get_sample_count() const
             {
                 return m_sample_count;
+            }
+
+            bool accept_scattering_mode(
+                const BSDF::Mode            prev_bsdf_mode,
+                const BSDF::Mode            bsdf_mode) const
+            {
+                return (bsdf_mode & (BSDF::Diffuse | BSDF::Glossy | BSDF::Specular)) != 0;
             }
 
             template <bool IsAreaLight>
@@ -295,10 +301,19 @@ namespace
                 const Vector3d&             outgoing,           // in this context, toward the light
                 const BSDF*                 bsdf,
                 const void*                 bsdf_data,
+                const size_t                path_length,
                 const BSDF::Mode            prev_bsdf_mode,
                 const double                prev_bsdf_prob,
                 const Spectrum&             throughput)
             {
+                if (!m_params.m_enable_caustics &&
+                    path_length > 1 &&
+                    (prev_bsdf_mode & (BSDF::Glossy | BSDF::Specular)) != 0)
+                {
+                    // This is a caustics path but caustics are disabled.
+                    return false;
+                }
+
                 Vector2d sample_position_ndc;
                 double transmission;
                 Vector3d vertex_to_camera;
@@ -371,6 +386,7 @@ namespace
             }
 
           private:
+            const Parameters&               m_params;
             const Camera&                   m_camera;
             const LightingConditions&       m_lighting_conditions;
             const ShadingContext&           m_shading_context;
@@ -447,14 +463,9 @@ namespace
             }
         };
 
-        typedef PathTracer<
-            PathVisitor,
-            BSDF::Diffuse | BSDF::Glossy | BSDF::Specular,
-            true    // adjoint
-        > PathTracerType;
+        typedef PathTracer<PathVisitor, true> PathTracerType;   // true = adjoint
 
         const Parameters                m_params;
-        Statistics                      m_stats;
 
         const Scene&                    m_scene;
         const Frame&                    m_frame;
@@ -474,9 +485,12 @@ namespace
 
         uint64                          m_light_sample_count;
 
+        uint64                          m_path_count;
+        Population<size_t>              m_path_length;
+
         virtual size_t generate_samples(
             const size_t                sequence_index,
-            SampleVector&               samples)
+            SampleVector&               samples) override
         {
             SamplingContext sampling_context(
                 m_rng,
@@ -489,7 +503,7 @@ namespace
             if (m_light_sampler.has_lights_or_emitting_triangles())
                 stored_sample_count += generate_light_sample(sampling_context, samples);
 
-            if (m_env_edf)
+            if (m_env_edf && m_params.m_enable_ibl)
                 stored_sample_count += generate_environment_sample(sampling_context, samples);
 
             ++m_light_sample_count;
@@ -573,6 +587,7 @@ namespace
 
             // Build the path tracer.
             PathVisitor path_visitor(
+                m_params,
                 m_scene,
                 m_frame,
                 m_shading_context,
@@ -603,8 +618,8 @@ namespace
                     &parent_shading_point);
 
             // Update path statistics.
-            ++m_stats.m_path_count;
-            m_stats.m_path_length.insert(path_length);
+            ++m_path_count;
+            m_path_length.insert(path_length);
 
             // Return the number of samples generated when tracing this light path.
             return path_visitor.get_sample_count();
@@ -648,6 +663,7 @@ namespace
 
             // Build the path tracer.
             PathVisitor path_visitor(
+                m_params,
                 m_scene,
                 m_frame,
                 m_shading_context,
@@ -677,8 +693,8 @@ namespace
                     light_ray);
 
             // Update path statistics.
-            ++m_stats.m_path_count;
-            m_stats.m_path_length.insert(path_length);
+            ++m_path_count;
+            m_path_length.insert(path_length);
 
             // Return the number of samples generated when tracing this light path.
             return path_visitor.get_sample_count();
@@ -726,6 +742,7 @@ namespace
 
             // Build the path tracer.
             PathVisitor path_visitor(
+                m_params,
                 m_scene,
                 m_frame,
                 m_shading_context,
@@ -746,8 +763,8 @@ namespace
                     light_ray);
 
             // Update path statistics.
-            ++m_stats.m_path_count;
-            m_stats.m_path_length.insert(path_length);
+            ++m_path_count;
+            m_path_length.insert(path_length);
 
             // Return the number of samples generated when tracing this light path.
             return path_visitor.get_sample_count();

@@ -133,6 +133,7 @@ void SingleModelCollectionItem<Entity, ParentEntity>::slot_create()
     open_entity_editor(
         QTreeWidgetItem::treeWidget(),
         window_title,
+        CollectionItemType::m_project_builder.get_project(),
         form_factory,
         entity_browser,
         this,

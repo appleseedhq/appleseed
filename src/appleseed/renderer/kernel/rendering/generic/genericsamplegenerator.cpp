@@ -31,7 +31,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/kernel/lighting/imageimportancesampler.h"
 #include "renderer/kernel/rendering/isamplerenderer.h"
 #include "renderer/kernel/rendering/localaccumulationframebuffer.h"
 #include "renderer/kernel/rendering/sample.h"
@@ -40,6 +39,7 @@
 #include "renderer/modeling/frame/frame.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
 #include "foundation/math/population.h"
 #include "foundation/math/qmc.h"
@@ -47,9 +47,10 @@
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/autoreleaseptr.h"
-#include "foundation/utility/string.h"
+#include "foundation/utility/statistics.h"
 
 // Standard headers.
+#include <cassert>
 #include <vector>
 
 // Forward declarations.
@@ -58,116 +59,11 @@ namespace foundation    { class LightingConditions; }
 using namespace foundation;
 using namespace std;
 
-#undef ADAPTIVE_IMAGE_SAMPLING
-
 namespace renderer
 {
 
 namespace
 {
-    //
-    // GenericSampleGenerator class implementation.
-    //
-
-    class PixelSampler
-    {
-      public:
-        PixelSampler(
-            const size_t    width,
-            const size_t    height)
-          : m_width(width)
-          , m_height(height)
-          , m_pixel_history(width * height)
-        {
-            const size_t pixel_count = m_pixel_history.size();
-            for (size_t i = 0; i < pixel_count; ++i)
-            {
-                PixelHistory& history = m_pixel_history[i];
-                history.m_avg = 0.0;
-                history.m_s = 0.0;
-                history.m_size = 0;
-            }
-        }
-
-        double operator()(
-            const size_t    x,
-            const size_t    y) const
-        {
-            assert(x < m_width);
-            assert(y < m_height);
-
-            const size_t MinSamplesPerPixel = 4;
-            const double VariationThreshold = 0.1;
-            const double LowProbability = 1.0 / 6;
-            const double HighProbability = 1.0;
-
-            const PixelHistory& history = m_pixel_history[y * m_width + x];
-
-            if (history.m_size < MinSamplesPerPixel)
-                return HighProbability;
-
-            if (history.m_avg == 0.0)
-                return HighProbability;
-
-            // Compute the standard deviation.
-            const double deviation = sqrt(history.m_s / history.m_size);
-
-            // Compute the coefficient of variation.
-            const double variation = deviation / history.m_avg;
-            assert(variation >= 0.0);
-
-#if 0
-            return variation < VariationThreshold ? LowProbability : HighProbability;
-#else
-            return clamp(variation, LowProbability, HighProbability);
-#endif
-        }
-
-        void update_pixel_variance(
-            const size_t    x,
-            const size_t    y,
-            const float     luminance)
-        {
-            assert(x < m_width);
-            assert(y < m_height);
-            assert(luminance >= 0.0f);
-
-            PixelHistory& history = m_pixel_history[y * m_width + x];
-
-            const double double_luminance = static_cast<double>(luminance);
-
-            // Compute residual value.
-            const double residual = double_luminance - history.m_avg;
-
-            // Compute the new size of the population.
-            const size_t new_size = history.m_size + 1;
-
-            // Compute the new mean value of the population.
-            const double new_avg = history.m_avg + residual / new_size;
-
-            // Update s.
-            history.m_s += residual * (double_luminance - new_avg);
-
-            // Update the mean value of the population.
-            history.m_avg = new_avg;
-
-            // Update the size of the population.
-            history.m_size = new_size;
-        }
-
-      private:
-        struct PixelHistory
-        {
-            double  m_avg;
-            double  m_s;
-            size_t  m_size;
-        };
-
-        const size_t            m_width;
-        const size_t            m_height;
-        vector<PixelHistory>    m_pixel_history;
-    };
-
     class GenericSampleGenerator
       : public SampleGeneratorBase
     {
@@ -182,44 +78,33 @@ namespace
           , m_frame_props(frame.image().properties())
           , m_lighting_conditions(frame.get_lighting_conditions())
           , m_sample_renderer(sample_renderer_factory->create())
-#ifdef ADAPTIVE_IMAGE_SAMPLING
-          , m_pixel_sampler(m_frame_props.m_canvas_width, m_frame_props.m_canvas_height)
-          , m_image_sampler(m_frame_props.m_canvas_width, m_frame_props.m_canvas_height, m_pixel_sampler)
-          , m_sample_count(0)
-#else
           , m_frame_width_next_pow2(next_power(static_cast<double>(m_frame_props.m_canvas_width), 2.0))
           , m_frame_height_next_pow3(next_power(static_cast<double>(m_frame_props.m_canvas_height), 3.0))
-          , m_scale_x(m_frame_width_next_pow2 / m_frame_props.m_canvas_width)
-          , m_scale_y(m_frame_height_next_pow3 / m_frame_props.m_canvas_height)
-#endif
         {
         }
 
-        ~GenericSampleGenerator()
-        {
-            RENDERER_LOG_DEBUG(
-                "generic sample generator statistics:\n"
-                "  max. samp. dim.  avg %.1f  min %s  max %s  dev %.1f\n"
-                "  max. samp. inst. avg %.1f  min %s  max %s  dev %.1f\n",
-                m_total_sampling_dim.get_mean(),
-                pretty_uint(m_total_sampling_dim.get_min()).c_str(),
-                pretty_uint(m_total_sampling_dim.get_max()).c_str(),
-                m_total_sampling_dim.get_dev(),
-                m_total_sampling_inst.get_mean(),
-                pretty_uint(m_total_sampling_inst.get_min()).c_str(),
-                pretty_uint(m_total_sampling_inst.get_max()).c_str(),
-                m_total_sampling_inst.get_dev());
-        }
-
-        virtual void release()
+        virtual void release() override
         {
             delete this;
         }
 
-        virtual void reset()
+        virtual void reset() override
         {
             SampleGeneratorBase::reset();
             m_rng = MersenneTwister();
+        }
+
+        virtual StatisticsVector get_statistics() const override
+        {
+            Statistics stats;
+            stats.insert("max. samp. dim.", m_total_sampling_dim);
+            stats.insert("max. samp. inst.", m_total_sampling_inst);
+
+            StatisticsVector vec;
+            vec.insert("generic sample generator statistics", stats);
+            vec.merge(m_sample_renderer->get_statistics());
+
+            return vec;
         }
 
       private:
@@ -229,66 +114,34 @@ namespace
         auto_release_ptr<ISampleRenderer>   m_sample_renderer;
         MersenneTwister                     m_rng;
 
-#ifdef ADAPTIVE_IMAGE_SAMPLING
-        PixelSampler                        m_pixel_sampler;
-        ImageImportanceSampler<double>      m_image_sampler;
-        size_t                              m_sample_count;
-#else
         const double                        m_frame_width_next_pow2;
         const double                        m_frame_height_next_pow3;
-        const double                        m_scale_x;
-        const double                        m_scale_y;
-#endif
 
         Population<size_t>                  m_total_sampling_dim;
         Population<size_t>                  m_total_sampling_inst;
 
         virtual size_t generate_samples(
             const size_t                    sequence_index,
-            SampleVector&                   samples)
+            SampleVector&                   samples) override
         {
-#ifdef ADAPTIVE_IMAGE_SAMPLING
-
-            // Generate a uniform sample in [0,1)^2.
-            const size_t Bases[2] = { 2, 3 };
-            const Vector2d s = halton_sequence<double, 2>(Bases, sequence_index);
-
-            // Choose a pixel.
-            size_t pixel_x, pixel_y;
-            double pixel_prob;
-            m_image_sampler.sample(s, pixel_x, pixel_y, pixel_prob);
-
-            // Create a sampling context. We start with an initial dimension of 2,
-            // corresponding to the Halton sequence used for the sample positions.
-            SamplingContext sampling_context(
-                m_rng,
-                2,                          // number of dimensions
-                0,                          // number of samples
-                sequence_index);            // initial instance number
-
-            // Compute the sample position in NDC.
-            sampling_context.split_in_place(2, 1);
-            const Vector2d subpixel = sampling_context.next_vector2<2>();
-            const Vector2d sample_position(
-                (pixel_x + subpixel.x) * m_frame_props.m_rcp_canvas_width,
-                (pixel_y + subpixel.y) * m_frame_props.m_rcp_canvas_height);
-
-#else
-
             // Compute the sample position in NDC.
             const size_t Bases[2] = { 2, 3 };
             const Vector2d s = halton_sequence<double, 2>(Bases, sequence_index);
 
             // Compute the coordinates of the pixel in the larger frame.
-            const size_t x = truncate<size_t>(s[0] * m_frame_width_next_pow2);
-            const size_t y = truncate<size_t>(s[1] * m_frame_height_next_pow3);
+            const Vector2d t(s[0] * m_frame_width_next_pow2, s[1] * m_frame_height_next_pow3);
+            const size_t x = truncate<size_t>(t[0]);
+            const size_t y = truncate<size_t>(t[1]);
 
             // Reject samples that fall outside the actual frame.
             if (x >= m_frame_props.m_canvas_width || y >= m_frame_props.m_canvas_height)
                 return 0;
 
-            // Transform back the pixel coordinates to NDC.
-            const Vector2d sample_position(s[0] * m_scale_x, s[1] * m_scale_y);
+            // Transform the sample position back to NDC. Full precision divisions are required
+            // to ensure that the sample position indeed lies in the [0,1)^2 interval.
+            const Vector2d sample_position(
+                t[0] / m_frame_props.m_canvas_width,
+                t[1] / m_frame_props.m_canvas_height);
 
             // Create a sampling context. We start with an initial dimension of 2,
             // corresponding to the Halton sequence used for the sample positions.
@@ -297,8 +150,6 @@ namespace
                 2,                          // number of dimensions
                 sequence_index,             // number of samples
                 sequence_index);            // initial instance number
-
-#endif
 
             // Render the sample.
             ShadingResult shading_result;
@@ -318,25 +169,6 @@ namespace
             sample.m_color[2] = shading_result.m_color[2];
             sample.m_color[3] = shading_result.m_alpha[0];
             samples.push_back(sample);
-
-#ifdef ADAPTIVE_IMAGE_SAMPLING
-
-            // Update pixel variance.
-            m_pixel_sampler.update_pixel_variance(
-                pixel_x,
-                pixel_y,
-                luminance(sample.m_color.rgb()));
-
-            // Rebuild the pixel CDF regularly.
-            const size_t ImageSamplerUpdatePeriod = 256 * 1000;
-            if (++m_sample_count == ImageSamplerUpdatePeriod)
-            {
-                RENDERER_LOG_DEBUG("rebuilding pixel cdf...");
-                m_image_sampler.rebuild(m_pixel_sampler);
-                m_sample_count = 0;
-            }
-
-#endif
 
             m_total_sampling_dim.insert(sampling_context.get_total_dimension());
             m_total_sampling_inst.insert(sampling_context.get_total_instance());

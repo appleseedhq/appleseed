@@ -44,7 +44,7 @@ bl_info = {
     "name": "appleseed project format",
     "description": "Exports a scene to the appleseed project file format.",
     "author": "Franz Beaune",
-    "version": (1, 1, 6),
+    "version": (1, 2, 0),
     "blender": (2, 6, 2),   # we really need Blender 2.62 or newer
     "api": 36339,
     "location": "File > Export",
@@ -284,6 +284,13 @@ class AppleseedExportOperator(bpy.types.Operator):
                                                          max=1000.0,
                                                          default=1.0,
                                                          subtype='FACTOR')
+
+    spot_lights_exitance_mult = bpy.props.FloatProperty(name="Spot Lights Energy Multiplier",
+                                                        description="Multiply the exitance of spot lights by this factor",
+                                                        min=0.001,
+                                                        max=1000.0,
+                                                        default=1.0,
+                                                        subtype='FACTOR')
 
     light_mats_exitance_mult = bpy.props.FloatProperty(name="Light-Emitting Materials Energy Multiplier",
                                                        description="Multiply the exitance of light-emitting materials by this factor",
@@ -853,18 +860,32 @@ class AppleseedExportOperator(bpy.types.Operator):
 
         if light_type == 'POINT':
             self.__emit_point_light(scene, object)
+        elif light_type == 'SPOT':
+            self.__emit_spot_light(scene, object)
         else:
             self.__warning("While exporting light '{0}': unsupported light type '{1}', skipping this light.".format(object.name, light_type))
 
     def __emit_point_light(self, scene, lamp):
         exitance_name = "{0}_exitance".format(lamp.name)
         self.__emit_solid_linear_rgb_color_element(exitance_name, lamp.data.color, lamp.data.energy * self.point_lights_exitance_mult)
-        self.__emit_light_element(lamp.name, "point_light", exitance_name, self.global_matrix * lamp.matrix_world)
 
-    def __emit_light_element(self, light_name, light_model, exitance_name, matrix):
-        self.__open_element('light name="{0}" model="{1}"'.format(light_name, light_model))
+        self.__open_element('light name="{0}" model="point_light"'.format(lamp.name))
         self.__emit_parameter("exitance", exitance_name)
-        self.__emit_transform_element(matrix)
+        self.__emit_transform_element(self.global_matrix * lamp.matrix_world)
+        self.__close_element("light")
+
+    def __emit_spot_light(self, scene, lamp):
+        exitance_name = "{0}_exitance".format(lamp.name)
+        self.__emit_solid_linear_rgb_color_element(exitance_name, lamp.data.color, lamp.data.energy * self.spot_lights_exitance_mult)
+
+        outer_angle = math.degrees(lamp.data.spot_size)
+        inner_angle = (1.0 - lamp.data.spot_blend) * outer_angle
+
+        self.__open_element('light name="{0}" model="spot_light"'.format(lamp.name))
+        self.__emit_parameter("exitance", exitance_name)
+        self.__emit_parameter("inner_angle", inner_angle)
+        self.__emit_parameter("outer_angle", outer_angle)
+        self.__emit_transform_element(self.global_matrix * lamp.matrix_world * mathutils.Matrix.Rotation(math.radians(-90.0), 4, 'X'))
         self.__close_element("light")
 
     #----------------------------------------------------------------------------------------------

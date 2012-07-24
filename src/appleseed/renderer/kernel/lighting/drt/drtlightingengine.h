@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_PATHTRACING_PATHTRACING_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_PATHTRACING_PATHTRACING_H
+#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_DRT_DRTLIGHTINGENGINE_H
+#define APPLESEED_RENDERER_KERNEL_LIGHTING_DRT_DRTLIGHTINGENGINE_H
 
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
@@ -40,25 +40,25 @@ namespace renderer
 {
 
 //
-// Path tracing lighting engine factory.
+// Distribution Ray Tracing (DRT) lighting engine factory.
 //
 
-class RENDERERDLL PTLightingEngineFactory
+class DRTLightingEngineFactory
   : public ILightingEngineFactory
 {
   public:
     // Constructor.
-    PTLightingEngineFactory(
+    DRTLightingEngineFactory(
         const LightSampler& light_sampler,
         const ParamArray&   params);
 
     // Delete this instance.
-    virtual void release();
+    virtual void release() override;
 
-    // Return a new path tracing lighting engine instance.
-    virtual ILightingEngine* create();
+    // Return a new DRT lighting engine instance.
+    virtual ILightingEngine* create() override;
 
-    // Return a new path tracing lighting engine instance.
+    // Return a new DRT lighting engine instance.
     static ILightingEngine* create(
         const LightSampler& light_sampler,
         const ParamArray&   params);
@@ -70,4 +70,4 @@ class RENDERERDLL PTLightingEngineFactory
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_PATHTRACING_PATHTRACING_H
+#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_DRT_DRTLIGHTINGENGINE_H

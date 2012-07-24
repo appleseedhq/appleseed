@@ -6,13 +6,13 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>500</width>
+    <width>550</width>
     <height>600</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>500</width>
+    <width>550</width>
     <height>600</height>
    </size>
   </property>
@@ -55,15 +55,21 @@
    </item>
    <item>
     <widget class="QScrollArea" name="scrollarea">
+     <property name="verticalScrollBarPolicy">
+      <enum>Qt::ScrollBarAlwaysOn</enum>
+     </property>
      <property name="widgetResizable">
       <bool>true</bool>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignHCenter|Qt::AlignTop</set>
      </property>
      <widget class="QWidget" name="scrollareawidget">
       <property name="geometry">
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>480</width>
+        <width>513</width>
         <height>520</height>
        </rect>
       </property>
@@ -78,7 +84,7 @@
          </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>440</width>
+           <width>470</width>
            <height>0</height>
           </size>
          </property>

@@ -46,6 +46,7 @@
 
 // Forward declarations.
 namespace appleseed { namespace studio { class IInputWidgetProxy; } }
+namespace renderer  { class Project; }
 namespace Ui        { class EntityEditorWindow; }
 class QFormLayout;
 class QSignalMapper;
@@ -97,6 +98,7 @@ class EntityEditorWindow
     EntityEditorWindow(
         QWidget*                            parent,
         const std::string&                  window_title,
+        const renderer::Project&            project,
         std::auto_ptr<IFormFactory>         form_factory,
         std::auto_ptr<IEntityBrowser>       entity_browser,
         const foundation::Dictionary&       values = foundation::Dictionary());
@@ -114,6 +116,8 @@ class EntityEditorWindow
     // Not wrapped in std::auto_ptr<> to avoid pulling in the UI definition code.
     Ui::EntityEditorWindow*             m_ui;
 
+    const renderer::Project&            m_project;
+
     std::auto_ptr<IFormFactory>         m_form_factory;
     std::auto_ptr<IEntityBrowser>       m_entity_browser;
 
@@ -123,6 +127,7 @@ class EntityEditorWindow
 
     QSignalMapper*                      m_entity_picker_signal_mapper;
     QSignalMapper*                      m_color_picker_signal_mapper;
+    QSignalMapper*                      m_file_picker_signal_mapper;
 
     void create_form_layout();
 
@@ -133,6 +138,7 @@ class EntityEditorWindow
     void create_dropdown_list_input_widget(const foundation::Dictionary& definition);
     void create_entity_picker_input_widget(const foundation::Dictionary& definition);
     void create_color_picker_input_widget(const foundation::Dictionary& definition);
+    void create_file_picker_input_widget(const foundation::Dictionary& definition);
 
     foundation::Dictionary get_values() const;
 
@@ -141,8 +147,8 @@ class EntityEditorWindow
 
     void slot_open_entity_browser(const QString& widget_name);
     void slot_entity_browser_accept(QString widget_name, QString page_name, QString entity_name);
-
     void slot_open_color_picker(const QString& widget_name);
+    void slot_open_file_picker(const QString& widget_name);
 
     void slot_accept();
 };
