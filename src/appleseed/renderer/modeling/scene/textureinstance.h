@@ -42,6 +42,7 @@
 
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
+namespace foundation    { class LightingConditions; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Texture; }
 
@@ -87,6 +88,9 @@ class DLLSYMBOL TextureInstance
     // Return the texture mapping modes.
     TextureAddressingMode get_addressing_mode() const;
     TextureFilteringMode get_filtering_mode() const;
+
+    // Return the lighting conditions of the texture.
+    const foundation::LightingConditions& get_lighting_conditions() const;
 
     // Perform entity binding.
     void bind_entities(const TextureContainer& textures);

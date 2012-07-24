@@ -34,6 +34,7 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/colorspace.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/uid.h"
@@ -56,6 +57,7 @@ struct TextureInstance::Impl
     string                  m_texture_name;
     TextureAddressingMode   m_addressing_mode;
     TextureFilteringMode    m_filtering_mode;
+    LightingConditions      m_lighting_conditions;
     Texture*                m_texture;
 };
 
@@ -105,6 +107,9 @@ TextureInstance::TextureInstance(
         impl->m_filtering_mode = TextureFilteringBilinear;
     }
 
+    // todo: retrieve the lighting conditions.
+    impl->m_lighting_conditions = LightingConditions(IlluminantCIED65, XYZCMFCIE196410Deg);
+
     impl->m_texture = 0;
 }
 
@@ -131,6 +136,11 @@ TextureAddressingMode TextureInstance::get_addressing_mode() const
 TextureFilteringMode TextureInstance::get_filtering_mode() const
 {
     return impl->m_filtering_mode;
+}
+
+const LightingConditions& TextureInstance::get_lighting_conditions() const
+{
+    return impl->m_lighting_conditions;
 }
 
 void TextureInstance::bind_entities(const TextureContainer& textures)
