@@ -30,8 +30,14 @@
 #define APPLESEED_RENDERER_MODELING_INPUT_INPUTEVALUATOR_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
 #include "renderer/modeling/input/inputarray.h"
+
+// appleseed.foundation headers.
+#include "foundation/math/vector.h"
+#include "foundation/platform/compiler.h"
+
+// Standard headers.
+#include <cstddef>
 
 // Forward declarations.
 namespace renderer      { class TextureCache; }

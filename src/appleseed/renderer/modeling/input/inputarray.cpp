@@ -35,6 +35,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/memory.h"
 
@@ -53,116 +54,6 @@ namespace renderer
 //
 // InputArray class implementation.
 //
-
-struct InputArray::Impl
-{
-    struct InputDecl
-    {
-        string          m_name;
-        InputFormat     m_format;
-        bool            m_has_default_value;
-        string          m_default_value;
-        Source*         m_source;
-    };
-
-    typedef vector<InputDecl> InputDeclVector;
-
-    InputDeclVector m_input_decls;
-};
-
-InputArray::InputArray()
-  : impl(new Impl())
-{
-}
-
-InputArray::~InputArray()
-{
-    for (each<Impl::InputDeclVector> i = impl->m_input_decls; i; ++i)
-        delete i->m_source;
-
-    delete impl;
-}
-
-void InputArray::declare(
-    const char*         name,
-    const InputFormat   format,
-    const char*         default_value)
-{
-    assert(name);
-
-    Impl::InputDecl decl;
-    decl.m_name = name;
-    decl.m_format = format;
-    decl.m_has_default_value = default_value != 0;
-    if (default_value)
-        decl.m_default_value = default_value;
-    decl.m_source = 0;
-
-    impl->m_input_decls.push_back(decl);
-}
-
-InputArray::iterator InputArray::begin()
-{
-    return iterator(this, 0);
-}
-
-InputArray::iterator InputArray::end()
-{
-    return iterator(this, impl->m_input_decls.size());
-}
-
-InputArray::const_iterator InputArray::begin() const
-{
-    return const_iterator(this, 0);
-}
-
-InputArray::const_iterator InputArray::end() const
-{
-    return const_iterator(this, impl->m_input_decls.size());
-}
-
-InputArray::iterator InputArray::find(const char* name)
-{
-    assert(name);
-
-    const size_t input_count = impl->m_input_decls.size();
-
-    for (size_t i = 0; i < input_count; ++i)
-    {
-        if (strcmp(impl->m_input_decls[i].m_name.c_str(), name) == 0)
-            return iterator(this, i);
-    }
-
-    return end();
-}
-
-InputArray::const_iterator InputArray::find(const char* name) const
-{
-    assert(name);
-
-    const size_t input_count = impl->m_input_decls.size();
-
-    for (size_t i = 0; i < input_count; ++i)
-    {
-        if (strcmp(impl->m_input_decls[i].m_name.c_str(), name) == 0)
-            return const_iterator(this, i);
-    }
-
-    return end();
-}
-
-Source* InputArray::source(const char* name) const
-{
-    assert(name);
-
-    for (const_each<Impl::InputDeclVector> i = impl->m_input_decls; i; ++i)
-    {
-        if (strcmp(i->m_name.c_str(), name) == 0)
-            return i->m_source;
-    }
-
-    return 0;
-}
 
 namespace
 {
@@ -186,28 +77,209 @@ namespace
     {
         return align(x, offset_of<Target>());
     }
+
+    struct Input
+    {
+        string          m_name;
+        InputFormat     m_format;
+        bool            m_has_default_value;
+        string          m_default_value;
+        Source*         m_source;
+
+        size_t add_size(size_t size) const
+        {
+            switch (m_format)
+            {
+              case InputFormatScalar:
+                size = align_to<double>(size);
+                size += sizeof(double);
+                break;
+
+              case InputFormatSpectrum:
+                size = align_to<Spectrum>(size);
+                size += sizeof(Spectrum);
+                size += sizeof(Alpha);
+                break;
+            }
+
+            return size;
+        }
+
+        uint8* evaluate(
+            TextureCache&       texture_cache,
+            const Vector2d&     uv,
+            uint8*              ptr) const
+        {
+            switch (m_format)
+            {
+              case InputFormatScalar:
+                ptr = align_to<double>(ptr);
+                if (m_source)
+                {
+                    m_source->evaluate(
+                        texture_cache,
+                        uv,
+                        *reinterpret_cast<double*>(ptr));
+                }
+                ptr += sizeof(double);
+                break;
+
+              case InputFormatSpectrum:
+                ptr = align_to<Spectrum>(ptr);
+                if (m_source)
+                {
+                    m_source->evaluate(
+                        texture_cache,
+                        uv,
+                        *reinterpret_cast<Spectrum*>(ptr),
+                        *reinterpret_cast<Alpha*>(ptr + sizeof(Spectrum)));
+                }
+                ptr += sizeof(Spectrum);
+                ptr += sizeof(Alpha);
+                break;
+            }
+
+            return ptr;
+        }
+
+        uint8* evaluate_uniform(uint8* ptr) const
+        {
+            switch (m_format)
+            {
+              case InputFormatScalar:
+                ptr = align_to<double>(ptr);
+                if (m_source && m_source->is_uniform())
+                    m_source->evaluate_uniform(*reinterpret_cast<double*>(ptr));
+                ptr += sizeof(double);
+                break;
+
+              case InputFormatSpectrum:
+                ptr = align_to<Spectrum>(ptr);
+                if (m_source && m_source->is_uniform())
+                {
+                    m_source->evaluate_uniform(
+                        *reinterpret_cast<Spectrum*>(ptr),
+                        *reinterpret_cast<Alpha*>(ptr + sizeof(Spectrum)));
+                }
+                ptr += sizeof(Spectrum);
+                ptr += sizeof(Alpha);
+                break;
+            }
+
+            return ptr;
+        }
+    };
+
+    typedef vector<Input> InputVector;
+}
+
+struct InputArray::Impl
+{
+    InputVector m_inputs;
+};
+
+InputArray::InputArray()
+  : impl(new Impl())
+{
+}
+
+InputArray::~InputArray()
+{
+    for (each<InputVector> i = impl->m_inputs; i; ++i)
+        delete i->m_source;
+
+    delete impl;
+}
+
+void InputArray::declare(
+    const char*         name,
+    const InputFormat   format,
+    const char*         default_value)
+{
+    assert(name);
+
+    Input input;
+    input.m_name = name;
+    input.m_format = format;
+    input.m_has_default_value = default_value != 0;
+
+    if (default_value)
+        input.m_default_value = default_value;
+
+    input.m_source = 0;
+
+    impl->m_inputs.push_back(input);
+}
+
+InputArray::iterator InputArray::begin()
+{
+    return iterator(this, 0);
+}
+
+InputArray::iterator InputArray::end()
+{
+    return iterator(this, impl->m_inputs.size());
+}
+
+InputArray::const_iterator InputArray::begin() const
+{
+    return const_iterator(this, 0);
+}
+
+InputArray::const_iterator InputArray::end() const
+{
+    return const_iterator(this, impl->m_inputs.size());
+}
+
+InputArray::iterator InputArray::find(const char* name)
+{
+    assert(name);
+
+    const size_t input_count = impl->m_inputs.size();
+
+    for (size_t i = 0; i < input_count; ++i)
+    {
+        if (strcmp(impl->m_inputs[i].m_name.c_str(), name) == 0)
+            return iterator(this, i);
+    }
+
+    return end();
+}
+
+InputArray::const_iterator InputArray::find(const char* name) const
+{
+    assert(name);
+
+    const size_t input_count = impl->m_inputs.size();
+
+    for (size_t i = 0; i < input_count; ++i)
+    {
+        if (strcmp(impl->m_inputs[i].m_name.c_str(), name) == 0)
+            return const_iterator(this, i);
+    }
+
+    return end();
+}
+
+Source* InputArray::source(const char* name) const
+{
+    assert(name);
+
+    for (const_each<InputVector> i = impl->m_inputs; i; ++i)
+    {
+        if (strcmp(i->m_name.c_str(), name) == 0)
+            return i->m_source;
+    }
+
+    return 0;
 }
 
 size_t InputArray::compute_data_size() const
 {
     size_t size = 0;
 
-    for (const_each<Impl::InputDeclVector> i = impl->m_input_decls; i; ++i)
-    {
-        switch (i->m_format)
-        {
-          case InputFormatScalar:
-            size = align_to<double>(size);
-            size += sizeof(double);
-            break;
-
-          case InputFormatSpectrum:
-            size = align_to<Spectrum>(size);
-            size += sizeof(Spectrum);
-            size += sizeof(Alpha);
-            break;
-        }
-    }
+    for (const_each<InputVector> i = impl->m_inputs; i; ++i)
+        size = i->add_size(size);
 
     size = align(size, 16);
 
@@ -225,37 +297,8 @@ void InputArray::evaluate(
     uint8* ptr = static_cast<uint8*>(values) + offset;
     assert(is_aligned(ptr, 16));
 
-    for (const_each<Impl::InputDeclVector> i = impl->m_input_decls; i; ++i)
-    {
-        switch (i->m_format)
-        {
-          case InputFormatScalar:
-            ptr = align_to<double>(ptr);
-            if (i->m_source)
-            {
-                i->m_source->evaluate(
-                    texture_cache,
-                    uv,
-                    *reinterpret_cast<double*>(ptr));
-            }
-            ptr += sizeof(double);
-            break;
-
-          case InputFormatSpectrum:
-            ptr = align_to<Spectrum>(ptr);
-            if (i->m_source)
-            {
-                i->m_source->evaluate(
-                    texture_cache,
-                    uv,
-                    *reinterpret_cast<Spectrum*>(ptr),
-                    *reinterpret_cast<Alpha*>(ptr + sizeof(Spectrum)));
-            }
-            ptr += sizeof(Spectrum);
-            ptr += sizeof(Alpha);
-            break;
-        }
-    }
+    for (const_each<InputVector> i = impl->m_inputs; i; ++i)
+        ptr = i->evaluate(texture_cache, uv, ptr);
 }
 
 void InputArray::evaluate_uniforms(
@@ -267,30 +310,8 @@ void InputArray::evaluate_uniforms(
     uint8* ptr = static_cast<uint8*>(values) + offset;
     assert(is_aligned(ptr, 16));
 
-    for (const_each<Impl::InputDeclVector> i = impl->m_input_decls; i; ++i)
-    {
-        switch (i->m_format)
-        {
-          case InputFormatScalar:
-            ptr = align_to<double>(ptr);
-            if (i->m_source && i->m_source->is_uniform())
-                i->m_source->evaluate_uniform(*reinterpret_cast<double*>(ptr));
-            ptr += sizeof(double);
-            break;
-
-          case InputFormatSpectrum:
-            ptr = align_to<Spectrum>(ptr);
-            if (i->m_source && i->m_source->is_uniform())
-            {
-                i->m_source->evaluate_uniform(
-                    *reinterpret_cast<Spectrum*>(ptr),
-                    *reinterpret_cast<Alpha*>(ptr + sizeof(Spectrum)));
-            }
-            ptr += sizeof(Spectrum);
-            ptr += sizeof(Alpha);
-            break;
-        }
-    }
+    for (const_each<InputVector> i = impl->m_inputs; i; ++i)
+        ptr = i->evaluate_uniform(ptr);
 }
 
 
@@ -356,23 +377,23 @@ const InputArray::const_iterator& InputArray::const_iterator::operator*() const
 
 const char* InputArray::const_iterator::name() const
 {
-    return m_input_array->impl->m_input_decls[m_input_index].m_name.c_str();
+    return m_input_array->impl->m_inputs[m_input_index].m_name.c_str();
 }
 
 InputFormat InputArray::const_iterator::format() const
 {
-    return m_input_array->impl->m_input_decls[m_input_index].m_format;
+    return m_input_array->impl->m_inputs[m_input_index].m_format;
 }
 
 const char* InputArray::const_iterator::default_value() const
 {
-    const Impl::InputDecl& decl = m_input_array->impl->m_input_decls[m_input_index];
-    return decl.m_has_default_value ? decl.m_default_value.c_str() : 0;
+    const Input& input = m_input_array->impl->m_inputs[m_input_index];
+    return input.m_has_default_value ? input.m_default_value.c_str() : 0;
 }
 
 Source* InputArray::const_iterator::source() const
 {
-    return m_input_array->impl->m_input_decls[m_input_index].m_source;
+    return m_input_array->impl->m_inputs[m_input_index].m_source;
 }
 
 
@@ -416,9 +437,9 @@ InputArray::iterator& InputArray::iterator::operator*()
 
 void InputArray::iterator::bind(Source* source)
 {
-    Impl::InputDecl& decl = m_input_array->impl->m_input_decls[m_input_index];
-    delete decl.m_source;
-    decl.m_source = source;
+    Input& input = m_input_array->impl->m_inputs[m_input_index];
+    delete input.m_source;
+    input.m_source = source;
 }
 
 }   // namespace renderer
