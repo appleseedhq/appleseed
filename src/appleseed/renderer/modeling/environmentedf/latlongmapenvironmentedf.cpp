@@ -84,18 +84,28 @@ namespace
     //   http://www.cs.kuleuven.be/~graphics/index.php/environment-maps
     //
 
+    struct Payload
+    {
+        uint32      m_x;
+        Color3f     m_color;
+    };
+
+    typedef ImageImportanceSampler<Payload, double> ImageImportanceSamplerType;
+
     class ImageSampler
     {
       public:
         ImageSampler(
             TextureCache&   texture_cache,
-            const Source*   source,
+            const Source*   exitance_source,
+            const Source*   multiplier_source,
             const size_t    width,
             const size_t    height,
             const double    u_shift,
             const double    v_shift)
           : m_texture_cache(texture_cache)
-          , m_source(source)
+          , m_exitance_source(exitance_source)
+          , m_multiplier_source(multiplier_source)
           , m_rcp_width(1.0 / width)
           , m_rcp_height(1.0 / height)
           , m_u_shift(u_shift)
@@ -104,35 +114,42 @@ namespace
         {
         }
 
-        double operator()(const size_t x, const size_t y)
+        void sample(const size_t x, const size_t y, Payload& payload, double& importance)
         {
-            if (m_source == 0)
-                return 0.0;
+            payload.m_x = static_cast<uint32>(x);
+
+            if (m_exitance_source == 0)
+            {
+                payload.m_color.set(0.0f);
+                importance = 0.0;
+                return;
+            }
 
             const Vector2d uv(
-                x * m_rcp_width + m_u_shift,
-                1.0 - y * m_rcp_height + m_v_shift);
+                (x + 0.5) * m_rcp_width + m_u_shift,
+                1.0 - (y + 0.5) * m_rcp_height + m_v_shift);
 
-            Color3f linear_rgb;
-            m_source->evaluate(m_texture_cache, uv, linear_rgb);
+            m_exitance_source->evaluate(m_texture_cache, uv, payload.m_color);
 
-            const double MaxLuminance = 1.0e4;
+            double multiplier;
+            m_multiplier_source->evaluate(m_texture_cache, uv, multiplier);
+            payload.m_color *= static_cast<float>(multiplier);
 
-            double lum = static_cast<double>(luminance(linear_rgb));
+            importance = static_cast<double>(luminance(payload.m_color));
 
-            if (lum < 0.0)
+            const double MaxImportance = 1.0e4;
+
+            if (importance < 0.0)
             {
-                lum = 0.0;
+                importance = 0.0;
                 ++m_out_of_range_luminance_error_count;
             }
 
-            if (lum > MaxLuminance)
+            if (importance > MaxImportance)
             {
-                lum = MaxLuminance;
+                importance = MaxImportance;
                 ++m_out_of_range_luminance_error_count;
             }
-
-            return lum;
         }
 
         size_t get_out_of_range_luminance_error_count() const
@@ -142,7 +159,8 @@ namespace
 
       private:
         TextureCache&   m_texture_cache;
-        const Source*   m_source;
+        const Source*   m_exitance_source;
+        const Source*   m_multiplier_source;
         const double    m_rcp_width;
         const double    m_rcp_height;
         const double    m_u_shift;
@@ -197,22 +215,21 @@ namespace
             double&             probability) const override
         {
             // Sample the importance map.
-            size_t x, y;
+            Payload payload;
+            size_t y;
             double prob_xy;
-            m_importance_sampler->sample(s, x, y, prob_xy);
+            m_importance_sampler->sample(s, payload, y, prob_xy);
 
             // Compute the coordinates in [0,1]^2 of the sample.
-            const double u = (2.0 * x + 1.0) / (2.0 * m_importance_map_width);
-            const double v = (2.0 * y + 1.0) / (2.0 * m_importance_map_height);
-
-            double theta, phi;
-            unit_square_to_angles(u, v, theta, phi);
+            const double u = (payload.m_x + 0.5) * m_rcp_importance_map_width;
+            const double v = (y + 0.5) * m_rcp_importance_map_height;
 
             // Compute the world space emission direction.
+            double theta, phi;
+            unit_square_to_angles(u, v, theta, phi);
             outgoing = Vector3d::unit_vector(theta, phi);
 
-            lookup_environment_map(input_evaluator, u, v, value);
-
+            linear_rgb_to_spectrum(m_lighting_conditions, payload.m_color, value);
             probability = prob_xy * m_probability_scale / sin(theta);
         }
 
@@ -274,14 +291,18 @@ namespace
             double      m_exitance_multiplier;
         };
 
-        typedef ImageImportanceSampler<double> ImageImportanceSamplerType;
-
         double                                  m_u_shift;
         double                                  m_v_shift;
 
+        LightingConditions                      m_lighting_conditions;
+
         size_t                                  m_importance_map_width;
         size_t                                  m_importance_map_height;
+
+        double                                  m_rcp_importance_map_width;
+        double                                  m_rcp_importance_map_height;
         double                                  m_probability_scale;
+
         auto_ptr<ImageImportanceSamplerType>    m_importance_sampler;
 
         // Compute the spherical coordinates of a given direction.
@@ -335,16 +356,28 @@ namespace
 
             if (dynamic_cast<const TextureSource*>(exitance_source))
             {
-                const CanvasProperties& texture_props =
-                    static_cast<const TextureSource*>(exitance_source)->get_texture_instance().get_texture()->properties();
+                const TextureSource* texture_source = static_cast<const TextureSource*>(exitance_source);
+                const TextureInstance& texture_instance = texture_source->get_texture_instance();
+                const CanvasProperties& texture_props = texture_instance.get_texture()->properties();
+
+                m_lighting_conditions = texture_instance.get_lighting_conditions();
                 m_importance_map_width = texture_props.m_canvas_width;
                 m_importance_map_height = texture_props.m_canvas_height;
             }
             else
             {
+                RENDERER_LOG_ERROR(
+                    "while building importance map for environment edf \"%s\": a texture instance "
+                    "must be bound to the \"exitance\" input.",
+                    get_name());
+
+                m_lighting_conditions = LightingConditions(IlluminantCIED65, XYZCMFCIE196410Deg);
                 m_importance_map_width = 1;
                 m_importance_map_height = 1;
             }
+
+            m_rcp_importance_map_width = 1.0 / m_importance_map_width;
+            m_rcp_importance_map_height = 1.0 / m_importance_map_height;
 
             const size_t texel_count = m_importance_map_width * m_importance_map_height;
             m_probability_scale = texel_count / (2.0 * Pi * Pi);
@@ -354,6 +387,7 @@ namespace
             ImageSampler sampler(
                 texture_cache,
                 exitance_source,
+                m_inputs.source("exitance_multiplier"),
                 m_importance_map_width,
                 m_importance_map_height,
                 m_u_shift,
