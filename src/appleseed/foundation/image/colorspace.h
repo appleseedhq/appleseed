@@ -242,6 +242,8 @@ class LightingConditions
   public:
     Color3f                     m_cmf[31];                  // precomputed values of (cmf[0], cmf[1], cmf[2]) * illuminant
 
+    LightingConditions();                                   // leaves the object uninitialized
+
     LightingConditions(
         const Spectrum31f&      illuminant,                 // illuminant
         const Spectrum31f       cmf[3]);                    // color matching functions
