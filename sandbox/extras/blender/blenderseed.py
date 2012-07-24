@@ -44,7 +44,7 @@ bl_info = {
     "name": "appleseed project format",
     "description": "Exports a scene to the appleseed project file format.",
     "author": "Franz Beaune",
-    "version": (1, 2, 0),
+    "version": (1, 2, 1),
     "blender": (2, 6, 2),   # we really need Blender 2.62 or newer
     "api": 36339,
     "location": "File > Export",
@@ -885,7 +885,7 @@ class AppleseedExportOperator(bpy.types.Operator):
         self.__emit_parameter("exitance", exitance_name)
         self.__emit_parameter("inner_angle", inner_angle)
         self.__emit_parameter("outer_angle", outer_angle)
-        self.__emit_transform_element(self.global_matrix * lamp.matrix_world * mathutils.Matrix.Rotation(math.radians(-90.0), 4, 'X'))
+        self.__emit_transform_element(self.global_matrix * lamp.matrix_world)
         self.__close_element("light")
 
     #----------------------------------------------------------------------------------------------
