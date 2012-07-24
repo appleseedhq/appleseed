@@ -677,7 +677,6 @@ set (foundation_utility_sources
     foundation/utility/vpythonfile.h
     foundation/utility/xercesc.cpp
     foundation/utility/xercesc.h
-    foundation/utility/xmlelement.cpp
     foundation/utility/xmlelement.h
 )
 list (APPEND appleseed_sources

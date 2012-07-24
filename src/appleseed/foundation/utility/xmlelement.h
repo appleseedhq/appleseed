@@ -30,10 +30,10 @@
 #define APPLESEED_FOUNDATION_UTILITY_XMLELEMENT_H
 
 // appleseed.foundation headers.
+#include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/foreach.h"
+#include "foundation/utility/indenter.h"
 #include "foundation/utility/string.h"
-
-// appleseed.main headers.
-#include "main/dllsymbol.h"
 
 // Standard headers.
 #include <cassert>
@@ -41,10 +41,6 @@
 #include <string>
 #include <utility>
 #include <vector>
-
-// Forward declarations.
-namespace foundation    { class Dictionary; }
-namespace foundation    { class Indenter; }
 
 namespace foundation
 {
@@ -101,15 +97,38 @@ class XMLElement
 //   </parameters>
 //
 
-DLLSYMBOL void write_dictionary(
+void write_dictionary(
     const Dictionary&       dictionary,
     std::FILE*              file,
     Indenter&               indenter);
 
 
 //
-// XMLElement class implementation.
+// Implementation.
 //
+
+inline XMLElement::XMLElement(
+    const std::string&      name,
+    std::FILE*              file,
+    Indenter&               indenter)
+  : m_name(name)
+  , m_file(file)
+  , m_indenter(indenter)
+  , m_opened(false)
+  , m_closed(false)
+{
+}
+
+inline XMLElement::~XMLElement()
+{
+    assert(m_opened);
+
+    if (!m_closed)
+    {
+        --m_indenter;
+        std::fprintf(m_file, "%s</%s>\n", m_indenter.c_str(), m_name.c_str());
+    }
+}
 
 template <typename T>
 void XMLElement::add_attribute(
@@ -118,6 +137,55 @@ void XMLElement::add_attribute(
 {
     assert(!m_opened);
     m_attributes.push_back(std::make_pair(name, to_string(value)));
+}
+
+inline void XMLElement::write(const bool has_content)
+{
+    assert(!m_opened);
+
+    std::fprintf(m_file, "%s<%s", m_indenter.c_str(), m_name.c_str());
+
+    for (const_each<AttributeVector> i = m_attributes; i; ++i)
+    {
+        const std::string attribute_value = replace_special_xml_characters(i->second);
+        std::fprintf(m_file, " %s=\"%s\"", i->first.c_str(), attribute_value.c_str());
+    }
+
+    if (has_content)
+    {
+        std::fprintf(m_file, ">\n");
+        ++m_indenter;
+        m_closed = false;
+    }
+    else
+    {
+        std::fprintf(m_file, " />\n");
+        m_closed = true;
+    }
+
+    m_opened = true;
+}
+
+inline void write_dictionary(
+    const Dictionary&       dictionary,
+    std::FILE*              file,
+    Indenter&               indenter)
+{
+    for (const_each<StringDictionary> i = dictionary.strings(); i; ++i)
+    {
+        XMLElement element("parameter", file, indenter);
+        element.add_attribute("name", i->name());
+        element.add_attribute("value", i->value<std::string>());
+        element.write(false);
+    }
+
+    for (const_each<DictionaryDictionary> i = dictionary.dictionaries(); i; ++i)
+    {
+        XMLElement element("parameters", file, indenter);
+        element.add_attribute("name", i->name());
+        element.write(true);
+        write_dictionary(i->value(), file, indenter);
+    }
 }
 
 }       // namespace foundation
