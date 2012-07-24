@@ -104,6 +104,10 @@ class DLLSYMBOL TextureInstance
     struct Impl;
     Impl* impl;
 
+    TextureAddressingMode           m_addressing_mode;
+    TextureFilteringMode            m_filtering_mode;
+    Texture*                        m_texture;
+
     // Constructor.
     TextureInstance(
         const char*                 name,
@@ -131,6 +135,26 @@ class DLLSYMBOL TextureInstanceFactory
         const ParamArray&           params,
         const char*                 texture_name);
 };
+
+
+//
+// TextureInstance class implementation.
+//
+
+inline TextureAddressingMode TextureInstance::get_addressing_mode() const
+{
+    return m_addressing_mode;
+}
+
+inline TextureFilteringMode TextureInstance::get_filtering_mode() const
+{
+    return m_filtering_mode;
+}
+
+inline Texture* TextureInstance::get_texture() const
+{
+    return m_texture;
+}
 
 }       // namespace renderer
 

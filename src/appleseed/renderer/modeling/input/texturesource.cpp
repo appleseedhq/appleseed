@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/texturing/texturecache.h"
+#include "renderer/modeling/scene/textureinstance.h"
 #include "renderer/modeling/texture/texture.h"
 
 // appleseed.foundation headers.
@@ -175,9 +176,7 @@ TextureSource::TextureSource(
   , m_assembly_uid(assembly_uid)
   , m_texture_instance(texture_instance)
   , m_texture_uid(texture_instance.get_texture()->get_uid())
-  , m_addressing_mode(texture_instance.get_addressing_mode())           // todo: remove once inlined in TextureInstance
-  , m_filtering_mode(texture_instance.get_filtering_mode())             // todo: remove once inlined in TextureInstance
-  , m_lighting_conditions(texture_instance.get_lighting_conditions())   // todo: remove once inlined in TextureInstance
+  , m_lighting_conditions(texture_instance.get_lighting_conditions())
   , m_texture_props(texture_props)
   , m_scalar_canvas_width(static_cast<double>(texture_props.m_canvas_width))
   , m_scalar_canvas_height(static_cast<double>(texture_props.m_canvas_height))
@@ -246,7 +245,7 @@ void TextureSource::get_texels_2x2(
 {
     const Vector<size_t, 2> p00 =
         constrain_to_canvas(
-            m_addressing_mode,
+            m_texture_instance.get_addressing_mode(),
             m_texture_props.m_canvas_width,
             m_texture_props.m_canvas_height,
             ix + 0,
@@ -254,7 +253,7 @@ void TextureSource::get_texels_2x2(
 
     const Vector<size_t, 2> p11 =
         constrain_to_canvas(
-            m_addressing_mode,
+            m_texture_instance.get_addressing_mode(),
             m_texture_props.m_canvas_width,
             m_texture_props.m_canvas_height,
             ix + 1,
@@ -385,9 +384,9 @@ Color4f TextureSource::sample_texture(
     p.y = 1.0 - p.y;
 
     // Apply the texture addressing mode.
-    apply_addressing_mode(m_addressing_mode, p);
+    apply_addressing_mode(m_texture_instance.get_addressing_mode(), p);
 
-    switch (m_filtering_mode)
+    switch (m_texture_instance.get_filtering_mode())
     {
       case TextureFilteringNearest:
         {

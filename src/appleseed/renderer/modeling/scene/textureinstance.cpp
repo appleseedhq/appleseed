@@ -52,19 +52,16 @@ namespace renderer
 // TextureInstance class implementation.
 //
 
-struct TextureInstance::Impl
-{
-    string                  m_texture_name;
-    TextureAddressingMode   m_addressing_mode;
-    TextureFilteringMode    m_filtering_mode;
-    LightingConditions      m_lighting_conditions;
-    Texture*                m_texture;
-};
-
 namespace
 {
     const UniqueID g_class_uid = new_guid();
 }
+
+struct TextureInstance::Impl
+{
+    string                  m_texture_name;
+    LightingConditions      m_lighting_conditions;
+};
 
 TextureInstance::TextureInstance(
     const char*             name,
@@ -80,37 +77,37 @@ TextureInstance::TextureInstance(
     // Retrieve the texture addressing mode.
     const string addressing_mode = m_params.get_required<string>("addressing_mode", "wrap");
     if (addressing_mode == "clamp")
-        impl->m_addressing_mode = TextureAddressingClamp;
+        m_addressing_mode = TextureAddressingClamp;
     else if (addressing_mode == "wrap")
-        impl->m_addressing_mode = TextureAddressingWrap;
+        m_addressing_mode = TextureAddressingWrap;
     else
     {
         RENDERER_LOG_ERROR(
             "invalid value \"%s\" for parameter \"addressing_mode\", ",
             "using default value \"wrap\".",
             addressing_mode.c_str());
-        impl->m_addressing_mode = TextureAddressingWrap;
+        m_addressing_mode = TextureAddressingWrap;
     }
 
     // Retrieve the texture filtering mode.
     const string filtering_mode = m_params.get_required<string>("filtering_mode", "bilinear");
     if (filtering_mode == "nearest")
-        impl->m_filtering_mode = TextureFilteringNearest;
+        m_filtering_mode = TextureFilteringNearest;
     else if (filtering_mode == "bilinear")
-        impl->m_filtering_mode = TextureFilteringBilinear;
+        m_filtering_mode = TextureFilteringBilinear;
     else
     {
         RENDERER_LOG_ERROR(
             "invalid value \"%s\" for parameter \"filtering_mode\", ",
             "using default value \"bilinear\".",
             filtering_mode.c_str());
-        impl->m_filtering_mode = TextureFilteringBilinear;
+        m_filtering_mode = TextureFilteringBilinear;
     }
 
     // todo: retrieve the lighting conditions.
     impl->m_lighting_conditions = LightingConditions(IlluminantCIED65, XYZCMFCIE196410Deg);
 
-    impl->m_texture = 0;
+    m_texture = 0;
 }
 
 TextureInstance::~TextureInstance()
@@ -128,16 +125,6 @@ const char* TextureInstance::get_texture_name() const
     return impl->m_texture_name.c_str();
 }
 
-TextureAddressingMode TextureInstance::get_addressing_mode() const
-{
-    return impl->m_addressing_mode;
-}
-
-TextureFilteringMode TextureInstance::get_filtering_mode() const
-{
-    return impl->m_filtering_mode;
-}
-
 const LightingConditions& TextureInstance::get_lighting_conditions() const
 {
     return impl->m_lighting_conditions;
@@ -145,15 +132,10 @@ const LightingConditions& TextureInstance::get_lighting_conditions() const
 
 void TextureInstance::bind_entities(const TextureContainer& textures)
 {
-    impl->m_texture = textures.get_by_name(impl->m_texture_name.c_str());
+    m_texture = textures.get_by_name(impl->m_texture_name.c_str());
 
-    if (impl->m_texture == 0)
+    if (m_texture == 0)
         throw ExceptionUnknownEntity(impl->m_texture_name.c_str());
-}
-
-Texture* TextureInstance::get_texture() const
-{
-    return impl->m_texture;
 }
 
 
