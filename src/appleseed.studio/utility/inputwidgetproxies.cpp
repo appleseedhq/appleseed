@@ -48,6 +48,9 @@
 #include <QToolButton>
 #include <QVariant>
 
+// Standard headers.
+#include <vector>
+
 using namespace foundation;
 using namespace std;
 
@@ -207,7 +210,14 @@ Color3d ColorPickerProxy::get_color_from_string(const string& s)
 {
     try
     {
-        return from_string<Color3d>(s);
+        vector<double> values;
+        tokenize(s, Blanks, values);
+
+        if (values.size() == 1)
+            return Color3d(values[0]);
+        else if (values.size() == 3)
+            return Color3d(values[0], values[1], values[2]);
+        else return Color3d(0.0);
     }
     catch (const ExceptionStringConversionError&)
     {
