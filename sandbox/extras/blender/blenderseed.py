@@ -44,7 +44,7 @@ bl_info = {
     "name": "appleseed project format",
     "description": "Exports a scene to the appleseed project file format.",
     "author": "Franz Beaune",
-    "version": (1, 2, 5),
+    "version": (1, 2, 6),
     "blender": (2, 6, 2),   # we really need Blender 2.62 or newer
     "api": 36339,
     "location": "File > Export",
@@ -536,13 +536,14 @@ class AppleseedExportOperator(bpy.types.Operator):
 
         # Emit the dupli objects.
         for dupli_object in dupli_objects:
-            self.__emit_dupli_object(scene, dupli_object[0], dupli_object[1], object.material_slots)
+            self.__emit_dupli_object(scene, dupli_object[0], dupli_object[1])
 
         # Clear dupli list.
         if object.dupli_type != 'NONE':
             object.dupli_list_clear()
 
-    def __emit_dupli_object(self, scene, object, object_matrix, object_material_slots):
+    def __emit_dupli_object(self, scene, object, object_matrix):
+        # Emit the object the first time it is encountered.
         if object.name in self._instance_count:
             if Verbose:
                 self.__info("Skipping export of object '{0}' since it was already exported.".format(object.name))
@@ -570,7 +571,8 @@ class AppleseedExportOperator(bpy.types.Operator):
                 self.__info("Skipping object '{0}' of type '{1}' because it could not be converted to a mesh.".format(object.name, object.type))
                 return
 
-        self.__emit_mesh_object_instance(object, object_matrix, object_material_slots)
+        # Emit the object instance.
+        self.__emit_mesh_object_instance(object, object_matrix)
 
     def __emit_mesh_object(self, scene, object, mesh, mesh_faces, mesh_uvtex):
         if len(mesh_faces) == 0:
@@ -606,9 +608,9 @@ class AppleseedExportOperator(bpy.types.Operator):
 
         return mesh_parts
 
-    def __emit_mesh_object_instance(self, object, object_matrix, object_material_slots):
-        # Emit BSDFs and materials.
-        for material_slot_index, material_slot in enumerate(object_material_slots):
+    def __emit_mesh_object_instance(self, object, object_matrix):
+        # Emit BSDFs and materials if they are encountered for the first time.
+        for material_slot_index, material_slot in enumerate(object.material_slots):
             material = material_slot.material
             if material is None:
                 self.__warning("While exporting instance of object '{0}': material slot #{1} has no material.".format(object.name, material_slot_index))
@@ -623,7 +625,7 @@ class AppleseedExportOperator(bpy.types.Operator):
             instance_index = 0
         self._instance_count[object.name] = instance_index
         if Verbose:
-            self.__info("This is instance #{0} of object '{1}'.".format(instance_index, object.name))
+            self.__info("This is instance #{0} of object '{1}', it has {2} material slot(s).".format(instance_index, object.name, len(object.material_slots)))
 
         # Emit object parts instances.
         for (material_index, mesh_name) in self._mesh_parts[object.name]:
@@ -631,8 +633,8 @@ class AppleseedExportOperator(bpy.types.Operator):
             instance_name = "{0}.instance_{1}".format(part_name, instance_index)
             front_material_name = "__default_material"
             back_material_name = "__default_material"
-            if material_index < len(object_material_slots):
-                material = object_material_slots[material_index].material
+            if material_index < len(object.material_slots):
+                material = object.material_slots[material_index].material
                 if material:
                     front_material_name, back_material_name = self._emitted_materials[material]
             self.__emit_object_instance_element(part_name, instance_name, self.global_matrix * object_matrix, front_material_name, back_material_name)
