@@ -58,13 +58,13 @@ TEST_SUITE(Foundation_Math_Triangulator)
         EXPECT_EQ(TriangulatorType::CW, orientation);
     }
 
-    TEST_CASE_F(ComputePolygonOrientation_GivenLowestLeftmostTriangleIsDenerate_ReturnsCorrectOrientation, Fixture)
+    TEST_CASE_F(ComputePolygonOrientation_GivenLowestLeftmostTriangleIsDegenerate_ReturnsCorrectOrientation, Fixture)
     {
         TriangulatorType::Polygon2 polygon;
-        polygon.push_back(Vector2Type(0.0, 0.0));
-        polygon.push_back(Vector2Type(0.0, 0.0));
         polygon.push_back(Vector2Type(0.0, 1.0));
         polygon.push_back(Vector2Type(1.0, 1.0));
+        polygon.push_back(Vector2Type(0.0, 0.0));
+        polygon.push_back(Vector2Type(0.0, 0.0));
 
         TriangulatorType triangulator;
         const TriangulatorType::Orientation orientation =

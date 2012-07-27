@@ -41,7 +41,7 @@
 #include <vector>
 
 DECLARE_TEST_CASE(Foundation_Math_Triangulator, ComputePolygonOrientation_GivenLowestLeftmostTriangleIsValid_ReturnsCorrectOrientation);
-DECLARE_TEST_CASE(Foundation_Math_Triangulator, ComputePolygonOrientation_GivenLowestLeftmostTriangleIsDenerate_ReturnsCorrectOrientation);
+DECLARE_TEST_CASE(Foundation_Math_Triangulator, ComputePolygonOrientation_GivenLowestLeftmostTriangleIsDegenerate_ReturnsCorrectOrientation);
 
 namespace foundation
 {
@@ -93,7 +93,7 @@ class Triangulator
 
   private:
     GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Triangulator, ComputePolygonOrientation_GivenLowestLeftmostTriangleIsValid_ReturnsCorrectOrientation);
-    GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Triangulator, ComputePolygonOrientation_GivenLowestLeftmostTriangleIsDenerate_ReturnsCorrectOrientation);
+    GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Triangulator, ComputePolygonOrientation_GivenLowestLeftmostTriangleIsDegenerate_ReturnsCorrectOrientation);
 
     enum Orientation
     {
@@ -384,7 +384,7 @@ Triangulator<T>::compute_polygon_orientation(const Polygon2& polygon)
         }
     }
 
-    for (size_t i = 0; i < n; ++i, ++corner_index)
+    for (size_t i = 0; i < n; ++i)
     {
         // Find the two neighbors of the corner vertex.
         const size_t prev_index = corner_index > 0 ? corner_index - 1 : n - 1;
@@ -400,6 +400,9 @@ Triangulator<T>::compute_polygon_orientation(const Polygon2& polygon)
         // The first non-denegerate triangle determines the orientation of the polygon.
         if (orientation != Degenerate)
             return orientation;
+
+        // Consider the next vertex as the corner vertex.
+        corner_index = corner_index < n - 1 ? corner_index + 1 : 0;
     }
 
     // All triangles are degenerate thus the polygon is degenerate.
