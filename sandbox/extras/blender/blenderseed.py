@@ -44,7 +44,7 @@ bl_info = {
     "name": "appleseed project format",
     "description": "Exports a scene to the appleseed project file format.",
     "author": "Franz Beaune",
-    "version": (1, 2, 3),
+    "version": (1, 2, 4),
     "blender": (2, 6, 2),   # we really need Blender 2.62 or newer
     "api": 36339,
     "location": "File > Export",
@@ -800,6 +800,9 @@ class AppleseedExportOperator(bpy.types.Operator):
         reflectance_name = "{0}_reflectance".format(bsdf_name)
         self.__emit_solid_linear_rgb_color_element(reflectance_name, [ 1.0 ], 1.0)
 
+        transmittance_name = "{0}_transmittance".format(bsdf_name)
+        self.__emit_solid_linear_rgb_color_element(transmittance_name, [ 1.0 ], 1.0)
+
         if material.transparency_method == 'RAYTRACE':
             if side == 'front':
                 from_ior = 1.0
@@ -813,6 +816,7 @@ class AppleseedExportOperator(bpy.types.Operator):
 
         self.__open_element('bsdf name="{0}" model="specular_btdf"'.format(bsdf_name))
         self.__emit_parameter("reflectance", reflectance_name)
+        self.__emit_parameter("transmittance", transmittance_name)
         self.__emit_parameter("from_ior", from_ior)
         self.__emit_parameter("to_ior", to_ior)
         self.__close_element("bsdf")
