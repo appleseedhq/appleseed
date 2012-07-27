@@ -87,7 +87,8 @@ namespace
             const Project&      project,
             const Assembly&     assembly) override
         {
-            m_axis = normalize(get_transform().vector_to_parent(Vector3d(0.0, 1.0, 0.0)));
+            m_transform = Transformd(Matrix4d::rotation(Vector3d(1.0, 0.0, 0.0), -HalfPi)) * get_transform();
+            m_axis = normalize(m_transform.vector_to_parent(Vector3d(0.0, 1.0, 0.0)));
         }
  
         virtual void sample(
@@ -98,7 +99,7 @@ namespace
             double&             probability) const override
         {
             const Vector3d wo = sample_cone_uniform(s, m_cos_outer_half_angle);
-            outgoing = get_transform().vector_to_parent(wo);
+            outgoing = m_transform.vector_to_parent(wo);
 
             compute_exitance(data, wo.y, value);
 
@@ -159,6 +160,7 @@ namespace
         const double    m_cos_inner_half_angle;
         const double    m_cos_outer_half_angle;
 
+        Transformd      m_transform;
         Vector3d        m_axis;
 
         void compute_exitance(

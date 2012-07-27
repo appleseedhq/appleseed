@@ -32,7 +32,6 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/input/source.h"
-#include "renderer/modeling/scene/textureinstance.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
@@ -47,6 +46,7 @@
 
 // Forward declarations.
 namespace renderer      { class TextureCache; }
+namespace renderer      { class TextureInstance; }
 
 namespace renderer
 {
@@ -100,8 +100,6 @@ class TextureSource
     const foundation::UniqueID              m_assembly_uid;
     const TextureInstance&                  m_texture_instance;
     const foundation::UniqueID              m_texture_uid;
-    const TextureAddressingMode             m_addressing_mode;
-    const TextureFilteringMode              m_filtering_mode;
     const foundation::LightingConditions    m_lighting_conditions;
     const foundation::CanvasProperties      m_texture_props;
     const double                            m_scalar_canvas_width;

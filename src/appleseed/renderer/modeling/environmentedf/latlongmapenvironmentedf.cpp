@@ -42,6 +42,7 @@
 #include "renderer/modeling/input/texturesource.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/scene.h"
+#include "renderer/modeling/scene/textureinstance.h"
 #include "renderer/modeling/texture/texture.h"
 #include "renderer/utility/paramarray.h"
 
