@@ -44,7 +44,7 @@ bl_info = {
     "name": "appleseed project format",
     "description": "Exports a scene to the appleseed project file format.",
     "author": "Franz Beaune",
-    "version": (1, 2, 6),
+    "version": (1, 2, 7),
     "blender": (2, 6, 2),   # we really need Blender 2.62 or newer
     "api": 36339,
     "location": "File > Export",
@@ -655,6 +655,12 @@ class AppleseedExportOperator(bpy.types.Operator):
     # Materials.
     #----------------------------------------------------------------------------------------------
 
+    def __is_light_emitting_material(self, material):
+        if material.get('appleseed_arealight', False):
+            return True;
+
+        return material.emit > 0.0 and self.export_emitting_obj_as_lights
+
     def __emit_physical_surface_shader_element(self):
         self.__emit_line('<surface_shader name="physical_surface_shader" model="physical_surface_shader" />')
 
@@ -671,35 +677,35 @@ class AppleseedExportOperator(bpy.types.Operator):
         if Verbose:
             self.__info("Translating material '{0}'...".format(material.name))
 
-        front_material_name = self.__emit_front_material(material)
-
         if MatUtils.is_material_transparent(material):
-            back_material_name = self.__emit_back_material(material)
-        else: back_material_name = front_material_name
+            front_material_name = material.name + "_front"
+            back_material_name = material.name + "_back"
+            self.__emit_front_material(material, front_material_name)
+            self.__emit_back_material(material, back_material_name)
+        else:
+            front_material_name = material.name
+            self.__emit_front_material(material, front_material_name)
+            if self.__is_light_emitting_material(material):
+                # Assign the default material to the back face if the front face emits light,
+                # as we don't want mesh lights to emit from both faces.
+                back_material_name = "__default_material"
+            else: back_material_name = front_material_name
 
         return front_material_name, back_material_name
 
-    def __emit_front_material(self, material):
+    def __emit_front_material(self, material, material_name):
         bsdf_name = self.__emit_front_material_bsdf_tree(material)
 
-        force_area_light = material.get('appleseed_arealight', False)
-        if force_area_light or (material.emit > 0.0 and self.export_emitting_obj_as_lights):
+        if self.__is_light_emitting_material(material):
             edf_name = "{0}_edf".format(material.name)
             self.__emit_edf(material, edf_name)
         else: edf_name = ""
 
-        material_name = material.name + "_front"
         self.__emit_material_element(material_name, bsdf_name, edf_name, "physical_surface_shader")
 
-        return material_name
-
-    def __emit_back_material(self, material):
+    def __emit_back_material(self, material, material_name):
         bsdf_name = self.__emit_back_material_bsdf_tree(material)
-
-        material_name = material.name + "_back"
         self.__emit_material_element(material_name, bsdf_name, "", "physical_surface_shader")
-
-        return material_name
 
     def __emit_front_material_bsdf_tree(self, material):
         bsdfs = []
