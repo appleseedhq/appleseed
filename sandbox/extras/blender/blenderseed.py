@@ -44,7 +44,7 @@ bl_info = {
     "name": "appleseed project format",
     "description": "Exports a scene to the appleseed project file format.",
     "author": "Franz Beaune",
-    "version": (1, 2, 8),
+    "version": (1, 2, 9),
     "blender": (2, 6, 2),   # we really need Blender 2.62 or newer
     "api": 36339,
     "location": "File > Export",
@@ -310,6 +310,9 @@ class AppleseedExportOperator(bpy.types.Operator):
                                         description="If checked, Image Based Lighting (IBL) will be enabled during rendering",
                                         default=True)
 
+    enable_caustics = bpy.props.BoolProperty(name="Enable Caustics (Path Tracing Only)",
+                                             description="If checked, caustics will be enabled during rendering",
+                                             default=True)
 
     generate_mesh_files = bpy.props.BoolProperty(name="Write Meshes to Disk",
                                                  description="If unchecked, the mesh files (.obj files) won't be regenerated",
@@ -960,6 +963,7 @@ class AppleseedExportOperator(bpy.types.Operator):
         self.__emit_parameter("lighting_engine", self.lighting_engine)
         self.__open_element('parameters name="{0}"'.format(self.lighting_engine))
         self.__emit_parameter("enable_ibl", "true" if self.enable_ibl else "false")
+        self.__emit_parameter("enable_caustics", "true" if self.enable_caustics else "false")
         self.__close_element('parameters')
 
     #----------------------------------------------------------------------------------------------
