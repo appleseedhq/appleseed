@@ -44,7 +44,7 @@ bl_info = {
     "name": "appleseed project format",
     "description": "Exports a scene to the appleseed project file format.",
     "author": "Franz Beaune",
-    "version": (1, 2, 2),
+    "version": (1, 2, 3),
     "blender": (2, 6, 2),   # we really need Blender 2.62 or newer
     "api": 36339,
     "location": "File > Export",
@@ -299,7 +299,7 @@ class AppleseedExportOperator(bpy.types.Operator):
                                                        default=1.0,
                                                        subtype='FACTOR')
 
-    specular_mult = bpy.props.FloatProperty(name="Specular Highlights Multiplier",
+    specular_mult = bpy.props.FloatProperty(name="Specular Components Multiplier",
                                             description="Multiply the intensity of specular components by this factor",
                                             min=0.0,
                                             max=1.0,
@@ -324,9 +324,8 @@ class AppleseedExportOperator(bpy.types.Operator):
 
     tessellation_quality = bpy.props.EnumProperty(name="Tessellation Quality",
                                                   description="Fineness of the tessellation of non-mesh objects",
-                                                  items=[('PREVIEW', "Preview", ""),
-                                                         ('RENDER', "Render", "")],
-                                                  default='PREVIEW')
+                                                  items=[('PREVIEW', "Preview", ""), ('RENDER', "Render", "")],
+                                                  default='RENDER')
 
     # Transformation matrix applied to all entities of the scene.
     global_scale = 0.1
