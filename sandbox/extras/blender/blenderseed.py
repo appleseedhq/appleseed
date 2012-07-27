@@ -44,7 +44,7 @@ bl_info = {
     "name": "appleseed project format",
     "description": "Exports a scene to the appleseed project file format.",
     "author": "Franz Beaune",
-    "version": (1, 2, 1),
+    "version": (1, 2, 2),
     "blender": (2, 6, 2),   # we really need Blender 2.62 or newer
     "api": 36339,
     "location": "File > Export",
@@ -270,7 +270,7 @@ class AppleseedExportOperator(bpy.types.Operator):
     sample_count = bpy.props.IntProperty(name="Sample Count",
                                          description="Number of samples per pixels in final frame mode",
                                          min=1,
-                                         max=4096,
+                                         max=1000000,
                                          default=32,
                                          subtype='UNSIGNED')
 
@@ -280,28 +280,28 @@ class AppleseedExportOperator(bpy.types.Operator):
 
     point_lights_exitance_mult = bpy.props.FloatProperty(name="Point Lights Energy Multiplier",
                                                          description="Multiply the exitance of point lights by this factor",
-                                                         min=0.001,
+                                                         min=0.0,
                                                          max=1000.0,
                                                          default=1.0,
                                                          subtype='FACTOR')
 
     spot_lights_exitance_mult = bpy.props.FloatProperty(name="Spot Lights Energy Multiplier",
                                                         description="Multiply the exitance of spot lights by this factor",
-                                                        min=0.001,
+                                                        min=0.0,
                                                         max=1000.0,
                                                         default=1.0,
                                                         subtype='FACTOR')
 
     light_mats_exitance_mult = bpy.props.FloatProperty(name="Light-Emitting Materials Energy Multiplier",
                                                        description="Multiply the exitance of light-emitting materials by this factor",
-                                                       min=0.001,
+                                                       min=0.0,
                                                        max=1000.0,
                                                        default=1.0,
                                                        subtype='FACTOR')
 
     specular_mult = bpy.props.FloatProperty(name="Specular Highlights Multiplier",
                                             description="Multiply the intensity of specular components by this factor",
-                                            min=0.01,
+                                            min=0.0,
                                             max=1.0,
                                             default=0.3,
                                             subtype='FACTOR')
