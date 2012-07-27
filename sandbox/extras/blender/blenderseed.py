@@ -44,7 +44,7 @@ bl_info = {
     "name": "appleseed project format",
     "description": "Exports a scene to the appleseed project file format.",
     "author": "Franz Beaune",
-    "version": (1, 2, 7),
+    "version": (1, 2, 8),
     "blender": (2, 6, 2),   # we really need Blender 2.62 or newer
     "api": 36339,
     "location": "File > Export",
@@ -271,7 +271,7 @@ class AppleseedExportOperator(bpy.types.Operator):
                                          description="Number of samples per pixels in final frame mode",
                                          min=1,
                                          max=1000000,
-                                         default=32,
+                                         default=25,
                                          subtype='UNSIGNED')
 
     export_emitting_obj_as_lights = bpy.props.BoolProperty(name="Export Emitting Objects As Mesh Lights",
@@ -302,13 +302,14 @@ class AppleseedExportOperator(bpy.types.Operator):
     specular_mult = bpy.props.FloatProperty(name="Specular Components Multiplier",
                                             description="Multiply the intensity of specular components by this factor",
                                             min=0.0,
-                                            max=1.0,
-                                            default=0.3,
+                                            max=1000.0,
+                                            default=1.0,
                                             subtype='FACTOR')
 
     enable_ibl = bpy.props.BoolProperty(name="Enable Image Based Lighting",
-                                        description="If checked, Image Based Lighting (IBL) will be enabled",
-                                        default=False)
+                                        description="If checked, Image Based Lighting (IBL) will be enabled during rendering",
+                                        default=True)
+
 
     generate_mesh_files = bpy.props.BoolProperty(name="Write Meshes to Disk",
                                                  description="If unchecked, the mesh files (.obj files) won't be regenerated",
