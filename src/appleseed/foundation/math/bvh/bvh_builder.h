@@ -78,7 +78,8 @@ class Builder
     void build(
         Tree&           tree,
         Partitioner&    partitioner,
-        const size_t    size);
+        const size_t    size,
+        const size_t    items_per_leaf_hint);
 
     // Return the construction time.
     double get_build_time() const;
@@ -87,7 +88,7 @@ class Builder
     typedef typename Tree::NodeType NodeType;
     typedef typename NodeType::AABBType AABBType;
 
-    double  m_build_time;
+    double m_build_time;
 
     // Recursively subdivide the tree.
     void subdivide_recurse(
@@ -115,7 +116,8 @@ template <typename Timer>
 void Builder<Tree, Partitioner>::build(
     Tree&               tree,
     Partitioner&        partitioner,
-    const size_t        size)
+    const size_t        size,
+    const size_t        items_per_leaf_hint)
 {
     // Start stopwatch.
     Stopwatch<Timer> stopwatch;
@@ -124,11 +126,16 @@ void Builder<Tree, Partitioner>::build(
     // Clear the tree.
     tree.m_nodes.clear();
 
+    // Reserve memory for the nodes.
+    const size_t leaf_count_guess = size / items_per_leaf_hint;
+    const size_t node_count_guess = leaf_count_guess > 0 ? 2 * leaf_count_guess - 1 : 0;
+    tree.m_nodes.reserve(node_count_guess);
+
     // Create the root node of the tree.
     tree.m_nodes.push_back(NodeType());
 
     // Compute the bounding box of the tree.
-    const AABBType root_bbox = partitioner.compute_bbox(0, size);
+    const AABBType root_bbox(partitioner.compute_bbox(0, size));
 
     // todo: preallocate node memory?
 
@@ -167,7 +174,7 @@ void Builder<Tree, Partitioner>::subdivide_recurse(
     size_t pivot = end;
     if (end - begin > 1)
     {
-        pivot = partitioner.partition(begin, end, bbox);
+        pivot = partitioner.partition(begin, end, typename Partitioner::AABBType(bbox));
         assert(pivot > begin);
         assert(pivot <= end);
     }
@@ -183,8 +190,8 @@ void Builder<Tree, Partitioner>::subdivide_recurse(
     else
     {
         // Compute the bounding box of the child nodes.
-        const AABBType left_bbox = partitioner.compute_bbox(begin, pivot);
-        const AABBType right_bbox = partitioner.compute_bbox(pivot, end);
+        const AABBType left_bbox(partitioner.compute_bbox(begin, pivot));
+        const AABBType right_bbox(partitioner.compute_bbox(pivot, end));
 
         // Compute the indices of the child nodes.
         const size_t left_node_index = tree.m_nodes.size();

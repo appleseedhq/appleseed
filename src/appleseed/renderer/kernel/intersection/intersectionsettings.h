@@ -92,10 +92,10 @@ const size_t RegionTreeAccessCacheSize = 16;
 const size_t TriangleTreeMaxLeafSize = 2;
 
 // Relative cost of traversing an interior node.
-const double TriangleTreeInteriorNodeTraversalCost = 1.0;
+const GScalar TriangleTreeInteriorNodeTraversalCost(1.0);
 
 // Relative cost of intersecting a triangle.
-const double TriangleTreeTriangleIntersectionCost = 1.0;
+const GScalar TriangleTreeTriangleIntersectionCost(1.0);
 
 // Number of bins used during SBVH construction.
 const size_t TriangleTreeBinCount = 256;

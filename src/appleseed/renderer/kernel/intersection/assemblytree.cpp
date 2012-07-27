@@ -150,7 +150,7 @@ void AssemblyTree::rebuild_assembly_tree()
     // Build the assembly tree.
     typedef bvh::Builder<AssemblyTree, Partitioner> Builder;
     Builder builder;
-    builder.build<DefaultWallclockTimer>(*this, partitioner, m_assembly_instances.size());
+    builder.build<DefaultWallclockTimer>(*this, partitioner, m_assembly_instances.size(), AssemblyTreeMaxLeafSize);
     statistics.insert_time("build time", builder.get_build_time());
     statistics.merge(bvh::TreeStatistics<AssemblyTree>(*this, AABB3d(m_scene.compute_bbox())));
 
