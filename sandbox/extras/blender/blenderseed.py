@@ -44,7 +44,7 @@ bl_info = {
     "name": "appleseed project format",
     "description": "Exports a scene to the appleseed project file format.",
     "author": "Franz Beaune",
-    "version": (1, 2, 4),
+    "version": (1, 2, 5),
     "blender": (2, 6, 2),   # we really need Blender 2.62 or newer
     "api": 36339,
     "location": "File > Export",
@@ -357,7 +357,7 @@ class AppleseedExportOperator(bpy.types.Operator):
 
         if scene is None:
             self.__error("No scene to export.")
-            pass
+            return
 
         # Blender material -> front material name, back material name.
         self._emitted_materials = {}
@@ -577,13 +577,14 @@ class AppleseedExportOperator(bpy.types.Operator):
             self.__info("Skipping object '{0}' since it has no faces once converted to a mesh.".format(object.name))
             return []
 
-        # Recalculate vertex normals.
-        if self.recompute_vertex_normals:
-            mesh.calc_normals()
-
-        # Export mesh to disk.
         mesh_filename = object.name + ".obj"
+
         if self.generate_mesh_files:
+            # Recalculate vertex normals.
+            if self.recompute_vertex_normals:
+                mesh.calc_normals()
+
+            # Export the mesh to disk.
             self.__progress("Exporting object '{0}' to {1}...".format(object.name, mesh_filename))
             mesh_filepath = os.path.join(os.path.dirname(self.filepath), mesh_filename)
             try:
@@ -594,6 +595,7 @@ class AppleseedExportOperator(bpy.types.Operator):
                 self.__error("While exporting object '{0}': could not write to {1}, skipping this object.".format(object.name, mesh_filepath))
                 return []
         else:
+            # Build a list of mesh parts just as if we had exported the mesh to disk.
             material_indices = set()
             for face in mesh_faces:
                 material_indices.add(face.material_index)
@@ -967,12 +969,10 @@ class AppleseedExportOperator(bpy.types.Operator):
     #
     # A note on color spaces:
     #
-    # Internally, Blender stores colors are linear RGB values, and the numeric color values
-    # we get from color pickers are linear RGB values although the color swatches and color
-    # pickers show gamma corrected colors.
-    #
-    # This explains why we pretty much exclusively use __emit_solid_linear_rgb_color_element()
-    # instead of __emit_solid_srgb_color_element().
+    # Internally, Blender stores colors as linear RGB values, and the numeric color values
+    # we get from color pickers are linear RGB values, although the color swatches and color
+    # pickers show gamma corrected colors. This explains why we pretty much exclusively use
+    # __emit_solid_linear_rgb_color_element() instead of __emit_solid_srgb_color_element().
     #
 
     def __emit_solid_linear_rgb_color_element(self, name, values, multiplier):
