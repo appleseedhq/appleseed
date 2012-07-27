@@ -100,6 +100,10 @@ const GScalar TriangleTreeTriangleIntersectionCost(1.0);
 // Number of bins used during SBVH construction.
 const size_t TriangleTreeBinCount = 256;
 
+// Define this symbol to enable reordering the nodes of triangle trees for better
+// locality of reference. Requires a lot of temporary memory for minimal results.
+#undef RENDERER_TRIANGLE_TREE_REORDER_NODES
+
 // Depth of a subtree in the van Emde Boas node layout.
 const size_t TriangleTreeSubtreeDepth = 2;
 

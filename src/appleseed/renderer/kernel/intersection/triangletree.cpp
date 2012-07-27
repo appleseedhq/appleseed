@@ -72,10 +72,6 @@ namespace renderer
 // TriangleTree class implementation.
 //
 
-// Define this symbol to enable reordering of the tree nodes for better locality
-// of reference. Requires a lot of temporary memory for minimal results.
-#undef OPTIMIZE_TREE
-
 namespace
 {
     template <typename Vector>
@@ -403,7 +399,7 @@ TriangleTree::TriangleTree(const Arguments& arguments)
         build_bvh(arguments, Time, statistics);
     else build_sbvh(arguments, Time, statistics);
 
-#ifdef OPTIMIZE_TREE
+#ifdef RENDERER_TRIANGLE_TREE_REORDER_NODES
     // Optimize the tree layout in memory.
     TreeOptimizer<NodeVectorType> tree_optimizer(m_nodes);
     tree_optimizer.optimize_node_layout(TriangleTreeSubtreeDepth);
