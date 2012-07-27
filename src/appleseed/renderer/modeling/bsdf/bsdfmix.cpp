@@ -32,8 +32,8 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
-#include "renderer/modeling/bsdf/brdfwrapper.h"
 #include "renderer/modeling/bsdf/bsdf.h"
+#include "renderer/modeling/bsdf/btdfwrapper.h"
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/scene/assembly.h"
 
@@ -196,12 +196,12 @@ namespace
 
             // Blend BSDF values.
             value.set(0.0f);
-            if (bsdf0_prob > 0.0)
+            if (bsdf0_prob == BSDF::DiracDelta || bsdf0_prob > 0.0)
             {
                 bsdf0_value *= static_cast<float>(w[bsdf0_index]);
                 value += bsdf0_value;
             }
-            if (bsdf1_prob > 0.0)
+            if (bsdf1_prob == BSDF::DiracDelta || bsdf1_prob > 0.0)
             {
                 bsdf1_value *= static_cast<float>(w[bsdf1_index]);
                 value += bsdf1_value;
@@ -353,7 +353,7 @@ namespace
         }
     };
 
-    typedef BRDFWrapper<BSDFMixImpl> BSDFMix;
+    typedef BTDFWrapper<BSDFMixImpl> BSDFMix;
 }
 
 
