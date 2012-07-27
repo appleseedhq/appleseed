@@ -44,7 +44,7 @@ bl_info = {
     "name": "appleseed project format",
     "description": "Exports a scene to the appleseed project file format.",
     "author": "Franz Beaune",
-    "version": (1, 2, 9),
+    "version": (1, 3, 0),
     "blender": (2, 6, 2),   # we really need Blender 2.62 or newer
     "api": 36339,
     "location": "File > Export",
@@ -698,38 +698,38 @@ class AppleseedExportOperator(bpy.types.Operator):
         return front_material_name, back_material_name
 
     def __emit_front_material(self, material, material_name):
-        bsdf_name = self.__emit_front_material_bsdf_tree(material)
+        bsdf_name = self.__emit_front_material_bsdf_tree(material, material_name)
 
         if self.__is_light_emitting_material(material):
-            edf_name = "{0}_edf".format(material.name)
+            edf_name = "{0}_edf".format(material_name)
             self.__emit_edf(material, edf_name)
         else: edf_name = ""
 
         self.__emit_material_element(material_name, bsdf_name, edf_name, "physical_surface_shader")
 
     def __emit_back_material(self, material, material_name):
-        bsdf_name = self.__emit_back_material_bsdf_tree(material)
+        bsdf_name = self.__emit_back_material_bsdf_tree(material, material_name)
         self.__emit_material_element(material_name, bsdf_name, "", "physical_surface_shader")
 
-    def __emit_front_material_bsdf_tree(self, material):
+    def __emit_front_material_bsdf_tree(self, material, material_name):
         bsdfs = []
 
         # Transparent component.
         material_transp_factor = MatUtils.compute_transparency_factor(material)
         if material_transp_factor > 0.0:
-            transp_bsdf_name = "{0}_transparent".format(material.name)
+            transp_bsdf_name = "{0}|transparent".format(material_name)
             self.__emit_specular_btdf(material, transp_bsdf_name, 'front')
             bsdfs.append([ transp_bsdf_name, material_transp_factor ])
 
         # Mirror component.
         material_refl_factor = MatUtils.compute_reflection_factor(material)
         if material_refl_factor > 0.0:
-            mirror_bsdf_name = "{0}_mirror".format(material.name)
+            mirror_bsdf_name = "{0}|specular".format(material_name)
             self.__emit_specular_brdf(material, mirror_bsdf_name)
             bsdfs.append([ mirror_bsdf_name, material_refl_factor ])
 
         # Diffuse/glossy component.
-        dg_bsdf_name = "{0}_diffuse_glossy".format(material.name)
+        dg_bsdf_name = "{0}|diffuseglossy".format(material_name)
         if is_black(material.specular_color * material.specular_intensity):
             self.__emit_lambertian_brdf(material, dg_bsdf_name)
         else:
@@ -739,8 +739,8 @@ class AppleseedExportOperator(bpy.types.Operator):
 
         return self.__emit_bsdf_blend(bsdfs)
 
-    def __emit_back_material_bsdf_tree(self, material):
-        transp_bsdf_name = "{0}_back_transparent".format(material.name)
+    def __emit_back_material_bsdf_tree(self, material, material_name):
+        transp_bsdf_name = "{0}|transparent".format(material_name)
         self.__emit_specular_btdf(material, transp_bsdf_name, 'back')
         return transp_bsdf_name
 
@@ -768,7 +768,7 @@ class AppleseedExportOperator(bpy.types.Operator):
         bsdf1_weight = 1.0 - bsdf0_weight
 
         # Blend the left and right branches together.
-        mix_name = "{0}_{1}_mix".format(bsdf0_name, bsdf1_name)
+        mix_name = "{0}+{1}".format(bsdf0_name, bsdf1_name)
         self.__emit_bsdf_mix(mix_name, bsdf0_name, bsdf0_weight, bsdf1_name, bsdf1_weight)
 
         return mix_name
