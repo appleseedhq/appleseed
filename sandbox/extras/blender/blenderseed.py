@@ -44,7 +44,7 @@ bl_info = {
     "name": "appleseed project format",
     "description": "Exports a scene to the appleseed project file format.",
     "author": "Franz Beaune",
-    "version": (1, 3, 0),
+    "version": (1, 3, 1),
     "blender": (2, 6, 2),   # we really need Blender 2.62 or newer
     "api": 36339,
     "location": "File > Export",
@@ -493,21 +493,51 @@ class AppleseedExportOperator(bpy.types.Operator):
     #----------------------------------------------------------------------------------------------
 
     def __emit_environment(self, scene):
-        sky_color = scene.world.horizon_color if scene.world is not None else [0, 0, 0]
+        sky_diffuse_env_edf_name = ""
+        sky_glossy_specular_env_edf_name = ""
+        sky_env_shader_name = ""
 
-        self.__emit_solid_linear_rgb_color_element("environment_edf_exitance", sky_color, 1.0)
+        # Emit an environment EDF for the first hemi light found in the scene.
+        for object in scene.objects:
+            if object.hide_render:
+                continue
+            if object.type == 'LAMP' and object.data.type == 'HEMI':
+                if not sky_diffuse_env_edf_name:
+                    self.__info("Using hemi light '{0}' for environment lighting.".format(object.name))
 
-        self.__open_element('environment_edf name="environment_edf" model="constant_environment_edf"')
-        self.__emit_parameter("exitance", "environment_edf_exitance")
-        self.__close_element('environment_edf')
+                    self.__emit_solid_linear_rgb_color_element("sky_exitance", object.data.color, object.data.energy)
 
-        self.__open_element('environment_shader name="environment_shader" model="edf_environment_shader"')
-        self.__emit_parameter("environment_edf", "environment_edf")
-        self.__close_element('environment_shader')
+                    sky_diffuse_env_edf_name = "sky_diffuse_env_edf"
+                    self.__open_element('environment_edf name="{0}" model="constant_environment_edf"'.format(sky_diffuse_env_edf_name))
+                    self.__emit_parameter("exitance", "sky_exitance")
+                    self.__close_element('environment_edf')
+                else:
+                    self.__warning("Ignoring hemi light '{0}', multiple hemi lights are not supported yet.".format(object.name))
 
+        # Emit an environment EDF and an environment shader for the sky.
+        if scene.world is not None:
+            self.__emit_solid_linear_rgb_color_element("sky_horizon_color", scene.world.horizon_color, 1.0)
+            self.__emit_solid_linear_rgb_color_element("sky_zenith_color", scene.world.zenith_color, 1.0)
+
+            # Environment EDF.
+            sky_glossy_specular_env_edf_name = "sky_glossy_specular_env_edf"
+            self.__open_element('environment_edf name="{0}" model="gradient_environment_edf"'.format(sky_glossy_specular_env_edf_name))
+            self.__emit_parameter("horizon_exitance", "sky_horizon_color")
+            self.__emit_parameter("zenith_exitance", "sky_zenith_color")
+            self.__close_element('environment_edf')
+
+            # Environment shader.
+            sky_env_shader_name = "sky_shader"
+            self.__open_element('environment_shader name="{0}" model="edf_environment_shader"'.format(sky_env_shader_name))
+            self.__emit_parameter("environment_edf", sky_glossy_specular_env_edf_name)
+            self.__close_element('environment_shader')
+
+        # Emit the environment element.
         self.__open_element('environment name="environment" model="generic_environment"')
-        self.__emit_parameter("environment_edf", "environment_edf")
-        self.__emit_parameter("environment_shader", "environment_shader")
+        self.__emit_parameter("diffuse_environment_edf", sky_diffuse_env_edf_name)
+        self.__emit_parameter("glossy_environment_edf", sky_glossy_specular_env_edf_name)
+        self.__emit_parameter("specular_environment_edf", sky_glossy_specular_env_edf_name)
+        self.__emit_parameter("environment_shader", sky_env_shader_name)
         self.__close_element('environment')
 
     #----------------------------------------------------------------------------------------------
@@ -879,6 +909,9 @@ class AppleseedExportOperator(bpy.types.Operator):
             self.__emit_point_light(scene, object)
         elif light_type == 'SPOT':
             self.__emit_spot_light(scene, object)
+        elif light_type == 'HEMI':
+            # Handle by the environment handling code.
+            pass
         else:
             self.__warning("While exporting light '{0}': unsupported light type '{1}', skipping this light.".format(object.name, light_type))
 
