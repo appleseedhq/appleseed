@@ -74,17 +74,18 @@ class DLLSYMBOL BSDF
     // BSDF types.
     enum Type
     {
-        Reflective      = 1 << 0,
-        Transmissive    = 1 << 1
+        Reflective          = 1 << 0,
+        Transmissive        = 1 << 1
     };
 
     // Scattering modes.
     enum Mode
     {
-        Absorption      = 0,
-        Diffuse         = 1 << 0,
-        Glossy          = 1 << 1,
-        Specular        = 1 << 2
+        Absorption          = 0,
+        Diffuse             = 1 << 0,
+        Glossy              = 1 << 1,
+        Specular            = 1 << 2,
+        MaxScatteringMode
     };
 
     // Use a particular (negative) value as the probability density
