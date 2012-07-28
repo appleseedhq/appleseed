@@ -44,7 +44,7 @@ bl_info = {
     "name": "appleseed project format",
     "description": "Exports a scene to the appleseed project file format.",
     "author": "Franz Beaune",
-    "version": (1, 3, 1),
+    "version": (1, 3, 2),
     "blender": (2, 6, 2),   # we really need Blender 2.62 or newer
     "api": 36339,
     "location": "File > Export",
@@ -79,6 +79,12 @@ def rad_to_deg(rad):
 
 def is_black(color):
     return color[0] == 0.0 and color[1] == 0.0 and color[2] == 0.0
+
+def add(color1, color2):
+    return [ color1[0] + color2[0], color1[1] + color2[1], color1[2] + color2[2] ]
+
+def mul(color, multiplier):
+    return [ color[0] * multiplier, color[1] * multiplier, color[2] * multiplier ]
 
 def scene_enumerator(self, context):
     matches = []
@@ -299,6 +305,13 @@ class AppleseedExportOperator(bpy.types.Operator):
                                                        default=1.0,
                                                        subtype='FACTOR')
 
+    env_exitance_mult = bpy.props.FloatProperty(name="Environment Energy Multiplier",
+                                                description="Multiply the exitance of the environment by this factor",
+                                                min=0.0,
+                                                max=1000.0,
+                                                default=1.0,
+                                                subtype='FACTOR')
+
     specular_mult = bpy.props.FloatProperty(name="Specular Components Multiplier",
                                             description="Multiply the intensity of specular components by this factor",
                                             min=0.0,
@@ -492,52 +505,56 @@ class AppleseedExportOperator(bpy.types.Operator):
     # Environment.
     #----------------------------------------------------------------------------------------------
 
-    def __emit_environment(self, scene):
-        sky_diffuse_env_edf_name = ""
-        sky_glossy_specular_env_edf_name = ""
-        sky_env_shader_name = ""
+    def __emit_environment(self, scene):    
+        horizon_exitance = [ 0.0, 0.0, 0.0 ]
+        zenith_exitance = [ 0.0, 0.0, 0.0 ]
 
-        # Emit an environment EDF for the first hemi light found in the scene.
+        # Add the contribution of the first hemi light found in the scene.
+        found_hemi_light = False
         for object in scene.objects:
             if object.hide_render:
                 continue
             if object.type == 'LAMP' and object.data.type == 'HEMI':
-                if not sky_diffuse_env_edf_name:
+                if not found_hemi_light:
                     self.__info("Using hemi light '{0}' for environment lighting.".format(object.name))
-
-                    self.__emit_solid_linear_rgb_color_element("sky_exitance", object.data.color, object.data.energy)
-
-                    sky_diffuse_env_edf_name = "sky_diffuse_env_edf"
-                    self.__open_element('environment_edf name="{0}" model="constant_environment_edf"'.format(sky_diffuse_env_edf_name))
-                    self.__emit_parameter("exitance", "sky_exitance")
-                    self.__close_element('environment_edf')
+                    hemi_exitance = mul(object.data.color, object.data.energy)
+                    horizon_exitance = add(horizon_exitance, hemi_exitance)
+                    zenith_exitance = add(zenith_exitance, hemi_exitance)
+                    found_hemi_light = True
                 else:
                     self.__warning("Ignoring hemi light '{0}', multiple hemi lights are not supported yet.".format(object.name))
 
-        # Emit an environment EDF and an environment shader for the sky.
+        # Add the contribution of the sky.
         if scene.world is not None:
-            self.__emit_solid_linear_rgb_color_element("sky_horizon_color", scene.world.horizon_color, 1.0)
-            self.__emit_solid_linear_rgb_color_element("sky_zenith_color", scene.world.zenith_color, 1.0)
+            horizon_exitance = add(horizon_exitance, scene.world.horizon_color)
+            zenith_exitance = add(zenith_exitance, scene.world.zenith_color)
 
-            # Environment EDF.
-            sky_glossy_specular_env_edf_name = "sky_glossy_specular_env_edf"
-            self.__open_element('environment_edf name="{0}" model="gradient_environment_edf"'.format(sky_glossy_specular_env_edf_name))
-            self.__emit_parameter("horizon_exitance", "sky_horizon_color")
-            self.__emit_parameter("zenith_exitance", "sky_zenith_color")
+        # Emith the environment EDF and environment shader if necessary.
+        if is_black(horizon_exitance) and is_black(zenith_exitance):
+            env_edf_name = ""
+            env_shader_name = ""
+        else:
+            # Emit the exitances.
+            self.__emit_solid_linear_rgb_color_element("horizon_exitance", horizon_exitance, self.env_exitance_mult)
+            self.__emit_solid_linear_rgb_color_element("zenith_exitance", zenith_exitance, self.env_exitance_mult)
+
+            # Emit the environment EDF.
+            env_edf_name = "environment_edf"
+            self.__open_element('environment_edf name="{0}" model="gradient_environment_edf"'.format(env_edf_name))
+            self.__emit_parameter("horizon_exitance", "horizon_exitance")
+            self.__emit_parameter("zenith_exitance", "zenith_exitance")
             self.__close_element('environment_edf')
 
-            # Environment shader.
-            sky_env_shader_name = "sky_shader"
-            self.__open_element('environment_shader name="{0}" model="edf_environment_shader"'.format(sky_env_shader_name))
-            self.__emit_parameter("environment_edf", sky_glossy_specular_env_edf_name)
+            # Emit the environment shader.
+            env_shader_name = "environment_shader"
+            self.__open_element('environment_shader name="{0}" model="edf_environment_shader"'.format(env_shader_name))
+            self.__emit_parameter("environment_edf", env_edf_name)
             self.__close_element('environment_shader')
 
         # Emit the environment element.
         self.__open_element('environment name="environment" model="generic_environment"')
-        self.__emit_parameter("diffuse_environment_edf", sky_diffuse_env_edf_name)
-        self.__emit_parameter("glossy_environment_edf", sky_glossy_specular_env_edf_name)
-        self.__emit_parameter("specular_environment_edf", sky_glossy_specular_env_edf_name)
-        self.__emit_parameter("environment_shader", sky_env_shader_name)
+        self.__emit_parameter("environment_edf", env_edf_name)
+        self.__emit_parameter("environment_shader", env_shader_name)
         self.__close_element('environment')
 
     #----------------------------------------------------------------------------------------------
