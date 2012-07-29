@@ -40,6 +40,10 @@
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
 
+// Forward declarations.
+namespace renderer  { class Assembly; }
+namespace renderer  { class Project; }
+
 using namespace foundation;
 
 namespace renderer
@@ -73,6 +77,13 @@ namespace
         virtual const char* get_model() const override
         {
             return Model;
+        }
+
+        virtual void on_frame_begin(
+            const Project&      project,
+            const Assembly&     assembly) override
+        {
+            check_non_null_exitance_input("exitance");
         }
 
         virtual void sample(
