@@ -635,7 +635,7 @@ void MainWindow::start_rendering(const bool interactive)
     m_rendering_manager.start_rendering(
         m_project_manager.get_project(),
         params,
-        !interactive,
+        interactive,
         m_render_widgets["RGB"]->m_render_widget);
 }
 
