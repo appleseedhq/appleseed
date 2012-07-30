@@ -33,6 +33,7 @@
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/intersection/tracecontext.h"
 #include "renderer/kernel/lighting/ilightingengine.h"
+#include "renderer/kernel/lighting/tracer.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingengine.h"
 #include "renderer/kernel/shading/shadingpoint.h"
@@ -80,7 +81,9 @@ namespace
           , m_opacity_threshold(1.0f - m_params.m_transparency_threshold)
           , m_texture_cache(texture_store)
           , m_intersector(trace_context, m_texture_cache, m_params.m_report_self_intersections)
+          , m_tracer(m_scene, m_intersector, m_texture_cache, m_params.m_transparency_threshold, m_params.m_max_iterations)
           , m_lighting_engine(lighting_engine_factory->create())
+          , m_shading_context(m_intersector, m_tracer, m_texture_cache, m_lighting_engine, m_params.m_transparency_threshold, m_params.m_max_iterations)
           , m_shading_engine(shading_engine)
         {
         }
@@ -106,14 +109,6 @@ namespace
             const uint64 last_texture_cache_miss_count = m_texture_cache.get_miss_count();
 
 #endif
-
-            // Construct a shading context.
-            ShadingContext shading_context(
-                m_intersector,
-                m_texture_cache,
-                m_lighting_engine,
-                m_params.m_transparency_threshold,
-                m_params.m_max_iterations);
 
             // Construct a primary ray.
             ShadingRay primary_ray;
@@ -154,7 +149,7 @@ namespace
                     // Shade the intersection point.
                     m_shading_engine.shade(
                         sampling_context,
-                        shading_context,
+                        m_shading_context,
                         *shading_point_ptr,
                         shading_result);
 
@@ -172,7 +167,7 @@ namespace
                     local_result.m_aovs.set_size(shading_result.m_aovs.size());
                     m_shading_engine.shade(
                         sampling_context,
-                        shading_context,
+                        m_shading_context,
                         *shading_point_ptr,
                         local_result);
 
@@ -254,7 +249,9 @@ namespace
 
         TextureCache                m_texture_cache;
         Intersector                 m_intersector;
+        Tracer                      m_tracer;
         ILightingEngine*            m_lighting_engine;
+        const ShadingContext        m_shading_context;
         ShadingEngine&              m_shading_engine;
     };
 }

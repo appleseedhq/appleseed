@@ -155,7 +155,8 @@ namespace
           , m_light_sampler(light_sampler)
           , m_texture_cache(texture_store)
           , m_intersector(trace_context, m_texture_cache, m_params.m_report_self_intersections)
-          , m_shading_context(m_intersector, m_texture_cache, 0, m_params.m_transparency_threshold, m_params.m_max_iterations)
+          , m_tracer(m_scene, m_intersector, m_texture_cache, m_params.m_transparency_threshold, m_params.m_max_iterations)
+          , m_shading_context(m_intersector, m_tracer, m_texture_cache, 0, m_params.m_transparency_threshold, m_params.m_max_iterations)
           , m_path_count(0)
         {
         }
@@ -250,21 +251,20 @@ namespace
                 const double                time)
             {
                 Vector2d sample_position_ndc;
-                double transmission;
                 Vector3d vertex_to_camera;
                 double square_distance;
 
-                const bool visible =
+                const double transmission =
                     vertex_visible_to_camera(
                         sampling_context,    
                         light_sample.m_point,
                         time,
                         sample_position_ndc,
-                        transmission,
                         vertex_to_camera,
                         square_distance);
 
-                if (!visible)
+                // Cull occluded samples.
+                if (transmission == 0.0)
                     return;
 
                 double cos_alpha = 0.0;
@@ -315,21 +315,20 @@ namespace
                 }
 
                 Vector2d sample_position_ndc;
-                double transmission;
                 Vector3d vertex_to_camera;
                 double square_distance;
 
-                const bool visible =
+                const double transmission =
                     vertex_visible_to_camera(
                         sampling_context,
                         shading_point.get_point(),
                         shading_point.get_ray().m_time,
                         sample_position_ndc,
-                        transmission,
                         vertex_to_camera,
                         square_distance);
 
-                if (!visible)
+                // Cull occluded samples.
+                if (transmission == 0.0)
                     return true;            // proceed with this path
 
                 // Retrieve the shading and geometric normals at the vertex.
@@ -400,12 +399,11 @@ namespace
             SampleVector&                   m_samples;
             size_t                          m_sample_count;         // the number of samples added to m_samples
 
-            bool vertex_visible_to_camera(
+            double vertex_visible_to_camera(
                 SamplingContext&            sampling_context,
                 const Vector3d&             vertex_position_world,
                 const double                time,
                 Vector2d&                   sample_position_ndc,
-                double&                     transmission,
                 Vector3d&                   vertex_to_camera,
                 double&                     square_distance) const
             {
@@ -427,25 +425,22 @@ namespace
 
                 // Compute the transmission factor between this vertex and the camera.
                 // Prevent self-intersections by letting the ray originate from the camera.
-                Tracer tracer(m_shading_context);
-                const ShadingPoint& shading_point =
-                    tracer.trace_between(
+                const double transmission =
+                    m_shading_context.get_tracer().trace_between(
                         sampling_context,
                         m_camera_position,
                         vertex_position_world,
-                        time,
-                        transmission);
-
-                // Reject vertices not directly visible from the camera.
-                if (shading_point.hit())
-                    return false;
+                        time);
 
                 // Compute the vertex-to-camera direction vector.
-                vertex_to_camera = m_camera_position - vertex_position_world;
-                square_distance = square_norm(vertex_to_camera);
-                vertex_to_camera /= sqrt(square_distance);
+                if (transmission > 0.0)
+                {
+                    vertex_to_camera = m_camera_position - vertex_position_world;
+                    square_distance = square_norm(vertex_to_camera);
+                    vertex_to_camera /= sqrt(square_distance);
+                }
 
-                return true;
+                return transmission;
             }
 
             void emit_sample(const Vector2d& position_ndc, const Spectrum& radiance)
@@ -479,6 +474,7 @@ namespace
         const LightSampler&             m_light_sampler;
         TextureCache                    m_texture_cache;
         Intersector                     m_intersector;
+        Tracer                          m_tracer;
         const ShadingContext            m_shading_context;
 
         MersenneTwister                 m_rng;

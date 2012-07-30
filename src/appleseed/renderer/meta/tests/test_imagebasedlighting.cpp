@@ -31,6 +31,7 @@
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/intersection/tracecontext.h"
 #include "renderer/kernel/lighting/imagebasedlighting.h"
+#include "renderer/kernel/lighting/tracer.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/kernel/texturing/texturestore.h"
@@ -56,19 +57,21 @@ TEST_SUITE(Renderer_Kernel_Lighting_ImageBasedLighting)
     struct Fixture
       : public TestFixtureBase
     {
-        MersenneTwister     m_rng;
-        SamplingContext     m_sampling_context;
-        TextureStore        m_texture_store;
-        TextureCache        m_texture_cache;
-        const Intersector   m_intersector;
-        ShadingContext      m_shading_context;
+        MersenneTwister         m_rng;
+        SamplingContext         m_sampling_context;
+        TextureStore            m_texture_store;
+        TextureCache            m_texture_cache;
+        const Intersector       m_intersector;
+        Tracer                  m_tracer;
+        const ShadingContext    m_shading_context;
 
         Fixture()
           : m_sampling_context(m_rng)
           , m_texture_store(m_scene)
           , m_texture_cache(m_texture_store)
           , m_intersector(m_project.get_trace_context(), m_texture_cache, false)
-          , m_shading_context(m_intersector, m_texture_cache)
+          , m_tracer(m_scene, m_intersector, m_texture_cache)
+          , m_shading_context(m_intersector, m_tracer, m_texture_cache)
         {
         }
     };

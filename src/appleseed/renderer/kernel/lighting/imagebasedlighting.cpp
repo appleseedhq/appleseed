@@ -32,7 +32,6 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/tracer.h"
 #include "renderer/kernel/shading/shadingcontext.h"
-#include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/input/inputevaluator.h"
@@ -98,19 +97,16 @@ namespace
             assert(bsdf_prob != BSDF::DiracDelta);
 
             // Compute the transmission factor toward the incoming direction.
-            Tracer tracer(shading_context);
-            double transmission;
-            const ShadingPoint& shading_point =
-                tracer.trace(
+            const double transmission =
+                shading_context.get_tracer().trace(
                     sampling_context,
                     point,
                     incoming,
                     time,
-                    transmission,
                     parent_shading_point);
 
             // Discard occluded samples.
-            if (shading_point.hit())
+            if (transmission == 0.0)
                 continue;
 
             // Evaluate the environment's EDF.
@@ -193,19 +189,16 @@ namespace
 
             // Compute the transmission factor toward the incoming direction.
             SamplingContext child_sampling_context(sampling_context);
-            Tracer tracer(shading_context);
-            double transmission;
-            const ShadingPoint& shading_point =
-                tracer.trace(
+            const double transmission =
+                shading_context.get_tracer().trace(
                     child_sampling_context,
                     point,
                     incoming,
                     time,
-                    transmission,
                     parent_shading_point);
 
             // Discard occluded samples.
-            if (shading_point.hit())
+            if (transmission == 0.0)
                 continue;
 
             // Evaluate the BSDF.
