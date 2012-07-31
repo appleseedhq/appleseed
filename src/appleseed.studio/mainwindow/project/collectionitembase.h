@@ -156,7 +156,9 @@ template <typename Entity>
 void CollectionItemBase<Entity>::remove_item(const foundation::UniqueID entity_id)
 {
     const ItemMap::iterator it = m_items.find(entity_id);
-    assert(it != m_items.end());
+
+    if (it == m_items.end())
+        return;
 
     removeChild(it->second);
 
