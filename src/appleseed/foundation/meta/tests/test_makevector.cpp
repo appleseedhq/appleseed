@@ -35,11 +35,11 @@
 #include <string>
 #include <vector>
 
+using namespace foundation;
+using namespace std;
+
 TEST_SUITE(Foundation_Utility_MakeVector)
 {
-    using namespace foundation;
-    using namespace std;
-
     TEST_CASE(TestMakeVectorWithSingleIntegerValue)
     {
         vector<int> expected_vector;

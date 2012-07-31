@@ -147,6 +147,11 @@ inline QString from_string(const std::string& s)
     return QString::fromStdString(s);
 }
 
+}       // namespace foundation
+
+namespace std
+{
+
 inline std::ostream& operator<<(std::ostream& s, const QColor& color)
 {
     return
@@ -156,6 +161,6 @@ inline std::ostream& operator<<(std::ostream& s, const QColor& color)
           << color.alpha();
 }
 
-}       // namespace foundation
+}       // namespace std
 
 #endif  // !APPLESEED_STUDIO_UTILITY_INTEROP_H

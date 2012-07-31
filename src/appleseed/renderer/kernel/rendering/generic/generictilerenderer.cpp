@@ -464,10 +464,11 @@ namespace
                         frame.get_sample_position(ix + s[0], iy + s[1]);
 
                     // Render the sample.
+                    SamplingContext child_sampling_context = sampling_context.split(0, 0);
                     ShadingResult shading_result;
                     shading_result.m_aovs.set_size(pixel_aovs.size());
                     m_sample_renderer->render_sample(
-                        sampling_context.split(0, 0),
+                        child_sampling_context,
                         sample_position,
                         shading_result);
 
