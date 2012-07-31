@@ -41,11 +41,13 @@ TEST_SUITE(Foundation_Math_Triangulator)
         typedef Vector<ValueType, 2> Vector2Type;
         typedef Vector<ValueType, 3> Vector3Type;
         typedef Triangulator<ValueType> TriangulatorType;
+        typedef TriangulatorType::Polygon2 Polygon2;
+        typedef TriangulatorType::Polygon3 Polygon3;
     };
 
     TEST_CASE_F(ComputePolygonOrientation_GivenLowestLeftmostTriangleIsValid_ReturnsCorrectOrientation, Fixture)
     {
-        TriangulatorType::Polygon2 polygon;
+        Polygon2 polygon;
         polygon.push_back(Vector2Type(0.0, 0.0));
         polygon.push_back(Vector2Type(0.0, 1.0));
         polygon.push_back(Vector2Type(1.0, 1.0));
@@ -60,7 +62,7 @@ TEST_SUITE(Foundation_Math_Triangulator)
 
     TEST_CASE_F(ComputePolygonOrientation_GivenLowestLeftmostTriangleIsDegenerate_ReturnsCorrectOrientation, Fixture)
     {
-        TriangulatorType::Polygon2 polygon;
+        Polygon2 polygon;
         polygon.push_back(Vector2Type(0.0, 1.0));
         polygon.push_back(Vector2Type(1.0, 1.0));
         polygon.push_back(Vector2Type(0.0, 0.0));
@@ -75,7 +77,7 @@ TEST_SUITE(Foundation_Math_Triangulator)
 
     TEST_CASE_F(Triangulate_GivenQuadWithCoincidentVertices_KeepDegenerateTrianglesIsFalse_ReturnsOneTriangle, Fixture)
     {
-        TriangulatorType::Polygon3 polygon;
+        Polygon3 polygon;
         polygon.push_back(Vector3Type(0.0, 0.0, 0.0));
         polygon.push_back(Vector3Type(0.0, 1.0, 0.0));
         polygon.push_back(Vector3Type(1.0, 1.0, 0.0));
@@ -92,7 +94,7 @@ TEST_SUITE(Foundation_Math_Triangulator)
 
     TEST_CASE_F(Triangulate_GivenQuadWithCoincidentVertices_KeepDegenerateTrianglesIsTrue_ReturnsTwoTriangles, Fixture)
     {
-        TriangulatorType::Polygon3 polygon;
+        Polygon3 polygon;
         polygon.push_back(Vector3Type(0.0, 0.0, 0.0));
         polygon.push_back(Vector3Type(0.0, 1.0, 0.0));
         polygon.push_back(Vector3Type(1.0, 1.0, 0.0));
@@ -109,7 +111,7 @@ TEST_SUITE(Foundation_Math_Triangulator)
 
     TEST_CASE_F(Triangulate_GivenSelfCrossingTriangle_ReturnsFalse, Fixture)
     {
-        TriangulatorType::Polygon3 polygon;
+        Polygon3 polygon;
         polygon.push_back(Vector3Type(0.0, 0.0, 1.0));
         polygon.push_back(Vector3Type(3.0, 2.0, 2.0));
         polygon.push_back(Vector3Type(3.0, 3.0, 3.0));
@@ -121,5 +123,29 @@ TEST_SUITE(Foundation_Math_Triangulator)
         const bool success = triangulator.triangulate(polygon, triangles);
 
         EXPECT_FALSE(success);
+    }
+
+    TEST_CASE_F(Triangulate_GivenComplexConcavePolygon_ReturnsTrue, Fixture)
+    {
+        Polygon3 polygon;
+        polygon.push_back(Vector3Type(0.137498, -1.09128, 0.0));
+        polygon.push_back(Vector3Type(0.124257, -1.10419, 0.0));
+        polygon.push_back(Vector3Type(0.124257, -1.31878, 0.0));
+        polygon.push_back(Vector3Type(0.240957, -1.30956, 0.0));
+        polygon.push_back(Vector3Type(0.240957, 1.3116, 0.0));
+        polygon.push_back(Vector3Type(0.124256, 1.30447, 0.0));
+        polygon.push_back(Vector3Type(0.124256, 1.08131, 0.0));
+        polygon.push_back(Vector3Type(0.137498, 1.0684, 0.0));
+        polygon.push_back(Vector3Type(0.160558, 1.02428, 0.0));
+        polygon.push_back(Vector3Type(0.168503, 0.975371, 0.0));
+        polygon.push_back(Vector3Type(0.168503, -0.998254, 0.0));
+        polygon.push_back(Vector3Type(0.160558, -1.04716, 0.0));
+
+        TriangulatorType triangulator;
+        TriangulatorType::IndexArray triangles;
+
+        const bool success = triangulator.triangulate(polygon, triangles);
+
+        EXPECT_TRUE(success);
     }
 }
