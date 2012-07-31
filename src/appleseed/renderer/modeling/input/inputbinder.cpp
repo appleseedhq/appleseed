@@ -75,16 +75,12 @@ void InputBinder::bind(const Scene& scene)
 {
     // Build the symbol table of the scene.
     SymbolTable scene_symbols;
-    build_scene_symbol_table(
-        scene,
-        scene_symbols);
+    build_scene_symbol_table(scene, scene_symbols);
 
     // Bind all inputs of all entities in the scene.
-    bind_scene_entities_inputs(
-        scene,
-        scene_symbols);
+    bind_scene_entities_inputs(scene, scene_symbols);
 
-    // Bind inputs of all entities in assemblies.
+    // Bind all inputs of all entities in all assemblies.
     for (const_each<AssemblyContainer> i = scene.assemblies(); i; ++i)
     {
         // Retrieve the assembly.
@@ -345,16 +341,26 @@ void InputBinder::bind_scene_entity_inputs(
             continue;
         }
 
-        if (!try_bind_scalar_to_input(param_value, input))
-        {
-            bind_scene_entity_to_input(
+        if (try_bind_scene_entity_to_input(
                 scene,
                 scene_symbols,
                 entity_type,
                 entity_name,
                 param_value.c_str(),
-                input);
-        }
+                input))
+            continue;
+
+        if (try_bind_scalar_to_input(param_value, input))
+            continue;
+
+        RENDERER_LOG_ERROR(
+            "while defining %s \"%s\": cannot bind \"%s\" to parameter \"%s\".",
+            entity_type,
+            entity_name,
+            param_value,
+            input.name());
+
+        ++m_error_count;
     }
 }
 
@@ -397,9 +403,7 @@ void InputBinder::bind_assembly_entity_inputs(
             continue;
         }
 
-        if (!try_bind_scalar_to_input(param_value, input))
-        {
-            bind_assembly_entity_to_input(
+        if (try_bind_assembly_entity_to_input(
                 scene,
                 scene_symbols,
                 assembly,
@@ -407,12 +411,33 @@ void InputBinder::bind_assembly_entity_inputs(
                 entity_type,
                 entity_name,
                 param_value.c_str(),
-                input);
-        }
+                input))
+            continue;
+
+        if (try_bind_scene_entity_to_input(
+                scene,
+                scene_symbols,
+                entity_type,
+                entity_name,
+                param_value.c_str(),
+                input))
+            continue;
+
+        if (try_bind_scalar_to_input(param_value, input))
+            continue;
+
+        RENDERER_LOG_ERROR(
+            "while defining %s \"%s\": cannot bind \"%s\" to parameter \"%s\".",
+            entity_type,
+            entity_name,
+            param_value,
+            input.name());
+
+        ++m_error_count;
     }
 }
 
-void InputBinder::bind_scene_entity_to_input(
+bool InputBinder::try_bind_scene_entity_to_input(
     const Scene&                    scene,
     const SymbolTable&              scene_symbols,
     const char*                     entity_type,
@@ -427,7 +452,7 @@ void InputBinder::bind_scene_entity_to_input(
             scene.colors(),
             param_value,
             input);
-        break;
+        return true;
 
       case SymbolTable::SymbolTextureInstance:
         bind_texture_instance_to_input(
@@ -437,21 +462,14 @@ void InputBinder::bind_scene_entity_to_input(
             entity_name,
             param_value,
             input);
-        break;
+        return true;
 
       default:
-        RENDERER_LOG_ERROR(
-            "while defining %s \"%s\": cannot bind \"%s\" to parameter \"%s\".",
-            entity_type,
-            entity_name,
-            param_value,
-            input.name());
-        ++m_error_count;
-        break;
+        return false;
     }
 }
 
-void InputBinder::bind_assembly_entity_to_input(
+bool InputBinder::try_bind_assembly_entity_to_input(
     const Scene&                    scene,
     const SymbolTable&              scene_symbols,
     const Assembly&                 assembly,
@@ -468,7 +486,7 @@ void InputBinder::bind_assembly_entity_to_input(
             assembly.colors(),
             param_value,
             input);
-        break;
+        return true;
 
       case SymbolTable::SymbolTextureInstance:
         bind_texture_instance_to_input(
@@ -478,29 +496,10 @@ void InputBinder::bind_assembly_entity_to_input(
             entity_name,
             param_value,
             input);
-        break;
-
-      case SymbolTable::SymbolNotFound:
-        // No entity with this name was found in this scope.
-        // Attempt to bind the input to a scene entity.
-        bind_scene_entity_to_input(
-            scene,
-            scene_symbols,
-            entity_type,
-            entity_name,
-            param_value,
-            input);
-        break;
+        return true;
 
       default:
-        RENDERER_LOG_ERROR(
-            "while defining %s \"%s\": cannot bind \"%s\" to parameter \"%s\".",
-            entity_type,
-            entity_name,
-            param_value,
-            input.name());
-        ++m_error_count;
-        break;
+        return false;
     }
 }
 
