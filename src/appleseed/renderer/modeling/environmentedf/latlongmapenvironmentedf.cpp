@@ -80,7 +80,6 @@ namespace
     //
     // Light probes:
     //
-    //   http://www.debevec.org/probes/
     //   http://gl.ict.usc.edu/Data/HighResProbes/
     //   http://www.cs.kuleuven.be/~graphics/index.php/environment-maps
     //

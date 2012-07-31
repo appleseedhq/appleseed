@@ -84,7 +84,7 @@ namespace
             return Model;
         }
 
-        FORCE_INLINE virtual void sample(
+        FORCE_INLINE virtual Mode sample(
             SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
@@ -94,8 +94,7 @@ namespace
             const Vector3d&     outgoing,
             Vector3d&           incoming,
             Spectrum&           value,
-            double&             probability,
-            Mode&               mode) const
+            double&             probability) const
         {
             // Compute the incoming direction in local space.
             sampling_context.split_in_place(2, 1);
@@ -114,8 +113,8 @@ namespace
             probability = wi.y * RcpPi;
             assert(probability > 0.0);
 
-            // Set the scattering mode.
-            mode = Diffuse;
+            // Return the scattering mode.
+            return Diffuse;
         }
 
         FORCE_INLINE virtual double evaluate(

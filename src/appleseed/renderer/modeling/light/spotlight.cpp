@@ -35,6 +35,7 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/matrix.h"
 #include "foundation/math/sampling.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
@@ -87,6 +88,8 @@ namespace
             const Project&      project,
             const Assembly&     assembly) override
         {
+            check_non_null_exitance_input("exitance");
+
             m_transform = Transformd(Matrix4d::rotation(Vector3d(1.0, 0.0, 0.0), -HalfPi)) * get_transform();
             m_axis = normalize(m_transform.vector_to_parent(Vector3d(0.0, 1.0, 0.0)));
         }

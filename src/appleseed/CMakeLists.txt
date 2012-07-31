@@ -688,6 +688,7 @@ source_group ("foundation\\utility" FILES
 
 set (main_sources
     main/allocator.cpp
+    main/allocator.h
     main/dllmain.cpp
     main/dllsymbol.h
 )

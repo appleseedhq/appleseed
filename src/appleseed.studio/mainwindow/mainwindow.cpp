@@ -107,8 +107,8 @@ MainWindow::MainWindow(QWidget* parent)
 
     build_connections();
 
-    slot_load_settings();
     print_startup_information();
+    slot_load_settings();
 
     update_workspace();
     update_project_explorer();
@@ -635,7 +635,7 @@ void MainWindow::start_rendering(const bool interactive)
     m_rendering_manager.start_rendering(
         m_project_manager.get_project(),
         params,
-        !interactive,
+        interactive,
         m_render_widgets["RGB"]->m_render_widget);
 }
 
@@ -926,8 +926,8 @@ void MainWindow::slot_show_about_window()
 void MainWindow::slot_load_settings()
 {
     const filesystem::path root_path(Application::get_root_path());
-    const filesystem::path settings_file_path = root_path / "settings" / "appleseed.studio.xml";
-    const filesystem::path schema_file_path = root_path / "schemas" / "settings.xsd";
+    const string settings_file_path = (root_path / "settings" / "appleseed.studio.xml").string();
+    const string schema_file_path = (root_path / "schemas" / "settings.xsd").string();
 
     SettingsFileReader reader(global_logger());
 
@@ -935,24 +935,36 @@ void MainWindow::slot_load_settings()
 
     const bool success =
         reader.read(
-            settings_file_path.string().c_str(),
-            schema_file_path.string().c_str(),
+            settings_file_path.c_str(),
+            schema_file_path.c_str(),
             settings);
 
     if (success)
+    {
+        RENDERER_LOG_INFO("successfully loaded settings from %s.", settings_file_path.c_str());
         m_settings = settings;
+    }
+    else
+    {
+        RENDERER_LOG_ERROR("failed to load settings from %s.", settings_file_path.c_str());
+    }
 }
 
 void MainWindow::slot_save_settings()
 {
     const filesystem::path root_path(Application::get_root_path());
-    const filesystem::path settings_file_path = root_path / "settings/appleseed.studio.xml";
+    const string settings_file_path = (root_path / "settings" / "appleseed.studio.xml").string();
 
     SettingsFileWriter writer;
 
-    writer.write(
-        settings_file_path.string().c_str(),
-        m_settings);
+    const bool success =
+        writer.write(
+            settings_file_path.c_str(),
+            m_settings);
+
+    if (success)
+        RENDERER_LOG_INFO("successfully saved settings to %s.", settings_file_path.c_str());
+    else RENDERER_LOG_ERROR("failed to save settings to %s.", settings_file_path.c_str());
 }
 
 namespace

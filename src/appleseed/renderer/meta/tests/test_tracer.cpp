@@ -185,7 +185,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
           , m_texture_cache(m_texture_store)
           , m_intersector(m_trace_context, m_texture_cache)
           , m_sampling_context(m_rng, 0, 0, 0)
-          , m_tracer(m_intersector, m_texture_cache)
+          , m_tracer(*Base::m_scene, m_intersector, m_texture_cache)
         {
             InputBinder input_binder;
             input_binder.bind(*Base::m_scene);

@@ -125,15 +125,21 @@ RenderSettingsWindow::~RenderSettingsWindow()
 
 void RenderSettingsWindow::reload()
 {
-    m_current_configuration_name.clear();
-
-    m_ui->combobox_configurations->clear();
+    vector<QString> configs;
 
     for (const_each<ConfigurationContainer> i = m_project_manager.get_project()->configurations(); i; ++i)
     {
         if (!BaseConfigurationFactory::is_base_configuration(i->get_name()))
-            m_ui->combobox_configurations->addItem(i->get_name());
+            configs.push_back(i->get_name());
     }
+
+    sort(configs.begin(), configs.end());
+
+    m_current_configuration_name.clear();
+    m_ui->combobox_configurations->clear();
+
+    for (size_t i = 0; i < configs.size(); ++i)
+        m_ui->combobox_configurations->addItem(configs[i]);
 }
 
 void RenderSettingsWindow::create_panels()

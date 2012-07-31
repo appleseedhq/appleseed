@@ -162,17 +162,16 @@ double Scene::compute_radius() const
 {
     double square_radius = 0.0;
 
-    for (const_each<AssemblyInstanceContainer> i = impl->m_assembly_instances; i; ++i)
+    const GAABB3 bbox = compute_bbox();
+
+    if (bbox.is_valid())
     {
-        const AssemblyInstance& inst = *i;
-        const GAABB3 inst_bbox = inst.compute_parent_bbox();
-
         GVector3 corners[8];
-        inst_bbox.compute_corners(corners);
+        bbox.compute_corners(corners);
 
-        for (size_t j = 0; j < 8; ++j)
+        for (size_t i = 0; i < 8; ++i)
         {
-            const double square_distance = square_norm(corners[j]);
+            const double square_distance = square_norm(corners[i]);
 
             if (square_radius < square_distance)
                 square_radius = square_distance;

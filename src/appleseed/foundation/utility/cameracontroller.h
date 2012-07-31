@@ -227,6 +227,8 @@ void CameraController<T>::update_drag(const Vector<T, 2>& point)
             speed *= std::pow(T(1.0) + target_distance, T(1.2));
         }
         break;
+
+      default:;
     }
 
     const Vector<T, 2> delta = (point - m_drag_origin) * speed;
@@ -246,6 +248,8 @@ void CameraController<T>::update_drag(const Vector<T, 2>& point)
       case Dolly:
         dolly(delta);
         break;
+
+      default:;
     }
 }
 

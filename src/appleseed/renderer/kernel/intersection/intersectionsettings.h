@@ -92,13 +92,17 @@ const size_t RegionTreeAccessCacheSize = 16;
 const size_t TriangleTreeMaxLeafSize = 2;
 
 // Relative cost of traversing an interior node.
-const double TriangleTreeInteriorNodeTraversalCost = 1.0;
+const GScalar TriangleTreeInteriorNodeTraversalCost(1.0);
 
 // Relative cost of intersecting a triangle.
-const double TriangleTreeTriangleIntersectionCost = 1.0;
+const GScalar TriangleTreeTriangleIntersectionCost(1.0);
 
 // Number of bins used during SBVH construction.
 const size_t TriangleTreeBinCount = 256;
+
+// Define this symbol to enable reordering the nodes of triangle trees for better
+// locality of reference. Requires a lot of temporary memory for minimal results.
+#undef RENDERER_TRIANGLE_TREE_REORDER_NODES
 
 // Depth of a subtree in the van Emde Boas node layout.
 const size_t TriangleTreeSubtreeDepth = 2;

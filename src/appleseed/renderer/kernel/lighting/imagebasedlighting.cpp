@@ -32,7 +32,6 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/tracer.h"
 #include "renderer/kernel/shading/shadingcontext.h"
-#include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/input/inputevaluator.h"
@@ -75,19 +74,18 @@ namespace
             Vector3d incoming;
             Spectrum bsdf_value;
             double bsdf_prob;
-            BSDF::Mode bsdf_mode;
-            bsdf.sample(
-                sampling_context,
-                bsdf_data,
-                false,              // not adjoint
-                true,               // multiply by |cos(incoming, normal)|
-                geometric_normal,
-                shading_basis,
-                outgoing,
-                incoming,
-                bsdf_value,
-                bsdf_prob,
-                bsdf_mode);
+            const BSDF::Mode bsdf_mode =
+                bsdf.sample(
+                    sampling_context,
+                    bsdf_data,
+                    false,          // not adjoint
+                    true,           // multiply by |cos(incoming, normal)|
+                    geometric_normal,
+                    shading_basis,
+                    outgoing,
+                    incoming,
+                    bsdf_value,
+                    bsdf_prob);
 
             // Ignore glossy/specular components: they must be handled by the parent.
             // See Physically Based Rendering vol. 1 page 732.
@@ -98,19 +96,16 @@ namespace
             assert(bsdf_prob != BSDF::DiracDelta);
 
             // Compute the transmission factor toward the incoming direction.
-            Tracer tracer(shading_context);
-            double transmission;
-            const ShadingPoint& shading_point =
-                tracer.trace(
+            const double transmission =
+                shading_context.get_tracer().trace(
                     sampling_context,
                     point,
                     incoming,
                     time,
-                    transmission,
                     parent_shading_point);
 
             // Discard occluded samples.
-            if (shading_point.hit())
+            if (transmission == 0.0)
                 continue;
 
             // Evaluate the environment's EDF.
@@ -193,19 +188,16 @@ namespace
 
             // Compute the transmission factor toward the incoming direction.
             SamplingContext child_sampling_context(sampling_context);
-            Tracer tracer(shading_context);
-            double transmission;
-            const ShadingPoint& shading_point =
-                tracer.trace(
+            const double transmission =
+                shading_context.get_tracer().trace(
                     child_sampling_context,
                     point,
                     incoming,
                     time,
-                    transmission,
                     parent_shading_point);
 
             // Discard occluded samples.
-            if (shading_point.hit())
+            if (transmission == 0.0)
                 continue;
 
             // Evaluate the BSDF.

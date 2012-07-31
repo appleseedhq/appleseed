@@ -63,7 +63,6 @@ DirectLightingIntegrator::DirectLightingIntegrator(
   , m_bsdf_sample_count(bsdf_sample_count)
   , m_light_sample_count(light_sample_count)
   , m_parent_shading_point(parent_shading_point)
-  , m_tracer(shading_context)
 {
     assert(is_normalized(geometric_normal));
     assert(is_normalized(outgoing));
@@ -148,8 +147,16 @@ void DirectLightingIntegrator::add_light_sample_contribution(
         return;
 
     // Compute the transmission factor between the light sample and the shading point.
-    double transmission;
-    if (!check_visibility(sampling_context, sample, transmission))
+    const double transmission =
+        m_shading_context.get_tracer().trace_between(
+            sampling_context,
+            m_point,
+            sample.m_point,
+            m_time,
+            m_parent_shading_point);
+
+    // Discard occluded samples.
+    if (transmission == 0.0)
         return;
 
     // Compute the square distance between the light sample and the shading point.

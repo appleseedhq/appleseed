@@ -29,6 +29,14 @@
 // Interface header.
 #include "edf.h"
 
+// appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
+#include "renderer/modeling/input/inputarray.h"
+#include "renderer/modeling/input/source.h"
+
+// appleseed.foundation headers.
+#include "foundation/utility/uid.h"
+
 using namespace foundation;
 
 namespace renderer
@@ -61,6 +69,40 @@ void EDF::on_frame_end(
     const Project&      project,
     const Assembly&     assembly)
 {
+}
+
+void EDF::check_non_null_exitance_input(
+    const char*         exitance_input_name,
+    const char*         multiplier_input_name) const
+{
+    bool zero_exitance = false;
+    const Source* exitance_source = m_inputs.source(exitance_input_name);
+
+    if (exitance_source->is_uniform())
+    {
+        Spectrum exitance;
+        Alpha alpha;
+        exitance_source->evaluate_uniform(exitance, alpha);
+        zero_exitance = exitance == Spectrum(0.0f);
+    }
+
+    bool zero_multiplier = false;
+    const Source* multiplier_source = m_inputs.source(multiplier_input_name);
+
+    if (multiplier_source->is_uniform())
+    {
+        double multiplier;
+        multiplier_source->evaluate_uniform(multiplier);
+        zero_multiplier = multiplier == 0.0;
+    }
+
+    if (zero_exitance || zero_multiplier)
+    {
+        RENDERER_LOG_WARNING(
+            "edf \"%s\" has a zero exitance and will slow down rendering "
+            "without contributing to the lighting.",
+            get_name());
+    }
 }
 
 }   // namespace renderer

@@ -85,6 +85,14 @@ const char* Material::get_model() const
     return MaterialFactory::get_model();
 }
 
+bool Material::has_alpha_map() const
+{
+    if (!m_params.strings().exist("alpha_map"))
+        return false;
+
+    return !m_params.get<string>("alpha_map").empty();
+}
+
 void Material::bind_entities(
     const SurfaceShaderContainer&   surface_shaders,
     const BSDFContainer&            bsdfs,

@@ -29,6 +29,9 @@
 // Interface header.
 #include "memory.h"
 
+// appleseed.main headers.
+#include "main/allocator.h"
+
 // Standard headers.
 #include <cstdlib>
 
@@ -59,14 +62,21 @@ void* aligned_malloc(const size_t size, size_t alignment)
 
     // Allocate the memory.
     void** const unaligned_ptr = reinterpret_cast<void**>(malloc(total_size));
+
+    // Handle allocation failures.
     if (!unaligned_ptr)
+    {
+        log_allocation_failure(total_size);
         return 0;
+    }
 
     // Compute the next aligned address.
     void** const aligned_ptr = align(unaligned_ptr + 1, alignment);
 
     // Store the address of the unaligned memory block.
     *(aligned_ptr - 1) = unaligned_ptr;
+
+    log_allocation(aligned_ptr, total_size);
 
     return aligned_ptr;
 }
@@ -80,6 +90,8 @@ void aligned_free(void* aligned_ptr)
 
     // Deallocate the memory.
     free(unaligned_ptr);
+
+    log_deallocation(aligned_ptr);
 }
 
 }   // namespace foundation

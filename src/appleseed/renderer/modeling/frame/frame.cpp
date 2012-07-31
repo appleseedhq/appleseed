@@ -159,18 +159,6 @@ const LightingConditions& Frame::get_lighting_conditions() const
 
 namespace
 {
-    template <typename T, size_t N>
-    Color<T, N> clamp_to_zero(Color<T, N> c)
-    {
-        for (size_t i = 0; i < N; ++i)
-        {
-            if (c[i] < 0.0)
-                c[i] = 0.0;
-        }
-
-        return c;
-    }
-
     template <
         int  ColorSpace,
         bool Clamp,
@@ -202,7 +190,7 @@ namespace
 
             // Apply clamping.
             // todo: mark clamped pixels in the diagnostic map.
-            color = Clamp ? saturate(color) : clamp_to_zero(color);
+            color = Clamp ? saturate(color) : clamp_low(color, 0.0f);
 
             // Apply gamma correction.
             if (GammaCorrect)

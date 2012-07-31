@@ -41,6 +41,20 @@ using namespace std;
 
 TEST_SUITE(Foundation_Image_Color)
 {
+    TEST_CASE(TestClampLow)
+    {
+        const Color3d c(2.0, -4.0, 1.0);
+
+        EXPECT_EQ(Color3d(2.0, 0.5, 1.0), clamp_low(c, 0.5));
+    }
+
+    TEST_CASE(TestClampHigh)
+    {
+        const Color3d c(2.0, -4.0, 1.0);
+
+        EXPECT_EQ(Color3d(1.5, -4.0, 1.0), clamp_high(c, 1.5));
+    }
+
     TEST_CASE(TestMin)
     {
         const Color3d a(2.0, -4.0, 1.0);

@@ -39,6 +39,7 @@
 namespace renderer      { class ILightingEngine; }
 namespace renderer      { class Intersector; }
 namespace renderer      { class TextureCache; }
+namespace renderer      { class Tracer; }
 
 namespace renderer
 {
@@ -54,26 +55,29 @@ class ShadingContext
     // Constructor.
     ShadingContext(
         const Intersector&      intersector,
+        Tracer&                 tracer,
         TextureCache&           texture_cache,
         ILightingEngine*        lighting_engine = 0,
         const float             transparency_threshold = 0.001f,
         const size_t            max_iterations = 10000);
 
-    // Return the intersector.
     const Intersector& get_intersector() const;
 
-    // Return the texture cache.
+    Tracer& get_tracer() const;
+
     TextureCache& get_texture_cache() const;
 
-    // Return the light transport solver.
     ILightingEngine* get_lighting_engine() const;
 
+    // Return the minimum transmission value that defines transparency.
     float get_transparency_threshold() const;
 
+    // Return the maximum number of iterations in ray/path tracing loops.
     size_t get_max_iterations() const;
 
   private:
     const Intersector&          m_intersector;
+    Tracer&                     m_tracer;
     TextureCache&               m_texture_cache;
     ILightingEngine*            m_lighting_engine;
     const float                 m_transparency_threshold;
@@ -87,11 +91,13 @@ class ShadingContext
 
 inline ShadingContext::ShadingContext(
     const Intersector&          intersector,
+    Tracer&                     tracer,
     TextureCache&               texture_cache,
     ILightingEngine*            lighting_engine,
     const float                 transparency_threshold,
     const size_t                max_iterations)
   : m_intersector(intersector)
+  , m_tracer(tracer)
   , m_texture_cache(texture_cache)
   , m_lighting_engine(lighting_engine)
   , m_transparency_threshold(transparency_threshold)
@@ -102,6 +108,11 @@ inline ShadingContext::ShadingContext(
 inline const Intersector& ShadingContext::get_intersector() const
 {
     return m_intersector;
+}
+
+inline Tracer& ShadingContext::get_tracer() const
+{
+    return m_tracer;
 }
 
 inline TextureCache& ShadingContext::get_texture_cache() const

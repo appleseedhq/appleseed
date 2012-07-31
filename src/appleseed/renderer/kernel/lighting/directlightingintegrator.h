@@ -150,12 +150,6 @@ class DirectLightingIntegrator
     const size_t                        m_bsdf_sample_count;
     const size_t                        m_light_sample_count;
     const ShadingPoint*                 m_parent_shading_point;
-    Tracer                              m_tracer;
-
-    bool check_visibility(
-        SamplingContext&                sampling_context,
-        const LightSample&              sample,
-        double&                         transmission);
 
     void take_single_bsdf_or_light_sample(
         SamplingContext&                sampling_context,
@@ -382,23 +376,6 @@ void DirectLightingIntegrator::sample_lights_low_variance(
     }
 }
 
-inline bool DirectLightingIntegrator::check_visibility(
-    SamplingContext&                    sampling_context,
-    const LightSample&                  sample,
-    double&                             transmission)
-{
-    const ShadingPoint& shading_point =
-        m_tracer.trace_between(
-            sampling_context,
-            m_point,
-            sample.m_point,
-            m_time,
-            transmission,
-            m_parent_shading_point);
-
-    return !shading_point.hit();
-}
-
 template <typename WeightingFunction>
 void DirectLightingIntegrator::take_single_bsdf_sample(
     SamplingContext&                    sampling_context,
@@ -410,19 +387,18 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     foundation::Vector3d incoming;
     Spectrum bsdf_value;
     double bsdf_prob;
-    BSDF::Mode bsdf_mode;
-    m_bsdf.sample(
-        sampling_context,
-        m_bsdf_data,
-        false,                          // not adjoint
-        true,                           // multiply by |cos(incoming, normal)|
-        m_geometric_normal,
-        m_shading_basis,
-        m_outgoing,
-        incoming,
-        bsdf_value,
-        bsdf_prob,
-        bsdf_mode);
+    const BSDF::Mode bsdf_mode =
+        m_bsdf.sample(
+            sampling_context,
+            m_bsdf_data,
+            false,                      // not adjoint
+            true,                       // multiply by |cos(incoming, normal)|
+            m_geometric_normal,
+            m_shading_basis,
+            m_outgoing,
+            incoming,
+            bsdf_value,
+            bsdf_prob);
 
     // Ignore glossy/specular components: they must be handled by the parent.
     // See Physically Based Rendering vol. 1 page 732.
@@ -435,7 +411,7 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     // Trace a ray in the direction of the reflection.
     double weight;
     const ShadingPoint& light_shading_point =
-        m_tracer.trace(
+        m_shading_context.get_tracer().trace(
             sampling_context,
             m_point,
             incoming,
@@ -572,8 +548,16 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
         return;
 
     // Compute the transmission factor between the light sample and the shading point.
-    double transmission;
-    if (!check_visibility(sampling_context, sample, transmission))
+    const double transmission =
+        m_shading_context.get_tracer().trace_between(
+            sampling_context,
+            m_point,
+            sample.m_point,
+            m_time,
+            m_parent_shading_point);
+
+    // Discard occluded samples.
+    if (transmission == 0.0)
         return;
 
     // Compute the square distance between the light sample and the shading point.

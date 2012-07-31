@@ -403,32 +403,46 @@ struct OBJMeshFileReader::Impl
     {
         m_lexer.eat_blanks();
 
-        // End the current mesh.
-        if (m_inside_mesh_def)
-        {
-            m_builder.end_mesh();
-            m_inside_mesh_def = false;
-        }
-
-        clear_keep_memory(m_vertex_index_mapping);
-        clear_keep_memory(m_tex_coord_index_mapping);
-        clear_keep_memory(m_normal_index_mapping);
-        m_mesh_name.clear();
-
         // Retrieve the name of the upcoming mesh.
+        const string upcoming_mesh_name = parse_mesh_name();
+
+        // Start a new mesh only if the name of the object or group actually changes.
+        if (upcoming_mesh_name != m_mesh_name)
+        {
+            // End the current mesh.
+            if (m_inside_mesh_def)
+            {
+                m_builder.end_mesh();
+                m_inside_mesh_def = false;
+            }
+
+            clear_keep_memory(m_vertex_index_mapping);
+            clear_keep_memory(m_tex_coord_index_mapping);
+            clear_keep_memory(m_normal_index_mapping);
+
+            m_mesh_name = upcoming_mesh_name;
+        }
+    }
+
+    string parse_mesh_name()
+    {
+        string mesh_name;
+
         while (!m_lexer.is_eol())
         {
-            const char* mesh_name;
-            size_t mesh_name_length;
+            const char* token;
+            size_t token_length;
 
-            m_lexer.accept_string(&mesh_name, &mesh_name_length);
+            m_lexer.accept_string(&token, &token_length);
             m_lexer.eat_blanks();
 
-            if (!m_mesh_name.empty())
-                m_mesh_name += ' ';
+            if (!mesh_name.empty())
+                mesh_name += ' ';
 
-            m_mesh_name.append(mesh_name, mesh_name_length);
+            mesh_name.append(token, token_length);
         }
+
+        return mesh_name;
     }
 
     void parse_v_statement()

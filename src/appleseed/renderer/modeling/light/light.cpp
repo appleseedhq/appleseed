@@ -29,6 +29,11 @@
 // Interface header.
 #include "light.h"
 
+// appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
+#include "renderer/modeling/input/inputarray.h"
+#include "renderer/modeling/input/source.h"
+
 using namespace foundation;
 
 namespace renderer
@@ -83,6 +88,26 @@ void Light::on_frame_end(
     const Project&      project,
     const Assembly&     assembly)
 {
+}
+
+void Light::check_non_null_exitance_input(const char* input_name) const
+{
+    const Source* source = m_inputs.source(input_name);
+
+    if (source->is_uniform())
+    {
+        Spectrum exitance;
+        Alpha alpha;
+        source->evaluate_uniform(exitance, alpha);
+
+        if (exitance == Spectrum(0.0f))
+        {
+            RENDERER_LOG_WARNING(
+                "light \"%s\" has a zero exitance and will slow down rendering "
+                "without contributing to the lighting.",
+                get_name());
+        }
+    }
 }
 
 }   // namespace renderer

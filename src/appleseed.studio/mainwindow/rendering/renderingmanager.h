@@ -70,7 +70,7 @@ class RenderingManager
     void start_rendering(
         renderer::Project*                      project,
         const renderer::ParamArray&             params,
-        const bool                              highlight_tiles,
+        const bool                              interactive,
         RenderWidget*                           render_widget);
 
     // Return true if currently rendering, false otherwise.

@@ -251,19 +251,18 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         foundation::Vector3d incoming;
         Spectrum bsdf_value;
         double bsdf_prob;
-        BSDF::Mode bsdf_mode;
-        bsdf->sample(
-            sampling_context,
-            bsdf_data,
-            Adjoint,
-            true,       // multiply by |cos(incoming, normal)|
-            shading_point_ptr->get_geometric_normal(),
-            shading_point_ptr->get_shading_basis(),
-            outgoing,
-            incoming,
-            bsdf_value,
-            bsdf_prob,
-            bsdf_mode);
+        const BSDF::Mode bsdf_mode =
+            bsdf->sample(
+                sampling_context,
+                bsdf_data,
+                Adjoint,
+                true,       // multiply by |cos(incoming, normal)|
+                shading_point_ptr->get_geometric_normal(),
+                shading_point_ptr->get_shading_basis(),
+                outgoing,
+                incoming,
+                bsdf_value,
+                bsdf_prob);
 
         // Terminate the path if this scattering mode is not accepted.
         if (!m_path_visitor.accept_scattering_mode(prev_bsdf_mode, bsdf_mode))

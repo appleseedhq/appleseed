@@ -73,6 +73,9 @@ namespace
 
     const char* Model = "ashikhmin_brdf";
 
+    // Clamp the |cos(ongoing, halfVector)| factor to this value to avoid fireflies.
+    const double MinCosOH = 0.2;
+
     class AshikhminBRDFImpl
       : public BSDF
     {
@@ -108,38 +111,28 @@ namespace
         {
             BSDF::on_frame_begin(project, assembly);
 
-            UniformInputEvaluator input_evaluator;
-            const InputValues* values =
-                static_cast<const InputValues*>(input_evaluator.evaluate(m_inputs));
-
             m_uniform_reflectance =
                 m_inputs.source("diffuse_reflectance")->is_uniform() &&
                 m_inputs.source("diffuse_reflectance_multiplier")->is_uniform() &&
                 m_inputs.source("glossy_reflectance")->is_uniform() &&
                 m_inputs.source("glossy_reflectance_multiplier")->is_uniform();
 
-            if (m_uniform_reflectance)
-            {
-                m_compute_rval_return_value =
-                    compute_rval(
-                        values->m_rd,
-                        values->m_rd_multiplier,
-                        values->m_rg,
-                        values->m_rg_multiplier,
-                        m_uniform_rval);
-            }
-
             m_uniform_shininess =
                 m_inputs.source("shininess_u")->is_uniform() &&
                 m_inputs.source("shininess_v")->is_uniform();
-            
+
+            UniformInputEvaluator input_evaluator;
+            const InputValues* values =
+                static_cast<const InputValues*>(input_evaluator.evaluate(m_inputs));
+
+            if (m_uniform_reflectance)
+                m_compute_rval_return_value = compute_rval(m_uniform_rval, values);
+
             if (m_uniform_shininess)
-            {
-                compute_sval(values->m_nu, values->m_nv, m_uniform_sval);
-            }
+                compute_sval(m_uniform_sval, values->m_nu, values->m_nv);
         }
 
-        FORCE_INLINE virtual void sample(
+        FORCE_INLINE virtual Mode sample(
             SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
@@ -149,18 +142,14 @@ namespace
             const Vector3d&     outgoing,
             Vector3d&           incoming,
             Spectrum&           value,
-            double&             probability,
-            Mode&               mode) const
+            double&             probability) const
         {
             const InputValues* values = static_cast<const InputValues*>(data);
 
             // Compute (or retrieve precomputed) reflectance-related values.
             RVal rval;
             if (!get_rval(rval, values))
-            {
-                mode = Absorption;
-                return;
-            }
+                return Absorption;
 
             // Compute (or retrieve precomputed) shininess-related values.
             SVal sval;
@@ -170,6 +159,7 @@ namespace
             sampling_context.split_in_place(3, 1);
             const Vector3d s = sampling_context.next_vector2<3>();
 
+            Mode mode;
             Vector3d h;
             double exp;
 
@@ -187,10 +177,7 @@ namespace
                 // No reflection in or below the geometric surface.
                 const double cos_ig = dot(incoming, geometric_normal);
                 if (cos_ig <= 0.0)
-                {
-                    mode = Absorption;
-                    return;
-                }
+                    return Absorption;
 
                 // Compute the halfway vector in world space.
                 h = normalize(incoming + outgoing);
@@ -262,11 +249,7 @@ namespace
 
                 // Compute the halfway vector in world space.
                 h = shading_basis.transform_to_parent(
-                        Vector3d::unit_vector(
-                            cos_theta,
-                            sin_theta,
-                            cos_phi,
-                            sin_phi));
+                        Vector3d::unit_vector(cos_theta, sin_theta, cos_phi, sin_phi));
 
                 // Compute the incoming direction in world space.
                 incoming = reflect(outgoing, h);
@@ -280,10 +263,7 @@ namespace
             // No reflection in or below the shading surface.
             const double cos_in = dot(incoming, shading_normal);
             if (cos_in <= 0.0)
-            {
-                mode = Absorption;
-                return;
-            }
+                return Absorption;
 
             // Compute dot products.
             const double cos_on = abs(dot(outgoing, shading_normal));
@@ -291,10 +271,10 @@ namespace
             const double cos_hn = abs(dot(h, shading_normal));
 
             // Evaluate the glossy component of the BRDF (equation 4).
-            const double num = pow(cos_hn, exp);
-            const double den = cos_oh * (cos_in + cos_on - cos_in * cos_on);
-            value = schlick_fresnel_reflection(values->m_rg, cos_oh);
-            value *= static_cast<float>(sval.m_kg * num / den);
+            const double num = sval.m_kg * pow(cos_hn, exp);
+            const double den = max(cos_oh, MinCosOH) * (cos_in + cos_on - cos_in * cos_on);
+            value = schlick_fresnel_reflection(rval.m_scaled_rg, cos_oh);
+            value *= static_cast<float>(num / den);
 
             // Evaluate the diffuse component of the BRDF (equation 5).
             const double a = 1.0 - pow5(1.0 - 0.5 * cos_in);
@@ -306,12 +286,14 @@ namespace
             assert(pdf_diffuse > 0.0);
 
             // Evaluate the PDF of the glossy component (equation 8).
-            const double pdf_h = sval.m_kg * num;
-            const double pdf_glossy = pdf_h / cos_oh;
+            const double pdf_glossy = num / cos_oh;     // omit division by 4 since num = pdf(h) / 4
             assert(pdf_glossy >= 0.0);
 
             // Evaluate the final PDF.
             probability = rval.m_pd * pdf_diffuse + rval.m_pg * pdf_glossy;
+
+            // Return the scattering mode.
+            return mode;
         }
 
         FORCE_INLINE virtual double evaluate(
@@ -353,8 +335,8 @@ namespace
             const double exp_den = 1.0 - cos_hn * cos_hn;
             const double exp = (exp_num_u + exp_num_v) / exp_den;
             const double num = exp_den == 0.0 ? 0.0 : sval.m_kg * pow(cos_hn, exp);
-            const double den = cos_oh * (cos_in + cos_on - cos_in * cos_on);
-            Spectrum glossy = schlick_fresnel_reflection(values->m_rg, cos_oh);
+            const double den = max(cos_oh, MinCosOH) * (cos_in + cos_on - cos_in * cos_on);
+            Spectrum glossy = schlick_fresnel_reflection(rval.m_scaled_rg, cos_oh);
             glossy *= static_cast<float>(num / den);
 
             // Evaluate the diffuse component of the BRDF (equation 5).
@@ -368,18 +350,17 @@ namespace
             value += diffuse;
 
             // Evaluate the PDF of the glossy component (equation 8).
-            const double pdf_glossy = num / cos_oh;
+            const double pdf_glossy = num / cos_oh;     // omit division by 4 since num = pdf(h) / 4
             assert(pdf_glossy >= 0.0);
 
             // Evaluate the PDF of the diffuse component.
             const double pdf_diffuse = cos_in * RcpPi;
             assert(pdf_diffuse >= 0.0);
 
-            // Evaluate the final PDF. Note that the probability might be zero,
-            // e.g. if m_pd is zero (the BSDF has no diffuse component) and
-            // pdf_glossy is also zero (because of numerical imprecision: the
-            // value of pdf_glossy depends on the value of pdf_h, which might
-            // end up being zero if cos_hn is small and exp is very high).
+            // Evaluate the final PDF. Note that the returned probability might be equal to zero,
+            // for instance if m_pd is equal to zero (the BSDF has no diffuse component) and
+            // pdf_glossy is also equal to zero (the value of pdf_glossy depends on the value of
+            // num which might be equal to zero).
             return rval.m_pd * pdf_diffuse + rval.m_pg * pdf_glossy;
         }
 
@@ -418,21 +399,20 @@ namespace
             const double exp_num_v = values->m_nv * cos_hv * cos_hv;
             const double exp_den = 1.0 - cos_hn * cos_hn;
             const double exp = (exp_num_u + exp_num_v) / exp_den;
-            const double pdf_h = exp_den == 0.0 ? 0.0 : sval.m_kg * pow(cos_hn, exp);
+            const double num = exp_den == 0.0 ? 0.0 : sval.m_kg * pow(cos_hn, exp);
 
             // Evaluate the PDF of the glossy component (equation 8).
-            const double pdf_glossy = pdf_h / cos_oh;
+            const double pdf_glossy = num / cos_oh;     // omit division by 4 since num = pdf(h) / 4
             assert(pdf_glossy >= 0.0);
 
             // Evaluate the PDF of the diffuse component.
             const double pdf_diffuse = cos_in * RcpPi;
             assert(pdf_diffuse >= 0.0);
 
-            // Evaluate the final PDF. Note that the probability might be zero,
-            // e.g. if m_pd is zero (the BSDF has no diffuse component) and
-            // pdf_glossy is also zero (because of numerical imprecision: the
-            // value of pdf_glossy depends on the value of pdf_h, which might
-            // end up being zero if cos_hn is small and exp is very high).
+            // Evaluate the final PDF. Note that the returned probability might be equal to zero,
+            // for instance if m_pd is equal to zero (the BSDF has no diffuse component) and
+            // pdf_glossy is also equal to zero (the value of pdf_glossy depends on the value of
+            // num which might be equal to zero).
             return rval.m_pd * pdf_diffuse + rval.m_pg * pdf_glossy;
         }
 
@@ -452,17 +432,18 @@ namespace
         // Precomputed reflectance-related values.
         struct RVal
         {
-            Spectrum    m_kd;
-            double      m_pd;
-            double      m_pg;
+            Spectrum    m_kd;               // constant factor of diffuse component
+            Spectrum    m_scaled_rg;        // glossy reflectance scaled by multiplier
+            double      m_pd;               // probability of diffuse component
+            double      m_pg;               // probability of glossy component
         };
         
         // Precomputed shininess-related values.
         struct SVal
         {
-            double      m_kg;
-            double      m_k;
-            bool        m_isotropic;
+            double      m_kg;               // constant factor of glossy component
+            double      m_k;                // constant factor needed during hemisphere (isotropic case only)
+            bool        m_isotropic;        // true if the U and V shininess values are the same
         };
 
         bool            m_uniform_reflectance;
@@ -477,22 +458,21 @@ namespace
             return x2 * x2 * x;
         }
 
-        static bool compute_rval(
-            const Spectrum&     rd_unmultiplied,
-            const double        rd_multiplier,
-            const Spectrum&     rg_unmultiplied,
-            const double        rg_multiplier,
-            RVal&               rval)
+        static bool compute_rval(RVal& rval, const InputValues* values)
         {
-            // Apply multipliers.
-            Spectrum rd(rd_unmultiplied);
-            rd *= static_cast<float>(rd_multiplier);
-            Spectrum rg(rg_unmultiplied);
-            rg *= static_cast<float>(rg_multiplier);
+            // Scale and clamp the diffuse reflectance.
+            Spectrum scaled_rd = values->m_rd;
+            scaled_rd *= static_cast<float>(values->m_rd_multiplier);
+            scaled_rd = saturate(scaled_rd);
+
+            // Scale and clamp the glossy reflectance.
+            rval.m_scaled_rg = values->m_rg;
+            rval.m_scaled_rg *= static_cast<float>(values->m_rg_multiplier);
+            rval.m_scaled_rg = saturate(rval.m_scaled_rg);
 
             // Compute average diffuse and glossy reflectances.
-            const double rd_avg = average_value(rd);
-            const double rg_avg = average_value(rg);
+            const double rd_avg = average_value(scaled_rd);
+            const double rg_avg = average_value(rval.m_scaled_rg);
             const double sum = rd_avg + rg_avg;
             if (sum == 0.0)
                 return false;
@@ -504,14 +484,15 @@ namespace
 
             // Precompute constant factor of diffuse component (equation 5).
             rval.m_kd.set(1.0f);
-            rval.m_kd -= rg;
-            rval.m_kd *= rd;
+            rval.m_kd -= rval.m_scaled_rg;
+            rval.m_kd *= scaled_rd;
             rval.m_kd *= static_cast<float>(28.0 / (23.0 * Pi));
+            assert(min_value(rval.m_kd) >= 0.0f);
 
             return true;
         }
 
-        static void compute_sval(const double nu, const double nv, SVal& sval)
+        static void compute_sval(SVal& sval, const double nu, const double nv)
         {
             // Check for isotropicity.
             sval.m_isotropic = feq(nu, nv, 1.0e-6);
@@ -533,23 +514,14 @@ namespace
                 rval = m_uniform_rval;
                 return m_compute_rval_return_value;
             }
-            else
-            {
-                return
-                    compute_rval(
-                        values->m_rd,
-                        values->m_rd_multiplier,
-                        values->m_rg,
-                        values->m_rg_multiplier,
-                        rval);
-            }
+            else return compute_rval(rval, values);
         }
 
         void get_sval(SVal& sval, const InputValues* values) const
         {
             if (m_uniform_shininess)
                 sval = m_uniform_sval;
-            else compute_sval(values->m_nu, values->m_nv, sval);
+            else compute_sval(sval, values->m_nu, values->m_nv);
         }
     };
 

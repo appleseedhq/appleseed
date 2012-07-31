@@ -88,7 +88,7 @@ namespace
             return Model;
         }
 
-        FORCE_INLINE virtual void sample(
+        FORCE_INLINE virtual Mode sample(
             SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
@@ -98,8 +98,7 @@ namespace
             const Vector3d&     outgoing,
             Vector3d&           incoming,
             Spectrum&           value,
-            double&             probability,
-            Mode&               mode) const
+            double&             probability) const
         {
             const InputValues* values = static_cast<const InputValues*>(data);
 
@@ -165,8 +164,8 @@ namespace
             // The probability density of the sampled direction is the Dirac delta.
             probability = DiracDelta;
 
-            // Set the scattering mode.
-            mode = Specular;
+            // Return the scattering mode.
+            return Specular;
         }
 
         FORCE_INLINE virtual double evaluate(

@@ -104,8 +104,8 @@ class InputBinder
         const ParamArray&               entity_params,
         InputArray&                     entity_inputs);
 
-    // Bind a given scene entity to a given input.
-    void bind_scene_entity_to_input(
+    // Try to bind a given scene entity to a given input.
+    bool try_bind_scene_entity_to_input(
         const Scene&                    scene,
         const SymbolTable&              scene_symbols,
         const char*                     entity_type,
@@ -113,8 +113,8 @@ class InputBinder
         const char*                     param_value,
         InputArray::iterator&           input);
 
-    // Bind a given assembly entity to a given input.
-    void bind_assembly_entity_to_input(
+    // Try to bind a given assembly entity to a given input.
+    bool try_bind_assembly_entity_to_input(
         const Scene&                    scene,
         const SymbolTable&              scene_symbols,
         const Assembly&                 assembly,
@@ -124,8 +124,7 @@ class InputBinder
         const char*                     param_value,
         InputArray::iterator&           input);
 
-    // Try binding a scalar to a given input.
-    // Return true on success (the value was indeed a scalar), false otherwise.
+    // Try to bind a scalar to a given input.
     bool try_bind_scalar_to_input(
         const std::string&              param_value,
         InputArray::iterator&           input) const;

@@ -44,7 +44,6 @@
 // Standard headers.
 #include <algorithm>
 #include <cassert>
-#include <cstddef>
 #include <cstdio>
 #include <cstring>
 #include <ctime>
@@ -62,38 +61,57 @@ using namespace std;
 
 
 //
-// Track memory allocations and deallocations and report memory leaks.
+// Configuration of the memory tracker.
 //
 
-// Define this symbol to enable memory tracking.
+// This is the global enable/disable switch that conditions everything else.
 #undef ENABLE_MEMORY_TRACKING
 
 // Define this symbol to enable report of memory allocations.
-#define REPORT_MEMORY_ALLOCATIONS
+#define LOG_MEMORY_ALLOCATIONS
+
+// Define this symbol to enable report of memory allocation failures.
+#define LOG_MEMORY_ALLOCATION_FAILURES
 
 // Define this symbol to enable report of memory deallocations.
-#undef REPORT_MEMORY_DEALLOCATIONS
+#undef LOG_MEMORY_DEALLOCATIONS
 
-#ifdef ENABLE_MEMORY_TRACKING
+// Define this symbol to dump a (part of) the callstack when a block of memory is allocated.
+#undef DUMP_CALLSTACK_ON_ALLOCATION
 
 namespace
 {
+    // Name of the log file. It will be created in the current working directory.
     const char* MemoryLogFileName = "memory.log";
 
     // Shave off that many levels from the top of the stack when dumping it to the log file.
     const size_t NumberOfCallStackLevelsToSkip = 3;
 
+    // Minimum alignment boundary of all memory allocations, in bytes.
+    const size_t MemoryAlignment = 16;
+}
+
+
+//
+// Memory tracker implementation.
+//
+
+#ifdef ENABLE_MEMORY_TRACKING
+
+namespace
+{
     // This mutex is used to serialize access to all static members of this file.
     recursive_mutex s_mutex;
 
     // Indicate whether memory tracking is currently enabled.
     bool s_tracking_enabled = false;
 
-    // Total number of memory allocations.
-    uint64 s_allocation_count = 0;
-
-    // Total number of bytes allocated.
-    uint64 s_total_allocated_bytes = 0;
+    // Statistics.
+    uint64 s_allocation_count = 0;          // total number of memory allocations
+    uint64 s_allocated_bytes = 0;           // number of bytes currently allocated
+    uint64 s_peak_allocated_bytes = 0;      // peak number of bytes ever allocated
+    uint64 s_total_allocated_bytes = 0;     // total number of bytes ever allocated
+    uint64 s_largest_allocation_bytes = 0;  // size in bytes of the largest allocation
 
     // File to which memory operations and leaks are logged.
     FILE* s_log_file = 0;
@@ -160,7 +178,7 @@ namespace
 
     StackWalkerOutputToFile s_stack_walker;
 
-    string get_current_date_time_string()
+    string get_timestamp_string()
     {
         time_t t;
         time(&t);
@@ -170,9 +188,6 @@ namespace
         stringstream sstr;
         sstr << setfill('0');
 
-        sstr << setw(4) << local_time->tm_year + 1900 << '-';
-        sstr << setw(2) << local_time->tm_mon + 1 << '-';
-        sstr << setw(2) << local_time->tm_mday << ' ';
         sstr << setw(2) << local_time->tm_hour << ':';
         sstr << setw(2) << local_time->tm_min << ':';
         sstr << setw(2) << local_time->tm_sec;
@@ -187,37 +202,29 @@ namespace
         fprintf(
             s_log_file,
             "[%s] Allocated %s at %s\n",
-            get_current_date_time_string().c_str(),
+            get_timestamp_string().c_str(),
             pretty_size(size).c_str(),
             to_string(ptr).c_str());
 
+#ifdef DUMP_CALLSTACK_ON_ALLOCATION
         fprintf(s_log_file, "    Call stack:\n");
 
         s_stack_walker.reset(s_log_file);
         s_stack_walker.ShowCallstack();
 
         fprintf(s_log_file, "\n");
+#endif
     }
 
-    void log_allocation(const void* ptr, const size_t size)
+    void log_allocation_failure_to_file(const size_t size)
     {
-        recursive_mutex::scoped_lock lock(s_mutex);
+        assert(!s_tracking_enabled);
 
-        if (!s_tracking_enabled)
-            return;
-
-        s_tracking_enabled = false;
-
-        ++s_allocation_count;
-        s_total_allocated_bytes += static_cast<uint64>(size);
-
-        s_allocated_mem_blocks[ptr] = size;
-
-#ifdef REPORT_MEMORY_ALLOCATIONS
-        log_allocation_to_file(ptr, size);
-#endif
-
-        s_tracking_enabled = true;
+        fprintf(
+            s_log_file,
+            "[%s] FAILED to allocate %s\n",
+            get_timestamp_string().c_str(),
+            pretty_size(size).c_str());
     }
 
     void log_deallocation_to_file(const void* ptr, const size_t size)
@@ -227,46 +234,9 @@ namespace
         fprintf(
             s_log_file,
             "[%s] Deallocated %s at %s\n\n",
-            get_current_date_time_string().c_str(),
+            get_timestamp_string().c_str(),
             pretty_size(size).c_str(),
             to_string(ptr).c_str());
-    }
-
-    void log_deallocation(const void* ptr)
-    {
-        recursive_mutex::scoped_lock lock(s_mutex);
-
-        if (!s_tracking_enabled)
-            return;
-
-        s_tracking_enabled = false;
-
-        const MemoryBlockMap::const_iterator i = s_allocated_mem_blocks.find(ptr);
-
-        if (i != s_allocated_mem_blocks.end())
-        {
-#ifdef REPORT_MEMORY_DEALLOCATIONS
-            log_deallocation_to_file(ptr, i->second);
-#endif
-
-            s_allocated_mem_blocks.erase(i);
-        }
-
-        s_tracking_enabled = true;
-    }
-
-    void report_allocation_statistics()
-    {
-        assert(!s_tracking_enabled);
-
-        fprintf(
-            s_log_file,
-            "%s memory allocation%s, %s (%s byte%s) allocated in total.\n\n",
-            pretty_uint(s_allocation_count).c_str(),
-            s_allocation_count > 1 ? "s" : "",
-            pretty_size(s_total_allocated_bytes).c_str(),
-            pretty_uint(s_total_allocated_bytes).c_str(),
-            s_total_allocated_bytes > 1 ? "s" : "");
     }
 
     uint64 compute_leaked_memory_size()
@@ -287,6 +257,32 @@ namespace
         }
     };
 
+    void report_allocation_statistics()
+    {
+        assert(!s_tracking_enabled);
+
+        fprintf(
+            s_log_file,
+            "\n"
+            "Statistics:\n"
+            "\n"
+            "    Allocations:            %s\n"
+            "    Total allocated:        %s (%s byte%s)\n"
+            "    Peak allocated:         %s (%s byte%s)\n"
+            "    Largest allocation:     %s (%s byte%s)\n"
+            "\n",
+            pretty_uint(s_allocation_count).c_str(),
+            pretty_size(s_total_allocated_bytes).c_str(),
+            pretty_uint(s_total_allocated_bytes).c_str(),
+            s_total_allocated_bytes > 1 ? "s" : "",
+            pretty_size(s_peak_allocated_bytes).c_str(),
+            pretty_uint(s_peak_allocated_bytes).c_str(),
+            s_peak_allocated_bytes > 1 ? "s" : "",
+            pretty_size(s_largest_allocation_bytes).c_str(),
+            pretty_uint(s_largest_allocation_bytes).c_str(),
+            s_largest_allocation_bytes > 1 ? "s" : "");
+    }
+
     void report_memory_leaks()
     {
         assert(!s_tracking_enabled);
@@ -302,7 +298,7 @@ namespace
 
             fprintf(
                 s_log_file,
-                "Detected %s possible memory leak%s (%s in total):\n\n",
+                "Detected %s potential memory leak%s (%s in total):\n\n",
                 pretty_uint(leak_count).c_str(),
                 leak_count > 1 ? "s" : "",
                 pretty_size(leak_bytes).c_str());
@@ -324,9 +320,78 @@ namespace
                     to_string(i->first).c_str());
             }
         }
-
-        fprintf(s_log_file, "\n");
     }
+}
+
+
+//
+// Public entry points.
+//
+
+void log_allocation(const void* ptr, const size_t size)
+{
+    recursive_mutex::scoped_lock lock(s_mutex);
+
+    if (!s_tracking_enabled)
+        return;
+
+    s_tracking_enabled = false;
+
+    ++s_allocation_count;
+    s_allocated_bytes += size;
+    s_peak_allocated_bytes = max(s_peak_allocated_bytes, s_allocated_bytes);
+    s_total_allocated_bytes += size;
+    s_largest_allocation_bytes = max<uint64>(s_largest_allocation_bytes, size);
+
+    s_allocated_mem_blocks[ptr] = size;
+
+#ifdef LOG_MEMORY_ALLOCATIONS
+    log_allocation_to_file(ptr, size);
+#endif
+
+    s_tracking_enabled = true;
+}
+
+void log_allocation_failure(const size_t size)
+{
+#ifdef LOG_MEMORY_ALLOCATION_FAILURES
+    recursive_mutex::scoped_lock lock(s_mutex);
+
+    if (!s_tracking_enabled)
+        return;
+
+    s_tracking_enabled = false;
+
+    log_allocation_failure_to_file(size);
+
+    s_tracking_enabled = true;
+#endif
+}
+
+void log_deallocation(const void* ptr)
+{
+    recursive_mutex::scoped_lock lock(s_mutex);
+
+    if (!s_tracking_enabled)
+        return;
+
+    s_tracking_enabled = false;
+
+    const MemoryBlockMap::const_iterator i = s_allocated_mem_blocks.find(ptr);
+
+    if (i != s_allocated_mem_blocks.end())
+    {
+        assert(s_allocated_bytes >= i->second);
+        s_allocated_bytes -= i->second;
+
+#ifdef LOG_MEMORY_DEALLOCATIONS
+        log_deallocation_to_file(ptr, i->second);
+#endif
+
+        s_allocated_mem_blocks.erase(i);
+    }
+
+    s_tracking_enabled = true;
 }
 
 void start_memory_tracking()
@@ -367,12 +432,9 @@ void stop_memory_tracking()
 
 #else
 
-namespace
-{
-    void log_allocation(const void* ptr, const size_t size) {}
-    void log_deallocation(const void* ptr) {}
-}
-
+void log_allocation(const void* ptr, const size_t size) {}
+void log_allocation_failure(const size_t size) {}
+void log_deallocation(const void* ptr) {}
 void start_memory_tracking() {}
 void stop_memory_tracking() {}
 
@@ -385,20 +447,15 @@ void stop_memory_tracking() {}
 
 namespace
 {
-    // Minimum alignment boundary of all memory allocations, in bytes.
-    const size_t Alignment = 16;
-
     void* new_impl(size_t size)
     {
         if (size < 1)
             size = 1;
 
-        void* ptr = aligned_malloc(size, Alignment);
+        void* ptr = aligned_malloc(size, MemoryAlignment);
 
         if (!ptr)
             throw bad_alloc();
-
-        log_allocation(ptr, size);
 
         return ptr;
     }
@@ -409,8 +466,6 @@ namespace
             return;
 
         aligned_free(ptr);
-
-        log_deallocation(ptr);
     }
 }
 

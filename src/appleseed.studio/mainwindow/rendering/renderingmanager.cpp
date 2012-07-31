@@ -150,17 +150,20 @@ RenderingManager::RenderingManager(StatusBar& status_bar)
 void RenderingManager::start_rendering(
     Project*                    project,
     const ParamArray&           params,
-    const bool                  highlight_tiles,
+    const bool                  interactive,
     RenderWidget*               render_widget)
 {
     m_project = project;
     m_render_widget = render_widget;
     m_camera_changed = false;
 
-    m_camera_controller.reset(
-        new CameraController(
-            m_render_widget,
-            m_project->get_scene()));
+    if (interactive)
+    {
+        m_camera_controller.reset(
+            new CameraController(
+                m_render_widget,
+                m_project->get_scene()));
+    }
 
     connect(
         m_camera_controller.get(), SIGNAL(signal_camera_changed()),
@@ -169,6 +172,8 @@ void RenderingManager::start_rendering(
     connect(
         m_camera_controller.get(), SIGNAL(signal_camera_changed()),
         this, SIGNAL(signal_camera_changed()));
+
+    const bool highlight_tiles = !interactive;
 
     m_tile_callback_factory.reset(
         new QtTileCallbackFactory(
@@ -306,7 +311,9 @@ void RenderingManager::slot_frame_begin()
 
     if (m_camera_changed)
     {
-        m_camera_controller->update_camera_transform();
+        if (m_camera_controller.get())
+            m_camera_controller->update_camera_transform();
+
         m_camera_changed = false;
     }
 

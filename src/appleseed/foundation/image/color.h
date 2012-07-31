@@ -117,6 +117,12 @@ template <typename T, size_t N> Color<T, N> saturate(const Color<T, N>& c);
 // Clamp the argument to [min, max].
 template <typename T, size_t N> Color<T, N> clamp(const Color<T, N>& c, const T min, const T max);
 
+// Clamp the argument to [min, +infinity).
+template <typename T, size_t N> Color<T, N> clamp_low(const Color<T, N>& c, const T min);
+
+// Clamp the argument to (-infinity, max].
+template <typename T, size_t N> Color<T, N> clamp_high(const Color<T, N>& c, const T max);
+
 // Return the smallest or largest signed component of a color.
 template <typename T, size_t N> T min_value(const Color<T, N>& c);
 template <typename T, size_t N> T max_value(const Color<T, N>& c);
@@ -571,6 +577,28 @@ inline Color<T, N> clamp(const Color<T, N>& c, const T min, const T max)
 
     for (size_t i = 0; i < N; ++i)
         result[i] = clamp(c[i], min, max);
+
+    return result;
+}
+
+template <typename T, size_t N>
+inline Color<T, N> clamp_low(const Color<T, N>& c, const T min)
+{
+    Color<T, N> result;
+
+    for (size_t i = 0; i < N; ++i)
+        result[i] = std::max(c[i], min);
+
+    return result;
+}
+
+template <typename T, size_t N>
+inline Color<T, N> clamp_high(const Color<T, N>& c, const T max)
+{
+    Color<T, N> result;
+
+    for (size_t i = 0; i < N; ++i)
+        result[i] = std::min(c[i], max);
 
     return result;
 }

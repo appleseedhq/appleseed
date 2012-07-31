@@ -30,14 +30,19 @@
 #define APPLESEED_RENDERER_MODELING_EDF_EDF_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/entity/connectableentity.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
+#include "foundation/math/vector.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Forward declarations.
 namespace renderer      { class Assembly; }
+namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 
 namespace renderer
@@ -51,7 +56,7 @@ namespace renderer
 // All probability densities are measured with respect to solid angle.
 //
 
-class RENDERERDLL EDF
+class DLLSYMBOL EDF
   : public ConnectableEntity
 {
   public:
@@ -106,6 +111,11 @@ class RENDERERDLL EDF
         const foundation::Vector3d& geometric_normal,           // world space geometric normal, unit-length
         const foundation::Basis3d&  shading_basis,              // world space orthonormal basis around shading normal
         const foundation::Vector3d& outgoing) const = 0;        // world space emission direction, unit-length
+
+  protected:
+    void check_non_null_exitance_input(
+        const char*                 exitance_input_name,
+        const char*                 multiplier_input_name) const;
 };
 
 }       // namespace renderer
