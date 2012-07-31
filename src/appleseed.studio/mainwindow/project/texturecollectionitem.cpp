@@ -143,7 +143,9 @@ ItemBase* TextureCollectionItem::create_item(Texture* texture) const
 {
     assert(texture);
 
-    return new TextureItem<Assembly>(texture, *m_assembly, m_project_builder);
+    if (m_scene)
+        return new TextureItem<Scene>(texture, *m_scene, m_project_builder);
+    else return new TextureItem<Assembly>(texture, *m_assembly, m_project_builder);
 }
 
 }   // namespace studio
