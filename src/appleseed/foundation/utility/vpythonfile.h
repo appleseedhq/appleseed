@@ -70,14 +70,23 @@ class VPythonFile
         const std::string&  color = "white",
         const size_t        size = 5);
 
+    // Output a polyline.
+    void draw_polyline(
+        const size_t        point_count,
+        const Vector3d      points[],
+        const std::string&  color = "white",
+        const double        thickness = 0.001);
+
     // Output the unit square in the XZ plane.
     void draw_unit_square(
+        const std::string&  color = "white",
         const double        thickness = 0.001);
 
     // Output an arrow.
     void draw_arrow(
         const Vector3d&     from,
         const Vector3d&     to,
+        const std::string&  color = "white",
         const double        shaft_width = 0.01);
 
   private:

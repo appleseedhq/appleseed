@@ -108,27 +108,46 @@ void VPythonFile::draw_points(
         color.c_str());
 }
 
-void VPythonFile::draw_unit_square(const double thickness)
+void VPythonFile::draw_polyline(
+    const size_t        point_count,
+    const Vector3d      points[],
+    const std::string&  color,
+    const double        thickness)
 {
     fprintf(
         m_file,
-        "curve(pos=[(0,0,0),(0,0,1),(1,0,1),(1,0,0),(0,0,0)], radius=%f)\n",
-        thickness);
+        "curve(pos=[%s], radius=%f, color=color.%s)\n",
+        points_to_string(point_count, points).c_str(),
+        thickness,
+        color.c_str());
+}
+
+void VPythonFile::draw_unit_square(
+    const string&       color,
+    const double        thickness)
+{
+    fprintf(
+        m_file,
+        "curve(pos=[(0,0,0),(0,0,1),(1,0,1),(1,0,0),(0,0,0)], radius=%f, color=color.%s)\n",
+        thickness,
+        color.c_str());
 }
 
 void VPythonFile::draw_arrow(
     const Vector3d&     from,
     const Vector3d&     to,
+    const string&       color,
     const double        shaft_width)
 {
     const Vector3d axis = to - from;
 
     fprintf(
         m_file,
-        "arrow(pos=(%f,%f,%f), axis=(%f,%f,%f), shaftwidth=%f)\n",
+        "arrow(pos=(%f,%f,%f), axis=(%f,%f,%f), shaftwidth=%f, color=color.%s)\n",
         from.x, from.y, from.z,
         axis.x, axis.y, axis.z,
-        shaft_width);
+        shaft_width,
+        color.c_str());
 }
 
 }   // namespace foundation
