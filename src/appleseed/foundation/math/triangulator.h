@@ -34,6 +34,7 @@
 #include "foundation/math/vector.h"
 #include "foundation/utility/memory.h"
 #include "foundation/utility/test.h"
+#include "foundation/utility/vpythonfile.h"
 
 // Standard headers.
 #include <cassert>
@@ -42,6 +43,8 @@
 
 DECLARE_TEST_CASE(Foundation_Math_Triangulator, ComputePolygonOrientation_GivenLowestLeftmostTriangleIsValid_ReturnsCorrectOrientation);
 DECLARE_TEST_CASE(Foundation_Math_Triangulator, ComputePolygonOrientation_GivenLowestLeftmostTriangleIsDegenerate_ReturnsCorrectOrientation);
+
+#undef FOUNDATION_TRIANGULATOR_DEBUG
 
 namespace foundation
 {
@@ -147,6 +150,13 @@ class Triangulator
         const size_t        prev,
         const size_t        curr,
         const size_t        next) const;
+
+    void debug(
+        const size_t        remaining_vertices,
+        const size_t        failed_iterations,
+        const size_t        prev,
+        const size_t        curr,
+        const size_t        next) const;
 };
 
 
@@ -226,6 +236,10 @@ bool Triangulator<T>::triangulate(
         const size_t prev = m_links[curr].m_prev;
         const size_t next = m_links[curr].m_next;
 
+#ifdef FOUNDATION_TRIANGULATOR_DEBUG
+        debug(remaining_vertices, failed_iterations, prev, curr, next);
+#endif
+
         // Fetch the vertices of the triangle (prev, curr, next).
         const Vector2Type& v0 = m_polygon2[prev];
         const Vector2Type& v1 = m_polygon2[curr];
@@ -236,21 +250,9 @@ bool Triangulator<T>::triangulate(
         const Vector2Type e1 = v2 - v0;
         const ValueType det = e0[0] * e1[1] - e1[0] * e0[1];
 
-        // Only consider convex vertices.
-        if (det < ValueType(0.0))
-        {
-            // Update the failed iteration counter and detect infinite loop.
-            if (++failed_iterations >= remaining_vertices)
-                return false;
-
-            // Consider the next vertex.
-            curr = next;
-            continue;
-        }
-
-        // Insert the triangle into the triangulation.
         if (det == ValueType(0.0))
         {
+            // Degenerate triangle.
             if (m_options & KeepDegenerateTriangles)
             {
                 triangles.push_back(prev);
@@ -260,9 +262,20 @@ bool Triangulator<T>::triangulate(
         }
         else if (det > ValueType(0.0) && is_ear(prev, curr, next))
         {
+            // Ear.
             triangles.push_back(prev);
             triangles.push_back(curr);
             triangles.push_back(next);
+        }
+        else
+        {
+            // Not an ear: update the failed iteration counter and detect infinite loop.
+            if (++failed_iterations >= remaining_vertices)
+                return false;
+
+            // Consider the next vertex.
+            curr = next;
+            continue;
         }
 
         // Remove the current vertex from the list.
@@ -457,16 +470,57 @@ bool Triangulator<T>::is_ear(
     // of the triangle (prev, curr, next) then this is not an ear. In practice,
     // it is equivalent and more efficient to check only the reflex vertices.
     // todo: check only the reflex vertices.
-    for (size_t i = m_links[curr].m_next; i != curr; i = m_links[i].m_next)
+    for (size_t i = m_links[next].m_next; i != prev; i = m_links[i].m_next)
     {
-        if (i == prev || i == next)
-            continue;
-
         if (point_in_triangle(m_polygon2[i], v0, v1, v2))
             return false;
     }
 
     return true;
+}
+
+template <typename T>
+void Triangulator<T>::debug(
+    const size_t            remaining_vertices,
+    const size_t            failed_iterations,
+    const size_t            prev,
+    const size_t            curr,
+    const size_t            next) const
+{
+    // Open a VPython file.
+    char filename[100];
+    std::sprintf(filename, "poly-remaining=%d-attempt=%d.py", remaining_vertices, failed_iterations + 1);
+    VPythonFile file(filename);
+
+    // Draw the remaining polygon.
+    std::vector<Vector3d> poly;
+    for (size_t i = 0, c = curr; i < remaining_vertices + 1; ++i, c = m_links[c].m_next)
+        poly.push_back(Vector3d(m_polygon2[c].x, m_polygon2[c].y, 0.0));
+    file.draw_polyline(poly.size(), &poly[0], "white", 0.0025);
+
+    // Fetch the vertices of the candidate ear.
+    const Vector2Type& v0 = m_polygon2[prev];
+    const Vector2Type& v1 = m_polygon2[curr];
+    const Vector2Type& v2 = m_polygon2[next];
+
+    // Compute the orientation of the candidate ear.
+    const Vector2Type e0 = v1 - v0;
+    const Vector2Type e1 = v2 - v0;
+    const ValueType det = e0[0] * e1[1] - e1[0] * e0[1];
+
+    // Determine if this triangle is effectively an ear.
+    const bool ear = det > ValueType(0.0) && is_ear(prev, curr, next);
+
+    // Draw the candidate ear.
+    poly.clear();
+    poly.push_back(Vector3d(v0.x, v0.y, 0.0));
+    poly.push_back(Vector3d(v1.x, v1.y, 0.0));
+    poly.push_back(Vector3d(v2.x, v2.y, 0.0));
+    poly.push_back(Vector3d(v0.x, v0.y, 0.0));
+    file.draw_polyline(poly.size(), &poly[0], ear ? "green" : "red", 0.0025);
+
+    // Highlight the tip of the candidate ear.
+    file.draw_point(Vector3d(v1.x, v1.y, 0.0), "yellow", 10);
 }
 
 }       // namespace foundation
