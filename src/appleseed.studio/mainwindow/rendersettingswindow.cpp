@@ -135,12 +135,11 @@ void RenderSettingsWindow::reload()
 
     sort(configs.begin(), configs.end());
 
+    m_current_configuration_name.clear();
     m_ui->combobox_configurations->clear();
 
     for (size_t i = 0; i < configs.size(); ++i)
         m_ui->combobox_configurations->addItem(configs[i]);
-
-    m_current_configuration_name.clear();
 }
 
 void RenderSettingsWindow::create_panels()
