@@ -59,7 +59,7 @@ class NullBSDF
         return "null_bsdf";
     }
 
-    virtual void sample(
+    virtual Mode sample(
         SamplingContext&                sampling_context,
         const void*                     data,
         const bool                      adjoint,
@@ -69,10 +69,9 @@ class NullBSDF
         const foundation::Vector3d&     outgoing,
         foundation::Vector3d&           incoming,
         Spectrum&                       value,
-        double&                         probability,
-        Mode&                           mode) const override
+        double&                         probability) const override
     {
-        mode = Absorption;
+        return Absorption;
     }
 
     virtual double evaluate(

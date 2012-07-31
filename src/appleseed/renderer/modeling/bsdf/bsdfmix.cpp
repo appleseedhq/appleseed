@@ -122,7 +122,7 @@ namespace
             m_bsdf[1]->evaluate_inputs(input_evaluator, uv, offset + m_bsdf_data_offset[1]);
         }
 
-        FORCE_INLINE virtual void sample(
+        FORCE_INLINE virtual Mode sample(
             SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
@@ -132,8 +132,7 @@ namespace
             const Vector3d&     outgoing,
             Vector3d&           incoming,
             Spectrum&           value,
-            double&             probability,
-            Mode&               mode) const
+            double&             probability) const
         {
             // Retrieve the blending weights.
             const InputValues* values = static_cast<const InputValues*>(data);
@@ -142,10 +141,7 @@ namespace
             // Handle absorption.
             const double total_weight = w[0] + w[1];
             if (total_weight == 0.0)
-            {
-                mode = Absorption;
-                return;
-            }
+                return Absorption;
 
             // Normalize the blending weights.
             const double rcp_total_weight = 1.0 / total_weight;
@@ -161,25 +157,20 @@ namespace
             // Sample this BSDF.
             Spectrum bsdf0_value;
             double bsdf0_prob;
-            Mode bsdf0_mode;
-            m_bsdf[bsdf0_index]->sample(
-                sampling_context,
-                get_bsdf_data(data, bsdf0_index),
-                adjoint,
-                false,          // do not multiply by |cos(incoming, normal)|
-                geometric_normal,
-                shading_basis,
-                outgoing,
-                incoming,
-                bsdf0_value,
-                bsdf0_prob,
-                bsdf0_mode);
-
-            if (bsdf0_mode == BSDF::Absorption)
-            {
-                mode = BSDF::Absorption;
-                return;
-            }
+            const Mode bsdf0_mode =
+                m_bsdf[bsdf0_index]->sample(
+                    sampling_context,
+                    get_bsdf_data(data, bsdf0_index),
+                    adjoint,
+                    false,      // do not multiply by |cos(incoming, normal)|
+                    geometric_normal,
+                    shading_basis,
+                    outgoing,
+                    incoming,
+                    bsdf0_value,
+                    bsdf0_prob);
+            if (bsdf0_mode == Absorption)
+                return Absorption;
 
             // Evaluate the other BSDF.
             Spectrum bsdf1_value;
@@ -213,8 +204,8 @@ namespace
                     ? BSDF::DiracDelta
                     : bsdf0_prob * w[bsdf0_index] + bsdf1_prob * w[bsdf1_index];
 
-            // Set the scattering mode.
-            mode = bsdf0_mode;
+            // Return the scattering mode.
+            return bsdf0_mode;
         }
 
         FORCE_INLINE virtual double evaluate(

@@ -387,19 +387,18 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     foundation::Vector3d incoming;
     Spectrum bsdf_value;
     double bsdf_prob;
-    BSDF::Mode bsdf_mode;
-    m_bsdf.sample(
-        sampling_context,
-        m_bsdf_data,
-        false,                          // not adjoint
-        true,                           // multiply by |cos(incoming, normal)|
-        m_geometric_normal,
-        m_shading_basis,
-        m_outgoing,
-        incoming,
-        bsdf_value,
-        bsdf_prob,
-        bsdf_mode);
+    const BSDF::Mode bsdf_mode =
+        m_bsdf.sample(
+            sampling_context,
+            m_bsdf_data,
+            false,                      // not adjoint
+            true,                       // multiply by |cos(incoming, normal)|
+            m_geometric_normal,
+            m_shading_basis,
+            m_outgoing,
+            incoming,
+            bsdf_value,
+            bsdf_prob);
 
     // Ignore glossy/specular components: they must be handled by the parent.
     // See Physically Based Rendering vol. 1 page 732.

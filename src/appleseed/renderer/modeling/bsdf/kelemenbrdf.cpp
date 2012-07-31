@@ -154,7 +154,7 @@ namespace
             BSDF::on_frame_end(project, assembly);
         }
 
-        FORCE_INLINE virtual void sample(
+        FORCE_INLINE virtual Mode sample(
             SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
@@ -164,8 +164,7 @@ namespace
             const Vector3d&     outgoing,
             Vector3d&           incoming,
             Spectrum&           value,
-            double&             probability,
-            Mode&               mode) const
+            double&             probability) const
         {
             const InputValues* values = static_cast<const InputValues*>(data);
 
@@ -196,6 +195,7 @@ namespace
             sampling_context.split_in_place(3, 1);
             const Vector3d s = sampling_context.next_vector2<3>();
 
+            Mode mode;
             Vector3d H;
             double dot_LN, dot_HN, dot_HV;
 
@@ -237,24 +237,17 @@ namespace
 
                 // No reflection in or below the shading surface.
                 if (dot_LN <= 0.0)
-                {
-                    mode = Absorption;
-                    return;
-                }
+                    return Absorption;
             }
             else
             {
-                mode = Absorption;
-                return;
+                return Absorption;
             }
 
             // No reflection in or below the geometric surface.
             const double cos_ig = dot(incoming, geometric_normal);
             if (cos_ig <= 0.0)
-            {
-                mode = Absorption;
-                return;
-            }
+                return Absorption;
 
             // Compute the specular albedo for the incoming angle.
             Spectrum specular_albedo_L;
@@ -287,6 +280,9 @@ namespace
             // Evaluate the final PDF.
             probability = specular_prob * pdf_specular + matte_prob * pdf_matte;
             assert(probability >= 0.0);
+
+            // Return the scattering mode.
+            return mode;
         }
 
         FORCE_INLINE virtual double evaluate(

@@ -132,7 +132,7 @@ namespace
                 compute_sval(m_uniform_sval, values->m_nu, values->m_nv);
         }
 
-        FORCE_INLINE virtual void sample(
+        FORCE_INLINE virtual Mode sample(
             SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
@@ -142,18 +142,14 @@ namespace
             const Vector3d&     outgoing,
             Vector3d&           incoming,
             Spectrum&           value,
-            double&             probability,
-            Mode&               mode) const
+            double&             probability) const
         {
             const InputValues* values = static_cast<const InputValues*>(data);
 
             // Compute (or retrieve precomputed) reflectance-related values.
             RVal rval;
             if (!get_rval(rval, values))
-            {
-                mode = Absorption;
-                return;
-            }
+                return Absorption;
 
             // Compute (or retrieve precomputed) shininess-related values.
             SVal sval;
@@ -163,6 +159,7 @@ namespace
             sampling_context.split_in_place(3, 1);
             const Vector3d s = sampling_context.next_vector2<3>();
 
+            Mode mode;
             Vector3d h;
             double exp;
 
@@ -180,10 +177,7 @@ namespace
                 // No reflection in or below the geometric surface.
                 const double cos_ig = dot(incoming, geometric_normal);
                 if (cos_ig <= 0.0)
-                {
-                    mode = Absorption;
-                    return;
-                }
+                    return Absorption;
 
                 // Compute the halfway vector in world space.
                 h = normalize(incoming + outgoing);
@@ -269,10 +263,7 @@ namespace
             // No reflection in or below the shading surface.
             const double cos_in = dot(incoming, shading_normal);
             if (cos_in <= 0.0)
-            {
-                mode = Absorption;
-                return;
-            }
+                return Absorption;
 
             // Compute dot products.
             const double cos_on = abs(dot(outgoing, shading_normal));
@@ -300,6 +291,9 @@ namespace
 
             // Evaluate the final PDF.
             probability = rval.m_pd * pdf_diffuse + rval.m_pg * pdf_glossy;
+
+            // Return the scattering mode.
+            return mode;
         }
 
         FORCE_INLINE virtual double evaluate(

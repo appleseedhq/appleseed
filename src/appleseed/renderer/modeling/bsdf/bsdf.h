@@ -127,10 +127,10 @@ class DLLSYMBOL BSDF
         const size_t                offset = 0) const;
 
     // Given an outgoing direction, sample the BSDF and compute the incoming
-    // direction, the probability density with which it was chosen, the value
-    // of the BSDF for this pair of directions and the scattering mode.
+    // direction, the probability density with which it was chosen and the value
+    // of the BSDF for this pair of directions. Return the scattering mode.
     // If the scattering mode is Absorption, the BSDF and PDF values are undefined.
-    virtual void sample(
+    virtual Mode sample(
         SamplingContext&            sampling_context,
         const void*                 data,                       // input values
         const bool                  adjoint,                    // if true, use the adjoint scattering kernel
@@ -140,8 +140,7 @@ class DLLSYMBOL BSDF
         const foundation::Vector3d& outgoing,                   // world space outgoing direction, unit-length
         foundation::Vector3d&       incoming,                   // world space incoming direction, unit-length
         Spectrum&                   value,                      // BSDF value, or BSDF value * |cos(incoming, normal)|
-        double&                     probability,                // PDF value
-        Mode&                       mode) const = 0;            // scattering mode
+        double&                     probability) const = 0;     // PDF value
 
     // Evaluate the BSDF for a given pair of directions. Return the PDF value
     // for this pair of directions. If the returned probability is zero, the

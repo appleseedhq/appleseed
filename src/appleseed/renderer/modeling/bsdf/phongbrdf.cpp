@@ -76,7 +76,7 @@ namespace
             return Model;
         }
 
-        FORCE_INLINE virtual void sample(
+        FORCE_INLINE virtual Mode sample(
             SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
@@ -86,10 +86,10 @@ namespace
             const Vector3d&     outgoing,
             Vector3d&           incoming,
             Spectrum&           value,
-            double&             probability,
-            Mode&               mode) const
+            double&             probability) const
         {
             throw ExceptionNotImplemented();
+            return Absorption;
         }
 
         FORCE_INLINE virtual double evaluate(

@@ -74,19 +74,18 @@ namespace
             Vector3d incoming;
             Spectrum bsdf_value;
             double bsdf_prob;
-            BSDF::Mode bsdf_mode;
-            bsdf.sample(
-                sampling_context,
-                bsdf_data,
-                false,              // not adjoint
-                true,               // multiply by |cos(incoming, normal)|
-                geometric_normal,
-                shading_basis,
-                outgoing,
-                incoming,
-                bsdf_value,
-                bsdf_prob,
-                bsdf_mode);
+            const BSDF::Mode bsdf_mode =
+                bsdf.sample(
+                    sampling_context,
+                    bsdf_data,
+                    false,          // not adjoint
+                    true,           // multiply by |cos(incoming, normal)|
+                    geometric_normal,
+                    shading_basis,
+                    outgoing,
+                    incoming,
+                    bsdf_value,
+                    bsdf_prob);
 
             // Ignore glossy/specular components: they must be handled by the parent.
             // See Physically Based Rendering vol. 1 page 732.

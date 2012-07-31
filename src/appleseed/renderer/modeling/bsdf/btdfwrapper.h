@@ -48,13 +48,11 @@ class BTDFWrapper
   : public BTDFImpl
 {
   public:
-    typedef typename BTDFImpl::Mode Mode;
-
     BTDFWrapper(
         const char*                     name,
         const ParamArray&               params);
 
-    virtual void sample(
+    virtual typename BTDFImpl::Mode sample(
         SamplingContext&                sampling_context,
         const void*                     data,
         const bool                      adjoint,
@@ -64,8 +62,7 @@ class BTDFWrapper
         const foundation::Vector3d&     outgoing,
         foundation::Vector3d&           incoming,
         Spectrum&                       value,
-        double&                         probability,
-        Mode&                           mode) const override;
+        double&                         probability) const override;
 
     virtual double evaluate(
         const void*                     data,
@@ -99,7 +96,7 @@ BTDFWrapper<BTDFImpl>::BTDFWrapper(
 }
 
 template <typename BTDFImpl>
-void BTDFWrapper<BTDFImpl>::sample(
+typename BTDFImpl::Mode BTDFWrapper<BTDFImpl>::sample(
     SamplingContext&                    sampling_context,
     const void*                         data,
     const bool                          adjoint,
@@ -109,46 +106,47 @@ void BTDFWrapper<BTDFImpl>::sample(
     const foundation::Vector3d&         outgoing,
     foundation::Vector3d&               incoming,
     Spectrum&                           value,
-    double&                             probability,
-    Mode&                               mode) const
+    double&                             probability) const
 {
     assert(foundation::is_normalized(geometric_normal));
     assert(foundation::is_normalized(outgoing));
 
-    BTDFImpl::sample(
-        sampling_context,
-        data,
-        adjoint,
-        false,
-        geometric_normal,
-        shading_basis,
-        outgoing,
-        incoming,
-        value,
-        probability,
-        mode);
+    const typename BTDFImpl::Mode mode =
+        BTDFImpl::sample(
+            sampling_context,
+            data,
+            adjoint,
+            false,
+            geometric_normal,
+            shading_basis,
+            outgoing,
+            incoming,
+            value,
+            probability);
 
-    if (mode == BTDFImpl::Absorption)
-        return;
-
-    assert(foundation::is_normalized(incoming));
-    assert(probability == BTDFImpl::DiracDelta || probability > 0.0);
-
-    if (cosine_mult)
+    if (mode != BTDFImpl::Absorption)
     {
-        if (adjoint)
+        assert(foundation::is_normalized(incoming));
+        assert(probability == BTDFImpl::DiracDelta || probability > 0.0);
+
+        if (cosine_mult)
         {
-            const double cos_on = std::abs(foundation::dot(outgoing, shading_basis.get_normal()));
-            const double cos_ig = std::abs(foundation::dot(incoming, geometric_normal));
-            const double cos_og = std::abs(foundation::dot(outgoing, geometric_normal));
-            value *= static_cast<float>(cos_on * cos_ig / cos_og);
-        }
-        else
-        {
-            const double cos_in = std::abs(foundation::dot(incoming, shading_basis.get_normal()));
-            value *= static_cast<float>(cos_in);
+            if (adjoint)
+            {
+                const double cos_on = std::abs(foundation::dot(outgoing, shading_basis.get_normal()));
+                const double cos_ig = std::abs(foundation::dot(incoming, geometric_normal));
+                const double cos_og = std::abs(foundation::dot(outgoing, geometric_normal));
+                value *= static_cast<float>(cos_on * cos_ig / cos_og);
+            }
+            else
+            {
+                const double cos_in = std::abs(foundation::dot(incoming, shading_basis.get_normal()));
+                value *= static_cast<float>(cos_in);
+            }
         }
     }
+
+    return mode;
 }
 
 template <typename BTDFImpl>
