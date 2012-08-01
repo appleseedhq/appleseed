@@ -97,6 +97,7 @@ class DirectLightingIntegrator
         const foundation::Vector3d&     outgoing,           // world space outgoing direction, unit-length
         const BSDF&                     bsdf,
         const void*                     bsdf_data,
+        const int                       bsdf_modes,         // selected scattering modes
         const size_t                    bsdf_sample_count,
         const size_t                    light_sample_count,
         const ShadingPoint*             parent_shading_point = 0);
@@ -147,6 +148,7 @@ class DirectLightingIntegrator
     const foundation::Vector3d&         m_outgoing;
     const BSDF&                         m_bsdf;
     const void*                         m_bsdf_data;
+    const int                           m_bsdf_modes;
     const size_t                        m_bsdf_sample_count;
     const size_t                        m_light_sample_count;
     const ShadingPoint*                 m_parent_shading_point;
@@ -580,6 +582,7 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
             m_shading_basis,
             m_outgoing,
             incoming,
+            m_bsdf_modes,
             bsdf_value);
     if (bsdf_prob == 0.0)
         return;

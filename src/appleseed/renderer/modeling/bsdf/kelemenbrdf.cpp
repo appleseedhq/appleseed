@@ -293,9 +293,13 @@ namespace
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
             const Vector3d&     incoming,
+            const int           modes,
             Spectrum&           value) const
         {
             const InputValues* values = static_cast<const InputValues*>(data);
+
+            value.set(0.0f);
+            double probability = 0.0;
 
             // Define aliases to match the notations in the paper.
             const Vector3d& V = outgoing;
@@ -315,44 +319,50 @@ namespace
             evaluate_a_spec(m_a_spec, dot_VN, specular_albedo_V);
             evaluate_a_spec(m_a_spec, dot_LN, specular_albedo_L);
 
-            // Compute the matte albedo.
-            Spectrum matte_albedo(1.0f);
-            matte_albedo -= specular_albedo_V;
-            matte_albedo *= values->m_rm;
-            matte_albedo *= static_cast<float>(values->m_rm_multiplier);
+            if (modes & Diffuse)
+            {
+                // Compute the matte albedo.
+                Spectrum matte_albedo(1.0f);
+                matte_albedo -= specular_albedo_V;
+                matte_albedo *= values->m_rm;
+                matte_albedo *= static_cast<float>(values->m_rm_multiplier);
 
-            // Specular component (equation 3).
-            Spectrum rs(values->m_rs);
-            rs *= static_cast<float>(values->m_rs_multiplier);
-            Spectrum fr_spec;
-            evaluate_fr_spec(*m_mdf.get(), rs, dot_HL, dot_HN, fr_spec);
+                // Compute the matte component (last equation of section 2.2).
+                Spectrum matte_comp(1.0f);
+                matte_comp -= specular_albedo_L;
+                matte_comp *= matte_albedo;
+                matte_comp *= m_s;
+                value += matte_comp;
 
-            // Matte component (last equation of section 2.2).
-            value.set(1.0f);
-            value -= specular_albedo_L;
-            value *= matte_albedo;
-            value *= m_s;
+                // Compute the probability of a matte bounce.
+                const double matte_prob = average_value(matte_albedo);
 
-            // The final value of the BRDF is the sum of the specular and matte components.
-            value += fr_spec;
+                // Compute the PDF of the incoming direction for the matte component.
+                const double pdf_matte = dot_LN * RcpPi;
+                assert(pdf_matte >= 0.0);
+                probability += matte_prob * pdf_matte;
+            }
 
-            // Compute the probability of a specular bounce.
-            const double specular_prob = average_value(specular_albedo_V);
+            if (modes & Glossy)
+            {
+                // Compute the specular component (equation 3).
+                Spectrum rs(values->m_rs);
+                rs *= static_cast<float>(values->m_rs_multiplier);
+                Spectrum fr_spec;
+                evaluate_fr_spec(*m_mdf.get(), rs, dot_HL, dot_HN, fr_spec);
+                value += fr_spec;
 
-            // Compute the probability of a matte bounce.
-            const double matte_prob = average_value(matte_albedo);
+                // Compute the probability of a specular bounce.
+                const double specular_prob = average_value(specular_albedo_V);
 
-            // Compute the PDF of the incoming direction for the specular component.
-            const double pdf_H = m_mdf->evaluate_pdf(dot_HN);
-            const double pdf_specular = pdf_H / (4.0 * dot_HL);
-            assert(pdf_specular >= 0.0);
+                // Compute the PDF of the incoming direction for the specular component.
+                const double pdf_H = m_mdf->evaluate_pdf(dot_HN);
+                const double pdf_specular = pdf_H / (4.0 * dot_HL);
+                assert(pdf_specular >= 0.0);
+                probability += specular_prob * pdf_specular;
+            }
 
-            // Compute the PDF of the incoming direction for the matte component.
-            const double pdf_matte = dot_LN * RcpPi;
-            assert(pdf_matte >= 0.0);
-
-            // Evaluate the final PDF.
-            return specular_prob * pdf_specular + matte_prob * pdf_matte;
+            return probability;
         }
 
         FORCE_INLINE virtual double evaluate_pdf(
@@ -360,9 +370,12 @@ namespace
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
-            const Vector3d&     incoming) const
+            const Vector3d&     incoming,
+            const int           modes) const
         {
             const InputValues* values = static_cast<const InputValues*>(data);
+
+            double probability = 0.0;
 
             // Define aliases to match the notations in the paper.
             const Vector3d& V = outgoing;
@@ -381,29 +394,36 @@ namespace
             Spectrum specular_albedo_V;
             evaluate_a_spec(m_a_spec, dot_VN, specular_albedo_V);
 
-            // Compute the matte albedo.
-            Spectrum matte_albedo(1.0f);
-            matte_albedo -= specular_albedo_V;
-            matte_albedo *= values->m_rm;
-            matte_albedo *= static_cast<float>(values->m_rm_multiplier);
+            if (modes & Diffuse)
+            {
+                // Compute the matte albedo.
+                Spectrum matte_albedo(1.0f);
+                matte_albedo -= specular_albedo_V;
+                matte_albedo *= values->m_rm;
+                matte_albedo *= static_cast<float>(values->m_rm_multiplier);
 
-            // Compute the probability of a specular bounce.
-            const double specular_prob = average_value(specular_albedo_V);
+                // Compute the probability of a matte bounce.
+                const double matte_prob = average_value(matte_albedo);
 
-            // Compute the probability of a matte bounce.
-            const double matte_prob = average_value(matte_albedo);
+                // Compute the PDF of the incoming direction for the matte component.
+                const double pdf_matte = dot_LN * RcpPi;
+                assert(pdf_matte >= 0.0);
+                probability += matte_prob * pdf_matte;
+            }
 
-            // Compute the PDF of the incoming direction for the specular component.
-            const double pdf_H = m_mdf->evaluate_pdf(dot_HN);
-            const double pdf_specular = pdf_H / (4.0 * dot_HL);
-            assert(pdf_specular >= 0.0);
+            if (modes & Glossy)
+            {
+                // Compute the probability of a specular bounce.
+                const double specular_prob = average_value(specular_albedo_V);
 
-            // Compute the PDF of the incoming direction for the matte component.
-            const double pdf_matte = dot_LN * RcpPi;
-            assert(pdf_matte >= 0.0);
+                // Compute the PDF of the incoming direction for the specular component.
+                const double pdf_H = m_mdf->evaluate_pdf(dot_HN);
+                const double pdf_specular = pdf_H / (4.0 * dot_HL);
+                assert(pdf_specular >= 0.0);
+                probability += specular_prob * pdf_specular;
+            }
 
-            // Evaluate the final PDF.
-            return specular_prob * pdf_specular + matte_prob * pdf_matte;
+            return probability;
         }
 
       private:

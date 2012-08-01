@@ -72,6 +72,7 @@ class BTDFWrapper
         const foundation::Basis3d&      shading_basis,
         const foundation::Vector3d&     outgoing,
         const foundation::Vector3d&     incoming,
+        const int                       modes,
         Spectrum&                       value) const override;
 
     virtual double evaluate_pdf(
@@ -79,7 +80,8 @@ class BTDFWrapper
         const foundation::Vector3d&     geometric_normal,
         const foundation::Basis3d&      shading_basis,
         const foundation::Vector3d&     outgoing,
-        const foundation::Vector3d&     incoming) const override;
+        const foundation::Vector3d&     incoming,
+        const int                       modes) const override;
 };
 
 
@@ -158,6 +160,7 @@ double BTDFWrapper<BTDFImpl>::evaluate(
     const foundation::Basis3d&          shading_basis,
     const foundation::Vector3d&         outgoing,
     const foundation::Vector3d&         incoming,
+    const int                           modes,
     Spectrum&                           value) const
 {
     assert(foundation::is_normalized(geometric_normal));
@@ -173,6 +176,7 @@ double BTDFWrapper<BTDFImpl>::evaluate(
             shading_basis,
             outgoing,
             incoming,
+            modes,
             value);
 
     assert(probability >= 0.0);
@@ -202,7 +206,8 @@ double BTDFWrapper<BTDFImpl>::evaluate_pdf(
     const foundation::Vector3d&         geometric_normal,
     const foundation::Basis3d&          shading_basis,
     const foundation::Vector3d&         outgoing,
-    const foundation::Vector3d&         incoming) const
+    const foundation::Vector3d&         incoming,
+    const int                           modes) const
 {
     assert(foundation::is_normalized(geometric_normal));
     assert(foundation::is_normalized(outgoing));
@@ -214,7 +219,8 @@ double BTDFWrapper<BTDFImpl>::evaluate_pdf(
             geometric_normal,
             shading_basis,
             outgoing,
-            incoming);
+            incoming,
+            modes);
 
     assert(probability >= 0.0);
 

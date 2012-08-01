@@ -349,6 +349,7 @@ namespace
                         shading_point.get_shading_basis(),
                         outgoing,                           // outgoing
                         vertex_to_camera,                   // incoming
+                        BSDF::AllScatteringModes,           // todo: likely incorrect
                         bsdf_value);
                 if (bsdf_prob == 0.0)
                     return true;            // proceed with this path

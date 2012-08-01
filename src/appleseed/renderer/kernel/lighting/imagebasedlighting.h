@@ -59,6 +59,7 @@ void compute_image_based_lighting(
     const foundation::Vector3d&     outgoing,           // world space outgoing direction, unit-length
     const BSDF&                     bsdf,
     const void*                     bsdf_data,
+    const int                       bsdf_modes,         // selected scattering modes
     const size_t                    bsdf_sample_count,  // number of samples in BSDF sampling
     const size_t                    env_sample_count,   // number of samples in environment sampling
     Spectrum&                       radiance,

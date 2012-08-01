@@ -157,8 +157,12 @@ namespace
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
             const Vector3d&     incoming,
+            const int           modes,
             Spectrum&           value) const
         {
+            if (!(modes & Diffuse))
+                return 0.0;
+
             const Vector3d& n = shading_basis.get_normal();
             const double cos_in = dot(incoming, n);
 
@@ -181,10 +185,15 @@ namespace
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
-            const Vector3d&     incoming) const
+            const Vector3d&     incoming,
+            const int           modes) const
         {
+            if (!(modes & Diffuse))
+                return 0.0;
+
             const Vector3d& n = shading_basis.get_normal();
             const double cos_in = dot(incoming, n);
+
             return cos_in * RcpPi;
         }
 
