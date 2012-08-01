@@ -434,7 +434,7 @@ namespace
 
             // Create a sampling context.
             const size_t pixel_index = iy * frame.image().properties().m_canvas_width + ix;
-            const size_t instance = hashint32(pixel_index);
+            const size_t instance = hashint32(static_cast<uint32>(pixel_index));
             SamplingContext sampling_context(
                 m_rng,
                 2,                      // number of dimensions
