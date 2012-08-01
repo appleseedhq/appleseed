@@ -705,13 +705,13 @@ void Intersector<Tree, Visitor, Ray, StackSize, 3>::intersect(
 
             if (left_motion_segment_count > 0 && right_motion_segment_count > 0)
             {
-                const sse2d left_t = mulpd(mraytime, set1pd(left_motion_segment_count));
+                const sse2d left_t = mulpd(mraytime, set1pd(static_cast<double>(left_motion_segment_count)));
                 const int left_prev_index = _mm_cvttsd_si32(left_t);
                 const size_t left_base_index = node_ptr->get_left_bbox_index() + left_prev_index;
                 const sse2d left_w2 = subpd(left_t, set1pd(left_prev_index));
                 const sse2d left_w1 = subpd(mone, left_w2);
 
-                const sse2d right_t = mulpd(mraytime, set1pd(right_motion_segment_count));
+                const sse2d right_t = mulpd(mraytime, set1pd(static_cast<double>(right_motion_segment_count)));
                 const int right_prev_index = _mm_cvttsd_si32(right_t);
                 const size_t right_base_index = node_ptr->get_right_bbox_index() + right_prev_index;
                 const sse2d right_w2 = subpd(right_t, set1pd(right_prev_index));
@@ -758,7 +758,7 @@ void Intersector<Tree, Visitor, Ray, StackSize, 3>::intersect(
                 // Fetch the left bounding box.
                 if (left_motion_segment_count > 0)
                 {
-                    const sse2d t = mulpd(mraytime, set1pd(left_motion_segment_count));
+                    const sse2d t = mulpd(mraytime, set1pd(static_cast<double>(left_motion_segment_count)));
                     const int prev_index = _mm_cvttsd_si32(t);
                     const sse2d w2 = subpd(t, set1pd(prev_index));
                     const sse2d w1 = subpd(mone, w2);
@@ -791,7 +791,7 @@ void Intersector<Tree, Visitor, Ray, StackSize, 3>::intersect(
                 // Fetch the right bounding box.
                 if (right_motion_segment_count > 0)
                 {
-                    const sse2d t = mulpd(mraytime, set1pd(right_motion_segment_count));
+                    const sse2d t = mulpd(mraytime, set1pd(static_cast<double>(right_motion_segment_count)));
                     const int prev_index = _mm_cvttsd_si32(t);
                     const sse2d w2 = subpd(t, set1pd(prev_index));
                     const sse2d w1 = subpd(mone, w2);
