@@ -61,7 +61,8 @@ class TileStack
     void set_pixel(
        const size_t             x,
        const size_t             y,
-       const SpectrumStack&     aovs) const;
+       const SpectrumStack&     aovs,
+       const float              alpha) const;
 
   private:
     foundation::Tile*           m_tiles[MaxSize];
@@ -94,12 +95,13 @@ inline void TileStack::append(foundation::Tile* tile)
 inline void TileStack::set_pixel(
     const size_t                x,
     const size_t                y,
-    const SpectrumStack&        aovs) const
+    const SpectrumStack&        aovs,
+    const float                 alpha) const
 {
     for (size_t i = 0; i < m_size; ++i)
     {
         const Spectrum& spectrum = aovs[i];
-        const foundation::Color4f linear_rgb(spectrum[0], spectrum[1], spectrum[2], 1.0f);
+        const foundation::Color4f linear_rgb(spectrum[0], spectrum[1], spectrum[2], alpha);
 
         m_tiles[i]->set_pixel(x, y, linear_rgb);
     }

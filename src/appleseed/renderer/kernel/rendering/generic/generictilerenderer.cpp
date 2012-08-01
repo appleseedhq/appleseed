@@ -230,7 +230,7 @@ namespace
 
                 // Store the pixel values.
                 tile.set_pixel(tx, ty, pixel_color);
-                aov_tiles.set_pixel(tx, ty, pixel_aovs);
+                aov_tiles.set_pixel(tx, ty, pixel_aovs, pixel_color.a);
             }
         }
 
