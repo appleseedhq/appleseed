@@ -357,7 +357,7 @@ void InputBinder::bind_scene_entity_inputs(
             "while defining %s \"%s\": cannot bind \"%s\" to parameter \"%s\".",
             entity_type,
             entity_name,
-            param_value,
+            param_value.c_str(),
             input.name());
 
         ++m_error_count;
@@ -430,7 +430,7 @@ void InputBinder::bind_assembly_entity_inputs(
             "while defining %s \"%s\": cannot bind \"%s\" to parameter \"%s\".",
             entity_type,
             entity_name,
-            param_value,
+            param_value.c_str(),
             input.name());
 
         ++m_error_count;
