@@ -28,6 +28,7 @@
 
 // appleseed.cli headers.
 #include "commandlinehandler.h"
+#include "progresstilecallback.h"
 
 // appleseed.shared headers.
 #include "application/application.h"
@@ -470,10 +471,12 @@ namespace
 
         // Create the master renderer.
         DefaultRendererController renderer_controller;
+        ProgressTileCallbackFactory tile_callback_factory;
         MasterRenderer renderer(
             project.ref(),
             params,
-            &renderer_controller);
+            &renderer_controller,
+            &tile_callback_factory);
 
         // Render the frame.
         Stopwatch<DefaultWallclockTimer> stopwatch;
