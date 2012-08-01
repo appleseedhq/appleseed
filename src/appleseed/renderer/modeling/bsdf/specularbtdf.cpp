@@ -119,18 +119,18 @@ namespace
             {
                 // Compute the Fresnel reflection factor.
                 const double cos_theta_t = sqrt(cos_theta_t2);
-                const Spectrum fresnel_reflection =
+                const double fresnel_reflection =
                     fresnel_reflection_no_polarization(
-                        Spectrum(static_cast<Spectrum::ValueType>(values->m_from_ior)),
-                        Spectrum(static_cast<Spectrum::ValueType>(values->m_to_ior)),
+                        values->m_from_ior,
+                        values->m_to_ior,
                         abs(cos_theta_i),
                         cos_theta_t);
 
                 sampling_context.split_in_place(1, 1);
                 const double s = sampling_context.next_double2();
-                const float reflection_prob = min(max_value(fresnel_reflection), 1.0f);
+                const double reflection_prob = min(fresnel_reflection, 1.0);
 
-                if (s < static_cast<double>(reflection_prob))
+                if (s < reflection_prob)
                 {
                     // Compute the reflected direction.
                     incoming = reflect(outgoing, shading_normal);
@@ -140,8 +140,7 @@ namespace
 
                     // Compute the reflected radiance.
                     value = values->m_reflectance;
-                    value *= fresnel_reflection;
-                    value *= static_cast<float>(values->m_reflectance_multiplier) / reflection_prob;
+                    value *= static_cast<float>(fresnel_reflection * values->m_reflectance_multiplier / reflection_prob);
                 }
                 else
                 {
@@ -153,8 +152,7 @@ namespace
 
                     // Compute the refracted radiance.
                     value = values->m_transmittance;
-                    value *= Spectrum(1.0f) - fresnel_reflection;
-                    value *= static_cast<float>(values->m_transmittance_multiplier) / (1.0f - reflection_prob);
+                    value *= static_cast<float>((1.0 - fresnel_reflection) * values->m_transmittance_multiplier / (1.0 - reflection_prob));
                 }
             }
 

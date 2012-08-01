@@ -88,6 +88,13 @@ Spectrum schlick_fresnel_reflection(
 // Implementation.
 //
 
+namespace impl
+{
+    template <typename T> struct GetValueType   { typedef typename T::ValueType ValueType; };
+    template <> struct GetValueType<float>      { typedef float ValueType; };
+    template <> struct GetValueType<double>     { typedef double ValueType; };
+}
+
 template <typename Spectrum, typename T>
 Spectrum fresnel_reflection_s_polarization(
     const Spectrum&     ior_i,
@@ -95,10 +102,10 @@ Spectrum fresnel_reflection_s_polarization(
     const T             cos_theta_i,
     const T             cos_theta_t)
 {
+    typedef impl::GetValueType<Spectrum>::ValueType ValueType;
+
     assert(cos_theta_i >= T(0.0) && cos_theta_i <= T(1.0));
     assert(cos_theta_t >= T(0.0) && cos_theta_t <= T(1.0));
-
-    typedef typename Spectrum::ValueType ValueType;
 
     Spectrum k1 = ior_i;
     k1 *= static_cast<ValueType>(cos_theta_i);
@@ -125,10 +132,10 @@ Spectrum fresnel_reflection_p_polarization(
     const T             cos_theta_i,
     const T             cos_theta_t)
 {
+    typedef impl::GetValueType<Spectrum>::ValueType ValueType;
+
     assert(cos_theta_i >= T(0.0) && cos_theta_i <= T(1.0));
     assert(cos_theta_t >= T(0.0) && cos_theta_t <= T(1.0));
-
-    typedef typename Spectrum::ValueType ValueType;
 
     Spectrum k1 = ior_i;
     k1 *= static_cast<ValueType>(cos_theta_t);
@@ -155,10 +162,10 @@ Spectrum fresnel_reflection_no_polarization(
     const T             cos_theta_i,
     const T             cos_theta_t)
 {
+    typedef impl::GetValueType<Spectrum>::ValueType ValueType;
+
     assert(cos_theta_i >= T(0.0) && cos_theta_i <= T(1.0));
     assert(cos_theta_t >= T(0.0) && cos_theta_t <= T(1.0));
-
-    typedef typename Spectrum::ValueType ValueType;
 
     Spectrum r =
         fresnel_reflection_s_polarization(
@@ -184,9 +191,9 @@ Spectrum schlick_fresnel_reflection(
     const Spectrum&     normal_reflectance,
     const T             cos_theta)
 {
-    assert(cos_theta >= T(0.0) && cos_theta <= T(1.0));
+    typedef impl::GetValueType<Spectrum>::ValueType ValueType;
 
-    typedef typename Spectrum::ValueType ValueType;
+    assert(cos_theta >= T(0.0) && cos_theta <= T(1.0));
 
     const T k = T(1.0) - cos_theta;
     const T k2 = k * k;
