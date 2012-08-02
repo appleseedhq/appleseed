@@ -59,12 +59,12 @@ TileObject::TileObject(Tile& tile)
 
 int TileObject::width() const
 {
-    return m_tile.get_width();
+    return static_cast<int>(m_tile.get_width());
 }
 
 int TileObject::height() const
 {
-    return m_tile.get_height();
+    return static_cast<int>(m_tile.get_height());
 }
 
 void* TileObject::pixels()
@@ -130,32 +130,32 @@ TiledTextureObject::~TiledTextureObject()
 
 int TiledTextureObject::width() const
 {
-    return m_props.m_canvas_width;
+    return static_cast<int>(m_props.m_canvas_width);
 }
 
 int TiledTextureObject::height() const
 {
-    return m_props.m_canvas_height;
+    return static_cast<int>(m_props.m_canvas_height);
 }
 
 int TiledTextureObject::tile_width() const
 {
-    return m_props.m_tile_width;
+    return static_cast<int>(m_props.m_tile_width);
 }
 
 int TiledTextureObject::tile_height() const
 {
-    return m_props.m_tile_height;
+    return static_cast<int>(m_props.m_tile_height);
 }
 
 int TiledTextureObject::tile_count_x() const
 {
-    return m_props.m_tile_count_x;
+    return static_cast<int>(m_props.m_tile_count_x);
 }
 
 int TiledTextureObject::tile_count_y() const
 {
-    return m_props.m_tile_count_y;
+    return static_cast<int>(m_props.m_tile_count_y);
 }
 
 TileObject& TiledTextureObject::tile(

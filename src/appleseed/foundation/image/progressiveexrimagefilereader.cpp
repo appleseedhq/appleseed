@@ -334,7 +334,7 @@ Tile* ProgressiveEXRImageFileReader::read_tile(
         const size_t stride_y = impl->m_is_tiled
             ? stride_x * tile_width
             : stride_x * impl->m_props.m_canvas_width;
-        const int origin = dw.min.x * stride_x + dw.min.y * stride_y;
+        const int origin = static_cast<int>(dw.min.x * stride_x + dw.min.y * stride_y);
         char* base = impl->m_is_tiled
             ? reinterpret_cast<char*>(tile->pixel(0, 0)) - origin
             : reinterpret_cast<char*>(&impl->m_scanlines[0]) - origin;
