@@ -102,7 +102,7 @@ Spectrum fresnel_reflection_s_polarization(
     const T             cos_theta_i,
     const T             cos_theta_t)
 {
-    typedef impl::GetValueType<Spectrum>::ValueType ValueType;
+    typedef typename impl::GetValueType<Spectrum>::ValueType ValueType;
 
     assert(cos_theta_i >= T(0.0) && cos_theta_i <= T(1.0));
     assert(cos_theta_t >= T(0.0) && cos_theta_t <= T(1.0));
@@ -132,7 +132,7 @@ Spectrum fresnel_reflection_p_polarization(
     const T             cos_theta_i,
     const T             cos_theta_t)
 {
-    typedef impl::GetValueType<Spectrum>::ValueType ValueType;
+    typedef typename impl::GetValueType<Spectrum>::ValueType ValueType;
 
     assert(cos_theta_i >= T(0.0) && cos_theta_i <= T(1.0));
     assert(cos_theta_t >= T(0.0) && cos_theta_t <= T(1.0));
@@ -162,7 +162,7 @@ Spectrum fresnel_reflection_no_polarization(
     const T             cos_theta_i,
     const T             cos_theta_t)
 {
-    typedef impl::GetValueType<Spectrum>::ValueType ValueType;
+    typedef typename impl::GetValueType<Spectrum>::ValueType ValueType;
 
     assert(cos_theta_i >= T(0.0) && cos_theta_i <= T(1.0));
     assert(cos_theta_t >= T(0.0) && cos_theta_t <= T(1.0));
@@ -191,7 +191,7 @@ Spectrum schlick_fresnel_reflection(
     const Spectrum&     normal_reflectance,
     const T             cos_theta)
 {
-    typedef impl::GetValueType<Spectrum>::ValueType ValueType;
+    typedef typename impl::GetValueType<Spectrum>::ValueType ValueType;
 
     assert(cos_theta >= T(0.0) && cos_theta <= T(1.0));
 
