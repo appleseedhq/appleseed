@@ -59,12 +59,12 @@ TileObject::TileObject(Tile& tile)
 
 int TileObject::width() const
 {
-    return m_tile.get_width();
+    return static_cast<int>(m_tile.get_width());
 }
 
 int TileObject::height() const
 {
-    return m_tile.get_height();
+    return static_cast<int>(m_tile.get_height());
 }
 
 void* TileObject::pixels()
@@ -82,8 +82,8 @@ void TileObject::get(
     const int   y,
     float       texel[]) const
 {
-    const int clamped_x = clamp(x, 0, static_cast<int>(m_tile.get_width()) - 1);
-    const int clamped_y = clamp(y, 0, static_cast<int>(m_tile.get_height()) - 1);
+    const int clamped_x = clamp(x, 0, width() - 1);
+    const int clamped_y = clamp(y, 0, height() - 1);
 
     memcpy(
         texel,
@@ -96,8 +96,8 @@ void TileObject::put(
     const int   y,
     const float texel[])
 {
-    assert(x >= 0 && x < static_cast<int>(m_tile.get_width()));
-    assert(y >= 0 && y < static_cast<int>(m_tile.get_height()));
+    assert(x >= 0 && x < width());
+    assert(y >= 0 && y < height());
 
     memcpy(m_tile.pixel(x, y), texel, m_tile.get_channel_count() * sizeof(float));
 }
@@ -130,40 +130,40 @@ TiledTextureObject::~TiledTextureObject()
 
 int TiledTextureObject::width() const
 {
-    return m_props.m_canvas_width;
+    return static_cast<int>(m_props.m_canvas_width);
 }
 
 int TiledTextureObject::height() const
 {
-    return m_props.m_canvas_height;
+    return static_cast<int>(m_props.m_canvas_height);
 }
 
 int TiledTextureObject::tile_width() const
 {
-    return m_props.m_tile_width;
+    return static_cast<int>(m_props.m_tile_width);
 }
 
 int TiledTextureObject::tile_height() const
 {
-    return m_props.m_tile_height;
+    return static_cast<int>(m_props.m_tile_height);
 }
 
 int TiledTextureObject::tile_count_x() const
 {
-    return m_props.m_tile_count_x;
+    return static_cast<int>(m_props.m_tile_count_x);
 }
 
 int TiledTextureObject::tile_count_y() const
 {
-    return m_props.m_tile_count_y;
+    return static_cast<int>(m_props.m_tile_count_y);
 }
 
 TileObject& TiledTextureObject::tile(
     const int   tile_x,
     const int   tile_y)
 {
-    assert(tile_x >= 0 && tile_x < static_cast<int>(m_props.m_tile_count_x));
-    assert(tile_y >= 0 && tile_y < static_cast<int>(m_props.m_tile_count_y));
+    assert(tile_x >= 0 && tile_x < tile_count_x());
+    assert(tile_y >= 0 && tile_y < tile_count_y());
 
     return *m_tile_objects[tile_y * m_props.m_tile_count_x + tile_x];
 }
@@ -172,8 +172,8 @@ const TileObject& TiledTextureObject::tile(
     const int   tile_x,
     const int   tile_y) const
 {
-    assert(tile_x >= 0 && tile_x < static_cast<int>(m_props.m_tile_count_x));
-    assert(tile_y >= 0 && tile_y < static_cast<int>(m_props.m_tile_count_y));
+    assert(tile_x >= 0 && tile_x < tile_count_x());
+    assert(tile_y >= 0 && tile_y < tile_count_y());
 
     return *m_tile_objects[tile_y * m_props.m_tile_count_x + tile_x];
 }
@@ -222,8 +222,8 @@ void TextureObject::get(
     const int   y,
     float       texel[]) const
 {
-    const int clamped_x = clamp(x, 0, static_cast<int>(m_width) - 1);
-    const int clamped_y = clamp(y, 0, static_cast<int>(m_height) - 1);
+    const int clamped_x = clamp(x, 0, width() - 1);
+    const int clamped_y = clamp(y, 0, height() - 1);
     const size_t base_index = (clamped_y * m_width + clamped_x) * m_channel_count;
 
     for (size_t i = 0; i < m_channel_count; ++i)
@@ -235,8 +235,8 @@ void TextureObject::put(
     const int   y,
     const float texel[])
 {
-    assert(x >= 0 && x < static_cast<int>(m_width));
-    assert(y >= 0 && y < static_cast<int>(m_height));
+    assert(x >= 0 && x < width());
+    assert(y >= 0 && y < height());
 
     memcpy(m_texture.pixel(x, y), texel, m_channel_count * sizeof(float));
 }
