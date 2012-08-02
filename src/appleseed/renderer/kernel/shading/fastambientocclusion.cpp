@@ -40,6 +40,7 @@
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/utility/bbox.h"
+#include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/intersection.h"
@@ -61,7 +62,6 @@ namespace renderer
 // AOVoxelTree class implementation.
 //
 
-// Constructor, build the tree for a given scene.
 AOVoxelTree::AOVoxelTree(
     const Scene&    scene,
     const GScalar   max_extent_fraction)
@@ -91,7 +91,6 @@ AOVoxelTree::AOVoxelTree(
     tree_stats.print(global_logger());
 }
 
-// Dump all solid leaves of the tree to disk, as an .obj mesh file.
 void AOVoxelTree::dump_solid_leaves_to_disk(const string& filename) const
 {
     RENDERER_LOG_INFO(
@@ -112,7 +111,6 @@ void AOVoxelTree::dump_solid_leaves_to_disk(const string& filename) const
     }
 }
 
-// Dump the entire tree to disk, in proprietary binary format.
 void AOVoxelTree::dump_tree_to_disk(const string& filename) const
 {
     RENDERER_LOG_INFO(
@@ -175,11 +173,13 @@ namespace
     };
 }
 
-// Build the tree.
 void AOVoxelTree::build(
     const Scene&    scene,
     BuilderType&    builder)
 {
+    // The voxel tree is built using the scene geometry at the middle of the shutter interval.
+    const double time = scene.get_camera()->get_shutter_middle_time();
+
     // Loop over the assembly instances of the scene.
     for (const_each<AssemblyInstanceContainer> i = scene.assembly_instances(); i; ++i)
     {
@@ -196,8 +196,9 @@ void AOVoxelTree::build(
             const ObjectInstance& object_instance = *j;
 
             // Compute the object space to world space transformation.
-            const Transformd& transform =
-                assembly_instance.get_transform() * object_instance.get_transform();
+            const Transformd transform =
+                  assembly_instance.transform_sequence().evaluate(time)
+                * object_instance.get_transform();
 
             // Retrieve the object.
             Object& object = object_instance.get_object();
@@ -246,13 +247,11 @@ void AOVoxelTree::build(
 // AOVoxelTreeIntersector class implementation.
 //
 
-// Constructor, binds the intersector to a given tree.
 AOVoxelTreeIntersector::AOVoxelTreeIntersector(const AOVoxelTree& tree)
   : m_tree(tree)
 {
 }
 
-// Destructor.
 AOVoxelTreeIntersector::~AOVoxelTreeIntersector()
 {
 #ifdef FOUNDATION_VOXEL_ENABLE_TRAVERSAL_STATS
@@ -261,7 +260,6 @@ AOVoxelTreeIntersector::~AOVoxelTreeIntersector()
 #endif
 }
 
-// Trace a world space ray through the voxel tree.
 bool AOVoxelTreeIntersector::trace(
     ShadingRay::RayType ray,
     const bool          solid,

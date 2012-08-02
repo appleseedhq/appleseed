@@ -41,6 +41,7 @@
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
+#include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exceptionnotimplemented.h"
@@ -150,18 +151,22 @@ void LightSampler::collect_emitting_triangles(const Scene& scene)
     for (const_each<AssemblyInstanceContainer> i = scene.assembly_instances(); i; ++i)
     {
         const AssemblyInstance& assembly_instance = *i;
-        const Assembly& assembly = assembly_instance.get_assembly();
 
-        if (has_emitting_materials(assembly))
-            collect_emitting_triangles(assembly_instance, assembly);
+        if (has_emitting_materials(assembly_instance.get_assembly()))
+            collect_emitting_triangles(scene, assembly_instance);
     }
 }
 
 void LightSampler::collect_emitting_triangles(
-    const AssemblyInstance& assembly_instance,
-    const Assembly&         assembly)
+    const Scene&            scene,
+    const AssemblyInstance& assembly_instance)
 {
+    // Gather light-emitting triangles at the middle of the shutter interval.
+    // todo: add support for moving light-emitters.
+    const double time = scene.get_camera()->get_shutter_middle_time();
+
     // Loop over the object instances of the assembly.
+    const Assembly& assembly = assembly_instance.get_assembly();
     const size_t object_instance_count = assembly.object_instances().size();
     for (size_t object_instance_index = 0; object_instance_index < object_instance_count; ++object_instance_index)
     {
@@ -178,7 +183,7 @@ void LightSampler::collect_emitting_triangles(
 
         // Compute the object space to world space transformation.
         const Transformd& object_instance_transform = object_instance->get_transform();
-        const Transformd& assembly_instance_transform = assembly_instance.get_transform();
+        const Transformd assembly_instance_transform = assembly_instance.transform_sequence().evaluate(time);
         const Transformd global_transform = assembly_instance_transform * object_instance_transform;
 
         // Retrieve the object.

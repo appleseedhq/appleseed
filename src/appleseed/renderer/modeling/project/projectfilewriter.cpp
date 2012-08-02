@@ -292,6 +292,18 @@ namespace
             }
         }
 
+        // Write a transform sequence.
+        void write_transform_sequence(const TransformSequence& transform_sequence)
+        {
+            for (size_t i = 0; i < transform_sequence.size(); ++i)
+            {
+                double time;
+                Transformd transform;
+                transform_sequence.get_transform(i, time, transform);
+                write_transform(transform, time);
+            }
+        }
+
         // Write an array of color values.
         void write_value_array(const char* element_name, const ColorValueArray& values)
         {
@@ -457,16 +469,7 @@ namespace
             element.write(true);
 
             write_params(camera.get_parameters());
-
-            const TransformSequence& transform_sequence = camera.transform_sequence();
-
-            for (size_t i = 0; i < transform_sequence.size(); ++i)
-            {
-                double time;
-                Transformd transform;
-                transform_sequence.get_transform(i, time, transform);
-                write_transform(transform, time);
-            }
+            write_transform_sequence(camera.transform_sequence());
         }
 
         // Write a collection of <object> elements.
@@ -671,7 +674,7 @@ namespace
             element.add_attribute("assembly", assembly_instance.get_assembly().get_name());
             element.write(true);
 
-            write_transform(assembly_instance.get_transform());
+            write_transform_sequence(assembly_instance.transform_sequence());
         }
 
         // Write a <scene> element.

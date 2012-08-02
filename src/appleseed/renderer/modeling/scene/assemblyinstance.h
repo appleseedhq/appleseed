@@ -30,14 +30,21 @@
 #define APPLESEED_RENDERER_MODELING_SCENE_ASSEMBLYINSTANCE_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/entity/entity.h"
+#include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/transform.h"
+#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/utility/uid.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Forward declarations.
 namespace renderer  { class Assembly; }
+namespace renderer  { class ParamArray; }
+namespace renderer  { class Project; }
 
 namespace renderer
 {
@@ -46,7 +53,7 @@ namespace renderer
 // An instance of an assembly.
 //
 
-class RENDERERDLL AssemblyInstance
+class DLLSYMBOL AssemblyInstance
   : public Entity
 {
   public:
@@ -59,8 +66,15 @@ class RENDERERDLL AssemblyInstance
     // Return the unique ID of the instantiated assembly.
     foundation::UniqueID get_assembly_uid() const;
 
-    // Return the transform of the instance.
-    const foundation::Transformd& get_transform() const;
+    // Access the transform sequence of the instance.
+    TransformSequence& transform_sequence();
+    const TransformSequence& transform_sequence() const;
+
+    // This method is called once before rendering each frame.
+    void on_frame_begin(const Project& project);
+
+    // This method is called once after rendering each frame.
+    void on_frame_end(const Project& project);
 
     // Return the parent space bounding box of the instance.
     GAABB3 compute_parent_bbox() const;
@@ -68,22 +82,15 @@ class RENDERERDLL AssemblyInstance
   private:
     friend class AssemblyInstanceFactory;
 
-    struct Impl;
-    Impl* impl;
-
-    // Derogate to the private implementation rule, for performance reasons.
     const Assembly&         m_assembly;
     foundation::UniqueID    m_assembly_uid;
+    TransformSequence       m_transform_sequence;
 
     // Constructor.
     AssemblyInstance(
-        const char*                     name,
-        const ParamArray&               params,
-        const Assembly&                 assembly,
-        const foundation::Transformd&   transform);
-
-    // Destructor.
-    ~AssemblyInstance();
+        const char*         name,
+        const ParamArray&   params,
+        const Assembly&     assembly);
 };
 
 
@@ -91,15 +98,14 @@ class RENDERERDLL AssemblyInstance
 // Assembly instance factory.
 //
 
-class RENDERERDLL AssemblyInstanceFactory
+class DLLSYMBOL AssemblyInstanceFactory
 {
   public:
     // Create a new assembly instance.
     static foundation::auto_release_ptr<AssemblyInstance> create(
-        const char*                     name,
-        const ParamArray&               params,
-        const Assembly&                 assembly,
-        const foundation::Transformd&   transform);
+        const char*         name,
+        const ParamArray&   params,
+        const Assembly&     assembly);
 };
 
 
@@ -115,6 +121,16 @@ inline const Assembly& AssemblyInstance::get_assembly() const
 inline foundation::UniqueID AssemblyInstance::get_assembly_uid() const
 {
     return m_assembly_uid;
+}
+
+inline TransformSequence& AssemblyInstance::transform_sequence()
+{
+    return m_transform_sequence;
+}
+
+inline const TransformSequence& AssemblyInstance::transform_sequence() const
+{
+    return m_transform_sequence;
 }
 
 }       // namespace renderer

@@ -178,10 +178,7 @@ namespace
             }
 
             // Retrieve the camera transformation.
-            const Transformd transform =
-                m_transform_sequence.size() > 1
-                    ? m_transform_sequence.evaluate(ray.m_time)
-                    : m_transform_sequence.evaluate(0.0);
+            const Transformd transform = m_transform_sequence.evaluate(ray.m_time);
 
             // Set the ray origin.
             const Transformd::MatrixType& mat = transform.get_local_to_parent();
@@ -272,11 +269,11 @@ namespace
             ShadingRay ray;
             ray.m_tmin = 0.0;
             ray.m_tmax = numeric_limits<double>::max();
-            ray.m_time = 0.5 * (get_shutter_open_time() + get_shutter_close_time());
+            ray.m_time = get_shutter_middle_time();
             ray.m_flags = ~0;
 
             // Set the ray origin.
-            const Transformd transform = m_transform_sequence.evaluate(0.0);
+            const Transformd transform = m_transform_sequence.evaluate(ray.m_time);
             const Transformd::MatrixType& mat = transform.get_local_to_parent();
             ray.m_org.x = mat[ 3];
             ray.m_org.y = mat[ 7];
@@ -308,10 +305,11 @@ namespace
                 const double af_focal_distance = dot(v, camera_direction);
 
                 RENDERER_LOG_INFO(
-                    "camera \"%s\": autofocus sets focal distance to %f %s (using camera position at time=0.0).",
+                    "camera \"%s\": autofocus sets focal distance to %f %s (using camera position at time=%.1f).",
                     get_name(),
                     af_focal_distance,
-                    plural(af_focal_distance, "meter").c_str());
+                    plural(af_focal_distance, "meter").c_str(),
+                    ray.m_time);
 
                 return af_focal_distance;
             }
@@ -319,8 +317,9 @@ namespace
             {
                 // No hit: focus at infinity.
                 RENDERER_LOG_INFO(
-                    "camera \"%s\": autofocus sets focal distance to infinity (using camera position at time=0.0).",
-                    get_name());
+                    "camera \"%s\": autofocus sets focal distance to infinity (using camera position at time=%.1f).",
+                    get_name(),
+                    ray.m_time);
 
                 return 1.0e38;
             }

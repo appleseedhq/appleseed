@@ -37,6 +37,7 @@
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/utility/bbox.h"
+#include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/intersection.h"
@@ -371,16 +372,14 @@ void AssemblyTree::update_child_trees()
 namespace
 {
     void transform_ray_to_assembly_instance_space(
-        const AssemblyInstance*         assembly_instance,
-        const ShadingPoint*             parent_shading_point,
-        const ShadingRay::RayType&      input_ray,
-        ShadingRay::RayType&            output_ray)
+        const AssemblyInstance*     assembly_instance,
+        const Transformd&           assembly_instance_transform,
+        const ShadingPoint*         parent_shading_point,
+        const ShadingRay&           input_ray,
+        ShadingRay&                 output_ray)
     {
-        // Retrieve the transformation of the assembly instance.
-        const Transformd& transform = assembly_instance->get_transform();
-
         // Transform the ray direction.
-        output_ray.m_dir = transform.vector_to_local(input_ray.m_dir);
+        output_ray.m_dir = assembly_instance_transform.vector_to_local(input_ray.m_dir);
 
         if (parent_shading_point &&
             &parent_shading_point->get_assembly_instance() == assembly_instance)
@@ -396,7 +395,7 @@ namespace
             // The caller didn't provide the previous intersection, or we are
             // about to intersect an assembly instance that does not contain
             // the previous intersection: proceed normally.
-            output_ray.m_org = transform.point_to_local(input_ray.m_org);
+            output_ray.m_org = assembly_instance_transform.point_to_local(input_ray.m_org);
         }
     }
 }
@@ -429,10 +428,15 @@ bool AssemblyLeafVisitor::visit(
         // Retrieve the assembly instance.
         const AssemblyInstance* assembly_instance = assembly_instances[i];
 
+        // Evaluate the transformation of the assembly instance.
+        const Transformd assembly_instance_transform =
+            assembly_instance->transform_sequence().evaluate(ray.m_time);
+
         // Transform the ray to assembly instance space.
         ShadingPoint local_shading_point;
         transform_ray_to_assembly_instance_space(
             assembly_instance,
+            assembly_instance_transform,
             m_parent_shading_point,
             ray,
             local_shading_point.m_ray);
@@ -501,6 +505,7 @@ bool AssemblyLeafVisitor::visit(
             m_shading_point.m_hit = true;
             m_shading_point.m_bary = local_shading_point.m_bary;
             m_shading_point.m_assembly_instance = assembly_instance;
+            m_shading_point.m_assembly_instance_transform = assembly_instance_transform;
             m_shading_point.m_object_instance_index = local_shading_point.m_object_instance_index;
             m_shading_point.m_region_index = local_shading_point.m_region_index;
             m_shading_point.m_triangle_index = local_shading_point.m_triangle_index;
@@ -540,10 +545,15 @@ bool AssemblyLeafProbeVisitor::visit(
         // Retrieve the assembly instance.
         const AssemblyInstance* assembly_instance = assembly_instances[i];
 
+        // Evaluate the transformation of the assembly instance.
+        const Transformd assembly_instance_transform =
+            assembly_instance->transform_sequence().evaluate(ray.m_time);
+
         // Transform the ray to assembly instance space.
         ShadingRay local_ray;
         transform_ray_to_assembly_instance_space(
             assembly_instance,
+            assembly_instance_transform,
             m_parent_shading_point,
             ray,
             local_ray);

@@ -82,6 +82,9 @@ class DLLSYMBOL Camera
     // Get the shutter close time.
     double get_shutter_close_time() const;
 
+    // Get the time at the middle of the shutter interval.
+    double get_shutter_middle_time() const;
+
     // Get the view pyramid of the camera.
     const foundation::Pyramid3d& get_view_pyramid() const;
 
@@ -108,7 +111,6 @@ class DLLSYMBOL Camera
     struct Impl;
     Impl* impl;
 
-    // Derogate to the private implementation rule, for performance reasons.
     TransformSequence m_transform_sequence;
 
     // Destructor.

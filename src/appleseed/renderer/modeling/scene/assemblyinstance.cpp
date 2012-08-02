@@ -35,6 +35,9 @@
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/utility/bbox.h"
 
+// Standard headers.
+#include <cstddef>
+
 using namespace foundation;
 using namespace std;
 
@@ -45,12 +48,6 @@ namespace renderer
 // AssemblyInstance class implementation.
 //
 
-struct AssemblyInstance::Impl
-{
-    // Order of data members impacts performance, preserve it.
-    Transformd  m_transform;
-};
-
 namespace
 {
     const UniqueID g_class_uid = new_guid();
@@ -59,21 +56,12 @@ namespace
 AssemblyInstance::AssemblyInstance(
     const char*         name,
     const ParamArray&   params,
-    const Assembly&     assembly,
-    const Transformd&   transform)
+    const Assembly&     assembly)
   : Entity(g_class_uid, params)
-  , impl(new Impl())
   , m_assembly(assembly)
   , m_assembly_uid(assembly.get_uid())
 {
     set_name(name);
-
-    impl->m_transform = transform;
-}
-
-AssemblyInstance::~AssemblyInstance()
-{
-    delete impl;
 }
 
 void AssemblyInstance::release()
@@ -81,18 +69,38 @@ void AssemblyInstance::release()
     delete this;
 }
 
-const Transformd& AssemblyInstance::get_transform() const
+void AssemblyInstance::on_frame_begin(const Project& project)
 {
-    return impl->m_transform;
+    m_transform_sequence.prepare();
+}
+
+void AssemblyInstance::on_frame_end(const Project& project)
+{
 }
 
 GAABB3 AssemblyInstance::compute_parent_bbox() const
 {
-    return
-        impl->m_transform.to_parent(
-            get_parent_bbox<GAABB3>(
-                m_assembly.object_instances().begin(),
-                m_assembly.object_instances().end()));
+    const GAABB3 object_instances_bbox =
+        get_parent_bbox<GAABB3>(
+            m_assembly.object_instances().begin(),
+            m_assembly.object_instances().end());
+
+    if (m_transform_sequence.empty())
+        return object_instances_bbox;
+
+    GAABB3 bbox;
+    bbox.invalidate();
+
+    for (size_t i = 0; i < m_transform_sequence.size(); ++i)
+    {
+        double time;
+        Transformd transform;
+        m_transform_sequence.get_transform(i, time, transform);
+
+        bbox.insert(transform.to_parent(object_instances_bbox));
+    }
+
+    return bbox;
 }
 
 
@@ -103,16 +111,14 @@ GAABB3 AssemblyInstance::compute_parent_bbox() const
 auto_release_ptr<AssemblyInstance> AssemblyInstanceFactory::create(
     const char*         name,
     const ParamArray&   params,
-    const Assembly&     assembly,
-    const Transformd&   transform)
+    const Assembly&     assembly)
 {
     return
         auto_release_ptr<AssemblyInstance>(
             new AssemblyInstance(
                 name,
                 params,
-                assembly,
-                transform));
+                assembly));
 }
 
 }   // namespace renderer

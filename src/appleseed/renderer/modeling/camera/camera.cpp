@@ -79,8 +79,6 @@ Camera::Camera(
 {
     set_name(name);
 
-    m_transform_sequence.set_transform(0.0, Transformd::identity());
-
     impl->m_film_dimensions = extract_film_dimensions();
     impl->m_focal_length = extract_focal_length(impl->m_film_dimensions[0]);
 
@@ -113,6 +111,11 @@ double Camera::get_shutter_open_time() const
 double Camera::get_shutter_close_time() const
 {
     return impl->m_shutter_close_time;
+}
+
+double Camera::get_shutter_middle_time() const
+{
+    return 0.5 * (get_shutter_open_time() + get_shutter_close_time());
 }
 
 const Pyramid3d& Camera::get_view_pyramid() const
