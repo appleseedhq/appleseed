@@ -1008,8 +1008,8 @@ namespace
             Base::start_element(attrs);
 
             m_entity.reset();
-            m_name = get_value(attrs, "name");
-            m_model = get_value(attrs, "model");
+            m_name = Base::get_value(attrs, "name");
+            m_model = Base::get_value(attrs, "model");
         }
 
         virtual void end_element() override
@@ -1022,7 +1022,7 @@ namespace
                     m_entity_type,
                     m_model,
                     m_name,
-                    m_params,
+                    Base::m_params,
                     m_context);
         }
 
