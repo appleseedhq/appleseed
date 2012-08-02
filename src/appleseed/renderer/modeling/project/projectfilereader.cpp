@@ -915,6 +915,7 @@ namespace
         virtual void start_element(const Attributes& attrs)
         {
             ParametrizedElementHandler::start_element(attrs);
+
             m_color_entity.reset();
             m_name = get_value(attrs, "name");
             m_values.clear();
@@ -923,6 +924,8 @@ namespace
 
         virtual void end_element()
         {
+            ParametrizedElementHandler::end_element();
+
             try
             {
                 m_color_entity =
@@ -997,6 +1000,7 @@ namespace
         virtual void start_element(const Attributes& attrs)
         {
             ParametrizedElementHandler::start_element(attrs);
+
             m_texture.reset();
             m_name = get_value(attrs, "name");
             m_model = get_value(attrs, "model");
@@ -1004,6 +1008,8 @@ namespace
 
         virtual void end_element()
         {
+            ParametrizedElementHandler::end_element();
+
             try
             {
                 const TextureFactoryRegistrar::FactoryType* factory =
@@ -1072,6 +1078,7 @@ namespace
         virtual void start_element(const Attributes& attrs)
         {
             ParametrizedElementHandler::start_element(attrs);
+
             m_texture_instance.reset();
             m_name = get_value(attrs, "name");
             m_texture = get_value(attrs, "texture");
@@ -1079,6 +1086,8 @@ namespace
 
         virtual void end_element()
         {
+            ParametrizedElementHandler::end_element();
+
             assert(m_textures);
             const Texture* texture = m_textures->get_by_name(m_texture.c_str());
 
@@ -1186,6 +1195,7 @@ namespace
         virtual void start_element(const Attributes& attrs)
         {
             ParametrizedElementHandler::start_element(attrs);
+
             m_environment.reset();
             m_name = get_value(attrs, "name");
             m_model = get_value(attrs, "model");
@@ -1193,6 +1203,8 @@ namespace
 
         virtual void end_element()
         {
+            ParametrizedElementHandler::end_element();
+
             if (m_model == EnvironmentFactory::get_model())
                 m_environment = EnvironmentFactory::create(m_name.c_str(), m_params);
             else
@@ -1256,8 +1268,6 @@ namespace
       : public EntityElementHandler<Light, LightFactoryRegistrar>
     {
       public:
-        typedef EntityElementHandler<Light, LightFactoryRegistrar> Base;
-
         explicit LightElementHandler(ParseContext& context)
           : Base("light", context)
         {
@@ -1266,12 +1276,14 @@ namespace
         virtual void start_element(const Attributes& attrs)
         {
             Base::start_element(attrs);
+
             m_transform = Transformd(Matrix4d::identity());
         }
 
         virtual void end_element()
         {
             Base::end_element();
+
             m_entity->set_transform(m_transform);
         }
 
@@ -1296,6 +1308,8 @@ namespace
         }
 
       private:
+        typedef EntityElementHandler<Light, LightFactoryRegistrar> Base;
+
         Transformd m_transform;
     };
 
@@ -1316,6 +1330,7 @@ namespace
         virtual void start_element(const Attributes& attrs)
         {
             ParametrizedElementHandler::start_element(attrs);
+
             m_material.reset();
             m_name = get_value(attrs, "name");
             m_model = get_value(attrs, "model");
@@ -1323,6 +1338,8 @@ namespace
 
         virtual void end_element()
         {    
+            ParametrizedElementHandler::end_element();
+
             if (m_model == MaterialFactory::get_model())
                 m_material = MaterialFactory::create(m_name.c_str(), m_params);
             else
@@ -1424,6 +1441,7 @@ namespace
         virtual void start_element(const Attributes& attrs)
         {
             ParametrizedElementHandler::start_element(attrs);
+
             clear_keep_memory(m_objects);
             m_name = get_value(attrs, "name");
             m_model = get_value(attrs, "model");
@@ -1431,6 +1449,8 @@ namespace
 
         virtual void end_element()
         {
+            ParametrizedElementHandler::end_element();
+
             try
             {
                 if (m_model == MeshObjectFactory::get_model())
@@ -1572,6 +1592,7 @@ namespace
         virtual void start_element(const Attributes& attrs)
         {
             ParametrizedElementHandler::start_element(attrs);
+
             m_object_instance.reset();
             m_transform = Transformd(Matrix4d::identity());
             m_front_material_names.clear();
@@ -1582,8 +1603,9 @@ namespace
 
         virtual void end_element()
         {
-            assert(m_objects);
+            ParametrizedElementHandler::end_element();
 
+            assert(m_objects);
             Object* object = m_objects->get_by_name(m_object.c_str());
 
             if (object)
@@ -1694,6 +1716,7 @@ namespace
         virtual void start_element(const Attributes& attrs)
         {
             ParametrizedElementHandler::start_element(attrs);
+
             m_assembly.reset();
             m_name = get_value(attrs, "name");
             m_bsdfs.clear();
@@ -1710,6 +1733,8 @@ namespace
 
         virtual void end_element()
         {
+            ParametrizedElementHandler::end_element();
+
             m_assembly = AssemblyFactory::create(m_name.c_str(), m_params);
             m_assembly->bsdfs().swap(m_bsdfs);
             m_assembly->colors().swap(m_colors);
@@ -1933,6 +1958,7 @@ namespace
         virtual void start_element(const Attributes& attrs)
         {
             ParametrizedElementHandler::start_element(attrs);
+
             m_assembly_instance.reset();
             m_name = get_value(attrs, "name");
             m_assembly = get_value(attrs, "assembly");
@@ -1941,6 +1967,8 @@ namespace
 
         virtual void end_element()
         {
+            ParametrizedElementHandler::end_element();
+
             assert(m_assemblies);
             const Assembly* assembly = m_assemblies->get_by_name(m_assembly.c_str());
 
@@ -2233,12 +2261,15 @@ namespace
         virtual void start_element(const Attributes& attrs)
         {
             ParametrizedElementHandler::start_element(attrs);
+
             m_frame.reset();
             m_name = get_value(attrs, "name");
         }
 
         virtual void end_element()
         {    
+            ParametrizedElementHandler::end_element();
+
             m_frame = FrameFactory::create(m_name.c_str(), m_params);
         }
 
@@ -2321,6 +2352,7 @@ namespace
         virtual void start_element(const Attributes& attrs)
         {
             ParametrizedElementHandler::start_element(attrs);
+
             m_configuration.reset();
             m_name = get_value(attrs, "name");
             m_base_name = get_value(attrs, "base");
@@ -2328,7 +2360,7 @@ namespace
 
         virtual void end_element()
         {    
-            assert(m_project);
+            ParametrizedElementHandler::end_element();
 
             m_configuration =
                 ConfigurationFactory::create(
@@ -2338,6 +2370,7 @@ namespace
             // Handle configuration inheritance.
             if (!m_base_name.empty())
             {
+                assert(m_project);
                 const Configuration* base =
                     m_project->configurations().get_by_name(m_base_name.c_str());
 
