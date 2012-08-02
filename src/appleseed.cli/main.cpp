@@ -294,7 +294,7 @@ namespace
 
     void dump_entity_definitions(Logger& logger)
     {
-        FILE* file = stderr;
+        FILE* file = stdout;
         Indenter indenter(4);
 
         fprintf(file, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
