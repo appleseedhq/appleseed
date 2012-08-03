@@ -852,12 +852,19 @@ namespace
             }
         }
 
-        void copy_transform_sequence_to(TransformSequence& target)
+        void copy_transform_sequence_to(TransformSequence& target) const
         {
             target.clear();
 
             for (const_each<TransformMap> i = m_transforms; i; ++i)
                 target.set_transform(i->first, i->second);
+        }
+
+        Transformd get_earliest_transform() const
+        {
+            TransformSequence sequence;
+            copy_transform_sequence_to(sequence);
+            return sequence.earliest_transform();
         }
 
       private:
@@ -1359,12 +1366,23 @@ namespace
     {
       public:
         explicit LightElementHandler(ParseContext& context)
-          : EntityElementHandler<
-                Light,
-                LightFactoryRegistrar,
-                TransformSequenceElementHandler<ParametrizedElementHandler> >("light", context)
+          : Base("light", context)
         {
         }
+
+        virtual void end_element() override
+        {
+            Base::end_element();
+
+            Base::m_entity->set_transform(Base::get_earliest_transform());
+        }
+
+      private:
+        typedef EntityElementHandler<
+            Light,
+            LightFactoryRegistrar,
+            TransformSequenceElementHandler<ParametrizedElementHandler>
+        > Base;
     };
 
 
@@ -1622,7 +1640,6 @@ namespace
             Base::start_element(attrs);
 
             m_object_instance.reset();
-            m_transform = Transformd(Matrix4d::identity());
             m_front_material_names.clear();
             m_back_material_names.clear();
             m_name = get_value(attrs, "name");
@@ -1643,7 +1660,7 @@ namespace
                         m_name.c_str(),
                         m_params,
                         *object,
-                        m_transform,
+                        Base::get_earliest_transform(),
                         m_front_material_names,
                         m_back_material_names);
             }
@@ -1696,14 +1713,6 @@ namespace
                 }
                 break;
 
-              case ElementTransform:
-                {
-                    TransformElementHandler* transform_handler =
-                        static_cast<TransformElementHandler*>(handler);
-                    m_transform = transform_handler->get_transform();
-                }
-                break;
-
               default:
                 Base::end_child_element(element, handler);
                 break;
@@ -1724,7 +1733,6 @@ namespace
         auto_release_ptr<ObjectInstance>    m_object_instance;
         string                              m_name;
         string                              m_object;
-        Transformd                          m_transform;
         StringArray                         m_front_material_names;
         StringArray                         m_back_material_names;
     };
