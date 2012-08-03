@@ -125,7 +125,7 @@ namespace
                     env_sample_count * env_prob);
 
             // Add the contribution of this sample to the illumination.
-            env_value *= static_cast<float>(transmission * mis_weight / bsdf_prob);
+            env_value *= static_cast<float>(transmission / bsdf_prob * mis_weight);
             env_value *= bsdf_value;
             radiance += env_value;
         }
@@ -204,8 +204,8 @@ namespace
             const double bsdf_prob =
                 bsdf.evaluate(
                     bsdf_data,
-                    false,              // not adjoint
-                    true,               // multiply by |cos(incoming, normal)|
+                    false,          // not adjoint
+                    true,           // multiply by |cos(incoming, normal)|
                     geometric_normal,
                     shading_basis,
                     outgoing,
@@ -238,21 +238,21 @@ namespace
 //
 
 void compute_image_based_lighting(
-    SamplingContext&            sampling_context,
-    const ShadingContext&       shading_context,
-    const EnvironmentEDF&       environment_edf,
-    const Vector3d&             point,
-    const Vector3d&             geometric_normal,
-    const Basis3d&              shading_basis,
-    const double                time,
-    const Vector3d&             outgoing,
-    const BSDF&                 bsdf,
-    const void*                 bsdf_data,
-    const int                   bsdf_modes,
-    const size_t                bsdf_sample_count,
-    const size_t                env_sample_count,
-    Spectrum&                   radiance,
-    const ShadingPoint*         parent_shading_point)
+    SamplingContext&                sampling_context,
+    const ShadingContext&           shading_context,
+    const EnvironmentEDF&           environment_edf,
+    const Vector3d&                 point,
+    const Vector3d&                 geometric_normal,
+    const Basis3d&                  shading_basis,
+    const double                    time,
+    const Vector3d&                 outgoing,
+    const BSDF&                     bsdf,
+    const void*                     bsdf_data,
+    const int                       bsdf_modes,
+    const size_t                    bsdf_sample_count,
+    const size_t                    env_sample_count,
+    Spectrum&                       radiance,
+    const ShadingPoint*             parent_shading_point)
 {
     assert(is_normalized(geometric_normal));
     assert(is_normalized(outgoing));
