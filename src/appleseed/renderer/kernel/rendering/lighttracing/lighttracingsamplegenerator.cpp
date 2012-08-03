@@ -245,7 +245,6 @@ namespace
 
             template <bool IsAreaLight>
             void visit_light_vertex(
-                SamplingContext&            sampling_context,
                 const LightSample&          light_sample,
                 const Spectrum&             light_particle_flux,
                 const double                time)
@@ -256,7 +255,6 @@ namespace
 
                 const double transmission =
                     vertex_visible_to_camera(
-                        sampling_context,    
                         light_sample.m_point,
                         time,
                         sample_position_ndc,
@@ -320,7 +318,6 @@ namespace
 
                 const double transmission =
                     vertex_visible_to_camera(
-                        sampling_context,
                         shading_point.get_point(),
                         shading_point.get_ray().m_time,
                         sample_position_ndc,
@@ -401,7 +398,6 @@ namespace
             size_t                          m_sample_count;         // the number of samples added to m_samples
 
             double vertex_visible_to_camera(
-                SamplingContext&            sampling_context,
                 const Vector3d&             vertex_position_world,
                 const double                time,
                 Vector2d&                   sample_position_ndc,
@@ -428,7 +424,6 @@ namespace
                 // Prevent self-intersections by letting the ray originate from the camera.
                 const double transmission =
                     m_shading_context.get_tracer().trace_between(
-                        sampling_context,
                         m_camera_position,
                         vertex_position_world,
                         time);
@@ -600,7 +595,6 @@ namespace
             Spectrum light_particle_flux = edf_value;       // todo: only works for diffuse EDF? What we need is the light exitance
             light_particle_flux /= static_cast<float>(light_sample.m_probability);
             path_visitor.visit_light_vertex<true>(
-                sampling_context,
                 light_sample,
                 light_particle_flux,
                 light_ray.m_time);
@@ -676,7 +670,6 @@ namespace
             Spectrum light_particle_flux = light_value;
             light_particle_flux /= static_cast<float>(light_sample.m_probability);
             path_visitor.visit_light_vertex<false>(
-                sampling_context,
                 light_sample,
                 light_particle_flux,
                 light_ray.m_time);

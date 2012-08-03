@@ -99,7 +99,6 @@ namespace
             // Compute the transmission factor toward the incoming direction.
             const double transmission =
                 shading_context.get_tracer().trace(
-                    sampling_context,
                     point,
                     incoming,
                     time,
@@ -189,10 +188,8 @@ namespace
                 continue;
 
             // Compute the transmission factor toward the incoming direction.
-            SamplingContext child_sampling_context(sampling_context);
             const double transmission =
                 shading_context.get_tracer().trace(
-                    child_sampling_context,
                     point,
                     incoming,
                     time,

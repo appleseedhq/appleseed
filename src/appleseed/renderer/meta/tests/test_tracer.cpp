@@ -175,7 +175,6 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         TextureCache        m_texture_cache;
         Intersector         m_intersector;
         MersenneTwister     m_rng;
-        SamplingContext     m_sampling_context;
         Tracer              m_tracer;
 
         Fixture()
@@ -183,7 +182,6 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
           , m_texture_store(*Base::m_scene)
           , m_texture_cache(m_texture_store)
           , m_intersector(m_trace_context, m_texture_cache)
-          , m_sampling_context(m_rng, 0, 0, 0)
           , m_tracer(*Base::m_scene, m_intersector, m_texture_cache)
         {
             InputBinder input_binder;
@@ -208,7 +206,6 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         double transmission;
         const ShadingPoint& shading_point =
             m_tracer.trace(
-                m_sampling_context,
                 Vector3d(0.0),
                 Vector3d(1.0, 0.0, 0.0),
                 0.0,
@@ -223,7 +220,6 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         double transmission;
         const ShadingPoint& shading_point =
             m_tracer.trace_between(
-                m_sampling_context,
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
                 0.0,
@@ -247,7 +243,6 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         double transmission;
         const ShadingPoint& shading_point =
             m_tracer.trace(
-                m_sampling_context,
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(1.0, 0.0, 0.0),
                 0.0,
@@ -263,7 +258,6 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         double transmission;
         const ShadingPoint& shading_point =
             m_tracer.trace_between(
-                m_sampling_context,
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
                 0.0,
@@ -288,7 +282,6 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         double transmission;
         const ShadingPoint& shading_point =
             m_tracer.trace(
-                m_sampling_context,
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(1.0, 0.0, 0.0),
                 0.0,
@@ -303,7 +296,6 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         double transmission;
         const ShadingPoint& shading_point =
             m_tracer.trace_between(
-                m_sampling_context,
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
                 0.0,
@@ -328,7 +320,6 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         double transmission;
         const ShadingPoint& shading_point =
             m_tracer.trace(
-                m_sampling_context,
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(1.0, 0.0, 0.0),
                 0.0,
@@ -344,7 +335,6 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         double transmission;
         const ShadingPoint& shading_point =
             m_tracer.trace_between(
-                m_sampling_context,
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
                 0.0,
@@ -360,7 +350,6 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         double transmission;
         const ShadingPoint& shading_point =
             m_tracer.trace_between(
-                m_sampling_context,
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(4.0, 0.0, 0.0),
                 0.0,

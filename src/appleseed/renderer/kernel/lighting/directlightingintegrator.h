@@ -174,14 +174,12 @@ class DirectLightingIntegrator
 
     template <typename WeightingFunction>
     void add_emitting_triangle_sample_contribution(
-        SamplingContext&                sampling_context,
         const LightSample&              sample,
         WeightingFunction&              weighting_function,
         Spectrum&                       radiance,
         SpectrumStack&                  aovs);
 
     void add_light_sample_contribution(
-        SamplingContext&                sampling_context,
         const LightSample&              sample,
         Spectrum&                       radiance,
         SpectrumStack&                  aovs);
@@ -338,9 +336,7 @@ void DirectLightingIntegrator::sample_lights_low_variance(
             LightSample sample;
             m_light_sampler.sample_emitting_triangles(s, sample);
 
-            SamplingContext child_sampling_context(sampling_context);
             add_emitting_triangle_sample_contribution(
-                child_sampling_context,
                 sample,
                 weighting_function,
                 radiance,
@@ -368,12 +364,7 @@ void DirectLightingIntegrator::sample_lights_low_variance(
             LightSample sample;
             m_light_sampler.sample_single_light(i, s, sample);
 
-            SamplingContext child_sampling_context(sampling_context);
-            add_light_sample_contribution(
-                child_sampling_context,
-                sample,
-                radiance,
-                aovs);
+            add_light_sample_contribution(sample, radiance, aovs);
         }
     }
 }
@@ -414,7 +405,6 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     double weight;
     const ShadingPoint& light_shading_point =
         m_shading_context.get_tracer().trace(
-            sampling_context,
             m_point,
             incoming,
             m_time,
@@ -505,12 +495,9 @@ void DirectLightingIntegrator::take_single_light_sample(
     LightSample sample;
     m_light_sampler.sample(s, sample);
 
-    SamplingContext child_sampling_context(sampling_context);
-
     if (sample.m_triangle)
     {
         add_emitting_triangle_sample_contribution(
-            child_sampling_context,
             sample,
             weighting_function,
             radiance,
@@ -518,17 +505,12 @@ void DirectLightingIntegrator::take_single_light_sample(
     }
     else
     {
-        add_light_sample_contribution(
-            child_sampling_context,
-            sample,
-            radiance,
-            aovs);
+        add_light_sample_contribution(sample, radiance, aovs);
     }
 }
 
 template <typename WeightingFunction>
 void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
-    SamplingContext&                    sampling_context,
     const LightSample&                  sample,
     WeightingFunction&                  weighting_function,
     Spectrum&                           radiance,
@@ -552,7 +534,6 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     // Compute the transmission factor between the light sample and the shading point.
     const double transmission =
         m_shading_context.get_tracer().trace_between(
-            sampling_context,
             m_point,
             sample.m_point,
             m_time,

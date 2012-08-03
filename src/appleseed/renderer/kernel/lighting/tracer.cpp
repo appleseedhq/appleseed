@@ -137,7 +137,6 @@ Tracer::Tracer(
 }
 
 const ShadingPoint& Tracer::trace(
-    SamplingContext&        sampling_context,
     const Vector3d&         origin,
     const Vector3d&         direction,
     const double            time,
@@ -220,7 +219,6 @@ const ShadingPoint& Tracer::trace(
 }
 
 double Tracer::trace(
-    SamplingContext&        sampling_context,
     const Vector3d&         origin,
     const Vector3d&         direction,
     const double            time,
@@ -241,7 +239,6 @@ double Tracer::trace(
         double transmission;
         const ShadingPoint& shading_point =
             trace(
-                sampling_context,
                 origin,
                 direction,
                 time,
@@ -259,7 +256,6 @@ namespace
 }
 
 const ShadingPoint& Tracer::trace_between(
-    SamplingContext&        sampling_context,
     const Vector3d&         origin,
     const Vector3d&         target,
     const double            time,
@@ -344,7 +340,6 @@ const ShadingPoint& Tracer::trace_between(
 }
 
 double Tracer::trace_between(
-    SamplingContext&        sampling_context,
     const Vector3d&         origin,
     const Vector3d&         target,
     const double            time,
@@ -367,7 +362,6 @@ double Tracer::trace_between(
         double transmission;
         const ShadingPoint& shading_point =
             trace_between(
-                sampling_context,
                 origin,
                 target,
                 time,
