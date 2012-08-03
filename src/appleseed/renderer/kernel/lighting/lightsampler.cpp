@@ -161,10 +161,6 @@ void LightSampler::collect_emitting_triangles(
     const Scene&            scene,
     const AssemblyInstance& assembly_instance)
 {
-    // Gather light-emitting triangles at the middle of the shutter interval.
-    // todo: add support for moving light-emitters.
-    const double time = scene.get_camera()->get_shutter_middle_time();
-
     // Loop over the object instances of the assembly.
     const Assembly& assembly = assembly_instance.get_assembly();
     const size_t object_instance_count = assembly.object_instances().size();
@@ -182,8 +178,12 @@ void LightSampler::collect_emitting_triangles(
             continue;
 
         // Compute the object space to world space transformation.
+        // todo: add support for moving light-emitters.
         const Transformd& object_instance_transform = object_instance->get_transform();
-        const Transformd assembly_instance_transform = assembly_instance.transform_sequence().evaluate(time);
+        const Transformd assembly_instance_transform =
+            assembly_instance.transform_sequence().empty()
+                ? Transformd(Matrix4d::identity())
+                : assembly_instance.transform_sequence().earliest_transform();
         const Transformd global_transform = assembly_instance_transform * object_instance_transform;
 
         // Retrieve the object.
