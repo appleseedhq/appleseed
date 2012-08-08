@@ -36,6 +36,7 @@
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/utility/paramarray.h"
+#include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/matrix.h"
@@ -65,6 +66,7 @@ TEST_SUITE(Renderer_Modeling_Scene_Scene)
 
     TEST_CASE(ComputeRadius_GivenSceneWithOneAssemblyInstance_ReturnsRadius)
     {
+        // Create a scene.
         auto_release_ptr<Scene> scene(SceneFactory::create());
 
         // Create an assembly.
@@ -89,16 +91,20 @@ TEST_SUITE(Renderer_Modeling_Scene_Scene)
                 StringArray()));
 
         // Create an instance of the assembly.
-        scene->assembly_instances().insert(
+        auto_release_ptr<AssemblyInstance> assembly_instance(
             AssemblyInstanceFactory::create(
                 "assembly_inst",
                 ParamArray(),
-                *assembly,
-                Transformd(
-                    Matrix4d::translation(Vector3d(1.0)) *
-                    Matrix4d::scaling(Vector3d(10.0)))));
+                *assembly));
+        assembly_instance->transform_sequence().set_transform(
+            0.0,
+            Transformd(
+                Matrix4d::translation(Vector3d(1.0)) *
+                Matrix4d::scaling(Vector3d(10.0))));
 
+        // Insert the assembly and the assembly instance into the scene.
         scene->assemblies().insert(assembly);
+        scene->assembly_instances().insert(assembly_instance);
 
         const double radius = scene->compute_radius();
 

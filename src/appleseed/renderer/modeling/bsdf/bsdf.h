@@ -85,7 +85,7 @@ class DLLSYMBOL BSDF
         Diffuse             = 1 << 0,
         Glossy              = 1 << 1,
         Specular            = 1 << 2,
-        MaxScatteringMode
+        AllScatteringModes  = Diffuse | Glossy | Specular
     };
 
     // Use a particular (negative) value as the probability density
@@ -153,6 +153,7 @@ class DLLSYMBOL BSDF
         const foundation::Basis3d&  shading_basis,              // world space orthonormal basis around shading normal
         const foundation::Vector3d& outgoing,                   // world space outgoing direction, unit-length
         const foundation::Vector3d& incoming,                   // world space incoming direction, unit-length
+        const int                   modes,                      // selected scattering modes
         Spectrum&                   value) const = 0;           // BSDF value, or BSDF value * |cos(incoming, normal)|
 
     // Evaluate the PDF for a given pair of directions.
@@ -161,7 +162,8 @@ class DLLSYMBOL BSDF
         const foundation::Vector3d& geometric_normal,           // world space geometric normal, unit-length
         const foundation::Basis3d&  shading_basis,              // world space orthonormal basis around shading normal
         const foundation::Vector3d& outgoing,                   // world space outgoing direction, unit-length
-        const foundation::Vector3d& incoming) const = 0;        // world space incoming direction, unit-length
+        const foundation::Vector3d& incoming,                   // world space incoming direction, unit-length
+        const int                   modes) const = 0;           // selected scattering modes
 
   protected:
     // Force a given direction to lie above a surface described by its normal vector.

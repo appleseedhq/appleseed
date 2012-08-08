@@ -304,6 +304,7 @@ namespace
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
             const Vector3d&     incoming,
+            const int           modes,
             Spectrum&           value) const
         {
             const InputValues* values = static_cast<const InputValues*>(data);
@@ -317,6 +318,9 @@ namespace
             SVal sval;
             get_sval(sval, values);
 
+            value.set(0.0f);
+            double probability = 0.0;
+
             // Compute the halfway vector in world space.
             const Vector3d h = normalize(incoming + outgoing);
 
@@ -329,39 +333,41 @@ namespace
             const double cos_hu = dot(h, shading_basis.get_tangent_u());
             const double cos_hv = dot(h, shading_basis.get_tangent_v());
 
-            // Evaluate the glossy component of the BRDF (equation 4).
-            const double exp_num_u = values->m_nu * cos_hu * cos_hu;
-            const double exp_num_v = values->m_nv * cos_hv * cos_hv;
-            const double exp_den = 1.0 - cos_hn * cos_hn;
-            const double exp = (exp_num_u + exp_num_v) / exp_den;
-            const double num = exp_den == 0.0 ? 0.0 : sval.m_kg * pow(cos_hn, exp);
-            const double den = max(cos_oh, MinCosOH) * (cos_in + cos_on - cos_in * cos_on);
-            Spectrum glossy = schlick_fresnel_reflection(rval.m_scaled_rg, cos_oh);
-            glossy *= static_cast<float>(num / den);
+            if (modes & Diffuse)
+            {
+                // Evaluate the diffuse component of the BRDF (equation 5).
+                const double a = 1.0 - pow5(1.0 - 0.5 * cos_in);
+                const double b = 1.0 - pow5(1.0 - 0.5 * cos_on);
+                Spectrum diffuse = rval.m_kd;
+                diffuse *= static_cast<float>(a * b);
+                value += diffuse;
 
-            // Evaluate the diffuse component of the BRDF (equation 5).
-            const double a = 1.0 - pow5(1.0 - 0.5 * cos_in);
-            const double b = 1.0 - pow5(1.0 - 0.5 * cos_on);
-            Spectrum diffuse = rval.m_kd;
-            diffuse *= static_cast<float>(a * b);
+                // Evaluate the PDF of the diffuse component.
+                const double pdf_diffuse = cos_in * RcpPi;
+                assert(pdf_diffuse >= 0.0);
+                probability += rval.m_pd * pdf_diffuse;
+            }
 
-            // Return the sum of the glossy and diffuse components.
-            value = glossy;
-            value += diffuse;
+            if (modes & Glossy)
+            {
+                // Evaluate the glossy component of the BRDF (equation 4).
+                const double exp_num_u = values->m_nu * cos_hu * cos_hu;
+                const double exp_num_v = values->m_nv * cos_hv * cos_hv;
+                const double exp_den = 1.0 - cos_hn * cos_hn;
+                const double exp = (exp_num_u + exp_num_v) / exp_den;
+                const double num = exp_den == 0.0 ? 0.0 : sval.m_kg * pow(cos_hn, exp);
+                const double den = max(cos_oh, MinCosOH) * (cos_in + cos_on - cos_in * cos_on);
+                Spectrum glossy = schlick_fresnel_reflection(rval.m_scaled_rg, cos_oh);
+                glossy *= static_cast<float>(num / den);
+                value += glossy;
 
-            // Evaluate the PDF of the glossy component (equation 8).
-            const double pdf_glossy = num / cos_oh;     // omit division by 4 since num = pdf(h) / 4
-            assert(pdf_glossy >= 0.0);
+                // Evaluate the PDF of the glossy component (equation 8).
+                const double pdf_glossy = num / cos_oh;     // omit division by 4 since num = pdf(h) / 4
+                assert(pdf_glossy >= 0.0);
+                probability += rval.m_pg * pdf_glossy;
+            }
 
-            // Evaluate the PDF of the diffuse component.
-            const double pdf_diffuse = cos_in * RcpPi;
-            assert(pdf_diffuse >= 0.0);
-
-            // Evaluate the final PDF. Note that the returned probability might be equal to zero,
-            // for instance if m_pd is equal to zero (the BSDF has no diffuse component) and
-            // pdf_glossy is also equal to zero (the value of pdf_glossy depends on the value of
-            // num which might be equal to zero).
-            return rval.m_pd * pdf_diffuse + rval.m_pg * pdf_glossy;
+            return probability;
         }
 
         FORCE_INLINE virtual double evaluate_pdf(
@@ -369,7 +375,8 @@ namespace
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
-            const Vector3d&     incoming) const
+            const Vector3d&     incoming,
+            const int           modes) const
         {
             const InputValues* values = static_cast<const InputValues*>(data);
 
@@ -382,6 +389,8 @@ namespace
             SVal sval;
             get_sval(sval, values);
 
+            double probability = 0.0;
+
             // Compute the halfway vector in world space.
             const Vector3d h = normalize(incoming + outgoing);
 
@@ -394,26 +403,30 @@ namespace
             const double cos_hu = dot(h, shading_basis.get_tangent_u());
             const double cos_hv = dot(h, shading_basis.get_tangent_v());
 
-            // Evaluate the PDF for the halfway vector (equation 6).
-            const double exp_num_u = values->m_nu * cos_hu * cos_hu;
-            const double exp_num_v = values->m_nv * cos_hv * cos_hv;
-            const double exp_den = 1.0 - cos_hn * cos_hn;
-            const double exp = (exp_num_u + exp_num_v) / exp_den;
-            const double num = exp_den == 0.0 ? 0.0 : sval.m_kg * pow(cos_hn, exp);
+            if (modes & Diffuse)
+            {
+                // Evaluate the PDF of the diffuse component.
+                const double pdf_diffuse = cos_in * RcpPi;
+                assert(pdf_diffuse >= 0.0);
+                probability += pdf_diffuse;
+            }
 
-            // Evaluate the PDF of the glossy component (equation 8).
-            const double pdf_glossy = num / cos_oh;     // omit division by 4 since num = pdf(h) / 4
-            assert(pdf_glossy >= 0.0);
+            if (modes & Glossy)
+            {
+                // Evaluate the PDF for the halfway vector (equation 6).
+                const double exp_num_u = values->m_nu * cos_hu * cos_hu;
+                const double exp_num_v = values->m_nv * cos_hv * cos_hv;
+                const double exp_den = 1.0 - cos_hn * cos_hn;
+                const double exp = (exp_num_u + exp_num_v) / exp_den;
+                const double num = exp_den == 0.0 ? 0.0 : sval.m_kg * pow(cos_hn, exp);
 
-            // Evaluate the PDF of the diffuse component.
-            const double pdf_diffuse = cos_in * RcpPi;
-            assert(pdf_diffuse >= 0.0);
+                // Evaluate the PDF of the glossy component (equation 8).
+                const double pdf_glossy = num / cos_oh;     // omit division by 4 since num = pdf(h) / 4
+                assert(pdf_glossy >= 0.0);
+                probability += pdf_glossy;
+            }
 
-            // Evaluate the final PDF. Note that the returned probability might be equal to zero,
-            // for instance if m_pd is equal to zero (the BSDF has no diffuse component) and
-            // pdf_glossy is also equal to zero (the value of pdf_glossy depends on the value of
-            // num which might be equal to zero).
-            return rval.m_pd * pdf_diffuse + rval.m_pg * pdf_glossy;
+            return probability;
         }
 
       private:

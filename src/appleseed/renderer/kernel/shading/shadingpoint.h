@@ -179,6 +179,7 @@ class ShadingPoint
     bool                                m_hit;                          // true if there was a hit, false otherwise
     foundation::Vector2d                m_bary;                         // barycentric coordinates of intersection point
     const AssemblyInstance*             m_assembly_instance;            // hit assembly instance
+    foundation::Transformd              m_assembly_instance_transform;  // transform of the hit assembly instance at ray time
     size_t                              m_object_instance_index;        // index of the object instance that was hit
     size_t                              m_region_index;                 // index of the region containing the hit triangle
     size_t                              m_triangle_index;               // index of the hit triangle
@@ -408,7 +409,7 @@ inline const foundation::Vector3d& ShadingPoint::get_geometric_normal() const
 
             // Transform the geometric normal to world space.
             m_geometric_normal =
-                m_assembly_instance->get_transform().normal_to_parent(
+                m_assembly_instance_transform.normal_to_parent(
                     m_object_instance->get_transform().normal_to_parent(m_geometric_normal));
         }
 
@@ -508,7 +509,7 @@ inline const foundation::Vector3d& ShadingPoint::get_original_shading_normal() c
 
             // Transform the shading normal to world space.
             m_original_shading_normal =
-                m_assembly_instance->get_transform().normal_to_parent(
+                m_assembly_instance_transform.normal_to_parent(
                     m_object_instance->get_transform().normal_to_parent(m_original_shading_normal));
         }
 
@@ -558,10 +559,6 @@ inline const foundation::Vector3d& ShadingPoint::get_vertex(const size_t i) cons
         const foundation::Transformd& obj_instance_transform =
             m_object_instance->get_transform();
 
-        // Retrieve assembly instance space to world space transform.
-        const foundation::Transformd& asm_instance_transform =
-            m_assembly_instance->get_transform();
-
         // Transform triangle vertices to world space.
         const foundation::Vector3d v0(m_v0);
         const foundation::Vector3d v1(m_v1);
@@ -569,9 +566,9 @@ inline const foundation::Vector3d& ShadingPoint::get_vertex(const size_t i) cons
         m_v0_w = obj_instance_transform.point_to_parent(v0);
         m_v1_w = obj_instance_transform.point_to_parent(v1);
         m_v2_w = obj_instance_transform.point_to_parent(v2);
-        m_v0_w = asm_instance_transform.point_to_parent(m_v0_w);
-        m_v1_w = asm_instance_transform.point_to_parent(m_v1_w);
-        m_v2_w = asm_instance_transform.point_to_parent(m_v2_w);
+        m_v0_w = m_assembly_instance_transform.point_to_parent(m_v0_w);
+        m_v1_w = m_assembly_instance_transform.point_to_parent(m_v1_w);
+        m_v2_w = m_assembly_instance_transform.point_to_parent(m_v2_w);
 
         // World space triangle vertices are now available.
         m_members |= HasWorldSpaceVertices;
@@ -593,10 +590,6 @@ inline const foundation::Vector3d& ShadingPoint::get_vertex_normal(const size_t 
         const foundation::Transformd& obj_instance_transform =
             m_object_instance->get_transform();
 
-        // Retrieve assembly instance space to world space transform.
-        const foundation::Transformd& asm_instance_transform =
-            m_assembly_instance->get_transform();
-
         // Transform vertex normals to world space.
         const foundation::Vector3d n0(m_n0);
         const foundation::Vector3d n1(m_n1);
@@ -604,9 +597,9 @@ inline const foundation::Vector3d& ShadingPoint::get_vertex_normal(const size_t 
         m_n0_w = obj_instance_transform.normal_to_parent(n0);
         m_n1_w = obj_instance_transform.normal_to_parent(n1);
         m_n2_w = obj_instance_transform.normal_to_parent(n2);
-        m_n0_w = asm_instance_transform.normal_to_parent(m_n0_w);
-        m_n1_w = asm_instance_transform.normal_to_parent(m_n1_w);
-        m_n2_w = asm_instance_transform.normal_to_parent(m_n2_w);
+        m_n0_w = m_assembly_instance_transform.normal_to_parent(m_n0_w);
+        m_n1_w = m_assembly_instance_transform.normal_to_parent(m_n1_w);
+        m_n2_w = m_assembly_instance_transform.normal_to_parent(m_n2_w);
 
         // World space vertex normals are now available.
         m_members |= HasWorldSpaceVertexNormals;

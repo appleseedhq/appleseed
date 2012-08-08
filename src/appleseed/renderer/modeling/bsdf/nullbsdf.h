@@ -82,6 +82,7 @@ class NullBSDF
         const foundation::Basis3d&      shading_basis,
         const foundation::Vector3d&     outgoing,
         const foundation::Vector3d&     incoming,
+        const int                       modes,
         Spectrum&                       value) const override
     {
         return 0.0;
@@ -92,7 +93,8 @@ class NullBSDF
         const foundation::Vector3d&     geometric_normal,
         const foundation::Basis3d&      shading_basis,
         const foundation::Vector3d&     outgoing,
-        const foundation::Vector3d&     incoming) const override
+        const foundation::Vector3d&     incoming,
+        const int                       modes) const override
     {
         return 0.0;
     }

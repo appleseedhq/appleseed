@@ -30,7 +30,6 @@
 #define APPLESEED_RENDERER_KERNEL_LIGHTING_TRACER_H
 
 // appleseed.renderer headers.
-#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 
 // appleseed.foundation headers.
@@ -65,7 +64,6 @@ class Tracer
     // to (but excluding) this occluder, or a miss if there is no fully opaque
     // occluder in this direction.
     const ShadingPoint& trace(
-        SamplingContext&                sampling_context,
         const foundation::Vector3d&     origin,
         const foundation::Vector3d&     direction,
         const double                    time,
@@ -76,7 +74,6 @@ class Tracer
     // advantage of the fact that the intersection with the closest occluder
     // is not required to deliver higher performances.
     double trace(
-        SamplingContext&                sampling_context,
         const foundation::Vector3d&     origin,
         const foundation::Vector3d&     direction,
         const double                    time,
@@ -87,7 +84,6 @@ class Tracer
     // to (but excluding) this occluder, or a miss if there is no fully opaque
     // occluder in the segment [origin, target).
     const ShadingPoint& trace_between(
-        SamplingContext&                sampling_context,
         const foundation::Vector3d&     origin,
         const foundation::Vector3d&     target,
         const double                    time,
@@ -98,7 +94,6 @@ class Tracer
     // advantage of the fact that the intersection with the closest occluder
     // is not required to deliver higher performances.
     double trace_between(
-        SamplingContext&                sampling_context,
         const foundation::Vector3d&     origin,
         const foundation::Vector3d&     target,
         const double                    time,

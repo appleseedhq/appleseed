@@ -154,8 +154,7 @@ void ProjectBuilder::insert_assembly_instance(
         AssemblyInstanceFactory::create(
             name.c_str(),
             ParamArray(),
-            assembly,
-            Transformd(Matrix4d::identity())));
+            assembly));
 
     m_project_tree.add_item(assembly_instance.get());
 

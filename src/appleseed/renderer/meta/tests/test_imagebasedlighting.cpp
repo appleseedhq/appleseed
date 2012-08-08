@@ -116,6 +116,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_ImageBasedLighting)
             Vector3d(0.0, 1.0, 0.0),
             specular_brdf_ref,
             specular_brdf_data,
+            BSDF::AllScatteringModes,
             1,              // number of samples in BSDF sampling
             0,              // number of samples in environment sampling
             radiance);

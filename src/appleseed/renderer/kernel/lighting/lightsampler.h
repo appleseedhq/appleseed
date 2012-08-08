@@ -156,8 +156,8 @@ class LightSampler
 
     // Collect emitting triangles from a given assembly instance.
     void collect_emitting_triangles(
-        const AssemblyInstance&         assembly_instance,
-        const Assembly&                 assembly);
+        const Scene&                    scene,
+        const AssemblyInstance&         assembly_instance);
 
     // Sample a given light.
     void sample_light(

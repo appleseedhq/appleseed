@@ -55,14 +55,12 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
     TEST_CASE(Clear_GivenSequenceTiedToParent_BumpsParentVersionID)
     {
         Versionable parent;
+        TransformSequence sequence(&parent);
         const VersionID initial_version_id = parent.get_version_id();
 
-        TransformSequence sequence(&parent);
         sequence.clear();
 
-        const VersionID new_version_id = parent.get_version_id();
-
-        EXPECT_GT(initial_version_id, new_version_id);
+        EXPECT_GT(initial_version_id, parent.get_version_id());
     }
 
     TEST_CASE(SetTransform_GivenTimeAtWhichNoTransformExists_AddsTransform)
@@ -97,17 +95,27 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
         EXPECT_EQ(NewTransform, transform);
     }
 
-    TEST_CASE(SetTransform_GivenSequenceTiedToParent_BumpsParentVersionID)
+    TEST_CASE(SetTransform_GivenSequenceTiedToParentAndTimeAtWhichNoTransformExists_BumpsParentVersionID)
     {
         Versionable parent;
+        TransformSequence sequence(&parent);
         const VersionID initial_version_id = parent.get_version_id();
 
-        TransformSequence sequence(&parent);
         sequence.set_transform(1.0, Transformd::identity());
 
-        const VersionID new_version_id = parent.get_version_id();
+        EXPECT_GT(initial_version_id, parent.get_version_id());
+    }
 
-        EXPECT_GT(initial_version_id, new_version_id);
+    TEST_CASE(SetTransform_GivenSequenceTiedToParentAndTimeOfExistingTransform_BumpsParentVersionID)
+    {
+        Versionable parent;
+        TransformSequence sequence(&parent);
+        sequence.set_transform(1.0, Transformd::identity());
+        const VersionID initial_version_id = parent.get_version_id();
+
+        sequence.set_transform(1.0, Transformd::identity());
+
+        EXPECT_GT(initial_version_id, parent.get_version_id());
     }
 
     TEST_CASE(GetEarliestTransform_EarliestTransformIsFirst)
@@ -180,6 +188,18 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
         sequence.set_transform(1.0, Transformd::identity());
 
         EXPECT_EQ(1, sequence.size());
+    }
+
+    TEST_CASE(Evaluate_GivenNoTransform_ReturnsIdentityTransformRegardlessOfTime)
+    {
+        const Transformd ExpectedTransform(Matrix4d::identity());
+
+        TransformSequence sequence;
+        sequence.prepare();
+
+        EXPECT_EQ(ExpectedTransform, sequence.evaluate(0.0));
+        EXPECT_EQ(ExpectedTransform, sequence.evaluate(1.0));
+        EXPECT_EQ(ExpectedTransform, sequence.evaluate(2.0));
     }
 
     TEST_CASE(Evaluate_GivenSingleTransform_ReturnsTransformRegardlessOfTime)

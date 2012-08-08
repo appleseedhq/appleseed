@@ -113,8 +113,7 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
                     AssemblyInstanceFactory::create(
                         "assembly_instance",
                         ParamArray(),
-                        *assembly,
-                        Transformd(Matrix4d::identity()))));
+                        *assembly)));
 
             m_scene->assemblies().insert(assembly);
         }

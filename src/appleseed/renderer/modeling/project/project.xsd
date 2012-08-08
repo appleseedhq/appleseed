@@ -112,7 +112,7 @@
                                                     <xsd:complexType>
                                                         <xsd:complexContent>
                                                             <xsd:extension base="parameterSet">
-                                                                <xsd:sequence>
+                                                                <xsd:sequence maxOccurs="unbounded">
                                                                     <xsd:element name="transform" type="transform" minOccurs="0"/>
                                                                 </xsd:sequence>
                                                                 <xsd:attribute name="name" type="xsd:string" use="required"/>
@@ -146,7 +146,9 @@
                                                         <xsd:complexContent>
                                                             <xsd:extension base="parameterSet">
                                                                 <xsd:sequence>
-                                                                    <xsd:element name="transform" type="transform" minOccurs="0"/>
+                                                                    <xsd:sequence maxOccurs="unbounded">
+                                                                        <xsd:element name="transform" type="transform" minOccurs="0"/>
+                                                                    </xsd:sequence>
                                                                     <xsd:element name="assign_material" minOccurs="0" maxOccurs="unbounded">
                                                                         <xsd:complexType>
                                                                             <xsd:attribute name="slot" type="xsd:nonNegativeInteger" use="required"/>
@@ -183,7 +185,7 @@
                                 <xsd:complexType>
                                     <xsd:complexContent>
                                         <xsd:extension base="parameterSet">
-                                            <xsd:sequence>
+                                            <xsd:sequence maxOccurs="unbounded">
                                                 <xsd:element name="transform" type="transform" minOccurs="0"/>
                                             </xsd:sequence>
                                             <xsd:attribute name="name" type="xsd:string" use="required"/>

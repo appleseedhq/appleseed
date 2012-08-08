@@ -35,6 +35,8 @@ set (sources
     commandlinehandler.cpp
     commandlinehandler.h
     main.cpp
+    progresstilecallback.cpp
+    progresstilecallback.h
 )
 list (APPEND appleseed.cli_sources
     ${sources}

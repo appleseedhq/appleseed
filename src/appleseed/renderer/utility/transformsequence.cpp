@@ -150,8 +150,6 @@ const Transformd& TransformSequence::earliest_transform() const
 
 void TransformSequence::prepare()
 {
-    assert(m_size > 0);
-
     delete [] m_interpolators;
     m_interpolators = 0;
 
@@ -172,7 +170,9 @@ void TransformSequence::prepare()
 
 Transformd TransformSequence::evaluate(const double time) const
 {
-    assert(m_size > 0);
+    if (m_size == 0)
+        return Transformd::identity();
+
     assert(m_size == 1 || m_interpolators != 0);
 
     const TransformKey* first = m_keys;

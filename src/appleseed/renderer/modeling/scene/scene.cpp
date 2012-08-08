@@ -210,10 +210,12 @@ void Scene::on_frame_begin(const Project& project)
     invoke_on_frame_begin(project, environment_edfs());
     invoke_on_frame_begin(project, environment_shaders());
     invoke_on_frame_begin(project, assemblies());
+    invoke_on_frame_begin(project, assembly_instances());
 }
 
 void Scene::on_frame_end(const Project& project)
 {
+    invoke_on_frame_end(project, assembly_instances());
     invoke_on_frame_end(project, assemblies());
     invoke_on_frame_end(project, environment_shaders());
     invoke_on_frame_end(project, environment_edfs());

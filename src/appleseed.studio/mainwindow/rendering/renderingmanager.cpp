@@ -163,15 +163,15 @@ void RenderingManager::start_rendering(
             new CameraController(
                 m_render_widget,
                 m_project->get_scene()));
+
+        connect(
+            m_camera_controller.get(), SIGNAL(signal_camera_changed()),
+            this, SLOT(slot_camera_changed()));
+
+        connect(
+            m_camera_controller.get(), SIGNAL(signal_camera_changed()),
+            this, SIGNAL(signal_camera_changed()));
     }
-
-    connect(
-        m_camera_controller.get(), SIGNAL(signal_camera_changed()),
-        this, SLOT(slot_camera_changed()));
-
-    connect(
-        m_camera_controller.get(), SIGNAL(signal_camera_changed()),
-        this, SIGNAL(signal_camera_changed()));
 
     const bool highlight_tiles = !interactive;
 

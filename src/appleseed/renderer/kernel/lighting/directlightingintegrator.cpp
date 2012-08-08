@@ -48,6 +48,7 @@ DirectLightingIntegrator::DirectLightingIntegrator(
     const Vector3d&             outgoing,
     const BSDF&                 bsdf,
     const void*                 bsdf_data,
+    const int                   bsdf_modes,
     const size_t                bsdf_sample_count,
     const size_t                light_sample_count,
     const ShadingPoint*         parent_shading_point)
@@ -60,6 +61,7 @@ DirectLightingIntegrator::DirectLightingIntegrator(
   , m_outgoing(outgoing)
   , m_bsdf(bsdf)
   , m_bsdf_data(bsdf_data)
+  , m_bsdf_modes(bsdf_modes)
   , m_bsdf_sample_count(bsdf_sample_count)
   , m_light_sample_count(light_sample_count)
   , m_parent_shading_point(parent_shading_point)
@@ -131,7 +133,6 @@ void DirectLightingIntegrator::take_single_bsdf_or_light_sample(
 }
 
 void DirectLightingIntegrator::add_light_sample_contribution(
-    SamplingContext&            sampling_context,
     const LightSample&          sample,
     Spectrum&                   radiance,
     SpectrumStack&              aovs)
@@ -149,7 +150,6 @@ void DirectLightingIntegrator::add_light_sample_contribution(
     // Compute the transmission factor between the light sample and the shading point.
     const double transmission =
         m_shading_context.get_tracer().trace_between(
-            sampling_context,
             m_point,
             sample.m_point,
             m_time,
@@ -178,6 +178,7 @@ void DirectLightingIntegrator::add_light_sample_contribution(
             m_shading_basis,
             m_outgoing,
             incoming,
+            m_bsdf_modes,
             bsdf_value);
     if (bsdf_prob == 0.0)
         return;

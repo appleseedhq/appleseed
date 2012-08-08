@@ -183,6 +183,7 @@ namespace
                     shading_basis,
                     outgoing,
                     incoming,
+                    BSDF::AllScatteringModes,
                     bsdf1_value);
 
             // Blend BSDF values.
@@ -216,6 +217,7 @@ namespace
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
             const Vector3d&     incoming,
+            const int           modes,
             Spectrum&           value) const
         {
             // Retrieve the blending weights.
@@ -244,6 +246,7 @@ namespace
                     shading_basis,
                     outgoing,
                     incoming,
+                    modes,
                     bsdf0_value);
 
             // Evaluate the second BSDF.
@@ -257,6 +260,7 @@ namespace
                     shading_basis,
                     outgoing,
                     incoming,
+                    modes,
                     bsdf1_value);
 
             // Blend BSDF values.
@@ -281,7 +285,8 @@ namespace
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
-            const Vector3d&     incoming) const
+            const Vector3d&     incoming,
+            const int           modes) const
         {
             // Retrieve the blending weights.
             const InputValues* values = static_cast<const InputValues*>(data);
@@ -300,7 +305,8 @@ namespace
                     geometric_normal,
                     shading_basis,
                     outgoing,
-                    incoming);
+                    incoming,
+                    modes);
 
             // Evaluate the PDF of the second BSDF.
             const double bsdf1_prob =
@@ -309,7 +315,8 @@ namespace
                     geometric_normal,
                     shading_basis,
                     outgoing,
-                    incoming);
+                    incoming,
+                    modes);
 
             // Blend PDF values.
             return (bsdf0_prob * w0 + bsdf1_prob * w1) / total_weight;

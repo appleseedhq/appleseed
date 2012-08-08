@@ -28,6 +28,7 @@
 
 // appleseed.cli headers.
 #include "commandlinehandler.h"
+#include "progresstilecallback.h"
 
 // appleseed.shared headers.
 #include "application/application.h"
@@ -36,6 +37,7 @@
 // appleseed.renderer headers.
 #include "renderer/api/bsdf.h"
 #include "renderer/api/camera.h"
+#include "renderer/api/color.h"
 #include "renderer/api/edf.h"
 #include "renderer/api/environmentedf.h"
 #include "renderer/api/environmentshader.h"
@@ -238,6 +240,40 @@ namespace
         print_unit_benchmark_result(logger, result);
     }
 
+    void dump_widget_definitions(
+        const DictionaryArray&  definitions_array,
+        FILE*                   file,
+        Indenter&               indenter)
+    {
+        for (size_t i = 0; i < definitions_array.size(); ++i)
+        {
+            Dictionary definitions = definitions_array[i];
+
+            const string name = definitions.get<string>("name");
+            definitions.strings().remove("name");
+
+            Dictionary wrapped_definitions;
+            wrapped_definitions.insert(name, definitions);
+
+            write_dictionary(wrapped_definitions, file, indenter);
+        }
+    }
+
+    void dump_definitions(
+        const char*             entity_type,
+        const char*             entity_model,
+        const DictionaryArray&  definitions_array,
+        FILE*                   file,
+        Indenter&               indenter)
+    {
+        XMLElement entity_element("entity", file, indenter);
+        entity_element.add_attribute("type", entity_type);
+        entity_element.add_attribute("model", entity_model);
+        entity_element.write(true);
+
+        dump_widget_definitions(definitions_array, file, indenter);
+    }
+
     template <typename FactoryRegistrar>
     void dump_definitions(const char* entity_type, FILE* file, Indenter& indenter)
     {
@@ -247,33 +283,18 @@ namespace
 
         for (size_t i = 0; i < factories.size(); ++i)
         {
-            const typename FactoryRegistrar::FactoryType* factory = factories[i];
-
-            XMLElement entity_element("entity", file, indenter);
-            entity_element.add_attribute("type", entity_type);
-            entity_element.add_attribute("model", factory->get_model());
-            entity_element.write(true);
-
-            const DictionaryArray definitions_array = factory->get_widget_definitions();
-
-            for (size_t j = 0; j < definitions_array.size(); ++j)
-            {
-                Dictionary definitions = definitions_array[j];
-
-                const string name = definitions.get<string>("name");
-                definitions.strings().remove("name");
-
-                Dictionary wrapped_definitions;
-                wrapped_definitions.insert(name, definitions);
-
-                write_dictionary(wrapped_definitions, file, indenter);
-            }
+            dump_definitions(
+                entity_type,
+                factories[i]->get_model(),
+                factories[i]->get_widget_definitions(),
+                file,
+                indenter);
         }
     }
 
     void dump_entity_definitions(Logger& logger)
     {
-        FILE* file = stderr;
+        FILE* file = stdout;
         Indenter indenter(4);
 
         fprintf(file, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
@@ -287,6 +308,7 @@ namespace
 
         dump_definitions<BSDFFactoryRegistrar>("bsdf", file, indenter);
         dump_definitions<CameraFactoryRegistrar>("camera", file, indenter);
+        dump_definitions("color", "color", ColorEntityFactory::get_widget_definitions(), file, indenter);
         dump_definitions<EDFFactoryRegistrar>("edf", file, indenter);
         dump_definitions<EnvironmentEDFFactoryRegistrar>("environment_edf", file, indenter);
         dump_definitions<EnvironmentShaderFactoryRegistrar>("environment_shader", file, indenter);
@@ -470,10 +492,12 @@ namespace
 
         // Create the master renderer.
         DefaultRendererController renderer_controller;
+        ProgressTileCallbackFactory tile_callback_factory;
         MasterRenderer renderer(
             project.ref(),
             params,
-            &renderer_controller);
+            &renderer_controller,
+            &tile_callback_factory);
 
         // Render the frame.
         Stopwatch<DefaultWallclockTimer> stopwatch;

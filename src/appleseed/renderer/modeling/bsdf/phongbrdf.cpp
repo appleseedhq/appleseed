@@ -100,6 +100,7 @@ namespace
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
             const Vector3d&     incoming,
+            const int           modes,
             Spectrum&           value) const
         {
             throw ExceptionNotImplemented();
@@ -111,7 +112,8 @@ namespace
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
-            const Vector3d&     incoming) const
+            const Vector3d&     incoming,
+            const int           modes) const
         {
             throw ExceptionNotImplemented();
             return 0.0;
