@@ -26,39 +26,35 @@
 //
 
 // Has to be first, to avoid redifinition warnings.
-#include <Python.h>
+#include "bind_auto_release_ptr.h"
 
-#include <boost/python.hpp>
+#include "foundation/math/matrix.h"
 
-// Prototypes
-void bind_assembly();
-void bind_bsdf();
-void bind_camera();
-void bind_entity();
-void bind_frame();
-void bind_master_renderer();
-void bind_matrix();
-void bind_project();
-void bind_renderer_controller();
-void bind_scene();
-void bind_transform();
-void bind_utility();
-void bind_vector();
+namespace bpy = boost::python;
+using namespace foundation;
 
-// appleseed python module
-BOOST_PYTHON_MODULE( _appleseed)
+namespace
 {
-    bind_assembly();
-    bind_bsdf();
-    bind_camera();
-    bind_entity();
-    bind_frame();
-    bind_master_renderer();
-	bind_matrix();
-	bind_project();
-	bind_renderer_controller();
-    bind_scene();
-    bind_transform();
-	bind_utility();
-    bind_vector();
+
+// gcc 4.5 does not compile this if name is a const char *
+// probably a bug.
+template<class T>
+void bind_typed_matrix4( const std::string& class_name)
+{
+    bpy::class_<Matrix<T,4,4> >( class_name.c_str())
+        ;
+}
+
+} // unnamed
+
+void bind_matrix()
+{
+    //bpy::class_<Matrix<float,4,4> >( "Matrix4f")
+    //    ;
+
+    //bpy::class_<Matrix<double,4,4> >( "Matrix4d")
+    //    ;
+
+    bind_typed_matrix4<float>( "Matrix4f");
+    bind_typed_matrix4<double>( "Matrix4d");
 }

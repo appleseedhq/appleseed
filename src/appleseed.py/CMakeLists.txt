@@ -46,14 +46,26 @@ find_package (Boost 1.46 REQUIRED date_time filesystem regex system thread pytho
 set (sources
     module.cpp
 
+    bind_assembly.cpp
+    bind_bbox.cpp
     bind_bsdf.cpp
     bind_camera.cpp
+    bind_color.cpp
+    bind_edf.cpp
     bind_entity.cpp
+    bind_environment.cpp
     bind_frame.cpp
+    bind_light.cpp
     bind_master_renderer.cpp
+    bind_material.cpp
+    bind_matrix.cpp
+    bind_object.cpp
     bind_project.cpp
     bind_renderer_controller.cpp
     bind_scene.cpp
+    bind_surface_shader.cpp
+    bind_texture.cpp
+    bind_transform.cpp
     bind_utility.cpp
     bind_vector.cpp
 

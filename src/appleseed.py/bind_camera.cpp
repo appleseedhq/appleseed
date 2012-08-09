@@ -56,13 +56,23 @@ auto_release_ptr<Camera> create_camera( const std::string& camera_type, const st
     return f->create( name.c_str(), bpy_dict_to_param_array( params));
 }
 
+TransformSequence *camera_get_transform_sequence( Camera *cam)
+{
+    return &( cam->transform_sequence());
+}
+
 } // unnamed
 
 void bind_camera()
 {
     bpy::class_<Camera, auto_release_ptr<Camera>, bpy::bases<Entity>, boost::noncopyable>( "Camera", bpy::no_init)
         .def( "create", create_camera).staticmethod( "create")
-
+        .def( "get_model", &Camera::get_model)
+        .def( "transform_sequence", camera_get_transform_sequence, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def( "get_film_dimensions", &Camera::get_film_dimensions, bpy::return_value_policy<bpy::copy_const_reference>())
         .def( "get_focal_length", &Camera::get_focal_length)
+        .def( "get_shutter_open_time", &Camera::get_shutter_open_time)
+        .def( "get_shutter_close_time", &Camera::get_shutter_close_time)
+        .def( "get_shutter_middle_time", &Camera::get_shutter_middle_time)
         ;
 }

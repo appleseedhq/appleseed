@@ -28,7 +28,7 @@
 // Has to be first, to avoid redifinition warnings.
 #include "bind_auto_release_ptr.h"
 
-#include "renderer/api/scene.h"
+#include "renderer/modeling/scene/scene.h"
 
 namespace bpy = boost::python;
 using namespace foundation;
@@ -54,6 +54,22 @@ void bind_scene()
         .def( "set_camera", &Scene::set_camera)
         .def( "get_camera", &Scene::get_camera, bpy::return_value_policy<bpy::reference_existing_object>())
 
+        .def( "get_environment", &Scene::get_environment, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def( "set_environment", &Scene::set_environment)
+
+        .def( "colors", &Scene::colors, bpy::return_value_policy<bpy::reference_existing_object>())
+
+        .def( "textures", &Scene::textures, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def( "texture_instances", &Scene::texture_instances, bpy::return_value_policy<bpy::reference_existing_object>())
+
+        .def( "environment_edfs", &Scene::environment_edfs, bpy::return_value_policy<bpy::reference_existing_object>())
+
+        .def( "environment_shaders", &Scene::environment_shaders, bpy::return_value_policy<bpy::reference_existing_object>())
+
+        .def( "assemblies", &Scene::assemblies, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def( "assembly_instances", &Scene::assembly_instances, bpy::return_value_policy<bpy::reference_existing_object>())
+
+        .def( "compute_bbox", &Scene::compute_bbox)
         .def( "compute_radius", &Scene::compute_radius)
         ;
 }

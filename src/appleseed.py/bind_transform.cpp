@@ -26,39 +26,42 @@
 //
 
 // Has to be first, to avoid redifinition warnings.
-#include <Python.h>
+#include "bind_auto_release_ptr.h"
 
-#include <boost/python.hpp>
+#include "renderer/utility/transformsequence.h"
 
-// Prototypes
-void bind_assembly();
-void bind_bsdf();
-void bind_camera();
-void bind_entity();
-void bind_frame();
-void bind_master_renderer();
-void bind_matrix();
-void bind_project();
-void bind_renderer_controller();
-void bind_scene();
-void bind_transform();
-void bind_utility();
-void bind_vector();
+namespace bpy = boost::python;
+using namespace foundation;
+using namespace renderer;
 
-// appleseed python module
-BOOST_PYTHON_MODULE( _appleseed)
+namespace
 {
-    bind_assembly();
-    bind_bsdf();
-    bind_camera();
-    bind_entity();
-    bind_frame();
-    bind_master_renderer();
-	bind_matrix();
-	bind_project();
-	bind_renderer_controller();
-    bind_scene();
-    bind_transform();
-	bind_utility();
-    bind_vector();
+
+template<class T>
+void bind_typed_transform( const char *class_name)
+{
+    typedef typename Transform<T>::MatrixType MatrixType;
+
+    bpy::class_<Transform<T> >( class_name)
+        .def( bpy::init<const MatrixType&>())
+        .def( bpy::init<const MatrixType&, const MatrixType&>())
+
+        .def( "identity", &Transform<T>::identity).staticmethod( "identity")
+
+        .def( "get_local_to_parent", &Transform<T>::get_local_to_parent, bpy::return_value_policy<bpy::copy_const_reference>())
+        .def( "get_parent_to_local", &Transform<T>::get_parent_to_local, bpy::return_value_policy<bpy::copy_const_reference>())
+
+        .def( bpy::self * bpy::self)
+        ;
+}
+
+} // unnamed
+
+void bind_transform()
+{
+    bind_typed_transform<float>( "Transformf");
+    bind_typed_transform<double>( "Transformd");
+
+    bpy::class_<TransformSequence, boost::noncopyable>( "TransformSequence", bpy::no_init)
+        ;
 }
