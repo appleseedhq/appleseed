@@ -46,6 +46,7 @@ find_package (Boost 1.46 REQUIRED date_time filesystem regex system thread pytho
 set (sources
     module.cpp
 
+    bind_bsdf.cpp
     bind_camera.cpp
     bind_entity.cpp
     bind_frame.cpp
