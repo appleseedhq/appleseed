@@ -28,10 +28,12 @@
 
 #include "py_utility.hpp"
 
-namespace bpy = boost::python;
+#include "foundation/utility/string.h"
+#include "foundation/math/vector.h"
 
-namespace renderer
-{
+namespace bpy = boost::python;
+using namespace foundation;
+using namespace renderer;
 
 ParamArray bpy_dict_to_param_array( const bpy::dict& d)
 {
@@ -45,6 +47,7 @@ ParamArray bpy_dict_to_param_array( const bpy::dict& d)
         bpy::object key( keys[i] );
         bpy::object value( values[i] );
 
+        // keys
         bpy::extract<const char*> key_extractor( key );
         if( !key_extractor.check() )
         {
@@ -102,10 +105,45 @@ ParamArray bpy_dict_to_param_array( const bpy::dict& d)
     return result;
 }
 
-boost::python::dict param_array_to_bpy_dict( const ParamArray& array)
+bpy::object obj_from_string( const std::string& str)
 {
-    // TODO: implment this.
-    return bpy::dict();
+    // guess the type of the value represented by str.
+    try
+    {
+        bool b = from_string<bool>( str);
+        return bpy::object( b);
+    }
+    catch( ExceptionStringConversionError&) {}
+
+    try
+    {
+        double d = from_string<double>( str);
+        return bpy::object( d);
+    }
+    catch( ExceptionStringConversionError&) {}
+
+    // as a fallback, return a string
+    return bpy::object( str);
 }
 
-}       // namespace renderer
+bpy::dict dictionary_to_bpy_dict( const Dictionary& dict)
+{
+    bpy::dict result;
+
+    for( StringDictionary::const_iterator it( dict.strings().begin()), e( dict.strings().end()); it != e; ++it)
+        result[it.name()] = obj_from_string( it.value());
+
+    for( DictionaryDictionary::const_iterator it( dict.dictionaries().begin()), e( dict.dictionaries().end()); it != e; ++it)
+    {
+        // recurse
+        result[it.name()] = dictionary_to_bpy_dict( it.value());
+    }
+
+    return result;
+}
+
+// Keep this for a bit, in case ParamArray needs special handling.
+bpy::dict param_array_to_bpy_dict( const ParamArray& array)
+{
+    return dictionary_to_bpy_dict( array);
+}

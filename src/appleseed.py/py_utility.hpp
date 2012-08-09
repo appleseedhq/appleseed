@@ -36,12 +36,7 @@
 
 #include "renderer/utility/paramarray.h"
 
-namespace renderer
-{
+renderer::ParamArray bpy_dict_to_param_array( const boost::python::dict& d);
+boost::python::dict param_array_to_bpy_dict( const renderer::ParamArray& array);
 
-ParamArray bpy_dict_to_param_array( const boost::python::dict& d);
-boost::python::dict param_array_to_bpy_dict( const ParamArray& array);
-
-}       // namespace renderer
-
-#endif  // !APPLESEED_PY_RENDERER_UTILITY_H
+#endif
