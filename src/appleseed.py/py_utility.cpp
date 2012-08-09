@@ -35,9 +35,23 @@ namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 
-ParamArray bpy_dict_to_param_array( const bpy::dict& d)
+ParamArray& push_dict( ParamArray& dict, const char *name)
 {
-    ParamArray result;
+    return dict.push( name);
+}
+
+Dictionary& push_dict( Dictionary& dict, const char *name)
+{
+    if( !dict.dictionaries().exist( name))
+        dict.dictionaries().insert( name, Dictionary());
+
+    return dict.dictionaries().get( name);
+}
+
+template<class Dict>
+Dict convert_from_bpy_dict( const bpy::dict& d)
+{
+    Dict result;
 
     bpy::list values = d.values();
     bpy::list keys = d.keys();
@@ -85,8 +99,7 @@ ParamArray bpy_dict_to_param_array( const bpy::dict& d)
             }
         }
 
-        // ...
-        // TODO: check more types here... (est.)
+        // TODO: check more types here if needed... (est.)
 
         // dict
         {
@@ -94,15 +107,25 @@ ParamArray bpy_dict_to_param_array( const bpy::dict& d)
             if( extractor.check())
             {
                 // recurse
-                result.push( key_extractor()) = bpy_dict_to_param_array( extractor());
+                push_dict( result, key_extractor()) = convert_from_bpy_dict<Dict>( extractor());
             }
         }
 
-        PyErr_SetString( PyExc_TypeError, "Incompatible value type - must be XXX." );
+        PyErr_SetString( PyExc_TypeError, "Incompatible value type - must be string, int, double or dictionary." );
         bpy::throw_error_already_set();
     }
 
     return result;
+}
+
+Dictionary bpy_dict_to_dict( const bpy::dict& d)
+{
+    return convert_from_bpy_dict<Dictionary>( d);
+}
+
+ParamArray bpy_dict_to_param_array( const bpy::dict& d)
+{
+    return convert_from_bpy_dict<ParamArray>( d);
 }
 
 bpy::object obj_from_string( const std::string& str)
