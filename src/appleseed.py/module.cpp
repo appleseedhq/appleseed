@@ -48,10 +48,11 @@ void bind_vector();
 // appleseed python module
 BOOST_PYTHON_MODULE( _appleseed)
 {
+    bind_entity();
+
     bind_assembly();
     bind_bsdf();
     bind_camera();
-    bind_entity();
     bind_frame();
     bind_master_renderer();
 	bind_matrix();

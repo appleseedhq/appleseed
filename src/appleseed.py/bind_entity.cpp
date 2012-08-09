@@ -108,7 +108,7 @@ void bind_entity()
         .def( "get_render_layer_index", &Entity::get_render_layer_index)
         ;
 
-    bpy::class_<ConnectableEntity, bpy::bases<Entity>, boost::noncopyable>( "ConnectableEntity", bpy::no_init)
+    bpy::class_<ConnectableEntity, auto_release_ptr<ConnectableEntity>, bpy::bases<Entity>, boost::noncopyable>( "ConnectableEntity", bpy::no_init)
         ;
 
     bpy::class_<EntityVector, boost::noncopyable>( "EntityVector")
