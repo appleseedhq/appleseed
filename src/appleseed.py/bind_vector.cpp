@@ -136,27 +136,27 @@ void do_bind_vector( const char *class_name)
         .def( "__init__", bpy::make_constructor( &construct_from_list<T,N>))
 
         // operator[]
-		.def("__getitem__", &vector_indexer<T,N>::get)
-		.def("__setitem__", &vector_indexer<T,N>::set)
+		.def( "__getitem__", &vector_indexer<T,N>::get)
+		.def( "__setitem__", &vector_indexer<T,N>::set)
 
 		// operators
-		.def(bpy::self += bpy::self)
-		.def(bpy::self + bpy::self)
-		.def(bpy::self -= bpy::self)
-		.def(bpy::self - bpy::self)
+		.def( bpy::self += bpy::self)
+		.def( bpy::self + bpy::self)
+		.def( bpy::self -= bpy::self)
+		.def( bpy::self - bpy::self)
 
-		.def(bpy::self *= T())
-		.def(bpy::self * T())
-		.def(T() * bpy::self)
+		.def( bpy::self *= T())
+		.def( bpy::self * T())
+		.def( T() * bpy::self)
 
-		.def(bpy::self /= T())
-		.def(bpy::self / bpy::self)
-		.def(bpy::self / T())
+		.def( bpy::self /= T())
+		.def( bpy::self / bpy::self)
+		.def( bpy::self / T())
 
-		.def(-bpy::self)
+		.def( -bpy::self)
 
-		.def(bpy::self == bpy::self)
-		.def(bpy::self != bpy::self)
+		.def( bpy::self == bpy::self)
+		.def( bpy::self != bpy::self)
         ;
 }
 
