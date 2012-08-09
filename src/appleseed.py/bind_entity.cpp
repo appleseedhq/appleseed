@@ -25,11 +25,16 @@
 // THE SOFTWARE.
 //
 
+// Has to be first, to avoid redifinition warnings.
+#include "Python.h"
+
 #include "bind_auto_release_ptr.h"
 
 #include <string>
 
 #include "renderer/modeling/entity/entity.h"
+#include "renderer/modeling/entity/connectableentity.h"
+
 #include "renderer/modeling/entity/entityvector.h"
 #include "renderer/modeling/entity/entitymap.h"
 
@@ -37,6 +42,8 @@
 #include "renderer/modeling/scene/assemblyinstance.h"
 
 #include "renderer/modeling/project/configuration.h"
+
+#include "py_utility.hpp"
 
 namespace bpy = boost::python;
 using namespace foundation;
@@ -51,7 +58,10 @@ Entity *get_item( EntityVector& vec, int index)
         index = vec.size() - index;
 
     if( index < 0 || index >= vec.size())
-        throw std::out_of_range("");
+    {
+        PyErr_SetString( PyExc_IndexError, "Invalid index in appleseed.EntityVector" );
+        bpy::throw_error_already_set();
+    }
 
     return vec.get_by_index( index);
 }
@@ -61,6 +71,16 @@ void bind_typed_entity_map( const char *name)
 {
     bpy::class_<TypedEntityMap<T>, bpy::bases<EntityMap>, boost::noncopyable> X( name)
         ;
+}
+
+bpy::dict entity_get_parameters( const Entity *e)
+{
+    return param_array_to_bpy_dict( e->get_parameters());
+}
+
+void entity_set_parameters( Entity *e, const bpy::dict& params)
+{
+    e->get_parameters() = bpy_dict_to_param_array( params);
 }
 
 } // unnamed
@@ -78,11 +98,17 @@ void bind_entity()
         .def( "get_name", &Entity::get_name)
         .def( "set_name", &Entity::set_name)
 
+        .def( "get_parameters", entity_get_parameters)
+        .def( "set_parameters", entity_set_parameters)
+
         .def( "get_render_layer_name", &Entity::get_render_layer_name)
         .def( "set_render_layer_name", &Entity::set_render_layer_name)
 
         .def( "set_render_layer_index", &Entity::set_render_layer_index)
         .def( "get_render_layer_index", &Entity::get_render_layer_index)
+        ;
+
+    bpy::class_<ConnectableEntity, bpy::bases<Entity>, boost::noncopyable>( "ConnectableEntity", bpy::no_init)
         ;
 
     bpy::class_<EntityVector, boost::noncopyable>( "EntityVector")
