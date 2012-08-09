@@ -57,7 +57,7 @@ Entity *get_item( EntityVector& vec, int index)
 }
 
 template<class T>
-void bind_typed_entity_name( const char *name)
+void bind_typed_entity_map( const char *name)
 {
     bpy::class_<TypedEntityMap<T>, bpy::bases<EntityMap>, boost::noncopyable> X( name)
         ;
@@ -109,7 +109,7 @@ void bind_entity()
         //.def( "__iter__", bpy::iterator<EntityMap>())
         ;
 
-    bind_typed_entity_name<Configuration>( "ConfigurationContainer");
-    bind_typed_entity_name<Assembly>( "AssemblyContainer");
-    bind_typed_entity_name<AssemblyInstance>( "AssemblyInstanceContainer");
+    bind_typed_entity_map<Configuration>( "ConfigurationContainer");
+    bind_typed_entity_map<Assembly>( "AssemblyContainer");
+    bind_typed_entity_map<AssemblyInstance>( "AssemblyInstanceContainer");
 }

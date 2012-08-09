@@ -43,8 +43,8 @@ Vector<T,N> *construct_from_list( bpy::list l)
 {
 	if( bpy::len( l) != N)
 	{
-		//throw InvalidArgumentException( std::string( "Invalid list length given to IECore." ) + typeName<V>() + " constructor" );
-		// TODO.
+        PyErr_SetString( PyExc_RuntimeError, "Invalid list length given to appleseed.Vector" );
+        bpy::throw_error_already_set();
 	}
 
 	Vector<T,N> *r = new Vector<T,N>();
@@ -54,8 +54,8 @@ Vector<T,N> *construct_from_list( bpy::list l)
 		bpy::extract<T> ex( l[i]);
 		if( !ex.check())
 		{
-			//throw InvalidArgumentException( std::string( "Invalid list element given to IECore." ) + typeName<V>() + " constructor" );
-			// TODO.
+            PyErr_SetString( PyExc_RuntimeError, "Invalid list length given to appleseed.Vector" );
+            bpy::throw_error_already_set();
 		}
 
 		(*r)[i] = ex();
@@ -63,6 +63,48 @@ Vector<T,N> *construct_from_list( bpy::list l)
 
 	return r;
 }
+
+template<class T, size_t N>
+struct vector_constructor {};
+
+template<class T>
+struct vector_constructor<T,2>
+{
+    static Vector<T,2> *construct( T x, T y)
+    {
+        Vector<T,2> *r = new Vector<T,2>();
+        (*r)[0] = x;
+        (*r)[1] = y;
+        return r;
+    }
+};
+
+template<class T>
+struct vector_constructor<T,3>
+{
+    static Vector<T,3> *construct( T x, T y, T z)
+    {
+        Vector<T,3> *r = new Vector<T,3>();
+        (*r)[0] = x;
+        (*r)[1] = y;
+        (*r)[2] = z;
+        return r;
+    }
+};
+
+template<class T>
+struct vector_constructor<T,4>
+{
+    static Vector<T,4> *construct( T x, T y, T z, T w)
+    {
+        Vector<T,4> *r = new Vector<T,4>();
+        (*r)[0] = x;
+        (*r)[1] = y;
+        (*r)[2] = z;
+        (*r)[3] = w;
+        return r;
+    }
+};
 
 template<typename T, size_t N>
 struct vector_indexer
@@ -72,7 +114,7 @@ struct vector_indexer
 		if ( i >= 0 && i < N )
 			return x[i];
 		else
-			throw std::out_of_range("");
+			throw std::out_of_range( "");
 	}
 
 	static void set( Vector<T,N>& x, int i, const T& v)
@@ -90,8 +132,10 @@ void do_bind_vector( const char *class_name)
     bpy::class_<Vector<T,N> >( class_name)
         .def( bpy::init<>())
         .def( bpy::init<T>())
-
+        .def( "__init__", bpy::make_constructor( &vector_constructor<T,N>::construct))
         .def( "__init__", bpy::make_constructor( &construct_from_list<T,N>))
+
+        // operator[]
 		.def("__getitem__", &vector_indexer<T,N>::get)
 		.def("__setitem__", &vector_indexer<T,N>::set)
 

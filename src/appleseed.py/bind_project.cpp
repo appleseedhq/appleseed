@@ -44,11 +44,35 @@ auto_release_ptr<Project> create_project( const std::string& name)
     return ProjectFactory::create( name.c_str());
 }
 
+auto_release_ptr<Project> create_default_project()
+{
+    return DefaultProjectFactory::create();
+}
+
+auto_release_ptr<Project> create_cornell_box_project()
+{
+    return CornellBoxProjectFactory::create();
+}
+
+bool write_project_default_opts( ProjectFileWriter *writer, const Project *project, const char *filepath)
+{
+    return ProjectFileWriter::write( *project, filepath);
+}
+
+bool write_project_with_opts( ProjectFileWriter *writer, const Project *project,
+                                const char *filepath, ProjectFileWriter::Options opts)
+{
+    return ProjectFileWriter::write( *project, filepath, opts);
+}
+
 } // unnamed
 
 void bind_project()
 {
-    bpy::class_<Project, auto_release_ptr<Project>, bpy::bases<Entity>, boost::noncopyable>( "Project", bpy::no_init)
+    bpy::class_<Project, auto_release_ptr<Project>, bpy::bases<Entity>, boost::noncopyable>( "Project", bpy::no_init)    
+        .def( "create_default", create_default_project).staticmethod( "create_default")
+        .def( "create_cornell_box", create_cornell_box_project).staticmethod( "create_cornell_box")
+
         .def( "__init__", bpy::make_constructor( create_project))
 
         .def( "has_path", &Project::has_path)
@@ -62,5 +86,27 @@ void bind_project()
         .def( "get_frame", &Project::get_frame, bpy::return_value_policy<bpy::reference_existing_object>())
 
         .def( "create_aov_images", &Project::create_aov_images)
+        ;
+
+    bpy::class_<Configuration, auto_release_ptr<Configuration>, boost::noncopyable>( "Configuration", bpy::no_init)
+        ;
+
+    bpy::class_<ProjectFileReader>( "ProjectFileReader")
+        .def( "read", &ProjectFileReader::read)
+        .def( "load_builtin", &ProjectFileReader::load_builtin)
+        ;
+
+    bpy::enum_<ProjectFileWriter::Options>( "ProjectFileWriterOptions")
+        .value( "Defaults"              , ProjectFileWriter::Defaults)
+        .value( "OmitHeaderComment"     , ProjectFileWriter::OmitHeaderComment)
+        .value( "OmitWritingMeshFiles"  , ProjectFileWriter::OmitWritingMeshFiles)
+        .value( "OmitCopyingAssets"     , ProjectFileWriter::OmitCopyingAssets)
+        ;
+
+    bpy::class_<ProjectFileWriter>( "ProjectFileWriter")
+        // These methods are static, but for symmetry with
+        // ProjectFileReader, I'm wrapping them non static.
+        .def( "write", write_project_default_opts)
+        .def( "write", write_project_with_opts)
         ;
 }

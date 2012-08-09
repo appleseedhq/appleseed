@@ -25,6 +25,25 @@
 // THE SOFTWARE.
 //
 
+// Has to be first, to avoid redifinition warnings.
+#include "Python.h"
+
+#include <boost/python.hpp>
+namespace bpy = boost::python;
+
+#include "renderer/modeling/project/eventcounters.h"
+using namespace renderer;
+
 void bind_utility()
 {
+    bpy::class_<EventCounters, boost::noncopyable>( "EventCounters")
+        .def( "clear", &EventCounters::clear)
+        .def( "signal_warning", &EventCounters::signal_warning)
+        .def( "signal_warnings", &EventCounters::signal_warnings)
+        .def( "signal_error", &EventCounters::signal_error)
+        .def( "signal_errors", &EventCounters::signal_errors)
+        .def( "get_warning_count", &EventCounters::get_warning_count)
+        .def( "get_error_count", &EventCounters::get_error_count)
+        .def( "has_errors", &EventCounters::has_errors)
+        ;
 }
