@@ -31,6 +31,7 @@
 #include <boost/python.hpp>
 
 // Prototypes
+void bind_bsdf();
 void bind_camera();
 void bind_entity();
 void bind_frame();
@@ -44,13 +45,14 @@ void bind_vector();
 // appleseed python module
 BOOST_PYTHON_MODULE( _appleseed)
 {
-    bind_vector();
-	bind_utility();
-    bind_entity();
+    bind_bsdf();
     bind_camera();
+    bind_entity();
     bind_frame();
-    bind_scene();
+    bind_master_renderer();
 	bind_project();
 	bind_renderer_controller();
-    bind_master_renderer();
+    bind_scene();
+	bind_utility();
+    bind_vector();
 }
