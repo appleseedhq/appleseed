@@ -32,6 +32,8 @@
 #include "renderer/api/scene.h"
 #include "renderer/api/frame.h"
 
+#include "py_utility.hpp"
+
 namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
@@ -54,15 +56,41 @@ auto_release_ptr<Project> create_cornell_box_project()
     return CornellBoxProjectFactory::create();
 }
 
-bool write_project_default_opts( ProjectFileWriter *writer, const Project *project, const char *filepath)
+bool write_project_default_opts( const ProjectFileWriter *writer, const Project *project, const char *filepath)
 {
     return ProjectFileWriter::write( *project, filepath);
 }
 
-bool write_project_with_opts( ProjectFileWriter *writer, const Project *project,
+bool write_project_with_opts( const ProjectFileWriter *writer, const Project *project,
                                 const char *filepath, ProjectFileWriter::Options opts)
 {
     return ProjectFileWriter::write( *project, filepath, opts);
+}
+
+auto_release_ptr<Configuration> create_config( const std::string& name)
+{
+    return ConfigurationFactory::create( name.c_str());
+}
+
+auto_release_ptr<Configuration> create_config_with_params( const std::string& name, const bpy::dict& params)
+{
+    return ConfigurationFactory::create( name.c_str(), bpy_dict_to_param_array( params));
+}
+
+auto_release_ptr<Configuration> create_base_final_config()
+{
+    return BaseConfigurationFactory::create_base_final();
+}
+
+auto_release_ptr<Configuration> create_base_interactive_config()
+{
+    return BaseConfigurationFactory::create_base_interactive();
+}
+
+bpy::dict config_get_inherited_parameters( const Configuration *config)
+{
+    ParamArray params( config->get_inherited_parameters());
+    return param_array_to_bpy_dict( params);
 }
 
 } // unnamed
@@ -89,6 +117,15 @@ void bind_project()
         ;
 
     bpy::class_<Configuration, auto_release_ptr<Configuration>, boost::noncopyable>( "Configuration", bpy::no_init)
+        .def( "create_base_final", create_base_final_config).staticmethod( "create_base_final")
+        .def( "create_base_interactive", create_base_interactive_config).staticmethod( "create_base_interactive")
+
+        .def( "__init__", bpy::make_constructor( create_config))
+        .def( "__init__", bpy::make_constructor( create_config_with_params))
+
+        .def( "set_base", &Configuration::set_base)
+        .def( "get_base", &Configuration::get_base, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def( "get_inherited_parameters", config_get_inherited_parameters)
         ;
 
     bpy::class_<ProjectFileReader>( "ProjectFileReader")
