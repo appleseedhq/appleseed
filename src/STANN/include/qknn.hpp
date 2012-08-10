@@ -90,9 +90,6 @@ public:
     K = k;
   }
   
-  bool is_element(double dist, long int p)
-  {
-  }
   //! Point with largest distance
   /*!
     Returns the index associated with the largest element in the queue.
