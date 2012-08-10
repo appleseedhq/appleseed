@@ -28,7 +28,9 @@
 
 #include "dict2dict.hpp"
 
+#include "foundation/math/vector.h"
 #include "foundation/utility/string.h"
+#include "foundation/utility/iostreamop.h"
 
 namespace bpy = boost::python;
 using namespace foundation;
@@ -98,6 +100,39 @@ Dict convert_from_bpy_dict( const bpy::dict& d)
             }
         }
 
+        // Vector2i
+        {
+            bpy::extract<Vector2i> extractor( value );
+            if( extractor.check())
+            {
+                result.insert( key_extractor(), extractor());
+                continue;
+            }
+        }
+
+        // Vector2f
+        {
+            bpy::extract<Vector2f> extractor( value );
+            if( extractor.check())
+            {
+                result.insert( key_extractor(), extractor());
+                continue;
+            }
+        }
+
+        // Vector2d
+        {
+            bpy::extract<Vector2d> extractor( value );
+            if( extractor.check())
+            {
+                result.insert( key_extractor(), extractor());
+                continue;
+            }
+        }
+
+        // TODO: add conversions from bpy::tuple to Vector<T,N>.
+        // ...
+
         // TODO: check more types here if needed... (est.)
 
         // dict
@@ -146,6 +181,32 @@ bpy::object obj_from_string( const std::string& str)
         return bpy::object( d);
     }
     catch( ExceptionStringConversionError&) {}
+
+    try
+    {
+        // Vector2i
+        Vector2i v = from_string<Vector2i>( str);
+        return bpy::object( v);
+    }
+    catch( ExceptionStringConversionError&) {}
+
+    try
+    {
+        // Vector2f
+        Vector2f v = from_string<Vector2f>( str);
+        return bpy::object( v);
+    }
+    catch( ExceptionStringConversionError&) {}
+
+    try
+    {
+        // Vector2d
+        Vector2d v = from_string<Vector2d>( str);
+        return bpy::object( v);
+    }
+    catch( ExceptionStringConversionError&) {}
+
+    // TODO: add conversions from bpy::tuple to Vector<T,N>.
 
     // TODO: check more types here if needed... (est.)
 
