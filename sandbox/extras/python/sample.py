@@ -206,6 +206,29 @@ class PyRendererController( asr.IRendererController):
     def __init__( self):
         super( PyRendererController, self).__init__()
 
+    # This method is called before rendering begins.
+    def on_rendering_begin( self):
+        print( "rendering begin")
+
+    # This method is called after rendering has succeeded.
+    def on_rendering_success( self):
+        print( "rendering success")
+
+    # This method is called after rendering was aborted.
+    def on_rendering_abort( self):
+        print( "rendering abort")
+
+    # This method is called before rendering a single frame.
+    def on_frame_begin( self):
+        print( "frame begin")
+
+    # This method is called after rendering a single frame.
+    def on_frame_end( self):
+        print( "frame end")
+
+    def on_progress( self):
+        return asr.IRenderControllerStatus.ContinueRendering
+
 def main()
     """
     # Create a log target that outputs to stderr, and binds it to the renderer's global logger.
