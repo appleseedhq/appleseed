@@ -108,6 +108,7 @@ Dict convert_from_bpy_dict( const bpy::dict& d)
             {
                 // recurse
                 push_dict( result, key_extractor()) = convert_from_bpy_dict<Dict>( extractor());
+                continue;
             }
         }
 

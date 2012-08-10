@@ -66,11 +66,9 @@ Entity *get_item( EntityVector& vec, int index)
     return vec.get_by_index( index);
 }
 
-template<class T>
-void bind_typed_entity_map( const char *name)
+Entity *get_map_item( EntityMap& map, const std::string& key)
 {
-    bpy::class_<TypedEntityMap<T>, bpy::bases<EntityMap>, boost::noncopyable> X( name)
-        ;
+    return map.get_by_name( key.c_str());
 }
 
 bpy::dict entity_get_parameters( const Entity *e)
@@ -125,6 +123,7 @@ void bind_entity()
     bpy::class_<EntityMap, boost::noncopyable>( "EntityMap")
         .def( "clear", &EntityMap::clear)
         .def( "__len__", &EntityMap::size)
+        .def( "__getitem__", get_map_item, bpy::return_value_policy<bpy::reference_existing_object>())
 
         .def( "insert", &EntityMap::insert)
         .def( "remove", &EntityMap::remove)
@@ -134,8 +133,4 @@ void bind_entity()
 
         //.def( "__iter__", bpy::iterator<EntityMap>())
         ;
-
-    bind_typed_entity_map<Configuration>( "ConfigurationContainer");
-    bind_typed_entity_map<Assembly>( "AssemblyContainer");
-    bind_typed_entity_map<AssemblyInstance>( "AssemblyInstanceContainer");
 }

@@ -34,13 +34,20 @@
 void bind_assembly();
 void bind_bsdf();
 void bind_camera();
+void bind_color();
+void bind_edf();
 void bind_entity();
 void bind_frame();
+void bind_light();
 void bind_master_renderer();
+void bind_material();
 void bind_matrix();
+void bind_object();
 void bind_project();
 void bind_renderer_controller();
 void bind_scene();
+void bind_surface_shader();
+void bind_texture();
 void bind_transform();
 void bind_utility();
 void bind_vector();
@@ -48,18 +55,30 @@ void bind_vector();
 // appleseed python module
 BOOST_PYTHON_MODULE( _appleseed)
 {
+	bind_utility();
+
+    bind_vector();
+	bind_matrix();
+    bind_transform();
+
     bind_entity();
 
-    bind_assembly();
+    bind_color();
+    bind_texture();
     bind_bsdf();
+    bind_edf();
+    bind_surface_shader();
+    bind_material();
+    bind_light();
+    bind_object();
+    bind_assembly();
+
     bind_camera();
-    bind_frame();
-    bind_master_renderer();
-	bind_matrix();
-	bind_project();
-	bind_renderer_controller();
     bind_scene();
-    bind_transform();
-	bind_utility();
-    bind_vector();
+
+    bind_frame();
+	bind_project();
+
+	bind_renderer_controller();
+    bind_master_renderer();
 }
