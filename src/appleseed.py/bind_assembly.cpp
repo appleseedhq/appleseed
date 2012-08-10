@@ -32,7 +32,7 @@
 #include "renderer/modeling/scene/assemblyinstance.h"
 
 #include "bind_typed_entity_containers.hpp"
-#include "py_utility.hpp"
+#include "dict2dict.hpp"
 
 namespace bpy = boost::python;
 using namespace foundation;

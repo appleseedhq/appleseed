@@ -29,7 +29,7 @@
 
 #include "renderer/api/bsdf.h"
 
-#include "py_utility.hpp"
+#include "dict2dict.hpp"
 
 namespace bpy = boost::python;
 using namespace foundation;

@@ -26,10 +26,9 @@
 // THE SOFTWARE.
 //
 
-#include "py_utility.hpp"
+#include "dict2dict.hpp"
 
 #include "foundation/utility/string.h"
-#include "foundation/math/vector.h"
 
 namespace bpy = boost::python;
 using namespace foundation;
@@ -134,6 +133,7 @@ bpy::object obj_from_string( const std::string& str)
     // guess the type of the value represented by str.
     try
     {
+        // bool
         bool b = from_string<bool>( str);
         return bpy::object( b);
     }
@@ -141,10 +141,13 @@ bpy::object obj_from_string( const std::string& str)
 
     try
     {
+        // int / double
         double d = from_string<double>( str);
         return bpy::object( d);
     }
     catch( ExceptionStringConversionError&) {}
+
+    // TODO: check more types here if needed... (est.)
 
     // as a fallback, return a string
     return bpy::object( str);

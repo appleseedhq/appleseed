@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_PY_RENDERER_UTILITY_H
-#define APPLESEED_PY_RENDERER_UTILITY_H
+#ifndef APPLESEED_PY_DICT2DICT_H
+#define APPLESEED_PY_DICT2DICT_H
 
 // Has to be first.
 #include "Python.h"

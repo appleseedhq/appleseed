@@ -45,6 +45,8 @@ find_package (Boost 1.46 REQUIRED date_time filesystem regex system thread pytho
 
 set (sources
     module.cpp
+    dict2dict.hpp
+    dict2dict.cpp
 
     bind_assembly.cpp
     bind_bbox.cpp
@@ -68,9 +70,6 @@ set (sources
     bind_transform.cpp
     bind_utility.cpp
     bind_vector.cpp
-
-    py_utility.hpp
-    py_utility.cpp
 )
 list (APPEND appleseed.py_sources
     ${sources}
