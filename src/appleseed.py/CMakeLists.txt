@@ -68,6 +68,7 @@ set (sources
     bind_surface_shader.cpp
     bind_texture.cpp
     bind_transform.cpp
+    bind_typed_entity_containers.hpp
     bind_utility.cpp
     bind_vector.cpp
 )

@@ -34,8 +34,8 @@
 #include "renderer/api/scene.h"
 #include "renderer/api/frame.h"
 
-#include "py_utility.hpp"
 #include "dict2dict.hpp"
+#include "bind_typed_entity_containers.hpp"
 
 namespace bpy = boost::python;
 using namespace foundation;

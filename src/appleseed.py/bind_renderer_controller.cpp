@@ -29,6 +29,7 @@
 #include "bind_auto_release_ptr.h"
 
 #include "renderer/kernel/rendering/irenderercontroller.h"
+#include "renderer/kernel/rendering/defaultrenderercontroller.h"
 
 #include "dict2dict.hpp"
 
@@ -93,5 +94,8 @@ void bind_renderer_controller()
         .def( "on_frame_begin", bpy::pure_virtual( &IRendererController::on_frame_begin))
         .def( "on_frame_end", bpy::pure_virtual( &IRendererController::on_frame_end))
         .def( "on_progress", bpy::pure_virtual( &IRendererController::on_progress))
+        ;
+
+    bpy::class_<DefaultRendererController, boost::noncopyable>( "DefaultRendererController")
         ;
 }

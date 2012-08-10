@@ -32,11 +32,13 @@
 
 // Prototypes
 void bind_assembly();
+void bind_bbox();
 void bind_bsdf();
 void bind_camera();
 void bind_color();
 void bind_edf();
 void bind_entity();
+void bind_environment();
 void bind_frame();
 void bind_light();
 void bind_master_renderer();
@@ -58,6 +60,7 @@ BOOST_PYTHON_MODULE( _appleseed)
 	bind_utility();
 
     bind_vector();
+    bind_bbox();
 	bind_matrix();
     bind_transform();
 
@@ -74,6 +77,7 @@ BOOST_PYTHON_MODULE( _appleseed)
     bind_assembly();
 
     bind_camera();
+    bind_environment();
     bind_scene();
 
     bind_frame();
