@@ -63,7 +63,6 @@ void bind_scene()
         .def( "texture_instances", &Scene::texture_instances, bpy::return_value_policy<bpy::reference_existing_object>())
 
         .def( "environment_edfs", &Scene::environment_edfs, bpy::return_value_policy<bpy::reference_existing_object>())
-
         .def( "environment_shaders", &Scene::environment_shaders, bpy::return_value_policy<bpy::reference_existing_object>())
 
         .def( "assemblies", &Scene::assemblies, bpy::return_value_policy<bpy::reference_existing_object>())

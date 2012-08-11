@@ -119,32 +119,13 @@ def build_project():
     #------------------------------------------------------------------------
 
     # Create a color called "sky_exitance" and insert it into the scene.
-    SkyExitance = [ 0.75f, 0.80f, 1.0f ];
+    SkyExitance = [ 0.75, 0.80, 1.0 ];
     scene.colors().insert( asr.ColorEntity( "sky_exitance", { 'color_space' : 'srgb', 'multiplier' : 0.5 }, SkyExitance))
 
-    """
-    # Create an environment EDF called "sky_edf" and insert it into the scene.
-    scene->environment_edfs().insert(
-        asr::ConstantEnvironmentEDFFactory().create(
-            "sky_edf",
-            asr::ParamArray()
-                .insert("exitance", "sky_exitance")));
+    scene.environment_edfs().insert( asr.EnvironmentEDF( "constant_environment_edf", "sky_edf", { 'exitance' : 'sky_exitance'}))
+    scene.environment_shaders().insert( asr.EnvironmentShader( "edf_environment_shader", "sky_shader", { 'environment_edf' : 'sky_edf'}))
 
-    # Create an environment shader called "sky_shader" and insert it into the scene.
-    scene->environment_shaders().insert(
-        asr::EDFEnvironmentShaderFactory().create(
-            "sky_shader",
-            asr::ParamArray()
-                .insert("environment_edf", "sky_edf")));
-
-    # Create an environment called "sky" and bind it to the scene.
-    scene->set_environment(
-        asr::EnvironmentFactory::create(
-            "sky",
-            asr::ParamArray()
-                .insert("environment_edf", "sky_edf")
-                .insert("environment_shader", "sky_shader")));
-    """
+    scene.set_environment( asr.Environment( "sky", { "edf" : "sky_edf", "environment_shader" : "sky_shader"}))
 
     #------------------------------------------------------------------------
     # Camera
