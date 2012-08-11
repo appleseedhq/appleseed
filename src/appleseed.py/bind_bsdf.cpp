@@ -30,6 +30,7 @@
 #include "renderer/api/bsdf.h"
 
 #include "dict2dict.hpp"
+#include "bind_typed_entity_containers.hpp"
 
 namespace bpy = boost::python;
 using namespace foundation;
@@ -42,7 +43,8 @@ auto_release_ptr<BSDF> create_bsdf( const std::string& bsdf_type,
                                     const std::string& name,
                                     const bpy::dict& params)
 {
-    const BSDFFactoryRegistrar::FactoryType *factory = BSDFFactoryRegistrar().lookup( bsdf_type.c_str());
+    BSDFFactoryRegistrar factories;
+    const IBSDFFactory *factory = factories.lookup( bsdf_type.c_str());
 
     if( factory)
         return factory->create( name.c_str(), bpy_dict_to_param_array( params));
@@ -58,6 +60,8 @@ auto_release_ptr<BSDF> create_bsdf( const std::string& bsdf_type,
 void bind_bsdf()
 {
     bpy::class_<BSDF, auto_release_ptr<BSDF>, bpy::bases<ConnectableEntity>, boost::noncopyable>( "BSDF", bpy::no_init)
-        .def( "create", bpy::make_constructor( create_bsdf))
+        .def( "__init__", bpy::make_constructor( create_bsdf))
         ;
+
+    bind_typed_entity_vector<BSDF>( "BSDFContainer");
 }

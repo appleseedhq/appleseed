@@ -25,6 +25,8 @@
 // THE SOFTWARE.
 //
 
+#include "renderer/api/texture.h"
+
 namespace
 {
 

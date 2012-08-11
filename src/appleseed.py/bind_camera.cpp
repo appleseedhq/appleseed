@@ -66,7 +66,7 @@ TransformSequence *camera_get_transform_sequence( Camera *cam)
 void bind_camera()
 {
     bpy::class_<Camera, auto_release_ptr<Camera>, bpy::bases<Entity>, boost::noncopyable>( "Camera", bpy::no_init)
-        .def( "create", create_camera).staticmethod( "create")
+        .def( "__init__", bpy::make_constructor( create_camera))
         .def( "get_model", &Camera::get_model)
         .def( "transform_sequence", camera_get_transform_sequence, bpy::return_value_policy<bpy::reference_existing_object>())
         .def( "get_film_dimensions", &Camera::get_film_dimensions, bpy::return_value_policy<bpy::copy_const_reference>())

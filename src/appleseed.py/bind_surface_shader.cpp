@@ -25,11 +25,59 @@
 // THE SOFTWARE.
 //
 
+#include "bind_auto_release_ptr.h"
+
+#include "renderer/api/surfaceshader.h"
+
+#include "dict2dict.hpp"
+#include "bind_typed_entity_containers.hpp"
+
+namespace bpy = boost::python;
+using namespace foundation;
+using namespace renderer;
+
 namespace
 {
+
+auto_release_ptr<SurfaceShader> create_surface_shader( const std::string& surf_type,
+                                                        const std::string& name)
+{
+    SurfaceShaderFactoryRegistrar factories;
+    const ISurfaceShaderFactory *factory = factories.lookup( surf_type.c_str());
+
+    if( factory)
+        return factory->create( name.c_str(), ParamArray());
+    else
+    {
+        PyErr_SetString( PyExc_RuntimeError, "SurfaceShader type not found");
+        bpy::throw_error_already_set();
+    }
+}
+
+auto_release_ptr<SurfaceShader> create_surface_shader_with_params( const std::string& surf_type,
+                                                                    const std::string& name,
+                                                                    const bpy::dict& params)
+{
+    SurfaceShaderFactoryRegistrar factories;
+    const ISurfaceShaderFactory *factory = factories.lookup( surf_type.c_str());
+
+    if( factory)
+        return factory->create( name.c_str(), bpy_dict_to_param_array( params));
+    else
+    {
+        PyErr_SetString( PyExc_RuntimeError, "SurfaceShader type not found");
+        bpy::throw_error_already_set();
+    }
+}
 
 } // unnamed
 
 void bind_surface_shader()
 {
+    bpy::class_<SurfaceShader, auto_release_ptr<SurfaceShader>, bpy::bases<ConnectableEntity>, boost::noncopyable>( "SurfaceShader", bpy::no_init)
+        .def( "__init__", bpy::make_constructor( create_surface_shader))
+        .def( "__init__", bpy::make_constructor( create_surface_shader_with_params))
+        ;
+
+    bind_typed_entity_vector<SurfaceShader>( "SurfaceShaderContainer");
 }

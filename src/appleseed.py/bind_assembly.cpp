@@ -41,7 +41,12 @@ using namespace renderer;
 namespace
 {
 
-auto_release_ptr<Assembly> create_assembly( const std::string& name, const bpy::dict& params)
+auto_release_ptr<Assembly> create_assembly( const std::string& name)
+{
+    return AssemblyFactory::create( name.c_str(), ParamArray());
+}
+
+auto_release_ptr<Assembly> create_assembly_with_params( const std::string& name, const bpy::dict& params)
 {
     return AssemblyFactory::create( name.c_str(), bpy_dict_to_param_array( params));
 }
@@ -64,6 +69,7 @@ void bind_assembly()
 {
     bpy::class_<Assembly, auto_release_ptr<Assembly>, bpy::bases<Entity>, boost::noncopyable>( "Assembly", bpy::no_init)
         .def( "__init__", bpy::make_constructor( create_assembly))
+        .def( "__init__", bpy::make_constructor( create_assembly_with_params))
         .def( "colors", &Assembly::colors, bpy::return_value_policy<bpy::reference_existing_object>())
         .def( "textures", &Assembly::textures, bpy::return_value_policy<bpy::reference_existing_object>())
         .def( "texture_instances", &Assembly::texture_instances, bpy::return_value_policy<bpy::reference_existing_object>())

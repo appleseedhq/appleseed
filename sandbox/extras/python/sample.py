@@ -23,43 +23,26 @@ def build_project():
 
     scene = asr.Scene()
 
-    assembly = asr.Assembly( "assembly", {})
+    assembly = asr.Assembly( "assembly")
 
-"""
     #------------------------------------------------------------------------
     # Materials
     #------------------------------------------------------------------------
 
     # Create a color called "gray" and insert it into the assembly.
-    static const float GrayReflectance[] = { 0.5f, 0.5f, 0.5f };
-    assembly->colors().insert(
-        asr::ColorEntityFactory::create(
-            "gray",
-            asr::ParamArray()
-                .insert("color_space", "srgb"),
-            asr::ColorValueArray(3, GrayReflectance)));
+    GrayReflectance = [0.5, 0.5, 0.5]
+    assembly.colors().insert(  asr.ColorEntity( "gray", { 'color_space' : 'srgb'}, GrayReflectance))
 
     # Create a BRDF called "diffuse_gray_brdf" and insert it into the assembly.
-    assembly->bsdfs().insert(
-        asr::LambertianBRDFFactory().create(
-            "diffuse_gray_brdf",
-            asr::ParamArray()
-                .insert("reflectance", "gray")));
+    assembly.bsdfs().insert( asr.BSDF( "lambertian_brdf", "diffuse_gray_brdf", { 'reflectance' : 'gray'}))
 
     # Create a physical surface shader and insert it into the assembly.
-    assembly->surface_shaders().insert(
-        asr::PhysicalSurfaceShaderFactory().create(
-            "physical_surface_shader",
-            asr::ParamArray()));
+    assembly.surface_shaders().insert( asr.SurfaceShader( "physical_surface_shader", "physical_surface_shader"))
 
     # Create a material called "gray_material" and insert it into the assembly.
-    assembly->materials().insert(
-        asr::MaterialFactory::create(
-            "gray_material",
-            asr::ParamArray()
-                .insert("surface_shader", "physical_surface_shader")
-                .insert("bsdf", "diffuse_gray_brdf")));
-
+    assembly.materials().insert( asr.Material( "gray_material", { "surface_shader" : "physical_surface_shader",
+                                                                    "bsdf", : "diffuse_gray_brdf"})
+    """
     #------------------------------------------------------------------------
     # Geometry
     #------------------------------------------------------------------------
@@ -166,7 +149,7 @@ def build_project():
                 .insert("environment_edf", "sky_edf")
                 .insert("environment_shader", "sky_shader")));
 
-"""
+    """
 
     #------------------------------------------------------------------------
     # Camera
@@ -174,9 +157,9 @@ def build_project():
 
     # Create a pinhole camera with film dimensions 0.980 x 0.735 in (24.892 x 18.669 mm).
     params = { 'film_dimensions' : asr.Vector2f( 0.024892, 0.018669), 'focal_length' : 0.035}
-    camera = asr.Camera.create( "pinhole_camera", "camera", params)
+    camera = asr.Camera( "pinhole_camera", "camera", params)
 
-"""
+    """
     # Place and orient the camera. By default cameras are located in (0.0, 0.0, 0.0)
     # and are looking toward Z- (0.0, 0.0, -1.0).
     camera->transform_sequence().set_transform(
@@ -184,7 +167,8 @@ def build_project():
         asf::Transformd(
             asf::Matrix4d::rotation(asf::Vector3d(1.0, 0.0, 0.0), asf::deg_to_rad(-20.0)) *
             asf::Matrix4d::translation(asf::Vector3d(0.0, 0.8, 11.0))));
-"""
+    """
+
     # Bind the camera to the scene.
     scene.set_camera( camera);
 

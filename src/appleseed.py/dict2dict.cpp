@@ -57,7 +57,7 @@ Dict convert_from_bpy_dict( const bpy::dict& d)
     bpy::list values = d.values();
     bpy::list keys = d.keys();
 
-    for( int i = 0; i < keys.attr("__len__")(); ++i)
+    for( int i = 0, e = bpy::len( d); i < e; ++i)
     {
         bpy::object key( keys[i] );
         bpy::object value( values[i] );

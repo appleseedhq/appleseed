@@ -73,7 +73,7 @@ void project_set_search_paths( Project *proj, const bpy::list& paths)
 {
     proj->get_search_paths().clear();
 
-    for( int i = 0; i < paths.attr("__len__")(); ++i)
+    for( int i = 0, e = bpy::len( paths); i < e; ++i)
     {
         bpy::extract<const char*> extractor( paths[i] );
         if( extractor.check() )

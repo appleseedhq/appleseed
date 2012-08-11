@@ -25,11 +25,32 @@
 // THE SOFTWARE.
 //
 
+#include "bind_auto_release_ptr.h"
+
+#include "renderer/api/material.h"
+
+#include "dict2dict.hpp"
+#include "bind_typed_entity_containers.hpp"
+
+namespace bpy = boost::python;
+using namespace foundation;
+using namespace renderer;
+
 namespace
 {
+
+auto_release_ptr<Material> create_material( const std::string& name, const bpy::dict& params)
+{
+    return MaterialFactory::create( name.c_str(), bpy_dict_to_param_array( params));
+}
 
 } // unnamed
 
 void bind_material()
 {
+    bpy::class_<Material, auto_release_ptr<Material>, bpy::bases<ConnectableEntity>, boost::noncopyable>( "Material", bpy::no_init)
+        .def( "__init__", bpy::make_constructor( create_material))
+        ;
+
+    bind_typed_entity_vector<Material>( "MaterialContainer");
 }

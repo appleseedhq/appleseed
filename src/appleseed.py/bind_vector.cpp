@@ -54,7 +54,7 @@ Vector<T,N> *construct_from_list( bpy::list l)
 		bpy::extract<T> ex( l[i]);
 		if( !ex.check())
 		{
-            PyErr_SetString( PyExc_RuntimeError, "Invalid list length given to appleseed.Vector" );
+            PyErr_SetString( PyExc_TypeError, "Incompatible type type. Only floats." );
             bpy::throw_error_already_set();
 		}
 
