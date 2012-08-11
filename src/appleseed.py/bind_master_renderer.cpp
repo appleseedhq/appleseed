@@ -34,6 +34,7 @@
 
 #include "renderer/kernel/rendering/masterrenderer.h"
 #include "renderer/modeling/project/project.h"
+#include "renderer/kernel/rendering/defaultrenderercontroller.h"
 
 #include "dict2dict.hpp"
 
@@ -47,6 +48,13 @@ namespace
 std::auto_ptr<MasterRenderer> create_master_renderer( Project* project,
                                                         const bpy::dict& params,
                                                         IRendererController* render_controller)
+{
+    return std::auto_ptr<MasterRenderer>( new MasterRenderer( *project, bpy_dict_to_param_array( params), render_controller));
+}
+
+std::auto_ptr<MasterRenderer> create_master_renderer_with_default_controller( Project* project,
+                                                                            const bpy::dict& params,
+                                                                            DefaultRendererController* render_controller)
 {
     return std::auto_ptr<MasterRenderer>( new MasterRenderer( *project, bpy_dict_to_param_array( params), render_controller));
 }
@@ -67,10 +75,9 @@ void bind_master_renderer()
 {
     bpy::class_<MasterRenderer, std::auto_ptr<MasterRenderer>, boost::noncopyable>( "MasterRenderer", bpy::no_init)
         .def( "__init__", bpy::make_constructor( create_master_renderer))
-
+        .def( "__init__", bpy::make_constructor( create_master_renderer_with_default_controller))
         .def( "get_parameters", master_renderer_get_parameters)
         .def( "set_parameters", master_renderer_set_parameters)
-
         .def( "render", &MasterRenderer::render)
         ;
 }

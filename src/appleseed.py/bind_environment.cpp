@@ -25,6 +25,19 @@
 // THE SOFTWARE.
 //
 
+#include "bind_auto_release_ptr.h"
+
+#include "renderer/api/environment.h"
+#include "renderer/api/environmentedf.h"
+#include "renderer/api/environmentshader.h"
+
+#include "dict2dict.hpp"
+#include "bind_typed_entity_containers.hpp"
+
+namespace bpy = boost::python;
+using namespace foundation;
+using namespace renderer;
+
 namespace
 {
 
@@ -32,4 +45,12 @@ namespace
 
 void bind_environment()
 {
+    bpy::class_<EnvironmentEDF, auto_release_ptr<EnvironmentEDF>, bpy::bases<ConnectableEntity>, boost::noncopyable >( "EnvironmentEDF", bpy::no_init)
+        ;
+
+    bpy::class_<EnvironmentShader, auto_release_ptr<EnvironmentShader>, bpy::bases<ConnectableEntity>, boost::noncopyable >( "EnvironmentShader", bpy::no_init)
+        ;
+
+    bpy::class_<Environment, auto_release_ptr<Environment>, bpy::bases<Entity>, boost::noncopyable >( "Environment", bpy::no_init)
+        ;
 }

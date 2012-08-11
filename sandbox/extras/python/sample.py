@@ -31,7 +31,7 @@ def build_project():
 
     # Create a color called "gray" and insert it into the assembly.
     GrayReflectance = [0.5, 0.5, 0.5]
-    assembly.colors().insert(  asr.ColorEntity( "gray", { 'color_space' : 'srgb'}, GrayReflectance))
+    assembly.colors().insert( asr.ColorEntity( "gray", { 'color_space' : 'srgb'}, GrayReflectance))
 
     # Create a BRDF called "diffuse_gray_brdf" and insert it into the assembly.
     assembly.bsdfs().insert( asr.BSDF( "lambertian_brdf", "diffuse_gray_brdf", { 'reflectance' : 'gray'}))
@@ -41,7 +41,7 @@ def build_project():
 
     # Create a material called "gray_material" and insert it into the assembly.
     assembly.materials().insert( asr.Material( "gray_material", { "surface_shader" : "physical_surface_shader",
-                                                                    "bsdf", : "diffuse_gray_brdf"})
+                                                                    "bsdf" : "diffuse_gray_brdf"}))
     """
     #------------------------------------------------------------------------
     # Geometry
@@ -112,21 +112,17 @@ def build_project():
 
     # Insert the assembly into the scene.
     scene->assemblies().insert(assembly);
+    """
 
     #------------------------------------------------------------------------
     # Environment
     #------------------------------------------------------------------------
 
     # Create a color called "sky_exitance" and insert it into the scene.
-    static const float SkyExitance[] = { 0.75f, 0.80f, 1.0f };
-    scene->colors().insert(
-        asr::ColorEntityFactory::create(
-            "sky_exitance",
-            asr::ParamArray()
-                .insert("color_space", "srgb")
-                .insert("multiplier", "0.5"),
-            asr::ColorValueArray(3, SkyExitance)));
+    SkyExitance = [ 0.75f, 0.80f, 1.0f ];
+    scene.colors().insert( asr.ColorEntity( "sky_exitance", { 'color_space' : 'srgb', 'multiplier' : 0.5 }, SkyExitance))
 
+    """
     # Create an environment EDF called "sky_edf" and insert it into the scene.
     scene->environment_edfs().insert(
         asr::ConstantEnvironmentEDFFactory().create(
@@ -148,7 +144,6 @@ def build_project():
             asr::ParamArray()
                 .insert("environment_edf", "sky_edf")
                 .insert("environment_shader", "sky_shader")));
-
     """
 
     #------------------------------------------------------------------------
@@ -179,8 +174,7 @@ def build_project():
     params = { 'camera' : scene.get_camera().get_name(),
                 'resolution' : asr.Vector2i( 640, 480),
                 'color_space' : 'srgb'}
-    frame = asr.Frame( "beauty", params)
-
+    project.set_frame( asr.Frame( "beauty", params))
 
     # Bind the scene to the project.
     project.set_scene( scene);
@@ -213,7 +207,7 @@ class PyRendererController( asr.IRendererController):
     def on_progress( self):
         return asr.IRenderControllerStatus.ContinueRendering
 
-def main()
+def main():
     """
     # Create a log target that outputs to stderr, and binds it to the renderer's global logger.
     # Eventually you will probably want to redirect log messages to your own target. For this
@@ -223,7 +217,7 @@ def main()
     """
 
     # Build the project.
-    proj = build_project()
+    project = build_project()
 
     renderer_controller = asr.DefaultRendererController()
     renderer = asr.MasterRenderer( project, project.configurations()['final'].get_inherited_parameters(), renderer_controller)
@@ -231,3 +225,6 @@ def main()
 
     project.get_frame().write( "output.test/png")
     asr.ProjectFileWriter().write( project, "output/test.appleseed")
+
+if __name__ == "__main__":
+    main()
