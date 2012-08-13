@@ -31,7 +31,9 @@
 #include <boost/python.hpp>
 namespace bpy = boost::python;
 
+#include "renderer/api/log.h"
 #include "renderer/modeling/project/eventcounters.h"
+using namespace foundation;
 using namespace renderer;
 
 void bind_utility()
@@ -46,4 +48,14 @@ void bind_utility()
         .def( "get_error_count", &EventCounters::get_error_count)
         .def( "has_errors", &EventCounters::has_errors)
         ;
+
+    bpy::class_<LogTargetBase, boost::noncopyable>( "LogTargetBase", bpy::no_init)
+        ;
+
+    bpy::class_<Logger, boost::noncopyable>( "Logger", bpy::no_init)
+        .def( "set_enabled", &Logger::set_enabled)
+        .def( "add_target", &Logger::add_target)
+        ;
+
+    bpy::def( "global_logger", global_logger, bpy::return_value_policy<bpy::reference_existing_object>());
 }

@@ -63,6 +63,7 @@ set (sources
     bind_matrix.cpp
     bind_object.cpp
     bind_project.cpp
+    bind_quaternion.cpp
     bind_renderer_controller.cpp
     bind_scene.cpp
     bind_surface_shader.cpp

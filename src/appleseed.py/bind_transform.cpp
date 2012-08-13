@@ -55,6 +55,19 @@ void bind_typed_transform( const char *class_name)
         ;
 }
 
+bpy::tuple transform_seq_get_transform( const TransformSequence& seq, std::size_t index)
+{
+    double time;
+    Transformd xform;
+    seq.get_transform( index, time, xform);
+    return bpy::make_tuple( time, xform);
+}
+
+Transformd transform_seq_get_earliest( const TransformSequence& seq)
+{
+    return seq.earliest_transform();
+}
+
 } // unnamed
 
 void bind_transform()
@@ -63,5 +76,13 @@ void bind_transform()
     bind_typed_transform<double>( "Transformd");
 
     bpy::class_<TransformSequence, boost::noncopyable>( "TransformSequence", bpy::no_init)
+        .def( "clear", &TransformSequence::clear)
+        .def( "set_transform", &TransformSequence::set_transform)
+        .def( "get_transform", &transform_seq_get_transform)
+        .def( "earliest_transform", &transform_seq_get_earliest)
+        .def( "empty", &TransformSequence::empty)
+        .def( "size", &TransformSequence::size)
+        .def( "prepare", &TransformSequence::prepare)
+        .def( "evaluate", &TransformSequence::evaluate)
         ;
 }

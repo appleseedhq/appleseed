@@ -38,7 +38,7 @@ using namespace foundation;
 namespace
 {
 
-template<typename T, size_t N>
+template<typename T, std::size_t N>
 Vector<T,N> *construct_from_list( bpy::list l)
 {
 	if( bpy::len( l) != N)
@@ -64,7 +64,7 @@ Vector<T,N> *construct_from_list( bpy::list l)
 	return r;
 }
 
-template<class T, size_t N>
+template<class T, std::size_t N>
 struct vector_constructor {};
 
 template<class T>
@@ -106,27 +106,39 @@ struct vector_constructor<T,4>
     }
 };
 
-template<typename T, size_t N>
+template<typename T, std::size_t N>
 struct vector_indexer
 {
 	static T get( const Vector<T,N>& x, int i)
 	{
+	    if( i < 0)
+            i = N - i;
+
 		if ( i >= 0 && i < N )
 			return x[i];
 		else
-			throw std::out_of_range( "");
+		{
+            PyErr_SetString( PyExc_IndexError, "Invalid index in appleseed.Vector" );
+            boost::python::throw_error_already_set();
+		}
 	}
 
 	static void set( Vector<T,N>& x, int i, const T& v)
 	{
+	    if( i < 0)
+            i = N - i;
+
 		if ( i >= 0 && i < N )
 			x[i] = v;
 		else
-			throw std::out_of_range("");
+		{
+            PyErr_SetString( PyExc_IndexError, "Invalid index in appleseed.Vector" );
+            boost::python::throw_error_already_set();
+        }
 	}
 };
 
-template<typename T, size_t N>
+template<typename T, std::size_t N>
 void do_bind_vector( const char *class_name)
 {
     bpy::class_<Vector<T,N> >( class_name)

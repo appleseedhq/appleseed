@@ -46,6 +46,7 @@ void bind_material();
 void bind_matrix();
 void bind_object();
 void bind_project();
+void bind_quaternion();
 void bind_renderer_controller();
 void bind_scene();
 void bind_surface_shader();
@@ -60,6 +61,7 @@ BOOST_PYTHON_MODULE( _appleseed)
 	bind_utility();
 
     bind_vector();
+    bind_quaternion();
     bind_bbox();
 	bind_matrix();
     bind_transform();
