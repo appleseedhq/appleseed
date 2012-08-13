@@ -69,10 +69,15 @@ void AssemblyInstance::release()
     delete this;
 }
 
-void AssemblyInstance::on_frame_begin(const Project& project)
+bool AssemblyInstance::on_frame_begin(const Project& project)
 {
     if (!m_transform_sequence.prepare())
+    {
         RENDERER_LOG_ERROR("assembly instance \"%s\" has one or more invalid transforms.", get_name());
+        return false;
+    }
+
+    return true;
 }
 
 void AssemblyInstance::on_frame_end(const Project& project)

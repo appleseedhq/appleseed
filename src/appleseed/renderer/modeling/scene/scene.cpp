@@ -184,12 +184,16 @@ double Scene::compute_radius() const
 namespace
 {
     template <typename EntityCollection>
-    void invoke_on_frame_begin(
+    bool invoke_on_frame_begin(
         const Project&          project,
         EntityCollection&       entities)
     {
+        bool success = true;
+
         for (each<EntityCollection> i = entities; i; ++i)
-            i->on_frame_begin(project);
+            success = success && i->on_frame_begin(project);
+
+        return success;
     }
 
     template <typename EntityCollection>
@@ -202,15 +206,19 @@ namespace
     }
 }
 
-void Scene::on_frame_begin(const Project& project)
+bool Scene::on_frame_begin(const Project& project)
 {
-    if (impl->m_camera.get())
-        impl->m_camera->on_frame_begin(project);
+    bool success = true;
 
-    invoke_on_frame_begin(project, environment_edfs());
-    invoke_on_frame_begin(project, environment_shaders());
-    invoke_on_frame_begin(project, assemblies());
-    invoke_on_frame_begin(project, assembly_instances());
+    if (impl->m_camera.get())
+        success = success && impl->m_camera->on_frame_begin(project);
+
+    success = success && invoke_on_frame_begin(project, environment_edfs());
+    success = success && invoke_on_frame_begin(project, environment_shaders());
+    success = success && invoke_on_frame_begin(project, assemblies());
+    success = success && invoke_on_frame_begin(project, assembly_instances());
+
+    return success;
 }
 
 void Scene::on_frame_end(const Project& project)

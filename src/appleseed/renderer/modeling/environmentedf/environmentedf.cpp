@@ -59,8 +59,9 @@ EnvironmentEDF::EnvironmentEDF(
     set_name(name);
 }
 
-void EnvironmentEDF::on_frame_begin(const Project& project)
+bool EnvironmentEDF::on_frame_begin(const Project& project)
 {
+    return true;
 }
 
 void EnvironmentEDF::on_frame_end(const Project& project)

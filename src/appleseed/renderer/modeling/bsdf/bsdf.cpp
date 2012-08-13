@@ -61,10 +61,11 @@ BSDF::BSDF(
     set_name(name);
 }
 
-void BSDF::on_frame_begin(
+bool BSDF::on_frame_begin(
     const Project&      project,
     const Assembly&     assembly)
 {
+    return true;
 }
 
 void BSDF::on_frame_end(

@@ -199,12 +199,15 @@ namespace
             return Model;
         }
 
-        virtual void on_frame_begin(const Project& project) override
+        virtual bool on_frame_begin(const Project& project) override
         {
-            EnvironmentEDF::on_frame_begin(project);
+            if (!EnvironmentEDF::on_frame_begin(project))
+                return false;
 
             if (m_importance_sampler.get() == 0)
                 build_importance_map(*project.get_scene());
+
+            return true;
         }
 
         virtual void sample(

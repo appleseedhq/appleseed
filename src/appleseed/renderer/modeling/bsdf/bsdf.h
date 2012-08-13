@@ -104,7 +104,8 @@ class DLLSYMBOL BSDF
     Type get_type() const;
 
     // This method is called once before rendering each frame.
-    virtual void on_frame_begin(
+    // Returns true on success, false otherwise.
+    virtual bool on_frame_begin(
         const Project&              project,
         const Assembly&             assembly);
 

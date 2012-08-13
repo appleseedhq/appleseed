@@ -59,10 +59,11 @@ EDF::EDF(
     set_name(name);
 }
 
-void EDF::on_frame_begin(
+bool EDF::on_frame_begin(
     const Project&      project,
     const Assembly&     assembly)
 {
+    return true;
 }
 
 void EDF::on_frame_end(

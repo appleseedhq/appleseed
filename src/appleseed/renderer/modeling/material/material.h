@@ -76,7 +76,8 @@ class DLLSYMBOL Material
         const EDFContainer&             edfs);
 
     // This method is called once before rendering each frame.
-    void on_frame_begin(
+    // Returns true on success, false otherwise.
+    bool on_frame_begin(
         const Project&                  project,
         const Assembly&                 assembly);
 

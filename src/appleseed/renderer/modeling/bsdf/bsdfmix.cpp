@@ -86,17 +86,20 @@ namespace
             return Model;
         }
 
-        virtual void on_frame_begin(
+        virtual bool on_frame_begin(
             const Project&      project,
             const Assembly&     assembly) override
         {
-            BSDF::on_frame_begin(project, assembly);
+            if (!BSDF::on_frame_begin(project, assembly))
+                return false;
 
             m_bsdf[0] = retrieve_bsdf(assembly, "bsdf0");
             m_bsdf[1] = retrieve_bsdf(assembly, "bsdf1");
 
             m_bsdf_data_offset[0] = get_inputs().compute_data_size();
             m_bsdf_data_offset[1] = m_bsdf_data_offset[0] + m_bsdf[0]->compute_input_data_size(assembly);
+
+            return true;
         }
 
         virtual size_t compute_input_data_size(

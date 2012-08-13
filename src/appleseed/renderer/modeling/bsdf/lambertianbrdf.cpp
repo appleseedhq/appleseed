@@ -86,11 +86,12 @@ namespace
             return Model;
         }
 
-        virtual void on_frame_begin(
+        virtual bool on_frame_begin(
             const Project&      project,
             const Assembly&     assembly) override
         {
-            BSDF::on_frame_begin(project, assembly);
+            if (!BSDF::on_frame_begin(project, assembly))
+                return false;
 
             if (m_inputs.source("reflectance")->is_uniform() &&
                 m_inputs.source("reflectance_multiplier")->is_uniform())
@@ -104,6 +105,8 @@ namespace
                 m_brdf_value = values->m_reflectance;
                 m_brdf_value *= static_cast<float>(values->m_reflectance_multiplier * RcpPi);
             }
+
+            return true;
         }
 
         FORCE_INLINE virtual Mode sample(

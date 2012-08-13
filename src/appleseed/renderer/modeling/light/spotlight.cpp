@@ -84,14 +84,19 @@ namespace
             return Model;
         }
 
-        virtual void on_frame_begin(
+        virtual bool on_frame_begin(
             const Project&      project,
             const Assembly&     assembly) override
         {
+            if (!Light::on_frame_begin(project, assembly))
+                return false;
+
             check_non_null_exitance_input("exitance");
 
             m_transform = Transformd(Matrix4d::rotation(Vector3d(1.0, 0.0, 0.0), -HalfPi)) * get_transform();
             m_axis = normalize(m_transform.vector_to_parent(Vector3d(0.0, 1.0, 0.0)));
+
+            return true;
         }
  
         virtual void sample(

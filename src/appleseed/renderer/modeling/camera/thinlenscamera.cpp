@@ -130,9 +130,10 @@ namespace
             return Model;
         }
 
-        virtual void on_frame_begin(const Project& project) override
+        virtual bool on_frame_begin(const Project& project) override
         {
-            Camera::on_frame_begin(project);
+            if (!Camera::on_frame_begin(project))
+                return false;
 
             // Perform autofocus, if enabled.
             if (m_autofocus_enabled)
@@ -147,6 +148,8 @@ namespace
             const double t = m_focal_distance / m_focal_length;
             m_kx = m_film_dimensions[0] * t;
             m_ky = m_film_dimensions[1] * t;
+
+            return true;
         }
 
         virtual void generate_ray(

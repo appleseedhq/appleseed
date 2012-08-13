@@ -108,7 +108,8 @@ class DLLSYMBOL Scene
     double compute_radius() const;
 
     // Perform pre-frame rendering actions.
-    void on_frame_begin(const Project& project);
+    // Returns true on success, false otherwise.
+    bool on_frame_begin(const Project& project);
 
     // Perform post-frame rendering actions.
     void on_frame_end(const Project& project);
