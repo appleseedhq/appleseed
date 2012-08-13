@@ -142,7 +142,8 @@ class TransformInterpolator
         const TransformType& to);
 
     // Set the initial and final transformations.
-    void set_transforms(
+    // Returns true on success, false otherwise.
+    bool set_transforms(
         const TransformType& from,
         const TransformType& to);
 
@@ -494,7 +495,7 @@ inline TransformInterpolator<T>::TransformInterpolator(
 }
 
 template <typename T>
-void TransformInterpolator<T>::set_transforms(
+bool TransformInterpolator<T>::set_transforms(
     const TransformType& from,
     const TransformType& to)
 {
@@ -509,6 +510,8 @@ void TransformInterpolator<T>::set_transforms(
 
     if (dot(m_q0, m_q1) < T(0.0))
         m_q1 = -m_q1;
+
+    return is_normalized(m_q0) && is_normalized(m_q1);
 }
 
 template <typename T>

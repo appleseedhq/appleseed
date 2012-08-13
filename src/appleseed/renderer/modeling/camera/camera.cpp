@@ -125,7 +125,8 @@ const Pyramid3d& Camera::get_view_pyramid() const
 
 void Camera::on_frame_begin(const Project& project)
 {
-    m_transform_sequence.prepare();
+    if (!m_transform_sequence.prepare())
+        RENDERER_LOG_ERROR("camera \"%s\" has one or more invalid transforms.", get_name());
 }
 
 void Camera::on_frame_end(const Project& project)

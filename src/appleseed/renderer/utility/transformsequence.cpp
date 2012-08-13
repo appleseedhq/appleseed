@@ -148,10 +148,12 @@ const Transformd& TransformSequence::earliest_transform() const
     return const_cast<TransformSequence*>(this)->earliest_transform();
 }
 
-void TransformSequence::prepare()
+bool TransformSequence::prepare()
 {
     delete [] m_interpolators;
     m_interpolators = 0;
+
+    bool success = true;
 
     if (m_size > 1)
     {
@@ -161,11 +163,14 @@ void TransformSequence::prepare()
 
         for (size_t i = 0; i < m_size - 1; ++i)
         {
-            m_interpolators[i].set_transforms(
-                m_keys[i].m_transform,
-                m_keys[i + 1].m_transform);
+            success = success &&
+                m_interpolators[i].set_transforms(
+                    m_keys[i].m_transform,
+                    m_keys[i + 1].m_transform);
         }
     }
+
+    return success;
 }
 
 Transformd TransformSequence::evaluate(const double time) const

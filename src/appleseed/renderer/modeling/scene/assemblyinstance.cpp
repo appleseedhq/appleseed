@@ -71,7 +71,8 @@ void AssemblyInstance::release()
 
 void AssemblyInstance::on_frame_begin(const Project& project)
 {
-    m_transform_sequence.prepare();
+    if (!m_transform_sequence.prepare())
+        RENDERER_LOG_ERROR("assembly instance \"%s\" has one or more invalid transforms.", get_name());
 }
 
 void AssemblyInstance::on_frame_end(const Project& project)
