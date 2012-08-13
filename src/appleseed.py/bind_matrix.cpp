@@ -29,6 +29,7 @@
 #include "bind_auto_release_ptr.h"
 
 #include "foundation/math/matrix.h"
+#include "foundation/utility/iostreamop.h"
 
 namespace bpy = boost::python;
 using namespace foundation;
@@ -203,6 +204,11 @@ void bind_typed_matrix4( const std::string& class_name)
 
 		.def( bpy::self * bpy::self)
 		.def( bpy::self * Vector<T,4>())
+
+		// a bug in boost::python, this needs
+		// the extra self_ns qualification
+		.def( bpy::self_ns::str( bpy::self))
+		.def( bpy::self_ns::repr( bpy::self))
 
 		.def( "extract_translation", &Matrix<T,4,4>::extract_translation)
         .def( "extract_unit_quaternion", &Matrix<T,4,4>::extract_unit_quaternion)

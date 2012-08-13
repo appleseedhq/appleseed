@@ -29,6 +29,7 @@
 #include "bind_auto_release_ptr.h"
 
 #include "renderer/utility/transformsequence.h"
+#include "foundation/utility/iostreamop.h"
 
 namespace bpy = boost::python;
 using namespace foundation;
@@ -52,6 +53,11 @@ void bind_typed_transform( const char *class_name)
         .def( "get_parent_to_local", &Transform<T>::get_parent_to_local, bpy::return_value_policy<bpy::copy_const_reference>())
 
         .def( bpy::self * bpy::self)
+
+		// a bug in boost::python, this needs
+		// the extra self_ns qualification
+		.def( bpy::self_ns::str( bpy::self))
+		.def( bpy::self_ns::repr( bpy::self))
         ;
 }
 

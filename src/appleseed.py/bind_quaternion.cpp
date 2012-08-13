@@ -31,6 +31,7 @@
 #include <boost/python.hpp>
 
 #include "foundation/math/quaternion.h"
+#include "foundation/utility/iostreamop.h"
 
 namespace bpy = boost::python;
 using namespace foundation;
@@ -102,7 +103,6 @@ Quaternion<T> quat_slerp(const Quaternion<T>& p, const Quaternion<T>& q, const T
     return slerp( p, q, t);
 }
 
-
 template<class T>
 void do_bind_quaternion( const char *class_name)
 {
@@ -132,6 +132,11 @@ void do_bind_quaternion( const char *class_name)
 		.def( bpy::self /= T())
 		.def( bpy::self * bpy::self)
 		.def( bpy::self *= bpy::self)
+
+		// a bug in boost::python, this needs
+		// the extra self_ns qualification
+		.def( bpy::self_ns::str( bpy::self))
+		.def( bpy::self_ns::repr( bpy::self))
 
 		.def( "dot", &quat_dot_prod<T>)
 		.def( "extract_axis_angle", &quat_extract_axis_angle<T>)

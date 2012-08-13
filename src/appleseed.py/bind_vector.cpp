@@ -31,6 +31,7 @@
 #include <boost/python.hpp>
 
 #include "foundation/math/vector.h"
+#include "foundation/utility/iostreamop.h"
 
 namespace bpy = boost::python;
 using namespace foundation;
@@ -164,11 +165,14 @@ void do_bind_vector( const char *class_name)
 		.def( bpy::self /= T())
 		.def( bpy::self / bpy::self)
 		.def( bpy::self / T())
-
 		.def( -bpy::self)
-
 		.def( bpy::self == bpy::self)
 		.def( bpy::self != bpy::self)
+
+		// a bug in boost::python, this needs
+		// the extra self_ns qualification
+		.def( bpy::self_ns::str( bpy::self))
+		.def( bpy::self_ns::repr( bpy::self))
         ;
 }
 

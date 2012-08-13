@@ -25,11 +25,38 @@
 // THE SOFTWARE.
 //
 
+// Has to be first, to avoid redifinition warnings.
+#include "Python.h"
+
+#include <boost/python.hpp>
+
+#include "foundation/math/aabb.h"
+#include "foundation/utility/iostreamop.h"
+
+namespace bpy = boost::python;
+using namespace foundation;
+
 namespace
 {
+
+template<class T>
+void bind_aabb3( const char *class_name)
+{
+    bpy::class_<AABB<T,3> >( class_name)
+        .def_readwrite( "min", &AABB<T,3>::min)
+        .def_readwrite( "max", &AABB<T,3>::max)
+
+        // a bug in boost::python, this needs
+        // the extra self_ns qualification
+        .def( bpy::self_ns::str( bpy::self))
+        .def( bpy::self_ns::repr( bpy::self))
+        ;
+}
 
 } // unnamed
 
 void bind_bbox()
 {
+    bind_aabb3<float>( "AABB3f");
+    bind_aabb3<double>( "AABB3d");
 }
