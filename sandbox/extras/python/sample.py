@@ -65,6 +65,7 @@ def build_project():
 
         # Create an instance of this object and insert it into the assembly.
         obj_inst = asr.ObjectInstance( instance_name, {}, o, asr.Transformd( asr.Matrix4d.identity()), material_names)
+        assembly.object_instances().insert( obj_inst)
 
     #------------------------------------------------------------------------
     # Light
@@ -97,7 +98,7 @@ def build_project():
     scene.environment_edfs().insert( asr.EnvironmentEDF( "constant_environment_edf", "sky_edf", { 'exitance' : 'sky_exitance'}))
     scene.environment_shaders().insert( asr.EnvironmentShader( "edf_environment_shader", "sky_shader", { 'environment_edf' : 'sky_edf'}))
 
-    scene.set_environment( asr.Environment( "sky", { "edf" : "sky_edf", "environment_shader" : "sky_shader"}))
+    scene.set_environment( asr.Environment( "sky", { "environment_edf" : "sky_edf", "environment_shader" : "sky_shader"}))
 
     #------------------------------------------------------------------------
     # Camera
