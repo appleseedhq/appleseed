@@ -84,11 +84,16 @@ namespace
             return Model;
         }
 
-        virtual void on_frame_begin(
+        virtual bool on_frame_begin(
             const Project&      project,
             const Assembly&     assembly) override
         {
+            if (!EDF::on_frame_begin(project, assembly))
+                return false;
+
             check_non_null_exitance_input("exitance", "exitance_multiplier");
+
+            return true;
         }
 
         virtual void sample(

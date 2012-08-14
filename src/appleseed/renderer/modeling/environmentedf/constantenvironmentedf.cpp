@@ -86,9 +86,10 @@ namespace
             return Model;
         }
 
-        virtual void on_frame_begin(const Project& project) override
+        virtual bool on_frame_begin(const Project& project) override
         {
-            EnvironmentEDF::on_frame_begin(project);
+            if (!EnvironmentEDF::on_frame_begin(project))
+                return false;
 
             // todo: what happens if these are not uniform?
             check_uniform("exitance");
@@ -97,6 +98,8 @@ namespace
             m_inputs.evaluate_uniforms(&m_values);
 
             m_values.m_exitance *= static_cast<float>(m_values.m_exitance_multiplier);
+
+            return true;
         }
 
         virtual void sample(

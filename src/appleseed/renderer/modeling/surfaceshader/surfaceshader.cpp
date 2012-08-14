@@ -51,10 +51,11 @@ SurfaceShader::SurfaceShader(
     set_name(name);
 }
 
-void SurfaceShader::on_frame_begin(
+bool SurfaceShader::on_frame_begin(
     const Project&      project,
     const Assembly&     assembly)
 {
+    return true;
 }
 
 void SurfaceShader::on_frame_end(

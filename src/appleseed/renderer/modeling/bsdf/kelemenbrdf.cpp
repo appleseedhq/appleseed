@@ -108,11 +108,12 @@ namespace
             return Model;
         }
 
-        virtual void on_frame_begin(
+        virtual bool on_frame_begin(
             const Project&      project,
             const Assembly&     assembly) override
         {
-            BSDF::on_frame_begin(project, assembly);
+            if (!BSDF::on_frame_begin(project, assembly))
+                return false;
 
             // todo: implement proper error handling.
             assert(m_inputs.source("specular_reflectance")->is_uniform());
@@ -143,6 +144,8 @@ namespace
             m_s /= s_denom;
 
             // plot_specular_albedo_curves();
+
+            return true;
         }
 
         virtual void on_frame_end(

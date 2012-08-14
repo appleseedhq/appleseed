@@ -114,14 +114,18 @@ namespace
             return Model;
         }
 
-        virtual void on_frame_begin(
+        virtual bool on_frame_begin(
             const Project&          project,
             const Assembly&         assembly) override
         {
-            SurfaceShader::on_frame_begin(project, assembly);
+            if (!SurfaceShader::on_frame_begin(project, assembly))
+                return false;
 
             const Scene& scene = *project.get_scene();
+
             m_light_sampler.reset(new LightSampler(scene));
+
+            return true;
         }
 
         virtual void evaluate(

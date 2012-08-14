@@ -51,8 +51,9 @@ EnvironmentShader::EnvironmentShader(
     set_name(name);
 }
 
-void EnvironmentShader::on_frame_begin(const Project& project)
+bool EnvironmentShader::on_frame_begin(const Project& project)
 {
+    return true;
 }
 
 void EnvironmentShader::on_frame_end(const Project& project)

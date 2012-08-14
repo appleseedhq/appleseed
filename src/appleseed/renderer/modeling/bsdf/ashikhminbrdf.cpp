@@ -105,11 +105,12 @@ namespace
             return Model;
         }
 
-        virtual void on_frame_begin(
+        virtual bool on_frame_begin(
             const Project&      project,
             const Assembly&     assembly) override
         {
-            BSDF::on_frame_begin(project, assembly);
+            if (!BSDF::on_frame_begin(project, assembly))
+                return false;
 
             m_uniform_reflectance =
                 m_inputs.source("diffuse_reflectance")->is_uniform() &&
@@ -130,6 +131,8 @@ namespace
 
             if (m_uniform_shininess)
                 compute_sval(m_uniform_sval, values->m_nu, values->m_nv);
+
+            return true;
         }
 
         FORCE_INLINE virtual Mode sample(

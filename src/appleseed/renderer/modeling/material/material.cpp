@@ -133,7 +133,7 @@ namespace
     }
 }
 
-void Material::on_frame_begin(
+bool Material::on_frame_begin(
     const Project&                  project,
     const Assembly&                 assembly)
 {
@@ -141,6 +141,8 @@ void Material::on_frame_begin(
     m_normal_map = m_inputs.source("normal_map");
 
     check_texture_source_color_space_is_linear_rgb("normal map", m_normal_map);
+
+    return true;
 }
 
 void Material::on_frame_end(

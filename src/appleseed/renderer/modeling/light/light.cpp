@@ -78,10 +78,11 @@ const Transformd& Light::get_transform() const
     return impl->m_transform;
 }
 
-void Light::on_frame_begin(
+bool Light::on_frame_begin(
     const Project&      project,
     const Assembly&     assembly)
 {
+    return true;
 }
 
 void Light::on_frame_end(

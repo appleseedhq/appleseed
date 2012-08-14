@@ -389,8 +389,11 @@ IRendererController::Status MasterRenderer::render_frame_sequence(IFrameRenderer
     while (true) 
     {
         assert(!frame_renderer->is_rendering());
+
+        if (!m_project.get_scene()->on_frame_begin(m_project))
+            return IRendererController::AbortRendering;
+
         m_renderer_controller->on_frame_begin();
-        m_project.get_scene()->on_frame_begin(m_project);
 
         frame_renderer->start_rendering();
 
@@ -412,7 +415,9 @@ IRendererController::Status MasterRenderer::render_frame_sequence(IFrameRenderer
         }
 
         assert(!frame_renderer->is_rendering());
+
         m_project.get_scene()->on_frame_end(m_project);
+
         m_renderer_controller->on_frame_end();
 
         if (status != IRendererController::RestartRendering)

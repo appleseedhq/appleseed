@@ -89,7 +89,8 @@ class DLLSYMBOL Camera
     const foundation::Pyramid3d& get_view_pyramid() const;
 
     // This method is called once before rendering each frame.
-    virtual void on_frame_begin(const Project& project);
+    // Returns true on success, false otherwise.
+    virtual bool on_frame_begin(const Project& project);
 
     // This method is called once after rendering each frame.
     virtual void on_frame_end(const Project& project);

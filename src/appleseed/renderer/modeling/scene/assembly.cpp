@@ -142,13 +142,17 @@ ObjectInstanceContainer& Assembly::object_instances() const
 namespace
 {
     template <typename EntityCollection>
-    void invoke_on_frame_begin(
+    bool invoke_on_frame_begin(
         const Project&          project,
         const Assembly&         assembly,
         EntityCollection&       entities)
     {
+        bool success = true;
+
         for (each<EntityCollection> i = entities; i; ++i)
-            i->on_frame_begin(project, assembly);
+            success = success && i->on_frame_begin(project, assembly);
+
+        return success;
     }
 
     template <typename EntityCollection>
@@ -162,13 +166,17 @@ namespace
     }
 }
 
-void Assembly::on_frame_begin(const Project& project)
+bool Assembly::on_frame_begin(const Project& project)
 {
-    invoke_on_frame_begin(project, *this, surface_shaders());
-    invoke_on_frame_begin(project, *this, bsdfs());
-    invoke_on_frame_begin(project, *this, edfs());
-    invoke_on_frame_begin(project, *this, materials());
-    invoke_on_frame_begin(project, *this, lights());
+    bool success = true;
+
+    success = success && invoke_on_frame_begin(project, *this, surface_shaders());
+    success = success && invoke_on_frame_begin(project, *this, bsdfs());
+    success = success && invoke_on_frame_begin(project, *this, edfs());
+    success = success && invoke_on_frame_begin(project, *this, materials());
+    success = success && invoke_on_frame_begin(project, *this, lights());
+
+    return success;
 }
 
 void Assembly::on_frame_end(const Project& project)

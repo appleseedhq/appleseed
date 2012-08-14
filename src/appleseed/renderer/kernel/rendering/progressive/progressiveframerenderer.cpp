@@ -147,7 +147,8 @@ namespace
             m_abort_switch.abort();
 
             // Wait until the statistics printing thread is terminated.
-            m_statistics_thread->join();
+            if (m_statistics_thread.get())
+                m_statistics_thread->join();
 
             // Delete tile callbacks.
             for (const_each<TileCallbackVector> i = m_tile_callbacks; i; ++i)

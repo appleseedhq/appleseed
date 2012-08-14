@@ -71,7 +71,8 @@ class DLLSYMBOL AssemblyInstance
     const TransformSequence& transform_sequence() const;
 
     // This method is called once before rendering each frame.
-    void on_frame_begin(const Project& project);
+    // Returns true on success, false otherwise.
+    bool on_frame_begin(const Project& project);
 
     // This method is called once after rendering each frame.
     void on_frame_end(const Project& project);

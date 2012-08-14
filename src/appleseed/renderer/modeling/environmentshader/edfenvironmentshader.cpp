@@ -78,19 +78,20 @@ namespace
         {
         }
 
-        virtual void release()
+        virtual void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const
+        virtual const char* get_model() const override
         {
             return Model;
         }
 
-        virtual void on_frame_begin(const Project& project)
+        virtual bool on_frame_begin(const Project& project) override
         {
-            EnvironmentShader::on_frame_begin(project);
+            if (!EnvironmentShader::on_frame_begin(project))
+                return false;
 
             m_env_edf = 0;
 
@@ -103,18 +104,21 @@ namespace
                 {
                     RENDERER_LOG_ERROR(
                         "while preparing environment shader \"%s\": "
-                        "cannot find environment EDF \"%s\", "
-                        "the environment will be transparent black.",
+                        "cannot find environment EDF \"%s\".",
                         get_name(),
                         m_env_edf_name.c_str());
+
+                    return false;
                 }
             }
+
+            return true;
         }
 
         virtual void evaluate(
             InputEvaluator&         input_evaluator,
             const Vector3d&         direction,
-            ShadingResult&          shading_result) const
+            ShadingResult&          shading_result) const override
         {
             if (m_env_edf)
             {

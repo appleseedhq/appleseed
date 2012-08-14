@@ -89,9 +89,10 @@ namespace
             return Model;
         }
 
-        virtual void on_frame_begin(const Project& project) override
+        virtual bool on_frame_begin(const Project& project) override
         {
-            Camera::on_frame_begin(project);
+            if (!Camera::on_frame_begin(project))
+                return false;
 
             // Precompute the rays origin in world space if the camera is static.
             if (m_transform_sequence.size() == 1)
@@ -109,6 +110,8 @@ namespace
                 if (w != 1.0)
                     m_ray_org /= w;
             }
+
+            return true;
         }
 
         virtual void generate_ray(

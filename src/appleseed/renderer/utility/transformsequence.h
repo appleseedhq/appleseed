@@ -87,7 +87,8 @@ class DLLSYMBOL TransformSequence
     // Prepare the sequence for quick evaluation.
     // This method must be called after new transforms have been set and
     // before any call to evaluate(). It may be called multiple times.
-    void prepare();
+    // Returns true on success, false otherwise.
+    bool prepare();
 
     // Compute the transform at any given time.
     foundation::Transformd evaluate(const double time) const;

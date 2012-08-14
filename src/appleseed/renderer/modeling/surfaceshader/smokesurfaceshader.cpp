@@ -101,11 +101,12 @@ namespace
             return Model;
         }
 
-        virtual void on_frame_begin(
+        virtual bool on_frame_begin(
             const Project&          project,
             const Assembly&         assembly) override
         {
-            SurfaceShader::on_frame_begin(project, assembly);
+            if (!SurfaceShader::on_frame_begin(project, assembly))
+                return false;
 
             if (m_first_frame)
             {
@@ -125,6 +126,8 @@ namespace
 
                 m_first_frame = false;
             }
+
+            return true;
         }
 
         virtual void evaluate(
