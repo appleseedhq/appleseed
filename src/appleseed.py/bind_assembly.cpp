@@ -53,9 +53,9 @@ auto_release_ptr<Assembly> create_assembly_with_params( const std::string& name,
 
 auto_release_ptr<AssemblyInstance> create_assembly_instance( const std::string& name,
                                                                 const bpy::dict& params,
-                                                                const Assembly& assembly)
+                                                                const Assembly *assembly)
 {
-    return AssemblyInstanceFactory::create( name.c_str(), bpy_dict_to_param_array( params), assembly);
+    return AssemblyInstanceFactory::create( name.c_str(), bpy_dict_to_param_array( params), *assembly);
 }
 
 TransformSequence& assembly_instance_get_transform_sequence( AssemblyInstance *instance)
@@ -82,14 +82,15 @@ void bind_assembly()
         .def( "object_instances", &Assembly::object_instances, bpy::return_value_policy<bpy::reference_existing_object>())
         ;
 
+    bind_typed_entity_map<Assembly>( "AssemblyContainer");
+
     bpy::class_<AssemblyInstance, auto_release_ptr<AssemblyInstance>, bpy::bases<Entity>, boost::noncopyable>( "AssemblyInstance", bpy::no_init)
-        .def( "__init__", bpy::make_constructor( create_assembly))
+        .def( "__init__", bpy::make_constructor( create_assembly_instance))
         .def( "get_assembly", &AssemblyInstance::get_assembly, bpy::return_value_policy<bpy::reference_existing_object>())
         .def( "get_assembly_uid", &AssemblyInstance::get_assembly_uid)
         .def( "transform_sequence", assembly_instance_get_transform_sequence, bpy::return_value_policy<bpy::reference_existing_object>())
         .def( "compute_parent_bbox", &AssemblyInstance::compute_parent_bbox)
         ;
 
-    bind_typed_entity_map<Assembly>( "AssemblyContainer");
     bind_typed_entity_map<AssemblyInstance>( "AssemblyInstanceContainer");
 }

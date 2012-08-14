@@ -140,6 +140,8 @@ void bind_object()
         .def( "__init__", bpy::make_constructor( create_mesh_obj))
         ;
 
+    boost::python::implicitly_convertible<auto_release_ptr<MeshObject>, auto_release_ptr<Object> >();
+
     bpy::class_<MeshObjectReader>( "MeshObjectReader", bpy::no_init)
         .def( "read", read_mesh_objects).staticmethod( "read")
         ;

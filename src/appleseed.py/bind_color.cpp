@@ -51,7 +51,7 @@ ColorValueArray color_value_array_from_bpy_list( const bpy::list& vals)
     {
 		bpy::extract<float> ex( vals[i]);
 		if( ex.check())
-            result[i] = ex();
+            result.push_back( ex());
 		else
 		{
             PyErr_SetString( PyExc_TypeError, "Incompatible type type. Only floats." );
@@ -91,7 +91,8 @@ auto_release_ptr<ColorEntity> create_color_entity_vals_alpha( const std::string&
                                                                 const bpy::list& alpha)
 {
     return ColorEntityFactory::create( name.c_str(), bpy_dict_to_param_array( params),
-                                        color_value_array_from_bpy_list( values), color_value_array_from_bpy_list( alpha));
+                                        color_value_array_from_bpy_list( values),
+                                        color_value_array_from_bpy_list( alpha));
 }
 
 bpy::list color_entity_get_vals( const ColorEntity *col)

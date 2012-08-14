@@ -87,6 +87,8 @@ void bind_typed_entity_map( const char *name)
         .def( "get_by_uid", &renderer::TypedEntityMap<T>::get_by_uid, boost::python::return_value_policy<boost::python::reference_existing_object>())
         .def( "get_by_name", &renderer::TypedEntityMap<T>::get_by_name, boost::python::return_value_policy<boost::python::reference_existing_object>())
 
+        .def( "insert", &renderer::TypedEntityMap<T>::insert)
+
         //.def( "__iter__", boost::python::iterator<renderer::TypedEntityMap<T> >())
         ;
 }

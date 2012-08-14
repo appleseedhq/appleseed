@@ -8,12 +8,13 @@
 #
 
 import appleseed as asr
+import math
 
 def build_project():
     project = asr.Project( 'test project')
 
     paths = project.get_search_paths()
-    paths.append( 'data')
+    paths.append( '/home/est/Devel/appleseed/sandbox/extras/devkit/sample/data')
     project.set_search_paths( paths)
 
     project.add_default_configurations()
@@ -59,11 +60,11 @@ def build_project():
         index = assembly.objects().insert( o)
         o = assembly.objects()[index]
 
-        instance_name = o.name + "_inst"
+        instance_name = obj_name + "_inst"
         material_names = ["gray_material"]
 
         # Create an instance of this object and insert it into the assembly.
-        obj_inst = asr.ObjectInstance( instance_name, {}, o, asr.Transformd( asr.Matrix4d.identity(), material_names)
+        obj_inst = asr.ObjectInstance( instance_name, {}, o, asr.Transformd( asr.Matrix4d.identity()), material_names)
 
     #------------------------------------------------------------------------
     # Light
@@ -73,25 +74,14 @@ def build_project():
     LightExitance = [ 1.0, 1.0, 1.0 ]
     assembly.colors().insert( asr.ColorEntity( "light_exitance", { 'color_space' : 'srgb', 'multiplier' : 30.0 }, LightExitance))
 
-    """
-    # Create a point light called "light" and insert it into the assembly.
-    asf::auto_release_ptr<asr::Light> light(
-        asr::PointLightFactory().create(
-            "light",
-            asr::ParamArray()
-                .insert("exitance", "light_exitance")))
-    light->set_transform( asr.Transformd(
-        asr.Matrix4d.translation( asr.Vector3d(0.6, 2.0, 1.0))))
-    assembly->lights().insert(light)
+    light = asr.Light( "point_light", "light", { 'exitance' : 'light_exitance'})
+    light.set_transform( asr.Transformd( asr.Matrix4d.translation( asr.Vector3d(0.6, 2.0, 1.0))))
+    assembly.lights().insert( light)
 
     # Create an instance of the assembly and insert it into the scene.
-    scene->assembly_instances().insert(
-        asr::AssemblyInstanceFactory::create(
-            "assembly_inst",
-            asr::ParamArray(),
-            *assembly,
-            asr.Transformd( asr.Matrix4d.identity())))
-    """
+    assembly_inst = asr.AssemblyInstance( "assembly_inst", {}, assembly)
+    assembly_inst.transform_sequence().set_transform( 0.0, asr.Transformd( asr.Matrix4d.identity()))
+    scene.assembly_instances().insert( assembly_inst)
 
     # Insert the assembly into the scene.
     scene.assemblies().insert( assembly)
@@ -119,8 +109,9 @@ def build_project():
 
     # Place and orient the camera. By default cameras are located in (0.0, 0.0, 0.0)
     # and are looking toward Z- (0.0, 0.0, -1.0).
-    camera->transform_sequence().set_transform( 0.0, asr.Transformd( asr.Matrix4d.rotation( asr.Vector3d(1.0, 0.0, 0.0), math.radians(-20.0)) *
-                                                                    asr.Matrix4d.translation( asr.Vector3d(0.0, 0.8, 11.0))))
+    mat = asr.Matrix4d.rotation( asr.Vector3d(1.0, 0.0, 0.0), math.radians(-20.0))
+    mat = mat * asr.Matrix4d.translation( asr.Vector3d(0.0, 0.8, 11.0))
+    camera.transform_sequence().set_transform( 0.0, asr.Transformd( mat))
 
     # Bind the camera to the scene.
     scene.set_camera( camera)
@@ -177,13 +168,13 @@ def main():
     # Build the project.
     project = build_project()
 
-    renderer_controller = asr.DefaultRendererController()
+    #renderer_controller = asr.DefaultRendererController()
     #renderer_controller = PyRendererController()
-    renderer = asr.MasterRenderer( project, project.configurations()['final'].get_inherited_parameters(), renderer_controller)
-    renderer.render()
+    #renderer = asr.MasterRenderer( project, project.configurations()['final'].get_inherited_parameters(), renderer_controller)
+    #renderer.render()
 
-    project.get_frame().write( "output.test/png")
-    asr.ProjectFileWriter().write( project, "output/test.appleseed")
+    #project.get_frame().write( "output.test/png")
+    asr.ProjectFileWriter().write( project, "/tmp/test.appleseed")
 
 if __name__ == "__main__":
     main()
