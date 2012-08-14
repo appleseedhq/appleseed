@@ -42,42 +42,28 @@ def build_project():
     # Create a material called "gray_material" and insert it into the assembly.
     assembly.materials().insert( asr.Material( "gray_material", { "surface_shader" : "physical_surface_shader",
                                                                     "bsdf" : "diffuse_gray_brdf"}))
-    """
     #------------------------------------------------------------------------
     # Geometry
     #------------------------------------------------------------------------
 
     # Load the scene geometry from disk.
-    asr::MeshObjectArray objects;
-    asr::MeshObjectReader::read(
-        project->get_search_paths(),
-        "cube",
-        asr::ParamArray()
-            .insert("filename", "scene.obj"),
-        objects)
+    objects = asr.MeshObjectReader.read( project.get_search_paths(), "cube", { 'filename' : 'scene.obj'})
 
     # Insert all the objects into the assembly.
-    for (size_t i = 0; i < objects.size() ++i)
-    {
-        # Insert this object into the scene.
-        asr::MeshObject* object = objects[i];
-        assembly->objects().insert(asf::auto_release_ptr<asr::Object>(object))
+    for o in objects:
+        obj_name = o.get_name()
 
-        # Create the array of material names.
-        asf::StringArray material_names;
-        material_names.push_back("gray_material")
+        # insert takes ownership of the object
+        # it's necessary to save the index of the
+        # object an get a new reference to o
+        index = assembly.objects().insert( o)
+        o = assembly.objects()[index]
+
+        instance_name = o.name + "_inst"
+        material_names = ["gray_material"]
 
         # Create an instance of this object and insert it into the assembly.
-        const std::string instance_name = std::string(object->get_name()) + "_inst";
-        assembly->object_instances().insert(
-            asr::ObjectInstanceFactory::create(
-                instance_name.c_str(),
-                asr::ParamArray(),
-                *object,
-                asr.Transformd( asr.Matrix4d.identity()),
-                material_names))
-    }
-    """
+        obj_inst = asr.ObjectInstance( instance_name, {}, o, asr.Transformd( asr.Matrix4d.identity(), material_names)
 
     #------------------------------------------------------------------------
     # Light
