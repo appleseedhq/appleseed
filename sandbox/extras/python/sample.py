@@ -51,21 +51,16 @@ def build_project():
     objects = asr.MeshObjectReader.read( project.get_search_paths(), "cube", { 'filename' : 'scene.obj'})
 
     # Insert all the objects into the assembly.
+
+    material_names = ["gray_material"]
+
     for o in objects:
-        obj_name = o.get_name()
+        # Create an instance of this object and insert it into the assembly.
+        obj_inst = asr.ObjectInstance( o.get_name() + "_inst", {}, o, asr.Transformd( asr.Matrix4d.identity()), material_names)
+        assembly.object_instances().insert( obj_inst)
 
         # insert takes ownership of the object
-        # it's necessary to save the index of the
-        # object an get a new reference to o
-        index = assembly.objects().insert( o)
-        o = assembly.objects()[index]
-
-        instance_name = obj_name + "_inst"
-        material_names = ["gray_material"]
-
-        # Create an instance of this object and insert it into the assembly.
-        obj_inst = asr.ObjectInstance( instance_name, {}, o, asr.Transformd( asr.Matrix4d.identity()), material_names)
-        assembly.object_instances().insert( obj_inst)
+        assembly.objects().insert( o)
 
     #------------------------------------------------------------------------
     # Light
@@ -169,10 +164,10 @@ def main():
     # Build the project.
     project = build_project()
 
-    #renderer_controller = asr.DefaultRendererController()
+    renderer_controller = asr.DefaultRendererController()
     #renderer_controller = PyRendererController()
-    #renderer = asr.MasterRenderer( project, project.configurations()['final'].get_inherited_parameters(), renderer_controller)
-    #renderer.render()
+    renderer = asr.MasterRenderer( project, project.configurations()['final'].get_inherited_parameters(), renderer_controller)
+    renderer.render()
 
     #project.get_frame().write( "output.test/png")
     asr.ProjectFileWriter().write( project, "/tmp/test.appleseed")
