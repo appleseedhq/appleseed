@@ -109,13 +109,29 @@ EntityVector::iterator::operator--()
     return *this;
 }
 
-EntityVector::iterator::value_type&
+EntityVector::iterator
+EntityVector::iterator::operator++(int)
+{
+    iterator current( *this);
+    ++impl->m_it;
+    return current;
+}
+
+EntityVector::iterator
+EntityVector::iterator::operator--(int)
+{
+    iterator current( *this);
+    --impl->m_it;
+    return current;
+}
+
+EntityVector::iterator::reference
 EntityVector::iterator::operator*() const
 {
     return **impl->m_it;
 }
 
-EntityVector::iterator::value_type*
+EntityVector::iterator::pointer
 EntityVector::iterator::operator->() const
 {
     return *impl->m_it;
@@ -176,13 +192,29 @@ EntityVector::const_iterator::operator--()
     return *this;
 }
 
-const EntityVector::const_iterator::value_type&
+EntityVector::const_iterator
+EntityVector::const_iterator::operator++(int)
+{
+    const_iterator current( *this);
+    ++impl->m_it;
+    return current;
+}
+
+EntityVector::const_iterator
+EntityVector::const_iterator::operator--(int)
+{
+    const_iterator current( *this);
+    --impl->m_it;
+    return current;
+}
+
+EntityVector::const_iterator::reference
 EntityVector::const_iterator::operator*() const
 {
     return **impl->m_it;
 }
 
-const EntityVector::const_iterator::value_type*
+EntityVector::const_iterator::pointer
 EntityVector::const_iterator::operator->() const
 {
     return *impl->m_it;
