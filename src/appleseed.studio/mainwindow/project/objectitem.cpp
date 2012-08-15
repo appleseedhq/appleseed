@@ -42,11 +42,12 @@ namespace studio {
 
 ObjectItem::ObjectItem(
     Object*         object,
-    Assembly&       assembly,
+    Assembly&       parent,
+    AssemblyItem*   parent_item,
     ProjectBuilder& project_builder)
   : EntityItemBase<Object>(object)
-  , m_object(object)
-  , m_assembly(assembly)
+  , m_parent(parent)
+  , m_parent_item(parent_item)
   , m_project_builder(project_builder)
 {
     set_allow_edition(false);
@@ -57,7 +58,10 @@ void ObjectItem::slot_delete()
     if (!allows_deletion())
         return;
 
-    m_project_builder.remove_object(m_assembly, m_object->get_uid());
+    m_project_builder.remove_object(
+        m_parent,
+        m_parent_item,
+        m_entity->get_uid());
 
     // 'this' no longer exists at this point.
 }

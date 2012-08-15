@@ -35,12 +35,11 @@
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 
-// Qt headers.
-#include <QObject>
-
 // Forward declarations.
+namespace appleseed { namespace studio { class BaseGroupItem; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace renderer  { class AssemblyInstance; }
+namespace renderer  { class BaseGroup; }
 
 namespace appleseed {
 namespace studio {
@@ -48,15 +47,16 @@ namespace studio {
 class AssemblyInstanceItem
   : public EntityItemBase<renderer::AssemblyInstance>
 {
-    Q_OBJECT
-
   public:
     AssemblyInstanceItem(
         renderer::AssemblyInstance* assembly_instance,
+        renderer::BaseGroup&        parent,
+        BaseGroupItem*              parent_item,
         ProjectBuilder&             project_builder);
 
   private:
-    renderer::AssemblyInstance*     m_assembly_instance;
+    renderer::BaseGroup&            m_parent;
+    BaseGroupItem*                  m_parent_item;
     ProjectBuilder&                 m_project_builder;
 
     virtual void slot_delete() override;

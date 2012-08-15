@@ -57,12 +57,14 @@ namespace
 }
 
 AssemblyCollectionItem::AssemblyCollectionItem(
-    Scene&              scene,
     AssemblyContainer&  assemblies,
+    BaseGroup&          parent,
+    BaseGroupItem*      parent_item,
     ProjectBuilder&     project_builder,
     ParamArray&         settings)
   : CollectionItemBase<Assembly>(g_class_uid, "Assemblies")
-  , m_scene(scene)
+  , m_parent(parent)
+  , m_parent_item(parent_item)
   , m_project_builder(project_builder)
   , m_settings(settings)
 {
@@ -72,25 +74,16 @@ AssemblyCollectionItem::AssemblyCollectionItem(
 QMenu* AssemblyCollectionItem::get_single_item_context_menu() const
 {
     QMenu* menu = CollectionItemBase<Assembly>::get_single_item_context_menu();
-    menu->addSeparator();
 
-    menu->addAction("Create Assembly...", this, SLOT(slot_create_assembly()));
+    menu->addSeparator();
+    menu->addAction("Create Assembly...", this, SLOT(slot_create()));
 
     return menu;
 }
 
-AssemblyItem& AssemblyCollectionItem::get_item(const Assembly& assembly) const
+void AssemblyCollectionItem::slot_create()
 {
-    const ItemMap::const_iterator i = m_items.find(assembly.get_uid());
-    assert(i != m_items.end());
-
-    return *static_cast<AssemblyItem*>(i->second);
-}
-
-void AssemblyCollectionItem::slot_create_assembly()
-{
-    const string assembly_name_suggestion =
-        get_name_suggestion("assembly", m_scene.assemblies());
+    const string assembly_name_suggestion = get_name_suggestion("assembly", m_parent.assemblies());
 
     const string assembly_name =
         get_entity_name_dialog(
@@ -100,7 +93,7 @@ void AssemblyCollectionItem::slot_create_assembly()
             assembly_name_suggestion);
 
     if (!assembly_name.empty())
-        m_project_builder.insert_assembly(assembly_name);
+        m_project_builder.insert_assembly(m_parent, m_parent_item, assembly_name);
 }
 
 ItemBase* AssemblyCollectionItem::create_item(Assembly* assembly) const
@@ -109,8 +102,9 @@ ItemBase* AssemblyCollectionItem::create_item(Assembly* assembly) const
 
     return
         new AssemblyItem(
-            assembly,
-            m_scene,
+            *assembly,
+            m_parent,
+            m_parent_item,
             m_project_builder,
             m_settings);
 }

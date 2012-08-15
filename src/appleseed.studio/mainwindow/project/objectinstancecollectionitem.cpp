@@ -50,11 +50,13 @@ namespace
 }
 
 ObjectInstanceCollectionItem::ObjectInstanceCollectionItem(
-    Assembly&                   assembly,
     ObjectInstanceContainer&    object_instances,
+    Assembly&                   parent,
+    AssemblyItem*               parent_item,
     ProjectBuilder&             project_builder)
   : CollectionItemBase<ObjectInstance>(g_class_uid, "Object Instances")
-  , m_assembly(assembly)
+  , m_parent(parent)
+  , m_parent_item(parent_item)
   , m_project_builder(project_builder)
 {
     add_items(object_instances);
@@ -67,7 +69,8 @@ ItemBase* ObjectInstanceCollectionItem::create_item(ObjectInstance* object_insta
     return
         new ObjectInstanceItem(
             object_instance,
-            m_assembly,
+            m_parent,
+            m_parent_item,
             m_project_builder);
 }
 

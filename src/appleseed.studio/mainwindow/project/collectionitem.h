@@ -32,14 +32,13 @@
 // appleseed.studio headers.
 #include "mainwindow/project/collectionitembase.h"
 #include "mainwindow/project/entitycreatorbase.h"
-#include "mainwindow/project/itembase.h"
 #include "mainwindow/project/projectbuilder.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/entity.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/containers/dictionary.h"
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/uid.h"
 
 // Qt headers.
@@ -49,12 +48,13 @@
 #include <QWidget>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class ProjectBuilder; } }
+namespace appleseed     { namespace studio { class ProjectBuilder; } }
+namespace foundation    { class Dictionary; }
 
 namespace appleseed {
 namespace studio {
 
-template <typename Entity, typename ParentEntity>
+template <typename Entity, typename ParentEntity, typename ParentItem>
 class CollectionItem
   : public CollectionItemBase<Entity>
   , private EntityCreatorBase
@@ -64,19 +64,21 @@ class CollectionItem
         const foundation::UniqueID  class_uid,
         const QString&              title,
         ParentEntity&               parent,
+        ParentItem*                 parent_item,
         ProjectBuilder&             project_builder);
 
     void set_allow_creation(const bool allow);
     bool allows_creation() const;
 
-    virtual QMenu* get_single_item_context_menu() const;
+    virtual QMenu* get_single_item_context_menu() const override;
 
   protected:
     ParentEntity&       m_parent;
+    ParentItem*         m_parent_item;
     ProjectBuilder&     m_project_builder;
     bool                m_allow_creation;
 
-    virtual void slot_create_accepted(foundation::Dictionary values);
+    virtual void slot_create_accepted(foundation::Dictionary values) override;
 
     void create(const foundation::Dictionary& values);
 
@@ -89,39 +91,41 @@ class CollectionItem
 // CollectionItem class implementation.
 //
 
-template <typename Entity, typename ParentEntity>
-CollectionItem<Entity, ParentEntity>::CollectionItem(
+template <typename Entity, typename ParentEntity, typename ParentItem>
+CollectionItem<Entity, ParentEntity, ParentItem>::CollectionItem(
     const foundation::UniqueID      class_uid,
     const QString&                  title,
     ParentEntity&                   parent,
+    ParentItem*                     parent_item,
     ProjectBuilder&                 project_builder)
   : CollectionItemBase<Entity>(class_uid, title)
   , m_parent(parent)
+  , m_parent_item(parent_item)
   , m_project_builder(project_builder)
   , m_allow_creation(true)
 {
 }
 
-template <typename Entity, typename ParentEntity>
-inline void CollectionItem<Entity, ParentEntity>::set_allow_creation(const bool allow)
+template <typename Entity, typename ParentEntity, typename ParentItem>
+inline void CollectionItem<Entity, ParentEntity, ParentItem>::set_allow_creation(const bool allow)
 {
     m_allow_creation = allow;
 }
 
-template <typename Entity, typename ParentEntity>
-inline bool CollectionItem<Entity, ParentEntity>::allows_creation() const
+template <typename Entity, typename ParentEntity, typename ParentItem>
+inline bool CollectionItem<Entity, ParentEntity, ParentItem>::allows_creation() const
 {
     return m_allow_creation;
 }
 
-template <typename Entity, typename ParentEntity>
-QMenu* CollectionItem<Entity, ParentEntity>::get_single_item_context_menu() const
+template <typename Entity, typename ParentEntity, typename ParentItem>
+QMenu* CollectionItem<Entity, ParentEntity, ParentItem>::get_single_item_context_menu() const
 {
     QMenu* menu = CollectionItemBase<Entity>::get_single_item_context_menu();
-    menu->addSeparator();
 
     if (m_allow_creation)
     {
+        menu->addSeparator();
         menu->addAction(
             QString("Create %1...").arg(
                 renderer::EntityTraits<Entity>::get_human_readable_entity_type_name()),
@@ -132,8 +136,8 @@ QMenu* CollectionItem<Entity, ParentEntity>::get_single_item_context_menu() cons
     return menu;
 }
 
-template <typename Entity, typename ParentEntity>
-void CollectionItem<Entity, ParentEntity>::slot_create_accepted(foundation::Dictionary values)
+template <typename Entity, typename ParentEntity, typename ParentItem>
+void CollectionItem<Entity, ParentEntity, ParentItem>::slot_create_accepted(foundation::Dictionary values)
 {
     catch_entity_creation_errors(
         &CollectionItem::create,
@@ -141,10 +145,10 @@ void CollectionItem<Entity, ParentEntity>::slot_create_accepted(foundation::Dict
         renderer::EntityTraits<Entity>::get_human_readable_entity_type_name());
 }
 
-template <typename Entity, typename ParentEntity>
-void CollectionItem<Entity, ParentEntity>::create(const foundation::Dictionary& values)
+template <typename Entity, typename ParentEntity, typename ParentItem>
+void CollectionItem<Entity, ParentEntity, ParentItem>::create(const foundation::Dictionary& values)
 {
-    m_project_builder.insert_entity<Entity>(m_parent, values);
+    m_project_builder.insert_entity<Entity>(m_parent, m_parent_item, values);
 
     qobject_cast<QWidget*>(QObject::sender())->close();
 }

@@ -26,45 +26,51 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "assemblyinstanceitem.h"
-
-// appleseed.studio headers.
-#include "mainwindow/project/projectbuilder.h"
+#ifndef APPLESEED_RENDERER_MODELING_SCENE_BASEGROUP_H
+#define APPLESEED_RENDERER_MODELING_SCENE_BASEGROUP_H
 
 // appleseed.renderer headers.
-#include "renderer/api/scene.h"
+#include "renderer/modeling/scene/containers.h"
 
-using namespace renderer;
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
-namespace appleseed {
-namespace studio {
-
-AssemblyInstanceItem::AssemblyInstanceItem(
-    AssemblyInstance*   assembly_instance,
-    BaseGroup&          parent,
-    BaseGroupItem*      parent_item,
-    ProjectBuilder&     project_builder)
-  : EntityItemBase<AssemblyInstance>(assembly_instance)
-  , m_parent(parent)
-  , m_parent_item(parent_item)
-  , m_project_builder(project_builder)
+namespace renderer
 {
-    set_allow_edition(false);
-}
 
-void AssemblyInstanceItem::slot_delete()
+//
+// Base class for renderer::Scene and renderer::Assembly.
+//
+
+class DLLSYMBOL BaseGroup
 {
-    if (!allows_deletion())
-        return;
+  public:
+    // Constructor.
+    BaseGroup();
 
-    m_project_builder.remove_assembly_instance(
-        m_parent,
-        m_parent_item,
-        m_entity->get_uid());
+    // Destructor.
+    ~BaseGroup();
 
-    // 'this' no longer exists at this point.
-}
+    // Access the colors.
+    ColorContainer& colors() const;
 
-}   // namespace studio
-}   // namespace appleseed
+    // Access the textures.
+    TextureContainer& textures() const;
+
+    // Access the texture instances.
+    TextureInstanceContainer& texture_instances() const;
+
+    // Access the assemblies.
+    AssemblyContainer& assemblies() const;
+
+    // Access the assembly instances.
+    AssemblyInstanceContainer& assembly_instances() const;
+
+  private:
+    struct Impl;
+    Impl* impl;
+};
+
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_MODELING_SCENE_BASEGROUP_H

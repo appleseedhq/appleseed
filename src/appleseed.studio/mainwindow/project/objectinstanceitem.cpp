@@ -62,7 +62,7 @@ namespace
 {
     enum Side
     {
-        FrontSide = 0,
+        FrontSide,
         BackSide,
         FrontAndBackSides
     };
@@ -77,7 +77,7 @@ namespace
         }
 
         explicit MaterialAssignmentData(const Side side)
-            : m_side(side)
+          : m_side(side)
         {
         }
 
@@ -98,11 +98,12 @@ namespace studio {
 
 ObjectInstanceItem::ObjectInstanceItem(
     ObjectInstance*     object_instance,
-    Assembly&           assembly,
+    Assembly&           parent,
+    AssemblyItem*       parent_item,
     ProjectBuilder&     project_builder)
   : EntityItemBase<ObjectInstance>(object_instance)
-  , m_object_instance(object_instance)
-  , m_assembly(assembly)
+  , m_parent(parent)
+  , m_parent_item(parent_item)
   , m_project_builder(project_builder)
 {
     set_allow_edition(false);
@@ -110,30 +111,44 @@ ObjectInstanceItem::ObjectInstanceItem(
     update_style();
 }
 
+const Assembly& ObjectInstanceItem::get_assembly() const
+{
+    return m_parent;
+}
+
+namespace
+{
+    void add_material_assignment_menu_actions(QMenu* menu, const ObjectInstanceItem* item)
+    {
+        menu->addSeparator();
+
+        menu->addAction("Assign Material To Front Side...", item, SLOT(slot_assign_material()))
+            ->setData(QVariant::fromValue(MaterialAssignmentData(FrontSide)));
+
+        menu->addAction("Assign Material To Back Side...", item, SLOT(slot_assign_material()))
+            ->setData(QVariant::fromValue(MaterialAssignmentData(BackSide)));
+
+        menu->addAction("Assign Material To Both Sides...", item, SLOT(slot_assign_material()))
+            ->setData(QVariant::fromValue(MaterialAssignmentData(FrontAndBackSides)));
+
+        menu->addSeparator();
+
+        menu->addAction("Unassign Front Side Material", item, SLOT(slot_unassign_material()))
+            ->setData(QVariant::fromValue(MaterialAssignmentData(FrontSide)));
+
+        menu->addAction("Unassign Back Side Material", item, SLOT(slot_unassign_material()))
+            ->setData(QVariant::fromValue(MaterialAssignmentData(BackSide)));
+
+        menu->addAction("Unassign Both Sides Materials", item, SLOT(slot_unassign_material()))
+            ->setData(QVariant::fromValue(MaterialAssignmentData(FrontAndBackSides)));
+    }
+}
+
 QMenu* ObjectInstanceItem::get_single_item_context_menu() const
 {
     QMenu* menu = ItemBase::get_single_item_context_menu();
-    menu->addSeparator();
 
-    menu->addAction("Assign Material To Front Side...", this, SLOT(slot_assign_material()))
-        ->setData(QVariant::fromValue(MaterialAssignmentData(FrontSide)));
-
-    menu->addAction("Assign Material To Back Side...", this, SLOT(slot_assign_material()))
-        ->setData(QVariant::fromValue(MaterialAssignmentData(BackSide)));
-
-    menu->addAction("Assign Material To Both Sides...", this, SLOT(slot_assign_material()))
-        ->setData(QVariant::fromValue(MaterialAssignmentData(FrontAndBackSides)));
-
-    menu->addSeparator();
-
-    menu->addAction("Unassign Front Side Material", this, SLOT(slot_unassign_material()))
-        ->setData(QVariant::fromValue(MaterialAssignmentData(FrontSide)));
-
-    menu->addAction("Unassign Back Side Material", this, SLOT(slot_unassign_material()))
-        ->setData(QVariant::fromValue(MaterialAssignmentData(BackSide)));
-
-    menu->addAction("Unassign Both Sides Materials", this, SLOT(slot_unassign_material()))
-        ->setData(QVariant::fromValue(MaterialAssignmentData(FrontAndBackSides)));
+    add_material_assignment_menu_actions(menu, this);
 
     return menu;
 }
@@ -166,38 +181,14 @@ namespace
 
 QMenu* ObjectInstanceItem::get_multiple_items_context_menu(const QList<ItemBase*>& items) const
 {
-    if (!are_in_assembly(items_to_object_instance_items(items), m_assembly.get_uid()))
+    if (!are_in_assembly(items_to_object_instance_items(items), m_parent.get_uid()))
         return 0;
 
     QMenu* menu = ItemBase::get_multiple_items_context_menu(items);
-    menu->addSeparator();
 
-    menu->addAction("Assign Material To Front Side...", this, SLOT(slot_assign_material()))
-        ->setData(QVariant::fromValue(MaterialAssignmentData(FrontSide, items)));
-
-    menu->addAction("Assign Material To Back Side...", this, SLOT(slot_assign_material()))
-        ->setData(QVariant::fromValue(MaterialAssignmentData(BackSide, items)));
-
-    menu->addAction("Assign Material To Both Sides...", this, SLOT(slot_assign_material()))
-        ->setData(QVariant::fromValue(MaterialAssignmentData(FrontAndBackSides, items)));
-
-    menu->addSeparator();
-
-    menu->addAction("Unassign Front Side Material", this, SLOT(slot_unassign_material()))
-        ->setData(QVariant::fromValue(MaterialAssignmentData(FrontSide, items)));
-
-    menu->addAction("Unassign Back Side Material", this, SLOT(slot_unassign_material()))
-        ->setData(QVariant::fromValue(MaterialAssignmentData(BackSide, items)));
-
-    menu->addAction("Unassign Both Sides Materials", this, SLOT(slot_unassign_material()))
-        ->setData(QVariant::fromValue(MaterialAssignmentData(FrontAndBackSides, items)));
+    add_material_assignment_menu_actions(menu, this);
 
     return menu;
-}
-
-const Assembly& ObjectInstanceItem::get_assembly() const
-{
-    return m_assembly;
 }
 
 namespace
@@ -236,7 +227,7 @@ void ObjectInstanceItem::slot_assign_material()
 
     const QString window_title =
         data.m_items.empty()
-            ? QString("Assign Material to %1").arg(m_object_instance->get_name())
+            ? QString("Assign Material to %1").arg(m_entity->get_name())
             : QString("Assign Material to Multiple Object Instances");
 
     EntityBrowserWindow* browser_window =
@@ -244,7 +235,7 @@ void ObjectInstanceItem::slot_assign_material()
             treeWidget(),
             window_title.toStdString());
 
-    EntityBrowser<Assembly> entity_browser(m_assembly);
+    EntityBrowser<Assembly> entity_browser(m_parent);
 
     browser_window->add_items_page(
         "material",
@@ -317,7 +308,10 @@ void ObjectInstanceItem::slot_delete()
     if (!allows_deletion())
         return;
 
-    m_project_builder.remove_object_instance(m_assembly, m_object_instance->get_uid());
+    m_project_builder.remove_object_instance(
+        m_parent,
+        m_parent_item,
+        m_entity->get_uid());
 
     // 'this' no longer exists at this point.
 }
@@ -325,10 +319,10 @@ void ObjectInstanceItem::slot_delete()
 void ObjectInstanceItem::assign_material(const bool front_side, const bool back_side, const char* material_name)
 {
     if (front_side)
-        m_object_instance->assign_material(0, ObjectInstance::FrontSide, material_name);
+        m_entity->assign_material(0, ObjectInstance::FrontSide, material_name);
 
     if (back_side)
-        m_object_instance->assign_material(0, ObjectInstance::BackSide, material_name);
+        m_entity->assign_material(0, ObjectInstance::BackSide, material_name);
 
     m_project_builder.notify_project_modification();
 
@@ -338,10 +332,10 @@ void ObjectInstanceItem::assign_material(const bool front_side, const bool back_
 void ObjectInstanceItem::unassign_material(const bool front_side, const bool back_side)
 {
     if (front_side)
-        m_object_instance->clear_front_materials();
+        m_entity->clear_front_materials();
 
     if (back_side)
-        m_object_instance->clear_back_materials();
+        m_entity->clear_back_materials();
 
     m_project_builder.notify_project_modification();
 
@@ -350,8 +344,8 @@ void ObjectInstanceItem::unassign_material(const bool front_side, const bool bac
 
 void ObjectInstanceItem::update_style()
 {
-    if (m_object_instance->get_front_material_names().empty() &&
-        m_object_instance->get_back_material_names().empty())
+    if (m_entity->get_front_material_names().empty() &&
+        m_entity->get_back_material_names().empty())
     {
         setTextColor(0, QColor(255, 0, 255, 255));
     }

@@ -38,17 +38,30 @@
 // Forward declarations.
 namespace foundation    { class StringDictionary; }
 namespace renderer      { class Assembly; }
+namespace renderer      { class BaseGroup; }
 namespace renderer      { class Scene; }
 
 namespace appleseed {
 namespace studio {
 
-template <typename ParentEntity>
-class EntityBrowser;
+template <typename ParentEntity> class EntityBrowser;
+
+template <>
+class EntityBrowser<renderer::BaseGroup>
+  : public EntityEditorWindow::IEntityBrowser
+{
+  public:
+    explicit EntityBrowser(const renderer::BaseGroup& base_group);
+
+    virtual foundation::StringDictionary get_entities(const std::string& type) const;
+
+  private:
+    const renderer::BaseGroup& m_base_group;
+};
 
 template <>
 class EntityBrowser<renderer::Scene>
-  : public EntityEditorWindow::IEntityBrowser
+  : public EntityBrowser<renderer::BaseGroup>
 {
   public:
     explicit EntityBrowser(const renderer::Scene& scene);
@@ -61,7 +74,7 @@ class EntityBrowser<renderer::Scene>
 
 template <>
 class EntityBrowser<renderer::Assembly>
-  : public EntityEditorWindow::IEntityBrowser
+  : public EntityBrowser<renderer::BaseGroup>
 {
   public:
     explicit EntityBrowser(const renderer::Assembly& assembly);

@@ -34,7 +34,9 @@
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/material/material.h"
+#include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
+#include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
@@ -51,9 +53,6 @@ namespace renderer
 
 struct Assembly::Impl
 {
-    ColorContainer              m_colors;
-    TextureContainer            m_textures;
-    TextureInstanceContainer    m_texture_instances;
     BSDFContainer               m_bsdfs;
     EDFContainer                m_edfs;
     SurfaceShaderContainer      m_surface_shaders;
@@ -87,21 +86,6 @@ Assembly::~Assembly()
 void Assembly::release()
 {
     delete this;
-}
-
-ColorContainer& Assembly::colors() const
-{
-    return impl->m_colors;
-}
-
-TextureContainer& Assembly::textures() const
-{
-    return impl->m_textures;
-}
-
-TextureInstanceContainer& Assembly::texture_instances() const
-{
-    return impl->m_texture_instances;
 }
 
 BSDFContainer& Assembly::bsdfs() const
@@ -144,6 +128,19 @@ namespace
     template <typename EntityCollection>
     bool invoke_on_frame_begin(
         const Project&          project,
+        EntityCollection&       entities)
+    {
+        bool success = true;
+
+        for (each<EntityCollection> i = entities; i; ++i)
+            success = success && i->on_frame_begin(project);
+
+        return success;
+    }
+
+    template <typename EntityCollection>
+    bool invoke_on_frame_begin(
+        const Project&          project,
         const Assembly&         assembly,
         EntityCollection&       entities)
     {
@@ -153,6 +150,15 @@ namespace
             success = success && i->on_frame_begin(project, assembly);
 
         return success;
+    }
+
+    template <typename EntityCollection>
+    void invoke_on_frame_end(
+        const Project&          project,
+        EntityCollection&       entities)
+    {
+        for (each<EntityCollection> i = entities; i; ++i)
+            i->on_frame_end(project);
     }
 
     template <typename EntityCollection>
@@ -175,12 +181,16 @@ bool Assembly::on_frame_begin(const Project& project)
     success = success && invoke_on_frame_begin(project, *this, edfs());
     success = success && invoke_on_frame_begin(project, *this, materials());
     success = success && invoke_on_frame_begin(project, *this, lights());
+    success = success && invoke_on_frame_begin(project, assemblies());
+    success = success && invoke_on_frame_begin(project, assembly_instances());
 
     return success;
 }
 
 void Assembly::on_frame_end(const Project& project)
 {
+    invoke_on_frame_end(project, assembly_instances());
+    invoke_on_frame_end(project, assemblies());
     invoke_on_frame_end(project, *this, lights());
     invoke_on_frame_end(project, *this, materials());
     invoke_on_frame_end(project, *this, edfs());

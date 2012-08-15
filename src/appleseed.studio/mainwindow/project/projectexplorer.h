@@ -31,7 +31,6 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/projectbuilder.h"
-#include "mainwindow/project/projecttree.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -57,7 +56,7 @@ namespace studio {
 
 class ProjectExplorer
   : public QObject
-  , foundation::NonCopyable
+  , public foundation::NonCopyable
 {
     Q_OBJECT
 
@@ -72,12 +71,9 @@ class ProjectExplorer
 
   private:
     QTreeWidget*                m_tree_widget;
-    ProjectTree                 m_project_tree;
-    renderer::Project&          m_project;
     ProjectBuilder              m_project_builder;
     std::auto_ptr<QShortcut>    m_delete_shortcut;
 
-    QMenu* build_no_item_context_menu() const;
     QMenu* build_single_item_context_menu(QTreeWidgetItem* item) const;
     QMenu* build_multiple_items_context_menu(const QList<QTreeWidgetItem*>& item_widgets) const;
 

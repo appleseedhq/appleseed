@@ -43,6 +43,7 @@
 #include <QObject>
 
 // Forward declarations.
+namespace appleseed { namespace studio { class AssemblyItem; } }
 namespace appleseed { namespace studio { class ItemBase; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace renderer  { class ParamArray; }
@@ -58,8 +59,9 @@ class ObjectCollectionItem
 
   public:
     ObjectCollectionItem(
-        renderer::Assembly&         assembly,
         renderer::ObjectContainer&  objects,
+        renderer::Assembly&         parent,
+        AssemblyItem*               parent_item,
         ProjectBuilder&             project_builder,
         renderer::ParamArray&       settings);
 
@@ -69,7 +71,8 @@ class ObjectCollectionItem
     void slot_import_objects();
 
   private:
-    renderer::Assembly&             m_assembly;
+    renderer::Assembly&             m_parent;
+    AssemblyItem*                   m_parent_item;
     ProjectBuilder&                 m_project_builder;
     renderer::ParamArray&           m_settings;
 

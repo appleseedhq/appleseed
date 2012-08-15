@@ -31,10 +31,12 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/assemblyinstancecollectionitem.h"
+#include "mainwindow/project/basegroupitem.h"
 #include "mainwindow/project/collectionitem.h"
 #include "mainwindow/project/exceptioninvalidentityname.h"
 #include "mainwindow/project/objectcollectionitem.h"
 #include "mainwindow/project/objectinstancecollectionitem.h"
+#include "mainwindow/project/sceneitem.h"
 #include "mainwindow/project/texturecollectionitem.h"
 
 // appleseed.renderer headers.
@@ -63,11 +65,8 @@ using namespace std;
 namespace appleseed {
 namespace studio {
 
-ProjectBuilder::ProjectBuilder(
-    Project&            project,
-    ProjectTree&        project_tree)
+ProjectBuilder::ProjectBuilder(Project& project)
   : m_project(project)
-  , m_project_tree(project_tree)
 {
 }
 
@@ -87,25 +86,29 @@ void ProjectBuilder::notify_project_modification() const
 }
 
 void ProjectBuilder::insert_assembly(
+    BaseGroup&          parent,
+    BaseGroupItem*      parent_item,
     const string&       name) const
 {
     auto_release_ptr<Assembly> assembly(
         AssemblyFactory::create(name.c_str(), ParamArray()));
 
-    m_project_tree.add_item(assembly.get());
+    parent_item->add_item(assembly.get());
 
-    m_project.get_scene()->assemblies().insert(assembly);
+    parent.assemblies().insert(assembly);
 
     notify_project_modification();
 }
 
 namespace
 {
-    vector<UniqueID> collect_assembly_instances(const Scene& scene, const UniqueID assembly_uid)
+    vector<UniqueID> collect_assembly_instances(
+        const AssemblyInstanceContainer&    assembly_instances,
+        const UniqueID                      assembly_uid)
     {
         vector<UniqueID> collected;
 
-        for (const_each<AssemblyInstanceContainer> i = scene.assembly_instances(); i; ++i)
+        for (const_each<AssemblyInstanceContainer> i = assembly_instances; i; ++i)
         {
             if (i->get_assembly().get_uid() == assembly_uid)
                 collected.push_back(i->get_uid());
@@ -116,37 +119,40 @@ namespace
 }
 
 void ProjectBuilder::remove_assembly(
+    BaseGroup&          parent,
+    BaseGroupItem*      parent_item,
     const UniqueID      assembly_uid) const
 {
-    Scene& scene = *m_project.get_scene();
+    AssemblyContainer& assemblies = parent.assemblies();
+    AssemblyInstanceContainer& assembly_instances = parent.assembly_instances();
 
-    const vector<UniqueID> remove_list = collect_assembly_instances(scene, assembly_uid);
+    const vector<UniqueID> remove_list = collect_assembly_instances(assembly_instances, assembly_uid);
 
     for (const_each<vector<UniqueID> > i = remove_list; i; ++i)
     {
         const UniqueID assembly_instance_uid = *i;
 
         // Remove the project item corresponding to this assembly instance.
-        m_project_tree
-            .get_assembly_instance_collection_item()
-                .remove_item(assembly_instance_uid);
+        parent_item->get_assembly_instance_collection_item().remove_item(assembly_instance_uid);
 
         // Remove this assembly instance.
-        scene.assembly_instances().remove(assembly_instance_uid);
+        assembly_instances.remove(assembly_instance_uid);
     }
 
     // Remove the project item corresponding to the assembly itself.
-    m_project_tree.get_assembly_collection_item().remove_item(assembly_uid);
+    parent_item->get_assembly_collection_item().remove_item(assembly_uid);
 
     // Remove the assembly itself.
-    scene.assemblies().remove(assembly_uid);
+    assemblies.remove(assembly_uid);
 
-    scene.bump_geometry_version_id();
+    m_project.get_scene()->bump_geometry_version_id();
 
     notify_project_modification();
 }
 
 void ProjectBuilder::insert_assembly_instance(
+    BaseGroup&          parent,
+    BaseGroupItem*      parent_item,
     const string&       name,
     Assembly&           assembly) const
 {
@@ -156,154 +162,32 @@ void ProjectBuilder::insert_assembly_instance(
             ParamArray(),
             assembly));
 
-    m_project_tree.add_item(assembly_instance.get());
+    parent_item->get_assembly_instance_collection_item().add_item(assembly_instance.get());
 
-    Scene* scene = m_project.get_scene();
-    scene->assembly_instances().insert(assembly_instance);
+    parent.assembly_instances().insert(assembly_instance);
 
-    scene->bump_geometry_version_id();
+    m_project.get_scene()->bump_geometry_version_id();
 
     notify_project_modification();
 }
 
 void ProjectBuilder::remove_assembly_instance(
+    BaseGroup&          parent,
+    BaseGroupItem*      parent_item,
     const UniqueID      assembly_instance_uid) const
 {
-    m_project_tree
-        .get_assembly_instance_collection_item()
-            .remove_item(assembly_instance_uid);
+    parent_item->get_assembly_instance_collection_item().remove_item(assembly_instance_uid);
 
-    Scene* scene = m_project.get_scene();
-    scene->assembly_instances().remove(assembly_instance_uid);
+    parent.assembly_instances().remove(assembly_instance_uid);
     
-    scene->bump_geometry_version_id();
-
-    notify_project_modification();
-}
-
-void ProjectBuilder::insert_objects(
-    Assembly&           assembly,
-    const string&       path) const
-{
-    const string base_object_name =
-        filesystem::path(path).replace_extension().filename().string();
-
-    ParamArray params;
-    params.insert("filename", path);
-
-    SearchPaths search_paths;
-
-    MeshObjectArray mesh_objects;
-
-    if (!MeshObjectReader().read(
-            search_paths,
-            base_object_name.c_str(),
-            params,
-            mesh_objects))
-        return;
-
-    for (size_t i = 0; i < mesh_objects.size(); ++i)
-    {
-        MeshObject* object = mesh_objects[i];
-
-        m_project_tree.get_assembly_collection_item().get_item(assembly).add_item(object);
-
-        assembly.objects().insert(auto_release_ptr<Object>(object));
-
-        const string object_instance_name = string(object->get_name()) + "_inst";
-        
-        auto_release_ptr<ObjectInstance> object_instance(
-            ObjectInstanceFactory::create(
-                object_instance_name.c_str(),
-                ParamArray(),
-                *object,
-                Transformd(Matrix4d::identity()),
-                StringArray()));
-
-        m_project_tree.get_assembly_collection_item().get_item(assembly).add_item(object_instance.get());
-
-        assembly.object_instances().insert(object_instance);
-    }
-
-    assembly.bump_version_id();
-
-    if (!mesh_objects.empty())
-        notify_project_modification();
-}
-
-namespace
-{
-    vector<UniqueID> collect_object_instances(const Assembly& assembly, const UniqueID object_id)
-    {
-        vector<UniqueID> collected;
-
-        for (const_each<ObjectInstanceContainer> i = assembly.object_instances(); i; ++i)
-        {
-            if (i->get_object().get_uid() == object_id)
-                collected.push_back(i->get_uid());
-        }
-
-        return collected;
-    }
-}
-
-void ProjectBuilder::remove_object(
-    Assembly&           assembly,
-    const UniqueID      object_id) const
-{
-    const AssemblyItem& assembly_item =
-        m_project_tree.get_assembly_collection_item().get_item(assembly);
-
-    ObjectInstanceCollectionItem& object_instance_collection_item =
-        assembly_item.get_object_instance_collection_item();
-
-    const vector<UniqueID> remove_list = collect_object_instances(assembly, object_id);
-
-    for (const_each<vector<UniqueID> > i = remove_list; i; ++i)
-    {
-        const UniqueID object_instance_uid = *i;
-
-        // Remove the project item corresponding to this object instance.
-        object_instance_collection_item.remove_item(object_instance_uid);
-
-        // Remove this object instance.
-        assembly.object_instances().remove(
-            assembly.object_instances().get_by_uid(object_instance_uid));
-    }
-
-    // Remove the project item corresponding to the object itself.
-    assembly_item.get_object_collection_item().remove_item(object_id);
-
-    // Remove the object itself.
-    assembly.objects().remove(assembly.objects().get_by_uid(object_id));
-
-    assembly.bump_version_id();
-
-    notify_project_modification();
-}
-
-void ProjectBuilder::remove_object_instance(
-    Assembly&           assembly,
-    const UniqueID      object_instance_uid) const
-{
-    m_project_tree
-        .get_assembly_collection_item()
-            .get_item(assembly)
-                .get_object_instance_collection_item()
-                    .remove_item(object_instance_uid);
-
-    assembly.object_instances().remove(
-        assembly.object_instances().get_by_uid(object_instance_uid));
-
-    assembly.bump_version_id();
+    m_project.get_scene()->bump_geometry_version_id();
 
     notify_project_modification();
 }
 
 namespace
 {
-    auto_release_ptr<Texture> create_texture(
-        const string&   path)
+    auto_release_ptr<Texture> create_texture(const string& path)
     {
         const string texture_name =
             filesystem::path(path).replace_extension().filename().string();
@@ -322,8 +206,7 @@ namespace
                     search_paths));
     }
 
-    auto_release_ptr<TextureInstance> create_texture_instance(
-        const string&   texture_name)
+    auto_release_ptr<TextureInstance> create_texture_instance(const string& texture_name)
     {
         const string texture_instance_name = texture_name + "_inst";
 
@@ -341,33 +224,18 @@ namespace
 }
 
 void ProjectBuilder::insert_texture(
-    Scene&              scene,
+    BaseGroup&          parent,
+    BaseGroupItem*      parent_item,
     const string&       path) const
 {
     auto_release_ptr<Texture> texture = create_texture(path);
     auto_release_ptr<TextureInstance> texture_instance = create_texture_instance(texture->get_name());
 
-    m_project_tree.add_item(texture.get());
-    m_project_tree.add_item(texture_instance.get());
+    parent_item->add_item(texture.get());
+    parent_item->add_item(texture_instance.get());
 
-    scene.textures().insert(texture);
-    scene.texture_instances().insert(texture_instance);
-
-    notify_project_modification();
-}
-
-void ProjectBuilder::insert_texture(
-    Assembly&           assembly,
-    const string&       path) const
-{
-    auto_release_ptr<Texture> texture = create_texture(path);
-    auto_release_ptr<TextureInstance> texture_instance = create_texture_instance(texture->get_name());
-
-    m_project_tree.get_assembly_collection_item().get_item(assembly).add_item(texture.get());
-    m_project_tree.get_assembly_collection_item().get_item(assembly).add_item(texture_instance.get());
-
-    assembly.textures().insert(texture);
-    assembly.texture_instances().insert(texture_instance);
+    parent.textures().insert(texture);
+    parent.texture_instances().insert(texture_instance);
 
     notify_project_modification();
 }
@@ -391,66 +259,151 @@ namespace
 
         return collected;
     }
-
-    template <typename ParentEntity>
-    void do_remove_texture(
-        TextureContainer&           textures,
-        TextureInstanceContainer&   texture_instances,
-        TextureCollectionItem&      texture_collection_item,
-        CollectionItem<
-            TextureInstance,
-            ParentEntity>&          texture_instance_collection_item,
-        const UniqueID              texture_uid)
-    {
-        const vector<UniqueID> remove_list =
-            collect_texture_instances(textures, texture_instances, texture_uid);
-
-        for (const_each<vector<UniqueID> > i = remove_list; i; ++i)
-        {
-            const UniqueID texture_instance_uid = *i;
-
-            // Remove the project item corresponding to this texture instance.
-            texture_instance_collection_item.remove_item(texture_instance_uid);
-
-            // Remove this texture instance.
-            texture_instances.remove(texture_instances.get_by_uid(texture_instance_uid));
-        }
-
-        // Remove the project item corresponding to the texture itself.
-        texture_collection_item.remove_item(texture_uid);
-
-        // Remove the texture itself.
-        textures.remove(textures.get_by_uid(texture_uid));
-    }
 }
 
 void ProjectBuilder::remove_texture(
-    Scene&              scene,
+    BaseGroup&          parent,
+    BaseGroupItem*      parent_item,
     const UniqueID      texture_uid) const
 {
-    do_remove_texture(
-        scene.textures(),
-        scene.texture_instances(),
-        m_project_tree.get_texture_collection_item(),
-        m_project_tree.get_texture_instance_collection_item(),
-        texture_uid);
+    TextureContainer& textures = parent.textures();
+    TextureInstanceContainer& texture_instances = parent.texture_instances();
+
+    const vector<UniqueID> remove_list =
+        collect_texture_instances(textures, texture_instances, texture_uid);
+
+    for (const_each<vector<UniqueID> > i = remove_list; i; ++i)
+    {
+        const UniqueID texture_instance_uid = *i;
+
+        // Remove the project item corresponding to this texture instance.
+        parent_item->get_texture_instance_collection_item().remove_item(texture_instance_uid);
+
+        // Remove this texture instance.
+        texture_instances.remove(texture_instances.get_by_uid(texture_instance_uid));
+    }
+
+    // Remove the project item corresponding to the texture itself.
+    parent_item->get_texture_collection_item().remove_item(texture_uid);
+
+    // Remove the texture itself.
+    textures.remove(textures.get_by_uid(texture_uid));
 
     notify_project_modification();
 }
 
-void ProjectBuilder::remove_texture(
-    Assembly&           assembly,
-    const UniqueID      texture_uid) const
+void ProjectBuilder::insert_objects(
+    Assembly&           parent,
+    AssemblyItem*       parent_item,
+    const string&       path) const
 {
-    const AssemblyItem& assembly_item =
-        m_project_tree.get_assembly_collection_item().get_item(assembly);
+    const string base_object_name =
+        filesystem::path(path).replace_extension().filename().string();
 
-    do_remove_texture(
-        assembly.textures(),
-        assembly.texture_instances(),
-        assembly_item.get_texture_collection_item(),
-        assembly_item.get_texture_instance_collection_item(),
-        texture_uid);
+    ParamArray params;
+    params.insert("filename", path);
+
+    SearchPaths search_paths;
+    MeshObjectArray mesh_objects;
+
+    if (!MeshObjectReader().read(
+            search_paths,
+            base_object_name.c_str(),
+            params,
+            mesh_objects))
+        return;
+
+    for (size_t i = 0; i < mesh_objects.size(); ++i)
+    {
+        MeshObject* object = mesh_objects[i];
+
+        parent_item->add_item(object);
+
+        parent.objects().insert(auto_release_ptr<Object>(object));
+
+        const string object_instance_name = string(object->get_name()) + "_inst";
+        
+        auto_release_ptr<ObjectInstance> object_instance(
+            ObjectInstanceFactory::create(
+                object_instance_name.c_str(),
+                ParamArray(),
+                *object,
+                Transformd(Matrix4d::identity()),
+                StringArray()));
+
+        parent_item->add_item(object_instance.get());
+
+        parent.object_instances().insert(object_instance);
+    }
+
+    if (!mesh_objects.empty())
+    {
+        parent.bump_version_id();
+        notify_project_modification();
+    }
+}
+
+namespace
+{
+    vector<UniqueID> collect_object_instances(
+        const ObjectInstanceContainer&      object_instances,
+        const UniqueID                      object_uid)
+    {
+        vector<UniqueID> collected;
+
+        for (const_each<ObjectInstanceContainer> i = object_instances; i; ++i)
+        {
+            if (i->get_object().get_uid() == object_uid)
+                collected.push_back(i->get_uid());
+        }
+
+        return collected;
+    }
+}
+
+void ProjectBuilder::remove_object(
+    Assembly&           parent,
+    AssemblyItem*       parent_item,
+    const UniqueID      object_uid) const
+{
+    ObjectContainer& objects = parent.objects();
+    ObjectInstanceContainer& object_instances = parent.object_instances();
+
+    const vector<UniqueID> remove_list = collect_object_instances(object_instances, object_uid);
+
+    for (const_each<vector<UniqueID> > i = remove_list; i; ++i)
+    {
+        const UniqueID object_instance_uid = *i;
+
+        // Remove the project item corresponding to this object instance.
+        parent_item->get_object_instance_collection_item().remove_item(object_instance_uid);
+
+        // Remove this object instance.
+        object_instances.remove(object_instances.get_by_uid(object_instance_uid));
+    }
+
+    // Remove the project item corresponding to the object itself.
+    parent_item->get_object_collection_item().remove_item(object_uid);
+
+    // Remove the object itself.
+    objects.remove(objects.get_by_uid(object_uid));
+
+    parent.bump_version_id();
+
+    notify_project_modification();
+}
+
+void ProjectBuilder::remove_object_instance(
+    Assembly&           parent,
+    AssemblyItem*       parent_item,
+    const UniqueID      object_instance_uid) const
+{
+    parent_item->get_object_instance_collection_item().remove_item(object_instance_uid);
+
+    parent.object_instances().remove(
+        parent.object_instances().get_by_uid(object_instance_uid));
+
+    parent.bump_version_id();
 
     notify_project_modification();
 }

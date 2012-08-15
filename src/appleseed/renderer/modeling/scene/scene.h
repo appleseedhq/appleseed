@@ -33,6 +33,7 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/environment/environment.h"
+#include "renderer/modeling/scene/basegroup.h"
 #include "renderer/modeling/scene/containers.h"
 
 // appleseed.foundation headers.
@@ -57,6 +58,7 @@ namespace renderer
 class DLLSYMBOL Scene
   : public foundation::IUnknown
   , public foundation::Identifiable
+  , public BaseGroup
 {
   public:
     // Delete this instance.
@@ -80,26 +82,11 @@ class DLLSYMBOL Scene
     // Return 0 if the environment does not exist.
     Environment* get_environment() const;
 
-    // Access the colors.
-    ColorContainer& colors() const;
-
-    // Access the textures.
-    TextureContainer& textures() const;
-
-    // Access the texture instances.
-    TextureInstanceContainer& texture_instances() const;
-
     // Access the environment EDFs.
     EnvironmentEDFContainer& environment_edfs() const;
 
     // Access the environment shaders.
     EnvironmentShaderContainer& environment_shaders() const;
-
-    // Access the assemblies.
-    AssemblyContainer& assemblies() const;
-
-    // Access the assembly instances.
-    AssemblyInstanceContainer& assembly_instances() const;
 
     // Compute and return the bounding box of the scene.
     GAABB3 compute_bbox() const;

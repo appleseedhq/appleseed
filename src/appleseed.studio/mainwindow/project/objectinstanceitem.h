@@ -40,6 +40,7 @@
 #include <QObject>
 
 // Forward declarations.
+namespace appleseed { namespace studio { class AssemblyItem; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace renderer  { class Assembly; }
 namespace renderer  { class ObjectInstance; }
@@ -58,14 +59,14 @@ class ObjectInstanceItem
   public:
     ObjectInstanceItem(
         renderer::ObjectInstance*   object_instance,
-        renderer::Assembly&         assembly,
+        renderer::Assembly&         parent,
+        AssemblyItem*               parent_item,
         ProjectBuilder&             project_builder);
 
-    virtual QMenu* get_single_item_context_menu() const override;
-
-    virtual QMenu* get_multiple_items_context_menu(const QList<ItemBase*>& items) const override;
-
     const renderer::Assembly& get_assembly() const;
+
+    virtual QMenu* get_single_item_context_menu() const override;
+    virtual QMenu* get_multiple_items_context_menu(const QList<ItemBase*>& items) const override;
 
   private slots:
     void slot_assign_material();
@@ -73,8 +74,8 @@ class ObjectInstanceItem
     void slot_unassign_material();
 
   private:
-    renderer::ObjectInstance*       m_object_instance;
-    renderer::Assembly&             m_assembly;
+    renderer::Assembly&             m_parent;
+    AssemblyItem*                   m_parent_item;
     ProjectBuilder&                 m_project_builder;
 
     virtual void slot_delete() override;

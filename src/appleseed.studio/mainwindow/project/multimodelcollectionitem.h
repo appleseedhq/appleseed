@@ -42,8 +42,10 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/uid.h"
+
+// Qt headers.
+#include <QTreeWidgetItem>
 
 // Standard headers.
 #include <cassert>
@@ -51,28 +53,28 @@
 #include <string>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class ItemBase; } }
-namespace appleseed { namespace studio { class ProjectBuilder; } }
+namespace appleseed     { namespace studio { class ItemBase; } }
+namespace appleseed     { namespace studio { class ProjectBuilder; } }
+namespace foundation    { class Dictionary; }
+class QString;
 
 namespace appleseed {
 namespace studio {
 
-#pragma warning (push)
-#pragma warning (disable: 4250)     // 'class1' : inherits 'class2::member' via dominance
-
-template <typename Entity, typename ParentEntity>
+template <typename Entity, typename ParentEntity, typename ParentItem>
 class MultiModelCollectionItem
-  : public CollectionItem<Entity, ParentEntity>
+  : public CollectionItem<Entity, ParentEntity, ParentItem>
 {
   public:
     MultiModelCollectionItem(
         const foundation::UniqueID  class_uid,
         const QString&              title,
         ParentEntity&               parent,
+        ParentItem*                 parent_item,
         ProjectBuilder&             project_builder);
 
   private:
-    typedef CollectionItem<Entity, ParentEntity> CollectionItemType;
+    typedef CollectionItem<Entity, ParentEntity, ParentItem> CollectionItemType;
 
     virtual ItemBase* create_item(Entity* entity) const override;
 
@@ -84,18 +86,19 @@ class MultiModelCollectionItem
 // MultiModelCollectionItem class implementation.
 //
 
-template <typename Entity, typename ParentEntity>
-MultiModelCollectionItem<Entity, ParentEntity>::MultiModelCollectionItem(
+template <typename Entity, typename ParentEntity, typename ParentItem>
+MultiModelCollectionItem<Entity, ParentEntity, ParentItem>::MultiModelCollectionItem(
     const foundation::UniqueID      class_uid,
     const QString&                  title,
     ParentEntity&                   parent,
+    ParentItem*                     parent_item,
     ProjectBuilder&                 project_builder)
-  : CollectionItemType(class_uid, title, parent, project_builder)
+  : CollectionItemType(class_uid, title, parent, parent_item, project_builder)
 {
 }
 
-template <typename Entity, typename ParentEntity>
-ItemBase* MultiModelCollectionItem<Entity, ParentEntity>::create_item(Entity* entity) const
+template <typename Entity, typename ParentEntity, typename ParentItem>
+ItemBase* MultiModelCollectionItem<Entity, ParentEntity, ParentItem>::create_item(Entity* entity) const
 {
     assert(entity);
 
@@ -106,8 +109,8 @@ ItemBase* MultiModelCollectionItem<Entity, ParentEntity>::create_item(Entity* en
             CollectionItemType::m_project_builder);
 }
 
-template <typename Entity, typename ParentEntity>
-void MultiModelCollectionItem<Entity, ParentEntity>::slot_create()
+template <typename Entity, typename ParentEntity, typename ParentItem>
+void MultiModelCollectionItem<Entity, ParentEntity, ParentItem>::slot_create()
 {
     typedef typename renderer::EntityTraits<Entity> EntityTraits;
 
@@ -139,8 +142,6 @@ void MultiModelCollectionItem<Entity, ParentEntity>::slot_create()
         this,
         SLOT(slot_create_accepted(foundation::Dictionary)));
 }
-
-#pragma warning (pop)
 
 }       // namespace studio
 }       // namespace appleseed

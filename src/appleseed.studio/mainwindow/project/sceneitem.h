@@ -26,68 +26,58 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTTREE_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTTREE_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_SCENEITEM_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_SCENEITEM_H
+
+// appleseed.studio headers.
+#include "mainwindow/project/basegroupitem.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
+#include "foundation/platform/compiler.h"
 
 // Forward declarations.
-namespace appleseed { namespace studio { class AssemblyCollectionItem; } }
-namespace appleseed { namespace studio { class AssemblyInstanceCollectionItem; } }
-namespace appleseed { namespace studio { template <typename Entity, typename ParentEntity> class CollectionItem; } }
+namespace appleseed { namespace studio { template <typename Entity, typename ParentEntity, typename ParentItem> class CollectionItem; } }
+namespace appleseed { namespace studio { template <typename Entity, typename ParentEntity> class MultiModelEntityItem; } }
+namespace appleseed { namespace studio { template <typename Entity, typename ParentEntity> class SingleModelEntityItem; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
-namespace appleseed { namespace studio { class TextureCollectionItem; } }
-namespace renderer  { class Assembly; }
-namespace renderer  { class AssemblyInstance; }
-namespace renderer  { class ColorEntity; }
+namespace renderer  { class Camera; }
+namespace renderer  { class Environment; }
 namespace renderer  { class EnvironmentEDF; }
 namespace renderer  { class EnvironmentShader; }
 namespace renderer  { class ParamArray; }
-namespace renderer  { class Project; }
 namespace renderer  { class Scene; }
-namespace renderer  { class Texture; }
-namespace renderer  { class TextureInstance; }
-class QTreeWidget;
+class QMenu;
 
 namespace appleseed {
 namespace studio {
 
-class ProjectTree
-  : foundation::NonCopyable
+class SceneItem
+  : public BaseGroupItem
 {
   public:
-    explicit ProjectTree(QTreeWidget* tree_widget);
+    SceneItem(
+        renderer::Scene&                scene,
+        ProjectBuilder&                 project_builder,
+        renderer::ParamArray&           settings);
 
-    ~ProjectTree();
+    virtual QMenu* get_single_item_context_menu() const override;
 
-    void initialize(
-        renderer::Project&      project,
-        ProjectBuilder&         project_builder,
-        renderer::ParamArray&   settings);
-
-    void add_item(renderer::ColorEntity* color);
-    void add_item(renderer::Texture* texture);
-    void add_item(renderer::TextureInstance* texture_instance);
     void add_item(renderer::EnvironmentEDF* environment_edf);
     void add_item(renderer::EnvironmentShader* environment_shader);
-    void add_item(renderer::Assembly* assembly);
-    void add_item(renderer::AssemblyInstance* assembly_instance);
-
-    TextureCollectionItem& get_texture_collection_item() const;
-    CollectionItem<
-        renderer::TextureInstance,
-        renderer::Scene>& get_texture_instance_collection_item() const;
-
-    AssemblyCollectionItem& get_assembly_collection_item() const;
-    AssemblyInstanceCollectionItem& get_assembly_instance_collection_item() const;
 
   private:
-    struct Impl;
-    Impl* impl;
+    typedef MultiModelEntityItem<renderer::Camera, renderer::Scene> CameraItem;
+    typedef SingleModelEntityItem<renderer::Environment, renderer::Scene> EnvironmentItem;
+    typedef CollectionItem<renderer::EnvironmentEDF, renderer::Scene, SceneItem> EnvironmentEDFCollectionItem;
+    typedef CollectionItem<renderer::EnvironmentShader, renderer::Scene, SceneItem> EnvironmentShaderCollectionItem;
+
+    CameraItem*                         m_camera_item;
+    EnvironmentItem*                    m_environment_item;
+    EnvironmentEDFCollectionItem*       m_environment_edf_collection_item;
+    EnvironmentShaderCollectionItem*    m_environment_shader_collection_item;
 };
 
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTTREE_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_SCENEITEM_H

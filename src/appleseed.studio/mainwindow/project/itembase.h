@@ -76,13 +76,10 @@ class ItemBase
     virtual void slot_delete();
     virtual void slot_delete_multiple(QList<ItemBase*> items = QList<ItemBase*>());
 
-  protected:
-    ItemBase();
-
   private:
-    foundation::UniqueID    m_class_uid;
-    bool                    m_allow_edition;
-    bool                    m_allow_deletion;
+    const foundation::UniqueID  m_class_uid;
+    bool                        m_allow_edition;
+    bool                        m_allow_deletion;
 };
 
 }       // namespace studio

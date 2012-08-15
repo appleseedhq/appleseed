@@ -38,10 +38,8 @@
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 
-// Qt headers.
-#include <QObject>
-
 // Forward declarations.
+namespace appleseed { namespace studio { class BaseGroupItem; } }
 namespace appleseed { namespace studio { class ItemBase; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
 
@@ -51,17 +49,17 @@ namespace studio {
 class AssemblyInstanceCollectionItem
   : public CollectionItemBase<renderer::AssemblyInstance>
 {
-    Q_OBJECT
-
   public:
     AssemblyInstanceCollectionItem(
-        renderer::Scene&                        scene,
         renderer::AssemblyInstanceContainer&    assembly_instances,
+        renderer::BaseGroup&                    parent,
+        BaseGroupItem*                          parent_item,
         ProjectBuilder&                         project_builder);
 
   private:
-    renderer::Scene&    m_scene;
-    ProjectBuilder&     m_project_builder;
+    renderer::BaseGroup&    m_parent;
+    BaseGroupItem*          m_parent_item;
+    ProjectBuilder&         m_project_builder;
 
     virtual ItemBase* create_item(renderer::AssemblyInstance* assembly_instance) const override;
 };
