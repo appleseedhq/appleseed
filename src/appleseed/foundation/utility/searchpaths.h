@@ -92,6 +92,12 @@ class FOUNDATIONDLL SearchPaths
     // this file is returned. Otherwise the input path is returned.
     template <typename T> std::basic_string<T> qualify(const std::basic_string<T>& filepath) const;
 
+    // Iterators, used in python bindings
+    typedef std::vector<std::string>::const_iterator ConstIterator;
+
+    ConstIterator begin() const;
+    ConstIterator end() const;
+
   private:
     struct Impl;
     Impl* impl;

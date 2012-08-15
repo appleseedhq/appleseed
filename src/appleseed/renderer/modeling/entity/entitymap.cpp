@@ -106,13 +106,29 @@ EntityMap::iterator::operator--()
     return *this;
 }
 
-EntityMap::iterator::value_type&
+EntityMap::iterator
+EntityMap::iterator::operator++(int)
+{
+    iterator current( *this);
+    ++impl->m_it;
+    return current;
+}
+
+EntityMap::iterator
+EntityMap::iterator::operator--(int)
+{
+    iterator current( *this);
+    --impl->m_it;
+    return current;
+}
+
+EntityMap::iterator::reference
 EntityMap::iterator::operator*() const
 {
     return *impl->m_it->second;
 }
 
-EntityMap::iterator::value_type*
+EntityMap::iterator::pointer
 EntityMap::iterator::operator->() const
 {
     return impl->m_it->second;
@@ -173,13 +189,29 @@ EntityMap::const_iterator::operator--()
     return *this;
 }
 
-const EntityMap::const_iterator::value_type&
+EntityMap::const_iterator
+EntityMap::const_iterator::operator++(int)
+{
+    const_iterator current( *this);
+    ++impl->m_it;
+    return current;
+}
+
+EntityMap::const_iterator
+EntityMap::const_iterator::operator--(int)
+{
+    const_iterator current( *this);
+    --impl->m_it;
+    return current;
+}
+
+EntityMap::const_iterator::reference
 EntityMap::const_iterator::operator*() const
 {
     return *impl->m_it->second;
 }
 
-const EntityMap::const_iterator::value_type*
+EntityMap::const_iterator::pointer
 EntityMap::const_iterator::operator->() const
 {
     return impl->m_it->second;
