@@ -38,7 +38,6 @@
 #include "foundation/math/scalar.h"
 
 // Standard headers.
-#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <cstddef>
@@ -50,18 +49,6 @@ namespace foundation
 
 namespace
 {
-    template <typename T, size_t N>
-    bool has_nan(const Color<T, N>& color)
-    {
-        for (size_t i = 0; i < N; ++i)
-        {
-            if (color[i] != color[i])
-                return true;
-        }
-
-        return false;
-    }
-
     void accumulate_luminance(
         const Tile&     tile,
         double&         accumulated_luminance,
@@ -86,7 +73,7 @@ namespace
                     continue;
 
                 // Compute the Rec. 709 relative luminance of this pixel.
-                const float lum = luminance(std::max(linear_rgb, Color3f(0.0)));    // needs full qualification
+                const float lum = luminance(clamp_low(linear_rgb, 0.0f));
 
                 // It should no longer be possible to have NaN at this point.
                 assert(lum == lum);

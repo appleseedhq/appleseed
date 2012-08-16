@@ -138,6 +138,9 @@ template <typename T, size_t N> size_t max_abs_index(const Color<T, N>& c);
 // Return the average value of a color.
 template <typename T, size_t N> T average_value(const Color<T, N>& c);
 
+// Return true if a color contains at least one NaN value.
+template <typename T, size_t N> bool has_nan(const Color<T, N>& c);
+
 
 //
 // RGB color class of arbitrary type.
@@ -720,6 +723,18 @@ inline T average_value(const Color<T, N>& c)
         average += c[i];
 
     return average * (T(1.0) / N);
+}
+
+template <typename T, size_t N>
+inline bool has_nan(const Color<T, N>& c)
+{
+    for (size_t i = 0; i < N; ++i)
+    {
+        if (c[i] != c[i])
+            return true;
+    }
+
+    return false;
 }
 
 
