@@ -177,7 +177,10 @@ inline void ImageImportanceSampler<Payload, Importance>::sample(
     }
     else
     {
+        const size_t x = foundation::truncate<size_t>(s[0] * m_width);
+
         y = foundation::truncate<size_t>(s[1] * m_height);
+        payload = m_cdf_x[y][x].first;
 
         probability = m_rcp_pixel_count;
     }

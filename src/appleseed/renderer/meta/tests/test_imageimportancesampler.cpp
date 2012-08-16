@@ -73,7 +73,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_ImageImportanceSampler)
         const size_t m_height;
     };
 
-    TEST_CASE(GetPDF_GivenImageAndSample_ReturnsSameProbabilityAsSample)
+    TEST_CASE(GetPDF_ReturnsSameProbabilityAsSample)
     {
         const size_t Width = 5;
         const size_t Height = 5;
@@ -136,7 +136,6 @@ TEST_SUITE(Renderer_Kernel_Lighting_ImageImportanceSampler)
 
             size_t x, y;
             float prob_xy;
-
             importance_sampler.sample(s, x, y, prob_xy);
 
             const float pdf = importance_sampler.get_pdf(x, y);
@@ -202,17 +201,31 @@ TEST_SUITE(Renderer_Kernel_Lighting_ImageImportanceSampler)
         void sample(const size_t x, const size_t y, size_t& payload, double& importance) const
         {
             payload = x;
-            importance = y == 0 ? 0.0 : 1.0;
+            importance = 0.0;
         }
     };
 
-    TEST_CASE(GetPDF_GivenBlackImage_ReturnsZeroDotFive)
+    TEST_CASE(Sample_GivenUniformBlackImage)
+    {
+        UniformBlackSampler sampler;
+        ImageImportanceSampler<size_t, double> importance_sampler(2, 2, sampler);
+
+        size_t x, y;
+        double prob_xy;
+        importance_sampler.sample(Vector2d(0.0, 0.0), x, y, prob_xy);
+
+        EXPECT_EQ(0, x);
+        EXPECT_EQ(0, y);
+        EXPECT_EQ(0.25, prob_xy);
+    }
+
+    TEST_CASE(GetPDF_GivenUniformBlackImage)
     {
         UniformBlackSampler sampler;
         ImageImportanceSampler<size_t, double> importance_sampler(2, 2, sampler);
 
         const double pdf = importance_sampler.get_pdf(0, 1);
 
-        EXPECT_EQ(0.5, pdf);
+        EXPECT_EQ(0.25, pdf);
     }
 }
