@@ -66,6 +66,7 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
 	option ( USE_EXTERNAL_PNG       "Use external Png lib"      OFF)
 	option ( USE_EXTERNAL_ALEMBIC   "Use external Alembic libs" OFF)
 	option ( USE_EXTERNAL_XERCES    "Use external Xerces lib"   OFF)
+	option ( WITH_PYTHON            "Build Python module"       ON)
 endif ()
 
 #--------------------------------------------------------------------------------------------------
@@ -96,7 +97,6 @@ exec_program (
     ARGS "describe --long"
     OUTPUT_VARIABLE git_tag
 )
-
 
 #--------------------------------------------------------------------------------------------------
 # Boost libraries.
@@ -146,6 +146,7 @@ endif ()
 include_directories (
     appleseed
     STANN/include
+    ${PYTHON_INCLUDE_DIRS}
 )
 
 if (USE_EXTERNAL_PNG)
@@ -370,3 +371,7 @@ add_subdirectory (appleseed.studio)
 add_subdirectory (tools/animatecamera)
 add_subdirectory (tools/maketiledexr)
 add_subdirectory (tools/normalizeprojectfile)
+
+if (WITH_PYTHON)
+    add_subdirectory (appleseed.py)
+endif ()
