@@ -221,7 +221,7 @@ namespace
         assemblies.reserve(scene.assembly_instances().size());
 
         for (const_each<AssemblyInstanceContainer> i = scene.assembly_instances(); i; ++i)
-            assemblies.push_back(i->get_assembly_uid());
+            assemblies.push_back(i->get_assembly().get_uid());
 
         sort(assemblies.begin(), assemblies.end());
 
@@ -453,7 +453,7 @@ bool AssemblyLeafVisitor::visit(
             // Retrieve the region tree of this assembly.
             const RegionTree& region_tree =
                 *m_region_tree_cache.access(
-                    assembly_instance->get_assembly_uid(),
+                    assembly_instance->get_assembly().get_uid(),
                     m_tree.m_region_trees);
 
             // Check the intersection between the ray and the region tree.
@@ -476,7 +476,7 @@ bool AssemblyLeafVisitor::visit(
             // Retrieve the triangle tree of this assembly.
             const TriangleTree* triangle_tree =
                 m_triangle_tree_cache.access(
-                    assembly_instance->get_assembly_uid(),
+                    assembly_instance->get_assembly().get_uid(),
                     m_tree.m_triangle_trees);
 
             if (triangle_tree)
@@ -570,7 +570,7 @@ bool AssemblyLeafProbeVisitor::visit(
             // Retrieve the region tree of this assembly.
             const RegionTree& region_tree =
                 *m_region_tree_cache.access(
-                    assembly_instance->get_assembly_uid(),
+                    assembly_instance->get_assembly().get_uid(),
                     m_tree.m_region_trees);
 
             // Check the intersection between the ray and the region tree.
@@ -599,7 +599,7 @@ bool AssemblyLeafProbeVisitor::visit(
             // Retrieve the triangle tree of this leaf.
             const TriangleTree* triangle_tree =
                 m_triangle_tree_cache.access(
-                    assembly_instance->get_assembly_uid(),
+                    assembly_instance->get_assembly().get_uid(),
                     m_tree.m_triangle_trees);
 
             if (triangle_tree)

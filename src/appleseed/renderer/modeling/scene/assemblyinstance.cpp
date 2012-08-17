@@ -59,7 +59,6 @@ AssemblyInstance::AssemblyInstance(
     const Assembly&     assembly)
   : Entity(g_class_uid, params)
   , m_assembly(assembly)
-  , m_assembly_uid(assembly.get_uid())
 {
     set_name(name);
 }
