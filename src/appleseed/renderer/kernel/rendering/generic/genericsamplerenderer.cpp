@@ -30,6 +30,9 @@
 #include "genericsamplerenderer.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
+#include "renderer/global/globaltypes.h"
+#include "renderer/kernel/aov/spectrumstack.h"
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/intersection/tracecontext.h"
 #include "renderer/kernel/lighting/ilightingengine.h"
@@ -45,7 +48,18 @@
 #include "renderer/modeling/scene/scene.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/color.h"
+#include "foundation/image/colorspace.h"
+#include "foundation/image/spectrum.h"
+#include "foundation/math/vector.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/statistics.h"
+#include "foundation/utility/string.h"
+
+// Standard headers.
+#include <cstddef>
+#include <limits>
+#include <string>
 
 using namespace foundation;
 using namespace std;
@@ -85,11 +99,20 @@ namespace
           , m_lighting_engine(lighting_engine_factory->create())
           , m_shading_context(m_intersector, m_tracer, m_texture_cache, m_lighting_engine, m_params.m_transparency_threshold, m_params.m_max_iterations)
           , m_shading_engine(shading_engine)
+          , m_invalid_sample_count(0)
         {
         }
 
         ~GenericSampleRenderer()
         {
+            if (m_invalid_sample_count > 0)
+            {
+                RENDERER_LOG_WARNING(
+                    "found %s pixel sample%s with NaN or negative values",
+                    pretty_uint(m_invalid_sample_count).c_str(),
+                    m_invalid_sample_count > 1 ? "s" : "");
+            }
+
             m_lighting_engine->release();
         }
 
@@ -191,6 +214,9 @@ namespace
                 primary_ray.m_tmax = numeric_limits<double>::max();
             }
 
+            // Detect and report invalid values.
+            report_invalid_values(shading_result);
+
 #ifdef DEBUG_DISPLAY_TEXTURE_CACHE_PERFORMANCES
 
             const uint64 delta_hit_count = m_texture_cache.get_hit_count() - last_texture_cache_hit_count;
@@ -253,6 +279,50 @@ namespace
         ILightingEngine*            m_lighting_engine;
         const ShadingContext        m_shading_context;
         ShadingEngine&              m_shading_engine;
+
+        uint64                      m_invalid_sample_count;
+
+        void report_invalid_values(const ShadingResult& result)
+        {
+            bool warn = false;
+            
+            warn = warn || has_invalid_values(spectrum_as_color3f(result.m_color));
+            warn = warn || has_invalid_values(result.m_alpha);
+
+            const size_t aov_count = result.m_aovs.size();
+
+            for (size_t i = 0; i < aov_count; ++i)
+                warn = warn || has_invalid_values(spectrum_as_color3f(result.m_aovs[i]));
+
+            if (warn)
+            {
+                if (m_invalid_sample_count++ == 0)
+                    RENDERER_LOG_WARNING("found at least one pixel sample with NaN or negative values");
+            }
+        }
+
+        static Color3f spectrum_as_color3f(const Spectrum& s)
+        {
+            return Color3f(s[0], s[1], s[2]);
+        }
+
+        template <typename T, size_t N>
+        static bool has_invalid_values(const Color<T, N>& c)
+        {
+            for (size_t i = 0; i < N; ++i)
+            {
+                if (is_invalid_value(c[i]))
+                    return true;
+            }
+
+            return false;
+        }
+
+        template <typename T>
+        static bool is_invalid_value(const T x)
+        {
+            return x < T(0.0) || x != x;
+        }
     };
 }
 
