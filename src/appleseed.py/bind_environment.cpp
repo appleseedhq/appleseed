@@ -55,6 +55,9 @@ auto_release_ptr<EnvironmentEDF> create_environment_edf( const std::string env_t
         PyErr_SetString( PyExc_RuntimeError, "EnvironmentEDF type not found");
         bpy::throw_error_already_set();
     }
+
+    // To keep LLVM happy.
+    return auto_release_ptr<EnvironmentEDF>();
 }
 
 auto_release_ptr<EnvironmentShader> create_environment_shader( const std::string& env_shader_type,
@@ -71,6 +74,9 @@ auto_release_ptr<EnvironmentShader> create_environment_shader( const std::string
         PyErr_SetString( PyExc_RuntimeError, "EnvironmentShader type not found");
         bpy::throw_error_already_set();
     }
+
+    // To keep LLVM happy.
+    return auto_release_ptr<EnvironmentShader>();
 }
 
 auto_release_ptr<Environment> create_environment( const std::string& name, const bpy::dict& params)

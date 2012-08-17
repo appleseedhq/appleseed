@@ -53,6 +53,9 @@ auto_release_ptr<BSDF> create_bsdf( const std::string& bsdf_type,
         PyErr_SetString( PyExc_RuntimeError, "BSDF type not found");
         bpy::throw_error_already_set();
     }
+
+    // To keep LLVM happy.
+    return auto_release_ptr<BSDF>();
 }
 
 } // unnamed

@@ -105,6 +105,9 @@ struct matrix_indexer
 
         PyErr_SetString( PyExc_IndexError, "Out of bounds access in appleseed.Matrix.__get_item__" );
         boost::python::throw_error_already_set();
+
+        // To keep LLVM happy.
+        return T();
     }
 
 	static void set( Matrix<T,M,N>& mat, bpy::tuple indices, const T& v)
@@ -160,6 +163,9 @@ Matrix<T,N,N> invert_matrix( const Matrix<T,N,N>& mat)
         PyErr_SetString( PyExc_RuntimeError, "Singular matrix in appleseed.Matrix.inverse" );
         boost::python::throw_error_already_set();
     }
+
+    // To keep LLVM happy.
+    return Matrix<T,N,N>();
 }
 
 template<class T>

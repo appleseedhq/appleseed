@@ -134,12 +134,15 @@ void bind_object()
         .def( "compute_local_bbox", &Object::compute_local_bbox)
         ;
 
+    bpy::register_ptr_to_python< auto_release_ptr<Object> >();
+
     bind_typed_entity_vector<Object>( "ObjectContainer");
 
     bpy::class_<MeshObject, auto_release_ptr<MeshObject>, bpy::bases<Object>, boost::noncopyable>( "MeshObject", bpy::no_init)
         .def( "__init__", bpy::make_constructor( create_mesh_obj))
         ;
 
+    bpy::register_ptr_to_python< auto_release_ptr<MeshObject> >();
     boost::python::implicitly_convertible<auto_release_ptr<MeshObject>, auto_release_ptr<Object> >();
 
     bpy::class_<MeshObjectReader>( "MeshObjectReader", bpy::no_init)

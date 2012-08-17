@@ -52,6 +52,9 @@ auto_release_ptr<SurfaceShader> create_surface_shader( const std::string& surf_t
         PyErr_SetString( PyExc_RuntimeError, "SurfaceShader type not found");
         bpy::throw_error_already_set();
     }
+
+    // Keep LLVM happy.
+    return auto_release_ptr<SurfaceShader>();
 }
 
 auto_release_ptr<SurfaceShader> create_surface_shader_with_params( const std::string& surf_type,
@@ -68,6 +71,9 @@ auto_release_ptr<SurfaceShader> create_surface_shader_with_params( const std::st
         PyErr_SetString( PyExc_RuntimeError, "SurfaceShader type not found");
         bpy::throw_error_already_set();
     }
+
+    // Keep LLVM happy.
+    return auto_release_ptr<SurfaceShader>();
 }
 
 } // unnamed

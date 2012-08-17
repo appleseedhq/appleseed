@@ -122,6 +122,9 @@ struct vector_indexer
             PyErr_SetString( PyExc_IndexError, "Invalid index in appleseed.Vector" );
             boost::python::throw_error_already_set();
 		}
+
+		// Keep LLVM happy
+		return T();
 	}
 
 	static void set( Vector<T,N>& x, int i, const T& v)

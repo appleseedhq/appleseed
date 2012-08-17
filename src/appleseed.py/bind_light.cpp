@@ -54,6 +54,9 @@ auto_release_ptr<Light> create_light( const std::string& light_type,
         PyErr_SetString( PyExc_RuntimeError, "Light type not found");
         bpy::throw_error_already_set();
     }
+
+    // To keep LLVM happy.
+    return auto_release_ptr<Light>();
 }
 
 } // unnamed
