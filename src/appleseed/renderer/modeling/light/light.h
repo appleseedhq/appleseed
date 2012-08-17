@@ -108,7 +108,7 @@ class RENDERERDLL Light
         const foundation::Vector3d&     outgoing) const = 0;        // world space emission direction, unit-length
 
   protected:
-    void check_non_null_exitance_input(const char* input_name) const;
+    void check_exitance_input_non_null(const char* input_name) const;
 
   private:
     struct Impl;

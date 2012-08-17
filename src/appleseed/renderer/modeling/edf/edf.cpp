@@ -72,13 +72,14 @@ void EDF::on_frame_end(
 {
 }
 
-void EDF::check_non_null_exitance_input(
+void EDF::check_exitance_input_non_null(
     const char*         exitance_input_name,
     const char*         multiplier_input_name) const
 {
-    bool zero_exitance = false;
     const Source* exitance_source = m_inputs.source(exitance_input_name);
+    const Source* multiplier_source = m_inputs.source(multiplier_input_name);
 
+    bool zero_exitance = false;
     if (exitance_source->is_uniform())
     {
         Spectrum exitance;
@@ -88,8 +89,6 @@ void EDF::check_non_null_exitance_input(
     }
 
     bool zero_multiplier = false;
-    const Source* multiplier_source = m_inputs.source(multiplier_input_name);
-
     if (multiplier_source->is_uniform())
     {
         double multiplier;
