@@ -353,12 +353,6 @@ namespace
                 write(*i, assembly);
         }
 
-        void write_collection(const AssemblyInstanceContainer& assembly_instances, const Scene& scene)
-        {
-            for (const_each<AssemblyInstanceContainer> i = assembly_instances; i; ++i)
-                write(*i, scene);
-        }
-
         // Write a <color> element.
         void write(const ColorEntity& color_entity)
         {
@@ -648,7 +642,9 @@ namespace
                 !assembly.materials().empty() ||
                 !assembly.lights().empty() ||
                 !assembly.objects().empty() ||
-                !assembly.object_instances().empty());
+                !assembly.object_instances().empty() ||
+                !assembly.assemblies().empty() ||
+                !assembly.assembly_instances().empty());
 
             write_params(assembly.get_parameters());
 
@@ -662,17 +658,17 @@ namespace
             write_collection(assembly.lights());
             write_object_collection(assembly.objects());
             write_collection(assembly.object_instances(), assembly);
+            write_collection(assembly.assemblies());
+            write_collection(assembly.assembly_instances());
         }
 
         // Write an <assembly_instance> element.
-        void write(
-            const AssemblyInstance& assembly_instance,
-            const Scene&            scene)
+        void write(const AssemblyInstance& assembly_instance)
         {
             XMLElement element("assembly_instance", m_file, m_indenter);
             element.add_attribute("name", assembly_instance.get_name());
             element.add_attribute("assembly", assembly_instance.get_assembly().get_name());
-            element.write(true);
+            element.write(!assembly_instance.transform_sequence().empty());
 
             write_transform_sequence(assembly_instance.transform_sequence());
         }
@@ -705,7 +701,7 @@ namespace
                 write(*scene.get_environment());
 
             write_collection(scene.assemblies());
-            write_collection(scene.assembly_instances(), scene);
+            write_collection(scene.assembly_instances());
         }
 
         // Write a <frame> element.

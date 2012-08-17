@@ -76,124 +76,124 @@
         </xsd:choice>
         <xsd:attribute name="time" type="xsd:double" use="optional"/>
     </xsd:complexType>
+    <xsd:complexType name="assembly">
+        <xsd:complexContent>
+            <xsd:extension base="parameterSet">
+                <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                    <xsd:element name="bsdf">
+                        <xsd:complexType>
+                            <xsd:complexContent>
+                                <xsd:extension base="parameterSet">
+                                    <xsd:attribute name="name" type="xsd:string" use="required"/>
+                                    <xsd:attribute name="model" type="xsd:string" use="required"/>
+                                </xsd:extension>
+                            </xsd:complexContent>
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element ref="color"/>
+                    <xsd:element name="edf">
+                        <xsd:complexType>
+                            <xsd:complexContent>
+                                <xsd:extension base="parameterSet">
+                                    <xsd:attribute name="name" type="xsd:string" use="required"/>
+                                    <xsd:attribute name="model" type="xsd:string" use="required"/>
+                                </xsd:extension>
+                            </xsd:complexContent>
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="light">
+                        <xsd:complexType>
+                            <xsd:complexContent>
+                                <xsd:extension base="parameterSet">
+                                    <xsd:sequence maxOccurs="unbounded">
+                                        <xsd:element name="transform" type="transform" minOccurs="0"/>
+                                    </xsd:sequence>
+                                    <xsd:attribute name="name" type="xsd:string" use="required"/>
+                                    <xsd:attribute name="model" type="xsd:string" use="required"/>
+                                </xsd:extension>
+                            </xsd:complexContent>
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="material">
+                        <xsd:complexType>
+                            <xsd:complexContent>
+                                <xsd:extension base="parameterSet">
+                                    <xsd:attribute name="name" type="xsd:string" use="required"/>
+                                    <xsd:attribute name="model" type="xsd:string" use="required"/>
+                                </xsd:extension>
+                            </xsd:complexContent>
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="object">
+                        <xsd:complexType>
+                            <xsd:complexContent>
+                                <xsd:extension base="parameterSet">
+                                    <xsd:attribute name="name" type="xsd:string" use="required"/>
+                                    <xsd:attribute name="model" type="xsd:string" use="required"/>
+                                </xsd:extension>
+                            </xsd:complexContent>
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="object_instance">
+                        <xsd:complexType>
+                            <xsd:complexContent>
+                                <xsd:extension base="parameterSet">
+                                    <xsd:sequence>
+                                        <xsd:sequence maxOccurs="unbounded">
+                                            <xsd:element name="transform" type="transform" minOccurs="0"/>
+                                        </xsd:sequence>
+                                        <xsd:element name="assign_material" minOccurs="0" maxOccurs="unbounded">
+                                            <xsd:complexType>
+                                                <xsd:attribute name="slot" type="xsd:nonNegativeInteger" use="required"/>
+                                                <xsd:attribute name="side" type="xsd:string" use="optional"/>
+                                                <xsd:attribute name="material" type="xsd:string" use="required"/>
+                                            </xsd:complexType>
+                                        </xsd:element>
+                                    </xsd:sequence>
+                                    <xsd:attribute name="name" type="xsd:string" use="required"/>
+                                    <xsd:attribute name="object" type="xsd:string" use="required"/>
+                                </xsd:extension>
+                            </xsd:complexContent>
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="surface_shader">
+                        <xsd:complexType>
+                            <xsd:complexContent>
+                                <xsd:extension base="parameterSet">
+                                    <xsd:attribute name="name" type="xsd:string" use="required"/>
+                                    <xsd:attribute name="model" type="xsd:string" use="required"/>
+                                </xsd:extension>
+                            </xsd:complexContent>
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element ref="texture"/>
+                    <xsd:element ref="texture_instance"/>
+                    <xsd:element name="assembly" type="assembly"/>
+                    <xsd:element name="assembly_instance" type="assembly_instance"/>
+                </xsd:choice>
+                <xsd:attribute name="name" type="xsd:string" use="required"/>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="assembly_instance">
+        <xsd:complexContent>
+            <xsd:extension base="parameterSet">
+                <xsd:sequence maxOccurs="unbounded">
+                    <xsd:element name="transform" type="transform" minOccurs="0"/>
+                </xsd:sequence>
+                <xsd:attribute name="name" type="xsd:string" use="required"/>
+                <xsd:attribute name="assembly" type="xsd:string" use="required"/>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
     <xsd:element name="project">
         <xsd:complexType>
             <xsd:all>
                 <xsd:element name="scene">
                     <xsd:complexType>
                         <xsd:choice minOccurs="0" maxOccurs="unbounded">
-                            <xsd:element name="assembly">
-                                <xsd:complexType>
-                                    <xsd:complexContent>
-                                        <xsd:extension base="parameterSet">
-                                            <xsd:choice minOccurs="0" maxOccurs="unbounded">
-                                                <xsd:element name="bsdf">
-                                                    <xsd:complexType>
-                                                        <xsd:complexContent>
-                                                            <xsd:extension base="parameterSet">
-                                                                <xsd:attribute name="name" type="xsd:string" use="required"/>
-                                                                <xsd:attribute name="model" type="xsd:string" use="required"/>
-                                                            </xsd:extension>
-                                                        </xsd:complexContent>
-                                                    </xsd:complexType>
-                                                </xsd:element>
-                                                <xsd:element ref="color"/>
-                                                <xsd:element name="edf">
-                                                    <xsd:complexType>
-                                                        <xsd:complexContent>
-                                                            <xsd:extension base="parameterSet">
-                                                                <xsd:attribute name="name" type="xsd:string" use="required"/>
-                                                                <xsd:attribute name="model" type="xsd:string" use="required"/>
-                                                            </xsd:extension>
-                                                        </xsd:complexContent>
-                                                    </xsd:complexType>
-                                                </xsd:element>
-                                                <xsd:element name="light">
-                                                    <xsd:complexType>
-                                                        <xsd:complexContent>
-                                                            <xsd:extension base="parameterSet">
-                                                                <xsd:sequence maxOccurs="unbounded">
-                                                                    <xsd:element name="transform" type="transform" minOccurs="0"/>
-                                                                </xsd:sequence>
-                                                                <xsd:attribute name="name" type="xsd:string" use="required"/>
-                                                                <xsd:attribute name="model" type="xsd:string" use="required"/>
-                                                            </xsd:extension>
-                                                        </xsd:complexContent>
-                                                    </xsd:complexType>
-                                                </xsd:element>
-                                                <xsd:element name="material">
-                                                    <xsd:complexType>
-                                                        <xsd:complexContent>
-                                                            <xsd:extension base="parameterSet">
-                                                                <xsd:attribute name="name" type="xsd:string" use="required"/>
-                                                                <xsd:attribute name="model" type="xsd:string" use="required"/>
-                                                            </xsd:extension>
-                                                        </xsd:complexContent>
-                                                    </xsd:complexType>
-                                                </xsd:element>
-                                                <xsd:element name="object">
-                                                    <xsd:complexType>
-                                                        <xsd:complexContent>
-                                                            <xsd:extension base="parameterSet">
-                                                                <xsd:attribute name="name" type="xsd:string" use="required"/>
-                                                                <xsd:attribute name="model" type="xsd:string" use="required"/>
-                                                            </xsd:extension>
-                                                        </xsd:complexContent>
-                                                    </xsd:complexType>
-                                                </xsd:element>
-                                                <xsd:element name="object_instance">
-                                                    <xsd:complexType>
-                                                        <xsd:complexContent>
-                                                            <xsd:extension base="parameterSet">
-                                                                <xsd:sequence>
-                                                                    <xsd:sequence maxOccurs="unbounded">
-                                                                        <xsd:element name="transform" type="transform" minOccurs="0"/>
-                                                                    </xsd:sequence>
-                                                                    <xsd:element name="assign_material" minOccurs="0" maxOccurs="unbounded">
-                                                                        <xsd:complexType>
-                                                                            <xsd:attribute name="slot" type="xsd:nonNegativeInteger" use="required"/>
-                                                                            <xsd:attribute name="side" type="xsd:string" use="optional"/>
-                                                                            <xsd:attribute name="material" type="xsd:string" use="required"/>
-                                                                        </xsd:complexType>
-                                                                    </xsd:element>
-                                                                </xsd:sequence>
-                                                                <xsd:attribute name="name" type="xsd:string" use="required"/>
-                                                                <xsd:attribute name="object" type="xsd:string" use="required"/>
-                                                            </xsd:extension>
-                                                        </xsd:complexContent>
-                                                    </xsd:complexType>
-                                                </xsd:element>
-                                                <xsd:element name="surface_shader">
-                                                    <xsd:complexType>
-                                                        <xsd:complexContent>
-                                                            <xsd:extension base="parameterSet">
-                                                                <xsd:attribute name="name" type="xsd:string" use="required"/>
-                                                                <xsd:attribute name="model" type="xsd:string" use="required"/>
-                                                            </xsd:extension>
-                                                        </xsd:complexContent>
-                                                    </xsd:complexType>
-                                                </xsd:element>
-                                                <xsd:element ref="texture"/>
-                                                <xsd:element ref="texture_instance"/>
-                                            </xsd:choice>
-                                            <xsd:attribute name="name" type="xsd:string" use="required"/>
-                                        </xsd:extension>
-                                    </xsd:complexContent>
-                                </xsd:complexType>
-                            </xsd:element>
-                            <xsd:element name="assembly_instance">
-                                <xsd:complexType>
-                                    <xsd:complexContent>
-                                        <xsd:extension base="parameterSet">
-                                            <xsd:sequence maxOccurs="unbounded">
-                                                <xsd:element name="transform" type="transform" minOccurs="0"/>
-                                            </xsd:sequence>
-                                            <xsd:attribute name="name" type="xsd:string" use="required"/>
-                                            <xsd:attribute name="assembly" type="xsd:string" use="required"/>
-                                        </xsd:extension>
-                                    </xsd:complexContent>
-                                </xsd:complexType>
-                            </xsd:element>
+                            <xsd:element name="assembly" type="assembly"/>
+                            <xsd:element name="assembly_instance" type="assembly_instance"/>
                             <xsd:element name="camera">
                                 <xsd:complexType>
                                     <xsd:complexContent>
