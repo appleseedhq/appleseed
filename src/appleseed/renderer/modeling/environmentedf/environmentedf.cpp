@@ -79,12 +79,35 @@ void EnvironmentEDF::check_uniform_input(const char* input_name) const
     }
 }
 
+void EnvironmentEDF::check_exitance_input_non_null(const char* input_name) const
+{
+    if (is_exitance_input_null(input_name))
+        warn_exitance_input_null();
+}
+
 void EnvironmentEDF::check_exitance_input_non_null(
     const char*         exitance_input_name,
     const char*         multiplier_input_name) const
 {
     if (is_exitance_input_null(exitance_input_name, multiplier_input_name))
         warn_exitance_input_null();
+}
+
+bool EnvironmentEDF::is_exitance_input_null(const char* input_name) const
+{
+    const Source* source = m_inputs.source(input_name);
+
+    if (source->is_uniform())
+    {
+        Spectrum exitance;
+        Alpha alpha;
+        source->evaluate_uniform(exitance, alpha);
+
+        if (exitance == Spectrum(0.0f))
+            return true;
+    }
+
+    return false;
 }
 
 bool EnvironmentEDF::is_exitance_input_null(

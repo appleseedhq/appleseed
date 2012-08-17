@@ -103,10 +103,12 @@ class DLLSYMBOL EnvironmentEDF
   protected:
     void check_uniform_input(const char* input_name) const;
 
+    void check_exitance_input_non_null(const char* input_name) const;
     void check_exitance_input_non_null(
         const char*                 exitance_input_name,
         const char*                 multiplier_input_name) const;
 
+    bool is_exitance_input_null(const char* input_name) const;
     bool is_exitance_input_null(
         const char*                 exitance_input_name,
         const char*                 multiplier_input_name) const;

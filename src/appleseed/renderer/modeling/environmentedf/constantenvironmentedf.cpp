@@ -73,7 +73,6 @@ namespace
           : EnvironmentEDF(name, params)
         {
             m_inputs.declare("exitance", InputFormatSpectrum);
-            m_inputs.declare("exitance_multiplier", InputFormatScalar, "1.0");
         }
 
         virtual void release() override
@@ -91,15 +90,12 @@ namespace
             if (!EnvironmentEDF::on_frame_begin(project))
                 return false;
 
-            // todo: what happens if these are not uniform?
+            // todo: what happens if this is not uniform?
             check_uniform_input("exitance");
-            check_uniform_input("exitance_multiplier");
 
-            check_exitance_input_non_null("exitance", "exitance_multiplier");
+            check_exitance_input_non_null("exitance");
 
             m_inputs.evaluate_uniforms(&m_values);
-
-            m_values.m_exitance *= static_cast<float>(m_values.m_exitance_multiplier);
 
             return true;
         }
@@ -147,9 +143,8 @@ namespace
       private:
         struct InputValues
         {
-            Spectrum    m_exitance;             // premultiplied by m_exitance_multiplier
+            Spectrum    m_exitance;
             Alpha       m_exitance_alpha;       // unused
-            double      m_exitance_multiplier;
         };
 
         InputValues     m_values;
@@ -184,14 +179,6 @@ DictionaryArray ConstantEnvironmentEDFFactory::get_widget_definitions() const
                 Dictionary().insert("color", "Colors"))
             .insert("use", "required")
             .insert("default", ""));
-
-    definitions.push_back(
-        Dictionary()
-            .insert("name", "exitance_multiplier")
-            .insert("label", "Exitance Multiplier")
-            .insert("widget", "text_box")
-            .insert("use", "optional")
-            .insert("default", "1.0"));
 
     return definitions;
 }

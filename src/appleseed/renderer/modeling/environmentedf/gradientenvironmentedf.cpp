@@ -73,9 +73,7 @@ namespace
           : EnvironmentEDF(name, params)
         {
             m_inputs.declare("horizon_exitance", InputFormatSpectrum);
-            m_inputs.declare("horizon_exitance_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("zenith_exitance", InputFormatSpectrum);
-            m_inputs.declare("zenith_exitance_multiplier", InputFormatScalar, "1.0");
         }
 
         virtual void release() override
@@ -95,18 +93,12 @@ namespace
 
             // todo: what happens if these are not uniform?
             check_uniform_input("horizon_exitance");
-            check_uniform_input("horizon_exitance_multiplier");
             check_uniform_input("zenith_exitance");
-            check_uniform_input("zenith_exitance_multiplier");
 
-            if (is_exitance_input_null("horizon_exitance", "horizon_exitance_multiplier") &&
-                is_exitance_input_null("zenith_exitance", "zenith_exitance_multiplier"))
+            if (is_exitance_input_null("horizon_exitance") && is_exitance_input_null("zenith_exitance"))
                 warn_exitance_input_null();
 
             m_inputs.evaluate_uniforms(&m_values);
-
-            m_values.m_horizon_exitance *= static_cast<float>(m_values.m_horizon_exitance_multiplier);
-            m_values.m_zenith_exitance *= static_cast<float>(m_values.m_zenith_exitance_multiplier);
 
             return true;
         }
@@ -154,12 +146,10 @@ namespace
       private:
         struct InputValues
         {
-            Spectrum    m_horizon_exitance;             // premultiplied by m_horizon_exitance_multiplier
+            Spectrum    m_horizon_exitance;
             Alpha       m_horizon_exitance_alpha;       // unused
-            double      m_horizon_exitance_multiplier;
-            Spectrum    m_zenith_exitance;              // premultiplied by m_zenith_exitance_multiplier
+            Spectrum    m_zenith_exitance;
             Alpha       m_zenith_exitance_alpha;        // unused
-            double      m_zenith_exitance_multiplier;
         };
 
         InputValues     m_values;
@@ -213,14 +203,6 @@ DictionaryArray GradientEnvironmentEDFFactory::get_widget_definitions() const
 
     definitions.push_back(
         Dictionary()
-            .insert("name", "horizon_exitance_multiplier")
-            .insert("label", "Horizon Exitance Multiplier")
-            .insert("widget", "text_box")
-            .insert("use", "optional")
-            .insert("default", "1.0"));
-
-    definitions.push_back(
-        Dictionary()
             .insert("name", "zenith_exitance")
             .insert("label", "Zenith Exitance")
             .insert("widget", "entity_picker")
@@ -229,14 +211,6 @@ DictionaryArray GradientEnvironmentEDFFactory::get_widget_definitions() const
                     .insert("color", "Colors"))
             .insert("use", "required")
             .insert("default", ""));
-
-    definitions.push_back(
-        Dictionary()
-            .insert("name", "zenith_exitance_multiplier")
-            .insert("label", "Zenith Exitance Multiplier")
-            .insert("widget", "text_box")
-            .insert("use", "optional")
-            .insert("default", "1.0"));
 
     return definitions;
 }
