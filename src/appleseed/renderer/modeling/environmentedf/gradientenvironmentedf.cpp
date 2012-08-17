@@ -94,10 +94,14 @@ namespace
                 return false;
 
             // todo: what happens if these are not uniform?
-            check_uniform("horizon_exitance");
-            check_uniform("horizon_exitance_multiplier");
-            check_uniform("zenith_exitance");
-            check_uniform("zenith_exitance_multiplier");
+            check_uniform_input("horizon_exitance");
+            check_uniform_input("horizon_exitance_multiplier");
+            check_uniform_input("zenith_exitance");
+            check_uniform_input("zenith_exitance_multiplier");
+
+            if (is_exitance_input_null("horizon_exitance", "horizon_exitance_multiplier") &&
+                is_exitance_input_null("zenith_exitance", "zenith_exitance_multiplier"))
+                warn_exitance_input_null();
 
             m_inputs.evaluate_uniforms(&m_values);
 

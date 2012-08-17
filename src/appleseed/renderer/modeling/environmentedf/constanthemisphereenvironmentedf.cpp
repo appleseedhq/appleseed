@@ -93,10 +93,14 @@ namespace
                 return false;
 
             // todo: what happens if these are not uniform?
-            check_uniform("upper_hemi_exitance");
-            check_uniform("upper_hemi_exitance_multiplier");
-            check_uniform("lower_hemi_exitance");
-            check_uniform("lower_hemi_exitance_multiplier");
+            check_uniform_input("upper_hemi_exitance");
+            check_uniform_input("upper_hemi_exitance_multiplier");
+            check_uniform_input("lower_hemi_exitance");
+            check_uniform_input("lower_hemi_exitance_multiplier");
+
+            if (is_exitance_input_null("upper_hemi_exitance", "upper_hemi_exitance_multiplier") &&
+                is_exitance_input_null("lower_hemi_exitance", "lower_hemi_exitance_multiplier"))
+                warn_exitance_input_null();
 
             m_inputs.evaluate_uniforms(&m_values);
 

@@ -204,6 +204,8 @@ namespace
             if (!EnvironmentEDF::on_frame_begin(project))
                 return false;
 
+            check_exitance_input_non_null("exitance", "exitance_multiplier");
+
             if (m_importance_sampler.get() == 0)
                 build_importance_map(*project.get_scene());
 

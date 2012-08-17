@@ -92,8 +92,10 @@ namespace
                 return false;
 
             // todo: what happens if these are not uniform?
-            check_uniform("exitance");
-            check_uniform("exitance_multiplier");
+            check_uniform_input("exitance");
+            check_uniform_input("exitance_multiplier");
+
+            check_exitance_input_non_null("exitance", "exitance_multiplier");
 
             m_inputs.evaluate_uniforms(&m_values);
 

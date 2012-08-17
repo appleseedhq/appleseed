@@ -68,7 +68,7 @@ void EnvironmentEDF::on_frame_end(const Project& project)
 {
 }
 
-void EnvironmentEDF::check_uniform(const char* input_name) const
+void EnvironmentEDF::check_uniform_input(const char* input_name) const
 {
     if (!m_inputs.source(input_name)->is_uniform())
     {
@@ -77,6 +77,51 @@ void EnvironmentEDF::check_uniform(const char* input_name) const
             input_name,
             get_model());
     }
+}
+
+void EnvironmentEDF::check_exitance_input_non_null(
+    const char*         exitance_input_name,
+    const char*         multiplier_input_name) const
+{
+    if (is_exitance_input_null(exitance_input_name, multiplier_input_name))
+        warn_exitance_input_null();
+}
+
+bool EnvironmentEDF::is_exitance_input_null(
+    const char*         exitance_input_name,
+    const char*         multiplier_input_name) const
+{
+    const Source* exitance_source = m_inputs.source(exitance_input_name);
+    const Source* multiplier_source = m_inputs.source(multiplier_input_name);
+
+    if (exitance_source->is_uniform())
+    {
+        Spectrum exitance;
+        Alpha alpha;
+        exitance_source->evaluate_uniform(exitance, alpha);
+
+        if (exitance == Spectrum(0.0f))
+            return true;
+    }
+
+    if (multiplier_source->is_uniform())
+    {
+        double multiplier;
+        multiplier_source->evaluate_uniform(multiplier);
+
+        if (multiplier == 0.0)
+            return true;
+    }
+
+    return false;
+}
+
+void EnvironmentEDF::warn_exitance_input_null() const
+{
+    RENDERER_LOG_WARNING(
+        "environment edf \"%s\" has a zero exitance and will slow down rendering "
+        "without contributing to the lighting.",
+        get_name());
 }
 
 }   // namespace renderer

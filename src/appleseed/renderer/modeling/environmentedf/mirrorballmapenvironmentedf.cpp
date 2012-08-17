@@ -47,6 +47,9 @@
 #include <cassert>
 #include <cmath>
 
+// Forward declarations.
+namespace renderer  { class Project; }
+
 using namespace foundation;
 using namespace std;
 
@@ -87,6 +90,16 @@ namespace
         virtual const char* get_model() const override
         {
             return Model;
+        }
+
+        virtual bool on_frame_begin(const Project& project) override
+        {
+            if (!EnvironmentEDF::on_frame_begin(project))
+                return false;
+
+            check_exitance_input_non_null("exitance", "exitance_multiplier");
+
+            return true;
         }
 
         virtual void sample(

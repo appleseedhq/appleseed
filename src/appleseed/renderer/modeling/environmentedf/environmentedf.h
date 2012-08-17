@@ -101,7 +101,17 @@ class DLLSYMBOL EnvironmentEDF
         const foundation::Vector3d& outgoing) const = 0;        // world space emission direction, unit-length
 
   protected:
-    void check_uniform(const char* input_name) const;
+    void check_uniform_input(const char* input_name) const;
+
+    void check_exitance_input_non_null(
+        const char*                 exitance_input_name,
+        const char*                 multiplier_input_name) const;
+
+    bool is_exitance_input_null(
+        const char*                 exitance_input_name,
+        const char*                 multiplier_input_name) const;
+
+    void warn_exitance_input_null() const;
 };
 
 }       // namespace renderer
