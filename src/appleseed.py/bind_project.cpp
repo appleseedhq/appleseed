@@ -144,8 +144,6 @@ void bind_project()
         .def( "get_inherited_parameters", config_get_inherited_parameters)
         ;
 
-    bpy::register_ptr_to_python< auto_release_ptr<Configuration> >();
-
     bind_typed_entity_map<Configuration>( "ConfigurationContainer");
 
     bpy::class_<Project, auto_release_ptr<Project>, bpy::bases<Entity>, boost::noncopyable>( "Project", bpy::no_init)    
@@ -173,8 +171,6 @@ void bind_project()
 
         .def( "configurations", project_get_configs, bpy::return_value_policy<bpy::reference_existing_object>())
         ;
-
-    bpy::register_ptr_to_python< auto_release_ptr<Project> >();
 
     bpy::class_<ProjectFileReader>( "ProjectFileReader")
         .def( "read", &ProjectFileReader::read)

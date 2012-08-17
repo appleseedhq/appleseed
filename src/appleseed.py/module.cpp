@@ -44,6 +44,7 @@ void bind_light();
 void bind_master_renderer();
 void bind_material();
 void bind_matrix();
+void bind_mesh_object();
 void bind_object();
 void bind_project();
 void bind_quaternion();
@@ -76,6 +77,7 @@ BOOST_PYTHON_MODULE( _appleseed)
     bind_material();
     bind_light();
     bind_object();
+    bind_mesh_object();
     bind_assembly();
 
     bind_camera();

@@ -61,6 +61,7 @@ set (sources
     bind_master_renderer.cpp
     bind_material.cpp
     bind_matrix.cpp
+    bind_mesh_object.cpp
     bind_object.cpp
     bind_project.cpp
     bind_quaternion.cpp
