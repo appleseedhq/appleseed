@@ -90,8 +90,58 @@ bool write_mesh_object( MeshObject *obj, const std::string& obj_name, const std:
 
 void bind_mesh_object()
 {
+    bpy::class_<Triangle>( "Triangle")
+        .def( bpy::init<const size_t, const size_t, const size_t>())
+        .def( bpy::init<const size_t, const size_t, const size_t, const size_t>())
+
+        .def( bpy::init<const size_t, const size_t, const size_t, const size_t,
+                        const size_t, const size_t, const size_t>())
+
+        .def( bpy::init<const size_t, const size_t, const size_t, const size_t,
+                        const size_t, const size_t, const size_t, const size_t,
+                        const size_t, const size_t>())
+
+        .def( "has_vertex_attributes", &Triangle::has_vertex_attributes)
+
+        .def_readwrite( "v0", &Triangle::m_v0)
+        .def_readwrite( "v1", &Triangle::m_v1)
+        .def_readwrite( "v2", &Triangle::m_v2)
+        .def_readwrite( "n0", &Triangle::m_n0)
+        .def_readwrite( "n1", &Triangle::m_n1)
+        .def_readwrite( "n2", &Triangle::m_n2)
+        .def_readwrite( "a0", &Triangle::m_a0)
+        .def_readwrite( "a1", &Triangle::m_a1)
+        .def_readwrite( "a2", &Triangle::m_a2)
+        .def_readwrite( "pa", &Triangle::m_pa)
+        ;
+
     bpy::class_<MeshObject, auto_release_ptr<MeshObject>, bpy::bases<Object>, boost::noncopyable>( "MeshObject", bpy::no_init)
         .def( "__init__", bpy::make_constructor( create_mesh_obj))
+
+        .def( "reserve_vertices", &MeshObject::reserve_vertices)
+        .def( "push_vertex", &MeshObject::push_vertex)
+        .def( "get_vertex_count", &MeshObject::get_vertex_count)
+        .def( "get_vertex", &MeshObject::get_vertex)
+
+        .def( "reserve_vertex_normals", &MeshObject::reserve_vertex_normals)
+        .def( "push_vertex_normal", &MeshObject::push_vertex_normal)
+        .def( "get_vertex_normal_count", &MeshObject::get_vertex_normal_count)
+        .def( "get_vertex_normal", &MeshObject::get_vertex_normal)
+
+        .def( "push_tex_coords", &MeshObject::push_tex_coords)
+        .def( "get_tex_coords_count", &MeshObject::get_tex_coords_count)
+        .def( "get_tex_coords", &MeshObject::get_tex_coords)
+
+        .def( "reserve_triangles", &MeshObject::reserve_triangles)
+        .def( "push_triangle", &MeshObject::push_triangle)
+        .def( "get_triangle_count", &MeshObject::get_triangle_count)
+        .def( "get_triangle", &MeshObject::get_triangle)
+
+        .def( "set_motion_segment_count", &MeshObject::set_motion_segment_count)
+        .def( "get_motion_segment_count", &MeshObject::get_motion_segment_count)
+
+        .def( "set_vertex_pose", &MeshObject::set_vertex_pose)
+        .def( "get_vertex_pose", &MeshObject::get_vertex_pose)
         ;
 
     boost::python::implicitly_convertible<auto_release_ptr<MeshObject>, auto_release_ptr<Object> >();
