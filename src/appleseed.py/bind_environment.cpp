@@ -38,7 +38,7 @@ namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 
-namespace
+namespace detail
 {
 
 auto_release_ptr<EnvironmentEDF> create_environment_edf( const std::string env_type,
@@ -55,6 +55,8 @@ auto_release_ptr<EnvironmentEDF> create_environment_edf( const std::string env_t
         PyErr_SetString( PyExc_RuntimeError, "EnvironmentEDF type not found");
         bpy::throw_error_already_set();
     }
+
+    return auto_release_ptr<EnvironmentEDF>();
 }
 
 auto_release_ptr<EnvironmentShader> create_environment_shader( const std::string& env_shader_type,
@@ -71,6 +73,8 @@ auto_release_ptr<EnvironmentShader> create_environment_shader( const std::string
         PyErr_SetString( PyExc_RuntimeError, "EnvironmentShader type not found");
         bpy::throw_error_already_set();
     }
+
+    return auto_release_ptr<EnvironmentShader>();
 }
 
 auto_release_ptr<Environment> create_environment( const std::string& name, const bpy::dict& params)
@@ -78,24 +82,24 @@ auto_release_ptr<Environment> create_environment( const std::string& name, const
     return EnvironmentFactory::create( name.c_str(), bpy_dict_to_param_array( params));
 }
 
-} // unnamed
+} // detail
 
 void bind_environment()
 {
     bpy::class_<EnvironmentEDF, auto_release_ptr<EnvironmentEDF>, bpy::bases<ConnectableEntity>, boost::noncopyable >( "EnvironmentEDF", bpy::no_init)
-        .def( "__init__", bpy::make_constructor( create_environment_edf))
+        .def( "__init__", bpy::make_constructor( detail::create_environment_edf))
         ;
 
     bind_typed_entity_vector<EnvironmentEDF>( "EnvironmentEDFContainer");
 
     bpy::class_<EnvironmentShader, auto_release_ptr<EnvironmentShader>, bpy::bases<ConnectableEntity>, boost::noncopyable >( "EnvironmentShader", bpy::no_init)
-        .def( "__init__", bpy::make_constructor( create_environment_shader))
+        .def( "__init__", bpy::make_constructor( detail::create_environment_shader))
         ;
 
     bind_typed_entity_vector<EnvironmentShader>( "EnvironmentShaderContainer");
 
     bpy::class_<Environment, auto_release_ptr<Environment>, bpy::bases<Entity>, boost::noncopyable >( "Environment", bpy::no_init)
-        .def( "__init__", bpy::make_constructor( create_environment))
+        .def( "__init__", bpy::make_constructor( detail::create_environment))
         .def( "get_environment_edf", &Environment::get_environment_edf, bpy::return_value_policy<bpy::reference_existing_object>())
         .def( "get_environment_shader", &Environment::get_environment_shader, bpy::return_value_policy<bpy::reference_existing_object>())
         ;

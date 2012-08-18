@@ -36,7 +36,7 @@ namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 
-namespace
+namespace detail
 {
 
 auto_release_ptr<SurfaceShader> create_surface_shader( const std::string& surf_type,
@@ -52,6 +52,8 @@ auto_release_ptr<SurfaceShader> create_surface_shader( const std::string& surf_t
         PyErr_SetString( PyExc_RuntimeError, "SurfaceShader type not found");
         bpy::throw_error_already_set();
     }
+
+    return auto_release_ptr<SurfaceShader>();
 }
 
 auto_release_ptr<SurfaceShader> create_surface_shader_with_params( const std::string& surf_type,
@@ -68,15 +70,17 @@ auto_release_ptr<SurfaceShader> create_surface_shader_with_params( const std::st
         PyErr_SetString( PyExc_RuntimeError, "SurfaceShader type not found");
         bpy::throw_error_already_set();
     }
+
+    return auto_release_ptr<SurfaceShader>();
 }
 
-} // unnamed
+} // detail
 
 void bind_surface_shader()
 {
     bpy::class_<SurfaceShader, auto_release_ptr<SurfaceShader>, bpy::bases<ConnectableEntity>, boost::noncopyable>( "SurfaceShader", bpy::no_init)
-        .def( "__init__", bpy::make_constructor( create_surface_shader))
-        .def( "__init__", bpy::make_constructor( create_surface_shader_with_params))
+        .def( "__init__", bpy::make_constructor( detail::create_surface_shader))
+        .def( "__init__", bpy::make_constructor( detail::create_surface_shader_with_params))
         ;
 
     bind_typed_entity_vector<SurfaceShader>( "SurfaceShaderContainer");

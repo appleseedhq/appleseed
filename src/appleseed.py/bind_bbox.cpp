@@ -36,7 +36,7 @@
 namespace bpy = boost::python;
 using namespace foundation;
 
-namespace
+namespace detail
 {
 
 template<class T>
@@ -53,10 +53,10 @@ void bind_aabb3( const char *class_name)
         ;
 }
 
-} // unnamed
+} // detail
 
 void bind_bbox()
 {
-    bind_aabb3<float>( "AABB3f");
-    bind_aabb3<double>( "AABB3d");
+    detail::bind_aabb3<float>( "AABB3f");
+    detail::bind_aabb3<double>( "AABB3d");
 }

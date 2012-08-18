@@ -35,7 +35,7 @@ namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 
-namespace
+namespace detail
 {
 
 template<class T>
@@ -74,18 +74,18 @@ Transformd transform_seq_get_earliest( const TransformSequence& seq)
     return seq.earliest_transform();
 }
 
-} // unnamed
+} // detail
 
 void bind_transform()
 {
-    bind_typed_transform<float>( "Transformf");
-    bind_typed_transform<double>( "Transformd");
+    detail::bind_typed_transform<float>( "Transformf");
+    detail::bind_typed_transform<double>( "Transformd");
 
     bpy::class_<TransformSequence, boost::noncopyable>( "TransformSequence", bpy::no_init)
         .def( "clear", &TransformSequence::clear)
         .def( "set_transform", &TransformSequence::set_transform)
-        .def( "get_transform", &transform_seq_get_transform)
-        .def( "earliest_transform", &transform_seq_get_earliest)
+        .def( "get_transform", &detail::transform_seq_get_transform)
+        .def( "earliest_transform", &detail::transform_seq_get_earliest)
         .def( "empty", &TransformSequence::empty)
         .def( "size", &TransformSequence::size)
         .def( "prepare", &TransformSequence::prepare)

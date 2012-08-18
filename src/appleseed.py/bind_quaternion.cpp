@@ -36,7 +36,7 @@
 namespace bpy = boost::python;
 using namespace foundation;
 
-namespace
+namespace detail
 {
 
 template<class T>
@@ -152,10 +152,10 @@ void do_bind_quaternion( const char *class_name)
         ;
 }
 
-} // unnamed
+} // detail
 
 void bind_quaternion()
 {
-    do_bind_quaternion<float>( "Quaternionf");
-    do_bind_quaternion<double>( "Quaterniond");
+    detail::do_bind_quaternion<float>( "Quaternionf");
+    detail::do_bind_quaternion<double>( "Quaterniond");
 }
