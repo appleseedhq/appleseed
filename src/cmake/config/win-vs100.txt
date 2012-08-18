@@ -49,6 +49,7 @@ set (git_command "git")
 set (preprocessor_definitions_common
     WIN32
     _CRT_SECURE_NO_WARNINGS
+    _SCL_SECURE_NO_WARNINGS
     _USRDLL
     _WINDOWS
     XERCES_STATIC_LIBRARY                   # link statically to Xerces-C
