@@ -56,7 +56,7 @@ void tile_data_to_py_array( const Tile& tile, bpy::object& buffer)
     if(success != 0)
         bpy::throw_error_already_set();
 
-    if (len < tile.get_size())
+    if (static_cast<size_t>(len) < tile.get_size())
     {
         PyErr_SetString(PyExc_IndexError, "Buffer size is smaller than data size");
         bpy::throw_error_already_set();

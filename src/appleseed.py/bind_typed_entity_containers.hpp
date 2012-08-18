@@ -47,7 +47,7 @@ T *typed_entity_vector_get_item( renderer::TypedEntityVector<T>& vec, int index)
     if( index < 0)
         index = vec.size() - index;
 
-    if( index < 0 || index >= vec.size())
+    if( index < 0 || static_cast<size_t>(index) >= vec.size())
     {
         PyErr_SetString( PyExc_IndexError, "Invalid index in appleseed.EntityVector" );
         boost::python::throw_error_already_set();

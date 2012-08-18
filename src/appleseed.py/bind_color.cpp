@@ -44,10 +44,10 @@ ColorValueArray color_value_array_from_bpy_list( const bpy::list& vals)
 {
     ColorValueArray result;
 
-    unsigned int size = bpy::len( vals);
+    ssize_t size = bpy::len( vals);
     result.reserve( size);
 
-    for( int i = 0; i < size; ++i)
+    for( ssize_t i = 0; i < size; ++i)
     {
 		bpy::extract<float> ex( vals[i]);
 		if( ex.check())

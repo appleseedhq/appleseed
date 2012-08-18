@@ -57,7 +57,7 @@ Entity *get_entity_vec_item( EntityVector& vec, int index)
     if( index < 0)
         index = vec.size() - index;
 
-    if( index < 0 || index >= vec.size())
+    if( index < 0 || static_cast<size_t>(index) >= vec.size())
     {
         PyErr_SetString( PyExc_IndexError, "Invalid index in appleseed.EntityVector" );
         bpy::throw_error_already_set();

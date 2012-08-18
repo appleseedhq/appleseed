@@ -157,7 +157,7 @@ Matrix<T,N,N> invert_matrix( const Matrix<T,N,N>& mat)
     try
     {
         return inverse( mat);
-    } catch( ExceptionSingularMatrix& e)
+    } catch( ExceptionSingularMatrix&)
     {
         PyErr_SetString( PyExc_RuntimeError, "Singular matrix in appleseed.Matrix.inverse" );
         boost::python::throw_error_already_set();
