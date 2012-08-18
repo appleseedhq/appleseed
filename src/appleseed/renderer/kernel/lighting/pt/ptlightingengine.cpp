@@ -258,7 +258,7 @@ namespace
                     Spectrum vertex_radiance;
                     SpectrumStack vertex_aovs(m_path_aovs.size());
 
-                    if (m_params.m_enable_dl || path_length > 1)
+                    if (bsdf && (m_params.m_enable_dl || path_length > 1))
                     {
                         // Compute direct lighting. We're using light sampling only: direct lighting
                         // via BSDF sampling will be taken into account when we'll extend the path.
@@ -290,7 +290,7 @@ namespace
                         vertex_aovs.set(0.0f);
                     }
 
-                    if (m_env_edf && m_params.m_enable_ibl)
+                    if (bsdf && m_env_edf && m_params.m_enable_ibl)
                     {
                         // Compute image-based lighting. We're sampling both the lights and
                         // the BSDF. There's no double contribution for diffuse BSDF samples
