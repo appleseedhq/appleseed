@@ -57,17 +57,19 @@ project (appleseed)
 # Setup the path for our FindPackage modules.
 set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/Modules)
 
+
 #--------------------------------------------------------------------------------------------------
 # Build options.
 #--------------------------------------------------------------------------------------------------
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
     option ( USE_STATIC_BOOST       "Use static boost libs"     ON)
-	option ( USE_EXTERNAL_PNG       "Use external Png lib"      OFF)
-	option ( USE_EXTERNAL_ALEMBIC   "Use external Alembic libs" OFF)
-	option ( USE_EXTERNAL_XERCES    "Use external Xerces lib"   OFF)
-	option ( WITH_PYTHON            "Build Python module"       ON)
+    option ( USE_EXTERNAL_PNG       "Use external Png lib"      OFF)
+    option ( USE_EXTERNAL_ALEMBIC   "Use external Alembic libs" OFF)
+    option ( USE_EXTERNAL_XERCES    "Use external Xerces lib"   OFF)
+    option ( WITH_PYTHON            "Build Python module"       ON)
 endif ()
+
 
 #--------------------------------------------------------------------------------------------------
 # Platform-specific settings.
@@ -98,6 +100,7 @@ exec_program (
     OUTPUT_VARIABLE git_tag
 )
 
+
 #--------------------------------------------------------------------------------------------------
 # Boost libraries.
 #--------------------------------------------------------------------------------------------------
@@ -115,28 +118,30 @@ add_definitions (-DBOOST_FILESYSTEM_VERSION=3 -DBOOST_FILESYSTEM_NO_DEPRECATED)
 include_directories (${Boost_INCLUDE_DIRS})
 link_directories (${Boost_LIBRARY_DIRS})
 
+
 #--------------------------------------------------------------------------------------------------
 # Find external packages.
 #--------------------------------------------------------------------------------------------------
 
 if (USE_EXTERNAL_PNG)
-	find_package(PNG REQUIRED)
-	add_definitions(-DWITH_EXTERNAL_PNG)
+    find_package(PNG REQUIRED)
+    add_definitions(-DWITH_EXTERNAL_PNG)
 endif ()
 
 if (USE_EXTERNAL_ALEMBIC)
-	find_package(ZLIB REQUIRED)
-	find_package(Imath REQUIRED)
-	find_package(OpenEXR REQUIRED)
-	find_package(HDF5 REQUIRED COMPONENTS C HL)
-	find_package(Alembic REQUIRED)
-	add_definitions(-DWITH_EXTERNAL_ALEMBIC)
+    find_package(ZLIB REQUIRED)
+    find_package(Imath REQUIRED)
+    find_package(OpenEXR REQUIRED)
+    find_package(HDF5 REQUIRED COMPONENTS C HL)
+    find_package(Alembic REQUIRED)
+    add_definitions(-DWITH_EXTERNAL_ALEMBIC)
 endif ()
 
 if (USE_EXTERNAL_XERCES)
-	find_package(Xerces REQUIRED)
-	add_definitions(-DWITH_EXTERNAL_XERCES)
+    find_package(Xerces REQUIRED)
+    add_definitions(-DWITH_EXTERNAL_XERCES)
 endif ()
+
 
 #--------------------------------------------------------------------------------------------------
 # Include paths.
@@ -177,6 +182,7 @@ if (USE_EXTERNAL_XERCES)
 else ()
     include_directories(xerces-c/src)
 endif ()
+
 
 #--------------------------------------------------------------------------------------------------
 # Preprocessor definitions.

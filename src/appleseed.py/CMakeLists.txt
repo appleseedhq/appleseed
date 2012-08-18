@@ -32,6 +32,7 @@
 
 find_package (PythonLibs)
 
+
 #--------------------------------------------------------------------------------------------------
 # Boost libraries.
 #--------------------------------------------------------------------------------------------------
@@ -47,7 +48,6 @@ set (sources
     module.cpp
     dict2dict.hpp
     dict2dict.cpp
-
     bind_assembly.cpp
     bind_bbox.cpp
     bind_bsdf.cpp
@@ -98,6 +98,7 @@ set_target_properties (_appleseed PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/appleseed.py/appleseed
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/appleseed.py/appleseed
 )
+
 
 #--------------------------------------------------------------------------------------------------
 # Include paths.
