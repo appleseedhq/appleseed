@@ -87,7 +87,6 @@ void bind_assembly()
     bpy::class_<AssemblyInstance, auto_release_ptr<AssemblyInstance>, bpy::bases<Entity>, boost::noncopyable>( "AssemblyInstance", bpy::no_init)
         .def( "__init__", bpy::make_constructor( detail::create_assembly_instance))
         .def( "get_assembly", &AssemblyInstance::get_assembly, bpy::return_value_policy<bpy::reference_existing_object>())
-        .def( "get_assembly_uid", &AssemblyInstance::get_assembly_uid)
         .def( "transform_sequence", detail::assembly_instance_get_transform_sequence, bpy::return_value_policy<bpy::reference_existing_object>())
         .def( "compute_parent_bbox", &AssemblyInstance::compute_parent_bbox)
         ;
