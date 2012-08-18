@@ -40,6 +40,7 @@ void bind_edf();
 void bind_entity();
 void bind_environment();
 void bind_frame();
+void bind_image();
 void bind_light();
 void bind_master_renderer();
 void bind_material();
@@ -52,6 +53,7 @@ void bind_renderer_controller();
 void bind_scene();
 void bind_surface_shader();
 void bind_texture();
+void bind_tile_callback();
 void bind_transform();
 void bind_utility();
 void bind_vector();
@@ -84,9 +86,11 @@ BOOST_PYTHON_MODULE( _appleseed)
     bind_environment();
     bind_scene();
 
+    bind_image();
     bind_frame();
 	bind_project();
 
 	bind_renderer_controller();
+	bind_tile_callback();
     bind_master_renderer();
 }

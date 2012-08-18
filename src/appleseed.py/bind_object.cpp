@@ -39,7 +39,7 @@ namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 
-namespace
+namespace detail
 {
 
 void bpy_list_to_string_array( const bpy::list& l, StringArray& strings)
@@ -83,7 +83,7 @@ auto_release_ptr<ObjectInstance> create_obj_instance( const std::string& name, c
     return create_obj_instance_with_back_mat( name, params, obj, transform, front_materials, bpy::list());
 }
 
-} // unnamed
+} // detail
 
 void bind_object()
 {
@@ -94,8 +94,8 @@ void bind_object()
     bind_typed_entity_vector<Object>( "ObjectContainer");
 
     bpy::class_<ObjectInstance, auto_release_ptr<ObjectInstance>, bpy::bases<Entity>, boost::noncopyable>( "ObjectInstance", bpy::no_init)
-        .def( "__init__", bpy::make_constructor( create_obj_instance))
-        .def( "__init__", bpy::make_constructor( create_obj_instance_with_back_mat))
+        .def( "__init__", bpy::make_constructor( detail::create_obj_instance))
+        .def( "__init__", bpy::make_constructor( detail::create_obj_instance_with_back_mat))
 
         .def( "get_object", &ObjectInstance::get_object, bpy::return_value_policy<bpy::reference_existing_object>())
         .def( "get_transform", &ObjectInstance::get_transform, bpy::return_value_policy<bpy::copy_const_reference>())

@@ -36,7 +36,7 @@ namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 
-namespace
+namespace detail
 {
 
 auto_release_ptr<Camera> create_camera( const std::string& camera_type, const std::string& name, const bpy::dict& params)
@@ -61,14 +61,14 @@ TransformSequence *camera_get_transform_sequence( Camera *cam)
     return &( cam->transform_sequence());
 }
 
-} // unnamed
+} // detail
 
 void bind_camera()
 {
     bpy::class_<Camera, auto_release_ptr<Camera>, bpy::bases<Entity>, boost::noncopyable>( "Camera", bpy::no_init)
-        .def( "__init__", bpy::make_constructor( create_camera))
+        .def( "__init__", bpy::make_constructor( detail::create_camera))
         .def( "get_model", &Camera::get_model)
-        .def( "transform_sequence", camera_get_transform_sequence, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def( "transform_sequence", detail::camera_get_transform_sequence, bpy::return_value_policy<bpy::reference_existing_object>())
         .def( "get_film_dimensions", &Camera::get_film_dimensions, bpy::return_value_policy<bpy::copy_const_reference>())
         .def( "get_focal_length", &Camera::get_focal_length)
         .def( "get_shutter_open_time", &Camera::get_shutter_open_time)

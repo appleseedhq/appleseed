@@ -26,12 +26,12 @@
 //
 
 // Has to be first, to avoid redifinition warnings.
-#include "bind_auto_release_ptr.h"
+#include "Python.h"
 
-#include "renderer/api/light.h"
+#include <boost/python.hpp>
 
-#include "bind_typed_entity_containers.hpp"
-#include "dict2dict.hpp"
+#include "renderer/api/rendering.h"
+#include "renderer/api/frame.h"
 
 namespace bpy = boost::python;
 using namespace foundation;
@@ -40,33 +40,38 @@ using namespace renderer;
 namespace detail
 {
 
-auto_release_ptr<Light> create_light( const std::string& light_type,
-                                        const std::string& name,
-                                        const bpy::dict& params)
+class ITileCallbackWrapper : public ITileCallback, public bpy::wrapper<ITileCallback>
 {
-    LightFactoryRegistrar factories;
-    const ILightFactory *factory = factories.lookup( light_type.c_str());
+public:
 
-    if( factory)
-        return factory->create( name.c_str(), bpy_dict_to_param_array( params));
-    else
+    virtual void pre_render( const size_t x, const size_t y, const size_t width, const size_t height)
     {
-        PyErr_SetString( PyExc_RuntimeError, "Light type not found");
-        bpy::throw_error_already_set();
+        this->get_override( "pre_render")( x, y, width, height);
     }
 
-    return auto_release_ptr<Light>();
-}
+    virtual void post_render( const Frame& frame, const size_t tile_x, const size_t tile_y)
+    {
+        this->get_override( "post_render")( frame, tile_x, tile_y);
+    }
+
+    virtual void post_render( const Frame& frame)
+    {
+        this->get_override( "post_render")( frame);
+    }
+};
 
 } // detail
 
-void bind_light()
+void bind_tile_callback()
 {
-    bpy::class_<Light, auto_release_ptr<Light>, bpy::bases<ConnectableEntity>, boost::noncopyable>( "Light", bpy::no_init)
-        .def( "__init__", bpy::make_constructor( detail::create_light))
-        .def( "set_transform", &Light::set_transform)
-        .def( "get_transform", &Light::get_transform, bpy::return_value_policy<bpy::copy_const_reference>())
-        ;
+    /*
+    void (ITileCallback::*post_render1)( const Frame&, const size_t, const size_t) = &ITileCallback::post_render;
+    void (ITileCallback::*post_render2)( const Frame&) = &ITileCallback::post_render;
 
-    bind_typed_entity_vector<Light>( "LightContainer");
+    bpy::class_<ITileCallbackWrapper, boost::noncopyable>( "ITileCallback")
+        .def( "pre_render", bpy::pure_virtual( &ITileCallback::pre_render))
+        .def( "post_render", bpy::pure_virtual( post_render1))
+        .def( "post_render", bpy::pure_virtual( post_render2))
+        ;
+    */
 }

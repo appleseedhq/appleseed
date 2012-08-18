@@ -25,11 +25,45 @@
 // THE SOFTWARE.
 //
 
-namespace
+#include "bind_auto_release_ptr.h"
+
+#include "renderer/api/edf.h"
+
+#include "dict2dict.hpp"
+#include "bind_typed_entity_containers.hpp"
+
+namespace bpy = boost::python;
+using namespace foundation;
+using namespace renderer;
+
+namespace detail
 {
 
-} // unnamed
+auto_release_ptr<EDF> create_edf( const std::string& edf_type,
+                                    const std::string& name,
+                                    const bpy::dict& params)
+{
+    EDFFactoryRegistrar factories;
+    const IEDFFactory *factory = factories.lookup( edf_type.c_str());
+
+    if( factory)
+        return factory->create( name.c_str(), bpy_dict_to_param_array( params));
+    else
+    {
+        PyErr_SetString( PyExc_RuntimeError, "EDF type not found");
+        bpy::throw_error_already_set();
+    }
+
+    return auto_release_ptr<EDF>();
+}
+
+} // detail
 
 void bind_edf()
 {
+    bpy::class_<EDF, auto_release_ptr<EDF>, bpy::bases<ConnectableEntity>, boost::noncopyable>( "EDF", bpy::no_init)
+        .def( "__init__", bpy::make_constructor( detail::create_edf))
+        ;
+
+    bind_typed_entity_vector<EDF>( "EDFContainer");
 }

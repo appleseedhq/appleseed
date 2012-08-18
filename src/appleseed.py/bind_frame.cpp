@@ -29,6 +29,8 @@
 #include "bind_auto_release_ptr.h"
 
 #include "renderer/api/frame.h"
+#include "renderer/kernel/aov/imagestack.h"
+#include "foundation/image/image.h"
 
 #include "dict2dict.hpp"
 
@@ -36,7 +38,7 @@ namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 
-namespace
+namespace detail
 {
 
 auto_release_ptr<Frame> create_frame( const std::string& name, const bpy::dict& params)
@@ -44,7 +46,7 @@ auto_release_ptr<Frame> create_frame( const std::string& name, const bpy::dict& 
     return FrameFactory::create( name.c_str(), bpy_dict_to_param_array( params));
 }
 
-bpy::object archive( const Frame *f, const char *directory)
+bpy::object archive_frame( const Frame *f, const char *directory)
 {
     char *output = 0;
 
@@ -59,14 +61,17 @@ bpy::object archive( const Frame *f, const char *directory)
     return bpy::object();
 }
 
-} // unnamed
+} // detail
 
 void bind_frame()
 {
     bpy::class_<Frame, auto_release_ptr<Frame>, bpy::bases<Entity>, boost::noncopyable>( "Frame", bpy::no_init)
-        .def( "__init__", bpy::make_constructor( create_frame))
+        .def( "__init__", bpy::make_constructor( detail::create_frame))
+
+        .def( "image", &Frame::image, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def( "aov_images", &Frame::aov_images, bpy::return_value_policy<bpy::reference_existing_object>())
 
         .def( "write", &Frame::write)
-        .def( "archive", archive)
+        .def( "archive", detail::archive_frame)
         ;
 }

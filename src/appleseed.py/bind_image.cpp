@@ -28,10 +28,9 @@
 // Has to be first, to avoid redifinition warnings.
 #include "bind_auto_release_ptr.h"
 
-#include "renderer/api/light.h"
-
-#include "bind_typed_entity_containers.hpp"
-#include "dict2dict.hpp"
+#include "foundation/image/image.h"
+#include "renderer/kernel/aov/tilestack.h"
+#include "renderer/kernel/aov/imagestack.h"
 
 namespace bpy = boost::python;
 using namespace foundation;
@@ -40,33 +39,19 @@ using namespace renderer;
 namespace detail
 {
 
-auto_release_ptr<Light> create_light( const std::string& light_type,
-                                        const std::string& name,
-                                        const bpy::dict& params)
-{
-    LightFactoryRegistrar factories;
-    const ILightFactory *factory = factories.lookup( light_type.c_str());
-
-    if( factory)
-        return factory->create( name.c_str(), bpy_dict_to_param_array( params));
-    else
-    {
-        PyErr_SetString( PyExc_RuntimeError, "Light type not found");
-        bpy::throw_error_already_set();
-    }
-
-    return auto_release_ptr<Light>();
-}
-
 } // detail
 
-void bind_light()
+void bind_image()
 {
-    bpy::class_<Light, auto_release_ptr<Light>, bpy::bases<ConnectableEntity>, boost::noncopyable>( "Light", bpy::no_init)
-        .def( "__init__", bpy::make_constructor( detail::create_light))
-        .def( "set_transform", &Light::set_transform)
-        .def( "get_transform", &Light::get_transform, bpy::return_value_policy<bpy::copy_const_reference>())
+    bpy::class_<Tile, boost::noncopyable>( "Tile", bpy::no_init)
         ;
 
-    bind_typed_entity_vector<Light>( "LightContainer");
+    bpy::class_<Image, boost::noncopyable>( "Image", bpy::no_init)
+        ;
+
+    bpy::class_<TileStack, boost::noncopyable>( "TileStack", bpy::no_init)
+        ;
+
+    bpy::class_<ImageStack, boost::noncopyable>( "ImageStack", bpy::no_init)
+        ;
 }

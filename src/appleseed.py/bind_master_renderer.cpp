@@ -32,9 +32,8 @@
 
 #include <boost/python.hpp>
 
-#include "renderer/kernel/rendering/masterrenderer.h"
-#include "renderer/modeling/project/project.h"
-#include "renderer/kernel/rendering/defaultrenderercontroller.h"
+#include "renderer/api/rendering.h"
+#include "renderer/api/project.h"
 
 #include "dict2dict.hpp"
 
@@ -42,7 +41,7 @@ namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 
-namespace
+namespace detail
 {
 
 std::auto_ptr<MasterRenderer> create_master_renderer( Project* project,
@@ -52,12 +51,16 @@ std::auto_ptr<MasterRenderer> create_master_renderer( Project* project,
     return std::auto_ptr<MasterRenderer>( new MasterRenderer( *project, bpy_dict_to_param_array( params), render_controller));
 }
 
-std::auto_ptr<MasterRenderer> create_master_renderer_with_default_controller( Project* project,
-                                                                            const bpy::dict& params,
-                                                                            DefaultRendererController* render_controller)
+/*
+std::auto_ptr<MasterRenderer> create_master_renderer_with_tile_callback( Project* project,
+                                                                         const bpy::dict& params,
+                                                                         IRendererController* render_controller,
+                                                                         ITileCallback *tile_callback)
 {
-    return std::auto_ptr<MasterRenderer>( new MasterRenderer( *project, bpy_dict_to_param_array( params), render_controller));
+    return std::auto_ptr<MasterRenderer>( new MasterRenderer( *project, bpy_dict_to_param_array( params),
+                                                                render_controller, tile_callback));
 }
+*/
 
 bpy::dict master_renderer_get_parameters( const MasterRenderer *m)
 {
@@ -69,15 +72,15 @@ void master_renderer_set_parameters( MasterRenderer *m, const bpy::dict& params)
     m->get_parameters() = bpy_dict_to_param_array( params);
 }
 
-} // unnamed
+} // detail
 
 void bind_master_renderer()
 {
     bpy::class_<MasterRenderer, std::auto_ptr<MasterRenderer>, boost::noncopyable>( "MasterRenderer", bpy::no_init)
-        .def( "__init__", bpy::make_constructor( create_master_renderer))
-        .def( "__init__", bpy::make_constructor( create_master_renderer_with_default_controller))
-        .def( "get_parameters", master_renderer_get_parameters)
-        .def( "set_parameters", master_renderer_set_parameters)
+        .def( "__init__", bpy::make_constructor( detail::create_master_renderer))
+        //.def( "__init__", bpy::make_constructor( create_master_renderer_with_tile_callback))
+        .def( "get_parameters", detail::master_renderer_get_parameters)
+        .def( "set_parameters", detail::master_renderer_set_parameters)
         .def( "render", &MasterRenderer::render)
         ;
 }

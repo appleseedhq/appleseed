@@ -38,7 +38,7 @@ namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 
-namespace
+namespace detail
 {
 
 auto_release_ptr<MeshObject> create_mesh_obj( const std::string& name, const bpy::dict& params)
@@ -86,7 +86,7 @@ bool write_mesh_object( MeshObject *obj, const std::string& obj_name, const std:
     return MeshObjectWriter::write( *obj, obj_name.c_str(), filename.c_str());
 }
 
-} // unnamed
+} // detail
 
 void bind_mesh_object()
 {
@@ -116,7 +116,7 @@ void bind_mesh_object()
         ;
 
     bpy::class_<MeshObject, auto_release_ptr<MeshObject>, bpy::bases<Object>, boost::noncopyable>( "MeshObject", bpy::no_init)
-        .def( "__init__", bpy::make_constructor( create_mesh_obj))
+        .def( "__init__", bpy::make_constructor( detail::create_mesh_obj))
 
         .def( "reserve_vertices", &MeshObject::reserve_vertices)
         .def( "push_vertex", &MeshObject::push_vertex)
@@ -147,10 +147,10 @@ void bind_mesh_object()
     boost::python::implicitly_convertible<auto_release_ptr<MeshObject>, auto_release_ptr<Object> >();
 
     bpy::class_<MeshObjectReader>( "MeshObjectReader", bpy::no_init)
-        .def( "read", read_mesh_objects).staticmethod( "read")
+        .def( "read", detail::read_mesh_objects).staticmethod( "read")
         ;
 
     bpy::class_<MeshObjectWriter>( "MeshObjectWriter", bpy::no_init)
-        .def( "write", write_mesh_object).staticmethod( "write")
+        .def( "write", detail::write_mesh_object).staticmethod( "write")
         ;
 }

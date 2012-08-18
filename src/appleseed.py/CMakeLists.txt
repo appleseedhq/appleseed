@@ -57,6 +57,7 @@ set (sources
     bind_entity.cpp
     bind_environment.cpp
     bind_frame.cpp
+    bind_image.cpp
     bind_light.cpp
     bind_master_renderer.cpp
     bind_material.cpp
@@ -69,6 +70,7 @@ set (sources
     bind_scene.cpp
     bind_surface_shader.cpp
     bind_texture.cpp
+    bind_tile_callback.cpp
     bind_transform.cpp
     bind_typed_entity_containers.hpp
     bind_utility.cpp

@@ -26,18 +26,18 @@
 //
 
 // Has to be first, to avoid redifinition warnings.
-#include "bind_auto_release_ptr.h"
+#include "Python.h"
+
+#include <boost/python.hpp>
 
 #include "renderer/kernel/rendering/irenderercontroller.h"
 #include "renderer/kernel/rendering/defaultrenderercontroller.h"
-
-#include "dict2dict.hpp"
 
 namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 
-namespace
+namespace detail
 {
 
 class IRendererControllerWrapper : public IRendererController, public bpy::wrapper<IRendererController>
@@ -75,7 +75,7 @@ public:
     }
 };
 
-} // unnamed
+} // detail
 
 void bind_renderer_controller()
 {
@@ -87,7 +87,7 @@ void bind_renderer_controller()
         .value( "ReinitializeRendering", IRendererController::ReinitializeRendering)
         ;
 
-    bpy::class_<IRendererControllerWrapper, boost::noncopyable>( "IRendererController")
+    bpy::class_<detail::IRendererControllerWrapper, boost::noncopyable>( "IRendererController")
         .def( "on_rendering_begin", bpy::pure_virtual( &IRendererController::on_rendering_begin))
         .def( "on_rendering_success", bpy::pure_virtual( &IRendererController::on_rendering_success))
         .def( "on_rendering_abort", bpy::pure_virtual( &IRendererController::on_rendering_abort))

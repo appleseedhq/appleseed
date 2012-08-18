@@ -36,11 +36,11 @@
 namespace bpy = boost::python;
 using namespace foundation;
 
-namespace
+namespace detail
 {
 
 template<typename T, std::size_t N>
-Vector<T,N> *construct_from_list( bpy::list l)
+Vector<T,N> *construct_vec_from_list( bpy::list l)
 {
 	if( bpy::len( l) != N)
 	{
@@ -123,7 +123,6 @@ struct vector_indexer
             boost::python::throw_error_already_set();
 		}
 
-		// Keep LLVM happy
 		return T();
 	}
 
@@ -149,7 +148,7 @@ void do_bind_vector( const char *class_name)
         .def( bpy::init<>())
         .def( bpy::init<T>())
         .def( "__init__", bpy::make_constructor( &vector_constructor<T,N>::construct))
-        .def( "__init__", bpy::make_constructor( &construct_from_list<T,N>))
+        .def( "__init__", bpy::make_constructor( &construct_vec_from_list<T,N>))
 
         // operator[]
 		.def( "__getitem__", &vector_indexer<T,N>::get)
@@ -179,17 +178,17 @@ void do_bind_vector( const char *class_name)
         ;
 }
 
-} // unnamed
+} // detail
 
 void bind_vector()
 {
-    do_bind_vector<int,2>( "Vector2i");
-    do_bind_vector<float,2>( "Vector2f");
-    do_bind_vector<double,2>( "Vector2d");
+    detail::do_bind_vector<int,2>( "Vector2i");
+    detail::do_bind_vector<float,2>( "Vector2f");
+    detail::do_bind_vector<double,2>( "Vector2d");
 
-    do_bind_vector<int,3>( "Vector3i");
-    do_bind_vector<float,3>( "Vector3f");
-    do_bind_vector<double,3>( "Vector3d");
+    detail::do_bind_vector<int,3>( "Vector3i");
+    detail::do_bind_vector<float,3>( "Vector3f");
+    detail::do_bind_vector<double,3>( "Vector3d");
 
-    do_bind_vector<int,4>( "Vector4i");
+    detail::do_bind_vector<int,4>( "Vector4i");
 }

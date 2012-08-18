@@ -38,7 +38,7 @@ namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 
-namespace
+namespace detail
 {
 
 auto_release_ptr<Assembly> create_assembly( const std::string& name)
@@ -63,13 +63,13 @@ TransformSequence& assembly_instance_get_transform_sequence( AssemblyInstance *i
     return instance->transform_sequence();
 }
 
-} // unnamed
+} // detail
 
 void bind_assembly()
 {
     bpy::class_<Assembly, auto_release_ptr<Assembly>, bpy::bases<Entity>, boost::noncopyable>( "Assembly", bpy::no_init)
-        .def( "__init__", bpy::make_constructor( create_assembly))
-        .def( "__init__", bpy::make_constructor( create_assembly_with_params))
+        .def( "__init__", bpy::make_constructor( detail::create_assembly))
+        .def( "__init__", bpy::make_constructor( detail::create_assembly_with_params))
         .def( "colors", &Assembly::colors, bpy::return_value_policy<bpy::reference_existing_object>())
         .def( "textures", &Assembly::textures, bpy::return_value_policy<bpy::reference_existing_object>())
         .def( "texture_instances", &Assembly::texture_instances, bpy::return_value_policy<bpy::reference_existing_object>())
@@ -85,10 +85,10 @@ void bind_assembly()
     bind_typed_entity_map<Assembly>( "AssemblyContainer");
 
     bpy::class_<AssemblyInstance, auto_release_ptr<AssemblyInstance>, bpy::bases<Entity>, boost::noncopyable>( "AssemblyInstance", bpy::no_init)
-        .def( "__init__", bpy::make_constructor( create_assembly_instance))
+        .def( "__init__", bpy::make_constructor( detail::create_assembly_instance))
         .def( "get_assembly", &AssemblyInstance::get_assembly, bpy::return_value_policy<bpy::reference_existing_object>())
         .def( "get_assembly_uid", &AssemblyInstance::get_assembly_uid)
-        .def( "transform_sequence", assembly_instance_get_transform_sequence, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def( "transform_sequence", detail::assembly_instance_get_transform_sequence, bpy::return_value_policy<bpy::reference_existing_object>())
         .def( "compute_parent_bbox", &AssemblyInstance::compute_parent_bbox)
         ;
 

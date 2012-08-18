@@ -28,11 +28,10 @@
 // Has to be first, to avoid redifinition warnings.
 #include "bind_auto_release_ptr.h"
 
-#include "foundation/utility/searchpaths.h"
-
 #include "renderer/api/project.h"
 #include "renderer/api/scene.h"
 #include "renderer/api/frame.h"
+#include "foundation/utility/searchpaths.h"
 
 #include "dict2dict.hpp"
 #include "bind_typed_entity_containers.hpp"
@@ -41,7 +40,7 @@ namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 
-namespace
+namespace detail
 {
 
 auto_release_ptr<Project> create_project( const std::string& name)
@@ -128,29 +127,29 @@ bpy::dict config_get_inherited_parameters( const Configuration *config)
     return param_array_to_bpy_dict( params);
 }
 
-} // unnamed
+} // detail
 
 void bind_project()
 {
     bpy::class_<Configuration, auto_release_ptr<Configuration>, bpy::bases<Entity>, boost::noncopyable>( "Configuration", bpy::no_init)
-        .def( "create_base_final", create_base_final_config).staticmethod( "create_base_final")
-        .def( "create_base_interactive", create_base_interactive_config).staticmethod( "create_base_interactive")
+        .def( "create_base_final", detail::create_base_final_config).staticmethod( "create_base_final")
+        .def( "create_base_interactive", detail::create_base_interactive_config).staticmethod( "create_base_interactive")
 
-        .def( "__init__", bpy::make_constructor( create_config))
-        .def( "__init__", bpy::make_constructor( create_config_with_params))
+        .def( "__init__", bpy::make_constructor( detail::create_config))
+        .def( "__init__", bpy::make_constructor( detail::create_config_with_params))
 
         .def( "set_base", &Configuration::set_base)
         .def( "get_base", &Configuration::get_base, bpy::return_value_policy<bpy::reference_existing_object>())
-        .def( "get_inherited_parameters", config_get_inherited_parameters)
+        .def( "get_inherited_parameters", detail::config_get_inherited_parameters)
         ;
 
     bind_typed_entity_map<Configuration>( "ConfigurationContainer");
 
     bpy::class_<Project, auto_release_ptr<Project>, bpy::bases<Entity>, boost::noncopyable>( "Project", bpy::no_init)    
-        .def( "create_default", create_default_project).staticmethod( "create_default")
-        .def( "create_cornell_box", create_cornell_box_project).staticmethod( "create_cornell_box")
+        .def( "create_default", detail::create_default_project).staticmethod( "create_default")
+        .def( "create_cornell_box", detail::create_cornell_box_project).staticmethod( "create_cornell_box")
 
-        .def( "__init__", bpy::make_constructor( create_project))
+        .def( "__init__", bpy::make_constructor( detail::create_project))
 
         .def( "add_default_configurations", &Project::add_default_configurations)
 
@@ -166,10 +165,10 @@ void bind_project()
 
         .def( "create_aov_images", &Project::create_aov_images)
 
-        .def( "get_search_paths", project_get_search_paths)
-        .def( "set_search_paths", project_set_search_paths)
+        .def( "get_search_paths", detail::project_get_search_paths)
+        .def( "set_search_paths", detail::project_set_search_paths)
 
-        .def( "configurations", project_get_configs, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def( "configurations", detail::project_get_configs, bpy::return_value_policy<bpy::reference_existing_object>())
         ;
 
     bpy::class_<ProjectFileReader>( "ProjectFileReader")
@@ -187,7 +186,7 @@ void bind_project()
     bpy::class_<ProjectFileWriter>( "ProjectFileWriter")
         // These methods are static, but for symmetry with
         // ProjectFileReader, I'm wrapping them non static.
-        .def( "write", write_project_default_opts)
-        .def( "write", write_project_with_opts)
+        .def( "write", detail::write_project_default_opts)
+        .def( "write", detail::write_project_with_opts)
         ;
 }
