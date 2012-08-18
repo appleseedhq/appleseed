@@ -47,16 +47,16 @@ ColorValueArray color_value_array_from_bpy_list( const bpy::list& vals)
     ssize_t size = bpy::len( vals);
     result.reserve( size);
 
-    for( ssize_t i = 0; i < size; ++i)
+    for (ssize_t i = 0; i < size; ++i)
     {
-		bpy::extract<float> ex( vals[i]);
-		if( ex.check())
+        bpy::extract<float> ex( vals[i]);
+        if (ex.check())
             result.push_back( ex());
-		else
-		{
+        else
+        {
             PyErr_SetString( PyExc_TypeError, "Incompatible type type. Only floats." );
             bpy::throw_error_already_set();
-		}
+        }
     }
 
     return result;
@@ -66,7 +66,7 @@ bpy::list bpy_list_from_color_value_array( const ColorValueArray& vals)
 {
     bpy::list result;
 
-    for( int i = 0, e = vals.size(); i < e; ++i)
+    for (int i = 0, e = vals.size(); i < e; ++i)
         result.append( vals[i]);
 
     return result;
@@ -86,9 +86,9 @@ auto_release_ptr<ColorEntity> create_color_entity_vals( const std::string& name,
 }
 
 auto_release_ptr<ColorEntity> create_color_entity_vals_alpha( const std::string& name,
-                                                                const bpy::dict& params,
-                                                                const bpy::list& values,
-                                                                const bpy::list& alpha)
+                                                              const bpy::dict& params,
+                                                              const bpy::list& values,
+                                                              const bpy::list& alpha)
 {
     return ColorEntityFactory::create( name.c_str(), bpy_dict_to_param_array( params),
                                         color_value_array_from_bpy_list( values),

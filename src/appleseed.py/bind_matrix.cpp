@@ -40,34 +40,34 @@ namespace detail
 template<typename T, std::size_t M, std::size_t N>
 Matrix<T,M,N> *construct_matrix_from_list( bpy::list l)
 {
-	if( bpy::len( l) != M * N)
-	{
+    if( bpy::len( l) != M * N)
+    {
         PyErr_SetString( PyExc_RuntimeError, "Invalid list length given to appleseed.Matrix.__init__" );
         bpy::throw_error_already_set();
-	}
+    }
 
-	Matrix<T,M,N> *r = new Matrix<T,M,N>();
+    Matrix<T,M,N> *r = new Matrix<T,M,N>();
 
-	for( unsigned i = 0; i < M * N; ++i)
-	{
-		bpy::extract<T> ex( l[i]);
-		if( !ex.check())
-		{
+    for( unsigned i = 0; i < M * N; ++i)
+    {
+        bpy::extract<T> ex( l[i]);
+        if( !ex.check())
+        {
             PyErr_SetString( PyExc_TypeError, "Incompatible type. Only floats." );
             bpy::throw_error_already_set();
-		}
+        }
 
-		(*r)[i] = ex();
-	}
+        (*r)[i] = ex();
+    }
 
-	return r;
+    return r;
 }
 
 template<typename T, std::size_t M, std::size_t N>
 struct matrix_indexer
 {
-	static T get( const Matrix<T,M,N>& mat, bpy::tuple indices)
-	{
+    static T get( const Matrix<T,M,N>& mat, bpy::tuple indices)
+    {
         if( bpy::len( indices) != 2)
         {
             PyErr_SetString( PyExc_RuntimeError, "Invalid tuple length given to appleseed.Matrix.__get_item__" );
@@ -76,22 +76,22 @@ struct matrix_indexer
 
         int i, j;
 
-		bpy::extract<int> ex0( indices[0]);
-		if( !ex0.check())
-		{
+        bpy::extract<int> ex0( indices[0]);
+        if( !ex0.check())
+        {
             PyErr_SetString( PyExc_TypeError, "Incompatible index type. Only ints." );
             bpy::throw_error_already_set();
-		}
-		else
+        }
+        else
             i = ex0();
 
-		bpy::extract<int> ex1( indices[1]);
-		if( !ex1.check())
-		{
+        bpy::extract<int> ex1( indices[1]);
+        if( !ex1.check())
+        {
             PyErr_SetString( PyExc_TypeError, "Incompatible index type. Only ints." );
             bpy::throw_error_already_set();
-		}
-		else
+        }
+        else
             j = ex1();
 
         if( i < 0)
@@ -109,8 +109,8 @@ struct matrix_indexer
         return T();
     }
 
-	static void set( Matrix<T,M,N>& mat, bpy::tuple indices, const T& v)
-	{
+    static void set( Matrix<T,M,N>& mat, bpy::tuple indices, const T& v)
+    {
         if( bpy::len( indices) != 2)
         {
             PyErr_SetString( PyExc_RuntimeError, "Invalid tuple length given to appleseed.Matrix.__set_item__" );
@@ -119,22 +119,22 @@ struct matrix_indexer
 
         int i, j;
 
-		bpy::extract<int> ex0( indices[0]);
-		if( !ex0.check())
-		{
+        bpy::extract<int> ex0( indices[0]);
+        if( !ex0.check())
+        {
             PyErr_SetString( PyExc_TypeError, "Incompatible index type. Only ints." );
             bpy::throw_error_already_set();
-		}
-		else
+        }
+        else
             i = ex0();
 
-		bpy::extract<int> ex1( indices[1]);
-		if( !ex1.check())
-		{
+        bpy::extract<int> ex1( indices[1]);
+        if( !ex1.check())
+        {
             PyErr_SetString( PyExc_TypeError, "Incompatible index type. Only ints." );
             bpy::throw_error_already_set();
-		}
-		else
+        }
+        else
             j = ex1();
 
         if( i >= 0 && i < M && j >= 0 && j < N)
@@ -148,7 +148,7 @@ struct matrix_indexer
 
         PyErr_SetString( PyExc_IndexError, "Out of bounds access in appleseed.Matrix.__set_item__" );
         boost::python::throw_error_already_set();
-	}
+    }
 };
 
 template<class T, std::size_t N>
@@ -200,21 +200,21 @@ void bind_typed_matrix4( const std::string& class_name)
         .def( "__init__", bpy::make_constructor( &construct_matrix_from_list<T,4,4>))
 
         // operator[]
-		.def( "__getitem__", &matrix_indexer<T,4,4>::get)
-		.def( "__setitem__", &matrix_indexer<T,4,4>::set)
+        .def( "__getitem__", &matrix_indexer<T,4,4>::get)
+        .def( "__setitem__", &matrix_indexer<T,4,4>::set)
 
         .def( "transpose", &transpose<T,4,4>)
         .def( "inverse", &invert_matrix<T,4>)
 
-		.def( bpy::self * bpy::self)
-		.def( bpy::self * Vector<T,4>())
+        .def( bpy::self * bpy::self)
+        .def( bpy::self * Vector<T,4>())
 
-		// a bug in boost::python, this needs
-		// the extra self_ns qualification
-		.def( bpy::self_ns::str( bpy::self))
-		.def( bpy::self_ns::repr( bpy::self))
+        // a bug in boost::python, this needs
+        // the extra self_ns qualification
+        .def( bpy::self_ns::str( bpy::self))
+        .def( bpy::self_ns::repr( bpy::self))
 
-		.def( "extract_translation", &Matrix<T,4,4>::extract_translation)
+        .def( "extract_translation", &Matrix<T,4,4>::extract_translation)
         .def( "extract_unit_quaternion", &Matrix<T,4,4>::extract_unit_quaternion)
         .def( "extract_euler_angles", &matrix_extract_euler_angles<T>)
         ;
