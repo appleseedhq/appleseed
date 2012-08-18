@@ -1189,7 +1189,7 @@ inline void Matrix<T, 3, 3>::extract_euler_angles(
     else
     {
         yaw   = ValueType(0.0);
-        pitch = HalfPi;
+        pitch = ValueType(HalfPi);
         roll  = std::atan2(m_comp[3], m_comp[0]);
     }
 }
@@ -1695,7 +1695,7 @@ inline void Matrix<T, 4, 4>::extract_euler_angles(
     else
     {
         yaw   = ValueType(0.0);
-        pitch = HalfPi;
+        pitch = ValueType(HalfPi);
         roll  = std::atan2(m_comp[4], m_comp[0]);
     }
 }
