@@ -142,6 +142,9 @@ template <typename T, size_t N> size_t max_abs_index(const RegularSpectrum<T, N>
 // Return the average value of a spectrum.
 template <typename T, size_t N> T average_value(const RegularSpectrum<T, N>& s);
 
+// Return true if a spectrum contains at least one NaN value.
+template <typename T, size_t N> bool has_nan(const RegularSpectrum<T, N>& s);
+
 
 //
 // Full specializations for spectra of type float and double.
@@ -695,6 +698,18 @@ inline T average_value(const RegularSpectrum<T, N>& s)
         average += s[i];
 
     return average / N;
+}
+
+template <typename T, size_t N>
+inline bool has_nan(const RegularSpectrum<T, N>& s)
+{
+    for (size_t i = 0; i < N; ++i)
+    {
+        if (s[i] != s[i])
+            return true;
+    }
+
+    return false;
 }
 
 }       // namespace foundation

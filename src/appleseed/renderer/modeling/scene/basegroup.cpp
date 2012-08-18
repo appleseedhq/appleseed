@@ -26,22 +26,54 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENVIRONMENTITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENVIRONMENTITEM_H
+// Interface header.
+#include "basegroup.h"
 
-// appleseed.studio headers.
-#include "mainwindow/project/singlemodelentityitem.h"
+namespace renderer
+{
 
-// Forward declarations.
-namespace renderer  { class Environment; }
-namespace renderer  { class Scene; }
+struct BaseGroup::Impl
+{
+    ColorContainer              m_colors;
+    TextureContainer            m_textures;
+    TextureInstanceContainer    m_texture_instances;
+    AssemblyContainer           m_assemblies;
+    AssemblyInstanceContainer   m_assembly_instances;
+};
 
-namespace appleseed {
-namespace studio {
+BaseGroup::BaseGroup()
+  : impl(new Impl())
+{
+}
 
-typedef SingleModelEntityItem<renderer::Environment, renderer::Scene> EnvironmentItem;
+BaseGroup::~BaseGroup()
+{
+    delete impl;
+}
 
-}       // namespace studio
-}       // namespace appleseed
+ColorContainer& BaseGroup::colors() const
+{
+    return impl->m_colors;
+}
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENVIRONMENTITEM_H
+TextureContainer& BaseGroup::textures() const
+{
+    return impl->m_textures;
+}
+
+TextureInstanceContainer& BaseGroup::texture_instances() const
+{
+    return impl->m_texture_instances;
+}
+
+AssemblyContainer& BaseGroup::assemblies() const
+{
+    return impl->m_assemblies;
+}
+
+AssemblyInstanceContainer& BaseGroup::assembly_instances() const
+{
+    return impl->m_assembly_instances;
+}
+
+}   // namespace renderer

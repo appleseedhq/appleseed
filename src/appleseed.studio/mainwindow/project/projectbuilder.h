@@ -33,7 +33,6 @@
 #include "mainwindow/project/assemblycollectionitem.h"
 #include "mainwindow/project/assemblyitem.h"
 #include "mainwindow/project/multimodelentityeditorformfactory.h"
-#include "mainwindow/project/projecttree.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/bsdf.h"
@@ -67,6 +66,7 @@
 #include <string>
 
 // Forward declarations.
+namespace appleseed { namespace studio { class BaseGroupItem; } }
 namespace appleseed { namespace studio { class TextureCollectionItem; } }
 
 namespace appleseed {
@@ -74,14 +74,12 @@ namespace studio {
 
 class ProjectBuilder
   : public QObject
-  , foundation::NonCopyable
+  , public foundation::NonCopyable
 {
     Q_OBJECT
 
   public:
-    ProjectBuilder(
-        renderer::Project&                  project,
-        ProjectTree&                        project_tree);
+    explicit ProjectBuilder(renderer::Project& project);
 
     renderer::Project& get_project();
     const renderer::Project& get_project() const;
@@ -92,9 +90,10 @@ class ProjectBuilder
 
     void notify_project_modification() const;
 
-    template <typename Entity, typename ParentEntity>
+    template <typename Entity, typename ParentEntity, typename ParentItem>
     void insert_entity(
         ParentEntity&                       parent,
+        ParentItem*                         parent_item,
         const foundation::Dictionary&       values) const;
 
     template <typename Entity, typename ParentEntity>
@@ -116,52 +115,56 @@ class ProjectBuilder
         const foundation::Dictionary&       values) const;
 
     void insert_assembly(
+        renderer::BaseGroup&                parent,
+        BaseGroupItem*                      parent_item,
         const std::string&                  name) const;
 
     void remove_assembly(
+        renderer::BaseGroup&                parent,
+        BaseGroupItem*                      parent_item,
         const foundation::UniqueID          assembly_uid) const;
 
     void insert_assembly_instance(
+        renderer::BaseGroup&                parent,
+        BaseGroupItem*                      parent_item,
         const std::string&                  name,
         renderer::Assembly&                 assembly) const;
 
     void remove_assembly_instance(
+        renderer::BaseGroup&                parent,
+        BaseGroupItem*                      parent_item,
         const foundation::UniqueID          assembly_instance_uid) const;
 
+    void insert_texture(
+        renderer::BaseGroup&                parent,
+        BaseGroupItem*                      parent_item,
+        const std::string&                  path) const;
+
+    void remove_texture(
+        renderer::BaseGroup&                parent,
+        BaseGroupItem*                      parent_item,
+        const foundation::UniqueID          texture_uid) const;
+
     void insert_objects(
-        renderer::Assembly&                 assembly,
+        renderer::Assembly&                 parent,
+        AssemblyItem*                       parent_item,
         const std::string&                  path) const;
 
     void remove_object(
-        renderer::Assembly&                 assembly,
-        const foundation::UniqueID          object_id) const;
+        renderer::Assembly&                 parent,
+        AssemblyItem*                       parent_item,
+        const foundation::UniqueID          object_uid) const;
 
     void remove_object_instance(
-        renderer::Assembly&                 assembly,
+        renderer::Assembly&                 parent,
+        AssemblyItem*                       parent_item,
         const foundation::UniqueID          object_instance_uid) const;
-
-    void insert_texture(
-        renderer::Scene&                    scene,
-        const std::string&                  path) const;
-
-    void insert_texture(
-        renderer::Assembly&                 assembly,
-        const std::string&                  path) const;
-
-    void remove_texture(
-        renderer::Scene&                    scene,
-        const foundation::UniqueID          texture_uid) const;
-
-    void remove_texture(
-        renderer::Assembly&                 assembly,
-        const foundation::UniqueID          texture_uid) const;
 
   signals:
     void signal_project_modified() const;
 
   private:
     renderer::Project&                              m_project;
-    ProjectTree&                                    m_project_tree;
 
     renderer::CameraFactoryRegistrar                m_camera_factory_registrar;
     renderer::BSDFFactoryRegistrar                  m_bsdf_factory_registrar;
@@ -179,16 +182,6 @@ class ProjectBuilder
     template <typename Entity>
     foundation::auto_release_ptr<Entity> create_entity(
         const foundation::Dictionary&       values) const;
-
-    template <typename Entity>
-    void add_item(
-        Entity*                             entity,
-        renderer::Scene&                    scene) const;
-
-    template <typename Entity>
-    void add_item(
-        Entity*                             entity,
-        renderer::Assembly&                 assembly) const;
 };
 
 
@@ -252,14 +245,15 @@ ProjectBuilder::get_factory_registrar<renderer::Texture>() const
     return m_texture_factory_registrar;
 }
 
-template <typename Entity, typename ParentEntity>
+template <typename Entity, typename ParentEntity, typename ParentItem>
 void ProjectBuilder::insert_entity(
     ParentEntity&                       parent,
+    ParentItem*                         parent_item,
     const foundation::Dictionary&       values) const
 {
     foundation::auto_release_ptr<Entity> entity(create_entity<Entity>(values));
 
-    add_item(entity.get(), parent);
+    parent_item->add_item(entity.get());
 
     renderer::EntityTraits<Entity>::insert_entity(entity, parent);
 
@@ -464,24 +458,6 @@ inline foundation::auto_release_ptr<renderer::Material> ProjectBuilder::create_e
     clean_values.strings().remove(EntityEditorFormFactoryBase::NameParameter);
 
     return renderer::MaterialFactory::create(name.c_str(), clean_values);
-}
-
-template <typename Entity>
-void ProjectBuilder::add_item(
-    Entity*                             entity,
-    renderer::Scene&                    scene) const
-{
-    m_project_tree.add_item(entity);
-}
-
-template <typename Entity>
-void ProjectBuilder::add_item(
-    Entity*                             entity,
-    renderer::Assembly&                 assembly) const
-{
-    m_project_tree.get_assembly_collection_item()
-                  .get_item(assembly)
-                  .add_item(entity);
 }
 
 }       // namespace studio

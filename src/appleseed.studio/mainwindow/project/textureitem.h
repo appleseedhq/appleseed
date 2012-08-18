@@ -31,51 +31,36 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/multimodelentityitem.h"
-#include "mainwindow/project/projectbuilder.h"
-
-// appleseed.renderer headers.
-#include "renderer/api/texture.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 
+// Forward declarations.
+namespace appleseed { namespace studio { class BaseGroupItem; } }
+namespace appleseed { namespace studio { class ProjectBuilder; } }
+namespace renderer  { class BaseGroup; }
+namespace renderer  { class Texture; }
+
 namespace appleseed {
 namespace studio {
 
-template <typename ParentEntity>
 class TextureItem
-  : public MultiModelEntityItem<renderer::Texture, ParentEntity>
+  : public MultiModelEntityItem<renderer::Texture, renderer::BaseGroup>
 {
   public:
     TextureItem(
-        renderer::Texture*  texture,
-        ParentEntity&       parent,
-        ProjectBuilder&     project_builder);
+        renderer::Texture*      texture,
+        renderer::BaseGroup&    parent,
+        BaseGroupItem*          parent_item,
+        ProjectBuilder&         project_builder);
 
   private:
+    typedef MultiModelEntityItem<renderer::Texture, renderer::BaseGroup> Base;
+
+    BaseGroupItem* m_parent_item;
+
     virtual void slot_delete() override;
 };
-
-
-//
-// Implementation.
-//
-
-template <typename ParentEntity>
-TextureItem<ParentEntity>::TextureItem(
-    renderer::Texture*      texture,
-    ParentEntity&           parent,
-    ProjectBuilder&         project_builder)
-  : MultiModelEntityItem<renderer::Texture, ParentEntity>(texture, parent, project_builder)
-{
-}
-
-template <typename ParentEntity>
-void TextureItem<ParentEntity>::slot_delete()
-{
-    typedef MultiModelEntityItem<renderer::Texture, ParentEntity> Base;
-    Base::m_project_builder.remove_texture(Base::m_parent, Base::m_entity->get_uid());
-}
 
 }       // namespace studio
 }       // namespace appleseed

@@ -422,19 +422,25 @@ inline Color<T, 3> linear_rgb_to_hsl(const Color<T, 3>& linear_rgb)
 template <typename T>
 inline Color<T, 3> ciexyz_to_linear_rgb(const Color<T, 3>& xyz)
 {
-    return Color<T, 3>(
-        T( 3.240479) * xyz[0] + T(-1.537150) * xyz[1] + T(-0.498535) * xyz[2],
-        T(-0.969256) * xyz[0] + T( 1.875991) * xyz[1] + T( 0.041556) * xyz[2],
-        T( 0.055648) * xyz[0] + T(-0.204043) * xyz[1] + T( 1.057311) * xyz[2]);
+    return
+        clamp_low(
+            Color<T, 3>(
+                T( 3.240479) * xyz[0] + T(-1.537150) * xyz[1] + T(-0.498535) * xyz[2],
+                T(-0.969256) * xyz[0] + T( 1.875991) * xyz[1] + T( 0.041556) * xyz[2],
+                T( 0.055648) * xyz[0] + T(-0.204043) * xyz[1] + T( 1.057311) * xyz[2]),
+            T(0.0));
 }
 
 template <typename T>
 inline Color<T, 3> linear_rgb_to_ciexyz(const Color<T, 3>& linear_rgb)
 {
-    return Color<T, 3>(
-        T(0.412453) * linear_rgb[0] + T(0.357580) * linear_rgb[1] + T(0.180423) * linear_rgb[2],
-        T(0.212671) * linear_rgb[0] + T(0.715160) * linear_rgb[1] + T(0.072169) * linear_rgb[2],
-        T(0.019334) * linear_rgb[0] + T(0.119193) * linear_rgb[1] + T(0.950227) * linear_rgb[2]);
+    return
+        clamp_low(
+            Color<T, 3>(
+                T(0.412453) * linear_rgb[0] + T(0.357580) * linear_rgb[1] + T(0.180423) * linear_rgb[2],
+                T(0.212671) * linear_rgb[0] + T(0.715160) * linear_rgb[1] + T(0.072169) * linear_rgb[2],
+                T(0.019334) * linear_rgb[0] + T(0.119193) * linear_rgb[1] + T(0.950227) * linear_rgb[2]),
+            T(0.0));
 }
 
 

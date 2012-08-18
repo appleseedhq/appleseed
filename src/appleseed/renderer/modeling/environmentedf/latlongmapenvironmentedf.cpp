@@ -110,7 +110,6 @@ namespace
           , m_rcp_height(1.0 / height)
           , m_u_shift(u_shift)
           , m_v_shift(v_shift)
-          , m_out_of_range_luminance_error_count(0)
         {
         }
 
@@ -136,25 +135,6 @@ namespace
             payload.m_color *= static_cast<float>(multiplier);
 
             importance = static_cast<double>(luminance(payload.m_color));
-
-            const double MaxImportance = 1.0e4;
-
-            if (importance < 0.0)
-            {
-                importance = 0.0;
-                ++m_out_of_range_luminance_error_count;
-            }
-
-            if (importance > MaxImportance)
-            {
-                importance = MaxImportance;
-                ++m_out_of_range_luminance_error_count;
-            }
-        }
-
-        size_t get_out_of_range_luminance_error_count() const
-        {
-            return m_out_of_range_luminance_error_count;
         }
 
       private:
@@ -165,7 +145,6 @@ namespace
         const double    m_rcp_height;
         const double    m_u_shift;
         const double    m_v_shift;
-        size_t          m_out_of_range_luminance_error_count;
     };
 
     const char* Model = "latlong_map_environment_edf";
@@ -203,6 +182,8 @@ namespace
         {
             if (!EnvironmentEDF::on_frame_begin(project))
                 return false;
+
+            check_exitance_input_non_null("exitance", "exitance_multiplier");
 
             if (m_importance_sampler.get() == 0)
                 build_importance_map(*project.get_scene());
@@ -408,18 +389,6 @@ namespace
                     m_importance_map_width,
                     m_importance_map_height,
                     sampler));
-
-            const size_t oor_error_count = sampler.get_out_of_range_luminance_error_count();
-
-            if (oor_error_count > 0)
-            {
-                RENDERER_LOG_WARNING(
-                    "while building importance map for environment edf \"%s\": "
-                    "found %s pixel%s with out-of-range luminance; rendering artifacts are to be expected.",
-                    get_name(),
-                    pretty_uint(oor_error_count).c_str(),
-                    oor_error_count > 1 ? "s" : "");
-            }
 
             RENDERER_LOG_INFO(
                 "built importance map for environment edf \"%s\".",

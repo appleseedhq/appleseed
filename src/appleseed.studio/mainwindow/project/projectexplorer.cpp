@@ -32,6 +32,10 @@
 // appleseed.studio headers.
 #include "mainwindow/project/assemblycollectionitem.h"
 #include "mainwindow/project/itembase.h"
+#include "mainwindow/project/sceneitem.h"
+
+// appleseed.renderer headers.
+#include "renderer/api/project.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/uid.h"
@@ -57,11 +61,13 @@ ProjectExplorer::ProjectExplorer(
     Project&        project,
     ParamArray&     settings)
   : m_tree_widget(tree_widget)
-  , m_project_tree(tree_widget)
-  , m_project(project)
-  , m_project_builder(project, m_project_tree)
+  , m_project_builder(project)
 {
     m_tree_widget->setContextMenuPolicy(Qt::CustomContextMenu);
+
+    SceneItem* scene_item = new SceneItem(*project.get_scene(), m_project_builder, settings);
+    m_tree_widget->addTopLevelItem(scene_item);
+    scene_item->setExpanded(true);
 
     connect(
         m_tree_widget, SIGNAL(customContextMenuRequested(const QPoint&)),
@@ -81,20 +87,6 @@ ProjectExplorer::ProjectExplorer(
     connect(
         &m_project_builder, SIGNAL(signal_project_modified()),
         this, SIGNAL(signal_project_modified()));
-
-    m_project_tree.initialize(project, m_project_builder, settings);
-}
-
-QMenu* ProjectExplorer::build_no_item_context_menu() const
-{
-    QMenu* menu = new QMenu(m_tree_widget);
-
-    menu->addAction(
-        "Create Assembly...",
-        &m_project_tree.get_assembly_collection_item(),
-        SLOT(slot_create_assembly()));
-
-    return menu;
 }
 
 QMenu* ProjectExplorer::build_single_item_context_menu(QTreeWidgetItem* item) const
@@ -146,10 +138,13 @@ void ProjectExplorer::slot_context_menu(const QPoint& point)
 {
     const QList<QTreeWidgetItem*> selected_items = m_tree_widget->selectedItems();
 
+    if (selected_items.empty())
+        return;
+
     QMenu* menu =
-        selected_items.size() == 0 ? build_no_item_context_menu() :
-        selected_items.size() == 1 ? build_single_item_context_menu(selected_items.first()) :
-                                     build_multiple_items_context_menu(selected_items);
+        selected_items.size() == 1
+            ? build_single_item_context_menu(selected_items.first())
+            : build_multiple_items_context_menu(selected_items);
 
     if (menu)
         menu->exec(m_tree_widget->mapToGlobal(point));

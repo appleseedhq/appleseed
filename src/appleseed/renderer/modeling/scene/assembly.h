@@ -30,11 +30,18 @@
 #define APPLESEED_RENDERER_MODELING_SCENE_ASSEMBLY_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
 #include "renderer/modeling/entity/entity.h"
+#include "renderer/modeling/scene/basegroup.h"
 #include "renderer/modeling/scene/containers.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/autoreleaseptr.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // Forward declarations.
+namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 
 namespace renderer
@@ -42,24 +49,16 @@ namespace renderer
 
 //
 // An assembly is either entirely self-contained, or it references colors,
-// textures and texture instances defined in the parent scene.
+// textures and texture instances defined in the parent scene or assembly.
 //
 
-class RENDERERDLL Assembly
+class DLLSYMBOL Assembly
   : public Entity
+  , public BaseGroup
 {
   public:
     // Delete this instance.
     virtual void release();
-
-    // Access the colors.
-    ColorContainer& colors() const;
-
-    // Access the textures.
-    TextureContainer& textures() const;
-
-    // Access the texture instances.
-    TextureInstanceContainer& texture_instances() const;
 
     // Access the BSDFs.
     BSDFContainer& bsdfs() const;
@@ -115,7 +114,7 @@ class RENDERERDLL Assembly
 // Assembly factory.
 //
 
-class RENDERERDLL AssemblyFactory
+class DLLSYMBOL AssemblyFactory
 {
   public:
     // Create a new assembly.

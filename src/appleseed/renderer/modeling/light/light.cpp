@@ -91,7 +91,7 @@ void Light::on_frame_end(
 {
 }
 
-void Light::check_non_null_exitance_input(const char* input_name) const
+void Light::check_exitance_input_non_null(const char* input_name) const
 {
     const Source* source = m_inputs.source(input_name);
 

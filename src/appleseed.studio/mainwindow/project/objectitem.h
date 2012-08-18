@@ -36,6 +36,7 @@
 #include "foundation/platform/compiler.h"
 
 // Forward declarations.
+namespace appleseed { namespace studio { class AssemblyItem; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace renderer  { class Assembly; }
 namespace renderer  { class Object; }
@@ -49,12 +50,13 @@ class ObjectItem
   public:
     ObjectItem(
         renderer::Object*   object,
-        renderer::Assembly& assembly,
+        renderer::Assembly& parent,
+        AssemblyItem*       parent_item,
         ProjectBuilder&     project_builder);
 
   private:
-    renderer::Object*       m_object;
-    renderer::Assembly&     m_assembly;
+    renderer::Assembly&     m_parent;
+    AssemblyItem*           m_parent_item;
     ProjectBuilder&         m_project_builder;
 
     virtual void slot_delete() override;

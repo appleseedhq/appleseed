@@ -35,8 +35,8 @@
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
-#include "foundation/utility/uid.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -58,13 +58,10 @@ class DLLSYMBOL AssemblyInstance
 {
   public:
     // Delete this instance.
-    virtual void release();
+    virtual void release() override;
 
     // Return the instantiated assembly.
     const Assembly& get_assembly() const;
-
-    // Return the unique ID of the instantiated assembly.
-    foundation::UniqueID get_assembly_uid() const;
 
     // Access the transform sequence of the instance.
     TransformSequence& transform_sequence();
@@ -84,7 +81,6 @@ class DLLSYMBOL AssemblyInstance
     friend class AssemblyInstanceFactory;
 
     const Assembly&         m_assembly;
-    foundation::UniqueID    m_assembly_uid;
     TransformSequence       m_transform_sequence;
 
     // Constructor.
@@ -117,11 +113,6 @@ class DLLSYMBOL AssemblyInstanceFactory
 inline const Assembly& AssemblyInstance::get_assembly() const
 {
     return m_assembly;
-}
-
-inline foundation::UniqueID AssemblyInstance::get_assembly_uid() const
-{
-    return m_assembly_uid;
 }
 
 inline TransformSequence& AssemblyInstance::transform_sequence()

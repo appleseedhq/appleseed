@@ -72,9 +72,7 @@ namespace
           : EnvironmentEDF(name, params)
         {
             m_inputs.declare("upper_hemi_exitance", InputFormatSpectrum);
-            m_inputs.declare("upper_hemi_exitance_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("lower_hemi_exitance", InputFormatSpectrum);
-            m_inputs.declare("lower_hemi_exitance_multiplier", InputFormatScalar, "1.0");
         }
 
         virtual void release() override
@@ -93,15 +91,13 @@ namespace
                 return false;
 
             // todo: what happens if these are not uniform?
-            check_uniform("upper_hemi_exitance");
-            check_uniform("upper_hemi_exitance_multiplier");
-            check_uniform("lower_hemi_exitance");
-            check_uniform("lower_hemi_exitance_multiplier");
+            check_uniform_input("upper_hemi_exitance");
+            check_uniform_input("lower_hemi_exitance");
+
+            if (is_exitance_input_null("upper_hemi_exitance") && is_exitance_input_null("lower_hemi_exitance"))
+                warn_exitance_input_null();
 
             m_inputs.evaluate_uniforms(&m_values);
-
-            m_values.m_upper_hemi_exitance *= static_cast<float>(m_values.m_upper_hemi_exitance_multiplier);
-            m_values.m_lower_hemi_exitance *= static_cast<float>(m_values.m_lower_hemi_exitance_multiplier);
 
             return true;
         }
@@ -158,12 +154,10 @@ namespace
       private:
         struct InputValues
         {
-            Spectrum    m_upper_hemi_exitance;              // premultiplied by m_upper_hemi_exitance_multiplier
+            Spectrum    m_upper_hemi_exitance;
             Alpha       m_upper_hemi_exitance_alpha;        // unused
-            double      m_upper_hemi_exitance_multiplier;
-            Spectrum    m_lower_hemi_exitance;              // premultiplied by m_lower_hemi_exitance_multiplier
+            Spectrum    m_lower_hemi_exitance;
             Alpha       m_lower_hemi_exitance_alpha;        // unused
-            double      m_lower_hemi_exitance_multiplier;
         };
 
         InputValues     m_values;
@@ -201,14 +195,6 @@ DictionaryArray ConstantHemisphereEnvironmentEDFFactory::get_widget_definitions(
 
     definitions.push_back(
         Dictionary()
-            .insert("name", "upper_hemi_exitance_multiplier")
-            .insert("label", "Upper Hemisphere Exitance Multiplier")
-            .insert("widget", "text_box")
-            .insert("use", "optional")
-            .insert("default", "1.0"));
-
-    definitions.push_back(
-        Dictionary()
             .insert("name", "lower_hemi_exitance")
             .insert("label", "Lower Hemisphere Exitance")
             .insert("widget", "entity_picker")
@@ -216,14 +202,6 @@ DictionaryArray ConstantHemisphereEnvironmentEDFFactory::get_widget_definitions(
                 Dictionary().insert("color", "Colors"))
             .insert("use", "required")
             .insert("default", ""));
-
-    definitions.push_back(
-        Dictionary()
-            .insert("name", "lower_hemi_exitance_multiplier")
-            .insert("label", "Lower Hemisphere Exitance Multiplier")
-            .insert("widget", "text_box")
-            .insert("use", "optional")
-            .insert("default", "1.0"));
 
     return definitions;
 }

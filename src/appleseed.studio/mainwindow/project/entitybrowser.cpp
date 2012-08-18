@@ -64,28 +64,25 @@ namespace
     }
 }
 
-EntityBrowser<Scene>::EntityBrowser(const Scene& scene)
-  : m_scene(scene)
+
+//
+// EntityBrowser<BaseGroup> class implementation.
+//
+
+EntityBrowser<BaseGroup>::EntityBrowser(const BaseGroup& base_group)
+  : m_base_group(base_group)
 {
 }
 
-StringDictionary EntityBrowser<Scene>::get_entities(const string& type) const
+StringDictionary EntityBrowser<BaseGroup>::get_entities(const string& type) const
 {
     if (type == "color")
     {
-        return build_entity_dictionary(m_scene.colors());
-    }
-    else if (type == "environment_edf")
-    {
-        return build_entity_dictionary(m_scene.environment_edfs());
-    }
-    else if (type == "environment_shader")
-    {
-        return build_entity_dictionary(m_scene.environment_shaders());
+        return build_entity_dictionary(m_base_group.colors());
     }
     else if (type == "texture_instance")
     {
-        return build_entity_dictionary(m_scene.texture_instances());
+        return build_entity_dictionary(m_base_group.texture_instances());
     }
     else
     {
@@ -93,8 +90,41 @@ StringDictionary EntityBrowser<Scene>::get_entities(const string& type) const
     }
 }
 
+
+//
+// EntityBrowser<Scene> class implementation.
+//
+
+EntityBrowser<Scene>::EntityBrowser(const Scene& scene)
+  : EntityBrowser<BaseGroup>(scene)
+  , m_scene(scene)
+{
+}
+
+StringDictionary EntityBrowser<Scene>::get_entities(const string& type) const
+{
+    if (type == "environment_edf")
+    {
+        return build_entity_dictionary(m_scene.environment_edfs());
+    }
+    else if (type == "environment_shader")
+    {
+        return build_entity_dictionary(m_scene.environment_shaders());
+    }
+    else
+    {
+        return EntityBrowser<BaseGroup>::get_entities(type);
+    }
+}
+
+
+//
+// EntityBrowser<Assembly> class implementation.
+//
+
 EntityBrowser<Assembly>::EntityBrowser(const Assembly& assembly)
-  : m_assembly(assembly)
+  : EntityBrowser<BaseGroup>(assembly)
+  , m_assembly(assembly)
 {
 }
 
@@ -103,10 +133,6 @@ StringDictionary EntityBrowser<Assembly>::get_entities(const string& type) const
     if (type == "bsdf")
     {
         return build_entity_dictionary(m_assembly.bsdfs());
-    }
-    else if (type == "color")
-    {
-        return build_entity_dictionary(m_assembly.colors());
     }
     else if (type == "edf")
     {
@@ -120,13 +146,9 @@ StringDictionary EntityBrowser<Assembly>::get_entities(const string& type) const
     {
         return build_entity_dictionary(m_assembly.surface_shaders());
     }
-    else if (type == "texture_instance")
-    {
-        return build_entity_dictionary(m_assembly.texture_instances());
-    }
     else
     {
-        return StringDictionary();
+        return EntityBrowser<BaseGroup>::get_entities(type);
     }
 }
 

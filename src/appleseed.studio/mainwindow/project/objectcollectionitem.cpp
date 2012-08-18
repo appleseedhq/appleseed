@@ -64,12 +64,14 @@ namespace
 }
 
 ObjectCollectionItem::ObjectCollectionItem(
-    Assembly&           assembly,
     ObjectContainer&    objects,
+    Assembly&           parent,
+    AssemblyItem*       parent_item,
     ProjectBuilder&     project_builder,
     ParamArray&         settings)
   : CollectionItemBase<Object>(g_class_uid, "Objects")
-  , m_assembly(assembly)
+  , m_parent(parent)
+  , m_parent_item(parent_item)
   , m_project_builder(project_builder)
   , m_settings(settings)
 {
@@ -79,8 +81,8 @@ ObjectCollectionItem::ObjectCollectionItem(
 QMenu* ObjectCollectionItem::get_single_item_context_menu() const
 {
     QMenu* menu = CollectionItemBase<Object>::get_single_item_context_menu();
-    menu->addSeparator();
 
+    menu->addSeparator();
     menu->addAction("Import Objects...", this, SLOT(slot_import_objects()));
 
     return menu;
@@ -113,7 +115,8 @@ void ObjectCollectionItem::slot_import_objects()
     for (int i = 0; i < filepaths.size(); ++i)
     {
         m_project_builder.insert_objects(
-            m_assembly,
+            m_parent,
+            m_parent_item,
             QDir::toNativeSeparators(filepaths[i]).toStdString());
     }
 }
@@ -122,7 +125,12 @@ ItemBase* ObjectCollectionItem::create_item(Object* object) const
 {
     assert(object);
 
-    return new ObjectItem(object, m_assembly, m_project_builder);
+    return
+        new ObjectItem(
+            object,
+            m_parent,
+            m_parent_item,
+            m_project_builder);
 }
 
 }   // namespace studio

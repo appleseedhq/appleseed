@@ -37,8 +37,6 @@
 #include "foundation/utility/uid.h"
 
 // Qt headers.
-#include <QList>
-#include <QMenu>
 #include <QObject>
 #include <QString>
 
@@ -68,9 +66,6 @@ class EntityItemBase
 
     void update();
 
-    virtual QMenu* get_single_item_context_menu() const;
-    virtual QMenu* get_multiple_items_context_menu(const QList<ItemBase*>& items) const;
-
   protected:
     Entity* m_entity;
 };
@@ -93,24 +88,6 @@ void EntityItemBase<Entity>::update()
 {
     set_title(QString::fromAscii(m_entity->get_name()));
     set_render_layer(QString::fromAscii(m_entity->get_render_layer_name()));
-}
-
-template <typename Entity>
-QMenu* EntityItemBase<Entity>::get_single_item_context_menu() const
-{
-    QMenu* menu = ItemBase::get_single_item_context_menu();
-    menu->addSeparator();
-
-    return menu;
-}
-
-template <typename Entity>
-QMenu* EntityItemBase<Entity>::get_multiple_items_context_menu(const QList<ItemBase*>& items) const
-{
-    QMenu* menu = ItemBase::get_multiple_items_context_menu(items);
-    menu->addSeparator();
-
-    return menu;
 }
 
 }       // namespace studio

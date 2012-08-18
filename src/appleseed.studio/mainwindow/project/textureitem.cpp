@@ -26,22 +26,34 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_CAMERAITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_CAMERAITEM_H
+// Interface header.
+#include "textureitem.h"
 
 // appleseed.studio headers.
-#include "mainwindow/project/multimodelentityitem.h"
+#include "mainwindow/project/projectbuilder.h"
 
-// Forward declarations.
-namespace renderer  { class Camera; }
-namespace renderer  { class Scene; }
+using namespace renderer;
 
 namespace appleseed {
 namespace studio {
 
-typedef MultiModelEntityItem<renderer::Camera, renderer::Scene> CameraItem;
+TextureItem::TextureItem(
+    Texture*            texture,
+    BaseGroup&          parent,
+    BaseGroupItem*      parent_item,
+    ProjectBuilder&     project_builder)
+  : Base(texture, parent, project_builder)
+  , m_parent_item(parent_item)
+{
+}
 
-}       // namespace studio
-}       // namespace appleseed
+void TextureItem::slot_delete()
+{
+    m_project_builder.remove_texture(
+        m_parent,
+        m_parent_item,
+        m_entity->get_uid());
+}
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_CAMERAITEM_H
+}   // namespace studio
+}   // namespace appleseed

@@ -30,7 +30,7 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYITEM_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/entityitembase.h"
+#include "mainwindow/project/basegroupitem.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -39,13 +39,11 @@
 #include <QObject>
 
 // Forward declarations.
-namespace appleseed { namespace studio { template <typename Entity, typename ParentEntity> class CollectionItem; } }
 namespace appleseed { namespace studio { class ObjectCollectionItem; } }
 namespace appleseed { namespace studio { class ObjectInstanceCollectionItem; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
-namespace appleseed { namespace studio { class TextureCollectionItem; } }
 namespace renderer  { class Assembly; }
-namespace renderer  { class ColorEntity; }
+namespace renderer  { class BaseGroup; }
 namespace renderer  { class BSDF; }
 namespace renderer  { class EDF; }
 namespace renderer  { class Light; }
@@ -53,34 +51,27 @@ namespace renderer  { class Material; }
 namespace renderer  { class Object; }
 namespace renderer  { class ObjectInstance; }
 namespace renderer  { class ParamArray; }
-namespace renderer  { class Scene; }
 namespace renderer  { class SurfaceShader; }
-namespace renderer  { class Texture; }
-namespace renderer  { class TextureInstance; }
 class QMenu;
 
 namespace appleseed {
 namespace studio {
 
 class AssemblyItem
-  : public EntityItemBase<renderer::Assembly>
+  : public BaseGroupItem
 {
     Q_OBJECT
 
   public:
     AssemblyItem(
-        renderer::Assembly*     assembly,
-        renderer::Scene&        scene,
-        ProjectBuilder&         project_builder,
-        renderer::ParamArray&   settings);
-
-    ~AssemblyItem();
+        renderer::Assembly&         assembly,
+        renderer::BaseGroup&        parent,
+        BaseGroupItem*              parent_item,
+        ProjectBuilder&             project_builder,
+        renderer::ParamArray&       settings);
 
     virtual QMenu* get_single_item_context_menu() const override;
 
-    void add_item(renderer::ColorEntity* color);
-    void add_item(renderer::Texture* texture);
-    void add_item(renderer::TextureInstance* texture_instance);
     void add_item(renderer::BSDF* bsdf);
     void add_item(renderer::EDF* edf);
     void add_item(renderer::SurfaceShader* surface_shader);
@@ -89,11 +80,6 @@ class AssemblyItem
     void add_item(renderer::Object* object);
     void add_item(renderer::ObjectInstance* object_instance);
 
-    TextureCollectionItem& get_texture_collection_item() const;
-    CollectionItem<
-        renderer::TextureInstance,
-        renderer::Assembly>& get_texture_instance_collection_item() const;
-
     ObjectCollectionItem& get_object_collection_item() const;
     ObjectInstanceCollectionItem& get_object_instance_collection_item() const;
 
@@ -101,10 +87,32 @@ class AssemblyItem
     void slot_instantiate();
 
   private:
-    struct Impl;
-    Impl* impl;
+    renderer::Assembly&             m_assembly;
+    renderer::BaseGroup&            m_parent;
+    BaseGroupItem*                  m_parent_item;
+    ProjectBuilder&                 m_project_builder;
+
+    typedef CollectionItem<renderer::BSDF, renderer::Assembly, AssemblyItem> BSDFCollectionItem;
+    typedef CollectionItem<renderer::EDF, renderer::Assembly, AssemblyItem> EDFCollectionItem;
+    typedef CollectionItem<renderer::SurfaceShader, renderer::Assembly, AssemblyItem> SurfaceShaderCollectionItem;
+    typedef CollectionItem<renderer::Material, renderer::Assembly, AssemblyItem> MaterialCollectionItem;
+    typedef CollectionItem<renderer::Light, renderer::Assembly, AssemblyItem> LightCollectionItem;
+
+    BSDFCollectionItem*             m_bsdf_collection_item;
+    EDFCollectionItem*              m_edf_collection_item;
+    SurfaceShaderCollectionItem*    m_surface_shader_collection_item;
+    MaterialCollectionItem*         m_material_collection_item;
+    LightCollectionItem*            m_light_collection_item;
+    ObjectCollectionItem*           m_object_collection_item;
+    ObjectInstanceCollectionItem*   m_object_instance_collection_item;
 
     virtual void slot_delete() override;
+
+    template <typename Entity, typename EntityContainer>
+    CollectionItem<Entity, renderer::Assembly, AssemblyItem>* add_single_model_collection_item(EntityContainer& entities);
+
+    template <typename Entity, typename EntityContainer>
+    CollectionItem<Entity, renderer::Assembly, AssemblyItem>* add_multi_model_collection_item(EntityContainer& entities);
 };
 
 }       // namespace studio

@@ -42,9 +42,12 @@ namespace studio {
 
 AssemblyInstanceItem::AssemblyInstanceItem(
     AssemblyInstance*   assembly_instance,
+    BaseGroup&          parent,
+    BaseGroupItem*      parent_item,
     ProjectBuilder&     project_builder)
   : EntityItemBase<AssemblyInstance>(assembly_instance)
-  , m_assembly_instance(assembly_instance)
+  , m_parent(parent)
+  , m_parent_item(parent_item)
   , m_project_builder(project_builder)
 {
     set_allow_edition(false);
@@ -55,7 +58,10 @@ void AssemblyInstanceItem::slot_delete()
     if (!allows_deletion())
         return;
 
-    m_project_builder.remove_assembly_instance(m_assembly_instance->get_uid());
+    m_project_builder.remove_assembly_instance(
+        m_parent,
+        m_parent_item,
+        m_entity->get_uid());
 
     // 'this' no longer exists at this point.
 }

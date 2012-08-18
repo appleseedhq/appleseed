@@ -221,15 +221,15 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
 
         // Retrieve the BSDF.
         const BSDF* bsdf = material->get_bsdf();
-        if (bsdf == 0)
-            break;
 
         // Evaluate the input values of the BSDF.
         InputEvaluator bsdf_input_evaluator(texture_cache);
-        bsdf->evaluate_inputs(
-            bsdf_input_evaluator,
-            shading_point_ptr->get_uv(0));
-        const void* bsdf_data = bsdf_input_evaluator.data();
+        if (bsdf)
+        {
+            bsdf->evaluate_inputs(
+                bsdf_input_evaluator,
+                shading_point_ptr->get_uv(0));
+        }
 
         // Compute the outgoing direction.
         const foundation::Vector3d outgoing = foundation::normalize(-ray.m_dir);
@@ -240,11 +240,15 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                 *shading_point_ptr,
                 outgoing,
                 bsdf,
-                bsdf_data,
+                bsdf_input_evaluator.data(),
                 path_length,
                 prev_bsdf_mode,
                 prev_bsdf_prob,
                 throughput))
+            break;
+
+        // Terminate the path if the material doesn't have a BSDF.
+        if (bsdf == 0)
             break;
 
         // Sample the BSDF.
@@ -254,7 +258,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         const BSDF::Mode bsdf_mode =
             bsdf->sample(
                 sampling_context,
-                bsdf_data,
+                bsdf_input_evaluator.data(),
                 Adjoint,
                 true,       // multiply by |cos(incoming, normal)|
                 shading_point_ptr->get_geometric_normal(),

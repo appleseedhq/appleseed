@@ -95,7 +95,7 @@ namespace
         assemblies.reserve(scene.assembly_instances().size());
 
         for (const_each<AssemblyInstanceContainer> i = scene.assembly_instances(); i; ++i)
-            assemblies.push_back(i->get_assembly_uid());
+            assemblies.push_back(i->get_assembly().get_uid());
 
         sort(assemblies.begin(), assemblies.end());
 

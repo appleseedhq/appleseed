@@ -220,33 +220,45 @@ namespace
                 const Basis3d& shading_basis = shading_point.get_shading_basis();
                 const Material* material = shading_point.get_material();
 
-                // Compute direct lighting. We're sampling both the lights and the BSDF,
-                // unlike in the path tracer where we're only sampling the lights.
-                // The reason is that, while the path tracer extends paths that hit a
-                // diffuse surface (using a single BSDF sample), the distributed ray
-                // tracer doesn't. There's no double contribution either for glossy
-                // BSDF samples since compute_direct_lighting() only computes direct
-                // lighting for diffuse BSDF samples; glossy BSDF samples are accounted
-                // for when the path is extended.
-                DirectLightingIntegrator integrator(
-                    m_shading_context,
-                    m_light_sampler,
-                    point,
-                    geometric_normal,
-                    shading_basis,
-                    shading_point.get_ray().m_time,
-                    outgoing,
-                    *bsdf,
-                    bsdf_data,
-                    BSDF::AllScatteringModes,
-                    m_params.m_dl_bsdf_sample_count,
-                    m_params.m_dl_light_sample_count,
-                    &shading_point);
                 Spectrum vertex_radiance;
                 SpectrumStack vertex_aovs(m_path_aovs.size());
-                integrator.sample_bsdf_and_lights_low_variance(sampling_context, vertex_radiance, vertex_aovs);
 
-                if (m_env_edf && m_params.m_enable_ibl)
+                if (bsdf)
+                {
+                    // Compute direct lighting. We're sampling both the lights and the BSDF,
+                    // unlike in the path tracer where we're only sampling the lights.
+                    // The reason is that, while the path tracer extends paths that hit a
+                    // diffuse surface (using a single BSDF sample), the distributed ray
+                    // tracer doesn't. There's no double contribution either for glossy
+                    // BSDF samples since compute_direct_lighting() only computes direct
+                    // lighting for diffuse BSDF samples; glossy BSDF samples are accounted
+                    // for when the path is extended.
+                    DirectLightingIntegrator integrator(
+                        m_shading_context,
+                        m_light_sampler,
+                        point,
+                        geometric_normal,
+                        shading_basis,
+                        shading_point.get_ray().m_time,
+                        outgoing,
+                        *bsdf,
+                        bsdf_data,
+                        BSDF::AllScatteringModes,
+                        m_params.m_dl_bsdf_sample_count,
+                        m_params.m_dl_light_sample_count,
+                        &shading_point);
+                    integrator.sample_bsdf_and_lights_low_variance(
+                        sampling_context,
+                        vertex_radiance,
+                        vertex_aovs);
+                }
+                else
+                {
+                    vertex_radiance.set(0.0f);
+                    vertex_aovs.set(0.0f);
+                }
+
+                if (bsdf && m_env_edf && m_params.m_enable_ibl)
                 {
                     // Compute image-based lighting. We're sampling both the lights and
                     // the BSDF. There's no double contribution for diffuse BSDF samples

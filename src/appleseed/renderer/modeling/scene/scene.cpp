@@ -56,17 +56,12 @@ namespace renderer
 
 struct Scene::Impl
 {
-    UniqueID                                m_uid;
-    VersionID                               m_geometry_version_id;
-    auto_release_ptr<Camera>                m_camera;
-    auto_release_ptr<Environment>           m_environment;
-    ColorContainer                          m_colors;
-    TextureContainer                        m_textures;
-    TextureInstanceContainer                m_texture_instances;
-    EnvironmentEDFContainer                 m_environment_edfs;
-    EnvironmentShaderContainer              m_environment_shaders;
-    AssemblyContainer                       m_assemblies;
-    AssemblyInstanceContainer               m_assembly_instances;
+    UniqueID                        m_uid;
+    VersionID                       m_geometry_version_id;
+    auto_release_ptr<Camera>        m_camera;
+    auto_release_ptr<Environment>   m_environment;
+    EnvironmentEDFContainer         m_environment_edfs;
+    EnvironmentShaderContainer      m_environment_shaders;
 };
 
 Scene::Scene()
@@ -115,21 +110,6 @@ Environment* Scene::get_environment() const
     return impl->m_environment.get();
 }
 
-ColorContainer& Scene::colors() const
-{
-    return impl->m_colors;
-}
-
-TextureContainer& Scene::textures() const
-{
-    return impl->m_textures;
-}
-
-TextureInstanceContainer& Scene::texture_instances() const
-{
-    return impl->m_texture_instances;
-}
-
 EnvironmentEDFContainer& Scene::environment_edfs() const
 {
     return impl->m_environment_edfs;
@@ -140,22 +120,10 @@ EnvironmentShaderContainer& Scene::environment_shaders() const
     return impl->m_environment_shaders;
 }
 
-AssemblyContainer& Scene::assemblies() const
-{
-    return impl->m_assemblies;
-}
-
-AssemblyInstanceContainer& Scene::assembly_instances() const
-{
-    return impl->m_assembly_instances;
-}
-
 GAABB3 Scene::compute_bbox() const
 {
-    return
-        compute_parent_bbox<GAABB3>(
-            impl->m_assembly_instances.begin(),
-            impl->m_assembly_instances.end());
+    const AssemblyInstanceContainer& instances = assembly_instances();
+    return compute_parent_bbox<GAABB3>(instances.begin(), instances.end());
 }
 
 double Scene::compute_radius() const

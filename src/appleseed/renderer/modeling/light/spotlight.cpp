@@ -91,7 +91,7 @@ namespace
             if (!Light::on_frame_begin(project, assembly))
                 return false;
 
-            check_non_null_exitance_input("exitance");
+            check_exitance_input_non_null("exitance");
 
             m_transform = Transformd(Matrix4d::rotation(Vector3d(1.0, 0.0, 0.0), -HalfPi)) * get_transform();
             m_axis = normalize(m_transform.vector_to_parent(Vector3d(0.0, 1.0, 0.0)));

@@ -43,6 +43,7 @@
 
 // Forward declarations.
 namespace appleseed { namespace studio { class AssemblyItem; } }
+namespace appleseed { namespace studio { class BaseGroupItem; } }
 namespace appleseed { namespace studio { class ItemBase; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace renderer  { class ParamArray; }
@@ -58,20 +59,20 @@ class AssemblyCollectionItem
 
   public:
     AssemblyCollectionItem(
-        renderer::Scene&                scene,
         renderer::AssemblyContainer&    assemblies,
+        renderer::BaseGroup&            parent,
+        BaseGroupItem*                  parent_item,
         ProjectBuilder&                 project_builder,
         renderer::ParamArray&           settings);
 
     virtual QMenu* get_single_item_context_menu() const override;
 
-    AssemblyItem& get_item(const renderer::Assembly& assembly) const;
-
   public slots:
-    void slot_create_assembly();
+    void slot_create();
 
   private:
-    renderer::Scene&        m_scene;
+    renderer::BaseGroup&    m_parent;
+    BaseGroupItem*          m_parent_item;
     ProjectBuilder&         m_project_builder;
     renderer::ParamArray&   m_settings;
 

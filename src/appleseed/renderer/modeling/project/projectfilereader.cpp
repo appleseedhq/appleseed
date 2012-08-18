@@ -1739,242 +1739,6 @@ namespace
 
 
     //
-    // <assembly> element handler.
-    //
-
-    class AssemblyElementHandler
-      : public ParametrizedElementHandler
-    {
-      public:
-        explicit AssemblyElementHandler(ParseContext& context)
-          : m_context(context)
-        {
-        }
-
-        virtual void start_element(const Attributes& attrs) override
-        {
-            ParametrizedElementHandler::start_element(attrs);
-
-            m_assembly.reset();
-            m_name = get_value(attrs, "name");
-            m_bsdfs.clear();
-            m_colors.clear();
-            m_edfs.clear();
-            m_lights.clear();
-            m_materials.clear();
-            m_objects.clear();
-            m_object_instances.clear();
-            m_surface_shaders.clear();
-            m_textures.clear();
-            m_texture_instances.clear();
-        }
-
-        virtual void end_element() override
-        {
-            ParametrizedElementHandler::end_element();
-
-            m_assembly = AssemblyFactory::create(m_name.c_str(), m_params);
-            m_assembly->bsdfs().swap(m_bsdfs);
-            m_assembly->colors().swap(m_colors);
-            m_assembly->edfs().swap(m_edfs);
-            m_assembly->lights().swap(m_lights);
-            m_assembly->materials().swap(m_materials);
-            m_assembly->objects().swap(m_objects);
-            m_assembly->object_instances().swap(m_object_instances);
-            m_assembly->surface_shaders().swap(m_surface_shaders);
-            m_assembly->textures().swap(m_textures);
-            m_assembly->texture_instances().swap(m_texture_instances);
-        }
-
-        virtual void start_child_element(
-            const ProjectElementID      element,
-            ElementHandlerType*         handler) override
-        {
-            switch (element)
-            {
-              case ElementBSDF:
-                break;
-
-              case ElementColor:
-                break;
-
-              case ElementEDF:
-                break;
-
-              case ElementLight:
-                break;
-
-              case ElementMaterial:
-                break;
-
-              case ElementObject:
-                break;
-
-              case ElementObjectInstance:
-                {
-                    ObjectInstanceElementHandler* object_inst_handler =
-                        static_cast<ObjectInstanceElementHandler*>(handler);
-                    object_inst_handler->set_containers(&m_objects, &m_materials);
-                }
-                break;
-
-              case ElementSurfaceShader:
-                break;
-
-              case ElementTexture:
-                break;
-
-              case ElementTextureInstance:
-                {
-                    TextureInstanceElementHandler* texture_inst_handler =
-                        static_cast<TextureInstanceElementHandler*>(handler);
-                    texture_inst_handler->set_texture_container(&m_textures);
-                }
-                break;
-
-              default:
-                ParametrizedElementHandler::start_child_element(element, handler);
-                break;
-            }
-        }
-
-        virtual void end_child_element(
-            const ProjectElementID      element,
-            ElementHandlerType*         handler) override
-        {
-            switch (element)
-            {
-              case ElementBSDF:
-                {
-                    BSDFElementHandler* bsdf_handler =
-                        static_cast<BSDFElementHandler*>(handler);
-                    auto_release_ptr<BSDF> bsdf = bsdf_handler->get_entity();
-                    if (bsdf.get())
-                        m_bsdfs.insert(bsdf);
-                }
-                break;
-
-              case ElementColor:
-                {
-                    ColorElementHandler* color_handler =
-                        static_cast<ColorElementHandler*>(handler);
-                    auto_release_ptr<ColorEntity> color_entity =
-                        color_handler->get_color_entity();
-                    if (color_entity.get())
-                        m_colors.insert(color_entity);
-                }
-                break;
-
-              case ElementEDF:
-                {
-                    EDFElementHandler* edf_handler =
-                        static_cast<EDFElementHandler*>(handler);
-                    auto_release_ptr<EDF> edf = edf_handler->get_entity();
-                    if (edf.get())
-                        m_edfs.insert(edf);
-                }
-                break;
-
-              case ElementLight:
-                {
-                    LightElementHandler* light_handler =
-                        static_cast<LightElementHandler*>(handler);
-                    auto_release_ptr<Light> light = light_handler->get_entity();
-                    if (light.get())
-                        m_lights.insert(light);
-                }
-                break;
-
-              case ElementMaterial:
-                {
-                    MaterialElementHandler* material_handler =
-                        static_cast<MaterialElementHandler*>(handler);
-                    auto_release_ptr<Material> material = material_handler->get_material();
-                    if (material.get())
-                        m_materials.insert(material);
-                }
-                break;
-
-              case ElementObject:
-                {
-                    ObjectElementHandler* object_handler =
-                        static_cast<ObjectElementHandler*>(handler);
-                    for (const_each<ObjectElementHandler::ObjectVector> i =
-                         object_handler->get_objects(); i; ++i)
-                        m_objects.insert(auto_release_ptr<Object>(*i));
-                }
-                break;
-
-              case ElementObjectInstance:
-                {
-                    ObjectInstanceElementHandler* object_inst_handler =
-                        static_cast<ObjectInstanceElementHandler*>(handler);
-                    auto_release_ptr<ObjectInstance> instance = object_inst_handler->get_object_instance();
-                    if (instance.get())
-                        m_object_instances.insert(instance);
-                }
-                break;
-
-              case ElementSurfaceShader:
-                {
-                    SurfaceShaderElementHandler* surface_shader_handler =
-                        static_cast<SurfaceShaderElementHandler*>(handler);
-                    auto_release_ptr<SurfaceShader> surface_shader =
-                        surface_shader_handler->get_entity();
-                    if (surface_shader.get())
-                        m_surface_shaders.insert(surface_shader);
-                }
-                break;
-
-              case ElementTexture:
-                {
-                    TextureElementHandler* texture_handler =
-                        static_cast<TextureElementHandler*>(handler);
-                    auto_release_ptr<Texture> texture = texture_handler->get_texture();
-                    if (texture.get())
-                        m_textures.insert(texture);
-                }
-                break;
-
-              case ElementTextureInstance:
-                {
-                    TextureInstanceElementHandler* texture_inst_handler =
-                        static_cast<TextureInstanceElementHandler*>(handler);
-                    auto_release_ptr<TextureInstance> instance = texture_inst_handler->get_texture_instance();
-                    if (instance.get())
-                        m_texture_instances.insert(instance);
-                }
-                break;
-
-              default:
-                ParametrizedElementHandler::end_child_element(element, handler);
-                break;
-            }
-        }
-
-        auto_release_ptr<Assembly> get_assembly()
-        {
-            return m_assembly;
-        }
-
-      private:
-        ParseContext&               m_context;
-        auto_release_ptr<Assembly>  m_assembly;
-        string                      m_name;
-        BSDFContainer               m_bsdfs;
-        ColorContainer              m_colors;
-        EDFContainer                m_edfs;
-        LightContainer              m_lights;
-        MaterialContainer           m_materials;
-        ObjectContainer             m_objects;
-        ObjectInstanceContainer     m_object_instances;
-        SurfaceShaderContainer      m_surface_shaders;
-        TextureContainer            m_textures;
-        TextureInstanceContainer    m_texture_instances;
-    };
-
-
-    //
     // <assembly_instance> element handler.
     //
 
@@ -2038,6 +1802,280 @@ namespace
         auto_release_ptr<AssemblyInstance>  m_assembly_instance;
         string                              m_name;
         string                              m_assembly;
+    };
+
+
+    //
+    // <assembly> element handler.
+    //
+
+    class AssemblyElementHandler
+      : public ParametrizedElementHandler
+    {
+      public:
+        explicit AssemblyElementHandler(ParseContext& context)
+          : m_context(context)
+        {
+        }
+
+        virtual void start_element(const Attributes& attrs) override
+        {
+            ParametrizedElementHandler::start_element(attrs);
+
+            m_assembly.reset();
+
+            m_name = get_value(attrs, "name");
+
+            m_assemblies.clear();
+            m_assembly_instances.clear();
+            m_bsdfs.clear();
+            m_colors.clear();
+            m_edfs.clear();
+            m_lights.clear();
+            m_materials.clear();
+            m_objects.clear();
+            m_object_instances.clear();
+            m_surface_shaders.clear();
+            m_textures.clear();
+            m_texture_instances.clear();
+        }
+
+        virtual void end_element() override
+        {
+            ParametrizedElementHandler::end_element();
+
+            m_assembly = AssemblyFactory::create(m_name.c_str(), m_params);
+
+            m_assembly->assemblies().swap(m_assemblies);
+            m_assembly->assembly_instances().swap(m_assembly_instances);
+            m_assembly->bsdfs().swap(m_bsdfs);
+            m_assembly->colors().swap(m_colors);
+            m_assembly->edfs().swap(m_edfs);
+            m_assembly->lights().swap(m_lights);
+            m_assembly->materials().swap(m_materials);
+            m_assembly->objects().swap(m_objects);
+            m_assembly->object_instances().swap(m_object_instances);
+            m_assembly->surface_shaders().swap(m_surface_shaders);
+            m_assembly->textures().swap(m_textures);
+            m_assembly->texture_instances().swap(m_texture_instances);
+        }
+
+        virtual void start_child_element(
+            const ProjectElementID      element,
+            ElementHandlerType*         handler) override
+        {
+            switch (element)
+            {
+              case ElementAssembly:
+                break;
+
+              case ElementAssemblyInstance:
+                {
+                    AssemblyInstanceElementHandler* asm_inst_handler =
+                        static_cast<AssemblyInstanceElementHandler*>(handler);
+                    asm_inst_handler->set_assembly_container(&m_assemblies);
+                }
+                break;
+
+              case ElementBSDF:
+                break;
+
+              case ElementColor:
+                break;
+
+              case ElementEDF:
+                break;
+
+              case ElementLight:
+                break;
+
+              case ElementMaterial:
+                break;
+
+              case ElementObject:
+                break;
+
+              case ElementObjectInstance:
+                {
+                    ObjectInstanceElementHandler* object_inst_handler =
+                        static_cast<ObjectInstanceElementHandler*>(handler);
+                    object_inst_handler->set_containers(&m_objects, &m_materials);
+                }
+                break;
+
+              case ElementSurfaceShader:
+                break;
+
+              case ElementTexture:
+                break;
+
+              case ElementTextureInstance:
+                {
+                    TextureInstanceElementHandler* texture_inst_handler =
+                        static_cast<TextureInstanceElementHandler*>(handler);
+                    texture_inst_handler->set_texture_container(&m_textures);
+                }
+                break;
+
+              default:
+                ParametrizedElementHandler::start_child_element(element, handler);
+                break;
+            }
+        }
+
+        virtual void end_child_element(
+            const ProjectElementID      element,
+            ElementHandlerType*         handler) override
+        {
+            switch (element)
+            {
+              case ElementAssembly:
+                {
+                    AssemblyElementHandler* assembly_handler =
+                        static_cast<AssemblyElementHandler*>(handler);
+                    auto_release_ptr<Assembly> assembly = assembly_handler->get_assembly();
+                    if (assembly.get())
+                        m_assemblies.insert(assembly);
+                }
+                break;
+
+              case ElementAssemblyInstance:
+                {
+                    AssemblyInstanceElementHandler* asm_inst_handler =
+                        static_cast<AssemblyInstanceElementHandler*>(handler);
+                    auto_release_ptr<AssemblyInstance> instance = asm_inst_handler->get_assembly_instance();
+                    if (instance.get())
+                        m_assembly_instances.insert(instance);
+                }
+                break;
+
+              case ElementBSDF:
+                {
+                    BSDFElementHandler* bsdf_handler =
+                        static_cast<BSDFElementHandler*>(handler);
+                    auto_release_ptr<BSDF> bsdf = bsdf_handler->get_entity();
+                    if (bsdf.get())
+                        m_bsdfs.insert(bsdf);
+                }
+                break;
+
+              case ElementColor:
+                {
+                    ColorElementHandler* color_handler =
+                        static_cast<ColorElementHandler*>(handler);
+                    auto_release_ptr<ColorEntity> color_entity = color_handler->get_color_entity();
+                    if (color_entity.get())
+                        m_colors.insert(color_entity);
+                }
+                break;
+
+              case ElementEDF:
+                {
+                    EDFElementHandler* edf_handler =
+                        static_cast<EDFElementHandler*>(handler);
+                    auto_release_ptr<EDF> edf = edf_handler->get_entity();
+                    if (edf.get())
+                        m_edfs.insert(edf);
+                }
+                break;
+
+              case ElementLight:
+                {
+                    LightElementHandler* light_handler =
+                        static_cast<LightElementHandler*>(handler);
+                    auto_release_ptr<Light> light = light_handler->get_entity();
+                    if (light.get())
+                        m_lights.insert(light);
+                }
+                break;
+
+              case ElementMaterial:
+                {
+                    MaterialElementHandler* material_handler =
+                        static_cast<MaterialElementHandler*>(handler);
+                    auto_release_ptr<Material> material = material_handler->get_material();
+                    if (material.get())
+                        m_materials.insert(material);
+                }
+                break;
+
+              case ElementObject:
+                {
+                    ObjectElementHandler* object_handler =
+                        static_cast<ObjectElementHandler*>(handler);
+                    for (const_each<ObjectElementHandler::ObjectVector> i =
+                         object_handler->get_objects(); i; ++i)
+                        m_objects.insert(auto_release_ptr<Object>(*i));
+                }
+                break;
+
+              case ElementObjectInstance:
+                {
+                    ObjectInstanceElementHandler* object_inst_handler =
+                        static_cast<ObjectInstanceElementHandler*>(handler);
+                    auto_release_ptr<ObjectInstance> instance = object_inst_handler->get_object_instance();
+                    if (instance.get())
+                        m_object_instances.insert(instance);
+                }
+                break;
+
+              case ElementSurfaceShader:
+                {
+                    SurfaceShaderElementHandler* surface_shader_handler =
+                        static_cast<SurfaceShaderElementHandler*>(handler);
+                    auto_release_ptr<SurfaceShader> surface_shader = surface_shader_handler->get_entity();
+                    if (surface_shader.get())
+                        m_surface_shaders.insert(surface_shader);
+                }
+                break;
+
+              case ElementTexture:
+                {
+                    TextureElementHandler* texture_handler =
+                        static_cast<TextureElementHandler*>(handler);
+                    auto_release_ptr<Texture> texture = texture_handler->get_texture();
+                    if (texture.get())
+                        m_textures.insert(texture);
+                }
+                break;
+
+              case ElementTextureInstance:
+                {
+                    TextureInstanceElementHandler* texture_inst_handler =
+                        static_cast<TextureInstanceElementHandler*>(handler);
+                    auto_release_ptr<TextureInstance> instance = texture_inst_handler->get_texture_instance();
+                    if (instance.get())
+                        m_texture_instances.insert(instance);
+                }
+                break;
+
+              default:
+                ParametrizedElementHandler::end_child_element(element, handler);
+                break;
+            }
+        }
+
+        auto_release_ptr<Assembly> get_assembly()
+        {
+            return m_assembly;
+        }
+
+      private:
+        ParseContext&               m_context;
+        auto_release_ptr<Assembly>  m_assembly;
+        string                      m_name;
+        AssemblyContainer           m_assemblies;
+        AssemblyInstanceContainer   m_assembly_instances;
+        BSDFContainer               m_bsdfs;
+        ColorContainer              m_colors;
+        EDFContainer                m_edfs;
+        LightContainer              m_lights;
+        MaterialContainer           m_materials;
+        ObjectContainer             m_objects;
+        ObjectInstanceContainer     m_object_instances;
+        SurfaceShaderContainer      m_surface_shaders;
+        TextureContainer            m_textures;
+        TextureInstanceContainer    m_texture_instances;
     };
 
 
