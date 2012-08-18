@@ -37,7 +37,7 @@ find_package (PythonLibs)
 # Boost libraries.
 #--------------------------------------------------------------------------------------------------
 
-find_package (Boost 1.46 REQUIRED date_time filesystem regex system thread python)
+find_package (Boost 1.46 REQUIRED chrono date_time filesystem regex system thread python)
 
 
 #--------------------------------------------------------------------------------------------------
