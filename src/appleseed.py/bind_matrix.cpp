@@ -34,11 +34,11 @@
 namespace bpy = boost::python;
 using namespace foundation;
 
-namespace
+namespace detail
 {
 
 template<typename T, std::size_t M, std::size_t N>
-Matrix<T,M,N> *construct_from_list( bpy::list l)
+Matrix<T,M,N> *construct_matrix_from_list( bpy::list l)
 {
 	if( bpy::len( l) != M * N)
 	{
@@ -105,6 +105,8 @@ struct matrix_indexer
 
         PyErr_SetString( PyExc_IndexError, "Out of bounds access in appleseed.Matrix.__get_item__" );
         boost::python::throw_error_already_set();
+
+        return T();
     }
 
 	static void set( Matrix<T,M,N>& mat, bpy::tuple indices, const T& v)
@@ -160,6 +162,8 @@ Matrix<T,N,N> invert_matrix( const Matrix<T,N,N>& mat)
         PyErr_SetString( PyExc_RuntimeError, "Singular matrix in appleseed.Matrix.inverse" );
         boost::python::throw_error_already_set();
     }
+
+    return Matrix<T,N,N>();
 }
 
 template<class T>
@@ -193,7 +197,7 @@ void bind_typed_matrix4( const std::string& class_name)
         .def( "rotation", rot1).def( "rotation", rot2).def( "rotation", rot3).staticmethod( "rotation")
 
         .def( bpy::init<T>())
-        .def( "__init__", bpy::make_constructor( &construct_from_list<T,4,4>))
+        .def( "__init__", bpy::make_constructor( &construct_matrix_from_list<T,4,4>))
 
         // operator[]
 		.def( "__getitem__", &matrix_indexer<T,4,4>::get)
@@ -216,10 +220,10 @@ void bind_typed_matrix4( const std::string& class_name)
         ;
 }
 
-} // unnamed
+} // detail
 
 void bind_matrix()
 {
-    bind_typed_matrix4<float>( "Matrix4f");
-    bind_typed_matrix4<double>( "Matrix4d");
+    detail::bind_typed_matrix4<float>( "Matrix4f");
+    detail::bind_typed_matrix4<double>( "Matrix4d");
 }
