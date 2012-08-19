@@ -25,8 +25,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_PY_TYPED_ENTITY_CONTAINERS_H
-#define APPLESEED_PY_TYPED_ENTITY_CONTAINERS_H
+#ifndef APPLESEED_PY_BIND_TYPED_ENTITY_CONTAINERS_H
+#define APPLESEED_PY_BIND_TYPED_ENTITY_CONTAINERS_H
 
 // Has to be first, to avoid redifinition warnings.
 #include "Python.h"
@@ -42,12 +42,12 @@ namespace detail
 {
 
 template<class T>
-T *typed_entity_vector_get_item( renderer::TypedEntityVector<T>& vec, int index)
+T* typed_entity_vector_get_item( renderer::TypedEntityVector<T>& vec, int index)
 {
-    if( index < 0)
+    if ( index < 0)
         index = vec.size() + index;
 
-    if( index < 0 || index >= vec.size())
+    if ( index < 0 || index >= vec.size())
     {
         PyErr_SetString( PyExc_IndexError, "Invalid index in appleseed.EntityVector" );
         boost::python::throw_error_already_set();
@@ -57,7 +57,7 @@ T *typed_entity_vector_get_item( renderer::TypedEntityVector<T>& vec, int index)
 }
 
 template<class T>
-T *typed_entity_map_get_item( renderer::TypedEntityMap<T>& map, const std::string& key)
+T* typed_entity_map_get_item( renderer::TypedEntityMap<T>& map, const std::string& key)
 {
     return map.get_by_name( key.c_str());
 }
@@ -93,4 +93,4 @@ void bind_typed_entity_map( const char *name)
         ;
 }
 
-#endif
+#endif // APPLESEED_PY_BIND_TYPED_ENTITY_CONTAINERS_H
