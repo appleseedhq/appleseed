@@ -113,7 +113,7 @@ struct vector_indexer
 	static T get( const Vector<T,N>& x, int i)
 	{
 	    if( i < 0)
-            i = N - i;
+            i = N + i;
 
 		if ( i >= 0 && i < N )
 			return x[i];
@@ -129,7 +129,7 @@ struct vector_indexer
 	static void set( Vector<T,N>& x, int i, const T& v)
 	{
 	    if( i < 0)
-            i = N - i;
+            i = N + i;
 
 		if ( i >= 0 && i < N )
 			x[i] = v;

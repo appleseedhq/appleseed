@@ -25,53 +25,105 @@
 // THE SOFTWARE.
 //
 
-// Has to be first, to avoid redifinition warnings.
-#include "Python.h"
+#include "tile_callback_factory.hpp"
 
-#include <boost/python.hpp>
+#include <boost/thread/locks.hpp>
 
-#include "renderer/api/rendering.h"
-#include "renderer/api/frame.h"
+#include "renderer/modeling/frame/frame.h"
+
+#include <iostream>
 
 namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 
-namespace detail
+namespace
 {
 
-class ITileCallbackWrapper : public ITileCallback, public bpy::wrapper<ITileCallback>
+struct scoped_gil_lock
 {
-public:
-
-    virtual void pre_render( const size_t x, const size_t y, const size_t width, const size_t height)
+    scoped_gil_lock()
     {
-        this->get_override( "pre_render")( x, y, width, height);
+        state_ = PyGILState_Ensure();
     }
 
-    virtual void post_render( const Frame& frame, const size_t tile_x, const size_t tile_y)
+    ~scoped_gil_lock()
     {
-        this->get_override( "post_render")( frame, tile_x, tile_y);
+        PyGILState_Release( state_);
     }
 
-    virtual void post_render( const Frame& frame)
-    {
-        this->get_override( "post_render")( frame);
-    }
+private:
+
+    PyGILState_STATE state_;
 };
 
-} // detail
+}
+
+PyTileCallback::PyTileCallback(boost::python::object callback, boost::mutex *mutex)
+{
+    callback_ = callback;
+    mutex_ = mutex;
+}
+
+PyTileCallback::~PyTileCallback()
+{
+    std::cout << "PyTileCallback deleted" << std::endl;
+}
+
+void PyTileCallback::release() { delete this;}
+
+void PyTileCallback::pre_render( const size_t x, const size_t y, const size_t width, const size_t height)
+{
+    boost::lock_guard<boost::mutex> lock( *mutex_);
+    scoped_gil_lock gil_lock();
+
+    std::cout << "PyTileCallback::pre_render" << std::endl;
+    std::cout << "Ref count = " << callback_.ptr()->ob_refcnt << std::endl;
+    callback_.attr( "pre_render")( x, y, width, height);
+}
+
+void PyTileCallback::post_render( const Frame& frame, const size_t tile_x, const size_t tile_y)
+{
+    boost::lock_guard<boost::mutex> lock( *mutex_);
+    scoped_gil_lock gil_lock();
+
+    //std::cout << "PyTileCallback::post_render_tile" << std::endl;
+    callback_.attr( "post_render_tile")( bpy::ptr( &frame), tile_x, tile_y);
+}
+
+void PyTileCallback::post_render( const Frame& frame)
+{
+    boost::lock_guard<boost::mutex> lock( *mutex_);
+    scoped_gil_lock gil_lock();
+
+    //std::cout << "PyTileCallback::post_render" << std::endl;
+    callback_.attr( "post_render")( bpy::ptr( &frame));
+}
+
+PyTileCallbackFactory::PyTileCallbackFactory( bpy::object callback)
+{
+    callback_ = callback;
+}
+
+void PyTileCallbackFactory::release() { delete this;}
+
+ITileCallback *PyTileCallbackFactory::create()
+{
+    boost::lock_guard<boost::mutex> lock( mutex_);
+    scoped_gil_lock gil_lock();
+
+    std::cout << "PyTileCallbackFactory::create" << std::endl;
+    ITileCallback *result = new PyTileCallback( callback_, &mutex_);
+    std::cout << "Ref count = " << callback_.ptr()->ob_refcnt << std::endl;
+    return result;
+}
 
 void bind_tile_callback()
 {
-    /*
-    void (ITileCallback::*post_render1)( const Frame&, const size_t, const size_t) = &ITileCallback::post_render;
-    void (ITileCallback::*post_render2)( const Frame&) = &ITileCallback::post_render;
-
-    bpy::class_<ITileCallbackWrapper, boost::noncopyable>( "ITileCallback")
-        .def( "pre_render", bpy::pure_virtual( &ITileCallback::pre_render))
-        .def( "post_render", bpy::pure_virtual( post_render1))
-        .def( "post_render", bpy::pure_virtual( post_render2))
+    bpy::class_<ITileCallbackFactory, boost::noncopyable>( "ITileCallbackFactory", bpy::no_init)
         ;
-    */
+
+    bpy::class_<PyTileCallbackFactory, bpy::bases<ITileCallbackFactory>, boost::noncopyable>( "TileCallbackFactory", bpy::no_init)
+        .def( bpy::init<const bpy::object&>())
+        ;
 }

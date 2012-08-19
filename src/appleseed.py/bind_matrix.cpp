@@ -95,10 +95,10 @@ struct matrix_indexer
             j = ex1();
 
         if( i < 0)
-            i = M - i;
+            i = M + i;
 
         if( j < 0)
-            j = N - j;
+            j = N + j;
 
         if( i >= 0 && i < M && j >= 0 && j < N)
             return mat( i, j);
