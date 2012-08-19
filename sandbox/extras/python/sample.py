@@ -150,6 +150,7 @@ class RendererController( asr.IRendererController):
         print "frame end"
 
     def on_progress( self):
+        print "on_progress"
         return asr.IRenderControllerStatus.ContinueRendering
 
 class TileCallback( object):
@@ -176,17 +177,17 @@ def main():
     project = build_project()
 
     renderer_controller = RendererController()
-    tile_callback = TileCallback()
-    tile_callback_factory = asr.TileCallbackFactory( tile_callback)
+    #tile_callback = TileCallback()
+    #tile_callback_factory = asr.TileCallbackFactory( tile_callback)
     renderer = asr.MasterRenderer( project,
                                     project.configurations()['final'].get_inherited_parameters(),
-                                    renderer_controller,
-                                    tile_callback_factory
+                                    renderer_controller
+                                    #tile_callback_factory
                                     )
     renderer.render()
 
-    #project.get_frame().write( "output.test/png")
-    #asr.ProjectFileWriter().write( project, "/tmp/test.appleseed")
+    project.get_frame().write( "output.test/png")
+    asr.ProjectFileWriter().write( project, "/tmp/test.appleseed")
 
 if __name__ == "__main__":
     main()
