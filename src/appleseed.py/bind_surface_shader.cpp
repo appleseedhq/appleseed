@@ -43,9 +43,9 @@ auto_release_ptr<SurfaceShader> create_surface_shader( const std::string& surf_t
                                                         const std::string& name)
 {
     SurfaceShaderFactoryRegistrar factories;
-    const ISurfaceShaderFactory *factory = factories.lookup( surf_type.c_str());
+    const ISurfaceShaderFactory* factory = factories.lookup( surf_type.c_str());
 
-    if( factory)
+    if (factory)
         return factory->create( name.c_str(), ParamArray());
     else
     {
@@ -61,9 +61,9 @@ auto_release_ptr<SurfaceShader> create_surface_shader_with_params( const std::st
                                                                     const bpy::dict& params)
 {
     SurfaceShaderFactoryRegistrar factories;
-    const ISurfaceShaderFactory *factory = factories.lookup( surf_type.c_str());
+    const ISurfaceShaderFactory* factory = factories.lookup( surf_type.c_str());
 
-    if( factory)
+    if (factory)
         return factory->create( name.c_str(), bpy_dict_to_param_array( params));
     else
     {

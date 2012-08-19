@@ -104,7 +104,7 @@ Quaternion<T> quat_slerp(const Quaternion<T>& p, const Quaternion<T>& q, const T
 }
 
 template<class T>
-void do_bind_quaternion( const char *class_name)
+void do_bind_quaternion( const char* class_name)
 {
     Quaternion<T> (*rot1)( const Vector<T,3>&, T) = &Quaternion<T>::rotation;
     Quaternion<T> (*rot2)( const Vector<T,3>&, const Vector<T,3>&) = &Quaternion<T>::rotation;

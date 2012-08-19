@@ -44,10 +44,10 @@ namespace detail
 template<class T>
 T* typed_entity_vector_get_item( renderer::TypedEntityVector<T>& vec, int index)
 {
-    if ( index < 0)
+    if (index < 0)
         index = vec.size() + index;
 
-    if ( index < 0 || index >= vec.size())
+    if (index < 0 || index >= vec.size())
     {
         PyErr_SetString( PyExc_IndexError, "Invalid index in appleseed.EntityVector" );
         boost::python::throw_error_already_set();
@@ -65,7 +65,7 @@ T* typed_entity_map_get_item( renderer::TypedEntityMap<T>& map, const std::strin
 } // detail
 
 template<class T>
-void bind_typed_entity_vector( const char *name)
+void bind_typed_entity_vector( const char* name)
 {
     boost::python::class_<renderer::TypedEntityVector<T>, boost::python::bases<renderer::EntityVector>, boost::noncopyable>( name)
         .def( "__getitem__", detail::typed_entity_vector_get_item<T>, boost::python::return_value_policy<boost::python::reference_existing_object>())
@@ -79,7 +79,7 @@ void bind_typed_entity_vector( const char *name)
 }
 
 template<class T>
-void bind_typed_entity_map( const char *name)
+void bind_typed_entity_map( const char* name)
 {
     boost::python::class_<renderer::TypedEntityMap<T>, boost::python::bases<renderer::EntityMap>, boost::noncopyable>( name)
         .def( "__getitem__", detail::typed_entity_map_get_item<T>, boost::python::return_value_policy<boost::python::reference_existing_object>())

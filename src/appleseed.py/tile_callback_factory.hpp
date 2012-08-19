@@ -25,12 +25,12 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_PY_TILE_CALLBACK_FACTORY_H
-#define APPLESEED_PY_TILE_CALLBACK_FACTORY_H
+#ifndef APPLESEED_PY_BIND_TILE_CALLBACK_FACTORY_H
+#define APPLESEED_PY_BIND_TILE_CALLBACK_FACTORY_H
 
 // Has to be first, to avoid redifinition warnings.
 #include "Python.h"
 
 #include <boost/python.hpp>
 
-#endif
+#endif // APPLESEED_PY_BIND_TILE_CALLBACK_FACTORY_H

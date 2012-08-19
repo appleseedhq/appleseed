@@ -47,16 +47,16 @@ auto_release_ptr<Texture> create_texture( const std::string& texture_type,
                                             const bpy::list& search_paths)
 {
     TextureFactoryRegistrar factories;
-    const ITextureFactory *factory = factories.lookup( texture_type.c_str());
+    const ITextureFactory* factory = factories.lookup( texture_type.c_str());
 
-    if( factory)
+    if (factory)
     {
         SearchPaths paths;
 
-        for( int i = 0, e = bpy::len( search_paths); i < e; ++i)
+        for (int i = 0, e = bpy::len( search_paths); i < e; ++i)
         {
             bpy::extract<const char*> extractor( search_paths[i] );
-            if( extractor.check() )
+            if (extractor.check())
                 paths.push_back( extractor());
             else
             {

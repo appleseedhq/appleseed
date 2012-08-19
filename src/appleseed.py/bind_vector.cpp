@@ -40,20 +40,20 @@ namespace detail
 {
 
 template<typename T, std::size_t N>
-Vector<T,N> *construct_vec_from_list( bpy::list l)
+Vector<T,N>* construct_vec_from_list( bpy::list l)
 {
-	if( bpy::len( l) != N)
+	if (bpy::len( l) != N)
 	{
         PyErr_SetString( PyExc_RuntimeError, "Invalid list length given to appleseed.Vector" );
         bpy::throw_error_already_set();
 	}
 
-	Vector<T,N> *r = new Vector<T,N>();
+	Vector<T,N>* r = new Vector<T,N>();
 
-	for( unsigned i = 0; i < N; ++i)
+	for (unsigned i = 0; i < N; ++i)
 	{
 		bpy::extract<T> ex( l[i]);
-		if( !ex.check())
+		if (!ex.check())
 		{
             PyErr_SetString( PyExc_TypeError, "Incompatible type type. Only floats." );
             bpy::throw_error_already_set();
@@ -71,9 +71,9 @@ struct vector_constructor {};
 template<class T>
 struct vector_constructor<T,2>
 {
-    static Vector<T,2> *construct( T x, T y)
+    static Vector<T,2>* construct( T x, T y)
     {
-        Vector<T,2> *r = new Vector<T,2>();
+        Vector<T,2>* r = new Vector<T,2>();
         (*r)[0] = x;
         (*r)[1] = y;
         return r;
@@ -83,9 +83,9 @@ struct vector_constructor<T,2>
 template<class T>
 struct vector_constructor<T,3>
 {
-    static Vector<T,3> *construct( T x, T y, T z)
+    static Vector<T,3>* construct( T x, T y, T z)
     {
-        Vector<T,3> *r = new Vector<T,3>();
+        Vector<T,3>* r = new Vector<T,3>();
         (*r)[0] = x;
         (*r)[1] = y;
         (*r)[2] = z;
@@ -96,9 +96,9 @@ struct vector_constructor<T,3>
 template<class T>
 struct vector_constructor<T,4>
 {
-    static Vector<T,4> *construct( T x, T y, T z, T w)
+    static Vector<T,4>* construct( T x, T y, T z, T w)
     {
-        Vector<T,4> *r = new Vector<T,4>();
+        Vector<T,4>* r = new Vector<T,4>();
         (*r)[0] = x;
         (*r)[1] = y;
         (*r)[2] = z;
@@ -112,10 +112,10 @@ struct vector_indexer
 {
 	static T get( const Vector<T,N>& x, int i)
 	{
-	    if( i < 0)
+	    if (i < 0)
             i = N + i;
 
-		if ( i >= 0 && i < N )
+		if (i >= 0 && i < N)
 			return x[i];
 		else
 		{
@@ -128,10 +128,10 @@ struct vector_indexer
 
 	static void set( Vector<T,N>& x, int i, const T& v)
 	{
-	    if( i < 0)
+	    if (i < 0)
             i = N + i;
 
-		if ( i >= 0 && i < N )
+		if (i >= 0 && i < N)
 			x[i] = v;
 		else
 		{
@@ -142,7 +142,7 @@ struct vector_indexer
 };
 
 template<typename T, std::size_t N>
-void do_bind_vector( const char *class_name)
+void do_bind_vector( const char* class_name)
 {
     bpy::class_<Vector<T,N> >( class_name)
         .def( bpy::init<>())

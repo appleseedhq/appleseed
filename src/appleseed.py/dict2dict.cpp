@@ -36,14 +36,14 @@ namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 
-ParamArray& push_dict( ParamArray& dict, const char *name)
+ParamArray& push_dict( ParamArray& dict, const char* name)
 {
     return dict.push( name);
 }
 
-Dictionary& push_dict( Dictionary& dict, const char *name)
+Dictionary& push_dict( Dictionary& dict, const char* name)
 {
-    if( !dict.dictionaries().exist( name))
+    if (!dict.dictionaries().exist( name))
         dict.dictionaries().insert( name, Dictionary());
 
     return dict.dictionaries().get( name);
@@ -57,14 +57,14 @@ Dict convert_from_bpy_dict( const bpy::dict& d)
     bpy::list values = d.values();
     bpy::list keys = d.keys();
 
-    for( int i = 0, e = bpy::len( d); i < e; ++i)
+    for (int i = 0, e = bpy::len( d); i < e; ++i)
     {
         bpy::object key( keys[i] );
         bpy::object value( values[i] );
 
         // keys
         bpy::extract<const char*> key_extractor( key );
-        if( !key_extractor.check() )
+        if (!key_extractor.check() )
         {
             PyErr_SetString( PyExc_TypeError, "Incompatible key type. Only strings accepted." );
             bpy::throw_error_already_set();
@@ -73,7 +73,7 @@ Dict convert_from_bpy_dict( const bpy::dict& d)
         // string
         {
             bpy::extract<const char*> extractor( value );
-            if( extractor.check())
+            if (extractor.check())
             {
                 result.insert( key_extractor(), extractor());
                 continue;
@@ -83,7 +83,7 @@ Dict convert_from_bpy_dict( const bpy::dict& d)
         // int
         {
             bpy::extract<int> extractor( value );
-            if( extractor.check())
+            if (extractor.check())
             {
                 result.insert( key_extractor(), extractor());
                 continue;
@@ -93,7 +93,7 @@ Dict convert_from_bpy_dict( const bpy::dict& d)
         // double
         {
             bpy::extract<double> extractor( value );
-            if( extractor.check())
+            if (extractor.check())
             {
                 result.insert( key_extractor(), extractor());
                 continue;
@@ -103,7 +103,7 @@ Dict convert_from_bpy_dict( const bpy::dict& d)
         // Vector2i
         {
             bpy::extract<Vector2i> extractor( value );
-            if( extractor.check())
+            if (extractor.check())
             {
                 result.insert( key_extractor(), extractor());
                 continue;
@@ -113,7 +113,7 @@ Dict convert_from_bpy_dict( const bpy::dict& d)
         // Vector2f
         {
             bpy::extract<Vector2f> extractor( value );
-            if( extractor.check())
+            if (extractor.check())
             {
                 result.insert( key_extractor(), extractor());
                 continue;
@@ -123,7 +123,7 @@ Dict convert_from_bpy_dict( const bpy::dict& d)
         // Vector2d
         {
             bpy::extract<Vector2d> extractor( value );
-            if( extractor.check())
+            if (extractor.check())
             {
                 result.insert( key_extractor(), extractor());
                 continue;
@@ -138,7 +138,7 @@ Dict convert_from_bpy_dict( const bpy::dict& d)
         // dict
         {
             bpy::extract<bpy::dict> extractor( value );
-            if( extractor.check())
+            if (extractor.check())
             {
                 // recurse
                 push_dict( result, key_extractor()) = convert_from_bpy_dict<Dict>( extractor());
@@ -218,10 +218,10 @@ bpy::dict dictionary_to_bpy_dict( const Dictionary& dict)
 {
     bpy::dict result;
 
-    for( StringDictionary::const_iterator it( dict.strings().begin()), e( dict.strings().end()); it != e; ++it)
+    for (StringDictionary::const_iterator it( dict.strings().begin()), e( dict.strings().end()); it != e; ++it)
         result[it.name()] = obj_from_string( it.value());
 
-    for( DictionaryDictionary::const_iterator it( dict.dictionaries().begin()), e( dict.dictionaries().end()); it != e; ++it)
+    for (DictionaryDictionary::const_iterator it( dict.dictionaries().begin()), e( dict.dictionaries().end()); it != e; ++it)
     {
         // recurse
         result[it.name()] = dictionary_to_bpy_dict( it.value());

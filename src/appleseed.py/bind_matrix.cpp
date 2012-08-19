@@ -38,20 +38,20 @@ namespace detail
 {
 
 template<typename T, std::size_t M, std::size_t N>
-Matrix<T,M,N> *construct_matrix_from_list( bpy::list l)
+Matrix<T,M,N>* construct_matrix_from_list( bpy::list l)
 {
-    if( bpy::len( l) != M * N)
+    if (bpy::len( l) != M * N)
     {
         PyErr_SetString( PyExc_RuntimeError, "Invalid list length given to appleseed.Matrix.__init__" );
         bpy::throw_error_already_set();
     }
 
-    Matrix<T,M,N> *r = new Matrix<T,M,N>();
+    Matrix<T,M,N>* r = new Matrix<T,M,N>();
 
-    for( unsigned i = 0; i < M * N; ++i)
+    for (unsigned i = 0; i < M * N; ++i)
     {
         bpy::extract<T> ex( l[i]);
-        if( !ex.check())
+        if (!ex.check())
         {
             PyErr_SetString( PyExc_TypeError, "Incompatible type. Only floats." );
             bpy::throw_error_already_set();
@@ -68,7 +68,7 @@ struct matrix_indexer
 {
     static T get( const Matrix<T,M,N>& mat, bpy::tuple indices)
     {
-        if( bpy::len( indices) != 2)
+        if (bpy::len( indices) != 2)
         {
             PyErr_SetString( PyExc_RuntimeError, "Invalid tuple length given to appleseed.Matrix.__get_item__" );
             bpy::throw_error_already_set();
@@ -77,7 +77,7 @@ struct matrix_indexer
         int i, j;
 
         bpy::extract<int> ex0( indices[0]);
-        if( !ex0.check())
+        if (!ex0.check())
         {
             PyErr_SetString( PyExc_TypeError, "Incompatible index type. Only ints." );
             bpy::throw_error_already_set();
@@ -86,7 +86,7 @@ struct matrix_indexer
             i = ex0();
 
         bpy::extract<int> ex1( indices[1]);
-        if( !ex1.check())
+        if (!ex1.check())
         {
             PyErr_SetString( PyExc_TypeError, "Incompatible index type. Only ints." );
             bpy::throw_error_already_set();
@@ -94,24 +94,23 @@ struct matrix_indexer
         else
             j = ex1();
 
-        if( i < 0)
+        if (i < 0)
             i = M + i;
 
-        if( j < 0)
+        if (j < 0)
             j = N + j;
 
-        if( i >= 0 && i < M && j >= 0 && j < N)
+        if (i >= 0 && i < M && j >= 0 && j < N)
             return mat( i, j);
 
         PyErr_SetString( PyExc_IndexError, "Out of bounds access in appleseed.Matrix.__get_item__" );
         boost::python::throw_error_already_set();
-
         return T();
     }
 
     static void set( Matrix<T,M,N>& mat, bpy::tuple indices, const T& v)
     {
-        if( bpy::len( indices) != 2)
+        if (bpy::len( indices) != 2)
         {
             PyErr_SetString( PyExc_RuntimeError, "Invalid tuple length given to appleseed.Matrix.__set_item__" );
             bpy::throw_error_already_set();
@@ -120,7 +119,7 @@ struct matrix_indexer
         int i, j;
 
         bpy::extract<int> ex0( indices[0]);
-        if( !ex0.check())
+        if (!ex0.check())
         {
             PyErr_SetString( PyExc_TypeError, "Incompatible index type. Only ints." );
             bpy::throw_error_already_set();
@@ -129,7 +128,7 @@ struct matrix_indexer
             i = ex0();
 
         bpy::extract<int> ex1( indices[1]);
-        if( !ex1.check())
+        if (!ex1.check())
         {
             PyErr_SetString( PyExc_TypeError, "Incompatible index type. Only ints." );
             bpy::throw_error_already_set();
@@ -137,17 +136,19 @@ struct matrix_indexer
         else
             j = ex1();
 
-        if( i >= 0 && i < M && j >= 0 && j < N)
+        if (i < 0)
+            i = M + i;
+
+        if (j < 0)
+            j = N + j;
+
+        if (i >= 0 && i < M && j >= 0 && j < N)
             mat( i, j) = v;
-
-        if( i < 0)
-            i = M - i;
-
-        if( j < 0)
-            j = N - j;
-
-        PyErr_SetString( PyExc_IndexError, "Out of bounds access in appleseed.Matrix.__set_item__" );
-        boost::python::throw_error_already_set();
+        else
+        {
+            PyErr_SetString( PyExc_IndexError, "Out of bounds access in appleseed.Matrix.__set_item__" );
+            boost::python::throw_error_already_set();
+        }
     }
 };
 
@@ -174,7 +175,7 @@ bpy::tuple matrix_extract_euler_angles( const Matrix<T,4,4>& mat)
     return bpy::make_tuple( yaw, pitch, roll);
 }
 
-// gcc 4.5 does not compile this if name is a const char *
+// gcc 4.5 does not compile this if name is a const char*
 // probably a bug.
 template<class T>
 void bind_typed_matrix4( const std::string& class_name)

@@ -25,8 +25,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_PY_FOUNDATION_AUTO_RELEASE_PTR_H
-#define APPLESEED_PY_FOUNDATION_AUTO_RELEASE_PTR_H
+#ifndef APPLESEED_PY_BIND_AUTO_RELEASE_PTR_H
+#define APPLESEED_PY_BIND_AUTO_RELEASE_PTR_H
 
 // Has to be first, to avoid redifinition warnings.
 #include <Python.h>
@@ -59,4 +59,4 @@ T *get_pointer( const auto_release_ptr<T>& p)
 
 } // foundation
 
-#endif
+#endif // APPLESEED_PY_BIND_AUTO_RELEASE_PTR_H

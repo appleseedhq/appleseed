@@ -55,7 +55,7 @@ std::auto_ptr<MasterRenderer> create_master_renderer( Project* project,
 std::auto_ptr<MasterRenderer> create_master_renderer_with_tile_callback( Project* project,
                                                                          const bpy::dict& params,
                                                                          IRendererController* render_controller,
-                                                                         ITileCallbackFactory *tile_callback)
+                                                                         ITileCallbackFactory* tile_callback)
 {
     return std::auto_ptr<MasterRenderer>( new MasterRenderer( *project,
                                                                 bpy_dict_to_param_array( params),
@@ -64,12 +64,12 @@ std::auto_ptr<MasterRenderer> create_master_renderer_with_tile_callback( Project
 }
 */
 
-bpy::dict master_renderer_get_parameters( const MasterRenderer *m)
+bpy::dict master_renderer_get_parameters( const MasterRenderer* m)
 {
     return param_array_to_bpy_dict( m->get_parameters());
 }
 
-void master_renderer_set_parameters( MasterRenderer *m, const bpy::dict& params)
+void master_renderer_set_parameters( MasterRenderer* m, const bpy::dict& params)
 {
     m->get_parameters() = bpy_dict_to_param_array( params);
 }

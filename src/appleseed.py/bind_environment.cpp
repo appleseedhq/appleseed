@@ -46,9 +46,9 @@ auto_release_ptr<EnvironmentEDF> create_environment_edf( const std::string env_t
                                                         const bpy::dict& params)
 {
     EnvironmentEDFFactoryRegistrar factories;
-    const IEnvironmentEDFFactory *factory = factories.lookup( env_type.c_str());
+    const IEnvironmentEDFFactory* factory = factories.lookup( env_type.c_str());
 
-    if( factory)
+    if (factory)
         return factory->create( name.c_str(), bpy_dict_to_param_array( params));
     else
     {
@@ -64,9 +64,9 @@ auto_release_ptr<EnvironmentShader> create_environment_shader( const std::string
                                                             const bpy::dict& params)
 {
     EnvironmentShaderFactoryRegistrar factories;
-    const IEnvironmentShaderFactory *factory = factories.lookup( env_shader_type.c_str());
+    const IEnvironmentShaderFactory* factory = factories.lookup( env_shader_type.c_str());
 
-    if( factory)
+    if (factory)
         return factory->create( name.c_str(), bpy_dict_to_param_array( params));
     else
     {

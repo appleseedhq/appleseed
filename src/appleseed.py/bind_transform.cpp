@@ -39,7 +39,7 @@ namespace detail
 {
 
 template<class T>
-void bind_typed_transform( const char *class_name)
+void bind_typed_transform( const char* class_name)
 {
     typedef typename Transform<T>::MatrixType MatrixType;
 
