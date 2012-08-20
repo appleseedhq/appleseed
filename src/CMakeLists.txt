@@ -55,7 +55,7 @@ endif ()
 project (appleseed)
 
 # Setup the path for our FindPackage modules.
-set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/Modules)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/Modules)
 
 
 #--------------------------------------------------------------------------------------------------
@@ -63,11 +63,11 @@ set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/Modules)
 #--------------------------------------------------------------------------------------------------
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    option ( USE_STATIC_BOOST       "Use static boost libs"     ON)
-    option ( USE_EXTERNAL_PNG       "Use external Png lib"      OFF)
-    option ( USE_EXTERNAL_ALEMBIC   "Use external Alembic libs" OFF)
-    option ( USE_EXTERNAL_XERCES    "Use external Xerces lib"   OFF)
-    option ( WITH_PYTHON            "Build Python module"       ON)
+    option (USE_STATIC_BOOST        "Use static boost libs"     ON)
+    option (USE_EXTERNAL_PNG        "Use external Png lib"      OFF)
+    option (USE_EXTERNAL_ALEMBIC    "Use external Alembic libs" OFF)
+    option (USE_EXTERNAL_XERCES     "Use external Xerces lib"   OFF)
+    option (WITH_PYTHON             "Build Python module"       ON)
 endif ()
 
 
