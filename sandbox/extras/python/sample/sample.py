@@ -1,10 +1,29 @@
 
 #
 # This source file is part of appleseed.
-# Visit http:#appleseedhq.net/ for additional information and resources.
+# Visit http://appleseedhq.net/ for additional information and resources.
 #
 # This software is released under the MIT license.
 #
+# Copyright (c) 2010-2012 Francois Beaune, Jupiter Jazz Limited
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
 #
 
 import appleseed as asr
@@ -87,7 +106,7 @@ def build_project():
     #------------------------------------------------------------------------
 
     # Create a color called "sky_exitance" and insert it into the scene.
-    SkyExitance = [ 0.75, 0.80, 1.0 ];
+    SkyExitance = [ 0.75, 0.80, 1.0 ]
     scene.colors().insert( asr.ColorEntity( "sky_exitance", { 'color_space' : 'srgb', 'multiplier' : 0.5 }, SkyExitance))
 
     scene.environment_edfs().insert( asr.EnvironmentEDF( "constant_environment_edf", "sky_edf", { 'exitance' : 'sky_exitance'}))
@@ -123,7 +142,7 @@ def build_project():
 
     # Bind the scene to the project.
     project.set_scene( scene)
-    return project;
+    return project
 
 class RendererController( asr.IRendererController):
     def __init__( self):
@@ -154,7 +173,6 @@ class RendererController( asr.IRendererController):
         return asr.IRenderControllerStatus.ContinueRendering
 
 class TileCallback( object):
-
     def pre_render( self, x, y, width, height):
         print "pre_render: x = %s, y = %s, width = %s, height = %s" % ( x, y, width, height)
 
@@ -186,8 +204,8 @@ def main():
                                     )
     renderer.render()
 
-    project.get_frame().write( "output.test/png")
-    asr.ProjectFileWriter().write( project, "/tmp/test.appleseed")
+    project.get_frame().write( "output/test.png")
+    asr.ProjectFileWriter().write( project, "output/test.appleseed")
 
 if __name__ == "__main__":
     main()
