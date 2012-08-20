@@ -51,7 +51,7 @@ bpy::list read_mesh_objects( const bpy::list& search_paths, const std::string& b
 {
     SearchPaths paths;
 
-	for( unsigned i = 0, e = bpy::len( search_paths); i < e; ++i)
+	for (unsigned i = 0, e = bpy::len( search_paths); i < e; ++i)
 	{
 		bpy::extract<const char*> ex( search_paths[i]);
 		if( !ex.check())
@@ -66,9 +66,9 @@ bpy::list read_mesh_objects( const bpy::list& search_paths, const std::string& b
     MeshObjectArray objs;
     bpy::list py_objects;
 
-    if( MeshObjectReader::read( paths, base_object_name.c_str(), bpy_dict_to_param_array( params), objs))
+    if (MeshObjectReader::read( paths, base_object_name.c_str(), bpy_dict_to_param_array( params), objs))
     {
-        for( int i = 0, e = objs.size(); i < e; ++i)
+        for (int i = 0, e = objs.size(); i < e; ++i)
             py_objects.append( auto_release_ptr<MeshObject>( objs[i]));
     }
     else
@@ -81,7 +81,7 @@ bpy::list read_mesh_objects( const bpy::list& search_paths, const std::string& b
     return py_objects;
 }
 
-bool write_mesh_object( MeshObject *obj, const std::string& obj_name, const std::string& filename)
+bool write_mesh_object( MeshObject* obj, const std::string& obj_name, const std::string& filename)
 {
     return MeshObjectWriter::write( *obj, obj_name.c_str(), filename.c_str());
 }

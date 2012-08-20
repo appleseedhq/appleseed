@@ -117,7 +117,7 @@ def build_project():
     #------------------------------------------------------------------------
 
     params = { 'camera' : scene.get_camera().get_name(),
-                'resolution' : asr.Vector2i( 640, 480),
+                'resolution' : asr.Vector2i( 320, 240),
                 'color_space' : 'srgb'}
     project.set_frame( asr.Frame( "beauty", params))
 
@@ -125,32 +125,44 @@ def build_project():
     project.set_scene( scene)
     return project;
 
-class PyRendererController( asr.IRendererController):
+class RendererController( asr.IRendererController):
     def __init__( self):
-        super( PyRendererController, self).__init__()
+        super( RendererController, self).__init__()
 
     # This method is called before rendering begins.
     def on_rendering_begin( self):
-        print( "rendering begin")
+        print "rendering begin"
 
     # This method is called after rendering has succeeded.
     def on_rendering_success( self):
-        print( "rendering success")
+        print "rendering success"
 
     # This method is called after rendering was aborted.
     def on_rendering_abort( self):
-        print( "rendering abort")
+        print "rendering abort"
 
     # This method is called before rendering a single frame.
     def on_frame_begin( self):
-        print( "frame begin")
+        print "frame begin"
 
     # This method is called after rendering a single frame.
     def on_frame_end( self):
-        print( "frame end")
+        print "frame end"
 
     def on_progress( self):
+        print "on_progress"
         return asr.IRenderControllerStatus.ContinueRendering
+
+class TileCallback( object):
+
+    def pre_render( self, x, y, width, height):
+        print "pre_render: x = %s, y = %s, width = %s, height = %s" % ( x, y, width, height)
+
+    def post_render_tile( self, frame, tile_x, tile_y):
+        print "post_render_tile: frame = %s, tile_x = %s, tile_y = %s" % ( frame, tile_x, tile_y)
+
+    def post_render( self, frame):
+        print "post_render: frame = %s" & frame
 
 def main():
     """
@@ -164,12 +176,17 @@ def main():
     # Build the project.
     project = build_project()
 
-    renderer_controller = asr.DefaultRendererController()
-    #renderer_controller = PyRendererController()
-    renderer = asr.MasterRenderer( project, project.configurations()['final'].get_inherited_parameters(), renderer_controller)
+    renderer_controller = RendererController()
+    #tile_callback = TileCallback()
+    #tile_callback_factory = asr.TileCallbackFactory( tile_callback)
+    renderer = asr.MasterRenderer( project,
+                                    project.configurations()['final'].get_inherited_parameters(),
+                                    renderer_controller
+                                    #tile_callback_factory
+                                    )
     renderer.render()
 
-    #project.get_frame().write( "output.test/png")
+    project.get_frame().write( "output.test/png")
     asr.ProjectFileWriter().write( project, "/tmp/test.appleseed")
 
 if __name__ == "__main__":

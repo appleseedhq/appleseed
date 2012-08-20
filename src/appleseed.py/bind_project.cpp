@@ -58,24 +58,24 @@ auto_release_ptr<Project> create_cornell_box_project()
     return CornellBoxProjectFactory::create();
 }
 
-bpy::list project_get_search_paths( const Project *proj)
+bpy::list project_get_search_paths( const Project* proj)
 {
     bpy::list paths;
 
-    for( SearchPaths::ConstIterator it( proj->get_search_paths().begin()), e( proj->get_search_paths().end()); it != e; ++it)
+    for (SearchPaths::ConstIterator it( proj->get_search_paths().begin()), e( proj->get_search_paths().end()); it != e; ++it)
         paths.append( *it);
 
     return paths;
 }
 
-void project_set_search_paths( Project *proj, const bpy::list& paths)
+void project_set_search_paths( Project* proj, const bpy::list& paths)
 {
     proj->get_search_paths().clear();
 
-    for( int i = 0, e = bpy::len( paths); i < e; ++i)
+    for (int i = 0, e = bpy::len( paths); i < e; ++i)
     {
         bpy::extract<const char*> extractor( paths[i] );
-        if( extractor.check() )
+        if (extractor.check())
             proj->get_search_paths().push_back( extractor());
         else
         {
@@ -85,18 +85,18 @@ void project_set_search_paths( Project *proj, const bpy::list& paths)
     }
 }
 
-ConfigurationContainer *project_get_configs( Project *proj)
+ConfigurationContainer* project_get_configs( Project* proj)
 {
     return &( proj->configurations());
 }
 
-bool write_project_default_opts( const ProjectFileWriter *writer, const Project *project, const char *filepath)
+bool write_project_default_opts( const ProjectFileWriter* writer, const Project* project, const char* filepath)
 {
     return ProjectFileWriter::write( *project, filepath);
 }
 
-bool write_project_with_opts( const ProjectFileWriter *writer, const Project *project,
-                                const char *filepath, ProjectFileWriter::Options opts)
+bool write_project_with_opts( const ProjectFileWriter* writer, const Project* project,
+                                const char* filepath, ProjectFileWriter::Options opts)
 {
     return ProjectFileWriter::write( *project, filepath, opts);
 }
@@ -121,7 +121,7 @@ auto_release_ptr<Configuration> create_base_interactive_config()
     return BaseConfigurationFactory::create_base_interactive();
 }
 
-bpy::dict config_get_inherited_parameters( const Configuration *config)
+bpy::dict config_get_inherited_parameters( const Configuration* config)
 {
     ParamArray params( config->get_inherited_parameters());
     return param_array_to_bpy_dict( params);

@@ -45,9 +45,9 @@ auto_release_ptr<Light> create_light( const std::string& light_type,
                                         const bpy::dict& params)
 {
     LightFactoryRegistrar factories;
-    const ILightFactory *factory = factories.lookup( light_type.c_str());
+    const ILightFactory* factory = factories.lookup( light_type.c_str());
 
-    if( factory)
+    if (factory)
         return factory->create( name.c_str(), bpy_dict_to_param_array( params));
     else
     {
