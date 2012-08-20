@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_PY_DICT2DICT_H
-#define APPLESEED_PY_DICT2DICT_H
+#ifndef APPLESEED_PY_BIND_DICT2DICT_H
+#define APPLESEED_PY_BIND_DICT2DICT_H
 
 // Has to be first.
 #include "Python.h"
@@ -39,4 +39,5 @@
 renderer::ParamArray bpy_dict_to_param_array( const boost::python::dict& d);
 boost::python::dict param_array_to_bpy_dict( const renderer::ParamArray& array);
 
-#endif
+#endif // APPLESEED_PY_BIND_DICT2DICT_H
+

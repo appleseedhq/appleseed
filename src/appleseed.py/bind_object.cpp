@@ -46,7 +46,7 @@ void bpy_list_to_string_array( const bpy::list& l, StringArray& strings)
 {
     strings.clear();
 
-	for( unsigned i = 0, e = bpy::len( l); i < e; ++i)
+	for (unsigned i = 0, e = bpy::len( l); i < e; ++i)
 	{
 		bpy::extract<const char*> ex( l[i]);
 		if( !ex.check())

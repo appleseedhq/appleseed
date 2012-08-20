@@ -95,12 +95,12 @@ auto_release_ptr<ColorEntity> create_color_entity_vals_alpha( const std::string&
                                         color_value_array_from_bpy_list( alpha));
 }
 
-bpy::list color_entity_get_vals( const ColorEntity *col)
+bpy::list color_entity_get_vals( const ColorEntity* col)
 {
     return bpy_list_from_color_value_array( col->get_values());
 }
 
-bpy::list color_entity_get_alpha( const ColorEntity *col)
+bpy::list color_entity_get_alpha( const ColorEntity* col)
 {
     return bpy_list_from_color_value_array( col->get_alpha());
 }

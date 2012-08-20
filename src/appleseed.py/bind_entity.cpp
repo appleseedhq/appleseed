@@ -52,7 +52,7 @@ using namespace renderer;
 namespace detail
 {
 
-Entity *get_entity_vec_item( EntityVector& vec, int index)
+Entity* get_entity_vec_item( EntityVector& vec, int index)
 {
     if (index < 0)
         index = vec.size() - index;
@@ -66,17 +66,17 @@ Entity *get_entity_vec_item( EntityVector& vec, int index)
     return vec.get_by_index( index);
 }
 
-Entity *get_entity_map_item( EntityMap& map, const std::string& key)
+Entity* get_entity_map_item( EntityMap& map, const std::string& key)
 {
     return map.get_by_name( key.c_str());
 }
 
-bpy::dict entity_get_parameters( const Entity *e)
+bpy::dict entity_get_parameters( const Entity* e)
 {
     return param_array_to_bpy_dict( e->get_parameters());
 }
 
-void entity_set_parameters( Entity *e, const bpy::dict& params)
+void entity_set_parameters( Entity* e, const bpy::dict& params)
 {
     e->get_parameters() = bpy_dict_to_param_array( params);
 }

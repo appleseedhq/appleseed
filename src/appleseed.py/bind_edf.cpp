@@ -44,9 +44,9 @@ auto_release_ptr<EDF> create_edf( const std::string& edf_type,
                                     const bpy::dict& params)
 {
     EDFFactoryRegistrar factories;
-    const IEDFFactory *factory = factories.lookup( edf_type.c_str());
+    const IEDFFactory* factory = factories.lookup( edf_type.c_str());
 
-    if( factory)
+    if (factory)
         return factory->create( name.c_str(), bpy_dict_to_param_array( params));
     else
     {

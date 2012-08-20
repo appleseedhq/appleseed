@@ -44,9 +44,9 @@ auto_release_ptr<BSDF> create_bsdf( const std::string& bsdf_type,
                                     const bpy::dict& params)
 {
     BSDFFactoryRegistrar factories;
-    const IBSDFFactory *factory = factories.lookup( bsdf_type.c_str());
+    const IBSDFFactory* factory = factories.lookup( bsdf_type.c_str());
 
-    if( factory)
+    if (factory)
         return factory->create( name.c_str(), bpy_dict_to_param_array( params));
     else
     {
