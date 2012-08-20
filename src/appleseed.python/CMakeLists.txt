@@ -98,9 +98,6 @@ add_library (appleseed.python SHARED
 set_target_properties (appleseed.python PROPERTIES
     PREFIX ""
     OUTPUT_NAME "_appleseedpython"
-    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/appleseed.python/appleseed
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/appleseed.python/appleseed
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/appleseed.python/appleseed
 )
 
 
