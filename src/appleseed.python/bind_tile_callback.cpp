@@ -1,11 +1,10 @@
-
 //
 // This source file is part of appleseed.
 // Visit http://appleseedhq.net/ for additional information and resources.
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2012 Esteban Tovagliari
+// Copyright (c) 2012 Esteban Tovagliari.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,18 +25,14 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_PY_BIND_DICT2DICT_H
-#define APPLESEED_PY_BIND_DICT2DICT_H
+#include "tile_callback_factory.h"
 
-// Has to be first.
-#include "Python.h"
+namespace detail
+{
 
-#include <boost/python.hpp>
+} // detail
 
-#include "renderer/utility/paramarray.h"
-
-renderer::ParamArray bpy_dict_to_param_array( const boost::python::dict& d);
-boost::python::dict param_array_to_bpy_dict( const renderer::ParamArray& array);
-
-#endif // APPLESEED_PY_BIND_DICT2DICT_H
-
+void bind_tile_callback()
+{
+    // nothing here yet
+}

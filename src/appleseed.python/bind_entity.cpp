@@ -29,21 +29,17 @@
 #include "Python.h"
 
 #include "bind_auto_release_ptr.h"
+#include "dict2dict.h"
 
-#include <string>
-
-#include "renderer/modeling/entity/entity.h"
 #include "renderer/modeling/entity/connectableentity.h"
-
-#include "renderer/modeling/entity/entityvector.h"
+#include "renderer/modeling/entity/entity.h"
 #include "renderer/modeling/entity/entitymap.h"
-
+#include "renderer/modeling/entity/entityvector.h"
+#include "renderer/modeling/project/configuration.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
 
-#include "renderer/modeling/project/configuration.h"
-
-#include "dict2dict.hpp"
+#include <string>
 
 namespace bpy = boost::python;
 using namespace foundation;

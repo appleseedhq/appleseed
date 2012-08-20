@@ -25,8 +25,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_PY_BIND_TYPED_ENTITY_CONTAINERS_H
-#define APPLESEED_PY_BIND_TYPED_ENTITY_CONTAINERS_H
+#ifndef APPLESEED_PYTHON_BIND_TYPED_ENTITY_CONTAINERS_H
+#define APPLESEED_PYTHON_BIND_TYPED_ENTITY_CONTAINERS_H
 
 // Has to be first, to avoid redifinition warnings.
 #include "Python.h"
@@ -36,7 +36,7 @@
 #include "renderer/modeling/entity/entityvector.h"
 #include "renderer/modeling/entity/entitymap.h"
 
-#include "dict2dict.hpp"
+#include "dict2dict.h"
 
 namespace detail
 {
@@ -93,4 +93,4 @@ void bind_typed_entity_map( const char* name)
         ;
 }
 
-#endif // APPLESEED_PY_BIND_TYPED_ENTITY_CONTAINERS_H
+#endif  // !APPLESEED_PYTHON_BIND_TYPED_ENTITY_CONTAINERS_H

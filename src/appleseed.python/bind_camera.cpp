@@ -30,7 +30,7 @@
 
 #include "renderer/api/camera.h"
 
-#include "dict2dict.hpp"
+#include "dict2dict.h"
 
 namespace bpy = boost::python;
 using namespace foundation;

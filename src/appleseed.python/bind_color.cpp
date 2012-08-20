@@ -30,8 +30,8 @@
 #include "foundation/image/colorspace.h"
 #include "renderer/api/color.h"
 
-#include "dict2dict.hpp"
-#include "bind_typed_entity_containers.hpp"
+#include "bind_typed_entity_containers.h"
+#include "dict2dict.h"
 
 namespace bpy = boost::python;
 using namespace foundation;

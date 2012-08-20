@@ -25,12 +25,14 @@
 // THE SOFTWARE.
 //
 
+// Has to be first, to avoid redifinition warnings.
 #include "bind_auto_release_ptr.h"
 
-#include "renderer/api/bsdf.h"
+#include "renderer/api/frame.h"
+#include "renderer/kernel/aov/imagestack.h"
+#include "foundation/image/image.h"
 
-#include "dict2dict.hpp"
-#include "bind_typed_entity_containers.hpp"
+#include "dict2dict.h"
 
 namespace bpy = boost::python;
 using namespace foundation;
@@ -39,31 +41,37 @@ using namespace renderer;
 namespace detail
 {
 
-auto_release_ptr<BSDF> create_bsdf( const std::string& bsdf_type,
-                                    const std::string& name,
-                                    const bpy::dict& params)
+auto_release_ptr<Frame> create_frame( const std::string& name, const bpy::dict& params)
 {
-    BSDFFactoryRegistrar factories;
-    const IBSDFFactory* factory = factories.lookup( bsdf_type.c_str());
+    return FrameFactory::create( name.c_str(), bpy_dict_to_param_array( params));
+}
 
-    if (factory)
-        return factory->create( name.c_str(), bpy_dict_to_param_array( params));
-    else
+bpy::object archive_frame( const Frame* f, const char* directory)
+{
+    char* output = 0;
+
+    if (f->archive( directory, &output))
     {
-        PyErr_SetString( PyExc_RuntimeError, "BSDF type not found");
-        bpy::throw_error_already_set();
+        bpy::str path( output);
+        foundation::free_string( output);
+        return path;
     }
 
-    return auto_release_ptr<BSDF>();
+    // return None
+    return bpy::object();
 }
 
 } // detail
 
-void bind_bsdf()
+void bind_frame()
 {
-    bpy::class_<BSDF, auto_release_ptr<BSDF>, bpy::bases<ConnectableEntity>, boost::noncopyable>( "BSDF", bpy::no_init)
-        .def( "__init__", bpy::make_constructor( detail::create_bsdf))
-        ;
+    bpy::class_<Frame, auto_release_ptr<Frame>, bpy::bases<Entity>, boost::noncopyable>( "Frame", bpy::no_init)
+        .def( "__init__", bpy::make_constructor( detail::create_frame))
 
-    bind_typed_entity_vector<BSDF>( "BSDFContainer");
+        .def( "image", &Frame::image, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def( "aov_images", &Frame::aov_images, bpy::return_value_policy<bpy::reference_existing_object>())
+
+        .def( "write", &Frame::write)
+        .def( "archive", detail::archive_frame)
+        ;
 }

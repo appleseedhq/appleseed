@@ -27,10 +27,10 @@
 
 #include "bind_auto_release_ptr.h"
 
-#include "renderer/api/edf.h"
+#include "renderer/api/material.h"
 
-#include "dict2dict.hpp"
-#include "bind_typed_entity_containers.hpp"
+#include "bind_typed_entity_containers.h"
+#include "dict2dict.h"
 
 namespace bpy = boost::python;
 using namespace foundation;
@@ -39,31 +39,18 @@ using namespace renderer;
 namespace detail
 {
 
-auto_release_ptr<EDF> create_edf( const std::string& edf_type,
-                                    const std::string& name,
-                                    const bpy::dict& params)
+auto_release_ptr<Material> create_material( const std::string& name, const bpy::dict& params)
 {
-    EDFFactoryRegistrar factories;
-    const IEDFFactory* factory = factories.lookup( edf_type.c_str());
-
-    if (factory)
-        return factory->create( name.c_str(), bpy_dict_to_param_array( params));
-    else
-    {
-        PyErr_SetString( PyExc_RuntimeError, "EDF type not found");
-        bpy::throw_error_already_set();
-    }
-
-    return auto_release_ptr<EDF>();
+    return MaterialFactory::create( name.c_str(), bpy_dict_to_param_array( params));
 }
 
 } // detail
 
-void bind_edf()
+void bind_material()
 {
-    bpy::class_<EDF, auto_release_ptr<EDF>, bpy::bases<ConnectableEntity>, boost::noncopyable>( "EDF", bpy::no_init)
-        .def( "__init__", bpy::make_constructor( detail::create_edf))
+    bpy::class_<Material, auto_release_ptr<Material>, bpy::bases<ConnectableEntity>, boost::noncopyable>( "Material", bpy::no_init)
+        .def( "__init__", bpy::make_constructor( detail::create_material))
         ;
 
-    bind_typed_entity_vector<EDF>( "EDFContainer");
+    bind_typed_entity_vector<Material>( "MaterialContainer");
 }

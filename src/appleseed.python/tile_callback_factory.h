@@ -25,14 +25,12 @@
 // THE SOFTWARE.
 //
 
-#include "tile_callback_factory.hpp"
+#ifndef APPLESEED_PYTHON_TILE_CALLBACK_FACTORY_H
+#define APPLESEED_PYTHON_TILE_CALLBACK_FACTORY_H
 
-namespace detail
-{
+// Has to be first, to avoid redifinition warnings.
+#include "Python.h"
 
-} // detail
+#include <boost/python.hpp>
 
-void bind_tile_callback()
-{
-    // nothing here yet
-}
+#endif  // !APPLESEED_PYTHON_TILE_CALLBACK_FACTORY_H

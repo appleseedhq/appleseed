@@ -32,8 +32,8 @@
 #include "renderer/modeling/scene/objectinstance.h"
 #include "foundation/utility/searchpaths.h"
 
-#include "bind_typed_entity_containers.hpp"
-#include "dict2dict.hpp"
+#include "bind_typed_entity_containers.h"
+#include "dict2dict.h"
 
 namespace bpy = boost::python;
 using namespace foundation;

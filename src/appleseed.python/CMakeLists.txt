@@ -45,10 +45,8 @@ find_package (Boost 1.46 REQUIRED chrono date_time filesystem regex system threa
 #--------------------------------------------------------------------------------------------------
 
 set (sources
-    module.cpp
-    dict2dict.hpp
-    dict2dict.cpp
     bind_assembly.cpp
+    bind_auto_release_ptr.h
     bind_bbox.cpp
     bind_bsdf.cpp
     bind_camera.cpp
@@ -72,14 +70,18 @@ set (sources
     bind_texture.cpp
     bind_tile_callback.cpp
     bind_transform.cpp
-    bind_typed_entity_containers.hpp
+    bind_typed_entity_containers.h
     bind_utility.cpp
     bind_vector.cpp
+    dict2dict.cpp
+    dict2dict.h
+    module.cpp
+    tile_callback_factory.h
 )
-list (APPEND appleseed.py_sources
+list (APPEND appleseed.python_sources
     ${sources}
 )
-source_group ("python" FILES
+source_group ("" FILES
     ${sources}
 )
 
@@ -88,15 +90,16 @@ source_group ("python" FILES
 # Target.
 #--------------------------------------------------------------------------------------------------
 
-add_library ( _appleseed SHARED
-    ${appleseed.py_sources}
+add_library (appleseed.python SHARED
+    ${appleseed.python_sources}
 )
 
-set_target_properties (_appleseed PROPERTIES
+set_target_properties (appleseed.python PROPERTIES
     PREFIX ""
-    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/appleseed.py/appleseed
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/appleseed.py/appleseed
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/appleseed.py/appleseed
+    OUTPUT_NAME "_appleseedpython"
+    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/appleseed.python/appleseed
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/appleseed.python/appleseed
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/appleseed.python/appleseed
 )
 
 
@@ -107,7 +110,7 @@ set_target_properties (_appleseed PROPERTIES
 include_directories (
     .
     ../appleseed.shared
-	${PYTHON_INCLUDE_DIRS}
+    ${PYTHON_INCLUDE_DIRS}
 )
 
 
@@ -115,16 +118,16 @@ include_directories (
 # Preprocessor definitions.
 #--------------------------------------------------------------------------------------------------
 
-apply_preprocessor_definitions (_appleseed)
+apply_preprocessor_definitions (appleseed.python)
 
 
 #--------------------------------------------------------------------------------------------------
 # Static libraries.
 #--------------------------------------------------------------------------------------------------
 
-link_against_platform (_appleseed)
+link_against_platform (appleseed.python)
 
-target_link_libraries (_appleseed
+target_link_libraries (appleseed.python
     appleseed
     appleseed.shared
     ${Boost_LIBRARIES}
@@ -136,4 +139,4 @@ target_link_libraries (_appleseed
 # Post-build commands.
 #--------------------------------------------------------------------------------------------------
 
-add_copy_target_to_sandbox_command (_appleseed)
+add_copy_target_to_sandbox_command (appleseed.python)

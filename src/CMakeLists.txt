@@ -379,5 +379,5 @@ add_subdirectory (tools/maketiledexr)
 add_subdirectory (tools/normalizeprojectfile)
 
 if (WITH_PYTHON)
-    add_subdirectory (appleseed.py)
+    add_subdirectory (appleseed.python)
 endif ()

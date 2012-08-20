@@ -26,7 +26,7 @@
 // THE SOFTWARE.
 //
 
-#include "dict2dict.hpp"
+#include "dict2dict.h"
 
 #include "foundation/math/vector.h"
 #include "foundation/utility/string.h"
