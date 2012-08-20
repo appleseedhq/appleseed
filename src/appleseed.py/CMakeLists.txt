@@ -30,7 +30,7 @@
 # Python.
 #--------------------------------------------------------------------------------------------------
 
-find_package (PythonLibs)
+find_package (PythonLibs REQUIRED)
 
 
 #--------------------------------------------------------------------------------------------------
@@ -128,7 +128,7 @@ target_link_libraries (_appleseed
     appleseed
     appleseed.shared
     ${Boost_LIBRARIES}
-    ${Python_LIBRARIES}
+    ${PYTHON_LIBRARIES}
 )
 
 
