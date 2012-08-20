@@ -45,6 +45,7 @@ find_package (Boost 1.46 REQUIRED chrono date_time filesystem regex system threa
 #--------------------------------------------------------------------------------------------------
 
 set (sources
+    __init__.py
     bind_assembly.cpp
     bind_auto_release_ptr.h
     bind_bbox.cpp
