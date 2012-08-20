@@ -1,3 +1,4 @@
+
 #
 # This source file is part of appleseed.
 # Visit http://appleseedhq.net/ for additional information and resources.
@@ -28,6 +29,6 @@
 import sys
 
 if sys.hexversion < 0x030000F0:
-    from _appleseed import * # Python 2.X
+    from _appleseedpython import *  # Python 2.X
 else:
-    from ._appleseed import * # Python 3.X
+    from ._appleseedpython import * # Python 3.X
