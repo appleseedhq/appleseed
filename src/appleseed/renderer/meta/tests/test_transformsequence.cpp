@@ -35,7 +35,6 @@
 #include "foundation/math/vector.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"
-#include "foundation/utility/version.h"
 
 using namespace foundation;
 using namespace renderer;
@@ -50,17 +49,6 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
         sequence.clear();
 
         EXPECT_TRUE(sequence.empty());
-    }
-
-    TEST_CASE(Clear_GivenSequenceTiedToParent_BumpsParentVersionID)
-    {
-        Versionable parent;
-        TransformSequence sequence(&parent);
-        const VersionID initial_version_id = parent.get_version_id();
-
-        sequence.clear();
-
-        EXPECT_GT(initial_version_id, parent.get_version_id());
     }
 
     TEST_CASE(SetTransform_GivenTimeAtWhichNoTransformExists_AddsTransform)
@@ -93,29 +81,6 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
 
         EXPECT_EQ(1.0, time);
         EXPECT_EQ(NewTransform, transform);
-    }
-
-    TEST_CASE(SetTransform_GivenSequenceTiedToParentAndTimeAtWhichNoTransformExists_BumpsParentVersionID)
-    {
-        Versionable parent;
-        TransformSequence sequence(&parent);
-        const VersionID initial_version_id = parent.get_version_id();
-
-        sequence.set_transform(1.0, Transformd::identity());
-
-        EXPECT_GT(initial_version_id, parent.get_version_id());
-    }
-
-    TEST_CASE(SetTransform_GivenSequenceTiedToParentAndTimeOfExistingTransform_BumpsParentVersionID)
-    {
-        Versionable parent;
-        TransformSequence sequence(&parent);
-        sequence.set_transform(1.0, Transformd::identity());
-        const VersionID initial_version_id = parent.get_version_id();
-
-        sequence.set_transform(1.0, Transformd::identity());
-
-        EXPECT_GT(initial_version_id, parent.get_version_id());
     }
 
     TEST_CASE(GetEarliestTransform_EarliestTransformIsFirst)

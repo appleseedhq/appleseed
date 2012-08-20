@@ -75,7 +75,6 @@ Camera::Camera(
     const ParamArray&   params)
   : Entity(g_class_uid, params)
   , impl(new Impl())
-  , m_transform_sequence(this)
 {
     set_name(name);
 

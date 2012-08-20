@@ -30,7 +30,6 @@
 #define APPLESEED_RENDERER_UTILITY_TRANSFORMSEQUENCE_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/transform.h"
 
 // appleseed.main headers.
@@ -38,9 +37,6 @@
 
 // Standard headers.
 #include <cstddef>
-
-// Forward declarations.
-namespace foundation    { class Versionable; }
 
 namespace renderer
 {
@@ -50,14 +46,17 @@ namespace renderer
 //
 
 class DLLSYMBOL TransformSequence
-  : public foundation::NonCopyable
 {
   public:
-    // Constructor.
-    explicit TransformSequence(foundation::Versionable* parent = 0);
+    // Constructors.
+    TransformSequence();
+    TransformSequence(const TransformSequence& rhs);
 
     // Destructor.
     ~TransformSequence();
+
+    // Assignment operator.
+    TransformSequence& operator=(const TransformSequence& rhs);
 
     // Remove all transforms from the sequence.
     void clear();
@@ -105,7 +104,6 @@ class DLLSYMBOL TransformSequence
         }
     };
 
-    foundation::Versionable*            m_parent;
     size_t                              m_capacity;
     size_t                              m_size;
     TransformKey*                       m_keys;

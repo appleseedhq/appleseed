@@ -29,12 +29,10 @@
 // Interface header.
 #include "transformsequence.h"
 
-// appleseed.foundation headers.
-#include "foundation/utility/version.h"
-
 // Standard headers.
 #include <algorithm>
 #include <cassert>
+#include <cstring>
 #include <vector>
 
 using namespace foundation;
@@ -43,19 +41,47 @@ using namespace std;
 namespace renderer
 {
 
-TransformSequence::TransformSequence(Versionable* parent)
-  : m_parent(parent)
-  , m_capacity(0)
+TransformSequence::TransformSequence()
+  : m_capacity(0)
   , m_size(0)
   , m_keys(0)
   , m_interpolators(0)
 {
 }
 
+TransformSequence::TransformSequence(const TransformSequence& rhs)
+  : m_capacity(rhs.m_size)      // shrink to size
+  , m_size(rhs.m_size)
+  , m_interpolators(0)
+{
+    if (rhs.m_keys)
+    {
+        m_keys = new TransformKey[m_size];
+        memcpy(m_keys, rhs.m_keys, m_size * sizeof(TransformKey));
+    }
+    else m_keys = 0;
+}
+
 TransformSequence::~TransformSequence()
 {
     delete [] m_keys;
     delete [] m_interpolators;
+}
+
+TransformSequence& TransformSequence::operator=(const TransformSequence& rhs)
+{
+    m_capacity = rhs.m_size;    // shrink to size
+    m_size = rhs.m_size;
+    m_interpolators = 0;
+
+    if (rhs.m_keys)
+    {
+        m_keys = new TransformKey[m_size];
+        memcpy(m_keys, rhs.m_keys, m_size * sizeof(TransformKey));
+    }
+    else m_keys = 0;
+
+    return *this;
 }
 
 void TransformSequence::clear()
@@ -68,9 +94,6 @@ void TransformSequence::clear()
 
     delete [] m_interpolators;
     m_interpolators = 0;
-
-    if (m_parent)
-        m_parent->bump_version_id();
 }
 
 void TransformSequence::set_transform(
@@ -78,9 +101,6 @@ void TransformSequence::set_transform(
     const Transformd&   transform)
 {
     assert(m_size <= m_capacity);
-
-    if (m_parent)
-        m_parent->bump_version_id();
 
     for (size_t i = 0; i < m_size; ++i)
     {
