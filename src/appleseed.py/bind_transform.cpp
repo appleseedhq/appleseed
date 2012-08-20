@@ -54,10 +54,10 @@ void bind_typed_transform( const char *class_name)
 
         .def( bpy::self * bpy::self)
 
-		// a bug in boost::python, this needs
-		// the extra self_ns qualification
-		.def( bpy::self_ns::str( bpy::self))
-		.def( bpy::self_ns::repr( bpy::self))
+        // a bug in boost::python, this needs
+        // the extra self_ns qualification
+        .def( bpy::self_ns::str( bpy::self))
+        .def( bpy::self_ns::repr( bpy::self))
         ;
 }
 
