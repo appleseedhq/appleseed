@@ -59,7 +59,7 @@ void bind_utility();
 void bind_vector();
 
 // appleseed python module
-BOOST_PYTHON_MODULE( _appleseed)
+BOOST_PYTHON_MODULE( _appleseedpython)
 {
 	bind_utility();
 
