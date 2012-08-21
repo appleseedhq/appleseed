@@ -182,8 +182,6 @@ bpy::tuple matrix_extract_euler_angles( const UnalignedMatrix44<T>& mat)
     return bpy::make_tuple( yaw, pitch, roll);
 }
 
-// gcc 4.5 does not compile this if name is a const char*
-// probably a bug.
 template<class T>
 void bind_typed_matrix4( const char *class_name)
 {
