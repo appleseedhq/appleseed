@@ -31,7 +31,7 @@
 #include "renderer/utility/transformsequence.h"
 #include "foundation/utility/iostreamop.h"
 
-#include "unaligned_matrix44.hpp"
+#include "unaligned_matrix44.h"
 
 namespace bpy = boost::python;
 using namespace foundation;

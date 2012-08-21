@@ -37,7 +37,7 @@ namespace foundation
 template<class T>
 class UnalignedMatrix44
 {
-public:
+  public:
 
     static UnalignedMatrix44<T> identity()
     {
@@ -128,7 +128,7 @@ public:
         return data_[row * 4 + col];
     }
 
-    Vector<T,3> extract_translation()
+    Vector<T,3> extract_translation() const
     {
         as_foundation_matrix().extract_translation();
     }
@@ -138,7 +138,7 @@ public:
         as_foundation_matrix().extract_unit_quaternion();
     }
 
-private:
+  private:
 
     T data_[16];
 };
