@@ -78,6 +78,7 @@ set (sources
     dict2dict.h
     module.cpp
     tile_callback_factory.h
+    unaligned_matrix44.h
 )
 list (APPEND appleseed.python_sources
     ${sources}

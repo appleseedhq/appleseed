@@ -30,7 +30,7 @@
 
 #include <boost/python.hpp>
 
-#include "unaligned_matrix44.hpp"
+#include "unaligned_matrix44.h"
 
 namespace bpy = boost::python;
 using namespace foundation;
@@ -185,7 +185,6 @@ bpy::tuple matrix_extract_euler_angles( const UnalignedMatrix44<T>& mat)
 template<class T>
 void bind_typed_matrix4( const char *class_name)
 {
-
     UnalignedMatrix44<T> (*rot1)( T, T, T) = &UnalignedMatrix44<T>::rotation;
     UnalignedMatrix44<T> (*rot2)( const Vector<T,3>&, T) = &UnalignedMatrix44<T>::rotation;
     UnalignedMatrix44<T> (*rot3)( const Quaternion<T>&) = &UnalignedMatrix44<T>::rotation;
