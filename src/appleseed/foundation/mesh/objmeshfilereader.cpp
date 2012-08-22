@@ -285,9 +285,15 @@ struct OBJMeshFileReader::Impl
             //
 
             {
-                const long n = m_lexer.accept_long();
-                const size_t vn = fix_index(n, m_normals.size());
-                m_face_normal_indices.push_back(vn);
+                const unsigned char c = m_lexer.get_char();
+                if (m_lexer.is_space(c))
+                    continue;
+                else
+                {
+                    const long n = m_lexer.accept_long();
+                    const size_t vn = fix_index(n, m_normals.size());
+                    m_face_normal_indices.push_back(vn);
+                }
             }
         }
 
