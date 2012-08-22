@@ -394,6 +394,18 @@ class Matrix<T, 4, 4>
     SSE_ALIGN ValueType m_comp[Components];
 };
 
+// 4x4 matrix by 3-vector multiplication.
+template <typename T>
+Vector<T, 3> operator*(
+    const Matrix<T, 4, 4>&  m,
+    const Vector<T, 3>&     v);
+
+// 3-vector by 4x4 matrix multiplication.
+template <typename T>
+Vector<T, 3> operator*(
+    const Vector<T, 3>&     v,
+    const Matrix<T, 4, 4>&  m);
+
 
 //
 // Full specializations for 2x2, 3x3 and 4x4 matrices of type int, float and double.
@@ -1781,6 +1793,34 @@ inline const T& Matrix<T, 4, 4>::operator()(const size_t row, const size_t col) 
     assert(row < Rows);
     assert(col < Columns);
     return m_comp[row * Columns + col];
+}
+
+template <typename T>
+inline Vector<T, 3> operator*(
+    const Matrix<T, 4, 4>&  m,
+    const Vector<T, 3>&     v)
+{
+    Vector<T, 3> res;
+
+    res[0] = m[0] * v[0] + m[1] * v[1] + m[ 2] * v[2];
+    res[1] = m[4] * v[0] + m[5] * v[1] + m[ 6] * v[2];
+    res[2] = m[8] * v[0] + m[9] * v[1] + m[10] * v[2];
+
+    return res;
+}
+
+template <typename T>
+inline Vector<T, 3> operator*(
+    const Vector<T, 3>&     v,
+    const Matrix<T, 4, 4>&  m)
+{
+    Vector<T, 3> res;
+
+    res[0] = v[0] * m[0] + v[1] * m[4] + v[2] * m[ 8];
+    res[1] = v[0] * m[1] + v[1] * m[5] + v[2] * m[ 9];
+    res[2] = v[0] * m[2] + v[1] * m[6] + v[2] * m[10];
+
+    return res;
 }
 
 template <typename T>
