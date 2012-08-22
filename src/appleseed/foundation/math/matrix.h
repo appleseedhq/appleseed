@@ -137,14 +137,14 @@ Matrix<T, M, K> operator*(
 // Matrix-vector multiplication (MxN * Nx1 = Mx1).
 template <typename T, size_t M, size_t N>
 Vector<T, M> operator*(
-    const Matrix<T, M, N>&  lhs,
-    const Vector<T, N>&     rhs);
+    const Matrix<T, M, N>&  m,
+    const Vector<T, N>&     v);
 
 // Vector-matrix multiplication (1xM * MxN = 1xN).
 template <typename T, size_t M, size_t N>
 Vector<T, N> operator*(
-    const Vector<T, M>&     lhs,
-    const Matrix<T, M, N>&  rhs);
+    const Vector<T, M>&     v,
+    const Matrix<T, M, N>&  m);
 
 // Matrix transposition.
 template <typename T, size_t M, size_t N>
@@ -699,8 +699,8 @@ inline Matrix<T, M, K> operator*(
 
 template <typename T, size_t M, size_t N>
 inline Vector<T, M> operator*(
-    const Matrix<T, M, N>&  lhs,
-    const Vector<T, N>&     rhs)
+    const Matrix<T, M, N>&  m,
+    const Vector<T, N>&     v)
 {
     Vector<T, M> res;
 
@@ -709,7 +709,7 @@ inline Vector<T, M> operator*(
         res[r] = T(0.0);
 
         for (size_t c = 0; c < N; ++c)
-            res[r] += lhs(r, c) * rhs[c];
+            res[r] += m(r, c) * v[c];
     }
 
     return res;
@@ -717,8 +717,8 @@ inline Vector<T, M> operator*(
 
 template <typename T, size_t M, size_t N>
 inline Vector<T, N> operator*(
-    const Vector<T, M>&     lhs,
-    const Matrix<T, M, N>&  rhs)
+    const Vector<T, M>&     v,
+    const Matrix<T, M, N>&  m)
 {
     Vector<T, N> res;
 
@@ -727,7 +727,7 @@ inline Vector<T, N> operator*(
         res[c] = T(0.0);
 
         for (size_t r = 0; r < M; ++r)
-            res[c] += lhs[r] * rhs(r, c);
+            res[c] += v[r] * m(r, c);
     }
 
     return res;
@@ -1315,29 +1315,29 @@ inline Matrix<T, 3, 3> operator*(
 
 template <typename T>
 inline Vector<T, 3> operator*(
-    const Matrix<T, 3, 3>&  lhs,
-    const Vector<T, 3>&     rhs)
+    const Matrix<T, 3, 3>&  m,
+    const Vector<T, 3>&     v)
 {
     Vector<T, 3> res;
 
-    res[0] = lhs[0] * rhs[0] + lhs[1] * rhs[1] + lhs[2] * rhs[2];
-    res[1] = lhs[3] * rhs[0] + lhs[4] * rhs[1] + lhs[5] * rhs[2];
-    res[2] = lhs[6] * rhs[0] + lhs[7] * rhs[1] + lhs[8] * rhs[2];
-    
+    res[0] = m[0] * v[0] + m[1] * v[1] + m[2] * v[2];
+    res[1] = m[3] * v[0] + m[4] * v[1] + m[5] * v[2];
+    res[2] = m[6] * v[0] + m[7] * v[1] + m[8] * v[2];
+
     return res;
 }
 
 template <typename T>
 inline Vector<T, 3> operator*(
-    const Vector<T, 3>&     lhs,
-    const Matrix<T, 3, 3>&  rhs)
+    const Vector<T, 3>&     v,
+    const Matrix<T, 3, 3>&  m)
 {
     Vector<T, 3> res;
 
-    res[0] = lhs[0] * rhs[0] + lhs[1] * rhs[3] + lhs[2] * rhs[6];
-    res[1] = lhs[0] * rhs[1] + lhs[1] * rhs[4] + lhs[2] * rhs[7];
-    res[2] = lhs[0] * rhs[2] + lhs[1] * rhs[5] + lhs[2] * rhs[8];
-    
+    res[0] = v[0] * m[0] + v[1] * m[3] + v[2] * m[6];
+    res[1] = v[0] * m[1] + v[1] * m[4] + v[2] * m[7];
+    res[2] = v[0] * m[2] + v[1] * m[5] + v[2] * m[8];
+
     return res;
 }
 
@@ -1913,15 +1913,15 @@ inline Matrix<double, 4, 4> operator*(
 
 template <typename T>
 inline Vector<T, 4> operator*(
-    const Matrix<T, 4, 4>&  lhs,
-    const Vector<T, 4>&     rhs)
+    const Matrix<T, 4, 4>&  m,
+    const Vector<T, 4>&     v)
 {
     Vector<T, 4> res;
 
-    res[0] = lhs[ 0] * rhs[0] + lhs[ 1] * rhs[1] + lhs[ 2] * rhs[2] + lhs[ 3] * rhs[3];
-    res[1] = lhs[ 4] * rhs[0] + lhs[ 5] * rhs[1] + lhs[ 6] * rhs[2] + lhs[ 7] * rhs[3];
-    res[2] = lhs[ 8] * rhs[0] + lhs[ 9] * rhs[1] + lhs[10] * rhs[2] + lhs[11] * rhs[3];
-    res[3] = lhs[12] * rhs[0] + lhs[13] * rhs[1] + lhs[14] * rhs[2] + lhs[15] * rhs[3];
+    res[0] = m[ 0] * v[0] + m[ 1] * v[1] + m[ 2] * v[2] + m[ 3] * v[3];
+    res[1] = m[ 4] * v[0] + m[ 5] * v[1] + m[ 6] * v[2] + m[ 7] * v[3];
+    res[2] = m[ 8] * v[0] + m[ 9] * v[1] + m[10] * v[2] + m[11] * v[3];
+    res[3] = m[12] * v[0] + m[13] * v[1] + m[14] * v[2] + m[15] * v[3];
     
     return res;
 }
@@ -1931,18 +1931,18 @@ inline Vector<T, 4> operator*(
 // SSE2-optimized double precision 4x4 matrix-vector multiplication.
 template <>
 inline Vector<double, 4> operator*(
-    const Matrix<double, 4, 4>& lhs,
-    const Vector<double, 4>&    rhs)
+    const Matrix<double, 4, 4>& m,
+    const Vector<double, 4>&    v)
 {
     Vector<double, 4> res;
 
-    const sse2d rhs0 = loadupd(&rhs[0]);
-    const sse2d rhs2 = loadupd(&rhs[2]);
+    const sse2d v0 = loadupd(&v[0]);
+    const sse2d v2 = loadupd(&v[2]);
 
-    const sse2d res0 = addpd(mulpd(loadpd(&lhs[0]), rhs0), mulpd(loadpd(&lhs[2]), rhs2));
-    const sse2d res1 = addpd(mulpd(loadpd(&lhs[4]), rhs0), mulpd(loadpd(&lhs[6]), rhs2));
-    const sse2d res2 = addpd(mulpd(loadpd(&lhs[8]), rhs0), mulpd(loadpd(&lhs[10]), rhs2));
-    const sse2d res3 = addpd(mulpd(loadpd(&lhs[12]), rhs0), mulpd(loadpd(&lhs[14]), rhs2));
+    const sse2d res0 = addpd(mulpd(loadpd(&m[ 0]), v0), mulpd(loadpd(&m[ 2]), v2));
+    const sse2d res1 = addpd(mulpd(loadpd(&m[ 4]), v0), mulpd(loadpd(&m[ 6]), v2));
+    const sse2d res2 = addpd(mulpd(loadpd(&m[ 8]), v0), mulpd(loadpd(&m[10]), v2));
+    const sse2d res3 = addpd(mulpd(loadpd(&m[12]), v0), mulpd(loadpd(&m[14]), v2));
 
     storeupd(
         &res[0],
@@ -1963,15 +1963,15 @@ inline Vector<double, 4> operator*(
 
 template <typename T>
 inline Vector<T, 4> operator*(
-    const Vector<T, 4>&     lhs,
-    const Matrix<T, 4, 4>&  rhs)
+    const Vector<T, 4>&     v,
+    const Matrix<T, 4, 4>&  m)
 {
     Vector<T, 4> res;
 
-    res[0] = lhs[0] * rhs[ 0] + lhs[1] * rhs[ 4] + lhs[2] * rhs[ 8] + lhs[3] * rhs[12];
-    res[1] = lhs[0] * rhs[ 1] + lhs[1] * rhs[ 5] + lhs[2] * rhs[ 9] + lhs[3] * rhs[13];
-    res[2] = lhs[0] * rhs[ 2] + lhs[1] * rhs[ 6] + lhs[2] * rhs[10] + lhs[3] * rhs[14];
-    res[3] = lhs[0] * rhs[ 3] + lhs[1] * rhs[ 7] + lhs[2] * rhs[11] + lhs[3] * rhs[15];
+    res[0] = v[0] * m[ 0] + v[1] * m[ 4] + v[2] * m[ 8] + v[3] * m[12];
+    res[1] = v[0] * m[ 1] + v[1] * m[ 5] + v[2] * m[ 9] + v[3] * m[13];
+    res[2] = v[0] * m[ 2] + v[1] * m[ 6] + v[2] * m[10] + v[3] * m[14];
+    res[3] = v[0] * m[ 3] + v[1] * m[ 7] + v[2] * m[11] + v[3] * m[15];
     
     return res;
 }
