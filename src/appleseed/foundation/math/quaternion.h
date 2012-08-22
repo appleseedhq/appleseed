@@ -68,7 +68,7 @@ class Quaternion
 
     // Construct a quaternion from another quaternion of a different type.
     template <typename U>
-    explicit Quaternion(const Quaternion<U>& rhs);
+    Quaternion(const Quaternion<U>& rhs);
 
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
 

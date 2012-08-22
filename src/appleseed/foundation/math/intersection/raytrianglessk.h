@@ -91,7 +91,7 @@ struct TriangleSSK
 
     // Construct a triangle from another triangle of a different type.
     template <typename U>
-    explicit TriangleSSK(const TriangleSSK<U>& rhs);
+    TriangleSSK(const TriangleSSK<U>& rhs);
 
     bool intersect(
         const RayType&      ray,

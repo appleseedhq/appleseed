@@ -69,7 +69,7 @@ struct TriangleMT
 
     // Construct a triangle from another triangle of a different type.
     template <typename U>
-    explicit TriangleMT(const TriangleMT<U>& rhs);
+    TriangleMT(const TriangleMT<U>& rhs);
 
     bool intersect(
         const RayType&      ray,

@@ -77,7 +77,7 @@ class AABB
 
     // Construct a bounding box from another bounding box of a different type.
     template <typename U>
-    explicit AABB(const AABB<U, N>& rhs);
+    AABB(const AABB<U, N>& rhs);
 
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
 

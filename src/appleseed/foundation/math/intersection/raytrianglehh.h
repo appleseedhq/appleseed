@@ -74,7 +74,7 @@ struct TriangleHH
 
     // Construct a triangle from another triangle of a different type.
     template <typename U>
-    explicit TriangleHH(const TriangleHH<U>& rhs);
+    TriangleHH(const TriangleHH<U>& rhs);
 
     bool intersect(
         const RayType&      ray,

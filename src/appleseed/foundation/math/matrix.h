@@ -90,7 +90,7 @@ class Matrix
 
     // Construct a matrix from another matrix of a different type.
     template <typename U>
-    explicit Matrix(const Matrix<U, M, N>& rhs);
+    Matrix(const Matrix<U, M, N>& rhs);
 
     // Unchecked array subscripting.
     ValueType& operator[](const size_t i);
@@ -175,7 +175,7 @@ class Matrix<T, N, N>
 
     // Construct a matrix from another matrix of a different type.
     template <typename U>
-    explicit Matrix(const Matrix<U, N, N>& rhs);
+    Matrix(const Matrix<U, N, N>& rhs);
 
     // Return the NxN identity matrix.
     static MatrixType identity();
@@ -235,7 +235,7 @@ class Matrix<T, 3, 3>
 
     // Construct a matrix from another matrix of a different type.
     template <typename U>
-    explicit Matrix(const Matrix<U, 3, 3>& rhs);
+    Matrix(const Matrix<U, 3, 3>& rhs);
 
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
 
@@ -325,7 +325,7 @@ class Matrix<T, 4, 4>
 
     // Construct a matrix from another matrix of a different type.
     template <typename U>
-    explicit Matrix(const Matrix<U, 4, 4>& rhs);
+    Matrix(const Matrix<U, 4, 4>& rhs);
 
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
 

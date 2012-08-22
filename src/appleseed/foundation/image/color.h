@@ -66,7 +66,7 @@ class Color
 
     // Construct a color from another color of a different type.
     template <typename U>
-    explicit Color(const Color<U, N>& rhs);
+    Color(const Color<U, N>& rhs);
 
     // Set all components to a given value.
     void set(const ValueType val);
@@ -168,7 +168,7 @@ class Color<T, 3>
 
     // Construct a color from another color of a different type.
     template <typename U>
-    explicit Color(const Color<U, 3>& rhs);
+    Color(const Color<U, 3>& rhs);
 
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
 
@@ -220,7 +220,7 @@ class Color<T, 4>
 
     // Construct a color from another color of a different type.
     template <typename U>
-    explicit Color(const Color<U, 4>& rhs);
+    Color(const Color<U, 4>& rhs);
 
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
 

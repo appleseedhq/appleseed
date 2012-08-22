@@ -71,7 +71,7 @@ class RegularSpectrum
 
     // Construct a spectrum from another spectrum of a different type.
     template <typename U>
-    explicit RegularSpectrum(const RegularSpectrum<U, N>& rhs);
+    RegularSpectrum(const RegularSpectrum<U, N>& rhs);
 
     // Set all components to a given value.
     void set(const ValueType val);
