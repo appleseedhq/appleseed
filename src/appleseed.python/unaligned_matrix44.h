@@ -130,12 +130,12 @@ class UnalignedMatrix44
 
     Vector<T,3> extract_translation() const
     {
-        as_foundation_matrix().extract_translation();
+        return as_foundation_matrix().extract_translation();
     }
 
     Quaternion<T> extract_unit_quaternion() const
     {
-        as_foundation_matrix().extract_unit_quaternion();
+        return as_foundation_matrix().extract_unit_quaternion();
     }
 
   private:
