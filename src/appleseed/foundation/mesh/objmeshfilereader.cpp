@@ -220,7 +220,7 @@ struct OBJMeshFileReader::Impl
 
             //
             // Recognized (epsilon)
-            // Accept n(/((n(/n)?)|(/n)))?
+            // Accept n
             //
 
             {
@@ -231,7 +231,7 @@ struct OBJMeshFileReader::Impl
 
             //
             // Recognized n
-            // Accept (/((n(/n)?)|(/n)))?
+            // Accept (epsilon), /
             //
 
             {
@@ -245,7 +245,7 @@ struct OBJMeshFileReader::Impl
 
             //
             // Recognized n/
-            // Accept (n(/n)?)|(/n)
+            // Accept /, n
             //
 
             {
@@ -253,7 +253,7 @@ struct OBJMeshFileReader::Impl
                 if (c == '/')
                 {
                     m_lexer.next_char();
-                    goto terminate;
+                    goto skip;
                 }
                 else
                 {
@@ -265,7 +265,7 @@ struct OBJMeshFileReader::Impl
 
             //
             // Recognized n/n
-            // Accept (/n)?
+            // Accept (epsilon), /
             //
 
             {
@@ -277,11 +277,11 @@ struct OBJMeshFileReader::Impl
                 else parse_error();
             }
 
-          terminate:
+          skip:
 
             //
-            // Recognized n//
-            // Accept n
+            // Recognized n//, n/n/
+            // Accept (epsilon), n
             //
 
             {
