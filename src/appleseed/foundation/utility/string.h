@@ -423,9 +423,11 @@ inline std::string from_string(const std::string& s)
 template <>
 inline bool from_string(const std::string& s)
 {
-    if (s == "1" || s == "true" || s == "on" || s == "yes")
+    const std::string t = lower_case(s);
+
+    if (t == "1" || t == "true" || t == "on" || t == "yes")
         return true;
-    else if (s == "0" || s == "false" || s == "off" || s == "no")
+    else if (t == "0" || t == "false" || t == "off" || t == "no")
         return false;
     else throw ExceptionStringConversionError();
 }
