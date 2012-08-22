@@ -39,6 +39,7 @@
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/scene.h"
+#include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/aabb.h"
@@ -53,6 +54,7 @@
 
 // Forward declarations.
 namespace foundation    { class Statistics; }
+namespace renderer      { class Assembly; }
 namespace renderer      { class AssemblyInstance; }
 namespace renderer      { class ShadingPoint; }
 
@@ -88,14 +90,35 @@ class AssemblyTree
     friend class AssemblyLeafProbeVisitor;
     friend class Intersector;
 
+    struct Item
+    {
+        const renderer::Assembly*               m_assembly;
+        foundation::UniqueID                    m_assembly_uid;
+        const renderer::AssemblyInstance*       m_assembly_instance;
+        renderer::TransformSequence             m_transform_sequence;
+
+        Item() {}
+
+        Item(
+            const renderer::Assembly*           assembly,
+            const renderer::AssemblyInstance*   assembly_instance,
+            renderer::TransformSequence         transform_sequence)
+          : m_assembly(assembly)
+          , m_assembly_uid(assembly->get_uid())
+          , m_assembly_instance(assembly_instance)
+          , m_transform_sequence(transform_sequence)
+        {
+        }
+    };
+
     typedef std::vector<foundation::AABB3d> AABBVector;
     typedef std::map<foundation::UniqueID, foundation::VersionID> AssemblyVersionMap;
 
-    const Scene&                            m_scene;
-    RegionTreeContainer                     m_region_trees;
-    TriangleTreeContainer                   m_triangle_trees;
-    std::vector<const AssemblyInstance*>    m_assembly_instances;
-    AssemblyVersionMap                      m_assembly_versions;
+    const Scene&            m_scene;
+    RegionTreeContainer     m_region_trees;
+    TriangleTreeContainer   m_triangle_trees;
+    std::vector<Item>       m_items;
+    AssemblyVersionMap      m_assembly_versions;
 
     void collect_assembly_instances(AABBVector& assembly_instance_bboxes);
     void rebuild_assembly_tree();
