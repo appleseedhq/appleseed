@@ -38,7 +38,6 @@ template<class T>
 class UnalignedMatrix44
 {
   public:
-
     static UnalignedMatrix44<T> identity()
     {
         return UnalignedMatrix44<T>( Matrix<T,4,4>::identity());
@@ -94,38 +93,38 @@ class UnalignedMatrix44
     explicit UnalignedMatrix44( T x)
     {
         for( int i = 0; i < 16; ++i)
-            data_[i] = x;
+            m_data[i] = x;
     }
 
     explicit UnalignedMatrix44( const Matrix<T,4,4>& m)
     {
         for( int i = 0; i < 16; ++i)
-            data_[i] = m[i];
+            m_data[i] = m[i];
     }
 
     Matrix<T,4,4> as_foundation_matrix() const
     {
-        return Matrix<T,4,4>( data_);
+        return Matrix<T,4,4>( m_data);
     }
 
     T operator[]( int index) const
     {
-        return data_[index];
+        return m_data[index];
     }
 
     T& operator[]( int index)
     {
-        return data_[index];
+        return m_data[index];
     }
 
     T operator()( int row, int col) const
     {
-        return data_[row * 4 + col];
+        return m_data[row * 4 + col];
     }
 
     T& operator()( int row, int col)
     {
-        return data_[row * 4 + col];
+        return m_data[row * 4 + col];
     }
 
     Vector<T,3> extract_translation() const
@@ -139,8 +138,7 @@ class UnalignedMatrix44
     }
 
   private:
-
-    T data_[16];
+    T m_data[16];
 };
 
 template<class T>
@@ -175,6 +173,6 @@ std::ostream& operator<<( std::ostream& s, const UnalignedMatrix44<T>& matrix)
     return s << matrix.as_foundation_matrix();
 }
 
-} // foundation
+}       // namespace foundation
 
-#endif
+#endif  // !APPLESEED_PYTHON_UNALIGNED_MATRIX44_H
