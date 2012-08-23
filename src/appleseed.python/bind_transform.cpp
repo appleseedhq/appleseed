@@ -31,7 +31,7 @@
 #include "renderer/utility/transformsequence.h"
 #include "foundation/utility/iostreamop.h"
 
-#include "unaligned_matrix44.h"
+#include "unaligned_transform44.h"
 
 namespace bpy = boost::python;
 using namespace foundation;
@@ -40,73 +40,46 @@ using namespace renderer;
 namespace detail
 {
 
-template<class T>
-Transform<T>* create_from_matrix( const UnalignedMatrix44<T>& m)
-{
-    return new Transform<T>( m.as_foundation_matrix());
-}
-
-template<class T>
-Transform<T>* create_from_matrix_with_inv( const UnalignedMatrix44<T>& m, const UnalignedMatrix44<T>& minv)
-{
-    Matrix<T,4,4> aligned_m = m.as_foundation_matrix();
-    Matrix<T,4,4> aligned_minv = minv.as_foundation_matrix();
-
-    // check that m * minv == identity, if not, throw an exception before the assert fires.
-    if ( !feq( aligned_m * aligned_minv, Matrix<T,4,4>::identity(), make_eps<T>(1.0e-6f, 1.0e-9)))
-    {
-        PyErr_SetString( PyExc_RuntimeError, "Matrices passed to appleseed.Transform are not inverses" );
-        bpy::throw_error_already_set();
-        return new Transform<T>();
-    }
-
-    return new Transform<T>( aligned_m, aligned_minv);
-}
-
-template<class T>
-UnalignedMatrix44<T> xform_get_local_to_parent( const Transform<T>* xform)
-{
-    return UnalignedMatrix44<T>( xform->get_local_to_parent());
-}
-
-template<class T>
-UnalignedMatrix44<T> xform_get_parent_to_local( const Transform<T>* xform)
-{
-    return UnalignedMatrix44<T>( xform->get_parent_to_local());
-}
 
 template<class T>
 void bind_typed_transform( const char* class_name)
 {
-    bpy::class_<Transform<T> >( class_name)
-        .def( "__init__", bpy::make_constructor( create_from_matrix<T>))
-        .def( "__init__", bpy::make_constructor( create_from_matrix_with_inv<T>))
+    bpy::class_<UnalignedTransform44<T> >( class_name)
+        .def( bpy::init<const UnalignedMatrix44<T>&>())
+        .def( bpy::init<const UnalignedMatrix44<T>&, const UnalignedMatrix44<T>&>())
+        .def( "identity", &UnalignedTransform44<T>::identity).staticmethod( "identity")
 
-        .def( "identity", &Transform<T>::identity).staticmethod( "identity")
-
-        .def( "get_local_to_parent", &xform_get_local_to_parent<T>)
-        .def( "get_parent_to_local", &xform_get_parent_to_local<T>)
+        .def( "get_local_to_parent", &UnalignedTransform44<T>::get_local_to_parent, bpy::return_value_policy<bpy::copy_const_reference>())
+        .def( "get_parent_to_local", &UnalignedTransform44<T>::get_parent_to_local, bpy::return_value_policy<bpy::copy_const_reference>())
 
         .def( bpy::self * bpy::self)
 
-        // a bug in boost::python, this needs
         // the extra self_ns qualification
         .def( bpy::self_ns::str( bpy::self))
         .def( bpy::self_ns::repr( bpy::self))
         ;
 }
 
-bpy::tuple transform_seq_get_transform( const TransformSequence& seq, std::size_t index)
+void transform_seq_set_transform( TransformSequence* seq, const double time, const UnalignedTransform44<float>& transform)
+{
+    Transformd xform( transform.get_local_to_parent().as_foundation_matrix(),
+                        transform.get_parent_to_local().as_foundation_matrix());
+
+    seq->set_transform( time, xform);
+}
+
+bpy::tuple transform_seq_get_transform( const TransformSequence* seq, std::size_t index)
 {
     double time;
     Transformd xform;
-    seq.get_transform( index, time, xform);
-    return bpy::make_tuple( time, xform);
+    seq->get_transform( index, time, xform);
+    return bpy::make_tuple( time, UnalignedTransform44<float>(xform));
 }
 
-Transformd transform_seq_get_earliest( const TransformSequence& seq)
+UnalignedTransform44<float> transform_seq_get_earliest( const TransformSequence* seq)
 {
-    return seq.earliest_transform();
+    Transformd xform( seq->earliest_transform());
+    return UnalignedTransform44<float>( xform);
 }
 
 } // detail
@@ -117,13 +90,12 @@ void bind_transform()
     detail::bind_typed_transform<double>( "Transformd");
 
     bpy::class_<TransformSequence, boost::noncopyable>( "TransformSequence", bpy::no_init)
-        .def( "clear", &TransformSequence::clear)
-        .def( "set_transform", &TransformSequence::set_transform)
+        .def( "set_transform", &detail::transform_seq_set_transform)
         .def( "get_transform", &detail::transform_seq_get_transform)
         .def( "earliest_transform", &detail::transform_seq_get_earliest)
+
         .def( "empty", &TransformSequence::empty)
         .def( "size", &TransformSequence::size)
-        .def( "prepare", &TransformSequence::prepare)
-        .def( "evaluate", &TransformSequence::evaluate)
+        .def( "clear", &TransformSequence::clear)
         ;
 }

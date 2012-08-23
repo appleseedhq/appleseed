@@ -154,21 +154,6 @@ struct matrix_indexer
 };
 
 template<class T>
-UnalignedMatrix44<T> invert_matrix( const UnalignedMatrix44<T>& mat)
-{
-    try
-    {
-        return UnalignedMatrix44<T>( inverse( mat.as_foundation_matrix()));
-    } catch( ExceptionSingularMatrix&)
-    {
-        PyErr_SetString( PyExc_RuntimeError, "Singular matrix in appleseed.Matrix.inverse" );
-        boost::python::throw_error_already_set();
-    }
-
-    return UnalignedMatrix44<T>();
-}
-
-template<class T>
 UnalignedMatrix44<T> transpose_matrix( const UnalignedMatrix44<T>& mat)
 {
     return UnalignedMatrix44<T>( transpose( mat.as_foundation_matrix()));
@@ -212,7 +197,6 @@ void bind_typed_matrix4( const char *class_name)
 
         .def( bpy::self * bpy::self)
         .def( bpy::self * Vector<T,4>())
-        .def( bpy::self * Vector<T,3>())
 
         // a bug in boost::python, this needs
         // the extra self_ns qualification

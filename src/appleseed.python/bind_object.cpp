@@ -33,6 +33,7 @@
 #include "foundation/utility/searchpaths.h"
 
 #include "bind_typed_entity_containers.h"
+#include "unaligned_transform44.h"
 #include "dict2dict.h"
 
 namespace bpy = boost::python;
@@ -83,6 +84,11 @@ auto_release_ptr<ObjectInstance> create_obj_instance( const std::string& name, c
     return create_obj_instance_with_back_mat( name, params, obj, transform, front_materials, bpy::list());
 }
 
+UnalignedTransform44<float> obj_inst_get_transform( const ObjectInstance *obj)
+{
+    return UnalignedTransform44<float>( obj->get_transform());
+}
+
 } // detail
 
 void bind_object()
@@ -98,7 +104,7 @@ void bind_object()
         .def( "__init__", bpy::make_constructor( detail::create_obj_instance_with_back_mat))
 
         .def( "get_object", &ObjectInstance::get_object, bpy::return_value_policy<bpy::reference_existing_object>())
-        .def( "get_transform", &ObjectInstance::get_transform, bpy::return_value_policy<bpy::copy_const_reference>())
+        .def( "get_transform", &detail::obj_inst_get_transform)
         .def( "get_parent_bbox", &ObjectInstance::get_parent_bbox, bpy::return_value_policy<bpy::copy_const_reference>())
         ;
 

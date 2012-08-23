@@ -79,6 +79,7 @@ set (sources
     module.cpp
     tile_callback_factory.h
     unaligned_matrix44.h
+    unaligned_transform44.h
 )
 list (APPEND appleseed.python_sources
     ${sources}

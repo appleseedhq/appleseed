@@ -31,6 +31,7 @@
 #include "renderer/api/light.h"
 
 #include "bind_typed_entity_containers.h"
+#include "unaligned_transform44.h"
 #include "dict2dict.h"
 
 namespace bpy = boost::python;
@@ -58,14 +59,24 @@ auto_release_ptr<Light> create_light( const std::string& light_type,
     return auto_release_ptr<Light>();
 }
 
+UnalignedTransform44<float> light_get_transform(const Light *l)
+{
+    return UnalignedTransform44<float>(l->get_transform());
+}
+
+void light_set_transform(Light *l, const UnalignedTransform44<float>& xform)
+{
+    l->set_transform(xform.as_foundation_transform<double>());
+}
+
 } // detail
 
 void bind_light()
 {
     bpy::class_<Light, auto_release_ptr<Light>, bpy::bases<ConnectableEntity>, boost::noncopyable>( "Light", bpy::no_init)
         .def( "__init__", bpy::make_constructor( detail::create_light))
-        .def( "set_transform", &Light::set_transform)
-        .def( "get_transform", &Light::get_transform, bpy::return_value_policy<bpy::copy_const_reference>())
+        .def( "set_transform", &detail::light_set_transform)
+        .def( "get_transform", &detail::light_get_transform)
         ;
 
     bind_typed_entity_vector<Light>( "LightContainer");
