@@ -39,7 +39,6 @@
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
-#include "renderer/utility/bbox.h"
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
@@ -71,11 +70,8 @@ AOVoxelTree::AOVoxelTree(
     // Print a progress message.
     RENDERER_LOG_INFO("building ambient occlusion voxel tree...");
 
-    // Compute the bounding box of the scene, in world space.
-    const GAABB3 scene_bbox =
-        compute_parent_bbox<GAABB3>(
-            scene.assembly_instances().begin(),
-            scene.assembly_instances().end());
+    // Compute the bounding box of the scene.
+    const GAABB3 scene_bbox = scene.compute_bbox();
 
     // Compute the maximum extent of a leaf, in world space.
     const GScalar max_extent = max_extent_fraction * max_value(scene_bbox.extent());

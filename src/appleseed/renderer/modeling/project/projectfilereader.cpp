@@ -72,7 +72,6 @@
 #include "renderer/modeling/texture/itexturefactory.h"
 #include "renderer/modeling/texture/texture.h"
 #include "renderer/modeling/texture/texturefactoryregistrar.h"
-#include "renderer/utility/bbox.h"
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
@@ -2100,17 +2099,14 @@ namespace
         virtual void end_element() override
         {
             // Compute the bounding box of the scene.
-            const GAABB3 bbox =
-                compute_parent_bbox<GAABB3>(
-                    m_scene->assembly_instances().begin(),
-                    m_scene->assembly_instances().end());
+            const GAABB3 scene_bbox = m_scene->compute_bbox();
 
             // Print the bounding box of the scene.
-            if (bbox.is_valid())
+            if (scene_bbox.is_valid())
             {
                 RENDERER_LOG_INFO("scene bounding box: (%f, %f, %f)-(%f, %f, %f).",
-                    bbox.min[0], bbox.min[1], bbox.min[2],
-                    bbox.max[0], bbox.max[1], bbox.max[2]);
+                    scene_bbox.min[0], scene_bbox.min[1], scene_bbox.min[2],
+                    scene_bbox.max[0], scene_bbox.max[1], scene_bbox.max[2]);
             }
             else
             {
