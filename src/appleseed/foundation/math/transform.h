@@ -290,14 +290,42 @@ template <typename T>
 template <typename U>
 inline Vector<U, 3> Transform<T>::vector_to_local(const Vector<U, 3>& v) const
 {
-    return m_parent_to_local * Vector<T, 3>(v);
+    Vector<U, 3> res;
+
+    res.x = static_cast<U>(m_parent_to_local[ 0] * T(v.x) +
+                           m_parent_to_local[ 1] * T(v.y) +
+                           m_parent_to_local[ 2] * T(v.z));
+
+    res.y = static_cast<U>(m_parent_to_local[ 4] * T(v.x) +
+                           m_parent_to_local[ 5] * T(v.y) +
+                           m_parent_to_local[ 6] * T(v.z));
+
+    res.z = static_cast<U>(m_parent_to_local[ 8] * T(v.x) +
+                           m_parent_to_local[ 9] * T(v.y) +
+                           m_parent_to_local[10] * T(v.z));
+
+    return res;
 }
 
 template <typename T>
 template <typename U>
 inline Vector<U, 3> Transform<T>::vector_to_parent(const Vector<U, 3>& v) const
 {
-    return m_local_to_parent * Vector<T, 3>(v);
+    Vector<U, 3> res;
+
+    res.x = static_cast<U>(m_local_to_parent[ 0] * T(v.x) +
+                           m_local_to_parent[ 1] * T(v.y) +
+                           m_local_to_parent[ 2] * T(v.z));
+
+    res.y = static_cast<U>(m_local_to_parent[ 4] * T(v.x) +
+                           m_local_to_parent[ 5] * T(v.y) +
+                           m_local_to_parent[ 6] * T(v.z));
+
+    res.z = static_cast<U>(m_local_to_parent[ 8] * T(v.x) +
+                           m_local_to_parent[ 9] * T(v.y) +
+                           m_local_to_parent[10] * T(v.z));
+
+    return res;
 }
 
 template <typename T>
