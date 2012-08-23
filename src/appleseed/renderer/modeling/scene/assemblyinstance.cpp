@@ -35,9 +35,6 @@
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/utility/bbox.h"
 
-// Standard headers.
-#include <cstddef>
-
 using namespace foundation;
 using namespace std;
 
@@ -83,29 +80,24 @@ void AssemblyInstance::on_frame_end(const Project& project)
 {
 }
 
-GAABB3 AssemblyInstance::compute_parent_bbox() const
+GAABB3 AssemblyInstance::compute_local_bbox() const
 {
-    const GAABB3 object_instances_bbox =
+    GAABB3 bbox =
         get_parent_bbox<GAABB3>(
             m_assembly.object_instances().begin(),
             m_assembly.object_instances().end());
 
-    if (m_transform_sequence.empty())
-        return object_instances_bbox;
-
-    GAABB3 bbox;
-    bbox.invalidate();
-
-    for (size_t i = 0; i < m_transform_sequence.size(); ++i)
-    {
-        double time;
-        Transformd transform;
-        m_transform_sequence.get_transform(i, time, transform);
-
-        bbox.insert(transform.to_parent(object_instances_bbox));
-    }
+    bbox.insert(
+        renderer::compute_parent_bbox<GAABB3>(
+            m_assembly.assembly_instances().begin(),
+            m_assembly.assembly_instances().end()));
 
     return bbox;
+}
+
+GAABB3 AssemblyInstance::compute_parent_bbox() const
+{
+    return m_transform_sequence.to_parent(compute_local_bbox());
 }
 
 

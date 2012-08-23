@@ -52,8 +52,8 @@ auto_release_ptr<Assembly> create_assembly_with_params( const std::string& name,
 }
 
 auto_release_ptr<AssemblyInstance> create_assembly_instance( const std::string& name,
-                                                                const bpy::dict& params,
-                                                                const Assembly *assembly)
+                                                             const bpy::dict& params,
+                                                             const Assembly *assembly)
 {
     return AssemblyInstanceFactory::create( name.c_str(), bpy_dict_to_param_array( params), *assembly);
 }
@@ -88,6 +88,7 @@ void bind_assembly()
         .def( "__init__", bpy::make_constructor( detail::create_assembly_instance))
         .def( "get_assembly", &AssemblyInstance::get_assembly, bpy::return_value_policy<bpy::reference_existing_object>())
         .def( "transform_sequence", detail::assembly_instance_get_transform_sequence, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def( "compute_local_bbox", &AssemblyInstance::compute_local_bbox)
         .def( "compute_parent_bbox", &AssemblyInstance::compute_parent_bbox)
         ;
 

@@ -74,6 +74,9 @@ class DLLSYMBOL AssemblyInstance
     // This method is called once after rendering each frame.
     void on_frame_end(const Project& project);
 
+    // Return the local space bounding box of the instance.
+    GAABB3 compute_local_bbox() const;
+
     // Return the parent space bounding box of the instance.
     GAABB3 compute_parent_bbox() const;
 
