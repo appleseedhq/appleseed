@@ -138,4 +138,36 @@ auto_release_ptr<DummyEntity> DummyEntityFactory::create(const char* name)
     return auto_release_ptr<DummyEntity>(new DummyEntity(name));
 }
 
+
+//
+// BoundingBoxObject class implementation.
+//
+
+BoundingBoxObject::BoundingBoxObject(const char* name, const GAABB3& bbox)
+  : Object(name, ParamArray())
+  , m_bbox(bbox)
+  , m_lazy_region_kit(&m_region_kit)
+{
+}
+
+void BoundingBoxObject::release()
+{
+    delete this;
+}
+
+const char* BoundingBoxObject::get_model() const
+{
+    return "boundingbox_object";
+}
+
+GAABB3 BoundingBoxObject::compute_local_bbox() const
+{
+    return m_bbox;
+}
+
+Lazy<RegionKit>& BoundingBoxObject::get_region_kit()
+{
+    return m_lazy_region_kit;
+}
+
 }   // namespace renderer

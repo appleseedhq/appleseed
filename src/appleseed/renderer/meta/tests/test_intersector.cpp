@@ -27,7 +27,7 @@
 //
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/intersection/tracecontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
@@ -35,57 +35,27 @@
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/object/object.h"
-#include "renderer/modeling/object/regionkit.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
+#include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
+#include "renderer/utility/paramarray.h"
+#include "renderer/utility/testutils.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/matrix.h"
+#include "foundation/math/transform.h"
+#include "foundation/math/vector.h"
 #include "foundation/utility/containers/specializedarrays.h"
-#include "foundation/utility/lazy.h"
+#include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/test.h"
+
+using namespace foundation;
+using namespace renderer;
 
 TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
 {
-    using namespace foundation;
-    using namespace renderer;
-
-    class BoundingBoxObject
-      : public Object
-    {
-      public:
-        BoundingBoxObject()
-          : Object("boundingbox_object", ParamArray())
-          , m_lazy_region_kit(&m_region_kit)
-        {
-        }
-
-        virtual void release()
-        {
-            delete this;
-        }
-
-        virtual const char* get_model() const
-        {
-            return "boundingbox_object";
-        }
-
-        virtual GAABB3 compute_local_bbox() const
-        {
-            return GAABB3(GAABB3::VectorType(-1.0), GAABB3::VectorType(1.0));
-        }
-
-        virtual Lazy<RegionKit>& get_region_kit()
-        {
-            return m_lazy_region_kit;
-        }
-
-      private:
-        RegionKit       m_region_kit;
-        Lazy<RegionKit> m_lazy_region_kit;
-    };
-
     struct TestScene
     {
         auto_release_ptr<Scene> m_scene;
@@ -96,8 +66,10 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
             auto_release_ptr<Assembly> assembly(
                 AssemblyFactory::create("assembly", ParamArray()));
 
-            BoundingBoxObject* object = new BoundingBoxObject();
-
+            BoundingBoxObject* object =
+                new BoundingBoxObject(
+                    "object",
+                    GAABB3(GVector3(-1.0), GVector3(1.0)));
             assembly->objects().insert(auto_release_ptr<Object>(object));
 
             assembly->object_instances().insert(

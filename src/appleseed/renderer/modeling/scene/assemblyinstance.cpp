@@ -82,15 +82,19 @@ void AssemblyInstance::on_frame_end(const Project& project)
 
 GAABB3 AssemblyInstance::compute_local_bbox() const
 {
+    const ObjectInstanceContainer& object_instances = m_assembly.object_instances();
+
     GAABB3 bbox =
         get_parent_bbox<GAABB3>(
-            m_assembly.object_instances().begin(),
-            m_assembly.object_instances().end());
+            object_instances.begin(),
+            object_instances.end());
+
+    const AssemblyInstanceContainer& assembly_instances = m_assembly.assembly_instances();
 
     bbox.insert(
         renderer::compute_parent_bbox<GAABB3>(
-            m_assembly.assembly_instances().begin(),
-            m_assembly.assembly_instances().end()));
+            assembly_instances.begin(),
+            assembly_instances.end()));
 
     return bbox;
 }

@@ -28,7 +28,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/object/triangle.h"
 #include "renderer/modeling/scene/assembly.h"
@@ -36,6 +35,7 @@
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/utility/paramarray.h"
+#include "renderer/utility/testutils.h"
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
@@ -74,11 +74,10 @@ TEST_SUITE(Renderer_Modeling_Scene_Scene)
             AssemblyFactory::create("assembly", ParamArray()));
 
         // Create an object.
-        MeshObject* object = MeshObjectFactory::create("object", ParamArray()).release();
-        object->push_vertex(GVector3(-1.0f, -1.0f, -1.0f));
-        object->push_vertex(GVector3( 1.0f,  1.0f,  1.0f));
-        object->push_vertex(GVector3( 1.0f, -1.0f,  1.0f));
-        object->push_triangle(Triangle(0, 1, 2, 0, 0, 0, 0));
+        BoundingBoxObject* object =
+            new BoundingBoxObject(
+                "object",
+                GAABB3(GVector3(-1.0), GVector3(1.0)));
         assembly->objects().insert(auto_release_ptr<Object>(object));
 
         // Create an instance of the object.

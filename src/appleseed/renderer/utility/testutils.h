@@ -32,12 +32,16 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/entity/entity.h"
+#include "renderer/modeling/object/object.h"
+#include "renderer/modeling/object/regionkit.h"
 #include "renderer/modeling/project/project.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/image/color.h"
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
+#include "foundation/utility/lazy.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -90,7 +94,7 @@ class DLLSYMBOL DummyEntity
   : public Entity
 {
   public:
-    virtual void release();
+    virtual void release() override;
 
   private:
     friend class DummyEntityFactory;
@@ -99,9 +103,32 @@ class DLLSYMBOL DummyEntity
 };
 
 class DLLSYMBOL DummyEntityFactory
+  : public foundation::NonCopyable
 {
   public:
     static foundation::auto_release_ptr<DummyEntity> create(const char* name);
+};
+
+class BoundingBoxObject
+  : public Object
+{
+  public:
+    BoundingBoxObject(
+        const char*                 name,
+        const GAABB3&               bbox);
+
+    virtual void release() override;
+
+    virtual const char* get_model() const override;
+
+    virtual GAABB3 compute_local_bbox() const override;
+
+    virtual foundation::Lazy<RegionKit>& get_region_kit() override;
+
+  private:
+    const GAABB3&                   m_bbox;
+    RegionKit                       m_region_kit;
+    foundation::Lazy<RegionKit>     m_lazy_region_kit;
 };
 
 }       // namespace renderer
