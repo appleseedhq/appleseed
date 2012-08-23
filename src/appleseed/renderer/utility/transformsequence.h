@@ -30,6 +30,7 @@
 #define APPLESEED_RENDERER_UTILITY_TRANSFORMSEQUENCE_H
 
 // appleseed.foundation headers.
+#include "foundation/math/aabb.h"
 #include "foundation/math/transform.h"
 
 // appleseed.main headers.
@@ -58,6 +59,12 @@ class DLLSYMBOL TransformSequence
     // Assignment operator.
     TransformSequence& operator=(const TransformSequence& rhs);
 
+    // Return true if the sequence is empty.
+    bool empty() const;
+
+    // Return the number of transforms in the sequence.
+    size_t size() const;
+
     // Remove all transforms from the sequence.
     void clear();
 
@@ -77,12 +84,6 @@ class DLLSYMBOL TransformSequence
     foundation::Transformd& earliest_transform();
     const foundation::Transformd& earliest_transform() const;
 
-    // Return true if the sequence is empty.
-    bool empty() const;
-
-    // Return the number of transforms in the sequence.
-    size_t size() const;
-
     // Prepare the sequence for quick evaluation.
     // This method must be called after new transforms have been set and
     // before any call to evaluate(). It may be called multiple times.
@@ -91,6 +92,11 @@ class DLLSYMBOL TransformSequence
 
     // Compute the transform at any given time.
     foundation::Transformd evaluate(const double time) const;
+
+    // Transform a 3D axis-aligned bounding box.
+    // If the bounding box is invalid, it is returned unmodified.
+    template <typename T>
+    foundation::AABB<T, 3> to_parent(const foundation::AABB<T, 3>& bbox) const;
 
   private:
     struct TransformKey
@@ -123,6 +129,21 @@ inline bool TransformSequence::empty() const
 inline size_t TransformSequence::size() const
 {
     return m_size;
+}
+
+template <typename T>
+foundation::AABB<T, 3> TransformSequence::to_parent(const foundation::AABB<T, 3>& bbox) const
+{
+    if (m_size == 0 || !bbox.is_valid())
+        return bbox;
+
+    foundation::AABB<T, 3> result;
+    result.invalidate();
+
+    for (size_t i = 0; i < m_size; ++i)
+        result.insert(m_keys[i].m_transform.to_parent(bbox));
+
+    return result;
 }
 
 }       // namespace renderer
