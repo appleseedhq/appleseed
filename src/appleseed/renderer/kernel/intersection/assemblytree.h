@@ -111,18 +111,25 @@ class AssemblyTree
         }
     };
 
+    typedef std::vector<Item> ItemVector;
     typedef std::vector<foundation::AABB3d> AABBVector;
+    typedef std::vector<const Assembly*> AssemblyVector;
     typedef std::map<foundation::UniqueID, foundation::VersionID> AssemblyVersionMap;
 
     const Scene&            m_scene;
     RegionTreeContainer     m_region_trees;
     TriangleTreeContainer   m_triangle_trees;
-    std::vector<Item>       m_items;
+    ItemVector              m_items;
     AssemblyVersionMap      m_assembly_versions;
 
-    void collect_assembly_instances(AABBVector& assembly_instance_bboxes);
+    void collect_assembly_instances(
+        const AssemblyInstanceContainer&        assembly_instances,
+        const TransformSequence&                parent_transform_seq,
+        AABBVector&                             assembly_instance_bboxes);
     void rebuild_assembly_tree();
-    void store_assembly_instances_in_leaves(foundation::Statistics& statistics);
+    void store_items_in_leaves(foundation::Statistics& statistics);
+
+    void collect_unique_assemblies(AssemblyVector& assemblies) const;
     void update_child_trees();
 };
 

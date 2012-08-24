@@ -31,6 +31,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/matrix.h"
+#include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/iostreamop.h"
@@ -230,5 +231,93 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
             ExpectedSecondTransform);
 
         EXPECT_FEQ(interpolator.evaluate(0.5), sequence.evaluate(2.0));
+    }
+
+    TEST_CASE(CompositionOperator_GivenTwoEmptyTransformSequences_ReturnsEmptyTransformSequence)
+    {
+        TransformSequence seq1, seq2;
+
+        const TransformSequence result = seq1 * seq2;
+
+        EXPECT_TRUE(result.empty());
+    }
+
+    TEST_CASE(CompositionOperator_GivenEmptyAndNonEmptyTransformSequences_ReturnsNonEmptyTransformSequence)
+    {
+        TransformSequence seq1;
+        seq1.set_transform(1.0, Transformd(Matrix4d::translation(Vector3d(1.0, 2.0, 3.0))));
+
+        TransformSequence seq2;
+
+        const TransformSequence result = seq1 * seq2;
+
+        ASSERT_EQ(1, result.size());
+
+        double time;
+        Transformd transform;
+        result.get_transform(0, time, transform);
+
+        EXPECT_EQ(1.0, time);
+        EXPECT_EQ(Transformd(Matrix4d::translation(Vector3d(1.0, 2.0, 3.0))), transform);
+    }
+
+    TEST_CASE(CompositionOperator_GivenTwoNonEmptyTransformSequencesWithCoincidentTimes_ReturnsTransformSequenceWithSameNumberOfTransforms)
+    {
+        TransformSequence seq1;
+        seq1.set_transform(1.0, Transformd(Matrix4d::rotation(Vector3d(1.0, 0, 0), HalfPi)));
+
+        TransformSequence seq2;
+        seq2.set_transform(1.0, Transformd(Matrix4d::translation(Vector3d(1.0, 2.0, 3.0))));
+
+        const TransformSequence result = seq1 * seq2;
+
+        ASSERT_EQ(1, result.size());
+
+        double time;
+        Transformd transform;
+        result.get_transform(0, time, transform);
+
+        EXPECT_EQ(1.0, time);
+        EXPECT_EQ(
+              Transformd(Matrix4d::rotation(Vector3d(1.0, 0, 0), HalfPi))
+            * Transformd(Matrix4d::translation(Vector3d(1.0, 2.0, 3.0))),
+            transform);
+    }
+
+    TEST_CASE(CompositionOperator_GivenTwoNonEmptyTransformSequencesWithDistinctTimes_ReturnsTransformSequenceWithCumulatedNumberOfTransforms)
+    {
+        TransformSequence seq1;
+        seq1.set_transform(1.0, Transformd(Matrix4d::rotation(Vector3d(1.0, 0, 0), HalfPi)));
+
+        TransformSequence seq2;
+        seq2.set_transform(2.0, Transformd(Matrix4d::translation(Vector3d(1.0, 2.0, 3.0))));
+
+        const TransformSequence result = seq1 * seq2;
+
+        ASSERT_EQ(2, result.size());
+
+        {
+            double time;
+            Transformd transform;
+            result.get_transform(0, time, transform);
+
+            EXPECT_EQ(1.0, time);
+            EXPECT_EQ(
+                  Transformd(Matrix4d::rotation(Vector3d(1.0, 0, 0), HalfPi))
+                * Transformd(Matrix4d::translation(Vector3d(1.0, 2.0, 3.0))),
+                transform);
+        }
+
+        {
+            double time;
+            Transformd transform;
+            result.get_transform(1, time, transform);
+
+            EXPECT_EQ(2.0, time);
+            EXPECT_EQ(
+                  Transformd(Matrix4d::rotation(Vector3d(1.0, 0, 0), HalfPi))
+                * Transformd(Matrix4d::translation(Vector3d(1.0, 2.0, 3.0))),
+                transform);
+        }
     }
 }
