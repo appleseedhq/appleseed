@@ -93,6 +93,9 @@ class DLLSYMBOL TransformSequence
     // Compute the transform at any given time.
     foundation::Transformd evaluate(const double time) const;
 
+    // Compose two transform sequences.
+    TransformSequence operator*(const TransformSequence& rhs) const;
+
     // Transform a 3D axis-aligned bounding box.
     // If the bounding box is invalid, it is returned unmodified.
     template <typename T>

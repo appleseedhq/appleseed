@@ -135,7 +135,6 @@ void TransformSequence::get_transform(
     double&             time,
     Transformd&         transform) const
 {
-    assert(m_size > 0);
     assert(index < m_size);
 
     time = m_keys[index].m_time;
@@ -231,6 +230,52 @@ Transformd TransformSequence::evaluate(const double time) const
     const double t = (time - begin_time) / (end_time - begin_time);
 
     return m_interpolators[begin].evaluate(t);
+}
+
+TransformSequence TransformSequence::operator*(const TransformSequence& rhs) const
+{
+    TransformSequence result;
+
+    size_t lhs_i = 0, rhs_i = 0;
+
+    while (lhs_i < m_size && rhs_i < rhs.m_size)
+    {
+        const double lhs_t = m_keys[lhs_i].m_time;
+        const double rhs_t = rhs.m_keys[rhs_i].m_time;
+
+        if (lhs_t == rhs_t)
+        {
+            result.set_transform(lhs_t, m_keys[lhs_i].m_transform * rhs.m_keys[rhs_i].m_transform);
+            ++lhs_i;
+            ++rhs_i;
+        }
+        else if (lhs_t < rhs_t)
+        {
+            result.set_transform(lhs_t, m_keys[lhs_i].m_transform * rhs.evaluate(lhs_t));
+            ++lhs_i;
+        }
+        else
+        {
+            result.set_transform(rhs_t, evaluate(rhs_t) * rhs.m_keys[rhs_i].m_transform);
+            ++rhs_i;
+        }
+    }
+
+    while (lhs_i < m_size)
+    {
+        const double lhs_t = m_keys[lhs_i].m_time;
+        result.set_transform(lhs_t, m_keys[lhs_i].m_transform * rhs.evaluate(lhs_t));
+        ++lhs_i;
+    }
+
+    while (rhs_i < rhs.m_size)
+    {
+        const double rhs_t = rhs.m_keys[rhs_i].m_time;
+        result.set_transform(rhs_t, evaluate(rhs_t) * rhs.m_keys[rhs_i].m_transform);
+        ++rhs_i;
+    }
+
+    return result;
 }
 
 }   // namespace renderer
