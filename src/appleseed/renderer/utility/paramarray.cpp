@@ -50,7 +50,7 @@ namespace
 {
     static const char* PartSeparator = ".";
 
-    const ParamArray empty_param_array;
+    const ParamArray m_empty_param_array;
 }
 
 ParamArray::ParamArray()
@@ -133,7 +133,7 @@ const ParamArray& ParamArray::child(const char* name) const
 
     return dictionaries().exist(name)
         ? static_cast<const ParamArray&>(dictionaries().get(name))
-        : empty_param_array;
+        : m_empty_param_array;
 }
 
 namespace
@@ -148,13 +148,8 @@ namespace
         for (const_each<DictionaryDictionary> i = source.dictionaries(); i; ++i)
         {
             if (dest.dictionaries().exist(i->name()))
-            {
                 merge_dictionaries(dest.dictionary(i->name()), i->value());
-            }
-            else
-            {
-                dest.insert(i->name(), i->value());
-            }
+            else dest.insert(i->name(), i->value());
         }
     }
 }
