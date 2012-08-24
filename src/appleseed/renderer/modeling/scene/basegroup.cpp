@@ -39,10 +39,19 @@ struct BaseGroup::Impl
     TextureInstanceContainer    m_texture_instances;
     AssemblyContainer           m_assemblies;
     AssemblyInstanceContainer   m_assembly_instances;
+
+    explicit Impl(Entity* parent)
+      : m_colors(parent)
+      , m_textures(parent)
+      , m_texture_instances(parent)
+      , m_assemblies(parent)
+      , m_assembly_instances(parent)
+    {
+    }
 };
 
-BaseGroup::BaseGroup()
-  : impl(new Impl())
+BaseGroup::BaseGroup(Entity* parent)
+  : impl(new Impl(parent))
 {
 }
 

@@ -225,8 +225,9 @@ EntityVector::const_iterator::operator->() const
 // EntityVector class implementation.
 //
 
-EntityVector::EntityVector()
+EntityVector::EntityVector(Entity* parent)
   : impl(new Impl())
+  , m_parent(parent)
 {
 }
 
@@ -242,6 +243,12 @@ void EntityVector::swap(EntityVector& rhs)
     impl->m_storage.swap(rhs.impl->m_storage);
     impl->m_id_index.swap(rhs.impl->m_id_index);
     impl->m_name_index.swap(rhs.impl->m_name_index);
+
+    for (const_each<Impl::Storage> i = impl->m_storage; i; ++i)
+        (*i)->set_parent(m_parent);
+
+    for (const_each<Impl::Storage> i = rhs.impl->m_storage; i; ++i)
+        (*i)->set_parent(rhs.m_parent);
 }
 
 void EntityVector::clear()
@@ -279,6 +286,9 @@ size_t EntityVector::insert(auto_release_ptr<Entity> entity)
     impl->m_storage.push_back(entity_ptr);
     impl->m_id_index[entity_ptr->get_uid()] = entity_index;
     impl->m_name_index[entity_ptr->get_name()] = entity_index;
+
+    // Link the entity to its parent.
+    entity_ptr->set_parent(m_parent);
 
     return entity_index;
 }

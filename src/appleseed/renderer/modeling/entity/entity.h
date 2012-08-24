@@ -61,10 +61,21 @@ class DLLSYMBOL Entity
         const foundation::UniqueID      class_uid);
     Entity(
         const foundation::UniqueID      class_uid,
+        Entity*                         parent);
+    Entity(
+        const foundation::UniqueID      class_uid,
+        const ParamArray&               params);
+    Entity(
+        const foundation::UniqueID      class_uid,
+        Entity*                         parent,
         const ParamArray&               params);
 
     // Return the unique ID of this class of entities.
     foundation::UniqueID get_class_uid() const;
+
+    // Set/get the parent of this entity.
+    void set_parent(Entity* parent);
+    Entity* get_parent() const;
 
     // Set/get the name of this entity.
     void set_name(const char* name);
@@ -88,6 +99,7 @@ class DLLSYMBOL Entity
     Impl* impl;
 
     const foundation::UniqueID          m_class_uid;
+    Entity*                             m_parent;
     ParamArray                          m_params;
     size_t                              m_render_layer;
 
@@ -103,6 +115,16 @@ class DLLSYMBOL Entity
 inline foundation::UniqueID Entity::get_class_uid() const
 {
     return m_class_uid;
+}
+
+inline void Entity::set_parent(Entity* parent)
+{
+    m_parent = parent;
+}
+
+inline Entity* Entity::get_parent() const
+{
+    return m_parent;
 }
 
 inline ParamArray& Entity::get_parameters()

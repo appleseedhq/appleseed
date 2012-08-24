@@ -60,6 +60,17 @@ struct Assembly::Impl
     LightContainer              m_lights;
     ObjectContainer             m_objects;
     ObjectInstanceContainer     m_object_instances;
+
+    explicit Impl(Entity* parent)
+      : m_bsdfs(parent)
+      , m_edfs(parent)
+      , m_surface_shaders(parent)
+      , m_materials(parent)
+      , m_lights(parent)
+      , m_objects(parent)
+      , m_object_instances(parent)
+    {
+    }
 };
 
 namespace
@@ -71,7 +82,8 @@ Assembly::Assembly(
     const char*         name,
     const ParamArray&   params)
   : Entity(g_class_uid, params)
-  , impl(new Impl())
+  , BaseGroup(this)
+  , impl(new Impl(this))
 {
     set_name(name);
 

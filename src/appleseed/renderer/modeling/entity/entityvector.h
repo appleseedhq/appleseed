@@ -149,7 +149,7 @@ class DLLSYMBOL EntityVector
     };
 
     // Constructor.
-    EntityVector();
+    explicit EntityVector(Entity* parent = 0);
 
     // Destructor.
     ~EntityVector();
@@ -194,6 +194,8 @@ class DLLSYMBOL EntityVector
   private:
     struct Impl;
     Impl* impl;
+
+    Entity* m_parent;
 };
 
 inline void swap(EntityVector& lhs, EntityVector& rhs)
@@ -242,6 +244,9 @@ class TypedEntityVector
         const value_type& operator*() const;
         const value_type* operator->() const;
     };
+
+    // Constructor.
+    explicit TypedEntityVector(Entity* parent = 0);
 
     // Insert an entity into the container and return its index.
     size_t insert(foundation::auto_release_ptr<T> entity);
@@ -311,6 +316,12 @@ inline const T* TypedEntityVector<T>::const_iterator::operator->() const
 //
 // TypedEntityVector class implementation.
 //
+
+template <typename T>
+inline TypedEntityVector<T>::TypedEntityVector(Entity* parent)
+  : EntityVector(parent)
+{
+}
 
 template <typename T>
 inline size_t TypedEntityVector<T>::insert(foundation::auto_release_ptr<T> entity)

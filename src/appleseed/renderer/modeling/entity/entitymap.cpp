@@ -222,8 +222,9 @@ EntityMap::const_iterator::operator->() const
 // EntityMap class implementation.
 //
 
-EntityMap::EntityMap()
+EntityMap::EntityMap(Entity* parent)
   : impl(new Impl())
+  , m_parent(parent)
 {
 }
 
@@ -238,6 +239,12 @@ void EntityMap::swap(EntityMap& rhs)
 {
     impl->m_storage.swap(rhs.impl->m_storage);
     impl->m_index.swap(rhs.impl->m_index);
+
+    for (const_each<Impl::Storage> i = impl->m_storage; i; ++i)
+        i->second->set_parent(m_parent);
+
+    for (const_each<Impl::Storage> i = rhs.impl->m_storage; i; ++i)
+        i->second->set_parent(rhs.m_parent);
 }
 
 void EntityMap::clear()
@@ -272,6 +279,9 @@ void EntityMap::insert(auto_release_ptr<Entity> entity)
     // Insert the entity into the container.
     impl->m_storage[entity_ptr->get_uid()] = entity_ptr;
     impl->m_index[entity_ptr->get_name()] = entity_ptr;
+
+    // Link the entity to its parent.
+    entity_ptr->set_parent(m_parent);
 }
 
 void EntityMap::remove(const UniqueID id)
