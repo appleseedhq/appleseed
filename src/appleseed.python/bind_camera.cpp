@@ -39,40 +39,40 @@ using namespace renderer;
 namespace detail
 {
 
-auto_release_ptr<Camera> create_camera( const std::string& camera_type, const std::string& name, const bpy::dict& params)
+auto_release_ptr<Camera> create_camera(const std::string& camera_type, const std::string& name, const bpy::dict& params)
 {
     CameraFactoryRegistrar factories;
-    const ICameraFactory* f = factories.lookup( camera_type.c_str());
+    const ICameraFactory* f = factories.lookup(camera_type.c_str());
 
     if (!f)
     {
         std::string error = "Camera type ";
         error += camera_type;
         error += " not found";
-        PyErr_SetString( PyExc_RuntimeError, error.c_str() );
+        PyErr_SetString(PyExc_RuntimeError, error.c_str() );
         bpy::throw_error_already_set();
     }
 
-    return f->create( name.c_str(), bpy_dict_to_param_array( params));
+    return f->create(name.c_str(), bpy_dict_to_param_array(params));
 }
 
-TransformSequence* camera_get_transform_sequence( Camera* cam)
+TransformSequence* camera_get_transform_sequence(Camera* cam)
 {
-    return &( cam->transform_sequence());
+    return &(cam->transform_sequence());
 }
 
 } // detail
 
 void bind_camera()
 {
-    bpy::class_<Camera, auto_release_ptr<Camera>, bpy::bases<Entity>, boost::noncopyable>( "Camera", bpy::no_init)
-        .def( "__init__", bpy::make_constructor( detail::create_camera))
-        .def( "get_model", &Camera::get_model)
-        .def( "transform_sequence", detail::camera_get_transform_sequence, bpy::return_value_policy<bpy::reference_existing_object>())
-        .def( "get_film_dimensions", &Camera::get_film_dimensions, bpy::return_value_policy<bpy::copy_const_reference>())
-        .def( "get_focal_length", &Camera::get_focal_length)
-        .def( "get_shutter_open_time", &Camera::get_shutter_open_time)
-        .def( "get_shutter_close_time", &Camera::get_shutter_close_time)
-        .def( "get_shutter_middle_time", &Camera::get_shutter_middle_time)
+    bpy::class_<Camera, auto_release_ptr<Camera>, bpy::bases<Entity>, boost::noncopyable>("Camera", bpy::no_init)
+        .def("__init__", bpy::make_constructor(detail::create_camera))
+        .def("get_model", &Camera::get_model)
+        .def("transform_sequence", detail::camera_get_transform_sequence, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("get_film_dimensions", &Camera::get_film_dimensions, bpy::return_value_policy<bpy::copy_const_reference>())
+        .def("get_focal_length", &Camera::get_focal_length)
+        .def("get_shutter_open_time", &Camera::get_shutter_open_time)
+        .def("get_shutter_close_time", &Camera::get_shutter_close_time)
+        .def("get_shutter_middle_time", &Camera::get_shutter_middle_time)
         ;
 }

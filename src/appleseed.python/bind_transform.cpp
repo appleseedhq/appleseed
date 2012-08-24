@@ -31,7 +31,7 @@
 #include "renderer/utility/transformsequence.h"
 #include "foundation/utility/iostreamop.h"
 
-#include "unaligned_transform44.h"
+#include "unaligned_transformd44.h"
 
 namespace bpy = boost::python;
 using namespace foundation;
@@ -40,62 +40,94 @@ using namespace renderer;
 namespace detail
 {
 
-
-template<class T>
-void bind_typed_transform( const char* class_name)
+void transform_seq_set_transform(TransformSequence* seq, const double time, const UnalignedTransformd44& transform)
 {
-    bpy::class_<UnalignedTransform44<T> >( class_name)
-        .def( bpy::init<const UnalignedMatrix44<T>&>())
-        .def( bpy::init<const UnalignedMatrix44<T>&, const UnalignedMatrix44<T>&>())
-        .def( "identity", &UnalignedTransform44<T>::identity).staticmethod( "identity")
-
-        .def( "get_local_to_parent", &UnalignedTransform44<T>::get_local_to_parent, bpy::return_value_policy<bpy::copy_const_reference>())
-        .def( "get_parent_to_local", &UnalignedTransform44<T>::get_parent_to_local, bpy::return_value_policy<bpy::copy_const_reference>())
-
-        .def( bpy::self * bpy::self)
-
-        // the extra self_ns qualification
-        .def( bpy::self_ns::str( bpy::self))
-        .def( bpy::self_ns::repr( bpy::self))
-        ;
-}
-
-void transform_seq_set_transform( TransformSequence* seq, const double time, const UnalignedTransform44<float>& transform)
-{
-    Transformd xform( transform.get_local_to_parent().as_foundation_matrix(),
+    Transformd xform(transform.get_local_to_parent().as_foundation_matrix(),
                         transform.get_parent_to_local().as_foundation_matrix());
 
-    seq->set_transform( time, xform);
+    seq->set_transform(time, xform);
 }
 
-bpy::tuple transform_seq_get_transform( const TransformSequence* seq, std::size_t index)
+bpy::tuple transform_seq_get_transform(const TransformSequence* seq, std::size_t index)
 {
     double time;
     Transformd xform;
-    seq->get_transform( index, time, xform);
-    return bpy::make_tuple( time, UnalignedTransform44<float>(xform));
+    seq->get_transform(index, time, xform);
+    return bpy::make_tuple(time, UnalignedTransformd44(xform));
 }
 
-UnalignedTransform44<float> transform_seq_get_earliest( const TransformSequence* seq)
+UnalignedTransformd44 transform_seq_get_earliest(const TransformSequence* seq)
 {
-    Transformd xform( seq->earliest_transform());
-    return UnalignedTransform44<float>( xform);
+    Transformd xform(seq->earliest_transform());
+    return UnalignedTransformd44(xform);
 }
 
 } // detail
 
 void bind_transform()
 {
-    detail::bind_typed_transform<float>( "Transformf");
-    detail::bind_typed_transform<double>( "Transformd");
+    Vector<float, 3> (UnalignedTransformd44::*point_to_localf)(const Vector<float, 3>&) const = &UnalignedTransformd44::point_to_local;
+    Vector<double, 3> (UnalignedTransformd44::*point_to_locald)(const Vector<double, 3>&) const = &UnalignedTransformd44::point_to_local;
 
-    bpy::class_<TransformSequence, boost::noncopyable>( "TransformSequence", bpy::no_init)
-        .def( "set_transform", &detail::transform_seq_set_transform)
-        .def( "get_transform", &detail::transform_seq_get_transform)
-        .def( "earliest_transform", &detail::transform_seq_get_earliest)
+    Vector<float, 3> (UnalignedTransformd44::*point_to_parentf)(const Vector<float, 3>&) const= &UnalignedTransformd44::point_to_parent;
+    Vector<double, 3> (UnalignedTransformd44::*point_to_parentd)(const Vector<double, 3>&) const= &UnalignedTransformd44::point_to_parent;
 
-        .def( "empty", &TransformSequence::empty)
-        .def( "size", &TransformSequence::size)
-        .def( "clear", &TransformSequence::clear)
+    Vector<float, 3> (UnalignedTransformd44::*vector_to_localf)(const Vector<float, 3>&) const= &UnalignedTransformd44::vector_to_local;
+    Vector<double, 3> (UnalignedTransformd44::*vector_to_locald)(const Vector<double, 3>&) const= &UnalignedTransformd44::vector_to_local;
+
+    Vector<float, 3> (UnalignedTransformd44::*vector_to_parentf)(const Vector<float, 3>&) const = &UnalignedTransformd44::vector_to_parent;
+    Vector<double, 3> (UnalignedTransformd44::*vector_to_parentd)(const Vector<double, 3>&) const = &UnalignedTransformd44::vector_to_parent;
+
+    Vector<float, 3> (UnalignedTransformd44::*normal_to_localf)(const Vector<float, 3>&) const = &UnalignedTransformd44::normal_to_local;
+    Vector<double, 3> (UnalignedTransformd44::*normal_to_locald)(const Vector<double, 3>&) const = &UnalignedTransformd44::normal_to_local;
+
+    Vector<float, 3> (UnalignedTransformd44::*normal_to_parentf)(const Vector<float, 3>&) const = &UnalignedTransformd44::normal_to_parent;
+    Vector<double, 3> (UnalignedTransformd44::*normal_to_parentd)(const Vector<double, 3>&) const = &UnalignedTransformd44::normal_to_parent;
+
+    bpy::class_<UnalignedTransformd44 >("Transformd")
+        .def(bpy::init<const UnalignedMatrix44<double>&>())
+        .def(bpy::init<const UnalignedMatrix44<double>&, const UnalignedMatrix44<double>&>())
+
+        .def(bpy::init<const UnalignedMatrix44<float>&>())
+        .def(bpy::init<const UnalignedMatrix44<float>&, const UnalignedMatrix44<float>&>())
+
+        .def("identity", &UnalignedTransformd44::identity).staticmethod("identity")
+
+        .def("get_local_to_parent", &UnalignedTransformd44::get_local_to_parent, bpy::return_value_policy<bpy::copy_const_reference>())
+        .def("get_parent_to_local", &UnalignedTransformd44::get_parent_to_local, bpy::return_value_policy<bpy::copy_const_reference>())
+
+        .def(bpy::self * bpy::self)
+
+        .def("point_to_local", point_to_localf)
+        .def("point_to_local", point_to_locald)
+
+        .def("point_to_parent", point_to_parentf)
+        .def("point_to_parent", point_to_parentd)
+
+        .def("vector_to_local", vector_to_localf)
+        .def("vector_to_local", vector_to_locald)
+
+        .def("vector_to_parent", vector_to_parentf)
+        .def("vector_to_parent", vector_to_parentd)
+
+        .def("normal_to_local", normal_to_localf)
+        .def("normal_to_local", normal_to_locald)
+
+        .def("normal_to_parent", normal_to_parentf)
+        .def("normal_to_parent", normal_to_parentd)
+
+        // the extra self_ns qualification
+        .def(bpy::self_ns::str(bpy::self))
+        .def(bpy::self_ns::repr(bpy::self))
+        ;
+
+    bpy::class_<TransformSequence, boost::noncopyable>("TransformSequence", bpy::no_init)
+        .def("set_transform", &detail::transform_seq_set_transform)
+        .def("get_transform", &detail::transform_seq_get_transform)
+        .def("earliest_transform", &detail::transform_seq_get_earliest)
+
+        .def("empty", &TransformSequence::empty)
+        .def("size", &TransformSequence::size)
+        .def("clear", &TransformSequence::clear)
         ;
 }

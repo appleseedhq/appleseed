@@ -107,6 +107,22 @@ class UnalignedMatrix44
             m_data[i] = m[i];
     }
 
+    template<class U>
+    explicit UnalignedMatrix44(const UnalignedMatrix44<U>& m)
+    {
+        for(int i = 0; i < 16; ++i)
+            m_data[i] = m[i];
+    }
+
+    template<class U>
+    UnalignedMatrix44<T>& operator=( const UnalignedMatrix44<U>& m)
+    {
+        for(int i = 0; i < 16; ++i)
+            m_data[i] = m[i];
+
+        return *this;
+    }
+
     Matrix<T,4,4> as_foundation_matrix() const
     {
         return Matrix<T,4,4>(m_data);

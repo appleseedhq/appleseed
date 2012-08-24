@@ -42,54 +42,54 @@ namespace detail
 {
 
 template<class T>
-T* typed_entity_vector_get_item( renderer::TypedEntityVector<T>& vec, int index)
+T* typed_entity_vector_get_item(renderer::TypedEntityVector<T>& vec, int index)
 {
     if (index < 0)
         index = vec.size() + index;
 
     if (index < 0 || static_cast<size_t>(index) >= vec.size())
     {
-        PyErr_SetString( PyExc_IndexError, "Invalid index in appleseed.EntityVector" );
+        PyErr_SetString(PyExc_IndexError, "Invalid index in appleseed.EntityVector" );
         boost::python::throw_error_already_set();
     }
 
-    return vec.get_by_index( index);
+    return vec.get_by_index(index);
 }
 
 template<class T>
-T* typed_entity_map_get_item( renderer::TypedEntityMap<T>& map, const std::string& key)
+T* typed_entity_map_get_item(renderer::TypedEntityMap<T>& map, const std::string& key)
 {
-    return map.get_by_name( key.c_str());
+    return map.get_by_name(key.c_str());
 }
 
 } // detail
 
 template<class T>
-void bind_typed_entity_vector( const char* name)
+void bind_typed_entity_vector(const char* name)
 {
-    boost::python::class_<renderer::TypedEntityVector<T>, boost::python::bases<renderer::EntityVector>, boost::noncopyable>( name)
-        .def( "__getitem__", detail::typed_entity_vector_get_item<T>, boost::python::return_value_policy<boost::python::reference_existing_object>())
-        .def( "get_by_uid", &renderer::TypedEntityVector<T>::get_by_uid, boost::python::return_value_policy<boost::python::reference_existing_object>())
-        .def( "get_by_name", &renderer::TypedEntityVector<T>::get_by_name, boost::python::return_value_policy<boost::python::reference_existing_object>())
+    boost::python::class_<renderer::TypedEntityVector<T>, boost::python::bases<renderer::EntityVector>, boost::noncopyable>(name)
+        .def("__getitem__", detail::typed_entity_vector_get_item<T>, boost::python::return_value_policy<boost::python::reference_existing_object>())
+        .def("get_by_uid", &renderer::TypedEntityVector<T>::get_by_uid, boost::python::return_value_policy<boost::python::reference_existing_object>())
+        .def("get_by_name", &renderer::TypedEntityVector<T>::get_by_name, boost::python::return_value_policy<boost::python::reference_existing_object>())
 
-        .def( "insert", &renderer::TypedEntityVector<T>::insert)
+        .def("insert", &renderer::TypedEntityVector<T>::insert)
 
-        .def( "__iter__", boost::python::iterator<renderer::TypedEntityVector<T> >())
+        .def("__iter__", boost::python::iterator<renderer::TypedEntityVector<T> >())
         ;
 }
 
 template<class T>
-void bind_typed_entity_map( const char* name)
+void bind_typed_entity_map(const char* name)
 {
-    boost::python::class_<renderer::TypedEntityMap<T>, boost::python::bases<renderer::EntityMap>, boost::noncopyable>( name)
-        .def( "__getitem__", detail::typed_entity_map_get_item<T>, boost::python::return_value_policy<boost::python::reference_existing_object>())
+    boost::python::class_<renderer::TypedEntityMap<T>, boost::python::bases<renderer::EntityMap>, boost::noncopyable>(name)
+        .def("__getitem__", detail::typed_entity_map_get_item<T>, boost::python::return_value_policy<boost::python::reference_existing_object>())
 
-        .def( "get_by_uid", &renderer::TypedEntityMap<T>::get_by_uid, boost::python::return_value_policy<boost::python::reference_existing_object>())
-        .def( "get_by_name", &renderer::TypedEntityMap<T>::get_by_name, boost::python::return_value_policy<boost::python::reference_existing_object>())
+        .def("get_by_uid", &renderer::TypedEntityMap<T>::get_by_uid, boost::python::return_value_policy<boost::python::reference_existing_object>())
+        .def("get_by_name", &renderer::TypedEntityMap<T>::get_by_name, boost::python::return_value_policy<boost::python::reference_existing_object>())
 
-        .def( "insert", &renderer::TypedEntityMap<T>::insert)
+        .def("insert", &renderer::TypedEntityMap<T>::insert)
 
-        //.def( "__iter__", boost::python::iterator<renderer::TypedEntityMap<T> >())
+        //.def("__iter__", boost::python::iterator<renderer::TypedEntityMap<T> >())
         ;
 }
 

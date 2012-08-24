@@ -41,19 +41,19 @@ using namespace renderer;
 namespace detail
 {
 
-auto_release_ptr<Frame> create_frame( const std::string& name, const bpy::dict& params)
+auto_release_ptr<Frame> create_frame(const std::string& name, const bpy::dict& params)
 {
-    return FrameFactory::create( name.c_str(), bpy_dict_to_param_array( params));
+    return FrameFactory::create(name.c_str(), bpy_dict_to_param_array(params));
 }
 
-bpy::object archive_frame( const Frame* f, const char* directory)
+bpy::object archive_frame(const Frame* f, const char* directory)
 {
     char* output = 0;
 
-    if (f->archive( directory, &output))
+    if (f->archive(directory, &output))
     {
-        bpy::str path( output);
-        foundation::free_string( output);
+        bpy::str path(output);
+        foundation::free_string(output);
         return path;
     }
 
@@ -65,13 +65,13 @@ bpy::object archive_frame( const Frame* f, const char* directory)
 
 void bind_frame()
 {
-    bpy::class_<Frame, auto_release_ptr<Frame>, bpy::bases<Entity>, boost::noncopyable>( "Frame", bpy::no_init)
-        .def( "__init__", bpy::make_constructor( detail::create_frame))
+    bpy::class_<Frame, auto_release_ptr<Frame>, bpy::bases<Entity>, boost::noncopyable>("Frame", bpy::no_init)
+        .def("__init__", bpy::make_constructor(detail::create_frame))
 
-        .def( "image", &Frame::image, bpy::return_value_policy<bpy::reference_existing_object>())
-        .def( "aov_images", &Frame::aov_images, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("image", &Frame::image, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("aov_images", &Frame::aov_images, bpy::return_value_policy<bpy::reference_existing_object>())
 
-        .def( "write", &Frame::write)
-        .def( "archive", detail::archive_frame)
+        .def("write", &Frame::write)
+        .def("archive", detail::archive_frame)
         ;
 }

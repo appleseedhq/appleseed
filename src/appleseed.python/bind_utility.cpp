@@ -38,24 +38,24 @@ using namespace renderer;
 
 void bind_utility()
 {
-    bpy::class_<EventCounters, boost::noncopyable>( "EventCounters")
-        .def( "clear", &EventCounters::clear)
-        .def( "signal_warning", &EventCounters::signal_warning)
-        .def( "signal_warnings", &EventCounters::signal_warnings)
-        .def( "signal_error", &EventCounters::signal_error)
-        .def( "signal_errors", &EventCounters::signal_errors)
-        .def( "get_warning_count", &EventCounters::get_warning_count)
-        .def( "get_error_count", &EventCounters::get_error_count)
-        .def( "has_errors", &EventCounters::has_errors)
+    bpy::class_<EventCounters, boost::noncopyable>("EventCounters")
+        .def("clear", &EventCounters::clear)
+        .def("signal_warning", &EventCounters::signal_warning)
+        .def("signal_warnings", &EventCounters::signal_warnings)
+        .def("signal_error", &EventCounters::signal_error)
+        .def("signal_errors", &EventCounters::signal_errors)
+        .def("get_warning_count", &EventCounters::get_warning_count)
+        .def("get_error_count", &EventCounters::get_error_count)
+        .def("has_errors", &EventCounters::has_errors)
         ;
 
-    bpy::class_<LogTargetBase, boost::noncopyable>( "LogTargetBase", bpy::no_init)
+    bpy::class_<LogTargetBase, boost::noncopyable>("LogTargetBase", bpy::no_init)
         ;
 
-    bpy::class_<Logger, boost::noncopyable>( "Logger", bpy::no_init)
-        .def( "set_enabled", &Logger::set_enabled)
-        .def( "add_target", &Logger::add_target)
+    bpy::class_<Logger, boost::noncopyable>("Logger", bpy::no_init)
+        .def("set_enabled", &Logger::set_enabled)
+        .def("add_target", &Logger::add_target)
         ;
 
-    bpy::def( "global_logger", global_logger, bpy::return_value_policy<bpy::reference_existing_object>());
+    bpy::def("global_logger", global_logger, bpy::return_value_policy<bpy::reference_existing_object>());
 }
