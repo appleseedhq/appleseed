@@ -62,6 +62,12 @@ namespace
 
         return result;
     }
+
+    void merge_dictionary(StringDictionary& dest, const StringDictionary& other)
+    {
+        for (const_each<StringDictionary> i = other; i; ++i)
+            dest.insert(i->name(), i->value());
+    }
 }
 
 
@@ -130,26 +136,41 @@ EntityBrowser<Assembly>::EntityBrowser(const Assembly& assembly)
 
 StringDictionary EntityBrowser<Assembly>::get_entities(const string& type) const
 {
+    return get_entities(m_assembly, type);
+}
+
+StringDictionary EntityBrowser<Assembly>::get_entities(const Assembly& assembly, const string& type) const
+{
+    StringDictionary entities;
+
     if (type == "bsdf")
     {
-        return build_entity_dictionary(m_assembly.bsdfs());
+        entities = build_entity_dictionary(assembly.bsdfs());
     }
     else if (type == "edf")
     {
-        return build_entity_dictionary(m_assembly.edfs());
+        entities = build_entity_dictionary(assembly.edfs());
     }
     else if (type == "material")
     {
-        return build_entity_dictionary(m_assembly.materials());
+        entities = build_entity_dictionary(assembly.materials());
     }
     else if (type == "surface_shader")
     {
-        return build_entity_dictionary(m_assembly.surface_shaders());
+        entities = build_entity_dictionary(assembly.surface_shaders());
     }
     else
     {
         return EntityBrowser<BaseGroup>::get_entities(type);
     }
+
+    if (assembly.get_parent())
+    {
+        const Assembly& parent = *static_cast<Assembly*>(assembly.get_parent());
+        merge_dictionary(entities, get_entities(parent, type));
+    }
+
+    return entities;
 }
 
 }   // namespace studio

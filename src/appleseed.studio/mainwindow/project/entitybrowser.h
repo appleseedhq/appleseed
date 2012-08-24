@@ -83,6 +83,10 @@ class EntityBrowser<renderer::Assembly>
 
   private:
     const renderer::Assembly& m_assembly;
+
+    foundation::StringDictionary get_entities(
+        const renderer::Assembly&   assembly,
+        const std::string&          type) const;
 };
 
 }       // namespace studio
