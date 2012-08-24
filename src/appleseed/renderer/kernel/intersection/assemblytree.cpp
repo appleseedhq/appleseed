@@ -99,15 +99,28 @@ size_t AssemblyTree::get_memory_size() const
         + m_assembly_versions.size() * sizeof(pair<UniqueID, VersionID>);
 }
 
-void AssemblyTree::collect_assembly_instances(AABBVector& assembly_instance_bboxes)
+void AssemblyTree::collect_assembly_instances(
+    const AssemblyInstanceContainer&    assembly_instances,
+    const TransformSequence&            parent_transform_seq,
+    AABBVector&                         assembly_instance_bboxes)
 {
-    for (const_each<AssemblyInstanceContainer> i = m_scene.assembly_instances(); i; ++i)
+    for (const_each<AssemblyInstanceContainer> i = assembly_instances; i; ++i)
     {
         // Retrieve the assembly instance.
         const AssemblyInstance& assembly_instance = *i;
 
         // Retrieve the assembly.
         const Assembly& assembly = assembly_instance.get_assembly();
+
+        // Compute the cumulated transform sequence of this assembly instance.
+        const TransformSequence cumulated_transform_seq =
+            parent_transform_seq * assembly_instance.transform_sequence();
+
+        // Collect child assembly instances.
+        collect_assembly_instances(
+            assembly.assembly_instances(),
+            cumulated_transform_seq,
+            assembly_instance_bboxes);
 
         // Skip empty assemblies.
         if (assembly.object_instances().empty())
@@ -118,10 +131,12 @@ void AssemblyTree::collect_assembly_instances(AABBVector& assembly_instance_bbox
             Item(
                 &assembly,
                 &assembly_instance,
-                assembly_instance.transform_sequence()));
+                cumulated_transform_seq));
 
         // Compute and store the assembly instance bounding box.
-        AABB3d assembly_instance_bbox(assembly_instance.compute_parent_bbox());
+        AABB3d assembly_instance_bbox(
+            cumulated_transform_seq.to_parent(
+                assembly_instance.compute_local_bbox()));
         assembly_instance_bbox.robust_grow(1.0e-15);
         assembly_instance_bboxes.push_back(assembly_instance_bbox);
     }
@@ -137,7 +152,10 @@ void AssemblyTree::rebuild_assembly_tree()
 
     // Collect all assembly instances of the scene.
     AABBVector assembly_instance_bboxes;
-    collect_assembly_instances(assembly_instance_bboxes);
+    collect_assembly_instances(
+        m_scene.assembly_instances(),
+        TransformSequence(),
+        assembly_instance_bboxes);
 
     RENDERER_LOG_INFO(
         "building assembly tree (%s %s)...",
@@ -164,16 +182,16 @@ void AssemblyTree::rebuild_assembly_tree()
         const vector<size_t>& ordering = partitioner.get_item_ordering();
         assert(m_items.size() == ordering.size());
 
-        // Reorder the assembly instances according to the tree ordering.
-        vector<Item> temp_assembly_instances(ordering.size());
+        // Reorder the items according to the tree ordering.
+        ItemVector temp_assembly_instances(ordering.size());
         small_item_reorder(
             &m_items[0],
             &temp_assembly_instances[0],
             &ordering[0],
             ordering.size());
 
-        // Store assembly instances in the tree leaves whenever possible.
-        store_assembly_instances_in_leaves(statistics);
+        // Store the items in the tree leaves whenever possible.
+        store_items_in_leaves(statistics);
     }
 
     // Print assembly tree statistics.
@@ -183,7 +201,7 @@ void AssemblyTree::rebuild_assembly_tree()
             statistics).to_string().c_str());
 }
 
-void AssemblyTree::store_assembly_instances_in_leaves(Statistics& statistics)
+void AssemblyTree::store_items_in_leaves(Statistics& statistics)
 {
     size_t leaf_count = 0;
     size_t fat_leaf_count = 0;
@@ -216,24 +234,24 @@ void AssemblyTree::store_assembly_instances_in_leaves(Statistics& statistics)
     statistics.insert_percent("fat leaves", fat_leaf_count, leaf_count);
 }
 
+void AssemblyTree::collect_unique_assemblies(AssemblyVector& assemblies) const
+{
+    assert(assemblies.empty());
+
+    assemblies.reserve(m_items.size());
+
+    for (const_each<ItemVector> i = m_items; i; ++i)
+        assemblies.push_back(i->m_assembly);
+
+    sort(assemblies.begin(), assemblies.end());
+
+    assemblies.erase(
+        unique(assemblies.begin(), assemblies.end()),
+        assemblies.end());
+}
+
 namespace
 {
-    void collect_assemblies(const Scene& scene, vector<UniqueID>& assemblies)
-    {
-        assert(assemblies.empty());
-
-        assemblies.reserve(scene.assembly_instances().size());
-
-        for (const_each<AssemblyInstanceContainer> i = scene.assembly_instances(); i; ++i)
-            assemblies.push_back(i->get_assembly().get_uid());
-
-        sort(assemblies.begin(), assemblies.end());
-
-        assemblies.erase(
-            unique(assemblies.begin(), assemblies.end()),
-            assemblies.end());
-    }
-
     void collect_regions(const Assembly& assembly, RegionInfoVector& regions)
     {
         assert(regions.empty());
@@ -313,15 +331,15 @@ namespace
 void AssemblyTree::update_child_trees()
 {
     // Collect all assemblies in the scene.
-    vector<UniqueID> assemblies;
-    collect_assemblies(m_scene, assemblies);
+    AssemblyVector assemblies;
+    collect_unique_assemblies(assemblies);
 
     // Create or update the child tree of each assembly.
-    for (const_each<vector<UniqueID> > i = assemblies; i; ++i)
+    for (const_each<AssemblyVector> i = assemblies; i; ++i)
     {
         // Retrieve the assembly.
-        const UniqueID assembly_uid = *i;
-        const Assembly& assembly = *m_scene.assemblies().get_by_uid(assembly_uid);
+        const Assembly& assembly = **i;
+        const UniqueID assembly_uid = assembly.get_uid();
 
         // Retrieve the current version ID of the assembly.
         const VersionID current_version_id = assembly.get_version_id();
