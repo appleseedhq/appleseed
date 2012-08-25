@@ -33,6 +33,8 @@
 #include "renderer/kernel/rendering/irenderercontroller.h"
 #include "renderer/kernel/rendering/defaultrenderercontroller.h"
 
+#include "gil_locks.h"
+
 namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
@@ -46,6 +48,10 @@ public:
 
     virtual void on_rendering_begin()
     {
+        // Lock Python's global interpreter lock (GIL),
+        // was released in MasterRenderer.render.
+        ScopedGILLock lock;
+
         try
         {
             this->get_override("on_rendering_begin")();
@@ -58,6 +64,10 @@ public:
 
     virtual void on_rendering_success()
     {
+        // Lock Python's global interpreter lock (GIL),
+        // was released in MasterRenderer.render.
+        ScopedGILLock lock;
+
         try
         {
             this->get_override("on_rendering_success")();
@@ -70,6 +80,10 @@ public:
 
     virtual void on_rendering_abort()
     {
+        // Lock Python's global interpreter lock (GIL),
+        // was released in MasterRenderer.render.
+        ScopedGILLock lock;
+
         try
         {
             this->get_override("on_rendering_abort")();
@@ -82,6 +96,10 @@ public:
 
     virtual void on_frame_begin()
     {
+        // Lock Python's global interpreter lock (GIL),
+        // was released in MasterRenderer.render.
+        ScopedGILLock lock;
+
         try
         {
             this->get_override("on_frame_begin")();
@@ -94,6 +112,10 @@ public:
 
     virtual void on_frame_end()
     {
+        // Lock Python's global interpreter lock (GIL),
+        // was released in MasterRenderer.render.
+        ScopedGILLock lock;
+
         try
         {
             this->get_override("on_frame_end")();
@@ -106,6 +128,10 @@ public:
 
     virtual Status on_progress()
     {
+        // Lock Python's global interpreter lock (GIL),
+        // was released in MasterRenderer.render.
+        ScopedGILLock lock;
+
         try
         {
             return this->get_override("on_progress")();
