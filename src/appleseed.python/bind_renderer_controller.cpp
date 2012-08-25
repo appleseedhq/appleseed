@@ -46,32 +46,74 @@ public:
 
     virtual void on_rendering_begin()
     {
-        this->get_override("on_rendering_begin")();
+        try
+        {
+            this->get_override("on_rendering_begin")();
+        }
+        catch( bpy::error_already_set)
+        {
+            PyErr_Print();
+        }
     }
 
     virtual void on_rendering_success()
     {
-        this->get_override("on_rendering_success")();
+        try
+        {
+            this->get_override("on_rendering_success")();
+        }
+        catch( bpy::error_already_set)
+        {
+            PyErr_Print();
+        }
     }
 
     virtual void on_rendering_abort()
     {
-        this->get_override("on_rendering_abort")();
+        try
+        {
+            this->get_override("on_rendering_abort")();
+        }
+        catch( bpy::error_already_set)
+        {
+            PyErr_Print();
+        }
     }
 
     virtual void on_frame_begin()
     {
-        this->get_override("on_frame_begin")();
+        try
+        {
+            this->get_override("on_frame_begin")();
+        }
+        catch( bpy::error_already_set)
+        {
+            PyErr_Print();
+        }
     }
 
     virtual void on_frame_end()
     {
-        this->get_override("on_frame_end")();
+        try
+        {
+            this->get_override("on_frame_end")();
+        }
+        catch( bpy::error_already_set)
+        {
+            PyErr_Print();
+        }
     }
 
     virtual Status on_progress()
     {
-        return this->get_override("on_progress")();
+        try
+        {
+            return this->get_override("on_progress")();
+        }
+        catch( bpy::error_already_set)
+        {
+            PyErr_Print();
+        }
     }
 };
 
