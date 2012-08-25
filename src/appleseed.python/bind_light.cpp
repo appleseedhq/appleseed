@@ -31,6 +31,7 @@
 #include "renderer/api/light.h"
 
 #include "bind_typed_entity_containers.h"
+#include "unaligned_transformd44.h"
 #include "dict2dict.h"
 
 namespace bpy = boost::python;
@@ -40,33 +41,43 @@ using namespace renderer;
 namespace detail
 {
 
-auto_release_ptr<Light> create_light( const std::string& light_type,
+auto_release_ptr<Light> create_light(const std::string& light_type,
                                         const std::string& name,
                                         const bpy::dict& params)
 {
     LightFactoryRegistrar factories;
-    const ILightFactory* factory = factories.lookup( light_type.c_str());
+    const ILightFactory* factory = factories.lookup(light_type.c_str());
 
     if (factory)
-        return factory->create( name.c_str(), bpy_dict_to_param_array( params));
+        return factory->create(name.c_str(), bpy_dict_to_param_array(params));
     else
     {
-        PyErr_SetString( PyExc_RuntimeError, "Light type not found");
+        PyErr_SetString(PyExc_RuntimeError, "Light type not found");
         bpy::throw_error_already_set();
     }
 
     return auto_release_ptr<Light>();
 }
 
+UnalignedTransformd44 light_get_transform(const Light *l)
+{
+    return UnalignedTransformd44(l->get_transform());
+}
+
+void light_set_transform(Light *l, const UnalignedTransformd44& xform)
+{
+    l->set_transform(xform.as_foundation_transform());
+}
+
 } // detail
 
 void bind_light()
 {
-    bpy::class_<Light, auto_release_ptr<Light>, bpy::bases<ConnectableEntity>, boost::noncopyable>( "Light", bpy::no_init)
-        .def( "__init__", bpy::make_constructor( detail::create_light))
-        .def( "set_transform", &Light::set_transform)
-        .def( "get_transform", &Light::get_transform, bpy::return_value_policy<bpy::copy_const_reference>())
+    bpy::class_<Light, auto_release_ptr<Light>, bpy::bases<ConnectableEntity>, boost::noncopyable>("Light", bpy::no_init)
+        .def("__init__", bpy::make_constructor(detail::create_light))
+        .def("set_transform", &detail::light_set_transform)
+        .def("get_transform", &detail::light_get_transform)
         ;
 
-    bind_typed_entity_vector<Light>( "LightContainer");
+    bind_typed_entity_vector<Light>("LightContainer");
 }

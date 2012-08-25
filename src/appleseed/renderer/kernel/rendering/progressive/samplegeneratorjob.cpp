@@ -129,7 +129,7 @@ void SampleGeneratorJob::execute(const size_t thread_index)
         m_framebuffer.render_to_frame(m_frame);
 
         if (m_tile_callback)
-            m_tile_callback->post_render(m_frame);
+            m_tile_callback->post_render(&m_frame);
     }
 
     if (!m_abort_switch.is_aborted())

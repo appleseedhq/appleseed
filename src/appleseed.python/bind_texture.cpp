@@ -41,61 +41,61 @@ using namespace renderer;
 namespace detail
 {
 
-auto_release_ptr<Texture> create_texture( const std::string& texture_type,
+auto_release_ptr<Texture> create_texture(const std::string& texture_type,
                                             const std::string& name,
                                             const bpy::dict& params,
                                             const bpy::list& search_paths)
 {
     TextureFactoryRegistrar factories;
-    const ITextureFactory* factory = factories.lookup( texture_type.c_str());
+    const ITextureFactory* factory = factories.lookup(texture_type.c_str());
 
     if (factory)
     {
         SearchPaths paths;
 
-        for (int i = 0, e = bpy::len( search_paths); i < e; ++i)
+        for (int i = 0, e = bpy::len(search_paths); i < e; ++i)
         {
-            bpy::extract<const char*> extractor( search_paths[i] );
+            bpy::extract<const char*> extractor(search_paths[i] );
             if (extractor.check())
-                paths.push_back( extractor());
+                paths.push_back(extractor());
             else
             {
-                PyErr_SetString( PyExc_TypeError, "Incompatible type. Only strings accepted." );
+                PyErr_SetString(PyExc_TypeError, "Incompatible type. Only strings accepted." );
                 bpy::throw_error_already_set();
             }
         }
 
-        return factory->create( name.c_str(), bpy_dict_to_param_array( params), paths);
+        return factory->create(name.c_str(), bpy_dict_to_param_array(params), paths);
     }
     else
     {
-        PyErr_SetString( PyExc_RuntimeError, "EDF type not found");
+        PyErr_SetString(PyExc_RuntimeError, "EDF type not found");
         bpy::throw_error_already_set();
     }
 
     return auto_release_ptr<Texture>();
 }
 
-auto_release_ptr<TextureInstance> create_texture_instance( const std::string& name,
+auto_release_ptr<TextureInstance> create_texture_instance(const std::string& name,
                                                             const bpy::dict& params,
                                                             const std::string& texture_name)
 {
-    return TextureInstanceFactory::create( name.c_str(), bpy_dict_to_param_array( params), texture_name.c_str());
+    return TextureInstanceFactory::create(name.c_str(), bpy_dict_to_param_array(params), texture_name.c_str());
 }
 
 } // detail
 
 void bind_texture()
 {
-    bpy::class_<Texture, auto_release_ptr<Texture>, bpy::bases<Entity>, boost::noncopyable>( "Texture", bpy::no_init)
-        .def( "__init__", bpy::make_constructor( detail::create_texture))
+    bpy::class_<Texture, auto_release_ptr<Texture>, bpy::bases<Entity>, boost::noncopyable>("Texture", bpy::no_init)
+        .def("__init__", bpy::make_constructor(detail::create_texture))
         ;
 
-    bind_typed_entity_vector<Texture>( "TextureContainer");
+    bind_typed_entity_vector<Texture>("TextureContainer");
 
-    bpy::class_<TextureInstance, auto_release_ptr<TextureInstance>, bpy::bases<Entity>, boost::noncopyable>( "TextureInstance", bpy::no_init)
-        .def( "__init__", bpy::make_constructor( detail::create_texture_instance))
+    bpy::class_<TextureInstance, auto_release_ptr<TextureInstance>, bpy::bases<Entity>, boost::noncopyable>("TextureInstance", bpy::no_init)
+        .def("__init__", bpy::make_constructor(detail::create_texture_instance))
         ;
 
-    bind_typed_entity_vector<TextureInstance>( "TextureInstanceContainer");
+    bind_typed_entity_vector<TextureInstance>("TextureInstanceContainer");
 }

@@ -77,8 +77,8 @@ set (sources
     dict2dict.cpp
     dict2dict.h
     module.cpp
-    tile_callback_factory.h
     unaligned_matrix44.h
+    unaligned_transformd44.h
 )
 list (APPEND appleseed.python_sources
     ${sources}
@@ -92,7 +92,7 @@ source_group ("" FILES
 # Target.
 #--------------------------------------------------------------------------------------------------
 
-add_library (appleseed.python SHARED
+add_library (appleseed.python MODULE
     ${appleseed.python_sources}
 )
 

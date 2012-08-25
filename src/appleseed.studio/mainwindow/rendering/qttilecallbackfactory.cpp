@@ -80,23 +80,23 @@ namespace
         }
 
         // This method is called after a tile is rendered.
-        virtual void post_render(
-            const Frame&    frame,
+        virtual void post_render_tile(
+            const Frame*    frame,
             const size_t    tile_x,
             const size_t    tile_y)
         {
             assert(m_render_widget);
 
-            m_render_widget->blit_tile(frame, tile_x, tile_y);
+            m_render_widget->blit_tile(*frame, tile_x, tile_y);
         }
 
         // This method is called after a whole frame is rendered.
         virtual void post_render(
-            const Frame&    frame)
+            const Frame*    frame)
         {
             assert(m_render_widget);
 
-            m_render_widget->blit_frame(frame);
+            m_render_widget->blit_frame(*frame);
         }
 
       private:

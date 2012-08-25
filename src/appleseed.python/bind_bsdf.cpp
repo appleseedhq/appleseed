@@ -39,18 +39,18 @@ using namespace renderer;
 namespace detail
 {
 
-auto_release_ptr<BSDF> create_bsdf( const std::string& bsdf_type,
+auto_release_ptr<BSDF> create_bsdf(const std::string& bsdf_type,
                                     const std::string& name,
                                     const bpy::dict& params)
 {
     BSDFFactoryRegistrar factories;
-    const IBSDFFactory* factory = factories.lookup( bsdf_type.c_str());
+    const IBSDFFactory* factory = factories.lookup(bsdf_type.c_str());
 
     if (factory)
-        return factory->create( name.c_str(), bpy_dict_to_param_array( params));
+        return factory->create(name.c_str(), bpy_dict_to_param_array(params));
     else
     {
-        PyErr_SetString( PyExc_RuntimeError, "BSDF type not found");
+        PyErr_SetString(PyExc_RuntimeError, "BSDF type not found");
         bpy::throw_error_already_set();
     }
 
@@ -61,9 +61,9 @@ auto_release_ptr<BSDF> create_bsdf( const std::string& bsdf_type,
 
 void bind_bsdf()
 {
-    bpy::class_<BSDF, auto_release_ptr<BSDF>, bpy::bases<ConnectableEntity>, boost::noncopyable>( "BSDF", bpy::no_init)
-        .def( "__init__", bpy::make_constructor( detail::create_bsdf))
+    bpy::class_<BSDF, auto_release_ptr<BSDF>, bpy::bases<ConnectableEntity>, boost::noncopyable>("BSDF", bpy::no_init)
+        .def("__init__", bpy::make_constructor(detail::create_bsdf))
         ;
 
-    bind_typed_entity_vector<BSDF>( "BSDFContainer");
+    bind_typed_entity_vector<BSDF>("BSDFContainer");
 }
