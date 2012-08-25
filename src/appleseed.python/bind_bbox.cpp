@@ -40,16 +40,16 @@ namespace detail
 {
 
 template<class T>
-void bind_aabb3( const char *class_name)
+void bind_aabb3(const char *class_name)
 {
-    bpy::class_<AABB<T,3> >( class_name)
-        .def_readwrite( "min", &AABB<T,3>::min)
-        .def_readwrite( "max", &AABB<T,3>::max)
+    bpy::class_<AABB<T,3> >(class_name)
+        .def_readwrite("min", &AABB<T,3>::min)
+        .def_readwrite("max", &AABB<T,3>::max)
 
         // a bug in boost::python, this needs
         // the extra self_ns qualification
-        .def( bpy::self_ns::str( bpy::self))
-        .def( bpy::self_ns::repr( bpy::self))
+        .def(bpy::self_ns::str(bpy::self))
+        .def(bpy::self_ns::repr(bpy::self))
         ;
 }
 
@@ -57,6 +57,6 @@ void bind_aabb3( const char *class_name)
 
 void bind_bbox()
 {
-    detail::bind_aabb3<float>( "AABB3f");
-    detail::bind_aabb3<double>( "AABB3d");
+    detail::bind_aabb3<float>("AABB3f");
+    detail::bind_aabb3<double>("AABB3d");
 }

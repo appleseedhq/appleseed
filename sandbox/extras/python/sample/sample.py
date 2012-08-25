@@ -26,8 +26,11 @@
 # THE SOFTWARE.
 #
 
-import appleseed as asr
+import sys
+import signal
 import math
+
+import appleseed as asr
 
 def build_project():
     project = asr.Project( 'test project')
@@ -39,10 +42,8 @@ def build_project():
     project.add_default_configurations()
     conf = project.configurations()['final']
     params = { 'generic_tile_renderer' : { 'min_samples' : 25, 'max_samples' : 25} }
-    conf.set_parameters( params)
 
     scene = asr.Scene()
-
     assembly = asr.Assembly( "assembly")
 
     #------------------------------------------------------------------------
@@ -148,6 +149,15 @@ class RendererController( asr.IRendererController):
     def __init__( self):
         super( RendererController, self).__init__()
 
+        # catch Control-C
+        signal.signal(signal.SIGINT, lambda signal, frame: self.__signal_handler( signal, frame))
+        self.__abort = False
+        self.__count = 0
+
+    def __signal_handler( self, signal, frame):
+        print "Ctrl+C!, aborting."
+        self.__abort = True
+
     # This method is called before rendering begins.
     def on_rendering_begin( self):
         print "rendering begin"
@@ -169,10 +179,21 @@ class RendererController( asr.IRendererController):
         print "frame end"
 
     def on_progress( self):
-        print "on_progress"
+        self.__count += 1
+
+        if self.__count == 200:
+            sys.stdout.write('.')
+            self.__count = 0
+
+        if self.__abort:
+            return asr.IRenderControllerStatus.AbortRendering
+
         return asr.IRenderControllerStatus.ContinueRendering
 
-class TileCallback( object):
+class TileCallback( asr.ITileCallback):
+    def __init__( self):
+        super( TileCallback, self).__init__()
+
     def pre_render( self, x, y, width, height):
         print "pre_render: x = %s, y = %s, width = %s, height = %s" % ( x, y, width, height)
 
@@ -195,12 +216,11 @@ def main():
     project = build_project()
 
     renderer_controller = RendererController()
-    #tile_callback = TileCallback()
-    #tile_callback_factory = asr.TileCallbackFactory( tile_callback)
+    tile_callback = TileCallback()
     renderer = asr.MasterRenderer( project,
                                     project.configurations()['final'].get_inherited_parameters(),
-                                    renderer_controller
-                                    #tile_callback_factory
+                                    renderer_controller,
+                                    tile_callback
                                     )
     renderer.render()
 

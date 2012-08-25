@@ -43,32 +43,24 @@ auto_release_ptr<Scene> create_scene() { return SceneFactory::create();}
 
 void bind_scene()
 {
-    bpy::class_<Scene, auto_release_ptr<Scene>, boost::noncopyable>( "Scene", bpy::no_init)
-        .def( "__init__", bpy::make_constructor( detail::create_scene))
+    bpy::class_<Scene, auto_release_ptr<Scene>, bpy::bases<BaseGroup>, boost::noncopyable>("Scene", bpy::no_init)
+        .def("__init__", bpy::make_constructor(detail::create_scene))
 
-        .def( "get_uid", &Identifiable::get_uid)
+        .def("get_uid", &Identifiable::get_uid)
 
-        .def( "get_geometry_version_id", &Scene::get_geometry_version_id)
-        .def( "bump_geometry_version_id", &Scene::bump_geometry_version_id)
+        .def("get_geometry_version_id", &Scene::get_geometry_version_id)
+        .def("bump_geometry_version_id", &Scene::bump_geometry_version_id)
 
-        .def( "set_camera", &Scene::set_camera)
-        .def( "get_camera", &Scene::get_camera, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("set_camera", &Scene::set_camera)
+        .def("get_camera", &Scene::get_camera, bpy::return_value_policy<bpy::reference_existing_object>())
 
-        .def( "get_environment", &Scene::get_environment, bpy::return_value_policy<bpy::reference_existing_object>())
-        .def( "set_environment", &Scene::set_environment)
+        .def("get_environment", &Scene::get_environment, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("set_environment", &Scene::set_environment)
 
-        .def( "colors", &Scene::colors, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("environment_edfs", &Scene::environment_edfs, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("environment_shaders", &Scene::environment_shaders, bpy::return_value_policy<bpy::reference_existing_object>())
 
-        .def( "textures", &Scene::textures, bpy::return_value_policy<bpy::reference_existing_object>())
-        .def( "texture_instances", &Scene::texture_instances, bpy::return_value_policy<bpy::reference_existing_object>())
-
-        .def( "environment_edfs", &Scene::environment_edfs, bpy::return_value_policy<bpy::reference_existing_object>())
-        .def( "environment_shaders", &Scene::environment_shaders, bpy::return_value_policy<bpy::reference_existing_object>())
-
-        .def( "assemblies", &Scene::assemblies, bpy::return_value_policy<bpy::reference_existing_object>())
-        .def( "assembly_instances", &Scene::assembly_instances, bpy::return_value_policy<bpy::reference_existing_object>())
-
-        .def( "compute_bbox", &Scene::compute_bbox)
-        .def( "compute_radius", &Scene::compute_radius)
+        .def("compute_bbox", &Scene::compute_bbox)
+        .def("compute_radius", &Scene::compute_radius)
         ;
 }

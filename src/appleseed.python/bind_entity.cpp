@@ -48,85 +48,85 @@ using namespace renderer;
 namespace detail
 {
 
-Entity* get_entity_vec_item( EntityVector& vec, int index)
+Entity* get_entity_vec_item(EntityVector& vec, int index)
 {
     if (index < 0)
         index = vec.size() - index;
 
     if (index < 0 || static_cast<size_t>(index) >= vec.size())
     {
-        PyErr_SetString( PyExc_IndexError, "Invalid index in appleseed.EntityVector" );
+        PyErr_SetString(PyExc_IndexError, "Invalid index in appleseed.EntityVector" );
         bpy::throw_error_already_set();
     }
 
-    return vec.get_by_index( index);
+    return vec.get_by_index(index);
 }
 
-Entity* get_entity_map_item( EntityMap& map, const std::string& key)
+Entity* get_entity_map_item(EntityMap& map, const std::string& key)
 {
-    return map.get_by_name( key.c_str());
+    return map.get_by_name(key.c_str());
 }
 
-bpy::dict entity_get_parameters( const Entity* e)
+bpy::dict entity_get_parameters(const Entity* e)
 {
-    return param_array_to_bpy_dict( e->get_parameters());
+    return param_array_to_bpy_dict(e->get_parameters());
 }
 
-void entity_set_parameters( Entity* e, const bpy::dict& params)
+void entity_set_parameters(Entity* e, const bpy::dict& params)
 {
-    e->get_parameters() = bpy_dict_to_param_array( params);
+    e->get_parameters() = bpy_dict_to_param_array(params);
 }
 
 } // detail
 
 void bind_entity()
 {
-    bpy::class_<Entity, auto_release_ptr<Entity>, boost::noncopyable>( "Entity", bpy::no_init)
-        .def( "get_uid", &Identifiable::get_uid)
+    bpy::class_<Entity, auto_release_ptr<Entity>, boost::noncopyable>("Entity", bpy::no_init)
+        .def("get_uid", &Identifiable::get_uid)
 
-        .def( "get_version_id", &Versionable::get_version_id)
-        .def( "bump_version_id", &Versionable::bump_version_id)
+        .def("get_version_id", &Versionable::get_version_id)
+        .def("bump_version_id", &Versionable::bump_version_id)
 
-        .def( "get_class_uid", &Entity::get_class_uid)
+        .def("get_class_uid", &Entity::get_class_uid)
 
-        .def( "get_name", &Entity::get_name)
-        .def( "set_name", &Entity::set_name)
+        .def("get_name", &Entity::get_name)
+        .def("set_name", &Entity::set_name)
 
-        .def( "get_parameters", detail::entity_get_parameters)
-        .def( "set_parameters", detail::entity_set_parameters)
+        .def("get_parameters", detail::entity_get_parameters)
+        .def("set_parameters", detail::entity_set_parameters)
 
-        .def( "get_render_layer_name", &Entity::get_render_layer_name)
-        .def( "set_render_layer_name", &Entity::set_render_layer_name)
+        .def("get_render_layer_name", &Entity::get_render_layer_name)
+        .def("set_render_layer_name", &Entity::set_render_layer_name)
 
-        .def( "set_render_layer_index", &Entity::set_render_layer_index)
-        .def( "get_render_layer_index", &Entity::get_render_layer_index)
+        .def("set_render_layer_index", &Entity::set_render_layer_index)
+        .def("get_render_layer_index", &Entity::get_render_layer_index)
         ;
 
-    bpy::class_<ConnectableEntity, auto_release_ptr<ConnectableEntity>, bpy::bases<Entity>, boost::noncopyable>( "ConnectableEntity", bpy::no_init)
+    bpy::class_<ConnectableEntity, auto_release_ptr<ConnectableEntity>, bpy::bases<Entity>, boost::noncopyable>("ConnectableEntity", bpy::no_init)
         ;
 
-    bpy::class_<EntityVector, boost::noncopyable>( "EntityVector")
-        .def( "clear", &EntityVector::clear)
-        .def( "__len__", &EntityVector::size)
-        .def( "__getitem__", detail::get_entity_vec_item, bpy::return_value_policy<bpy::reference_existing_object>())
+    bpy::class_<EntityVector, boost::noncopyable>("EntityVector")
+        .def("clear", &EntityVector::clear)
+        .def("__len__", &EntityVector::size)
+        .def("__getitem__", detail::get_entity_vec_item, bpy::return_value_policy<bpy::reference_existing_object>())
 
-        .def( "insert", &EntityVector::insert)
-        .def( "remove", &EntityVector::remove)
+        .def("insert", &EntityVector::insert)
+        .def("remove", &EntityVector::remove)
 
-        .def( "__iter__", bpy::iterator<EntityVector>())
+        .def("__iter__", bpy::iterator<EntityVector>())
         ;
 
-    bpy::class_<EntityMap, boost::noncopyable>( "EntityMap")
-        .def( "clear", &EntityMap::clear)
-        .def( "__len__", &EntityMap::size)
-        .def( "__getitem__", detail::get_entity_map_item, bpy::return_value_policy<bpy::reference_existing_object>())
+    bpy::class_<EntityMap, boost::noncopyable>("EntityMap")
+        .def("clear", &EntityMap::clear)
+        .def("__len__", &EntityMap::size)
+        .def("__getitem__", detail::get_entity_map_item, bpy::return_value_policy<bpy::reference_existing_object>())
 
-        .def( "insert", &EntityMap::insert)
-        .def( "remove", &EntityMap::remove)
+        .def("insert", &EntityMap::insert)
+        .def("remove", &EntityMap::remove)
 
-        .def( "get_by_uid", &EntityMap::get_by_uid, bpy::return_value_policy<bpy::reference_existing_object>())
-        .def( "get_by_name", &EntityMap::get_by_name, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("get_by_uid", &EntityMap::get_by_uid, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("get_by_name", &EntityMap::get_by_name, bpy::return_value_policy<bpy::reference_existing_object>())
 
-        //.def( "__iter__", bpy::iterator<EntityMap>())
+        //.def("__iter__", bpy::iterator<EntityMap>())
         ;
 }

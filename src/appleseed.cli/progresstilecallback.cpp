@@ -72,17 +72,17 @@ namespace
             // Do nothing.
         }
 
-        virtual void post_render(
-            const Frame&    frame,
+        virtual void post_render_tile(
+            const Frame*    frame,
             const size_t    tile_x,
             const size_t    tile_y) override
         {
             mutex::scoped_lock lock(m_mutex);
 
-            const Tile& tile = frame.image().tile(tile_x, tile_y);
+            const Tile& tile = frame->image().tile(tile_x, tile_y);
             m_rendered_pixels += tile.get_pixel_count();
 
-            const size_t total_pixels = frame.image().properties().m_pixel_count;
+            const size_t total_pixels = frame->image().properties().m_pixel_count;
 
             RENDERER_LOG_INFO("rendering, %s done", pretty_percent(m_rendered_pixels, total_pixels).c_str());
         }

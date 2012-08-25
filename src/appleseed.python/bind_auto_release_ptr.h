@@ -52,7 +52,7 @@ namespace foundation
 {
 
 template<class T>
-T *get_pointer( const auto_release_ptr<T>& p)
+T *get_pointer(const auto_release_ptr<T>& p)
 {
     return p.get();
 }
