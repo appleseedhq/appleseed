@@ -40,14 +40,10 @@ def build_project():
     project.set_search_paths( paths)
 
     project.add_default_configurations()
-    #conf = project.configurations()['final']
-    #params = { 'generic_tile_renderer' : { 'min_samples' : 25, 'max_samples' : 25} }
-
-    conf = project.configurations()['interactive']
-    conf.set_parameters( {})
+    conf = project.configurations()['final']
+    params = { 'generic_tile_renderer' : { 'min_samples' : 25, 'max_samples' : 25} }
 
     scene = asr.Scene()
-
     assembly = asr.Assembly( "assembly")
 
     #------------------------------------------------------------------------
