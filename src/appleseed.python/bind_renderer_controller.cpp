@@ -33,6 +33,8 @@
 #include "renderer/kernel/rendering/irenderercontroller.h"
 #include "renderer/kernel/rendering/defaultrenderercontroller.h"
 
+#include "gil_locks.h"
+
 namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
@@ -46,32 +48,98 @@ public:
 
     virtual void on_rendering_begin()
     {
-        this->get_override("on_rendering_begin")();
+        // Lock Python's global interpreter lock (GIL),
+        // was released in MasterRenderer.render.
+        ScopedGILLock lock;
+
+        try
+        {
+            this->get_override("on_rendering_begin")();
+        }
+        catch( bpy::error_already_set)
+        {
+            PyErr_Print();
+        }
     }
 
     virtual void on_rendering_success()
     {
-        this->get_override("on_rendering_success")();
+        // Lock Python's global interpreter lock (GIL),
+        // was released in MasterRenderer.render.
+        ScopedGILLock lock;
+
+        try
+        {
+            this->get_override("on_rendering_success")();
+        }
+        catch( bpy::error_already_set)
+        {
+            PyErr_Print();
+        }
     }
 
     virtual void on_rendering_abort()
     {
-        this->get_override("on_rendering_abort")();
+        // Lock Python's global interpreter lock (GIL),
+        // was released in MasterRenderer.render.
+        ScopedGILLock lock;
+
+        try
+        {
+            this->get_override("on_rendering_abort")();
+        }
+        catch( bpy::error_already_set)
+        {
+            PyErr_Print();
+        }
     }
 
     virtual void on_frame_begin()
     {
-        this->get_override("on_frame_begin")();
+        // Lock Python's global interpreter lock (GIL),
+        // was released in MasterRenderer.render.
+        ScopedGILLock lock;
+
+        try
+        {
+            this->get_override("on_frame_begin")();
+        }
+        catch( bpy::error_already_set)
+        {
+            PyErr_Print();
+        }
     }
 
     virtual void on_frame_end()
     {
-        this->get_override("on_frame_end")();
+        // Lock Python's global interpreter lock (GIL),
+        // was released in MasterRenderer.render.
+        ScopedGILLock lock;
+
+        try
+        {
+            this->get_override("on_frame_end")();
+        }
+        catch( bpy::error_already_set)
+        {
+            PyErr_Print();
+        }
     }
 
     virtual Status on_progress()
     {
-        return this->get_override("on_progress")();
+        // Lock Python's global interpreter lock (GIL),
+        // was released in MasterRenderer.render.
+        ScopedGILLock lock;
+
+        try
+        {
+            return this->get_override("on_progress")();
+        }
+        catch( bpy::error_already_set)
+        {
+            PyErr_Print();
+        }
     }
 };
 

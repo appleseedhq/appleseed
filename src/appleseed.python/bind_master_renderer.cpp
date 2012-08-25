@@ -35,6 +35,7 @@
 #include "renderer/api/rendering.h"
 #include "renderer/api/project.h"
 
+#include "gil_locks.h"
 #include "dict2dict.h"
 
 namespace bpy = boost::python;
@@ -72,6 +73,16 @@ void master_renderer_set_parameters(MasterRenderer* m, const bpy::dict& params)
     m->get_parameters() = bpy_dict_to_param_array(params);
 }
 
+bool master_renderer_render(MasterRenderer* m)
+{
+    // Unlock Python's global interpreter lock (GIL),
+    // while we do lenghty C++ computations.
+    // the GIL is locked again when unlock goes out of scope.
+    ScopedGILUnlock unlock;
+
+    return m->render();
+}
+
 } // detail
 
 void bind_master_renderer()
@@ -81,6 +92,6 @@ void bind_master_renderer()
         .def("__init__", bpy::make_constructor(detail::create_master_renderer_with_tile_callback))
         .def("get_parameters", detail::master_renderer_get_parameters)
         .def("set_parameters", detail::master_renderer_set_parameters)
-        .def("render", &MasterRenderer::render)
+        .def("render", detail::master_renderer_render)
         ;
 }
