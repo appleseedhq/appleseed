@@ -25,14 +25,50 @@
 // THE SOFTWARE.
 //
 
-#include "tile_callback_factory.h"
+// Has to be first, to avoid redifinition warnings.
+#include "Python.h"
+
+#include <boost/python.hpp>
+
+#include "renderer/kernel/rendering/itilecallback.h"
+#include "renderer/api/frame.h"
+
+namespace bpy = boost::python;
+using namespace foundation;
+using namespace renderer;
 
 namespace detail
 {
+
+class ITileCallbackWrapper : public ITileCallback, public bpy::wrapper<ITileCallback>
+{
+public:
+
+    virtual void release() {delete this;}
+
+    virtual void pre_render(const size_t x, const size_t y, const size_t width, const size_t height)
+    {
+        this->get_override("pre_render")(x, y, width, height);
+    }
+
+    virtual void post_render_tile(const Frame* frame, const size_t tile_x, const size_t tile_y)
+    {
+        this->get_override("post_render_tile")(frame, tile_x, tile_y);
+    }
+
+    virtual void post_render(const Frame* frame)
+    {
+        this->get_override("post_render")(frame);
+    }
+};
 
 } // detail
 
 void bind_tile_callback()
 {
-    // nothing here yet
+    bpy::class_<detail::ITileCallbackWrapper, boost::noncopyable>("ITileCallback")
+        .def("pre_render", bpy::pure_virtual(&ITileCallback::pre_render))
+        .def("post_render_tile", bpy::pure_virtual(&ITileCallback::post_render_tile))
+        .def("post_render", bpy::pure_virtual(&ITileCallback::post_render))
+        ;
 }

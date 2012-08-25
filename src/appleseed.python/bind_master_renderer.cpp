@@ -51,18 +51,16 @@ std::auto_ptr<MasterRenderer> create_master_renderer(Project* project,
     return std::auto_ptr<MasterRenderer>(new MasterRenderer(*project, bpy_dict_to_param_array(params), render_controller));
 }
 
-/*
 std::auto_ptr<MasterRenderer> create_master_renderer_with_tile_callback(Project* project,
                                                                          const bpy::dict& params,
                                                                          IRendererController* render_controller,
-                                                                         ITileCallbackFactory* tile_callback)
+                                                                         ITileCallback* tile_callback)
 {
     return std::auto_ptr<MasterRenderer>(new MasterRenderer(*project,
-                                                                bpy_dict_to_param_array(params),
-                                                                render_controller,
-                                                                tile_callback));
+                                                            bpy_dict_to_param_array(params),
+                                                            render_controller,
+                                                            tile_callback));
 }
-*/
 
 bpy::dict master_renderer_get_parameters(const MasterRenderer* m)
 {
@@ -80,7 +78,7 @@ void bind_master_renderer()
 {
     bpy::class_<MasterRenderer, std::auto_ptr<MasterRenderer>, boost::noncopyable>("MasterRenderer", bpy::no_init)
         .def("__init__", bpy::make_constructor(detail::create_master_renderer))
-        //.def("__init__", bpy::make_constructor(detail::create_master_renderer_with_tile_callback))
+        .def("__init__", bpy::make_constructor(detail::create_master_renderer_with_tile_callback))
         .def("get_parameters", detail::master_renderer_get_parameters)
         .def("set_parameters", detail::master_renderer_set_parameters)
         .def("render", &MasterRenderer::render)

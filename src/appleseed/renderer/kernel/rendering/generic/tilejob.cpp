@@ -112,7 +112,7 @@ void TileJob::execute(const size_t thread_index)
     {
         // Call the post-render tile callback.
         if (tile_callback)
-            tile_callback->post_render(m_frame, m_tile_x, m_tile_y);
+            tile_callback->post_render_tile(&m_frame, m_tile_x, m_tile_y);
 
         // Rethrow the exception.
         throw;
@@ -120,7 +120,7 @@ void TileJob::execute(const size_t thread_index)
 
     // Call the post-render tile callback.
     if (tile_callback)
-        tile_callback->post_render(m_frame, m_tile_x, m_tile_y);
+        tile_callback->post_render_tile(&m_frame, m_tile_x, m_tile_y);
 }
 
 }   // namespace renderer

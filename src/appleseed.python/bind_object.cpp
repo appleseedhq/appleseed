@@ -63,7 +63,7 @@ void bpy_list_to_string_array(const bpy::list& l, StringArray& strings)
 auto_release_ptr<ObjectInstance> create_obj_instance_with_back_mat(const std::string& name,
                                                                     const bpy::dict& params,
                                                                     Object& obj,
-                                                                    const Transformd& transform,
+                                                                    const UnalignedTransformd44& transform,
                                                                     const bpy::list& front_materials,
                                                                     const bpy::list& back_materials)
 {
@@ -74,11 +74,11 @@ auto_release_ptr<ObjectInstance> create_obj_instance_with_back_mat(const std::st
     bpy_list_to_string_array(back_materials, back_mats);
 
     return ObjectInstanceFactory::create(name.c_str(), bpy_dict_to_param_array(params),
-                                            obj, transform, front_mats, back_mats);
+                                            obj, transform.as_foundation_transform(), front_mats, back_mats);
 }
 
 auto_release_ptr<ObjectInstance> create_obj_instance(const std::string& name, const bpy::dict& params,
-                                                       Object& obj, const Transformd& transform,
+                                                       Object& obj, const UnalignedTransformd44& transform,
                                                        const bpy::list& front_materials)
 {
     return create_obj_instance_with_back_mat(name, params, obj, transform, front_materials, bpy::list());
