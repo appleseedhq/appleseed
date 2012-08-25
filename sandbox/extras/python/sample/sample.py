@@ -29,6 +29,7 @@
 import sys
 import signal
 import math
+import threading
 
 import appleseed as asr
 
@@ -198,10 +199,18 @@ class TileCallback( asr.ITileCallback):
         print "pre_render: x = %s, y = %s, width = %s, height = %s" % ( x, y, width, height)
 
     def post_render_tile( self, frame, tile_x, tile_y):
-        print "post_render_tile: frame = %s, tile_x = %s, tile_y = %s" % ( frame, tile_x, tile_y)
+        print "post_render_tile: tile_x = %s, tile_y = %s" % ( tile_x, tile_y)
 
     def post_render( self, frame):
         print "post_render: frame = %s" & frame
+
+class RenderThread( threading.Thread):
+    def __init__( self, renderer):
+        super( RenderThread, self).__init__()
+        self.__renderer = renderer
+
+    def run( self):
+        self.__renderer.render()
 
 def main():
     """
@@ -222,7 +231,10 @@ def main():
                                     renderer_controller,
                                     tile_callback
                                     )
-    renderer.render()
+
+    render_thread = RenderThread( renderer)
+    render_thread.start()
+    render_thread.join()
 
     project.get_frame().write( "output/test.png")
     asr.ProjectFileWriter().write( project, "output/test.appleseed")
