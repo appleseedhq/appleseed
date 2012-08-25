@@ -48,17 +48,38 @@ public:
 
     virtual void pre_render(const size_t x, const size_t y, const size_t width, const size_t height)
     {
-        this->get_override("pre_render")(x, y, width, height);
+        try
+        {
+            this->get_override("pre_render")(x, y, width, height);
+        }
+        catch( bpy::error_already_set)
+        {
+            PyErr_Print();
+        }
     }
 
     virtual void post_render_tile(const Frame* frame, const size_t tile_x, const size_t tile_y)
     {
-        this->get_override("post_render_tile")(frame, tile_x, tile_y);
+        try
+        {
+            this->get_override("post_render_tile")(bpy::ptr(frame), tile_x, tile_y);
+        }
+        catch( bpy::error_already_set)
+        {
+            PyErr_Print();
+        }
     }
 
     virtual void post_render(const Frame* frame)
     {
-        this->get_override("post_render")(frame);
+        try
+        {
+            this->get_override("post_render")(bpy::ptr(frame));
+        }
+        catch( bpy::error_already_set)
+        {
+            PyErr_Print();
+        }
     }
 };
 
