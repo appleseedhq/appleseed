@@ -62,6 +62,45 @@ T* typed_entity_map_get_item(renderer::TypedEntityMap<T>& map, const std::string
     return map.get_by_name(key.c_str());
 }
 
+template<class T>
+boost::python::object typed_entity_map_get_iter( renderer::TypedEntityMap<T> *map)
+{
+    boost::python::dict items;
+
+    typedef typename renderer::TypedEntityMap<T>::iterator iterator;
+
+    for (iterator it( map->begin()), e( map->end()); it != e; ++it)
+        items[it->get_name()] = boost::python::ptr( &(*it));
+
+    return items.attr( "__iter__")();
+}
+
+template<class T>
+boost::python::list typed_entity_map_get_keys( renderer::TypedEntityMap<T> *map)
+{
+    boost::python::list items;
+
+    typedef typename renderer::TypedEntityMap<T>::iterator iterator;
+
+    for (iterator it( map->begin()), e( map->end()); it != e; ++it)
+        items.append( it->get_name());
+
+    return items;
+}
+
+template<class T>
+boost::python::list typed_entity_map_get_values( renderer::TypedEntityMap<T> *map)
+{
+    boost::python::list items;
+
+    typedef typename renderer::TypedEntityMap<T>::iterator iterator;
+
+    for (iterator it( map->begin()), e( map->end()); it != e; ++it)
+        items.append( boost::python::ptr( &(*it)));
+
+    return items;
+}
+
 } // detail
 
 template<class T>
@@ -74,7 +113,7 @@ void bind_typed_entity_vector(const char* name)
 
         .def("insert", &renderer::TypedEntityVector<T>::insert)
 
-        .def("__iter__", boost::python::iterator<renderer::TypedEntityVector<T> >())
+        .def("__iter__", boost::python::iterator<renderer::TypedEntityVector<T>,boost::python::return_internal_reference<> >())
         ;
 }
 
@@ -89,7 +128,9 @@ void bind_typed_entity_map(const char* name)
 
         .def("insert", &renderer::TypedEntityMap<T>::insert)
 
-        //.def("__iter__", boost::python::iterator<renderer::TypedEntityMap<T> >())
+        .def("__iter__", &detail::typed_entity_map_get_iter<T>)
+        .def( "keys", &detail::typed_entity_map_get_keys<T>)
+        .def( "values", &detail::typed_entity_map_get_values<T>)
         ;
 }
 
