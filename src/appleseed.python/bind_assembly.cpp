@@ -67,12 +67,17 @@ TransformSequence& assembly_instance_get_transform_sequence(AssemblyInstance *in
 
 void bind_assembly()
 {
-    bpy::class_<Assembly, auto_release_ptr<Assembly>, bpy::bases<Entity>, boost::noncopyable>("Assembly", bpy::no_init)
+    bpy::class_<BaseGroup, boost::noncopyable>( "BaseGroup")
+        .def("colors", &BaseGroup::colors, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("textures", &BaseGroup::textures, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("texture_instances", &BaseGroup::texture_instances, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("assemblies", &BaseGroup::assemblies, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("assembly_instances", &BaseGroup::assembly_instances, bpy::return_value_policy<bpy::reference_existing_object>())
+        ;
+
+    bpy::class_<Assembly, auto_release_ptr<Assembly>, bpy::bases<Entity, BaseGroup>, boost::noncopyable>("Assembly", bpy::no_init)
         .def("__init__", bpy::make_constructor(detail::create_assembly))
         .def("__init__", bpy::make_constructor(detail::create_assembly_with_params))
-        .def("colors", &Assembly::colors, bpy::return_value_policy<bpy::reference_existing_object>())
-        .def("textures", &Assembly::textures, bpy::return_value_policy<bpy::reference_existing_object>())
-        .def("texture_instances", &Assembly::texture_instances, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("bsdfs", &Assembly::bsdfs, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("edfs", &Assembly::edfs, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("surface_shaders", &Assembly::surface_shaders, bpy::return_value_policy<bpy::reference_existing_object>())
