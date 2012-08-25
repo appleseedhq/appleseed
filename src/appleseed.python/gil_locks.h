@@ -34,6 +34,8 @@
 
 #include <boost/noncopyable.hpp>
 
+// This class locks Python's Global interpreter lock on construction
+// and unlocks it on destructions. A classic lock.
 class ScopedGILLock : boost::noncopyable
 {
   public:
@@ -47,6 +49,8 @@ class ScopedGILLock : boost::noncopyable
 	PyGILState_STATE m_state;
 };
 
+// This class unlocks Python's Global interpreter lock on construction
+// and locks it on destructions. An inverted lock -> unlock.
 class ScopedGILUnlock : boost::noncopyable
 {
   public:
