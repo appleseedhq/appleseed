@@ -63,7 +63,6 @@
 // Standard headers.
 #include <exception>
 #include <deque>
-#include <iostream>
 
 using namespace foundation;
 using namespace std;
@@ -126,13 +125,10 @@ class SerialTileCallbacksRendererController : public IRendererController
         {
             boost::mutex::scoped_lock lock(m_mutex);
 
-            if(!m_todo_callbacks.empty())
-                std::cout << "SerialTileCallback: pending = " << m_todo_callbacks.size() << std::endl;
-
-            while(!m_todo_callbacks.empty())
+            while(!m_callbacks_todo.empty())
             {
-                exec_callback(m_todo_callbacks.front());
-                m_todo_callbacks.pop_front();
+                exec_callback(m_callbacks_todo.front());
+                m_callbacks_todo.pop_front();
             }
         }
 
@@ -148,7 +144,7 @@ class SerialTileCallbacksRendererController : public IRendererController
         enum CallbackType
         {
             PreRender,
-            PostRenderTileXY,
+            PostRenderTile,
             PostRender
         };
 
@@ -171,7 +167,7 @@ class SerialTileCallbacksRendererController : public IRendererController
         callback.y = y;
         callback.width = width;
         callback.height = height;
-        m_todo_callbacks.push_back(callback);
+        m_callbacks_todo.push_back(callback);
     }
 
     void add_post_render_tile_callback(const Frame* frame, const size_t tile_x, const size_t tile_y)
@@ -179,13 +175,13 @@ class SerialTileCallbacksRendererController : public IRendererController
         boost::mutex::scoped_lock lock(m_mutex);
 
         PendingTileCallback callback;
-        callback.type = PendingTileCallback::PostRenderTileXY;
+        callback.type = PendingTileCallback::PostRenderTile;
         callback.frame = frame;
         callback.x = tile_x;
         callback.y = tile_y;
         callback.width = 0;
         callback.height = 0;
-        m_todo_callbacks.push_back(callback);
+        m_callbacks_todo.push_back(callback);
     }
 
     void add_post_render_tile_callback(const Frame *frame)
@@ -199,19 +195,18 @@ class SerialTileCallbacksRendererController : public IRendererController
         callback.y = 0;
         callback.width = 0;
         callback.height = 0;
-        m_todo_callbacks.push_back(callback);
+        m_callbacks_todo.push_back(callback);
     }
 
     void exec_callback(const PendingTileCallback& call)
     {
-        // TODO: do pending tile callbacks here.
         switch( call.type)
         {
           case PendingTileCallback::PreRender:
             m_tile_callback->pre_render(call.x, call.y, call.width, call.height);
           break;
 
-          case PendingTileCallback::PostRenderTileXY:
+          case PendingTileCallback::PostRenderTile:
             m_tile_callback->post_render_tile(call.frame, call.x, call.y);
           break;
 
@@ -227,7 +222,7 @@ class SerialTileCallbacksRendererController : public IRendererController
     IRendererController* m_controller;
     ITileCallback* m_tile_callback;
     boost::mutex m_mutex;
-    std::deque<PendingTileCallback> m_todo_callbacks;
+    std::deque<PendingTileCallback> m_callbacks_todo;
     boost::thread::id m_thread_id;
 };
 
