@@ -79,49 +79,35 @@ class SerialTileCallbacksRendererController : public IRendererController
     {
         assert(m_controller);
         assert(m_tile_callback);
-
-        m_thread_id = boost::this_thread::get_id();
     }
 
     virtual void on_rendering_begin()
     {
-        assert(m_thread_id == boost::this_thread::get_id());
-
         m_controller->on_rendering_begin();
     }
 
     virtual void on_rendering_success()
     {
-        assert(m_thread_id == boost::this_thread::get_id());
-
         m_controller->on_rendering_success();
     }
 
     virtual void on_rendering_abort()
     {
-        assert(m_thread_id == boost::this_thread::get_id());
-
         m_controller->on_rendering_abort();
     }
 
     virtual void on_frame_begin()
     {
-        assert(m_thread_id == boost::this_thread::get_id());
-
         m_controller->on_frame_begin();
     }
 
     virtual void on_frame_end()
     {
-        assert(m_thread_id == boost::this_thread::get_id());
-
         m_controller->on_frame_end();
     }
 
     virtual Status on_progress()
     {
-        assert(m_thread_id == boost::this_thread::get_id());
-
         {
             boost::mutex::scoped_lock lock(m_mutex);
 
@@ -223,7 +209,6 @@ class SerialTileCallbacksRendererController : public IRendererController
     ITileCallback* m_tile_callback;
     boost::mutex m_mutex;
     std::deque<PendingTileCallback> m_callbacks_todo;
-    boost::thread::id m_thread_id;
 };
 
 class SerialTileCallback : public ITileCallback
