@@ -30,6 +30,7 @@
 
 #include "foundation/math/vector.h"
 #include "foundation/utility/string.h"
+#include "foundation/utility/foreach.h"
 #include "foundation/utility/iostreamop.h"
 
 namespace bpy = boost::python;
@@ -218,13 +219,13 @@ bpy::dict dictionary_to_bpy_dict(const Dictionary& dict)
 {
     bpy::dict result;
 
-    for (StringDictionary::const_iterator it(dict.strings().begin()), e(dict.strings().end()); it != e; ++it)
-        result[it.name()] = obj_from_string(it.value());
+    for (const_each<StringDictionary> it = dict.strings(); it; ++it)
+        result[it->name()] = obj_from_string(it->value());
 
-    for (DictionaryDictionary::const_iterator it(dict.dictionaries().begin()), e(dict.dictionaries().end()); it != e; ++it)
+    for (const_each<DictionaryDictionary> it = dict.dictionaries(); it; ++it)
     {
         // recurse
-        result[it.name()] = dictionary_to_bpy_dict(it.value());
+        result[it->name()] = dictionary_to_bpy_dict(it->value());
     }
 
     return result;
