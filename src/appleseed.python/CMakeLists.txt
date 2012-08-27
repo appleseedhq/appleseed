@@ -76,9 +76,11 @@ set (sources
     bind_vector.cpp
     dict2dict.cpp
     dict2dict.h
+    gil_locks.h
+    gil_locks.cpp
     module.cpp
-    tile_callback_factory.h
     unaligned_matrix44.h
+    unaligned_transformd44.h
 )
 list (APPEND appleseed.python_sources
     ${sources}
@@ -92,7 +94,7 @@ source_group ("" FILES
 # Target.
 #--------------------------------------------------------------------------------------------------
 
-add_library (appleseed.python SHARED
+add_library (appleseed.python MODULE
     ${appleseed.python_sources}
 )
 

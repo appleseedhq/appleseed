@@ -1,10 +1,11 @@
+
 //
 // This source file is part of appleseed.
 // Visit http://appleseedhq.net/ for additional information and resources.
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2012 Esteban Tovagliari.
+// Copyright (c) 2012 Esteban Tovagliari
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -25,45 +26,42 @@
 // THE SOFTWARE.
 //
 
-#include "bind_auto_release_ptr.h"
+#ifndef APPLESEED_PYTHON_GIL_LOCKS_H
+#define APPLESEED_PYTHON_GIL_LOCKS_H
 
-#include "renderer/api/bsdf.h"
+// Has to be first.
+#include "Python.h"
 
-#include "bind_typed_entity_containers.h"
-#include "dict2dict.h"
+#include <boost/noncopyable.hpp>
 
-namespace bpy = boost::python;
-using namespace foundation;
-using namespace renderer;
-
-namespace detail
+// This class locks Python's Global interpreter lock on construction
+// and unlocks it on destructions. A classic lock.
+class ScopedGILLock : boost::noncopyable
 {
+  public:
 
-auto_release_ptr<BSDF> create_bsdf(const std::string& bsdf_type,
-                                    const std::string& name,
-                                    const bpy::dict& params)
+    ScopedGILLock();
+	~ScopedGILLock();
+
+  private:
+
+    bool m_threadsInitialised;
+	PyGILState_STATE m_state;
+};
+
+// This class unlocks Python's Global interpreter lock on construction
+// and locks it on destructions. An inverted lock -> unlock.
+class ScopedGILUnlock : boost::noncopyable
 {
-    BSDFFactoryRegistrar factories;
-    const IBSDFFactory* factory = factories.lookup(bsdf_type.c_str());
+  public:
 
-    if (factory)
-        return factory->create(name.c_str(), bpy_dict_to_param_array(params));
-    else
-    {
-        PyErr_SetString(PyExc_RuntimeError, "BSDF type not found");
-        bpy::throw_error_already_set();
-    }
+    ScopedGILUnlock();
+	~ScopedGILUnlock();
 
-    return auto_release_ptr<BSDF>();
-}
+  private:
 
-} // detail
+    bool m_threadsInitialised;
+	PyThreadState* m_state;
+};
 
-void bind_bsdf()
-{
-    bpy::class_<BSDF, auto_release_ptr<BSDF>, bpy::bases<ConnectableEntity>, boost::noncopyable>("BSDF", bpy::no_init)
-        .def("__init__", bpy::make_constructor(detail::create_bsdf))
-        ;
-
-    bind_typed_entity_vector<BSDF>("BSDFContainer");
-}
+#endif  // !APPLESEED_PYTHON_GIL_LOCKS_H

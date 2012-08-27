@@ -39,18 +39,18 @@ using namespace renderer;
 namespace detail
 {
 
-auto_release_ptr<EDF> create_edf( const std::string& edf_type,
+auto_release_ptr<EDF> create_edf(const std::string& edf_type,
                                     const std::string& name,
                                     const bpy::dict& params)
 {
     EDFFactoryRegistrar factories;
-    const IEDFFactory* factory = factories.lookup( edf_type.c_str());
+    const IEDFFactory* factory = factories.lookup(edf_type.c_str());
 
     if (factory)
-        return factory->create( name.c_str(), bpy_dict_to_param_array( params));
+        return factory->create(name.c_str(), bpy_dict_to_param_array(params));
     else
     {
-        PyErr_SetString( PyExc_RuntimeError, "EDF type not found");
+        PyErr_SetString(PyExc_RuntimeError, "EDF type not found");
         bpy::throw_error_already_set();
     }
 
@@ -61,9 +61,9 @@ auto_release_ptr<EDF> create_edf( const std::string& edf_type,
 
 void bind_edf()
 {
-    bpy::class_<EDF, auto_release_ptr<EDF>, bpy::bases<ConnectableEntity>, boost::noncopyable>( "EDF", bpy::no_init)
-        .def( "__init__", bpy::make_constructor( detail::create_edf))
+    bpy::class_<EDF, auto_release_ptr<EDF>, bpy::bases<ConnectableEntity>, boost::noncopyable>("EDF", bpy::no_init)
+        .def("__init__", bpy::make_constructor(detail::create_edf))
         ;
 
-    bind_typed_entity_vector<EDF>( "EDFContainer");
+    bind_typed_entity_vector<EDF>("EDFContainer");
 }

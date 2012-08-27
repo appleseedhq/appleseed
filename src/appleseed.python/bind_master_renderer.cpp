@@ -35,6 +35,7 @@
 #include "renderer/api/rendering.h"
 #include "renderer/api/project.h"
 
+#include "gil_locks.h"
 #include "dict2dict.h"
 
 namespace bpy = boost::python;
@@ -44,45 +45,53 @@ using namespace renderer;
 namespace detail
 {
 
-std::auto_ptr<MasterRenderer> create_master_renderer( Project* project,
+std::auto_ptr<MasterRenderer> create_master_renderer(Project* project,
                                                         const bpy::dict& params,
                                                         IRendererController* render_controller)
 {
-    return std::auto_ptr<MasterRenderer>( new MasterRenderer( *project, bpy_dict_to_param_array( params), render_controller));
+    return std::auto_ptr<MasterRenderer>(new MasterRenderer(*project, bpy_dict_to_param_array(params), render_controller));
 }
 
-/*
-std::auto_ptr<MasterRenderer> create_master_renderer_with_tile_callback( Project* project,
+std::auto_ptr<MasterRenderer> create_master_renderer_with_tile_callback(Project* project,
                                                                          const bpy::dict& params,
                                                                          IRendererController* render_controller,
-                                                                         ITileCallbackFactory* tile_callback)
+                                                                         ITileCallback* tile_callback)
 {
-    return std::auto_ptr<MasterRenderer>( new MasterRenderer( *project,
-                                                                bpy_dict_to_param_array( params),
-                                                                render_controller,
-                                                                tile_callback));
-}
-*/
-
-bpy::dict master_renderer_get_parameters( const MasterRenderer* m)
-{
-    return param_array_to_bpy_dict( m->get_parameters());
+    return std::auto_ptr<MasterRenderer>(new MasterRenderer(*project,
+                                                            bpy_dict_to_param_array(params),
+                                                            render_controller,
+                                                            tile_callback));
 }
 
-void master_renderer_set_parameters( MasterRenderer* m, const bpy::dict& params)
+bpy::dict master_renderer_get_parameters(const MasterRenderer* m)
 {
-    m->get_parameters() = bpy_dict_to_param_array( params);
+    return param_array_to_bpy_dict(m->get_parameters());
+}
+
+void master_renderer_set_parameters(MasterRenderer* m, const bpy::dict& params)
+{
+    m->get_parameters() = bpy_dict_to_param_array(params);
+}
+
+bool master_renderer_render(MasterRenderer* m)
+{
+    // Unlock Python's global interpreter lock (GIL),
+    // while we do lenghty C++ computations.
+    // the GIL is locked again when unlock goes out of scope.
+    ScopedGILUnlock unlock;
+
+    return m->render();
 }
 
 } // detail
 
 void bind_master_renderer()
 {
-    bpy::class_<MasterRenderer, std::auto_ptr<MasterRenderer>, boost::noncopyable>( "MasterRenderer", bpy::no_init)
-        .def( "__init__", bpy::make_constructor( detail::create_master_renderer))
-        //.def( "__init__", bpy::make_constructor( detail::create_master_renderer_with_tile_callback))
-        .def( "get_parameters", detail::master_renderer_get_parameters)
-        .def( "set_parameters", detail::master_renderer_set_parameters)
-        .def( "render", &MasterRenderer::render)
+    bpy::class_<MasterRenderer, std::auto_ptr<MasterRenderer>, boost::noncopyable>("MasterRenderer", bpy::no_init)
+        .def("__init__", bpy::make_constructor(detail::create_master_renderer))
+        .def("__init__", bpy::make_constructor(detail::create_master_renderer_with_tile_callback))
+        .def("get_parameters", detail::master_renderer_get_parameters)
+        .def("set_parameters", detail::master_renderer_set_parameters)
+        .def("render", detail::master_renderer_render)
         ;
 }

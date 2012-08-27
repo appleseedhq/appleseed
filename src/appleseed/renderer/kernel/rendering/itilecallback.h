@@ -66,15 +66,15 @@ class DLLSYMBOL ITileCallback
 
     // This method is called after a tile is rendered.
     // Only tile-based renderers call this method.
-    virtual void post_render(
-        const Frame&    frame,
+    virtual void post_render_tile(
+        const Frame*    frame,
         const size_t    tile_x,
         const size_t    tile_y) = 0;
 
     // This method is called after a whole frame is rendered.
     // Only whole-frame (progressive) renderers call this method.
     virtual void post_render(
-        const Frame&    frame) = 0;
+        const Frame*    frame) = 0;
 };
 
 

@@ -58,15 +58,214 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/stringexception.h"
+#include "foundation/platform/thread.h"
 
 // Standard headers.
 #include <exception>
+#include <deque>
 
 using namespace foundation;
 using namespace std;
 
 namespace renderer
 {
+
+class SerialTileCallbacksRendererController : public IRendererController
+{
+  public:
+
+    SerialTileCallbacksRendererController(IRendererController* controller,
+                                            ITileCallback* tile_callback) : m_controller(controller),m_tile_callback(tile_callback)
+    {
+        assert(m_controller);
+        assert(m_tile_callback);
+    }
+
+    virtual void on_rendering_begin()
+    {
+        m_controller->on_rendering_begin();
+    }
+
+    virtual void on_rendering_success()
+    {
+        m_controller->on_rendering_success();
+    }
+
+    virtual void on_rendering_abort()
+    {
+        m_controller->on_rendering_abort();
+    }
+
+    virtual void on_frame_begin()
+    {
+        m_controller->on_frame_begin();
+    }
+
+    virtual void on_frame_end()
+    {
+        m_controller->on_frame_end();
+    }
+
+    virtual Status on_progress()
+    {
+        {
+            boost::mutex::scoped_lock lock(m_mutex);
+
+            while(!m_callbacks_todo.empty())
+            {
+                exec_callback(m_callbacks_todo.front());
+                m_callbacks_todo.pop_front();
+            }
+        }
+
+        return m_controller->on_progress();
+    }
+
+  private:
+
+    friend class SerialTileCallback;
+
+    struct PendingTileCallback
+    {
+        enum CallbackType
+        {
+            PreRender,
+            PostRenderTile,
+            PostRender
+        };
+
+        CallbackType type;
+        const Frame* frame;
+        size_t x;
+        size_t y;
+        size_t width;
+        size_t height;
+    };
+
+    void add_pre_render_tile_callback(const size_t x, const size_t y, const size_t width, const size_t height)
+    {
+        boost::mutex::scoped_lock lock(m_mutex);
+
+        PendingTileCallback callback;
+        callback.type = PendingTileCallback::PreRender;
+        callback.frame = 0;
+        callback.x = x;
+        callback.y = y;
+        callback.width = width;
+        callback.height = height;
+        m_callbacks_todo.push_back(callback);
+    }
+
+    void add_post_render_tile_callback(const Frame* frame, const size_t tile_x, const size_t tile_y)
+    {
+        boost::mutex::scoped_lock lock(m_mutex);
+
+        PendingTileCallback callback;
+        callback.type = PendingTileCallback::PostRenderTile;
+        callback.frame = frame;
+        callback.x = tile_x;
+        callback.y = tile_y;
+        callback.width = 0;
+        callback.height = 0;
+        m_callbacks_todo.push_back(callback);
+    }
+
+    void add_post_render_tile_callback(const Frame *frame)
+    {
+        boost::mutex::scoped_lock lock(m_mutex);
+
+        PendingTileCallback callback;
+        callback.type = PendingTileCallback::PostRender;
+        callback.frame = frame;
+        callback.x = 0;
+        callback.y = 0;
+        callback.width = 0;
+        callback.height = 0;
+        m_callbacks_todo.push_back(callback);
+    }
+
+    void exec_callback(const PendingTileCallback& call)
+    {
+        switch( call.type)
+        {
+          case PendingTileCallback::PreRender:
+            m_tile_callback->pre_render(call.x, call.y, call.width, call.height);
+          break;
+
+          case PendingTileCallback::PostRenderTile:
+            m_tile_callback->post_render_tile(call.frame, call.x, call.y);
+          break;
+
+          case PendingTileCallback::PostRender:
+            m_tile_callback->post_render(call.frame);
+          break;
+
+          default:
+            assert(false);
+        }
+    }
+
+    IRendererController* m_controller;
+    ITileCallback* m_tile_callback;
+    boost::mutex m_mutex;
+    std::deque<PendingTileCallback> m_callbacks_todo;
+};
+
+class SerialTileCallback : public ITileCallback
+{
+  public:
+
+    SerialTileCallback(SerialTileCallbacksRendererController* controller) : m_controller(controller)
+    {
+        assert(m_controller);
+    }
+
+    virtual void release()
+    {
+        delete this;
+    }
+
+    virtual void pre_render(const size_t x, const size_t y, const size_t width, const size_t height)
+    {
+        m_controller->add_pre_render_tile_callback(x,y,width,height);
+    }
+
+    virtual void post_render_tile(const Frame* frame, const size_t tile_x, const size_t tile_y)
+    {
+        m_controller->add_post_render_tile_callback(frame,tile_x,tile_y);
+    }
+
+    virtual void post_render(const Frame* frame)
+    {
+        m_controller->add_post_render_tile_callback(frame);
+    }
+
+  private:
+    SerialTileCallbacksRendererController* m_controller;
+};
+
+class SerialTileCallbackFactory : public ITileCallbackFactory
+{
+  public:
+
+    SerialTileCallbackFactory(SerialTileCallbacksRendererController* controller) : m_controller(controller)
+    {
+        assert(m_controller);
+    }
+
+    virtual void release()
+    {
+        delete this;
+    }
+
+    virtual ITileCallback* create()
+    {
+        return new SerialTileCallback(m_controller);
+    }
+
+  private:
+    SerialTileCallbacksRendererController* m_controller;
+};
 
 //
 // MasterRenderer class implementation.
@@ -81,7 +280,32 @@ MasterRenderer::MasterRenderer(
   , m_params(params)
   , m_renderer_controller(renderer_controller)
   , m_tile_callback_factory(tile_callback_factory)
+  , m_serial_renderer_controller(0)
 {
+}
+
+MasterRenderer::MasterRenderer(
+    Project&                project,
+    const ParamArray&       params,
+    IRendererController*    renderer_controller,
+    ITileCallback*          tile_callback)
+  : m_project(project)
+  , m_params(params)
+  , m_renderer_controller(0)
+  , m_tile_callback_factory(0)
+  , m_serial_renderer_controller(0)
+{
+    m_serial_renderer_controller = new SerialTileCallbacksRendererController(renderer_controller, tile_callback);
+    m_serial_tile_callback_factory.reset(new SerialTileCallbackFactory(
+                                        dynamic_cast<SerialTileCallbacksRendererController*>(m_serial_renderer_controller)));
+
+    m_renderer_controller = m_serial_renderer_controller;
+    m_tile_callback_factory = m_serial_tile_callback_factory.get();
+}
+
+MasterRenderer::~MasterRenderer()
+{
+    delete m_serial_renderer_controller;
 }
 
 ParamArray& MasterRenderer::get_parameters()

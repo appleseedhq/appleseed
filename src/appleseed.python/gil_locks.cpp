@@ -1,10 +1,11 @@
+
 //
 // This source file is part of appleseed.
 // Visit http://appleseedhq.net/ for additional information and resources.
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2012 Esteban Tovagliari.
+// Copyright (c) 2012 Esteban Tovagliari
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -25,12 +26,28 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_PYTHON_TILE_CALLBACK_FACTORY_H
-#define APPLESEED_PYTHON_TILE_CALLBACK_FACTORY_H
+#include "gil_locks.h"
 
-// Has to be first, to avoid redifinition warnings.
-#include "Python.h"
+ScopedGILLock::ScopedGILLock() : m_threadsInitialised(PyEval_ThreadsInitialized())
+{
+	if (m_threadsInitialised)
+		m_state = PyGILState_Ensure();
+}
 
-#include <boost/python.hpp>
+ScopedGILLock::~ScopedGILLock()
+{
+	if (m_threadsInitialised)
+		PyGILState_Release( m_state );
+}
 
-#endif  // !APPLESEED_PYTHON_TILE_CALLBACK_FACTORY_H
+ScopedGILUnlock::ScopedGILUnlock() : m_threadsInitialised(PyEval_ThreadsInitialized())
+{
+	if (m_threadsInitialised)
+		m_state = PyEval_SaveThread();
+}
+
+ScopedGILUnlock::~ScopedGILUnlock()
+{
+	if( m_threadsInitialised )
+		PyEval_RestoreThread( m_state );
+}

@@ -43,9 +43,9 @@ using namespace renderer;
 namespace detail
 {
 
-auto_release_ptr<Project> create_project( const std::string& name)
+auto_release_ptr<Project> create_project(const std::string& name)
 {
-    return ProjectFactory::create( name.c_str());
+    return ProjectFactory::create(name.c_str());
 }
 
 auto_release_ptr<Project> create_default_project()
@@ -58,57 +58,57 @@ auto_release_ptr<Project> create_cornell_box_project()
     return CornellBoxProjectFactory::create();
 }
 
-bpy::list project_get_search_paths( const Project* proj)
+bpy::list project_get_search_paths(const Project* proj)
 {
     bpy::list paths;
 
-    for (SearchPaths::ConstIterator it( proj->get_search_paths().begin()), e( proj->get_search_paths().end()); it != e; ++it)
-        paths.append( *it);
+    for (SearchPaths::ConstIterator it(proj->get_search_paths().begin()), e(proj->get_search_paths().end()); it != e; ++it)
+        paths.append(*it);
 
     return paths;
 }
 
-void project_set_search_paths( Project* proj, const bpy::list& paths)
+void project_set_search_paths(Project* proj, const bpy::list& paths)
 {
     proj->get_search_paths().clear();
 
-    for (int i = 0, e = bpy::len( paths); i < e; ++i)
+    for (int i = 0, e = bpy::len(paths); i < e; ++i)
     {
-        bpy::extract<const char*> extractor( paths[i] );
+        bpy::extract<const char*> extractor(paths[i] );
         if (extractor.check())
-            proj->get_search_paths().push_back( extractor());
+            proj->get_search_paths().push_back(extractor());
         else
         {
-            PyErr_SetString( PyExc_TypeError, "Incompatible type. Only strings accepted." );
+            PyErr_SetString(PyExc_TypeError, "Incompatible type. Only strings accepted." );
             bpy::throw_error_already_set();
         }
     }
 }
 
-ConfigurationContainer* project_get_configs( Project* proj)
+ConfigurationContainer* project_get_configs(Project* proj)
 {
-    return &( proj->configurations());
+    return &(proj->configurations());
 }
 
-bool write_project_default_opts( const ProjectFileWriter* writer, const Project* project, const char* filepath)
+bool write_project_default_opts(const ProjectFileWriter* writer, const Project* project, const char* filepath)
 {
-    return ProjectFileWriter::write( *project, filepath);
+    return ProjectFileWriter::write(*project, filepath);
 }
 
-bool write_project_with_opts( const ProjectFileWriter* writer, const Project* project,
+bool write_project_with_opts(const ProjectFileWriter* writer, const Project* project,
                                 const char* filepath, ProjectFileWriter::Options opts)
 {
-    return ProjectFileWriter::write( *project, filepath, opts);
+    return ProjectFileWriter::write(*project, filepath, opts);
 }
 
-auto_release_ptr<Configuration> create_config( const std::string& name)
+auto_release_ptr<Configuration> create_config(const std::string& name)
 {
-    return ConfigurationFactory::create( name.c_str());
+    return ConfigurationFactory::create(name.c_str());
 }
 
-auto_release_ptr<Configuration> create_config_with_params( const std::string& name, const bpy::dict& params)
+auto_release_ptr<Configuration> create_config_with_params(const std::string& name, const bpy::dict& params)
 {
-    return ConfigurationFactory::create( name.c_str(), bpy_dict_to_param_array( params));
+    return ConfigurationFactory::create(name.c_str(), bpy_dict_to_param_array(params));
 }
 
 auto_release_ptr<Configuration> create_base_final_config()
@@ -121,72 +121,72 @@ auto_release_ptr<Configuration> create_base_interactive_config()
     return BaseConfigurationFactory::create_base_interactive();
 }
 
-bpy::dict config_get_inherited_parameters( const Configuration* config)
+bpy::dict config_get_inherited_parameters(const Configuration* config)
 {
-    ParamArray params( config->get_inherited_parameters());
-    return param_array_to_bpy_dict( params);
+    ParamArray params(config->get_inherited_parameters());
+    return param_array_to_bpy_dict(params);
 }
 
 } // detail
 
 void bind_project()
 {
-    bpy::class_<Configuration, auto_release_ptr<Configuration>, bpy::bases<Entity>, boost::noncopyable>( "Configuration", bpy::no_init)
-        .def( "create_base_final", detail::create_base_final_config).staticmethod( "create_base_final")
-        .def( "create_base_interactive", detail::create_base_interactive_config).staticmethod( "create_base_interactive")
+    bpy::class_<Configuration, auto_release_ptr<Configuration>, bpy::bases<Entity>, boost::noncopyable>("Configuration", bpy::no_init)
+        .def("create_base_final", detail::create_base_final_config).staticmethod("create_base_final")
+        .def("create_base_interactive", detail::create_base_interactive_config).staticmethod("create_base_interactive")
 
-        .def( "__init__", bpy::make_constructor( detail::create_config))
-        .def( "__init__", bpy::make_constructor( detail::create_config_with_params))
+        .def("__init__", bpy::make_constructor(detail::create_config))
+        .def("__init__", bpy::make_constructor(detail::create_config_with_params))
 
-        .def( "set_base", &Configuration::set_base)
-        .def( "get_base", &Configuration::get_base, bpy::return_value_policy<bpy::reference_existing_object>())
-        .def( "get_inherited_parameters", detail::config_get_inherited_parameters)
+        .def("set_base", &Configuration::set_base)
+        .def("get_base", &Configuration::get_base, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("get_inherited_parameters", detail::config_get_inherited_parameters)
         ;
 
-    bind_typed_entity_map<Configuration>( "ConfigurationContainer");
+    bind_typed_entity_map<Configuration>("ConfigurationContainer");
 
-    bpy::class_<Project, auto_release_ptr<Project>, bpy::bases<Entity>, boost::noncopyable>( "Project", bpy::no_init)    
-        .def( "create_default", detail::create_default_project).staticmethod( "create_default")
-        .def( "create_cornell_box", detail::create_cornell_box_project).staticmethod( "create_cornell_box")
+    bpy::class_<Project, auto_release_ptr<Project>, bpy::bases<Entity>, boost::noncopyable>("Project", bpy::no_init)
+        .def("create_default", detail::create_default_project).staticmethod("create_default")
+        .def("create_cornell_box", detail::create_cornell_box_project).staticmethod("create_cornell_box")
 
-        .def( "__init__", bpy::make_constructor( detail::create_project))
+        .def("__init__", bpy::make_constructor(detail::create_project))
 
-        .def( "add_default_configurations", &Project::add_default_configurations)
+        .def("add_default_configurations", &Project::add_default_configurations)
 
-        .def( "has_path", &Project::has_path)
-        .def( "set_path", &Project::set_path)
-        .def( "get_path", &Project::get_path)
+        .def("has_path", &Project::has_path)
+        .def("set_path", &Project::set_path)
+        .def("get_path", &Project::get_path)
 
-        .def( "set_scene", &Project::set_scene)
-        .def( "get_scene", &Project::get_scene, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("set_scene", &Project::set_scene)
+        .def("get_scene", &Project::get_scene, bpy::return_value_policy<bpy::reference_existing_object>())
 
-        .def( "set_frame", &Project::set_frame)
-        .def( "get_frame", &Project::get_frame, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("set_frame", &Project::set_frame)
+        .def("get_frame", &Project::get_frame, bpy::return_value_policy<bpy::reference_existing_object>())
 
-        .def( "create_aov_images", &Project::create_aov_images)
+        .def("create_aov_images", &Project::create_aov_images)
 
-        .def( "get_search_paths", detail::project_get_search_paths)
-        .def( "set_search_paths", detail::project_set_search_paths)
+        .def("get_search_paths", detail::project_get_search_paths)
+        .def("set_search_paths", detail::project_set_search_paths)
 
-        .def( "configurations", detail::project_get_configs, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("configurations", detail::project_get_configs, bpy::return_value_policy<bpy::reference_existing_object>())
         ;
 
-    bpy::class_<ProjectFileReader>( "ProjectFileReader")
-        .def( "read", &ProjectFileReader::read)
-        .def( "load_builtin", &ProjectFileReader::load_builtin)
+    bpy::class_<ProjectFileReader>("ProjectFileReader")
+        .def("read", &ProjectFileReader::read)
+        .def("load_builtin", &ProjectFileReader::load_builtin)
         ;
 
-    bpy::enum_<ProjectFileWriter::Options>( "ProjectFileWriterOptions")
-        .value( "Defaults"              , ProjectFileWriter::Defaults)
-        .value( "OmitHeaderComment"     , ProjectFileWriter::OmitHeaderComment)
-        .value( "OmitWritingMeshFiles"  , ProjectFileWriter::OmitWritingMeshFiles)
-        .value( "OmitCopyingAssets"     , ProjectFileWriter::OmitCopyingAssets)
+    bpy::enum_<ProjectFileWriter::Options>("ProjectFileWriterOptions")
+        .value("Defaults"              , ProjectFileWriter::Defaults)
+        .value("OmitHeaderComment"     , ProjectFileWriter::OmitHeaderComment)
+        .value("OmitWritingMeshFiles"  , ProjectFileWriter::OmitWritingMeshFiles)
+        .value("OmitCopyingAssets"     , ProjectFileWriter::OmitCopyingAssets)
         ;
 
-    bpy::class_<ProjectFileWriter>( "ProjectFileWriter")
+    bpy::class_<ProjectFileWriter>("ProjectFileWriter")
         // These methods are static, but for symmetry with
         // ProjectFileReader, I'm wrapping them non static.
-        .def( "write", detail::write_project_default_opts)
-        .def( "write", detail::write_project_with_opts)
+        .def("write", detail::write_project_default_opts)
+        .def("write", detail::write_project_with_opts)
         ;
 }
