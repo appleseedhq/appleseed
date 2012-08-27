@@ -41,6 +41,7 @@
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/input/source.h"
+#include "renderer/modeling/light/light.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/utility/paramarray.h"
@@ -194,25 +195,43 @@ namespace
                     (values.m_ambient_sss + view_dep * values.m_view_dep_sss) * sss_contrib +                               // subsurface scattering
                     dot_nl * values.m_diffuse;                                                                              // diffuse lighting
 
-                // Evaluate the input values of the EDF.
-                InputEvaluator edf_input_evaluator(shading_context.get_texture_cache());
-                const void* edf_data =
-                    edf_input_evaluator.evaluate(
-                        light_sample.m_triangle->m_edf->get_inputs(),
-                        light_sample.m_bary);
+                Spectrum exitance;
+                if (light_sample.m_triangle)
+                {
+                    // Evaluate the EDF's inputs.
+                    InputEvaluator input_evaluator(shading_context.get_texture_cache());
+                    const void* edf_data =
+                        input_evaluator.evaluate(
+                            light_sample.m_triangle->m_edf->get_inputs(),
+                            light_sample.m_bary);
 
-                // Evaluate the EDF.
-                Spectrum edf_value;
-                light_sample.m_triangle->m_edf->evaluate(
-                    edf_data,
-                    light_sample.m_geometric_normal,
-                    Basis3d(light_sample.m_shading_normal),
-                    -light_vec,
-                    edf_value);
+                    // Evaluate the EDF.
+                    light_sample.m_triangle->m_edf->evaluate(
+                        edf_data,
+                        light_sample.m_geometric_normal,
+                        Basis3d(light_sample.m_shading_normal),
+                        -light_vec,
+                        exitance);
+                }
+                else
+                {
+                    // Evaluate the light's inputs.
+                    InputEvaluator input_evaluator(shading_context.get_texture_cache());
+                    const void* light_data =
+                        input_evaluator.evaluate(
+                            light_sample.m_light->get_inputs(),
+                            light_sample.m_bary);
+
+                    // Evaluate the light.
+                    light_sample.m_light->evaluate(
+                        light_data,
+                        -light_vec,
+                        exitance);
+                }
 
                 // Compute and accumulate the contribution of this light sample.
                 Spectrum result = values.m_albedo;
-                result *= edf_value;
+                result *= exitance;
                 result *= static_cast<float>(sample_contrib);
                 shading_result.m_color += result;
             }
