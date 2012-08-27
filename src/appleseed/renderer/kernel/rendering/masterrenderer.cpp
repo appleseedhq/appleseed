@@ -285,6 +285,7 @@ MasterRenderer::MasterRenderer(
   , m_renderer_controller(renderer_controller)
   , m_tile_callback_factory(tile_callback_factory)
   , m_serial_renderer_controller(0)
+  , m_serial_tile_callback_factory(0)
 {
 }
 
