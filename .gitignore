@@ -2,4 +2,5 @@ build/
 __pycache__
 *.pyc
 CMakeLists.txt.user
+sandbox/extras/blender/reference/
 
