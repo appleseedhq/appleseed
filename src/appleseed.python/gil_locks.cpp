@@ -28,7 +28,8 @@
 
 #include "gil_locks.h"
 
-ScopedGILLock::ScopedGILLock() : m_threadsInitialised(PyEval_ThreadsInitialized())
+ScopedGILLock::ScopedGILLock()
+  : m_threadsInitialised(PyEval_ThreadsInitialized() ? true : false)
 {
 	if (m_threadsInitialised)
 		m_state = PyGILState_Ensure();
@@ -40,7 +41,8 @@ ScopedGILLock::~ScopedGILLock()
 		PyGILState_Release( m_state );
 }
 
-ScopedGILUnlock::ScopedGILUnlock() : m_threadsInitialised(PyEval_ThreadsInitialized())
+ScopedGILUnlock::ScopedGILUnlock()
+  : m_threadsInitialised(PyEval_ThreadsInitialized() ? true : false)
 {
 	if (m_threadsInitialised)
 		m_state = PyEval_SaveThread();
@@ -48,6 +50,6 @@ ScopedGILUnlock::ScopedGILUnlock() : m_threadsInitialised(PyEval_ThreadsInitiali
 
 ScopedGILUnlock::~ScopedGILUnlock()
 {
-	if( m_threadsInitialised )
+	if (m_threadsInitialised)
 		PyEval_RestoreThread( m_state );
 }

@@ -38,7 +38,7 @@
 namespace foundation
 {
 
-template<class T>
+template <class T>
 class UnalignedMatrix44
 {
   public:
@@ -96,29 +96,29 @@ class UnalignedMatrix44
 
     explicit UnalignedMatrix44(T x)
     {
-        for(int i = 0; i < 16; ++i)
+        for (int i = 0; i < 16; ++i)
             m_data[i] = x;
     }
 
-    template<class U>
+    template <class U>
     explicit UnalignedMatrix44(const Matrix<U,4,4>& m)
     {
-        for(int i = 0; i < 16; ++i)
-            m_data[i] = m[i];
+        for (int i = 0; i < 16; ++i)
+            m_data[i] = static_cast<T>(m[i]);
     }
 
-    template<class U>
+    template <class U>
     explicit UnalignedMatrix44(const UnalignedMatrix44<U>& m)
     {
-        for(int i = 0; i < 16; ++i)
-            m_data[i] = m[i];
+        for (int i = 0; i < 16; ++i)
+            m_data[i] = static_cast<T>(m[i]);
     }
 
-    template<class U>
+    template <class U>
     UnalignedMatrix44<T>& operator=( const UnalignedMatrix44<U>& m)
     {
-        for(int i = 0; i < 16; ++i)
-            m_data[i] = m[i];
+        for (int i = 0; i < 16; ++i)
+            m_data[i] = static_cast<T>(m[i]);
 
         return *this;
     }
@@ -210,19 +210,19 @@ class UnalignedMatrix44
     T m_data[16];
 };
 
-template<class T>
+template <class T>
 UnalignedMatrix44<T> operator*(const UnalignedMatrix44<T>& a, const UnalignedMatrix44<T>& b)
 {
     return UnalignedMatrix44<T>(a.as_foundation_matrix() * b.as_foundation_matrix());
 }
 
-template<class T>
+template <class T>
 Vector<T,4> operator*(const UnalignedMatrix44<T>& a, const Vector<T,4>& v)
 {
     return a.as_foundation_matrix() * v;
 }
 
-template<class T>
+template <class T>
 UnalignedMatrix44<T> invert_matrix(const UnalignedMatrix44<T>& mat)
 {
     try
