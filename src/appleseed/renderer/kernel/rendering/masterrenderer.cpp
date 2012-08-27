@@ -59,10 +59,11 @@
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/stringexception.h"
 #include "foundation/platform/thread.h"
+#include "foundation/utility/autoreleaseptr.h"
 
 // Standard headers.
-#include <exception>
 #include <deque>
+#include <exception>
 
 using namespace foundation;
 using namespace std;
@@ -70,11 +71,11 @@ using namespace std;
 namespace renderer
 {
 
-class SerialTileCallbacksRendererController : public IRendererController
+class SerialRendererController : public IRendererController
 {
   public:
 
-    SerialTileCallbacksRendererController(IRendererController* controller,
+    SerialRendererController(IRendererController* controller,
                                             ITileCallback* tile_callback) : m_controller(controller),m_tile_callback(tile_callback)
     {
         assert(m_controller);
@@ -215,7 +216,7 @@ class SerialTileCallback : public ITileCallback
 {
   public:
 
-    SerialTileCallback(SerialTileCallbacksRendererController* controller) : m_controller(controller)
+    SerialTileCallback(SerialRendererController* controller) : m_controller(controller)
     {
         assert(m_controller);
     }
@@ -241,14 +242,14 @@ class SerialTileCallback : public ITileCallback
     }
 
   private:
-    SerialTileCallbacksRendererController* m_controller;
+    SerialRendererController* m_controller;
 };
 
 class SerialTileCallbackFactory : public ITileCallbackFactory
 {
   public:
 
-    SerialTileCallbackFactory(SerialTileCallbacksRendererController* controller) : m_controller(controller)
+    SerialTileCallbackFactory(SerialRendererController* controller) : m_controller(controller)
     {
         assert(m_controller);
     }
@@ -264,7 +265,7 @@ class SerialTileCallbackFactory : public ITileCallbackFactory
     }
 
   private:
-    SerialTileCallbacksRendererController* m_controller;
+    SerialRendererController* m_controller;
 };
 
 //
@@ -293,18 +294,16 @@ MasterRenderer::MasterRenderer(
   , m_params(params)
   , m_renderer_controller(0)
   , m_tile_callback_factory(0)
-  , m_serial_renderer_controller(0)
+  , m_serial_renderer_controller(new SerialRendererController(renderer_controller, tile_callback))
+  , m_serial_tile_callback_factory(new SerialTileCallbackFactory(m_serial_renderer_controller))
 {
-    m_serial_renderer_controller = new SerialTileCallbacksRendererController(renderer_controller, tile_callback);
-    m_serial_tile_callback_factory.reset(new SerialTileCallbackFactory(
-                                        dynamic_cast<SerialTileCallbacksRendererController*>(m_serial_renderer_controller)));
-
     m_renderer_controller = m_serial_renderer_controller;
-    m_tile_callback_factory = m_serial_tile_callback_factory.get();
+    m_tile_callback_factory = m_serial_tile_callback_factory;
 }
 
 MasterRenderer::~MasterRenderer()
 {
+    delete m_serial_tile_callback_factory;
     delete m_serial_renderer_controller;
 }
 
