@@ -400,6 +400,13 @@ DictionaryArray CameraFactory::get_widget_definitions()
 
     definitions.push_back(
         Dictionary()
+            .insert("name", "aspect_ratio")
+            .insert("label", "Aspect Ratio")
+            .insert("widget", "text_box")
+            .insert("use", "required"));
+
+    definitions.push_back(
+        Dictionary()
             .insert("name", "focal_length")
             .insert("label", "Focal Length")
             .insert("widget", "text_box")
