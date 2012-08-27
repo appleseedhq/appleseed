@@ -38,26 +38,25 @@ namespace foundation
 class UnalignedTransformd44
 {
   public:
-
     UnalignedTransformd44() {}
 
-    template<class T>
+    template <class T>
     explicit UnalignedTransformd44(const Transform<T>& xform)
+      : m_local_to_parent(UnalignedMatrix44<double>(xform.get_local_to_parent()))
+      , m_parent_to_local(UnalignedMatrix44<double>(xform.get_parent_to_local()))
     {
-        m_local_to_parent = UnalignedMatrix44<double>(xform.get_local_to_parent());
-        m_parent_to_local = UnalignedMatrix44<double>(xform.get_parent_to_local());
     }
 
-    template<class T>
+    template <class T>
     explicit UnalignedTransformd44(const UnalignedMatrix44<T>& local_to_parent)
+      : m_local_to_parent(local_to_parent)
+      , m_parent_to_local(invert_matrix(m_local_to_parent))
     {
-        m_local_to_parent = local_to_parent;
-        m_parent_to_local = invert_matrix(m_local_to_parent);
     }
 
-    template<class T>
+    template <class T>
     UnalignedTransformd44(const UnalignedMatrix44<T>& local_to_parent,
-                        const UnalignedMatrix44<T>& parent_to_local)
+                          const UnalignedMatrix44<T>& parent_to_local)
     {
         Matrix<T, 4, 4> aligned_local_to_parent = local_to_parent.as_foundation_matrix();
         Matrix<T, 4, 4> aligned_parent_to_local = parent_to_local.as_foundation_matrix();
@@ -70,7 +69,7 @@ class UnalignedTransformd44
         }
         else
         {
-            PyErr_SetString(PyExc_RuntimeError, "Matrices passed to appleseed.Transform are not inverses" );
+            PyErr_SetString(PyExc_RuntimeError, "Matrices passed to appleseed.Transform are not inverses");
             boost::python::throw_error_already_set();
         }
     }
@@ -84,7 +83,7 @@ class UnalignedTransformd44
     Transform<double> as_foundation_transform() const
     {
         return Transform<double>(get_local_to_parent().as_foundation_matrix(),
-                                get_parent_to_local().as_foundation_matrix());
+                                 get_parent_to_local().as_foundation_matrix());
     }
 
     const UnalignedMatrix44<double>& get_local_to_parent() const { return m_local_to_parent;}
@@ -95,66 +94,72 @@ class UnalignedTransformd44
         return UnalignedTransformd44(this->as_foundation_transform() * rhs.as_foundation_transform());
     }
 
-    template<class T>
+    template <class T>
     Vector<T, 3> point_to_local(const Vector<T, 3>& p) const
     {
         return m_parent_to_local.transform_point(p);
     }
 
-    template<class T>
+    template <class T>
     Vector<T, 3> point_to_parent(const Vector<T, 3>& p) const
     {
         return m_local_to_parent.transform_point(p);
     }
 
-    template<class T>
+    template <class T>
     Vector<T, 3> vector_to_local(const Vector<T, 3>& v) const
     {
         return m_parent_to_local.transform_vector(v);
     }
 
-    template<class T>
+    template <class T>
     Vector<T, 3> vector_to_parent(const Vector<T, 3>& v) const
     {
         return m_local_to_parent.transform_vector(v);
     }
 
-    template<class T>
+    template <class T>
     Vector<T, 3> normal_to_local(const Vector<T, 3>& n) const
     {
         Vector<T, 3> res;
 
-        res.x = m_local_to_parent[ 0] * n.x +
-                m_local_to_parent[ 4] * n.y +
-                m_local_to_parent[ 8] * n.z;
+        res.x = static_cast<T>(
+                    m_local_to_parent[ 0] * n.x +
+                    m_local_to_parent[ 4] * n.y +
+                    m_local_to_parent[ 8] * n.z);
 
-        res.y = m_local_to_parent[ 1] * n.x +
-                m_local_to_parent[ 5] * n.y +
-                m_local_to_parent[ 9] * n.z;
+        res.y = static_cast<T>(
+                    m_local_to_parent[ 1] * n.x +
+                    m_local_to_parent[ 5] * n.y +
+                    m_local_to_parent[ 9] * n.z);
 
-        res.z = m_local_to_parent[ 2] * n.x +
-                m_local_to_parent[ 6] * n.y +
-                m_local_to_parent[10] * n.z;
+        res.z = static_cast<T>(
+                    m_local_to_parent[ 2] * n.x +
+                    m_local_to_parent[ 6] * n.y +
+                    m_local_to_parent[10] * n.z);
 
         return res;
     }
 
-    template<class T>
+    template <class T>
     Vector<T, 3> normal_to_parent(const Vector<T, 3>& n) const
     {
         Vector<T, 3> res;
 
-        res.x = m_parent_to_local[ 0] * n.x +
-                m_parent_to_local[ 4] * n.y +
-                m_parent_to_local[ 8] * n.z;
+        res.x = static_cast<T>(
+                    m_parent_to_local[ 0] * n.x +
+                    m_parent_to_local[ 4] * n.y +
+                    m_parent_to_local[ 8] * n.z);
 
-        res.y = m_parent_to_local[ 1] * n.x +
-                m_parent_to_local[ 5] * n.y +
-                m_parent_to_local[ 9] * n.z;
+        res.y = static_cast<T>(
+                    m_parent_to_local[ 1] * n.x +
+                    m_parent_to_local[ 5] * n.y +
+                    m_parent_to_local[ 9] * n.z);
 
-        res.z = m_parent_to_local[ 2] * n.x +
-                m_parent_to_local[ 6] * n.y +
-                m_parent_to_local[10] * n.z;
+        res.z = static_cast<T>(
+                    m_parent_to_local[ 2] * n.x +
+                    m_parent_to_local[ 6] * n.y +
+                    m_parent_to_local[10] * n.z);
 
         return res;
     }
