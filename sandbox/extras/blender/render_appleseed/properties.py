@@ -1,3 +1,4 @@
+
 #
 # This source file is part of appleseed.
 # Visit http://appleseedhq.net/ for additional information and resources.
@@ -30,53 +31,43 @@ import bpy
 from bpy.props import PointerProperty, StringProperty, BoolProperty, EnumProperty
 from bpy.props import IntProperty, FloatProperty, FloatVectorProperty, CollectionProperty
 
-class AppleseedSceneSettings(bpy.types.PropertyGroup):
-	lighting_engine = bpy.props.EnumProperty(name="Lighting Engine",
-											 description="Select the lighting engine to use",
-											 items=[('pt', "Path Tracing", "Full Global Illumination"),
-													('drt', "Distributed Ray Tracing", "Direct Lighting Only")],
-											 default='pt')
+def get_appleseed_path():
+    return '/usr/local/appleseed'
 
-	sample_count = bpy.props.IntProperty(name="Sample Count",
-										 description="Number of samples per pixels in final frame mode",
-										 min=1,
-										 max=4096,
-										 default=32,
-										 subtype='UNSIGNED')
+class AppleseedRenderSettings(bpy.types.PropertyGroup):
+    @classmethod
+    def register(cls):
+        bpy.types.Scene.appleseed = PointerProperty(
+                name="Appleseed Render Settings",
+                description="Appleseed render settings",
+                type=cls,
+                )
 
-class AppleseedWorldSettings(bpy.types.PropertyGroup):
-	pass
+        cls.lighting_engine = bpy.props.EnumProperty(name="Lighting Engine",
+                    								 description="Select the lighting engine to use",
+                            						 items=[('pt', "Path Tracing", "Full Global Illumination"),
+                                    						('drt', "Distributed Ray Tracing", "Direct Lighting Only")],
+                                            		 default='pt')
 
-class AppleseedObjectSettings(bpy.types.PropertyGroup):
-	pass
+        cls.sample_count = bpy.props.IntProperty(name="Sample Count",
+                                                 description="Number of samples per pixels in final frame mode",
+                                                 min=1,
+                                                 max=1000000,
+                                                 default=25,
+                                                 subtype='UNSIGNED')
 
-class AppleseedLampSettings(bpy.types.PropertyGroup):
-	pass
+        cls.appleseed_path = bpy.props.StringProperty( name="Appleseed Path",
+                                                       description="Path to Appleseed installation folder",
+                                                       subtype='DIR_PATH',
+                                                       default=get_appleseed_path())
 
-class AppleseedMaterialSettings(bpy.types.PropertyGroup):
-	pass
+    @classmethod
+    def unregister(cls):
+        del bpy.types.Scene.cycles
 
-class AppleseedTextureSettings(bpy.types.PropertyGroup):
-	pass
 
 def register():
-	bpy.utils.register_class( AppleseedSceneSettings)
-	bpy.types.Scene.appleseed = PointerProperty( type=AppleseedSceneSettings, name="Appleseed Scene Settings")
-
-	bpy.utils.register_class( AppleseedWorldSettings)
-	bpy.types.World.appleseed = PointerProperty( type=AppleseedWorldSettings, name="Appleseed World Settings")
-
-	bpy.utils.register_class( AppleseedObjectSettings)
-	bpy.types.Object.appleseed = PointerProperty( type=AppleseedObjectSettings, name="Appleseed Object Settings")
-
-	bpy.utils.register_class( AppleseedLampSettings)
-	bpy.types.Lamp.appleseed = PointerProperty( type=AppleseedLampSettings, name="Appleseed Lamp Settings")
-
-	bpy.utils.register_class( AppleseedMaterialSettings)
-	bpy.types.Material.appleseed = PointerProperty( type=AppleseedMaterialSettings, name="Appleseed Material Settings")
-
-	bpy.utils.register_class( AppleseedTextureSettings)
-	bpy.types.Texture.appleseed = PointerProperty( type=AppleseedTextureSettings, name="Appleseed Texture Settings")
+	bpy.utils.register_class( AppleseedRenderSettings)
 
 def unregister():
-	bpy.utils.unregister_module( __name__)
+	bpy.utils.unregister_class( AppleseedRenderSettings)

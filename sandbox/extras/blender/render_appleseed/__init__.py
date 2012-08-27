@@ -1,3 +1,4 @@
+
 #
 # This source file is part of appleseed.
 # Visit http://appleseedhq.net/ for additional information and resources.
@@ -37,64 +38,56 @@ bl_info = {
     "tracker_url": "",
     "category": "Render"}
 
-import appleseed
+#import appleseed
 
-if "bpy" in locals():
-    import imp
-    imp.reload( properties)
-    imp.reload( ui)
-    imp.reload( exporter)
-else:
-    import bpy
-    from . import properties
-    from . import ui
-    from . import exporter
+import bpy
+from . import ui, properties, operators
 
 class RenderAppleseed( bpy.types.RenderEngine):
-    bl_idname = 'APPLESEED_RENDER'
+    bl_idname = 'APPLESEED'
     bl_label = "Appleseed"
     bl_use_preview = True
 
     def __init__( self):
-        exporter.init( self)
+        print( "RenderEngine __init__ called.")
 
     def __del__( self):
-        exporter.free( self)
+        print( "RenderEngine __del__ called.")
 
-    # final
+    # final rendering
     def update( self, data, scene):
         print( "RenderEngine.update called.")
-        exporter.update( self, data, scene)
 
     def render( self, scene):
-        print( "RenderEngine.render called.")
-        exporter.render( self, scene)
+        if scene.name == "preview":
+            print( "RenderEngine.render preview called.")
+        else:
+            print( "RenderEngine.render called.")
 
-    # preview
-    def preview_update( self, context, id):
-        print( "RenderEngine.preview_update called.")
-        pass
+    # viewport rendering
+    #try:
+        # if appleseed can be imported, it could be possible
+        # to support scene updates and viewport renders
+        #import appleseed
 
-    def preview_render( self):
-        print( "RenderEngine.preview_render called.")
-        pass
+        #def view_update( self, context):
+            #print( "RenderEngine.view_update called.")
 
-    # viewport
-    def view_update( self, context):
-        print( "RenderEngine.view_update called.")
-
-    def view_draw( self, context):
-        print( "RenderEngine.view_draw called.")
+        #def view_draw( self, context):
+            #print( "RenderEngine.view_draw called.")
+    #except:
+        #pass
 
 def register():
     properties.register()
-    exporter.register()
+    ui.register()
+    operators.register()
     bpy.utils.register_module(__name__)
 
 def unregister():
     properties.unregister()
     ui.unregister()
-    exporter.unregister()
+    operators.unregister()
     bpy.utils.unregister_module(__name__)
 
 if __name__ == "__main__":
