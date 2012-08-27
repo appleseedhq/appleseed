@@ -349,21 +349,25 @@ set (shared_lib_linker_flags_profile
 convert_list_to_string (CMAKE_CXX_FLAGS_DEBUG "${compiler_flags_debug}")
 convert_list_to_string (CMAKE_EXE_LINKER_FLAGS_DEBUG "${exe_linker_flags_debug}")
 convert_list_to_string (CMAKE_SHARED_LINKER_FLAGS_DEBUG "${shared_lib_linker_flags_debug}")
+convert_list_to_string (CMAKE_MODULE_LINKER_FLAGS_DEBUG "${shared_lib_linker_flags_debug}")
 
 # Apply Release configuration compilation/linking flags.
 convert_list_to_string (CMAKE_CXX_FLAGS_RELEASE "${compiler_flags_release}")
 convert_list_to_string (CMAKE_EXE_LINKER_FLAGS_RELEASE "${exe_linker_flags_release}")
 convert_list_to_string (CMAKE_SHARED_LINKER_FLAGS_RELEASE "${shared_lib_linker_flags_release}")
+convert_list_to_string (CMAKE_MODULE_LINKER_FLAGS_RELEASE "${shared_lib_linker_flags_release}")
 
 # Apply Ship configuration compilation/linking flags.
 convert_list_to_string (CMAKE_CXX_FLAGS_SHIP "${compiler_flags_ship}")
 convert_list_to_string (CMAKE_EXE_LINKER_FLAGS_SHIP "${exe_linker_flags_ship}")
 convert_list_to_string (CMAKE_SHARED_LINKER_FLAGS_SHIP "${shared_lib_linker_flags_ship}")
+convert_list_to_string (CMAKE_MODULE_LINKER_FLAGS_SHIP "${shared_lib_linker_flags_ship}")
 
 # Apply Profile configuration compilation/linking flags.
 convert_list_to_string (CMAKE_CXX_FLAGS_PROFILE "${compiler_flags_profile}")
 convert_list_to_string (CMAKE_EXE_LINKER_FLAGS_PROFILE "${exe_linker_flags_profile}")
 convert_list_to_string (CMAKE_SHARED_LINKER_FLAGS_PROFILE "${shared_lib_linker_flags_profile}")
+convert_list_to_string (CMAKE_MODULE_LINKER_FLAGS_PROFILE "${shared_lib_linker_flags_profile}")
 
 
 #--------------------------------------------------------------------------------------------------
