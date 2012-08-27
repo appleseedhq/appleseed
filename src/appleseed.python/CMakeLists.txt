@@ -76,6 +76,8 @@ set (sources
     bind_vector.cpp
     dict2dict.cpp
     dict2dict.h
+    gil_locks.h
+    gil_locks.cpp
     module.cpp
     unaligned_matrix44.h
     unaligned_transformd44.h
