@@ -40,9 +40,21 @@ struct Entity::Impl
     string m_name;
 };
 
-Entity::Entity(const UniqueID class_uid)
+Entity::Entity(
+    const UniqueID      class_uid)
   : impl(new Impl())
   , m_class_uid(class_uid)
+  , m_parent(0)
+  , m_render_layer(~0)
+{
+}
+
+Entity::Entity(
+    const UniqueID      class_uid,
+    Entity*             parent)
+  : impl(new Impl())
+  , m_class_uid(class_uid)
+  , m_parent(parent)
   , m_render_layer(~0)
 {
 }
@@ -52,6 +64,19 @@ Entity::Entity(
     const ParamArray&   params)
   : impl(new Impl())
   , m_class_uid(class_uid)
+  , m_parent(0)
+  , m_params(params)
+  , m_render_layer(~0)
+{
+}
+
+Entity::Entity(
+    const UniqueID      class_uid,
+    Entity*             parent,
+    const ParamArray&   params)
+  : impl(new Impl())
+  , m_class_uid(class_uid)
+  , m_parent(parent)
   , m_params(params)
   , m_render_layer(~0)
 {

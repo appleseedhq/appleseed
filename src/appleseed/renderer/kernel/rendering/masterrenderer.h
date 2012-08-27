@@ -33,14 +33,12 @@
 #include "renderer/global/global.h"
 #include "renderer/kernel/rendering/irenderercontroller.h"
 
-// appleseed.foundation headers
-#include "foundation/utility/autoreleaseptr.h"
-
 // Forward declarations.
 namespace renderer      { class IFrameRenderer; }
 namespace renderer      { class ITileCallbackFactory; }
 namespace renderer      { class ITileCallback; }
 namespace renderer      { class Project; }
+namespace renderer      { class SerialRendererController; }
 
 namespace renderer
 {
@@ -67,6 +65,7 @@ class RENDERERDLL MasterRenderer
         IRendererController*    renderer_controller,
         ITileCallback*          tile_callback);
 
+    // Destructor.
     ~MasterRenderer();
 
     // Return the parameters of the master renderer.
@@ -82,9 +81,9 @@ class RENDERERDLL MasterRenderer
     IRendererController*        m_renderer_controller;
     ITileCallbackFactory*       m_tile_callback_factory;
 
-    // storage for serial tile callbacks
-    IRendererController*                                m_serial_renderer_controller;
-    foundation::auto_release_ptr<ITileCallbackFactory>  m_serial_tile_callback_factory;
+    // Storage for serial tile callbacks.
+    SerialRendererController*   m_serial_renderer_controller;
+    ITileCallbackFactory*       m_serial_tile_callback_factory;
 
     // Render frame sequences, each time reinitializing the rendering components.
     void do_render() const;

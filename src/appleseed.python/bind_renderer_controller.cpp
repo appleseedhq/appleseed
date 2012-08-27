@@ -42,10 +42,11 @@ using namespace renderer;
 namespace detail
 {
 
-class IRendererControllerWrapper : public IRendererController, public bpy::wrapper<IRendererController>
+class IRendererControllerWrapper
+  : public IRendererController
+  , public bpy::wrapper<IRendererController>
 {
-public:
-
+  public:
     virtual void on_rendering_begin()
     {
         // Lock Python's global interpreter lock (GIL),
@@ -54,9 +55,9 @@ public:
 
         try
         {
-            this->get_override("on_rendering_begin")();
+            get_override("on_rendering_begin")();
         }
-        catch( bpy::error_already_set)
+        catch (bpy::error_already_set)
         {
             PyErr_Print();
         }
@@ -70,9 +71,9 @@ public:
 
         try
         {
-            this->get_override("on_rendering_success")();
+            get_override("on_rendering_success")();
         }
-        catch( bpy::error_already_set)
+        catch (bpy::error_already_set)
         {
             PyErr_Print();
         }
@@ -86,9 +87,9 @@ public:
 
         try
         {
-            this->get_override("on_rendering_abort")();
+            get_override("on_rendering_abort")();
         }
-        catch( bpy::error_already_set)
+        catch (bpy::error_already_set)
         {
             PyErr_Print();
         }
@@ -102,9 +103,9 @@ public:
 
         try
         {
-            this->get_override("on_frame_begin")();
+            get_override("on_frame_begin")();
         }
-        catch( bpy::error_already_set)
+        catch (bpy::error_already_set)
         {
             PyErr_Print();
         }
@@ -118,9 +119,9 @@ public:
 
         try
         {
-            this->get_override("on_frame_end")();
+            get_override("on_frame_end")();
         }
-        catch( bpy::error_already_set)
+        catch (bpy::error_already_set)
         {
             PyErr_Print();
         }
@@ -134,11 +135,12 @@ public:
 
         try
         {
-            return this->get_override("on_progress")();
+            return get_override("on_progress")();
         }
-        catch( bpy::error_already_set)
+        catch (bpy::error_already_set)
         {
             PyErr_Print();
+            return AbortRendering;
         }
     }
 };

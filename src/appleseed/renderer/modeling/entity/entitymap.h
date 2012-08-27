@@ -58,8 +58,7 @@ class DLLSYMBOL EntityMap
     class DLLSYMBOL iterator
     {
       public:
-
-         // iterator category
+        // Iterator category.
         typedef std::bidirectional_iterator_tag iterator_category;
 
         // Value type.
@@ -105,8 +104,7 @@ class DLLSYMBOL EntityMap
     class DLLSYMBOL const_iterator
     {
       public:
-
-        // iterator category
+        // Iterator category.
         typedef std::bidirectional_iterator_tag iterator_category;
 
         // Value type.
@@ -149,7 +147,7 @@ class DLLSYMBOL EntityMap
     };
 
     // Constructor.
-    EntityMap();
+    explicit EntityMap(Entity* parent = 0);
 
     // Destructor.
     ~EntityMap();
@@ -188,6 +186,8 @@ class DLLSYMBOL EntityMap
   private:
     struct Impl;
     Impl* impl;
+
+    Entity* m_parent;
 };
 
 inline void swap(EntityMap& lhs, EntityMap& rhs)
@@ -241,6 +241,9 @@ class TypedEntityMap
         const value_type& operator*() const;
         const value_type* operator->() const;
     };
+
+    // Constructor.
+    explicit TypedEntityMap(Entity* parent = 0);
 
     // Insert an entity into the container and return its index.
     void insert(foundation::auto_release_ptr<T> entity);
@@ -309,6 +312,12 @@ inline const T* TypedEntityMap<T>::const_iterator::operator->() const
 //
 // TypedEntityMap class implementation.
 //
+
+template <typename T>
+inline TypedEntityMap<T>::TypedEntityMap(Entity* parent)
+  : EntityMap(parent)
+{
+}
 
 template <typename T>
 inline void TypedEntityMap<T>::insert(foundation::auto_release_ptr<T> entity)

@@ -35,6 +35,9 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
+// Forward declarations.
+namespace renderer  { class Entity; }
+
 namespace renderer
 {
 
@@ -46,7 +49,7 @@ class DLLSYMBOL BaseGroup
 {
   public:
     // Constructor.
-    BaseGroup();
+    explicit BaseGroup(Entity* parent = 0);
 
     // Destructor.
     ~BaseGroup();
