@@ -140,6 +140,11 @@ inline void CameraController<T>::set_transform(const MatrixType& m)
     m_view.m_z[1] = m[ 6];
     m_view.m_z[2] = m[10];
 
+    // Make sure the basis vectors are normalized.
+    m_view.m_x = normalize(m_view.m_x);
+    m_view.m_y = normalize(m_view.m_y);
+    m_view.m_z = normalize(m_view.m_z);
+
     // Compute initial camera target.
     m_view.m_target = m_view.m_position - m_view.m_z;
 }
