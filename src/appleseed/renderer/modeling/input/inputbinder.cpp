@@ -83,21 +83,11 @@ void InputBinder::bind(const Scene& scene)
     // Bind all inputs of all entities in all assemblies.
     for (const_each<AssemblyContainer> i = scene.assemblies(); i; ++i)
     {
-        // Retrieve the assembly.
-        const Assembly& assembly = *i;
-
-        // Build the symbol table of the assembly.
-        SymbolTable assembly_symbols;
-        build_assembly_symbol_table(
-            assembly,
-            assembly_symbols);
-
-        // Bind all inputs of all entities in the assembly.
+        assert(m_assembly_info_stack.empty());
         bind_assembly_entities_inputs(
             scene,
             scene_symbols,
-            assembly,
-            assembly_symbols);
+            *i);
     }
 }
 
@@ -217,9 +207,20 @@ void InputBinder::bind_scene_entities_inputs(
 void InputBinder::bind_assembly_entities_inputs(
     const Scene&                    scene,
     const SymbolTable&              scene_symbols,
-    const Assembly&                 assembly,
-    const SymbolTable&              assembly_symbols)
+    const Assembly&                 assembly)
 {
+    // Build the symbol table of the assembly.
+    SymbolTable assembly_symbols;
+    build_assembly_symbol_table(
+        assembly,
+        assembly_symbols);
+
+    // Push the assembly and its symbol table to the stack.
+    AssemblyInfo info;
+    info.m_assembly = &assembly;
+    info.m_assembly_symbols = &assembly_symbols;
+    m_assembly_info_stack.push_back(info);
+
     // Bind textures to texture instances.
     for (each<TextureInstanceContainer> i = assembly.texture_instances(); i; ++i)
         i->bind_entities(assembly.textures());
@@ -230,8 +231,6 @@ void InputBinder::bind_assembly_entities_inputs(
         bind_assembly_entity_inputs(
             scene,
             scene_symbols,
-            assembly,
-            assembly_symbols,
             SymbolTable::symbol_name(SymbolTable::SymbolBSDF),
             i->get_name(),
             i->get_parameters(),
@@ -244,8 +243,6 @@ void InputBinder::bind_assembly_entities_inputs(
         bind_assembly_entity_inputs(
             scene,
             scene_symbols,
-            assembly,
-            assembly_symbols,
             SymbolTable::symbol_name(SymbolTable::SymbolEDF),
             i->get_name(),
             i->get_parameters(),
@@ -258,8 +255,6 @@ void InputBinder::bind_assembly_entities_inputs(
         bind_assembly_entity_inputs(
             scene,
             scene_symbols,
-            assembly,
-            assembly_symbols,
             SymbolTable::symbol_name(SymbolTable::SymbolSurfaceShader),
             i->get_name(),
             i->get_parameters(),
@@ -272,8 +267,6 @@ void InputBinder::bind_assembly_entities_inputs(
         bind_assembly_entity_inputs(
             scene,
             scene_symbols,
-            assembly,
-            assembly_symbols,
             SymbolTable::symbol_name(SymbolTable::SymbolMaterial),
             i->get_name(),
             i->get_parameters(),
@@ -291,8 +284,6 @@ void InputBinder::bind_assembly_entities_inputs(
         bind_assembly_entity_inputs(
             scene,
             scene_symbols,
-            assembly,
-            assembly_symbols,
             SymbolTable::symbol_name(SymbolTable::SymbolLight),
             i->get_name(),
             i->get_parameters(),
@@ -302,6 +293,18 @@ void InputBinder::bind_assembly_entities_inputs(
     // Bind object instances inputs.
     for (each<ObjectInstanceContainer> i = assembly.object_instances(); i; ++i)
         i->bind_entities(assembly.materials());
+
+    // Bind all inputs of all entities in all child assemblies.
+    for (const_each<AssemblyContainer> i = assembly.assemblies(); i; ++i)
+    {
+        bind_assembly_entities_inputs(
+            scene,
+            scene_symbols,
+            *i);
+    }
+
+    // Pop the information about this assembly from the stack.
+    m_assembly_info_stack.pop_back();
 }
 
 void InputBinder::bind_scene_entity_inputs(
@@ -367,8 +370,6 @@ void InputBinder::bind_scene_entity_inputs(
 void InputBinder::bind_assembly_entity_inputs(
     const Scene&                    scene,
     const SymbolTable&              scene_symbols,
-    const Assembly&                 assembly,
-    const SymbolTable&              assembly_symbols,
     const char*                     entity_type,
     const char*                     entity_name,
     const ParamArray&               entity_params,
@@ -406,8 +407,6 @@ void InputBinder::bind_assembly_entity_inputs(
         if (try_bind_assembly_entity_to_input(
                 scene,
                 scene_symbols,
-                assembly,
-                assembly_symbols,
                 entity_type,
                 entity_name,
                 param_value.c_str(),
@@ -467,6 +466,32 @@ bool InputBinder::try_bind_scene_entity_to_input(
       default:
         return false;
     }
+}
+
+bool InputBinder::try_bind_assembly_entity_to_input(
+    const Scene&                    scene,
+    const SymbolTable&              scene_symbols,
+    const char*                     entity_type,
+    const char*                     entity_name,
+    const char*                     param_value,
+    InputArray::iterator&           input)
+{
+    for (AssemblyInfoVector::const_reverse_iterator i = m_assembly_info_stack.rbegin();
+         i != m_assembly_info_stack.rend(); ++i)
+    {
+        if (try_bind_assembly_entity_to_input(
+                scene,
+                scene_symbols,
+                *i->m_assembly,
+                *i->m_assembly_symbols,
+                entity_type,
+                entity_name,
+                param_value,
+                input))
+            return true;
+    }
+
+    return false;
 }
 
 bool InputBinder::try_bind_assembly_entity_to_input(
