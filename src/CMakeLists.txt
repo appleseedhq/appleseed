@@ -62,13 +62,11 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/Modules)
 # Build options.
 #--------------------------------------------------------------------------------------------------
 
-if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    option (USE_STATIC_BOOST        "Use static boost libs"     ON)
-    option (USE_EXTERNAL_PNG        "Use external Png lib"      OFF)
-    option (USE_EXTERNAL_ALEMBIC    "Use external Alembic libs" OFF)
-    option (USE_EXTERNAL_XERCES     "Use external Xerces lib"   OFF)
-    option (WITH_PYTHON             "Build Python module"       ON)
-endif ()
+option (USE_STATIC_BOOST        "Use static Boost libs"         ON)
+option (USE_EXTERNAL_PNG        "Use external PNG lib"          OFF)
+option (USE_EXTERNAL_ALEMBIC    "Use external Alembic lib"      OFF)
+option (USE_EXTERNAL_XERCES     "Use external Xerces lib"       OFF)
+option (WITH_PYTHON             "Build Python module"           ON)
 
 
 #--------------------------------------------------------------------------------------------------
@@ -124,22 +122,22 @@ link_directories (${Boost_LIBRARY_DIRS})
 #--------------------------------------------------------------------------------------------------
 
 if (USE_EXTERNAL_PNG)
-    find_package(PNG REQUIRED)
-    add_definitions(-DWITH_EXTERNAL_PNG)
+    find_package (PNG REQUIRED)
+    add_definitions (-DWITH_EXTERNAL_PNG)
 endif ()
 
 if (USE_EXTERNAL_ALEMBIC)
-    find_package(ZLIB REQUIRED)
-    find_package(Imath REQUIRED)
-    find_package(OpenEXR REQUIRED)
-    find_package(HDF5 REQUIRED COMPONENTS C HL)
-    find_package(Alembic REQUIRED)
-    add_definitions(-DWITH_EXTERNAL_ALEMBIC)
+    find_package (ZLIB REQUIRED)
+    find_package (Imath REQUIRED)
+    find_package (OpenEXR REQUIRED)
+    find_package (HDF5 REQUIRED COMPONENTS C HL)
+    find_package (Alembic REQUIRED)
+    add_definitions (-DWITH_EXTERNAL_ALEMBIC)
 endif ()
 
 if (USE_EXTERNAL_XERCES)
-    find_package(Xerces REQUIRED)
-    add_definitions(-DWITH_EXTERNAL_XERCES)
+    find_package (Xerces REQUIRED)
+    add_definitions (-DWITH_EXTERNAL_XERCES)
 endif ()
 
 
@@ -147,7 +145,7 @@ endif ()
 # Include paths.
 #--------------------------------------------------------------------------------------------------
 
-# common includes
+# Common include paths.
 include_directories (
     appleseed
     STANN/include
@@ -155,13 +153,13 @@ include_directories (
 )
 
 if (USE_EXTERNAL_PNG)
-    include_directories(${PNG_INCLUDE_DIR})
+    include_directories (${PNG_INCLUDE_DIR})
 else ()
-    include_directories(libpng)
+    include_directories (libpng)
 endif ()
 
 if (USE_EXTERNAL_ALEMBIC)
-    include_directories(
+    include_directories (
         ${ZLIB_INCLUDE_DIRS}
         ${OPENEXR_INCLUDE_DIR}
         ${OPENEXR_INCLUDE_DIR}/OpenEXR/
@@ -169,7 +167,7 @@ if (USE_EXTERNAL_ALEMBIC)
         ${ALEMBIC_INCLUDE_DIRS}
     )
 else ()
-    include_directories(
+    include_directories (
         alembic/lib
         openexr/include
         openexr/include/OpenEXR
@@ -178,9 +176,9 @@ else ()
 endif ()
 
 if (USE_EXTERNAL_XERCES)
-    include_directories(${XERCES_INCLUDE_DIRS})
+    include_directories (${XERCES_INCLUDE_DIRS})
 else ()
-    include_directories(xerces-c/src)
+    include_directories (xerces-c/src)
 endif ()
 
 

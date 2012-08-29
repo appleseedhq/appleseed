@@ -98,7 +98,7 @@ endmacro ()
 
 macro (link_against_openexr target)
     if (USE_EXTERNAL_ALEMBIC)
-		target_link_libraries (${target} ${IMATH_LIBRARIES} ${OPENEXR_LIBRARIES})
+        target_link_libraries (${target} ${IMATH_LIBRARIES} ${OPENEXR_LIBRARIES})
     else ()
         target_link_libraries (${target}
             ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/libHalf.a
@@ -112,7 +112,7 @@ endmacro ()
 
 macro (link_against_zlib target)
     if (USE_EXTERNAL_ALEMBIC)
-		target_link_libraries (${target} ${ZLIB_LIBRARIES})
+        target_link_libraries (${target} ${ZLIB_LIBRARIES})
     else ()
         target_link_libraries (${target}
             ${CMAKE_SOURCE_DIR}/../build/${platform}/zlib/libz.a
@@ -122,7 +122,7 @@ endmacro ()
 
 macro (link_against_libpng target)
     if (USE_EXTERNAL_PNG)
-		target_link_libraries (${target} ${PNG_LIBRARIES})
+        target_link_libraries (${target} ${PNG_LIBRARIES})
     else ()
         target_link_libraries (${target}
             ${CMAKE_SOURCE_DIR}/../build/${platform}/libpng/libpng.a
@@ -132,7 +132,7 @@ endmacro ()
 
 macro (link_against_xercesc target)
     if (USE_EXTERNAL_XERCES)
-		target_link_libraries (${target} ${XERCES_LIBRARIES})
+        target_link_libraries (${target} ${XERCES_LIBRARIES})
     else ()
         target_link_libraries (${target}
             ${CMAKE_SOURCE_DIR}/../build/${platform}/xerces-c/libxerces-c.a
@@ -142,7 +142,7 @@ endmacro ()
 
 macro (link_against_hdf5 target)
     if (USE_EXTERNAL_ALEMBIC)
-		target_link_libraries (${target} ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
+        target_link_libraries (${target} ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
     else ()
         target_link_libraries (${target}
             ${CMAKE_SOURCE_DIR}/../build/${platform}/hdf5/libhdf5.a
@@ -153,7 +153,7 @@ endmacro ()
 
 macro (link_against_alembic target)
     if (USE_EXTERNAL_ALEMBIC)
-		target_link_libraries (${target} ${ALEMBIC_LIBRARIES})
+        target_link_libraries (${target} ${ALEMBIC_LIBRARIES})
     else ()
         target_link_libraries (${target}
             ${CMAKE_SOURCE_DIR}/../build/${platform}/alembic/libalembic.a
