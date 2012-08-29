@@ -34,6 +34,9 @@
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/scene/containers.h"
 
+// Standard headers.
+#include <vector>
+
 // Forward declarations.
 namespace renderer      { class Assembly; }
 namespace renderer      { class Scene; }
@@ -60,7 +63,16 @@ class InputBinder
     size_t get_error_count() const;
 
   private:
-    size_t  m_error_count;
+    struct AssemblyInfo
+    {
+        const Assembly*     m_assembly;
+        const SymbolTable*  m_assembly_symbols;
+    };
+
+    typedef std::vector<AssemblyInfo> AssemblyInfoVector;
+
+    size_t                  m_error_count;
+    AssemblyInfoVector      m_assembly_info_stack;
 
     // Build the symbol table for a given scene.
     void build_scene_symbol_table(
@@ -81,8 +93,7 @@ class InputBinder
     void bind_assembly_entities_inputs(
         const Scene&                    scene,
         const SymbolTable&              scene_symbols,
-        const Assembly&                 assembly,
-        const SymbolTable&              assembly_symbols);
+        const Assembly&                 assembly);
 
     // Bind all inputs of a given entity of a given scene.
     void bind_scene_entity_inputs(
@@ -97,14 +108,12 @@ class InputBinder
     void bind_assembly_entity_inputs(
         const Scene&                    scene,
         const SymbolTable&              scene_symbols,
-        const Assembly&                 assembly,
-        const SymbolTable&              assembly_symbols,
         const char*                     entity_type,
         const char*                     entity_name,
         const ParamArray&               entity_params,
         InputArray&                     entity_inputs);
 
-    // Try to bind a given scene entity to a given input.
+    // Try to bind a scene entity to a given input.
     bool try_bind_scene_entity_to_input(
         const Scene&                    scene,
         const SymbolTable&              scene_symbols,
@@ -113,7 +122,16 @@ class InputBinder
         const char*                     param_value,
         InputArray::iterator&           input);
 
-    // Try to bind a given assembly entity to a given input.
+    // Try to bind an entity from any parent assembly to a given input.
+    bool try_bind_assembly_entity_to_input(
+        const Scene&                    scene,
+        const SymbolTable&              scene_symbols,
+        const char*                     entity_type,
+        const char*                     entity_name,
+        const char*                     param_value,
+        InputArray::iterator&           input);
+
+    // Try to bind an entity from a given assembly to a given input.
     bool try_bind_assembly_entity_to_input(
         const Scene&                    scene,
         const SymbolTable&              scene_symbols,
