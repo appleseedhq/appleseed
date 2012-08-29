@@ -41,7 +41,7 @@ bl_info = {
 #import appleseed
 
 import bpy
-from . import ui, properties, operators
+from . import ui, properties, operators, renderer
 
 class RenderAppleseed( bpy.types.RenderEngine):
     bl_idname = 'APPLESEED'
@@ -49,20 +49,17 @@ class RenderAppleseed( bpy.types.RenderEngine):
     bl_use_preview = True
 
     def __init__( self):
-        print( "RenderEngine __init__ called.")
+        renderer.init( self)
 
     def __del__( self):
-        print( "RenderEngine __del__ called.")
+        renderer.free( self)
 
     # final rendering
     def update( self, data, scene):
-        print( "RenderEngine.update called.")
+        renderer.update( self, data, scene)
 
     def render( self, scene):
-        if scene.name == "preview":
-            print( "RenderEngine.render preview called.")
-        else:
-            print( "RenderEngine.render called.")
+        renderer.render( self, scene)
 
     # viewport rendering
     #try:

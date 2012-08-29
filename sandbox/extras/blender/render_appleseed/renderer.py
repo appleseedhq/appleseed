@@ -28,15 +28,35 @@
 
 import bpy
 
-class AppleseedRenderer( object):
-    def __init__( self):
-        pass
+def update_preview( engine, data, scene):
+    pass
 
-    def update( self, data, scene):
-        pass
+def render_preview( engine, scene):
+    pass
 
-    def render( self, scene):
-        pass
+def update_scene( engine, data, scene):
+    pass
 
-def create( data, scene, region=None, v3d=None, rv3d=None):
-    return AppleseedRenderer()
+def render_scene( engine, scene):
+    pass
+
+def init( engine):
+    pass
+
+def free( engine):
+    pass
+
+def update( engine, data, scene):
+    pass
+
+def update( engine, data, scene):
+    if scene.name == 'preview':
+        update_preview( engine, data, scene)
+    else:
+        update_scene( engine, data, scene)
+
+def render( engine, scene):
+    if scene.name == 'preview':
+        render_preview( engine, scene)
+    else:
+        render_scene( engine, scene)

@@ -28,25 +28,8 @@
 
 import bpy
 
-class ExportAppleseedProject(bpy.types.Operator):
-    bl_idname = "appleseed.export"
-    bl_label = "Export"
-
-    # props
-    filepath = bpy.props.StringProperty(subtype='FILE_PATH')
-
-    def invoke(self, context, event):
-        context.window_manager.fileselect_add(self)
-        return { 'RUNNING_MODAL' }
-
-    def execute(self, context):
-        return { 'FINISHED' }
-
-# menus
-export_proj_menu_func = (lambda self, context: self.layout.operator(ExportAppleseedProject.bl_idname, text="appleseed (.appleseed)"))
-
 def register():
-    bpy.types.INFO_MT_file_export.append(export_proj_menu_func)
+    pass
 
 def unregister():
-    bpy.types.INFO_MT_file_export.remove(export_proj_menu_func)
+    pass
