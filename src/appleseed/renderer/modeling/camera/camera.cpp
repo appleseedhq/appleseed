@@ -77,14 +77,6 @@ Camera::Camera(
   , impl(new Impl())
 {
     set_name(name);
-
-    impl->m_film_dimensions = extract_film_dimensions();
-    impl->m_focal_length = extract_focal_length(impl->m_film_dimensions[0]);
-
-    impl->m_shutter_open_time = m_params.get_optional<double>("shutter_open_time", 0.0);
-    impl->m_shutter_close_time = m_params.get_optional<double>("shutter_close_time", 1.0);
-
-    compute_view_pyramid();
 }
 
 Camera::~Camera()
@@ -129,6 +121,13 @@ bool Camera::on_frame_begin(const Project& project)
         RENDERER_LOG_ERROR("camera \"%s\" has one or more invalid transforms.", get_name());
         return false;
     }
+
+    impl->m_film_dimensions = extract_film_dimensions();
+    impl->m_focal_length = extract_focal_length(impl->m_film_dimensions[0]);
+    impl->m_shutter_open_time = m_params.get_optional<double>("shutter_open_time", 0.0);
+    impl->m_shutter_close_time = m_params.get_optional<double>("shutter_close_time", 1.0);
+
+    compute_view_pyramid();
 
     return true;
 }
