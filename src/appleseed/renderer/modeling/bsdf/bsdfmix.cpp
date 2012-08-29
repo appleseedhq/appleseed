@@ -189,18 +189,19 @@ namespace
                     BSDF::AllScatteringModes,
                     bsdf1_value);
 
+            // Apply blending weights.
+            if (bsdf1_prob > 0.0)
+            {
+                bsdf0_value *= static_cast<float>(w[bsdf0_index]);
+                bsdf1_value *= static_cast<float>(w[bsdf1_index]);
+            }
+
             // Blend BSDF values.
             value.set(0.0f);
             if (bsdf0_prob == BSDF::DiracDelta || bsdf0_prob > 0.0)
-            {
-                bsdf0_value *= static_cast<float>(w[bsdf0_index]);
                 value += bsdf0_value;
-            }
-            if (bsdf1_prob == BSDF::DiracDelta || bsdf1_prob > 0.0)
-            {
-                bsdf1_value *= static_cast<float>(w[bsdf1_index]);
+            if (bsdf1_prob > 0.0)
                 value += bsdf1_value;
-            }
 
             // Blend PDF values.
             probability =
