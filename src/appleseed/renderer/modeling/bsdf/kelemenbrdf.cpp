@@ -125,7 +125,7 @@ namespace
                 static_cast<const InputValues*>(input_evaluator.evaluate(m_inputs));
 
             // Construct the Microfacet Distribution Function.
-            m_mdf.reset(new WardMDF<double>(values->m_roughness));
+            m_mdf.reset(new MDF(values->m_roughness));
 
             // Precompute the specular albedo curve.
             Spectrum rs(values->m_rs);
@@ -441,9 +441,11 @@ namespace
             double              m_roughness;                    // technically, root-mean-square of the microfacets slopes
         };
 
-        auto_ptr<WardMDF<double> >  m_mdf;                      // Microfacet Distribution Function
-        Spectrum                    m_a_spec[AlbedoTableSize];  // albedo of the specular component as V varies
-        Spectrum                    m_s;                        // normalization constant for the matte component
+        typedef WardMDF<double> MDF;
+
+        auto_ptr<MDF>           m_mdf;                          // Microfacet Distribution Function
+        Spectrum                m_a_spec[AlbedoTableSize];      // albedo of the specular component as V varies
+        Spectrum                m_s;                            // normalization constant for the matte component
 
         // Evaluate the specular component of the BRDF (equation 3).
         template <typename MDF>
@@ -517,7 +519,9 @@ namespace
                 const double dot_HN = H.y;
                 const double pdf_H = mdf.evaluate_pdf(dot_HN);
                 const double pdf_L = pdf_H / (4.0 * dot_HV);
-                assert(pdf_L > 0.0);
+                assert(pdf_L >= 0.0);
+                if (pdf_L == 0.0)
+                    continue;
 
                 // Sanity checks.
                 assert(is_normalized(V));
