@@ -31,7 +31,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/connectableentity.h"
-#include "renderer/modeling/scene/containers.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/autoreleaseptr.h"
@@ -69,37 +68,42 @@ class DLLSYMBOL Material
     // Return true if this material has an alpha map.
     bool has_alpha_map() const;
 
-    // Perform entity binding.
-    void bind_entities(
-        const SurfaceShaderContainer&   surface_shaders,
-        const BSDFContainer&            bsdfs,
-        const EDFContainer&             edfs);
-
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
     bool on_frame_begin(
-        const Project&                  project,
-        const Assembly&                 assembly);
+        const Project&      project,
+        const Assembly&     assembly);
 
     // This method is called once after rendering each frame.
     void on_frame_end(
-        const Project&                  project,
-        const Assembly&                 assembly);
+        const Project&      project,
+        const Assembly&     assembly);
+
+    //
+    // The get_*() methods below retrieve entities that were cached by on_frame_begin().
+    // To retrieve the entities before on_frame_begin() or after on_frame_end() is called,
+    // use the get_uncached_*() variants.
+    //
 
     // Return the surface shader of the material, or 0 if the material doesn't have one.
     const SurfaceShader* get_surface_shader() const;
+    const SurfaceShader* get_uncached_surface_shader() const;
 
     // Return the BSDF of the material, or 0 if the material doesn't have one.
     const BSDF* get_bsdf() const;
+    const BSDF* get_uncached_bsdf() const;
 
     // Return the EDF of the material, or 0 if the material doesn't have one.
     const EDF* get_edf() const;
+    const EDF* get_uncached_edf() const;
 
     // Return the source bound to the alpha map input, or 0 if the material doesn't have an alpha map.
     const Source* get_alpha_map() const;
+    const Source* get_uncached_alpha_map() const;
 
     // Return the source bound to the normal map input, or 0 if the material doesn't have a normal map.
     const Source* get_normal_map() const;
+    const Source* get_uncached_normal_map() const;
 
   private:
     friend class MaterialFactory;

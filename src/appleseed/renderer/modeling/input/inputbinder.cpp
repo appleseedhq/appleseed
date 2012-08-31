@@ -271,11 +271,6 @@ void InputBinder::bind_assembly_entities_inputs(
             i->get_name(),
             i->get_parameters(),
             i->get_inputs());
-
-        i->bind_entities(
-            assembly.surface_shaders(),
-            assembly.bsdfs(),
-            assembly.edfs());
     }
 
     // Bind lights inputs.
@@ -521,6 +516,18 @@ bool InputBinder::try_bind_assembly_entity_to_input(
             entity_name,
             param_value,
             input);
+        return true;
+
+      case SymbolTable::SymbolBSDF:
+        input.bind(assembly.bsdfs().get_by_name(param_value));
+        return true;
+
+      case SymbolTable::SymbolEDF:
+        input.bind(assembly.edfs().get_by_name(param_value));
+        return true;
+
+      case SymbolTable::SymbolSurfaceShader:
+        input.bind(assembly.surface_shaders().get_by_name(param_value));
         return true;
 
       default:
