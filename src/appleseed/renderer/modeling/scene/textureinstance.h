@@ -50,7 +50,7 @@ namespace renderer
 {
 
 //
-// Texture mapping modes.
+// Modes.
 //
 
 enum TextureAddressingMode
@@ -66,6 +66,12 @@ enum TextureFilteringMode
     TextureFilteringBicubic,
     TextureFilteringFeline,             // Reference: http://www.hpl.hp.com/techreports/Compaq-DEC/WRL-99-1.pdf
     TextureFilteringEWA
+};
+
+enum TextureAlphaMode
+{
+    TextureAlphaModeAlphaChannel = 0,
+    TextureAlphaModeLuminance
 };
 
 
@@ -85,9 +91,10 @@ class DLLSYMBOL TextureInstance
     // Return the name of the instantiated texture in the parent scene or assembly.
     const char* get_texture_name() const;
 
-    // Return the texture mapping modes.
+    // Return the modes.
     TextureAddressingMode get_addressing_mode() const;
     TextureFilteringMode get_filtering_mode() const;
+    TextureAlphaMode get_alpha_mode() const;
 
     // Return the lighting conditions of the texture.
     const foundation::LightingConditions& get_lighting_conditions() const;
@@ -106,6 +113,7 @@ class DLLSYMBOL TextureInstance
 
     TextureAddressingMode           m_addressing_mode;
     TextureFilteringMode            m_filtering_mode;
+    TextureAlphaMode                m_alpha_mode;
     Texture*                        m_texture;
 
     // Constructor.
@@ -149,6 +157,11 @@ inline TextureAddressingMode TextureInstance::get_addressing_mode() const
 inline TextureFilteringMode TextureInstance::get_filtering_mode() const
 {
     return m_filtering_mode;
+}
+
+inline TextureAlphaMode TextureInstance::get_alpha_mode() const
+{
+    return m_alpha_mode;
 }
 
 inline Texture* TextureInstance::get_texture() const
