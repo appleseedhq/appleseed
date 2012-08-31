@@ -33,6 +33,7 @@
 #include "renderer/modeling/entity/connectableentity.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
@@ -60,7 +61,7 @@ class DLLSYMBOL Material
 {
   public:
     // Delete this instance.
-    virtual void release();
+    virtual void release() override;
 
     // Return a string identifying the model of this material.
     const char* get_model() const;

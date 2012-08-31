@@ -36,7 +36,6 @@
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/input/texturesource.h"
-#include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/textureinstance.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/modeling/texture/texture.h"
