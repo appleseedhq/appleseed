@@ -51,6 +51,7 @@
 #include "foundation/utility/string.h"
 
 // Standard headers.
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <cstddef>
@@ -127,7 +128,7 @@ namespace
                 static_cast<const InputValues*>(input_evaluator.evaluate(m_inputs));
 
             // Construct the Microfacet Distribution Function.
-            m_mdf.reset(new MDF(values->m_roughness));
+            m_mdf.reset(new MDF(max(values->m_roughness, 1.0e-6)));
 
             // Precompute the specular albedo curve.
             Spectrum rs(values->m_rs);
@@ -601,6 +602,7 @@ namespace
             plot_specular_albedo_curve(file, 0.8, Spectrum(1.0f));
             plot_specular_albedo_curve(file, 0.4, Spectrum(1.0f));
             plot_specular_albedo_curve(file, 0.03, Spectrum(1.0f));
+            plot_specular_albedo_curve(file, 1.0e-6, Spectrum(1.0f));
         }
 
         static void plot_specular_albedo_curve(
