@@ -245,7 +245,7 @@ double Tracer::trace(
                 transmission,
                 parent_shading_point);
 
-        return transmission;
+        return shading_point.hit() ? 0.0 : transmission;
     }
 }
 
@@ -368,7 +368,7 @@ double Tracer::trace_between(
                 transmission,
                 parent_shading_point);
 
-        return transmission;
+        return shading_point.hit() ? 0.0 : transmission;
     }
 }
 
