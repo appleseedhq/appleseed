@@ -182,12 +182,17 @@ asf::auto_release_ptr<asr::Project> build_project()
     assembly->lights().insert(light);
 
     // Create an instance of the assembly and insert it into the scene.
-    scene->assembly_instances().insert(
+    asf::auto_release_ptr<asr::AssemblyInstance> assembly_instance(
         asr::AssemblyInstanceFactory::create(
             "assembly_inst",
             asr::ParamArray(),
-            *assembly,
-            asf::Transformd(asf::Matrix4d::identity())));
+            *assembly));
+    assembly_instance
+        ->transform_sequence()
+            .set_transform(
+                0.0,
+                asf::Transformd(asf::Matrix4d::identity()));
+    scene->assembly_instances().insert(assembly_instance);
 
     // Insert the assembly into the scene.
     scene->assemblies().insert(assembly);

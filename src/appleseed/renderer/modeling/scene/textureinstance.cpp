@@ -104,6 +104,21 @@ TextureInstance::TextureInstance(
         m_filtering_mode = TextureFilteringBilinear;
     }
 
+    // Retrieve the texture alpha mode.
+    const string alpha_mode = m_params.get_optional<string>("alpha_mode", "alpha_channel");
+    if (alpha_mode == "alpha_channel")
+        m_alpha_mode = TextureAlphaModeAlphaChannel;
+    else if (alpha_mode == "luminance")
+        m_alpha_mode = TextureAlphaModeLuminance;
+    else
+    {
+        RENDERER_LOG_ERROR(
+            "invalid value \"%s\" for parameter \"alpha_mode\", ",
+            "using default value \"alpha_channel\".",
+            alpha_mode.c_str());
+        m_alpha_mode = TextureAlphaModeAlphaChannel;
+    }
+
     // todo: retrieve the lighting conditions.
     impl->m_lighting_conditions = LightingConditions(IlluminantCIED65, XYZCMFCIE196410Deg);
 
@@ -170,6 +185,18 @@ DictionaryArray TextureInstanceFactory::get_widget_definitions()
                     .insert("Bilinear", "bilinear"))
             .insert("use", "required")
             .insert("default", "bilinear"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "alpha_mode")
+            .insert("label", "Alpha Mode")
+            .insert("widget", "dropdown_list")
+            .insert("dropdown_items",
+                Dictionary()
+                    .insert("Alpha Channel", "alpha_channel")
+                    .insert("Luminance", "luminance"))
+            .insert("use", "optional")
+            .insert("default", "alpha_channel"));
 
     return definitions;
 }

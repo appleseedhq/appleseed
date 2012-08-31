@@ -43,11 +43,15 @@
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
 
+// Standard headers.
+#include <cmath>
+
 // Forward declarations.
 namespace renderer  { class Assembly; }
 namespace renderer  { class Project; }
 
 using namespace foundation;
+using namespace std;
 
 namespace renderer
 {
@@ -68,8 +72,6 @@ namespace
             const char*         name,
             const ParamArray&   params)
           : Light(name, params)
-          , m_cos_inner_half_angle(cos(deg_to_rad(params.get_required<double>("inner_angle", 20.0) / 2.0)))
-          , m_cos_outer_half_angle(cos(deg_to_rad(params.get_required<double>("outer_angle", 30.0) / 2.0)))
         {
             m_inputs.declare("exitance", InputFormatSpectrum);
         }
@@ -93,6 +95,8 @@ namespace
 
             check_exitance_input_non_null("exitance");
 
+            m_cos_inner_half_angle = cos(deg_to_rad(m_params.get_required<double>("inner_angle", 20.0) / 2.0));
+            m_cos_outer_half_angle = cos(deg_to_rad(m_params.get_required<double>("outer_angle", 30.0) / 2.0));
             m_transform = Transformd(Matrix4d::rotation(Vector3d(1.0, 0.0, 0.0), -HalfPi)) * get_transform();
             m_axis = normalize(m_transform.vector_to_parent(Vector3d(0.0, 1.0, 0.0)));
 
@@ -165,9 +169,8 @@ namespace
             Alpha       m_exitance_alpha;   // unused
         };
 
-        const double    m_cos_inner_half_angle;
-        const double    m_cos_outer_half_angle;
-
+        double          m_cos_inner_half_angle;
+        double          m_cos_outer_half_angle;
         Transformd      m_transform;
         Vector3d        m_axis;
 

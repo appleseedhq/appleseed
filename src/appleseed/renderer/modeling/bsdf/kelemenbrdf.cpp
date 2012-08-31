@@ -51,9 +51,12 @@
 #include "foundation/utility/string.h"
 
 // Standard headers.
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <cstddef>
+#include <iomanip>
+#include <sstream>
 #include <string>
 
 using namespace foundation;
@@ -125,7 +128,7 @@ namespace
                 static_cast<const InputValues*>(input_evaluator.evaluate(m_inputs));
 
             // Construct the Microfacet Distribution Function.
-            m_mdf.reset(new WardMDF<double>(values->m_roughness));
+            m_mdf.reset(new MDF(max(values->m_roughness, 1.0e-6)));
 
             // Precompute the specular albedo curve.
             Spectrum rs(values->m_rs);
@@ -441,9 +444,11 @@ namespace
             double              m_roughness;                    // technically, root-mean-square of the microfacets slopes
         };
 
-        auto_ptr<WardMDF<double> >  m_mdf;                      // Microfacet Distribution Function
-        Spectrum                    m_a_spec[AlbedoTableSize];  // albedo of the specular component as V varies
-        Spectrum                    m_s;                        // normalization constant for the matte component
+        typedef WardMDF<double> MDF;
+
+        auto_ptr<MDF>           m_mdf;                          // Microfacet Distribution Function
+        Spectrum                m_a_spec[AlbedoTableSize];      // albedo of the specular component as V varies
+        Spectrum                m_s;                            // normalization constant for the matte component
 
         // Evaluate the specular component of the BRDF (equation 3).
         template <typename MDF>
@@ -517,7 +522,9 @@ namespace
                 const double dot_HN = H.y;
                 const double pdf_H = mdf.evaluate_pdf(dot_HN);
                 const double pdf_L = pdf_H / (4.0 * dot_HV);
-                assert(pdf_L > 0.0);
+                assert(pdf_L >= 0.0);
+                if (pdf_L == 0.0)
+                    continue;
 
                 // Sanity checks.
                 assert(is_normalized(V));
@@ -590,10 +597,12 @@ namespace
 
         static void plot_specular_albedo_curves()
         {
-            MapleFile file("albedo.txt");
+            MapleFile file("albedo.mpl");
+
             plot_specular_albedo_curve(file, 0.8, Spectrum(1.0f));
             plot_specular_albedo_curve(file, 0.4, Spectrum(1.0f));
             plot_specular_albedo_curve(file, 0.03, Spectrum(1.0f));
+            plot_specular_albedo_curve(file, 1.0e-6, Spectrum(1.0f));
         }
 
         static void plot_specular_albedo_curve(
@@ -601,7 +610,9 @@ namespace
             const double        m,
             const Spectrum&     rs)
         {
-            const string suffix = "_" + replace(to_string(m), ".", "_");
+            stringstream sstr;
+            sstr << fixed << m;
+            const string suffix = "_" + replace(sstr.str(), ".", "_");
 
             generate_specular_albedo_plot_data(file, "ward_" + suffix, WardMDF<double>(m), rs);
             generate_specular_albedo_plot_data(file, "beckmann_" + suffix, BeckmannMDF<double>(m), rs);

@@ -72,11 +72,6 @@ namespace
             const ParamArray&       params)
           : Camera(name, params)
         {
-            m_film_dimensions = get_film_dimensions();
-            m_focal_length = get_focal_length();
-
-            m_rcp_film_width = 1.0 / m_film_dimensions[0];
-            m_rcp_film_height = 1.0 / m_film_dimensions[1];
         }
 
         virtual void release() override
@@ -93,6 +88,11 @@ namespace
         {
             if (!Camera::on_frame_begin(project))
                 return false;
+
+            m_film_dimensions = get_film_dimensions();
+            m_focal_length = get_focal_length();
+            m_rcp_film_width = 1.0 / m_film_dimensions[0];
+            m_rcp_film_height = 1.0 / m_film_dimensions[1];
 
             // Precompute the rays origin in world space if the camera is static.
             if (m_transform_sequence.size() == 1)

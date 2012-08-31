@@ -32,6 +32,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/input/source.h"
+#include "renderer/modeling/scene/textureinstance.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
@@ -46,7 +47,6 @@
 
 // Forward declarations.
 namespace renderer      { class TextureCache; }
-namespace renderer      { class TextureInstance; }
 
 namespace renderer
 {
@@ -127,6 +127,11 @@ class TextureSource
     foundation::Color4f sample_texture(
         TextureCache&                       texture_cache,
         const foundation::Vector2d&         uv) const;
+
+    // Compute an alpha value given a linear RGBA color and the alpha mode of the texture instance.
+    void evaluate_alpha(
+        const foundation::Color4f&          color,
+        Alpha&                              alpha) const;
 };
 
 
@@ -179,7 +184,7 @@ inline void TextureSource::evaluate(
 {
     const foundation::Color4f color = sample_texture(texture_cache, uv);
 
-    alpha.set(color.a);
+    evaluate_alpha(color, alpha);
 }
 
 inline void TextureSource::evaluate(
@@ -192,7 +197,7 @@ inline void TextureSource::evaluate(
 
     linear_rgb = color.rgb();
 
-    alpha.set(color.a);
+    evaluate_alpha(color, alpha);
 }
 
 inline void TextureSource::evaluate(
@@ -208,7 +213,25 @@ inline void TextureSource::evaluate(
         color.rgb(),
         spectrum);
 
-    alpha.set(color.a);
+    evaluate_alpha(color, alpha);
+}
+
+inline void TextureSource::evaluate_alpha(
+    const foundation::Color4f&              color,
+    Alpha&                                  alpha) const
+{
+    switch (m_texture_instance.get_alpha_mode())
+    {
+      case TextureAlphaModeAlphaChannel:
+        alpha.set(color.a);
+        break;
+
+      case TextureAlphaModeLuminance:
+        alpha.set(average_value(color.rgb()));
+        break;
+
+      assert_otherwise;
+    }
 }
 
 }       // namespace renderer

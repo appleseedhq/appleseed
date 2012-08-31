@@ -175,14 +175,12 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         TextureCache        m_texture_cache;
         Intersector         m_intersector;
         MersenneTwister     m_rng;
-        Tracer              m_tracer;
 
         Fixture()
           : m_trace_context(*Base::m_scene)
           , m_texture_store(*Base::m_scene)
           , m_texture_cache(m_texture_store)
           , m_intersector(m_trace_context, m_texture_cache)
-          , m_tracer(*Base::m_scene, m_intersector, m_texture_cache)
         {
             InputBinder input_binder;
             input_binder.bind(*Base::m_scene);
@@ -201,11 +199,13 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
     {
     };
 
-    TEST_CASE_F(Trace_GivenOriginAndDirection_NoOccluder, Fixture<EmptyScene>)
+    TEST_CASE_F(Trace_GivenNoOccluder, Fixture<EmptyScene>)
     {
+        Tracer tracer(*m_scene, m_intersector, m_texture_cache);
+
         double transmission;
         const ShadingPoint& shading_point =
-            m_tracer.trace(
+            tracer.trace(
                 Vector3d(0.0),
                 Vector3d(1.0, 0.0, 0.0),
                 0.0,
@@ -215,17 +215,45 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         EXPECT_EQ(1.0, transmission);
     }
 
-    TEST_CASE_F(TraceBetween_GivenOriginAndTarget_NoOccluder, Fixture<EmptyScene>)
+    TEST_CASE_F(Trace_QuickVariant_GivenNoOccluder, Fixture<EmptyScene>)
     {
+        Tracer tracer(*m_scene, m_intersector, m_texture_cache);
+
+        const double transmission =
+            tracer.trace(
+                Vector3d(0.0),
+                Vector3d(1.0, 0.0, 0.0),
+                0.0);
+
+        EXPECT_EQ(1.0, transmission);
+    }
+
+    TEST_CASE_F(TraceBetween_GivenNoOccluder, Fixture<EmptyScene>)
+    {
+        Tracer tracer(*m_scene, m_intersector, m_texture_cache);
+
         double transmission;
         const ShadingPoint& shading_point =
-            m_tracer.trace_between(
+            tracer.trace_between(
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
                 0.0,
                 transmission);
 
         EXPECT_FALSE(shading_point.hit());
+        EXPECT_EQ(1.0, transmission);
+    }
+
+    TEST_CASE_F(TraceBetween_QuickVariant_GivenNoOccluder, Fixture<EmptyScene>)
+    {
+        Tracer tracer(*m_scene, m_intersector, m_texture_cache);
+
+        const double transmission =
+            tracer.trace_between(
+                Vector3d(0.0, 0.0, 0.0),
+                Vector3d(5.0, 0.0, 0.0),
+                0.0);
+
         EXPECT_EQ(1.0, transmission);
     }
 
@@ -238,11 +266,13 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         }
     };
 
-    TEST_CASE_F(Trace_GivenOriginAndDirection_SingleOpaqueOccluder, Fixture<SceneWithSingleOpaqueOccluder>)
+    TEST_CASE_F(Trace_GivenSingleOpaqueOccluder, Fixture<SceneWithSingleOpaqueOccluder>)
     {
+        Tracer tracer(*m_scene, m_intersector, m_texture_cache);
+
         double transmission;
         const ShadingPoint& shading_point =
-            m_tracer.trace(
+            tracer.trace(
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(1.0, 0.0, 0.0),
                 0.0,
@@ -253,11 +283,26 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         EXPECT_EQ(1.0, transmission);
     }
 
-    TEST_CASE_F(TraceBetween_GivenOriginAndTarget_SingleOpaqueOccluder, Fixture<SceneWithSingleOpaqueOccluder>)
+    TEST_CASE_F(Trace_QuickVariant_GivenSingleOpaqueOccluder, Fixture<SceneWithSingleOpaqueOccluder>)
     {
+        Tracer tracer(*m_scene, m_intersector, m_texture_cache);
+
+        const double transmission =
+            tracer.trace(
+                Vector3d(0.0, 0.0, 0.0),
+                Vector3d(1.0, 0.0, 0.0),
+                0.0);
+
+        EXPECT_EQ(0.0, transmission);
+    }
+
+    TEST_CASE_F(TraceBetween_GivenSingleOpaqueOccluder, Fixture<SceneWithSingleOpaqueOccluder>)
+    {
+        Tracer tracer(*m_scene, m_intersector, m_texture_cache);
+
         double transmission;
         const ShadingPoint& shading_point =
-            m_tracer.trace_between(
+            tracer.trace_between(
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
                 0.0,
@@ -266,6 +311,19 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         ASSERT_TRUE(shading_point.hit());
         EXPECT_FEQ(Vector3d(2.0, 0.0, 0.0), shading_point.get_point());
         EXPECT_EQ(1.0, transmission);
+    }
+
+    TEST_CASE_F(TraceBetween_QuickVariant_GivenSingleOpaqueOccluder, Fixture<SceneWithSingleOpaqueOccluder>)
+    {
+        Tracer tracer(*m_scene, m_intersector, m_texture_cache);
+
+        const double transmission =
+            tracer.trace_between(
+                Vector3d(0.0, 0.0, 0.0),
+                Vector3d(5.0, 0.0, 0.0),
+                0.0);
+
+        EXPECT_EQ(0.0, transmission);
     }
 
     struct SceneWithSingleTransparentOccluder
@@ -277,11 +335,13 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         }
     };
 
-    TEST_CASE_F(Trace_GivenOriginAndDirection_SingleTransparentOccluder, Fixture<SceneWithSingleTransparentOccluder>)
+    TEST_CASE_F(Trace_GivenSingleTransparentOccluder, Fixture<SceneWithSingleTransparentOccluder>)
     {
+        Tracer tracer(*m_scene, m_intersector, m_texture_cache);
+
         double transmission;
         const ShadingPoint& shading_point =
-            m_tracer.trace(
+            tracer.trace(
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(1.0, 0.0, 0.0),
                 0.0,
@@ -291,17 +351,45 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         EXPECT_FEQ(0.5, transmission);
     }
 
-    TEST_CASE_F(TraceBetween_GivenOriginAndTarget_SingleTransparentOccluder, Fixture<SceneWithSingleTransparentOccluder>)
+    TEST_CASE_F(Trace_QuickVariant_GivenSingleTransparentOccluder, Fixture<SceneWithSingleTransparentOccluder>)
     {
+        Tracer tracer(*m_scene, m_intersector, m_texture_cache);
+
+        const double transmission =
+            tracer.trace(
+                Vector3d(0.0, 0.0, 0.0),
+                Vector3d(1.0, 0.0, 0.0),
+                0.0);
+
+        EXPECT_FEQ(0.5, transmission);
+    }
+
+    TEST_CASE_F(TraceBetween_GivenSingleTransparentOccluder, Fixture<SceneWithSingleTransparentOccluder>)
+    {
+        Tracer tracer(*m_scene, m_intersector, m_texture_cache);
+
         double transmission;
         const ShadingPoint& shading_point =
-            m_tracer.trace_between(
+            tracer.trace_between(
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
                 0.0,
                 transmission);
 
         ASSERT_FALSE(shading_point.hit());
+        EXPECT_FEQ(0.5, transmission);
+    }
+
+    TEST_CASE_F(TraceBetween_QuickVariant_GivenSingleTransparentOccluder, Fixture<SceneWithSingleTransparentOccluder>)
+    {
+        Tracer tracer(*m_scene, m_intersector, m_texture_cache);
+
+        const double transmission =
+            tracer.trace_between(
+                Vector3d(0.0, 0.0, 0.0),
+                Vector3d(5.0, 0.0, 0.0),
+                0.0);
+
         EXPECT_FEQ(0.5, transmission);
     }
 
@@ -315,11 +403,13 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         }
     };
 
-    TEST_CASE_F(Trace_GivenOriginAndDirection_TransparentThenOpaqueOccluders, Fixture<SceneWithTransparentThenOpaqueOccluders>)
+    TEST_CASE_F(Trace_GivenTransparentThenOpaqueOccluders, Fixture<SceneWithTransparentThenOpaqueOccluders>)
     {
+        Tracer tracer(*m_scene, m_intersector, m_texture_cache);
+
         double transmission;
         const ShadingPoint& shading_point =
-            m_tracer.trace(
+            tracer.trace(
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(1.0, 0.0, 0.0),
                 0.0,
@@ -330,11 +420,26 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         EXPECT_FEQ(0.5, transmission);
     }
 
-    TEST_CASE_F(TraceBetween_GivenOriginAndTarget_TransparentThenOpaqueOccluders_TargetPastOpaqueOccluder, Fixture<SceneWithTransparentThenOpaqueOccluders>)
+    TEST_CASE_F(Trace_QuickVariant_GivenTransparentThenOpaqueOccluders, Fixture<SceneWithTransparentThenOpaqueOccluders>)
     {
+        Tracer tracer(*m_scene, m_intersector, m_texture_cache);
+
+        const double transmission =
+            tracer.trace(
+                Vector3d(0.0, 0.0, 0.0),
+                Vector3d(1.0, 0.0, 0.0),
+                0.0);
+
+        EXPECT_FEQ(0.0, transmission);
+    }
+
+    TEST_CASE_F(TraceBetween_GivenTransparentThenOpaqueOccluders_GivenTargetPastOpaqueOccluder, Fixture<SceneWithTransparentThenOpaqueOccluders>)
+    {
+        Tracer tracer(*m_scene, m_intersector, m_texture_cache);
+
         double transmission;
         const ShadingPoint& shading_point =
-            m_tracer.trace_between(
+            tracer.trace_between(
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
                 0.0,
@@ -345,17 +450,45 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         EXPECT_FEQ(0.5, transmission);
     }
 
-    TEST_CASE_F(TraceBetween_GivenOriginAndTarget_TransparentThenOpaqueOccluders_TargetOnOpaqueOccluder, Fixture<SceneWithTransparentThenOpaqueOccluders>)
+    TEST_CASE_F(TraceBetween_QuickVariant_GivenTransparentThenOpaqueOccluders_GivenTargetPastOpaqueOccluder, Fixture<SceneWithTransparentThenOpaqueOccluders>)
     {
+        Tracer tracer(*m_scene, m_intersector, m_texture_cache);
+
+        const double transmission =
+            tracer.trace_between(
+                Vector3d(0.0, 0.0, 0.0),
+                Vector3d(5.0, 0.0, 0.0),
+                0.0);
+
+        EXPECT_FEQ(0.0, transmission);
+    }
+
+    TEST_CASE_F(TraceBetween_GivenTransparentThenOpaqueOccluders_GivenTargetOnOpaqueOccluder, Fixture<SceneWithTransparentThenOpaqueOccluders>)
+    {
+        Tracer tracer(*m_scene, m_intersector, m_texture_cache);
+
         double transmission;
         const ShadingPoint& shading_point =
-            m_tracer.trace_between(
+            tracer.trace_between(
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(4.0, 0.0, 0.0),
                 0.0,
                 transmission);
 
         ASSERT_FALSE(shading_point.hit());
+        EXPECT_FEQ(0.5, transmission);
+    }
+
+    TEST_CASE_F(TraceBetween_QuickVariant_GivenTransparentThenOpaqueOccluders_GivenTargetOnOpaqueOccluder, Fixture<SceneWithTransparentThenOpaqueOccluders>)
+    {
+        Tracer tracer(*m_scene, m_intersector, m_texture_cache);
+
+        const double transmission =
+            tracer.trace_between(
+                Vector3d(0.0, 0.0, 0.0),
+                Vector3d(4.0, 0.0, 0.0),
+                0.0);
+
         EXPECT_FEQ(0.5, transmission);
     }
 }

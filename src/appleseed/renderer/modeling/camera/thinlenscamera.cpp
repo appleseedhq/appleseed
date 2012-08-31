@@ -92,32 +92,6 @@ namespace
             const ParamArray&   params)
           : Camera(name, params)
         {
-            m_film_dimensions = get_film_dimensions();
-            m_focal_length = get_focal_length();
-            m_f_stop = extract_f_stop();
-
-            extract_focal_distance(
-                m_autofocus_enabled,
-                m_autofocus_target,
-                m_focal_distance);
-
-            extract_diaphragm_blade_count();
-            extract_diaphragm_tilt_angle();
-
-            // Precompute some values.
-            m_lens_radius = 0.5 * m_focal_length / m_f_stop;
-            m_rcp_film_width = 1.0 / m_film_dimensions[0];
-            m_rcp_film_height = 1.0 / m_film_dimensions[1];
-
-            // Build the diaphragm polygon.
-            if (m_diaphragm_blade_count > 0)
-            {
-                m_diaphragm_vertices.resize(m_diaphragm_blade_count);
-                build_regular_polygon(
-                    m_diaphragm_blade_count,
-                    m_diaphragm_tilt_angle,
-                    &m_diaphragm_vertices.front());
-            }
         }
 
         virtual void release() override
@@ -135,6 +109,23 @@ namespace
             if (!Camera::on_frame_begin(project))
                 return false;
 
+            m_focal_length = get_focal_length();
+
+            extract_focal_distance(
+                m_autofocus_enabled,
+                m_autofocus_target,
+                m_focal_distance);
+
+            extract_diaphragm_blade_count();
+            extract_diaphragm_tilt_angle();
+
+            // Precompute some values.
+            const Vector2d& film_dimensions = get_film_dimensions();
+            const double f_stop = extract_f_stop();
+            m_lens_radius = 0.5 * m_focal_length / f_stop;
+            m_rcp_film_width = 1.0 / film_dimensions[0];
+            m_rcp_film_height = 1.0 / film_dimensions[1];
+
             // Perform autofocus, if enabled.
             if (m_autofocus_enabled)
             {
@@ -144,10 +135,20 @@ namespace
                 m_focal_distance = get_autofocus_focal_distance(intersector);
             }
 
-            // Precompute some values.
+            // Precompute some more values.
             const double t = m_focal_distance / m_focal_length;
-            m_kx = m_film_dimensions[0] * t;
-            m_ky = m_film_dimensions[1] * t;
+            m_kx = film_dimensions[0] * t;
+            m_ky = film_dimensions[1] * t;
+
+            // Build the diaphragm polygon.
+            if (m_diaphragm_blade_count > 0)
+            {
+                m_diaphragm_vertices.resize(m_diaphragm_blade_count);
+                build_regular_polygon(
+                    m_diaphragm_blade_count,
+                    m_diaphragm_tilt_angle,
+                    &m_diaphragm_vertices.front());
+            }
 
             return true;
         }
@@ -224,9 +225,7 @@ namespace
 
       private:
         // Parameters.
-        Vector2d            m_film_dimensions;          // film dimensions, in meters
         double              m_focal_length;             // focal length, in meters
-        double              m_f_stop;                   // f-stop
         bool                m_autofocus_enabled;        // is autofocus enabled?
         Vector2d            m_autofocus_target;         // autofocus target on film plane in NDC
         double              m_focal_distance;           // focal distance, in meters
@@ -287,9 +286,10 @@ namespace
                 ray.m_org /= w;
 
             // Transform the film point from NDC to camera space.
+            const Vector2d& film_dimensions = get_film_dimensions();
             const Vector3d target(
-                (m_autofocus_target[0] - 0.5) * m_film_dimensions[0],
-                (0.5 - m_autofocus_target[1]) * m_film_dimensions[1],
+                (m_autofocus_target[0] - 0.5) * film_dimensions[0],
+                (0.5 - m_autofocus_target[1]) * film_dimensions[1],
                 -m_focal_length);
 
             // Set the ray direction.
