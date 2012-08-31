@@ -54,6 +54,8 @@
 #include <cassert>
 #include <cmath>
 #include <cstddef>
+#include <iomanip>
+#include <sstream>
 #include <string>
 
 using namespace foundation;
@@ -594,7 +596,8 @@ namespace
 
         static void plot_specular_albedo_curves()
         {
-            MapleFile file("albedo.txt");
+            MapleFile file("albedo.mpl");
+
             plot_specular_albedo_curve(file, 0.8, Spectrum(1.0f));
             plot_specular_albedo_curve(file, 0.4, Spectrum(1.0f));
             plot_specular_albedo_curve(file, 0.03, Spectrum(1.0f));
@@ -605,7 +608,9 @@ namespace
             const double        m,
             const Spectrum&     rs)
         {
-            const string suffix = "_" + replace(to_string(m), ".", "_");
+            stringstream sstr;
+            sstr << fixed << m;
+            const string suffix = "_" + replace(sstr.str(), ".", "_");
 
             generate_specular_albedo_plot_data(file, "ward_" + suffix, WardMDF<double>(m), rs);
             generate_specular_albedo_plot_data(file, "beckmann_" + suffix, BeckmannMDF<double>(m), rs);
