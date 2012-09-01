@@ -30,14 +30,21 @@
 #define APPLESEED_RENDERER_MODELING_ENVIRONMENT_ENVIRONMENT_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
-#include "renderer/modeling/entity/entity.h"
-#include "renderer/modeling/scene/containers.h"
+#include "renderer/modeling/entity/connectableentity.h"
+
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
+#include "foundation/utility/autoreleaseptr.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
 namespace renderer      { class EnvironmentEDF; }
 namespace renderer      { class EnvironmentShader; }
+namespace renderer      { class ParamArray; }
+namespace renderer      { class Project; }
 
 namespace renderer
 {
@@ -46,20 +53,22 @@ namespace renderer
 // Environment.
 //
 
-class RENDERERDLL Environment
-  : public Entity
+class DLLSYMBOL Environment
+  : public ConnectableEntity
 {
   public:
     // Delete this instance.
-    virtual void release();
+    virtual void release() override;
 
     // Return a string identifying the model of this environment.
     const char* get_model() const;
 
-    // Perform entity binding.
-    void bind_entities(
-        const EnvironmentEDFContainer&      environment_edfs,
-        const EnvironmentShaderContainer&   environment_shaders);
+    // This method is called once before rendering each frame.
+    // Returns true on success, false otherwise.
+    bool on_frame_begin(const Project& project);
+
+    // This method is called once after rendering each frame.
+    void on_frame_end(const Project& project);
 
     // Return the EDF of this environment, or 0 if the environment doesn't have one.
     EnvironmentEDF* get_environment_edf() const;
@@ -70,13 +79,13 @@ class RENDERERDLL Environment
   private:
     friend class EnvironmentFactory;
 
-    EnvironmentEDF*     m_environment_edf;
-    EnvironmentShader*  m_environment_shader;
+    EnvironmentEDF*         m_environment_edf;
+    EnvironmentShader*      m_environment_shader;
 
     // Constructor.
     Environment(
-        const char*                         name,
-        const ParamArray&                   params);
+        const char*         name,
+        const ParamArray&   params);
 };
 
 
@@ -84,7 +93,7 @@ class RENDERERDLL Environment
 // Environment factory.
 //
 
-class RENDERERDLL EnvironmentFactory
+class DLLSYMBOL EnvironmentFactory
 {
   public:
     // Return a string identifying this environment model.
@@ -95,8 +104,8 @@ class RENDERERDLL EnvironmentFactory
 
     // Create a new environment.
     static foundation::auto_release_ptr<Environment> create(
-        const char*                         name,
-        const ParamArray&                   params);
+        const char*         name,
+        const ParamArray&   params);
 };
 
 

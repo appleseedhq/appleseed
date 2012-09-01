@@ -183,6 +183,10 @@ bool Scene::on_frame_begin(const Project& project)
 
     success = success && invoke_on_frame_begin(project, environment_edfs());
     success = success && invoke_on_frame_begin(project, environment_shaders());
+
+    if (impl->m_environment.get())
+        success = success && impl->m_environment->on_frame_begin(project);
+
     success = success && invoke_on_frame_begin(project, assemblies());
     success = success && invoke_on_frame_begin(project, assembly_instances());
 
@@ -193,6 +197,10 @@ void Scene::on_frame_end(const Project& project)
 {
     invoke_on_frame_end(project, assembly_instances());
     invoke_on_frame_end(project, assemblies());
+
+    if (impl->m_environment.get())
+        impl->m_environment->on_frame_end(project);
+
     invoke_on_frame_end(project, environment_shaders());
     invoke_on_frame_end(project, environment_edfs());
 

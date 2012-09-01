@@ -198,9 +198,14 @@ void InputBinder::bind_scene_entities_inputs(
     // Bind environment inputs.
     if (scene.get_environment())
     {
-        scene.get_environment()->bind_entities(
-            scene.environment_edfs(),
-            scene.environment_shaders());
+        Environment& environment = *scene.get_environment();
+        bind_scene_entity_inputs(
+            scene,
+            scene_symbols,
+            SymbolTable::symbol_name(SymbolTable::SymbolEnvironment),
+            environment.get_name(),
+            environment.get_parameters(),
+            environment.get_inputs());
     }
 }
 
@@ -456,6 +461,14 @@ bool InputBinder::try_bind_scene_entity_to_input(
             entity_name,
             param_value,
             input);
+        return true;
+
+      case SymbolTable::SymbolEnvironmentEDF:
+        input.bind(scene.environment_edfs().get_by_name(param_value));
+        return true;
+
+      case SymbolTable::SymbolEnvironmentShader:
+        input.bind(scene.environment_shaders().get_by_name(param_value));
         return true;
 
       default:
