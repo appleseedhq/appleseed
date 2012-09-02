@@ -328,7 +328,7 @@ void ProjectBuilder::insert_objects(
                 object_instance_name.c_str(),
                 ParamArray(),
                 *object,
-                Transformd(Matrix4d::identity()),
+                Transformd::identity(),
                 StringArray()));
 
         parent_item->add_item(object_instance.get());

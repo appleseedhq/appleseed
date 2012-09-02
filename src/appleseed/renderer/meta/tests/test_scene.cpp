@@ -86,7 +86,7 @@ TEST_SUITE(Renderer_Modeling_Scene_Scene)
                 "object_inst",
                 ParamArray(),
                 *object,
-                Transformd(Matrix4d::identity()),
+                Transformd::identity(),
                 StringArray()));
 
         // Create an instance of the assembly.

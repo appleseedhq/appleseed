@@ -77,7 +77,7 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
                     "object_instance",
                     ParamArray(),
                     *object,
-                    Transformd(Matrix4d::identity()),
+                    Transformd::identity(),
                     StringArray()));
 
             m_scene->assembly_instances().insert(

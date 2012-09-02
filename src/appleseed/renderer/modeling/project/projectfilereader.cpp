@@ -738,7 +738,7 @@ namespace
             {
                 RENDERER_LOG_ERROR("while defining <transform> element: the transformation matrix is singular.");
                 m_context.get_event_counters().signal_error();
-                m_transform = Transformd(Matrix4d::identity());
+                m_transform = Transformd::identity();
             }
         }
 
@@ -827,7 +827,7 @@ namespace
         virtual void end_element() override
         {
             if (m_transforms.empty())
-                m_transforms[0.0] = Transformd(Matrix4d::identity());
+                m_transforms[0.0] = Transformd::identity();
         }
 
         virtual void end_child_element(
