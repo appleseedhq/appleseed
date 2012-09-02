@@ -31,40 +31,77 @@ import bpy
 from bpy.props import PointerProperty, StringProperty, BoolProperty, EnumProperty
 from bpy.props import IntProperty, FloatProperty, FloatVectorProperty, CollectionProperty
 
-def get_appleseed_path():
-    return '/usr/local/appleseed'
-
-class AppleseedRenderSettings(bpy.types.PropertyGroup):
+class AppleseedRenderSettings( bpy.types.PropertyGroup):
     @classmethod
     def register(cls):
         bpy.types.Scene.appleseed = PointerProperty(
-                name="Appleseed Render Settings",
-                description="Appleseed render settings",
-                type=cls,
+                name = "Appleseed Render Settings",
+                description = "Appleseed render settings",
+                type = cls
                 )
 
-        cls.lighting_engine = bpy.props.EnumProperty(name="Lighting Engine",
-                    								 description="Select the lighting engine to use",
-                            						 items=[('pt', "Path Tracing", "Full Global Illumination"),
-                                    						('drt', "Distributed Ray Tracing", "Direct Lighting Only")],
-                                            		 default='pt')
+        # sampling
+        cls.pixel_filter = bpy.props.EnumProperty( name = "Filter",
+                                                    description = "Pixel filter to use",
+                                                    items = [ ( "box", "Box", "Box" ),
+                                                              ( "gaussian", "Gaussian", "Gaussian"),
+                                                              ( "mitchell", "Mitchell", "Mitchell")],
+                                                    default = "mitchell")
 
-        cls.sample_count = bpy.props.IntProperty(name="Sample Count",
-                                                 description="Number of samples per pixels in final frame mode",
-                                                 min=1,
-                                                 max=1000000,
-                                                 default=25,
-                                                 subtype='UNSIGNED')
+        cls.filter_size = bpy.props.IntProperty( name = "Filter Size",
+                                                 description = "Filter size",
+                                                 min = 1,
+                                                 max = 64,
+                                                 default = 2,
+                                                 subtype = 'UNSIGNED')
 
-        cls.appleseed_path = bpy.props.StringProperty( name="Appleseed Path",
-                                                       description="Path to Appleseed installation folder",
-                                                       subtype='DIR_PATH',
-                                                       default=get_appleseed_path())
+        cls.pixel_sampler = bpy.props.EnumProperty( name = "Sampler",
+                                                    description = "Sampler",
+                                                    items = [ ( "uniform", "Uniform", "Uniform" ),
+                                                              ( "adaptive", "Adaptive", "Adaptive")],
+                                                    default = "adaptive")
+
+        cls.sampler_min_samples = bpy.props.IntProperty( name = "Min Samples",
+                                                 description = "Min Samples",
+                                                 min = 1,
+                                                 max = 1000000,
+                                                 default = 2,
+                                                 subtype = 'UNSIGNED')
+
+        cls.sampler_max_samples = bpy.props.IntProperty( name = "Max Samples",
+                                                 description = "Max Samples",
+                                                 min = 1,
+                                                 max = 1000000,
+                                                 default = 64,
+                                                 subtype = 'UNSIGNED')
+
+        cls.sampler_max_contrast = bpy.props.FloatProperty( name = "Max Contrast",
+                                                 description = "Max contrast",
+                                                 min = 0,
+                                                 max = 1000,
+                                                 default = 1)
+
+        cls.sampler_max_variation = bpy.props.FloatProperty( name = "Max Variation",
+                                                 description = "Max variation",
+                                                 min = 0,
+                                                 max = 1000,
+                                                 default = 1)
+
+        # lighting
+        cls.lighting_engine = bpy.props.EnumProperty( name = "Lighting Engine",
+                    								 description = "Select the lighting engine to use",
+                            						 items = [ ( 'pt', "Path Tracing", "Full Global Illumination"),
+                                    						( 'drt', "Distributed Ray Tracing", "Direct Lighting Only")],
+                                            		 default = 'pt')
+
+        # drt
+        cls.drt_ibl_enable = BoolProperty( name = "Image Based Lighting",
+                                            description = "Image based lighting",
+                                            default = False)
 
     @classmethod
     def unregister(cls):
-        del bpy.types.Scene.cycles
-
+        del bpy.types.Scene.appleseed
 
 def register():
 	bpy.utils.register_class( AppleseedRenderSettings)

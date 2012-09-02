@@ -107,7 +107,7 @@ del properties_particle
 
 ######################################################################
 
-class appleseed_render_panel_base( object):
+class AppleseedRenderPanelBase( object):
     bl_context = "render"
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
@@ -117,7 +117,33 @@ class appleseed_render_panel_base( object):
         renderer = context.scene.render
         return renderer.engine == 'APPLESEED'
 
-class appleseed_lighting_panel( Panel, appleseed_render_panel_base):
+class AppleseedSamplesPanel( Panel, AppleseedRenderPanelBase):
+    bl_label = "Samples"
+    COMPAT_ENGINES = {'APPLESEED'}
+    bl_options = {'DEFAULT_CLOSED'}
+
+    def draw( self, context):
+        layout = self.layout
+        scene = context.scene
+        asr_scene_props = scene.appleseed
+
+        col = layout.column()
+        row = col.row( align=True)
+        row.prop( asr_scene_props, "pixel_filter")
+        row.prop( asr_scene_props, "filter_size")
+
+        col.separator()
+        col.prop( asr_scene_props, "pixel_sampler")
+
+        if asr_scene_props.pixel_sampler == 'adaptive':
+            col.prop( asr_scene_props, "sampler_min_samples")
+            col.prop( asr_scene_props, "sampler_max_samples")
+            col.prop( asr_scene_props, "sampler_max_contrast")
+            col.prop( asr_scene_props, "sampler_max_variation")
+        else:
+            col.prop( asr_scene_props, "sampler_max_samples")
+
+class AppleseedLightingPanel( Panel, AppleseedRenderPanelBase):
     bl_label = "Lighting"
     COMPAT_ENGINES = {'APPLESEED'}
     bl_options = {'DEFAULT_CLOSED'}
@@ -125,22 +151,23 @@ class appleseed_lighting_panel( Panel, appleseed_render_panel_base):
     def draw( self, context):
         layout = self.layout
         scene = context.scene
-        ascene = scene.appleseed
+        asr_scene_props = scene.appleseed
 
         col = layout.column()
-        col.prop( ascene, "lighting_engine")
-        sub = col.row( align=True)
-        sub.prop( ascene, "sample_count")
+        col.prop( asr_scene_props, "lighting_engine")
 
-class appleseed_search_paths_panel( Panel, appleseed_render_panel_base):
+        if asr_scene_props.lighting_engine == 'drt':
+            col.prop( asr_scene_props, "drt_ibl_enable")
+
+class AppleseedSearchPathsPanel( Panel, AppleseedRenderPanelBase):
     bl_label = "Search Paths"
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw( self, context):
         layout = self.layout
         scene = context.scene
-        ascene = scene.appleseed
-        layout.prop( ascene, "appleseed_path")
+        asr_scene_props = scene.appleseed
+        #layout.prop( asr_scene_props, "appleseed_path")
 
 def register():
     pass

@@ -26,7 +26,19 @@
 # THE SOFTWARE.
 #
 
+import os
+import subprocess
+import time
+
 import bpy
+
+from .project_writer import ProjectWriter
+
+def init( engine):
+    pass
+
+def free( engine):
+    pass
 
 def update_preview( engine, data, scene):
     pass
@@ -35,28 +47,91 @@ def render_preview( engine, scene):
     pass
 
 def update_scene( engine, data, scene):
-    pass
+    writer = ProjectWriter( scene)
+    engine.render_info = writer.write()
 
 def render_scene( engine, scene):
-    pass
 
-def init( engine):
-    pass
+    return
 
-def free( engine):
-    pass
+    DELAY = 0.1
+
+    project_file = engine.render_info["project_file"]
+    render_output = engine.render_info["render_output"]
+    width = engine.render_info["width"]
+    height = engine.render_info["height"]
+
+    try:
+        os.remove( render_output)
+    except:
+        pass
+
+    cmd = "appleseed.cli"
+    cdir = os.path.dirname( project_file)
+    process = subprocess.Popen( cmd, cwd = cdir, stdout=subprocess.PIPE)
+
+    # Wait for the file to be created
+    while not os.path.exists( render_output):
+        if engine.test_break():
+            try:
+                process.kill()
+            except:
+                pass
+            break
+
+        if process.poll() != None:
+            engine.update_stats("", "Appleseed: Error")
+            break
+
+        time.sleep( DELAY)
+
+    if os.path.exists(render_output):
+        engine.update_stats("", "Appleseed: Rendering")
+
+        prev_size = -1
+
+        def update_image():
+            result = engine.begin_result( 0, 0, width, height)
+            lay = result.layers[0]
+            # possible the image wont load early on.
+            try:
+                lay.load_from_file( render_output)
+            except:
+                pass
+
+            engine.end_result( result)
+
+        # Update while rendering
+        while True:
+            if process.poll() is not None:
+                update_image()
+                break
+
+            # user exit
+            if engine.test_break():
+                try:
+                    process.kill()
+                except:
+                    pass
+                break
+
+            # check if the file updated
+            new_size = os.path.getsize( render_output)
+
+            if new_size != prev_size:
+                update_image()
+                prev_size = new_size
+
+            time.sleep( DELAY)
 
 def update( engine, data, scene):
-    pass
-
-def update( engine, data, scene):
-    if scene.name == 'preview':
+    if engine.is_preview:
         update_preview( engine, data, scene)
     else:
         update_scene( engine, data, scene)
 
 def render( engine, scene):
-    if scene.name == 'preview':
+    if engine.is_preview:
         render_preview( engine, scene)
     else:
         render_scene( engine, scene)
