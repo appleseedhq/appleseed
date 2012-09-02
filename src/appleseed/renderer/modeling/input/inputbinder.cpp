@@ -198,9 +198,14 @@ void InputBinder::bind_scene_entities_inputs(
     // Bind environment inputs.
     if (scene.get_environment())
     {
-        scene.get_environment()->bind_entities(
-            scene.environment_edfs(),
-            scene.environment_shaders());
+        Environment& environment = *scene.get_environment();
+        bind_scene_entity_inputs(
+            scene,
+            scene_symbols,
+            SymbolTable::symbol_name(SymbolTable::SymbolEnvironment),
+            environment.get_name(),
+            environment.get_parameters(),
+            environment.get_inputs());
     }
 }
 
@@ -271,11 +276,6 @@ void InputBinder::bind_assembly_entities_inputs(
             i->get_name(),
             i->get_parameters(),
             i->get_inputs());
-
-        i->bind_entities(
-            assembly.surface_shaders(),
-            assembly.bsdfs(),
-            assembly.edfs());
     }
 
     // Bind lights inputs.
@@ -463,6 +463,14 @@ bool InputBinder::try_bind_scene_entity_to_input(
             input);
         return true;
 
+      case SymbolTable::SymbolEnvironmentEDF:
+        input.bind(scene.environment_edfs().get_by_name(param_value));
+        return true;
+
+      case SymbolTable::SymbolEnvironmentShader:
+        input.bind(scene.environment_shaders().get_by_name(param_value));
+        return true;
+
       default:
         return false;
     }
@@ -521,6 +529,18 @@ bool InputBinder::try_bind_assembly_entity_to_input(
             entity_name,
             param_value,
             input);
+        return true;
+
+      case SymbolTable::SymbolBSDF:
+        input.bind(assembly.bsdfs().get_by_name(param_value));
+        return true;
+
+      case SymbolTable::SymbolEDF:
+        input.bind(assembly.edfs().get_by_name(param_value));
+        return true;
+
+      case SymbolTable::SymbolSurfaceShader:
+        input.bind(assembly.surface_shaders().get_by_name(param_value));
         return true;
 
       default:

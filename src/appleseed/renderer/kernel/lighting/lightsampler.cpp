@@ -72,7 +72,7 @@ namespace
     {
         for (const_each<MaterialContainer> i = assembly.materials(); i; ++i)
         {
-            if (i->get_edf())
+            if (i->get_uncached_edf())
                 return true;
         }
 
@@ -84,7 +84,7 @@ namespace
     {
         for (size_t i = 0; i < materials.size(); ++i)
         {
-            if (materials[i] && materials[i]->get_edf())
+            if (materials[i] && materials[i]->get_uncached_edf())
                 return true;
         }
 
@@ -217,8 +217,8 @@ void LightSampler::collect_emitting_triangles(
                     pa_index < back_materials.size() ? back_materials[pa_index] : 0;
 
                 // Skip triangles that don't emit light.
-                if ((front_material == 0 || front_material->get_edf() == 0) &&
-                    (back_material == 0 || back_material->get_edf() == 0))
+                if ((front_material == 0 || front_material->get_uncached_edf() == 0) &&
+                    (back_material == 0 || back_material->get_uncached_edf() == 0))
                     continue;
 
                 // Retrieve object instance space vertices of the triangle.
@@ -270,8 +270,14 @@ void LightSampler::collect_emitting_triangles(
                     const Vector3d side_n1 = side == 0 ? n1 : -n1;
                     const Vector3d side_n2 = side == 0 ? n2 : -n2;
 
+                    // Skip sides without a material.
+                    if (material == 0)
+                        continue;
+
+                    const EDF* edf = material->get_uncached_edf();
+
                     // Skip sides without a light-emitting material.
-                    if (material == 0 || material->get_edf() == 0)
+                    if (edf == 0)
                         continue;
 
                     // Create a light-emitting triangle.
@@ -289,7 +295,7 @@ void LightSampler::collect_emitting_triangles(
                     emitting_triangle.m_geometric_normal = side_geometric_normal;
                     emitting_triangle.m_triangle_support_plane = triangle_support_plane;
                     emitting_triangle.m_rcp_area = rcp_area;
-                    emitting_triangle.m_edf = material->get_edf();
+                    emitting_triangle.m_edf = edf;
 
                     // Store the light-emitting triangle.
                     const size_t emitting_triangle_index = m_emitting_triangles.size();

@@ -29,9 +29,15 @@
 // Interface header.
 #include "environment.h"
 
+// appleseed.renderer headers.
+#include "renderer/modeling/environmentedf/environmentedf.h"
+#include "renderer/modeling/environmentshader/environmentshader.h"
+#include "renderer/modeling/input/inputarray.h"
+
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/uid.h"
 
 using namespace foundation;
 using namespace std;
@@ -49,13 +55,16 @@ namespace
 }
 
 Environment::Environment(
-    const char*                         name,
-    const ParamArray&                   params)
-  : Entity(g_class_uid, params)
+    const char*         name,
+    const ParamArray&   params)
+  : ConnectableEntity(g_class_uid, params)
   , m_environment_edf(0)
   , m_environment_shader(0)
 {
     set_name(name);
+
+    m_inputs.declare("environment_edf", InputEntity, "");
+    m_inputs.declare("environment_shader", InputEntity, "");
 }
 
 void Environment::release()
@@ -63,15 +72,18 @@ void Environment::release()
     delete this;
 }
 
-void Environment::bind_entities(
-    const EnvironmentEDFContainer&      environment_edfs,
-    const EnvironmentShaderContainer&   environment_shaders)
+bool Environment::on_frame_begin(const Project& project)
 {
-    m_environment_edf =
-        get_optional_entity<EnvironmentEDF>(environment_edfs, m_params, "environment_edf");
+    m_environment_edf = static_cast<EnvironmentEDF*>(m_inputs.get_entity("environment_edf"));
+    m_environment_shader = static_cast<EnvironmentShader*>(m_inputs.get_entity("environment_shader"));
 
-    m_environment_shader =
-        get_optional_entity<EnvironmentShader>(environment_shaders, m_params, "environment_shader");
+    return true;
+}
+
+void Environment::on_frame_end(const Project& project)
+{
+    m_environment_edf = 0;
+    m_environment_shader = 0;
 }
 
 const char* Environment::get_model() const
@@ -98,7 +110,8 @@ DictionaryArray EnvironmentFactory::get_widget_definitions()
             .insert("name", "environment_edf")
             .insert("label", "Environment EDF")
             .insert("widget", "entity_picker")
-            .insert("entity_types", Dictionary().insert("environment_edf", "Environment EDFs"))
+            .insert("entity_types",
+                Dictionary().insert("environment_edf", "Environment EDFs"))
             .insert("use", "optional"));
 
     definitions.push_back(
@@ -106,15 +119,16 @@ DictionaryArray EnvironmentFactory::get_widget_definitions()
             .insert("name", "environment_shader")
             .insert("label", "Environment Shader")
             .insert("widget", "entity_picker")
-            .insert("entity_types", Dictionary().insert("environment_shader", "Environment Shaders"))
+            .insert("entity_types",
+                Dictionary().insert("environment_shader", "Environment Shaders"))
             .insert("use", "optional"));
 
     return definitions;
 }
 
 auto_release_ptr<Environment> EnvironmentFactory::create(
-    const char*                         name,
-    const ParamArray&                   params)
+    const char*         name,
+    const ParamArray&   params)
 {
     return auto_release_ptr<Environment>(new Environment(name, params));
 }

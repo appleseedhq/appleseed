@@ -85,6 +85,7 @@ namespace
         bool            m_has_default_value;
         string          m_default_value;
         Source*         m_source;
+        Entity*         m_entity;
 
         size_t add_size(size_t size) const
         {
@@ -207,6 +208,7 @@ void InputArray::declare(
         input.m_default_value = default_value;
 
     input.m_source = 0;
+    input.m_entity = 0;
 
     impl->m_inputs.push_back(input);
 }
@@ -269,6 +271,19 @@ Source* InputArray::source(const char* name) const
     {
         if (strcmp(i->m_name.c_str(), name) == 0)
             return i->m_source;
+    }
+
+    return 0;
+}
+
+Entity* InputArray::get_entity(const char* name) const
+{
+    assert(name);
+
+    for (const_each<InputVector> i = impl->m_inputs; i; ++i)
+    {
+        if (strcmp(i->m_name.c_str(), name) == 0)
+            return i->m_entity;
     }
 
     return 0;
@@ -440,6 +455,12 @@ void InputArray::iterator::bind(Source* source)
     Input& input = m_input_array->impl->m_inputs[m_input_index];
     delete input.m_source;
     input.m_source = source;
+}
+
+void InputArray::iterator::bind(Entity* entity)
+{
+    Input& input = m_input_array->impl->m_inputs[m_input_index];
+    input.m_entity = entity;
 }
 
 }   // namespace renderer

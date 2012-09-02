@@ -39,6 +39,7 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/bvh.h"
+#include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
 
@@ -105,6 +106,7 @@ class Intersector
         ShadingPoint&                   shading_point,
         const ShadingRay&               shading_ray,
         const AssemblyInstance*         assembly_instance,
+        const foundation::Transformd&   assembly_instance_transform,
         const size_t                    object_instance_index,
         const size_t                    region_index,
         const size_t                    triangle_index,

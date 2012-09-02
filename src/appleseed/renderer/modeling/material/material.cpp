@@ -31,11 +31,13 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/modeling/bsdf/bsdf.h"
+#include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/input/texturesource.h"
-#include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/textureinstance.h"
+#include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/modeling/texture/texture.h"
 
 // appleseed.foundation headers.
@@ -60,8 +62,8 @@ namespace
 }
 
 Material::Material(
-    const char*                     name,
-    const ParamArray&               params)
+    const char*         name,
+    const ParamArray&   params)
   : ConnectableEntity(g_class_uid, params)
   , m_surface_shader(0)
   , m_bsdf(0)
@@ -71,6 +73,9 @@ Material::Material(
 {
     set_name(name);
 
+    m_inputs.declare("bsdf", InputEntity, "");
+    m_inputs.declare("edf", InputEntity, "");
+    m_inputs.declare("surface_shader", InputEntity);
     m_inputs.declare("alpha_map", InputFormatScalar, "");
     m_inputs.declare("normal_map", InputFormatSpectrum, "");
 }
@@ -93,27 +98,11 @@ bool Material::has_alpha_map() const
     return !m_params.get<string>("alpha_map").empty();
 }
 
-void Material::bind_entities(
-    const SurfaceShaderContainer&   surface_shaders,
-    const BSDFContainer&            bsdfs,
-    const EDFContainer&             edfs)
-{
-    m_surface_shader =
-        get_required_entity<SurfaceShader>(
-            surface_shaders,
-            m_params,
-            "surface_shader");
-
-    m_bsdf = get_optional_entity<BSDF>(bsdfs, m_params, "bsdf");
-
-    m_edf = get_optional_entity<EDF>(edfs, m_params, "edf");
-}
-
 namespace
 {
     void check_texture_source_color_space_is_linear_rgb(
-        const char*                 map_type,
-        const Source*               source)
+        const char*     map_type,
+        const Source*   source)
     {
         if (dynamic_cast<const TextureSource*>(source))
         {
@@ -134,11 +123,14 @@ namespace
 }
 
 bool Material::on_frame_begin(
-    const Project&                  project,
-    const Assembly&                 assembly)
+    const Project&      project,
+    const Assembly&     assembly)
 {
-    m_alpha_map = m_inputs.source("alpha_map");
-    m_normal_map = m_inputs.source("normal_map");
+    m_surface_shader = get_uncached_surface_shader();
+    m_bsdf = get_uncached_bsdf();
+    m_edf = get_uncached_edf();
+    m_alpha_map = get_uncached_alpha_map();
+    m_normal_map = get_uncached_normal_map();
 
     check_texture_source_color_space_is_linear_rgb("normal map", m_normal_map);
 
@@ -146,9 +138,39 @@ bool Material::on_frame_begin(
 }
 
 void Material::on_frame_end(
-    const Project&                  project,
-    const Assembly&                 assembly)
+    const Project&      project,
+    const Assembly&     assembly)
 {
+    m_surface_shader = 0;
+    m_bsdf = 0;
+    m_edf = 0;
+    m_alpha_map = 0;
+    m_normal_map = 0;
+}
+
+const SurfaceShader* Material::get_uncached_surface_shader() const
+{
+    return static_cast<SurfaceShader*>(m_inputs.get_entity("surface_shader"));
+}
+
+const BSDF* Material::get_uncached_bsdf() const
+{
+    return static_cast<BSDF*>(m_inputs.get_entity("bsdf"));
+}
+
+const EDF* Material::get_uncached_edf() const
+{
+    return static_cast<EDF*>(m_inputs.get_entity("edf"));
+}
+
+const Source* Material::get_uncached_alpha_map() const
+{
+    return m_inputs.source("alpha_map");
+}
+
+const Source* Material::get_uncached_normal_map() const
+{
+    return m_inputs.source("normal_map");
 }
 
 
@@ -212,8 +234,8 @@ DictionaryArray MaterialFactory::get_widget_definitions()
 }
 
 auto_release_ptr<Material> MaterialFactory::create(
-    const char*                     name,
-    const ParamArray&               params)
+    const char*         name,
+    const ParamArray&   params)
 {
     return auto_release_ptr<Material>(new Material(name, params));
 }
