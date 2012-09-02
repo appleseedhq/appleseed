@@ -384,7 +384,6 @@ namespace
 
         virtual void start_element(const Attributes& attrs) override
         {
-            // We need to fully qualify the call to get_value().
             m_name = ElementHandlerBase::get_value(attrs, "name");
             m_value = ElementHandlerBase::get_value(attrs, "value");
         }
@@ -1014,6 +1013,7 @@ namespace
             Base::start_element(attrs);
 
             m_entity.reset();
+
             m_name = Base::get_value(attrs, "name");
             m_model = Base::get_value(attrs, "model");
         }
@@ -1373,7 +1373,8 @@ namespace
         {
             Base::end_element();
 
-            Base::m_entity->set_transform(Base::get_earliest_transform());
+            if (m_entity.get())
+                m_entity->set_transform(get_earliest_transform());
         }
 
       private:
@@ -1456,7 +1457,8 @@ namespace
         {
             Base::end_element();
 
-            copy_transform_sequence_to(m_entity->transform_sequence());
+            if (m_entity.get())
+                copy_transform_sequence_to(m_entity->transform_sequence());
         }
 
       private:
@@ -1659,7 +1661,7 @@ namespace
                         m_name.c_str(),
                         m_params,
                         *object,
-                        Base::get_earliest_transform(),
+                        get_earliest_transform(),
                         m_front_material_names,
                         m_back_material_names);
             }
