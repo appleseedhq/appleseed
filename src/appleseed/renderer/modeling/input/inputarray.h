@@ -40,6 +40,7 @@
 #include <cstddef>
 
 // Forward declarations.
+namespace renderer      { class Entity; }
 namespace renderer      { class Source; }
 namespace renderer      { class TextureCache; }
 
@@ -53,7 +54,8 @@ namespace renderer
 enum InputFormat
 {
     InputFormatScalar = 0,
-    InputFormatSpectrum
+    InputFormatSpectrum,
+    InputEntity
 };
 
 
@@ -106,6 +108,8 @@ class DLLSYMBOL InputArray
         // Get the source bound to this input, or 0 if no source is bound to this input.
         Source* source() const;
 
+        Entity* get_entity() const;
+
       protected:
         friend class InputArray;
 
@@ -142,6 +146,8 @@ class DLLSYMBOL InputArray
         // 'source' may be 0, in which case the input is unbound.
         void bind(Source* source);
 
+        void bind(Entity* entity);
+
       private:
         friend class InputArray;
 
@@ -177,6 +183,8 @@ class DLLSYMBOL InputArray
     // Get the source bound to a given input.
     // Return 0 if the input could not be found, or no source is bound to it.
     Source* source(const char* name) const;
+
+    Entity* get_entity(const char* name) const;
 
     // Compute the cumulated size in bytes of the input values.
     size_t compute_data_size() const;

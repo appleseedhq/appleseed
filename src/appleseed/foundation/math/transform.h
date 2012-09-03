@@ -192,7 +192,7 @@ inline Transform<T>::Transform(
 template <typename T>
 inline Transform<T> Transform<T>::identity()
 {
-    return Transform(MatrixType::identity());
+    return Transform(MatrixType::identity(), MatrixType::identity());
 }
 
 template <typename T>

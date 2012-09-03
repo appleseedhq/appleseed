@@ -341,6 +341,7 @@ void Intersector::manufacture_hit(
     ShadingPoint&                   shading_point,
     const ShadingRay&               shading_ray,
     const AssemblyInstance*         assembly_instance,
+    const Transformd&               assembly_instance_transform,
     const size_t                    object_instance_index,
     const size_t                    region_index,
     const size_t                    triangle_index,
@@ -348,10 +349,12 @@ void Intersector::manufacture_hit(
 {
     shading_point.m_region_kit_cache = &m_region_kit_cache;
     shading_point.m_tess_cache = &m_tess_cache;
+    shading_point.m_texture_cache = &m_texture_cache;
     shading_point.m_scene = &m_trace_context.get_scene();
     shading_point.m_ray = shading_ray;
     shading_point.m_hit = true;
     shading_point.m_assembly_instance = assembly_instance;
+    shading_point.m_assembly_instance_transform = assembly_instance_transform;
     shading_point.m_object_instance_index = object_instance_index;
     shading_point.m_region_index = region_index;
     shading_point.m_triangle_index = triangle_index;

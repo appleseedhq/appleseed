@@ -65,7 +65,7 @@ TEST_SUITE(Renderer_Modeling_Scene_AssemblyInstance)
                 "object_instance",
                 ParamArray(),
                 *object,
-                Transformd(Matrix4d::identity()),
+                Transformd::identity(),
                 StringArray()));
 
         auto_release_ptr<AssemblyInstance> inner_assembly_instance =

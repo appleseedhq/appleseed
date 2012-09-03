@@ -576,7 +576,16 @@ TEST_SUITE(Foundation_Math_Matrix33)
         EXPECT_FEQ(Vector3d(-238.0, -2167.0, 4097.0), result);
     }
 
-    TEST_CASE(TestExtractUnitQuaternion)
+    TEST_CASE(TestExtractUnitQuaternion_GivenIdentityMatrix)
+    {
+        const Matrix3d m = Matrix3d::identity();
+
+        const Quaterniond q = m.extract_unit_quaternion();
+
+        EXPECT_FEQ(Quaterniond::rotation(Vector3d(1.0, 0.0, 0.0), 0.0), q);
+    }
+
+    TEST_CASE(TestExtractUnitQuaternion_GivenRotationMatrix)
     {
         const Matrix3d m = Matrix3d::rotation_x(Pi / 4.0);
 
@@ -729,7 +738,16 @@ TEST_SUITE(Foundation_Math_Matrix44)
         EXPECT_FEQ(Vector4d(-22927.0, -2126.0, 8586.0, -2175.0), result);
     }
 
-    TEST_CASE(TestExtractUnitQuaternion)
+    TEST_CASE(TestExtractUnitQuaternion_GivenIdentityMatrix)
+    {
+        const Matrix4d m = Matrix4d::identity();
+
+        const Quaterniond q = m.extract_unit_quaternion();
+
+        EXPECT_FEQ(Quaterniond::rotation(Vector3d(1.0, 0.0, 0.0), 0.0), q);
+    }
+
+    TEST_CASE(TestExtractUnitQuaternion_GivenRotationMatrix)
     {
         const Matrix4d m = Matrix4d::rotation_x(Pi / 4.0);
 
