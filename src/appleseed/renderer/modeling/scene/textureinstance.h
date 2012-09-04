@@ -88,7 +88,7 @@ class DLLSYMBOL TextureInstance
     // Delete this instance.
     virtual void release() override;
 
-    // Return the name of the instantiated texture in the parent scene or assembly.
+    // Return the name of the instantiated texture.
     const char* get_texture_name() const;
 
     // Return the modes.
