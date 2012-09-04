@@ -175,7 +175,7 @@ namespace
     }
 
     void do_check_materials(
-        MaterialArray&              material_array,
+        const MaterialArray&        material_array,
         const StringArray&          material_names)
     {
         for (size_t i = 0; i < material_array.size(); ++i)
@@ -198,7 +198,7 @@ void ObjectInstance::bind_materials(const MaterialContainer& materials)
     do_bind_materials(m_back_materials, impl->m_back_material_names, materials);
 }
 
-void ObjectInstance::check_materials()
+void ObjectInstance::check_materials() const
 {
     do_check_materials(m_front_materials, impl->m_front_material_names);
     do_check_materials(m_back_materials, impl->m_back_material_names);

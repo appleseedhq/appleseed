@@ -96,7 +96,7 @@ class RENDERERDLL ObjectInstance
     // Material binding.
     void allocate_materials();
     void bind_materials(const MaterialContainer& materials);
-    void check_materials();
+    void check_materials() const;
 
     // Return the materials referenced by this instance.
     const MaterialArray& get_front_materials() const;
