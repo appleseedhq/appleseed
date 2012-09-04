@@ -52,7 +52,6 @@ TransformSequence::TransformSequence()
 TransformSequence::TransformSequence(const TransformSequence& rhs)
   : m_capacity(rhs.m_size)      // shrink to size
   , m_size(rhs.m_size)
-  , m_interpolators(0)
 {
     if (rhs.m_keys)
     {
@@ -60,6 +59,13 @@ TransformSequence::TransformSequence(const TransformSequence& rhs)
         memcpy(m_keys, rhs.m_keys, m_size * sizeof(TransformKey));
     }
     else m_keys = 0;
+
+    if (rhs.m_interpolators)
+    {
+        m_interpolators = new TransformInterpolatord[m_size - 1];
+        memcpy(m_interpolators, rhs.m_interpolators, (m_size - 1) * sizeof(TransformInterpolatord));
+    }
+    else m_interpolators = 0;
 }
 
 TransformSequence::~TransformSequence()
@@ -72,7 +78,6 @@ TransformSequence& TransformSequence::operator=(const TransformSequence& rhs)
 {
     m_capacity = rhs.m_size;    // shrink to size
     m_size = rhs.m_size;
-    m_interpolators = 0;
 
     if (rhs.m_keys)
     {
@@ -80,6 +85,13 @@ TransformSequence& TransformSequence::operator=(const TransformSequence& rhs)
         memcpy(m_keys, rhs.m_keys, m_size * sizeof(TransformKey));
     }
     else m_keys = 0;
+
+    if (rhs.m_interpolators)
+    {
+        m_interpolators = new TransformInterpolatord[m_size - 1];
+        memcpy(m_interpolators, rhs.m_interpolators, (m_size - 1) * sizeof(TransformInterpolatord));
+    }
+    else m_interpolators = 0;
 
     return *this;
 }
