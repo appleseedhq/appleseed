@@ -126,7 +126,7 @@ class BoundingBoxObject
     virtual foundation::Lazy<RegionKit>& get_region_kit() override;
 
   private:
-    const GAABB3&                   m_bbox;
+    GAABB3                          m_bbox;
     RegionKit                       m_region_kit;
     foundation::Lazy<RegionKit>     m_lazy_region_kit;
 };
