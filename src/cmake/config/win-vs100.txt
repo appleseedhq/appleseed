@@ -72,6 +72,7 @@ set (preprocessor_definitions_release
 
 # All configurations.
 set (compiler_flags_common
+    /WX                                     # Treat Warnings As Errors
     /MP                                     # Multi-processor Compilation
     /GF                                     # Enable String Pooling
     /wd4290                                 # Disable warning C4290: C++ exception specification ignored except to indicate a function is not __declspec(nothrow)
@@ -82,11 +83,6 @@ if (CMAKE_SIZEOF_VOID_P EQUAL 8)
     set (compiler_flags_common
         ${compiler_flags_common}
         /bigobj                             # Increase Number of Sections in .Obj file
-    )
-else ()
-    set (compiler_flags_common
-        ${compiler_flags_common}
-        /WX                                 # Treat Warnings As Errors
     )
 endif ()
 set (exe_linker_flags_common
