@@ -33,8 +33,8 @@
 #include "renderer/modeling/object/object.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/memory.h"
+#include "foundation/utility/uid.h"
 
 using namespace foundation;
 using namespace std;

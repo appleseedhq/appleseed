@@ -30,18 +30,27 @@
 #define APPLESEED_RENDERER_MODELING_SCENE_OBJECTINSTANCE_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/entity/entity.h"
 #include "renderer/modeling/scene/containers.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/transform.h"
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/containers/array.h"
+#include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/autoreleaseptr.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+// Standard headers.
+#include <cstddef>
 
 // Forward declarations.
-namespace foundation    { class StringArray; }
-namespace renderer      { class Material; }
-namespace renderer      { class Object; }
+namespace renderer  { class Material; }
+namespace renderer  { class Object; }
+namespace renderer  { class ParamArray; }
 
 namespace renderer
 {
@@ -57,12 +66,12 @@ DECLARE_ARRAY(MaterialArray, const Material*);
 // An instance of an object.
 //
 
-class RENDERERDLL ObjectInstance
+class DLLSYMBOL ObjectInstance
   : public Entity
 {
   public:
     // Delete this instance.
-    virtual void release();
+    virtual void release() override;
 
     // Return the instantiated object.
     Object& get_object() const;
@@ -108,7 +117,6 @@ class RENDERERDLL ObjectInstance
     struct Impl;
     Impl* impl;
 
-    // Derogate to the private implementation rule, for performance reasons.
     MaterialArray   m_front_materials;
     MaterialArray   m_back_materials;
 
@@ -130,7 +138,7 @@ class RENDERERDLL ObjectInstance
 // Object instance factory.
 //
 
-class RENDERERDLL ObjectInstanceFactory
+class DLLSYMBOL ObjectInstanceFactory
 {
   public:
     // Create a new object instance.
