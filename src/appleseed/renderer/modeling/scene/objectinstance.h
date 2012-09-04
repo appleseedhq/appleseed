@@ -93,8 +93,10 @@ class RENDERERDLL ObjectInstance
     const foundation::StringArray& get_front_material_names() const;
     const foundation::StringArray& get_back_material_names() const;
 
-    // Perform entity binding.
-    void bind_entities(const MaterialContainer& materials);
+    // Material binding.
+    void allocate_materials();
+    void bind_materials(const MaterialContainer& materials);
+    void check_materials();
 
     // Return the materials referenced by this instance.
     const MaterialArray& get_front_materials() const;

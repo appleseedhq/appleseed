@@ -154,32 +154,54 @@ const StringArray& ObjectInstance::get_back_material_names() const
 
 namespace
 {
-    void bind_materials(
-        const MaterialContainer&    materials,
-        const StringArray&          material_names,
-        MaterialArray&              material_array)
+    void do_allocate_materials(
+        MaterialArray&              material_array,
+        const StringArray&          material_names)
     {
-        const size_t material_count = material_names.size();
-
         material_array.clear();
-        material_array.resize(material_count);
+        material_array.resize(material_names.size());
+    }
 
-        for (size_t i = 0; i < material_count; ++i)
+    void do_bind_materials(
+        MaterialArray&              material_array,
+        const StringArray&          material_names,
+        const MaterialContainer&    materials)
+    {
+        for (size_t i = 0; i < material_array.size(); ++i)
         {
-            const char* material_name = material_names[i];
-
-            material_array[i] = materials.get_by_name(material_name);
-
             if (material_array[i] == 0)
-                throw ExceptionUnknownEntity(material_name);
+                material_array[i] = materials.get_by_name(material_names[i]);
+        }
+    }
+
+    void do_check_materials(
+        MaterialArray&              material_array,
+        const StringArray&          material_names)
+    {
+        for (size_t i = 0; i < material_array.size(); ++i)
+        {
+            if (material_array[i] == 0)
+                throw ExceptionUnknownEntity(material_names[i]);
         }
     }
 }
 
-void ObjectInstance::bind_entities(const MaterialContainer& materials)
+void ObjectInstance::allocate_materials()
 {
-    bind_materials(materials, impl->m_front_material_names, m_front_materials);
-    bind_materials(materials, impl->m_back_material_names, m_back_materials);
+    do_allocate_materials(m_front_materials, impl->m_front_material_names);
+    do_allocate_materials(m_back_materials, impl->m_back_material_names);
+}
+
+void ObjectInstance::bind_materials(const MaterialContainer& materials)
+{
+    do_bind_materials(m_front_materials, impl->m_front_material_names, materials);
+    do_bind_materials(m_back_materials, impl->m_back_material_names, materials);
+}
+
+void ObjectInstance::check_materials()
+{
+    do_check_materials(m_front_materials, impl->m_front_material_names);
+    do_check_materials(m_back_materials, impl->m_back_material_names);
 }
 
 
