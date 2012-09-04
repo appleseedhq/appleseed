@@ -167,7 +167,10 @@ void InputBinder::bind_scene_entities_inputs(
 {
     // Bind textures to texture instances.
     for (each<TextureInstanceContainer> i = scene.texture_instances(); i; ++i)
-        i->bind_entities(scene.textures());
+    {
+        i->bind_texture(scene.textures());
+        i->check_texture();
+    }
 
     // Bind environment EDFs inputs.
     for (each<EnvironmentEDFContainer> i = scene.environment_edfs(); i; ++i)
@@ -230,7 +233,9 @@ void InputBinder::bind_assembly_entities_inputs(
     for (each<TextureInstanceContainer> i = assembly.texture_instances(); i; ++i)
     {
         for (AssemblyInfoIt j = m_assembly_info.rbegin(); j != m_assembly_info.rend(); ++j)
-            i->bind_entities(j->m_assembly->textures());
+            i->bind_texture(j->m_assembly->textures());
+
+        i->check_texture();
     }
 
     // Bind BSDFs inputs.

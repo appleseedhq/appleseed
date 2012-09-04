@@ -145,10 +145,14 @@ const LightingConditions& TextureInstance::get_lighting_conditions() const
     return impl->m_lighting_conditions;
 }
 
-void TextureInstance::bind_entities(const TextureContainer& textures)
+void TextureInstance::bind_texture(const TextureContainer& textures)
 {
-    m_texture = textures.get_by_name(impl->m_texture_name.c_str());
+    if (m_texture == 0)
+        m_texture = textures.get_by_name(impl->m_texture_name.c_str());
+}
 
+void TextureInstance::check_texture() const
+{
     if (m_texture == 0)
         throw ExceptionUnknownEntity(impl->m_texture_name.c_str());
 }

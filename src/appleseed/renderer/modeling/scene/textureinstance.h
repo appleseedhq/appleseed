@@ -99,8 +99,9 @@ class DLLSYMBOL TextureInstance
     // Return the lighting conditions of the texture.
     const foundation::LightingConditions& get_lighting_conditions() const;
 
-    // Perform entity binding.
-    void bind_entities(const TextureContainer& textures);
+    // Texture binding.
+    void bind_texture(const TextureContainer& textures);
+    void check_texture() const;
 
     // Return the instantiated texture.
     Texture* get_texture() const;
