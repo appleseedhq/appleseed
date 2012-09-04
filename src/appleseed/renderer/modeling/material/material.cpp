@@ -73,9 +73,9 @@ Material::Material(
 {
     set_name(name);
 
-    m_inputs.declare("bsdf", InputEntity, "");
-    m_inputs.declare("edf", InputEntity, "");
-    m_inputs.declare("surface_shader", InputEntity);
+    m_inputs.declare("bsdf", InputFormatEntity, "");
+    m_inputs.declare("edf", InputFormatEntity, "");
+    m_inputs.declare("surface_shader", InputFormatEntity);
     m_inputs.declare("alpha_map", InputFormatScalar, "");
     m_inputs.declare("normal_map", InputFormatSpectrum, "");
 }
