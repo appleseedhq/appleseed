@@ -93,6 +93,7 @@ class SymbolTable
 
   private:
     typedef std::map<std::string, SymbolID> SymbolContainer;
+
     SymbolContainer m_symbols;
 };
 
