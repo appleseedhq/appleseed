@@ -113,8 +113,9 @@ void AssemblyTree::collect_assembly_instances(
         const Assembly& assembly = assembly_instance.get_assembly();
 
         // Compute the cumulated transform sequence of this assembly instance.
-        const TransformSequence cumulated_transform_seq =
+        TransformSequence cumulated_transform_seq =
             parent_transform_seq * assembly_instance.transform_sequence();
+        cumulated_transform_seq.prepare();
 
         // Collect child assembly instances.
         collect_assembly_instances(
@@ -126,7 +127,7 @@ void AssemblyTree::collect_assembly_instances(
         if (assembly.object_instances().empty())
             continue;
 
-        // Store the assembly instance.
+        // Create and store an item for this assembly instance.
         m_items.push_back(
             Item(
                 &assembly,
