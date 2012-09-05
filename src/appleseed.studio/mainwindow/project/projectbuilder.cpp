@@ -280,8 +280,8 @@ namespace
         // Recurse into child assemblies.
         for (each<AssemblyContainer> i = base_group.assemblies(); i; ++i)
         {
-            BaseGroupItem* child_item =
-                static_cast<BaseGroupItem*>(
+            AssemblyItem* child_item =
+                static_cast<AssemblyItem*>(
                     base_group_item->get_assembly_collection_item().get_item(i->get_uid()));
             remove_texture_instances(*i, child_item, texture_uid);
         }
@@ -358,7 +358,6 @@ void ProjectBuilder::insert_objects(
 namespace
 {
     vector<UniqueID> collect_object_instances(
-        const ObjectContainer&              objects,
         const ObjectInstanceContainer&      object_instances,
         const UniqueID                      object_uid)
     {
@@ -366,13 +365,44 @@ namespace
 
         for (const_each<ObjectInstanceContainer> i = object_instances; i; ++i)
         {
-            const Object* object = objects.get_by_name(i->get_object_name());
+            const Object* object = i->find_object();
 
             if (object && object->get_uid() == object_uid)
                 collected.push_back(i->get_uid());
         }
 
         return collected;
+    }
+
+    void remove_object_instances(
+        Assembly&                           assembly,
+        AssemblyItem*                       assembly_item,
+        const UniqueID                      object_uid)
+    {
+        ObjectInstanceContainer& object_instances = assembly.object_instances();
+
+        // Collect the object instances to remove.
+        const vector<UniqueID> remove_list =
+            collect_object_instances(object_instances, object_uid);
+
+        // Remove object instances and their corresponding project items.
+        for (const_each<vector<UniqueID> > i = remove_list; i; ++i)
+        {
+            object_instances.remove(object_instances.get_by_uid(*i));
+            assembly_item->get_object_instance_collection_item().remove_item(*i);
+        }
+
+        if (!remove_list.empty())
+            assembly.bump_version_id();
+
+        // Recurse into child assemblies.
+        for (each<AssemblyContainer> i = assembly.assemblies(); i; ++i)
+        {
+            AssemblyItem* child_item =
+                static_cast<AssemblyItem*>(
+                    assembly_item->get_assembly_collection_item().get_item(i->get_uid()));
+            remove_object_instances(*i, child_item, object_uid);
+        }
     }
 }
 
@@ -381,30 +411,13 @@ void ProjectBuilder::remove_object(
     AssemblyItem*       parent_item,
     const UniqueID      object_uid) const
 {
+    // Remove all object instances and their corresponding project items.
+    remove_object_instances(parent, parent_item, object_uid);
+
+    // Remove the object and the corresponding project item.
     ObjectContainer& objects = parent.objects();
-    ObjectInstanceContainer& object_instances = parent.object_instances();
-
-    const vector<UniqueID> remove_list =
-        collect_object_instances(objects, object_instances, object_uid);
-
-    for (const_each<vector<UniqueID> > i = remove_list; i; ++i)
-    {
-        const UniqueID object_instance_uid = *i;
-
-        // Remove the project item corresponding to this object instance.
-        parent_item->get_object_instance_collection_item().remove_item(object_instance_uid);
-
-        // Remove this object instance.
-        object_instances.remove(object_instances.get_by_uid(object_instance_uid));
-    }
-
-    // Remove the project item corresponding to the object itself.
-    parent_item->get_object_collection_item().remove_item(object_uid);
-
-    // Remove the object itself.
     objects.remove(objects.get_by_uid(object_uid));
-
-    parent.bump_version_id();
+    parent_item->get_object_collection_item().remove_item(object_uid);
 
     notify_project_modification();
 }
