@@ -99,7 +99,7 @@ void IntersectionFilter::copy_alpha_mask(
     if (dynamic_cast<const TextureSource*>(alpha_map))
     {
         const CanvasProperties& texture_props =
-            static_cast<const TextureSource*>(alpha_map)->get_texture_instance().get_texture()->properties();
+            static_cast<const TextureSource*>(alpha_map)->get_texture_instance().get_texture().properties();
         m_alpha_mask_width = texture_props.m_canvas_width;
         m_alpha_mask_height = texture_props.m_canvas_height;
     }
@@ -151,11 +151,10 @@ void IntersectionFilter::copy_uv_coordinates(
     const ObjectInstance*   object_instance)
 {
     // Retrieve the object.
-    Object* object = object_instance->get_object();
-    assert(object);
+    Object& object = object_instance->get_object();
 
     // Retrieve the region kit of the object.
-    Access<RegionKit> region_kit(&object->get_region_kit());
+    Access<RegionKit> region_kit(&object.get_region_kit());
 
     // Iterate over the regions of this object.
     for (const_each<RegionKit> region_it = *region_kit; region_it; ++region_it)

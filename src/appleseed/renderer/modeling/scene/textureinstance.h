@@ -40,6 +40,9 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
+// Standard headers.
+#include <cassert>
+
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
 namespace foundation    { class LightingConditions; }
@@ -108,7 +111,7 @@ class DLLSYMBOL TextureInstance
     void check_texture() const;
 
     // Return the texture bound to this instance.
-    Texture* get_texture() const;
+    Texture& get_texture() const;
 
   private:
     friend class TextureInstanceFactory;
@@ -169,9 +172,11 @@ inline TextureAlphaMode TextureInstance::get_alpha_mode() const
     return m_alpha_mode;
 }
 
-inline Texture* TextureInstance::get_texture() const
+inline Texture& TextureInstance::get_texture() const
 {
-    return m_texture;
+    assert(m_texture);
+
+    return *m_texture;
 }
 
 }       // namespace renderer

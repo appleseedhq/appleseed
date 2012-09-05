@@ -42,6 +42,9 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
+// Standard headers.
+#include <cassert>
+
 // Forward declarations.
 namespace renderer  { class Assembly; }
 namespace renderer  { class ParamArray; }
@@ -83,7 +86,7 @@ class DLLSYMBOL AssemblyInstance
     void check_assembly() const;
 
     // Return the assembly bound to this instance.
-    Assembly* get_assembly() const;
+    Assembly& get_assembly() const;
 
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
@@ -141,9 +144,11 @@ inline const TransformSequence& AssemblyInstance::transform_sequence() const
     return m_transform_sequence;
 }
 
-inline Assembly* AssemblyInstance::get_assembly() const
+inline Assembly& AssemblyInstance::get_assembly() const
 {
-    return m_assembly;
+    assert(m_assembly);
+
+    return *m_assembly;
 }
 
 }       // namespace renderer

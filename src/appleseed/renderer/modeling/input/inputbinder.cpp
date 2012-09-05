@@ -658,8 +658,7 @@ void InputBinder::bind_texture_instance_to_input(
     assert(texture_instance);
 
     // Textures must have been bound to texture instances already.
-    Texture* texture = texture_instance->get_texture();
-    assert(texture);
+    Texture& texture = texture_instance->get_texture();
 
     try
     {
@@ -667,7 +666,7 @@ void InputBinder::bind_texture_instance_to_input(
             new TextureSource(
                 assembly_uid,
                 *texture_instance,
-                texture->properties()));
+                texture.properties()));
     }
     catch (const exception& e)
     {

@@ -45,6 +45,7 @@
 #include "main/dllsymbol.h"
 
 // Standard headers.
+#include <cassert>
 #include <cstddef>
 
 // Forward declarations.
@@ -116,7 +117,7 @@ class DLLSYMBOL ObjectInstance
     void check_materials() const;
 
     // Return the object bound to this instance.
-    Object* get_object() const;
+    Object& get_object() const;
 
     // Return the materials bound to this instance.
     const MaterialArray& get_front_materials() const;
@@ -168,9 +169,11 @@ class DLLSYMBOL ObjectInstanceFactory
 // ObjectInstance class implementation.
 //
 
-inline Object* ObjectInstance::get_object() const
+inline Object& ObjectInstance::get_object() const
 {
-    return m_object;
+    assert(m_object);
+
+    return *m_object;
 }
 
 inline const MaterialArray& ObjectInstance::get_front_materials() const

@@ -106,17 +106,17 @@ namespace
     {
         if (dynamic_cast<const TextureSource*>(source))
         {
-            const Texture* texture =
+            const Texture& texture =
                 static_cast<const TextureSource*>(source)->get_texture_instance().get_texture();
 
-            if (texture->get_color_space() != ColorSpaceLinearRGB)
+            if (texture.get_color_space() != ColorSpaceLinearRGB)
             {
                 RENDERER_LOG_WARNING(
                     "color space for %s \"%s\" should be \"%s\" but is \"%s\" instead; expect artifacts and/or slowdowns.",
                     map_type,
-                    texture->get_name(),
+                    texture.get_name(),
                     color_space_name(ColorSpaceLinearRGB),
-                    color_space_name(texture->get_color_space()));
+                    color_space_name(texture.get_color_space()));
             }
         }
     }

@@ -38,7 +38,6 @@
 #include "foundation/utility/uid.h"
 
 // Standard headers.
-#include <cassert>
 #include <string>
 
 using namespace foundation;
