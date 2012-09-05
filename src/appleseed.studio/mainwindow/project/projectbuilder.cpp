@@ -243,7 +243,6 @@ void ProjectBuilder::insert_texture(
 namespace
 {
     vector<UniqueID> collect_texture_instances(
-        const TextureContainer&             textures,
         const TextureInstanceContainer&     texture_instances,
         const UniqueID                      texture_uid)
     {
@@ -251,13 +250,41 @@ namespace
 
         for (const_each<TextureInstanceContainer> i = texture_instances; i; ++i)
         {
-            const Texture* texture = textures.get_by_name(i->get_texture_name());
+            const Texture* texture = i->find_texture();
 
             if (texture && texture->get_uid() == texture_uid)
                 collected.push_back(i->get_uid());
         }
 
         return collected;
+    }
+
+    void remove_texture_instances(
+        BaseGroup&                          base_group,
+        BaseGroupItem*                      base_group_item,
+        const UniqueID                      texture_uid)
+    {
+        TextureInstanceContainer& texture_instances = base_group.texture_instances();
+
+        // Collect the texture instances to remove.
+        const vector<UniqueID> remove_list =
+            collect_texture_instances(texture_instances, texture_uid);
+
+        // Remove texture instances and their corresponding project items.
+        for (const_each<vector<UniqueID> > i = remove_list; i; ++i)
+        {
+            texture_instances.remove(texture_instances.get_by_uid(*i));
+            base_group_item->get_texture_instance_collection_item().remove_item(*i);
+        }
+
+        // Recurse into child assemblies.
+        for (each<AssemblyContainer> i = base_group.assemblies(); i; ++i)
+        {
+            BaseGroupItem* child_item =
+                static_cast<BaseGroupItem*>(
+                    base_group_item->get_assembly_collection_item().get_item(i->get_uid()));
+            remove_texture_instances(*i, child_item, texture_uid);
+        }
     }
 }
 
@@ -266,28 +293,13 @@ void ProjectBuilder::remove_texture(
     BaseGroupItem*      parent_item,
     const UniqueID      texture_uid) const
 {
+    // Remove all texture instances and their corresponding project items.
+    remove_texture_instances(parent, parent_item, texture_uid);
+
+    // Remove the texture and the corresponding project item.
     TextureContainer& textures = parent.textures();
-    TextureInstanceContainer& texture_instances = parent.texture_instances();
-
-    const vector<UniqueID> remove_list =
-        collect_texture_instances(textures, texture_instances, texture_uid);
-
-    for (const_each<vector<UniqueID> > i = remove_list; i; ++i)
-    {
-        const UniqueID texture_instance_uid = *i;
-
-        // Remove the project item corresponding to this texture instance.
-        parent_item->get_texture_instance_collection_item().remove_item(texture_instance_uid);
-
-        // Remove this texture instance.
-        texture_instances.remove(texture_instances.get_by_uid(texture_instance_uid));
-    }
-
-    // Remove the project item corresponding to the texture itself.
-    parent_item->get_texture_collection_item().remove_item(texture_uid);
-
-    // Remove the texture itself.
     textures.remove(textures.get_by_uid(texture_uid));
+    parent_item->get_texture_collection_item().remove_item(texture_uid);
 
     notify_project_modification();
 }
