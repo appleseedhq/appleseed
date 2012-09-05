@@ -50,7 +50,7 @@ namespace renderer
 {
 
 //
-// Modes.
+// Texture modes.
 //
 
 enum TextureAddressingMode
@@ -100,10 +100,11 @@ class DLLSYMBOL TextureInstance
     const foundation::LightingConditions& get_lighting_conditions() const;
 
     // Texture binding.
+    void unbind_texture();
     void bind_texture(const TextureContainer& textures);
     void check_texture() const;
 
-    // Return the instantiated texture.
+    // Return the texture bound to this instance.
     Texture* get_texture() const;
 
   private:

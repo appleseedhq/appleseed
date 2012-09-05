@@ -603,8 +603,8 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
 
     {
         // Create a new mesh object.
-        MeshObject* object =
-            MeshObjectFactory::create("floor", ParamArray()).release();
+        auto_release_ptr<MeshObject> object(
+            MeshObjectFactory::create("floor", ParamArray()));
 
         // Vertices.
         object->push_vertex(GVector3(552.8f, 0.0f,   0.0f));
@@ -631,7 +631,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
             ObjectInstanceFactory::create(
                 "floor_inst",
                 ParamArray(),
-                *object,
+                "floor",
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
                 material_names));
     }
@@ -642,8 +642,8 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
 
     {
         // Create a new mesh object.
-        MeshObject* object =
-            MeshObjectFactory::create("ceiling", ParamArray()).release();
+        auto_release_ptr<MeshObject> object(
+            MeshObjectFactory::create("ceiling", ParamArray()));
 
         // Vertices.
         object->push_vertex(GVector3(556.0f, 548.8f,   0.0f));
@@ -670,7 +670,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
             ObjectInstanceFactory::create(
                 "ceiling_inst",
                 ParamArray(),
-                *object,
+                "ceiling",
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
                 material_names));
     }
@@ -681,8 +681,8 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
 
     {
         // Create a new mesh object.
-        MeshObject* object =
-            MeshObjectFactory::create("back_wall", ParamArray()).release();
+        auto_release_ptr<MeshObject> object(
+            MeshObjectFactory::create("back_wall", ParamArray()));
 
         // Vertices.
         object->push_vertex(GVector3(549.6f,   0.0f, 559.2f));
@@ -709,7 +709,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
             ObjectInstanceFactory::create(
                 "back_wall_inst",
                 ParamArray(),
-                *object,
+                "back_wall",
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
                 material_names));
     }
@@ -720,8 +720,8 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
 
     {
         // Create a new mesh object.
-        MeshObject* object =
-            MeshObjectFactory::create("right_wall", ParamArray()).release();
+        auto_release_ptr<MeshObject> object(
+            MeshObjectFactory::create("right_wall", ParamArray()));
 
         // Vertices.
         object->push_vertex(GVector3(0.0f,   0.0f, 559.2f));
@@ -748,7 +748,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
             ObjectInstanceFactory::create(
                 "right_wall_inst",
                 ParamArray(),
-                *object,
+                "right_wall",
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
                 material_names));
     }
@@ -759,8 +759,8 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
 
     {
         // Create a new mesh object.
-        MeshObject* object =
-            MeshObjectFactory::create("left_wall", ParamArray()).release();
+        auto_release_ptr<MeshObject> object(
+            MeshObjectFactory::create("left_wall", ParamArray()));
 
         // Vertices.
         object->push_vertex(GVector3(552.8f,   0.0f,   0.0f));
@@ -788,7 +788,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
             ObjectInstanceFactory::create(
                 "left_wall_inst",
                 ParamArray(),
-                *object,
+                "left_wall",
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
                 material_names));
     }
@@ -799,8 +799,8 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
 
     {
         // Create a new mesh object.
-        MeshObject* object =
-            MeshObjectFactory::create("short_block", ParamArray()).release();
+        auto_release_ptr<MeshObject> object(
+            MeshObjectFactory::create("short_block", ParamArray()));
 
         // Vertices.
         object->push_vertex(GVector3(130.0f, 165.0f,  65.0f));
@@ -855,7 +855,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
             ObjectInstanceFactory::create(
                 "short_block_inst",
                 ParamArray(),
-                *object,
+                "short_block",
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
                 material_names));
     }
@@ -866,8 +866,8 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
 
     {
         // Create a new mesh object.
-        MeshObject* object =
-            MeshObjectFactory::create("tall_block", ParamArray()).release();
+        auto_release_ptr<MeshObject> object(
+            MeshObjectFactory::create("tall_block", ParamArray()));
 
         // Vertices.
         object->push_vertex(GVector3(423.0f, 330.0f, 247.0f));
@@ -922,7 +922,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
             ObjectInstanceFactory::create(
                 "tall_block_inst",
                 ParamArray(),
-                *object,
+                "tall_block",
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
                 material_names));
     }
@@ -933,8 +933,8 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
 
     {
         // Create a new mesh object.
-        MeshObject* object =
-            MeshObjectFactory::create("light", ParamArray()).release();
+        auto_release_ptr<MeshObject> object(
+            MeshObjectFactory::create("light", ParamArray()));
 
         // Vertices.
         object->push_vertex(GVector3(343.0f, 548.7999f, 227.0f));
@@ -961,7 +961,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
             ObjectInstanceFactory::create(
                 "light_inst",
                 ParamArray(),
-                *object,
+                "light",
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
                 material_names));
     }

@@ -145,6 +145,11 @@ const LightingConditions& TextureInstance::get_lighting_conditions() const
     return impl->m_lighting_conditions;
 }
 
+void TextureInstance::unbind_texture()
+{
+    m_texture = 0;
+}
+
 void TextureInstance::bind_texture(const TextureContainer& textures)
 {
     if (m_texture == 0)

@@ -327,7 +327,7 @@ void ProjectBuilder::insert_objects(
             ObjectInstanceFactory::create(
                 object_instance_name.c_str(),
                 ParamArray(),
-                *object,
+                object->get_name(),
                 Transformd::identity(),
                 StringArray()));
 
@@ -346,6 +346,7 @@ void ProjectBuilder::insert_objects(
 namespace
 {
     vector<UniqueID> collect_object_instances(
+        const ObjectContainer&              objects,
         const ObjectInstanceContainer&      object_instances,
         const UniqueID                      object_uid)
     {
@@ -353,7 +354,9 @@ namespace
 
         for (const_each<ObjectInstanceContainer> i = object_instances; i; ++i)
         {
-            if (i->get_object().get_uid() == object_uid)
+            const Object* object = objects.get_by_name(i->get_object_name());
+
+            if (object && object->get_uid() == object_uid)
                 collected.push_back(i->get_uid());
         }
 
@@ -369,7 +372,8 @@ void ProjectBuilder::remove_object(
     ObjectContainer& objects = parent.objects();
     ObjectInstanceContainer& object_instances = parent.object_instances();
 
-    const vector<UniqueID> remove_list = collect_object_instances(object_instances, object_uid);
+    const vector<UniqueID> remove_list =
+        collect_object_instances(objects, object_instances, object_uid);
 
     for (const_each<vector<UniqueID> > i = remove_list; i; ++i)
     {

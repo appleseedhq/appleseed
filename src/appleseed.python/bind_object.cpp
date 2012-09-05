@@ -47,25 +47,25 @@ void bpy_list_to_string_array(const bpy::list& l, StringArray& strings)
 {
     strings.clear();
 
-	for (unsigned i = 0, e = bpy::len(l); i < e; ++i)
-	{
-		bpy::extract<const char*> ex(l[i]);
-		if(!ex.check())
-		{
+    for (unsigned i = 0, e = bpy::len(l); i < e; ++i)
+    {
+        bpy::extract<const char*> ex(l[i]);
+        if(!ex.check())
+        {
             PyErr_SetString(PyExc_TypeError, "Incompatible type. Only strings." );
             bpy::throw_error_already_set();
-		}
+        }
 
-		strings.push_back(ex());
-	}
+        strings.push_back(ex());
+    }
 }
 
 auto_release_ptr<ObjectInstance> create_obj_instance_with_back_mat(const std::string& name,
-                                                                    const bpy::dict& params,
-                                                                    Object& obj,
-                                                                    const UnalignedTransformd44& transform,
-                                                                    const bpy::list& front_materials,
-                                                                    const bpy::list& back_materials)
+                                                                   const bpy::dict& params,
+                                                                   const std::string& object_name,
+                                                                   const UnalignedTransformd44& transform,
+                                                                   const bpy::list& front_materials,
+                                                                   const bpy::list& back_materials)
 {
     StringArray front_mats;
     bpy_list_to_string_array(front_materials, front_mats);
@@ -73,15 +73,26 @@ auto_release_ptr<ObjectInstance> create_obj_instance_with_back_mat(const std::st
     StringArray back_mats;
     bpy_list_to_string_array(back_materials, back_mats);
 
-    return ObjectInstanceFactory::create(name.c_str(), bpy_dict_to_param_array(params),
-                                            obj, transform.as_foundation_transform(), front_mats, back_mats);
+    return ObjectInstanceFactory::create(name.c_str(),
+                                         bpy_dict_to_param_array(params),
+                                         object_name.c_str(),
+                                         transform.as_foundation_transform(),
+                                         front_mats,
+                                         back_mats);
 }
 
-auto_release_ptr<ObjectInstance> create_obj_instance(const std::string& name, const bpy::dict& params,
-                                                       Object& obj, const UnalignedTransformd44& transform,
-                                                       const bpy::list& front_materials)
+auto_release_ptr<ObjectInstance> create_obj_instance(const std::string& name,
+                                                     const bpy::dict& params,
+                                                     const std::string& object_name,
+                                                     const UnalignedTransformd44& transform,
+                                                     const bpy::list& front_materials)
 {
-    return create_obj_instance_with_back_mat(name, params, obj, transform, front_materials, bpy::list());
+    return create_obj_instance_with_back_mat(name,
+                                             params,
+                                             object_name,
+                                             transform,
+                                             front_materials,
+                                             bpy::list());
 }
 
 UnalignedTransformd44 obj_inst_get_transform(const ObjectInstance *obj)
@@ -102,10 +113,9 @@ void bind_object()
     bpy::class_<ObjectInstance, auto_release_ptr<ObjectInstance>, bpy::bases<Entity>, boost::noncopyable>("ObjectInstance", bpy::no_init)
         .def("__init__", bpy::make_constructor(detail::create_obj_instance))
         .def("__init__", bpy::make_constructor(detail::create_obj_instance_with_back_mat))
-
         .def("get_object", &ObjectInstance::get_object, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("get_transform", &detail::obj_inst_get_transform)
-        .def("get_parent_bbox", &ObjectInstance::get_parent_bbox, bpy::return_value_policy<bpy::copy_const_reference>())
+        .def("compute_parent_bbox", &ObjectInstance::compute_parent_bbox)
         ;
 
     bind_typed_entity_vector<ObjectInstance>("ObjectInstanceContainer");

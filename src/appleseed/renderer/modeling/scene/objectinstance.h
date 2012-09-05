@@ -73,14 +73,14 @@ class DLLSYMBOL ObjectInstance
     // Delete this instance.
     virtual void release() override;
 
-    // Return the instantiated object.
-    Object& get_object() const;
+    // Return the name of the instantiated object.
+    const char* get_object_name() const;
 
     // Return the transform of the instance.
     const foundation::Transformd& get_transform() const;
 
-    // Return the parent space bounding box of the instance.
-    const GAABB3& get_parent_bbox() const;
+    // Compute the parent space bounding box of the instance.
+    GAABB3 compute_parent_bbox() const;
 
     enum Side
     {
@@ -102,12 +102,20 @@ class DLLSYMBOL ObjectInstance
     const foundation::StringArray& get_front_material_names() const;
     const foundation::StringArray& get_back_material_names() const;
 
+    // Object binding.
+    void unbind_object();
+    void bind_object(const ObjectContainer& objects);
+    void check_object() const;
+
     // Material binding.
-    void allocate_materials();
+    void unbind_materials();
     void bind_materials(const MaterialContainer& materials);
     void check_materials() const;
 
-    // Return the materials referenced by this instance.
+    // Return the object bound to this instance.
+    Object* get_object() const;
+
+    // Return the materials bound to this instance.
     const MaterialArray& get_front_materials() const;
     const MaterialArray& get_back_materials() const;
 
@@ -117,14 +125,15 @@ class DLLSYMBOL ObjectInstance
     struct Impl;
     Impl* impl;
 
-    MaterialArray   m_front_materials;
-    MaterialArray   m_back_materials;
+    Object*             m_object;
+    MaterialArray       m_front_materials;
+    MaterialArray       m_back_materials;
 
     // Constructor.
     ObjectInstance(
         const char*                     name,
         const ParamArray&               params,
-        Object&                         object,
+        const char*                     object_name,
         const foundation::Transformd&   transform,
         const foundation::StringArray&  front_materials,
         const foundation::StringArray&  back_materials);
@@ -145,7 +154,7 @@ class DLLSYMBOL ObjectInstanceFactory
     static foundation::auto_release_ptr<ObjectInstance> create(
         const char*                     name,
         const ParamArray&               params,
-        Object&                         object,
+        const char*                     object_name,
         const foundation::Transformd&   transform,
         const foundation::StringArray&  front_materials,
         const foundation::StringArray&  back_materials = foundation::StringArray());
@@ -155,6 +164,11 @@ class DLLSYMBOL ObjectInstanceFactory
 //
 // ObjectInstance class implementation.
 //
+
+inline Object* ObjectInstance::get_object() const
+{
+    return m_object;
+}
 
 inline const MaterialArray& ObjectInstance::get_front_materials() const
 {

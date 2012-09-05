@@ -66,17 +66,17 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
             auto_release_ptr<Assembly> assembly(
                 AssemblyFactory::create("assembly", ParamArray()));
 
-            BoundingBoxObject* object =
-                new BoundingBoxObject(
-                    "object",
-                    GAABB3(GVector3(-1.0), GVector3(1.0)));
-            assembly->objects().insert(auto_release_ptr<Object>(object));
+            assembly->objects().insert(
+                auto_release_ptr<Object>(
+                    new BoundingBoxObject(
+                        "object",
+                        GAABB3(GVector3(-1.0), GVector3(1.0)))));
 
             assembly->object_instances().insert(
                 ObjectInstanceFactory::create(
                     "object_instance",
                     ParamArray(),
-                    *object,
+                    "object",
                     Transformd::identity(),
                     StringArray()));
 
@@ -92,7 +92,7 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
     };
 
     struct Fixture
-      : public TestScene
+      : public BindInputs<TestScene>
     {
         TraceContext    m_trace_context;
         TextureStore    m_texture_store;

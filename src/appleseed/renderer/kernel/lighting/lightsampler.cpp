@@ -187,10 +187,11 @@ void LightSampler::collect_emitting_triangles(
         const Transformd global_transform = assembly_instance_transform * object_instance_transform;
 
         // Retrieve the object.
-        Object& object = object_instance->get_object();
+        Object* object = object_instance->get_object();
+        assert(object);
 
         // Retrieve the region kit of the object.
-        Access<RegionKit> region_kit(&object.get_region_kit());
+        Access<RegionKit> region_kit(&object->get_region_kit());
 
         // Loop over the regions of the object.
         const size_t region_count = region_kit->size();

@@ -31,10 +31,14 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/object/object.h"
+#include "renderer/modeling/scene/assembly.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/memory.h"
 #include "foundation/utility/uid.h"
+
+// Standard headers.
+#include <cassert>
 
 using namespace foundation;
 using namespace std;
@@ -57,15 +61,9 @@ struct ObjectInstance::Impl
 {
     // Order of data members impacts performance, preserve it.
     Transformd          m_transform;
-    GAABB3              m_parent_bbox;
-    Object&             m_object;
+    string              m_object_name;
     StringArray         m_front_material_names;
     StringArray         m_back_material_names;
-
-    explicit Impl(Object& object)
-      : m_object(object)
-    {
-    }
 };
 
 namespace
@@ -76,19 +74,21 @@ namespace
 ObjectInstance::ObjectInstance(
     const char*         name,
     const ParamArray&   params,
-    Object&             object,
+    const char*         object_name,
     const Transformd&   transform,
     const StringArray&  front_materials,
     const StringArray&  back_materials)
   : Entity(g_class_uid, params)
-  , impl(new Impl(object))
+  , impl(new Impl())
 {
     set_name(name);
 
     impl->m_transform = transform;
-    impl->m_parent_bbox = transform.to_parent(object.compute_local_bbox());
+    impl->m_object_name = object_name;
     impl->m_front_material_names = front_materials;
     impl->m_back_material_names = back_materials;
+
+    m_object = 0;
 }
 
 ObjectInstance::~ObjectInstance()
@@ -101,9 +101,9 @@ void ObjectInstance::release()
     delete this;
 }
 
-Object& ObjectInstance::get_object() const
+const char* ObjectInstance::get_object_name() const
 {
-    return impl->m_object;
+    return impl->m_object_name.c_str();
 }
 
 const Transformd& ObjectInstance::get_transform() const
@@ -111,9 +111,28 @@ const Transformd& ObjectInstance::get_transform() const
     return impl->m_transform;
 }
 
-const GAABB3& ObjectInstance::get_parent_bbox() const
+GAABB3 ObjectInstance::compute_parent_bbox() const
 {
-    return impl->m_parent_bbox;
+    // In many places, we need the parent-space bounding box of an object instance
+    // before input binding is performed, i.e. before the instantiated object is
+    // bound to the instance. Therefore we manually look the object up through the
+    // assembly hierarchy instead of simply using impl->m_object.
+
+    while (true)
+    {
+        const Assembly* parent = static_cast<const Assembly*>(get_parent());
+
+        if (parent == 0)
+        {
+            // There is no way to compute the bounding box of this instance.
+            return GAABB3::invalid();
+        }
+
+        const Object* object = parent->objects().get_by_name(impl->m_object_name.c_str());
+
+        if (object)
+            return impl->m_transform.to_parent(object->compute_local_bbox());
+    }
 }
 
 void ObjectInstance::clear_front_materials()
@@ -152,9 +171,26 @@ const StringArray& ObjectInstance::get_back_material_names() const
     return impl->m_back_material_names;
 }
 
+void ObjectInstance::unbind_object()
+{
+    m_object = 0;
+}
+
+void ObjectInstance::bind_object(const ObjectContainer& objects)
+{
+    if (m_object == 0)
+        m_object = objects.get_by_name(impl->m_object_name.c_str());
+}
+
+void ObjectInstance::check_object() const
+{
+    if (m_object == 0)
+        throw ExceptionUnknownEntity(impl->m_object_name.c_str());
+}
+
 namespace
 {
-    void do_allocate_materials(
+    void do_unbind_materials(
         MaterialArray&              material_array,
         const StringArray&          material_names)
     {
@@ -186,10 +222,10 @@ namespace
     }
 }
 
-void ObjectInstance::allocate_materials()
+void ObjectInstance::unbind_materials()
 {
-    do_allocate_materials(m_front_materials, impl->m_front_material_names);
-    do_allocate_materials(m_back_materials, impl->m_back_material_names);
+    do_unbind_materials(m_front_materials, impl->m_front_material_names);
+    do_unbind_materials(m_back_materials, impl->m_back_material_names);
 }
 
 void ObjectInstance::bind_materials(const MaterialContainer& materials)
@@ -212,7 +248,7 @@ void ObjectInstance::check_materials() const
 auto_release_ptr<ObjectInstance> ObjectInstanceFactory::create(
     const char*         name,
     const ParamArray&   params,
-    Object&             object,
+    const char*         object_name,
     const Transformd&   transform,
     const StringArray&  front_materials,
     const StringArray&  back_materials)
@@ -222,7 +258,7 @@ auto_release_ptr<ObjectInstance> ObjectInstanceFactory::create(
             new ObjectInstance(
                 name,
                 params,
-                object,
+                object_name,
                 transform,
                 front_materials,
                 back_materials));

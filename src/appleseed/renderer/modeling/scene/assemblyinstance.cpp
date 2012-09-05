@@ -85,7 +85,7 @@ GAABB3 AssemblyInstance::compute_local_bbox() const
     const ObjectInstanceContainer& object_instances = m_assembly.object_instances();
 
     GAABB3 bbox =
-        get_parent_bbox<GAABB3>(
+        renderer::compute_parent_bbox<GAABB3>(
             object_instances.begin(),
             object_instances.end());
 

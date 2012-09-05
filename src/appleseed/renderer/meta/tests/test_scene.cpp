@@ -74,18 +74,18 @@ TEST_SUITE(Renderer_Modeling_Scene_Scene)
             AssemblyFactory::create("assembly", ParamArray()));
 
         // Create an object.
-        BoundingBoxObject* object =
-            new BoundingBoxObject(
-                "object",
-                GAABB3(GVector3(-1.0), GVector3(1.0)));
-        assembly->objects().insert(auto_release_ptr<Object>(object));
+        assembly->objects().insert(
+            auto_release_ptr<Object>(
+                new BoundingBoxObject(
+                    "object",
+                    GAABB3(GVector3(-1.0), GVector3(1.0)))));
 
         // Create an instance of the object.
         assembly->object_instances().insert(
             ObjectInstanceFactory::create(
                 "object_inst",
                 ParamArray(),
-                *object,
+                "object",
                 Transformd::identity(),
                 StringArray()));
 

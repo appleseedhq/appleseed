@@ -151,10 +151,11 @@ void IntersectionFilter::copy_uv_coordinates(
     const ObjectInstance*   object_instance)
 {
     // Retrieve the object.
-    Object& object = object_instance->get_object();
+    Object* object = object_instance->get_object();
+    assert(object);
 
     // Retrieve the region kit of the object.
-    Access<RegionKit> region_kit(&object.get_region_kit());
+    Access<RegionKit> region_kit(&object->get_region_kit());
 
     // Iterate over the regions of this object.
     for (const_each<RegionKit> region_it = *region_kit; region_it; ++region_it)

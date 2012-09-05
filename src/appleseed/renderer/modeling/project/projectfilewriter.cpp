@@ -341,18 +341,6 @@ namespace
                 write(*i);
         }
 
-        void write_collection(const TextureInstanceContainer& texture_instances, const TextureContainer& textures)
-        {
-            for (const_each<TextureInstanceContainer> i = texture_instances; i; ++i)
-                write(*i, textures);
-        }
-
-        void write_collection(const ObjectInstanceContainer& object_instances, const Assembly& assembly)
-        {
-            for (const_each<ObjectInstanceContainer> i = object_instances; i; ++i)
-                write(*i, assembly);
-        }
-
         // Write a <color> element.
         void write(const ColorEntity& color_entity)
         {
@@ -383,18 +371,11 @@ namespace
         }
 
         // Write a <texture_instance> element.
-        void write(
-            const TextureInstance&  texture_instance,
-            const TextureContainer& textures)
+        void write(const TextureInstance& texture_instance)
         {
-            const Texture* texture = textures.get_by_name(texture_instance.get_texture_name());
-
-            if (texture == 0)
-                return;
-
             XMLElement element("texture_instance", m_file, m_indenter);
             element.add_attribute("name", texture_instance.get_name());
-            element.add_attribute("texture", texture->get_name());
+            element.add_attribute("texture", texture_instance.get_texture_name());
             element.write(!texture_instance.get_parameters().empty());
 
             write_params(texture_instance.get_parameters());
@@ -609,19 +590,16 @@ namespace
         }
 
         // Write an <object_instance> element.
-        void write(
-            const ObjectInstance&   object_instance,
-            const Assembly&         assembly)
+        void write(const ObjectInstance& object_instance)
         {
             XMLElement element("object_instance", m_file, m_indenter);
             element.add_attribute("name", object_instance.get_name());
-            element.add_attribute("object", translate_object_name(object_instance.get_object().get_name()));
+            element.add_attribute("object", translate_object_name(object_instance.get_object_name()));
             element.write(true);
 
             write_params(object_instance.get_parameters());
             write_transform(object_instance.get_transform());
 
-            // Write the <assign_material> elements.
             write_assign_materials(ObjectInstance::FrontSide, object_instance.get_front_material_names());
             write_assign_materials(ObjectInstance::BackSide, object_instance.get_back_material_names());
         }
@@ -650,14 +628,14 @@ namespace
 
             write_collection(assembly.colors());
             write_collection(assembly.textures());
-            write_collection(assembly.texture_instances(), assembly.textures());
+            write_collection(assembly.texture_instances());
             write_collection(assembly.bsdfs());
             write_collection(assembly.edfs());
             write_collection(assembly.surface_shaders());
             write_collection(assembly.materials());
             write_collection(assembly.lights());
             write_object_collection(assembly.objects());
-            write_collection(assembly.object_instances(), assembly);
+            write_collection(assembly.object_instances());
             write_collection(assembly.assemblies());
             write_collection(assembly.assembly_instances());
         }
@@ -693,7 +671,7 @@ namespace
 
             write_collection(scene.colors());
             write_collection(scene.textures());
-            write_collection(scene.texture_instances(), scene.textures());
+            write_collection(scene.texture_instances());
             write_collection(scene.environment_edfs());
             write_collection(scene.environment_shaders());
 

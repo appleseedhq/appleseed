@@ -168,6 +168,7 @@ void InputBinder::bind_scene_entities_inputs(
     // Bind textures to texture instances.
     for (each<TextureInstanceContainer> i = scene.texture_instances(); i; ++i)
     {
+        i->unbind_texture();
         i->bind_texture(scene.textures());
         i->check_texture();
     }
@@ -232,6 +233,8 @@ void InputBinder::bind_assembly_entities_inputs(
     // Bind textures to texture instances.
     for (each<TextureInstanceContainer> i = assembly.texture_instances(); i; ++i)
     {
+        i->unbind_texture();
+
         for (AssemblyInfoIt j = m_assembly_info.rbegin(); j != m_assembly_info.rend(); ++j)
             i->bind_texture(j->m_assembly->textures());
 
@@ -298,14 +301,19 @@ void InputBinder::bind_assembly_entities_inputs(
             i->get_inputs());
     }
 
-    // Bind materials to object instances.
+    // Bind objects and materials to object instances.
     for (each<ObjectInstanceContainer> i = assembly.object_instances(); i; ++i)
     {
-        i->allocate_materials();
+        i->unbind_object();
+        i->unbind_materials();
 
         for (AssemblyInfoIt j = m_assembly_info.rbegin(); j != m_assembly_info.rend(); ++j)
+        {
+            i->bind_object(j->m_assembly->objects());
             i->bind_materials(j->m_assembly->materials());
+        }
 
+        i->check_object();
         i->check_materials();
     }
 

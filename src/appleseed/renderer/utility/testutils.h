@@ -32,6 +32,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/entity/entity.h"
+#include "renderer/modeling/input/inputbinder.h"
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/object/regionkit.h"
 #include "renderer/modeling/project/project.h"
@@ -88,6 +89,18 @@ class TestFixtureBase
         const char*                 texture_name);
 
     void bind_inputs();
+};
+
+template <typename Scene>
+class BindInputs
+  : public Scene
+{
+  public:
+    BindInputs()
+    {
+        InputBinder input_binder;
+        input_binder.bind(*Scene::m_scene);
+    }
 };
 
 class DLLSYMBOL DummyEntity

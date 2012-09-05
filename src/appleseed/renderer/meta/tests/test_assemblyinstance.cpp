@@ -54,22 +54,25 @@ TEST_SUITE(Renderer_Modeling_Scene_AssemblyInstance)
         auto_release_ptr<Assembly> inner_assembly =
             AssemblyFactory::create("inner_assembly", ParamArray());
 
-        BoundingBoxObject* object =
-            new BoundingBoxObject(
-                "object",
-                GAABB3(GVector3(-1.0), GVector3(1.0)));
-        inner_assembly->objects().insert(auto_release_ptr<Object>(object));
+        inner_assembly->objects().insert(
+            auto_release_ptr<Object>(
+                new BoundingBoxObject(
+                    "object",
+                    GAABB3(GVector3(-1.0), GVector3(1.0)))));
 
         inner_assembly->object_instances().insert(
             ObjectInstanceFactory::create(
                 "object_instance",
                 ParamArray(),
-                *object,
+                "object",
                 Transformd::identity(),
                 StringArray()));
 
         auto_release_ptr<AssemblyInstance> inner_assembly_instance =
-            AssemblyInstanceFactory::create("inner_assembly_instance", ParamArray(), inner_assembly.ref());
+            AssemblyInstanceFactory::create(
+                "inner_assembly_instance",
+                ParamArray(),
+                inner_assembly.ref());
 
         inner_assembly_instance->transform_sequence().set_transform(
             0.0,
@@ -78,12 +81,18 @@ TEST_SUITE(Renderer_Modeling_Scene_AssemblyInstance)
         // Outer assembly.
 
         auto_release_ptr<Assembly> outer_assembly =
-            AssemblyFactory::create("outer_assembly", ParamArray());
+            AssemblyFactory::create(
+                "outer_assembly",
+                ParamArray());
 
+        outer_assembly->assemblies().insert(inner_assembly);
         outer_assembly->assembly_instances().insert(inner_assembly_instance);
 
         auto_release_ptr<AssemblyInstance> outer_assembly_instance =
-            AssemblyInstanceFactory::create("outer_assembly_instance", ParamArray(), outer_assembly.ref());
+            AssemblyInstanceFactory::create(
+                "outer_assembly_instance",
+                ParamArray(),
+                outer_assembly.ref());
 
         const GAABB3 local_bbox = outer_assembly_instance->compute_local_bbox();
 

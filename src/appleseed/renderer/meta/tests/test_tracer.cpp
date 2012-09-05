@@ -35,7 +35,6 @@
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/color/colorentity.h"
-#include "renderer/modeling/input/inputbinder.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/triangle.h"
@@ -47,6 +46,7 @@
 #include "renderer/modeling/surfaceshader/constantsurfaceshader.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/utility/paramarray.h"
+#include "renderer/utility/testutils.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
@@ -151,8 +151,6 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 
         void create_plane_object_instance(const char* name, const Vector3d& position, const char* material_name)
         {
-            Object* object = m_assembly->objects().get_by_name("plane");
-            
             StringArray material_names;
             material_names.push_back(material_name);
 
@@ -160,7 +158,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 ObjectInstanceFactory::create(
                     name,
                     ParamArray(),
-                    *object,
+                    "plane",
                     Transformd(Matrix4d::translation(position)),
                     material_names));
         }
@@ -168,7 +166,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 
     template <typename Base>
     struct Fixture
-      : public Base
+      : public BindInputs<Base>
     {
         TraceContext        m_trace_context;
         TextureStore        m_texture_store;
@@ -182,9 +180,6 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
           , m_texture_cache(m_texture_store)
           , m_intersector(m_trace_context, m_texture_cache)
         {
-            InputBinder input_binder;
-            input_binder.bind(*Base::m_scene);
-
             Base::m_scene->on_frame_begin(Base::m_project.ref());
         }
 

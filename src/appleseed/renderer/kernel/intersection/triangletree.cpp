@@ -307,10 +307,11 @@ namespace
             assert(object_instance);
 
             // Retrieve the object.
-            Object& object = object_instance->get_object();
+            Object* object = object_instance->get_object();
+            assert(object);
 
             // Retrieve the region kit of the object.
-            Access<RegionKit> region_kit(&object.get_region_kit());
+            Access<RegionKit> region_kit(&object->get_region_kit());
 
             // Retrieve the region.
             const IRegion* region = (*region_kit)[region_info.get_region_index()];

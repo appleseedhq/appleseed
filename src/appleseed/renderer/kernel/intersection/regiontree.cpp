@@ -331,26 +331,24 @@ namespace
             // Create the root leaf of the region tree.
             auto_ptr<IntermRegionLeaf> root_leaf(factory.create_leaf());
             root_leaf->m_extent =
-                get_parent_bbox<GAABB3>(
+                compute_parent_bbox<GAABB3>(
                     assembly.object_instances().begin(),
                     assembly.object_instances().end());
 
             // Insert all regions of all object instances into the root leaf.
-            for (size_t object_instance_index = 0;
-                 object_instance_index < assembly.object_instances().size();
-                 ++object_instance_index)
+            for (size_t inst_index = 0; inst_index < assembly.object_instances().size(); ++inst_index)
             {
                 // Retrieve the object instance and its transformation.
-                const ObjectInstance* object_instance =
-                    assembly.object_instances().get_by_index(object_instance_index);
+                const ObjectInstance* object_instance = assembly.object_instances().get_by_index(inst_index);
                 assert(object_instance);
                 const Transformd& transform = object_instance->get_transform();
 
                 // Retrieve the object.
-                Object& object = object_instance->get_object();
+                Object* object = object_instance->get_object();
+                assert(object);
 
                 // Retrieve the region kit of the object.
-                Access<RegionKit> region_kit(&object.get_region_kit());
+                Access<RegionKit> region_kit(&object->get_region_kit());
 
                 // Insert all regions of the object into the root leaf.
                 for (size_t region_index = 0; region_index < region_kit->size(); ++region_index)
@@ -365,7 +363,7 @@ namespace
                     // Insert the region into the root leaf.
                     root_leaf->insert(
                         RegionInfo(
-                            object_instance_index,
+                            inst_index,
                             region_index,
                             region_bbox));
                 }

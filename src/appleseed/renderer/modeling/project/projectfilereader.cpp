@@ -1623,17 +1623,7 @@ namespace
       public:
         explicit ObjectInstanceElementHandler(ParseContext& context)
           : m_context(context)
-          , m_objects(0)
-          , m_materials(0)
         {
-        }
-
-        void set_containers(
-            const ObjectContainer*          objects,
-            const MaterialContainer*        materials)
-        {
-            m_objects = objects;
-            m_materials = materials;
         }
 
         virtual void start_element(const Attributes& attrs) override
@@ -1643,6 +1633,7 @@ namespace
             m_object_instance.reset();
             m_front_material_names.clear();
             m_back_material_names.clear();
+
             m_name = get_value(attrs, "name");
             m_object = get_value(attrs, "object");
         }
@@ -1651,28 +1642,14 @@ namespace
         {
             Base::end_element();
 
-            assert(m_objects);
-            Object* object = m_objects->get_by_name(m_object.c_str());
-
-            if (object)
-            {
-                m_object_instance =
-                    ObjectInstanceFactory::create(
-                        m_name.c_str(),
-                        m_params,
-                        *object,
-                        get_earliest_transform(),
-                        m_front_material_names,
-                        m_back_material_names);
-            }
-            else
-            {
-                RENDERER_LOG_ERROR(
-                    "while defining object instance \"%s\": the object \"%s\" does not exist.",
+            m_object_instance =
+                ObjectInstanceFactory::create(
                     m_name.c_str(),
-                    m_object.c_str());
-                m_context.get_event_counters().signal_error();
-            }
+                    m_params,
+                    m_object.c_str(),
+                    get_earliest_transform(),
+                    m_front_material_names,
+                    m_back_material_names);
         }
 
         virtual void end_child_element(
@@ -1729,13 +1706,11 @@ namespace
         typedef TransformSequenceElementHandler<ParametrizedElementHandler> Base;
 
         ParseContext&                       m_context;
-        const ObjectContainer*              m_objects;
-        const MaterialContainer*            m_materials;
         auto_release_ptr<ObjectInstance>    m_object_instance;
-        string                              m_name;
-        string                              m_object;
         StringArray                         m_front_material_names;
         StringArray                         m_back_material_names;
+        string                              m_name;
+        string                              m_object;
     };
 
 
@@ -1897,11 +1872,6 @@ namespace
                 break;
 
               case ElementObjectInstance:
-                {
-                    ObjectInstanceElementHandler* object_inst_handler =
-                        static_cast<ObjectInstanceElementHandler*>(handler);
-                    object_inst_handler->set_containers(&m_objects, &m_materials);
-                }
                 break;
 
               case ElementSurfaceShader:

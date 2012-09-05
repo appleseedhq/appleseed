@@ -269,10 +269,11 @@ namespace
             const Transformd& transform = object_instance->get_transform();
 
             // Retrieve the object.
-            Object& object = object_instance->get_object();
+            Object* object = object_instance->get_object();
+            assert(object);
 
             // Retrieve the region kit of the object.
-            Access<RegionKit> region_kit(&object.get_region_kit());
+            Access<RegionKit> region_kit(&object->get_region_kit());
 
             // Collect all regions of the object.
             for (size_t region_index = 0; region_index < region_kit->size(); ++region_index)
@@ -297,7 +298,7 @@ namespace
     {
         // Compute the assembly space bounding box of the assembly.
         const GAABB3 assembly_bbox =
-            get_parent_bbox<GAABB3>(
+            compute_parent_bbox<GAABB3>(
                 assembly.object_instances().begin(),
                 assembly.object_instances().end());
 
