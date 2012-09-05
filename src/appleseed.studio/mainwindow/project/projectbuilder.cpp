@@ -110,11 +110,41 @@ namespace
 
         for (const_each<AssemblyInstanceContainer> i = assembly_instances; i; ++i)
         {
-            if (i->get_assembly().get_uid() == assembly_uid)
+            const Assembly& assembly = i->find_assembly();
+
+            if (assembly.get_uid() == assembly_uid)
                 collected.push_back(i->get_uid());
         }
 
         return collected;
+    }
+
+    void remove_assembly_instances(
+        BaseGroup&                          base_group,
+        BaseGroupItem*                      base_group_item,
+        const UniqueID                      assembly_uid)
+    {
+        AssemblyInstanceContainer& assembly_instances = base_group.assembly_instances();
+
+        // Collect the assembly instances to remove.
+        const vector<UniqueID> remove_list =
+            collect_assembly_instances(assembly_instances, assembly_uid);
+
+        // Remove assembly instances and their corresponding project items.
+        for (const_each<vector<UniqueID> > i = remove_list; i; ++i)
+        {
+            assembly_instances.remove(*i);
+            base_group_item->get_assembly_instance_collection_item().remove_item(*i);
+        }
+
+        // Recurse into child assemblies.
+        for (each<AssemblyContainer> i = base_group.assemblies(); i; ++i)
+        {
+            AssemblyItem* child_item =
+                static_cast<AssemblyItem*>(
+                    base_group_item->get_assembly_collection_item().get_item(i->get_uid()));
+            remove_assembly_instances(*i, child_item, assembly_uid);
+        }
     }
 }
 
@@ -123,27 +153,12 @@ void ProjectBuilder::remove_assembly(
     BaseGroupItem*      parent_item,
     const UniqueID      assembly_uid) const
 {
-    AssemblyContainer& assemblies = parent.assemblies();
-    AssemblyInstanceContainer& assembly_instances = parent.assembly_instances();
+    // Remove all assembly instances and their corresponding project items.
+    remove_assembly_instances(parent, parent_item, assembly_uid);
 
-    const vector<UniqueID> remove_list = collect_assembly_instances(assembly_instances, assembly_uid);
-
-    for (const_each<vector<UniqueID> > i = remove_list; i; ++i)
-    {
-        const UniqueID assembly_instance_uid = *i;
-
-        // Remove the project item corresponding to this assembly instance.
-        parent_item->get_assembly_instance_collection_item().remove_item(assembly_instance_uid);
-
-        // Remove this assembly instance.
-        assembly_instances.remove(assembly_instance_uid);
-    }
-
-    // Remove the project item corresponding to the assembly itself.
+    // Remove the assembly and the corresponding project item.
+    parent.assemblies().remove(assembly_uid);
     parent_item->get_assembly_collection_item().remove_item(assembly_uid);
-
-    // Remove the assembly itself.
-    assemblies.remove(assembly_uid);
 
     m_project.get_scene()->bump_geometry_version_id();
 
@@ -154,13 +169,13 @@ void ProjectBuilder::insert_assembly_instance(
     BaseGroup&          parent,
     BaseGroupItem*      parent_item,
     const string&       name,
-    Assembly&           assembly) const
+    const string&       assembly_name) const
 {
     auto_release_ptr<AssemblyInstance> assembly_instance(
         AssemblyInstanceFactory::create(
             name.c_str(),
             ParamArray(),
-            assembly));
+            assembly_name.c_str()));
 
     parent_item->get_assembly_instance_collection_item().add_item(assembly_instance.get());
 

@@ -216,7 +216,7 @@ void AssemblyItem::slot_instantiate()
             m_parent,
             m_parent_item,
             instance_name,
-            m_assembly);
+            m_assembly.get_name());
     }
 }
 

@@ -84,6 +84,7 @@ void InputBinder::bind(const Scene& scene)
     for (const_each<AssemblyContainer> i = scene.assemblies(); i; ++i)
     {
         assert(m_assembly_info.empty());
+
         bind_assembly_entities_inputs(
             scene,
             scene_symbols,
@@ -211,6 +212,14 @@ void InputBinder::bind_scene_entities_inputs(
             environment.get_parameters(),
             environment.get_inputs());
     }
+
+    // Bind assemblies to assembly instances.
+    for (each<AssemblyInstanceContainer> i = scene.assembly_instances(); i; ++i)
+    {
+        i->unbind_assembly();
+        i->bind_assembly(scene.assemblies());
+        i->check_assembly();
+    }
 }
 
 void InputBinder::bind_assembly_entities_inputs(
@@ -319,7 +328,20 @@ void InputBinder::bind_assembly_entities_inputs(
         i->check_materials();
     }
 
-    // Bind all inputs of all entities in all child assemblies.
+    // Bind assemblies to assembly instances.
+    for (each<AssemblyInstanceContainer> i = assembly.assembly_instances(); i; ++i)
+    {
+        i->unbind_assembly();
+
+        i->bind_assembly(scene.assemblies());
+
+        for (AssemblyInfoIt j = m_assembly_info.rbegin(); j != m_assembly_info.rend(); ++j)
+            i->bind_assembly(j->m_assembly->assemblies());
+
+        i->check_assembly();
+    }
+
+    // Recurse into child assemblies.
     for (const_each<AssemblyContainer> i = assembly.assemblies(); i; ++i)
     {
         bind_assembly_entities_inputs(

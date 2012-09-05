@@ -31,9 +31,11 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/scene/assembly.h"
-#include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/utility/bbox.h"
+
+// Standard headers.
+#include <string>
 
 using namespace foundation;
 using namespace std;
@@ -45,6 +47,11 @@ namespace renderer
 // AssemblyInstance class implementation.
 //
 
+struct AssemblyInstance::Impl
+{
+    string m_assembly_name;
+};
+
 namespace
 {
     const UniqueID g_class_uid = new_guid();
@@ -53,16 +60,99 @@ namespace
 AssemblyInstance::AssemblyInstance(
     const char*         name,
     const ParamArray&   params,
-    const Assembly&     assembly)
+    const char*         assembly_name)
   : Entity(g_class_uid, params)
-  , m_assembly(assembly)
+  , impl(new Impl())
 {
     set_name(name);
+
+    impl->m_assembly_name = assembly_name;
+
+    m_assembly = 0;
+}
+
+AssemblyInstance::~AssemblyInstance()
+{
+    delete impl;
 }
 
 void AssemblyInstance::release()
 {
     delete this;
+}
+
+const char* AssemblyInstance::get_assembly_name() const
+{
+    return impl->m_assembly_name.c_str();
+}
+
+Assembly& AssemblyInstance::find_assembly() const
+{
+    const Entity* parent = get_parent();
+
+    while (parent)
+    {
+        Assembly* assembly =
+            static_cast<const Assembly*>(parent)
+                ->assemblies().get_by_name(impl->m_assembly_name.c_str());
+
+        if (assembly)
+            return *assembly;
+
+        parent = parent->get_parent();
+    }
+
+    // todo: throw exception.
+
+    return *(Assembly*)0;
+}
+
+GAABB3 AssemblyInstance::compute_local_bbox() const
+{
+    // In many places, we need the parent-space bounding box of an assembly instance
+    // before input binding is performed, i.e. before the instantiated assembly is
+    // bound to the instance. Therefore we manually look the assembly up through the
+    // assembly hierarchy instead of simply using m_assembly.
+
+    const Assembly& assembly = find_assembly();
+
+    const ObjectInstanceContainer& object_instances = assembly.object_instances();
+
+    GAABB3 bbox =
+        renderer::compute_parent_bbox<GAABB3>(
+            object_instances.begin(),
+            object_instances.end());
+
+    const AssemblyInstanceContainer& assembly_instances = assembly.assembly_instances();
+
+    bbox.insert(
+        renderer::compute_parent_bbox<GAABB3>(
+            assembly_instances.begin(),
+            assembly_instances.end()));
+
+    return bbox;
+}
+
+GAABB3 AssemblyInstance::compute_parent_bbox() const
+{
+    return m_transform_sequence.to_parent(compute_local_bbox());
+}
+
+void AssemblyInstance::unbind_assembly()
+{
+    m_assembly = 0;
+}
+
+void AssemblyInstance::bind_assembly(const AssemblyContainer& assemblies)
+{
+    if (m_assembly == 0)
+        m_assembly = assemblies.get_by_name(impl->m_assembly_name.c_str());
+}
+
+void AssemblyInstance::check_assembly() const
+{
+    if (m_assembly == 0)
+        throw ExceptionUnknownEntity(impl->m_assembly_name.c_str());
 }
 
 bool AssemblyInstance::on_frame_begin(const Project& project)
@@ -80,30 +170,6 @@ void AssemblyInstance::on_frame_end(const Project& project)
 {
 }
 
-GAABB3 AssemblyInstance::compute_local_bbox() const
-{
-    const ObjectInstanceContainer& object_instances = m_assembly.object_instances();
-
-    GAABB3 bbox =
-        renderer::compute_parent_bbox<GAABB3>(
-            object_instances.begin(),
-            object_instances.end());
-
-    const AssemblyInstanceContainer& assembly_instances = m_assembly.assembly_instances();
-
-    bbox.insert(
-        renderer::compute_parent_bbox<GAABB3>(
-            assembly_instances.begin(),
-            assembly_instances.end()));
-
-    return bbox;
-}
-
-GAABB3 AssemblyInstance::compute_parent_bbox() const
-{
-    return m_transform_sequence.to_parent(compute_local_bbox());
-}
-
 
 //
 // AssemblyInstanceFactory class implementation.
@@ -112,14 +178,14 @@ GAABB3 AssemblyInstance::compute_parent_bbox() const
 auto_release_ptr<AssemblyInstance> AssemblyInstanceFactory::create(
     const char*         name,
     const ParamArray&   params,
-    const Assembly&     assembly)
+    const char*         assembly_name)
 {
     return
         auto_release_ptr<AssemblyInstance>(
             new AssemblyInstance(
                 name,
                 params,
-                assembly));
+                assembly_name));
 }
 
 }   // namespace renderer

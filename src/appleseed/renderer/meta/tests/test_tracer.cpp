@@ -88,7 +88,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 AssemblyInstanceFactory::create(
                     "assembly_inst",
                     ParamArray(),
-                    *m_assembly));
+                    "assembly"));
 
             create_color("white", Color4f(1.0f));
             create_constant_surface_shader("constant_white_surface_shader", "white");

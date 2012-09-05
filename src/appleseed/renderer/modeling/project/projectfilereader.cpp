@@ -440,8 +440,10 @@ namespace
         virtual void start_element(const Attributes& attrs) override
         {
             ParametrizedElementHandler::start_element(attrs);
-            m_name = get_value(attrs, "name");
+
             m_params.clear();
+
+            m_name = get_value(attrs, "name");
         }
 
         const string& get_name() const
@@ -926,9 +928,10 @@ namespace
             ParametrizedElementHandler::start_element(attrs);
 
             m_color_entity.reset();
-            m_name = get_value(attrs, "name");
             m_values.clear();
             m_alpha.clear();
+
+            m_name = get_value(attrs, "name");
         }
 
         virtual void end_element() override
@@ -1065,6 +1068,7 @@ namespace
             ParametrizedElementHandler::start_element(attrs);
 
             m_texture.reset();
+
             m_name = get_value(attrs, "name");
             m_model = get_value(attrs, "model");
         }
@@ -1258,6 +1262,7 @@ namespace
             ParametrizedElementHandler::start_element(attrs);
 
             m_environment.reset();
+
             m_name = get_value(attrs, "name");
             m_model = get_value(attrs, "model");
         }
@@ -1384,6 +1389,7 @@ namespace
             ParametrizedElementHandler::start_element(attrs);
 
             m_material.reset();
+
             m_name = get_value(attrs, "name");
             m_model = get_value(attrs, "model");
         }
@@ -1470,6 +1476,7 @@ namespace
             ParametrizedElementHandler::start_element(attrs);
 
             clear_keep_memory(m_objects);
+
             m_name = get_value(attrs, "name");
             m_model = get_value(attrs, "model");
         }
@@ -1704,13 +1711,7 @@ namespace
       public:
         explicit AssemblyInstanceElementHandler(ParseContext& context)
           : m_context(context)
-          , m_assemblies(0)
         {
-        }
-
-        void set_assembly_container(const AssemblyContainer* assemblies)
-        {
-            m_assemblies = assemblies;
         }
 
         virtual void start_element(const Attributes& attrs) override
@@ -1718,6 +1719,7 @@ namespace
             Base::start_element(attrs);
 
             m_assembly_instance.reset();
+
             m_name = get_value(attrs, "name");
             m_assembly = get_value(attrs, "assembly");
         }
@@ -1726,23 +1728,13 @@ namespace
         {
             Base::end_element();
 
-            assert(m_assemblies);
-            const Assembly* assembly = m_assemblies->get_by_name(m_assembly.c_str());
-
-            if (assembly)
-            {
-                m_assembly_instance =
-                    AssemblyInstanceFactory::create(m_name.c_str(), m_params, *assembly);
-                copy_transform_sequence_to(m_assembly_instance->transform_sequence());
-            }
-            else
-            {
-                RENDERER_LOG_ERROR(
-                    "while defining assembly instance \"%s\": the assembly \"%s\" does not exist",
+            m_assembly_instance =
+                AssemblyInstanceFactory::create(
                     m_name.c_str(),
+                    m_params,
                     m_assembly.c_str());
-                m_context.get_event_counters().signal_error();
-            }
+
+            copy_transform_sequence_to(m_assembly_instance->transform_sequence());
         }
 
         auto_release_ptr<AssemblyInstance> get_assembly_instance()
@@ -1754,7 +1746,6 @@ namespace
         typedef TransformSequenceElementHandler<ParametrizedElementHandler> Base;
 
         ParseContext&                       m_context;
-        const AssemblyContainer*            m_assemblies;
         auto_release_ptr<AssemblyInstance>  m_assembly_instance;
         string                              m_name;
         string                              m_assembly;
@@ -1780,8 +1771,6 @@ namespace
 
             m_assembly.reset();
 
-            m_name = get_value(attrs, "name");
-
             m_assemblies.clear();
             m_assembly_instances.clear();
             m_bsdfs.clear();
@@ -1794,6 +1783,8 @@ namespace
             m_surface_shaders.clear();
             m_textures.clear();
             m_texture_instances.clear();
+
+            m_name = get_value(attrs, "name");
         }
 
         virtual void end_element() override
@@ -1814,59 +1805,6 @@ namespace
             m_assembly->surface_shaders().swap(m_surface_shaders);
             m_assembly->textures().swap(m_textures);
             m_assembly->texture_instances().swap(m_texture_instances);
-        }
-
-        virtual void start_child_element(
-            const ProjectElementID      element,
-            ElementHandlerType*         handler) override
-        {
-            switch (element)
-            {
-              case ElementAssembly:
-                break;
-
-              case ElementAssemblyInstance:
-                {
-                    AssemblyInstanceElementHandler* asm_inst_handler =
-                        static_cast<AssemblyInstanceElementHandler*>(handler);
-                    asm_inst_handler->set_assembly_container(&m_assemblies);
-                }
-                break;
-
-              case ElementBSDF:
-                break;
-
-              case ElementColor:
-                break;
-
-              case ElementEDF:
-                break;
-
-              case ElementLight:
-                break;
-
-              case ElementMaterial:
-                break;
-
-              case ElementObject:
-                break;
-
-              case ElementObjectInstance:
-                break;
-
-              case ElementSurfaceShader:
-                break;
-
-              case ElementTexture:
-                break;
-
-              case ElementTextureInstance:
-                break;
-
-              default:
-                ParametrizedElementHandler::start_child_element(element, handler);
-                break;
-            }
         }
 
         virtual void end_child_element(
@@ -2061,50 +1999,6 @@ namespace
             }
         }
 
-        virtual void start_child_element(
-            const ProjectElementID      element,
-            ElementHandlerType*         handler) override
-        {
-            assert(m_scene.get());
-
-            switch (element)
-            {
-              case ElementAssembly:
-                break;
-
-              case ElementAssemblyInstance:
-                {
-                    AssemblyInstanceElementHandler* asm_inst_handler =
-                        static_cast<AssemblyInstanceElementHandler*>(handler);
-                    asm_inst_handler->set_assembly_container(&m_scene->assemblies());
-                }
-                break;
-
-              case ElementCamera:
-                break;
-
-              case ElementColor:
-                break;
-
-              case ElementEnvironment:
-                break;
-
-              case ElementEnvironmentEDF:
-                break;
-
-              case ElementEnvironmentShader:
-                break;
-
-              case ElementTexture:
-                break;
-
-              case ElementTextureInstance:
-                break;
-
-              assert_otherwise;
-            }
-        }
-
         virtual void end_child_element(
             const ProjectElementID      element,
             ElementHandlerType*         handler) override
@@ -2254,6 +2148,7 @@ namespace
             ParametrizedElementHandler::start_element(attrs);
 
             m_frame.reset();
+
             m_name = get_value(attrs, "name");
         }
 
@@ -2345,6 +2240,7 @@ namespace
             ParametrizedElementHandler::start_element(attrs);
 
             m_configuration.reset();
+
             m_name = get_value(attrs, "name");
             m_base_name = get_value(attrs, "base");
         }

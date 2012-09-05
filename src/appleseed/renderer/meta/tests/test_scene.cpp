@@ -94,7 +94,7 @@ TEST_SUITE(Renderer_Modeling_Scene_Scene)
             AssemblyInstanceFactory::create(
                 "assembly_inst",
                 ParamArray(),
-                *assembly));
+                "assembly"));
         assembly_instance->transform_sequence().set_transform(
             0.0,
             Transformd(

@@ -98,8 +98,16 @@ LightSampler::LightSampler(const Scene& scene)
     RENDERER_LOG_INFO("collecting light emitters...");
 
     // Collect all lights and light-emitting triangles.
-    collect_lights(scene);
-    collect_emitting_triangles(scene);
+    for (const_each<AssemblyInstanceContainer> i = scene.assembly_instances(); i; ++i)
+    {
+        const AssemblyInstance& assembly_instance = *i;
+        const Assembly& assembly = assembly_instance.find_assembly();
+
+        collect_lights(assembly, assembly_instance);
+
+        if (has_emitting_materials(assembly))
+            collect_emitting_triangles(assembly, assembly_instance);
+    }
 
     // Precompute some values.
     m_light_count = m_lights.size();
@@ -119,15 +127,11 @@ LightSampler::LightSampler(const Scene& scene)
         plural(m_emitting_triangles.size(), "triangle").c_str());
 }
 
-void LightSampler::collect_lights(const Scene& scene)
+void LightSampler::collect_lights(
+    const Assembly&         assembly,
+    const AssemblyInstance& assembly_instance)
 {
-    for (const_each<AssemblyInstanceContainer> i = scene.assembly_instances(); i; ++i)
-        collect_lights(*i);
-}
-
-void LightSampler::collect_lights(const AssemblyInstance& assembly_instance)
-{
-    const Assembly& assembly = assembly_instance.get_assembly();
+    // todo: handle assembly instance transforms.
 
     for (const_each<LightContainer> i = assembly.lights(); i; ++i)
     {
@@ -146,23 +150,11 @@ void LightSampler::collect_lights(const AssemblyInstance& assembly_instance)
     }
 }
 
-void LightSampler::collect_emitting_triangles(const Scene& scene)
-{
-    for (const_each<AssemblyInstanceContainer> i = scene.assembly_instances(); i; ++i)
-    {
-        const AssemblyInstance& assembly_instance = *i;
-
-        if (has_emitting_materials(assembly_instance.get_assembly()))
-            collect_emitting_triangles(scene, assembly_instance);
-    }
-}
-
 void LightSampler::collect_emitting_triangles(
-    const Scene&            scene,
+    const Assembly&         assembly,
     const AssemblyInstance& assembly_instance)
 {
     // Loop over the object instances of the assembly.
-    const Assembly& assembly = assembly_instance.get_assembly();
     const size_t object_instance_count = assembly.object_instances().size();
     for (size_t object_instance_index = 0; object_instance_index < object_instance_count; ++object_instance_index)
     {

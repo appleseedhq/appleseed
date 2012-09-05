@@ -128,7 +128,7 @@ class ProjectBuilder
         renderer::BaseGroup&                parent,
         BaseGroupItem*                      parent_item,
         const std::string&                  name,
-        renderer::Assembly&                 assembly) const;
+        const std::string&                  assembly_name) const;
 
     void remove_assembly_instance(
         renderer::BaseGroup&                parent,

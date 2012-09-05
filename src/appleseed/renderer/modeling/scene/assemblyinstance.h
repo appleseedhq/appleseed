@@ -32,6 +32,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/entity/entity.h"
+#include "renderer/modeling/scene/containers.h"
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
@@ -60,12 +61,29 @@ class DLLSYMBOL AssemblyInstance
     // Delete this instance.
     virtual void release() override;
 
-    // Return the instantiated assembly.
-    const Assembly& get_assembly() const;
+    // Return the name of the instantiated assembly.
+    const char* get_assembly_name() const;
 
     // Access the transform sequence of the instance.
     TransformSequence& transform_sequence();
     const TransformSequence& transform_sequence() const;
+
+    // Find the assembly bound to this instance.
+    Assembly& find_assembly() const;
+
+    // Compute the local space bounding box of the instance.
+    GAABB3 compute_local_bbox() const;
+
+    // Compute the parent space bounding box of the instance.
+    GAABB3 compute_parent_bbox() const;
+
+    // Assembly binding.
+    void unbind_assembly();
+    void bind_assembly(const AssemblyContainer& assemblies);
+    void check_assembly() const;
+
+    // Return the assembly bound to this instance.
+    Assembly* get_assembly() const;
 
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
@@ -74,23 +92,23 @@ class DLLSYMBOL AssemblyInstance
     // This method is called once after rendering each frame.
     void on_frame_end(const Project& project);
 
-    // Compute the local space bounding box of the instance.
-    GAABB3 compute_local_bbox() const;
-
-    // Compute the parent space bounding box of the instance.
-    GAABB3 compute_parent_bbox() const;
-
   private:
     friend class AssemblyInstanceFactory;
 
-    const Assembly&         m_assembly;
+    struct Impl;
+    Impl* impl;
+
+    Assembly*               m_assembly;
     TransformSequence       m_transform_sequence;
 
     // Constructor.
     AssemblyInstance(
         const char*         name,
         const ParamArray&   params,
-        const Assembly&     assembly);
+        const char*         assembly_name);
+
+    // Destructor.
+    ~AssemblyInstance();
 };
 
 
@@ -105,18 +123,13 @@ class DLLSYMBOL AssemblyInstanceFactory
     static foundation::auto_release_ptr<AssemblyInstance> create(
         const char*         name,
         const ParamArray&   params,
-        const Assembly&     assembly);
+        const char*         assembly_name);
 };
 
 
 //
 // AssemblyInstance class implementation.
 //
-
-inline const Assembly& AssemblyInstance::get_assembly() const
-{
-    return m_assembly;
-}
 
 inline TransformSequence& AssemblyInstance::transform_sequence()
 {
@@ -126,6 +139,11 @@ inline TransformSequence& AssemblyInstance::transform_sequence()
 inline const TransformSequence& AssemblyInstance::transform_sequence() const
 {
     return m_transform_sequence;
+}
+
+inline Assembly* AssemblyInstance::get_assembly() const
+{
+    return m_assembly;
 }
 
 }       // namespace renderer
