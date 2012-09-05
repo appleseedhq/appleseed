@@ -99,6 +99,9 @@ class DLLSYMBOL TextureInstance
     // Return the lighting conditions of the texture.
     const foundation::LightingConditions& get_lighting_conditions() const;
 
+    // Find the texture bound to this instance.
+    Texture* find_texture() const;
+
     // Texture binding.
     void unbind_texture();
     void bind_texture(const TextureContainer& textures);
