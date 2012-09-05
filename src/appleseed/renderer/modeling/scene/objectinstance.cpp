@@ -39,6 +39,7 @@
 
 // Standard headers.
 #include <cassert>
+#include <string>
 
 using namespace foundation;
 using namespace std;
@@ -111,6 +112,25 @@ const Transformd& ObjectInstance::get_transform() const
     return impl->m_transform;
 }
 
+Object* ObjectInstance::find_object() const
+{
+    const Entity* parent = get_parent();
+
+    while (parent)
+    {
+        Object* object =
+            static_cast<const Assembly*>(parent)
+                ->objects().get_by_name(impl->m_object_name.c_str());
+
+        if (object)
+            return object;
+
+        parent = parent->get_parent();
+    }
+
+    return 0;
+}
+
 GAABB3 ObjectInstance::compute_parent_bbox() const
 {
     // In many places, we need the parent-space bounding box of an object instance
@@ -118,21 +138,12 @@ GAABB3 ObjectInstance::compute_parent_bbox() const
     // bound to the instance. Therefore we manually look the object up through the
     // assembly hierarchy instead of simply using impl->m_object.
 
-    while (true)
-    {
-        const Assembly* parent = static_cast<const Assembly*>(get_parent());
+    const Object* object = find_object();
 
-        if (parent == 0)
-        {
-            // There is no way to compute the bounding box of this instance.
-            return GAABB3::invalid();
-        }
-
-        const Object* object = parent->objects().get_by_name(impl->m_object_name.c_str());
-
-        if (object)
-            return impl->m_transform.to_parent(object->compute_local_bbox());
-    }
+    return
+        object
+            ? impl->m_transform.to_parent(object->compute_local_bbox())
+            : GAABB3::invalid();
 }
 
 void ObjectInstance::clear_front_materials()

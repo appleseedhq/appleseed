@@ -79,6 +79,9 @@ class DLLSYMBOL ObjectInstance
     // Return the transform of the instance.
     const foundation::Transformd& get_transform() const;
 
+    // Find the object bound to this instance.
+    Object* find_object() const;
+
     // Compute the parent space bounding box of the instance.
     GAABB3 compute_parent_bbox() const;
 
