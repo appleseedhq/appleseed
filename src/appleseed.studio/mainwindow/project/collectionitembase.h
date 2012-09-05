@@ -79,6 +79,8 @@ class CollectionItemBase
 
     void remove_item(const foundation::UniqueID entity_id);
 
+    ItemBase* get_item(const foundation::UniqueID entity_id) const;
+
   protected:
     typedef std::map<foundation::UniqueID, ItemBase*> ItemMap;
 
@@ -153,6 +155,18 @@ void CollectionItemBase<Entity>::add_items(EntityContainer& entities)
 }
 
 template <typename Entity>
+void CollectionItemBase<Entity>::add_item(const int index, Entity* entity)
+{
+    assert(entity);
+
+    ItemBase* item = create_item(entity);
+
+    insertChild(index, item);
+
+    m_items[entity->get_uid()] = item;
+}
+
+template <typename Entity>
 void CollectionItemBase<Entity>::remove_item(const foundation::UniqueID entity_id)
 {
     const ItemMap::iterator it = m_items.find(entity_id);
@@ -166,15 +180,11 @@ void CollectionItemBase<Entity>::remove_item(const foundation::UniqueID entity_i
 }
 
 template <typename Entity>
-void CollectionItemBase<Entity>::add_item(const int index, Entity* entity)
+ItemBase* CollectionItemBase<Entity>::get_item(const foundation::UniqueID entity_id) const
 {
-    assert(entity);
+    const ItemMap::const_iterator it = m_items.find(entity_id);
 
-    ItemBase* item = create_item(entity);
-
-    insertChild(index, item);
-
-    m_items[entity->get_uid()] = item;
+    return it == m_items.end() ? 0 : it->second;
 }
 
 template <typename Entity>
