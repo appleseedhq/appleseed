@@ -1129,13 +1129,7 @@ namespace
       public:
         explicit TextureInstanceElementHandler(ParseContext& context)
           : m_context(context)
-          , m_textures(0)
         {
-        }
-
-        void set_texture_container(const TextureContainer* textures)
-        {
-            m_textures = textures;
         }
 
         virtual void start_element(const Attributes& attrs) override
@@ -1143,6 +1137,7 @@ namespace
             ParametrizedElementHandler::start_element(attrs);
 
             m_texture_instance.reset();
+
             m_name = get_value(attrs, "name");
             m_texture = get_value(attrs, "texture");
         }
@@ -1151,34 +1146,20 @@ namespace
         {
             ParametrizedElementHandler::end_element();
 
-            assert(m_textures);
-            const Texture* texture = m_textures->get_by_name(m_texture.c_str());
-
-            if (texture)
+            try
             {
-                try
-                {
-                    m_texture_instance =
-                        TextureInstanceFactory::create(
-                            m_name.c_str(),
-                            m_params,
-                            texture->get_name());
-                }
-                catch (const ExceptionDictionaryItemNotFound& e)
-                {
-                    RENDERER_LOG_ERROR(
-                        "while defining texture instance \"%s\": required parameter \"%s\" missing.",
+                m_texture_instance =
+                    TextureInstanceFactory::create(
                         m_name.c_str(),
-                        e.string());
-                    m_context.get_event_counters().signal_error();
-                }
+                        m_params,
+                        m_texture.c_str());
             }
-            else
+            catch (const ExceptionDictionaryItemNotFound& e)
             {
                 RENDERER_LOG_ERROR(
-                    "while defining texture instance \"%s\": the texture \"%s\" does not exist.",
+                    "while defining texture instance \"%s\": required parameter \"%s\" missing.",
                     m_name.c_str(),
-                    m_texture.c_str());
+                    e.string());
                 m_context.get_event_counters().signal_error();
             }
         }
@@ -1190,7 +1171,6 @@ namespace
 
       private:
         ParseContext&                       m_context;
-        const TextureContainer*             m_textures;
         auto_release_ptr<TextureInstance>   m_texture_instance;
         string                              m_name;
         string                              m_texture;
@@ -1881,11 +1861,6 @@ namespace
                 break;
 
               case ElementTextureInstance:
-                {
-                    TextureInstanceElementHandler* texture_inst_handler =
-                        static_cast<TextureInstanceElementHandler*>(handler);
-                    texture_inst_handler->set_texture_container(&m_textures);
-                }
                 break;
 
               default:
@@ -2124,11 +2099,6 @@ namespace
                 break;
 
               case ElementTextureInstance:
-                {
-                    TextureInstanceElementHandler* texture_inst_handler =
-                        static_cast<TextureInstanceElementHandler*>(handler);
-                    texture_inst_handler->set_texture_container(&m_scene->textures());
-                }
                 break;
 
               assert_otherwise;
