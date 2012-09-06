@@ -183,7 +183,7 @@ void AOVoxelTree::build(
         const AssemblyInstance& assembly_instance = *i;
 
         // Retrieve the assembly.
-        const Assembly& assembly = assembly_instance.find_assembly();
+        const Assembly& assembly = assembly_instance.get_assembly();
 
         // Loop over the object instances of the assembly.
         for (const_each<ObjectInstanceContainer> j = assembly.object_instances(); j; ++j)

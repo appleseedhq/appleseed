@@ -412,6 +412,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     assert(m_project.get_scene());
     assert(m_project.get_frame());
 
+    // We start by binding entities inputs. This must be done before creating/updating the trace context.
     if (!bind_scene_entities_inputs())
         return IRendererController::AbortRendering;
 

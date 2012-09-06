@@ -110,7 +110,7 @@ void AssemblyTree::collect_assembly_instances(
         const AssemblyInstance& assembly_instance = *i;
 
         // Retrieve the assembly.
-        const Assembly& assembly = assembly_instance.find_assembly();
+        const Assembly& assembly = assembly_instance.get_assembly();
 
         // Compute the cumulated transform sequence of this assembly instance.
         TransformSequence cumulated_transform_seq =

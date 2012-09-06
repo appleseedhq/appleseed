@@ -110,9 +110,9 @@ namespace
 
         for (const_each<AssemblyInstanceContainer> i = assembly_instances; i; ++i)
         {
-            const Assembly& assembly = i->find_assembly();
+            const Assembly* assembly = i->find_assembly();
 
-            if (assembly.get_uid() == assembly_uid)
+            if (assembly && assembly->get_uid() == assembly_uid)
                 collected.push_back(i->get_uid());
         }
 

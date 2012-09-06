@@ -86,7 +86,7 @@ const char* AssemblyInstance::get_assembly_name() const
     return impl->m_assembly_name.c_str();
 }
 
-Assembly& AssemblyInstance::find_assembly() const
+Assembly* AssemblyInstance::find_assembly() const
 {
     const Entity* parent = get_parent();
 
@@ -97,14 +97,12 @@ Assembly& AssemblyInstance::find_assembly() const
                 ->assemblies().get_by_name(impl->m_assembly_name.c_str());
 
         if (assembly)
-            return *assembly;
+            return assembly;
 
         parent = parent->get_parent();
     }
 
-    // todo: throw exception.
-
-    return *(Assembly*)0;
+    return 0;
 }
 
 GAABB3 AssemblyInstance::compute_local_bbox() const
@@ -114,16 +112,19 @@ GAABB3 AssemblyInstance::compute_local_bbox() const
     // bound to the instance. Therefore we manually look the assembly up through the
     // assembly hierarchy instead of simply using m_assembly.
 
-    const Assembly& assembly = find_assembly();
+    const Assembly* assembly = find_assembly();
 
-    const ObjectInstanceContainer& object_instances = assembly.object_instances();
+    if (assembly == 0)
+        return GAABB3::invalid();
+
+    const ObjectInstanceContainer& object_instances = assembly->object_instances();
 
     GAABB3 bbox =
         renderer::compute_parent_bbox<GAABB3>(
             object_instances.begin(),
             object_instances.end());
 
-    const AssemblyInstanceContainer& assembly_instances = assembly.assembly_instances();
+    const AssemblyInstanceContainer& assembly_instances = assembly->assembly_instances();
 
     bbox.insert(
         renderer::compute_parent_bbox<GAABB3>(

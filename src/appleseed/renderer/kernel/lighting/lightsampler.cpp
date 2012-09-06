@@ -101,7 +101,7 @@ LightSampler::LightSampler(const Scene& scene)
     for (const_each<AssemblyInstanceContainer> i = scene.assembly_instances(); i; ++i)
     {
         const AssemblyInstance& assembly_instance = *i;
-        const Assembly& assembly = assembly_instance.find_assembly();
+        const Assembly& assembly = assembly_instance.get_assembly();
 
         collect_lights(assembly, assembly_instance);
 

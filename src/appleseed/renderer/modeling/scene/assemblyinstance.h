@@ -72,7 +72,7 @@ class DLLSYMBOL AssemblyInstance
     const TransformSequence& transform_sequence() const;
 
     // Find the assembly bound to this instance.
-    Assembly& find_assembly() const;
+    Assembly* find_assembly() const;
 
     // Compute the local space bounding box of the instance.
     GAABB3 compute_local_bbox() const;
