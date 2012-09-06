@@ -95,7 +95,9 @@ void Scene::release()
 void Scene::set_camera(auto_release_ptr<Camera> camera)
 {
     impl->m_camera = camera;
-    impl->m_camera->set_parent(this);
+
+    if (impl->m_camera.get())
+        impl->m_camera->set_parent(this);
 }
 
 Camera* Scene::get_camera() const
@@ -106,7 +108,9 @@ Camera* Scene::get_camera() const
 void Scene::set_environment(auto_release_ptr<Environment> environment)
 {
     impl->m_environment = environment;
-    impl->m_environment->set_parent(this);
+
+    if (impl->m_environment.get())
+        impl->m_environment->set_parent(this);
 }
 
 Environment* Scene::get_environment() const
