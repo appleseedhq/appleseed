@@ -40,7 +40,6 @@
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
-#include "foundation/utility/version.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -62,10 +61,6 @@ class DLLSYMBOL Scene
   public:
     // Delete this instance.
     virtual void release() override;
-
-    // Return/increase the version ID of the scene geometry.
-    foundation::VersionID get_geometry_version_id() const;
-    void bump_geometry_version_id();
 
     // Set the camera.
     void set_camera(foundation::auto_release_ptr<Camera> camera);

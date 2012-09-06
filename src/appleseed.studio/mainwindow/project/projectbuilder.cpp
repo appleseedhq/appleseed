@@ -160,7 +160,7 @@ void ProjectBuilder::remove_assembly(
     parent.assemblies().remove(assembly_uid);
     parent_item->get_assembly_collection_item().remove_item(assembly_uid);
 
-    m_project.get_scene()->bump_geometry_version_id();
+    m_project.get_scene()->bump_version_id();
 
     notify_project_modification();
 }
@@ -181,7 +181,7 @@ void ProjectBuilder::insert_assembly_instance(
 
     parent.assembly_instances().insert(assembly_instance);
 
-    m_project.get_scene()->bump_geometry_version_id();
+    m_project.get_scene()->bump_version_id();
 
     notify_project_modification();
 }
@@ -195,7 +195,7 @@ void ProjectBuilder::remove_assembly_instance(
 
     parent.assembly_instances().remove(assembly_instance_uid);
     
-    m_project.get_scene()->bump_geometry_version_id();
+    m_project.get_scene()->bump_version_id();
 
     notify_project_modification();
 }

@@ -64,7 +64,7 @@ namespace detail
                 assembly_name.c_str());
     }
 
-    TransformSequence& get_transform_sequence(AssemblyInstance *instance)
+    TransformSequence& get_transform_sequence(AssemblyInstance* instance)
     {
         return instance->transform_sequence();
     }
@@ -72,7 +72,7 @@ namespace detail
 
 void bind_assembly()
 {
-    bpy::class_<BaseGroup, boost::noncopyable>( "BaseGroup")
+    bpy::class_<BaseGroup, boost::noncopyable>("BaseGroup")
         .def("colors", &BaseGroup::colors, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("textures", &BaseGroup::textures, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("texture_instances", &BaseGroup::texture_instances, bpy::return_value_policy<bpy::reference_existing_object>())

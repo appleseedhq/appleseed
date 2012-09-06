@@ -58,7 +58,6 @@ namespace renderer
 struct Scene::Impl
 {
     UniqueID                        m_uid;
-    VersionID                       m_geometry_version_id;
     auto_release_ptr<Camera>        m_camera;
     auto_release_ptr<Environment>   m_environment;
     EnvironmentEDFContainer         m_environment_edfs;
@@ -81,7 +80,6 @@ Scene::Scene()
   , BaseGroup(this)
   , impl(new Impl(this))
 {
-    impl->m_geometry_version_id = 0;
 }
 
 Scene::~Scene()
@@ -92,16 +90,6 @@ Scene::~Scene()
 void Scene::release()
 {
     delete this;
-}
-
-VersionID Scene::get_geometry_version_id() const
-{
-    return impl->m_geometry_version_id;
-}
-
-void Scene::bump_geometry_version_id()
-{
-    ++impl->m_geometry_version_id;
 }
 
 void Scene::set_camera(auto_release_ptr<Camera> camera)
