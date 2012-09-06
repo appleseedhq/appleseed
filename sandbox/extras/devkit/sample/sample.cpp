@@ -152,7 +152,7 @@ asf::auto_release_ptr<asr::Project> build_project()
             asr::ObjectInstanceFactory::create(
                 instance_name.c_str(),
                 asr::ParamArray(),
-                *object,
+                object->get_name(),
                 asf::Transformd(asf::Matrix4d::identity()),
                 material_names));
     }
@@ -186,7 +186,7 @@ asf::auto_release_ptr<asr::Project> build_project()
         asr::AssemblyInstanceFactory::create(
             "assembly_inst",
             asr::ParamArray(),
-            *assembly));
+            "assembly"));
     assembly_instance
         ->transform_sequence()
             .set_transform(
