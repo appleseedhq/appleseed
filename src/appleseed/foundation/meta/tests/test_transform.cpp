@@ -225,6 +225,18 @@ TEST_SUITE(Foundation_Math_Transform)
 
 TEST_SUITE(Foundation_Math_TransformInterpolator)
 {
+    TEST_CASE(Evaluate_GivenScalingComponents_ReturnsValidScalingInterpolationTransform)
+    {
+        const Transformd from(Matrix4d::identity());
+        const Transformd to(Matrix4d::scaling(Vector3d(3.0, 5.0, 0.6)));
+
+        const TransformInterpolatord interpolator(from, to);
+        const Transformd transform = interpolator.evaluate(0.5);
+
+        EXPECT_FEQ(Vector3d(2.0, 3.0, 0.8), transform.get_local_to_parent().extract_scaling());
+        EXPECT_FEQ(Matrix4d::identity(), transform.get_local_to_parent() * transform.get_parent_to_local());
+    }
+
     TEST_CASE(VisualizeTransform)
     {
         const Transformd from(Matrix4d::identity());

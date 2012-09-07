@@ -150,8 +150,9 @@ class TransformInterpolator
     TransformType evaluate(const T t) const;
 
   private:
-    Vector<T, 3>  m_t0, m_t1;
+    Vector<T, 3>  m_s0, m_s1;
     Quaternion<T> m_q0, m_q1;
+    Vector<T, 3>  m_t0, m_t1;
 };
 
 
@@ -500,14 +501,8 @@ bool TransformInterpolator<T>::set_transforms(
     const TransformType& from,
     const TransformType& to)
 {
-    const MatrixType& from_matrix = from.get_local_to_parent();
-    const MatrixType& to_matrix = to.get_local_to_parent();
-
-    m_t0 = from_matrix.extract_translation();
-    m_q0 = from_matrix.extract_unit_quaternion();
-
-    m_t1 = to_matrix.extract_translation();
-    m_q1 = to_matrix.extract_unit_quaternion();
+    from.get_local_to_parent().decompose(m_s0, m_q0, m_t0);
+    to.get_local_to_parent().decompose(m_s1, m_q1, m_t1);
 
     if (dot(m_q0, m_q1) < T(0.0))
         m_q1 = -m_q1;
@@ -518,8 +513,9 @@ bool TransformInterpolator<T>::set_transforms(
 template <typename T>
 inline Transform<T> TransformInterpolator<T>::evaluate(const T t) const
 {
-    const Vector<T, 3> p = lerp(m_t0, m_t1, t);
+    const Vector<T, 3> s = lerp(m_s0, m_s1, t);
     const Quaternion<T> q = slerp(m_q0, m_q1, t);
+    const Vector<T, 3> p = lerp(m_t0, m_t1, t);
 
     assert(is_normalized(q));
 
@@ -596,6 +592,47 @@ inline Transform<T> TransformInterpolator<T>::evaluate(const T t) const
     parent_to_local[13] = T(0.0);
     parent_to_local[14] = T(0.0);
     parent_to_local[15] = T(1.0);
+
+    //
+    // Apply scaling factors to the local-to-parent transformation matrix.
+    //
+
+    // First column.
+    local_to_parent[ 0] *= s.x;
+    local_to_parent[ 4] *= s.x;
+    local_to_parent[ 8] *= s.x;
+
+    // Second column.
+    local_to_parent[ 1] *= s.y;
+    local_to_parent[ 5] *= s.y;
+    local_to_parent[ 9] *= s.y;
+
+    // Third column.
+    local_to_parent[ 2] *= s.z;
+    local_to_parent[ 6] *= s.z;
+    local_to_parent[10] *= s.z;
+
+    //
+    // Apply scaling factors to the parent-to-local transformation matrix.
+    //
+
+    // First column.
+    const T rcp_sx = T(1.0) / s.x;
+    parent_to_local[ 0] *= rcp_sx;
+    parent_to_local[ 4] *= rcp_sx;
+    parent_to_local[ 8] *= rcp_sx;
+
+    // Second column.
+    const T rcp_sy = T(1.0) / s.y;
+    parent_to_local[ 1] *= rcp_sy;
+    parent_to_local[ 5] *= rcp_sy;
+    parent_to_local[ 9] *= rcp_sy;
+
+    // Third column.
+    const T rcp_sz = T(1.0) / s.z;
+    parent_to_local[ 2] *= rcp_sz;
+    parent_to_local[ 6] *= rcp_sz;
+    parent_to_local[10] *= rcp_sz;
 
     return Transform<T>(local_to_parent, parent_to_local);
 }
