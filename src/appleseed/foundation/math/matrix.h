@@ -272,6 +272,9 @@ class Matrix<T, 3, 3>
     static MatrixType rotation(
         const Quaternion<T>&    q);                         // unit quaternion
 
+    // Extract the scaling factors from a transformation matrix.
+    Vector<T, 3> extract_scaling() const;
+
     // Extract Euler angles from a rotation matrix.
     void extract_euler_angles(
         ValueType&              yaw,
@@ -280,6 +283,11 @@ class Matrix<T, 3, 3>
 
     // Extract a unit quaternion from a rotation matrix.
     Quaternion<T> extract_unit_quaternion() const;
+
+    // Decompose a matrix into scaling -> rotation.
+    void decompose(
+        Vector<T, 3>&           scaling,
+        Quaternion<T>&          rotation) const;
 
     // Unchecked array subscripting.
     ValueType& operator[](const size_t i);
@@ -370,8 +378,8 @@ class Matrix<T, 4, 4>
         const Vector<T, 3>&     target,                     // target point
         const Vector<T, 3>&     up);                        // up vector, unit-length
 
-    // Extract the translation from a transformation matrix.
-    Vector<T, 3> extract_translation() const;
+    // Extract the scaling factors from a transformation matrix.
+    Vector<T, 3> extract_scaling() const;
 
     // Extract Euler angles from a rotation matrix.
     void extract_euler_angles(
@@ -381,6 +389,15 @@ class Matrix<T, 4, 4>
 
     // Extract a unit quaternion from a rotation matrix.
     Quaternion<T> extract_unit_quaternion() const;
+
+    // Extract the translation from a transformation matrix.
+    Vector<T, 3> extract_translation() const;
+
+    // Decompose a matrix into scaling -> rotation -> translation.
+    void decompose(
+        Vector<T, 3>&           scaling,
+        Quaternion<T>&          rotation,
+        Vector<T, 3>&           translation) const;
 
     // Unchecked array subscripting.
     ValueType& operator[](const size_t i);
@@ -1173,6 +1190,18 @@ inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation(
 }
 
 template <typename T>
+inline Vector<T, 3> Matrix<T, 3, 3>::extract_scaling() const
+{
+    Vector<T, 3> scaling;
+
+    scaling[0] = norm(Vector<T, 3>(m_comp[0], m_comp[3], m_comp[6]));
+    scaling[1] = norm(Vector<T, 3>(m_comp[1], m_comp[4], m_comp[7]));
+    scaling[2] = norm(Vector<T, 3>(m_comp[2], m_comp[5], m_comp[8]));
+
+    return scaling;
+}
+
+template <typename T>
 inline void Matrix<T, 3, 3>::extract_euler_angles(
     ValueType&              yaw,
     ValueType&              pitch,
@@ -1247,6 +1276,35 @@ inline Quaternion<T> Matrix<T, 3, 3>::extract_unit_quaternion() const
         q.v[k] = (m_comp[k * 3 + i] + m_comp[i * 3 + k]) * root;
         return q;
     }
+}
+
+template <typename T>
+inline void Matrix<T, 3, 3>::decompose(
+    Vector<T, 3>&           scaling,
+    Quaternion<T>&          rotation) const
+{
+    scaling = extract_scaling();
+
+    const Vector<T, 3> rcp_scaling(
+        T(1.0) / scaling[0],
+        T(1.0) / scaling[1],
+        T(1.0) / scaling[2]);
+
+    Matrix<T, 3, 3> unit_matrix(*this);
+
+    unit_matrix[0] *= rcp_scaling[0];
+    unit_matrix[3] *= rcp_scaling[0];
+    unit_matrix[6] *= rcp_scaling[0];
+
+    unit_matrix[1] *= rcp_scaling[1];
+    unit_matrix[4] *= rcp_scaling[1];
+    unit_matrix[7] *= rcp_scaling[1];
+
+    unit_matrix[2] *= rcp_scaling[2];
+    unit_matrix[5] *= rcp_scaling[2];
+    unit_matrix[8] *= rcp_scaling[2];
+
+    rotation = unit_matrix.extract_unit_quaternion();
 }
 
 template <typename T>
@@ -1673,9 +1731,15 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::lookat(
 }
 
 template <typename T>
-inline Vector<T, 3> Matrix<T, 4, 4>::extract_translation() const
+inline Vector<T, 3> Matrix<T, 4, 4>::extract_scaling() const
 {
-    return Vector<T, 3>(m_comp[3], m_comp[7], m_comp[11]);
+    Vector<T, 3> scaling;
+
+    scaling[0] = norm(Vector<T, 3>(m_comp[0], m_comp[4], m_comp[ 8]));
+    scaling[1] = norm(Vector<T, 3>(m_comp[1], m_comp[5], m_comp[ 9]));
+    scaling[2] = norm(Vector<T, 3>(m_comp[2], m_comp[6], m_comp[10]));
+
+    return scaling;
 }
 
 template <typename T>
@@ -1751,6 +1815,44 @@ inline Quaternion<T> Matrix<T, 4, 4>::extract_unit_quaternion() const
         q.v[k] = (m_comp[k*4+i] + m_comp[i*4+k]) * root;
         return q;
     }
+}
+
+template <typename T>
+inline Vector<T, 3> Matrix<T, 4, 4>::extract_translation() const
+{
+    return Vector<T, 3>(m_comp[3], m_comp[7], m_comp[11]);
+}
+
+template <typename T>
+inline void Matrix<T, 4, 4>::decompose(
+    Vector<T, 3>&           scaling,
+    Quaternion<T>&          rotation,
+    Vector<T, 3>&           translation) const
+{
+    scaling = extract_scaling();
+
+    const Vector<T, 3> rcp_scaling(
+        T(1.0) / scaling[0],
+        T(1.0) / scaling[1],
+        T(1.0) / scaling[2]);
+
+    Matrix<T, 4, 4> unit_matrix(*this);
+
+    unit_matrix[ 0] *= rcp_scaling[0];
+    unit_matrix[ 4] *= rcp_scaling[0];
+    unit_matrix[ 8] *= rcp_scaling[0];
+
+    unit_matrix[ 1] *= rcp_scaling[1];
+    unit_matrix[ 5] *= rcp_scaling[1];
+    unit_matrix[ 9] *= rcp_scaling[1];
+
+    unit_matrix[ 2] *= rcp_scaling[2];
+    unit_matrix[ 6] *= rcp_scaling[2];
+    unit_matrix[10] *= rcp_scaling[2];
+
+    rotation = unit_matrix.extract_unit_quaternion();
+
+    translation = extract_translation();
 }
 
 template <typename T>
