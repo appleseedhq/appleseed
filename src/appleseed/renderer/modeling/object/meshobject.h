@@ -50,16 +50,16 @@ class RENDERERDLL MeshObject
 {
   public:
     // Delete this instance.
-    virtual void release();
+    virtual void release() override;
 
     // Return a string identifying the model of this object.
-    virtual const char* get_model() const;
+    virtual const char* get_model() const override;
 
     // Compute the local space bounding box of the object over the shutter interval.
-    virtual GAABB3 compute_local_bbox() const;
+    virtual GAABB3 compute_local_bbox() const override;
 
     // Return the region kit of the object.
-    virtual foundation::Lazy<RegionKit>& get_region_kit();
+    virtual foundation::Lazy<RegionKit>& get_region_kit() override;
 
     // Insert and access vertices.
     void reserve_vertices(const size_t count);
