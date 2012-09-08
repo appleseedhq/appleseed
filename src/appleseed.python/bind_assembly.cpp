@@ -28,11 +28,11 @@
 // Has to be first, to avoid redifinition warnings.
 #include "bind_auto_release_ptr.h"
 
-#include "renderer/modeling/scene/assembly.h"
-#include "renderer/modeling/scene/assemblyinstance.h"
-
 #include "bind_typed_entity_containers.h"
 #include "dict2dict.h"
+
+#include "renderer/modeling/scene/assembly.h"
+#include "renderer/modeling/scene/assemblyinstance.h"
 
 namespace bpy = boost::python;
 using namespace foundation;
