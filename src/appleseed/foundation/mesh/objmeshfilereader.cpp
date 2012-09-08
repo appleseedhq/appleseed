@@ -60,8 +60,10 @@ struct OBJMeshFileReader::Impl
     const int               m_options;
     IMeshBuilder&           m_builder;
     OBJMeshFileLexer        m_lexer;
+
+    // Current state.
     bool                    m_inside_mesh_def;          // currently inside a mesh definition?
-    string                  m_mesh_name;
+    string                  m_current_mesh_name;        // name of the current mesh
 
     // Features defined in the file.
     vector<Vector3d>        m_vertices;
@@ -319,12 +321,43 @@ struct OBJMeshFileReader::Impl
         }
     }
 
-    static void translate_indices(
-        vector<size_t>&         indices,
-        const vector<size_t>&   mapping)
+    void insert_face_into_mesh()
     {
-        for (size_t i = 0; i < indices.size(); ++i)
-            indices[i] = mapping[indices[i]];
+        if (!m_inside_mesh_def)
+        {
+            // Begin the definition of the new mesh.
+            m_builder.begin_mesh(m_current_mesh_name);
+            m_inside_mesh_def = true;
+        }
+
+        // Insert the features into the mesh, updating index mappings as necessary.
+        insert_vertices_into_mesh();
+        insert_vertex_normals_into_mesh();
+        insert_tex_coords_into_mesh();
+
+        // Translate feature indices from internal space to mesh space.
+        translate_indices(m_face_vertex_indices, m_vertex_index_mapping);
+        translate_indices(m_face_normal_indices, m_normal_index_mapping);
+        translate_indices(m_face_tex_coord_indices, m_tex_coord_index_mapping);
+
+        const size_t n = m_face_vertex_indices.size();
+
+        // Begin defining a new face.
+        m_builder.begin_face(n); 
+
+        // Set face vertices.
+        m_builder.set_face_vertices(&m_face_vertex_indices.front());
+
+        // Set face vertex normals (if any).
+        if (m_face_normal_indices.size() == n)
+            m_builder.set_face_vertex_normals(&m_face_normal_indices.front());
+
+        // Set face vertex texture coordinates (if any).
+        if (m_face_tex_coord_indices.size() == n)
+            m_builder.set_face_vertex_tex_coords(&m_face_tex_coord_indices.front());
+
+        // End defining the face.
+        m_builder.end_face();
     }
 
     void insert_vertices_into_mesh()
@@ -366,54 +399,23 @@ struct OBJMeshFileReader::Impl
         }
     }
 
-    void insert_face_into_mesh()
+    static void translate_indices(
+        vector<size_t>&         indices,
+        const vector<size_t>&   mapping)
     {
-        if (!m_inside_mesh_def)
-        {
-            // Begin the definition of the new mesh.
-            m_builder.begin_mesh(m_mesh_name);
-            m_inside_mesh_def = true;
-        }
+        const size_t count = indices.size();
 
-        // Insert the features into the mesh, updating index mappings as necessary.
-        insert_vertices_into_mesh();
-        insert_vertex_normals_into_mesh();
-        insert_tex_coords_into_mesh();
-
-        // Translate feature indices from internal space to mesh space.
-        translate_indices(m_face_vertex_indices, m_vertex_index_mapping);
-        translate_indices(m_face_normal_indices, m_normal_index_mapping);
-        translate_indices(m_face_tex_coord_indices, m_tex_coord_index_mapping);
-
-        const size_t n = m_face_vertex_indices.size();
-
-        // Begin defining a new face.
-        m_builder.begin_face(n); 
-
-        // Set face vertices.
-        m_builder.set_face_vertices(&m_face_vertex_indices.front());
-
-        // Set face vertex normals (if any).
-        if (m_face_normal_indices.size() == n)
-            m_builder.set_face_vertex_normals(&m_face_normal_indices.front());
-
-        // Set face vertex texture coordinates (if any).
-        if (m_face_tex_coord_indices.size() == n)
-            m_builder.set_face_vertex_tex_coords(&m_face_tex_coord_indices.front());
-
-        // End defining the face.
-        m_builder.end_face();
+        for (size_t i = 0; i < count; ++i)
+            indices[i] = mapping[indices[i]];
     }
 
     void parse_o_g_statement()
     {
-        m_lexer.eat_blanks();
-
         // Retrieve the name of the upcoming mesh.
-        const string upcoming_mesh_name = parse_mesh_name();
+        const string upcoming_mesh_name = parse_compound_identifier();
 
         // Start a new mesh only if the name of the object or group actually changes.
-        if (upcoming_mesh_name != m_mesh_name)
+        if (upcoming_mesh_name != m_current_mesh_name)
         {
             // End the current mesh.
             if (m_inside_mesh_def)
@@ -426,13 +428,15 @@ struct OBJMeshFileReader::Impl
             clear_keep_memory(m_tex_coord_index_mapping);
             clear_keep_memory(m_normal_index_mapping);
 
-            m_mesh_name = upcoming_mesh_name;
+            m_current_mesh_name = upcoming_mesh_name;
         }
     }
 
-    string parse_mesh_name()
+    string parse_compound_identifier()
     {
-        string mesh_name;
+        string identifier;
+
+        m_lexer.eat_blanks();
 
         while (!m_lexer.is_eol())
         {
@@ -442,13 +446,13 @@ struct OBJMeshFileReader::Impl
             m_lexer.accept_string(&token, &token_length);
             m_lexer.eat_blanks();
 
-            if (!mesh_name.empty())
-                mesh_name += ' ';
+            if (!identifier.empty())
+                identifier += ' ';
 
-            mesh_name.append(token, token_length);
+            identifier.append(token, token_length);
         }
 
-        return mesh_name;
+        return identifier;
     }
 
     void parse_v_statement()
@@ -483,6 +487,7 @@ struct OBJMeshFileReader::Impl
         v.y = m_lexer.accept_double();
 
         m_lexer.eat_blanks();
+
         if (!m_lexer.is_eol())
             m_lexer.accept_double();
 
@@ -503,7 +508,6 @@ struct OBJMeshFileReader::Impl
         n.z = m_lexer.accept_double();
 
         n = normalize(n);
-
         m_normals.push_back(n);
     }
 };
