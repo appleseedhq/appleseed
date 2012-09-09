@@ -45,7 +45,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/matrix.h"
 #include "foundation/math/transform.h"
-#include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/searchpaths.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/string.h"
@@ -356,7 +356,7 @@ void ProjectBuilder::insert_objects(
                 ParamArray(),
                 object->get_name(),
                 Transformd::identity(),
-                StringArray()));
+                StringDictionary()));
 
         parent_item->add_item(object_instance.get());
 

@@ -59,7 +59,7 @@
 // appleseed.foundation headers.
 #include "foundation/core/appleseed.h"
 #include "foundation/math/transform.h"
-#include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/indenter.h"
 #include "foundation/utility/searchpaths.h"
@@ -569,24 +569,24 @@ namespace
 
         // Write an <assign_material> element.
         void write_assign_material(
-            const size_t                slot,
+            const string&               slot,
             const ObjectInstance::Side  side,
-            const string&               material_name)
+            const string&               name)
         {
             XMLElement element("assign_material", m_file, m_indenter);
             element.add_attribute("slot", slot);
             element.add_attribute("side", side == ObjectInstance::FrontSide ? "front" : "back");
-            element.add_attribute("material", material_name);
+            element.add_attribute("material", name);
             element.write(false);
         }
 
         // Write a series of <assign_material> elements.
         void write_assign_materials(
             const ObjectInstance::Side  side,
-            const StringArray&          material_names)
+            const StringDictionary&     material_mappings)
         {
-            for (size_t i = 0; i < material_names.size(); ++i)
-                write_assign_material(i, side, material_names[i]);
+            for (const_each<StringDictionary> i = material_mappings; i; ++i)
+                write_assign_material(i->name(), side, i->value<string>());
         }
 
         // Write an <object_instance> element.
@@ -600,8 +600,8 @@ namespace
             write_params(object_instance.get_parameters());
             write_transform(object_instance.get_transform());
 
-            write_assign_materials(ObjectInstance::FrontSide, object_instance.get_front_material_names());
-            write_assign_materials(ObjectInstance::BackSide, object_instance.get_back_material_names());
+            write_assign_materials(ObjectInstance::FrontSide, object_instance.get_front_material_mappings());
+            write_assign_materials(ObjectInstance::BackSide, object_instance.get_back_material_mappings());
         }
 
         // Write an <assembly> element.

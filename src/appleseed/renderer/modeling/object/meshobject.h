@@ -30,11 +30,24 @@
 #define APPLESEED_RENDERER_MODELING_OBJECT_MESHOBJECT_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/object/object.h"
+#include "renderer/modeling/object/regionkit.h"
+
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
+#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/utility/lazy.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+// Standard headers.
+#include <cstddef>
 
 // Forward declarations.
-namespace renderer      { class Triangle; }
+namespace renderer  { class ParamArray; }
+namespace renderer  { class Triangle; }
 
 namespace renderer
 {
@@ -45,7 +58,7 @@ namespace renderer
 // todo: add support for arbitrary polygonal faces.
 //
 
-class RENDERERDLL MeshObject
+class DLLSYMBOL MeshObject
   : public Object
 {
   public:
@@ -101,6 +114,12 @@ class RENDERERDLL MeshObject
         const size_t    vertex_index,
         const size_t    motion_segment_index) const;
 
+    // Insert and access material slots.
+    void reserve_material_slots(const size_t count);
+    size_t push_material_slot(const char* name);
+    virtual size_t get_material_slot_count() const override;
+    virtual const char* get_material_slot(const size_t index) const override;
+
   private:
     friend class MeshObjectFactory;
 
@@ -121,7 +140,7 @@ class RENDERERDLL MeshObject
 // Mesh object factory.
 //
 
-class RENDERERDLL MeshObjectFactory
+class DLLSYMBOL MeshObjectFactory
 {
   public:
     // Return a string identifying this object model.

@@ -38,7 +38,6 @@
 #include "foundation/math/transform.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/containers/array.h"
-#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
@@ -49,9 +48,10 @@
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer  { class Material; }
-namespace renderer  { class Object; }
-namespace renderer  { class ParamArray; }
+namespace foundation    { class StringDictionary; }
+namespace renderer      { class Material; }
+namespace renderer      { class Object; }
+namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
@@ -98,13 +98,13 @@ class DLLSYMBOL ObjectInstance
 
     // Assign a material to a given slot.
     void assign_material(
-        const size_t    slot,
+        const char*     slot,
         const Side      side,
-        const char*     material_name);
+        const char*     name);
 
-    // Return the names of the materials referenced by this instance.
-    const foundation::StringArray& get_front_material_names() const;
-    const foundation::StringArray& get_back_material_names() const;
+    // Return the slot-to-material mappings of this instance.
+    const foundation::StringDictionary& get_front_material_mappings() const;
+    const foundation::StringDictionary& get_back_material_mappings() const;
 
     // Object binding.
     void unbind_object();
@@ -135,12 +135,12 @@ class DLLSYMBOL ObjectInstance
 
     // Constructor.
     ObjectInstance(
-        const char*                     name,
-        const ParamArray&               params,
-        const char*                     object_name,
-        const foundation::Transformd&   transform,
-        const foundation::StringArray&  front_materials,
-        const foundation::StringArray&  back_materials);
+        const char*                         name,
+        const ParamArray&                   params,
+        const char*                         object_name,
+        const foundation::Transformd&       transform,
+        const foundation::StringDictionary& front_material_mappings,
+        const foundation::StringDictionary& back_material_mappings);
 
     // Destructor.
     ~ObjectInstance();
@@ -156,12 +156,12 @@ class DLLSYMBOL ObjectInstanceFactory
   public:
     // Create a new object instance.
     static foundation::auto_release_ptr<ObjectInstance> create(
-        const char*                     name,
-        const ParamArray&               params,
-        const char*                     object_name,
-        const foundation::Transformd&   transform,
-        const foundation::StringArray&  front_materials,
-        const foundation::StringArray&  back_materials = foundation::StringArray());
+        const char*                         name,
+        const ParamArray&                   params,
+        const char*                         object_name,
+        const foundation::Transformd&       transform,
+        const foundation::StringDictionary& front_material_mappings,
+        const foundation::StringDictionary& back_material_mappings = foundation::StringDictionary());
 };
 
 

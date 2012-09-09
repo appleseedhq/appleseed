@@ -78,7 +78,7 @@
 #include "foundation/math/matrix.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
-#include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/memory.h"
 #include "foundation/utility/searchpaths.h"
@@ -1546,19 +1546,7 @@ namespace
 
         virtual void start_element(const Attributes& attrs) override
         {
-            const string slot_string = get_value(attrs, "slot");
-            try
-            {
-                m_slot = from_string<size_t>(slot_string);
-            }
-            catch (const ExceptionStringConversionError&)
-            {
-                RENDERER_LOG_ERROR(
-                    "while assigning material: slot must be an integer >= 0, got \"%s\".",
-                    slot_string.c_str());
-                m_context.get_event_counters().signal_error();
-                m_slot = 0;
-            }
+            m_slot = get_value(attrs, "slot");
 
             const string side_string = get_value(attrs, "side", "front");
             if (side_string == "front")
@@ -1577,7 +1565,7 @@ namespace
             m_material = get_value(attrs, "material");
         }
 
-        size_t get_material_slot() const
+        const string& get_material_slot() const
         {
             return m_slot;
         }
@@ -1594,7 +1582,7 @@ namespace
 
       private:
         ParseContext&           m_context;
-        size_t                  m_slot;
+        string                  m_slot;
         ObjectInstance::Side    m_side;
         string                  m_material;
     };
@@ -1618,8 +1606,8 @@ namespace
             Base::start_element(attrs);
 
             m_object_instance.reset();
-            m_front_material_names.clear();
-            m_back_material_names.clear();
+            m_front_material_mappings.clear();
+            m_back_material_mappings.clear();
 
             m_name = get_value(attrs, "name");
             m_object = get_value(attrs, "object");
@@ -1635,8 +1623,8 @@ namespace
                     m_params,
                     m_object.c_str(),
                     get_earliest_transform(),
-                    m_front_material_names,
-                    m_back_material_names);
+                    m_front_material_mappings,
+                    m_back_material_mappings);
         }
 
         virtual void end_child_element(
@@ -1650,31 +1638,16 @@ namespace
                     AssignMaterialElementHandler* assign_mat_handler =
                         static_cast<AssignMaterialElementHandler*>(handler);
 
-                    const size_t material_slot = assign_mat_handler->get_material_slot();
+                    const string& material_slot = assign_mat_handler->get_material_slot();
                     const ObjectInstance::Side material_side = assign_mat_handler->get_material_side();
                     const string& material_name = assign_mat_handler->get_material_name();
-                    StringArray& material_names =
+
+                    StringDictionary& material_mappings =
                         material_side == ObjectInstance::FrontSide
-                            ? m_front_material_names
-                            : m_back_material_names;
+                            ? m_front_material_mappings
+                            : m_back_material_mappings;
 
-                    const size_t MaxMaterialSlots = 256;
-
-                    if (material_slot < MaxMaterialSlots)
-                    {
-                        ensure_minimum_size(material_names, material_slot + 1);
-                        material_names.set(material_slot, material_name.c_str());
-                    }
-                    else
-                    {
-                        RENDERER_LOG_ERROR(
-                            "while defining object instance \"%s\": "
-                            "material slot should be in [0, " FMT_SIZE_T "], got " FMT_SIZE_T ".",
-                            m_name.c_str(),
-                            MaxMaterialSlots - 1,
-                            material_slot);
-                        m_context.get_event_counters().signal_error();
-                    }
+                    material_mappings.insert(material_slot, material_name);
                 }
                 break;
 
@@ -1694,8 +1667,8 @@ namespace
 
         ParseContext&                       m_context;
         auto_release_ptr<ObjectInstance>    m_object_instance;
-        StringArray                         m_front_material_names;
-        StringArray                         m_back_material_names;
+        StringDictionary                    m_front_material_mappings;
+        StringDictionary                    m_back_material_mappings;
         string                              m_name;
         string                              m_object;
     };

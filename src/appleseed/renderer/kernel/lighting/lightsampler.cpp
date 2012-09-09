@@ -200,9 +200,13 @@ void LightSampler::collect_emitting_triangles(
             {
                 // Fetch the triangle.
                 const Triangle& triangle = tess->m_primitives[triangle_index];
-                const size_t pa_index = static_cast<size_t>(triangle.m_pa);
+
+                // Skip triangles without a material.
+                if (triangle.m_pa == Triangle::None)
+                    continue;
 
                 // Fetch the materials assigned to this triangle.
+                const size_t pa_index = static_cast<size_t>(triangle.m_pa);
                 const Material* front_material =
                     pa_index < front_materials.size() ? front_materials[pa_index] : 0;
                 const Material* back_material =

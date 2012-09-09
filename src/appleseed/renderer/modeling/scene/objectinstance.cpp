@@ -34,7 +34,7 @@
 #include "renderer/modeling/scene/assembly.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/memory.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/uid.h"
 
 // Standard headers.
@@ -60,10 +60,10 @@ DEFINE_ARRAY(MaterialArray);
 struct ObjectInstance::Impl
 {
     // Order of data members impacts performance, preserve it.
-    Transformd          m_transform;
-    string              m_object_name;
-    StringArray         m_front_material_names;
-    StringArray         m_back_material_names;
+    Transformd              m_transform;
+    string                  m_object_name;
+    StringDictionary        m_front_material_mappings;
+    StringDictionary        m_back_material_mappings;
 };
 
 namespace
@@ -72,12 +72,12 @@ namespace
 }
 
 ObjectInstance::ObjectInstance(
-    const char*         name,
-    const ParamArray&   params,
-    const char*         object_name,
-    const Transformd&   transform,
-    const StringArray&  front_materials,
-    const StringArray&  back_materials)
+    const char*             name,
+    const ParamArray&       params,
+    const char*             object_name,
+    const Transformd&       transform,
+    const StringDictionary& front_material_mappings,
+    const StringDictionary& back_material_mappings)
   : Entity(g_class_uid, params)
   , impl(new Impl())
 {
@@ -85,8 +85,8 @@ ObjectInstance::ObjectInstance(
 
     impl->m_transform = transform;
     impl->m_object_name = object_name;
-    impl->m_front_material_names = front_materials;
-    impl->m_back_material_names = back_materials;
+    impl->m_front_material_mappings = front_material_mappings;
+    impl->m_back_material_mappings = back_material_mappings;
 
     m_object = 0;
 }
@@ -147,38 +147,35 @@ GAABB3 ObjectInstance::compute_parent_bbox() const
 
 void ObjectInstance::clear_front_materials()
 {
-    m_front_materials.clear();
-    impl->m_front_material_names.clear();
+    impl->m_front_material_mappings.clear();
 }
 
 void ObjectInstance::clear_back_materials()
 {
-    m_back_materials.clear();
-    impl->m_back_material_names.clear();
+    impl->m_back_material_mappings.clear();
 }
 
 void ObjectInstance::assign_material(
-    const size_t    slot,
-    const Side      side,
-    const char*     material_name)
+    const char*             slot,
+    const Side              side,
+    const char*             name)
 {
-    StringArray& material_names =
+    StringDictionary& material_mappings =
         side == FrontSide
-            ? impl->m_front_material_names
-            : impl->m_back_material_names;
+            ? impl->m_front_material_mappings
+            : impl->m_back_material_mappings;
 
-    ensure_minimum_size(material_names, slot + 1);
-    material_names.set(slot, material_name);
+    material_mappings.insert(slot, name);
 }
 
-const StringArray& ObjectInstance::get_front_material_names() const
+const StringDictionary& ObjectInstance::get_front_material_mappings() const
 {
-    return impl->m_front_material_names;
+    return impl->m_front_material_mappings;
 }
 
-const StringArray& ObjectInstance::get_back_material_names() const
+const StringDictionary& ObjectInstance::get_back_material_mappings() const
 {
-    return impl->m_back_material_names;
+    return impl->m_back_material_mappings;
 }
 
 void ObjectInstance::unbind_object()
@@ -200,54 +197,94 @@ void ObjectInstance::check_object() const
 
 namespace
 {
-    void do_unbind_materials(
-        MaterialArray&              material_array,
-        const StringArray&          material_names)
-    {
-        material_array.clear();
-        material_array.resize(material_names.size());
-    }
-
     void do_bind_materials(
         MaterialArray&              material_array,
-        const StringArray&          material_names,
+        const Object&               object,
+        const StringDictionary&     material_mappings,
         const MaterialContainer&    materials)
     {
         for (size_t i = 0; i < material_array.size(); ++i)
         {
             if (material_array[i] == 0)
-                material_array[i] = materials.get_by_name(material_names[i]);
+            {
+                if (object.get_material_slot_count() > 0)
+                {
+                    const char* slot_name = object.get_material_slot(i);
+
+                    if (!material_mappings.exist(slot_name))
+                        continue;
+
+                    const char* material_name = material_mappings.get(slot_name);
+                    material_array[i] = materials.get_by_name(material_name);
+                }
+                else if (!material_mappings.empty())
+                {
+                    const char* material_name = material_mappings.begin().value();
+                    material_array[i] = materials.get_by_name(material_name);
+                }
+            }
         }
     }
 
     void do_check_materials(
         const MaterialArray&        material_array,
-        const StringArray&          material_names)
+        const Object&               object,
+        const StringDictionary&     material_mappings)
     {
         for (size_t i = 0; i < material_array.size(); ++i)
         {
             if (material_array[i] == 0)
-                throw ExceptionUnknownEntity(material_names[i]);
+            {
+                if (object.get_material_slot_count() > 0)
+                {
+                    const char* slot_name = object.get_material_slot(i);
+
+                    if (!material_mappings.exist(slot_name))
+                        continue;
+
+                    const char* material_name = material_mappings.get(slot_name);
+                    throw ExceptionUnknownEntity(material_name);
+                }
+                else if (!material_mappings.empty())
+                {
+                    const char* material_name = material_mappings.begin().value();
+                    throw ExceptionUnknownEntity(material_name);
+                }
+            }
         }
     }
 }
 
 void ObjectInstance::unbind_materials()
 {
-    do_unbind_materials(m_front_materials, impl->m_front_material_names);
-    do_unbind_materials(m_back_materials, impl->m_back_material_names);
+    assert(m_object);
+
+    m_front_materials.clear();
+    m_back_materials.clear();
+
+    size_t slot_count = m_object->get_material_slot_count();
+
+    if (slot_count < 1)
+        slot_count = 1;
+
+    m_front_materials.resize(slot_count);
+    m_back_materials.resize(slot_count);
 }
 
 void ObjectInstance::bind_materials(const MaterialContainer& materials)
 {
-    do_bind_materials(m_front_materials, impl->m_front_material_names, materials);
-    do_bind_materials(m_back_materials, impl->m_back_material_names, materials);
+    assert(m_object);
+
+    do_bind_materials(m_front_materials, *m_object, impl->m_front_material_mappings, materials);
+    do_bind_materials(m_back_materials, *m_object, impl->m_back_material_mappings, materials);
 }
 
 void ObjectInstance::check_materials() const
 {
-    do_check_materials(m_front_materials, impl->m_front_material_names);
-    do_check_materials(m_back_materials, impl->m_back_material_names);
+    assert(m_object);
+
+    do_check_materials(m_front_materials, *m_object, impl->m_front_material_mappings);
+    do_check_materials(m_back_materials, *m_object, impl->m_back_material_mappings);
 }
 
 
@@ -256,12 +293,12 @@ void ObjectInstance::check_materials() const
 //
 
 auto_release_ptr<ObjectInstance> ObjectInstanceFactory::create(
-    const char*         name,
-    const ParamArray&   params,
-    const char*         object_name,
-    const Transformd&   transform,
-    const StringArray&  front_materials,
-    const StringArray&  back_materials)
+    const char*             name,
+    const ParamArray&       params,
+    const char*             object_name,
+    const Transformd&       transform,
+    const StringDictionary& front_material_mappings,
+    const StringDictionary& back_material_mappings)
 {
     return
         auto_release_ptr<ObjectInstance>(
@@ -270,8 +307,8 @@ auto_release_ptr<ObjectInstance> ObjectInstanceFactory::create(
                 params,
                 object_name,
                 transform,
-                front_materials,
-                back_materials));
+                front_material_mappings,
+                back_material_mappings));
 }
 
 }   // namespace renderer

@@ -39,6 +39,9 @@
 
 // Standard headers.
 #include <cassert>
+#include <cstring>
+#include <map>
+#include <utility>
 #include <vector>
 
 using namespace std;
@@ -62,8 +65,10 @@ struct OBJMeshFileReader::Impl
     OBJMeshFileLexer        m_lexer;
 
     // Current state.
-    bool                    m_inside_mesh_def;          // currently inside a mesh definition?
-    string                  m_current_mesh_name;        // name of the current mesh
+    bool                    m_inside_mesh_def;              // currently inside a mesh definition?
+    string                  m_current_mesh_name;            // name of the current mesh
+    map<string, size_t>     m_material_slots;               // material slots for the current mesh
+    size_t                  m_current_material_slot_index;  // index of the current material slot
 
     // Features defined in the file.
     vector<Vector3d>        m_vertices;
@@ -91,6 +96,7 @@ struct OBJMeshFileReader::Impl
                 ? OBJMeshFileLexer::Fast
                 : OBJMeshFileLexer::Precise)
       , m_inside_mesh_def(false)
+      , m_current_material_slot_index(0)
     {
     }
 
@@ -167,6 +173,10 @@ struct OBJMeshFileReader::Impl
                     continue;
                 }
             }
+            else if (strncmp(keyword, "usemtl", keyword_length) == 0)
+            {
+                parse_usemtl_statement();
+            }
             else
             {
                 // Ignore unknown or unhandled statements.
@@ -181,30 +191,6 @@ struct OBJMeshFileReader::Impl
         // End the definition of the last object.
         if (m_inside_mesh_def)
             m_builder.end_mesh();
-    }
-
-    // Convert 1-based indices (including negative indices) to 0-based indices.
-    size_t fix_index(const long index, const size_t count)
-    {
-        if (index > 0)
-        {
-            const size_t i = static_cast<size_t>(index);
-            if (i > count)
-                parse_error();
-            return i - 1;
-        }
-        else if (index < 0)
-        {
-            const size_t i = static_cast<size_t>(-index);
-            if (i > count)
-                parse_error();
-            return count - i;
-        }
-        else
-        {
-            parse_error();
-            return 0;       // keep the compiler happy
-        }
     }
 
     void parse_f_statement()
@@ -321,14 +307,34 @@ struct OBJMeshFileReader::Impl
         }
     }
 
+    // Convert 1-based indices (including negative indices) to 0-based indices.
+    size_t fix_index(const long index, const size_t count)
+    {
+        if (index > 0)
+        {
+            const size_t i = static_cast<size_t>(index);
+            if (i > count)
+                parse_error();
+            return i - 1;
+        }
+        else if (index < 0)
+        {
+            const size_t i = static_cast<size_t>(-index);
+            if (i > count)
+                parse_error();
+            return count - i;
+        }
+        else
+        {
+            parse_error();
+            return 0;       // keep the compiler happy
+        }
+    }
+
     void insert_face_into_mesh()
     {
-        if (!m_inside_mesh_def)
-        {
-            // Begin the definition of the new mesh.
-            m_builder.begin_mesh(m_current_mesh_name);
-            m_inside_mesh_def = true;
-        }
+        // Begin a mesh definition if we're not already inside one.
+        ensure_mesh_def();
 
         // Insert the features into the mesh, updating index mappings as necessary.
         insert_vertices_into_mesh();
@@ -355,6 +361,9 @@ struct OBJMeshFileReader::Impl
         // Set face vertex texture coordinates (if any).
         if (m_face_tex_coord_indices.size() == n)
             m_builder.set_face_vertex_tex_coords(&m_face_tex_coord_indices.front());
+
+        // Set face material.
+        m_builder.set_face_material(m_current_material_slot_index);
 
         // End defining the face.
         m_builder.end_face();
@@ -509,6 +518,45 @@ struct OBJMeshFileReader::Impl
 
         n = normalize(n);
         m_normals.push_back(n);
+    }
+
+    void parse_usemtl_statement()
+    {
+        // Begin a mesh definition if we're not already inside one.
+        ensure_mesh_def();
+
+        // Retrieve the name of the material slot.
+        const string material_slot_name = parse_compound_identifier();
+
+        // Check whether this material slot has already been defined for this mesh.
+        const map<string, size_t>::const_iterator& it =
+            m_material_slots.find(material_slot_name);
+
+        if (it != m_material_slots.end())
+        {
+            // It has: just make it the active material slot.
+            m_current_material_slot_index = it->second;
+        }
+        else
+        {
+            // It hasn't: insert it into the mesh and make it the active material slot.
+            m_current_material_slot_index = m_builder.push_material_slot(material_slot_name);
+            m_material_slots.insert(make_pair(material_slot_name, m_current_material_slot_index));
+        }
+    }
+
+    void ensure_mesh_def()
+    {
+        if (!m_inside_mesh_def)
+        {
+            // Begin the definition of the new mesh.
+            m_builder.begin_mesh(m_current_mesh_name);
+            m_inside_mesh_def = true;
+
+            // Clear material slot definitions.
+            m_material_slots.clear();
+            m_current_material_slot_index = 0;
+        }
     }
 };
 

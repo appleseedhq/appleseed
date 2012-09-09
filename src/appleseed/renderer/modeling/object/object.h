@@ -30,12 +30,21 @@
 #define APPLESEED_RENDERER_MODELING_OBJECT_OBJECT_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/entity/entity.h"
 #include "renderer/modeling/object/regionkit.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/lazy.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+// Standard headers.
+#include <cstddef>
+
+// Forward declarations.
+namespace renderer  { class ParamArray; }
 
 namespace renderer
 {
@@ -44,7 +53,7 @@ namespace renderer
 // Object.
 //
 
-class RENDERERDLL Object
+class DLLSYMBOL Object
   : public Entity
 {
   public:
@@ -61,6 +70,10 @@ class RENDERERDLL Object
 
     // Return the region kit of the object.
     virtual foundation::Lazy<RegionKit>& get_region_kit() = 0;
+
+    // Access materials slots.
+    virtual size_t get_material_slot_count() const = 0;
+    virtual const char* get_material_slot(const size_t index) const = 0;
 };
 
 }       // namespace renderer

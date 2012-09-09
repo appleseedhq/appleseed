@@ -344,8 +344,8 @@ void ObjectInstanceItem::unassign_material(const bool front_side, const bool bac
 
 void ObjectInstanceItem::update_style()
 {
-    if (m_entity->get_front_material_names().empty() &&
-        m_entity->get_back_material_names().empty())
+    if (m_entity->get_front_material_mappings().empty() &&
+        m_entity->get_back_material_mappings().empty())
     {
         setTextColor(0, QColor(255, 0, 255, 255));
     }

@@ -45,7 +45,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/transform.h"
-#include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/containers/dictionary.h"
 
 using namespace foundation;
 using namespace std;
@@ -619,12 +619,11 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         object->push_triangle(Triangle(0, 1, 2,  0, 0, 0,  0));
         object->push_triangle(Triangle(0, 2, 3,  0, 0, 0,  0));
 
+        // Material slots.
+        object->push_material_slot("white_material");
+
         // Insert the object into the assembly.
         assembly->objects().insert(auto_release_ptr<Object>(object));
-
-        // Create the array of material names.
-        StringArray material_names;
-        material_names.push_back("white_material");
 
         // Create an instance of this object and insert it into the assembly.
         assembly->object_instances().insert(
@@ -633,7 +632,8 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
                 ParamArray(),
                 "floor",
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
-                material_names));
+                StringDictionary()
+                    .insert("white_material", "white_material")));
     }
 
     //
@@ -658,12 +658,11 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         object->push_triangle(Triangle(0, 1, 2,  0, 0, 0,  0));
         object->push_triangle(Triangle(0, 2, 3,  0, 0, 0,  0));
 
+        // Material slots.
+        object->push_material_slot("white_material");
+
         // Insert the object into the assembly.
         assembly->objects().insert(auto_release_ptr<Object>(object));
-
-        // Create the array of material names.
-        StringArray material_names;
-        material_names.push_back("white_material");
 
         // Create an instance of this object and insert it into the assembly.
         assembly->object_instances().insert(
@@ -672,7 +671,8 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
                 ParamArray(),
                 "ceiling",
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
-                material_names));
+                StringDictionary()
+                    .insert("white_material", "white_material")));
     }
 
     //
@@ -697,12 +697,11 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         object->push_triangle(Triangle(0, 1, 2,  0, 0, 0,  0));
         object->push_triangle(Triangle(0, 2, 3,  0, 0, 0,  0));
 
+        // Material slots.
+        object->push_material_slot("white_material");
+
         // Insert the object into the assembly.
         assembly->objects().insert(auto_release_ptr<Object>(object));
-
-        // Create the array of material names.
-        StringArray material_names;
-        material_names.push_back("white_material");
 
         // Create an instance of this object and insert it into the assembly.
         assembly->object_instances().insert(
@@ -711,7 +710,8 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
                 ParamArray(),
                 "back_wall",
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
-                material_names));
+                StringDictionary()
+                    .insert("white_material", "white_material")));
     }
 
     //
@@ -736,12 +736,11 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         object->push_triangle(Triangle(0, 1, 2,  0, 0, 0,  0));
         object->push_triangle(Triangle(0, 2, 3,  0, 0, 0,  0));
 
+        // Material slots.
+        object->push_material_slot("green_material");
+
         // Insert the object into the assembly.
         assembly->objects().insert(auto_release_ptr<Object>(object));
-
-        // Create the array of material names.
-        StringArray material_names;
-        material_names.push_back("green_material");
 
         // Create an instance of this object and insert it into the assembly.
         assembly->object_instances().insert(
@@ -750,7 +749,8 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
                 ParamArray(),
                 "right_wall",
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
-                material_names));
+                StringDictionary()
+                    .insert("green_material", "green_material")));
     }
 
     //
@@ -776,12 +776,11 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         object->push_triangle(Triangle(0, 1, 2,  0, 0, 0,  0));
         object->push_triangle(Triangle(0, 2, 3,  1, 1, 1,  0));
 
+        // Material slots.
+        object->push_material_slot("red_material");
+
         // Insert the object into the assembly.
         assembly->objects().insert(auto_release_ptr<Object>(object));
-
-        // Create the array of material names.
-        StringArray material_names;
-        material_names.push_back("red_material");
 
         // Create an instance of this object and insert it into the assembly.
         assembly->object_instances().insert(
@@ -790,7 +789,8 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
                 ParamArray(),
                 "left_wall",
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
-                material_names));
+                StringDictionary()
+                    .insert("red_material", "red_material")));
     }
 
     //
@@ -843,12 +843,11 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         object->push_triangle(Triangle(16, 17, 18,  4,  4,  4,  0));
         object->push_triangle(Triangle(16, 18, 19,  4,  4,  4,  0));
 
+        // Material slots.
+        object->push_material_slot("white_material");
+
         // Insert the object into the assembly.
         assembly->objects().insert(auto_release_ptr<Object>(object));
-
-        // Create the array of material names.
-        StringArray material_names;
-        material_names.push_back("white_material");
 
         // Create an instance of this object and insert it into the assembly.
         assembly->object_instances().insert(
@@ -857,7 +856,8 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
                 ParamArray(),
                 "short_block",
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
-                material_names));
+                StringDictionary()
+                    .insert("white_material", "white_material")));
     }
 
     //
@@ -910,12 +910,11 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         object->push_triangle(Triangle(16, 17, 18,  4,  4,  4,  0));
         object->push_triangle(Triangle(16, 18, 19,  4,  4,  4,  0));
 
+        // Material slots.
+        object->push_material_slot("white_material");
+
         // Insert the object into the assembly.
         assembly->objects().insert(auto_release_ptr<Object>(object));
-
-        // Create the array of material names.
-        StringArray material_names;
-        material_names.push_back("white_material");
 
         // Create an instance of this object and insert it into the assembly.
         assembly->object_instances().insert(
@@ -924,7 +923,8 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
                 ParamArray(),
                 "tall_block",
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
-                material_names));
+                StringDictionary()
+                    .insert("white_material", "white_material")));
     }
 
     //
@@ -949,12 +949,11 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         object->push_triangle(Triangle(0, 1, 2,  0, 0, 0,  0));
         object->push_triangle(Triangle(0, 2, 3,  0, 0, 0,  0));
 
+        // Material slots.
+        object->push_material_slot("light_material");
+
         // Insert the object into the assembly.
         assembly->objects().insert(auto_release_ptr<Object>(object));
-
-        // Create the array of material names.
-        StringArray material_names;
-        material_names.push_back("light_material");
 
         // Create an instance of this object and insert it into the assembly.
         assembly->object_instances().insert(
@@ -963,7 +962,8 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
                 ParamArray(),
                 "light",
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
-                material_names));
+                StringDictionary()
+                    .insert("light_material", "light_material")));
     }
 
     // Create an instance of the assembly and insert it into the scene.

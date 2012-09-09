@@ -47,7 +47,7 @@
 #include "foundation/math/matrix.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
-#include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/test.h"
 
@@ -78,7 +78,7 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
                     ParamArray(),
                     "object",
                     Transformd::identity(),
-                    StringArray()));
+                    StringDictionary()));
 
             m_scene->assembly_instances().insert(
                 auto_release_ptr<AssemblyInstance>(

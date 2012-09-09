@@ -54,7 +54,7 @@
 #include "foundation/math/rng.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
-#include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/test.h"
 
@@ -145,22 +145,22 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             mesh_object->push_triangle(Triangle(0, 1, 2, 0, 0, 0, 0));
             mesh_object->push_triangle(Triangle(2, 3, 0, 0, 0, 0, 0));
 
+            mesh_object->push_material_slot("material");
+
             auto_release_ptr<Object> object(mesh_object.release());
             m_assembly->objects().insert(object);
         }
 
         void create_plane_object_instance(const char* name, const Vector3d& position, const char* material_name)
         {
-            StringArray material_names;
-            material_names.push_back(material_name);
-
             m_assembly->object_instances().insert(
                 ObjectInstanceFactory::create(
                     name,
                     ParamArray(),
                     "plane",
                     Transformd(Matrix4d::translation(position)),
-                    material_names));
+                    StringDictionary()
+                        .insert("material", material_name)));
         }
     };
 

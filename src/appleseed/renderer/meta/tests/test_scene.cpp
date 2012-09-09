@@ -41,7 +41,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/matrix.h"
 #include "foundation/math/transform.h"
-#include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/test.h"
 
@@ -87,7 +87,7 @@ TEST_SUITE(Renderer_Modeling_Scene_Scene)
                 ParamArray(),
                 "object",
                 Transformd::identity(),
-                StringArray()));
+                StringDictionary()));
 
         // Create an instance of the assembly.
         auto_release_ptr<AssemblyInstance> assembly_instance(

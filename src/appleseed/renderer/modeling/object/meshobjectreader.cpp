@@ -170,6 +170,11 @@ namespace
             return m_objects.back()->push_tex_coords(GVector2(v));
         }
 
+        virtual size_t push_material_slot(const string& name) override
+        {
+            return m_objects.back()->push_material_slot(name.c_str());
+        }
+
         virtual void begin_face(const size_t vertex_count) override
         {
             assert(vertex_count >= 3);
@@ -362,8 +367,7 @@ namespace
             }
 
             // Set triangle material.
-//          triangle.m_pa = m_face_material;
-            triangle.m_pa = 0;
+            triangle.m_pa = m_face_material;
 
             // Insert the triangle into the mesh.
             m_objects.back()->push_triangle(triangle);

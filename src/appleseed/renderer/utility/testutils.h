@@ -47,6 +47,9 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
+// Standard headers.
+#include <cstddef>
+
 // Forward declarations.
 namespace renderer      { class Assembly; }
 namespace renderer      { class Scene; }
@@ -137,6 +140,9 @@ class BoundingBoxObject
     virtual GAABB3 compute_local_bbox() const override;
 
     virtual foundation::Lazy<RegionKit>& get_region_kit() override;
+
+    virtual size_t get_material_slot_count() const override;
+    virtual const char* get_material_slot(const size_t index) const override;
 
   private:
     GAABB3                          m_bbox;
