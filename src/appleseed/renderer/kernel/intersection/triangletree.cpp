@@ -913,8 +913,12 @@ void TriangleTree::create_intersection_filters(
         if (object_instance->get_front_materials().empty())
             continue;
 
-        // No intersection filter for this object instance if its first front material doesn't have an alpha map.
+        // No intersection filter for this object instance if its first front material is not bound.
         const Material* material = object_instance->get_front_materials()[0];
+        if (material == 0)
+            continue;
+
+        // No intersection filter for this object instance if its first front material doesn't have an alpha map.
         const Source* alpha_map = material->get_alpha_map();
         if (alpha_map == 0)
             continue;
