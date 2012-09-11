@@ -420,14 +420,15 @@ template <>
 inline foundation::auto_release_ptr<renderer::TextureInstance> ProjectBuilder::create_entity(
     const foundation::Dictionary&       values) const
 {
-    static const char* TextureNameParameter = "__texture_name";
+    const char* texture_name_parameter =
+        renderer::EntityTraits<renderer::TextureInstance>::get_texture_name_parameter();
 
     const std::string name = get_entity_name(values);
-    const std::string texture_name = values.get<std::string>(TextureNameParameter);
+    const std::string texture_name = values.get<std::string>(texture_name_parameter);
 
     foundation::Dictionary clean_values(values);
     clean_values.strings().remove(EntityEditorFormFactoryBase::NameParameter);
-    clean_values.strings().remove(TextureNameParameter);
+    clean_values.strings().remove(texture_name_parameter);
 
     return
         renderer::TextureInstanceFactory::create(
