@@ -53,6 +53,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/math/transform.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/uid.h"
@@ -104,6 +105,13 @@ class ProjectBuilder
     template <typename Entity, typename ParentEntity>
     Entity* edit_entity(
         Entity*                             old_entity,
+        ParentEntity&                       parent,
+        const foundation::Dictionary&       values) const;
+
+    // Simulate partial specialization of edit_entity() for Entity = renderer::ObjectInstance.
+    template <typename ParentEntity>
+    renderer::ObjectInstance* edit_entity(
+        renderer::ObjectInstance*           old_entity,
         ParentEntity&                       parent,
         const foundation::Dictionary&       values) const;
 
@@ -309,6 +317,40 @@ inline renderer::Camera* ProjectBuilder::edit_entity(
     renderer::EntityTraits<renderer::Camera>::remove_entity(old_entity, parent);
     renderer::EntityTraits<renderer::Camera>::insert_entity(new_entity, parent);
 
+    notify_project_modification();
+
+    return new_entity_ptr;
+}
+
+template <typename ParentEntity>
+inline renderer::ObjectInstance* ProjectBuilder::edit_entity(
+    renderer::ObjectInstance*           old_entity,
+    ParentEntity&                       parent,
+    const foundation::Dictionary&       values) const
+{
+    const std::string object_name = old_entity->get_object_name();
+    const foundation::Transformd transform = old_entity->get_transform();
+    const foundation::StringDictionary front_material_mappings = old_entity->get_front_material_mappings();
+    const foundation::StringDictionary back_material_mappings = old_entity->get_back_material_mappings();
+    const std::string name = get_entity_name(values);
+
+    foundation::Dictionary clean_values(values);
+    clean_values.strings().remove(EntityEditorFormFactoryBase::NameParameter);
+
+    foundation::auto_release_ptr<renderer::ObjectInstance> new_entity(
+        renderer::ObjectInstanceFactory::create(
+            name.c_str(),
+            clean_values,
+            object_name.c_str(),
+            transform,
+            front_material_mappings,
+            back_material_mappings));
+    renderer::ObjectInstance* new_entity_ptr = new_entity.get();
+
+    renderer::EntityTraits<renderer::ObjectInstance>::remove_entity(old_entity, parent);
+    renderer::EntityTraits<renderer::ObjectInstance>::insert_entity(new_entity, parent);
+
+    parent.bump_version_id();
     notify_project_modification();
 
     return new_entity_ptr;

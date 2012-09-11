@@ -35,6 +35,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/uid.h"
 
 // Standard headers.
@@ -291,6 +292,13 @@ void ObjectInstance::check_materials() const
 //
 // ObjectInstanceFactory class implementation.
 //
+
+DictionaryArray ObjectInstanceFactory::get_widget_definitions()
+{
+    DictionaryArray definitions;
+
+    return definitions;
+}
 
 auto_release_ptr<ObjectInstance> ObjectInstanceFactory::create(
     const char*             name,

@@ -30,7 +30,7 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_OBJECTINSTANCEITEM_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/entityitembase.h"
+#include "mainwindow/project/singlemodelentityitem.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -52,7 +52,7 @@ namespace appleseed {
 namespace studio {
 
 class ObjectInstanceItem
-  : public EntityItemBase<renderer::ObjectInstance>
+  : public SingleModelEntityItem<renderer::ObjectInstance, renderer::Assembly>
 {
     Q_OBJECT
 

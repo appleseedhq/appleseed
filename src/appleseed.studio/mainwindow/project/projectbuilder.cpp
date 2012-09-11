@@ -44,7 +44,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/matrix.h"
-#include "foundation/math/transform.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/searchpaths.h"
 #include "foundation/utility/foreach.h"

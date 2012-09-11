@@ -48,6 +48,7 @@
 #include <cstddef>
 
 // Forward declarations.
+namespace foundation    { class DictionaryArray; }
 namespace foundation    { class StringDictionary; }
 namespace renderer      { class Material; }
 namespace renderer      { class Object; }
@@ -154,6 +155,9 @@ class DLLSYMBOL ObjectInstance
 class DLLSYMBOL ObjectInstanceFactory
 {
   public:
+    // Return a set of widget definitions for object instance entities.
+    static foundation::DictionaryArray get_widget_definitions();
+
     // Create a new object instance.
     static foundation::auto_release_ptr<ObjectInstance> create(
         const char*                         name,
