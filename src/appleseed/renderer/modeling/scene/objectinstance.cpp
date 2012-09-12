@@ -208,7 +208,7 @@ namespace
         {
             if (material_array[i] == 0)
             {
-                if (object.get_material_slot_count() > 0)
+                if (object.get_material_slot_count() > 1)
                 {
                     const char* slot_name = object.get_material_slot(i);
 
@@ -236,7 +236,7 @@ namespace
         {
             if (material_array[i] == 0)
             {
-                if (object.get_material_slot_count() > 0)
+                if (object.get_material_slot_count() > 1)
                 {
                     const char* slot_name = object.get_material_slot(i);
 
