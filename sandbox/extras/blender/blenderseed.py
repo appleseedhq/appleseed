@@ -44,7 +44,7 @@ bl_info = {
     "name": "appleseed project format",
     "description": "Exports a scene to the appleseed project file format.",
     "author": "Franz Beaune",
-    "version": (1, 3, 2),
+    "version": (1, 3, 3),
     "blender": (2, 6, 2),   # we really need Blender 2.62 or newer
     "api": 36339,
     "location": "File > Export",
@@ -471,7 +471,7 @@ class AppleseedExportOperator(bpy.types.Operator):
 
         render = scene.render
 
-        film_width = 32.0 / 1000                                # Blender's film width is hardcoded to 32 mm
+        film_width = camera.data.sensor_width / 1000
         aspect_ratio = self.__get_frame_aspect_ratio(render)
         focal_length = camera.data.lens / 1000.0                # Blender's camera focal length is expressed in mm
 
