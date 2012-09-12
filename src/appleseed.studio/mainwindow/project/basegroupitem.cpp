@@ -35,6 +35,7 @@
 #include "mainwindow/project/instancecollectionitem.h"
 #include "mainwindow/project/singlemodelcollectionitem.h"
 #include "mainwindow/project/texturecollectionitem.h"
+#include "mainwindow/project/textureinstanceitem.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/color.h"
@@ -167,7 +168,6 @@ void BaseGroupItem::add_items(
                 this,
                 project_builder));
     m_texture_instance_collection_item->add_items(base_group.texture_instances());
-    m_texture_instance_collection_item->set_allow_creation(false);
 
     addChild(
         m_assembly_collection_item =

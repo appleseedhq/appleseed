@@ -102,9 +102,7 @@ ObjectInstanceItem::ObjectInstanceItem(
     AssemblyItem*       parent_item,
     ProjectBuilder&     project_builder)
   : SingleModelEntityItem<ObjectInstance, Assembly>(object_instance, parent, project_builder)
-  , m_parent(parent)
   , m_parent_item(parent_item)
-  , m_project_builder(project_builder)
 {
     update_style();
 }

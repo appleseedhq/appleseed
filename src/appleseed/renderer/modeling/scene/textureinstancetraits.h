@@ -58,16 +58,9 @@ struct EntityTraits<TextureInstance>
     template <typename ParentEntity>
     static ContainerType& get_entity_container(ParentEntity& parent)    { return parent.texture_instances(); }
 
-    static const char* get_texture_name_parameter()
-    {
-        return "__texture_name";
-    }
-
     static foundation::Dictionary get_entity_values(const TextureInstance* entity)
     {
-        foundation::Dictionary values = entity->get_parameters();
-        values.insert(get_texture_name_parameter(), entity->get_texture_name());
-        return values;
+        return entity->get_parameters();
     }
 
     template <typename ParentEntity>

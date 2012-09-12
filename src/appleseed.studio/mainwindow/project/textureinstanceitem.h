@@ -26,71 +26,41 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_OBJECTINSTANCEITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_OBJECTINSTANCEITEM_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_TEXTUREINSTANCEITEM_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_TEXTUREINSTANCEITEM_H
 
 // appleseed.studio headers.
 #include "mainwindow/project/singlemodelentityitem.h"
 
-// appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
-
 // Qt headers.
-#include <QList>
 #include <QObject>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class AssemblyItem; } }
+namespace appleseed { namespace studio { class BaseGroupItem; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
-namespace renderer  { class Assembly; }
-namespace renderer  { class ObjectInstance; }
-class QMenu;
-class QString;
-class QVariant;
+namespace renderer  { class BaseGroup; }
+namespace renderer  { class TextureInstance; }
 
 namespace appleseed {
 namespace studio {
 
-class ObjectInstanceItem
-  : public SingleModelEntityItem<renderer::ObjectInstance, renderer::Assembly>
+class TextureInstanceItem
+  : public SingleModelEntityItem<renderer::TextureInstance, renderer::BaseGroup>
 {
     Q_OBJECT
 
   public:
-    ObjectInstanceItem(
-        renderer::ObjectInstance*   object_instance,
-        renderer::Assembly&         parent,
-        AssemblyItem*               parent_item,
+    TextureInstanceItem(
+        renderer::TextureInstance*  texture_instance,
+        renderer::BaseGroup&        parent,
+        BaseGroupItem*              parent_item,
         ProjectBuilder&             project_builder);
 
-    const renderer::Assembly& get_assembly() const;
-
-    virtual QMenu* get_single_item_context_menu() const override;
-    virtual QMenu* get_multiple_items_context_menu(const QList<ItemBase*>& items) const override;
-
-  private slots:
-    void slot_assign_material();
-    void slot_assign_material_accepted(QString page_name, QString entity_name, QVariant untyped_data);
-    void slot_unassign_material();
-
   private:
-    AssemblyItem* m_parent_item;
-
-    virtual void slot_delete() override;
-
-    void assign_material(
-        const bool                  font_side,
-        const bool                  back_side,
-        const char*                 material_name);
-
-    void unassign_material(
-        const bool                  font_side,
-        const bool                  back_side);
-
-    void update_style();
+    BaseGroupItem* m_parent_item;
 };
 
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_OBJECTINSTANCEITEM_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_TEXTUREINSTANCEITEM_H

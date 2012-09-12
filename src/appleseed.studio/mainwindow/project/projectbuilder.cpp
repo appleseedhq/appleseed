@@ -40,6 +40,7 @@
 #include "mainwindow/project/sceneitem.h"
 #include "mainwindow/project/singlemodelcollectionitem.h"
 #include "mainwindow/project/texturecollectionitem.h"
+#include "mainwindow/project/textureinstanceitem.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/object.h"
