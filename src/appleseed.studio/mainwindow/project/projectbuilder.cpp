@@ -30,13 +30,15 @@
 #include "projectbuilder.h"
 
 // appleseed.studio headers.
-#include "mainwindow/project/assemblyinstancecollectionitem.h"
+#include "mainwindow/project/assemblyinstanceitem.h"
 #include "mainwindow/project/basegroupitem.h"
 #include "mainwindow/project/collectionitem.h"
 #include "mainwindow/project/exceptioninvalidentityname.h"
+#include "mainwindow/project/instancecollectionitem.h"
 #include "mainwindow/project/objectcollectionitem.h"
-#include "mainwindow/project/objectinstancecollectionitem.h"
+#include "mainwindow/project/objectinstanceitem.h"
 #include "mainwindow/project/sceneitem.h"
+#include "mainwindow/project/singlemodelcollectionitem.h"
 #include "mainwindow/project/texturecollectionitem.h"
 
 // appleseed.renderer headers.

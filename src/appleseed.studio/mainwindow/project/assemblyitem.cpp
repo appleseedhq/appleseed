@@ -31,9 +31,10 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/collectionitem.h"
+#include "mainwindow/project/instancecollectionitem.h"
 #include "mainwindow/project/multimodelcollectionitem.h"
 #include "mainwindow/project/objectcollectionitem.h"
-#include "mainwindow/project/objectinstancecollectionitem.h"
+#include "mainwindow/project/objectinstanceitem.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/singlemodelcollectionitem.h"
 #include "mainwindow/project/texturecollectionitem.h"
@@ -122,10 +123,12 @@ AssemblyItem::AssemblyItem(
         9,
         m_object_instance_collection_item =
             new ObjectInstanceCollectionItem(
-                assembly.object_instances(),
+                new_guid(),
+                EntityTraits<ObjectInstance>::get_human_readable_collection_type_name(),
                 assembly,
                 this,
                 project_builder));
+    m_object_instance_collection_item->add_items(assembly.object_instances());
 }
 
 QMenu* AssemblyItem::get_single_item_context_menu() const
@@ -191,7 +194,7 @@ ObjectCollectionItem& AssemblyItem::get_object_collection_item() const
     return *m_object_collection_item;
 }
 
-ObjectInstanceCollectionItem& AssemblyItem::get_object_instance_collection_item() const
+AssemblyItem::ObjectInstanceCollectionItem& AssemblyItem::get_object_instance_collection_item() const
 {
     return *m_object_instance_collection_item;
 }

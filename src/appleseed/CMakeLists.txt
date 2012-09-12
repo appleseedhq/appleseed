@@ -1329,6 +1329,7 @@ set (renderer_modeling_scene_sources
     renderer/modeling/scene/assembly.h
     renderer/modeling/scene/assemblyinstance.cpp
     renderer/modeling/scene/assemblyinstance.h
+    renderer/modeling/scene/assemblyinstancetraits.h
     renderer/modeling/scene/basegroup.cpp
     renderer/modeling/scene/basegroup.h
     renderer/modeling/scene/containers.h

@@ -38,8 +38,9 @@
 
 // Forward declarations.
 namespace appleseed { namespace studio { class AssemblyCollectionItem; } }
-namespace appleseed { namespace studio { class AssemblyInstanceCollectionItem; } }
-namespace appleseed { namespace studio { template <typename Entity, typename ParentEntity, typename ParentItem> class CollectionItem; } }
+namespace appleseed { namespace studio { class AssemblyInstanceItem; } }
+namespace appleseed { namespace studio { template <typename Entity, typename EntityItem, typename ParentEntity, typename ParentItem> class InstanceCollectionItem; } }
+namespace appleseed { namespace studio { template <typename Entity, typename ParentEntity, typename ParentItem> class SingleModelCollectionItem; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace appleseed { namespace studio { class TextureCollectionItem; } }
 namespace renderer  { class Assembly; }
@@ -80,8 +81,9 @@ class BaseGroupItem
     void add_item(renderer::Assembly* assembly);
     void add_item(renderer::AssemblyInstance* assembly_instance);
 
-    typedef CollectionItem<renderer::ColorEntity, renderer::BaseGroup, BaseGroupItem> ColorCollectionItem;
-    typedef CollectionItem<renderer::TextureInstance, renderer::BaseGroup, BaseGroupItem> TextureInstanceCollectionItem;
+    typedef InstanceCollectionItem<renderer::AssemblyInstance, AssemblyInstanceItem, renderer::BaseGroup, BaseGroupItem> AssemblyInstanceCollectionItem;
+    typedef SingleModelCollectionItem<renderer::ColorEntity, renderer::BaseGroup, BaseGroupItem> ColorCollectionItem;
+    typedef SingleModelCollectionItem<renderer::TextureInstance, renderer::BaseGroup, BaseGroupItem> TextureInstanceCollectionItem;
 
     ColorCollectionItem& get_color_collection_item() const;
     TextureCollectionItem& get_texture_collection_item() const;

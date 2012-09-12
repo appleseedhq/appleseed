@@ -32,6 +32,7 @@
 // API headers.
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
+#include "renderer/modeling/scene/assemblyinstancetraits.h"
 #include "renderer/modeling/scene/basegroup.h"
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/objectinstance.h"
