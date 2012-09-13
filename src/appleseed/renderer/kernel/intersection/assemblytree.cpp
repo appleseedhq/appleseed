@@ -335,7 +335,7 @@ void AssemblyTree::update_child_trees()
     AssemblyVector assemblies;
     collect_unique_assemblies(assemblies);
 
-    // Create or update the child tree of each assembly.
+    // Create or rebuild the child tree of each assembly.
     for (const_each<AssemblyVector> i = assemblies; i; ++i)
     {
         // Retrieve the assembly.
@@ -349,40 +349,44 @@ void AssemblyTree::update_child_trees()
         const AssemblyVersionMap::const_iterator stored_version_it =
             m_assembly_versions.find(assembly_uid);
 
-        if (stored_version_it == m_assembly_versions.end())
+        if (stored_version_it != m_assembly_versions.end())
         {
-            // No tree for this assembly yet, create one.
+            // The assembly has an up-to-date child tree, nothing to do.
+            if (stored_version_it->second == current_version_id)
+                continue;
+
+            // The assembly has an out-of-date child tree, delete it.
             if (assembly.is_flushable())
             {
-                m_region_trees.insert(
-                    make_pair(assembly_uid, create_region_tree(m_scene, assembly)));
+                const RegionTreeContainer::iterator it = m_region_trees.find(assembly_uid);
+                delete it->second;
+                m_region_trees.erase(it);
             }
             else
             {
-                m_triangle_trees.insert(
-                    make_pair(assembly_uid, create_triangle_tree(m_scene, assembly)));
-            }
-        }
-        else if (current_version_id != stored_version_it->second)
-        {
-            // The tree corresponding to this assembly is out-of-date.
-            if (assembly.is_flushable())
-            {
-                const RegionTreeContainer::iterator region_tree_it =
-                    m_region_trees.find(assembly_uid);
-                delete region_tree_it->second;
-                region_tree_it->second = create_region_tree(m_scene, assembly);
-            }
-            else
-            {
-                const TriangleTreeContainer::iterator triangle_tree_it =
-                    m_triangle_trees.find(assembly_uid);
-                delete triangle_tree_it->second;
-                triangle_tree_it->second = create_triangle_tree(m_scene, assembly);
+                const TriangleTreeContainer::iterator it = m_triangle_trees.find(assembly_uid);
+                delete it->second;
+                m_triangle_trees.erase(it);
             }
         }
 
-        // Update the stored version ID of the assembly.
+        // The assembly does not contain any geometry, nothing to do.
+        if (assembly.object_instances().empty())
+            continue;
+
+        // The assembly does contains geometry, build a new child tree.
+        if (assembly.is_flushable())
+        {
+            m_region_trees.insert(
+                make_pair(assembly_uid, create_region_tree(m_scene, assembly)));
+        }
+        else
+        {
+            m_triangle_trees.insert(
+                make_pair(assembly_uid, create_triangle_tree(m_scene, assembly)));
+        }
+
+        // Store the current version ID of the assembly.
         m_assembly_versions[assembly_uid] = current_version_id;
     }
 }
