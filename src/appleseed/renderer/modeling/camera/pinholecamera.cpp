@@ -95,7 +95,7 @@ namespace
             m_rcp_film_height = 1.0 / m_film_dimensions[1];
 
             // Precompute the rays origin in world space if the camera is static.
-            if (m_transform_sequence.size() == 1)
+            if (m_transform_sequence.size() <= 1)
             {
                 const Transformd::MatrixType mat =
                     m_transform_sequence.evaluate(0.0).get_local_to_parent();
