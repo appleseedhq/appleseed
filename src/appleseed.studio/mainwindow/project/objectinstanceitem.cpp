@@ -76,11 +76,6 @@ namespace
         {
         }
 
-        explicit MaterialAssignmentData(const Side side)
-          : m_side(side)
-        {
-        }
-
         MaterialAssignmentData(
             const Side              side,
             const QList<ItemBase*>& items)
@@ -114,29 +109,32 @@ const Assembly& ObjectInstanceItem::get_assembly() const
 
 namespace
 {
-    void add_material_assignment_menu_actions(QMenu* menu, const ObjectInstanceItem* item)
+    void add_material_assignment_menu_actions(
+        QMenu*                      menu,
+        const ObjectInstanceItem*   item,
+        const QList<ItemBase*>&     items = QList<ItemBase*>())
     {
         menu->addSeparator();
 
         menu->addAction("Assign Material To Front Side...", item, SLOT(slot_assign_material()))
-            ->setData(QVariant::fromValue(MaterialAssignmentData(FrontSide)));
+            ->setData(QVariant::fromValue(MaterialAssignmentData(FrontSide, items)));
 
         menu->addAction("Assign Material To Back Side...", item, SLOT(slot_assign_material()))
-            ->setData(QVariant::fromValue(MaterialAssignmentData(BackSide)));
+            ->setData(QVariant::fromValue(MaterialAssignmentData(BackSide, items)));
 
         menu->addAction("Assign Material To Both Sides...", item, SLOT(slot_assign_material()))
-            ->setData(QVariant::fromValue(MaterialAssignmentData(FrontAndBackSides)));
+            ->setData(QVariant::fromValue(MaterialAssignmentData(FrontAndBackSides, items)));
 
         menu->addSeparator();
 
         menu->addAction("Unassign Front Side Material", item, SLOT(slot_unassign_material()))
-            ->setData(QVariant::fromValue(MaterialAssignmentData(FrontSide)));
+            ->setData(QVariant::fromValue(MaterialAssignmentData(FrontSide, items)));
 
         menu->addAction("Unassign Back Side Material", item, SLOT(slot_unassign_material()))
-            ->setData(QVariant::fromValue(MaterialAssignmentData(BackSide)));
+            ->setData(QVariant::fromValue(MaterialAssignmentData(BackSide, items)));
 
         menu->addAction("Unassign Both Sides Materials", item, SLOT(slot_unassign_material()))
-            ->setData(QVariant::fromValue(MaterialAssignmentData(FrontAndBackSides)));
+            ->setData(QVariant::fromValue(MaterialAssignmentData(FrontAndBackSides, items)));
     }
 }
 
@@ -182,7 +180,7 @@ QMenu* ObjectInstanceItem::get_multiple_items_context_menu(const QList<ItemBase*
 
     QMenu* menu = ItemBase::get_multiple_items_context_menu(items);
 
-    add_material_assignment_menu_actions(menu, this);
+    add_material_assignment_menu_actions(menu, this, items);
 
     return menu;
 }
