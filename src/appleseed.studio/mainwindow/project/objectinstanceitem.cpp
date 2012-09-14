@@ -313,10 +313,10 @@ void ObjectInstanceItem::slot_delete()
 void ObjectInstanceItem::assign_material(const bool front_side, const bool back_side, const char* material_name)
 {
     if (front_side)
-        m_entity->assign_material(0, ObjectInstance::FrontSide, material_name);
+        m_entity->assign_material("0", ObjectInstance::FrontSide, material_name);
 
     if (back_side)
-        m_entity->assign_material(0, ObjectInstance::BackSide, material_name);
+        m_entity->assign_material("0", ObjectInstance::BackSide, material_name);
 
     m_project_builder.notify_project_modification();
 
