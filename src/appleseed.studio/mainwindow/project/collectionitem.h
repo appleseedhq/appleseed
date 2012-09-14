@@ -148,7 +148,9 @@ void CollectionItem<Entity, ParentEntity, ParentItem>::slot_create_accepted(foun
 template <typename Entity, typename ParentEntity, typename ParentItem>
 void CollectionItem<Entity, ParentEntity, ParentItem>::create(const foundation::Dictionary& values)
 {
-    m_project_builder.insert_entity<Entity>(m_parent, m_parent_item, values);
+    Entity* entity = m_project_builder.insert_entity<Entity>(m_parent, values);
+
+    m_parent_item->add_item(entity);
 
     qobject_cast<QWidget*>(QObject::sender())->close();
 }

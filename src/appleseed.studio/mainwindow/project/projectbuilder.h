@@ -91,10 +91,9 @@ class ProjectBuilder
 
     void notify_project_modification() const;
 
-    template <typename Entity, typename ParentEntity, typename ParentItem>
-    void insert_entity(
+    template <typename Entity, typename ParentEntity>
+    Entity* insert_entity(
         ParentEntity&                       parent,
-        ParentItem*                         parent_item,
         const foundation::Dictionary&       values) const;
 
     template <typename Entity, typename ParentEntity>
@@ -253,19 +252,19 @@ ProjectBuilder::get_factory_registrar<renderer::Texture>() const
     return m_texture_factory_registrar;
 }
 
-template <typename Entity, typename ParentEntity, typename ParentItem>
-void ProjectBuilder::insert_entity(
+template <typename Entity, typename ParentEntity>
+Entity* ProjectBuilder::insert_entity(
     ParentEntity&                       parent,
-    ParentItem*                         parent_item,
     const foundation::Dictionary&       values) const
 {
     foundation::auto_release_ptr<Entity> entity(create_entity<Entity>(values));
-
-    parent_item->add_item(entity.get());
+    Entity* entity_ptr = entity.get();
 
     renderer::EntityTraits<Entity>::insert_entity(entity, parent);
 
     notify_project_modification();
+
+    return entity_ptr;
 }
 
 template <typename Entity, typename ParentEntity>
