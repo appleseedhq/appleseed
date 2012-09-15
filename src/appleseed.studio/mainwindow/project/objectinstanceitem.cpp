@@ -30,8 +30,10 @@
 #include "objectinstanceitem.h"
 
 // appleseed.studio headers.
+#include "mainwindow/project/assemblyitem.h"
 #include "mainwindow/project/entitybrowser.h"
 #include "mainwindow/project/entitybrowserwindow.h"
+#include "mainwindow/project/instancecollectionitem.h"
 #include "mainwindow/project/projectbuilder.h"
 
 // appleseed.renderer headers.
@@ -302,12 +304,15 @@ void ObjectInstanceItem::slot_delete()
     if (!allows_deletion())
         return;
 
-    m_project_builder.remove_object_instance(
-        m_parent,
-        m_parent_item,
-        m_entity->get_uid());
+    m_parent_item->get_object_instance_collection_item().remove_item(m_entity->get_uid());
 
-    // 'this' no longer exists at this point.
+    m_parent.object_instances().remove(
+        m_parent.object_instances().get_by_uid(m_entity->get_uid()));
+
+    m_parent.bump_version_id();
+    m_project_builder.notify_project_modification();
+
+    delete this;
 }
 
 void ObjectInstanceItem::assign_material(const bool front_side, const bool back_side, const char* material_name)

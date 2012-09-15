@@ -30,9 +30,12 @@
 #include "assemblyinstanceitem.h"
 
 // appleseed.studio headers.
+#include "mainwindow/project/basegroupitem.h"
+#include "mainwindow/project/instancecollectionitem.h"
 #include "mainwindow/project/projectbuilder.h"
 
 // appleseed.renderer headers.
+#include "renderer/api/project.h"
 #include "renderer/api/scene.h"
 
 using namespace renderer;
@@ -58,12 +61,14 @@ void AssemblyInstanceItem::slot_delete()
     if (!allows_deletion())
         return;
 
-    m_project_builder.remove_assembly_instance(
-        m_parent,
-        m_parent_item,
-        m_entity->get_uid());
+    m_parent_item->get_assembly_instance_collection_item().remove_item(m_entity->get_uid());
 
-    // 'this' no longer exists at this point.
+    m_parent.assembly_instances().remove(m_entity->get_uid());
+    
+    m_project_builder.get_project().get_scene()->bump_version_id();
+    m_project_builder.notify_project_modification();
+
+    delete this;
 }
 
 }   // namespace studio

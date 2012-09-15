@@ -30,6 +30,7 @@
 #include "texturecollectionitem.h"
 
 // appleseed.studio headers.
+#include "mainwindow/project/basegroupitem.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/textureitem.h"
 #include "utility/interop.h"
@@ -39,6 +40,8 @@
 #include "renderer/api/utility.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/utility/searchpaths.h"
 #include "foundation/utility/uid.h"
 
 // Qt headers.
@@ -92,6 +95,44 @@ QMenu* TextureCollectionItem::get_single_item_context_menu() const
     return menu;
 }
 
+namespace
+{
+    auto_release_ptr<Texture> create_texture(const string& path)
+    {
+        const string texture_name =
+            filesystem::path(path).replace_extension().filename().string();
+
+        ParamArray texture_params;
+        texture_params.insert("filename", path);
+        texture_params.insert("color_space", "srgb");
+
+        SearchPaths search_paths;
+
+        return
+            auto_release_ptr<Texture>(
+                DiskTexture2dFactory().create(
+                    texture_name.c_str(),
+                    texture_params,
+                    search_paths));
+    }
+
+    auto_release_ptr<TextureInstance> create_texture_instance(const string& texture_name)
+    {
+        const string texture_instance_name = texture_name + "_inst";
+
+        ParamArray texture_instance_params;
+        texture_instance_params.insert("addressing_mode", "clamp");
+        texture_instance_params.insert("filtering_mode", "bilinear");
+
+        return
+            auto_release_ptr<TextureInstance>(
+                TextureInstanceFactory::create(
+                    texture_instance_name.c_str(),
+                    texture_instance_params,
+                    texture_name.c_str()));
+    }
+}
+
 void TextureCollectionItem::slot_import_textures()
 {
     QFileDialog::Options options;
@@ -119,8 +160,20 @@ void TextureCollectionItem::slot_import_textures()
     for (int i = 0; i < filepaths.size(); ++i)
     {
         const string filepath = QDir::toNativeSeparators(filepaths[i]).toStdString();
-        m_project_builder.insert_texture(m_parent, m_parent_item, filepath);
+
+        auto_release_ptr<Texture> texture = create_texture(filepath);
+        auto_release_ptr<TextureInstance> texture_instance = create_texture_instance(texture->get_name());
+
+        m_parent_item->add_item(texture.get());
+        m_parent_item->add_item(texture_instance.get());
+
+        m_parent.textures().insert(texture);
+        m_parent.texture_instances().insert(texture_instance);
+
     }
+
+    if (!filepaths.empty())
+        m_project_builder.notify_project_modification();
 }
 
 ItemBase* TextureCollectionItem::create_item(Texture* texture) const

@@ -30,8 +30,6 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTBUILDER_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/assemblycollectionitem.h"
-#include "mainwindow/project/assemblyitem.h"
 #include "mainwindow/project/multimodelentityeditorformfactory.h"
 
 // appleseed.renderer headers.
@@ -65,10 +63,6 @@
 #include <cassert>
 #include <cstddef>
 #include <string>
-
-// Forward declarations.
-namespace appleseed { namespace studio { class BaseGroupItem; } }
-namespace appleseed { namespace studio { class TextureCollectionItem; } }
 
 namespace appleseed {
 namespace studio {
@@ -120,52 +114,6 @@ class ProjectBuilder
         renderer::TextureInstance*          old_entity,
         ParentEntity&                       parent,
         const foundation::Dictionary&       values) const;
-
-    void insert_assembly(
-        renderer::BaseGroup&                parent,
-        BaseGroupItem*                      parent_item,
-        const std::string&                  name) const;
-
-    void remove_assembly(
-        renderer::BaseGroup&                parent,
-        BaseGroupItem*                      parent_item,
-        const foundation::UniqueID          assembly_uid) const;
-
-    void insert_assembly_instance(
-        renderer::BaseGroup&                parent,
-        BaseGroupItem*                      parent_item,
-        const std::string&                  name,
-        const std::string&                  assembly_name) const;
-
-    void remove_assembly_instance(
-        renderer::BaseGroup&                parent,
-        BaseGroupItem*                      parent_item,
-        const foundation::UniqueID          assembly_instance_uid) const;
-
-    void insert_texture(
-        renderer::BaseGroup&                parent,
-        BaseGroupItem*                      parent_item,
-        const std::string&                  path) const;
-
-    void remove_texture(
-        renderer::BaseGroup&                parent,
-        BaseGroupItem*                      parent_item,
-        const foundation::UniqueID          texture_uid) const;
-
-    void insert_objects(
-        renderer::Assembly&                 parent,
-        AssemblyItem*                       parent_item,
-        const std::string&                  path) const;
-
-    void remove_object(
-        renderer::Assembly&                 parent,
-        AssemblyItem*                       parent_item,
-        const foundation::UniqueID          object_uid) const;
-
-    void remove_object_instance(
-        renderer::Assembly&                 parent,
-        AssemblyItem*                       parent_item,
-        const foundation::UniqueID          object_instance_uid) const;
 
   signals:
     void signal_project_modified() const;

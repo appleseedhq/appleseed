@@ -42,6 +42,9 @@
 // Qt headers.
 #include <QObject>
 
+// Standard headers.
+#include <string>
+
 // Forward declarations.
 namespace appleseed { namespace studio { class AssemblyItem; } }
 namespace appleseed { namespace studio { class ItemBase; } }
@@ -77,6 +80,8 @@ class ObjectCollectionItem
     renderer::ParamArray&           m_settings;
 
     virtual ItemBase* create_item(renderer::Object* object) const override;
+
+    void insert_objects(const std::string& path) const;
 };
 
 }       // namespace studio

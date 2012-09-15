@@ -30,6 +30,8 @@
 #include "assemblyitem.h"
 
 // appleseed.studio headers.
+#include "mainwindow/project/assemblycollectionitem.h"
+#include "mainwindow/project/assemblyinstanceitem.h"
 #include "mainwindow/project/collectionitem.h"
 #include "mainwindow/project/instancecollectionitem.h"
 #include "mainwindow/project/multimodelcollectionitem.h"
@@ -46,10 +48,14 @@
 #include "renderer/api/entity.h"
 #include "renderer/api/light.h"
 #include "renderer/api/material.h"
+#include "renderer/api/project.h"
 #include "renderer/api/scene.h"
 #include "renderer/api/surfaceshader.h"
+#include "renderer/api/utility.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/utility/foreach.h"
 #include "foundation/utility/uid.h"
 
 // Qt headers.
@@ -59,6 +65,7 @@
 
 // Standard headers.
 #include <string>
+#include <vector>
 
 using namespace foundation;
 using namespace renderer;
@@ -215,11 +222,18 @@ void AssemblyItem::slot_instantiate()
 
     if (!instance_name.empty())
     {
-        m_project_builder.insert_assembly_instance(
-            m_parent,
-            m_parent_item,
-            instance_name,
-            m_assembly.get_name());
+        auto_release_ptr<AssemblyInstance> assembly_instance(
+            AssemblyInstanceFactory::create(
+                instance_name.c_str(),
+                ParamArray(),
+                m_assembly.get_name()));
+
+        m_parent_item->get_assembly_instance_collection_item().add_item(assembly_instance.get());
+
+        m_parent.assembly_instances().insert(assembly_instance);
+
+        m_project_builder.get_project().get_scene()->bump_version_id();
+        m_project_builder.notify_project_modification();
     }
 }
 
@@ -270,6 +284,54 @@ namespace
     }
 }
 
+namespace
+{
+    vector<UniqueID> collect_assembly_instances(
+        const AssemblyInstanceContainer&    assembly_instances,
+        const UniqueID                      assembly_uid)
+    {
+        vector<UniqueID> collected;
+
+        for (const_each<AssemblyInstanceContainer> i = assembly_instances; i; ++i)
+        {
+            const Assembly* assembly = i->find_assembly();
+
+            if (assembly && assembly->get_uid() == assembly_uid)
+                collected.push_back(i->get_uid());
+        }
+
+        return collected;
+    }
+
+    void remove_assembly_instances(
+        BaseGroup&                          base_group,
+        BaseGroupItem*                      base_group_item,
+        const UniqueID                      assembly_uid)
+    {
+        AssemblyInstanceContainer& assembly_instances = base_group.assembly_instances();
+
+        // Collect the assembly instances to remove.
+        const vector<UniqueID> remove_list =
+            collect_assembly_instances(assembly_instances, assembly_uid);
+
+        // Remove assembly instances and their corresponding project items.
+        for (const_each<vector<UniqueID> > i = remove_list; i; ++i)
+        {
+            assembly_instances.remove(*i);
+            base_group_item->get_assembly_instance_collection_item().remove_item(*i);
+        }
+
+        // Recurse into child assemblies.
+        for (each<AssemblyContainer> i = base_group.assemblies(); i; ++i)
+        {
+            AssemblyItem* child_item =
+                static_cast<AssemblyItem*>(
+                    base_group_item->get_assembly_collection_item().get_item(i->get_uid()));
+            remove_assembly_instances(*i, child_item, assembly_uid);
+        }
+    }
+}
+
 void AssemblyItem::slot_delete()
 {
     if (!allows_deletion())
@@ -280,12 +342,19 @@ void AssemblyItem::slot_delete()
     if (ask_assembly_deletion_confirmation(assembly_name) != QMessageBox::Yes)
         return;
 
-    m_project_builder.remove_assembly(
-        m_parent,
-        m_parent_item,
-        m_assembly.get_uid());
+    const UniqueID assembly_uid = m_assembly.get_uid();
 
-    // 'this' no longer exists at this point.
+    // Remove all assembly instances and their corresponding project items.
+    remove_assembly_instances(m_parent, m_parent_item, assembly_uid);
+
+    // Remove the assembly and the corresponding project item.
+    m_parent.assemblies().remove(assembly_uid);
+    m_parent_item->get_assembly_collection_item().remove_item(assembly_uid);
+
+    m_project_builder.get_project().get_scene()->bump_version_id();
+    m_project_builder.notify_project_modification();
+
+    delete this;
 }
 
 }   // namespace studio

@@ -30,6 +30,7 @@
 #include "sceneitem.h"
 
 // appleseed.studio headers.
+#include "mainwindow/project/assemblycollectionitem.h"
 #include "mainwindow/project/multimodelcollectionitem.h"
 #include "mainwindow/project/singlemodelcollectionitem.h"
 #include "mainwindow/project/texturecollectionitem.h"

@@ -30,12 +30,20 @@
 #include "objectcollectionitem.h"
 
 // appleseed.studio headers.
+#include "mainwindow/project/assemblyitem.h"
 #include "mainwindow/project/objectitem.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "utility/interop.h"
 #include "utility/settingskeys.h"
 
+// appleseed.renderer headers.
+#include "renderer/api/utility.h"
+
 // appleseed.foundation headers.
+#include "foundation/math/transform.h"
+#include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/utility/searchpaths.h"
 #include "foundation/utility/uid.h"
 
 // Qt headers.
@@ -50,10 +58,12 @@
 
 // Standard headers.
 #include <cassert>
+#include <cstddef>
 
 using namespace boost;
 using namespace foundation;
 using namespace renderer;
+using namespace std;
 
 namespace appleseed {
 namespace studio {
@@ -113,11 +123,54 @@ void ObjectCollectionItem::slot_import_objects()
         path.parent_path().string());
 
     for (int i = 0; i < filepaths.size(); ++i)
+        insert_objects(QDir::toNativeSeparators(filepaths[i]).toStdString());
+}
+
+void ObjectCollectionItem::insert_objects(const string& path) const
+{
+    const string base_object_name =
+        filesystem::path(path).replace_extension().filename().string();
+
+    ParamArray params;
+    params.insert("filename", path);
+
+    SearchPaths search_paths;
+    MeshObjectArray mesh_objects;
+
+    if (!MeshObjectReader().read(
+            search_paths,
+            base_object_name.c_str(),
+            params,
+            mesh_objects))
+        return;
+
+    for (size_t i = 0; i < mesh_objects.size(); ++i)
     {
-        m_project_builder.insert_objects(
-            m_parent,
-            m_parent_item,
-            QDir::toNativeSeparators(filepaths[i]).toStdString());
+        MeshObject* object = mesh_objects[i];
+
+        m_parent_item->add_item(object);
+
+        m_parent.objects().insert(auto_release_ptr<Object>(object));
+
+        const string object_instance_name = string(object->get_name()) + "_inst";
+        
+        auto_release_ptr<ObjectInstance> object_instance(
+            ObjectInstanceFactory::create(
+                object_instance_name.c_str(),
+                ParamArray(),
+                object->get_name(),
+                Transformd::identity(),
+                StringDictionary()));
+
+        m_parent_item->add_item(object_instance.get());
+
+        m_parent.object_instances().insert(object_instance);
+    }
+
+    if (!mesh_objects.empty())
+    {
+        m_parent.bump_version_id();
+        m_project_builder.notify_project_modification();
     }
 }
 
