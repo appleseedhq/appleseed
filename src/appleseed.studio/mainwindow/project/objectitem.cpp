@@ -129,14 +129,16 @@ void ObjectItem::slot_delete()
     // Remove all object instances and their corresponding project items.
     remove_object_instances(m_parent, m_parent_item, object_uid);
 
-    // Remove the object and the corresponding project item.
-    ObjectContainer& objects = m_parent.objects();
-    objects.remove(objects.get_by_uid(object_uid));
-    m_parent_item->get_object_collection_item().remove_item(object_uid);
+    // Remove and delete the object.
+    m_parent.objects().remove(m_parent.objects().get_by_uid(object_uid));
 
+    // Mark the project as modified.
     m_project_builder.notify_project_modification();
 
-    delete this;
+    // Remove and delete the object item.
+    m_parent_item->get_object_collection_item().remove_item(object_uid);
+
+    // At this point 'this' no longer exists.
 }
 
 }   // namespace studio

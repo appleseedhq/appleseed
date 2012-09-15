@@ -124,14 +124,16 @@ void TextureItem::slot_delete()
     // Remove all texture instances and their corresponding project items.
     remove_texture_instances(m_parent, m_parent_item, texture_uid);
 
-    // Remove the texture and the corresponding project item.
-    TextureContainer& textures = m_parent.textures();
-    textures.remove(textures.get_by_uid(texture_uid));
-    m_parent_item->get_texture_collection_item().remove_item(texture_uid);
+    // Remove and delete the texture.
+    m_parent.textures().remove(m_parent.textures().get_by_uid(texture_uid));
 
+    // Mark the project as modified.
     m_project_builder.notify_project_modification();
 
-    delete this;
+    // Remove and delete the texture item.
+    m_parent_item->get_texture_collection_item().remove_item(texture_uid);
+
+    // At this point 'this' no longer exists.
 }
 
 }   // namespace studio

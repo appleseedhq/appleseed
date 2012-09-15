@@ -347,14 +347,16 @@ void AssemblyItem::slot_delete()
     // Remove all assembly instances and their corresponding project items.
     remove_assembly_instances(m_parent, m_parent_item, assembly_uid);
 
-    // Remove the assembly and the corresponding project item.
+    // Remove and delete the assembly.
     m_parent.assemblies().remove(assembly_uid);
-    m_parent_item->get_assembly_collection_item().remove_item(assembly_uid);
 
-    m_project_builder.get_project().get_scene()->bump_version_id();
+    // Mark the project as modified.
     m_project_builder.notify_project_modification();
 
-    delete this;
+    // Remove and delete the assembly item.
+    m_parent_item->get_assembly_collection_item().remove_item(assembly_uid);
+
+    // At this point 'this' no longer exists.
 }
 
 }   // namespace studio

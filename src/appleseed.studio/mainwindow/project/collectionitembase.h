@@ -174,7 +174,7 @@ void CollectionItemBase<Entity>::remove_item(const foundation::UniqueID entity_i
     if (it == m_items.end())
         return;
 
-    removeChild(it->second);
+    delete it->second;
 
     m_items.erase(it);
 }

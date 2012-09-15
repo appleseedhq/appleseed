@@ -38,6 +38,10 @@
 #include "renderer/api/project.h"
 #include "renderer/api/scene.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/uid.h"
+
+using namespace foundation;
 using namespace renderer;
 
 namespace appleseed {
@@ -61,14 +65,19 @@ void AssemblyInstanceItem::slot_delete()
     if (!allows_deletion())
         return;
 
-    m_parent_item->get_assembly_instance_collection_item().remove_item(m_entity->get_uid());
+    const UniqueID assembly_instance_uid = m_entity->get_uid();
 
-    m_parent.assembly_instances().remove(m_entity->get_uid());
+    // Remove and delete the assembly instance.
+    m_parent.assembly_instances().remove(assembly_instance_uid);
     
+    // Mark the scene and the project as modified.
     m_project_builder.get_project().get_scene()->bump_version_id();
     m_project_builder.notify_project_modification();
 
-    delete this;
+    // Remove and delete the assembly instance item.
+    m_parent_item->get_assembly_instance_collection_item().remove_item(assembly_instance_uid);
+
+    // At this point 'this' no longer exists.
 }
 
 }   // namespace studio

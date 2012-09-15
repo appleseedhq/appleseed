@@ -304,15 +304,20 @@ void ObjectInstanceItem::slot_delete()
     if (!allows_deletion())
         return;
 
-    m_parent_item->get_object_instance_collection_item().remove_item(m_entity->get_uid());
+    const UniqueID object_instance_uid = m_entity->get_uid();
 
+    // Remove and delete the object instance.
     m_parent.object_instances().remove(
-        m_parent.object_instances().get_by_uid(m_entity->get_uid()));
+        m_parent.object_instances().get_by_uid(object_instance_uid));
 
+    // Mark the assembly and the project as modified.
     m_parent.bump_version_id();
     m_project_builder.notify_project_modification();
 
-    delete this;
+    // Remove and delete the object instance item.
+    m_parent_item->get_object_instance_collection_item().remove_item(object_instance_uid);
+
+    // At this point 'this' no longer exists.
 }
 
 void ObjectInstanceItem::assign_material(const bool front_side, const bool back_side, const char* material_name)
