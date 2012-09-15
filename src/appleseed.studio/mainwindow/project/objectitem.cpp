@@ -102,7 +102,7 @@ namespace
         for (const_each<vector<UniqueID> > i = remove_list; i; ++i)
         {
             object_instances.remove(object_instances.get_by_uid(*i));
-            assembly_item->get_object_instance_collection_item().remove_item(*i);
+            assembly_item->get_object_instance_collection_item().delete_item(*i);
         }
 
         if (!remove_list.empty())
@@ -136,7 +136,7 @@ void ObjectItem::slot_delete()
     m_project_builder.notify_project_modification();
 
     // Remove and delete the object item.
-    m_parent_item->get_object_collection_item().remove_item(object_uid);
+    m_parent_item->get_object_collection_item().delete_item(object_uid);
 
     // At this point 'this' no longer exists.
 }

@@ -100,7 +100,7 @@ namespace
         for (const_each<vector<UniqueID> > i = remove_list; i; ++i)
         {
             texture_instances.remove(texture_instances.get_by_uid(*i));
-            base_group_item->get_texture_instance_collection_item().remove_item(*i);
+            base_group_item->get_texture_instance_collection_item().delete_item(*i);
         }
 
         // Recurse into child assemblies.
@@ -131,7 +131,7 @@ void TextureItem::slot_delete()
     m_project_builder.notify_project_modification();
 
     // Remove and delete the texture item.
-    m_parent_item->get_texture_collection_item().remove_item(texture_uid);
+    m_parent_item->get_texture_collection_item().delete_item(texture_uid);
 
     // At this point 'this' no longer exists.
 }

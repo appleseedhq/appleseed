@@ -315,7 +315,7 @@ void ObjectInstanceItem::slot_delete()
     m_project_builder.notify_project_modification();
 
     // Remove and delete the object instance item.
-    m_parent_item->get_object_instance_collection_item().remove_item(object_instance_uid);
+    m_parent_item->get_object_instance_collection_item().delete_item(object_instance_uid);
 
     // At this point 'this' no longer exists.
 }

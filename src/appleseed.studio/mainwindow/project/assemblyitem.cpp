@@ -318,7 +318,7 @@ namespace
         for (const_each<vector<UniqueID> > i = remove_list; i; ++i)
         {
             assembly_instances.remove(*i);
-            base_group_item->get_assembly_instance_collection_item().remove_item(*i);
+            base_group_item->get_assembly_instance_collection_item().delete_item(*i);
         }
 
         // Recurse into child assemblies.
@@ -354,7 +354,7 @@ void AssemblyItem::slot_delete()
     m_project_builder.notify_project_modification();
 
     // Remove and delete the assembly item.
-    m_parent_item->get_assembly_collection_item().remove_item(assembly_uid);
+    m_parent_item->get_assembly_collection_item().delete_item(assembly_uid);
 
     // At this point 'this' no longer exists.
 }

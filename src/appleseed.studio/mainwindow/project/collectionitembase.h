@@ -77,7 +77,7 @@ class CollectionItemBase
     template <typename EntityContainer>
     void add_items(EntityContainer& items);
 
-    void remove_item(const foundation::UniqueID entity_id);
+    void delete_item(const foundation::UniqueID entity_id);
 
     ItemBase* get_item(const foundation::UniqueID entity_id) const;
 
@@ -167,7 +167,7 @@ void CollectionItemBase<Entity>::add_item(const int index, Entity* entity)
 }
 
 template <typename Entity>
-void CollectionItemBase<Entity>::remove_item(const foundation::UniqueID entity_id)
+void CollectionItemBase<Entity>::delete_item(const foundation::UniqueID entity_id)
 {
     const ItemMap::iterator it = m_items.find(entity_id);
 
