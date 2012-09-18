@@ -53,12 +53,12 @@ class AssemblyInstanceItem
     AssemblyInstanceItem(
         renderer::AssemblyInstance*     assembly_instance,
         renderer::BaseGroup&            parent,
-        AssemblyInstanceCollectionItem* parent_item,
+        AssemblyInstanceCollectionItem* collection_item,
         ProjectBuilder&                 project_builder);
 
   private:
     renderer::BaseGroup&                m_parent;
-    AssemblyInstanceCollectionItem*     m_parent_item;
+    AssemblyInstanceCollectionItem*     m_collection_item;
     ProjectBuilder&                     m_project_builder;
 
     virtual void slot_delete() override;

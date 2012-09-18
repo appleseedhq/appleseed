@@ -38,8 +38,8 @@
 
 // Forward declarations.
 namespace appleseed { namespace studio { template <typename Entity, typename ParentEntity, typename ParentItem> class CollectionItem; } }
-namespace appleseed { namespace studio { template <typename Entity, typename ParentEntity, typename ParentItem> class MultiModelEntityItem; } }
-namespace appleseed { namespace studio { template <typename Entity, typename ParentEntity, typename ParentItem> class SingleModelEntityItem; } }
+namespace appleseed { namespace studio { template <typename Entity, typename ParentEntity, typename CollectionItem> class MultiModelEntityItem; } }
+namespace appleseed { namespace studio { template <typename Entity, typename ParentEntity, typename CollectionItem> class SingleModelEntityItem; } }
 namespace appleseed { namespace studio { class ItemBase; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace renderer  { class Camera; }

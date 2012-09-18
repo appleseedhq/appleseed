@@ -42,6 +42,7 @@
 
 // Forward declarations.
 namespace appleseed     { namespace studio { class ProjectBuilder; } }
+namespace foundation    { class Dictionary; }
 namespace renderer      { class Assembly; }
 namespace renderer      { class ObjectInstance; }
 class QMenu;
@@ -68,7 +69,7 @@ class ObjectInstanceItem
     ObjectInstanceItem(
         renderer::ObjectInstance*       object_instance,
         renderer::Assembly&             parent,
-        ObjectInstanceCollectionItem*   parent_item,
+        ObjectInstanceCollectionItem*   collection_item,
         ProjectBuilder&                 project_builder);
 
     const renderer::Assembly& get_assembly() const;

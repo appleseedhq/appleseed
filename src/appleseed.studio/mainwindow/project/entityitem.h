@@ -51,7 +51,7 @@
 namespace appleseed {
 namespace studio {
 
-template <typename Entity, typename ParentEntity, typename ParentItem>
+template <typename Entity, typename ParentEntity, typename CollectionItem>
 class EntityItem
   : public EntityItemBase<Entity>
   , private EntityCreatorBase
@@ -60,7 +60,7 @@ class EntityItem
     EntityItem(
         Entity*             entity,
         ParentEntity&       parent,
-        ParentItem*         parent_item,
+        CollectionItem*     collection_item,
         ProjectBuilder&     project_builder);
 
     void set_fixed_position(const bool fixed);
@@ -70,7 +70,7 @@ class EntityItem
     typedef EntityItemBase<Entity> EntityItemBaseType;
 
     ParentEntity&           m_parent;
-    ParentItem*             m_parent_item;
+    CollectionItem*         m_collection_item;
     ProjectBuilder&         m_project_builder;
 
     virtual void slot_edit_accepted(foundation::Dictionary values);
@@ -89,34 +89,34 @@ class EntityItem
 // EntityItem class implementation.
 //
 
-template <typename Entity, typename ParentEntity, typename ParentItem>
-EntityItem<Entity, ParentEntity, ParentItem>::EntityItem(
+template <typename Entity, typename ParentEntity, typename CollectionItem>
+EntityItem<Entity, ParentEntity, CollectionItem>::EntityItem(
     Entity*                 entity,
     ParentEntity&           parent,
-    ParentItem*             parent_item,
+    CollectionItem*         collection_item,
     ProjectBuilder&         project_builder)
   : EntityItemBaseType(entity)
   , m_parent(parent)
-  , m_parent_item(parent_item)
+  , m_collection_item(collection_item)
   , m_project_builder(project_builder)
   , m_fixed_position(false)
 {
 }
 
-template <typename Entity, typename ParentEntity, typename ParentItem>
-void EntityItem<Entity, ParentEntity, ParentItem>::set_fixed_position(const bool fixed)
+template <typename Entity, typename ParentEntity, typename CollectionItem>
+void EntityItem<Entity, ParentEntity, CollectionItem>::set_fixed_position(const bool fixed)
 {
     m_fixed_position = fixed;
 }
 
-template <typename Entity, typename ParentEntity, typename ParentItem>
-bool EntityItem<Entity, ParentEntity, ParentItem>::is_fixed_position() const
+template <typename Entity, typename ParentEntity, typename CollectionItem>
+bool EntityItem<Entity, ParentEntity, CollectionItem>::is_fixed_position() const
 {
     return m_fixed_position;
 }
 
-template <typename Entity, typename ParentEntity, typename ParentItem>
-void EntityItem<Entity, ParentEntity, ParentItem>::slot_edit_accepted(foundation::Dictionary values)
+template <typename Entity, typename ParentEntity, typename CollectionItem>
+void EntityItem<Entity, ParentEntity, CollectionItem>::slot_edit_accepted(foundation::Dictionary values)
 {
     catch_entity_creation_errors(
         &EntityItem::edit,
@@ -124,10 +124,10 @@ void EntityItem<Entity, ParentEntity, ParentItem>::slot_edit_accepted(foundation
         renderer::EntityTraits<Entity>::get_human_readable_entity_type_name());
 }
 
-template <typename Entity, typename ParentEntity, typename ParentItem>
-void EntityItem<Entity, ParentEntity, ParentItem>::edit(const foundation::Dictionary& values)
+template <typename Entity, typename ParentEntity, typename CollectionItem>
+void EntityItem<Entity, ParentEntity, CollectionItem>::edit(const foundation::Dictionary& values)
 {
-    m_parent_item->remove_item(EntityItemBaseType::m_entity->get_uid());
+    m_collection_item->remove_item(EntityItemBaseType::m_entity->get_uid());
 
     const std::string old_entity_name = EntityItemBaseType::m_entity->get_name();
 
@@ -146,11 +146,11 @@ void EntityItem<Entity, ParentEntity, ParentItem>::edit(const foundation::Dictio
 
     qobject_cast<QWidget*>(QObject::sender())->close();
 
-    m_parent_item->insert_item(EntityItemBaseType::m_entity->get_uid(), this);
+    m_collection_item->insert_item(EntityItemBaseType::m_entity->get_uid(), this);
 }
 
-template <typename Entity, typename ParentEntity, typename ParentItem>
-void EntityItem<Entity, ParentEntity, ParentItem>::slot_delete()
+template <typename Entity, typename ParentEntity, typename CollectionItem>
+void EntityItem<Entity, ParentEntity, CollectionItem>::slot_delete()
 {
     if (EntityItemBaseType::allows_deletion())
     {

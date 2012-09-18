@@ -96,9 +96,9 @@ namespace studio {
 ObjectInstanceItem::ObjectInstanceItem(
     ObjectInstance*                 object_instance,
     Assembly&                       parent,
-    ObjectInstanceCollectionItem*   parent_item,
+    ObjectInstanceCollectionItem*   collection_item,
     ProjectBuilder&                 project_builder)
-  : Base(object_instance, parent, parent_item, project_builder)
+  : Base(object_instance, parent, collection_item, project_builder)
 {
     update_style();
 }
@@ -314,7 +314,7 @@ void ObjectInstanceItem::slot_delete()
     m_project_builder.notify_project_modification();
 
     // Remove and delete the object instance item.
-    m_parent_item->delete_item(object_instance_uid);
+    m_collection_item->delete_item(object_instance_uid);
 
     // At this point 'this' no longer exists.
 }

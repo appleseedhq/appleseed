@@ -52,19 +52,19 @@ namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace appleseed {
 namespace studio {
 
-template <typename Entity, typename ParentEntity, typename ParentItem>
+template <typename Entity, typename ParentEntity, typename CollectionItem>
 class SingleModelEntityItem
-  : public EntityItem<Entity, ParentEntity, ParentItem>
+  : public EntityItem<Entity, ParentEntity, CollectionItem>
 {
   public:
     SingleModelEntityItem(
         Entity*             entity,
         ParentEntity&       parent,
-        ParentItem*         parent_item,
+        CollectionItem*     collection_item,
         ProjectBuilder&     project_builder);
 
   private:
-    typedef EntityItem<Entity, ParentEntity, ParentItem> Base;
+    typedef EntityItem<Entity, ParentEntity, CollectionItem> Base;
     typedef typename renderer::EntityTraits<Entity> EntityTraitsType;
 
     virtual void slot_edit();
@@ -75,18 +75,18 @@ class SingleModelEntityItem
 // SingleModelEntityItem class implementation.
 //
 
-template <typename Entity, typename ParentEntity, typename ParentItem>
-SingleModelEntityItem<Entity, ParentEntity, ParentItem>::SingleModelEntityItem(
+template <typename Entity, typename ParentEntity, typename CollectionItem>
+SingleModelEntityItem<Entity, ParentEntity, CollectionItem>::SingleModelEntityItem(
     Entity*                 entity,
     ParentEntity&           parent,
-    ParentItem*             parent_item,
+    CollectionItem*         collection_item,
     ProjectBuilder&         project_builder)
-  : Base(entity, parent, parent_item, project_builder)
+  : Base(entity, parent, collection_item, project_builder)
 {
 }
 
-template <typename Entity, typename ParentEntity, typename ParentItem>
-void SingleModelEntityItem<Entity, ParentEntity, ParentItem>::slot_edit()
+template <typename Entity, typename ParentEntity, typename CollectionItem>
+void SingleModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit()
 {
     if (!Base::allows_edition())
         return;

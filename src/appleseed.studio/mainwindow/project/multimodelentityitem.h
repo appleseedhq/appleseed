@@ -51,19 +51,19 @@
 namespace appleseed {
 namespace studio {
 
-template <typename Entity, typename ParentEntity, typename ParentItem>
+template <typename Entity, typename ParentEntity, typename CollectionItem>
 class MultiModelEntityItem
-  : public EntityItem<Entity, ParentEntity, ParentItem>
+  : public EntityItem<Entity, ParentEntity, CollectionItem>
 {
   public:
     MultiModelEntityItem(
         Entity*             entity,
         ParentEntity&       parent,
-        ParentItem*         parent_item,
+        CollectionItem*     collection_item,
         ProjectBuilder&     project_builder);
 
   private:
-    typedef EntityItem<Entity, ParentEntity, ParentItem> Base;
+    typedef EntityItem<Entity, ParentEntity, CollectionItem> Base;
     typedef typename renderer::EntityTraits<Entity> EntityTraitsType;
 
     typedef MultiModelEntityEditorFormFactory<
@@ -78,18 +78,18 @@ class MultiModelEntityItem
 // MultiModelEntityItem class implementation.
 //
 
-template <typename Entity, typename ParentEntity, typename ParentItem>
-MultiModelEntityItem<Entity, ParentEntity, ParentItem>::MultiModelEntityItem(
+template <typename Entity, typename ParentEntity, typename CollectionItem>
+MultiModelEntityItem<Entity, ParentEntity, CollectionItem>::MultiModelEntityItem(
     Entity*                 entity,
     ParentEntity&           parent,
-    ParentItem*             parent_item,
+    CollectionItem*         collection_item,
     ProjectBuilder&         project_builder)
-  : Base(entity, parent, parent_item, project_builder)
+  : Base(entity, parent, collection_item, project_builder)
 {
 }
 
-template <typename Entity, typename ParentEntity, typename ParentItem>
-void MultiModelEntityItem<Entity, ParentEntity, ParentItem>::slot_edit()
+template <typename Entity, typename ParentEntity, typename CollectionItem>
+void MultiModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit()
 {
     if (!Base::allows_edition())
         return;

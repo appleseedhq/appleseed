@@ -59,10 +59,10 @@ namespace studio {
 TextureItem::TextureItem(
     Texture*                texture,
     BaseGroup&              parent,
-    TextureCollectionItem*  parent_item,
+    TextureCollectionItem*  collection_item,
     BaseGroupItem*          base_group_item,
     ProjectBuilder&         project_builder)
-  : Base(texture, parent, parent_item, project_builder)
+  : Base(texture, parent, collection_item, project_builder)
   , m_base_group_item(base_group_item)
 {
 }
@@ -132,7 +132,7 @@ void TextureItem::slot_delete()
     m_project_builder.notify_project_modification();
 
     // Remove and delete the texture item.
-    m_parent_item->delete_item(texture_uid);
+    m_collection_item->delete_item(texture_uid);
 
     // At this point 'this' no longer exists.
 }
