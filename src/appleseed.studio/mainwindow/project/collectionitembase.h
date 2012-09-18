@@ -73,11 +73,11 @@ class CollectionItemBase
     CollectionItemBase(const foundation::UniqueID class_uid, const QString& title);
 
     void add_item(Entity* entity);
-
-    template <typename EntityContainer>
-    void add_items(EntityContainer& items);
-
+    template <typename EntityContainer> void add_items(EntityContainer& items);
     void delete_item(const foundation::UniqueID entity_id);
+
+    void insert_item(const foundation::UniqueID entity_id, ItemBase* item);
+    void remove_item(const foundation::UniqueID entity_id);
 
     ItemBase* get_item(const foundation::UniqueID entity_id) const;
 
@@ -170,11 +170,24 @@ template <typename Entity>
 void CollectionItemBase<Entity>::delete_item(const foundation::UniqueID entity_id)
 {
     const ItemMap::iterator it = m_items.find(entity_id);
+    assert(it != m_items.end());
 
-    if (it == m_items.end())
-        return;
+    m_items.erase(it);
 
     delete it->second;
+}
+
+template <typename Entity>
+void CollectionItemBase<Entity>::insert_item(const foundation::UniqueID entity_id, ItemBase* item)
+{
+    m_items[entity_id] = item;
+}
+
+template <typename Entity>
+void CollectionItemBase<Entity>::remove_item(const foundation::UniqueID entity_id)
+{
+    const ItemMap::iterator it = m_items.find(entity_id);
+    assert(it != m_items.end());
 
     m_items.erase(it);
 }

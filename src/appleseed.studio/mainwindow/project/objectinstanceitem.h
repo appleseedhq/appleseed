@@ -40,10 +40,11 @@
 #include <QObject>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class AssemblyItem; } }
-namespace appleseed { namespace studio { class ProjectBuilder; } }
-namespace renderer  { class Assembly; }
-namespace renderer  { class ObjectInstance; }
+namespace appleseed     { namespace studio { class AssemblyItem; } }
+namespace appleseed     { namespace studio { class ProjectBuilder; } }
+namespace foundation    { class Dictionary; }
+namespace renderer      { class Assembly; }
+namespace renderer      { class ObjectInstance; }
 class QMenu;
 class QString;
 class QVariant;
@@ -74,9 +75,13 @@ class ObjectInstanceItem
     void slot_unassign_material();
 
   private:
+    typedef SingleModelEntityItem<renderer::ObjectInstance, renderer::Assembly> Base;
+
     AssemblyItem* m_parent_item;
 
     virtual void slot_delete() override;
+
+    virtual void edit(const foundation::Dictionary& values);
 
     void assign_material(
         const bool                  font_side,

@@ -98,7 +98,7 @@ ObjectInstanceItem::ObjectInstanceItem(
     Assembly&           parent,
     AssemblyItem*       parent_item,
     ProjectBuilder&     project_builder)
-  : SingleModelEntityItem<ObjectInstance, Assembly>(object_instance, parent, project_builder)
+  : Base(object_instance, parent, project_builder)
   , m_parent_item(parent_item)
 {
     update_style();
@@ -318,6 +318,15 @@ void ObjectInstanceItem::slot_delete()
     m_parent_item->get_object_instance_collection_item().delete_item(object_instance_uid);
 
     // At this point 'this' no longer exists.
+}
+
+void ObjectInstanceItem::edit(const Dictionary& values)
+{
+    m_parent_item->get_object_instance_collection_item().remove_item(m_entity->get_uid());
+
+    Base::edit(values);
+
+    m_parent_item->get_object_instance_collection_item().insert_item(m_entity->get_uid(), this);
 }
 
 void ObjectInstanceItem::assign_material(const bool front_side, const bool back_side, const char* material_name)

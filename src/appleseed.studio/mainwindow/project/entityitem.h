@@ -74,7 +74,7 @@ class EntityItem
     virtual void slot_edit_accepted(foundation::Dictionary values);
     virtual void slot_delete();
 
-    void edit(const foundation::Dictionary& values);
+    virtual void edit(const foundation::Dictionary& values);
 
   private:
     friend class EntityCreatorBase;
