@@ -110,7 +110,7 @@ void AssemblyCollectionItem::slot_create()
     }
 }
 
-ItemBase* AssemblyCollectionItem::create_item(Assembly* assembly) const
+ItemBase* AssemblyCollectionItem::create_item(Assembly* assembly)
 {
     assert(assembly);
 

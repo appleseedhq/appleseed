@@ -79,7 +79,6 @@ class CollectionItem
     bool                m_allow_creation;
 
     virtual void slot_create_accepted(foundation::Dictionary values) override;
-
     void create(const foundation::Dictionary& values);
 
   private:

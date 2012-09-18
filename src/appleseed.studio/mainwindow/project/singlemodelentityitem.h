@@ -52,18 +52,19 @@ namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace appleseed {
 namespace studio {
 
-template <typename Entity, typename ParentEntity>
+template <typename Entity, typename ParentEntity, typename ParentItem>
 class SingleModelEntityItem
-  : public EntityItem<Entity, ParentEntity>
+  : public EntityItem<Entity, ParentEntity, ParentItem>
 {
   public:
     SingleModelEntityItem(
         Entity*             entity,
         ParentEntity&       parent,
+        ParentItem*         parent_item,
         ProjectBuilder&     project_builder);
 
   private:
-    typedef EntityItem<Entity, ParentEntity> EntityItemType;
+    typedef EntityItem<Entity, ParentEntity, ParentItem> Base;
     typedef typename renderer::EntityTraits<Entity> EntityTraitsType;
 
     virtual void slot_edit();
@@ -74,19 +75,20 @@ class SingleModelEntityItem
 // SingleModelEntityItem class implementation.
 //
 
-template <typename Entity, typename ParentEntity>
-SingleModelEntityItem<Entity, ParentEntity>::SingleModelEntityItem(
+template <typename Entity, typename ParentEntity, typename ParentItem>
+SingleModelEntityItem<Entity, ParentEntity, ParentItem>::SingleModelEntityItem(
     Entity*                 entity,
     ParentEntity&           parent,
+    ParentItem*             parent_item,
     ProjectBuilder&         project_builder)
-  : EntityItemType(entity, parent, project_builder)
+  : Base(entity, parent, parent_item, project_builder)
 {
 }
 
-template <typename Entity, typename ParentEntity>
-void SingleModelEntityItem<Entity, ParentEntity>::slot_edit()
+template <typename Entity, typename ParentEntity, typename ParentItem>
+void SingleModelEntityItem<Entity, ParentEntity, ParentItem>::slot_edit()
 {
-    if (!EntityItemType::allows_edition())
+    if (!Base::allows_edition())
         return;
 
     const std::string window_title =
@@ -97,19 +99,19 @@ void SingleModelEntityItem<Entity, ParentEntity>::slot_edit()
 
     std::auto_ptr<EntityEditorWindow::IFormFactory> form_factory(
         new SingleModelEntityEditorFormFactory(
-            EntityItemType::m_entity->get_name(),
+            Base::m_entity->get_name(),
             FactoryType::get_widget_definitions()));
 
     std::auto_ptr<EntityEditorWindow::IEntityBrowser> entity_browser(
-        new EntityBrowser<ParentEntity>(EntityItemType::m_parent));
+        new EntityBrowser<ParentEntity>(Base::m_parent));
 
     foundation::Dictionary values =
-        EntityTraitsType::get_entity_values(EntityItemType::m_entity);
+        EntityTraitsType::get_entity_values(Base::m_entity);
 
     open_entity_editor(
         QTreeWidgetItem::treeWidget(),
         window_title,
-        EntityItemType::m_project_builder.get_project(),
+        Base::m_project_builder.get_project(),
         form_factory,
         entity_browser,
         values,

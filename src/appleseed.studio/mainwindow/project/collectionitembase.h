@@ -40,11 +40,14 @@
 
 // Qt headers.
 #include <QFont>
-#include <QString>
+#include <QObject>
 
 // Standard headers.
 #include <cassert>
 #include <map>
+
+// Forward declarations.
+class QString;
 
 namespace appleseed {
 namespace studio {
@@ -56,8 +59,11 @@ class CollectionItemBaseSlots
     Q_OBJECT
 
   protected:
-    explicit CollectionItemBaseSlots(const foundation::UniqueID class_uid);
-    CollectionItemBaseSlots(const foundation::UniqueID class_uid, const QString& title);
+    explicit CollectionItemBaseSlots(const foundation::UniqueID class_uid)
+      : ItemBase(class_uid) {}
+
+    CollectionItemBaseSlots(const foundation::UniqueID class_uid, const QString& title)
+      : ItemBase(class_uid, title) {}
 
   protected slots:
     virtual void slot_create() {}
@@ -90,23 +96,8 @@ class CollectionItemBase
 
     void add_item(const int index, Entity* entity);
 
-    virtual ItemBase* create_item(Entity* entity) const;
+    virtual ItemBase* create_item(Entity* entity);
 };
-
-
-//
-// CollectionItemBaseSlots class implementation.
-//
-
-inline CollectionItemBaseSlots::CollectionItemBaseSlots(const foundation::UniqueID class_uid)
-  : ItemBase(class_uid)
-{
-}
-
-inline CollectionItemBaseSlots::CollectionItemBaseSlots(const foundation::UniqueID class_uid, const QString& title)
-  : ItemBase(class_uid, title)
-{
-}
 
 
 //
@@ -172,9 +163,9 @@ void CollectionItemBase<Entity>::delete_item(const foundation::UniqueID entity_i
     const ItemMap::iterator it = m_items.find(entity_id);
     assert(it != m_items.end());
 
-    m_items.erase(it);
-
     delete it->second;
+
+    m_items.erase(it);
 }
 
 template <typename Entity>
@@ -201,7 +192,7 @@ ItemBase* CollectionItemBase<Entity>::get_item(const foundation::UniqueID entity
 }
 
 template <typename Entity>
-ItemBase* CollectionItemBase<Entity>::create_item(Entity* entity) const
+ItemBase* CollectionItemBase<Entity>::create_item(Entity* entity)
 {
     assert(entity);
 

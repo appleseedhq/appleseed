@@ -174,7 +174,7 @@ void ObjectCollectionItem::insert_objects(const string& path) const
     }
 }
 
-ItemBase* ObjectCollectionItem::create_item(Object* object) const
+ItemBase* ObjectCollectionItem::create_item(Object* object)
 {
     assert(object);
 

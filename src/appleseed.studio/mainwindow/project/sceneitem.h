@@ -34,11 +34,13 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
+#include "foundation/utility/uid.h"
 
 // Forward declarations.
 namespace appleseed { namespace studio { template <typename Entity, typename ParentEntity, typename ParentItem> class CollectionItem; } }
-namespace appleseed { namespace studio { template <typename Entity, typename ParentEntity> class MultiModelEntityItem; } }
-namespace appleseed { namespace studio { template <typename Entity, typename ParentEntity> class SingleModelEntityItem; } }
+namespace appleseed { namespace studio { template <typename Entity, typename ParentEntity, typename ParentItem> class MultiModelEntityItem; } }
+namespace appleseed { namespace studio { template <typename Entity, typename ParentEntity, typename ParentItem> class SingleModelEntityItem; } }
+namespace appleseed { namespace studio { class ItemBase; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace renderer  { class Camera; }
 namespace renderer  { class Environment; }
@@ -65,9 +67,14 @@ class SceneItem
     void add_item(renderer::EnvironmentEDF* environment_edf);
     void add_item(renderer::EnvironmentShader* environment_shader);
 
+    // The camera and the environment are direct children of the scene; they are not part of collections.
+    // For the sake of simplicity, we add these two methods to allow treating SceneItem like a collection.
+    void insert_item(const foundation::UniqueID entity_id, ItemBase* item) {}
+    void remove_item(const foundation::UniqueID entity_id) {}
+
   private:
-    typedef MultiModelEntityItem<renderer::Camera, renderer::Scene> CameraItem;
-    typedef SingleModelEntityItem<renderer::Environment, renderer::Scene> EnvironmentItem;
+    typedef MultiModelEntityItem<renderer::Camera, renderer::Scene, SceneItem> CameraItem;
+    typedef SingleModelEntityItem<renderer::Environment, renderer::Scene, SceneItem> EnvironmentItem;
     typedef CollectionItem<renderer::EnvironmentEDF, renderer::Scene, SceneItem> EnvironmentEDFCollectionItem;
     typedef CollectionItem<renderer::EnvironmentShader, renderer::Scene, SceneItem> EnvironmentShaderCollectionItem;
 

@@ -57,12 +57,13 @@ namespace appleseed {
 namespace studio {
 
 TextureItem::TextureItem(
-    Texture*            texture,
-    BaseGroup&          parent,
-    BaseGroupItem*      parent_item,
-    ProjectBuilder&     project_builder)
-  : Base(texture, parent, project_builder)
-  , m_parent_item(parent_item)
+    Texture*                texture,
+    BaseGroup&              parent,
+    TextureCollectionItem*  parent_item,
+    BaseGroupItem*          base_group_item,
+    ProjectBuilder&         project_builder)
+  : Base(texture, parent, parent_item, project_builder)
+  , m_base_group_item(base_group_item)
 {
 }
 
@@ -122,7 +123,7 @@ void TextureItem::slot_delete()
     const UniqueID texture_uid = m_entity->get_uid();
 
     // Remove all texture instances and their corresponding project items.
-    remove_texture_instances(m_parent, m_parent_item, texture_uid);
+    remove_texture_instances(m_parent, m_base_group_item, texture_uid);
 
     // Remove and delete the texture.
     m_parent.textures().remove(m_parent.textures().get_by_uid(texture_uid));
@@ -131,7 +132,7 @@ void TextureItem::slot_delete()
     m_project_builder.notify_project_modification();
 
     // Remove and delete the texture item.
-    m_parent_item->get_texture_collection_item().delete_item(texture_uid);
+    m_parent_item->delete_item(texture_uid);
 
     // At this point 'this' no longer exists.
 }

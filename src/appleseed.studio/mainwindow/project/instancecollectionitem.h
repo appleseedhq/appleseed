@@ -47,7 +47,7 @@ class QString;
 namespace appleseed {
 namespace studio {
 
-template <typename Entity, typename EntityItem, typename ParentEntity, typename ParentItem>
+template <typename Entity, typename EntityItem, typename ParentEntity>
 class InstanceCollectionItem
   : public CollectionItemBase<Entity>
 {
@@ -56,15 +56,13 @@ class InstanceCollectionItem
         const foundation::UniqueID  class_uid,
         const QString&              title,
         ParentEntity&               parent,
-        ParentItem*                 parent_item,
         ProjectBuilder&             project_builder);
 
   private:
     ParentEntity&                   m_parent;
-    ParentItem*                     m_parent_item;
     ProjectBuilder&                 m_project_builder;
 
-    virtual ItemBase* create_item(Entity* entity) const override;
+    virtual ItemBase* create_item(Entity* entity) override;
 };
 
 
@@ -72,22 +70,20 @@ class InstanceCollectionItem
 // InstanceCollectionItem class implementation.
 //
 
-template <typename Entity, typename EntityItem, typename ParentEntity, typename ParentItem>
-InstanceCollectionItem<Entity, EntityItem, ParentEntity, ParentItem>::InstanceCollectionItem(
+template <typename Entity, typename EntityItem, typename ParentEntity>
+InstanceCollectionItem<Entity, EntityItem, ParentEntity>::InstanceCollectionItem(
     const foundation::UniqueID      class_uid,
     const QString&                  title,
     ParentEntity&                   parent,
-    ParentItem*                     parent_item,
     ProjectBuilder&                 project_builder)
   : CollectionItemBase<Entity>(class_uid, title)
   , m_parent(parent)
-  , m_parent_item(parent_item)
   , m_project_builder(project_builder)
 {
 }
 
-template <typename Entity, typename EntityItem, typename ParentEntity, typename ParentItem>
-ItemBase* InstanceCollectionItem<Entity, EntityItem, ParentEntity, ParentItem>::create_item(Entity* entity) const
+template <typename Entity, typename EntityItem, typename ParentEntity>
+ItemBase* InstanceCollectionItem<Entity, EntityItem, ParentEntity>::create_item(Entity* entity)
 {
     assert(entity);
 
@@ -95,7 +91,7 @@ ItemBase* InstanceCollectionItem<Entity, EntityItem, ParentEntity, ParentItem>::
         new EntityItem(
             entity,
             m_parent,
-            m_parent_item,
+            this,
             m_project_builder);
 }
 

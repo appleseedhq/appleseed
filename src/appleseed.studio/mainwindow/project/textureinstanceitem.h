@@ -30,13 +30,13 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_TEXTUREINSTANCEITEM_H
 
 // appleseed.studio headers.
+#include "mainwindow/project/instancecollectionitem.h"
 #include "mainwindow/project/singlemodelentityitem.h"
 
 // Qt headers.
 #include <QObject>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class BaseGroupItem; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace renderer  { class BaseGroup; }
 namespace renderer  { class TextureInstance; }
@@ -44,20 +44,28 @@ namespace renderer  { class TextureInstance; }
 namespace appleseed {
 namespace studio {
 
+class TextureInstanceItem;
+
+typedef InstanceCollectionItem<
+    renderer::TextureInstance,
+    TextureInstanceItem,
+    renderer::BaseGroup
+> TextureInstanceCollectionItem;
+
 class TextureInstanceItem
-  : public SingleModelEntityItem<renderer::TextureInstance, renderer::BaseGroup>
+  : public SingleModelEntityItem<renderer::TextureInstance, renderer::BaseGroup, TextureInstanceCollectionItem>
 {
     Q_OBJECT
 
   public:
     TextureInstanceItem(
-        renderer::TextureInstance*  texture_instance,
-        renderer::BaseGroup&        parent,
-        BaseGroupItem*              parent_item,
-        ProjectBuilder&             project_builder);
+        renderer::TextureInstance*      texture_instance,
+        renderer::BaseGroup&            parent,
+        TextureInstanceCollectionItem*  parent_item,
+        ProjectBuilder&                 project_builder);
 
   private:
-    BaseGroupItem* m_parent_item;
+    typedef SingleModelEntityItem<renderer::TextureInstance, renderer::BaseGroup, TextureInstanceCollectionItem> Base;
 };
 
 }       // namespace studio

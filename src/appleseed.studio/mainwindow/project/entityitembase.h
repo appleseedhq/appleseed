@@ -50,11 +50,14 @@ class EntityItemBaseSlots
     Q_OBJECT
 
   public:
-    explicit EntityItemBaseSlots(const foundation::UniqueID class_uid);
-    EntityItemBaseSlots(const foundation::UniqueID class_uid, const QString& title);
+    explicit EntityItemBaseSlots(const foundation::UniqueID class_uid)
+      : ItemBase(class_uid) {}
+
+    EntityItemBaseSlots(const foundation::UniqueID class_uid, const QString& title)
+      : ItemBase(class_uid, title) {}
 
   protected slots:
-    virtual void slot_edit_accepted(foundation::Dictionary values);
+    virtual void slot_edit_accepted(foundation::Dictionary values) {}
 };
 
 template <typename Entity>

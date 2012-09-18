@@ -133,7 +133,6 @@ AssemblyItem::AssemblyItem(
                 new_guid(),
                 EntityTraits<ObjectInstance>::get_human_readable_collection_type_name(),
                 assembly,
-                this,
                 project_builder));
     m_object_instance_collection_item->add_items(assembly.object_instances());
 }

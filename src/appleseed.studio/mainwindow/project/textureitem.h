@@ -38,6 +38,7 @@
 // Forward declarations.
 namespace appleseed { namespace studio { class BaseGroupItem; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
+namespace appleseed { namespace studio { class TextureCollectionItem; } }
 namespace renderer  { class BaseGroup; }
 namespace renderer  { class Texture; }
 
@@ -45,19 +46,20 @@ namespace appleseed {
 namespace studio {
 
 class TextureItem
-  : public MultiModelEntityItem<renderer::Texture, renderer::BaseGroup>
+  : public MultiModelEntityItem<renderer::Texture, renderer::BaseGroup, TextureCollectionItem>
 {
   public:
     TextureItem(
         renderer::Texture*      texture,
         renderer::BaseGroup&    parent,
-        BaseGroupItem*          parent_item,
+        TextureCollectionItem*  parent_item,
+        BaseGroupItem*          base_group_item,
         ProjectBuilder&         project_builder);
 
   private:
-    typedef MultiModelEntityItem<renderer::Texture, renderer::BaseGroup> Base;
+    typedef MultiModelEntityItem<renderer::Texture, renderer::BaseGroup, TextureCollectionItem> Base;
 
-    BaseGroupItem* m_parent_item;
+    BaseGroupItem* m_base_group_item;
 
     virtual void slot_delete() override;
 };

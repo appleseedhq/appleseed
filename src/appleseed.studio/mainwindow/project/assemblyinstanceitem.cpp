@@ -30,8 +30,6 @@
 #include "assemblyinstanceitem.h"
 
 // appleseed.studio headers.
-#include "mainwindow/project/basegroupitem.h"
-#include "mainwindow/project/instancecollectionitem.h"
 #include "mainwindow/project/projectbuilder.h"
 
 // appleseed.renderer headers.
@@ -48,10 +46,10 @@ namespace appleseed {
 namespace studio {
 
 AssemblyInstanceItem::AssemblyInstanceItem(
-    AssemblyInstance*   assembly_instance,
-    BaseGroup&          parent,
-    BaseGroupItem*      parent_item,
-    ProjectBuilder&     project_builder)
+    AssemblyInstance*               assembly_instance,
+    BaseGroup&                      parent,
+    AssemblyInstanceCollectionItem* parent_item,
+    ProjectBuilder&                 project_builder)
   : EntityItemBase<AssemblyInstance>(assembly_instance)
   , m_parent(parent)
   , m_parent_item(parent_item)
@@ -75,7 +73,7 @@ void AssemblyInstanceItem::slot_delete()
     m_project_builder.notify_project_modification();
 
     // Remove and delete the assembly instance item.
-    m_parent_item->get_assembly_instance_collection_item().delete_item(assembly_instance_uid);
+    m_parent_item->delete_item(assembly_instance_uid);
 
     // At this point 'this' no longer exists.
 }

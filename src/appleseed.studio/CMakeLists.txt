@@ -127,7 +127,6 @@ set (mainwindow_project_sources
     mainwindow/project/entityeditorwindow.h
     mainwindow/project/entityeditorwindow.ui
     mainwindow/project/entityitem.h
-    mainwindow/project/entityitembase.cpp
     mainwindow/project/entityitembase.h
     mainwindow/project/exceptioninvalidentityname.h
     mainwindow/project/instancecollectionitem.h

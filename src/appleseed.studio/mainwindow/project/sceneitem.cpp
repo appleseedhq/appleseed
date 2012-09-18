@@ -73,6 +73,7 @@ SceneItem::SceneItem(
             new CameraItem(
                 scene.get_camera(),
                 scene,
+                this,
                 project_builder));
     m_camera_item->set_allow_deletion(false);
     m_camera_item->set_fixed_position(true);
@@ -83,6 +84,7 @@ SceneItem::SceneItem(
             new EnvironmentItem(
                 scene.get_environment(),
                 scene,
+                this,
                 project_builder));
     m_environment_item->set_allow_deletion(false);
     m_environment_item->set_fixed_position(true);

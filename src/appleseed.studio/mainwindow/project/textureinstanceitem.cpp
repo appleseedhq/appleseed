@@ -29,21 +29,17 @@
 // Interface header.
 #include "textureinstanceitem.h"
 
-// appleseed.renderer headers.
-#include "renderer/api/scene.h"
-
 using namespace renderer;
 
 namespace appleseed {
 namespace studio {
 
 TextureInstanceItem::TextureInstanceItem(
-    TextureInstance*    texture_instance,
-    BaseGroup&          parent,
-    BaseGroupItem*      parent_item,
-    ProjectBuilder&     project_builder)
-  : SingleModelEntityItem<TextureInstance, BaseGroup>(texture_instance, parent, project_builder)
-  , m_parent_item(parent_item)
+    TextureInstance*                texture_instance,
+    BaseGroup&                      parent,
+    TextureInstanceCollectionItem*  parent_item,
+    ProjectBuilder&                 project_builder)
+  : Base(texture_instance, parent, parent_item, project_builder)
 {
 }
 

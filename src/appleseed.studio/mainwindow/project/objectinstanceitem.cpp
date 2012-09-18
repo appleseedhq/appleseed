@@ -33,7 +33,7 @@
 #include "mainwindow/project/assemblyitem.h"
 #include "mainwindow/project/entitybrowser.h"
 #include "mainwindow/project/entitybrowserwindow.h"
-#include "mainwindow/project/instancecollectionitem.h"
+#include "mainwindow/project/objectinstanceeditorwindow.h"
 #include "mainwindow/project/projectbuilder.h"
 
 // appleseed.renderer headers.
@@ -94,12 +94,11 @@ namespace appleseed {
 namespace studio {
 
 ObjectInstanceItem::ObjectInstanceItem(
-    ObjectInstance*     object_instance,
-    Assembly&           parent,
-    AssemblyItem*       parent_item,
-    ProjectBuilder&     project_builder)
-  : Base(object_instance, parent, project_builder)
-  , m_parent_item(parent_item)
+    ObjectInstance*                 object_instance,
+    Assembly&                       parent,
+    ObjectInstanceCollectionItem*   parent_item,
+    ProjectBuilder&                 project_builder)
+  : Base(object_instance, parent, parent_item, project_builder)
 {
     update_style();
 }
@@ -315,18 +314,9 @@ void ObjectInstanceItem::slot_delete()
     m_project_builder.notify_project_modification();
 
     // Remove and delete the object instance item.
-    m_parent_item->get_object_instance_collection_item().delete_item(object_instance_uid);
+    m_parent_item->delete_item(object_instance_uid);
 
     // At this point 'this' no longer exists.
-}
-
-void ObjectInstanceItem::edit(const Dictionary& values)
-{
-    m_parent_item->get_object_instance_collection_item().remove_item(m_entity->get_uid());
-
-    Base::edit(values);
-
-    m_parent_item->get_object_instance_collection_item().insert_item(m_entity->get_uid(), this);
 }
 
 void ObjectInstanceItem::assign_material(const bool front_side, const bool back_side, const char* material_name)

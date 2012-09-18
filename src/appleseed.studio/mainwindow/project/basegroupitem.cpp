@@ -165,7 +165,6 @@ void BaseGroupItem::add_items(
                 new_guid(),
                 EntityTraits<TextureInstance>::get_human_readable_collection_type_name(),
                 base_group,
-                this,
                 project_builder));
     m_texture_instance_collection_item->add_items(base_group.texture_instances());
 
@@ -184,7 +183,6 @@ void BaseGroupItem::add_items(
                 new_guid(),
                 EntityTraits<AssemblyInstance>::get_human_readable_collection_type_name(),
                 base_group,
-                this,
                 project_builder));
     m_assembly_instance_collection_item->add_items(base_group.assembly_instances());
 }

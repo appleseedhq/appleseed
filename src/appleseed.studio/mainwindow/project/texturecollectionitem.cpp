@@ -176,11 +176,11 @@ void TextureCollectionItem::slot_import_textures()
         m_project_builder.notify_project_modification();
 }
 
-ItemBase* TextureCollectionItem::create_item(Texture* texture) const
+ItemBase* TextureCollectionItem::create_item(Texture* texture)
 {
     assert(texture);
 
-    return new TextureItem(texture, m_parent, m_parent_item, m_project_builder);
+    return new TextureItem(texture, m_parent, this, m_parent_item, m_project_builder);
 }
 
 }   // namespace studio
