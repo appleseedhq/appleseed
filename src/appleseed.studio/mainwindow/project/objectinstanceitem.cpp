@@ -33,7 +33,6 @@
 #include "mainwindow/project/assemblyitem.h"
 #include "mainwindow/project/entitybrowser.h"
 #include "mainwindow/project/entitybrowserwindow.h"
-#include "mainwindow/project/objectinstanceeditorwindow.h"
 #include "mainwindow/project/projectbuilder.h"
 
 // appleseed.renderer headers.
