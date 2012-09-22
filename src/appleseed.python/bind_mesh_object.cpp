@@ -73,7 +73,10 @@ namespace detail
         if (MeshObjectReader::read(paths, base_object_name.c_str(), bpy_dict_to_param_array(params), objs))
         {
             for (int i = 0, e = objs.size(); i < e; ++i)
-                py_objects.append(auto_release_ptr<MeshObject>(objs[i]));
+            {
+                auto_release_ptr<MeshObject> object(objs[i]);
+                py_objects.append(object);
+            }
         }
         else
         {
