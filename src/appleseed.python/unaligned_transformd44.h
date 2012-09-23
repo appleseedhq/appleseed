@@ -28,8 +28,10 @@
 #ifndef APPLESEED_PYTHON_UNALIGNED_TRANSFORMD44_H
 #define APPLESEED_PYTHON_UNALIGNED_TRANSFORMD44_H
 
+// appleseed.python headers.
 #include "unaligned_matrix44.h"
 
+// appleseed.foundation headers.
 #include "foundation/math/transform.h"
 
 namespace foundation

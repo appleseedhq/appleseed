@@ -27,11 +27,15 @@
 
 #include "bind_auto_release_ptr.h"
 
-#include "foundation/image/colorspace.h"
-#include "renderer/api/color.h"
-
+// appleseed.python headers.
 #include "bind_typed_entity_containers.h"
 #include "dict2dict.h"
+
+// appleseed.renderer headers.
+#include "renderer/api/color.h"
+
+// appleseed.foundation headers.
+#include "foundation/image/colorspace.h"
 
 namespace bpy = boost::python;
 using namespace foundation;

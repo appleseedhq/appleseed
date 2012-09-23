@@ -25,9 +25,10 @@
 // THE SOFTWARE.
 //
 
-// Has to be first, to avoid redifinition warnings.
+// Has to be first, to avoid redefinition warnings.
 #include "bind_auto_release_ptr.h"
 
+// appleseed.renderer headers.
 #include "renderer/modeling/scene/scene.h"
 
 namespace bpy = boost::python;

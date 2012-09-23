@@ -25,13 +25,14 @@
 // THE SOFTWARE.
 //
 
-// Has to be first, to avoid redifinition warnings.
+// Has to be first, to avoid redefinition warnings.
 #include "Python.h"
 
-#include <boost/python.hpp>
-
+// appleseed.foundation headers.
 #include "foundation/math/quaternion.h"
 #include "foundation/utility/iostreamop.h"
+
+#include "boost/python.hpp"
 
 namespace bpy = boost::python;
 using namespace foundation;

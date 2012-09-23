@@ -25,14 +25,18 @@
 // THE SOFTWARE.
 //
 
-// Has to be first, to avoid redifinition warnings.
+// Has to be first, to avoid redefinition warnings.
 #include "bind_auto_release_ptr.h"
 
-#include <algorithm>
-
-#include "foundation/image/image.h"
-#include "renderer/kernel/aov/tilestack.h"
+// appleseed.renderer headers.
 #include "renderer/kernel/aov/imagestack.h"
+#include "renderer/kernel/aov/tilestack.h"
+
+// appleseed.foundation headers.
+#include "foundation/image/image.h"
+
+// Standard headers.
+#include <algorithm>
 
 namespace bpy = boost::python;
 using namespace foundation;

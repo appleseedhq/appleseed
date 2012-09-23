@@ -25,16 +25,19 @@
 // THE SOFTWARE.
 //
 
-// Has to be first, to avoid redifinition warnings.
+// Has to be first, to avoid redefinition warnings.
 #include "bind_auto_release_ptr.h"
 
+// appleseed.python headers.
 #include "bind_typed_entity_containers.h"
 #include "dict2dict.h"
 #include "unaligned_transformd44.h"
 
+// appleseed.renderer headers.
 #include "renderer/api/object.h"
 #include "renderer/modeling/scene/objectinstance.h"
 
+// appleseed.foundation headers.
 #include "foundation/utility/searchpaths.h"
 
 namespace bpy = boost::python;

@@ -25,12 +25,13 @@
 // THE SOFTWARE.
 //
 
-// Has to be first, to avoid redifinition warnings.
+// Has to be first, to avoid redefinition warnings.
 #include "Python.h"
 
-#include <boost/python.hpp>
-
+// appleseed.python headers.
 #include "unaligned_matrix44.h"
+
+#include "boost/python.hpp"
 
 namespace bpy = boost::python;
 using namespace foundation;

@@ -27,10 +27,18 @@
 
 #include "bind_auto_release_ptr.h"
 
-#include "renderer/api/bsdf.h"
-
+// appleseed.python headers.
 #include "bind_typed_entity_containers.h"
 #include "dict2dict.h"
+
+// appleseed.renderer headers.
+#include "renderer/api/bsdf.h"
+
+// appleseed.foundation headers.
+#include "foundation/utility/autoreleaseptr.h"
+
+// Standard headers.
+#include <string>
 
 namespace bpy = boost::python;
 using namespace foundation;
@@ -38,26 +46,24 @@ using namespace renderer;
 
 namespace detail
 {
-
-auto_release_ptr<BSDF> create_bsdf(const std::string& bsdf_type,
-                                    const std::string& name,
-                                    const bpy::dict& params)
-{
-    BSDFFactoryRegistrar factories;
-    const IBSDFFactory* factory = factories.lookup(bsdf_type.c_str());
-
-    if (factory)
-        return factory->create(name.c_str(), bpy_dict_to_param_array(params));
-    else
+    auto_release_ptr<BSDF> create_bsdf(const std::string& bsdf_type,
+                                       const std::string& name,
+                                       const bpy::dict& params)
     {
-        PyErr_SetString(PyExc_RuntimeError, "BSDF type not found");
-        bpy::throw_error_already_set();
+        BSDFFactoryRegistrar factories;
+        const IBSDFFactory* factory = factories.lookup(bsdf_type.c_str());
+
+        if (factory)
+            return factory->create(name.c_str(), bpy_dict_to_param_array(params));
+        else
+        {
+            PyErr_SetString(PyExc_RuntimeError, "BSDF type not found");
+            bpy::throw_error_already_set();
+        }
+
+        return auto_release_ptr<BSDF>();
     }
-
-    return auto_release_ptr<BSDF>();
 }
-
-} // detail
 
 void bind_bsdf()
 {

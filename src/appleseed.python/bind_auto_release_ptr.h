@@ -28,35 +28,34 @@
 #ifndef APPLESEED_PYTHON_BIND_AUTO_RELEASE_PTR_H
 #define APPLESEED_PYTHON_BIND_AUTO_RELEASE_PTR_H
 
-// Has to be first, to avoid redifinition warnings.
+// Has to be first, to avoid redefinition warnings.
 #include <Python.h>
 
-#include <boost/python.hpp>
-
+// appleseed.foundation headers.
 #include "foundation/utility/autoreleaseptr.h"
 
-namespace boost
-{
-namespace python
-{
+#include "boost/python.hpp"
 
-template<class T> struct pointee<foundation::auto_release_ptr<T> >
+namespace boost {
+namespace python {
+
+template <class T> struct pointee<foundation::auto_release_ptr<T> >
 {
     typedef T type;
 };
 
-} // python
-} // boost
+}       // namespace python
+}       // namespace boost
 
 namespace foundation
 {
 
-template<class T>
-T *get_pointer(const auto_release_ptr<T>& p)
+template <class T>
+T* get_pointer(const auto_release_ptr<T>& p)
 {
     return p.get();
 }
 
-}       // foundation
+}       // namespace foundation
 
 #endif  // !APPLESEED_PYTHON_BIND_AUTO_RELEASE_PTR_H

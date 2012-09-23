@@ -27,12 +27,16 @@
 
 #include "bind_auto_release_ptr.h"
 
-#include "renderer/api/texture.h"
-#include "renderer/modeling/scene/textureinstance.h"
-#include "foundation/utility/searchpaths.h"
-
+// appleseed.python headers.
 #include "bind_typed_entity_containers.h"
 #include "dict2dict.h"
+
+// appleseed.renderer headers.
+#include "renderer/api/texture.h"
+#include "renderer/modeling/scene/textureinstance.h"
+
+// appleseed.foundation headers.
+#include "foundation/utility/searchpaths.h"
 
 namespace bpy = boost::python;
 using namespace foundation;

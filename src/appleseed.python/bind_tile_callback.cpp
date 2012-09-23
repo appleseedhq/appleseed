@@ -25,15 +25,17 @@
 // THE SOFTWARE.
 //
 
-// Has to be first, to avoid redifinition warnings.
+// Has to be first, to avoid redefinition warnings.
 #include "Python.h"
 
-#include <boost/python.hpp>
-
-#include "renderer/kernel/rendering/itilecallback.h"
-#include "renderer/api/frame.h"
-
+// appleseed.python headers.
 #include "gil_locks.h"
+
+// appleseed.renderer headers.
+#include "renderer/api/frame.h"
+#include "renderer/kernel/rendering/itilecallback.h"
+
+#include "boost/python.hpp"
 
 namespace bpy = boost::python;
 using namespace foundation;

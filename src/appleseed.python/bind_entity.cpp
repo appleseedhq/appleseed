@@ -25,12 +25,14 @@
 // THE SOFTWARE.
 //
 
-// Has to be first, to avoid redifinition warnings.
+// Has to be first, to avoid redefinition warnings.
 #include "Python.h"
 
+// appleseed.python headers.
 #include "bind_auto_release_ptr.h"
 #include "dict2dict.h"
 
+// appleseed.renderer headers.
 #include "renderer/modeling/entity/connectableentity.h"
 #include "renderer/modeling/entity/entity.h"
 #include "renderer/modeling/entity/entitymap.h"
@@ -39,6 +41,7 @@
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
 
+// Standard headers.
 #include <string>
 
 namespace bpy = boost::python;

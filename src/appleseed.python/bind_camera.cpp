@@ -25,12 +25,14 @@
 // THE SOFTWARE.
 //
 
-// Has to be first, to avoid redifinition warnings.
+// Has to be first, to avoid redefinition warnings.
 #include "bind_auto_release_ptr.h"
 
-#include "renderer/api/camera.h"
-
+// appleseed.python headers.
 #include "dict2dict.h"
+
+// appleseed.renderer headers.
+#include "renderer/api/camera.h"
 
 namespace bpy = boost::python;
 using namespace foundation;

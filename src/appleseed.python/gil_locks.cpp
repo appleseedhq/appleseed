@@ -26,6 +26,7 @@
 // THE SOFTWARE.
 //
 
+// Interface header.
 #include "gil_locks.h"
 
 ScopedGILLock::ScopedGILLock()

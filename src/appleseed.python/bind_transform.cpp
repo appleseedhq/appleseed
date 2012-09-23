@@ -25,13 +25,17 @@
 // THE SOFTWARE.
 //
 
-// Has to be first, to avoid redifinition warnings.
+// Has to be first, to avoid redefinition warnings.
 #include "bind_auto_release_ptr.h"
 
-#include "renderer/utility/transformsequence.h"
-#include "foundation/utility/iostreamop.h"
-
+// appleseed.python headers.
 #include "unaligned_transformd44.h"
+
+// appleseed.renderer headers.
+#include "renderer/utility/transformsequence.h"
+
+// appleseed.foundation headers.
+#include "foundation/utility/iostreamop.h"
 
 namespace bpy = boost::python;
 using namespace foundation;

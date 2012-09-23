@@ -25,14 +25,16 @@
 // THE SOFTWARE.
 //
 
-// Has to be first, to avoid redifinition warnings.
+// Has to be first, to avoid redefinition warnings.
 #include "Python.h"
 
-#include <boost/python.hpp>
-namespace bpy = boost::python;
-
+// appleseed.renderer headers.
 #include "renderer/api/log.h"
 #include "renderer/modeling/project/eventcounters.h"
+
+#include "boost/python.hpp"
+
+namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 

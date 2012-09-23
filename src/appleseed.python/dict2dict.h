@@ -32,7 +32,7 @@
 // Has to be first.
 #include "Python.h"
 
-#include <boost/python.hpp>
+#include "boost/python.hpp"
 
 namespace foundation    { class Dictionary; }
 namespace renderer      { class ParamArray; }

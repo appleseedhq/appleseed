@@ -30,10 +30,11 @@
 
 #include "Python.h"
 
-#include "boost/python.hpp"
-
+// appleseed.foundation headers.
 #include "foundation/math/matrix.h"
 #include "foundation/utility/iostreamop.h"
+
+#include "boost/python.hpp"
 
 namespace foundation
 {

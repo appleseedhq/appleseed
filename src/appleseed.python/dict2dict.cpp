@@ -26,10 +26,13 @@
 // THE SOFTWARE.
 //
 
+// appleseed.python headers.
 #include "dict2dict.h"
 
+// appleseed.renderer headers.
 #include "renderer/utility/paramarray.h"
 
+// appleseed.foundation headers.
 #include "foundation/math/vector.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"

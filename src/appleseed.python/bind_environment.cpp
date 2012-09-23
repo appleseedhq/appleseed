@@ -27,12 +27,14 @@
 
 #include "bind_auto_release_ptr.h"
 
+// appleseed.python headers.
+#include "bind_typed_entity_containers.h"
+#include "dict2dict.h"
+
+// appleseed.renderer headers.
 #include "renderer/api/environment.h"
 #include "renderer/api/environmentedf.h"
 #include "renderer/api/environmentshader.h"
-
-#include "bind_typed_entity_containers.h"
-#include "dict2dict.h"
 
 namespace bpy = boost::python;
 using namespace foundation;

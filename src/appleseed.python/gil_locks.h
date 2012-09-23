@@ -32,7 +32,7 @@
 // Has to be first.
 #include "Python.h"
 
-#include <boost/noncopyable.hpp>
+#include "boost/noncopyable.hpp"
 
 // This class locks Python's Global interpreter lock on construction
 // and unlocks it on destructions. A classic lock.
