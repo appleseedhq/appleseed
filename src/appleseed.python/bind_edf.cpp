@@ -40,26 +40,24 @@ using namespace renderer;
 
 namespace detail
 {
-
-auto_release_ptr<EDF> create_edf(const std::string& edf_type,
-                                    const std::string& name,
-                                    const bpy::dict& params)
-{
-    EDFFactoryRegistrar factories;
-    const IEDFFactory* factory = factories.lookup(edf_type.c_str());
-
-    if (factory)
-        return factory->create(name.c_str(), bpy_dict_to_param_array(params));
-    else
+    auto_release_ptr<EDF> create_edf(const std::string& edf_type,
+                                     const std::string& name,
+                                     const bpy::dict& params)
     {
-        PyErr_SetString(PyExc_RuntimeError, "EDF type not found");
-        bpy::throw_error_already_set();
+        EDFFactoryRegistrar factories;
+        const IEDFFactory* factory = factories.lookup(edf_type.c_str());
+
+        if (factory)
+            return factory->create(name.c_str(), bpy_dict_to_param_array(params));
+        else
+        {
+            PyErr_SetString(PyExc_RuntimeError, "EDF type not found");
+            bpy::throw_error_already_set();
+        }
+
+        return auto_release_ptr<EDF>();
     }
-
-    return auto_release_ptr<EDF>();
 }
-
-} // detail
 
 void bind_edf()
 {

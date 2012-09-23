@@ -43,68 +43,66 @@
 
 namespace detail
 {
-
-template <class T>
-T* typed_entity_vector_get_item(renderer::TypedEntityVector<T>& vec, int index)
-{
-    if (index < 0)
-        index = vec.size() + index;
-
-    if (index < 0 || static_cast<size_t>(index) >= vec.size())
+    template <class T>
+    T* typed_entity_vector_get_item(renderer::TypedEntityVector<T>& vec, int index)
     {
-        PyErr_SetString(PyExc_IndexError, "Invalid index in appleseed.EntityVector" );
-        boost::python::throw_error_already_set();
+        if (index < 0)
+            index = vec.size() + index;
+
+        if (index < 0 || static_cast<size_t>(index) >= vec.size())
+        {
+            PyErr_SetString(PyExc_IndexError, "Invalid index in appleseed.EntityVector");
+            boost::python::throw_error_already_set();
+        }
+
+        return vec.get_by_index(index);
     }
 
-    return vec.get_by_index(index);
+    template <class T>
+    T* typed_entity_map_get_item(renderer::TypedEntityMap<T>& map, const std::string& key)
+    {
+        return map.get_by_name(key.c_str());
+    }
+
+    template <class T>
+    boost::python::object typed_entity_map_get_iter( renderer::TypedEntityMap<T>* map)
+    {
+        boost::python::dict items;
+
+        typedef typename renderer::TypedEntityMap<T>::iterator iterator;
+
+        for (iterator it( map->begin()), e( map->end()); it != e; ++it)
+            items[it->get_name()] = boost::python::ptr( &(*it));
+
+        return items.attr( "__iter__")();
+    }
+
+    template <class T>
+    boost::python::list typed_entity_map_get_keys( renderer::TypedEntityMap<T>* map)
+    {
+        boost::python::list items;
+
+        typedef typename renderer::TypedEntityMap<T>::iterator iterator;
+
+        for (iterator it( map->begin()), e( map->end()); it != e; ++it)
+            items.append( it->get_name());
+
+        return items;
+    }
+
+    template <class T>
+    boost::python::list typed_entity_map_get_values( renderer::TypedEntityMap<T>* map)
+    {
+        boost::python::list items;
+
+        typedef typename renderer::TypedEntityMap<T>::iterator iterator;
+
+        for (iterator it( map->begin()), e( map->end()); it != e; ++it)
+            items.append( boost::python::ptr( &(*it)));
+
+        return items;
+    }
 }
-
-template <class T>
-T* typed_entity_map_get_item(renderer::TypedEntityMap<T>& map, const std::string& key)
-{
-    return map.get_by_name(key.c_str());
-}
-
-template <class T>
-boost::python::object typed_entity_map_get_iter( renderer::TypedEntityMap<T> *map)
-{
-    boost::python::dict items;
-
-    typedef typename renderer::TypedEntityMap<T>::iterator iterator;
-
-    for (iterator it( map->begin()), e( map->end()); it != e; ++it)
-        items[it->get_name()] = boost::python::ptr( &(*it));
-
-    return items.attr( "__iter__")();
-}
-
-template <class T>
-boost::python::list typed_entity_map_get_keys( renderer::TypedEntityMap<T> *map)
-{
-    boost::python::list items;
-
-    typedef typename renderer::TypedEntityMap<T>::iterator iterator;
-
-    for (iterator it( map->begin()), e( map->end()); it != e; ++it)
-        items.append( it->get_name());
-
-    return items;
-}
-
-template <class T>
-boost::python::list typed_entity_map_get_values( renderer::TypedEntityMap<T> *map)
-{
-    boost::python::list items;
-
-    typedef typename renderer::TypedEntityMap<T>::iterator iterator;
-
-    for (iterator it( map->begin()), e( map->end()); it != e; ++it)
-        items.append( boost::python::ptr( &(*it)));
-
-    return items;
-}
-
-} // detail
 
 template <class T>
 void bind_typed_entity_vector(const char* name)

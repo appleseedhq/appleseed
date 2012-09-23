@@ -48,46 +48,44 @@ using namespace renderer;
 
 namespace detail
 {
+    std::auto_ptr<MasterRenderer> create_master_renderer(Project* project,
+                                                         const bpy::dict& params,
+                                                         IRendererController* render_controller)
+    {
+        return std::auto_ptr<MasterRenderer>(new MasterRenderer(*project, bpy_dict_to_param_array(params), render_controller));
+    }
 
-std::auto_ptr<MasterRenderer> create_master_renderer(Project* project,
-                                                        const bpy::dict& params,
-                                                        IRendererController* render_controller)
-{
-    return std::auto_ptr<MasterRenderer>(new MasterRenderer(*project, bpy_dict_to_param_array(params), render_controller));
+    std::auto_ptr<MasterRenderer> create_master_renderer_with_tile_callback(Project* project,
+                                                                            const bpy::dict& params,
+                                                                            IRendererController* render_controller,
+                                                                            ITileCallback* tile_callback)
+    {
+        return std::auto_ptr<MasterRenderer>(new MasterRenderer(*project,
+                                                                bpy_dict_to_param_array(params),
+                                                                render_controller,
+                                                                tile_callback));
+    }
+
+    bpy::dict master_renderer_get_parameters(const MasterRenderer* m)
+    {
+        return param_array_to_bpy_dict(m->get_parameters());
+    }
+
+    void master_renderer_set_parameters(MasterRenderer* m, const bpy::dict& params)
+    {
+        m->get_parameters() = bpy_dict_to_param_array(params);
+    }
+
+    bool master_renderer_render(MasterRenderer* m)
+    {
+        // Unlock Python's global interpreter lock (GIL),
+        // while we do lenghty C++ computations.
+        // the GIL is locked again when unlock goes out of scope.
+        ScopedGILUnlock unlock;
+
+        return m->render();
+    }
 }
-
-std::auto_ptr<MasterRenderer> create_master_renderer_with_tile_callback(Project* project,
-                                                                         const bpy::dict& params,
-                                                                         IRendererController* render_controller,
-                                                                         ITileCallback* tile_callback)
-{
-    return std::auto_ptr<MasterRenderer>(new MasterRenderer(*project,
-                                                            bpy_dict_to_param_array(params),
-                                                            render_controller,
-                                                            tile_callback));
-}
-
-bpy::dict master_renderer_get_parameters(const MasterRenderer* m)
-{
-    return param_array_to_bpy_dict(m->get_parameters());
-}
-
-void master_renderer_set_parameters(MasterRenderer* m, const bpy::dict& params)
-{
-    m->get_parameters() = bpy_dict_to_param_array(params);
-}
-
-bool master_renderer_render(MasterRenderer* m)
-{
-    // Unlock Python's global interpreter lock (GIL),
-    // while we do lenghty C++ computations.
-    // the GIL is locked again when unlock goes out of scope.
-    ScopedGILUnlock unlock;
-
-    return m->render();
-}
-
-} // detail
 
 void bind_master_renderer()
 {

@@ -43,30 +43,28 @@ using namespace renderer;
 
 namespace detail
 {
+    void transform_seq_set_transform(TransformSequence* seq, const double time, const UnalignedTransformd44& transform)
+    {
+        Transformd xform(transform.get_local_to_parent().as_foundation_matrix(),
+                         transform.get_parent_to_local().as_foundation_matrix());
 
-void transform_seq_set_transform(TransformSequence* seq, const double time, const UnalignedTransformd44& transform)
-{
-    Transformd xform(transform.get_local_to_parent().as_foundation_matrix(),
-                        transform.get_parent_to_local().as_foundation_matrix());
+        seq->set_transform(time, xform);
+    }
 
-    seq->set_transform(time, xform);
+    bpy::tuple transform_seq_get_transform(const TransformSequence* seq, std::size_t index)
+    {
+        double time;
+        Transformd xform;
+        seq->get_transform(index, time, xform);
+        return bpy::make_tuple(time, UnalignedTransformd44(xform));
+    }
+
+    UnalignedTransformd44 transform_seq_get_earliest(const TransformSequence* seq)
+    {
+        Transformd xform(seq->earliest_transform());
+        return UnalignedTransformd44(xform);
+    }
 }
-
-bpy::tuple transform_seq_get_transform(const TransformSequence* seq, std::size_t index)
-{
-    double time;
-    Transformd xform;
-    seq->get_transform(index, time, xform);
-    return bpy::make_tuple(time, UnalignedTransformd44(xform));
-}
-
-UnalignedTransformd44 transform_seq_get_earliest(const TransformSequence* seq)
-{
-    Transformd xform(seq->earliest_transform());
-    return UnalignedTransformd44(xform);
-}
-
-} // detail
 
 void bind_transform()
 {

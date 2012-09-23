@@ -40,147 +40,145 @@ using namespace foundation;
 
 namespace detail
 {
-
-template <typename T, std::size_t N>
-Vector<T,N>* construct_vec_from_list(bpy::list l)
-{
-    if (bpy::len(l) != N)
+    template <typename T, std::size_t N>
+    Vector<T,N>* construct_vec_from_list(bpy::list l)
     {
-        PyErr_SetString(PyExc_RuntimeError, "Invalid list length given to appleseed.Vector" );
-        bpy::throw_error_already_set();
-    }
-
-    Vector<T,N>* r = new Vector<T,N>();
-
-    for (unsigned i = 0; i < N; ++i)
-    {
-        bpy::extract<T> ex(l[i]);
-        if (!ex.check())
+        if (bpy::len(l) != N)
         {
-            PyErr_SetString(PyExc_TypeError, "Incompatible type type. Only floats." );
+            PyErr_SetString(PyExc_RuntimeError, "Invalid list length given to appleseed.Vector" );
             bpy::throw_error_already_set();
         }
 
-        (*r)[i] = ex();
-    }
+        Vector<T,N>* r = new Vector<T,N>();
 
-    return r;
-}
-
-template <class T, std::size_t N>
-struct vector_constructor {};
-
-template <class T>
-struct vector_constructor<T,2>
-{
-    static Vector<T,2>* construct(T x, T y)
-    {
-        Vector<T,2>* r = new Vector<T,2>();
-        (*r)[0] = x;
-        (*r)[1] = y;
-        return r;
-    }
-};
-
-template <class T>
-struct vector_constructor<T,3>
-{
-    static Vector<T,3>* construct(T x, T y, T z)
-    {
-        Vector<T,3>* r = new Vector<T,3>();
-        (*r)[0] = x;
-        (*r)[1] = y;
-        (*r)[2] = z;
-        return r;
-    }
-};
-
-template <class T>
-struct vector_constructor<T,4>
-{
-    static Vector<T,4>* construct(T x, T y, T z, T w)
-    {
-        Vector<T,4>* r = new Vector<T,4>();
-        (*r)[0] = x;
-        (*r)[1] = y;
-        (*r)[2] = z;
-        (*r)[3] = w;
-        return r;
-    }
-};
-
-template <typename T, std::size_t N>
-struct vector_indexer
-{
-    static T get(const Vector<T,N>& x, int i)
-    {
-        if (i < 0)
-            i = N + i;
-
-        if (i >= 0 && i < N)
-            return x[i];
-        else
+        for (unsigned i = 0; i < N; ++i)
         {
-            PyErr_SetString(PyExc_IndexError, "Invalid index in appleseed.Vector" );
-            boost::python::throw_error_already_set();
+            bpy::extract<T> ex(l[i]);
+            if (!ex.check())
+            {
+                PyErr_SetString(PyExc_TypeError, "Incompatible type type. Only floats." );
+                bpy::throw_error_already_set();
+            }
+
+            (*r)[i] = ex();
         }
 
-        return T();
+        return r;
     }
 
-    static void set(Vector<T,N>& x, int i, const T& v)
+    template <class T, std::size_t N>
+    struct vector_constructor {};
+
+    template <class T>
+    struct vector_constructor<T,2>
     {
-        if (i < 0)
-            i = N + i;
-
-        if (i >= 0 && i < N)
-            x[i] = v;
-        else
+        static Vector<T,2>* construct(T x, T y)
         {
-            PyErr_SetString(PyExc_IndexError, "Invalid index in appleseed.Vector" );
-            boost::python::throw_error_already_set();
+            Vector<T,2>* r = new Vector<T,2>();
+            (*r)[0] = x;
+            (*r)[1] = y;
+            return r;
         }
+    };
+
+    template <class T>
+    struct vector_constructor<T,3>
+    {
+        static Vector<T,3>* construct(T x, T y, T z)
+        {
+            Vector<T,3>* r = new Vector<T,3>();
+            (*r)[0] = x;
+            (*r)[1] = y;
+            (*r)[2] = z;
+            return r;
+        }
+    };
+
+    template <class T>
+    struct vector_constructor<T,4>
+    {
+        static Vector<T,4>* construct(T x, T y, T z, T w)
+        {
+            Vector<T,4>* r = new Vector<T,4>();
+            (*r)[0] = x;
+            (*r)[1] = y;
+            (*r)[2] = z;
+            (*r)[3] = w;
+            return r;
+        }
+    };
+
+    template <typename T, std::size_t N>
+    struct vector_indexer
+    {
+        static T get(const Vector<T,N>& x, int i)
+        {
+            if (i < 0)
+                i = N + i;
+
+            if (i >= 0 && i < N)
+                return x[i];
+            else
+            {
+                PyErr_SetString(PyExc_IndexError, "Invalid index in appleseed.Vector" );
+                boost::python::throw_error_already_set();
+            }
+
+            return T();
+        }
+
+        static void set(Vector<T,N>& x, int i, const T& v)
+        {
+            if (i < 0)
+                i = N + i;
+
+            if (i >= 0 && i < N)
+                x[i] = v;
+            else
+            {
+                PyErr_SetString(PyExc_IndexError, "Invalid index in appleseed.Vector" );
+                boost::python::throw_error_already_set();
+            }
+        }
+    };
+
+    template <typename T, std::size_t N>
+    void do_bind_vector(const char* class_name)
+    {
+        bpy::class_<Vector<T,N> >(class_name)
+            .def(bpy::init<>())
+            .def(bpy::init<T>())
+            .def("__init__", bpy::make_constructor(&vector_constructor<T,N>::construct))
+            .def("__init__", bpy::make_constructor(&construct_vec_from_list<T,N>))
+
+            // operator[]
+            .def("__getitem__", &vector_indexer<T,N>::get)
+            .def("__setitem__", &vector_indexer<T,N>::set)
+
+            // operators
+            .def(bpy::self += bpy::self)
+            .def(bpy::self + bpy::self)
+            .def(bpy::self -= bpy::self)
+            .def(bpy::self - bpy::self)
+
+            .def(bpy::self *= T())
+            .def(bpy::self * T())
+            .def(T() * bpy::self)
+
+            .def(bpy::self /= T())
+            .def(bpy::self / bpy::self)
+            .def(bpy::self / T())
+            .def(-bpy::self)
+            .def(bpy::self == bpy::self)
+            .def(bpy::self != bpy::self)
+
+            // a bug in boost::python, this needs
+            // the extra self_ns qualification
+            .def(bpy::self_ns::str(bpy::self))
+            .def(bpy::self_ns::repr(bpy::self))
+            ;
     }
-};
-
-template <typename T, std::size_t N>
-void do_bind_vector(const char* class_name)
-{
-    bpy::class_<Vector<T,N> >(class_name)
-        .def(bpy::init<>())
-        .def(bpy::init<T>())
-        .def("__init__", bpy::make_constructor(&vector_constructor<T,N>::construct))
-        .def("__init__", bpy::make_constructor(&construct_vec_from_list<T,N>))
-
-        // operator[]
-        .def("__getitem__", &vector_indexer<T,N>::get)
-        .def("__setitem__", &vector_indexer<T,N>::set)
-
-        // operators
-        .def(bpy::self += bpy::self)
-        .def(bpy::self + bpy::self)
-        .def(bpy::self -= bpy::self)
-        .def(bpy::self - bpy::self)
-
-        .def(bpy::self *= T())
-        .def(bpy::self * T())
-        .def(T() * bpy::self)
-
-        .def(bpy::self /= T())
-        .def(bpy::self / bpy::self)
-        .def(bpy::self / T())
-        .def(-bpy::self)
-        .def(bpy::self == bpy::self)
-        .def(bpy::self != bpy::self)
-
-        // a bug in boost::python, this needs
-        // the extra self_ns qualification
-        .def(bpy::self_ns::str(bpy::self))
-        .def(bpy::self_ns::repr(bpy::self))
-        ;
 }
-
-} // detail
 
 void bind_vector()
 {

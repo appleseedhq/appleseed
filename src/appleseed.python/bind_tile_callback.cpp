@@ -44,63 +44,65 @@ using namespace renderer;
 
 namespace detail
 {
-
-class ITileCallbackWrapper : public ITileCallback, public bpy::wrapper<ITileCallback>
-{
-public:
-
-    virtual void release() {delete this;}
-
-    virtual void pre_render(const size_t x, const size_t y, const size_t width, const size_t height)
+    class ITileCallbackWrapper
+      : public ITileCallback
+      , public bpy::wrapper<ITileCallback>
     {
-        // Lock Python's global interpreter lock (GIL),
-        // was released in MasterRenderer.render.
-        ScopedGILLock lock;
-
-        try
+      public:
+        virtual void release()
         {
-            this->get_override("pre_render")(x, y, width, height);
+            delete this;
         }
-        catch( bpy::error_already_set)
-        {
-            PyErr_Print();
-        }
-    }
 
-    virtual void post_render_tile(const Frame* frame, const size_t tile_x, const size_t tile_y)
-    {
-        // Lock Python's global interpreter lock (GIL),
-        // was released in MasterRenderer.render.
-        ScopedGILLock lock;
-
-        try
+        virtual void pre_render(const size_t x, const size_t y, const size_t width, const size_t height)
         {
-            this->get_override("post_render_tile")(bpy::ptr(frame), tile_x, tile_y);
-        }
-        catch( bpy::error_already_set)
-        {
-            PyErr_Print();
-        }
-    }
+            // Lock Python's global interpreter lock (GIL),
+            // was released in MasterRenderer.render.
+            ScopedGILLock lock;
 
-    virtual void post_render(const Frame* frame)
-    {
-        // Lock Python's global interpreter lock (GIL),
-        // was released in MasterRenderer.render.
-        ScopedGILLock lock;
-
-        try
-        {
-            this->get_override("post_render")(bpy::ptr(frame));
+            try
+            {
+                this->get_override("pre_render")(x, y, width, height);
+            }
+            catch( bpy::error_already_set)
+            {
+                PyErr_Print();
+            }
         }
-        catch( bpy::error_already_set)
-        {
-            PyErr_Print();
-        }
-    }
-};
 
-} // detail
+        virtual void post_render_tile(const Frame* frame, const size_t tile_x, const size_t tile_y)
+        {
+            // Lock Python's global interpreter lock (GIL),
+            // was released in MasterRenderer.render.
+            ScopedGILLock lock;
+
+            try
+            {
+                this->get_override("post_render_tile")(bpy::ptr(frame), tile_x, tile_y);
+            }
+            catch( bpy::error_already_set)
+            {
+                PyErr_Print();
+            }
+        }
+
+        virtual void post_render(const Frame* frame)
+        {
+            // Lock Python's global interpreter lock (GIL),
+            // was released in MasterRenderer.render.
+            ScopedGILLock lock;
+
+            try
+            {
+                this->get_override("post_render")(bpy::ptr(frame));
+            }
+            catch( bpy::error_already_set)
+            {
+                PyErr_Print();
+            }
+        }
+    };
+}
 
 void bind_tile_callback()
 {

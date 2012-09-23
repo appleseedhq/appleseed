@@ -28,12 +28,12 @@
 // Has to be first, to avoid redefinition warnings.
 #include "Python.h"
 
+// boost headers.
+#include <boost/python.hpp>
+
 // appleseed.foundation headers.
 #include "foundation/math/aabb.h"
 #include "foundation/utility/iostreamop.h"
-
-// boost headers.
-#include <boost/python.hpp>
 
 namespace bpy = boost::python;
 using namespace foundation;

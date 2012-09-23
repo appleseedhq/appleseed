@@ -44,32 +44,30 @@ using namespace renderer;
 
 namespace detail
 {
-
-std::string image_stack_get_name(const ImageStack* img, const size_t index)
-{
-    return img->get_name(index);
-}
-
-void tile_data_to_py_array(const Tile& tile, bpy::object& buffer)
-{
-    void* array = 0;
-    Py_ssize_t len;
-
-    int success = PyObject_AsWriteBuffer(buffer.ptr(), &array, &len);
-
-    if (success != 0)
-        bpy::throw_error_already_set();
-
-    if (static_cast<size_t>(len) < tile.get_size())
+    std::string image_stack_get_name(const ImageStack* img, const size_t index)
     {
-        PyErr_SetString(PyExc_IndexError, "Buffer size is smaller than data size");
-        bpy::throw_error_already_set();
+        return img->get_name(index);
     }
 
-    std::copy(tile.get_storage(), tile.get_storage() + tile.get_size(), reinterpret_cast<uint8*>(array));
-}
+    void tile_data_to_py_array(const Tile& tile, bpy::object& buffer)
+    {
+        void* array = 0;
+        Py_ssize_t len;
 
-} // detail
+        int success = PyObject_AsWriteBuffer(buffer.ptr(), &array, &len);
+
+        if (success != 0)
+            bpy::throw_error_already_set();
+
+        if (static_cast<size_t>(len) < tile.get_size())
+        {
+            PyErr_SetString(PyExc_IndexError, "Buffer size is smaller than data size");
+            bpy::throw_error_already_set();
+        }
+
+        std::copy(tile.get_storage(), tile.get_storage() + tile.get_size(), reinterpret_cast<uint8*>(array));
+    }
+}
 
 void bind_image()
 {

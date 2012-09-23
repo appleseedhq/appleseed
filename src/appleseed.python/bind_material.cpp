@@ -40,13 +40,11 @@ using namespace renderer;
 
 namespace detail
 {
-
-auto_release_ptr<Material> create_material(const std::string& name, const bpy::dict& params)
-{
-    return MaterialFactory::create(name.c_str(), bpy_dict_to_param_array(params));
+    auto_release_ptr<Material> create_material(const std::string& name, const bpy::dict& params)
+    {
+        return MaterialFactory::create(name.c_str(), bpy_dict_to_param_array(params));
+    }
 }
-
-} // detail
 
 void bind_material()
 {

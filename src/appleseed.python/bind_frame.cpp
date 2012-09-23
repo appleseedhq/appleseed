@@ -44,28 +44,26 @@ using namespace renderer;
 
 namespace detail
 {
-
-auto_release_ptr<Frame> create_frame(const std::string& name, const bpy::dict& params)
-{
-    return FrameFactory::create(name.c_str(), bpy_dict_to_param_array(params));
-}
-
-bpy::object archive_frame(const Frame* f, const char* directory)
-{
-    char* output = 0;
-
-    if (f->archive(directory, &output))
+    auto_release_ptr<Frame> create_frame(const std::string& name, const bpy::dict& params)
     {
-        bpy::str path(output);
-        foundation::free_string(output);
-        return path;
+        return FrameFactory::create(name.c_str(), bpy_dict_to_param_array(params));
     }
 
-    // return None
-    return bpy::object();
-}
+    bpy::object archive_frame(const Frame* f, const char* directory)
+    {
+        char* output = 0;
 
-} // detail
+        if (f->archive(directory, &output))
+        {
+            bpy::str path(output);
+            foundation::free_string(output);
+            return path;
+        }
+
+        // return None
+        return bpy::object();
+    }
+}
 
 void bind_frame()
 {
