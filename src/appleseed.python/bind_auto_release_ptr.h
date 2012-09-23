@@ -1,3 +1,4 @@
+
 //
 // This source file is part of appleseed.
 // Visit http://appleseedhq.net/ for additional information and resources.
@@ -31,11 +32,11 @@
 // Has to be first, to avoid redefinition warnings.
 #include <Python.h>
 
-// appleseed.foundation headers.
-#include "foundation/utility/autoreleaseptr.h"
-
 // boost headers.
 #include <boost/python.hpp>
+
+// appleseed.foundation headers.
+#include "foundation/utility/autoreleaseptr.h"
 
 namespace boost {
 namespace python {

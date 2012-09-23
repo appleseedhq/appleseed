@@ -1,3 +1,4 @@
+
 //
 // This source file is part of appleseed.
 // Visit http://appleseedhq.net/ for additional information and resources.
@@ -31,12 +32,12 @@
 // appleseed.python headers.
 #include "gil_locks.h"
 
+// boost headers.
+#include <boost/python.hpp>
+
 // appleseed.renderer headers.
 #include "renderer/api/frame.h"
 #include "renderer/kernel/rendering/itilecallback.h"
-
-// boost headers.
-#include <boost/python.hpp>
 
 namespace bpy = boost::python;
 using namespace foundation;

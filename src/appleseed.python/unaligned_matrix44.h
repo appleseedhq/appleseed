@@ -1,3 +1,4 @@
+
 //
 // This source file is part of appleseed.
 // Visit http://appleseedhq.net/ for additional information and resources.
@@ -30,12 +31,12 @@
 
 #include "Python.h"
 
+// boost headers.
+#include <boost/python.hpp>
+
 // appleseed.foundation headers.
 #include "foundation/math/matrix.h"
 #include "foundation/utility/iostreamop.h"
-
-// boost headers.
-#include <boost/python.hpp>
 
 namespace foundation
 {

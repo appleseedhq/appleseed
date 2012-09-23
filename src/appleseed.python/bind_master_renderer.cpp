@@ -1,3 +1,4 @@
+
 //
 // This source file is part of appleseed.
 // Visit http://appleseedhq.net/ for additional information and resources.
@@ -32,12 +33,12 @@
 #include "dict2dict.h"
 #include "gil_locks.h"
 
+// boost headers.
+#include <boost/python.hpp>
+
 // appleseed.renderer headers.
 #include "renderer/api/project.h"
 #include "renderer/api/rendering.h"
-
-// boost headers.
-#include <boost/python.hpp>
 
 // Standard headers.
 #include <memory>

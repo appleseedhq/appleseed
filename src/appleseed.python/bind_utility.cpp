@@ -1,3 +1,4 @@
+
 //
 // This source file is part of appleseed.
 // Visit http://appleseedhq.net/ for additional information and resources.
@@ -28,12 +29,12 @@
 // Has to be first, to avoid redefinition warnings.
 #include "Python.h"
 
+// boost headers.
+#include <boost/python.hpp>
+
 // appleseed.renderer headers.
 #include "renderer/api/log.h"
 #include "renderer/modeling/project/eventcounters.h"
-
-// boost headers.
-#include <boost/python.hpp>
 
 namespace bpy = boost::python;
 using namespace foundation;

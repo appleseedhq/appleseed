@@ -1,3 +1,4 @@
+
 //
 // This source file is part of appleseed.
 // Visit http://appleseedhq.net/ for additional information and resources.
@@ -34,12 +35,12 @@
 // appleseed.python headers.
 #include "dict2dict.h"
 
+// boost headers.
+#include <boost/python.hpp>
+
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entitymap.h"
 #include "renderer/modeling/entity/entityvector.h"
-
-// boost headers.
-#include <boost/python.hpp>
 
 namespace detail
 {
