@@ -28,7 +28,8 @@
 // Has to be first, to avoid redefinition warnings.
 #include <Python.h>
 
-#include "boost/python.hpp"
+// boost headers.
+#include <boost/python.hpp>
 
 // Forward declarations.
 void bind_assembly();

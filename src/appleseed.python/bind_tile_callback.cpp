@@ -35,7 +35,8 @@
 #include "renderer/api/frame.h"
 #include "renderer/kernel/rendering/itilecallback.h"
 
-#include "boost/python.hpp"
+// boost headers.
+#include <boost/python.hpp>
 
 namespace bpy = boost::python;
 using namespace foundation;

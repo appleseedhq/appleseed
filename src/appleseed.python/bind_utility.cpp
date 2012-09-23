@@ -32,7 +32,8 @@
 #include "renderer/api/log.h"
 #include "renderer/modeling/project/eventcounters.h"
 
-#include "boost/python.hpp"
+// boost headers.
+#include <boost/python.hpp>
 
 namespace bpy = boost::python;
 using namespace foundation;

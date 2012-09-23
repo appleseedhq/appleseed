@@ -35,7 +35,8 @@
 #include "renderer/kernel/rendering/defaultrenderercontroller.h"
 #include "renderer/kernel/rendering/irenderercontroller.h"
 
-#include "boost/python.hpp"
+// boost headers.
+#include <boost/python.hpp>
 
 namespace bpy = boost::python;
 using namespace foundation;

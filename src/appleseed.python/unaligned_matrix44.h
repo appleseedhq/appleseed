@@ -34,7 +34,8 @@
 #include "foundation/math/matrix.h"
 #include "foundation/utility/iostreamop.h"
 
-#include "boost/python.hpp"
+// boost headers.
+#include <boost/python.hpp>
 
 namespace foundation
 {

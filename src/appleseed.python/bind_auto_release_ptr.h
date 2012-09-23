@@ -34,7 +34,8 @@
 // appleseed.foundation headers.
 #include "foundation/utility/autoreleaseptr.h"
 
-#include "boost/python.hpp"
+// boost headers.
+#include <boost/python.hpp>
 
 namespace boost {
 namespace python {

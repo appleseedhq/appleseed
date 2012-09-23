@@ -31,7 +31,8 @@
 // appleseed.python headers.
 #include "unaligned_matrix44.h"
 
-#include "boost/python.hpp"
+// boost headers.
+#include <boost/python.hpp>
 
 namespace bpy = boost::python;
 using namespace foundation;
@@ -39,7 +40,7 @@ using namespace foundation;
 namespace detail
 {
 
-template<typename T>
+template <typename T>
 UnalignedMatrix44<T>* construct_matrix_from_list(bpy::list l)
 {
     if (bpy::len(l) != 4 * 4)
@@ -65,7 +66,7 @@ UnalignedMatrix44<T>* construct_matrix_from_list(bpy::list l)
     return r;
 }
 
-template<typename T>
+template <typename T>
 struct matrix_indexer
 {
     static T get(const UnalignedMatrix44<T>& mat, bpy::tuple indices)
@@ -154,13 +155,13 @@ struct matrix_indexer
     }
 };
 
-template<class T>
+template <class T>
 UnalignedMatrix44<T> transpose_matrix(const UnalignedMatrix44<T>& mat)
 {
     return UnalignedMatrix44<T>(transpose(mat.as_foundation_matrix()));
 }
 
-template<class T>
+template <class T>
 bpy::tuple matrix_extract_euler_angles(const UnalignedMatrix44<T>& mat)
 {
     T yaw, pitch, roll;
@@ -178,7 +179,7 @@ void bind_typed_matrix4_extra( bpy::class_<UnalignedMatrix44<double> >& X)
     X.def(bpy::init<UnalignedMatrix44<float> >());
 }
 
-template<class T>
+template <class T>
 void bind_typed_matrix4(const char *class_name)
 {
     UnalignedMatrix44<T> (*rot1)(T, T, T) = &UnalignedMatrix44<T>::rotation;

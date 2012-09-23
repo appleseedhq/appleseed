@@ -36,7 +36,8 @@
 #include "renderer/api/project.h"
 #include "renderer/api/rendering.h"
 
-#include "boost/python.hpp"
+// boost headers.
+#include <boost/python.hpp>
 
 // Standard headers.
 #include <memory>

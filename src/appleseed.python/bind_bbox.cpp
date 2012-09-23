@@ -32,7 +32,8 @@
 #include "foundation/math/aabb.h"
 #include "foundation/utility/iostreamop.h"
 
-#include "boost/python.hpp"
+// boost headers.
+#include <boost/python.hpp>
 
 namespace bpy = boost::python;
 using namespace foundation;

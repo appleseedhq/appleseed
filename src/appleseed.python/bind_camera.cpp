@@ -40,30 +40,28 @@ using namespace renderer;
 
 namespace detail
 {
-
-auto_release_ptr<Camera> create_camera(const std::string& camera_type, const std::string& name, const bpy::dict& params)
-{
-    CameraFactoryRegistrar factories;
-    const ICameraFactory* f = factories.lookup(camera_type.c_str());
-
-    if (!f)
+    auto_release_ptr<Camera> create_camera(const std::string& camera_type, const std::string& name, const bpy::dict& params)
     {
-        std::string error = "Camera type ";
-        error += camera_type;
-        error += " not found";
-        PyErr_SetString(PyExc_RuntimeError, error.c_str() );
-        bpy::throw_error_already_set();
+        CameraFactoryRegistrar factories;
+        const ICameraFactory* f = factories.lookup(camera_type.c_str());
+
+        if (!f)
+        {
+            std::string error = "Camera type ";
+            error += camera_type;
+            error += " not found";
+            PyErr_SetString(PyExc_RuntimeError, error.c_str() );
+            bpy::throw_error_already_set();
+        }
+
+        return f->create(name.c_str(), bpy_dict_to_param_array(params));
     }
 
-    return f->create(name.c_str(), bpy_dict_to_param_array(params));
+    TransformSequence* camera_get_transform_sequence(Camera* cam)
+    {
+        return &(cam->transform_sequence());
+    }
 }
-
-TransformSequence* camera_get_transform_sequence(Camera* cam)
-{
-    return &(cam->transform_sequence());
-}
-
-} // detail
 
 void bind_camera()
 {
