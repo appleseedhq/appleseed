@@ -82,7 +82,7 @@ namespace detail
 
         for (int i = 0, e = bpy::len(paths); i < e; ++i)
         {
-            bpy::extract<const char*> extractor(paths[i] );
+            const bpy::extract<const char*> extractor(paths[i]);
             if (extractor.check())
                 proj->get_search_paths().push_back(extractor());
             else
@@ -134,6 +134,18 @@ namespace detail
         ParamArray params(config->get_inherited_parameters());
         return param_array_to_bpy_dict(params);
     }
+
+    bpy::object project_file_reader_read(ProjectFileReader* reader,
+                                         const char* project_filename,
+                                         const char* schema_filename)
+    {
+        return bpy::object(reader->read(project_filename, schema_filename));
+    }
+
+    bpy::object project_file_reader_load_builtin(ProjectFileReader* reader, const char* project_name)
+    {
+        return bpy::object(reader->load_builtin(project_name));
+    }
 }
 
 void bind_project()
@@ -179,8 +191,8 @@ void bind_project()
         ;
 
     bpy::class_<ProjectFileReader>("ProjectFileReader")
-        .def("read", &ProjectFileReader::read)
-        .def("load_builtin", &ProjectFileReader::load_builtin)
+        .def("read", &detail::project_file_reader_read)
+        .def("load_builtin", &detail::project_file_reader_load_builtin)
         ;
 
     bpy::enum_<ProjectFileWriter::Options>("ProjectFileWriterOptions")
