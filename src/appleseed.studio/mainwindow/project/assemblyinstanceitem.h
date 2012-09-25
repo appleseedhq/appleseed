@@ -31,12 +31,12 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/entityitembase.h"
+#include "mainwindow/project/instancecollectionitem.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 
 // Forward declarations.
-namespace appleseed { namespace studio { class BaseGroupItem; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace renderer  { class AssemblyInstance; }
 namespace renderer  { class BaseGroup; }
@@ -48,16 +48,18 @@ class AssemblyInstanceItem
   : public EntityItemBase<renderer::AssemblyInstance>
 {
   public:
+    typedef InstanceCollectionItem<renderer::AssemblyInstance, AssemblyInstanceItem, renderer::BaseGroup> AssemblyInstanceCollectionItem;
+
     AssemblyInstanceItem(
-        renderer::AssemblyInstance* assembly_instance,
-        renderer::BaseGroup&        parent,
-        BaseGroupItem*              parent_item,
-        ProjectBuilder&             project_builder);
+        renderer::AssemblyInstance*     assembly_instance,
+        renderer::BaseGroup&            parent,
+        AssemblyInstanceCollectionItem* collection_item,
+        ProjectBuilder&                 project_builder);
 
   private:
-    renderer::BaseGroup&            m_parent;
-    BaseGroupItem*                  m_parent_item;
-    ProjectBuilder&                 m_project_builder;
+    renderer::BaseGroup&                m_parent;
+    AssemblyInstanceCollectionItem*     m_collection_item;
+    ProjectBuilder&                     m_project_builder;
 
     virtual void slot_delete() override;
 };

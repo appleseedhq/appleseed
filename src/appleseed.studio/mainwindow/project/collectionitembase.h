@@ -40,11 +40,14 @@
 
 // Qt headers.
 #include <QFont>
-#include <QString>
+#include <QObject>
 
 // Standard headers.
 #include <cassert>
 #include <map>
+
+// Forward declarations.
+class QString;
 
 namespace appleseed {
 namespace studio {
@@ -56,8 +59,11 @@ class CollectionItemBaseSlots
     Q_OBJECT
 
   protected:
-    explicit CollectionItemBaseSlots(const foundation::UniqueID class_uid);
-    CollectionItemBaseSlots(const foundation::UniqueID class_uid, const QString& title);
+    explicit CollectionItemBaseSlots(const foundation::UniqueID class_uid)
+      : ItemBase(class_uid) {}
+
+    CollectionItemBaseSlots(const foundation::UniqueID class_uid, const QString& title)
+      : ItemBase(class_uid, title) {}
 
   protected slots:
     virtual void slot_create() {}
@@ -73,11 +79,13 @@ class CollectionItemBase
     CollectionItemBase(const foundation::UniqueID class_uid, const QString& title);
 
     void add_item(Entity* entity);
+    template <typename EntityContainer> void add_items(EntityContainer& items);
+    void delete_item(const foundation::UniqueID entity_id);
 
-    template <typename EntityContainer>
-    void add_items(EntityContainer& items);
-
+    void insert_item(const foundation::UniqueID entity_id, ItemBase* item);
     void remove_item(const foundation::UniqueID entity_id);
+
+    ItemBase* get_item(const foundation::UniqueID entity_id) const;
 
   protected:
     typedef std::map<foundation::UniqueID, ItemBase*> ItemMap;
@@ -88,23 +96,8 @@ class CollectionItemBase
 
     void add_item(const int index, Entity* entity);
 
-    virtual ItemBase* create_item(Entity* entity) const;
+    virtual ItemBase* create_item(Entity* entity);
 };
-
-
-//
-// CollectionItemBaseSlots class implementation.
-//
-
-inline CollectionItemBaseSlots::CollectionItemBaseSlots(const foundation::UniqueID class_uid)
-  : ItemBase(class_uid)
-{
-}
-
-inline CollectionItemBaseSlots::CollectionItemBaseSlots(const foundation::UniqueID class_uid, const QString& title)
-  : ItemBase(class_uid, title)
-{
-}
 
 
 //
@@ -153,19 +146,6 @@ void CollectionItemBase<Entity>::add_items(EntityContainer& entities)
 }
 
 template <typename Entity>
-void CollectionItemBase<Entity>::remove_item(const foundation::UniqueID entity_id)
-{
-    const ItemMap::iterator it = m_items.find(entity_id);
-
-    if (it == m_items.end())
-        return;
-
-    removeChild(it->second);
-
-    m_items.erase(it);
-}
-
-template <typename Entity>
 void CollectionItemBase<Entity>::add_item(const int index, Entity* entity)
 {
     assert(entity);
@@ -178,7 +158,41 @@ void CollectionItemBase<Entity>::add_item(const int index, Entity* entity)
 }
 
 template <typename Entity>
-ItemBase* CollectionItemBase<Entity>::create_item(Entity* entity) const
+void CollectionItemBase<Entity>::delete_item(const foundation::UniqueID entity_id)
+{
+    const ItemMap::iterator it = m_items.find(entity_id);
+    assert(it != m_items.end());
+
+    delete it->second;
+
+    m_items.erase(it);
+}
+
+template <typename Entity>
+void CollectionItemBase<Entity>::insert_item(const foundation::UniqueID entity_id, ItemBase* item)
+{
+    m_items[entity_id] = item;
+}
+
+template <typename Entity>
+void CollectionItemBase<Entity>::remove_item(const foundation::UniqueID entity_id)
+{
+    const ItemMap::iterator it = m_items.find(entity_id);
+    assert(it != m_items.end());
+
+    m_items.erase(it);
+}
+
+template <typename Entity>
+ItemBase* CollectionItemBase<Entity>::get_item(const foundation::UniqueID entity_id) const
+{
+    const ItemMap::const_iterator it = m_items.find(entity_id);
+
+    return it == m_items.end() ? 0 : it->second;
+}
+
+template <typename Entity>
+ItemBase* CollectionItemBase<Entity>::create_item(Entity* entity)
 {
     assert(entity);
 

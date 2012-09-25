@@ -27,52 +27,23 @@
 //
 
 // Interface header.
-#include "assemblyinstancecollectionitem.h"
+#include "textureinstanceitem.h"
 
-// appleseed.studio headers.
-#include "mainwindow/project/assemblyinstanceitem.h"
-
-// appleseed.foundation headers.
-#include "foundation/utility/uid.h"
-
-// Standard headers.
-#include <cassert>
-
-using namespace foundation;
 using namespace renderer;
 
 namespace appleseed {
 namespace studio {
 
-namespace
+TextureInstanceItem::TextureInstanceItem(
+    TextureInstance*                texture_instance,
+    BaseGroup&                      parent,
+    TextureInstanceCollectionItem*  parent_item,
+    ProjectBuilder&                 project_builder)
+  : Base(texture_instance, parent, parent_item, project_builder)
 {
-    const UniqueID g_class_uid = new_guid();
-}
-
-AssemblyInstanceCollectionItem::AssemblyInstanceCollectionItem(
-    AssemblyInstanceContainer&  assembly_instances,
-    BaseGroup&                  parent,
-    BaseGroupItem*              parent_item,
-    ProjectBuilder&             project_builder)
-  : CollectionItemBase<AssemblyInstance>(g_class_uid, "Assembly Instances")
-  , m_parent(parent)
-  , m_parent_item(parent_item)
-  , m_project_builder(project_builder)
-{
-    add_items(assembly_instances);
-}
-
-ItemBase* AssemblyInstanceCollectionItem::create_item(AssemblyInstance* assembly_instance) const
-{
-    assert(assembly_instance);
-
-    return
-        new AssemblyInstanceItem(
-            assembly_instance,
-            m_parent,
-            m_parent_item,
-            m_project_builder);
 }
 
 }   // namespace studio
 }   // namespace appleseed
+
+#include "mainwindow/project/moc_cpp_textureinstanceitem.cxx"

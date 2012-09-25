@@ -1,3 +1,4 @@
+
 //
 // This source file is part of appleseed.
 // Visit http://appleseedhq.net/ for additional information and resources.
@@ -25,14 +26,22 @@
 // THE SOFTWARE.
 //
 
-// Has to be first, to avoid redifinition warnings.
+// Has to be first, to avoid redefinition warnings.
 #include "bind_auto_release_ptr.h"
 
+// appleseed.python headers.
+#include "bind_typed_entity_containers.h"
+#include "dict2dict.h"
+
+// appleseed.renderer headers.
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
 
-#include "bind_typed_entity_containers.h"
-#include "dict2dict.h"
+// appleseed.foundation headers.
+#include "foundation/utility/autoreleaseptr.h"
+
+// Standard headers.
+#include <string>
 
 namespace bpy = boost::python;
 using namespace foundation;
@@ -40,34 +49,39 @@ using namespace renderer;
 
 namespace detail
 {
+    auto_release_ptr<Assembly> create_assembly(const std::string& name)
+    {
+        return AssemblyFactory::create(name.c_str(), ParamArray());
+    }
 
-auto_release_ptr<Assembly> create_assembly(const std::string& name)
-{
-    return AssemblyFactory::create(name.c_str(), ParamArray());
+    auto_release_ptr<Assembly> create_assembly_with_params(
+        const std::string&  name,
+        const bpy::dict&    params)
+    {
+        return AssemblyFactory::create(name.c_str(), bpy_dict_to_param_array(params));
+    }
+
+    auto_release_ptr<AssemblyInstance> create_assembly_instance(
+        const std::string&  name,
+        const bpy::dict&    params,
+        const std::string&  assembly_name)
+    {
+        return
+            AssemblyInstanceFactory::create(
+                name.c_str(),
+                bpy_dict_to_param_array(params),
+                assembly_name.c_str());
+    }
+
+    TransformSequence& get_transform_sequence(AssemblyInstance* instance)
+    {
+        return instance->transform_sequence();
+    }
 }
-
-auto_release_ptr<Assembly> create_assembly_with_params(const std::string& name, const bpy::dict& params)
-{
-    return AssemblyFactory::create(name.c_str(), bpy_dict_to_param_array(params));
-}
-
-auto_release_ptr<AssemblyInstance> create_assembly_instance(const std::string& name,
-                                                             const bpy::dict& params,
-                                                             const Assembly *assembly)
-{
-    return AssemblyInstanceFactory::create(name.c_str(), bpy_dict_to_param_array(params), *assembly);
-}
-
-TransformSequence& assembly_instance_get_transform_sequence(AssemblyInstance *instance)
-{
-    return instance->transform_sequence();
-}
-
-} // detail
 
 void bind_assembly()
 {
-    bpy::class_<BaseGroup, boost::noncopyable>( "BaseGroup")
+    bpy::class_<BaseGroup, boost::noncopyable>("BaseGroup")
         .def("colors", &BaseGroup::colors, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("textures", &BaseGroup::textures, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("texture_instances", &BaseGroup::texture_instances, bpy::return_value_policy<bpy::reference_existing_object>())
@@ -92,7 +106,7 @@ void bind_assembly()
     bpy::class_<AssemblyInstance, auto_release_ptr<AssemblyInstance>, bpy::bases<Entity>, boost::noncopyable>("AssemblyInstance", bpy::no_init)
         .def("__init__", bpy::make_constructor(detail::create_assembly_instance))
         .def("get_assembly", &AssemblyInstance::get_assembly, bpy::return_value_policy<bpy::reference_existing_object>())
-        .def("transform_sequence", detail::assembly_instance_get_transform_sequence, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("transform_sequence", detail::get_transform_sequence, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("compute_local_bbox", &AssemblyInstance::compute_local_bbox)
         .def("compute_parent_bbox", &AssemblyInstance::compute_parent_bbox)
         ;

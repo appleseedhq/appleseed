@@ -30,6 +30,7 @@
 #include "sceneitem.h"
 
 // appleseed.studio headers.
+#include "mainwindow/project/assemblycollectionitem.h"
 #include "mainwindow/project/multimodelcollectionitem.h"
 #include "mainwindow/project/singlemodelcollectionitem.h"
 #include "mainwindow/project/texturecollectionitem.h"
@@ -72,6 +73,7 @@ SceneItem::SceneItem(
             new CameraItem(
                 scene.get_camera(),
                 scene,
+                this,
                 project_builder));
     m_camera_item->set_allow_deletion(false);
     m_camera_item->set_fixed_position(true);
@@ -82,6 +84,7 @@ SceneItem::SceneItem(
             new EnvironmentItem(
                 scene.get_environment(),
                 scene,
+                this,
                 project_builder));
     m_environment_item->set_allow_deletion(false);
     m_environment_item->set_fixed_position(true);

@@ -1329,11 +1329,13 @@ set (renderer_modeling_scene_sources
     renderer/modeling/scene/assembly.h
     renderer/modeling/scene/assemblyinstance.cpp
     renderer/modeling/scene/assemblyinstance.h
+    renderer/modeling/scene/assemblyinstancetraits.h
     renderer/modeling/scene/basegroup.cpp
     renderer/modeling/scene/basegroup.h
     renderer/modeling/scene/containers.h
     renderer/modeling/scene/objectinstance.cpp
     renderer/modeling/scene/objectinstance.h
+    renderer/modeling/scene/objectinstancetraits.h
     renderer/modeling/scene/scene.cpp
     renderer/modeling/scene/scene.h
     renderer/modeling/scene/textureinstance.cpp

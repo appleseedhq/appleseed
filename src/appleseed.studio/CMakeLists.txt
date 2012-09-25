@@ -106,8 +106,6 @@ source_group ("main" FILES
 set (mainwindow_project_sources
     mainwindow/project/assemblycollectionitem.cpp
     mainwindow/project/assemblycollectionitem.h
-    mainwindow/project/assemblyinstancecollectionitem.cpp
-    mainwindow/project/assemblyinstancecollectionitem.h
     mainwindow/project/assemblyinstanceitem.cpp
     mainwindow/project/assemblyinstanceitem.h
     mainwindow/project/assemblyitem.cpp
@@ -129,9 +127,9 @@ set (mainwindow_project_sources
     mainwindow/project/entityeditorwindow.h
     mainwindow/project/entityeditorwindow.ui
     mainwindow/project/entityitem.h
-    mainwindow/project/entityitembase.cpp
     mainwindow/project/entityitembase.h
     mainwindow/project/exceptioninvalidentityname.h
+    mainwindow/project/instancecollectionitem.h
     mainwindow/project/itembase.cpp
     mainwindow/project/itembase.h
     mainwindow/project/multimodelcollectionitem.h
@@ -139,8 +137,6 @@ set (mainwindow_project_sources
     mainwindow/project/multimodelentityitem.h
     mainwindow/project/objectcollectionitem.cpp
     mainwindow/project/objectcollectionitem.h
-    mainwindow/project/objectinstancecollectionitem.cpp
-    mainwindow/project/objectinstancecollectionitem.h
     mainwindow/project/objectinstanceitem.cpp
     mainwindow/project/objectinstanceitem.h
     mainwindow/project/objectitem.cpp
@@ -159,6 +155,8 @@ set (mainwindow_project_sources
     mainwindow/project/singlemodelentityitem.h
     mainwindow/project/texturecollectionitem.cpp
     mainwindow/project/texturecollectionitem.h
+    mainwindow/project/textureinstanceitem.cpp
+    mainwindow/project/textureinstanceitem.h
     mainwindow/project/textureitem.cpp
     mainwindow/project/textureitem.h
     mainwindow/project/tools.cpp

@@ -14,7 +14,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Entity Editor</string>
+   <string>Edit Entity</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="1" column="0">

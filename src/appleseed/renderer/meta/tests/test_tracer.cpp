@@ -35,7 +35,6 @@
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/color/colorentity.h"
-#include "renderer/modeling/input/inputbinder.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/triangle.h"
@@ -47,6 +46,7 @@
 #include "renderer/modeling/surfaceshader/constantsurfaceshader.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/utility/paramarray.h"
+#include "renderer/utility/testutils.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
@@ -54,7 +54,7 @@
 #include "foundation/math/rng.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
-#include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/test.h"
 
@@ -88,7 +88,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 AssemblyInstanceFactory::create(
                     "assembly_inst",
                     ParamArray(),
-                    *m_assembly));
+                    "assembly"));
 
             create_color("white", Color4f(1.0f));
             create_constant_surface_shader("constant_white_surface_shader", "white");
@@ -145,30 +145,28 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             mesh_object->push_triangle(Triangle(0, 1, 2, 0, 0, 0, 0));
             mesh_object->push_triangle(Triangle(2, 3, 0, 0, 0, 0, 0));
 
+            mesh_object->push_material_slot("material");
+
             auto_release_ptr<Object> object(mesh_object.release());
             m_assembly->objects().insert(object);
         }
 
         void create_plane_object_instance(const char* name, const Vector3d& position, const char* material_name)
         {
-            Object* object = m_assembly->objects().get_by_name("plane");
-            
-            StringArray material_names;
-            material_names.push_back(material_name);
-
             m_assembly->object_instances().insert(
                 ObjectInstanceFactory::create(
                     name,
                     ParamArray(),
-                    *object,
+                    "plane",
                     Transformd(Matrix4d::translation(position)),
-                    material_names));
+                    StringDictionary()
+                        .insert("material", material_name)));
         }
     };
 
     template <typename Base>
     struct Fixture
-      : public Base
+      : public BindInputs<Base>
     {
         TraceContext        m_trace_context;
         TextureStore        m_texture_store;
@@ -182,9 +180,6 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
           , m_texture_cache(m_texture_store)
           , m_intersector(m_trace_context, m_texture_cache)
         {
-            InputBinder input_binder;
-            input_binder.bind(*Base::m_scene);
-
             Base::m_scene->on_frame_begin(Base::m_project.ref());
         }
 

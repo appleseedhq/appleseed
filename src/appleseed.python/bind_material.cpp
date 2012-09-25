@@ -1,3 +1,4 @@
+
 //
 // This source file is part of appleseed.
 // Visit http://appleseedhq.net/ for additional information and resources.
@@ -27,10 +28,12 @@
 
 #include "bind_auto_release_ptr.h"
 
-#include "renderer/api/material.h"
-
+// appleseed.python headers.
 #include "bind_typed_entity_containers.h"
 #include "dict2dict.h"
+
+// appleseed.renderer headers.
+#include "renderer/api/material.h"
 
 namespace bpy = boost::python;
 using namespace foundation;
@@ -38,13 +41,11 @@ using namespace renderer;
 
 namespace detail
 {
-
-auto_release_ptr<Material> create_material(const std::string& name, const bpy::dict& params)
-{
-    return MaterialFactory::create(name.c_str(), bpy_dict_to_param_array(params));
+    auto_release_ptr<Material> create_material(const std::string& name, const bpy::dict& params)
+    {
+        return MaterialFactory::create(name.c_str(), bpy_dict_to_param_array(params));
+    }
 }
-
-} // detail
 
 void bind_material()
 {

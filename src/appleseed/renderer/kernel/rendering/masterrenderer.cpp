@@ -71,6 +71,11 @@ using namespace std;
 namespace renderer
 {
 
+//
+// A renderer controller that can queue tile callback updates and execute them
+// later in the master renderer's thread. Needed by the Python bindings.
+//
+
 class SerialRendererController
   : public IRendererController
 {
@@ -125,26 +130,6 @@ class SerialRendererController
         return m_controller->on_progress();
     }
 
-  private:
-    friend class SerialTileCallback;
-
-    struct PendingTileCallback
-    {
-        enum CallbackType
-        {
-            PreRender,
-            PostRenderTile,
-            PostRender
-        };
-
-        CallbackType    m_type;
-        const Frame*    m_frame;
-        size_t          m_x;
-        size_t          m_y;
-        size_t          m_width;
-        size_t          m_height;
-    };
-
     void add_pre_render_tile_callback(const size_t x, const size_t y, const size_t width, const size_t height)
     {
         boost::mutex::scoped_lock lock(m_mutex);
@@ -187,89 +172,117 @@ class SerialRendererController
         m_callbacks_todo.push_back(callback);
     }
 
+  private:
+    struct PendingTileCallback
+    {
+        enum CallbackType
+        {
+            PreRender,
+            PostRenderTile,
+            PostRender
+        };
+
+        CallbackType    m_type;
+        const Frame*    m_frame;
+        size_t          m_x;
+        size_t          m_y;
+        size_t          m_width;
+        size_t          m_height;
+    };
+
     void exec_callback(const PendingTileCallback& call)
     {
         switch (call.m_type)
         {
-          case PendingTileCallback::PreRender:
+            case PendingTileCallback::PreRender:
             m_tile_callback->pre_render(call.m_x, call.m_y, call.m_width, call.m_height);
             break;
 
-          case PendingTileCallback::PostRenderTile:
+            case PendingTileCallback::PostRenderTile:
             m_tile_callback->post_render_tile(call.m_frame, call.m_x, call.m_y);
             break;
 
-          case PendingTileCallback::PostRender:
+            case PendingTileCallback::PostRender:
             m_tile_callback->post_render(call.m_frame);
             break;
 
-          default:
+            default:
             assert(false);
         }
     }
 
-    IRendererController*            m_controller;
-    ITileCallback*                  m_tile_callback;
-    boost::mutex                    m_mutex;
-    std::deque<PendingTileCallback> m_callbacks_todo;
+    IRendererController*        m_controller;
+    ITileCallback*              m_tile_callback;
+    boost::mutex                m_mutex;
+    deque<PendingTileCallback>  m_callbacks_todo;
 };
 
-class SerialTileCallback
-  : public ITileCallback
+
+namespace
 {
-  public:
-    SerialTileCallback(SerialRendererController* controller)
-      : m_controller(controller)
+    //
+    // A tile callback that simply serializes updates to a SerialRendererController.
+    //
+
+    class SerialTileCallback
+      : public ITileCallback
     {
-        assert(m_controller);
-    }
+      public:
+        explicit SerialTileCallback(SerialRendererController* controller)
+          : m_controller(controller)
+        {
+            assert(m_controller);
+        }
 
-    virtual void release() override
+        virtual void release() override
+        {
+            delete this;
+        }
+
+        virtual void pre_render(const size_t x, const size_t y, const size_t width, const size_t height) override
+        {
+            m_controller->add_pre_render_tile_callback(x,y,width,height);
+        }
+
+        virtual void post_render_tile(const Frame* frame, const size_t tile_x, const size_t tile_y) override
+        {
+            m_controller->add_post_render_tile_callback(frame,tile_x,tile_y);
+        }
+
+        virtual void post_render(const Frame* frame) override
+        {
+            m_controller->add_post_render_tile_callback(frame);
+        }
+
+      private:
+        SerialRendererController* m_controller;
+    };
+
+    class SerialTileCallbackFactory
+      : public ITileCallbackFactory
     {
-        delete this;
-    }
+      public:
+        explicit SerialTileCallbackFactory(SerialRendererController* controller)
+          : m_controller(controller)
+        {
+            assert(m_controller);
+        }
 
-    virtual void pre_render(const size_t x, const size_t y, const size_t width, const size_t height) override
-    {
-        m_controller->add_pre_render_tile_callback(x,y,width,height);
-    }
+        virtual void release() override
+        {
+            delete this;
+        }
 
-    virtual void post_render_tile(const Frame* frame, const size_t tile_x, const size_t tile_y) override
-    {
-        m_controller->add_post_render_tile_callback(frame,tile_x,tile_y);
-    }
+        virtual ITileCallback* create() override
+        {
+            return new SerialTileCallback(m_controller);
+        }
 
-    virtual void post_render(const Frame* frame) override
-    {
-        m_controller->add_post_render_tile_callback(frame);
-    }
+      private:
+        SerialRendererController* m_controller;
+    };
+}
 
-  private:
-    SerialRendererController* m_controller;
-};
-
-class SerialTileCallbackFactory : public ITileCallbackFactory
-{
-  public:
-
-    SerialTileCallbackFactory(SerialRendererController* controller) : m_controller(controller)
-    {
-        assert(m_controller);
-    }
-
-    virtual void release()
-    {
-        delete this;
-    }
-
-    virtual ITileCallback* create()
-    {
-        return new SerialTileCallback(m_controller);
-    }
-
-  private:
-    SerialRendererController* m_controller;
-};
 
 //
 // MasterRenderer class implementation.
@@ -399,6 +412,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     assert(m_project.get_scene());
     assert(m_project.get_frame());
 
+    // We start by binding entities inputs. This must be done before creating/updating the trace context.
     if (!bind_scene_entities_inputs())
         return IRendererController::AbortRendering;
 

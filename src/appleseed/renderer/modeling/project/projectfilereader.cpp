@@ -78,7 +78,7 @@
 #include "foundation/math/matrix.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
-#include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/memory.h"
 #include "foundation/utility/searchpaths.h"
@@ -440,8 +440,10 @@ namespace
         virtual void start_element(const Attributes& attrs) override
         {
             ParametrizedElementHandler::start_element(attrs);
-            m_name = get_value(attrs, "name");
+
             m_params.clear();
+
+            m_name = get_value(attrs, "name");
         }
 
         const string& get_name() const
@@ -926,9 +928,10 @@ namespace
             ParametrizedElementHandler::start_element(attrs);
 
             m_color_entity.reset();
-            m_name = get_value(attrs, "name");
             m_values.clear();
             m_alpha.clear();
+
+            m_name = get_value(attrs, "name");
         }
 
         virtual void end_element() override
@@ -1065,6 +1068,7 @@ namespace
             ParametrizedElementHandler::start_element(attrs);
 
             m_texture.reset();
+
             m_name = get_value(attrs, "name");
             m_model = get_value(attrs, "model");
         }
@@ -1129,13 +1133,7 @@ namespace
       public:
         explicit TextureInstanceElementHandler(ParseContext& context)
           : m_context(context)
-          , m_textures(0)
         {
-        }
-
-        void set_texture_container(const TextureContainer* textures)
-        {
-            m_textures = textures;
         }
 
         virtual void start_element(const Attributes& attrs) override
@@ -1143,6 +1141,7 @@ namespace
             ParametrizedElementHandler::start_element(attrs);
 
             m_texture_instance.reset();
+
             m_name = get_value(attrs, "name");
             m_texture = get_value(attrs, "texture");
         }
@@ -1151,34 +1150,20 @@ namespace
         {
             ParametrizedElementHandler::end_element();
 
-            assert(m_textures);
-            const Texture* texture = m_textures->get_by_name(m_texture.c_str());
-
-            if (texture)
+            try
             {
-                try
-                {
-                    m_texture_instance =
-                        TextureInstanceFactory::create(
-                            m_name.c_str(),
-                            m_params,
-                            texture->get_name());
-                }
-                catch (const ExceptionDictionaryItemNotFound& e)
-                {
-                    RENDERER_LOG_ERROR(
-                        "while defining texture instance \"%s\": required parameter \"%s\" missing.",
+                m_texture_instance =
+                    TextureInstanceFactory::create(
                         m_name.c_str(),
-                        e.string());
-                    m_context.get_event_counters().signal_error();
-                }
+                        m_params,
+                        m_texture.c_str());
             }
-            else
+            catch (const ExceptionDictionaryItemNotFound& e)
             {
                 RENDERER_LOG_ERROR(
-                    "while defining texture instance \"%s\": the texture \"%s\" does not exist.",
+                    "while defining texture instance \"%s\": required parameter \"%s\" missing.",
                     m_name.c_str(),
-                    m_texture.c_str());
+                    e.string());
                 m_context.get_event_counters().signal_error();
             }
         }
@@ -1190,7 +1175,6 @@ namespace
 
       private:
         ParseContext&                       m_context;
-        const TextureContainer*             m_textures;
         auto_release_ptr<TextureInstance>   m_texture_instance;
         string                              m_name;
         string                              m_texture;
@@ -1278,6 +1262,7 @@ namespace
             ParametrizedElementHandler::start_element(attrs);
 
             m_environment.reset();
+
             m_name = get_value(attrs, "name");
             m_model = get_value(attrs, "model");
         }
@@ -1404,6 +1389,7 @@ namespace
             ParametrizedElementHandler::start_element(attrs);
 
             m_material.reset();
+
             m_name = get_value(attrs, "name");
             m_model = get_value(attrs, "model");
         }
@@ -1490,6 +1476,7 @@ namespace
             ParametrizedElementHandler::start_element(attrs);
 
             clear_keep_memory(m_objects);
+
             m_name = get_value(attrs, "name");
             m_model = get_value(attrs, "model");
         }
@@ -1559,19 +1546,7 @@ namespace
 
         virtual void start_element(const Attributes& attrs) override
         {
-            const string slot_string = get_value(attrs, "slot");
-            try
-            {
-                m_slot = from_string<size_t>(slot_string);
-            }
-            catch (const ExceptionStringConversionError&)
-            {
-                RENDERER_LOG_ERROR(
-                    "while assigning material: slot must be an integer >= 0, got \"%s\".",
-                    slot_string.c_str());
-                m_context.get_event_counters().signal_error();
-                m_slot = 0;
-            }
+            m_slot = get_value(attrs, "slot");
 
             const string side_string = get_value(attrs, "side", "front");
             if (side_string == "front")
@@ -1590,7 +1565,7 @@ namespace
             m_material = get_value(attrs, "material");
         }
 
-        size_t get_material_slot() const
+        const string& get_material_slot() const
         {
             return m_slot;
         }
@@ -1607,7 +1582,7 @@ namespace
 
       private:
         ParseContext&           m_context;
-        size_t                  m_slot;
+        string                  m_slot;
         ObjectInstance::Side    m_side;
         string                  m_material;
     };
@@ -1623,17 +1598,7 @@ namespace
       public:
         explicit ObjectInstanceElementHandler(ParseContext& context)
           : m_context(context)
-          , m_objects(0)
-          , m_materials(0)
         {
-        }
-
-        void set_containers(
-            const ObjectContainer*          objects,
-            const MaterialContainer*        materials)
-        {
-            m_objects = objects;
-            m_materials = materials;
         }
 
         virtual void start_element(const Attributes& attrs) override
@@ -1641,8 +1606,9 @@ namespace
             Base::start_element(attrs);
 
             m_object_instance.reset();
-            m_front_material_names.clear();
-            m_back_material_names.clear();
+            m_front_material_mappings.clear();
+            m_back_material_mappings.clear();
+
             m_name = get_value(attrs, "name");
             m_object = get_value(attrs, "object");
         }
@@ -1651,28 +1617,14 @@ namespace
         {
             Base::end_element();
 
-            assert(m_objects);
-            Object* object = m_objects->get_by_name(m_object.c_str());
-
-            if (object)
-            {
-                m_object_instance =
-                    ObjectInstanceFactory::create(
-                        m_name.c_str(),
-                        m_params,
-                        *object,
-                        get_earliest_transform(),
-                        m_front_material_names,
-                        m_back_material_names);
-            }
-            else
-            {
-                RENDERER_LOG_ERROR(
-                    "while defining object instance \"%s\": the object \"%s\" does not exist.",
+            m_object_instance =
+                ObjectInstanceFactory::create(
                     m_name.c_str(),
-                    m_object.c_str());
-                m_context.get_event_counters().signal_error();
-            }
+                    m_params,
+                    m_object.c_str(),
+                    get_earliest_transform(),
+                    m_front_material_mappings,
+                    m_back_material_mappings);
         }
 
         virtual void end_child_element(
@@ -1686,31 +1638,16 @@ namespace
                     AssignMaterialElementHandler* assign_mat_handler =
                         static_cast<AssignMaterialElementHandler*>(handler);
 
-                    const size_t material_slot = assign_mat_handler->get_material_slot();
+                    const string& material_slot = assign_mat_handler->get_material_slot();
                     const ObjectInstance::Side material_side = assign_mat_handler->get_material_side();
                     const string& material_name = assign_mat_handler->get_material_name();
-                    StringArray& material_names =
+
+                    StringDictionary& material_mappings =
                         material_side == ObjectInstance::FrontSide
-                            ? m_front_material_names
-                            : m_back_material_names;
+                            ? m_front_material_mappings
+                            : m_back_material_mappings;
 
-                    const size_t MaxMaterialSlots = 256;
-
-                    if (material_slot < MaxMaterialSlots)
-                    {
-                        ensure_minimum_size(material_names, material_slot + 1);
-                        material_names.set(material_slot, material_name.c_str());
-                    }
-                    else
-                    {
-                        RENDERER_LOG_ERROR(
-                            "while defining object instance \"%s\": "
-                            "material slot should be in [0, " FMT_SIZE_T "], got " FMT_SIZE_T ".",
-                            m_name.c_str(),
-                            MaxMaterialSlots - 1,
-                            material_slot);
-                        m_context.get_event_counters().signal_error();
-                    }
+                    material_mappings.insert(material_slot, material_name);
                 }
                 break;
 
@@ -1729,13 +1666,11 @@ namespace
         typedef TransformSequenceElementHandler<ParametrizedElementHandler> Base;
 
         ParseContext&                       m_context;
-        const ObjectContainer*              m_objects;
-        const MaterialContainer*            m_materials;
         auto_release_ptr<ObjectInstance>    m_object_instance;
+        StringDictionary                    m_front_material_mappings;
+        StringDictionary                    m_back_material_mappings;
         string                              m_name;
         string                              m_object;
-        StringArray                         m_front_material_names;
-        StringArray                         m_back_material_names;
     };
 
 
@@ -1749,13 +1684,7 @@ namespace
       public:
         explicit AssemblyInstanceElementHandler(ParseContext& context)
           : m_context(context)
-          , m_assemblies(0)
         {
-        }
-
-        void set_assembly_container(const AssemblyContainer* assemblies)
-        {
-            m_assemblies = assemblies;
         }
 
         virtual void start_element(const Attributes& attrs) override
@@ -1763,6 +1692,7 @@ namespace
             Base::start_element(attrs);
 
             m_assembly_instance.reset();
+
             m_name = get_value(attrs, "name");
             m_assembly = get_value(attrs, "assembly");
         }
@@ -1771,23 +1701,13 @@ namespace
         {
             Base::end_element();
 
-            assert(m_assemblies);
-            const Assembly* assembly = m_assemblies->get_by_name(m_assembly.c_str());
-
-            if (assembly)
-            {
-                m_assembly_instance =
-                    AssemblyInstanceFactory::create(m_name.c_str(), m_params, *assembly);
-                copy_transform_sequence_to(m_assembly_instance->transform_sequence());
-            }
-            else
-            {
-                RENDERER_LOG_ERROR(
-                    "while defining assembly instance \"%s\": the assembly \"%s\" does not exist",
+            m_assembly_instance =
+                AssemblyInstanceFactory::create(
                     m_name.c_str(),
+                    m_params,
                     m_assembly.c_str());
-                m_context.get_event_counters().signal_error();
-            }
+
+            copy_transform_sequence_to(m_assembly_instance->transform_sequence());
         }
 
         auto_release_ptr<AssemblyInstance> get_assembly_instance()
@@ -1799,7 +1719,6 @@ namespace
         typedef TransformSequenceElementHandler<ParametrizedElementHandler> Base;
 
         ParseContext&                       m_context;
-        const AssemblyContainer*            m_assemblies;
         auto_release_ptr<AssemblyInstance>  m_assembly_instance;
         string                              m_name;
         string                              m_assembly;
@@ -1825,8 +1744,6 @@ namespace
 
             m_assembly.reset();
 
-            m_name = get_value(attrs, "name");
-
             m_assemblies.clear();
             m_assembly_instances.clear();
             m_bsdfs.clear();
@@ -1839,6 +1756,8 @@ namespace
             m_surface_shaders.clear();
             m_textures.clear();
             m_texture_instances.clear();
+
+            m_name = get_value(attrs, "name");
         }
 
         virtual void end_element() override
@@ -1859,69 +1778,6 @@ namespace
             m_assembly->surface_shaders().swap(m_surface_shaders);
             m_assembly->textures().swap(m_textures);
             m_assembly->texture_instances().swap(m_texture_instances);
-        }
-
-        virtual void start_child_element(
-            const ProjectElementID      element,
-            ElementHandlerType*         handler) override
-        {
-            switch (element)
-            {
-              case ElementAssembly:
-                break;
-
-              case ElementAssemblyInstance:
-                {
-                    AssemblyInstanceElementHandler* asm_inst_handler =
-                        static_cast<AssemblyInstanceElementHandler*>(handler);
-                    asm_inst_handler->set_assembly_container(&m_assemblies);
-                }
-                break;
-
-              case ElementBSDF:
-                break;
-
-              case ElementColor:
-                break;
-
-              case ElementEDF:
-                break;
-
-              case ElementLight:
-                break;
-
-              case ElementMaterial:
-                break;
-
-              case ElementObject:
-                break;
-
-              case ElementObjectInstance:
-                {
-                    ObjectInstanceElementHandler* object_inst_handler =
-                        static_cast<ObjectInstanceElementHandler*>(handler);
-                    object_inst_handler->set_containers(&m_objects, &m_materials);
-                }
-                break;
-
-              case ElementSurfaceShader:
-                break;
-
-              case ElementTexture:
-                break;
-
-              case ElementTextureInstance:
-                {
-                    TextureInstanceElementHandler* texture_inst_handler =
-                        static_cast<TextureInstanceElementHandler*>(handler);
-                    texture_inst_handler->set_texture_container(&m_textures);
-                }
-                break;
-
-              default:
-                ParametrizedElementHandler::start_child_element(element, handler);
-                break;
-            }
         }
 
         virtual void end_child_element(
@@ -2116,55 +1972,6 @@ namespace
             }
         }
 
-        virtual void start_child_element(
-            const ProjectElementID      element,
-            ElementHandlerType*         handler) override
-        {
-            assert(m_scene.get());
-
-            switch (element)
-            {
-              case ElementAssembly:
-                break;
-
-              case ElementAssemblyInstance:
-                {
-                    AssemblyInstanceElementHandler* asm_inst_handler =
-                        static_cast<AssemblyInstanceElementHandler*>(handler);
-                    asm_inst_handler->set_assembly_container(&m_scene->assemblies());
-                }
-                break;
-
-              case ElementCamera:
-                break;
-
-              case ElementColor:
-                break;
-
-              case ElementEnvironment:
-                break;
-
-              case ElementEnvironmentEDF:
-                break;
-
-              case ElementEnvironmentShader:
-                break;
-
-              case ElementTexture:
-                break;
-
-              case ElementTextureInstance:
-                {
-                    TextureInstanceElementHandler* texture_inst_handler =
-                        static_cast<TextureInstanceElementHandler*>(handler);
-                    texture_inst_handler->set_texture_container(&m_scene->textures());
-                }
-                break;
-
-              assert_otherwise;
-            }
-        }
-
         virtual void end_child_element(
             const ProjectElementID      element,
             ElementHandlerType*         handler) override
@@ -2314,6 +2121,7 @@ namespace
             ParametrizedElementHandler::start_element(attrs);
 
             m_frame.reset();
+
             m_name = get_value(attrs, "name");
         }
 
@@ -2405,6 +2213,7 @@ namespace
             ParametrizedElementHandler::start_element(attrs);
 
             m_configuration.reset();
+
             m_name = get_value(attrs, "name");
             m_base_name = get_value(attrs, "base");
         }

@@ -32,6 +32,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/entity/entity.h"
+#include "renderer/modeling/input/inputbinder.h"
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/object/regionkit.h"
 #include "renderer/modeling/project/project.h"
@@ -45,6 +46,9 @@
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
+
+// Standard headers.
+#include <cstddef>
 
 // Forward declarations.
 namespace renderer      { class Assembly; }
@@ -90,6 +94,18 @@ class TestFixtureBase
     void bind_inputs();
 };
 
+template <typename Scene>
+class BindInputs
+  : public Scene
+{
+  public:
+    BindInputs()
+    {
+        InputBinder input_binder;
+        input_binder.bind(*Scene::m_scene);
+    }
+};
+
 class DLLSYMBOL DummyEntity
   : public Entity
 {
@@ -125,8 +141,11 @@ class BoundingBoxObject
 
     virtual foundation::Lazy<RegionKit>& get_region_kit() override;
 
+    virtual size_t get_material_slot_count() const override;
+    virtual const char* get_material_slot(const size_t index) const override;
+
   private:
-    const GAABB3&                   m_bbox;
+    GAABB3                          m_bbox;
     RegionKit                       m_region_kit;
     foundation::Lazy<RegionKit>     m_lazy_region_kit;
 };

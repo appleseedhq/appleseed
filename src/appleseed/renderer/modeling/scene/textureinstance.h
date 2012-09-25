@@ -40,6 +40,9 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
+// Standard headers.
+#include <cassert>
+
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
 namespace foundation    { class LightingConditions; }
@@ -50,7 +53,7 @@ namespace renderer
 {
 
 //
-// Modes.
+// Texture modes.
 //
 
 enum TextureAddressingMode
@@ -88,7 +91,7 @@ class DLLSYMBOL TextureInstance
     // Delete this instance.
     virtual void release() override;
 
-    // Return the name of the instantiated texture in the parent scene or assembly.
+    // Return the name of the instantiated texture.
     const char* get_texture_name() const;
 
     // Return the modes.
@@ -99,11 +102,16 @@ class DLLSYMBOL TextureInstance
     // Return the lighting conditions of the texture.
     const foundation::LightingConditions& get_lighting_conditions() const;
 
-    // Perform entity binding.
-    void bind_entities(const TextureContainer& textures);
+    // Find the texture bound to this instance.
+    Texture* find_texture() const;
 
-    // Return the instantiated texture.
-    Texture* get_texture() const;
+    // Texture binding.
+    void unbind_texture();
+    void bind_texture(const TextureContainer& textures);
+    void check_texture() const;
+
+    // Return the texture bound to this instance.
+    Texture& get_texture() const;
 
   private:
     friend class TextureInstanceFactory;
@@ -134,7 +142,7 @@ class DLLSYMBOL TextureInstance
 class DLLSYMBOL TextureInstanceFactory
 {
   public:
-    // Return a set of widget definitions for this texture instance entity model.
+    // Return a set of widget definitions for texture instance entities.
     static foundation::DictionaryArray get_widget_definitions();
 
     // Create a new texture instance.
@@ -164,9 +172,11 @@ inline TextureAlphaMode TextureInstance::get_alpha_mode() const
     return m_alpha_mode;
 }
 
-inline Texture* TextureInstance::get_texture() const
+inline Texture& TextureInstance::get_texture() const
 {
-    return m_texture;
+    assert(m_texture);
+
+    return *m_texture;
 }
 
 }       // namespace renderer

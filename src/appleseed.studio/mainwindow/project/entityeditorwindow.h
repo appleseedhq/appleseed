@@ -31,7 +31,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/core/exceptions/exceptionnotimplemented.h"
 #include "foundation/utility/containers/dictionary.h"
 
 // Qt headers.

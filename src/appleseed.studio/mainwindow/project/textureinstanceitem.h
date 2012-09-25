@@ -26,45 +26,49 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYINSTANCECOLLECTIONITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYINSTANCECOLLECTIONITEM_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_TEXTUREINSTANCEITEM_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_TEXTUREINSTANCEITEM_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/collectionitembase.h"
+#include "mainwindow/project/instancecollectionitem.h"
+#include "mainwindow/project/singlemodelentityitem.h"
 
-// appleseed.renderer headers.
-#include "renderer/api/scene.h"
-
-// appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
+// Qt headers.
+#include <QObject>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class BaseGroupItem; } }
-namespace appleseed { namespace studio { class ItemBase; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
+namespace renderer  { class BaseGroup; }
+namespace renderer  { class TextureInstance; }
 
 namespace appleseed {
 namespace studio {
 
-class AssemblyInstanceCollectionItem
-  : public CollectionItemBase<renderer::AssemblyInstance>
+class TextureInstanceItem;
+
+typedef InstanceCollectionItem<
+    renderer::TextureInstance,
+    TextureInstanceItem,
+    renderer::BaseGroup
+> TextureInstanceCollectionItem;
+
+class TextureInstanceItem
+  : public SingleModelEntityItem<renderer::TextureInstance, renderer::BaseGroup, TextureInstanceCollectionItem>
 {
+    Q_OBJECT
+
   public:
-    AssemblyInstanceCollectionItem(
-        renderer::AssemblyInstanceContainer&    assembly_instances,
-        renderer::BaseGroup&                    parent,
-        BaseGroupItem*                          parent_item,
-        ProjectBuilder&                         project_builder);
+    TextureInstanceItem(
+        renderer::TextureInstance*      texture_instance,
+        renderer::BaseGroup&            parent,
+        TextureInstanceCollectionItem*  parent_item,
+        ProjectBuilder&                 project_builder);
 
   private:
-    renderer::BaseGroup&    m_parent;
-    BaseGroupItem*          m_parent_item;
-    ProjectBuilder&         m_project_builder;
-
-    virtual ItemBase* create_item(renderer::AssemblyInstance* assembly_instance) const override;
+    typedef SingleModelEntityItem<renderer::TextureInstance, renderer::BaseGroup, TextureInstanceCollectionItem> Base;
 };
 
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYINSTANCECOLLECTIONITEM_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_TEXTUREINSTANCEITEM_H

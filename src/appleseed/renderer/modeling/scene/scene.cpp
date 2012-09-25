@@ -39,6 +39,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
 #include "foundation/utility/foreach.h"
+#include "foundation/utility/uid.h"
 
 // Standard headers.
 #include <cmath>
@@ -57,17 +58,28 @@ namespace renderer
 struct Scene::Impl
 {
     UniqueID                        m_uid;
-    VersionID                       m_geometry_version_id;
     auto_release_ptr<Camera>        m_camera;
     auto_release_ptr<Environment>   m_environment;
     EnvironmentEDFContainer         m_environment_edfs;
     EnvironmentShaderContainer      m_environment_shaders;
+
+    explicit Impl(Entity* parent)
+      : m_environment_edfs(parent)
+      , m_environment_shaders(parent)
+    {
+    }
 };
 
-Scene::Scene()
-  : impl(new Impl())
+namespace
 {
-    impl->m_geometry_version_id = 0;
+    const UniqueID g_class_uid = new_guid();
+}
+
+Scene::Scene()
+  : Entity(g_class_uid)
+  , BaseGroup(this)
+  , impl(new Impl(this))
+{
 }
 
 Scene::~Scene()
@@ -80,19 +92,12 @@ void Scene::release()
     delete this;
 }
 
-VersionID Scene::get_geometry_version_id() const
-{
-    return impl->m_geometry_version_id;
-}
-
-void Scene::bump_geometry_version_id()
-{
-    ++impl->m_geometry_version_id;
-}
-
 void Scene::set_camera(auto_release_ptr<Camera> camera)
 {
     impl->m_camera = camera;
+
+    if (impl->m_camera.get())
+        impl->m_camera->set_parent(this);
 }
 
 Camera* Scene::get_camera() const
@@ -103,6 +108,9 @@ Camera* Scene::get_camera() const
 void Scene::set_environment(auto_release_ptr<Environment> environment)
 {
     impl->m_environment = environment;
+
+    if (impl->m_environment.get())
+        impl->m_environment->set_parent(this);
 }
 
 Environment* Scene::get_environment() const

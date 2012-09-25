@@ -342,7 +342,7 @@ namespace
             {
                 const TextureSource* texture_source = static_cast<const TextureSource*>(exitance_source);
                 const TextureInstance& texture_instance = texture_source->get_texture_instance();
-                const CanvasProperties& texture_props = texture_instance.get_texture()->properties();
+                const CanvasProperties& texture_props = texture_instance.get_texture().properties();
 
                 m_lighting_conditions = texture_instance.get_lighting_conditions();
                 m_importance_map_width = texture_props.m_canvas_width;

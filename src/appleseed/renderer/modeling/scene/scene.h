@@ -32,21 +32,20 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/camera/camera.h"
+#include "renderer/modeling/entity/entity.h"
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/scene/basegroup.h"
 #include "renderer/modeling/scene/containers.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts/iunknown.h"
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
-#include "foundation/utility/uid.h"
-#include "foundation/utility/version.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
 // Forward declarations.
-namespace renderer      { class Project; }
+namespace renderer  { class Project; }
 
 namespace renderer
 {
@@ -56,17 +55,12 @@ namespace renderer
 //
 
 class DLLSYMBOL Scene
-  : public foundation::IUnknown
-  , public foundation::Identifiable
+  : public Entity
   , public BaseGroup
 {
   public:
     // Delete this instance.
-    virtual void release();
-
-    // Return/increase the version ID of the scene geometry.
-    foundation::VersionID get_geometry_version_id() const;
-    void bump_geometry_version_id();
+    virtual void release() override;
 
     // Set the camera.
     void set_camera(foundation::auto_release_ptr<Camera> camera);

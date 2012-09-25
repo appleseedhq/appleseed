@@ -1,3 +1,4 @@
+
 //
 // This source file is part of appleseed.
 // Visit http://appleseedhq.net/ for additional information and resources.
@@ -27,10 +28,12 @@
 
 #include "bind_auto_release_ptr.h"
 
-#include "renderer/api/surfaceshader.h"
-
+// appleseed.python headers.
 #include "bind_typed_entity_containers.h"
 #include "dict2dict.h"
+
+// appleseed.renderer headers.
+#include "renderer/api/surfaceshader.h"
 
 namespace bpy = boost::python;
 using namespace foundation;
@@ -38,43 +41,41 @@ using namespace renderer;
 
 namespace detail
 {
-
-auto_release_ptr<SurfaceShader> create_surface_shader(const std::string& surf_type,
-                                                        const std::string& name)
-{
-    SurfaceShaderFactoryRegistrar factories;
-    const ISurfaceShaderFactory* factory = factories.lookup(surf_type.c_str());
-
-    if (factory)
-        return factory->create(name.c_str(), ParamArray());
-    else
+    auto_release_ptr<SurfaceShader> create_surface_shader(const std::string& surf_type,
+                                                          const std::string& name)
     {
-        PyErr_SetString(PyExc_RuntimeError, "SurfaceShader type not found");
-        bpy::throw_error_already_set();
+        SurfaceShaderFactoryRegistrar factories;
+        const ISurfaceShaderFactory* factory = factories.lookup(surf_type.c_str());
+
+        if (factory)
+            return factory->create(name.c_str(), ParamArray());
+        else
+        {
+            PyErr_SetString(PyExc_RuntimeError, "SurfaceShader type not found");
+            bpy::throw_error_already_set();
+        }
+
+        return auto_release_ptr<SurfaceShader>();
     }
 
-    return auto_release_ptr<SurfaceShader>();
-}
-
-auto_release_ptr<SurfaceShader> create_surface_shader_with_params(const std::string& surf_type,
-                                                                    const std::string& name,
-                                                                    const bpy::dict& params)
-{
-    SurfaceShaderFactoryRegistrar factories;
-    const ISurfaceShaderFactory* factory = factories.lookup(surf_type.c_str());
-
-    if (factory)
-        return factory->create(name.c_str(), bpy_dict_to_param_array(params));
-    else
+    auto_release_ptr<SurfaceShader> create_surface_shader_with_params(const std::string& surf_type,
+                                                                      const std::string& name,
+                                                                      const bpy::dict& params)
     {
-        PyErr_SetString(PyExc_RuntimeError, "SurfaceShader type not found");
-        bpy::throw_error_already_set();
+        SurfaceShaderFactoryRegistrar factories;
+        const ISurfaceShaderFactory* factory = factories.lookup(surf_type.c_str());
+
+        if (factory)
+            return factory->create(name.c_str(), bpy_dict_to_param_array(params));
+        else
+        {
+            PyErr_SetString(PyExc_RuntimeError, "SurfaceShader type not found");
+            bpy::throw_error_already_set();
+        }
+
+        return auto_release_ptr<SurfaceShader>();
     }
-
-    return auto_release_ptr<SurfaceShader>();
 }
-
-} // detail
 
 void bind_surface_shader()
 {

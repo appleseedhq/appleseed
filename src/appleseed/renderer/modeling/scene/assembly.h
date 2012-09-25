@@ -35,14 +35,15 @@
 #include "renderer/modeling/scene/containers.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
 // Forward declarations.
-namespace renderer      { class ParamArray; }
-namespace renderer      { class Project; }
+namespace renderer  { class ParamArray; }
+namespace renderer  { class Project; }
 
 namespace renderer
 {
@@ -58,7 +59,7 @@ class DLLSYMBOL Assembly
 {
   public:
     // Delete this instance.
-    virtual void release();
+    virtual void release() override;
 
     // Access the BSDFs.
     BSDFContainer& bsdfs() const;

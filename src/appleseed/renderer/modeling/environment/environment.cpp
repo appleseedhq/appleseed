@@ -63,8 +63,8 @@ Environment::Environment(
 {
     set_name(name);
 
-    m_inputs.declare("environment_edf", InputEntity, "");
-    m_inputs.declare("environment_shader", InputEntity, "");
+    m_inputs.declare("environment_edf", InputFormatEntity, "");
+    m_inputs.declare("environment_shader", InputFormatEntity, "");
 }
 
 void Environment::release()

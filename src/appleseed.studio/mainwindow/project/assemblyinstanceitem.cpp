@@ -33,21 +33,26 @@
 #include "mainwindow/project/projectbuilder.h"
 
 // appleseed.renderer headers.
+#include "renderer/api/project.h"
 #include "renderer/api/scene.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/uid.h"
+
+using namespace foundation;
 using namespace renderer;
 
 namespace appleseed {
 namespace studio {
 
 AssemblyInstanceItem::AssemblyInstanceItem(
-    AssemblyInstance*   assembly_instance,
-    BaseGroup&          parent,
-    BaseGroupItem*      parent_item,
-    ProjectBuilder&     project_builder)
+    AssemblyInstance*               assembly_instance,
+    BaseGroup&                      parent,
+    AssemblyInstanceCollectionItem* collection_item,
+    ProjectBuilder&                 project_builder)
   : EntityItemBase<AssemblyInstance>(assembly_instance)
   , m_parent(parent)
-  , m_parent_item(parent_item)
+  , m_collection_item(collection_item)
   , m_project_builder(project_builder)
 {
     set_allow_edition(false);
@@ -58,12 +63,19 @@ void AssemblyInstanceItem::slot_delete()
     if (!allows_deletion())
         return;
 
-    m_project_builder.remove_assembly_instance(
-        m_parent,
-        m_parent_item,
-        m_entity->get_uid());
+    const UniqueID assembly_instance_uid = m_entity->get_uid();
 
-    // 'this' no longer exists at this point.
+    // Remove and delete the assembly instance.
+    m_parent.assembly_instances().remove(assembly_instance_uid);
+    
+    // Mark the scene and the project as modified.
+    m_project_builder.get_project().get_scene()->bump_version_id();
+    m_project_builder.notify_project_modification();
+
+    // Remove and delete the assembly instance item.
+    m_collection_item->delete_item(assembly_instance_uid);
+
+    // At this point 'this' no longer exists.
 }
 
 }   // namespace studio

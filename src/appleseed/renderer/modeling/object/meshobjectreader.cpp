@@ -45,6 +45,7 @@
 #include "foundation/mesh/imeshbuilder.h"
 #include "foundation/mesh/imeshfilereader.h"
 #include "foundation/mesh/objmeshfilereader.h"
+#include "foundation/platform/compiler.h"
 #include "foundation/platform/defaulttimers.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/autoreleaseptr.h"
@@ -120,20 +121,23 @@ namespace
             return m_total_triangle_count;
         }
 
-        virtual void begin_mesh(const string& mesh_name)
+        virtual void begin_mesh(const string& mesh_name) override
         {
             // Construct the object name.
             const string object_name = m_base_object_name + "." + make_unique_mesh_name(mesh_name);
 
             // Create an empty mesh object.
             m_objects.push_back(
-                MeshObjectFactory::create(object_name.c_str(), m_params).release());
+                MeshObjectFactory::create(
+                    object_name.c_str(),
+                    m_params).release());
 
+            // Reset mesh statistics.
             m_face_count = 0;
             m_triangulation_error_count = 0;
         }
 
-        virtual void end_mesh()
+        virtual void end_mesh() override
         {
             // Print the number of faces that could not be triangulated (if any).
             if (m_triangulation_error_count > 0)
@@ -151,36 +155,40 @@ namespace
             m_total_triangle_count += m_objects.back()->get_triangle_count();
         }
 
-        virtual size_t push_vertex(const Vector3d& v)
+        virtual size_t push_vertex(const Vector3d& v) override
         {
             return m_objects.back()->push_vertex(GVector3(v));
         }
 
-        virtual size_t push_vertex_normal(const Vector3d& v)
+        virtual size_t push_vertex_normal(const Vector3d& v) override
         {
             return m_objects.back()->push_vertex_normal(GVector3(v));
         }
 
-        virtual size_t push_tex_coords(const Vector2d& v)
+        virtual size_t push_tex_coords(const Vector2d& v) override
         {
             return m_objects.back()->push_tex_coords(GVector2(v));
         }
 
-        virtual void begin_face(const size_t vertex_count)
+        virtual size_t push_material_slot(const string& name) override
+        {
+            return m_objects.back()->push_material_slot(name.c_str());
+        }
+
+        virtual void begin_face(const size_t vertex_count) override
         {
             assert(vertex_count >= 3);
 
+            m_vertex_count = vertex_count;
             clear_keep_memory(m_face_vertices);
             clear_keep_memory(m_face_normals);
             clear_keep_memory(m_face_tex_coords);
+            m_face_material = Triangle::None;
 
             ++m_face_count;
-
-            m_vertex_count = vertex_count;
-            m_face_material = Triangle::None;
         }
 
-        virtual void end_face()
+        virtual void end_face() override
         {
             assert(m_face_vertices.size() == m_vertex_count);
             assert(m_face_normals.size() == 0 || m_face_normals.size() == m_vertex_count);
@@ -231,7 +239,7 @@ namespace
             }
         }
 
-        virtual void set_face_vertices(const size_t vertices[])
+        virtual void set_face_vertices(const size_t vertices[]) override
         {
             m_face_vertices.resize(m_vertex_count);
 
@@ -239,7 +247,7 @@ namespace
                 m_face_vertices[i] = static_cast<uint32>(vertices[i]);
         }
 
-        virtual void set_face_vertex_normals(const size_t vertex_normals[])
+        virtual void set_face_vertex_normals(const size_t vertex_normals[]) override
         {
             m_face_normals.resize(m_vertex_count);
 
@@ -247,7 +255,7 @@ namespace
                 m_face_normals[i] = static_cast<uint32>(vertex_normals[i]);
         }
 
-        virtual void set_face_vertex_tex_coords(const size_t tex_coords[])
+        virtual void set_face_vertex_tex_coords(const size_t tex_coords[]) override
         {
             m_face_tex_coords.resize(m_vertex_count);
 
@@ -255,7 +263,7 @@ namespace
                 m_face_tex_coords[i] = static_cast<uint32>(tex_coords[i]);
         }
 
-        virtual void set_face_material(const size_t material)
+        virtual void set_face_material(const size_t material) override
         {
             m_face_material = static_cast<uint32>(material);
         }
@@ -265,24 +273,29 @@ namespace
         const bool              m_ignore_vertex_normals;
         const string            m_base_object_name;
 
+        MeshObjectVector        m_objects;
+
+        // Support data for untitled meshes.
         size_t                  m_untitled_mesh_counter;
         map<string, size_t>     m_mesh_counters;
 
-        MeshObjectVector        m_objects;
-
+        // Face definition.
         size_t                  m_vertex_count;
         vector<uint32>          m_face_vertices;
         vector<uint32>          m_face_normals;
         vector<uint32>          m_face_tex_coords;
         uint32                  m_face_material;
 
+        // Support data for face triangulation.
         Triangulator<double>    m_triangulator;
         vector<Vector3d>        m_polygon;
         vector<size_t>          m_triangles;
 
+        // Mesh statistics.
         size_t                  m_face_count;
         size_t                  m_triangulation_error_count;
 
+        // Global statistics.
         size_t                  m_total_vertex_count;
         size_t                  m_total_triangle_count;
 
@@ -354,8 +367,7 @@ namespace
             }
 
             // Set triangle material.
-//          triangle.m_pa = m_face_material;
-            triangle.m_pa = 0;
+            triangle.m_pa = m_face_material;
 
             // Insert the triangle into the mesh.
             m_objects.back()->push_triangle(triangle);

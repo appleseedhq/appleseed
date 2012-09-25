@@ -32,6 +32,7 @@
 // Has to be first.
 #include "Python.h"
 
+// boost headers.
 #include <boost/noncopyable.hpp>
 
 // This class locks Python's Global interpreter lock on construction
@@ -39,14 +40,12 @@
 class ScopedGILLock : boost::noncopyable
 {
   public:
-
     ScopedGILLock();
-	~ScopedGILLock();
+    ~ScopedGILLock();
 
   private:
-
     bool m_threadsInitialised;
-	PyGILState_STATE m_state;
+    PyGILState_STATE m_state;
 };
 
 // This class unlocks Python's Global interpreter lock on construction
@@ -54,14 +53,12 @@ class ScopedGILLock : boost::noncopyable
 class ScopedGILUnlock : boost::noncopyable
 {
   public:
-
     ScopedGILUnlock();
-	~ScopedGILUnlock();
+    ~ScopedGILUnlock();
 
   private:
-
     bool m_threadsInitialised;
-	PyThreadState* m_state;
+    PyThreadState* m_state;
 };
 
 #endif  // !APPLESEED_PYTHON_GIL_LOCKS_H

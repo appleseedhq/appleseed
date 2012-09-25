@@ -26,30 +26,31 @@
 // THE SOFTWARE.
 //
 
+// Interface header.
 #include "gil_locks.h"
 
 ScopedGILLock::ScopedGILLock()
   : m_threadsInitialised(PyEval_ThreadsInitialized() ? true : false)
 {
-	if (m_threadsInitialised)
-		m_state = PyGILState_Ensure();
+    if (m_threadsInitialised)
+        m_state = PyGILState_Ensure();
 }
 
 ScopedGILLock::~ScopedGILLock()
 {
-	if (m_threadsInitialised)
-		PyGILState_Release( m_state );
+    if (m_threadsInitialised)
+        PyGILState_Release(m_state);
 }
 
 ScopedGILUnlock::ScopedGILUnlock()
   : m_threadsInitialised(PyEval_ThreadsInitialized() ? true : false)
 {
-	if (m_threadsInitialised)
-		m_state = PyEval_SaveThread();
+    if (m_threadsInitialised)
+        m_state = PyEval_SaveThread();
 }
 
 ScopedGILUnlock::~ScopedGILUnlock()
 {
-	if (m_threadsInitialised)
-		PyEval_RestoreThread( m_state );
+    if (m_threadsInitialised)
+        PyEval_RestoreThread(m_state);
 }

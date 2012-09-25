@@ -1,3 +1,4 @@
+
 //
 // This source file is part of appleseed.
 // Visit http://appleseedhq.net/ for additional information and resources.
@@ -27,12 +28,16 @@
 
 #include "bind_auto_release_ptr.h"
 
-#include "renderer/api/texture.h"
-#include "renderer/modeling/scene/textureinstance.h"
-#include "foundation/utility/searchpaths.h"
-
+// appleseed.python headers.
 #include "bind_typed_entity_containers.h"
 #include "dict2dict.h"
+
+// appleseed.renderer headers.
+#include "renderer/api/texture.h"
+#include "renderer/modeling/scene/textureinstance.h"
+
+// appleseed.foundation headers.
+#include "foundation/utility/searchpaths.h"
 
 namespace bpy = boost::python;
 using namespace foundation;
@@ -40,50 +45,48 @@ using namespace renderer;
 
 namespace detail
 {
-
-auto_release_ptr<Texture> create_texture(const std::string& texture_type,
-                                            const std::string& name,
-                                            const bpy::dict& params,
-                                            const bpy::list& search_paths)
-{
-    TextureFactoryRegistrar factories;
-    const ITextureFactory* factory = factories.lookup(texture_type.c_str());
-
-    if (factory)
+    auto_release_ptr<Texture> create_texture(const std::string& texture_type,
+                                             const std::string& name,
+                                             const bpy::dict& params,
+                                             const bpy::list& search_paths)
     {
-        SearchPaths paths;
+        TextureFactoryRegistrar factories;
+        const ITextureFactory* factory = factories.lookup(texture_type.c_str());
 
-        for (int i = 0, e = bpy::len(search_paths); i < e; ++i)
+        if (factory)
         {
-            bpy::extract<const char*> extractor(search_paths[i] );
-            if (extractor.check())
-                paths.push_back(extractor());
-            else
+            SearchPaths paths;
+
+            for (int i = 0, e = bpy::len(search_paths); i < e; ++i)
             {
-                PyErr_SetString(PyExc_TypeError, "Incompatible type. Only strings accepted." );
-                bpy::throw_error_already_set();
+                bpy::extract<const char*> extractor(search_paths[i] );
+                if (extractor.check())
+                    paths.push_back(extractor());
+                else
+                {
+                    PyErr_SetString(PyExc_TypeError, "Incompatible type. Only strings accepted." );
+                    bpy::throw_error_already_set();
+                }
             }
+
+            return factory->create(name.c_str(), bpy_dict_to_param_array(params), paths);
+        }
+        else
+        {
+            PyErr_SetString(PyExc_RuntimeError, "EDF type not found");
+            bpy::throw_error_already_set();
         }
 
-        return factory->create(name.c_str(), bpy_dict_to_param_array(params), paths);
+        return auto_release_ptr<Texture>();
     }
-    else
+
+    auto_release_ptr<TextureInstance> create_texture_instance(const std::string& name,
+                                                              const bpy::dict& params,
+                                                              const std::string& texture_name)
     {
-        PyErr_SetString(PyExc_RuntimeError, "EDF type not found");
-        bpy::throw_error_already_set();
+        return TextureInstanceFactory::create(name.c_str(), bpy_dict_to_param_array(params), texture_name.c_str());
     }
-
-    return auto_release_ptr<Texture>();
 }
-
-auto_release_ptr<TextureInstance> create_texture_instance(const std::string& name,
-                                                            const bpy::dict& params,
-                                                            const std::string& texture_name)
-{
-    return TextureInstanceFactory::create(name.c_str(), bpy_dict_to_param_array(params), texture_name.c_str());
-}
-
-} // detail
 
 void bind_texture()
 {

@@ -1,3 +1,4 @@
+
 //
 // This source file is part of appleseed.
 // Visit http://appleseedhq.net/ for additional information and resources.
@@ -25,14 +26,23 @@
 // THE SOFTWARE.
 //
 
-// Has to be first, to avoid redifinition warnings.
+// Has to be first, to avoid redefinition warnings.
 #include "bind_auto_release_ptr.h"
 
-#include "renderer/api/object.h"
-#include "foundation/utility/searchpaths.h"
-
+// appleseed.python headers.
 #include "bind_typed_entity_containers.h"
 #include "dict2dict.h"
+
+// appleseed.renderer headers.
+#include "renderer/api/object.h"
+
+// appleseed.foundation headers.
+#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/utility/searchpaths.h"
+
+// Standard headers.
+#include <cstddef>
+#include <string>
 
 namespace bpy = boost::python;
 using namespace foundation;
@@ -40,53 +50,54 @@ using namespace renderer;
 
 namespace detail
 {
-
-auto_release_ptr<MeshObject> create_mesh_obj(const std::string& name, const bpy::dict& params)
-{
-    return MeshObjectFactory::create(name.c_str(), bpy_dict_to_param_array(params));
-}
-
-bpy::list read_mesh_objects(const bpy::list& search_paths, const std::string& base_object_name,
-                                const bpy::dict& params)
-{
-    SearchPaths paths;
-
-	for (unsigned i = 0, e = bpy::len(search_paths); i < e; ++i)
-	{
-		bpy::extract<const char*> ex(search_paths[i]);
-		if(!ex.check())
-		{
-            PyErr_SetString(PyExc_TypeError, "Incompatible type. Only strings." );
-            bpy::throw_error_already_set();
-		}
-
-		paths.push_back(ex());
-	}
-
-    MeshObjectArray objs;
-    bpy::list py_objects;
-
-    if (MeshObjectReader::read(paths, base_object_name.c_str(), bpy_dict_to_param_array(params), objs))
+    auto_release_ptr<MeshObject> create_mesh_obj(const std::string& name, const bpy::dict& params)
     {
-        for (int i = 0, e = objs.size(); i < e; ++i)
-            py_objects.append(auto_release_ptr<MeshObject>(objs[i]));
+        return MeshObjectFactory::create(name.c_str(), bpy_dict_to_param_array(params));
     }
-    else
+
+    bpy::list read_mesh_objects(const bpy::list& search_paths, const std::string& base_object_name,
+                                const bpy::dict& params)
     {
-        PyErr_SetString(PyExc_RuntimeError, "MeshObjectReader failed" );
-        bpy::throw_error_already_set();
+        SearchPaths paths;
+
+        for (unsigned i = 0, e = bpy::len(search_paths); i < e; ++i)
+        {
+            bpy::extract<const char*> ex(search_paths[i]);
+            if(!ex.check())
+            {
+                PyErr_SetString(PyExc_TypeError, "Incompatible type. Only strings.");
+                bpy::throw_error_already_set();
+            }
+
+            paths.push_back(ex());
+        }
+
+        MeshObjectArray objs;
+        bpy::list py_objects;
+
+        if (MeshObjectReader::read(paths, base_object_name.c_str(), bpy_dict_to_param_array(params), objs))
+        {
+            for (int i = 0, e = objs.size(); i < e; ++i)
+            {
+                auto_release_ptr<MeshObject> object(objs[i]);
+                py_objects.append(object);
+            }
+        }
+        else
+        {
+            PyErr_SetString(PyExc_RuntimeError, "MeshObjectReader failed");
+            bpy::throw_error_already_set();
+            return py_objects;
+        }
+
         return py_objects;
     }
 
-    return py_objects;
+    bool write_mesh_object(MeshObject* obj, const std::string& obj_name, const std::string& filename)
+    {
+        return MeshObjectWriter::write(*obj, obj_name.c_str(), filename.c_str());
+    }
 }
-
-bool write_mesh_object(MeshObject* obj, const std::string& obj_name, const std::string& filename)
-{
-    return MeshObjectWriter::write(*obj, obj_name.c_str(), filename.c_str());
-}
-
-} // detail
 
 void bind_mesh_object()
 {
@@ -95,11 +106,11 @@ void bind_mesh_object()
         .def(bpy::init<const size_t, const size_t, const size_t, const size_t>())
 
         .def(bpy::init<const size_t, const size_t, const size_t, const size_t,
-                        const size_t, const size_t, const size_t>())
+                       const size_t, const size_t, const size_t>())
 
         .def(bpy::init<const size_t, const size_t, const size_t, const size_t,
-                        const size_t, const size_t, const size_t, const size_t,
-                        const size_t, const size_t>())
+                       const size_t, const size_t, const size_t, const size_t,
+                       const size_t, const size_t>())
 
         .def("has_vertex_attributes", &Triangle::has_vertex_attributes)
 

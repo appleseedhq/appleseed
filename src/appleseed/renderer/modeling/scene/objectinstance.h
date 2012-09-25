@@ -30,18 +30,29 @@
 #define APPLESEED_RENDERER_MODELING_SCENE_OBJECTINSTANCE_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/entity/entity.h"
 #include "renderer/modeling/scene/containers.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/transform.h"
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/containers/array.h"
+#include "foundation/utility/autoreleaseptr.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+// Standard headers.
+#include <cassert>
+#include <cstddef>
 
 // Forward declarations.
-namespace foundation    { class StringArray; }
+namespace foundation    { class DictionaryArray; }
+namespace foundation    { class StringDictionary; }
 namespace renderer      { class Material; }
 namespace renderer      { class Object; }
+namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
@@ -57,21 +68,24 @@ DECLARE_ARRAY(MaterialArray, const Material*);
 // An instance of an object.
 //
 
-class RENDERERDLL ObjectInstance
+class DLLSYMBOL ObjectInstance
   : public Entity
 {
   public:
     // Delete this instance.
-    virtual void release();
+    virtual void release() override;
 
-    // Return the instantiated object.
-    Object& get_object() const;
+    // Return the name of the instantiated object.
+    const char* get_object_name() const;
 
     // Return the transform of the instance.
     const foundation::Transformd& get_transform() const;
 
-    // Return the parent space bounding box of the instance.
-    const GAABB3& get_parent_bbox() const;
+    // Find the object bound to this instance.
+    Object* find_object() const;
+
+    // Compute the parent space bounding box of the instance.
+    GAABB3 compute_parent_bbox() const;
 
     enum Side
     {
@@ -85,18 +99,28 @@ class RENDERERDLL ObjectInstance
 
     // Assign a material to a given slot.
     void assign_material(
-        const size_t    slot,
+        const char*     slot,
         const Side      side,
-        const char*     material_name);
+        const char*     name);
 
-    // Return the names of the materials referenced by this instance.
-    const foundation::StringArray& get_front_material_names() const;
-    const foundation::StringArray& get_back_material_names() const;
+    // Return the slot-to-material mappings of this instance.
+    const foundation::StringDictionary& get_front_material_mappings() const;
+    const foundation::StringDictionary& get_back_material_mappings() const;
 
-    // Perform entity binding.
-    void bind_entities(const MaterialContainer& materials);
+    // Object binding.
+    void unbind_object();
+    void bind_object(const ObjectContainer& objects);
+    void check_object() const;
 
-    // Return the materials referenced by this instance.
+    // Material binding.
+    void unbind_materials();
+    void bind_materials(const MaterialContainer& materials);
+    void check_materials() const;
+
+    // Return the object bound to this instance.
+    Object& get_object() const;
+
+    // Return the materials bound to this instance.
     const MaterialArray& get_front_materials() const;
     const MaterialArray& get_back_materials() const;
 
@@ -106,18 +130,18 @@ class RENDERERDLL ObjectInstance
     struct Impl;
     Impl* impl;
 
-    // Derogate to the private implementation rule, for performance reasons.
-    MaterialArray   m_front_materials;
-    MaterialArray   m_back_materials;
+    Object*             m_object;
+    MaterialArray       m_front_materials;
+    MaterialArray       m_back_materials;
 
     // Constructor.
     ObjectInstance(
-        const char*                     name,
-        const ParamArray&               params,
-        Object&                         object,
-        const foundation::Transformd&   transform,
-        const foundation::StringArray&  front_materials,
-        const foundation::StringArray&  back_materials);
+        const char*                         name,
+        const ParamArray&                   params,
+        const char*                         object_name,
+        const foundation::Transformd&       transform,
+        const foundation::StringDictionary& front_material_mappings,
+        const foundation::StringDictionary& back_material_mappings);
 
     // Destructor.
     ~ObjectInstance();
@@ -128,23 +152,33 @@ class RENDERERDLL ObjectInstance
 // Object instance factory.
 //
 
-class RENDERERDLL ObjectInstanceFactory
+class DLLSYMBOL ObjectInstanceFactory
 {
   public:
+    // Return a set of widget definitions for object instance entities.
+    static foundation::DictionaryArray get_widget_definitions();
+
     // Create a new object instance.
     static foundation::auto_release_ptr<ObjectInstance> create(
-        const char*                     name,
-        const ParamArray&               params,
-        Object&                         object,
-        const foundation::Transformd&   transform,
-        const foundation::StringArray&  front_materials,
-        const foundation::StringArray&  back_materials = foundation::StringArray());
+        const char*                         name,
+        const ParamArray&                   params,
+        const char*                         object_name,
+        const foundation::Transformd&       transform,
+        const foundation::StringDictionary& front_material_mappings,
+        const foundation::StringDictionary& back_material_mappings = foundation::StringDictionary());
 };
 
 
 //
 // ObjectInstance class implementation.
 //
+
+inline Object& ObjectInstance::get_object() const
+{
+    assert(m_object);
+
+    return *m_object;
+}
 
 inline const MaterialArray& ObjectInstance::get_front_materials() const
 {

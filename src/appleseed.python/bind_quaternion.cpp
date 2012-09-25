@@ -1,3 +1,4 @@
+
 //
 // This source file is part of appleseed.
 // Visit http://appleseedhq.net/ for additional information and resources.
@@ -25,11 +26,13 @@
 // THE SOFTWARE.
 //
 
-// Has to be first, to avoid redifinition warnings.
+// Has to be first, to avoid redefinition warnings.
 #include "Python.h"
 
+// boost headers.
 #include <boost/python.hpp>
 
+// appleseed.foundation headers.
 #include "foundation/math/quaternion.h"
 #include "foundation/utility/iostreamop.h"
 
@@ -38,121 +41,119 @@ using namespace foundation;
 
 namespace detail
 {
+    template <class T>
+    T quat_dot_prod(const Quaternion<T>& a, const Quaternion<T>& b)
+    {
+        return dot(a, b);
+    }
 
-template<class T>
-T quat_dot_prod(const Quaternion<T>& a, const Quaternion<T>& b)
-{
-    return dot(a, b);
+    template <class T>
+    bpy::tuple quat_extract_axis_angle(const Quaternion<T>& q)
+    {
+        Vector<T,3> axis;
+        T angle;
+
+        q.extract_axis_angle(axis, angle);
+        return bpy::make_tuple(axis, angle);
+    }
+
+    template <class T>
+    Quaternion<T> quat_conjugate(const Quaternion<T>& q)
+    {
+        return conjugate(q);
+    }
+
+    template <class T>
+    Quaternion<T> quat_inverse(const Quaternion<T>& q)
+    {
+        return inverse(q);
+    }
+
+    template <class T>
+    T quat_square_norm(const Quaternion<T>& q)
+    {
+        return square_norm(q);
+    }
+
+    template <class T>
+    T quat_norm(const Quaternion<T>& q)
+    {
+        return norm(q);
+    }
+
+    template <class T>
+    Quaternion<T> quat_normalize(const Quaternion<T>& q)
+    {
+        return normalize(q);
+    }
+
+    template <class T>
+    bool quat_is_normalized(const Quaternion<T>& q)
+    {
+        return is_normalized(q);
+    }
+
+    template <class T>
+    bool quat_is_normalized_with_eps(const Quaternion<T>& q, const T eps)
+    {
+        return is_normalized(q, eps);
+    }
+
+    template <class T>
+    Quaternion<T> quat_slerp(const Quaternion<T>& p, const Quaternion<T>& q, const T t)
+    {
+        return slerp(p, q, t);
+    }
+
+    template <class T>
+    void do_bind_quaternion(const char* class_name)
+    {
+        Quaternion<T> (*rot1)(const Vector<T,3>&, T) = &Quaternion<T>::rotation;
+        Quaternion<T> (*rot2)(const Vector<T,3>&, const Vector<T,3>&) = &Quaternion<T>::rotation;
+
+        bpy::class_<Quaternion<T> >(class_name)
+            .def("identity", &Quaternion<T>::identity).staticmethod("identity")
+            .def("rotation", rot1).def("rotation", rot2).staticmethod("rotation")
+
+            .def(bpy::init<>())
+            .def(bpy::init<T, Vector<T,3> >())
+
+            .def_readwrite("s", &Quaternion<T>::s)
+            .def_readwrite("v", &Quaternion<T>::v)
+
+            // operators
+            .def(bpy::self + bpy::self)
+            .def(bpy::self - bpy::self)
+            .def(-bpy::self)
+            .def(bpy::self * T())
+            .def(T() * bpy::self)
+            .def(bpy::self / T())
+            .def(bpy::self += bpy::self)
+            .def(bpy::self -= bpy::self)
+            .def(bpy::self *= T())
+            .def(bpy::self /= T())
+            .def(bpy::self * bpy::self)
+            .def(bpy::self *= bpy::self)
+
+            // a bug in boost::python, this needs
+            // the extra self_ns qualification
+            .def(bpy::self_ns::str(bpy::self))
+            .def(bpy::self_ns::repr(bpy::self))
+
+            .def("dot", &quat_dot_prod<T>)
+            .def("extract_axis_angle", &quat_extract_axis_angle<T>)
+
+            .def("conjugate", &quat_conjugate<T>)
+            .def("inverse", &quat_inverse<T>)
+            .def("square_norm", &quat_square_norm<T>)
+            .def("norm", &quat_norm<T>)
+            .def("normalize", &quat_normalize<T>)
+            .def("is_normalized", &quat_is_normalized<T>)
+            .def("is_normalized", &quat_is_normalized_with_eps<T>)
+            .def("slerp", &quat_slerp<T>)
+            ;
+    }
 }
-
-template<class T>
-bpy::tuple quat_extract_axis_angle(const Quaternion<T>& q)
-{
-    Vector<T,3> axis;
-    T angle;
-
-    q.extract_axis_angle(axis, angle);
-    return bpy::make_tuple(axis, angle);
-}
-
-template<class T>
-Quaternion<T> quat_conjugate(const Quaternion<T>& q)
-{
-    return conjugate(q);
-}
-
-template<class T>
-Quaternion<T> quat_inverse(const Quaternion<T>& q)
-{
-    return inverse(q);
-}
-
-template<class T>
-T quat_square_norm(const Quaternion<T>& q)
-{
-    return square_norm(q);
-}
-
-template<class T>
-T quat_norm(const Quaternion<T>& q)
-{
-    return norm(q);
-}
-
-template<class T>
-Quaternion<T> quat_normalize(const Quaternion<T>& q)
-{
-    return normalize(q);
-}
-
-template<class T>
-bool quat_is_normalized(const Quaternion<T>& q)
-{
-    return is_normalized(q);
-}
-
-template<class T>
-bool quat_is_normalized_with_eps(const Quaternion<T>& q, const T eps)
-{
-    return is_normalized(q, eps);
-}
-
-template<class T>
-Quaternion<T> quat_slerp(const Quaternion<T>& p, const Quaternion<T>& q, const T t)
-{
-    return slerp(p, q, t);
-}
-
-template<class T>
-void do_bind_quaternion(const char* class_name)
-{
-    Quaternion<T> (*rot1)(const Vector<T,3>&, T) = &Quaternion<T>::rotation;
-    Quaternion<T> (*rot2)(const Vector<T,3>&, const Vector<T,3>&) = &Quaternion<T>::rotation;
-
-    bpy::class_<Quaternion<T> >(class_name)
-        .def("identity", &Quaternion<T>::identity).staticmethod("identity")
-        .def("rotation", rot1).def("rotation", rot2).staticmethod("rotation")
-
-        .def(bpy::init<>())
-        .def(bpy::init<T, Vector<T,3> >())
-
-        .def_readwrite("s", &Quaternion<T>::s)
-        .def_readwrite("v", &Quaternion<T>::v)
-
-		// operators
-		.def(bpy::self + bpy::self)
-		.def(bpy::self - bpy::self)
-		.def(-bpy::self)
-		.def(bpy::self * T())
-		.def(T() * bpy::self)
-		.def(bpy::self / T())
-		.def(bpy::self += bpy::self)
-		.def(bpy::self -= bpy::self)
-		.def(bpy::self *= T())
-		.def(bpy::self /= T())
-		.def(bpy::self * bpy::self)
-		.def(bpy::self *= bpy::self)
-
-		// a bug in boost::python, this needs
-		// the extra self_ns qualification
-		.def(bpy::self_ns::str(bpy::self))
-		.def(bpy::self_ns::repr(bpy::self))
-
-		.def("dot", &quat_dot_prod<T>)
-		.def("extract_axis_angle", &quat_extract_axis_angle<T>)
-
-        .def("conjugate", &quat_conjugate<T>)
-        .def("inverse", &quat_inverse<T>)
-        .def("square_norm", &quat_square_norm<T>)
-        .def("norm", &quat_norm<T>)
-        .def("normalize", &quat_normalize<T>)
-        .def("is_normalized", &quat_is_normalized<T>)
-        .def("is_normalized", &quat_is_normalized_with_eps<T>)
-        .def("slerp", &quat_slerp<T>)
-        ;
-}
-
-} // detail
 
 void bind_quaternion()
 {

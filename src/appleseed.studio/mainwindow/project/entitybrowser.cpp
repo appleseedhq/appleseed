@@ -164,11 +164,10 @@ StringDictionary EntityBrowser<Assembly>::get_entities(const Assembly& assembly,
         return EntityBrowser<BaseGroup>::get_entities(type);
     }
 
-    if (assembly.get_parent())
-    {
-        const Assembly& parent = *static_cast<Assembly*>(assembly.get_parent());
-        merge_dictionary(entities, get_entities(parent, type));
-    }
+    const Assembly* parent = dynamic_cast<const Assembly*>(assembly.get_parent());
+
+    if (parent)
+        merge_dictionary(entities, get_entities(*parent, type));
 
     return entities;
 }

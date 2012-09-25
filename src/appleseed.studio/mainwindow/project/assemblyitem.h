@@ -39,8 +39,10 @@
 #include <QObject>
 
 // Forward declarations.
+namespace appleseed { namespace studio { template <typename Entity, typename ParentEntity, typename ParentItem> class CollectionItem; } }
+namespace appleseed { namespace studio { template <typename Entity, typename EntityItem, typename ParentEntity> class InstanceCollectionItem; } }
 namespace appleseed { namespace studio { class ObjectCollectionItem; } }
-namespace appleseed { namespace studio { class ObjectInstanceCollectionItem; } }
+namespace appleseed { namespace studio { class ObjectInstanceItem; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace renderer  { class Assembly; }
 namespace renderer  { class BaseGroup; }
@@ -79,6 +81,8 @@ class AssemblyItem
     void add_item(renderer::Light* light);
     void add_item(renderer::Object* object);
     void add_item(renderer::ObjectInstance* object_instance);
+
+    typedef InstanceCollectionItem<renderer::ObjectInstance, ObjectInstanceItem, renderer::Assembly> ObjectInstanceCollectionItem;
 
     ObjectCollectionItem& get_object_collection_item() const;
     ObjectInstanceCollectionItem& get_object_instance_collection_item() const;

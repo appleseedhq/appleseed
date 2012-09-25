@@ -45,7 +45,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/transform.h"
-#include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/containers/dictionary.h"
 
 using namespace foundation;
 using namespace std;
@@ -603,8 +603,8 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
 
     {
         // Create a new mesh object.
-        MeshObject* object =
-            MeshObjectFactory::create("floor", ParamArray()).release();
+        auto_release_ptr<MeshObject> object(
+            MeshObjectFactory::create("floor", ParamArray()));
 
         // Vertices.
         object->push_vertex(GVector3(552.8f, 0.0f,   0.0f));
@@ -619,21 +619,21 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         object->push_triangle(Triangle(0, 1, 2,  0, 0, 0,  0));
         object->push_triangle(Triangle(0, 2, 3,  0, 0, 0,  0));
 
+        // Material slots.
+        object->push_material_slot("white_material");
+
         // Insert the object into the assembly.
         assembly->objects().insert(auto_release_ptr<Object>(object));
-
-        // Create the array of material names.
-        StringArray material_names;
-        material_names.push_back("white_material");
 
         // Create an instance of this object and insert it into the assembly.
         assembly->object_instances().insert(
             ObjectInstanceFactory::create(
                 "floor_inst",
                 ParamArray(),
-                *object,
+                "floor",
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
-                material_names));
+                StringDictionary()
+                    .insert("white_material", "white_material")));
     }
 
     //
@@ -642,8 +642,8 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
 
     {
         // Create a new mesh object.
-        MeshObject* object =
-            MeshObjectFactory::create("ceiling", ParamArray()).release();
+        auto_release_ptr<MeshObject> object(
+            MeshObjectFactory::create("ceiling", ParamArray()));
 
         // Vertices.
         object->push_vertex(GVector3(556.0f, 548.8f,   0.0f));
@@ -658,21 +658,21 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         object->push_triangle(Triangle(0, 1, 2,  0, 0, 0,  0));
         object->push_triangle(Triangle(0, 2, 3,  0, 0, 0,  0));
 
+        // Material slots.
+        object->push_material_slot("white_material");
+
         // Insert the object into the assembly.
         assembly->objects().insert(auto_release_ptr<Object>(object));
-
-        // Create the array of material names.
-        StringArray material_names;
-        material_names.push_back("white_material");
 
         // Create an instance of this object and insert it into the assembly.
         assembly->object_instances().insert(
             ObjectInstanceFactory::create(
                 "ceiling_inst",
                 ParamArray(),
-                *object,
+                "ceiling",
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
-                material_names));
+                StringDictionary()
+                    .insert("white_material", "white_material")));
     }
 
     //
@@ -681,8 +681,8 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
 
     {
         // Create a new mesh object.
-        MeshObject* object =
-            MeshObjectFactory::create("back_wall", ParamArray()).release();
+        auto_release_ptr<MeshObject> object(
+            MeshObjectFactory::create("back_wall", ParamArray()));
 
         // Vertices.
         object->push_vertex(GVector3(549.6f,   0.0f, 559.2f));
@@ -697,21 +697,21 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         object->push_triangle(Triangle(0, 1, 2,  0, 0, 0,  0));
         object->push_triangle(Triangle(0, 2, 3,  0, 0, 0,  0));
 
+        // Material slots.
+        object->push_material_slot("white_material");
+
         // Insert the object into the assembly.
         assembly->objects().insert(auto_release_ptr<Object>(object));
-
-        // Create the array of material names.
-        StringArray material_names;
-        material_names.push_back("white_material");
 
         // Create an instance of this object and insert it into the assembly.
         assembly->object_instances().insert(
             ObjectInstanceFactory::create(
                 "back_wall_inst",
                 ParamArray(),
-                *object,
+                "back_wall",
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
-                material_names));
+                StringDictionary()
+                    .insert("white_material", "white_material")));
     }
 
     //
@@ -720,8 +720,8 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
 
     {
         // Create a new mesh object.
-        MeshObject* object =
-            MeshObjectFactory::create("right_wall", ParamArray()).release();
+        auto_release_ptr<MeshObject> object(
+            MeshObjectFactory::create("right_wall", ParamArray()));
 
         // Vertices.
         object->push_vertex(GVector3(0.0f,   0.0f, 559.2f));
@@ -736,21 +736,21 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         object->push_triangle(Triangle(0, 1, 2,  0, 0, 0,  0));
         object->push_triangle(Triangle(0, 2, 3,  0, 0, 0,  0));
 
+        // Material slots.
+        object->push_material_slot("green_material");
+
         // Insert the object into the assembly.
         assembly->objects().insert(auto_release_ptr<Object>(object));
-
-        // Create the array of material names.
-        StringArray material_names;
-        material_names.push_back("green_material");
 
         // Create an instance of this object and insert it into the assembly.
         assembly->object_instances().insert(
             ObjectInstanceFactory::create(
                 "right_wall_inst",
                 ParamArray(),
-                *object,
+                "right_wall",
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
-                material_names));
+                StringDictionary()
+                    .insert("green_material", "green_material")));
     }
 
     //
@@ -759,8 +759,8 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
 
     {
         // Create a new mesh object.
-        MeshObject* object =
-            MeshObjectFactory::create("left_wall", ParamArray()).release();
+        auto_release_ptr<MeshObject> object(
+            MeshObjectFactory::create("left_wall", ParamArray()));
 
         // Vertices.
         object->push_vertex(GVector3(552.8f,   0.0f,   0.0f));
@@ -776,21 +776,21 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         object->push_triangle(Triangle(0, 1, 2,  0, 0, 0,  0));
         object->push_triangle(Triangle(0, 2, 3,  1, 1, 1,  0));
 
+        // Material slots.
+        object->push_material_slot("red_material");
+
         // Insert the object into the assembly.
         assembly->objects().insert(auto_release_ptr<Object>(object));
-
-        // Create the array of material names.
-        StringArray material_names;
-        material_names.push_back("red_material");
 
         // Create an instance of this object and insert it into the assembly.
         assembly->object_instances().insert(
             ObjectInstanceFactory::create(
                 "left_wall_inst",
                 ParamArray(),
-                *object,
+                "left_wall",
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
-                material_names));
+                StringDictionary()
+                    .insert("red_material", "red_material")));
     }
 
     //
@@ -799,8 +799,8 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
 
     {
         // Create a new mesh object.
-        MeshObject* object =
-            MeshObjectFactory::create("short_block", ParamArray()).release();
+        auto_release_ptr<MeshObject> object(
+            MeshObjectFactory::create("short_block", ParamArray()));
 
         // Vertices.
         object->push_vertex(GVector3(130.0f, 165.0f,  65.0f));
@@ -843,21 +843,21 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         object->push_triangle(Triangle(16, 17, 18,  4,  4,  4,  0));
         object->push_triangle(Triangle(16, 18, 19,  4,  4,  4,  0));
 
+        // Material slots.
+        object->push_material_slot("white_material");
+
         // Insert the object into the assembly.
         assembly->objects().insert(auto_release_ptr<Object>(object));
-
-        // Create the array of material names.
-        StringArray material_names;
-        material_names.push_back("white_material");
 
         // Create an instance of this object and insert it into the assembly.
         assembly->object_instances().insert(
             ObjectInstanceFactory::create(
                 "short_block_inst",
                 ParamArray(),
-                *object,
+                "short_block",
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
-                material_names));
+                StringDictionary()
+                    .insert("white_material", "white_material")));
     }
 
     //
@@ -866,8 +866,8 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
 
     {
         // Create a new mesh object.
-        MeshObject* object =
-            MeshObjectFactory::create("tall_block", ParamArray()).release();
+        auto_release_ptr<MeshObject> object(
+            MeshObjectFactory::create("tall_block", ParamArray()));
 
         // Vertices.
         object->push_vertex(GVector3(423.0f, 330.0f, 247.0f));
@@ -910,21 +910,21 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         object->push_triangle(Triangle(16, 17, 18,  4,  4,  4,  0));
         object->push_triangle(Triangle(16, 18, 19,  4,  4,  4,  0));
 
+        // Material slots.
+        object->push_material_slot("white_material");
+
         // Insert the object into the assembly.
         assembly->objects().insert(auto_release_ptr<Object>(object));
-
-        // Create the array of material names.
-        StringArray material_names;
-        material_names.push_back("white_material");
 
         // Create an instance of this object and insert it into the assembly.
         assembly->object_instances().insert(
             ObjectInstanceFactory::create(
                 "tall_block_inst",
                 ParamArray(),
-                *object,
+                "tall_block",
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
-                material_names));
+                StringDictionary()
+                    .insert("white_material", "white_material")));
     }
 
     //
@@ -933,8 +933,8 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
 
     {
         // Create a new mesh object.
-        MeshObject* object =
-            MeshObjectFactory::create("light", ParamArray()).release();
+        auto_release_ptr<MeshObject> object(
+            MeshObjectFactory::create("light", ParamArray()));
 
         // Vertices.
         object->push_vertex(GVector3(343.0f, 548.7999f, 227.0f));
@@ -949,21 +949,21 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         object->push_triangle(Triangle(0, 1, 2,  0, 0, 0,  0));
         object->push_triangle(Triangle(0, 2, 3,  0, 0, 0,  0));
 
+        // Material slots.
+        object->push_material_slot("light_material");
+
         // Insert the object into the assembly.
         assembly->objects().insert(auto_release_ptr<Object>(object));
-
-        // Create the array of material names.
-        StringArray material_names;
-        material_names.push_back("light_material");
 
         // Create an instance of this object and insert it into the assembly.
         assembly->object_instances().insert(
             ObjectInstanceFactory::create(
                 "light_inst",
                 ParamArray(),
-                *object,
+                "light",
                 Transformd(Matrix4d::scaling(Vector3d(0.001f))),
-                material_names));
+                StringDictionary()
+                    .insert("light_material", "light_material")));
     }
 
     // Create an instance of the assembly and insert it into the scene.
@@ -971,7 +971,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         AssemblyInstanceFactory::create(
             "assembly_inst",
             ParamArray(),
-            *assembly));
+            "assembly"));
 
     // Insert the assembly into the scene.
     scene->assemblies().insert(assembly);

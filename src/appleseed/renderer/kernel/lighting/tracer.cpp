@@ -49,7 +49,7 @@
 // Standard headers.
 #include <algorithm>
 #include <cassert>
-#include <vector>
+#include <set>
 
 using namespace foundation;
 using namespace std;
@@ -77,41 +77,35 @@ namespace
             use_alpha_mapping(object_instance.get_front_materials());
     }
 
-    bool use_alpha_mapping(const Assembly& assembly)
+    bool use_alpha_mapping(const Assembly& assembly, set<UniqueID>& visited_assemblies)
     {
-        for (const_each<ObjectInstanceContainer> i = assembly.object_instances(); i; ++i)
+        if (visited_assemblies.find(assembly.get_uid()) == visited_assemblies.end())
         {
-            if (use_alpha_mapping(*i))
-                return true;
+            visited_assemblies.insert(assembly.get_uid());
+
+            for (const_each<ObjectInstanceContainer> i = assembly.object_instances(); i; ++i)
+            {
+                if (use_alpha_mapping(*i))
+                    return true;
+            }
+
+            for (const_each<AssemblyContainer> i = assembly.assemblies(); i; ++i)
+            {
+                if (use_alpha_mapping(*i, visited_assemblies))
+                    return true;
+            }
         }
 
         return false;
     }
 
-    void collect_assemblies(const Scene& scene, vector<UniqueID>& assemblies)
-    {
-        assert(assemblies.empty());
-
-        assemblies.reserve(scene.assembly_instances().size());
-
-        for (const_each<AssemblyInstanceContainer> i = scene.assembly_instances(); i; ++i)
-            assemblies.push_back(i->get_assembly().get_uid());
-
-        sort(assemblies.begin(), assemblies.end());
-
-        assemblies.erase(
-            unique(assemblies.begin(), assemblies.end()),
-            assemblies.end());
-    }
-
     bool use_alpha_mapping(const Scene& scene)
     {
-        vector<UniqueID> assemblies;
-        collect_assemblies(scene, assemblies);
+        set<UniqueID> visited_assemblies;
 
-        for (size_t i = 0; i < assemblies.size(); ++i)
+        for (const_each<AssemblyContainer> i = scene.assemblies(); i; ++i)
         {
-            if (use_alpha_mapping(*scene.assemblies().get_by_uid(assemblies[i])))
+            if (use_alpha_mapping(*i, visited_assemblies))
                 return true;
         }
 

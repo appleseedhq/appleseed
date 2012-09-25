@@ -170,4 +170,14 @@ Lazy<RegionKit>& BoundingBoxObject::get_region_kit()
     return m_lazy_region_kit;
 }
 
+size_t BoundingBoxObject::get_material_slot_count() const
+{
+    return 0;
+}
+
+const char* BoundingBoxObject::get_material_slot(const size_t index) const
+{
+    return 0;
+}
+
 }   // namespace renderer

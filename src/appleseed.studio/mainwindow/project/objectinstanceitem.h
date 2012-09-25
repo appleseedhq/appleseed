@@ -30,7 +30,8 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_OBJECTINSTANCEITEM_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/entityitembase.h"
+#include "mainwindow/project/instancecollectionitem.h"
+#include "mainwindow/project/singlemodelentityitem.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -40,10 +41,10 @@
 #include <QObject>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class AssemblyItem; } }
-namespace appleseed { namespace studio { class ProjectBuilder; } }
-namespace renderer  { class Assembly; }
-namespace renderer  { class ObjectInstance; }
+namespace appleseed     { namespace studio { class ProjectBuilder; } }
+namespace foundation    { class Dictionary; }
+namespace renderer      { class Assembly; }
+namespace renderer      { class ObjectInstance; }
 class QMenu;
 class QString;
 class QVariant;
@@ -51,17 +52,25 @@ class QVariant;
 namespace appleseed {
 namespace studio {
 
+class ObjectInstanceItem;
+
+typedef InstanceCollectionItem<
+    renderer::ObjectInstance,
+    ObjectInstanceItem,
+    renderer::Assembly
+> ObjectInstanceCollectionItem;
+
 class ObjectInstanceItem
-  : public EntityItemBase<renderer::ObjectInstance>
+  : public SingleModelEntityItem<renderer::ObjectInstance, renderer::Assembly, ObjectInstanceCollectionItem>
 {
     Q_OBJECT
 
   public:
     ObjectInstanceItem(
-        renderer::ObjectInstance*   object_instance,
-        renderer::Assembly&         parent,
-        AssemblyItem*               parent_item,
-        ProjectBuilder&             project_builder);
+        renderer::ObjectInstance*       object_instance,
+        renderer::Assembly&             parent,
+        ObjectInstanceCollectionItem*   collection_item,
+        ProjectBuilder&                 project_builder);
 
     const renderer::Assembly& get_assembly() const;
 
@@ -74,20 +83,18 @@ class ObjectInstanceItem
     void slot_unassign_material();
 
   private:
-    renderer::Assembly&             m_parent;
-    AssemblyItem*                   m_parent_item;
-    ProjectBuilder&                 m_project_builder;
+    typedef SingleModelEntityItem<renderer::ObjectInstance, renderer::Assembly, ObjectInstanceCollectionItem> Base;
 
     virtual void slot_delete() override;
 
     void assign_material(
-        const bool                  font_side,
-        const bool                  back_side,
-        const char*                 material_name);
+        const bool                      font_side,
+        const bool                      back_side,
+        const char*                     material_name);
 
     void unassign_material(
-        const bool                  font_side,
-        const bool                  back_side);
+        const bool                      font_side,
+        const bool                      back_side);
 
     void update_style();
 };

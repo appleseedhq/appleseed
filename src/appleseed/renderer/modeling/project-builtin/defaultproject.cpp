@@ -70,7 +70,7 @@ auto_release_ptr<Project> DefaultProjectFactory::create()
         AssemblyInstanceFactory::create(
             "assembly_inst",
             ParamArray(),
-            *assembly));
+            "assembly"));
 
     // Insert the assembly into the scene.
     scene->assemblies().insert(assembly);

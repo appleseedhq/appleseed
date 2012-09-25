@@ -55,7 +55,7 @@ enum InputFormat
 {
     InputFormatScalar = 0,
     InputFormatSpectrum,
-    InputEntity
+    InputFormatEntity
 };
 
 

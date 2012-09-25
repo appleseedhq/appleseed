@@ -31,10 +31,15 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/object/object.h"
+#include "renderer/modeling/scene/assembly.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
-#include "foundation/utility/memory.h"
+#include "foundation/utility/uid.h"
+
+// Standard headers.
+#include <string>
 
 using namespace foundation;
 using namespace std;
@@ -56,16 +61,10 @@ DEFINE_ARRAY(MaterialArray);
 struct ObjectInstance::Impl
 {
     // Order of data members impacts performance, preserve it.
-    Transformd          m_transform;
-    GAABB3              m_parent_bbox;
-    Object&             m_object;
-    StringArray         m_front_material_names;
-    StringArray         m_back_material_names;
-
-    explicit Impl(Object& object)
-      : m_object(object)
-    {
-    }
+    Transformd              m_transform;
+    string                  m_object_name;
+    StringDictionary        m_front_material_mappings;
+    StringDictionary        m_back_material_mappings;
 };
 
 namespace
@@ -74,21 +73,23 @@ namespace
 }
 
 ObjectInstance::ObjectInstance(
-    const char*         name,
-    const ParamArray&   params,
-    Object&             object,
-    const Transformd&   transform,
-    const StringArray&  front_materials,
-    const StringArray&  back_materials)
+    const char*             name,
+    const ParamArray&       params,
+    const char*             object_name,
+    const Transformd&       transform,
+    const StringDictionary& front_material_mappings,
+    const StringDictionary& back_material_mappings)
   : Entity(g_class_uid, params)
-  , impl(new Impl(object))
+  , impl(new Impl())
 {
     set_name(name);
 
     impl->m_transform = transform;
-    impl->m_parent_bbox = transform.to_parent(object.compute_local_bbox());
-    impl->m_front_material_names = front_materials;
-    impl->m_back_material_names = back_materials;
+    impl->m_object_name = object_name;
+    impl->m_front_material_mappings = front_material_mappings;
+    impl->m_back_material_mappings = back_material_mappings;
+
+    m_object = 0;
 }
 
 ObjectInstance::~ObjectInstance()
@@ -101,9 +102,9 @@ void ObjectInstance::release()
     delete this;
 }
 
-Object& ObjectInstance::get_object() const
+const char* ObjectInstance::get_object_name() const
 {
-    return impl->m_object;
+    return impl->m_object_name.c_str();
 }
 
 const Transformd& ObjectInstance::get_transform() const
@@ -111,75 +112,183 @@ const Transformd& ObjectInstance::get_transform() const
     return impl->m_transform;
 }
 
-const GAABB3& ObjectInstance::get_parent_bbox() const
+Object* ObjectInstance::find_object() const
 {
-    return impl->m_parent_bbox;
+    const Entity* parent = get_parent();
+
+    while (parent)
+    {
+        if (dynamic_cast<const Assembly*>(parent) == 0)
+            break;
+
+        Object* object =
+            static_cast<const Assembly*>(parent)
+                ->objects().get_by_name(impl->m_object_name.c_str());
+
+        if (object)
+            return object;
+
+        parent = parent->get_parent();
+    }
+
+    return 0;
+}
+
+GAABB3 ObjectInstance::compute_parent_bbox() const
+{
+    // In many places, we need the parent-space bounding box of an object instance
+    // before input binding is performed, i.e. before the instantiated object is
+    // bound to the instance. Therefore we manually look the object up through the
+    // assembly hierarchy instead of simply using m_object.
+
+    const Object* object = find_object();
+
+    return
+        object
+            ? impl->m_transform.to_parent(object->compute_local_bbox())
+            : GAABB3::invalid();
 }
 
 void ObjectInstance::clear_front_materials()
 {
-    m_front_materials.clear();
-    impl->m_front_material_names.clear();
+    impl->m_front_material_mappings.clear();
 }
 
 void ObjectInstance::clear_back_materials()
 {
-    m_back_materials.clear();
-    impl->m_back_material_names.clear();
+    impl->m_back_material_mappings.clear();
 }
 
 void ObjectInstance::assign_material(
-    const size_t    slot,
-    const Side      side,
-    const char*     material_name)
+    const char*             slot,
+    const Side              side,
+    const char*             name)
 {
-    StringArray& material_names =
+    StringDictionary& material_mappings =
         side == FrontSide
-            ? impl->m_front_material_names
-            : impl->m_back_material_names;
+            ? impl->m_front_material_mappings
+            : impl->m_back_material_mappings;
 
-    ensure_minimum_size(material_names, slot + 1);
-    material_names.set(slot, material_name);
+    material_mappings.insert(slot, name);
 }
 
-const StringArray& ObjectInstance::get_front_material_names() const
+const StringDictionary& ObjectInstance::get_front_material_mappings() const
 {
-    return impl->m_front_material_names;
+    return impl->m_front_material_mappings;
 }
 
-const StringArray& ObjectInstance::get_back_material_names() const
+const StringDictionary& ObjectInstance::get_back_material_mappings() const
 {
-    return impl->m_back_material_names;
+    return impl->m_back_material_mappings;
+}
+
+void ObjectInstance::unbind_object()
+{
+    m_object = 0;
+}
+
+void ObjectInstance::bind_object(const ObjectContainer& objects)
+{
+    if (m_object == 0)
+        m_object = objects.get_by_name(impl->m_object_name.c_str());
+}
+
+void ObjectInstance::check_object() const
+{
+    if (m_object == 0)
+        throw ExceptionUnknownEntity(impl->m_object_name.c_str());
 }
 
 namespace
 {
-    void bind_materials(
-        const MaterialContainer&    materials,
-        const StringArray&          material_names,
-        MaterialArray&              material_array)
+    void do_bind_materials(
+        MaterialArray&              material_array,
+        const Object&               object,
+        const StringDictionary&     material_mappings,
+        const MaterialContainer&    materials)
     {
-        const size_t material_count = material_names.size();
-
-        material_array.clear();
-        material_array.resize(material_count);
-
-        for (size_t i = 0; i < material_count; ++i)
+        for (size_t i = 0; i < material_array.size(); ++i)
         {
-            const char* material_name = material_names[i];
-
-            material_array[i] = materials.get_by_name(material_name);
-
             if (material_array[i] == 0)
-                throw ExceptionUnknownEntity(material_name);
+            {
+                if (object.get_material_slot_count() > 1)
+                {
+                    const char* slot_name = object.get_material_slot(i);
+
+                    if (!material_mappings.exist(slot_name))
+                        continue;
+
+                    const char* material_name = material_mappings.get(slot_name);
+                    material_array[i] = materials.get_by_name(material_name);
+                }
+                else if (!material_mappings.empty())
+                {
+                    const char* material_name = material_mappings.begin().value();
+                    material_array[i] = materials.get_by_name(material_name);
+                }
+            }
+        }
+    }
+
+    void do_check_materials(
+        const MaterialArray&        material_array,
+        const Object&               object,
+        const StringDictionary&     material_mappings)
+    {
+        for (size_t i = 0; i < material_array.size(); ++i)
+        {
+            if (material_array[i] == 0)
+            {
+                if (object.get_material_slot_count() > 1)
+                {
+                    const char* slot_name = object.get_material_slot(i);
+
+                    if (!material_mappings.exist(slot_name))
+                        continue;
+
+                    const char* material_name = material_mappings.get(slot_name);
+                    throw ExceptionUnknownEntity(material_name);
+                }
+                else if (!material_mappings.empty())
+                {
+                    const char* material_name = material_mappings.begin().value();
+                    throw ExceptionUnknownEntity(material_name);
+                }
+            }
         }
     }
 }
 
-void ObjectInstance::bind_entities(const MaterialContainer& materials)
+void ObjectInstance::unbind_materials()
 {
-    bind_materials(materials, impl->m_front_material_names, m_front_materials);
-    bind_materials(materials, impl->m_back_material_names, m_back_materials);
+    assert(m_object);
+
+    m_front_materials.clear();
+    m_back_materials.clear();
+
+    size_t slot_count = m_object->get_material_slot_count();
+
+    if (slot_count < 1)
+        slot_count = 1;
+
+    m_front_materials.resize(slot_count);
+    m_back_materials.resize(slot_count);
+}
+
+void ObjectInstance::bind_materials(const MaterialContainer& materials)
+{
+    assert(m_object);
+
+    do_bind_materials(m_front_materials, *m_object, impl->m_front_material_mappings, materials);
+    do_bind_materials(m_back_materials, *m_object, impl->m_back_material_mappings, materials);
+}
+
+void ObjectInstance::check_materials() const
+{
+    assert(m_object);
+
+    do_check_materials(m_front_materials, *m_object, impl->m_front_material_mappings);
+    do_check_materials(m_back_materials, *m_object, impl->m_back_material_mappings);
 }
 
 
@@ -187,23 +296,30 @@ void ObjectInstance::bind_entities(const MaterialContainer& materials)
 // ObjectInstanceFactory class implementation.
 //
 
+DictionaryArray ObjectInstanceFactory::get_widget_definitions()
+{
+    DictionaryArray definitions;
+
+    return definitions;
+}
+
 auto_release_ptr<ObjectInstance> ObjectInstanceFactory::create(
-    const char*         name,
-    const ParamArray&   params,
-    Object&             object,
-    const Transformd&   transform,
-    const StringArray&  front_materials,
-    const StringArray&  back_materials)
+    const char*             name,
+    const ParamArray&       params,
+    const char*             object_name,
+    const Transformd&       transform,
+    const StringDictionary& front_material_mappings,
+    const StringDictionary& back_material_mappings)
 {
     return
         auto_release_ptr<ObjectInstance>(
             new ObjectInstance(
                 name,
                 params,
-                object,
+                object_name,
                 transform,
-                front_materials,
-                back_materials));
+                front_material_mappings,
+                back_material_mappings));
 }
 
 }   // namespace renderer

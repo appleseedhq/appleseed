@@ -47,7 +47,7 @@
 #include "foundation/math/matrix.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
-#include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/test.h"
 
@@ -66,33 +66,33 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
             auto_release_ptr<Assembly> assembly(
                 AssemblyFactory::create("assembly", ParamArray()));
 
-            BoundingBoxObject* object =
-                new BoundingBoxObject(
-                    "object",
-                    GAABB3(GVector3(-1.0), GVector3(1.0)));
-            assembly->objects().insert(auto_release_ptr<Object>(object));
+            assembly->objects().insert(
+                auto_release_ptr<Object>(
+                    new BoundingBoxObject(
+                        "object",
+                        GAABB3(GVector3(-1.0), GVector3(1.0)))));
 
             assembly->object_instances().insert(
                 ObjectInstanceFactory::create(
                     "object_instance",
                     ParamArray(),
-                    *object,
+                    "object",
                     Transformd::identity(),
-                    StringArray()));
+                    StringDictionary()));
 
             m_scene->assembly_instances().insert(
                 auto_release_ptr<AssemblyInstance>(
                     AssemblyInstanceFactory::create(
                         "assembly_instance",
                         ParamArray(),
-                        *assembly)));
+                        "assembly")));
 
             m_scene->assemblies().insert(assembly);
         }
     };
 
     struct Fixture
-      : public TestScene
+      : public BindInputs<TestScene>
     {
         TraceContext    m_trace_context;
         TextureStore    m_texture_store;

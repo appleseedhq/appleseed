@@ -41,7 +41,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/matrix.h"
 #include "foundation/math/transform.h"
-#include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/test.h"
 
@@ -74,27 +74,27 @@ TEST_SUITE(Renderer_Modeling_Scene_Scene)
             AssemblyFactory::create("assembly", ParamArray()));
 
         // Create an object.
-        BoundingBoxObject* object =
-            new BoundingBoxObject(
-                "object",
-                GAABB3(GVector3(-1.0), GVector3(1.0)));
-        assembly->objects().insert(auto_release_ptr<Object>(object));
+        assembly->objects().insert(
+            auto_release_ptr<Object>(
+                new BoundingBoxObject(
+                    "object",
+                    GAABB3(GVector3(-1.0), GVector3(1.0)))));
 
         // Create an instance of the object.
         assembly->object_instances().insert(
             ObjectInstanceFactory::create(
                 "object_inst",
                 ParamArray(),
-                *object,
+                "object",
                 Transformd::identity(),
-                StringArray()));
+                StringDictionary()));
 
         // Create an instance of the assembly.
         auto_release_ptr<AssemblyInstance> assembly_instance(
             AssemblyInstanceFactory::create(
                 "assembly_inst",
                 ParamArray(),
-                *assembly));
+                "assembly"));
         assembly_instance->transform_sequence().set_transform(
             0.0,
             Transformd(

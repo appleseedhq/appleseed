@@ -74,9 +74,10 @@ class SingleModelCollectionItem
         ProjectBuilder&             project_builder);
 
   private:
-    typedef CollectionItem<Entity, ParentEntity, ParentItem> CollectionItemType;
+    typedef CollectionItem<Entity, ParentEntity, ParentItem> Base;
+    typedef SingleModelCollectionItem<Entity, ParentEntity, ParentItem> This;
 
-    virtual ItemBase* create_item(Entity* entity) const override;
+    virtual ItemBase* create_item(Entity* entity) override;
 
     virtual void slot_create() override;
 };
@@ -93,20 +94,21 @@ SingleModelCollectionItem<Entity, ParentEntity, ParentItem>::SingleModelCollecti
     ParentEntity&                   parent,
     ParentItem*                     parent_item,
     ProjectBuilder&                 project_builder)
-  : CollectionItemType(class_uid, title, parent, parent_item, project_builder)
+  : Base(class_uid, title, parent, parent_item, project_builder)
 {
 }
 
 template <typename Entity, typename ParentEntity, typename ParentItem>
-ItemBase* SingleModelCollectionItem<Entity, ParentEntity, ParentItem>::create_item(Entity* entity) const
+ItemBase* SingleModelCollectionItem<Entity, ParentEntity, ParentItem>::create_item(Entity* entity)
 {
     assert(entity);
 
     return
-        new SingleModelEntityItem<Entity, ParentEntity>(
+        new SingleModelEntityItem<Entity, ParentEntity, This>(
             entity,
-            CollectionItemType::m_parent,
-            CollectionItemType::m_project_builder);
+            Base::m_parent,
+            this,
+            Base::m_project_builder);
 }
 
 template <typename Entity, typename ParentEntity, typename ParentItem>
@@ -121,7 +123,7 @@ void SingleModelCollectionItem<Entity, ParentEntity, ParentItem>::slot_create()
     const std::string name_suggestion =
         get_name_suggestion(
             EntityTraits::get_entity_type_name(),
-            EntityTraits::get_entity_container(CollectionItemType::m_parent));
+            EntityTraits::get_entity_container(Base::m_parent));
 
     typedef typename EntityTraits::FactoryType FactoryType;
 
@@ -131,12 +133,12 @@ void SingleModelCollectionItem<Entity, ParentEntity, ParentItem>::slot_create()
             FactoryType::get_widget_definitions()));
 
     std::auto_ptr<EntityEditorWindow::IEntityBrowser> entity_browser(
-        new EntityBrowser<ParentEntity>(CollectionItemType::m_parent));
+        new EntityBrowser<ParentEntity>(Base::m_parent));
 
     open_entity_editor(
         QTreeWidgetItem::treeWidget(),
         window_title,
-        CollectionItemType::m_project_builder.get_project(),
+        Base::m_project_builder.get_project(),
         form_factory,
         entity_browser,
         this,

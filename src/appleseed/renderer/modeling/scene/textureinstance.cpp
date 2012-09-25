@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/modeling/scene/basegroup.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
@@ -145,10 +146,38 @@ const LightingConditions& TextureInstance::get_lighting_conditions() const
     return impl->m_lighting_conditions;
 }
 
-void TextureInstance::bind_entities(const TextureContainer& textures)
+Texture* TextureInstance::find_texture() const
 {
-    m_texture = textures.get_by_name(impl->m_texture_name.c_str());
+    const Entity* parent = get_parent();
 
+    while (parent)
+    {
+        Texture* texture =
+            dynamic_cast<const BaseGroup*>(parent)
+                ->textures().get_by_name(impl->m_texture_name.c_str());
+
+        if (texture)
+            return texture;
+
+        parent = parent->get_parent();
+    }
+
+    return 0;
+}
+
+void TextureInstance::unbind_texture()
+{
+    m_texture = 0;
+}
+
+void TextureInstance::bind_texture(const TextureContainer& textures)
+{
+    if (m_texture == 0)
+        m_texture = textures.get_by_name(impl->m_texture_name.c_str());
+}
+
+void TextureInstance::check_texture() const
+{
     if (m_texture == 0)
         throw ExceptionUnknownEntity(impl->m_texture_name.c_str());
 }

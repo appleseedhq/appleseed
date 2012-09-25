@@ -403,9 +403,7 @@ bool MainWindow::can_close_project()
         return true;
 
     // The current project has been modified, ask the user what to do.
-    const int result = show_modified_project_message_box(this);
-
-    switch (result)
+    switch (show_modified_project_message_box(this))
     {
       case QMessageBox::Save:
         slot_save_project();

@@ -30,8 +30,6 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTBUILDER_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/assemblycollectionitem.h"
-#include "mainwindow/project/assemblyitem.h"
 #include "mainwindow/project/multimodelentityeditorformfactory.h"
 
 // appleseed.renderer headers.
@@ -53,6 +51,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/math/transform.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/uid.h"
@@ -64,10 +63,6 @@
 #include <cassert>
 #include <cstddef>
 #include <string>
-
-// Forward declarations.
-namespace appleseed { namespace studio { class BaseGroupItem; } }
-namespace appleseed { namespace studio { class TextureCollectionItem; } }
 
 namespace appleseed {
 namespace studio {
@@ -90,10 +85,9 @@ class ProjectBuilder
 
     void notify_project_modification() const;
 
-    template <typename Entity, typename ParentEntity, typename ParentItem>
-    void insert_entity(
+    template <typename Entity, typename ParentEntity>
+    Entity* insert_entity(
         ParentEntity&                       parent,
-        ParentItem*                         parent_item,
         const foundation::Dictionary&       values) const;
 
     template <typename Entity, typename ParentEntity>
@@ -107,58 +101,19 @@ class ProjectBuilder
         ParentEntity&                       parent,
         const foundation::Dictionary&       values) const;
 
+    // Simulate partial specialization of edit_entity() for Entity = renderer::ObjectInstance.
+    template <typename ParentEntity>
+    renderer::ObjectInstance* edit_entity(
+        renderer::ObjectInstance*           old_entity,
+        ParentEntity&                       parent,
+        const foundation::Dictionary&       values) const;
+
     // Simulate partial specialization of edit_entity() for Entity = renderer::TextureInstance.
     template <typename ParentEntity>
     renderer::TextureInstance* edit_entity(
         renderer::TextureInstance*          old_entity,
         ParentEntity&                       parent,
         const foundation::Dictionary&       values) const;
-
-    void insert_assembly(
-        renderer::BaseGroup&                parent,
-        BaseGroupItem*                      parent_item,
-        const std::string&                  name) const;
-
-    void remove_assembly(
-        renderer::BaseGroup&                parent,
-        BaseGroupItem*                      parent_item,
-        const foundation::UniqueID          assembly_uid) const;
-
-    void insert_assembly_instance(
-        renderer::BaseGroup&                parent,
-        BaseGroupItem*                      parent_item,
-        const std::string&                  name,
-        renderer::Assembly&                 assembly) const;
-
-    void remove_assembly_instance(
-        renderer::BaseGroup&                parent,
-        BaseGroupItem*                      parent_item,
-        const foundation::UniqueID          assembly_instance_uid) const;
-
-    void insert_texture(
-        renderer::BaseGroup&                parent,
-        BaseGroupItem*                      parent_item,
-        const std::string&                  path) const;
-
-    void remove_texture(
-        renderer::BaseGroup&                parent,
-        BaseGroupItem*                      parent_item,
-        const foundation::UniqueID          texture_uid) const;
-
-    void insert_objects(
-        renderer::Assembly&                 parent,
-        AssemblyItem*                       parent_item,
-        const std::string&                  path) const;
-
-    void remove_object(
-        renderer::Assembly&                 parent,
-        AssemblyItem*                       parent_item,
-        const foundation::UniqueID          object_uid) const;
-
-    void remove_object_instance(
-        renderer::Assembly&                 parent,
-        AssemblyItem*                       parent_item,
-        const foundation::UniqueID          object_instance_uid) const;
 
   signals:
     void signal_project_modified() const;
@@ -245,19 +200,19 @@ ProjectBuilder::get_factory_registrar<renderer::Texture>() const
     return m_texture_factory_registrar;
 }
 
-template <typename Entity, typename ParentEntity, typename ParentItem>
-void ProjectBuilder::insert_entity(
+template <typename Entity, typename ParentEntity>
+Entity* ProjectBuilder::insert_entity(
     ParentEntity&                       parent,
-    ParentItem*                         parent_item,
     const foundation::Dictionary&       values) const
 {
     foundation::auto_release_ptr<Entity> entity(create_entity<Entity>(values));
-
-    parent_item->add_item(entity.get());
+    Entity* entity_ptr = entity.get();
 
     renderer::EntityTraits<Entity>::insert_entity(entity, parent);
 
     notify_project_modification();
+
+    return entity_ptr;
 }
 
 template <typename Entity, typename ParentEntity>
@@ -309,6 +264,40 @@ inline renderer::Camera* ProjectBuilder::edit_entity(
     renderer::EntityTraits<renderer::Camera>::remove_entity(old_entity, parent);
     renderer::EntityTraits<renderer::Camera>::insert_entity(new_entity, parent);
 
+    notify_project_modification();
+
+    return new_entity_ptr;
+}
+
+template <typename ParentEntity>
+inline renderer::ObjectInstance* ProjectBuilder::edit_entity(
+    renderer::ObjectInstance*           old_entity,
+    ParentEntity&                       parent,
+    const foundation::Dictionary&       values) const
+{
+    const std::string object_name = old_entity->get_object_name();
+    const foundation::Transformd transform = old_entity->get_transform();
+    const foundation::StringDictionary front_material_mappings = old_entity->get_front_material_mappings();
+    const foundation::StringDictionary back_material_mappings = old_entity->get_back_material_mappings();
+    const std::string name = get_entity_name(values);
+
+    foundation::Dictionary clean_values(values);
+    clean_values.strings().remove(EntityEditorFormFactoryBase::NameParameter);
+
+    foundation::auto_release_ptr<renderer::ObjectInstance> new_entity(
+        renderer::ObjectInstanceFactory::create(
+            name.c_str(),
+            clean_values,
+            object_name.c_str(),
+            transform,
+            front_material_mappings,
+            back_material_mappings));
+    renderer::ObjectInstance* new_entity_ptr = new_entity.get();
+
+    renderer::EntityTraits<renderer::ObjectInstance>::remove_entity(old_entity, parent);
+    renderer::EntityTraits<renderer::ObjectInstance>::insert_entity(new_entity, parent);
+
+    parent.bump_version_id();
     notify_project_modification();
 
     return new_entity_ptr;
@@ -414,26 +403,6 @@ inline foundation::auto_release_ptr<renderer::Texture> ProjectBuilder::create_en
     assert(factory);
 
     return factory->create(name.c_str(), clean_values, m_project.get_search_paths());
-}
-
-template <>
-inline foundation::auto_release_ptr<renderer::TextureInstance> ProjectBuilder::create_entity(
-    const foundation::Dictionary&       values) const
-{
-    static const char* TextureNameParameter = "__texture_name";
-
-    const std::string name = get_entity_name(values);
-    const std::string texture_name = values.get<std::string>(TextureNameParameter);
-
-    foundation::Dictionary clean_values(values);
-    clean_values.strings().remove(EntityEditorFormFactoryBase::NameParameter);
-    clean_values.strings().remove(TextureNameParameter);
-
-    return
-        renderer::TextureInstanceFactory::create(
-            name.c_str(),
-            clean_values,
-            texture_name.c_str());
 }
 
 template <>

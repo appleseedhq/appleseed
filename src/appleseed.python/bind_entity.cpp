@@ -1,3 +1,4 @@
+
 //
 // This source file is part of appleseed.
 // Visit http://appleseedhq.net/ for additional information and resources.
@@ -25,12 +26,14 @@
 // THE SOFTWARE.
 //
 
-// Has to be first, to avoid redifinition warnings.
+// Has to be first, to avoid redefinition warnings.
 #include "Python.h"
 
+// appleseed.python headers.
 #include "bind_auto_release_ptr.h"
 #include "dict2dict.h"
 
+// appleseed.renderer headers.
 #include "renderer/modeling/entity/connectableentity.h"
 #include "renderer/modeling/entity/entity.h"
 #include "renderer/modeling/entity/entitymap.h"
@@ -39,6 +42,7 @@
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
 
+// Standard headers.
 #include <string>
 
 namespace bpy = boost::python;
@@ -47,37 +51,35 @@ using namespace renderer;
 
 namespace detail
 {
-
-Entity* get_entity_vec_item(EntityVector& vec, int index)
-{
-    if (index < 0)
-        index = vec.size() - index;
-
-    if (index < 0 || static_cast<size_t>(index) >= vec.size())
+    Entity* get_entity_vec_item(EntityVector& vec, int index)
     {
-        PyErr_SetString(PyExc_IndexError, "Invalid index in appleseed.EntityVector" );
-        bpy::throw_error_already_set();
+        if (index < 0)
+            index = vec.size() - index;
+
+        if (index < 0 || static_cast<size_t>(index) >= vec.size())
+        {
+            PyErr_SetString(PyExc_IndexError, "Invalid index in appleseed.EntityVector" );
+            bpy::throw_error_already_set();
+        }
+
+        return vec.get_by_index(index);
     }
 
-    return vec.get_by_index(index);
-}
+    Entity* get_entity_map_item(EntityMap& map, const std::string& key)
+    {
+        return map.get_by_name(key.c_str());
+    }
 
-Entity* get_entity_map_item(EntityMap& map, const std::string& key)
-{
-    return map.get_by_name(key.c_str());
-}
+    bpy::dict entity_get_parameters(const Entity* e)
+    {
+        return param_array_to_bpy_dict(e->get_parameters());
+    }
 
-bpy::dict entity_get_parameters(const Entity* e)
-{
-    return param_array_to_bpy_dict(e->get_parameters());
+    void entity_set_parameters(Entity* e, const bpy::dict& params)
+    {
+        e->get_parameters() = bpy_dict_to_param_array(params);
+    }
 }
-
-void entity_set_parameters(Entity* e, const bpy::dict& params)
-{
-    e->get_parameters() = bpy_dict_to_param_array(params);
-}
-
-} // detail
 
 void bind_entity()
 {

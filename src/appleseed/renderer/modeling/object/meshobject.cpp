@@ -32,11 +32,11 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/tessellation/statictessellation.h"
 #include "renderer/modeling/object/iregion.h"
-#include "renderer/modeling/object/regionkit.h"
 #include "renderer/modeling/object/triangle.h"
 
-// appleseed.foundation headers.
-#include "foundation/utility/lazy.h"
+// Standard headers.
+#include <string>
+#include <vector>
 
 using namespace foundation;
 using namespace std;
@@ -86,6 +86,7 @@ struct MeshObject::Impl
     MeshRegion                  m_region;
     RegionKit                   m_region_kit;
     mutable Lazy<RegionKit>     m_lazy_region_kit;
+    vector<string>              m_material_slots;
 
     Impl()
       : m_region(&m_tess)
@@ -220,18 +221,40 @@ size_t MeshObject::get_motion_segment_count() const
 }
 
 void MeshObject::set_vertex_pose(
-    const size_t    vertex_index,
-    const size_t    motion_segment_index,
-    const GVector3& v)
+    const size_t        vertex_index,
+    const size_t        motion_segment_index,
+    const GVector3&     v)
 {
     impl->m_tess.set_vertex_pose(vertex_index, motion_segment_index, v);
 }
 
 GVector3 MeshObject::get_vertex_pose(
-    const size_t    vertex_index,
-    const size_t    motion_segment_index) const
+    const size_t        vertex_index,
+    const size_t        motion_segment_index) const
 {
     return impl->m_tess.get_vertex_pose(vertex_index, motion_segment_index);
+}
+
+void MeshObject::reserve_material_slots(const size_t count)
+{
+    impl->m_material_slots.reserve(count);
+}
+
+size_t MeshObject::push_material_slot(const char* name)
+{
+    const size_t index = impl->m_material_slots.size();
+    impl->m_material_slots.push_back(name);
+    return index;
+}
+
+size_t MeshObject::get_material_slot_count() const
+{
+    return impl->m_material_slots.size();
+}
+
+const char* MeshObject::get_material_slot(const size_t index) const
+{
+    return impl->m_material_slots[index].c_str();
 }
 
 

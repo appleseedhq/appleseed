@@ -26,6 +26,19 @@
 // THE SOFTWARE.
 //
 
+//
+// Compiling the STANN library on 64-bit Windows generates the following warnings:
+//
+//   warning C4267: 'var' : conversion from 'size_t' to 'type', possible loss of data
+//   warning C4800: 'type' : forcing value to bool 'true' or 'false' (performance warning)
+//
+// Since they are mostly harmless, we simply disable them for this file.
+//
+
+#pragma warning (push)
+#pragma warning (disable : 4800)
+#pragma warning (disable : 4267)
+
 // appleseed.foundation headers.
 #include "foundation/math/knn.h"
 #include "foundation/math/rng.h"
@@ -35,10 +48,7 @@
 #include "foundation/utility/test.h"
 
 // STANN headers.
-#pragma warning (push)
-#pragma warning (disable : 4800)
 #include "sfcnn.hpp"
-#pragma warning (pop)
 
 // Standard headers.
 #include <cstddef>
@@ -301,3 +311,5 @@ TEST_SUITE(Foundation_Math_Knn_Query)
         }
     }
 }
+
+#pragma warning (pop)

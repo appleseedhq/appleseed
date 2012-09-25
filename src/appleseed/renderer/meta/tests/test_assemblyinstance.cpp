@@ -33,12 +33,14 @@
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/objectinstance.h"
+#include "renderer/modeling/scene/scene.h"
 #include "renderer/utility/paramarray.h"
 #include "renderer/utility/testutils.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/matrix.h"
 #include "foundation/math/transform.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/test.h"
 
@@ -47,43 +49,67 @@ using namespace renderer;
 
 TEST_SUITE(Renderer_Modeling_Scene_AssemblyInstance)
 {
-    TEST_CASE(ComputeLocalBBox_TakesChildAssemblyInstanceIntoAccount)
+    struct TestScene
     {
-        // Inner assembly.
+        auto_release_ptr<Scene> m_scene;
 
-        auto_release_ptr<Assembly> inner_assembly =
-            AssemblyFactory::create("inner_assembly", ParamArray());
+        TestScene()
+          : m_scene(SceneFactory::create())
+        {
+            // Inner assembly.
 
-        BoundingBoxObject* object =
-            new BoundingBoxObject(
-                "object",
-                GAABB3(GVector3(-1.0), GVector3(1.0)));
-        inner_assembly->objects().insert(auto_release_ptr<Object>(object));
+            auto_release_ptr<Assembly> inner_assembly(
+                AssemblyFactory::create("inner_assembly", ParamArray()));
 
-        inner_assembly->object_instances().insert(
-            ObjectInstanceFactory::create(
-                "object_instance",
-                ParamArray(),
-                *object,
-                Transformd::identity(),
-                StringArray()));
+            inner_assembly->objects().insert(
+                auto_release_ptr<Object>(
+                    new BoundingBoxObject(
+                        "object",
+                        GAABB3(GVector3(-1.0), GVector3(1.0)))));
 
-        auto_release_ptr<AssemblyInstance> inner_assembly_instance =
-            AssemblyInstanceFactory::create("inner_assembly_instance", ParamArray(), inner_assembly.ref());
+            inner_assembly->object_instances().insert(
+                ObjectInstanceFactory::create(
+                    "object_instance",
+                    ParamArray(),
+                    "object",
+                    Transformd::identity(),
+                    StringDictionary()));
 
-        inner_assembly_instance->transform_sequence().set_transform(
-            0.0,
-            Transformd(Matrix4d::scaling(Vector3d(10.0))));
+            auto_release_ptr<AssemblyInstance> inner_assembly_instance(
+                AssemblyInstanceFactory::create(
+                    "inner_assembly_instance",
+                    ParamArray(),
+                    "inner_assembly"));
 
-        // Outer assembly.
+            inner_assembly_instance->transform_sequence().set_transform(
+                0.0,
+                Transformd(Matrix4d::scaling(Vector3d(10.0))));
 
-        auto_release_ptr<Assembly> outer_assembly =
-            AssemblyFactory::create("outer_assembly", ParamArray());
+            // Outer assembly.
 
-        outer_assembly->assembly_instances().insert(inner_assembly_instance);
+            auto_release_ptr<Assembly> outer_assembly(
+                AssemblyFactory::create(
+                    "outer_assembly",
+                    ParamArray()));
 
-        auto_release_ptr<AssemblyInstance> outer_assembly_instance =
-            AssemblyInstanceFactory::create("outer_assembly_instance", ParamArray(), outer_assembly.ref());
+            outer_assembly->assemblies().insert(inner_assembly);
+            outer_assembly->assembly_instances().insert(inner_assembly_instance);
+
+            m_scene->assembly_instances().insert(
+                auto_release_ptr<AssemblyInstance>(
+                    AssemblyInstanceFactory::create(
+                        "outer_assembly_instance",
+                        ParamArray(),
+                        "outer_assembly")));
+
+            m_scene->assemblies().insert(outer_assembly);
+        }
+    };
+
+    TEST_CASE_F(ComputeLocalBBox_TakesChildAssemblyInstanceIntoAccount, TestScene)
+    {
+        const AssemblyInstance* outer_assembly_instance =
+            m_scene->assembly_instances().get_by_name("outer_assembly_instance");
 
         const GAABB3 local_bbox = outer_assembly_instance->compute_local_bbox();
 

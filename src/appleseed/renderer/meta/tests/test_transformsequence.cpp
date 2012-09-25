@@ -197,6 +197,13 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
         }
     };
 
+    TEST_CASE_F(CopyConstructor_CopiesTransformInterpolators, TwoTransformsFixture)
+    {
+        TransformSequence copy(m_sequence);
+
+        EXPECT_EQ(m_expected_first_transform, copy.evaluate(0.0));
+    }
+
     TEST_CASE_F(Evaluate_GivenTwoTransforms_WhenTimeBeforeFirstTransform_ReturnsFirstTransform, TwoTransformsFixture)
     {
         EXPECT_EQ(m_expected_first_transform, m_sequence.evaluate(0.0));

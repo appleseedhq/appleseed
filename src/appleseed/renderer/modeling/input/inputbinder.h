@@ -70,9 +70,10 @@ class InputBinder
     };
 
     typedef std::vector<AssemblyInfo> AssemblyInfoVector;
+    typedef AssemblyInfoVector::const_reverse_iterator AssemblyInfoIt;
 
     size_t                  m_error_count;
-    AssemblyInfoVector      m_assembly_info_stack;
+    AssemblyInfoVector      m_assembly_info;
 
     // Build the symbol table for a given scene.
     void build_scene_symbol_table(

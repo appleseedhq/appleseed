@@ -1,3 +1,4 @@
+
 //
 // This source file is part of appleseed.
 // Visit http://appleseedhq.net/ for additional information and resources.
@@ -25,11 +26,13 @@
 // THE SOFTWARE.
 //
 
-// Has to be first, to avoid redifinition warnings.
+// Has to be first, to avoid redefinition warnings.
 #include "Python.h"
 
+// boost headers.
 #include <boost/python.hpp>
 
+// appleseed.foundation headers.
 #include "foundation/math/aabb.h"
 #include "foundation/utility/iostreamop.h"
 
@@ -38,22 +41,20 @@ using namespace foundation;
 
 namespace detail
 {
+    template <class T>
+    void bind_aabb3(const char* class_name)
+    {
+        bpy::class_<AABB<T,3> >(class_name)
+            .def_readwrite("min", &AABB<T,3>::min)
+            .def_readwrite("max", &AABB<T,3>::max)
 
-template<class T>
-void bind_aabb3(const char *class_name)
-{
-    bpy::class_<AABB<T,3> >(class_name)
-        .def_readwrite("min", &AABB<T,3>::min)
-        .def_readwrite("max", &AABB<T,3>::max)
-
-        // a bug in boost::python, this needs
-        // the extra self_ns qualification
-        .def(bpy::self_ns::str(bpy::self))
-        .def(bpy::self_ns::repr(bpy::self))
-        ;
+            // a bug in boost::python, this needs
+            // the extra self_ns qualification
+            .def(bpy::self_ns::str(bpy::self))
+            .def(bpy::self_ns::repr(bpy::self))
+            ;
+    }
 }
-
-} // detail
 
 void bind_bbox()
 {

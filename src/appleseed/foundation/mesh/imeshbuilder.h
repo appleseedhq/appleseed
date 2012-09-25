@@ -66,6 +66,9 @@ class IMeshBuilder
     // Return the index of the vector within the mesh.
     virtual size_t push_tex_coords(const Vector2d& v) = 0;
 
+    // Append a material slot to the mesh.
+    virtual size_t push_material_slot(const std::string& name) = 0;
+
     // Begin the definition of a face.
     virtual void begin_face(const size_t vertex_count) = 0;
 

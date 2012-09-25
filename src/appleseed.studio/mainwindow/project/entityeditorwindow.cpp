@@ -174,11 +174,8 @@ void EntityEditorWindow::rebuild_form(const Dictionary& values)
 void EntityEditorWindow::create_form_layout()
 {
     m_form_layout = new QFormLayout(m_ui->scrollarea_contents);
+    m_form_layout->setVerticalSpacing(10);
     m_form_layout->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
-
-    int left, top, right, bottom;
-    m_form_layout->getContentsMargins(&left, &top, &right, &bottom);
-    m_form_layout->setContentsMargins(0, top, 0, bottom);
 }
 
 Dictionary EntityEditorWindow::get_widget_definition(const string& name) const
@@ -294,12 +291,12 @@ void EntityEditorWindow::create_entity_picker_input_widget(const Dictionary& def
 {
     QLineEdit* line_edit = new QLineEdit(m_ui->scrollarea_contents);
 
-    QWidget* button = new QPushButton("Browse", m_ui->scrollarea_contents);
-    button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    connect(button, SIGNAL(clicked()), m_entity_picker_signal_mapper, SLOT(map()));
+    QWidget* browse_button = new QPushButton("Browse", m_ui->scrollarea_contents);
+    browse_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    connect(browse_button, SIGNAL(clicked()), m_entity_picker_signal_mapper, SLOT(map()));
 
     const string name = definition.get<string>("name");
-    m_entity_picker_signal_mapper->setMapping(button, QString::fromStdString(name));
+    m_entity_picker_signal_mapper->setMapping(browse_button, QString::fromStdString(name));
 
     IInputWidgetProxy* widget_proxy = new LineEditProxy(line_edit);
     m_widget_proxies[name] = widget_proxy;
@@ -314,8 +311,9 @@ void EntityEditorWindow::create_entity_picker_input_widget(const Dictionary& def
     }
 
     QHBoxLayout* layout = new QHBoxLayout();
+    layout->setSpacing(6);
     layout->addWidget(line_edit);
-    layout->addWidget(button);
+    layout->addWidget(browse_button);
     m_form_layout->addRow(get_label_text(definition), layout);
 }
 
@@ -344,6 +342,7 @@ void EntityEditorWindow::create_color_picker_input_widget(const Dictionary& defi
     }
 
     QHBoxLayout* layout = new QHBoxLayout();
+    layout->setSpacing(6);
     layout->addWidget(line_edit);
     layout->addWidget(picker_button);
     m_form_layout->addRow(get_label_text(definition), layout);
@@ -353,12 +352,12 @@ void EntityEditorWindow::create_file_picker_input_widget(const Dictionary& defin
 {
     QLineEdit* line_edit = new QLineEdit(m_ui->scrollarea_contents);
 
-    QWidget* button = new QPushButton("Browse", m_ui->scrollarea_contents);
-    button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    connect(button, SIGNAL(clicked()), m_file_picker_signal_mapper, SLOT(map()));
+    QWidget* browse_button = new QPushButton("Browse", m_ui->scrollarea_contents);
+    browse_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    connect(browse_button, SIGNAL(clicked()), m_file_picker_signal_mapper, SLOT(map()));
 
     const string name = definition.get<string>("name");
-    m_file_picker_signal_mapper->setMapping(button, QString::fromStdString(name));
+    m_file_picker_signal_mapper->setMapping(browse_button, QString::fromStdString(name));
 
     IInputWidgetProxy* widget_proxy = new LineEditProxy(line_edit);
     m_widget_proxies[name] = widget_proxy;
@@ -373,8 +372,9 @@ void EntityEditorWindow::create_file_picker_input_widget(const Dictionary& defin
     }
 
     QHBoxLayout* layout = new QHBoxLayout();
+    layout->setSpacing(6);
     layout->addWidget(line_edit);
-    layout->addWidget(button);
+    layout->addWidget(browse_button);
     m_form_layout->addRow(get_label_text(definition), layout);
 }
 

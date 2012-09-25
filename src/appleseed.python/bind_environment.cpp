@@ -1,3 +1,4 @@
+
 //
 // This source file is part of appleseed.
 // Visit http://appleseedhq.net/ for additional information and resources.
@@ -27,12 +28,14 @@
 
 #include "bind_auto_release_ptr.h"
 
+// appleseed.python headers.
+#include "bind_typed_entity_containers.h"
+#include "dict2dict.h"
+
+// appleseed.renderer headers.
 #include "renderer/api/environment.h"
 #include "renderer/api/environmentedf.h"
 #include "renderer/api/environmentshader.h"
-
-#include "bind_typed_entity_containers.h"
-#include "dict2dict.h"
 
 namespace bpy = boost::python;
 using namespace foundation;
@@ -40,49 +43,47 @@ using namespace renderer;
 
 namespace detail
 {
-
-auto_release_ptr<EnvironmentEDF> create_environment_edf(const std::string env_type,
-                                                        const std::string& name,
-                                                        const bpy::dict& params)
-{
-    EnvironmentEDFFactoryRegistrar factories;
-    const IEnvironmentEDFFactory* factory = factories.lookup(env_type.c_str());
-
-    if (factory)
-        return factory->create(name.c_str(), bpy_dict_to_param_array(params));
-    else
-    {
-        PyErr_SetString(PyExc_RuntimeError, "EnvironmentEDF type not found");
-        bpy::throw_error_already_set();
-    }
-
-    return auto_release_ptr<EnvironmentEDF>();
-}
-
-auto_release_ptr<EnvironmentShader> create_environment_shader(const std::string& env_shader_type,
+    auto_release_ptr<EnvironmentEDF> create_environment_edf(const std::string env_type,
                                                             const std::string& name,
                                                             const bpy::dict& params)
-{
-    EnvironmentShaderFactoryRegistrar factories;
-    const IEnvironmentShaderFactory* factory = factories.lookup(env_shader_type.c_str());
-
-    if (factory)
-        return factory->create(name.c_str(), bpy_dict_to_param_array(params));
-    else
     {
-        PyErr_SetString(PyExc_RuntimeError, "EnvironmentShader type not found");
-        bpy::throw_error_already_set();
+        EnvironmentEDFFactoryRegistrar factories;
+        const IEnvironmentEDFFactory* factory = factories.lookup(env_type.c_str());
+
+        if (factory)
+            return factory->create(name.c_str(), bpy_dict_to_param_array(params));
+        else
+        {
+            PyErr_SetString(PyExc_RuntimeError, "EnvironmentEDF type not found");
+            bpy::throw_error_already_set();
+        }
+
+        return auto_release_ptr<EnvironmentEDF>();
     }
 
-    return auto_release_ptr<EnvironmentShader>();
-}
+    auto_release_ptr<EnvironmentShader> create_environment_shader(const std::string& env_shader_type,
+                                                                  const std::string& name,
+                                                                  const bpy::dict& params)
+    {
+        EnvironmentShaderFactoryRegistrar factories;
+        const IEnvironmentShaderFactory* factory = factories.lookup(env_shader_type.c_str());
 
-auto_release_ptr<Environment> create_environment(const std::string& name, const bpy::dict& params)
-{
-    return EnvironmentFactory::create(name.c_str(), bpy_dict_to_param_array(params));
-}
+        if (factory)
+            return factory->create(name.c_str(), bpy_dict_to_param_array(params));
+        else
+        {
+            PyErr_SetString(PyExc_RuntimeError, "EnvironmentShader type not found");
+            bpy::throw_error_already_set();
+        }
 
-} // detail
+        return auto_release_ptr<EnvironmentShader>();
+    }
+
+    auto_release_ptr<Environment> create_environment(const std::string& name, const bpy::dict& params)
+    {
+        return EnvironmentFactory::create(name.c_str(), bpy_dict_to_param_array(params));
+    }
+}
 
 void bind_environment()
 {

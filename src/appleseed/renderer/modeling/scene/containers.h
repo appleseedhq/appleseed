@@ -80,10 +80,9 @@ typedef TypedEntityVector<TextureInstance>      TextureInstanceContainer;
 
 
 //
-// Utilities.
+// Exception thrown when an entity is not found.
 //
 
-// Exception thrown by renderer::get_entity() when an entity is not found.
 struct ExceptionUnknownEntity
   : public foundation::StringException
 {
@@ -93,9 +92,37 @@ struct ExceptionUnknownEntity
     }
 };
 
+
+//
 // Retrieve a mandatory entity from a container.
 // Returns 0 if the parameter does not exist.
 // Throws a renderer::ExceptionUnknownEntity exception if the requested entity does not exist.
+//
+
+template <typename T, typename Container>
+T* get_required_entity(
+    const Container&    container,
+    const ParamArray&   params,
+    const std::string&  param_name);
+
+
+//
+// Retrieve an optional entity from a container.
+// Returns 0 if the parameter does not exist.
+// Throws a renderer::ExceptionUnknownEntity exception if the requested entity does not exist.
+//
+
+template <typename T, typename Container>
+T* get_optional_entity(
+    const Container&    container,
+    const ParamArray&   params,
+    const std::string&  param_name);
+
+
+//
+// Implementation.
+//
+
 template <typename T, typename Container>
 T* get_required_entity(
     const Container&    container,
@@ -103,7 +130,7 @@ T* get_required_entity(
     const std::string&  param_name)
 {
     const std::string entity_name =
-        params.get_required<std::string>(param_name.c_str(), "");
+        params.get_required<std::string>(param_name.c_str(), std::string());
 
     if (entity_name.empty())
         return 0;
@@ -116,9 +143,6 @@ T* get_required_entity(
     return entity;
 }
 
-// Retrieve an optional entity from a container.
-// Returns 0 if the parameter does not exist.
-// Throws a renderer::ExceptionUnknownEntity exception if the requested entity does not exist.
 template <typename T, typename Container>
 T* get_optional_entity(
     const Container&    container,
@@ -126,7 +150,7 @@ T* get_optional_entity(
     const std::string&  param_name)
 {
     const std::string entity_name =
-        params.get_optional<std::string>(param_name.c_str(), "");
+        params.get_optional<std::string>(param_name.c_str(), std::string());
 
     if (entity_name.empty())
         return 0;

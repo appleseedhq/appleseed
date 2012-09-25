@@ -31,10 +31,15 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/assemblyitem.h"
+#include "mainwindow/project/basegroupitem.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/tools.h"
 
+// appleseed.renderer headers.
+#include "renderer/api/utility.h"
+
 // appleseed.foundation headers.
+#include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/uid.h"
 
 // Qt headers.
@@ -93,10 +98,19 @@ void AssemblyCollectionItem::slot_create()
             assembly_name_suggestion);
 
     if (!assembly_name.empty())
-        m_project_builder.insert_assembly(m_parent, m_parent_item, assembly_name);
+    {
+        auto_release_ptr<Assembly> assembly(
+            AssemblyFactory::create(assembly_name.c_str(), ParamArray()));
+
+        m_parent_item->add_item(assembly.get());
+
+        m_parent.assemblies().insert(assembly);
+
+        m_project_builder.notify_project_modification();
+    }
 }
 
-ItemBase* AssemblyCollectionItem::create_item(Assembly* assembly) const
+ItemBase* AssemblyCollectionItem::create_item(Assembly* assembly)
 {
     assert(assembly);
 

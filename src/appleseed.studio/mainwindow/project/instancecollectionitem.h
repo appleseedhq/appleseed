@@ -26,45 +26,76 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_OBJECTINSTANCECOLLECTIONITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_OBJECTINSTANCECOLLECTIONITEM_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_INSTANCECOLLECTIONITEM_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_INSTANCECOLLECTIONITEM_H
 
 // appleseed.studio headers.
 #include "mainwindow/project/collectionitembase.h"
 
-// appleseed.renderer headers.
-#include "renderer/api/scene.h"
-
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
+#include "foundation/utility/uid.h"
+
+// Standard headers.
+#include <cassert>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class AssemblyItem; } }
 namespace appleseed { namespace studio { class ItemBase; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
+class QString;
 
 namespace appleseed {
 namespace studio {
 
-class ObjectInstanceCollectionItem
-  : public CollectionItemBase<renderer::ObjectInstance>
+template <typename Entity, typename EntityItem, typename ParentEntity>
+class InstanceCollectionItem
+  : public CollectionItemBase<Entity>
 {
   public:
-    ObjectInstanceCollectionItem(
-        renderer::ObjectInstanceContainer&  object_instances,
-        renderer::Assembly&                 parent,
-        AssemblyItem*                       parent_item,
-        ProjectBuilder&                     project_builder);
+    InstanceCollectionItem(
+        const foundation::UniqueID  class_uid,
+        const QString&              title,
+        ParentEntity&               parent,
+        ProjectBuilder&             project_builder);
 
   private:
-    renderer::Assembly&     m_parent;
-    AssemblyItem*           m_parent_item;
-    ProjectBuilder&         m_project_builder;
+    ParentEntity&                   m_parent;
+    ProjectBuilder&                 m_project_builder;
 
-    virtual ItemBase* create_item(renderer::ObjectInstance* object_instance) const override;
+    virtual ItemBase* create_item(Entity* entity) override;
 };
+
+
+//
+// InstanceCollectionItem class implementation.
+//
+
+template <typename Entity, typename EntityItem, typename ParentEntity>
+InstanceCollectionItem<Entity, EntityItem, ParentEntity>::InstanceCollectionItem(
+    const foundation::UniqueID      class_uid,
+    const QString&                  title,
+    ParentEntity&                   parent,
+    ProjectBuilder&                 project_builder)
+  : CollectionItemBase<Entity>(class_uid, title)
+  , m_parent(parent)
+  , m_project_builder(project_builder)
+{
+}
+
+template <typename Entity, typename EntityItem, typename ParentEntity>
+ItemBase* InstanceCollectionItem<Entity, EntityItem, ParentEntity>::create_item(Entity* entity)
+{
+    assert(entity);
+
+    return
+        new EntityItem(
+            entity,
+            m_parent,
+            this,
+            m_project_builder);
+}
 
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_OBJECTINSTANCECOLLECTIONITEM_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_INSTANCECOLLECTIONITEM_H

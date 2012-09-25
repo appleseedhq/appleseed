@@ -40,6 +40,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
+#include "foundation/utility/uid.h"
 
 using namespace foundation;
 using namespace std;

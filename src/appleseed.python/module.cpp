@@ -1,3 +1,4 @@
+
 //
 // This source file is part of appleseed.
 // Visit http://appleseedhq.net/ for additional information and resources.
@@ -25,12 +26,13 @@
 // THE SOFTWARE.
 //
 
-// Has to be first, to avoid redifinition warnings.
+// Has to be first, to avoid redefinition warnings.
 #include <Python.h>
 
+// boost headers.
 #include <boost/python.hpp>
 
-// Prototypes
+// Forward declarations.
 void bind_assembly();
 void bind_bbox();
 void bind_bsdf();
@@ -58,15 +60,14 @@ void bind_transform();
 void bind_utility();
 void bind_vector();
 
-// appleseed python module
 BOOST_PYTHON_MODULE(_appleseedpython)
 {
-	bind_utility();
+    bind_utility();
 
     bind_vector();
     bind_quaternion();
     bind_bbox();
-	bind_matrix();
+    bind_matrix();
     bind_transform();
 
     bind_entity();
@@ -88,9 +89,9 @@ BOOST_PYTHON_MODULE(_appleseedpython)
 
     bind_image();
     bind_frame();
-	bind_project();
+    bind_project();
 
-	bind_renderer_controller();
-	bind_tile_callback();
+    bind_renderer_controller();
+    bind_tile_callback();
     bind_master_renderer();
 }

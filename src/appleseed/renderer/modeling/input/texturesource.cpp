@@ -174,7 +174,7 @@ TextureSource::TextureSource(
   : Source(false)
   , m_assembly_uid(assembly_uid)
   , m_texture_instance(texture_instance)
-  , m_texture_uid(texture_instance.get_texture()->get_uid())
+  , m_texture_uid(texture_instance.get_texture().get_uid())
   , m_lighting_conditions(texture_instance.get_lighting_conditions())
   , m_texture_props(texture_props)
   , m_scalar_canvas_width(static_cast<double>(texture_props.m_canvas_width))

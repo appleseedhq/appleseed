@@ -31,10 +31,11 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/assemblycollectionitem.h"
-#include "mainwindow/project/assemblyinstancecollectionitem.h"
-#include "mainwindow/project/collectionitem.h"
+#include "mainwindow/project/assemblyinstanceitem.h"
+#include "mainwindow/project/instancecollectionitem.h"
 #include "mainwindow/project/singlemodelcollectionitem.h"
 #include "mainwindow/project/texturecollectionitem.h"
+#include "mainwindow/project/textureinstanceitem.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/color.h"
@@ -129,7 +130,7 @@ AssemblyCollectionItem& BaseGroupItem::get_assembly_collection_item() const
     return *m_assembly_collection_item;
 }
 
-AssemblyInstanceCollectionItem& BaseGroupItem::get_assembly_instance_collection_item() const
+BaseGroupItem::AssemblyInstanceCollectionItem& BaseGroupItem::get_assembly_instance_collection_item() const
 {
     return *m_assembly_instance_collection_item;
 }
@@ -141,7 +142,7 @@ void BaseGroupItem::add_items(
 {
     addChild(
         m_color_collection_item =
-            new SingleModelCollectionItem<ColorEntity, BaseGroup, BaseGroupItem>(
+            new ColorCollectionItem(
                 new_guid(),
                 EntityTraits<ColorEntity>::get_human_readable_collection_type_name(),
                 base_group,
@@ -160,14 +161,12 @@ void BaseGroupItem::add_items(
 
     addChild(
         m_texture_instance_collection_item =
-            new SingleModelCollectionItem<TextureInstance, BaseGroup, BaseGroupItem>(
+            new TextureInstanceCollectionItem(
                 new_guid(),
                 EntityTraits<TextureInstance>::get_human_readable_collection_type_name(),
                 base_group,
-                this,
                 project_builder));
     m_texture_instance_collection_item->add_items(base_group.texture_instances());
-    m_texture_instance_collection_item->set_allow_creation(false);
 
     addChild(
         m_assembly_collection_item =
@@ -181,10 +180,11 @@ void BaseGroupItem::add_items(
     addChild(
         m_assembly_instance_collection_item =
             new AssemblyInstanceCollectionItem(
-                base_group.assembly_instances(),
+                new_guid(),
+                EntityTraits<AssemblyInstance>::get_human_readable_collection_type_name(),
                 base_group,
-                this,
                 project_builder));
+    m_assembly_instance_collection_item->add_items(base_group.assembly_instances());
 }
 
 }   // namespace studio

@@ -76,7 +76,7 @@ class AssemblyCollectionItem
     ProjectBuilder&         m_project_builder;
     renderer::ParamArray&   m_settings;
 
-    virtual ItemBase* create_item(renderer::Assembly* assembly) const override;
+    virtual ItemBase* create_item(renderer::Assembly* assembly) override;
 };
 
 }       // namespace studio
