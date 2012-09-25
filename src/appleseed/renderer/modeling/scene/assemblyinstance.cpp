@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/scene/assembly.h"
+#include "renderer/modeling/scene/basegroup.h"
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/utility/bbox.h"
 
@@ -93,7 +94,7 @@ Assembly* AssemblyInstance::find_assembly() const
     while (parent)
     {
         Assembly* assembly =
-            static_cast<const Assembly*>(parent)
+            dynamic_cast<const BaseGroup*>(parent)
                 ->assemblies().get_by_name(impl->m_assembly_name.c_str());
 
         if (assembly)

@@ -31,7 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
-#include "renderer/modeling/scene/assembly.h"
+#include "renderer/modeling/scene/basegroup.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
@@ -153,7 +153,7 @@ Texture* TextureInstance::find_texture() const
     while (parent)
     {
         Texture* texture =
-            static_cast<const Assembly*>(parent)
+            dynamic_cast<const BaseGroup*>(parent)
                 ->textures().get_by_name(impl->m_texture_name.c_str());
 
         if (texture)

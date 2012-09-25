@@ -118,6 +118,9 @@ Object* ObjectInstance::find_object() const
 
     while (parent)
     {
+        if (dynamic_cast<const Assembly*>(parent) == 0)
+            break;
+
         Object* object =
             static_cast<const Assembly*>(parent)
                 ->objects().get_by_name(impl->m_object_name.c_str());
