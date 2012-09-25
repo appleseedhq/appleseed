@@ -56,14 +56,16 @@ namespace detail
         return ProjectFactory::create(name.c_str());
     }
 
-    auto_release_ptr<Project> create_default_project()
+    bpy::object create_default_project()
     {
-        return DefaultProjectFactory::create();
+        auto_release_ptr<Project> project(DefaultProjectFactory::create());
+        return bpy::object(project);
     }
 
-    auto_release_ptr<Project> create_cornell_box_project()
+    bpy::object create_cornell_box_project()
     {
-        return CornellBoxProjectFactory::create();
+        auto_release_ptr<Project> project(CornellBoxProjectFactory::create());
+        return bpy::object(project);
     }
 
     bpy::list project_get_search_paths(const Project* proj)
@@ -119,14 +121,16 @@ namespace detail
         return ConfigurationFactory::create(name.c_str(), bpy_dict_to_param_array(params));
     }
 
-    auto_release_ptr<Configuration> create_base_final_config()
+    bpy::object create_base_final_config()
     {
-        return BaseConfigurationFactory::create_base_final();
+        auto_release_ptr<Configuration> config(BaseConfigurationFactory::create_base_final());
+        return bpy::object(config);
     }
 
-    auto_release_ptr<Configuration> create_base_interactive_config()
+    bpy::object create_base_interactive_config()
     {
-        return BaseConfigurationFactory::create_base_interactive();
+        auto_release_ptr<Configuration> config(BaseConfigurationFactory::create_base_interactive());
+        return bpy::object(config);
     }
 
     bpy::dict config_get_inherited_parameters(const Configuration* config)
@@ -139,12 +143,14 @@ namespace detail
                                          const char* project_filename,
                                          const char* schema_filename)
     {
-        return bpy::object(reader->read(project_filename, schema_filename));
+        auto_release_ptr<Project> project(reader->read(project_filename, schema_filename));
+        return bpy::object(project);
     }
 
     bpy::object project_file_reader_load_builtin(ProjectFileReader* reader, const char* project_name)
     {
-        return bpy::object(reader->load_builtin(project_name));
+        auto_release_ptr<Project> project(reader->load_builtin(project_name));
+        return bpy::object(project);
     }
 }
 
