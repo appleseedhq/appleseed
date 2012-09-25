@@ -477,7 +477,7 @@ QPushButton
     background-color: ACTIVE_BACKGROUND_COLOR;
     border: BORDER_STYLE;
     border-radius: 5px;
-    padding: 3px 11px 3px 11px;
+    padding: 2px 11px 3px 11px;
 #ifdef __APPLE__
     qproperty-flat: true;   /* prevent push buttons from overlapping on Mac OS X */
 #endif
