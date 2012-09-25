@@ -342,6 +342,10 @@ namespace
                     return false;
                 }
 
+                // Terminate the path if there is no BSDF.
+                if (bsdf == 0)
+                    return false;
+
                 // Start computing the vertex-to-camera direction vector.
                 Vector3d vertex_to_camera = m_camera_position - shading_point.get_point();
 
