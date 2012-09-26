@@ -33,6 +33,7 @@
 #include "mainwindow/project/assemblyitem.h"
 #include "mainwindow/project/entitybrowser.h"
 #include "mainwindow/project/entitybrowserwindow.h"
+#include "mainwindow/project/materialassignmenteditorwindow.h"
 #include "mainwindow/project/projectbuilder.h"
 
 // appleseed.renderer headers.
@@ -142,6 +143,9 @@ QMenu* ObjectInstanceItem::get_single_item_context_menu() const
 {
     QMenu* menu = ItemBase::get_single_item_context_menu();
 
+    menu->addSeparator();
+    menu->addAction("Assign Materials...", this, SLOT(slot_open_material_assignment_editor()));
+
     add_material_assignment_menu_actions(menu, this);
 
     return menu;
@@ -211,6 +215,17 @@ namespace
       private:
         const QVariant m_data;
     };
+}
+
+void ObjectInstanceItem::slot_open_material_assignment_editor()
+{
+    MaterialAssignmentEditorWindow* editor_window =
+        new MaterialAssignmentEditorWindow(
+            QTreeWidgetItem::treeWidget(),
+            *m_entity);
+
+    editor_window->showNormal();
+    editor_window->activateWindow();
 }
 
 void ObjectInstanceItem::slot_assign_material()

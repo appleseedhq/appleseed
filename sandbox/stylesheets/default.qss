@@ -872,3 +872,13 @@ QWidget#RenderSettingsWindow QWidget#scrollareawidget
 {
     background-color: transparent;
 }
+
+QWidget#MaterialAssignmentEditorWindow QWidget#scrollarea
+{
+    background-color: INPUT_BACKGROUND_COLOR;
+}
+
+QWidget#MaterialAssignmentEditorWindow QWidget#scrollarea_contents
+{
+    background-color: transparent;
+}
