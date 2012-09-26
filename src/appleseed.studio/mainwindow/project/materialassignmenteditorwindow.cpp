@@ -80,7 +80,7 @@ MaterialAssignmentEditorWindow::MaterialAssignmentEditorWindow(
     setAttribute(Qt::WA_DeleteOnClose);
     setWindowFlags(Qt::Tool);
 
-    resize(500, 400);
+    resize(600, 400);
 
     m_ui->scrollarea->setProperty("hasFrame", true);
 
