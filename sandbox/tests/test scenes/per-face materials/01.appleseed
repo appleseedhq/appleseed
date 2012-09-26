@@ -74,7 +74,7 @@
                     </matrix>
                 </transform>
                 <assign_material slot="blue_material_slot" side="front" material="blue_material" />
-                <assign_material slot="red_material_slot" side="back" material="blue_material" />
+                <assign_material slot="red_material_slot" side="front" material="red_material" />
             </object_instance>
         </assembly>
         <assembly_instance name="assembly_inst" assembly="assembly">

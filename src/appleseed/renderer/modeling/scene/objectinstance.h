@@ -104,6 +104,8 @@ class DLLSYMBOL ObjectInstance
         const char*     name);
 
     // Return the slot-to-material mappings of this instance.
+    foundation::StringDictionary& get_front_material_mappings();
+    foundation::StringDictionary& get_back_material_mappings();
     const foundation::StringDictionary& get_front_material_mappings() const;
     const foundation::StringDictionary& get_back_material_mappings() const;
 

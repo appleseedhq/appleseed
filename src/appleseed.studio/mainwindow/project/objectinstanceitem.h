@@ -78,6 +78,7 @@ class ObjectInstanceItem
     virtual QMenu* get_multiple_items_context_menu(const QList<ItemBase*>& items) const override;
 
   private slots:
+    void slot_open_material_assignment_editor();
     void slot_assign_material();
     void slot_assign_material_accepted(QString page_name, QString entity_name, QVariant untyped_data);
     void slot_unassign_material();

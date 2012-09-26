@@ -132,6 +132,9 @@ set (mainwindow_project_sources
     mainwindow/project/instancecollectionitem.h
     mainwindow/project/itembase.cpp
     mainwindow/project/itembase.h
+    mainwindow/project/materialassignmenteditorwindow.cpp
+    mainwindow/project/materialassignmenteditorwindow.h
+    mainwindow/project/materialassignmenteditorwindow.ui
     mainwindow/project/multimodelcollectionitem.h
     mainwindow/project/multimodelentityeditorformfactory.h
     mainwindow/project/multimodelentityitem.h

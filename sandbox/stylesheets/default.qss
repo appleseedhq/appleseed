@@ -35,8 +35,9 @@
 #define BORDER_COLOR                    rgb(40, 40, 40)
 #define BORDER_STYLE                    1px solid BORDER_COLOR
 
-#define INPUT_BACKGROUND_COLOR          rgb(43, 43, 43)
 #define DEFAULT_BACKGROUND_COLOR        rgb(50, 50, 50)
+#define INPUT_BACKGROUND_COLOR          rgb(43, 43, 43)
+#define SHELF_BACKGROUND_COLOR          rgb(45, 45, 45)
 #define ACTIVE_BACKGROUND_COLOR         rgb(60, 60, 60)
 #define HOVER_BACKGROUND_COLOR          rgb(190, 140, 50)
 #define SELECTED_BACKGROUND_COLOR       rgb(80, 80, 80)
@@ -863,12 +864,14 @@ appleseed--studio--FoldablePanelWidget > QFrame[hasFrame="true"]
  * Specific styles.
  */
 
-QWidget#RenderSettingsWindow QWidget#scrollarea
+QWidget#RenderSettingsWindow QWidget#scrollarea,
+QWidget#MaterialAssignmentEditorWindow QWidget#scrollarea
 {
-    background-color: INPUT_BACKGROUND_COLOR;
+    background-color: SHELF_BACKGROUND_COLOR;
 }
 
-QWidget#RenderSettingsWindow QWidget#scrollareawidget
+QWidget#RenderSettingsWindow QWidget#scrollareawidget,
+QWidget#MaterialAssignmentEditorWindow QWidget#scrollarea_contents
 {
     background-color: transparent;
 }

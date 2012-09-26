@@ -172,6 +172,16 @@ void ObjectInstance::assign_material(
     material_mappings.insert(slot, name);
 }
 
+StringDictionary& ObjectInstance::get_front_material_mappings()
+{
+    return impl->m_front_material_mappings;
+}
+
+StringDictionary& ObjectInstance::get_back_material_mappings()
+{
+    return impl->m_back_material_mappings;
+}
+
 const StringDictionary& ObjectInstance::get_front_material_mappings() const
 {
     return impl->m_front_material_mappings;
