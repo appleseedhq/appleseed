@@ -45,6 +45,7 @@
 #include <string>
 
 // Forward declarations.
+namespace renderer  { class Object; }
 namespace Ui        { class MaterialAssignmentEditorWindow; }
 class QGridLayout;
 class QLineEdit;
@@ -75,6 +76,7 @@ class MaterialAssignmentEditorWindow
     Ui::MaterialAssignmentEditorWindow* m_ui;
 
     renderer::ObjectInstance&           m_object_instance;
+    renderer::Object*                   m_object;
 
     typedef renderer::ObjectInstance::Side Side;
 

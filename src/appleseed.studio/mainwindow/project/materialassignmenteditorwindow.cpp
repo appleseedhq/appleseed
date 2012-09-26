@@ -59,6 +59,7 @@
 
 // Standard headers.
 #include <cstddef>
+#include <set>
 #include <sstream>
 
 using namespace foundation;
@@ -74,6 +75,7 @@ MaterialAssignmentEditorWindow::MaterialAssignmentEditorWindow(
   : QWidget(parent)
   , m_ui(new Ui::MaterialAssignmentEditorWindow())
   , m_object_instance(object_instance)
+  , m_object(m_object_instance.find_object())
 {
     m_ui->setupUi(this);
 
@@ -113,18 +115,25 @@ void MaterialAssignmentEditorWindow::create_widgets()
     layout->setAlignment(Qt::AlignTop);
     layout->setSpacing(20);
 
-    const Object* object = m_object_instance.find_object();
-
-    if (object)
+    if (m_object)
     {
-        if (object->get_material_slot_count() > 0)
+        if (m_object->get_material_slot_count() > 0)
         {
-            for (size_t i = 0; i < object->get_material_slot_count(); ++i)
-                create_widgets_for_slot(layout, object->get_material_slot(i));
+            for (size_t i = 0; i < m_object->get_material_slot_count(); ++i)
+                create_widgets_for_slot(layout, m_object->get_material_slot(i));
         }
         else
         {
-            create_widgets_for_slot(layout, "Default");
+            set<string> slot_names;
+
+            for (const_each<StringDictionary> i = m_object_instance.get_front_material_mappings(); i; ++i)
+                slot_names.insert(i->name());
+
+            for (const_each<StringDictionary> i = m_object_instance.get_back_material_mappings(); i; ++i)
+                slot_names.insert(i->name());
+
+            for (const_each<set<string> > i = slot_names; i; ++i)
+                create_widgets_for_slot(layout, i->c_str());
         }
     }
     else
@@ -143,10 +152,11 @@ void MaterialAssignmentEditorWindow::create_widgets_for_slot(
     row_layout->setHorizontalSpacing(20);
     row_layout->setVerticalSpacing(10);
 
-    row_layout->addWidget(new QLabel(QString("<b>%1</b>").arg(slot_name)), 0, 0, 2, 1);
+    row_layout->addWidget(new QLabel("Slot:"), 0, 0);
+    row_layout->addWidget(new QLabel(QString("<b>%1</b>").arg(slot_name)), 0, 1);
 
-    create_widgets_for_side(row_layout, 0, slot_name, ObjectInstance::FrontSide);
-    create_widgets_for_side(row_layout, 1, slot_name, ObjectInstance::BackSide);
+    create_widgets_for_side(row_layout, 1, slot_name, ObjectInstance::FrontSide);
+    create_widgets_for_side(row_layout, 2, slot_name, ObjectInstance::BackSide);
 
     append_row(parent, row_layout);
 }
@@ -157,7 +167,7 @@ void MaterialAssignmentEditorWindow::create_widgets_for_side(
     const char*         slot_name,
     const Side          side)
 {
-    parent->addWidget(new QLabel(side == ObjectInstance::FrontSide ? "Front" : "Back"), row_index, 1);
+    parent->addWidget(new QLabel(side == ObjectInstance::FrontSide ? "Front:" : "Back:"), row_index, 0);
 
     QHBoxLayout* layout = new QHBoxLayout();
     layout->setSpacing(6);
@@ -201,8 +211,15 @@ void MaterialAssignmentEditorWindow::create_widgets_for_side(
             ? m_object_instance.get_front_material_mappings()
             : m_object_instance.get_back_material_mappings();
 
-    if (mappings.exist(slot_name))
-        line_edit->setText(mappings.get<QString>(slot_name));
+    if (m_object->get_material_slot_count() > 1)
+    {
+        if (mappings.exist(slot_name))
+            line_edit->setText(mappings.get<QString>(slot_name));
+    }
+    else if (!mappings.empty())
+    {
+        line_edit->setText(mappings.begin().value<QString>());
+    }
 
     QPushButton* browse_button = new QPushButton("Browse");
     browse_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
@@ -219,7 +236,7 @@ void MaterialAssignmentEditorWindow::create_widgets_for_side(
         this, SLOT(slot_open_entity_browser()));
 
     layout->addWidget(group);
-    parent->addLayout(layout, row_index, 2);
+    parent->addLayout(layout, row_index, 1);
 }
 
 void MaterialAssignmentEditorWindow::append_row(
