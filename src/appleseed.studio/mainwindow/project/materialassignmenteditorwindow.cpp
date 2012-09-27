@@ -37,6 +37,7 @@
 #include "mainwindow/project/entitybrowserwindow.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "utility/interop.h"
+#include "utility/spinboxeventfilter.h"
 #include "utility/tweaks.h"
 
 // appleseed.renderer headers.
@@ -188,6 +189,8 @@ void MaterialAssignmentEditorWindow::create_widgets_for_side(
         combo_box->addItem("None", "none");
         combo_box->addItem("Enabled", "enabled");
         layout->addWidget(combo_box);
+
+        new SpinBoxEventFilter(combo_box);
 
         m_model_combo_to_widget_group[combo_box] = group;
 

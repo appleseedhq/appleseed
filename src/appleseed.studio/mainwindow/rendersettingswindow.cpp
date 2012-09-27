@@ -37,6 +37,7 @@
 #include "mainwindow/configurationmanagerwindow.h"
 #include "utility/foldablepanelwidget.h"
 #include "utility/inputwidgetproxies.h"
+#include "utility/spinboxeventfilter.h"
 #include "utility/tweaks.h"
 
 // appleseed.renderer headers.
@@ -569,6 +570,8 @@ QSpinBox* RenderSettingsWindow::create_integer_input(
     spinbox->setRange(min, max);
     set_widget_width_for_value(spinbox, max, SpinBoxMargin, SpinBoxMinWidth);
 
+    new SpinBoxEventFilter(spinbox);
+
     return spinbox;
 }
 
@@ -589,6 +592,8 @@ QSpinBox* RenderSettingsWindow::create_integer_input(
 
     set_widget_width_for_text(spinbox, text, SpinBoxMargin, SpinBoxMinWidth);
 
+    new SpinBoxEventFilter(spinbox);
+
     return spinbox;
 }
 
@@ -606,6 +611,8 @@ QDoubleSpinBox* RenderSettingsWindow::create_double_input(
     spinbox->setRange(min, max);
     spinbox->setDecimals(decimals);
     spinbox->setSingleStep(step);
+
+    new SpinBoxEventFilter(spinbox);
 
     return spinbox;
 }
@@ -637,6 +644,8 @@ QComboBox* RenderSettingsWindow::create_combobox(
 {
     QComboBox* combobox = new QComboBox();
     m_widget_proxies[widget_key] = new ComboBoxProxy(combobox);
+
+    new SpinBoxEventFilter(combobox);
 
     return combobox;
 }
