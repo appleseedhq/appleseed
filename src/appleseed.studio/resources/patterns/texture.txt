@@ -1,0 +1,3 @@
+Author: Anatoli Nicolae
+Source: http://subtlepatterns.com/txture/
+License: Creative Commons Attribution-ShareAlike 3.0 Unported License

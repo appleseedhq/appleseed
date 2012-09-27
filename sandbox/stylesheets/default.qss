@@ -32,20 +32,20 @@
  * Common styles.
  */
 
-#define BORDER_COLOR                    rgb(40, 40, 40)
-#define BORDER_STYLE                    1px solid BORDER_COLOR
-
-#define DEFAULT_BACKGROUND_COLOR        rgb(50, 50, 50)
-#define INPUT_BACKGROUND_COLOR          rgb(43, 43, 43)
-#define SHELF_BACKGROUND_COLOR          rgb(45, 45, 45)
-#define ACTIVE_BACKGROUND_COLOR         rgb(60, 60, 60)
-#define HOVER_BACKGROUND_COLOR          rgb(190, 140, 50)
-#define SELECTED_BACKGROUND_COLOR       rgb(80, 80, 80)
-
-#define DEFAULT_TEXT_COLOR              rgb(210, 210, 210)
-#define DISABLED_TEXT_COLOR             rgb(100, 100, 100)
-#define HOVER_TEXT_COLOR                rgb(255, 255, 255)
-#define SELECTED_TEXT_COLOR             rgb(255, 255, 255)
+#define BORDER_COLOR                        rgb(40, 40, 40)
+#define BORDER_STYLE                        1px solid BORDER_COLOR
+    
+#define DEFAULT_BACKGROUND_COLOR            rgb(50, 50, 50)
+#define INPUT_BACKGROUND_COLOR              rgb(43, 43, 43)
+#define DISABLED_INPUT_BACKGROUND_COLOR     rgb(45, 45, 45)
+#define ACTIVE_BACKGROUND_COLOR             rgb(60, 60, 60)
+#define HOVER_BACKGROUND_COLOR              rgb(190, 140, 50)
+#define SELECTED_BACKGROUND_COLOR           rgb(80, 80, 80)
+    
+#define DEFAULT_TEXT_COLOR                  rgb(210, 210, 210)
+#define DISABLED_TEXT_COLOR                 rgb(100, 100, 100)
+#define HOVER_TEXT_COLOR                    rgb(255, 255, 255)
+#define SELECTED_TEXT_COLOR                 rgb(255, 255, 255)
 
 
 /*
@@ -705,6 +705,13 @@ QComboBox
     padding: 1px;
 }
 
+QLineEdit:disabled,
+QAbstractSpinBox:disabled,
+QComboBox:disabled
+{
+    background-color: DISABLED_INPUT_BACKGROUND_COLOR;
+}
+
 
 /*
  * QLabel.
@@ -867,7 +874,8 @@ appleseed--studio--FoldablePanelWidget > QFrame[hasFrame="true"]
 QWidget#RenderSettingsWindow QWidget#scrollarea,
 QWidget#MaterialAssignmentEditorWindow QWidget#scrollarea
 {
-    background-color: SHELF_BACKGROUND_COLOR;
+    background-image: url(":/patterns/texture.png");
+    background-repeat: repeat-xy;
 }
 
 QWidget#RenderSettingsWindow QWidget#scrollareawidget,
