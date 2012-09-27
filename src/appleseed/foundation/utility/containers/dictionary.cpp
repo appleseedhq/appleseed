@@ -140,6 +140,28 @@ StringDictionary& StringDictionary::operator=(const StringDictionary& rhs)
     return *this;
 }
 
+bool StringDictionary::operator==(const StringDictionary& rhs) const
+{
+    if (size() != rhs.size())
+        return false;
+
+    for (
+        StringMap::const_iterator it = impl->m_strings.begin(), rhs_it = rhs.impl->m_strings.begin();
+        it != impl->m_strings.end();
+        ++it, ++rhs_it)
+    {
+        if (it->first != rhs_it->first || it->second != rhs_it->second)
+            return false;
+    }
+
+    return true;
+}
+
+bool StringDictionary::operator!=(const StringDictionary& rhs) const
+{
+    return !(*this == rhs);
+}
+
 size_t StringDictionary::size() const
 {
     return impl->m_strings.size();

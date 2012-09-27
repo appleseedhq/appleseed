@@ -38,6 +38,62 @@ using namespace std;
 
 TEST_SUITE(Foundation_Utility_StringDictionary)
 {
+    TEST_CASE(EqualityOperator_GivenTwoEmptyDictionaries_ReturnsTrue)
+    {
+        StringDictionary sd1;
+        StringDictionary sd2;
+
+        ASSERT_TRUE(sd1 == sd2);
+        ASSERT_FALSE(sd1 != sd2);
+    }
+
+    TEST_CASE(EqualityOperator_GivenDictionariesOfDifferentSize_ReturnsFalse)
+    {
+        StringDictionary sd1;
+        sd1.insert("key", "value");
+
+        StringDictionary sd2;
+
+        ASSERT_FALSE(sd1 == sd2);
+        ASSERT_TRUE(sd1 != sd2);
+    }
+
+    TEST_CASE(EqualityOperator_GivenDictionariesWithSingleItemWithSameKeyButDifferentValues_ReturnsFalse)
+    {
+        StringDictionary sd1;
+        sd1.insert("key", "value1");
+
+        StringDictionary sd2;
+        sd2.insert("key", "value2");
+
+        ASSERT_FALSE(sd1 == sd2);
+        ASSERT_TRUE(sd1 != sd2);
+    }
+
+    TEST_CASE(EqualityOperator_GivenDictionariesWithSingleItemWithDifferentKeysButSameValue_ReturnsFalse)
+    {
+        StringDictionary sd1;
+        sd1.insert("key1", "value");
+
+        StringDictionary sd2;
+        sd2.insert("key2", "value");
+
+        ASSERT_FALSE(sd1 == sd2);
+        ASSERT_TRUE(sd1 != sd2);
+    }
+
+    TEST_CASE(EqualityOperator_GivenDictionariesWithSingleIdenticalItem_ReturnsTrue)
+    {
+        StringDictionary sd1;
+        sd1.insert("key", "value");
+
+        StringDictionary sd2;
+        sd2.insert("key", "value");
+
+        ASSERT_TRUE(sd1 == sd2);
+        ASSERT_FALSE(sd1 != sd2);
+    }
+
     TEST_CASE(Insert_ReturnsThisPointer)
     {
         StringDictionary sd;
