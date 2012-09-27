@@ -263,6 +263,8 @@ QMenuBar
 {
     background-color: ACTIVE_BACKGROUND_COLOR;
     border: BORDER_STYLE;
+    border-top: 0px;
+    padding: 1px;
 }
 
 QMenuBar::item
@@ -342,6 +344,7 @@ QMenu::tearoff:selected
 QToolBar
 {
     border: BORDER_STYLE;
+    padding: 2px;
 }
 
 QToolBar::separator
@@ -873,6 +876,7 @@ appleseed--studio--FoldablePanelWidget > QFrame[hasFrame="true"]
  * Specific styles.
  */
 
+QWidget#main_window_contents,
 QWidget#RenderSettingsWindow QWidget#scrollarea,
 QWidget#MaterialAssignmentEditorWindow QWidget#scrollarea
 {
