@@ -144,12 +144,12 @@
    </widget>
    <addaction name="menu_file"/>
    <addaction name="menu_edit"/>
+   <addaction name="menu_view"/>
    <addaction name="menu_navigation"/>
    <addaction name="menu_rendering"/>
    <addaction name="menu_diagnostics"/>
    <addaction name="menu_debug"/>
    <addaction name="menu_tools"/>
-   <addaction name="menu_view"/>
    <addaction name="menu_help"/>
   </widget>
   <widget class="QToolBar" name="main_toolbar">
