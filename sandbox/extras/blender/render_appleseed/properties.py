@@ -1,3 +1,4 @@
+
 #
 # This source file is part of appleseed.
 # Visit http://appleseedhq.net/ for additional information and resources.
@@ -30,53 +31,80 @@ import bpy
 from bpy.props import PointerProperty, StringProperty, BoolProperty, EnumProperty
 from bpy.props import IntProperty, FloatProperty, FloatVectorProperty, CollectionProperty
 
-class AppleseedSceneSettings(bpy.types.PropertyGroup):
-	lighting_engine = bpy.props.EnumProperty(name="Lighting Engine",
-											 description="Select the lighting engine to use",
-											 items=[('pt', "Path Tracing", "Full Global Illumination"),
-													('drt', "Distributed Ray Tracing", "Direct Lighting Only")],
-											 default='pt')
+class AppleseedRenderSettings( bpy.types.PropertyGroup):
+    @classmethod
+    def register(cls):
+        bpy.types.Scene.appleseed = PointerProperty(
+                name = "Appleseed Render Settings",
+                description = "Appleseed render settings",
+                type = cls
+                )
 
-	sample_count = bpy.props.IntProperty(name="Sample Count",
-										 description="Number of samples per pixels in final frame mode",
-										 min=1,
-										 max=4096,
-										 default=32,
-										 subtype='UNSIGNED')
+        # sampling
+        cls.pixel_filter = bpy.props.EnumProperty( name = "Filter",
+                                                    description = "Pixel filter to use",
+                                                    items = [ ( "box", "Box", "Box" ),
+                                                              ( "gaussian", "Gaussian", "Gaussian"),
+                                                              ( "mitchell", "Mitchell", "Mitchell")],
+                                                    default = "mitchell")
 
-class AppleseedWorldSettings(bpy.types.PropertyGroup):
-	pass
+        cls.filter_size = bpy.props.IntProperty( name = "Filter Size",
+                                                 description = "Filter size",
+                                                 min = 1,
+                                                 max = 64,
+                                                 default = 2,
+                                                 subtype = 'UNSIGNED')
 
-class AppleseedObjectSettings(bpy.types.PropertyGroup):
-	pass
+        cls.pixel_sampler = bpy.props.EnumProperty( name = "Sampler",
+                                                    description = "Sampler",
+                                                    items = [ ( "uniform", "Uniform", "Uniform" ),
+                                                              ( "adaptive", "Adaptive", "Adaptive")],
+                                                    default = "adaptive")
 
-class AppleseedLampSettings(bpy.types.PropertyGroup):
-	pass
+        cls.sampler_min_samples = bpy.props.IntProperty( name = "Min Samples",
+                                                 description = "Min Samples",
+                                                 min = 1,
+                                                 max = 1000000,
+                                                 default = 2,
+                                                 subtype = 'UNSIGNED')
 
-class AppleseedMaterialSettings(bpy.types.PropertyGroup):
-	pass
+        cls.sampler_max_samples = bpy.props.IntProperty( name = "Max Samples",
+                                                 description = "Max Samples",
+                                                 min = 1,
+                                                 max = 1000000,
+                                                 default = 64,
+                                                 subtype = 'UNSIGNED')
 
-class AppleseedTextureSettings(bpy.types.PropertyGroup):
-	pass
+        cls.sampler_max_contrast = bpy.props.FloatProperty( name = "Max Contrast",
+                                                 description = "Max contrast",
+                                                 min = 0,
+                                                 max = 1000,
+                                                 default = 1)
+
+        cls.sampler_max_variation = bpy.props.FloatProperty( name = "Max Variation",
+                                                 description = "Max variation",
+                                                 min = 0,
+                                                 max = 1000,
+                                                 default = 1)
+
+        # lighting
+        cls.lighting_engine = bpy.props.EnumProperty( name = "Lighting Engine",
+                    								 description = "Select the lighting engine to use",
+                            						 items = [ ( 'pt', "Path Tracing", "Full Global Illumination"),
+                                    						( 'drt', "Distributed Ray Tracing", "Direct Lighting Only")],
+                                            		 default = 'pt')
+
+        # drt
+        cls.drt_ibl_enable = BoolProperty( name = "Image Based Lighting",
+                                            description = "Image based lighting",
+                                            default = False)
+
+    @classmethod
+    def unregister(cls):
+        del bpy.types.Scene.appleseed
 
 def register():
-	bpy.utils.register_class( AppleseedSceneSettings)
-	bpy.types.Scene.appleseed = PointerProperty( type=AppleseedSceneSettings, name="Appleseed Scene Settings")
-
-	bpy.utils.register_class( AppleseedWorldSettings)
-	bpy.types.World.appleseed = PointerProperty( type=AppleseedWorldSettings, name="Appleseed World Settings")
-
-	bpy.utils.register_class( AppleseedObjectSettings)
-	bpy.types.Object.appleseed = PointerProperty( type=AppleseedObjectSettings, name="Appleseed Object Settings")
-
-	bpy.utils.register_class( AppleseedLampSettings)
-	bpy.types.Lamp.appleseed = PointerProperty( type=AppleseedLampSettings, name="Appleseed Lamp Settings")
-
-	bpy.utils.register_class( AppleseedMaterialSettings)
-	bpy.types.Material.appleseed = PointerProperty( type=AppleseedMaterialSettings, name="Appleseed Material Settings")
-
-	bpy.utils.register_class( AppleseedTextureSettings)
-	bpy.types.Texture.appleseed = PointerProperty( type=AppleseedTextureSettings, name="Appleseed Texture Settings")
+	bpy.utils.register_class( AppleseedRenderSettings)
 
 def unregister():
-	bpy.utils.unregister_module( __name__)
+	bpy.utils.unregister_class( AppleseedRenderSettings)

@@ -51,7 +51,7 @@
      <x>0</x>
      <y>0</y>
      <width>1280</width>
-     <height>21</height>
+     <height>28</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_file">
@@ -304,16 +304,10 @@
    <property name="text">
     <string>&amp;New Project</string>
    </property>
-   <property name="shortcut">
-    <string>Ctrl+N</string>
-   </property>
   </action>
   <action name="action_file_open_project">
    <property name="text">
     <string>&amp;Open Project...</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+O</string>
    </property>
   </action>
   <action name="action_file_open_builtin_project_cornellbox">
@@ -325,9 +319,6 @@
    <property name="text">
     <string>&amp;Save Project</string>
    </property>
-   <property name="shortcut">
-    <string>Ctrl+S</string>
-   </property>
   </action>
   <action name="action_file_save_project_as">
    <property name="text">
@@ -337,9 +328,6 @@
   <action name="action_file_exit">
    <property name="text">
     <string>&amp;Exit</string>
-   </property>
-   <property name="shortcut">
-    <string>Alt+F4</string>
    </property>
   </action>
   <action name="action_debug_tests">
