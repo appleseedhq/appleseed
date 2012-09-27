@@ -292,9 +292,9 @@ void MaterialAssignmentEditorWindow::assign_material(
 {
     if (material_name.isEmpty())
     {
-        if (slot_info.m_side == ObjectInstance::FrontSide)
-            m_object_instance.get_front_material_mappings().remove(slot_info.m_slot_name);
-        else m_object_instance.get_back_material_mappings().remove(slot_info.m_slot_name);
+        m_object_instance.unassign_material(
+            slot_info.m_slot_name.c_str(),
+            slot_info.m_side);
     }
     else
     {

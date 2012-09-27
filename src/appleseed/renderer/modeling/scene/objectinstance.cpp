@@ -172,14 +172,16 @@ void ObjectInstance::assign_material(
     material_mappings.insert(slot, name);
 }
 
-StringDictionary& ObjectInstance::get_front_material_mappings()
+void ObjectInstance::unassign_material(
+    const char*             slot,
+    const Side              side)
 {
-    return impl->m_front_material_mappings;
-}
+    StringDictionary& material_mappings =
+        side == FrontSide
+            ? impl->m_front_material_mappings
+            : impl->m_back_material_mappings;
 
-StringDictionary& ObjectInstance::get_back_material_mappings()
-{
-    return impl->m_back_material_mappings;
+    material_mappings.remove(slot);
 }
 
 const StringDictionary& ObjectInstance::get_front_material_mappings() const
