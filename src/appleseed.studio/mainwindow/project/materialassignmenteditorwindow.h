@@ -45,6 +45,7 @@
 #include <string>
 
 // Forward declarations.
+namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace renderer  { class Object; }
 namespace Ui        { class MaterialAssignmentEditorWindow; }
 class QGridLayout;
@@ -64,7 +65,8 @@ class MaterialAssignmentEditorWindow
   public:
     MaterialAssignmentEditorWindow(
         QWidget*                        parent,
-        renderer::ObjectInstance&       object_instance);
+        renderer::ObjectInstance&       object_instance,
+        ProjectBuilder&                 project_builder);
 
     ~MaterialAssignmentEditorWindow();
 
@@ -77,6 +79,7 @@ class MaterialAssignmentEditorWindow
 
     renderer::ObjectInstance&           m_object_instance;
     renderer::Object*                   m_object;
+    ProjectBuilder&                     m_project_builder;
 
     typedef renderer::ObjectInstance::Side Side;
 

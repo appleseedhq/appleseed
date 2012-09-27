@@ -103,7 +103,7 @@ EntityEditorWindow::EntityEditorWindow(
     setWindowFlags(Qt::Tool);
     setWindowTitle(QString::fromStdString(window_title));
 
-    resize(600, 400);
+    resize(500, 400);
 
     create_form_layout();
     rebuild_form(values);

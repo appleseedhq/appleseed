@@ -103,9 +103,12 @@ class DLLSYMBOL ObjectInstance
         const Side      side,
         const char*     name);
 
+    // Unassign a material from a given slot.
+    void unassign_material(
+        const char*     slot,
+        const Side      side);
+
     // Return the slot-to-material mappings of this instance.
-    foundation::StringDictionary& get_front_material_mappings();
-    foundation::StringDictionary& get_back_material_mappings();
     const foundation::StringDictionary& get_front_material_mappings() const;
     const foundation::StringDictionary& get_back_material_mappings() const;
 

@@ -134,6 +134,10 @@ class FOUNDATIONDLL StringDictionary
     // Assignment operator.
     StringDictionary& operator=(const StringDictionary& rhs);
 
+    // Comparison operators.
+    bool operator==(const StringDictionary& rhs) const;
+    bool operator!=(const StringDictionary& rhs) const;
+
     // Return the number of items in the dictionary.
     size_t size() const;
 

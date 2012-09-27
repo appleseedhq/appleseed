@@ -35,7 +35,9 @@
 // appleseed.studio headers.
 #include "mainwindow/project/entitybrowser.h"
 #include "mainwindow/project/entitybrowserwindow.h"
+#include "mainwindow/project/projectbuilder.h"
 #include "utility/interop.h"
+#include "utility/spinboxeventfilter.h"
 #include "utility/tweaks.h"
 
 // appleseed.renderer headers.
@@ -71,11 +73,13 @@ namespace studio {
 
 MaterialAssignmentEditorWindow::MaterialAssignmentEditorWindow(
     QWidget*            parent,
-    ObjectInstance&     object_instance)
+    ObjectInstance&     object_instance,
+    ProjectBuilder&     project_builder)
   : QWidget(parent)
   , m_ui(new Ui::MaterialAssignmentEditorWindow())
   , m_object_instance(object_instance)
   , m_object(m_object_instance.find_object())
+  , m_project_builder(project_builder)
 {
     m_ui->setupUi(this);
 
@@ -186,6 +190,8 @@ void MaterialAssignmentEditorWindow::create_widgets_for_side(
         combo_box->addItem("Enabled", "enabled");
         layout->addWidget(combo_box);
 
+        new SpinBoxEventFilter(combo_box);
+
         m_model_combo_to_widget_group[combo_box] = group;
 
         connect(
@@ -292,9 +298,9 @@ void MaterialAssignmentEditorWindow::assign_material(
 {
     if (material_name.isEmpty())
     {
-        if (slot_info.m_side == ObjectInstance::FrontSide)
-            m_object_instance.get_front_material_mappings().remove(slot_info.m_slot_name);
-        else m_object_instance.get_back_material_mappings().remove(slot_info.m_slot_name);
+        m_object_instance.unassign_material(
+            slot_info.m_slot_name.c_str(),
+            slot_info.m_side);
     }
     else
     {
@@ -384,7 +390,15 @@ void MaterialAssignmentEditorWindow::slot_entity_browser_accept(
 
 void MaterialAssignmentEditorWindow::slot_accept()
 {
+    const StringDictionary old_front_mappings = m_object_instance.get_front_material_mappings();
+    const StringDictionary old_back_mappings = m_object_instance.get_back_material_mappings();
+
     assign_materials();
+
+    if (old_front_mappings != m_object_instance.get_front_material_mappings() ||
+        old_back_mappings != m_object_instance.get_back_material_mappings())
+        m_project_builder.notify_project_modification();
+
     close();
 }
 
