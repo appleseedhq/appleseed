@@ -139,7 +139,7 @@
    </widget>
    <widget class="QMenu" name="menu_view">
     <property name="title">
-     <string>View</string>
+     <string>&amp;View</string>
     </property>
    </widget>
    <addaction name="menu_file"/>
