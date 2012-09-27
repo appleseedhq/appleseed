@@ -35,6 +35,7 @@
 // appleseed.studio headers.
 #include "mainwindow/project/entitybrowser.h"
 #include "mainwindow/project/entitybrowserwindow.h"
+#include "mainwindow/project/projectbuilder.h"
 #include "utility/interop.h"
 #include "utility/tweaks.h"
 
@@ -71,11 +72,13 @@ namespace studio {
 
 MaterialAssignmentEditorWindow::MaterialAssignmentEditorWindow(
     QWidget*            parent,
-    ObjectInstance&     object_instance)
+    ObjectInstance&     object_instance,
+    ProjectBuilder&     project_builder)
   : QWidget(parent)
   , m_ui(new Ui::MaterialAssignmentEditorWindow())
   , m_object_instance(object_instance)
   , m_object(m_object_instance.find_object())
+  , m_project_builder(project_builder)
 {
     m_ui->setupUi(this);
 
@@ -384,7 +387,15 @@ void MaterialAssignmentEditorWindow::slot_entity_browser_accept(
 
 void MaterialAssignmentEditorWindow::slot_accept()
 {
+    const StringDictionary old_front_mappings = m_object_instance.get_front_material_mappings();
+    const StringDictionary old_back_mappings = m_object_instance.get_back_material_mappings();
+
     assign_materials();
+
+    if (old_front_mappings != m_object_instance.get_front_material_mappings() ||
+        old_back_mappings != m_object_instance.get_back_material_mappings())
+        m_project_builder.notify_project_modification();
+
     close();
 }
 
