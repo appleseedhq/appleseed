@@ -163,6 +163,10 @@ void MainWindow::build_menus()
 
     // Help menu.
     connect(m_ui->action_help_about, SIGNAL(triggered()), this, SLOT(slot_show_about_window()));
+
+    // View menu.
+    m_ui->menu_view->addAction(m_ui->project_explorer->toggleViewAction());
+    m_ui->menu_view->addAction(m_ui->log->toggleViewAction());
 }
 
 void MainWindow::build_override_shading_menu_item()
