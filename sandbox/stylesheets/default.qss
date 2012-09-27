@@ -303,7 +303,7 @@ QMenu::separator
 {
     height: 1px;
     background-color: BORDER_COLOR;
-    margin: 4px 4px 4px 4px;
+    margin: 4px;
 }
 
 QMenu::right-arrow
@@ -348,7 +348,7 @@ QToolBar::separator
 {
     width: 1px;
     background-color: BORDER_COLOR;
-    margin: 4px 4px 4px 4px;
+    margin: 4px;
 }
 
 QToolBar::handle
@@ -759,8 +759,10 @@ QGroupBox::title
 
 QComboBox
 {
-    padding-left: 4px;
-    padding-right: 4px;
+    padding: 1px 4px 1px 4px;
+#ifdef __APPLE__
+    margin-bottom: 2px;
+#endif
 }
 
 QComboBox::drop-down
