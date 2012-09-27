@@ -80,6 +80,7 @@
 #include "foundation/math/transform.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
+#include "foundation/utility/iterators.h"
 #include "foundation/utility/memory.h"
 #include "foundation/utility/searchpaths.h"
 #include "foundation/utility/string.h"
@@ -828,6 +829,9 @@ namespace
 
         virtual void end_element() override
         {
+            if (m_transforms.size() > 1)
+                collapse_transforms();
+
             if (m_transforms.empty())
                 m_transforms[0.0] = Transformd::identity();
         }
@@ -871,6 +875,27 @@ namespace
         typedef map<double, Transformd> TransformMap;
 
         TransformMap m_transforms;
+
+        void collapse_transforms()
+        {
+            if (are_transforms_identical())
+            {
+                const Transformd transform = m_transforms.begin()->second;
+                m_transforms.clear();
+                m_transforms[0.0] = transform;
+            }
+        }
+
+        bool are_transforms_identical() const
+        {
+            for (TransformMap::const_iterator i = m_transforms.begin(); i != pred(m_transforms.end()); ++i)
+            {
+                if (i->second != succ(i)->second)
+                    return false;
+            }
+
+            return true;
+        }
     };
 
 
