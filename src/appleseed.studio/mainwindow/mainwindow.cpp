@@ -126,12 +126,22 @@ MainWindow::~MainWindow()
 void MainWindow::build_menus()
 {
     // File menu.
+    m_ui->action_file_new_project->setShortcut( QKeySequence::New );
     connect(m_ui->action_file_new_project, SIGNAL(triggered()), this, SLOT(slot_new_project()));
+
+    m_ui->action_file_open_project->setShortcut( QKeySequence::Open );
     connect(m_ui->action_file_open_project, SIGNAL(triggered()), this, SLOT(slot_open_project()));
+
     connect(m_ui->action_file_open_builtin_project_cornellbox, SIGNAL(triggered()), SLOT(slot_open_cornellbox_builtin_project()));
     connect(m_ui->action_file_reload_project, SIGNAL(triggered()), SLOT(slot_reload_project()));
+
+    m_ui->action_file_save_project->setShortcut( QKeySequence::Save );
     connect(m_ui->action_file_save_project, SIGNAL(triggered()), this, SLOT(slot_save_project()));
+
+    m_ui->action_file_save_project_as->setShortcut( QKeySequence::SaveAs );
     connect(m_ui->action_file_save_project_as, SIGNAL(triggered()), this, SLOT(slot_save_project_as()));
+
+    m_ui->action_file_exit->setShortcut( QKeySequence::Quit );
     connect(m_ui->action_file_exit, SIGNAL(triggered()), this, SLOT(close()));
 
     // Rendering menu.
