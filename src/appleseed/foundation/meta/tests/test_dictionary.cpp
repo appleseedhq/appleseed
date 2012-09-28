@@ -43,8 +43,8 @@ TEST_SUITE(Foundation_Utility_StringDictionary)
         StringDictionary sd1;
         StringDictionary sd2;
 
-        ASSERT_TRUE(sd1 == sd2);
-        ASSERT_FALSE(sd1 != sd2);
+        EXPECT_TRUE(sd1 == sd2);
+        EXPECT_FALSE(sd1 != sd2);
     }
 
     TEST_CASE(EqualityOperator_GivenDictionariesOfDifferentSize_ReturnsFalse)
@@ -54,8 +54,8 @@ TEST_SUITE(Foundation_Utility_StringDictionary)
 
         StringDictionary sd2;
 
-        ASSERT_FALSE(sd1 == sd2);
-        ASSERT_TRUE(sd1 != sd2);
+        EXPECT_FALSE(sd1 == sd2);
+        EXPECT_TRUE(sd1 != sd2);
     }
 
     TEST_CASE(EqualityOperator_GivenDictionariesWithSingleItemWithSameKeyButDifferentValues_ReturnsFalse)
@@ -66,8 +66,8 @@ TEST_SUITE(Foundation_Utility_StringDictionary)
         StringDictionary sd2;
         sd2.insert("key", "value2");
 
-        ASSERT_FALSE(sd1 == sd2);
-        ASSERT_TRUE(sd1 != sd2);
+        EXPECT_FALSE(sd1 == sd2);
+        EXPECT_TRUE(sd1 != sd2);
     }
 
     TEST_CASE(EqualityOperator_GivenDictionariesWithSingleItemWithDifferentKeysButSameValue_ReturnsFalse)
@@ -78,8 +78,8 @@ TEST_SUITE(Foundation_Utility_StringDictionary)
         StringDictionary sd2;
         sd2.insert("key2", "value");
 
-        ASSERT_FALSE(sd1 == sd2);
-        ASSERT_TRUE(sd1 != sd2);
+        EXPECT_FALSE(sd1 == sd2);
+        EXPECT_TRUE(sd1 != sd2);
     }
 
     TEST_CASE(EqualityOperator_GivenDictionariesWithSingleIdenticalItem_ReturnsTrue)
@@ -90,8 +90,8 @@ TEST_SUITE(Foundation_Utility_StringDictionary)
         StringDictionary sd2;
         sd2.insert("key", "value");
 
-        ASSERT_TRUE(sd1 == sd2);
-        ASSERT_FALSE(sd1 != sd2);
+        EXPECT_TRUE(sd1 == sd2);
+        EXPECT_FALSE(sd1 != sd2);
     }
 
     TEST_CASE(Insert_ReturnsThisPointer)
