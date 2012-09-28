@@ -111,7 +111,7 @@ namespace detail
             return T();
         }
 
-        static void set(UnalignedMatrix44<T>& mat, bpy::tuple indices, const T& v)
+        static void set(UnalignedMatrix44<T>& mat, bpy::tuple indices, const T v)
         {
             if (bpy::len(indices) != 2)
             {
@@ -187,40 +187,38 @@ namespace detail
         UnalignedMatrix44<T> (*rot3)(const Quaternion<T>&) = &UnalignedMatrix44<T>::rotation;
 
         bpy::class_<UnalignedMatrix44<T> > X(class_name);
-            // statics
-            X.def("identity", &UnalignedMatrix44<T>::identity).staticmethod("identity")
-             .def("translation", &UnalignedMatrix44<T>::translation).staticmethod("translation")
-             .def("scaling", &UnalignedMatrix44<T>::scaling).staticmethod("scaling")
-             .def("rotation_x", &UnalignedMatrix44<T>::rotation_x).staticmethod("rotation_x")
-             .def("rotation_y", &UnalignedMatrix44<T>::rotation_y).staticmethod("rotation_y")
-             .def("rotation_z", &UnalignedMatrix44<T>::rotation_z).staticmethod("rotation_z")
-             .def("lookat", &UnalignedMatrix44<T>::lookat).staticmethod("lookat")
-             .def("rotation", rot1).def("rotation", rot2).def("rotation", rot3).staticmethod("rotation")
 
-             .def(bpy::init<T>())
-             .def("__init__", bpy::make_constructor(&construct_matrix_from_list<T>))
+        X.def("identity", &UnalignedMatrix44<T>::identity).staticmethod("identity")
+         .def("translation", &UnalignedMatrix44<T>::translation).staticmethod("translation")
+         .def("scaling", &UnalignedMatrix44<T>::scaling).staticmethod("scaling")
+         .def("rotation_x", &UnalignedMatrix44<T>::rotation_x).staticmethod("rotation_x")
+         .def("rotation_y", &UnalignedMatrix44<T>::rotation_y).staticmethod("rotation_y")
+         .def("rotation_z", &UnalignedMatrix44<T>::rotation_z).staticmethod("rotation_z")
+         .def("lookat", &UnalignedMatrix44<T>::lookat).staticmethod("lookat")
+         .def("rotation", rot1).def("rotation", rot2).def("rotation", rot3).staticmethod("rotation")
 
-              // operator[]
-             .def("__getitem__", &matrix_indexer<T>::get)
-             .def("__setitem__", &matrix_indexer<T>::set)
+         .def(bpy::init<T>())
+         .def("__init__", bpy::make_constructor(&construct_matrix_from_list<T>))
 
-             .def("transpose", &transpose_matrix<T>)
-             .def("inverse", &invert_matrix<T>)
+         // operator[]
+         .def("__getitem__", &matrix_indexer<T>::get)
+         .def("__setitem__", &matrix_indexer<T>::set)
 
-             .def(bpy::self * bpy::self)
-             .def(bpy::self * Vector<T,4>())
+         .def("transpose", &transpose_matrix<T>)
+         .def("inverse", &invert_matrix<T>)
 
-              // a bug in boost::python, this needs
-              // the extra self_ns qualification
-             .def(bpy::self_ns::str(bpy::self))
-             .def(bpy::self_ns::repr(bpy::self))
+         .def(bpy::self * bpy::self)
+         .def(bpy::self * Vector<T,4>())
 
-             .def("extract_translation", &UnalignedMatrix44<T>::extract_translation)
-             .def("extract_unit_quaternion", &UnalignedMatrix44<T>::extract_unit_quaternion)
-             .def("extract_euler_angles", &matrix_extract_euler_angles<T>)
-             ;
+         // a bug in boost::python, this needs the extra self_ns qualification
+         .def(bpy::self_ns::str(bpy::self))
+         .def(bpy::self_ns::repr(bpy::self))
 
-        bind_typed_matrix4_extra( X);
+         .def("extract_matrix3", &UnalignedMatrix44<T>::extract_matrix3)
+         .def("extract_translation", &UnalignedMatrix44<T>::extract_translation)
+         ;
+
+        bind_typed_matrix4_extra(X);
     }
 }
 

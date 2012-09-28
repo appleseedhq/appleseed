@@ -636,6 +636,24 @@ TEST_SUITE(Foundation_Math_Matrix33)
         EXPECT_FEQ(Vector3d(2.0, 3.0, 0.5), s);
         EXPECT_FEQ(Quaterniond::rotation(Vector3d(1.0, 0.0, 0.0), Pi / 4.0), q);
     }
+
+    TEST_CASE(TestDecompose_GivenMirroring)
+    {
+        static const double Values[] =
+        {
+            0.0, 1.0, 0.0,
+            1.0, 0.0, 0.0,
+            0.0, 0.0, 1.0
+        };
+
+        const Matrix3d m(Values);
+
+        Vector3d s;
+        Quaterniond q;
+        m.decompose(s, q);
+
+        EXPECT_TRUE(is_normalized(q));
+    }
 }
 
 TEST_SUITE(Foundation_Math_Matrix44)
@@ -779,53 +797,6 @@ TEST_SUITE(Foundation_Math_Matrix44)
         const Vector4d result = Vec * Matrix4d(Values);
 
         EXPECT_FEQ(Vector4d(-22927.0, -2126.0, 8586.0, -2175.0), result);
-    }
-
-    TEST_CASE(TestExtractScaling_GivenIdentityMatrix)
-    {
-        const Matrix4d m = Matrix4d::identity();
-
-        const Vector3d s = m.extract_scaling();
-
-        EXPECT_FEQ(Vector3d(1.0, 1.0, 1.0), s);
-    }
-
-    TEST_CASE(TestExtractScaling_GivenScalingMatrix)
-    {
-        const Matrix4d m = Matrix4d::scaling(Vector3d(2.0, 3.0, 0.5));
-
-        const Vector3d s = m.extract_scaling();
-
-        EXPECT_FEQ(Vector3d(2.0, 3.0, 0.5), s);
-    }
-
-    TEST_CASE(TestExtractScaling_GivenScalingFollowedByRotation)
-    {
-        const Matrix4d m =
-              Matrix4d::rotation_x(Pi / 4.0)
-            * Matrix4d::scaling(Vector3d(2.0, 3.0, 0.5));
-
-        const Vector3d s = m.extract_scaling();
-
-        EXPECT_FEQ(Vector3d(2.0, 3.0, 0.5), s);
-    }
-
-    TEST_CASE(TestExtractUnitQuaternion_GivenIdentityMatrix)
-    {
-        const Matrix4d m = Matrix4d::identity();
-
-        const Quaterniond q = m.extract_unit_quaternion();
-
-        EXPECT_FEQ(Quaterniond::rotation(Vector3d(1.0, 0.0, 0.0), 0.0), q);
-    }
-
-    TEST_CASE(TestExtractUnitQuaternion_GivenRotationMatrix)
-    {
-        const Matrix4d m = Matrix4d::rotation_x(Pi / 4.0);
-
-        const Quaterniond q = m.extract_unit_quaternion();
-
-        EXPECT_FEQ(Quaterniond::rotation(Vector3d(1.0, 0.0, 0.0), Pi / 4.0), q);
     }
 
     TEST_CASE(TestExtractTranslation)

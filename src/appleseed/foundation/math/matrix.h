@@ -272,6 +272,14 @@ class Matrix<T, 3, 3>
     static MatrixType rotation(
         const Quaternion<T>&    q);                         // unit quaternion
 
+    // Unchecked array subscripting.
+    ValueType& operator[](const size_t i);
+    const ValueType& operator[](const size_t i) const;
+
+    // Unchecked Fortran-style subscripting (0-based).
+    ValueType& operator()(const size_t row, const size_t col);
+    const ValueType& operator()(const size_t row, const size_t col) const;
+
     // Extract the scaling factors from a transformation matrix.
     Vector<T, 3> extract_scaling() const;
 
@@ -288,14 +296,6 @@ class Matrix<T, 3, 3>
     void decompose(
         Vector<T, 3>&           scaling,
         Quaternion<T>&          rotation) const;
-
-    // Unchecked array subscripting.
-    ValueType& operator[](const size_t i);
-    const ValueType& operator[](const size_t i) const;
-
-    // Unchecked Fortran-style subscripting (0-based).
-    ValueType& operator()(const size_t row, const size_t col);
-    const ValueType& operator()(const size_t row, const size_t col) const;
 
   private:
     ValueType m_comp[Components];
@@ -378,17 +378,16 @@ class Matrix<T, 4, 4>
         const Vector<T, 3>&     target,                     // target point
         const Vector<T, 3>&     up);                        // up vector, unit-length
 
-    // Extract the scaling factors from a transformation matrix.
-    Vector<T, 3> extract_scaling() const;
+    // Unchecked array subscripting.
+    ValueType& operator[](const size_t i);
+    const ValueType& operator[](const size_t i) const;
 
-    // Extract Euler angles from a rotation matrix.
-    void extract_euler_angles(
-        ValueType&              yaw,
-        ValueType&              pitch,
-        ValueType&              roll) const;
+    // Unchecked Fortran-style subscripting (0-based).
+    ValueType& operator()(const size_t row, const size_t col);
+    const ValueType& operator()(const size_t row, const size_t col) const;
 
-    // Extract a unit quaternion from a rotation matrix.
-    Quaternion<T> extract_unit_quaternion() const;
+    // Extract the upper-left 3x3 matrix.
+    Matrix<T, 3, 3> extract_matrix3() const;
 
     // Extract the translation from a transformation matrix.
     Vector<T, 3> extract_translation() const;
@@ -398,14 +397,6 @@ class Matrix<T, 4, 4>
         Vector<T, 3>&           scaling,
         Quaternion<T>&          rotation,
         Vector<T, 3>&           translation) const;
-
-    // Unchecked array subscripting.
-    ValueType& operator[](const size_t i);
-    const ValueType& operator[](const size_t i) const;
-
-    // Unchecked Fortran-style subscripting (0-based).
-    ValueType& operator()(const size_t row, const size_t col);
-    const ValueType& operator()(const size_t row, const size_t col) const;
 
   private:
     SSE_ALIGN ValueType m_comp[Components];
@@ -1190,6 +1181,36 @@ inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation(
 }
 
 template <typename T>
+inline T& Matrix<T, 3, 3>::operator[](const size_t i)
+{
+    assert(i < Components);
+    return m_comp[i];
+}
+
+template <typename T>
+inline const T& Matrix<T, 3, 3>::operator[](const size_t i) const
+{
+    assert(i < Components);
+    return m_comp[i];
+}
+
+template <typename T>
+inline T& Matrix<T, 3, 3>::operator()(const size_t row, const size_t col)
+{
+    assert(row < Rows);
+    assert(col < Columns);
+    return m_comp[row * Columns + col];
+}
+
+template <typename T>
+inline const T& Matrix<T, 3, 3>::operator()(const size_t row, const size_t col) const
+{
+    assert(row < Rows);
+    assert(col < Columns);
+    return m_comp[row * Columns + col];
+}
+
+template <typename T>
 inline Vector<T, 3> Matrix<T, 3, 3>::extract_scaling() const
 {
     Vector<T, 3> scaling;
@@ -1285,6 +1306,9 @@ inline void Matrix<T, 3, 3>::decompose(
 {
     scaling = extract_scaling();
 
+    if (det(*this) < T(0.0))
+        scaling[0] = -scaling[0];
+
     const Vector<T, 3> rcp_scaling(
         T(1.0) / scaling[0],
         T(1.0) / scaling[1],
@@ -1308,33 +1332,15 @@ inline void Matrix<T, 3, 3>::decompose(
 }
 
 template <typename T>
-inline T& Matrix<T, 3, 3>::operator[](const size_t i)
+inline T det(const Matrix<T, 3, 3>& mat)
 {
-    assert(i < Components);
-    return m_comp[i];
-}
-
-template <typename T>
-inline const T& Matrix<T, 3, 3>::operator[](const size_t i) const
-{
-    assert(i < Components);
-    return m_comp[i];
-}
-
-template <typename T>
-inline T& Matrix<T, 3, 3>::operator()(const size_t row, const size_t col)
-{
-    assert(row < Rows);
-    assert(col < Columns);
-    return m_comp[row * Columns + col];
-}
-
-template <typename T>
-inline const T& Matrix<T, 3, 3>::operator()(const size_t row, const size_t col) const
-{
-    assert(row < Rows);
-    assert(col < Columns);
-    return m_comp[row * Columns + col];
+    return
+        mat[0] * mat[4] * mat[8] +
+        mat[1] * mat[5] * mat[6] +
+        mat[2] * mat[3] * mat[7] -
+        mat[2] * mat[4] * mat[6] -
+        mat[1] * mat[3] * mat[8] -
+        mat[0] * mat[5] * mat[7];
 }
 
 template <typename T>
@@ -1637,7 +1643,7 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation(
     // http://www.geometrictools.com
     //
 
-    assert(is_normalized(q));
+    assert(is_normalized(q, make_eps<T>(1.0e-4f, 1.0e-6)));
 
     const ValueType tx  = q.v[0] + q.v[0];
     const ValueType ty  = q.v[1] + q.v[1];
@@ -1731,131 +1737,6 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::lookat(
 }
 
 template <typename T>
-inline Vector<T, 3> Matrix<T, 4, 4>::extract_scaling() const
-{
-    Vector<T, 3> scaling;
-
-    scaling[0] = norm(Vector<T, 3>(m_comp[0], m_comp[4], m_comp[ 8]));
-    scaling[1] = norm(Vector<T, 3>(m_comp[1], m_comp[5], m_comp[ 9]));
-    scaling[2] = norm(Vector<T, 3>(m_comp[2], m_comp[6], m_comp[10]));
-
-    return scaling;
-}
-
-template <typename T>
-inline void Matrix<T, 4, 4>::extract_euler_angles(
-    ValueType&              yaw,
-    ValueType&              pitch,
-    ValueType&              roll) const
-{
-    // todo: in debug, make sure the matrix is orthogonal.
-
-    if (m_comp[8] != ValueType(0.0))
-    {
-        yaw   = std::atan2(-m_comp[8], m_comp[10]);
-        pitch = std::asin(m_comp[9]);
-        roll  = std::atan2(-m_comp[1], m_comp[5]);
-    }
-    else
-    {
-        yaw   = ValueType(0.0);
-        pitch = ValueType(HalfPi);
-        roll  = std::atan2(m_comp[4], m_comp[0]);
-    }
-}
-
-template <typename T>
-inline Quaternion<T> Matrix<T, 4, 4>::extract_unit_quaternion() const
-{
-    //
-    // Implementation from Wild Magic Source Code, David Eberly
-    // http://www.geometrictools.com
-    //
-    // Algorithm in Ken Shoemake's article in 1987 SIGGRAPH course notes
-    // article "Quaternion Calculus and Fast Animation".
-    //
-
-    // todo: in debug, make sure the matrix is orthogonal.
-
-    const ValueType t = m_comp[0] + m_comp[5] + m_comp[10];     // rotation matrix trace
-
-    if (t > ValueType(0.0))
-    {
-        // |w| > 1/2, may as well choose w > 1/2.
-
-        ValueType root = std::sqrt(t + ValueType(1.0));         // 2w
-
-        Quaternion<T> q;
-        q.s   = ValueType(0.5) * root;
-        root  = ValueType(0.5) / root;                          // 1/(4w)
-        q.v.x = (m_comp[9] - m_comp[6]) * root;
-        q.v.y = (m_comp[2] - m_comp[8]) * root;
-        q.v.z = (m_comp[4] - m_comp[1]) * root;
-        return q;
-    }
-    else
-    {
-        // |w| <= 1/2.
-
-        size_t i = 0;
-        if (m_comp[5] > m_comp[0]) i = 1;
-        if (m_comp[10] > m_comp[i*4+i]) i = 2;
-
-        const size_t j = (1 << i) & 3;
-        const size_t k = (1 << j) & 3;
-
-        ValueType root =
-            std::sqrt(m_comp[i*4+i] - m_comp[j*4+j] - m_comp[k*4+k] + ValueType(1.0));
-
-        Quaternion<T> q;
-        q.v[i] = ValueType(0.5) * root;
-        root   = ValueType(0.5) / root;
-        q.s    = (m_comp[k*4+j] - m_comp[j*4+k]) * root;
-        q.v[j] = (m_comp[j*4+i] + m_comp[i*4+j]) * root;
-        q.v[k] = (m_comp[k*4+i] + m_comp[i*4+k]) * root;
-        return q;
-    }
-}
-
-template <typename T>
-inline Vector<T, 3> Matrix<T, 4, 4>::extract_translation() const
-{
-    return Vector<T, 3>(m_comp[3], m_comp[7], m_comp[11]);
-}
-
-template <typename T>
-inline void Matrix<T, 4, 4>::decompose(
-    Vector<T, 3>&           scaling,
-    Quaternion<T>&          rotation,
-    Vector<T, 3>&           translation) const
-{
-    scaling = extract_scaling();
-
-    const Vector<T, 3> rcp_scaling(
-        T(1.0) / scaling[0],
-        T(1.0) / scaling[1],
-        T(1.0) / scaling[2]);
-
-    Matrix<T, 4, 4> unit_matrix(*this);
-
-    unit_matrix[ 0] *= rcp_scaling[0];
-    unit_matrix[ 4] *= rcp_scaling[0];
-    unit_matrix[ 8] *= rcp_scaling[0];
-
-    unit_matrix[ 1] *= rcp_scaling[1];
-    unit_matrix[ 5] *= rcp_scaling[1];
-    unit_matrix[ 9] *= rcp_scaling[1];
-
-    unit_matrix[ 2] *= rcp_scaling[2];
-    unit_matrix[ 6] *= rcp_scaling[2];
-    unit_matrix[10] *= rcp_scaling[2];
-
-    rotation = unit_matrix.extract_unit_quaternion();
-
-    translation = extract_translation();
-}
-
-template <typename T>
 inline T& Matrix<T, 4, 4>::operator[](const size_t i)
 {
     assert(i < Components);
@@ -1883,6 +1764,41 @@ inline const T& Matrix<T, 4, 4>::operator()(const size_t row, const size_t col) 
     assert(row < Rows);
     assert(col < Columns);
     return m_comp[row * Columns + col];
+}
+
+template <typename T>
+inline Matrix<T, 3, 3> Matrix<T, 4, 4>::extract_matrix3() const
+{
+    Matrix<T, 3, 3> mat;
+
+    mat[0] = m_comp[ 0];
+    mat[1] = m_comp[ 1];
+    mat[2] = m_comp[ 2];
+    mat[3] = m_comp[ 4];
+    mat[4] = m_comp[ 5];
+    mat[5] = m_comp[ 6];
+    mat[6] = m_comp[ 8];
+    mat[7] = m_comp[ 9];
+    mat[8] = m_comp[10];
+
+    return mat;
+}
+
+template <typename T>
+inline Vector<T, 3> Matrix<T, 4, 4>::extract_translation() const
+{
+    return Vector<T, 3>(m_comp[3], m_comp[7], m_comp[11]);
+}
+
+template <typename T>
+inline void Matrix<T, 4, 4>::decompose(
+    Vector<T, 3>&           scaling,
+    Quaternion<T>&          rotation,
+    Vector<T, 3>&           translation) const
+{
+    Matrix<T, 3, 3> matrix3(extract_matrix3());
+    matrix3.decompose(scaling, rotation);
+    translation = extract_translation();
 }
 
 template <typename T>

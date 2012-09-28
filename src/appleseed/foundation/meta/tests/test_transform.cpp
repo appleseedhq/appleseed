@@ -229,12 +229,61 @@ TEST_SUITE(Foundation_Math_TransformInterpolator)
     {
         const Transformd from(Matrix4d::identity());
         const Transformd to(Matrix4d::scaling(Vector3d(3.0, 5.0, 0.6)));
-
         const TransformInterpolatord interpolator(from, to);
-        const Transformd transform = interpolator.evaluate(0.5);
 
-        EXPECT_FEQ(Vector3d(2.0, 3.0, 0.8), transform.get_local_to_parent().extract_scaling());
-        EXPECT_FEQ(Matrix4d::identity(), transform.get_local_to_parent() * transform.get_parent_to_local());
+        const Transformd result = interpolator.evaluate(0.5);
+
+        EXPECT_FEQ(Matrix4d::identity(), result.get_local_to_parent() * result.get_parent_to_local());
+        EXPECT_FEQ(Vector3d(2.0, 3.0, 0.8), result.get_local_to_parent().extract_matrix3().extract_scaling());
+    }
+
+    TEST_CASE(Evaluate_GivenIdenticalFromAndToMatricesWithMirroring_ReturnsInputTransform)
+    {
+        static const double Values[] =
+        {
+            -1.0, 0.0, 0.0, 4.0,
+             0.0, 1.0, 0.0, 6.0,
+             0.0, 0.0, 1.0, 8.0,
+             0.0, 0.0, 0.0, 1.0
+        };
+
+        const Matrix4d matrix(Values);
+        const Transformd transform(matrix);
+        const TransformInterpolatord interpolator(transform, transform);
+
+        const Transformd result = interpolator.evaluate(0.5);
+
+        EXPECT_FEQ(transform, result);
+    }
+
+    TEST_CASE(Evaluate_GivenRealWorldMatricesWithMirroring_ReturnsValidInterpolationTransform)
+    {
+        static const double FromValues[] =
+        {
+            -0.99702130594062099,   0.077087478205260004, -0.0025112020321310003,   0.76365516185966298,
+             0.077096829499781999,  0.99701625983943298,  -0.0039071886356200000, 146.27250157945070,
+            -0.0022025165107730001, 0.0040890970283240001, 0.99998953373952104,     8.9871358181588690,
+             0.00000000000000000,   0.00000000000000000,   0.00000000000000000,     1.0000000000000000
+        };
+
+        static const double ToValues[] =
+        {
+            -0.99665231953250000,   0.081673207457143002, -0.0036906925368350003,   0.65271732495429602,
+             0.081677812416244000,  0.99665822601435605,  -0.0011578872622540000, 145.34519371726373,
+            -0.0035839072864200005, 0.0014554931967890000, 0.99999257746504999,     9.0022056937678983,
+             0.00000000000000000,   0.00000000000000000,   0.00000000000000000,     1.0000000000000000
+        };
+
+        const TransformInterpolatord interpolator(
+            Transformd(Matrix4d(FromValues)),
+            Transformd(Matrix4d(ToValues)));
+
+        const Transformd result = interpolator.evaluate(0.024320000000000008);
+
+        EXPECT_FEQ_EPS(
+            Matrix4d::identity(),
+            result.get_local_to_parent() * result.get_parent_to_local(),
+            1.0e-9);
     }
 
     TEST_CASE(VisualizeTransform)

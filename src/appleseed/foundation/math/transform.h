@@ -187,7 +187,7 @@ inline Transform<T>::Transform(
   : m_local_to_parent(local_to_parent)
   , m_parent_to_local(parent_to_local)
 {
-    assert(feq(m_local_to_parent * m_parent_to_local, MatrixType::identity(), make_eps<T>(1.0e-6f, 1.0e-9)));
+    assert(feq(m_local_to_parent * m_parent_to_local, MatrixType::identity(), make_eps<T>(1.0e-4f, 1.0e-6)));
 }
 
 template <typename T>
@@ -507,132 +507,77 @@ bool TransformInterpolator<T>::set_transforms(
     if (dot(m_q0, m_q1) < T(0.0))
         m_q1 = -m_q1;
 
-    return is_normalized(m_q0) && is_normalized(m_q1);
+    const T Eps = make_eps<T>(1.0e-4f, 1.0e-6);
+
+    return is_normalized(m_q0, Eps) && is_normalized(m_q1, Eps);
 }
 
 template <typename T>
 inline Transform<T> TransformInterpolator<T>::evaluate(const T t) const
 {
+    // Interpolate the scaling, rotation and translation components.
     const Vector<T, 3> s = lerp(m_s0, m_s1, t);
     const Quaternion<T> q = slerp(m_q0, m_q1, t);
     const Vector<T, 3> p = lerp(m_t0, m_t1, t);
 
-    assert(is_normalized(q));
-
     //
-    // Form the local-to-parent transformation matrix.
-    // See the implementation of foundation::Matrix<T, 4, 4>::rotation().
+    // Unoptimized implementation:
     //
-
-    const T tx  = q.v[0] + q.v[0];
-    const T ty  = q.v[1] + q.v[1];
-    const T tz  = q.v[2] + q.v[2];
-    const T twx = tx * q.s;
-    const T twy = ty * q.s;
-    const T twz = tz * q.s;
-    const T txx = tx * q.v[0];
-    const T txy = ty * q.v[0];
-    const T txz = tz * q.v[0];
-    const T tyy = ty * q.v[1];
-    const T tyz = tz * q.v[1];
-    const T tzz = tz * q.v[2];
-
-    Matrix<T, 4, 4> local_to_parent;
-
-    // First row.
-    local_to_parent[ 0] = T(1.0) - (tyy + tzz);
-    local_to_parent[ 1] = txy - twz;
-    local_to_parent[ 2] = txz + twy;
-    local_to_parent[ 3] = p.x;
-
-    // Second row.
-    local_to_parent[ 4] = txy + twz;
-    local_to_parent[ 5] = T(1.0) - (txx + tzz);
-    local_to_parent[ 6] = tyz - twx;
-    local_to_parent[ 7] = p.y;
-
-    // Third row.
-    local_to_parent[ 8] = txz - twy;
-    local_to_parent[ 9] = tyz + twx;
-    local_to_parent[10] = T(1.0) - (txx + tyy);
-    local_to_parent[11] = p.z;
-
-    // Fourth row.
-    local_to_parent[12] = T(0.0);
-    local_to_parent[13] = T(0.0);
-    local_to_parent[14] = T(0.0);
-    local_to_parent[15] = T(1.0);
-
-    //
-    // Form the parent-to-local transformation matrix.
+    //     // Compute the local-to-parent matrix.
+    //     const Matrix<T, 4, 4> smat(Matrix<T, 4, 4>::scaling(s));
+    //     const Matrix<T, 4, 4> rmat(Matrix<T, 4, 4>::rotation(q));
+    //     const Matrix<T, 4, 4> tmat(Matrix<T, 4, 4>::translation(p));
+    //     Matrix<T, 4, 4> local_to_parent = smat;
+    //     local_to_parent = rmat * local_to_parent;
+    //     local_to_parent = tmat * local_to_parent;
+    //     
+    //     // Compute the parent-to-local matrix.
+    //     const Vector<T, 3> inv_s(T(1.0) / s[0], T(1.0) / s[1], T(1.0) / s[2]);
+    //     const Matrix<T, 4, 4> inv_smat(Matrix<T, 4, 4>::scaling(inv_s));
+    //     const Matrix<T, 4, 4> inv_rmat(transpose(rmat));
+    //     const Matrix<T, 4, 4> inv_tmat(Matrix<T, 4, 4>::translation(-p));
+    //     Matrix<T, 4, 4> parent_to_local = inv_tmat;
+    //     parent_to_local = inv_rmat * parent_to_local;
+    //     parent_to_local = inv_smat * parent_to_local;
     //
 
-    Matrix<T, 4, 4> parent_to_local;
-
-    // First row.
-    parent_to_local[ 0] = local_to_parent[ 0];
-    parent_to_local[ 1] = local_to_parent[ 4];
-    parent_to_local[ 2] = local_to_parent[ 8];
-    parent_to_local[ 3] = -(parent_to_local[0] * p[0] + parent_to_local[1] * p[1] + parent_to_local[2] * p[2]);
-
-    // Second row.
-    parent_to_local[ 4] = local_to_parent[ 1];
-    parent_to_local[ 5] = local_to_parent[ 5];
-    parent_to_local[ 6] = local_to_parent[ 9];
-    parent_to_local[ 7] = -(parent_to_local[4] * p[0] + parent_to_local[5] * p[1] + parent_to_local[6] * p[2]);
-
-    // Third row.
-    parent_to_local[ 8] = local_to_parent[ 2];
-    parent_to_local[ 9] = local_to_parent[ 6];
-    parent_to_local[10] = local_to_parent[10];
-    parent_to_local[11] = -(parent_to_local[8] * p[0] + parent_to_local[9] * p[1] + parent_to_local[10] * p[2]);
-
-    // Fourth row.
-    parent_to_local[12] = T(0.0);
-    parent_to_local[13] = T(0.0);
-    parent_to_local[14] = T(0.0);
-    parent_to_local[15] = T(1.0);
-
     //
-    // Apply scaling factors to the local-to-parent transformation matrix.
+    // Compute the local-to-parent matrix.
     //
 
-    // First column.
+    // Compute R.
+    const Matrix<T, 4, 4> rmat(Matrix<T, 4, 4>::rotation(q));
+    Matrix<T, 4, 4> local_to_parent(rmat);
+
+    // Compute R * S.
     local_to_parent[ 0] *= s.x;
     local_to_parent[ 4] *= s.x;
     local_to_parent[ 8] *= s.x;
-
-    // Second column.
     local_to_parent[ 1] *= s.y;
     local_to_parent[ 5] *= s.y;
     local_to_parent[ 9] *= s.y;
-
-    // Third column.
     local_to_parent[ 2] *= s.z;
     local_to_parent[ 6] *= s.z;
     local_to_parent[10] *= s.z;
 
+    // Compute T * R * S.
+    local_to_parent[ 3] = p.x;
+    local_to_parent[ 7] = p.y;
+    local_to_parent[11] = p.z;
+
     //
-    // Apply scaling factors to the parent-to-local transformation matrix.
+    // Compute the local-to-parent matrix.
     //
 
-    // First column.
-    const T rcp_sx = T(1.0) / s.x;
-    parent_to_local[ 0] *= rcp_sx;
-    parent_to_local[ 4] *= rcp_sx;
-    parent_to_local[ 8] *= rcp_sx;
+    // Compute T^-1.
+    Matrix<T, 4, 4> parent_to_local(Matrix<T, 4, 4>::translation(-p));
 
-    // Second column.
-    const T rcp_sy = T(1.0) / s.y;
-    parent_to_local[ 1] *= rcp_sy;
-    parent_to_local[ 5] *= rcp_sy;
-    parent_to_local[ 9] *= rcp_sy;
+    // Compute R^-1 * T^-1.
+    parent_to_local = transpose(rmat) * parent_to_local;
 
-    // Third column.
-    const T rcp_sz = T(1.0) / s.z;
-    parent_to_local[ 2] *= rcp_sz;
-    parent_to_local[ 6] *= rcp_sz;
-    parent_to_local[10] *= rcp_sz;
+    // Compute S^-1 * R^-1 * T^-1.
+    const Vector<T, 3> inv_s(T(1.0) / s[0], T(1.0) / s[1], T(1.0) / s[2]);
+    parent_to_local = Matrix<T, 4, 4>::scaling(inv_s) * parent_to_local;
 
     return Transform<T>(local_to_parent, parent_to_local);
 }
