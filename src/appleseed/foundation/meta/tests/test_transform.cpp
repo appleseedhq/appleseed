@@ -275,8 +275,8 @@ TEST_SUITE(Foundation_Math_TransformInterpolator)
         };
 
         const TransformInterpolatord interpolator(
-            Transformd(Matrix4d(FromValues)),
-            Transformd(Matrix4d(ToValues)));
+            (Transformd(Matrix4d(FromValues))),
+            (Transformd(Matrix4d(ToValues))));
 
         const Transformd result = interpolator.evaluate(0.024320000000000008);
 
