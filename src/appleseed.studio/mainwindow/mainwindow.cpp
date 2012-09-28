@@ -79,7 +79,7 @@
 // boost headers.
 #include "boost/filesystem/path.hpp"
 
-// standard headers
+// Standard headers.
 #include <algorithm>
 
 using namespace appleseed::shared;
@@ -129,51 +129,71 @@ MainWindow::~MainWindow()
 
 void MainWindow::build_menus()
 {
+    //
     // File menu.
-    m_ui->action_file_new_project->setShortcut( QKeySequence::New );
+    //
+
+    m_ui->action_file_new_project->setShortcut(QKeySequence::New);
     connect(m_ui->action_file_new_project, SIGNAL(triggered()), SLOT(slot_new_project()));
 
-    m_ui->action_file_open_project->setShortcut( QKeySequence::Open );
+    m_ui->action_file_open_project->setShortcut(QKeySequence::Open);
     connect(m_ui->action_file_open_project, SIGNAL(triggered()), SLOT(slot_open_project()));
 
-    // open recent
     init_recent_files_menu();
 
     connect(m_ui->action_file_open_builtin_project_cornellbox, SIGNAL(triggered()), SLOT(slot_open_cornellbox_builtin_project()));
     connect(m_ui->action_file_reload_project, SIGNAL(triggered()), SLOT(slot_reload_project()));
 
-    m_ui->action_file_save_project->setShortcut( QKeySequence::Save );
+    m_ui->action_file_save_project->setShortcut(QKeySequence::Save);
     connect(m_ui->action_file_save_project, SIGNAL(triggered()), SLOT(slot_save_project()));
 
-    m_ui->action_file_save_project_as->setShortcut( QKeySequence::SaveAs );
+    m_ui->action_file_save_project_as->setShortcut(QKeySequence::SaveAs);
     connect(m_ui->action_file_save_project_as, SIGNAL(triggered()), this, SLOT(slot_save_project_as()));
 
-    m_ui->action_file_exit->setShortcut( QKeySequence::Quit );
+    m_ui->action_file_exit->setShortcut(QKeySequence::Quit);
     connect(m_ui->action_file_exit, SIGNAL(triggered()), SLOT(close()));
 
+    //
+    // View menu.
+    //
+
+    m_ui->menu_view->addAction(m_ui->project_explorer->toggleViewAction());
+    m_ui->menu_view->addAction(m_ui->log->toggleViewAction());
+
+    //
     // Rendering menu.
+    //
+
     connect(m_ui->action_rendering_start_interactive_rendering, SIGNAL(triggered()), SLOT(slot_start_interactive_rendering()));
     connect(m_ui->action_rendering_start_final_rendering, SIGNAL(triggered()), SLOT(slot_start_final_rendering()));
     connect(m_ui->action_rendering_stop_rendering, SIGNAL(triggered()), SLOT(slot_stop_rendering()));
     connect(m_ui->action_rendering_render_settings, SIGNAL(triggered()), SLOT(slot_show_render_settings_window()));
 
+    //
     // Diagnostics menu.
+    //
+
     build_override_shading_menu_item();
 
+    //
     // Debug menu.
+    //
+
     connect(m_ui->action_debug_tests, SIGNAL(triggered()), SLOT(slot_show_test_window()));
     connect(m_ui->action_debug_benchmarks, SIGNAL(triggered()), SLOT(slot_show_benchmark_window()));
 
+    //
     // Tools menu.
+    //
+
     connect(m_ui->action_tools_save_settings, SIGNAL(triggered()), SLOT(slot_save_settings()));
     connect(m_ui->action_tools_reload_settings, SIGNAL(triggered()), SLOT(slot_load_settings()));
 
+    //
     // Help menu.
-    connect(m_ui->action_help_about, SIGNAL(triggered()), SLOT(slot_show_about_window()));
+    //
 
-    // View menu.
-    m_ui->menu_view->addAction(m_ui->project_explorer->toggleViewAction());
-    m_ui->menu_view->addAction(m_ui->log->toggleViewAction());
+    connect(m_ui->action_help_about, SIGNAL(triggered()), SLOT(slot_show_about_window()));
 }
 
 void MainWindow::build_override_shading_menu_item()
@@ -702,16 +722,17 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
 namespace
 {
-    const int max_recently_opened_files = 5;
-    const char* settings_org_str = "com.appleseed.studio";
-    const char* settings_recent_files_entry_str = "appleseed.studio Recent Files";
-    const char* settings_recent_file_list_str = "recent_file_list";
+    const int MaxRecentlyOpenedFiles = 5;
+    const char* SettingsOrgString = "com.appleseed.studio";
+    const char* SettingsRecentFilesEntryString = "appleseed.studio Recent Files";
+    const char* SettingsRecentFileListString = "recent_file_list";
 }
 
 void MainWindow::init_recent_files_menu()
 {
-    m_recently_opened.reserve(max_recently_opened_files);
-    for (int i = 0; i < max_recently_opened_files; ++i)
+    m_recently_opened.reserve(MaxRecentlyOpenedFiles);
+
+    for (int i = 0; i < MaxRecentlyOpenedFiles; ++i)
     {
         m_recently_opened.push_back(new QAction(this));
         m_recently_opened[i]->setVisible(false);
@@ -719,8 +740,8 @@ void MainWindow::init_recent_files_menu()
         m_ui->menu_open_recent->addAction(m_recently_opened[i]);
     }
 
-    QSettings settings(settings_org_str, settings_recent_files_entry_str);
-    QStringList files = settings.value(settings_recent_file_list_str).toStringList();
+    QSettings settings(SettingsOrgString, SettingsRecentFilesEntryString);
+    QStringList files = settings.value(SettingsRecentFileListString).toStringList();
     update_recent_files_menu(files);
 
     m_ui->menu_open_recent->addSeparator();
@@ -732,33 +753,33 @@ void MainWindow::init_recent_files_menu()
 
 void MainWindow::update_recent_files_menu(const QString& filename)
 {
-    QSettings settings(settings_org_str, settings_recent_files_entry_str);
-    QStringList files = settings.value(settings_recent_file_list_str).toStringList();
+    QSettings settings(SettingsOrgString, SettingsRecentFilesEntryString);
+    QStringList files = settings.value(SettingsRecentFileListString).toStringList();
     files.removeAll(filename);
     files.prepend(filename);
 
-    while (files.size() > max_recently_opened_files)
+    while (files.size() > MaxRecentlyOpenedFiles)
         files.removeLast();
 
-    settings.setValue(settings_recent_file_list_str, files);
+    settings.setValue(SettingsRecentFileListString, files);
     update_recent_files_menu(files);
 }
 
 void MainWindow::update_recent_files_menu(const QStringList& files)
 {
-    int num_recent_files = std::min(files.size(), static_cast<int>(max_recently_opened_files));
+    const int num_recent_files = min(files.size(), MaxRecentlyOpenedFiles);
 
     for (int i = 0; i < num_recent_files; ++i)
     {
-        QString stripped = QFileInfo(files[i]).fileName();
-        QString text = tr("&%1 %2").arg(i + 1).arg(stripped);
+        const QString stripped = QFileInfo(files[i]).fileName();
+        const QString text = tr("&%1 %2").arg(i + 1).arg(stripped);
         m_recently_opened[i]->setText(text);
         m_recently_opened[i]->setData(files[i]);
         m_recently_opened[i]->setVisible(true);
     }
 
-    for(int j = num_recent_files; j < max_recently_opened_files; ++j)
-        m_recently_opened[j]->setVisible(false);
+    for (int i = num_recent_files; i < MaxRecentlyOpenedFiles; ++i)
+        m_recently_opened[i]->setVisible(false);
 }
 
 void MainWindow::slot_new_project()
@@ -863,9 +884,9 @@ void MainWindow::slot_open_recent()
 
 void MainWindow::slot_clear_open_recent_files_menu()
 {
-    QSettings settings(settings_org_str, settings_recent_files_entry_str);
+    QSettings settings(SettingsOrgString, SettingsRecentFilesEntryString);
     QStringList files;
-    settings.setValue(settings_recent_file_list_str, files);
+    settings.setValue(SettingsRecentFileListString, files);
     update_recent_files_menu(files);
 }
 
