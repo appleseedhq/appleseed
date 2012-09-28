@@ -48,6 +48,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstring>
+#include <cstdio>
 
 using namespace boost;
 using namespace std;
@@ -86,7 +87,20 @@ const char* Path::get_executable_path()
 // Linux.
 #elif defined __linux__
 
-        ssize_t result = readlink("/proc/self/exe", path, sizeof(path));
+		static char linkname[FOUNDATION_MAX_PATH_LENGTH + 1];
+		pid_t pid = getpid();
+
+		if (snprintf(linkname, sizeof(linkname), "/proc/%i/exe", pid) < 0)
+			assert(false);
+
+		int result = readlink(linkname, path, sizeof(path));
+
+		if (result == -1)
+			assert(false);
+
+		if (result >= sizeof(path))
+			assert( false);
+
         assert(result > 0);
         path[result] = '\0';
 
