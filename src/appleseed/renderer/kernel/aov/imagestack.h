@@ -70,7 +70,7 @@ class DLLSYMBOL ImageStack
 
     void clear();
 
-    void append(
+    size_t append(
         const char*                     name,
         const foundation::PixelFormat   format);
 
