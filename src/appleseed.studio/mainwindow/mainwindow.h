@@ -142,7 +142,6 @@ class MainWindow
 
     RenderWidgetCollection              m_render_widgets;
 
-    const static int max_recently_opened_files;
     std::vector<QAction*> m_recently_opened;
 
     void build_menus();
