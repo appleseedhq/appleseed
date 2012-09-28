@@ -95,8 +95,6 @@ namespace studio {
 // MainWindow class implementation.
 //
 
-const int MainWindow::max_recently_opened_files = 5;
-
 MainWindow::MainWindow(QWidget* parent)
   : QMainWindow(parent)
   , m_ui(new Ui::MainWindow())
@@ -145,33 +143,33 @@ void MainWindow::build_menus()
     connect(m_ui->action_file_reload_project, SIGNAL(triggered()), SLOT(slot_reload_project()));
 
     m_ui->action_file_save_project->setShortcut( QKeySequence::Save );
-    connect(m_ui->action_file_save_project, SIGNAL(triggered()), this, SLOT(slot_save_project()));
+    connect(m_ui->action_file_save_project, SIGNAL(triggered()), SLOT(slot_save_project()));
 
     m_ui->action_file_save_project_as->setShortcut( QKeySequence::SaveAs );
     connect(m_ui->action_file_save_project_as, SIGNAL(triggered()), this, SLOT(slot_save_project_as()));
 
     m_ui->action_file_exit->setShortcut( QKeySequence::Quit );
-    connect(m_ui->action_file_exit, SIGNAL(triggered()), this, SLOT(close()));
+    connect(m_ui->action_file_exit, SIGNAL(triggered()), SLOT(close()));
 
     // Rendering menu.
-    connect(m_ui->action_rendering_start_interactive_rendering, SIGNAL(triggered()), this, SLOT(slot_start_interactive_rendering()));
-    connect(m_ui->action_rendering_start_final_rendering, SIGNAL(triggered()), this, SLOT(slot_start_final_rendering()));
-    connect(m_ui->action_rendering_stop_rendering, SIGNAL(triggered()), this, SLOT(slot_stop_rendering()));
-    connect(m_ui->action_rendering_render_settings, SIGNAL(triggered()), this, SLOT(slot_show_render_settings_window()));
+    connect(m_ui->action_rendering_start_interactive_rendering, SIGNAL(triggered()), SLOT(slot_start_interactive_rendering()));
+    connect(m_ui->action_rendering_start_final_rendering, SIGNAL(triggered()), SLOT(slot_start_final_rendering()));
+    connect(m_ui->action_rendering_stop_rendering, SIGNAL(triggered()), SLOT(slot_stop_rendering()));
+    connect(m_ui->action_rendering_render_settings, SIGNAL(triggered()), SLOT(slot_show_render_settings_window()));
 
     // Diagnostics menu.
     build_override_shading_menu_item();
 
     // Debug menu.
-    connect(m_ui->action_debug_tests, SIGNAL(triggered()), this, SLOT(slot_show_test_window()));
-    connect(m_ui->action_debug_benchmarks, SIGNAL(triggered()), this, SLOT(slot_show_benchmark_window()));
+    connect(m_ui->action_debug_tests, SIGNAL(triggered()), SLOT(slot_show_test_window()));
+    connect(m_ui->action_debug_benchmarks, SIGNAL(triggered()), SLOT(slot_show_benchmark_window()));
 
     // Tools menu.
-    connect(m_ui->action_tools_save_settings, SIGNAL(triggered()), this, SLOT(slot_save_settings()));
-    connect(m_ui->action_tools_reload_settings, SIGNAL(triggered()), this, SLOT(slot_load_settings()));
+    connect(m_ui->action_tools_save_settings, SIGNAL(triggered()), SLOT(slot_save_settings()));
+    connect(m_ui->action_tools_reload_settings, SIGNAL(triggered()), SLOT(slot_load_settings()));
 
     // Help menu.
-    connect(m_ui->action_help_about, SIGNAL(triggered()), this, SLOT(slot_show_about_window()));
+    connect(m_ui->action_help_about, SIGNAL(triggered()), SLOT(slot_show_about_window()));
 
     // View menu.
     m_ui->menu_view->addAction(m_ui->project_explorer->toggleViewAction());
@@ -702,10 +700,18 @@ void MainWindow::closeEvent(QCloseEvent* event)
     event->accept();
 }
 
+namespace
+{
+    const int max_recently_opened_files = 5;
+    const char* settings_org_str = "com.appleseed.studio";
+    const char* settings_recent_files_entry_str = "appleseed.studio Recent Files";
+    const char* settings_recent_file_list_str = "recent_file_list";
+}
+
 void MainWindow::init_recent_files_menu()
 {
     m_recently_opened.reserve(max_recently_opened_files);
-    for(int i = 0; i < max_recently_opened_files; ++i)
+    for (int i = 0; i < max_recently_opened_files; ++i)
     {
         m_recently_opened.push_back(new QAction(this));
         m_recently_opened[i]->setVisible(false);
@@ -713,8 +719,8 @@ void MainWindow::init_recent_files_menu()
         m_ui->menu_open_recent->addAction(m_recently_opened[i]);
     }
 
-    QSettings settings("com.appleseed.studio", "Appleseed.studio Recent Files");
-    QStringList files = settings.value("recent_file_list").toStringList();
+    QSettings settings(settings_org_str, settings_recent_files_entry_str);
+    QStringList files = settings.value(settings_recent_file_list_str).toStringList();
     update_recent_files_menu(files);
 
     m_ui->menu_open_recent->addSeparator();
@@ -726,15 +732,15 @@ void MainWindow::init_recent_files_menu()
 
 void MainWindow::update_recent_files_menu(const QString& filename)
 {
-    QSettings settings("com.appleseed.studio", "Appleseed.studio Recent Files");
-    QStringList files = settings.value("recent_file_list").toStringList();
+    QSettings settings(settings_org_str, settings_recent_files_entry_str);
+    QStringList files = settings.value(settings_recent_file_list_str).toStringList();
     files.removeAll(filename);
     files.prepend(filename);
 
-    while(files.size() > max_recently_opened_files)
+    while (files.size() > max_recently_opened_files)
         files.removeLast();
 
-    settings.setValue("recent_file_list", files);
+    settings.setValue(settings_recent_file_list_str, files);
     update_recent_files_menu(files);
 }
 
@@ -742,7 +748,7 @@ void MainWindow::update_recent_files_menu(const QStringList& files)
 {
     int num_recent_files = std::min(files.size(), static_cast<int>(max_recently_opened_files));
 
-    for(int i = 0; i < num_recent_files; ++i)
+    for (int i = 0; i < num_recent_files; ++i)
     {
         QString stripped = QFileInfo(files[i]).fileName();
         QString text = tr("&%1 %2").arg(i + 1).arg(stripped);
@@ -848,7 +854,7 @@ void MainWindow::slot_open_recent()
 
     QAction *action = qobject_cast<QAction *>(sender());
 
-    if(action)
+    if (action)
     {
         QString filename = action->data().toString();
         open_project(filename);
@@ -857,9 +863,9 @@ void MainWindow::slot_open_recent()
 
 void MainWindow::slot_clear_open_recent_files_menu()
 {
-    QSettings settings("com.appleseed.studio", "Appleseed.studio Recent Files");
+    QSettings settings(settings_org_str, settings_recent_files_entry_str);
     QStringList files;
-    settings.setValue("recent_file_list", files);
+    settings.setValue(settings_recent_file_list_str, files);
     update_recent_files_menu(files);
 }
 
