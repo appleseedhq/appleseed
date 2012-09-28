@@ -71,16 +71,18 @@
 #include <QMessageBox>
 #include <QMetaType>
 #include <QRegExp>
+#include <QSettings>
 #include <QStatusBar>
 #include <QString>
+#include <QStringList>
 #include <QWidget>
-#include <QSettings>
 
 // boost headers.
 #include "boost/filesystem/path.hpp"
 
 // Standard headers.
 #include <algorithm>
+#include <cassert>
 
 using namespace appleseed::shared;
 using namespace boost;
@@ -139,7 +141,7 @@ void MainWindow::build_menus()
     m_ui->action_file_open_project->setShortcut(QKeySequence::Open);
     connect(m_ui->action_file_open_project, SIGNAL(triggered()), SLOT(slot_open_project()));
 
-    init_recent_files_menu();
+    build_recent_files_menu();
 
     connect(m_ui->action_file_open_builtin_project_cornellbox, SIGNAL(triggered()), SLOT(slot_open_cornellbox_builtin_project()));
     connect(m_ui->action_file_reload_project, SIGNAL(triggered()), SLOT(slot_reload_project()));
@@ -728,8 +730,10 @@ namespace
     const char* SettingsRecentFileListString = "recent_file_list";
 }
 
-void MainWindow::init_recent_files_menu()
+void MainWindow::build_recent_files_menu()
 {
+    assert(m_recently_opened.empty());
+
     m_recently_opened.reserve(MaxRecentlyOpenedFiles);
 
     for (int i = 0; i < MaxRecentlyOpenedFiles; ++i)
@@ -746,7 +750,7 @@ void MainWindow::init_recent_files_menu()
 
     m_ui->menu_open_recent->addSeparator();
     m_clear_open_recent_menu = new QAction(this);
-    m_clear_open_recent_menu->setText("Clear Menu");
+    m_clear_open_recent_menu->setText("&Clear Menu");
     connect(m_clear_open_recent_menu, SIGNAL(triggered()), SLOT(slot_clear_open_recent_files_menu()));
     m_ui->menu_open_recent->addAction(m_clear_open_recent_menu);
 }

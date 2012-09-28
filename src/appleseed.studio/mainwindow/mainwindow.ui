@@ -51,7 +51,7 @@
      <x>0</x>
      <y>0</y>
      <width>1280</width>
-     <height>28</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_file">
@@ -66,7 +66,7 @@
     </widget>
     <widget class="QMenu" name="menu_open_recent">
      <property name="title">
-      <string>Open Recent</string>
+      <string>Open Re&amp;cent</string>
      </property>
     </widget>
     <addaction name="action_file_new_project"/>

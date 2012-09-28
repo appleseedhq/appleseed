@@ -67,6 +67,7 @@ namespace Ui            { class MainWindow; }
 class QAction;
 class QPoint;
 class QString;
+class QStringList;
 
 namespace appleseed {
 namespace studio {
@@ -183,8 +184,8 @@ class MainWindow
 
     virtual void closeEvent(QCloseEvent* event);
 
-    // open recent menu
-    void init_recent_files_menu();
+    // Open recent menu.
+    void build_recent_files_menu();
     void update_recent_files_menu(const QString& filename);
     void update_recent_files_menu(const QStringList& files);
 
