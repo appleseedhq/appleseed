@@ -459,14 +459,14 @@ inline bool is_normalized(const Quaternion<T>& q, const T eps)
 template <typename T>
 inline Quaternion<T> slerp(const Quaternion<T>& p, const Quaternion<T>& q, const T t)
 {
-    assert(is_normalized(p));
-    assert(is_normalized(q));
+    const T Eps = make_eps<T>(1.0e-4f, 1.0e-6);
+
+    assert(is_normalized(p, Eps));
+    assert(is_normalized(q, Eps));
 
     const T cos_theta = clamp(dot(p, q), T(-1.0), T(1.0));
     const T theta = std::acos(cos_theta);
     const T sin_theta = std::sin(theta);
-
-    const T Eps = T(1.0e-6);
 
     return
         std::abs(sin_theta) < Eps
