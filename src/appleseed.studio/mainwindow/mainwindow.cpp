@@ -74,9 +74,13 @@
 #include <QStatusBar>
 #include <QString>
 #include <QWidget>
+#include <QSettings>
 
 // boost headers.
 #include "boost/filesystem/path.hpp"
+
+// standard headers
+#include <algorithm>
 
 using namespace appleseed::shared;
 using namespace boost;
@@ -90,6 +94,8 @@ namespace studio {
 //
 // MainWindow class implementation.
 //
+
+const int MainWindow::max_recently_opened_files = 5;
 
 MainWindow::MainWindow(QWidget* parent)
   : QMainWindow(parent)
@@ -127,10 +133,13 @@ void MainWindow::build_menus()
 {
     // File menu.
     m_ui->action_file_new_project->setShortcut( QKeySequence::New );
-    connect(m_ui->action_file_new_project, SIGNAL(triggered()), this, SLOT(slot_new_project()));
+    connect(m_ui->action_file_new_project, SIGNAL(triggered()), SLOT(slot_new_project()));
 
     m_ui->action_file_open_project->setShortcut( QKeySequence::Open );
-    connect(m_ui->action_file_open_project, SIGNAL(triggered()), this, SLOT(slot_open_project()));
+    connect(m_ui->action_file_open_project, SIGNAL(triggered()), SLOT(slot_open_project()));
+
+    // open recent
+    init_recent_files_menu();
 
     connect(m_ui->action_file_open_builtin_project_cornellbox, SIGNAL(triggered()), SLOT(slot_open_cornellbox_builtin_project()));
     connect(m_ui->action_file_reload_project, SIGNAL(triggered()), SLOT(slot_reload_project()));
@@ -693,6 +702,59 @@ void MainWindow::closeEvent(QCloseEvent* event)
     event->accept();
 }
 
+void MainWindow::init_recent_files_menu()
+{
+    m_recently_opened.reserve(max_recently_opened_files);
+    for(int i = 0; i < max_recently_opened_files; ++i)
+    {
+        m_recently_opened.push_back(new QAction(this));
+        m_recently_opened[i]->setVisible(false);
+        connect(m_recently_opened[i], SIGNAL(triggered()), SLOT(slot_open_recent()));
+        m_ui->menu_open_recent->addAction(m_recently_opened[i]);
+    }
+
+    QSettings settings("com.appleseed.studio", "Appleseed.studio Recent Files");
+    QStringList files = settings.value("recent_file_list").toStringList();
+    update_recent_files_menu(files);
+
+    m_ui->menu_open_recent->addSeparator();
+    m_clear_open_recent_menu = new QAction(this);
+    m_clear_open_recent_menu->setText("Clear Menu");
+    connect(m_clear_open_recent_menu, SIGNAL(triggered()), SLOT(slot_clear_open_recent_files_menu()));
+    m_ui->menu_open_recent->addAction(m_clear_open_recent_menu);
+}
+
+void MainWindow::update_recent_files_menu(const QString& filename)
+{
+    QSettings settings("com.appleseed.studio", "Appleseed.studio Recent Files");
+    QStringList files = settings.value("recent_file_list").toStringList();
+    files.removeAll(filename);
+    files.prepend(filename);
+
+    while(files.size() > max_recently_opened_files)
+        files.removeLast();
+
+    settings.setValue("recent_file_list", files);
+    update_recent_files_menu(files);
+}
+
+void MainWindow::update_recent_files_menu(const QStringList& files)
+{
+    int num_recent_files = std::min(files.size(), static_cast<int>(max_recently_opened_files));
+
+    for(int i = 0; i < num_recent_files; ++i)
+    {
+        QString stripped = QFileInfo(files[i]).fileName();
+        QString text = tr("&%1 %2").arg(i + 1).arg(stripped);
+        m_recently_opened[i]->setText(text);
+        m_recently_opened[i]->setData(files[i]);
+        m_recently_opened[i]->setVisible(true);
+    }
+
+    for(int j = num_recent_files; j < max_recently_opened_files; ++j)
+        m_recently_opened[j]->setVisible(false);
+}
+
 void MainWindow::slot_new_project()
 {
     if (!can_close_project())
@@ -732,23 +794,8 @@ namespace
     }
 }
 
-void MainWindow::slot_open_project()
+void MainWindow::open_project(QString filepath)
 {
-    if (!can_close_project())
-        return;
-
-    QFileDialog::Options options;
-    QString selected_filter;
-
-    QString filepath =
-        QFileDialog::getOpenFileName(
-            this,
-            "Open...",
-            m_settings.get_path_optional<QString>(LAST_DIRECTORY_SETTINGS_KEY),
-            "Project Files (*.appleseed);;All Files (*.*)",
-            &selected_filter,
-            options);
-
     if (!filepath.isEmpty())
     {
         filepath = QDir::toNativeSeparators(filepath);
@@ -771,6 +818,49 @@ void MainWindow::slot_open_project()
             show_project_file_loading_failed_message_box(this, filepath);
         }
     }
+}
+
+void MainWindow::slot_open_project()
+{
+    if (!can_close_project())
+        return;
+
+    QFileDialog::Options options;
+    QString selected_filter;
+
+    QString filepath =
+        QFileDialog::getOpenFileName(
+            this,
+            "Open...",
+            m_settings.get_path_optional<QString>(LAST_DIRECTORY_SETTINGS_KEY),
+            "Project Files (*.appleseed);;All Files (*.*)",
+            &selected_filter,
+            options);
+
+    open_project(filepath);
+    update_recent_files_menu(filepath);
+}
+
+void MainWindow::slot_open_recent()
+{
+    if (!can_close_project())
+        return;
+
+    QAction *action = qobject_cast<QAction *>(sender());
+
+    if(action)
+    {
+        QString filename = action->data().toString();
+        open_project(filename);
+    }
+}
+
+void MainWindow::slot_clear_open_recent_files_menu()
+{
+    QSettings settings("com.appleseed.studio", "Appleseed.studio Recent Files");
+    QStringList files;
+    settings.setValue("recent_file_list", files);
+    update_recent_files_menu(files);
 }
 
 void MainWindow::slot_open_cornellbox_builtin_project()
@@ -856,6 +946,7 @@ void MainWindow::slot_save_project_as()
         m_project_manager.save_project_as(filepath.toAscii().constData());
     }
 
+    update_recent_files_menu(filepath);
     update_workspace();
 }
 
