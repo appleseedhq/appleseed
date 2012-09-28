@@ -64,8 +64,14 @@
      </property>
      <addaction name="action_file_open_builtin_project_cornellbox"/>
     </widget>
+    <widget class="QMenu" name="menu_open_recent">
+     <property name="title">
+      <string>Open Recent</string>
+     </property>
+    </widget>
     <addaction name="action_file_new_project"/>
     <addaction name="action_file_open_project"/>
+    <addaction name="menu_open_recent"/>
     <addaction name="menu_file_open_builtin_project"/>
     <addaction name="action_file_reload_project"/>
     <addaction name="separator"/>
@@ -461,6 +467,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+S</string>
+   </property>
+  </action>
+  <action name="action_clear_open_recent_menu">
+   <property name="text">
+    <string>Clear Menu</string>
    </property>
   </action>
  </widget>

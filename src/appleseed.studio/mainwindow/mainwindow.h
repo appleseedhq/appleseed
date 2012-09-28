@@ -59,6 +59,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 // Forward declarations.
 namespace appleseed     { namespace studio { class LogWidget; } }
@@ -92,6 +93,7 @@ class MainWindow
 
     QAction*                            m_action_new_project;
     QAction*                            m_action_open_project;
+    QAction*                            m_clear_open_recent_menu;
     QAction*                            m_action_save_project;
     QAction*                            m_action_start_interactive_rendering;
     QAction*                            m_action_start_final_rendering;
@@ -140,6 +142,9 @@ class MainWindow
 
     RenderWidgetCollection              m_render_widgets;
 
+    const static int max_recently_opened_files;
+    std::vector<QAction*> m_recently_opened;
+
     void build_menus();
     void build_override_shading_menu_item();
     void update_override_shading_menu_item();
@@ -179,9 +184,18 @@ class MainWindow
 
     virtual void closeEvent(QCloseEvent* event);
 
+    // open recent menu
+    void init_recent_files_menu();
+    void update_recent_files_menu(const QString& filename);
+    void update_recent_files_menu(const QStringList& files);
+
+    void open_project(QString filepath);
+
   private slots:
     void slot_new_project();
     void slot_open_project();
+    void slot_open_recent();
+    void slot_clear_open_recent_files_menu();
     void slot_open_cornellbox_builtin_project();
     void slot_reload_project();
     void slot_save_project();
