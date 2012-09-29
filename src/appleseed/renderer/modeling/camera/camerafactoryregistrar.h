@@ -29,6 +29,9 @@
 #ifndef APPLESEED_RENDERER_MODELING_CAMERA_CAMERAFACTORYREGISTRAR_H
 #define APPLESEED_RENDERER_MODELING_CAMERA_CAMERAFACTORYREGISTRAR_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
 
@@ -53,7 +56,7 @@ DECLARE_ARRAY(CameraFactoryArray, ICameraFactory*);
 // Camera factory registrar.
 //
 
-class RENDERERDLL CameraFactoryRegistrar
+class DLLSYMBOL CameraFactoryRegistrar
   : public foundation::NonCopyable
 {
   public:

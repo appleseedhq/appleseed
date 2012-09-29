@@ -46,6 +46,7 @@ set (application_sources
     application/application.h
     application/commandlinehandlerbase.cpp
     application/commandlinehandlerbase.h
+    application/dllsymbol.h
     application/superlogger.cpp
     application/superlogger.h
 )
@@ -86,11 +87,6 @@ include_directories (
 #--------------------------------------------------------------------------------------------------
 
 apply_preprocessor_definitions (appleseed.shared)
-
-append_custom_preprocessor_definitions (appleseed.shared
-    APPLESEED_SHARED_EXPORTS
-)
-
 
 #--------------------------------------------------------------------------------------------------
 # Static libraries.

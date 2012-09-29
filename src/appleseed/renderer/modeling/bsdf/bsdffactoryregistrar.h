@@ -29,6 +29,9 @@
 #ifndef APPLESEED_RENDERER_MODELING_BSDF_BSDFFACTORYREGISTRAR_H
 #define APPLESEED_RENDERER_MODELING_BSDF_BSDFFACTORYREGISTRAR_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
 
@@ -52,7 +55,7 @@ DECLARE_ARRAY(BSDFFactoryArray, IBSDFFactory*);
 // BSDF factory registrar.
 //
 
-class RENDERERDLL BSDFFactoryRegistrar
+class DLLSYMBOL BSDFFactoryRegistrar
   : public foundation::NonCopyable
 {
   public:

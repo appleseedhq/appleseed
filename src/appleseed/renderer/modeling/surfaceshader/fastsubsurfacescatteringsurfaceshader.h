@@ -29,6 +29,9 @@
 #ifndef APPLESEED_RENDERER_MODELING_SURFACESHADER_FASTSUBSURFACESCATTERINGSURFACESHADER_H
 #define APPLESEED_RENDERER_MODELING_SURFACESHADER_FASTSUBSURFACESCATTERINGSURFACESHADER_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.renderer headers.
 #include "renderer/modeling/surfaceshader/isurfaceshaderfactory.h"
 
@@ -47,7 +50,7 @@ namespace renderer
 // Fast approximate subsurface scattering surface shader factory.
 //
 
-class RENDERERDLL FastSubSurfaceScatteringSurfaceShaderFactory
+class DLLSYMBOL FastSubSurfaceScatteringSurfaceShaderFactory
   : public ISurfaceShaderFactory
 {
   public:

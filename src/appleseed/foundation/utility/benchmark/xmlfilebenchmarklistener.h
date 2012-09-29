@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_BENCHMARK_XMLFILEBENCHMARKLISTENER_H
 #define APPLESEED_FOUNDATION_UTILITY_BENCHMARK_XMLFILEBENCHMARKLISTENER_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/utility/benchmark/benchmarklistenerbase.h"
 
@@ -40,25 +43,6 @@ namespace foundation    { class IBenchmarkCase; }
 namespace foundation    { class BenchmarkSuite; }
 namespace foundation    { class TimingResult; }
 
-//
-// On Windows, define FOUNDATIONDLL to __declspec(dllexport) when building the DLL
-// and to __declspec(dllimport) when building an application using the DLL.
-// Other platforms don't use this export mechanism and the symbol FOUNDATIONDLL is
-// defined to evaluate to nothing.
-//
-
-#ifndef FOUNDATIONDLL
-#ifdef _WIN32
-#ifdef APPLESEED_FOUNDATION_EXPORTS
-#define FOUNDATIONDLL __declspec(dllexport)
-#else
-#define FOUNDATIONDLL __declspec(dllimport)
-#endif
-#else
-#define FOUNDATIONDLL
-#endif
-#endif
-
 namespace foundation
 {
 
@@ -66,7 +50,7 @@ namespace foundation
 // A benchmark listener that outputs to a XML file.
 //
 
-class FOUNDATIONDLL XMLFileBenchmarkListener
+class DLLSYMBOL XMLFileBenchmarkListener
   : public BenchmarkListenerBase
 {
   public:
@@ -114,7 +98,7 @@ class FOUNDATIONDLL XMLFileBenchmarkListener
     bool is_open() const;
 
   private:
-    friend FOUNDATIONDLL XMLFileBenchmarkListener* create_xmlfile_benchmark_listener();
+    friend DLLSYMBOL XMLFileBenchmarkListener* create_xmlfile_benchmark_listener();
 
     struct Impl;
     Impl* impl;
@@ -130,7 +114,7 @@ class FOUNDATIONDLL XMLFileBenchmarkListener
 };
 
 // Create an instance of a benchmark listener that outputs to a XML file.
-FOUNDATIONDLL XMLFileBenchmarkListener* create_xmlfile_benchmark_listener();
+DLLSYMBOL XMLFileBenchmarkListener* create_xmlfile_benchmark_listener();
 
 }       // namespace foundation
 

@@ -124,6 +124,9 @@ class AABB
     // Robustly grow the bounding box by a given epsilon factor.
     void robust_grow(const ValueType eps);
 
+    // Translate the bounding box.
+    void translate(const VectorType& v);
+
     // Return true if the extent of the bounding box is positive or
     // null along all dimensions.
     bool is_valid() const;
@@ -404,6 +407,15 @@ inline void AABB<T, N>::robust_grow(const ValueType eps)
         min[i] -= delta;
         max[i] += delta;
     }
+}
+
+template <typename T, size_t N>
+inline void AABB<T, N>::translate(const VectorType& v)
+{
+    assert(is_valid());
+
+    min += v;
+    max += v;
 }
 
 template <typename T, size_t N>

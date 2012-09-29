@@ -29,6 +29,9 @@
 #ifndef APPLESEED_RENDERER_KERNEL_RENDERING_IRENDERERCONTROLLER_H
 #define APPLESEED_RENDERER_KERNEL_RENDERING_IRENDERERCONTROLLER_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
 
@@ -39,7 +42,7 @@ namespace renderer
 // Renderer controller, allows to react to various rendering events.
 //
 
-class RENDERERDLL IRendererController
+class DLLSYMBOL IRendererController
   : public foundation::NonCopyable
 {
   public:

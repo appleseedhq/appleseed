@@ -29,6 +29,9 @@
 #ifndef APPLESEED_RENDERER_MODELING_SURFACESHADER_AOSURFACESHADER_H
 #define APPLESEED_RENDERER_MODELING_SURFACESHADER_AOSURFACESHADER_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.renderer headers.
 #include "renderer/modeling/surfaceshader/isurfaceshaderfactory.h"
 
@@ -46,7 +49,7 @@ namespace renderer
 // Ambient occlusion surface shader factory.
 //
 
-class RENDERERDLL AOSurfaceShaderFactory
+class DLLSYMBOL AOSurfaceShaderFactory
   : public ISurfaceShaderFactory
 {
   public:

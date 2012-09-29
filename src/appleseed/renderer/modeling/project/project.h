@@ -29,6 +29,9 @@
 #ifndef APPLESEED_RENDERER_MODELING_PROJECT_PROJECT_H
 #define APPLESEED_RENDERER_MODELING_PROJECT_PROJECT_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
 #include "renderer/modeling/entity/entity.h"
@@ -47,7 +50,7 @@ namespace renderer
 // A rendering project.
 //
 
-class RENDERERDLL Project
+class DLLSYMBOL Project
   : public Entity
 {
   public:
@@ -114,7 +117,7 @@ class RENDERERDLL Project
 // Project factory.
 //
 
-class RENDERERDLL ProjectFactory
+class DLLSYMBOL ProjectFactory
 {
   public:
     // Create a new project.
