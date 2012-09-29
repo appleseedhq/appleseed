@@ -37,6 +37,7 @@
 #include "renderer/modeling/surfaceshader/physicalsurfaceshader.h"
 #include "renderer/modeling/surfaceshader/smokesurfaceshader.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
+#include "renderer/modeling/surfaceshader/surfaceshadercollection.h"
 #include "renderer/modeling/surfaceshader/surfaceshaderfactoryregistrar.h"
 #include "renderer/modeling/surfaceshader/surfaceshadertraits.h"
 #include "renderer/modeling/surfaceshader/voxelaosurfaceshader.h"

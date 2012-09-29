@@ -115,7 +115,7 @@ void ImageStack::clear()
     impl->m_images.clear();
 }
 
-void ImageStack::append(
+size_t ImageStack::append(
     const char*             name,
     const PixelFormat       format)
 {
@@ -131,7 +131,11 @@ void ImageStack::append(
             4,
             format);
 
+    const size_t aov_index = impl->m_images.size();
+
     impl->m_images.push_back(named_image);
+
+    return aov_index;
 }
 
 size_t ImageStack::get_or_append(
@@ -146,11 +150,7 @@ size_t ImageStack::get_or_append(
             return i;
     }
 
-    const size_t index = impl->m_images.size();
-
-    append(name, format);
-
-    return index;
+    return append(name, format);
 }
 
 TileStack ImageStack::tiles(

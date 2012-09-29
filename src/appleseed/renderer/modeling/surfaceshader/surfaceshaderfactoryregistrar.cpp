@@ -37,6 +37,7 @@
 #include "renderer/modeling/surfaceshader/isurfaceshaderfactory.h"
 #include "renderer/modeling/surfaceshader/physicalsurfaceshader.h"
 #include "renderer/modeling/surfaceshader/smokesurfaceshader.h"
+#include "renderer/modeling/surfaceshader/surfaceshadercollection.h"
 #include "renderer/modeling/surfaceshader/voxelaosurfaceshader.h"
 
 // appleseed.foundation headers.
@@ -64,6 +65,7 @@ SurfaceShaderFactoryRegistrar::SurfaceShaderFactoryRegistrar()
     register_factory(auto_ptr<FactoryType>(new FastSubSurfaceScatteringSurfaceShaderFactory()));
     register_factory(auto_ptr<FactoryType>(new PhysicalSurfaceShaderFactory()));
     register_factory(auto_ptr<FactoryType>(new SmokeSurfaceShaderFactory()));
+    register_factory(auto_ptr<FactoryType>(new SurfaceShaderCollectionFactory()));
     register_factory(auto_ptr<FactoryType>(new VoxelAOSurfaceShaderFactory()));
 }
 

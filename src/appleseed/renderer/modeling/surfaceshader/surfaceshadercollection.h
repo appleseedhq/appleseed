@@ -26,67 +26,50 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_AOV_IMAGESTACK_H
-#define APPLESEED_RENDERER_KERNEL_AOV_IMAGESTACK_H
+#ifndef APPLESEED_RENDERER_MODELING_SURFACESHADER_SURFACESHADERCOLLECTION_H
+#define APPLESEED_RENDERER_MODELING_SURFACESHADER_SURFACESHADERCOLLECTION_H
+
+// appleseed.renderer headers.
+#include "renderer/modeling/surfaceshader/isurfaceshaderfactory.h"
 
 // appleseed.foundation headers.
-#include "foundation/image/pixel.h"
+#include "foundation/platform/compiler.h"
+#include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// Standard headers.
-#include <cstddef>
-
 // Forward declarations.
-namespace foundation    { class Image; }
-namespace renderer      { class TileStack; }
+namespace foundation    { class DictionaryArray; }
+namespace renderer      { class ParamArray; }
+namespace renderer      { class SurfaceShader; }
 
 namespace renderer
 {
 
 //
-// A stack of named images.
+// A collection of surface shaders, each outputting to its own AOVs.
 //
 
-class DLLSYMBOL ImageStack
+class DLLSYMBOL SurfaceShaderCollectionFactory
+  : public ISurfaceShaderFactory
 {
   public:
-    ImageStack(
-        const size_t                    canvas_width,
-        const size_t                    canvas_height,
-        const size_t                    tile_width,
-        const size_t                    tile_height);
+    // Return a string identifying this surface shader model.
+    virtual const char* get_model() const override;
 
-    ~ImageStack();
+    // Return a human-readable string identifying this surface shader model.
+    virtual const char* get_human_readable_model() const override;
 
-    bool empty() const;
+    // Return a set of widget definitions for this surface shader model.
+    virtual foundation::DictionaryArray get_widget_definitions() const override;
 
-    size_t size() const;
-
-    const char* get_name(const size_t index) const;
-
-    const foundation::Image& get_image(const size_t index) const;
-
-    void clear();
-
-    size_t append(
-        const char*                     name,
-        const foundation::PixelFormat   format);
-
-    size_t get_or_append(
-        const char*                     name,
-        const foundation::PixelFormat   format);
-
-    TileStack tiles(
-        const size_t                    tile_x,
-        const size_t                    tile_y) const;
-
-  private:
-    struct Impl;
-    Impl* impl;
+    // Create a new surface shader instance.
+    virtual foundation::auto_release_ptr<SurfaceShader> create(
+        const char*         name,
+        const ParamArray&   params) const override;
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_KERNEL_AOV_IMAGESTACK_H
+#endif  // !APPLESEED_RENDERER_MODELING_SURFACESHADER_SURFACESHADERCOLLECTION_H
