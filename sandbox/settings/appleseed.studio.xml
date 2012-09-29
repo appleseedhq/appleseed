@@ -6,9 +6,4 @@
     <parameters name="progressive_frame_renderer">
         <parameter name="rendering_threads" value="auto" />
     </parameters>
-    <parameters name="ui">
-        <parameters name="filedialog">
-            <parameter name="lastdirectory" value="/home/est/Devel/appleseed/sandbox/scenes/danger bikinis" />
-        </parameters>
-    </parameters>
 </settings>
