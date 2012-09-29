@@ -61,7 +61,7 @@ class FOUNDATIONDLL LogMessage
     // Message categories.
     enum Category
     {
-        Info = 0,                   // general information, statistics, progress messages, etc.
+        Info,                       // general information, statistics, progress messages, etc.
         Debug,                      // debug message
         Warning,                    // warning message; execution can continue
         Error,                      // severe error message; the program will attempt to continue

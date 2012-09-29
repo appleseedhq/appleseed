@@ -53,7 +53,7 @@ namespace renderer
 
 enum InputFormat
 {
-    InputFormatScalar = 0,
+    InputFormatScalar,
     InputFormatSpectrum,
     InputFormatEntity
 };

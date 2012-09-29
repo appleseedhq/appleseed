@@ -65,7 +65,7 @@ class DLLSYMBOL DiagnosticSurfaceShader
     // Available shading modes.
     enum ShadingMode
     {
-        Coverage = 0,               // shade according to pixel coverage
+        Coverage,                   // shade according to pixel coverage
         Barycentric,                // shade according to barycentric coordinates
         UV,                         // shade according to UV coordinates
         Tangent,                    // shade according to the tangent vector

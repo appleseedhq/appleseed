@@ -89,7 +89,7 @@ class DLLSYMBOL ObjectInstance
 
     enum Side
     {
-        FrontSide = 0,
+        FrontSide,
         BackSide
     };
 

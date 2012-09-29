@@ -80,14 +80,14 @@ class FOUNDATIONDLL BufferedFile
     // File type.
     enum FileType
     {
-        TextType = 0,
+        TextType,
         BinaryType
     };
 
     // File access mode.
     enum FileMode
     {
-        ReadMode = 0,
+        ReadMode,
         WriteMode
     };
 
@@ -100,7 +100,7 @@ class FOUNDATIONDLL BufferedFile
     // Initial position for seek().
     enum SeekOrigin
     {
-        SeekFromBeginning = 0,  // offset must be positive or null
+        SeekFromBeginning,      // offset must be positive or null
         SeekFromCurrent,        // offset may be positive, negative or null
         SeekFromEnd             // offset must be negative or null
     };

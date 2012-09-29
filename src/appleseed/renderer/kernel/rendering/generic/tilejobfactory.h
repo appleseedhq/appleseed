@@ -60,7 +60,7 @@ class TileJobFactory
     // Tile orderings.
     enum TileOrdering
     {
-        LinearOrdering = 0,
+        LinearOrdering,
         SpiralOrdering,
         HilbertOrdering,
         RandomOrdering

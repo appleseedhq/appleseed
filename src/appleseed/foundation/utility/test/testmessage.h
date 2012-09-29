@@ -41,7 +41,7 @@ struct TestMessage
     // Message types.
     enum Type
     {
-        TestCaseFailure = 0,        // a test case failed
+        TestCaseFailure,            // a test case failed
         AssertionFailure            // an assertion failed
     };
 

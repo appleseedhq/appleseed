@@ -58,13 +58,13 @@ namespace renderer
 
 enum TextureAddressingMode
 {
-    TextureAddressingClamp = 0,
+    TextureAddressingClamp,
     TextureAddressingWrap
 };
 
 enum TextureFilteringMode
 {
-    TextureFilteringNearest = 0,
+    TextureFilteringNearest,
     TextureFilteringBilinear,
     TextureFilteringBicubic,
     TextureFilteringFeline,             // Reference: http://www.hpl.hp.com/techreports/Compaq-DEC/WRL-99-1.pdf
@@ -73,7 +73,7 @@ enum TextureFilteringMode
 
 enum TextureAlphaMode
 {
-    TextureAlphaModeAlphaChannel = 0,
+    TextureAlphaModeAlphaChannel,
     TextureAlphaModeLuminance
 };
 

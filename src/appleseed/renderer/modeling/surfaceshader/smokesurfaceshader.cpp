@@ -173,13 +173,13 @@ namespace
       private:
         enum ShadingMode
         {
-            VolumeMode = 0,
+            VolumeMode,
             IsosurfaceMode
         };
 
         enum InterpolationMode
         {
-            NearestMode = 0,
+            NearestMode,
             LinearMode,
             QuadraticMode
         };

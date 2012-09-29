@@ -58,7 +58,7 @@ class CameraController
     // Dragging movements.
     enum Movement
     {
-        None = 0,
+        None,
         Tumble,
         Track,
         Dolly

@@ -45,7 +45,7 @@ namespace foundation
 
 enum NumericTypeID
 {
-    NumericTypeInt8 = 0,        // 8-bit signed integer
+    NumericTypeInt8,            // 8-bit signed integer
     NumericTypeInt16,           // 16-bit signed integer
     NumericTypeInt32,           // 32-bit signed integer
     NumericTypeInt64,           // 64-bit signed integer

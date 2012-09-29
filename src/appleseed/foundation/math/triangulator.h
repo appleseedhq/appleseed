@@ -100,7 +100,7 @@ class Triangulator
 
     enum Orientation
     {
-        Degenerate = 0,                     // degenerate polygon, no clear orientation
+        Degenerate,                         // degenerate polygon, no clear orientation
         CCW,                                // counterclockwise orientation
         CW                                  // clockwise orientation
     };

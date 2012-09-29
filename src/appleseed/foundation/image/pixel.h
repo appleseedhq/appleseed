@@ -54,7 +54,7 @@ namespace foundation
 
 enum PixelFormat
 {
-    PixelFormatUInt8 = 0,
+    PixelFormatUInt8,
     PixelFormatUInt16,
     PixelFormatUInt32,
     PixelFormatHalf,

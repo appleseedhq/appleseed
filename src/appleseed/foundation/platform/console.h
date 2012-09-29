@@ -65,7 +65,7 @@ class FOUNDATIONDLL Console
     // Output devices.
     enum Device
     {
-        StdOut = 0,
+        StdOut,
         StdErr,
         NumDevices      // keep at the end
     };
@@ -73,7 +73,7 @@ class FOUNDATIONDLL Console
     // Colors.
     enum Color
     {
-        DefaultColor = 0,
+        DefaultColor,
         Black,
         White,
         DarkGray,

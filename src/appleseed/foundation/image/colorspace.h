@@ -157,7 +157,7 @@ Color3f fast_srgb_to_linear_rgb(const Color3f& srgb);
 
 enum ColorSpace
 {
-    ColorSpaceLinearRGB = 0,    // linear RGB
+    ColorSpaceLinearRGB,        // linear RGB
     ColorSpaceSRGB,             // sRGB
     ColorSpaceCIEXYZ,           // CIE XYZ
     ColorSpaceSpectral          // spectral
