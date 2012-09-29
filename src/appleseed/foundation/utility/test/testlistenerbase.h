@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_TEST_TESTLISTENERBASE_H
 #define APPLESEED_FOUNDATION_UTILITY_TEST_TESTLISTENERBASE_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/test/itestlistener.h"
@@ -40,25 +43,6 @@
 namespace foundation    { class TestResult; }
 namespace foundation    { class TestSuite; }
 
-//
-// On Windows, define FOUNDATIONDLL to __declspec(dllexport) when building the DLL
-// and to __declspec(dllimport) when building an application using the DLL.
-// Other platforms don't use this export mechanism and the symbol FOUNDATIONDLL is
-// defined to evaluate to nothing.
-//
-
-#ifndef FOUNDATIONDLL
-#ifdef _WIN32
-#ifdef APPLESEED_FOUNDATION_EXPORTS
-#define FOUNDATIONDLL __declspec(dllexport)
-#else
-#define FOUNDATIONDLL __declspec(dllimport)
-#endif
-#else
-#define FOUNDATIONDLL
-#endif
-#endif
-
 namespace foundation
 {
 
@@ -66,7 +50,7 @@ namespace foundation
 // A convenient base class for test listeners.
 //
 
-class FOUNDATIONDLL TestListenerBase
+class DLLSYMBOL TestListenerBase
   : public ITestListener
 {
   public:

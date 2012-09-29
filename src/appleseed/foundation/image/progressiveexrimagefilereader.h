@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_IMAGE_PROGRESSIVEEXRIMAGEFILEREADER_H
 #define APPLESEED_FOUNDATION_IMAGE_PROGRESSIVEEXRIMAGEFILEREADER_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
 #include "foundation/image/iprogressiveimagefilereader.h"
@@ -43,24 +46,6 @@ namespace foundation    { class Logger; }
 namespace foundation    { class Tile; }
 namespace Imf           { struct Channel; }
 
-//
-// On Windows, define FOUNDATIONDLL to __declspec(dllexport) when building the DLL
-// and to __declspec(dllimport) when building an application using the DLL.
-// Other platforms don't use this export mechanism and the symbol FOUNDATIONDLL is
-// defined to evaluate to nothing.
-//
-
-#ifndef FOUNDATIONDLL
-#ifdef _WIN32
-#ifdef APPLESEED_FOUNDATION_EXPORTS
-#define FOUNDATIONDLL __declspec(dllexport)
-#else
-#define FOUNDATIONDLL __declspec(dllimport)
-#endif
-#else
-#define FOUNDATIONDLL
-#endif
-#endif
 
 namespace foundation
 {
@@ -69,7 +54,7 @@ namespace foundation
 // Progressive OpenEXR image file reader interface.
 //
 
-class FOUNDATIONDLL ProgressiveEXRImageFileReader
+class DLLSYMBOL ProgressiveEXRImageFileReader
   : public IProgressiveImageFileReader
 {
   public:

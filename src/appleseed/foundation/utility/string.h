@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_STRING_H
 #define APPLESEED_FOUNDATION_UTILITY_STRING_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
 #include "foundation/math/scalar.h"
@@ -49,25 +52,6 @@
 #include <string>
 #include <vector>
 
-//
-// On Windows, define FOUNDATIONDLL to __declspec(dllexport) when building the DLL
-// and to __declspec(dllimport) when building an application using the DLL.
-// Other platforms don't use this export mechanism and the symbol FOUNDATIONDLL is
-// defined to evaluate to nothing.
-//
-
-#ifndef FOUNDATIONDLL
-#ifdef _WIN32
-#ifdef APPLESEED_FOUNDATION_EXPORTS
-#define FOUNDATIONDLL __declspec(dllexport)
-#else
-#define FOUNDATIONDLL __declspec(dllimport)
-#endif
-#else
-#define FOUNDATIONDLL
-#endif
-#endif
-
 namespace foundation
 {
 
@@ -80,7 +64,7 @@ namespace foundation
 //
 
 // All blank characters in one string.
-extern FOUNDATIONDLL const char* Blanks;
+extern DLLSYMBOL const char* Blanks;
 
 
 //
@@ -112,10 +96,10 @@ T from_string(const std::string& s);
 //
 
 // Duplicate a string. The returned string must be freed using free_string().
-FOUNDATIONDLL char* duplicate_string(const char* s);
+DLLSYMBOL char* duplicate_string(const char* s);
 
 // Deallocate a string returned by duplicate_string().
-FOUNDATIONDLL void free_string(const char* s);
+DLLSYMBOL void free_string(const char* s);
 
 // Convert all characters of a string to lower case.
 std::string lower_case(const std::string& s);

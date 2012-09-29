@@ -29,31 +29,15 @@
 #ifndef APPLESEED_SHARED_APPLICATION_APPLICATION_H
 #define APPLESEED_SHARED_APPLICATION_APPLICATION_H
 
+// appleseed.shared headers
+#include "dllsymbol.h"
+
 // boost headers.
 #include "boost/filesystem/operations.hpp"
 #include "boost/filesystem/path.hpp"
 
 // Forward declarations.
 namespace foundation    { class Logger; }
-
-//
-// On Windows, define SHAREDDLL to __declspec(dllexport) when building the DLL
-// and to __declspec(dllimport) when building an application using the DLL.
-// Other platforms don't use this export mechanism and the symbol SHAREDDLL is
-// defined to evaluate to nothing.
-//
-
-#ifndef SHAREDDLL
-#ifdef _WIN32
-#ifdef APPLESEED_SHARED_EXPORTS
-#define SHAREDDLL __declspec(dllexport)
-#else
-#define SHAREDDLL __declspec(dllimport)
-#endif
-#else
-#define SHAREDDLL
-#endif
-#endif
 
 namespace appleseed {
 namespace shared {

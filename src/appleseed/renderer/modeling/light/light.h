@@ -29,6 +29,9 @@
 #ifndef APPLESEED_RENDERER_MODELING_LIGHT_LIGHT_H
 #define APPLESEED_RENDERER_MODELING_LIGHT_LIGHT_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/entity/connectableentity.h"
@@ -49,7 +52,7 @@ namespace renderer
 // Shape-less light.
 //
 
-class RENDERERDLL Light
+class DLLSYMBOL Light
   : public ConnectableEntity
 {
   public:

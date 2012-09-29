@@ -29,27 +29,12 @@
 #ifndef APPLESEED_FOUNDATION_PLATFORM_CONSOLE_H
 #define APPLESEED_FOUNDATION_PLATFORM_CONSOLE_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/concepts/singleton.h"
 
-//
-// On Windows, define FOUNDATIONDLL to __declspec(dllexport) when building the DLL
-// and to __declspec(dllimport) when building an application using the DLL.
-// Other platforms don't use this export mechanism and the symbol FOUNDATIONDLL is
-// defined to evaluate to nothing.
-//
-
-#ifndef FOUNDATIONDLL
-#ifdef _WIN32
-#ifdef APPLESEED_FOUNDATION_EXPORTS
-#define FOUNDATIONDLL __declspec(dllexport)
-#else
-#define FOUNDATIONDLL __declspec(dllimport)
-#endif
-#else
-#define FOUNDATIONDLL
-#endif
-#endif
 
 namespace foundation
 {
@@ -58,7 +43,7 @@ namespace foundation
 // Console class.
 //
 
-class FOUNDATIONDLL Console
+class DLLSYMBOL Console
   : public Singleton<Console>
 {
   public:
@@ -120,7 +105,7 @@ class FOUNDATIONDLL Console
     ~Console();
 };
 
-FOUNDATIONDLL Console& console();
+DLLSYMBOL Console& console();
 
 }       // namespace foundation
 

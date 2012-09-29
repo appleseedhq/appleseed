@@ -411,6 +411,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_triangulator.cpp
     foundation/meta/tests/test_typetraits.cpp
     foundation/meta/tests/test_vector.cpp
+    foundation/meta/tests/test_viewport.cpp
     foundation/meta/tests/test_voxelgrid.cpp
 )
 list (APPEND appleseed_sources
@@ -686,11 +687,22 @@ source_group ("foundation\\utility" FILES
     ${foundation_utility_sources}
 )
 
+set (foundation_ui_sources
+    foundation/ui/viewport.h
+)
+list (APPEND appleseed_sources
+    ${foundation_ui_sources}
+)
+source_group ("foundation\\ui" FILES
+    ${foundation_ui_sources}
+)
+
 set (main_sources
     main/allocator.cpp
     main/allocator.h
     main/dllmain.cpp
     main/dllsymbol.h
+    main/dllvisibility.h
 )
 list (APPEND appleseed_sources
     ${main_sources}
@@ -1450,9 +1462,6 @@ set_target_properties (appleseed PROPERTIES
 apply_preprocessor_definitions (appleseed)
 
 append_custom_preprocessor_definitions (appleseed
-    APPLESEED_FOUNDATION_EXPORTS        # deprecated, remove
-    APPLESEED_RENDERER_EXPORTS          # deprecated, remove
-    APPLESEED_EXPORTS
     APPLESEED_FOUNDATION_USE_SSE
     APPLESEED_ENABLE_IMATH_INTEROP
 )

@@ -29,6 +29,9 @@
 #ifndef APPLESEED_RENDERER_MODELING_SPECTRUM_COLORENTITY_H
 #define APPLESEED_RENDERER_MODELING_SPECTRUM_COLORENTITY_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
 #include "renderer/modeling/entity/entity.h"
@@ -56,7 +59,7 @@ typedef foundation::FloatArray ColorValueArray;
 // todo: allow to specify the lighting conditions of a color.
 //
 
-class RENDERERDLL ColorEntity
+class DLLSYMBOL ColorEntity
   : public Entity
 {
   public:
@@ -111,7 +114,7 @@ class RENDERERDLL ColorEntity
 // Color entity factory.
 //
 
-class RENDERERDLL ColorEntityFactory
+class DLLSYMBOL ColorEntityFactory
 {
   public:
     // Return a set of widget definitions for this color entity model.
