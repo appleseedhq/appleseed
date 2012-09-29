@@ -118,4 +118,4 @@ StowPrivate<Tag,x> StowPrivate<Tag,x>::instance;
 
 }       // namespace foundation
 
-#endif // !APPLESEED_FOUNDATION_UTILITY
+#endif // !APPLESEED_FOUNDATION_UTILITY_PRIVATE_ACCESS_H
