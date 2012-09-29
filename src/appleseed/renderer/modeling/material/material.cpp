@@ -36,6 +36,8 @@
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/input/texturesource.h"
+#include "renderer/modeling/material/bumpmappingmodifier.h"
+#include "renderer/modeling/material/normalmappingmodifier.h"
 #include "renderer/modeling/scene/textureinstance.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/modeling/texture/texture.h"
@@ -69,7 +71,7 @@ Material::Material(
   , m_bsdf(0)
   , m_edf(0)
   , m_alpha_map(0)
-  , m_normal_map(0)
+  , m_normal_modifier(0)
 {
     set_name(name);
 
@@ -77,7 +79,7 @@ Material::Material(
     m_inputs.declare("edf", InputFormatEntity, "");
     m_inputs.declare("surface_shader", InputFormatEntity);
     m_inputs.declare("alpha_map", InputFormatScalar, "");
-    m_inputs.declare("normal_map", InputFormatSpectrum, "");
+    m_inputs.declare("displacement_map", InputFormatSpectrum, "");
 }
 
 void Material::release()
@@ -130,9 +132,28 @@ bool Material::on_frame_begin(
     m_bsdf = get_uncached_bsdf();
     m_edf = get_uncached_edf();
     m_alpha_map = get_uncached_alpha_map();
-    m_normal_map = get_uncached_normal_map();
 
-    check_texture_source_color_space_is_linear_rgb("normal map", m_normal_map);
+    Source* displacement_map = m_inputs.source("displacement_map");
+    check_texture_source_color_space_is_linear_rgb("displacement map", displacement_map);
+
+    if (displacement_map)
+    {
+        // Retrieve the displacement method and create the normal modifier.
+        const string displacement_method =
+            m_params.get_required<string>("displacement_method", "bump");
+        if (displacement_method == "bump")
+            m_normal_modifier = new BumpMappingModifier(displacement_map);
+        else if (displacement_method == "normal")
+            m_normal_modifier = new NormalMappingModifier(displacement_map);
+        else
+        {
+            RENDERER_LOG_ERROR(
+                "invalid value \"%s\" for parameter \"displacement_method\", ",
+                "using default value \"bump\".",
+                displacement_method.c_str());
+            m_normal_modifier = new BumpMappingModifier(displacement_map);
+        }
+    }
 
     return true;
 }
@@ -145,7 +166,9 @@ void Material::on_frame_end(
     m_bsdf = 0;
     m_edf = 0;
     m_alpha_map = 0;
-    m_normal_map = 0;
+
+    delete m_normal_modifier;
+    m_normal_modifier = 0;
 }
 
 const SurfaceShader* Material::get_uncached_surface_shader() const
@@ -166,11 +189,6 @@ const EDF* Material::get_uncached_edf() const
 const Source* Material::get_uncached_alpha_map() const
 {
     return m_inputs.source("alpha_map");
-}
-
-const Source* Material::get_uncached_normal_map() const
-{
-    return m_inputs.source("normal_map");
 }
 
 
@@ -223,12 +241,24 @@ DictionaryArray MaterialFactory::get_widget_definitions()
 
     definitions.push_back(
         Dictionary()
-            .insert("name", "normal_map")
-            .insert("label", "Normal Map")
+            .insert("name", "displacement_map")
+            .insert("label", "Displacement Map")
             .insert("widget", "entity_picker")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "optional"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "displacement_method")
+            .insert("label", "Displacement Method")
+            .insert("widget", "dropdown_list")
+            .insert("dropdown_items",
+                Dictionary()
+                    .insert("Bump Mapping", "bump")
+                    .insert("Normal Mapping", "normal"))
+            .insert("use", "required")
+            .insert("default", "bump"));
 
     return definitions;
 }

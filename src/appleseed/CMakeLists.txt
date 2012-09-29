@@ -1260,9 +1260,14 @@ source_group ("renderer\\modeling\\light" FILES
 )
 
 set (renderer_modeling_material_sources
+    renderer/modeling/material/bumpmappingmodifier.cpp
+    renderer/modeling/material/bumpmappingmodifier.h
+    renderer/modeling/material/inormalmodifier.h
     renderer/modeling/material/material.cpp
     renderer/modeling/material/material.h
     renderer/modeling/material/materialtraits.h
+    renderer/modeling/material/normalmappingmodifier.cpp
+    renderer/modeling/material/normalmappingmodifier.h
 )
 list (APPEND appleseed_sources
     ${renderer_modeling_material_sources}
