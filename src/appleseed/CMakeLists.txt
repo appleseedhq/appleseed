@@ -657,6 +657,7 @@ set (foundation_utility_sources
     foundation/utility/poolallocator.h
     foundation/utility/preprocessor.cpp
     foundation/utility/preprocessor.h
+    foundation/utility/privateaccess.h
     foundation/utility/registrar.h
     foundation/utility/searchpaths.cpp
     foundation/utility/searchpaths.h
