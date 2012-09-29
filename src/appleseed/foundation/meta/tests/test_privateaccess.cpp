@@ -27,13 +27,65 @@
 //
 
 // appleseed.foundation headers.
-#include "foundation/ui/viewport.h"
+#include "foundation/utility/privateaccess.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"
 
 using namespace foundation;
 
-TEST_SUITE(Foundation_Ui_Viewport)
+namespace
 {
-    // TODO: write unit tests. (est.)
+
+struct A
+{
+    A() : m_x(77) {}
+
+private:
+
+    int fun()
+    {
+        return 42;
+    }
+
+    int m_x;
+};
+
+}       // unnamed namespace
+
+namespace foundation
+{
+
+// A tag type for A::x.  Each distinct private member you need to
+// access should have its own tag.  Each tag should contain a
+// nested ::type that is the corresponding pointer-to-member type.
+struct A_x
+{
+    typedef int(A::*type);
+};
+
+// Explicit instantiation; the only place where it is legal to pass
+// the address of a private member.  Generates the static ::instance
+// that in turn initializes Stowed<Tag>::value.
+template class StowPrivate<A_x,&A::m_x>;
+
+// Repeat for member function pointer
+
+struct A_fun
+{
+    typedef int(A::*type)();
+};
+
+template class StowPrivate<A_fun,&A::fun>;
+
+}       // namespace foundation
+
+
+TEST_SUITE(Foundation_Util_PrivateAccess)
+{
+    TEST_CASE(TestPrivateAccess)
+    {
+        A a;
+        EXPECT_EQ(a.*Stowed<A_x>::value, 77);
+        EXPECT_EQ((a.*Stowed<A_fun>::value)(), 42);
+    }
 }
