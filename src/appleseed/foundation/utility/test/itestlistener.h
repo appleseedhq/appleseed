@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_TEST_ITESTLISTENER_H
 #define APPLESEED_FOUNDATION_UTILITY_TEST_ITESTLISTENER_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/concepts/iunknown.h"
 #include "foundation/utility/test/testmessage.h"
@@ -47,7 +50,7 @@ namespace foundation
 // Interface of a test listener.
 //
 
-class FOUNDATIONDLL ITestListener
+class DLLSYMBOL ITestListener
   : public IUnknown
 {
   public:

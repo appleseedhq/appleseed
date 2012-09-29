@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_IMAGE_EXRIMAGEFILEREADER_H
 #define APPLESEED_FOUNDATION_IMAGE_EXRIMAGEFILEREADER_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/image/iimagefilereader.h"
 
@@ -43,7 +46,7 @@ namespace foundation
 // OpenEXR image file reader.
 //
 
-class FOUNDATIONDLL EXRImageFileReader
+class DLLSYMBOL EXRImageFileReader
   : public IImageFileReader
 {
   public:

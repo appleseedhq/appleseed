@@ -29,6 +29,9 @@
 #ifndef APPLESEED_RENDERER_MODELING_SURFACESHADER_DIAGNOSTICSURFACESHADER_H
 #define APPLESEED_RENDERER_MODELING_SURFACESHADER_DIAGNOSTICSURFACESHADER_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.renderer headers.
 #include "renderer/modeling/surfaceshader/isurfaceshaderfactory.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
@@ -119,7 +122,7 @@ class DLLSYMBOL DiagnosticSurfaceShader
 // Diagnostic surface shader factory.
 //
 
-class RENDERERDLL DiagnosticSurfaceShaderFactory
+class DLLSYMBOL DiagnosticSurfaceShaderFactory
   : public ISurfaceShaderFactory
 {
   public:

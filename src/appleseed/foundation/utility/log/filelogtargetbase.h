@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_LOG_FILELOGTARGETBASE_H
 #define APPLESEED_FOUNDATION_UTILITY_LOG_FILELOGTARGETBASE_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/utility/log/logmessage.h"
 #include "foundation/utility/log/logtargetbase.h"
@@ -43,7 +46,7 @@ namespace foundation
 // A convenient base class for log targets that write to std::FILE.
 //
 
-class FOUNDATIONDLL FileLogTargetBase
+class DLLSYMBOL FileLogTargetBase
   : public LogTargetBase
 {
   protected:

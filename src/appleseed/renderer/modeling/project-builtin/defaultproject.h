@@ -29,6 +29,9 @@
 #ifndef APPLESEED_RENDERER_MODELING_PROJECTBUILTIN_DEFAULTPROJECT_H
 #define APPLESEED_RENDERER_MODELING_PROJECTBUILTIN_DEFAULTPROJECT_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
 
@@ -42,7 +45,7 @@ namespace renderer
 // Default project factory.
 //
 
-class RENDERERDLL DefaultProjectFactory
+class DLLSYMBOL DefaultProjectFactory
 {
   public:
     // Create a new instance of the default project.

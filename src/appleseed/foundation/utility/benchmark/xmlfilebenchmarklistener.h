@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_BENCHMARK_XMLFILEBENCHMARKLISTENER_H
 #define APPLESEED_FOUNDATION_UTILITY_BENCHMARK_XMLFILEBENCHMARKLISTENER_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/utility/benchmark/benchmarklistenerbase.h"
 
@@ -47,7 +50,7 @@ namespace foundation
 // A benchmark listener that outputs to a XML file.
 //
 
-class FOUNDATIONDLL XMLFileBenchmarkListener
+class DLLSYMBOL XMLFileBenchmarkListener
   : public BenchmarkListenerBase
 {
   public:
@@ -95,7 +98,7 @@ class FOUNDATIONDLL XMLFileBenchmarkListener
     bool is_open() const;
 
   private:
-    friend FOUNDATIONDLL XMLFileBenchmarkListener* create_xmlfile_benchmark_listener();
+    friend DLLSYMBOL XMLFileBenchmarkListener* create_xmlfile_benchmark_listener();
 
     struct Impl;
     Impl* impl;
@@ -111,7 +114,7 @@ class FOUNDATIONDLL XMLFileBenchmarkListener
 };
 
 // Create an instance of a benchmark listener that outputs to a XML file.
-FOUNDATIONDLL XMLFileBenchmarkListener* create_xmlfile_benchmark_listener();
+DLLSYMBOL XMLFileBenchmarkListener* create_xmlfile_benchmark_listener();
 
 }       // namespace foundation
 

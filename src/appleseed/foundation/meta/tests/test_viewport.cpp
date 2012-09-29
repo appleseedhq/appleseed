@@ -27,12 +27,13 @@
 //
 
 // appleseed.foundation headers.
-#include "foundation/math/viewport.h"
+#include "foundation/ui/viewport.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"
 
 using namespace foundation;
 
-TEST_SUITE(Foundation_Math_Viewport)
+TEST_SUITE(Foundation_Ui_Viewport)
 {
+    // TODO: write unit tests. (est.)
 }

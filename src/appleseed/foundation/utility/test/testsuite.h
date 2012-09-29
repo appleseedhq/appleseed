@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_TEST_TESTSUITE_H
 #define APPLESEED_FOUNDATION_UTILITY_TEST_TESTSUITE_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 
@@ -49,7 +52,7 @@ namespace foundation
 // A test suite, as a collection of tests.
 //
 
-class FOUNDATIONDLL TestSuite
+class DLLSYMBOL TestSuite
   : public NonCopyable
 {
   public:

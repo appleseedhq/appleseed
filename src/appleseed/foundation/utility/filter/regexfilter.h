@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_FILTER_REGEXFILTER_H
 #define APPLESEED_FOUNDATION_UTILITY_FILTER_REGEXFILTER_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/utility/filter/ifilter.h"
 
@@ -39,7 +42,7 @@ namespace foundation
 // A filter based on Perl regular expressions.
 //
 
-class FOUNDATIONDLL RegExFilter
+class DLLSYMBOL RegExFilter
   : public IFilter
 {
   public:

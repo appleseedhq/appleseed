@@ -29,6 +29,9 @@
 #ifndef APPLESEED_RENDERER_MODELING_SURFACESHADER_ISURFACESHADERFACTORY_H
 #define APPLESEED_RENDERER_MODELING_SURFACESHADER_ISURFACESHADERFACTORY_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
 
@@ -43,7 +46,7 @@ namespace renderer
 // Surface shader factory interface.
 //
 
-class RENDERERDLL ISurfaceShaderFactory
+class DLLSYMBOL ISurfaceShaderFactory
   : public foundation::NonCopyable
 {
   public:

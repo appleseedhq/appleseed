@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKLISTENERBASE_H
 #define APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKLISTENERBASE_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/utility/benchmark/ibenchmarklistener.h"
 
@@ -48,7 +51,7 @@ namespace foundation
 // A convenient base class for benchmark listeners.
 //
 
-class FOUNDATIONDLL BenchmarkListenerBase
+class DLLSYMBOL BenchmarkListenerBase
   : public IBenchmarkListener
 {
   public:

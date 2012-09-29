@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_IMAGE_ICANVAS_H
 #define APPLESEED_FOUNDATION_IMAGE_ICANVAS_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/image/canvasproperties.h"
@@ -48,7 +51,7 @@ namespace foundation
 // Canvas interface.
 //
 
-class FOUNDATIONDLL ICanvas
+class DLLSYMBOL ICanvas
   : public NonCopyable
 {
   public:

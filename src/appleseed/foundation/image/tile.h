@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_IMAGE_TILE_H
 #define APPLESEED_FOUNDATION_IMAGE_TILE_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/image/pixel.h"
@@ -47,7 +50,7 @@ namespace foundation
 // A tile, as a 2D array of pixels.
 //
 
-class FOUNDATIONDLL Tile
+class DLLSYMBOL Tile
   : public NonCopyable
 {
   public:

@@ -60,7 +60,6 @@ source_group ("foundation\\core\\exceptions" FILES
 set (foundation_core_sources
     foundation/core/appleseed.cpp
     foundation/core/appleseed.h
-    foundation/core/dllsymbol.h
 )
 list (APPEND appleseed_sources
     ${foundation_core_sources}
@@ -278,7 +277,6 @@ set (foundation_math_sources
     foundation/math/treeoptimizer.h
     foundation/math/triangulator.h
     foundation/math/vector.h
-    foundation/math/viewport.h
     foundation/math/voxel.h
     foundation/math/voxelgrid.h
 )
@@ -689,11 +687,22 @@ source_group ("foundation\\utility" FILES
     ${foundation_utility_sources}
 )
 
+set (foundation_ui_sources
+    foundation/ui/viewport.h
+)
+list (APPEND appleseed_sources
+    ${foundation_ui_sources}
+)
+source_group ("foundation\\ui" FILES
+    ${foundation_ui_sources}
+)
+
 set (main_sources
     main/allocator.cpp
     main/allocator.h
     main/dllmain.cpp
     main/dllsymbol.h
+    main/dllvisibility.h
 )
 list (APPEND appleseed_sources
     ${main_sources}
@@ -734,7 +743,6 @@ source_group ("renderer\\api" FILES
 )
 
 set (renderer_global_sources
-    renderer/global/dllsymbol.h
     renderer/global/global.h
     renderer/global/globallogger.cpp
     renderer/global/globallogger.h

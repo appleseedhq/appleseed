@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_IMAGE_GENERICIMAGEFILEREADER_H
 #define APPLESEED_FOUNDATION_IMAGE_GENERICIMAGEFILEREADER_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/image/iimagefilereader.h"
 
@@ -43,7 +46,7 @@ namespace foundation
 // Read an image file using the right reader based on the extension of the image file name.
 //
 
-class FOUNDATIONDLL GenericImageFileReader
+class DLLSYMBOL GenericImageFileReader
   : public IImageFileReader
 {
   public:

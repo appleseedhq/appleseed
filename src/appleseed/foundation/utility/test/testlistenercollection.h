@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_TEST_TESTLISTENERCOLLECTION_H
 #define APPLESEED_FOUNDATION_UTILITY_TEST_TESTLISTENERCOLLECTION_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/utility/test/itestlistener.h"
 #include "foundation/utility/test/testmessage.h"
@@ -47,7 +50,7 @@ namespace foundation
 // A collection of test listeners.
 //
 
-class FOUNDATIONDLL TestListenerCollection
+class DLLSYMBOL TestListenerCollection
   : public ITestListener
 {
   public:

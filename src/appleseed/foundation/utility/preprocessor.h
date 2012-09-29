@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_PREPROCESSOR_H
 #define APPLESEED_FOUNDATION_UTILITY_PREPROCESSOR_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 
@@ -49,7 +52,7 @@ namespace foundation
 //   #endif
 //
 
-class FOUNDATIONDLL Preprocessor
+class DLLSYMBOL Preprocessor
   : public NonCopyable
 {
   public:

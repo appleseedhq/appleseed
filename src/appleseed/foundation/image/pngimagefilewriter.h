@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_IMAGE_PNGIMAGEFILEWRITER_H
 #define APPLESEED_FOUNDATION_IMAGE_PNGIMAGEFILEWRITER_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
 #include "foundation/image/iimagefilewriter.h"
@@ -62,7 +65,7 @@ namespace foundation
 // Reference: http://www.libpng.org/pub/png/spec/1.2/PNG-Chunks.html
 //
 
-class FOUNDATIONDLL PNGImageFileWriter
+class DLLSYMBOL PNGImageFileWriter
   : public IImageFileWriter
 {
   public:

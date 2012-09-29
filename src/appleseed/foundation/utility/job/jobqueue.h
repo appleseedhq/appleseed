@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_JOB_JOBQUEUE_H
 #define APPLESEED_FOUNDATION_UTILITY_JOB_JOBQUEUE_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/utility/poolallocator.h"
@@ -62,7 +65,7 @@ namespace foundation
 //   - running: the job is currently being executed
 //
 
-class FOUNDATIONDLL JobQueue
+class DLLSYMBOL JobQueue
   : public NonCopyable
 {
   public:

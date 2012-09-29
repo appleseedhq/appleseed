@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_PLATFORM_X86TIMER_H
 #define APPLESEED_FOUNDATION_PLATFORM_X86TIMER_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/platform/types.h"
@@ -42,7 +45,7 @@ namespace foundation
 // available on all modern x86 processors to read the CPU internal clock cycle counter.
 //
 
-class FOUNDATIONDLL X86Timer
+class DLLSYMBOL X86Timer
   : public NonCopyable
 {
   public:

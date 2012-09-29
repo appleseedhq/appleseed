@@ -29,8 +29,8 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_LOG_CONSOLELOGTARGET_H
 #define APPLESEED_FOUNDATION_UTILITY_LOG_CONSOLELOGTARGET_H
 
-// appleseed.foundation headers.
-#include "foundation/core/dllsymbol.h"
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Standard headers.
 #include <cstdio>
@@ -45,7 +45,7 @@ namespace foundation
 // Create an instance of a log target that outputs to the console and use colors.
 //
 
-FOUNDATIONDLL LogTargetBase* create_console_log_target(std::FILE* file);
+DLLSYMBOL LogTargetBase* create_console_log_target(std::FILE* file);
 
 }       // namespace foundation
 

@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_IMAGE_GENERICPROGRESSIVEIMAGEFILEREADER_H
 #define APPLESEED_FOUNDATION_IMAGE_GENERICPROGRESSIVEIMAGEFILEREADER_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/image/iprogressiveimagefilereader.h"
 
@@ -48,7 +51,7 @@ namespace foundation
 // Generic progressive image file reader interface.
 //
 
-class FOUNDATIONDLL GenericProgressiveImageFileReader
+class DLLSYMBOL GenericProgressiveImageFileReader
   : public IProgressiveImageFileReader
 {
   public:

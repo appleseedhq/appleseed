@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_LOG_LOGTARGETBASE_H
 #define APPLESEED_FOUNDATION_UTILITY_LOG_LOGTARGETBASE_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/concepts/iunknown.h"
 #include "foundation/utility/log/logmessage.h"
@@ -43,7 +46,7 @@ namespace foundation
 // The base class for log targets.
 //
 
-class FOUNDATIONDLL LogTargetBase
+class DLLSYMBOL LogTargetBase
   : public IUnknown
 {
   public:

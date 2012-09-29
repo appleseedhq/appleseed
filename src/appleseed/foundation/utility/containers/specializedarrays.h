@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_CONTAINERS_SPECIALIZEDARRAYS_H
 #define APPLESEED_FOUNDATION_UTILITY_CONTAINERS_SPECIALIZEDARRAYS_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/utility/containers/array.h"
 #include "foundation/utility/containers/dictionary.h"
@@ -52,7 +55,7 @@ DECLARE_ARRAY(DictionaryArray, Dictionary);
 // An array of strings that can be passed safely across DLL boundaries.
 //
 
-class FOUNDATIONDLL StringArray
+class DLLSYMBOL StringArray
 {
   public:
     // Types.

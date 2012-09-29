@@ -29,6 +29,9 @@
 #ifndef APPLESEED_RENDERER_MODELING_PROJECT_CONFIGURATION_H
 #define APPLESEED_RENDERER_MODELING_PROJECT_CONFIGURATION_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
 #include "renderer/modeling/entity/entity.h"
@@ -41,7 +44,7 @@ namespace renderer
 // parameters from a base configuration.
 //
 
-class RENDERERDLL Configuration
+class DLLSYMBOL Configuration
   : public Entity
 {
   public:
@@ -75,7 +78,7 @@ class RENDERERDLL Configuration
 // Configuration factory.
 //
 
-class RENDERERDLL ConfigurationFactory
+class DLLSYMBOL ConfigurationFactory
 {
   public:
     // Create a new empty configuration.
@@ -90,7 +93,7 @@ class RENDERERDLL ConfigurationFactory
 // Base configuration factory.
 //
 
-class RENDERERDLL BaseConfigurationFactory
+class DLLSYMBOL BaseConfigurationFactory
 {
   public:
     // Create a new "base_final" configuration.

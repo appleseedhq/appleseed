@@ -29,6 +29,9 @@
 #ifndef APPLESEED_RENDERER_KERNEL_RENDERING_MASTERRENDERER_H
 #define APPLESEED_RENDERER_KERNEL_RENDERING_MASTERRENDERER_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
 #include "renderer/kernel/rendering/irenderercontroller.h"
@@ -47,7 +50,7 @@ namespace renderer
 // Master renderer, handles rendering of a given project.
 //
 
-class RENDERERDLL MasterRenderer
+class DLLSYMBOL MasterRenderer
   : public foundation::NonCopyable
 {
   public:

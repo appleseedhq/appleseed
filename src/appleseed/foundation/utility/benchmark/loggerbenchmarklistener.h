@@ -29,8 +29,8 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_BENCHMARK_LOGGERBENCHMARKLISTENER_H
 #define APPLESEED_FOUNDATION_UTILITY_BENCHMARK_LOGGERBENCHMARKLISTENER_H
 
-// appleseed.foundation headers.
-#include "foundation/core/dllsymbol.h"
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Forward declarations.
 namespace foundation    { class IBenchmarkListener; }
@@ -44,7 +44,7 @@ namespace foundation
 //
 
 // Factory function.
-FOUNDATIONDLL IBenchmarkListener* create_logger_benchmark_listener(Logger& logger);
+DLLSYMBOL IBenchmarkListener* create_logger_benchmark_listener(Logger& logger);
 
 }       // namespace foundation
 

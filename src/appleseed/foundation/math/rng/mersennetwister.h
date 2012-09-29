@@ -29,8 +29,10 @@
 #ifndef APPLESEED_FOUNDATION_MATH_RNG_MERSENNETWISTER_H
 #define APPLESEED_FOUNDATION_MATH_RNG_MERSENNETWISTER_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
-#include "foundation/core/dllsymbol.h"
 #include "foundation/platform/types.h"
 
 // Standard headers.
@@ -43,7 +45,7 @@ namespace foundation
 // Mersenne Twister random number generator.
 //
 
-class FOUNDATIONDLL MersenneTwister
+class DLLSYMBOL MersenneTwister
 {
   public:
     // Constructors, seed the generator.

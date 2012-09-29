@@ -29,13 +29,16 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_FILTER_IFILTER_H
 #define APPLESEED_FOUNDATION_UTILITY_FILTER_IFILTER_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 
 namespace foundation
 {
 
-class FOUNDATIONDLL IFilter
+class DLLSYMBOL IFilter
   : public NonCopyable
 {
   public:

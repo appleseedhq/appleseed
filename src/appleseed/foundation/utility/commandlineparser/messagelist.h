@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_COMMANDLINEPARSER_MESSAGELIST_H
 #define APPLESEED_FOUNDATION_UTILITY_COMMANDLINEPARSER_MESSAGELIST_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/utility/log.h"
@@ -40,7 +43,7 @@ namespace foundation
 // Message list.
 //
 
-class FOUNDATIONDLL MessageList
+class DLLSYMBOL MessageList
   : public NonCopyable
 {
   public:

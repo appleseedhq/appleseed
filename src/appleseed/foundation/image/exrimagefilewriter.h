@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_IMAGE_EXRIMAGEFILEWRITER_H
 #define APPLESEED_FOUNDATION_IMAGE_EXRIMAGEFILEWRITER_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
 #include "foundation/image/iimagefilewriter.h"
@@ -58,7 +61,7 @@ namespace foundation
 // Reference: openexr/ImfStandardAttributes.h
 //
 
-class FOUNDATIONDLL EXRImageFileWriter
+class DLLSYMBOL EXRImageFileWriter
   : public IImageFileWriter
 {
   public:

@@ -29,8 +29,10 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_BUFFEREDFILE_H
 #define APPLESEED_FOUNDATION_UTILITY_BUFFEREDFILE_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
-#include "foundation/core/dllsymbol.h"
 #include "foundation/platform/types.h"
 
 // Standard headers.
@@ -56,7 +58,7 @@ namespace foundation
 //     and no other method except close() may be called safely.
 //
 
-class FOUNDATIONDLL BufferedFile
+class DLLSYMBOL BufferedFile
 {
   public:
     // File type.

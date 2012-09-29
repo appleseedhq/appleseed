@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_IMAGE_PROGRESSIVEEXRIMAGEFILEREADER_H
 #define APPLESEED_FOUNDATION_IMAGE_PROGRESSIVEEXRIMAGEFILEREADER_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
 #include "foundation/image/iprogressiveimagefilereader.h"
@@ -51,7 +54,7 @@ namespace foundation
 // Progressive OpenEXR image file reader interface.
 //
 
-class FOUNDATIONDLL ProgressiveEXRImageFileReader
+class DLLSYMBOL ProgressiveEXRImageFileReader
   : public IProgressiveImageFileReader
 {
   public:

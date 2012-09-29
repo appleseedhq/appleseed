@@ -29,8 +29,10 @@
 #ifndef APPLESEED_FOUNDATION_CORE_CONCEPTS_NONCOPYABLE_H
 #define APPLESEED_FOUNDATION_CORE_CONCEPTS_NONCOPYABLE_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
-#include "foundation/core/dllsymbol.h"
 #include "foundation/utility/typetraits.h"
 
 namespace foundation
@@ -42,7 +44,7 @@ namespace foundation
 // Taken from boost (http://www.boost.org/boost/noncopyable.hpp).
 //
 
-class FOUNDATIONDLL NonCopyable
+class DLLSYMBOL NonCopyable
 {
   protected:
     // Class NonCopyable has protected constructor and destructor members

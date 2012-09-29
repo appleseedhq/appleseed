@@ -29,8 +29,10 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKDATAPOINT_H
 #define APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKDATAPOINT_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
-#include "foundation/core/dllsymbol.h"
 #include "foundation/platform/datetime.h"
 #include "foundation/platform/types.h"
 
@@ -42,7 +44,7 @@
 namespace foundation
 {
 
-class FOUNDATIONDLL BenchmarkDataPoint
+class DLLSYMBOL BenchmarkDataPoint
 {
   public:
     BenchmarkDataPoint();

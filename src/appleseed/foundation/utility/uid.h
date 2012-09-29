@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_UID_H
 #define APPLESEED_FOUNDATION_UTILITY_UID_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/platform/types.h"
@@ -54,7 +57,7 @@ typedef uint64 UniqueID;
 // Base class for uniquely identifiable objects.
 //
 
-class FOUNDATIONDLL Identifiable
+class DLLSYMBOL Identifiable
   : public NonCopyable
 {
   public:
@@ -75,7 +78,7 @@ class FOUNDATIONDLL Identifiable
 // Thread-safe.
 //
 
-FOUNDATIONDLL UniqueID new_guid();
+DLLSYMBOL UniqueID new_guid();
 
 
 //

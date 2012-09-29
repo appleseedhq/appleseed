@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_CORE_CONCEPTS_IUNKNOWN_H
 #define APPLESEED_FOUNDATION_CORE_CONCEPTS_IUNKNOWN_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // Standard headers.
 #include "foundation/core/concepts/noncopyable.h"
 
@@ -45,7 +48,7 @@ namespace foundation
 // are not yet supported.
 //
 
-class FOUNDATIONDLL IUnknown
+class DLLSYMBOL IUnknown
   : public NonCopyable
 {
   public:

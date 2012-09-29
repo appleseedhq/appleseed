@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_IMAGE_GENERICIMAGEFILEWRITER_H
 #define APPLESEED_FOUNDATION_IMAGE_GENERICIMAGEFILEWRITER_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/image/iimagefilewriter.h"
 #include "foundation/image/imageattributes.h"
@@ -43,7 +46,7 @@ namespace foundation
 // Generic image file writer.
 //
 
-class FOUNDATIONDLL GenericImageFileWriter
+class DLLSYMBOL GenericImageFileWriter
   : public IImageFileWriter
 {
   public:

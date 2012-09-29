@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_IMAGE_IIMAGEFILEREADER_H
 #define APPLESEED_FOUNDATION_IMAGE_IIMAGEFILEREADER_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 
@@ -43,7 +46,7 @@ namespace foundation
 // Image file reader interface.
 //
 
-class FOUNDATIONDLL IImageFileReader
+class DLLSYMBOL IImageFileReader
   : public NonCopyable
 {
   public:

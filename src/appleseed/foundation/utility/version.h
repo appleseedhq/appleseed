@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_VERSION_H
 #define APPLESEED_FOUNDATION_UTILITY_VERSION_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/platform/types.h"
@@ -61,7 +64,7 @@ const VersionID InvalidVersionID = ~0;
 // Base class for versionable objects.
 //
 
-class FOUNDATIONDLL Versionable
+class DLLSYMBOL Versionable
   : public NonCopyable
 {
   public:

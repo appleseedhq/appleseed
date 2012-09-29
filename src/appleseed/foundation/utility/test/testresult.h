@@ -29,8 +29,8 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_TEST_TESTRESULT_H
 #define APPLESEED_FOUNDATION_UTILITY_TEST_TESTRESULT_H
 
-// appleseed.foundation headers.
-#include "foundation/core/dllsymbol.h"
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Standard headers.
 #include <cstddef>
@@ -42,7 +42,7 @@ namespace foundation
 // The purpose of this class is to gather test execution results.
 //
 
-class FOUNDATIONDLL TestResult
+class DLLSYMBOL TestResult
 {
   public:
     // Constructor.

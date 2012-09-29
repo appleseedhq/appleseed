@@ -29,8 +29,8 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_LOG_LOGMESSAGE_H
 #define APPLESEED_FOUNDATION_UTILITY_LOG_LOGMESSAGE_H
 
-// appleseed.foundation headers.
-#include "foundation/core/dllsymbol.h"
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 namespace foundation
 {
@@ -39,7 +39,7 @@ namespace foundation
 // Log message.
 //
 
-class FOUNDATIONDLL LogMessage
+class DLLSYMBOL LogMessage
 {
   public:
     // Message categories.

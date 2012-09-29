@@ -29,8 +29,10 @@
 #ifndef APPLESEED_FOUNDATION_IMAGE_NATIVEDRAWING_H
 #define APPLESEED_FOUNDATION_IMAGE_NATIVEDRAWING_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
-#include "foundation/core/dllsymbol.h"
 #include "foundation/platform/types.h"
 
 // Standard headers.
@@ -48,7 +50,7 @@ namespace foundation
 // Warning: none of those methods handle pixel format conversion or clipping.
 //
 
-class FOUNDATIONDLL NativeDrawing
+class DLLSYMBOL NativeDrawing
 {
   public:
     // Clear an image buffer with a given pixel color.

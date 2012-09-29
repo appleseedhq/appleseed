@@ -34,7 +34,6 @@
 #define APPLESEED_RENDERER_GLOBAL_GLOBAL_H
 
 // Globally included appleseed.renderer headers.
-#include "renderer/global/dllsymbol.h"
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
 #include "renderer/utility/paramarray.h"

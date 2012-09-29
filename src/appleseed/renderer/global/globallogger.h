@@ -29,11 +29,11 @@
 #ifndef APPLESEED_RENDERER_GLOBAL_GLOBALLOGGER_H
 #define APPLESEED_RENDERER_GLOBAL_GLOBALLOGGER_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/utility/log.h"
-
-// appleseed.renderer headers.
-#include "renderer/global/dllsymbol.h"
 
 namespace renderer
 {
@@ -42,7 +42,7 @@ namespace renderer
 // A globally accessible logger.
 //
 
-RENDERERDLL foundation::Logger& global_logger();
+DLLSYMBOL foundation::Logger& global_logger();
 
 
 //

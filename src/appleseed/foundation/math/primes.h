@@ -29,8 +29,8 @@
 #ifndef APPLESEED_FOUNDATION_MATH_PRIMES_H
 #define APPLESEED_FOUNDATION_MATH_PRIMES_H
 
-// appleseed.foundation headers
-#include "foundation/core/dllsymbol.h"
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Standard headers.
 #include <cstddef>
@@ -43,7 +43,7 @@ namespace foundation
 //
 
 const size_t PrimeTableSize = 1000;
-FOUNDATIONDLL extern const size_t Primes[PrimeTableSize];
+DLLSYMBOL extern const size_t Primes[PrimeTableSize];
 
 }       // namespace foundation
 

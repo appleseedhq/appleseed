@@ -29,8 +29,8 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_TEST_LOGGERTESTLISTENER_H
 #define APPLESEED_FOUNDATION_UTILITY_TEST_LOGGERTESTLISTENER_H
 
-// appleseed.foundation headers.
-#include "foundation/core/dllsymbol.h"
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Forward declarations.
 namespace foundation    { class ITestListener; }
@@ -44,7 +44,7 @@ namespace foundation
 //
 
 // Factory function.
-FOUNDATIONDLL ITestListener* create_logger_test_listener(
+DLLSYMBOL ITestListener* create_logger_test_listener(
     Logger&     logger,
     const bool  verbose = false);
 

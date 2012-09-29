@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_IMAGE_PROGRESSIVEEXRIMAGEFILEWRITER_H
 #define APPLESEED_FOUNDATION_IMAGE_PROGRESSIVEEXRIMAGEFILEWRITER_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
 #include "foundation/image/imageattributes.h"
@@ -53,7 +56,7 @@ namespace foundation
 // Progressive OpenEXR image file writer interface.
 //
 
-class FOUNDATIONDLL ProgressiveEXRImageFileWriter
+class DLLSYMBOL ProgressiveEXRImageFileWriter
   : public IProgressiveImageFileWriter
 {
   public:

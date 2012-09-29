@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_CORE_CONCEPTS_SINGLETON_H
 #define APPLESEED_FOUNDATION_CORE_CONCEPTS_SINGLETON_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // Standard headers.
 #include "foundation/core/concepts/noncopyable.h"
 
@@ -43,7 +46,7 @@ namespace foundation
 //
 
 template <typename T>
-class FOUNDATIONDLL Singleton
+class DLLSYMBOL Singleton
   : public NonCopyable
 {
   public:

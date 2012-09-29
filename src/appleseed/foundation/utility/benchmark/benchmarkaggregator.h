@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKAGGREGATOR_H
 #define APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKAGGREGATOR_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/utility/uid.h"
@@ -44,7 +47,7 @@ namespace foundation    { class Dictionary; }
 namespace foundation
 {
 
-class FOUNDATIONDLL BenchmarkAggregator
+class DLLSYMBOL BenchmarkAggregator
   : public NonCopyable
 {
   public:

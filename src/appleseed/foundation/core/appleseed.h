@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_CORE_APPLESEED_H
 #define APPLESEED_FOUNDATION_CORE_APPLESEED_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 
@@ -39,7 +42,7 @@ namespace foundation
 // The Appleseed class provides information about the appleseed library.
 //
 
-class FOUNDATIONDLL Appleseed
+class DLLSYMBOL Appleseed
   : public NonCopyable
 {
   public:

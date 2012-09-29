@@ -29,13 +29,13 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_JOB_ABORTSWITCH_H
 #define APPLESEED_FOUNDATION_UTILITY_JOB_ABORTSWITCH_H
 
-// appleseed.foundation headers.
-#include "foundation/core/dllsymbol.h"
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 namespace foundation
 {
 
-class FOUNDATIONDLL AbortSwitch
+class DLLSYMBOL AbortSwitch
 {
   public:
     // Constructor, clears the abort flag.

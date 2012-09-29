@@ -29,6 +29,9 @@
 #ifndef APPLESEED_RENDERER_MODELING_ENVIRONMENTSHADER_ENVIRONMENTSHADERFACTORYREGISTRAR_H
 #define APPLESEED_RENDERER_MODELING_ENVIRONMENTSHADER_ENVIRONMENTSHADERFACTORYREGISTRAR_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
 
@@ -52,7 +55,7 @@ DECLARE_ARRAY(EnvironmentShaderFactoryArray, IEnvironmentShaderFactory*);
 // Environment shader factory registrar.
 //
 
-class RENDERERDLL EnvironmentShaderFactoryRegistrar
+class DLLSYMBOL EnvironmentShaderFactoryRegistrar
   : public foundation::NonCopyable
 {
   public:

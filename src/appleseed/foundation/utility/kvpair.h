@@ -29,8 +29,10 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_KVPAIR_H
 #define APPLESEED_FOUNDATION_UTILITY_KVPAIR_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
-#include "foundation/core/dllsymbol.h"
 #include "foundation/utility/countof.h"
 
 // Standard headers.
@@ -44,7 +46,7 @@ namespace foundation
 //
 
 template <typename KeyType, typename ValueType>
-struct FOUNDATIONDLL KeyValuePair
+struct DLLSYMBOL KeyValuePair
 {
     const KeyType   m_key;
     const ValueType m_value;

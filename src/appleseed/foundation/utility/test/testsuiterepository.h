@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_TEST_TESTSUITEREPOSITORY_H
 #define APPLESEED_FOUNDATION_UTILITY_TEST_TESTSUITEREPOSITORY_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/concepts/singleton.h"
 
@@ -48,7 +51,7 @@ namespace foundation
 // The (unique) test suite repository, as a collection of test suites.
 //
 
-class FOUNDATIONDLL TestSuiteRepository
+class DLLSYMBOL TestSuiteRepository
   : public Singleton<TestSuiteRepository>
 {
   public:

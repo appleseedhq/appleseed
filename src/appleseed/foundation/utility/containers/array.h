@@ -29,8 +29,8 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_CONTAINERS_ARRAY_H
 #define APPLESEED_FOUNDATION_UTILITY_CONTAINERS_ARRAY_H
 
-// appleseed.foundation headers.
-#include "foundation/core/dllsymbol.h"
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Standard headers.
 #include <cassert>
@@ -48,7 +48,7 @@ namespace foundation
 //
 
 #define DECLARE_ARRAY(ArrayName, ArrayType)                             \
-    class FOUNDATIONDLL ArrayName                                       \
+    class DLLSYMBOL ArrayName                                           \
     {                                                                   \
       public:                                                           \
         /* Types. */                                                    \

@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_PLATFORM_SYSTEM_H
 #define APPLESEED_FOUNDATION_PLATFORM_SYSTEM_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/platform/types.h"
@@ -43,7 +46,7 @@ namespace foundation
 // The System class provides information about the system.
 //
 
-class FOUNDATIONDLL System
+class DLLSYMBOL System
   : public NonCopyable
 {
   public:

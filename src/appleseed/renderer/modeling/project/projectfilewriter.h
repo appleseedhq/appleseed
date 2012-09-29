@@ -29,6 +29,9 @@
 #ifndef APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFILEWRITER_H
 #define APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFILEWRITER_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
 
@@ -42,7 +45,7 @@ namespace renderer
 // Project file writer.
 //
 
-class RENDERERDLL ProjectFileWriter
+class DLLSYMBOL ProjectFileWriter
 {
   public:
     enum Options

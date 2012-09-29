@@ -29,8 +29,10 @@
 #ifndef APPLESEED_FOUNDATION_IMAGE_ANALYSIS_H
 #define APPLESEED_FOUNDATION_IMAGE_ANALYSIS_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
-#include "foundation/core/dllsymbol.h"
 #include "foundation/core/exceptions/exception.h"
 
 // Forward declarations.
@@ -44,7 +46,7 @@ namespace foundation
 // Pixels containing NaN values are skipped.
 //
 
-FOUNDATIONDLL double compute_average_luminance(
+DLLSYMBOL double compute_average_luminance(
     const Image&    image);
 
 
@@ -63,7 +65,7 @@ struct ExceptionIncompatibleImages
 // Compute the Root-Mean-Square deviation between two images.
 //
 
-FOUNDATIONDLL double compute_rms_deviation(
+DLLSYMBOL double compute_rms_deviation(
     const Image&    image1,
     const Image&    image2);
 

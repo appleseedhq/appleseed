@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_IMAGE_PNGIMAGEFILEREADER_H
 #define APPLESEED_FOUNDATION_IMAGE_PNGIMAGEFILEREADER_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/image/iimagefilereader.h"
 
@@ -43,7 +46,7 @@ namespace foundation
 // PNG image file reader.
 //
 
-class FOUNDATIONDLL PNGImageFileReader
+class DLLSYMBOL PNGImageFileReader
   : public IImageFileReader
 {
   public:

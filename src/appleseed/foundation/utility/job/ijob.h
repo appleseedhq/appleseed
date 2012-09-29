@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_JOB_IJOB_H
 #define APPLESEED_FOUNDATION_UTILITY_JOB_IJOB_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 
@@ -42,7 +45,7 @@ namespace foundation
 // Job interface.
 //
 
-class FOUNDATIONDLL IJob
+class DLLSYMBOL IJob
   : public NonCopyable
 {
   public:

@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKSUITE_H
 #define APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKSUITE_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 
@@ -45,7 +48,7 @@ namespace foundation
 // A benchmark suite, as a collection of benchmarks.
 //
 
-class FOUNDATIONDLL BenchmarkSuite
+class DLLSYMBOL BenchmarkSuite
   : public NonCopyable
 {
   public:

@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_PLATFORM_DEFAULTTIMERS_H
 #define APPLESEED_FOUNDATION_PLATFORM_DEFAULTTIMERS_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/platform/types.h"
@@ -42,7 +45,7 @@ namespace foundation
 // on Windows and std::clock() on other platforms.
 //
 
-class FOUNDATIONDLL DefaultProcessorTimer
+class DLLSYMBOL DefaultProcessorTimer
   : public NonCopyable
 {
   public:
@@ -67,7 +70,7 @@ class FOUNDATIONDLL DefaultProcessorTimer
 // platforms, _ftime() on Windows and std::time() on other platforms.
 //
 
-class FOUNDATIONDLL DefaultWallclockTimer
+class DLLSYMBOL DefaultWallclockTimer
   : public NonCopyable
 {
   public:

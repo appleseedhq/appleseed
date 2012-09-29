@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_IMAGE_IPROGRESSIVEIMAGEFILEREADER_H
 #define APPLESEED_FOUNDATION_IMAGE_IPROGRESSIVEIMAGEFILEREADER_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 
@@ -48,7 +51,7 @@ namespace foundation
 // Progressive image file reader interface.
 //
 
-class FOUNDATIONDLL IProgressiveImageFileReader
+class DLLSYMBOL IProgressiveImageFileReader
   : public NonCopyable
 {
   public:

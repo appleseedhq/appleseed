@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_MATH_PERMUTATION_H
 #define APPLESEED_FOUNDATION_MATH_PERMUTATION_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/math/rng.h"
 #include "foundation/platform/types.h"
@@ -79,7 +82,7 @@ void faure_qmc_permutation(
 //
 
 const size_t FaurePermutationTableSize = 100;
-FOUNDATIONDLL extern const size_t* FaurePermutations[FaurePermutationTableSize];
+DLLSYMBOL extern const size_t* FaurePermutations[FaurePermutationTableSize];
 
 
 //

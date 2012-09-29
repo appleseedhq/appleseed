@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_PLATFORM_PATH_H
 #define APPLESEED_FOUNDATION_PLATFORM_PATH_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #ifdef _WIN32
 #include "foundation/platform/windows.h"
@@ -40,8 +43,6 @@
 #elif defined __linux__
 #include <linux/limits.h> 
 #endif
-
-#include "foundation/core/dllsymbol.h"
 
 namespace foundation
 {
@@ -72,7 +73,7 @@ namespace foundation
 // Path handling.
 //
 
-class FOUNDATIONDLL Path
+class DLLSYMBOL Path
 {
   public:
     // Return the path to the application's executable. NOT thread-safe.

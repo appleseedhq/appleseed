@@ -29,6 +29,9 @@
 #ifndef APPLESEED_RENDERER_MODELING_EDF_IEDFFACTORY_H
 #define APPLESEED_RENDERER_MODELING_EDF_IEDFFACTORY_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
 
@@ -45,7 +48,7 @@ namespace renderer
 // EDF factory interface.
 //
 
-class RENDERERDLL IEDFFactory
+class DLLSYMBOL IEDFFactory
   : public foundation::NonCopyable
 {
   public:

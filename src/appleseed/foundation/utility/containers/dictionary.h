@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_CONTAINERS_DICTIONARY_H
 #define APPLESEED_FOUNDATION_UTILITY_CONTAINERS_DICTIONARY_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/stringexception.h"
 #include "foundation/utility/string.h"
@@ -61,10 +64,10 @@ struct ExceptionDictionaryItemNotFound
 // A string-to-string dictionary that can cross DLL boundaries.
 //
 
-class FOUNDATIONDLL StringDictionary
+class DLLSYMBOL StringDictionary
 {
   public:
-    class FOUNDATIONDLL const_iterator
+    class DLLSYMBOL const_iterator
     {
       public:
         // Value type.
@@ -160,10 +163,10 @@ class FOUNDATIONDLL StringDictionary
 // A string-to-dictionary dictionary that can cross DLL boundaries.
 //
 
-class FOUNDATIONDLL DictionaryDictionary
+class DLLSYMBOL DictionaryDictionary
 {
   public:
-    class FOUNDATIONDLL const_iterator
+    class DLLSYMBOL const_iterator
     {
       public:
         // Value type.
@@ -256,7 +259,7 @@ class FOUNDATIONDLL DictionaryDictionary
 // A dictionary that supports nesting and that can cross DLL boundaries.
 //
 
-class FOUNDATIONDLL Dictionary
+class DLLSYMBOL Dictionary
 {
   public:
     // Return the number of items in the dictionary.

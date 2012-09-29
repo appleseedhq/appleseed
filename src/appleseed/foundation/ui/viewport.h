@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_VIEWPORT_H
-#define APPLESEED_FOUNDATION_MATH_VIEWPORT_H
+#ifndef APPLESEED_FOUNDATION_UI_VIEWPORT_H
+#define APPLESEED_FOUNDATION_UI_VIEWPORT_H
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
@@ -261,4 +261,4 @@ inline void Viewport<T>::zoom(const RealVectorType& center, float xfactor, float
 
 }       // namespace foundation
 
-#endif  // !APPLESEED_FOUNDATION_MATH_VIEWPORT_H
+#endif  // !APPLESEED_FOUNDATION_UI_VIEWPORT_H

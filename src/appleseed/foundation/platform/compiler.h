@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_PLATFORM_COMPILER_H
 #define APPLESEED_FOUNDATION_PLATFORM_COMPILER_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 
@@ -40,7 +43,7 @@ namespace foundation
 // The Compiler class provides information about the compiler used to build the library.
 //
 
-class FOUNDATIONDLL Compiler
+class DLLSYMBOL Compiler
   : public NonCopyable
 {
   public:

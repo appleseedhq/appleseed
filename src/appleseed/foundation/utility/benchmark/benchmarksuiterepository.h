@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKSUITEREPOSITORY_H
 #define APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKSUITEREPOSITORY_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/concepts/singleton.h"
 
@@ -44,7 +47,7 @@ namespace foundation
 // The (unique) benchmark suite repository, as a collection of benchmark suites.
 //
 
-class FOUNDATIONDLL BenchmarkSuiteRepository
+class DLLSYMBOL BenchmarkSuiteRepository
   : public Singleton<BenchmarkSuiteRepository>
 {
   public:

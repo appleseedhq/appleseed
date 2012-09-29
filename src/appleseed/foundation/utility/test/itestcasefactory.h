@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_TEST_ITESTCASEFACTORY_H
 #define APPLESEED_FOUNDATION_UTILITY_TEST_ITESTCASEFACTORY_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 
@@ -42,7 +45,7 @@ namespace foundation
 // Interface of a test case factory.
 //
 
-class FOUNDATIONDLL ITestCaseFactory
+class DLLSYMBOL ITestCaseFactory
   : public NonCopyable
 {
   public:

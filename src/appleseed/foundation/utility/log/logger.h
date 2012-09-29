@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_LOG_LOGGER_H
 #define APPLESEED_FOUNDATION_UTILITY_LOG_LOGGER_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/utility/log/logmessage.h"
@@ -48,7 +51,7 @@ namespace foundation
 // All methods of this class are thread-safe.
 //
 
-class FOUNDATIONDLL Logger
+class DLLSYMBOL Logger
   : public NonCopyable
 {
   public:

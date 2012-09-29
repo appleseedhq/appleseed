@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_JOB_JOBMANAGER_H
 #define APPLESEED_FOUNDATION_UTILITY_JOB_JOBMANAGER_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 
@@ -48,7 +51,7 @@ namespace foundation
 // The job manager itself is thread-local: none of its methods are thread-safe.
 //
 
-class FOUNDATIONDLL JobManager
+class DLLSYMBOL JobManager
   : public NonCopyable
 {
   public:

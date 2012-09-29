@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_BENCHMARK_IBENCHMARKCASEFACTORY_H
 #define APPLESEED_FOUNDATION_UTILITY_BENCHMARK_IBENCHMARKCASEFACTORY_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 
@@ -42,7 +45,7 @@ namespace foundation
 // Interface of a benchmark case factory.
 //
 
-class FOUNDATIONDLL IBenchmarkCaseFactory
+class DLLSYMBOL IBenchmarkCaseFactory
   : public NonCopyable
 {
   public:

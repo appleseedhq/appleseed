@@ -29,6 +29,9 @@
 #ifndef APPLESEED_RENDERER_KERNEL_RENDERING_DEFAULTRENDERERCONTROLLER_H
 #define APPLESEED_RENDERER_KERNEL_RENDERING_DEFAULTRENDERERCONTROLLER_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
 #include "renderer/kernel/rendering/irenderercontroller.h"
@@ -40,7 +43,7 @@ namespace renderer
 // A default renderer controller, and a convenient base class for renderer controllers.
 //
 
-class RENDERERDLL DefaultRendererController
+class DLLSYMBOL DefaultRendererController
   : public IRendererController
 {
   public:

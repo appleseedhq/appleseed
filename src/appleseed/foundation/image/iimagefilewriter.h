@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_IMAGE_IIMAGEFILEWRITER_H
 #define APPLESEED_FOUNDATION_IMAGE_IIMAGEFILEWRITER_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/image/imageattributes.h"
@@ -43,7 +46,7 @@ namespace foundation
 // Image file writer interface.
 //
 
-class FOUNDATIONDLL IImageFileWriter
+class DLLSYMBOL IImageFileWriter
   : public NonCopyable
 {
   public:

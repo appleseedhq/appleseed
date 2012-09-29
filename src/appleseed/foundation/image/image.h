@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_IMAGE_IMAGE_H
 #define APPLESEED_FOUNDATION_IMAGE_IMAGE_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/concepts/iunknown.h"
 #include "foundation/image/canvasproperties.h"
@@ -50,7 +53,7 @@ namespace foundation
 // Tiles are initially blank.
 //
 
-class FOUNDATIONDLL Image
+class DLLSYMBOL Image
   : public ICanvas
   , public IUnknown
 {

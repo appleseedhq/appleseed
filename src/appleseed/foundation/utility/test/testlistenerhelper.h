@@ -29,8 +29,10 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_TEST_TESTLISTENERHELPER_H
 #define APPLESEED_FOUNDATION_UTILITY_TEST_TESTLISTENERHELPER_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
-#include "foundation/core/dllsymbol.h"
 #include "foundation/utility/test/testmessage.h"
 
 // Standard headers.
@@ -44,7 +46,7 @@ namespace foundation    { class TestSuite; }
 namespace foundation
 {
 
-class FOUNDATIONDLL TestListenerHelper
+class DLLSYMBOL TestListenerHelper
 {
   public:
     // Write a message with formatting to a test listener.

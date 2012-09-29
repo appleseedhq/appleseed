@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_PLATFORM_THREAD_H
 #define APPLESEED_FOUNDATION_PLATFORM_THREAD_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/platform/types.h"
@@ -86,7 +89,7 @@ class Spinlock
 // An object to configure a thread for accurate benchmarking.
 //
 
-class FOUNDATIONDLL BenchmarkingThreadContext
+class DLLSYMBOL BenchmarkingThreadContext
   : public NonCopyable
 {
   public:
@@ -135,10 +138,10 @@ class ThreadFunctionWrapper
 //
 
 // Suspend the current thread for a given number of milliseconds.
-FOUNDATIONDLL void sleep(const uint32 ms);
+DLLSYMBOL void sleep(const uint32 ms);
 
 // Give up the remainder of the current thread's time slice, to allow other threads to run.
-FOUNDATIONDLL void yield();
+DLLSYMBOL void yield();
 
 
 //

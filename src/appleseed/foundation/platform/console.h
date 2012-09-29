@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_PLATFORM_CONSOLE_H
 #define APPLESEED_FOUNDATION_PLATFORM_CONSOLE_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/concepts/singleton.h"
 
@@ -40,7 +43,7 @@ namespace foundation
 // Console class.
 //
 
-class FOUNDATIONDLL Console
+class DLLSYMBOL Console
   : public Singleton<Console>
 {
   public:
@@ -102,7 +105,7 @@ class FOUNDATIONDLL Console
     ~Console();
 };
 
-FOUNDATIONDLL Console& console();
+DLLSYMBOL Console& console();
 
 }       // namespace foundation
 
