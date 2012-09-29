@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_LOG_FILELOGTARGET_H
 #define APPLESEED_FOUNDATION_UTILITY_LOG_FILELOGTARGET_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/utility/log/filelogtargetbase.h"
 #include "foundation/utility/log/logmessage.h"
@@ -37,25 +40,6 @@
 #include <cstddef>
 #include <cstdio>
 
-//
-// On Windows, define FOUNDATIONDLL to __declspec(dllexport) when building the DLL
-// and to __declspec(dllimport) when building an application using the DLL.
-// Other platforms don't use this export mechanism and the symbol FOUNDATIONDLL is
-// defined to evaluate to nothing.
-//
-
-#ifndef FOUNDATIONDLL
-#ifdef _WIN32
-#ifdef APPLESEED_FOUNDATION_EXPORTS
-#define FOUNDATIONDLL __declspec(dllexport)
-#else
-#define FOUNDATIONDLL __declspec(dllimport)
-#endif
-#else
-#define FOUNDATIONDLL
-#endif
-#endif
-
 namespace foundation
 {
 
@@ -63,7 +47,7 @@ namespace foundation
 // A log target that outputs to a file.
 //
 
-class FOUNDATIONDLL FileLogTarget
+class DLLSYMBOL FileLogTarget
   : public FileLogTargetBase
 {
   public:
@@ -84,7 +68,7 @@ class FOUNDATIONDLL FileLogTarget
     bool is_open() const;
 
   private:
-    friend FOUNDATIONDLL FileLogTarget* create_file_log_target();
+    friend DLLSYMBOL FileLogTarget* create_file_log_target();
 
     std::FILE*  m_file;
 
@@ -96,7 +80,7 @@ class FOUNDATIONDLL FileLogTarget
 };
 
 // Create an instance of a log target that outputs to a file.
-FOUNDATIONDLL FileLogTarget* create_file_log_target();
+DLLSYMBOL FileLogTarget* create_file_log_target();
 
 }       // namespace foundation
 

@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_PLATFORM_TIMER_H
 #define APPLESEED_FOUNDATION_PLATFORM_TIMER_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // Include all available timer classes here.
 #include "foundation/platform/defaulttimers.h"
 #include "foundation/platform/x86timer.h"
@@ -37,24 +40,6 @@
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/platform/types.h"
 
-//
-// On Windows, define FOUNDATIONDLL to __declspec(dllexport) when building the DLL
-// and to __declspec(dllimport) when building an application using the DLL.
-// Other platforms don't use this export mechanism and the symbol FOUNDATIONDLL is
-// defined to evaluate to nothing.
-//
-
-#ifndef FOUNDATIONDLL
-#ifdef _WIN32
-#ifdef APPLESEED_FOUNDATION_EXPORTS
-#define FOUNDATIONDLL __declspec(dllexport)
-#else
-#define FOUNDATIONDLL __declspec(dllimport)
-#endif
-#else
-#define FOUNDATIONDLL
-#endif
-#endif
 
 namespace foundation
 {
@@ -65,7 +50,7 @@ namespace foundation
 // in appleseed.foundation. This class is not implemented, and may not be used.
 //
 
-class FOUNDATIONDLL Timer
+class DLLSYMBOL Timer
   : public NonCopyable
 {
   public:

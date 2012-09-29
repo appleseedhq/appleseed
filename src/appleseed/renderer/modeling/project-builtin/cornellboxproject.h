@@ -29,6 +29,9 @@
 #ifndef APPLESEED_RENDERER_MODELING_PROJECTBUILTIN_CORNELLBOXPROJECT_H
 #define APPLESEED_RENDERER_MODELING_PROJECTBUILTIN_CORNELLBOXPROJECT_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
 
@@ -42,7 +45,7 @@ namespace renderer
 // Cornell Box project factory.
 //
 
-class RENDERERDLL CornellBoxProjectFactory
+class DLLSYMBOL CornellBoxProjectFactory
 {
   public:
     // Create a new instance of the Cornell Box project.

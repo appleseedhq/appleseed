@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_MATH_PERMUTATION_H
 #define APPLESEED_FOUNDATION_MATH_PERMUTATION_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/math/rng.h"
 #include "foundation/platform/types.h"
@@ -36,25 +39,6 @@
 // Standard headers.
 #include <cassert>
 #include <cstddef>
-
-//
-// On Windows, define FOUNDATIONDLL to __declspec(dllexport) when building the DLL
-// and to __declspec(dllimport) when building an application using the DLL.
-// Other platforms don't use this export mechanism and the symbol FOUNDATIONDLL is
-// defined to evaluate to nothing.
-//
-
-#ifndef FOUNDATIONDLL
-#ifdef _WIN32
-#ifdef APPLESEED_FOUNDATION_EXPORTS
-#define FOUNDATIONDLL __declspec(dllexport)
-#else
-#define FOUNDATIONDLL __declspec(dllimport)
-#endif
-#else
-#define FOUNDATIONDLL
-#endif
-#endif
 
 namespace foundation
 {
@@ -98,7 +82,7 @@ void faure_qmc_permutation(
 //
 
 const size_t FaurePermutationTableSize = 100;
-FOUNDATIONDLL extern const size_t* FaurePermutations[FaurePermutationTableSize];
+DLLSYMBOL extern const size_t* FaurePermutations[FaurePermutationTableSize];
 
 
 //

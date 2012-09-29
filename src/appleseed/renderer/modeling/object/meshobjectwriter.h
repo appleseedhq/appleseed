@@ -29,6 +29,9 @@
 #ifndef APPLESEED_RENDERER_MODELING_OBJECT_MESHOBJECTWRITER_H
 #define APPLESEED_RENDERER_MODELING_OBJECT_MESHOBJECTWRITER_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
 
@@ -42,7 +45,7 @@ namespace renderer
 // Mesh object writer.
 //
 
-class RENDERERDLL MeshObjectWriter
+class DLLSYMBOL MeshObjectWriter
 {
   public:
     // Write a mesh object to disk.

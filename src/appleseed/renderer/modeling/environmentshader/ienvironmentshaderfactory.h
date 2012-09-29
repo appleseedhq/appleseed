@@ -29,6 +29,9 @@
 #ifndef APPLESEED_RENDERER_MODELING_ENVIRONMENTSHADER_IENVIRONMENTSHADERFACTORY_H
 #define APPLESEED_RENDERER_MODELING_ENVIRONMENTSHADER_IENVIRONMENTSHADERFACTORY_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
 
@@ -45,7 +48,7 @@ namespace renderer
 // Environment shader factory interface.
 //
 
-class RENDERERDLL IEnvironmentShaderFactory
+class DLLSYMBOL IEnvironmentShaderFactory
   : public foundation::NonCopyable
 {
   public:

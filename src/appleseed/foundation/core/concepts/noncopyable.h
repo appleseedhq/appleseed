@@ -29,27 +29,11 @@
 #ifndef APPLESEED_FOUNDATION_CORE_CONCEPTS_NONCOPYABLE_H
 #define APPLESEED_FOUNDATION_CORE_CONCEPTS_NONCOPYABLE_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/utility/typetraits.h"
-
-//
-// On Windows, define FOUNDATIONDLL to __declspec(dllexport) when building the DLL
-// and to __declspec(dllimport) when building an application using the DLL.
-// Other platforms don't use this export mechanism and the symbol FOUNDATIONDLL is
-// defined to evaluate to nothing.
-//
-
-#ifndef FOUNDATIONDLL
-#ifdef _WIN32
-#ifdef APPLESEED_FOUNDATION_EXPORTS
-#define FOUNDATIONDLL __declspec(dllexport)
-#else
-#define FOUNDATIONDLL __declspec(dllimport)
-#endif
-#else
-#define FOUNDATIONDLL
-#endif
-#endif
 
 namespace foundation
 {
@@ -60,7 +44,7 @@ namespace foundation
 // Taken from boost (http://www.boost.org/boost/noncopyable.hpp).
 //
 
-class FOUNDATIONDLL NonCopyable
+class DLLSYMBOL NonCopyable
 {
   protected:
     // Class NonCopyable has protected constructor and destructor members

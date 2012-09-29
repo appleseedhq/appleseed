@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_JOB_JOBQUEUE_H
 #define APPLESEED_FOUNDATION_UTILITY_JOB_JOBQUEUE_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/utility/poolallocator.h"
@@ -48,25 +51,6 @@ DECLARE_TEST_CASE(Foundation_Utility_Job_JobQueue, RetiringRunningJobWorks);
 DECLARE_TEST_CASE(Foundation_Utility_Job_JobQueue, RunningJobOwnedByQueueIsDestructedWhenRetired);
 DECLARE_TEST_CASE(Foundation_Utility_Job_JobQueue, RunningJobNotOwnedByQueueIsNotDestructedWhenRetired);
 
-//
-// On Windows, define FOUNDATIONDLL to __declspec(dllexport) when building the DLL
-// and to __declspec(dllimport) when building an application using the DLL.
-// Other platforms don't use this export mechanism and the symbol FOUNDATIONDLL is
-// defined to evaluate to nothing.
-//
-
-#ifndef FOUNDATIONDLL
-#ifdef _WIN32
-#ifdef APPLESEED_FOUNDATION_EXPORTS
-#define FOUNDATIONDLL __declspec(dllexport)
-#else
-#define FOUNDATIONDLL __declspec(dllimport)
-#endif
-#else
-#define FOUNDATIONDLL
-#endif
-#endif
-
 namespace foundation
 {
 
@@ -81,7 +65,7 @@ namespace foundation
 //   - running: the job is currently being executed
 //
 
-class FOUNDATIONDLL JobQueue
+class DLLSYMBOL JobQueue
   : public NonCopyable
 {
   public:

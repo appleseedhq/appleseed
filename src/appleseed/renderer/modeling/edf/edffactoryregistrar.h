@@ -29,6 +29,9 @@
 #ifndef APPLESEED_RENDERER_MODELING_EDF_EDFFACTORYREGISTRAR_H
 #define APPLESEED_RENDERER_MODELING_EDF_EDFFACTORYREGISTRAR_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
 
@@ -52,7 +55,7 @@ DECLARE_ARRAY(EDFFactoryArray, IEDFFactory*);
 // EDF factory registrar.
 //
 
-class RENDERERDLL EDFFactoryRegistrar
+class DLLSYMBOL EDFFactoryRegistrar
   : public foundation::NonCopyable
 {
   public:

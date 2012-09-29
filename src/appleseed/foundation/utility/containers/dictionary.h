@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_CONTAINERS_DICTIONARY_H
 #define APPLESEED_FOUNDATION_UTILITY_CONTAINERS_DICTIONARY_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/stringexception.h"
 #include "foundation/utility/string.h"
@@ -39,25 +42,6 @@
 
 // Forward declarations.
 namespace foundation    { class Dictionary; }
-
-//
-// On Windows, define FOUNDATIONDLL to __declspec(dllexport) when building the DLL
-// and to __declspec(dllimport) when building an application using the DLL.
-// Other platforms don't use this export mechanism and the symbol FOUNDATIONDLL is
-// defined to evaluate to nothing.
-//
-
-#ifndef FOUNDATIONDLL
-#ifdef _WIN32
-#ifdef APPLESEED_FOUNDATION_EXPORTS
-#define FOUNDATIONDLL __declspec(dllexport)
-#else
-#define FOUNDATIONDLL __declspec(dllimport)
-#endif
-#else
-#define FOUNDATIONDLL
-#endif
-#endif
 
 namespace foundation
 {
@@ -80,10 +64,10 @@ struct ExceptionDictionaryItemNotFound
 // A string-to-string dictionary that can cross DLL boundaries.
 //
 
-class FOUNDATIONDLL StringDictionary
+class DLLSYMBOL StringDictionary
 {
   public:
-    class FOUNDATIONDLL const_iterator
+    class DLLSYMBOL const_iterator
     {
       public:
         // Value type.
@@ -179,10 +163,10 @@ class FOUNDATIONDLL StringDictionary
 // A string-to-dictionary dictionary that can cross DLL boundaries.
 //
 
-class FOUNDATIONDLL DictionaryDictionary
+class DLLSYMBOL DictionaryDictionary
 {
   public:
-    class FOUNDATIONDLL const_iterator
+    class DLLSYMBOL const_iterator
     {
       public:
         // Value type.
@@ -275,7 +259,7 @@ class FOUNDATIONDLL DictionaryDictionary
 // A dictionary that supports nesting and that can cross DLL boundaries.
 //
 
-class FOUNDATIONDLL Dictionary
+class DLLSYMBOL Dictionary
 {
   public:
     // Return the number of items in the dictionary.

@@ -26,48 +26,14 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSDF_IBSDFFACTORY_H
-#define APPLESEED_RENDERER_MODELING_BSDF_IBSDFFACTORY_H
+// appleseed.foundation headers.
+#include "foundation/ui/viewport.h"
+#include "foundation/utility/iostreamop.h"
+#include "foundation/utility/test.h"
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
+using namespace foundation;
 
-// appleseed.renderer headers.
-#include "renderer/global/global.h"
-
-// Forward declarations.
-namespace foundation    { class DictionaryArray; }
-namespace renderer      { class BSDF; }
-
-namespace renderer
+TEST_SUITE(Foundation_Ui_Viewport)
 {
-
-//
-// BSDF factory interface.
-//
-
-class DLLSYMBOL IBSDFFactory
-  : public foundation::NonCopyable
-{
-  public:
-    // Destructor.
-    virtual ~IBSDFFactory() {}
-
-    // Return a string identifying this BSDF model.
-    virtual const char* get_model() const = 0;
-
-    // Return a human-readable string identifying this BSDF model.
-    virtual const char* get_human_readable_model() const = 0;
-
-    // Return a set of widget definitions for this BSDF model.
-    virtual foundation::DictionaryArray get_widget_definitions() const = 0;
-
-    // Create a new BSDF instance.
-    virtual foundation::auto_release_ptr<BSDF> create(
-        const char*         name,
-        const ParamArray&   params) const = 0;
-};
-
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_BSDF_IBSDFFACTORY_H
+    // TODO: write unit tests. (est.)
+}

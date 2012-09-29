@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_PLATFORM_THREAD_H
 #define APPLESEED_FOUNDATION_PLATFORM_THREAD_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/platform/types.h"
@@ -48,25 +51,6 @@
 namespace boost_atomic = boost::interprocess::ipcdetail;
 #else
 namespace boost_atomic = boost::interprocess::detail;
-#endif
-
-//
-// On Windows, define FOUNDATIONDLL to __declspec(dllexport) when building the DLL
-// and to __declspec(dllimport) when building an application using the DLL.
-// Other platforms don't use this export mechanism and the symbol FOUNDATIONDLL is
-// defined to evaluate to nothing.
-//
-
-#ifndef FOUNDATIONDLL
-#ifdef _WIN32
-#ifdef APPLESEED_FOUNDATION_EXPORTS
-#define FOUNDATIONDLL __declspec(dllexport)
-#else
-#define FOUNDATIONDLL __declspec(dllimport)
-#endif
-#else
-#define FOUNDATIONDLL
-#endif
 #endif
 
 namespace foundation
@@ -105,7 +89,7 @@ class Spinlock
 // An object to configure a thread for accurate benchmarking.
 //
 
-class FOUNDATIONDLL BenchmarkingThreadContext
+class DLLSYMBOL BenchmarkingThreadContext
   : public NonCopyable
 {
   public:
@@ -154,10 +138,10 @@ class ThreadFunctionWrapper
 //
 
 // Suspend the current thread for a given number of milliseconds.
-FOUNDATIONDLL void sleep(const uint32 ms);
+DLLSYMBOL void sleep(const uint32 ms);
 
 // Give up the remainder of the current thread's time slice, to allow other threads to run.
-FOUNDATIONDLL void yield();
+DLLSYMBOL void yield();
 
 
 //

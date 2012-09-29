@@ -29,6 +29,9 @@
 #ifndef APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFILEREADER_H
 #define APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFILEREADER_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
 #include "renderer/modeling/project/eventcounters.h"
@@ -43,7 +46,7 @@ namespace renderer
 // Project file reader.
 //
 
-class RENDERERDLL ProjectFileReader
+class DLLSYMBOL ProjectFileReader
 {
   public:
     // Read a project from disk.
