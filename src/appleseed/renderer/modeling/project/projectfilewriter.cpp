@@ -546,15 +546,15 @@ namespace
                     filepath.c_str());
             }
 
-            // Add a "filename" parameter to the object.
-            ParamArray& params = object.get_parameters();
-            params.insert("filename", filename);
-
             // Write an <object> element.
             XMLElement element("object", m_file, m_indenter);
             element.add_attribute("name", name);
             element.add_attribute("model", MeshObjectFactory::get_model());
             element.write(true);
+
+            // Output a "filename" parameter but don't add it to the object.
+            ParamArray params = object.get_parameters();
+            params.insert("filename", filename);
             write_params(params);
 
             // Update the object name mapping.
