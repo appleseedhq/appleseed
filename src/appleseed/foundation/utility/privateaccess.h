@@ -60,8 +60,8 @@ typename Tag::type Stowed<Tag>::value;
 template <typename Tag, typename Tag::type x>
 struct StowPrivate
 {
-     StowPrivate() { Stowed<Tag>::value = x;}
-     static StowPrivate instance;
+    StowPrivate() { Stowed<Tag>::value = x;}
+    static StowPrivate instance;
 };
 
 template <typename Tag, typename Tag::type x>
