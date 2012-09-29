@@ -277,6 +277,7 @@ set (foundation_math_sources
     foundation/math/treeoptimizer.h
     foundation/math/triangulator.h
     foundation/math/vector.h
+    foundation/math/viewport.h
     foundation/math/voxel.h
     foundation/math/voxelgrid.h
 )
@@ -411,6 +412,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_triangulator.cpp
     foundation/meta/tests/test_typetraits.cpp
     foundation/meta/tests/test_vector.cpp
+    foundation/meta/tests/test_viewport.cpp
     foundation/meta/tests/test_voxelgrid.cpp
 )
 list (APPEND appleseed_sources
