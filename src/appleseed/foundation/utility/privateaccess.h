@@ -72,7 +72,7 @@ StowPrivate<Tag,x> StowPrivate<Tag,x>::instance;
 #if 0
     struct A
     {
-         A() : x( "proof!") {}
+         A() : x("proof!") {}
 
     private:
 
@@ -95,7 +95,7 @@ StowPrivate<Tag,x> StowPrivate<Tag,x>::instance;
     // Explicit instantiation; the only place where it is legal to pass
     // the address of a private member.  Generates the static ::instance
     // that in turn initializes Stowed<Tag>::value.
-    template class base::util::StowPrivate<A_x,&A::x>;
+    template class StowPrivate<A_x,&A::x>;
 
     // Repeat for member function pointer
 
@@ -104,15 +104,15 @@ StowPrivate<Tag,x> StowPrivate<Tag,x>::instance;
         typedef int(A::*type)();
     };
 
-    template class base::util::StowPrivate<A_fun,&A::fun>;
+    template class StowPrivate<A_fun,&A::fun>;
 
     int access_private()
     {
         A a;
 
         // Use the Stowed private members pointer
-        std::cout << a.*base::util::Stowed<A_x>::value << std::endl;
-        std::cout << (a.*base::util::Stowed<A_fun>::value)() << std::endl;
+        std::cout << a.*Stowed<A_x>::value << std::endl;
+        std::cout << (a.*Stowed<A_fun>::value)() << std::endl;
     }
 #endif
 
