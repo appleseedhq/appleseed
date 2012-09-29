@@ -60,6 +60,7 @@ source_group ("foundation\\core\\exceptions" FILES
 set (foundation_core_sources
     foundation/core/appleseed.cpp
     foundation/core/appleseed.h
+    foundation/core/dllsymbol.h
 )
 list (APPEND appleseed_sources
     ${foundation_core_sources}
@@ -733,6 +734,7 @@ source_group ("renderer\\api" FILES
 )
 
 set (renderer_global_sources
+    renderer/global/dllsymbol.h
     renderer/global/global.h
     renderer/global/globallogger.cpp
     renderer/global/globallogger.h
@@ -1452,9 +1454,6 @@ set_target_properties (appleseed PROPERTIES
 apply_preprocessor_definitions (appleseed)
 
 append_custom_preprocessor_definitions (appleseed
-    APPLESEED_FOUNDATION_EXPORTS        # deprecated, remove
-    APPLESEED_RENDERER_EXPORTS          # deprecated, remove
-    APPLESEED_EXPORTS
     APPLESEED_FOUNDATION_USE_SSE
     APPLESEED_ENABLE_IMATH_INTEROP
 )

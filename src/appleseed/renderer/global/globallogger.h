@@ -32,24 +32,8 @@
 // appleseed.foundation headers.
 #include "foundation/utility/log.h"
 
-//
-// On Windows, define RENDERERDLL to __declspec(dllexport) when building the DLL
-// and to __declspec(dllimport) when building an application using the DLL.
-// Other platforms don't use this export mechanism and the symbol RENDERERDLL is
-// defined to evaluate to nothing.
-//
-
-#ifndef RENDERERDLL
-#ifdef _WIN32
-#ifdef APPLESEED_RENDERER_EXPORTS
-#define RENDERERDLL __declspec(dllexport)
-#else
-#define RENDERERDLL __declspec(dllimport)
-#endif
-#else
-#define RENDERERDLL
-#endif
-#endif
+// appleseed.renderer headers.
+#include "renderer/global/dllsymbol.h"
 
 namespace renderer
 {

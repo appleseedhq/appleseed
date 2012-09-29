@@ -46,6 +46,7 @@ set (application_sources
     application/application.h
     application/commandlinehandlerbase.cpp
     application/commandlinehandlerbase.h
+    application/dllsymbol.h
     application/superlogger.cpp
     application/superlogger.h
 )
