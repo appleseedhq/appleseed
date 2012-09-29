@@ -69,52 +69,6 @@ StowPrivate<Tag,x> StowPrivate<Tag,x>::instance;
 
 // ------- Usage -------
 // A demonstration of how to use the library, with explanation
-#if 0
-    struct A
-    {
-         A() : x("proof!") {}
-
-    private:
-
-        int fun()
-        {
-            return 42;
-        }
-
-        char const* x;
-    };
-
-    // A tag type for A::x.  Each distinct private member you need to
-    // access should have its own tag.  Each tag should contain a
-    // nested ::type that is the corresponding pointer-to-member type.
-    struct A_x
-    {
-        typedef char const*(A::*type);
-    };
-
-    // Explicit instantiation; the only place where it is legal to pass
-    // the address of a private member.  Generates the static ::instance
-    // that in turn initializes Stowed<Tag>::value.
-    template class StowPrivate<A_x,&A::x>;
-
-    // Repeat for member function pointer
-
-    struct A_fun
-    {
-        typedef int(A::*type)();
-    };
-
-    template class StowPrivate<A_fun,&A::fun>;
-
-    int access_private()
-    {
-        A a;
-
-        // Use the Stowed private members pointer
-        std::cout << a.*Stowed<A_x>::value << std::endl;
-        std::cout << (a.*Stowed<A_fun>::value)() << std::endl;
-    }
-#endif
 
 }       // namespace foundation
 
