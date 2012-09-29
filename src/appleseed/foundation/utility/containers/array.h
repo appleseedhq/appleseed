@@ -48,7 +48,7 @@ namespace foundation
 //
 
 #define DECLARE_ARRAY(ArrayName, ArrayType)                             \
-    class FOUNDATIONDLL ArrayName                                \
+    class FOUNDATIONDLL ArrayName                                       \
     {                                                                   \
       public:                                                           \
         /* Types. */                                                    \
