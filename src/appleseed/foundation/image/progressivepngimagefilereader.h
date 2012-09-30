@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_IMAGE_PROGRESSIVEEXRIMAGEFILEREADER_H
-#define APPLESEED_FOUNDATION_IMAGE_PROGRESSIVEEXRIMAGEFILEREADER_H
+#ifndef APPLESEED_FOUNDATION_IMAGE_PROGRESSIVEPNGIMAGEFILEREADER_H
+#define APPLESEED_FOUNDATION_IMAGE_PROGRESSIVEPNGIMAGEFILEREADER_H
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -43,34 +43,32 @@ namespace foundation    { class CanvasProperties; }
 namespace foundation    { class ImageAttributes; }
 namespace foundation    { class Logger; }
 namespace foundation    { class Tile; }
-namespace Imf           { struct Channel; }
-
 
 namespace foundation
 {
 
 //
-// Progressive OpenEXR image file reader interface.
+// Progressive PNG image file reader interface.
 //
 
-class DLLSYMBOL ProgressiveEXRImageFileReader
+class DLLSYMBOL ProgressivePNGImageFileReader
   : public IProgressiveImageFileReader
 {
   public:
     // Constructors.
-    explicit ProgressiveEXRImageFileReader(Logger* logger = 0);
-    ProgressiveEXRImageFileReader(
-        const size_t        default_tile_width,
-        const size_t        default_tile_height);
-    ProgressiveEXRImageFileReader(
+    explicit ProgressivePNGImageFileReader(Logger* logger = 0);
+    ProgressivePNGImageFileReader(
+        const size_t        tile_width,
+        const size_t        tile_height);
+    ProgressivePNGImageFileReader(
         Logger*             logger,
-        const size_t        default_tile_width,
-        const size_t        default_tile_height);
+        const size_t        tile_width,
+        const size_t        tile_height);
 
     // Destructor.
-    ~ProgressiveEXRImageFileReader();
+    ~ProgressivePNGImageFileReader();
 
-    // Open an OpenEXR image file.
+    // Open an image file.
     virtual void open(
         const char*         filename);
 
@@ -92,7 +90,7 @@ class DLLSYMBOL ProgressiveEXRImageFileReader
     virtual Tile* read_tile(
         const size_t        tile_x,
         const size_t        tile_y);
-        
+
   private:
     struct Impl;
     Impl* impl;
@@ -100,4 +98,4 @@ class DLLSYMBOL ProgressiveEXRImageFileReader
 
 }       // namespace foundation
 
-#endif  // !APPLESEED_FOUNDATION_IMAGE_PROGRESSIVEEXRIMAGEFILEREADER_H
+#endif  // !APPLESEED_FOUNDATION_IMAGE_PROGRESSIVEPNGIMAGEFILEREADER_H

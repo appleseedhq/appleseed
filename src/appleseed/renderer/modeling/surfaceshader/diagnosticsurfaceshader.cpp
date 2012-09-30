@@ -53,6 +53,7 @@
 
 // Standard headers.
 #include <cassert>
+#include <cmath>
 
 using namespace foundation;
 using namespace std;
@@ -128,15 +129,36 @@ const char* DiagnosticSurfaceShader::get_model() const
 
 namespace
 {
-    // Compute a color from a given unit-length vector.
-    inline Color3f vector_to_color(const Vector3d& v)
+    // Like foundation::wrap() defined in foundation/math/scalar.h but for [0,1] instead of [0,1).
+    template <typename T>
+    inline T wrap1(const T x)
     {
-        assert(is_normalized(v));
+        if (x < T(0.0) || x > T(1.0))
+        {
+            const T y = fmod(x, T(1.0));
+            return y < T(0.0) ? y + T(1.0) : y;
+        }
+        else return x;
+    }
+
+    // Compute a color from a given 2D vector.
+    inline Color3f vector2_to_color(const Vector2d& vec)
+    {
+        const float u = wrap1(static_cast<float>(vec[0]));
+        const float v = wrap1(static_cast<float>(vec[1]));
+        const float w = wrap1(1.0f - u - v);
+        return Color3f(u, v, w);
+    }
+
+    // Compute a color from a given unit-length 3D vector.
+    inline Color3f vector3_to_color(const Vector3d& vec)
+    {
+        assert(is_normalized(vec));
 
         return Color3f(
-            static_cast<float>((v[0] + 1.0) * 0.5),
-            static_cast<float>((v[1] + 1.0) * 0.5),
-            static_cast<float>((v[2] + 1.0) * 0.5));
+            static_cast<float>((vec[0] + 1.0) * 0.5),
+            static_cast<float>((vec[1] + 1.0) * 0.5),
+            static_cast<float>((vec[2] + 1.0) * 0.5));
     }
 
     // Compute a color from a given integer.
@@ -168,50 +190,38 @@ void DiagnosticSurfaceShader::evaluate(
         break;
 
       case Barycentric:
-        {
-            const Vector2d& bary = shading_point.get_bary();
-            shading_result.set_to_linear_rgb(
-                Color3f(
-                    static_cast<float>(1.0 - bary[0] - bary[1]),
-                    static_cast<float>(bary[0]),
-                    static_cast<float>(bary[1])));
-        }
+        shading_result.set_to_linear_rgb(
+            vector2_to_color(shading_point.get_bary()));
         break;
 
       case UV:
-        {
-            const Vector2d& uv0 = shading_point.get_uv(0);
-            shading_result.set_to_linear_rgb(
-                Color3f(
-                    static_cast<float>(1.0 - uv0[0] - uv0[1]),
-                    static_cast<float>(uv0[0]),
-                    static_cast<float>(uv0[1])));
-        }
+        shading_result.set_to_linear_rgb(
+            vector2_to_color(shading_point.get_uv(0)));
         break;
 
       case Tangent:
         shading_result.set_to_linear_rgb(
-            vector_to_color(shading_point.get_dpdu(0)));
+            vector3_to_color(shading_point.get_dpdu(0)));
         break;
 
       case Bitangent:
         shading_result.set_to_linear_rgb(
-            vector_to_color(shading_point.get_dpdv(0)));
+            vector3_to_color(shading_point.get_dpdv(0)));
         break;
 
       case GeometricNormal:
         shading_result.set_to_linear_rgb(
-            vector_to_color(shading_point.get_geometric_normal()));
+            vector3_to_color(shading_point.get_geometric_normal()));
         break;
 
       case ShadingNormal:
         shading_result.set_to_linear_rgb(
-            vector_to_color(shading_point.get_shading_normal()));
+            vector3_to_color(shading_point.get_shading_normal()));
         break;
 
       case OriginalShadingNormal:
         shading_result.set_to_linear_rgb(
-            vector_to_color(shading_point.get_original_shading_normal()));
+            vector3_to_color(shading_point.get_original_shading_normal()));
         break;
 
       case Sides:

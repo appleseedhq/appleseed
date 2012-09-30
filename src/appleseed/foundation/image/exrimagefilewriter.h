@@ -33,7 +33,6 @@
 #include "main/dllsymbol.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/exceptions/exception.h"
 #include "foundation/image/iimagefilewriter.h"
 #include "foundation/image/imageattributes.h"
 
@@ -65,9 +64,6 @@ class DLLSYMBOL EXRImageFileWriter
   : public IImageFileWriter
 {
   public:
-    // Unsupported image format.
-    struct ExceptionUnsupportedImageFormat : public Exception {};
-
     // Constructor.
     explicit EXRImageFileWriter(
         const size_t            thread_count = 1);

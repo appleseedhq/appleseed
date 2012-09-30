@@ -60,9 +60,6 @@ class DLLSYMBOL ProgressiveEXRImageFileWriter
   : public IProgressiveImageFileWriter
 {
   public:
-    // Unsupported image format.
-    struct ExceptionUnsupportedImageFormat : public Exception {};
-
     // Constructors.
     explicit ProgressiveEXRImageFileWriter(Logger* logger = 0);
     explicit ProgressiveEXRImageFileWriter(const size_t thread_count);

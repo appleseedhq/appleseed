@@ -37,8 +37,10 @@
 #include "foundation/core/exceptions/exception.h"
 #include "foundation/core/exceptions/stringexception.h"
 #include "foundation/image/canvasproperties.h"
+#include "foundation/image/exceptionunsupportedimageformat.h"
 #include "foundation/image/genericprogressiveimagefilereader.h"
 #include "foundation/image/imageattributes.h"
+#include "foundation/image/pixel.h"
 #include "foundation/image/progressiveexrimagefilewriter.h"
 #include "foundation/image/tile.h"
 #include "foundation/platform/types.h"
@@ -54,6 +56,7 @@
 
 // Standard headers.
 #include <cstddef>
+#include <memory>
 
 using namespace appleseed::maketiledexr;
 using namespace appleseed::shared;
@@ -68,7 +71,6 @@ using namespace std;
 int main(int argc, const char* argv[])
 {
     SuperLogger logger;
-
     Application::check_installation(logger);
 
     CommandLineHandler cl;
@@ -112,12 +114,29 @@ int main(int argc, const char* argv[])
 
         // Open the output file.
         ProgressiveEXRImageFileWriter writer(&logger);
-        writer.open(cl.m_filenames.values()[1].c_str(), props, attrs);
+        bool require_format_conversion = false;
+        try
+        {
+            writer.open(cl.m_filenames.values()[1].c_str(), props, attrs);
+        }
+        catch (const ExceptionUnsupportedImageFormat&)
+        {
+            props =
+                CanvasProperties(
+                    props.m_canvas_width,
+                    props.m_canvas_height,
+                    props.m_tile_width,
+                    props.m_tile_height,
+                    props.m_channel_count,
+                    PixelFormatFloat);
+            writer.open(cl.m_filenames.values()[1].c_str(), props, attrs);
+            require_format_conversion = true;
+        }
 
         // Copy the tiles.
         for (size_t y = 0; y < props.m_tile_count_y; ++y)
         {
-            // Print a progress message.
+            // Print a progress message for every row.
             if (cl.m_progress_messages.is_set())
             {
                 LOG_INFO(
@@ -127,13 +146,24 @@ int main(int argc, const char* argv[])
                     props.m_tile_count_y);
             }
 
+            // Copy the tiles from this row.
             for (size_t x = 0; x < props.m_tile_count_x; ++x)
             {
-                // Read the tile.
+                // Read the tile. Use auto_release_ptr<> because the image
+                // was allocated in appleseed's shared library.
                 auto_release_ptr<Tile> tile(reader.read_tile(x, y));
 
-                // Write the tile.
-                writer.write_tile(*tile.get(), x, y);
+                if (require_format_conversion)
+                {
+                    // Convert and write the tile.
+                    auto_ptr<Tile> converted_tile(new Tile(tile.ref(), PixelFormatFloat));
+                    writer.write_tile(*converted_tile.get(), x, y);
+                }
+                else
+                {
+                    // Write the tile.
+                    writer.write_tile(tile.ref(), x, y);
+                }
             }
         }
 

@@ -30,7 +30,7 @@
 #define APPLESEED_FOUNDATION_CORE_EXCEPTIONS_EXCEPTIONIOERROR_H
 
 // appleseed.foundation headers.
-#include "foundation/core/exceptions/exception.h"
+#include "foundation/core/exceptions/stringexception.h"
 
 namespace foundation
 {
@@ -40,12 +40,13 @@ namespace foundation
 //
 
 class ExceptionIOError
-  : public Exception
+  : public StringException
 {
   public:
     // Constructors.
     ExceptionIOError();
     explicit ExceptionIOError(const char* what);
+    ExceptionIOError(const char* what, const char* s);
 };
 
 
@@ -54,11 +55,17 @@ class ExceptionIOError
 //
 
 inline ExceptionIOError::ExceptionIOError()
+  : StringException("foundation::ExceptionIOError", "")
 {
 }
 
 inline ExceptionIOError::ExceptionIOError(const char* what)
-  : Exception(what)
+  : StringException(what, "")
+{
+}
+
+inline ExceptionIOError::ExceptionIOError(const char* what, const char* s)
+  : StringException(what, s)
 {
 }
 

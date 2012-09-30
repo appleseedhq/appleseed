@@ -32,7 +32,7 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// Standard headers.
+// appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 
 namespace foundation

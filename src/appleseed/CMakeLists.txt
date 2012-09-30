@@ -76,6 +76,7 @@ set (foundation_image_sources
     foundation/image/colorspace.cpp
     foundation/image/colorspace.h
     foundation/image/drawing.h
+    foundation/image/exceptionunsupportedimageformat.h
     foundation/image/exrimagefilereader.cpp
     foundation/image/exrimagefilereader.h
     foundation/image/exrimagefilewriter.cpp
@@ -109,6 +110,8 @@ set (foundation_image_sources
     foundation/image/progressiveexrimagefilereader.h
     foundation/image/progressiveexrimagefilewriter.cpp
     foundation/image/progressiveexrimagefilewriter.h
+    foundation/image/progressivepngimagefilereader.cpp
+    foundation/image/progressivepngimagefilereader.h
     foundation/image/spectrum.h
     foundation/image/tile.cpp
     foundation/image/tile.h
@@ -1274,9 +1277,14 @@ source_group ("renderer\\modeling\\light" FILES
 )
 
 set (renderer_modeling_material_sources
+    renderer/modeling/material/bumpmappingmodifier.cpp
+    renderer/modeling/material/bumpmappingmodifier.h
+    renderer/modeling/material/inormalmodifier.h
     renderer/modeling/material/material.cpp
     renderer/modeling/material/material.h
     renderer/modeling/material/materialtraits.h
+    renderer/modeling/material/normalmappingmodifier.cpp
+    renderer/modeling/material/normalmappingmodifier.h
 )
 list (APPEND appleseed_sources
     ${renderer_modeling_material_sources}

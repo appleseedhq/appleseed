@@ -35,6 +35,7 @@
 #include "foundation/image/progressiveexrimagefilereader.h"
 
 // Standard headers.
+#include <cstddef>
 #include <memory>
 
 using namespace std;

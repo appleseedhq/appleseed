@@ -44,10 +44,12 @@ namespace foundation    { class DictionaryArray; }
 namespace renderer      { class Assembly; }
 namespace renderer      { class BSDF; }
 namespace renderer      { class EDF; }
+namespace renderer      { class INormalModifier; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 namespace renderer      { class Source; }
 namespace renderer      { class SurfaceShader; }
+namespace renderer      { class TextureCache; }
 
 namespace renderer
 {
@@ -102,9 +104,8 @@ class DLLSYMBOL Material
     const Source* get_alpha_map() const;
     const Source* get_uncached_alpha_map() const;
 
-    // Return the source bound to the normal map input, or 0 if the material doesn't have a normal map.
-    const Source* get_normal_map() const;
-    const Source* get_uncached_normal_map() const;
+    // Return the normal modifier of the material, or 0 if the material doesn't have one.
+    const INormalModifier* get_normal_modifier() const;
 
   private:
     friend class MaterialFactory;
@@ -113,7 +114,7 @@ class DLLSYMBOL Material
     const BSDF*             m_bsdf;
     const EDF*              m_edf;
     const Source*           m_alpha_map;
-    const Source*           m_normal_map;
+    const INormalModifier*  m_normal_modifier;
 
     // Constructor.
     Material(
@@ -166,9 +167,9 @@ inline const Source* Material::get_alpha_map() const
     return m_alpha_map;
 }
 
-inline const Source* Material::get_normal_map() const
+inline const INormalModifier* Material::get_normal_modifier() const
 {
-    return m_normal_map;
+    return m_normal_modifier;
 }
 
 }       // namespace renderer

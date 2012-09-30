@@ -32,6 +32,7 @@
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exceptionunsupportedfileformat.h"
 #include "foundation/image/progressiveexrimagefilereader.h"
+#include "foundation/image/progressivepngimagefilereader.h"
 #include "foundation/utility/string.h"
 
 // boost headers.
@@ -117,6 +118,17 @@ void GenericProgressiveImageFileReader::open(const char* filename)
                       impl->m_default_tile_width,
                       impl->m_default_tile_height)
                 : new ProgressiveEXRImageFileReader(
+                      impl->m_logger));
+    }
+    else if (extension == ".png")
+    {
+        impl->m_reader.reset(
+            impl->m_has_default_tile_size
+                ? new ProgressivePNGImageFileReader(
+                      impl->m_logger,
+                      impl->m_default_tile_width,
+                      impl->m_default_tile_height)
+                : new ProgressivePNGImageFileReader(
                       impl->m_logger));
     }
     else

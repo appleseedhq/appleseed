@@ -34,7 +34,7 @@
 #include "renderer/kernel/intersection/intersectionsettings.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/kernel/tessellation/statictessellation.h"
-#include "renderer/modeling/input/source.h"
+#include "renderer/modeling/material/inormalmodifier.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/object/regionkit.h"
 #include "renderer/modeling/object/triangle.h"
@@ -44,7 +44,6 @@
 #include "renderer/modeling/scene/objectinstance.h"
 
 // appleseed.foundation headers.
-#include "foundation/image/color.h"
 #include "foundation/math/basis.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
@@ -446,27 +445,20 @@ inline const foundation::Vector3d& ShadingPoint::get_shading_normal() const
         // Start with the original shading normal.
         m_shading_normal = get_original_shading_normal();
 
-        // Apply normal mapping if the material carries a normal map.
+        // Apply the normal modifier if the material has one.
         const Material* material = get_material();
-        if (material && material->get_normal_map())
+        if (material)
         {
-            // Lookup the normal map.
-            foundation::Color3f normal_rgb;
-            material->get_normal_map()->evaluate(*m_texture_cache, get_uv(0), normal_rgb);
-
-            // Reconstruct the shading normal from the texel value.
-            assert(is_saturated(normal_rgb));
-            const foundation::Vector3f normal(
-                normal_rgb[0] * 2.0f - 1.0f,
-                normal_rgb[2] * 2.0f - 1.0f,
-                normal_rgb[1] * 2.0f - 1.0f);
-
-            // Transform the shading normal to world space.
-            const foundation::Basis3d basis(m_shading_normal, get_dpdu(0));
-            m_shading_normal = basis.transform_to_parent(foundation::Vector3d(normal));
-
-            // Normalize the shading normal.
-            m_shading_normal = foundation::normalize(m_shading_normal);
+            const INormalModifier* modifier = material->get_normal_modifier();
+            if (modifier)
+            {
+                m_shading_normal =
+                    modifier->modify(
+                        *m_texture_cache,
+                        m_shading_normal,
+                        get_uv(0),
+                        get_dpdu(0));
+            }
         }
 
         // Place the shading normal in the same hemisphere as the geometric normal.
