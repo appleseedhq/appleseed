@@ -149,6 +149,10 @@ class MainWindow
     void build_override_shading_menu_item();
     void update_override_shading_menu_item();
 
+    void build_recent_files_menu();
+    void update_recent_files_menu(const QString& filepath);
+    void update_recent_files_menu(const QStringList& files);
+
     void build_toolbar();
 
     LogWidget* create_log_widget() const;
@@ -162,6 +166,7 @@ class MainWindow
 
     renderer::ParamArray get_project_params(const char* configuration_name) const;
 
+    void open_project(const QString& filepath);
     bool can_close_project();
     void on_project_change();
 
@@ -183,13 +188,6 @@ class MainWindow
     void start_rendering(const bool interactive);
 
     virtual void closeEvent(QCloseEvent* event);
-
-    // Open recent menu.
-    void build_recent_files_menu();
-    void update_recent_files_menu(const QString& filename);
-    void update_recent_files_menu(const QStringList& files);
-
-    void open_project(QString filepath);
 
   private slots:
     void slot_new_project();

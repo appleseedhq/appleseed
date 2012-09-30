@@ -280,6 +280,73 @@ void MainWindow::update_override_shading_menu_item()
     }
 }
 
+namespace
+{
+    const int MaxRecentlyOpenedFiles = 5;
+    const char* SettingsOrgString = "com.appleseed.studio";
+    const char* SettingsRecentFilesEntryString = "appleseed.studio Recent Files";
+    const char* SettingsRecentFileListString = "recent_file_list";
+}
+
+void MainWindow::build_recent_files_menu()
+{
+    assert(m_recently_opened.empty());
+    m_recently_opened.reserve(MaxRecentlyOpenedFiles);
+
+    for (int i = 0; i < MaxRecentlyOpenedFiles; ++i)
+    {
+        QAction* action = new QAction(this);
+        action->setVisible(false);
+
+        connect(action, SIGNAL(triggered()), SLOT(slot_open_recent()));
+
+        m_ui->menu_open_recent->addAction(action);
+        m_recently_opened.push_back(action);
+    }
+
+    QSettings settings(SettingsOrgString, SettingsRecentFilesEntryString);
+    QStringList files = settings.value(SettingsRecentFileListString).toStringList();
+    update_recent_files_menu(files);
+
+    m_ui->menu_open_recent->addSeparator();
+    m_clear_open_recent_menu = new QAction(this);
+    m_clear_open_recent_menu->setText("&Clear Menu");
+    connect(m_clear_open_recent_menu, SIGNAL(triggered()), SLOT(slot_clear_open_recent_files_menu()));
+    m_ui->menu_open_recent->addAction(m_clear_open_recent_menu);
+}
+
+void MainWindow::update_recent_files_menu(const QString& filepath)
+{
+    QSettings settings(SettingsOrgString, SettingsRecentFilesEntryString);
+    QStringList files = settings.value(SettingsRecentFileListString).toStringList();
+    files.removeAll(filepath);
+    files.prepend(filepath);
+
+    while (files.size() > MaxRecentlyOpenedFiles)
+        files.removeLast();
+
+    settings.setValue(SettingsRecentFileListString, files);
+    update_recent_files_menu(files);
+}
+
+void MainWindow::update_recent_files_menu(const QStringList& files)
+{
+    const int num_recent_files = min(files.size(), MaxRecentlyOpenedFiles);
+
+    for (int i = 0; i < num_recent_files; ++i)
+    {
+        const QString filepath = files[i];
+        const QString text = tr("&%1 %2").arg(i + 1).arg(filepath);
+
+        m_recently_opened[i]->setText(text);
+        m_recently_opened[i]->setData(filepath);
+        m_recently_opened[i]->setVisible(true);
+    }
+
+    for (int i = num_recent_files; i < MaxRecentlyOpenedFiles; ++i)
+        m_recently_opened[i]->setVisible(false);
+}
+
 void MainWindow::build_toolbar()
 {
     m_action_new_project = new QAction(QIcon(":/icons/page_white.png"), "&New", this);
@@ -433,6 +500,48 @@ namespace
         msgbox.setDefaultButton(QMessageBox::Save);
         return msgbox.exec();
     }
+
+    void show_project_file_loading_failed_message_box(QWidget* parent, const QString& filepath)
+    {
+        QMessageBox msgbox(parent);
+        msgbox.setWindowTitle("Loading Error");
+        msgbox.setIcon(QMessageBox::Critical);
+        msgbox.setText("Failed to load the project file " + filepath + ".");
+        msgbox.setInformativeText(
+            "The project file may be invalid or corrupted. "
+            "Please look at the Log window for details.");
+        msgbox.setStandardButtons(QMessageBox::Ok);
+        msgbox.exec();
+    }
+
+    void show_builtin_project_loading_failed_message_box(QWidget* parent, const QString& name)
+    {
+        QMessageBox msgbox(parent);
+        msgbox.setWindowTitle("Loading Error");
+        msgbox.setIcon(QMessageBox::Critical);
+        msgbox.setText("Failed to load the built-in project '" + name + "'.");
+        msgbox.setInformativeText(
+            "The project may be invalid or corrupted. "
+            "Please look at the Log window for details.");
+        msgbox.setStandardButtons(QMessageBox::Ok);
+        msgbox.exec();
+    }
+}
+
+void MainWindow::open_project(const QString& filepath)
+{
+    const filesystem::path path(filepath.toStdString());
+
+    m_settings.insert_path(
+        LAST_DIRECTORY_SETTINGS_KEY,
+        path.parent_path().string());
+
+    const bool successful =
+        m_project_manager.load_project(filepath.toAscii().constData());
+
+    if (successful)
+        on_project_change();
+    else  show_project_file_loading_failed_message_box(this, filepath);
 }
 
 bool MainWindow::can_close_project()
@@ -722,77 +831,6 @@ void MainWindow::closeEvent(QCloseEvent* event)
     event->accept();
 }
 
-namespace
-{
-    const int MaxRecentlyOpenedFiles = 5;
-    const char* SettingsOrgString = "com.appleseed.studio";
-    const char* SettingsRecentFilesEntryString = "appleseed.studio Recent Files";
-    const char* SettingsRecentFileListString = "recent_file_list";
-}
-
-void MainWindow::build_recent_files_menu()
-{
-    assert(m_recently_opened.empty());
-    m_recently_opened.reserve(MaxRecentlyOpenedFiles);
-
-    for (int i = 0; i < MaxRecentlyOpenedFiles; ++i)
-    {
-        QAction* action = new QAction(this);
-        action->setVisible(false);
-
-        if (i == 0)
-        {
-            //action->setShortcut("");
-        }
-
-        connect(action, SIGNAL(triggered()), SLOT(slot_open_recent()));
-
-        m_ui->menu_open_recent->addAction(action);
-        m_recently_opened.push_back(action);
-    }
-
-    QSettings settings(SettingsOrgString, SettingsRecentFilesEntryString);
-    QStringList files = settings.value(SettingsRecentFileListString).toStringList();
-    update_recent_files_menu(files);
-
-    m_ui->menu_open_recent->addSeparator();
-    m_clear_open_recent_menu = new QAction(this);
-    m_clear_open_recent_menu->setText("&Clear Menu");
-    connect(m_clear_open_recent_menu, SIGNAL(triggered()), SLOT(slot_clear_open_recent_files_menu()));
-    m_ui->menu_open_recent->addAction(m_clear_open_recent_menu);
-}
-
-void MainWindow::update_recent_files_menu(const QString& filename)
-{
-    QSettings settings(SettingsOrgString, SettingsRecentFilesEntryString);
-    QStringList files = settings.value(SettingsRecentFileListString).toStringList();
-    files.removeAll(filename);
-    files.prepend(filename);
-
-    while (files.size() > MaxRecentlyOpenedFiles)
-        files.removeLast();
-
-    settings.setValue(SettingsRecentFileListString, files);
-    update_recent_files_menu(files);
-}
-
-void MainWindow::update_recent_files_menu(const QStringList& files)
-{
-    const int num_recent_files = min(files.size(), MaxRecentlyOpenedFiles);
-
-    for (int i = 0; i < num_recent_files; ++i)
-    {
-        QFileInfo file_info(files[i]);
-        QString text = tr("&%1 %2").arg(i + 1).arg(file_info.filePath());
-        m_recently_opened[i]->setText(text);
-        m_recently_opened[i]->setData(files[i]);
-        m_recently_opened[i]->setVisible(true);
-    }
-
-    for (int i = num_recent_files; i < MaxRecentlyOpenedFiles; ++i)
-        m_recently_opened[i]->setVisible(false);
-}
-
 void MainWindow::slot_new_project()
 {
     if (!can_close_project())
@@ -801,61 +839,6 @@ void MainWindow::slot_new_project()
     m_project_manager.create_project();
 
     on_project_change();
-}
-
-namespace
-{
-    void show_project_file_loading_failed_message_box(QWidget* parent, const QString& filepath)
-    {
-        QMessageBox msgbox(parent);
-        msgbox.setWindowTitle("Loading Error");
-        msgbox.setIcon(QMessageBox::Critical);
-        msgbox.setText("Failed to load the project file " + filepath + ".");
-        msgbox.setInformativeText(
-            "The project file may be invalid or corrupted. "
-            "Please look at the Log window for details.");
-        msgbox.setStandardButtons(QMessageBox::Ok);
-        msgbox.exec();
-    }
-
-    void show_builtin_project_loading_failed_message_box(QWidget* parent, const QString& name)
-    {
-        QMessageBox msgbox(parent);
-        msgbox.setWindowTitle("Loading Error");
-        msgbox.setIcon(QMessageBox::Critical);
-        msgbox.setText("Failed to load the built-in project '" + name + "'.");
-        msgbox.setInformativeText(
-            "The project may be invalid or corrupted. "
-            "Please look at the Log window for details.");
-        msgbox.setStandardButtons(QMessageBox::Ok);
-        msgbox.exec();
-    }
-}
-
-void MainWindow::open_project(QString filepath)
-{
-    if (!filepath.isEmpty())
-    {
-        filepath = QDir::toNativeSeparators(filepath);
-
-        const filesystem::path path(filepath.toStdString());
-
-        m_settings.insert_path(
-            LAST_DIRECTORY_SETTINGS_KEY,
-            path.parent_path().string());
-
-        const bool successful =
-            m_project_manager.load_project(filepath.toAscii().constData());
-
-        if (successful)
-        {
-            on_project_change();
-        }
-        else
-        {
-            show_project_file_loading_failed_message_box(this, filepath);
-        }
-    }
 }
 
 void MainWindow::slot_open_project()
@@ -875,8 +858,13 @@ void MainWindow::slot_open_project()
             &selected_filter,
             options);
 
-    open_project(filepath);
-    update_recent_files_menu(filepath);
+    if (!filepath.isEmpty())
+    {
+        filepath = QDir::toNativeSeparators(filepath);
+
+        open_project(filepath);
+        update_recent_files_menu(filepath);
+    }
 }
 
 void MainWindow::slot_open_recent()
@@ -884,12 +872,12 @@ void MainWindow::slot_open_recent()
     if (!can_close_project())
         return;
 
-    QAction *action = qobject_cast<QAction *>(sender());
+    QAction* action = qobject_cast<QAction*>(sender());
 
     if (action)
     {
-        QString filename = action->data().toString();
-        open_project(filename);
+        const QString filepath = action->data().toString();
+        open_project(filepath);
     }
 }
 
@@ -982,10 +970,10 @@ void MainWindow::slot_save_project_as()
             path.parent_path().string());
 
         m_project_manager.save_project_as(filepath.toAscii().constData());
-    }
 
-    update_recent_files_menu(filepath);
-    update_workspace();
+        update_recent_files_menu(filepath);
+        update_workspace();
+    }
 }
 
 void MainWindow::slot_project_modified()
