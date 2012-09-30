@@ -49,11 +49,12 @@ class NormalMappingModifier
   public:
     explicit NormalMappingModifier(const Source* map);
 
-    virtual foundation::Vector3d modify(
-        TextureCache&               texture_cache,
-        const foundation::Vector3d& shading_normal,
-        const foundation::Vector2d& uv,
-        const foundation::Vector3d& dpdu) const override;
+    virtual foundation::Vector3d evaluate(
+        TextureCache&                   texture_cache,
+        const foundation::Vector3d&     n,
+        const foundation::Vector2d&     uv,
+        const foundation::Vector3d&     dpdu,
+        const foundation::Vector3d&     dpdv) const override;
 
   private:
     const Source* m_map;

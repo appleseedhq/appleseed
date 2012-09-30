@@ -45,11 +45,12 @@ class INormalModifier
   public:
     virtual ~INormalModifier() {}
 
-    virtual foundation::Vector3d modify(
-        TextureCache&               texture_cache,
-        const foundation::Vector3d& shading_normal,
-        const foundation::Vector2d& uv,
-        const foundation::Vector3d& dpdu) const = 0;
+    virtual foundation::Vector3d evaluate(
+        TextureCache&                   texture_cache,
+        const foundation::Vector3d&     n,
+        const foundation::Vector2d&     uv,
+        const foundation::Vector3d&     dpdu,
+        const foundation::Vector3d&     dpdv) const = 0;
 };
 
 }       // namespace renderer

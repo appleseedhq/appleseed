@@ -49,11 +49,12 @@ NormalMappingModifier::NormalMappingModifier(const Source* map)
 {
 }
 
-Vector3d NormalMappingModifier::modify(
+Vector3d NormalMappingModifier::evaluate(
     TextureCache&       texture_cache,
-    const Vector3d&     shading_normal,
+    const Vector3d&     n,
     const Vector2d&     uv,
-    const Vector3d&     dpdu) const
+    const Vector3d&     dpdu,
+    const Vector3d&     dpdv) const
 {
     // Lookup the normal map.
     Color3f normal_rgb;
@@ -67,7 +68,7 @@ Vector3d NormalMappingModifier::modify(
         normal_rgb[1] * 2.0f - 1.0f);
 
     // Transform the normal to world space and normalize it.
-    const Basis3d basis(shading_normal, dpdu);
+    const Basis3d basis(n, dpdu);
     return normalize(basis.transform_to_parent(Vector3d(normal)));
 }
 

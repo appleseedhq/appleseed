@@ -100,30 +100,6 @@ bool Material::has_alpha_map() const
     return !m_params.get<string>("alpha_map").empty();
 }
 
-namespace
-{
-    void check_texture_source_color_space_is_linear_rgb(
-        const char*     map_type,
-        const Source*   source)
-    {
-        if (dynamic_cast<const TextureSource*>(source))
-        {
-            const Texture& texture =
-                static_cast<const TextureSource*>(source)->get_texture_instance().get_texture();
-
-            if (texture.get_color_space() != ColorSpaceLinearRGB)
-            {
-                RENDERER_LOG_WARNING(
-                    "color space for %s \"%s\" should be \"%s\" but is \"%s\" instead; expect artifacts and/or slowdowns.",
-                    map_type,
-                    texture.get_name(),
-                    color_space_name(ColorSpaceLinearRGB),
-                    color_space_name(texture.get_color_space()));
-            }
-        }
-    }
-}
-
 bool Material::on_frame_begin(
     const Project&      project,
     const Assembly&     assembly)
@@ -133,25 +109,51 @@ bool Material::on_frame_begin(
     m_edf = get_uncached_edf();
     m_alpha_map = get_uncached_alpha_map();
 
-    Source* displacement_map = m_inputs.source("displacement_map");
-    check_texture_source_color_space_is_linear_rgb("displacement map", displacement_map);
+    const Source* displacement_source = m_inputs.source("displacement_map");
 
-    if (displacement_map)
+    if (displacement_source)
     {
-        // Retrieve the displacement method and create the normal modifier.
-        const string displacement_method =
-            m_params.get_required<string>("displacement_method", "bump");
-        if (displacement_method == "bump")
-            m_normal_modifier = new BumpMappingModifier(displacement_map);
-        else if (displacement_method == "normal")
-            m_normal_modifier = new NormalMappingModifier(displacement_map);
-        else
+        if (dynamic_cast<const TextureSource*>(displacement_source) == 0)
         {
             RENDERER_LOG_ERROR(
-                "invalid value \"%s\" for parameter \"displacement_method\", ",
-                "using default value \"bump\".",
-                displacement_method.c_str());
-            m_normal_modifier = new BumpMappingModifier(displacement_map);
+                "while defining material \"%s\": a texture instance must be bound "
+                "to the \"displacement_map\" input; disabling displacement map for this material.",
+                get_name());
+        }
+        else
+        {
+            const TextureSource* displacement_map = static_cast<const TextureSource*>(displacement_source);
+            const Texture& texture = displacement_map->get_texture_instance().get_texture();
+
+            if (texture.get_color_space() != ColorSpaceLinearRGB)
+            {
+                RENDERER_LOG_WARNING(
+                    "while defining material \"%s\": color space for displacement map \"%s\" "
+                    "should be \"%s\" but is \"%s\" instead; expect artifacts and/or slowdowns.",
+                    get_name(),
+                    texture.get_name(),
+                    color_space_name(ColorSpaceLinearRGB),
+                    color_space_name(texture.get_color_space()));
+            }
+
+            // Retrieve the displacement method and create the normal modifier.
+            const string displacement_method =
+                m_params.get_required<string>("displacement_method", "bump");
+            if (displacement_method == "bump")
+            {
+                const double amplitude = m_params.get_optional<double>("bump_amplitude", 1.0);
+                m_normal_modifier = new BumpMappingModifier(displacement_map, 2.0, amplitude);
+            }
+            else if (displacement_method == "normal")
+                m_normal_modifier = new NormalMappingModifier(displacement_map);
+            else
+            {
+                RENDERER_LOG_ERROR(
+                    "while defining material \"%s\": invalid value \"%s\" for parameter "
+                    "\"displacement_method\"; disabling displacement map for this material.",
+                    get_name(),
+                    displacement_method.c_str());
+            }
         }
     }
 
@@ -259,6 +261,14 @@ DictionaryArray MaterialFactory::get_widget_definitions()
                     .insert("Normal Mapping", "normal"))
             .insert("use", "required")
             .insert("default", "bump"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "bump_amplitude")
+            .insert("label", "Bump Amplitude")
+            .insert("widget", "text_box")
+            .insert("default", "1.0")
+            .insert("use", "optional"));
 
     return definitions;
 }

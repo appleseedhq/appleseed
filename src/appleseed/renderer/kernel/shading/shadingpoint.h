@@ -453,11 +453,12 @@ inline const foundation::Vector3d& ShadingPoint::get_shading_normal() const
             if (modifier)
             {
                 m_shading_normal =
-                    modifier->modify(
+                    modifier->evaluate(
                         *m_texture_cache,
                         m_shading_normal,
                         get_uv(0),
-                        get_dpdu(0));
+                        get_dpdu(0),
+                        get_dpdv(0));
             }
         }
 

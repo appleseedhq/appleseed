@@ -47,16 +47,23 @@ class BumpMappingModifier
   : public INormalModifier
 {
   public:
-    explicit BumpMappingModifier(const Source* map);
+    BumpMappingModifier(
+        const Source*                   map,
+        const double                    offset,
+        const double                    amplitude);
 
-    virtual foundation::Vector3d modify(
-        TextureCache&               texture_cache,
-        const foundation::Vector3d& shading_normal,
-        const foundation::Vector2d& uv,
-        const foundation::Vector3d& dpdu) const override;
+    virtual foundation::Vector3d evaluate(
+        TextureCache&                   texture_cache,
+        const foundation::Vector3d&     n,
+        const foundation::Vector2d&     uv,
+        const foundation::Vector3d&     dpdu,
+        const foundation::Vector3d&     dpdv) const override;
 
   private:
-    const Source* m_map;
+    const Source*   m_map;
+    const double    m_amplitude;
+    double          m_du, m_dv;
+    double          m_rcp_du, m_rcp_dv;
 };
 
 }       // namespace renderer
