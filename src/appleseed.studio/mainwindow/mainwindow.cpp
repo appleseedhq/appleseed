@@ -782,13 +782,11 @@ void MainWindow::update_recent_files_menu(const QStringList& files)
 
     for (int i = 0; i < num_recent_files; ++i)
     {
-        QFileInfo fileInfo(files[i]);
-        QString fileName = fileInfo.fileName();
-        QString text = tr("&%1 %2").arg(i + 1).arg(fileName);
+        QFileInfo file_info(files[i]);
+        QString text = tr("&%1 %2").arg(i + 1).arg(file_info.filePath());
         m_recently_opened[i]->setText(text);
         m_recently_opened[i]->setData(files[i]);
         m_recently_opened[i]->setVisible(true);
-        m_recently_opened[i]->setToolTip(files[i]);
     }
 
     for (int i = num_recent_files; i < MaxRecentlyOpenedFiles; ++i)
