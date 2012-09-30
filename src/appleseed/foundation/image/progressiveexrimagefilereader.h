@@ -33,7 +33,6 @@
 #include "main/dllsymbol.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/exceptions/exception.h"
 #include "foundation/image/iprogressiveimagefilereader.h"
 
 // Standard headers.
@@ -58,9 +57,6 @@ class DLLSYMBOL ProgressiveEXRImageFileReader
   : public IProgressiveImageFileReader
 {
   public:
-    // Unsupported image format.
-    struct ExceptionUnsupportedImageFormat : public Exception {};
-
     // Constructors.
     explicit ProgressiveEXRImageFileReader(Logger* logger = 0);
     ProgressiveEXRImageFileReader(

@@ -76,6 +76,7 @@ set (foundation_image_sources
     foundation/image/colorspace.cpp
     foundation/image/colorspace.h
     foundation/image/drawing.h
+    foundation/image/exceptionunsupportedimageformat.h
     foundation/image/exrimagefilereader.cpp
     foundation/image/exrimagefilereader.h
     foundation/image/exrimagefilewriter.cpp

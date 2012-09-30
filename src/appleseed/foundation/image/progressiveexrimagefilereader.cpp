@@ -31,8 +31,8 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exceptionioerror.h"
-#include "foundation/core/exceptions/exceptionnotimplemented.h"
 #include "foundation/image/canvasproperties.h"
+#include "foundation/image/exceptionunsupportedimageformat.h"
 #include "foundation/image/pixel.h"
 #include "foundation/image/tile.h"
 #include "foundation/platform/types.h"

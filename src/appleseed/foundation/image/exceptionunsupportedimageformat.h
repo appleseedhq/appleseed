@@ -26,58 +26,42 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_IMAGE_EXRIMAGEFILEWRITER_H
-#define APPLESEED_FOUNDATION_IMAGE_EXRIMAGEFILEWRITER_H
-
-// appleseed.main headers.
-#include "main/dllsymbol.h"
+#ifndef APPLESEED_FOUNDATION_IMAGE_EXCEPTIONUNSUPPORTEDIMAGEFORMAT_H
+#define APPLESEED_FOUNDATION_IMAGE_EXCEPTIONUNSUPPORTEDIMAGEFORMAT_H
 
 // appleseed.foundation headers.
-#include "foundation/image/iimagefilewriter.h"
-#include "foundation/image/imageattributes.h"
-
-// Standard headers.
-#include <cstddef>
-
-// Forward declarations.
-namespace foundation    { class ICanvas; }
+#include "foundation/core/exceptions/exception.h"
 
 namespace foundation
 {
 
 //
-// OpenEXR image file writer.
-//
-// The following image attributes are recognized by the OpenEXR format:
-//
-//   author             string      name of the author of the image
-//   creation_time      string      time of original image creation
-//   comment            string      miscellaneous comment
-//   dpi                float       physical image resolution, in dots per inch
-//
-// Other image attributes will be stored as generic string attributes.
-//
-// Reference: openexr/ImfStandardAttributes.h
+// Unsupported image format exception.
 //
 
-class DLLSYMBOL EXRImageFileWriter
-  : public IImageFileWriter
+class ExceptionUnsupportedImageFormat
+  : public Exception
 {
   public:
-    // Constructor.
-    explicit EXRImageFileWriter(
-        const size_t            thread_count = 1);
-
-    // Write an OpenEXR image file.
-    virtual void write(
-        const char*             filename,
-        const ICanvas&          image,
-        const ImageAttributes&  image_attributes = ImageAttributes());
-
-  private:
-    const int m_thread_count;
+    // Constructors.
+    ExceptionUnsupportedImageFormat();
+    explicit ExceptionUnsupportedImageFormat(const char* what);
 };
+
+
+//
+// ExceptionUnsupportedImageFormat class implementation.
+//
+
+inline ExceptionUnsupportedImageFormat::ExceptionUnsupportedImageFormat()
+{
+}
+
+inline ExceptionUnsupportedImageFormat::ExceptionUnsupportedImageFormat(const char* what)
+  : Exception(what)
+{
+}
 
 }       // namespace foundation
 
-#endif  // !APPLESEED_FOUNDATION_IMAGE_EXRIMAGEFILEWRITER_H
+#endif  // !APPLESEED_FOUNDATION_IMAGE_EXCEPTIONUNSUPPORTEDIMAGEFORMAT_H
