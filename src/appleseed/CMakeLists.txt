@@ -393,6 +393,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_poolallocator.cpp
     foundation/meta/tests/test_population.cpp
     foundation/meta/tests/test_preprocessor.cpp
+    foundation/meta/tests/test_privateaccess.cpp
     foundation/meta/tests/test_qmc.cpp
     foundation/meta/tests/test_quaternion.cpp
     foundation/meta/tests/test_ray.cpp
@@ -660,6 +661,7 @@ set (foundation_utility_sources
     foundation/utility/poolallocator.h
     foundation/utility/preprocessor.cpp
     foundation/utility/preprocessor.h
+    foundation/utility/privateaccess.h
     foundation/utility/registrar.h
     foundation/utility/searchpaths.cpp
     foundation/utility/searchpaths.h
