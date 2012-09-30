@@ -38,9 +38,8 @@
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/string.h"
 
-// libpng header.
+// libpng headers.
 #include "png.h"
-
 #if PNG_LIBPNG_VER_DLLNUM >= 15
     #include "pngstruct.h"
 #endif
