@@ -733,21 +733,22 @@ namespace
 void MainWindow::build_recent_files_menu()
 {
     assert(m_recently_opened.empty());
-
     m_recently_opened.reserve(MaxRecentlyOpenedFiles);
 
     for (int i = 0; i < MaxRecentlyOpenedFiles; ++i)
     {
-        m_recently_opened.push_back(new QAction(this));
+        QAction* action = new QAction(this);
+        action->setVisible(false);
 
-        if ( i == 0 )
+        if (i == 0)
         {
-            //m_recently_opened[i]->setShortcut("");
+            //action->setShortcut("");
         }
 
-        m_recently_opened[i]->setVisible(false);
-        connect(m_recently_opened[i], SIGNAL(triggered()), SLOT(slot_open_recent()));
-        m_ui->menu_open_recent->addAction(m_recently_opened[i]);
+        connect(action, SIGNAL(triggered()), SLOT(slot_open_recent()));
+
+        m_ui->menu_open_recent->addAction(action);
+        m_recently_opened.push_back(action);
     }
 
     QSettings settings(SettingsOrgString, SettingsRecentFilesEntryString);
