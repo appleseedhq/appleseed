@@ -26,18 +26,17 @@
 // THE SOFTWARE.
 //
 
+#ifndef APPLESEED_FOUNDATION_UTILITY_PRIVATEACCESS_H
+#define APPLESEED_FOUNDATION_UTILITY_PRIVATEACCESS_H
+
+//
 // Original code from: https://gist.github.com/1528856
 // This is a rewrite and analysis of the technique in this article:
 // http://bloglitb.blogspot.com/2010/07/access-to-private-members-thats-easy.html
-
-#ifndef APPLESEED_FOUNDATION_UTILITY_PRIVATE_ACCESS_H
-#define APPLESEED_FOUNDATION_UTILITY_PRIVATE_ACCESS_H
+//
 
 namespace foundation
 {
-
-// ------- Framework -------
-// The little library required to work this magic
 
 // Generate a static data member of type Tag::type in which to store
 // the address of a private member.  It is crucial that Tag does not
@@ -60,16 +59,13 @@ typename Tag::type Stowed<Tag>::value;
 template <typename Tag, typename Tag::type x>
 struct StowPrivate
 {
-    StowPrivate() { Stowed<Tag>::value = x;}
+    StowPrivate() { Stowed<Tag>::value = x; }
     static StowPrivate instance;
 };
 
 template <typename Tag, typename Tag::type x>
 StowPrivate<Tag,x> StowPrivate<Tag,x>::instance;
 
-// ------- Usage -------
-// A demonstration of how to use the library, with explanation
-
 }       // namespace foundation
 
-#endif // !APPLESEED_FOUNDATION_UTILITY_PRIVATE_ACCESS_H
+#endif  // !APPLESEED_FOUNDATION_UTILITY_PRIVATEACCESS_H
