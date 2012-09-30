@@ -739,6 +739,12 @@ void MainWindow::build_recent_files_menu()
     for (int i = 0; i < MaxRecentlyOpenedFiles; ++i)
     {
         m_recently_opened.push_back(new QAction(this));
+
+        if ( i == 0 )
+        {
+            //m_recently_opened[i]->setShortcut("");
+        }
+
         m_recently_opened[i]->setVisible(false);
         connect(m_recently_opened[i], SIGNAL(triggered()), SLOT(slot_open_recent()));
         m_ui->menu_open_recent->addAction(m_recently_opened[i]);
@@ -775,11 +781,13 @@ void MainWindow::update_recent_files_menu(const QStringList& files)
 
     for (int i = 0; i < num_recent_files; ++i)
     {
-        const QString stripped = QFileInfo(files[i]).fileName();
-        const QString text = tr("&%1 %2").arg(i + 1).arg(stripped);
+        QFileInfo fileInfo(files[i]);
+        QString fileName = fileInfo.fileName();
+        QString text = tr("&%1 %2").arg(i + 1).arg(fileName);
         m_recently_opened[i]->setText(text);
         m_recently_opened[i]->setData(files[i]);
         m_recently_opened[i]->setVisible(true);
+        m_recently_opened[i]->setToolTip(files[i]);
     }
 
     for (int i = num_recent_files; i < MaxRecentlyOpenedFiles; ++i)
