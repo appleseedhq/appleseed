@@ -1158,7 +1158,7 @@ void MainWindow::slot_save_frame()
             this,
             "Save Frame As...",
             m_settings.get_path_optional<QString>(LAST_DIRECTORY_SETTINGS_KEY),
-            "OpenEXR (*.exr);;PNG (*.png)",
+            "Image Files (*.png;*.exr);;All Files (*.*)",
             &selected_filter,
             options);
 
