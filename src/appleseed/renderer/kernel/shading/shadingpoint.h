@@ -523,7 +523,7 @@ inline const foundation::Basis3d& ShadingPoint::get_shading_basis() const
     if (!(m_members & HasShadingBasis))
     {
         // Construct the orthonormal basis.
-        m_shading_basis.build(get_shading_normal(), get_dpdu(0));
+        m_shading_basis.build(get_shading_normal(), normalize(get_dpdu(0)));
 
         // The orthonormal basis is now available.
         m_members |= HasShadingBasis;
@@ -715,9 +715,10 @@ inline void ShadingPoint::compute_partial_derivatives() const
     {
         const foundation::Vector3d dp0 = get_vertex(0) - get_vertex(2);
         const foundation::Vector3d dp1 = get_vertex(1) - get_vertex(2);
+        const double rcp_det = 1.0 / det;
 
-        m_dpdu = foundation::normalize(dv1 * dp0 - dv0 * dp1);
-        m_dpdv = foundation::normalize(du0 * dp1 - du1 * dp0);
+        m_dpdu = (dv1 * dp0 - dv0 * dp1) * rcp_det;
+        m_dpdv = (du0 * dp1 - du1 * dp0) * rcp_det;
     }
 }
 
