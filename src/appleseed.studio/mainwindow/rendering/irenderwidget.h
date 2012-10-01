@@ -48,8 +48,9 @@ class IRenderWidget
   public:
     virtual ~IRenderWidget() {}
 
-    virtual void clear(
-        const foundation::Color4f&  color) = 0;
+    virtual void clear(const foundation::Color4f& color) = 0;
+
+    virtual void multiply(const float multiplier) = 0;
 
     virtual void highlight_region(
         const size_t                x,

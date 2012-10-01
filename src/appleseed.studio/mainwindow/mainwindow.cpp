@@ -50,6 +50,7 @@
 // appleseed.foundation headers.
 #include "foundation/core/appleseed.h"
 #include "foundation/image/canvasproperties.h"
+#include "foundation/image/color.h"
 #include "foundation/image/image.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/system.h"
@@ -779,14 +780,20 @@ void MainWindow::start_rendering(const bool interactive)
 
     enable_disable_widgets(true);
 
+    Project* project = m_project_manager.get_project();
+    project->get_frame()->clear();
+
+    RenderWidget* render_widget = m_render_widgets["RGB"]->m_render_widget;
+    render_widget->multiply(0.2f);
+
     const char* configuration_name = interactive ? "interactive" : "final";
     const ParamArray params = get_project_params(configuration_name);
 
     m_rendering_manager.start_rendering(
-        m_project_manager.get_project(),
+        project,
         params,
         interactive,
-        m_render_widgets["RGB"]->m_render_widget);
+        render_widget);
 }
 
 namespace
@@ -1143,6 +1150,9 @@ void MainWindow::slot_render_widget_context_menu(const QPoint& point)
 
     QMenu* menu = new QMenu(this);
     menu->addAction("Save Frame As...", this, SLOT(slot_save_frame()));
+    menu->addSeparator();
+    menu->addAction("Clear Frame", this, SLOT(slot_clear_frame()));
+
     menu->exec(reinterpret_cast<QWidget*>(sender())->mapToGlobal(point));
 }
 
@@ -1169,6 +1179,16 @@ void MainWindow::slot_save_frame()
         const Project* project = m_project_manager.get_project();
         project->get_frame()->write(filepath.toAscii().constData());
     }
+}
+
+void MainWindow::slot_clear_frame()
+{
+    // Internally, clear the frame to black and delete all AOV images.
+    m_project_manager.get_project()->get_frame()->clear();
+
+    // In the UI, clear the render widgets to black.
+    for (const_each<RenderWidgetCollection> i = m_render_widgets; i; ++i)
+        i->second->m_render_widget->clear(Color4f(0.0f));
 }
 
 }   // namespace studio

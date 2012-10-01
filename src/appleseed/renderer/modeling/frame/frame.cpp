@@ -423,6 +423,13 @@ void Frame::transform_to_output_color_space(Image& image) const
     }
 }
 
+void Frame::clear()
+{
+    impl->m_image->clear(Color4f(0.0));
+
+    impl->m_aov_images->clear();
+}
+
 bool Frame::write(const char* file_path) const
 {
     assert(file_path);

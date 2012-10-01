@@ -40,6 +40,7 @@
 #include "foundation/image/image.h"
 #include "foundation/image/nativedrawing.h"
 #include "foundation/image/tile.h"
+#include "foundation/math/scalar.h"
 #include "foundation/platform/types.h"
 
 // Qt headers.
@@ -97,7 +98,33 @@ namespace
         uint8* scanline = static_cast<uint8*>(image.scanLine(static_cast<int>(y)));
         return scanline + x * image.depth() / 8;
     }
+}
 
+void RenderWidget::multiply(const float multiplier)
+{
+    assert(multiplier >= 0.0f && multiplier <= 1.0f);
+
+    m_mutex.lock();
+
+    const size_t image_width = static_cast<size_t>(m_image.width());
+    const size_t image_height = static_cast<size_t>(m_image.height());
+    const size_t dest_stride = static_cast<size_t>(m_image.bytesPerLine());
+
+    uint8* dest = get_image_pointer(m_image, 0, 0);
+
+    for (size_t y = 0; y < image_height; ++y)
+    {
+        uint8* row = dest + y * dest_stride;
+
+        for (size_t x = 0; x < image_width * 3; ++x)
+            row[x] = truncate<uint8>(row[x] * multiplier);
+    }
+
+    m_mutex.unlock();
+}
+
+namespace
+{
     void draw_bracket(
         uint8*          dest,
         const size_t    dest_width,

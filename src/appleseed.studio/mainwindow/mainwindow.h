@@ -62,8 +62,8 @@
 #include <vector>
 
 // Forward declarations.
-namespace appleseed     { namespace studio { class LogWidget; } }
-namespace Ui            { class MainWindow; }
+namespace appleseed { namespace studio { class LogWidget; } }
+namespace Ui        { class MainWindow; }
 class QAction;
 class QPoint;
 class QString;
@@ -221,6 +221,7 @@ class MainWindow
 
     void slot_render_widget_context_menu(const QPoint&);
     void slot_save_frame();
+    void slot_clear_frame();
 };
 
 }       // namespace studio

@@ -70,8 +70,10 @@ class RenderWidget
         QWidget*                    parent = 0);
 
     // Thread-safe.
-    virtual void clear(
-        const foundation::Color4f&  color);
+    virtual void clear(const foundation::Color4f& color);
+
+    // Thread-safe.
+    virtual void multiply(const float multiplier);
 
     // Thread-safe.
     virtual void highlight_region(
@@ -98,8 +100,7 @@ class RenderWidget
     std::auto_ptr<foundation::Tile> m_float_tile_storage;
     std::auto_ptr<foundation::Tile> m_uint8_tile_storage;
 
-    void allocate_working_storage(
-        const foundation::CanvasProperties& frame_props);
+    void allocate_working_storage(const foundation::CanvasProperties& frame_props);
 
     void blit_tile_no_lock(
         const renderer::Frame&      frame,
