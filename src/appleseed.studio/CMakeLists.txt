@@ -175,8 +175,6 @@ source_group ("mainwindow\\project" FILES
 set (mainwindow_rendering_sources
     mainwindow/rendering/cameracontroller.cpp
     mainwindow/rendering/cameracontroller.h
-    mainwindow/rendering/glrenderwidget.cpp
-    mainwindow/rendering/glrenderwidget.h
     mainwindow/rendering/irenderwidget.h
     mainwindow/rendering/qtrenderercontroller.cpp
     mainwindow/rendering/qtrenderercontroller.h
