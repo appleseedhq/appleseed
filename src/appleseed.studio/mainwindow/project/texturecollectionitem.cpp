@@ -143,7 +143,7 @@ void TextureCollectionItem::slot_import_textures()
             treeWidget(),
             "Import Textures...",
             m_settings.get_path_optional<QString>(LAST_DIRECTORY_SETTINGS_KEY),
-            "Texture Files (*.exr);;All Files (*.*)",
+            "Texture Files (*.png;*.exr);;All Files (*.*)",
             &selected_filter,
             options);
 
