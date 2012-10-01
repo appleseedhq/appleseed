@@ -67,11 +67,13 @@ Image* PNGImageFileReader::read(
 
     // Read and check the file header.
     png_byte header[8];
-    fread(header, 1, 8, file);
-    if (!png_check_sig(header, 8))
     {
-        fclose(file);
-        throw ExceptionIOError("not a valid PNG file", filename);
+        const size_t read = fread(header, 1, 8, file);
+        if (read != 8 || !png_check_sig(header, 8))
+        {
+            fclose(file);
+            throw ExceptionIOError("not a valid PNG file", filename);
+        }
     }
 
     // Create read structure.
