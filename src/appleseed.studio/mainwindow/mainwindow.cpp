@@ -42,6 +42,7 @@
 #include "application/application.h"
 
 // appleseed.renderer headers.
+#include "renderer/api/aov.h"
 #include "renderer/api/frame.h"
 #include "renderer/api/log.h"
 #include "renderer/api/project.h"
@@ -780,11 +781,14 @@ void MainWindow::start_rendering(const bool interactive)
 
     enable_disable_widgets(true);
 
+    // Internally, clear the main image to transparent black and delete all AOV images.
     Project* project = m_project_manager.get_project();
-    project->get_frame()->clear();
+    project->get_frame()->clear_main_image();
+    project->get_frame()->aov_images().clear();
 
-    RenderWidget* render_widget = m_render_widgets["RGB"]->m_render_widget;
-    render_widget->multiply(0.2f);
+    // In the UI, darken all render widgets.
+    for (const_each<RenderWidgetCollection> i = m_render_widgets; i; ++i)
+        i->second->m_render_widget->multiply(0.2f);
 
     const char* configuration_name = interactive ? "interactive" : "final";
     const ParamArray params = get_project_params(configuration_name);
@@ -793,7 +797,7 @@ void MainWindow::start_rendering(const bool interactive)
         project,
         params,
         interactive,
-        render_widget);
+        m_render_widgets["RGB"]->m_render_widget);
 }
 
 namespace
@@ -1149,7 +1153,8 @@ void MainWindow::slot_render_widget_context_menu(const QPoint& point)
         return;
 
     QMenu* menu = new QMenu(this);
-    menu->addAction("Save Frame As...", this, SLOT(slot_save_frame()));
+    menu->addAction("Save Frame...", this, SLOT(slot_save_frame()));
+    menu->addAction("Save All AOVs...", this, SLOT(slot_save_all_aovs()));
     menu->addSeparator();
     menu->addAction("Clear Frame", this, SLOT(slot_clear_frame()));
 
@@ -1176,17 +1181,45 @@ void MainWindow::slot_save_frame()
     {
         filepath = QDir::toNativeSeparators(filepath);
 
-        const Project* project = m_project_manager.get_project();
-        project->get_frame()->write(filepath.toAscii().constData());
+        const Frame* frame = m_project_manager.get_project()->get_frame();
+        frame->write_main_image(filepath.toAscii().constData());
+    }
+}
+
+void MainWindow::slot_save_all_aovs()
+{
+    assert(!m_rendering_manager.is_rendering());
+
+    QFileDialog::Options options;
+    QString selected_filter;
+
+    QString filepath =
+        QFileDialog::getSaveFileName(
+            this,
+            "Save All AOVs As...",
+            m_settings.get_path_optional<QString>(LAST_DIRECTORY_SETTINGS_KEY),
+            "Image Files (*.png;*.exr);;All Files (*.*)",
+            &selected_filter,
+            options);
+
+    if (!filepath.isEmpty())
+    {
+        filepath = QDir::toNativeSeparators(filepath);
+
+        const Frame* frame = m_project_manager.get_project()->get_frame();
+        frame->write_main_image(filepath.toAscii().constData());
+        frame->write_aov_images(filepath.toAscii().constData());
     }
 }
 
 void MainWindow::slot_clear_frame()
 {
-    // Internally, clear the frame to black and delete all AOV images.
-    m_project_manager.get_project()->get_frame()->clear();
+    // Internally, clear the main image to transparent black and delete all AOV images.
+    Frame* frame = m_project_manager.get_project()->get_frame();
+    frame->clear_main_image();
+    frame->aov_images().clear();
 
-    // In the UI, clear the render widgets to black.
+    // In the UI, clear all render widgets to black.
     for (const_each<RenderWidgetCollection> i = m_render_widgets; i; ++i)
         i->second->m_render_widget->clear(Color4f(0.0f));
 }

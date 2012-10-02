@@ -74,7 +74,9 @@ void bind_frame()
         .def("image", &Frame::image, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("aov_images", &Frame::aov_images, bpy::return_value_policy<bpy::reference_existing_object>())
 
-        .def("write", &Frame::write)
+        .def("clear_main_image", &Frame::clear_main_image)
+        .def("write_main_image", &Frame::write_main_image)
+        .def("write_aov_images", &Frame::write_aov_images)
         .def("archive", detail::archive_frame)
         ;
 }

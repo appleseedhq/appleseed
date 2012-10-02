@@ -103,12 +103,13 @@ class DLLSYMBOL Frame
     void transform_to_output_color_space(foundation::Tile& tile) const;
     void transform_to_output_color_space(foundation::Image& image) const;
 
-    // Clear the main image to transparent black and delete all AOV images.
-    void clear();
+    // Clear the main image to transparent black.
+    void clear_main_image();
 
-    // Write the frame to disk.
+    // Write the main image / the AOV images to disk.
     // Return true if successful, false otherwise.
-    bool write(const char* file_path) const;
+    bool write_main_image(const char* file_path) const;
+    bool write_aov_images(const char* file_path) const;
 
     // Archive the frame to a given directory on disk. If output_path is provided,
     // the full path to the output file will be returned. The returned string must

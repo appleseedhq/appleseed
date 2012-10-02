@@ -527,7 +527,8 @@ namespace
         if (g_cl.m_output.is_set())
         {
             RENDERER_LOG_INFO("writing frame to disk...");
-            project->get_frame()->write(g_cl.m_output.values()[0].c_str());
+            project->get_frame()->write_main_image(g_cl.m_output.values()[0].c_str());
+            project->get_frame()->write_aov_images(g_cl.m_output.values()[0].c_str());
         }
 
 #if defined __APPLE__ || defined _WIN32
@@ -592,7 +593,10 @@ namespace
 
         // Write the frame to disk.
         if (g_cl.m_output.is_set())
-            project->get_frame()->write(g_cl.m_output.values()[0].c_str());
+        {
+            project->get_frame()->write_main_image(g_cl.m_output.values()[0].c_str());
+            project->get_frame()->write_aov_images(g_cl.m_output.values()[0].c_str());
+        }
 
         // Force-unload the project.
         project.reset();

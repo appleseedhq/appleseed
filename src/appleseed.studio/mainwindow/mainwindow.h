@@ -221,6 +221,7 @@ class MainWindow
 
     void slot_render_widget_context_menu(const QPoint&);
     void slot_save_frame();
+    void slot_save_all_aovs();
     void slot_clear_frame();
 };
 

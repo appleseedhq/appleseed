@@ -423,21 +423,29 @@ void Frame::transform_to_output_color_space(Image& image) const
     }
 }
 
-void Frame::clear()
+void Frame::clear_main_image()
 {
     impl->m_image->clear(Color4f(0.0));
-
-    impl->m_aov_images->clear();
 }
 
-bool Frame::write(const char* file_path) const
+bool Frame::write_main_image(const char* file_path) const
 {
     assert(file_path);
 
     const ImageAttributes image_attributes =
         ImageAttributes::create_default_attributes();
 
-    bool result = write_image(file_path, *impl->m_image, image_attributes);
+    return write_image(file_path, *impl->m_image, image_attributes);
+}
+
+bool Frame::write_aov_images(const char* file_path) const
+{
+    assert(file_path);
+
+    const ImageAttributes image_attributes =
+        ImageAttributes::create_default_attributes();
+
+    bool result = true;
 
     if (!impl->m_aov_images->empty())
     {
