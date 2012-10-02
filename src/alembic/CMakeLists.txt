@@ -95,7 +95,7 @@ include_directories (${Boost_INCLUDE_DIRS})
 include_directories (
     include
     lib
-    ../openexr/include/openexr
+    ../openexr/include/OpenEXR
     ../hdf5/hl/src
     ../hdf5/build       # for H5pubconf.h (a generated file)
     ../hdf5/src
