@@ -1,15 +1,17 @@
-# Copyright (c) 2012 Jonathan Topf
 
+#
+# Copyright (c) 2012 Jonathan Topf
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-
+#
 # The above copyright notice and this permission notice shall be included in
 # all copies or substantial portions of the Software.
-
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -17,11 +19,11 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-
+#
 
 
 import maya.cmds as cmds
-import maya.mel
+import maya.mel as mel 
 import maya.utils as mu
 import os
 import time
@@ -29,90 +31,152 @@ import re
 import subprocess
 import sys
 import ms_commands
+import ms_export_obj
+import time
 
 inch_to_meter = 0.02539999983236
 
 
+#--------------------------------------------------------------------------------------------------
+# WriteXml class.
+#--------------------------------------------------------------------------------------------------
 
+class WriteXml():
+    spaces_per_indentation_level = 4
 
-#****************************************************************************************************************************************************************************************************
-# utilitiy functions & classes **********************************************************************************************************************************************************************
-#****************************************************************************************************************************************************************************************************
-
-
-#
-# writeXml class --
-#
-
-class WriteXml(): #(file_path)
-    spaces_per_indentation_level = 4    
-    def __init__(self, f_path):
-        self.file_path = f_path
+    def __init__(self, file_path):
         self.indentation_level = 0
         self.file_object = None
         try:
-            self.file_object = open(self.file_path, 'w') #open file for editing
-
+            self.file_object = open(file_path, 'w')
         except IOError:
-            cmds.error('IO error: file not accesable')
-            raise RuntimeError('IO error: file not accesable')
-            return
-        
-    def startElement(self,str):
-        self.file_object.write(((self.indentation_level * self.spaces_per_indentation_level) * ' ') + "<" + str + '>\n')
+            error_msg = "IO error: failed to open {0} for writing.".format(file_path)
+            cmds.error(error_msg)
+            raise RuntimeError(error_msg)
+
+    def startElement(self, str):
+        self.appendLine("<" + str + ">")
         self.indentation_level += 1
         
     def endElement(self, str):
         self.indentation_level -= 1
-        self.file_object.write(((self.indentation_level * self.spaces_per_indentation_level) * ' ') + '</' + str + '>\n')
+        self.appendLine("</" + str + ">")
         
     def appendElement(self, str):
-        self.file_object.write(((self.indentation_level * self.spaces_per_indentation_level) * ' ') + '<' + str + '/>\n')
-        
+        self.appendLine("<" + str + "/>")
+
+    def appendParameter(self, name, value):
+        self.appendLine('<parameter name="{0}" value="{1}" />'.format(name, value))
+
     def appendLine(self, str):
-        self.file_object.write(((self.indentation_level * self.spaces_per_indentation_level) * ' ') + str + '\n')
-        
+        self.file_object.write(self.indentation_string() + str + "\n")
+
     def close(self):
-        self.file_object.close() #close file
+        self.file_object.close()
+
+    def indentation_string(self):
+        return (self.indentation_level * self.spaces_per_indentation_level) * " "
 
 
-#
-# writeTransform function --
-#
+#--------------------------------------------------------------------------------------------------
+# cancelExport function.
+#--------------------------------------------------------------------------------------------------
 
-def writeTransform(doc, scale = 1, transform = [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]]):
-    doc.startElement('transform')
-    doc.appendElement('scaling value="{0}"'.format(scale))
-    doc.startElement('matrix')
+def checkExportCancelled():
+    if cmds.progressWindow(query=True, isCancelled=True):
+        cmds.progressWindow(endProgress=1)
+        raise RuntimeError('Export Cancelled')
 
-    doc.appendLine('{0:.15f} {1:.15f} {2:.15f} {3:.15f}'.format(transform[0][0], transform[1][0], transform[2][0], transform[3][0]))
-    doc.appendLine('{0:.15f} {1:.15f} {2:.15f} {3:.15f}'.format(transform[0][1], transform[1][1], transform[2][1], transform[3][1]))
-    doc.appendLine('{0:.15f} {1:.15f} {2:.15f} {3:.15f}'.format(transform[0][2], transform[1][2], transform[2][2], transform[3][2]))
-    doc.appendLine('{0:.15f} {1:.15f} {2:.15f} {3:.15f}'.format(transform[0][3], transform[1][3], transform[2][3], transform[3][3]))    
 
-    doc.endElement('matrix')
-    doc.endElement('transform')
+#--------------------------------------------------------------------------------------------------
+# writeTransform function.
+#--------------------------------------------------------------------------------------------------
 
-#
-# load params function
-#
+def writeTransform(doc, scale = 1, object=False, motion=False, motion_samples=2):
+    if motion:
+        start_time = cmds.currentTime(query=True)
+
+        if motion_samples < 2:
+            print('Motion samples is set too low, must be at least 2, using 2.')
+            motion_samples = 2
+
+        sample_interval = 1.0 / (motion_samples - 1)
+
+        cmds.select(object)
+
+        for i in range(motion_samples):
+            new_time = start_time + (sample_interval * i)
+            cmds.currentTime(new_time)
+            cmds.refresh()
+
+            if object:
+                m = cmds.xform(object, query=True, ws=True, matrix=True)
+                transform = [m[0],m[1],m[2],m[3]], [m[4],m[5],m[6],m[7]], [m[8],m[9],m[10],m[11]], [m[12],m[13],m[14],m[15]]
+            else:
+                transform = [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]]
+
+            doc.startElement('transform time="{0:03}"'.format(i))
+            doc.appendElement('scaling value="{0}"'.format(scale))
+            doc.startElement('matrix')
+
+            doc.appendLine('{0:.15f} {1:.15f} {2:.15f} {3:.15f}'.format(transform[0][0], transform[1][0], transform[2][0], transform[3][0]))
+            doc.appendLine('{0:.15f} {1:.15f} {2:.15f} {3:.15f}'.format(transform[0][1], transform[1][1], transform[2][1], transform[3][1]))
+            doc.appendLine('{0:.15f} {1:.15f} {2:.15f} {3:.15f}'.format(transform[0][2], transform[1][2], transform[2][2], transform[3][2]))
+            doc.appendLine('{0:.15f} {1:.15f} {2:.15f} {3:.15f}'.format(transform[0][3], transform[1][3], transform[2][3], transform[3][3]))    
+
+            doc.endElement('matrix')
+            doc.endElement('transform')
+
+        cmds.currentTime(start_time)
+        cmds.select(cl=True)
+
+    else:
+
+        transform = [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]]
+        if (object):
+            m = cmds.xform(object, query=True, ws=True, matrix=True)
+            transform = [m[0],m[1],m[2],m[3]], [m[4],m[5],m[6],m[7]], [m[8],m[9],m[10],m[11]], [m[12],m[13],m[14],m[15]]
+
+        doc.startElement('transform')
+        doc.appendElement('scaling value="{0}"'.format(scale))
+        doc.startElement('matrix')
+
+        doc.appendLine('{0:.15f} {1:.15f} {2:.15f} {3:.15f}'.format(transform[0][0], transform[1][0], transform[2][0], transform[3][0]))
+        doc.appendLine('{0:.15f} {1:.15f} {2:.15f} {3:.15f}'.format(transform[0][1], transform[1][1], transform[2][1], transform[3][1]))
+        doc.appendLine('{0:.15f} {1:.15f} {2:.15f} {3:.15f}'.format(transform[0][2], transform[1][2], transform[2][2], transform[3][2]))
+        doc.appendLine('{0:.15f} {1:.15f} {2:.15f} {3:.15f}'.format(transform[0][3], transform[1][3], transform[2][3], transform[3][3]))    
+
+        doc.endElement('matrix')
+        doc.endElement('transform')
+
+
+#--------------------------------------------------------------------------------------------------
+# getMayaParams function.
+#--------------------------------------------------------------------------------------------------
 
 def getMayaParams(render_settings_node):
     print('getting params from ui')
-    #comile regular expression to check for non numeric chracters
-    is_numeric = re.compile('^[0-9]+$')
-    
+
     params = {'error':False}
-    
+
+    params['entityDefs'] = ms_commands.getEntityDefs(os.path.join(ms_commands.ROOT_DIRECTORY, 'scripts', 'appleseedEntityDefs.xml'))
+
     #main settings
     params['outputDir'] = cmds.getAttr(render_settings_node + '.output_directory')
     params['fileName'] = cmds.getAttr(render_settings_node + '.output_file')
     params['convertShadingNodes'] = cmds.getAttr(render_settings_node + '.convert_shading_nodes_to_textures')
     params['convertTexturesToExr'] = cmds.getAttr(render_settings_node + '.convert_textures_to_exr')
-    params['overwriteExistingExrs'] = cmds.getAttr(render_settings_node + '.overwrite_existing_exrs')
+    params['overwrite_existing_textures'] = cmds.getAttr(render_settings_node + '.overwrite_existing_textures')
     params['fileName'] = cmds.getAttr(render_settings_node + '.output_file')
-    params['exportMotionBlur'] = cmds.getAttr(render_settings_node + '.export_motion_blur')
-    params['exportAnimation'] = cmds.getAttr(render_settings_node + '.export_animation')
+    params['export_camera_blur'] = cmds.getAttr(render_settings_node + '.export_camera_blur')
+    params['exportMayaLights'] = cmds.getAttr(render_settings_node + '.export_maya_lights')
+    params['export_transformation_blur'] = cmds.getAttr(render_settings_node + '.export_transformation_blur')
+    params['export_deformation_blur'] = cmds.getAttr(render_settings_node + '.export_deformation_blur')
+    params['motion_samples'] = cmds.getAttr(render_settings_node + '.motion_samples')
+    params['export_animation'] = cmds.getAttr(render_settings_node + '.export_animation')
+    params['animation_start_frame'] = cmds.getAttr(render_settings_node + '.animation_start_frame')
+    params['animation_end_frame'] = cmds.getAttr(render_settings_node + '.animation_end_frame')
+    params['animatedTextures'] = cmds.getAttr(render_settings_node + '.export_animated_textures')
     params['scene_scale'] = 1
     
     #Advanced options
@@ -143,13 +207,13 @@ def getMayaParams(render_settings_node):
     params['matDefaultBSDF'] = 'Lambertian'
     params['matDefaultEDF'] = 'None'
     params['matDefaultSurfaceShader'] = 'Physical'
-    params['matDoubleShade'] = cmds.getAttr(render_settings_node + '.double_sided_shading')
 
     # output 
     if cmds.listConnections(render_settings_node + '.camera'):
         params['outputCamera'] = cmds.listConnections(render_settings_node + '.camera')[0]
     else:
-        cmds.warning('no camera connected to ' + render_settings_node)
+        cmds.warning("no camera connected to {0}, using \"persp\"".format(render_settings_node))
+        params['outputCamera'] = 'persp'
     
     if cmds.getAttr(render_settings_node + '.color_space') == 1:
         params['outputColorSpace'] = 'linear_rgb'
@@ -160,35 +224,265 @@ def getMayaParams(render_settings_node):
     else:
         params['outputColorSpace'] = 'srgb'
 
-    params['outputResWidth'] = cmds.getAttr(render_settings_node + '.width')
-    params['outputResHeight'] = cmds.getAttr(render_settings_node + '.height')
+    params['output_res_width'] = cmds.getAttr(render_settings_node + '.width')
+    params['output_res_height'] = cmds.getAttr(render_settings_node + '.height')
 
-    # configurations
-    # custom intercative config
-    params['customInteractiveConfigCheck'] = cmds.getAttr(render_settings_node + '.export_custom_interactive_config')
-    params['customInteractiveConfigEngine'] = cmds.getAttr(render_settings_node + '.interactive_lighting_engine')
-    params['customInteractiveConfigMinSamples'] = cmds.getAttr(render_settings_node + '.interactive_min_samples')
-    params['customInteractiveConfigMaxSamples'] = cmds.getAttr(render_settings_node + '.interactive_max_samples')
-    params['customInteractiveConfigMaxRayDepth'] = cmds.getAttr(render_settings_node + '.interactive_max_ray_depth')
-    params['customInteractiveConfigLightSamples'] = cmds.getAttr(render_settings_node + '.interactive_light_samples')
-
+    # configuration
     # custom Final config
     params['customFinalConfigCheck'] = cmds.getAttr(render_settings_node + '.export_custom_final_config')
     params['customFinalConfigEngine'] = cmds.getAttr(render_settings_node + '.final_lighting_engine')
-    params['customFinalConfigMinSamples'] = cmds.getAttr(render_settings_node + '.final_min_samples')
-    params['customFinalConfigMaxSamples'] = cmds.getAttr(render_settings_node + '.final_max_samples')
-    params['customFinalConfigMaxRayDepth'] = cmds.getAttr(render_settings_node + '.final_max_ray_depth')
-    params['customFinalConfigLightSamples'] = cmds.getAttr(render_settings_node + '.final_light_samples')
-    return(params)
+
+    params['customFinalConfigMinSamples'] = cmds.getAttr(render_settings_node + '.min_samples')
+    params['customFinalConfigMaxSamples'] = cmds.getAttr(render_settings_node + '.max_samples')
 
 
-#****************************************************************************************************************************************************************************************************
-# entity classes ************************************************************************************************************************************************************************************
-#****************************************************************************************************************************************************************************************************
+    params['drtDLBSDFSamples'] = cmds.getAttr(render_settings_node + '.drt_dl_bsdf_samples')
+    params['drtDLLightSamples'] = cmds.getAttr(render_settings_node + '.drt_dl_light_samples')
+    params['drtEnableIBL'] = cmds.getAttr(render_settings_node + '.drt_enable_ibl')
+    params['drtIBLBSDFSamples'] = cmds.getAttr(render_settings_node + '.drt_ibl_bsdf_samples')
+    params['drtIBLEnvSamples'] = cmds.getAttr(render_settings_node + '.drt_ibl_env_samples')
+    params['drtMaxPathLength'] = cmds.getAttr(render_settings_node + '.drt_max_path_length')
+    params['drtRRMinPathLength'] = cmds.getAttr(render_settings_node + '.drt_rr_min_path_length')
 
-#
-# color object ---
-#
+    params['ptDLLightSamples'] = cmds.getAttr(render_settings_node + '.pt_dl_light_samples')
+    params['ptEnableCaustics'] = cmds.getAttr(render_settings_node + '.pt_enable_caustics')
+    params['ptEnableDL'] = cmds.getAttr(render_settings_node + '.pt_enable_dl')
+    params['ptEnableIBL'] = cmds.getAttr(render_settings_node + '.pt_enable_ibl')
+    params['ptIBLBSDFSamples'] = cmds.getAttr(render_settings_node + '.pt_ibl_bsdf_samples')
+    params['ptIBLEnvSamples'] = cmds.getAttr(render_settings_node + '.pt_ibl_env_samples')
+    params['ptMaxPathLength'] = cmds.getAttr(render_settings_node + '.pt_max_path_length')
+    params['ptNextEventEstimation'] = cmds.getAttr(render_settings_node + '.pt_next_event_estimation')
+    params['ptRRMinPathLength'] = cmds.getAttr(render_settings_node + '.pt_rr_min_path_length')
+
+    params['gtrFilterSize'] = cmds.getAttr(render_settings_node + '.gtr_filter_size')
+    params['gtrMinSamples'] = cmds.getAttr(render_settings_node + '.gtr_min_samples')
+    params['gtrMaxSamples'] = cmds.getAttr(render_settings_node + '.gtr_max_samples')
+    params['gtrMaxContrast'] = cmds.getAttr(render_settings_node + '.gtr_max_contrast')
+    params['gtrMaxVariation'] = cmds.getAttr(render_settings_node + '.gtr_max_variation')
+
+    if cmds.getAttr(render_settings_node + '.gtr_sampler') == 0:
+        params['gtrSampler'] = 'uniform'
+    else:
+        params['gtrSampler'] = 'adaptive'
+
+    # select obj exporter
+    if cmds.pluginInfo(('ms_export_obj_' + str(int(mel.eval('getApplicationVersionAsFloat()')))), query=True, r=True):
+        params['obj_exporter'] = ms_commands.export_obj
+    else:
+        cmds.warning("no compiled obj exporter present, exporting using python obj exporter")
+        params['obj_exporter'] = ms_export_obj.export
+
+
+    return params
+
+#--------------------------------------------------------------------------------------------------
+# GetMayaScene function.
+#--------------------------------------------------------------------------------------------------
+
+def get_maya_scene(params):
+    
+    """ Parses the maya scene and returns a list of root transforms with the relevant children """
+
+    start_time = cmds.currentTime(query=True)
+
+    # the maya scene is stored as a list of root transforms that contain mesh's/geometry/lights as children
+    maya_root_transforms = []
+
+    # find all root transforms and create Mtransforms from them
+    for maya_transform in cmds.ls(tr=True):
+        if not cmds.listRelatives(maya_transform, ap=True):
+            maya_root_transforms.append(MTransform(params, maya_transform, None))
+
+    motion_samples = params['motion_samples']
+    if motion_samples < 2:
+        motion_samples = 2
+
+    start_time = cmds.currentTime(query=True)
+    start_frame = int(start_time)
+    end_frame = start_frame
+    sample_increment = 1.0 / (motion_samples - 1)
+
+    if params['export_animation']:
+        start_frame = params['animation_start_frame']
+        end_frame = params['animation_end_frame']
+
+    if params['export_transformation_blur'] or params['export_deformation_blur'] or params['export_camera_blur']:
+        end_frame += 1
+
+    # add motion samples
+    current_frame = start_frame
+
+    while current_frame <= end_frame:
+        cmds.currentTime(current_frame)
+
+        if params['export_transformation_blur']:
+            for transform in maya_root_transforms:
+                for descendant_transform in transform.descendant_transforms:
+                    descendant_transform.add_transform_sample()
+
+        if params['export_deformation_blur']:
+            for transform in maya_root_transforms:
+                for mesh in transform.descendant_meshes:
+                    mesh.add_deform_sample()
+
+        if params['export_camera_blur']:
+            for transform in maya_root_transforms:
+                for camera in transform.descendant_cameras:
+                    camera.add_matrix_sample()
+
+        print cmds.currentTime(query=True)
+        current_frame += sample_increment
+
+        # add code to export textures here
+    
+
+    # return to pre-export time
+    cmds.currentTime(start_time)
+
+    return maya_root_transforms
+
+
+#--------------------------------------------------------------------------------------------------
+# MTransform class.
+#--------------------------------------------------------------------------------------------------
+
+class MTransform():
+
+    """ lightweight class representing info for a maya transform node """
+
+    def __init__(self, params, maya_transform_name, parent):
+        self.name = maya_transform_name
+        self.safe_name = ms_commands.legalizeName(self.name)
+        self.parent = parent
+        self.matricies = []
+        self.child_cameras = []
+        self.descendant_cameras = []
+        self.child_meshes = []
+        self.descendant_meshes = []
+        self.child_lights = []
+        self.descendant_lights = []
+        self.child_transforms = []
+        self.descendant_transforms = []
+
+        # get children
+        mesh_names = cmds.listRelatives(self.name, type='mesh')
+        if mesh_names != None:
+            for mesh_name in mesh_names:
+                self.child_meshes.append(MMesh(params, mesh_name, self))
+
+        light_names = cmds.listRelatives(self.name, type='light')
+        if light_names != None:
+            for light_name in light_names:
+                self.child_lights.append(MLight(params, light_name, self))
+
+        camera_names = cmds.listRelatives(self.name, type='camera')
+        if camera_names != None:
+            for camera_name in camera_names:
+                self.child_cameras.append(MCamera(params, camera_name, self))
+
+        transform_names = cmds.listRelatives(self.name, type='transform')
+        if transform_names != None:
+            for transform_name in transform_names:
+                new_transform = MTransform(params, transform_name, self)
+                self.child_transforms.append(new_transform)
+
+                # add descendants
+                self.descendant_cameras += new_transform.child_cameras
+                self.descendant_meshes += new_transform.child_meshes
+                self.descendant_lights += new_transform.child_lights
+                self.descendant_transforms += new_transform.child_transforms
+
+    def add_transform_sample():
+        pass
+
+#--------------------------------------------------------------------------------------------------
+# MTransformChild class.
+#--------------------------------------------------------------------------------------------------
+
+class MTransformChild():
+
+    """ base class for all classes representing maya scene entities """
+
+    def __init__(self, params, maya_entity_name, MTransform_object):
+        self.params = params
+        self.name = maya_entity_name
+        self.safe_name = ms_commands.legalizeName(self.name)
+        self.transform = MTransform_object
+
+#--------------------------------------------------------------------------------------------------
+# MMesh class.
+#--------------------------------------------------------------------------------------------------
+
+class MMesh(MTransformChild):
+
+    """ lightweight class representing maya mesh data """
+
+    def __init__(self, params, maya_mesh_name, MTransform_object):
+        MTransformChild.__init__(self, params, maya_mesh_name, MTransform_object)        
+        self.material_names = ms_commands.get_attached_materials(self.name)
+
+    def add_deform_sample():
+        pass
+
+    def export_obj(export_dir):
+        pass
+
+#--------------------------------------------------------------------------------------------------
+# MLight class.
+#--------------------------------------------------------------------------------------------------
+
+class MLight(MTransformChild):
+
+    """ lightweight class representing maya light data """
+
+    def __init__(self, params, maya_light_name, MTransform_object):
+        MTransformChild.__init__(self, params, maya_light_name, MTransform_object)
+        self.color = cmds.getAttr(self.name + '.color')
+        self.multiplier = cmds.getAttr(self.name+'.intensity')
+        self.decay = cmds.getAttr(self.name+'.decayRate')
+        self.model = cmds.nodeType(self.name)
+        if self.model == 'spotLight':
+            self.inner_angle = cmds.getAttr(self.name + '.coneAngle')
+            self.outer_angle = cmds.getAttr(self.name + '.coneAngle') + cmds.getAttr(self.name + '.penumbraAngle')
+
+
+
+#--------------------------------------------------------------------------------------------------
+# MCamera class.
+#--------------------------------------------------------------------------------------------------
+
+class MCamera(MTransformChild):
+
+    """ lightweight class representing maya camera data """
+
+    def __init__(self, params, maya_camera_name, MTransform_object):
+        MTransformChild.__init__(self, params, maya_camera_name, MTransform_object)
+        self.world_space_matricies = []
+
+        self.dof = (self.name + '.depthOfField' )
+        self.focal_distance = cmds.getAttr(self.name + '.focusDistance') 
+        self.focal_length = float(cmds.getAttr(self.name + '.focalLength')) / 1000
+        self.f_stop = cmds.getAttr(self.name + '.fStop')
+
+        maya_resolution_aspect = float(self.params['output_res_width']) / float(self.params['output_res_height'])
+        maya_film_aspect = cmds.getAttr(self.name + '.horizontalFilmAperture') / cmds.getAttr(self.name + '.verticalFilmAperture')
+
+        if maya_resolution_aspect > maya_film_aspect:
+            self.film_width = float(cmds.getAttr(self.name + '.horizontalFilmAperture')) * inch_to_meter
+            self.film_height = self.film_width / maya_resolution_aspect  
+        else:
+            self.film_height = float(cmds.getAttr(self.name + '.verticalFilmAperture')) * inch_to_meter
+            self.film_width = self.film_height * maya_resolution_aspect 
+
+    def add_matrix_sample():
+        pass
+
+
+
+
+#--------------------------------------------------------------------------------------------------
+# Color class.
+#--------------------------------------------------------------------------------------------------
 
 class Color():
     def __init__(self, name, color, multiplier):
@@ -199,19 +493,14 @@ class Color():
         self.wavelength_range = '400.0 700.0'
         self.alpha = 1.0
 
-        print self.name
-        print self.color
-        print self.multiplier
-
-
-
     def writeXML(self, doc):
         print('writing color {0}'.format(self.name))
-        doc.startElement('color name="{0}"'.format(self.name))
-        doc.appendElement('parameter name="color" value="{0:.6f} {1:.6f} {2:.6f}"'.format(self.color[0], self.color[1], self.color[2]))
-        doc.appendElement('parameter name="color_space" value="{0}"'.format(self.color_space))
-        doc.appendElement('parameter name="multiplier" value="{0}"'.format(self.multiplier))
-        doc.appendElement('parameter name="alpha" value="{0}"'.format(self.alpha))
+        doc.startElement('color name="{0}"'.format(self.name))       
+        doc.appendParameter('color', '{0:.6f} {1:.6f} {2:.6f}'.format(self.color[0], self.color[1], self.color[2]))
+        doc.appendParameter('color_space', self.color_space)
+        doc.appendParameter('multiplier', self.multiplier)
+        doc.appendParameter('alpha', self.alpha)
+
         doc.startElement('values')
         doc.appendLine('{0:.6f} {1:.6f} {2:.6f}'.format(self.color[0], self.color[1], self.color[2]))
         doc.endElement('values')
@@ -220,199 +509,351 @@ class Color():
         doc.endElement('alpha')
         doc.endElement('color')
 
-#
-# texture class --
-#
+
+#--------------------------------------------------------------------------------------------------
+# Texture class.
+#--------------------------------------------------------------------------------------------------
 
 class Texture():
-    def __init__(self, name, file_name, color_space='srgb'):
+    def __init__(self, name, file_name, color_space='srgb', alpha_as_luminance=False):
         self.name = name
-        self.file_name = file_name
+
+        directory = ms_commands.legalizeName(os.path.split(file_name)[0])
+        filename = ms_commands.legalizeName(os.path.split(file_name)[1])
+        self.filepath = os.path.join(directory, filename)
+
         self.color_space = color_space
+
+        if alpha_as_luminance:
+            self.alpha_mode = 'luminance'
+        else:
+            self.alpha_mode = 'alpha_channel'
+
     def writeXMLObject(self, doc):
         print('writing texture object {0}'.format(self.name))
         doc.startElement('texture name="{0}" model="disk_texture_2d"'.format(self.name))
-        doc.appendElement('parameter name="color_space" value="{0}"'.format(self.color_space))
-        doc.appendElement('parameter name="filename" value="{0}"'.format(self.file_name))
+        doc.appendParameter('color_space', self.color_space)
+        doc.appendParameter('filename', self.filepath)
         doc.endElement('texture')
+
     def writeXMLInstance(self, doc):
         print('writing texture instance {0}_inst'.format(self.name))
         doc.startElement('texture_instance name="{0}_inst" texture="{0}"'.format(self.name, self.name))
-        doc.appendElement('parameter name="addressing_mode" value="clamp"')
-        doc.appendElement('parameter name="filtering_mode" value="bilinear"')
+        doc.appendParameter('addressing_mode', 'clamp')
+        doc.appendParameter('filtering_mode', 'bilinear')
+        doc.appendParameter('alpha_mode', self.alpha_mode)
         doc.endElement('texture_instance')
 
-#
-# light object --
-#
+
+#--------------------------------------------------------------------------------------------------
+# Light class.
+#--------------------------------------------------------------------------------------------------
 
 class Light():
-    def __init__(self, params, name):
+    def __init__(self, params, name, model='point_light'):
         self.params = params
         self.name = name
+        self.model = model
         self.color_name = self.name + '_exitance'
         self.color = cmds.getAttr(self.name+'.color')[0]
         self.multiplier = cmds.getAttr(self.name+'.intensity')
         self.decay = cmds.getAttr(self.name+'.decayRate')
-        m = cmds.getAttr(self.name+'.matrix')
-        self.transform = [m[0],m[1],m[2],m[3]], [m[4],m[5],m[6],m[7]], [m[8],m[9],m[10],m[11]], [m[12],m[13],m[14],m[15]]
+        self.inner_angle = None
+        self.outer_angle = None
+
     def writeXML(self, doc):
         print('writing light: {0}'.format(self.name))
-        doc.startElement('light name="{0}" model="point_light"'.format(self.name))
-        doc.appendElement('parameter name="exitance" value="{0}"'.format(self.color_name))
-        writeTransform(doc, 1, self.transform)
+        doc.startElement('light name="{0}" model="{1}"'.format(self.name, self.model))
+
+        # add spot light attribs if they exist
+        if self.model == 'spot_light':
+            doc.appendParameter('inner_angle', self.inner_angle)
+            doc.appendParameter('outer_angle', self.outer_angle)
+
+        doc.appendParameter('exitance', self.color_name)
+
+        writeTransform(doc, self.params['scene_scale'], self.name, self.params['export_transformation_blur'], self.params['motion_samples'])
         doc.endElement('light')
 
-#
-# shader object --
-#
 
-class Material(): #object transform name
-    def __init__(self, params, name, bsdf=None, edf=None, surface_shader=None): 
+#--------------------------------------------------------------------------------------------------
+# Material class.
+#--------------------------------------------------------------------------------------------------
+
+class Material():
+    def __init__(self, params, maya_node):
         self.params = params
-        self.name = name
-        self.shader_type = cmds.nodeType(self.name)
-        self.bsdf = bsdf 
-        self.edf = edf
-        self.surface_shader = surface_shader
-        self.bsdf_color = (0.5, 0.5, 0.5, 1)
-        self.bsdf_texture = None
-        self.edf_color = (0,0,0,1)
-        self.edf_texture = None
-        self.specular_color = (0,0,0,1)
-        self.specular_texture = None
+        self.name = maya_node
+        self.safe_name = ms_commands.legalizeName(self.name)
+        self.duplicate_shaders = cmds.getAttr(self.name + '.duplicate_front_attributes_on_back')
+        self.shading_nodes = []
+        self.colors = []
+        self.textures = []
+        self.enable_front = cmds.getAttr(self.name + '.enable_front_material')
+        self.enable_back = cmds.getAttr(self.name + '.enable_back_material')
 
-        #for shaders with color & incandescence attributes interpret them as bsdf and edf
-        if (self.shader_type == 'lambert') or (self.shader_type == 'blinn') or (self.shader_type == 'phong') or (self.shader_type == 'phongE'):
-            self.bsdf_color = ms_commands.normalizeRGB(cmds.getAttr(self.name+'.color')[0])
-            self.edf_color = ms_commands.normalizeRGB(cmds.getAttr(self.name+'.incandescence')[0])
-            color_connection = cmds.connectionInfo((self.name + '.color'), sourceFromDestination=True).split('.')[0]
-            incandecence_connection = cmds.connectionInfo((self.name+'.incandescence'), sourceFromDestination=True).split('.')[0]
-            if color_connection:
-                if cmds.nodeType(color_connection) == 'file':
-                    print('# texture connected to {0}'.format(self.name + '.color'))
-                    if params['convertTexturesToExr']:
-                        self.bsdf_texture = ('textures/' + os.path.split(ms_commands.convertTexToExr(cmds.getAttr(color_connection+ '.fileTextureName'), os.path.join(params['outputDir'], 'textures'), params['overwriteExistingExrs']))[1])
-                    else:
-                        self.bsdf_texture = cmds.getAttr(color_connection+ '.fileTextureName')
-                elif params['convertShadingNodes']:
-                    #convert connection to exr
-                    temp_dir = os.path.join(self.params['outputDir'],'temp')
-                    temp_file = os.path.join(temp_dir, (color_connection + '.iff'))
-                    ms_commands.convertConnectionToImage(self.name, 'color', temp_file, 1024)
-                    self.bsdf_texture =  ('textures/' + os.path.split(ms_commands.convertTexToExr(temp_file, os.path.join(params['outputDir'], 'textures'), params['overwriteExistingExrs']))[1])
+        self.bsdf_front = self.getMayaAttr(self.name + '.BSDF_front_color')
+        self.edf_front = self.getMayaAttr(self.name + '.EDF_front_color')
+        self.surface_shader_front = self.getMayaAttr(self.name + '.surface_shader_front_color')
+        self.normal_map_front = self.getMayaAttr(self.name + '.normal_map_front_color')
+        self.alpha_map = self.getMayaAttr(self.name + '.alpha_map_color')
+        if self.alpha_map != None:
+            self.alpha_map.alpha_mode = 'luminance'
 
+        #only use front shaders on back if box is checked
+        if not self.duplicate_shaders:
+            self.bsdf_back = self.getMayaAttr(self.name + '.BSDF_back_color')
+            self.edf_back = self.getMayaAttr(self.name + '.EDF_back_color')
+            self.surface_shader_back = self.getMayaAttr(self.name + '.surface_shader_back_color')
+            self.normal_map_back = self.getMayaAttr(self.name + '.normal_map_back_color')
 
-            if incandecence_connection:
-                if cmds.nodeType(incandecence_connection) == 'file':
-                    print('texture connected to {0}'.format(self.name + '.incandescence'))
-                    if params['convertTexturesToExr']:
-                        self.edf_texture = ('textures/' + os.path.split(ms_commands.convertTexToExr(cmds.getAttr(incandecence_connection+ '.fileTextureName'), os.path.join(params['outputDir'], 'textures'), params['overwriteExistingExrs']))[1])
-                    else:
-                        self.edf_texture = cmds.getAttr(incandecence_connection+ '.fileTextureName')
-                else:
-                    #convert connection to exr
-                    temp_file = os.path.join(params['outputDir'], 'temp_files', (incandecence_connection + '.iff'))
-                    ms_commands.convertConnectionToImage(self.name, 'incandescence', temp_file, 1024)
-                    self.edf_texture =  ('textures/' + os.path.split(ms_commands.convertTexToExr(temp_file, os.path.join(params['outputDir'], 'textures'), params['overwriteExistingExrs']))[1])
+            self.shading_nodes += [self.bsdf_front,
+                                   self.bsdf_back,
+                                   self.edf_front,
+                                   self.edf_back,
+                                   self.surface_shader_front,
+                                   self.surface_shader_back]
 
+            self.textures = self.textures + [self.normal_map_front,
+                                             self.normal_map_back,
+                                             self.alpha_map]
 
+        else: 
+            self.bsdf_back, self.edf_back, self.surface_shader_back, self.normal_map_back = self.bsdf_front, self.edf_front, self.surface_shader_front, self.normal_map_front
 
-        #get specular conponent for shaders which have one
-        elif (self.shader_type == 'blinn') or (self.shader_type == 'phong') or (self.shader_type == 'phongE'):
-            self.specular_color = ms_commands.normalizeRGB(cmds.getAttr(self.name+'.specularColor')[0])
-            specular_connection = cmds.connectionInfo((self.name + '.specularColor'), sourceFromDestination=True).split('.')[0]
-            if specular_connection:
-                if cmds.nodeType(specular_connection) == 'file':
-                    print('texture connected to {0}'.format(self.name + '.specularColor'))
-                    if params['convertTexturesToExr']:
-                        self.specular_texture = ('textures/' + os.path.split(ms_commands.convertTexToExr(cmds.getAttr(specular_connection+ '.fileTextureName'), os.path.join(params['outputDir'], 'textures'), params['overwriteExistingExrs']))[1])
-                    else:
-                        self.specular_texture = cmds.getAttr(specular_connection+ '.fileTextureName')
-                else:
-                    #convert connection to exr
-                    temp_file = os.path.join(params['outputDir'], 'temp_files', (specular_connection + '.iff'))
-                    ms_commands.convertConnectionToImage(self.name, 'specularColor', temp_file, 1024)
-                    self.specular_texture =  ('textures/' + os.path.split(ms_commands.convertTexToExr(temp_file, os.path.join(params['outputDir'], 'textures'), params['overwriteExistingExrs']))[1])
+            self.shading_nodes += [self.bsdf_front,
+                                   self.edf_front,
+                                   self.surface_shader_front]
 
-        #for surface shaders interpret outColor as bsdf and edf
-        elif self.shader_type == 'surfaceShader':
-            self.edf_color = ms_commands.normalizeRGB(cmds.getAttr(self.name+'.outColor')[0])
-            self.bsdf_color = self.edf_color
+            self.textures += [self.normal_map_front, self.alpha_map]
 
+    def getMayaAttr(self, attr_name):
+        connection = cmds.listConnections(attr_name)
+        if connection:
+            if cmds.nodeType(connection[0]) == 'ms_appleseed_shading_node':
+                shading_node = ShadingNode(self.params, connection[0])
+                self.shading_nodes = self.shading_nodes + [shading_node] + shading_node.getChildren()
+                self.colors += shading_node.colors
+                self.textures += shading_node.textures
+                return shading_node
 
-            outColor_connection = cmds.connectionInfo((self.name+'.outColor'), sourceFromDestination=True).split('.')[0]
-            if outColor_connection:
-                if cmds.nodeType(outColor_connection) == 'file':
-                    print('texture connected to {0}'.format(self.name + '.outColor'))
-                    if params['convertTexturesToExr']:
-                        self.bsdf_texture = ('textures/' + os.path.split(ms_commands.convertTexToExr(cmds.getAttr(outColor_connection+ '.fileTextureName'), os.path.join(params['outputDir'], 'textures'), params['overwriteExistingExrs']))[1])
-                    else:
-                        self.bsdf_texture = cmds.getAttr(outColor_connection+ '.fileTextureName')
+            elif cmds.nodeType(connection[0]) == 'file':
+                maya_texture_file = ms_commands.getFileTextureName(connection[0])
+                texture = ms_commands.convertTexToExr(maya_texture_file, self.params['absolute_tex_dir'], overwrite=self.params['overwrite_existing_textures'], pass_through=False)
+                texture_node = Texture((connection[0] + '_texture'), (os.path.join(self.params['tex_dir'], os.path.split(texture)[1])), color_space='srgb')
+                attribute_value = (texture_node.name + '_inst')
+                self.textures += [texture_node]
+                return texture_node
 
-                    self.edf_texture = self.bsdf_texture
-                else:
-                    #convert connection to exr
-                    temp_file = os.path.join(params['outputDir'], 'temp_files', (outColor_connection + '.iff'))
-                    ms_commands.convertConnectionToImage(self.name, 'outColor', temp_file, 1024)
-                    self.edf_texture =  ('textures/' + os.path.split(ms_commands.convertTexToExr(temp_file, os.path.join(params['outputDir'], 'textures'), params['overwriteExistingExrs']))[1])
-
-            else:
-                self.bsdf_texture = None
-                self.edf_texture = None
-
-        #else use default shader
         else:
-            cmds.error('no valid texture connected to {0} using default'.format(self.name))
-            self.name = 'default_texture'
+            return None
 
-    def writeXML(self,doc):
+    def getShadingNodes(self):
+        return self.shading_nodes
 
-        print('writing material {0}'.format(self.name))
-        doc.startElement('material name="{0}" model="generic_material"'.format(self.name))
-        if self.bsdf:
-            doc.appendElement('parameter name="bsdf" value="{0}"'.format(self.bsdf))
-        if self.edf:
-            doc.appendElement('parameter name="edf" value="{0}"'.format(self.edf))
-        if self.surface_shader:
-            doc.appendElement('parameter name="surface_shader" value="{0}"'.format(self.surface_shader))
-        doc.endElement('material')
+    def writeXML(self, doc):
+        if self.duplicate_shaders:
+            if self.enable_front:
+                print('writing material {0}'.format(self.name))
+                doc.startElement('material name="{0}" model="generic_material"'.format(self.name))
+                if self.bsdf_front:
+                    doc.appendParameter('bsdf', self.bsdf_front.name)
+                if self.edf_front:
+                    doc.appendParameter('edf', self.edf_front.name)
+                doc.appendParameter('surface_shader', self.surface_shader_front.name)
+                if self.alpha_map:
+                    doc.appendParameter('alpha_map', self.alpha_map.name + '_inst')
+                if self.normal_map_front:
+                    doc.appendParameter('normal_map', self.normal_map_front.name + '_inst')
+                doc.endElement('material')
+        else:
+            if self.enable_front:
+                print('writing material {0}_front'.format(self.name))
+                doc.startElement('material name="{0}_front" model="generic_material"'.format(self.name))
+                if self.bsdf_front:
+                    doc.appendParameter('bsdf', self.bsdf_front.name)
+                if self.edf_front:
+                    doc.appendParameter('edf', self.edf_front.name)
+                doc.appendParameter('surface_shader', self.surface_shader_front.name)
+                if self.alpha_map:
+                    doc.appendParameter('alpha_map', self.alpha_map.name + '_inst')
+                if self.normal_map_front:
+                    doc.appendParameter('normal_map', self.normal_map_front.name + '_inst')
+                doc.endElement('material')    
+            if self.enable_back:
+                print('writing material {0}_back'.format(self.name))
+                doc.startElement('material name="{0}_back" model="generic_material"'.format(self.name))
+                if self.bsdf_back:
+                    doc.appendParameter('bsdf', self.bsdf_back.name)
+                if self.edf_back:
+                    doc.appendParameter('edf', self.edf_back.name)
+                doc.appendParameter('surface_shader', self.surface_shader_back.name)
+                if self.alpha_map:
+                    doc.appendParameter('alpha_map', self.alpha_map.name + '_inst')
+                if self.normal_map_back:
+                    doc.appendParameter('normal_map', self.normal_map_back.name + '_inst')
+                doc.endElement('material') 
 
-#
-# bsdf class --
-#
+#--------------------------------------------------------------------------------------------------
+# ShadingNode class.
+#--------------------------------------------------------------------------------------------------
+
+class ShadingNode():
+    def __init__(self, params, name, attributes=False, node_type=False, model=False):
+        self.params = params
+        self.name = name                
+        self.type = node_type           # bsdf etc
+        self.model = model              # ashikhmin-shirley etc
+        self.child_shading_nodes = []
+        self.attributes = dict()
+        self.colors = []
+        self.textures = []
+
+        #if the node comes with attributes to initialize with then use them
+        if attributes:
+            self.attributes = attributes
+
+        #else find them from maya
+        else:
+            self.type = cmds.getAttr(self.name + '.node_type') #bsdf, edf etc
+            self.model = cmds.getAttr(self.name + '.node_model') #lambertian etc
+
+
+            #add the correct attributes based on the entity defs xml
+            for attribute_key in params['entityDefs'][self.model].attributes.keys():
+                self.attributes[attribute_key] = ''
+
+            for attribute_key in self.attributes.keys():
+                maya_attribute = self.name + '.' + attribute_key
+
+                #create variable to story the final string value
+                attribute_value = ''
+
+                #if the attribute is a color/entity 
+
+                if params['entityDefs'][self.model].attributes[attribute_key].type == 'entity_picker':
+
+                    #get attribute color value
+                    attribute_color = cmds.getAttr(maya_attribute)[0]
+                    connected_node = None
+
+                    #check for connected node
+                    connection = cmds.listConnections(maya_attribute, destination=False, source=True)
+                    if connection:
+                        connected_node = connection[0]
+
+                    #if there is a node connected
+                    if connected_node:
+
+                        #if the node is an appleseed shading node
+                        if cmds.nodeType(connected_node) == 'ms_appleseed_shading_node':
+                            shading_node = ShadingNode(self.params, connected_node)
+                            attribute_value = shading_node.name
+                            self.child_shading_nodes = self.child_shading_nodes + [shading_node] + shading_node.child_shading_nodes
+                            self.colors += shading_node.colors
+                            self.textures = self.textures + shading_node.textures
+
+                        #else if its a maya texture node
+                        elif cmds.nodeType(connected_node) == 'file':
+                            maya_texture_file = ms_commands.getFileTextureName(connected_node)
+                            texture = ms_commands.convertTexToExr(maya_texture_file, params['absolute_tex_dir'], overwrite=self.params['overwrite_existing_textures'], pass_through=False)
+                            texture_node = Texture((connected_node + '_texture'), (os.path.join(params['tex_dir'], os.path.split(texture)[1])), color_space='srgb')
+                            attribute_value = (texture_node.name + '_inst')
+                            self.textures += [texture_node]
+
+                        # if the node is unrecognized, bake it
+                        else:
+                            if self.params['convertShadingNodes']:
+                                print '***********', maya_attribute
+                                print '***********', connection
+                                print '***********', connected_node
+                                print '***********', self.name
+                                print '***********', attribute_key
+                                #convert texture and get path
+                                output_texture = os.path.join(params['tex_dir'], (connected_node + '.exr'))
+                                texture = ms_commands.convertConnectionToImage(self.name, attribute_key, output_texture, resolution=1024)
+                                texture_node = Texture((connected_node + '_texture'), (os.path.join(params['tex_dir'], os.path.split(texture)[1])), color_space='srgb')
+                                attribute_value = (texture_node.name + '_inst')
+                                self.textures += [texture_node]
+
+                    # no node is connected, just use the color value
+                    else:
+                        # if that color is gray interpret the R value as a 1-dimensional value
+                        if (attribute_color[0] == attribute_color[1]) and (attribute_color[0] == attribute_color[2]):
+                            attribute_value = str(attribute_color[0])
+
+                        # if its not black it must be a color so create a color node
+                        elif attribute_color != (0,0,0):
+                            color_name = self.name + '_' + attribute_key + '_color'
+                            normalized_color = ms_commands.normalizeRGB(attribute_color)
+                            color_node = Color(color_name, normalized_color[:3], normalized_color[3])
+                            attribute_value = color_node.name
+                            self.colors += [color_node]
+
+                elif params['entityDefs'][self.model].attributes[attribute_key].type == 'dropdown_list': 
+                    pass
+                # the node must be a text entity
+                else:
+                    attribute_value = str(cmds.getAttr(maya_attribute))
+
+                # add attribute to dict
+                self.attributes[attribute_key] = attribute_value
+
+    def getChildren(self):
+        return self.child_shading_nodes
+
+    def writeXML(self, doc):
+        print('writing shading node {0}'.format(self.name))
+        doc.startElement('{0} name="{1}" model="{2}"'.format(self.type, self.name, self.model))
+
+        #add the relevant parameters
+        for attribute_key in self.attributes.keys():
+            #only output the attribute if it has a value
+            if self.attributes[attribute_key]:
+                doc.appendParameter(attribute_key, self.attributes[attribute_key])
+
+        doc.endElement(self.type)
+
+
+#--------------------------------------------------------------------------------------------------
+# Bsdf class.
+#--------------------------------------------------------------------------------------------------
 
 class Bsdf():
     def __init__(self, name, model, bsdf_params):
         self.name = name
         self.model = model
         self.bsdf_params = bsdf_params
+
     def writeXML(self, doc):
         print('writing bsdf {0}'.format(self.name))
         doc.startElement('bsdf name="{0}" model="{1}"'.format(self.name, self.model))
         for param in self.bsdf_params:
-            doc.appendElement('parameter name="{0}" value="{1}"'.format(param, self.bsdf_params[param]))
+            doc.appendParameter(param, self.bsdf_params[param])
         doc.endElement('bsdf')
 
-#
-# edf class --
-#
+
+#--------------------------------------------------------------------------------------------------
+# Edf class.
+#--------------------------------------------------------------------------------------------------
 
 class Edf():
     def __init__(self, name, model, edf_params):
         self.name = name
         self.model = model
         self.edf_params = edf_params
+
     def writeXML(self, doc):
         print('writing bsdf {0}'.format(self.name))
         doc.startElement('edf name="{0}" model="{1}"'.format(self.name, self.model))
         for param in self.edf_params:
-            doc.appendElement('parameter name="{0}" value="{1}"'.format(param, self.edf_params[param]))
+            doc.appendParameter(param, self.edf_params[param])
         doc.endElement('edf')
 
-#
-# surface shader class --
-#
+
+#--------------------------------------------------------------------------------------------------
+# SurfaceShader class.
+#--------------------------------------------------------------------------------------------------
 
 class SurfaceShader():
     def __init__(self, name, model, surface_shader_params=None):
@@ -424,28 +865,28 @@ class SurfaceShader():
         doc.startElement('surface_shader name="{0}" model="{1}"'.format(self.name, self.model))
         if self.model == 'constant_surface_shader':
             for param in self.surface_shader_params:
-                doc.appendElement('parameter name="{0}" value="{1}"'.format(param, self.surface_shader_params[param]))
+                doc.appendParameter(param, self.surface_shader_params[param])
         doc.endElement('surface_shader')
 
 
-#
-# camera class --
-#
+#--------------------------------------------------------------------------------------------------
+# Camera class.
+#--------------------------------------------------------------------------------------------------
 
-class Camera(): #(camera_name)
+class Camera():
     def __init__(self, params, cam):
         self.params = params
-        if self.params['sceneCameraDefaultThinLens'] or cmds.getAttr(cam+'.depthOfField'):
+        if self.params['sceneCameraDefaultThinLens'] or cmds.getAttr(cam + '.depthOfField'):
             self.model = 'thinlens_camera'
-            self.f_stop = cmds.getAttr(cam+'.fStop')
-            self.focal_distance = cmds.getAttr(cam+'.focusDistance')
-            self.diaphram_blades = 0
-            self.diaphram_tilt_angle = 0.0
+            self.f_stop = cmds.getAttr(cam + '.fStop')
+            self.focal_distance = cmds.getAttr(cam + '.focusDistance')
+            self.diaphragm_blades = 0
+            self.diaphragm_tilt_angle = 0.0
         else:
             self.model = 'pinhole_camera'
         self.name = cam
 
-        maya_resolution_aspect = float(params['outputResWidth'])/float(params['outputResHeight'])
+        maya_resolution_aspect = float(params['output_res_width']) / float(params['output_res_height'])
         maya_film_aspect = cmds.getAttr(cam + '.horizontalFilmAperture') / cmds.getAttr(cam + '.verticalFilmAperture')
 
         if maya_resolution_aspect > maya_film_aspect:
@@ -455,32 +896,35 @@ class Camera(): #(camera_name)
             self.film_height = float(cmds.getAttr(self.name + '.verticalFilmAperture')) * inch_to_meter
             self.film_width = self.film_height * maya_resolution_aspect 
 
-
-
         self.focal_length = float(cmds.getAttr(self.name+'.focalLength')) / 1000
+
         # transpose camera matrix -> XXX0, YYY0, ZZZ0, XYZ1
-        m = cmds.getAttr(cam+'.matrix')
+        m = cmds.xform(cam, query=True, ws=True, matrix=True)
         self.transform = [m[0],m[1],m[2],m[3]], [m[4],m[5],m[6],m[7]], [m[8],m[9],m[10],m[11]], [m[12],m[13],m[14],m[15]]
    
     def writeXML(self, doc):
         print('writing camera: {0}'.format(self.name))
         doc.startElement('camera name="{0}" model="{1}"'.format(self.name, self.model))
-        doc.appendElement('parameter name="film_dimensions" value="{0} {1}"'.format(self.film_width, self.film_height))
-        doc.appendElement('parameter name="focal_length" value="{0}"'.format(self.focal_length))
+
+        doc.appendParameter('film_dimensions', '{0} {1}'.format(self.film_width, self.film_height))
+        doc.appendParameter('focal_length', self.focal_length)
+
         if self.model == 'thinlens_camera':
             print('exporting ' + self.name + ' as thinlens camera')
-            doc.appendElement('parameter name="focal_distance" value="{0}"'.format(self.focal_distance))
-            doc.appendElement('parameter name="f_stop" value="{0}"'.format(self.f_stop))
-            doc.appendElement('parameter name="diaphragm_blades" value="{0}"'.format(self.diaphram_blades))
-            doc.appendElement('parameter name="diaphragm_tilt_angle" value="{0}"'.format(self.diaphram_tilt_angle))
+            doc.appendParameter('focal_distance', self.focal_distance)
+            doc.appendParameter('f_stop', self.f_stop)
+            doc.appendParameter('diaphragm_blades', self.diaphragm_blades)
+            doc.appendParameter('diaphragm_tilt_angle', self.diaphragm_tilt_angle)
+
         #output transform matrix
-        writeTransform(doc, self.params['scene_scale'], self.transform)
+        writeTransform(doc, self.params['scene_scale'], self.name, self.params['export_camera_blur'], self.params['motion_samples'])
+
         doc.endElement('camera')
 
 
-#
-# environment class --
-#
+#--------------------------------------------------------------------------------------------------
+# Environment class.
+#--------------------------------------------------------------------------------------------------
 
 class Environment():
     def __init__(self, params, name, shader, edf):
@@ -488,480 +932,401 @@ class Environment():
         self.name = name
         self.environment_shader = shader
         self.environment_edf = edf
+
     def writeXML(self, doc):
         print('writing environment: ' + self.name)
         doc.startElement('environment name="{0}" model="generic_environment"'.format(self.name))
-        doc.appendElement('parameter name="environment_edf" value="{0}"'.format(self.environment_edf))
-        doc.appendElement('parameter name="environment_shader" value="{0}"'.format(self.environment_shader))
+        doc.appendParameter('environment_edf', self.environment_edf)
         doc.endElement('environment')
 
-#
-# environment shader class --
-#
+
+#--------------------------------------------------------------------------------------------------
+# EnvironmentShader class.
+#--------------------------------------------------------------------------------------------------
 
 class EnvironmentShader():
     def __init__(self, name, edf):
         self.name = name
         self.edf = edf
+
     def writeXML(self, doc):
         print('writing environment shader: ' + self.name)
         doc.startElement('environment_shader name="{0}" model="edf_environment_shader"'.format(self.name))
-        doc.appendElement('parameter name="environment_edf" value="{0}"'.format(self.edf))
+        doc.appendParameter('environment_edf', self.edf)
         doc.endElement('environment_shader')
 
-#
-# environment edf class --
-#
+
+#--------------------------------------------------------------------------------------------------
+# EnvironmentEdf class.
+#--------------------------------------------------------------------------------------------------
 
 class EnvironmentEdf():
     def __init__(self, name, model, edf_params):
         self.name = name
         self.model = model
         self.edf_params = edf_params
+
     def writeXML(self, doc):
         print('writing environment edf: ' + self.name)
         doc.startElement('environment_edf name="{0}" model="{1}"'.format(self.name, self.model))
         for param in self.edf_params:
-            doc.appendElement('parameter name ="{0}" value="{1}"'.format(param, self.edf_params[param]))
+            doc.appendParameter(param, self.edf_params[param])
         doc.endElement('environment_edf')
 
-#
-# geometry class --
-#
+
+#--------------------------------------------------------------------------------------------------
+# Geometry class.
+#--------------------------------------------------------------------------------------------------
 
 class Geometry():
     def __init__(self, params, name, output_file, assembly='main_assembly'):
+        checkExportCancelled()
         self.params = params
         self.name = name
-        #get name in heirarchy
-        self.heirarchy_name = name
+        self.safe_name = ms_commands.legalizeName(name)
+
+        self.hierarchy_name = name
+        self.material_nodes = []
+        self.shading_nodes = []
+        self.colors = []
+        self.textures = []
 
         current_object = name
         while cmds.listRelatives(current_object, parent=True):
             current_object = cmds.listRelatives(current_object, parent=True)[0]
-            self.heirarchy_name = current_object + ' ' + self.heirarchy_name
+            self.hierarchy_name = current_object + ' ' + self.hierarchy_name
         self.output_file = output_file
         self.assembly = assembly
+
+
         # get material name
-        shape = cmds.listRelatives(self.name, s=True)[0]
-        shadingEngine = None
-        if not (cmds.listConnections(shape, t='shadingEngine')):
-            cmds.error('no shader connected to ' + shape)
+        shape_node = cmds.listRelatives(self.name, shapes=True)[0]
+
+        #get list of unique shading engines
+        shading_engines = set(cmds.listConnections(shape_node, t='shadingEngine')) 
+
+        if shading_engines:
+            for shading_engine in shading_engines:
+                connected_material = cmds.listConnections(shading_engine + ".surfaceShader")
+                if connected_material != None:
+                    if cmds.nodeType(connected_material[0]) == 'ms_appleseed_material':
+                        # this is an appleseed material
+                        new_material = Material(self.params, connected_material[0])
+                        self.material_nodes.append(new_material)
+                        self.shading_nodes = self.shading_nodes + new_material.getShadingNodes()
+                        self.colors = self.colors + new_material.colors
+                        self.textures = self.textures + new_material.textures
+                    else: 
+                        cmds.warning("no appleseed material or shader translation connected to {0}".format(self.name))
         else:
-            shadingEngine = cmds.listConnections(shape, t='shadingEngine')[0]
-        self.material = cmds.connectionInfo((shadingEngine + ".surfaceShader"),sourceFromDestination=True).split('.')[0] #find the attribute the surface shader is plugged into athen split off the attribute name to leave the shader name
-       
-        # transpose camera matrix -> XXX0, YYY0, ZZZ0, XYZ1
-        m = cmds.getAttr(name+'.matrix')
+            cmds.warning("no shading engine connected to {0}".format(self.name))
+
+        # transpose matrix -> XXX0, YYY0, ZZZ0, XYZ1
+        m = cmds.xform(name, query=True, ws=True, matrix=True)
         self.transform = [m[0],m[1],m[2],m[3]], [m[4],m[5],m[6],m[7]], [m[8],m[9],m[10],m[11]], [m[12],m[13],m[14],m[15]]
         
 
+    def getMaterials(self):
+        return self.material_nodes
+
+    def getShadingNodes(self):
+        return self.shading_nodes
+
     def writeXMLInstance(self, doc):
-        print('writing objecct instance: '+self.name)
-        doc.startElement('object_instance name="{0}.0_inst" object="{1}.0"'.format(self.name, self.name))
-        writeTransform(doc)
-        doc.appendElement('assign_material slot="0" side="front" material="{0}"'.format(self.material))
-        if self.params['matDoubleShade']:
-            doc.appendElement('assign_material slot="0" side="back" material="{0}"'.format(self.material))
+        print('writing object instance: '+ self.name)
+        doc.startElement('object_instance name="{0}.0_inst" object="{1}.0"'.format(self.safe_name, self.safe_name))
+
+        if self.params['export_transformation_blur']:
+            # write 0 transform as the assembly will handle that
+            writeTransform(doc)
+        else:
+            writeTransform(doc, self.params['scene_scale'], self.name)
+
+        for material in self.material_nodes:
+            if material.duplicate_shaders:
+                if material.enable_front:
+                    doc.appendElement('assign_material slot="{0}" side="front" material="{1}"'.format(material.name, material.name))
+                if material.enable_back:
+                    doc.appendElement('assign_material slot="{0}" side="back" material="{1}"'.format(material.name, material.name))
+            else:
+                if material.enable_front:
+                    doc.appendElement('assign_material slot="{0}" side="front" material="{1}_front"'.format(material.name, material.name))
+                if material.enable_back:
+                    doc.appendElement('assign_material slot="{0}" side="back" material="{1}_back"'.format(material.name, material.name))
         doc.endElement('object_instance')
-#
-# assembly object --
-#
+
+
+#--------------------------------------------------------------------------------------------------
+# Assembly class.
+#--------------------------------------------------------------------------------------------------
 
 class Assembly():
-    def __init__(self, params, name='main_assembly'):
+    def __init__(self, params, name='main_assembly', object_list=False, position_from_object=False):
+        checkExportCancelled()
         self.params = params
-        self.name = name
+        self.name = ms_commands.legalizeName(name)
+        self.position_from_object = position_from_object
         self.light_objects = []
-        self.geo_objects = dict()
-        self.material_objects = dict()
-        self.color_objects = dict()
-        self.texture_objects = dict()
-        self.surface_shader_objects = dict()
-        self.bsdf_objects = dict()
-        self.edf_objects = dict()
+        self.geo_objects = []
+        self.material_objects = []
+        self.shading_node_objects = []
+        self.color_objects = []
+        self.texture_objects = []
 
-        #if name is default populate list with all lights otherwise just lights from set with the same name as the object
-        if (self.name == 'main_assembly'):
-            for light_shape in cmds.ls(lights=True):
-                self.light_objects.append(Light(self.params, cmds.listRelatives(light_shape, ad=True, ap=True)[0]))
-        else:
-            for light_shape in cmds.listRelatives(self.name, typ='light'):
-                self.light_objects.append(Light(self.params, cmds.listRelatives(light_shape, ad=True, ap=True)[0]))
-        #add light colors to list
-        for light_object in self.light_objects:
-            self.addColor(light_object.color_name, light_object.color, light_object.multiplier)
-        
-        if not len(self.light_objects):
-            cmds.warning('no light present in: ' + self.name)
-        
-        #if name is default populate list with all geometry otherwise just geometry from set with the same name as the object
-        if (self.name == 'main_assembly'):
-            #create a list of all geometry objects and itterate over them
-            for geo in cmds.ls(typ='mesh'):
-                if (ms_commands.shapeIsExportable(geo) and ms_commands.hasShaderConnected(geo)):
-                    geo_transform = cmds.listRelatives(geo, ad=True, ap=True)[0]
+        # add shape nodes as geo objects
+        if object_list:
+            for object in object_list:
+                if cmds.nodeType(object) == 'mesh':
+                    geo_transform = cmds.listRelatives(object, ad=True, ap=True)[0]
                     if not (geo_transform in self.geo_objects):
-                        self.geo_objects[geo_transform] = Geometry(self.params, geo_transform, ('geo/'+self.name+'.obj'), self.name)
-        else:
-            for geo in cmds.listConnections(self.name, sh=True):
-                if (ms_commands.shapeIsExportable(geo) and ms_commands.hasShaderConnected(geo)):
-                    geo_transform = cmds.listRelatives(geo, ad=True, ap=True)[0]
-                    if not geo_transform in self.geo_objects:
-                        self.geo_objects[geo_transform] = Geometry(self.params, geo_transform, ('geo/'+self.name+'.obj'), self.name)
-                
-        #populate list with individual materials
+                        geo_filename = self.name + '.obj'
+                        geo_filepath = os.path.join(self.params['geo_dir'], geo_filename)
+                        self.geo_objects.append(Geometry(self.params, geo_transform, geo_filepath, self.name))
+                elif (cmds.nodeType(object) == 'pointLight') and self.params['exportMayaLights']:
+                    light_transform = cmds.listRelatives(object, ad=True, ap=True)[0]
+                    if not (light_transform in self.light_objects):
+                        self.light_objects.append(Light(self.params, cmds.listRelatives(object, ad=True, ap=True)[0]))
+                elif (cmds.nodeType(object) == 'spotLight') and self.params['exportMayaLights']:
+                    light_transform = cmds.listRelatives(object, ad=True, ap=True)[0]
+                    if not (light_transform in self.light_objects):
+                        light_object = Light(self.params, cmds.listRelatives(object, ad=True, ap=True)[0])
+                        light_object.model = 'spot_light'
+                        light_object.inner_angle = cmds.getAttr(object + '.coneAngle')
+                        light_object.outer_angle = cmds.getAttr(object + '.coneAngle') + cmds.getAttr(object + '.penumbraAngle')
+                        self.light_objects.append(light_object)
+
+        # add light colors to list
+        for light_object in self.light_objects:
+            light_color_object = Color(light_object.color_name, light_object.color, light_object.multiplier)
+            self.color_objects.append(light_color_object)
+
+        # populate material, shading node and color list
         for geo in self.geo_objects:
-            self.addMaterial(self.geo_objects[geo].material)
-        #if there are no objects in the scene raise error
-        if not len(self.geo_objects):
-            cmds.error('no objects present in ' + self.name)
-            raise RuntimeError('no objects present in ' + self.name)
-
-    def addColor(self, name, value, multiplier=1):
-        if not name in self.color_objects:
-            self.color_objects[name] = Color(name, value, multiplier)
-
-    def addTexture(self, name, file_name):
-        if not name in self.texture_objects:
-            self.texture_objects[name] = Texture(name, file_name)
-    
-    def addEDF(self, material, type):
-        edf_params = dict()
-        if type == 'Diffuse':
-            if material.edf_texture:
-                self.addTexture(material.name + '_exitance', material.edf_texture)
-                edf_params['exitance'] = (material.name + '_exitance_inst')
+            if geo.getMaterials() != None:
+                self.material_objects = self.material_objects + geo.getMaterials()
             else:
-                self.addColor((material.name + '_exitance'), material.edf_color[0:3], material.edf_color[3])
-                edf_params['exitance'] = material.name + '_exitance'
-            self.edf_objects[material.name + '_edf'] = Edf(material.name + '_edf', 'diffuse_edf', edf_params)
+                cmds.warning("no material connected to {0}".format(geo.name))
+            self.shading_node_objects = self.shading_node_objects + geo.getShadingNodes()
+            self.color_objects = self.color_objects + geo.colors
+            self.texture_objects = self.texture_objects + geo.textures
 
-    def addBSDF(self, material, type):
-        print('translating {0} to {1} BSDF'.format(material.name, type))
-        bsdf_params = dict()
-        if type == 'Lambertian':
-            #add reflectence component
-            if material.bsdf_texture:
-                self.addTexture(material.name + '_reflectance', material.bsdf_texture)
-                bsdf_params['reflectance'] = (material.name + '_reflectance_inst')
-            else:
-                self.addColor((material.name + '_reflectance'), material.bsdf_color[0:3], material.bsdf_color[3])
-                bsdf_params['reflectance'] = material.name + '_reflectance'
-            self.bsdf_objects[material.name + '_bsdf'] = Bsdf(material.name + '_bsdf', 'lambertian_brdf', bsdf_params)
+        # materials
+        unsorted_materials = self.material_objects
+        self.material_objects = dict()
+        for material in unsorted_materials:
+            if not material.name in self.material_objects:
+                self.material_objects[material.name] = material
+        self.material_objects = self.material_objects.values()
 
-        elif type =='Ashikhmin-Shirley':
-            bsdf_params['shininess_u'] = 0.5
-            bsdf_params['shininess_v'] = 0.5
-            # add diffuse reflectence component
-            if material.bsdf_texture:
-                self.addTexture(material.name + '_diffuse_reflectance', material.bsdf_texture)
-                bsdf_params['diffuse_reflectance'] = (material.name + '_diffuse_reflectance_inst')
-            else:
-                self.addColor(material.name + '_diffuse_reflectance', material.bsdf_color[0:3], material.bsdf_color[3])
-                bsdf_params['diffuse_reflectance'] = material.name + '_diffuse_reflectance'
-            #add glossy reflectence component
-            if material.specular_texture:
-                self.addTexture(material.name + '_glossy_reflectance', material.specular_texture)
-                bsdf_params['glossy_reflectance'] = material.name + '_glossy_reflectance'
-            else:
-                self.addColor(material.name + '_glossy_reflectance', material.specular_color[0:3], material.bsdf_color[3])
-                bsdf_params['glossy_reflectance'] = material.name + '_glossy_reflectance'
-            self.bsdf_objects[material.name + '_bsdf'] = Bsdf(material.name + '_bsdf', 'ashikhmin_brdf', bsdf_params)
+        # shading nodes
+        unsorted_shading_nodes = self.shading_node_objects
+        self.shading_node_objects = dict()
+        for shading_node in unsorted_shading_nodes:
+            if shading_node != None:
+                if not shading_node.name in self.shading_node_objects:
+                    self.shading_node_objects[shading_node.name] = shading_node
+        self.shading_node_objects = self.shading_node_objects.values()
 
-        elif type == 'Kelemen':
-            bsdf_params['roughness'] = 0.5
-            #add matte_reflectance component
-            if material.bsdf_texture:
-                self.addTexture(material.name + '_matte_reflectance', material.bsdf_texture)
-                bsdf_params['matte_reflectance'] = (material.name + '_matte_reflectance_inst')
-            else:
-                self.addColor(material.name + '_matte_reflectance', material.bsdf_color[0:3], material.bsdf_color[3])
-                bsdf_params['matte_reflectance'] = material.name + '_matte_reflectance'
-            #add specular_reflectance component
-            if material.specular_texture:
-                self.addTexture(material.name + '_specular_reflectance', material.specular_texture)
-                bsdf_params['specular_reflectance'] = material.name + '_specular_reflectance'
-            else:
-                self.addColor(material.name + '_specular_reflectance', material.bsdf_color[0:3], material.bsdf_color[3])
-                bsdf_params['specular_reflectance'] = material.name + '_specular_reflectance'
-            self.bsdf_objects[material.name + '_bsdf'] = Bsdf(material.name + '_bsdf', 'kelemen_brdf', bsdf_params)
+        # colors
+        unsorted_colors = self.color_objects
+        self.color_objects = dict()
+        for color in unsorted_colors:
+            if not color.name in self.color_objects:
+                self.color_objects[color.name] = color
+        self.color_objects = self.color_objects.values()
 
-        elif type == 'Specular_BRDF':
-            #add reflectence component
-            if material.bsdf_texture:
-                self.addTexture(material.name + '_reflectance', material.bsdf_texture)
-                bsdf_params['reflectance'] = (material.name + '_reflectance_inst')
-            else:
-                self.addColor((material.name + '_reflectance'), material.bsdf_color[0:3], material.bsdf_color[3])
-                bsdf_params['reflectance'] = material.name + '_reflectance'
-            self.bsdf_objects[material.name + '_bsdf'] = Bsdf(material.name + '_bsdf', 'specular_brdf', bsdf_params)
-        
+        # textures
+        unsorted_textures = self.texture_objects
+        self.texture_objects = dict()
+        for texture in unsorted_textures:
+            if texture!= None:
+                if not texture.name in self.texture_objects:
+                    self.texture_objects[texture.name] = texture
+        self.texture_objects = self.texture_objects.values()
 
-    def addSurfaceShader(self, material, name, type): 
-        if not name in self.surface_shader_objects:
-            surface_shader_params = dict()
-            model=None
-            #check surface shader type and add appropriate parameters to dict
-            if type == 'Physical':
-                model = 'physical_surface_shader'
-            elif type == 'Constant':
-                model = 'constant_surface_shader'
-                #if surface_shader is set to constant, take color or texture from material bsdf
-                if material.bsdf_texture:
-                    self.addTexture(material.name + '_surface_shader_color', material.bsdf_texture)
-                    surface_shader_params['color'] = (material.name + '_surface_shader_color_inst ')
-                else:
-                    self.addColor((material.name + '_surface_shader_color'), material.bsdf_color[0:3], material.bsdf_color[3])
-                    surface_shader_params['color'] = material.name + '_surface_shader_color'
-            elif type == 'Ambient Occlusion':
-                cmds.error('atempting to set {0} surface shader to ambient occlusion'.format(name))
-                cmds.error('ambient occlusion not implimented yet')
-            print('adding {0} surface shader to {0}'.format(type, name))
-            self.surface_shader_objects[name] = SurfaceShader(name, model, surface_shader_params)
-
-
-    def addMaterial(self, name):
-        if not name in self.material_objects:
-            self.material_objects[name] = Material(self.params, name)
-
-            self.material_objects[name].bsdf = None
-            self.material_objects[name].edf = None
-            self.material_objects[name].surface_shader = None
-
-            #if custom shader translation attribs exists use them
-            if cmds.objExists(name + '.mayaseed_bsdf'):
-                if not (cmds.getAttr(name+'.mayaseed_bsdf', asString=True) == '<None>'):
-                    self.material_objects[name].bsdf = (name + '_bsdf')
-                    self.addBSDF(self.material_objects[name], cmds.getAttr(name+'.mayaseed_bsdf', asString=True)) 
-                if not (cmds.getAttr(name+'.mayaseed_edf', asString=True) == '<None>'):
-                    self.material_objects[name].edf = (name + '_edf')
-                    self.addEDF(self.material_objects[name], cmds.getAttr(name+'.mayaseed_edf', asString=True))  
-                if not (cmds.getAttr(name+'.mayaseed_surface_shader', asString=True) == '<None>'):
-                    self.material_objects[name].surface_shader = (name + '_surface_shader')
-                    self.addSurfaceShader(self.material_objects[name], name + '_surface_shader', cmds.getAttr(name+'.mayaseed_surface_shader', asString=True))  
-
-            else: #create bsdf,edf & surface shader based on defaults
-                #create bsdf
-                if self.material_objects[name].shader_type == 'lambert':
-                    if not self.params['matLambertBSDF'] == 'None':
-                        self.material_objects[name].bsdf = (name + '_bsdf')
-                        self.addBSDF(self.material_objects[name], self.params['matLambertBSDF'])  
-                          
-                elif self.material_objects[name].shader_type == 'blinn':
-                    if not self.params['matBlinnBSDF'] == 'None':
-                        self.material_objects[name].bsdf = (name + '_bsdf')
-                        self.addBSDF(self.material_objects[name], self.params['matBlinnBSDF'])   
-                          
-                elif self.material_objects[name].shader_type == 'phong' or self.material_objects[name].shader_type == 'phongE':
-                    if not self.params['matPhongBSDF'] == 'None':
-                        self.material_objects[name].bsdf = (name + '_bsdf')
-                        self.addBSDF(self.material_objects[name], self.params['matPhongBSDF'])  
-                          
-                elif self.material_objects[name].shader_type == 'surfaceShader':
-                    if not self.params['matSurfaceShaderBSDF'] == 'None':
-                        self.material_objects[name].bsdf = (name + '_bsdf')
-                        self.addBSDF(self.material_objects[name], self.params['matSurfaceShaderBSDF'])  
-                          
-                else:
-                    if not self.params['matDefaultBSDF'] == 'None':
-                        self.material_objects[name].bsdf = (name + '_bsdf')
-                        self.addBSDF(self.material_objects[name], self.params['matDefaultBSDF'])  
-
-                #create edf 
-                if self.material_objects[name].shader_type == 'lambert':
-                    if not self.params['matLambertEDF'] == 'None':
-                        self.material_objects[name].edf = (name + '_edf')
-                        self.addEDF(self.material_objects[name], self.params['matLambertEDF'])
-
-                elif self.material_objects[name].shader_type == 'blinn':
-                    if not self.params['matBlinnEDF'] == 'None':
-                        self.material_objects[name].edf = (name + '_edf')
-                        self.addEDF(self.material_objects[name], self.params['matBlinnEDF'])
-
-                elif self.material_objects[name].shader_type == 'phong' or self.material_objects[name].shader_type == 'phongE':
-                    if not self.params['matPhongEDF'] == 'None':
-                        self.material_objects[name].edf = (name + '_edf')
-                        self.addEDF(self.material_objects[name], self.params['matPhongEDF'])
-
-                elif self.material_objects[name].shader_type == 'surfaceShader':
-                    if not self.params['matSurfaceShaderEDF'] == 'None':
-                        self.material_objects[name].edf = (name + '_edf')
-                        self.addEDF(self.material_objects[name], self.params['matSurfaceShaderEDF'])
-                else:
-                    if not self.params['matDefaultEDF'] == 'None':
-                        self.material_objects[name].edf = (name + '_edf')
-                        self.addEDF(self.material_objects[name], self.params['matDefaultEDF'])
-
-                #create surface
-                if self.material_objects[name].shader_type == 'lambert':
-                    if not self.params['matLambertSurfaceShader'] == 'None':   
-                        if self.params['matLambertSurfaceShader'] == 'Physical':
-                            self.material_objects[name].surface_shader = ('Physical_surface_shader')
-                            self.addSurfaceShader(self.material_objects[name], 'Physical_surface_shader', self.params['matLambertSurfaceShader'])
-                        else:
-                            self.material_objects[name].surface_shader = (name + '_surface_shader')
-                            self.addSurfaceShader(self.material_objects[name], name + '_surface_shader', self.params['matLambertSurfaceShader'])
-
-                elif self.material_objects[name].shader_type == 'blinn':
-                    if not self.params['matBlinnSurfaceShader'] == 'None':   
-                        if self.params['matBlinnSurfaceShader'] == 'Physical':
-                            self.material_objects[name].surface_shader = ('Physical_surface_shader')
-                            self.addSurfaceShader(self.material_objects[name], 'Physical_surface_shader', self.params['matBlinnSurfaceShader'])
-                        else:
-                            self.material_objects[name].surface_shader = (name + '_surface_shader')
-                            self.addSurfaceShader(self.material_objects[name], name + '_surface_shader', self.params['matBlinnSurfaceShader'])
-
-                elif self.material_objects[name].shader_type == 'phong' or self.material_objects[name].shader_type == 'phongE':
-                    if not self.params['matPhongSurfaceShader'] == 'None':   
-                        if self.params['matPhongSurfaceShader'] == 'Physical':
-                            self.material_objects[name].surface_shader = ('Physical_surface_shader')
-                            self.addSurfaceShader(self.material_objects[name], 'Physical_surface_shader', self.params['matPhongSurfaceShader'])
-                        else:
-                            self.material_objects[name].surface_shader = (name + '_surface_shader')
-                            self.addSurfaceShader(self.material_objects[name], name + '_surface_shader', self.params['matPhongSurfaceShader'])
-
-                elif self.material_objects[name].shader_type == 'surfaceShader':
-                    if not self.params['matSurfaceShaderSurfaceShader'] == 'None':   
-                        if self.params['matSurfaceShaderSurfaceShader'] == 'Physical':
-                            self.material_objects[name].surface_shader = ('Physical_surface_shader')
-                            self.addSurfaceShader(self.material_objects[name], 'Physical_surface_shader', self.params['matSurfaceShaderSurfaceShader'])
-                        else:
-                            self.material_objects[name].surface_shader = (name + '_surface_shader')
-                            self.addSurfaceShader(self.material_objects[name], name + '_surface_shader', self.params['matSurfaceShaderSurfaceShader'])
-
-                else:
-                    if not self.params['matDefaultSurfaceShader'] == 'None':   
-                        if self.params['matDefaultSurfaceShader'] == 'Physical':
-                            self.material_objects[name].surface_shader = ('Physical_surface_shader')
-                            self.addSurfaceShader(self.material_objects[name], 'Physical_surface_shader', self.params['matDefaultSurfaceShader'])
-                        else:
-                            self.material_objects[name].surface_shader = (name + '_surface_shader')
-                            self.addSurfaceShader(self.material_objects[name], name + '_surface_shader', self.params['matDefaultSurfaceShader'])
-
-
-        
     def writeXML(self, doc):
         print('writing assembly: {0}'.format(self.name))
         doc.startElement('assembly name="{0}"'.format(self.name))
 
-        #write colors
+        # write colors
         for col in self.color_objects:
-             self.color_objects[col].writeXML(doc)
+            col.writeXML(doc)
 
-        #write texture objects
+        # write texture objects
         for tex in self.texture_objects:
-            self.texture_objects[tex].writeXMLObject(doc)
-        #write texture instances
+            tex.writeXMLObject(doc)
+
+        # write texture instances
         for tex in self.texture_objects:
-            self.texture_objects[tex].writeXMLInstance(doc)
+            tex.writeXMLInstance(doc)
 
-        #write bsdfs
-        for bsdf in self.bsdf_objects:
-            self.bsdf_objects[bsdf].writeXML(doc)
+        # write bsdfs
+        for shading_node in self.shading_node_objects:
+            if shading_node.type == 'bsdf':
+                shading_node.writeXML(doc)
 
-        #write eddfs
-        for edf in self.edf_objects:
-            self.edf_objects[edf].writeXML(doc)
+        # write edfs
+        for shading_node in self.shading_node_objects:
+            if shading_node.type == 'edf':
+                shading_node.writeXML(doc)
 
-        #write surface shaders
-        for surface_shader in self.surface_shader_objects:
-            self.surface_shader_objects[surface_shader].writeXML(doc)
+        # write surface shaders
+        for shading_node in self.shading_node_objects:
+            if shading_node.type == 'surface_shader':
+                shading_node.writeXML(doc)
 
-        #write materials
+        # write materials
         for material in self.material_objects:
-            self.material_objects[material].writeXML(doc)
-        
-        #export and write .obj object
+            material.writeXML(doc)
+
+        # export and write objects
         for geo in self.geo_objects:
-            #export geo
-            cmds.select(geo)
-            output_file = os.path.join(self.params['outputDir'], 'geo', (geo + '.obj'))
-            print geo
-            print output_file
-            cmds.file(output_file, force=True, options='groups=0;ptgroups=0;materials=0;smoothing=0;normals=1', typ='OBJexport',pr=True, es=True)
-            cmds.select(cl=True)
-            #write xml
-            doc.startElement('object name="{0}" model="mesh_object"'.format(geo))
-            doc.appendElement('parameter name="filename" value="geo/{0}.obj"'.format(geo))
+            file_name = ms_commands.legalizeName(geo.name)
+
+            doc.startElement('object name="{0}" model="mesh_object"'.format(file_name))
+
+            if  self.params['export_deformation_blur']:
+                # store the start time of the export
+                start_time = cmds.currentTime(query=True)
+                motion_samples = self.params['motion_samples']
+                if motion_samples < 2:
+                    cmds.warning("motion samples is set too low, must be at least 2; using 2")
+                    motion_samples = 2
+                sample_interval = 1.0 / (motion_samples - 1)
+
+                cmds.currentTime(cmds.currentTime(query=True) - 1)
+
+                doc.startElement('parameters name="filename"')
+
+                for i in range(motion_samples):
+                    frame = start_time + sample_interval * i
+                    print("exporting frame {0}".format(frame))
+
+                    cmds.currentTime(frame)
+                    cmds.refresh()
+
+                    obj_filename = "{0}.{1:03}.obj".format(file_name, i)
+                    doc.appendParameter("{0:03}".format(i), "{0}/{1}".format(self.params['geo_dir'], obj_filename))
+
+                    # write the OBJ file to disk
+                    obj_filepath = os.path.join(self.params['absolute_geo_dir'], obj_filename)
+                    checkExportCancelled()
+                    self.params['obj_exporter'](geo.name, obj_filepath, overwrite=True)
+
+                doc.endElement('parameters')
+
+                cmds.currentTime(start_time)
+            else:
+                obj_filename = file_name + ".obj"
+                doc.appendParameter('filename', os.path.join(self.params['geo_dir'], obj_filename))
+
+                # write the OBJ file to disk
+                obj_filepath = os.path.join(self.params['absolute_geo_dir'], obj_filename)
+                checkExportCancelled()
+                self.params['obj_exporter'](geo.name, obj_filepath)
+
+            self.params['progress_bar_progress'] += self.params['progress_bar_incriments']
+            cmds.progressWindow(edit=True, progress=self.params['progress_bar_progress'])
+
             doc.endElement('object')
-        
-        #write lights
-        for light_name in self.light_objects:
-            light_name.writeXML(doc)
-        
-        #write geo object instances
+
+        # write lights
+        for light_object in self.light_objects:
+           light_object.writeXML(doc)
+
+        # write geo object instances
         for geo in self.geo_objects:
-            self.geo_objects[geo].writeXMLInstance(doc)
-        
+            geo.writeXMLInstance(doc)
+
         doc.endElement('assembly')
         doc.startElement('assembly_instance name="{0}_inst" assembly="{1}"'.format(self.name, self.name))
-        writeTransform(doc, self.params['scene_scale'])
+
+        # if transformation blur is set output the transform with motion from the position_from_object variable
+        if self.params['export_transformation_blur']:
+            writeTransform(doc, self.params['scene_scale'], self.position_from_object, True, self.params['motion_samples'])
+        else:
+            writeTransform(doc, self.params['scene_scale'])
         doc.endElement('assembly_instance')
 
-#
-# scene class --
-#
+
+#--------------------------------------------------------------------------------------------------
+# Scene class.
+#--------------------------------------------------------------------------------------------------
 
 class Scene():
     def __init__(self,params):
+        checkExportCancelled()
         self.params = params
         self.assembly_list = []
         self.color_objects = dict()
         self.texture_objects = dict()
+        self.assembly_objects = dict()
 
-        #setup environment 
+        # setup environment 
         if self.params['environment']:
-            self.environment = Environment(self.params, self.params['environment'], (self.params['environment'] + '_env_shader'), (self.params['environment'] + '_env_edf'))
+            env_name = self.params['environment']
+            self.environment = Environment(self.params, env_name, (env_name + '_env_shader'), env_name + '_env_edf')
 
-            #retrieve model and param values from ui
-            environment_edf_model_enum = cmds.getAttr(self.params['environment'] + '.model')
+            env_edf_model_enum = cmds.getAttr(env_name + '.model')
             env_edf_params = dict()
-            if environment_edf_model_enum == 0:
-                environment_edf_model = 'constant_environment_edf'
-                environment_color = ms_commands.normalizeRGB(cmds.getAttr(self.params['environment']+'.constant_exitance')[0])
-                self.addColor('constant_env_exitance', environment_color[0:3], environment_color[3])
-                env_edf_params['exitance'] =  'constant_env_exitance'
 
-            elif environment_edf_model_enum == 1:
+            if env_edf_model_enum == 0:
+                environment_edf_model = 'constant_environment_edf'
+
+                environment_color = ms_commands.normalizeRGB(cmds.getAttr(env_name + '.constant_exitance')[0])
+                self.addColor('constant_env_exitance', environment_color[0:3], environment_color[3])
+
+                env_edf_params['exitance'] = 'constant_env_exitance'
+
+            elif env_edf_model_enum == 1:
                 environment_edf_model = 'gradient_environment_edf'
 
-                horizon_exitance = ms_commands.normalizeRGB(cmds.getAttr(self.params['environment']+'.gradient_horizon_exitance')[0])
+                horizon_exitance = ms_commands.normalizeRGB(cmds.getAttr(env_name + '.gradient_horizon_exitance')[0])
                 self.addColor('gradient_env_horizon_exitance', horizon_exitance[0:3], horizon_exitance[3])
 
-                zenith_exitance = ms_commands.normalizeRGB(cmds.getAttr(self.params['environment']+'.gradient_zenith_exitance')[0])
+                zenith_exitance = ms_commands.normalizeRGB(cmds.getAttr(env_name + '.gradient_zenith_exitance')[0])
                 self.addColor('gradient_env_zenith_exitance', zenith_exitance[0:3], zenith_exitance[3])
 
                 env_edf_params['horizon_exitance'] = 'gradient_env_horizon_exitance'
                 env_edf_params['zenith_exitance'] = 'gradient_env_zenith_exitance'
 
-            elif environment_edf_model_enum == 2:
-                lat_long_connection = cmds.connectionInfo((self.params['environment'] + '.latitude_longitude_exitance'), sourceFromDestination=True).split('.')[0]
+            elif env_edf_model_enum == 2:
                 environment_edf_model = 'latlong_map_environment_edf'
-                if lat_long_connection:
-                    if cmds.nodeType(lat_long_connection) == 'file':
-                        self.addTexture(self.params['environment'] + '_latlong_edf_map', cmds.getAttr(lat_long_connection + '.fileTextureName'))
-                        env_edf_params['exitance'] = self.params['environment'] + '_latlong_edf_map_inst'
-                        env_edf_params['horizontal_shift'] = 0
-                        env_edf_params['vertical_shift'] = 0
-                else:
-                    cmds.error('no texture connected to {0}.latitude_longitude_exitance'.format(self.params['environment']))
 
-            elif environment_edf_model_enum == 3:
-                mirrorball_edf_connection = cmds.connectionInfo((self.params['environment'] + '.mirror_ball_exitance'), sourceFromDestination=True).split('.')[0]
-                environment_edf_model = 'mirrorball_map_environment_edf'
-                if mirrorball_edf_connection:
-                    if cmds.nodeType(mirrorball_edf_connection) == 'file':
-                        self.addTexture(self.params['environment'] + '_mirrorball_map_environment_edf', cmds.getAttr(mirrorball_edf_connection + '.fileTextureName'))
-                        env_edf_params['exitance'] = self.params['environment'] + '_mirrorball_map_environment_edf_inst'
+                exitance_connection = cmds.connectionInfo(env_name + '.latitude_longitude_exitance', sourceFromDestination=True).split('.')[0]
+                if exitance_connection:
+                    if cmds.nodeType(exitance_connection) == 'file':
+                        maya_texture_file = ms_commands.getFileTextureName(exitance_connection)
+                        texture_file = ms_commands.convertTexToExr(maya_texture_file, params['absolute_tex_dir'], self.params['overwrite_existing_textures'])
+                        self.addTexture(env_name + '_latlong_edf_map', os.path.join(params['tex_dir'], os.path.split(texture_file)[1]))
+
+                        env_edf_params['exitance'] = env_name + '_latlong_edf_map_inst'
+                        env_edf_params['exitance_multiplier'] = cmds.getAttr(env_name + '.exitance_multiplier')
+                        env_edf_params['horizontal_shift'] = 0.0
+                        env_edf_params['vertical_shift'] = 0.0
                 else:
-                    cmds.error('no texture connected to {0}.mirrorball_exitance'.format(self.params['environment']))
+                    cmds.error('no texture connected to {0}.latitude_longitude_exitance'.format(env_name))
+
+            elif env_edf_model_enum == 3:
+                environment_edf_model = 'mirrorball_map_environment_edf'
+
+                exitance_connection = cmds.connectionInfo(env_name + '.mirror_ball_exitance', sourceFromDestination=True).split('.')[0]
+                if exitance_connection:
+                    if cmds.nodeType(exitance_connection) == 'file':
+                        maya_texture_name = ms_commands.getFileTextureName(exitance_connection)
+                        texture_file = ms_commands.convertTexToExr(maya_texture_name, params['absolute_tex_dir'], self.params['overwrite_existing_textures'])
+                        self.addTexture(env_name + '_mirrorball_map_environment_edf', os.path.join(params['tex_dir'], os.path.split(texture_file)[1]))
+
+                        env_edf_params['exitance'] = env_name + '_mirrorball_map_environment_edf_inst'
+                        env_edf_params['exitance_multiplier'] = cmds.getAttr(env_name + '.exitance_multiplier')
+                else:
+                    cmds.error('no texture connected to {0}.mirrorball_exitance'.format(env_name))
 
             else:
-                cmds.error('no environment model selected for ' + self.params['environment'])
-            
-            self.environment_edf = EnvironmentEdf((self.params['environment'] + '_env_edf'), environment_edf_model, env_edf_params)
-            self.environment_shader = EnvironmentShader((self.params['environment'] + '_env_shader'), (self.params['environment'] + '_env_edf'))
+                cmds.error("no environment model selected for {0}".format(env_name))
+
+            self.environment_edf = EnvironmentEdf(env_name + '_env_edf', environment_edf_model, env_edf_params)
+            self.environment_shader = EnvironmentShader(env_name + '_env_shader', env_name + '_env_edf')
 
         else:
             self.environment = None
@@ -976,147 +1341,240 @@ class Scene():
 
     def writeXML(self, doc):
         print('writing scene element')
+
         doc.startElement('scene')
 
-        #write current camera
+        # write current camera
         camera_instance = Camera(self.params, self.params['outputCamera'])
         camera_instance.writeXML(doc)   
-             
-        #write colors
+
+        # write colors
         for col in self.color_objects:
              self.color_objects[col].writeXML(doc)
-             
-        #write texture objects
+
+        # write texture objects
         for tex in self.texture_objects:
+            print 'writing texture', self.texture_objects[tex].name
             self.texture_objects[tex].writeXMLObject(doc)
 
-        #write texture instances
+        # write texture instances
         for tex in self.texture_objects:
             self.texture_objects[tex].writeXMLInstance(doc)
         
-        #if tehre is an environment write it
+        # if there is an environment write it
         if self.environment:
             self.environment_edf.writeXML(doc)
             self.environment_shader.writeXML(doc)
             self.environment.writeXML(doc)
 
-        #export assemblies
-        #get maya geometry
-        shape_list = cmds.ls(g=True, v=True) 
-        geo_transform_list = []
-        for g in shape_list:
-            # add first connected transform to the list
-            geo_transform_list.append(cmds.listRelatives(g, ad=True, ap=True)[0]) 
+        # write assemblies
+        shape_list = cmds.ls(g=True, v=True, noIntermediate=True)
+        light_list = cmds.ls(lt=True, v=True)
 
-        #populate a list of assemblies
-        for g in geo_transform_list:
-            set = cmds.listSets(object=g)
-            if set:
-                if not set[0] in self.assembly_list:
-                    self.assembly_list.append(cmds.listSets(object=g)[0])
-        
-        #create assemblys if any assembly names are present otherwise create default assembly
-        if self.assembly_list:
-            #for each assemply in assembly_list create an object and output its XML
-            for assembly in self.assembly_list:
-                new_assembly = Assembly(self.params, assembly)
-                new_assembly.writeXML(doc)
+        self.params['progress_bar_incriments'] = 100.0 / len(shape_list)
+        self.params['progress_bar_progress'] = 0
+
+        if self.params['export_transformation_blur']:
+            for geo in shape_list:
+                checkExportCancelled()
+                if ms_commands.shapeIsExportable(geo):
+                    # add first connected transform to the list
+                    geo_transform = cmds.listRelatives(geo, ad=True, ap=True)[0]
+                    geo_assembly = Assembly(self.params, geo_transform + '_assembly', [geo], geo_transform)
+                    geo_assembly.writeXML(doc)
+
+            for light in light_list:
+                    light_transform = cmds.listRelatives(light, ad=True, ap=True)[0]
+                    light_assembly = Assembly(self.params, light_transform + '_assembly', [light], light_transform)
+                    light_assembly.writeXML(doc)
         else:
-            print('no populated maya sets present, using default "main_assembly"')
-            new_assembly = Assembly(self.params, 'main_assembly')
-            new_assembly.writeXML(doc)
+            assembly = Assembly(self.params, "assembly", light_list + shape_list)
+            assembly.writeXML(doc)
+
         doc.endElement('scene')
 
-#
-# output class --
-#
+
+#--------------------------------------------------------------------------------------------------
+# Output class.
+#--------------------------------------------------------------------------------------------------
 
 class Output():
     def __init__(self, params):
         self.params = params
+
     def writeXML(self, doc):
         doc.startElement('output')
         doc.startElement('frame name="beauty"')
-        doc.appendElement('parameter name="camera" value="{0}"'.format(self.params['outputCamera']))
-        doc.appendElement('parameter name="color_space" value="{0}"'.format(self.params['outputColorSpace']))
-        doc.appendElement('parameter name="resolution" value="{0} {1}"'.format(self.params['outputResWidth'], self.params['outputResHeight']))
+        doc.appendParameter('camera', self.params['outputCamera'])
+        doc.appendParameter('color_space', self.params['outputColorSpace'])
+        doc.appendParameter('resolution', '{0} {1}'.format(self.params['output_res_width'], self.params['output_res_height']))
         doc.endElement('frame')
         doc.endElement('output')
 
-#
-# configurations class --
-#
+
+#--------------------------------------------------------------------------------------------------
+# Configurations class.
+#--------------------------------------------------------------------------------------------------
 
 class Configurations():
     def __init__(self, params):
         self.params = params
-    def writeXML(self,doc):
-        doc.startElement("configurations")
+
+    def writeXML(self, doc):
         print('writing configurations')
-        #if 'customise interactive configuration' is set read customised values
-        if self.params['customInteractiveConfigCheck']:
-            print('writing custom interactive config')
-            doc.startElement('configuration name="interactive" base="base_interactive"')
-            engine = ''
-            if self.params['customInteractiveConfigEngine'] == 'Path Tracing':
-                engine = "pt"
-            else:
-                engine = "drt"
-            doc.appendElement('parameter name="lighting_engine" value="{0}"'.format(engine))
-            doc.startElement('parameters name="{0}"'.format(engine))
-            doc.appendElement('parameter name="max_path_length" value="{0}"'.format(self.params['customInteractiveConfigMaxRayDepth']))
-            doc.endElement('parameters')
-            doc.appendElement('parameter name="min_samples" value="{0}"'.format(self.params['customInteractiveConfigMinSamples']))
-            doc.appendElement('parameter name="max_samples" value="{0}"'.format(self.params['customInteractiveConfigMaxSamples']))
-            doc.endElement('configuration')
-        else:# otherwise add default configurations
-            print('writing default interactive config')
-            doc.appendElement('configuration name="interactive" base="base_interactive"')
+
+        doc.startElement("configurations")
+
+        # add base interactive config
+        doc.appendElement('configuration name="interactive" base="base_interactive"')
 
         #if 'customise final configuration' is set read customised values
         if self.params['customFinalConfigCheck']:
             print('writing custom final config')
             doc.startElement('configuration name="final" base="base_final"')
-            engine = ''
-            if cmds.optionMenu('ms_customFinalConfigEngine', query=True, value=True) == "Path Tracing":
+
+            if self.params['customFinalConfigEngine'] == 0:
                 engine = 'pt'
             else:
                 engine = 'drt'
-            doc.appendElement('parameter name="lighting_engine" value="{0}"'.format(engine))
-            doc.startElement('parameters name="{0}"'.format(engine))
-            doc.appendElement('parameter name="max_path_length" value="{0}"'.format(self.params['customFinalConfigMaxRayDepth']))
+            doc.appendParameter('lighting_engine', engine)
+            doc.appendParameter('min_samples', self.params['customFinalConfigMaxSamples'])
+            doc.appendParameter('max_samples', self.params['customFinalConfigMaxSamples'])
+            
+            doc.startElement('parameters name="drt"')
+            doc.appendParameter('dl_bsdf_samples', self.params['drtDLBSDFSamples'])
+            doc.appendParameter('dl_light_samples', self.params['drtDLLightSamples'])
+            doc.appendParameter('enable_ibl', self.params['drtEnableIBL'])
+            doc.appendParameter('ibl_bsdf_samples', self.params['drtIBLBSDFSamples'])
+            doc.appendParameter('ibl_env_samples', self.params['drtIBLEnvSamples'])
+            doc.appendParameter('max_path_length', self.params['drtMaxPathLength'])
+            doc.appendParameter('rr_min_path_length', self.params['drtRRMinPathLength'])
+            doc.endElement("parameters")
+
+            doc.startElement('parameters name="pt"')
+            doc.appendParameter('dl_light_samples', self.params['ptDLLightSamples'])
+
+            if self.params['ptEnableCaustics']:
+                doc.appendParameter('enable_caustics', 'true')
+            else:
+                doc.appendParameter('enable_caustics', 'false')
+
+            if self.params['ptEnableDL']:
+                doc.appendParameter('enable_dl', 'true')
+            else:
+                doc.appendParameter('enable_dl', 'false')
+
+            if self.params['ptEnableIBL']:
+                doc.appendParameter('enable_ibl', 'true')
+            else:
+                doc.appendParameter('enable_ibl', 'false')
+
+            doc.appendParameter('ibl_bsdf_samples', self.params['ptIBLBSDFSamples'])
+            doc.appendParameter('ibl_env_samples', self.params['ptIBLEnvSamples'])
+            doc.appendParameter('max_path_length', self.params['ptMaxPathLength'])
+
+            if self.params['ptNextEventEstimation']:
+                doc.appendParameter('next_event_estimation', 'true')
+            else:
+                doc.appendParameter('next_event_estimation', 'false')
+
+            doc.appendParameter('rr_min_path_length', self.params['ptRRMinPathLength'])
+            doc.endElement("parameters")
+
+            doc.startElement('parameters name="generic_tile_renderer"')
+            doc.appendParameter('filter_size', self.params['gtrFilterSize'])
+            doc.appendParameter('max_contrast', self.params['gtrMaxContrast'])
+            doc.appendParameter('max_samples', self.params['gtrMaxSamples'])
+            doc.appendParameter('max_variation', self.params['gtrMaxVariation'])
+            doc.appendParameter('min_samples', self.params['gtrMinSamples'])
+            doc.appendParameter('sampler', self.params['gtrSampler'])
             doc.endElement('parameters')
-            doc.appendElement('parameter name="min_samples" value="{0}"'.format(self.params['customFinalConfigMinSamples']))
-            doc.appendElement('parameter name="max_samples" value="{0}"'.format(self.params['customFinalConfigMaxSamples']))
+
             doc.endElement("configuration")
+
         else:# otherwise add default configurations
             print('writing default final config')
             doc.appendElement('configuration name="final" base="base_final"')
-        # begin adding custom configurations
+
         doc.endElement('configurations')
-	
 
-#****************************************************************************************************************************************************************************************************
-# export function ***********************************************************************************************************************************************************************************
-#****************************************************************************************************************************************************************************************************
 
-def export(render_settings_node):
+#--------------------------------------------------------------------------------------------------
+# Main export function.
+#--------------------------------------------------------------------------------------------------
+
+def safe_make_dirs(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+def export_container(render_settings_node):
     params = getMayaParams(render_settings_node)
-    if not params['error']:
-        #make output directories if they dont exists
-        if not os.path.exists(os.path.join(params['outputDir'],'temp')):
-            os.makedirs(os.path.join(params['outputDir'],'temp'))
-        if not os.path.exists(os.path.join(params['outputDir'],'geo')):
-            os.makedirs(os.path.join(params['outputDir'],'geo'))
-        if not os.path.exists(os.path.join(params['outputDir'],'textures')):
-            os.makedirs(os.path.join(params['outputDir'],'textures'))
 
-        #begin export
+    # create progres bar
+    params['progress_amount'] = 0
+    cmds.progressWindow(title='Exporting', progress=params['progress_amount'], status='Exporting ' + render_settings_node, isInterruptable=True)
+
+
+    if params['error']:
+        cmds.error("error validating UI attributes")
+        raise RuntimeError("check script editor for details")
+
+    # compute the base output directory
+    scene_filepath = cmds.file(q=True, sceneName=True)
+    scene_basename = os.path.splitext(os.path.basename(scene_filepath))[0]
+    project_directory = cmds.workspace(q=True, rd=True)
+    params['outputDir'] = params['outputDir'].replace("<ProjectDir>", project_directory)
+    params['outputDir'] = os.path.join(params['outputDir'], scene_basename)
+
+    if params['export_animation']:
+        start_frame = params['animation_start_frame']
+        end_frame = params['animation_end_frame']
+    else:
+        start_frame = cmds.currentTime(query=True)
+        end_frame = start_frame
+
+    start_time = time.time()
+
+    current_frame = start_frame
+    original_time = cmds.currentTime(query=True)
+
+    # loop through frames and perform export
+    while (current_frame  <= end_frame):
+        # todo: add check for Escape being held down here to cancel an export
+
+        # todo: is this necessary, since we're already doing it when exporting geometry?
+        cmds.currentTime(current_frame)
+        frame_name = '{0:04}'.format(int(current_frame))
+
+        # compute the output file path
+        filename = params['fileName']
+        filename = filename.replace("<FileName>", scene_basename)
+        filename = filename.replace("#", frame_name)
+        filepath = os.path.join(params['outputDir'], filename)
+
+        # directory for geometry
+        params['geo_dir'] = os.path.join(frame_name, "geometry")
+        params['absolute_geo_dir'] = os.path.join(params['outputDir'], params['geo_dir'])
+
+        # directory for textures
+        params['tex_dir'] = 'textures'
+        if params['animatedTextures']:
+            params['tex_dir'] = os.path.join(frame_name, params['tex_dir'])
+        params['absolute_tex_dir'] = os.path.join(params['outputDir'], params['tex_dir'])
+
+        # create directories if they don't exist yet
+        safe_make_dirs(params['absolute_geo_dir'])
+        safe_make_dirs(params['absolute_tex_dir'])
+
+        params['skipTextures'] = False
+
         print('beginning export')
-        print('opening output file: ' + params['fileName'])
-        doc = WriteXml('{0}/{1}'.format(params['outputDir'], params['fileName'].replace("#",'{0:05}'.format(int(cmds.currentTime(query=True))))))
-        doc.appendLine('<?xml version="1.0" encoding="UTF-8"?>') # XML format string
-        doc.appendLine('<!-- File generated by mayaseed version {0} -->'.format(ms_commands.MAYASEED_VERSION))
+        print('opening output file {0}'.format(filepath))
+
+        doc = WriteXml(filepath)
+        doc.appendLine('<?xml version="1.0" encoding="UTF-8"?>')
+        doc.appendLine('<!-- File generated by Mayaseed version {0} -->'.format(ms_commands.MAYASEED_VERSION))
+
         print('writing project element')
         doc.startElement('project')
         scene_element = Scene(params)
@@ -1128,15 +1586,33 @@ def export(render_settings_node):
     
         doc.endElement('project')
         doc.close()
-        print('export finished')
+
+        current_frame += 1
+
+        # only export textures for the first frame
+        if not params['animatedTextures']:
+            params['skipTextures'] = True
+
+    cmds.currentTime(original_time)
+    cmds.select(render_settings_node)
+
+    # Compute and report export time.
+    export_time = time.time() - start_time
+    export_message = "Export completed in {0:.1f} seconds.".format(export_time)
+    print(export_message)
+
+    # end progress bar
+    cmds.progressWindow(endProgress=1)
+
+    cmds.confirmDialog(title="Export Completed", icon='information', message=export_message, button="OK")
 
 
+def export(render_settings_node):
+    if cmds.getAttr(render_settings_node + '.profile_export'):
+        import cProfile
+        command = 'import ms_export\nms_export.export_container("' + render_settings_node + '")'
+        cProfile.run(command)
     else:
-        cmds.error('error validating ui attributes ')
-        raise RuntimeError('check script editor for details')
-
-
-
-
+        export_container(render_settings_node)
 
 

@@ -22,13 +22,14 @@
 global proc AEms_environmentTemplate(string $nodeName)
 {
    editorTemplate -beginScrollLayout;
-      editorTemplate -beginLayout "Appleseed Projection" -collapse false;
+      editorTemplate -beginLayout "appleseed Projection" -collapse false;
          editorTemplate -addControl "model";
          editorTemplate -addControl "constant_exitance";
          editorTemplate -addControl "gradient_horizon_exitance";
          editorTemplate -addControl "gradient_zenith_exitance";
          editorTemplate -addControl "latitude_longitude_exitance";
          editorTemplate -addControl "mirror_ball_exitance";
+         editorTemplate -addControl "exitance_multiplier";
 
       editorTemplate -endLayout;
 

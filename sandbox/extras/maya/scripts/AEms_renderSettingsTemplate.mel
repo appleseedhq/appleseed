@@ -1,15 +1,17 @@
-   // Copyright (c) 2012 Jonathan Topf
 
+//
+// Copyright (c) 2012 Jonathan Topf
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-
+//
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
-
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -19,232 +21,278 @@
 // THE SOFTWARE.
 
 
-// procedure to get connected node of an attribute
+//--------------------------------------------------------------------------------------------------
+// Utility function to get connected node of an attribute.
+//--------------------------------------------------------------------------------------------------
 
-global proc string getConnectedNode(string $nodeName){
+global proc string getConnectedNode(string $nodeName) {
     string $nodes[] = `listConnections($nodeName)`;
     return $nodes[0];
 }
 
 
-// procedures for -callCustom folderPicker  ----------------------------------------
+//--------------------------------------------------------------------------------------------------
+// Directory browser.
+//--------------------------------------------------------------------------------------------------
 
-global proc AEfileBrowse(string $attr){    
- rowLayout -nc 3;  
-  text -label "Output directory";  
-  textField  -fileName `getAttr $attr` LocationText;  
-  symbolButton -image "navButtonBrowse.xpm" -c ("loadPopup(\"" + $attr + "\")");  
-  setParent ..;  
-   
-}  
-  
-global proc AEfileBrowseRepeat(string $attr){  
- textField  -e -fileName `getAttr $attr` LocationText;  
+global proc AEfileBrowse(string $attr) {
+    rowLayout -nc 3;
+    text -label "Output Directory";
+    textField  -fileName `getAttr $attr` LocationText;
+    symbolButton -image "navButtonBrowse.xpm" -c ("loadPopup(\"" + $attr + "\")");
+    setParent ..;
 }
 
-global proc loadPopup(string $attr){  
- string $loc[0] = `fileDialog2 -fm 3 -okc "save"`;  
-   
- if ($loc[0] != ""){  
-  setAttr -type "string" $attr $loc[0];  
-  textField -e -fileName `getAttr $attr` LocationText;  
- }  
-} 
-
-// procedure for -callCustom render button  ----------------------------------------
-global proc AEexportButton(string $attr){
-   string $nodeNameTokens[];
-   tokenize $attr "." $nodeNameTokens;
-   string $export_command = "python(\"import ms_export\\nms_export.export(\\\"" + $nodeNameTokens[0] + "\\\")\")";
-   print $export_command;
-   button -label "Export scene" -width 200 -height 30 -bgc 0 0.6 0.8 -ebg false -c $export_command;
+global proc AEfileBrowseRepeat(string $attr) {
+    textField  -e -fileName `getAttr $attr` LocationText;
 }
 
-global proc AE_edit_export_button(string $attr){
+global proc loadPopup(string $attr) {
+    string $loc[0] = `fileDialog2 -fm 3 -okc "save"`;
+
+    if ($loc[0] != "") {
+        setAttr -type "string" $attr $loc[0];
+        textField -e -fileName `getAttr $attr` LocationText;
+    }
 }
 
 
-// procedures for environment option menu  ----------------------------------------
+//--------------------------------------------------------------------------------------------------
+// Export button.
+//--------------------------------------------------------------------------------------------------
 
-global proc AEcustomEnvironmentMenuCreate(string $attr){
-   // get actual node name
-   string $nodeNameTokens[];
-   tokenize $attr "." $nodeNameTokens;
-   int $newStringLength = size($nodeNameTokens[0]);
-   string $nodeName = `substring $nodeNameTokens[0] 1 $newStringLength`;
-   string $currentEnvironmentConnectionTransform = `getConnectedNode($nodeName + ".environment")`;
-   string $currentEnvironmentConnectionTransformRelatives[] = {""};
-   if ($currentEnvironmentConnectionTransform != ""){
-      $currentEnvironmentConnectionTransformRelatives = `listRelatives $currentEnvironmentConnectionTransform`;
-   }
-   string $currentEnvironmentConnection = $currentEnvironmentConnectionTransformRelatives[0];
-
-   optionMenuGrp -label "Environmnets" -cc ("setEnvironmentConnection " + $nodeName) customEnvironmentMenu;
-   string $environments[] = `ls -type "ms_environment"`;
-   menuItem -label "<none>";
-   for ($item in $environments){
-        menuItem -label $item;         
-   }
-   print ($currentEnvironmentConnection + "****\n\n");
-   if ($currentEnvironmentConnection != ""){
-      optionMenuGrp -e -v $currentEnvironmentConnection customEnvironmentMenu;  
-   }
-   button -l " select " -h 20 -w 50 -c ("AEselecConnectedEnvironmentNode " + $nodeName) -p customEnvironmentMenu;
-   button -l " + " -h 20 -c ("createMsEnvironmentNode " + $nodeName ) -p customEnvironmentMenu;
-
+global proc AEexportButton(string $attr) {
+    string $nodeNameTokens[];
+    tokenize $attr "." $nodeNameTokens;
+    string $export_command = "python(\"import ms_export\\nms_export.export(\\\"" + $nodeNameTokens[0] + "\\\")\")";
+    print $export_command;
+    button -label "Export" -width 200 -height 30 -bgc 0 0.6 0.8 -ebg false -c $export_command;
 }
-global proc AEselecConnectedEnvironmentNode(string $nodeName){
-   string $connectedNode = `getConnectedNode($nodeName + ".environment")`;
-   if ($connectedNode != ""){
-      select -r $connectedNode;
-   } 
+
+global proc AE_edit_export_button(string $attr) {
 }
-global proc AEcustomEnvironmentMenuEdit(string $nodeName){  
-    deleteUI customEnvironmentMenu;       
+
+
+//--------------------------------------------------------------------------------------------------
+// Environment picker.
+//--------------------------------------------------------------------------------------------------
+
+global proc AEcustomEnvironmentMenuCreate(string $attr) {
+    // get actual node name
+    string $nodeNameTokens[];
+    tokenize $attr "." $nodeNameTokens;
+    int $newStringLength = size($nodeNameTokens[0]);
+    string $nodeName = `substring $nodeNameTokens[0] 1 $newStringLength`;
+    string $currentEnvironmentConnectionTransform = `getConnectedNode($nodeName + ".environment")`;
+    string $currentEnvironmentConnectionTransformRelatives[] = {""};
+    if ($currentEnvironmentConnectionTransform != "") {
+        $currentEnvironmentConnectionTransformRelatives = `listRelatives $currentEnvironmentConnectionTransform`;
+    }
+    string $currentEnvironmentConnection = $currentEnvironmentConnectionTransformRelatives[0];
+
+    optionMenuGrp -label "Environment" -cc ("setEnvironmentConnection " + $nodeName) customEnvironmentMenu;
+    string $environments[] = `ls -type "ms_environment"`;
+    menuItem -label "<none>";
+    for ($item in $environments) {
+        menuItem -label $item;
+    }
+    print ($currentEnvironmentConnection + "****\n\n");
+    if ($currentEnvironmentConnection != "") {
+        optionMenuGrp -e -v $currentEnvironmentConnection customEnvironmentMenu;  
+    }
+    button -l " select " -h 20 -w 50 -c ("AEselecConnectedEnvironmentNode " + $nodeName) -p customEnvironmentMenu;
+    button -l " + " -h 20 -c ("createMsEnvironmentNode " + $nodeName ) -p customEnvironmentMenu;
+}
+
+global proc AEselecConnectedEnvironmentNode(string $nodeName) {
+    string $connectedNode = `getConnectedNode($nodeName + ".environment")`;
+    if ($connectedNode != "") {
+        select -r $connectedNode;
+    } 
+}
+global proc AEcustomEnvironmentMenuEdit(string $nodeName) {
+    deleteUI customEnvironmentMenu;
     AEcustomEnvironmentMenuCreate($nodeName);
 }
 
-global proc setEnvironmentConnection(string $nodeName){
-   string $newSelection = `optionMenuGrp -q -v customEnvironmentMenu`;
-   $newSelectionAttr = $newSelection + ".nodeState";
-   string $environmentConnectionName = $nodeName + ".environment";
-   string $currentEnvironmentConnection = `getConnectedNode($nodeName + ".environment")`;
-   if ($currentEnvironmentConnection != ""){
-      $currentEnvironmentConnection = $currentEnvironmentConnection + ".nodeState";
-      //disconnectAttr $currentEnvironmentConnection $environmentConnectionName;
-      select $nodeName;
-   }
-   if ($newSelection != "<none>"){
-      print ("connecting "+$newSelectionAttr+" and "+$environmentConnectionName+"\n");
-      connectAttr -f $newSelectionAttr $environmentConnectionName;      
-   }
+global proc setEnvironmentConnection(string $nodeName) {
+    string $newSelection = `optionMenuGrp -q -v customEnvironmentMenu`;
+    $newSelectionAttr = $newSelection + ".nodeState";
+    string $environmentConnectionName = $nodeName + ".environment";
+    string $currentEnvironmentConnection = `getConnectedNode($nodeName + ".environment")`;
+    if ($currentEnvironmentConnection != "") {
+        $currentEnvironmentConnection = $currentEnvironmentConnection + ".nodeState";
+        select $nodeName;
+    }
+    if ($newSelection != "<none>") {
+        print ("connecting "+$newSelectionAttr+" and "+$environmentConnectionName+"\n");
+        connectAttr -f $newSelectionAttr $environmentConnectionName;
+    }
 }
 
-global proc createMsEnvironmentNode(string $nodeName){
-   string $node = `createNode "ms_environment"`;
-   connectAttr -f ($node + ".nodeState") ($nodeName + ".environment");
+global proc createMsEnvironmentNode(string $nodeName) {
+    string $node = `createNode "ms_environment"`;
+    connectAttr -f ($node + ".nodeState") ($nodeName + ".environment");
 }
 
-// procedures for camera option menu ----------------------------------------
-global proc AEcustomCameraMenuCreate(string $attr){
 
-   // get actual node name
-   string $nodeNameTokens[];
-   tokenize $attr "." $nodeNameTokens;
-   int $newStringLength = size($nodeNameTokens[0]);
-   string $nodeName = `substring $nodeNameTokens[0] 1 $newStringLength`;
-   print $nodeName;
+//--------------------------------------------------------------------------------------------------
+// Camera picker.
+//--------------------------------------------------------------------------------------------------
 
-   //string $currentCameraConnection = `getConnectedNode($nodeName + ".camera")`;
-   string $customCameraMenuCommand = "setCameraConnection " + $nodeName;
-   optionMenuGrp -label "Cameras" -cc $customCameraMenuCommand customCameraMenu;
-   string $cameras[] = `ls -cameras`;
-   menuItem -label "<none>";
-   for ($item in $cameras){
-        menuItem -label $item;         
-   }
+global proc AEcustomCameraMenuCreate(string $attr) {
+    // get actual node name
+    string $nodeNameTokens[];
+    tokenize $attr "." $nodeNameTokens;
+    int $newStringLength = size($nodeNameTokens[0]);
+    string $nodeName = `substring $nodeNameTokens[0] 1 $newStringLength`;
+    print $nodeName;
 
+    string $customCameraMenuCommand = "setCameraConnection " + $nodeName;
+    optionMenuGrp -label "Camera" -cc $customCameraMenuCommand customCameraMenu;
+    string $cameras[] = `ls -cameras`;
+    menuItem -label "<none>";
+    for ($item in $cameras) {
+        string $is_orthographic = `getAttr ($item + ".orthographic")`;
+        if ($is_orthographic == 0) {
+            menuItem -label $item;
+        }
+    }
 
-   string $currentCameraConnectionTransform = `getConnectedNode($nodeName + ".camera")`;
-   string $currentCameraConnectionTransformRelatives[] = {""};
-   if ($currentCameraConnectionTransform != ""){
-      $currentCameraConnectionTransformRelatives = `listRelatives $currentCameraConnectionTransform`;
-   }
-   string $currentCameraConnection = $currentCameraConnectionTransformRelatives[0];
+    string $currentCameraConnectionTransform = `getConnectedNode($nodeName + ".camera")`;
+    string $currentCameraConnectionTransformRelatives[] = {""};
+    if ($currentCameraConnectionTransform != "") {
+        $currentCameraConnectionTransformRelatives = `listRelatives $currentCameraConnectionTransform`;
+    }
+    string $currentCameraConnection = $currentCameraConnectionTransformRelatives[0];
 
-
-   if ($currentCameraConnection != ""){
-      optionMenuGrp -e -v $currentCameraConnection customCameraMenu;  
-   }
+    if ($currentCameraConnection != "") {
+        optionMenuGrp -e -v $currentCameraConnection customCameraMenu;  
+    }
 }
- 
-global proc AEcustomCameraMenuEdit(string $nodeName){
-    deleteUI customCameraMenu;       
+
+global proc AEcustomCameraMenuEdit(string $nodeName) {
+    deleteUI customCameraMenu;
     AEcustomCameraMenuCreate($nodeName);
 }
 
-global proc setCameraConnection(string $nodeName){
-   string $newSelection = `optionMenuGrp -q -v customCameraMenu`;
-   $newSelectionAttr = $newSelection + ".nodeState";
-   string $cameraConnectionName = $nodeName + ".camera";
-   string $currentCameraConnection = `getConnectedNode($nodeName + ".camera")`;
-   if ($currentCameraConnection != ""){
-      $currentCameraConnection = $currentCameraConnection + ".nodeState";
-      //disconnectAttr $currentCameraConnection $cameraConnectionName;
-   }
-   if ($newSelection != "<none>"){
-      connectAttr -f $newSelectionAttr $cameraConnectionName;      
-   }
+global proc setCameraConnection(string $nodeName) {
+    string $newSelection = `optionMenuGrp -q -v customCameraMenu`;
+    $newSelectionAttr = $newSelection + ".nodeState";
+    string $cameraConnectionName = $nodeName + ".camera";
+    string $currentCameraConnection = `getConnectedNode($nodeName + ".camera")`;
+    if ($currentCameraConnection != "") {
+        $currentCameraConnection = $currentCameraConnection + ".nodeState";
+    }
+    if ($newSelection != "<none>") {
+        connectAttr -f $newSelectionAttr $cameraConnectionName;
+    } else {
+        if ($currentCameraConnection != ""){
+            string $cams[] = `listConnections ($nodeName + ".camera")`;
+            disconnectAttr ($cams[0] + "Shape.nodeState") ($nodeName + ".camera");
+        }
+    }
 }
 
 
-// layout definition ---------------------------------------------------------
-global proc AEms_renderSettingsTemplate(string $nodeName)
-{
-   editorTemplate -callCustom "AEexportButton" "AE_edit_export_button" "export";
-   editorTemplate -beginScrollLayout;
-      editorTemplate -beginLayout "Export settings" -collapse false;
-         editorTemplate -callCustom "AEfileBrowse" "AEfileBrowseRepeat" "output_directory";
-         editorTemplate -addControl "output_file";
-         editorTemplate -addControl "convert_shading_nodes_to_textures";
-         editorTemplate -addSeparator;
-         editorTemplate -addControl "convert_textures_to_exr";
-         editorTemplate -addSeparator;
-         editorTemplate -addControl "overwrite_existing_exrs";
-         editorTemplate -addSeparator;
-         editorTemplate -addControl "export_motion_blur";
-         editorTemplate -addControl "shutter_open";
-         editorTemplate -addControl "shutter_close";
-         editorTemplate -addSeparator;
-         editorTemplate -addControl "export_animation";
-         editorTemplate -addControl "animation_start_frame";
-         editorTemplate -addControl "animation_end_frame";
-      editorTemplate -endLayout;
+//--------------------------------------------------------------------------------------------------
+// Layout definition.
+//--------------------------------------------------------------------------------------------------
 
-      editorTemplate -beginLayout "Environment settings" -collapse true;
-         editorTemplate -callCustom "AEcustomEnvironmentMenuCreate" "AEcustomEnvironmentMenuEdit" "environment";
-      editorTemplate -endLayout;
+global proc AEms_renderSettingsTemplate(string $nodeName) {
+    editorTemplate -beginNoOptimize;
 
-      editorTemplate -beginLayout "Camera settings" -collapse true;
-         editorTemplate -addControl "export_all_cameras";
-         editorTemplate -addSeparator;
-         editorTemplate -addControl "export_all_cameras_as_thinlens";
-      editorTemplate -endLayout;
+    editorTemplate -callCustom "AEexportButton" "AE_edit_export_button" "export";
+
+    editorTemplate -beginScrollLayout;
+        editorTemplate -beginLayout "Export Settings" -collapse false;
+            editorTemplate -addControl "output_directory";
+            editorTemplate -addControl "output_file";
+            editorTemplate -addSeparator;
+            editorTemplate -addControl "convert_shading_nodes_to_textures";
+            editorTemplate -label "Convert Textures to OpenEXR" -addControl "convert_textures_to_exr";
+            editorTemplate -label "Overwrite Existing Textures Files" -addControl "overwrite_existing_textures";
+            editorTemplate -addSeparator;
+            editorTemplate -addControl "export_maya_lights";
+            editorTemplate -addSeparator;
+            editorTemplate -label "Export Camera Transformation Motion Blur" -addControl "export_camera_blur";
+            editorTemplate -label "Export Assembly Transformation Motion Blur" -addControl "export_transformation_blur";
+            editorTemplate -label "Export Object Deformation Motion Blur" -addControl "export_deformation_blur";
+
+            editorTemplate -addControl "motion_samples";
+            editorTemplate -addControl "shutter_open_time";
+            editorTemplate -addControl "shutter_close_time";
+            editorTemplate -addSeparator;
+            editorTemplate -addControl "export_animation";
+            editorTemplate -addControl "animation_start_frame";
+            editorTemplate -addControl "animation_end_frame";
+            editorTemplate -addControl "export_animated_textures";
+        editorTemplate -endLayout;
+
+        editorTemplate -beginLayout "Output Settings" -collapse true (uiRes("m_AElocatorTemplate.kLocatorAttributes"));
+            editorTemplate -callCustom "AEcustomCameraMenuCreate" "AEcustomCameraMenuEdit" "camera";
+            editorTemplate -addControl "frame_width";
+            editorTemplate -addControl "frame_height";
+            editorTemplate -addControl "color_space";
+        editorTemplate -endLayout;
+
+        editorTemplate -beginLayout "Environment Settings" -collapse true;
+            editorTemplate -callCustom "AEcustomEnvironmentMenuCreate" "AEcustomEnvironmentMenuEdit" "environment";
+        editorTemplate -endLayout;
+
+        editorTemplate -beginLayout "Camera Settings" -collapse true;
+            editorTemplate -addControl "export_all_cameras";
+            editorTemplate -addSeparator;
+            editorTemplate -addControl "export_all_cameras_as_thinlens";
+        editorTemplate -endLayout;
       
-      editorTemplate -beginLayout "Assembly settings" -collapse true;
-         editorTemplate -addControl "interpret_sets_as_assemblies";
-         editorTemplate -addSeparator;
-         editorTemplate -addControl "double_sided_shading";
-      editorTemplate -endLayout;
+        editorTemplate -beginLayout "Assembly Settings" -collapse true;
+            editorTemplate -addControl "interpret_sets_as_assemblies";
+            editorTemplate -addSeparator;
+        editorTemplate -endLayout;
 
-      editorTemplate -beginLayout "Output settings" -collapse true (uiRes("m_AElocatorTemplate.kLocatorAttributes"));
-         editorTemplate -callCustom "AEcustomCameraMenuCreate" "AEcustomCameraMenuEdit" "camera";
-         editorTemplate -addControl "resolution_width";
-         editorTemplate -addControl "resolution_height";
-         editorTemplate -addControl "color_space";
-      editorTemplate -endLayout;
+        editorTemplate -beginLayout "Configuration Settings" -collapse true;
+            editorTemplate -addControl "export_custom_final_config";
+            editorTemplate -addControl "min_samples";
+            editorTemplate -addControl "max_samples";
+            editorTemplate -addControl "gtr_sampler";
+            editorTemplate -addControl "gtr_filter_size";
+            editorTemplate -addControl "gtr_min_samples";
+            editorTemplate -addControl "gtr_max_samples";
+            editorTemplate -addControl "gtr_max_contrast";
+            editorTemplate -addControl "gtr_max_variation";
+            editorTemplate -addControl "final_lighting_engine";
 
-      editorTemplate -beginLayout "Configuration settings" -collapse true;
-         editorTemplate -addControl "export_custom_interactive_config";
-         editorTemplate -addControl "interactive_lighting_engine";
-         editorTemplate -addControl "interactive_min_samples";
-         editorTemplate -addControl "interactive_max_samples";
-         editorTemplate -addControl "interactive_max_ray_depth";
-         editorTemplate -addControl "interactive_light_samples";
-         editorTemplate -addSeparator;
-         editorTemplate -addControl "export_custom_final_config";
-         editorTemplate -addControl "final_lighting_engine";
-         editorTemplate -addControl "final_min_samples";
-         editorTemplate -addControl "final_max_samples";
-         editorTemplate -addControl "final_max_ray_depth";
-         editorTemplate -addControl "final_light_samples";
-      editorTemplate -endLayout;
+            editorTemplate -beginLayout "DRT Settings" -collapse true;
+                editorTemplate -addControl "drt_dl_bsdf_samples";
+                editorTemplate -addControl "drt_dl_light_samples";
+                editorTemplate -addControl "drt_enable_ibl";
+                editorTemplate -addControl "drt_ibl_bsdf_samples";
+                editorTemplate -addControl "drt_ibl_env_samples";
+                editorTemplate -addControl "drt_max_path_length";
+                editorTemplate -addControl "drt_rr_min_path_length";
+            editorTemplate -endLayout;
 
+            editorTemplate -beginLayout "PT Settings" -collapse true;
+                editorTemplate -addControl "pt_dl_light_samples";
+                editorTemplate -addControl "pt_enable_caustics";
+                editorTemplate -addControl "pt_enable_dl";
+                editorTemplate -addControl "pt_enable_ibl";
+                editorTemplate -addControl "pt_ibl_bsdf_samples";
+                editorTemplate -addControl "pt_ibl_env_samples";
+                editorTemplate -addControl "pt_max_path_length";
+                editorTemplate -addControl "pt_next_event_estimation";
+                editorTemplate -addControl "pt_rr_min_path_length";
+            editorTemplate -endLayout;
+        editorTemplate -endLayout;
 
-      AEdependNodeTemplate $nodeName; // add any base class attributes
-      
-      editorTemplate -addExtraControls; // add any other attributes
-      //editorTemplate -suppress "attrbute";
+        editorTemplate -beginLayout "Advanced Settings" -collapse true;
+            editorTemplate -addControl "profile_export";
+        editorTemplate -endLayout;
 
-   editorTemplate -endScrollLayout;
+        AEdependNodeTemplate $nodeName;       // add any base class attributes
+        editorTemplate -addExtraControls;     // add any other attributes
+    editorTemplate -endScrollLayout;
+
+    editorTemplate -endNoOptimize;
 }

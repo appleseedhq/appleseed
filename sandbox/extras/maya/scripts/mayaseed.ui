@@ -57,7 +57,7 @@
          <string/>
         </property>
         <property name="pixmap">
-         <pixmap>mayaseed_graphic.png</pixmap>
+         <pixmap>mayaseed.png</pixmap>
         </property>
         <property name="scaledContents">
          <bool>false</bool>
