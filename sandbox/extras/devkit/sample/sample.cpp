@@ -48,7 +48,7 @@
 #include "foundation/math/matrix.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
-#include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/log/consolelogtarget.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/searchpaths.h"
@@ -142,10 +142,6 @@ asf::auto_release_ptr<asr::Project> build_project()
         asr::MeshObject* object = objects[i];
         assembly->objects().insert(asf::auto_release_ptr<asr::Object>(object));
 
-        // Create the array of material names.
-        asf::StringArray material_names;
-        material_names.push_back("gray_material");
-
         // Create an instance of this object and insert it into the assembly.
         const std::string instance_name = std::string(object->get_name()) + "_inst";
         assembly->object_instances().insert(
@@ -154,7 +150,9 @@ asf::auto_release_ptr<asr::Project> build_project()
                 asr::ParamArray(),
                 object->get_name(),
                 asf::Transformd(asf::Matrix4d::identity()),
-                material_names));
+                asf::StringDictionary()
+                    .insert("default", "gray_material")
+                    .insert("default2", "gray_material")));
     }
 
     //------------------------------------------------------------------------
@@ -297,7 +295,7 @@ int main()
     renderer.render();
 
     // Save the frame to disk.
-    project->get_frame()->write("output/test.png");
+    project->get_frame()->write_main_image("output/test.png");
 
     // Save the project to disk.
     asr::ProjectFileWriter::write(project.ref(), "output/test.appleseed");
