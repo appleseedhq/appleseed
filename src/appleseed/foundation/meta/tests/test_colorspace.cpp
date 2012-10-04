@@ -43,6 +43,9 @@ using namespace std;
 
 TEST_SUITE(Foundation_Image_ColorSpace)
 {
+#pragma warning (push)
+#pragma warning (disable : 4723)    // potential divide by 0
+
     TEST_CASE(TestHSVToLinearRGBConversion)
     {
         EXPECT_FEQ(Color3d(0.0, 0.0, 0.0), hsv_to_linear_rgb(Color3d(0.0, 0.0, 0.0)));
@@ -82,6 +85,8 @@ TEST_SUITE(Foundation_Image_ColorSpace)
         EXPECT_FEQ(Color3d(240.0, 1.0, 0.75), linear_rgb_to_hsl(Color3d(0.5, 0.5, 1.0)));
         EXPECT_FEQ(Color3d(300.0, 0.5, 0.5), linear_rgb_to_hsl(Color3d(0.75, 0.25, 0.75)));
     }
+
+#pragma warning (pop)
 
     TEST_CASE(TestCIEXYZToLinearRGBConversion)
     {
