@@ -583,6 +583,9 @@ void Frame::extract_parameters()
         m_color_space = DefaultColorSpace;
     }
 
+    // Retrieve premultiplied alpha parameter.
+    m_is_premultiplied_alpha = m_params.get_optional<bool>("premultiplied_alpha", true);
+
     // Retrieve clamping parameter.
     impl->m_clamp = m_params.get_optional<bool>("clamping", false);
 

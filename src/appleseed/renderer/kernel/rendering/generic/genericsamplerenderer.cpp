@@ -179,7 +179,7 @@ namespace
                     // Transform the result to the linear RGB color space.
                     shading_result.transform_to_linear_rgb(m_lighting_conditions);
 
-                    // Apply alpha.
+                    // Apply alpha premultiplication.
                     if (shading_point_ptr->hit())
                         shading_result.m_color *= shading_result.m_alpha[0];
                 }
@@ -197,7 +197,11 @@ namespace
                     // Transform the result to the linear RGB color space.
                     local_result.transform_to_linear_rgb(m_lighting_conditions);
 
-                    // "Over" alpha compositing.
+                    // Apply alpha premultiplication.
+                    if (shading_point_ptr->hit())
+                        local_result.m_color *= local_result.m_alpha[0];
+
+                    // Compositing.
                     shading_result.composite_over(local_result);
                 }
 
@@ -214,8 +218,13 @@ namespace
                 primary_ray.m_tmax = numeric_limits<double>::max();
             }
 
-            // Detect and report invalid values.
-            report_invalid_values(shading_result);
+            // Detect and report invalid values in samples.
+            if (has_invalid_values(shading_result))
+            {
+                // todo: mark pixel as faulty in the diagnostic map.
+                if (m_invalid_sample_count++ == 0)
+                    RENDERER_LOG_WARNING("found at least one pixel sample with NaN or negative values.");
+            }
 
 #ifdef DEBUG_DISPLAY_TEXTURE_CACHE_PERFORMANCES
 
@@ -282,28 +291,23 @@ namespace
 
         uint64                      m_invalid_sample_count;
 
-        void report_invalid_values(const ShadingResult& result)
+        static bool has_invalid_values(const ShadingResult& result)
         {
-            bool warn = false;
-            
-            warn = warn || has_invalid_values(spectrum_as_color3f(result.m_color));
-            warn = warn || has_invalid_values(result.m_alpha);
+            if (has_invalid_values(spectrum_as_color3f(result.m_color)))
+                return true;
+
+            if (has_invalid_values(result.m_alpha))
+                return true;
 
             const size_t aov_count = result.m_aovs.size();
 
             for (size_t i = 0; i < aov_count; ++i)
-                warn = warn || has_invalid_values(spectrum_as_color3f(result.m_aovs[i]));
-
-            if (warn)
             {
-                if (m_invalid_sample_count++ == 0)
-                    RENDERER_LOG_WARNING("found at least one pixel sample with NaN or negative values");
+                if (has_invalid_values(spectrum_as_color3f(result.m_aovs[i])))
+                    return true;
             }
-        }
 
-        static Color3f spectrum_as_color3f(const Spectrum& s)
-        {
-            return Color3f(s[0], s[1], s[2]);
+            return false;
         }
 
         template <typename T, size_t N>
@@ -322,6 +326,11 @@ namespace
         static bool is_invalid_value(const T x)
         {
             return x < T(0.0) || x != x;
+        }
+
+        static Color3f spectrum_as_color3f(const Spectrum& s)
+        {
+            return Color3f(s[0], s[1], s[2]);
         }
     };
 }

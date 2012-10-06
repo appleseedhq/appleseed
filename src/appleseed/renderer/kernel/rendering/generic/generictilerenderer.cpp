@@ -78,10 +78,6 @@ namespace
     //
     // Generic tile renderer.
     //
-    // Reference for composition algebra with alpha channels:
-    //
-    //   http://keithp.com/~keithp/porterduff/p253-porter.pdf
-    //
 
 #ifndef NDEBUG
 
@@ -228,6 +224,16 @@ namespace
                     }
                 }
 
+                // Optionally undo alpha premultiplication.
+                if (!frame.is_premultiplied_alpha())
+                {
+                    const float rcp_alpha = pixel_color[3] == 0.0f ? 0.0f : 1.0f / pixel_color[3];
+                    pixel_color[0] *= rcp_alpha;
+                    pixel_color[1] *= rcp_alpha;
+                    pixel_color[2] *= rcp_alpha;
+                    pixel_aovs *= rcp_alpha;
+                }
+
                 // Store the pixel values.
                 tile.set_pixel(tx, ty, pixel_color);
                 aov_tiles.set_pixel(tx, ty, pixel_aovs, pixel_color.a);
@@ -369,11 +375,8 @@ namespace
                         sample_position,
                         shading_result);
 
-                    // todo: implement proper sample filtering.
-                    // todo: detect invalid sample values (NaN, infinity, etc.), set
-                    // them to black and mark them as faulty in the diagnostic map.
-
                     // Accumulate the sample.
+                    // todo: implement proper sample filtering.
                     assert(shading_result.m_color_space == ColorSpaceLinearRGB);
                     pixel_color[0] += shading_result.m_color[0];
                     pixel_color[1] += shading_result.m_color[1];
@@ -472,11 +475,8 @@ namespace
                         sample_position,
                         shading_result);
 
-                    // todo: implement proper sample filtering.
-                    // todo: detect invalid sample values (NaN, infinity, etc.), set
-                    // them to black and mark them as faulty in the diagnostic map.
-
                     // Accumulate the sample.
+                    // todo: implement proper sample filtering.
                     assert(shading_result.m_color_space == ColorSpaceLinearRGB);
                     pixel_color[0] += shading_result.m_color[0];
                     pixel_color[1] += shading_result.m_color[1];

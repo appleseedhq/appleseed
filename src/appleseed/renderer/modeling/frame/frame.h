@@ -99,6 +99,9 @@ class DLLSYMBOL Frame
     // Return the lighting conditions for spectral to RGB conversion.
     const foundation::LightingConditions& get_lighting_conditions() const;
 
+    // Return true if the frame uses premultiplied alpha, false if it uses straight alpha.
+    bool is_premultiplied_alpha() const;
+
     // Convert a tile or an image from linear RGB to the output color space.
     void transform_to_output_color_space(foundation::Tile& tile) const;
     void transform_to_output_color_space(foundation::Image& image) const;
@@ -127,6 +130,7 @@ class DLLSYMBOL Frame
 
     foundation::CanvasProperties    m_props;
     foundation::ColorSpace          m_color_space;
+    bool                            m_is_premultiplied_alpha;
 
     // Constructor.
     Frame(
@@ -168,6 +172,11 @@ class DLLSYMBOL FrameFactory
 inline foundation::ColorSpace Frame::get_color_space() const
 {
     return m_color_space;
+}
+
+inline bool Frame::is_premultiplied_alpha() const
+{
+    return m_is_premultiplied_alpha;
 }
 
 inline foundation::Vector2d Frame::get_sample_position(

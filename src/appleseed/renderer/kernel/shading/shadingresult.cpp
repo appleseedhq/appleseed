@@ -150,31 +150,41 @@ void ShadingResult::transform_to_spectrum(const LightingConditions& lighting)
     m_color_space = ColorSpaceSpectral;
 }
 
-void ShadingResult::composite_over(const ShadingResult& other)
+void ShadingResult::composite_over(const ShadingResult& background)
 {
+    //
+    // Shading results use premultiplied alpha.
+    //
+    // References and interesting resources on alpha compositing:
+    //
+    //   http://keithp.com/~keithp/porterduff/p253-porter.pdf
+    //   http://en.wikipedia.org/wiki/Alpha_compositing
+    //   http://dvd-hq.info/alpha_matting.php
+    //   http://my.opera.com/emoller/blog/2012/08/28/alpha-blending
+    //
+
     assert(m_color_space == ColorSpaceLinearRGB);
-    assert(other.m_color_space == ColorSpaceLinearRGB);
+    assert(background.m_color_space == ColorSpaceLinearRGB);
 
-    const Alpha contrib = Alpha(1.0) - m_alpha;
-    const Alpha color_contrib = contrib * other.m_alpha;
+    const Alpha contrib = Alpha(1.0f) - m_alpha;
 
-    m_color[0] += color_contrib[0] * other.m_color[0];
-    m_color[1] += color_contrib[0] * other.m_color[1];
-    m_color[2] += color_contrib[0] * other.m_color[2];
+    m_color[0] += contrib[0] * background.m_color[0];
+    m_color[1] += contrib[0] * background.m_color[1];
+    m_color[2] += contrib[0] * background.m_color[2];
 
     const size_t aov_count = m_aovs.size();
 
     for (size_t i = 0; i < aov_count; ++i)
     {
-        const Spectrum& other_aov_color = other.m_aovs[i];
+        const Spectrum& background_aov_color = background.m_aovs[i];
         Spectrum& aov_color = m_aovs[i];
 
-        aov_color[0] += color_contrib[0] * other_aov_color[0];
-        aov_color[1] += color_contrib[0] * other_aov_color[1];
-        aov_color[2] += color_contrib[0] * other_aov_color[2];
+        aov_color[0] += contrib[0] * background_aov_color[0];
+        aov_color[1] += contrib[0] * background_aov_color[1];
+        aov_color[2] += contrib[0] * background_aov_color[2];
     }
 
-    m_alpha += contrib * other.m_alpha;
+    m_alpha += contrib * background.m_alpha;
 }
 
 }   // namespace renderer

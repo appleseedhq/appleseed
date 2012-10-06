@@ -239,12 +239,13 @@ void LocalAccumulationFramebuffer::develop_to_frame(Frame& frame) const
             const size_t origin_x = tx * frame_props.m_tile_width;
             const size_t origin_y = ty * frame_props.m_tile_height;
 
-            develop_to_tile(level, tile, origin_x, origin_y, tx, ty);
+            develop_to_tile(frame, level, tile, origin_x, origin_y, tx, ty);
         }
     }
 }
 
 void LocalAccumulationFramebuffer::develop_to_tile(
+    const Frame&    frame,
     const Tile&     level,
     Tile&           tile,
     const size_t    origin_x,
@@ -290,10 +291,19 @@ void LocalAccumulationFramebuffer::develop_to_tile(
                         (origin_x + x) * level_width / m_width,
                         (origin_y + y) * level_height / m_height));
 
-            const Color4f color =
+            Color4f color =
                 pixel->m_count > 0
                     ? pixel->m_color / static_cast<float>(pixel->m_count)
                     : Color4f(0.0f);
+
+            // Optionally undo alpha premultiplication.
+            if (!frame.is_premultiplied_alpha())
+            {
+                const float rcp_alpha = color[3] == 0.0f ? 0.0f : 1.0f / color[3];
+                color[0] *= rcp_alpha;
+                color[1] *= rcp_alpha;
+                color[2] *= rcp_alpha;
+            }
 
             tile.set_pixel(x, y, color);
         }

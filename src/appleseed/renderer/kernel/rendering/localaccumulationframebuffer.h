@@ -83,6 +83,7 @@ class LocalAccumulationFramebuffer
     virtual void develop_to_frame(Frame& frame) const override;
 
     void develop_to_tile(
+        const Frame&                    frame,
         const foundation::Tile&         level,
         foundation::Tile&               tile,
         const size_t                    origin_x,

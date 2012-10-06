@@ -75,7 +75,8 @@ class ShadingResult
     // Set the shading result to solid pink (used for debugging).
     void set_to_solid_pink();
 
-    void composite_over(const ShadingResult& other);
+    // Composite this shading result over 'background'.
+    void composite_over(const ShadingResult& background);
 };
 
 
