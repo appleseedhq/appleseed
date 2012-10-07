@@ -189,6 +189,10 @@ void ProgressiveEXRImageFileReader::open(const char* filename)
         // Retrieve the dimensions of the image.
         impl->m_dw = header.dataWindow();
 
+        // Compute the dimensions of the canvas.
+        const size_t canvas_width = static_cast<size_t>(impl->m_dw.max.x - impl->m_dw.min.x + 1);
+        const size_t canvas_height = static_cast<size_t>(impl->m_dw.max.y - impl->m_dw.min.y + 1);
+
         // Retrieve the dimensions of the tiles.
         size_t tile_width, tile_height;
         if (impl->m_is_tiled)
@@ -213,15 +217,15 @@ void ProgressiveEXRImageFileReader::open(const char* filename)
         }
         else
         {
-            const double nx = ceil(static_cast<double>(impl->m_dw.max.x - impl->m_dw.min.x) / tile_width);
-            const double ny = ceil(static_cast<double>(impl->m_dw.max.y - impl->m_dw.min.y) / tile_height);
+            const double nx = ceil(static_cast<double>(canvas_width) / tile_width);
+            const double ny = ceil(static_cast<double>(canvas_height) / tile_height);
             tile_count_x = truncate<size_t>(nx);
             tile_count_y = truncate<size_t>(ny);
         }
 
         // Set canvas properties.
-        impl->m_props.m_canvas_width = static_cast<size_t>(impl->m_dw.max.x - impl->m_dw.min.x + 1);
-        impl->m_props.m_canvas_height = static_cast<size_t>(impl->m_dw.max.y - impl->m_dw.min.y + 1);
+        impl->m_props.m_canvas_width = canvas_width;
+        impl->m_props.m_canvas_height = canvas_height;
         impl->m_props.m_rcp_canvas_width = 1.0 / impl->m_props.m_canvas_width;
         impl->m_props.m_rcp_canvas_height = 1.0 / impl->m_props.m_canvas_height;
         impl->m_props.m_pixel_count = impl->m_props.m_canvas_width * impl->m_props.m_canvas_height;
