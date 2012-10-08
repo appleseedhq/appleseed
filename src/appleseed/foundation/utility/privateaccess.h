@@ -64,7 +64,7 @@ struct StowPrivate
 };
 
 template <typename Tag, typename Tag::type x>
-StowPrivate<Tag,x> StowPrivate<Tag,x>::instance;
+StowPrivate<Tag, x> StowPrivate<Tag, x>::instance;
 
 }       // namespace foundation
 
