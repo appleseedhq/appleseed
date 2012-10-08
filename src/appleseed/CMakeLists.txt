@@ -637,7 +637,6 @@ set (foundation_utility_sources
     foundation/utility/bufferedfile.h
     foundation/utility/cache.cpp
     foundation/utility/cache.h
-    foundation/utility/cameracontroller.h
     foundation/utility/casts.h
     foundation/utility/cc.h
     foundation/utility/commandlineparser.h
@@ -694,6 +693,7 @@ source_group ("foundation\\utility" FILES
 )
 
 set (foundation_ui_sources
+    foundation/ui/cameracontroller.h
     foundation/ui/viewport.h
 )
 list (APPEND appleseed_sources

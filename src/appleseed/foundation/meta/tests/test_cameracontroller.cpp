@@ -29,12 +29,12 @@
 // appleseed.foundation headers.
 #include "foundation/math/matrix.h"
 #include "foundation/math/vector.h"
-#include "foundation/utility/cameracontroller.h"
+#include "foundation/ui/cameracontroller.h"
 #include "foundation/utility/test.h"
 
 using namespace foundation;
 
-TEST_SUITE(Foundation_Utility_CameraController)
+TEST_SUITE(Foundation_UI_CameraController)
 {
     typedef CameraController<double> CameraController;
 
