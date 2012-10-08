@@ -30,8 +30,8 @@
 #define APPLESEED_FOUNDATION_UI_VIEWPORT_H
 
 // appleseed.foundation headers.
-#include "foundation/math/vector.h"
 #include "foundation/math/aabb.h"
+#include "foundation/math/vector.h"
 
 namespace foundation
 {
@@ -44,15 +44,14 @@ template <typename T>
 class Viewport
 {
   public:
-
     // Types.
-    typedef Vector<T,2> RealVectorType;
-    typedef Vector2i    IntVectorType;
-    typedef AABB<T,2>   RealBoxType;
-    typedef AABB2i      IntBoxType;
+    typedef Vector<T, 2> RealVectorType;
+    typedef Vector2i IntVectorType;
+    typedef AABB<T, 2> RealBoxType;
+    typedef AABB2i IntBoxType;
 
     Viewport();
-    explicit Viewport( bool y_down);
+    explicit Viewport(const bool y_down);
 
     bool y_down() const;
 
@@ -70,25 +69,25 @@ class Viewport
     IntBoxType world_to_device(const RealBoxType& b) const;
 
     void reset();
-    void reset(int w, int h);
+    void reset(const int w, const int h);
     void reset(const IntBoxType& device);
     void reset(const IntBoxType& device, const RealBoxType& world);
 
     void resize(const IntBoxType& device);
-    void resize(int w, int h);
+    void resize(const int w, const int h);
 
     void scroll(const IntVectorType& inc);
     void scroll_to_center_point(const RealVectorType& center);
 
-    void zoom(const RealVectorType& center, float factor);
-    void zoom(const RealVectorType& center, float xfactor, float yfactor);
+    void zoom(const RealVectorType& center, const float factor);
+    void zoom(const RealVectorType& center, const float xfactor, const float yfactor);
 
-private:
-
-    IntBoxType m_device;
+  private:
+    const bool  m_y_down;
+    IntBoxType  m_device;
     RealBoxType m_world;
-    bool m_y_down;
 };
+
 
 //
 // Full specializations float and double.
@@ -97,17 +96,20 @@ private:
 typedef Viewport<float>  Viewportf;
 typedef Viewport<double> Viewportd;
 
+
 //
 // 2-dimensional viewport implementation.
 //
 
 template <typename T>
-inline Viewport<T>::Viewport() : m_y_down(false)
+inline Viewport<T>::Viewport()
+  : m_y_down(false)
 {
 }
 
 template <typename T>
-inline Viewport<T>::Viewport(bool y_down) : m_y_down(y_down)
+inline Viewport<T>::Viewport(const bool y_down)
+  : m_y_down(y_down)
 {
 }
 
@@ -149,17 +151,17 @@ inline typename Viewport<T>::RealVectorType Viewport<T>::device_to_world(const I
     if (y_down())
         y = m_device.min[1] + (m_device.max[1] - y);
 
-    return RealVectorType(((p[0] - m_device.min[0]) / zoom_x()) + m_world.min[0],
-                          ((y - m_device.min[1]) / zoom_y()) + m_world.min[1]);
+    return RealVectorType((p[0] - m_device.min[0]) / zoom_x() + m_world.min[0],
+                          (y - m_device.min[1]) / zoom_y() + m_world.min[1]);
 }
 
 template <typename T>
 inline typename Viewport<T>::IntVectorType Viewport<T>::world_to_device(const RealVectorType& p) const
 {
-    int x = ((p[0] - m_world.min[0]) * zoom_x()) + m_device.min[0];
-    int y = ((p[1] - m_world.min[1]) * zoom_y()) + m_device.min[1];
+    int x = (p[0] - m_world.min[0]) * zoom_x() + m_device.min[0];
+    int y = (p[1] - m_world.min[1]) * zoom_y() + m_device.min[1];
 
-    if(y_down())
+    if (y_down())
         y = m_device.min[1] + (m_device.max[1] - y);
 
     return IntVectorType(x, y);
@@ -194,9 +196,9 @@ inline void Viewport<T>::reset()
 }
 
 template <typename T>
-inline void Viewport<T>::reset(int w, int h)
+inline void Viewport<T>::reset(const int w, const int h)
 {
-    reset(IntBoxType(IntVectorType(0, 0), IntVectorType(w-1, h-1)));
+    reset(IntBoxType(IntVectorType(0, 0), IntVectorType(w - 1, h - 1)));
 }
 
 template <typename T>
@@ -216,13 +218,13 @@ inline void Viewport<T>::reset(const IntBoxType& device, const RealBoxType& worl
 template <typename T>
 inline void Viewport<T>::resize(const IntBoxType& device)
 {
-    m_world.max[0] = m_world.min[0] + (device.extent(0) / zoom_x());
-    m_world.max[1] = m_world.min[1] + (device.extent(1) / zoom_y());
+    m_world.max[0] = m_world.min[0] + device.extent(0) / zoom_x();
+    m_world.max[1] = m_world.min[1] + device.extent(1) / zoom_y();
     m_device = device;
 }
 
 template <typename T>
-inline void Viewport<T>::resize(int w, int h)
+inline void Viewport<T>::resize(const int w, const int h)
 {
     resize(IntBoxType(IntVectorType(0, 0), IntVectorType(w - 1, h - 1)));
 }
@@ -243,13 +245,13 @@ inline void Viewport<T>::scroll_to_center_point(const RealVectorType& center)
 }
 
 template <typename T>
-inline void Viewport<T>::zoom(const RealVectorType& center, float factor)
+inline void Viewport<T>::zoom(const RealVectorType& center, const float factor)
 {
     zoom(center, factor, factor);
 }
 
 template <typename T>
-inline void Viewport<T>::zoom(const RealVectorType& center, float xfactor, float yfactor)
+inline void Viewport<T>::zoom(const RealVectorType& center, const float xfactor, const float yfactor)
 {
     m_world = m_world.translate(RealVectorType(-center[0], -center[1]));
     m_world.min[0] *= xfactor;
