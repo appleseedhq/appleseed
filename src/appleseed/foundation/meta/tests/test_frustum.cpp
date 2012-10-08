@@ -34,7 +34,7 @@
 
 using namespace foundation;
 
-TEST_SUITE(Foundation_Math_Frustum_Pyramid3)
+TEST_SUITE(Foundation_Math_Pyramid3)
 {
     TEST_CASE(Clip_GivenSegmentParallelToPlaneInsideNegativeHalfSpace_ReturnsTrueAndLeavesSegmentUnchanged)
     {
