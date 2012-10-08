@@ -30,36 +30,28 @@
 #include "foundation/math/aabb.h"
 #include "foundation/math/distance.h"
 #include "foundation/math/vector.h"
-#include "foundation/utility/test.h"
+#include "foundation/utility/benchmark.h"
 
 using namespace foundation;
 
-TEST_SUITE(Foundation_Math_Distance)
+BENCHMARK_SUITE(Foundation_Math_Distance)
 {
-    TEST_CASE(SquareDistance_PointIsInsideTheBoundingBox_ReturnsZero)
+    struct Fixture
     {
-        const AABB2d bbox(Vector2d(-1.0), Vector2d(+1.0));
-        const Vector2d point(0.0, 0.0);
+        const Vector2d  m_point;
+        const AABB2d    m_bbox;
+        double          m_dummy;
 
-        EXPECT_EQ(0.0, square_distance(point, bbox));
-        EXPECT_EQ(0.0, square_distance(bbox, point));
-    }
+        Fixture()
+          : m_point(4.0, 3.0)
+          , m_bbox(Vector2d(-1.0), Vector2d(+1.0))
+          , m_dummy(1.0)
+        {
+        }
+    };
 
-    TEST_CASE(SquareDistance_PointIsToTheLeftOfTheBoundingBox_ReturnsSquareDistance)
+    BENCHMARK_CASE_F(SquareDistance, Fixture)
     {
-        const AABB2d bbox(Vector2d(-1.0), Vector2d(+1.0));
-        const Vector2d point(-4.0, 3.0);
-
-        EXPECT_FEQ(13.0, square_distance(point, bbox));
-        EXPECT_FEQ(13.0, square_distance(bbox, point));
-    }
-
-    TEST_CASE(SquareDistance_PointIsToTheRightOfTheBoundingBox_ReturnsSquareDistance)
-    {
-        const AABB2d bbox(Vector2d(-1.0), Vector2d(+1.0));
-        const Vector2d point(4.0, 3.0);
-
-        EXPECT_FEQ(13.0, square_distance(point, bbox));
-        EXPECT_FEQ(13.0, square_distance(bbox, point));
+        m_dummy *= square_distance(m_point, m_bbox);
     }
 }
