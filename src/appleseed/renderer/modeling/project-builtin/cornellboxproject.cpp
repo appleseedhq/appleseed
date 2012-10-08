@@ -615,12 +615,12 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         // Vertex normals.
         object->push_vertex_normal(GVector3(0.0f, 1.0f, 0.0f));
 
-        // Triangles.
-        object->push_triangle(Triangle(0, 1, 2,  0, 0, 0,  0));
-        object->push_triangle(Triangle(0, 2, 3,  0, 0, 0,  0));
-
         // Material slots.
-        object->push_material_slot("white_material");
+        const size_t mat_slot = object->push_material_slot("white_material");
+
+        // Triangles.
+        object->push_triangle(Triangle(0, 1, 2,  0, 0, 0,  mat_slot));
+        object->push_triangle(Triangle(0, 2, 3,  0, 0, 0,  mat_slot));
 
         // Insert the object into the assembly.
         assembly->objects().insert(auto_release_ptr<Object>(object));
@@ -654,12 +654,12 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         // Vertex normals.
         object->push_vertex_normal(GVector3(0.0f, -1.0f, 0.0f));
 
-        // Triangles.
-        object->push_triangle(Triangle(0, 1, 2,  0, 0, 0,  0));
-        object->push_triangle(Triangle(0, 2, 3,  0, 0, 0,  0));
-
         // Material slots.
-        object->push_material_slot("white_material");
+        const size_t mat_slot = object->push_material_slot("white_material");
+
+        // Triangles.
+        object->push_triangle(Triangle(0, 1, 2,  0, 0, 0,  mat_slot));
+        object->push_triangle(Triangle(0, 2, 3,  0, 0, 0,  mat_slot));
 
         // Insert the object into the assembly.
         assembly->objects().insert(auto_release_ptr<Object>(object));
@@ -693,12 +693,12 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         // Vertex normals.
         object->push_vertex_normal(GVector3(0.0f, 0.0f, -1.0f));
 
-        // Triangles.
-        object->push_triangle(Triangle(0, 1, 2,  0, 0, 0,  0));
-        object->push_triangle(Triangle(0, 2, 3,  0, 0, 0,  0));
-
         // Material slots.
-        object->push_material_slot("white_material");
+        const size_t mat_slot = object->push_material_slot("white_material");
+
+        // Triangles.
+        object->push_triangle(Triangle(0, 1, 2,  0, 0, 0,  mat_slot));
+        object->push_triangle(Triangle(0, 2, 3,  0, 0, 0,  mat_slot));
 
         // Insert the object into the assembly.
         assembly->objects().insert(auto_release_ptr<Object>(object));
@@ -732,12 +732,12 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         // Vertex normals.
         object->push_vertex_normal(GVector3(1.0f, 0.0f, 0.0f));
 
-        // Triangles.
-        object->push_triangle(Triangle(0, 1, 2,  0, 0, 0,  0));
-        object->push_triangle(Triangle(0, 2, 3,  0, 0, 0,  0));
-
         // Material slots.
-        object->push_material_slot("green_material");
+        const size_t mat_slot = object->push_material_slot("green_material");
+
+        // Triangles.
+        object->push_triangle(Triangle(0, 1, 2,  0, 0, 0,  mat_slot));
+        object->push_triangle(Triangle(0, 2, 3,  0, 0, 0,  mat_slot));
 
         // Insert the object into the assembly.
         assembly->objects().insert(auto_release_ptr<Object>(object));
@@ -772,12 +772,12 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         object->push_vertex_normal(GVector3(-0.99991564f,  0.011660824f, -0.0057219779f));
         object->push_vertex_normal(GVector3(  -0.999983f, 0.0058308047f,           0.0f));
 
-        // Triangles.
-        object->push_triangle(Triangle(0, 1, 2,  0, 0, 0,  0));
-        object->push_triangle(Triangle(0, 2, 3,  1, 1, 1,  0));
-
         // Material slots.
-        object->push_material_slot("red_material");
+        const size_t mat_slot = object->push_material_slot("red_material");
+
+        // Triangles.
+        object->push_triangle(Triangle(0, 1, 2,  0, 0, 0,  mat_slot));
+        object->push_triangle(Triangle(0, 2, 3,  1, 1, 1,  mat_slot));
 
         // Insert the object into the assembly.
         assembly->objects().insert(auto_release_ptr<Object>(object));
@@ -831,20 +831,20 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         object->push_vertex_normal(GVector3(-0.95782629f, 0.0f, -0.28734789f));
         object->push_vertex_normal(GVector3(-0.28512091f, 0.0f,  0.95849156f));
 
-        // Triangles.
-        object->push_triangle(Triangle( 0,  1,  2,  0,  0,  0,  0));
-        object->push_triangle(Triangle( 0,  2,  3,  0,  0,  0,  0));
-        object->push_triangle(Triangle( 4,  5,  6,  1,  1,  1,  0));
-        object->push_triangle(Triangle( 4,  6,  7,  1,  1,  1,  0));
-        object->push_triangle(Triangle( 8,  9, 10,  2,  2,  2,  0));
-        object->push_triangle(Triangle( 8, 10, 11,  2,  2,  2,  0));
-        object->push_triangle(Triangle(12, 13, 14,  3,  3,  3,  0));
-        object->push_triangle(Triangle(12, 14, 15,  3,  3,  3,  0));
-        object->push_triangle(Triangle(16, 17, 18,  4,  4,  4,  0));
-        object->push_triangle(Triangle(16, 18, 19,  4,  4,  4,  0));
-
         // Material slots.
-        object->push_material_slot("white_material");
+        const size_t mat_slot = object->push_material_slot("white_material");
+
+        // Triangles.
+        object->push_triangle(Triangle( 0,  1,  2,  0,  0,  0,  mat_slot));
+        object->push_triangle(Triangle( 0,  2,  3,  0,  0,  0,  mat_slot));
+        object->push_triangle(Triangle( 4,  5,  6,  1,  1,  1,  mat_slot));
+        object->push_triangle(Triangle( 4,  6,  7,  1,  1,  1,  mat_slot));
+        object->push_triangle(Triangle( 8,  9, 10,  2,  2,  2,  mat_slot));
+        object->push_triangle(Triangle( 8, 10, 11,  2,  2,  2,  mat_slot));
+        object->push_triangle(Triangle(12, 13, 14,  3,  3,  3,  mat_slot));
+        object->push_triangle(Triangle(12, 14, 15,  3,  3,  3,  mat_slot));
+        object->push_triangle(Triangle(16, 17, 18,  4,  4,  4,  mat_slot));
+        object->push_triangle(Triangle(16, 18, 19,  4,  4,  4,  mat_slot));
 
         // Insert the object into the assembly.
         assembly->objects().insert(auto_release_ptr<Object>(object));
@@ -898,20 +898,20 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         object->push_vertex_normal(GVector3(-0.95616581f, 0.0f,  0.29282578f));
         object->push_vertex_normal(GVector3(-0.29620907f, 0.0f, -0.95512313f));
 
-        // Triangles.
-        object->push_triangle(Triangle( 0,  1,  2,  0,  0,  0,  0));
-        object->push_triangle(Triangle( 0,  2,  3,  0,  0,  0,  0));
-        object->push_triangle(Triangle( 4,  5,  6,  1,  1,  1,  0));
-        object->push_triangle(Triangle( 4,  6,  7,  1,  1,  1,  0));
-        object->push_triangle(Triangle( 8,  9, 10,  2,  2,  2,  0));
-        object->push_triangle(Triangle( 8, 10, 11,  2,  2,  2,  0));
-        object->push_triangle(Triangle(12, 13, 14,  3,  3,  3,  0));
-        object->push_triangle(Triangle(12, 14, 15,  3,  3,  3,  0));
-        object->push_triangle(Triangle(16, 17, 18,  4,  4,  4,  0));
-        object->push_triangle(Triangle(16, 18, 19,  4,  4,  4,  0));
-
         // Material slots.
-        object->push_material_slot("white_material");
+        const size_t mat_slot = object->push_material_slot("white_material");
+
+        // Triangles.
+        object->push_triangle(Triangle( 0,  1,  2,  0,  0,  0,  mat_slot));
+        object->push_triangle(Triangle( 0,  2,  3,  0,  0,  0,  mat_slot));
+        object->push_triangle(Triangle( 4,  5,  6,  1,  1,  1,  mat_slot));
+        object->push_triangle(Triangle( 4,  6,  7,  1,  1,  1,  mat_slot));
+        object->push_triangle(Triangle( 8,  9, 10,  2,  2,  2,  mat_slot));
+        object->push_triangle(Triangle( 8, 10, 11,  2,  2,  2,  mat_slot));
+        object->push_triangle(Triangle(12, 13, 14,  3,  3,  3,  mat_slot));
+        object->push_triangle(Triangle(12, 14, 15,  3,  3,  3,  mat_slot));
+        object->push_triangle(Triangle(16, 17, 18,  4,  4,  4,  mat_slot));
+        object->push_triangle(Triangle(16, 18, 19,  4,  4,  4,  mat_slot));
 
         // Insert the object into the assembly.
         assembly->objects().insert(auto_release_ptr<Object>(object));
@@ -945,12 +945,12 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         // Vertex normals.
         object->push_vertex_normal(GVector3(0.0f, -1.0f, 0.0f));
 
-        // Triangles.
-        object->push_triangle(Triangle(0, 1, 2,  0, 0, 0,  0));
-        object->push_triangle(Triangle(0, 2, 3,  0, 0, 0,  0));
-
         // Material slots.
-        object->push_material_slot("light_material");
+        const size_t mat_slot = object->push_material_slot("light_material");
+
+        // Triangles.
+        object->push_triangle(Triangle(0, 1, 2,  0, 0, 0,  mat_slot));
+        object->push_triangle(Triangle(0, 2, 3,  0, 0, 0,  mat_slot));
 
         // Insert the object into the assembly.
         assembly->objects().insert(auto_release_ptr<Object>(object));
