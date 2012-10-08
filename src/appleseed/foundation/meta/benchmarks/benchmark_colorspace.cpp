@@ -29,30 +29,58 @@
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
+#include "foundation/image/spectrum.h"
+#include "foundation/math/rng.h"
 #include "foundation/utility/benchmark.h"
+
+// Standard headers.
+#include <cstddef>
 
 using namespace foundation;
 
 BENCHMARK_SUITE(Foundation_Image_ColorSpace)
 {
-    struct Fixture
+    struct RGBFixture
     {
         Color3f m_input;
         Color3f m_output;
 
-        Fixture()
+        RGBFixture()
           : m_input(0.5f, 0.7f, 0.2f)
         {
         }
     };
 
-    BENCHMARK_CASE_F(LinearRGBTosRGBConversion, Fixture)
+    BENCHMARK_CASE_F(LinearRGBTosRGBConversion, RGBFixture)
     {
         m_output = linear_rgb_to_srgb(m_input);
     }
 
-    BENCHMARK_CASE_F(FastLinearRGBTosRGBConversion, Fixture)
+    BENCHMARK_CASE_F(FastLinearRGBTosRGBConversion, RGBFixture)
     {
         m_output = fast_linear_rgb_to_srgb(m_input);
+    }
+
+    struct SpectrumFixture
+    {
+        typedef RegularSpectrum<float, 31> SpectrumType;
+
+        const LightingConditions    m_lighting_conditions;
+        SpectrumType                m_input;
+        Color3f                     m_output;
+
+        SpectrumFixture()
+          : m_lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg)
+        {
+            MersenneTwister rng;
+
+            for (size_t w = 0; w < SpectrumType::Samples; ++w)
+                m_input[w] = rand_float1(rng);
+        }
+    };
+
+    BENCHMARK_CASE_F(SpectrumToCIEXYZ, SpectrumFixture)
+    {
+        m_output = spectrum_to_ciexyz<float>(m_lighting_conditions, m_input);
     }
 }
