@@ -59,7 +59,7 @@ namespace renderer
 
 namespace
 {
-    bool use_alpha_mapping(const MaterialArray& materials)
+    bool uses_alpha_mapping(const MaterialArray& materials)
     {
         for (size_t i = 0; i < materials.size(); ++i)
         {
@@ -70,14 +70,14 @@ namespace
         return false;
     }
 
-    bool use_alpha_mapping(const ObjectInstance& object_instance)
+    bool uses_alpha_mapping(const ObjectInstance& object_instance)
     {
         return
-            use_alpha_mapping(object_instance.get_back_materials()) ||
-            use_alpha_mapping(object_instance.get_front_materials());
+            uses_alpha_mapping(object_instance.get_back_materials()) ||
+            uses_alpha_mapping(object_instance.get_front_materials());
     }
 
-    bool use_alpha_mapping(const Assembly& assembly, set<UniqueID>& visited_assemblies)
+    bool uses_alpha_mapping(const Assembly& assembly, set<UniqueID>& visited_assemblies)
     {
         if (visited_assemblies.find(assembly.get_uid()) == visited_assemblies.end())
         {
@@ -85,13 +85,13 @@ namespace
 
             for (const_each<ObjectInstanceContainer> i = assembly.object_instances(); i; ++i)
             {
-                if (use_alpha_mapping(*i))
+                if (uses_alpha_mapping(*i))
                     return true;
             }
 
             for (const_each<AssemblyContainer> i = assembly.assemblies(); i; ++i)
             {
-                if (use_alpha_mapping(*i, visited_assemblies))
+                if (uses_alpha_mapping(*i, visited_assemblies))
                     return true;
             }
         }
@@ -99,13 +99,13 @@ namespace
         return false;
     }
 
-    bool use_alpha_mapping(const Scene& scene)
+    bool uses_alpha_mapping(const Scene& scene)
     {
         set<UniqueID> visited_assemblies;
 
         for (const_each<AssemblyContainer> i = scene.assemblies(); i; ++i)
         {
-            if (use_alpha_mapping(*i, visited_assemblies))
+            if (uses_alpha_mapping(*i, visited_assemblies))
                 return true;
         }
 
@@ -121,7 +121,7 @@ Tracer::Tracer(
     const size_t            max_iterations)
   : m_intersector(intersector)
   , m_texture_cache(texture_cache)
-  , m_assume_no_alpha_mapping(!use_alpha_mapping(scene))
+  , m_assume_no_alpha_mapping(!uses_alpha_mapping(scene))
   , m_transmission_threshold(static_cast<double>(transparency_threshold))
   , m_max_iterations(max_iterations)
 {
