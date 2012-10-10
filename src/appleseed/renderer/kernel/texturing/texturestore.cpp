@@ -189,7 +189,7 @@ void TextureStore::TileSwapper::load(const TileKey& key, TileRecord& record)
     }
 
     // Track the amount of memory used by the tile cache.
-    m_memory_size += dynamic_sizeof(*record.m_tile);
+    m_memory_size += record.m_tile->get_memory_size();
     m_max_memory_size = max(m_max_memory_size, m_memory_size);
 
 #ifdef TRACK_CACHE_SIZE
@@ -219,7 +219,7 @@ bool TextureStore::TileSwapper::unload(const TileKey& key, TileRecord& record)
         return false;
 
     // Track the amount of memory used by the tile cache.
-    const size_t tile_memory_size = dynamic_sizeof(*record.m_tile);
+    const size_t tile_memory_size = record.m_tile->get_memory_size();
     assert(m_memory_size >= tile_memory_size);
     m_memory_size -= tile_memory_size;
 

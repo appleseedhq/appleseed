@@ -36,7 +36,6 @@
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/image/pixel.h"
 #include "foundation/platform/types.h"
-#include "foundation/utility/memory.h"
 
 // Standard headers.
 #include <cassert>
@@ -84,6 +83,9 @@ class DLLSYMBOL Tile
 
     // Like foundation::IUnknown::release() but without introducing a virtual function table.
     void release();
+
+    // Return the size in memory of this object.
+    size_t get_memory_size() const;
 
     // Tile properties.
     PixelFormat get_pixel_format() const;
@@ -188,9 +190,6 @@ class DLLSYMBOL Tile
     uint8*          m_pixel_array;                  // pixel array
     bool            m_own_storage;                  // does the tile own the memory used for pixel storage?
 };
-
-// Return the size of a tile, including the dynamically allocated memory.
-size_t dynamic_sizeof(const Tile& tile);
 
 
 //

@@ -29,6 +29,8 @@
 // Interface header.
 #include "tile.h"
 
+using namespace std;
+
 namespace foundation
 {
 
@@ -157,7 +159,7 @@ Tile::Tile(const Tile& rhs)
     m_pixel_array = new uint8[m_array_size];
     m_own_storage = true;
 
-    std::memcpy(m_pixel_array, rhs.m_pixel_array, m_array_size);
+    memcpy(m_pixel_array, rhs.m_pixel_array, m_array_size);
 }
 
 Tile::~Tile()
@@ -169,6 +171,11 @@ Tile::~Tile()
 void Tile::release()
 {
     delete this;
+}
+
+size_t Tile::get_memory_size() const
+{
+    return sizeof(*this) + get_size();
 }
 
 void Tile::copy(const Tile& rhs)
@@ -185,11 +192,6 @@ void Tile::copy(const Tile& rhs)
         m_pixel_format,                             // destination format
         m_pixel_array,                              // destination
         1);                                         // destination stride
-}
-
-size_t dynamic_sizeof(const Tile& tile)
-{
-    return sizeof(Tile) + tile.get_size();
 }
 
 }   // namespace foundation

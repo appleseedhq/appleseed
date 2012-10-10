@@ -42,22 +42,6 @@ namespace foundation
 {
 
 //
-// dynamic_sizeof() returns the size of a given object, including
-// the dynamically allocated memory owned by the object.
-//
-// If dynamic_sizeof() is not implemented for a particular object
-// type, it is equivalent to sizeof(). Like for sizeof(), the size
-// of an object is expressed as a multiple of the size of a char.
-//
-
-template <typename T>
-size_t dynamic_sizeof(const T& object);
-
-template <typename T>
-size_t dynamic_sizeof(T* object);
-
-
-//
 // Memory-alignment related functions.
 //
 
@@ -128,23 +112,6 @@ class MemoryWriter
     const uint8* const  m_base;
     uint8*              m_ptr;
 };
-
-
-//
-// dynamic_sizeof() functions implementation.
-//
-
-template <typename T>
-inline size_t dynamic_sizeof(const T& object)
-{
-    return sizeof(object);
-}
-
-template <typename T>
-inline size_t dynamic_sizeof(T* object)
-{
-    return dynamic_sizeof(*object);
-}
 
 
 //
