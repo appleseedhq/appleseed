@@ -40,7 +40,7 @@ namespace renderer
 
 //
 // The Triangle class defines a triangle as a set of indices into feature arrays.
-// It doesn't *identify* a triangle, that's what the renderer::TriangleKey class
+// It doesn't *identify* a triangle; that's what the renderer::TriangleKey class
 // is for.
 //
 

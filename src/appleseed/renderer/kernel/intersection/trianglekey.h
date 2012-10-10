@@ -50,7 +50,8 @@ class TriangleKey
     TriangleKey(
         const size_t        object_instance_index,
         const size_t        region_index,
-        const size_t        triangle_index);
+        const size_t        triangle_index,
+        const size_t        triangle_pa);
 
     // Return the index of the object instance within the assembly.
     size_t get_object_instance_index() const;
@@ -61,9 +62,13 @@ class TriangleKey
     // Return the index of the triangle within the region.
     size_t get_triangle_index() const;
 
+    // Return the primitive attribute index of the triangle.
+    size_t get_triangle_pa() const;
+
   private:
     foundation::uint32      m_object_instance_index;
-    foundation::uint32      m_region_index;
+    foundation::uint16      m_region_index;
+    foundation::uint16      m_triangle_pa;
     foundation::uint32      m_triangle_index;
 };
 
@@ -79,9 +84,11 @@ inline TriangleKey::TriangleKey()
 inline TriangleKey::TriangleKey(
     const size_t            object_instance_index,
     const size_t            region_index,
-    const size_t            triangle_index)
+    const size_t            triangle_index,
+    const size_t            triangle_pa)
   : m_object_instance_index(static_cast<foundation::uint32>(object_instance_index))
-  , m_region_index(static_cast<foundation::uint32>(region_index))
+  , m_region_index(static_cast<foundation::uint16>(region_index))
+  , m_triangle_pa(static_cast<foundation::uint16>(triangle_pa))
   , m_triangle_index(static_cast<foundation::uint32>(triangle_index))
 {
 }
@@ -99,6 +106,11 @@ inline size_t TriangleKey::get_region_index() const
 inline size_t TriangleKey::get_triangle_index() const
 {
     return static_cast<size_t>(m_triangle_index);
+}
+
+inline size_t TriangleKey::get_triangle_pa() const
+{
+    return static_cast<size_t>(m_triangle_pa);
 }
 
 }       // namespace renderer

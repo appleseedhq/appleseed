@@ -37,7 +37,6 @@
 #include "renderer/kernel/tessellation/statictessellation.h"
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/kernel/texturing/texturestore.h"
-#include "renderer/modeling/input/source.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/object/iregion.h"
 #include "renderer/modeling/object/object.h"
@@ -144,7 +143,8 @@ namespace
                     TriangleKey(
                         region_info.get_object_instance_index(),
                         region_info.get_region_index(),
-                        i));
+                        i,
+                        triangle.m_pa));
             }
 
             // Store the index of the first triangle vertex and the number of motion segments.
@@ -240,7 +240,8 @@ namespace
                     TriangleKey(
                         region_info.get_object_instance_index(),
                         region_info.get_region_index(),
-                        i));
+                        i,
+                        triangle.m_pa));
             }
 
             // Store the index of the first triangle vertex and the number of motion segments.
@@ -880,6 +881,24 @@ void TriangleTree::store_triangles(
     statistics.insert_percent("fat leaves", fat_leaf_count, leaf_count);
 }
 
+namespace
+{
+    bool has_alpha_maps(const ObjectInstance& object_instance)
+    {
+        const MaterialArray& materials = object_instance.get_front_materials();
+
+        for (size_t i = 0; i < materials.size(); ++i)
+        {
+            const Material* material = materials[i];
+
+            if (material && material->get_alpha_map())
+                return true;
+        }
+
+        return false;
+    }
+}
+
 void TriangleTree::create_intersection_filters(
     const Arguments&    arguments,
     Statistics&         statistics)
@@ -909,31 +928,22 @@ void TriangleTree::create_intersection_filters(
             arguments.m_assembly.object_instances().get_by_index(object_instance_index);
         assert(object_instance);
 
-        // No intersection filter for this object instance if it doesn't have any front materials.
-        if (object_instance->get_front_materials().empty())
-            continue;
-
-        // No intersection filter for this object instance if its first front material is not bound.
-        const Material* material = object_instance->get_front_materials()[0];
-        if (material == 0)
-            continue;
-
-        // No intersection filter for this object instance if its first front material doesn't have an alpha map.
-        const Source* alpha_map = material->get_alpha_map();
-        if (alpha_map == 0)
+        // No intersection filter for this object instance it it doesn't reference any alpha map.
+        if (!has_alpha_maps(*object_instance))
             continue;
 
         // Create an intersection filter for this object instance.
         auto_ptr<IntersectionFilter> intersection_filter(
-            new IntersectionFilter(
-                arguments.m_scene,
-                arguments.m_assembly,
-                object_instance_index,
-                texture_cache));
+            new IntersectionFilter(*object_instance, texture_cache));
 
-        // No intersection filter for this object instance if its alpha map is mostly opaque or semi-transparent.
-        if (intersection_filter->get_transparent_pixel_ratio() < 5.0 / 100)
+        // Don't store this intersection filter if it's not useful.
+        if (!intersection_filter->keep())
             continue;
+
+        RENDERER_LOG_DEBUG(
+            "created intersection filter for object instance \"%s\" (%s).",
+            object_instance->get_name(),
+            pretty_size(intersection_filter->get_memory_size()).c_str());
 
         // Allocate the array of intersection filters.
         if (m_intersection_filters.empty())
@@ -944,7 +954,7 @@ void TriangleTree::create_intersection_filters(
         ++intersection_filter_count;
     }
 
-    statistics.insert<uint64>("inter. filters", intersection_filter_count);
+    statistics.insert<uint64>("int. filters", intersection_filter_count);
 }
 
 

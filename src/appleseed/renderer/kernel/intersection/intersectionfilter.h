@@ -44,9 +44,8 @@
 #include <vector>
 
 // Forward declarations.
-namespace renderer  { class Assembly; }
 namespace renderer  { class ObjectInstance; }
-namespace renderer  { class Scene; }
+namespace renderer  { class Source; }
 namespace renderer  { class TextureCache; }
 
 namespace renderer
@@ -57,36 +56,40 @@ class IntersectionFilter
 {
   public:
     IntersectionFilter(
-        const Scene&            scene,
-        const Assembly&         assembly,
-        const size_t            object_instance_index,
+        const ObjectInstance&   object_instance,
         TextureCache&           texture_cache);
 
-    double get_transparent_pixel_ratio() const;
+    ~IntersectionFilter();
+
+    bool keep() const;
 
     bool accept(
         const TriangleKey&      triangle_key,
         const double            u,
         const double            v) const;
 
-  private:
-    size_t                              m_alpha_mask_width;
-    size_t                              m_alpha_mask_height;
-    float                               m_max_x;
-    float                               m_max_y;
-    std::vector<foundation::uint8>      m_alpha_mask;
-    std::vector<foundation::Vector2f>   m_uv;
-    double                              m_transparent_texel_ratio;
+    size_t get_memory_size() const;
 
-    void copy_alpha_mask(
-        const Scene&            scene,
-        const Assembly&         assembly,
-        const ObjectInstance*   object_instance,
+  private:
+    struct Bitmap
+    {
+        size_t                          m_width;
+        size_t                          m_height;
+        float                           m_max_x;
+        float                           m_max_y;
+        double                          m_transparency;
+        std::vector<foundation::uint8>  m_bits;
+    };
+
+    std::vector<Bitmap*>                m_alpha_masks;
+    std::vector<foundation::Vector2f>   m_uv;
+
+    static Bitmap* create_alpha_mask(
+        const Source*           alpha_map,
         TextureCache&           texture_cache);
 
     void copy_uv_coordinates(
-        const Assembly&         assembly,
-        const ObjectInstance*   object_instance);
+        const ObjectInstance&   object_instance);
 };
 
 
@@ -101,6 +104,11 @@ inline bool IntersectionFilter::accept(
 {
     assert(triangle_key.get_region_index() == 0);
 
+    const Bitmap* alpha_mask = m_alpha_masks[triangle_key.get_triangle_pa()];
+
+    if (alpha_mask == 0)
+        return true;
+
     const size_t triangle_index = triangle_key.get_triangle_index();
 
     const float fu = static_cast<float>(u);
@@ -111,12 +119,12 @@ inline bool IntersectionFilter::accept(
         + m_uv[triangle_index * 3 + 1] * fu
         + m_uv[triangle_index * 3 + 2] * fv;
 
-    const float fx = foundation::clamp(uv[0], 0.0f, m_max_x);
-    const float fy = foundation::clamp(uv[1], 0.0f, m_max_y);
+    const float fx = foundation::clamp(uv[0] * alpha_mask->m_width, 0.0f, alpha_mask->m_max_x);
+    const float fy = foundation::clamp(uv[1] * alpha_mask->m_height, 0.0f, alpha_mask->m_max_y);
     const size_t ix = foundation::truncate<size_t>(fx);
     const size_t iy = foundation::truncate<size_t>(fy);
 
-    return m_alpha_mask[iy * m_alpha_mask_width + ix] > 0;
+    return alpha_mask->m_bits[iy * alpha_mask->m_width + ix] > 0;
 }
 
 }       // namespace renderer
