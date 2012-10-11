@@ -101,6 +101,7 @@ class DLLSYMBOL BSDF
     // Return a string identifying the model of this entity.
     virtual const char* get_model() const = 0;
 
+    // Return the type of the BSDF.
     Type get_type() const;
 
     // This method is called once before rendering each frame.
