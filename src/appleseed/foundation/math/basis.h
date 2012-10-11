@@ -59,15 +59,25 @@ class Basis3
     explicit Basis3(const VectorType& normal);
     Basis3(
         const VectorType&   normal,
-        const VectorType&   tangent);
+        const VectorType&   u);
+    Basis3(
+        const VectorType&   normal,
+        const VectorType&   u,
+        const VectorType&   v);
 
     // Rebuild the basis for a given unit-length normal vector.
     void build(const VectorType& normal);
 
-    // Rebuild the basis for a given unit-length normal and tangent vector.
+    // Rebuild the basis for a given unit-length normal and U tangent vector.
     void build(
         const VectorType&   normal,
-        const VectorType&   tangent);
+        const VectorType&   u);
+
+    // Rebuild the basis for a given unit-length normal and tangent vectors.
+    void build(
+        const VectorType&   normal,
+        const VectorType&   u,
+        const VectorType&   v);
 
     // Transform a 3D vector. The vector is not required to be unit-length,
     // and is not normalized after transformation. However the length of the
@@ -82,6 +92,11 @@ class Basis3
 
   private:
     VectorType m_n, m_u, m_v;
+
+#ifndef NDEBUG
+    // Run a bunch of assertions on the basis vectors.
+    void checks();
+#endif
 };
 
 
@@ -111,9 +126,18 @@ inline Basis3<T>::Basis3(const VectorType& normal)
 template <typename T>
 inline Basis3<T>::Basis3(
     const VectorType&   normal,
-    const VectorType&   tangent)
+    const VectorType&   u)
 {
-    build(normal, tangent);
+    build(normal, u);
+}
+
+template <typename T>
+inline Basis3<T>::Basis3(
+    const VectorType&   normal,
+    const VectorType&   u,
+    const VectorType&   v)
+{
+    build(normal, u, v);
 }
 
 template <typename T>
@@ -174,45 +198,45 @@ inline void Basis3<T>::build(const VectorType& normal)
     // Compute v.
     m_v = cross(m_u, m_n);
 
-    // Make sure (m_u, m_n, m_v) forms an orthonormal basis.
-    assert(is_normalized(m_u));
-    assert(is_normalized(m_n));
-    assert(is_normalized(m_v));
-    assert(fz(dot(m_u, m_n)));
-    assert(fz(dot(m_u, m_v)));
-    assert(fz(dot(m_n, m_v)));
-
-    // Make sure (m_u, m_n, m_v) is right-handed.
-    assert(feq(cross(m_n, m_v), m_u));
-    assert(feq(cross(m_v, m_u), m_n));
-    assert(feq(cross(m_u, m_n), m_v));
+#ifndef NDEBUG
+    checks();
+#endif
 }
 
 template <typename T>
 inline void Basis3<T>::build(
     const VectorType&   normal,
-    const VectorType&   tangent)
+    const VectorType&   u)
 {
     assert(is_normalized(normal));
-    assert(is_normalized(tangent));
+    assert(is_normalized(u));
 
     m_n = normal;
-    m_v = normalize(cross(tangent, m_n));
+    m_v = normalize(cross(u, m_n));
     m_u = cross(m_n, m_v);
 
-    // Make sure (m_u, m_n, m_v) forms an orthonormal basis.
-    assert(is_normalized(m_u));
-    assert(is_normalized(m_n));
-    assert(is_normalized(m_v));
-    assert(fz(dot(m_u, m_n)));
-    assert(fz(dot(m_u, m_v)));
-    assert(fz(dot(m_n, m_v)));
+#ifndef NDEBUG
+    checks();
+#endif
+}
 
-    // Make sure (m_u, m_n, m_v) is right-handed.
-    const T Eps = make_eps<T>(1.0e-4f, 1.0e-6);
-    assert(feq(cross(m_n, m_v), m_u, Eps));
-    assert(feq(cross(m_v, m_u), m_n, Eps));
-    assert(feq(cross(m_u, m_n), m_v, Eps));
+template <typename T>
+inline void Basis3<T>::build(
+    const VectorType&   normal,
+    const VectorType&   u,
+    const VectorType&   v)
+{
+    assert(is_normalized(normal));
+    assert(is_normalized(u));
+    assert(is_normalized(v));
+
+    m_n = normal;
+    m_u = u;
+    m_v = v;
+
+#ifndef NDEBUG
+    checks();
+#endif
 }
 
 template <typename T>
@@ -244,6 +268,28 @@ inline const Vector<T, 3>& Basis3<T>::get_tangent_v() const
 {
     return m_v;
 }
+
+#ifndef NDEBUG
+
+template <typename T>
+void Basis3<T>::checks()
+{
+    // Make sure (m_u, m_n, m_v) forms an orthonormal basis.
+    assert(is_normalized(m_u));
+    assert(is_normalized(m_n));
+    assert(is_normalized(m_v));
+    assert(fz(dot(m_u, m_n)));
+    assert(fz(dot(m_u, m_v)));
+    assert(fz(dot(m_n, m_v)));
+
+    // Make sure (m_u, m_n, m_v) is right-handed.
+    const T Eps = make_eps<T>(1.0e-4f, 1.0e-6);
+    assert(feq(cross(m_n, m_v), m_u, Eps));
+    assert(feq(cross(m_v, m_u), m_n, Eps));
+    assert(feq(cross(m_u, m_n), m_v, Eps));
+}
+
+#endif
 
 }       // namespace foundation
 
