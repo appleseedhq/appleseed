@@ -187,11 +187,14 @@ void DirectLightingIntegrator::add_light_sample_contribution(
 
     // Evaluate the input values of the light.
     InputEvaluator light_input_evaluator(m_shading_context.get_texture_cache());
-    const void* light_data = light_input_evaluator.evaluate(light->get_inputs(), sample.m_bary);
+    light->evaluate_inputs(light_input_evaluator, -incoming);
 
     // Evaluate the light.
     Spectrum light_value;
-    light->evaluate(light_data, -incoming, light_value);
+    light->evaluate(
+        light_input_evaluator.data(),
+        -incoming,
+        light_value);
 
     // Add the contribution of this sample to the illumination.
     const double weight = transmission * rcp_sample_square_distance / sample.m_probability;

@@ -32,6 +32,8 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/input/inputarray.h"
+#include "renderer/modeling/input/inputevaluator.h"
+#include "renderer/modeling/input/source.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
@@ -74,6 +76,7 @@ namespace
           : Light(name, params)
         {
             m_inputs.declare("exitance", InputFormatSpectrum);
+            m_inputs.declare("exitance_multiplier", InputFormatScalar, "1.0");
         }
 
         virtual void release() override
@@ -93,16 +96,42 @@ namespace
             if (!Light::on_frame_begin(project, assembly))
                 return false;
 
-            check_non_zero_exitance("exitance");
+            m_exitance_source = m_inputs.source("exitance");
+            m_exitance_multiplier_source = m_inputs.source("exitance_multiplier");
 
-            m_cos_inner_half_angle = cos(deg_to_rad(m_params.get_required<double>("inner_angle", 20.0) / 2.0));
-            m_cos_outer_half_angle = cos(deg_to_rad(m_params.get_required<double>("outer_angle", 30.0) / 2.0));
+            check_non_zero_exitance(m_exitance_source, m_exitance_multiplier_source);
+
+            const double inner_half_angle = deg_to_rad(m_params.get_required<double>("inner_angle", 20.0) / 2.0);
+            const double outer_half_angle = deg_to_rad(m_params.get_required<double>("outer_angle", 30.0) / 2.0);
+            const double tilt_angle = deg_to_rad(m_params.get_optional<double>("tilt_angle", 0.0));
+
+            m_cos_inner_half_angle = cos(inner_half_angle);
+            m_cos_outer_half_angle = cos(outer_half_angle);
+            m_rcp_screen_half_size = 1.0 / tan(outer_half_angle);
+
             m_transform = Transformd(Matrix4d::rotation(Vector3d(1.0, 0.0, 0.0), -HalfPi)) * get_transform();
             m_axis = normalize(m_transform.vector_to_parent(Vector3d(0.0, 1.0, 0.0)));
+            m_up = normalize(m_transform.vector_to_parent(Vector3d(sin(tilt_angle), 0.0, cos(tilt_angle))));
 
             return true;
         }
- 
+
+        void evaluate_inputs(
+            InputEvaluator&     input_evaluator,
+            const Vector3d&     outgoing) const override
+        {
+            const Vector3d v = -m_axis;
+            const Vector3d u = normalize(cross(m_up, v));
+            const Vector3d n = cross(v, u);
+
+            const double cos_theta = dot(outgoing, m_axis);
+            const Vector3d d = outgoing / cos_theta - m_axis;
+            const double x = (dot(d, u) * m_rcp_screen_half_size + 1.0) * 0.5;
+            const double y = (dot(d, n) * m_rcp_screen_half_size + 1.0) * 0.5;
+
+            input_evaluator.evaluate(m_inputs, Vector2d(x, y));
+        }
+
         virtual void sample(
             const void*         data,
             const Vector2d&     s,
@@ -165,14 +194,21 @@ namespace
       private:
         struct InputValues
         {
-            Spectrum    m_exitance;         // radiant exitance, in W.m^-2
-            Alpha       m_exitance_alpha;   // unused
+            Spectrum    m_exitance;             // radiant exitance, in W.m^-2
+            Alpha       m_exitance_alpha;       // unused
+            double      m_exitance_multiplier;  // radiant exitance multiplier
         };
+
+        const Source*   m_exitance_source;
+        const Source*   m_exitance_multiplier_source;
 
         double          m_cos_inner_half_angle;
         double          m_cos_outer_half_angle;
+        double          m_rcp_screen_half_size;
+
         Transformd      m_transform;
         Vector3d        m_axis;
+        Vector3d        m_up;
 
         void compute_exitance(
             const void*         data,
@@ -181,7 +217,9 @@ namespace
         {
             assert(cos_theta > m_cos_outer_half_angle);
 
-            exitance = static_cast<const InputValues*>(data)->m_exitance;
+            const InputValues* values = static_cast<const InputValues*>(data);
+            exitance = values->m_exitance;
+            exitance *= static_cast<float>(values->m_exitance_multiplier);
 
             if (cos_theta < m_cos_inner_half_angle)
             {
@@ -219,9 +257,20 @@ DictionaryArray SpotLightFactory::get_widget_definitions() const
             .insert("widget", "entity_picker")
             .insert("entity_types",
                 Dictionary()
-                    .insert("color", "Colors"))
+                    .insert("color", "Colors")
+                    .insert("texture_instance", "Textures"))
             .insert("use", "required")
             .insert("default", ""));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "exitance_multiplier")
+            .insert("label", "Exitance Multiplier")
+            .insert("widget", "entity_picker")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "optional")
+            .insert("default", "1.0"));
 
     definitions.push_back(
         Dictionary()
@@ -238,6 +287,14 @@ DictionaryArray SpotLightFactory::get_widget_definitions() const
             .insert("widget", "text_box")
             .insert("use", "required")
             .insert("default", "30.0"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "tilt_angle")
+            .insert("label", "Tilt Angle")
+            .insert("widget", "text_box")
+            .insert("use", "optional")
+            .insert("default", "0.0"));
 
     return definitions;
 }

@@ -42,6 +42,7 @@
 
 // Forward declarations.
 namespace renderer  { class Assembly; }
+namespace renderer  { class InputEvaluator; }
 namespace renderer  { class ParamArray; }
 namespace renderer  { class Project; }
 
@@ -83,6 +84,11 @@ class DLLSYMBOL Light
     virtual void on_frame_end(
         const Project&                  project,
         const Assembly&                 assembly);
+
+    // Evaluate the inputs of this light. Input values are stored in the input evaluator.
+    virtual void evaluate_inputs(
+        InputEvaluator&                 input_evaluator,
+        const foundation::Vector3d&     outgoing) const;
 
     // Sample the light and compute the emission direction, the probability
     // density with which it was chosen and the value of the light for this
