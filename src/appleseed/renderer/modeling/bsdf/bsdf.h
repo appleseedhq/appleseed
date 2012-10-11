@@ -44,10 +44,10 @@
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer      { class Assembly; }
-namespace renderer      { class InputEvaluator; }
-namespace renderer      { class ParamArray; }
-namespace renderer      { class Project; }
+namespace renderer  { class Assembly; }
+namespace renderer  { class InputEvaluator; }
+namespace renderer  { class ParamArray; }
+namespace renderer  { class Project; }
 
 namespace renderer
 {

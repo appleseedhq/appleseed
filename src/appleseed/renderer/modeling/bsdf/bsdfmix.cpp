@@ -34,7 +34,6 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/btdfwrapper.h"
-#include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/scene/assembly.h"
 
 // appleseed.foundation headers.
@@ -48,6 +47,9 @@
 #include <cassert>
 #include <cstddef>
 #include <string>
+
+// Forward declarations.
+namespace renderer  { class InputEvaluator; }
 
 using namespace foundation;
 using namespace std;
@@ -119,7 +121,7 @@ namespace
             const Vector2d&     uv,
             const size_t        offset) const override
         {
-            input_evaluator.evaluate(get_inputs(), uv, offset);
+            BSDF::evaluate_inputs(input_evaluator, uv, offset);
 
             m_bsdf[0]->evaluate_inputs(input_evaluator, uv, offset + m_bsdf_data_offset[0]);
             m_bsdf[1]->evaluate_inputs(input_evaluator, uv, offset + m_bsdf_data_offset[1]);
