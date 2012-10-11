@@ -41,9 +41,9 @@
 #include "foundation/math/vector.h"
 
 // Forward declarations.
-namespace renderer      { class Assembly; }
-namespace renderer      { class ParamArray; }
-namespace renderer      { class Project; }
+namespace renderer  { class Assembly; }
+namespace renderer  { class ParamArray; }
+namespace renderer  { class Project; }
 
 namespace renderer
 {
@@ -109,9 +109,6 @@ class DLLSYMBOL Light
     virtual double evaluate_pdf(
         const void*                     data,                       // input values
         const foundation::Vector3d&     outgoing) const = 0;        // world space emission direction, unit-length
-
-  protected:
-    void check_exitance_input_non_null(const char* input_name) const;
 
   private:
     struct Impl;

@@ -90,12 +90,11 @@ namespace
             if (!EnvironmentEDF::on_frame_begin(project))
                 return false;
 
-            // todo: what happens if these are not uniform?
-            check_uniform_input("upper_hemi_exitance");
-            check_uniform_input("lower_hemi_exitance");
+            if (!check_uniform("upper_hemi_exitance") || !check_uniform("lower_hemi_exitance"))
+                return false;
 
-            if (is_exitance_input_null("upper_hemi_exitance") && is_exitance_input_null("lower_hemi_exitance"))
-                warn_exitance_input_null();
+            if (is_uniform_zero("upper_hemi_exitance") && is_uniform_zero("lower_hemi_exitance"))
+                warn_zero_exitance();
 
             m_inputs.evaluate_uniforms(&m_values);
 

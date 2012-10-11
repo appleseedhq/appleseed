@@ -93,7 +93,7 @@ namespace
             if (!Light::on_frame_begin(project, assembly))
                 return false;
 
-            check_exitance_input_non_null("exitance");
+            check_non_zero_exitance("exitance");
 
             m_cos_inner_half_angle = cos(deg_to_rad(m_params.get_required<double>("inner_angle", 20.0) / 2.0));
             m_cos_outer_half_angle = cos(deg_to_rad(m_params.get_required<double>("outer_angle", 30.0) / 2.0));

@@ -91,7 +91,7 @@ namespace
             if (!EDF::on_frame_begin(project, assembly))
                 return false;
 
-            check_exitance_input_non_null("exitance", "exitance_multiplier");
+            check_non_zero_exitance("exitance", "exitance_multiplier");
 
             return true;
         }

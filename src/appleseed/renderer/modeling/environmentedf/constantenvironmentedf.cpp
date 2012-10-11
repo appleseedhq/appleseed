@@ -90,10 +90,10 @@ namespace
             if (!EnvironmentEDF::on_frame_begin(project))
                 return false;
 
-            // todo: what happens if this is not uniform?
-            check_uniform_input("exitance");
+            if (!check_uniform("exitance"))
+                return false;
 
-            check_exitance_input_non_null("exitance");
+            check_non_zero_exitance("exitance");
 
             m_inputs.evaluate_uniforms(&m_values);
 

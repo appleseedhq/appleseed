@@ -40,7 +40,8 @@
 #include "main/dllsymbol.h"
 
 // Forward declarations.
-namespace renderer      { class ParamArray; }
+namespace renderer  { class ParamArray; }
+namespace renderer  { class Source; }
 
 namespace renderer
 {
@@ -66,6 +67,22 @@ class DLLSYMBOL ConnectableEntity
 
   protected:
     InputArray m_inputs;
+
+    static bool is_uniform_zero(const Source* source);
+    bool is_uniform_zero(const char* input_name) const;
+
+    static bool is_uniform_zero(const Source* source, const Source* multiplier);
+    bool is_uniform_zero(const char* input_name, const char* multiplier_name) const;
+
+    bool check_uniform(const char* input_name) const;
+
+    void check_non_zero_exitance(const Source* source) const;
+    void check_non_zero_exitance(const char* input_name) const;
+
+    void check_non_zero_exitance(const Source* source, const Source* multiplier) const;
+    void check_non_zero_exitance(const char* input_name, const char* multiplier_name) const;
+
+    void warn_zero_exitance() const;
 };
 
 

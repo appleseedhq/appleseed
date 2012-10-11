@@ -91,12 +91,11 @@ namespace
             if (!EnvironmentEDF::on_frame_begin(project))
                 return false;
 
-            // todo: what happens if these are not uniform?
-            check_uniform_input("horizon_exitance");
-            check_uniform_input("zenith_exitance");
+            if (!check_uniform("horizon_exitance") || !check_uniform("zenith_exitance"))
+                return false;
 
-            if (is_exitance_input_null("horizon_exitance") && is_exitance_input_null("zenith_exitance"))
-                warn_exitance_input_null();
+            if (is_uniform_zero("horizon_exitance") && is_uniform_zero("zenith_exitance"))
+                warn_zero_exitance();
 
             m_inputs.evaluate_uniforms(&m_values);
 

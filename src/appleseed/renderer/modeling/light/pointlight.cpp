@@ -86,7 +86,7 @@ namespace
             if (!Light::on_frame_begin(project, assembly))
                 return false;
 
-            check_exitance_input_non_null("exitance");
+            check_non_zero_exitance("exitance");
 
             return true;
         }

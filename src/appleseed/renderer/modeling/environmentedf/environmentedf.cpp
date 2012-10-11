@@ -32,11 +32,6 @@
 // appleseed.foundation headers.
 #include "foundation/utility/uid.h"
 
-// appleseed.renderer headers.
-#include "renderer/global/globallogger.h"
-#include "renderer/modeling/input/inputarray.h"
-#include "renderer/modeling/input/source.h"
-
 using namespace foundation;
 
 namespace renderer
@@ -66,85 +61,6 @@ bool EnvironmentEDF::on_frame_begin(const Project& project)
 
 void EnvironmentEDF::on_frame_end(const Project& project)
 {
-}
-
-void EnvironmentEDF::check_uniform_input(const char* input_name) const
-{
-    if (!m_inputs.source(input_name)->is_uniform())
-    {
-        RENDERER_LOG_ERROR(
-            "the \"%s\" input of a \"%s\" must be bound to a scalar or a color.",
-            input_name,
-            get_model());
-    }
-}
-
-void EnvironmentEDF::check_exitance_input_non_null(const char* input_name) const
-{
-    if (is_exitance_input_null(input_name))
-        warn_exitance_input_null();
-}
-
-void EnvironmentEDF::check_exitance_input_non_null(
-    const char*         exitance_input_name,
-    const char*         multiplier_input_name) const
-{
-    if (is_exitance_input_null(exitance_input_name, multiplier_input_name))
-        warn_exitance_input_null();
-}
-
-bool EnvironmentEDF::is_exitance_input_null(const char* input_name) const
-{
-    const Source* source = m_inputs.source(input_name);
-
-    if (source->is_uniform())
-    {
-        Spectrum exitance;
-        Alpha alpha;
-        source->evaluate_uniform(exitance, alpha);
-
-        if (exitance == Spectrum(0.0f))
-            return true;
-    }
-
-    return false;
-}
-
-bool EnvironmentEDF::is_exitance_input_null(
-    const char*         exitance_input_name,
-    const char*         multiplier_input_name) const
-{
-    const Source* exitance_source = m_inputs.source(exitance_input_name);
-    const Source* multiplier_source = m_inputs.source(multiplier_input_name);
-
-    if (exitance_source->is_uniform())
-    {
-        Spectrum exitance;
-        Alpha alpha;
-        exitance_source->evaluate_uniform(exitance, alpha);
-
-        if (exitance == Spectrum(0.0f))
-            return true;
-    }
-
-    if (multiplier_source->is_uniform())
-    {
-        double multiplier;
-        multiplier_source->evaluate_uniform(multiplier);
-
-        if (multiplier == 0.0)
-            return true;
-    }
-
-    return false;
-}
-
-void EnvironmentEDF::warn_exitance_input_null() const
-{
-    RENDERER_LOG_WARNING(
-        "environment edf \"%s\" has a zero exitance and will slow down rendering "
-        "without contributing to the lighting.",
-        get_name());
 }
 
 }   // namespace renderer
