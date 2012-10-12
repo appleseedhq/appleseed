@@ -37,6 +37,7 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/basis.h"
 #include "foundation/math/matrix.h"
 #include "foundation/math/sampling.h"
 #include "foundation/math/scalar.h"
@@ -111,7 +112,13 @@ namespace
 
             m_transform = Transformd(Matrix4d::rotation(Vector3d(1.0, 0.0, 0.0), -HalfPi)) * get_transform();
             m_axis = normalize(m_transform.vector_to_parent(Vector3d(0.0, 1.0, 0.0)));
-            m_up = normalize(m_transform.vector_to_parent(Vector3d(sin(tilt_angle), 0.0, cos(tilt_angle))));
+
+            const Vector3d up = m_transform.vector_to_parent(Vector3d(sin(tilt_angle), 0.0, cos(tilt_angle)));
+            const Vector3d v = -m_axis;
+            const Vector3d u = normalize(cross(up, v));
+            const Vector3d n = cross(v, u);
+
+            m_screen_basis.build(n, u, v);
 
             return true;
         }
@@ -120,16 +127,13 @@ namespace
             InputEvaluator&     input_evaluator,
             const Vector3d&     outgoing) const override
         {
-            const Vector3d v = -m_axis;
-            const Vector3d u = normalize(cross(m_up, v));
-            const Vector3d n = cross(v, u);
-
             const double cos_theta = dot(outgoing, m_axis);
             const Vector3d d = outgoing / cos_theta - m_axis;
-            const double x = (dot(d, u) * m_rcp_screen_half_size + 1.0) * 0.5;
-            const double y = (dot(d, n) * m_rcp_screen_half_size + 1.0) * 0.5;
+            const double x = dot(d, m_screen_basis.get_tangent_u()) * m_rcp_screen_half_size;
+            const double y = dot(d, m_screen_basis.get_normal()) * m_rcp_screen_half_size;
+            const Vector2d uv(0.5 * (x + 1.0), 0.5 * (y + 1.0));
 
-            input_evaluator.evaluate(m_inputs, Vector2d(x, y));
+            input_evaluator.evaluate(m_inputs, uv);
         }
 
         virtual void sample(
@@ -207,8 +211,8 @@ namespace
         double          m_rcp_screen_half_size;
 
         Transformd      m_transform;
-        Vector3d        m_axis;
-        Vector3d        m_up;
+        Vector3d        m_axis;                 // world space
+        Basis3d         m_screen_basis;         // world space
 
         void compute_exitance(
             const void*         data,
