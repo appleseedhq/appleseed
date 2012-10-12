@@ -46,6 +46,7 @@
 #include "foundation/image/colorspace.h"
 #include "foundation/image/image.h"
 #include "foundation/image/tile.h"
+#include "foundation/math/aabb.h"
 #include "foundation/math/hash.h"
 #include "foundation/math/minmax.h"
 #include "foundation/math/ordering.h"
@@ -262,7 +263,7 @@ namespace
             const bool          m_adaptive_sampler_diagnostics;
 
             bool                m_crop;                 // is cropping enabled?
-            Vector4i            m_crop_window;
+            AABB2i              m_crop_window;
 
             // Constructor, extract parameters.
             explicit Parameters(const ParamArray& params)
@@ -293,9 +294,9 @@ namespace
                 if (m_crop)
                 {
                     m_crop_window =
-                        params.get_required<Vector4i>(
+                        params.get_required<AABB2i>(
                             "crop_window",
-                            Vector4i(0, 0, 65535, 65535));
+                            AABB2i(Vector2i(0), Vector2i(65535)));
                 }
             }
         };
@@ -326,10 +327,8 @@ namespace
             const size_t                iy) const
         {
             return
-                static_cast<int>(ix) >= m_params.m_crop_window[0] &&
-                static_cast<int>(iy) >= m_params.m_crop_window[1] &&
-                static_cast<int>(ix) <= m_params.m_crop_window[2] &&
-                static_cast<int>(iy) <= m_params.m_crop_window[3];
+                m_params.m_crop_window.contains(
+                    Vector2i(static_cast<int>(ix), static_cast<int>(iy)));
         }
 
         void render_pixel(
