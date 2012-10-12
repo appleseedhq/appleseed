@@ -477,7 +477,6 @@ inline T fit(
     const T max_y)
 {
     assert(min_x != max_x);
-    assert(min_y != max_y);
 
     const T k = (x - min_x) / (max_x - min_x);
     return min_y * (T(1.0) - k) + max_y * k;
