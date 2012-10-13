@@ -65,7 +65,7 @@ class PixelSampler
         const size_t            sx,
         const size_t            sy,
         foundation::Vector2d&   sample_position,
-        size_t&                 initial_instance);
+        size_t&                 initial_instance) const;
 
   private:
     size_t                      m_subpixel_grid_size;
@@ -86,7 +86,7 @@ FORCE_INLINE void PixelSampler::sample(
     const size_t                sx,
     const size_t                sy,
     foundation::Vector2d&       sample_position,
-    size_t&                     initial_instance)
+    size_t&                     initial_instance) const
 {
     // Compute the initial instance number of the sampling context.
     const size_t j = sx & m_period_mask;
