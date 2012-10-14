@@ -323,18 +323,22 @@ class Vector<T, 4>
 //
 
 typedef Vector<int,    1> Vector1i;
+typedef Vector<size_t, 1> Vector1u;
 typedef Vector<float,  1> Vector1f;
 typedef Vector<double, 1> Vector1d;
 
 typedef Vector<int,    2> Vector2i;
+typedef Vector<size_t, 2> Vector2u;
 typedef Vector<float,  2> Vector2f;
 typedef Vector<double, 2> Vector2d;
 
 typedef Vector<int,    3> Vector3i;
+typedef Vector<size_t, 3> Vector3u;
 typedef Vector<float,  3> Vector3f;
 typedef Vector<double, 3> Vector3d;
 
 typedef Vector<int,    4> Vector4i;
+typedef Vector<size_t, 4> Vector4u;
 typedef Vector<float,  4> Vector4f;
 typedef Vector<double, 4> Vector4d;
 

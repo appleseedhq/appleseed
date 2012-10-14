@@ -178,18 +178,22 @@ template <typename T> T surface_area(const AABB<T, 3>& bbox);
 //
 
 typedef AABB<int,    1> AABB1i;
+typedef AABB<size_t, 1> AABB1u;
 typedef AABB<float,  1> AABB1f;
 typedef AABB<double, 1> AABB1d;
 
 typedef AABB<int,    2> AABB2i;
+typedef AABB<size_t, 2> AABB2u;
 typedef AABB<float,  2> AABB2f;
 typedef AABB<double, 2> AABB2d;
 
 typedef AABB<int,    3> AABB3i;
+typedef AABB<size_t, 3> AABB3u;
 typedef AABB<float,  3> AABB3f;
 typedef AABB<double, 3> AABB3d;
 
 typedef AABB<int,    4> AABB4i;
+typedef AABB<size_t, 4> AABB4u;
 typedef AABB<float,  4> AABB4f;
 typedef AABB<double, 4> AABB4d;
 
