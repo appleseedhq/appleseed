@@ -216,7 +216,7 @@ namespace
                 if (!abort_switch.is_aborted())
                 {
                     // If cropping is enabled, skip pixels outside the crop window.
-                    if (!m_params.m_crop || is_pixel_inside_crop_window(ix, iy))
+                    if (!m_params.m_crop || m_params.m_crop_window.contains(Vector2u(ix, iy)))
                     {
                         // Render, filter and accumulate samples.
                         if (m_params.m_sampler_type == Parameters::AdaptiveSampler)
@@ -261,7 +261,7 @@ namespace
             const bool          m_adaptive_sampler_diagnostics;
 
             bool                m_crop;                 // is cropping enabled?
-            AABB2i              m_crop_window;
+            AABB2u              m_crop_window;
 
             // Constructor, extract parameters.
             explicit Parameters(const ParamArray& params)
@@ -292,9 +292,9 @@ namespace
                 if (m_crop)
                 {
                     m_crop_window =
-                        params.get_required<AABB2i>(
+                        params.get_required<AABB2u>(
                             "crop_window",
-                            AABB2i(Vector2i(0), Vector2i(65535)));
+                            AABB2u(Vector2u(0U), Vector2u(65535U)));
                 }
             }
         };
@@ -319,15 +319,6 @@ namespace
         size_t                              m_variation_aov_index;
         size_t                              m_contrast_aov_index;
         size_t                              m_samples_aov_index;
-
-        bool is_pixel_inside_crop_window(
-            const size_t                ix,
-            const size_t                iy) const
-        {
-            return
-                m_params.m_crop_window.contains(
-                    Vector2i(static_cast<int>(ix), static_cast<int>(iy)));
-        }
 
         void render_pixel(
             const Frame&                frame,
