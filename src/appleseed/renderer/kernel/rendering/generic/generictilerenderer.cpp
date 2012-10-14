@@ -135,22 +135,16 @@ namespace
                 m_pixel_ordering[i].y = static_cast<uint16>(y);
             }
 
-            if (m_params.m_sampler_type == Parameters::UniformSampler)
-            {
-                // Compute the approximate size of one side of the subpixel grid inside a pixel.
-                m_sqrt_sample_count = round<size_t>(sqrt(static_cast<double>(m_params.m_max_samples)));
-                RENDERER_LOG_INFO(
-                    "effective subpixel grid size: min: " FMT_SIZE_T "x" FMT_SIZE_T,
-                    m_sqrt_sample_count,
-                    m_sqrt_sample_count);
+            // Initialize the pixel sampler.
+            m_sqrt_sample_count = round<size_t>(sqrt(static_cast<double>(m_params.m_max_samples)));
+            m_rcp_sample_count = 1.0f / (m_sqrt_sample_count * m_sqrt_sample_count);
+            m_pixel_sampler.initialize(m_sqrt_sample_count);
+            RENDERER_LOG_INFO(
+                "effective max subpixel grid size: " FMT_SIZE_T "x" FMT_SIZE_T,
+                m_sqrt_sample_count,
+                m_sqrt_sample_count);
 
-                // Precompute some stuff.
-                m_rcp_sample_count = 1.0f / (m_sqrt_sample_count * m_sqrt_sample_count);
-
-                // Initialize the pixel sampler.
-                m_pixel_sampler.initialize(m_sqrt_sample_count);
-            }
-            else if (m_params.m_sampler_type == Parameters::AdaptiveSampler)
+            if (m_params.m_sampler_type == Parameters::AdaptiveSampler)
             {
                 if (m_params.m_adaptive_sampler_diagnostics)
                 {
@@ -179,10 +173,26 @@ namespace
             Tile& tile = frame.image().tile(tile_x, tile_y);
             TileStack aov_tiles(frame.aov_images().tiles(tile_x, tile_y));
             const size_t aov_count = frame.aov_images().size();
-            const size_t tile_width = tile.get_width();
-            const size_t tile_height = tile.get_height();
             const size_t tile_origin_x = m_frame_properties.m_tile_width * tile_x;
             const size_t tile_origin_y = m_frame_properties.m_tile_height * tile_y;
+            const size_t tile_width = tile.get_width();
+            const size_t tile_height = tile.get_height();
+
+            // Compute the bounding box of the pixels that will need to be rendered.
+            AABB2u rect;
+            rect.min.x = tile_origin_x;
+            rect.min.y = tile_origin_y;
+            rect.max.x = tile_origin_x + tile_width - 1;
+            rect.max.y = tile_origin_y + tile_height - 1;
+            if (m_params.m_crop)
+                rect = AABB2u::intersect(rect, m_params.m_crop_window);
+            if (!rect.is_valid())
+                return;
+
+            // If the adaptive sampler is selected, render the top row and left column of pixels.
+            vector<Pixel> top_pixels, left_pixels;
+            if (m_params.m_sampler_type == Parameters::AdaptiveSampler)
+                render_neighboring_pixels(frame, rect, top_pixels, left_pixels);
 
             // Loop over tile pixels.
             const size_t tile_pixel_count = m_pixel_ordering.size();
@@ -219,9 +229,25 @@ namespace
                     if (!m_params.m_crop || m_params.m_crop_window.contains(Vector2u(ix, iy)))
                     {
                         // Render, filter and accumulate samples.
-                        if (m_params.m_sampler_type == Parameters::AdaptiveSampler)
-                            render_pixel_adaptive(frame, ix, iy, tile, tx, ty, pixel_color, pixel_aovs);
-                        else render_pixel(frame, ix, iy, pixel_color, pixel_aovs);
+                        if (m_params.m_sampler_type == Parameters::UniformSampler)
+                        {
+                            render_pixel(
+                                frame,
+                                ix, iy,
+                                pixel_color,
+                                pixel_aovs);
+                        }
+                        else
+                        {
+                            render_pixel_adaptive(
+                                frame,
+                                ix, iy,
+                                rect,
+                                top_pixels,
+                                left_pixels,
+                                pixel_color,
+                                pixel_aovs);
+                        }
                     }
                 }
 
@@ -299,23 +325,28 @@ namespace
             }
         };
 
-        // Pixel coordinates in a tile; max tile size is 65536 x 65536 pixels.
-        typedef Vector<uint16, 2> Pixel;
-
         const Parameters                    m_params;
         auto_release_ptr<ISampleRenderer>   m_sample_renderer;
         const CanvasProperties&             m_frame_properties;
         const ColorSpace                    m_frame_color_space;
         const LightingConditions&           m_lighting_conditions;
-        vector<Pixel>                       m_pixel_ordering;
         SamplingContext::RNGType            m_rng;
 
-        // Uniform sampler only.
+        // Pixel coordinates in a tile. Max tile size is 65536 x 65536 pixels.
+        typedef Vector<uint16, 2> PixelCoords;
+
+        vector<PixelCoords>                 m_pixel_ordering;
+
         size_t                              m_sqrt_sample_count;
         float                               m_rcp_sample_count;
         PixelSampler                        m_pixel_sampler;
 
         // Adaptive sampler only.
+        struct Pixel
+        {
+            Color4f m_color;
+            Color3f m_aovs[SpectrumStack::MaxSize];
+        };
         size_t                              m_variation_aov_index;
         size_t                              m_contrast_aov_index;
         size_t                              m_samples_aov_index;
@@ -370,7 +401,7 @@ namespace
                     pixel_color[1] += shading_result.m_color[1];
                     pixel_color[2] += shading_result.m_color[2];
                     pixel_color[3] += shading_result.m_alpha[0];
-                    pixel_aovs += shading_result.m_aovs;
+                    pixel_aovs += shading_result.m_aovs;            // todo: add the first 4 components only of each AOV
                 }
             }
 
@@ -379,50 +410,85 @@ namespace
             pixel_aovs *= m_rcp_sample_count;
         }
 
-        float contrast(const Color4f& c1_linear, const Color4f& c2_linear) const
+        void render_neighboring_pixels(
+            const Frame&                frame,
+            const AABB2u&               rect,
+            vector<Pixel>&              top_pixels,
+            vector<Pixel>&              left_pixels)
         {
-            const Color3f c1 = transform_color(c1_linear.rgb(), ColorSpaceLinearRGB, m_frame_color_space);
-            const Color3f c2 = transform_color(c2_linear.rgb(), ColorSpaceLinearRGB, m_frame_color_space);
+            const size_t width = rect.extent()[0] + 1;
+            const size_t height = rect.extent()[1] + 1;
+            const size_t aov_count = frame.aov_images().size();
 
-            return
-                max(
-                    abs(c1[0] - c2[0]),
-                    abs(c1[1] - c2[1]),
-                    abs(c1[2] - c2[2]),
-                    abs(c1_linear[3] - c2_linear[3]));
-        }
+            top_pixels.resize(width);
 
-        static void set_false_color_aov(
-            SpectrumStack&              pixel_aovs,
-            const size_t                aov_index,
-            const float                 value)
-        {
-            const Color3f color =
-                lerp(
-                    Color3f(0.0f, 0.0f, 1.0f),
-                    Color3f(1.0f, 0.0f, 0.0f),
-                    saturate(value));
+            if (rect.min.y > 0)
+            {
+                for (size_t x = 0; x < width; ++x)
+                {
+                    Pixel& pixel = top_pixels[x];
+                    pixel.m_color.set(0.0f);
 
-            pixel_aovs[aov_index][0] = color[0];
-            pixel_aovs[aov_index][1] = color[1];
-            pixel_aovs[aov_index][2] = color[2];
+                    SpectrumStack pixel_aovs(aov_count);
+                    pixel_aovs.set(0.0f);
+
+                    render_pixel(
+                        frame,
+                        rect.min.x + x,
+                        rect.min.y - 1,
+                        pixel.m_color,
+                        pixel_aovs);
+
+                    for (size_t i = 0; i < aov_count; ++i)
+                    {
+                        const Spectrum& aov = pixel_aovs[i];
+                        pixel.m_aovs[i] = Color3f(aov[0], aov[1], aov[2]);
+                    }
+
+                    convert_to_frame_color_space(pixel, aov_count);
+                }
+            }
+
+            left_pixels.resize(height);
+
+            if (rect.min.x > 0)
+            {
+                for (size_t y = 0; y < height; ++y)
+                {
+                    Pixel& pixel = left_pixels[y];
+                    pixel.m_color.set(0.0f);
+
+                    SpectrumStack pixel_aovs(aov_count);
+                    pixel_aovs.set(0.0f);
+
+                    render_pixel(
+                        frame,
+                        rect.min.x - 1,
+                        rect.min.y + y,
+                        pixel.m_color,
+                        pixel_aovs);
+
+                    for (size_t i = 0; i < aov_count; ++i)
+                    {
+                        const Spectrum& aov = pixel_aovs[i];
+                        pixel.m_aovs[i] = Color3f(aov[0], aov[1], aov[2]);
+                    }
+
+                    convert_to_frame_color_space(pixel, aov_count);
+                }
+            }
         }
 
         void render_pixel_adaptive(
             const Frame&                frame,
             const size_t                ix,
             const size_t                iy,
-            Tile&                       tile,
-            const size_t                tx,
-            const size_t                ty,
+            const AABB2u&               rect,
+            vector<Pixel>&              top_pixels,
+            vector<Pixel>&              left_pixels,
             Color4f&                    pixel_color,
             SpectrumStack&              pixel_aovs)
         {
-            // Get the color of the neighboring pixels.
-            Color4f left_pixel, top_pixel;
-            if (tx > 0) tile.get_pixel<Color4f>(tx - 1, ty, left_pixel);
-            if (ty > 0) tile.get_pixel<Color4f>(tx, ty - 1, top_pixel);
-
             // Create a sampling context.
             const size_t pixel_index = iy * frame.image().properties().m_canvas_width + ix;
             const size_t instance = hashint32(static_cast<uint32>(pixel_index));
@@ -433,6 +499,12 @@ namespace
                 instance);
 
             Population<float> history;
+
+            Pixel& top_pixel = top_pixels[ix - rect.min.x];
+            Pixel& left_pixel = left_pixels[iy - rect.min.y];
+            Pixel current_pixel;
+
+            const size_t aov_count = frame.aov_images().size();
 
             while (true)
             {
@@ -473,6 +545,7 @@ namespace
                     pixel_aovs += shading_result.m_aovs;            // todo: add the first 4 components only of each AOV
 
                     // Update statistics for this pixel.
+                    // todo: one history per AOV.
                     history.insert(
                         luminance(
                             Color3f(
@@ -481,40 +554,82 @@ namespace
                                 shading_result.m_color[2])));
                 }
 
-                // Continue oversampling if we can't compute contrast because there are no neighboring pixels.
-                if (tx == 0 || ty == 0)
-                    continue;
-
-                // Compute the coefficient of variation.
-                const double variation = history.get_var();
-
-                // Compute the contrast with neighboring pixels.
-                const Color4f current_pixel = pixel_color / static_cast<float>(history.get_size());
-                const float hcontrast = contrast(current_pixel, left_pixel);
-                const float vcontrast = contrast(current_pixel, top_pixel);
-                const float contrast = max(hcontrast, vcontrast);
+                // Compute the current pixel as if it was complete.
+                const float rcp_sample_count = 1.0f / history.get_size();
+                current_pixel.m_color = pixel_color * rcp_sample_count;
+                for (size_t i = 0; i < aov_count; ++i)
+                {
+                    const Spectrum& aov = pixel_aovs[i];
+                    current_pixel.m_aovs[i] = Color3f(aov[0], aov[1], aov[2]);
+                    current_pixel.m_aovs[i] *= rcp_sample_count;
+                }
+                convert_to_frame_color_space(current_pixel, aov_count);
 
                 if (m_params.m_adaptive_sampler_diagnostics && history.get_size() == m_params.m_min_samples)
                 {
-                    // Output the variation diagnostic AOV.
-                    set_false_color_aov(
+                    // Check variation.
+                    const bool pass_variation_check =
+                        history.get_var() <= m_params.m_max_variation;
+
+                    // Check contrast.
+                    bool pass_contrast_check = true;
+                    if (rect.min.y > 0 || iy > 0)
+                    {
+                        // Check contrast with top neighbor.
+                        if (!check_contrast(current_pixel, top_pixel, m_params.m_max_contrast, aov_count))
+                            pass_contrast_check = false;
+                    }
+                    if (rect.min.x > 0 || ix > 0)
+                    {
+                        // Check contrast with left neighbor.
+                        if (!check_contrast(current_pixel, left_pixel, m_params.m_max_contrast, aov_count))
+                            pass_contrast_check = false;
+                    }
+
+                    // Output the 'variation' diagnostic AOV.
+                    set_false_color(
                         pixel_aovs,
                         m_variation_aov_index,
-                        variation > m_params.m_max_variation ? 1.0f : 0.0f);
+                        pass_variation_check ? 0.0f : 1.0f);
 
-                    // Output the contrast diagnostic AOV.
-                    set_false_color_aov(
+                    // Output the 'contrast' diagnostic AOV.
+                    set_false_color(
                         pixel_aovs,
                         m_contrast_aov_index,
-                        contrast > m_params.m_max_contrast ? 1.0f : 0.0f);
-                }
+                        pass_contrast_check ? 0.0f : 1.0f);
 
-                // Stop oversampling if quality criteria have been met.
-                if (variation <= m_params.m_max_variation && contrast <= m_params.m_max_contrast)
+                    if (pass_contrast_check && pass_variation_check)
+                        break;
+                }
+                else
+                {
+                    // Check variation.
+                    if (history.get_var() > m_params.m_max_variation)
+                        continue;
+
+                    // Check contrast with top neighbor.
+                    if (rect.min.y > 0 || iy > 0)
+                    {
+                        if (!check_contrast(current_pixel, top_pixel, m_params.m_max_contrast, aov_count))
+                            continue;
+                    }
+
+                    // Check contrast with left neighbor.
+                    if (rect.min.x > 0 || ix > 0)
+                    {
+                        if (!check_contrast(current_pixel, left_pixel, m_params.m_max_contrast, aov_count))
+                            continue;
+                    }
+
                     break;
+                }
             }
 
-            // Scale diagnostic AOV to cancel the division performed below.
+            // Update top and left pixels.
+            copy_pixel(top_pixel, current_pixel, aov_count);
+            copy_pixel(left_pixel, current_pixel, aov_count);
+
+            // Scale diagnostic AOVs to cancel the division performed below.
             const float sample_count = static_cast<float>(history.get_size());
             if (m_params.m_adaptive_sampler_diagnostics)
             {
@@ -527,18 +642,112 @@ namespace
             pixel_color *= rcp_sample_count;
             pixel_aovs *= rcp_sample_count;
 
-            // Output the samples diagnostic AOV.
+            // Output the 'samples' diagnostic AOV.
             if (m_params.m_adaptive_sampler_diagnostics)
             {
                 // Sample count AOV.
-                const float normalized_sample_count =
-                    fit(
-                        sample_count,
-                        static_cast<float>(m_params.m_min_samples),
-                        static_cast<float>(m_params.m_max_samples),
-                        0.0f, 1.0f);
-                set_false_color_aov(pixel_aovs, m_samples_aov_index, normalized_sample_count);
+                if (m_params.m_min_samples == m_params.m_max_samples)
+                    set_false_color(pixel_aovs, m_samples_aov_index, 1.0f);
+                else
+                {
+                    const float normalized_sample_count =
+                        fit(
+                            sample_count,
+                            static_cast<float>(m_params.m_min_samples),
+                            static_cast<float>(m_params.m_max_samples),
+                            0.0f, 1.0f);
+                    set_false_color(pixel_aovs, m_samples_aov_index, normalized_sample_count);
+                }
             }
+        }
+
+        void convert_to_frame_color_space(
+            Pixel&                      pixel,
+            const size_t                aov_count) const
+        {
+            pixel.m_color.rgb() =
+                transform_color(pixel.m_color.rgb(), ColorSpaceLinearRGB, m_frame_color_space);
+
+            for (size_t i = 0; i < aov_count; ++i)
+            {
+                if (!is_diagnostic_aov(i))
+                {
+                    pixel.m_aovs[i] =
+                        transform_color(pixel.m_aovs[i], ColorSpaceLinearRGB, m_frame_color_space);
+                }
+            }
+        }
+
+        bool check_contrast(
+            const Pixel&                a,
+            const Pixel&                b,
+            const float                 max_contrast,
+            const size_t                aov_count) const
+        {
+            if (!check_contrast(a.m_color, b.m_color, max_contrast))
+                return false;
+
+            for (size_t i = 0; i < aov_count; ++i)
+            {
+                if (!is_diagnostic_aov(i))
+                {
+                    if (!check_contrast(a.m_aovs[i], b.m_aovs[i], max_contrast))
+                        return false;
+                }
+            }
+
+            return true;
+        }
+
+        template <typename T, size_t N>
+        static bool check_contrast(
+            const Color<T, N>&          a,
+            const Color<T, N>&          b,
+            const float                 max_contrast)
+        {
+            for (size_t i = 0; i < N; ++i)
+            {
+                if (abs(a[i] - b[i]) > max_contrast)
+                    return false;
+            }
+
+            return true;
+        }
+
+        static void copy_pixel(
+            Pixel&                      dest,
+            const Pixel&                source,
+            const size_t                aov_count)
+        {
+            dest.m_color = source.m_color;
+
+            for (size_t i = 0; i < aov_count; ++i)
+                dest.m_aovs[i] = source.m_aovs[i];
+        }
+
+        bool is_diagnostic_aov(const size_t aov_index) const
+        {
+            return
+                m_params.m_adaptive_sampler_diagnostics &&
+                (aov_index == m_variation_aov_index ||
+                 aov_index == m_contrast_aov_index ||
+                 aov_index == m_samples_aov_index);
+        }
+
+        static void set_false_color(
+            SpectrumStack&              pixel_aovs,
+            const size_t                aov_index,
+            const float                 value)
+        {
+            const Color3f color =
+                lerp(
+                    Color3f(0.0f, 0.0f, 1.0f),
+                    Color3f(1.0f, 0.0f, 0.0f),
+                    saturate(value));
+
+            pixel_aovs[aov_index][0] = color[0];
+            pixel_aovs[aov_index][1] = color[1];
+            pixel_aovs[aov_index][2] = color[2];
         }
     };
 }
