@@ -84,7 +84,7 @@ namespace
 
     // Define this symbol to break execution into the debugger
     // when a specific pixel is about to be rendered.
-    // #define DEBUG_BREAK_AT_PIXEL Vector<size_t, 2>(0, 0)
+    // #define DEBUG_BREAK_AT_PIXEL Vector2u(0, 0)
 
 #endif
 
@@ -104,15 +104,15 @@ namespace
         {
             // Retrieve frame properties.
             const CanvasProperties& properties = frame.image().properties();
-            const size_t num_pixels = properties.m_tile_width * properties.m_tile_height;
+            const size_t tile_pixel_count = properties.m_tile_width * properties.m_tile_height;
 
             // Generate pixel ordering.
             vector<size_t> ordering;
-            ordering.reserve(num_pixels);
+            ordering.reserve(tile_pixel_count);
             if (m_params.m_sampler_type == Parameters::AdaptiveSampler)
             {
                 // A linear order allows to compute contrast with the left and top neighbors.
-                linear_ordering(ordering, num_pixels);
+                linear_ordering(ordering, tile_pixel_count);
             }
             else
             {
@@ -121,11 +121,11 @@ namespace
                     properties.m_tile_width,
                     properties.m_tile_height);
             }
-            assert(ordering.size() == num_pixels);
+            assert(ordering.size() == tile_pixel_count);
 
             // Convert pixel ordering to (x, y) representation.
-            m_pixel_ordering.resize(num_pixels);
-            for (size_t i = 0; i < num_pixels; ++i)
+            m_pixel_ordering.resize(tile_pixel_count);
+            for (size_t i = 0; i < tile_pixel_count; ++i)
             {
                 const size_t x = ordering[i] % properties.m_tile_width;
                 const size_t y = ordering[i] / properties.m_tile_width;
@@ -185,8 +185,8 @@ namespace
             const size_t tile_origin_y = m_frame_properties.m_tile_height * tile_y;
 
             // Loop over tile pixels.
-            const size_t num_pixels = m_pixel_ordering.size();
-            for (size_t i = 0; i < num_pixels; ++i)
+            const size_t tile_pixel_count = m_pixel_ordering.size();
+            for (size_t i = 0; i < tile_pixel_count; ++i)
             {
                 // Retrieve the coordinates of the pixel in the tile.
                 const size_t tx = static_cast<size_t>(m_pixel_ordering[i].x);
@@ -208,7 +208,7 @@ namespace
 #ifdef DEBUG_BREAK_AT_PIXEL
 
                 // Break in the debugger when this pixel is reached.
-                if (Vector<size_t, 2>(ix, iy) == DEBUG_BREAK_AT_PIXEL)
+                if (Vector2u(ix, iy) == DEBUG_BREAK_AT_PIXEL)
                     BREAKPOINT();
 
 #endif
@@ -229,9 +229,7 @@ namespace
                 if (!frame.is_premultiplied_alpha())
                 {
                     const float rcp_alpha = pixel_color[3] == 0.0f ? 0.0f : 1.0f / pixel_color[3];
-                    pixel_color[0] *= rcp_alpha;
-                    pixel_color[1] *= rcp_alpha;
-                    pixel_color[2] *= rcp_alpha;
+                    pixel_color.rgb() *= rcp_alpha;
                     pixel_aovs *= rcp_alpha;
                 }
 
