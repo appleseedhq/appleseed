@@ -294,7 +294,7 @@ void PNGImageFileWriter::write(
                     // the converted pixel into the temporary buffer.
                     if (tile.get_channel_count() == 3)
                     {
-                        Color3i pixel;
+                        Color3b pixel;
                         tile.get_pixel(x, y, pixel);
                         buffer[buffer_index + 0] = pixel[0];
                         buffer[buffer_index + 1] = pixel[1];
@@ -303,7 +303,7 @@ void PNGImageFileWriter::write(
                     else
                     {
                         assert(tile.get_channel_count() == 4);
-                        Color4i pixel;
+                        Color4b pixel;
                         tile.get_pixel(x, y, pixel);
                         buffer[buffer_index + 0] = pixel[0];
                         buffer[buffer_index + 1] = pixel[1];

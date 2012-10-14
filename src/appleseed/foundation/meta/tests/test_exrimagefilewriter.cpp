@@ -41,7 +41,7 @@ TEST_SUITE(Foundation_Image_EXRImageFileWriter)
     using namespace foundation;
 
     static const char* Filename = "unit tests/outputs/test_exrimagefilewriter.exr";
-    static const Color4i Reference(50, 100, 150, 42);
+    static const Color4b Reference(50, 100, 150, 42);
 
     void generate_test_openexr_file()
     {
@@ -67,7 +67,7 @@ TEST_SUITE(Foundation_Image_EXRImageFileWriter)
 
         for (size_t i = 0; i < 4; ++i)
         {
-            Color4i c;
+            Color4b c;
             tile->get_pixel(i, c);
             EXPECT_EQ(Reference, c);
         }

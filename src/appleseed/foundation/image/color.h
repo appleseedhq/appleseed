@@ -250,10 +250,11 @@ class Color<T, 4>
 // Full specializations for colors of type int, float and double.
 //
 
-typedef Color<uint8,    3> Color3i;
+typedef Color<uint8,    3> Color3b;
 typedef Color<float,    3> Color3f;
 typedef Color<double,   3> Color3d;
-typedef Color<uint8,    4> Color4i;
+
+typedef Color<uint8,    4> Color4b;
 typedef Color<float,    4> Color4f;
 typedef Color<double,   4> Color4d;
 

@@ -266,7 +266,7 @@ TEST_SUITE(ImageTools)
                 Color4f input_color;
                 input_image->get_pixel(x, y, input_color);
 
-                Color4i output_color;
+                Color4b output_color;
 
                 for (size_t c = 0; c < 4; ++c)
                 {
