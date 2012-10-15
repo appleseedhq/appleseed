@@ -230,7 +230,7 @@ template <typename T>
 inline double Population<T>::get_var() const
 {
     const double dev = get_dev();
-    return dev == 0.0 ? 0.0 : dev / m_mean;
+    return m_mean == 0.0 ? dev : dev / m_mean;
 }
 
 }       // namespace foundation
