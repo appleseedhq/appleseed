@@ -46,7 +46,33 @@ TEST_SUITE(Foundation_Math_Population)
         EXPECT_EQ(0.0, pop.get_var());
     }
 
-    TEST_CASE(NonEmptyPopulation)
+    TEST_CASE(IntegerPopulationWithSingleZeroValue)
+    {
+        Population<int> pop;
+        pop.insert(0);
+
+        EXPECT_EQ(1, pop.get_size());
+        EXPECT_EQ(0, pop.get_min());
+        EXPECT_EQ(0, pop.get_max());
+        EXPECT_EQ(0.0, pop.get_mean());
+        EXPECT_EQ(0.0, pop.get_dev());
+        EXPECT_EQ(0.0, pop.get_var());
+    }
+
+    TEST_CASE(FloatingPointPopulationWithSingleZeroValue)
+    {
+        Population<double> pop;
+        pop.insert(0.0);
+
+        EXPECT_EQ(1, pop.get_size());
+        EXPECT_EQ(0.0, pop.get_min());
+        EXPECT_EQ(0.0, pop.get_max());
+        EXPECT_EQ(0.0, pop.get_mean());
+        EXPECT_EQ(0.0, pop.get_dev());
+        EXPECT_EQ(0.0, pop.get_var());
+    }
+
+    TEST_CASE(NonEmptyIntegerPopulation)
     {
         Population<int> pop;
         pop.insert(2);

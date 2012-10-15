@@ -352,8 +352,8 @@ inline void AABB<T, N>::invalidate()
 {
     for (size_t i = 0; i < N; ++i)
     {
-        min[i] =  std::numeric_limits<T>::max();
-        max[i] = -std::numeric_limits<T>::max();
+        min[i] = std::numeric_limits<T>::max();
+        max[i] = signed_min<T>();
     }
 }
 

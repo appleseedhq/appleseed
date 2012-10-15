@@ -111,11 +111,22 @@ TEST_SUITE(Foundation_Math_AABB)
         EXPECT_EQ(Vector3d(4.0, 5.0, 6.0), bbox[1]);
     }
 
-    TEST_CASE(TestInvalidate)
+    TEST_CASE(TestInvalidateOnFloatingPointAABB)
     {
         AABB3d bbox(
             Vector3d(1.0, 2.0, 3.0),
             Vector3d(4.0, 5.0, 6.0));
+
+        bbox.invalidate();
+
+        EXPECT_FALSE(bbox.is_valid());
+    }
+
+    TEST_CASE(TestInvalidateOnUnsignedIntegerAABB)
+    {
+        AABB3u bbox(
+            Vector3u(1, 2, 3),
+            Vector3u(4, 5, 6));
 
         bbox.invalidate();
 

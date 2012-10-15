@@ -88,7 +88,7 @@ template <typename T>
 inline Population<T>::Population()
   : m_size(0)
   , m_min(std::numeric_limits<ValueType>::max())
-  , m_max(std::numeric_limits<ValueType>::min())
+  , m_max(signed_min<ValueType>())
   , m_mean(0.0)
   , m_s(0.0)
 {

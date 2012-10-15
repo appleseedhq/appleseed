@@ -221,6 +221,18 @@ bool fz(const int lhs);
 
 
 //
+// Miscellaneous.
+//
+
+// Return the minimum signed finite value for a given type.
+template <typename T> T signed_min()            { return std::numeric_limits<T>::min(); }
+template <> inline float signed_min()           { return -std::numeric_limits<float>::max(); }
+template <> inline double signed_min()          { return -std::numeric_limits<double>::max(); }
+template <> inline long double signed_min()     { return -std::numeric_limits<long double>::max(); }
+
+
+//
+//
 // Conversion operations implementation.
 //
 
