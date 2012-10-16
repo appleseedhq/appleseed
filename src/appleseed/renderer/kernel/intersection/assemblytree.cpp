@@ -114,7 +114,7 @@ void AssemblyTree::collect_assembly_instances(
 
         // Compute the cumulated transform sequence of this assembly instance.
         TransformSequence cumulated_transform_seq =
-            parent_transform_seq * assembly_instance.transform_sequence();
+            assembly_instance.transform_sequence() * parent_transform_seq;
         cumulated_transform_seq.prepare();
 
         // Collect child assembly instances.
