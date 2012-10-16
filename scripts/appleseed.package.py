@@ -28,7 +28,7 @@
 #
 
 # Package builder settings.
-VersionString = "2.0"
+VersionString = "2.0.1"
 SettingsFileName = "appleseed.package.configuration.xml"
 
 # Imports.
@@ -226,9 +226,9 @@ class PackageBuilder:
         copy_glob(os.path.join(self.settings.appleseed_path, "sandbox/schemas/*.xsd"), "appleseed/schemas/")
 
     def add_text_files_to_stage(self):
-        progress("Adding LICENSE.txt and README.txt files")
+        progress("Adding LICENSE.txt and README.md files")
         shutil.copy(os.path.join(self.settings.appleseed_path, "LICENSE.txt"), "appleseed/")
-        shutil.copy(os.path.join(self.settings.appleseed_path, "README.txt"), "appleseed/")
+        shutil.copy(os.path.join(self.settings.appleseed_path, "README.md"), "appleseed/")
 
     def build_final_zip_file(self):
         progress("Building final zip file from staging directory")
