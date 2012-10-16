@@ -40,16 +40,13 @@ namespace foundation
 //
 
 template <typename T>
-inline bool pass_rr(
-    const T probability,
-    const T sample)
+inline bool pass_rr(const T probability, const T sample)
 {
     assert(probability >= T(0.0));
     assert(probability <= T(1.0));
     assert(sample >= T(0.0));
     assert(sample <  T(1.0));
 
-    // Do Russian Roulette.
     return sample < probability;
 }
 
