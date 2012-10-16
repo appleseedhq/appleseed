@@ -320,7 +320,7 @@ namespace
                     m_crop_window =
                         params.get_required<AABB2u>(
                             "crop_window",
-                            AABB2u(Vector2u(0U), Vector2u(65535U)));
+                            AABB2u(Vector2u(0, 0), Vector2u(65535, 65535)));
                 }
             }
         };
