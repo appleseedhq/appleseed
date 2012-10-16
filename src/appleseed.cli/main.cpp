@@ -323,7 +323,7 @@ namespace
         if (g_cl.m_rendering_threads.is_set())
         {
             params.insert_path(
-                "generic_frame_renderer.rendering_threads",
+                "rendering_threads",
                 g_cl.m_rendering_threads.string_values()[0].c_str());
         }
 
