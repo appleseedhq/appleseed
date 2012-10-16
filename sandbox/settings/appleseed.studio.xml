@@ -1,9 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <settings>
-    <parameters name="generic_frame_renderer">
-        <parameter name="rendering_threads" value="auto" />
-    </parameters>
-    <parameters name="progressive_frame_renderer">
-        <parameter name="rendering_threads" value="auto" />
-    </parameters>
+    <parameter name="rendering_threads" value="auto" />
 </settings>
