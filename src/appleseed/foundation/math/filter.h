@@ -124,6 +124,10 @@ class GaussianFilter2
 //
 // 2D Mitchell-Netravali filter.
 //
+// Reference:
+//
+//   http://www.cs.utexas.edu/~fussell/courses/cs384g/lectures/mitchell/Mitchell.pdf
+//
 
 template <typename T>
 class MitchellFilter2
