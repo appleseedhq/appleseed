@@ -244,6 +244,7 @@ set (foundation_math_sources
     foundation/math/combination.h
     foundation/math/distance.h
     foundation/math/fastmath.h
+    foundation/math/filter.h
     foundation/math/fixedsizehistory.h
     foundation/math/fp.h
     foundation/math/fresnel.h
@@ -367,7 +368,6 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_distance.cpp
     foundation/meta/tests/test_exrimagefilewriter.cpp
     foundation/meta/tests/test_fastmath.cpp
-    foundation/meta/tests/test_filter.cpp
     foundation/meta/tests/test_fixedsizehistory.cpp
     foundation/meta/tests/test_fp.cpp
     foundation/meta/tests/test_fresnel.cpp
@@ -381,6 +381,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_lazy.cpp
     foundation/meta/tests/test_log.cpp
     foundation/meta/tests/test_makevector.cpp
+    foundation/meta/tests/test_math_filter.cpp
     foundation/meta/tests/test_matrix.cpp
     foundation/meta/tests/test_memory.cpp
     foundation/meta/tests/test_microfacet.cpp
@@ -415,6 +416,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_transform.cpp
     foundation/meta/tests/test_triangulator.cpp
     foundation/meta/tests/test_typetraits.cpp
+    foundation/meta/tests/test_utility_filter.cpp
     foundation/meta/tests/test_vector.cpp
     foundation/meta/tests/test_viewport.cpp
     foundation/meta/tests/test_voxelgrid.cpp
