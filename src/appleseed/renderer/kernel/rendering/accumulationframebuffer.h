@@ -72,7 +72,7 @@ class AccumulationFramebuffer
         const Sample    samples[]) = 0;
 
     // Develop the framebuffer to a frame. Thread-safe.
-    void render_to_frame(Frame& frame);
+    void develop_to_frame(Frame& frame);
 
   protected:
     const size_t            m_width;
@@ -84,7 +84,7 @@ class AccumulationFramebuffer
 
     void clear_no_lock();
 
-    virtual void develop_to_frame(Frame& frame) const = 0;
+    virtual void develop_to_frame_no_lock(Frame& frame) const = 0;
 };
 
 

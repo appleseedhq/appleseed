@@ -80,7 +80,7 @@ class LocalAccumulationFramebuffer
     std::vector<size_t>                 m_set_pixels;
     size_t                              m_active_level;
 
-    virtual void develop_to_frame(Frame& frame) const override;
+    virtual void develop_to_frame_no_lock(Frame& frame) const override;
 
     void develop_to_tile(
         const Frame&                    frame,

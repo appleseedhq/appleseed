@@ -213,7 +213,7 @@ void LocalAccumulationFramebuffer::store_samples(
     m_sample_count += sample_count;
 }
 
-void LocalAccumulationFramebuffer::develop_to_frame(Frame& frame) const
+void LocalAccumulationFramebuffer::develop_to_frame_no_lock(Frame& frame) const
 {
     Image& image = frame.image();
     const CanvasProperties& frame_props = image.properties();

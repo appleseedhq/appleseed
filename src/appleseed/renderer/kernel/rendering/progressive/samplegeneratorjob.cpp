@@ -126,7 +126,7 @@ void SampleGeneratorJob::execute(const size_t thread_index)
 
     if (m_job_index == 0)
     {
-        m_framebuffer.render_to_frame(m_frame);
+        m_framebuffer.develop_to_frame(m_frame);
 
         if (m_tile_callback)
             m_tile_callback->post_render(&m_frame);

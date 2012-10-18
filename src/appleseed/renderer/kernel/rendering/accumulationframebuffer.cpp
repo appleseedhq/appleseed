@@ -44,11 +44,11 @@ AccumulationFramebuffer::AccumulationFramebuffer(
 {
 }
 
-void AccumulationFramebuffer::render_to_frame(Frame& frame)
+void AccumulationFramebuffer::develop_to_frame(Frame& frame)
 {
     mutex::scoped_lock lock(m_mutex);
 
-    develop_to_frame(frame);
+    develop_to_frame_no_lock(frame);
 }
 
 }   // namespace renderer

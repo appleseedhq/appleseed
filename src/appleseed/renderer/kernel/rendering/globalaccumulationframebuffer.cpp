@@ -38,7 +38,6 @@
 #include "foundation/image/image.h"
 #include "foundation/image/pixel.h"
 #include "foundation/math/scalar.h"
-#include "foundation/platform/compiler.h"
 #include "foundation/platform/thread.h"
 
 // Standard headers.
@@ -110,7 +109,7 @@ void GlobalAccumulationFramebuffer::increment_sample_count(const uint64 delta_sa
     m_sample_count += delta_sample_count;
 }
 
-void GlobalAccumulationFramebuffer::develop_to_frame(Frame& frame) const
+void GlobalAccumulationFramebuffer::develop_to_frame_no_lock(Frame& frame) const
 {
     Image& image = frame.image();
     const CanvasProperties& frame_props = image.properties();

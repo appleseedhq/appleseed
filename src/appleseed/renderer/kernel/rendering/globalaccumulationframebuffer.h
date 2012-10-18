@@ -35,6 +35,7 @@
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
 #include "foundation/image/tile.h"
+#include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
 
 // Standard headers.
@@ -80,7 +81,7 @@ class GlobalAccumulationFramebuffer
         const size_t                    x,
         const size_t                    y) const;
 
-    virtual void develop_to_frame(Frame& frame) const;
+    virtual void develop_to_frame_no_lock(Frame& frame) const override;
 
     void develop_to_tile(
         foundation::Tile&               tile,
