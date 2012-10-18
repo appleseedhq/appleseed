@@ -101,9 +101,9 @@ inline void TileStack::set_pixel(
     for (size_t i = 0; i < m_size; ++i)
     {
         const Spectrum& spectrum = aovs[i];
-        const foundation::Color4f linear_rgb(spectrum[0], spectrum[1], spectrum[2], alpha);
+        const foundation::Color4f linear_rgba(spectrum[0], spectrum[1], spectrum[2], alpha);
 
-        m_tiles[i]->set_pixel(x, y, linear_rgb);
+        m_tiles[i]->set_pixel(x, y, linear_rgba);
     }
 }
 
