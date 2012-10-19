@@ -191,11 +191,15 @@ void RenderSettingsWindow::create_image_plane_sampling_general_settings(QVBoxLay
 
     QComboBox* filter = create_combobox("image_plane_sampling.general.filter");
     filter->addItem("Box", "box");
+    filter->addItem("Triangle", "triangle");
     filter->addItem("Gaussian", "gaussian");
     filter->addItem("Mitchell-Netravali", "mitchell");
+    filter->addItem("Cubic B-spline", "bspline");
+    filter->addItem("Catmull-Rom Spline", "catmull");
+    filter->addItem("Lanczos", "lanczos");
     sublayout->addLayout(create_form_layout("Filter:", filter));
 
-    sublayout->addLayout(create_form_layout("Filter Size:", create_integer_input("image_plane_sampling.general.filter_size", 1, 64)));
+    sublayout->addLayout(create_form_layout("Filter Size:", create_double_input("image_plane_sampling.general.filter_size", 1, 256, 1, 0.1)));
 
     m_image_planer_sampler_combo = create_combobox("image_plane_sampling.general.sampler");
     m_image_planer_sampler_combo->addItem("Uniform", "uniform");
@@ -657,8 +661,9 @@ QComboBox* RenderSettingsWindow::create_combobox(
 void RenderSettingsWindow::create_direct_links()
 {
     // Image Plane Sampling.
+    create_direct_link("image_plane_sampling.general.filter", "generic_tile_renderer.filter", "mitchell");
+    create_direct_link("image_plane_sampling.general.filter_size", "generic_tile_renderer.filter_size", 2.0);
     create_direct_link("image_plane_sampling.general.sampler", "generic_tile_renderer.sampler", "uniform");
-    create_direct_link("image_plane_sampling.general.filter_size", "generic_tile_renderer.filter_size", 2);
     create_direct_link("image_plane_sampling.adaptive_sampler.max_contrast", "generic_tile_renderer.max_contrast", 1.0 / 256);
     create_direct_link("image_plane_sampling.adaptive_sampler.max_variation", "generic_tile_renderer.max_variation", 0.15);
     create_direct_link("image_plane_sampling.adaptive_sampler.enable_diagnostics", "generic_tile_renderer.enable_adaptive_sampler_diagnostics", false);

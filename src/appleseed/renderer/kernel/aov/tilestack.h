@@ -30,7 +30,6 @@
 #define APPLESEED_RENDERER_KERNEL_AOV_TILESTACK_H
 
 // appleseed.renderer headers.
-#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/aov/spectrumstack.h"
 
 // appleseed.foundation headers.
@@ -59,14 +58,14 @@ class TileStack
     void append(foundation::Tile* tile);
 
     void set_pixel(
-       const size_t             x,
-       const size_t             y,
-       const SpectrumStack&     aovs,
-       const float              alpha) const;
+       const size_t                 x,
+       const size_t                 y,
+       const size_t                 i,
+       const foundation::Color4f&   color) const;
 
   private:
-    foundation::Tile*           m_tiles[MaxSize];
-    size_t                      m_size;
+    foundation::Tile*   m_tiles[MaxSize];
+    size_t              m_size;
 };
 
 
@@ -95,16 +94,10 @@ inline void TileStack::append(foundation::Tile* tile)
 inline void TileStack::set_pixel(
     const size_t                x,
     const size_t                y,
-    const SpectrumStack&        aovs,
-    const float                 alpha) const
+    const size_t                i,
+    const foundation::Color4f&  color) const
 {
-    for (size_t i = 0; i < m_size; ++i)
-    {
-        const Spectrum& spectrum = aovs[i];
-        const foundation::Color4f linear_rgba(spectrum[0], spectrum[1], spectrum[2], alpha);
-
-        m_tiles[i]->set_pixel(x, y, linear_rgba);
-    }
+    m_tiles[i]->set_pixel(x, y, color);
 }
 
 }       // namespace renderer

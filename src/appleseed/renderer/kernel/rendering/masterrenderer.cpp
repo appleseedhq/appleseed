@@ -502,7 +502,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     auto_ptr<ITileRendererFactory> tile_renderer_factory;
 
     const string tile_renderer_param =
-        m_params.get_required<string>("tile_renderer", "generic");
+        m_params.get_optional<string>("tile_renderer", "");
 
     if (tile_renderer_param == "generic")
     {
@@ -529,7 +529,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
                 texture_store,
                 m_params.child("ewatest_tile_renderer")));
     }
-    else
+    else if (!tile_renderer_param.empty())
     {
         RENDERER_LOG_ERROR(
             "invalid value for \"tile_renderer\" parameter: \"%s\".",
@@ -545,7 +545,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     auto_ptr<ISampleGeneratorFactory> sample_generator_factory;
 
     const string sample_generator_param =
-        m_params.get_optional<string>("sample_generator", "generic");
+        m_params.get_optional<string>("sample_generator", "");
 
     if (sample_generator_param == "generic")
     {
@@ -565,7 +565,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
                 light_sampler,
                 m_params.child("lighttracing_sample_generator")));
     }
-    else
+    else if (!sample_generator_param.empty())
     {
         RENDERER_LOG_ERROR(
             "invalid value for \"sample_generator\" parameter: \"%s\".",

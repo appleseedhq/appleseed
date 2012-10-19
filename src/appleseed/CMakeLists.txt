@@ -890,6 +890,8 @@ source_group ("renderer\\kernel\\rendering\\debug" FILES
 )
 
 set (renderer_kernel_rendering_generic_sources
+    renderer/kernel/rendering/generic/developedpixelbuffer.cpp
+    renderer/kernel/rendering/generic/developedpixelbuffer.h
     renderer/kernel/rendering/generic/genericframerenderer.cpp
     renderer/kernel/rendering/generic/genericframerenderer.h
     renderer/kernel/rendering/generic/genericsamplegenerator.cpp
@@ -900,6 +902,8 @@ set (renderer_kernel_rendering_generic_sources
     renderer/kernel/rendering/generic/generictilerenderer.h
     renderer/kernel/rendering/generic/pixelsampler.cpp
     renderer/kernel/rendering/generic/pixelsampler.h
+    renderer/kernel/rendering/generic/sampleaccumulationbuffer.cpp
+    renderer/kernel/rendering/generic/sampleaccumulationbuffer.h
     renderer/kernel/rendering/generic/tilejob.cpp
     renderer/kernel/rendering/generic/tilejob.h
     renderer/kernel/rendering/generic/tilejobfactory.cpp

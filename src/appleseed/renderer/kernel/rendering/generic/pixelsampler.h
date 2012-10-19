@@ -62,8 +62,8 @@ class PixelSampler
     // of the subpixel grid cell containing the sample. The coordinates of the
     // pixel sample are expressed in sample space (http://appleseedhq.net/conventions).
     void sample(
-        const size_t            sx,
-        const size_t            sy,
+        const int               sx,
+        const int               sy,
         foundation::Vector2d&   sample_position,
         size_t&                 initial_instance) const;
 
@@ -83,8 +83,8 @@ class PixelSampler
 //
 
 FORCE_INLINE void PixelSampler::sample(
-    const size_t                sx,
-    const size_t                sy,
+    const int                   sx,
+    const int                   sy,
     foundation::Vector2d&       sample_position,
     size_t&                     initial_instance) const
 {

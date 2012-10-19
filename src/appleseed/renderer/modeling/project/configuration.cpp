@@ -125,10 +125,11 @@ auto_release_ptr<Configuration> BaseConfigurationFactory::create_base_final()
     parameters.insert("lighting_engine", "pt");
 
     ParamArray generic_tile_renderer_params;
-    generic_tile_renderer_params.insert("min_samples", "1");
-    generic_tile_renderer_params.insert("max_samples", "1");
-    generic_tile_renderer_params.insert("sample_filter_size", "4");
-    generic_tile_renderer_params.insert("sample_filter_type", "mitchell");
+    generic_tile_renderer_params.insert("filter", "mitchell");
+    generic_tile_renderer_params.insert("filter_size", "2.0");
+    generic_tile_renderer_params.insert("sampler", "uniform");
+    generic_tile_renderer_params.insert("min_samples", "64");
+    generic_tile_renderer_params.insert("max_samples", "64");
     parameters.dictionaries().insert("generic_tile_renderer", generic_tile_renderer_params);
 
     return configuration;
@@ -142,20 +143,8 @@ auto_release_ptr<Configuration> BaseConfigurationFactory::create_base_interactiv
 
     parameters.insert("frame_renderer", "progressive");
     parameters.insert("sample_renderer", "generic");
+    parameters.insert("sample_generator", "generic");
     parameters.insert("lighting_engine", "pt");
-
-    // todo: this parameter should be removed as soon as a tile renderer
-    // isn't required anymore by renderer::MasterRenderer::render().
-    parameters.insert("tile_renderer", "generic");
-
-    // todo: these parameters should be removed as soon as a tile renderer
-    // isn't required anymore by renderer::MasterRenderer::render().
-    ParamArray generic_tile_renderer_params;
-    generic_tile_renderer_params.insert("min_samples", "1");
-    generic_tile_renderer_params.insert("max_samples", "1");
-    generic_tile_renderer_params.insert("sample_filter_size", "1");
-    generic_tile_renderer_params.insert("sample_filter_type", "box");
-    parameters.dictionaries().insert("generic_tile_renderer", generic_tile_renderer_params);
 
     return configuration;
 }
