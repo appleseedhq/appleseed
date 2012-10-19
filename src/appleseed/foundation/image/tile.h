@@ -136,12 +136,12 @@ class DLLSYMBOL Tile
         const size_t        x,
         const size_t        y,
         const size_t        c,
-        const T             component);
+        const T             value);
     template <typename T>
     void set_component(
         const size_t        i,
         const size_t        c,
-        const T             component);
+        const T             value);
 
     // Structured read access to a given pixel, with automatic pixel format conversion.
     template <typename Color>
@@ -327,11 +327,11 @@ inline void Tile::set_component(
     const size_t    x,
     const size_t    y,
     const size_t    c,
-    const T         component)
+    const T         value)
 {
     Pixel::convert_to_format(
-        &component,                             // source begin
-        &component + 1,                         // source end
+        &value,                                 // source begin
+        &value + 1,                             // source end
         1,                                      // source stride
         m_pixel_format,                         // destination format
         component(x, y, c),                     // destination
@@ -342,11 +342,11 @@ template <typename T>
 inline void Tile::set_component(
     const size_t    i,
     const size_t    c,
-    const T         component)
+    const T         value)
 {
     Pixel::convert_to_format(
-        &component,                             // source begin
-        &component + 1,                         // source end
+        &value,                                 // source begin
+        &value + 1,                             // source end
         1,                                      // source stride
         m_pixel_format,                         // destination format
         component(i, c),                        // destination
@@ -415,16 +415,16 @@ inline T Tile::get_component(
 {
     const uint8* src = component(x, y, c);
 
-    T component;
+    T value;
     Pixel::convert_from_format(
         m_pixel_format,                         // source format
         src,                                    // source begin
         src + m_channel_size,                   // source end
         1,                                      // source stride
-        &component,                             // destination
+        &value,                                 // destination
         1);                                     // destination stride
 
-    return component;
+    return value;
 }
 
 template <typename T>
@@ -434,16 +434,16 @@ inline T Tile::get_component(
 {
     const uint8* src = component(i, c);
 
-    T component;
+    T value;
     Pixel::convert_from_format(
         m_pixel_format,                         // source format
         src,                                    // source begin
         src + m_channel_size,                   // source end
         1,                                      // source stride
-        &component,                             // destination
+        &value,                                 // destination
         1);                                     // destination stride
 
-    return component;
+    return value;
 }
 
 template <typename Color>
