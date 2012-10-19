@@ -110,13 +110,10 @@ namespace
           , m_lighting_conditions(frame.get_lighting_conditions())
         {
             // Compute pixel filter extent.
-            m_filter_half_width = truncate<int>(ceil(m_params.m_filter_radius) - 1.0);
-            m_filter_half_height = truncate<int>(ceil(m_params.m_filter_radius) - 1.0);
-            m_filter_width = 2 * m_filter_half_width + 1;
-            m_filter_height = 2 * m_filter_half_height + 1;
+            compute_pixel_filter_extent(frame);
 
             // Precompute pixel filter weights.
-            precompute_filter_weights();
+            precompute_pixel_filter_weights();
 
             // Precompute pixel ordering.
             if (m_params.m_sampler_type == Parameters::UniformSampler)
@@ -267,7 +264,32 @@ namespace
         size_t                              m_contrast_aov_index;
         size_t                              m_samples_aov_index;
 
-        void precompute_filter_weights()
+        void compute_pixel_filter_extent(const Frame& frame)
+        {
+            m_filter_half_width = truncate<int>(ceil(m_params.m_filter_radius) - 1.0);
+            m_filter_half_height = truncate<int>(ceil(m_params.m_filter_radius) - 1.0);
+            m_filter_width = 2 * m_filter_half_width + 1;
+            m_filter_height = 2 * m_filter_half_height + 1;
+
+            const CanvasProperties& properties = frame.image().properties();
+            const size_t padded_tile_width = properties.m_tile_width + 2 * m_filter_half_width;
+            const size_t padded_tile_height = properties.m_tile_height + 2 * m_filter_half_height;
+            const size_t padded_pixel_count = padded_tile_width * padded_tile_height;
+            const size_t pixel_count = properties.m_tile_width * properties.m_tile_height;
+            const size_t overhead_pixel_count = padded_pixel_count - pixel_count;
+            const double wasted_effort = static_cast<double>(overhead_pixel_count) / pixel_count * 100.0;
+
+            RENDERER_LOG(
+                wasted_effort >= 10.0 ? LogMessage::Warning : LogMessage::Info,
+                "rendering effort wasted by tile borders: %s (tile dimensions: %sx%s, filter dimensions: %sx%s)",
+                pretty_percent(overhead_pixel_count, pixel_count).c_str(),
+                pretty_uint(properties.m_tile_width).c_str(),
+                pretty_uint(properties.m_tile_height).c_str(),
+                pretty_uint(m_filter_width).c_str(),
+                pretty_uint(m_filter_height).c_str());
+        }
+
+        void precompute_pixel_filter_weights()
         {
             m_filter_weights.resize(m_filter_width * m_filter_height);
 
