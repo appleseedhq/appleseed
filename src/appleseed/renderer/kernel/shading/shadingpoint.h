@@ -698,8 +698,8 @@ inline void ShadingPoint::compute_partial_derivatives() const
     cache_source_geometry();
 
     const double du0 = static_cast<double>(m_v0_uv[0] - m_v2_uv[0]);
-    const double du1 = static_cast<double>(m_v1_uv[0] - m_v2_uv[0]);
     const double dv0 = static_cast<double>(m_v0_uv[1] - m_v2_uv[1]);
+    const double du1 = static_cast<double>(m_v1_uv[0] - m_v2_uv[0]);
     const double dv1 = static_cast<double>(m_v1_uv[1] - m_v2_uv[1]);
 
     const double det = du0 * dv1 - dv0 * du1;
@@ -713,9 +713,10 @@ inline void ShadingPoint::compute_partial_derivatives() const
     }
     else
     {
+        const double rcp_det = 1.0 / det;
+
         const foundation::Vector3d dp0 = get_vertex(0) - get_vertex(2);
         const foundation::Vector3d dp1 = get_vertex(1) - get_vertex(2);
-        const double rcp_det = 1.0 / det;
 
         m_dpdu = (dv1 * dp0 - dv0 * dp1) * rcp_det;
         m_dpdv = (du0 * dp1 - du1 * dp0) * rcp_det;
