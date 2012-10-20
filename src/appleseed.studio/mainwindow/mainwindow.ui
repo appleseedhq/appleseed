@@ -66,7 +66,7 @@
     </widget>
     <widget class="QMenu" name="menu_open_recent">
      <property name="title">
-      <string>Open Re&amp;cent</string>
+      <string>Open Recen&amp;t</string>
      </property>
     </widget>
     <addaction name="action_file_new_project"/>
