@@ -112,9 +112,6 @@ namespace
             // Compute pixel filter extent.
             compute_pixel_filter_extent(frame);
 
-            // Precompute pixel filter weights.
-            precompute_pixel_filter_weights();
-
             // Precompute pixel ordering.
             if (m_params.m_sampler_type == Parameters::UniformSampler)
                 precompute_pixel_ordering(frame);
@@ -250,7 +247,6 @@ namespace
         int                                 m_filter_half_height;
         int                                 m_filter_width;
         int                                 m_filter_height;
-        vector<float>                       m_filter_weights;
 
         // Pixel ordering.
         vector<Vector<int16, 2> >           m_pixel_ordering;
@@ -287,23 +283,6 @@ namespace
                 pretty_uint(properties.m_tile_height).c_str(),
                 pretty_uint(m_filter_width).c_str(),
                 pretty_uint(m_filter_height).c_str());
-        }
-
-        void precompute_pixel_filter_weights()
-        {
-            m_filter_weights.resize(m_filter_width * m_filter_height);
-
-            for (int dy = -m_filter_half_height; dy <= m_filter_half_height; ++dy)
-            {
-                for (int dx = -m_filter_half_width; dx <= m_filter_half_width; ++dx)
-                {
-                    const int x = dx + m_filter_half_width;
-                    const int y = dy + m_filter_half_height;
-
-                    m_filter_weights[y * m_filter_width + x] =
-                        static_cast<float>(m_params.m_filter->evaluate(dx, dy));
-                }
-            }
         }
 
         void precompute_pixel_ordering(const Frame& frame)
@@ -364,6 +343,23 @@ namespace
             const size_t tile_width = tile.get_width();
             const size_t tile_height = tile.get_height();
 
+            // Compute the bounding box in image space of the pixels that need to be rendered.
+            AABB2u tile_bbox;
+            tile_bbox.min.x = tile_origin_x;
+            tile_bbox.min.y = tile_origin_y;
+            tile_bbox.max.x = tile_origin_x + tile_width - 1;
+            tile_bbox.max.y = tile_origin_y + tile_height - 1;
+            if (m_params.m_crop)
+                tile_bbox = AABB2u::intersect(tile_bbox, m_params.m_crop_window);
+            if (!tile_bbox.is_valid())
+                return;
+
+            // Transform the bounding box to tile space.
+            tile_bbox.min.x -= tile_origin_x;
+            tile_bbox.min.y -= tile_origin_y;
+            tile_bbox.max.x -= tile_origin_x;
+            tile_bbox.max.y -= tile_origin_y;
+
             // Allocate the buffer that will hold the samples and the filter weights.
             SampleAccumulationBuffer sample_buffer(tile_width, tile_height, aov_count);
 
@@ -399,8 +395,9 @@ namespace
                 // If cropping is enabled, skip pixels outside the crop window.
                 if (!m_params.m_crop || m_params.m_crop_window.contains(Vector2u(ix, iy)))
                 {
-                    render_pixel(
+                    render_pixel_uniform(
                         frame,
+                        tile_bbox,
                         ix, iy,
                         tx, ty,
                         sample_buffer);
@@ -413,8 +410,9 @@ namespace
             else sample_buffer.develop_to_tile_straight_alpha(tile, aov_tiles);
         }
 
-        void render_pixel(
+        void render_pixel_uniform(
             const Frame&                frame,
+            const AABB2u&               tile_bbox,
             const int                   ix,
             const int                   iy,
             const int                   tx,
@@ -424,8 +422,6 @@ namespace
             const size_t aov_count = frame.aov_images().size();
             const int base_sx = ix * m_sqrt_sample_count;
             const int base_sy = iy * m_sqrt_sample_count;
-            const int buffer_width = static_cast<int>(sample_buffer.get_width());
-            const int buffer_height = static_cast<int>(sample_buffer.get_height());
 
             for (size_t sy = 0; sy < m_sqrt_sample_count; ++sy)
             {
@@ -461,19 +457,20 @@ namespace
                         shading_result);
 
                     // Find the pixels affected by this sample.
-                    const int minx = max(tx - m_filter_half_width, 0);
-                    const int miny = max(ty - m_filter_half_height, 0);
-                    const int maxx = min(tx + m_filter_half_width, buffer_width - 1);
-                    const int maxy = min(ty + m_filter_half_height, buffer_height - 1);
+                    const int minx = max(tx - m_filter_half_width, static_cast<int>(tile_bbox.min.x));
+                    const int miny = max(ty - m_filter_half_height, static_cast<int>(tile_bbox.min.y));
+                    const int maxx = min(tx + m_filter_half_width, static_cast<int>(tile_bbox.max.x));
+                    const int maxy = min(ty + m_filter_half_height, static_cast<int>(tile_bbox.max.y));
 
                     // Add the contribution of this sample to the affected pixels.
+                    const double dx = ix - tx + 0.5 - s.x;
+                    const double dy = iy - ty + 0.5 - s.y;
                     for (int ry = miny; ry <= maxy; ++ry)
                     {
                         for (int rx = minx; rx <= maxx; ++rx)
                         {
-                            const int x = rx + m_filter_half_width - tx;
-                            const int y = ry + m_filter_half_height - ty;
-                            const float weight = m_filter_weights[y * m_filter_width + x];
+                            const float weight =
+                                static_cast<float>(m_params.m_filter->evaluate(rx + dx, ry + dy));
                             sample_buffer.add(rx, ry, shading_result, weight);
                         }
                     }
@@ -537,6 +534,12 @@ namespace
                 tile_origin_y,
                 pixel_buffer);
 
+            // Transform the bounding box to tile space.
+            tile_bbox.min.x -= tile_origin_x;
+            tile_bbox.min.y -= tile_origin_y;
+            tile_bbox.max.x -= tile_origin_x;
+            tile_bbox.max.y -= tile_origin_y;
+
             // Loop over tile pixels.
             for (int ty = -m_filter_half_height; ty < tile_height + m_filter_half_height; ++ty)
             {
@@ -564,6 +567,7 @@ namespace
                         // Render and accumulate samples.
                         render_pixel_adaptive(
                             frame,
+                            tile_bbox,
                             ix, iy,
                             tx, ty,
                             sample_buffer,
@@ -572,11 +576,6 @@ namespace
                     }
                 }
             }
-
-            tile_bbox.min.x -= tile_origin_x;
-            tile_bbox.min.y -= tile_origin_y;
-            tile_bbox.max.x -= tile_origin_x;
-            tile_bbox.max.y -= tile_origin_y;
 
             // Develop the accumulation buffer to the tile.
             if (frame.is_premultiplied_alpha())
@@ -714,6 +713,7 @@ namespace
 
         void render_pixel_adaptive(
             const Frame&                frame,
+            const AABB2u&               tile_bbox,
             const int                   ix,
             const int                   iy,
             const int                   tx,
@@ -723,8 +723,6 @@ namespace
             Tile*                       diagnostics)
         {
             const size_t aov_count = frame.aov_images().size();
-            const int buffer_width = static_cast<int>(sample_buffer.get_width());
-            const int buffer_height = static_cast<int>(sample_buffer.get_height());
 
             // Create a sampling context.
             const size_t pixel_index = iy * frame.image().properties().m_canvas_width + ix;
@@ -755,7 +753,7 @@ namespace
 
                     // Compute the sample position in NDC.
                     const Vector2d sample_position =
-                        frame.get_sample_position(ix + s[0], iy + s[1]);
+                        frame.get_sample_position(ix + s.x, iy + s.y);
 
                     // Render the sample.
                     SamplingContext child_sampling_context = sampling_context.split(0, 0);
@@ -767,19 +765,20 @@ namespace
                         shading_result);
 
                     // Find the pixels affected by this sample.
-                    const int minx = max(tx - m_filter_half_width, 0);
-                    const int miny = max(ty - m_filter_half_height, 0);
-                    const int maxx = min(tx + m_filter_half_width, buffer_width - 1);
-                    const int maxy = min(ty + m_filter_half_height, buffer_height - 1);
+                    const int minx = max(tx - m_filter_half_width, static_cast<int>(tile_bbox.min.x));
+                    const int miny = max(ty - m_filter_half_height, static_cast<int>(tile_bbox.min.y));
+                    const int maxx = min(tx + m_filter_half_width, static_cast<int>(tile_bbox.max.x));
+                    const int maxy = min(ty + m_filter_half_height, static_cast<int>(tile_bbox.max.y));
 
                     // Add the contribution of this sample to the affected pixels.
+                    const double dx = -tx + 0.5 - s.x;
+                    const double dy = -ty + 0.5 - s.y;
                     for (int ry = miny; ry <= maxy; ++ry)
                     {
                         for (int rx = minx; rx <= maxx; ++rx)
                         {
-                            const int x = rx + m_filter_half_width - tx;
-                            const int y = ry + m_filter_half_height - ty;
-                            const float weight = m_filter_weights[y * m_filter_width + x];
+                            const float weight =
+                                static_cast<float>(m_params.m_filter->evaluate(rx + dx, ry + dy));
                             sample_buffer.add(rx, ry, shading_result, weight);
                         }
                     }
@@ -795,7 +794,10 @@ namespace
                 }
 
                 // Pixels outside the tile are always refined.
-                if (tx >= 0 && ty >= 0 && tx < buffer_width && ty < buffer_height)
+                if (tx >= static_cast<int>(tile_bbox.min.x) &&
+                    ty >= static_cast<int>(tile_bbox.min.y) &&
+                    tx <= static_cast<int>(tile_bbox.max.x) &&
+                    ty <= static_cast<int>(tile_bbox.max.y))
                 {
                     // Develop the pixel.
                     sample_buffer.develop_pixel(tx, ty, pixel_buffer);
@@ -834,7 +836,10 @@ namespace
 
             // Output the 'samples' diagnostic AOV.
             if (m_params.m_adaptive_sampler_diagnostics &&
-                tx >= 0 && ty >= 0 && tx < buffer_width && ty < buffer_height)
+                tx >= static_cast<int>(tile_bbox.min.x) &&
+                ty >= static_cast<int>(tile_bbox.min.y) &&
+                tx <= static_cast<int>(tile_bbox.max.x) &&
+                ty <= static_cast<int>(tile_bbox.max.y))
             {
                 diagnostics->set_component(tx, ty, 2,
                     m_params.m_min_samples == m_params.m_max_samples
