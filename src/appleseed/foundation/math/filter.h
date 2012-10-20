@@ -206,7 +206,7 @@ inline T Filter2<T>::get_yradius() const
 
 template <typename T>
 inline BoxFilter2<T>::BoxFilter2(const T xradius, const T yradius)
-  : Filter2(xradius, yradius)
+  : Filter2<T>(xradius, yradius)
 {
 }
 
@@ -223,15 +223,15 @@ inline T BoxFilter2<T>::evaluate(const T x, const T y) const
 
 template <typename T>
 inline TriangleFilter2<T>::TriangleFilter2(const T xradius, const T yradius)
-  : Filter2(xradius, yradius)
+  : Filter2<T>(xradius, yradius)
 {
 }
 
 template <typename T>
 inline T TriangleFilter2<T>::evaluate(const T x, const T y) const
 {
-    const T nx = x * m_rcp_xradius;
-    const T ny = y * m_rcp_yradius;
+    const T nx = x * Filter2<T>::m_rcp_xradius;
+    const T ny = y * Filter2<T>::m_rcp_yradius;
     return (T(1.0) - std::abs(nx)) * (T(1.0) - std::abs(ny));
 }
 
@@ -245,7 +245,7 @@ inline GaussianFilter2<T>::GaussianFilter2(
     const T xradius,
     const T yradius,
     const T alpha)
-  : Filter2(xradius, yradius)
+  : Filter2<T>(xradius, yradius)
   , m_alpha(alpha)
   , m_shift(gaussian(T(1.0), alpha))
 {
@@ -254,8 +254,8 @@ inline GaussianFilter2<T>::GaussianFilter2(
 template <typename T>
 inline T GaussianFilter2<T>::evaluate(const T x, const T y) const
 {
-    const T nx = x * m_rcp_xradius;
-    const T ny = y * m_rcp_yradius;
+    const T nx = x * Filter2<T>::m_rcp_xradius;
+    const T ny = y * Filter2<T>::m_rcp_yradius;
     const T fx = gaussian(nx, m_alpha) - m_shift;
     const T fy = gaussian(ny, m_alpha) - m_shift;
     return fx * fy;
@@ -278,7 +278,7 @@ inline MitchellFilter2<T>::MitchellFilter2(
     const T yradius,
     const T b,
     const T c)
-  : Filter2(xradius, yradius)
+  : Filter2<T>(xradius, yradius)
   , m_b(b)
   , m_c(c)
 {
@@ -287,8 +287,8 @@ inline MitchellFilter2<T>::MitchellFilter2(
 template <typename T>
 inline T MitchellFilter2<T>::evaluate(const T x, const T y) const
 {
-    const T nx = x * m_rcp_xradius;
-    const T ny = y * m_rcp_yradius;
+    const T nx = x * Filter2<T>::m_rcp_xradius;
+    const T ny = y * Filter2<T>::m_rcp_yradius;
     return mitchell(nx, m_b, m_c) * mitchell(ny, m_b, m_c);
 }
 
@@ -324,7 +324,7 @@ inline LanczosFilter2<T>::LanczosFilter2(
     const T xradius,
     const T yradius,
     const T tau)
-  : Filter2(xradius, yradius)
+  : Filter2<T>(xradius, yradius)
   , m_rcp_tau(tau)
 {
 }
@@ -332,8 +332,8 @@ inline LanczosFilter2<T>::LanczosFilter2(
 template <typename T>
 inline T LanczosFilter2<T>::evaluate(const T x, const T y) const
 {
-    const T nx = x * m_rcp_xradius;
-    const T ny = y * m_rcp_yradius;
+    const T nx = x * Filter2<T>::m_rcp_xradius;
+    const T ny = y * Filter2<T>::m_rcp_yradius;
     return lanczos(nx, m_rcp_tau) * lanczos(ny, m_rcp_tau);
 }
 
