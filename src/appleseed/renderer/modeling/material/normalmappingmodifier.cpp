@@ -44,8 +44,11 @@ using namespace foundation;
 namespace renderer
 {
 
-NormalMappingModifier::NormalMappingModifier(const Source* map)
+NormalMappingModifier::NormalMappingModifier(
+    const Source*       map,
+    const UpVector      up_vector)
   : m_map(map)
+  , m_y(up_vector == UpVectorY ? 1 : 2)
 {
 }
 
@@ -64,8 +67,8 @@ Vector3d NormalMappingModifier::evaluate(
     assert(is_saturated(normal_rgb));
     const Vector3f normal(
         normal_rgb[0] * 2.0f - 1.0f,
-        normal_rgb[2] * 2.0f - 1.0f,
-        normal_rgb[1] * 2.0f - 1.0f);
+        normal_rgb[m_y] * 2.0f - 1.0f,
+        normal_rgb[3 - m_y] * 2.0f - 1.0f);
 
     // Transform the normal to world space and normalize it.
     const Basis3d basis(n, dpdu);

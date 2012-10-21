@@ -145,7 +145,25 @@ bool Material::on_frame_begin(
                 m_normal_modifier = new BumpMappingModifier(displacement_map, 2.0, amplitude);
             }
             else if (displacement_method == "normal")
-                m_normal_modifier = new NormalMappingModifier(displacement_map);
+            {
+                const string up_string = m_params.get_optional<string>("normal_map_up", "z");
+                NormalMappingModifier::UpVector up_vector;
+                if (up_string == "y")
+                    up_vector = NormalMappingModifier::UpVectorY;
+                else if (up_string == "z")
+                    up_vector = NormalMappingModifier::UpVectorZ;
+                else
+                {
+                    RENDERER_LOG_ERROR(
+                        "while defining material \"%s\": invalid value \"%s\" for parameter "
+                        "\"normal_map_up_vector\"; using default value \"%s\".",
+                        get_name(),
+                        up_string.c_str(),
+                        "z");
+                    up_vector = NormalMappingModifier::UpVectorZ;
+                }
+                m_normal_modifier = new NormalMappingModifier(displacement_map, up_vector);
+            }
             else
             {
                 RENDERER_LOG_ERROR(
@@ -267,8 +285,20 @@ DictionaryArray MaterialFactory::get_widget_definitions()
             .insert("name", "bump_amplitude")
             .insert("label", "Bump Amplitude")
             .insert("widget", "text_box")
-            .insert("default", "1.0")
-            .insert("use", "optional"));
+            .insert("use", "optional")
+            .insert("default", "1.0"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "normal_map_up")
+            .insert("label", "Normal Map Up Vector")
+            .insert("widget", "dropdown_list")
+            .insert("dropdown_items",
+                Dictionary()
+                    .insert("Green Channel (Y)", "y")
+                    .insert("Blue Channel (Z)", "z"))
+            .insert("use", "optional")
+            .insert("default", "z"));
 
     return definitions;
 }

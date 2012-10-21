@@ -36,6 +36,9 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 
+// Standard headers.
+#include <cstddef>
+
 // Forward declarations.
 namespace renderer  { class Source; }
 namespace renderer  { class TextureCache; }
@@ -47,7 +50,11 @@ class NormalMappingModifier
   : public INormalModifier
 {
   public:
-    explicit NormalMappingModifier(const Source* map);
+    enum UpVector { UpVectorY, UpVectorZ };
+
+    NormalMappingModifier(
+        const Source*                   map,
+        const UpVector                  up_vector);
 
     virtual foundation::Vector3d evaluate(
         TextureCache&                   texture_cache,
@@ -57,7 +64,8 @@ class NormalMappingModifier
         const foundation::Vector3d&     dpdv) const override;
 
   private:
-    const Source* m_map;
+    const Source*   m_map;
+    const size_t    m_y;
 };
 
 }       // namespace renderer
