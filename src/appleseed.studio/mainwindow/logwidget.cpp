@@ -30,7 +30,9 @@
 #include "logwidget.h"
 
 // Qt headers.
+#include <QAction>
 #include <QContextMenuEvent>
+#include <QKeySequence>
 #include <QMenu>
 
 namespace appleseed {
@@ -43,6 +45,10 @@ namespace studio {
 LogWidget::LogWidget(QWidget* parent)
   : QTextEdit(parent)
 {
+    m_action_clear_all = new QAction("Clear All", this);
+    m_action_clear_all->setShortcut(QKeySequence("Ctrl+K"));
+    connect(m_action_clear_all, SIGNAL(triggered()), this, SLOT(slot_clear_all()));
+    addAction(m_action_clear_all);
 }
 
 void LogWidget::slot_append_item(const QColor& color, const QString& text)
@@ -59,13 +65,8 @@ void LogWidget::slot_clear_all()
 void LogWidget::contextMenuEvent(QContextMenuEvent* event)
 {
     QMenu* context_menu = createStandardContextMenu();
-
-    QAction* action_clear_all = context_menu->addAction(tr("Clear All"));
-    action_clear_all->setEnabled(!document()->isEmpty());
-    connect(action_clear_all, SIGNAL(triggered()), this, SLOT(slot_clear_all()));
-
+    context_menu->addAction(m_action_clear_all);
     context_menu->exec(event->globalPos());
-
     delete context_menu;
 }
 

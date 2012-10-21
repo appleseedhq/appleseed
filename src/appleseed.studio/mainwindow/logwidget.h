@@ -30,13 +30,14 @@
 #define APPLESEED_STUDIO_MAINWINDOW_LOGWIDGET_H
 
 // Qt headers.
-#include <QColor>
 #include <QObject>
-#include <QString>
 #include <QTextEdit>
 
 // Forward declarations.
+class QAction;
+class QColor;
 class QContextMenuEvent;
+class QString;
 class QWidget;
 
 namespace appleseed {
@@ -55,6 +56,8 @@ class LogWidget
     void slot_clear_all();
 
   private:
+    QAction* m_action_clear_all;
+
     virtual void contextMenuEvent(QContextMenuEvent* event);
 };
 
