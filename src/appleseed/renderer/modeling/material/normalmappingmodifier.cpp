@@ -64,15 +64,14 @@ Vector3d NormalMappingModifier::evaluate(
     m_map->evaluate(texture_cache, uv, normal_rgb);
 
     // Reconstruct the normal from the texel value.
-    assert(is_saturated(normal_rgb));
-    const Vector3f normal(
-        normal_rgb[0] * 2.0f - 1.0f,
-        normal_rgb[m_y] * 2.0f - 1.0f,
-        normal_rgb[3 - m_y] * 2.0f - 1.0f);
+    const Vector3d normal(
+        static_cast<double>(normal_rgb[0]) * 2.0 - 1.0,
+        static_cast<double>(normal_rgb[m_y]) * 2.0 - 1.0,
+        static_cast<double>(normal_rgb[3 - m_y]) * 2.0 - 1.0);
 
     // Transform the normal to world space and normalize it.
     const Basis3d basis(n, dpdu);
-    return normalize(basis.transform_to_parent(Vector3d(normal)));
+    return normalize(basis.transform_to_parent(normal));
 }
 
 }   // namespace renderer
