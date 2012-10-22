@@ -56,28 +56,28 @@ class Basis3
 
     // Constructors.
     Basis3();                                       // leave all components uninitialized
-    explicit Basis3(const VectorType& normal);
+    explicit Basis3(const VectorType& normal);      // normal must be unit-length
     Basis3(
-        const VectorType&   normal,
-        const VectorType&   u);
+        const VectorType&   normal,                 // must be unit-length
+        const VectorType&   u);                     // does not need to be unit-length
     Basis3(
-        const VectorType&   normal,
-        const VectorType&   u,
-        const VectorType&   v);
+        const VectorType&   normal,                 // must be unit-length
+        const VectorType&   u,                      // must be unit-length
+        const VectorType&   v);                     // must be unit-length
 
     // Rebuild the basis for a given unit-length normal vector.
-    void build(const VectorType& normal);
+    void build(const VectorType& normal);           // normal must be unit-length
 
     // Rebuild the basis for a given unit-length normal and U tangent vector.
     void build(
-        const VectorType&   normal,
-        const VectorType&   u);
+        const VectorType&   normal,                 // must be unit-length
+        const VectorType&   u);                     // does not need to be unit-length
 
     // Rebuild the basis for a given unit-length normal and tangent vectors.
     void build(
-        const VectorType&   normal,
-        const VectorType&   u,
-        const VectorType&   v);
+        const VectorType&   normal,                 // must be unit-length
+        const VectorType&   u,                      // must be unit-length
+        const VectorType&   v);                     // must be unit-length
 
     // Transform a 3D vector. The vector is not required to be unit-length,
     // and is not normalized after transformation. However the length of the
@@ -209,7 +209,6 @@ inline void Basis3<T>::build(
     const VectorType&   u)
 {
     assert(is_normalized(normal));
-    assert(is_normalized(u));
 
     m_n = normal;
     m_v = normalize(cross(u, m_n));
