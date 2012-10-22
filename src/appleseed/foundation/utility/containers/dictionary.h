@@ -216,6 +216,10 @@ class DLLSYMBOL DictionaryDictionary
     // Assignment operator.
     DictionaryDictionary& operator=(const DictionaryDictionary& rhs);
 
+    // Comparison operators.
+    bool operator==(const DictionaryDictionary& rhs) const;
+    bool operator!=(const DictionaryDictionary& rhs) const;
+
     // Return the number of items in the dictionary.
     size_t size() const;
 
@@ -262,6 +266,10 @@ class DLLSYMBOL DictionaryDictionary
 class DLLSYMBOL Dictionary
 {
   public:
+    // Comparison operators.
+    bool operator==(const Dictionary& rhs) const;
+    bool operator!=(const Dictionary& rhs) const;
+
     // Return the number of items in the dictionary.
     size_t size() const;
 
@@ -395,6 +403,16 @@ inline DictionaryDictionary& DictionaryDictionary::remove(const std::basic_strin
 //
 // Dictionary class implementation.
 //
+
+inline bool Dictionary::operator==(const Dictionary& rhs) const
+{
+    return m_strings == rhs.m_strings && m_dictionaries == rhs.m_dictionaries;
+}
+
+inline bool Dictionary::operator!=(const Dictionary& rhs) const
+{
+    return !(*this == rhs);
+}
 
 inline size_t Dictionary::size() const
 {

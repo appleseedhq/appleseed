@@ -70,6 +70,10 @@ namespace foundation
         /* Assignment operator. */                                      \
         ArrayName& operator=(const ArrayName& rhs);                     \
                                                                         \
+        /* Comparison operators. */                                     \
+        bool operator==(const ArrayName& rhs) const;                    \
+        bool operator!=(const ArrayName& rhs) const;                    \
+                                                                        \
         /* Returns the size of the vector. */                           \
         size_type size() const;                                         \
                                                                         \
@@ -137,6 +141,16 @@ namespace foundation
     {                                                                   \
         *impl = *rhs.impl;                                              \
         return *this;                                                   \
+    }                                                                   \
+                                                                        \
+    bool ArrayName::operator==(const ArrayName& rhs) const              \
+    {                                                                   \
+        return *impl == *rhs.impl;                                      \
+    }                                                                   \
+                                                                        \
+    bool ArrayName::operator!=(const ArrayName& rhs) const              \
+    {                                                                   \
+        return *impl != *rhs.impl;                                      \
     }                                                                   \
                                                                         \
     ArrayName::size_type ArrayName::size() const                        \

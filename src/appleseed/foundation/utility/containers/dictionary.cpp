@@ -331,6 +331,28 @@ DictionaryDictionary& DictionaryDictionary::operator=(const DictionaryDictionary
     return *this;
 }
 
+bool DictionaryDictionary::operator==(const DictionaryDictionary& rhs) const
+{
+    if (size() != rhs.size())
+        return false;
+
+    for (
+        DictionaryMap::const_iterator it = impl->m_dictionaries.begin(), rhs_it = rhs.impl->m_dictionaries.begin();
+        it != impl->m_dictionaries.end();
+        ++it, ++rhs_it)
+    {
+        if (it->first != rhs_it->first || it->second != rhs_it->second)
+            return false;
+    }
+
+    return true;
+}
+
+bool DictionaryDictionary::operator!=(const DictionaryDictionary& rhs) const
+{
+    return !(*this == rhs);
+}
+
 size_t DictionaryDictionary::size() const
 {
     return impl->m_dictionaries.size();
