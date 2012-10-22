@@ -29,9 +29,6 @@
 // Interface header.
 #include "paramarray.h"
 
-// appleseed.foundation headers.
-#include "foundation/utility/foreach.h"
-
 // Standard headers.
 #include <cstddef>
 #include <vector>
