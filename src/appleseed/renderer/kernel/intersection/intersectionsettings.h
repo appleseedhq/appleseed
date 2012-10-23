@@ -108,7 +108,7 @@ const size_t TriangleTreeDefaultBinCount = 256;
 const size_t TriangleTreeSubtreeDepth = 2;
 
 // Size of the triangle tree access cache.
-const size_t TriangleTreeAccessCacheSize = 16;
+const size_t TriangleTreeAccessCacheSize = 32;
 
 // Size of the stack (in number of nodes) used during traversal.
 const size_t TriangleTreeStackSize = 64;
