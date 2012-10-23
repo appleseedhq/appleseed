@@ -101,6 +101,9 @@ class Transform
     template <typename U> AABB<U, 3> to_parent(const AABB<U, 3>& b) const;
 
   private:
+    template <typename>
+    friend class TransformInterpolator;
+
     MatrixType  m_local_to_parent;
     MatrixType  m_parent_to_local;
 };
@@ -541,45 +544,62 @@ inline Transform<T> TransformInterpolator<T>::evaluate(const T t) const
     //     parent_to_local = inv_smat * parent_to_local;
     //
 
-    //
-    // Compute the local-to-parent matrix.
-    //
-
-    // Compute R.
-    const Matrix<T, 4, 4> rmat(Matrix<T, 4, 4>::rotation(q));
-    Matrix<T, 4, 4> local_to_parent(rmat);
-
-    // Compute R * S.
-    local_to_parent[ 0] *= s.x;
-    local_to_parent[ 4] *= s.x;
-    local_to_parent[ 8] *= s.x;
-    local_to_parent[ 1] *= s.y;
-    local_to_parent[ 5] *= s.y;
-    local_to_parent[ 9] *= s.y;
-    local_to_parent[ 2] *= s.z;
-    local_to_parent[ 6] *= s.z;
-    local_to_parent[10] *= s.z;
-
-    // Compute T * R * S.
-    local_to_parent[ 3] = p.x;
-    local_to_parent[ 7] = p.y;
-    local_to_parent[11] = p.z;
+    Transform<T> result;
 
     //
     // Compute the local-to-parent matrix.
     //
 
-    // Compute T^-1.
-    Matrix<T, 4, 4> parent_to_local(Matrix<T, 4, 4>::translation(-p));
+    const Matrix<T, 3, 3> rmat(Matrix<T, 3, 3>::rotation(q));
 
-    // Compute R^-1 * T^-1.
-    parent_to_local = transpose(rmat) * parent_to_local;
+    result.m_local_to_parent[ 0] = rmat[0] * s.x;
+    result.m_local_to_parent[ 1] = rmat[1] * s.y;
+    result.m_local_to_parent[ 2] = rmat[2] * s.z;
+    result.m_local_to_parent[ 3] = p.x;
 
-    // Compute S^-1 * R^-1 * T^-1.
-    const Vector<T, 3> inv_s(T(1.0) / s[0], T(1.0) / s[1], T(1.0) / s[2]);
-    parent_to_local = Matrix<T, 4, 4>::scaling(inv_s) * parent_to_local;
+    result.m_local_to_parent[ 4] = rmat[3] * s.x;
+    result.m_local_to_parent[ 5] = rmat[4] * s.y;
+    result.m_local_to_parent[ 6] = rmat[5] * s.z;
+    result.m_local_to_parent[ 7] = p.y;
 
-    return Transform<T>(local_to_parent, parent_to_local);
+    result.m_local_to_parent[ 8] = rmat[6] * s.x;
+    result.m_local_to_parent[ 9] = rmat[7] * s.y;
+    result.m_local_to_parent[10] = rmat[8] * s.z;
+    result.m_local_to_parent[11] = p.z;
+
+    result.m_local_to_parent[12] = T(0.0);
+    result.m_local_to_parent[13] = T(0.0);
+    result.m_local_to_parent[14] = T(0.0);
+    result.m_local_to_parent[15] = T(1.0);
+
+    //
+    // Compute the local-to-parent matrix.
+    //
+
+    const double rcp_sx = T(1.0) / s[0];
+    result.m_parent_to_local[ 0] = rmat[0] * rcp_sx;
+    result.m_parent_to_local[ 1] = rmat[3] * rcp_sx;
+    result.m_parent_to_local[ 2] = rmat[6] * rcp_sx;
+    result.m_parent_to_local[ 3] = -(result.m_parent_to_local[ 0] * p.x + result.m_parent_to_local[ 1] * p.y + result.m_parent_to_local[ 2] * p.z);
+
+    const double rcp_sy = T(1.0) / s[1];
+    result.m_parent_to_local[ 4] = rmat[1] * rcp_sy;
+    result.m_parent_to_local[ 5] = rmat[4] * rcp_sy;
+    result.m_parent_to_local[ 6] = rmat[7] * rcp_sy;
+    result.m_parent_to_local[ 7] = -(result.m_parent_to_local[ 4] * p.x + result.m_parent_to_local[ 5] * p.y + result.m_parent_to_local[ 6] * p.z);
+
+    const double rcp_sz = T(1.0) / s[2];
+    result.m_parent_to_local[ 8] = rmat[2] * rcp_sz;
+    result.m_parent_to_local[ 9] = rmat[5] * rcp_sz;
+    result.m_parent_to_local[10] = rmat[8] * rcp_sz;
+    result.m_parent_to_local[11] = -(result.m_parent_to_local[ 8] * p.x + result.m_parent_to_local[ 9] * p.y + result.m_parent_to_local[10] * p.z);
+
+    result.m_parent_to_local[12] = T(0.0);
+    result.m_parent_to_local[13] = T(0.0);
+    result.m_parent_to_local[14] = T(0.0);
+    result.m_parent_to_local[15] = T(1.0);
+
+    return result;
 }
 
 }       // namespace foundation
