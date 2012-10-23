@@ -89,16 +89,16 @@ const size_t RegionTreeAccessCacheSize = 16;
 //
 
 // Maximum number of triangles per leaf.
-const size_t TriangleTreeMaxLeafSize = 2;
+const size_t TriangleTreeDefaultMaxLeafSize = 2;
 
 // Relative cost of traversing an interior node.
-const GScalar TriangleTreeInteriorNodeTraversalCost(1.0);
+const GScalar TriangleTreeDefaultInteriorNodeTraversalCost(2.0);
 
 // Relative cost of intersecting a triangle.
-const GScalar TriangleTreeTriangleIntersectionCost(1.0);
+const GScalar TriangleTreeDefaultTriangleIntersectionCost(1.0);
 
 // Number of bins used during SBVH construction.
-const size_t TriangleTreeBinCount = 256;
+const size_t TriangleTreeDefaultBinCount = 256;
 
 // Define this symbol to enable reordering the nodes of triangle trees for better
 // locality of reference. Requires a lot of temporary memory for minimal results.

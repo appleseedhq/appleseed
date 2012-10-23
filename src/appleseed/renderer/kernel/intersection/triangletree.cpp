@@ -46,6 +46,7 @@
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/utility/bbox.h"
+#include "renderer/utility/messagecontext.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
@@ -54,6 +55,7 @@
 #include "foundation/math/treeoptimizer.h"
 #include "foundation/platform/system.h"
 #include "foundation/platform/timer.h"
+#include "foundation/utility/makevector.h"
 #include "foundation/utility/memory.h"
 #include "foundation/utility/statistics.h"
 
@@ -369,26 +371,12 @@ TriangleTree::TriangleTree(const Arguments& arguments)
   : TreeType(AlignedAllocator<void>(System::get_l1_data_cache_line_size()))
   , m_triangle_tree_uid(arguments.m_triangle_tree_uid)
 {
+    const MessageContext context(
+        string("while building acceleration structure for assembly \"") + arguments.m_assembly.get_name() + "\"");
+
+    const ParamArray& params = arguments.m_assembly.get_parameters().child("acceleration_structure");
+
     Statistics statistics;
-
-    const string DefaultAccelerationStructure = "bvh";
-
-    string acceleration_structure =
-        arguments.m_assembly.get_parameters().get_optional<string>(
-            "acceleration_structure",
-            DefaultAccelerationStructure);
-
-    if (acceleration_structure != "bvh" && acceleration_structure != "sbvh")
-    {
-        RENDERER_LOG_DEBUG(
-            "while building acceleration structure for assembly \"%s\": "
-            "invalid acceleration structure \"%s\", using default value \"%s\".",
-            arguments.m_assembly.get_name(),
-            acceleration_structure.c_str(),
-            DefaultAccelerationStructure.c_str());
-
-        acceleration_structure = DefaultAccelerationStructure;
-    }
 
     // We're going to build the BVH for the geometry as it is in the middle of the shutter interval:
     // the topology of the tree will be optimal for this time and will hopefully be good enough for
@@ -396,9 +384,9 @@ TriangleTree::TriangleTree(const Arguments& arguments)
     const double Time = 0.5;
 
     // Build the tree.
-    if (acceleration_structure == "bvh")
-        build_bvh(arguments, Time, statistics);
-    else build_sbvh(arguments, Time, statistics);
+    if (params.get_optional<string>("algorithm", "bvh", make_vector("bvh", "sbvh"), context) == "bvh")
+        build_bvh(arguments, params, Time, statistics);
+    else build_sbvh(arguments, params, Time, statistics);
 
 #ifdef RENDERER_TRIANGLE_TREE_REORDER_NODES
     // Optimize the tree layout in memory.
@@ -465,6 +453,7 @@ namespace
 
 void TriangleTree::build_bvh(
     const Arguments&    arguments,
+    const ParamArray&   params,
     const double        time,
     Statistics&         statistics)
 {
@@ -493,18 +482,23 @@ void TriangleTree::build_bvh(
         pretty_int(triangle_keys.size()).c_str(),
         plural(triangle_keys.size(), "triangle").c_str());
 
+    // Retrieving the partitioner parameters.
+    const size_t max_leaf_size = params.get_optional<size_t>("max_leaf_size", TriangleTreeDefaultMaxLeafSize);
+    const GScalar interior_node_travesal_cost = params.get_optional<GScalar>("interior_node_traversal_cost", TriangleTreeDefaultInteriorNodeTraversalCost);
+    const GScalar triangle_intersection_cost = params.get_optional<GScalar>("triangle_intersection_cost", TriangleTreeDefaultTriangleIntersectionCost);
+
     // Create the partitioner.
     typedef bvh::SAHPartitioner<vector<GAABB3> > Partitioner;
     Partitioner partitioner(
         triangle_bboxes,
-        TriangleTreeMaxLeafSize,
-        TriangleTreeInteriorNodeTraversalCost,
-        TriangleTreeTriangleIntersectionCost);
+        max_leaf_size,
+        interior_node_travesal_cost,
+        triangle_intersection_cost);
 
     // Build the tree.
     typedef bvh::Builder<TriangleTree, Partitioner> Builder;
     Builder builder;
-    builder.build<DefaultWallclockTimer>(*this, partitioner, triangle_keys.size(), TriangleTreeMaxLeafSize);
+    builder.build<DefaultWallclockTimer>(*this, partitioner, triangle_keys.size(), max_leaf_size);
     statistics.insert_time("build time", builder.get_build_time());
     statistics.merge(bvh::TreeStatistics<TriangleTree>(*this, AABB3d(arguments.m_bbox)));
 
@@ -540,6 +534,7 @@ void TriangleTree::build_bvh(
 
 void TriangleTree::build_sbvh(
     const Arguments&    arguments,
+    const ParamArray&   params,
     const double        time,
     Statistics&         statistics)
 {
@@ -570,6 +565,12 @@ void TriangleTree::build_sbvh(
         pretty_int(triangle_keys.size()).c_str(),
         plural(triangle_keys.size(), "triangle").c_str());
 
+    // Retrieving the partitioner parameters.
+    const size_t max_leaf_size = params.get_optional<size_t>("max_leaf_size", TriangleTreeDefaultMaxLeafSize);
+    const size_t bin_count = params.get_optional<size_t>("bin_count", TriangleTreeDefaultBinCount);
+    const GScalar interior_node_travesal_cost = params.get_optional<GScalar>("interior_node_traversal_cost", TriangleTreeDefaultInteriorNodeTraversalCost);
+    const GScalar triangle_intersection_cost = params.get_optional<GScalar>("triangle_intersection_cost", TriangleTreeDefaultTriangleIntersectionCost);
+
     // Create the partitioner.
     typedef bvh::SBVHPartitioner<TriangleItemHandler, vector<AABB3d> > Partitioner;
     TriangleItemHandler triangle_handler(
@@ -579,10 +580,10 @@ void TriangleTree::build_sbvh(
     Partitioner partitioner(
         triangle_handler,
         triangle_bboxes,
-        TriangleTreeMaxLeafSize,
-        TriangleTreeBinCount,
-        TriangleTreeInteriorNodeTraversalCost,
-        TriangleTreeTriangleIntersectionCost);
+        max_leaf_size,
+        bin_count,
+        interior_node_travesal_cost,
+        triangle_intersection_cost);
 
     // Create the root leaf.
     Partitioner::LeafType* root_leaf = partitioner.create_root_leaf();

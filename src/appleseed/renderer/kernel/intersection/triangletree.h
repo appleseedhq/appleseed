@@ -60,6 +60,7 @@
 // Forward declarations.
 namespace foundation    { class Statistics; }
 namespace renderer      { class Assembly; }
+namespace renderer      { class ParamArray; }
 namespace renderer      { class Scene; }
 namespace renderer      { class TriangleVertexInfo; }
 
@@ -118,11 +119,13 @@ class TriangleTree
 
     void build_bvh(
         const Arguments&                        arguments,
+        const ParamArray&                       params,
         const double                            time,
         foundation::Statistics&                 statistics);
 
     void build_sbvh(
         const Arguments&                        arguments,
+        const ParamArray&                       params,
         const double                            time,
         foundation::Statistics&                 statistics);
 
