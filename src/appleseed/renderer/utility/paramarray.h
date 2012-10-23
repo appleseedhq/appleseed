@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/utility/messagecontext.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
@@ -86,9 +87,10 @@ class DLLSYMBOL ParamArray
 
     template <typename T>
     T get_required(
-        const char*         name,
-        const T&            default_value,
-        const StringVec&    allowed_values = StringVec()) const;
+        const char*             name,
+        const T&                default_value,
+        const StringVec&        allowed_values = StringVec(),
+        const MessageContext&   message_context = MessageContext()) const;
 
     //
     // Retrieve the value of an optional parameter.
@@ -105,9 +107,10 @@ class DLLSYMBOL ParamArray
 
     template <typename T>
     T get_optional(
-        const char*         name,
-        const T&            default_value = T(),
-        const StringVec&    allowed_values = StringVec()) const;
+        const char*             name,
+        const T&                default_value = T(),
+        const StringVec&        allowed_values = StringVec(),
+        const MessageContext&   message_context = MessageContext()) const;
 
     //
     // Insert an item through a given hierarchy, creating branches as needed.
@@ -126,16 +129,18 @@ class DLLSYMBOL ParamArray
     // Like get_required() but given a path instead of a key.
     template <typename T>
     T get_path_required(
-        const char*         path,
-        const T&            default_value,
-        const StringVec&    allowed_values = StringVec()) const;
+        const char*             path,
+        const T&                default_value,
+        const StringVec&        allowed_values = StringVec(),
+        const MessageContext&   message_context = MessageContext()) const;
 
     // Like get_optional() but given a path instead of a key.
     template <typename T>
     T get_path_optional(
-        const char*         path,
-        const T&            default_value = T(),
-        const StringVec&    allowed_values = StringVec()) const;
+        const char*             path,
+        const T&                default_value = T(),
+        const StringVec&        allowed_values = StringVec(),
+        const MessageContext&   message_context = MessageContext()) const;
 
     // Return a child set of parameters, or create it if it doesn't exist.
     ParamArray& push(const char* name);
@@ -150,22 +155,17 @@ class DLLSYMBOL ParamArray
   private:
     template <typename T>
     T get_helper(
-        const char*         name,
-        const bool          required,
-        const T&            default_value,
-        const StringVec&    allowed_values) const;
+        const char*             name,
+        const bool              is_path,
+        const bool              is_required,
+        const T&                default_value,
+        const StringVec&        allowed_values,
+        const MessageContext&   message_context) const;
 
     template <typename T>
-    T get_path_helper(
-        const char*         path,
-        const bool          required,
-        const T&            default_value,
-        const StringVec&    allowed_values) const;
-
-    template <typename T>
-    bool is_allowed(
-        const T&            value,
-        const StringVec&    allowed_values) const;
+    static bool contains(
+        const StringVec&        allowed_values,
+        const T&                value);
 };
 
 
@@ -189,20 +189,22 @@ inline ParamArray& ParamArray::insert(const char* key, const ParamArray& value)
 
 template <typename T>
 inline T ParamArray::get_required(
-    const char*             name,
-    const T&                default_value,
-    const StringVec&        allowed_values) const
+    const char*                 name,
+    const T&                    default_value,
+    const StringVec&            allowed_values,
+    const MessageContext&       message_context) const
 {
-    return get_helper(name, true, default_value, allowed_values);
+    return get_helper(name, false, true, default_value, allowed_values, message_context);
 }
 
 template <typename T>
 inline T ParamArray::get_optional(
-    const char*             name,
-    const T&                default_value,
-    const StringVec&        allowed_values) const
+    const char*                 name,
+    const T&                    default_value,
+    const StringVec&            allowed_values,
+    const MessageContext&       message_context) const
 {
-    return get_helper(name, false, default_value, allowed_values);
+    return get_helper(name, false, false, default_value, allowed_values, message_context);
 }
 
 template <typename T>
@@ -219,134 +221,76 @@ inline ParamArray& ParamArray::insert_path(const std::string& path, const T& val
 
 template <typename T>
 inline T ParamArray::get_path_required(
-    const char*             path,
-    const T&                default_value,
-    const StringVec&        allowed_values) const
+    const char*                 path,
+    const T&                    default_value,
+    const StringVec&            allowed_values,
+    const MessageContext&       message_context) const
 {
-    return get_path_helper(path, true, default_value, allowed_values);
+    return get_helper(path, true, true, default_value, allowed_values, message_context);
 }
 
 template <typename T>
 inline T ParamArray::get_path_optional(
-    const char*             path,
-    const T&                default_value,
-    const StringVec&        allowed_values) const
+    const char*                 path,
+    const T&                    default_value,
+    const StringVec&            allowed_values,
+    const MessageContext&       message_context) const
 {
-    return get_path_helper(path, false, default_value, allowed_values);
+    return get_helper(path, true, false, default_value, allowed_values, message_context);
 }
 
 template <typename T>
 T ParamArray::get_helper(
-    const char*             name,
-    const bool              required,
-    const T&                default_value,
-    const StringVec&        allowed_values) const
+    const char*                 name,
+    const bool                  is_path,
+    const bool                  is_required,
+    const T&                    default_value,
+    const StringVec&            allowed_values,
+    const MessageContext&       message_context) const
 {
     assert(name);
 
-    T value;
-
     try
     {
-        value = get<T>(name);
+        const T value = is_path ? foundation::from_string<T>(get_path(name)) : get<T>(name);
+
+        if (allowed_values.empty() || contains(allowed_values, value))
+            return value;
     }
     catch (const foundation::ExceptionDictionaryItemNotFound&)
     {
-        if (required)
+        if (is_required)
         {
             RENDERER_LOG_ERROR(
-                "parameter \"%s\" not found, using default value \"%s\".",
+                "%s%sparameter \"%s\" not found, using default value \"%s\".",
+                message_context.get(),
+                message_context.empty() ? "" : ": ",
                 name,
                 foundation::to_string(default_value).c_str());
         }
 
-        value = default_value;
+        return default_value;
     }
     catch (const foundation::ExceptionStringConversionError&)
     {
-        RENDERER_LOG_ERROR(
-            "invalid value \"%s\" for parameter \"%s\", using default value \"%s\".",
-            get(name),
-            name,
-            foundation::to_string(default_value).c_str());
-
-        value = default_value;
     }
 
-    if (!is_allowed(value, allowed_values))
-    {
-        RENDERER_LOG_ERROR(
-            "invalid value \"%s\" for parameter \"%s\", using default value \"%s\".",
-            foundation::to_string(value).c_str(),
-            name,
-            foundation::to_string(default_value).c_str());
+    RENDERER_LOG_ERROR(
+        "%s%sinvalid value \"%s\" for parameter \"%s\", using default value \"%s\".",
+        message_context.get(),
+        message_context.empty() ? "" : ": ",
+        is_path ? get_path(name) : get(name),
+        name,
+        foundation::to_string(default_value).c_str());
 
-        value = default_value;
-    }
-
-    return value;
+    return default_value;
 }
 
 template <typename T>
-T ParamArray::get_path_helper(
-    const char*             path,
-    const bool              required,
-    const T&                default_value,
-    const StringVec&        allowed_values) const
+bool ParamArray::contains(
+    const StringVec&            allowed_values,
+    const T&                    value)
 {
-    assert(path);
-
-    T value;
-
-    try
-    {
-        value = foundation::from_string<T>(get_path(path));
-    }
-    catch (const foundation::ExceptionDictionaryItemNotFound&)
-    {
-        if (required)
-        {
-            RENDERER_LOG_ERROR(
-                "parameter \"%s\" not found, using default value \"%s\".",
-                path,
-                foundation::to_string(default_value).c_str());
-        }
-
-        value = default_value;
-    }
-    catch (const foundation::ExceptionStringConversionError&)
-    {
-        RENDERER_LOG_ERROR(
-            "invalid value \"%s\" for parameter \"%s\", using default value \"%s\".",
-            get_path(path),
-            path,
-            foundation::to_string(default_value).c_str());
-
-        value = default_value;
-    }
-
-    if (!is_allowed(value, allowed_values))
-    {
-        RENDERER_LOG_ERROR(
-            "invalid value \"%s\" for parameter \"%s\", using default value \"%s\".",
-            foundation::to_string(value).c_str(),
-            path,
-            foundation::to_string(default_value).c_str());
-
-        value = default_value;
-    }
-
-    return value;
-}
-
-template <typename T>
-bool ParamArray::is_allowed(
-    const T&                value,
-    const StringVec&        allowed_values) const
-{
-    if (allowed_values.empty())
-        return true;
-
     for (foundation::const_each<StringVec> i = allowed_values; i; ++i)
     {
         if (value == foundation::from_string<T>(*i))

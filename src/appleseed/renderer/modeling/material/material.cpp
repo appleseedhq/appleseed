@@ -41,11 +41,14 @@
 #include "renderer/modeling/scene/textureinstance.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/modeling/texture/texture.h"
+#include "renderer/utility/messagecontext.h"
+#include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/makevector.h"
 #include "foundation/utility/uid.h"
 
 using namespace foundation;
@@ -104,6 +107,8 @@ bool Material::on_frame_begin(
     const Project&      project,
     const Assembly&     assembly)
 {
+    const EntityDefMessageContext context("material", get_name());
+
     m_surface_shader = get_uncached_surface_shader();
     m_bsdf = get_uncached_bsdf();
     m_edf = get_uncached_edf();
@@ -116,9 +121,10 @@ bool Material::on_frame_begin(
         if (dynamic_cast<const TextureSource*>(displacement_source) == 0)
         {
             RENDERER_LOG_ERROR(
-                "while defining material \"%s\": a texture instance must be bound "
-                "to the \"displacement_map\" input; disabling displacement map for this material.",
-                get_name());
+                "%s: a texture instance must be bound to the \"displacement_map\" input.",
+                context.get());
+
+            return false;
         }
         else
         {
@@ -128,9 +134,9 @@ bool Material::on_frame_begin(
             if (texture.get_color_space() != ColorSpaceLinearRGB)
             {
                 RENDERER_LOG_WARNING(
-                    "while defining material \"%s\": color space for displacement map \"%s\" "
+                    "%s: color space for displacement map \"%s\" "
                     "should be \"%s\" but is \"%s\" instead; expect artifacts and/or slowdowns.",
-                    get_name(),
+                    context.get(),
                     texture.get_name(),
                     color_space_name(ColorSpaceLinearRGB),
                     color_space_name(texture.get_color_space()));
@@ -138,39 +144,20 @@ bool Material::on_frame_begin(
 
             // Retrieve the displacement method and create the normal modifier.
             const string displacement_method =
-                m_params.get_required<string>("displacement_method", "bump");
+                m_params.get_required<string>("displacement_method", "bump", make_vector("bump", "normal"), context);
             if (displacement_method == "bump")
             {
                 const double amplitude = m_params.get_optional<double>("bump_amplitude", 1.0);
                 m_normal_modifier = new BumpMappingModifier(displacement_map, 2.0, amplitude);
             }
-            else if (displacement_method == "normal")
-            {
-                const string up_string = m_params.get_optional<string>("normal_map_up", "z");
-                NormalMappingModifier::UpVector up_vector;
-                if (up_string == "y")
-                    up_vector = NormalMappingModifier::UpVectorY;
-                else if (up_string == "z")
-                    up_vector = NormalMappingModifier::UpVectorZ;
-                else
-                {
-                    RENDERER_LOG_ERROR(
-                        "while defining material \"%s\": invalid value \"%s\" for parameter "
-                        "\"normal_map_up_vector\"; using default value \"%s\".",
-                        get_name(),
-                        up_string.c_str(),
-                        "z");
-                    up_vector = NormalMappingModifier::UpVectorZ;
-                }
-                m_normal_modifier = new NormalMappingModifier(displacement_map, up_vector);
-            }
             else
             {
-                RENDERER_LOG_ERROR(
-                    "while defining material \"%s\": invalid value \"%s\" for parameter "
-                    "\"displacement_method\"; disabling displacement map for this material.",
-                    get_name(),
-                    displacement_method.c_str());
+                const string up_string =
+                    m_params.get_optional<string>("normal_map_up", "z", make_vector("y", "z"), context);
+                m_normal_modifier =
+                    new NormalMappingModifier(
+                        displacement_map,
+                        up_string == "y" ? NormalMappingModifier::UpVectorY : NormalMappingModifier::UpVectorZ);
             }
         }
     }
