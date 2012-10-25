@@ -32,6 +32,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
+#include "foundation/platform/compiler.h"
 
 // Imath headers.
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
@@ -457,7 +458,7 @@ inline bool is_normalized(const Quaternion<T>& q, const T eps)
 }
 
 template <typename T>
-inline Quaternion<T> slerp(const Quaternion<T>& p, const Quaternion<T>& q, const T t)
+FORCE_INLINE Quaternion<T> slerp(const Quaternion<T>& p, const Quaternion<T>& q, const T t)
 {
     const T Eps = make_eps<T>(1.0e-4f, 1.0e-6);
 
@@ -466,10 +467,10 @@ inline Quaternion<T> slerp(const Quaternion<T>& p, const Quaternion<T>& q, const
 
     const T cos_theta = clamp(dot(p, q), T(-1.0), T(1.0));
     const T theta = std::acos(cos_theta);
-    const T sin_theta = std::sin(theta);
+    const T sin_theta = std::sqrt(T(1.0) - cos_theta * cos_theta);
 
     return
-        std::abs(sin_theta) < Eps
+        sin_theta < Eps
             ? lerp(p, q, t)
             : (std::sin((T(1.0) - t) * theta) * p + std::sin(t * theta) * q) / sin_theta;
 }
