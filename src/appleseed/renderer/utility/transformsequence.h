@@ -32,6 +32,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/aabb.h"
 #include "foundation/math/transform.h"
+#include "foundation/platform/compiler.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -122,6 +123,10 @@ class DLLSYMBOL TransformSequence
     size_t                              m_size;
     TransformKey*                       m_keys;
     foundation::TransformInterpolatord* m_interpolators;
+
+    void interpolate(
+        const double                    time,
+        foundation::Transformd&         result) const;
 };
 
 
@@ -143,6 +148,36 @@ inline foundation::Transformd TransformSequence::evaluate(const double time) con
 {
     foundation::Transformd tmp;
     return evaluate(time, tmp);
+}
+
+FORCE_INLINE const foundation::Transformd& TransformSequence::evaluate(
+    const double            time,
+    foundation::Transformd& tmp) const
+{
+    if (m_size == 0)
+    {
+        tmp = foundation::Transformd::identity();
+        return tmp;
+    }
+
+    assert(m_size == 1 || m_interpolators != 0);
+
+    const TransformKey* first = m_keys;
+
+    if (m_size == 1)
+        return first->m_transform;
+
+    if (time <= first->m_time)
+        return first->m_transform;
+
+    const TransformKey* last = m_keys + m_size - 1;
+
+    if (time >= last->m_time)
+        return last->m_transform;
+
+    interpolate(time, tmp);
+
+    return tmp;
 }
 
 template <typename T>

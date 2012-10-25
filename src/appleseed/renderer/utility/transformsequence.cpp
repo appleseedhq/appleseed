@@ -204,52 +204,6 @@ bool TransformSequence::prepare()
     return success;
 }
 
-const Transformd& TransformSequence::evaluate(
-    const double        time,
-    Transformd&         tmp) const
-{
-    if (m_size == 0)
-    {
-        tmp = Transformd::identity();
-        return tmp;
-    }
-
-    assert(m_size == 1 || m_interpolators != 0);
-
-    const TransformKey* first = m_keys;
-
-    if (m_size == 1)
-        return first->m_transform;
-
-    if (time <= first->m_time)
-        return first->m_transform;
-
-    const TransformKey* last = m_keys + m_size - 1;
-
-    if (time >= last->m_time)
-        return last->m_transform;
-
-    size_t begin = 0;
-    size_t end = m_size;
-
-    while (end - begin > 1)
-    {
-        const size_t mid = (begin + end) / 2;
-        if (time < m_keys[mid].m_time)
-            end = mid;
-        else begin = mid;
-    }
-
-    const double begin_time = m_keys[begin].m_time;
-    const double end_time = m_keys[end].m_time;
-    assert(end_time > begin_time);
-
-    const double t = (time - begin_time) / (end_time - begin_time);
-    m_interpolators[begin].evaluate(t, tmp);
-
-    return tmp;
-}
-
 TransformSequence TransformSequence::operator*(const TransformSequence& rhs) const
 {
     TransformSequence result;
@@ -295,6 +249,31 @@ TransformSequence TransformSequence::operator*(const TransformSequence& rhs) con
     }
 
     return result;
+}
+
+void TransformSequence::interpolate(
+    const double        time,
+    Transformd&         result) const
+{
+    size_t begin = 0;
+    size_t end = m_size;
+
+    while (end - begin > 1)
+    {
+        const size_t mid = (begin + end) / 2;
+        if (time < m_keys[mid].m_time)
+            end = mid;
+        else begin = mid;
+    }
+
+    const double begin_time = m_keys[begin].m_time;
+    const double end_time = m_keys[end].m_time;
+
+    assert(end_time > begin_time);
+
+    const double t = (time - begin_time) / (end_time - begin_time);
+
+    m_interpolators[begin].evaluate(t, result);
 }
 
 }   // namespace renderer
