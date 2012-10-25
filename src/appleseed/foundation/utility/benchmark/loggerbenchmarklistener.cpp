@@ -187,14 +187,8 @@ namespace
 
             LOG_INFO(
                 m_logger,
-                "  %s:\n"
-                "    parameters  : %s %s, %s %s\n"
-                "    results     : %s %s %s\n\n",
+                "  %s: %s %s %s\n",
                 benchmark_case.get_name(),
-                pretty_uint(timing_result.m_iteration_count).c_str(),
-                plural(timing_result.m_iteration_count, "iteration").c_str(),
-                pretty_uint(timing_result.m_measurement_count).c_str(),
-                plural(timing_result.m_measurement_count, "measurement").c_str(),
                 timing_result.m_ticks >= 1000.0
                     ? pretty_uint(static_cast<uint64>(timing_result.m_ticks)).c_str()
                     : pretty_scalar(timing_result.m_ticks).c_str(),
@@ -210,7 +204,7 @@ namespace
         {
             if (!m_suite_name_printed)
             {
-                LOG_INFO(m_logger, "%s:\n\n", benchmark_suite.get_name());
+                LOG_INFO(m_logger, "%s:\n", benchmark_suite.get_name());
                 m_suite_name_printed = true;
             }
         }
