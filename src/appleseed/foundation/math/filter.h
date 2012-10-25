@@ -143,8 +143,8 @@ class MitchellFilter2
     virtual T evaluate(const T x, const T y) const override;
 
   private:
-    const T m_b;
-    const T m_c;
+    T m_a3, m_a2, m_a0;
+    T m_b3, m_b2, m_b1, m_b0;
 
     static T mitchell(const T x, const T b, const T c);
 };
@@ -262,7 +262,7 @@ inline T GaussianFilter2<T>::evaluate(const T x, const T y) const
 }
 
 template <typename T>
-inline T GaussianFilter2<T>::gaussian(const T x, const T alpha)
+FORCE_INLINE T GaussianFilter2<T>::gaussian(const T x, const T alpha)
 {
     return std::exp(-alpha * x * x);
 }
@@ -279,21 +279,45 @@ inline MitchellFilter2<T>::MitchellFilter2(
     const T b,
     const T c)
   : Filter2<T>(xradius, yradius)
-  , m_b(b)
-  , m_c(c)
 {
+    m_a3 = T(1.0 / 6.0) * (T(12.0) - T(9.0) * b - T(6.0) * c);
+    m_a2 = T(1.0 / 6.0) * (T(-18.0) + T(12.0) * b + T(6.0) * c);
+    m_a0 = T(1.0 / 6.0) * (T(6.0) - T(2.0) * b);
+
+    m_b3 = T(1.0 / 6.0) * (-b - T(6.0) * c);
+    m_b2 = T(1.0 / 6.0) * (T(6.0) * b + T(30.0) * c);
+    m_b1 = T(1.0 / 6.0) * (T(-12.0) * b - T(48.0) * c);
+    m_b0 = T(1.0 / 6.0) * (T(8.0) * b + T(24.0) * c);
 }
 
 template <typename T>
 inline T MitchellFilter2<T>::evaluate(const T x, const T y) const
 {
     const T nx = x * Filter2<T>::m_rcp_xradius;
+    const T x1 = std::abs(nx + nx);
+    const T x2 = x1 * x1;
+    const T x3 = x2 * x1;
+
+    const T fx =
+        x1 < T(1.0)
+            ? m_a3 * x3 + m_a2 * x2 + m_a0
+            : m_b3 * x3 + m_b2 * x2 + m_b1 * x1 + m_b0;
+
     const T ny = y * Filter2<T>::m_rcp_yradius;
-    return mitchell(nx, m_b, m_c) * mitchell(ny, m_b, m_c);
+    const T y1 = std::abs(ny + ny);
+    const T y2 = y1 * y1;
+    const T y3 = y2 * y1;
+
+    const T fy =
+        y1 < T(1.0)
+            ? m_a3 * y3 + m_a2 * y2 + m_a0
+            : m_b3 * y3 + m_b2 * y2 + m_b1 * y1 + m_b0;
+
+    return fx * fy;
 }
 
 template <typename T>
-inline T MitchellFilter2<T>::mitchell(const T x, const T b, const T c)
+FORCE_INLINE T MitchellFilter2<T>::mitchell(const T x, const T b, const T c)
 {
     const T x1 = std::abs(x + x);
     const T x2 = x1 * x1;
@@ -338,14 +362,14 @@ inline T LanczosFilter2<T>::evaluate(const T x, const T y) const
 }
 
 template <typename T>
-inline T LanczosFilter2<T>::lanczos(const T x, const T rcp_tau)
+FORCE_INLINE T LanczosFilter2<T>::lanczos(const T x, const T rcp_tau)
 {
     const T theta = T(Pi) * x;
     return theta == T(0.0) ? T(1.0) : sinc(theta * rcp_tau) * sinc(theta);
 }
 
 template <typename T>
-inline T LanczosFilter2<T>::sinc(const T x)
+FORCE_INLINE T LanczosFilter2<T>::sinc(const T x)
 {
     return std::sin(x) / x;
 }
