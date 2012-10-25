@@ -92,7 +92,7 @@ const size_t RegionTreeAccessCacheSize = 16;
 const size_t TriangleTreeDefaultMaxLeafSize = 2;
 
 // Relative cost of traversing an interior node.
-const GScalar TriangleTreeDefaultInteriorNodeTraversalCost(2.0);
+const GScalar TriangleTreeDefaultInteriorNodeTraversalCost(1.0);
 
 // Relative cost of intersecting a triangle.
 const GScalar TriangleTreeDefaultTriangleIntersectionCost(1.0);
