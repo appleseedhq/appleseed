@@ -54,6 +54,6 @@ BENCHMARK_SUITE(Foundation_Math_Transform_TransformInterpolator)
 
     BENCHMARK_CASE_F(Test, Fixture)
     {
-        m_result = m_interpolator.evaluate(0.5);
+        m_interpolator.evaluate(0.5, m_result);
     }
 }

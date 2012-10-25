@@ -231,7 +231,8 @@ TEST_SUITE(Foundation_Math_TransformInterpolator)
         const Transformd to(Matrix4d::scaling(Vector3d(3.0, 5.0, 0.6)));
         const TransformInterpolatord interpolator(from, to);
 
-        const Transformd result = interpolator.evaluate(0.5);
+        Transformd result;
+        interpolator.evaluate(0.5, result);
 
         EXPECT_FEQ(Matrix4d::identity(), result.get_local_to_parent() * result.get_parent_to_local());
         EXPECT_FEQ(Vector3d(2.0, 3.0, 0.8), result.get_local_to_parent().extract_matrix3().extract_scaling());
@@ -251,7 +252,8 @@ TEST_SUITE(Foundation_Math_TransformInterpolator)
         const Transformd transform(matrix);
         const TransformInterpolatord interpolator(transform, transform);
 
-        const Transformd result = interpolator.evaluate(0.5);
+        Transformd result;
+        interpolator.evaluate(0.5, result);
 
         EXPECT_FEQ(transform, result);
     }
@@ -278,7 +280,8 @@ TEST_SUITE(Foundation_Math_TransformInterpolator)
             (Transformd(Matrix4d(FromValues))),
             (Transformd(Matrix4d(ToValues))));
 
-        const Transformd result = interpolator.evaluate(0.024320000000000008);
+        Transformd result;
+        interpolator.evaluate(0.024320000000000008, result);
 
         EXPECT_FEQ_EPS(
             Matrix4d::identity(),
@@ -303,7 +306,9 @@ TEST_SUITE(Foundation_Math_TransformInterpolator)
         for (size_t i = 0; i < FrameCount; ++i)
         {
             const double t = static_cast<double>(i) / (FrameCount - 1);
-            const Transformd transform = interpolator.evaluate(t);
+
+            Transformd transform;
+            interpolator.evaluate(t, transform);
 
             const Vector3d origin = transform.point_to_parent(Vector3d(0.0, 0.0, 0.0));
             const Vector3d axis = transform.vector_to_parent(Vector3d(0.0, 1.0, 0.0));

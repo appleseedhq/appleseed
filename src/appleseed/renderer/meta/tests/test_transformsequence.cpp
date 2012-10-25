@@ -220,7 +220,10 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
             m_expected_first_transform,
             m_expected_second_transform);
 
-        EXPECT_FEQ(interpolator.evaluate(0.5), m_sequence.evaluate(2.0));
+        Transformd expected;
+        interpolator.evaluate(0.5, expected);
+
+        EXPECT_FEQ(expected, m_sequence.evaluate(2.0));
     }
 
     TEST_CASE(Evaluate_GivenTwoTransformsSetInReverseOrder_ReturnsCorrectlyInterpolatedTransform)
@@ -237,7 +240,10 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
             ExpectedFirstTransform,
             ExpectedSecondTransform);
 
-        EXPECT_FEQ(interpolator.evaluate(0.5), sequence.evaluate(2.0));
+        Transformd expected;
+        interpolator.evaluate(0.5, expected);
+
+        EXPECT_FEQ(expected, sequence.evaluate(2.0));
     }
 
     TEST_CASE(CompositionOperator_GivenTwoEmptyTransformSequences_ReturnsEmptyTransformSequence)

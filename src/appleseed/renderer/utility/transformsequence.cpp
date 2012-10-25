@@ -241,7 +241,10 @@ Transformd TransformSequence::evaluate(const double time) const
 
     const double t = (time - begin_time) / (end_time - begin_time);
 
-    return m_interpolators[begin].evaluate(t);
+    Transformd result;
+    m_interpolators[begin].evaluate(t, result);
+
+    return result;
 }
 
 TransformSequence TransformSequence::operator*(const TransformSequence& rhs) const

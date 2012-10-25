@@ -141,16 +141,18 @@ class TransformInterpolator
     // Constructors.
     TransformInterpolator();                    // leave the interpolator uninitialized
     TransformInterpolator(
-        const TransformType& from,
-        const TransformType& to);
+        const TransformType&    from,
+        const TransformType&    to);
 
     // Set the initial and final transformations.
     // Returns true on success, false otherwise.
     bool set_transforms(
-        const TransformType& from,
-        const TransformType& to);
+        const TransformType&    from,
+        const TransformType&    to);
 
-    TransformType evaluate(const T t) const;
+    void evaluate(
+        const T                 t,
+        TransformType&          result) const;
 
   private:
     Vector<T, 3>  m_s0, m_s1;
@@ -516,15 +518,15 @@ bool TransformInterpolator<T>::set_transforms(
 }
 
 template <typename T>
-inline Transform<T> TransformInterpolator<T>::evaluate(const T t) const
+inline void TransformInterpolator<T>::evaluate(const T t, Transform<T>& result) const
 {
-    // Interpolate the scaling, rotation and translation components.
-    const Vector<T, 3> s = lerp(m_s0, m_s1, t);
-    const Quaternion<T> q = slerp(m_q0, m_q1, t);
-    const Vector<T, 3> p = lerp(m_t0, m_t1, t);
-
     //
     // Unoptimized implementation:
+    //
+    //     // Interpolate the scaling, rotation and translation components.
+    //     const Vector<T, 3> s = lerp(m_s0, m_s1, t);
+    //     const Quaternion<T> q = slerp(m_q0, m_q1, t);
+    //     const Vector<T, 3> p = lerp(m_t0, m_t1, t);
     //
     //     // Compute the local-to-parent matrix.
     //     const Matrix<T, 4, 4> smat(Matrix<T, 4, 4>::scaling(s));
@@ -544,62 +546,73 @@ inline Transform<T> TransformInterpolator<T>::evaluate(const T t) const
     //     parent_to_local = inv_smat * parent_to_local;
     //
 
-    Transform<T> result;
+    const Quaternion<T> q = slerp(m_q0, m_q1, t);
 
-    //
-    // Compute the local-to-parent matrix.
-    //
+    const T rtx = q.v[0] + q.v[0];
+    const T rty = q.v[1] + q.v[1];
+    const T rtz = q.v[2] + q.v[2];
+    const T twx = rtx * q.s;
+    const T twy = rty * q.s;
+    const T twz = rtz * q.s;
+    const T txx = rtx * q.v[0];
+    const T txy = rty * q.v[0];
+    const T txz = rtz * q.v[0];
+    const T tyy = rty * q.v[1];
+    const T tyz = rtz * q.v[1];
+    const T tzz = rtz * q.v[2];
 
-    const Matrix<T, 3, 3> rmat(Matrix<T, 3, 3>::rotation(q));
+    result.m_local_to_parent[ 0] = result.m_parent_to_local[ 0] = T(1.0) - (tyy + tzz);
+    result.m_local_to_parent[ 4] = result.m_parent_to_local[ 1] = txy + twz;
+    result.m_local_to_parent[ 8] = result.m_parent_to_local[ 2] = txz - twy;
+    result.m_local_to_parent[ 1] = result.m_parent_to_local[ 4] = txy - twz;
+    result.m_local_to_parent[ 5] = result.m_parent_to_local[ 5] = T(1.0) - (txx + tzz);
+    result.m_local_to_parent[ 9] = result.m_parent_to_local[ 6] = tyz + twx;
+    result.m_local_to_parent[ 2] = result.m_parent_to_local[ 8] = txz + twy;
+    result.m_local_to_parent[ 6] = result.m_parent_to_local[ 9] = tyz - twx;
+    result.m_local_to_parent[10] = result.m_parent_to_local[10] = T(1.0) - (txx + tyy);
 
-    result.m_local_to_parent[ 0] = rmat[0] * s.x;
-    result.m_local_to_parent[ 1] = rmat[1] * s.y;
-    result.m_local_to_parent[ 2] = rmat[2] * s.z;
+    const Vector<T, 3> s = lerp(m_s0, m_s1, t);
+
+    result.m_local_to_parent[ 0] *= s.x;
+    result.m_local_to_parent[ 4] *= s.x;
+    result.m_local_to_parent[ 8] *= s.x;
+
+    result.m_local_to_parent[ 1] *= s.y;
+    result.m_local_to_parent[ 5] *= s.y;
+    result.m_local_to_parent[ 9] *= s.y;
+
+    result.m_local_to_parent[ 2] *= s.z;
+    result.m_local_to_parent[ 6] *= s.z;
+    result.m_local_to_parent[10] *= s.z;
+
+    const T rcp_sx = T(1.0) / s[0];
+    result.m_parent_to_local[ 0] *= rcp_sx;
+    result.m_parent_to_local[ 1] *= rcp_sx;
+    result.m_parent_to_local[ 2] *= rcp_sx;
+
+    const T rcp_sy = T(1.0) / s[1];
+    result.m_parent_to_local[ 4] *= rcp_sy;
+    result.m_parent_to_local[ 5] *= rcp_sy;
+    result.m_parent_to_local[ 6] *= rcp_sy;
+
+    const T rcp_sz = T(1.0) / s[2];
+    result.m_parent_to_local[ 8] *= rcp_sz;
+    result.m_parent_to_local[ 9] *= rcp_sz;
+    result.m_parent_to_local[10] *= rcp_sz;
+
+    const Vector<T, 3> p = lerp(m_t0, m_t1, t);
+
+    result.m_parent_to_local[ 3] = -(result.m_parent_to_local[ 0] * p.x + result.m_parent_to_local[ 1] * p.y + result.m_parent_to_local[ 2] * p.z);
     result.m_local_to_parent[ 3] = p.x;
-
-    result.m_local_to_parent[ 4] = rmat[3] * s.x;
-    result.m_local_to_parent[ 5] = rmat[4] * s.y;
-    result.m_local_to_parent[ 6] = rmat[5] * s.z;
+    result.m_parent_to_local[ 7] = -(result.m_parent_to_local[ 4] * p.x + result.m_parent_to_local[ 5] * p.y + result.m_parent_to_local[ 6] * p.z);
     result.m_local_to_parent[ 7] = p.y;
-
-    result.m_local_to_parent[ 8] = rmat[6] * s.x;
-    result.m_local_to_parent[ 9] = rmat[7] * s.y;
-    result.m_local_to_parent[10] = rmat[8] * s.z;
+    result.m_parent_to_local[11] = -(result.m_parent_to_local[ 8] * p.x + result.m_parent_to_local[ 9] * p.y + result.m_parent_to_local[10] * p.z);
     result.m_local_to_parent[11] = p.z;
 
-    result.m_local_to_parent[12] = T(0.0);
-    result.m_local_to_parent[13] = T(0.0);
-    result.m_local_to_parent[14] = T(0.0);
-    result.m_local_to_parent[15] = T(1.0);
-
-    //
-    // Compute the local-to-parent matrix.
-    //
-
-    const double rcp_sx = T(1.0) / s[0];
-    result.m_parent_to_local[ 0] = rmat[0] * rcp_sx;
-    result.m_parent_to_local[ 1] = rmat[3] * rcp_sx;
-    result.m_parent_to_local[ 2] = rmat[6] * rcp_sx;
-    result.m_parent_to_local[ 3] = -(result.m_parent_to_local[ 0] * p.x + result.m_parent_to_local[ 1] * p.y + result.m_parent_to_local[ 2] * p.z);
-
-    const double rcp_sy = T(1.0) / s[1];
-    result.m_parent_to_local[ 4] = rmat[1] * rcp_sy;
-    result.m_parent_to_local[ 5] = rmat[4] * rcp_sy;
-    result.m_parent_to_local[ 6] = rmat[7] * rcp_sy;
-    result.m_parent_to_local[ 7] = -(result.m_parent_to_local[ 4] * p.x + result.m_parent_to_local[ 5] * p.y + result.m_parent_to_local[ 6] * p.z);
-
-    const double rcp_sz = T(1.0) / s[2];
-    result.m_parent_to_local[ 8] = rmat[2] * rcp_sz;
-    result.m_parent_to_local[ 9] = rmat[5] * rcp_sz;
-    result.m_parent_to_local[10] = rmat[8] * rcp_sz;
-    result.m_parent_to_local[11] = -(result.m_parent_to_local[ 8] * p.x + result.m_parent_to_local[ 9] * p.y + result.m_parent_to_local[10] * p.z);
-
-    result.m_parent_to_local[12] = T(0.0);
-    result.m_parent_to_local[13] = T(0.0);
-    result.m_parent_to_local[14] = T(0.0);
-    result.m_parent_to_local[15] = T(1.0);
-
-    return result;
+    result.m_local_to_parent[12] = result.m_parent_to_local[12] = T(0.0);
+    result.m_local_to_parent[13] = result.m_parent_to_local[13] = T(0.0);
+    result.m_local_to_parent[14] = result.m_parent_to_local[14] = T(0.0);
+    result.m_local_to_parent[15] = result.m_parent_to_local[15] = T(1.0);
 }
 
 }       // namespace foundation
