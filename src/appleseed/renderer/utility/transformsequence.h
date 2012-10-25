@@ -90,8 +90,13 @@ class DLLSYMBOL TransformSequence
     // Returns true on success, false otherwise.
     bool prepare();
 
-    // Compute the transform at any given time.
+    // Compute the transform for any time value.
     foundation::Transformd evaluate(const double time) const;
+
+    // A variant of evaluate() that avoids copying transforms in certain cases.
+    const foundation::Transformd& evaluate(
+        const double                    time,
+        foundation::Transformd&         tmp) const;
 
     // Compose two transform sequences.
     TransformSequence operator*(const TransformSequence& rhs) const;
@@ -132,6 +137,12 @@ inline bool TransformSequence::empty() const
 inline size_t TransformSequence::size() const
 {
     return m_size;
+}
+
+inline foundation::Transformd TransformSequence::evaluate(const double time) const
+{
+    foundation::Transformd tmp;
+    return evaluate(time, tmp);
 }
 
 template <typename T>

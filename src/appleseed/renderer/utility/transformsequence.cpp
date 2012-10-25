@@ -204,10 +204,15 @@ bool TransformSequence::prepare()
     return success;
 }
 
-Transformd TransformSequence::evaluate(const double time) const
+const Transformd& TransformSequence::evaluate(
+    const double        time,
+    Transformd&         tmp) const
 {
     if (m_size == 0)
-        return Transformd::identity();
+    {
+        tmp = Transformd::identity();
+        return tmp;
+    }
 
     assert(m_size == 1 || m_interpolators != 0);
 
@@ -240,11 +245,9 @@ Transformd TransformSequence::evaluate(const double time) const
     assert(end_time > begin_time);
 
     const double t = (time - begin_time) / (end_time - begin_time);
+    m_interpolators[begin].evaluate(t, tmp);
 
-    Transformd result;
-    m_interpolators[begin].evaluate(t, result);
-
-    return result;
+    return tmp;
 }
 
 TransformSequence TransformSequence::operator*(const TransformSequence& rhs) const
@@ -252,6 +255,7 @@ TransformSequence TransformSequence::operator*(const TransformSequence& rhs) con
     TransformSequence result;
 
     size_t lhs_i = 0, rhs_i = 0;
+    Transformd tmp;
 
     while (lhs_i < m_size && rhs_i < rhs.m_size)
     {
@@ -266,12 +270,12 @@ TransformSequence TransformSequence::operator*(const TransformSequence& rhs) con
         }
         else if (lhs_t < rhs_t)
         {
-            result.set_transform(lhs_t, m_keys[lhs_i].m_transform * rhs.evaluate(lhs_t));
+            result.set_transform(lhs_t, m_keys[lhs_i].m_transform * rhs.evaluate(lhs_t, tmp));
             ++lhs_i;
         }
         else
         {
-            result.set_transform(rhs_t, evaluate(rhs_t) * rhs.m_keys[rhs_i].m_transform);
+            result.set_transform(rhs_t, evaluate(rhs_t, tmp) * rhs.m_keys[rhs_i].m_transform);
             ++rhs_i;
         }
     }
@@ -279,14 +283,14 @@ TransformSequence TransformSequence::operator*(const TransformSequence& rhs) con
     while (lhs_i < m_size)
     {
         const double lhs_t = m_keys[lhs_i].m_time;
-        result.set_transform(lhs_t, m_keys[lhs_i].m_transform * rhs.evaluate(lhs_t));
+        result.set_transform(lhs_t, m_keys[lhs_i].m_transform * rhs.evaluate(lhs_t, tmp));
         ++lhs_i;
     }
 
     while (rhs_i < rhs.m_size)
     {
         const double rhs_t = rhs.m_keys[rhs_i].m_time;
-        result.set_transform(rhs_t, evaluate(rhs_t) * rhs.m_keys[rhs_i].m_transform);
+        result.set_transform(rhs_t, evaluate(rhs_t, tmp) * rhs.m_keys[rhs_i].m_transform);
         ++rhs_i;
     }
 

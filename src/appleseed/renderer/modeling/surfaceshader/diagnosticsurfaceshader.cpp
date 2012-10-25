@@ -244,12 +244,15 @@ void DiagnosticSurfaceShader::evaluate(
             // Initialize the shading result to the background color.
             shading_result.set_to_linear_rgba(Color4f(0.0f, 0.0f, 0.8f, 0.5f));
 
-            // Retrieve the camera.
+            // Retrieve the camera and the view frustum.
             const Scene& scene = shading_point.get_scene();
             const Camera& camera = *scene.get_camera();
-            const double time = shading_point.get_ray().m_time;
-            const Transformd camera_transform = camera.transform_sequence().evaluate(time);
             const Pyramid3d& view_pyramid = camera.get_view_pyramid();
+
+            // Retrieve the camera transform.
+            Transformd tmp;
+            const double time = shading_point.get_ray().m_time;
+            const Transformd& camera_transform = camera.transform_sequence().evaluate(time, tmp);
 
             // Compute the film space coordinates of the intersection point.
             const Vector3d& point = shading_point.get_point();

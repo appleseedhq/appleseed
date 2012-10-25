@@ -129,17 +129,13 @@ namespace
                 -m_focal_length);
 
             // Compute the origin and direction of the ray.
-            if (m_transform_sequence.size() > 1)
-            {
-                const Transformd transform = m_transform_sequence.evaluate(ray.m_time);
-                ray.m_org = transform.get_local_to_parent().extract_translation();
-                ray.m_dir = transform.vector_to_parent(target);
-            }
-            else
-            {
-                ray.m_org = m_ray_org;
-                ray.m_dir = m_transform_sequence.evaluate(0.0).vector_to_parent(target);
-            }
+            Transformd tmp;
+            const Transformd& transform = m_transform_sequence.evaluate(ray.m_time, tmp);
+            ray.m_org =
+                m_transform_sequence.size() > 1
+                    ? transform.get_local_to_parent().extract_translation()
+                    : m_ray_org;
+            ray.m_dir = transform.vector_to_parent(target);
         }
 
         virtual Vector2d project(const Vector3d& point) const override

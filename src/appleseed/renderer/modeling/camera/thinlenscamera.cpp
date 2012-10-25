@@ -182,7 +182,8 @@ namespace
             }
 
             // Retrieve the camera transformation.
-            const Transformd transform = m_transform_sequence.evaluate(ray.m_time);
+            Transformd tmp;
+            const Transformd& transform = m_transform_sequence.evaluate(ray.m_time, tmp);
 
             // Set the ray origin.
             const Transformd::MatrixType& mat = transform.get_local_to_parent();
@@ -277,9 +278,7 @@ namespace
             // Set the ray origin.
             const Transformd transform = m_transform_sequence.evaluate(ray.m_time);
             const Transformd::MatrixType& mat = transform.get_local_to_parent();
-            ray.m_org.x = mat[ 3];
-            ray.m_org.y = mat[ 7];
-            ray.m_org.z = mat[11];
+            ray.m_org = mat.extract_translation();
             const double w = mat[15];
             assert(w != 0.0);
             if (w != 1.0)

@@ -126,8 +126,8 @@ typedef Transform<double> Transformd;
 
 
 //
-// The TransformInterpolator class allows to interpolate between two
-// rigid transformations (combinations of rotations and translations).
+// The TransformInterpolator class allows to interpolate between two rigid
+// transformations (any combination of rotations, translations and scalings).
 //
 
 template <typename T>
@@ -150,6 +150,8 @@ class TransformInterpolator
         const TransformType&    from,
         const TransformType&    to);
 
+    // Compute the transform for any value of the interpolation parameter t.
+    // Returns the initial transform for t == 0 and the final transform for t == 1.
     void evaluate(
         const T                 t,
         TransformType&          result) const;

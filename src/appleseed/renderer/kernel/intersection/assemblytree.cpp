@@ -456,8 +456,9 @@ bool AssemblyLeafVisitor::visit(
         const AssemblyTree::Item& item = items[i];
 
         // Evaluate the transformation of the assembly instance.
-        const Transformd assembly_instance_transform =
-            item.m_transform_sequence.evaluate(ray.m_time);
+        Transformd tmp;
+        const Transformd& assembly_instance_transform =
+            item.m_transform_sequence.evaluate(ray.m_time, tmp);
 
         // Transform the ray to assembly instance space.
         ShadingPoint local_shading_point;
@@ -573,8 +574,9 @@ bool AssemblyLeafProbeVisitor::visit(
         const AssemblyTree::Item& item = items[i];
 
         // Evaluate the transformation of the assembly instance.
-        const Transformd assembly_instance_transform =
-            item.m_transform_sequence.evaluate(ray.m_time);
+        Transformd tmp;
+        const Transformd& assembly_instance_transform =
+            item.m_transform_sequence.evaluate(ray.m_time, tmp);
 
         // Transform the ray to assembly instance space.
         ShadingRay local_ray;
