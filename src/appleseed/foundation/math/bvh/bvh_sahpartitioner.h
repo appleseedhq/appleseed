@@ -155,7 +155,7 @@ size_t SAHPartitioner<AABBVector>::partition(
 
     // Don't split if it's cheaper to make a leaf.
     const ValueType split_cost =
-        m_interior_node_traversal_cost +  
+        m_interior_node_traversal_cost +
         best_split_cost / half_surface_area(bbox) * m_item_intersection_cost;
     const ValueType leaf_cost = count * m_item_intersection_cost;
     if (leaf_cost <= split_cost)
