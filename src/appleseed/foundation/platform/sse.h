@@ -41,78 +41,6 @@ namespace foundation
 {
 
 //
-// SSE vector types.
-//
-
-// Four single-precision values.
-typedef __m128  sse4f;
-
-// Two double-precision values.
-typedef __m128d sse2d;
-
-
-//
-// Shortcuts for SSE intrinsics.
-//
-
-// Single-precision packet instructions.
-#define addps           _mm_add_ps
-#define andps           _mm_and_ps
-#define andnotps        _mm_andnot_ps
-#define cmpgeps         _mm_cmpge_ps
-#define cmpgtps         _mm_cmpgt_ps
-#define cmpleps         _mm_cmple_ps
-#define cmpltps         _mm_cmplt_ps
-#define divps           _mm_div_ps
-#define loadps          _mm_load_ps
-#define loadups         _mm_loadu_ps
-#define load1ps         _mm_load1_ps
-#define maxss           _mm_max_ss
-#define maxps           _mm_max_ps
-#define minss           _mm_min_ss
-#define minps           _mm_min_ps
-#define movemaskps      _mm_movemask_ps
-#define mulps           _mm_mul_ps
-#define orps            _mm_or_ps
-#define setss           _mm_set_ss
-#define setps           _mm_set_ps
-#define set1ps          _mm_set1_ps
-#define shuffleps       _mm_shuffle_ps
-#define storess         _mm_store_ss
-#define storeps         _mm_store_ps
-#define storeups        _mm_storeu_ps
-#define subps           _mm_sub_ps
-
-// Double-precision packet instructions.
-#define addpd           _mm_add_pd
-#define andpd           _mm_and_pd
-#define andnotpd        _mm_andnot_pd
-#define cmpgepd         _mm_cmpge_pd
-#define cmpgtpd         _mm_cmpgt_pd
-#define cmplepd         _mm_cmple_pd
-#define cmpltpd         _mm_cmplt_pd
-#define divpd           _mm_div_pd
-#define loadpd          _mm_load_pd
-#define loadupd         _mm_loadu_pd
-#define load1pd         _mm_load1_pd
-#define maxsd           _mm_max_sd
-#define maxpd           _mm_max_pd
-#define minsd           _mm_min_sd
-#define minpd           _mm_min_pd
-#define movemaskpd      _mm_movemask_pd
-#define mulpd           _mm_mul_pd
-#define orpd            _mm_or_pd
-#define setsd           _mm_set_sd
-#define setpd           _mm_set_pd
-#define set1pd          _mm_set1_pd
-#define shufflepd       _mm_shuffle_pd
-#define storesd         _mm_store_sd
-#define storepd         _mm_store_pd
-#define storeupd        _mm_storeu_pd
-#define subpd           _mm_sub_pd
-
-
-//
 // 4-way SSE implementation of std::floor().
 //
 // Reference:
@@ -122,7 +50,7 @@ typedef __m128d sse2d;
 // Note: SSE 4.1 has an _mm_floor_ps() intrinsic (see smmintrin.h).
 //
 
-inline sse4f floorps(const sse4f x)
+inline __m128 floorps(const __m128 x)
 {
     return
         _mm_cvtepi32_ps(

@@ -267,16 +267,16 @@ inline RayInfo<double, 3>::RayInfo()
 
 FORCE_INLINE RayInfo<double, 3>::RayInfo(const RayType& ray)
 {
-    const sse2d one = set1pd(1.0);
-    const sse2d rcp_dir0 = divpd(one, loadupd(&ray.m_dir[0]));
-    const sse2d rcp_dir2 = divpd(one, set1pd(ray.m_dir[2]));
+    const __m128d one = _mm_set1_pd(1.0);
+    const __m128d rcp_dir0 = _mm_div_pd(one, _mm_loadu_pd(&ray.m_dir[0]));
+    const __m128d rcp_dir2 = _mm_div_pd(one, _mm_set1_pd(ray.m_dir[2]));
 
-    storepd(&m_rcp_dir[0], rcp_dir0);
-    storesd(&m_rcp_dir[2], rcp_dir2);
+    _mm_store_pd(&m_rcp_dir[0], rcp_dir0);
+    _mm_store_sd(&m_rcp_dir[2], rcp_dir2);
 
-    const sse2d zero = _mm_setzero_pd();
-    const sse2d sgn_dir0 = cmpgepd(rcp_dir0, zero);
-    const sse2d sgn_dir2 = cmpgepd(rcp_dir2, zero);
+    const __m128d zero = _mm_setzero_pd();
+    const __m128d sgn_dir0 = _mm_cmpge_pd(rcp_dir0, zero);
+    const __m128d sgn_dir2 = _mm_cmpge_pd(rcp_dir2, zero);
     const __m128i mask = _mm_set_epi32(0, 1, 0, 1);
     const __m128i sgn0 = _mm_and_si128(_mm_castpd_si128(sgn_dir0), mask);
     const __m128i sgn2 = _mm_and_si128(_mm_castpd_si128(sgn_dir2), mask);

@@ -93,14 +93,14 @@ TEST_SUITE(Foundation_Math_MinMax)
     float ssemin_reference(const float a, const float b)
     {
         float ret;
-        storess(&ret, minss(setss(a), setss(b)));
+        _mm_store_ss(&ret, _mm_min_ss(_mm_set_ss(a), _mm_set_ss(b)));
         return ret;
     }
 
     float ssemax_reference(const float a, const float b)
     {
         float ret;
-        storess(&ret, maxss(setss(a), setss(b)));
+        _mm_store_ss(&ret, _mm_max_ss(_mm_set_ss(a), _mm_set_ss(b)));
         return ret;
     }
 

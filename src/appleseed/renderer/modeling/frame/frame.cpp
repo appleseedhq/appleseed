@@ -222,77 +222,77 @@ namespace
         for (; pixel_ptr < pixel_end; pixel_ptr += 4)
         {
             // Load the pixel color.
-            sse4f color = loadps(pixel_ptr);
-            sse4f original_color = color;
+            __m128 color = _mm_load_ps(pixel_ptr);
+            __m128 original_color = color;
 
             // Apply color space conversion.
             if (ColorSpace == ColorSpaceSRGB)
             {
-                sse4f x = _mm_cvtepi32_ps(_mm_castps_si128(color));
+                __m128 x = _mm_cvtepi32_ps(_mm_castps_si128(color));
 
-                const sse4f K = set1ps(127.0f);
-                x = mulps(x, set1ps(0.1192092896e-6f));     // x *= pow(2.0f, -23)
-                x = subps(x, K);
+                const __m128 K = _mm_set1_ps(127.0f);
+                x = _mm_mul_ps(x, _mm_set1_ps(0.1192092896e-6f));     // x *= pow(2.0f, -23)
+                x = _mm_sub_ps(x, K);
 
                 // One Newton-Raphson refinement step.
-                sse4f z = subps(x, floorps(x));
-                z = subps(z, mulps(z, z));
-                z = mulps(z, set1ps(0.346607f));
-                x = addps(x, z);
+                __m128 z = _mm_sub_ps(x, floorps(x));
+                z = _mm_sub_ps(z, _mm_mul_ps(z, z));
+                z = _mm_mul_ps(z, _mm_set1_ps(0.346607f));
+                x = _mm_add_ps(x, z);
 
-                x = mulps(x, set1ps(1.0f / 2.4f));
+                x = _mm_mul_ps(x, _mm_set1_ps(1.0f / 2.4f));
 
-                sse4f y = subps(x, floorps(x));
-                y = subps(y, mulps(y, y));
-                y = mulps(y, set1ps(0.33971f));
-                y = subps(addps(x, K), y);
-                y = mulps(y, set1ps(8388608.0f));           // y *= pow(2.0f, 23)
+                __m128 y = _mm_sub_ps(x, floorps(x));
+                y = _mm_sub_ps(y, _mm_mul_ps(y, y));
+                y = _mm_mul_ps(y, _mm_set1_ps(0.33971f));
+                y = _mm_sub_ps(_mm_add_ps(x, K), y);
+                y = _mm_mul_ps(y, _mm_set1_ps(8388608.0f));           // y *= pow(2.0f, 23)
 
                 y = _mm_castsi128_ps(_mm_cvtps_epi32(y));
 
                 // Compute both outcomes of the branch.
-                const sse4f a = mulps(set1ps(12.92f), color);
-                const sse4f b = subps(mulps(set1ps(1.055f), y), set1ps(0.055f));
+                const __m128 a = _mm_mul_ps(_mm_set1_ps(12.92f), color);
+                const __m128 b = _mm_sub_ps(_mm_mul_ps(_mm_set1_ps(1.055f), y), _mm_set1_ps(0.055f));
 
                 // Interleave them based on the actual comparison.
-                const sse4f mask = cmpleps(color, set1ps(0.0031308f));
-                color = addps(andps(mask, a), andnotps(mask, b));
+                const __m128 mask = _mm_cmple_ps(color, _mm_set1_ps(0.0031308f));
+                color = _mm_add_ps(_mm_and_ps(mask, a), _mm_andnot_ps(mask, b));
             }
 
             // Apply clamping.
             // todo: mark clamped pixels in the diagnostic map.
             if (Clamp)
-                color = minps(maxps(color, set1ps(0.0f)), set1ps(1.0f));
-            else color = maxps(color, set1ps(0.0f));
+                color = _mm_min_ps(_mm_max_ps(color, _mm_set1_ps(0.0f)), _mm_set1_ps(1.0f));
+            else color = _mm_max_ps(color, _mm_set1_ps(0.0f));
 
             // Apply gamma correction.
             if (GammaCorrect)
             {
-                sse4f x = _mm_cvtepi32_ps(_mm_castps_si128(color));
+                __m128 x = _mm_cvtepi32_ps(_mm_castps_si128(color));
 
-                const sse4f K = set1ps(127.0f);
-                x = mulps(x, set1ps(0.1192092896e-6f));     // x *= pow(2.0f, -23)
-                x = subps(x, K);
+                const __m128 K = _mm_set1_ps(127.0f);
+                x = _mm_mul_ps(x, _mm_set1_ps(0.1192092896e-6f));     // x *= pow(2.0f, -23)
+                x = _mm_sub_ps(x, K);
 
                 // One Newton-Raphson refinement step.
-                sse4f z = subps(x, floorps(x));
-                z = subps(z, mulps(z, z));
-                z = mulps(z, set1ps(0.346607f));
-                x = addps(x, z);
+                __m128 z = _mm_sub_ps(x, floorps(x));
+                z = _mm_sub_ps(z, _mm_mul_ps(z, z));
+                z = _mm_mul_ps(z, _mm_set1_ps(0.346607f));
+                x = _mm_add_ps(x, z);
 
-                x = mulps(x, set1ps(rcp_target_gamma));
+                x = _mm_mul_ps(x, _mm_set1_ps(rcp_target_gamma));
 
-                sse4f y = subps(x, floorps(x));
-                y = subps(y, mulps(y, y));
-                y = mulps(y, set1ps(0.33971f));
-                y = subps(addps(x, K), y);
-                y = mulps(y, set1ps(8388608.0f));           // y *= pow(2.0f, 23)
+                __m128 y = _mm_sub_ps(x, floorps(x));
+                y = _mm_sub_ps(y, _mm_mul_ps(y, y));
+                y = _mm_mul_ps(y, _mm_set1_ps(0.33971f));
+                y = _mm_sub_ps(_mm_add_ps(x, K), y);
+                y = _mm_mul_ps(y, _mm_set1_ps(8388608.0f));           // y *= pow(2.0f, 23)
 
                 color = _mm_castsi128_ps(_mm_cvtps_epi32(y));
             }
 
             // Store the pixel color (leave the alpha channel unmodified).
-            storeps(pixel_ptr, shuffleps(color, _mm_unpackhi_ps(color, original_color), _MM_SHUFFLE(3, 0, 1, 0)));
+            _mm_store_ps(pixel_ptr, _mm_shuffle_ps(color, _mm_unpackhi_ps(color, original_color), _MM_SHUFFLE(3, 0, 1, 0)));
         }
     }
 

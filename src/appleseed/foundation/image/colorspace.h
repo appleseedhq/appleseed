@@ -508,38 +508,38 @@ inline Color3f fast_linear_rgb_to_srgb(const Color3f& linear_rgb)
         linear_rgb[2]
     };
 
-    sse4f c = loadps(transfer);
-    sse4f x = _mm_cvtepi32_ps(_mm_castps_si128(c));
+    __m128 c = _mm_load_ps(transfer);
+    __m128 x = _mm_cvtepi32_ps(_mm_castps_si128(c));
 
-    const sse4f K = set1ps(127.0f);
-    x = mulps(x, set1ps(0.1192092896e-6f));     // x *= pow(2.0f, -23)
-    x = subps(x, K);
+    const __m128 K = _mm_set1_ps(127.0f);
+    x = _mm_mul_ps(x, _mm_set1_ps(0.1192092896e-6f));     // x *= pow(2.0f, -23)
+    x = _mm_sub_ps(x, K);
 
     // One Newton-Raphson refinement step.
-    sse4f z = subps(x, floorps(x));
-    z = subps(z, mulps(z, z));
-    z = mulps(z, set1ps(0.346607f));
-    x = addps(x, z);
+    __m128 z = _mm_sub_ps(x, floorps(x));
+    z = _mm_sub_ps(z, _mm_mul_ps(z, z));
+    z = _mm_mul_ps(z, _mm_set1_ps(0.346607f));
+    x = _mm_add_ps(x, z);
 
-    x = mulps(x, set1ps(1.0f / 2.4f));
+    x = _mm_mul_ps(x, _mm_set1_ps(1.0f / 2.4f));
 
-    sse4f y = subps(x, floorps(x));
-    y = subps(y, mulps(y, y));
-    y = mulps(y, set1ps(0.33971f));
-    y = subps(addps(x, K), y);
-    y = mulps(y, set1ps(8388608.0f));           // y *= pow(2.0f, 23)
+    __m128 y = _mm_sub_ps(x, floorps(x));
+    y = _mm_sub_ps(y, _mm_mul_ps(y, y));
+    y = _mm_mul_ps(y, _mm_set1_ps(0.33971f));
+    y = _mm_sub_ps(_mm_add_ps(x, K), y);
+    y = _mm_mul_ps(y, _mm_set1_ps(8388608.0f));           // y *= pow(2.0f, 23)
 
     y = _mm_castsi128_ps(_mm_cvtps_epi32(y));
 
     // Compute both outcomes of the branch.
-    const sse4f a = mulps(set1ps(12.92f), c);
-    const sse4f b = subps(mulps(set1ps(1.055f), y), set1ps(0.055f));
+    const __m128 a = _mm_mul_ps(_mm_set1_ps(12.92f), c);
+    const __m128 b = _mm_sub_ps(_mm_mul_ps(_mm_set1_ps(1.055f), y), _mm_set1_ps(0.055f));
 
     // Interleave them based on the actual comparison.
-    const sse4f mask = cmpleps(c, set1ps(0.0031308f));
-    c = addps(andps(mask, a), andnotps(mask, b));
+    const __m128 mask = _mm_cmple_ps(c, _mm_set1_ps(0.0031308f));
+    c = _mm_add_ps(_mm_and_ps(mask, a), _mm_andnot_ps(mask, b));
 
-    storeps(transfer, c);
+    _mm_store_ps(transfer, c);
 
     return Color3f(transfer[0], transfer[1], transfer[2]);
 }

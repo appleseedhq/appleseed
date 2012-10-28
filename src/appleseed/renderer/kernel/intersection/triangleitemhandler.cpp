@@ -101,40 +101,40 @@ AABB3d TriangleItemHandler::clip(
     const int v2_ge_min = v2d >= slab_min ? 1 : 0;
     const int v2_le_max = v2d <= slab_max ? 1 : 0;
 
-    sse2d bbox_min_xy = set1pd(+numeric_limits<double>::max());
-    sse2d bbox_min_zz = set1pd(+numeric_limits<double>::max());
-    sse2d bbox_max_xy = set1pd(-numeric_limits<double>::max());
-    sse2d bbox_max_zz = set1pd(-numeric_limits<double>::max());
+    __m128d bbox_min_xy = _mm_set1_pd(+numeric_limits<double>::max());
+    __m128d bbox_min_zz = _mm_set1_pd(+numeric_limits<double>::max());
+    __m128d bbox_max_xy = _mm_set1_pd(-numeric_limits<double>::max());
+    __m128d bbox_max_zz = _mm_set1_pd(-numeric_limits<double>::max());
 
-    const sse2d v0_xy = loadpd(&v0.x);
-    const sse2d v0_zz = set1pd(v0.z);
-    const sse2d v1_xy = loadpd(&v1.x);
-    const sse2d v1_zz = set1pd(v1.z);
-    const sse2d v2_xy = loadpd(&v2.x);
-    const sse2d v2_zz = set1pd(v2.z);
+    const __m128d v0_xy = _mm_load_pd(&v0.x);
+    const __m128d v0_zz = _mm_set1_pd(v0.z);
+    const __m128d v1_xy = _mm_load_pd(&v1.x);
+    const __m128d v1_zz = _mm_set1_pd(v1.z);
+    const __m128d v2_xy = _mm_load_pd(&v2.x);
+    const __m128d v2_zz = _mm_set1_pd(v2.z);
 
     if (v0_ge_min & v0_le_max)
     {
-        bbox_min_xy = minpd(bbox_min_xy, v0_xy);
-        bbox_max_xy = maxpd(bbox_max_xy, v0_xy);
-        bbox_min_zz = minpd(bbox_min_zz, v0_zz);
-        bbox_max_zz = maxpd(bbox_max_zz, v0_zz);
+        bbox_min_xy = _mm_min_pd(bbox_min_xy, v0_xy);
+        bbox_max_xy = _mm_max_pd(bbox_max_xy, v0_xy);
+        bbox_min_zz = _mm_min_pd(bbox_min_zz, v0_zz);
+        bbox_max_zz = _mm_max_pd(bbox_max_zz, v0_zz);
     }
 
     if (v1_ge_min & v1_le_max)
     {
-        bbox_min_xy = minpd(bbox_min_xy, v1_xy);
-        bbox_max_xy = maxpd(bbox_max_xy, v1_xy);
-        bbox_min_zz = minpd(bbox_min_zz, v1_zz);
-        bbox_max_zz = maxpd(bbox_max_zz, v1_zz);
+        bbox_min_xy = _mm_min_pd(bbox_min_xy, v1_xy);
+        bbox_max_xy = _mm_max_pd(bbox_max_xy, v1_xy);
+        bbox_min_zz = _mm_min_pd(bbox_min_zz, v1_zz);
+        bbox_max_zz = _mm_max_pd(bbox_max_zz, v1_zz);
     }
 
     if (v2_ge_min & v2_le_max)
     {
-        bbox_min_xy = minpd(bbox_min_xy, v2_xy);
-        bbox_max_xy = maxpd(bbox_max_xy, v2_xy);
-        bbox_min_zz = minpd(bbox_min_zz, v2_zz);
-        bbox_max_zz = maxpd(bbox_max_zz, v2_zz);
+        bbox_min_xy = _mm_min_pd(bbox_min_xy, v2_xy);
+        bbox_max_xy = _mm_max_pd(bbox_max_xy, v2_xy);
+        bbox_min_zz = _mm_min_pd(bbox_min_zz, v2_zz);
+        bbox_max_zz = _mm_max_pd(bbox_max_zz, v2_zz);
     }
 
     const int v0v1_cross_min = v0_ge_min ^ v1_ge_min;
@@ -153,15 +153,15 @@ AABB3d TriangleItemHandler::clip(
             const double t = (slab_min - v0[dimension]) * rcp_v0v1;
             assert(t >= 0.0 && t <= 1.0);
 
-            const sse2d mt = set1pd(t);
-            const sse2d mt1 = set1pd(1.0 - t);
-            const sse2d p_xy = addpd(mulpd(v0_xy, mt1), mulpd(v1_xy, mt));
-            const sse2d p_zz = addpd(mulpd(v0_zz, mt1), mulpd(v1_zz, mt));
+            const __m128d mt = _mm_set1_pd(t);
+            const __m128d mt1 = _mm_set1_pd(1.0 - t);
+            const __m128d p_xy = _mm_add_pd(_mm_mul_pd(v0_xy, mt1), _mm_mul_pd(v1_xy, mt));
+            const __m128d p_zz = _mm_add_pd(_mm_mul_pd(v0_zz, mt1), _mm_mul_pd(v1_zz, mt));
 
-            bbox_min_xy = minpd(bbox_min_xy, p_xy);
-            bbox_max_xy = maxpd(bbox_max_xy, p_xy);
-            bbox_min_zz = minpd(bbox_min_zz, p_zz);
-            bbox_max_zz = maxpd(bbox_max_zz, p_zz);
+            bbox_min_xy = _mm_min_pd(bbox_min_xy, p_xy);
+            bbox_max_xy = _mm_max_pd(bbox_max_xy, p_xy);
+            bbox_min_zz = _mm_min_pd(bbox_min_zz, p_zz);
+            bbox_max_zz = _mm_max_pd(bbox_max_zz, p_zz);
         }
 
         if (v0v1_cross_max)
@@ -169,15 +169,15 @@ AABB3d TriangleItemHandler::clip(
             const double t = (slab_max - v0[dimension]) * rcp_v0v1;
             assert(t >= 0.0 && t <= 1.0);
 
-            const sse2d mt = set1pd(t);
-            const sse2d mt1 = set1pd(1.0 - t);
-            const sse2d p_xy = addpd(mulpd(v0_xy, mt1), mulpd(v1_xy, mt));
-            const sse2d p_zz = addpd(mulpd(v0_zz, mt1), mulpd(v1_zz, mt));
+            const __m128d mt = _mm_set1_pd(t);
+            const __m128d mt1 = _mm_set1_pd(1.0 - t);
+            const __m128d p_xy = _mm_add_pd(_mm_mul_pd(v0_xy, mt1), _mm_mul_pd(v1_xy, mt));
+            const __m128d p_zz = _mm_add_pd(_mm_mul_pd(v0_zz, mt1), _mm_mul_pd(v1_zz, mt));
 
-            bbox_min_xy = minpd(bbox_min_xy, p_xy);
-            bbox_max_xy = maxpd(bbox_max_xy, p_xy);
-            bbox_min_zz = minpd(bbox_min_zz, p_zz);
-            bbox_max_zz = maxpd(bbox_max_zz, p_zz);
+            bbox_min_xy = _mm_min_pd(bbox_min_xy, p_xy);
+            bbox_max_xy = _mm_max_pd(bbox_max_xy, p_xy);
+            bbox_min_zz = _mm_min_pd(bbox_min_zz, p_zz);
+            bbox_max_zz = _mm_max_pd(bbox_max_zz, p_zz);
         }
     }
 
@@ -190,15 +190,15 @@ AABB3d TriangleItemHandler::clip(
             const double t = (slab_min - v1[dimension]) * rcp_v1v2;
             assert(t >= 0.0 && t <= 1.0);
 
-            const sse2d mt = set1pd(t);
-            const sse2d mt1 = set1pd(1.0 - t);
-            const sse2d p_xy = addpd(mulpd(v1_xy, mt1), mulpd(v2_xy, mt));
-            const sse2d p_zz = addpd(mulpd(v1_zz, mt1), mulpd(v2_zz, mt));
+            const __m128d mt = _mm_set1_pd(t);
+            const __m128d mt1 = _mm_set1_pd(1.0 - t);
+            const __m128d p_xy = _mm_add_pd(_mm_mul_pd(v1_xy, mt1), _mm_mul_pd(v2_xy, mt));
+            const __m128d p_zz = _mm_add_pd(_mm_mul_pd(v1_zz, mt1), _mm_mul_pd(v2_zz, mt));
 
-            bbox_min_xy = minpd(bbox_min_xy, p_xy);
-            bbox_max_xy = maxpd(bbox_max_xy, p_xy);
-            bbox_min_zz = minpd(bbox_min_zz, p_zz);
-            bbox_max_zz = maxpd(bbox_max_zz, p_zz);
+            bbox_min_xy = _mm_min_pd(bbox_min_xy, p_xy);
+            bbox_max_xy = _mm_max_pd(bbox_max_xy, p_xy);
+            bbox_min_zz = _mm_min_pd(bbox_min_zz, p_zz);
+            bbox_max_zz = _mm_max_pd(bbox_max_zz, p_zz);
         }
 
         if (v1v2_cross_max)
@@ -206,15 +206,15 @@ AABB3d TriangleItemHandler::clip(
             const double t = (slab_max - v1[dimension]) * rcp_v1v2;
             assert(t >= 0.0 && t <= 1.0);
 
-            const sse2d mt = set1pd(t);
-            const sse2d mt1 = set1pd(1.0 - t);
-            const sse2d p_xy = addpd(mulpd(v1_xy, mt1), mulpd(v2_xy, mt));
-            const sse2d p_zz = addpd(mulpd(v1_zz, mt1), mulpd(v2_zz, mt));
+            const __m128d mt = _mm_set1_pd(t);
+            const __m128d mt1 = _mm_set1_pd(1.0 - t);
+            const __m128d p_xy = _mm_add_pd(_mm_mul_pd(v1_xy, mt1), _mm_mul_pd(v2_xy, mt));
+            const __m128d p_zz = _mm_add_pd(_mm_mul_pd(v1_zz, mt1), _mm_mul_pd(v2_zz, mt));
 
-            bbox_min_xy = minpd(bbox_min_xy, p_xy);
-            bbox_max_xy = maxpd(bbox_max_xy, p_xy);
-            bbox_min_zz = minpd(bbox_min_zz, p_zz);
-            bbox_max_zz = maxpd(bbox_max_zz, p_zz);
+            bbox_min_xy = _mm_min_pd(bbox_min_xy, p_xy);
+            bbox_max_xy = _mm_max_pd(bbox_max_xy, p_xy);
+            bbox_min_zz = _mm_min_pd(bbox_min_zz, p_zz);
+            bbox_max_zz = _mm_max_pd(bbox_max_zz, p_zz);
         }
     }
 
@@ -227,15 +227,15 @@ AABB3d TriangleItemHandler::clip(
             const double t = (slab_min - v2[dimension]) * rcp_v2v0;
             assert(t >= 0.0 && t <= 1.0);
 
-            const sse2d mt = set1pd(t);
-            const sse2d mt1 = set1pd(1.0 - t);
-            const sse2d p_xy = addpd(mulpd(v2_xy, mt1), mulpd(v0_xy, mt));
-            const sse2d p_zz = addpd(mulpd(v2_zz, mt1), mulpd(v0_zz, mt));
+            const __m128d mt = _mm_set1_pd(t);
+            const __m128d mt1 = _mm_set1_pd(1.0 - t);
+            const __m128d p_xy = _mm_add_pd(_mm_mul_pd(v2_xy, mt1), _mm_mul_pd(v0_xy, mt));
+            const __m128d p_zz = _mm_add_pd(_mm_mul_pd(v2_zz, mt1), _mm_mul_pd(v0_zz, mt));
 
-            bbox_min_xy = minpd(bbox_min_xy, p_xy);
-            bbox_max_xy = maxpd(bbox_max_xy, p_xy);
-            bbox_min_zz = minpd(bbox_min_zz, p_zz);
-            bbox_max_zz = maxpd(bbox_max_zz, p_zz);
+            bbox_min_xy = _mm_min_pd(bbox_min_xy, p_xy);
+            bbox_max_xy = _mm_max_pd(bbox_max_xy, p_xy);
+            bbox_min_zz = _mm_min_pd(bbox_min_zz, p_zz);
+            bbox_max_zz = _mm_max_pd(bbox_max_zz, p_zz);
         }
 
         if (v2v0_cross_max)
@@ -243,24 +243,24 @@ AABB3d TriangleItemHandler::clip(
             const double t = (slab_max - v2[dimension]) * rcp_v2v0;
             assert(t >= 0.0 && t <= 1.0);
 
-            const sse2d mt = set1pd(t);
-            const sse2d mt1 = set1pd(1.0 - t);
-            const sse2d p_xy = addpd(mulpd(v2_xy, mt1), mulpd(v0_xy, mt));
-            const sse2d p_zz = addpd(mulpd(v2_zz, mt1), mulpd(v0_zz, mt));
+            const __m128d mt = _mm_set1_pd(t);
+            const __m128d mt1 = _mm_set1_pd(1.0 - t);
+            const __m128d p_xy = _mm_add_pd(_mm_mul_pd(v2_xy, mt1), _mm_mul_pd(v0_xy, mt));
+            const __m128d p_zz = _mm_add_pd(_mm_mul_pd(v2_zz, mt1), _mm_mul_pd(v0_zz, mt));
 
-            bbox_min_xy = minpd(bbox_min_xy, p_xy);
-            bbox_max_xy = maxpd(bbox_max_xy, p_xy);
-            bbox_min_zz = minpd(bbox_min_zz, p_zz);
-            bbox_max_zz = maxpd(bbox_max_zz, p_zz);
+            bbox_min_xy = _mm_min_pd(bbox_min_xy, p_xy);
+            bbox_max_xy = _mm_max_pd(bbox_max_xy, p_xy);
+            bbox_min_zz = _mm_min_pd(bbox_min_zz, p_zz);
+            bbox_max_zz = _mm_max_pd(bbox_max_zz, p_zz);
         }
     }
 
     SSE_ALIGN AABB3d bbox;
 
-    storepd(&bbox.min.x, bbox_min_xy);
-    storesd(&bbox.min.z, bbox_min_zz);
-    storeupd(&bbox.max.x, bbox_max_xy);
-    storesd(&bbox.max.z, bbox_max_zz);
+    _mm_store_pd(&bbox.min.x, bbox_min_xy);
+    _mm_store_sd(&bbox.min.z, bbox_min_zz);
+    _mm_storeu_pd(&bbox.max.x, bbox_max_xy);
+    _mm_store_sd(&bbox.max.z, bbox_max_zz);
 
     if (bbox.min[dimension] < slab_min)
         bbox.min[dimension] = slab_min;

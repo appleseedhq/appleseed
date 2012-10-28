@@ -1845,84 +1845,84 @@ inline Matrix<double, 4, 4> operator*(
 {
     Matrix<double, 4, 4> res;
 
-    const sse2d rhs0  = loadpd(&rhs[0]);
-    const sse2d rhs2  = loadpd(&rhs[2]);
-    const sse2d rhs4  = loadpd(&rhs[4]);
-    const sse2d rhs6  = loadpd(&rhs[6]);
-    const sse2d rhs8  = loadpd(&rhs[8]);
-    const sse2d rhs10 = loadpd(&rhs[10]);
-    const sse2d rhs12 = loadpd(&rhs[12]);
-    const sse2d rhs14 = loadpd(&rhs[14]);
+    const __m128d rhs0  = _mm_load_pd(&rhs[0]);
+    const __m128d rhs2  = _mm_load_pd(&rhs[2]);
+    const __m128d rhs4  = _mm_load_pd(&rhs[4]);
+    const __m128d rhs6  = _mm_load_pd(&rhs[6]);
+    const __m128d rhs8  = _mm_load_pd(&rhs[8]);
+    const __m128d rhs10 = _mm_load_pd(&rhs[10]);
+    const __m128d rhs12 = _mm_load_pd(&rhs[12]);
+    const __m128d rhs14 = _mm_load_pd(&rhs[14]);
 
-    sse2d res0, res2;
+    __m128d res0, res2;
 
-    const sse2d lhs0 = set1pd(lhs[0]);
-    const sse2d lhs1 = set1pd(lhs[1]);
-    const sse2d lhs2 = set1pd(lhs[2]);
-    const sse2d lhs3 = set1pd(lhs[3]);
+    const __m128d lhs0 = _mm_set1_pd(lhs[0]);
+    const __m128d lhs1 = _mm_set1_pd(lhs[1]);
+    const __m128d lhs2 = _mm_set1_pd(lhs[2]);
+    const __m128d lhs3 = _mm_set1_pd(lhs[3]);
 
-    res0 = mulpd(lhs0, rhs0);
-    res2 = mulpd(lhs0, rhs2);
-    res0 = addpd(res0, mulpd(lhs1, rhs4));
-    res2 = addpd(res2, mulpd(lhs1, rhs6));
-    res0 = addpd(res0, mulpd(lhs2, rhs8));
-    res2 = addpd(res2, mulpd(lhs2, rhs10));
-    res0 = addpd(res0, mulpd(lhs3, rhs12));
-    res2 = addpd(res2, mulpd(lhs3, rhs14));
+    res0 = _mm_mul_pd(lhs0, rhs0);
+    res2 = _mm_mul_pd(lhs0, rhs2);
+    res0 = _mm_add_pd(res0, _mm_mul_pd(lhs1, rhs4));
+    res2 = _mm_add_pd(res2, _mm_mul_pd(lhs1, rhs6));
+    res0 = _mm_add_pd(res0, _mm_mul_pd(lhs2, rhs8));
+    res2 = _mm_add_pd(res2, _mm_mul_pd(lhs2, rhs10));
+    res0 = _mm_add_pd(res0, _mm_mul_pd(lhs3, rhs12));
+    res2 = _mm_add_pd(res2, _mm_mul_pd(lhs3, rhs14));
 
-    storepd(&res[0], res0);
-    storepd(&res[2], res2);
+    _mm_store_pd(&res[0], res0);
+    _mm_store_pd(&res[2], res2);
 
-    const sse2d lhs4 = set1pd(lhs[4]);
-    const sse2d lhs5 = set1pd(lhs[5]);
-    const sse2d lhs6 = set1pd(lhs[6]);
-    const sse2d lhs7 = set1pd(lhs[7]);
+    const __m128d lhs4 = _mm_set1_pd(lhs[4]);
+    const __m128d lhs5 = _mm_set1_pd(lhs[5]);
+    const __m128d lhs6 = _mm_set1_pd(lhs[6]);
+    const __m128d lhs7 = _mm_set1_pd(lhs[7]);
 
-    res0 = mulpd(lhs4, rhs0);
-    res2 = mulpd(lhs4, rhs2);
-    res0 = addpd(res0, mulpd(lhs5, rhs4));
-    res2 = addpd(res2, mulpd(lhs5, rhs6));
-    res0 = addpd(res0, mulpd(lhs6, rhs8));
-    res2 = addpd(res2, mulpd(lhs6, rhs10));
-    res0 = addpd(res0, mulpd(lhs7, rhs12));
-    res2 = addpd(res2, mulpd(lhs7, rhs14));
+    res0 = _mm_mul_pd(lhs4, rhs0);
+    res2 = _mm_mul_pd(lhs4, rhs2);
+    res0 = _mm_add_pd(res0, _mm_mul_pd(lhs5, rhs4));
+    res2 = _mm_add_pd(res2, _mm_mul_pd(lhs5, rhs6));
+    res0 = _mm_add_pd(res0, _mm_mul_pd(lhs6, rhs8));
+    res2 = _mm_add_pd(res2, _mm_mul_pd(lhs6, rhs10));
+    res0 = _mm_add_pd(res0, _mm_mul_pd(lhs7, rhs12));
+    res2 = _mm_add_pd(res2, _mm_mul_pd(lhs7, rhs14));
 
-    storepd(&res[4], res0);
-    storepd(&res[6], res2);
+    _mm_store_pd(&res[4], res0);
+    _mm_store_pd(&res[6], res2);
 
-    const sse2d lhs8  = set1pd(lhs[8]);
-    const sse2d lhs9  = set1pd(lhs[9]);
-    const sse2d lhs10 = set1pd(lhs[10]);
-    const sse2d lhs11 = set1pd(lhs[11]);
+    const __m128d lhs8  = _mm_set1_pd(lhs[8]);
+    const __m128d lhs9  = _mm_set1_pd(lhs[9]);
+    const __m128d lhs10 = _mm_set1_pd(lhs[10]);
+    const __m128d lhs11 = _mm_set1_pd(lhs[11]);
 
-    res0 = mulpd(lhs8, rhs0);
-    res2 = mulpd(lhs8, rhs2);
-    res0 = addpd(res0, mulpd(lhs9, rhs4));
-    res2 = addpd(res2, mulpd(lhs9, rhs6));
-    res0 = addpd(res0, mulpd(lhs10, rhs8));
-    res2 = addpd(res2, mulpd(lhs10, rhs10));
-    res0 = addpd(res0, mulpd(lhs11, rhs12));
-    res2 = addpd(res2, mulpd(lhs11, rhs14));
+    res0 = _mm_mul_pd(lhs8, rhs0);
+    res2 = _mm_mul_pd(lhs8, rhs2);
+    res0 = _mm_add_pd(res0, _mm_mul_pd(lhs9, rhs4));
+    res2 = _mm_add_pd(res2, _mm_mul_pd(lhs9, rhs6));
+    res0 = _mm_add_pd(res0, _mm_mul_pd(lhs10, rhs8));
+    res2 = _mm_add_pd(res2, _mm_mul_pd(lhs10, rhs10));
+    res0 = _mm_add_pd(res0, _mm_mul_pd(lhs11, rhs12));
+    res2 = _mm_add_pd(res2, _mm_mul_pd(lhs11, rhs14));
 
-    storepd(&res[8],  res0);
-    storepd(&res[10], res2);
+    _mm_store_pd(&res[8],  res0);
+    _mm_store_pd(&res[10], res2);
 
-    const sse2d lhs12 = set1pd(lhs[12]);
-    const sse2d lhs13 = set1pd(lhs[13]);
-    const sse2d lhs14 = set1pd(lhs[14]);
-    const sse2d lhs15 = set1pd(lhs[15]);
+    const __m128d lhs12 = _mm_set1_pd(lhs[12]);
+    const __m128d lhs13 = _mm_set1_pd(lhs[13]);
+    const __m128d lhs14 = _mm_set1_pd(lhs[14]);
+    const __m128d lhs15 = _mm_set1_pd(lhs[15]);
 
-    res0 = mulpd(lhs12, rhs0);
-    res2 = mulpd(lhs12, rhs2);
-    res0 = addpd(res0, mulpd(lhs13, rhs4));
-    res2 = addpd(res2, mulpd(lhs13, rhs6));
-    res0 = addpd(res0, mulpd(lhs14, rhs8));
-    res2 = addpd(res2, mulpd(lhs14, rhs10));
-    res0 = addpd(res0, mulpd(lhs15, rhs12));
-    res2 = addpd(res2, mulpd(lhs15, rhs14));
+    res0 = _mm_mul_pd(lhs12, rhs0);
+    res2 = _mm_mul_pd(lhs12, rhs2);
+    res0 = _mm_add_pd(res0, _mm_mul_pd(lhs13, rhs4));
+    res2 = _mm_add_pd(res2, _mm_mul_pd(lhs13, rhs6));
+    res0 = _mm_add_pd(res0, _mm_mul_pd(lhs14, rhs8));
+    res2 = _mm_add_pd(res2, _mm_mul_pd(lhs14, rhs10));
+    res0 = _mm_add_pd(res0, _mm_mul_pd(lhs15, rhs12));
+    res2 = _mm_add_pd(res2, _mm_mul_pd(lhs15, rhs14));
 
-    storepd(&res[12], res0);
-    storepd(&res[14], res2);
+    _mm_store_pd(&res[12], res0);
+    _mm_store_pd(&res[14], res2);
 
     return res;
 }
@@ -1954,25 +1954,25 @@ inline Vector<double, 4> operator*(
 {
     Vector<double, 4> res;
 
-    const sse2d v0 = loadupd(&v[0]);
-    const sse2d v2 = loadupd(&v[2]);
+    const __m128d v0 = _mm_loadu_pd(&v[0]);
+    const __m128d v2 = _mm_loadu_pd(&v[2]);
 
-    const sse2d res0 = addpd(mulpd(loadpd(&m[ 0]), v0), mulpd(loadpd(&m[ 2]), v2));
-    const sse2d res1 = addpd(mulpd(loadpd(&m[ 4]), v0), mulpd(loadpd(&m[ 6]), v2));
-    const sse2d res2 = addpd(mulpd(loadpd(&m[ 8]), v0), mulpd(loadpd(&m[10]), v2));
-    const sse2d res3 = addpd(mulpd(loadpd(&m[12]), v0), mulpd(loadpd(&m[14]), v2));
+    const __m128d res0 = _mm_add_pd(_mm_mul_pd(_mm_load_pd(&m[ 0]), v0), _mm_mul_pd(_mm_load_pd(&m[ 2]), v2));
+    const __m128d res1 = _mm_add_pd(_mm_mul_pd(_mm_load_pd(&m[ 4]), v0), _mm_mul_pd(_mm_load_pd(&m[ 6]), v2));
+    const __m128d res2 = _mm_add_pd(_mm_mul_pd(_mm_load_pd(&m[ 8]), v0), _mm_mul_pd(_mm_load_pd(&m[10]), v2));
+    const __m128d res3 = _mm_add_pd(_mm_mul_pd(_mm_load_pd(&m[12]), v0), _mm_mul_pd(_mm_load_pd(&m[14]), v2));
 
-    storeupd(
+    _mm_storeu_pd(
         &res[0],
-        addpd(
-            shufflepd(res0, res1, _MM_SHUFFLE2(0, 0)),
-            shufflepd(res0, res1, _MM_SHUFFLE2(1, 1))));
+        _mm_add_pd(
+            _mm_shuffle_pd(res0, res1, _MM_SHUFFLE2(0, 0)),
+            _mm_shuffle_pd(res0, res1, _MM_SHUFFLE2(1, 1))));
 
-    storeupd(
+    _mm_storeu_pd(
         &res[2],
-        addpd(
-            shufflepd(res2, res3, _MM_SHUFFLE2(0, 0)),
-            shufflepd(res2, res3, _MM_SHUFFLE2(1, 1))));
+        _mm_add_pd(
+            _mm_shuffle_pd(res2, res3, _MM_SHUFFLE2(0, 0)),
+            _mm_shuffle_pd(res2, res3, _MM_SHUFFLE2(1, 1))));
 
     return res;
 }

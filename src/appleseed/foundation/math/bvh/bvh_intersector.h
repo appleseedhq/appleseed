@@ -487,17 +487,17 @@ void Intersector<Tree, Visitor, Ray, StackSize, 3>::intersect(
     assert(!tree.m_nodes.empty());
 
     // Load the ray into SSE registers.
-    const sse2d mrox = set1pd(ray.m_org.x);
-    const sse2d mroy = set1pd(ray.m_org.y);
-    const sse2d mroz = set1pd(ray.m_org.z);
-    const sse2d mrrcpdx = set1pd(ray_info.m_rcp_dir.x);
-    const sse2d mrrcpdy = set1pd(ray_info.m_rcp_dir.y);
-    const sse2d mrrcpdz = set1pd(ray_info.m_rcp_dir.z);
-    const sse2d mraytmin = set1pd(ray.m_tmin);
+    const __m128d mrox = _mm_set1_pd(ray.m_org.x);
+    const __m128d mroy = _mm_set1_pd(ray.m_org.y);
+    const __m128d mroz = _mm_set1_pd(ray.m_org.z);
+    const __m128d mrrcpdx = _mm_set1_pd(ray_info.m_rcp_dir.x);
+    const __m128d mrrcpdy = _mm_set1_pd(ray_info.m_rcp_dir.y);
+    const __m128d mrrcpdz = _mm_set1_pd(ray_info.m_rcp_dir.z);
+    const __m128d mraytmin = _mm_set1_pd(ray.m_tmin);
 
     // Load constants.
-    const sse2d mposinf = set1pd(FP<double>::pos_inf());
-    const sse2d mneginf = set1pd(FP<double>::neg_inf());
+    const __m128d mposinf = _mm_set1_pd(FP<double>::pos_inf());
+    const __m128d mneginf = _mm_set1_pd(FP<double>::neg_inf());
 
     // Node stack.
     const NodeType* stack[StackSize];
@@ -524,38 +524,38 @@ void Intersector<Tree, Visitor, Ray, StackSize, 3>::intersect(
         {
             FOUNDATION_BVH_TRAVERSAL_STATS(intersected_bboxes += 2);
 
-            const sse2d mbbminx2d = loadpd(node_ptr->m_bbox_data + 0);
-            const sse2d mbbmaxx2d = loadpd(node_ptr->m_bbox_data + 2);
-            const sse2d mx1 = mulpd(mrrcpdx, subpd(mbbminx2d, mrox));
-            const sse2d mx2 = mulpd(mrrcpdx, subpd(mbbmaxx2d, mrox));
+            const __m128d mbbminx2d = _mm_load_pd(node_ptr->m_bbox_data + 0);
+            const __m128d mbbmaxx2d = _mm_load_pd(node_ptr->m_bbox_data + 2);
+            const __m128d mx1 = _mm_mul_pd(mrrcpdx, _mm_sub_pd(mbbminx2d, mrox));
+            const __m128d mx2 = _mm_mul_pd(mrrcpdx, _mm_sub_pd(mbbmaxx2d, mrox));
 
-            sse2d mtmax = maxpd(minpd(mx1, mposinf), minpd(mx2, mposinf));
-            sse2d mtmin = minpd(maxpd(mx1, mneginf), maxpd(mx2, mneginf));
+            __m128d mtmax = _mm_max_pd(_mm_min_pd(mx1, mposinf), _mm_min_pd(mx2, mposinf));
+            __m128d mtmin = _mm_min_pd(_mm_max_pd(mx1, mneginf), _mm_max_pd(mx2, mneginf));
 
-            const sse2d mbbminy2d = loadpd(node_ptr->m_bbox_data + 4);
-            const sse2d mbbmaxy2d = loadpd(node_ptr->m_bbox_data + 6);
-            const sse2d my1 = mulpd(mrrcpdy, subpd(mbbminy2d, mroy));
-            const sse2d my2 = mulpd(mrrcpdy, subpd(mbbmaxy2d, mroy));
+            const __m128d mbbminy2d = _mm_load_pd(node_ptr->m_bbox_data + 4);
+            const __m128d mbbmaxy2d = _mm_load_pd(node_ptr->m_bbox_data + 6);
+            const __m128d my1 = _mm_mul_pd(mrrcpdy, _mm_sub_pd(mbbminy2d, mroy));
+            const __m128d my2 = _mm_mul_pd(mrrcpdy, _mm_sub_pd(mbbmaxy2d, mroy));
 
-            mtmax = minpd(mtmax, maxpd(minpd(my1, mposinf), minpd(my2, mposinf)));
-            mtmin = maxpd(mtmin, minpd(maxpd(my1, mneginf), maxpd(my2, mneginf)));
+            mtmax = _mm_min_pd(mtmax, _mm_max_pd(_mm_min_pd(my1, mposinf), _mm_min_pd(my2, mposinf)));
+            mtmin = _mm_max_pd(mtmin, _mm_min_pd(_mm_max_pd(my1, mneginf), _mm_max_pd(my2, mneginf)));
 
-            const sse2d mbbminz2d = loadpd(node_ptr->m_bbox_data + 8);
-            const sse2d mbbmaxz2d = loadpd(node_ptr->m_bbox_data + 10);
-            const sse2d mz1 = mulpd(mrrcpdz, subpd(mbbminz2d, mroz));
-            const sse2d mz2 = mulpd(mrrcpdz, subpd(mbbmaxz2d, mroz));
+            const __m128d mbbminz2d = _mm_load_pd(node_ptr->m_bbox_data + 8);
+            const __m128d mbbmaxz2d = _mm_load_pd(node_ptr->m_bbox_data + 10);
+            const __m128d mz1 = _mm_mul_pd(mrrcpdz, _mm_sub_pd(mbbminz2d, mroz));
+            const __m128d mz2 = _mm_mul_pd(mrrcpdz, _mm_sub_pd(mbbmaxz2d, mroz));
 
-            mtmax = minpd(mtmax, maxpd(minpd(mz1, mposinf), minpd(mz2, mposinf)));
-            mtmin = maxpd(mtmin, minpd(maxpd(mz1, mneginf), maxpd(mz2, mneginf)));
+            mtmax = _mm_min_pd(mtmax, _mm_max_pd(_mm_min_pd(mz1, mposinf), _mm_min_pd(mz2, mposinf)));
+            mtmin = _mm_max_pd(mtmin, _mm_min_pd(_mm_max_pd(mz1, mneginf), _mm_max_pd(mz2, mneginf)));
 
-            const sse2d mraytmax = set1pd(ray_tmax);
+            const __m128d mraytmax = _mm_set1_pd(ray_tmax);
             const int hits =
-                movemaskpd(
-                    orpd(
-                        cmpgtpd(mtmin, mtmax),
-                        orpd(
-                            cmpltpd(mtmax, mraytmin),
-                            cmpgepd(mtmin, mraytmax)))) ^ 3;
+                _mm_movemask_pd(
+                    _mm_or_pd(
+                        _mm_cmpgt_pd(mtmin, mtmax),
+                        _mm_or_pd(
+                            _mm_cmplt_pd(mtmax, mraytmin),
+                            _mm_cmpge_pd(mtmin, mraytmax)))) ^ 3;
 
             const size_t hit_left = hits & 1;
             const size_t hit_right = hits >> 1;
@@ -574,10 +574,10 @@ void Intersector<Tree, Visitor, Ray, StackSize, 3>::intersect(
             {
                 // Push the far child node to the stack, continue with the near child node.
                 const int far =
-                    movemaskpd(
-                        cmpltpd(
+                    _mm_movemask_pd(
+                        _mm_cmplt_pd(
                             mtmin,
-                            shufflepd(mtmin, mtmin, _MM_SHUFFLE2(1, 1))));
+                            _mm_shuffle_pd(mtmin, mtmin, _MM_SHUFFLE2(1, 1))));
                 *stack_ptr++ = node_ptr + far - 1;
                 node_ptr -= far;
                 continue;
@@ -658,19 +658,19 @@ void Intersector<Tree, Visitor, Ray, StackSize, 3>::intersect(
     assert(!tree.m_nodes.empty());
 
     // Load the ray into SSE registers.
-    const sse2d mrox = set1pd(ray.m_org.x);
-    const sse2d mroy = set1pd(ray.m_org.y);
-    const sse2d mroz = set1pd(ray.m_org.z);
-    const sse2d mrrcpdx = set1pd(ray_info.m_rcp_dir.x);
-    const sse2d mrrcpdy = set1pd(ray_info.m_rcp_dir.y);
-    const sse2d mrrcpdz = set1pd(ray_info.m_rcp_dir.z);
-    const sse2d mraytmin = set1pd(ray.m_tmin);
-    const sse2d mraytime = set1pd(ray_time);
+    const __m128d mrox = _mm_set1_pd(ray.m_org.x);
+    const __m128d mroy = _mm_set1_pd(ray.m_org.y);
+    const __m128d mroz = _mm_set1_pd(ray.m_org.z);
+    const __m128d mrrcpdx = _mm_set1_pd(ray_info.m_rcp_dir.x);
+    const __m128d mrrcpdy = _mm_set1_pd(ray_info.m_rcp_dir.y);
+    const __m128d mrrcpdz = _mm_set1_pd(ray_info.m_rcp_dir.z);
+    const __m128d mraytmin = _mm_set1_pd(ray.m_tmin);
+    const __m128d mraytime = _mm_set1_pd(ray_time);
 
     // Load constants.
-    const sse2d mone = set1pd(1.0);
-    const sse2d mposinf = set1pd(FP<double>::pos_inf());
-    const sse2d mneginf = set1pd(FP<double>::neg_inf());
+    const __m128d mone = _mm_set1_pd(1.0);
+    const __m128d mposinf = _mm_set1_pd(FP<double>::pos_inf());
+    const __m128d mneginf = _mm_set1_pd(FP<double>::neg_inf());
 
     // Node stack.
     const NodeType* stack[StackSize];
@@ -697,7 +697,7 @@ void Intersector<Tree, Visitor, Ray, StackSize, 3>::intersect(
         {
             FOUNDATION_BVH_TRAVERSAL_STATS(intersected_bboxes += 2);
 
-            sse2d mtmax, mtmin;
+            __m128d mtmax, mtmin;
 
             const NodeType* base_child_node_ptr = &tree.m_nodes[node_ptr->get_child_node_index()];
             const size_t left_motion_segment_count = node_ptr->get_left_bbox_count() - 1;
@@ -705,51 +705,51 @@ void Intersector<Tree, Visitor, Ray, StackSize, 3>::intersect(
 
             if (left_motion_segment_count > 0 && right_motion_segment_count > 0)
             {
-                const sse2d left_t = mulpd(mraytime, set1pd(static_cast<double>(left_motion_segment_count)));
+                const __m128d left_t = _mm_mul_pd(mraytime, _mm_set1_pd(static_cast<double>(left_motion_segment_count)));
                 const int left_prev_index = _mm_cvttsd_si32(left_t);
                 const size_t left_base_index = node_ptr->get_left_bbox_index() + left_prev_index;
-                const sse2d left_w2 = subpd(left_t, set1pd(left_prev_index));
-                const sse2d left_w1 = subpd(mone, left_w2);
+                const __m128d left_w2 = _mm_sub_pd(left_t, _mm_set1_pd(left_prev_index));
+                const __m128d left_w1 = _mm_sub_pd(mone, left_w2);
 
-                const sse2d right_t = mulpd(mraytime, set1pd(static_cast<double>(right_motion_segment_count)));
+                const __m128d right_t = _mm_mul_pd(mraytime, _mm_set1_pd(static_cast<double>(right_motion_segment_count)));
                 const int right_prev_index = _mm_cvttsd_si32(right_t);
                 const size_t right_base_index = node_ptr->get_right_bbox_index() + right_prev_index;
-                const sse2d right_w2 = subpd(right_t, set1pd(right_prev_index));
-                const sse2d right_w1 = subpd(mone, right_w2);
+                const __m128d right_w2 = _mm_sub_pd(right_t, _mm_set1_pd(right_prev_index));
+                const __m128d right_w1 = _mm_sub_pd(mone, right_w2);
 
                 const double* base_bbox = &tree.m_node_bboxes[0][0][0];
                 const double* left_bbox = base_bbox + left_base_index * 6;
                 const double* right_bbox = base_bbox + right_base_index * 6;
 
-                const sse2d mleftbbx = addpd(mulpd(loadpd(left_bbox + 0), left_w1), mulpd(loadpd(left_bbox + 6), left_w2));
-                const sse2d mrightbbx = addpd(mulpd(loadpd(right_bbox + 0), right_w1), mulpd(loadpd(right_bbox + 6), right_w2));
-                const sse2d mbbminx2d = shufflepd(mleftbbx, mrightbbx, _MM_SHUFFLE2(0, 0));
-                const sse2d mbbmaxx2d = shufflepd(mleftbbx, mrightbbx, _MM_SHUFFLE2(1, 1));
-                const sse2d mx1 = mulpd(mrrcpdx, subpd(mbbminx2d, mrox));
-                const sse2d mx2 = mulpd(mrrcpdx, subpd(mbbmaxx2d, mrox));
+                const __m128d mleftbbx = _mm_add_pd(_mm_mul_pd(_mm_load_pd(left_bbox + 0), left_w1), _mm_mul_pd(_mm_load_pd(left_bbox + 6), left_w2));
+                const __m128d mrightbbx = _mm_add_pd(_mm_mul_pd(_mm_load_pd(right_bbox + 0), right_w1), _mm_mul_pd(_mm_load_pd(right_bbox + 6), right_w2));
+                const __m128d mbbminx2d = _mm_shuffle_pd(mleftbbx, mrightbbx, _MM_SHUFFLE2(0, 0));
+                const __m128d mbbmaxx2d = _mm_shuffle_pd(mleftbbx, mrightbbx, _MM_SHUFFLE2(1, 1));
+                const __m128d mx1 = _mm_mul_pd(mrrcpdx, _mm_sub_pd(mbbminx2d, mrox));
+                const __m128d mx2 = _mm_mul_pd(mrrcpdx, _mm_sub_pd(mbbmaxx2d, mrox));
 
-                mtmax = maxpd(minpd(mx1, mposinf), minpd(mx2, mposinf));
-                mtmin = minpd(maxpd(mx1, mneginf), maxpd(mx2, mneginf));
+                mtmax = _mm_max_pd(_mm_min_pd(mx1, mposinf), _mm_min_pd(mx2, mposinf));
+                mtmin = _mm_min_pd(_mm_max_pd(mx1, mneginf), _mm_max_pd(mx2, mneginf));
 
-                const sse2d mleftbby = addpd(mulpd(loadpd(left_bbox + 2), left_w1), mulpd(loadpd(left_bbox + 8), left_w2));
-                const sse2d mrightbby = addpd(mulpd(loadpd(right_bbox + 2), right_w1), mulpd(loadpd(right_bbox + 8), right_w2));
-                const sse2d mbbminy2d = shufflepd(mleftbby, mrightbby, _MM_SHUFFLE2(0, 0));
-                const sse2d mbbmaxy2d = shufflepd(mleftbby, mrightbby, _MM_SHUFFLE2(1, 1));
-                const sse2d my1 = mulpd(mrrcpdy, subpd(mbbminy2d, mroy));
-                const sse2d my2 = mulpd(mrrcpdy, subpd(mbbmaxy2d, mroy));
+                const __m128d mleftbby = _mm_add_pd(_mm_mul_pd(_mm_load_pd(left_bbox + 2), left_w1), _mm_mul_pd(_mm_load_pd(left_bbox + 8), left_w2));
+                const __m128d mrightbby = _mm_add_pd(_mm_mul_pd(_mm_load_pd(right_bbox + 2), right_w1), _mm_mul_pd(_mm_load_pd(right_bbox + 8), right_w2));
+                const __m128d mbbminy2d = _mm_shuffle_pd(mleftbby, mrightbby, _MM_SHUFFLE2(0, 0));
+                const __m128d mbbmaxy2d = _mm_shuffle_pd(mleftbby, mrightbby, _MM_SHUFFLE2(1, 1));
+                const __m128d my1 = _mm_mul_pd(mrrcpdy, _mm_sub_pd(mbbminy2d, mroy));
+                const __m128d my2 = _mm_mul_pd(mrrcpdy, _mm_sub_pd(mbbmaxy2d, mroy));
 
-                mtmax = minpd(mtmax, maxpd(minpd(my1, mposinf), minpd(my2, mposinf)));
-                mtmin = maxpd(mtmin, minpd(maxpd(my1, mneginf), maxpd(my2, mneginf)));
+                mtmax = _mm_min_pd(mtmax, _mm_max_pd(_mm_min_pd(my1, mposinf), _mm_min_pd(my2, mposinf)));
+                mtmin = _mm_max_pd(mtmin, _mm_min_pd(_mm_max_pd(my1, mneginf), _mm_max_pd(my2, mneginf)));
 
-                const sse2d mleftbbz = addpd(mulpd(loadpd(left_bbox + 4), left_w1), mulpd(loadpd(left_bbox + 10), left_w2));
-                const sse2d mrightbbz = addpd(mulpd(loadpd(right_bbox + 4), right_w1), mulpd(loadpd(right_bbox + 10), right_w2));
-                const sse2d mbbminz2d = shufflepd(mleftbbz, mrightbbz, _MM_SHUFFLE2(0, 0));
-                const sse2d mbbmaxz2d = shufflepd(mleftbbz, mrightbbz, _MM_SHUFFLE2(1, 1));
-                const sse2d mz1 = mulpd(mrrcpdz, subpd(mbbminz2d, mroz));
-                const sse2d mz2 = mulpd(mrrcpdz, subpd(mbbmaxz2d, mroz));
+                const __m128d mleftbbz = _mm_add_pd(_mm_mul_pd(_mm_load_pd(left_bbox + 4), left_w1), _mm_mul_pd(_mm_load_pd(left_bbox + 10), left_w2));
+                const __m128d mrightbbz = _mm_add_pd(_mm_mul_pd(_mm_load_pd(right_bbox + 4), right_w1), _mm_mul_pd(_mm_load_pd(right_bbox + 10), right_w2));
+                const __m128d mbbminz2d = _mm_shuffle_pd(mleftbbz, mrightbbz, _MM_SHUFFLE2(0, 0));
+                const __m128d mbbmaxz2d = _mm_shuffle_pd(mleftbbz, mrightbbz, _MM_SHUFFLE2(1, 1));
+                const __m128d mz1 = _mm_mul_pd(mrrcpdz, _mm_sub_pd(mbbminz2d, mroz));
+                const __m128d mz2 = _mm_mul_pd(mrrcpdz, _mm_sub_pd(mbbmaxz2d, mroz));
 
-                mtmax = minpd(mtmax, maxpd(minpd(mz1, mposinf), minpd(mz2, mposinf)));
-                mtmin = maxpd(mtmin, minpd(maxpd(mz1, mneginf), maxpd(mz2, mneginf)));
+                mtmax = _mm_min_pd(mtmax, _mm_max_pd(_mm_min_pd(mz1, mposinf), _mm_min_pd(mz2, mposinf)));
+                mtmin = _mm_max_pd(mtmin, _mm_min_pd(_mm_max_pd(mz1, mneginf), _mm_max_pd(mz2, mneginf)));
             }
             else
             {
@@ -758,23 +758,23 @@ void Intersector<Tree, Visitor, Ray, StackSize, 3>::intersect(
                 // Fetch the left bounding box.
                 if (left_motion_segment_count > 0)
                 {
-                    const sse2d t = mulpd(mraytime, set1pd(static_cast<double>(left_motion_segment_count)));
+                    const __m128d t = _mm_mul_pd(mraytime, _mm_set1_pd(static_cast<double>(left_motion_segment_count)));
                     const int prev_index = _mm_cvttsd_si32(t);
-                    const sse2d w2 = subpd(t, set1pd(prev_index));
-                    const sse2d w1 = subpd(mone, w2);
+                    const __m128d w2 = _mm_sub_pd(t, _mm_set1_pd(prev_index));
+                    const __m128d w1 = _mm_sub_pd(mone, w2);
 
                     const size_t base_index = node_ptr->get_left_bbox_index() + prev_index;
                     const double* bbox = &tree.m_node_bboxes[0][0][0] + base_index * 6;
 
-                    const sse2d x = addpd(mulpd(loadpd(bbox + 0), w1), mulpd(loadpd(bbox + 6), w2));
+                    const __m128d x = _mm_add_pd(_mm_mul_pd(_mm_load_pd(bbox + 0), w1), _mm_mul_pd(_mm_load_pd(bbox + 6), w2));
                     _mm_storel_pd(bbox_data + 0, x);
                     _mm_storeh_pd(bbox_data + 2, x);
 
-                    const sse2d y = addpd(mulpd(loadpd(bbox + 2), w1), mulpd(loadpd(bbox + 8), w2));
+                    const __m128d y = _mm_add_pd(_mm_mul_pd(_mm_load_pd(bbox + 2), w1), _mm_mul_pd(_mm_load_pd(bbox + 8), w2));
                     _mm_storel_pd(bbox_data + 4, y);
                     _mm_storeh_pd(bbox_data + 6, y);
 
-                    const sse2d z = addpd(mulpd(loadpd(bbox + 4), w1), mulpd(loadpd(bbox + 10), w2));
+                    const __m128d z = _mm_add_pd(_mm_mul_pd(_mm_load_pd(bbox + 4), w1), _mm_mul_pd(_mm_load_pd(bbox + 10), w2));
                     _mm_storel_pd(bbox_data +  8, z);
                     _mm_storeh_pd(bbox_data + 10, z);
                 }
@@ -791,23 +791,23 @@ void Intersector<Tree, Visitor, Ray, StackSize, 3>::intersect(
                 // Fetch the right bounding box.
                 if (right_motion_segment_count > 0)
                 {
-                    const sse2d t = mulpd(mraytime, set1pd(static_cast<double>(right_motion_segment_count)));
+                    const __m128d t = _mm_mul_pd(mraytime, _mm_set1_pd(static_cast<double>(right_motion_segment_count)));
                     const int prev_index = _mm_cvttsd_si32(t);
-                    const sse2d w2 = subpd(t, set1pd(prev_index));
-                    const sse2d w1 = subpd(mone, w2);
+                    const __m128d w2 = _mm_sub_pd(t, _mm_set1_pd(prev_index));
+                    const __m128d w1 = _mm_sub_pd(mone, w2);
 
                     const size_t base_index = node_ptr->get_right_bbox_index() + prev_index;
                     const double* bbox = &tree.m_node_bboxes[0][0][0] + base_index * 6;
 
-                    const sse2d x = addpd(mulpd(loadpd(bbox + 0), w1), mulpd(loadpd(bbox + 6), w2));
+                    const __m128d x = _mm_add_pd(_mm_mul_pd(_mm_load_pd(bbox + 0), w1), _mm_mul_pd(_mm_load_pd(bbox + 6), w2));
                     _mm_storel_pd(bbox_data + 1, x);
                     _mm_storeh_pd(bbox_data + 3, x);
 
-                    const sse2d y = addpd(mulpd(loadpd(bbox + 2), w1), mulpd(loadpd(bbox + 8), w2));
+                    const __m128d y = _mm_add_pd(_mm_mul_pd(_mm_load_pd(bbox + 2), w1), _mm_mul_pd(_mm_load_pd(bbox + 8), w2));
                     _mm_storel_pd(bbox_data + 5, y);
                     _mm_storeh_pd(bbox_data + 7, y);
 
-                    const sse2d z = addpd(mulpd(loadpd(bbox + 4), w1), mulpd(loadpd(bbox + 10), w2));
+                    const __m128d z = _mm_add_pd(_mm_mul_pd(_mm_load_pd(bbox + 4), w1), _mm_mul_pd(_mm_load_pd(bbox + 10), w2));
                     _mm_storel_pd(bbox_data +  9, z);
                     _mm_storeh_pd(bbox_data + 11, z);
                 }
@@ -821,39 +821,39 @@ void Intersector<Tree, Visitor, Ray, StackSize, 3>::intersect(
                     bbox_data[11] = node_ptr->m_bbox_data[11];
                 }
 
-                const sse2d mbbminx2d = loadpd(bbox_data + 0);
-                const sse2d mbbmaxx2d = loadpd(bbox_data + 2);
-                const sse2d mx1 = mulpd(mrrcpdx, subpd(mbbminx2d, mrox));
-                const sse2d mx2 = mulpd(mrrcpdx, subpd(mbbmaxx2d, mrox));
+                const __m128d mbbminx2d = _mm_load_pd(bbox_data + 0);
+                const __m128d mbbmaxx2d = _mm_load_pd(bbox_data + 2);
+                const __m128d mx1 = _mm_mul_pd(mrrcpdx, _mm_sub_pd(mbbminx2d, mrox));
+                const __m128d mx2 = _mm_mul_pd(mrrcpdx, _mm_sub_pd(mbbmaxx2d, mrox));
 
-                mtmax = maxpd(minpd(mx1, mposinf), minpd(mx2, mposinf));
-                mtmin = minpd(maxpd(mx1, mneginf), maxpd(mx2, mneginf));
+                mtmax = _mm_max_pd(_mm_min_pd(mx1, mposinf), _mm_min_pd(mx2, mposinf));
+                mtmin = _mm_min_pd(_mm_max_pd(mx1, mneginf), _mm_max_pd(mx2, mneginf));
 
-                const sse2d mbbminy2d = loadpd(bbox_data + 4);
-                const sse2d mbbmaxy2d = loadpd(bbox_data + 6);
-                const sse2d my1 = mulpd(mrrcpdy, subpd(mbbminy2d, mroy));
-                const sse2d my2 = mulpd(mrrcpdy, subpd(mbbmaxy2d, mroy));
+                const __m128d mbbminy2d = _mm_load_pd(bbox_data + 4);
+                const __m128d mbbmaxy2d = _mm_load_pd(bbox_data + 6);
+                const __m128d my1 = _mm_mul_pd(mrrcpdy, _mm_sub_pd(mbbminy2d, mroy));
+                const __m128d my2 = _mm_mul_pd(mrrcpdy, _mm_sub_pd(mbbmaxy2d, mroy));
 
-                mtmax = minpd(mtmax, maxpd(minpd(my1, mposinf), minpd(my2, mposinf)));
-                mtmin = maxpd(mtmin, minpd(maxpd(my1, mneginf), maxpd(my2, mneginf)));
+                mtmax = _mm_min_pd(mtmax, _mm_max_pd(_mm_min_pd(my1, mposinf), _mm_min_pd(my2, mposinf)));
+                mtmin = _mm_max_pd(mtmin, _mm_min_pd(_mm_max_pd(my1, mneginf), _mm_max_pd(my2, mneginf)));
 
-                const sse2d mbbminz2d = loadpd(bbox_data + 8);
-                const sse2d mbbmaxz2d = loadpd(bbox_data + 10);
-                const sse2d mz1 = mulpd(mrrcpdz, subpd(mbbminz2d, mroz));
-                const sse2d mz2 = mulpd(mrrcpdz, subpd(mbbmaxz2d, mroz));
+                const __m128d mbbminz2d = _mm_load_pd(bbox_data + 8);
+                const __m128d mbbmaxz2d = _mm_load_pd(bbox_data + 10);
+                const __m128d mz1 = _mm_mul_pd(mrrcpdz, _mm_sub_pd(mbbminz2d, mroz));
+                const __m128d mz2 = _mm_mul_pd(mrrcpdz, _mm_sub_pd(mbbmaxz2d, mroz));
 
-                mtmax = minpd(mtmax, maxpd(minpd(mz1, mposinf), minpd(mz2, mposinf)));
-                mtmin = maxpd(mtmin, minpd(maxpd(mz1, mneginf), maxpd(mz2, mneginf)));
+                mtmax = _mm_min_pd(mtmax, _mm_max_pd(_mm_min_pd(mz1, mposinf), _mm_min_pd(mz2, mposinf)));
+                mtmin = _mm_max_pd(mtmin, _mm_min_pd(_mm_max_pd(mz1, mneginf), _mm_max_pd(mz2, mneginf)));
             }
 
-            const sse2d mraytmax = set1pd(ray_tmax);
+            const __m128d mraytmax = _mm_set1_pd(ray_tmax);
             const int hits =
-                movemaskpd(
-                    orpd(
-                        cmpgtpd(mtmin, mtmax),
-                        orpd(
-                            cmpltpd(mtmax, mraytmin),
-                            cmpgepd(mtmin, mraytmax)))) ^ 3;
+                _mm_movemask_pd(
+                    _mm_or_pd(
+                        _mm_cmpgt_pd(mtmin, mtmax),
+                        _mm_or_pd(
+                            _mm_cmplt_pd(mtmax, mraytmin),
+                            _mm_cmpge_pd(mtmin, mraytmax)))) ^ 3;
 
             const size_t hit_left = hits & 1;
             const size_t hit_right = hits >> 1;
@@ -871,10 +871,10 @@ void Intersector<Tree, Visitor, Ray, StackSize, 3>::intersect(
             {
                 // Push the far child node to the stack, continue with the near child node.
                 const int far =
-                    movemaskpd(
-                        cmpltpd(
+                    _mm_movemask_pd(
+                        _mm_cmplt_pd(
                             mtmin,
-                            shufflepd(mtmin, mtmin, _MM_SHUFFLE2(1, 1))));
+                            _mm_shuffle_pd(mtmin, mtmin, _MM_SHUFFLE2(1, 1))));
                 *stack_ptr++ = node_ptr + far - 1;
                 node_ptr -= far;
                 continue;

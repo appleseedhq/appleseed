@@ -203,16 +203,16 @@ inline void RegularSpectrum<T, N>::set(const ValueType val)
 template <>
 FORCE_INLINE void RegularSpectrum<float, 31>::set(const float val)
 {
-    const sse4f mval = set1ps(val);
+    const __m128 mval = _mm_set1_ps(val);
 
-    storeps(&m_samples[ 0], mval);
-    storeps(&m_samples[ 4], mval);
-    storeps(&m_samples[ 8], mval);
-    storeps(&m_samples[12], mval);
-    storeps(&m_samples[16], mval);
-    storeps(&m_samples[20], mval);
-    storeps(&m_samples[24], mval);
-    storeps(&m_samples[28], mval);
+    _mm_store_ps(&m_samples[ 0], mval);
+    _mm_store_ps(&m_samples[ 4], mval);
+    _mm_store_ps(&m_samples[ 8], mval);
+    _mm_store_ps(&m_samples[12], mval);
+    _mm_store_ps(&m_samples[16], mval);
+    _mm_store_ps(&m_samples[20], mval);
+    _mm_store_ps(&m_samples[24], mval);
+    _mm_store_ps(&m_samples[28], mval);
 }
 
 #endif  // APPLESEED_FOUNDATION_USE_SSE
@@ -412,14 +412,14 @@ inline RegularSpectrum<T, N>& operator+=(RegularSpectrum<T, N>& lhs, const Regul
 template <>
 FORCE_INLINE RegularSpectrum<float, 31>& operator+=(RegularSpectrum<float, 31>& lhs, const RegularSpectrum<float, 31>& rhs)
 {
-    storeps(&lhs[ 0], addps(loadps(&lhs[ 0]), loadps(&rhs[ 0])));
-    storeps(&lhs[ 4], addps(loadps(&lhs[ 4]), loadps(&rhs[ 4])));
-    storeps(&lhs[ 8], addps(loadps(&lhs[ 8]), loadps(&rhs[ 8])));
-    storeps(&lhs[12], addps(loadps(&lhs[12]), loadps(&rhs[12])));
-    storeps(&lhs[16], addps(loadps(&lhs[16]), loadps(&rhs[16])));
-    storeps(&lhs[20], addps(loadps(&lhs[20]), loadps(&rhs[20])));
-    storeps(&lhs[24], addps(loadps(&lhs[24]), loadps(&rhs[24])));
-    storeps(&lhs[28], addps(loadps(&lhs[28]), loadps(&rhs[28])));
+    _mm_store_ps(&lhs[ 0], _mm_add_ps(_mm_load_ps(&lhs[ 0]), _mm_load_ps(&rhs[ 0])));
+    _mm_store_ps(&lhs[ 4], _mm_add_ps(_mm_load_ps(&lhs[ 4]), _mm_load_ps(&rhs[ 4])));
+    _mm_store_ps(&lhs[ 8], _mm_add_ps(_mm_load_ps(&lhs[ 8]), _mm_load_ps(&rhs[ 8])));
+    _mm_store_ps(&lhs[12], _mm_add_ps(_mm_load_ps(&lhs[12]), _mm_load_ps(&rhs[12])));
+    _mm_store_ps(&lhs[16], _mm_add_ps(_mm_load_ps(&lhs[16]), _mm_load_ps(&rhs[16])));
+    _mm_store_ps(&lhs[20], _mm_add_ps(_mm_load_ps(&lhs[20]), _mm_load_ps(&rhs[20])));
+    _mm_store_ps(&lhs[24], _mm_add_ps(_mm_load_ps(&lhs[24]), _mm_load_ps(&rhs[24])));
+    _mm_store_ps(&lhs[28], _mm_add_ps(_mm_load_ps(&lhs[28]), _mm_load_ps(&rhs[28])));
 
     return lhs;
 }
@@ -449,16 +449,16 @@ inline RegularSpectrum<T, N>& operator*=(RegularSpectrum<T, N>& lhs, const T rhs
 template <>
 FORCE_INLINE RegularSpectrum<float, 31>& operator*=(RegularSpectrum<float, 31>& lhs, const float rhs)
 {
-    const sse4f mrhs = set1ps(rhs);
+    const __m128 mrhs = _mm_set1_ps(rhs);
 
-    storeps(&lhs[ 0], mulps(loadps(&lhs[ 0]), mrhs));
-    storeps(&lhs[ 4], mulps(loadps(&lhs[ 4]), mrhs));
-    storeps(&lhs[ 8], mulps(loadps(&lhs[ 8]), mrhs));
-    storeps(&lhs[12], mulps(loadps(&lhs[12]), mrhs));
-    storeps(&lhs[16], mulps(loadps(&lhs[16]), mrhs));
-    storeps(&lhs[20], mulps(loadps(&lhs[20]), mrhs));
-    storeps(&lhs[24], mulps(loadps(&lhs[24]), mrhs));
-    storeps(&lhs[28], mulps(loadps(&lhs[28]), mrhs));
+    _mm_store_ps(&lhs[ 0], _mm_mul_ps(_mm_load_ps(&lhs[ 0]), mrhs));
+    _mm_store_ps(&lhs[ 4], _mm_mul_ps(_mm_load_ps(&lhs[ 4]), mrhs));
+    _mm_store_ps(&lhs[ 8], _mm_mul_ps(_mm_load_ps(&lhs[ 8]), mrhs));
+    _mm_store_ps(&lhs[12], _mm_mul_ps(_mm_load_ps(&lhs[12]), mrhs));
+    _mm_store_ps(&lhs[16], _mm_mul_ps(_mm_load_ps(&lhs[16]), mrhs));
+    _mm_store_ps(&lhs[20], _mm_mul_ps(_mm_load_ps(&lhs[20]), mrhs));
+    _mm_store_ps(&lhs[24], _mm_mul_ps(_mm_load_ps(&lhs[24]), mrhs));
+    _mm_store_ps(&lhs[28], _mm_mul_ps(_mm_load_ps(&lhs[28]), mrhs));
 
     return lhs;
 }
@@ -479,14 +479,14 @@ inline RegularSpectrum<T, N>& operator*=(RegularSpectrum<T, N>& lhs, const Regul
 template <>
 FORCE_INLINE RegularSpectrum<float, 31>& operator*=(RegularSpectrum<float, 31>& lhs, const RegularSpectrum<float, 31>& rhs)
 {
-    storeps(&lhs[ 0], mulps(loadps(&lhs[ 0]), loadps(&rhs[ 0])));
-    storeps(&lhs[ 4], mulps(loadps(&lhs[ 4]), loadps(&rhs[ 4])));
-    storeps(&lhs[ 8], mulps(loadps(&lhs[ 8]), loadps(&rhs[ 8])));
-    storeps(&lhs[12], mulps(loadps(&lhs[12]), loadps(&rhs[12])));
-    storeps(&lhs[16], mulps(loadps(&lhs[16]), loadps(&rhs[16])));
-    storeps(&lhs[20], mulps(loadps(&lhs[20]), loadps(&rhs[20])));
-    storeps(&lhs[24], mulps(loadps(&lhs[24]), loadps(&rhs[24])));
-    storeps(&lhs[28], mulps(loadps(&lhs[28]), loadps(&rhs[28])));
+    _mm_store_ps(&lhs[ 0], _mm_mul_ps(_mm_load_ps(&lhs[ 0]), _mm_load_ps(&rhs[ 0])));
+    _mm_store_ps(&lhs[ 4], _mm_mul_ps(_mm_load_ps(&lhs[ 4]), _mm_load_ps(&rhs[ 4])));
+    _mm_store_ps(&lhs[ 8], _mm_mul_ps(_mm_load_ps(&lhs[ 8]), _mm_load_ps(&rhs[ 8])));
+    _mm_store_ps(&lhs[12], _mm_mul_ps(_mm_load_ps(&lhs[12]), _mm_load_ps(&rhs[12])));
+    _mm_store_ps(&lhs[16], _mm_mul_ps(_mm_load_ps(&lhs[16]), _mm_load_ps(&rhs[16])));
+    _mm_store_ps(&lhs[20], _mm_mul_ps(_mm_load_ps(&lhs[20]), _mm_load_ps(&rhs[20])));
+    _mm_store_ps(&lhs[24], _mm_mul_ps(_mm_load_ps(&lhs[24]), _mm_load_ps(&rhs[24])));
+    _mm_store_ps(&lhs[28], _mm_mul_ps(_mm_load_ps(&lhs[28]), _mm_load_ps(&rhs[28])));
 
     return lhs;
 }

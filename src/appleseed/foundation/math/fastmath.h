@@ -135,18 +135,18 @@ inline void fast_pow(float a[4], const float b)
 {
     assert(is_aligned(a, 16));
 
-    sse4f x = _mm_cvtepi32_ps(_mm_load_si128((__m128i*)a));
+    __m128 x = _mm_cvtepi32_ps(_mm_load_si128((__m128i*)a));
 
-    const sse4f K = set1ps(127.0f);
-    x = mulps(x, set1ps(0.1192092896e-6f));     // x *= pow(2.0f, -23)
-    x = subps(x, K);
-    x = mulps(x, set1ps(b));
+    const __m128 K = _mm_set1_ps(127.0f);
+    x = _mm_mul_ps(x, _mm_set1_ps(0.1192092896e-6f));     // x *= pow(2.0f, -23)
+    x = _mm_sub_ps(x, K);
+    x = _mm_mul_ps(x, _mm_set1_ps(b));
 
-    sse4f y = subps(x, floorps(x));
-    y = subps(y, mulps(y, y));
-    y = mulps(y, set1ps(0.33971f));
-    y = subps(addps(x, K), y);
-    y = mulps(y, set1ps(8388608.0f));           // y *= pow(2.0f, 23)
+    __m128 y = _mm_sub_ps(x, floorps(x));
+    y = _mm_sub_ps(y, _mm_mul_ps(y, y));
+    y = _mm_mul_ps(y, _mm_set1_ps(0.33971f));
+    y = _mm_sub_ps(_mm_add_ps(x, K), y);
+    y = _mm_mul_ps(y, _mm_set1_ps(8388608.0f));           // y *= pow(2.0f, 23)
 
     _mm_store_si128((__m128i*)a, _mm_cvtps_epi32(y));
 }
@@ -175,25 +175,25 @@ inline void fast_pow_refined(float a[4], const float b)
 {
     assert(is_aligned(a, 16));
 
-    sse4f x = _mm_cvtepi32_ps(_mm_load_si128((__m128i*)a));
+    __m128 x = _mm_cvtepi32_ps(_mm_load_si128((__m128i*)a));
 
-    const sse4f K = set1ps(127.0f);
-    x = mulps(x, set1ps(0.1192092896e-6f));     // x *= pow(2.0f, -23)
-    x = subps(x, K);
+    const __m128 K = _mm_set1_ps(127.0f);
+    x = _mm_mul_ps(x, _mm_set1_ps(0.1192092896e-6f));     // x *= pow(2.0f, -23)
+    x = _mm_sub_ps(x, K);
 
     // One Newton-Raphson refinement step.
-    sse4f z = subps(x, floorps(x));
-    z = subps(z, mulps(z, z));
-    z = mulps(z, set1ps(0.346607f));
-    x = addps(x, z);
+    __m128 z = _mm_sub_ps(x, floorps(x));
+    z = _mm_sub_ps(z, _mm_mul_ps(z, z));
+    z = _mm_mul_ps(z, _mm_set1_ps(0.346607f));
+    x = _mm_add_ps(x, z);
 
-    x = mulps(x, set1ps(b));
+    x = _mm_mul_ps(x, _mm_set1_ps(b));
 
-    sse4f y = subps(x, floorps(x));
-    y = subps(y, mulps(y, y));
-    y = mulps(y, set1ps(0.33971f));
-    y = subps(addps(x, K), y);
-    y = mulps(y, set1ps(8388608.0f));           // y *= pow(2.0f, 23)
+    __m128 y = _mm_sub_ps(x, floorps(x));
+    y = _mm_sub_ps(y, _mm_mul_ps(y, y));
+    y = _mm_mul_ps(y, _mm_set1_ps(0.33971f));
+    y = _mm_sub_ps(_mm_add_ps(x, K), y);
+    y = _mm_mul_ps(y, _mm_set1_ps(8388608.0f));           // y *= pow(2.0f, 23)
 
     _mm_store_si128((__m128i*)a, _mm_cvtps_epi32(y));
 }

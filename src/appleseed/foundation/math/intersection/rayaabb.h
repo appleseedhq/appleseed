@@ -121,40 +121,40 @@ inline bool intersect<float>(
     const RayInfo3f&        ray_info,
     const AABB3f&           bbox)
 {
-    const sse4f pos_inf = set1ps(FP<float>::pos_inf());
-    const sse4f neg_inf = set1ps(FP<float>::neg_inf());
+    const __m128 pos_inf = _mm_set1_ps(FP<float>::pos_inf());
+    const __m128 neg_inf = _mm_set1_ps(FP<float>::neg_inf());
 
-    const sse4f org_x = set1ps(ray.m_org.x);
-    const sse4f rcp_dir_x = set1ps(ray_info.m_rcp_dir.x);
-    const sse4f xl1 = mulps(rcp_dir_x, subps(set1ps(bbox.min.x), org_x));
-    const sse4f xl2 = mulps(rcp_dir_x, subps(set1ps(bbox.max.x), org_x));
+    const __m128 org_x = _mm_set1_ps(ray.m_org.x);
+    const __m128 rcp_dir_x = _mm_set1_ps(ray_info.m_rcp_dir.x);
+    const __m128 xl1 = _mm_mul_ps(rcp_dir_x, _mm_sub_ps(_mm_set1_ps(bbox.min.x), org_x));
+    const __m128 xl2 = _mm_mul_ps(rcp_dir_x, _mm_sub_ps(_mm_set1_ps(bbox.max.x), org_x));
 
-    sse4f tmax = maxps(minps(xl1, pos_inf), minps(xl2, pos_inf));
-    sse4f tmin = minps(maxps(xl1, neg_inf), maxps(xl2, neg_inf));
+    __m128 tmax = _mm_max_ps(_mm_min_ps(xl1, pos_inf), _mm_min_ps(xl2, pos_inf));
+    __m128 tmin = _mm_min_ps(_mm_max_ps(xl1, neg_inf), _mm_max_ps(xl2, neg_inf));
 
-    const sse4f org_y = set1ps(ray.m_org.y);
-    const sse4f rcp_dir_y = set1ps(ray_info.m_rcp_dir.y);
-    const sse4f yl1 = mulps(rcp_dir_y, subps(set1ps(bbox.min.y), org_y));
-    const sse4f yl2 = mulps(rcp_dir_y, subps(set1ps(bbox.max.y), org_y));
+    const __m128 org_y = _mm_set1_ps(ray.m_org.y);
+    const __m128 rcp_dir_y = _mm_set1_ps(ray_info.m_rcp_dir.y);
+    const __m128 yl1 = _mm_mul_ps(rcp_dir_y, _mm_sub_ps(_mm_set1_ps(bbox.min.y), org_y));
+    const __m128 yl2 = _mm_mul_ps(rcp_dir_y, _mm_sub_ps(_mm_set1_ps(bbox.max.y), org_y));
 
-    tmax = minps(maxps(minps(yl1, pos_inf), minps(yl2, pos_inf)), tmax);
-    tmin = maxps(minps(maxps(yl1, neg_inf), maxps(yl2, neg_inf)), tmin);
+    tmax = _mm_min_ps(_mm_max_ps(_mm_min_ps(yl1, pos_inf), _mm_min_ps(yl2, pos_inf)), tmax);
+    tmin = _mm_max_ps(_mm_min_ps(_mm_max_ps(yl1, neg_inf), _mm_max_ps(yl2, neg_inf)), tmin);
 
-    const sse4f org_z = set1ps(ray.m_org.z);
-    const sse4f rcp_dir_z = set1ps(ray_info.m_rcp_dir.z);
-    const sse4f zl1 = mulps(rcp_dir_z, subps(set1ps(bbox.min.z), org_z));
-    const sse4f zl2 = mulps(rcp_dir_z, subps(set1ps(bbox.max.z), org_z));
+    const __m128 org_z = _mm_set1_ps(ray.m_org.z);
+    const __m128 rcp_dir_z = _mm_set1_ps(ray_info.m_rcp_dir.z);
+    const __m128 zl1 = _mm_mul_ps(rcp_dir_z, _mm_sub_ps(_mm_set1_ps(bbox.min.z), org_z));
+    const __m128 zl2 = _mm_mul_ps(rcp_dir_z, _mm_sub_ps(_mm_set1_ps(bbox.max.z), org_z));
 
-    tmax = minps(maxps(minps(zl1, pos_inf), minps(zl2, pos_inf)), tmax);
-    tmin = maxps(minps(maxps(zl1, neg_inf), maxps(zl2, neg_inf)), tmin);
+    tmax = _mm_min_ps(_mm_max_ps(_mm_min_ps(zl1, pos_inf), _mm_min_ps(zl2, pos_inf)), tmax);
+    tmin = _mm_max_ps(_mm_min_ps(_mm_max_ps(zl1, neg_inf), _mm_max_ps(zl2, neg_inf)), tmin);
 
     return
-        movemaskps(
-            orps(
-                cmpgtps(tmin, tmax),
-                orps(
-                    cmpltps(tmax, set1ps(ray.m_tmin)),
-                    cmpgeps(tmin, set1ps(ray.m_tmax))))) == 0;
+        _mm_movemask_ps(
+            _mm_or_ps(
+                _mm_cmpgt_ps(tmin, tmax),
+                _mm_or_ps(
+                    _mm_cmplt_ps(tmax, _mm_set1_ps(ray.m_tmin)),
+                    _mm_cmpge_ps(tmin, _mm_set1_ps(ray.m_tmax))))) == 0;
 }
 
 // Test the intersection between a ray and a bounding box.
@@ -164,40 +164,40 @@ inline bool intersect<double>(
     const RayInfo3d&        ray_info,
     const AABB3d&           bbox)
 {
-    const sse2d pos_inf = set1pd(FP<double>::pos_inf());
-    const sse2d neg_inf = set1pd(FP<double>::neg_inf());
+    const __m128d pos_inf = _mm_set1_pd(FP<double>::pos_inf());
+    const __m128d neg_inf = _mm_set1_pd(FP<double>::neg_inf());
 
-    const sse2d org_x = set1pd(ray.m_org.x);
-    const sse2d rcp_dir_x = set1pd(ray_info.m_rcp_dir.x);
-    const sse2d xl1 = mulpd(rcp_dir_x, subpd(set1pd(bbox.min.x), org_x));
-    const sse2d xl2 = mulpd(rcp_dir_x, subpd(set1pd(bbox.max.x), org_x));
+    const __m128d org_x = _mm_set1_pd(ray.m_org.x);
+    const __m128d rcp_dir_x = _mm_set1_pd(ray_info.m_rcp_dir.x);
+    const __m128d xl1 = _mm_mul_pd(rcp_dir_x, _mm_sub_pd(_mm_set1_pd(bbox.min.x), org_x));
+    const __m128d xl2 = _mm_mul_pd(rcp_dir_x, _mm_sub_pd(_mm_set1_pd(bbox.max.x), org_x));
 
-    sse2d tmax = maxpd(minpd(xl1, pos_inf), minpd(xl2, pos_inf));
-    sse2d tmin = minpd(maxpd(xl1, neg_inf), maxpd(xl2, neg_inf));
+    __m128d tmax = _mm_max_pd(_mm_min_pd(xl1, pos_inf), _mm_min_pd(xl2, pos_inf));
+    __m128d tmin = _mm_min_pd(_mm_max_pd(xl1, neg_inf), _mm_max_pd(xl2, neg_inf));
 
-    const sse2d org_y = set1pd(ray.m_org.y);
-    const sse2d rcp_dir_y = set1pd(ray_info.m_rcp_dir.y);
-    const sse2d yl1 = mulpd(rcp_dir_y, subpd(set1pd(bbox.min.y), org_y));
-    const sse2d yl2 = mulpd(rcp_dir_y, subpd(set1pd(bbox.max.y), org_y));
+    const __m128d org_y = _mm_set1_pd(ray.m_org.y);
+    const __m128d rcp_dir_y = _mm_set1_pd(ray_info.m_rcp_dir.y);
+    const __m128d yl1 = _mm_mul_pd(rcp_dir_y, _mm_sub_pd(_mm_set1_pd(bbox.min.y), org_y));
+    const __m128d yl2 = _mm_mul_pd(rcp_dir_y, _mm_sub_pd(_mm_set1_pd(bbox.max.y), org_y));
 
-    tmax = minpd(maxpd(minpd(yl1, pos_inf), minpd(yl2, pos_inf)), tmax);
-    tmin = maxpd(minpd(maxpd(yl1, neg_inf), maxpd(yl2, neg_inf)), tmin);
+    tmax = _mm_min_pd(_mm_max_pd(_mm_min_pd(yl1, pos_inf), _mm_min_pd(yl2, pos_inf)), tmax);
+    tmin = _mm_max_pd(_mm_min_pd(_mm_max_pd(yl1, neg_inf), _mm_max_pd(yl2, neg_inf)), tmin);
 
-    const sse2d org_z = set1pd(ray.m_org.z);
-    const sse2d rcp_dir_z = set1pd(ray_info.m_rcp_dir.z);
-    const sse2d zl1 = mulpd(rcp_dir_z, subpd(set1pd(bbox.min.z), org_z));
-    const sse2d zl2 = mulpd(rcp_dir_z, subpd(set1pd(bbox.max.z), org_z));
+    const __m128d org_z = _mm_set1_pd(ray.m_org.z);
+    const __m128d rcp_dir_z = _mm_set1_pd(ray_info.m_rcp_dir.z);
+    const __m128d zl1 = _mm_mul_pd(rcp_dir_z, _mm_sub_pd(_mm_set1_pd(bbox.min.z), org_z));
+    const __m128d zl2 = _mm_mul_pd(rcp_dir_z, _mm_sub_pd(_mm_set1_pd(bbox.max.z), org_z));
 
-    tmax = minpd(maxpd(minpd(zl1, pos_inf), minpd(zl2, pos_inf)), tmax);
-    tmin = maxpd(minpd(maxpd(zl1, neg_inf), maxpd(zl2, neg_inf)), tmin);
+    tmax = _mm_min_pd(_mm_max_pd(_mm_min_pd(zl1, pos_inf), _mm_min_pd(zl2, pos_inf)), tmax);
+    tmin = _mm_max_pd(_mm_min_pd(_mm_max_pd(zl1, neg_inf), _mm_max_pd(zl2, neg_inf)), tmin);
 
     return
-        movemaskpd(
-            orpd(
-                cmpgtpd(tmin, tmax),
-                orpd(
-                    cmpltpd(tmax, set1pd(ray.m_tmin)),
-                    cmpgepd(tmin, set1pd(ray.m_tmax))))) == 0;
+        _mm_movemask_pd(
+            _mm_or_pd(
+                _mm_cmpgt_pd(tmin, tmax),
+                _mm_or_pd(
+                    _mm_cmplt_pd(tmax, _mm_set1_pd(ray.m_tmin)),
+                    _mm_cmpge_pd(tmin, _mm_set1_pd(ray.m_tmax))))) == 0;
 }
 
 #else
@@ -320,48 +320,48 @@ inline bool clip<float>(
     const RayInfo3f&        ray_info,
     const AABB3f&           bbox)
 {
-    const sse4f pos_inf = set1ps(FP<float>::pos_inf());
-    const sse4f neg_inf = set1ps(FP<float>::neg_inf());
+    const __m128 pos_inf = _mm_set1_ps(FP<float>::pos_inf());
+    const __m128 neg_inf = _mm_set1_ps(FP<float>::neg_inf());
 
-    const sse4f org_x = set1ps(ray.m_org.x);
-    const sse4f rcp_dir_x = set1ps(ray_info.m_rcp_dir.x);
-    const sse4f xl1 = mulps(rcp_dir_x, subps(set1ps(bbox.min.x), org_x));
-    const sse4f xl2 = mulps(rcp_dir_x, subps(set1ps(bbox.max.x), org_x));
+    const __m128 org_x = _mm_set1_ps(ray.m_org.x);
+    const __m128 rcp_dir_x = _mm_set1_ps(ray_info.m_rcp_dir.x);
+    const __m128 xl1 = _mm_mul_ps(rcp_dir_x, _mm_sub_ps(_mm_set1_ps(bbox.min.x), org_x));
+    const __m128 xl2 = _mm_mul_ps(rcp_dir_x, _mm_sub_ps(_mm_set1_ps(bbox.max.x), org_x));
 
-    sse4f tmax = maxps(minps(xl1, pos_inf), minps(xl2, pos_inf));
-    sse4f tmin = minps(maxps(xl1, neg_inf), maxps(xl2, neg_inf));
+    __m128 tmax = _mm_max_ps(_mm_min_ps(xl1, pos_inf), _mm_min_ps(xl2, pos_inf));
+    __m128 tmin = _mm_min_ps(_mm_max_ps(xl1, neg_inf), _mm_max_ps(xl2, neg_inf));
 
-    const sse4f org_y = set1ps(ray.m_org.y);
-    const sse4f rcp_dir_y = set1ps(ray_info.m_rcp_dir.y);
-    const sse4f yl1 = mulps(rcp_dir_y, subps(set1ps(bbox.min.y), org_y));
-    const sse4f yl2 = mulps(rcp_dir_y, subps(set1ps(bbox.max.y), org_y));
+    const __m128 org_y = _mm_set1_ps(ray.m_org.y);
+    const __m128 rcp_dir_y = _mm_set1_ps(ray_info.m_rcp_dir.y);
+    const __m128 yl1 = _mm_mul_ps(rcp_dir_y, _mm_sub_ps(_mm_set1_ps(bbox.min.y), org_y));
+    const __m128 yl2 = _mm_mul_ps(rcp_dir_y, _mm_sub_ps(_mm_set1_ps(bbox.max.y), org_y));
 
-    tmax = minps(maxps(minps(yl1, pos_inf), minps(yl2, pos_inf)), tmax);
-    tmin = maxps(minps(maxps(yl1, neg_inf), maxps(yl2, neg_inf)), tmin);
+    tmax = _mm_min_ps(_mm_max_ps(_mm_min_ps(yl1, pos_inf), _mm_min_ps(yl2, pos_inf)), tmax);
+    tmin = _mm_max_ps(_mm_min_ps(_mm_max_ps(yl1, neg_inf), _mm_max_ps(yl2, neg_inf)), tmin);
 
-    const sse4f org_z = set1ps(ray.m_org.z);
-    const sse4f rcp_dir_z = set1ps(ray_info.m_rcp_dir.z);
-    const sse4f zl1 = mulps(rcp_dir_z, subps(set1ps(bbox.min.z), org_z));
-    const sse4f zl2 = mulps(rcp_dir_z, subps(set1ps(bbox.max.z), org_z));
+    const __m128 org_z = _mm_set1_ps(ray.m_org.z);
+    const __m128 rcp_dir_z = _mm_set1_ps(ray_info.m_rcp_dir.z);
+    const __m128 zl1 = _mm_mul_ps(rcp_dir_z, _mm_sub_ps(_mm_set1_ps(bbox.min.z), org_z));
+    const __m128 zl2 = _mm_mul_ps(rcp_dir_z, _mm_sub_ps(_mm_set1_ps(bbox.max.z), org_z));
 
-    tmax = minps(maxps(minps(zl1, pos_inf), minps(zl2, pos_inf)), tmax);
-    tmin = maxps(minps(maxps(zl1, neg_inf), maxps(zl2, neg_inf)), tmin);
+    tmax = _mm_min_ps(_mm_max_ps(_mm_min_ps(zl1, pos_inf), _mm_min_ps(zl2, pos_inf)), tmax);
+    tmin = _mm_max_ps(_mm_min_ps(_mm_max_ps(zl1, neg_inf), _mm_max_ps(zl2, neg_inf)), tmin);
 
-    const sse4f ray_tmin = set1ps(ray.m_tmin);
-    const sse4f ray_tmax = set1ps(ray.m_tmax);
+    const __m128 ray_tmin = _mm_set1_ps(ray.m_tmin);
+    const __m128 ray_tmax = _mm_set1_ps(ray.m_tmax);
 
     const bool hit =
-        movemaskps(
-            orps(
-                cmpgtps(tmin, tmax),
-                orps(
-                    cmpltps(tmax, ray_tmin),
-                    cmpgeps(tmin, ray_tmax)))) == 0;
+        _mm_movemask_ps(
+            _mm_or_ps(
+                _mm_cmpgt_ps(tmin, tmax),
+                _mm_or_ps(
+                    _mm_cmplt_ps(tmax, ray_tmin),
+                    _mm_cmpge_ps(tmin, ray_tmax)))) == 0;
 
     if (hit)
     {
-        storess(&ray.m_tmin, maxps(ray_tmin, tmin));
-        storess(&ray.m_tmax, minps(ray_tmax, tmax));
+        _mm_store_ss(&ray.m_tmin, _mm_max_ps(ray_tmin, tmin));
+        _mm_store_ss(&ray.m_tmax, _mm_min_ps(ray_tmax, tmax));
     }
 
     return hit;
@@ -374,48 +374,48 @@ inline bool clip<double>(
     const RayInfo3d&        ray_info,
     const AABB3d&           bbox)
 {
-    const sse2d pos_inf = set1pd(FP<double>::pos_inf());
-    const sse2d neg_inf = set1pd(FP<double>::neg_inf());
+    const __m128d pos_inf = _mm_set1_pd(FP<double>::pos_inf());
+    const __m128d neg_inf = _mm_set1_pd(FP<double>::neg_inf());
 
-    const sse2d org_x = set1pd(ray.m_org.x);
-    const sse2d rcp_dir_x = set1pd(ray_info.m_rcp_dir.x);
-    const sse2d xl1 = mulpd(rcp_dir_x, subpd(set1pd(bbox.min.x), org_x));
-    const sse2d xl2 = mulpd(rcp_dir_x, subpd(set1pd(bbox.max.x), org_x));
+    const __m128d org_x = _mm_set1_pd(ray.m_org.x);
+    const __m128d rcp_dir_x = _mm_set1_pd(ray_info.m_rcp_dir.x);
+    const __m128d xl1 = _mm_mul_pd(rcp_dir_x, _mm_sub_pd(_mm_set1_pd(bbox.min.x), org_x));
+    const __m128d xl2 = _mm_mul_pd(rcp_dir_x, _mm_sub_pd(_mm_set1_pd(bbox.max.x), org_x));
 
-    sse2d tmax = maxpd(minpd(xl1, pos_inf), minpd(xl2, pos_inf));
-    sse2d tmin = minpd(maxpd(xl1, neg_inf), maxpd(xl2, neg_inf));
+    __m128d tmax = _mm_max_pd(_mm_min_pd(xl1, pos_inf), _mm_min_pd(xl2, pos_inf));
+    __m128d tmin = _mm_min_pd(_mm_max_pd(xl1, neg_inf), _mm_max_pd(xl2, neg_inf));
 
-    const sse2d org_y = set1pd(ray.m_org.y);
-    const sse2d rcp_dir_y = set1pd(ray_info.m_rcp_dir.y);
-    const sse2d yl1 = mulpd(rcp_dir_y, subpd(set1pd(bbox.min.y), org_y));
-    const sse2d yl2 = mulpd(rcp_dir_y, subpd(set1pd(bbox.max.y), org_y));
+    const __m128d org_y = _mm_set1_pd(ray.m_org.y);
+    const __m128d rcp_dir_y = _mm_set1_pd(ray_info.m_rcp_dir.y);
+    const __m128d yl1 = _mm_mul_pd(rcp_dir_y, _mm_sub_pd(_mm_set1_pd(bbox.min.y), org_y));
+    const __m128d yl2 = _mm_mul_pd(rcp_dir_y, _mm_sub_pd(_mm_set1_pd(bbox.max.y), org_y));
 
-    tmax = minpd(maxpd(minpd(yl1, pos_inf), minpd(yl2, pos_inf)), tmax);
-    tmin = maxpd(minpd(maxpd(yl1, neg_inf), maxpd(yl2, neg_inf)), tmin);
+    tmax = _mm_min_pd(_mm_max_pd(_mm_min_pd(yl1, pos_inf), _mm_min_pd(yl2, pos_inf)), tmax);
+    tmin = _mm_max_pd(_mm_min_pd(_mm_max_pd(yl1, neg_inf), _mm_max_pd(yl2, neg_inf)), tmin);
 
-    const sse2d org_z = set1pd(ray.m_org.z);
-    const sse2d rcp_dir_z = set1pd(ray_info.m_rcp_dir.z);
-    const sse2d zl1 = mulpd(rcp_dir_z, subpd(set1pd(bbox.min.z), org_z));
-    const sse2d zl2 = mulpd(rcp_dir_z, subpd(set1pd(bbox.max.z), org_z));
+    const __m128d org_z = _mm_set1_pd(ray.m_org.z);
+    const __m128d rcp_dir_z = _mm_set1_pd(ray_info.m_rcp_dir.z);
+    const __m128d zl1 = _mm_mul_pd(rcp_dir_z, _mm_sub_pd(_mm_set1_pd(bbox.min.z), org_z));
+    const __m128d zl2 = _mm_mul_pd(rcp_dir_z, _mm_sub_pd(_mm_set1_pd(bbox.max.z), org_z));
 
-    tmax = minpd(maxpd(minpd(zl1, pos_inf), minpd(zl2, pos_inf)), tmax);
-    tmin = maxpd(minpd(maxpd(zl1, neg_inf), maxpd(zl2, neg_inf)), tmin);
+    tmax = _mm_min_pd(_mm_max_pd(_mm_min_pd(zl1, pos_inf), _mm_min_pd(zl2, pos_inf)), tmax);
+    tmin = _mm_max_pd(_mm_min_pd(_mm_max_pd(zl1, neg_inf), _mm_max_pd(zl2, neg_inf)), tmin);
 
-    const sse2d ray_tmin = set1pd(ray.m_tmin);
-    const sse2d ray_tmax = set1pd(ray.m_tmax);
+    const __m128d ray_tmin = _mm_set1_pd(ray.m_tmin);
+    const __m128d ray_tmax = _mm_set1_pd(ray.m_tmax);
 
     const bool hit =
-        movemaskpd(
-            orpd(
-                cmpgtpd(tmin, tmax),
-                orpd(
-                    cmpltpd(tmax, ray_tmin),
-                    cmpgepd(tmin, ray_tmax)))) == 0;
+        _mm_movemask_pd(
+            _mm_or_pd(
+                _mm_cmpgt_pd(tmin, tmax),
+                _mm_or_pd(
+                    _mm_cmplt_pd(tmax, ray_tmin),
+                    _mm_cmpge_pd(tmin, ray_tmax)))) == 0;
 
     if (hit)
     {
-        storesd(&ray.m_tmin, maxpd(ray_tmin, tmin));
-        storesd(&ray.m_tmax, minpd(ray_tmax, tmax));
+        _mm_store_sd(&ray.m_tmin, _mm_max_pd(ray_tmin, tmin));
+        _mm_store_sd(&ray.m_tmax, _mm_min_pd(ray_tmax, tmax));
     }
 
     return hit;

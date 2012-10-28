@@ -222,12 +222,12 @@ FORCE_INLINE bool TriangleSSK<float>::intersect(
     // Check that the intersection point lies inside the triangle.
 #ifdef APPLESEED_FOUNDATION_USE_SSE
     SSE_ALIGN float detarray[4] = { uprime, uprime, vprime, wprime };
-    const sse4f mu = loadps(detarray);
-    const sse4f mv = shuffleps(mu, mu, _MM_SHUFFLE(2, 3, 3, 2));
-    const sse4f product = mulps(mu, mv);
-    const sse4f zero = set1ps(0.0f);
-    const sse4f cmp = cmpgeps(product, zero);
-    const int mask = movemaskps(cmp);
+    const __m128 mu = _mm_load_ps(detarray);
+    const __m128 mv = _mm_shuffle_ps(mu, mu, _MM_SHUFFLE(2, 3, 3, 2));
+    const __m128 product = _mm_mul_ps(mu, mv);
+    const __m128 zero = _mm_set1_ps(0.0f);
+    const __m128 cmp = _mm_cmpge_ps(product, zero);
+    const int mask = _mm_movemask_ps(cmp);
     if (mask != 0xF)
         return false;
 #else
@@ -281,13 +281,13 @@ FORCE_INLINE bool TriangleSSK<double>::intersect(
 
     // Check that the intersection point lies inside the triangle.
 #ifdef APPLESEED_FOUNDATION_USE_SSE
-    const sse2d zero = set1pd(0.0);
-    const sse2d mdetu = set1pd(uprime);
-    const sse2d mdetv = set1pd(vprime);
-    const sse2d mdetvw = setpd(vprime, wprime);
+    const __m128d zero = _mm_set1_pd(0.0);
+    const __m128d mdetu = _mm_set1_pd(uprime);
+    const __m128d mdetv = _mm_set1_pd(vprime);
+    const __m128d mdetvw = _mm_set_pd(vprime, wprime);
     const int mask =
-          movemaskpd(cmpgepd(mulpd(mdetu, mdetvw), zero))
-        & movemaskpd(cmpgepd(mulpd(mdetv, mdetvw), zero));
+          _mm_movemask_pd(_mm_cmpge_pd(_mm_mul_pd(mdetu, mdetvw), zero))
+        & _mm_movemask_pd(_mm_cmpge_pd(_mm_mul_pd(mdetv, mdetvw), zero));
     if (mask != 3)
         return false;
 #else
@@ -338,12 +338,12 @@ FORCE_INLINE bool TriangleSSK<float>::intersect(const RayType& ray) const
     // Check that the intersection point lies inside the triangle.
 #ifdef APPLESEED_FOUNDATION_USE_SSE
     SSE_ALIGN float detarray[4] = { uprime, uprime, vprime, wprime };
-    const sse4f mu = loadps(detarray);
-    const sse4f mv = shuffleps(mu, mu, _MM_SHUFFLE(2, 3, 3, 2));
-    const sse4f product = mulps(mu, mv);
-    const sse4f zero = set1ps(0.0f);
-    const sse4f cmp = cmpgeps(product, zero);
-    const int mask = movemaskps(cmp);
+    const __m128 mu = _mm_load_ps(detarray);
+    const __m128 mv = _mm_shuffle_ps(mu, mu, _MM_SHUFFLE(2, 3, 3, 2));
+    const __m128 product = _mm_mul_ps(mu, mv);
+    const __m128 zero = _mm_set1_ps(0.0f);
+    const __m128 cmp = _mm_cmpge_ps(product, zero);
+    const int mask = _mm_movemask_ps(cmp);
     if (mask != 0xF)
         return false;
 #else
@@ -385,13 +385,13 @@ FORCE_INLINE bool TriangleSSK<double>::intersect(const RayType& ray) const
 
     // Check that the intersection point lies inside the triangle.
 #ifdef APPLESEED_FOUNDATION_USE_SSE
-    const sse2d zero = set1pd(0.0);
-    const sse2d mdetu = set1pd(uprime);
-    const sse2d mdetv = set1pd(vprime);
-    const sse2d mdetvw = setpd(vprime, wprime);
+    const __m128d zero = _mm_set1_pd(0.0);
+    const __m128d mdetu = _mm_set1_pd(uprime);
+    const __m128d mdetv = _mm_set1_pd(vprime);
+    const __m128d mdetvw = _mm_set_pd(vprime, wprime);
     const int mask =
-          movemaskpd(cmpgepd(mulpd(mdetu, mdetvw), zero))
-        & movemaskpd(cmpgepd(mulpd(mdetv, mdetvw), zero));
+          _mm_movemask_pd(_mm_cmpge_pd(_mm_mul_pd(mdetu, mdetvw), zero))
+        & _mm_movemask_pd(_mm_cmpge_pd(_mm_mul_pd(mdetv, mdetvw), zero));
     if (mask != 3)
         return false;
 #else

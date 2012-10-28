@@ -144,12 +144,12 @@ BENCHMARK_SUITE(SameSign)
     {
         SSE_ALIGN float u[4] = { a, a, b, c };
 
-        const sse4f mu = loadps(u);
-        const sse4f mv = shuffleps(mu, mu, _MM_SHUFFLE(2, 3, 3, 2));
-        const sse4f product = mulps(mu, mv);
-        const sse4f zero = set1ps(0.0f);
-        const sse4f cmp = cmpgeps(product, zero);
-        const int mask = movemaskps(cmp);
+        const __m128 mu = _mm_load_ps(u);
+        const __m128 mv = _mm_shuffle_ps(mu, mu, _MM_SHUFFLE(2, 3, 3, 2));
+        const __m128 product = _mm_mul_ps(mu, mv);
+        const __m128 zero = _mm_set1_ps(0.0f);
+        const __m128 cmp = _mm_cmpge_ps(product, zero);
+        const int mask = _mm_movemask_ps(cmp);
 
         return mask == 0xF;
     }
