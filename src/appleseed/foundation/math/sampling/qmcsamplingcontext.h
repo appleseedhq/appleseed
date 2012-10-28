@@ -105,12 +105,12 @@ class QMCSamplingContext
     double next_double2();
 
     // Return the next sample in [0,1]^N.
-    template <size_t N>
-    Vector<double, N> next_vector1();
+    void next_vector1(const size_t n, double v[]);
+    template <size_t N> Vector<double, N> next_vector1();
 
     // Return the next sample in [0,1)^N.
-    template <size_t N>
-    Vector<double, N> next_vector2();
+    void next_vector2(const size_t n, double v[]);
+    template <size_t N> Vector<double, N> next_vector2();
 
     // Return the total dimension of this sampler.
     size_t get_total_dimension() const;
@@ -287,26 +287,33 @@ inline double QMCSamplingContext<RNG>::next_double2()
 }
 
 template <typename RNG>
-template <size_t N>
-inline Vector<double, N> QMCSamplingContext<RNG>::next_vector1()
+inline void QMCSamplingContext<RNG>::next_vector1(const size_t n, double v[])
 {
-    // todo: implement properly.
-    return next_vector2<N>();
+    // todo: implement.
+    assert(!"Not implemented yet.");
 }
 
 template <typename RNG>
 template <size_t N>
-inline Vector<double, N> QMCSamplingContext<RNG>::next_vector2()
+inline Vector<double, N> QMCSamplingContext<RNG>::next_vector1()
+{
+    Vector<double, N> v;
+
+    next_vector1(N, &v[0]);
+
+    return v;
+}
+
+template <typename RNG>
+inline void QMCSamplingContext<RNG>::next_vector2(const size_t n, double v[])
 {
     assert(m_sample_count == 0 || m_instance < m_sample_count);
-    assert(N == m_dimension);
-    assert(N <= PrimeTableSize);
-
-    Vector<double, N> v;
+    assert(n == m_dimension);
+    assert(n <= PrimeTableSize);
 
     if (m_instance < PrecomputedHaltonSequenceSize)
     {
-        for (size_t i = 0; i < N; ++i)
+        for (size_t i = 0; i < n; ++i)
         {
             v[i] = PrecomputedHaltonSequence[m_instance * 4 + i];
             v[i] = rotate(v[i], m_offset[i]);
@@ -317,7 +324,7 @@ inline Vector<double, N> QMCSamplingContext<RNG>::next_vector2()
         v[0] = radical_inverse_base2<double>(m_instance);
         v[0] = rotate(v[0], m_offset[0]);
 
-        for (size_t i = 1; i < N; ++i)
+        for (size_t i = 1; i < n; ++i)
         {
             v[i] = radical_inverse<double>(Primes[i], m_instance);
             v[i] = rotate(v[i], m_offset[i]);
@@ -325,6 +332,15 @@ inline Vector<double, N> QMCSamplingContext<RNG>::next_vector2()
     }
 
     ++m_instance;
+}
+
+template <typename RNG>
+template <size_t N>
+inline Vector<double, N> QMCSamplingContext<RNG>::next_vector2()
+{
+    Vector<double, N> v;
+
+    next_vector2(N, &v[0]);
 
     return v;
 }

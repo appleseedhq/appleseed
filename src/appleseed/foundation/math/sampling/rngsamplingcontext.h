@@ -79,12 +79,12 @@ class RNGSamplingContext
     double next_double2();
 
     // Return the next sample in [0,1]^N.
-    template <size_t N>
-    Vector<double, N> next_vector1();
+    void next_vector1(const size_t n, double v[]);
+    template <size_t N> Vector<double, N> next_vector1();
 
     // Return the next sample in [0,1)^N.
-    template <size_t N>
-    Vector<double, N> next_vector2();
+    void next_vector2(const size_t n, double v[]);
+    template <size_t N> Vector<double, N> next_vector2();
 
     // Return the total dimension of this sampler.
     size_t get_total_dimension() const;
@@ -156,15 +156,28 @@ inline double RNGSamplingContext<RNG>::next_double2()
 }
 
 template <typename RNG>
+inline void RNGSamplingContext<RNG>::next_vector1(const size_t n, double v[])
+{
+    for (size_t i = 0; i < n; ++i)
+        v[i] = rand_double1(m_rng);
+}
+
+template <typename RNG>
 template <size_t N>
 inline Vector<double, N> RNGSamplingContext<RNG>::next_vector1()
 {
     Vector<double, N> v;
 
-    for (size_t i = 0; i < N; ++i)
-        v[i] = rand_double1(m_rng);
+    next_vector1(N, &v[0]);
 
     return v;
+}
+
+template <typename RNG>
+inline void RNGSamplingContext<RNG>::next_vector2(const size_t n, double v[])
+{
+    for (size_t i = 0; i < n; ++i)
+        v[i] = rand_double2(m_rng);
 }
 
 template <typename RNG>
@@ -173,8 +186,7 @@ inline Vector<double, N> RNGSamplingContext<RNG>::next_vector2()
 {
     Vector<double, N> v;
 
-    for (size_t i = 0; i < N; ++i)
-        v[i] = rand_double2(m_rng);
+    next_vector2(N, &v[0]);
 
     return v;
 }
