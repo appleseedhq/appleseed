@@ -31,6 +31,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
+#include "foundation/platform/compiler.h"
 
 // Standard headers.
 #include <cassert>
@@ -130,6 +131,36 @@ class RayInfo
     explicit RayInfo(const RayType& ray);   // initialize with a ray
 };
 
+#ifdef APPLESEED_FOUNDATION_USE_SSE
+
+template <>
+class RayInfo<double, 3>
+{
+  public:
+    // Types.
+    typedef double ValueType;
+    typedef Vector3d VectorType;
+    typedef Ray3d RayType;
+    typedef RayInfo<double, 3> RayInfoType;
+
+    // Dimension.
+    static const size_t Dimension = 3;
+
+    // Reciprocal of the ray direction.
+    SSE_ALIGN VectorType m_rcp_dir;
+
+    // Sign of the ray direction (for the i'th component, the sign value
+    // is 1 if the component is positive or null, and 0 if the component
+    // is strictly negative).
+    SSE_ALIGN Vector<size_t, 4> m_sgn_dir;
+
+    // Constructors.
+    RayInfo();                              // leave all fields uninitialized
+    explicit RayInfo(const RayType& ray);   // initialize with a ray
+};
+
+#endif
+
 
 //
 // Full specializations of RayInfo for 2D, 3D and 4D rays of type float and double.
@@ -227,6 +258,34 @@ inline RayInfo<T, N>::RayInfo(const RayType& ray)
         m_sgn_dir[i] = m_rcp_dir[i] >= ValueType(0.0) ? 1 : 0;
     }
 }
+
+#ifdef APPLESEED_FOUNDATION_USE_SSE
+
+inline RayInfo<double, 3>::RayInfo()
+{
+}
+
+FORCE_INLINE RayInfo<double, 3>::RayInfo(const RayType& ray)
+{
+    const sse2d one = set1pd(1.0);
+    const sse2d rcp_dir0 = divpd(one, loadupd(&ray.m_dir[0]));
+    const sse2d rcp_dir2 = divpd(one, set1pd(ray.m_dir[2]));
+
+    storepd(&m_rcp_dir[0], rcp_dir0);
+    storesd(&m_rcp_dir[2], rcp_dir2);
+
+    const sse2d zero = _mm_setzero_pd();
+    const sse2d sgn_dir0 = cmpgepd(rcp_dir0, zero);
+    const sse2d sgn_dir2 = cmpgepd(rcp_dir2, zero);
+    const __m128i mask = _mm_set_epi32(0, 1, 0, 1);
+    const __m128i sgn0 = _mm_and_si128(_mm_castpd_si128(sgn_dir0), mask);
+    const __m128i sgn2 = _mm_and_si128(_mm_castpd_si128(sgn_dir2), mask);
+    const __m128i sgn = _mm_unpacklo_epi64(_mm_shuffle_epi32(sgn0, _MM_SHUFFLE(3, 3, 2, 0)), sgn2);
+
+    _mm_store_si128((__m128i*)&m_sgn_dir[0], sgn);
+}
+
+#endif
 
 }       // namespace foundation
 

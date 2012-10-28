@@ -27,8 +27,6 @@
 //
 
 // appleseed.foundation headers.
-#include "foundation/math/aabb.h"
-#include "foundation/math/intersection.h"
 #include "foundation/math/ray.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/benchmark.h"
@@ -39,25 +37,26 @@ BENCHMARK_SUITE(Foundation_Math_RayInfo)
 {
     struct Fixture
     {
-        Ray3d   m_ray;
-        AABB3d  m_aabb;
-        bool    m_hit;
+        Ray3d               m_ray;
+        volatile double     m_rcp_dir[3];
+        volatile size_t     m_sgn_dir[3];
 
         Fixture()
           : m_ray(Vector3d(0.0, 0.0, -2.0), Vector3d(0.1, -0.1, 1.0))
-          , m_aabb(Vector3d(-1.0), Vector3d(1.0))
-          , m_hit(false)
         {
         }
     };
 
     BENCHMARK_CASE_F(RayInfo3d, Fixture)
     {
-        for (int i = 0; i < 100; ++i)
-        {
-            const RayInfo3d ray_info(m_ray);
+        const RayInfo3d ray_info(m_ray);
 
-            m_hit ^= intersect(m_ray, ray_info, m_aabb);
-        }
+        m_rcp_dir[0] = ray_info.m_rcp_dir[0];
+        m_rcp_dir[1] = ray_info.m_rcp_dir[1];
+        m_rcp_dir[2] = ray_info.m_rcp_dir[2];
+
+        m_sgn_dir[0] = ray_info.m_sgn_dir[0];
+        m_sgn_dir[1] = ray_info.m_sgn_dir[1];
+        m_sgn_dir[2] = ray_info.m_sgn_dir[2];
     }
 }
