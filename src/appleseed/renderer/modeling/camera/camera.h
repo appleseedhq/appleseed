@@ -112,7 +112,10 @@ class DLLSYMBOL Camera
     struct Impl;
     Impl* impl;
 
-    TransformSequence m_transform_sequence;
+    TransformSequence   m_transform_sequence;
+    double              m_focal_length;         // focal length, in meters
+    double              m_shutter_open_time;
+    double              m_shutter_close_time;
 
     // Destructor.
     ~Camera();
@@ -174,6 +177,26 @@ inline TransformSequence& Camera::transform_sequence()
 inline const TransformSequence& Camera::transform_sequence() const
 {
     return m_transform_sequence;
+}
+
+inline double Camera::get_focal_length() const
+{
+    return m_focal_length;
+}
+
+inline double Camera::get_shutter_open_time() const
+{
+    return m_shutter_open_time;
+}
+
+inline double Camera::get_shutter_close_time() const
+{
+    return m_shutter_close_time;
+}
+
+inline double Camera::get_shutter_middle_time() const
+{
+    return 0.5 * (m_shutter_open_time + m_shutter_close_time);
 }
 
 }       // namespace renderer

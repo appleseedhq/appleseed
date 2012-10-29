@@ -64,9 +64,6 @@ namespace
 struct Camera::Impl
 {
     Vector2d            m_film_dimensions;      // film dimensions, in meters
-    double              m_focal_length;         // focal length, in meters
-    double              m_shutter_open_time;
-    double              m_shutter_close_time;
     Pyramid3d           m_view_pyramid;
 };
 
@@ -89,26 +86,6 @@ const Vector2d& Camera::get_film_dimensions() const
     return impl->m_film_dimensions;
 }
 
-double Camera::get_focal_length() const
-{
-    return impl->m_focal_length;
-}
-
-double Camera::get_shutter_open_time() const
-{
-    return impl->m_shutter_open_time;
-}
-
-double Camera::get_shutter_close_time() const
-{
-    return impl->m_shutter_close_time;
-}
-
-double Camera::get_shutter_middle_time() const
-{
-    return 0.5 * (get_shutter_open_time() + get_shutter_close_time());
-}
-
 const Pyramid3d& Camera::get_view_pyramid() const
 {
     return impl->m_view_pyramid;
@@ -120,9 +97,9 @@ bool Camera::on_frame_begin(const Project& project)
         RENDERER_LOG_WARNING("camera \"%s\" has one or more invalid transforms.", get_name());
 
     impl->m_film_dimensions = extract_film_dimensions();
-    impl->m_focal_length = extract_focal_length(impl->m_film_dimensions[0]);
-    impl->m_shutter_open_time = m_params.get_optional<double>("shutter_open_time", 0.0);
-    impl->m_shutter_close_time = m_params.get_optional<double>("shutter_close_time", 1.0);
+    m_focal_length = extract_focal_length(impl->m_film_dimensions[0]);
+    m_shutter_open_time = m_params.get_optional<double>("shutter_open_time", 0.0);
+    m_shutter_close_time = m_params.get_optional<double>("shutter_close_time", 1.0);
 
     compute_view_pyramid();
 
@@ -292,8 +269,8 @@ void Camera::initialize_ray(
     ray.m_tmin = 0.0;
     ray.m_tmax = numeric_limits<double>::max();
 
-    if (impl->m_shutter_open_time == impl->m_shutter_close_time)
-        ray.m_time = impl->m_shutter_open_time;
+    if (m_shutter_open_time == m_shutter_close_time)
+        ray.m_time = m_shutter_open_time;
     else
     {
         sampling_context.split_in_place(1, 1);
@@ -301,7 +278,7 @@ void Camera::initialize_ray(
             fit(
                 sampling_context.next_double2(),
                 0.0, 1.0,
-                impl->m_shutter_open_time, impl->m_shutter_close_time);
+                m_shutter_open_time, m_shutter_close_time);
     }
 
     ray.m_flags = ~0;
@@ -341,7 +318,7 @@ double Camera::get_greater_than_zero(
 
 void Camera::compute_view_pyramid()
 {
-    const double focal_length = impl->m_focal_length;
+    const double focal_length = m_focal_length;
     const double half_fw = impl->m_film_dimensions[0] / 2.0;
     const double half_fh = impl->m_film_dimensions[1] / 2.0;
 

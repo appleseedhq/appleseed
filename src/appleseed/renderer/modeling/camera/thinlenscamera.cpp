@@ -109,8 +109,6 @@ namespace
             if (!Camera::on_frame_begin(project))
                 return false;
 
-            m_focal_length = get_focal_length();
-
             extract_focal_distance(
                 m_autofocus_enabled,
                 m_autofocus_target,
@@ -226,7 +224,6 @@ namespace
 
       private:
         // Parameters.
-        double              m_focal_length;             // focal length, in meters
         bool                m_autofocus_enabled;        // is autofocus enabled?
         Vector2d            m_autofocus_target;         // autofocus target on film plane in NDC
         double              m_focal_distance;           // focal distance, in meters
