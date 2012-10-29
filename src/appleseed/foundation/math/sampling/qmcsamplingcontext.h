@@ -326,7 +326,7 @@ inline void QMCSamplingContext<RNG>::next_vector2(const size_t n, double v[])
 
         for (size_t i = 1; i < n; ++i)
         {
-            v[i] = radical_inverse<double>(Primes[i], m_instance);
+            v[i] = radical_inverse<double>(PrimesFaurePermutations[i].m_prime, m_instance);
             v[i] = rotate(v[i], m_offset[i]);
         }
     }
