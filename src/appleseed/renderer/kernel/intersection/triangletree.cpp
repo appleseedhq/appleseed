@@ -58,6 +58,7 @@
 #include "foundation/utility/makevector.h"
 #include "foundation/utility/memory.h"
 #include "foundation/utility/statistics.h"
+#include "foundation/utility/stopwatch.h"
 
 // Standard headers.
 #include <algorithm>
@@ -371,11 +372,14 @@ TriangleTree::TriangleTree(const Arguments& arguments)
   : TreeType(AlignedAllocator<void>(System::get_l1_data_cache_line_size()))
   , m_triangle_tree_uid(arguments.m_triangle_tree_uid)
 {
+    // Start stopwatch.
+    Stopwatch<DefaultWallclockTimer> stopwatch;
+    stopwatch.start();
+
     const MessageContext context(
         string("while building acceleration structure for assembly \"") + arguments.m_assembly.get_name() + "\"");
 
     const ParamArray& params = arguments.m_assembly.get_parameters().child("acceleration_structure");
-
     Statistics statistics;
 
     // We're going to build the BVH for the geometry as it is in the middle of the shutter interval:
@@ -402,6 +406,7 @@ TriangleTree::TriangleTree(const Arguments& arguments)
 
     // Print triangle tree statistics.
     statistics.insert_size("nodes alignment", alignment(&m_nodes[0]));
+    statistics.insert_time("total time", stopwatch.measure().get_seconds());
     RENDERER_LOG_DEBUG("%s",
         StatisticsVector::make(
             "triangle tree #" + to_string(arguments.m_triangle_tree_uid) + " statistics",
@@ -449,6 +454,19 @@ namespace
     }
 
     #define RENDERER_LOG_VECTOR_STATS(vec) print_vector_stats(#vec, vec)
+
+    size_t count_static_triangles(const vector<TriangleVertexInfo>& info)
+    {
+        size_t count = 0;
+
+        for (size_t i = 0; i < info.size(); ++i)
+        {
+            if (info[i].m_motion_segment_count == 0)
+                ++count;
+        }
+
+        return count;
+    }
 }
 
 void TriangleTree::build_bvh(
@@ -457,14 +475,19 @@ void TriangleTree::build_bvh(
     const double        time,
     Statistics&         statistics)
 {
-    RENDERER_LOG_INFO(
-        "collecting geometry for triangle tree #" FMT_UNIQUE_ID "...",
-        arguments.m_triangle_tree_uid);
+    Stopwatch<DefaultWallclockTimer> stopwatch;
 
     // Collect triangles intersecting the bounding box of this tree.
+    RENDERER_LOG_INFO(
+        "collecting geometry for triangle tree #" FMT_UNIQUE_ID " from assembly %s (%s %s)...",
+        arguments.m_triangle_tree_uid,
+        arguments.m_assembly.get_name(),
+        pretty_uint(arguments.m_regions.size()).c_str(),
+        plural(arguments.m_regions.size(), "region").c_str());
     vector<TriangleKey> triangle_keys;
     vector<TriangleVertexInfo> triangle_vertex_infos;
     vector<GAABB3> triangle_bboxes;
+    stopwatch.start();
     collect_triangles(
         arguments,
         time,
@@ -472,15 +495,18 @@ void TriangleTree::build_bvh(
         &triangle_vertex_infos,
         0,
         &triangle_bboxes);
-    RENDERER_LOG_VECTOR_STATS(triangle_keys);
-    RENDERER_LOG_VECTOR_STATS(triangle_vertex_infos);
-    RENDERER_LOG_VECTOR_STATS(triangle_bboxes);
+    const double collection_time = stopwatch.measure().get_seconds();
 
+    // Print statistics about the input geometry.
+    const size_t static_triangle_count = count_static_triangles(triangle_vertex_infos);
+    const size_t moving_triangle_count = triangle_vertex_infos.size() - static_triangle_count;
     RENDERER_LOG_INFO(
-        "building bvh triangle tree #" FMT_UNIQUE_ID " (%s %s)...",
+        "building bvh triangle tree #" FMT_UNIQUE_ID " (%s %s, %s %s)...",
         arguments.m_triangle_tree_uid,
-        pretty_int(triangle_keys.size()).c_str(),
-        plural(triangle_keys.size(), "triangle").c_str());
+        pretty_uint(static_triangle_count).c_str(),
+        plural(static_triangle_count, "static triangle").c_str(),
+        pretty_uint(moving_triangle_count).c_str(),
+        plural(moving_triangle_count, "moving triangle").c_str());
 
     // Retrieving the partitioner parameters.
     const size_t max_leaf_size = params.get_optional<size_t>("max_leaf_size", TriangleTreeDefaultMaxLeafSize);
@@ -499,8 +525,9 @@ void TriangleTree::build_bvh(
     typedef bvh::Builder<TriangleTree, Partitioner> Builder;
     Builder builder;
     builder.build<DefaultWallclockTimer>(*this, partitioner, triangle_keys.size(), max_leaf_size);
-    statistics.insert_time("build time", builder.get_build_time());
     statistics.merge(bvh::TreeStatistics<TriangleTree>(*this, AABB3d(arguments.m_bbox)));
+
+    stopwatch.start();
 
     // Bounding boxes are no longer needed.
     clear_release_memory(triangle_bboxes);
@@ -514,7 +541,6 @@ void TriangleTree::build_bvh(
         0,
         &triangle_vertices,
         0);
-    RENDERER_LOG_VECTOR_STATS(triangle_vertices);
 
     // Compute and propagate motion bounding boxes.
     compute_motion_bboxes(
@@ -530,6 +556,12 @@ void TriangleTree::build_bvh(
         triangle_vertices,
         triangle_keys,
         statistics);
+
+    const double storing_time = stopwatch.measure().get_seconds();
+
+    statistics.insert_time("collection time", collection_time);
+    statistics.insert_time("partition time", builder.get_build_time());
+    statistics.insert_time("store time", storing_time);
 }
 
 void TriangleTree::build_sbvh(
@@ -538,15 +570,20 @@ void TriangleTree::build_sbvh(
     const double        time,
     Statistics&         statistics)
 {
-    RENDERER_LOG_INFO(
-        "collecting geometry for triangle tree #" FMT_UNIQUE_ID "...",
-        arguments.m_triangle_tree_uid);
+    Stopwatch<DefaultWallclockTimer> stopwatch;
 
     // Collect triangles intersecting the bounding box of this tree.
+    RENDERER_LOG_INFO(
+        "collecting geometry for triangle tree #" FMT_UNIQUE_ID " from assembly %s (%s %s)...",
+        arguments.m_triangle_tree_uid,
+        arguments.m_assembly.get_name(),
+        pretty_uint(arguments.m_regions.size()).c_str(),
+        plural(arguments.m_regions.size(), "region").c_str());
     vector<TriangleKey> triangle_keys;
     vector<TriangleVertexInfo> triangle_vertex_infos;
     vector<GVector3> triangle_vertices;
     vector<AABB3d> triangle_bboxes;
+    stopwatch.start();
     collect_triangles(
         arguments,
         time,
@@ -554,16 +591,18 @@ void TriangleTree::build_sbvh(
         &triangle_vertex_infos,
         &triangle_vertices,
         &triangle_bboxes);
-    RENDERER_LOG_VECTOR_STATS(triangle_keys);
-    RENDERER_LOG_VECTOR_STATS(triangle_vertex_infos);
-    RENDERER_LOG_VECTOR_STATS(triangle_vertices);
-    RENDERER_LOG_VECTOR_STATS(triangle_bboxes);
+    const double collection_time = stopwatch.measure().get_seconds();
 
+    // Print statistics about the input geometry.
+    const size_t static_triangle_count = count_static_triangles(triangle_vertex_infos);
+    const size_t moving_triangle_count = triangle_vertex_infos.size() - static_triangle_count;
     RENDERER_LOG_INFO(
-        "building sbvh triangle tree #" FMT_UNIQUE_ID " (%s %s)...",
+        "building sbvh triangle tree #" FMT_UNIQUE_ID " (%s %s, %s %s)...",
         arguments.m_triangle_tree_uid,
-        pretty_int(triangle_keys.size()).c_str(),
-        plural(triangle_keys.size(), "triangle").c_str());
+        pretty_uint(static_triangle_count).c_str(),
+        plural(static_triangle_count, "static triangle").c_str(),
+        pretty_uint(moving_triangle_count).c_str(),
+        plural(moving_triangle_count, "moving triangle").c_str());
 
     // Retrieving the partitioner parameters.
     const size_t max_leaf_size = params.get_optional<size_t>("max_leaf_size", TriangleTreeDefaultMaxLeafSize);
@@ -597,7 +636,6 @@ void TriangleTree::build_sbvh(
         partitioner,
         root_leaf,
         root_leaf_bbox);
-    statistics.insert_time("build time", builder.get_build_time());
     statistics.merge(bvh::TreeStatistics<TriangleTree>(*this, AABB3d(arguments.m_bbox)));
 
     // Add splits statistics.
@@ -608,6 +646,8 @@ void TriangleTree::build_sbvh(
         "splits",
         "spatial " + pretty_uint(spatial_splits) + " (" + pretty_percent(spatial_splits, total_splits) + ")  "
         "object " + pretty_uint(object_splits) + " (" + pretty_percent(object_splits, total_splits) + ")");
+
+    stopwatch.start();
 
     // Bounding boxes are no longer needed.
     clear_release_memory(triangle_bboxes);
@@ -626,6 +666,12 @@ void TriangleTree::build_sbvh(
         triangle_vertices,
         triangle_keys,
         statistics);
+
+    const double storing_time = stopwatch.measure().get_seconds();
+
+    statistics.insert_time("collection time", collection_time);
+    statistics.insert_time("partition time", builder.get_build_time());
+    statistics.insert_time("store time", storing_time);
 }
 
 namespace
