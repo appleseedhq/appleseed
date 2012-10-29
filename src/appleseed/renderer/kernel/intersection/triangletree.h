@@ -121,12 +121,14 @@ class TriangleTree
         const Arguments&                        arguments,
         const ParamArray&                       params,
         const double                            time,
+        const bool                              save_memory,
         foundation::Statistics&                 statistics);
 
     void build_sbvh(
         const Arguments&                        arguments,
         const ParamArray&                       params,
         const double                            time,
+        const bool                              save_memory,
         foundation::Statistics&                 statistics);
 
     std::vector<GAABB3> compute_motion_bboxes(

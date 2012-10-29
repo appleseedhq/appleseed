@@ -95,6 +95,7 @@ namespace
         const RegionInfo&               region_info,
         const StaticTriangleTess&       tess,
         const Transformd&               transform,
+        const bool                      save_memory,
         vector<TriangleKey>*            triangle_keys,
         vector<TriangleVertexInfo>*     triangle_vertex_infos,
         vector<GVector3>*               triangle_vertices,
@@ -103,11 +104,14 @@ namespace
     {
         const size_t triangle_count = tess.m_primitives.size();
 
-        // Reserve memory.
-        increase_capacity(triangle_keys, triangle_count);
-        increase_capacity(triangle_vertex_infos, triangle_count);
-        increase_capacity(triangle_vertices, triangle_count * 3);
-        increase_capacity(triangle_bboxes, triangle_count);
+        if (save_memory)
+        {
+            // Reserve memory.
+            increase_capacity(triangle_keys, triangle_count);
+            increase_capacity(triangle_vertex_infos, triangle_count);
+            increase_capacity(triangle_vertices, triangle_count * 3);
+            increase_capacity(triangle_bboxes, triangle_count);
+        }
 
         for (size_t i = 0; i < triangle_count; ++i)
         {
@@ -179,6 +183,7 @@ namespace
         const StaticTriangleTess&       tess,
         const Transformd&               transform,
         const double                    time,
+        const bool                      save_memory,
         vector<TriangleKey>*            triangle_keys,
         vector<TriangleVertexInfo>*     triangle_vertex_infos,
         vector<GVector3>*               triangle_vertices,
@@ -188,11 +193,14 @@ namespace
         const size_t motion_segment_count = tess.get_motion_segment_count();
         const size_t triangle_count = tess.m_primitives.size();
 
-        // Reserve memory.
-        increase_capacity(triangle_keys, triangle_count);
-        increase_capacity(triangle_vertex_infos, triangle_count);
-        increase_capacity(triangle_vertices, triangle_count * 3 * (motion_segment_count + 1));
-        increase_capacity(triangle_bboxes, triangle_count);
+        if (save_memory)
+        {
+            // Reserve memory.
+            increase_capacity(triangle_keys, triangle_count);
+            increase_capacity(triangle_vertex_infos, triangle_count);
+            increase_capacity(triangle_vertices, triangle_count * 3 * (motion_segment_count + 1));
+            increase_capacity(triangle_bboxes, triangle_count);
+        }
 
         vector<GAABB3> tri_pose_bboxes(motion_segment_count + 1);
 
@@ -285,6 +293,7 @@ namespace
     void collect_triangles(
         const TriangleTree::Arguments&  arguments,
         const double                    time,
+        const bool                      save_memory,
         vector<TriangleKey>*            triangle_keys,
         vector<TriangleVertexInfo>*     triangle_vertex_infos,
         vector<GVector3>*               triangle_vertices,
@@ -331,6 +340,7 @@ namespace
                     tess.ref(),
                     object_instance->get_transform(),
                     time,
+                    save_memory,
                     triangle_keys,
                     triangle_vertex_infos,
                     triangle_vertices,
@@ -344,6 +354,7 @@ namespace
                     region_info,
                     tess.ref(),
                     object_instance->get_transform(),
+                    save_memory,
                     triangle_keys,
                     triangle_vertex_infos,
                     triangle_vertices,
@@ -372,25 +383,24 @@ TriangleTree::TriangleTree(const Arguments& arguments)
   : TreeType(AlignedAllocator<void>(System::get_l1_data_cache_line_size()))
   , m_triangle_tree_uid(arguments.m_triangle_tree_uid)
 {
+    // Retrieve construction parameters.
+    const MessageContext context(
+        string("while building acceleration structure for assembly \"") + arguments.m_assembly.get_name() + "\"");
+    const ParamArray& params = arguments.m_assembly.get_parameters().child("acceleration_structure");
+    const string algorithm = params.get_optional<string>("algorithm", "bvh", make_vector("bvh", "sbvh"), context);
+    const double time = params.get_optional<double>("time", 0.5);
+    const bool save_memory = params.get_optional<bool>("save_temporary_memory", false);
+
     // Start stopwatch.
     Stopwatch<DefaultWallclockTimer> stopwatch;
     stopwatch.start();
 
-    const MessageContext context(
-        string("while building acceleration structure for assembly \"") + arguments.m_assembly.get_name() + "\"");
-
-    const ParamArray& params = arguments.m_assembly.get_parameters().child("acceleration_structure");
     Statistics statistics;
 
-    // We're going to build the BVH for the geometry as it is in the middle of the shutter interval:
-    // the topology of the tree will be optimal for this time and will hopefully be good enough for
-    // all the shutter interval.
-    const double Time = 0.5;
-
     // Build the tree.
-    if (params.get_optional<string>("algorithm", "bvh", make_vector("bvh", "sbvh"), context) == "bvh")
-        build_bvh(arguments, params, Time, statistics);
-    else build_sbvh(arguments, params, Time, statistics);
+    if (algorithm == "bvh")
+        build_bvh(arguments, params, time, save_memory, statistics);
+    else build_sbvh(arguments, params, time, save_memory, statistics);
 
 #ifdef RENDERER_TRIANGLE_TREE_REORDER_NODES
     // Optimize the tree layout in memory.
@@ -473,6 +483,7 @@ void TriangleTree::build_bvh(
     const Arguments&    arguments,
     const ParamArray&   params,
     const double        time,
+    const bool          save_memory,
     Statistics&         statistics)
 {
     Stopwatch<DefaultWallclockTimer> stopwatch;
@@ -491,6 +502,7 @@ void TriangleTree::build_bvh(
     collect_triangles(
         arguments,
         time,
+        save_memory,
         &triangle_keys,
         &triangle_vertex_infos,
         0,
@@ -537,6 +549,7 @@ void TriangleTree::build_bvh(
     collect_triangles<GAABB3>(
         arguments,
         time,
+        save_memory,
         0,
         0,
         &triangle_vertices,
@@ -568,6 +581,7 @@ void TriangleTree::build_sbvh(
     const Arguments&    arguments,
     const ParamArray&   params,
     const double        time,
+    const bool          save_memory,
     Statistics&         statistics)
 {
     Stopwatch<DefaultWallclockTimer> stopwatch;
@@ -587,6 +601,7 @@ void TriangleTree::build_sbvh(
     collect_triangles(
         arguments,
         time,
+        save_memory,
         &triangle_keys,
         &triangle_vertex_infos,
         &triangle_vertices,
