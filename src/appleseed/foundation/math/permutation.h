@@ -34,6 +34,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/rng.h"
+#include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
 
 // Standard headers.
@@ -83,6 +84,14 @@ void faure_qmc_permutation(
 
 const size_t FaurePermutationTableSize = 100;
 DLLSYMBOL extern const size_t* FaurePermutations[FaurePermutationTableSize];
+
+struct PrimePermutationPair
+{
+    size_t          m_prime;
+    const size_t*   m_perm;
+};
+
+DLLSYMBOL extern const PrimePermutationPair FOUNDATION_ALIGN(16) PrimesFaurePermutations[FaurePermutationTableSize];
 
 
 //

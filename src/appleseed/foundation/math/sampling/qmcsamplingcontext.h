@@ -256,8 +256,8 @@ inline void QMCSamplingContext<RNG>::compute_offset()
 
             m_offset[i] =
                 permuted_radical_inverse<double>(
-                    Primes[d],
-                    FaurePermutations[d],
+                    PrimesFaurePermutations[d].m_prime,
+                    PrimesFaurePermutations[d].m_perm,
                     m_base_instance);
         }
         else
