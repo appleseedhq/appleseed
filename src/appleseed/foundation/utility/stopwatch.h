@@ -62,7 +62,7 @@ class Stopwatch
 
     // Measure the time elapsed since the last call to start().
     // The stopwatch keeps running.
-    void measure();
+    Stopwatch& measure();
 
     // Return true if the stopwatch is running, i.e. if start() has been called at least once.
     bool is_running() const;
@@ -127,7 +127,7 @@ inline void Stopwatch<Timer>::start()
 }
 
 template <typename Timer>
-inline void Stopwatch<Timer>::measure()
+inline Stopwatch<Timer>& Stopwatch<Timer>::measure()
 {
     assert(m_is_running);
 
@@ -139,6 +139,8 @@ inline void Stopwatch<Timer>::measure()
     if (m_elapsed >= m_overhead)
         m_elapsed -= m_overhead;
     else m_elapsed = 0;
+
+    return *this;
 }
 
 template <typename Timer>
