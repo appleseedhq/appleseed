@@ -510,20 +510,7 @@ namespace
         msgbox.setIcon(QMessageBox::Critical);
         msgbox.setText("Failed to load the project file " + filepath + ".");
         msgbox.setInformativeText(
-            "The project file may be invalid or corrupted. "
-            "Please look at the Log window for details.");
-        msgbox.setStandardButtons(QMessageBox::Ok);
-        msgbox.exec();
-    }
-
-    void show_builtin_project_loading_failed_message_box(QWidget* parent, const QString& name)
-    {
-        QMessageBox msgbox(parent);
-        msgbox.setWindowTitle("Loading Error");
-        msgbox.setIcon(QMessageBox::Critical);
-        msgbox.setText("Failed to load the built-in project '" + name + "'.");
-        msgbox.setInformativeText(
-            "The project may be invalid or corrupted. "
+            "The project file may be invalid, corrupted or missing. "
             "Please look at the Log window for details.");
         msgbox.setStandardButtons(QMessageBox::Ok);
         msgbox.exec();
@@ -906,15 +893,9 @@ void MainWindow::slot_open_cornellbox_builtin_project()
         return;
 
     const bool successful = m_project_manager.load_builtin_project("cornell_box");
+    assert(successful);
 
-    if (successful)
-    {
-        on_project_change();
-    }
-    else
-    {
-        show_builtin_project_loading_failed_message_box(this, "cornell_box");
-    }
+    on_project_change();
 }
 
 void MainWindow::slot_reload_project()
@@ -925,12 +906,8 @@ void MainWindow::slot_reload_project()
     if (!can_close_project())
         return;
 
-    const bool successful = m_project_manager.reload_project();
-
-    if (successful)
-    {
+    if (m_project_manager.reload_project())
         on_project_change();
-    }
     else
     {
         show_project_file_loading_failed_message_box(
