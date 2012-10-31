@@ -147,7 +147,8 @@ class AABB
     T volume() const;
 
     // Compute the 2^N corner points of the bounding box.
-    void compute_corners(VectorType corners[]) const;
+    size_t get_corner_count() const;
+    VectorType compute_corner(const size_t i) const;
 
     // Return true if the bounding box contains a given point.
     bool contains(const VectorType& v) const;
@@ -497,18 +498,22 @@ T AABB<T, N>::volume() const
 }
 
 template <typename T, size_t N>
-void AABB<T, N>::compute_corners(VectorType corners[]) const
+inline size_t AABB<T, N>::get_corner_count() const
+{
+    return 1 << N;
+}
+
+template <typename T, size_t N>
+Vector<T, N> AABB<T, N>::compute_corner(const size_t i) const
 {
     assert(is_valid());
-    assert(corners);
 
-    for (size_t i = 0; i < 1 << N; ++i)
-    {
-        VectorType& p = corners[i];
+    VectorType p;
 
-        for (size_t d = 0; d < N; ++d)
-            p[d] = i & (size_t(1) << d) ? max[d] : min[d];
-    }
+    for (size_t d = 0; d < N; ++d)
+        p[d] = i & (size_t(1) << d) ? max[d] : min[d];
+
+    return p;
 }
 
 template <typename T, size_t N>

@@ -137,17 +137,13 @@ GAABB3 Scene::compute_bbox() const
 double Scene::compute_radius() const
 {
     double square_radius = 0.0;
-
     const GAABB3 bbox = compute_bbox();
 
     if (bbox.is_valid())
     {
-        GVector3 corners[8];
-        bbox.compute_corners(corners);
-
         for (size_t i = 0; i < 8; ++i)
         {
-            const double square_distance = square_norm(corners[i]);
+            const double square_distance = square_norm(bbox.compute_corner(i));
 
             if (square_radius < square_distance)
                 square_radius = square_distance;
