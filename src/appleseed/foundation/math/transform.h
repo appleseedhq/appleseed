@@ -150,6 +150,14 @@ class TransformInterpolator
         const TransformType&    from,
         const TransformType&    to);
 
+    // Return the start and end scaling, rotation and translation.
+    const Vector<T, 3>& get_s0() const;
+    const Vector<T, 3>& get_s1() const;
+    const Quaternion<T>& get_q0() const;
+    const Quaternion<T>& get_q1() const;
+    const Vector<T, 3>& get_t0() const;
+    const Vector<T, 3>& get_t1() const;
+
     // Compute the transform for any value of the interpolation parameter t.
     // Returns the initial transform for t == 0 and the final transform for t == 1.
     void evaluate(
@@ -517,6 +525,42 @@ bool TransformInterpolator<T>::set_transforms(
     const T Eps = make_eps<T>(1.0e-4f, 1.0e-6);
 
     return is_normalized(m_q0, Eps) && is_normalized(m_q1, Eps);
+}
+
+template <typename T>
+inline const Vector<T, 3>& TransformInterpolator<T>::get_s0() const
+{
+    return m_s0;
+}
+
+template <typename T>
+inline const Vector<T, 3>& TransformInterpolator<T>::get_s1() const
+{
+    return m_s1;
+}
+
+template <typename T>
+inline const Quaternion<T>& TransformInterpolator<T>::get_q0() const
+{
+    return m_q0;
+}
+
+template <typename T>
+inline const Quaternion<T>& TransformInterpolator<T>::get_q1() const
+{
+    return m_q1;
+}
+
+template <typename T>
+inline const Vector<T, 3>& TransformInterpolator<T>::get_t0() const
+{
+    return m_t0;
+}
+
+template <typename T>
+inline const Vector<T, 3>& TransformInterpolator<T>::get_t1() const
+{
+    return m_t1;
 }
 
 template <typename T>
