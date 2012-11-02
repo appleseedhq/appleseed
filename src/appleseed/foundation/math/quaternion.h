@@ -96,6 +96,7 @@ class Quaternion
         const VectorType&   to);
 
     // Convert a unit quaternion to the axis-angle representation.
+    // The returned axis is always unit-length.
     void extract_axis_angle(
         VectorType&         axis,
         ValueType&          angle) const;
@@ -241,15 +242,12 @@ inline void Quaternion<T>::extract_axis_angle(
 {
     assert(is_normalized(*this));
 
-    const ValueType half_angle = std::acos(s);
-    const ValueType sin_half_angle = std::sin(half_angle);
+    angle = T(2.0) * std::acos(s);
 
     axis =
-        sin_half_angle == ValueType(0.0)
+        angle == ValueType(0.0)
             ? VectorType(ValueType(1.0), ValueType(0.0), ValueType(0.0))
-            : VectorType(v / sin_half_angle);
-
-    angle = half_angle + half_angle;
+            : normalize(v);
 }
 
 template <typename T>
