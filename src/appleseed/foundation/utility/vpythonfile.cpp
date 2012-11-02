@@ -83,7 +83,7 @@ namespace
 
 void VPythonFile::draw_point(
     const Vector3d&     point,
-    const string&       color,
+    const char*         color,
     const size_t        size)
 {
     fprintf(
@@ -91,13 +91,13 @@ void VPythonFile::draw_point(
         "points(pos=[(%f,%f,%f)], size=" FMT_SIZE_T ", color=color.%s)\n",
         point.x, point.y, point.z,
         size,
-        color.c_str());
+        color);
 }
 
 void VPythonFile::draw_points(
     const size_t        point_count,
     const Vector3d      points[],
-    const string&       color,
+    const char*         color,
     const size_t        size)
 {
     fprintf(
@@ -105,13 +105,13 @@ void VPythonFile::draw_points(
         "points(pos=[%s], size=" FMT_SIZE_T ", color=color.%s)\n",
         points_to_string(point_count, points).c_str(),
         size,
-        color.c_str());
+        color);
 }
 
 void VPythonFile::draw_polyline(
     const size_t        point_count,
     const Vector3d      points[],
-    const std::string&  color,
+    const char*         color,
     const double        thickness)
 {
     fprintf(
@@ -119,35 +119,102 @@ void VPythonFile::draw_polyline(
         "curve(pos=[%s], radius=%f, color=color.%s)\n",
         points_to_string(point_count, points).c_str(),
         thickness,
-        color.c_str());
+        color);
 }
 
 void VPythonFile::draw_unit_square(
-    const string&       color,
+    const char*         color,
     const double        thickness)
 {
     fprintf(
         m_file,
         "curve(pos=[(0,0,0),(0,0,1),(1,0,1),(1,0,0),(0,0,0)], radius=%f, color=color.%s)\n",
         thickness,
-        color.c_str());
+        color);
+}
+
+void VPythonFile::draw_aabb(
+    const AABB3d&       bbox,
+    const char*         color,
+    const double        thickness)
+{
+    fprintf(
+        m_file,
+        "curve(pos=[(%f,%f,%f),(%f,%f,%f),(%f,%f,%f),(%f,%f,%f),(%f,%f,%f)], radius=%f, color=color.%s)\n",
+        bbox.min.x, bbox.min.y, bbox.min.z,
+        bbox.max.x, bbox.min.y, bbox.min.z,
+        bbox.max.x, bbox.max.y, bbox.min.z,
+        bbox.min.x, bbox.max.y, bbox.min.z,
+        bbox.min.x, bbox.min.y, bbox.min.z,
+        thickness,
+        color);
+
+    fprintf(
+        m_file,
+        "curve(pos=[(%f,%f,%f),(%f,%f,%f),(%f,%f,%f),(%f,%f,%f),(%f,%f,%f)], radius=%f, color=color.%s)\n",
+        bbox.min.x, bbox.min.y, bbox.max.z,
+        bbox.max.x, bbox.min.y, bbox.max.z,
+        bbox.max.x, bbox.max.y, bbox.max.z,
+        bbox.min.x, bbox.max.y, bbox.max.z,
+        bbox.min.x, bbox.min.y, bbox.max.z,
+        thickness,
+        color);
+
+    fprintf(
+        m_file,
+        "curve(pos=[(%f,%f,%f),(%f,%f,%f)], radius=%f, color=color.%s)\n",
+        bbox.min.x, bbox.min.y, bbox.min.z,
+        bbox.min.x, bbox.min.y, bbox.max.z,
+        thickness,
+        color);
+
+    fprintf(
+        m_file,
+        "curve(pos=[(%f,%f,%f),(%f,%f,%f)], radius=%f, color=color.%s)\n",
+        bbox.max.x, bbox.min.y, bbox.min.z,
+        bbox.max.x, bbox.min.y, bbox.max.z,
+        thickness,
+        color);
+
+    fprintf(
+        m_file,
+        "curve(pos=[(%f,%f,%f),(%f,%f,%f)], radius=%f, color=color.%s)\n",
+        bbox.max.x, bbox.max.y, bbox.min.z,
+        bbox.max.x, bbox.max.y, bbox.max.z,
+        thickness,
+        color);
+
+    fprintf(
+        m_file,
+        "curve(pos=[(%f,%f,%f),(%f,%f,%f)], radius=%f, color=color.%s)\n",
+        bbox.min.x, bbox.max.y, bbox.min.z,
+        bbox.min.x, bbox.max.y, bbox.max.z,
+        thickness,
+        color);
 }
 
 void VPythonFile::draw_arrow(
     const Vector3d&     from,
     const Vector3d&     to,
-    const string&       color,
+    const char*         color,
     const double        shaft_width)
 {
     const Vector3d axis = to - from;
 
     fprintf(
         m_file,
-        "arrow(pos=(%f,%f,%f), axis=(%f,%f,%f), shaftwidth=%f, color=color.%s)\n",
+        "arrow(pos=(%f,%f,%f), axis=(%f,%f,%f), shaftwidth=%f, fixedwidth=True, color=color.%s)\n",
         from.x, from.y, from.z,
         axis.x, axis.y, axis.z,
         shaft_width,
-        color.c_str());
+        color);
+}
+
+void VPythonFile::draw_axes(const double shaft_width)
+{
+    draw_arrow(Vector3d(0.0), Vector3d(1.0, 0.0, 0.0), "red", shaft_width);
+    draw_arrow(Vector3d(0.0), Vector3d(0.0, 1.0, 0.0), "green", shaft_width);
+    draw_arrow(Vector3d(0.0), Vector3d(0.0, 0.0, 1.0), "blue", shaft_width);
 }
 
 }   // namespace foundation
