@@ -29,9 +29,16 @@
 // Interface header.
 #include "transformsequence.h"
 
+// appleseed.foundation headers.
+#include "foundation/math/matrix.h"
+#include "foundation/math/quaternion.h"
+#include "foundation/math/scalar.h"
+#include "foundation/math/vector.h"
+
 // Standard headers.
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 #include <cstring>
 #include <vector>
 
@@ -274,6 +281,93 @@ void TransformSequence::interpolate(
     const double t = (time - begin_time) / (end_time - begin_time);
 
     m_interpolators[begin].evaluate(t, result);
+}
+
+AABB3d TransformSequence::compute_motion_segment_bbox(
+    const AABB3d&       bbox,
+    const Transformd&   from,
+    const Transformd&   to) const
+{
+    //
+    // Reference:
+    //
+    //   http://gruenschloss.org/motion-blur/motion-blur.pdf page 11.
+    //
+
+    AABB3d result = from.to_parent(bbox);
+
+    // Compute the relative rotation between 'from' and 'to'.
+    TransformInterpolatord interpolator;
+    if (!interpolator.set_transforms(from, to))
+        return result;
+    const Quaterniond q =
+        interpolator.get_q1() * conjugate(interpolator.get_q0());
+
+    // Transform the relative rotation to the axis-angle representation.
+    Vector3d axis;
+    double angle;
+    q.extract_axis_angle(axis, angle);
+    if (angle == 0.0)
+        return result;
+
+    // Compute the rotation required to align the rotation axis with the Z axis.
+    const Vector3d Z(0.0, 0.0, 1.0);
+    const Vector3d perp = cross(Z, axis);
+    const double perp_norm = norm(perp);
+    const Transformd axis_to_z(
+        perp_norm == 0.0
+            ? Matrix4d::identity()
+            : Matrix4d::rotation(
+                  perp / perp_norm,
+                  asin(clamp(perp_norm, -1.0, 1.0))));
+    if (axis == -Z)
+        angle = -angle;
+
+    // Consider each corner point of the bounding box.
+    for (size_t c = 0; c < 8; ++c)
+    {
+        // Compute the position of this corner at 'from'.
+        const Vector3d p0 = axis_to_z.point_to_local(bbox.compute_corner(c));
+
+        // Compute the four rotations that place the corner at an extremum in X or Y.
+        const double theta_maxx = atan2(-p0.y, p0.x);
+        const double theta_maxy = atan2(p0.x, p0.y);
+        const double thetas[4] =
+        {
+            mod(theta_maxy, TwoPi),
+            mod(theta_maxx + Pi, TwoPi),
+            mod(theta_maxy + Pi, TwoPi),
+            mod(theta_maxx, TwoPi)
+        };
+
+        // Compute the quadrant the corner belongs to at 'from'.
+        const int qinit = p0.y > 0 ? (p0.x > 0 ? 0 : 1) : (p0.x < 0 ? 2 : 3);
+
+        for (int i = 0; i < 4; ++i)
+        {
+            // Compute the orientation of the next extremum.
+            const int theta_index = angle > 0.0 ? qinit + i : qinit - i - 1;
+            const double theta = thetas[mod(theta_index, 4)];
+
+            // Don't consider extrema past the full rotation.
+            if ((angle > 0.0 && theta > angle) ||
+                (angle < 0.0 && theta - TwoPi < angle))
+                break;
+
+            // Compute the position of this extrema.
+            const double cos_theta = cos(theta);
+            const double sin_theta = sin(theta);
+            const Vector3d extremum(
+                p0.x * cos_theta - p0.y * sin_theta,
+                p0.x * sin_theta + p0.y * cos_theta,
+                p0.z);
+
+            // Include the extrema in the final bounding box.
+            result.insert(axis_to_z.point_to_parent(extremum));
+        }
+    }
+
+    return result;
 }
 
 }   // namespace renderer

@@ -127,6 +127,11 @@ class DLLSYMBOL TransformSequence
     void interpolate(
         const double                    time,
         foundation::Transformd&         result) const;
+
+    foundation::AABB3d compute_motion_segment_bbox(
+        const foundation::AABB3d&       bbox,
+        const foundation::Transformd&   from,
+        const foundation::Transformd&   to) const;
 };
 
 
@@ -189,8 +194,19 @@ foundation::AABB<T, 3> TransformSequence::to_parent(const foundation::AABB<T, 3>
     foundation::AABB<T, 3> result;
     result.invalidate();
 
-    for (size_t i = 0; i < m_size; ++i)
-        result.insert(m_keys[i].m_transform.to_parent(bbox));
+    for (size_t i = 0; i < m_size - 1; ++i)
+    {
+        // Insert the bounding box of the path from this key frame to the next.
+        result.insert(
+            foundation::AABB<T, 3>(
+                compute_motion_segment_bbox(
+                    foundation::AABB3d(bbox),
+                    m_keys[i].m_transform,
+                    m_keys[i + 1].m_transform)));
+    }
+
+    // Insert the bounding box at the last key frame.
+    result.insert(m_keys[m_size - 1].m_transform.to_parent(bbox));
 
     return result;
 }

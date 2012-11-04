@@ -30,11 +30,13 @@
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/aabb.h"
 #include "foundation/math/matrix.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/iostreamop.h"
+#include "foundation/utility/vpythonfile.h"
 #include "foundation/utility/test.h"
 
 using namespace foundation;
@@ -332,5 +334,162 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
                 * Transformd(Matrix4d::translation(Vector3d(1.0, 2.0, 3.0))),
                 transform);
         }
+    }
+
+    TEST_CASE(ToParent_SmallPositiveRotation)
+    {
+        TransformSequence sequence;
+        sequence.set_transform(0.0, Transformd(Matrix4d::rotation(Vector3d(0.0, 0.0, 1.0), 0.0)));
+        sequence.set_transform(1.0, Transformd(Matrix4d::rotation(Vector3d(0.0, 0.0, 1.0), Pi / 8)));
+        sequence.prepare();
+
+        const AABB3d bbox(Vector3d(1.0, 1.0, 0.0), Vector3d(1.0, 1.0, 0.0));
+        const AABB3d motion_bbox = sequence.to_parent(bbox);
+
+        EXPECT_EQ(AABB3d(Vector3d(0.54119610014619690, 1.0, 0.0), Vector3d(1.0, 1.3065629648763766, 0.0)), motion_bbox);
+    }
+
+    TEST_CASE(ToParent_SmallNegativeRotation)
+    {
+        TransformSequence sequence;
+        sequence.set_transform(0.0, Transformd(Matrix4d::rotation(Vector3d(0.0, 0.0, 1.0), 0.0)));
+        sequence.set_transform(1.0, Transformd(Matrix4d::rotation(Vector3d(0.0, 0.0, 1.0), -Pi / 8)));
+        sequence.prepare();
+
+        const AABB3d bbox(Vector3d(1.0, 1.0, 0.0), Vector3d(1.0, 1.0, 0.0));
+        const AABB3d motion_bbox = sequence.to_parent(bbox);
+
+        EXPECT_EQ(AABB3d(Vector3d(1.0, 0.54119610014619690, 0.0), Vector3d(1.3065629648763766, 1.0, 0.0)), motion_bbox);
+    }
+
+    TEST_CASE(ToParent_LargePositiveRotation)
+    {
+        TransformSequence sequence;
+        sequence.set_transform(0.0, Transformd(Matrix4d::rotation(Vector3d(0.0, 0.0, 1.0), 0.0)));
+        sequence.set_transform(1.0, Transformd(Matrix4d::rotation(Vector3d(0.0, 0.0, 1.0), Pi - Pi / 8)));
+        sequence.prepare();
+
+        const AABB3d bbox(Vector3d(1.0, 1.0, 0.0), Vector3d(1.0, 1.0, 0.0));
+        const AABB3d motion_bbox = sequence.to_parent(bbox);
+
+        EXPECT_EQ(AABB3d(Vector3d(-1.4142135623730949, -0.54119610014619690, 0.0), Vector3d(1.0, 1.4142135623730949, 0.0)), motion_bbox);
+    }
+
+    TEST_CASE(ToParent_LargeNegativeRotation)
+    {
+        TransformSequence sequence;
+        sequence.set_transform(0.0, Transformd(Matrix4d::rotation(Vector3d(0.0, 0.0, 1.0), 0.0)));
+        sequence.set_transform(1.0, Transformd(Matrix4d::rotation(Vector3d(0.0, 0.0, 1.0), -Pi + Pi / 8)));
+        sequence.prepare();
+
+        const AABB3d bbox(Vector3d(1.0, 1.0, 0.0), Vector3d(1.0, 1.0, 0.0));
+        const AABB3d motion_bbox = sequence.to_parent(bbox);
+
+        EXPECT_EQ(AABB3d(Vector3d(-0.54119610014619690, -1.4142135623730951, 0.0), Vector3d(1.4142135623730949, 1.0, 0.0)), motion_bbox);
+    }
+
+    void visualize(
+        const char*                 filename,
+        const TransformSequence&    sequence,
+        const AABB3d&               bbox,
+        const size_t                steps = 2)
+    {
+        const AABB3d motion_bbox = sequence.to_parent(bbox);
+
+        const double Width = 0.005;
+
+        VPythonFile file(filename);
+
+        file.draw_axes(Width);
+
+        for (size_t i = 0; i < steps; ++i)
+        {
+            const double t = fit<double>(i, 0, steps - 1, 0.0, 1.0);
+            const Transformd transform = sequence.evaluate(t);
+            const char* color = i == 0 ? "red" : i == steps - 1 ? "green" : "white";
+
+            file.draw_aabb(transform.to_parent(bbox), color, Width);
+            file.draw_arrow(Vector3d(0.0), transform.point_to_parent(bbox.center()), color, Width);
+        }
+
+        file.draw_aabb(motion_bbox, "white", Width);
+    }
+
+    TEST_CASE(ToParent_GivenPoint_VisualizeSmallPositiveRotation)
+    {
+        TransformSequence sequence;
+        sequence.set_transform(0.0, Transformd(Matrix4d::rotation(Vector3d(0.0, 0.0, 1.0), 0.0)));
+        sequence.set_transform(1.0, Transformd(Matrix4d::rotation(Vector3d(0.0, 0.0, 1.0), Pi / 8)));
+        sequence.prepare();
+
+        const AABB3d bbox(Vector3d(1.0, 1.0, 0.0), Vector3d(1.0, 1.0, 0.0));
+
+        visualize(
+            "unit tests/outputs/test_transformsequence_toparent_givenpoint_smallpositiverotation.py",
+            sequence,
+            bbox);
+    }
+
+    TEST_CASE(ToParent_GivenPoint_VisualizeSmallNegativeRotation)
+    {
+        TransformSequence sequence;
+        sequence.set_transform(0.0, Transformd(Matrix4d::rotation(Vector3d(0.0, 0.0, 1.0), 0.0)));
+        sequence.set_transform(1.0, Transformd(Matrix4d::rotation(Vector3d(0.0, 0.0, 1.0), -Pi / 8)));
+        sequence.prepare();
+
+        const AABB3d bbox(Vector3d(1.0, 1.0, 0.0), Vector3d(1.0, 1.0, 0.0));
+
+        visualize(
+            "unit tests/outputs/test_transformsequence_toparent_point_smallnegativerotation.py",
+            sequence,
+            bbox);
+    }
+
+    TEST_CASE(ToParent_GivenPoint_VisualizeLargePositiveRotation)
+    {
+        TransformSequence sequence;
+        sequence.set_transform(0.0, Transformd(Matrix4d::rotation(Vector3d(0.0, 0.0, 1.0), 0.0)));
+        sequence.set_transform(1.0, Transformd(Matrix4d::rotation(Vector3d(0.0, 0.0, 1.0), Pi - Pi / 8)));
+        sequence.prepare();
+
+        const AABB3d bbox(Vector3d(-1.0, -1.0, 0.0), Vector3d(-1.0, -1.0, 0.0));
+
+        visualize(
+            "unit tests/outputs/test_transformsequence_toparent_point_largepositiverotation.py",
+            sequence,
+            bbox,
+            20);
+    }
+
+    TEST_CASE(ToParent_GivenPoint_VisualizeLargeNegativeRotation)
+    {
+        TransformSequence sequence;
+        sequence.set_transform(0.0, Transformd(Matrix4d::rotation(Vector3d(0.0, 0.0, 1.0), 0.0)));
+        sequence.set_transform(1.0, Transformd(Matrix4d::rotation(Vector3d(0.0, 0.0, 1.0), -Pi + Pi / 8)));
+        sequence.prepare();
+
+        const AABB3d bbox(Vector3d(-1.0, -1.0, 0.0), Vector3d(-1.0, -1.0, 0.0));
+
+        visualize(
+            "unit tests/outputs/test_transformsequence_toparent_point_largenegativerotation.py",
+            sequence,
+            bbox,
+            20);
+    }
+
+    TEST_CASE(ToParent_GivenAABB_VisualizeLargeNegativeRotation)
+    {
+        TransformSequence sequence;
+        sequence.set_transform(0.0, Transformd(Matrix4d::rotation(Vector3d(0.0, 0.0, 1.0), 0.0)));
+        sequence.set_transform(1.0, Transformd(Matrix4d::rotation(Vector3d(0.0, 0.0, 1.0), -Pi + Pi / 8)));
+        sequence.prepare();
+
+        const AABB3d bbox(Vector3d(-2.0, -2.0, 0.0), Vector3d(-1.0, -1.0, 0.0));
+
+        visualize(
+            "unit tests/outputs/test_transformsequence_toparent_aabb_largenegativerotation.py",
+            sequence,
+            bbox,
+            20);
     }
 }
