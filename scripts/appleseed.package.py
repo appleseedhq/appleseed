@@ -28,7 +28,7 @@
 #
 
 # Package builder settings.
-VersionString = "2.0.1"
+VersionString = "2.1.0"
 SettingsFileName = "appleseed.package.configuration.xml"
 
 # Imports.
@@ -177,6 +177,7 @@ class PackageBuilder:
         self.deploy_sandbox_to_stage()
         self.cleanup_stage()
         self.add_local_binaries_to_stage()
+        self.add_scripts_to_stage()
         self.add_local_schema_files_to_stage()
         self.add_text_files_to_stage()
         self.add_dummy_files_into_empty_directories()
@@ -219,6 +220,10 @@ class PackageBuilder:
         progress("Adding local binaries to staging directory")
         safe_make_directory("appleseed/bin")
         dir_util.copy_tree(os.path.join(self.settings.appleseed_path, "sandbox/bin", self.settings.configuration), "appleseed/bin/")
+
+    def add_scripts_to_stage(self):
+        progress("Adding scripts to staging directory")
+        shutil.copy("watch_folder.py", "appleseed/bin/")
 
     def add_local_schema_files_to_stage(self):
         progress("Adding local schema files to staging directory")
@@ -351,7 +356,7 @@ class LinuxPackageBuilder(PackageBuilder):
         self.copy_qt_library("QtGui")
         self.copy_qt_library("QtOpenGL")
         self.copy_png_library()
-        self.copy_run_scripts()
+        self.copy_run_script()
 
     def copy_qt_library(self, library_name):
         library_filename = "lib" + library_name + ".so.4"
@@ -371,7 +376,7 @@ class LinuxPackageBuilder(PackageBuilder):
         mode |= S_IXUSR | S_IXGRP | S_IXOTH
         os.chmod(filepath, mode)
 
-    def copy_run_scripts(self):
+    def copy_run_script(self):
         dest_path = os.path.join("appleseed", "bin")
         shutil.copy("run-appleseed.sh", dest_path)
 
