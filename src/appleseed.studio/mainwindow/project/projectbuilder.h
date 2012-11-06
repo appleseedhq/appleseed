@@ -101,13 +101,6 @@ class ProjectBuilder
         ParentEntity&                       parent,
         const foundation::Dictionary&       values) const;
 
-    // Simulate partial specialization of edit_entity() for Entity = renderer::ObjectInstance.
-    template <typename ParentEntity>
-    renderer::ObjectInstance* edit_entity(
-        renderer::ObjectInstance*           old_entity,
-        ParentEntity&                       parent,
-        const foundation::Dictionary&       values) const;
-
     // Simulate partial specialization of edit_entity() for Entity = renderer::TextureInstance.
     template <typename ParentEntity>
     renderer::TextureInstance* edit_entity(
@@ -269,10 +262,10 @@ inline renderer::Camera* ProjectBuilder::edit_entity(
     return new_entity_ptr;
 }
 
-template <typename ParentEntity>
+template <>
 inline renderer::ObjectInstance* ProjectBuilder::edit_entity(
     renderer::ObjectInstance*           old_entity,
-    ParentEntity&                       parent,
+    renderer::Assembly&                 parent,
     const foundation::Dictionary&       values) const
 {
     const std::string object_name = old_entity->get_object_name();
