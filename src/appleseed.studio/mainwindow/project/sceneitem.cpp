@@ -45,6 +45,7 @@
 #include "foundation/utility/uid.h"
 
 // Qt headers.
+#include <QFont>
 #include <QMenu>
 
 using namespace foundation;
@@ -66,6 +67,10 @@ SceneItem::SceneItem(
 {
     set_allow_deletion(false);
     set_allow_edition(false);
+
+    QFont font;
+    font.setBold(true);
+    setFont(0, font);
 
     insertChild(
         0,
