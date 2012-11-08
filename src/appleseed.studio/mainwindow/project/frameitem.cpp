@@ -27,17 +27,26 @@
 //
 
 // Interface header.
-#include "projectbuilder.h"
+#include "frameitem.h"
 
 // appleseed.studio headers.
-#include "mainwindow/project/entityeditorformfactorybase.h"
-#include "mainwindow/project/exceptioninvalidentityname.h"
+#include "mainwindow/project/entityeditorwindow.h"
+#include "mainwindow/project/projectbuilder.h"
+#include "mainwindow/project/singlemodelentityeditorformfactory.h"
+#include "mainwindow/project/tools.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/frame.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/string.h"
+#include "foundation/utility/uid.h"
+
+// Qt headers.
+#include <QString>
+#include <QWidget>
+
+// Standard headers.
+#include <memory>
 
 using namespace foundation;
 using namespace renderer;
@@ -46,58 +55,51 @@ using namespace std;
 namespace appleseed {
 namespace studio {
 
-ProjectBuilder::ProjectBuilder(Project& project)
-  : m_project(project)
+namespace
 {
+    const UniqueID g_class_uid = new_guid();
 }
 
-Project& ProjectBuilder::get_project()
+FrameItem::FrameItem(
+    Frame*          frame,
+    ProjectBuilder& project_builder)
+  : ItemBase(g_class_uid, frame->get_name())
+  , m_frame(frame)
+  , m_project_builder(project_builder)
 {
-    return m_project;
+    set_allow_deletion(false);
 }
 
-const Project& ProjectBuilder::get_project() const
+void FrameItem::slot_edit()
 {
-    return m_project;
+    auto_ptr<EntityEditorWindow::IFormFactory> form_factory(
+        new SingleModelEntityEditorFormFactory(
+            m_frame->get_name(),
+            FrameFactory::get_widget_definitions()));
+
+    open_entity_editor(
+        treeWidget(),
+        "Edit Frame",
+        m_project_builder.get_project(),
+        form_factory,
+        auto_ptr<EntityEditorWindow::IEntityBrowser>(0),
+        m_frame->get_parameters(),
+        this,
+        SLOT(slot_edit_accepted(foundation::Dictionary)));
 }
 
-void ProjectBuilder::notify_project_modification() const
+void FrameItem::slot_edit_accepted(Dictionary values)
 {
-    emit signal_project_modified();
+    catch_entity_creation_errors(&FrameItem::edit, values, "Frame");
 }
 
-Frame* ProjectBuilder::edit_frame(
-    const Dictionary&   values) const
+void FrameItem::edit(const Dictionary& values)
 {
-    const string name = get_entity_name(values);
+    m_frame = m_project_builder.edit_frame(values);
 
-    Dictionary clean_values(values);
-    clean_values.strings().remove(EntityEditorFormFactoryBase::NameParameter);
+    set_title(QString::fromAscii(m_frame->get_name()));
 
-    m_project.set_frame(FrameFactory::create(name.c_str(), clean_values));
-
-    notify_project_modification();
-
-    return m_project.get_frame();
-}
-
-string ProjectBuilder::get_entity_name(const Dictionary& values)
-{
-    if (!values.strings().exist(EntityEditorFormFactoryBase::NameParameter))
-        throw ExceptionInvalidEntityName();
-
-    const string name = trim_both(
-        values.get<string>(EntityEditorFormFactoryBase::NameParameter));
-
-    if (!is_valid_entity_name(name))
-        throw ExceptionInvalidEntityName();
-
-    return name;
-}
-
-bool ProjectBuilder::is_valid_entity_name(const string& name)
-{
-    return !name.empty();
+    qobject_cast<QWidget*>(QObject::sender())->close();
 }
 
 }   // namespace studio

@@ -47,6 +47,7 @@
 #include <cstddef>
 
 // Forward declarations.
+namespace foundation    { class DictionaryArray; }
 namespace foundation    { class Image; }
 namespace foundation    { class ImageAttributes; }
 namespace foundation    { class LightingConditions; }
@@ -158,6 +159,9 @@ class DLLSYMBOL Frame
 class DLLSYMBOL FrameFactory
 {
   public:
+    // Return a set of widget definitions for frames.
+    static foundation::DictionaryArray get_widget_definitions();
+
     // Create a new frame.
     static foundation::auto_release_ptr<Frame> create(
         const char*         name,

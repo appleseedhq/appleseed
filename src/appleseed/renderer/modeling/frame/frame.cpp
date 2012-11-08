@@ -50,6 +50,8 @@
 #include "foundation/platform/sse.h"
 #endif
 #include "foundation/platform/timer.h"
+#include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/otherwise.h"
 #include "foundation/utility/stopwatch.h"
@@ -659,6 +661,80 @@ bool Frame::write_image(
 //
 // FrameFactory class implementation.
 //
+
+DictionaryArray FrameFactory::get_widget_definitions()
+{
+    DictionaryArray definitions;
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "resolution")
+            .insert("label", "Resolution")
+            .insert("widget", "text_box")
+            .insert("use", "required"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "tile_size")
+            .insert("label", "Tile Size")
+            .insert("widget", "text_box")
+            .insert("use", "required"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "pixel_format")
+            .insert("label", "Pixel Format")
+            .insert("widget", "dropdown_list")
+            .insert("dropdown_items",
+                Dictionary()
+                    .insert("Integer, 8-bit", "uint8")
+                    .insert("Integer, 16-bit", "uint16")
+                    .insert("Integer, 32-bit", "uint32")
+                    .insert("Floating-Point, 16-bit", "half")
+                    .insert("Floating-Point, 32-bit", "float")
+                    .insert("Floating-Point, 64-bit", "double"))
+            .insert("use", "optional")
+            .insert("default", "float"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "color_space")
+            .insert("label", "Color Space")
+            .insert("widget", "dropdown_list")
+            .insert("dropdown_items",
+                Dictionary()
+                    .insert("Linear RGB", "linear_rgb")
+                    .insert("sRGB", "srgb")
+                    .insert("CIE XYZ", "ciexyz"))
+            .insert("use", "optional")
+            .insert("default", "linear_rgb"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "premultiplied_alpha")
+            .insert("label", "Premultiplied Alpha")
+            .insert("widget", "checkbox")
+            .insert("use", "optional")
+            .insert("default", "true"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "clamping")
+            .insert("label", "Clamping")
+            .insert("widget", "checkbox")
+            .insert("use", "optional")
+            .insert("default", "false"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "gamma_correction")
+            .insert("label", "Gamma Correction")
+            .insert("widget", "text_box")
+            .insert("use", "optional")
+            .insert("default", "1.0"));
+
+    return definitions;
+}
 
 auto_release_ptr<Frame> FrameFactory::create(
     const char*         name,

@@ -32,6 +32,7 @@
 // appleseed.studio headers.
 #include "mainwindow/project/assemblycollectionitem.h"
 #include "mainwindow/project/itembase.h"
+#include "mainwindow/project/outputitem.h"
 #include "mainwindow/project/sceneitem.h"
 
 // appleseed.renderer headers.
@@ -68,6 +69,10 @@ ProjectExplorer::ProjectExplorer(
     SceneItem* scene_item = new SceneItem(*project.get_scene(), m_project_builder, settings);
     m_tree_widget->addTopLevelItem(scene_item);
     scene_item->setExpanded(true);
+
+    OutputItem* output_item = new OutputItem(project, m_project_builder);
+    m_tree_widget->addTopLevelItem(output_item);
+    output_item->setExpanded(true);
 
     connect(
         m_tree_widget, SIGNAL(customContextMenuRequested(const QPoint&)),

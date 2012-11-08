@@ -48,6 +48,7 @@
 #include "foundation/utility/string.h"
 
 // Qt headers.
+#include <QCheckBox>
 #include <QColor>
 #include <QColorDialog>
 #include <QComboBox>
@@ -199,6 +200,10 @@ void EntityEditorWindow::create_input_widget(const Dictionary& definition)
     {
         create_text_box_input_widget(definition);
     }
+    else if (widget_type == "checkbox")
+    {
+        create_checkbox_input_widget(definition);
+    }
     else if (widget_type == "dropdown_list")
     {
         create_dropdown_list_input_widget(definition);
@@ -255,6 +260,24 @@ void EntityEditorWindow::create_text_box_input_widget(const Dictionary& definiti
     }
 
     m_form_layout->addRow(get_label_text(definition), line_edit);
+}
+
+void EntityEditorWindow::create_checkbox_input_widget(const Dictionary& definition)
+{
+    QCheckBox* checkbox = new QCheckBox(m_ui->scrollarea_contents);
+
+    const string name = definition.get<string>("name");
+
+    IInputWidgetProxy* widget_proxy = new CheckBoxProxy(checkbox);
+    m_widget_proxies[name] = widget_proxy;
+
+    if (definition.strings().exist("default"))
+        widget_proxy->set(definition.strings().get<string>("default"));
+
+    if (should_be_focused(definition))
+        checkbox->setFocus();
+
+    m_form_layout->addRow(get_label_text(definition), checkbox);
 }
 
 void EntityEditorWindow::create_dropdown_list_input_widget(const Dictionary& definition)

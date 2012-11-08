@@ -108,6 +108,9 @@ class ProjectBuilder
         ParentEntity&                       parent,
         const foundation::Dictionary&       values) const;
 
+    renderer::Frame* edit_frame(
+        const foundation::Dictionary&       values) const;
+
   signals:
     void signal_project_modified() const;
 

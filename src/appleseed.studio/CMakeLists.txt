@@ -129,6 +129,8 @@ set (mainwindow_project_sources
     mainwindow/project/entityitem.h
     mainwindow/project/entityitembase.h
     mainwindow/project/exceptioninvalidentityname.h
+    mainwindow/project/frameitem.cpp
+    mainwindow/project/frameitem.h
     mainwindow/project/instancecollectionitem.h
     mainwindow/project/itembase.cpp
     mainwindow/project/itembase.h
@@ -144,6 +146,8 @@ set (mainwindow_project_sources
     mainwindow/project/objectinstanceitem.h
     mainwindow/project/objectitem.cpp
     mainwindow/project/objectitem.h
+    mainwindow/project/outputitem.cpp
+    mainwindow/project/outputitem.h
     mainwindow/project/projectbuilder.cpp
     mainwindow/project/projectbuilder.h
     mainwindow/project/projectexplorer.cpp

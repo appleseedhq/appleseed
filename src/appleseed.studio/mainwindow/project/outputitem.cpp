@@ -27,77 +27,48 @@
 //
 
 // Interface header.
-#include "projectbuilder.h"
+#include "outputitem.h"
 
 // appleseed.studio headers.
-#include "mainwindow/project/entityeditorformfactorybase.h"
-#include "mainwindow/project/exceptioninvalidentityname.h"
+#include "mainwindow/project/frameitem.h"
 
 // appleseed.renderer headers.
-#include "renderer/api/frame.h"
+#include "renderer/api/project.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/string.h"
+#include "foundation/utility/uid.h"
+
+// Qt headers.
+#include <QFont>
 
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 namespace appleseed {
 namespace studio {
 
-ProjectBuilder::ProjectBuilder(Project& project)
-  : m_project(project)
+namespace
 {
+    const UniqueID g_class_uid = new_guid();
 }
 
-Project& ProjectBuilder::get_project()
+OutputItem::OutputItem(
+    Project&        project,
+    ProjectBuilder& project_builder)
+  : ItemBase(g_class_uid, "Output")
 {
-    return m_project;
-}
+    set_allow_deletion(false);
+    set_allow_edition(false);
 
-const Project& ProjectBuilder::get_project() const
-{
-    return m_project;
-}
+    QFont font;
+    font.setBold(true);
+    setFont(0, font);
 
-void ProjectBuilder::notify_project_modification() const
-{
-    emit signal_project_modified();
-}
-
-Frame* ProjectBuilder::edit_frame(
-    const Dictionary&   values) const
-{
-    const string name = get_entity_name(values);
-
-    Dictionary clean_values(values);
-    clean_values.strings().remove(EntityEditorFormFactoryBase::NameParameter);
-
-    m_project.set_frame(FrameFactory::create(name.c_str(), clean_values));
-
-    notify_project_modification();
-
-    return m_project.get_frame();
-}
-
-string ProjectBuilder::get_entity_name(const Dictionary& values)
-{
-    if (!values.strings().exist(EntityEditorFormFactoryBase::NameParameter))
-        throw ExceptionInvalidEntityName();
-
-    const string name = trim_both(
-        values.get<string>(EntityEditorFormFactoryBase::NameParameter));
-
-    if (!is_valid_entity_name(name))
-        throw ExceptionInvalidEntityName();
-
-    return name;
-}
-
-bool ProjectBuilder::is_valid_entity_name(const string& name)
-{
-    return !name.empty();
+    insertChild(
+        0,
+        new FrameItem(
+            project.get_frame(),
+            project_builder));
 }
 
 }   // namespace studio
