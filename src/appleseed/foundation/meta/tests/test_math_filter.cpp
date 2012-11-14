@@ -72,7 +72,7 @@ namespace
 
         for (size_t i = 0; i < PointCount; ++i)
         {
-            const double x = fit<double>(i, 0, PointCount, -r - 1.0, r + 1.0);
+            const double x = fit<size_t, double>(i, 0, PointCount, -r - 1.0, r + 1.0);
             const double value = x < -r || x > r ? 0.0 : filter.evaluate(x, 0.0);
 
             abscissas.push_back(x);
