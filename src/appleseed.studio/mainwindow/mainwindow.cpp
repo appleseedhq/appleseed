@@ -131,6 +131,11 @@ MainWindow::~MainWindow()
     delete m_ui;
 }
 
+void MainWindow::slot_recreate_render_widgets()
+{
+    recreate_render_widgets();
+}
+
 void MainWindow::build_menus()
 {
     //
@@ -594,9 +599,13 @@ void MainWindow::update_project_explorer()
                 *m_project_manager.get_project(),
                 m_settings));
 
-        QObject::connect(
+        connect(
             m_project_explorer.get(), SIGNAL(signal_project_modified()),
             this, SLOT(slot_project_modified()));
+
+        connect(
+            m_project_explorer.get(), SIGNAL(signal_frame_modified()),
+            this, SLOT(slot_recreate_render_widgets()));
     }
     else
     {
@@ -1006,7 +1015,7 @@ void MainWindow::slot_show_render_settings_window()
     {
         m_render_settings_window.reset(new RenderSettingsWindow(m_project_manager, this));
 
-        QObject::connect(
+        connect(
             m_render_settings_window.get(), SIGNAL(signal_settings_modified()),
             this, SLOT(slot_project_modified()));
     }

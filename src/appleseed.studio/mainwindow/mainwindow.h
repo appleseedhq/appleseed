@@ -88,6 +88,9 @@ class MainWindow
     // Destructor.
     ~MainWindow();
 
+  public slots:
+    void slot_recreate_render_widgets();
+
   private:
     // Not wrapped in std::auto_ptr<> to avoid pulling in the UI definition code.
     Ui::MainWindow*                     m_ui;

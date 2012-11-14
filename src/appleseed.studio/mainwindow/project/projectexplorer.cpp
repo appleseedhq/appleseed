@@ -92,6 +92,10 @@ ProjectExplorer::ProjectExplorer(
     connect(
         &m_project_builder, SIGNAL(signal_project_modified()),
         this, SIGNAL(signal_project_modified()));
+
+    connect(
+        &m_project_builder, SIGNAL(signal_frame_modified()),
+        this, SIGNAL(signal_frame_modified()));
 }
 
 QMenu* ProjectExplorer::build_single_item_context_menu(QTreeWidgetItem* item) const

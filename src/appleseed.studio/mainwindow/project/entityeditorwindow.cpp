@@ -474,11 +474,11 @@ void EntityEditorWindow::slot_open_entity_browser(const QString& widget_name)
     ForwardAcceptedSignal* forward_signal =
         new ForwardAcceptedSignal(browser_window, widget_name);
 
-    QObject::connect(
+    connect(
         browser_window, SIGNAL(signal_accepted(QString, QString)),
         forward_signal, SLOT(slot_accept(QString, QString)));
 
-    QObject::connect(
+    connect(
         forward_signal, SIGNAL(signal_accepted(QString, QString, QString)),
         this, SLOT(slot_entity_browser_accept(QString, QString, QString)));
 

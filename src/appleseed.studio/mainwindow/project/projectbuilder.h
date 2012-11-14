@@ -113,6 +113,7 @@ class ProjectBuilder
 
   signals:
     void signal_project_modified() const;
+    void signal_frame_modified() const;
 
   private:
     renderer::Project&                              m_project;

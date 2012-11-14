@@ -255,11 +255,11 @@ void ObjectInstanceItem::slot_assign_material()
     EnrichAndForwardAcceptedSignal* forwarder =
         new EnrichAndForwardAcceptedSignal(browser_window, action->data());
 
-    QObject::connect(
+    connect(
         browser_window, SIGNAL(signal_accepted(QString, QString)),
         forwarder, SLOT(slot_accepted(QString, QString)));
 
-    QObject::connect(
+    connect(
         forwarder, SIGNAL(signal_accepted(QString, QString, QVariant)),
         this, SLOT(slot_assign_material_accepted(QString, QString, QVariant)));
 

@@ -77,6 +77,7 @@ Frame* ProjectBuilder::edit_frame(
     m_project.set_frame(FrameFactory::create(name.c_str(), clean_values));
 
     notify_project_modification();
+    emit signal_frame_modified();
 
     return m_project.get_frame();
 }
