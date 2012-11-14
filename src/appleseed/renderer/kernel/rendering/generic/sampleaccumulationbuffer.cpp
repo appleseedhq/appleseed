@@ -113,13 +113,13 @@ void SampleAccumulationBuffer::develop_pixel(
     const float alpha = *ptr++;
 
     const Color4f color(ptr[0], ptr[1], ptr[2], alpha);
-    pixel_buffer.set_pixel_color(x, y, color * rcp_weight);
+    pixel_buffer.set_pixel_color(static_cast<int>(x), static_cast<int>(y), color * rcp_weight);
     ptr += 3;
 
     for (size_t i = 0; i < m_aov_count; ++i)
     {
         const Color3f aov(ptr[0], ptr[1], ptr[2]);
-        pixel_buffer.set_pixel_aov(x, y, i, aov * rcp_weight);
+        pixel_buffer.set_pixel_aov(static_cast<int>(x), static_cast<int>(y), i, aov * rcp_weight);
         ptr += 3;
     }
 }
