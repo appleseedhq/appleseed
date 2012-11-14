@@ -19,6 +19,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
+//
 
 
 //--------------------------------------------------------------------------------------------------
@@ -212,6 +213,7 @@ global proc AEms_renderSettingsTemplate(string $nodeName) {
             editorTemplate -addControl "convert_shading_nodes_to_textures";
             editorTemplate -label "Convert Textures to OpenEXR" -addControl "convert_textures_to_exr";
             editorTemplate -label "Overwrite Existing Textures Files" -addControl "overwrite_existing_textures";
+            editorTemplate -label "Overwrite Existing Geometry Files" -addControl "overwrite_existing_geometry";
             editorTemplate -addSeparator;
             editorTemplate -addControl "export_maya_lights";
             editorTemplate -addSeparator;
@@ -245,7 +247,7 @@ global proc AEms_renderSettingsTemplate(string $nodeName) {
             editorTemplate -addSeparator;
             editorTemplate -addControl "export_all_cameras_as_thinlens";
         editorTemplate -endLayout;
-      
+
         editorTemplate -beginLayout "Assembly Settings" -collapse true;
             editorTemplate -addControl "interpret_sets_as_assemblies";
             editorTemplate -addSeparator;
@@ -253,8 +255,6 @@ global proc AEms_renderSettingsTemplate(string $nodeName) {
 
         editorTemplate -beginLayout "Configuration Settings" -collapse true;
             editorTemplate -addControl "export_custom_final_config";
-            editorTemplate -addControl "min_samples";
-            editorTemplate -addControl "max_samples";
             editorTemplate -addControl "gtr_sampler";
             editorTemplate -addControl "gtr_filter_size";
             editorTemplate -addControl "gtr_min_samples";
@@ -288,10 +288,11 @@ global proc AEms_renderSettingsTemplate(string $nodeName) {
 
         editorTemplate -beginLayout "Advanced Settings" -collapse true;
             editorTemplate -addControl "profile_export";
+            editorTemplate -addControl "verbose_output";
         editorTemplate -endLayout;
 
-        AEdependNodeTemplate $nodeName;       // add any base class attributes
-        editorTemplate -addExtraControls;     // add any other attributes
+        AEdependNodeTemplate $nodeName;
+        editorTemplate -addExtraControls;
     editorTemplate -endScrollLayout;
 
     editorTemplate -endNoOptimize;
