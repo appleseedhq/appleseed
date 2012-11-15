@@ -61,7 +61,7 @@ def ms_renderSettings_nodeInitializer():
     ms_renderSettings.export_button = export_button_string_Attr.create("export", "export", OpenMaya.MFnData.kString, export_button_string)
 
     #  output directory
-    output_dir_string = OpenMaya.MFnStringData().create(os.path.join("<ProjectDir>", "Mayaseed", "<SceneName>"))
+    output_dir_string = OpenMaya.MFnStringData().create(os.path.join("<ProjectDir>Mayaseed", "<SceneName>"))
     output_dir_Attr = OpenMaya.MFnTypedAttribute()
     ms_renderSettings.output_dir = output_dir_Attr.create("output_directory", "out_dir", OpenMaya.MFnData.kString, output_dir_string)
     

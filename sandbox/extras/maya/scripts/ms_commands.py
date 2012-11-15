@@ -38,7 +38,7 @@ import random
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-MAYASEED_VERSION = '0.3.0'
+MAYASEED_VERSION = '0.3.1'
 MAYASEED_URL = 'https://github.com/jonathantopf/mayaseed'
 APPLESEED_URL = 'http://appleseedhq.net/'
 ROOT_DIRECTORY = os.path.split((os.path.dirname(inspect.getfile(inspect.currentframe()))))[0]
@@ -114,6 +114,7 @@ def normalizeRGB(color):
 #--------------------------------------------------------------------------------------------------
 
 def convert_connection_to_image(shader, attribute, dest_file, resolution=1024, pass_through=False):
+
     dest_dir = os.path.split(dest_file)[0]
 
     create_dir(dest_dir)

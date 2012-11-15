@@ -307,10 +307,14 @@ def add_scene_sample(m_transform, transform_blur, deform_blur, camera_blur, curr
 
     for mesh in m_transform.child_meshes:
         if (frame_sample_number == 1) or force_sample:
-            for material in (mesh.ms_materials + mesh.generic_materials):
+            for material in mesh.ms_materials:
                 for texture in material.textures:
                     if texture.is_animated or force_sample:
                         texture.add_image_sample(export_root, tex_dir, current_frame)
+            for material in mesh.generic_materials:
+                for texture in material.textures:
+                    if texture.is_animated or force_sample:
+                        texture.add_image_sample(export_root, tex_dir, current_frame)               
 
     for camera in m_transform.child_cameras:
         if camera_blur or force_sample or (frame_sample_number == 1):
@@ -321,6 +325,20 @@ def add_scene_sample(m_transform, transform_blur, deform_blur, camera_blur, curr
     for transform in m_transform.child_transforms:
         add_scene_sample(transform, transform_blur, deform_blur, camera_blur, current_frame, start_frame, frame_sample_number, force_sample, export_root, geo_dir, tex_dir)
 
+
+#--------------------------------------------------------------------------------------------------
+# m_file_from_color_connection function.
+#--------------------------------------------------------------------------------------------------
+
+def m_file_from_color_connection(params, m_color_connection):
+    if m_color_connection.connected_node:
+        if m_color_connection.connected_node_type == 'file':
+            return MFile(params, m_color_connection.connected_node)
+        else:
+            node_name, attr_name = m_color_connection.name.split('.')
+            return MFile(params, None, node_name, attr_name)
+
+    return None
 
 #--------------------------------------------------------------------------------------------------
 # MTransform class.
@@ -531,26 +549,46 @@ class MFile():
 
     """ Lightweight class representing Maya file nodes """
 
-    def __init__(self, params, maya_file_node):
+    def __init__(self, params, maya_file_node, source_node=False, attribute=False):
         self.params = params
-        self.name = maya_file_node
-        self.safe_name = ms_commands.legalize_name(self.name)
-        self.image_name = cmds.getAttr(self.name + '.fileTextureName')
-        self.resolved_image_name = ms_commands.get_file_texture_name(self.name)
         self.image_file_names = []
-        self.is_animated = cmds.getAttr(self.name + '.useFrameExtension')
-        self.alpha_is_luminance = cmds.getAttr(self.name + '.alphaIsLuminance')
+        self.node_type = cmds.nodeType(maya_file_node)
+        
+        if self.node_type == 'file':
+            self.name = maya_file_node
+            self.safe_name = ms_commands.legalize_name(self.name)
+            self.image_name = cmds.getAttr(self.name + '.fileTextureName')
+            self.resolved_image_name = ms_commands.get_file_texture_name(self.name)
+            self.is_animated = cmds.getAttr(self.name + '.useFrameExtension')
+            self.alpha_is_luminance = cmds.getAttr(self.name + '.alphaIsLuminance')
+            
+            self.filtering_mode = cmds.getAttr((self.name + '.filterType'), asString=True)
 
-        texture_placement_node = ms_commands.get_connected_node(self.name + '.uvCoord')
-        if texture_placement_node is not None:
-            self.has_uv_placement = True
-            self.repeat_u = cmds.getAttr(texture_placement_node + '.repeatU')
-            self.repeat_v = cmds.getAttr(texture_placement_node + '.repeatV')
+            # Off, Mipmap, Box, Quadratic, Quartic, Gaussian 
+
+            texture_placement_node = ms_commands.get_connected_node(self.name + '.uvCoord')
+            if texture_placement_node is not None:
+                self.has_uv_placement = True
+                self.repeat_u = cmds.getAttr(texture_placement_node + '.repeatU')
+                self.repeat_v = cmds.getAttr(texture_placement_node + '.repeatV')
+            else:
+                self.has_uv_placement = False
+
+
         else:
+            self.source_node = source_node
+            self.attribute = attribute
+            self.name = 'baked_' + self.source_node + '_' + self.attribute
+            self.safe_name = ms_commands.legalize_name(self.name)
+            self.is_animated = False
+            self.alpha_is_luminance = False
             self.has_uv_placement = False
 
     def add_image_sample(self, export_root, texture_dir, time):
-        image_name = ms_commands.get_file_texture_name(self.name, time)
+        if self.node_type == 'file':
+            image_name = ms_commands.get_file_texture_name(self.name, time)
+        else:
+            image_name = ms_commands.convert_connection_to_image(self.source_node, self.attribute, os.path.join(export_root, texture_dir, ('{0}_{1}.iff'.format(self.name, time))))
 
         if self.params['convert_textures_to_exr']:
             converted_image = ms_commands.convert_texture_to_exr(image_name, export_root, texture_dir, overwrite=self.params['overwrite_existing_textures'], pass_through=False)
@@ -601,12 +639,10 @@ class MMsEnvironment():
 
     def get_connections(self, attr_name):
         connection = MColorConnection(self.params, attr_name)
-        if cmds.nodeType(connection.connected_node) == 'file':
-            texture_node = MFile(self.params, connection.connected_node)
-            return texture_node
-
-        else:
-            return None
+        if connection.connected_node is not None:
+            return m_file_from_color_connection(self.params, connection)
+        
+        return None
 
     def add_environment_sample(self, export_root, texture_dir, time):
         if self.latitude_longitude_exitance is not None:
@@ -697,15 +733,15 @@ class MMsMaterial():
         connection = MColorConnection(self.params, attr_name)
 
         if connection.connected_node is not None:
-            if cmds.nodeType(connection.connected_node) == 'ms_appleseed_shading_node':
+            if connection.connected_node_type == 'ms_appleseed_shading_node':
                 shading_node = MMsShadingNode(self.params, connection.connected_node)
                 self.shading_nodes = self.shading_nodes + [shading_node] + shading_node.child_shading_nodes
                 self.colors += shading_node.colors
                 self.textures += shading_node.textures
                 return shading_node
 
-            elif cmds.nodeType(connection.connected_node) == 'file':
-                texture_node = MFile(self.params, connection.connected_node)
+            elif connection.connected_node_type == 'file':
+                texture_node = m_file_from_color_connection(self.params, connection.connected_node)
                 self.textures += [texture_node]
                 return texture_node
 
@@ -736,13 +772,13 @@ class MGenericMaterial():
         if cmds.attributeQuery('color', node=self.name, exists=True):
             self.diffuse = MColorConnection(self.params, self.name + '.color')
             if self.diffuse.connected_node is not None:
-                self.diffuse = MFile(self.params, self.diffuse.connected_node)
+                self.diffuse = m_file_from_color_connection(self.params, self.diffuse)
                 self.textures.append(self.diffuse)
 
         elif cmds.attributeQuery('outColor', node=self.name, exists=True):
             self.diffuse = MColorConnection(self.params, self.name + '.outColor')
             if self.diffuse.connected_node is not None:
-                self.diffuse = MFile(self.params, self.diffuse.connected_node)
+                self.diffuse = m_file_from_color_connection(self.params, self.diffuse)
                 self.textures.append(self.diffuse)
 
         # work out specular component
@@ -754,7 +790,7 @@ class MGenericMaterial():
         if cmds.attributeQuery('transparency', node=self.name, exists=True):
             self.alpha = MColorConnection(self.params, self.name + '.transparency')
             if self.alpha.connected_node is not None:
-                self.alpha = MFile(self.params, self.alpha.connected_node)
+                self.alpha = m_file_from_color_connection(self.params, self.alpha)
                 self.textures.append(self.alpha)
             elif self.alpha.is_black:
                 self.alpha = None
@@ -763,7 +799,7 @@ class MGenericMaterial():
         elif cmds.attributeQuery('outTransparency', node=self.name, exists=True):
             self.alpha = MColorConnection(self.params, self.name + '.outTransparency')
             if self.alpha.connected_node is not None:
-                self.alpha = MFile(self.params, self.alpha.connected_node)
+                self.alpha = m_file_from_color_connection(self.params, self.alpha)
                 self.textures.append(self.alpha)
             elif self.alpha.is_black:
                 self.alpha = None
@@ -772,7 +808,7 @@ class MGenericMaterial():
         if cmds.attributeQuery('incandescence', node=self.name, exists=True):
             self.incandescence = MColorConnection(self.params, self.name + '.incandescence')
             if self.incandescence.connected_node is not None:
-                self.incandescence = MFile(self.params, self.incandescence.connected_node)
+                self.incandescence = m_file_from_color_connection(self.params, self.incandescence)
                 self.textures.append(self.incandescence)
             elif self.incandescence.is_black:
                 self.incandescence = None
@@ -780,7 +816,7 @@ class MGenericMaterial():
         elif cmds.attributeQuery('outColor', node=self.name, exists=True):
             self.incandescence = MColorConnection(self.params, self.name + '.outColor')
             if self.incandescence.connected_node is not None:
-                self.incandescence = MFile(self.params, self.incandescence.connected_node)
+                self.incandescence = m_file_from_color_connection(self.params, self.incandescence)
                 self.textures.append(self.incandescence)
             elif self.incandescence.is_black:
                 self.incandescence = None
@@ -835,8 +871,8 @@ class MMsShadingNode():
                     # else if it's a Maya texture node
                     elif color_connection.connected_node_type == 'file':
                         texture_node = MFile(self.params, color_connection.connected_node)
-                        attribute_value = texture_node
                         self.textures += [texture_node]
+                        attribute_value = texture_node
 
                 # no node is connected, just use the color value
                 else:
@@ -1587,6 +1623,9 @@ def m_file_to_as_texture(m_file, postfix='', file_number=0):
     if m_file.alpha_is_luminance:
         as_texture_instance.alpha_mode.value = 'luminance'
 
+    if m_file.filtering_mode == 'Off':
+        as_texture_instance.filtering_mode.value = 'nearest'
+
     return as_texture, as_texture_instance
 
 #--------------------------------------------------------------------------------------------------
@@ -1933,14 +1972,14 @@ def construct_transform_descendents(root_assembly, parent_assembly, matrix_stack
 def convert_maya_generic_material(root_assembly, generic_material):
 
     # check if material already exits in the root assembly
-    for material in root_assembly.materials:
-        if material.name == generic_material.safe_name:
-            return material
+    new_material = get_from_list(root_assembly.materials, generic_material.safe_name)
+    if new_material is not None:
+        return new_material
 
     new_material = AsMaterial()
     new_material.name = generic_material.safe_name
     root_assembly.materials.append(new_material)
-
+    
     new_bsdf = AsBsdf()
     new_bsdf.name = generic_material.safe_name + '_bsdf'
     new_bsdf.model = 'lambertian_brdf'
@@ -1948,12 +1987,13 @@ def convert_maya_generic_material(root_assembly, generic_material):
     new_material.bsdf = AsParameter('bsdf', new_bsdf.name)
 
     if generic_material.diffuse.__class__.__name__ == 'MFile':
-        bsdf_texture, bsdf_texture_instance = m_file_to_as_texture(generic_material.diffuse)
+        bsdf_texture, bsdf_texture_instance = m_file_to_as_texture(generic_material.diffuse, '_bsdf')
         new_bsdf.parameters.append(AsParameter('reflectance', bsdf_texture_instance.name))
         root_assembly.textures.append(bsdf_texture)
         root_assembly.texture_instances.append(bsdf_texture_instance)
     else:
-        bsdf_color = m_color_connection_to_as_color(generic_material.diffuse)
+        bsdf_color = m_color_connection_to_as_color(generic_material.diffuse, '_bsdf')
+        if bsdf_color.multiplier.value > 1 : bsdf_color.multiplier.value = 1
         new_bsdf.parameters.append(AsParameter('reflectance', bsdf_color.name))
         root_assembly.colors.append(bsdf_color)
 
@@ -1965,22 +2005,22 @@ def convert_maya_generic_material(root_assembly, generic_material):
         new_material.edf = AsParameter('edf', new_edf.name)
 
         if generic_material.incandescence.__class__.__name__ == 'MFile':
-            edf_texture, edf_texture_instance = m_file_to_as_texture(generic_material.incandescence)
+            edf_texture, edf_texture_instance = m_file_to_as_texture(generic_material.incandescence, '_edf')
             new_edf.parameters.append(AsParameter('exitance', edf_texture_instance.name))
             root_assembly.textures.append(edf_texture)
             root_assembly.texture_instances.append(edf_texture_instance)
         else:
-            edf_color = m_color_connection_to_as_color(generic_material.incandescence)
+            edf_color = m_color_connection_to_as_color(generic_material.incandescence, '_edf')
             new_edf.parameters.append(AsParameter('exitance', edf_color.name))
             root_assembly.colors.append(edf_color)
 
-    if generic_material.alpha is not None:
-        new_surface_shader = AsSurfaceShader()
-        new_surface_shader.name = generic_material.safe_name + '_surface_shader'
-        new_surface_shader.model = 'physical_surface_shader'
-        root_assembly.surface_shaders.append(new_surface_shader)
-        new_material.surface_shader = AsParameter('surface_shader', new_surface_shader.name)
+    new_surface_shader = AsSurfaceShader()
+    new_surface_shader.name = generic_material.safe_name + '_surface_shader'
+    new_surface_shader.model = 'physical_surface_shader'
+    root_assembly.surface_shaders.append(new_surface_shader)
+    new_material.surface_shader = AsParameter('surface_shader', new_surface_shader.name)
 
+    if generic_material.alpha is not None:
         if generic_material.alpha.__class__.__name__ == 'MFile':
             alpha_texture, alpha_texture_instance = m_file_to_as_texture(generic_material.alpha)
             new_surface_shader.parameters.append(AsParameter('exitance', alpha_texture_instance.name))
@@ -2131,6 +2171,7 @@ def build_as_shading_nodes(root_assembly, current_maya_shading_node):
             current_shading_node.parameters.append(new_shading_node_parameter)
 
         elif current_maya_shading_node.attributes[attrib_key].__class__.__name__ == 'MFile':
+
             new_texture_entity = get_from_list(root_assembly.textures, current_maya_shading_node.attributes[attrib_key].safe_name)
 
             if new_texture_entity is None:
