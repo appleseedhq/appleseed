@@ -32,6 +32,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
+#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <cassert>
@@ -124,7 +125,7 @@ class RayInfo
     // Sign of the ray direction (for the i'th component, the sign value
     // is 1 if the component is positive or null, and 0 if the component
     // is strictly negative).
-    Vector<size_t, N> m_sgn_dir;
+    Vector<uint32, N> m_sgn_dir;
 
     // Constructors.
     RayInfo();                              // leave all fields uninitialized
@@ -152,7 +153,7 @@ class RayInfo<double, 3>
     // Sign of the ray direction (for the i'th component, the sign value
     // is 1 if the component is positive or null, and 0 if the component
     // is strictly negative).
-    SSE_ALIGN Vector<size_t, 4> m_sgn_dir;
+    SSE_ALIGN Vector<uint32, 4> m_sgn_dir;
 
     // Constructors.
     RayInfo();                              // leave all fields uninitialized
