@@ -193,6 +193,13 @@ T fit(
     const T max_x,
     const T min_y,
     const T max_y);
+template <typename U, typename V>
+V fit(
+    const U x,
+    const U min_x,
+    const U max_x,
+    const V min_y,
+    const V max_y);
 
 
 //
@@ -491,7 +498,23 @@ inline T fit(
     assert(min_x != max_x);
 
     const T k = (x - min_x) / (max_x - min_x);
+
     return min_y * (T(1.0) - k) + max_y * k;
+}
+
+template <typename U, typename V>
+inline V fit(
+    const U x,
+    const U min_x,
+    const U max_x,
+    const V min_y,
+    const V max_y)
+{
+    assert(min_x != max_x);
+
+    const V k = static_cast<V>((x - min_x) / (max_x - min_x));
+
+    return min_y * (V(1.0) - k) + max_y * k;
 }
 
 
