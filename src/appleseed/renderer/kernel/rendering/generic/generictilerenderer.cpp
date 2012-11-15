@@ -252,7 +252,7 @@ namespace
         vector<Vector<int16, 2> >           m_pixel_ordering;
 
         // Pixel sampler.
-        size_t                              m_sqrt_sample_count;
+        int                                 m_sqrt_sample_count;
         PixelSampler                        m_pixel_sampler;
 
         // Adaptive sampler only.
@@ -314,11 +314,11 @@ namespace
 
         void initialize_pixel_sampler()
         {
-            m_sqrt_sample_count = round<size_t>(sqrt(static_cast<double>(m_params.m_max_samples)));
+            m_sqrt_sample_count = round<int>(sqrt(static_cast<double>(m_params.m_max_samples)));
             m_pixel_sampler.initialize(m_sqrt_sample_count);
 
             RENDERER_LOG_INFO(
-                "effective max subpixel grid size: " FMT_SIZE_T "x" FMT_SIZE_T,
+                "effective max subpixel grid size: %dx%d",
                 m_sqrt_sample_count,
                 m_sqrt_sample_count);
         }
@@ -381,8 +381,8 @@ namespace
                     continue;
 
                 // Compute the coordinates of the pixel in the padded image.
-                const int ix = tile_origin_x + tx;
-                const int iy = tile_origin_y + ty;
+                const int ix = static_cast<int>(tile_origin_x) + tx;
+                const int iy = static_cast<int>(tile_origin_y) + ty;
 
 #ifdef DEBUG_BREAK_AT_PIXEL
 
@@ -423,9 +423,9 @@ namespace
             const int base_sx = ix * m_sqrt_sample_count;
             const int base_sy = iy * m_sqrt_sample_count;
 
-            for (size_t sy = 0; sy < m_sqrt_sample_count; ++sy)
+            for (int sy = 0; sy < m_sqrt_sample_count; ++sy)
             {
-                for (size_t sx = 0; sx < m_sqrt_sample_count; ++sx)
+                for (int sx = 0; sx < m_sqrt_sample_count; ++sx)
                 {
                     // Compute the sample position in sample space and the instance number.
                     Vector2d s;
@@ -550,8 +550,8 @@ namespace
                         return;
 
                     // Compute the coordinates of the pixel in the padded image.
-                    const int ix = tile_origin_x + tx;
-                    const int iy = tile_origin_y + ty;
+                    const int ix = static_cast<int>(tile_origin_x) + tx;
+                    const int iy = static_cast<int>(tile_origin_y) + ty;
 
 #ifdef DEBUG_BREAK_AT_PIXEL
 
@@ -613,10 +613,10 @@ namespace
                 {
                     render_border_pixel(
                         frame,
-                        tile_bbox.min.x + tx,
-                        tile_bbox.min.y - 1,
-                        tile_bbox.min.x + tx - tile_origin_x,
-                        tile_bbox.min.y - 1 - tile_origin_y,
+                        static_cast<int>(tile_bbox.min.x + tx),
+                        static_cast<int>(tile_bbox.min.y - 1),
+                        static_cast<int>(tile_bbox.min.x + tx - tile_origin_x),
+                        static_cast<int>(tile_bbox.min.y - 1 - tile_origin_y),
                         pixel_buffer);
                 }
             }
@@ -628,10 +628,10 @@ namespace
                 {
                     render_border_pixel(
                         frame,
-                        tile_bbox.min.x - 1,
-                        tile_bbox.min.y + ty,
-                        tile_bbox.min.x - 1 - tile_origin_x,
-                        tile_bbox.min.y + ty - tile_origin_y,
+                        static_cast<int>(tile_bbox.min.x - 1),
+                        static_cast<int>(tile_bbox.min.y + ty),
+                        static_cast<int>(tile_bbox.min.x - 1 - tile_origin_x),
+                        static_cast<int>(tile_bbox.min.y + ty - tile_origin_y),
                         pixel_buffer);
                 }
             }
@@ -654,9 +654,9 @@ namespace
             SpectrumStack pixel_aovs(frame.aov_images().size());
             pixel_aovs.set(0.0f);
 
-            for (size_t sy = 0; sy < m_sqrt_sample_count; ++sy)
+            for (int sy = 0; sy < m_sqrt_sample_count; ++sy)
             {
-                for (size_t sx = 0; sx < m_sqrt_sample_count; ++sx)
+                for (int sx = 0; sx < m_sqrt_sample_count; ++sx)
                 {
                     // Compute the sample position in sample space and the instance number.
                     Vector2d s;

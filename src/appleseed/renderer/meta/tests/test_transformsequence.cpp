@@ -404,7 +404,7 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
 
         for (size_t i = 0; i < steps; ++i)
         {
-            const double t = fit<double>(i, 0, steps - 1, 0.0, 1.0);
+            const double t = fit<size_t, double>(i, 0, steps - 1, 0.0, 1.0);
             const Transformd transform = sequence.evaluate(t);
             const char* color = i == 0 ? "red" : i == steps - 1 ? "green" : "white";
 
