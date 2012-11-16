@@ -346,7 +346,7 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
         const AABB3d bbox(Vector3d(1.0, 1.0, 0.0), Vector3d(1.0, 1.0, 0.0));
         const AABB3d motion_bbox = sequence.to_parent(bbox);
 
-        EXPECT_EQ(AABB3d(Vector3d(0.54119610014619690, 1.0, 0.0), Vector3d(1.0, 1.3065629648763766, 0.0)), motion_bbox);
+        EXPECT_FEQ(AABB3d(Vector3d(0.54119610014619690, 1.0, 0.0), Vector3d(1.0, 1.3065629648763766, 0.0)), motion_bbox);
     }
 
     TEST_CASE(ToParent_SmallNegativeRotation)
@@ -359,7 +359,7 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
         const AABB3d bbox(Vector3d(1.0, 1.0, 0.0), Vector3d(1.0, 1.0, 0.0));
         const AABB3d motion_bbox = sequence.to_parent(bbox);
 
-        EXPECT_EQ(AABB3d(Vector3d(1.0, 0.54119610014619690, 0.0), Vector3d(1.3065629648763766, 1.0, 0.0)), motion_bbox);
+        EXPECT_FEQ(AABB3d(Vector3d(1.0, 0.54119610014619690, 0.0), Vector3d(1.3065629648763766, 1.0, 0.0)), motion_bbox);
     }
 
     TEST_CASE(ToParent_LargePositiveRotation)
@@ -372,7 +372,7 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
         const AABB3d bbox(Vector3d(1.0, 1.0, 0.0), Vector3d(1.0, 1.0, 0.0));
         const AABB3d motion_bbox = sequence.to_parent(bbox);
 
-        EXPECT_EQ(AABB3d(Vector3d(-1.4142135623730949, -0.54119610014619690, 0.0), Vector3d(1.0, 1.4142135623730949, 0.0)), motion_bbox);
+        EXPECT_FEQ(AABB3d(Vector3d(-1.4142135623730949, -0.54119610014619690, 0.0), Vector3d(1.0, 1.4142135623730949, 0.0)), motion_bbox);
     }
 
     TEST_CASE(ToParent_LargeNegativeRotation)
@@ -385,7 +385,7 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
         const AABB3d bbox(Vector3d(1.0, 1.0, 0.0), Vector3d(1.0, 1.0, 0.0));
         const AABB3d motion_bbox = sequence.to_parent(bbox);
 
-        EXPECT_EQ(AABB3d(Vector3d(-0.54119610014619690, -1.4142135623730951, 0.0), Vector3d(1.4142135623730949, 1.0, 0.0)), motion_bbox);
+        EXPECT_FEQ(AABB3d(Vector3d(-0.54119610014619690, -1.4142135623730951, 0.0), Vector3d(1.4142135623730949, 1.0, 0.0)), motion_bbox);
     }
 
     void visualize(
