@@ -720,6 +720,11 @@ inline void ShadingPoint::compute_partial_derivatives() const
 
         m_dpdu = (dv1 * dp0 - dv0 * dp1) * rcp_det;
         m_dpdv = (du0 * dp1 - du1 * dp0) * rcp_det;
+
+        const foundation::Vector3d& sn = get_original_shading_normal();
+
+        m_dpdu = foundation::cross(sn, foundation::normalize(foundation::cross(m_dpdu, sn)));
+        m_dpdv = foundation::cross(sn, foundation::normalize(foundation::cross(m_dpdv, sn)));
     }
 }
 
