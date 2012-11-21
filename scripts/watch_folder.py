@@ -233,7 +233,7 @@ def watch(args, log):
 def print_appleseed_version(args, log):
     try:
         p = subprocess.Popen([args.appleseed_bin_path, "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        version_string = p.communicate()[1].split('\r\n', 1)[0]
+        version_string = p.communicate()[1].split(os.linesep, 1)[0]
         msg = "Running {0}.".format(version_string)
         print(msg)
         log.message(msg)
