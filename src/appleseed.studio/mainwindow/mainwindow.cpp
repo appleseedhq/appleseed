@@ -1163,13 +1163,16 @@ void MainWindow::slot_save_frame()
             &selected_filter,
             options);
 
-    if (!filepath.isEmpty())
-    {
-        filepath = QDir::toNativeSeparators(filepath);
+    if (filepath.isEmpty())
+        return;
 
-        const Frame* frame = m_project_manager.get_project()->get_frame();
-        frame->write_main_image(filepath.toAscii().constData());
-    }
+    if (QFileInfo(filepath).suffix().isEmpty())
+        filepath += ".png";
+
+    filepath = QDir::toNativeSeparators(filepath);
+
+    const Frame* frame = m_project_manager.get_project()->get_frame();
+    frame->write_main_image(filepath.toAscii().constData());
 }
 
 void MainWindow::slot_save_all_aovs()
@@ -1188,14 +1191,17 @@ void MainWindow::slot_save_all_aovs()
             &selected_filter,
             options);
 
-    if (!filepath.isEmpty())
-    {
-        filepath = QDir::toNativeSeparators(filepath);
+    if (filepath.isEmpty())
+        return;
 
-        const Frame* frame = m_project_manager.get_project()->get_frame();
-        frame->write_main_image(filepath.toAscii().constData());
-        frame->write_aov_images(filepath.toAscii().constData());
-    }
+    if (QFileInfo(filepath).suffix().isEmpty())
+        filepath += ".png";
+
+    filepath = QDir::toNativeSeparators(filepath);
+
+    const Frame* frame = m_project_manager.get_project()->get_frame();
+    frame->write_main_image(filepath.toAscii().constData());
+    frame->write_aov_images(filepath.toAscii().constData());
 }
 
 void MainWindow::slot_clear_frame()
