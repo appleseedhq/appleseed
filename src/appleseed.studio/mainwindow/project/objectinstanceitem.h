@@ -31,6 +31,7 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/instancecollectionitem.h"
+#include "mainwindow/project/itembase.h"
 #include "mainwindow/project/singlemodelentityitem.h"
 
 // appleseed.foundation headers.
@@ -81,19 +82,25 @@ class ObjectInstanceItem
     void slot_open_material_assignment_editor();
     void slot_assign_material();
     void slot_assign_material_accepted(QString page_name, QString entity_name, QVariant untyped_data);
-    void slot_unassign_material();
+    void slot_clear_material();
 
   private:
     typedef SingleModelEntityItem<renderer::ObjectInstance, renderer::Assembly, ObjectInstanceCollectionItem> Base;
 
     virtual void slot_delete() override;
 
+    void add_material_assignment_menu_actions(
+        QMenu*                          menu,
+        const QList<ItemBase*>&         items = QList<ItemBase*>()) const;
+
     void assign_material(
+        const char*                     slot_name,
         const bool                      font_side,
         const bool                      back_side,
         const char*                     material_name);
 
     void unassign_material(
+        const char*                     slot_name,
         const bool                      font_side,
         const bool                      back_side);
 
