@@ -183,17 +183,21 @@ void DirectLightingIntegrator::add_light_sample_contribution(
     if (bsdf_prob == 0.0)
         return;
 
+    // Transform the incoming direction to assembly instance space.
+    const Vector3d local_incoming =
+        normalize(sample.m_asm_inst_transform.vector_to_local(incoming));
+
     const Light* light = sample.m_light;
 
     // Evaluate the input values of the light.
     InputEvaluator light_input_evaluator(m_shading_context.get_texture_cache());
-    light->evaluate_inputs(light_input_evaluator, -incoming);
+    light->evaluate_inputs(light_input_evaluator, -local_incoming);
 
     // Evaluate the light.
     Spectrum light_value;
     light->evaluate(
         light_input_evaluator.data(),
-        -incoming,
+        -local_incoming,
         light_value);
 
     // Add the contribution of this sample to the illumination.

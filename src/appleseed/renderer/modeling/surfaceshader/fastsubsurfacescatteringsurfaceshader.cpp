@@ -183,7 +183,10 @@ namespace
             {
                 // Sample the light sources.
                 LightSample light_sample;
-                m_light_sampler->sample(sampling_context.next_vector2<3>(), light_sample);
+                m_light_sampler->sample(
+                    shading_point.get_ray().m_time,
+                    sampling_context.next_vector2<3>(),
+                    light_sample);
 
                 // Compute the contribution of this light sample.
                 const Vector3d light_vec = normalize(light_sample.m_point - point);                                         // toward light
@@ -215,6 +218,10 @@ namespace
                 }
                 else
                 {
+                    // Transform the light direction to assembly instance space.
+                    const Vector3d local_light_vec =
+                        normalize(light_sample.m_asm_inst_transform.vector_to_local(light_vec));
+
                     // Evaluate the light's inputs.
                     InputEvaluator input_evaluator(shading_context.get_texture_cache());
                     const void* light_data =
@@ -225,7 +232,7 @@ namespace
                     // Evaluate the light.
                     light_sample.m_light->evaluate(
                         light_data,
-                        -light_vec,
+                        -local_light_vec,
                         exitance);
                 }
 

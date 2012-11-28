@@ -217,8 +217,7 @@ namespace
                 // todo: do this outside the performance-sensitive code path.
                 m_camera_transform = m_camera.transform_sequence().evaluate(0.0);
                 m_camera_position = m_camera_transform.point_to_parent(Vector3d(0.0));
-                m_camera_direction = m_camera_transform.vector_to_parent(Vector3d(0.0, 0.0, -1.0));
-                assert(is_normalized(m_camera_direction));
+                m_camera_direction = normalize(m_camera_transform.vector_to_parent(Vector3d(0.0, 0.0, -1.0)));
 
                 // Compute the reciprocal of the area of a single pixel.
                 const size_t pixel_count = frame.image().properties().m_pixel_count;
@@ -543,9 +542,10 @@ namespace
             SampleVector&               samples)
         {
             // Sample the light sources.
-            sampling_context.split_in_place(3, 1);
+            sampling_context.split_in_place(4, 1);
+            const Vector4d s = sampling_context.next_vector2<4>();
             LightSample light_sample;
-            m_light_sampler.sample(sampling_context.next_vector2<3>(), light_sample);
+            m_light_sampler.sample(s[0], Vector3d(s[1], s[2], s[3]), light_sample);
 
             return
                 light_sample.m_triangle
@@ -676,6 +676,10 @@ namespace
                 light_value,
                 light_prob);
 
+            // Transform the emission direction to world space.
+            const Vector3d emission_direction_world =
+                normalize(light_sample.m_asm_inst_transform.vector_to_parent(emission_direction));
+
             // Compute the initial particle weight.
             Spectrum initial_alpha = light_value;
             initial_alpha /= static_cast<float>(light_sample.m_probability * light_prob);
@@ -684,7 +688,7 @@ namespace
             sampling_context.split_in_place(1, 1);
             const ShadingRay light_ray(
                 light_sample.m_point,
-                emission_direction,
+                emission_direction_world,
                 sampling_context.next_double2(),
                 ~0);
 

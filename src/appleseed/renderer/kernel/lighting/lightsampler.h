@@ -52,6 +52,18 @@ namespace renderer
 {
 
 //
+// Non-physical light.
+//
+
+class LightInfo
+{
+  public:
+    const AssemblyInstance*     m_assembly_instance;
+    const Light*                m_light;
+};
+
+
+//
 // Light-emitting triangle.
 //
 
@@ -72,7 +84,7 @@ class EmittingTriangle
 
 
 //
-// Light sample.
+// Light sample: the result of sampling the sets of lights and light-emitting triangles.
 //
 
 class LightSample
@@ -84,8 +96,9 @@ class LightSample
     foundation::Vector3d        m_geometric_normal;             // world space geometric normal, unit-length
 
     const Light*                m_light;
+    foundation::Transformd      m_asm_inst_transform;
 
-    foundation::Vector3d        m_point;                        // world space point
+    foundation::Vector3d        m_point;                        // world space position of the sample
     double                      m_probability;                  // probability of this sample to be chosen
 };
 
@@ -114,16 +127,19 @@ class LightSampler
     // Sample a single light.
     void sample_single_light(
         const size_t                    light_index,
+        const double                    time,
         const foundation::Vector2d&     s,
         LightSample&                    sample) const;
 
     // Sample the set of emitting triangles.
     void sample_emitting_triangles(
+        const double                    time,
         const foundation::Vector3d&     s,
         LightSample&                    sample) const;
 
     // Sample the set of lights and emitting triangles.
     void sample(
+        const double                    time,
         const foundation::Vector3d&     s,
         LightSample&                    sample) const;
 
@@ -131,7 +147,7 @@ class LightSampler
     double evaluate_pdf(const ShadingPoint& result) const;
 
   private:
-    typedef std::vector<const Light*> LightVector;
+    typedef std::vector<LightInfo> LightVector;
     typedef std::vector<EmittingTriangle> EmittingTriangleVector;
     typedef foundation::CDF<size_t, double> EmitterCDF;
 
@@ -157,6 +173,7 @@ class LightSampler
 
     // Sample a given light.
     void sample_light(
+        const double                    time,
         const foundation::Vector2d&     s,
         const size_t                    light_index,
         const double                    light_prob,
@@ -164,6 +181,7 @@ class LightSampler
 
     // Sample a given emitting triangle.
     void sample_emitting_triangle(
+        const double                    time,
         const foundation::Vector2d&     s,
         const size_t                    triangle_index,
         const double                    triangle_prob,

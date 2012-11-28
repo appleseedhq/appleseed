@@ -131,8 +131,6 @@ void LightSampler::collect_lights(
     const Assembly&         assembly,
     const AssemblyInstance& assembly_instance)
 {
-    // todo: handle assembly instance transforms.
-
     for (const_each<LightContainer> i = assembly.lights(); i; ++i)
     {
         // Retrieve the light.
@@ -140,7 +138,10 @@ void LightSampler::collect_lights(
 
         // Copy the light into the light vector.
         const size_t light_index = m_lights.size();
-        m_lights.push_back(&light);
+        LightInfo light_info;
+        light_info.m_assembly_instance = &assembly_instance;
+        light_info.m_light = &light;
+        m_lights.push_back(light_info);
 
         // todo: compute importance.
         const double importance = 1.0;
@@ -309,17 +310,19 @@ void LightSampler::collect_emitting_triangles(
 
 void LightSampler::sample_single_light(
     const size_t            light_index,
+    const double            time,
     const Vector2d&         s,
     LightSample&            sample) const
 {
     sample.m_triangle = 0;
-    sample_light(s, light_index, 1.0, sample);
+    sample_light(time, s, light_index, 1.0, sample);
 
     assert(sample.m_light);
     assert(sample.m_probability == 1.0);
 }
 
 void LightSampler::sample_emitting_triangles(
+    const double            time,
     const Vector3d&         s,
     LightSample&            sample) const
 {
@@ -331,6 +334,7 @@ void LightSampler::sample_emitting_triangles(
 
     sample.m_light = 0;
     sample_emitting_triangle(
+        time,
         Vector2d(s[1], s[2]),
         emitter_index,
         emitter_prob,
@@ -342,6 +346,7 @@ void LightSampler::sample_emitting_triangles(
 }
 
 void LightSampler::sample(
+    const double            time,
     const Vector3d&         s,
     LightSample&            sample) const
 {
@@ -355,6 +360,7 @@ void LightSampler::sample(
     {
         sample.m_triangle = 0;
         sample_light(
+            time,
             Vector2d(s[1], s[2]),
             emitter_index,
             emitter_prob,
@@ -364,6 +370,7 @@ void LightSampler::sample(
     {
         sample.m_light = 0;
         sample_emitting_triangle(
+            time,
             Vector2d(s[1], s[2]),
             emitter_index - m_light_count,
             emitter_prob,
@@ -376,24 +383,30 @@ void LightSampler::sample(
 }
 
 void LightSampler::sample_light(
+    const double            time,
     const Vector2d&         s,
     const size_t            light_index,
     const double            light_prob,
     LightSample&            sample) const
 {
     // Fetch the light.
-    const Light* light = m_lights[light_index];
-    sample.m_light = light;
+    const LightInfo& light_info = m_lights[light_index];
+    sample.m_light = light_info.m_light;
 
-    // Compute the world space position of the light.
-    const Transformd::MatrixType& mat = light->get_transform().get_local_to_parent();
-    sample.m_point = Vector3d(mat[3], mat[7], mat[11]);
+    // Evaluate and store the transform of the assembly instance.
+    sample.m_asm_inst_transform =
+        light_info.m_assembly_instance->transform_sequence().evaluate(time);
+
+    // Compute the world space position of the sample.
+    const Transformd transform = light_info.m_light->get_transform() * sample.m_asm_inst_transform;
+    sample.m_point = transform.get_local_to_parent().extract_translation();
 
     // Store the probability of choosing this light.
     sample.m_probability = light_prob;
 }
 
 void LightSampler::sample_emitting_triangle(
+    const double            time,
     const Vector2d&         s,
     const size_t            triangle_index,
     const double            triangle_prob,

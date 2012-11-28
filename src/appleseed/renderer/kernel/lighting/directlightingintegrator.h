@@ -334,7 +334,7 @@ void DirectLightingIntegrator::sample_lights_low_variance(
             const foundation::Vector3d s = sampling_context.next_vector2<3>();
 
             LightSample sample;
-            m_light_sampler.sample_emitting_triangles(s, sample);
+            m_light_sampler.sample_emitting_triangles(m_time, s, sample);
 
             add_emitting_triangle_sample_contribution(
                 sample,
@@ -362,7 +362,7 @@ void DirectLightingIntegrator::sample_lights_low_variance(
             const foundation::Vector2d s = sampling_context.next_vector2<2>();
 
             LightSample sample;
-            m_light_sampler.sample_single_light(i, s, sample);
+            m_light_sampler.sample_single_light(i, m_time, s, sample);
 
             add_light_sample_contribution(sample, radiance, aovs);
         }
@@ -493,7 +493,7 @@ void DirectLightingIntegrator::take_single_light_sample(
     const foundation::Vector3d s = sampling_context.next_vector2<3>();
 
     LightSample sample;
-    m_light_sampler.sample(s, sample);
+    m_light_sampler.sample(m_time, s, sample);
 
     if (sample.m_triangle)
     {
