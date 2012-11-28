@@ -124,6 +124,8 @@ class DLLSYMBOL TransformSequence
     TransformKey*                       m_keys;
     foundation::TransformInterpolatord* m_interpolators;
 
+    void copy_from(const TransformSequence& rhs);
+
     void interpolate(
         const double                    time,
         foundation::Transformd&         result) const;

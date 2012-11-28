@@ -57,49 +57,18 @@ TransformSequence::TransformSequence()
 }
 
 TransformSequence::TransformSequence(const TransformSequence& rhs)
-  : m_capacity(rhs.m_size)      // shrink to size
-  , m_size(rhs.m_size)
 {
-    if (rhs.m_keys)
-    {
-        m_keys = new TransformKey[m_size];
-        memcpy(m_keys, rhs.m_keys, m_size * sizeof(TransformKey));
-    }
-    else m_keys = 0;
-
-    if (rhs.m_interpolators)
-    {
-        m_interpolators = new TransformInterpolatord[m_size - 1];
-        memcpy(m_interpolators, rhs.m_interpolators, (m_size - 1) * sizeof(TransformInterpolatord));
-    }
-    else m_interpolators = 0;
+    copy_from(rhs);
 }
 
 TransformSequence::~TransformSequence()
 {
-    delete [] m_keys;
-    delete [] m_interpolators;
+    clear();
 }
 
 TransformSequence& TransformSequence::operator=(const TransformSequence& rhs)
 {
-    m_capacity = rhs.m_size;    // shrink to size
-    m_size = rhs.m_size;
-
-    if (rhs.m_keys)
-    {
-        m_keys = new TransformKey[m_size];
-        memcpy(m_keys, rhs.m_keys, m_size * sizeof(TransformKey));
-    }
-    else m_keys = 0;
-
-    if (rhs.m_interpolators)
-    {
-        m_interpolators = new TransformInterpolatord[m_size - 1];
-        memcpy(m_interpolators, rhs.m_interpolators, (m_size - 1) * sizeof(TransformInterpolatord));
-    }
-    else m_interpolators = 0;
-
+    copy_from(rhs);
     return *this;
 }
 
@@ -181,9 +150,17 @@ Transformd& TransformSequence::earliest_transform()
     return m_keys[earliest_index].m_transform;
 }
 
+namespace
+{
+    const Transformd Identity = Transformd::identity();
+}
+
 const Transformd& TransformSequence::earliest_transform() const
 {
-    return const_cast<TransformSequence*>(this)->earliest_transform();
+    return
+        m_size == 0
+            ? Identity
+            : const_cast<TransformSequence*>(this)->earliest_transform();
 }
 
 bool TransformSequence::prepare()
@@ -258,10 +235,32 @@ TransformSequence TransformSequence::operator*(const TransformSequence& rhs) con
     return result;
 }
 
+void TransformSequence::copy_from(const TransformSequence& rhs)
+{
+    m_capacity = rhs.m_size;    // shrink to size on copy
+    m_size = rhs.m_size;
+
+    if (rhs.m_keys)
+    {
+        m_keys = new TransformKey[m_size];
+        memcpy(m_keys, rhs.m_keys, m_size * sizeof(TransformKey));
+    }
+    else m_keys = 0;
+
+    if (rhs.m_interpolators)
+    {
+        m_interpolators = new TransformInterpolatord[m_size - 1];
+        memcpy(m_interpolators, rhs.m_interpolators, (m_size - 1) * sizeof(TransformInterpolatord));
+    }
+    else m_interpolators = 0;
+}
+
 void TransformSequence::interpolate(
     const double        time,
     Transformd&         result) const
 {
+    assert(m_size > 0);
+
     size_t begin = 0;
     size_t end = m_size;
 

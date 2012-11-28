@@ -172,10 +172,8 @@ void LightSampler::collect_emitting_triangles(
         // Compute the object space to world space transformation.
         // todo: add support for moving light-emitters.
         const Transformd& object_instance_transform = object_instance->get_transform();
-        const Transformd assembly_instance_transform =
-            assembly_instance.transform_sequence().empty()
-                ? Transformd::identity()
-                : assembly_instance.transform_sequence().earliest_transform();
+        const Transformd& assembly_instance_transform =
+            assembly_instance.transform_sequence().earliest_transform();
         const Transformd global_transform = assembly_instance_transform * object_instance_transform;
 
         // Retrieve the object.
