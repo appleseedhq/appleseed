@@ -195,9 +195,9 @@ Spectrum schlick_fresnel_reflection(
 
     assert(cos_theta >= T(0.0) && cos_theta <= T(1.0));
 
-    const T k = T(1.0) - cos_theta;
-    const T k2 = k * k;
-    const T k5 = k2 * k2 * k;
+    const T k1 = T(1.0) - cos_theta;
+    const T k2 = k1 * k1;
+    const T k5 = k2 * k2 * k1;
 
     Spectrum r = normal_reflectance;
     r *= static_cast<ValueType>(T(1.0) - k5);
