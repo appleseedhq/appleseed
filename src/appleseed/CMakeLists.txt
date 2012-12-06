@@ -1209,6 +1209,8 @@ set (renderer_modeling_environmentedf_sources
     renderer/modeling/environmentedf/latlongmapenvironmentedf.h
     renderer/modeling/environmentedf/mirrorballmapenvironmentedf.cpp
     renderer/modeling/environmentedf/mirrorballmapenvironmentedf.h
+    renderer/modeling/environmentedf/preethamenvironmentedf.cpp
+    renderer/modeling/environmentedf/preethamenvironmentedf.h
 )
 list (APPEND appleseed_sources
     ${renderer_modeling_environmentedf_sources}

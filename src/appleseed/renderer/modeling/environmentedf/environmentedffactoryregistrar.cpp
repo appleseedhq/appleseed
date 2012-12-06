@@ -36,6 +36,7 @@
 #include "renderer/modeling/environmentedf/ienvironmentedffactory.h"
 #include "renderer/modeling/environmentedf/latlongmapenvironmentedf.h"
 #include "renderer/modeling/environmentedf/mirrorballmapenvironmentedf.h"
+#include "renderer/modeling/environmentedf/preethamenvironmentedf.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/registrar.h"
@@ -61,6 +62,7 @@ EnvironmentEDFFactoryRegistrar::EnvironmentEDFFactoryRegistrar()
     register_factory(auto_ptr<FactoryType>(new GradientEnvironmentEDFFactory()));
     register_factory(auto_ptr<FactoryType>(new LatLongMapEnvironmentEDFFactory()));
     register_factory(auto_ptr<FactoryType>(new MirrorBallMapEnvironmentEDFFactory()));
+    register_factory(auto_ptr<FactoryType>(new PreethamEnvironmentEDFFactory()));
 }
 
 EnvironmentEDFFactoryRegistrar::~EnvironmentEDFFactoryRegistrar()
