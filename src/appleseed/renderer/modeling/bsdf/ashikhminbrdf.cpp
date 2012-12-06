@@ -73,9 +73,6 @@ namespace
 
     const char* Model = "ashikhmin_brdf";
 
-    // Clamp the |cos(ongoing, halfVector)| factor to this value to avoid fireflies.
-    const double MinCosOH = 0.2;
-
     class AshikhminBRDFImpl
       : public BSDF
     {
@@ -275,7 +272,7 @@ namespace
 
             // Evaluate the glossy component of the BRDF (equation 4).
             const double num = sval.m_kg * pow(cos_hn, exp);
-            const double den = max(cos_oh, MinCosOH) * (cos_in + cos_on - cos_in * cos_on);
+            const double den = cos_oh * (cos_in + cos_on - cos_in * cos_on);
             value = schlick_fresnel_reflection(rval.m_scaled_rg, cos_oh);
             value *= static_cast<float>(num / den);
 
@@ -359,7 +356,7 @@ namespace
                 const double exp_den = 1.0 - cos_hn * cos_hn;
                 const double exp = (exp_num_u + exp_num_v) / exp_den;
                 const double num = exp_den == 0.0 ? 0.0 : sval.m_kg * pow(cos_hn, exp);
-                const double den = max(cos_oh, MinCosOH) * (cos_in + cos_on - cos_in * cos_on);
+                const double den = cos_oh * (cos_in + cos_on - cos_in * cos_on);
                 Spectrum glossy = schlick_fresnel_reflection(rval.m_scaled_rg, cos_oh);
                 glossy *= static_cast<float>(num / den);
                 value += glossy;
