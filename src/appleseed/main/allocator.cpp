@@ -61,7 +61,7 @@ using namespace std;
 
 
 //
-// Configuration of the memory tracker.
+// Configuration of the memory allocation subsystem.
 //
 
 // This is the global enable/disable switch that conditions everything else.
@@ -77,7 +77,9 @@ using namespace std;
 #undef LOG_MEMORY_DEALLOCATIONS
 
 // Define this symbol to dump a (part of) the callstack when a block of memory is allocated.
+#ifdef _WIN32
 #undef DUMP_CALLSTACK_ON_ALLOCATION
+#endif
 
 namespace
 {
@@ -122,6 +124,8 @@ namespace
 
     // Memory blocks currently allocated.
     MemoryBlockMap s_allocated_mem_blocks;
+
+#ifdef DUMP_CALLSTACK_ON_ALLOCATION
 
     class StackWalkerOutputToFile
       : public StackWalker
@@ -177,6 +181,8 @@ namespace
     };
 
     StackWalkerOutputToFile s_stack_walker;
+
+#endif
 
     string get_timestamp_string()
     {
@@ -330,10 +336,10 @@ namespace
 
 void log_allocation(const void* ptr, const size_t size)
 {
-    recursive_mutex::scoped_lock lock(s_mutex);
-
     if (!s_tracking_enabled)
         return;
+
+    recursive_mutex::scoped_lock lock(s_mutex);
 
     s_tracking_enabled = false;
 
@@ -355,10 +361,10 @@ void log_allocation(const void* ptr, const size_t size)
 void log_allocation_failure(const size_t size)
 {
 #ifdef LOG_MEMORY_ALLOCATION_FAILURES
-    recursive_mutex::scoped_lock lock(s_mutex);
-
     if (!s_tracking_enabled)
         return;
+
+    recursive_mutex::scoped_lock lock(s_mutex);
 
     s_tracking_enabled = false;
 
@@ -370,14 +376,14 @@ void log_allocation_failure(const size_t size)
 
 void log_deallocation(const void* ptr)
 {
-    recursive_mutex::scoped_lock lock(s_mutex);
-
     if (!s_tracking_enabled)
         return;
 
+    recursive_mutex::scoped_lock lock(s_mutex);
+
     s_tracking_enabled = false;
 
-    const MemoryBlockMap::const_iterator i = s_allocated_mem_blocks.find(ptr);
+    const MemoryBlockMap::iterator i = s_allocated_mem_blocks.find(ptr);
 
     if (i != s_allocated_mem_blocks.end())
     {
@@ -406,7 +412,9 @@ void start_memory_tracking()
 
     if (s_log_file)
     {
+#ifdef DUMP_CALLSTACK_ON_ALLOCATION
         s_stack_walker.LoadModules();
+#endif
 
         s_tracking_enabled = true;
     }
