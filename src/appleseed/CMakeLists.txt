@@ -1211,6 +1211,7 @@ set (renderer_modeling_environmentedf_sources
     renderer/modeling/environmentedf/mirrorballmapenvironmentedf.h
     renderer/modeling/environmentedf/preethamenvironmentedf.cpp
     renderer/modeling/environmentedf/preethamenvironmentedf.h
+    renderer/modeling/environmentedf/sphericalcoordinates.h
 )
 list (APPEND appleseed_sources
     ${renderer_modeling_environmentedf_sources}

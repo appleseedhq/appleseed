@@ -36,6 +36,7 @@
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
+#include "renderer/modeling/environmentedf/sphericalcoordinates.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/input/source.h"
@@ -288,50 +289,6 @@ namespace
         double                                  m_probability_scale;
 
         auto_ptr<ImageImportanceSamplerType>    m_importance_sampler;
-
-        // Compute the spherical coordinates of a given direction.
-        static void unit_vector_to_angles(
-            const Vector3d&     v,              // unit length
-            double&             theta,          // in [0, Pi]
-            double&             phi)            // in [-Pi, Pi]
-        {
-            assert(is_normalized(v));
-
-            theta = acos(v[1]);
-            phi = atan2(v[2], v[0]);
-        }
-
-        // Convert a given direction from spherical coordinates to [0,1]^2.
-        static void angles_to_unit_square(
-            const double        theta,          // in [0, Pi]
-            const double        phi,            // in [-Pi, Pi]
-            double&             u,              // in [0, 1]
-            double&             v)              // in [0, 1]
-        {
-            assert(theta >= 0.0);
-            assert(theta <= Pi);
-            assert(phi >= -Pi);
-            assert(phi <= Pi);
-
-            u = (0.5 / Pi) * (phi + Pi);
-            v = (1.0 / Pi) * theta;
-        }
-
-        // Convert a given direction from [0,1]^2 to spherical coordinates.
-        static void unit_square_to_angles(
-            const double        u,          // in [0, 1]
-            const double        v,          // in [0, 1]
-            double&             theta,      // in [0, Pi]
-            double&             phi)        // in [-Pi, Pi]
-        {
-            assert(u >= 0.0);
-            assert(u <= 1.0);
-            assert(v >= 0.0);
-            assert(v <= 1.0);
-
-            theta = Pi * v;
-            phi = Pi * (2.0 * u - 1.0);
-        }
 
         void build_importance_map(const Scene& scene)
         {
