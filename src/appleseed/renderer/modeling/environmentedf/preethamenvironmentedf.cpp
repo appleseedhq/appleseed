@@ -105,9 +105,12 @@ namespace
 
             m_inputs.evaluate_uniforms(&m_values);
 
+            // Compute the sun direction.
             m_sun_theta = deg_to_rad(m_values.m_sun_theta);
             m_sun_phi = deg_to_rad(m_values.m_sun_phi);
             m_sun_dir = Vector3d::unit_vector(m_sun_theta, m_sun_phi);
+
+            m_cos_sun_theta = cos(m_sun_theta);
 
             return true;
         }
@@ -120,8 +123,8 @@ namespace
             double&             probability) const override
         {
             outgoing = sample_sphere_uniform(s);
+            compute_sky_color(outgoing, value);
             probability = 1.0 / (4.0 * Pi);
-            compute_value(outgoing, value);
         }
 
         virtual void evaluate(
@@ -130,7 +133,7 @@ namespace
             Spectrum&           value) const override
         {
             assert(is_normalized(outgoing));
-            compute_value(outgoing, value);
+            compute_sky_color(outgoing, value);
         }
 
         virtual void evaluate(
@@ -140,8 +143,8 @@ namespace
             double&             probability) const override
         {
             assert(is_normalized(outgoing));
+            compute_sky_color(outgoing, value);
             probability = 1.0 / (4.0 * Pi);
-            compute_value(outgoing, value);
         }
 
         virtual double evaluate_pdf(
@@ -169,43 +172,9 @@ namespace
         double                      m_sun_phi;      // radians
         Vector3d                    m_sun_dir;
 
-        // Compute the zenith luminance, in Kcd/m^2.
-        static double compute_zenith_luminance(
-            const double        turbidity,
-            const double        sun_theta)
-        {
-            const double xi = ((4.0 / 9.0) - turbidity / 120.0) * (Pi - 2.0 * sun_theta);
-            return (4.0453 * turbidity - 4.9710) * tan(xi) - 0.2155 * turbidity + 2.4192;
-        }
+        double                      m_cos_sun_theta;
 
-        // Compute the zenith x and y chromaticities.
-        static void compute_zenith_chromacity(
-            const double        turbidity,
-            const double        sun_theta,
-            double              xy[2])
-        {
-            // Compute turbidity^2, sun_theta^2 and sun_theta^3.
-            // todo: precalculate.
-            const double turbidity2 = turbidity * turbidity;
-            const double sun_theta_2 = sun_theta * sun_theta;
-            const double sun_theta_3 = sun_theta * sun_theta_2;
-
-            // Compute x chromaticity.
-            const double a =  0.00166 * turbidity2 - 0.02903 * turbidity + 0.11693;
-            const double b = -0.00375 * turbidity2 + 0.06377 * turbidity - 0.21196;
-            const double c =  0.00209 * turbidity2 - 0.03202 * turbidity + 0.06052;
-            const double d =                         0.00394 * turbidity + 0.25886;
-            xy[0] = a * sun_theta_3 + b * sun_theta_2 + c * sun_theta + d;
-
-            // Compute y chromaticity.
-            const double e =  0.00275 * turbidity2 - 0.04214 * turbidity + 0.15346;
-            const double f = -0.00610 * turbidity2 + 0.08970 * turbidity - 0.26756;
-            const double g =  0.00317 * turbidity2 - 0.04153 * turbidity + 0.06670;
-            const double h =                         0.00516 * turbidity + 0.26688;
-            xy[1] = e * sun_theta_3 + f * sun_theta_2 + g * sun_theta + h;
-        }
-
-        // Compute the coefficients of the luminance distribution function for a given turbidity value.
+        // Compute the coefficients of the luminance distribution function.
         static void compute_luminance_coefficients(
             const double        turbidity,
             double              coeffs[5])
@@ -217,7 +186,7 @@ namespace
             coeffs[4] = -0.0670 * turbidity + 0.3703;
         }
 
-        // Compute the coefficients of the x chromaticity distribution function for a given turbidity value.
+        // Compute the coefficients of the x chromaticity distribution function.
         static void compute_xchroma_coefficients(
             const double        turbidity,
             double              coeffs[5])
@@ -229,7 +198,7 @@ namespace
             coeffs[4] = -0.0033 * turbidity + 0.0452;
         }
 
-        // Compute the coefficients of the y chromaticity distribution function for a given turbidity value.
+        // Compute the coefficients of the y chromaticity distribution function.
         static void compute_ychroma_coefficients(
             const double        turbidity,
             double              coeffs[5])
@@ -241,64 +210,69 @@ namespace
             coeffs[4] = -0.0109 * turbidity + 0.0529;
         }
 
+        // Compute the luminance at zenith, in Kcd/m^2.
+        static double compute_zenith_luminance(
+            const double        turbidity,
+            const double        sun_theta)
+        {
+            const double xi = ((4.0 / 9.0) - turbidity / 120.0) * (Pi - 2.0 * sun_theta);
+            return (4.0453 * turbidity - 4.9710) * tan(xi) - 0.2155 * turbidity + 2.4192;
+        }
+
+        // Compute the x chromaticity at zenith.
+        static double compute_zenith_xchroma(
+            const double        turbidity,
+            const double        sun_theta)
+        {
+            const double a = ( 0.00166 * turbidity - 0.02903) * turbidity + 0.11693;
+            const double b = (-0.00375 * turbidity + 0.06377) * turbidity - 0.21196;
+            const double c = ( 0.00209 * turbidity - 0.03202) * turbidity + 0.06052;
+            const double d = (                       0.00394) * turbidity + 0.25886;
+            return ((a * sun_theta + b) * sun_theta + c) * sun_theta + d;
+        }
+
+        // Compute the y chromaticity at zenith.
+        static double compute_zenith_ychroma(
+            const double        turbidity,
+            const double        sun_theta)
+        {
+            const double e = ( 0.00275 * turbidity - 0.04214) * turbidity + 0.15346;
+            const double f = (-0.00610 * turbidity + 0.08970) * turbidity - 0.26756;
+            const double g = ( 0.00317 * turbidity - 0.04153) * turbidity + 0.06670;
+            const double h = (                       0.00516) * turbidity + 0.26688;
+            return ((e * sun_theta + f) * sun_theta + g) * sun_theta + h;
+        }
+
         // Perez formula describing the sky luminance distribution.
         static double perez(
-            const double        theta,              // viewer zenith angle in radians, 0=zenith
-            const double        gamma,              // sun-viewer relative azimuth angle in radians
+            const double        rcp_cos_theta,
+            const double        gamma,
+            const double        cos_gamma,
             const double        coeffs[5])
         {
-            const double u = 1.0 + coeffs[0] * exp(coeffs[1] / cos(theta));
-            const double v = 1.0 + coeffs[2] * exp(coeffs[3] * gamma) + coeffs[4] * square(cos(gamma));
+            const double u = 1.0 + coeffs[0] * exp(coeffs[1] * rcp_cos_theta);
+            const double v = 1.0 + coeffs[2] * exp(coeffs[3] * gamma) + coeffs[4] * cos_gamma * cos_gamma;
             return u * v;
         }
 
         // Compute one the three quantity defining the sky aspect: the sky luminance Y and the sky chromaticities x and y.
         static double compute_quantity(
-            const double        theta,              // viewer zenith angle in radians, 0=zenith
-            const double        gamma,              // sun-viewer relative azimuth angle in radians
+            const double        rcp_cos_theta,
+            const double        gamma,
+            const double        cos_gamma,
             const double        sun_theta,
+            const double        cos_sun_theta,
             const double        zenith_val,
             const double        coeffs[5])
         {
-            return zenith_val * perez(theta, gamma, coeffs) / perez(0.0, sun_theta, coeffs);
+            return
+                  zenith_val
+                * perez(rcp_cos_theta, gamma, cos_gamma, coeffs)
+                / perez(1.0, sun_theta, cos_sun_theta, coeffs);
         }
 
-        // Compute the RGB sky color.
-        static Color3f compute_sky_color(
-            double              theta,              // viewer zenith angle in radians, 0=zenith
-            const double        gamma,              // sun-viewer relative azimuth angle in radians
-            const double        sun_theta,
-            const double        turbidity)
-        {
-            // Compute luminance Y and chromaticities x and y at zenith.
-            const double lum_zenith = compute_zenith_luminance(turbidity, sun_theta);
-            double xy_zenith[2];
-            compute_zenith_chromacity(turbidity, sun_theta, xy_zenith);
-
-            // Compute coefficients of the Y, x and y distribution functions.
-            double lum_coeffs[5], x_coeffs[5], y_coeffs[5];
-            compute_luminance_coefficients(turbidity, lum_coeffs);
-            compute_xchroma_coefficients(turbidity, x_coeffs);
-            compute_ychroma_coefficients(turbidity, y_coeffs);
-
-            // Compute luminance Y and chromaticities x and y.
-            double lum = compute_quantity(theta, gamma, sun_theta, lum_zenith, lum_coeffs);
-            const double x = compute_quantity(theta, gamma, sun_theta, xy_zenith[0], x_coeffs);
-            const double y = compute_quantity(theta, gamma, sun_theta, xy_zenith[1], y_coeffs);
-
-            // Scale the luminance value to a valid range.
-            lum = 1.0 - exp((-1.0 / 25.0) * lum);
-
-            // Convert Yxy to CIE XYZ tristimulus values.
-            Color3f cie_xyz;
-            cie_xyz[0] = static_cast<float>(x / y * lum);
-            cie_xyz[1] = static_cast<float>(lum);
-            cie_xyz[2] = static_cast<float>((1.0 - x - y) / y * lum);
-
-            return cie_xyz;
-        }
-
-        void compute_value(
+        // Compute the sky color in a given direction.
+        void compute_sky_color(
             const Vector3d&     outgoing,
             Spectrum&           value) const
         {
@@ -309,12 +283,35 @@ namespace
 
             if (shifted_outgoing.y > 0.0)
             {
-                const double theta = acos(shifted_outgoing.y);
-                const double gamma = acos(dot(shifted_outgoing, m_sun_dir));
+                // Compute coefficients of the Y, x and y distribution functions.
+                double lum_coeffs[5], x_coeffs[5], y_coeffs[5];
+                compute_luminance_coefficients(m_values.m_turbidity, lum_coeffs);
+                compute_xchroma_coefficients(m_values.m_turbidity, x_coeffs);
+                compute_ychroma_coefficients(m_values.m_turbidity, y_coeffs);
 
-                const Color3f cie_xyz =
-                    compute_sky_color(theta, gamma, m_sun_theta, m_values.m_turbidity);
+                // Compute luminance Y and chromaticities x and y at zenith.
+                const double lum_zenith = compute_zenith_luminance(m_values.m_turbidity, m_sun_theta);
+                const double xchroma_zenith = compute_zenith_xchroma(m_values.m_turbidity, m_sun_theta);
+                const double ychroma_zenith = compute_zenith_ychroma(m_values.m_turbidity, m_sun_theta);
 
+                // Compute the luminance and chromaticity.
+                const double rcp_cos_theta = 1.0 / shifted_outgoing.y;
+                const double cos_gamma = dot(shifted_outgoing, m_sun_dir);
+                const double gamma = acos(cos_gamma);
+                double lum = compute_quantity(rcp_cos_theta, gamma, cos_gamma, m_sun_theta, m_cos_sun_theta, lum_zenith, lum_coeffs);
+                const double x = compute_quantity(rcp_cos_theta, gamma, cos_gamma, m_sun_theta, m_cos_sun_theta, xchroma_zenith, x_coeffs);
+                const double y = compute_quantity(rcp_cos_theta, gamma, cos_gamma, m_sun_theta, m_cos_sun_theta, ychroma_zenith, y_coeffs);
+
+                // Scale the luminance value to a usable range.
+                lum = 1.0 - exp((-1.0 / 25.0) * lum);
+
+                // Convert the sky color to the CIE XYZ color space.
+                Color3f cie_xyz;
+                cie_xyz[0] = static_cast<float>(x / y * lum);
+                cie_xyz[1] = static_cast<float>(lum);
+                cie_xyz[2] = static_cast<float>((1.0 - x - y) / y * lum);
+
+                // Convert the sky color to a spectrum.
                 ciexyz_to_spectrum(m_lighting_conditions, cie_xyz, value);
             }
             else
