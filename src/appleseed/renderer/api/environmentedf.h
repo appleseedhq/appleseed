@@ -39,5 +39,6 @@
 #include "renderer/modeling/environmentedf/ienvironmentedffactory.h"
 #include "renderer/modeling/environmentedf/latlongmapenvironmentedf.h"
 #include "renderer/modeling/environmentedf/mirrorballmapenvironmentedf.h"
+#include "renderer/modeling/environmentedf/preethamenvironmentedf.h"
 
 #endif  // !APPLESEED_RENDERER_API_ENVIRONMENTEDF_H
