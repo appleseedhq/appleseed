@@ -32,7 +32,9 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
+#include "renderer/modeling/environmentedf/sphericalcoordinates.h"
 #include "renderer/modeling/input/inputarray.h"
+#include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/input/source.h"
 
 // appleseed.foundation headers.
@@ -85,6 +87,10 @@ namespace
             m_inputs.declare("sun_theta", InputFormatScalar);
             m_inputs.declare("sun_phi", InputFormatScalar);
             m_inputs.declare("turbidity", InputFormatScalar);
+            m_inputs.declare("turbidity_min", InputFormatScalar, "2.0");
+            m_inputs.declare("turbidity_max", InputFormatScalar, "6.0");
+            m_inputs.declare("luminance_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("saturation_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("horizon_shift", InputFormatScalar, "0.0");
         }
 
@@ -122,9 +128,9 @@ namespace
             Spectrum&           value,
             double&             probability) const override
         {
-            outgoing = sample_sphere_uniform(s);
-            compute_sky_color(outgoing, value);
-            probability = 1.0 / (4.0 * Pi);
+            outgoing = shift(sample_hemisphere_cosine(s));
+            compute_sky_color(input_evaluator, outgoing, value);
+            probability = outgoing.y * RcpPi;
         }
 
         virtual void evaluate(
@@ -133,7 +139,12 @@ namespace
             Spectrum&           value) const override
         {
             assert(is_normalized(outgoing));
-            compute_sky_color(outgoing, value);
+
+            const Vector3d unshifted_outgoing = unshift(outgoing);
+
+            if (unshifted_outgoing.y > 0.0)
+                compute_sky_color(input_evaluator, unshifted_outgoing, value);
+            else value.set(0.0f);
         }
 
         virtual void evaluate(
@@ -143,8 +154,19 @@ namespace
             double&             probability) const override
         {
             assert(is_normalized(outgoing));
-            compute_sky_color(outgoing, value);
-            probability = 1.0 / (4.0 * Pi);
+
+            const Vector3d unshifted_outgoing = unshift(outgoing);
+
+            if (unshifted_outgoing.y > 0.0)
+            {
+                compute_sky_color(input_evaluator, unshifted_outgoing, value);
+                probability = unshifted_outgoing.y * RcpPi;
+            }
+            else
+            {
+                value.set(0.0f);
+                probability = 0.0;
+            }
         }
 
         virtual double evaluate_pdf(
@@ -152,7 +174,10 @@ namespace
             const Vector3d&     outgoing) const override
         {
             assert(is_normalized(outgoing));
-            return 1.0 / (4.0 * Pi);
+
+            const Vector3d unshifted_outgoing = unshift(outgoing);
+
+            return unshifted_outgoing.y > 0.0 ? unshifted_outgoing.y * RcpPi : 0.0;
         }
 
       private:
@@ -161,6 +186,10 @@ namespace
             double  m_sun_theta;                    // sun zenith angle in degrees, 0=zenith
             double  m_sun_phi;                      // degrees
             double  m_turbidity;                    // atmosphere turbidity
+            double  m_turbidity_min;
+            double  m_turbidity_max;
+            double  m_luminance_multiplier;
+            double  m_saturation_multiplier;
             double  m_horizon_shift;
         };
 
@@ -273,30 +302,39 @@ namespace
 
         // Compute the sky color in a given direction.
         void compute_sky_color(
+            InputEvaluator&     input_evaluator,
             const Vector3d&     outgoing,
             Spectrum&           value) const
         {
-            // Shift the horizon.
-            Vector3d shifted_outgoing = outgoing;
-            shifted_outgoing.y -= m_values.m_horizon_shift;
-            shifted_outgoing = normalize(shifted_outgoing);
-
-            if (shifted_outgoing.y > 0.0)
+            if (outgoing.y > 0.0)
             {
+                // Evaluate turbidity.
+                double theta, phi;
+                double u, v;
+                unit_vector_to_angles(outgoing, theta, phi);
+                angles_to_unit_square(theta, phi, u, v);
+                const double turbidity =
+                    fit(
+                        input_evaluator.evaluate<InputValues>(m_inputs, Vector2d(u, v))->m_turbidity,
+                        0.0,
+                        1.0,
+                        m_values.m_turbidity_min,
+                        m_values.m_turbidity_max);
+
                 // Compute coefficients of the Y, x and y distribution functions.
                 double lum_coeffs[5], x_coeffs[5], y_coeffs[5];
-                compute_luminance_coefficients(m_values.m_turbidity, lum_coeffs);
-                compute_xchroma_coefficients(m_values.m_turbidity, x_coeffs);
-                compute_ychroma_coefficients(m_values.m_turbidity, y_coeffs);
+                compute_luminance_coefficients(turbidity, lum_coeffs);
+                compute_xchroma_coefficients(turbidity, x_coeffs);
+                compute_ychroma_coefficients(turbidity, y_coeffs);
 
                 // Compute luminance Y and chromaticities x and y at zenith.
-                const double lum_zenith = compute_zenith_luminance(m_values.m_turbidity, m_sun_theta);
-                const double xchroma_zenith = compute_zenith_xchroma(m_values.m_turbidity, m_sun_theta);
-                const double ychroma_zenith = compute_zenith_ychroma(m_values.m_turbidity, m_sun_theta);
+                const double lum_zenith = compute_zenith_luminance(turbidity, m_sun_theta);
+                const double xchroma_zenith = compute_zenith_xchroma(turbidity, m_sun_theta);
+                const double ychroma_zenith = compute_zenith_ychroma(turbidity, m_sun_theta);
 
                 // Compute the luminance and chromaticity.
-                const double rcp_cos_theta = 1.0 / shifted_outgoing.y;
-                const double cos_gamma = dot(shifted_outgoing, m_sun_dir);
+                const double rcp_cos_theta = 1.0 / outgoing.y;
+                const double cos_gamma = dot(outgoing, m_sun_dir);
                 const double gamma = acos(cos_gamma);
                 double lum = compute_quantity(rcp_cos_theta, gamma, cos_gamma, m_sun_theta, m_cos_sun_theta, lum_zenith, lum_coeffs);
                 const double x = compute_quantity(rcp_cos_theta, gamma, cos_gamma, m_sun_theta, m_cos_sun_theta, xchroma_zenith, x_coeffs);
@@ -304,21 +342,45 @@ namespace
 
                 // Scale the luminance value to a usable range.
                 lum = 1.0 - exp((-1.0 / 25.0) * lum);
+                lum *= m_values.m_luminance_multiplier;
 
                 // Convert the sky color to the CIE XYZ color space.
-                Color3f cie_xyz;
-                cie_xyz[0] = static_cast<float>(x / y * lum);
-                cie_xyz[1] = static_cast<float>(lum);
-                cie_xyz[2] = static_cast<float>((1.0 - x - y) / y * lum);
+                Color3f ciexyz;
+                ciexyz[0] = static_cast<float>(x / y * lum);
+                ciexyz[1] = static_cast<float>(lum);
+                ciexyz[2] = static_cast<float>((1.0 - x - y) / y * lum);
 
-                // Convert the sky color to a spectrum.
-                ciexyz_to_spectrum(m_lighting_conditions, cie_xyz, value);
+                // Then convert it to linear RGB, then to HSL.
+                Color3f linear_rgb = ciexyz_to_linear_rgb(ciexyz);
+                Color3f hsl = linear_rgb_to_hsl(linear_rgb);
+
+                // Apply the saturation multiplier.
+                hsl[1] *= static_cast<float>(m_values.m_saturation_multiplier);
+
+                // Back to linear RGB, then to CIE XYZ.
+                linear_rgb = hsl_to_linear_rgb(hsl);
+                ciexyz = linear_rgb_to_ciexyz(linear_rgb);
+
+                // And finally convert the sky color to a spectrum.
+                ciexyz_to_spectrum(m_lighting_conditions, ciexyz, value);
             }
             else
             {
                 // The average overall albedo of Earth is about 30% (http://en.wikipedia.org/wiki/Albedo).
                 value.set(0.30f);
             }
+        }
+
+        Vector3d shift(Vector3d v) const
+        {
+            v.y += m_values.m_horizon_shift;
+            return normalize(v);
+        }
+
+        Vector3d unshift(Vector3d v) const
+        {
+            v.y -= m_values.m_horizon_shift;
+            return normalize(v);
         }
     };
 }
@@ -362,9 +424,43 @@ DictionaryArray PreethamEnvironmentEDFFactory::get_widget_definitions() const
         Dictionary()
             .insert("name", "turbidity")
             .insert("label", "Turbidity")
-            .insert("widget", "text_box")
+            .insert("widget", "entity_picker")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "required")
-            .insert("default", "3.0"));
+            .insert("default", "4.0"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "turbidity_min")
+            .insert("label", "Turbidity Min")
+            .insert("widget", "text_box")
+            .insert("use", "optional")
+            .insert("default", "2.0"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "turbidity_max")
+            .insert("label", "Turbidity Max")
+            .insert("widget", "text_box")
+            .insert("use", "optional")
+            .insert("default", "6.0"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "luminance_multiplier")
+            .insert("label", "Luminance Multiplier")
+            .insert("widget", "text_box")
+            .insert("use", "optional")
+            .insert("default", "1.0"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "saturation_multiplier")
+            .insert("label", "Saturation Multiplier")
+            .insert("widget", "text_box")
+            .insert("use", "optional")
+            .insert("default", "1.0"));
 
     definitions.push_back(
         Dictionary()
