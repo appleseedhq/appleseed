@@ -29,19 +29,16 @@
 #ifndef APPLESEED_MAIN_DLLVISIBILITY_H
 #define APPLESEED_MAIN_DLLVISIBILITY_H
 
-#ifdef  __GNUC__
-	#define APPLESEED_DLL_EXPORT  __attribute__((visibility( "default")))
-	#define APPLESEED_DLL_IMPORT  __attribute__((visibility( "default")))
-	#define APPLESEED_DLL_PRIVATE __attribute__((visibility( "hidden")))
+#ifdef __GNUC__
+    #define APPLESEED_DLL_EXPORT __attribute__((visibility("default")))
+    #define APPLESEED_DLL_IMPORT __attribute__((visibility("default")))
 #else
     #ifdef _WIN32
-        #define APPLESEED_DLL_EXPORT  __declspec(dllexport)
-        #define APPLESEED_DLL_IMPORT  __declspec(dllimport)
-        #define APPLESEED_DLL_PRIVATE
+        #define APPLESEED_DLL_EXPORT __declspec(dllexport)
+        #define APPLESEED_DLL_IMPORT __declspec(dllimport)
     #else
         #define APPLESEED_DLL_EXPORT
         #define APPLESEED_DLL_IMPORT
-        #define APPLESEED_DLL_PRIVATE
     #endif
 #endif
 
