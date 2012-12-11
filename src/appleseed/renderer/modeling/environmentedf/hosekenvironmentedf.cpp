@@ -204,6 +204,7 @@ namespace
         double                      m_sun_phi;      // radians
         Vector3d                    m_sun_dir;
 
+        // Compute the coefficients of the radiance distribution function and the master luminance value.
         static void compute_coefficients(
             const double            turbidity,
             const double            albedo,
@@ -216,100 +217,71 @@ namespace
             const size_t turbidity_high = min(turbidity_low + 1, 9u);
             const double turbidity_interp = clamped_turbidity - turbidity_low;
 
+            // Compute solar elevation.
+            const double eta = HalfPi - sun_theta;
+
+            const double x1 = pow(eta * RcpHalfPi, (1.0 / 3.0));
+            const double x2 = x1 * x1;
+            const double x3 = x2 * x1;
+            const double y1 = 1.0 - x1;
+            const double y2 = y1 * y1;
+            const double y3 = y2 * y1;
+
+            // Coefficients of the quintic Bezier polynomial.
+            const double c0 = y2 * y3;
+            const double c1 = 5.0 * x1 * y2 * y2;
+            const double c2 = 10.0 * x2 * y3;
+            const double c3 = 10.0 * x3 * y2;
+            const double c4 = 5.0 * x2 * x2 * y1;
+            const double c5 = x2 * x3;
+
+            #define INTERP1(dataset)    \
+                (dataset)[ 0] * c0 +    \
+                (dataset)[ 9] * c1 +    \
+                (dataset)[18] * c2 +    \
+                (dataset)[27] * c3 +    \
+                (dataset)[36] * c4 +    \
+                (dataset)[45] * c5
+
+            #define INTERP2(dataset)    \
+                (dataset)[ 0] * c0 +    \
+                (dataset)[ 1] * c1 +    \
+                (dataset)[ 2] * c2 +    \
+                (dataset)[ 3] * c3 +    \
+                (dataset)[ 4] * c4 +    \
+                (dataset)[ 5] * c5
+
             for (size_t w = 0; w < 3; ++w)
             {
                 for (size_t p = 0; p < 9; ++p)
                 {
+                    const double* dataset = datasetsXYZ[w] + p;
+                    const double clow0  = INTERP1(dataset + (0 * 10 + turbidity_low ) * 9 * 6);
+                    const double clow1  = INTERP1(dataset + (1 * 10 + turbidity_low ) * 9 * 6);
+                    const double chigh0 = INTERP1(dataset + (0 * 10 + turbidity_high) * 9 * 6);
+                    const double chigh1 = INTERP1(dataset + (1 * 10 + turbidity_high) * 9 * 6);
                     coeffs[w * 9 + p] =
                         lerp(
-                            lerp(
-                                interpolate(datasetsXYZ[w] + ((0 * 10 + turbidity_low) * 9) * 6 + p, sun_theta),
-                                interpolate(datasetsXYZ[w] + ((1 * 10 + turbidity_low) * 9) * 6 + p, sun_theta),
-                                albedo),
-                            lerp(
-                                interpolate(datasetsXYZ[w] + ((0 * 10 + turbidity_high) * 9) * 6 + p, sun_theta),
-                                interpolate(datasetsXYZ[w] + ((1 * 10 + turbidity_high) * 9) * 6 + p, sun_theta),
-                                albedo),
+                            lerp(clow0, clow1, albedo),
+                            lerp(chigh0, chigh1, albedo),
                             turbidity_interp);
                 }
 
-                masterlum[w] =
-                    lerp(
+                {
+                    const double rlow0  = INTERP2(datasetsXYZRad[w] + (0 * 10 + turbidity_low ) * 6);
+                    const double rlow1  = INTERP2(datasetsXYZRad[w] + (1 * 10 + turbidity_low ) * 6);
+                    const double rhigh0 = INTERP2(datasetsXYZRad[w] + (0 * 10 + turbidity_high) * 6);
+                    const double rhigh1 = INTERP2(datasetsXYZRad[w] + (1 * 10 + turbidity_high) * 6);
+                    masterlum[w] =
                         lerp(
-                            interpolate_radiance(datasetsXYZRad[w] + (0 * 10 + turbidity_low) * 6, sun_theta),
-                            interpolate_radiance(datasetsXYZRad[w] + (1 * 10 + turbidity_low) * 6, sun_theta),
-                            albedo),
-                        lerp(
-                            interpolate_radiance(datasetsXYZRad[w] + (0 * 10 + turbidity_high) * 6, sun_theta),
-                            interpolate_radiance(datasetsXYZRad[w] + (1 * 10 + turbidity_high) * 6, sun_theta),
-                            albedo),
-                        turbidity_interp);
+                            lerp(rlow0, rlow1, albedo),
+                            lerp(rhigh0, rhigh1, albedo),
+                            turbidity_interp);
+                }
             }
-        }
 
-        // Compute the coefficients of the radiance distribution function.
-        static void compute_radiance_coefficients(
-            const double*           dataset,
-            const size_t            turbidity,
-            const size_t            albedo,
-            const double            sun_theta,
-            double                  coeffs[9])
-        {
-            assert(turbidity < 10);
-            assert(albedo < 2);
-
-        }
-
-        static double interpolate(
-            const double*           params,
-            const double            sun_theta)
-        {
-            const double eta = HalfPi - sun_theta;
-            const double x1 = pow(eta * RcpHalfPi, (1.0 / 3.0));
-            const double x2 = x1 * x1;
-            const double x3 = x2 * x1;
-            const double x4 = x2 * x2;
-            const double x5 = x2 * x3;
-
-            const double y1 = 1.0 - x1;
-            const double y2 = y1 * y1;
-            const double y3 = y2 * y1;
-            const double y4 = y2 * y2;
-            const double y5 = y2 * y3;
-
-            return
-                params[ 0] * y5 +
-                params[ 9] * 5.0 * x1 * y4 +
-                params[18] * 10.0 * x2 * y3 +
-                params[27] * 10.0 * x3 * y2 +
-                params[36] * 5.0 * x4 * y1 +
-                params[45] * x5;
-        }
-
-        static double interpolate_radiance(
-            const double*           params,
-            const double            sun_theta)
-        {
-            const double eta = HalfPi - sun_theta;
-            const double x1 = pow(eta * RcpHalfPi, (1.0 / 3.0));
-            const double x2 = x1 * x1;
-            const double x3 = x2 * x1;
-            const double x4 = x2 * x2;
-            const double x5 = x2 * x3;
-
-            const double y1 = 1.0 - x1;
-            const double y2 = y1 * y1;
-            const double y3 = y2 * y1;
-            const double y4 = y2 * y2;
-            const double y5 = y2 * y3;
-
-            return
-                params[0] * y5 +
-                params[1] * 5.0 * x1 * y4 +
-                params[2] * 10.0 * x2 * y3 +
-                params[3] * 10.0 * x3 * y2 +
-                params[4] * 5.0 * x4 * y1 +
-                params[5] * x5;
+            #undef INTERP2
+            #undef INTERP1
         }
 
         // Anisotropic term that places a localized glow around the solar point.
@@ -323,6 +295,7 @@ namespace
         // Extended Perez formula.
         static double perez(
             const double        cos_theta,
+            const double        sqrt_cos_theta,
             const double        gamma,
             const double        cos_gamma,
             const double        coeffs[9])
@@ -333,7 +306,7 @@ namespace
                              + coeffs[3] * exp(coeffs[4] * gamma)
                              + coeffs[5] * cos_gamma * cos_gamma
                              + coeffs[6] * xi(coeffs[8], cos_gamma)
-                             + coeffs[7] * sqrt(cos_theta);
+                             + coeffs[7] * sqrt_cos_theta;
             return u * v;
         }
 
@@ -365,14 +338,15 @@ namespace
                 coeffs,
                 masterlum);
 
+            const double sqrt_cos_theta = sqrt(outgoing.y);
             const double cos_gamma = dot(outgoing, m_sun_dir);
             const double gamma = acos(cos_gamma);
 
             // Compute the sky color in the CIE XYZ color space.
             Color3f ciexyz;
-            ciexyz[0] = static_cast<float>(perez(outgoing.y, gamma, cos_gamma, coeffs + 0 * 9) * masterlum[0]);
-            ciexyz[1] = static_cast<float>(perez(outgoing.y, gamma, cos_gamma, coeffs + 1 * 9) * masterlum[1]);
-            ciexyz[2] = static_cast<float>(perez(outgoing.y, gamma, cos_gamma, coeffs + 2 * 9) * masterlum[2]);
+            ciexyz[0] = static_cast<float>(perez(outgoing.y, sqrt_cos_theta, gamma, cos_gamma, coeffs + 0 * 9) * masterlum[0]);
+            ciexyz[1] = static_cast<float>(perez(outgoing.y, sqrt_cos_theta, gamma, cos_gamma, coeffs + 1 * 9) * masterlum[1]);
+            ciexyz[2] = static_cast<float>(perez(outgoing.y, sqrt_cos_theta, gamma, cos_gamma, coeffs + 2 * 9) * masterlum[2]);
 
             // Apply the luminance multiplier.
             ciexyz *= static_cast<float>(m_values.m_luminance_multiplier);
