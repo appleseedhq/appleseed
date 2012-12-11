@@ -33,6 +33,7 @@
 #include "renderer/modeling/environmentedf/constantenvironmentedf.h"
 #include "renderer/modeling/environmentedf/constanthemisphereenvironmentedf.h"
 #include "renderer/modeling/environmentedf/gradientenvironmentedf.h"
+#include "renderer/modeling/environmentedf/hosekenvironmentedf.h"
 #include "renderer/modeling/environmentedf/ienvironmentedffactory.h"
 #include "renderer/modeling/environmentedf/latlongmapenvironmentedf.h"
 #include "renderer/modeling/environmentedf/mirrorballmapenvironmentedf.h"
@@ -60,6 +61,7 @@ EnvironmentEDFFactoryRegistrar::EnvironmentEDFFactoryRegistrar()
     register_factory(auto_ptr<FactoryType>(new ConstantEnvironmentEDFFactory()));
     register_factory(auto_ptr<FactoryType>(new ConstantHemisphereEnvironmentEDFFactory()));
     register_factory(auto_ptr<FactoryType>(new GradientEnvironmentEDFFactory()));
+    register_factory(auto_ptr<FactoryType>(new HosekEnvironmentEDFFactory()));
     register_factory(auto_ptr<FactoryType>(new LatLongMapEnvironmentEDFFactory()));
     register_factory(auto_ptr<FactoryType>(new MirrorBallMapEnvironmentEDFFactory()));
     register_factory(auto_ptr<FactoryType>(new PreethamEnvironmentEDFFactory()));

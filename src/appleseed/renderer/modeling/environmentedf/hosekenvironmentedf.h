@@ -26,20 +26,49 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_ENVIRONMENTEDF_H
-#define APPLESEED_RENDERER_API_ENVIRONMENTEDF_H
+#ifndef APPLESEED_RENDERER_MODELING_ENVIRONMENTEDF_HOSEKENVIRONMENTEDF_H
+#define APPLESEED_RENDERER_MODELING_ENVIRONMENTEDF_HOSEKENVIRONMENTEDF_H
 
-// API headers.
-#include "renderer/modeling/environmentedf/constantenvironmentedf.h"
-#include "renderer/modeling/environmentedf/constanthemisphereenvironmentedf.h"
-#include "renderer/modeling/environmentedf/environmentedf.h"
-#include "renderer/modeling/environmentedf/environmentedffactoryregistrar.h"
-#include "renderer/modeling/environmentedf/environmentedftraits.h"
-#include "renderer/modeling/environmentedf/gradientenvironmentedf.h"
-#include "renderer/modeling/environmentedf/hosekenvironmentedf.h"
+// appleseed.renderer headers.
 #include "renderer/modeling/environmentedf/ienvironmentedffactory.h"
-#include "renderer/modeling/environmentedf/latlongmapenvironmentedf.h"
-#include "renderer/modeling/environmentedf/mirrorballmapenvironmentedf.h"
-#include "renderer/modeling/environmentedf/preethamenvironmentedf.h"
 
-#endif  // !APPLESEED_RENDERER_API_ENVIRONMENTEDF_H
+// appleseed.foundation headers.
+#include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/autoreleaseptr.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+// Forward declarations.
+namespace renderer      { class EnvironmentEDF; }
+namespace renderer      { class ParamArray; }
+
+namespace renderer
+{
+
+//
+// An environment EDF implementing the Hosek & Wilkie day sky model.
+//
+
+class DLLSYMBOL HosekEnvironmentEDFFactory
+  : public IEnvironmentEDFFactory
+{
+  public:
+    // Return a string identifying this environment EDF model.
+    virtual const char* get_model() const;
+
+    // Return a human-readable string identifying this environment EDF model.
+    virtual const char* get_human_readable_model() const;
+
+    // Return a set of widget definitions for this environment EDF model.
+    virtual foundation::DictionaryArray get_widget_definitions() const;
+
+    // Create a new environment EDF instance.
+    virtual foundation::auto_release_ptr<EnvironmentEDF> create(
+        const char*         name,
+        const ParamArray&   params) const;
+};
+
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_MODELING_ENVIRONMENTEDF_HOSEKENVIRONMENTEDF_H

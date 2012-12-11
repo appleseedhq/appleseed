@@ -1193,6 +1193,7 @@ source_group ("renderer\\modeling\\environment" FILES
 )
 
 set (renderer_modeling_environmentedf_sources
+    renderer/modeling/environmentedf/ArHosekSkyModelData.h
     renderer/modeling/environmentedf/constantenvironmentedf.cpp
     renderer/modeling/environmentedf/constantenvironmentedf.h
     renderer/modeling/environmentedf/constanthemisphereenvironmentedf.cpp
@@ -1204,6 +1205,8 @@ set (renderer_modeling_environmentedf_sources
     renderer/modeling/environmentedf/environmentedftraits.h
     renderer/modeling/environmentedf/gradientenvironmentedf.cpp
     renderer/modeling/environmentedf/gradientenvironmentedf.h
+    renderer/modeling/environmentedf/hosekenvironmentedf.cpp
+    renderer/modeling/environmentedf/hosekenvironmentedf.h
     renderer/modeling/environmentedf/ienvironmentedffactory.h
     renderer/modeling/environmentedf/latlongmapenvironmentedf.cpp
     renderer/modeling/environmentedf/latlongmapenvironmentedf.h
