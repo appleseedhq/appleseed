@@ -659,9 +659,6 @@ void ciexyz_to_spectrum(
     const Color<T, 3>&          xyz,
     Spectrum&                   spectrum)
 {
-    // todo: fix to handle arbitrary number of samples.
-    assert(Spectrum::Samples == 31);
-
     linear_rgb_to_spectrum(
         lighting,
         ciexyz_to_linear_rgb(xyz),
