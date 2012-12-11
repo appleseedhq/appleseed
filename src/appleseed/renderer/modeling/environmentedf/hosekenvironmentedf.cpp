@@ -97,7 +97,7 @@ namespace
             m_inputs.declare("turbidity_min", InputFormatScalar, "2.0");
             m_inputs.declare("turbidity_max", InputFormatScalar, "6.0");
             m_inputs.declare("ground_albedo", InputFormatScalar, "0.3");
-            m_inputs.declare("luminance_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("luminance_multiplier", InputFormatScalar, "0.01");
             m_inputs.declare("saturation_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("horizon_shift", InputFormatScalar, "0.0");
         }
@@ -135,7 +135,7 @@ namespace
                     m_uniform_values.m_ground_albedo,
                     m_sun_theta,
                     m_uniform_coeffs,
-                    m_uniform_master_lum);
+                    m_uniform_master_Y);
             }
 
             return true;
@@ -220,7 +220,7 @@ namespace
 
         bool                        m_uniform_turbidity;
         double                      m_uniform_coeffs[3 * 9];
-        double                      m_uniform_master_lum[3];
+        double                      m_uniform_master_Y[3];
 
         // Compute the coefficients of the radiance distribution function and the master luminance value.
         static void compute_coefficients(
@@ -228,7 +228,7 @@ namespace
             const double            albedo,
             const double            sun_theta,
             double                  coeffs[3 * 9],
-            double                  master_lum[3])
+            double                  master_Y[3])
         {
             const double clamped_turbidity = clamp(turbidity, 1.0, 10.0) - 1.0;
             const size_t turbidity_low = truncate<size_t>(clamped_turbidity);
@@ -238,14 +238,17 @@ namespace
             // Compute solar elevation.
             const double eta = HalfPi - sun_theta;
 
+            // Transform solar elevation to [0, 1] with more samples for low elevations.
             const double x1 = pow(eta * RcpHalfPi, (1.0 / 3.0));
+            const double y1 = 1.0 - x1;
+
+            // Compute the square and cube of x1 and (1 - x1).
             const double x2 = x1 * x1;
             const double x3 = x2 * x1;
-            const double y1 = 1.0 - x1;
             const double y2 = y1 * y1;
             const double y3 = y2 * y1;
 
-            // Coefficients of the quintic Bezier polynomial.
+            // Coefficients of the quintic Bezier interpolation polynomial.
             const double c0 = y2 * y3;
             const double c1 = 5.0 * x1 * y2 * y2;
             const double c2 = 10.0 * x2 * y3;
@@ -253,7 +256,7 @@ namespace
             const double c4 = 5.0 * x2 * x2 * y1;
             const double c5 = x2 * x3;
 
-            #define INTERP1(dataset)    \
+            #define EVALPOLY1(dataset)  \
                 (dataset)[ 0] * c0 +    \
                 (dataset)[ 9] * c1 +    \
                 (dataset)[18] * c2 +    \
@@ -261,7 +264,7 @@ namespace
                 (dataset)[36] * c4 +    \
                 (dataset)[45] * c5
 
-            #define INTERP2(dataset)    \
+            #define EVALPOLY2(dataset)  \
                 (dataset)[ 0] * c0 +    \
                 (dataset)[ 1] * c1 +    \
                 (dataset)[ 2] * c2 +    \
@@ -273,11 +276,11 @@ namespace
             {
                 for (size_t p = 0; p < 9; ++p)
                 {
-                    const double* dataset = datasetsXYZ[w] + p;
-                    const double clow0  = INTERP1(dataset + (0 * 10 + turbidity_low ) * 9 * 6);
-                    const double clow1  = INTERP1(dataset + (1 * 10 + turbidity_low ) * 9 * 6);
-                    const double chigh0 = INTERP1(dataset + (0 * 10 + turbidity_high) * 9 * 6);
-                    const double chigh1 = INTERP1(dataset + (1 * 10 + turbidity_high) * 9 * 6);
+                    const double clow0  = EVALPOLY1(datasetsXYZ[w] + (0 * 10 + turbidity_low ) * 9 * 6 + p);
+                    const double clow1  = EVALPOLY1(datasetsXYZ[w] + (1 * 10 + turbidity_low ) * 9 * 6 + p);
+                    const double chigh0 = EVALPOLY1(datasetsXYZ[w] + (0 * 10 + turbidity_high) * 9 * 6 + p);
+                    const double chigh1 = EVALPOLY1(datasetsXYZ[w] + (1 * 10 + turbidity_high) * 9 * 6 + p);
+
                     coeffs[w * 9 + p] =
                         lerp(
                             lerp(clow0, clow1, albedo),
@@ -286,11 +289,12 @@ namespace
                 }
 
                 {
-                    const double rlow0  = INTERP2(datasetsXYZRad[w] + (0 * 10 + turbidity_low ) * 6);
-                    const double rlow1  = INTERP2(datasetsXYZRad[w] + (1 * 10 + turbidity_low ) * 6);
-                    const double rhigh0 = INTERP2(datasetsXYZRad[w] + (0 * 10 + turbidity_high) * 6);
-                    const double rhigh1 = INTERP2(datasetsXYZRad[w] + (1 * 10 + turbidity_high) * 6);
-                    master_lum[w] =
+                    const double rlow0  = EVALPOLY2(datasetsXYZRad[w] + (0 * 10 + turbidity_low ) * 6);
+                    const double rlow1  = EVALPOLY2(datasetsXYZRad[w] + (1 * 10 + turbidity_low ) * 6);
+                    const double rhigh0 = EVALPOLY2(datasetsXYZRad[w] + (0 * 10 + turbidity_high) * 6);
+                    const double rhigh1 = EVALPOLY2(datasetsXYZRad[w] + (1 * 10 + turbidity_high) * 6);
+
+                    master_Y[w] =
                         lerp(
                             lerp(rlow0, rlow1, albedo),
                             lerp(rhigh0, rhigh1, albedo),
@@ -298,8 +302,8 @@ namespace
                 }
             }
 
-            #undef INTERP2
-            #undef INTERP1
+            #undef EVALPOLY2
+            #undef EVALPOLY1
         }
 
         // Anisotropic term that places a localized glow around the solar point.
@@ -343,9 +347,9 @@ namespace
             if (m_uniform_turbidity)
             {
                 // Compute the sky color in the CIE XYZ color space.
-                ciexyz[0] = static_cast<float>(perez(outgoing.y, sqrt_cos_theta, gamma, cos_gamma, m_uniform_coeffs + 0 * 9) * m_uniform_master_lum[0]);
-                ciexyz[1] = static_cast<float>(perez(outgoing.y, sqrt_cos_theta, gamma, cos_gamma, m_uniform_coeffs + 1 * 9) * m_uniform_master_lum[1]);
-                ciexyz[2] = static_cast<float>(perez(outgoing.y, sqrt_cos_theta, gamma, cos_gamma, m_uniform_coeffs + 2 * 9) * m_uniform_master_lum[2]);
+                ciexyz[0] = static_cast<float>(perez(outgoing.y, sqrt_cos_theta, gamma, cos_gamma, m_uniform_coeffs + 0 * 9) * m_uniform_master_Y[0]);
+                ciexyz[1] = static_cast<float>(perez(outgoing.y, sqrt_cos_theta, gamma, cos_gamma, m_uniform_coeffs + 1 * 9) * m_uniform_master_Y[1]);
+                ciexyz[2] = static_cast<float>(perez(outgoing.y, sqrt_cos_theta, gamma, cos_gamma, m_uniform_coeffs + 2 * 9) * m_uniform_master_Y[2]);
             }
             else
             {
@@ -363,35 +367,39 @@ namespace
                         m_uniform_values.m_turbidity_max);
 
                 // Compute the coefficients of the radiance distribution function and the master luminance value.
-                double coeffs[3 * 9], master_lum[3];
+                double coeffs[3 * 9], master_Y[3];
                 compute_coefficients(
                     turbidity,
                     m_uniform_values.m_ground_albedo,
                     m_sun_theta,
                     coeffs,
-                    master_lum);
+                    master_Y);
 
                 // Compute the sky color in the CIE XYZ color space.
-                ciexyz[0] = static_cast<float>(perez(outgoing.y, sqrt_cos_theta, gamma, cos_gamma, coeffs + 0 * 9) * master_lum[0]);
-                ciexyz[1] = static_cast<float>(perez(outgoing.y, sqrt_cos_theta, gamma, cos_gamma, coeffs + 1 * 9) * master_lum[1]);
-                ciexyz[2] = static_cast<float>(perez(outgoing.y, sqrt_cos_theta, gamma, cos_gamma, coeffs + 2 * 9) * master_lum[2]);
+                ciexyz[0] = static_cast<float>(perez(outgoing.y, sqrt_cos_theta, gamma, cos_gamma, coeffs + 0 * 9) * master_Y[0]);
+                ciexyz[1] = static_cast<float>(perez(outgoing.y, sqrt_cos_theta, gamma, cos_gamma, coeffs + 1 * 9) * master_Y[1]);
+                ciexyz[2] = static_cast<float>(perez(outgoing.y, sqrt_cos_theta, gamma, cos_gamma, coeffs + 2 * 9) * master_Y[2]);
             }
 
             // Apply the luminance multiplier.
             ciexyz *= static_cast<float>(m_uniform_values.m_luminance_multiplier);
 
-            // Then convert it to linear RGB, then to HSL.
-            Color3f linear_rgb = ciexyz_to_linear_rgb(ciexyz);
-            Color3f hsl = linear_rgb_to_hsl(linear_rgb);
+            // Apply an optional saturation correction.
+            if (m_uniform_values.m_saturation_multiplier != 1.0)
+            {
+                // Convert the sky color to linear RGB, then to HSL.
+                Color3f linear_rgb = ciexyz_to_linear_rgb(ciexyz);
+                Color3f hsl = linear_rgb_to_hsl(linear_rgb);
 
-            // Apply the saturation multiplier.
-            hsl[1] *= static_cast<float>(m_uniform_values.m_saturation_multiplier);
+                // Apply the saturation multiplier.
+                hsl[1] *= static_cast<float>(m_uniform_values.m_saturation_multiplier);
 
-            // Back to linear RGB, then to CIE XYZ.
-            linear_rgb = hsl_to_linear_rgb(hsl);
-            ciexyz = linear_rgb_to_ciexyz(linear_rgb);
+                // Convert the result back to linear RGB, then to CIE XYZ.
+                linear_rgb = hsl_to_linear_rgb(hsl);
+                ciexyz = linear_rgb_to_ciexyz(linear_rgb);
+            }
 
-            // And finally convert the sky color to a spectrum.
+            // Convert the sky color to a spectrum.
             ciexyz_to_spectrum(m_lighting_conditions, ciexyz, value);
         }
 
@@ -478,7 +486,7 @@ DictionaryArray HosekEnvironmentEDFFactory::get_widget_definitions() const
             .insert("label", "Luminance Multiplier")
             .insert("widget", "text_box")
             .insert("use", "optional")
-            .insert("default", "1.0"));
+            .insert("default", "0.01"));
 
     definitions.push_back(
         Dictionary()
