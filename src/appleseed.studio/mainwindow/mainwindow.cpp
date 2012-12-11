@@ -655,6 +655,9 @@ void MainWindow::enable_disable_menu_items(const bool rendering)
     m_ui->action_file_open_project->setEnabled(allow_replacing_project);
     m_action_open_project->setEnabled(allow_replacing_project);
 
+    // File -> Open Recent.
+    m_ui->menu_open_recent->setEnabled(allow_replacing_project);
+
     // File -> Open Built-in Project.
     m_ui->menu_file_open_builtin_project->setEnabled(allow_replacing_project);
 
