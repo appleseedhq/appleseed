@@ -40,9 +40,6 @@
 
 // libpng headers.
 #include "png.h"
-#if PNG_LIBPNG_VER_DLLNUM >= 15
-    #include "pngstruct.h"
-#endif
 
 // Standard headers.
 #include <cassert>
@@ -66,7 +63,7 @@ namespace
     void error_callback(png_structp png_ptr, png_const_charp error_msg)
     {
         // Close the file.
-        FILE* fp = static_cast<FILE*>(png_ptr->error_ptr);
+        FILE* fp = static_cast<FILE*>(png_get_error_ptr(png_ptr));
         fclose(fp);
 
         // Deallocate the png_struct structure.

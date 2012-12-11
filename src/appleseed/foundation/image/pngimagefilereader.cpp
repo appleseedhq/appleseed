@@ -38,9 +38,6 @@
 
 // libpng headers.
 #include "png.h"
-#if PNG_LIBPNG_VER_DLLNUM >= 15
-    #include "pngstruct.h"
-#endif
 
 // Standard headers.
 #include <csetjmp>
