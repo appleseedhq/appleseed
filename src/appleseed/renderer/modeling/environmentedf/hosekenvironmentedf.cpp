@@ -117,12 +117,26 @@ namespace
             if (!EnvironmentEDF::on_frame_begin(project))
                 return false;
 
-            m_inputs.evaluate_uniforms(&m_values);
+            // Evaluate uniform values.
+            m_inputs.evaluate_uniforms(&m_uniform_values);
 
             // Compute the sun direction.
-            m_sun_theta = deg_to_rad(m_values.m_sun_theta);
-            m_sun_phi = deg_to_rad(m_values.m_sun_phi);
+            m_sun_theta = deg_to_rad(m_uniform_values.m_sun_theta);
+            m_sun_phi = deg_to_rad(m_uniform_values.m_sun_phi);
             m_sun_dir = Vector3d::unit_vector(m_sun_theta, m_sun_phi);
+
+            // Precompute the coefficients of the radiance distribution function and
+            // the master luminance value if turbidity is uniform.
+            m_uniform_turbidity = m_inputs.source("turbidity")->is_uniform();
+            if (m_uniform_turbidity)
+            {
+                compute_coefficients(
+                    m_uniform_values.m_turbidity,
+                    m_uniform_values.m_ground_albedo,
+                    m_sun_theta,
+                    m_uniform_coeffs,
+                    m_uniform_master_lum);
+            }
 
             return true;
         }
@@ -198,11 +212,15 @@ namespace
 
         const LightingConditions    m_lighting_conditions;
 
-        InputValues                 m_values;
+        InputValues                 m_uniform_values;
 
         double                      m_sun_theta;    // sun zenith angle in radians, 0=zenith
         double                      m_sun_phi;      // radians
         Vector3d                    m_sun_dir;
+
+        bool                        m_uniform_turbidity;
+        double                      m_uniform_coeffs[3 * 9];
+        double                      m_uniform_master_lum[3];
 
         // Compute the coefficients of the radiance distribution function and the master luminance value.
         static void compute_coefficients(
@@ -210,7 +228,7 @@ namespace
             const double            albedo,
             const double            sun_theta,
             double                  coeffs[3 * 9],
-            double                  masterlum[3])
+            double                  master_lum[3])
         {
             const double clamped_turbidity = clamp(turbidity, 1.0, 10.0) - 1.0;
             const size_t turbidity_low = truncate<size_t>(clamped_turbidity);
@@ -272,7 +290,7 @@ namespace
                     const double rlow1  = INTERP2(datasetsXYZRad[w] + (1 * 10 + turbidity_low ) * 6);
                     const double rhigh0 = INTERP2(datasetsXYZRad[w] + (0 * 10 + turbidity_high) * 6);
                     const double rhigh1 = INTERP2(datasetsXYZRad[w] + (1 * 10 + turbidity_high) * 6);
-                    masterlum[w] =
+                    master_lum[w] =
                         lerp(
                             lerp(rlow0, rlow1, albedo),
                             lerp(rhigh0, rhigh1, albedo),
@@ -316,47 +334,58 @@ namespace
             const Vector3d&     outgoing,
             Spectrum&           value) const
         {
-            // Evaluate turbidity.
-            double theta, phi;
-            double u, v;
-            unit_vector_to_angles(outgoing, theta, phi);
-            angles_to_unit_square(theta, phi, u, v);
-            const double turbidity =
-                fit(
-                    input_evaluator.evaluate<InputValues>(m_inputs, Vector2d(u, v))->m_turbidity,
-                    0.0,
-                    1.0,
-                    m_values.m_turbidity_min,
-                    m_values.m_turbidity_max);
-
-            // Compute the coefficients of the radiance distribution function and the master luminance value.
-            double coeffs[3 * 9], masterlum[3];
-            compute_coefficients(
-                turbidity,
-                m_values.m_ground_albedo,
-                m_sun_theta,
-                coeffs,
-                masterlum);
-
             const double sqrt_cos_theta = sqrt(outgoing.y);
             const double cos_gamma = dot(outgoing, m_sun_dir);
             const double gamma = acos(cos_gamma);
 
-            // Compute the sky color in the CIE XYZ color space.
             Color3f ciexyz;
-            ciexyz[0] = static_cast<float>(perez(outgoing.y, sqrt_cos_theta, gamma, cos_gamma, coeffs + 0 * 9) * masterlum[0]);
-            ciexyz[1] = static_cast<float>(perez(outgoing.y, sqrt_cos_theta, gamma, cos_gamma, coeffs + 1 * 9) * masterlum[1]);
-            ciexyz[2] = static_cast<float>(perez(outgoing.y, sqrt_cos_theta, gamma, cos_gamma, coeffs + 2 * 9) * masterlum[2]);
+
+            if (m_uniform_turbidity)
+            {
+                // Compute the sky color in the CIE XYZ color space.
+                ciexyz[0] = static_cast<float>(perez(outgoing.y, sqrt_cos_theta, gamma, cos_gamma, m_uniform_coeffs + 0 * 9) * m_uniform_master_lum[0]);
+                ciexyz[1] = static_cast<float>(perez(outgoing.y, sqrt_cos_theta, gamma, cos_gamma, m_uniform_coeffs + 1 * 9) * m_uniform_master_lum[1]);
+                ciexyz[2] = static_cast<float>(perez(outgoing.y, sqrt_cos_theta, gamma, cos_gamma, m_uniform_coeffs + 2 * 9) * m_uniform_master_lum[2]);
+            }
+            else
+            {
+                // Evaluate turbidity.
+                double theta, phi;
+                double u, v;
+                unit_vector_to_angles(outgoing, theta, phi);
+                angles_to_unit_square(theta, phi, u, v);
+                const double turbidity =
+                    fit(
+                        input_evaluator.evaluate<InputValues>(m_inputs, Vector2d(u, v))->m_turbidity,
+                        0.0,
+                        1.0,
+                        m_uniform_values.m_turbidity_min,
+                        m_uniform_values.m_turbidity_max);
+
+                // Compute the coefficients of the radiance distribution function and the master luminance value.
+                double coeffs[3 * 9], master_lum[3];
+                compute_coefficients(
+                    turbidity,
+                    m_uniform_values.m_ground_albedo,
+                    m_sun_theta,
+                    coeffs,
+                    master_lum);
+
+                // Compute the sky color in the CIE XYZ color space.
+                ciexyz[0] = static_cast<float>(perez(outgoing.y, sqrt_cos_theta, gamma, cos_gamma, coeffs + 0 * 9) * master_lum[0]);
+                ciexyz[1] = static_cast<float>(perez(outgoing.y, sqrt_cos_theta, gamma, cos_gamma, coeffs + 1 * 9) * master_lum[1]);
+                ciexyz[2] = static_cast<float>(perez(outgoing.y, sqrt_cos_theta, gamma, cos_gamma, coeffs + 2 * 9) * master_lum[2]);
+            }
 
             // Apply the luminance multiplier.
-            ciexyz *= static_cast<float>(m_values.m_luminance_multiplier);
+            ciexyz *= static_cast<float>(m_uniform_values.m_luminance_multiplier);
 
             // Then convert it to linear RGB, then to HSL.
             Color3f linear_rgb = ciexyz_to_linear_rgb(ciexyz);
             Color3f hsl = linear_rgb_to_hsl(linear_rgb);
 
             // Apply the saturation multiplier.
-            hsl[1] *= static_cast<float>(m_values.m_saturation_multiplier);
+            hsl[1] *= static_cast<float>(m_uniform_values.m_saturation_multiplier);
 
             // Back to linear RGB, then to CIE XYZ.
             linear_rgb = hsl_to_linear_rgb(hsl);
@@ -368,7 +397,7 @@ namespace
 
         Vector3d shift(Vector3d v) const
         {
-            v.y -= m_values.m_horizon_shift;
+            v.y -= m_uniform_values.m_horizon_shift;
             return normalize(v);
         }
     };

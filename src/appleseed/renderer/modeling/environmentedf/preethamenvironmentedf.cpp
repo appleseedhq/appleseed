@@ -109,14 +109,29 @@ namespace
             if (!EnvironmentEDF::on_frame_begin(project))
                 return false;
 
-            m_inputs.evaluate_uniforms(&m_values);
+            // Evaluate uniform values.
+            m_inputs.evaluate_uniforms(&m_uniform_values);
 
             // Compute the sun direction.
-            m_sun_theta = deg_to_rad(m_values.m_sun_theta);
-            m_sun_phi = deg_to_rad(m_values.m_sun_phi);
+            m_sun_theta = deg_to_rad(m_uniform_values.m_sun_theta);
+            m_sun_phi = deg_to_rad(m_uniform_values.m_sun_phi);
             m_sun_dir = Vector3d::unit_vector(m_sun_theta, m_sun_phi);
-
             m_cos_sun_theta = cos(m_sun_theta);
+
+            // Precompute some stuff if turbidity is uniform.
+            m_uniform_turbidity = m_inputs.source("turbidity")->is_uniform();
+            if (m_uniform_turbidity)
+            {
+                // Precompute coefficients of the Y, x and y distribution functions.
+                compute_luminance_coefficients(m_uniform_values.m_turbidity, m_uniform_lum_coeffs);
+                compute_xchroma_coefficients(m_uniform_values.m_turbidity, m_uniform_x_coeffs);
+                compute_ychroma_coefficients(m_uniform_values.m_turbidity, m_uniform_y_coeffs);
+
+                // Precompute luminance Y and chromaticities x and y at zenith.
+                m_uniform_lum_zenith = compute_zenith_luminance(m_uniform_values.m_turbidity, m_sun_theta);
+                m_uniform_xchroma_zenith = compute_zenith_xchroma(m_uniform_values.m_turbidity, m_sun_theta);
+                m_uniform_ychroma_zenith = compute_zenith_ychroma(m_uniform_values.m_turbidity, m_sun_theta);
+            }
 
             return true;
         }
@@ -191,13 +206,20 @@ namespace
 
         const LightingConditions    m_lighting_conditions;
 
-        InputValues                 m_values;
+        InputValues                 m_uniform_values;
 
         double                      m_sun_theta;    // sun zenith angle in radians, 0=zenith
         double                      m_sun_phi;      // radians
         Vector3d                    m_sun_dir;
-
         double                      m_cos_sun_theta;
+
+        bool                        m_uniform_turbidity;
+        double                      m_uniform_lum_coeffs[5];
+        double                      m_uniform_x_coeffs[5];
+        double                      m_uniform_y_coeffs[5];
+        double                      m_uniform_lum_zenith;
+        double                      m_uniform_xchroma_zenith;
+        double                      m_uniform_ychroma_zenith;
 
         // Compute the coefficients of the luminance distribution function.
         static void compute_luminance_coefficients(
@@ -303,41 +325,54 @@ namespace
             const Vector3d&     outgoing,
             Spectrum&           value) const
         {
-            // Evaluate turbidity.
-            double theta, phi;
-            double u, v;
-            unit_vector_to_angles(outgoing, theta, phi);
-            angles_to_unit_square(theta, phi, u, v);
-            const double turbidity =
-                fit(
-                    input_evaluator.evaluate<InputValues>(m_inputs, Vector2d(u, v))->m_turbidity,
-                    0.0,
-                    1.0,
-                    m_values.m_turbidity_min,
-                    m_values.m_turbidity_max);
-
-            // Compute coefficients of the Y, x and y distribution functions.
-            double lum_coeffs[5], x_coeffs[5], y_coeffs[5];
-            compute_luminance_coefficients(turbidity, lum_coeffs);
-            compute_xchroma_coefficients(turbidity, x_coeffs);
-            compute_ychroma_coefficients(turbidity, y_coeffs);
-
-            // Compute luminance Y and chromaticities x and y at zenith.
-            const double lum_zenith = compute_zenith_luminance(turbidity, m_sun_theta);
-            const double xchroma_zenith = compute_zenith_xchroma(turbidity, m_sun_theta);
-            const double ychroma_zenith = compute_zenith_ychroma(turbidity, m_sun_theta);
-
-            // Compute the luminance and chromaticity.
             const double rcp_cos_theta = 1.0 / outgoing.y;
             const double cos_gamma = dot(outgoing, m_sun_dir);
             const double gamma = acos(cos_gamma);
-            double lum = compute_quantity(rcp_cos_theta, gamma, cos_gamma, m_sun_theta, m_cos_sun_theta, lum_zenith, lum_coeffs);
-            const double x = compute_quantity(rcp_cos_theta, gamma, cos_gamma, m_sun_theta, m_cos_sun_theta, xchroma_zenith, x_coeffs);
-            const double y = compute_quantity(rcp_cos_theta, gamma, cos_gamma, m_sun_theta, m_cos_sun_theta, ychroma_zenith, y_coeffs);
+
+            double lum, x, y;
+
+            if (m_uniform_turbidity)
+            {
+                // Compute the luminance and chromaticity.
+                lum = compute_quantity(rcp_cos_theta, gamma, cos_gamma, m_sun_theta, m_cos_sun_theta, m_uniform_lum_zenith, m_uniform_lum_coeffs);
+                x = compute_quantity(rcp_cos_theta, gamma, cos_gamma, m_sun_theta, m_cos_sun_theta, m_uniform_xchroma_zenith, m_uniform_x_coeffs);
+                y = compute_quantity(rcp_cos_theta, gamma, cos_gamma, m_sun_theta, m_cos_sun_theta, m_uniform_ychroma_zenith, m_uniform_y_coeffs);
+            }
+            else
+            {
+                // Evaluate turbidity.
+                double theta, phi;
+                double u, v;
+                unit_vector_to_angles(outgoing, theta, phi);
+                angles_to_unit_square(theta, phi, u, v);
+                const double turbidity =
+                    fit(
+                        input_evaluator.evaluate<InputValues>(m_inputs, Vector2d(u, v))->m_turbidity,
+                        0.0,
+                        1.0,
+                        m_uniform_values.m_turbidity_min,
+                        m_uniform_values.m_turbidity_max);
+
+                // Compute coefficients of the Y, x and y distribution functions.
+                double lum_coeffs[5], x_coeffs[5], y_coeffs[5];
+                compute_luminance_coefficients(turbidity, lum_coeffs);
+                compute_xchroma_coefficients(turbidity, x_coeffs);
+                compute_ychroma_coefficients(turbidity, y_coeffs);
+
+                // Compute luminance Y and chromaticities x and y at zenith.
+                const double lum_zenith = compute_zenith_luminance(turbidity, m_sun_theta);
+                const double xchroma_zenith = compute_zenith_xchroma(turbidity, m_sun_theta);
+                const double ychroma_zenith = compute_zenith_ychroma(turbidity, m_sun_theta);
+
+                // Compute the luminance and chromaticity.
+                lum = compute_quantity(rcp_cos_theta, gamma, cos_gamma, m_sun_theta, m_cos_sun_theta, lum_zenith, lum_coeffs);
+                x = compute_quantity(rcp_cos_theta, gamma, cos_gamma, m_sun_theta, m_cos_sun_theta, xchroma_zenith, x_coeffs);
+                y = compute_quantity(rcp_cos_theta, gamma, cos_gamma, m_sun_theta, m_cos_sun_theta, ychroma_zenith, y_coeffs);
+            }
 
             // Scale the luminance value to a usable range.
             lum = 1.0 - exp((-1.0 / 25.0) * lum);
-            lum *= m_values.m_luminance_multiplier;
+            lum *= m_uniform_values.m_luminance_multiplier;
 
             // Convert the sky color to the CIE XYZ color space.
             Color3f ciexyz;
@@ -350,7 +385,7 @@ namespace
             Color3f hsl = linear_rgb_to_hsl(linear_rgb);
 
             // Apply the saturation multiplier.
-            hsl[1] *= static_cast<float>(m_values.m_saturation_multiplier);
+            hsl[1] *= static_cast<float>(m_uniform_values.m_saturation_multiplier);
 
             // Back to linear RGB, then to CIE XYZ.
             linear_rgb = hsl_to_linear_rgb(hsl);
@@ -362,7 +397,7 @@ namespace
 
         Vector3d shift(Vector3d v) const
         {
-            v.y -= m_values.m_horizon_shift;
+            v.y -= m_uniform_values.m_horizon_shift;
             return normalize(v);
         }
     };
