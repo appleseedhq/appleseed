@@ -391,7 +391,7 @@ namespace
         const LightSampler&     m_light_sampler;
 
         uint64                  m_path_count;
-        Population<size_t>      m_path_length;
+        Population<uint64>      m_path_length;
     };
 }
 

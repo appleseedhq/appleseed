@@ -504,7 +504,7 @@ namespace
         uint64                          m_light_sample_count;
 
         uint64                          m_path_count;
-        Population<size_t>              m_path_length;
+        Population<uint64>              m_path_length;
 
         virtual size_t generate_samples(
             const size_t                sequence_index,
