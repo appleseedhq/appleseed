@@ -39,9 +39,11 @@
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <iomanip>
 #include <ios>
 #include <map>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -69,8 +71,8 @@ class Statistics
 
     struct Entry
     {
-        std::string     m_name;
-        std::string     m_unit;
+        std::string m_name;
+        std::string m_unit;
 
         explicit Entry(const std::string& name);
 
@@ -146,30 +148,16 @@ class Statistics
         virtual std::string to_string() const override;
     };
 
-    struct UnsignedIntegerPopulationEntry
+    template <typename T>
+    struct PopulationEntry
       : public Entry
     {
-        Population<size_t> m_value;
+        Population<T> m_value;
 
-        UnsignedIntegerPopulationEntry(
+        PopulationEntry(
             const std::string&          name,
             const std::string&          unit,
-            const Population<size_t>&   value);
-
-        virtual std::auto_ptr<Entry> clone() const override;
-        virtual void merge(const Entry* other) override;
-        virtual std::string to_string() const override;
-    };
-
-    struct FloatingPointPopulationEntry
-      : public Entry
-    {
-        Population<double> m_value;
-
-        FloatingPointPopulationEntry(
-            const std::string&          name,
-            const std::string&          unit,
-            const Population<double>&   value);
+            const Population<T>&        value);
 
         virtual std::auto_ptr<Entry> clone() const override;
         virtual void merge(const Entry* other) override;
@@ -343,8 +331,19 @@ inline void Statistics::insert<Population<size_t> >(
     const std::string&                  unit)
 {
     insert(
-        std::auto_ptr<UnsignedIntegerPopulationEntry>(
-            new UnsignedIntegerPopulationEntry(name, unit, value)));
+        std::auto_ptr<PopulationEntry<size_t> >(
+            new PopulationEntry<size_t>(name, unit, value)));
+}
+
+template <>
+inline void Statistics::insert<Population<uint64> >(
+    const std::string&                  name,
+    const Population<uint64>&           value,
+    const std::string&                  unit)
+{
+    insert(
+        std::auto_ptr<PopulationEntry<uint64> >(
+            new PopulationEntry<uint64>(name, unit, value)));
 }
 
 template <>
@@ -354,8 +353,8 @@ inline void Statistics::insert<Population<double> >(
     const std::string&                  unit)
 {
     insert(
-        std::auto_ptr<FloatingPointPopulationEntry>(
-            new FloatingPointPopulationEntry(name, unit, value)));
+        std::auto_ptr<PopulationEntry<double> >(
+            new PopulationEntry<double>(name, unit, value)));
 }
 
 inline void Statistics::insert_size(
@@ -400,6 +399,47 @@ const T* Statistics::Entry::cast(const Entry* entry)
         throw ExceptionTypeMismatch(entry->m_name.c_str());
 
     return typed_entry;
+}
+
+
+//
+// Statistics::PopulationEntry class implementation.
+//
+
+template <typename T>
+Statistics::PopulationEntry<T>::PopulationEntry(
+    const std::string&                  name,
+    const std::string&                  unit,
+    const Population<T>&                value)
+  : Entry(name, unit)
+  , m_value(value)
+{
+}
+
+template <typename T>
+std::auto_ptr<Statistics::Entry> Statistics::PopulationEntry<T>::clone() const
+{
+    return std::auto_ptr<Statistics::Entry>(new PopulationEntry(*this));
+}
+
+template <typename T>
+void Statistics::PopulationEntry<T>::merge(const Entry* other)
+{
+    m_value.merge(cast<PopulationEntry>(other)->m_value);
+}
+
+template <typename T>
+std::string Statistics::PopulationEntry<T>::to_string() const
+{
+    std::stringstream sstr;
+    sstr << std::fixed << std::setprecision(1);
+
+    sstr <<   "avg " << m_value.get_mean() << m_unit;
+    sstr << "  min " << m_value.get_min() << m_unit;
+    sstr << "  max " << m_value.get_max() << m_unit;
+    sstr << "  dev " << m_value.get_dev() << m_unit;
+
+    return sstr.str();
 }
 
 }       // namespace foundation

@@ -32,10 +32,6 @@
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
 
-// Standard headers.
-#include <iomanip>
-#include <sstream>
-
 using namespace std;
 
 namespace foundation
@@ -95,23 +91,6 @@ void Statistics::merge(const Statistics& other)
         if (it == m_index.end())
             insert(other_entry->clone());
         else it->second->merge(other_entry);
-    }
-}
-
-namespace
-{
-    template <typename T>
-    string pop_to_string(const Population<T>& pop, const string& unit)
-    {
-        stringstream sstr;
-        sstr << fixed << setprecision(1);
-
-        sstr <<   "avg " << pop.get_mean() << unit;
-        sstr << "  min " << pop.get_min() << unit;
-        sstr << "  max " << pop.get_max() << unit;
-        sstr << "  dev " << pop.get_dev() << unit;
-
-        return sstr.str();
     }
 }
 
@@ -293,64 +272,6 @@ void Statistics::StringEntry::merge(const Entry* other)
 string Statistics::StringEntry::to_string() const
 {
     return m_value;
-}
-
-
-//
-// Statistics::UnsignedIntegerPopulationEntry class implementation.
-//
-
-Statistics::UnsignedIntegerPopulationEntry::UnsignedIntegerPopulationEntry(
-    const string&               name,
-    const string&               unit,
-    const Population<size_t>&   value)
-  : Entry(name, unit)
-  , m_value(value)
-{
-}
-
-auto_ptr<Statistics::Entry> Statistics::UnsignedIntegerPopulationEntry::clone() const
-{
-    return auto_ptr<Statistics::Entry>(new UnsignedIntegerPopulationEntry(*this));
-}
-
-void Statistics::UnsignedIntegerPopulationEntry::merge(const Entry* other)
-{
-    m_value.merge(cast<UnsignedIntegerPopulationEntry>(other)->m_value);
-}
-
-string Statistics::UnsignedIntegerPopulationEntry::to_string() const
-{
-    return pop_to_string(m_value, m_unit);
-}
-
-
-//
-// Statistics::FloatingPointPopulationEntry class implementation.
-//
-
-Statistics::FloatingPointPopulationEntry::FloatingPointPopulationEntry(
-    const string&               name,
-    const string&               unit,
-    const Population<double>&   value)
-  : Entry(name, unit)
-  , m_value(value)
-{
-}
-
-auto_ptr<Statistics::Entry> Statistics::FloatingPointPopulationEntry::clone() const
-{
-    return auto_ptr<Statistics::Entry>(new FloatingPointPopulationEntry(*this));
-}
-
-void Statistics::FloatingPointPopulationEntry::merge(const Entry* other)
-{
-    m_value.merge(cast<FloatingPointPopulationEntry>(other)->m_value);
-}
-
-string Statistics::FloatingPointPopulationEntry::to_string() const
-{
-    return pop_to_string(m_value, m_unit);
 }
 
 
