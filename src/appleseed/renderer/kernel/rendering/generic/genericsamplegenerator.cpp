@@ -46,6 +46,7 @@
 #include "foundation/math/rng.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/statistics.h"
 
@@ -117,8 +118,8 @@ namespace
         const double                        m_frame_width_next_pow2;
         const double                        m_frame_height_next_pow3;
 
-        Population<size_t>                  m_total_sampling_dim;
-        Population<size_t>                  m_total_sampling_inst;
+        Population<uint64>                  m_total_sampling_dim;
+        Population<uint64>                  m_total_sampling_inst;
 
         virtual size_t generate_samples(
             const size_t                    sequence_index,
