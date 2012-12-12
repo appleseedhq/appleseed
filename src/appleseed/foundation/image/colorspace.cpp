@@ -39,6 +39,7 @@ const char* color_space_name(const ColorSpace color_space)
       case ColorSpaceLinearRGB: return "linear_rgb";
       case ColorSpaceSRGB:      return "srgb";
       case ColorSpaceCIEXYZ:    return "ciexyz";
+      case ColorSpaceCIExyY:    return "ciexyy";
       case ColorSpaceSpectral:  return "spectral";
       default:                  return "";
     }
@@ -821,13 +822,13 @@ LightingConditions::LightingConditions(
         m_cmf[w][2] = cmf[2][w] * illuminant[w];
     }
 
-    // Compute 1/N.
+    // Integrate the luminance.
     float n = 0.0f;
     for (size_t w = 0; w < 31; ++w)
         n += m_cmf[w][1];
     float rcp_n = 1.0f / n;
 
-    // Multiply the color matching functions by 1/N.
+    // Rescale the color matching functions such that luminance integrates to 1.
     for (size_t w = 0; w < 31; ++w)
         m_cmf[w] *= rcp_n;
 }

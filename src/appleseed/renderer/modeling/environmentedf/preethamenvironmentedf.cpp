@@ -330,14 +330,14 @@ namespace
             const double cos_gamma = dot(outgoing, m_sun_dir);
             const double gamma = acos(cos_gamma);
 
-            double Y, x, y;
+            Color3d xyY;
 
             if (m_uniform_turbidity)
             {
                 // Compute the sky color in the xyY color space.
-                x = compute_quantity(rcp_cos_theta, gamma, cos_gamma, m_sun_theta, m_cos_sun_theta, m_uniform_x_zenith, m_uniform_x_coeffs);
-                y = compute_quantity(rcp_cos_theta, gamma, cos_gamma, m_sun_theta, m_cos_sun_theta, m_uniform_y_zenith, m_uniform_y_coeffs);
-                Y = compute_quantity(rcp_cos_theta, gamma, cos_gamma, m_sun_theta, m_cos_sun_theta, m_uniform_Y_zenith, m_uniform_Y_coeffs);
+                xyY[0] = compute_quantity(rcp_cos_theta, gamma, cos_gamma, m_sun_theta, m_cos_sun_theta, m_uniform_x_zenith, m_uniform_x_coeffs);
+                xyY[1] = compute_quantity(rcp_cos_theta, gamma, cos_gamma, m_sun_theta, m_cos_sun_theta, m_uniform_y_zenith, m_uniform_y_coeffs);
+                xyY[2] = compute_quantity(rcp_cos_theta, gamma, cos_gamma, m_sun_theta, m_cos_sun_theta, m_uniform_Y_zenith, m_uniform_Y_coeffs);
             }
             else
             {
@@ -366,21 +366,16 @@ namespace
                 const double y_zenith = compute_zenith_y(turbidity, m_sun_theta);
 
                 // Compute the sky color in the xyY color space.
-                x = compute_quantity(rcp_cos_theta, gamma, cos_gamma, m_sun_theta, m_cos_sun_theta, x_zenith, x_coeffs);
-                y = compute_quantity(rcp_cos_theta, gamma, cos_gamma, m_sun_theta, m_cos_sun_theta, y_zenith, y_coeffs);
-                Y = compute_quantity(rcp_cos_theta, gamma, cos_gamma, m_sun_theta, m_cos_sun_theta, Y_zenith, Y_coeffs);
+                xyY[0] = compute_quantity(rcp_cos_theta, gamma, cos_gamma, m_sun_theta, m_cos_sun_theta, x_zenith, x_coeffs);
+                xyY[1] = compute_quantity(rcp_cos_theta, gamma, cos_gamma, m_sun_theta, m_cos_sun_theta, y_zenith, y_coeffs);
+                xyY[2] = compute_quantity(rcp_cos_theta, gamma, cos_gamma, m_sun_theta, m_cos_sun_theta, Y_zenith, Y_coeffs);
             }
 
             // Apply the luminance multiplier.
-            Y *= m_uniform_values.m_luminance_multiplier;
+            xyY[2] *= m_uniform_values.m_luminance_multiplier;
 
             // Convert the sky color to the CIE XYZ color space.
-            // See http://en.wikipedia.org/wiki/CIE_1931_color_space.
-            const double y_factor = Y / y;
-            Color3f ciexyz(
-                static_cast<float>(y_factor * x),
-                static_cast<float>(Y),
-                static_cast<float>(y_factor * (1.0 - x - y)));
+            Color3f ciexyz = ciexyy_to_ciexyz(xyY);
 
             // Apply an optional saturation correction.
             if (m_uniform_values.m_saturation_multiplier != 1.0)

@@ -121,6 +121,23 @@ Color<T, 3> linear_rgb_to_ciexyz(const Color<T, 3>& linear_rgb);
 
 
 //
+// CIE XYZ <-> CIE xyY transformations.
+//
+// Reference:
+//
+//   http://en.wikipedia.org/wiki/CIE_1931_color_space#The_CIE_xy_chromaticity_diagram_and_the_CIE_xyY_color_space
+//
+
+// Convert a color from the CIE XYZ color space to the CIE xyY color space.
+template <typename T>
+Color<T, 3> ciexyz_to_ciexyy(const Color<T, 3>& xyz);
+
+// Convert a color from the CIE xyY color space to the CIE XYZ color space.
+template <typename T>
+Color<T, 3> ciexyy_to_ciexyz(const Color<T, 3>& xyy);
+
+
+//
 // Linear RGB <-> sRGB transformations.
 //
 // Reference:
@@ -160,6 +177,7 @@ enum ColorSpace
     ColorSpaceLinearRGB,        // linear RGB
     ColorSpaceSRGB,             // sRGB
     ColorSpaceCIEXYZ,           // CIE XYZ
+    ColorSpaceCIExyY,           // CIE xyY
     ColorSpaceSpectral          // spectral
 };
 
@@ -445,7 +463,26 @@ inline Color<T, 3> linear_rgb_to_ciexyz(const Color<T, 3>& linear_rgb)
 
 
 //
-// Linear RGB <-> sRGB transformations.
+// CIE XYZ <-> CIE xyY transformations implementation.
+//
+
+template <typename T>
+inline Color<T, 3> ciexyz_to_ciexyy(const Color<T, 3>& xyz)
+{
+    const T rcp_sum = T(1.0) / (xyz[0] + xyz[1] + xyz[2]);
+    return Color<T, 3>(xyz[0] * rcp_sum, xyz[1] * rcp_sum, xyz[1]);
+}
+
+template <typename T>
+inline Color<T, 3> ciexyy_to_ciexyz(const Color<T, 3>& xyy)
+{
+    const T y = xyy[2] / xyy[1];
+    return Color<T, 3>(y * xyy[0], xyy[2], y * (T(1.0) - xyy[0] - xyy[1]));
+}
+
+
+//
+// Linear RGB <-> sRGB transformations implementation.
 //
 
 template <typename T>

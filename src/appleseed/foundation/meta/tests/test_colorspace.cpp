@@ -110,6 +110,28 @@ TEST_SUITE(Foundation_Image_ColorSpace)
             1.0e-5);
     }
 
+    TEST_CASE(TestCIEXYZToCIExyYConversion)
+    {
+        const Color3d ciexyz(0.5, 0.7, 0.2);
+        const Color3d ciexyy = ciexyz_to_ciexyy(ciexyz);
+
+        EXPECT_FEQ_EPS(
+            Color3d(0.357143, 0.5, 0.7),
+            ciexyy,
+            1.0e-6);
+    }
+
+    TEST_CASE(TestCIExyYToCIEXYZConversion)
+    {
+        const Color3d ciexyy(0.357143, 0.5, 0.7);
+        const Color3d ciexyz = ciexyy_to_ciexyz(ciexyy);
+
+        EXPECT_FEQ_EPS(
+            Color3d(0.5, 0.7, 0.2),
+            ciexyz,
+            1.0e-6);
+    }
+
     TEST_CASE(TestLinearRGBTosRGBConversion)
     {
         const Color3d linear_rgb(0.5, 0.7, 0.2);
