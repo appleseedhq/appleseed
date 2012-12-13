@@ -421,7 +421,7 @@ prev_combination_counts(BidirectionalIterator first,
     BidirectionalIterator current = --last;
     while (current != first && *(--current) == 0) {
     }
-    if (current == last || current == first && *current == 0) {
+    if (current == last || (current == first && *current == 0)) {
         if (first != last)
             std::iter_swap(first, last);
         return false; 
