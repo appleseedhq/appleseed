@@ -263,8 +263,8 @@ namespace
             const double        turbidity,
             const double        sun_theta)
         {
-            const double xi = ((4.0 / 9.0) - turbidity / 120.0) * (Pi - 2.0 * sun_theta);
-            return (4.0453 * turbidity - 4.9710) * tan(xi) - 0.2155 * turbidity + 2.4192;
+            const double chi = ((4.0 / 9.0) - turbidity / 120.0) * (Pi - 2.0 * sun_theta);
+            return (4.0453 * turbidity - 4.9710) * tan(chi) - 0.2155 * turbidity + 2.4192;
         }
 
         // Compute the x chromaticity at zenith.
