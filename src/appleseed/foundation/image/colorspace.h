@@ -109,6 +109,7 @@ Color<T, 3> linear_rgb_to_hsl(const Color<T, 3>& linear_rgb);
 //
 //   http://en.wikipedia.org/wiki/SRGB_color_space
 //   http://www.poynton.com/notes/colour_and_gamma/ColorFAQ.txt
+//   http://graphics.stanford.edu/courses/cs148-10-summer/docs/2010--kerr--cie_xyz.pdf
 //
 
 // Convert a color from the CIE XYZ color space to the linear RGB color space.
