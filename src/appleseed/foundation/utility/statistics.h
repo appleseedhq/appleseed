@@ -80,6 +80,8 @@ class Statistics
             const std::string&          name,
             const std::string&          unit);
 
+        virtual ~Entry() {}
+
         template <typename T>
         const T* cast(const Entry* entry);
 

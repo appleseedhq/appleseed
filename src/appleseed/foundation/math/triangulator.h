@@ -32,6 +32,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
 #include "foundation/math/vector.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/memory.h"
 #include "foundation/utility/test.h"
 #include "foundation/utility/vpythonfile.h"
@@ -489,7 +490,7 @@ void Triangulator<T>::debug(
 {
     // Open a VPython file.
     char filename[100];
-    std::sprintf(filename, "poly-remaining=%d-attempt=%d.py", remaining_vertices, failed_iterations + 1);
+    std::sprintf(filename, "poly-remaining=" FMT_SIZE_T "-attempt=" FMT_SIZE_T ".py", remaining_vertices, failed_iterations + 1);
     VPythonFile file(filename);
 
     // Draw the remaining polygon.
