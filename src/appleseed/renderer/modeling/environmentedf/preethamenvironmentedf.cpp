@@ -123,12 +123,12 @@ namespace
             m_uniform_turbidity = m_inputs.source("turbidity")->is_uniform();
             if (m_uniform_turbidity)
             {
-                // Precompute the coefficients of the luminance and chromacity distribution functions.
+                // Precompute the coefficients of the luminance and chromaticity distribution functions.
                 compute_Y_coefficients(m_uniform_values.m_turbidity, m_uniform_Y_coeffs);
                 compute_x_coefficients(m_uniform_values.m_turbidity, m_uniform_x_coeffs);
                 compute_y_coefficients(m_uniform_values.m_turbidity, m_uniform_y_coeffs);
 
-                // Precompute the luminance and chromacity at zenith.
+                // Precompute the luminance and chromaticity at zenith.
                 m_uniform_Y_zenith = compute_zenith_luminance(m_uniform_values.m_turbidity, m_sun_theta);
                 m_uniform_x_zenith = compute_zenith_x(m_uniform_values.m_turbidity, m_sun_theta);
                 m_uniform_y_zenith = compute_zenith_y(m_uniform_values.m_turbidity, m_sun_theta);
@@ -354,7 +354,7 @@ namespace
                         m_uniform_values.m_turbidity_min,
                         m_uniform_values.m_turbidity_max);
 
-                // Compute the coefficients of the luminance and chromacity distribution functions.
+                // Compute the coefficients of the luminance and chromaticity distribution functions.
                 double Y_coeffs[5], x_coeffs[5], y_coeffs[5];
                 compute_Y_coefficients(turbidity, Y_coeffs);
                 compute_x_coefficients(turbidity, x_coeffs);
