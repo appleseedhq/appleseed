@@ -20,7 +20,7 @@
         <environment_edf name="environment_edf" model="hosek_environment_edf">
             <parameter name="ground_albedo" value="0.0" />
             <parameter name="horizon_shift" value="-0.05" />
-            <parameter name="luminance_multiplier" value="0.01" />
+            <parameter name="luminance_multiplier" value="1.0" />
             <parameter name="saturation_multiplier" value="1.0" />
             <parameter name="sun_phi" value="0.0" />
             <parameter name="sun_theta" value="0.0" />

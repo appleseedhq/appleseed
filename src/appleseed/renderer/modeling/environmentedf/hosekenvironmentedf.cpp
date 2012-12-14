@@ -97,7 +97,7 @@ namespace
             m_inputs.declare("turbidity_min", InputFormatScalar, "2.0");
             m_inputs.declare("turbidity_max", InputFormatScalar, "6.0");
             m_inputs.declare("ground_albedo", InputFormatScalar, "0.3");
-            m_inputs.declare("luminance_multiplier", InputFormatScalar, "0.01");
+            m_inputs.declare("luminance_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("saturation_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("horizon_shift", InputFormatScalar, "0.0");
         }
@@ -299,6 +299,8 @@ namespace
                             lerp(rlow0, rlow1, albedo),
                             lerp(rhigh0, rhigh1, albedo),
                             turbidity_interp);
+
+                    master_Y[w] *= 1000.0;  // Kcd.m^-2 to cd.m^-2
                 }
             }
 
@@ -307,7 +309,7 @@ namespace
         }
 
         // Anisotropic term that places a localized glow around the solar point.
-        static double xi(
+        static double chi(
             const double        g,
             const double        cos_alpha)
         {
@@ -327,7 +329,7 @@ namespace
             const double v =   coeffs[2]
                              + coeffs[3] * exp(coeffs[4] * gamma)
                              + coeffs[5] * cos_gamma * cos_gamma
-                             + coeffs[6] * xi(coeffs[8], cos_gamma)
+                             + coeffs[6] * chi(coeffs[8], cos_gamma)
                              + coeffs[7] * sqrt_cos_theta;
             return u * v;
         }
@@ -381,9 +383,6 @@ namespace
                 ciexyz[2] = static_cast<float>(perez(outgoing.y, sqrt_cos_theta, gamma, cos_gamma, coeffs + 2 * 9) * master_Y[2]);
             }
 
-            // Apply the luminance multiplier.
-            ciexyz *= static_cast<float>(m_uniform_values.m_luminance_multiplier);
-
             // Apply an optional saturation correction.
             if (m_uniform_values.m_saturation_multiplier != 1.0)
             {
@@ -399,8 +398,20 @@ namespace
                 ciexyz = linear_rgb_to_ciexyz(linear_rgb);
             }
 
-            // Convert the sky color to a spectrum.
-            ciexyz_to_spectrum(m_lighting_conditions, ciexyz, value);
+            // Convert the sky color to the CIE xyY color space.
+            const Color3f xyY = ciexyz_to_ciexyy(ciexyz);
+
+            // Convert the sky chromaticity to a spectrum.
+            daylight_ciexy_to_spectrum(xyY[0], xyY[1], value);
+
+            // Compute the final sky radiance.
+            value *=
+                static_cast<float>(
+                      m_uniform_values.m_luminance_multiplier   // luminance multiplier
+                    / sum_value(value * XYZCMFCIE19312Deg[1])   // normalize to unit luminance
+                    * xyY[2]                                    // apply computed luminance
+                    / 683.0                                     // convert lumens to Watts
+                    * RcpPi);                                   // convert irradiance to radiance
         }
 
         Vector3d shift(Vector3d v) const
@@ -486,7 +497,7 @@ DictionaryArray HosekEnvironmentEDFFactory::get_widget_definitions() const
             .insert("label", "Luminance Multiplier")
             .insert("widget", "text_box")
             .insert("use", "optional")
-            .insert("default", "0.01"));
+            .insert("default", "1.0"));
 
     definitions.push_back(
         Dictionary()
