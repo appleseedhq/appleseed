@@ -38,12 +38,134 @@ const char* color_space_name(const ColorSpace color_space)
     {
       case ColorSpaceLinearRGB: return "linear_rgb";
       case ColorSpaceSRGB:      return "srgb";
+      case ColorSpaceHSV:       return "hsv";
+      case ColorSpaceHLS:       return "hls";
       case ColorSpaceCIEXYZ:    return "ciexyz";
       case ColorSpaceCIExyY:    return "ciexyy";
       case ColorSpaceSpectral:  return "spectral";
-      default:                  return "";
+      assert_otherwise;
     }
+
+    // Keep the compiler happy.
+    return "";
 }
+
+
+//
+// Basis vectors to convert the CIE xy chromaticity of a D series (daylight) illuminant to a spectrum.
+//
+
+namespace
+{
+    static const float DaylightS0Amplitudes[31] =
+    {
+         94.8f,             // 400 nm
+        104.8f,             // 410 nm
+        105.9f,             // 420 nm
+         96.8f,             // 430 nm
+        113.9f,             // 440 nm
+        125.6f,             // 450 nm
+        125.5f,             // 460 nm
+        121.3f,             // 470 nm
+        121.3f,             // 480 nm
+        113.5f,             // 490 nm
+        113.1f,             // 500 nm
+        110.8f,             // 510 nm
+        106.5f,             // 520 nm
+        108.8f,             // 530 nm
+        105.3f,             // 540 nm
+        104.4f,             // 550 nm
+        100.0f,             // 560 nm
+         96.0f,             // 570 nm
+         95.1f,             // 580 nm
+         89.1f,             // 590 nm
+         90.5f,             // 600 nm
+         90.3f,             // 610 nm
+         88.4f,             // 620 nm
+         84.0f,             // 630 nm
+         85.1f,             // 640 nm
+         81.9f,             // 650 nm
+         82.6f,             // 660 nm
+         84.9f,             // 670 nm
+         81.3f,             // 680 nm
+         71.9f,             // 690 nm
+         74.3f              // 700 nm
+    };
+
+    static const float DaylightS1Amplitudes[31] =
+    {
+         43.4f,             // 400 nm
+         46.3f,             // 410 nm
+         43.9f,             // 420 nm
+         37.1f,             // 430 nm
+         36.7f,             // 440 nm
+         35.9f,             // 450 nm
+         32.6f,             // 460 nm
+         27.9f,             // 470 nm
+         24.3f,             // 480 nm
+         20.1f,             // 490 nm
+         16.2f,             // 500 nm
+         13.2f,             // 510 nm
+          8.6f,             // 520 nm
+          6.1f,             // 530 nm
+          4.2f,             // 540 nm
+          1.9f,             // 550 nm
+          0.0f,             // 560 nm
+         -1.6f,             // 570 nm
+         -3.5f,             // 580 nm
+         -3.5f,             // 590 nm
+         -5.8f,             // 600 nm
+         -7.2f,             // 610 nm
+         -8.6f,             // 620 nm
+         -9.5f,             // 630 nm
+        -10.9f,             // 640 nm
+        -10.7f,             // 650 nm
+        -12.0f,             // 660 nm
+        -14.0f,             // 670 nm
+        -13.6f,             // 680 nm
+        -12.0f,             // 690 nm
+        -13.3f              // 700 nm
+    };
+
+    static const float DaylightS2Amplitudes[31] =
+    {
+        -1.1f,              // 400 nm
+        -0.5f,              // 410 nm
+        -0.7f,              // 420 nm
+        -1.2f,              // 430 nm
+        -2.6f,              // 440 nm
+        -2.9f,              // 450 nm
+        -2.8f,              // 460 nm
+        -2.6f,              // 470 nm
+        -2.6f,              // 480 nm
+        -1.8f,              // 490 nm
+        -1.5f,              // 500 nm
+        -1.3f,              // 510 nm
+        -1.2f,              // 520 nm
+        -1.0f,              // 530 nm
+        -0.5f,              // 540 nm
+        -0.3f,              // 550 nm
+         0.0f,              // 560 nm
+         0.2f,              // 570 nm
+         0.5f,              // 580 nm
+         2.1f,              // 590 nm
+         3.2f,              // 600 nm
+         4.1f,              // 610 nm
+         4.7f,              // 620 nm
+         5.1f,              // 630 nm
+         6.7f,              // 640 nm
+         7.3f,              // 650 nm
+         8.6f,              // 660 nm
+         9.8f,              // 670 nm
+        10.2f,              // 680 nm
+         8.3f,              // 690 nm
+         9.6f               // 700 nm
+    };
+}
+
+const Spectrum31f DaylightS0(DaylightS0Amplitudes);
+const Spectrum31f DaylightS1(DaylightS1Amplitudes);
+const Spectrum31f DaylightS2(DaylightS2Amplitudes);
 
 
 //
@@ -553,7 +675,7 @@ namespace
     };
 
     // RGB color matching functions -- Stiles and Burch (1955) 2-deg.
-    const float RGBCMFStilesBurch19552DefTabX[31] =
+    const float RGBCMFStilesBurch19552DegTabX[31] =
     {
          9.62640e-003f,     // 400 nm
          3.08030e-002f,     // 410 nm
@@ -587,7 +709,7 @@ namespace
          6.02600e-002f,     // 690 nm
          2.81140e-002f      // 700 nm
     };
-    const float RGBCMFStilesBurch19552DefTabY[31] =
+    const float RGBCMFStilesBurch19552DegTabY[31] =
     {
         -2.16890e-003f,     // 400 nm
         -7.20480e-003f,     // 410 nm
@@ -621,7 +743,7 @@ namespace
         -5.67650e-004f,     // 690 nm
         -2.62310e-004f      // 700 nm
     };
-    const float RGBCMFStilesBurch19552DefTabZ[31] =
+    const float RGBCMFStilesBurch19552DegTabZ[31] =
     {
          6.23710e-002f,     // 400 nm
          2.27500e-001f,     // 410 nm
@@ -657,7 +779,7 @@ namespace
     };
 
     // RGB color matching functions -- Stiles and Burch (1959) 10-deg.
-    const float RGBCMFStilesBurch195910DefTabX[31] =
+    const float RGBCMFStilesBurch195910DegTabX[31] =
     {
          8.9000E-03f,       // 400 nm
          3.5000E-02f,       // 410 nm
@@ -691,7 +813,7 @@ namespace
          5.8600E-02f,       // 690 nm
          2.8400E-02f        // 700 nm
     };
-    const float RGBCMFStilesBurch195910DefTabY[31] =
+    const float RGBCMFStilesBurch195910DegTabY[31] =
     {
         -2.5000E-03f,       // 400 nm
         -1.1900E-02f,       // 410 nm
@@ -725,7 +847,7 @@ namespace
         -4.7800E-04f,       // 690 nm
         -2.3500E-04f        // 700 nm
     };
-    const float RGBCMFStilesBurch195910DefTabZ[31] =
+    const float RGBCMFStilesBurch195910DegTabZ[31] =
     {
          4.0000E-02f,       // 400 nm
          1.8020E-01f,       // 410 nm
@@ -788,17 +910,17 @@ const Spectrum31f XYZCMFCIE196410Deg[3] =
 };
 
 // RGB color matching functions.
-const Spectrum31f RGBCMFStilesBurch19552Def[3] =
+const Spectrum31f RGBCMFStilesBurch19552Deg[3] =
 {
-    Spectrum31f(RGBCMFStilesBurch19552DefTabX),
-    Spectrum31f(RGBCMFStilesBurch19552DefTabY),
-    Spectrum31f(RGBCMFStilesBurch19552DefTabZ)
+    Spectrum31f(RGBCMFStilesBurch19552DegTabX),
+    Spectrum31f(RGBCMFStilesBurch19552DegTabY),
+    Spectrum31f(RGBCMFStilesBurch19552DegTabZ)
 };
-const Spectrum31f RGBCMFStilesBurch195910Def[3] =
+const Spectrum31f RGBCMFStilesBurch195910Deg[3] =
 {
-    Spectrum31f(RGBCMFStilesBurch195910DefTabX),
-    Spectrum31f(RGBCMFStilesBurch195910DefTabY),
-    Spectrum31f(RGBCMFStilesBurch195910DefTabZ)
+    Spectrum31f(RGBCMFStilesBurch195910DegTabX),
+    Spectrum31f(RGBCMFStilesBurch195910DegTabY),
+    Spectrum31f(RGBCMFStilesBurch195910DegTabZ)
 };
 
 

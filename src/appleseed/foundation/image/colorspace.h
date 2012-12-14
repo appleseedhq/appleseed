@@ -53,6 +53,102 @@ namespace foundation
 {
 
 //
+// Enumeration of all supported color spaces.
+//
+
+enum ColorSpace
+{
+    ColorSpaceLinearRGB,        // linear RGB
+    ColorSpaceSRGB,             // sRGB
+    ColorSpaceHSV,              // Hue Saturation Value (HSV, or HSB)
+    ColorSpaceHLS,              // Hue Lightness Saturation (HLS, or HSL)
+    ColorSpaceCIEXYZ,           // CIE XYZ
+    ColorSpaceCIExyY,           // CIE xyY
+    ColorSpaceSpectral          // spectral
+};
+
+// Return a string identifying a color space.
+DLLSYMBOL const char* color_space_name(const ColorSpace color_space);
+
+
+//
+// Transform a tristimulus value from one 3D color space to another 3D color space.
+//
+
+template <typename T>
+Color<T, 3> transform_color(
+    const Color<T, 3>&          color,
+    const ColorSpace            from,
+    const ColorSpace            to);
+
+
+//
+// Basis vectors to convert the CIE xy chromaticity of a D series (daylight) illuminant to a spectrum.
+//
+// Reference:
+//
+//   http://en.wikipedia.org/wiki/Standard_illuminant#Illuminant_series_D
+//
+
+extern const Spectrum31f DaylightS0;                        // mean spectral radiant power
+extern const Spectrum31f DaylightS1;                        // first characteristic vector (yellow-blue variation)
+extern const Spectrum31f DaylightS2;                        // second characteristic vector (pink-green variation)
+
+
+//
+// Standard illuminants.
+//
+// References:
+//
+//   http://en.wikipedia.org/wiki/Standard_illuminant
+//   http://cvrl.ioo.ucl.ac.uk/
+//
+
+// Daylight illuminants.
+extern const Spectrum31f IlluminantCIED65;                  // CIE D65
+
+// Incandescent lighting illuminants.
+extern const Spectrum31f IlluminantCIEA;                    // CIE A (black body radiator at 2856 K)
+
+
+//
+// Color Matching Functions (CMF).
+//
+// References:
+//
+//   http://en.wikipedia.org/wiki/CIE_1931_color_space
+//   http://cvrl.ioo.ucl.ac.uk/
+//
+
+// XYZ color matching functions.
+extern const Spectrum31f XYZCMFCIE19312Deg[3];              // CIE 1931 2-deg
+extern const Spectrum31f XYZCMFCIE1931Judd2Deg[3];          // CIE 1931 2-deg, modified by Judd (1951)
+extern const Spectrum31f XYZCMFCIE1931JuddVos2Deg[3];       // CIE 1931 2-deg, modified by Judd (1951) and Vos (1978)
+extern const Spectrum31f XYZCMFCIE196410Deg[3];             // CIE 1964 10-deg (recommended)
+
+// RGB color matching functions.
+extern const Spectrum31f RGBCMFStilesBurch19552Deg[3];      // Stiles and Burch (1955) 2-deg
+extern const Spectrum31f RGBCMFStilesBurch195910Deg[3];     // Stiles and Burch (1959) 10-deg (recommended)
+
+
+//
+// Lighting conditions, defined as a set of color matching functions and an illuminant.
+//
+
+class LightingConditions
+{
+  public:
+    Color3f                     m_cmf[31];                  // precomputed values of (cmf[0], cmf[1], cmf[2]) * illuminant
+
+    LightingConditions();                                   // leaves the object uninitialized
+
+    LightingConditions(
+        const Spectrum31f&      illuminant,                 // illuminant
+        const Spectrum31f       cmf[3]);                    // color matching functions
+};
+
+
+//
 // HSV <-> linear RGB transformations.
 //
 // Reference:
@@ -170,34 +266,6 @@ Color3f fast_srgb_to_linear_rgb(const Color3f& srgb);
 
 
 //
-// Enumeration of all supported color spaces.
-//
-
-enum ColorSpace
-{
-    ColorSpaceLinearRGB,        // linear RGB
-    ColorSpaceSRGB,             // sRGB
-    ColorSpaceCIEXYZ,           // CIE XYZ
-    ColorSpaceCIExyY,           // CIE xyY
-    ColorSpaceSpectral          // spectral
-};
-
-// Return a string identifying a color space.
-DLLSYMBOL const char* color_space_name(const ColorSpace color_space);
-
-
-//
-// Transform a 3-component color from one color space to another.
-//
-
-template <typename T>
-Color<T, 3> transform_color(
-    const Color<T, 3>&          color,
-    const ColorSpace            from,
-    const ColorSpace            to);
-
-
-//
 // Compute the relative luminance of a linear RGB triplet as defined
 // in the ITU-R Recommendation BT.709 (Rec. 709):
 //
@@ -217,59 +285,6 @@ T luminance(const Color<T, 3>& linear_rgb);
 
 
 //
-// Standard illuminants.
-//
-// References:
-//
-//   http://en.wikipedia.org/wiki/Standard_illuminant
-//   http://cvrl.ioo.ucl.ac.uk/
-//
-
-// Daylight illuminants.
-extern const Spectrum31f IlluminantCIED65;                  // CIE D65
-
-// Incandescent lighting illuminants.
-extern const Spectrum31f IlluminantCIEA;                    // CIE A (black body radiator at 2856 K)
-
-
-//
-// Color Matching Functions (CMF).
-//
-// References:
-//
-//   http://en.wikipedia.org/wiki/CIE_1931_color_space
-//   http://cvrl.ioo.ucl.ac.uk/
-//
-
-// XYZ color matching functions.
-extern const Spectrum31f XYZCMFCIE19312Deg[3];              // CIE 1931 2-deg
-extern const Spectrum31f XYZCMFCIE1931Judd2Deg[3];          // CIE 1931 2-deg, modified by Judd (1951)
-extern const Spectrum31f XYZCMFCIE1931JuddVos2Deg[3];       // CIE 1931 2-deg, modified by Judd (1951) and Vos (1978)
-extern const Spectrum31f XYZCMFCIE196410Deg[3];             // CIE 1964 10-deg (recommended)
-
-// RGB color matching functions.
-extern const Spectrum31f RGBCMFStilesBurch19552Def[3];      // Stiles and Burch (1955) 2-deg
-extern const Spectrum31f RGBCMFStilesBurch195910Def[3];     // Stiles and Burch (1959) 10-deg (recommended)
-
-
-//
-// Lighting conditions, defined as a set of color matching functions and an illuminant.
-//
-
-class LightingConditions
-{
-  public:
-    Color3f                     m_cmf[31];                  // precomputed values of (cmf[0], cmf[1], cmf[2]) * illuminant
-
-    LightingConditions();                                   // leaves the object uninitialized
-
-    LightingConditions(
-        const Spectrum31f&      illuminant,                 // illuminant
-        const Spectrum31f       cmf[3]);                    // color matching functions
-};
-
-
-//
 // Spectrum <-> CIE XYZ transformations.
 //
 
@@ -284,6 +299,17 @@ template <typename T, typename Spectrum>
 void ciexyz_to_spectrum(
     const LightingConditions&   lighting,
     const Color<T, 3>&          xyz,
+    Spectrum&                   spectrum);
+
+
+//
+// Convert the CIE xy chromaticity of a D series (daylight) illuminant to a spectrum.
+//
+
+template <typename T, typename Spectrum>
+void daylight_ciexy_to_spectrum(
+    const T                     x,
+    const T                     y,
     Spectrum&                   spectrum);
 
 
@@ -318,6 +344,53 @@ void spectrum_to_spectrum(
     const T                     output_wavelength[],
     T                           output_spectrum[],
     T                           working_storage[] = 0);
+
+
+//
+// Transform a tristimulus value from one 3D color space to another 3D color space.
+//
+
+template <typename T>
+Color<T, 3> transform_color(
+    const Color<T, 3>&          color,
+    const ColorSpace            from,
+    const ColorSpace            to)
+{
+    switch (from)
+    {
+      case ColorSpaceLinearRGB:
+        switch (to)
+        {
+          case ColorSpaceLinearRGB:     return color;
+          case ColorSpaceSRGB:          return linear_rgb_to_srgb(color);
+          case ColorSpaceCIEXYZ:        return linear_rgb_to_ciexyz(color);
+          assert_otherwise;
+        }
+
+      case ColorSpaceSRGB:
+        switch (to)
+        {
+          case ColorSpaceLinearRGB:     return srgb_to_linear_rgb(color);
+          case ColorSpaceSRGB:          return color;
+          case ColorSpaceCIEXYZ:        return linear_rgb_to_ciexyz(srgb_to_linear_rgb(color));
+          assert_otherwise;
+        }
+
+      case ColorSpaceCIEXYZ:
+        switch (to)
+        {
+          case ColorSpaceLinearRGB:     return ciexyz_to_linear_rgb(color);
+          case ColorSpaceSRGB:          return linear_rgb_to_srgb(ciexyz_to_linear_rgb(color));
+          case ColorSpaceCIEXYZ:        return color;
+          assert_otherwise;
+        }
+
+      assert_otherwise;
+    }
+
+    // Keep the compiler happy.
+    return color;
+}
 
 
 //
@@ -604,53 +677,6 @@ inline Color3f fast_srgb_to_linear_rgb(const Color3f& srgb)
 
 
 //
-// Transform a 3-component color from one color space to another.
-//
-
-template <typename T>
-Color<T, 3> transform_color(
-    const Color<T, 3>&          color,
-    const ColorSpace            from,
-    const ColorSpace            to)
-{
-    switch (from)
-    {
-      case ColorSpaceLinearRGB:
-        switch (to)
-        {
-          case ColorSpaceLinearRGB:     return color;
-          case ColorSpaceSRGB:          return linear_rgb_to_srgb(color);
-          case ColorSpaceCIEXYZ:        return linear_rgb_to_ciexyz(color);
-          assert_otherwise;
-        }
-
-      case ColorSpaceSRGB:
-        switch (to)
-        {
-          case ColorSpaceLinearRGB:     return srgb_to_linear_rgb(color);
-          case ColorSpaceSRGB:          return color;
-          case ColorSpaceCIEXYZ:        return linear_rgb_to_ciexyz(srgb_to_linear_rgb(color));
-          assert_otherwise;
-        }
-
-      case ColorSpaceCIEXYZ:
-        switch (to)
-        {
-          case ColorSpaceLinearRGB:     return ciexyz_to_linear_rgb(color);
-          case ColorSpaceSRGB:          return linear_rgb_to_srgb(ciexyz_to_linear_rgb(color));
-          case ColorSpaceCIEXYZ:        return color;
-          assert_otherwise;
-        }
-
-      assert_otherwise;
-    }
-
-    // Keep the compiler happy.
-    return color;
-}
-
-
-//
 // Relative luminance function implementation.
 //
 
@@ -673,7 +699,7 @@ Color<T, 3> spectrum_to_ciexyz(
     const LightingConditions&   lighting,
     const Spectrum&             spectrum)
 {
-    // todo: fix to handle arbitrary numbers of samples.
+    // todo: handle arbitrary numbers of samples.
     assert(Spectrum::Samples == 31);
 
     T x = T(0.0);
@@ -705,6 +731,28 @@ void ciexyz_to_spectrum(
 
 
 //
+// Convert the CIE xy chromaticity of a D series (daylight) illuminant to a spectrum.
+//
+
+template <typename T, typename Spectrum>
+void daylight_ciexy_to_spectrum(
+    const T                     x,
+    const T                     y,
+    Spectrum&                   spectrum)
+{
+    const T rcp_m = T(1.0) / (T(0.0241) + T(0.2562) * x - T(0.7341) * y);
+    const T m1 = (T(-1.3515) - T(1.7703) * x +  T(5.9114) * y) * rcp_m;
+    const T m2 = (T( 0.0300) - T(31.4424) * x + T(30.0717) * y) * rcp_m;
+
+    spectrum =
+        Spectrum(
+            DaylightS0 +
+            DaylightS1 * static_cast<float>(m1) +
+            DaylightS2 * static_cast<float>(m2));
+}
+
+
+//
 // Linear RGB to spectrum transformation implementation.
 //
 
@@ -714,7 +762,7 @@ void linear_rgb_to_spectrum(
     const Color<T, 3>&          linear_rgb,
     Spectrum&                   spectrum)
 {
-    // todo: fix to handle arbitrary number of samples.
+    // todo: handle arbitrary number of samples.
     assert(Spectrum::Samples == 31);
 
     typedef typename Spectrum::ValueType ValueType;
