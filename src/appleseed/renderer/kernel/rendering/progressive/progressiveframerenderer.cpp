@@ -147,7 +147,7 @@ namespace
             m_abort_switch.abort();
 
             // Wait until the statistics printing thread is terminated.
-            if (m_statistics_thread.get())
+            if (m_statistics_thread.get() && m_statistics_thread->joinable())
                 m_statistics_thread->join();
 
             // Delete tile callbacks.
