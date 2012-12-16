@@ -327,14 +327,14 @@ inline void Statistics::insert<std::string>(
 }
 
 template <>
-inline void Statistics::insert<Population<size_t> >(
+inline void Statistics::insert<Population<uint32> >(
     const std::string&                  name,
-    const Population<size_t>&           value,
+    const Population<uint32>&           value,
     const std::string&                  unit)
 {
     insert(
-        std::auto_ptr<PopulationEntry<size_t> >(
-            new PopulationEntry<size_t>(name, unit, value)));
+        std::auto_ptr<PopulationEntry<uint32> >(
+            new PopulationEntry<uint32>(name, unit, value)));
 }
 
 template <>
