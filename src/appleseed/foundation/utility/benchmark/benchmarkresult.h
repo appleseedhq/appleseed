@@ -29,11 +29,11 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKRESULT_H
 #define APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKRESULT_H
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Standard headers.
 #include <cstddef>
@@ -43,7 +43,6 @@ namespace foundation    { class BenchmarkSuite; }
 namespace foundation    { class IBenchmarkCase; }
 namespace foundation    { class IBenchmarkListener; }
 namespace foundation    { class TimingResult; }
-
 
 namespace foundation
 {

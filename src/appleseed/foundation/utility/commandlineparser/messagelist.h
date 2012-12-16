@@ -29,12 +29,12 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_COMMANDLINEPARSER_MESSAGELIST_H
 #define APPLESEED_FOUNDATION_UTILITY_COMMANDLINEPARSER_MESSAGELIST_H
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/utility/log.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 namespace foundation
 {

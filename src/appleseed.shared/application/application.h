@@ -29,7 +29,7 @@
 #ifndef APPLESEED_SHARED_APPLICATION_APPLICATION_H
 #define APPLESEED_SHARED_APPLICATION_APPLICATION_H
 
-// appleseed.shared headers
+// appleseed.shared headers.
 #include "dllsymbol.h"
 
 // boost headers.

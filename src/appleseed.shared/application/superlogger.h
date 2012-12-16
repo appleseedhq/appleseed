@@ -29,7 +29,7 @@
 #ifndef APPLESEED_SHARED_APPLICATION_SUPERLOGGER_H
 #define APPLESEED_SHARED_APPLICATION_SUPERLOGGER_H
 
-// appleseed.shared headers
+// appleseed.shared headers.
 #include "dllsymbol.h"
 
 // appleseed.foundation headers.

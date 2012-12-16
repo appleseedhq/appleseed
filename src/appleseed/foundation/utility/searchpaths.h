@@ -29,12 +29,12 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_SEARCHPATHS_H
 #define APPLESEED_FOUNDATION_UTILITY_SEARCHPATHS_H
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/utility/string.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Standard headers.
 #include <string>

@@ -29,11 +29,11 @@
 #ifndef APPLESEED_FOUNDATION_MATH_RNG_MERSENNETWISTER_H
 #define APPLESEED_FOUNDATION_MATH_RNG_MERSENNETWISTER_H
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 // appleseed.foundation headers.
 #include "foundation/platform/types.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Standard headers.
 #include <cstddef>

@@ -29,11 +29,11 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_TEST_TESTLISTENERHELPER_H
 #define APPLESEED_FOUNDATION_UTILITY_TEST_TESTLISTENERHELPER_H
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 // appleseed.foundation headers.
 #include "foundation/utility/test/testmessage.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Standard headers.
 #include <cstddef>

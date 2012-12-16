@@ -29,13 +29,13 @@
 #ifndef APPLESEED_FOUNDATION_PLATFORM_PATH_H
 #define APPLESEED_FOUNDATION_PLATFORM_PATH_H
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 // appleseed.foundation headers.
 #ifdef _WIN32
 #include "foundation/platform/windows.h"
 #endif
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Platform headers.
 #if defined __APPLE__

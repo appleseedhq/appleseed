@@ -29,15 +29,15 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_STRING_H
 #define APPLESEED_FOUNDATION_UTILITY_STRING_H
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
 #include "foundation/math/scalar.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/countof.h"
 #include "foundation/utility/typetraits.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Standard headers.
 #include <algorithm>

@@ -29,15 +29,15 @@
 #ifndef APPLESEED_RENDERER_MODELING_SPECTRUM_COLORENTITY_H
 #define APPLESEED_RENDERER_MODELING_SPECTRUM_COLORENTITY_H
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
 #include "renderer/modeling/entity/entity.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }

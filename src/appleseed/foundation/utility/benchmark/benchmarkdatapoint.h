@@ -29,17 +29,16 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKDATAPOINT_H
 #define APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKDATAPOINT_H
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 // appleseed.foundation headers.
 #include "foundation/platform/datetime.h"
 #include "foundation/platform/types.h"
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // boost headers.
 #include "boost/date_time/gregorian/gregorian.hpp"
 #include "boost/date_time/posix_time/posix_time.hpp"
-
 
 namespace foundation
 {

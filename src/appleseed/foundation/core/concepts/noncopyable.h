@@ -29,11 +29,11 @@
 #ifndef APPLESEED_FOUNDATION_CORE_CONCEPTS_NONCOPYABLE_H
 #define APPLESEED_FOUNDATION_CORE_CONCEPTS_NONCOPYABLE_H
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 // appleseed.foundation headers.
 #include "foundation/utility/typetraits.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 namespace foundation
 {

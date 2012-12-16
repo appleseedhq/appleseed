@@ -29,12 +29,12 @@
 #ifndef APPLESEED_FOUNDATION_IMAGE_EXRIMAGEFILEWRITER_H
 #define APPLESEED_FOUNDATION_IMAGE_EXRIMAGEFILEWRITER_H
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 // appleseed.foundation headers.
 #include "foundation/image/iimagefilewriter.h"
 #include "foundation/image/imageattributes.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Standard headers.
 #include <cstddef>

@@ -29,11 +29,11 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_FILTER_REGEXFILTER_H
 #define APPLESEED_FOUNDATION_UTILITY_FILTER_REGEXFILTER_H
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 // appleseed.foundation headers.
 #include "foundation/utility/filter/ifilter.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 namespace foundation
 {

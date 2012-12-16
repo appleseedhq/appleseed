@@ -29,14 +29,14 @@
 #ifndef APPLESEED_RENDERER_MODELING_ENVIRONMENTSHADER_IENVIRONMENTSHADERFACTORY_H
 #define APPLESEED_RENDERER_MODELING_ENVIRONMENTSHADER_IENVIRONMENTSHADERFACTORY_H
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/specializedarrays.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Forward declarations.
 namespace renderer      { class EnvironmentShader; }

@@ -29,12 +29,12 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_TEST_TESTLISTENERBASE_H
 #define APPLESEED_FOUNDATION_UTILITY_TEST_TESTLISTENERBASE_H
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/test/itestlistener.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Standard headers.
 #include <cstddef>

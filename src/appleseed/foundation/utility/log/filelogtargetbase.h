@@ -29,12 +29,12 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_LOG_FILELOGTARGETBASE_H
 #define APPLESEED_FOUNDATION_UTILITY_LOG_FILELOGTARGETBASE_H
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 // appleseed.foundation headers.
 #include "foundation/utility/log/logmessage.h"
 #include "foundation/utility/log/logtargetbase.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Standard headers.
 #include <cstdio>

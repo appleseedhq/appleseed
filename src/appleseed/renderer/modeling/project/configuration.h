@@ -29,12 +29,12 @@
 #ifndef APPLESEED_RENDERER_MODELING_PROJECT_CONFIGURATION_H
 #define APPLESEED_RENDERER_MODELING_PROJECT_CONFIGURATION_H
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
 #include "renderer/modeling/entity/entity.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 namespace renderer
 {

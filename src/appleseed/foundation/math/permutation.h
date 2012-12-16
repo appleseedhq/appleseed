@@ -29,13 +29,13 @@
 #ifndef APPLESEED_FOUNDATION_MATH_PERMUTATION_H
 #define APPLESEED_FOUNDATION_MATH_PERMUTATION_H
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 // appleseed.foundation headers.
 #include "foundation/math/rng.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Standard headers.
 #include <cassert>

@@ -29,12 +29,12 @@
 #ifndef APPLESEED_FOUNDATION_IMAGE_GENERICIMAGEFILEWRITER_H
 #define APPLESEED_FOUNDATION_IMAGE_GENERICIMAGEFILEWRITER_H
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 // appleseed.foundation headers.
 #include "foundation/image/iimagefilewriter.h"
 #include "foundation/image/imageattributes.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Forward declarations.
 namespace foundation    { class ICanvas; }

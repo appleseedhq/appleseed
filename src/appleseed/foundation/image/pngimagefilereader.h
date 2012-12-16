@@ -29,11 +29,11 @@
 #ifndef APPLESEED_FOUNDATION_IMAGE_PNGIMAGEFILEREADER_H
 #define APPLESEED_FOUNDATION_IMAGE_PNGIMAGEFILEREADER_H
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 // appleseed.foundation headers.
 #include "foundation/image/iimagefilereader.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Forward declarations.
 namespace foundation    { class Image; }

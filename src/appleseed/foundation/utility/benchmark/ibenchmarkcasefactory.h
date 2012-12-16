@@ -29,11 +29,11 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_BENCHMARK_IBENCHMARKCASEFACTORY_H
 #define APPLESEED_FOUNDATION_UTILITY_BENCHMARK_IBENCHMARKCASEFACTORY_H
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Forward declarations.
 namespace foundation    { class IBenchmarkCase; }

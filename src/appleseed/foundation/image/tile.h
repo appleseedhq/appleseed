@@ -29,13 +29,13 @@
 #ifndef APPLESEED_FOUNDATION_IMAGE_TILE_H
 #define APPLESEED_FOUNDATION_IMAGE_TILE_H
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/image/pixel.h"
 #include "foundation/platform/types.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Standard headers.
 #include <cassert>

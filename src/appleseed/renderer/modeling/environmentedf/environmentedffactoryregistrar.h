@@ -29,14 +29,14 @@
 #ifndef APPLESEED_RENDERER_MODELING_ENVIRONMENTEDF_ENVIRONMENTEDFFACTORYREGISTRAR_H
 #define APPLESEED_RENDERER_MODELING_ENVIRONMENTEDF_ENVIRONMENTEDFFACTORYREGISTRAR_H
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/array.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Forward declarations.
 namespace renderer      { class IEnvironmentEDFFactory; }

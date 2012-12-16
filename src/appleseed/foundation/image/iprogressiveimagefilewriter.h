@@ -29,12 +29,12 @@
 #ifndef APPLESEED_FOUNDATION_IMAGE_IPROGRESSIVEIMAGEFILEWRITER_H
 #define APPLESEED_FOUNDATION_IMAGE_IPROGRESSIVEIMAGEFILEWRITER_H
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/image/imageattributes.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Standard headers.
 #include <cstddef>

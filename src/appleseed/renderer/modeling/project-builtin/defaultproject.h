@@ -29,11 +29,11 @@
 #ifndef APPLESEED_RENDERER_MODELING_PROJECTBUILTIN_DEFAULTPROJECT_H
 #define APPLESEED_RENDERER_MODELING_PROJECTBUILTIN_DEFAULTPROJECT_H
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Forward declarations.
 namespace renderer  { class Project; }

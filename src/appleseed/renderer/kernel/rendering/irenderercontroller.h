@@ -29,11 +29,11 @@
 #ifndef APPLESEED_RENDERER_KERNEL_RENDERING_IRENDERERCONTROLLER_H
 #define APPLESEED_RENDERER_KERNEL_RENDERING_IRENDERERCONTROLLER_H
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 namespace renderer
 {

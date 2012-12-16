@@ -29,11 +29,11 @@
 #ifndef APPLESEED_FOUNDATION_IMAGE_GENERICPROGRESSIVEIMAGEFILEREADER_H
 #define APPLESEED_FOUNDATION_IMAGE_GENERICPROGRESSIVEIMAGEFILEREADER_H
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 // appleseed.foundation headers.
 #include "foundation/image/iprogressiveimagefilereader.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Standard headers.
 #include <cstddef>

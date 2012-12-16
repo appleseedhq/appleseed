@@ -29,11 +29,11 @@
 #ifndef APPLESEED_RENDERER_MODELING_BSDF_IBSDFFACTORY_H
 #define APPLESEED_RENDERER_MODELING_BSDF_IBSDFFACTORY_H
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }

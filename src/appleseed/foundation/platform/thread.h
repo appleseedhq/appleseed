@@ -29,12 +29,12 @@
 #ifndef APPLESEED_FOUNDATION_PLATFORM_THREAD_H
 #define APPLESEED_FOUNDATION_PLATFORM_THREAD_H
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/platform/types.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // boost headers.
 #include "boost/interprocess/detail/atomic.hpp"

@@ -29,13 +29,13 @@
 #ifndef APPLESEED_FOUNDATION_IMAGE_PROGRESSIVEEXRIMAGEFILEWRITER_H
 #define APPLESEED_FOUNDATION_IMAGE_PROGRESSIVEEXRIMAGEFILEWRITER_H
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
 #include "foundation/image/imageattributes.h"
 #include "foundation/image/iprogressiveimagefilewriter.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // OpenEXR headers.
 #include "OpenEXR/ImfTiledOutputFile.h"

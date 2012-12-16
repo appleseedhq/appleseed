@@ -29,12 +29,12 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_CONTAINERS_DICTIONARY_H
 #define APPLESEED_FOUNDATION_UTILITY_CONTAINERS_DICTIONARY_H
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/stringexception.h"
 #include "foundation/utility/string.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Standard headers.
 #include <cstddef>

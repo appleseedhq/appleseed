@@ -29,11 +29,11 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_BENCHMARK_IBENCHMARKLISTENER_H
 #define APPLESEED_FOUNDATION_UTILITY_BENCHMARK_IBENCHMARKLISTENER_H
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 // appleseed.foundation headers.
 #include "foundation/core/concepts/iunknown.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Standard headers.
 #include <cstddef>

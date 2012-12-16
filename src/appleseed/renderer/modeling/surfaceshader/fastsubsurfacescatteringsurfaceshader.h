@@ -29,15 +29,15 @@
 #ifndef APPLESEED_RENDERER_MODELING_SURFACESHADER_FASTSUBSURFACESCATTERINGSURFACESHADER_H
 #define APPLESEED_RENDERER_MODELING_SURFACESHADER_FASTSUBSURFACESCATTERINGSURFACESHADER_H
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 // appleseed.renderer headers.
 #include "renderer/modeling/surfaceshader/isurfaceshaderfactory.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }

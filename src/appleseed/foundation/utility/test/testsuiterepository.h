@@ -29,11 +29,11 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_TEST_TESTSUITEREPOSITORY_H
 #define APPLESEED_FOUNDATION_UTILITY_TEST_TESTSUITEREPOSITORY_H
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 // appleseed.foundation headers.
 #include "foundation/core/concepts/singleton.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Standard headers.
 #include <cstddef>

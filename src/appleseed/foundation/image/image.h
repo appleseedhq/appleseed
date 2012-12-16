@@ -29,9 +29,6 @@
 #ifndef APPLESEED_FOUNDATION_IMAGE_IMAGE_H
 #define APPLESEED_FOUNDATION_IMAGE_IMAGE_H
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 // appleseed.foundation headers.
 #include "foundation/core/concepts/iunknown.h"
 #include "foundation/image/canvasproperties.h"
@@ -40,9 +37,11 @@
 #include "foundation/image/tile.h"
 #include "foundation/platform/compiler.h"
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // Standard headers.
 #include <cstddef>
-
 
 namespace foundation
 {

@@ -29,12 +29,12 @@
 #ifndef APPLESEED_FOUNDATION_IMAGE_CANVASPROPERTIES_H
 #define APPLESEED_FOUNDATION_IMAGE_CANVASPROPERTIES_H
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 // appleseed.foundation headers.
 #include "foundation/image/pixel.h"
 #include "foundation/math/scalar.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Standard headers.
 #include <algorithm>
