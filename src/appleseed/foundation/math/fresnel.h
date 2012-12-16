@@ -81,7 +81,8 @@ Spectrum fresnel_reflection_no_polarization(
 template <typename Spectrum, typename T>
 Spectrum schlick_fresnel_reflection(
     const Spectrum&     normal_reflectance,     // reflectance at normal incidence
-    const T             cos_theta);             // cos(incident direction, normal)
+    const T             cos_theta,              // cos(incident direction, normal)
+    const T             multiplier = T(1.0));   // reflectance multiplier at tangent incidence
 
 
 //
@@ -189,7 +190,8 @@ Spectrum fresnel_reflection_no_polarization(
 template <typename Spectrum, typename T>
 Spectrum schlick_fresnel_reflection(
     const Spectrum&     normal_reflectance,
-    const T             cos_theta)
+    const T             cos_theta,
+    const T             multiplier)
 {
     typedef typename impl::GetValueType<Spectrum>::ValueType ValueType;
 
@@ -201,7 +203,7 @@ Spectrum schlick_fresnel_reflection(
 
     Spectrum r = normal_reflectance;
     r *= static_cast<ValueType>(T(1.0) - k5);
-    r += Spectrum(static_cast<ValueType>(k5));
+    r += Spectrum(static_cast<ValueType>(k5 * multiplier));
 
     return r;
 }

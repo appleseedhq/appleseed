@@ -88,6 +88,7 @@ namespace
             m_inputs.declare("diffuse_reflectance_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("glossy_reflectance", InputFormatSpectrum);
             m_inputs.declare("glossy_reflectance_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("fresnel_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("shininess_u", InputFormatScalar);
             m_inputs.declare("shininess_v", InputFormatScalar);
         }
@@ -273,7 +274,7 @@ namespace
             // Evaluate the glossy component of the BRDF (equation 4).
             const double num = sval.m_kg * pow(cos_hn, exp);
             const double den = cos_oh * (cos_in + cos_on - cos_in * cos_on);
-            value = schlick_fresnel_reflection(rval.m_scaled_rg, cos_oh);
+            value = schlick_fresnel_reflection(rval.m_scaled_rg, cos_oh, values->m_fr_multiplier);
             value *= static_cast<float>(num / den);
 
             // Evaluate the diffuse component of the BRDF (equation 5).
@@ -357,7 +358,7 @@ namespace
                 const double exp = (exp_num_u + exp_num_v) / exp_den;
                 const double num = exp_den == 0.0 ? 0.0 : sval.m_kg * pow(cos_hn, exp);
                 const double den = cos_oh * (cos_in + cos_on - cos_in * cos_on);
-                Spectrum glossy = schlick_fresnel_reflection(rval.m_scaled_rg, cos_oh);
+                Spectrum glossy = schlick_fresnel_reflection(rval.m_scaled_rg, cos_oh, values->m_fr_multiplier);
                 glossy *= static_cast<float>(num / den);
                 value += glossy;
 
@@ -438,6 +439,7 @@ namespace
             Spectrum    m_rg;               // glossy reflectance at normal incidence
             Alpha       m_rg_alpha;         // unused
             double      m_rg_multiplier;    // glossy reflectance multiplier
+            double      m_fr_multiplier;    // Fresnel multiplier
             double      m_nu;               // Phong-like exponent in first tangent direction
             double      m_nv;               // Phong-like exponent in second tangent direction
         };
@@ -598,6 +600,16 @@ DictionaryArray AshikhminBRDFFactory::get_widget_definitions() const
         Dictionary()
             .insert("name", "glossy_reflectance_multiplier")
             .insert("label", "Glossy Reflectance Multiplier")
+            .insert("widget", "entity_picker")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "optional")
+            .insert("default", "1.0"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "fresnel_multiplier")
+            .insert("label", "Fresnel Multiplier")
             .insert("widget", "entity_picker")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
