@@ -188,6 +188,8 @@ namespace
               case ColorSpaceCIEXYZ:
                 color.rgb() = linear_rgb_to_ciexyz(color.rgb());
                 break;
+
+              default:;
             }
 
             // Apply clamping.
