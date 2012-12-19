@@ -189,6 +189,12 @@ class Statistics
         const T&                        value,
         const std::string&              unit);
 
+    template <typename T>
+    void insert(
+        const std::string&              name,
+        const Population<T>&            value,
+        const std::string&              unit);
+
     void insert_size(
         const std::string&              name,
         const uint64                    bytes,
@@ -326,37 +332,15 @@ inline void Statistics::insert<std::string>(
             new StringEntry(name, unit, value)));
 }
 
-template <>
-inline void Statistics::insert<Population<uint32> >(
+template <typename T>
+inline void Statistics::insert(
     const std::string&                  name,
-    const Population<uint32>&           value,
+    const Population<T>&                value,
     const std::string&                  unit)
 {
     insert(
-        std::auto_ptr<PopulationEntry<uint32> >(
-            new PopulationEntry<uint32>(name, unit, value)));
-}
-
-template <>
-inline void Statistics::insert<Population<uint64> >(
-    const std::string&                  name,
-    const Population<uint64>&           value,
-    const std::string&                  unit)
-{
-    insert(
-        std::auto_ptr<PopulationEntry<uint64> >(
-            new PopulationEntry<uint64>(name, unit, value)));
-}
-
-template <>
-inline void Statistics::insert<Population<double> >(
-    const std::string&                  name,
-    const Population<double>&           value,
-    const std::string&                  unit)
-{
-    insert(
-        std::auto_ptr<PopulationEntry<double> >(
-            new PopulationEntry<double>(name, unit, value)));
+        std::auto_ptr<PopulationEntry<T> >(
+            new PopulationEntry<T>(name, unit, value)));
 }
 
 inline void Statistics::insert_size(
