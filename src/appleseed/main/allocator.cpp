@@ -535,4 +535,12 @@ void operator delete[](void* ptr, const nothrow_t&)
     delete_impl(ptr);
 }
 
+#else
+
+void log_allocation(const void* ptr, const size_t size) {}
+void log_allocation_failure(const size_t size) {}
+void log_deallocation(const void* ptr) {}
+void start_memory_tracking() {}
+void stop_memory_tracking() {}
+
 #endif  // _WIN32
