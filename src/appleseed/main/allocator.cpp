@@ -29,10 +29,22 @@
 // Interface header.
 #include "allocator.h"
 
-// appleseed.foundation headers.
+//
+// This module must be enabled on Windows, and on Windows only. Windows is
+// the only platform we support that doesn't natively provide 16-byte aligned
+// allocations. Mac OS X and Linux do.
+//
+// Moreover, on these platforms (especially on OS X) overriding the new and
+// delete operators in a shared library such as appleseed creates all kinds
+// of problems, as discussed in this thread on Stack Overflow:
+//
+// http://stackoverflow.com/questions/13793325/hiding-symbols-in-a-shared-library-on-mac-os-x
+//
+
 #ifdef _WIN32
+
+// appleseed.foundation headers.
 #include "foundation/platform/win32stackwalker.h"
-#endif
 #include "foundation/platform/types.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/memory.h"
@@ -77,9 +89,7 @@ using namespace std;
 #undef LOG_MEMORY_DEALLOCATIONS
 
 // Define this symbol to dump a (part of) the callstack when a block of memory is allocated.
-#ifdef _WIN32
 #undef DUMP_CALLSTACK_ON_ALLOCATION
-#endif
 
 namespace
 {
@@ -524,3 +534,5 @@ void operator delete[](void* ptr, const nothrow_t&)
 {
     delete_impl(ptr);
 }
+
+#endif  // _WIN32
