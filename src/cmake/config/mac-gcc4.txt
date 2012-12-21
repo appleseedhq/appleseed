@@ -65,16 +65,13 @@ set (preprocessor_definitions_release
 # All configurations.
 set (compiler_flags_common
     -Werror                                             # Treat Warnings As Errors
-    -fvisibility=hidden -fvisibility-inlines-hidden     # Hide all non-exported symbols
 )
 set (exe_linker_flags_common
     -Werror                                             # Treat Warnings As Errors
-    -fvisibility=hidden -fvisibility-inlines-hidden     # Hide all non-exported symbols
     -bind_at_load
 )
 set (shared_lib_linker_flags_common
     -Werror                                             # Treat Warnings As Errors
-    -fvisibility=hidden -fvisibility-inlines-hidden     # Hide all non-exported symbols
 )
 
 # Debug configuration.
