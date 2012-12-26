@@ -96,3 +96,9 @@ target_link_libraries (appleseed.cli
 #--------------------------------------------------------------------------------------------------
 
 add_copy_target_to_sandbox_command (appleseed.cli)
+
+install ( TARGETS
+  appleseed.cli
+  DESTINATION
+  bin
+)

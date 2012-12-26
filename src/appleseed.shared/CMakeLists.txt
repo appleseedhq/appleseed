@@ -103,3 +103,9 @@ target_link_libraries (appleseed.shared
 #--------------------------------------------------------------------------------------------------
 
 add_copy_target_to_sandbox_command (appleseed.shared)
+
+install ( TARGETS
+  appleseed.shared
+  DESTINATION
+  bin
+)

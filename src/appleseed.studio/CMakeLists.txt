@@ -390,3 +390,9 @@ endif ()
 #--------------------------------------------------------------------------------------------------
 
 add_copy_target_to_sandbox_command (appleseed.studio)
+
+install ( TARGETS
+  appleseed.studio
+  DESTINATION
+  bin
+)

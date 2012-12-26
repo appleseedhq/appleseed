@@ -96,3 +96,9 @@ target_link_libraries (animatecamera
 #--------------------------------------------------------------------------------------------------
 
 add_copy_target_to_sandbox_command (animatecamera)
+
+install ( TARGETS
+  animatecamera
+  DESTINATION
+  bin
+)

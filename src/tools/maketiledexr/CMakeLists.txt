@@ -93,3 +93,9 @@ target_link_libraries (maketiledexr
 #--------------------------------------------------------------------------------------------------
 
 add_copy_target_to_sandbox_command (maketiledexr)
+
+install ( TARGETS
+  maketiledexr
+  DESTINATION
+  bin
+)
