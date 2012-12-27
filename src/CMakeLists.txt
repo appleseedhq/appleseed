@@ -403,3 +403,17 @@ install ( FILES
   DESTINATION
   stylesheets
   )
+
+install ( FILES
+  ../sandbox/settings/appleseed.studio.xml
+  ../sandbox/settings/appleseed.cli.xml
+  DESTINATION
+  settings
+)
+
+install ( FILES
+  ../sandbox/schemas/settings.xsd
+  ../sandbox/schemas/project.xsd
+  DESTINATION
+  schemas
+)
