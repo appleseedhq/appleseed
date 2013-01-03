@@ -544,12 +544,6 @@ namespace
         {
         }
 
-        MeshObjectKeyFrame(const string& key, const string& filename)
-          : m_key(from_string<double>(key))
-          , m_filename(filename)
-        {
-        }
-
         bool operator<(const MeshObjectKeyFrame& rhs) const
         {
             return m_key < rhs.m_key;
@@ -566,7 +560,7 @@ namespace
         vector<MeshObjectKeyFrame> key_frames;
 
         for (const_each<StringDictionary> i = filenames; i; ++i)
-            key_frames.push_back(MeshObjectKeyFrame(i->name(), i->value<string>()));
+            key_frames.push_back(MeshObjectKeyFrame(from_string<double>(i->name()), i->value<string>()));
 
         sort(key_frames.begin(), key_frames.end());
 
