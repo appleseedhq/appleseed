@@ -66,7 +66,10 @@ option (USE_STATIC_BOOST        "Use static Boost libs"         ON)
 option (USE_EXTERNAL_PNG        "Use external PNG lib"          OFF)
 option (USE_EXTERNAL_ALEMBIC    "Use external Alembic lib"      OFF)
 option (USE_EXTERNAL_XERCES     "Use external Xerces lib"       OFF)
+option (WITH_CLI                "Build appleseed.cli"           ON)
+option (WITH_STUDIO             "Build appleseed.studio"        ON)
 option (WITH_PYTHON             "Build Python module"           ON)
+option (WITH_TOOLS              "Build appleseed tools"         ON)
 
 
 #--------------------------------------------------------------------------------------------------
@@ -109,7 +112,8 @@ if (USE_STATIC_BOOST)
     set (Boost_USE_STATIC_LIBS TRUE)
 endif ()
 
-find_package (Boost 1.47 REQUIRED chrono date_time filesystem regex system thread)
+set (BOOST_NEEDED_LIBS chrono date_time filesystem regex system thread)
+find_package (Boost 1.47 REQUIRED ${BOOST_NEEDED_LIBS})
 
 add_definitions (-DBOOST_FILESYSTEM_VERSION=3 -DBOOST_FILESYSTEM_NO_DEPRECATED)
 
@@ -373,12 +377,24 @@ convert_list_to_string (CMAKE_MODULE_LINKER_FLAGS_PROFILE "${shared_lib_linker_f
 #--------------------------------------------------------------------------------------------------
 
 add_subdirectory (appleseed)
-add_subdirectory (appleseed.shared)
-add_subdirectory (appleseed.cli)
-add_subdirectory (appleseed.studio)
-add_subdirectory (tools/animatecamera)
-add_subdirectory (tools/maketiledexr)
-add_subdirectory (tools/normalizeprojectfile)
+
+if (WITH_CLI OR WITH_STUDIO)
+    add_subdirectory (appleseed.shared)
+endif ()
+
+if (WITH_CLI)
+    add_subdirectory (appleseed.cli)
+endif ()
+
+if (WITH_STUDIO)
+    add_subdirectory (appleseed.studio)
+endif ()
+
+if (WITH_TOOLS)
+    add_subdirectory (tools/animatecamera)
+    add_subdirectory (tools/maketiledexr)
+    add_subdirectory (tools/normalizeprojectfile)
+endif()
 
 if (WITH_PYTHON)
     add_subdirectory (appleseed.python)

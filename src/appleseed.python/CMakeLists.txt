@@ -37,7 +37,7 @@ find_package (PythonLibs REQUIRED)
 # Boost libraries.
 #--------------------------------------------------------------------------------------------------
 
-find_package (Boost 1.46 REQUIRED chrono date_time filesystem regex system thread python)
+find_package (Boost 1.46 REQUIRED ${BOOST_NEEDED_LIBS} python)
 
 
 #--------------------------------------------------------------------------------------------------
@@ -133,7 +133,6 @@ link_against_platform (appleseed.python)
 
 target_link_libraries (appleseed.python
     appleseed
-    appleseed.shared
     ${Boost_LIBRARIES}
     ${PYTHON_LIBRARIES}
 )
@@ -143,4 +142,5 @@ target_link_libraries (appleseed.python
 # Post-build commands.
 #--------------------------------------------------------------------------------------------------
 
-add_copy_target_to_sandbox_command (appleseed.python)
+add_copy_target_to_sandbox_py_module_command (appleseed.python)
+add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/appleseed.python/__init__.py)
