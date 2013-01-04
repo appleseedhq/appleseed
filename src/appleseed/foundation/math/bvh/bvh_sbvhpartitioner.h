@@ -755,6 +755,8 @@ void SBVHPartitioner<ItemHandler, AABBVector>::spatial_sort(
         right_leaf.m_indices[split.m_dimension].size() >=
         leaf.m_indices[split.m_dimension].size());
 
+    // Unlike object splits, spatial splits break items orderings, so we need to sort
+    // again the items in the left and right leaf nodes, along all dimensions.
     for (size_t d = 0; d < Dimension; ++d)
     {
         if (d != split.m_dimension)
