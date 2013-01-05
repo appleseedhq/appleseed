@@ -417,3 +417,13 @@ install ( FILES
   DESTINATION
   schemas
 )
+
+install ( DIRECTORY
+  ../sandbox/animations
+  ../sandbox/extras
+  ../sandbox/images
+  ../sandbox/scenes
+  ../sandbox/tests
+  DESTINATION
+  .
+)
