@@ -34,7 +34,9 @@
 #include "renderer/kernel/lighting/pt/ptlightingengine.h"
 #include "renderer/kernel/lighting/ilightingengine.h"
 #include "renderer/kernel/lighting/lightsampler.h"
+#include "renderer/kernel/rendering/debug/blanksamplerenderer.h"
 #include "renderer/kernel/rendering/debug/blanktilerenderer.h"
+#include "renderer/kernel/rendering/debug/debugsamplerenderer.h"
 #include "renderer/kernel/rendering/debug/debugtilerenderer.h"
 #include "renderer/kernel/rendering/debug/ewatesttilerenderer.h"
 #include "renderer/kernel/rendering/generic/genericframerenderer.h"
@@ -485,6 +487,14 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
                 lighting_engine_factory.get(),
                 shading_engine,
                 m_params.child("generic_sample_renderer")));
+    }
+    else if (sample_renderer_param == "blank")
+    {
+        sample_renderer_factory.reset(new BlankSampleRendererFactory());
+    }
+    else if (sample_renderer_param == "debug")
+    {
+        sample_renderer_factory.reset(new DebugSampleRendererFactory());
     }
     else
     {

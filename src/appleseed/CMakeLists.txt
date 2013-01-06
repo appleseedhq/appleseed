@@ -879,6 +879,8 @@ set (renderer_kernel_rendering_debug_sources
     renderer/kernel/rendering/debug/blanksamplerenderer.h
     renderer/kernel/rendering/debug/blanktilerenderer.cpp
     renderer/kernel/rendering/debug/blanktilerenderer.h
+    renderer/kernel/rendering/debug/debugsamplerenderer.cpp
+    renderer/kernel/rendering/debug/debugsamplerenderer.h
     renderer/kernel/rendering/debug/debugtilerenderer.cpp
     renderer/kernel/rendering/debug/debugtilerenderer.h
     renderer/kernel/rendering/debug/ewatesttilerenderer.cpp
