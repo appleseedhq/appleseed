@@ -252,8 +252,7 @@ void RenderSettingsWindow::create_image_plane_sampling_adaptive_sampler_settings
 
     sublayout->addRow("Min Samples:", create_integer_input("image_plane_sampling.adaptive_sampler.min_samples", 1, 1000000));
     sublayout->addRow("Max Samples:", create_integer_input("image_plane_sampling.adaptive_sampler.max_samples", 1, 1000000));
-    sublayout->addRow("Max Contrast:", create_double_input("image_plane_sampling.adaptive_sampler.max_contrast", 0.0, 1000.0, 3, 0.005));
-    sublayout->addRow("Max Variation:", create_double_input("image_plane_sampling.adaptive_sampler.max_variation", 0.0, 1000.0, 3, 0.005));
+    sublayout->addRow("Quality:", create_double_input("image_plane_sampling.adaptive_sampler.quality", -20.0, +20.0, 2, 0.5));
 
     layout->addWidget(create_checkbox("image_plane_sampling.adaptive_sampler.enable_diagnostics", "Enable Diagnostics"));
 }
@@ -664,8 +663,7 @@ void RenderSettingsWindow::create_direct_links()
     create_direct_link("image_plane_sampling.general.filter", "generic_tile_renderer.filter", "mitchell");
     create_direct_link("image_plane_sampling.general.filter_size", "generic_tile_renderer.filter_size", 2.0);
     create_direct_link("image_plane_sampling.general.sampler", "generic_tile_renderer.sampler", "uniform");
-    create_direct_link("image_plane_sampling.adaptive_sampler.max_contrast", "generic_tile_renderer.max_contrast", 1.0 / 256);
-    create_direct_link("image_plane_sampling.adaptive_sampler.max_variation", "generic_tile_renderer.max_variation", 0.15);
+    create_direct_link("image_plane_sampling.adaptive_sampler.quality", "generic_tile_renderer.quality", 3.0);
     create_direct_link("image_plane_sampling.adaptive_sampler.enable_diagnostics", "generic_tile_renderer.enable_adaptive_sampler_diagnostics", false);
 
     // Lighting.

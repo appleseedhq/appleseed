@@ -894,8 +894,6 @@ source_group ("renderer\\kernel\\rendering\\debug" FILES
 )
 
 set (renderer_kernel_rendering_generic_sources
-    renderer/kernel/rendering/generic/developedpixelbuffer.cpp
-    renderer/kernel/rendering/generic/developedpixelbuffer.h
     renderer/kernel/rendering/generic/genericframerenderer.cpp
     renderer/kernel/rendering/generic/genericframerenderer.h
     renderer/kernel/rendering/generic/genericsamplegenerator.cpp

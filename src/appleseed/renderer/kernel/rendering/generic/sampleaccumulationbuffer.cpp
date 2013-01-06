@@ -31,7 +31,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/aov/tilestack.h"
-#include "renderer/kernel/rendering/generic/developedpixelbuffer.h"
 #include "renderer/kernel/shading/shadingresult.h"
 
 // appleseed.foundation headers.
@@ -58,28 +57,16 @@ SampleAccumulationBuffer::SampleAccumulationBuffer(
     m_buffer.resize(m_width * m_height * m_channel_count, 0.0f);
 }
 
-size_t SampleAccumulationBuffer::get_width() const
-{
-    return m_width;
-}
-
-size_t SampleAccumulationBuffer::get_height() const
-{
-    return m_height;
-}
-
 void SampleAccumulationBuffer::add(
     const size_t            x,
     const size_t            y,
     const ShadingResult&    sample,
     const float             weight)
 {
-    assert(x < m_width);
-    assert(y < m_height);
     assert(sample.m_color_space == ColorSpaceLinearRGB);
     assert(sample.m_aovs.size() == m_aov_count);
 
-    float* ptr = &m_buffer[(y * m_width + x) * m_channel_count];
+    float* ptr = pixel(x, y);
 
     *ptr++ += weight;
 
@@ -97,33 +84,6 @@ void SampleAccumulationBuffer::add(
     }
 }
 
-void SampleAccumulationBuffer::develop_pixel(
-    const size_t            x,
-    const size_t            y,
-    DevelopedPixelBuffer&   pixel_buffer) const
-{
-    assert(x < m_width);
-    assert(y < m_height);
-
-    const float* ptr = &m_buffer[(y * m_width + x) * m_channel_count];
-
-    const float weight = *ptr++;
-    const float rcp_weight = weight == 0.0f ? 0.0f : 1.0f / weight;
-
-    const float alpha = *ptr++;
-
-    const Color4f color(ptr[0], ptr[1], ptr[2], alpha);
-    pixel_buffer.set_pixel_color(static_cast<int>(x), static_cast<int>(y), color * rcp_weight);
-    ptr += 3;
-
-    for (size_t i = 0; i < m_aov_count; ++i)
-    {
-        const Color3f aov(ptr[0], ptr[1], ptr[2]);
-        pixel_buffer.set_pixel_aov(static_cast<int>(x), static_cast<int>(y), i, aov * rcp_weight);
-        ptr += 3;
-    }
-}
-
 void SampleAccumulationBuffer::develop_to_tile_premult_alpha(
     const AABB2u&           bbox,
     Tile&                   tile,
@@ -133,7 +93,7 @@ void SampleAccumulationBuffer::develop_to_tile_premult_alpha(
     {
         for (size_t x = bbox.min.x; x <= bbox.max.x; ++x)
         {
-            const float* ptr = &m_buffer[(y * m_width + x) * m_channel_count];
+            const float* ptr = pixel(x, y);
 
             const float weight = *ptr++;
             const float rcp_weight = weight == 0.0f ? 0.0f : 1.0f / weight;
@@ -173,7 +133,7 @@ void SampleAccumulationBuffer::develop_to_tile_straight_alpha(
     {
         for (size_t x = bbox.min.x; x <= bbox.max.x; ++x)
         {
-            const float* ptr = &m_buffer[(y * m_width + x) * m_channel_count];
+            const float* ptr = pixel(x, y);
 
             const float weight = *ptr++;
             const float rcp_weight = weight == 0.0f ? 0.0f : 1.0f / weight;
@@ -207,6 +167,23 @@ void SampleAccumulationBuffer::develop_to_tile_straight_alpha(
         AABB2u(Vector2u(0, 0), Vector2u(m_width - 1, m_height - 1)),
         tile,
         aov_tiles);
+}
+
+float* SampleAccumulationBuffer::pixel(
+    const size_t            x,
+    const size_t            y)
+{
+    assert(x < m_width);
+    assert(y < m_height);
+
+    return &m_buffer[(y * m_width + x) * m_channel_count];
+}
+
+const float* SampleAccumulationBuffer::pixel(
+    const size_t            x,
+    const size_t            y) const
+{
+    return const_cast<SampleAccumulationBuffer*>(this)->pixel(x, y);
 }
 
 }   // namespace renderer

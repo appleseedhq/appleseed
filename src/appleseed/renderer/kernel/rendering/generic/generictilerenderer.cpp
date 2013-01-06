@@ -35,7 +35,6 @@
 #include "renderer/kernel/aov/imagestack.h"
 #include "renderer/kernel/aov/spectrumstack.h"
 #include "renderer/kernel/aov/tilestack.h"
-#include "renderer/kernel/rendering/generic/developedpixelbuffer.h"
 #include "renderer/kernel/rendering/generic/pixelsampler.h"
 #include "renderer/kernel/rendering/generic/sampleaccumulationbuffer.h"
 #include "renderer/kernel/rendering/isamplerenderer.h"
@@ -53,7 +52,6 @@
 #include "foundation/math/hash.h"
 #include "foundation/math/minmax.h"
 #include "foundation/math/ordering.h"
-#include "foundation/math/population.h"
 #include "foundation/math/qmc.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
@@ -69,6 +67,7 @@
 #include <cassert>
 #include <cmath>
 #include <cstddef>
+#include <limits>
 #include <memory>
 #include <vector>
 
@@ -124,7 +123,6 @@ namespace
                 m_params.m_adaptive_sampler_diagnostics)
             {
                 m_variation_aov_index = frame.aov_images().get_or_append("variation", PixelFormatFloat);
-                m_contrast_aov_index = frame.aov_images().get_or_append("contrast", PixelFormatFloat);
                 m_samples_aov_index = frame.aov_images().get_or_append("samples", PixelFormatFloat);
             }
         }
@@ -167,8 +165,7 @@ namespace
             SamplerType             m_sampler_type;
             const size_t            m_min_samples;          // minimum number of samples per pixel
             const size_t            m_max_samples;          // maximum number of samples per pixel
-            const float             m_max_contrast;
-            const double            m_max_variation;
+            const float             m_max_variation;
             const bool              m_adaptive_sampler_diagnostics;
 
             bool                    m_crop;                 // is cropping enabled?
@@ -179,8 +176,7 @@ namespace
               : m_filter_radius(params.get_required<double>("filter_size", 2.0))
               , m_min_samples(params.get_required<size_t>("min_samples", 1))
               , m_max_samples(params.get_required<size_t>("max_samples", 1))
-              , m_max_contrast(params.get_optional<float>("max_contrast", 1.0f / 256))
-              , m_max_variation(params.get_optional<double>("max_variation", 0.15))
+              , m_max_variation(pow(10.0f, -params.get_optional<float>("quality", 3.0f)))
               , m_adaptive_sampler_diagnostics(params.get_optional<bool>("enable_adaptive_sampler_diagnostics"))
             {
                 // Retrieve filter parameter.
@@ -257,7 +253,6 @@ namespace
 
         // Adaptive sampler only.
         size_t                              m_variation_aov_index;
-        size_t                              m_contrast_aov_index;
         size_t                              m_samples_aov_index;
 
         void compute_pixel_filter_extent(const Frame& frame)
@@ -419,6 +414,12 @@ namespace
             const int                   ty,
             SampleAccumulationBuffer&   sample_buffer)
         {
+            // Find the pixels affected by this sample.
+            const int minx = max(tx - m_filter_half_width,  static_cast<int>(tile_bbox.min.x));
+            const int miny = max(ty - m_filter_half_height, static_cast<int>(tile_bbox.min.y));
+            const int maxx = min(tx + m_filter_half_width,  static_cast<int>(tile_bbox.max.x));
+            const int maxy = min(ty + m_filter_half_height, static_cast<int>(tile_bbox.max.y));
+
             const size_t aov_count = frame.aov_images().size();
             const int base_sx = ix * m_sqrt_sample_count;
             const int base_sy = iy * m_sqrt_sample_count;
@@ -456,21 +457,15 @@ namespace
                         sample_position,
                         shading_result);
 
-                    // Find the pixels affected by this sample.
-                    const int minx = max(tx - m_filter_half_width, static_cast<int>(tile_bbox.min.x));
-                    const int miny = max(ty - m_filter_half_height, static_cast<int>(tile_bbox.min.y));
-                    const int maxx = min(tx + m_filter_half_width, static_cast<int>(tile_bbox.max.x));
-                    const int maxy = min(ty + m_filter_half_height, static_cast<int>(tile_bbox.max.y));
-
                     // Add the contribution of this sample to the affected pixels.
-                    const double dx = ix - tx + 0.5 - s.x;
-                    const double dy = iy - ty + 0.5 - s.y;
+                    const double dx = (s.x - ix) - (0.5 - tx);
+                    const double dy = (s.y - iy) - (0.5 - ty);
                     for (int ry = miny; ry <= maxy; ++ry)
                     {
                         for (int rx = minx; rx <= maxx; ++rx)
                         {
                             const float weight =
-                                static_cast<float>(m_params.m_filter->evaluate(rx + dx, ry + dy));
+                                static_cast<float>(m_params.m_filter->evaluate(dx - rx, dy - ry));
                             sample_buffer.add(rx, ry, shading_result, weight);
                         }
                     }
@@ -512,27 +507,10 @@ namespace
             // Allocate the buffer that will hold the samples and the filter weights.
             SampleAccumulationBuffer sample_buffer(tile_width, tile_height, aov_count);
 
-            // Allocate the buffer that will hold the fully developed pixels used to compute contrast.
-            DevelopedPixelBuffer pixel_buffer(
-                tile_width,
-                tile_height,
-                aov_count,
-                tile_bbox,
-                frame.get_color_space(),
-                m_params.m_max_contrast);
-
             // Allocate the tiles that will hold diagnostic AOVs.
             auto_ptr<Tile> diagnostics;
             if (m_params.m_adaptive_sampler_diagnostics)
                 diagnostics.reset(new Tile(tile_width, tile_height, 3, PixelFormatFloat));
-
-            // Render the top row and left column of pixels.
-            render_top_left_border_pixels(
-                frame,
-                tile_bbox,
-                tile_origin_x,
-                tile_origin_y,
-                pixel_buffer);
 
             // Transform the bounding box to tile space.
             tile_bbox.min.x -= tile_origin_x;
@@ -571,7 +549,6 @@ namespace
                             ix, iy,
                             tx, ty,
                             sample_buffer,
-                            pixel_buffer,
                             diagnostics.get());
                     }
                 }
@@ -592,124 +569,57 @@ namespace
                         Color3f c;
                         diagnostics->get_pixel(x, y, c);
                         aov_tiles.set_pixel(x, y, m_variation_aov_index, scalar_to_color(c[0]));
-                        aov_tiles.set_pixel(x, y, m_contrast_aov_index, scalar_to_color(c[1]));
-                        aov_tiles.set_pixel(x, y, m_samples_aov_index, scalar_to_color(c[2]));
+                        aov_tiles.set_pixel(x, y, m_samples_aov_index, scalar_to_color(c[1]));
                     }
                 }
             }
         }
 
-        void render_top_left_border_pixels(
-            const Frame&                frame,
-            const AABB2u&               tile_bbox,
-            const size_t                tile_origin_x,
-            const size_t                tile_origin_y,
-            DevelopedPixelBuffer&       pixel_buffer)
+        static Color4f scalar_to_color(const float value)
         {
-            if (tile_bbox.min.y > 0)
-            {
-                const size_t width = tile_bbox.extent()[0] + 1;
-                for (size_t tx = 0; tx < width; ++tx)
-                {
-                    render_border_pixel(
-                        frame,
-                        static_cast<int>(tile_bbox.min.x + tx),
-                        static_cast<int>(tile_bbox.min.y - 1),
-                        static_cast<int>(tile_bbox.min.x + tx - tile_origin_x),
-                        static_cast<int>(tile_bbox.min.y - 1 - tile_origin_y),
-                        pixel_buffer);
-                }
-            }
-
-            if (tile_bbox.min.x > 0)
-            {
-                const size_t height = tile_bbox.extent()[1] + 1;
-                for (size_t ty = 0; ty < height; ++ty)
-                {
-                    render_border_pixel(
-                        frame,
-                        static_cast<int>(tile_bbox.min.x - 1),
-                        static_cast<int>(tile_bbox.min.y + ty),
-                        static_cast<int>(tile_bbox.min.x - 1 - tile_origin_x),
-                        static_cast<int>(tile_bbox.min.y + ty - tile_origin_y),
-                        pixel_buffer);
-                }
-            }
+            return
+                lerp(
+                    Color4f(0.0f, 0.0f, 1.0f, 1.0f),
+                    Color4f(1.0f, 0.0f, 0.0f, 1.0f),
+                    saturate(value));
         }
 
-        void render_border_pixel(
-            const Frame&                frame,
-            const int                   ix,
-            const int                   iy,
-            const int                   tx,
-            const int                   ty,
-            DevelopedPixelBuffer&       pixel_buffer)
+        class VariationTracker
         {
-            const size_t aov_count = frame.aov_images().size();
-            const int base_sx = ix * m_sqrt_sample_count;
-            const int base_sy = iy * m_sqrt_sample_count;
-
-            Color4f pixel_color(0.0f);
-
-            SpectrumStack pixel_aovs(frame.aov_images().size());
-            pixel_aovs.set(0.0f);
-
-            for (int sy = 0; sy < m_sqrt_sample_count; ++sy)
+          public:
+            VariationTracker()
+              : m_size(0)
+              , m_mean(0.0f)
+              , m_relative_mean_change(numeric_limits<float>::max())
             {
-                for (int sx = 0; sx < m_sqrt_sample_count; ++sx)
-                {
-                    // Compute the sample position in sample space and the instance number.
-                    Vector2d s;
-                    size_t instance;
-                    m_pixel_sampler.sample(
-                        base_sx + sx,
-                        base_sy + sy,
-                        s,
-                        instance);
-
-                    // Compute the sample position in NDC.
-                    const Vector2d sample_position = frame.get_sample_position(s.x, s.y);
-
-                    // Create a sampling context. We start with an initial dimension of 1,
-                    // as this seems to give less correlation artifacts than when the
-                    // initial dimension is set to 0 or 2.
-                    SamplingContext sampling_context(
-                        m_rng,
-                        1,              // number of dimensions
-                        instance,       // number of samples
-                        instance);      // initial instance number
-
-                    // Render the sample.
-                    ShadingResult shading_result;
-                    shading_result.m_aovs.set_size(pixel_aovs.size());
-                    m_sample_renderer->render_sample(
-                        sampling_context,
-                        sample_position,
-                        shading_result);
-
-                    // Accumulate the sample.
-                    assert(shading_result.m_color_space == ColorSpaceLinearRGB);
-                    pixel_color[0] += shading_result.m_color[0];
-                    pixel_color[1] += shading_result.m_color[1];
-                    pixel_color[2] += shading_result.m_color[2];
-                    pixel_color[3] += shading_result.m_alpha[0];
-                    pixel_aovs += shading_result.m_aovs;            // todo: add the first 4 components only of each AOV
-                }
             }
 
-            // Finish computing the pixel values.
-            const float rcp_sample_count = 1.0f / (m_sqrt_sample_count * m_sqrt_sample_count);
-            pixel_color *= rcp_sample_count;
-            pixel_aovs *= rcp_sample_count;
-
-            // Set the pixel in the pixel buffer.
-            pixel_buffer.set_pixel_color(tx, ty, pixel_color);
-            for (size_t i = 0; i < aov_count; ++i)
+            void insert(const float value)
             {
-                const Spectrum& aov = pixel_aovs[i];
-                pixel_buffer.set_pixel_aov(tx, ty, i, Color3f(aov[0], aov[1], aov[2]));
+                const float old_mean = m_mean;
+
+                ++m_size;
+                m_mean += value - m_mean / m_size;
+
+                m_relative_mean_change =
+                    m_mean > 0.0f ? abs(m_mean - old_mean) / m_mean : 0.0f;
             }
-        }
+
+            size_t get_size() const
+            {
+                return m_size;
+            }
+
+            float get_variation() const
+            {
+                return m_relative_mean_change;
+            }
+
+          private:
+            size_t  m_size;
+            float   m_mean;
+            float   m_relative_mean_change;
+        };
 
         void render_pixel_adaptive(
             const Frame&                frame,
@@ -719,9 +629,14 @@ namespace
             const int                   tx,
             const int                   ty,
             SampleAccumulationBuffer&   sample_buffer,
-            DevelopedPixelBuffer&       pixel_buffer,
             Tile*                       diagnostics)
         {
+            // Find the pixels affected by this sample.
+            const int minx = max(tx - m_filter_half_width,  static_cast<int>(tile_bbox.min.x));
+            const int miny = max(ty - m_filter_half_height, static_cast<int>(tile_bbox.min.y));
+            const int maxx = min(tx + m_filter_half_width,  static_cast<int>(tile_bbox.max.x));
+            const int maxy = min(ty + m_filter_half_height, static_cast<int>(tile_bbox.max.y));
+
             const size_t aov_count = frame.aov_images().size();
 
             // Create a sampling context.
@@ -733,18 +648,22 @@ namespace
                 0,                      // number of samples
                 instance);
 
-            Population<float> history;
+            VariationTracker trackers[3];
 
             while (true)
             {
-                assert(history.get_size() <= m_params.m_max_samples);
-
-                const size_t remaining_samples = m_params.m_max_samples - history.get_size();
-
+                // Don't exceed 'max' samples in total.
+                assert(trackers[0].get_size() <= m_params.m_max_samples);
+                const size_t remaining_samples = m_params.m_max_samples - trackers[0].get_size();
                 if (remaining_samples == 0)
                     break;
 
-                const size_t batch_size = min(m_params.m_min_samples, remaining_samples);
+                // The first batch contains 'min' samples, each subsequent batch contains half that.
+                const size_t samples_per_batch =
+                    trackers[0].get_size() == 0
+                        ? m_params.m_min_samples
+                        : max<size_t>(m_params.m_min_samples / 2, 1);
+                const size_t batch_size = min(samples_per_batch, remaining_samples);
 
                 for (size_t i = 0; i < batch_size; ++i)
                 {
@@ -764,101 +683,52 @@ namespace
                         sample_position,
                         shading_result);
 
-                    // Find the pixels affected by this sample.
-                    const int minx = max(tx - m_filter_half_width, static_cast<int>(tile_bbox.min.x));
-                    const int miny = max(ty - m_filter_half_height, static_cast<int>(tile_bbox.min.y));
-                    const int maxx = min(tx + m_filter_half_width, static_cast<int>(tile_bbox.max.x));
-                    const int maxy = min(ty + m_filter_half_height, static_cast<int>(tile_bbox.max.y));
-
                     // Add the contribution of this sample to the affected pixels.
-                    const double dx = -tx + 0.5 - s.x;
-                    const double dy = -ty + 0.5 - s.y;
+                    const double dx = s.x - (0.5 - tx);
+                    const double dy = s.y - (0.5 - ty);
                     for (int ry = miny; ry <= maxy; ++ry)
                     {
                         for (int rx = minx; rx <= maxx; ++rx)
                         {
                             const float weight =
-                                static_cast<float>(m_params.m_filter->evaluate(rx + dx, ry + dy));
+                                static_cast<float>(m_params.m_filter->evaluate(dx - rx, dy - ry));
                             sample_buffer.add(rx, ry, shading_result, weight);
                         }
                     }
 
                     // Update statistics for this pixel.
-                    // todo: one history per AOV?
-                    history.insert(
-                        luminance(
-                            Color3f(
-                                shading_result.m_color[0],
-                                shading_result.m_color[1],
-                                shading_result.m_color[2])));
+                    // todo: one tracker per AOV?
+                    trackers[0].insert(shading_result.m_color[0]);
+                    trackers[1].insert(shading_result.m_color[1]);
+                    trackers[2].insert(shading_result.m_color[2]);
                 }
 
-                // Pixels outside the tile are always refined.
-                if (tx >= static_cast<int>(tile_bbox.min.x) &&
-                    ty >= static_cast<int>(tile_bbox.min.y) &&
-                    tx <= static_cast<int>(tile_bbox.max.x) &&
-                    ty <= static_cast<int>(tile_bbox.max.y))
-                {
-                    // Develop the pixel.
-                    sample_buffer.develop_pixel(tx, ty, pixel_buffer);
-
-                    if (m_params.m_adaptive_sampler_diagnostics && history.get_size() == m_params.m_min_samples)
-                    {
-                        // Check variation.
-                        const bool pass_variation_check =
-                            history.get_var() <= m_params.m_max_variation;
-
-                        // Check contrast.
-                        const bool pass_contrast_check =
-                            pixel_buffer.check_contrast(ix, iy, tx, ty);
-
-                        // Output diagnostic AOVs.
-                        diagnostics->set_component(tx, ty, 0, pass_variation_check ? 0.0f : 1.0f);
-                        diagnostics->set_component(tx, ty, 1, pass_contrast_check ? 0.0f : 1.0f);
-
-                        if (pass_contrast_check && pass_variation_check)
-                            break;
-                    }
-                    else
-                    {
-                        // Check variation.
-                        if (history.get_var() > m_params.m_max_variation)
-                            continue;
-
-                        // Check contrast.
-                        if (!pixel_buffer.check_contrast(ix, iy, tx, ty))
-                            continue;
-
-                        break;
-                    }
-                }
+                // Stop if the variation criterion are met.
+                if (trackers[0].get_variation() <= m_params.m_max_variation &&
+                    trackers[1].get_variation() <= m_params.m_max_variation &&
+                    trackers[2].get_variation() <= m_params.m_max_variation)
+                    break;
             }
 
-            // Output the 'samples' diagnostic AOV.
+            // Output the diagnostic AOVs.
             if (m_params.m_adaptive_sampler_diagnostics &&
                 tx >= static_cast<int>(tile_bbox.min.x) &&
                 ty >= static_cast<int>(tile_bbox.min.y) &&
                 tx <= static_cast<int>(tile_bbox.max.x) &&
                 ty <= static_cast<int>(tile_bbox.max.y))
             {
-                diagnostics->set_component(tx, ty, 2,
+                diagnostics->set_component(tx, ty, 0,
+                    trackers[0].get_variation() <= m_params.m_max_variation ? 0.0f : 1.0f);
+
+                diagnostics->set_component(tx, ty, 1,
                     m_params.m_min_samples == m_params.m_max_samples
                         ? 1.0f
                         : fit(
-                            static_cast<float>(history.get_size()),
+                            static_cast<float>(trackers[0].get_size()),
                             static_cast<float>(m_params.m_min_samples),
                             static_cast<float>(m_params.m_max_samples),
                             0.0f, 1.0f));
             }
-        }
-
-        static Color4f scalar_to_color(const float value)
-        {
-            return
-                lerp(
-                    Color4f(0.0f, 0.0f, 1.0f, 1.0f),
-                    Color4f(1.0f, 0.0f, 0.0f, 1.0f),
-                    saturate(value));
         }
     };
 }

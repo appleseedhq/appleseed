@@ -39,7 +39,6 @@
 
 // Forward declarations.
 namespace foundation    { class Tile; }
-namespace renderer      { class DevelopedPixelBuffer; }
 namespace renderer      { class ShadingResult; }
 namespace renderer      { class TileStack; }
 
@@ -55,19 +54,11 @@ class SampleAccumulationBuffer
         const size_t                height,
         const size_t                aov_count);
 
-    size_t get_width() const;
-    size_t get_height() const;
-
     void add(
         const size_t                x,
         const size_t                y,
         const ShadingResult&        sample,
         const float                 weight);
-
-    void develop_pixel(
-        const size_t                x,
-        const size_t                y,
-        DevelopedPixelBuffer&       pixel_buffer) const;
 
     void develop_to_tile_premult_alpha(
         const foundation::AABB2u&   bbox,
@@ -93,6 +84,14 @@ class SampleAccumulationBuffer
     const size_t                    m_aov_count;
     const size_t                    m_channel_count;
     std::vector<float>              m_buffer;
+
+    float* pixel(
+        const size_t                x,
+        const size_t                y);
+
+    const float* pixel(
+        const size_t                x,
+        const size_t                y) const;
 };
 
 }       // namespace renderer
