@@ -37,6 +37,7 @@
 #include "renderer/kernel/aov/tilestack.h"
 #include "renderer/kernel/rendering/generic/pixelsampler.h"
 #include "renderer/kernel/rendering/generic/sampleaccumulationbuffer.h"
+#include "renderer/kernel/rendering/generic/variationtracker.h"
 #include "renderer/kernel/rendering/isamplerenderer.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/frame/frame.h"
@@ -506,6 +507,10 @@ namespace
 
             // Allocate the buffer that will hold the samples and the filter weights.
             SampleAccumulationBuffer sample_buffer(tile_width, tile_height, aov_count);
+            SampleAccumulationBuffer temp_sample_buffer(
+                m_filter_half_width * 2 + 1,
+                m_filter_half_height * 2 + 1,
+                aov_count);
 
             // Allocate the tiles that will hold diagnostic AOVs.
             auto_ptr<Tile> diagnostics;
@@ -549,6 +554,7 @@ namespace
                             ix, iy,
                             tx, ty,
                             sample_buffer,
+                            temp_sample_buffer,
                             diagnostics.get());
                     }
                 }
@@ -556,8 +562,8 @@ namespace
 
             // Develop the accumulation buffer to the tile.
             if (frame.is_premultiplied_alpha())
-                sample_buffer.develop_to_tile_premult_alpha(tile_bbox, tile, aov_tiles);
-            else sample_buffer.develop_to_tile_straight_alpha(tile_bbox, tile, aov_tiles);
+                sample_buffer.develop_to_tile_premult_alpha(tile, aov_tiles);
+            else sample_buffer.develop_to_tile_straight_alpha(tile, aov_tiles);
 
             // Merge diagnostics AOVs.
             if (m_params.m_adaptive_sampler_diagnostics)
@@ -575,52 +581,6 @@ namespace
             }
         }
 
-        static Color4f scalar_to_color(const float value)
-        {
-            return
-                lerp(
-                    Color4f(0.0f, 0.0f, 1.0f, 1.0f),
-                    Color4f(1.0f, 0.0f, 0.0f, 1.0f),
-                    saturate(value));
-        }
-
-        class VariationTracker
-        {
-          public:
-            VariationTracker()
-              : m_size(0)
-              , m_mean(0.0f)
-              , m_relative_mean_change(numeric_limits<float>::max())
-            {
-            }
-
-            void insert(const float value)
-            {
-                const float old_mean = m_mean;
-
-                ++m_size;
-                m_mean += value - m_mean / m_size;
-
-                m_relative_mean_change =
-                    m_mean > 0.0f ? abs(m_mean - old_mean) / m_mean : 0.0f;
-            }
-
-            size_t get_size() const
-            {
-                return m_size;
-            }
-
-            float get_variation() const
-            {
-                return m_relative_mean_change;
-            }
-
-          private:
-            size_t  m_size;
-            float   m_mean;
-            float   m_relative_mean_change;
-        };
-
         void render_pixel_adaptive(
             const Frame&                frame,
             const AABB2u&               tile_bbox,
@@ -629,6 +589,7 @@ namespace
             const int                   tx,
             const int                   ty,
             SampleAccumulationBuffer&   sample_buffer,
+            SampleAccumulationBuffer&   temp_sample_buffer,
             Tile*                       diagnostics)
         {
             // Find the pixels affected by this sample.
@@ -637,7 +598,8 @@ namespace
             const int maxx = min(tx + m_filter_half_width,  static_cast<int>(tile_bbox.max.x));
             const int maxy = min(ty + m_filter_half_height, static_cast<int>(tile_bbox.max.y));
 
-            const size_t aov_count = frame.aov_images().size();
+            // Clear the temporary sample accumulation buffer.
+            temp_sample_buffer.clear();
 
             // Create a sampling context.
             const size_t pixel_index = iy * frame.image().properties().m_canvas_width + ix;
@@ -648,6 +610,7 @@ namespace
                 0,                      // number of samples
                 instance);
 
+            const size_t aov_count = frame.aov_images().size();
             VariationTracker trackers[3];
 
             while (true)
@@ -683,7 +646,7 @@ namespace
                         sample_position,
                         shading_result);
 
-                    // Add the contribution of this sample to the affected pixels.
+                    // Add the contribution of this sample to the affected pixels in the temporary buffer.
                     const double dx = s.x - (0.5 - tx);
                     const double dy = s.y - (0.5 - ty);
                     for (int ry = miny; ry <= maxy; ++ry)
@@ -692,7 +655,7 @@ namespace
                         {
                             const float weight =
                                 static_cast<float>(m_params.m_filter->evaluate(dx - rx, dy - ry));
-                            sample_buffer.add(rx, ry, shading_result, weight);
+                            temp_sample_buffer.add(rx - minx, ry - miny, shading_result, weight);
                         }
                     }
 
@@ -708,6 +671,14 @@ namespace
                     trackers[1].get_variation() <= m_params.m_max_variation &&
                     trackers[2].get_variation() <= m_params.m_max_variation)
                     break;
+            }
+
+            // Scale the samples from the temporary buffer and merge them into the accumulation buffer.
+            const float rcp_sample_count = 1.0f / trackers[0].get_size();
+            for (int ry = miny; ry <= maxy; ++ry)
+            {
+                for (int rx = minx; rx <= maxx; ++rx)
+                    sample_buffer.add(temp_sample_buffer, rx - minx, ry - miny, rx, ry, rcp_sample_count);
             }
 
             // Output the diagnostic AOVs.
@@ -729,6 +700,15 @@ namespace
                             static_cast<float>(m_params.m_max_samples),
                             0.0f, 1.0f));
             }
+        }
+
+        static Color4f scalar_to_color(const float value)
+        {
+            return
+                lerp(
+                    Color4f(0.0f, 0.0f, 1.0f, 1.0f),
+                    Color4f(1.0f, 0.0f, 0.0f, 1.0f),
+                    saturate(value));
         }
     };
 }

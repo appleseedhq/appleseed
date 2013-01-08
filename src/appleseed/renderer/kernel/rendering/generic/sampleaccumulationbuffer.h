@@ -31,7 +31,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/math/aabb.h"
 
 // Standard headers.
 #include <cstddef>
@@ -50,48 +49,49 @@ class SampleAccumulationBuffer
 {
   public:
     SampleAccumulationBuffer(
-        const size_t                width,
-        const size_t                height,
-        const size_t                aov_count);
+        const size_t                    width,
+        const size_t                    height,
+        const size_t                    aov_count);
+
+    void clear();
 
     void add(
-        const size_t                x,
-        const size_t                y,
-        const ShadingResult&        sample,
-        const float                 weight);
+        const size_t                    x,
+        const size_t                    y,
+        const ShadingResult&            sample,
+        const float                     weight);
+
+    void add(
+        const SampleAccumulationBuffer& source,
+        const size_t                    source_x,
+        const size_t                    source_y,
+        const size_t                    dest_x,
+        const size_t                    dest_y,
+        const float                     weight);
 
     void develop_to_tile_premult_alpha(
-        const foundation::AABB2u&   bbox,
-        foundation::Tile&           tile,
-        TileStack&                  aov_tiles) const;
-
-    void develop_to_tile_premult_alpha(
-        foundation::Tile&           tile,
-        TileStack&                  aov_tiles) const;
+        foundation::Tile&               tile,
+        TileStack&                      aov_tiles) const;
 
     void develop_to_tile_straight_alpha(
-        const foundation::AABB2u&   bbox,
-        foundation::Tile&           tile,
-        TileStack&                  aov_tiles) const;
-
-    void develop_to_tile_straight_alpha(
-        foundation::Tile&           tile,
-        TileStack&                  aov_tiles) const;
+        foundation::Tile&               tile,
+        TileStack&                      aov_tiles) const;
 
   private:
-    const size_t                    m_width;
-    const size_t                    m_height;
-    const size_t                    m_aov_count;
-    const size_t                    m_channel_count;
-    std::vector<float>              m_buffer;
+    const size_t        m_width;
+    const size_t        m_height;
+    const size_t        m_aov_count;
+    const size_t        m_channel_count;
+    const size_t        m_buffer_size;
+    std::vector<float>  m_buffer;
 
     float* pixel(
-        const size_t                x,
-        const size_t                y);
+        const size_t                    x,
+        const size_t                    y);
 
     const float* pixel(
-        const size_t                x,
-        const size_t                y) const;
+        const size_t                    x,
+        const size_t                    y) const;
 };
 
 }       // namespace renderer
