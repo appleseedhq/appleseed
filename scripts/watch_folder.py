@@ -193,6 +193,8 @@ def render_project(args, project_file):
     output_filename = os.path.splitext(project_filename)[0] + '.png'
     output_filepath = os.path.join(args.watch_dir, OUTPUT_DIR, output_filename)
     command = '{0} -o "{1}" "{2}"'.format(args.appleseed_bin_path, output_filepath, project_file)
+    if args.args:
+        command += ' {0}'.format(" ".join(args.args))
 
     # Make sure the output directory exists.
     safe_mkdir(os.path.join(args.watch_dir, OUTPUT_DIR))
@@ -252,6 +254,7 @@ def main():
     parser.add_argument("-a", dest="appleseed_dir", metavar="DIR", required=True, help="set appleseed binaries directory")
     parser.add_argument("-w", dest="watch_dir", metavar="DIR", help="set watch directory")
     parser.add_argument("-u", dest="user_name", metavar="NAME", help="set user name", default="anonymous")
+    parser.add_argument("-f", dest="args", metavar="ARG", nargs="*", help="forward additional arguments to appleseed")
     args = parser.parse_args()
 
     # If no watch directory is provided, watch the current directory.
