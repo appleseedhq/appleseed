@@ -137,10 +137,11 @@ void RenderSettingsWindow::reload()
 
     sort(configs.begin(), configs.end());
 
+    // This will load an empty configuration.
     m_current_configuration_name.clear();
-    m_ui->combobox_configurations->clear();
 
-    // This will actually load the first configuration.
+    // This will load the first configuration.
+    m_ui->combobox_configurations->clear();
     for (size_t i = 0; i < configs.size(); ++i)
         m_ui->combobox_configurations->addItem(configs[i]);
 }
@@ -922,7 +923,8 @@ void RenderSettingsWindow::slot_change_active_configuration(const QString& confi
         }
     }
 
-    load_configuration(configuration_name);
+    if (!configuration_name.isEmpty())
+        load_configuration(configuration_name);
 
     m_ui->scrollareawidget->show();
 }
