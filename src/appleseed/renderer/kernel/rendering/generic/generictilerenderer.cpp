@@ -113,8 +113,7 @@ namespace
             compute_pixel_filter_extent(frame);
 
             // Precompute pixel ordering.
-            if (m_params.m_sampler_type == Parameters::UniformSampler)
-                precompute_pixel_ordering(frame);
+            precompute_pixel_ordering(frame);
 
             // Initialize the pixel sampler.
             initialize_pixel_sampler();
@@ -139,9 +138,133 @@ namespace
             const size_t                tile_y,
             AbortSwitch&                abort_switch) override
         {
-            if (m_params.m_sampler_type == Parameters::UniformSampler)
-                render_tile_uniform(frame, tile_x, tile_y, abort_switch);
-            else render_tile_adaptive(frame, tile_x, tile_y, abort_switch);
+            // Retrieve frame properties.
+            const CanvasProperties& frame_properties = frame.image().properties();
+            assert(tile_x < frame_properties.m_tile_count_x);
+            assert(tile_y < frame_properties.m_tile_count_y);
+
+            // Retrieve tile properties.
+            Tile& tile = frame.image().tile(tile_x, tile_y);
+            TileStack aov_tiles = frame.aov_images().tiles(tile_x, tile_y);
+            const size_t aov_count = frame.aov_images().size();
+            const size_t tile_origin_x = frame_properties.m_tile_width * tile_x;
+            const size_t tile_origin_y = frame_properties.m_tile_height * tile_y;
+            const size_t tile_width = tile.get_width();
+            const size_t tile_height = tile.get_height();
+
+            // Compute the bounding box in image space of the pixels that need to be rendered.
+            AABB2u tile_bbox;
+            tile_bbox.min.x = tile_origin_x;
+            tile_bbox.min.y = tile_origin_y;
+            tile_bbox.max.x = tile_origin_x + tile_width - 1;
+            tile_bbox.max.y = tile_origin_y + tile_height - 1;
+            if (m_params.m_crop)
+                tile_bbox = AABB2u::intersect(tile_bbox, m_params.m_crop_window);
+            if (!tile_bbox.is_valid())
+                return;
+
+            // Transform the bounding box to tile space.
+            tile_bbox.min.x -= tile_origin_x;
+            tile_bbox.min.y -= tile_origin_y;
+            tile_bbox.max.x -= tile_origin_x;
+            tile_bbox.max.y -= tile_origin_y;
+
+            // Allocate the buffer that will hold the samples and the filter weights.
+            SampleAccumulationBuffer sample_buffer(tile_width, tile_height, aov_count);
+
+            auto_ptr<SampleAccumulationBuffer> temp_sample_buffer;
+            auto_ptr<Tile> diagnostics;
+
+            if (m_params.m_sampler_type == Parameters::AdaptiveSampler)
+            {
+                // Allocate a second temporary buffer.
+                temp_sample_buffer.reset(
+                    new SampleAccumulationBuffer(
+                        m_filter_half_width * 2 + 1,
+                        m_filter_half_height * 2 + 1,
+                        aov_count));
+
+                // Allocate the tile that will hold diagnostic AOVs.
+                if (m_params.m_adaptive_sampler_diagnostics)
+                    diagnostics.reset(new Tile(tile_width, tile_height, 3, PixelFormatFloat));
+            }
+
+            // Loop over tile pixels.
+            const size_t tile_pixel_count = m_pixel_ordering.size();
+            for (size_t i = 0; i < tile_pixel_count; ++i)
+            {
+                // Cancel any work done on this tile if rendering is aborted.
+                if (abort_switch.is_aborted())
+                    return;
+
+                // Retrieve the coordinates of the pixel in the padded tile.
+                const int tx = m_pixel_ordering[i].x;
+                const int ty = m_pixel_ordering[i].y;
+
+                // Skip pixels outside of the padded tile.
+                if (tx >= static_cast<int>(tile_width + m_filter_half_width) ||
+                    ty >= static_cast<int>(tile_height + m_filter_half_height))
+                    continue;
+
+                // Compute the coordinates of the pixel in the padded image.
+                const int ix = static_cast<int>(tile_origin_x) + tx;
+                const int iy = static_cast<int>(tile_origin_y) + ty;
+
+#ifdef DEBUG_BREAK_AT_PIXEL
+
+                // Break in the debugger when this pixel is reached.
+                if (Vector2u(ix, iy) == DEBUG_BREAK_AT_PIXEL)
+                    BREAKPOINT();
+
+#endif
+
+                // If cropping is enabled, skip pixels outside the crop window.
+                if (!m_params.m_crop || m_params.m_crop_window.contains(Vector2u(ix, iy)))
+                {
+                    // Render and accumulate samples.
+                    if (m_params.m_sampler_type == Parameters::UniformSampler)
+                    {
+                        render_pixel_uniform(
+                            frame,
+                            tile_bbox,
+                            ix, iy,
+                            tx, ty,
+                            sample_buffer);
+                    }
+                    else
+                    {
+                        render_pixel_adaptive(
+                            frame,
+                            tile_bbox,
+                            ix, iy,
+                            tx, ty,
+                            sample_buffer,
+                            *temp_sample_buffer.get(),
+                            diagnostics.get());
+                    }
+                }
+            }
+
+            // Develop the accumulation buffer to the tile.
+            if (frame.is_premultiplied_alpha())
+                sample_buffer.develop_to_tile_premult_alpha(tile, aov_tiles);
+            else sample_buffer.develop_to_tile_straight_alpha(tile, aov_tiles);
+
+            // Merge diagnostics AOVs.
+            if (m_params.m_sampler_type == Parameters::AdaptiveSampler &&
+                m_params.m_adaptive_sampler_diagnostics)
+            {
+                for (size_t y = tile_bbox.min.y; y <= tile_bbox.max.y; ++y)
+                {
+                    for (size_t x = tile_bbox.min.x; x <= tile_bbox.max.x; ++x)
+                    {
+                        Color3f c;
+                        diagnostics->get_pixel(x, y, c);
+                        aov_tiles.set_pixel(x, y, m_variation_aov_index, scalar_to_color(c[0]));
+                        aov_tiles.set_pixel(x, y, m_samples_aov_index, scalar_to_color(c[1]));
+                    }
+                }
+            }
         }
 
         virtual StatisticsVector get_statistics() const override
@@ -319,93 +442,6 @@ namespace
                 m_sqrt_sample_count);
         }
 
-        void render_tile_uniform(
-            const Frame&                frame,
-            const size_t                tile_x,
-            const size_t                tile_y,
-            AbortSwitch&                abort_switch)
-        {
-            // Retrieve frame properties.
-            const CanvasProperties& frame_properties = frame.image().properties();
-            assert(tile_x < frame_properties.m_tile_count_x);
-            assert(tile_y < frame_properties.m_tile_count_y);
-
-            // Retrieve tile properties.
-            Tile& tile = frame.image().tile(tile_x, tile_y);
-            TileStack aov_tiles = frame.aov_images().tiles(tile_x, tile_y);
-            const size_t aov_count = frame.aov_images().size();
-            const size_t tile_origin_x = frame_properties.m_tile_width * tile_x;
-            const size_t tile_origin_y = frame_properties.m_tile_height * tile_y;
-            const size_t tile_width = tile.get_width();
-            const size_t tile_height = tile.get_height();
-
-            // Compute the bounding box in image space of the pixels that need to be rendered.
-            AABB2u tile_bbox;
-            tile_bbox.min.x = tile_origin_x;
-            tile_bbox.min.y = tile_origin_y;
-            tile_bbox.max.x = tile_origin_x + tile_width - 1;
-            tile_bbox.max.y = tile_origin_y + tile_height - 1;
-            if (m_params.m_crop)
-                tile_bbox = AABB2u::intersect(tile_bbox, m_params.m_crop_window);
-            if (!tile_bbox.is_valid())
-                return;
-
-            // Transform the bounding box to tile space.
-            tile_bbox.min.x -= tile_origin_x;
-            tile_bbox.min.y -= tile_origin_y;
-            tile_bbox.max.x -= tile_origin_x;
-            tile_bbox.max.y -= tile_origin_y;
-
-            // Allocate the buffer that will hold the samples and the filter weights.
-            SampleAccumulationBuffer sample_buffer(tile_width, tile_height, aov_count);
-
-            // Loop over tile pixels.
-            const size_t tile_pixel_count = m_pixel_ordering.size();
-            for (size_t i = 0; i < tile_pixel_count; ++i)
-            {
-                // Cancel any work done on this tile if rendering is aborted.
-                if (abort_switch.is_aborted())
-                    return;
-
-                // Retrieve the coordinates of the pixel in the padded tile.
-                const int tx = m_pixel_ordering[i].x;
-                const int ty = m_pixel_ordering[i].y;
-
-                // Skip pixels outside of the padded tile.
-                if (tx >= static_cast<int>(tile_width + m_filter_half_width) ||
-                    ty >= static_cast<int>(tile_height + m_filter_half_height))
-                    continue;
-
-                // Compute the coordinates of the pixel in the padded image.
-                const int ix = static_cast<int>(tile_origin_x) + tx;
-                const int iy = static_cast<int>(tile_origin_y) + ty;
-
-#ifdef DEBUG_BREAK_AT_PIXEL
-
-                // Break in the debugger when this pixel is reached.
-                if (Vector2u(ix, iy) == DEBUG_BREAK_AT_PIXEL)
-                    BREAKPOINT();
-
-#endif
-
-                // If cropping is enabled, skip pixels outside the crop window.
-                if (!m_params.m_crop || m_params.m_crop_window.contains(Vector2u(ix, iy)))
-                {
-                    render_pixel_uniform(
-                        frame,
-                        tile_bbox,
-                        ix, iy,
-                        tx, ty,
-                        sample_buffer);
-                }
-            }
-
-            // Develop the accumulation buffer to the tile.
-            if (frame.is_premultiplied_alpha())
-                sample_buffer.develop_to_tile_premult_alpha(tile, aov_tiles);
-            else sample_buffer.develop_to_tile_straight_alpha(tile, aov_tiles);
-        }
-
         void render_pixel_uniform(
             const Frame&                frame,
             const AABB2u&               tile_bbox,
@@ -469,113 +505,6 @@ namespace
                                 static_cast<float>(m_params.m_filter->evaluate(dx - rx, dy - ry));
                             sample_buffer.add(rx, ry, shading_result, weight);
                         }
-                    }
-                }
-            }
-        }
-
-        void render_tile_adaptive(
-            const Frame&                frame,
-            const size_t                tile_x,
-            const size_t                tile_y,
-            AbortSwitch&                abort_switch)
-        {
-            // Retrieve frame properties.
-            const CanvasProperties& frame_properties = frame.image().properties();
-            assert(tile_x < frame_properties.m_tile_count_x);
-            assert(tile_y < frame_properties.m_tile_count_y);
-
-            // Retrieve tile properties.
-            Tile& tile = frame.image().tile(tile_x, tile_y);
-            TileStack aov_tiles = frame.aov_images().tiles(tile_x, tile_y);
-            const size_t aov_count = frame.aov_images().size();
-            const size_t tile_origin_x = frame_properties.m_tile_width * tile_x;
-            const size_t tile_origin_y = frame_properties.m_tile_height * tile_y;
-            const int tile_width = static_cast<int>(tile.get_width());
-            const int tile_height = static_cast<int>(tile.get_height());
-
-            // Compute the bounding box in image space of the pixels that need to be rendered.
-            AABB2u tile_bbox;
-            tile_bbox.min.x = tile_origin_x;
-            tile_bbox.min.y = tile_origin_y;
-            tile_bbox.max.x = tile_origin_x + tile_width - 1;
-            tile_bbox.max.y = tile_origin_y + tile_height - 1;
-            if (m_params.m_crop)
-                tile_bbox = AABB2u::intersect(tile_bbox, m_params.m_crop_window);
-            if (!tile_bbox.is_valid())
-                return;
-
-            // Allocate the buffer that will hold the samples and the filter weights.
-            SampleAccumulationBuffer sample_buffer(tile_width, tile_height, aov_count);
-            SampleAccumulationBuffer temp_sample_buffer(
-                m_filter_half_width * 2 + 1,
-                m_filter_half_height * 2 + 1,
-                aov_count);
-
-            // Allocate the tiles that will hold diagnostic AOVs.
-            auto_ptr<Tile> diagnostics;
-            if (m_params.m_adaptive_sampler_diagnostics)
-                diagnostics.reset(new Tile(tile_width, tile_height, 3, PixelFormatFloat));
-
-            // Transform the bounding box to tile space.
-            tile_bbox.min.x -= tile_origin_x;
-            tile_bbox.min.y -= tile_origin_y;
-            tile_bbox.max.x -= tile_origin_x;
-            tile_bbox.max.y -= tile_origin_y;
-
-            // Loop over tile pixels.
-            for (int ty = -m_filter_half_height; ty < tile_height + m_filter_half_height; ++ty)
-            {
-                for (int tx = -m_filter_half_width; tx < tile_width + m_filter_half_width; ++tx)
-                {
-                    // Cancel any work done on this tile if rendering is aborted.
-                    if (abort_switch.is_aborted())
-                        return;
-
-                    // Compute the coordinates of the pixel in the padded image.
-                    const int ix = static_cast<int>(tile_origin_x) + tx;
-                    const int iy = static_cast<int>(tile_origin_y) + ty;
-
-#ifdef DEBUG_BREAK_AT_PIXEL
-
-                    // Break in the debugger when this pixel is reached.
-                    if (Vector2u(ix, iy) == DEBUG_BREAK_AT_PIXEL)
-                        BREAKPOINT();
-
-#endif
-
-                    // If cropping is enabled, skip pixels outside the crop window.
-                    if (!m_params.m_crop || m_params.m_crop_window.contains(Vector2u(ix, iy)))
-                    {
-                        // Render and accumulate samples.
-                        render_pixel_adaptive(
-                            frame,
-                            tile_bbox,
-                            ix, iy,
-                            tx, ty,
-                            sample_buffer,
-                            temp_sample_buffer,
-                            diagnostics.get());
-                    }
-                }
-            }
-
-            // Develop the accumulation buffer to the tile.
-            if (frame.is_premultiplied_alpha())
-                sample_buffer.develop_to_tile_premult_alpha(tile, aov_tiles);
-            else sample_buffer.develop_to_tile_straight_alpha(tile, aov_tiles);
-
-            // Merge diagnostics AOVs.
-            if (m_params.m_adaptive_sampler_diagnostics)
-            {
-                for (size_t y = tile_bbox.min.y; y <= tile_bbox.max.y; ++y)
-                {
-                    for (size_t x = tile_bbox.min.x; x <= tile_bbox.max.x; ++x)
-                    {
-                        Color3f c;
-                        diagnostics->get_pixel(x, y, c);
-                        aov_tiles.set_pixel(x, y, m_variation_aov_index, scalar_to_color(c[0]));
-                        aov_tiles.set_pixel(x, y, m_samples_aov_index, scalar_to_color(c[1]));
                     }
                 }
             }
