@@ -58,6 +58,7 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QLayout>
+#include <QMessageBox>
 #include <QShortcut>
 #include <QSpinBox>
 #include <Qt>
@@ -102,7 +103,7 @@ RenderSettingsWindow::RenderSettingsWindow(ProjectManager& project_manager, QWid
         this, SLOT(slot_change_active_configuration(const QString&)));
 
     connect(m_ui->buttonbox, SIGNAL(accepted()), this, SLOT(slot_save_configuration_and_close()));
-    connect(m_ui->buttonbox, SIGNAL(rejected()), this, SLOT(close()));
+    connect(m_ui->buttonbox, SIGNAL(rejected()), this, SLOT(slot_restore_configuration_and_close()));
 
     connect(
         create_window_local_shortcut(this, Qt::Key_Return), SIGNAL(activated()),
@@ -114,7 +115,7 @@ RenderSettingsWindow::RenderSettingsWindow(ProjectManager& project_manager, QWid
 
     connect(
         create_window_local_shortcut(this, Qt::Key_Escape), SIGNAL(activated()),
-        this, SLOT(close()));
+        this, SLOT(slot_restore_configuration_and_close()));
 
     reload();
 }
@@ -139,6 +140,7 @@ void RenderSettingsWindow::reload()
     m_current_configuration_name.clear();
     m_ui->combobox_configurations->clear();
 
+    // This will actually load the first configuration.
     for (size_t i = 0; i < configs.size(); ++i)
         m_ui->combobox_configurations->addItem(configs[i]);
 }
@@ -704,15 +706,15 @@ void RenderSettingsWindow::create_direct_link(
 
 void RenderSettingsWindow::load_configuration(const QString& name)
 {
-    if (!name.isEmpty())
-    {
-        load_configuration(get_configuration(name));
+    assert(!name.isEmpty());
 
-        set_panels_enabled(
-            !BaseConfigurationFactory::is_base_configuration(name.toAscii().constData()));
-    }
+    do_load_configuration(get_configuration(name));
 
     m_current_configuration_name = name;
+    m_initial_values = get_widget_values();
+
+    set_panels_enabled(
+        !BaseConfigurationFactory::is_base_configuration(name.toAscii().constData()));
 }
 
 void RenderSettingsWindow::save_current_configuration()
@@ -723,7 +725,7 @@ void RenderSettingsWindow::save_current_configuration()
     if (BaseConfigurationFactory::is_base_configuration(m_current_configuration_name.toAscii().constData()))
         return;
 
-    save_configuration(get_configuration(m_current_configuration_name));
+    do_save_configuration(get_configuration(m_current_configuration_name));
 
     emit signal_settings_modified();
 }
@@ -738,7 +740,7 @@ Configuration& RenderSettingsWindow::get_configuration(const QString& name) cons
     return *configuration;
 }
 
-void RenderSettingsWindow::load_configuration(const Configuration& config)
+void RenderSettingsWindow::do_load_configuration(const Configuration& config)
 {
     load_directly_linked_values(config);
 
@@ -778,7 +780,7 @@ void RenderSettingsWindow::load_configuration(const Configuration& config)
     set_widget("system.texture_cache_size.value", get_config<size_t>(config, "texture_cache_size", 256 * 1024 * 1024) / (1024 * 1024));
 }
 
-void RenderSettingsWindow::save_configuration(Configuration& config)
+void RenderSettingsWindow::do_save_configuration(Configuration& config)
 {
     save_directly_linked_values(config);
 
@@ -865,6 +867,16 @@ T RenderSettingsWindow::get_config(
         template get_path_optional<T>(param_path.c_str(), default_value);
 }
 
+RenderSettingsWindow::WidgetValueCollection RenderSettingsWindow::get_widget_values() const
+{
+    map<string, string> values;
+
+    for (const_each<WidgetProxyCollection> i = m_widget_proxies; i; ++i)
+        values[i->first] = i->second->get();
+
+    return values;
+}
+
 //---------------------------------------------------------------------------------------------
 // Slots.
 //---------------------------------------------------------------------------------------------
@@ -877,9 +889,39 @@ void RenderSettingsWindow::slot_open_configuration_manager_window()
     config_manager_window->activateWindow();
 }
 
+namespace
+{
+    int show_modified_configuration_message_box(QWidget* parent)
+    {
+        QMessageBox msgbox(parent);
+        msgbox.setWindowTitle("Save Changes?");
+        msgbox.setIcon(QMessageBox::Question);
+        msgbox.setText("This configuration has been modified.");
+        msgbox.setInformativeText("Do you want to save your changes?");
+        msgbox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard);
+        msgbox.setDefaultButton(QMessageBox::Save);
+        return msgbox.exec();
+    }
+}
+
 void RenderSettingsWindow::slot_change_active_configuration(const QString& configuration_name)
 {
-    save_current_configuration();
+    if (!m_current_configuration_name.isEmpty())
+    {
+        if (get_widget_values() != m_initial_values)
+        {
+            switch (show_modified_configuration_message_box(this))
+            {
+              case QMessageBox::Save:
+                save_current_configuration();
+                break;
+
+              case QMessageBox::Discard:
+                break;
+            }
+        }
+    }
+
     load_configuration(configuration_name);
 
     m_ui->scrollareawidget->show();
@@ -888,7 +930,12 @@ void RenderSettingsWindow::slot_change_active_configuration(const QString& confi
 void RenderSettingsWindow::slot_save_configuration_and_close()
 {
     save_current_configuration();
+    close();
+}
 
+void RenderSettingsWindow::slot_restore_configuration_and_close()
+{
+    load_configuration(m_current_configuration_name);
     close();
 }
 

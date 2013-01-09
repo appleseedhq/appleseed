@@ -85,6 +85,7 @@ class RenderSettingsWindow
   private:
     typedef std::vector<FoldablePanelWidget*> PanelCollection;
     typedef std::map<std::string, IInputWidgetProxy*> WidgetProxyCollection;
+    typedef std::map<std::string, std::string> WidgetValueCollection;
 
     struct DirectLink
     {
@@ -105,6 +106,7 @@ class RenderSettingsWindow
     DirectLinkCollection        m_direct_links;
 
     QString                     m_current_configuration_name;
+    WidgetValueCollection       m_initial_values;
 
     QComboBox*                  m_image_planer_sampler_combo;
     QGroupBox*                  m_uniform_image_plane_sampler;
@@ -183,8 +185,8 @@ class RenderSettingsWindow
     void load_configuration(const QString& name);
     void save_current_configuration();
 
-    void load_configuration(const renderer::Configuration& config);
-    void save_configuration(renderer::Configuration& config);
+    void do_load_configuration(const renderer::Configuration& config);
+    void do_save_configuration(renderer::Configuration& config);
     renderer::Configuration& get_configuration(const QString& name) const;
 
     void load_directly_linked_values(const renderer::Configuration& config);
@@ -210,10 +212,13 @@ class RenderSettingsWindow
         const std::string&              param_path,
         const T&                        default_value);
 
+    WidgetValueCollection get_widget_values() const;
+
   private slots:
     void slot_open_configuration_manager_window();
     void slot_change_active_configuration(const QString& configuration_name);
     void slot_save_configuration_and_close();
+    void slot_restore_configuration_and_close();
 
     void slot_changed_image_plane_sampler(int index);
 };
