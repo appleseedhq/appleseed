@@ -50,7 +50,7 @@ namespace renderer
 {
 
 //
-// Texture.
+// The base class for textures.
 //
 
 class DLLSYMBOL Texture
