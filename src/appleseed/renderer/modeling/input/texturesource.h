@@ -220,7 +220,7 @@ inline void TextureSource::evaluate_alpha(
     const foundation::Color4f&              color,
     Alpha&                                  alpha) const
 {
-    switch (m_texture_instance.get_alpha_mode())
+    switch (m_texture_instance.get_effective_alpha_mode())
     {
       case TextureAlphaModeAlphaChannel:
         alpha.set(color.a);

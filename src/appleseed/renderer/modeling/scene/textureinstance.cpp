@@ -32,15 +32,19 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/modeling/scene/basegroup.h"
+#include "renderer/modeling/texture/texture.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/canvasproperties.h"
 #include "foundation/image/colorspace.h"
+#include "foundation/image/tile.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/uid.h"
 
 // Standard headers.
+#include <cstddef>
 #include <string>
 
 using namespace foundation;
@@ -111,6 +115,8 @@ TextureInstance::TextureInstance(
         m_alpha_mode = TextureAlphaModeAlphaChannel;
     else if (alpha_mode == "luminance")
         m_alpha_mode = TextureAlphaModeLuminance;
+    else if (alpha_mode == "detect")
+        m_alpha_mode = TextureAlphaModeDetect;
     else
     {
         RENDERER_LOG_ERROR(
@@ -119,6 +125,9 @@ TextureInstance::TextureInstance(
             alpha_mode.c_str());
         m_alpha_mode = TextureAlphaModeAlphaChannel;
     }
+
+    // Until a texture is bound, the effective alpha mode is simply the user-selected alpha mode.
+    m_effective_alpha_mode = m_alpha_mode;
 
     // todo: retrieve the lighting conditions.
     impl->m_lighting_conditions = LightingConditions(IlluminantCIED65, XYZCMFCIE196410Deg);
@@ -165,15 +174,67 @@ Texture* TextureInstance::find_texture() const
     return 0;
 }
 
+namespace
+{
+    bool has_transparent_pixels(const Tile& tile)
+    {
+        const size_t pixel_count = tile.get_pixel_count();
+
+        for (size_t i = 0; i < pixel_count; ++i)
+        {
+            if (tile.get_component<float>(i, 3) < 1.0f)
+                return true;
+        }
+
+        return false;
+    }
+
+    TextureAlphaMode detect_alpha_mode(Texture& texture)
+    {
+        const CanvasProperties& props = texture.properties();
+
+        if (props.m_channel_count >= 4)
+        {
+            for (size_t y = 0; y < props.m_tile_count_y; ++y)
+            {
+                for (size_t x = 0; x < props.m_tile_count_x; ++x)
+                {
+                    const Tile* tile = texture.load_tile(x, y);
+                    const bool has_transparency = has_transparent_pixels(*tile);
+                    texture.unload_tile(x, y, tile);
+
+                    if (has_transparency)
+                        return TextureAlphaModeAlphaChannel;
+                }
+            }
+        }
+
+        return TextureAlphaModeLuminance;
+    }
+}
+
 void TextureInstance::unbind_texture()
 {
     m_texture = 0;
+    m_effective_alpha_mode = m_alpha_mode;
 }
 
 void TextureInstance::bind_texture(const TextureContainer& textures)
 {
     if (m_texture == 0)
+    {
         m_texture = textures.get_by_name(impl->m_texture_name.c_str());
+
+        if (m_texture && m_alpha_mode == TextureAlphaModeDetect)
+        {
+            m_effective_alpha_mode = detect_alpha_mode(*m_texture);
+
+            RENDERER_LOG_DEBUG(
+                "texture instance \"%s\" was detected to use the \"%s\" alpha mode.",
+                get_name(),
+                m_effective_alpha_mode == TextureAlphaModeAlphaChannel ? "alpha_channel" : "luminance");
+        }
+    }
 }
 
 void TextureInstance::check_texture() const
@@ -223,7 +284,8 @@ DictionaryArray TextureInstanceFactory::get_widget_definitions()
             .insert("dropdown_items",
                 Dictionary()
                     .insert("Alpha Channel", "alpha_channel")
-                    .insert("Luminance", "luminance"))
+                    .insert("Luminance", "luminance")
+                    .insert("Detect", "detect"))
             .insert("use", "optional")
             .insert("default", "alpha_channel"));
 

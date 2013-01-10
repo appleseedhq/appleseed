@@ -74,7 +74,8 @@ enum TextureFilteringMode
 enum TextureAlphaMode
 {
     TextureAlphaModeAlphaChannel,
-    TextureAlphaModeLuminance
+    TextureAlphaModeLuminance,
+    TextureAlphaModeDetect
 };
 
 
@@ -113,6 +114,9 @@ class DLLSYMBOL TextureInstance
     // Return the texture bound to this instance.
     Texture& get_texture() const;
 
+    // Return the effective (detected) alpha mode. A texture must be bound to this instance.
+    TextureAlphaMode get_effective_alpha_mode() const;
+
   private:
     friend class TextureInstanceFactory;
 
@@ -122,6 +126,7 @@ class DLLSYMBOL TextureInstance
     TextureAddressingMode           m_addressing_mode;
     TextureFilteringMode            m_filtering_mode;
     TextureAlphaMode                m_alpha_mode;
+    TextureAlphaMode                m_effective_alpha_mode;
     Texture*                        m_texture;
 
     // Constructor.
@@ -177,6 +182,13 @@ inline Texture& TextureInstance::get_texture() const
     assert(m_texture);
 
     return *m_texture;
+}
+
+inline TextureAlphaMode TextureInstance::get_effective_alpha_mode() const
+{
+    assert(m_texture);
+
+    return m_effective_alpha_mode;
 }
 
 }       // namespace renderer

@@ -39,11 +39,11 @@
                     0.500000
                 </alpha>
             </color>
-            <texture name="transparency gradient" model="disk_texture_2d">
+            <texture name="transparent gradient" model="disk_texture_2d">
                 <parameter name="color_space" value="srgb" />
-                <parameter name="filename" value="transparency gradient.exr" />
+                <parameter name="filename" value="transparent gradient.exr" />
             </texture>
-            <texture_instance name="transparency gradient_inst" texture="transparency gradient">
+            <texture_instance name="transparent gradient_inst" texture="transparent gradient">
                 <parameter name="addressing_mode" value="clamp" />
                 <parameter name="filtering_mode" value="bilinear" />
                 <parameter name="multiplier" value="1.0" />
@@ -59,7 +59,7 @@
                 <parameter name="surface_shader" value="back_square_surface_shader" />
             </material>
             <material name="front_square_material" model="generic_material">
-                <parameter name="alpha_map" value="transparency gradient_inst" />
+                <parameter name="alpha_map" value="transparent gradient_inst" />
                 <parameter name="surface_shader" value="front_square_surface_shader" />
             </material>
             <object name="two squares" model="mesh_object">
