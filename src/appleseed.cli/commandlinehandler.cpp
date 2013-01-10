@@ -80,7 +80,7 @@ CommandLineHandler::CommandLineHandler()
 
     m_params.add_name("--parameter");
     m_params.add_name("-p");
-    m_params.set_description("define a custom parameter");
+    m_params.set_description("set a custom parameter");
     m_params.set_syntax("name=value");
     m_params.set_flags(OptionHandler::Repeatable);
     m_params.set_exact_value_count(1);
