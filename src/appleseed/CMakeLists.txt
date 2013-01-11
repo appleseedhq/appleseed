@@ -363,6 +363,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_cdf.cpp
     foundation/meta/tests/test_color.cpp
     foundation/meta/tests/test_colorspace.cpp
+    foundation/meta/tests/test_commandlineparser.cpp
     foundation/meta/tests/test_concepts.cpp
     foundation/meta/tests/test_countof.cpp
     foundation/meta/tests/test_datetime.cpp

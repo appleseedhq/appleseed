@@ -36,6 +36,7 @@
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/log.h"
 #include "foundation/utility/string.h"
+#include "foundation/utility/test.h"
 
 // Standard headers.
 #include <cassert>
@@ -43,6 +44,9 @@
 #include <limits>
 #include <string>
 #include <vector>
+
+// Unit test case declarations.
+DECLARE_TEST_CASE(Foundation_Utility_CommandLineParser_ValueOptionHandler, Parse_GivenMultipleInvocations_AccumulateValues);
 
 namespace foundation
 {
@@ -81,6 +85,8 @@ class ValueOptionHandler
     virtual bool is_set() const;
 
   private:
+    GRANT_ACCESS_TO_TEST_CASE(Foundation_Utility_CommandLineParser_ValueOptionHandler, Parse_GivenMultipleInvocations_AccumulateValues);
+
     size_t              m_min_value_count;
     size_t              m_max_value_count;
 
@@ -244,8 +250,8 @@ void ValueOptionHandler<T>::parse(
     }
 
     // Copy string values locally.
-    m_values = parsed_values;
-    m_string_values = vals;
+    m_values.insert(m_values.end(), parsed_values.begin(), parsed_values.end());
+    m_string_values.insert(m_string_values.end(), vals.begin(), vals.end());
 
     // The option was successfully parsed.
     ++m_occurrence_count;
