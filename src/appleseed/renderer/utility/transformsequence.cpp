@@ -129,9 +129,15 @@ void TransformSequence::get_transform(
     transform = m_keys[index].m_transform;
 }
 
-Transformd& TransformSequence::earliest_transform()
+namespace
 {
-    assert(m_size > 0);
+    const Transformd Identity = Transformd::identity();
+}
+
+const Transformd& TransformSequence::get_earliest_transform() const
+{
+    if (m_size == 0)
+        return Identity;
 
     double earliest_time = m_keys[0].m_time;
     size_t earliest_index = 0;
@@ -148,19 +154,6 @@ Transformd& TransformSequence::earliest_transform()
     }
 
     return m_keys[earliest_index].m_transform;
-}
-
-namespace
-{
-    const Transformd Identity = Transformd::identity();
-}
-
-const Transformd& TransformSequence::earliest_transform() const
-{
-    return
-        m_size == 0
-            ? Identity
-            : const_cast<TransformSequence*>(this)->earliest_transform();
 }
 
 bool TransformSequence::prepare()

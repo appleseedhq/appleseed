@@ -599,7 +599,7 @@ namespace
                 parent_shading_point,
                 ShadingRay(light_sample.m_point, emission_direction, 0.0, 0.0, 0.0f, ~0),
                 light_sample.m_triangle->m_assembly_instance,
-                light_sample.m_triangle->m_assembly_instance->transform_sequence().earliest_transform(),
+                light_sample.m_triangle->m_assembly_instance->transform_sequence().get_earliest_transform(),
                 light_sample.m_triangle->m_object_instance_index,
                 light_sample.m_triangle->m_region_index,
                 light_sample.m_triangle->m_triangle_index,

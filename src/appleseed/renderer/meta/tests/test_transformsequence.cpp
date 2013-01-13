@@ -86,14 +86,14 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
         EXPECT_EQ(NewTransform, transform);
     }
 
-    TEST_CASE(EarliestTransform_EmptySequence_ReturnsIdentity)
+    TEST_CASE(GetEarliestTransform_EmptySequence_ReturnsIdentity)
     {
-        const TransformSequence sequence;   // const is mandatory here
+        const TransformSequence sequence;
 
-        EXPECT_EQ(Transformd::identity(), sequence.earliest_transform());
+        EXPECT_EQ(Transformd::identity(), sequence.get_earliest_transform());
     }
 
-    TEST_CASE(EarliestTransform_EarliestTransformIsFirst)
+    TEST_CASE(GetEarliestTransform_EarliestTransformIsFirst)
     {
         const Transformd Transform1(Matrix4d::translation(Vector3d(1.0, 2.0, 3.0)));
         const Transformd Transform2(Matrix4d::translation(Vector3d(4.0, 5.0, 6.0)));
@@ -102,10 +102,10 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
         sequence.set_transform(1.0, Transform1);
         sequence.set_transform(2.0, Transform2);
 
-        EXPECT_EQ(Transform1, sequence.earliest_transform());
+        EXPECT_EQ(Transform1, sequence.get_earliest_transform());
     }
 
-    TEST_CASE(EarliestTransform_EarliestTransformIsLast)
+    TEST_CASE(GetEarliestTransform_EarliestTransformIsLast)
     {
         const Transformd Transform1(Matrix4d::translation(Vector3d(1.0, 2.0, 3.0)));
         const Transformd Transform2(Matrix4d::translation(Vector3d(4.0, 5.0, 6.0)));
@@ -114,7 +114,7 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
         sequence.set_transform(2.0, Transform2);
         sequence.set_transform(1.0, Transform1);
 
-        EXPECT_EQ(Transform1, sequence.earliest_transform());
+        EXPECT_EQ(Transform1, sequence.get_earliest_transform());
     }
 
     TEST_CASE(Empty_GivenDefaultConstructedSequence_ReturnsTrue)

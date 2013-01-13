@@ -104,7 +104,7 @@ void CameraController::configure_controller(const Scene* scene)
 {
     // Set the controller orientation and position based on the scene camera.
     m_controller.set_transform(
-        m_camera->transform_sequence().earliest_transform().get_local_to_parent());
+        m_camera->transform_sequence().get_earliest_transform().get_local_to_parent());
 
     if (m_camera->get_parameters().strings().exist("controller_target"))
     {

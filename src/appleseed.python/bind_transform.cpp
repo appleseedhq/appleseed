@@ -62,7 +62,7 @@ namespace detail
 
     UnalignedTransformd44 transform_seq_get_earliest(const TransformSequence* seq)
     {
-        Transformd xform(seq->earliest_transform());
+        Transformd xform(seq->get_earliest_transform());
         return UnalignedTransformd44(xform);
     }
 }
@@ -127,7 +127,7 @@ void bind_transform()
     bpy::class_<TransformSequence, boost::noncopyable>("TransformSequence", bpy::no_init)
         .def("set_transform", &detail::transform_seq_set_transform)
         .def("get_transform", &detail::transform_seq_get_transform)
-        .def("earliest_transform", &detail::transform_seq_get_earliest)
+        .def("get_earliest_transform", &detail::transform_seq_get_earliest)
 
         .def("empty", &TransformSequence::empty)
         .def("size", &TransformSequence::size)

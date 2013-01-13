@@ -81,9 +81,9 @@ class DLLSYMBOL TransformSequence
         double&                         time,
         foundation::Transformd&         transform) const;
 
-    // Access the transform at the lowest time value.
-    foundation::Transformd& earliest_transform();
-    const foundation::Transformd& earliest_transform() const;
+    // Return the transform with the lowest time value.
+    // Return the identity transform if the sequence is empty.
+    const foundation::Transformd& get_earliest_transform() const;
 
     // Prepare the sequence for quick evaluation.
     // This method must be called after new transforms have been set and

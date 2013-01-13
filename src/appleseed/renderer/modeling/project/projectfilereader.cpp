@@ -868,7 +868,7 @@ namespace
         {
             TransformSequence sequence;
             copy_transform_sequence_to(sequence);
-            return sequence.earliest_transform();
+            return sequence.get_earliest_transform();
         }
 
       private:
