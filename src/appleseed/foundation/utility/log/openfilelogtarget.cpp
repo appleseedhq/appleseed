@@ -74,7 +74,7 @@ namespace
         }
 
       private:
-        FILE*   m_file;
+        FILE* m_file;
     };
 }
 

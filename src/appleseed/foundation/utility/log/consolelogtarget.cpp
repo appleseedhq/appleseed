@@ -77,7 +77,7 @@ namespace
         }
 
       private:
-        FILE*   m_file;
+        FILE* m_file;
 
         // Set the text color, if colors are enabled.
         void set_text_color(const LogMessage::Category category) const

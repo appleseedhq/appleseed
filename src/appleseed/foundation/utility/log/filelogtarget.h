@@ -70,7 +70,7 @@ class DLLSYMBOL FileLogTarget
   private:
     friend DLLSYMBOL FileLogTarget* create_file_log_target();
 
-    std::FILE*  m_file;
+    std::FILE* m_file;
 
     // Constructor.
     FileLogTarget();
