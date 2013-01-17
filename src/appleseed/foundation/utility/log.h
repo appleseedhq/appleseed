@@ -34,9 +34,10 @@
 #include "foundation/utility/log/filelogtarget.h"
 #include "foundation/utility/log/filelogtargetbase.h"
 #include "foundation/utility/log/helpers.h"
+#include "foundation/utility/log/ilogtarget.h"
+#include "foundation/utility/log/logformatter.h"
 #include "foundation/utility/log/logger.h"
 #include "foundation/utility/log/logmessage.h"
-#include "foundation/utility/log/logtargetbase.h"
 #include "foundation/utility/log/openfilelogtarget.h"
 
 #endif  // !APPLESEED_FOUNDATION_UTILITY_LOG_H

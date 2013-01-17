@@ -30,6 +30,7 @@
 #define APPLESEED_FOUNDATION_UTILITY_LOG_FILELOGTARGET_H
 
 // appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/log/filelogtargetbase.h"
 #include "foundation/utility/log/logmessage.h"
 
@@ -52,14 +53,15 @@ class DLLSYMBOL FileLogTarget
 {
   public:
     // Delete this instance.
-    virtual void release();
+    virtual void release() override;
 
     // Write a message.
     virtual void write(
         const LogMessage::Category  category,
         const char*                 file,
         const size_t                line,
-        const char*                 message);
+        const char*                 header,
+        const char*                 message) override;
 
     bool open(const char* filename);
 

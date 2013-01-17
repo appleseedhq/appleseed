@@ -50,10 +50,10 @@ class SHAREDDLL SuperLogger
 
     void enable_message_coloring();
 
-    foundation::LogTargetBase& get_log_target() const;
+    foundation::ILogTarget& get_log_target() const;
 
   private:
-    foundation::LogTargetBase* m_log_target;
+    foundation::ILogTarget* m_log_target;
 };
 
 }       // namespace shared

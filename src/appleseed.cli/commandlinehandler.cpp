@@ -140,17 +140,13 @@ void CommandLineHandler::print_program_usage(
     const char*     program_name,
     SuperLogger&    logger) const
 {
-    LogTargetBase& log_target = logger.get_log_target();
-
-    const int old_flags =
-        log_target.set_formatting_flags(LogMessage::Info, LogMessage::DisplayMessage);
+    SaveLogFormatterConfig save_config(logger);
+    logger.set_format(LogMessage::Info, "{message}");
 
     LOG_INFO(logger, "usage: %s [options] project.appleseed", program_name);
     LOG_INFO(logger, "options:");
 
     parser().print_usage(logger);
-
-    log_target.set_formatting_flags(LogMessage::Info, old_flags);
 }
 
 }   // namespace cli

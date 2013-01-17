@@ -33,15 +33,18 @@
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/snprintf.h"
 #include "foundation/platform/thread.h"
-#include "foundation/utility/log/logtargetbase.h"
+#include "foundation/utility/log/ilogtarget.h"
 #include "foundation/utility/foreach.h"
+#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <algorithm>
 #include <cassert>
 #include <cstdarg>
 #include <cstdlib>
+#include <ctime>
 #include <list>
+#include <map>
 #include <vector>
 
 using namespace std;
@@ -50,24 +53,183 @@ namespace foundation
 {
 
 //
-// Logger class implementation.
+// Internal utilities.
 //
 
 namespace
 {
-    const size_t InitialBufferSize = 1024;          // in bytes
-    const size_t MaxBufferSize = 1024 * 1024;       // in bytes
+    class FormatEvaluator
+      : public NonCopyable
+    {
+      public:
+        FormatEvaluator(
+            const LogMessage::Category  category,
+            const time_t&               datetime,
+            const size_t                thread,
+            const string&               message)
+          : m_category(LogMessage::get_category_name(category))
+          , m_padded_category(LogMessage::get_padded_category_name(category))
+          , m_datetime(get_datetime_string(datetime))
+          , m_thread(to_string(thread))
+          , m_padded_thread(pad_left(m_thread, '0', 2))
+          , m_message(message)
+        {
+        }
+
+        string evaluate(const string& format) const
+        {
+            string result = format;
+            result = replace(result, "{category}", m_category);
+            result = replace(result, "{padded-category}", m_padded_category);
+            result = replace(result, "{datetime}", m_datetime);
+            result = replace(result, "{thread}", m_thread);
+            result = replace(result, "{padded-thread}", m_padded_thread);
+            result = replace(result, "{message}", m_message);
+            return result;
+        }
+
+      private:
+        const string    m_category;
+        const string    m_padded_category;
+        const string    m_datetime;
+        const string    m_thread;
+        const string    m_padded_thread;
+        const string    m_message;
+
+        static string get_datetime_string(const time_t& datetime)
+        {
+            const tm* dt = localtime(&datetime);
+
+            stringstream sstr;
+            sstr << setfill('0');
+            sstr << setw(4) << dt->tm_year + 1900 << '-';
+            sstr << setw(2) << dt->tm_mon + 1 << '-';
+            sstr << setw(2) << dt->tm_mday << ' ';
+            sstr << setw(2) << dt->tm_hour << ':';
+            sstr << setw(2) << dt->tm_min << ':';
+            sstr << setw(2) << dt->tm_sec;
+
+            return sstr.str();
+        }
+    };
+
+    class Formatter
+      : public NonCopyable
+    {
+      public:
+        Formatter()
+        {
+            reset_all_formats();
+        }
+
+        void reset_all_formats()
+        {
+            for (size_t i = 0; i < LogMessage::NumMessageCategories; ++i)
+                reset_format(static_cast<LogMessage::Category>(i));
+        }
+
+        void reset_format(const LogMessage::Category category)
+        {
+            set_format(category, "{datetime} {padded-thread} {padded-category} | {message}");
+        }
+
+        void set_all_formats(const string& format)
+        {
+            for (size_t i = 0; i < LogMessage::NumMessageCategories; ++i)
+                set_format(static_cast<LogMessage::Category>(i), format);
+        }
+
+        void set_format(
+            const LogMessage::Category  category,
+            const string&               format)
+        {
+            const string::size_type message_start = format.find("{message}");
+
+            m_formats[category].m_format = format;
+            m_formats[category].m_header_format = format.substr(0, message_start);
+            m_formats[category].m_message_format =
+                message_start != string::npos ? format.substr(message_start) :
+                !format.empty() ? "\n" :
+                string();
+        }
+
+        const string& get_format(const LogMessage::Category category) const
+        {
+            return m_formats[category].m_format;
+        }
+
+        const string& get_header_format(const LogMessage::Category category) const
+        {
+            return m_formats[category].m_header_format;
+        }
+
+        const string& get_message_format(const LogMessage::Category category) const
+        {
+            return m_formats[category].m_message_format;
+        }
+
+      private:
+        struct Format
+        {
+            string  m_format;
+            string  m_header_format;
+            string  m_message_format;
+        };
+
+        Format m_formats[LogMessage::NumMessageCategories];
+    };
+
+    class ThreadMap
+      : public NonCopyable
+    {
+      public:
+        ThreadMap()
+          : m_thread_count(0)
+        {
+        }
+
+        size_t thread_id_to_int(const boost::thread::id id)
+        {
+            const ThreadIdToIntMap::const_iterator i = m_thread_id_to_int.find(id);
+
+            if (i != m_thread_id_to_int.end())
+                return i->second;
+
+            m_thread_id_to_int[id] = ++m_thread_count;
+
+            return m_thread_count;
+        }
+
+      private:
+        typedef map<boost::thread::id, size_t> ThreadIdToIntMap;
+
+        size_t              m_thread_count;
+        ThreadIdToIntMap    m_thread_id_to_int;
+    };
 }
+
+
+//
+// Logger class implementation.
+//
 
 struct Logger::Impl
 {
-    typedef list<LogTargetBase*> LogTargetContainer;
+    typedef list<ILogTarget*> LogTargetContainer;
 
     boost::mutex        m_mutex;
     bool                m_enabled;
     LogTargetContainer  m_targets;
     vector<char>        m_message_buffer;
+    ThreadMap           m_thread_map;
+    Formatter           m_formatter;
 };
+
+namespace
+{
+    const size_t InitialBufferSize = 1024;      // in bytes
+    const size_t MaxBufferSize = 1024 * 1024;   // in bytes
+}
 
 Logger::Logger()
   : impl(new Impl())
@@ -84,23 +246,52 @@ Logger::~Logger()
 void Logger::set_enabled(const bool enabled)
 {
     boost::mutex::scoped_lock lock(impl->m_mutex);
-
     impl->m_enabled = enabled;
 }
 
-void Logger::add_target(LogTargetBase* target)
+void Logger::reset_all_formats()
 {
-    assert(target);
-
     boost::mutex::scoped_lock lock(impl->m_mutex);
+    impl->m_formatter.reset_all_formats();
+}
+
+void Logger::reset_format(const LogMessage::Category category)
+{
+    boost::mutex::scoped_lock lock(impl->m_mutex);
+    impl->m_formatter.reset_format(category);
+}
+
+void Logger::set_all_formats(const char* format)
+{
+    boost::mutex::scoped_lock lock(impl->m_mutex);
+    impl->m_formatter.set_all_formats(format);
+}
+
+void Logger::set_format(const LogMessage::Category category, const char* format)
+{
+    boost::mutex::scoped_lock lock(impl->m_mutex);
+    impl->m_formatter.set_format(category, format);
+}
+
+const char* Logger::get_format(const LogMessage::Category category) const
+{
+    boost::mutex::scoped_lock lock(impl->m_mutex);
+    return impl->m_formatter.get_format(category).c_str();
+}
+
+void Logger::add_target(ILogTarget* target)
+{
+    boost::mutex::scoped_lock lock(impl->m_mutex);
+
+    assert(target);
     impl->m_targets.push_back(target);
 }
 
-void Logger::remove_target(LogTargetBase* target)
+void Logger::remove_target(ILogTarget* target)
 {
-    assert(target);
-
     boost::mutex::scoped_lock lock(impl->m_mutex);
+
+    assert(target);
     impl->m_targets.remove(target);
 }
 
@@ -148,24 +339,29 @@ void Logger::write(
 
     if (impl->m_enabled)
     {
-        // Print the formatted message into the temporary buffer.
+        // Print the message into the temporary buffer.
         va_list argptr;
         va_start(argptr, format);
         write_to_buffer(impl->m_message_buffer, MaxBufferSize, format, argptr);
 
-        // Send the message to every log target.
+        // Format the header and message.
+        time_t datetime;
+        time(&datetime);
+        const size_t thread = impl->m_thread_map.thread_id_to_int(boost::this_thread::get_id());
+        const FormatEvaluator format_evaluator(category, datetime, thread, &impl->m_message_buffer[0]);
+        const string header = format_evaluator.evaluate(impl->m_formatter.get_header_format(category));
+        const string message = format_evaluator.evaluate(impl->m_formatter.get_message_format(category));
+
+        // Send the header and message to all log targets.
         for (const_each<Impl::LogTargetContainer> i = impl->m_targets; i; ++i)
         {
-            LogTargetBase* target = *i;
-
-            if (target->get_formatting_flags(category))
-            {
-                target->write(
-                    category,
-                    file,
-                    line,
-                    &impl->m_message_buffer[0]);
-            }
+            ILogTarget* target = *i;
+            target->write(
+                category,
+                file,
+                line,
+                header.c_str(),
+                message.c_str());
         }
     }
 

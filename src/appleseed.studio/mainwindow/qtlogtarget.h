@@ -30,6 +30,7 @@
 #define APPLESEED_STUDIO_MAINWINDOW_QTLOGTARGET_H
 
 // appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/log.h"
 
 // Qt headers.
@@ -39,7 +40,6 @@
 
 // Standard headers.
 #include <cstddef>
-#include <string>
 
 // Forward declarations.
 namespace appleseed { namespace studio { class LogWidget; } }
@@ -53,7 +53,7 @@ namespace studio {
 
 class QtLogTarget
   : public QObject
-  , public foundation::LogTargetBase
+  , public foundation::ILogTarget
 {
     Q_OBJECT
 
@@ -62,24 +62,18 @@ class QtLogTarget
     explicit QtLogTarget(LogWidget* log_widget);
 
     // Delete this instance.
-    virtual void release();
+    virtual void release() override;
 
     // Write a message.
     virtual void write(
         const foundation::LogMessage::Category  category,
         const char*                             file,
         const size_t                            line,
-        const char*                             message);
+        const char*                             header,
+        const char*                             message) override;
 
   signals:
     void signal_append_item(const QColor& color, const QString& text);
-
-  private:
-    QString format_line(
-        const foundation::LogMessage::Category  category,
-        const char*                             file,
-        const size_t                            line_number,
-        const std::string&                      line) const;
 };
 
 }       // namespace studio

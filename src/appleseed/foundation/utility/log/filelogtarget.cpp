@@ -60,10 +60,11 @@ void FileLogTarget::write(
     const LogMessage::Category  category,
     const char*                 file,
     const size_t                line,
+    const char*                 header,
     const char*                 message)
 {
     if (m_file)
-        write_message(m_file, category, message);
+        write_message(m_file, category, header, message);
 }
 
 bool FileLogTarget::open(const char* filename)

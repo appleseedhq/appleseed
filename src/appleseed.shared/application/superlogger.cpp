@@ -51,19 +51,14 @@ SuperLogger::~SuperLogger()
 
 void SuperLogger::enable_message_coloring()
 {
-    int flags[LogMessage::NumMessageCategories];
-    m_log_target->save_formatting_flags(flags);
-
     remove_target(m_log_target);
     delete m_log_target;
 
     m_log_target = create_console_log_target(stderr);
     add_target(m_log_target);
-
-    m_log_target->restore_formatting_flags(flags);
 }
 
-LogTargetBase& SuperLogger::get_log_target() const
+ILogTarget& SuperLogger::get_log_target() const
 {
     return *m_log_target;
 }

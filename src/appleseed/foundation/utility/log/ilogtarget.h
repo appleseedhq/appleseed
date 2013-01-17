@@ -26,49 +26,39 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "logmessage.h"
+#ifndef APPLESEED_FOUNDATION_UTILITY_LOG_ILOGTARGET_H
+#define APPLESEED_FOUNDATION_UTILITY_LOG_ILOGTARGET_H
+
+// appleseed.foundation headers.
+#include "foundation/core/concepts/iunknown.h"
+#include "foundation/utility/log/logmessage.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Standard headers.
-#include <cassert>
+#include <cstddef>
 
 namespace foundation
 {
 
 //
-// LogMessage class implementation.
+// The log target interface.
 //
 
-const char* LogMessage::get_category_name(const Category c)
+class DLLSYMBOL ILogTarget
+  : public IUnknown
 {
-    static const char* Names[NumMessageCategories] =
-    {
-        "info",
-        "debug",
-        "warning",
-        "error",
-        "fatal"
-    };
+  public:
+    // Write a message.
+    virtual void write(
+        const LogMessage::Category  category,
+        const char*                 file,
+        const size_t                line,
+        const char*                 header,
+        const char*                 message) = 0;
+};
 
-    assert(c < NumMessageCategories);
+}       // namespace foundation
 
-    return Names[c];
-}
-
-const char* LogMessage::get_padded_category_name(const Category c)
-{
-    static const char* Names[NumMessageCategories] =
-    {
-        "info   ",
-        "debug  ",
-        "warning",
-        "error  ",
-        "fatal  "
-    };
-
-    assert(c < NumMessageCategories);
-
-    return Names[c];
-}
-
-}   // namespace foundation
+#endif  // !APPLESEED_FOUNDATION_UTILITY_LOG_ILOGTARGET_H

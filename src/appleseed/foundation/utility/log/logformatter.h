@@ -26,41 +26,41 @@
 // THE SOFTWARE.
 //
 
-// appleseed.shared headers.
-#include "application/superlogger.h"
+#ifndef APPLESEED_FOUNDATION_UTILITY_LOG_LOGFORMATTER_H
+#define APPLESEED_FOUNDATION_UTILITY_LOG_LOGFORMATTER_H
 
 // appleseed.foundation headers.
-#include "foundation/utility/log.h"
-#include "foundation/utility/test.h"
+#include "foundation/core/concepts/noncopyable.h"
 
-using namespace appleseed::shared;
-using namespace foundation;
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
-TEST_SUITE(Application_SuperLogger)
+// Forward declarations.
+namespace foundation    { class Logger; }
+
+namespace foundation
 {
-    TEST_CASE(Constructor_SetsLogTargetFormattingFlagsToCategoryAndMessage)
-    {
-        SuperLogger super_logger;
 
-        const int flags =
-            super_logger.get_log_target().get_formatting_flags(LogMessage::Info);
+//
+// This class saves the configuration of a given logger when constructed,
+// and restore it when destructed. It is typically instantiated on the stack
+// before altering the configuration of a logger. The old configuration will
+// be restored when the instance is destructed, when exiting the scope.
+//
 
-        EXPECT_EQ(LogMessage::DisplayCategory | LogMessage::DisplayMessage, flags);
-    }
+class DLLSYMBOL SaveLogFormatterConfig
+  : public NonCopyable
+{
+  public:
+    explicit SaveLogFormatterConfig(Logger& logger);
 
-    TEST_CASE(EnableMessageColoring_PreservesLogTargetFlags)
-    {
-        SuperLogger super_logger;
+    ~SaveLogFormatterConfig();
 
-        super_logger.get_log_target().set_formatting_flags(
-            LogMessage::Info,
-            LogMessage::DisplayDate | LogMessage::DisplayTime);
+  private:
+    struct Impl;
+    Impl* impl;
+};
 
-        super_logger.enable_message_coloring();
+}       // namespace foundation
 
-        const int flags =
-            super_logger.get_log_target().get_formatting_flags(LogMessage::Info);
-
-        EXPECT_EQ(LogMessage::DisplayDate | LogMessage::DisplayTime, flags);
-    }
-}
+#endif  // !APPLESEED_FOUNDATION_UTILITY_LOG_LOGFORMATTER_H

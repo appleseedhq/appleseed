@@ -36,7 +36,7 @@
 #include <cstdio>
 
 // Forward declarations.
-namespace foundation    { class LogTargetBase; }
+namespace foundation    { class ILogTarget; }
 
 namespace foundation
 {
@@ -45,7 +45,7 @@ namespace foundation
 // Create an instance of a log target that outputs to an open std::FILE.
 //
 
-DLLSYMBOL LogTargetBase* create_open_file_log_target(std::FILE* file);
+DLLSYMBOL ILogTarget* create_open_file_log_target(std::FILE* file);
 
 }       // namespace foundation
 

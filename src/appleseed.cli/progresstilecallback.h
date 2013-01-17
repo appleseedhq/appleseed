@@ -38,6 +38,9 @@
 // Standard headers.
 #include <memory>
 
+// Forward declarations.
+namespace foundation    { class Logger; }
+
 namespace appleseed {
 namespace cli {
 
@@ -45,7 +48,7 @@ class ProgressTileCallbackFactory
   : public renderer::ITileCallbackFactory
 {
   public:
-    ProgressTileCallbackFactory();
+    explicit ProgressTileCallbackFactory(foundation::Logger& logger);
 
     virtual void release() override;
 

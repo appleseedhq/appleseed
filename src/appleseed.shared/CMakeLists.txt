@@ -32,7 +32,6 @@
 #--------------------------------------------------------------------------------------------------
 
 set (application_meta_tests_sources
-    application/meta/tests/test_superlogger.cpp
 )
 list (APPEND appleseed.shared_sources
     ${application_meta_tests_sources}

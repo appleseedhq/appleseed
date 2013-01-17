@@ -382,7 +382,6 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_knn.cpp
     foundation/meta/tests/test_kvpair.cpp
     foundation/meta/tests/test_lazy.cpp
-    foundation/meta/tests/test_log.cpp
     foundation/meta/tests/test_makevector.cpp
     foundation/meta/tests/test_math_filter.cpp
     foundation/meta/tests/test_matrix.cpp
@@ -572,11 +571,13 @@ set (foundation_utility_log_sources
     foundation/utility/log/filelogtargetbase.cpp
     foundation/utility/log/filelogtargetbase.h
     foundation/utility/log/helpers.h
+    foundation/utility/log/ilogtarget.h
+    foundation/utility/log/logformatter.cpp
+    foundation/utility/log/logformatter.h
     foundation/utility/log/logger.cpp
     foundation/utility/log/logger.h
     foundation/utility/log/logmessage.cpp
     foundation/utility/log/logmessage.h
-    foundation/utility/log/logtargetbase.h
     foundation/utility/log/openfilelogtarget.cpp
     foundation/utility/log/openfilelogtarget.h
 )

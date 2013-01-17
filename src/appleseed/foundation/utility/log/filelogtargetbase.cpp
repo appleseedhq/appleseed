@@ -50,24 +50,20 @@ namespace foundation
 void FileLogTargetBase::write_message(
     FILE*                       file,
     const LogMessage::Category  category,
+    const char*                 header,
     const char*                 message) const
 {
     assert(file);
+    assert(header);
     assert(message);
 
     // Split the message into individual lines.
     vector<string> lines;
     split(message, "\n", lines);
 
-    // Write the lines.
+    // Emit the lines.
     for (const_each<vector<string> > i = lines; i; ++i)
-    {
-        if (has_formatting_flags(category, LogMessage::DisplayCategory))
-            fprintf(file, "%s: ", LogMessage::get_padded_category_name(category));
-
-        if (has_formatting_flags(category, LogMessage::DisplayMessage))
-            fprintf(file, "%s\n", i->c_str());
-    }
+        fprintf(file, "%s%s\n", header, i->c_str());
 }
 
 }   // namespace foundation

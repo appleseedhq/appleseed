@@ -30,8 +30,8 @@
 #define APPLESEED_FOUNDATION_UTILITY_LOG_FILELOGTARGETBASE_H
 
 // appleseed.foundation headers.
+#include "foundation/utility/log/ilogtarget.h"
 #include "foundation/utility/log/logmessage.h"
-#include "foundation/utility/log/logtargetbase.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -47,13 +47,14 @@ namespace foundation
 //
 
 class DLLSYMBOL FileLogTargetBase
-  : public LogTargetBase
+  : public ILogTarget
 {
   protected:
     // Format and display the message.
     void write_message(
         std::FILE*                  file,
         const LogMessage::Category  category,
+        const char*                 header,
         const char*                 message) const;
 };
 

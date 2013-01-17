@@ -38,6 +38,7 @@
 
 // Standard headers.
 #include <cassert>
+#include <string>
 #include <vector>
 
 using namespace foundation;
@@ -50,7 +51,6 @@ namespace studio {
 // QtLogTarget class implementation.
 //
 
-// Constructor.
 QtLogTarget::QtLogTarget(LogWidget* log_widget)
 {
     connect(
@@ -58,7 +58,6 @@ QtLogTarget::QtLogTarget(LogWidget* log_widget)
         log_widget, SLOT(slot_append_item(const QColor&, const QString&)));
 }
 
-// Delete this instance.
 void QtLogTarget::release()
 {
     delete this;
@@ -88,11 +87,11 @@ namespace
     }
 }
 
-// Write a message.
 void QtLogTarget::write(
     const LogMessage::Category  category,
     const char*                 file,
     const size_t                line_number,
+    const char*                 header,
     const char*                 message)
 {
     const QColor color = get_text_color_for_category(category);
@@ -102,35 +101,9 @@ void QtLogTarget::write(
 
     for (const_each<vector<string> > i = lines; i; ++i)
     {
-        const QString formatted_line =
-            format_line(
-                category,
-                file,
-                line_number,
-                *i);
-
-        emit signal_append_item(color, formatted_line);
+        const QString line = QString(header) + QString::fromStdString(*i);
+        emit signal_append_item(color, line);
     }
-}
-
-QString QtLogTarget::format_line(
-    const LogMessage::Category  category,
-    const char*                 file,
-    const size_t                line_number,
-    const string&               line) const
-{
-    QString result;
-
-    if (has_formatting_flags(category, LogMessage::DisplayCategory))
-    {
-        result.append(LogMessage::get_padded_category_name(category));
-        result.append(": ");
-    }
-
-    if (has_formatting_flags(category, LogMessage::DisplayMessage))
-        result.append(line.c_str());
-
-    return result;
 }
 
 }   // namespace studio

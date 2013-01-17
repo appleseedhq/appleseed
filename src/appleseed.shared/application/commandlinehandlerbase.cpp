@@ -145,10 +145,8 @@ const CommandLineParser& CommandLineHandlerBase::parser() const
 
 void CommandLineHandlerBase::print_version_information(SuperLogger& logger) const
 {
-    LogTargetBase& log_target = logger.get_log_target();
-
-    const int old_flags =
-        log_target.set_formatting_flags(LogMessage::Info, LogMessage::DisplayMessage);
+    SaveLogFormatterConfig save_config(logger);
+    logger.set_format(LogMessage::Info, "{message}");
 
     LOG_INFO(
         logger,
@@ -165,8 +163,6 @@ void CommandLineHandlerBase::print_version_information(SuperLogger& logger) cons
         Appleseed::get_lib_compilation_time(),
         Compiler::get_compiler_name(),
         Compiler::get_compiler_version());
-
-    log_target.set_formatting_flags(LogMessage::Info, old_flags);
 }
 
 void CommandLineHandlerBase::print_system_information(SuperLogger& logger)

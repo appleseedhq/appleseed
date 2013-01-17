@@ -53,21 +53,6 @@ class DLLSYMBOL LogMessage
         NumMessageCategories        // number of message categories (keep at the end)
     };
 
-    // Message formatting flags.
-    enum FormattingFlags
-    {
-        DisplayNothing  = 0,
-        DisplayCategory = 1 << 0,
-        DisplayFile     = 1 << 1,
-        DisplayLine     = 1 << 2,
-        DisplayDate     = 1 << 3,
-        DisplayTime     = 1 << 4,
-        DisplayMessage  = 1 << 5
-    };
-
-    // Default message formatting flags.
-    static const int DefaultFormattingFlags;
-
     // Return a string identifying a given message category.
     static const char* get_category_name(const Category c);
 

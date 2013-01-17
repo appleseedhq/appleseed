@@ -38,9 +38,10 @@
 
 // Standard headers.
 #include <cstddef>
+#include <string>
 
 // Forward declarations.
-namespace foundation    { class LogTargetBase; }
+namespace foundation    { class ILogTarget; }
 
 namespace foundation
 {
@@ -64,14 +65,31 @@ class DLLSYMBOL Logger
     // Enable/disable logging.
     void set_enabled(const bool enabled = true);
 
+    // Reset the format string for all message categories.
+    void reset_all_formats();
+
+    // Reset the format string for a given message category.
+    void reset_format(const LogMessage::Category category);
+
+    // Set the format string for all message categories.
+    void set_all_formats(const char* format);
+    void set_all_formats(const std::string& format);
+
+    // Set the format string for a given message category.
+    void set_format(const LogMessage::Category category, const char* format);
+    void set_format(const LogMessage::Category category, const std::string& format);
+
+    // Return the format string of a given message category.
+    const char* get_format(const LogMessage::Category category) const;
+
     // Add a log target. A given log target may be added
     // multiple times. Log targets can be added at any time.
-    void add_target(LogTargetBase* target);
+    void add_target(ILogTarget* target);
 
     // Remove all instances of a given log target.
     // If the specified target cannot be found, nothing happens.
     // Log targets can be removed at any time.
-    void remove_target(LogTargetBase* target);
+    void remove_target(ILogTarget* target);
 
     // Write a message. If the message category is Fatal,
     // this function will not return and the program will
@@ -86,6 +104,21 @@ class DLLSYMBOL Logger
     struct Impl;
     Impl* impl;
 };
+
+
+//
+// Logger class implementation.
+//
+
+inline void Logger::set_all_formats(const std::string& format)
+{
+    set_all_formats(format.c_str());
+}
+
+inline void Logger::set_format(const LogMessage::Category category, const std::string& format)
+{
+    set_format(category, format.c_str());
+}
 
 }       // namespace foundation
 

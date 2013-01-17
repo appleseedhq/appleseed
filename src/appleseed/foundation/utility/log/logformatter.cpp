@@ -27,48 +27,55 @@
 //
 
 // Interface header.
-#include "logmessage.h"
+#include "logformatter.h"
+
+// appleseed.foundation headers.
+#include "foundation/utility/log/logger.h"
+#include "foundation/utility/log/logmessage.h"
 
 // Standard headers.
-#include <cassert>
+#include <cstddef>
+#include <string>
+
+using namespace std;
 
 namespace foundation
 {
 
 //
-// LogMessage class implementation.
+// SaveLogFormatterConfig class implementation.
 //
 
-const char* LogMessage::get_category_name(const Category c)
+struct SaveLogFormatterConfig::Impl
 {
-    static const char* Names[NumMessageCategories] =
+    Logger& m_logger;
+    string  m_formats[LogMessage::NumMessageCategories];
+
+    explicit Impl(Logger& logger)
+      : m_logger(logger)
     {
-        "info",
-        "debug",
-        "warning",
-        "error",
-        "fatal"
-    };
+    }
+};
 
-    assert(c < NumMessageCategories);
-
-    return Names[c];
+SaveLogFormatterConfig::SaveLogFormatterConfig(Logger& logger)
+  : impl(new Impl(logger))
+{
+    for (size_t i = 0; i < LogMessage::NumMessageCategories; ++i)
+    {
+        const LogMessage::Category category = static_cast<LogMessage::Category>(i);
+        impl->m_formats[i] = impl->m_logger.get_format(category);
+    }
 }
 
-const char* LogMessage::get_padded_category_name(const Category c)
+SaveLogFormatterConfig::~SaveLogFormatterConfig()
 {
-    static const char* Names[NumMessageCategories] =
+    for (size_t i = 0; i < LogMessage::NumMessageCategories; ++i)
     {
-        "info   ",
-        "debug  ",
-        "warning",
-        "error  ",
-        "fatal  "
-    };
+        const LogMessage::Category category = static_cast<LogMessage::Category>(i);
+        impl->m_logger.set_format(category, impl->m_formats[i]);
+    }
 
-    assert(c < NumMessageCategories);
-
-    return Names[c];
+    delete impl;
 }
 
 }   // namespace foundation

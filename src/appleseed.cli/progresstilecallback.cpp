@@ -62,8 +62,9 @@ namespace
       : public TileCallbackBase
     {
       public:
-        ProgressTileCallback()
-          : m_rendered_pixels(0)
+        explicit ProgressTileCallback(Logger& logger)
+          : m_logger(logger)
+          , m_rendered_pixels(0)
         {
         }
 
@@ -84,10 +85,11 @@ namespace
 
             const size_t total_pixels = frame->image().properties().m_pixel_count;
 
-            RENDERER_LOG_INFO("rendering, %s done", pretty_percent(m_rendered_pixels, total_pixels).c_str());
+            LOG_INFO(m_logger, "rendering, %s done", pretty_percent(m_rendered_pixels, total_pixels).c_str());
         }
 
       private:
+        Logger& m_logger;
         mutex   m_mutex;
         size_t  m_rendered_pixels;
     };
@@ -98,8 +100,8 @@ namespace
 // ProgressTileCallbackFactory class implementation.
 //
 
-ProgressTileCallbackFactory::ProgressTileCallbackFactory()
-  : m_callback(new ProgressTileCallback())
+ProgressTileCallbackFactory::ProgressTileCallbackFactory(Logger& logger)
+  : m_callback(new ProgressTileCallback(logger))
 {
 }
 

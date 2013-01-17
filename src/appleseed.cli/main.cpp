@@ -87,16 +87,17 @@ using namespace std;
 
 namespace
 {
+    SuperLogger         g_logger;
     CommandLineHandler  g_cl;
     ParamArray          g_settings;
 
-    void load_settings(Logger& logger)
+    void load_settings()
     {
         const filesystem::path root_path(Application::get_root_path());
         const filesystem::path settings_file_path = root_path / "settings" / "appleseed.cli.xml";
         const filesystem::path schema_file_path = root_path / "schemas" / "settings.xsd";
 
-        SettingsFileReader reader(logger);
+        SettingsFileReader reader(g_logger);
         reader.read(
             settings_file_path.string().c_str(),
             schema_file_path.string().c_str(),
@@ -104,7 +105,7 @@ namespace
     }
 
     template <typename Result>
-    void print_suite_case_result(Logger& logger, const Result& result)
+    void print_suite_case_result(const Result& result)
     {
         const size_t suite_exec = result.get_suite_execution_count();
         const size_t suite_fail = result.get_suite_failure_count();
@@ -112,7 +113,7 @@ namespace
         const size_t case_fail = result.get_case_failure_count();
   
         LOG_INFO(
-            logger,
+            g_logger,
             "  suites      : %s executed, %s failed (%s)\n"
             "  cases       : %s executed, %s failed (%s)\n",
             pretty_uint(suite_exec).c_str(),
@@ -123,34 +124,44 @@ namespace
             pretty_percent(case_fail, case_exec).c_str());
     }
 
-    void print_unit_test_result(Logger& logger, const TestResult& result)
+    void print_unit_test_result(const TestResult& result)
     {
-        LOG_INFO(logger, "unit testing summary:\n");
-        print_suite_case_result(logger, result);
+        LOG_INFO(g_logger, "unit testing summary:\n");
+        print_suite_case_result(result);
 
         const size_t assert_exec = result.get_assertion_execution_count();
         const size_t assert_fail = result.get_assertion_failure_count();
 
         LOG_INFO(
-            logger,
+            g_logger,
             "  assertions  : %s executed, %s failed (%s)\n",
             pretty_uint(assert_exec).c_str(),
             pretty_uint(assert_fail).c_str(),
             pretty_percent(assert_fail, assert_exec).c_str());
     }
 
-    void print_unit_benchmark_result(Logger& logger, const BenchmarkResult& result)
+    void print_unit_benchmark_result(const BenchmarkResult& result)
     {
-        LOG_INFO(logger, "unit benchmarking summary:\n");
-        print_suite_case_result(logger, result);
+        LOG_INFO(g_logger, "unit benchmarking summary:\n");
+        print_suite_case_result(result);
     }
 
-    void run_unit_tests(Logger& logger)
+    void run_unit_tests()
     {
+        SaveLogFormatterConfig save_g_logger_config(g_logger);
+        g_logger.set_all_formats("{datetime} | {category}: {message}");
+        g_logger.set_format(LogMessage::Info, "{datetime} | {message}");
+
+        SaveLogFormatterConfig save_global_logger_config(global_logger());
+        global_logger().set_all_formats(string());
+        global_logger().set_format(LogMessage::Warning, "{datetime} | {category}: {message}");
+        global_logger().set_format(LogMessage::Error, "{datetime} | {category}: {message}");
+        global_logger().set_format(LogMessage::Fatal, "{datetime} | {category}: {message}");
+
         // Create a test listener that outputs to the logger.
         auto_release_ptr<ITestListener> listener(
             create_logger_test_listener(
-                logger,
+                g_logger,
                 g_cl.m_verbose_unit_tests.is_set()));
 
         TestResult result;
@@ -171,7 +182,7 @@ namespace
             else
             {
                 LOG_ERROR(
-                    logger,
+                    g_logger,
                     "malformed regular expression '%s', disabling test filtering.",
                     regex);
                 TestSuiteRepository::instance().run(listener.ref(), result);
@@ -181,16 +192,26 @@ namespace
         // Restore the current directory.
         filesystem::current_path(old_current_path);
 
-        print_unit_test_result(logger, result);
+        print_unit_test_result(result);
     }
 
-    void run_unit_benchmarks(Logger& logger)
+    void run_unit_benchmarks()
     {
+        SaveLogFormatterConfig save_g_logger_config(g_logger);
+        g_logger.set_all_formats("{datetime} | {category}: {message}");
+        g_logger.set_format(LogMessage::Info, "{datetime} | {message}");
+
+        SaveLogFormatterConfig save_global_logger_config(global_logger());
+        global_logger().set_all_formats(string());
+        global_logger().set_format(LogMessage::Warning, "{datetime} | {category}: {message}");
+        global_logger().set_format(LogMessage::Error, "{datetime} | {category}: {message}");
+        global_logger().set_format(LogMessage::Fatal, "{datetime} | {category}: {message}");
+
         BenchmarkResult result;
 
         // Add a benchmark listener that outputs to the logger.
         auto_release_ptr<IBenchmarkListener>
-            logger_listener(create_logger_benchmark_listener(logger));
+            logger_listener(create_logger_benchmark_listener(g_logger));
         result.add_listener(logger_listener.get());
 
         // Try to add a benchmark listener that outputs to a XML file.
@@ -205,7 +226,8 @@ namespace
             result.add_listener(xmlfile_listener.get());
         else
         {
-            RENDERER_LOG_WARNING(
+            LOG_WARNING(
+                g_logger,
                 "automatic benchmark results archiving to %s failed: i/o error.",
                 xmlfile_path.string().c_str());
         }
@@ -226,7 +248,7 @@ namespace
             else
             {
                 LOG_ERROR(
-                    logger,
+                    g_logger,
                     "malformed regular expression '%s', disabling benchmark filtering.",
                     regex);
                 BenchmarkSuiteRepository::instance().run(result);
@@ -237,7 +259,7 @@ namespace
         filesystem::current_path(old_current_path);
 
         // Print results.
-        print_unit_benchmark_result(logger, result);
+        print_unit_benchmark_result(result);
     }
 
     void dump_widget_definitions(
@@ -292,7 +314,7 @@ namespace
         }
     }
 
-    void dump_entity_definitions(Logger& logger)
+    void dump_entity_definitions()
     {
         FILE* file = stdout;
         Indenter indenter(4);
@@ -409,7 +431,7 @@ namespace
 #error Unsupported platform.
 #endif
 
-        RENDERER_LOG_DEBUG("executing '%s'", command.c_str());
+        LOG_DEBUG(g_logger, "executing '%s'", command.c_str());
         std::system(command.c_str());   // needs std:: qualifier
     }
 
@@ -455,7 +477,8 @@ namespace
             project.configurations().get_by_name(config_name.c_str());
         if (configuration == 0)
         {
-            RENDERER_LOG_ERROR(
+            LOG_ERROR(
+                g_logger,
                 "the configuration \"%s\" does not exist.",
                 config_name.c_str());
             return false;
@@ -474,10 +497,8 @@ namespace
         return true;
     }
 
-    void render(const string& project_filename, SuperLogger& logger)
+    void render(const string& project_filename)
     {
-        global_logger().add_target(&logger.get_log_target());
-
         // Load the project.
         auto_release_ptr<Project> project = load_project(project_filename);
         if (project.get() == 0)
@@ -488,11 +509,11 @@ namespace
         if (!configure_project(project.ref(), params))
             return;
 
-        RENDERER_LOG_INFO("rendering frame...");
+        LOG_INFO(g_logger, "rendering frame...");
 
         // Create the master renderer.
         DefaultRendererController renderer_controller;
-        ProgressTileCallbackFactory tile_callback_factory;
+        ProgressTileCallbackFactory tile_callback_factory(g_logger);
         MasterRenderer renderer(
             project.ref(),
             params,
@@ -507,7 +528,8 @@ namespace
 
         // Print rendering time.
         const double seconds = stopwatch.get_seconds();
-        RENDERER_LOG_INFO(
+        LOG_INFO(
+            g_logger,
             "rendering finished in %s.",
             pretty_time(seconds, 3).c_str());
 
@@ -517,7 +539,7 @@ namespace
             / "images/autosave/";
 
         // Archive the frame to disk.
-        RENDERER_LOG_INFO("archiving frame to disk...");
+        LOG_INFO(g_logger, "archiving frame to disk...");
         char* archive_path;
         project->get_frame()->archive(
             autosave_path.string().c_str(),
@@ -526,7 +548,7 @@ namespace
         // Write the frame to disk.
         if (g_cl.m_output.is_set())
         {
-            RENDERER_LOG_INFO("writing frame to disk...");
+            LOG_INFO(g_logger, "writing frame to disk...");
             project->get_frame()->write_main_image(g_cl.m_output.values()[0].c_str());
             project->get_frame()->write_aov_images(g_cl.m_output.values()[0].c_str());
         }
@@ -543,20 +565,13 @@ namespace
         free_string(archive_path);
     }
 
-    void benchmark_render(const string& project_filename, SuperLogger& logger)
+    void benchmark_render(const string& project_filename)
     {
-        LogTargetBase& log_target = logger.get_log_target();
-
-        // Save the log target's formatting flags.
-        int old_flags[LogMessage::NumMessageCategories];
-        log_target.save_formatting_flags(old_flags);
-
         // Only display error messages.
-        log_target.set_formatting_flags(LogMessage::DisplayNothing);
-        log_target.set_formatting_flags(LogMessage::Error, LogMessage::DefaultFormattingFlags);
-        log_target.set_formatting_flags(LogMessage::Fatal, LogMessage::DefaultFormattingFlags);
-
-        global_logger().add_target(&log_target);
+        SaveLogFormatterConfig save_config(global_logger());
+        global_logger().set_all_formats(string());
+        global_logger().reset_format(LogMessage::Error);
+        global_logger().reset_format(LogMessage::Fatal);
 
         // Load the project.
         auto_release_ptr<Project> project = load_project(project_filename);
@@ -594,22 +609,20 @@ namespace
         // Write the frame to disk.
         if (g_cl.m_output.is_set())
         {
-            project->get_frame()->write_main_image(g_cl.m_output.values()[0].c_str());
-            project->get_frame()->write_aov_images(g_cl.m_output.values()[0].c_str());
+            const char* file_path = g_cl.m_output.values()[0].c_str();
+            project->get_frame()->write_main_image(file_path);
+            project->get_frame()->write_aov_images(file_path);
         }
 
         // Force-unload the project.
         project.reset();
 
         // Print benchmark results.
-        log_target.set_formatting_flags(LogMessage::Info, LogMessage::DisplayMessage);
-        RENDERER_LOG_INFO("result=success");
-        RENDERER_LOG_INFO("setup_time=%.6f", total_time_seconds - render_time_seconds);
-        RENDERER_LOG_INFO("render_time=%.6f", render_time_seconds);
-        RENDERER_LOG_INFO("total_time=%.6f", total_time_seconds);
-
-        // Restore the log target's formatting flags.
-        log_target.restore_formatting_flags(old_flags);
+        global_logger().set_format(LogMessage::Info, "{message}");
+        LOG_INFO(g_logger, "result=success");
+        LOG_INFO(g_logger, "setup_time=%.6f", total_time_seconds - render_time_seconds);
+        LOG_INFO(g_logger, "render_time=%.6f", render_time_seconds);
+        LOG_INFO(g_logger, "total_time=%.6f", total_time_seconds);
     }
 }
 
@@ -622,37 +635,38 @@ int main(int argc, const char* argv[])
 {
     start_memory_tracking();
 
-    SuperLogger logger;
+    Application::check_installation(g_logger);
 
-    Application::check_installation(logger);
-
-    g_cl.parse(argc, argv, logger);
+    g_cl.parse(argc, argv, g_logger);
 
     // Read the application's settings from disk.
-    load_settings(logger);
-
+    load_settings();
     if (g_settings.get_optional<bool>("message_coloring", false))
-        logger.enable_message_coloring();
+        g_logger.enable_message_coloring();
+
+    // Now that the log target is fully configured, bind it to the renderer's logger.
+    global_logger().add_target(&g_logger.get_log_target());
 
     // Run unit tests.
     if (g_cl.m_run_unit_tests.is_set())
-        run_unit_tests(logger);
+        run_unit_tests();
 
     // Run unit benchmarks.
     if (g_cl.m_run_unit_benchmarks.is_set())
-        run_unit_benchmarks(logger);
+        run_unit_benchmarks();
 
     // Dump entity definitions.
     if (g_cl.m_dump_entity_definitions.is_set())
-        dump_entity_definitions(logger);
+        dump_entity_definitions();
 
     // Render the specified project.
     if (!g_cl.m_filenames.values().empty())
     {
         const string project_filename = g_cl.m_filenames.values().front();
+
         if (g_cl.m_benchmark_mode.is_set())
-            benchmark_render(project_filename, logger);
-        else render(project_filename, logger);
+            benchmark_render(project_filename);
+        else render(project_filename);
     }
 
     return 0;

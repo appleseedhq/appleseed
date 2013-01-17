@@ -30,6 +30,7 @@
 #include "openfilelogtarget.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/log/filelogtargetbase.h"
 #include "foundation/utility/log/logmessage.h"
 
@@ -58,7 +59,7 @@ namespace
         }
 
         // Delete this instance.
-        virtual void release()
+        virtual void release() override
         {
             delete this;
         }
@@ -68,9 +69,10 @@ namespace
             const LogMessage::Category  category,
             const char*                 file,
             const size_t                line,
-            const char*                 message)
+            const char*                 header,
+            const char*                 message) override
         {
-            write_message(m_file, category, message);
+            write_message(m_file, category, header, message);
         }
 
       private:
@@ -83,7 +85,7 @@ namespace
 // Create an instance of a log target that outputs to an open std::FILE.
 //
 
-LogTargetBase* create_open_file_log_target(FILE* file)
+ILogTarget* create_open_file_log_target(FILE* file)
 {
     return new OpenFileLogTarget(file);
 }
