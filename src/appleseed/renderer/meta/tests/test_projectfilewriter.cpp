@@ -88,13 +88,14 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
 
         void create_texture_entity(const string& filepath)
         {
+            ParamArray params;
+            params.insert("filename", filepath);
+            params.insert("color_space", "linear_rgb");
+
             SearchPaths search_paths;
 
             m_project->get_scene()->textures().insert(
-                DiskTexture2dFactory().create(
-                    "texture",
-                    ParamArray().insert("filename", filepath),
-                    search_paths));
+                DiskTexture2dFactory().create("texture", params, search_paths));
         }
 
         void create_texture_file(const filesystem::path& filepath)
@@ -102,6 +103,13 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
             const filesystem::path fullpath = m_base_output / filepath;
             filesystem::create_directories(fullpath.parent_path());
             filesystem::copy_file("unit tests/inputs/test_projectfilewriter_texture.png", fullpath);
+        }
+
+        void create_geometry_file(const filesystem::path& filepath)
+        {
+            const filesystem::path fullpath = m_base_output / filepath;
+            filesystem::create_directories(fullpath.parent_path());
+            filesystem::copy_file("unit tests/inputs/test_projectfilewriter_object.obj", fullpath);
         }
     };
 
@@ -301,6 +309,8 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
     TEST_CASE_F(Write_GivenMeshObjectWithMultiValueFilenameParameter_DoesNotAddAnotherFilenameParameter, Fixture)
     {
         create_project();
+        create_geometry_file("bunny.0.obj");
+        create_geometry_file("bunny.1.obj");
 
         ParamArray filenames;
         filenames.insert("0", "bunny.0.obj");

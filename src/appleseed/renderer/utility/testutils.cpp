@@ -89,6 +89,7 @@ void TestFixtureBase::create_color_entity(const char* name, const Spectrum& spec
 {
     ParamArray params;
     params.insert("color_space", "spectral");
+    params.insert("wavelength_range", "400.0 700.0");
 
     const ColorValueArray values(spectrum.Samples, &spectrum[0]);
 
