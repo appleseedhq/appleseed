@@ -148,7 +148,7 @@ namespace
 
             const Vector3d shifted_outgoing = shift(outgoing);
             if (shifted_outgoing.y > 0.0)
-                compute_sky_color(input_evaluator, shifted_outgoing, value);
+                compute_sky_radiance(input_evaluator, shifted_outgoing, value);
             else value.set(0.0f);
 
             probability = outgoing.y * RcpPi;
@@ -163,7 +163,7 @@ namespace
 
             const Vector3d shifted_outgoing = shift(outgoing);
             if (shifted_outgoing.y > 0.0)
-                compute_sky_color(input_evaluator, shifted_outgoing, value);
+                compute_sky_radiance(input_evaluator, shifted_outgoing, value);
             else value.set(0.0f);
         }
 
@@ -177,7 +177,7 @@ namespace
 
             const Vector3d shifted_outgoing = shift(outgoing);
             if (shifted_outgoing.y > 0.0)
-                compute_sky_color(input_evaluator, shifted_outgoing, value);
+                compute_sky_radiance(input_evaluator, shifted_outgoing, value);
             else value.set(0.0f);
 
             probability = outgoing.y > 0.0 ? outgoing.y * RcpPi : 0.0;
@@ -320,8 +320,8 @@ namespace
                 / perez(1.0, sun_theta, cos_sun_theta, coeffs);     // todo: build into zenith_val
         }
 
-        // Compute the sky color in a given direction.
-        void compute_sky_color(
+        // Compute the sky radiance along a given direction.
+        void compute_sky_radiance(
             InputEvaluator&     input_evaluator,
             const Vector3d&     outgoing,
             Spectrum&           value) const
