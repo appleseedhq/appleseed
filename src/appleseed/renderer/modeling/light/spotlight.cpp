@@ -99,7 +99,6 @@ namespace
 
             m_exitance_source = m_inputs.source("exitance");
             m_exitance_multiplier_source = m_inputs.source("exitance_multiplier");
-
             check_non_zero_exitance(m_exitance_source, m_exitance_multiplier_source);
 
             const double inner_half_angle = deg_to_rad(m_params.get_required<double>("inner_angle", 20.0) / 2.0);
