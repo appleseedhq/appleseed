@@ -218,23 +218,21 @@ namespace
                 }
                 else
                 {
-                    // Transform the light direction to assembly instance space.
-                    const Vector3d local_light_vec =
-                        normalize(light_sample.m_asm_inst_transform.vector_to_local(light_vec));
-
-                    // Evaluate the light's inputs.
-                    InputEvaluator input_evaluator(shading_context.get_texture_cache());
-                    const void* light_data =
-                        input_evaluator.evaluate(
-                            light_sample.m_light->get_inputs(),
-                            light_sample.m_bary);
-
                     // Evaluate the light.
+                    InputEvaluator input_evaluator(shading_context.get_texture_cache());
+                    Vector3d sample_position, emission_direction;
                     light_sample.m_light->evaluate(
-                        light_data,
-                        -local_light_vec,
+                        input_evaluator,
+                        light_sample.m_asm_inst_transform.point_to_local(point),
+                        sample_position,
+                        emission_direction,
                         exitance);
+
+                    // todo: transform sample_position and emission_direction
+                    // to world space when they will be needed for shadowing.
                 }
+
+                // todo: missing shadowing term.
 
                 // Compute and accumulate the contribution of this light sample.
                 Spectrum result = values.m_albedo;

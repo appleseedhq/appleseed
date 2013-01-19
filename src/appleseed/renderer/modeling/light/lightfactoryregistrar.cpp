@@ -30,6 +30,7 @@
 #include "lightfactoryregistrar.h"
 
 // appleseed.renderer headers.
+#include "renderer/modeling/light/directionallight.h"
 #include "renderer/modeling/light/ilightfactory.h"
 #include "renderer/modeling/light/pointlight.h"
 #include "renderer/modeling/light/spotlight.h"
@@ -58,6 +59,7 @@ struct LightFactoryRegistrar::Impl
 LightFactoryRegistrar::LightFactoryRegistrar()
   : impl(new Impl())
 {
+    register_factory(auto_ptr<FactoryType>(new DirectionalLightFactory()));
     register_factory(auto_ptr<FactoryType>(new PointLightFactory()));
     register_factory(auto_ptr<FactoryType>(new SpotLightFactory()));
 }

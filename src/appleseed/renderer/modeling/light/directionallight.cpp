@@ -27,25 +27,28 @@
 //
 
 // Interface header.
-#include "pointlight.h"
+#include "directionallight.h"
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/inputevaluator.h"
+#include "renderer/modeling/project/project.h"
+#include "renderer/modeling/scene/scene.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/basis.h"
 #include "foundation/math/sampling.h"
-#include "foundation/math/scalar.h"
+#include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
 
 // Forward declarations.
 namespace renderer  { class Assembly; }
-namespace renderer  { class Project; }
 
 using namespace foundation;
+using namespace std;
 
 namespace renderer
 {
@@ -53,16 +56,16 @@ namespace renderer
 namespace
 {
     //
-    // Point light.
+    // Directional light.
     //
 
-    const char* Model = "point_light";
+    const char* Model = "directional_light";
 
-    class PointLight
+    class DirectionalLight
       : public Light
     {
       public:
-        PointLight(
+        DirectionalLight(
             const char*         name,
             const ParamArray&   params)
           : Light(name, params)
@@ -93,7 +96,9 @@ namespace
             check_non_zero_exitance("exitance");
 
             m_inputs.evaluate_uniforms(&m_values);
-            m_position = get_transform().point_to_parent(Vector3d(0.0));
+            m_safe_scene_radius = project.get_scene()->compute_radius();
+            m_outgoing = normalize(get_transform().vector_to_parent(Vector3d(0.0, 0.0, -1.0)));
+            m_basis.build(m_outgoing);
 
             return true;
         }
@@ -106,10 +111,13 @@ namespace
             Spectrum&           value,
             double&             probability) const override
         {
-            position = m_position;
-            outgoing = sample_sphere_uniform(s);
+            const Vector2d point_on_disk = sample_disk_uniform(s);
+            position =
+                m_basis.transform_to_parent(
+                    m_safe_scene_radius * Vector3d(point_on_disk[0], -1.0, point_on_disk[1]));
+            outgoing = m_outgoing;
             value = m_values.m_exitance;
-            probability = 1.0 / (4.0 * Pi);
+            probability = RcpPi;
         }
 
         virtual void evaluate(
@@ -119,39 +127,41 @@ namespace
             Vector3d&           outgoing,
             Spectrum&           value) const override
         {
-            position = m_position;
-            outgoing = normalize(target - position);
+            position = target - m_safe_scene_radius * m_outgoing;
+            outgoing = m_outgoing;
             value = m_values.m_exitance;
         }
 
       private:
         struct InputValues
         {
-            Spectrum    m_exitance;         // radiant exitance, in W.m^-2
-            Alpha       m_exitance_alpha;   // unused
+            Spectrum    m_exitance;             // radiant exitance, in W.m^-2
+            Alpha       m_exitance_alpha;       // unused
         };
 
         InputValues     m_values;
-        Vector3d        m_position;         // world space
+        double          m_safe_scene_radius;    // world space
+        Vector3d        m_outgoing;             // world space
+        Basis3d         m_basis;                // world space
     };
 }
 
 
 //
-// PointLightFactory class implementation.
+// DirectionalLightFactory class implementation.
 //
 
-const char* PointLightFactory::get_model() const
+const char* DirectionalLightFactory::get_model() const
 {
     return Model;
 }
 
-const char* PointLightFactory::get_human_readable_model() const
+const char* DirectionalLightFactory::get_human_readable_model() const
 {
-    return "Point Light";
+    return "Directional Light";
 }
 
-DictionaryArray PointLightFactory::get_widget_definitions() const
+DictionaryArray DirectionalLightFactory::get_widget_definitions() const
 {
     DictionaryArray definitions;
 
@@ -169,11 +179,11 @@ DictionaryArray PointLightFactory::get_widget_definitions() const
     return definitions;
 }
 
-auto_release_ptr<Light> PointLightFactory::create(
+auto_release_ptr<Light> DirectionalLightFactory::create(
     const char*         name,
     const ParamArray&   params) const
 {
-    return auto_release_ptr<Light>(new PointLight(name, params));
+    return auto_release_ptr<Light>(new DirectionalLight(name, params));
 }
 
 }   // namespace renderer

@@ -97,20 +97,20 @@ LightSampler::LightSampler(const Scene& scene)
 {
     RENDERER_LOG_INFO("collecting light emitters...");
 
-    // Collect all lights and light-emitting triangles.
+    // Collect all non-physical lights and light-emitting triangles.
     for (const_each<AssemblyInstanceContainer> i = scene.assembly_instances(); i; ++i)
     {
         const AssemblyInstance& assembly_instance = *i;
         const Assembly& assembly = assembly_instance.get_assembly();
 
-        collect_lights(assembly, assembly_instance);
+        collect_non_physical_lights(assembly, assembly_instance);
 
         if (has_emitting_materials(assembly))
             collect_emitting_triangles(assembly, assembly_instance);
     }
 
     // Precompute some values.
-    m_light_count = m_lights.size();
+    m_non_physical_light_count = m_non_physical_lights.size();
     m_rcp_total_emissive_area = 1.0 / m_total_emissive_area;
 
     // Prepare the CDFs for sampling.
@@ -121,13 +121,13 @@ LightSampler::LightSampler(const Scene& scene)
 
     RENDERER_LOG_INFO(
         "found %s %s, %s emitting %s.",
-        pretty_int(m_light_count).c_str(),
-        plural(m_light_count, "light").c_str(),
+        pretty_int(m_non_physical_light_count).c_str(),
+        plural(m_non_physical_light_count, "non-physical light").c_str(),
         pretty_int(m_emitting_triangles.size()).c_str(),
         plural(m_emitting_triangles.size(), "triangle").c_str());
 }
 
-void LightSampler::collect_lights(
+void LightSampler::collect_non_physical_lights(
     const Assembly&         assembly,
     const AssemblyInstance& assembly_instance)
 {
@@ -137,11 +137,11 @@ void LightSampler::collect_lights(
         const Light& light = *i;
 
         // Copy the light into the light vector.
-        const size_t light_index = m_lights.size();
-        LightInfo light_info;
+        const size_t light_index = m_non_physical_lights.size();
+        NonPhysicalLightInfo light_info;
         light_info.m_assembly_instance = &assembly_instance;
         light_info.m_light = &light;
-        m_lights.push_back(light_info);
+        m_non_physical_lights.push_back(light_info);
 
         // todo: compute importance.
         const double importance = 1.0;
@@ -297,7 +297,7 @@ void LightSampler::collect_emitting_triangles(
                     m_emitting_triangles.push_back(emitting_triangle);
 
                     // Insert the light-emitting triangle into the CDFs.
-                    m_emitter_cdf.insert(emitting_triangle_index + m_lights.size(), area);
+                    m_emitter_cdf.insert(emitting_triangle_index + m_non_physical_lights.size(), area);
                     m_emitting_triangle_cdf.insert(emitting_triangle_index, area);
 
                     // Keep track of the total area of the light-emitting triangles.
@@ -308,14 +308,14 @@ void LightSampler::collect_emitting_triangles(
     }
 }
 
-void LightSampler::sample_single_light(
+void LightSampler::sample_non_physical_lights(
     const size_t            light_index,
     const double            time,
     const Vector2d&         s,
     LightSample&            sample) const
 {
     sample.m_triangle = 0;
-    sample_light(time, s, light_index, 1.0, sample);
+    sample_non_physical_light(time, s, light_index, 1.0, sample);
 
     assert(sample.m_light);
     assert(sample.m_probability == 1.0);
@@ -356,10 +356,10 @@ void LightSampler::sample(
     const size_t emitter_index = result.first;
     const double emitter_prob = result.second;
 
-    if (emitter_index < m_light_count)
+    if (emitter_index < m_non_physical_light_count)
     {
         sample.m_triangle = 0;
-        sample_light(
+        sample_non_physical_light(
             time,
             Vector2d(s[1], s[2]),
             emitter_index,
@@ -372,7 +372,7 @@ void LightSampler::sample(
         sample_emitting_triangle(
             time,
             Vector2d(s[1], s[2]),
-            emitter_index - m_light_count,
+            emitter_index - m_non_physical_light_count,
             emitter_prob,
             sample);
     }
@@ -382,7 +382,7 @@ void LightSampler::sample(
     assert(sample.m_probability > 0.0);
 }
 
-void LightSampler::sample_light(
+void LightSampler::sample_non_physical_light(
     const double            time,
     const Vector2d&         s,
     const size_t            light_index,
@@ -390,16 +390,12 @@ void LightSampler::sample_light(
     LightSample&            sample) const
 {
     // Fetch the light.
-    const LightInfo& light_info = m_lights[light_index];
+    const NonPhysicalLightInfo& light_info = m_non_physical_lights[light_index];
     sample.m_light = light_info.m_light;
 
     // Evaluate and store the transform of the assembly instance.
     sample.m_asm_inst_transform =
         light_info.m_assembly_instance->transform_sequence().evaluate(time);
-
-    // Compute the world space position of the sample.
-    const Transformd transform = light_info.m_light->get_transform() * sample.m_asm_inst_transform;
-    sample.m_point = transform.get_local_to_parent().extract_translation();
 
     // Store the probability of choosing this light.
     sample.m_probability = light_prob;

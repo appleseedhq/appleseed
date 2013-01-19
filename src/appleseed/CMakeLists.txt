@@ -1276,6 +1276,8 @@ source_group ("renderer\\modeling\\input" FILES
 )
 
 set (renderer_modeling_light_sources
+    renderer/modeling/light/directionallight.cpp
+    renderer/modeling/light/directionallight.h
     renderer/modeling/light/ilightfactory.h
     renderer/modeling/light/light.cpp
     renderer/modeling/light/light.h

@@ -57,6 +57,16 @@
                     1.000000
                 </alpha>
             </color>
+            <color name="Lamp_exitance">
+                <parameter name="color_space" value="linear_rgb" />
+                <parameter name="multiplier" value="1.0" />
+                <values>
+                    1.000000 1.000000 1.000000
+                </values>
+                <alpha>
+                    1.000000
+                </alpha>
+            </color>
             <bsdf name="__default_material_bsdf" model="lambertian_brdf">
                 <parameter name="reflectance" value="__default_material_bsdf_reflectance" />
             </bsdf>
@@ -72,6 +82,17 @@
                 <parameter name="bsdf" value="Material_dg" />
                 <parameter name="surface_shader" value="physical_surface_shader" />
             </material>
+            <light name="Lamp" model="directional_light">
+                <parameter name="exitance" value="Lamp_exitance" />
+                <transform>
+                    <matrix>
+                        1.000000000000000 0.000000000000000 0.000000000000000 0.000000000000000
+                        0.000000000000000 0.707106781186548 0.707106781186547 0.000000000000000
+                        0.000000000000000 -0.707106781186547 0.707106781186548 0.000000000000000
+                        0.000000000000000 0.000000000000000 0.000000000000000 1.000000000000000
+                    </matrix>
+                </transform>
+            </light>
             <object name="Cube" model="mesh_object">
                 <parameter name="filename" value="Cube.obj" />
             </object>
@@ -115,55 +136,12 @@
                 <assign_material slot="0" side="front" material="Material" />
             </object_instance>
         </assembly>
-        <assembly name="light_assembly">
-            <color name="Lamp_exitance">
-                <parameter name="color_space" value="linear_rgb" />
-                <parameter name="multiplier" value="1.0" />
-                <values>
-                    1.000000 1.000000 1.000000
-                </values>
-                <alpha>
-                    1.000000
-                </alpha>
-            </color>
-            <light name="Lamp" model="spot_light">
-                <parameter name="exitance" value="Lamp_exitance" />
-                <parameter name="inner_angle" value="20.0" />
-                <parameter name="outer_angle" value="30.0" />
-                <transform>
-                    <matrix>
-                        1.000000000000000 0.000000000000000 0.000000000000000 0.227187976241112
-                        0.000000000000000 0.000000000000000 1.000000000000000 0.700000000000000
-                        0.000000000000000 -1.000000000000000 0.000000000000000 -0.100545398890972
-                        0.000000000000000 0.000000000000000 0.000000000000000 1.000000000000000
-                    </matrix>
-                </transform>
-            </light>
-        </assembly>
         <assembly_instance name="Scene_instance" assembly="Scene">
             <transform time="0">
                 <matrix>
                     1.000000000000000 0.000000000000000 0.000000000000000 0.000000000000000
                     0.000000000000000 1.000000000000000 0.000000000000000 0.000000000000000
                     0.000000000000000 0.000000000000000 1.000000000000000 0.000000000000000
-                    0.000000000000000 0.000000000000000 0.000000000000000 1.000000000000000
-                </matrix>
-            </transform>
-        </assembly_instance>
-        <assembly_instance name="light_assembly_instance" assembly="light_assembly">
-            <transform time="0">
-                <matrix>
-                    1.000000000000000 0.000000000000000 0.000000000000000 0.000000000000000
-                    0.000000000000000 1.000000000000000 0.000000000000000 0.000000000000000
-                    0.000000000000000 0.000000000000000 1.000000000000000 -1.000000000000000
-                    0.000000000000000 0.000000000000000 0.000000000000000 1.000000000000000
-                </matrix>
-            </transform>
-            <transform time="1">
-                <matrix>
-                    1.000000000000000 0.000000000000000 0.000000000000000 0.000000000000000
-                    0.000000000000000 1.000000000000000 0.000000000000000 0.000000000000000
-                    0.000000000000000 0.000000000000000 1.000000000000000 1.000000000000000
                     0.000000000000000 0.000000000000000 0.000000000000000 1.000000000000000
                 </matrix>
             </transform>
@@ -178,13 +156,10 @@
     </output>
     <configurations>
         <configuration name="interactive" base="base_interactive">
-            <parameter name="lighting_engine" value="drt" />
-            <parameters name="drt">
-                <parameter name="enable_ibl" value="false" />
-            </parameters>
+            <parameter name="sample_generator" value="lighttracing" />
         </configuration>
         <configuration name="final" base="base_final">
-            <parameter name="lighting_engine" value="drt" />
+            <parameter name="lighting_engine" value="pt" />
             <parameters name="drt">
                 <parameter name="dl_bsdf_samples" value="1" />
                 <parameter name="dl_light_samples" value="1" />

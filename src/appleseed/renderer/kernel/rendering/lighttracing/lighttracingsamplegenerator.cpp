@@ -285,7 +285,7 @@ namespace
             }
 
             void visit_non_physical_light_vertex(
-                const LightSample&          light_sample,
+                const Vector3d&             sample_position,
                 const Spectrum&             light_particle_flux,
                 const double                time)
             {
@@ -293,7 +293,7 @@ namespace
                 Vector2d sample_position_ndc;
                 const double transmission =
                     vertex_visible_to_camera(
-                        light_sample.m_point,
+                        sample_position,
                         time,
                         sample_position_ndc);
 
@@ -302,7 +302,7 @@ namespace
                     return;
 
                 // Compute the vertex-to-camera direction vector.
-                Vector3d vertex_to_camera = m_camera_position - light_sample.m_point;
+                Vector3d vertex_to_camera = m_camera_position - sample_position;
                 const double square_distance = square_norm(vertex_to_camera);
                 vertex_to_camera /= sqrt(square_distance);
 
@@ -657,28 +657,21 @@ namespace
             const LightSample&          light_sample,
             SampleVector&               samples)
         {
-            // Evaluate the light inputs.
-            InputEvaluator input_evaluator(m_texture_cache);
-            const void* light_data =
-                input_evaluator.evaluate(
-                    light_sample.m_light->get_inputs(),
-                    light_sample.m_bary);
-
             // Sample the light.
+            InputEvaluator input_evaluator(m_texture_cache);
             sampling_context.split_in_place(2, 1);
-            Vector3d emission_direction;
+            Vector3d sample_position, emission_direction;
             Spectrum light_value;
             double light_prob;
             light_sample.m_light->sample(
-                light_data,
+                input_evaluator,
                 sampling_context.next_vector2<2>(),
+                sample_position,
                 emission_direction,
                 light_value,
                 light_prob);
-
-            // Transform the emission direction to world space.
-            const Vector3d emission_direction_world =
-                normalize(light_sample.m_asm_inst_transform.vector_to_parent(emission_direction));
+            sample_position = light_sample.m_asm_inst_transform.point_to_parent(sample_position);
+            emission_direction = normalize(light_sample.m_asm_inst_transform.vector_to_parent(emission_direction));
 
             // Compute the initial particle weight.
             Spectrum initial_alpha = light_value;
@@ -687,8 +680,8 @@ namespace
             // Build the light ray.
             sampling_context.split_in_place(1, 1);
             const ShadingRay light_ray(
-                light_sample.m_point,
-                emission_direction_world,
+                sample_position,
+                emission_direction,
                 sampling_context.next_double2(),
                 ~0);
 
@@ -710,7 +703,7 @@ namespace
             Spectrum light_particle_flux = light_value;
             light_particle_flux /= static_cast<float>(light_sample.m_probability);
             path_visitor.visit_non_physical_light_vertex(
-                light_sample,
+                sample_position,
                 light_particle_flux,
                 light_ray.m_time);
 

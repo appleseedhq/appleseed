@@ -110,6 +110,7 @@ namespace
             m_rcp_screen_half_size = 1.0 / tan(outer_half_angle);
 
             m_transform = Transformd(Matrix4d::rotation(Vector3d(1.0, 0.0, 0.0), -HalfPi)) * get_transform();
+            m_position = m_transform.point_to_parent(Vector3d(0.0));
             m_axis = normalize(m_transform.vector_to_parent(Vector3d(0.0, 1.0, 0.0)));
 
             const Vector3d up = m_transform.vector_to_parent(Vector3d(sin(tilt_angle), 0.0, cos(tilt_angle)));
@@ -122,76 +123,33 @@ namespace
             return true;
         }
 
-        void evaluate_inputs(
-            InputEvaluator&     input_evaluator,
-            const Vector3d&     outgoing) const override
-        {
-            const double cos_theta = dot(outgoing, m_axis);
-            const Vector3d d = outgoing / cos_theta - m_axis;
-            const double x = dot(d, m_screen_basis.get_tangent_u()) * m_rcp_screen_half_size;
-            const double y = dot(d, m_screen_basis.get_normal()) * m_rcp_screen_half_size;
-            const Vector2d uv(0.5 * (x + 1.0), 0.5 * (y + 1.0));
-
-            input_evaluator.evaluate(m_inputs, uv);
-        }
-
         virtual void sample(
-            const void*         data,
+            InputEvaluator&     input_evaluator,
             const Vector2d&     s,
+            Vector3d&           position,
             Vector3d&           outgoing,
             Spectrum&           value,
             double&             probability) const override
         {
-            const Vector3d wo = sample_cone_uniform(s, m_cos_outer_half_angle);
-            outgoing = m_transform.vector_to_parent(wo);
-
-            compute_exitance(data, wo.y, value);
-
+            position = m_position;
+            outgoing = m_transform.vector_to_parent(sample_cone_uniform(s, m_cos_outer_half_angle));
             probability = sample_cone_uniform_pdf(m_cos_outer_half_angle);
+            compute_exitance(input_evaluator, outgoing, value);
         }
 
         virtual void evaluate(
-            const void*         data,
-            const Vector3d&     outgoing,
+            InputEvaluator&     input_evaluator,
+            const Vector3d&     target,
+            Vector3d&           position,
+            Vector3d&           outgoing,
             Spectrum&           value) const override
         {
-            const double cos_theta = dot(outgoing, m_axis);
+            position = m_position;
+            outgoing = normalize(target - position);
 
-            if (cos_theta > m_cos_outer_half_angle)
-                compute_exitance(data, cos_theta, value);
+            if (dot(outgoing, m_axis) > m_cos_outer_half_angle)
+                compute_exitance(input_evaluator, outgoing, value);
             else value.set(0.0f);
-        }
-
-        virtual void evaluate(
-            const void*         data,
-            const Vector3d&     outgoing,
-            Spectrum&           value,
-            double&             probability) const override
-        {
-            const double cos_theta = dot(outgoing, m_axis);
-
-            if (cos_theta > m_cos_outer_half_angle)
-            {
-                compute_exitance(data, cos_theta, value);
-                probability = sample_cone_uniform_pdf(m_cos_outer_half_angle);
-            }
-            else
-            {
-                value.set(0.0f);
-                probability = 0.0f;
-            }
-        }
-
-        virtual double evaluate_pdf(
-            const void*         data,
-            const Vector3d&     outgoing) const override
-        {
-            const double cos_theta = dot(outgoing, m_axis);
-
-            return
-                cos_theta > m_cos_outer_half_angle
-                    ? sample_cone_uniform_pdf(m_cos_outer_half_angle)
-                    : 0.0;
         }
 
       private:
@@ -210,17 +168,24 @@ namespace
         double          m_rcp_screen_half_size;
 
         Transformd      m_transform;
+        Vector3d        m_position;             // world space
         Vector3d        m_axis;                 // world space
         Basis3d         m_screen_basis;         // world space
 
         void compute_exitance(
-            const void*         data,
-            const double        cos_theta,
+            InputEvaluator&     input_evaluator,
+            const Vector3d&     outgoing,
             Spectrum&           exitance) const
         {
+            const double cos_theta = dot(outgoing, m_axis);
             assert(cos_theta > m_cos_outer_half_angle);
 
-            const InputValues* values = static_cast<const InputValues*>(data);
+            const Vector3d d = outgoing / cos_theta - m_axis;
+            const double x = dot(d, m_screen_basis.get_tangent_u()) * m_rcp_screen_half_size;
+            const double y = dot(d, m_screen_basis.get_normal()) * m_rcp_screen_half_size;
+            const Vector2d uv(0.5 * (x + 1.0), 0.5 * (y + 1.0));
+
+            const InputValues* values = input_evaluator.evaluate<InputValues>(m_inputs, uv);
             exitance = values->m_exitance;
             exitance *= static_cast<float>(values->m_exitance_multiplier);
 

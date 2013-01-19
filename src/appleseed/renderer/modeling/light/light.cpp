@@ -29,9 +29,6 @@
 // Interface header.
 #include "light.h"
 
-// appleseed.renderer headers.
-#include "renderer/modeling/input/inputevaluator.h"
-
 using namespace foundation;
 
 namespace renderer
@@ -87,13 +84,6 @@ void Light::on_frame_end(
     const Project&      project,
     const Assembly&     assembly)
 {
-}
-
-void Light::evaluate_inputs(
-    InputEvaluator&     input_evaluator,
-    const Vector3d&     outgoing) const
-{
-    input_evaluator.evaluate(m_inputs, Vector2d(0.0));
 }
 
 }   // namespace renderer

@@ -29,6 +29,9 @@
 // Interface header.
 #include "directlightingintegrator.h"
 
+// appleseed.foundation headers.
+#include "foundation/math/distance.h"
+
 // appleseed.renderer headers.
 #include "renderer/modeling/light/light.h"
 
@@ -132,13 +135,26 @@ void DirectLightingIntegrator::take_single_bsdf_or_light_sample(
     }
 }
 
-void DirectLightingIntegrator::add_light_sample_contribution(
+void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     const LightSample&          sample,
     Spectrum&                   radiance,
     SpectrumStack&              aovs)
 {
+    // Evaluate the light.
+    InputEvaluator input_evaluator(m_shading_context.get_texture_cache());
+    Vector3d sample_position, emission_direction;
+    Spectrum light_value;
+    sample.m_light->evaluate(
+        input_evaluator,
+        sample.m_asm_inst_transform.point_to_local(m_point),
+        sample_position,
+        emission_direction,
+        light_value);
+    sample_position = sample.m_asm_inst_transform.point_to_parent(sample_position);
+    emission_direction = normalize(sample.m_asm_inst_transform.vector_to_parent(emission_direction));
+
     // Compute the incoming direction in world space.
-    Vector3d incoming = sample.m_point - m_point;
+    Vector3d incoming = -emission_direction;
 
     // Cull light samples behind the shading surface.
     double cos_in = dot(incoming, m_shading_basis.get_normal());
@@ -151,21 +167,13 @@ void DirectLightingIntegrator::add_light_sample_contribution(
     const double transmission =
         m_shading_context.get_tracer().trace_between(
             m_point,
-            sample.m_point,
+            sample_position,
             m_time,
             m_parent_shading_point);
 
     // Discard occluded samples.
     if (transmission == 0.0)
         return;
-
-    // Compute the square distance between the light sample and the shading point.
-    const double rcp_sample_square_distance = 1.0 / square_norm(incoming);
-    const double rcp_sample_distance = sqrt(rcp_sample_square_distance);
-
-    // Normalize the incoming direction.
-    incoming *= rcp_sample_distance;
-    cos_in *= rcp_sample_distance;
 
     // Evaluate the BSDF.
     Spectrum bsdf_value;
@@ -183,29 +191,12 @@ void DirectLightingIntegrator::add_light_sample_contribution(
     if (bsdf_prob == 0.0)
         return;
 
-    // Transform the incoming direction to assembly instance space.
-    const Vector3d local_incoming =
-        normalize(sample.m_asm_inst_transform.vector_to_local(incoming));
-
-    const Light* light = sample.m_light;
-
-    // Evaluate the input values of the light.
-    InputEvaluator light_input_evaluator(m_shading_context.get_texture_cache());
-    light->evaluate_inputs(light_input_evaluator, -local_incoming);
-
-    // Evaluate the light.
-    Spectrum light_value;
-    light->evaluate(
-        light_input_evaluator.data(),
-        -local_incoming,
-        light_value);
-
     // Add the contribution of this sample to the illumination.
-    const double weight = transmission * rcp_sample_square_distance / sample.m_probability;
+    const double weight = transmission / (square_distance(m_point, sample_position) * sample.m_probability);
     light_value *= static_cast<float>(weight);
     light_value *= bsdf_value;
     radiance += light_value;
-    aovs.add(light->get_render_layer_index(), radiance);
+    aovs.add(sample.m_light->get_render_layer_index(), radiance);
 }
 
 }   // namespace renderer

@@ -179,7 +179,7 @@ class DirectLightingIntegrator
         Spectrum&                       radiance,
         SpectrumStack&                  aovs);
 
-    void add_light_sample_contribution(
+    void add_non_physical_light_sample_contribution(
         const LightSample&              sample,
         Spectrum&                       radiance,
         SpectrumStack&                  aovs);
@@ -199,14 +199,14 @@ class DirectLightingIntegrator
 //                                                   |
 //   sample_lights  -->  take_single_light_sample  --+
 //                                                   |
-//                                                   `-->  add_light_sample_contribution
+//                                                   `-->  add_non_physical_light_sample_contribution
 //
 //
 //                                 .-->  add_emitting_triangle_sample_contribution
 //                                 |
 //   sample_lights_low_variance  --+
 //                                 |
-//                                 `-->  add_light_sample_contribution
+//                                 `-->  add_non_physical_light_sample_contribution
 //
 //
 //                                                                       .-->  take_single_bsdf_sample
@@ -215,7 +215,7 @@ class DirectLightingIntegrator
 //                             |                                         |                                 |     (Balance MIS)
 //                             |                                         `-->  take_single_light_sample  --+
 //                             |                                               (Balance MIS)               |
-//                             |                                                                           `-->  add_light_sample_contribution
+//                             |                                                                           `-->  add_non_physical_light_sample_contribution
 //   sample_bsdf_and_lights  --+-->  sample_bsdf
 //                             |
 //                             `-->  sample_lights
@@ -227,7 +227,7 @@ class DirectLightingIntegrator
 //                                          |                                         |                                 |     (Balance MIS)
 //                                          |                                         `-->  take_single_light_sample  --+
 //                                          |                                               (Balance MIS)               |
-//                                          |                                                                           `-->  add_light_sample_contribution
+//                                          |                                                                           `-->  add_non_physical_light_sample_contribution
 //   sample_bsdf_and_lights_low_variance  --+-->  sample_bsdf
 //                                          |
 //                                          `-->  sample_lights
@@ -351,8 +351,8 @@ void DirectLightingIntegrator::sample_lights_low_variance(
         }
     }
 
-    // Sample light sources.
-    const size_t light_count = m_light_sampler.get_light_count();
+    // Sample non-physical light sources.
+    const size_t light_count = m_light_sampler.get_non_physical_light_count();
     if (light_count > 0)
     {
         sampling_context.split_in_place(2, light_count);
@@ -362,9 +362,12 @@ void DirectLightingIntegrator::sample_lights_low_variance(
             const foundation::Vector2d s = sampling_context.next_vector2<2>();
 
             LightSample sample;
-            m_light_sampler.sample_single_light(i, m_time, s, sample);
+            m_light_sampler.sample_non_physical_lights(i, m_time, s, sample);
 
-            add_light_sample_contribution(sample, radiance, aovs);
+            add_non_physical_light_sample_contribution(
+                sample,
+                radiance,
+                aovs);
         }
     }
 }
@@ -505,7 +508,10 @@ void DirectLightingIntegrator::take_single_light_sample(
     }
     else
     {
-        add_light_sample_contribution(sample, radiance, aovs);
+        add_non_physical_light_sample_contribution(
+            sample,
+            radiance,
+            aovs);
     }
 }
 

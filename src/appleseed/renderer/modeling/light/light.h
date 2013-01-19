@@ -85,36 +85,24 @@ class DLLSYMBOL Light
         const Project&                  project,
         const Assembly&                 assembly);
 
-    // Evaluate the inputs of this light. Input values are stored in the input evaluator.
-    virtual void evaluate_inputs(
-        InputEvaluator&                 input_evaluator,
-        const foundation::Vector3d&     outgoing) const;
-
-    // Sample the light and compute the emission direction, the probability
-    // density with which it was chosen and the value of the light for this
-    // direction.
+    // Sample the light and compute the emission position, the emission direction,
+    // the probability density with which this direction was chosen and the value
+    // of the light for this direction.
     virtual void sample(
-        const void*                     data,                       // input values
+        InputEvaluator&                 input_evaluator,
         const foundation::Vector2d&     s,                          // sample in [0,1)^2
+        foundation::Vector3d&           position,                   // world space emission position
         foundation::Vector3d&           outgoing,                   // world space emission direction, unit-length
-        Spectrum&                       value,                      // light value for this direction
+        Spectrum&                       value,                      // light value
         double&                         probability) const = 0;     // PDF value
 
-    // Evaluate the light for a given emission direction.
+    // Evaluate the light for a given target point.
     virtual void evaluate(
-        const void*                     data,                       // input values
-        const foundation::Vector3d&     outgoing,                   // world space emission direction, unit-length
-        Spectrum&                       value) const = 0;           // light value for this direction
-    virtual void evaluate(
-        const void*                     data,                       // input values
-        const foundation::Vector3d&     outgoing,                   // world space emission direction, unit-length
-        Spectrum&                       value,                      // EDF value for this direction
-        double&                         probability) const = 0;     // light value
-
-    // Evaluate the PDF for a given emission direction.
-    virtual double evaluate_pdf(
-        const void*                     data,                       // input values
-        const foundation::Vector3d&     outgoing) const = 0;        // world space emission direction, unit-length
+        InputEvaluator&                 input_evaluator,
+        const foundation::Vector3d&     target,                     // world space target point
+        foundation::Vector3d&           position,                   // world space emission position
+        foundation::Vector3d&           outgoing,                   // world space emission direction, unit-length
+        Spectrum&                       value) const = 0;           // light value
 
   private:
     struct Impl;
