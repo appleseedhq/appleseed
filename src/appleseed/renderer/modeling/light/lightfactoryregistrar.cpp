@@ -34,6 +34,7 @@
 #include "renderer/modeling/light/ilightfactory.h"
 #include "renderer/modeling/light/pointlight.h"
 #include "renderer/modeling/light/spotlight.h"
+#include "renderer/modeling/light/sunlight.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
@@ -62,6 +63,7 @@ LightFactoryRegistrar::LightFactoryRegistrar()
     register_factory(auto_ptr<FactoryType>(new DirectionalLightFactory()));
     register_factory(auto_ptr<FactoryType>(new PointLightFactory()));
     register_factory(auto_ptr<FactoryType>(new SpotLightFactory()));
+    register_factory(auto_ptr<FactoryType>(new SunLightFactory()));
 }
 
 LightFactoryRegistrar::~LightFactoryRegistrar()

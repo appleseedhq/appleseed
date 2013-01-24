@@ -26,17 +26,50 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_LIGHT_H
-#define APPLESEED_RENDERER_API_LIGHT_H
+#ifndef APPLESEED_RENDERER_MODELING_LIGHT_SUNLIGHT_H
+#define APPLESEED_RENDERER_MODELING_LIGHT_SUNLIGHT_H
 
-// API headers.
-#include "renderer/modeling/light/directionallight.h"
+// appleseed.renderer headers.
 #include "renderer/modeling/light/ilightfactory.h"
 #include "renderer/modeling/light/light.h"
-#include "renderer/modeling/light/lightfactoryregistrar.h"
-#include "renderer/modeling/light/lighttraits.h"
-#include "renderer/modeling/light/pointlight.h"
-#include "renderer/modeling/light/spotlight.h"
-#include "renderer/modeling/light/sunlight.h"
 
-#endif  // !APPLESEED_RENDERER_API_LIGHT_H
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
+#include "foundation/utility/autoreleaseptr.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+// Forward declarations.
+namespace foundation    { class DictionaryArray; }
+namespace renderer      { class ParamArray; }
+
+namespace renderer
+{
+
+//
+// Sun light factory.
+//
+
+class DLLSYMBOL SunLightFactory
+  : public ILightFactory
+{
+  public:
+    // Return a string identifying this light model.
+    virtual const char* get_model() const override;
+
+    // Return a human-readable string identifying this light model.
+    virtual const char* get_human_readable_model() const override;
+
+    // Return a set of widget definitions for this light model.
+    virtual foundation::DictionaryArray get_widget_definitions() const override;
+
+    // Create a new light instance.
+    virtual foundation::auto_release_ptr<Light> create(
+        const char*         name,
+        const ParamArray&   params) const override;
+};
+
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_MODELING_LIGHT_SUNLIGHT_H

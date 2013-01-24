@@ -1288,6 +1288,8 @@ set (renderer_modeling_light_sources
     renderer/modeling/light/pointlight.h
     renderer/modeling/light/spotlight.cpp
     renderer/modeling/light/spotlight.h
+    renderer/modeling/light/sunlight.cpp
+    renderer/modeling/light/sunlight.h
 )
 list (APPEND appleseed_sources
     ${renderer_modeling_light_sources}
