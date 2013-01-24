@@ -32,6 +32,9 @@
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
 
+// Standard headers.
+#include <cstddef>
+
 using namespace foundation;
 
 namespace renderer
@@ -41,7 +44,7 @@ namespace renderer
 // Range of wavelengths used throughout the light simulation.
 //
 
-float g_light_wavelengths[Spectrum::Samples];
+Spectrum g_light_wavelengths;
 
 namespace
 {

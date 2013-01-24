@@ -30,7 +30,7 @@
 #define APPLESEED_RENDERER_MODELING_SPECTRUM_WAVELENGTHS_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/global/globaltypes.h"
 
 namespace renderer
 {
@@ -39,9 +39,9 @@ namespace renderer
 // Wavelengths used throughout the light simulation.
 //
 
-const float LowWavelength  = 400.0f;                    // low wavelength, in nm
-const float HighWavelength = 700.0f;                    // high wavelength, in nm
-extern float g_light_wavelengths[Spectrum::Samples];    // wavelengths, in nm
+const float LowWavelength = 400.0f;         // low wavelength, in nm
+const float HighWavelength = 700.0f;        // high wavelength, in nm
+extern Spectrum g_light_wavelengths;        // wavelengths, in nm
 
 }       // namespace renderer
 

@@ -100,7 +100,7 @@ namespace
             &wavelengths[0],
             &values[0],
             Spectrum::Samples,
-            g_light_wavelengths,
+            &g_light_wavelengths[0],
             &spectrum[0]);
 
         return spectrum;
