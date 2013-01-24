@@ -90,7 +90,7 @@ namespace
             if (!check_uniform("exitance"))
                 return false;
 
-            check_non_zero_exitance("exitance");
+            check_non_zero_radiance("exitance");
 
             m_inputs.evaluate_uniforms(&m_values);
             m_position = get_transform().point_to_parent(Vector3d(0.0));
@@ -108,7 +108,7 @@ namespace
         {
             position = m_position;
             outgoing = sample_sphere_uniform(s);
-            value = m_values.m_exitance;
+            value = m_values.m_radiance;
             probability = 1.0 / (4.0 * Pi);
         }
 
@@ -121,14 +121,14 @@ namespace
         {
             position = m_position;
             outgoing = normalize(target - position);
-            value = m_values.m_exitance;
+            value = m_values.m_radiance;
         }
 
       private:
         struct InputValues
         {
-            Spectrum    m_exitance;         // radiant exitance, in W.m^-2
-            Alpha       m_exitance_alpha;   // unused
+            Spectrum    m_radiance;         // emitted radiance in W.m^-2.sr^-1
+            Alpha       m_radiance_alpha;   // unused
         };
 
         InputValues     m_values;
@@ -158,7 +158,7 @@ DictionaryArray PointLightFactory::get_widget_definitions() const
     definitions.push_back(
         Dictionary()
             .insert("name", "exitance")
-            .insert("label", "Exitance")
+            .insert("label", "Radiance")
             .insert("widget", "entity_picker")
             .insert("entity_types",
                 Dictionary()

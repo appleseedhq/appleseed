@@ -47,7 +47,7 @@ namespace renderer
 {
 
 //
-// An environment EDF that creates a vertical gradient between two user-defined exitances.
+// An environment EDF that creates a vertical radiance gradient.
 //
 
 class DLLSYMBOL GradientEnvironmentEDFFactory

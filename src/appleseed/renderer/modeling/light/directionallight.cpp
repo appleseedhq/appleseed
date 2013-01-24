@@ -94,7 +94,7 @@ namespace
             if (!check_uniform("exitance"))
                 return false;
 
-            check_non_zero_exitance("exitance");
+            check_non_zero_radiance("exitance");
 
             m_inputs.evaluate_uniforms(&m_values);
             m_safe_scene_radius = project.get_scene()->compute_radius();
@@ -117,7 +117,7 @@ namespace
                 m_basis.transform_to_parent(
                     m_safe_scene_radius * Vector3d(point_on_disk[0], -1.0, point_on_disk[1]));
             outgoing = m_outgoing;
-            value = m_values.m_exitance;
+            value = m_values.m_radiance;
             probability = RcpPi;
         }
 
@@ -130,14 +130,14 @@ namespace
         {
             position = target - m_safe_scene_radius * m_outgoing;
             outgoing = m_outgoing;
-            value = m_values.m_exitance;
+            value = m_values.m_radiance;
         }
 
       private:
         struct InputValues
         {
-            Spectrum    m_exitance;             // radiant exitance, in W.m^-2
-            Alpha       m_exitance_alpha;       // unused
+            Spectrum    m_radiance;             // emitted radiance in W.m^-2.sr^-1
+            Alpha       m_radiance_alpha;       // unused
         };
 
         InputValues     m_values;
@@ -169,7 +169,7 @@ DictionaryArray DirectionalLightFactory::get_widget_definitions() const
     definitions.push_back(
         Dictionary()
             .insert("name", "exitance")
-            .insert("label", "Exitance")
+            .insert("label", "Radiance")
             .insert("widget", "entity_picker")
             .insert("entity_types",
                 Dictionary()

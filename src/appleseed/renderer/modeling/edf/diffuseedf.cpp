@@ -91,7 +91,7 @@ namespace
             if (!EDF::on_frame_begin(project, assembly))
                 return false;
 
-            check_non_zero_exitance("exitance", "exitance_multiplier");
+            check_non_zero_radiance("exitance", "exitance_multiplier");
 
             return true;
         }
@@ -111,8 +111,8 @@ namespace
             outgoing = shading_basis.transform_to_parent(wo);
 
             const InputValues* values = static_cast<const InputValues*>(data);
-            value = values->m_exitance;
-            value *= static_cast<float>(values->m_exitance_multiplier);
+            value = values->m_radiance;
+            value *= static_cast<float>(values->m_radiance_multiplier);
 
             probability = wo.y * RcpPi;
             assert(probability > 0.0);
@@ -138,8 +138,8 @@ namespace
             }
 
             const InputValues* values = static_cast<const InputValues*>(data);
-            value = values->m_exitance;
-            value *= static_cast<float>(values->m_exitance_multiplier);
+            value = values->m_radiance;
+            value *= static_cast<float>(values->m_radiance_multiplier);
         }
 
         virtual void evaluate(
@@ -164,8 +164,8 @@ namespace
             }
 
             const InputValues* values = static_cast<const InputValues*>(data);
-            value = values->m_exitance;
-            value *= static_cast<float>(values->m_exitance_multiplier);
+            value = values->m_radiance;
+            value *= static_cast<float>(values->m_radiance_multiplier);
 
             probability = cos_on * RcpPi;
         }
@@ -191,9 +191,9 @@ namespace
       private:
         struct InputValues
         {
-            Spectrum    m_exitance;             // radiant exitance, in W.m^-2
-            Alpha       m_exitance_alpha;       // unused
-            double      m_exitance_multiplier;  // radiant exitance multiplier
+            Spectrum    m_radiance;             // emitted radiance in W.m^-2.sr^-1
+            Alpha       m_radiance_alpha;       // unused
+            double      m_radiance_multiplier;  // emitted radiance multiplier
         };
     };
 }
@@ -220,7 +220,7 @@ DictionaryArray DiffuseEDFFactory::get_widget_definitions() const
     definitions.push_back(
         Dictionary()
             .insert("name", "exitance")
-            .insert("label", "Exitance")
+            .insert("label", "Radiance")
             .insert("widget", "entity_picker")
             .insert("entity_types",
                 Dictionary()
@@ -232,7 +232,7 @@ DictionaryArray DiffuseEDFFactory::get_widget_definitions() const
     definitions.push_back(
         Dictionary()
             .insert("name", "exitance_multiplier")
-            .insert("label", "Exitance Multiplier")
+            .insert("label", "Radiance Multiplier")
             .insert("widget", "entity_picker")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))

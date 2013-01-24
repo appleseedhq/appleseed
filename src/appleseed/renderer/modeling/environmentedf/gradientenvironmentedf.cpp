@@ -95,7 +95,7 @@ namespace
                 return false;
 
             if (is_uniform_zero("horizon_exitance") && is_uniform_zero("zenith_exitance"))
-                warn_zero_exitance();
+                warn_zero_radiance();
 
             m_inputs.evaluate_uniforms(&m_values);
 
@@ -145,10 +145,10 @@ namespace
       private:
         struct InputValues
         {
-            Spectrum    m_horizon_exitance;
-            Alpha       m_horizon_exitance_alpha;       // unused
-            Spectrum    m_zenith_exitance;
-            Alpha       m_zenith_exitance_alpha;        // unused
+            Spectrum    m_horizon_radiance;             // radiance emitted at horizon, in W.m^-2.sr^-1
+            Alpha       m_horizon_radiance_alpha;       // unused
+            Spectrum    m_zenith_radiance;              // radiance emitted at zenith, in W.m^-2.sr^-1
+            Alpha       m_zenith_radiance_alpha;        // unused
         };
 
         InputValues     m_values;
@@ -159,13 +159,13 @@ namespace
             const double angle = acos(abs(y));
             const double blend = angle * (1.0 / HalfPi);
 
-            // Blend the horizon and zenith exitances.
+            // Blend the horizon and zenith radiances.
             const float k = static_cast<float>(blend);
-            Spectrum horizon_exitance = m_values.m_horizon_exitance;
-            horizon_exitance *= k;
-            output = m_values.m_zenith_exitance;
+            Spectrum horizon_radiance = m_values.m_horizon_radiance;
+            horizon_radiance *= k;
+            output = m_values.m_zenith_radiance;
             output *= 1.0f - k;
-            output += horizon_exitance;
+            output += horizon_radiance;
         }
     };
 }
@@ -192,7 +192,7 @@ DictionaryArray GradientEnvironmentEDFFactory::get_widget_definitions() const
     definitions.push_back(
         Dictionary()
             .insert("name", "horizon_exitance")
-            .insert("label", "Horizon Exitance")
+            .insert("label", "Horizon Radiance")
             .insert("widget", "entity_picker")
             .insert("entity_types",
                 Dictionary()
@@ -203,7 +203,7 @@ DictionaryArray GradientEnvironmentEDFFactory::get_widget_definitions() const
     definitions.push_back(
         Dictionary()
             .insert("name", "zenith_exitance")
-            .insert("label", "Zenith Exitance")
+            .insert("label", "Zenith Radiance")
             .insert("widget", "entity_picker")
             .insert("entity_types",
                 Dictionary()

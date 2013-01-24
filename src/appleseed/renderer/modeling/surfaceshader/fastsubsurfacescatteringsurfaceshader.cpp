@@ -198,7 +198,7 @@ namespace
                     (values.m_ambient_sss + view_dep * values.m_view_dep_sss) * sss_contrib +                               // subsurface scattering
                     dot_nl * values.m_diffuse;                                                                              // diffuse lighting
 
-                Spectrum exitance;
+                Spectrum radiance;
                 if (light_sample.m_triangle)
                 {
                     // Evaluate the EDF's inputs.
@@ -214,7 +214,7 @@ namespace
                         light_sample.m_geometric_normal,
                         Basis3d(light_sample.m_shading_normal),
                         -light_vec,
-                        exitance);
+                        radiance);
                 }
                 else
                 {
@@ -226,7 +226,7 @@ namespace
                         light_sample.m_asm_inst_transform.point_to_local(point),
                         sample_position,
                         emission_direction,
-                        exitance);
+                        radiance);
 
                     // todo: transform sample_position and emission_direction
                     // to world space when they will be needed for shadowing.
@@ -236,7 +236,7 @@ namespace
 
                 // Compute and accumulate the contribution of this light sample.
                 Spectrum result = values.m_albedo;
-                result *= exitance;
+                result *= radiance;
                 result *= static_cast<float>(sample_contrib);
                 shading_result.m_color += result;
             }

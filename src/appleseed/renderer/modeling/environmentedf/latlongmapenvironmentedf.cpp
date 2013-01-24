@@ -98,14 +98,14 @@ namespace
       public:
         ImageSampler(
             TextureCache&   texture_cache,
-            const Source*   exitance_source,
+            const Source*   radiance_source,
             const Source*   multiplier_source,
             const size_t    width,
             const size_t    height,
             const double    u_shift,
             const double    v_shift)
           : m_texture_cache(texture_cache)
-          , m_exitance_source(exitance_source)
+          , m_radiance_source(radiance_source)
           , m_multiplier_source(multiplier_source)
           , m_rcp_width(1.0 / width)
           , m_rcp_height(1.0 / height)
@@ -118,7 +118,7 @@ namespace
         {
             payload.m_x = static_cast<uint32>(x);
 
-            if (m_exitance_source == 0)
+            if (m_radiance_source == 0)
             {
                 payload.m_color.set(0.0f);
                 importance = 0.0;
@@ -129,7 +129,7 @@ namespace
                 (x + 0.5) * m_rcp_width + m_u_shift,
                 1.0 - (y + 0.5) * m_rcp_height + m_v_shift);
 
-            m_exitance_source->evaluate(m_texture_cache, uv, payload.m_color);
+            m_radiance_source->evaluate(m_texture_cache, uv, payload.m_color);
 
             double multiplier;
             m_multiplier_source->evaluate(m_texture_cache, uv, multiplier);
@@ -140,7 +140,7 @@ namespace
 
       private:
         TextureCache&   m_texture_cache;
-        const Source*   m_exitance_source;
+        const Source*   m_radiance_source;
         const Source*   m_multiplier_source;
         const double    m_rcp_width;
         const double    m_rcp_height;
@@ -184,7 +184,7 @@ namespace
             if (!EnvironmentEDF::on_frame_begin(project))
                 return false;
 
-            check_non_zero_exitance("exitance", "exitance_multiplier");
+            check_non_zero_radiance("exitance", "exitance_multiplier");
 
             if (m_importance_sampler.get() == 0)
                 build_importance_map(*project.get_scene());
@@ -271,9 +271,9 @@ namespace
       private:
         struct InputValues
         {
-            Spectrum    m_exitance;
-            Alpha       m_exitance_alpha;       // unused
-            double      m_exitance_multiplier;
+            Spectrum    m_radiance;             // emitted radiance in W.m^-2.sr^-1
+            Alpha       m_radiance_alpha;       // unused
+            double      m_radiance_multiplier;  // emitted radiance multiplier
         };
 
         double                                  m_u_shift;
@@ -292,12 +292,12 @@ namespace
 
         void build_importance_map(const Scene& scene)
         {
-            const Source* exitance_source = m_inputs.source("exitance");
-            assert(exitance_source);
+            const Source* radiance_source = m_inputs.source("exitance");
+            assert(radiance_source);
 
-            if (dynamic_cast<const TextureSource*>(exitance_source))
+            if (dynamic_cast<const TextureSource*>(radiance_source))
             {
-                const TextureSource* texture_source = static_cast<const TextureSource*>(exitance_source);
+                const TextureSource* texture_source = static_cast<const TextureSource*>(radiance_source);
                 const TextureInstance& texture_instance = texture_source->get_texture_instance();
                 const CanvasProperties& texture_props = texture_instance.get_texture().properties();
 
@@ -327,7 +327,7 @@ namespace
             TextureCache texture_cache(texture_store);
             ImageSampler sampler(
                 texture_cache,
-                exitance_source,
+                radiance_source,
                 m_inputs.source("exitance_multiplier"),
                 m_importance_map_width,
                 m_importance_map_height,
@@ -363,8 +363,8 @@ namespace
             const InputValues* values =
                 input_evaluator.evaluate<InputValues>(m_inputs, uv);
 
-            value = values->m_exitance;
-            value *= static_cast<float>(values->m_exitance_multiplier);
+            value = values->m_radiance;
+            value *= static_cast<float>(values->m_radiance_multiplier);
         }
 
         double compute_pdf(
@@ -405,7 +405,7 @@ DictionaryArray LatLongMapEnvironmentEDFFactory::get_widget_definitions() const
     definitions.push_back(
         Dictionary()
             .insert("name", "exitance")
-            .insert("label", "Exitance")
+            .insert("label", "Radiance")
             .insert("widget", "entity_picker")
             .insert("entity_types",
                 Dictionary()
@@ -416,7 +416,7 @@ DictionaryArray LatLongMapEnvironmentEDFFactory::get_widget_definitions() const
     definitions.push_back(
         Dictionary()
             .insert("name", "exitance_multiplier")
-            .insert("label", "Exitance Multiplier")
+            .insert("label", "Radiance Multiplier")
             .insert("widget", "entity_picker")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))

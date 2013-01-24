@@ -94,7 +94,7 @@ namespace
                 return false;
 
             if (is_uniform_zero("upper_hemi_exitance") && is_uniform_zero("lower_hemi_exitance"))
-                warn_zero_exitance();
+                warn_zero_radiance();
 
             m_inputs.evaluate_uniforms(&m_values);
 
@@ -111,8 +111,8 @@ namespace
             outgoing = sample_sphere_uniform(s);
             value =
                 outgoing.y >= 0.0
-                    ? m_values.m_upper_hemi_exitance
-                    : m_values.m_lower_hemi_exitance;
+                    ? m_values.m_upper_hemi_radiance
+                    : m_values.m_lower_hemi_radiance;
             probability = 1.0 / (4.0 * Pi);
         }
 
@@ -124,8 +124,8 @@ namespace
             assert(is_normalized(outgoing));
             value =
                 outgoing.y >= 0.0
-                    ? m_values.m_upper_hemi_exitance
-                    : m_values.m_lower_hemi_exitance;
+                    ? m_values.m_upper_hemi_radiance
+                    : m_values.m_lower_hemi_radiance;
         }
 
         virtual void evaluate(
@@ -137,8 +137,8 @@ namespace
             assert(is_normalized(outgoing));
             value =
                 outgoing.y >= 0.0
-                    ? m_values.m_upper_hemi_exitance
-                    : m_values.m_lower_hemi_exitance;
+                    ? m_values.m_upper_hemi_radiance
+                    : m_values.m_lower_hemi_radiance;
             probability = 1.0 / (4.0 * Pi);
         }
 
@@ -153,10 +153,10 @@ namespace
       private:
         struct InputValues
         {
-            Spectrum    m_upper_hemi_exitance;
-            Alpha       m_upper_hemi_exitance_alpha;        // unused
-            Spectrum    m_lower_hemi_exitance;
-            Alpha       m_lower_hemi_exitance_alpha;        // unused
+            Spectrum    m_upper_hemi_radiance;              // radiance emitted by the upper hemisphere, in W.m^-2.sr^-1
+            Alpha       m_upper_hemi_radiance_alpha;        // unused
+            Spectrum    m_lower_hemi_radiance;              // radiance emitted by the lower hemisphere, in W.m^-2.sr^-1
+            Alpha       m_lower_hemi_radiance_alpha;        // unused
         };
 
         InputValues     m_values;
@@ -185,7 +185,7 @@ DictionaryArray ConstantHemisphereEnvironmentEDFFactory::get_widget_definitions(
     definitions.push_back(
         Dictionary()
             .insert("name", "upper_hemi_exitance")
-            .insert("label", "Upper Hemisphere Exitance")
+            .insert("label", "Upper Hemisphere Radiance")
             .insert("widget", "entity_picker")
             .insert("entity_types",
                 Dictionary().insert("color", "Colors"))
@@ -195,7 +195,7 @@ DictionaryArray ConstantHemisphereEnvironmentEDFFactory::get_widget_definitions(
     definitions.push_back(
         Dictionary()
             .insert("name", "lower_hemi_exitance")
-            .insert("label", "Lower Hemisphere Exitance")
+            .insert("label", "Lower Hemisphere Radiance")
             .insert("widget", "entity_picker")
             .insert("entity_types",
                 Dictionary().insert("color", "Colors"))

@@ -93,7 +93,7 @@ namespace
             if (!check_uniform("exitance"))
                 return false;
 
-            check_non_zero_exitance("exitance");
+            check_non_zero_radiance("exitance");
 
             m_inputs.evaluate_uniforms(&m_values);
 
@@ -108,7 +108,7 @@ namespace
             double&             probability) const override
         {
             outgoing = sample_sphere_uniform(s);
-            value = m_values.m_exitance;
+            value = m_values.m_radiance;
             probability = 1.0 / (4.0 * Pi);
         }
 
@@ -118,7 +118,7 @@ namespace
             Spectrum&           value) const override
         {
             assert(is_normalized(outgoing));
-            value = m_values.m_exitance;
+            value = m_values.m_radiance;
         }
 
         virtual void evaluate(
@@ -128,7 +128,7 @@ namespace
             double&             probability) const override
         {
             assert(is_normalized(outgoing));
-            value = m_values.m_exitance;
+            value = m_values.m_radiance;
             probability = 1.0 / (4.0 * Pi);
         }
 
@@ -143,8 +143,8 @@ namespace
       private:
         struct InputValues
         {
-            Spectrum    m_exitance;
-            Alpha       m_exitance_alpha;       // unused
+            Spectrum    m_radiance;             // emitted radiance in W.m^-2.sr^-1
+            Alpha       m_radiance_alpha;       // unused
         };
 
         InputValues     m_values;
@@ -173,7 +173,7 @@ DictionaryArray ConstantEnvironmentEDFFactory::get_widget_definitions() const
     definitions.push_back(
         Dictionary()
             .insert("name", "exitance")
-            .insert("label", "Exitance")
+            .insert("label", "Radiance")
             .insert("widget", "entity_picker")
             .insert("entity_types",
                 Dictionary().insert("color", "Colors"))

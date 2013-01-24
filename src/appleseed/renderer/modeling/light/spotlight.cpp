@@ -97,9 +97,9 @@ namespace
             if (!Light::on_frame_begin(project, assembly))
                 return false;
 
-            m_exitance_source = m_inputs.source("exitance");
-            m_exitance_multiplier_source = m_inputs.source("exitance_multiplier");
-            check_non_zero_exitance(m_exitance_source, m_exitance_multiplier_source);
+            m_radiance_source = m_inputs.source("exitance");
+            m_radiance_multiplier_source = m_inputs.source("exitance_multiplier");
+            check_non_zero_radiance(m_radiance_source, m_radiance_multiplier_source);
 
             const double inner_half_angle = deg_to_rad(m_params.get_required<double>("inner_angle", 20.0) / 2.0);
             const double outer_half_angle = deg_to_rad(m_params.get_required<double>("outer_angle", 30.0) / 2.0);
@@ -134,7 +134,7 @@ namespace
             position = m_position;
             outgoing = m_transform.vector_to_parent(sample_cone_uniform(s, m_cos_outer_half_angle));
             probability = sample_cone_uniform_pdf(m_cos_outer_half_angle);
-            compute_exitance(input_evaluator, outgoing, value);
+            compute_radiance(input_evaluator, outgoing, value);
         }
 
         virtual void evaluate(
@@ -148,20 +148,20 @@ namespace
             outgoing = normalize(target - position);
 
             if (dot(outgoing, m_axis) > m_cos_outer_half_angle)
-                compute_exitance(input_evaluator, outgoing, value);
+                compute_radiance(input_evaluator, outgoing, value);
             else value.set(0.0f);
         }
 
       private:
         struct InputValues
         {
-            Spectrum    m_exitance;             // radiant exitance, in W.m^-2
-            Alpha       m_exitance_alpha;       // unused
-            double      m_exitance_multiplier;  // radiant exitance multiplier
+            Spectrum    m_radiance;             // emitted radiance in W.m^-2.sr^-1
+            Alpha       m_radiance_alpha;       // unused
+            double      m_radiance_multiplier;  // emitted radiance multiplier
         };
 
-        const Source*   m_exitance_source;
-        const Source*   m_exitance_multiplier_source;
+        const Source*   m_radiance_source;
+        const Source*   m_radiance_multiplier_source;
 
         double          m_cos_inner_half_angle;
         double          m_cos_outer_half_angle;
@@ -172,10 +172,10 @@ namespace
         Vector3d        m_axis;                 // world space
         Basis3d         m_screen_basis;         // world space
 
-        void compute_exitance(
+        void compute_radiance(
             InputEvaluator&     input_evaluator,
             const Vector3d&     outgoing,
-            Spectrum&           exitance) const
+            Spectrum&           radiance) const
         {
             const double cos_theta = dot(outgoing, m_axis);
             assert(cos_theta > m_cos_outer_half_angle);
@@ -186,12 +186,12 @@ namespace
             const Vector2d uv(0.5 * (x + 1.0), 0.5 * (y + 1.0));
 
             const InputValues* values = input_evaluator.evaluate<InputValues>(m_inputs, uv);
-            exitance = values->m_exitance;
-            exitance *= static_cast<float>(values->m_exitance_multiplier);
+            radiance = values->m_radiance;
+            radiance *= static_cast<float>(values->m_radiance_multiplier);
 
             if (cos_theta < m_cos_inner_half_angle)
             {
-                exitance *=
+                radiance *=
                     static_cast<float>(
                         smoothstep(m_cos_outer_half_angle, m_cos_inner_half_angle, cos_theta));
             }
@@ -221,7 +221,7 @@ DictionaryArray SpotLightFactory::get_widget_definitions() const
     definitions.push_back(
         Dictionary()
             .insert("name", "exitance")
-            .insert("label", "Exitance")
+            .insert("label", "Radiance")
             .insert("widget", "entity_picker")
             .insert("entity_types",
                 Dictionary()
@@ -233,7 +233,7 @@ DictionaryArray SpotLightFactory::get_widget_definitions() const
     definitions.push_back(
         Dictionary()
             .insert("name", "exitance_multiplier")
-            .insert("label", "Exitance Multiplier")
+            .insert("label", "Radiance Multiplier")
             .insert("widget", "entity_picker")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))

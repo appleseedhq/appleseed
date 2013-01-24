@@ -117,9 +117,9 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         0.642f, 0.639f, 0.657f, 0.639f, 0.635f, 0.642f
     };
 
-    // Input wavelengths for light source exitance.
-    const size_t LightExitanceSampleCount = 1024;
-    static const float LightExitanceWavelengths[LightExitanceSampleCount] =
+    // Input wavelengths for light source radiance.
+    const size_t LightRadianceSampleCount = 1024;
+    static const float LightRadianceWavelengths[LightRadianceSampleCount] =
     {
         386.0000f, 386.3176f, 386.6352f, 386.9528f, 387.2704f, 387.5880f, 387.9056f, 388.2232f, 388.5408f, 388.8584f,
         389.1760f, 389.4936f, 389.8112f, 390.1288f, 390.4464f, 390.7640f, 391.0816f, 391.3992f, 391.7168f, 392.0344f,
@@ -226,8 +226,8 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         709.9520f, 710.2696f, 710.5872f, 710.9048f
     };
 
-    // Input values for light source exitance.
-    static const float LightExitanceValues[LightExitanceSampleCount] =
+    // Input values for light source radiance.
+    static const float LightRadianceValues[LightRadianceSampleCount] =
     {
          4.92835727f,  4.95023640f,  4.87167292f,  4.85039921f,  4.85475580f,
          4.80956281f,  4.77826218f,  4.75116142f,  4.69755889f,  4.66649574f,
@@ -494,19 +494,19 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
                 ColorValueArray(ReflectanceSampleCount, RedReflectanceValues)));
     }
 
-    // Create light source exitance.
+    // Create light source radiance.
     {
         ParamArray params;
         params.insert("color_space", "spectral");
         params.insert("wavelength_range",
             Vector2f(
-                LightExitanceWavelengths[0],
-                LightExitanceWavelengths[LightExitanceSampleCount - 1]));
+                LightRadianceWavelengths[0],
+                LightRadianceWavelengths[LightRadianceSampleCount - 1]));
         assembly->colors().insert(
             ColorEntityFactory::create(
-                "light_exitance",
+                "light_radiance",
                 params,
-                ColorValueArray(LightExitanceSampleCount, LightExitanceValues)));
+                ColorValueArray(LightRadianceSampleCount, LightRadianceValues)));
     }
 
     // Create a new physical surface shader.
@@ -584,7 +584,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
     {
         // Create a new EDF.
         ParamArray params;
-        params.insert("exitance", "light_exitance");
+        params.insert("exitance", "light_radiance");
         assembly->edfs().insert(
             DiffuseEDFFactory().create("light_material_edf", params));
     }

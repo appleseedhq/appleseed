@@ -97,7 +97,7 @@ namespace
             if (!EnvironmentEDF::on_frame_begin(project))
                 return false;
 
-            check_non_zero_exitance("exitance", "exitance_multiplier");
+            check_non_zero_radiance("exitance", "exitance_multiplier");
 
             return true;
         }
@@ -145,9 +145,9 @@ namespace
       private:
         struct InputValues
         {
-            Spectrum    m_exitance;
-            Alpha       m_exitance_alpha;       // unused
-            double      m_exitance_multiplier;
+            Spectrum    m_radiance;             // emitted radiance in W.m^-2.sr^-1
+            Alpha       m_radiance_alpha;       // unused
+            double      m_radiance_multiplier;  // emitted radiance multiplier
         };
 
         void lookup_envmap(
@@ -162,8 +162,8 @@ namespace
 
             // Evaluate the input.
             const InputValues* values = input_evaluator.evaluate<InputValues>(m_inputs, uv);
-            value = values->m_exitance;
-            value *= static_cast<float>(values->m_exitance_multiplier);
+            value = values->m_radiance;
+            value *= static_cast<float>(values->m_radiance_multiplier);
         }
     };
 }
@@ -190,7 +190,7 @@ DictionaryArray MirrorBallMapEnvironmentEDFFactory::get_widget_definitions() con
     definitions.push_back(
         Dictionary()
             .insert("name", "exitance")
-            .insert("label", "Exitance")
+            .insert("label", "Radiance")
             .insert("widget", "entity_picker")
             .insert("entity_types",
                 Dictionary()
@@ -202,7 +202,7 @@ DictionaryArray MirrorBallMapEnvironmentEDFFactory::get_widget_definitions() con
     definitions.push_back(
         Dictionary()
             .insert("name", "exitance_multiplier")
-            .insert("label", "Exitance Multiplier")
+            .insert("label", "Radiance Multiplier")
             .insert("widget", "entity_picker")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
