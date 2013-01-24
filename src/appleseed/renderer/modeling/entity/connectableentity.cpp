@@ -46,11 +46,11 @@ bool ConnectableEntity::is_uniform_zero(const Source* source)
 
     if (source->is_uniform())
     {
-        Spectrum exitance;
+        Spectrum spectrum;
         Alpha alpha;
-        source->evaluate_uniform(exitance, alpha);
+        source->evaluate_uniform(spectrum, alpha);
 
-        if (exitance == Spectrum(0.0f))
+        if (spectrum == Spectrum(0.0f))
             return true;
     }
 
