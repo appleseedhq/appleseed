@@ -95,20 +95,7 @@ namespace
 
             // Precompute the rays origin in world space if the camera is static.
             if (m_transform_sequence.size() <= 1)
-            {
-                const Transformd::MatrixType mat =
-                    m_transform_sequence.evaluate(0.0).get_local_to_parent();
-
-                m_ray_org.x = mat[ 3];
-                m_ray_org.y = mat[ 7];
-                m_ray_org.z = mat[11];
-
-                const double w = mat[15];
-                assert(w != 0.0);
-
-                if (w != 1.0)
-                    m_ray_org /= w;
-            }
+                m_ray_org = m_transform_sequence.evaluate(0.0).point_to_parent(Vector3d(0.0));
 
             return true;
         }
@@ -131,9 +118,9 @@ namespace
             Transformd tmp;
             const Transformd& transform = m_transform_sequence.evaluate(ray.m_time, tmp);
             ray.m_org =
-                m_transform_sequence.size() > 1
-                    ? transform.get_local_to_parent().extract_translation()
-                    : m_ray_org;
+                m_transform_sequence.size() <= 1
+                    ? m_ray_org
+                    : transform.get_local_to_parent().extract_translation();
             ray.m_dir = transform.vector_to_parent(target);
         }
 
@@ -147,12 +134,12 @@ namespace
 
       private:
         // Parameters.
-        Vector2d        m_film_dimensions;      // film dimensions, in meters
+        Vector2d    m_film_dimensions;      // film dimensions, in meters
 
         // Precomputed values.
-        double          m_rcp_film_width;       // film width reciprocal
-        double          m_rcp_film_height;      // film height reciprocal
-        Vector3d        m_ray_org;              // origin of the rays
+        double      m_rcp_film_width;       // film width reciprocal in camera space
+        double      m_rcp_film_height;      // film height reciprocal in camera space
+        Vector3d    m_ray_org;              // origin of the rays in world space
     };
 }
 

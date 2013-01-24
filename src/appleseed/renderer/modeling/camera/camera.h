@@ -113,7 +113,7 @@ class DLLSYMBOL Camera
     Impl* impl;
 
     TransformSequence   m_transform_sequence;
-    double              m_focal_length;         // focal length, in meters
+    double              m_focal_length;         // focal length in camera space
     double              m_shutter_open_time;
     double              m_shutter_close_time;
 

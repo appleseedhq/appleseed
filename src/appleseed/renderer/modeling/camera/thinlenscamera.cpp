@@ -183,7 +183,7 @@ namespace
             Transformd tmp;
             const Transformd& transform = m_transform_sequence.evaluate(ray.m_time, tmp);
 
-            // Set the ray origin.
+            // Compute the ray origin.
             const Transformd::MatrixType& mat = transform.get_local_to_parent();
             ray.m_org.x =    mat[ 0] * lens_point.x +
                              mat[ 1] * lens_point.y +
@@ -201,16 +201,10 @@ namespace
             if (w != 1.0)
                 ray.m_org /= w;
 
-            // Compute the location of the focus point.
-            const Vector3d focus_point(
-                (point.x - 0.5) * m_kx,
-                (0.5 - point.y) * m_ky,
-                -m_focal_distance);
-
-            // Set the ray direction.
-            ray.m_dir = focus_point;
-            ray.m_dir.x -= lens_point.x;
-            ray.m_dir.y -= lens_point.y;
+            // Compute the ray direction.
+            ray.m_dir.x = (point.x - 0.5) * m_kx - lens_point.x;
+            ray.m_dir.y = (0.5 - point.y) * m_ky - lens_point.y;
+            ray.m_dir.z = -m_focal_distance;
             ray.m_dir = transform.vector_to_parent(ray.m_dir);
         }
 
@@ -226,14 +220,14 @@ namespace
         // Parameters.
         bool                m_autofocus_enabled;        // is autofocus enabled?
         Vector2d            m_autofocus_target;         // autofocus target on film plane in NDC
-        double              m_focal_distance;           // focal distance, in meters
+        double              m_focal_distance;           // focal distance in camera space
         size_t              m_diaphragm_blade_count;    // number of blades of the diaphragm, 0 for round aperture
         double              m_diaphragm_tilt_angle;     // tilt angle of the diaphragm in radians
 
         // Precomputed values.
-        double              m_lens_radius;              // radius of the lens, in meters, in local space
-        double              m_rcp_film_width;           // film width reciprocal
-        double              m_rcp_film_height;          // film height reciprocal
+        double              m_lens_radius;              // radius of the lens in camera space
+        double              m_rcp_film_width;           // film width reciprocal in camera space
+        double              m_rcp_film_height;          // film height reciprocal in camera space
         double              m_kx, m_ky;
 
         vector<Vector2d>    m_diaphragm_vertices;
@@ -265,31 +259,25 @@ namespace
 
         double get_autofocus_focal_distance(const Intersector& intersector) const
         {
-            // Create a ray. The autofocus considers the scene in the middle of the shutter interval.
-            ShadingRay ray;
-            ray.m_tmin = 0.0;
-            ray.m_tmax = numeric_limits<double>::max();
-            ray.m_time = get_shutter_middle_time();
-            ray.m_flags = ~0;
+            // The autofocus considers the scene at the middle of the shutter interval.
+            const double time = get_shutter_middle_time();
+            const Transformd transform = m_transform_sequence.evaluate(time);
 
-            // Set the ray origin.
-            const Transformd transform = m_transform_sequence.evaluate(ray.m_time);
-            const Transformd::MatrixType& mat = transform.get_local_to_parent();
-            ray.m_org = mat.extract_translation();
-            const double w = mat[15];
-            assert(w != 0.0);
-            if (w != 1.0)
-                ray.m_org /= w;
-
-            // Transform the film point from NDC to camera space.
+            // Compute the camera space coordinates of the focus point.
             const Vector2d& film_dimensions = get_film_dimensions();
             const Vector3d target(
                 (m_autofocus_target[0] - 0.5) * film_dimensions[0],
                 (0.5 - m_autofocus_target[1]) * film_dimensions[1],
                 -m_focal_length);
 
-            // Set the ray direction.
-            ray.m_dir = transform.vector_to_parent(target);
+            // Create a ray in world space.
+            ShadingRay ray;
+            ray.m_org = transform.point_to_parent(Vector3d(0.0));
+            ray.m_dir = transform.point_to_parent(target) - ray.m_org;
+            ray.m_tmin = 0.0;
+            ray.m_tmax = numeric_limits<double>::max();
+            ray.m_time = time;
+            ray.m_flags = ~0;
 
             // Trace the ray.
             ShadingPoint shading_point;
@@ -299,22 +287,19 @@ namespace
             {
                 // Hit: compute the focal distance.
                 const Vector3d v = shading_point.get_point() - ray.m_org;
-                const Vector3d camera_direction =
-                    transform.vector_to_parent(Vector3d(0.0, 0.0, -1.0));
-                const double af_focal_distance = dot(v, camera_direction);
+                const double af_focal_distance = -transform.vector_to_local(v).z;
 
                 RENDERER_LOG_INFO(
-                    "camera \"%s\": autofocus sets focal distance to %f %s (using camera position at time=%.1f).",
+                    "camera \"%s\": autofocus sets focal distance to %f (using camera position at time=%.1f).",
                     get_name(),
                     af_focal_distance,
-                    plural(af_focal_distance, "meter").c_str(),
                     ray.m_time);
 
                 return af_focal_distance;
             }
             else
             {
-                // No hit: focus at infinity.
+                // Miss: focus at infinity.
                 RENDERER_LOG_INFO(
                     "camera \"%s\": autofocus sets focal distance to infinity (using camera position at time=%.1f).",
                     get_name(),
