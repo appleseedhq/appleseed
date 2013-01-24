@@ -41,6 +41,11 @@ namespace renderer
 struct Light::Impl
 {
     Transformd m_transform;
+
+    Impl()
+      : m_transform(Transformd::identity())
+    {
+    }
 };
 
 namespace
