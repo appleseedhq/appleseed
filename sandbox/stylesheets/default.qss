@@ -889,3 +889,8 @@ QWidget#MaterialAssignmentEditorWindow QWidget#scrollarea_contents
 {
     background-color: transparent;
 }
+
+QLabel#info_label
+{
+    color: rgb(100, 100, 100);
+}

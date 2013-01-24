@@ -241,6 +241,8 @@ set (utility_sources
     utility/inputwidgetproxies.cpp
     utility/inputwidgetproxies.h
     utility/interop.h
+    utility/mousecoordinatestracker.cpp
+    utility/mousecoordinatestracker.h
     utility/scrollareapanhandler.cpp
     utility/scrollareapanhandler.h
     utility/settingskeys.h

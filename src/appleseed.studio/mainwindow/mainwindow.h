@@ -40,6 +40,7 @@
 #include "mainwindow/qtlogtarget.h"
 #include "mainwindow/rendersettingswindow.h"
 #include "mainwindow/statusbar.h"
+#include "utility/mousecoordinatestracker.h"
 #include "utility/scrollareapanhandler.h"
 #include "utility/widgetzoomhandler.h"
 
@@ -65,6 +66,7 @@
 namespace appleseed { namespace studio { class LogWidget; } }
 namespace Ui        { class MainWindow; }
 class QAction;
+class QLabel;
 class QPoint;
 class QString;
 class QStringList;
@@ -116,17 +118,19 @@ class MainWindow
     std::auto_ptr<ProjectExplorer>      m_project_explorer;
     RenderingManager                    m_rendering_manager;
 
-    // A helper structure to associate a zoom handler to a render widget.
+    // A helper structure to associate event handlers to a render widget.
     struct RenderWidgetRecord
       : public foundation::NonCopyable
     {
-        RenderWidget*                       m_render_widget;
-        std::auto_ptr<WidgetZoomHandler>    m_zoom_handler;
-        std::auto_ptr<ScrollAreaPanHandler> m_pan_handler;
+        RenderWidget*                           m_render_widget;
+        std::auto_ptr<WidgetZoomHandler>        m_zoom_handler;
+        std::auto_ptr<ScrollAreaPanHandler>     m_pan_handler;
+        std::auto_ptr<MouseCoordinatesTracker>  m_mouse_tracker;
 
         RenderWidgetRecord(
             QScrollArea*    scroll_area,
             RenderWidget*   render_widget,
+            QLabel*         info_label,
             const int       content_width,
             const int       content_height)
           : m_render_widget(render_widget)
@@ -139,6 +143,13 @@ class MainWindow
                     content_height));
 
             m_pan_handler.reset(new ScrollAreaPanHandler(scroll_area));
+
+            m_mouse_tracker.reset(
+                new MouseCoordinatesTracker(
+                    m_render_widget,
+                    info_label,
+                    content_width,
+                    content_height));
         }
     };
 

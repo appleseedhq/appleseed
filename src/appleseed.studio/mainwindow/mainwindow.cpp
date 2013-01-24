@@ -70,6 +70,7 @@
 #include <QFileDialog>
 #include <QGridLayout>
 #include <QIcon>
+#include <QLabel>
 #include <QMessageBox>
 #include <QMetaType>
 #include <QRegExp>
@@ -757,11 +758,16 @@ void MainWindow::add_render_widget(
     scroll_area->setAlignment(Qt::AlignCenter);
     scroll_area->setWidget(render_widget_wrapper);
 
+    // Create a lebel to display various information such as mouse coordinates, etc.
+    QLabel* info_label = new QLabel();
+    info_label->setObjectName("info_label");
+
     // Associate a zoom handler to the scroll area / render widget.
     m_render_widgets[label.toStdString()] =
         new RenderWidgetRecord(
             scroll_area,
             render_widget,
+            info_label,
             width,
             height);
 
@@ -769,6 +775,7 @@ void MainWindow::add_render_widget(
     QWidget* tab = new QWidget();
     tab->setLayout(new QGridLayout());
     tab->layout()->addWidget(scroll_area);
+    tab->layout()->addWidget(info_label);
 
     // Add the tab to the render channels tab bar.
     m_ui->tab_render_channels->addTab(tab, label);
