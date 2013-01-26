@@ -274,7 +274,7 @@ namespace
             // Evaluate the glossy component of the BRDF (equation 4).
             const double num = sval.m_kg * pow(cos_hn, exp);
             const double den = cos_oh * (cos_in + cos_on - cos_in * cos_on);
-            value = schlick_fresnel_reflection(rval.m_scaled_rg, cos_oh, values->m_fr_multiplier);
+            value = fresnel_dielectric_schlick(rval.m_scaled_rg, cos_oh, values->m_fr_multiplier);
             value *= static_cast<float>(num / den);
 
             // Evaluate the diffuse component of the BRDF (equation 5).
@@ -358,7 +358,7 @@ namespace
                 const double exp = (exp_num_u + exp_num_v) / exp_den;
                 const double num = exp_den == 0.0 ? 0.0 : sval.m_kg * pow(cos_hn, exp);
                 const double den = cos_oh * (cos_in + cos_on - cos_in * cos_on);
-                Spectrum glossy = schlick_fresnel_reflection(rval.m_scaled_rg, cos_oh, values->m_fr_multiplier);
+                Spectrum glossy = fresnel_dielectric_schlick(rval.m_scaled_rg, cos_oh, values->m_fr_multiplier);
                 glossy *= static_cast<float>(num / den);
                 value += glossy;
 

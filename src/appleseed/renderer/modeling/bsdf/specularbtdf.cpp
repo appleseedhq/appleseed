@@ -120,7 +120,7 @@ namespace
                 // Compute the Fresnel reflection factor.
                 const double cos_theta_t = sqrt(cos_theta_t2);
                 const double fresnel_reflection =
-                    fresnel_reflection_no_polarization(
+                    fresnel_dielectric_unpolarized(
                         values->m_from_ior,
                         values->m_to_ior,
                         abs(cos_theta_i),

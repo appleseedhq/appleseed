@@ -36,20 +36,20 @@ using namespace foundation;
 
 TEST_SUITE(Foundation_Math_Fresnel)
 {
-    TEST_CASE(SchlickFresnelReflection_GivenCosThetaIsZero_ReturnsOne)
+    TEST_CASE(FresnelDielectricSchlick_GivenCosThetaIsZero_ReturnsOne)
     {
         const Spectrum31f NormalReflectance(42.0f);
 
-        const Spectrum31f result = schlick_fresnel_reflection(NormalReflectance, 0.0);
+        const Spectrum31f result = fresnel_dielectric_schlick(NormalReflectance, 0.0);
 
         EXPECT_EQ(Spectrum31f(1.0f), result);
     }
 
-    TEST_CASE(SchlickFresnelReflection_GivenCosThetaIsOne_ReturnsNormalReflectance)
+    TEST_CASE(FresnelDielectricSchlick_GivenCosThetaIsOne_ReturnsNormalReflectance)
     {
         const Spectrum31f NormalReflectance(42.0f);
 
-        const Spectrum31f result = schlick_fresnel_reflection(NormalReflectance, 1.0);
+        const Spectrum31f result = fresnel_dielectric_schlick(NormalReflectance, 1.0);
 
         EXPECT_EQ(NormalReflectance, result);
     }
