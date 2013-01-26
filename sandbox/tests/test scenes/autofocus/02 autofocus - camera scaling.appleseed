@@ -7,8 +7,8 @@
             <parameter name="controller_target" value="1.6 -0.209959 0" />
             <parameter name="diaphragm_blades" value="0" />
             <parameter name="diaphragm_tilt_angle" value="0.0" />
-            <parameter name="f_stop" value="0.04" />
-            <parameter name="film_dimensions" value="0.025 0.01875" />
+            <parameter name="f_stop" value="0.4" />
+            <parameter name="film_dimensions" value="0.25 0.1875" />
             <parameter name="horizontal_fov" value="45.0" />
             <parameter name="shutter_close_time" value="1.0" />
             <parameter name="shutter_open_time" value="0.0" />
