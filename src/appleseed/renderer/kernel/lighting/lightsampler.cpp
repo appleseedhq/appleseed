@@ -112,6 +112,7 @@ LightSampler::LightSampler(const Scene& scene)
     // Precompute some values.
     m_non_physical_light_count = m_non_physical_lights.size();
     m_rcp_total_emissive_area = 1.0 / m_total_emissive_area;
+    m_rcp_emitting_triangle_count = 1.0 / m_emitting_triangles.size();
 
     // Prepare the CDFs for sampling.
     if (m_emitter_cdf.valid())
@@ -297,8 +298,9 @@ void LightSampler::collect_emitting_triangles(
                     m_emitting_triangles.push_back(emitting_triangle);
 
                     // Insert the light-emitting triangle into the CDFs.
-                    m_emitter_cdf.insert(emitting_triangle_index + m_non_physical_lights.size(), area);
-                    m_emitting_triangle_cdf.insert(emitting_triangle_index, area);
+                    const double importance = 1.0;
+                    m_emitter_cdf.insert(emitting_triangle_index + m_non_physical_lights.size(), importance);
+                    m_emitting_triangle_cdf.insert(emitting_triangle_index, importance);
 
                     // Keep track of the total area of the light-emitting triangles.
                     m_total_emissive_area += area;
@@ -436,8 +438,7 @@ void LightSampler::sample_emitting_triangle(
     sample.m_geometric_normal = triangle.m_geometric_normal;
 
     // Compute the probability of choosing this sample.
-//  assert(feq(triangle_prob * triangle.m_rcp_area, m_rcp_total_emissive_area));    // subject to numerical instability
-    sample.m_probability = m_rcp_total_emissive_area;
+    sample.m_probability = triangle.m_rcp_area * m_rcp_emitting_triangle_count;
 }
 
 }   // namespace renderer

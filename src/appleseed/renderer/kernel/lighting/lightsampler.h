@@ -32,6 +32,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
 #include "renderer/kernel/intersection/intersectionsettings.h"
+#include "renderer/kernel/shading/shadingpoint.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/cdf.h"
@@ -46,7 +47,6 @@ namespace renderer      { class AssemblyInstance; }
 namespace renderer      { class EDF; }
 namespace renderer      { class Light; }
 namespace renderer      { class Scene; }
-namespace renderer      { class ShadingPoint; }
 
 namespace renderer
 {
@@ -161,6 +161,7 @@ class LightSampler
     EmittingTriangleVector              m_emitting_triangles;
     double                              m_total_emissive_area;
     double                              m_rcp_total_emissive_area;
+    double                              m_rcp_emitting_triangle_count;
 
     EmitterCDF                          m_emitter_cdf;
     EmitterCDF                          m_emitting_triangle_cdf;
@@ -212,29 +213,14 @@ inline bool LightSampler::has_lights_or_emitting_triangles() const
     return m_emitter_cdf.valid();
 }
 
-inline double LightSampler::evaluate_pdf(const ShadingPoint& /*result*/) const
+inline double LightSampler::evaluate_pdf(const ShadingPoint& result) const
 {
-    //
-    // The probability density of a given triangle is
-    //
-    //                   triangle area
-    //   p_triangle = -------------------
-    //                total emissive area
-    //
-    // The probability density of a given point on a given triangle is
-    //
-    //                  1.0
-    //   p_point = -------------
-    //             triangle area
-    //
-    // The probability density of a given light sample is thus
-    //
-    //                                             1.0
-    //   p_sample = p_triangle * p_point = -------------------
-    //                                     total emissive area
-    //
-
-    return m_rcp_total_emissive_area;
+    const foundation::Vector3d& v0 = result.get_vertex(0);
+    const foundation::Vector3d& v1 = result.get_vertex(1);
+    const foundation::Vector3d& v2 = result.get_vertex(2);
+    const foundation::Vector3d n = foundation::cross(v1 - v0, v2 - v0);
+    const double pdf_point = 2.0 / foundation::norm(n);
+    return pdf_point * m_rcp_emitting_triangle_count;
 }
 
 }       // namespace renderer
