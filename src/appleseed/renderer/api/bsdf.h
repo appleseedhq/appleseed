@@ -38,8 +38,8 @@
 #include "renderer/modeling/bsdf/ibsdffactory.h"
 #include "renderer/modeling/bsdf/kelemenbrdf.h"
 #include "renderer/modeling/bsdf/lambertianbrdf.h"
+#include "renderer/modeling/bsdf/microfacetbrdf.h"
 #include "renderer/modeling/bsdf/nullbsdf.h"
-#include "renderer/modeling/bsdf/phongbrdf.h"
 #include "renderer/modeling/bsdf/specularbrdf.h"
 #include "renderer/modeling/bsdf/specularbtdf.h"
 

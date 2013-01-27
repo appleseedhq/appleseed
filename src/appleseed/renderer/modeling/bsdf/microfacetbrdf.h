@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSDF_PHONGBRDF_H
-#define APPLESEED_RENDERER_MODELING_BSDF_PHONGBRDF_H
+#ifndef APPLESEED_RENDERER_MODELING_BSDF_MICROFACETBRDF_H
+#define APPLESEED_RENDERER_MODELING_BSDF_MICROFACETBRDF_H
 
 // appleseed.renderer headers.
 #include "renderer/modeling/bsdf/ibsdffactory.h"
@@ -48,10 +48,10 @@ namespace renderer
 {
 
 //
-// Phong BRDF factory.
+// Microfacet BRDF factory.
 //
 
-class DLLSYMBOL PhongBRDFFactory
+class DLLSYMBOL MicrofacetBRDFFactory
   : public IBSDFFactory
 {
   public:
@@ -72,4 +72,4 @@ class DLLSYMBOL PhongBRDFFactory
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_BSDF_PHONGBRDF_H
+#endif  // !APPLESEED_RENDERER_MODELING_BSDF_MICROFACETBRDF_H
