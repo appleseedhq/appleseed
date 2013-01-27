@@ -68,6 +68,7 @@ namespace
           : Light(name, params)
         {
             m_inputs.declare("exitance", InputFormatSpectrum);
+            m_inputs.declare("exitance_multiplier", InputFormatScalar, "1.0");
         }
 
         virtual void release() override
@@ -87,12 +88,14 @@ namespace
             if (!Light::on_frame_begin(project, assembly))
                 return false;
 
-            if (!check_uniform("exitance"))
+            if (!check_uniform("exitance") || !check_uniform("exitance_multiplier"))
                 return false;
 
-            check_non_zero_radiance("exitance");
+            check_non_zero_radiance("exitance", "exitance_multiplier");
 
             m_inputs.evaluate_uniforms(&m_values);
+            m_values.m_radiance *= static_cast<float>(m_values.m_radiance_multiplier);
+
             m_position = get_transform().point_to_parent(Vector3d(0.0));
 
             return true;
@@ -127,12 +130,13 @@ namespace
       private:
         struct InputValues
         {
-            Spectrum    m_radiance;         // emitted radiance in W.m^-2.sr^-1
-            Alpha       m_radiance_alpha;   // unused
+            Spectrum    m_radiance;             // emitted radiance in W.m^-2.sr^-1
+            Alpha       m_radiance_alpha;       // unused
+            double      m_radiance_multiplier;  // emitted radiance multiplier
         };
 
         InputValues     m_values;
-        Vector3d        m_position;         // world space
+        Vector3d        m_position;             // world space
     };
 }
 
@@ -165,6 +169,14 @@ DictionaryArray PointLightFactory::get_widget_definitions() const
                     .insert("color", "Colors"))
             .insert("use", "required")
             .insert("default", ""));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "exitance_multiplier")
+            .insert("label", "Radiance Multiplier")
+            .insert("widget", "text_box")
+            .insert("use", "optional")
+            .insert("default", "1.0"));
 
     return definitions;
 }
