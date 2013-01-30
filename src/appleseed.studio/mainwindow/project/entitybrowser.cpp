@@ -68,6 +68,14 @@ namespace
         for (const_each<StringDictionary> i = other; i; ++i)
             dest.insert(i->name(), i->value());
     }
+
+    const Scene* get_parent_scene(const Entity* entity)
+    {
+        while (dynamic_cast<const Scene*>(entity) == 0)
+            entity = entity->get_parent();
+
+        return static_cast<const Scene*>(entity);
+    }
 }
 
 
@@ -158,6 +166,14 @@ StringDictionary EntityBrowser<Assembly>::get_entities(const Assembly& assembly,
     else if (type == "surface_shader")
     {
         entities = build_entity_dictionary(assembly.surface_shaders());
+    }
+    else if (type == "environment_edf")
+    {
+        entities = build_entity_dictionary(get_parent_scene(&assembly)->environment_edfs());
+    }
+    else if (type == "environment_shader")
+    {
+        entities = build_entity_dictionary(get_parent_scene(&assembly)->environment_shaders());
     }
     else
     {

@@ -32,8 +32,10 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/color/wavelengths.h"
+#include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/inputevaluator.h"
+#include "renderer/modeling/input/source.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/scene.h"
 
@@ -77,10 +79,11 @@ namespace
     {
       public:
         SunLight(
-            const char*         name,
-            const ParamArray&   params)
+            const char*             name,
+            const ParamArray&       params)
           : Light(name, params)
         {
+            m_inputs.declare("environment_edf", InputFormatEntity, "");
             m_inputs.declare("turbidity", InputFormatScalar);
             m_inputs.declare("exitance_multiplier", InputFormatScalar, "1.0");
         }
@@ -96,32 +99,40 @@ namespace
         }
 
         virtual bool on_frame_begin(
-            const Project&      project,
-            const Assembly&     assembly) override
+            const Project&          project,
+            const Assembly&         assembly) override
         {
             if (!Light::on_frame_begin(project, assembly))
                 return false;
 
             m_inputs.evaluate_uniforms(&m_values);
-            m_safe_scene_radius = project.get_scene()->compute_radius();
             m_outgoing = normalize(get_transform().vector_to_parent(Vector3d(0.0, 0.0, -1.0)));
+
+            // If the sun light is bound to an environment EDF, let it override the sun direction and turbidity.
+            const EnvironmentEDF* env_edf = static_cast<EnvironmentEDF*>(m_inputs.get_entity("environment_edf"));
+            if (env_edf)
+                apply_env_edf_overrides(env_edf, m_outgoing, m_values.m_turbidity);
+
             m_basis.build(m_outgoing);
+
             compute_sun_radiance(
                 m_outgoing,
                 m_values.m_turbidity,
                 m_values.m_radiance_multiplier,
                 m_radiance);
 
+            m_safe_scene_radius = project.get_scene()->compute_radius();
+
             return true;
         }
 
         virtual void sample(
-            InputEvaluator&     input_evaluator,
-            const Vector2d&     s,
-            Vector3d&           position,
-            Vector3d&           outgoing,
-            Spectrum&           value,
-            double&             probability) const override
+            InputEvaluator&         input_evaluator,
+            const Vector2d&         s,
+            Vector3d&               position,
+            Vector3d&               outgoing,
+            Spectrum&               value,
+            double&                 probability) const override
         {
             const Vector2d point_on_disk = sample_disk_uniform(s);
             position =
@@ -133,11 +144,11 @@ namespace
         }
 
         virtual void evaluate(
-            InputEvaluator&     input_evaluator,
-            const Vector3d&     target,
-            Vector3d&           position,
-            Vector3d&           outgoing,
-            Spectrum&           value) const override
+            InputEvaluator&         input_evaluator,
+            const Vector3d&         target,
+            Vector3d&               position,
+            Vector3d&               outgoing,
+            Spectrum&               value) const override
         {
             position = target - m_safe_scene_radius * m_outgoing;
             outgoing = m_outgoing;
@@ -152,16 +163,38 @@ namespace
         };
 
         InputValues     m_values;
-        double          m_safe_scene_radius;        // world space
         Vector3d        m_outgoing;                 // world space
         Basis3d         m_basis;                    // world space
         Spectrum        m_radiance;
+        double          m_safe_scene_radius;        // world space
+
+        static void apply_env_edf_overrides(
+            const EnvironmentEDF*   env_edf,
+            Vector3d&               outgoing,
+            double&                 turbidity)
+        {
+            // Use the sun direction from the EDF if it has one.
+            const Source* sun_theta_src = env_edf->get_inputs().source("sun_theta");
+            const Source* sun_phi_src = env_edf->get_inputs().source("sun_phi");
+            if (sun_theta_src->is_uniform() && sun_phi_src->is_uniform())
+            {
+                double sun_theta, sun_phi;
+                sun_theta_src->evaluate_uniform(sun_theta);
+                sun_phi_src->evaluate_uniform(sun_phi);
+                outgoing = -Vector3d::unit_vector(deg_to_rad(sun_theta), deg_to_rad(sun_phi));
+            }
+
+            // Use the sun turbidity from the EDF if it has one.
+            const Source* turbidity_src = env_edf->get_inputs().source("turbidity");
+            if (turbidity_src->is_uniform())
+                turbidity_src->evaluate_uniform(turbidity);
+        }
 
         static void compute_sun_radiance(
-            const Vector3d&     outgoing,
-            const double        turbidity,
-            const double        radiance_multiplier,
-            Spectrum&           radiance)
+            const Vector3d&         outgoing,
+            const double            turbidity,
+            const double            radiance_multiplier,
+            Spectrum&               radiance)
         {
             // Compute the relative optical mass.
             const float cos_theta = -static_cast<float>(outgoing.y);
@@ -276,6 +309,15 @@ const char* SunLightFactory::get_human_readable_model() const
 DictionaryArray SunLightFactory::get_widget_definitions() const
 {
     DictionaryArray definitions;
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "environment_edf")
+            .insert("label", "Bind To")
+            .insert("widget", "entity_picker")
+            .insert("entity_types",
+                Dictionary().insert("environment_edf", "Environment EDFs"))
+            .insert("use", "optional"));
 
     definitions.push_back(
         Dictionary()
