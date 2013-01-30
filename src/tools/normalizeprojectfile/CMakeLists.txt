@@ -94,3 +94,12 @@ target_link_libraries (normalizeprojectfile
 #--------------------------------------------------------------------------------------------------
 
 add_copy_target_to_sandbox_command (normalizeprojectfile)
+
+
+#--------------------------------------------------------------------------------------------------
+# Installation.
+#--------------------------------------------------------------------------------------------------
+
+install (TARGETS normalizeprojectfile
+    DESTINATION bin
+)

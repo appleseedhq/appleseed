@@ -1530,3 +1530,12 @@ foreach (schema_file ${appleseed_schema_files})
         COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/${schema_file} ${PROJECT_SOURCE_DIR}/../sandbox/schemas/
     )
 endforeach ()
+
+
+#--------------------------------------------------------------------------------------------------
+# Installation.
+#--------------------------------------------------------------------------------------------------
+
+install (TARGETS appleseed
+    DESTINATION bin
+)

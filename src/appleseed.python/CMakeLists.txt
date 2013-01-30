@@ -144,3 +144,12 @@ target_link_libraries (appleseed.python
 
 add_copy_target_to_sandbox_py_module_command (appleseed.python)
 add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/appleseed.python/__init__.py)
+
+
+#--------------------------------------------------------------------------------------------------
+# Installation.
+#--------------------------------------------------------------------------------------------------
+
+install (TARGETS appleseed.python
+    DESTINATION bin
+)

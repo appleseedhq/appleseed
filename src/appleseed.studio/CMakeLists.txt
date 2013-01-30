@@ -392,3 +392,20 @@ endif ()
 #--------------------------------------------------------------------------------------------------
 
 add_copy_target_to_sandbox_command (appleseed.studio)
+
+
+#--------------------------------------------------------------------------------------------------
+# Installation.
+#--------------------------------------------------------------------------------------------------
+
+install (TARGETS appleseed.studio
+    DESTINATION bin
+)
+
+install (FILES ../../sandbox/stylesheets/default.qss
+    DESTINATION stylesheets
+)
+
+install (FILES ../../sandbox/settings/appleseed.studio.xml
+    DESTINATION settings
+)

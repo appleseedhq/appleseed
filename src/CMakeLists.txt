@@ -167,6 +167,8 @@ if (USE_EXTERNAL_ALEMBIC)
         ${ZLIB_INCLUDE_DIRS}
         ${OPENEXR_INCLUDE_DIR}
         ${OPENEXR_INCLUDE_DIR}/OpenEXR/
+        ${ILMBASE_INCLUDE_DIR}
+        ${ILMBASE_INCLUDE_DIR}/OpenEXR/
         ${HDF5_INCLUDE_DIRS}
         ${ALEMBIC_INCLUDE_DIRS}
     )
@@ -399,3 +401,33 @@ endif()
 if (WITH_PYTHON)
     add_subdirectory (appleseed.python)
 endif ()
+
+
+#--------------------------------------------------------------------------------------------------
+# Installation.
+#--------------------------------------------------------------------------------------------------
+
+install (PROGRAMS ../scripts/run-appleseed.sh
+    DESTINATION bin
+)
+
+install (FILES ../scripts/watch_folder.py
+    DESTINATION bin
+)
+
+install (
+    FILES
+        ../sandbox/schemas/settings.xsd
+        ../sandbox/schemas/project.xsd
+    DESTINATION schemas
+)
+
+install (
+    DIRECTORY
+        ../sandbox/animations
+        ../sandbox/extras
+        ../sandbox/images
+        ../sandbox/scenes
+        ../sandbox/tests
+    DESTINATION .
+)
