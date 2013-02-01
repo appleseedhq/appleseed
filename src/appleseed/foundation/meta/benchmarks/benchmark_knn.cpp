@@ -39,11 +39,8 @@
 #include "foundation/utility/string.h"
 
 // Standard headers.
-#include <algorithm>
 #include <cassert>
 #include <cstddef>
-#include <cstdio>
-#include <memory>
 #include <string>
 #include <vector>
 
@@ -95,120 +92,7 @@ BENCHMARK_SUITE(Foundation_Math_Knn_Query)
 {
     namespace
     {
-        bool load_points_from_text_file(const char* filename, vector<Vector3f>& points)
-        {
-            assert(filename);
-            assert(points.empty());
-
-            FILE* file = fopen(filename, "rt");
-
-            if (file == 0)
-                return false;
-
-            size_t point_count;
-            if (fscanf(file, FMT_SIZE_T, &point_count) != 1)
-                return false;
-
-            points.resize(point_count);
-
-            for (size_t i = 0; i < point_count; ++i)
-            {
-                Vector3f& p = points[i];
-
-                if (fscanf(file, "%f %f %f", &p.x, &p.y, &p.z) != 3)
-                {
-                    fclose(file);
-                    return false;
-                }
-            }
-
-            fclose(file);
-
-            return true;
-        }
-
-        template <typename T>
-        static void swap_bytes(T* ptr)
-        {
-            assert(ptr);
-            assert(sizeof(T) % 2 == 0);
-
-            uint8* bytes = reinterpret_cast<uint8*>(ptr);
-
-            reverse(bytes, bytes + sizeof(T));
-        }
-
-        bool load_points_from_toxic_photon_map(const char* filename, vector<Vector3f>& points)
-        {
-            assert(filename);
-            assert(points.empty());
-
-            BufferedFile file(filename, BufferedFile::BinaryType, BufferedFile::ReadMode);
-
-            if (!file.is_open())
-                return false;
-
-            const string FileSignature = "toxic photon map file version 1";
-            const size_t FileSignatureLength = FileSignature.size();
-
-            string sig(FileSignatureLength, 0);
-
-            if (file.read(&sig[0], FileSignatureLength) != FileSignatureLength)
-                return false;
-
-            if (sig != FileSignature)
-                return false;
-
-            uint32 stored_photon_count;
-
-            if (file.read(stored_photon_count) != sizeof(uint32))
-                return false;
-
-            swap_bytes(&stored_photon_count);
-
-            points.resize(stored_photon_count);
-
-            for (uint32 i = 0; i < stored_photon_count; ++i)
-            {
-                Vector3f& p = points[i];
-
-                if (file.read(p) != sizeof(Vector3f))
-                    return false;
-
-                swap_bytes(&p.x);
-                swap_bytes(&p.y);
-                swap_bytes(&p.z);
-
-                file.seek(29, BufferedFile::SeekFromCurrent);
-            }
-
-            return true;
-        }
-
-        bool write_points_to_binary_file(const char* filename, const vector<Vector3f>& points)
-        {
-            assert(filename);
-
-            BufferedFile file(filename, BufferedFile::BinaryType, BufferedFile::WriteMode);
-
-            if (!file.is_open())
-                return false;
-
-            if (file.write(static_cast<uint32>(points.size())) != sizeof(uint32))
-                return false;
-
-            if (!points.empty())
-            {
-                const size_t bytes = points.size() * sizeof(Vector3f);
-
-                if (file.write(&points[0], bytes) != bytes)
-                    return false;
-            }
-
-            return true;
-        }
-
-        bool load_points_from_binary_file(const char* filename, vector<Vector3f>& points)
+        bool load_points_from_disk(const char* filename, vector<Vector3f>& points)
         {
             assert(filename);
             assert(points.empty());
@@ -356,11 +240,7 @@ BENCHMARK_SUITE(Foundation_Math_Knn_Query)
         ParticlesFixture()
           : FixtureBaseType("particles_k" + to_string(AnswerSize))
         {
-/*
-            load_points_from_text_file("unit benchmarks/inputs/test_knn_points.txt", m_points);
-            write_points_to_binary_file("unit benchmarks/inputs/test_knn_particles.bin", m_points);
-*/
-            load_points_from_binary_file("unit benchmarks/inputs/test_knn_particles.bin", FixtureBaseType::m_points);
+            load_points_from_disk("unit benchmarks/inputs/test_knn_particles.bin", FixtureBaseType::m_points);
             FixtureBaseType::prepare();
         }
     };
@@ -374,11 +254,7 @@ BENCHMARK_SUITE(Foundation_Math_Knn_Query)
         PhotonMapFixture()
           : FixtureBaseType("photons_k" + to_string(AnswerSize))
         {
-/*
-            load_points_from_toxic_photon_map("unit benchmarks/inputs/test_knn_gally_gpm.bin", m_points);
-            write_points_to_binary_file("unit benchmarks/inputs/test_knn_photons.bin", m_points);
-*/
-            load_points_from_binary_file("unit benchmarks/inputs/test_knn_photons.bin", FixtureBaseType::m_points);
+            load_points_from_disk("unit benchmarks/inputs/test_knn_photons.bin", FixtureBaseType::m_points);
             FixtureBaseType::prepare();
         }
     };
