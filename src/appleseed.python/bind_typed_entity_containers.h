@@ -44,6 +44,7 @@
 
 // Standard headers.
 #include <cstddef>
+#include <string>
 
 namespace detail
 {
@@ -70,40 +71,40 @@ namespace detail
     }
 
     template <class T>
-    boost::python::object typed_entity_map_get_iter( renderer::TypedEntityMap<T>* map)
+    boost::python::object typed_entity_map_get_iter(renderer::TypedEntityMap<T>* map)
     {
         boost::python::dict items;
 
         typedef typename renderer::TypedEntityMap<T>::iterator iterator;
 
-        for (iterator it( map->begin()), e( map->end()); it != e; ++it)
-            items[it->get_name()] = boost::python::ptr( &(*it));
+        for (iterator it(map->begin()), e(map->end()); it != e; ++it)
+            items[it->get_name()] = boost::python::ptr(&(*it));
 
-        return items.attr( "__iter__")();
+        return items.attr("__iter__")();
     }
 
     template <class T>
-    boost::python::list typed_entity_map_get_keys( renderer::TypedEntityMap<T>* map)
+    boost::python::list typed_entity_map_get_keys(renderer::TypedEntityMap<T>* map)
     {
         boost::python::list items;
 
         typedef typename renderer::TypedEntityMap<T>::iterator iterator;
 
-        for (iterator it( map->begin()), e( map->end()); it != e; ++it)
-            items.append( it->get_name());
+        for (iterator it(map->begin()), e(map->end()); it != e; ++it)
+            items.append(it->get_name());
 
         return items;
     }
 
     template <class T>
-    boost::python::list typed_entity_map_get_values( renderer::TypedEntityMap<T>* map)
+    boost::python::list typed_entity_map_get_values(renderer::TypedEntityMap<T>* map)
     {
         boost::python::list items;
 
         typedef typename renderer::TypedEntityMap<T>::iterator iterator;
 
-        for (iterator it( map->begin()), e( map->end()); it != e; ++it)
-            items.append( boost::python::ptr( &(*it)));
+        for (iterator it(map->begin()), e(map->end()); it != e; ++it)
+            items.append(boost::python::ptr(&(*it)));
 
         return items;
     }
@@ -135,8 +136,8 @@ void bind_typed_entity_map(const char* name)
         .def("insert", &renderer::TypedEntityMap<T>::insert)
 
         .def("__iter__", &detail::typed_entity_map_get_iter<T>)
-        .def( "keys", &detail::typed_entity_map_get_keys<T>)
-        .def( "values", &detail::typed_entity_map_get_values<T>)
+        .def("keys", &detail::typed_entity_map_get_keys<T>)
+        .def("values", &detail::typed_entity_map_get_values<T>)
         ;
 }
 
