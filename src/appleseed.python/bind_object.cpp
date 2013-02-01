@@ -51,12 +51,12 @@ namespace detail
     {
         strings.clear();
 
-        for (unsigned i = 0, e = bpy::len(l); i < e; ++i)
+        for (bpy::ssize_t i = 0, e = bpy::len(l); i < e; ++i)
         {
             bpy::extract<const char*> ex(l[i]);
-            if(!ex.check())
+            if (!ex.check())
             {
-                PyErr_SetString(PyExc_TypeError, "Incompatible type. Only strings." );
+                PyErr_SetString(PyExc_TypeError, "Incompatible type. Only strings.");
                 bpy::throw_error_already_set();
             }
 

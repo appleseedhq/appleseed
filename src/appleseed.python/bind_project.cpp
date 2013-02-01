@@ -82,7 +82,7 @@ namespace detail
     {
         proj->get_search_paths().clear();
 
-        for (int i = 0, e = bpy::len(paths); i < e; ++i)
+        for (bpy::ssize_t i = 0, e = bpy::len(paths); i < e; ++i)
         {
             const bpy::extract<const char*> extractor(paths[i]);
             if (extractor.check())

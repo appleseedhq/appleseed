@@ -60,10 +60,10 @@ namespace detail
     {
         SearchPaths paths;
 
-        for (unsigned i = 0, e = bpy::len(search_paths); i < e; ++i)
+        for (bpy::ssize_t i = 0, e = bpy::len(search_paths); i < e; ++i)
         {
             bpy::extract<const char*> ex(search_paths[i]);
-            if(!ex.check())
+            if (!ex.check())
             {
                 PyErr_SetString(PyExc_TypeError, "Incompatible type. Only strings.");
                 bpy::throw_error_already_set();
@@ -77,7 +77,7 @@ namespace detail
 
         if (MeshObjectReader::read(paths, base_object_name.c_str(), bpy_dict_to_param_array(params), objs))
         {
-            for (int i = 0, e = objs.size(); i < e; ++i)
+            for (size_t i = 0, e = objs.size(); i < e; ++i)
             {
                 auto_release_ptr<MeshObject> object(objs[i]);
                 py_objects.append(object);

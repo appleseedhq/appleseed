@@ -57,7 +57,7 @@ namespace detail
         {
             SearchPaths paths;
 
-            for (int i = 0, e = bpy::len(search_paths); i < e; ++i)
+            for (bpy::ssize_t i = 0, e = bpy::len(search_paths); i < e; ++i)
             {
                 bpy::extract<const char*> extractor(search_paths[i] );
                 if (extractor.check())

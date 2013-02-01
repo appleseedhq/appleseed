@@ -66,22 +66,22 @@ namespace
         bpy::list values = d.values();
         bpy::list keys = d.keys();
 
-        for (int i = 0, e = bpy::len(d); i < e; ++i)
+        for (bpy::ssize_t i = 0, e = bpy::len(d); i < e; ++i)
         {
-            bpy::object key(keys[i] );
-            bpy::object value(values[i] );
+            bpy::object key(keys[i]);
+            bpy::object value(values[i]);
 
             // keys
-            bpy::extract<const char*> key_extractor(key );
-            if (!key_extractor.check() )
+            bpy::extract<const char*> key_extractor(key);
+            if (!key_extractor.check())
             {
-                PyErr_SetString(PyExc_TypeError, "Incompatible key type. Only strings accepted." );
+                PyErr_SetString(PyExc_TypeError, "Incompatible key type. Only strings accepted.");
                 bpy::throw_error_already_set();
             }
 
             // string
             {
-                bpy::extract<const char*> extractor(value );
+                bpy::extract<const char*> extractor(value);
                 if (extractor.check())
                 {
                     result.insert(key_extractor(), extractor());
@@ -91,7 +91,7 @@ namespace
 
             // int
             {
-                bpy::extract<int> extractor(value );
+                bpy::extract<int> extractor(value);
                 if (extractor.check())
                 {
                     result.insert(key_extractor(), extractor());
@@ -101,7 +101,7 @@ namespace
 
             // double
             {
-                bpy::extract<double> extractor(value );
+                bpy::extract<double> extractor(value);
                 if (extractor.check())
                 {
                     result.insert(key_extractor(), extractor());
@@ -111,7 +111,7 @@ namespace
 
             // Vector2i
             {
-                bpy::extract<Vector2i> extractor(value );
+                bpy::extract<Vector2i> extractor(value);
                 if (extractor.check())
                 {
                     result.insert(key_extractor(), extractor());
@@ -121,7 +121,7 @@ namespace
 
             // Vector2f
             {
-                bpy::extract<Vector2f> extractor(value );
+                bpy::extract<Vector2f> extractor(value);
                 if (extractor.check())
                 {
                     result.insert(key_extractor(), extractor());
@@ -131,7 +131,7 @@ namespace
 
             // Vector2d
             {
-                bpy::extract<Vector2d> extractor(value );
+                bpy::extract<Vector2d> extractor(value);
                 if (extractor.check())
                 {
                     result.insert(key_extractor(), extractor());
@@ -146,7 +146,7 @@ namespace
 
             // dict
             {
-                bpy::extract<bpy::dict> extractor(value );
+                bpy::extract<bpy::dict> extractor(value);
                 if (extractor.check())
                 {
                     // recurse
@@ -155,7 +155,7 @@ namespace
                 }
             }
 
-            PyErr_SetString(PyExc_TypeError, "Incompatible value type - must be string, int, double or dictionary." );
+            PyErr_SetString(PyExc_TypeError, "Incompatible value type - must be string, int, double or dictionary.");
             bpy::throw_error_already_set();
         }
 

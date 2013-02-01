@@ -71,7 +71,7 @@ namespace detail
     {
         bpy::list result;
 
-        for (int i = 0, e = vals.size(); i < e; ++i)
+        for (size_t i = 0, e = vals.size(); i < e; ++i)
             result.append(vals[i]);
 
         return result;

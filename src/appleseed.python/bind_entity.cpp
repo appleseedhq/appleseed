@@ -43,6 +43,7 @@
 #include "renderer/modeling/scene/assemblyinstance.h"
 
 // Standard headers.
+#include <cstddef>
 #include <string>
 
 namespace bpy = boost::python;
@@ -51,14 +52,15 @@ using namespace renderer;
 
 namespace detail
 {
-    Entity* get_entity_vec_item(EntityVector& vec, int index)
+    Entity* get_entity_vec_item(EntityVector& vec, const int relative_index)
     {
-        if (index < 0)
-            index = vec.size() - index;
+        const size_t index =
+            static_cast<size_t>(
+                relative_index >= 0 ? relative_index : vec.size() + relative_index);
 
-        if (index < 0 || static_cast<size_t>(index) >= vec.size())
+        if (index >= vec.size())
         {
-            PyErr_SetString(PyExc_IndexError, "Invalid index in appleseed.EntityVector" );
+            PyErr_SetString(PyExc_IndexError, "Invalid index in appleseed.EntityVector");
             bpy::throw_error_already_set();
         }
 
