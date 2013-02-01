@@ -1,0 +1,275 @@
+
+# -*- cmake -*- 
+# This source file is part of appleseed.
+# Visit http://appleseedhq.net/ for additional information and resources.
+#
+# This software is released under the MIT license.
+#
+# Copyright (c) 2010-2012 Francois Beaune, Jupiter Jazz Limited
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
+
+
+#--------------------------------------------------------------------------------------------------
+# Microsoft Visual Studio 2012 (11.0) on Windows, generating 32-bit or 64-bit binaries.
+#--------------------------------------------------------------------------------------------------
+
+set (platform "win-vs110")
+
+
+#--------------------------------------------------------------------------------------------------
+# Tools.
+#--------------------------------------------------------------------------------------------------
+
+set (git_command "git")
+
+
+#--------------------------------------------------------------------------------------------------
+# Preprocessor definitions.
+#--------------------------------------------------------------------------------------------------
+
+# All configurations.
+set (preprocessor_definitions_common
+    WIN32
+    _CRT_SECURE_NO_WARNINGS
+    _SCL_SECURE_NO_WARNINGS
+    _USRDLL
+    _WINDOWS
+    XERCES_STATIC_LIBRARY                   # link statically against Xerces-C
+    BOOST_PYTHON_STATIC_LIB                 # link statically against Boost.Python
+)
+
+# Debug configuration.
+set (preprocessor_definitions_debug
+)
+
+# Release configuration.
+set (preprocessor_definitions_release
+    _SECURE_SCL=0
+)
+
+
+#--------------------------------------------------------------------------------------------------
+# Compilation/linking flags.
+#--------------------------------------------------------------------------------------------------
+
+# All configurations.
+set (compiler_flags_common
+    /WX                                     # Treat Warnings As Errors
+    /MP                                     # Multi-processor Compilation
+    /GF                                     # Enable String Pooling
+    /wd4290                                 # Disable warning C4290: C++ exception specification ignored except to indicate a function is not __declspec(nothrow)
+    /wd4355                                 # Disable warning C4355: 'this' : used in base member initializer list
+    /wd4503                                 # Disable warning C4503: decorated name length exceeded, name was truncated
+)
+if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set (compiler_flags_common
+        ${compiler_flags_common}
+        /bigobj                             # Increase Number of Sections in .Obj file
+    )
+endif ()
+set (exe_linker_flags_common
+    /WX                                     # Treat Warnings As Errors
+)
+set (shared_lib_linker_flags_common
+    ${exe_linker_flags_common}
+)
+
+# Debug configuration.
+if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set (compiler_flags_debug
+        /Zi                                 # set Debug Information Format to Program Database
+    )
+else ()
+    set (compiler_flags_debug
+        /ZI                                 # set Debug Information Format to Program Database for Edit & Continue
+    )
+endif ()
+set (compiler_flags_debug
+    ${compiler_flags_debug}
+    /MDd                                    # set Runtime Library to Multi-threaded Debug DLL
+)
+
+# Release configuration.
+set (compiler_flags_release
+    /Zi                                     # set Debug Information Format to Program Database
+    /Ox                                     # Full Optimization
+    /Ob2                                    # set Inline Function Expansion to Any Suitable
+    /Oi                                     # Enable Intrinsic Functions
+    /Ot                                     # Favor Fast Code
+    /Oy                                     # Omit Frame Pointers
+    /MD                                     # set Runtime Library to Multi-threaded DLL
+    /GS-                                    # set Buffer Security Check to No
+    /arch:AVX                               # Advanced Vector Extensions
+)
+if (CMAKE_SIZEOF_VOID_P EQUAL 4)
+    set (compiler_flags_release
+        ${compiler_flags_release}
+        /fp:fast                            # set Floating Point Model to Fast, in 32-bit builds only because of a bug in VS 2010:
+    )                                       # http://connect.microsoft.com/VisualStudio/feedback/details/518015/nan-comparison-under-the-64-bit-compiler-is-incorrect
+endif ()
+set (exe_linker_flags_release
+    /OPT:REF                                # Eliminate Unreferenced Data
+    /OPT:ICF                                # Remove Redundant COMDATs
+)
+set (shared_lib_linker_flags_release
+    ${exe_linker_flags_release}
+)
+
+# Ship configuration.
+set (compiler_flags_ship
+    /GL                                     # Enable link-time code generation
+)
+set (exe_linker_flags_ship
+    /LTCG                                   # Use Link Time Code Generation
+    /INCREMENTAL:NO                         # Disable Incremental Linking
+)
+set (shared_lib_linker_flags_ship
+    ${exe_linker_flags_ship}
+)
+
+# Profile configuration.
+set (exe_linker_flags_profile
+    /DEBUG                                  # Generate Debug Info
+)
+set (shared_lib_linker_flags_profile
+    ${exe_linker_flags_profile}
+)
+
+
+#--------------------------------------------------------------------------------------------------
+# Static libraries.
+#--------------------------------------------------------------------------------------------------
+
+macro (link_against_platform target)
+endmacro ()
+
+macro (link_against_openexr target)
+    if (USE_EXTERNAL_ALEMBIC)
+        target_link_libraries (${target} ${IMATH_LIBRARIES} ${OPENEXR_LIBRARIES})
+    else ()
+        target_link_libraries (${target}
+            debug       ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/Half/Debug/Half.lib
+            debug       ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/Iex/Debug/Iex.lib
+            debug       ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/IlmImf/Debug/IlmImf.lib
+            debug       ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/IlmThread/Debug/IlmThread.lib
+            debug       ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/Imath/Debug/Imath.lib
+            optimized   ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/Half/Release/Half.lib
+            optimized   ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/Iex/Release/Iex.lib
+            optimized   ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/IlmImf/Release/IlmImf.lib
+            optimized   ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/IlmThread/Release/IlmThread.lib
+            optimized   ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/Imath/Release/Imath.lib
+        )
+    endif ()
+endmacro ()
+
+macro (link_against_zlib target)
+    if (USE_EXTERNAL_ALEMBIC)
+        target_link_libraries (${target} ${ZLIB_LIBRARIES})
+    else ()
+        target_link_libraries (${target}
+            debug       ${CMAKE_SOURCE_DIR}/../build/${platform}/zlib/Debug/zlib.lib
+            optimized   ${CMAKE_SOURCE_DIR}/../build/${platform}/zlib/Release/zlib.lib
+        )
+    endif ()
+endmacro ()
+
+macro (link_against_libpng target)
+    if (USE_EXTERNAL_PNG)
+        target_link_libraries (${target} ${PNG_LIBRARIES})
+    else ()
+        target_link_libraries (${target}
+            debug       ${CMAKE_SOURCE_DIR}/../build/${platform}/libpng/Debug/libpng.lib
+            optimized   ${CMAKE_SOURCE_DIR}/../build/${platform}/libpng/Release/libpng.lib
+        )
+    endif ()
+endmacro ()
+
+macro (link_against_xercesc target)
+    if (USE_EXTERNAL_XERCES)
+        target_link_libraries (${target} ${XERCES_LIBRARIES})
+    else ()
+        target_link_libraries (${target}
+            debug       ${CMAKE_SOURCE_DIR}/../build/${platform}/xerces-c/Static\ Debug/xerces-c_static_3D.lib
+            optimized   ${CMAKE_SOURCE_DIR}/../build/${platform}/xerces-c/Static\ Release/xerces-c_static_3.lib
+        )
+    endif ()
+endmacro ()
+
+macro (link_against_hdf5 target)
+    if (USE_EXTERNAL_ALEMBIC)
+        target_link_libraries (${target} ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
+    else ()
+        target_link_libraries (${target}
+            debug       ${CMAKE_SOURCE_DIR}/../build/${platform}/hdf5/Debug/hdf5d.lib
+            debug       ${CMAKE_SOURCE_DIR}/../build/${platform}/hdf5/Debug/hdf5_hld.lib
+            optimized   ${CMAKE_SOURCE_DIR}/../build/${platform}/hdf5/Release/hdf5.lib
+            optimized   ${CMAKE_SOURCE_DIR}/../build/${platform}/hdf5/Release/hdf5_hl.lib
+        )
+    endif ()
+endmacro ()
+
+macro (link_against_alembic target)
+    if (USE_EXTERNAL_ALEMBIC)
+        target_link_libraries (${target} ${ALEMBIC_LIBRARIES})
+    else ()
+        target_link_libraries (${target}
+            debug       ${CMAKE_SOURCE_DIR}/../build/${platform}/alembic/Debug/alembic.lib
+            optimized   ${CMAKE_SOURCE_DIR}/../build/${platform}/alembic/Release/alembic.lib
+        )
+    endif ()
+endmacro ()
+
+
+#--------------------------------------------------------------------------------------------------
+# Copy a target binary to the sandbox.
+#--------------------------------------------------------------------------------------------------
+
+macro (get_sandbox_bin_path path)
+    slashes_to_backslashes (${path} ${PROJECT_SOURCE_DIR})
+    set (${path} ${${path}}\\..\\sandbox\\bin\\$(ConfigurationName)\\)
+endmacro ()
+
+macro (add_copy_target_to_sandbox_command target)
+    get_sandbox_bin_path (bin_path)
+
+    add_custom_command (TARGET ${target} POST_BUILD
+        COMMAND if not exist "${bin_path}" mkdir "${bin_path}"
+        COMMAND ${CMAKE_COMMAND} -E copy "$(TargetPath)" "${bin_path}"
+    )
+endmacro ()
+
+macro (add_copy_target_to_sandbox_py_module_command target)
+    get_sandbox_bin_path (bin_path)
+
+    add_custom_command (TARGET ${target} POST_BUILD
+        COMMAND if not exist "${bin_path}\\appleseed" mkdir "${bin_path}\\appleseed"
+        COMMAND ${CMAKE_COMMAND} -E copy "$(TargetPath)" "${bin_path}\\appleseed"
+    )
+endmacro ()
+
+macro (add_copy_py_file_to_sandbox_py_module_command py_src)
+    get_sandbox_bin_path (bin_path)
+
+    add_custom_command (TARGET appleseed.python POST_BUILD
+        COMMAND if not exist "${bin_path}\\appleseed" mkdir "${bin_path}\\appleseed"
+        COMMAND ${CMAKE_COMMAND} -E copy "${py_src}" "${bin_path}\\appleseed"
+    )
+endmacro ()
