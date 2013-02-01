@@ -117,11 +117,11 @@ set (compiler_flags_release
     /Oy                                     # Omit Frame Pointers
     /MD                                     # set Runtime Library to Multi-threaded DLL
     /GS-                                    # set Buffer Security Check to No
-    /arch:AVX                               # Advanced Vector Extensions
 )
 if (CMAKE_SIZEOF_VOID_P EQUAL 4)
     set (compiler_flags_release
         ${compiler_flags_release}
+        /arch:SSE2                          # Streaming SIMD Extensions 2 (always enabled in 64-bit builds)
         /fp:fast                            # set Floating Point Model to Fast, in 32-bit builds only because of a bug in VS 2010:
     )                                       # http://connect.microsoft.com/VisualStudio/feedback/details/518015/nan-comparison-under-the-64-bit-compiler-is-incorrect
 endif ()
