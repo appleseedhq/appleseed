@@ -35,12 +35,12 @@
 // appleseed.python headers.
 #include "dict2dict.h"
 
-// boost headers.
-#include <boost/python.hpp>
-
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entitymap.h"
 #include "renderer/modeling/entity/entityvector.h"
+
+// appleseed.foundation headers.
+#include "foundation/platform/python.h"
 
 // Standard headers.
 #include <cstddef>

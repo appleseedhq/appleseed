@@ -33,12 +33,12 @@
 #include "dict2dict.h"
 #include "gil_locks.h"
 
-// boost headers.
-#include <boost/python.hpp>
-
 // appleseed.renderer headers.
 #include "renderer/api/project.h"
 #include "renderer/api/rendering.h"
+
+// appleseed.foundation headers.
+#include "foundation/platform/python.h"
 
 // Standard headers.
 #include <memory>

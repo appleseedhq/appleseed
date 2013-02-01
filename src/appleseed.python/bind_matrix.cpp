@@ -32,8 +32,8 @@
 // appleseed.python headers.
 #include "unaligned_matrix44.h"
 
-// boost headers.
-#include <boost/python.hpp>
+// appleseed.foundation headers.
+#include "foundation/platform/python.h"
 
 namespace bpy = boost::python;
 using namespace foundation;

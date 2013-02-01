@@ -32,8 +32,8 @@
 // Has to be first.
 #include "Python.h"
 
-// boost headers.
-#include <boost/python.hpp>
+// appleseed.foundation headers.
+#include "foundation/platform/python.h"
 
 namespace foundation    { class Dictionary; }
 namespace renderer      { class ParamArray; }

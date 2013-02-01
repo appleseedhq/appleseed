@@ -32,12 +32,12 @@
 // appleseed.python headers.
 #include "gil_locks.h"
 
-// boost headers.
-#include <boost/python.hpp>
-
 // appleseed.renderer headers.
 #include "renderer/kernel/rendering/defaultrenderercontroller.h"
 #include "renderer/kernel/rendering/irenderercontroller.h"
+
+// appleseed.foundation headers.
+#include "foundation/platform/python.h"
 
 namespace bpy = boost::python;
 using namespace foundation;

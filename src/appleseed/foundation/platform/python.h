@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2012 Esteban Tovagliari.
+// Copyright (c) 2010-2012 Francois Beaune, Jupiter Jazz Limited
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,36 +26,13 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_PYTHON_BIND_AUTO_RELEASE_PTR_H
-#define APPLESEED_PYTHON_BIND_AUTO_RELEASE_PTR_H
+#ifndef APPLESEED_FOUNDATION_PLATFORM_PYTHON_H
+#define APPLESEED_FOUNDATION_PLATFORM_PYTHON_H
 
-// Has to be first, to avoid redefinition warnings.
-#include <Python.h>
+// boost headers.
+#pragma warning (push)
+#pragma warning (disable : 4244)    // conversion from 'Py_ssize_t' to 'unsigned int', possible loss of data
+#include "boost/python.hpp"
+#pragma warning (pop)
 
-// appleseed.foundation headers.
-#include "foundation/platform/python.h"
-#include "foundation/utility/autoreleaseptr.h"
-
-namespace boost {
-namespace python {
-
-template <class T> struct pointee<foundation::auto_release_ptr<T> >
-{
-    typedef T type;
-};
-
-}       // namespace python
-}       // namespace boost
-
-namespace foundation
-{
-
-template <class T>
-T* get_pointer(const auto_release_ptr<T>& p)
-{
-    return p.get();
-}
-
-}       // namespace foundation
-
-#endif  // !APPLESEED_PYTHON_BIND_AUTO_RELEASE_PTR_H
+#endif  // !APPLESEED_FOUNDATION_PLATFORM_PYTHON_H

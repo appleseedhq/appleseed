@@ -29,8 +29,8 @@
 // Has to be first, to avoid redefinition warnings.
 #include <Python.h>
 
-// boost headers.
-#include <boost/python.hpp>
+// appleseed.foundation headers.
+#include "foundation/platform/python.h"
 
 // Forward declarations.
 void bind_assembly();
