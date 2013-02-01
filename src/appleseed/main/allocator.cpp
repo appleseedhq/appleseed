@@ -40,6 +40,11 @@
 //
 // http://stackoverflow.com/questions/13793325/hiding-symbols-in-a-shared-library-on-mac-os-x
 //
+// Unfortunately, there is a bug in Visual Studio 2012's debug runtime on x64
+// that will result in a crash when the application exits:
+//
+// http://connect.microsoft.com/VisualStudio/feedback/details/750951/std-locale-implementation-in-crt-assumes-all-facets-to-be-allocated-on-crt-heap-and-crashes-in-destructor-in-debug-mode-if-a-facet-was-allocated-by-a-custom-allocator
+//
 
 #ifdef _WIN32
 
