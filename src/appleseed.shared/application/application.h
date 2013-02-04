@@ -76,7 +76,6 @@ class SHAREDDLL Application
 // Application class implementation.
 //
 
-// Change the current directory to the root path of the application's tests.
 inline boost::filesystem::path Application::change_current_directory_to_tests_root_path()
 {
     using namespace boost;
