@@ -1,5 +1,5 @@
-# - Find Imath
-# Find Imath headers and libraries.
+#  Find Imath
+#  Find Imath headers and libraries.
 #
 #  IMATH_INCLUDE_DIRS - where to find IMATH uncludes.
 #  IMATH_LIBRARIES    - List of libraries when using IMATH.
@@ -17,25 +17,25 @@ find_library( IMATH_MATH_LIBRARY NAMES Imath)
 # all listed variables are TRUE
 include( FindPackageHandleStandardArgs)
 find_package_handle_standard_args( IMATH DEFAULT_MSG	IMATH_HALF_LIBRARY
-														IMATH_IEX_LIBRARY
-														IMATH_MATH_LIBRARY
-														IMATH_INCLUDE_DIR
-														)
+                                                        IMATH_IEX_LIBRARY
+                                                        IMATH_MATH_LIBRARY
+                                                        IMATH_INCLUDE_DIR
+                                                        )
 # Copy the results to the output variables.
-if(IMATH_FOUND)
-	set( IMATH_LIBRARIES ${IMATH_HALF_LIBRARY}
-							${IMATH_IEX_LIBRARY}
-							${IMATH_MATH_LIBRARY}
-							)
+if( IMATH_FOUND)
+    set( IMATH_LIBRARIES ${IMATH_HALF_LIBRARY}
+                         ${IMATH_IEX_LIBRARY}
+                         ${IMATH_MATH_LIBRARY}
+                         )
 
-	set( IMATH_INCLUDE_DIRS ${IMATH_INCLUDE_DIR})
-else(IMATH_FOUND)
-	set(IMATH_LIBRARIES)
-	set(IMATH_INCLUDE_DIRS)
-endif(IMATH_FOUND)
+    set( IMATH_INCLUDE_DIRS ${IMATH_INCLUDE_DIR})
+else( IMATH_FOUND)
+    set( IMATH_LIBRARIES)
+    set( IMATH_INCLUDE_DIRS)
+endif( IMATH_FOUND)
 
-mark_as_advanced(	IMATH_HALF_LIBRARY
-					IMATH_IEX_LIBRARY
-					IMATH_MATH_LIBRARY
-					IMATH_INCLUDE_DIR
-					)
+mark_as_advanced( IMATH_HALF_LIBRARY
+                  IMATH_IEX_LIBRARY
+                  IMATH_MATH_LIBRARY
+                  IMATH_INCLUDE_DIR
+                  )
