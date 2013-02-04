@@ -925,6 +925,522 @@ const Spectrum31f RGBCMFStilesBurch195910Deg[3] =
 
 
 //
+// Basis spectra for RGB-to-spectrum conversion.
+//
+
+namespace
+{
+    const float RGBToSpectrumWhiteReflectanceTab[31] =
+    {
+         1.061387f,         // 400 nm
+         1.062091f,         // 410 nm
+         1.062237f,         // 420 nm
+         1.062381f,         // 430 nm
+         1.062469f,         // 440 nm
+         1.062411f,         // 450 nm
+         1.062487f,         // 460 nm
+         1.062502f,         // 470 nm
+         1.062409f,         // 480 nm
+         1.062052f,         // 490 nm
+         1.061349f,         // 500 nm
+         1.061037f,         // 510 nm
+         1.061312f,         // 520 nm
+         1.061379f,         // 530 nm
+         1.061760f,         // 540 nm
+         1.062337f,         // 550 nm
+         1.062536f,         // 560 nm
+         1.062453f,         // 570 nm
+         1.062512f,         // 580 nm
+         1.062427f,         // 590 nm
+         1.062479f,         // 600 nm
+         1.062553f,         // 610 nm
+         1.062541f,         // 620 nm
+         1.062416f,         // 630 nm
+         1.062356f,         // 640 nm
+         1.062562f,         // 650 nm
+         1.061957f,         // 660 nm
+         1.060339f,         // 670 nm
+         1.059459f,         // 680 nm
+         1.060084f,         // 690 nm
+         1.060248f          // 700 nm
+    };
+
+    const float RGBToSpectrumCyanReflectanceTab[31] =
+    {
+         1.013784f,         // 400 nm
+         1.031559f,         // 410 nm
+         1.014911f,         // 420 nm
+         1.025949f,         // 430 nm
+         1.044892f,         // 440 nm
+         1.049293f,         // 450 nm
+         1.044493f,         // 460 nm
+         1.019764f,         // 470 nm
+         1.046143f,         // 480 nm
+         1.053069f,         // 490 nm
+         1.053699f,         // 500 nm
+         1.053409f,         // 510 nm
+         1.053772f,         // 520 nm
+         1.053003f,         // 530 nm
+         1.052717f,         // 540 nm
+         1.054052f,         // 550 nm
+         1.055816f,         // 560 nm
+         1.067498f,         // 570 nm
+         0.974937f,         // 580 nm
+         0.557098f,         // 590 nm
+         0.162351f,         // 600 nm
+        -0.004918f,         // 610 nm
+        -0.001546f,         // 620 nm
+        -0.006570f,         // 630 nm
+        -0.003945f,         // 640 nm
+        -0.000951f,         // 650 nm
+         0.008167f,         // 660 nm
+         0.004759f,         // 670 nm
+         0.001682f,         // 680 nm
+         0.015969f,         // 690 nm
+         0.004066f          // 700 nm
+    };
+
+    const float RGBToSpectrumMagentaReflectanceTab[31] =
+    {
+         0.982980f,         // 400 nm
+         0.991489f,         // 410 nm
+         1.013132f,         // 420 nm
+         1.018938f,         // 430 nm
+         1.020450f,         // 440 nm
+         1.012822f,         // 450 nm
+         0.997617f,         // 460 nm
+         1.018910f,         // 470 nm
+         0.996257f,         // 480 nm
+         0.624846f,         // 490 nm
+         0.023716f,         // 500 nm
+         0.000435f,         // 510 nm
+         0.003808f,         // 520 nm
+         0.001347f,         // 530 nm
+        -0.006551f,         // 540 nm
+        -0.002995f,         // 550 nm
+        -0.009466f,         // 560 nm
+         0.046101f,         // 570 nm
+         0.307088f,         // 580 nm
+         0.688640f,         // 590 nm
+         0.983592f,         // 600 nm
+         0.971656f,         // 610 nm
+         1.014684f,         // 620 nm
+         1.005811f,         // 630 nm
+         0.966371f,         // 640 nm
+         0.876699f,         // 650 nm
+         0.898889f,         // 660 nm
+         0.952359f,         // 670 nm
+         0.968253f,         // 680 nm
+         0.969608f,         // 690 nm
+         0.859295f          // 700 nm
+    };
+
+    const float RGBToSpectrumYellowReflectanceTab[31] =
+    {
+        -0.005256f,         // 400 nm
+        -0.006240f,         // 410 nm
+        -0.006453f,         // 420 nm
+        -0.005079f,         // 430 nm
+         0.002202f,         // 440 nm
+         0.041046f,         // 450 nm
+         0.126522f,         // 460 nm
+         0.240308f,         // 470 nm
+         0.381160f,         // 480 nm
+         0.545267f,         // 490 nm
+         0.732706f,         // 500 nm
+         0.899055f,         // 510 nm
+         1.026172f,         // 520 nm
+         1.054259f,         // 530 nm
+         1.051548f,         // 540 nm
+         1.051072f,         // 550 nm
+         1.051318f,         // 560 nm
+         1.051766f,         // 570 nm
+         1.051519f,         // 580 nm
+         1.051164f,         // 590 nm
+         1.051176f,         // 600 nm
+         1.051657f,         // 610 nm
+         1.051418f,         // 620 nm
+         1.051589f,         // 630 nm
+         1.051238f,         // 640 nm
+         1.051408f,         // 650 nm
+         1.051198f,         // 660 nm
+         1.051017f,         // 670 nm
+         1.049825f,         // 680 nm
+         1.048018f,         // 690 nm
+         1.048736f          // 700 nm
+    };
+
+    const float RGBToSpectrumRedReflectanceTab[31] =
+    {
+         0.123370f,         // 400 nm
+         0.118612f,         // 410 nm
+         0.093120f,         // 420 nm
+         0.053243f,         // 430 nm
+         0.007507f,         // 440 nm
+        -0.003131f,         // 450 nm
+         0.016717f,         // 460 nm
+         0.006158f,         // 470 nm
+         0.012482f,         // 480 nm
+        -0.006159f,         // 490 nm
+        -0.001790f,         // 500 nm
+        -0.010045f,         // 510 nm
+        -0.004015f,         // 520 nm
+        -0.008488f,         // 530 nm
+        -0.009905f,         // 540 nm
+        -0.005552f,         // 550 nm
+         0.002525f,         // 560 nm
+        -0.018421f,         // 570 nm
+         0.098336f,         // 580 nm
+         0.679751f,         // 590 nm
+         0.998411f,         // 600 nm
+         0.993848f,         // 610 nm
+         1.003718f,         // 620 nm
+         0.993893f,         // 630 nm
+         0.996498f,         // 640 nm
+         1.007329f,         // 650 nm
+         0.994003f,         // 660 nm
+         0.994352f,         // 670 nm
+         0.999046f,         // 680 nm
+         0.975771f,         // 690 nm
+         0.978881f          // 700 nm
+    };
+
+    const float RGBToSpectrumGreenReflectanceTab[31] =
+    {
+        -0.011856f,         // 400 nm
+        -0.010107f,         // 410 nm
+        -0.011761f,         // 420 nm
+        -0.010045f,         // 430 nm
+        -0.007570f,         // 440 nm
+        -0.011862f,         // 450 nm
+        -0.000730f,         // 460 nm
+         0.116436f,         // 470 nm
+         0.437371f,         // 480 nm
+         0.760744f,         // 490 nm
+         0.956170f,         // 500 nm
+         0.996844f,         // 510 nm
+         1.000443f,         // 520 nm
+         0.999553f,         // 530 nm
+         0.999740f,         // 540 nm
+         0.999719f,         // 550 nm
+         1.001184f,         // 560 nm
+         0.999628f,         // 570 nm
+         0.903812f,         // 580 nm
+         0.578153f,         // 590 nm
+         0.239696f,         // 600 nm
+         0.013386f,         // 610 nm
+        -0.003558f,         // 620 nm
+        -0.004351f,         // 630 nm
+        -0.006185f,         // 640 nm
+        -0.008415f,         // 650 nm
+        -0.008937f,         // 660 nm
+        -0.008493f,         // 670 nm
+        -0.008510f,         // 680 nm
+        -0.006252f,         // 690 nm
+         0.001272f          // 700 nm
+    };
+
+    const float RGBToSpectrumBlueReflectanceTab[31] =
+    {
+         0.994496f,         // 400 nm
+         0.995734f,         // 410 nm
+         0.992298f,         // 420 nm
+         0.996506f,         // 430 nm
+         1.000538f,         // 440 nm
+         1.000383f,         // 450 nm
+         1.002111f,         // 460 nm
+         0.957210f,         // 470 nm
+         0.764892f,         // 480 nm
+         0.554058f,         // 490 nm
+         0.343920f,         // 500 nm
+         0.161104f,         // 510 nm
+         0.038247f,         // 520 nm
+         0.001238f,         // 530 nm
+        -0.001204f,         // 540 nm
+        -0.000583f,         // 550 nm
+         0.000324f,         // 560 nm
+         0.002647f,         // 570 nm
+         0.003114f,         // 580 nm
+        -0.000802f,         // 590 nm
+         0.000202f,         // 600 nm
+         0.007214f,         // 610 nm
+         0.023857f,         // 620 nm
+         0.035788f,         // 630 nm
+         0.047014f,         // 640 nm
+         0.050053f,         // 650 nm
+         0.050377f,         // 660 nm
+         0.046082f,         // 670 nm
+         0.036494f,         // 680 nm
+         0.028174f,         // 690 nm
+         0.018875f          // 700 nm
+    };
+
+    const float RGBToSpectrumWhiteIlluminanceTab[31] =
+    {
+         1.156698f,         // 400 nm
+         1.155758f,         // 410 nm
+         1.155931f,         // 420 nm
+         1.156565f,         // 430 nm
+         1.156822f,         // 440 nm
+         1.156811f,         // 450 nm
+         1.156651f,         // 460 nm
+         1.156388f,         // 470 nm
+         1.156707f,         // 480 nm
+         1.156509f,         // 490 nm
+         1.156426f,         // 500 nm
+         1.157271f,         // 510 nm
+         1.150024f,         // 520 nm
+         1.137745f,         // 530 nm
+         1.130518f,         // 540 nm
+         1.133846f,         // 550 nm
+         1.098581f,         // 560 nm
+         1.045236f,         // 570 nm
+         1.036640f,         // 580 nm
+         0.987287f,         // 590 nm
+         0.953973f,         // 600 nm
+         0.925293f,         // 610 nm
+         0.916277f,         // 620 nm
+         0.901951f,         // 630 nm
+         0.896439f,         // 640 nm
+         0.891381f,         // 650 nm
+         0.884983f,         // 660 nm
+         0.881022f,         // 670 nm
+         0.878510f,         // 680 nm
+         0.876875f,         // 690 nm
+         0.880276f          // 700 nm
+    };
+
+    const float RGBToSpectrumCyanIlluminanceTab[31] =
+    {
+         1.133496f,         // 400 nm
+         1.135722f,         // 410 nm
+         1.135677f,         // 420 nm
+         1.135899f,         // 430 nm
+         1.136179f,         // 440 nm
+         1.136363f,         // 450 nm
+         1.136230f,         // 460 nm
+         1.135595f,         // 470 nm
+         1.136418f,         // 480 nm
+         1.136031f,         // 490 nm
+         1.136028f,         // 500 nm
+         1.135439f,         // 510 nm
+         1.136184f,         // 520 nm
+         1.135807f,         // 530 nm
+         1.135432f,         // 540 nm
+         1.136641f,         // 550 nm
+         1.135842f,         // 560 nm
+         1.061325f,         // 570 nm
+         0.843320f,         // 580 nm
+         0.565191f,         // 590 nm
+         0.280469f,         // 600 nm
+         0.100495f,         // 610 nm
+        -0.004459f,         // 620 nm
+        -0.013942f,         // 630 nm
+        -0.011351f,         // 640 nm
+        -0.012158f,         // 650 nm
+        -0.008124f,         // 660 nm
+        -0.005750f,         // 670 nm
+        -0.008846f,         // 680 nm
+        -0.008741f,         // 690 nm
+        -0.005066f          // 700 nm
+    };
+
+    const float RGBToSpectrumMagentaIlluminanceTab[31] =
+    {
+         1.074704f,         // 400 nm
+         1.076600f,         // 410 nm
+         1.078852f,         // 420 nm
+         1.076860f,         // 430 nm
+         1.073222f,         // 440 nm
+         1.072362f,         // 450 nm
+         1.075529f,         // 460 nm
+         1.085388f,         // 470 nm
+         1.076622f,         // 480 nm
+         0.948043f,         // 490 nm
+         0.577859f,         // 500 nm
+         0.133047f,         // 510 nm
+         0.006134f,         // 520 nm
+        -0.004691f,         // 530 nm
+        -0.001787f,         // 540 nm
+        -0.000471f,         // 550 nm
+        -0.000761f,         // 560 nm
+        -0.004745f,         // 570 nm
+         0.055622f,         // 580 nm
+         0.296176f,         // 590 nm
+         0.548960f,         // 600 nm
+         0.901497f,         // 610 nm
+         1.058057f,         // 620 nm
+         1.089931f,         // 630 nm
+         1.073832f,         // 640 nm
+         1.034064f,         // 650 nm
+         1.017433f,         // 660 nm
+         1.054028f,         // 670 nm
+         1.048301f,         // 680 nm
+         0.995864f,         // 690 nm
+         1.075629f          // 700 nm
+    };
+
+    const float RGBToSpectrumYellowIlluminanceTab[31] =
+    {
+         0.000371f,         // 400 nm
+         0.000189f,         // 410 nm
+        -0.000055f,         // 420 nm
+        -0.000159f,         // 430 nm
+        -0.000136f,         // 440 nm
+        -0.002447f,         // 450 nm
+        -0.000851f,         // 460 nm
+         0.112473f,         // 470 nm
+         0.547520f,         // 480 nm
+         1.037173f,         // 490 nm
+         1.033988f,         // 500 nm
+         1.036503f,         // 510 nm
+         1.036619f,         // 520 nm
+         1.036492f,         // 530 nm
+         1.036760f,         // 540 nm
+         1.036743f,         // 550 nm
+         1.036461f,         // 560 nm
+         1.036481f,         // 570 nm
+         1.036714f,         // 580 nm
+         1.036487f,         // 590 nm
+         1.036149f,         // 600 nm
+         1.035322f,         // 610 nm
+         1.014072f,         // 620 nm
+         0.874031f,         // 630 nm
+         0.764727f,         // 640 nm
+         0.685721f,         // 650 nm
+         0.625980f,         // 660 nm
+         0.597532f,         // 670 nm
+         0.595525f,         // 680 nm
+         0.587864f,         // 690 nm
+         0.562571f          // 700 nm
+    };
+
+    const float RGBToSpectrumRedIlluminanceTab[31] =
+    {
+         0.060372f,         // 400 nm
+         0.058076f,         // 410 nm
+         0.049804f,         // 420 nm
+         0.041882f,         // 430 nm
+         0.032383f,         // 440 nm
+         0.016357f,         // 450 nm
+         0.001227f,         // 460 nm
+        -0.000600f,         // 470 nm
+         0.000994f,         // 480 nm
+         0.000352f,         // 490 nm
+        -0.000416f,         // 500 nm
+        -0.000134f,         // 510 nm
+        -0.000109f,         // 520 nm
+        -0.000136f,         // 530 nm
+        -0.000159f,         // 540 nm
+        -0.002088f,         // 550 nm
+         0.003661f,         // 560 nm
+         0.060596f,         // 570 nm
+         0.200799f,         // 580 nm
+         0.382020f,         // 590 nm
+         0.585726f,         // 600 nm
+         0.759210f,         // 610 nm
+         0.879348f,         // 620 nm
+         0.953040f,         // 630 nm
+         0.984016f,         // 640 nm
+         0.997430f,         // 650 nm
+         0.992023f,         // 660 nm
+         0.990260f,         // 670 nm
+         0.988620f,         // 680 nm
+         0.976626f,         // 690 nm
+         0.991906f          // 700 nm
+    };
+
+    const float RGBToSpectrumGreenIlluminanceTab[31] =
+    {
+         0.010635f,         // 400 nm
+         0.006551f,         // 410 nm
+         0.002472f,         // 420 nm
+         0.001207f,         // 430 nm
+        -0.012218f,         // 440 nm
+        -0.009396f,         // 450 nm
+         0.005333f,         // 460 nm
+         0.041161f,         // 470 nm
+         0.393510f,         // 480 nm
+         1.026335f,         // 490 nm
+         1.033528f,         // 500 nm
+         1.032193f,         // 510 nm
+         1.036581f,         // 520 nm
+         1.019782f,         // 530 nm
+         1.025242f,         // 540 nm
+         1.036703f,         // 550 nm
+         1.037640f,         // 560 nm
+         1.034223f,         // 570 nm
+         1.032591f,         // 580 nm
+         0.866002f,         // 590 nm
+        -0.030362f,         // 600 nm
+         0.000527f,         // 610 nm
+         0.006544f,         // 620 nm
+         0.000415f,         // 630 nm
+         0.017375f,         // 640 nm
+         0.012188f,         // 650 nm
+         0.002288f,         // 660 nm
+         0.001011f,         // 670 nm
+        -0.002722f,         // 680 nm
+        -0.004106f,         // 690 nm
+         0.015684f          // 700 nm
+    };
+
+    const float RGBToSpectrumBlueIlluminanceTab[31] =
+    {
+         1.054973f,         // 400 nm
+         1.053157f,         // 410 nm
+         1.056342f,         // 420 nm
+         1.058145f,         // 430 nm
+         1.058072f,         // 440 nm
+         1.058307f,         // 450 nm
+         1.057469f,         // 460 nm
+         1.056468f,         // 470 nm
+         1.060424f,         // 480 nm
+         1.031067f,         // 490 nm
+         0.359200f,         // 500 nm
+         0.025142f,         // 510 nm
+        -0.008347f,         // 520 nm
+        -0.001384f,         // 530 nm
+        -0.001313f,         // 540 nm
+        -0.001800f,         // 550 nm
+        -0.000581f,         // 560 nm
+         0.000669f,         // 570 nm
+        -0.001740f,         // 580 nm
+        -0.001339f,         // 590 nm
+        -0.001779f,         // 600 nm
+        -0.001401f,         // 610 nm
+         0.008460f,         // 620 nm
+         0.024439f,         // 630 nm
+         0.071304f,         // 640 nm
+         0.122407f,         // 650 nm
+         0.151016f,         // 660 nm
+         0.152744f,         // 670 nm
+         0.153725f,         // 680 nm
+         0.168626f,         // 690 nm
+         0.168186f          // 700 nm
+    };
+}
+
+// Basis spectra for reflectance conversions.
+const Spectrum31f RGBToSpectrumWhiteReflectance(RGBToSpectrumWhiteReflectanceTab);
+const Spectrum31f RGBToSpectrumCyanReflectance(RGBToSpectrumCyanReflectanceTab);
+const Spectrum31f RGBToSpectrumMagentaReflectance(RGBToSpectrumMagentaReflectanceTab);
+const Spectrum31f RGBToSpectrumYellowReflectance(RGBToSpectrumYellowReflectanceTab);
+const Spectrum31f RGBToSpectrumRedReflectance(RGBToSpectrumRedReflectanceTab);
+const Spectrum31f RGBToSpectrumGreenReflectance(RGBToSpectrumGreenReflectanceTab);
+const Spectrum31f RGBToSpectrumBlueReflectance(RGBToSpectrumBlueReflectanceTab);
+
+// Basis spectra for illuminance conversions.
+const Spectrum31f RGBToSpectrumWhiteIlluminance(RGBToSpectrumWhiteIlluminanceTab);
+const Spectrum31f RGBToSpectrumCyanIlluminance(RGBToSpectrumCyanIlluminanceTab);
+const Spectrum31f RGBToSpectrumMagentaIlluminance(RGBToSpectrumMagentaIlluminanceTab);
+const Spectrum31f RGBToSpectrumYellowIlluminance(RGBToSpectrumYellowIlluminanceTab);
+const Spectrum31f RGBToSpectrumRedIlluminance(RGBToSpectrumRedIlluminanceTab);
+const Spectrum31f RGBToSpectrumGreenIlluminance(RGBToSpectrumGreenIlluminanceTab);
+const Spectrum31f RGBToSpectrumBlueIlluminance(RGBToSpectrumBlueIlluminanceTab);
+
+
+//
 // Lighting conditions class implementation.
 //
 

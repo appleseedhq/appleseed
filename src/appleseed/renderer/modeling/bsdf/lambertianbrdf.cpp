@@ -44,6 +44,9 @@
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
 
+// Standard headers.
+#include <cmath>
+
 // Forward declarations.
 namespace renderer  { class Assembly; }
 namespace renderer  { class Project; }
@@ -167,7 +170,7 @@ namespace
                 return 0.0;
 
             const Vector3d& n = shading_basis.get_normal();
-            const double cos_in = dot(incoming, n);
+            const double cos_in = abs(dot(incoming, n));
 
             // Compute the BRDF value.
             if (m_uniform_reflectance)
@@ -195,7 +198,7 @@ namespace
                 return 0.0;
 
             const Vector3d& n = shading_basis.get_normal();
-            const double cos_in = dot(incoming, n);
+            const double cos_in = abs(dot(incoming, n));
 
             return cos_in * RcpPi;
         }

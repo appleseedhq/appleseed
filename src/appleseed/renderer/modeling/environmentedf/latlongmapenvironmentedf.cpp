@@ -214,7 +214,12 @@ namespace
             unit_square_to_angles(u, v, theta, phi);
             outgoing = Vector3d::unit_vector(theta, phi);
 
-            linear_rgb_to_spectrum(m_lighting_conditions, payload.m_color, value);
+            // todo: it would be more correct to use foundation::linear_rgb_illuminance_to_spectrum()
+            // to compute the spectral illuminance. However, since renderer::TextureSource currently
+            // uses foundation::linear_rgb_reflectance_to_spectrum() indiscriminately, we have to do
+            // the same in order to preserve consistency between the values returned by sample() and
+            // evaluate().
+            linear_rgb_reflectance_to_spectrum(payload.m_color, value);
             probability = prob_xy * m_probability_scale / sin(theta);
         }
 
@@ -279,8 +284,6 @@ namespace
         double                                  m_u_shift;
         double                                  m_v_shift;
 
-        LightingConditions                      m_lighting_conditions;
-
         size_t                                  m_importance_map_width;
         size_t                                  m_importance_map_height;
 
@@ -301,7 +304,6 @@ namespace
                 const TextureInstance& texture_instance = texture_source->get_texture_instance();
                 const CanvasProperties& texture_props = texture_instance.get_texture().properties();
 
-                m_lighting_conditions = texture_instance.get_lighting_conditions();
                 m_importance_map_width = texture_props.m_canvas_width;
                 m_importance_map_height = texture_props.m_canvas_height;
             }
@@ -312,7 +314,6 @@ namespace
                     "must be bound to the \"exitance\" input.",
                     get_name());
 
-                m_lighting_conditions = LightingConditions(IlluminantCIED65, XYZCMFCIE196410Deg);
                 m_importance_map_width = 1;
                 m_importance_map_height = 1;
             }

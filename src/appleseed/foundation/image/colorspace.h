@@ -132,6 +132,29 @@ extern const Spectrum31f RGBCMFStilesBurch195910Deg[3];     // Stiles and Burch 
 
 
 //
+// Basis spectra for RGB-to-spectrum conversion.
+//
+
+// Basis spectra for reflectance conversions.
+extern const Spectrum31f RGBToSpectrumWhiteReflectance;
+extern const Spectrum31f RGBToSpectrumCyanReflectance;
+extern const Spectrum31f RGBToSpectrumMagentaReflectance;
+extern const Spectrum31f RGBToSpectrumYellowReflectance;
+extern const Spectrum31f RGBToSpectrumRedReflectance;
+extern const Spectrum31f RGBToSpectrumGreenReflectance;
+extern const Spectrum31f RGBToSpectrumBlueReflectance;
+
+// Basis spectra for illuminance conversions.
+extern const Spectrum31f RGBToSpectrumWhiteIlluminance;
+extern const Spectrum31f RGBToSpectrumCyanIlluminance;
+extern const Spectrum31f RGBToSpectrumMagentaIlluminance;
+extern const Spectrum31f RGBToSpectrumYellowIlluminance;
+extern const Spectrum31f RGBToSpectrumRedIlluminance;
+extern const Spectrum31f RGBToSpectrumGreenIlluminance;
+extern const Spectrum31f RGBToSpectrumBlueIlluminance;
+
+
+//
 // Lighting conditions, defined as a set of color matching functions and an illuminant.
 //
 
@@ -297,7 +320,6 @@ Color<T, 3> spectrum_to_ciexyz(
 // Convert a color in the CIE XYZ color space to a spectrum.
 template <typename T, typename Spectrum>
 void ciexyz_to_spectrum(
-    const LightingConditions&   lighting,
     const Color<T, 3>&          xyz,
     Spectrum&                   spectrum);
 
@@ -320,11 +342,21 @@ void daylight_ciexy_to_spectrum(
 // converting the spectrum to the CIE XYZ color space, then converting
 // the resulting CIE XYZ color to the linear RGB color space.
 //
+// Reference:
+//
+//   An RGB to Spectrum Conversion for Reflectances, Brian Smits, University of Utah
+//   http://www.cs.utah.edu/~bes/papers/color/
+//
 
-// Convert a color in the linear RGB color space to a spectrum.
+// Convert a linear RGB reflectance value to a spectrum.
 template <typename T, typename Spectrum>
-void linear_rgb_to_spectrum(
-    const LightingConditions&   lighting,
+void linear_rgb_reflectance_to_spectrum(
+    const Color<T, 3>&          linear_rgb,
+    Spectrum&                   spectrum);
+
+// Convert a linear RGB illuminance value to a spectrum.
+template <typename T, typename Spectrum>
+void linear_rgb_illuminance_to_spectrum(
     const Color<T, 3>&          linear_rgb,
     Spectrum&                   spectrum);
 
@@ -719,12 +751,10 @@ Color<T, 3> spectrum_to_ciexyz(
 
 template <typename T, typename Spectrum>
 void ciexyz_to_spectrum(
-    const LightingConditions&   lighting,
     const Color<T, 3>&          xyz,
     Spectrum&                   spectrum)
 {
-    linear_rgb_to_spectrum(
-        lighting,
+    linear_rgb_reflectance_to_spectrum(
         ciexyz_to_linear_rgb(xyz),
         spectrum);
 }
@@ -756,24 +786,105 @@ void daylight_ciexy_to_spectrum(
 // Linear RGB to spectrum transformation implementation.
 //
 
+namespace impl
+{
+    template <typename T, typename Spectrum>
+    void linear_rgb_to_spectrum(
+        const Color<T, 3>&      linear_rgb,
+        const Spectrum&         white,
+        const Spectrum&         cyan,
+        const Spectrum&         magenta,
+        const Spectrum&         yellow,
+        const Spectrum&         red,
+        const Spectrum&         green,
+        const Spectrum&         blue,
+        Spectrum&               spectrum)
+    {
+        const T r = linear_rgb[0];
+        const T g = linear_rgb[1];
+        const T b = linear_rgb[2];
+
+        if (r <= g && r <= b)
+        {
+            spectrum = r * white;
+            if (g <= b)
+            {
+                spectrum += (g - r) * cyan;
+                spectrum += (b - g) * blue;
+            }
+            else
+            {
+                spectrum += (b - r) * cyan;
+                spectrum += (g - b) * green;
+            }
+        }
+        else if (g <= r && g <= b)
+        {
+            spectrum = g * white;
+            if (r <= b)
+            {
+                spectrum += (r - g) * magenta;
+                spectrum += (b - r) * blue;
+            }
+            else
+            {
+                spectrum += (b - g) * magenta;
+                spectrum += (r - b) * red;
+            }
+        }
+        else
+        {
+            spectrum = b * white;
+            if (r <= g)
+            {
+                spectrum += (r - b) * yellow;
+                spectrum += (g - r) * green;
+            }
+            else
+            {
+                spectrum += (g - b) * yellow;
+                spectrum += (r - g) * red;
+            }
+        }
+    }
+}
+
 template <typename T, typename Spectrum>
-void linear_rgb_to_spectrum(
-    const LightingConditions&   lighting,
+void linear_rgb_reflectance_to_spectrum(
     const Color<T, 3>&          linear_rgb,
     Spectrum&                   spectrum)
 {
-    // todo: handle arbitrary number of samples.
-    assert(Spectrum::Samples == 31);
+    impl::linear_rgb_to_spectrum(
+        linear_rgb,
+        RGBToSpectrumWhiteReflectance,
+        RGBToSpectrumCyanReflectance,
+        RGBToSpectrumMagentaReflectance,
+        RGBToSpectrumYellowReflectance,
+        RGBToSpectrumRedReflectance,
+        RGBToSpectrumGreenReflectance,
+        RGBToSpectrumBlueReflectance,
+        spectrum);
 
-    typedef typename Spectrum::ValueType ValueType;
+    spectrum = clamp(spectrum, 0.0f, 1.0f);
+}
 
-    // todo: implement a better algorithm.
-    for (size_t w = 0;  w < 10; ++w)
-        spectrum[w] = static_cast<ValueType>(linear_rgb[2]);
-    for (size_t w = 10; w < 20; ++w)
-        spectrum[w] = static_cast<ValueType>(linear_rgb[1]);
-    for (size_t w = 20; w < 31; ++w)
-        spectrum[w] = static_cast<ValueType>(linear_rgb[0]);
+template <typename T, typename Spectrum>
+void linear_rgb_illuminance_to_spectrum(
+    const Color<T, 3>&          linear_rgb,
+    Spectrum&                   spectrum)
+{
+    impl::linear_rgb_to_spectrum(
+        linear_rgb,
+        RGBToSpectrumWhiteIlluminance,
+        RGBToSpectrumCyanIlluminance,
+        RGBToSpectrumMagentaIlluminance,
+        RGBToSpectrumYellowIlluminance,
+        RGBToSpectrumRedIlluminance,
+        RGBToSpectrumGreenIlluminance,
+        RGBToSpectrumBlueIlluminance,
+        spectrum);
+
+    spectrum = clamp_low(spectrum, 0.0f);
 }
 
 

@@ -100,7 +100,6 @@ class TextureSource
     const foundation::UniqueID              m_assembly_uid;
     const TextureInstance&                  m_texture_instance;
     const foundation::UniqueID              m_texture_uid;
-    const foundation::LightingConditions    m_lighting_conditions;
     const foundation::CanvasProperties      m_texture_props;
     const double                            m_scalar_canvas_width;
     const double                            m_scalar_canvas_height;
@@ -171,10 +170,7 @@ inline void TextureSource::evaluate(
 {
     const foundation::Color4f color = sample_texture(texture_cache, uv);
 
-    foundation::linear_rgb_to_spectrum(
-        m_lighting_conditions,
-        color.rgb(),
-        spectrum);
+    foundation::linear_rgb_reflectance_to_spectrum(color.rgb(), spectrum);
 }
 
 inline void TextureSource::evaluate(
@@ -208,10 +204,7 @@ inline void TextureSource::evaluate(
 {
     const foundation::Color4f color = sample_texture(texture_cache, uv);
 
-    foundation::linear_rgb_to_spectrum(
-        m_lighting_conditions,
-        color.rgb(),
-        spectrum);
+    foundation::linear_rgb_reflectance_to_spectrum(color.rgb(), spectrum);
 
     evaluate_alpha(color, alpha);
 }

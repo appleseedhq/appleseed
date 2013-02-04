@@ -151,22 +151,19 @@ ColorSource::ColorSource(const ColorEntity& color_entity)
         switch (color_space)
         {
           case ColorSpaceLinearRGB:
-            linear_rgb_to_spectrum(
-                lighting_conditions,
+            linear_rgb_reflectance_to_spectrum(
                 m_linear_rgb,
                 m_spectrum);
             break;
 
           case ColorSpaceSRGB:
-            linear_rgb_to_spectrum(
-                lighting_conditions,
+            linear_rgb_reflectance_to_spectrum(
                 srgb_to_linear_rgb(m_linear_rgb),
                 m_spectrum);
             break;
 
           case ColorSpaceCIEXYZ:
-            linear_rgb_to_spectrum(
-                lighting_conditions,
+            linear_rgb_reflectance_to_spectrum(
                 ciexyz_to_linear_rgb(m_linear_rgb),
                 m_spectrum);
             break;

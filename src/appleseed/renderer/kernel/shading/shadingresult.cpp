@@ -101,19 +101,19 @@ void ShadingResult::transform_to_linear_rgb(const LightingConditions& lighting)
 
 namespace
 {
-    inline void transform_linear_rgb_to_spectrum(const LightingConditions& lighting, Spectrum& s)
+    inline void transform_linear_rgb_to_spectrum(Spectrum& s)
     {
-        linear_rgb_to_spectrum(lighting, Color3f(s[0], s[1], s[2]), s);
+        linear_rgb_reflectance_to_spectrum(Color3f(s[0], s[1], s[2]), s);
     }
 
-    inline void transform_srgb_to_spectrum(const LightingConditions& lighting, Spectrum& s)
+    inline void transform_srgb_to_spectrum(Spectrum& s)
     {
-        linear_rgb_to_spectrum(lighting, srgb_to_linear_rgb(Color3f(s[0], s[1], s[2])), s);
+        linear_rgb_reflectance_to_spectrum(srgb_to_linear_rgb(Color3f(s[0], s[1], s[2])), s);
     }
 
-    inline void transform_ciexyz_to_spectrum(const LightingConditions& lighting, Spectrum& s)
+    inline void transform_ciexyz_to_spectrum(Spectrum& s)
     {
-        ciexyz_to_spectrum(lighting, Color3f(s[0], s[1], s[2]), s);
+        ciexyz_to_spectrum(Color3f(s[0], s[1], s[2]), s);
     }
 }
 
@@ -124,21 +124,21 @@ void ShadingResult::transform_to_spectrum(const LightingConditions& lighting)
     switch (m_color_space)
     {
       case ColorSpaceLinearRGB:
-        transform_linear_rgb_to_spectrum(lighting, m_color);
+        transform_linear_rgb_to_spectrum(m_color);
         for (size_t i = 0; i < aov_count; ++i)
-            transform_linear_rgb_to_spectrum(lighting, m_aovs[i]);
+            transform_linear_rgb_to_spectrum(m_aovs[i]);
         break;
 
       case ColorSpaceSRGB:
-        transform_srgb_to_spectrum(lighting, m_color);
+        transform_srgb_to_spectrum(m_color);
         for (size_t i = 0; i < aov_count; ++i)
-            transform_srgb_to_spectrum(lighting, m_aovs[i]);
+            transform_srgb_to_spectrum(m_aovs[i]);
         break;
 
       case ColorSpaceCIEXYZ:
-        transform_ciexyz_to_spectrum(lighting, m_color);
+        transform_ciexyz_to_spectrum(m_color);
         for (size_t i = 0; i < aov_count; ++i)
-            transform_ciexyz_to_spectrum(lighting, m_aovs[i]);
+            transform_ciexyz_to_spectrum(m_aovs[i]);
         break;
 
       case ColorSpaceSpectral:

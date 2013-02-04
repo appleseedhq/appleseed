@@ -204,17 +204,16 @@ TEST_SUITE(Foundation_Image_ColorSpace)
     TEST_CASE(TestCIEXYZToSpectrumConversion)
     {
         const Color3f ciexyz(0.699385f, 0.738633f, 0.790319f);
-        const LightingConditions lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg);
 
         Spectrum31f spectrum;
-        ciexyz_to_spectrum(lighting_conditions, ciexyz, spectrum);
+        ciexyz_to_spectrum(ciexyz, spectrum);
 
         const float ExpectedSpectrumValues[31] =
         {
-            0.72382f, 0.72382f, 0.72382f, 0.72382f, 0.72382f, 0.72382f, 0.72382f, 0.72382f,
-            0.72382f, 0.72382f, 0.740628f, 0.740628f, 0.740628f, 0.740628f, 0.740628f, 0.740628f,
-            0.740628f, 0.740628f, 0.740628f, 0.740628f, 0.736951f, 0.736951f, 0.736951f, 0.736951f,
-            0.736951f, 0.736951f, 0.736951f, 0.736951f, 0.736951f, 0.736951f, 0.736951f
+            0.768140f, 0.768643f, 0.768740f, 0.768869f, 0.769037f, 0.769489f, 0.770708f, 0.772643f,
+            0.775606f, 0.778692f, 0.781363f, 0.783471f, 0.785352f, 0.785766f, 0.786007f, 0.786419f,
+            0.786571f, 0.786511f, 0.786198f, 0.784935f, 0.783728f, 0.782956f, 0.782881f, 0.782790f,
+            0.782736f, 0.782879f, 0.782436f, 0.781264f, 0.780612f, 0.781049f, 0.781204f
         };
 
         EXPECT_FEQ_EPS(
