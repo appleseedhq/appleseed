@@ -1,4 +1,4 @@
-# - Find Alembic library
+#  Find Alembic library
 # Find the native Alembic includes and libraries
 # This module defines
 #  ALEMBIC_INCLUDE_DIRS, where to find Alembic/Abc/All.h, set when
@@ -10,8 +10,8 @@
 #
 
 # if ALEMBIC_ROOT_DIR was defined in the environment, use it.
-if(NOT ALEMBIC_ROOT_DIR AND NOT $ENV{ALEMBIC_ROOT_DIR} STREQUAL "")
-  set(ALEMBIC_ROOT_DIR $ENV{ALEMBIC_ROOT_DIR})
+if( NOT ALEMBIC_ROOT_DIR AND NOT $ENV{ALEMBIC_ROOT_DIR} STREQUAL "")
+  set( ALEMBIC_ROOT_DIR $ENV{ALEMBIC_ROOT_DIR})
 endif()
 
 set(_alembic_SEARCH_DIRS
@@ -24,7 +24,7 @@ set(_alembic_SEARCH_DIRS
 
 find_path(ALEMBIC_INCLUDE_DIR NAMES Alembic/Abc/All.h HINTS ${_alembic_SEARCH_DIRS} PATH_SUFFIXES include)
 
-find_library(ALEMBIC_ABC_LIBRARY 			NAMES AlembicAbc HINTS ${_alembic_SEARCH_DIRS} PATH_SUFFIXES lib64 lib)
+find_library(ALEMBIC_ABC_LIBRARY 		NAMES AlembicAbc HINTS ${_alembic_SEARCH_DIRS} PATH_SUFFIXES lib64 lib)
 find_library(ALEMBIC_ABCGEOM_LIBRARY 		NAMES AlembicAbcGeom HINTS ${_alembic_SEARCH_DIRS} PATH_SUFFIXES lib64 lib)
 find_library(ALEMBIC_ABCCORE_ABS_LIBRARY 	NAMES AlembicAbcCoreAbstract HINTS ${_alembic_SEARCH_DIRS} PATH_SUFFIXES lib64 lib)
 find_library(ALEMBIC_ABCUTIL_LIBRARY 		NAMES AlembicUtil HINTS ${_alembic_SEARCH_DIRS} PATH_SUFFIXES lib64 lib)
@@ -32,20 +32,17 @@ find_library(ALEMBIC_ABCCORE_HDF5_LIBRARY 	NAMES AlembicAbcCoreHDF5 HINTS ${_ale
 
 # handle the QUIETLY and REQUIRED arguments and set ALEMBIC_FOUND to TRUE if
 # all listed variables are TRUE
-include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(ALEMBIC DEFAULT_MSG ALEMBIC_ABC_LIBRARY ALEMBIC_INCLUDE_DIR)
+include( FindPackageHandleStandardArgs)
+find_package_handle_standard_args( ALEMBIC DEFAULT_MSG ALEMBIC_ABC_LIBRARY ALEMBIC_INCLUDE_DIR)
 
-if(ALEMBIC_FOUND)
-  set(ALEMBIC_LIBRARIES ${ALEMBIC_ABC_LIBRARY}
-						${ALEMBIC_ABCGEOM_LIBRARY}
-						${ALEMBIC_ABCCORE_ABS_LIBRARY}
-						${ALEMBIC_ABCUTIL_LIBRARY}
-						${ALEMBIC_ABCCORE_HDF5_LIBRARY})
+if( ALEMBIC_FOUND)
+    set( ALEMBIC_LIBRARIES  ${ALEMBIC_ABC_LIBRARY}
+                            ${ALEMBIC_ABCGEOM_LIBRARY}
+                            ${ALEMBIC_ABCCORE_ABS_LIBRARY}
+                            ${ALEMBIC_ABCUTIL_LIBRARY}
+                            ${ALEMBIC_ABCCORE_HDF5_LIBRARY})
 
-  set(ALEMBIC_INCLUDE_DIRS ${ALEMBIC_INCLUDE_DIR})
-endif(ALEMBIC_FOUND)
+    set( ALEMBIC_INCLUDE_DIRS ${ALEMBIC_INCLUDE_DIR})
+endif( ALEMBIC_FOUND)
 
-mark_as_advanced(
-  ALEMBIC_INCLUDE_DIR
-  ALEMBIC_LIBRARY
-)
+mark_as_advanced( ALEMBIC_INCLUDE_DIR ALEMBIC_LIBRARY)
