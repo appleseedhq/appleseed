@@ -45,7 +45,7 @@ namespace detail
     {
         if (bpy::len(l) != 4 * 4)
         {
-            PyErr_SetString(PyExc_RuntimeError, "Invalid list length given to appleseed.Matrix.__init__" );
+            PyErr_SetString(PyExc_RuntimeError, "Invalid list length given to appleseed.Matrix.__init__");
             bpy::throw_error_already_set();
         }
 
@@ -56,7 +56,7 @@ namespace detail
             bpy::extract<T> ex(l[i]);
             if (!ex.check())
             {
-                PyErr_SetString(PyExc_TypeError, "Incompatible type. Only floats." );
+                PyErr_SetString(PyExc_TypeError, "Incompatible type. Only floats.");
                 bpy::throw_error_already_set();
             }
 
@@ -73,7 +73,7 @@ namespace detail
         {
             if (bpy::len(indices) != 2)
             {
-                PyErr_SetString(PyExc_RuntimeError, "Invalid tuple length given to appleseed.Matrix.__get_item__" );
+                PyErr_SetString(PyExc_RuntimeError, "Invalid tuple length given to appleseed.Matrix.__get_item__");
                 bpy::throw_error_already_set();
             }
 
@@ -82,7 +82,7 @@ namespace detail
             bpy::extract<int> ex0(indices[0]);
             if (!ex0.check())
             {
-                PyErr_SetString(PyExc_TypeError, "Incompatible index type. Only ints." );
+                PyErr_SetString(PyExc_TypeError, "Incompatible index type. Only ints.");
                 bpy::throw_error_already_set();
             }
             else
@@ -91,7 +91,7 @@ namespace detail
             bpy::extract<int> ex1(indices[1]);
             if (!ex1.check())
             {
-                PyErr_SetString(PyExc_TypeError, "Incompatible index type. Only ints." );
+                PyErr_SetString(PyExc_TypeError, "Incompatible index type. Only ints.");
                 bpy::throw_error_already_set();
             }
             else
@@ -106,7 +106,7 @@ namespace detail
             if (i >= 0 && i < 4 && j >= 0 && j < 4)
                 return mat(i, j);
 
-            PyErr_SetString(PyExc_IndexError, "Out of bounds access in appleseed.Matrix.__get_item__" );
+            PyErr_SetString(PyExc_IndexError, "Out of bounds access in appleseed.Matrix.__get_item__");
             boost::python::throw_error_already_set();
             return T();
         }
@@ -115,7 +115,7 @@ namespace detail
         {
             if (bpy::len(indices) != 2)
             {
-                PyErr_SetString(PyExc_RuntimeError, "Invalid tuple length given to appleseed.Matrix.__set_item__" );
+                PyErr_SetString(PyExc_RuntimeError, "Invalid tuple length given to appleseed.Matrix.__set_item__");
                 bpy::throw_error_already_set();
             }
 
@@ -124,7 +124,7 @@ namespace detail
             bpy::extract<int> ex0(indices[0]);
             if (!ex0.check())
             {
-                PyErr_SetString(PyExc_TypeError, "Incompatible index type. Only ints." );
+                PyErr_SetString(PyExc_TypeError, "Incompatible index type. Only ints.");
                 bpy::throw_error_already_set();
             }
             else
@@ -133,7 +133,7 @@ namespace detail
             bpy::extract<int> ex1(indices[1]);
             if (!ex1.check())
             {
-                PyErr_SetString(PyExc_TypeError, "Incompatible index type. Only ints." );
+                PyErr_SetString(PyExc_TypeError, "Incompatible index type. Only ints.");
                 bpy::throw_error_already_set();
             }
             else
@@ -149,7 +149,7 @@ namespace detail
                 mat(i, j) = v;
             else
             {
-                PyErr_SetString(PyExc_IndexError, "Out of bounds access in appleseed.Matrix.__set_item__" );
+                PyErr_SetString(PyExc_IndexError, "Out of bounds access in appleseed.Matrix.__set_item__");
                 boost::python::throw_error_already_set();
             }
         }
