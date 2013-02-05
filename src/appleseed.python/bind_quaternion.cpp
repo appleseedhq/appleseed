@@ -30,8 +30,8 @@
 #include "Python.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/quaternion.h"
 #include "foundation/platform/python.h"
+#include "foundation/math/quaternion.h"
 #include "foundation/utility/iostreamop.h"
 
 namespace bpy = boost::python;

@@ -29,11 +29,11 @@
 // Has to be first, to avoid redefinition warnings.
 #include "Python.h"
 
-// appleseed.python headers.
-#include "unaligned_matrix44.h"
-
 // appleseed.foundation headers.
 #include "foundation/platform/python.h"
+
+// appleseed.python headers.
+#include "unaligned_matrix44.h"
 
 namespace bpy = boost::python;
 using namespace foundation;
