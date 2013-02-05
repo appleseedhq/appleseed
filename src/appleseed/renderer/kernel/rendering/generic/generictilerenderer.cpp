@@ -127,7 +127,7 @@ namespace
             }
         }
 
-        virtual void release() override
+        virtual void release() OVERRIDE
         {
             delete this;
         }
@@ -136,7 +136,7 @@ namespace
             const Frame&                frame,
             const size_t                tile_x,
             const size_t                tile_y,
-            AbortSwitch&                abort_switch) override
+            AbortSwitch&                abort_switch) OVERRIDE
         {
             // Retrieve frame properties.
             const CanvasProperties& frame_properties = frame.image().properties();
@@ -267,7 +267,7 @@ namespace
             }
         }
 
-        virtual StatisticsVector get_statistics() const override
+        virtual StatisticsVector get_statistics() const OVERRIDE
         {
             return m_sample_renderer->get_statistics();
         }

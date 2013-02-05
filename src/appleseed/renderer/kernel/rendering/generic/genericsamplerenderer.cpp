@@ -116,7 +116,7 @@ namespace
             m_lighting_engine->release();
         }
 
-        virtual void release() override
+        virtual void release() OVERRIDE
         {
             delete this;
         }
@@ -124,7 +124,7 @@ namespace
         virtual void render_sample(
             SamplingContext&        sampling_context,
             const Vector2d&         image_point,
-            ShadingResult&          shading_result) override
+            ShadingResult&          shading_result) OVERRIDE
         {
 #ifdef DEBUG_DISPLAY_TEXTURE_CACHE_PERFORMANCES
 
@@ -253,7 +253,7 @@ namespace
 #endif
         }
 
-        virtual StatisticsVector get_statistics() const override
+        virtual StatisticsVector get_statistics() const OVERRIDE
         {
             StatisticsVector stats;
             stats.merge(m_texture_cache.get_statistics());

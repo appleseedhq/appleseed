@@ -53,10 +53,10 @@ class BlankTileRendererFactory
 {
   public:
     // Delete this instance.
-    virtual void release() override;
+    virtual void release() OVERRIDE;
 
     // Return a new blank tile renderer instance.
-    virtual ITileRenderer* create() override;
+    virtual ITileRenderer* create() OVERRIDE;
 };
 
 }       // namespace renderer

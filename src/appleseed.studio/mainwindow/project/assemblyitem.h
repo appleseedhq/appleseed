@@ -72,7 +72,7 @@ class AssemblyItem
         ProjectBuilder&             project_builder,
         renderer::ParamArray&       settings);
 
-    virtual QMenu* get_single_item_context_menu() const override;
+    virtual QMenu* get_single_item_context_menu() const OVERRIDE;
 
     void add_item(renderer::BSDF* bsdf);
     void add_item(renderer::EDF* edf);
@@ -110,7 +110,7 @@ class AssemblyItem
     ObjectCollectionItem*           m_object_collection_item;
     ObjectInstanceCollectionItem*   m_object_instance_collection_item;
 
-    virtual void slot_delete() override;
+    virtual void slot_delete() OVERRIDE;
 
     template <typename Entity, typename EntityContainer>
     CollectionItem<Entity, renderer::Assembly, AssemblyItem>* add_single_model_collection_item(EntityContainer& entities);

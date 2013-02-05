@@ -61,7 +61,7 @@ class NormalMappingModifier
         const foundation::Vector3d&     n,
         const foundation::Vector2d&     uv,
         const foundation::Vector3d&     dpdu,
-        const foundation::Vector3d&     dpdv) const override;
+        const foundation::Vector3d&     dpdv) const OVERRIDE;
 
   private:
     const Source*   m_map;

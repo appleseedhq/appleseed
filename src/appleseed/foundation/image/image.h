@@ -83,18 +83,18 @@ class DLLSYMBOL Image
     virtual ~Image();
 
     // Delete this instance.
-    virtual void release() override;
+    virtual void release() OVERRIDE;
 
     // Access canvas properties.
-    virtual const CanvasProperties& properties() const override;
+    virtual const CanvasProperties& properties() const OVERRIDE;
 
     // Direct access to a given tile.
     virtual Tile& tile(
         const size_t        tile_x,
-        const size_t        tile_y) override;
+        const size_t        tile_y) OVERRIDE;
     virtual const Tile& tile(
         const size_t        tile_x,
-        const size_t        tile_y) const override;
+        const size_t        tile_y) const OVERRIDE;
 
     // Set a given tile. Ownership of the tile is transfered to the Image class.
     // If a tile already exists at the given coordinates, it gets replaced.

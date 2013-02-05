@@ -139,24 +139,28 @@ class DLLSYMBOL Compiler
 
 
 //
-// Define the 'override' keyword for compilers that don't yet implement C++11.
+// Define the OVERRIDE qualifer as a synonym for the 'override' keyword in C++11.
 //
 
 // Visual C++: supported since Visual Studio 2010.
 #if defined _MSC_VER
-    #if !(_MSC_VER >= 1600)
-        #define override
+    #if _MSC_VER >= 1600
+        #define OVERRIDE override
+    #else
+        #define OVERRIDE
     #endif
 
 // gcc: supported since gcc 4.7.
 #elif defined __GNUC__
-    #if !(__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7))
-        #define override
+    #if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7)
+        #define OVERRIDE override
+    #else
+        #define OVERRIDE
     #endif
 
-// Other compilers: ignore the 'override' keyword.
+// Other compilers: the OVERRIDE qualifier has no effect.
 #else
-    #define override
+    #define OVERRIDE
 #endif
 
 

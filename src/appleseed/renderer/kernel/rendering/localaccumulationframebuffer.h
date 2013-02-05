@@ -62,12 +62,12 @@ class LocalAccumulationFramebuffer
     ~LocalAccumulationFramebuffer();
 
     // Reset the framebuffer to its initial state. Thread-safe.
-    virtual void clear() override;
+    virtual void clear() OVERRIDE;
 
     // Store @samples into the framebuffer. Thread-safe.
     virtual void store_samples(
         const size_t    sample_count,
-        const Sample    samples[]) override;
+        const Sample    samples[]) OVERRIDE;
 
   private:
     struct AccumulationPixel
@@ -80,7 +80,7 @@ class LocalAccumulationFramebuffer
     std::vector<size_t>                 m_set_pixels;
     size_t                              m_active_level;
 
-    virtual void develop_to_frame_no_lock(Frame& frame) const override;
+    virtual void develop_to_frame_no_lock(Frame& frame) const OVERRIDE;
 
     void develop_to_tile(
         const Frame&                    frame,

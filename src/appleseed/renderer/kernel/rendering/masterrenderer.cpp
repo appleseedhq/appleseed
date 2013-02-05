@@ -92,32 +92,32 @@ class SerialRendererController
         assert(m_tile_callback);
     }
 
-    virtual void on_rendering_begin() override
+    virtual void on_rendering_begin() OVERRIDE
     {
         m_controller->on_rendering_begin();
     }
 
-    virtual void on_rendering_success() override
+    virtual void on_rendering_success() OVERRIDE
     {
         m_controller->on_rendering_success();
     }
 
-    virtual void on_rendering_abort() override
+    virtual void on_rendering_abort() OVERRIDE
     {
         m_controller->on_rendering_abort();
     }
 
-    virtual void on_frame_begin() override
+    virtual void on_frame_begin() OVERRIDE
     {
         m_controller->on_frame_begin();
     }
 
-    virtual void on_frame_end() override
+    virtual void on_frame_end() OVERRIDE
     {
         m_controller->on_frame_end();
     }
 
-    virtual Status on_progress() override
+    virtual Status on_progress() OVERRIDE
     {
         {
             boost::mutex::scoped_lock lock(m_mutex);
@@ -236,22 +236,22 @@ namespace
             assert(m_controller);
         }
 
-        virtual void release() override
+        virtual void release() OVERRIDE
         {
             delete this;
         }
 
-        virtual void pre_render(const size_t x, const size_t y, const size_t width, const size_t height) override
+        virtual void pre_render(const size_t x, const size_t y, const size_t width, const size_t height) OVERRIDE
         {
             m_controller->add_pre_render_tile_callback(x,y,width,height);
         }
 
-        virtual void post_render_tile(const Frame* frame, const size_t tile_x, const size_t tile_y) override
+        virtual void post_render_tile(const Frame* frame, const size_t tile_x, const size_t tile_y) OVERRIDE
         {
             m_controller->add_post_render_tile_callback(frame,tile_x,tile_y);
         }
 
-        virtual void post_render(const Frame* frame) override
+        virtual void post_render(const Frame* frame) OVERRIDE
         {
             m_controller->add_post_render_tile_callback(frame);
         }
@@ -270,12 +270,12 @@ namespace
             assert(m_controller);
         }
 
-        virtual void release() override
+        virtual void release() OVERRIDE
         {
             delete this;
         }
 
-        virtual ITileCallback* create() override
+        virtual ITileCallback* create() OVERRIDE
         {
             return new SerialTileCallback(m_controller);
         }

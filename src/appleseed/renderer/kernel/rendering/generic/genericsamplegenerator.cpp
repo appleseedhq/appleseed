@@ -84,18 +84,18 @@ namespace
         {
         }
 
-        virtual void release() override
+        virtual void release() OVERRIDE
         {
             delete this;
         }
 
-        virtual void reset() override
+        virtual void reset() OVERRIDE
         {
             SampleGeneratorBase::reset();
             m_rng = MersenneTwister();
         }
 
-        virtual StatisticsVector get_statistics() const override
+        virtual StatisticsVector get_statistics() const OVERRIDE
         {
             Statistics stats;
             stats.insert("max. samp. dim.", m_total_sampling_dim);
@@ -123,7 +123,7 @@ namespace
 
         virtual size_t generate_samples(
             const size_t                    sequence_index,
-            SampleVector&                   samples) override
+            SampleVector&                   samples) OVERRIDE
         {
             // Compute the sample position in NDC.
             const size_t Bases[2] = { 2, 3 };

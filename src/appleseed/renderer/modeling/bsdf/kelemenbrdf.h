@@ -56,18 +56,18 @@ class DLLSYMBOL KelemenBRDFFactory
 {
   public:
     // Return a string identifying this BSDF model.
-    virtual const char* get_model() const override;
+    virtual const char* get_model() const OVERRIDE;
 
     // Return a human-readable string identifying this BSDF model.
-    virtual const char* get_human_readable_model() const override;
+    virtual const char* get_human_readable_model() const OVERRIDE;
 
     // Return a set of widget definitions for this BSDF model.
-    virtual foundation::DictionaryArray get_widget_definitions() const override;
+    virtual foundation::DictionaryArray get_widget_definitions() const OVERRIDE;
 
     // Create a new BSDF instance.
     virtual foundation::auto_release_ptr<BSDF> create(
         const char*         name,
-        const ParamArray&   params) const override;
+        const ParamArray&   params) const OVERRIDE;
 };
 
 }       // namespace renderer

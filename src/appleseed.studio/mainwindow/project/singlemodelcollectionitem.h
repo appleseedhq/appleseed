@@ -77,9 +77,9 @@ class SingleModelCollectionItem
     typedef CollectionItem<Entity, ParentEntity, ParentItem> Base;
     typedef SingleModelCollectionItem<Entity, ParentEntity, ParentItem> This;
 
-    virtual ItemBase* create_item(Entity* entity) override;
+    virtual ItemBase* create_item(Entity* entity) OVERRIDE;
 
-    virtual void slot_create() override;
+    virtual void slot_create() OVERRIDE;
 };
 
 

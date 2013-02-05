@@ -54,18 +54,18 @@ class DLLSYMBOL VoxelAOSurfaceShaderFactory
 {
   public:
     // Return a string identifying this surface shader model.
-    virtual const char* get_model() const override;
+    virtual const char* get_model() const OVERRIDE;
 
     // Return a human-readable string identifying this surface shader model.
-    virtual const char* get_human_readable_model() const override;
+    virtual const char* get_human_readable_model() const OVERRIDE;
 
     // Return a set of widget definitions for this surface shader model.
-    virtual foundation::DictionaryArray get_widget_definitions() const override;
+    virtual foundation::DictionaryArray get_widget_definitions() const OVERRIDE;
 
     // Create a new surface shader instance.
     virtual foundation::auto_release_ptr<SurfaceShader> create(
         const char*         name,
-        const ParamArray&   params) const override;
+        const ParamArray&   params) const OVERRIDE;
 };
 
 }       // namespace renderer

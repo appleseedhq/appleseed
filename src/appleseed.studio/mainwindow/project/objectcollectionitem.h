@@ -68,7 +68,7 @@ class ObjectCollectionItem
         ProjectBuilder&             project_builder,
         renderer::ParamArray&       settings);
 
-    virtual QMenu* get_single_item_context_menu() const override;
+    virtual QMenu* get_single_item_context_menu() const OVERRIDE;
 
   public slots:
     void slot_import_objects();
@@ -79,7 +79,7 @@ class ObjectCollectionItem
     ProjectBuilder&                 m_project_builder;
     renderer::ParamArray&           m_settings;
 
-    virtual ItemBase* create_item(renderer::Object* object) override;
+    virtual ItemBase* create_item(renderer::Object* object) OVERRIDE;
 
     void insert_objects(const std::string& path) const;
 };

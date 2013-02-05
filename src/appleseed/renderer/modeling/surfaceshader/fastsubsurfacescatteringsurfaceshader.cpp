@@ -105,19 +105,19 @@ namespace
             m_inputs.declare("albedo", InputFormatSpectrum);
         }
 
-        virtual void release() override
+        virtual void release() OVERRIDE
         {
             delete this;
         }
 
-        virtual const char* get_model() const override
+        virtual const char* get_model() const OVERRIDE
         {
             return Model;
         }
 
         virtual bool on_frame_begin(
             const Project&          project,
-            const Assembly&         assembly) override
+            const Assembly&         assembly) OVERRIDE
         {
             if (!SurfaceShader::on_frame_begin(project, assembly))
                 return false;
@@ -133,7 +133,7 @@ namespace
             SamplingContext&        sampling_context,
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
-            ShadingResult&          shading_result) const override
+            ShadingResult&          shading_result) const OVERRIDE
         {
             // Initialize the shading result to opaque black.
             shading_result.m_color_space = ColorSpaceSpectral;

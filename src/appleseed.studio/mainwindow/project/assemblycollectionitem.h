@@ -65,7 +65,7 @@ class AssemblyCollectionItem
         ProjectBuilder&                 project_builder,
         renderer::ParamArray&           settings);
 
-    virtual QMenu* get_single_item_context_menu() const override;
+    virtual QMenu* get_single_item_context_menu() const OVERRIDE;
 
   public slots:
     void slot_create();
@@ -76,7 +76,7 @@ class AssemblyCollectionItem
     ProjectBuilder&         m_project_builder;
     renderer::ParamArray&   m_settings;
 
-    virtual ItemBase* create_item(renderer::Assembly* assembly) override;
+    virtual ItemBase* create_item(renderer::Assembly* assembly) OVERRIDE;
 };
 
 }       // namespace studio

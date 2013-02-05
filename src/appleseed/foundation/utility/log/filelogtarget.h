@@ -53,7 +53,7 @@ class DLLSYMBOL FileLogTarget
 {
   public:
     // Delete this instance.
-    virtual void release() override;
+    virtual void release() OVERRIDE;
 
     // Write a message.
     virtual void write(
@@ -61,7 +61,7 @@ class DLLSYMBOL FileLogTarget
         const char*                 file,
         const size_t                line,
         const char*                 header,
-        const char*                 message) override;
+        const char*                 message) OVERRIDE;
 
     bool open(const char* filename);
 

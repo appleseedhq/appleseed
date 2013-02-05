@@ -47,10 +47,10 @@ class DebugSampleRendererFactory
 {
   public:
     // Delete this instance.
-    virtual void release() override;
+    virtual void release() OVERRIDE;
 
     // Return a new debug sample renderer instance.
-    virtual ISampleRenderer* create() override;
+    virtual ISampleRenderer* create() OVERRIDE;
 };
 
 }       // namespace renderer

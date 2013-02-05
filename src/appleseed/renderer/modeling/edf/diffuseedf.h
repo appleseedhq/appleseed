@@ -56,18 +56,18 @@ class DLLSYMBOL DiffuseEDFFactory
 {
   public:
     // Return a string identifying this EDF model.
-    virtual const char* get_model() const override;
+    virtual const char* get_model() const OVERRIDE;
 
     // Return a human-readable string identifying this EDF model.
-    virtual const char* get_human_readable_model() const override;
+    virtual const char* get_human_readable_model() const OVERRIDE;
 
     // Return a set of widget definitions for this EDF model.
-    virtual foundation::DictionaryArray get_widget_definitions() const override;
+    virtual foundation::DictionaryArray get_widget_definitions() const OVERRIDE;
 
     // Create a new EDF instance.
     virtual foundation::auto_release_ptr<EDF> create(
         const char*         name,
-        const ParamArray&   params) const override;
+        const ParamArray&   params) const OVERRIDE;
 };
 
 }       // namespace renderer

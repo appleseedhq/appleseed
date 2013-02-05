@@ -62,7 +62,7 @@ class DLLSYMBOL AssemblyInstance
 {
   public:
     // Delete this instance.
-    virtual void release() override;
+    virtual void release() OVERRIDE;
 
     // Return the name of the instantiated assembly.
     const char* get_assembly_name() const;

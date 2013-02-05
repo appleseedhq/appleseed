@@ -64,7 +64,7 @@ class CommandLineHandler
     virtual void parse(
         const int               argc,
         const char*             argv[],
-        shared::SuperLogger&    logger) override;
+        shared::SuperLogger&    logger) OVERRIDE;
 
   private:
     // Emit usage instructions to the logger.

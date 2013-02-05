@@ -63,16 +63,16 @@ class DLLSYMBOL MeshObject
 {
   public:
     // Delete this instance.
-    virtual void release() override;
+    virtual void release() OVERRIDE;
 
     // Return a string identifying the model of this object.
-    virtual const char* get_model() const override;
+    virtual const char* get_model() const OVERRIDE;
 
     // Compute the local space bounding box of the object over the shutter interval.
-    virtual GAABB3 compute_local_bbox() const override;
+    virtual GAABB3 compute_local_bbox() const OVERRIDE;
 
     // Return the region kit of the object.
-    virtual foundation::Lazy<RegionKit>& get_region_kit() override;
+    virtual foundation::Lazy<RegionKit>& get_region_kit() OVERRIDE;
 
     // Insert and access vertices.
     void reserve_vertices(const size_t count);
@@ -117,8 +117,8 @@ class DLLSYMBOL MeshObject
     // Insert and access material slots.
     void reserve_material_slots(const size_t count);
     size_t push_material_slot(const char* name);
-    virtual size_t get_material_slot_count() const override;
-    virtual const char* get_material_slot(const size_t index) const override;
+    virtual size_t get_material_slot_count() const OVERRIDE;
+    virtual const char* get_material_slot(const size_t index) const OVERRIDE;
 
   private:
     friend class MeshObjectFactory;

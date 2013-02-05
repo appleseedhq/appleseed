@@ -86,29 +86,29 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
             create_horizontal_gradient();
         }
 
-        virtual void release() override
+        virtual void release() OVERRIDE
         {
             delete this;
         }
 
-        virtual const char* get_model() const override
+        virtual const char* get_model() const OVERRIDE
         {
             return "horizontal_gradient_texture";
         }
 
-        virtual ColorSpace get_color_space() const override
+        virtual ColorSpace get_color_space() const OVERRIDE
         {
             return ColorSpaceLinearRGB;
         }
 
-        virtual const CanvasProperties& properties() override
+        virtual const CanvasProperties& properties() OVERRIDE
         {
             return m_props;
         }
 
         virtual Tile* load_tile(
             const size_t    tile_x,
-            const size_t    tile_y) override
+            const size_t    tile_y) OVERRIDE
         {
             assert(tile_x == 0);
             assert(tile_y == 0);
@@ -119,7 +119,7 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
         virtual void unload_tile(
             const size_t    tile_x,
             const size_t    tile_y,
-            const Tile*     tile) override
+            const Tile*     tile) OVERRIDE
         {
         }
 

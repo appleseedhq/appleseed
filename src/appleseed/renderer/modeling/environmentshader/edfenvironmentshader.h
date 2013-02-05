@@ -56,18 +56,18 @@ class DLLSYMBOL EDFEnvironmentShaderFactory
 {
   public:
     // Return a string identifying this environment shader model.
-    virtual const char* get_model() const override;
+    virtual const char* get_model() const OVERRIDE;
 
     // Return a human-readable string identifying this environment shader model.
-    virtual const char* get_human_readable_model() const override;
+    virtual const char* get_human_readable_model() const OVERRIDE;
 
     // Return a set of widget definitions for this environment shader model.
-    virtual foundation::DictionaryArray get_widget_definitions() const override;
+    virtual foundation::DictionaryArray get_widget_definitions() const OVERRIDE;
 
     // Create a new environment shader instance.
     virtual foundation::auto_release_ptr<EnvironmentShader> create(
         const char*         name,
-        const ParamArray&   params) const override;
+        const ParamArray&   params) const OVERRIDE;
 };
 
 }       // namespace renderer

@@ -141,7 +141,7 @@ namespace
         {
         }
 
-        virtual void release() override
+        virtual void release() OVERRIDE
         {
             delete this;
         }
@@ -151,7 +151,7 @@ namespace
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
             Spectrum&               radiance,               // output radiance, in W.sr^-1.m^-2
-            SpectrumStack&          aovs) override
+            SpectrumStack&          aovs) OVERRIDE
         {
             PathVisitor path_visitor(
                 m_params,
@@ -179,7 +179,7 @@ namespace
             m_path_length.insert(path_length);
         }
 
-        virtual StatisticsVector get_statistics() const override
+        virtual StatisticsVector get_statistics() const OVERRIDE
         {
             Statistics stats;
             stats.insert("path count", m_path_count);

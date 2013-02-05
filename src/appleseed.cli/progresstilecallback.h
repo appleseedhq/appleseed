@@ -50,9 +50,9 @@ class ProgressTileCallbackFactory
   public:
     explicit ProgressTileCallbackFactory(foundation::Logger& logger);
 
-    virtual void release() override;
+    virtual void release() OVERRIDE;
 
-    virtual renderer::ITileCallback* create() override;
+    virtual renderer::ITileCallback* create() OVERRIDE;
 
   private:
     std::auto_ptr<renderer::ITileCallback> m_callback;

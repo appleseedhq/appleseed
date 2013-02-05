@@ -72,29 +72,29 @@ class TextureSource
     virtual void evaluate(
         TextureCache&                       texture_cache,
         const foundation::Vector2d&         uv,
-        double&                             scalar) const override;
+        double&                             scalar) const OVERRIDE;
     virtual void evaluate(
         TextureCache&                       texture_cache,
         const foundation::Vector2d&         uv,
-        foundation::Color3f&                linear_rgb) const override;
+        foundation::Color3f&                linear_rgb) const OVERRIDE;
     virtual void evaluate(
         TextureCache&                       texture_cache,
         const foundation::Vector2d&         uv,
-        Spectrum&                           spectrum) const override;
+        Spectrum&                           spectrum) const OVERRIDE;
     virtual void evaluate(
         TextureCache&                       texture_cache,
         const foundation::Vector2d&         uv,
-        Alpha&                              alpha) const override;
+        Alpha&                              alpha) const OVERRIDE;
     virtual void evaluate(
         TextureCache&                       texture_cache,
         const foundation::Vector2d&         uv,
         foundation::Color3f&                linear_rgb,
-        Alpha&                              alpha) const override;
+        Alpha&                              alpha) const OVERRIDE;
     virtual void evaluate(
         TextureCache&                       texture_cache,
         const foundation::Vector2d&         uv,
         Spectrum&                           spectrum,
-        Alpha&                              alpha) const override;
+        Alpha&                              alpha) const OVERRIDE;
 
   private:
     const foundation::UniqueID              m_assembly_uid;

@@ -56,7 +56,7 @@ class DLLSYMBOL TestListenerBase
   public:
     // Called before each test suite is run.
     virtual void begin_suite(
-        const TestSuite&        test_suite) override
+        const TestSuite&        test_suite) OVERRIDE
     {
     }
 
@@ -64,14 +64,14 @@ class DLLSYMBOL TestListenerBase
     virtual void end_suite(
         const TestSuite&        test_suite,
         const TestResult&       test_suite_result,
-        const TestResult&       cumulated_result) override
+        const TestResult&       cumulated_result) OVERRIDE
     {
     }
 
     // Called before each test case is run.
     virtual void begin_case(
         const TestSuite&        test_suite,
-        const char*             test_case_name) override
+        const char*             test_case_name) OVERRIDE
     {
     }
 
@@ -81,7 +81,7 @@ class DLLSYMBOL TestListenerBase
         const char*             test_case_name,
         const TestResult&       test_suite_result,
         const TestResult&       test_case_result,
-        const TestResult&       cumulated_result) override
+        const TestResult&       cumulated_result) OVERRIDE
     {
     }
 
@@ -92,7 +92,7 @@ class DLLSYMBOL TestListenerBase
         const char*             file,
         const size_t            line,
         const TestMessage::Type message_type,
-        const char*             message) override
+        const char*             message) OVERRIDE
     {
     }
 };

@@ -69,7 +69,7 @@ class DLLSYMBOL Frame
 {
   public:
     // Delete this instance.
-    virtual void release() override;
+    virtual void release() OVERRIDE;
 
     // Access the main underlying image.
     foundation::Image& image() const;

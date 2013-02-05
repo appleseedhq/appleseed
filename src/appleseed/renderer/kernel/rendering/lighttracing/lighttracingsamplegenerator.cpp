@@ -160,12 +160,12 @@ namespace
         {
         }
 
-        virtual void release() override
+        virtual void release() OVERRIDE
         {
             delete this;
         }
 
-        virtual void reset() override
+        virtual void reset() OVERRIDE
         {
             SampleGeneratorBase::reset();
             m_rng = MersenneTwister();
@@ -174,7 +174,7 @@ namespace
         virtual void generate_samples(
             const size_t                sample_count,
             AccumulationFramebuffer&    framebuffer,
-            AbortSwitch&                abort_switch) override
+            AbortSwitch&                abort_switch) OVERRIDE
         {
             m_light_sample_count = 0;
 
@@ -184,7 +184,7 @@ namespace
                 .increment_sample_count(m_light_sample_count);
         }
 
-        virtual StatisticsVector get_statistics() const override
+        virtual StatisticsVector get_statistics() const OVERRIDE
         {
             Statistics stats;
             stats.insert("path count", m_path_count);
@@ -508,7 +508,7 @@ namespace
 
         virtual size_t generate_samples(
             const size_t                sequence_index,
-            SampleVector&               samples) override
+            SampleVector&               samples) OVERRIDE
         {
             SamplingContext sampling_context(
                 m_rng,

@@ -61,7 +61,7 @@ class TextureItem
 
     BaseGroupItem* m_base_group_item;
 
-    virtual void slot_delete() override;
+    virtual void slot_delete() OVERRIDE;
 };
 
 }       // namespace studio

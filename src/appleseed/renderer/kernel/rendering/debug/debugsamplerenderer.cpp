@@ -56,7 +56,7 @@ namespace
       : public ISampleRenderer
     {
       public:
-        virtual void release() override
+        virtual void release() OVERRIDE
         {
             delete this;
         }
@@ -64,7 +64,7 @@ namespace
         virtual void render_sample(
             SamplingContext&    sampling_context,
             const Vector2d&     image_point,
-            ShadingResult&      shading_result) override
+            ShadingResult&      shading_result) OVERRIDE
         {
             const Vector2d v = Vector2d(0.5) - image_point;
             const double d = norm(v) * 2.0;
@@ -76,7 +76,7 @@ namespace
             shading_result.set_to_linear_rgb(Color3f(c));
         }
 
-        virtual StatisticsVector get_statistics() const override
+        virtual StatisticsVector get_statistics() const OVERRIDE
         {
             return StatisticsVector();
         }

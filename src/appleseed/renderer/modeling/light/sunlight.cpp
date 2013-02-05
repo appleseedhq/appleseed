@@ -88,19 +88,19 @@ namespace
             m_inputs.declare("exitance_multiplier", InputFormatScalar, "1.0");
         }
 
-        virtual void release() override
+        virtual void release() OVERRIDE
         {
             delete this;
         }
 
-        virtual const char* get_model() const override
+        virtual const char* get_model() const OVERRIDE
         {
             return Model;
         }
 
         virtual bool on_frame_begin(
             const Project&          project,
-            const Assembly&         assembly) override
+            const Assembly&         assembly) OVERRIDE
         {
             if (!Light::on_frame_begin(project, assembly))
                 return false;
@@ -132,7 +132,7 @@ namespace
             Vector3d&               position,
             Vector3d&               outgoing,
             Spectrum&               value,
-            double&                 probability) const override
+            double&                 probability) const OVERRIDE
         {
             const Vector2d point_on_disk = sample_disk_uniform(s);
             position =
@@ -148,7 +148,7 @@ namespace
             const Vector3d&         target,
             Vector3d&               position,
             Vector3d&               outgoing,
-            Spectrum&               value) const override
+            Spectrum&               value) const OVERRIDE
         {
             position = target - m_safe_scene_radius * m_outgoing;
             outgoing = m_outgoing;
