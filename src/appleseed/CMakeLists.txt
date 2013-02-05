@@ -1444,6 +1444,17 @@ source_group ("renderer\\modeling\\texture" FILES
     ${renderer_modeling_texture_sources}
 )
 
+set (renderer_modeling_shadergroup
+    renderer/modeling/shadergroup/shadergroup.cpp
+    renderer/modeling/shadergroup/shadergroup.h
+)
+list (APPEND appleseed_sources
+    ${renderer_modeling_shadergroup}
+)
+source_group ("renderer\\modeling\\shadergroup" FILES
+    ${renderer_modeling_shadergroup}
+)
+
 set (renderer_utility_sources
     renderer/utility/bbox.h
     renderer/utility/messagecontext.cpp
@@ -1513,6 +1524,8 @@ link_against_libpng (appleseed)
 link_against_xercesc (appleseed)
 link_against_hdf5 (appleseed)
 link_against_alembic (appleseed)
+link_against_oiio (appleseed)
+link_against_oslexec (appleseed)
 
 target_link_libraries (appleseed
     ${Boost_LIBRARIES}

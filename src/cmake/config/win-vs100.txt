@@ -237,6 +237,13 @@ macro (link_against_alembic target)
     endif ()
 endmacro ()
 
+macro (link_against_oiio target)
+        target_link_libraries (${target} ${OPENIMAGEIO_LIBRARIES})
+endmacro ()
+
+macro (link_against_oslexec target)
+        target_link_libraries (${target} ${OSL_EXEC_LIBRARY})
+endmacro ()
 
 #--------------------------------------------------------------------------------------------------
 # Copy a target binary to the sandbox.

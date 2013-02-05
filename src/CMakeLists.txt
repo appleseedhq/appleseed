@@ -125,6 +125,9 @@ link_directories (${Boost_LIBRARY_DIRS})
 # Find external packages.
 #--------------------------------------------------------------------------------------------------
 
+find_package (OpenImageIO REQUIRED)
+find_package (OSL REQUIRED)
+
 if (USE_EXTERNAL_PNG)
     find_package (PNG REQUIRED)
     add_definitions (-DWITH_EXTERNAL_PNG)
@@ -153,6 +156,8 @@ endif ()
 include_directories (
     appleseed
     STANN/include
+    ${OPENIMAGEIO_INCLUDE_DIRS}
+    ${OSL_INCLUDE_DIRS}
     ${PYTHON_INCLUDE_DIRS}
 )
 
