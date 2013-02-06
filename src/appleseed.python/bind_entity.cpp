@@ -26,6 +26,9 @@
 // THE SOFTWARE.
 //
 
+// Has to be first, to avoid redefinition warnings.
+#include "Python.h"
+
 // appleseed.python headers.
 #include "bind_auto_release_ptr.h"
 #include "dict2dict.h"

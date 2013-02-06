@@ -29,15 +29,15 @@
 // Has to be first, to avoid redefinition warnings.
 #include "Python.h"
 
-// appleseed.foundation headers.
-#include "foundation/platform/python.h"
-
 // appleseed.python headers.
 #include "gil_locks.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/frame.h"
 #include "renderer/kernel/rendering/itilecallback.h"
+
+// appleseed.foundation headers.
+#include "foundation/platform/python.h"
 
 namespace bpy = boost::python;
 using namespace foundation;

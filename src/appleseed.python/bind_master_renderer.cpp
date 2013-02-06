@@ -29,9 +29,6 @@
 // Has to be first, to avoid redefinition warnings.
 #include "Python.h"
 
-// appleseed.foundation headers.
-#include "foundation/platform/python.h"
-
 // appleseed.python headers.
 #include "dict2dict.h"
 #include "gil_locks.h"
@@ -39,6 +36,9 @@
 // appleseed.renderer headers.
 #include "renderer/api/project.h"
 #include "renderer/api/rendering.h"
+
+// appleseed.foundation headers.
+#include "foundation/platform/python.h"
 
 // Standard headers.
 #include <memory>
