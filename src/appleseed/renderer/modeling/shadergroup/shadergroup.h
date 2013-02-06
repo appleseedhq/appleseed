@@ -56,7 +56,7 @@ class DLLSYMBOL ShaderGroup
   : public Entity
 {
   public:
-    virtual void release() override;
+    virtual void release() OVERRIDE;
 
     // Return a string identifying the model of this shadergroup.
     const char* get_model() const;
