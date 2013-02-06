@@ -73,7 +73,7 @@ class DLLSYMBOL ObjectInstance
 {
   public:
     // Delete this instance.
-    virtual void release() override;
+    virtual void release() OVERRIDE;
 
     // Return the name of the instantiated object.
     const char* get_object_name() const;

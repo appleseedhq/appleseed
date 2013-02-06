@@ -59,7 +59,7 @@ class ObjectItem
     AssemblyItem*           m_parent_item;
     ProjectBuilder&         m_project_builder;
 
-    virtual void slot_delete() override;
+    virtual void slot_delete() OVERRIDE;
 };
 
 }       // namespace studio

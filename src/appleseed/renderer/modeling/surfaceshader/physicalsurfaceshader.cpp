@@ -108,12 +108,12 @@ namespace
             m_aerial_persp_intensity = m_params.get_optional<double>("aerial_persp_intensity", 0.01);
         }
 
-        virtual void release() override
+        virtual void release() OVERRIDE
         {
             delete this;
         }
 
-        virtual const char* get_model() const override
+        virtual const char* get_model() const OVERRIDE
         {
             return Model;
         }
@@ -122,7 +122,7 @@ namespace
             SamplingContext&        sampling_context,
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
-            ShadingResult&          shading_result) const override
+            ShadingResult&          shading_result) const OVERRIDE
         {
             // Evaluate the shader inputs.
             InputValues values;

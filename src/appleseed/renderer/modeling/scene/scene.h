@@ -60,7 +60,7 @@ class DLLSYMBOL Scene
 {
   public:
     // Delete this instance.
-    virtual void release() override;
+    virtual void release() OVERRIDE;
 
     // Set the camera.
     void set_camera(foundation::auto_release_ptr<Camera> camera);

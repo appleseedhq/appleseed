@@ -65,7 +65,7 @@ class FrameItem
     renderer::Frame*        m_frame;
     ProjectBuilder&         m_project_builder;
 
-    virtual void slot_edit() override;
+    virtual void slot_edit() OVERRIDE;
     void edit(const foundation::Dictionary& values);
 };
 

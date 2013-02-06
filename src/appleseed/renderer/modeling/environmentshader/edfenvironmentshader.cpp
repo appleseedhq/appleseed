@@ -78,17 +78,17 @@ namespace
         {
         }
 
-        virtual void release() override
+        virtual void release() OVERRIDE
         {
             delete this;
         }
 
-        virtual const char* get_model() const override
+        virtual const char* get_model() const OVERRIDE
         {
             return Model;
         }
 
-        virtual bool on_frame_begin(const Project& project) override
+        virtual bool on_frame_begin(const Project& project) OVERRIDE
         {
             if (!EnvironmentShader::on_frame_begin(project))
                 return false;
@@ -118,7 +118,7 @@ namespace
         virtual void evaluate(
             InputEvaluator&         input_evaluator,
             const Vector3d&         direction,
-            ShadingResult&          shading_result) const override
+            ShadingResult&          shading_result) const OVERRIDE
         {
             if (m_env_edf)
             {

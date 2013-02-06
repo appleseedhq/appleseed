@@ -58,7 +58,7 @@ class DLLSYMBOL Environment
 {
   public:
     // Delete this instance.
-    virtual void release() override;
+    virtual void release() OVERRIDE;
 
     // Return a string identifying the model of this environment.
     const char* get_model() const;

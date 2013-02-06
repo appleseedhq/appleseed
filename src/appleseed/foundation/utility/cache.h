@@ -1093,9 +1093,9 @@ namespace cache_impl
             const uint64        hit_count,
             const uint64        miss_count);
 
-        virtual std::auto_ptr<Entry> clone() const override;
-        virtual void merge(const Entry* other) override;
-        virtual std::string to_string() const override;
+        virtual std::auto_ptr<Entry> clone() const OVERRIDE;
+        virtual void merge(const Entry* other) OVERRIDE;
+        virtual std::string to_string() const OVERRIDE;
     };
 }
 

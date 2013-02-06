@@ -75,8 +75,8 @@ class ObjectInstanceItem
 
     const renderer::Assembly& get_assembly() const;
 
-    virtual QMenu* get_single_item_context_menu() const override;
-    virtual QMenu* get_multiple_items_context_menu(const QList<ItemBase*>& items) const override;
+    virtual QMenu* get_single_item_context_menu() const OVERRIDE;
+    virtual QMenu* get_multiple_items_context_menu(const QList<ItemBase*>& items) const OVERRIDE;
 
   private slots:
     void slot_open_material_assignment_editor();
@@ -87,7 +87,7 @@ class ObjectInstanceItem
   private:
     typedef SingleModelEntityItem<renderer::ObjectInstance, renderer::Assembly, ObjectInstanceCollectionItem> Base;
 
-    virtual void slot_delete() override;
+    virtual void slot_delete() OVERRIDE;
 
     void add_material_assignment_menu_actions(
         QMenu*                          menu,

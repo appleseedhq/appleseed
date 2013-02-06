@@ -90,7 +90,7 @@ class DLLSYMBOL TextureInstance
 {
   public:
     // Delete this instance.
-    virtual void release() override;
+    virtual void release() OVERRIDE;
 
     // Return the name of the instantiated texture.
     const char* get_texture_name() const;

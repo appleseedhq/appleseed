@@ -94,17 +94,17 @@ class DLLSYMBOL DiagnosticSurfaceShader
         const ParamArray&       params);
 
     // Delete this instance.
-    virtual void release() override;
+    virtual void release() OVERRIDE;
 
     // Return a string identifying the model of this surface shader.
-    virtual const char* get_model() const override;
+    virtual const char* get_model() const OVERRIDE;
 
     // Evaluate the shading at a given point.
     virtual void evaluate(
         SamplingContext&        sampling_context,
         const ShadingContext&   shading_context,
         const ShadingPoint&     shading_point,
-        ShadingResult&          shading_result) const override;
+        ShadingResult&          shading_result) const OVERRIDE;
 
   private:
     ShadingMode m_shading_mode;
@@ -124,18 +124,18 @@ class DLLSYMBOL DiagnosticSurfaceShaderFactory
 {
   public:
     // Return a string identifying this surface shader model.
-    virtual const char* get_model() const override;
+    virtual const char* get_model() const OVERRIDE;
 
     // Return a human-readable string identifying this surface shader model.
-    virtual const char* get_human_readable_model() const override;
+    virtual const char* get_human_readable_model() const OVERRIDE;
 
     // Return a set of widget definitions for this surface shader model.
-    virtual foundation::DictionaryArray get_widget_definitions() const override;
+    virtual foundation::DictionaryArray get_widget_definitions() const OVERRIDE;
 
     // Create a new surface shader instance.
     virtual foundation::auto_release_ptr<SurfaceShader> create(
         const char*         name,
-        const ParamArray&   params) const override;
+        const ParamArray&   params) const OVERRIDE;
 };
 
 }       // namespace renderer

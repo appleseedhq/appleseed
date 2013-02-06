@@ -110,7 +110,7 @@ class DLLSYMBOL DummyEntity
   : public Entity
 {
   public:
-    virtual void release() override;
+    virtual void release() OVERRIDE;
 
   private:
     friend class DummyEntityFactory;
@@ -133,16 +133,16 @@ class BoundingBoxObject
         const char*                 name,
         const GAABB3&               bbox);
 
-    virtual void release() override;
+    virtual void release() OVERRIDE;
 
-    virtual const char* get_model() const override;
+    virtual const char* get_model() const OVERRIDE;
 
-    virtual GAABB3 compute_local_bbox() const override;
+    virtual GAABB3 compute_local_bbox() const OVERRIDE;
 
-    virtual foundation::Lazy<RegionKit>& get_region_kit() override;
+    virtual foundation::Lazy<RegionKit>& get_region_kit() OVERRIDE;
 
-    virtual size_t get_material_slot_count() const override;
-    virtual const char* get_material_slot(const size_t index) const override;
+    virtual size_t get_material_slot_count() const OVERRIDE;
+    virtual const char* get_material_slot(const size_t index) const OVERRIDE;
 
   private:
     GAABB3                          m_bbox;

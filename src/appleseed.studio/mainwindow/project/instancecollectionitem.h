@@ -62,7 +62,7 @@ class InstanceCollectionItem
     ParentEntity&                   m_parent;
     ProjectBuilder&                 m_project_builder;
 
-    virtual ItemBase* create_item(Entity* entity) override;
+    virtual ItemBase* create_item(Entity* entity) OVERRIDE;
 };
 
 

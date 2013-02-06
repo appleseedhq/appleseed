@@ -68,7 +68,7 @@ namespace
         {
         }
 
-        virtual void release() override
+        virtual void release() OVERRIDE
         {
             // Do nothing.
         }
@@ -76,7 +76,7 @@ namespace
         virtual void post_render_tile(
             const Frame*    frame,
             const size_t    tile_x,
-            const size_t    tile_y) override
+            const size_t    tile_y) OVERRIDE
         {
             mutex::scoped_lock lock(m_mutex);
 

@@ -78,12 +78,12 @@ namespace
             m_inputs.declare("to_ior", InputFormatScalar);
         }
 
-        virtual void release() override
+        virtual void release() OVERRIDE
         {
             delete this;
         }
 
-        virtual const char* get_model() const override
+        virtual const char* get_model() const OVERRIDE
         {
             return Model;
         }

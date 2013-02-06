@@ -66,10 +66,10 @@ class GenericSampleRendererFactory
         const ParamArray&       params);
 
     // Delete this instance.
-    virtual void release() override;
+    virtual void release() OVERRIDE;
 
     // Return a new generic sample renderer instance.
-    virtual ISampleRenderer* create() override;
+    virtual ISampleRenderer* create() OVERRIDE;
 
     // Return a new generic sample renderer instance.
     static ISampleRenderer* create(

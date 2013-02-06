@@ -63,22 +63,22 @@ class QtTestListener
         TestResultWidgetDecorator*          result_widget);
 
     // Delete this instance.
-    virtual void release() override;
+    virtual void release() OVERRIDE;
 
     // Called before each test suite is run.
     virtual void begin_suite(
-        const foundation::TestSuite&        test_suite) override;
+        const foundation::TestSuite&        test_suite) OVERRIDE;
 
     // Called after each test suite is run.
     virtual void end_suite(
         const foundation::TestSuite&        test_suite,
         const foundation::TestResult&       test_suite_result,
-        const foundation::TestResult&       cumulated_result) override;
+        const foundation::TestResult&       cumulated_result) OVERRIDE;
 
     // Called before each test case is run.
     virtual void begin_case(
         const foundation::TestSuite&        test_suite,
-        const char*                         test_case_name) override;
+        const char*                         test_case_name) OVERRIDE;
 
     // Called after each test case is run.
     virtual void end_case(
@@ -86,7 +86,7 @@ class QtTestListener
         const char*                         test_case_name,
         const foundation::TestResult&       test_suite_result,
         const foundation::TestResult&       test_case_result,
-        const foundation::TestResult&       cumulated_result) override;
+        const foundation::TestResult&       cumulated_result) OVERRIDE;
 
     // Write a message.
     virtual void write(
@@ -95,7 +95,7 @@ class QtTestListener
         const char*                         file,
         const size_t                        line,
         const foundation::TestMessage::Type message_type,
-        const char*                         message) override;
+        const char*                         message) OVERRIDE;
 
   signals:
     void signal_add_top_level_item(TestOutputItem* item);

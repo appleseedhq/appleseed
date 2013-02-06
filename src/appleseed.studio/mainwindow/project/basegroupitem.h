@@ -74,7 +74,7 @@ class BaseGroupItem
         ProjectBuilder&                 project_builder,
         renderer::ParamArray&           settings);
 
-    virtual QMenu* get_single_item_context_menu() const override;
+    virtual QMenu* get_single_item_context_menu() const OVERRIDE;
 
     void add_item(renderer::ColorEntity* color);
     void add_item(renderer::Texture* texture);

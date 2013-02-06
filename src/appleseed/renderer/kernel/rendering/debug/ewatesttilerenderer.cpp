@@ -93,7 +93,7 @@ namespace
             m_texture_object.reset(new TextureObject(texture));
         }
 
-        virtual void release() override
+        virtual void release() OVERRIDE
         {
             delete this;
         }
@@ -102,7 +102,7 @@ namespace
             const Frame&            frame,
             const size_t            tile_x,
             const size_t            tile_y,
-            AbortSwitch&            abort_switch) override
+            AbortSwitch&            abort_switch) OVERRIDE
         {
             Image& image = frame.image();
 
@@ -187,7 +187,7 @@ namespace
             }
         }
 
-        virtual StatisticsVector get_statistics() const override
+        virtual StatisticsVector get_statistics() const OVERRIDE
         {
             return StatisticsVector();
         }

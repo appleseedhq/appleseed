@@ -74,12 +74,12 @@ namespace
             m_inputs.declare("transmittance_multiplier", InputFormatScalar, "1.0");
         }
 
-        virtual void release() override
+        virtual void release() OVERRIDE
         {
             delete this;
         }
 
-        virtual const char* get_model() const override
+        virtual const char* get_model() const OVERRIDE
         {
             return Model;
         }

@@ -78,19 +78,19 @@ namespace
             m_inputs.declare("weight1", InputFormatScalar);
         }
 
-        virtual void release() override
+        virtual void release() OVERRIDE
         {
             delete this;
         }
 
-        virtual const char* get_model() const override
+        virtual const char* get_model() const OVERRIDE
         {
             return Model;
         }
 
         virtual bool on_frame_begin(
             const Project&      project,
-            const Assembly&     assembly) override
+            const Assembly&     assembly) OVERRIDE
         {
             if (!BSDF::on_frame_begin(project, assembly))
                 return false;
@@ -105,7 +105,7 @@ namespace
         }
 
         virtual size_t compute_input_data_size(
-            const Assembly&     assembly) const override
+            const Assembly&     assembly) const OVERRIDE
         {
             const BSDF* bsdf0 = retrieve_bsdf(assembly, "bsdf0");
             const BSDF* bsdf1 = retrieve_bsdf(assembly, "bsdf1");
@@ -119,7 +119,7 @@ namespace
         virtual void evaluate_inputs(
             InputEvaluator&     input_evaluator,
             const Vector2d&     uv,
-            const size_t        offset) const override
+            const size_t        offset) const OVERRIDE
         {
             BSDF::evaluate_inputs(input_evaluator, uv, offset);
 

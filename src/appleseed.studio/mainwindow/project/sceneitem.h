@@ -62,7 +62,7 @@ class SceneItem
         ProjectBuilder&                 project_builder,
         renderer::ParamArray&           settings);
 
-    virtual QMenu* get_single_item_context_menu() const override;
+    virtual QMenu* get_single_item_context_menu() const OVERRIDE;
 
     void add_item(renderer::EnvironmentEDF* environment_edf);
     void add_item(renderer::EnvironmentShader* environment_shader);

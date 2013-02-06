@@ -94,17 +94,17 @@ namespace
         {
         }
 
-        virtual void release() override
+        virtual void release() OVERRIDE
         {
             delete this;
         }
 
-        virtual const char* get_model() const override
+        virtual const char* get_model() const OVERRIDE
         {
             return Model;
         }
 
-        virtual bool on_frame_begin(const Project& project) override
+        virtual bool on_frame_begin(const Project& project) OVERRIDE
         {
             if (!Camera::on_frame_begin(project))
                 return false;
@@ -154,7 +154,7 @@ namespace
         virtual void generate_ray(
             SamplingContext&        sampling_context,
             const Vector2d&         point,
-            ShadingRay&             ray) const override
+            ShadingRay&             ray) const OVERRIDE
         {
             // Initialize the ray.
             initialize_ray(sampling_context, ray);
@@ -208,7 +208,7 @@ namespace
             ray.m_dir = transform.vector_to_parent(ray.m_dir);
         }
 
-        virtual Vector2d project(const Vector3d& point) const override
+        virtual Vector2d project(const Vector3d& point) const OVERRIDE
         {
             const double k = -m_focal_length / point.z;
             const double x = 0.5 + (point.x * k * m_rcp_film_width);

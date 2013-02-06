@@ -49,12 +49,12 @@ class NullBSDF
     {
     }
 
-    virtual void release() override
+    virtual void release() OVERRIDE
     {
         delete this;
     }
 
-    virtual const char* get_model() const override
+    virtual const char* get_model() const OVERRIDE
     {
         return "null_bsdf";
     }
@@ -69,7 +69,7 @@ class NullBSDF
         const foundation::Vector3d&     outgoing,
         foundation::Vector3d&           incoming,
         Spectrum&                       value,
-        double&                         probability) const override
+        double&                         probability) const OVERRIDE
     {
         return Absorption;
     }
@@ -83,7 +83,7 @@ class NullBSDF
         const foundation::Vector3d&     outgoing,
         const foundation::Vector3d&     incoming,
         const int                       modes,
-        Spectrum&                       value) const override
+        Spectrum&                       value) const OVERRIDE
     {
         return 0.0;
     }
@@ -94,7 +94,7 @@ class NullBSDF
         const foundation::Basis3d&      shading_basis,
         const foundation::Vector3d&     outgoing,
         const foundation::Vector3d&     incoming,
-        const int                       modes) const override
+        const int                       modes) const OVERRIDE
     {
         return 0.0;
     }

@@ -52,7 +52,7 @@ namespace
       : public ISampleRenderer
     {
       public:
-        virtual void release() override
+        virtual void release() OVERRIDE
         {
             delete this;
         }
@@ -60,12 +60,12 @@ namespace
         virtual void render_sample(
             SamplingContext&    sampling_context,
             const Vector2d&     image_point,
-            ShadingResult&      shading_result) override
+            ShadingResult&      shading_result) OVERRIDE
         {
             shading_result.clear();
         }
 
-        virtual StatisticsVector get_statistics() const override
+        virtual StatisticsVector get_statistics() const OVERRIDE
         {
             return StatisticsVector();
         }

@@ -75,17 +75,17 @@ namespace
             m_inputs.declare("lower_hemi_exitance", InputFormatSpectrum);
         }
 
-        virtual void release() override
+        virtual void release() OVERRIDE
         {
             delete this;
         }
 
-        virtual const char* get_model() const override
+        virtual const char* get_model() const OVERRIDE
         {
             return Model;
         }
 
-        virtual bool on_frame_begin(const Project& project) override
+        virtual bool on_frame_begin(const Project& project) OVERRIDE
         {
             if (!EnvironmentEDF::on_frame_begin(project))
                 return false;
@@ -106,7 +106,7 @@ namespace
             const Vector2d&     s,
             Vector3d&           outgoing,
             Spectrum&           value,
-            double&             probability) const override
+            double&             probability) const OVERRIDE
         {
             outgoing = sample_sphere_uniform(s);
             value =
@@ -119,7 +119,7 @@ namespace
         virtual void evaluate(
             InputEvaluator&     input_evaluator,
             const Vector3d&     outgoing,
-            Spectrum&           value) const override
+            Spectrum&           value) const OVERRIDE
         {
             assert(is_normalized(outgoing));
             value =
@@ -132,7 +132,7 @@ namespace
             InputEvaluator&     input_evaluator,
             const Vector3d&     outgoing,
             Spectrum&           value,
-            double&             probability) const override
+            double&             probability) const OVERRIDE
         {
             assert(is_normalized(outgoing));
             value =
@@ -144,7 +144,7 @@ namespace
 
         virtual double evaluate_pdf(
             InputEvaluator&     input_evaluator,
-            const Vector3d&     outgoing) const override
+            const Vector3d&     outgoing) const OVERRIDE
         {
             assert(is_normalized(outgoing));
             return 1.0 / (4.0 * Pi);

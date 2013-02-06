@@ -74,19 +74,19 @@ namespace
             m_inputs.declare("exitance_multiplier", InputFormatScalar, "1.0");
         }
 
-        virtual void release() override
+        virtual void release() OVERRIDE
         {
             delete this;
         }
 
-        virtual const char* get_model() const override
+        virtual const char* get_model() const OVERRIDE
         {
             return Model;
         }
 
         virtual bool on_frame_begin(
             const Project&      project,
-            const Assembly&     assembly) override
+            const Assembly&     assembly) OVERRIDE
         {
             if (!EDF::on_frame_begin(project, assembly))
                 return false;
@@ -103,7 +103,7 @@ namespace
             const Vector2d&     s,
             Vector3d&           outgoing,
             Spectrum&           value,
-            double&             probability) const override
+            double&             probability) const OVERRIDE
         {
             assert(is_normalized(geometric_normal));
 
@@ -123,7 +123,7 @@ namespace
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
-            Spectrum&           value) const override
+            Spectrum&           value) const OVERRIDE
         {
             assert(is_normalized(geometric_normal));
             assert(is_normalized(outgoing));
@@ -148,7 +148,7 @@ namespace
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
             Spectrum&           value,
-            double&             probability) const override
+            double&             probability) const OVERRIDE
         {
             assert(is_normalized(geometric_normal));
             assert(is_normalized(outgoing));
@@ -174,7 +174,7 @@ namespace
             const void*         data,
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,
-            const Vector3d&     outgoing) const override
+            const Vector3d&     outgoing) const OVERRIDE
         {
             assert(is_normalized(geometric_normal));
             assert(is_normalized(outgoing));

@@ -63,7 +63,7 @@ class DLLSYMBOL Material
 {
   public:
     // Delete this instance.
-    virtual void release() override;
+    virtual void release() OVERRIDE;
 
     // Return a string identifying the model of this material.
     const char* get_model() const;

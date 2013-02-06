@@ -77,22 +77,22 @@ namespace
             extract_parameters(search_paths);
         }
 
-        virtual void release() override
+        virtual void release() OVERRIDE
         {
             delete this;
         }
 
-        virtual const char* get_model() const override
+        virtual const char* get_model() const OVERRIDE
         {
             return Model;
         }
 
-        virtual ColorSpace get_color_space() const override
+        virtual ColorSpace get_color_space() const OVERRIDE
         {
             return m_color_space;
         }
 
-        virtual const CanvasProperties& properties() override
+        virtual const CanvasProperties& properties() OVERRIDE
         {
             mutex::scoped_lock lock(m_mutex);
             open_image_file();
@@ -101,7 +101,7 @@ namespace
 
         virtual Tile* load_tile(
             const size_t        tile_x,
-            const size_t        tile_y) override
+            const size_t        tile_y) OVERRIDE
         {
             mutex::scoped_lock lock(m_mutex);
             open_image_file();
@@ -111,7 +111,7 @@ namespace
         virtual void unload_tile(
             const size_t        tile_x,
             const size_t        tile_y,
-            const Tile*         tile) override
+            const Tile*         tile) OVERRIDE
         {
             delete tile;
         }

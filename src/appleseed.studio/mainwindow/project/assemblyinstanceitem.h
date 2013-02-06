@@ -61,7 +61,7 @@ class AssemblyInstanceItem
     AssemblyInstanceCollectionItem*     m_collection_item;
     ProjectBuilder&                     m_project_builder;
 
-    virtual void slot_delete() override;
+    virtual void slot_delete() OVERRIDE;
 };
 
 }       // namespace studio

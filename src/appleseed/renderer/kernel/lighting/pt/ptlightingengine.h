@@ -53,10 +53,10 @@ class PTLightingEngineFactory
         const ParamArray&   params);
 
     // Delete this instance.
-    virtual void release() override;
+    virtual void release() OVERRIDE;
 
     // Return a new path tracing lighting engine instance.
-    virtual ILightingEngine* create() override;
+    virtual ILightingEngine* create() OVERRIDE;
 
     // Return a new path tracing lighting engine instance.
     static ILightingEngine* create(

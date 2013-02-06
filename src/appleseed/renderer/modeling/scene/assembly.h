@@ -59,7 +59,7 @@ class DLLSYMBOL Assembly
 {
   public:
     // Delete this instance.
-    virtual void release() override;
+    virtual void release() OVERRIDE;
 
     // Access the BSDFs.
     BSDFContainer& bsdfs() const;
