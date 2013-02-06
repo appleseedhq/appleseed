@@ -70,7 +70,7 @@ option (WITH_CLI                "Build appleseed.cli"           ON)
 option (WITH_STUDIO             "Build appleseed.studio"        ON)
 option (WITH_PYTHON             "Build Python module"           ON)
 option (WITH_TOOLS              "Build appleseed tools"         ON)
-
+option (WITH_OSL                "Build OSL support"             OFF)
 
 #--------------------------------------------------------------------------------------------------
 # Platform-specific settings.
@@ -125,8 +125,11 @@ link_directories (${Boost_LIBRARY_DIRS})
 # Find external packages.
 #--------------------------------------------------------------------------------------------------
 
-find_package (OpenImageIO REQUIRED)
-find_package (OSL REQUIRED)
+if (WITH_OSL)
+    find_package (OpenImageIO REQUIRED)
+    find_package (OSL REQUIRED)
+    add_definitions( -DWITH_OSL)
+endif ()
 
 if (USE_EXTERNAL_PNG)
     find_package (PNG REQUIRED)
@@ -160,6 +163,13 @@ include_directories (
     ${OSL_INCLUDE_DIRS}
     ${PYTHON_INCLUDE_DIRS}
 )
+
+if (WITH_OSL)
+    include_directories (
+        ${OPENIMAGEIO_INCLUDE_DIRS}
+        ${OSL_INCLUDE_DIRS}
+    )
+endif ()
 
 if (USE_EXTERNAL_PNG)
     include_directories (${PNG_INCLUDE_DIR})

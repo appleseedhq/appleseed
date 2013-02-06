@@ -1524,8 +1524,11 @@ link_against_libpng (appleseed)
 link_against_xercesc (appleseed)
 link_against_hdf5 (appleseed)
 link_against_alembic (appleseed)
-link_against_oiio (appleseed)
-link_against_oslexec (appleseed)
+
+if (WITH_OSL)
+    link_against_oiio (appleseed)
+    link_against_oslexec (appleseed)
+endif ()
 
 target_link_libraries (appleseed
     ${Boost_LIBRARIES}
