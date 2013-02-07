@@ -95,7 +95,6 @@ set (compiler_flags_release
 macro (link_against_platform target)
     target_link_libraries (${target}
         -lpthread
-        -licuuc
     )
 endmacro ()
 
