@@ -152,7 +152,7 @@ def ms_renderSettings_nodeInitializer():
     ms_renderSettings.export_all_cameras = export_all_cameras_nAttr.create("export_all_cameras", "export_all_cams", OpenMaya.MFnNumericData.kBoolean)
     # export all cameras as thin lens bool attribute
     export_all_cameras_as_thin_lens_nAttr = OpenMaya.MFnNumericAttribute()
-    ms_renderSettings.export_all_cameras_as_thin_lens = export_all_cameras_as_thin_lens_nAttr.create("export_all_cameras_as_thinlens", "export_thinlens", OpenMaya.MFnNumericData.kBoolean)
+    ms_renderSettings.export_all_cameras_as_thin_lens = export_all_cameras_as_thin_lens_nAttr.create("export_all_cameras_as_thin_lens", "export_thinlens", OpenMaya.MFnNumericData.kBoolean)
     # interpret sets as assemblies bool attribute
     interpret_sets_as_assemblies_nAttr = OpenMaya.MFnNumericAttribute()
     ms_renderSettings.interpret_sets_as_assemblies = interpret_sets_as_assemblies_nAttr.create("interpret_sets_as_assemblies", "sets_as_assemblies", OpenMaya.MFnNumericData.kBoolean)
@@ -332,10 +332,17 @@ def ms_renderSettings_nodeInitializer():
     profile_export_nAttr = OpenMaya.MFnNumericAttribute()
     ms_renderSettings.profile_export = profile_export_nAttr.create("profile_export", "profile_export", OpenMaya.MFnNumericData.kBoolean, False)
 
-    # verobse output
-    verbose_output_nAttr = OpenMaya.MFnNumericAttribute()
-    ms_renderSettings.verbose_output = verbose_output_nAttr.create("verbose_output", "verbose_output", OpenMaya.MFnNumericData.kBoolean, False)
+    # autodetect alpha
+    autodetect_alpha_nAttr = OpenMaya.MFnNumericAttribute()
+    ms_renderSettings.autodetect_alpha = autodetect_alpha_nAttr.create("autodetect_alpha", "autodetect_alpha", OpenMaya.MFnNumericData.kBoolean, False)
 
+    # force_linear_texture_interpretation
+    force_linear_texture_interpretation_nAttr = OpenMaya.MFnNumericAttribute()
+    ms_renderSettings.force_linear_texture_interpretation = force_linear_texture_interpretation_nAttr.create("force_linear_texture_interpretation", "force_linear_texture_interpretation", OpenMaya.MFnNumericData.kBoolean, False)
+
+    # force_linear_color_interpretation
+    force_linear_color_interpretation_nAttr = OpenMaya.MFnNumericAttribute()
+    ms_renderSettings.force_linear_color_interpretation = force_linear_color_interpretation_nAttr.create("force_linear_color_interpretation", "force_linear_color_interpretation", OpenMaya.MFnNumericData.kBoolean, False)
 
     # add attributes
     ms_renderSettings.addAttribute(ms_renderSettings.export_button)
@@ -399,7 +406,11 @@ def ms_renderSettings_nodeInitializer():
     ms_renderSettings.addAttribute(ms_renderSettings.gtr_sampler)
 
     ms_renderSettings.addAttribute(ms_renderSettings.profile_export)
-    ms_renderSettings.addAttribute(ms_renderSettings.verbose_output)
+    ms_renderSettings.addAttribute(ms_renderSettings.autodetect_alpha)
+
+    ms_renderSettings.addAttribute(ms_renderSettings.force_linear_texture_interpretation)
+    ms_renderSettings.addAttribute(ms_renderSettings.force_linear_color_interpretation)
+
 
 #--------------------------------------------------------------------------------------------------
 # ms_environment node.
@@ -677,6 +688,10 @@ def initializePlugin(obj):
     try:
         if not cmds.pluginInfo('objExport', query=True, loaded=True):
             cmds.loadPlugin('objExport')
+        if not cmds.pluginInfo('ms_appleseed_material.py', query=True, loaded=True):
+            cmds.loadPlugin('ms_appleseed_material.py')
+        if not cmds.pluginInfo('ms_appleseed_shading_node.py', query=True, loaded=True):
+            cmds.loadPlugin('ms_appleseed_shading_node.py')
     except: 
         print 'objExport plugin could not be loaded, cannot load mayaseed'
 
