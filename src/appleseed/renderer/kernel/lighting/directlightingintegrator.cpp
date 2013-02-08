@@ -154,7 +154,7 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     emission_direction = normalize(sample.m_asm_inst_transform.vector_to_parent(emission_direction));
 
     // Compute the incoming direction in world space.
-    Vector3d incoming = -emission_direction;
+    const Vector3d incoming = -emission_direction;
 
     // Cull light samples behind the shading surface.
     double cos_in = dot(incoming, m_shading_basis.get_normal());
