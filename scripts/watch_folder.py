@@ -1,6 +1,12 @@
+#!/usr/bin/python
 
 #
-# Copyright (c) 2012 Jonathan Topf
+# This source file is part of appleseed.
+# Visit http://appleseedhq.net/ for additional information and resources.
+#
+# This software is released under the MIT license.
+#
+# Copyright (c) 2012-2013 Jonathan Topf
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
