@@ -196,7 +196,7 @@ def render_project(args, project_file):
 
     # Create shell command.
     project_filename = os.path.split(project_file)[1]
-    output_filename = os.path.splitext(project_filename)[0] + '.png'
+    output_filename = os.path.splitext(project_filename)[0] + '.' + args.output_format
     output_filepath = os.path.join(args.watch_dir, OUTPUT_DIR, output_filename)
     command = '"{0}" -o "{1}" "{2}"'.format(args.appleseed_bin_path, output_filepath, project_file)
     if args.args:
@@ -259,6 +259,7 @@ def main():
     parser = argparse.ArgumentParser(description="Watch a directory and render any project file that appears in it.")
     parser.add_argument("-a", dest="appleseed_dir", metavar="DIR", required=True, help="set appleseed binaries directory")
     parser.add_argument("-w", dest="watch_dir", metavar="DIR", help="set watch directory")
+    parser.add_argument("-f", dest="output_format", metavar="EXTENSION", help="set output format (e.g. png, exr)")
     parser.add_argument("-u", dest="user_name", metavar="NAME", help="set user name", default="anonymous")
     parser.add_argument("-p", dest="args", metavar="ARG", nargs="*", help="forward additional arguments to appleseed")
     args = parser.parse_args()
