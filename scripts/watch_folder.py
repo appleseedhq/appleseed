@@ -192,7 +192,7 @@ def render_project(args, project_file):
     project_filename = os.path.split(project_file)[1]
     output_filename = os.path.splitext(project_filename)[0] + '.png'
     output_filepath = os.path.join(args.watch_dir, OUTPUT_DIR, output_filename)
-    command = '{0} -o "{1}" "{2}"'.format(args.appleseed_bin_path, output_filepath, project_file)
+    command = '"{0}" -o "{1}" "{2}"'.format(args.appleseed_bin_path, output_filepath, project_file)
     if args.args:
         command += ' {0}'.format(" ".join(args.args))
 
@@ -271,7 +271,7 @@ def main():
     log = Log(os.path.join(log_dir, log_filename))
 
     print_appleseed_version(args, log)
-    print("Watching directory {0}".format(args.watch_dir))
+    print('Watching directory "{0}"'.format(args.watch_dir))
 
     # Main watch loop.
     while True:
