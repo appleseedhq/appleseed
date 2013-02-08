@@ -271,7 +271,7 @@ def main():
     log = Log(os.path.join(log_dir, log_filename))
 
     print_appleseed_version(args, log)
-    print("Watching directory {0}.".format(args.watch_dir))
+    print("Watching directory {0}".format(args.watch_dir))
 
     # Main watch loop.
     while True:
