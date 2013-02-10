@@ -32,12 +32,12 @@
 // Has to be first.
 #include "Python.h"
 
-// boost headers.
-#include <boost/noncopyable.hpp>
+// appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
 
 // This class locks Python's Global interpreter lock on construction
 // and unlocks it on destructions. A classic lock.
-class ScopedGILLock : boost::noncopyable
+class ScopedGILLock : foundation::NonCopyable
 {
   public:
     ScopedGILLock();
@@ -50,7 +50,7 @@ class ScopedGILLock : boost::noncopyable
 
 // This class unlocks Python's Global interpreter lock on construction
 // and locks it on destructions. An inverted lock -> unlock.
-class ScopedGILUnlock : boost::noncopyable
+class ScopedGILUnlock : foundation::NonCopyable
 {
   public:
     ScopedGILUnlock();
