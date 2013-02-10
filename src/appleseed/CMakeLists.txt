@@ -1540,3 +1540,13 @@ endforeach ()
 install (TARGETS appleseed
     DESTINATION bin
 )
+
+#-------
+# Devkit
+#-------
+install ( TARGETS appleseed
+  DESTINATION
+  devkit/lib/${CMAKE_BUILD_TYPE}
+)
+
+

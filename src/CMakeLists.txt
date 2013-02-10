@@ -403,6 +403,30 @@ if (WITH_PYTHON)
 endif ()
 
 
+#--------------------------------------
+# DevKit Preparation (for installation)
+#--------------------------------------
+FILE ( GLOB_RECURSE DEVKIT_APPLESEED_INCLUDE RELATIVE ${PROJECT_SOURCE_DIR} "appleseed/*.h")
+FILE ( GLOB_RECURSE DEVKIT_APPLESEED_SHARED_INCLUDE RELATIVE ${PROJECT_SOURCE_DIR} "appleseed.shared/*.h")
+# Archives creation
+EXECUTE_PROCESS (
+  COMMAND ${CMAKE_COMMAND} -E tar cf ${CMAKE_BINARY_DIR}/appleseed_include.tar ${DEVKIT_APPLESEED_INCLUDE}
+  COMMAND ${CMAKE_COMMAND} -E tar cf ${CMAKE_BINARY_DIR}/appleseed_shared_include.tar ${DEVKIT_APPLESEED_SHARED_INCLUDE}
+  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+  )
+# Create devkit staging area
+EXECUTE_PROCESS (
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/devkit/include
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/devkit/lib/${CMAKE_BUILD_TYPE}
+  )
+# Archive extraction in preparation for installation commands
+EXECUTE_PROCESS (
+  COMMAND ${CMAKE_COMMAND} -E tar xf ${CMAKE_BINARY_DIR}/appleseed_include.tar
+  COMMAND ${CMAKE_COMMAND} -E tar xf ${CMAKE_BINARY_DIR}/appleseed_shared_include.tar
+  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/devkit/include
+  )
+# MESSAGE ( "DEVKIT_APPLESEED_SHARED_INCLUDE = ${DEVKIT_APPLESEED_SHARED_INCLUDE}")
+
 #--------------------------------------------------------------------------------------------------
 # Installation.
 #--------------------------------------------------------------------------------------------------
@@ -430,4 +454,13 @@ install (
         ../sandbox/scenes
         ../sandbox/tests
     DESTINATION .
+)
+
+#-------
+# Devkit
+#-------
+install ( DIRECTORY
+  ${CMAKE_BINARY_DIR}/devkit/include
+  DESTINATION
+  devkit
 )
