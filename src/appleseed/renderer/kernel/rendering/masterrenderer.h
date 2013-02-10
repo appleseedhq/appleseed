@@ -36,6 +36,11 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
+#if (WITH_OSL)
+    // appleseed.renderer headers.
+    #include "renderer/kernel/rendering/rendererservices.h"
+#endif
+
 // Forward declarations.
 namespace renderer      { class IFrameRenderer; }
 namespace renderer      { class ITileCallbackFactory; }

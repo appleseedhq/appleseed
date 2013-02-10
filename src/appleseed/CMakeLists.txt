@@ -971,6 +971,12 @@ set (renderer_kernel_rendering_sources
     renderer/kernel/rendering/samplegeneratorbase.h
     renderer/kernel/rendering/tilecallbackbase.h
 )
+if (WITH_OSL)
+    list (APPEND renderer_kernel_rendering_sources
+        renderer/kernel/rendering/rendererservices.cpp
+        renderer/kernel/rendering/rendererservices.h
+    )
+endif ()
 list (APPEND appleseed_sources
     ${renderer_kernel_rendering_sources}
 )
@@ -1418,6 +1424,12 @@ set (renderer_modeling_surfaceshader_sources
     renderer/modeling/surfaceshader/voxelaosurfaceshader.cpp
     renderer/modeling/surfaceshader/voxelaosurfaceshader.h
 )
+if (WITH_OSL)
+    list (APPEND renderer_modeling_surfaceshader_sources
+        renderer/modeling/surfaceshader/oslsurfaceshader.cpp
+        renderer/modeling/surfaceshader/oslsurfaceshader.h
+    )
+endif ()
 list (APPEND appleseed_sources
     ${renderer_modeling_surfaceshader_sources}
 )
@@ -1444,16 +1456,20 @@ source_group ("renderer\\modeling\\texture" FILES
     ${renderer_modeling_texture_sources}
 )
 
-set (renderer_modeling_shadergroup
-    renderer/modeling/shadergroup/shadergroup.cpp
-    renderer/modeling/shadergroup/shadergroup.h
-)
-list (APPEND appleseed_sources
-    ${renderer_modeling_shadergroup}
-)
-source_group ("renderer\\modeling\\shadergroup" FILES
-    ${renderer_modeling_shadergroup}
-)
+if (WITH_OSL)
+    set (renderer_modeling_shadergroup
+        renderer/modeling/shadergroup/shadergroup.cpp
+        renderer/modeling/shadergroup/shadergroup.h
+    )
+    list (APPEND appleseed_sources
+        ${renderer_modeling_shadergroup}
+    )
+    source_group ("renderer\\modeling\\shadergroup" FILES
+        ${renderer_modeling_shadergroup}
+    )
+
+    # TODO: add closures here...
+endif ()
 
 set (renderer_utility_sources
     renderer/utility/bbox.h

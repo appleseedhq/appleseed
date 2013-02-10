@@ -63,9 +63,19 @@
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/thread.h"
 
+// boost headers
+#include "boost/shared_ptr.hpp"
+#include "boost/bind.hpp"
+
 // Standard headers.
 #include <deque>
 #include <exception>
+
+#ifdef WITH_OSL
+    #include "OpenImageIO/texture.h"
+
+    #include "renderer/kernel/rendering/rendererservices.h"
+#endif
 
 using namespace foundation;
 using namespace std;
@@ -413,6 +423,24 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
 {
     assert(m_project.get_scene());
     assert(m_project.get_frame());
+
+    #ifdef WITH_OSL
+        // Create our renderer services.
+        // RendererServices services;
+
+        // Create the error handler
+        OIIO::ErrorHandler error_handler;
+
+        // Create the OIIO texture system.
+        boost::shared_ptr<OIIO::TextureSystem> texture_system( OIIO::TextureSystem::create(false),
+                                                               boost::bind( &OIIO::TextureSystem::destroy, _1));
+
+        // Create our OSL shading system.
+        boost::shared_ptr<OSL::ShadingSystem> shading_system( OSL::ShadingSystem::create(0, // RendererServices
+                                                                                         texture_system.get(),
+                                                                                         &error_handler),
+                                                              boost::bind( &OSL::ShadingSystem::destroy, _1));
+    #endif
 
     // We start by binding entities inputs. This must be done before creating/updating the trace context.
     if (!bind_scene_entities_inputs())
