@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2012 Francois Beaune, Jupiter Jazz Limited
+// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -154,7 +154,7 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     emission_direction = normalize(sample.m_asm_inst_transform.vector_to_parent(emission_direction));
 
     // Compute the incoming direction in world space.
-    Vector3d incoming = -emission_direction;
+    const Vector3d incoming = -emission_direction;
 
     // Cull light samples behind the shading surface.
     double cos_in = dot(incoming, m_shading_basis.get_normal());

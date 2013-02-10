@@ -33,7 +33,7 @@ global proc AEms_appleseed_materialTemplate(string $nodeName) {
         editorTemplate -addControl "BSDF_front_color";
         editorTemplate -addControl "EDF_front_color";
         editorTemplate -addControl "surface_shader_front_color";
-        editorTemplate -addControl "normal_map_front_color";
+        editorTemplate -addControl "displacement_map_front_color";
 
         editorTemplate -addSeparator; 
         editorTemplate -addControl "enable_back_material";
@@ -41,11 +41,16 @@ global proc AEms_appleseed_materialTemplate(string $nodeName) {
         editorTemplate -addControl "BSDF_back_color";
         editorTemplate -addControl "EDF_back_color";
         editorTemplate -addControl "surface_shader_back_color";
-        editorTemplate -addControl "normal_map_back_color";
+        editorTemplate -addControl "displacement_map_back_color";
 
         editorTemplate -addSeparator; 
+        editorTemplate -addControl "displacement_mode";
+        editorTemplate -addControl "bump_amplitude";
+        editorTemplate -addControl "normal_map_up";
 
+        editorTemplate -addSeparator; 
         editorTemplate -addControl "alpha_map_color";
+
     editorTemplate -endLayout;
 
     AEdependNodeTemplate $nodeName;
