@@ -45,4 +45,67 @@ RendererServices::~RendererServices()
 {
 }
 
+bool RendererServices::get_matrix(OSL::Matrix44 &result,
+                                  OSL::TransformationPtr xform,
+                                  float time)
+{
+    return false;
+}
+
+bool RendererServices::get_matrix(OSL::Matrix44 &result,
+                                  OSL::TransformationPtr xform)
+{
+    return false;
+}
+
+bool RendererServices::get_matrix(OSL::Matrix44 &result,
+                                  OIIO::ustring from,
+                                  float time)
+{
+    return false;
+}
+
+bool RendererServices::get_matrix(OSL::Matrix44 &result,
+                                  OIIO::ustring from)
+{
+    return false;
+}
+
+bool RendererServices::get_attribute(void *renderstate,
+                                     bool derivatives,
+                                     OIIO::ustring object,
+                                     OIIO::TypeDesc type,
+                                     OIIO::ustring name,
+                                     void *val)
+{
+    return false;
+}
+
+bool RendererServices::get_array_attribute(void *renderstate,
+                                           bool derivatives,
+                                           OIIO::ustring object,
+                                           OIIO::TypeDesc type,
+                                           OIIO::ustring name,
+                                           int index,
+                                           void *val)
+{
+    return false;
+}
+
+bool RendererServices::get_userdata(bool derivatives,
+                                    OIIO::ustring name,
+                                    OIIO::TypeDesc type,
+                                    void *renderstate,
+                                    void *val)
+{
+    return false;
+}
+
+bool RendererServices::has_userdata(OIIO::ustring name,
+                                    OIIO::TypeDesc type,
+                                    void *renderstate)
+{
+    return false;
+}
+
 }   // namespace renderer

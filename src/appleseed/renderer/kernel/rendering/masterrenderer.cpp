@@ -426,17 +426,19 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
 
     #ifdef WITH_OSL
         // Create our renderer services.
-        // RendererServices services;
+        RendererServices services;
 
         // Create the error handler
+        // TODO: replace this by an appropiate error handler...
         OIIO::ErrorHandler error_handler;
 
         // Create the OIIO texture system.
+        // TODO: set memory limits and other options here...
         boost::shared_ptr<OIIO::TextureSystem> texture_system( OIIO::TextureSystem::create(false),
                                                                boost::bind( &OIIO::TextureSystem::destroy, _1));
 
         // Create our OSL shading system.
-        boost::shared_ptr<OSL::ShadingSystem> shading_system( OSL::ShadingSystem::create(0, // RendererServices
+        boost::shared_ptr<OSL::ShadingSystem> shading_system( OSL::ShadingSystem::create(&services,
                                                                                          texture_system.get(),
                                                                                          &error_handler),
                                                               boost::bind( &OSL::ShadingSystem::destroy, _1));
