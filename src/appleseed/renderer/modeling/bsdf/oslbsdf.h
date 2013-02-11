@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2012-2013 Esteban Tovagliari, Jupiter Jazz Limited
+// Copyright (c) 2013 Esteban Tovagliari
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,39 +26,50 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_PYTHON_GIL_LOCKS_H
-#define APPLESEED_PYTHON_GIL_LOCKS_H
+#ifndef APPLESEED_RENDERER_MODELING_BSDF_OSLBSDF_H
+#define APPLESEED_RENDERER_MODELING_BSDF_OSLBSDF_H
 
-// Has to be first.
-#include "Python.h"
+// appleseed.renderer headers.
+#include "renderer/modeling/bsdf/ibsdffactory.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
+#include "foundation/platform/compiler.h"
+#include "foundation/utility/autoreleaseptr.h"
 
-// This class locks Python's Global interpreter lock on construction
-// and unlocks it on destructions. A classic lock.
-class ScopedGILLock : foundation::NonCopyable
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+// Forward declarations.
+namespace foundation    { class DictionaryArray; }
+namespace renderer      { class BSDF; }
+namespace renderer      { class ParamArray; }
+
+namespace renderer
+{
+
+//
+// OSL BSDF factory.
+//
+
+class DLLSYMBOL OSLBSDFFactory
+  : public IBSDFFactory
 {
   public:
-    ScopedGILLock();
-    ~ScopedGILLock();
+    // Return a string identifying this BSDF model.
+    virtual const char* get_model() const OVERRIDE;
 
-  private:
-    bool m_threadsInitialised;
-    PyGILState_STATE m_state;
+    // Return a human-readable string identifying this BSDF model.
+    virtual const char* get_human_readable_model() const OVERRIDE;
+
+    // Return a set of widget definitions for this BSDF model.
+    virtual foundation::DictionaryArray get_widget_definitions() const OVERRIDE;
+
+    // Create a new BSDF instance.
+    virtual foundation::auto_release_ptr<BSDF> create(
+        const char*         name,
+        const ParamArray&   params) const OVERRIDE;
 };
 
-// This class unlocks Python's Global interpreter lock on construction
-// and locks it on destructions. An inverted lock -> unlock.
-class ScopedGILUnlock : foundation::NonCopyable
-{
-  public:
-    ScopedGILUnlock();
-    ~ScopedGILUnlock();
+}       // namespace renderer
 
-  private:
-    bool m_threadsInitialised;
-    PyThreadState* m_state;
-};
-
-#endif  // !APPLESEED_PYTHON_GIL_LOCKS_H
+#endif  // !APPLESEED_RENDERER_MODELING_BSDF_OSL_H
