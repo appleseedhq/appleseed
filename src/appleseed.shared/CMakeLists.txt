@@ -111,3 +111,11 @@ add_copy_target_to_sandbox_command (appleseed.shared)
 install (TARGETS appleseed.shared
     DESTINATION bin
 )
+
+#-------
+# Devkit
+#-------
+install ( TARGETS appleseed.shared
+  DESTINATION
+  devkit/lib/${CMAKE_BUILD_TYPE}
+)
