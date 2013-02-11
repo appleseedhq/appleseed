@@ -72,6 +72,22 @@ void SearchPaths::clear()
     impl->m_paths.clear();
 }
 
+bool SearchPaths::empty()
+{
+    return impl->m_paths.empty();
+}
+
+size_t SearchPaths::size() const
+{
+    return impl->m_paths.size();
+}
+
+const char* SearchPaths::operator[](size_t i) const
+{
+    assert(i < size());
+    return impl->m_paths[i].c_str();
+}
+
 void SearchPaths::push_back(const char* path)
 {
     assert(path);

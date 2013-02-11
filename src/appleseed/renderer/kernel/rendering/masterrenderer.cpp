@@ -62,10 +62,12 @@
 #include "foundation/core/exceptions/stringexception.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/thread.h"
+#include "foundation/utility/searchpaths.h"
 
 // boost headers
 #include "boost/shared_ptr.hpp"
 #include "boost/bind.hpp"
+#include "boost/foreach.hpp"
 
 // Standard headers.
 #include <deque>
@@ -433,15 +435,40 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
         OIIO::ErrorHandler error_handler;
 
         // Create the OIIO texture system.
-        // TODO: set memory limits and other options here...
         boost::shared_ptr<OIIO::TextureSystem> texture_system( OIIO::TextureSystem::create(false),
                                                                boost::bind( &OIIO::TextureSystem::destroy, _1));
+
+
+        // Set texture system mem limit.
+        {
+            size_t max_size = m_params.get_optional<size_t>("texture_cache_size", 256 * 1024 * 1024);
+            texture_system->attribute("max_memory_MB", static_cast<float>(max_size / 1024));
+        }
+
+        // setup search path for textures.
+        {
+            std::string search_path;
+            for(size_t i = 0, e = m_project.get_search_paths().size(); i < e; ++i)
+            {
+                search_path.append( m_project.get_search_paths()[i]);
+
+                if( i != e - 1)
+                    search_path.append(";");
+            }
+
+            texture_system->attribute("searchpath", search_path);
+        }
+
+        // TODO: set other texture system options here...
 
         // Create our OSL shading system.
         boost::shared_ptr<OSL::ShadingSystem> shading_system( OSL::ShadingSystem::create(&services,
                                                                                          texture_system.get(),
                                                                                          &error_handler),
                                                               boost::bind( &OSL::ShadingSystem::destroy, _1));
+
+        // TODO: set shading system options here...
+        register_closures(*shading_system);
     #endif
 
     // We start by binding entities inputs. This must be done before creating/updating the trace context.
@@ -731,5 +758,12 @@ bool MasterRenderer::bind_scene_entities_inputs() const
     input_binder.bind(*m_project.get_scene());
     return input_binder.get_error_count() == 0;
 }
+
+#ifdef WITH_OSL
+    void MasterRenderer::register_closures(OSL::ShadingSystem& shading_sys) const
+    {
+       // OSL TODO: implement this...
+    }
+#endif
 
 }   // namespace renderer

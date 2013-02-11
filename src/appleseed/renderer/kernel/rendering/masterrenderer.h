@@ -107,6 +107,10 @@ class DLLSYMBOL MasterRenderer
 
     // Bind all scene entities inputs. Return true on success, false otherwise.
     bool bind_scene_entities_inputs() const;
+
+    #ifdef WITH_OSL
+        void register_closures(OSL::ShadingSystem& shading_sys) const;
+    #endif
 };
 
 }       // namespace renderer
