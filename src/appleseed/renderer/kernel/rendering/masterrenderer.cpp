@@ -449,7 +449,8 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
         {
             osl_search_path.append( m_project.get_search_paths()[i]);
 
-            if( i != e - 1)
+            // do not append a colon after the last path.
+            if (i != e - 1)
                 osl_search_path.append(";");
         }
 

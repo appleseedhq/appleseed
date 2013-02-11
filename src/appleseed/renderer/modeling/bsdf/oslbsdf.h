@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSDF_LAMBERTIANBRDF_H
-#define APPLESEED_RENDERER_MODELING_BSDF_LAMBERTIANBRDF_H
+#ifndef APPLESEED_RENDERER_MODELING_BSDF_OSLBSDF_H
+#define APPLESEED_RENDERER_MODELING_BSDF_OSLBSDF_H
 
 // appleseed.renderer headers.
 #include "renderer/modeling/bsdf/ibsdffactory.h"
@@ -48,10 +48,10 @@ namespace renderer
 {
 
 //
-// Lambertian BRDF factory.
+// OSL BSDF factory.
 //
 
-class DLLSYMBOL OSLBRDFFactory
+class DLLSYMBOL OSLBSDFFactory
   : public IBSDFFactory
 {
   public:

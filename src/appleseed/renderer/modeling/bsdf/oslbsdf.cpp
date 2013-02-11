@@ -63,16 +63,16 @@ namespace renderer
 namespace
 {
     //
-    // OSL BRDF.
+    // OSL BSDF.
     //
 
-    const char* Model = "osl_brdf";
+    const char* Model = "osl_bsdf";
 
-    class OSLBRDFImpl
+    class OSLBSDFImpl
       : public BSDF
     {
       public:
-        OSLBRDFImpl(
+        OSLBSDFImpl(
             const char*         name,
             const ParamArray&   params)
           : BSDF(name, Reflective, params)
@@ -140,35 +140,35 @@ namespace
         }
     };
 
-    typedef BRDFWrapper<OSLBRDFImpl> OSLBRDF;
+    typedef BRDFWrapper<OSLBSDFImpl> OSLBSDF;
 }
 
 
 //
-// OSLBRDFFactory class implementation.
+// OSLSRDFFactory class implementation.
 //
 
-const char* OSLBRDFFactory::get_model() const
+const char* OSLBSDFFactory::get_model() const
 {
     return Model;
 }
 
-const char* OSLBRDFFactory::get_human_readable_model() const
+const char* OSLBSDFFactory::get_human_readable_model() const
 {
-    return "OSL BRDF";
+    return "OSL BSDF";
 }
 
-DictionaryArray OSLBRDFFactory::get_widget_definitions() const
+DictionaryArray OSLBSDFFactory::get_widget_definitions() const
 {
     DictionaryArray definitions;
     return definitions;
 }
 
-auto_release_ptr<BSDF> OSLBRDFFactory::create(
+auto_release_ptr<BSDF> OSLBSDFFactory::create(
     const char*         name,
     const ParamArray&   params) const
 {
-    return auto_release_ptr<BSDF>(new OSLBRDF(name, params));
+    return auto_release_ptr<BSDF>(new OSLBSDF(name, params));
 }
 
 }   // namespace renderer

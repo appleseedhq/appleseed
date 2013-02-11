@@ -116,32 +116,32 @@ namespace
         {
             if (m_type_desc == OSL::TypeDesc::TypeInt)
             {
-                return reinterpret_cast<void*>(&m_int_value);
+                return &m_int_value;
             }
 
             if (m_type_desc == OSL::TypeDesc::TypeFloat)
             {
-                return reinterpret_cast<void*>(&m_float_value);
+                return &m_float_value;
             }
 
             if (m_type_desc == OSL::TypeDesc::TypeVector)
             {
-                return reinterpret_cast<void*>(&m_float_value);
+                return &m_float_value;
             }
 
             if (m_type_desc == OSL::TypeDesc::TypePoint)
             {
-                return reinterpret_cast<void*>(&m_float_value);
+                return &m_float_value;
             }
 
             if (m_type_desc == OSL::TypeDesc::TypeColor)
             {
-                return reinterpret_cast<void*>(&m_float_value);
+                return &m_float_value;
             }
 
             if (m_type_desc == OSL::TypeDesc::TypeString)
             {
-                return reinterpret_cast<void*>(const_cast<char*>(m_string_value.c_str()));
+                return const_cast<char*>(m_string_value.c_str());
             }
 
             assert(false);

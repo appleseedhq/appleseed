@@ -68,7 +68,8 @@ class DLLSYMBOL SearchPaths
     // Returns the number of paths.
     size_t size() const;
 
-    const char* operator[](size_t i) const;
+    // Returns the ith path.
+    const char* operator[](const size_t i) const;
 
     // Insert a search path at the end of the collection.
     void push_back(const char* path);
