@@ -62,6 +62,15 @@ class DLLSYMBOL SearchPaths
     // Remove all search paths.
     void clear();
 
+    // Returns true if empty.
+    bool empty();
+
+    // Returns the number of paths.
+    size_t size() const;
+
+    // Returns the ith path.
+    const char* operator[](const size_t i) const;
+
     // Insert a search path at the end of the collection.
     void push_back(const char* path);
     template <typename T> void push_back(const std::basic_string<T>& path);
@@ -76,7 +85,7 @@ class DLLSYMBOL SearchPaths
     // this file is returned. Otherwise the input path is returned.
     template <typename T> std::basic_string<T> qualify(const std::basic_string<T>& filepath) const;
 
-    // Iterators, used in python bindings
+    // Const iterator.
     typedef std::vector<std::string>::const_iterator ConstIterator;
 
     ConstIterator begin() const;
