@@ -444,19 +444,17 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
             texture_system->attribute("max_memory_MB", static_cast<float>(max_size / 1024));
         }
 
-        // setup search path for textures.
+        std::string osl_search_path;
+        for(size_t i = 0, e = m_project.get_search_paths().size(); i < e; ++i)
         {
-            std::string search_path;
-            for(size_t i = 0, e = m_project.get_search_paths().size(); i < e; ++i)
-            {
-                search_path.append( m_project.get_search_paths()[i]);
+            osl_search_path.append( m_project.get_search_paths()[i]);
 
-                if( i != e - 1)
-                    search_path.append(";");
-            }
-
-            texture_system->attribute("searchpath", search_path);
+            if( i != e - 1)
+                osl_search_path.append(";");
         }
+
+        // setup search paths.
+        texture_system->attribute("searchpath", osl_search_path);
 
         // TODO: set other texture system options here...
 
@@ -466,7 +464,14 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
                                                                                          &error_handler),
                                                               boost::bind( &OSL::ShadingSystem::destroy, _1));
 
-        // TODO: set shading system options here...
+        shading_system->attribute("searchpath:shader", osl_search_path);
+        shading_system->attribute("lockgeom", 1);
+        shading_system->attribute("colorspace", "Linear");
+        shading_system->attribute("commonspace", "world");
+        // TODO: set more shading system options here...
+        // string[] raytypes      Array of ray type names
+        // ...
+
         register_closures(*shading_system);
     #endif
 
