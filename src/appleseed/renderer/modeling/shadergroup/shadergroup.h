@@ -61,6 +61,13 @@ class DLLSYMBOL ShaderGroup
     // Return a string identifying the model of this shadergroup.
     const char* get_model() const;
 
+    // Adds a new shader to the group.
+    void add_shader(const char* type, const char* name, const char* layer);
+
+    // Adds a new shader to the group.
+    void add_shader(const char* name, const char* layer);
+
+    // Sets a parameter value for the last added shader.
     void add_int_parameter(const char*name, int value);
     void add_float_parameter(const char*name, float value);
     void add_vector_parameter(const char* name, float vx, float vy, float vz);
@@ -68,9 +75,7 @@ class DLLSYMBOL ShaderGroup
     void add_color_parameter(const char* name, float vx, float vy, float vz);
     void add_string_parameter(const char* name, const char* value);
 
-    void add_shader(const char* type, const char* name, const char* layer);
-    void add_shader(const char* name, const char* layer);
-
+    // Adds a connection between two parameters of two shaders.
     void add_connection(const char* src_layer, const char* src_param,
                         const char* dst_layer, const char* dst_param);
 
