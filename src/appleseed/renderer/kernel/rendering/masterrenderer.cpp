@@ -67,7 +67,6 @@
 // boost headers
 #include "boost/shared_ptr.hpp"
 #include "boost/bind.hpp"
-#include "boost/foreach.hpp"
 
 // Standard headers.
 #include <deque>
