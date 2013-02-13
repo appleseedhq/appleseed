@@ -151,9 +151,9 @@ typedef RegionTreeContainer::const_iterator RegionTreeConstIterator;
 // Region tree access cache type.
 typedef foundation::AccessCacheMap<
     RegionTreeContainer,
-    RegionTreeAccessCacheSize,
-    1,
-    foundation::PoolAllocator<void, RegionTreeAccessCacheSize>
+    RegionTreeAccessCacheLines,
+    RegionTreeAccessCacheWays,
+    foundation::PoolAllocator<void, RegionTreeAccessCacheLines * RegionTreeAccessCacheWays>
 > RegionTreeAccessCache;
 
 

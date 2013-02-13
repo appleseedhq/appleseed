@@ -185,9 +185,9 @@ typedef TriangleTreeContainer::const_iterator TriangleTreeConstIterator;
 // Triangle tree access cache type.
 typedef foundation::AccessCacheMap<
     TriangleTreeContainer,
-    TriangleTreeAccessCacheSize,
-    1,
-    foundation::PoolAllocator<void, TriangleTreeAccessCacheSize>
+    TriangleTreeAccessCacheLines,
+    TriangleTreeAccessCacheWays,
+    foundation::PoolAllocator<void, TriangleTreeAccessCacheLines * TriangleTreeAccessCacheWays>
 > TriangleTreeAccessCache;
 
 
