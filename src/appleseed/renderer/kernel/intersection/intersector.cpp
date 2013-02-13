@@ -429,7 +429,7 @@ StatisticsVector Intersector::get_statistics() const
         m_assembly_tree_traversal_stats.get_statistics());
 
     vec.insert(
-        "triangle tree intersection statistics",
+        "triangle trees intersection statistics",
         m_triangle_tree_traversal_stats.get_statistics());
 #endif
 
