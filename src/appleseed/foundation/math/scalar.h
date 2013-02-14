@@ -512,7 +512,7 @@ inline V fit(
 {
     assert(min_x != max_x);
 
-    const V k = static_cast<V>((x - min_x) / (max_x - min_x));
+    const V k = static_cast<V>(x - min_x) / (max_x - min_x);
 
     return min_y * (V(1.0) - k) + max_y * k;
 }
