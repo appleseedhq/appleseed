@@ -1546,7 +1546,7 @@ install (TARGETS appleseed
 #-------
 install ( TARGETS appleseed
   DESTINATION
-  devkit/lib/${CMAKE_BUILD_TYPE}
+  extras/devkit/lib/${CMAKE_BUILD_TYPE}
 )
 
 

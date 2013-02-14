@@ -117,5 +117,5 @@ install (TARGETS appleseed.shared
 #-------
 install ( TARGETS appleseed.shared
   DESTINATION
-  devkit/lib/${CMAKE_BUILD_TYPE}
+  extras/devkit/lib/${CMAKE_BUILD_TYPE}
 )
