@@ -47,7 +47,7 @@
 using namespace foundation;
 using namespace renderer;
 
-TEST_SUITE(Renderer_Modeling_Scene_AssemblyInstance)
+TEST_SUITE(Renderer_Modeling_Scene_Assembly)
 {
     struct TestScene
     {
@@ -75,6 +75,8 @@ TEST_SUITE(Renderer_Modeling_Scene_AssemblyInstance)
                     Transformd::identity(),
                     StringDictionary()));
 
+            // Inner assembly instance.
+
             auto_release_ptr<AssemblyInstance> inner_assembly_instance(
                 AssemblyInstanceFactory::create(
                     "inner_assembly_instance",
@@ -95,24 +97,23 @@ TEST_SUITE(Renderer_Modeling_Scene_AssemblyInstance)
             outer_assembly->assemblies().insert(inner_assembly);
             outer_assembly->assembly_instances().insert(inner_assembly_instance);
 
-            m_scene->assembly_instances().insert(
-                auto_release_ptr<AssemblyInstance>(
-                    AssemblyInstanceFactory::create(
-                        "outer_assembly_instance",
-                        ParamArray(),
-                        "outer_assembly")));
-
             m_scene->assemblies().insert(outer_assembly);
         }
     };
 
     TEST_CASE_F(ComputeLocalBBox_TakesChildAssemblyInstanceIntoAccount, TestScene)
     {
-        const AssemblyInstance* outer_assembly_instance =
-            m_scene->assembly_instances().get_by_name("outer_assembly_instance");
-
-        const GAABB3 local_bbox = outer_assembly_instance->compute_local_bbox();
+        const Assembly* outer_assembly = m_scene->assemblies().get_by_name("outer_assembly");
+        const GAABB3 local_bbox = outer_assembly->compute_local_bbox();
 
         EXPECT_EQ(GAABB3(GVector3(-10.0), GVector3(10.0)), local_bbox);
+    }
+
+    TEST_CASE_F(ComputeNonHierarchicalLocalBBox_DoesNotTakeChildAssemblyInstanceIntoAccount, TestScene)
+    {
+        const Assembly* outer_assembly = m_scene->assemblies().get_by_name("outer_assembly");
+        const GAABB3 local_bbox = outer_assembly->compute_non_hierarchical_local_bbox();
+
+        EXPECT_EQ(GAABB3::invalid(), local_bbox);
     }
 }

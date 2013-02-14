@@ -30,6 +30,7 @@
 #define APPLESEED_RENDERER_MODELING_SCENE_ASSEMBLY_H
 
 // appleseed.renderer headers.
+#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/entity/entity.h"
 #include "renderer/modeling/scene/basegroup.h"
 #include "renderer/modeling/scene/containers.h"
@@ -84,6 +85,14 @@ class DLLSYMBOL Assembly
 
     // Return true if this assembly is tagged as flushable.
     bool is_flushable() const;
+
+    // Compute the local space bounding box of the assembly, including all child assemblies,
+    // over the shutter interval.
+    GAABB3 compute_local_bbox() const;
+
+    // Compute the local space bounding box of this assembly, excluding all child assemblies,
+    // over the shutter interval.
+    GAABB3 compute_non_hierarchical_local_bbox() const;
 
     // Perform pre-frame rendering actions.
     // Returns true on success, false otherwise.

@@ -74,9 +74,6 @@ class DLLSYMBOL AssemblyInstance
     // Find the assembly bound to this instance.
     Assembly* find_assembly() const;
 
-    // Compute the local space bounding box of the instance.
-    GAABB3 compute_local_bbox() const;
-
     // Compute the parent space bounding box of the instance.
     GAABB3 compute_parent_bbox() const;
 

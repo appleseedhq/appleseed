@@ -137,7 +137,7 @@ void AssemblyTree::collect_assembly_instances(
         // Compute and store the assembly instance bounding box.
         AABB3d assembly_instance_bbox(
             cumulated_transform_seq.to_parent(
-                assembly_instance.compute_local_bbox()));
+                assembly.compute_non_hierarchical_local_bbox()));
         assembly_instance_bbox.robust_grow(1.0e-15);
         assembly_instance_bboxes.push_back(assembly_instance_bbox);
     }

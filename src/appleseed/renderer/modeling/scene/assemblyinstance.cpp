@@ -32,8 +32,6 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/basegroup.h"
-#include "renderer/modeling/scene/objectinstance.h"
-#include "renderer/utility/bbox.h"
 
 // Standard headers.
 #include <string>
@@ -106,7 +104,7 @@ Assembly* AssemblyInstance::find_assembly() const
     return 0;
 }
 
-GAABB3 AssemblyInstance::compute_local_bbox() const
+GAABB3 AssemblyInstance::compute_parent_bbox() const
 {
     // In many places, we need the parent-space bounding box of an assembly instance
     // before input binding is performed, i.e. before the instantiated assembly is
@@ -115,29 +113,10 @@ GAABB3 AssemblyInstance::compute_local_bbox() const
 
     const Assembly* assembly = find_assembly();
 
-    if (assembly == 0)
-        return GAABB3::invalid();
-
-    const ObjectInstanceContainer& object_instances = assembly->object_instances();
-
-    GAABB3 bbox =
-        renderer::compute_parent_bbox<GAABB3>(
-            object_instances.begin(),
-            object_instances.end());
-
-    const AssemblyInstanceContainer& assembly_instances = assembly->assembly_instances();
-
-    bbox.insert(
-        renderer::compute_parent_bbox<GAABB3>(
-            assembly_instances.begin(),
-            assembly_instances.end()));
-
-    return bbox;
-}
-
-GAABB3 AssemblyInstance::compute_parent_bbox() const
-{
-    return m_transform_sequence.to_parent(compute_local_bbox());
+    return
+        assembly
+            ? m_transform_sequence.to_parent(assembly->compute_local_bbox())
+            : GAABB3::invalid();
 }
 
 void AssemblyInstance::unbind_assembly()
