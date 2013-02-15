@@ -41,7 +41,6 @@
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
-#include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exceptionnotimplemented.h"
@@ -97,13 +96,15 @@ LightSampler::LightSampler(const Scene& scene)
 {
     RENDERER_LOG_INFO("collecting light emitters...");
 
-    // Collect all non-physical lights and light-emitting triangles.
+    // Collect all non-physical lights.
+    collect_non_physical_lights(scene.assembly_instances(), TransformSequence());
+
+    // Collect all light-emitting triangles.
+    // todo: update to support nested assemblies.
     for (const_each<AssemblyInstanceContainer> i = scene.assembly_instances(); i; ++i)
     {
         const AssemblyInstance& assembly_instance = *i;
         const Assembly& assembly = assembly_instance.get_assembly();
-
-        collect_non_physical_lights(assembly, assembly_instance);
 
         if (has_emitting_materials(assembly))
             collect_emitting_triangles(assembly, assembly_instance);
@@ -129,8 +130,37 @@ LightSampler::LightSampler(const Scene& scene)
 }
 
 void LightSampler::collect_non_physical_lights(
-    const Assembly&         assembly,
-    const AssemblyInstance& assembly_instance)
+    const AssemblyInstanceContainer&    assembly_instances,
+    const TransformSequence&            parent_transform_seq)
+{
+    for (const_each<AssemblyInstanceContainer> i = assembly_instances; i; ++i)
+    {
+        // Retrieve the assembly instance.
+        const AssemblyInstance& assembly_instance = *i;
+
+        // Retrieve the assembly.
+        const Assembly& assembly = assembly_instance.get_assembly();
+
+        // Compute the cumulated transform sequence of this assembly instance.
+        TransformSequence cumulated_transform_seq =
+            assembly_instance.transform_sequence() * parent_transform_seq;
+        cumulated_transform_seq.prepare();
+
+        // Recurse into child assembly instances.
+        collect_non_physical_lights(
+            assembly.assembly_instances(),
+            cumulated_transform_seq);
+
+        // Collect lights from this assembly instance.
+        collect_non_physical_lights(
+            assembly,
+            cumulated_transform_seq);
+    }
+}
+
+void LightSampler::collect_non_physical_lights(
+    const Assembly&                     assembly,
+    const TransformSequence&            transform_sequence)
 {
     for (const_each<LightContainer> i = assembly.lights(); i; ++i)
     {
@@ -140,7 +170,7 @@ void LightSampler::collect_non_physical_lights(
         // Copy the light into the light vector.
         const size_t light_index = m_non_physical_lights.size();
         NonPhysicalLightInfo light_info;
-        light_info.m_assembly_instance = &assembly_instance;
+        light_info.m_transform_sequence = transform_sequence;
         light_info.m_light = &light;
         m_non_physical_lights.push_back(light_info);
 
@@ -153,8 +183,8 @@ void LightSampler::collect_non_physical_lights(
 }
 
 void LightSampler::collect_emitting_triangles(
-    const Assembly&         assembly,
-    const AssemblyInstance& assembly_instance)
+    const Assembly&                     assembly,
+    const AssemblyInstance&             assembly_instance)
 {
     // Loop over the object instances of the assembly.
     const size_t object_instance_count = assembly.object_instances().size();
@@ -311,10 +341,10 @@ void LightSampler::collect_emitting_triangles(
 }
 
 void LightSampler::sample_non_physical_lights(
-    const size_t            light_index,
-    const double            time,
-    const Vector2d&         s,
-    LightSample&            sample) const
+    const size_t                        light_index,
+    const double                        time,
+    const Vector2d&                     s,
+    LightSample&                        sample) const
 {
     sample.m_triangle = 0;
     sample_non_physical_light(time, s, light_index, 1.0, sample);
@@ -324,9 +354,9 @@ void LightSampler::sample_non_physical_lights(
 }
 
 void LightSampler::sample_emitting_triangles(
-    const double            time,
-    const Vector3d&         s,
-    LightSample&            sample) const
+    const double                        time,
+    const Vector3d&                     s,
+    LightSample&                        sample) const
 {
     assert(m_emitting_triangle_cdf.valid());
 
@@ -348,9 +378,9 @@ void LightSampler::sample_emitting_triangles(
 }
 
 void LightSampler::sample(
-    const double            time,
-    const Vector3d&         s,
-    LightSample&            sample) const
+    const double                        time,
+    const Vector3d&                     s,
+    LightSample&                        sample) const
 {
     assert(m_emitter_cdf.valid());
 
@@ -385,30 +415,29 @@ void LightSampler::sample(
 }
 
 void LightSampler::sample_non_physical_light(
-    const double            time,
-    const Vector2d&         s,
-    const size_t            light_index,
-    const double            light_prob,
-    LightSample&            sample) const
+    const double                        time,
+    const Vector2d&                     s,
+    const size_t                        light_index,
+    const double                        light_prob,
+    LightSample&                        sample) const
 {
     // Fetch the light.
     const NonPhysicalLightInfo& light_info = m_non_physical_lights[light_index];
     sample.m_light = light_info.m_light;
 
-    // Evaluate and store the transform of the assembly instance.
-    sample.m_asm_inst_transform =
-        light_info.m_assembly_instance->transform_sequence().evaluate(time);
+    // Evaluate and store the transform of the light.
+    sample.m_light_transform = light_info.m_transform_sequence.evaluate(time);
 
     // Store the probability of choosing this light.
     sample.m_probability = light_prob;
 }
 
 void LightSampler::sample_emitting_triangle(
-    const double            time,
-    const Vector2d&         s,
-    const size_t            triangle_index,
-    const double            triangle_prob,
-    LightSample&            sample) const
+    const double                        time,
+    const Vector2d&                     s,
+    const size_t                        triangle_index,
+    const double                        triangle_prob,
+    LightSample&                        sample) const
 {
     // Fetch and set the emitting triangle.
     const EmittingTriangle& triangle = m_emitting_triangles[triangle_index];

@@ -146,12 +146,12 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     Spectrum light_value;
     sample.m_light->evaluate(
         input_evaluator,
-        sample.m_asm_inst_transform.point_to_local(m_point),
+        sample.m_light_transform.point_to_local(m_point),
         sample_position,
         emission_direction,
         light_value);
-    sample_position = sample.m_asm_inst_transform.point_to_parent(sample_position);
-    emission_direction = normalize(sample.m_asm_inst_transform.vector_to_parent(emission_direction));
+    sample_position = sample.m_light_transform.point_to_parent(sample_position);
+    emission_direction = normalize(sample.m_light_transform.vector_to_parent(emission_direction));
 
     // Compute the incoming direction in world space.
     const Vector3d incoming = -emission_direction;

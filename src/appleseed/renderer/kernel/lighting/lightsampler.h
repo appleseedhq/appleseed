@@ -33,6 +33,7 @@
 #include "renderer/global/global.h"
 #include "renderer/kernel/intersection/intersectionsettings.h"
 #include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/cdf.h"
@@ -58,7 +59,7 @@ namespace renderer
 class NonPhysicalLightInfo
 {
   public:
-    const AssemblyInstance*     m_assembly_instance;
+    TransformSequence           m_transform_sequence;
     const Light*                m_light;
 };
 
@@ -99,7 +100,7 @@ class LightSample
 
     // Data for a non-physical light sample.
     const Light*                m_light;
-    foundation::Transformd      m_asm_inst_transform;
+    foundation::Transformd      m_light_transform;
 
     // Data common to all sample types.
     double                      m_probability;                  // probability of this sample to be chosen
@@ -116,8 +117,7 @@ class LightSampler
 {
   public:
     // Constructor.
-    explicit LightSampler(
-        const Scene&                    scene);
+    explicit LightSampler(const Scene& scene);
 
     // Return the number of non-physical lights in the scene.
     size_t get_non_physical_light_count() const;
@@ -130,22 +130,22 @@ class LightSampler
 
     // Sample the set of non-physical lights.
     void sample_non_physical_lights(
-        const size_t                    light_index,
-        const double                    time,
-        const foundation::Vector2d&     s,
-        LightSample&                    sample) const;
+        const size_t                        light_index,
+        const double                        time,
+        const foundation::Vector2d&         s,
+        LightSample&                        sample) const;
 
     // Sample the set of emitting triangles.
     void sample_emitting_triangles(
-        const double                    time,
-        const foundation::Vector3d&     s,
-        LightSample&                    sample) const;
+        const double                        time,
+        const foundation::Vector3d&         s,
+        LightSample&                        sample) const;
 
     // Sample the sets of non-physical lights and emitting triangles.
     void sample(
-        const double                    time,
-        const foundation::Vector3d&     s,
-        LightSample&                    sample) const;
+        const double                        time,
+        const foundation::Vector3d&         s,
+        LightSample&                        sample) const;
 
     // Compute the probability density in area measure of a given light sample.
     double evaluate_pdf(const ShadingPoint& result) const;
@@ -155,42 +155,47 @@ class LightSampler
     typedef std::vector<EmittingTriangle> EmittingTriangleVector;
     typedef foundation::CDF<size_t, double> EmitterCDF;
 
-    NonPhysicalLightVector              m_non_physical_lights;
-    size_t                              m_non_physical_light_count;
+    NonPhysicalLightVector      m_non_physical_lights;
+    size_t                      m_non_physical_light_count;
 
-    EmittingTriangleVector              m_emitting_triangles;
-    double                              m_total_emissive_area;
-    double                              m_rcp_total_emissive_area;
-    double                              m_rcp_emitting_triangle_count;
+    EmittingTriangleVector      m_emitting_triangles;
+    double                      m_total_emissive_area;
+    double                      m_rcp_total_emissive_area;
+    double                      m_rcp_emitting_triangle_count;
 
-    EmitterCDF                          m_emitter_cdf;
-    EmitterCDF                          m_emitting_triangle_cdf;
+    EmitterCDF                  m_emitter_cdf;
+    EmitterCDF                  m_emitting_triangle_cdf;
 
-    // Collect non-physical lights from a given assembly instance.
+    // Recursively collect non-physical lights from a given set of assembly instances.
     void collect_non_physical_lights(
-        const Assembly&                 assembly,
-        const AssemblyInstance&         assembly_instance);
+        const AssemblyInstanceContainer&    assembly_instances,
+        const TransformSequence&            parent_transform_seq);
+
+    // Collect non-physical lights from a given assembly.
+    void collect_non_physical_lights(
+        const Assembly&                     assembly,
+        const TransformSequence&            transform_sequence);
 
     // Collect emitting triangles from a given assembly instance.
     void collect_emitting_triangles(
-        const Assembly&                 assembly,
-        const AssemblyInstance&         assembly_instance);
+        const Assembly&                     assembly,
+        const AssemblyInstance&             assembly_instance);
 
     // Sample a given non-physical light.
     void sample_non_physical_light(
-        const double                    time,
-        const foundation::Vector2d&     s,
-        const size_t                    light_index,
-        const double                    light_prob,
-        LightSample&                    sample) const;
+        const double                        time,
+        const foundation::Vector2d&         s,
+        const size_t                        light_index,
+        const double                        light_prob,
+        LightSample&                        sample) const;
 
     // Sample a given emitting triangle.
     void sample_emitting_triangle(
-        const double                    time,
-        const foundation::Vector2d&     s,
-        const size_t                    triangle_index,
-        const double                    triangle_prob,
-        LightSample&                    sample) const;
+        const double                        time,
+        const foundation::Vector2d&         s,
+        const size_t                        triangle_index,
+        const double                        triangle_prob,
+        LightSample&                        sample) const;
 };
 
 

@@ -223,7 +223,7 @@ namespace
                     Vector3d sample_position, emission_direction;
                     light_sample.m_light->evaluate(
                         input_evaluator,
-                        light_sample.m_asm_inst_transform.point_to_local(point),
+                        light_sample.m_light_transform.point_to_local(point),
                         sample_position,
                         emission_direction,
                         radiance);

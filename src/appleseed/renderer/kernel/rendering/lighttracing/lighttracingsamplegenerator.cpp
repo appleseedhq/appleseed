@@ -670,8 +670,8 @@ namespace
                 emission_direction,
                 light_value,
                 light_prob);
-            sample_position = light_sample.m_asm_inst_transform.point_to_parent(sample_position);
-            emission_direction = normalize(light_sample.m_asm_inst_transform.vector_to_parent(emission_direction));
+            sample_position = light_sample.m_light_transform.point_to_parent(sample_position);
+            emission_direction = normalize(light_sample.m_light_transform.vector_to_parent(emission_direction));
 
             // Compute the initial particle weight.
             Spectrum initial_alpha = light_value;
