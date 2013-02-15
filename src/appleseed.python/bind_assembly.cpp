@@ -86,8 +86,7 @@ void bind_assembly()
         .def("textures", &BaseGroup::textures, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("texture_instances", &BaseGroup::texture_instances, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("assemblies", &BaseGroup::assemblies, bpy::return_value_policy<bpy::reference_existing_object>())
-        .def("assembly_instances", &BaseGroup::assembly_instances, bpy::return_value_policy<bpy::reference_existing_object>())
-        ;
+        .def("assembly_instances", &BaseGroup::assembly_instances, bpy::return_value_policy<bpy::reference_existing_object>());
 
     bpy::class_<Assembly, auto_release_ptr<Assembly>, bpy::bases<Entity, BaseGroup>, boost::noncopyable>("Assembly", bpy::no_init)
         .def("__init__", bpy::make_constructor(detail::create_assembly))
@@ -99,17 +98,16 @@ void bind_assembly()
         .def("lights", &Assembly::lights, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("objects", &Assembly::objects, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("object_instances", &Assembly::object_instances, bpy::return_value_policy<bpy::reference_existing_object>())
-        ;
+        .def("compute_local_bbox", &Assembly::compute_local_bbox)
+        .def("compute_non_hierarchical_local_bbox", &Assembly::compute_local_bbox);
 
     bind_typed_entity_map<Assembly>("AssemblyContainer");
 
     bpy::class_<AssemblyInstance, auto_release_ptr<AssemblyInstance>, bpy::bases<Entity>, boost::noncopyable>("AssemblyInstance", bpy::no_init)
         .def("__init__", bpy::make_constructor(detail::create_assembly_instance))
-        .def("get_assembly", &AssemblyInstance::get_assembly, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("transform_sequence", detail::get_transform_sequence, bpy::return_value_policy<bpy::reference_existing_object>())
-        .def("compute_local_bbox", &AssemblyInstance::compute_local_bbox)
         .def("compute_parent_bbox", &AssemblyInstance::compute_parent_bbox)
-        ;
+        .def("get_assembly", &AssemblyInstance::get_assembly, bpy::return_value_policy<bpy::reference_existing_object>());
 
     bind_typed_entity_map<AssemblyInstance>("AssemblyInstanceContainer");
 }
