@@ -29,6 +29,9 @@
 #ifndef APPLESEED_RENDERER_KERNEL_TEXTURING_TEXTURESTORE_H
 #define APPLESEED_RENDERER_KERNEL_TEXTURING_TEXTURESTORE_H
 
+// appleseed.renderer headers.
+#include "renderer/modeling/scene/containers.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/platform/thread.h"
@@ -39,10 +42,12 @@
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <map>
 
 // Forward declarations.
 namespace foundation    { class Statistics; }
 namespace foundation    { class Tile; }
+namespace renderer      { class Assemblies; }
 namespace renderer      { class Scene; }
 
 namespace renderer
@@ -110,14 +115,10 @@ class TextureStore
     foundation::StatisticsVector get_statistics() const;
 
   private:
-    struct TileSwapper
+    class TileSwapper
       : public foundation::NonCopyable
     {
-        const Scene&        m_scene;
-        const size_t        m_memory_limit;
-        size_t              m_memory_size;
-        size_t              m_max_memory_size;
-
+      public:
         // Constructor.
         TileSwapper(
             const Scene&    scene,
@@ -131,6 +132,20 @@ class TextureStore
 
         // Return true if the cache is full, false otherwise.
         bool is_full(const size_t element_count) const;
+
+        // Return the peak memory size in bytes of the tile cache.
+        size_t get_peak_memory_size() const;
+
+      private:
+        typedef std::map<foundation::UniqueID, const Assembly*> AssemblyMap;
+
+        const Scene&        m_scene;
+        const size_t        m_memory_limit;
+        size_t              m_memory_size;
+        size_t              m_peak_memory_size;
+        AssemblyMap         m_assemblies;
+
+        void gather_assemblies(const AssemblyContainer& assemblies);
     };
 
     typedef foundation::LRUCache<
@@ -143,6 +158,29 @@ class TextureStore
     TileSwapper     m_tile_swapper;
     TileCache       m_tile_cache;
 };
+
+
+//
+// TextureStore class implementation.
+//
+
+inline TextureStore::TileRecord& TextureStore::acquire(const TileKey& key)
+{
+    boost::mutex::scoped_lock lock(m_mutex);
+
+    TileRecord& record = m_tile_cache.get(key);
+
+    boost_atomic::atomic_inc32(&record.m_owners);
+
+    return record;
+}
+
+inline void TextureStore::release(TileRecord& record) const
+{
+    assert(boost_atomic::atomic_read32(&record.m_owners) > 0);
+
+    boost_atomic::atomic_dec32(&record.m_owners);
+}
 
 
 //
@@ -223,35 +261,17 @@ inline bool TextureStore::TileKey::operator<(const TileKey& rhs) const
 
 
 //
-// TextureStore class implementation.
-//
-
-inline TextureStore::TileRecord& TextureStore::acquire(const TileKey& key)
-{
-    boost::mutex::scoped_lock lock(m_mutex);
-
-    TileRecord& record = m_tile_cache.get(key);
-
-    boost_atomic::atomic_inc32(&record.m_owners);
-
-    return record;
-}
-
-inline void TextureStore::release(TileRecord& record) const
-{
-    assert(boost_atomic::atomic_read32(&record.m_owners) > 0);
-
-    boost_atomic::atomic_dec32(&record.m_owners);
-}
-
-
-//
 // TextureStore::TileSwapper class implementation.
 //
 
 inline bool TextureStore::TileSwapper::is_full(const size_t element_count) const
 {
     return m_memory_size >= m_memory_limit;
+}
+
+inline size_t TextureStore::TileSwapper::get_peak_memory_size() const
+{
+    return m_peak_memory_size;
 }
 
 }       // namespace renderer

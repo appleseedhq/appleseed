@@ -32,7 +32,6 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/modeling/scene/assembly.h"
-#include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/texture/texture.h"
 
@@ -41,6 +40,7 @@
 #include "foundation/image/colorspace.h"
 #include "foundation/image/tile.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/foreach.h"
 #include "foundation/utility/memory.h"
 #include "foundation/utility/statistics.h"
 #include "foundation/utility/string.h"
@@ -58,6 +58,31 @@ using namespace std;
 
 namespace renderer
 {
+
+//
+// TextureStore class implementation.
+//
+
+TextureStore::TextureStore(
+    const Scene&    scene,
+    const size_t    memory_limit)
+  : m_tile_swapper(scene, memory_limit)
+  , m_tile_cache(m_tile_swapper)
+{
+}
+
+StatisticsVector TextureStore::get_statistics() const
+{
+    Statistics stats = make_single_stage_cache_stats(m_tile_cache);
+    stats.insert_size("peak size", m_tile_swapper.get_peak_memory_size());
+
+    return StatisticsVector::make("texture store statistics", stats);
+}
+
+
+//
+// TextureStore::TileSwapper class implementation.
+//
 
 namespace
 {
@@ -120,31 +145,17 @@ namespace
     }
 }
 
-TextureStore::TextureStore(
-    const Scene&    scene,
-    const size_t    memory_limit)
-  : m_tile_swapper(scene, memory_limit)
-  , m_tile_cache(m_tile_swapper)
-{
-}
-
-StatisticsVector TextureStore::get_statistics() const
-{
-    Statistics stats = make_single_stage_cache_stats(m_tile_cache);
-    stats.insert_size("peak size", m_tile_swapper.m_max_memory_size);
-
-    return StatisticsVector::make("texture store statistics", stats);
-}
-
 TextureStore::TileSwapper::TileSwapper(
     const Scene&    scene,
     const size_t    memory_limit)
   : m_scene(scene)
   , m_memory_limit(memory_limit)
   , m_memory_size(0)
-  , m_max_memory_size(0)
+  , m_peak_memory_size(0)
 {
     assert(m_memory_limit > 0);
+
+    gather_assemblies(scene.assemblies());
 }
 
 void TextureStore::TileSwapper::load(const TileKey& key, TileRecord& record)
@@ -153,7 +164,7 @@ void TextureStore::TileSwapper::load(const TileKey& key, TileRecord& record)
     const TextureContainer& textures =
         key.m_assembly_uid == ~0
             ? m_scene.textures()
-            : m_scene.assemblies().get_by_uid(key.m_assembly_uid)->textures();
+            : m_assemblies[key.m_assembly_uid]->textures();
 
     // Fetch the texture.
     Texture* texture = textures.get_by_uid(key.m_texture_uid);
@@ -190,7 +201,7 @@ void TextureStore::TileSwapper::load(const TileKey& key, TileRecord& record)
 
     // Track the amount of memory used by the tile cache.
     m_memory_size += record.m_tile->get_memory_size();
-    m_max_memory_size = max(m_max_memory_size, m_memory_size);
+    m_peak_memory_size = max(m_peak_memory_size, m_memory_size);
 
 #ifdef TRACK_CACHE_SIZE
     if (m_memory_size > m_memory_limit)
@@ -227,7 +238,7 @@ bool TextureStore::TileSwapper::unload(const TileKey& key, TileRecord& record)
     const TextureContainer& textures =
         key.m_assembly_uid == ~0
             ? m_scene.textures()
-            : m_scene.assemblies().get_by_uid(key.m_assembly_uid)->textures();
+            : m_assemblies[key.m_assembly_uid]->textures();
 
     // Fetch the texture.
     Texture* texture = textures.get_by_uid(key.m_texture_uid);
@@ -246,6 +257,15 @@ bool TextureStore::TileSwapper::unload(const TileKey& key, TileRecord& record)
 
     // Successfully unloaded the tile.
     return true;
+}
+
+void TextureStore::TileSwapper::gather_assemblies(const AssemblyContainer& assemblies)
+{
+    for (const_each<AssemblyContainer> i = assemblies; i; ++i)
+    {
+        m_assemblies[i->get_uid()] = &*i;
+        gather_assemblies(i->assemblies());
+    }
 }
 
 }   // namespace renderer
