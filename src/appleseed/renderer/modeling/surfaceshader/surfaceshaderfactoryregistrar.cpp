@@ -40,6 +40,10 @@
 #include "renderer/modeling/surfaceshader/surfaceshadercollection.h"
 #include "renderer/modeling/surfaceshader/voxelaosurfaceshader.h"
 
+#ifdef WITH_OSL
+    #include "renderer/modeling/surfaceshader/oslsurfaceshader.h"
+#endif
+
 // appleseed.foundation headers.
 #include "foundation/utility/registrar.h"
 
@@ -67,6 +71,10 @@ SurfaceShaderFactoryRegistrar::SurfaceShaderFactoryRegistrar()
     register_factory(auto_ptr<FactoryType>(new SmokeSurfaceShaderFactory()));
     register_factory(auto_ptr<FactoryType>(new SurfaceShaderCollectionFactory()));
     register_factory(auto_ptr<FactoryType>(new VoxelAOSurfaceShaderFactory()));
+
+    #ifdef WITH_OSL
+        register_factory(auto_ptr<FactoryType>(new OSLSurfaceShaderFactory()));
+    #endif
 }
 
 SurfaceShaderFactoryRegistrar::~SurfaceShaderFactoryRegistrar()

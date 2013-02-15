@@ -971,6 +971,12 @@ set (renderer_kernel_rendering_sources
     renderer/kernel/rendering/samplegeneratorbase.h
     renderer/kernel/rendering/tilecallbackbase.h
 )
+if (WITH_OSL)
+    list (APPEND renderer_kernel_rendering_sources
+        renderer/kernel/rendering/rendererservices.cpp
+        renderer/kernel/rendering/rendererservices.h
+    )
+endif ()
 list (APPEND appleseed_sources
     ${renderer_kernel_rendering_sources}
 )
@@ -1108,6 +1114,12 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/specularbtdf.cpp
     renderer/modeling/bsdf/specularbtdf.h
 )
+if (WITH_OSL)
+    list (APPEND renderer_modeling_bsdf_sources
+        renderer/modeling/bsdf/oslbsdf.cpp
+        renderer/modeling/bsdf/oslbsdf.h
+    )
+endif ()
 list (APPEND appleseed_sources
     ${renderer_modeling_bsdf_sources}
 )
@@ -1418,6 +1430,12 @@ set (renderer_modeling_surfaceshader_sources
     renderer/modeling/surfaceshader/voxelaosurfaceshader.cpp
     renderer/modeling/surfaceshader/voxelaosurfaceshader.h
 )
+if (WITH_OSL)
+    list (APPEND renderer_modeling_surfaceshader_sources
+        renderer/modeling/surfaceshader/oslsurfaceshader.cpp
+        renderer/modeling/surfaceshader/oslsurfaceshader.h
+    )
+endif ()
 list (APPEND appleseed_sources
     ${renderer_modeling_surfaceshader_sources}
 )
@@ -1443,6 +1461,21 @@ list (APPEND appleseed_sources
 source_group ("renderer\\modeling\\texture" FILES
     ${renderer_modeling_texture_sources}
 )
+
+if (WITH_OSL)
+    set (renderer_modeling_shadergroup
+        renderer/modeling/shadergroup/shadergroup.cpp
+        renderer/modeling/shadergroup/shadergroup.h
+    )
+    list (APPEND appleseed_sources
+        ${renderer_modeling_shadergroup}
+    )
+    source_group ("renderer\\modeling\\shadergroup" FILES
+        ${renderer_modeling_shadergroup}
+    )
+
+    # TODO: add closures here...
+endif ()
 
 set (renderer_utility_sources
     renderer/utility/bbox.h
@@ -1514,6 +1547,11 @@ link_against_xercesc (appleseed)
 link_against_hdf5 (appleseed)
 link_against_alembic (appleseed)
 
+if (WITH_OSL)
+    link_against_oiio (appleseed)
+    link_against_oslexec (appleseed)
+endif ()
+
 target_link_libraries (appleseed
     ${Boost_LIBRARIES}
 )
@@ -1540,3 +1578,13 @@ endforeach ()
 install (TARGETS appleseed
     DESTINATION bin
 )
+
+#-------
+# Devkit
+#-------
+install ( TARGETS appleseed
+  DESTINATION
+  extras/devkit/lib/${CMAKE_BUILD_TYPE}
+)
+
+

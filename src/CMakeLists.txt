@@ -70,7 +70,7 @@ option (WITH_CLI                "Build appleseed.cli"           ON)
 option (WITH_STUDIO             "Build appleseed.studio"        ON)
 option (WITH_PYTHON             "Build Python module"           ON)
 option (WITH_TOOLS              "Build appleseed tools"         ON)
-
+option (WITH_OSL                "Build OSL support"             OFF)
 
 #--------------------------------------------------------------------------------------------------
 # Platform-specific settings.
@@ -125,6 +125,12 @@ link_directories (${Boost_LIBRARY_DIRS})
 # Find external packages.
 #--------------------------------------------------------------------------------------------------
 
+if (WITH_OSL)
+    find_package (OpenImageIO REQUIRED)
+    find_package (OSL REQUIRED)
+    add_definitions( -DWITH_OSL)
+endif ()
+
 if (USE_EXTERNAL_PNG)
     find_package (PNG REQUIRED)
     add_definitions (-DWITH_EXTERNAL_PNG)
@@ -153,8 +159,17 @@ endif ()
 include_directories (
     appleseed
     STANN/include
+    ${OPENIMAGEIO_INCLUDE_DIRS}
+    ${OSL_INCLUDE_DIRS}
     ${PYTHON_INCLUDE_DIRS}
 )
+
+if (WITH_OSL)
+    include_directories (
+        ${OPENIMAGEIO_INCLUDE_DIRS}
+        ${OSL_INCLUDE_DIRS}
+    )
+endif ()
 
 if (USE_EXTERNAL_PNG)
     include_directories (${PNG_INCLUDE_DIR})
@@ -403,6 +418,30 @@ if (WITH_PYTHON)
 endif ()
 
 
+#--------------------------------------
+# DevKit Preparation (for installation)
+#--------------------------------------
+FILE ( GLOB_RECURSE DEVKIT_APPLESEED_INCLUDE RELATIVE ${PROJECT_SOURCE_DIR} "appleseed/*.h")
+FILE ( GLOB_RECURSE DEVKIT_APPLESEED_SHARED_INCLUDE RELATIVE ${PROJECT_SOURCE_DIR} "appleseed.shared/*.h")
+# Archives creation
+EXECUTE_PROCESS (
+  COMMAND ${CMAKE_COMMAND} -E tar cf ${CMAKE_BINARY_DIR}/appleseed_include.tar ${DEVKIT_APPLESEED_INCLUDE}
+  COMMAND ${CMAKE_COMMAND} -E tar cf ${CMAKE_BINARY_DIR}/appleseed_shared_include.tar ${DEVKIT_APPLESEED_SHARED_INCLUDE}
+  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+  )
+# Create devkit staging area
+EXECUTE_PROCESS (
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/extras/devkit/include
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/extras/devkit/lib/${CMAKE_BUILD_TYPE}
+  )
+# Archive extraction in preparation for installation commands
+EXECUTE_PROCESS (
+  COMMAND ${CMAKE_COMMAND} -E tar xf ${CMAKE_BINARY_DIR}/appleseed_include.tar
+  COMMAND ${CMAKE_COMMAND} -E tar xf ${CMAKE_BINARY_DIR}/appleseed_shared_include.tar
+  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/extras/devkit/include
+  )
+# MESSAGE ( "DEVKIT_APPLESEED_SHARED_INCLUDE = ${DEVKIT_APPLESEED_SHARED_INCLUDE}")
+
 #--------------------------------------------------------------------------------------------------
 # Installation.
 #--------------------------------------------------------------------------------------------------
@@ -430,4 +469,13 @@ install (
         ../sandbox/scenes
         ../sandbox/tests
     DESTINATION .
+)
+
+#-------
+# Devkit
+#-------
+install ( DIRECTORY
+  ${CMAKE_BINARY_DIR}/extras/devkit/include
+  DESTINATION
+  extras/devkit
 )
