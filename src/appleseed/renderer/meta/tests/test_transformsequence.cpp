@@ -422,13 +422,13 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
         {
             const double t = fit<size_t, double>(i, 0, steps - 1, 0.0, 1.0);
             const Transformd transform = sequence.evaluate(t);
-            const char* color = i == 0 ? "red" : i == steps - 1 ? "green" : "white";
+            const char* color = i == 0 ? "green" : i == steps - 1 ? "red" : "white";
 
             file.draw_aabb(transform.to_parent(bbox), color, Width);
             file.draw_arrow(Vector3d(0.0), transform.point_to_parent(bbox.center()), color, Width);
         }
 
-        file.draw_aabb(motion_bbox, "white", Width);
+        file.draw_aabb(motion_bbox, "magenta", Width);
     }
 
     TEST_CASE(ToParent_GivenPoint_VisualizeSmallPositiveRotation)
@@ -456,7 +456,7 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
         const AABB3d bbox(Vector3d(1.0, 1.0, 0.0), Vector3d(1.0, 1.0, 0.0));
 
         visualize(
-            "unit tests/outputs/test_transformsequence_toparent_point_smallnegativerotation.py",
+            "unit tests/outputs/test_transformsequence_toparent_givenpoint_smallnegativerotation.py",
             sequence,
             bbox);
     }
@@ -471,7 +471,7 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
         const AABB3d bbox(Vector3d(-1.0, -1.0, 0.0), Vector3d(-1.0, -1.0, 0.0));
 
         visualize(
-            "unit tests/outputs/test_transformsequence_toparent_point_largepositiverotation.py",
+            "unit tests/outputs/test_transformsequence_toparent_givenpoint_largepositiverotation.py",
             sequence,
             bbox,
             20);
@@ -487,7 +487,7 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
         const AABB3d bbox(Vector3d(-1.0, -1.0, 0.0), Vector3d(-1.0, -1.0, 0.0));
 
         visualize(
-            "unit tests/outputs/test_transformsequence_toparent_point_largenegativerotation.py",
+            "unit tests/outputs/test_transformsequence_toparent_givenpoint_largenegativerotation.py",
             sequence,
             bbox,
             20);
@@ -503,7 +503,7 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
         const AABB3d bbox(Vector3d(-2.0, -2.0, 0.0), Vector3d(-1.0, -1.0, 0.0));
 
         visualize(
-            "unit tests/outputs/test_transformsequence_toparent_aabb_largenegativerotation.py",
+            "unit tests/outputs/test_transformsequence_toparent_givenaabb_largenegativerotation.py",
             sequence,
             bbox,
             20);
