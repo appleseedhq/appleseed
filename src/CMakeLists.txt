@@ -101,6 +101,16 @@ exec_program (
     OUTPUT_VARIABLE git_tag
 )
 
+string(REGEX MATCHALL "[0-9]+" APPLESEED_VERSION_COMPONENTS ${git_tag})
+list(GET APPLESEED_VERSION_COMPONENTS 0 APPLESEED_VERSION_MAJOR)
+list(GET APPLESEED_VERSION_COMPONENTS 1 APPLESEED_VERSION_MINOR)
+list(GET APPLESEED_VERSION_COMPONENTS 2 APPLESEED_VERSION_PATCH)
+
+
+set ( CPACK_PACKAGE_VENDOR "JupiterJazz" )
+set ( CPACK_PACKAGE_VERSION_MAJOR ${APPLESEED_VERSION_MAJOR} )
+set ( CPACK_PACKAGE_VERSION_MINOR ${APPLESEED_VERSION_MINOR} )
+set ( CPACK_PACKAGE_VERSION_PATCH ${APPLESEED_VERSION_PATCH} )
 
 #--------------------------------------------------------------------------------------------------
 # Boost libraries.
@@ -464,3 +474,8 @@ install ( DIRECTORY
   DESTINATION
   extras/devkit
 )
+
+#---------------------------
+# CPack : software packaging
+#---------------------------
+include ( CPack )
