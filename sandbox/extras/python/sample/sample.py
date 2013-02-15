@@ -216,8 +216,8 @@ def main():
     """
     # Create a log target that outputs to stderr, and binds it to the renderer's global logger.
     # Eventually you will probably want to redirect log messages to your own target. For this
-    # you will need to subclass foundation::LogTargetBase (foundation/utility/log/logtargetbase.h).
-    std::auto_ptr<asf::LogTargetBase> log_target(asf::create_console_log_target(stderr))
+    # you will need to implement foundation::ILogTarget (foundation/utility/log/ilogtarget.h).
+    std::auto_ptr<asf::ILogTarget> log_target(asf::create_console_log_target(stderr))
     asr::global_logger().add_target(log_target.get())
     """
 
