@@ -72,6 +72,7 @@ option (WITH_PYTHON             "Build Python module"           ON)
 option (WITH_TOOLS              "Build appleseed tools"         ON)
 option (WITH_OSL                "Build OSL support"             OFF)
 
+
 #--------------------------------------------------------------------------------------------------
 # Platform-specific settings.
 #--------------------------------------------------------------------------------------------------
@@ -100,6 +101,7 @@ exec_program (
     ARGS "describe --long"
     OUTPUT_VARIABLE git_tag
 )
+
 
 #--------------------------------------------------------------------------------------------------
 # Boost libraries.
@@ -417,39 +419,45 @@ if (WITH_PYTHON)
 endif ()
 
 
-#--------------------------------------
-# DevKit Preparation (for installation)
-#--------------------------------------
-FILE ( GLOB_RECURSE DEVKIT_APPLESEED_INCLUDE RELATIVE ${PROJECT_SOURCE_DIR} "appleseed/*.h")
-FILE ( GLOB_RECURSE DEVKIT_APPLESEED_SHARED_INCLUDE RELATIVE ${PROJECT_SOURCE_DIR} "appleseed.shared/*.h")
-# Archives creation
+#--------------------------------------------------------------------------------------------------
+# Devkit preparation (for installation).
+#--------------------------------------------------------------------------------------------------
+
+FILE (GLOB_RECURSE DEVKIT_APPLESEED_INCLUDE RELATIVE ${PROJECT_SOURCE_DIR} "appleseed/*.h")
+FILE (GLOB_RECURSE DEVKIT_APPLESEED_SHARED_INCLUDE RELATIVE ${PROJECT_SOURCE_DIR} "appleseed.shared/*.h")
+
+# Archives creation.
 EXECUTE_PROCESS (
-  COMMAND ${CMAKE_COMMAND} -E tar cf ${CMAKE_BINARY_DIR}/appleseed_include.tar ${DEVKIT_APPLESEED_INCLUDE}
-  COMMAND ${CMAKE_COMMAND} -E tar cf ${CMAKE_BINARY_DIR}/appleseed_shared_include.tar ${DEVKIT_APPLESEED_SHARED_INCLUDE}
-  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-  )
-# Create devkit staging area
+    COMMAND ${CMAKE_COMMAND} -E tar cf ${CMAKE_BINARY_DIR}/appleseed_include.tar ${DEVKIT_APPLESEED_INCLUDE}
+    COMMAND ${CMAKE_COMMAND} -E tar cf ${CMAKE_BINARY_DIR}/appleseed_shared_include.tar ${DEVKIT_APPLESEED_SHARED_INCLUDE}
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+)
+
+# Create devkit staging area.
 EXECUTE_PROCESS (
-  COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/extras/devkit/include
-  COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/extras/devkit/lib/${CMAKE_BUILD_TYPE}
-  )
-# Archive extraction in preparation for installation commands
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/extras/devkit/include
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/extras/devkit/lib/${CMAKE_BUILD_TYPE}
+)
+
+# Archive extraction in preparation for installation commands.
 EXECUTE_PROCESS (
-  COMMAND ${CMAKE_COMMAND} -E tar xf ${CMAKE_BINARY_DIR}/appleseed_include.tar
-  COMMAND ${CMAKE_COMMAND} -E tar xf ${CMAKE_BINARY_DIR}/appleseed_shared_include.tar
-  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/extras/devkit/include
-  )
-# MESSAGE ( "DEVKIT_APPLESEED_SHARED_INCLUDE = ${DEVKIT_APPLESEED_SHARED_INCLUDE}")
+    COMMAND ${CMAKE_COMMAND} -E tar xf ${CMAKE_BINARY_DIR}/appleseed_include.tar
+    COMMAND ${CMAKE_COMMAND} -E tar xf ${CMAKE_BINARY_DIR}/appleseed_shared_include.tar
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/extras/devkit/include
+)
+
 
 #--------------------------------------------------------------------------------------------------
 # Installation.
 #--------------------------------------------------------------------------------------------------
 
-install (PROGRAMS ../scripts/run-appleseed.sh
+install (
+    PROGRAMS ../scripts/run-appleseed.sh
     DESTINATION bin
 )
 
-install (FILES ../scripts/watch_folder.py
+install (
+    FILES ../scripts/watch_folder.py
     DESTINATION bin
 )
 
@@ -470,27 +478,25 @@ install (
     DESTINATION .
 )
 
-#-------
-# Devkit
-#-------
-install ( DIRECTORY
-  ${CMAKE_BINARY_DIR}/extras/devkit/include
-  DESTINATION
-  extras/devkit
+install (
+    DIRECTORY
+        ${CMAKE_BINARY_DIR}/extras/devkit/include
+    DESTINATION extras/devkit
 )
 
-#---------------------------
-# CPack : software packaging
-#---------------------------
-string(REGEX MATCHALL "[0-9]+" APPLESEED_VERSION_COMPONENTS ${git_tag})
-list(GET APPLESEED_VERSION_COMPONENTS 0 APPLESEED_VERSION_MAJOR)
-list(GET APPLESEED_VERSION_COMPONENTS 1 APPLESEED_VERSION_MINOR)
-list(GET APPLESEED_VERSION_COMPONENTS 2 APPLESEED_VERSION_PATCH)
 
+#--------------------------------------------------------------------------------------------------
+# Packaging.
+#--------------------------------------------------------------------------------------------------
 
-set ( CPACK_PACKAGE_VENDOR "JupiterJazzLimited" )
-set ( CPACK_PACKAGE_VERSION_MAJOR ${APPLESEED_VERSION_MAJOR} )
-set ( CPACK_PACKAGE_VERSION_MINOR ${APPLESEED_VERSION_MINOR} )
-set ( CPACK_PACKAGE_VERSION_PATCH ${APPLESEED_VERSION_PATCH} )
+string (REGEX MATCHALL "[0-9]+" APPLESEED_VERSION_COMPONENTS ${git_tag})
+list (GET APPLESEED_VERSION_COMPONENTS 0 APPLESEED_VERSION_MAJOR)
+list (GET APPLESEED_VERSION_COMPONENTS 1 APPLESEED_VERSION_MINOR)
+list (GET APPLESEED_VERSION_COMPONENTS 2 APPLESEED_VERSION_PATCH)
 
-include ( CPack )
+set (CPACK_PACKAGE_VENDOR "JupiterJazzLimited")
+set (CPACK_PACKAGE_VERSION_MAJOR ${APPLESEED_VERSION_MAJOR})
+set (CPACK_PACKAGE_VERSION_MINOR ${APPLESEED_VERSION_MINOR})
+set (CPACK_PACKAGE_VERSION_PATCH ${APPLESEED_VERSION_PATCH})
+
+include (CPack)
