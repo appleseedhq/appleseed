@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2012 Francois Beaune, Jupiter Jazz Limited
+// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -70,6 +70,22 @@ SearchPaths::~SearchPaths()
 void SearchPaths::clear()
 {
     impl->m_paths.clear();
+}
+
+bool SearchPaths::empty()
+{
+    return impl->m_paths.empty();
+}
+
+size_t SearchPaths::size() const
+{
+    return impl->m_paths.size();
+}
+
+const char* SearchPaths::operator[](const size_t i) const
+{
+    assert(i < size());
+    return impl->m_paths[i].c_str();
 }
 
 void SearchPaths::push_back(const char* path)

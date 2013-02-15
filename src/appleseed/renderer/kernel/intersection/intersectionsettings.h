@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2012 Francois Beaune, Jupiter Jazz Limited
+// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -81,7 +81,8 @@ const size_t RegionTreeMaxLeafSize = 64;
 const size_t RegionTreeMaxDepth = 16;
 
 // Size of the region tree access cache.
-const size_t RegionTreeAccessCacheSize = 16;
+const size_t RegionTreeAccessCacheLines = 16;
+const size_t RegionTreeAccessCacheWays = 1;
 
 
 //
@@ -108,7 +109,8 @@ const size_t TriangleTreeDefaultBinCount = 256;
 const size_t TriangleTreeSubtreeDepth = 2;
 
 // Size of the triangle tree access cache.
-const size_t TriangleTreeAccessCacheSize = 256;
+const size_t TriangleTreeAccessCacheLines = 128;
+const size_t TriangleTreeAccessCacheWays = 2;
 
 // Size of the stack (in number of nodes) used during traversal.
 const size_t TriangleTreeStackSize = 64;

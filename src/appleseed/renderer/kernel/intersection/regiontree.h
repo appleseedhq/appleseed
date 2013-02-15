@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2012 Francois Beaune, Jupiter Jazz Limited
+// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -151,9 +151,9 @@ typedef RegionTreeContainer::const_iterator RegionTreeConstIterator;
 // Region tree access cache type.
 typedef foundation::AccessCacheMap<
     RegionTreeContainer,
-    RegionTreeAccessCacheSize,
-    1,
-    foundation::PoolAllocator<void, RegionTreeAccessCacheSize>
+    RegionTreeAccessCacheLines,
+    RegionTreeAccessCacheWays,
+    foundation::PoolAllocator<void, RegionTreeAccessCacheLines * RegionTreeAccessCacheWays>
 > RegionTreeAccessCache;
 
 

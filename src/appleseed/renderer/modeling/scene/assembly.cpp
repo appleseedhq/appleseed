@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2012 Francois Beaune, Jupiter Jazz Limited
+// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,9 @@
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
+#include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
+#include "renderer/utility/bbox.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
@@ -134,6 +136,26 @@ ObjectContainer& Assembly::objects() const
 ObjectInstanceContainer& Assembly::object_instances() const
 {
     return impl->m_object_instances;
+}
+
+GAABB3 Assembly::compute_local_bbox() const
+{
+    GAABB3 bbox = compute_non_hierarchical_local_bbox();
+
+    bbox.insert(
+        compute_parent_bbox<GAABB3>(
+            assembly_instances().begin(),
+            assembly_instances().end()));
+
+    return bbox;
+}
+
+GAABB3 Assembly::compute_non_hierarchical_local_bbox() const
+{
+    return
+        compute_parent_bbox<GAABB3>(
+            impl->m_object_instances.begin(),
+            impl->m_object_instances.end());
 }
 
 namespace

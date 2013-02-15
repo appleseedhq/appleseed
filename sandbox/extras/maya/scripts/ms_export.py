@@ -86,6 +86,7 @@ def check_export_cancelled():
         cmds.progressWindow(endProgress=1)
         raise RuntimeError('Export Cancelled.')
 
+
 #--------------------------------------------------------------------------------------------------
 # get_maya_params function.
 #--------------------------------------------------------------------------------------------------
@@ -117,7 +118,7 @@ def get_maya_params(render_settings_node):
     params['animated_textures'] = cmds.getAttr(render_settings_node + '.export_animated_textures')
     params['scene_scale'] = 1.0
 
-    if not (params['export_transformation_blur'] or params['export_deformation_blur'] or params['export_camera_blur']):
+    if not (params['export_transformation_blur'] or params['export_deformation_blur'] or params['export_camera_blur'] or params['export_animation']):
         params['motion_samples'] = 1
     elif params['motion_samples'] < 2:
         ms_commands.warning('Motion samples must be >= 2, using 2.')
@@ -131,7 +132,7 @@ def get_maya_params(render_settings_node):
 
     # Cameras.
     # params['sceneCameraExportAllCameras'] = cmds.checkBox('ms_sceneCameraExportAllCameras', query=True, value=True)
-    params['export_all_cameras_as_thinlens'] = cmds.getAttr(render_settings_node + '.export_all_cameras_as_thinlens')
+    params['export_all_cameras_as_thin_lens'] = cmds.getAttr(render_settings_node + '.export_all_cameras_as_thin_lens')
 
     # Output.
     if cmds.listConnections(render_settings_node + '.camera'):
@@ -199,7 +200,9 @@ def get_maya_params(render_settings_node):
         ms_commands.warning("No native obj exporter found, exporting using Python obj exporter.")
         params['obj_exporter'] = ms_export_obj.export
 
-    params['verbose_output'] = cmds.getAttr(render_settings_node + '.verbose_output')
+    params['autodetect_alpha'] = cmds.getAttr(render_settings_node + '.autodetect_alpha')
+    params['force_linear_texture_interpretation'] = cmds.getAttr(render_settings_node + '.force_linear_texture_interpretation')
+    params['force_linear_color_interpretation'] = cmds.getAttr(render_settings_node + '.force_linear_color_interpretation')
     return params
 
 
@@ -265,17 +268,18 @@ def get_maya_scene(params):
 
         ms_commands.info("Adding motion samples, frame {0}...".format(current_frame))
 
-        # if this is the first sample force a sample
-        if (current_frame == start_frame):
-            force_sample = True
+        # if this is the first sample of a frame set initial_sample True
+        if frame_sample_number == 1:
+            initial_sample = True
         else:
-            force_sample = False
+            initial_sample = False
 
         for transform in maya_root_transforms:
-            add_scene_sample(transform, params['export_transformation_blur'], params['export_deformation_blur'], params['export_camera_blur'], current_frame, start_frame, frame_sample_number, force_sample, params['output_directory'], geo_dir, texture_dir)
+            add_scene_sample(transform, params['export_transformation_blur'], params['export_deformation_blur'], params['export_camera_blur'], current_frame, start_frame, frame_sample_number, initial_sample, params['output_directory'], geo_dir, texture_dir)
 
 
         frame_sample_number += 1
+
         if frame_sample_number == params['motion_samples']:
             frame_sample_number = 1
 
@@ -293,37 +297,47 @@ def get_maya_scene(params):
 # add_scene_sample function.
 #--------------------------------------------------------------------------------------------------
 
-def add_scene_sample(m_transform, transform_blur, deform_blur, camera_blur, current_frame, start_frame, frame_sample_number, force_sample, export_root, geo_dir, tex_dir):
 
-    if transform_blur or force_sample:
+# needs mechanism to sample frames for camera and transforms on whole frame numbers for non mb scenes
+
+def add_scene_sample(m_transform, transform_blur, deform_blur, camera_blur, current_frame, start_frame, frame_sample_number, initial_sample, export_root, geo_dir, tex_dir):
+
+    if transform_blur or initial_sample:
         m_transform.add_transform_sample()
-        if (frame_sample_number == 1) or force_sample:
+        if (frame_sample_number == 1) or initial_sample:
             m_transform.add_visibility_sample()
 
-    if deform_blur or force_sample:
+    if deform_blur or initial_sample:
         for mesh in m_transform.child_meshes:
-            if mesh.has_deformation or force_sample:
-                mesh.add_deform_sample(export_root, geo_dir, current_frame)
+            # Only add a sample if this is the first frame to be exported or if it has some deformation
+            if mesh.has_deformation or (current_frame == start_frame):
+                if initial_sample:
+                    mesh.add_deform_sample(export_root, geo_dir, current_frame)
 
     for mesh in m_transform.child_meshes:
-        if (frame_sample_number == 1) or force_sample:
+        if (frame_sample_number == 1) or initial_sample:
             for material in mesh.ms_materials:
                 for texture in material.textures:
-                    if texture.is_animated or force_sample:
+                    if texture.is_animated or initial_sample:
                         texture.add_image_sample(export_root, tex_dir, current_frame)
             for material in mesh.generic_materials:
                 for texture in material.textures:
-                    if texture.is_animated or force_sample:
-                        texture.add_image_sample(export_root, tex_dir, current_frame)               
+                    if texture.is_animated or initial_sample:
+                        texture.add_image_sample(export_root, tex_dir, current_frame) 
+
+    for light in m_transform.child_lights:
+        if light.color.__class__.__name__ == 'MFile':
+            if light.color.is_animated or initial_sample:
+                light.color.add_image_sample(export_root, tex_dir, current_frame) 
 
     for camera in m_transform.child_cameras:
-        if camera_blur or force_sample or (frame_sample_number == 1):
+        if camera_blur or initial_sample or (frame_sample_number == 1):
             camera.add_matrix_sample()
         if (frame_sample_number == 1):
             camera.add_focal_distance_sample()
 
     for transform in m_transform.child_transforms:
-        add_scene_sample(transform, transform_blur, deform_blur, camera_blur, current_frame, start_frame, frame_sample_number, force_sample, export_root, geo_dir, tex_dir)
+        add_scene_sample(transform, transform_blur, deform_blur, camera_blur, current_frame, start_frame, frame_sample_number, initial_sample, export_root, geo_dir, tex_dir)
 
 
 #--------------------------------------------------------------------------------------------------
@@ -340,6 +354,7 @@ def m_file_from_color_connection(params, m_color_connection):
 
     return None
 
+
 #--------------------------------------------------------------------------------------------------
 # MTransform class.
 #--------------------------------------------------------------------------------------------------
@@ -350,8 +365,6 @@ class MTransform():
 
     def __init__(self, params, maya_transform_name, parent):
         self.params = params
-        if self.params['verbose_output']:
-            ms_commands.info("Creating MTransform {0}...".format(maya_transform_name))
         self.name = maya_transform_name
         self.safe_name = ms_commands.legalize_name(self.name)
         self.parent = parent
@@ -391,7 +404,8 @@ class MTransform():
         if light_names is not None:
             self.has_children = True
             for light_name in light_names:
-                self.child_lights.append(MLight(params, light_name, self))
+                if (cmds.nodeType(light_name) == 'pointLight') or (cmds.nodeType(light_name) == 'spotLight'):
+                    self.child_lights.append(MLight(params, light_name, self))
 
         camera_names = cmds.listRelatives(self.name, type='camera', fullPath=True)
         if camera_names is not None:
@@ -424,8 +438,6 @@ class MTransformChild():
 
     def __init__(self, params, maya_entity_name, MTransform_object):
         self.params = params
-        if self.params['verbose_output']:
-            ms_commands.info("Creating {0}: {1}...".format(self.__class__.__name__, maya_entity_name))
         self.name = maya_entity_name
         self.short_name = self.name.split('|')[-1]
         self.safe_name = ms_commands.legalize_name(self.name)
@@ -493,13 +505,15 @@ class MLight(MTransformChild):
 
     def __init__(self, params, maya_light_name, MTransform_object):
         MTransformChild.__init__(self, params, maya_light_name, MTransform_object)
-        self.color = cmds.getAttr(self.name + '.color')
+        self.color = MColorConnection(self.params, self.name + '.color')
+        if self.color.connected_node is not None:
+            self.color = MFile(self.params, self.color.connected_node)
         self.multiplier = cmds.getAttr(self.name+'.intensity')
         self.decay = cmds.getAttr(self.name+'.decayRate')
         self.model = cmds.nodeType(self.name)
         if self.model == 'spotLight':
             self.inner_angle = cmds.getAttr(self.name + '.coneAngle')
-            self.outer_angle = cmds.getAttr(self.name + '.coneAngle') + cmds.getAttr(self.name + '.penumbraAngle')
+            self.outer_angle = cmds.getAttr(self.name + '.coneAngle') +  (2 * cmds.getAttr(self.name + '.penumbraAngle'))
 
 
 #--------------------------------------------------------------------------------------------------
@@ -516,26 +530,28 @@ class MCamera(MTransformChild):
         # In Maya cameras are descendents of transforms like other objects but in appleseed they exist outside
         # of the main assembly. For this reason we include the world space matrix as an attribute of the camera's
         # transform even though it's not a 'correct' representation of the Maya scene.
+
         self.world_space_matrices = []
 
         self.dof = cmds.getAttr(self.name + '.depthOfField')
         self.focal_distance_values = []
         self.focus_region_scale = cmds.getAttr(self.name + '.focusRegionScale')
-        self.focal_length = float(cmds.getAttr(self.name + '.focalLength')) / 1000
+        self.focal_length = float(cmds.getAttr(self.name + '.focalLength')) / 10
         self.f_stop = self.focus_region_scale * cmds.getAttr(self.name + '.fStop')
 
         maya_resolution_aspect = float(self.params['output_res_width']) / float(self.params['output_res_height'])
         maya_film_aspect = cmds.getAttr(self.name + '.horizontalFilmAperture') / cmds.getAttr(self.name + '.verticalFilmAperture')
 
         if maya_resolution_aspect > maya_film_aspect:
-            self.film_width = float(cmds.getAttr(self.name + '.horizontalFilmAperture')) * inch_to_meter
+            self.film_width = float(cmds.getAttr(self.name + '.horizontalFilmAperture')) * inch_to_meter * 100
             self.film_height = self.film_width / maya_resolution_aspect
         else:
-            self.film_height = float(cmds.getAttr(self.name + '.verticalFilmAperture')) * inch_to_meter
+            self.film_height = float(cmds.getAttr(self.name + '.verticalFilmAperture')) * inch_to_meter * 100
             self.film_width = self.film_height * maya_resolution_aspect
 
     def add_matrix_sample(self):
-        self.world_space_matrices.append(cmds.xform(self.transform.name, query=True, matrix=True, ws=True))
+        world_space_matrix = cmds.xform(self.transform.name, query=True, matrix=True, ws=True)
+        self.world_space_matrices.append(ms_commands.matrix_remove_scale(world_space_matrix))
 
     def add_focal_distance_sample(self):
         self.focal_distance_values.append(cmds.getAttr(self.name + '.focusDistance') )
@@ -561,7 +577,7 @@ class MFile():
             self.resolved_image_name = ms_commands.get_file_texture_name(self.name)
             self.is_animated = cmds.getAttr(self.name + '.useFrameExtension')
             self.alpha_is_luminance = cmds.getAttr(self.name + '.alphaIsLuminance')
-            
+            self.autodetect_alpha = params['autodetect_alpha']
             self.filtering_mode = cmds.getAttr((self.name + '.filterType'), asString=True)
 
             # Off, Mipmap, Box, Quadratic, Quartic, Gaussian 
@@ -650,6 +666,7 @@ class MMsEnvironment():
         if self.mirrorball_exitance is not None:
             self.mirrorball_exitance.add_image_sample(export_root, texture_dir, time)
 
+
 #--------------------------------------------------------------------------------------------------
 # MColorConnection class.
 #--------------------------------------------------------------------------------------------------
@@ -695,15 +712,18 @@ class MMsMaterial():
         self.bsdf_front = self.get_connections(self.name + '.BSDF_front_color')
         self.edf_front = self.get_connections(self.name + '.EDF_front_color')
         self.surface_shader_front = self.get_connections(self.name + '.surface_shader_front_color')
-        self.normal_map_front = self.get_connections(self.name + '.normal_map_front_color')
+        self.displacement_map_front = self.get_connections(self.name + '.displacement_map_front_color')
         self.alpha_map = self.get_connections(self.name + '.alpha_map_color')
+        self.displacement_mode = cmds.getAttr(self.name + '.displacement_mode')
+        self.bump_amplitude = cmds.getAttr(self.name + '.bump_amplitude')
+        self.normal_map_up = cmds.getAttr(self.name + '.normal_map_up')
 
         # only use front shaders on back if box is checked
         if not self.duplicate_shaders:
             self.bsdf_back = self.get_connections(self.name + '.BSDF_back_color')
             self.edf_back = self.get_connections(self.name + '.EDF_back_color')
             self.surface_shader_back = self.get_connections(self.name + '.surface_shader_back_color')
-            self.normal_map_back = self.get_connections(self.name + '.normal_map_back_color')
+            self.displacement_map_back = self.get_connections(self.name + '.displacement_map_back_color')
 
             self.shading_nodes += [self.bsdf_front,
                                    self.bsdf_back,
@@ -712,19 +732,20 @@ class MMsMaterial():
                                    self.surface_shader_front,
                                    self.surface_shader_back]
 
-            self.textures = self.textures + [self.normal_map_front,
-                                             self.normal_map_back,
-                                             self.alpha_map]
+            for texture in [self.displacement_map_front, self.displacement_map_back, self.alpha_map]:
+                if texture is not None:
+                    self.textures.append(texture)
+
 
         else:
-            self.bsdf_back, self.edf_back, self.surface_shader_back, self.normal_map_back = self.bsdf_front, self.edf_front, self.surface_shader_front, self.normal_map_front
+            self.bsdf_back, self.edf_back, self.surface_shader_back, self.displacement_map_back = self.bsdf_front, self.edf_front, self.surface_shader_front, self.displacement_map_front
 
             self.shading_nodes += [self.bsdf_front,
                                    self.edf_front,
                                    self.surface_shader_front]
 
-            if self.normal_map_front is not None:
-                  self.textures.append(self.normal_map_front)
+            if self.displacement_map_front is not None:
+                  self.textures.append(self.displacement_map_front)
             if self.alpha_map is not None:
                 self.textures.append(self.alpha_map)
 
@@ -741,17 +762,17 @@ class MMsMaterial():
                 return shading_node
 
             elif connection.connected_node_type == 'file':
-                texture_node = m_file_from_color_connection(self.params, connection.connected_node)
+                texture_node = MFile(self.params, connection.connected_node)
                 self.textures += [texture_node]
                 return texture_node
 
         else:
             return None
 
+
 #--------------------------------------------------------------------------------------------------
 # MGenericMaterial class.
 #--------------------------------------------------------------------------------------------------
-
 
 class MGenericMaterial():
 
@@ -820,6 +841,7 @@ class MGenericMaterial():
                 self.textures.append(self.incandescence)
             elif self.incandescence.is_black:
                 self.incandescence = None
+
 
 #--------------------------------------------------------------------------------------------------
 # MMsShadingNode class.
@@ -941,7 +963,6 @@ class AsColor():
         self.wavelength_range = '400.0, 700.0'
 
     def emit_xml(self, doc):
-        ms_commands.info('Writing color %s...' % self.name)
         doc.start_element('color name="%s"' % self.name)
         self.color_space.emit_xml(doc)
         self.multiplier.emit_xml(doc)
@@ -1121,6 +1142,7 @@ class AsCamera():
         self.diaphragm_tilt_angle = AsParameter('diaphragm_tilt_angle', '0.0')
         self.shutter_open_time = AsParameter('shutter_open_time', '0.0')
         self.shutter_close_time = AsParameter('shutter_close_time', '1.0')
+        self.controller_target = AsParameter('controller_target', '0 0 0')
         self.transforms = []
 
     def emit_xml(self, doc):
@@ -1130,6 +1152,7 @@ class AsCamera():
         self.focal_length.emit_xml(doc)
         self.shutter_open_time.emit_xml(doc)
         self.shutter_close_time.emit_xml(doc)
+        self.controller_target.emit_xml(doc)
 
         if self.model == 'thinlens_camera':
             self.focal_distance.emit_xml(doc)
@@ -1217,7 +1240,10 @@ class AsMaterial():
         self.edf = None
         self.surface_shader = None
         self.alpha_map = None
-        self.normal_map = None
+        self.displacement_map = None
+        self.displacement_mode = None
+        self.bump_amplitude = None
+        self.normal_map_up = None
 
     def emit_xml(self, doc):
         doc.start_element('material name="%s" model="%s"' % (self.name, self.model))
@@ -1234,8 +1260,17 @@ class AsMaterial():
         if self.alpha_map is not None:
             self.alpha_map.emit_xml(doc)
 
-        if self.normal_map is not None:
-            self.normal_map.emit_xml(doc)
+        if self.displacement_map is not None:
+            self.displacement_map.emit_xml(doc)
+
+        if self.displacement_mode is not None:
+            self.displacement_mode.emit_xml(doc)
+
+        if self.bump_amplitude is not None:
+            self.bump_amplitude.emit_xml(doc)
+
+        if self.normal_map_up is not None:
+            self.normal_map_up.emit_xml(doc)
 
         doc.end_element('material')
 
@@ -1312,6 +1347,7 @@ class AsLight():
         self.name = None
         self.model = None
         self.exitance = None
+        self.exitance_multiplier = AsParameter('exitance_multiplier', 1)
         self.inner_angle = None
         self.outer_angle = None
         self.transform = None
@@ -1319,6 +1355,7 @@ class AsLight():
     def emit_xml(self, doc):
         doc.start_element('light name="%s" model="%s"' % (self.name, self.model))
         self.exitance.emit_xml(doc)
+        self.exitance_multiplier.emit_xml(doc)
         if self.model == 'spot_light':
             self.inner_angle.emit_xml(doc)
             self.outer_angle.emit_xml(doc)
@@ -1609,24 +1646,32 @@ def m_color_connection_to_as_color(m_color_connection, postfix=''):
 
     return as_color
 
+
 #--------------------------------------------------------------------------------------------------
 # m_file_to_as_texture function.
 #--------------------------------------------------------------------------------------------------
 
-def m_file_to_as_texture(m_file, postfix='', file_number=0):
+def m_file_to_as_texture(params, m_file, postfix='', file_number=0):
 
     as_texture = AsTexture()
     as_texture.name = m_file.safe_name + postfix
     as_texture.file_name = AsParameter('filename', m_file.image_file_names[file_number])
 
     as_texture_instance = as_texture.instantiate()
-    if m_file.alpha_is_luminance:
-        as_texture_instance.alpha_mode.value = 'luminance'
+    if m_file.autodetect_alpha:
+        as_texture_instance.alpha_mode.value = 'detect'
+    else:
+        if m_file.alpha_is_luminance:
+            as_texture_instance.alpha_mode.value = 'luminance'
+
+    if params['force_linear_texture_interpretation']:
+        as_texture.color_space.value = 'linear_rgb'
 
     if m_file.filtering_mode == 'Off':
         as_texture_instance.filtering_mode.value = 'nearest'
 
     return as_texture, as_texture_instance
+
 
 #--------------------------------------------------------------------------------------------------
 # traslate_maya_scene function.
@@ -1638,7 +1683,7 @@ def translate_maya_scene(params, maya_scene, maya_environment):
 
     # create dict for storing appleseed object models into
     # the key will be the file path to save the project too
-    as_object_models = dict()
+    as_object_models = []
 
     # initialize frame list with single default value
     frame_list = [int(cmds.currentTime(query=True))]
@@ -1774,7 +1819,7 @@ def translate_maya_scene(params, maya_scene, maya_environment):
                 as_project.scene.colors.append(zenith_horizon_exitance)
 
             elif environment_edf.model == 'latlong_map_environment_edf':
-                lat_long_map, lat_long_map_instance = m_file_to_as_texture(maya_environment.latitude_longitude_exitance, '_texture')                
+                lat_long_map, lat_long_map_instance = m_file_to_as_texture(params, maya_environment.latitude_longitude_exitance, '_texture')                
                 
                 as_project.scene.textures.append(lat_long_map)
                 as_project.scene.texture_instances.append(lat_long_map_instance)
@@ -1782,7 +1827,7 @@ def translate_maya_scene(params, maya_scene, maya_environment):
                 environment_edf.parameters.append(AsParameter('exitance', lat_long_map_instance.name))
 
             elif environment_edf.model == 'mirrorball_map_environment_edf':
-                mirror_ball_map, mirror_ball_map_instance = m_file_to_as_texture(maya_environment.mirrorball_exitance, '_texture')
+                mirror_ball_map, mirror_ball_map_instance = m_file_to_as_texture(params, maya_environment.mirrorball_exitance, '_texture')
                 
                 as_project.scene.textures.append(mirror_ball_map)
                 as_project.scene.texture_instances.append(mirror_ball_map_instance)
@@ -1815,7 +1860,7 @@ def translate_maya_scene(params, maya_scene, maya_environment):
         as_camera.shutter_close_time.value = params['shutter_close_time']
 
         # dof specific camera settings
-        if camera.dof or params['export_all_cameras_as_thinlens']:
+        if camera.dof or params['export_all_cameras_as_thin_lens']:
             as_camera.model = 'thinlens_camera'
             as_camera.focal_distance = AsParameter('focal_distance', camera.focal_distance_values[non_mb_sample_number])
             as_camera.f_stop = AsParameter('f_stop', camera.f_stop)
@@ -1850,8 +1895,24 @@ def translate_maya_scene(params, maya_scene, maya_environment):
         root_assembly_instance.transforms.append(AsTransform())
         as_project.scene.assembly_instances.append(root_assembly_instance)
 
+        # create default material
+        default_material = AsMaterial()
+        default_material.name = 'as_default_material'
+        default_material.alpha_map = AsParameter('alpha_map', '0')
+
+        default_surface_shader = AsSurfaceShader()
+        default_surface_shader.name = 'as_default_surface_shader'
+        default_surface_shader.model = 'constant_surface_shader'
+        default_surface_shader.parameters.append(AsParameter('color', '0'))
+        default_surface_shader.parameters.append(AsParameter('alpha_multiplier', '0'))
+
+        default_material.surface_shader = AsParameter('surface_shader', default_surface_shader.name)
+
+        root_assembly.surface_shaders.append(default_surface_shader)
+        root_assembly.materials.append(default_material)
+
         for transform in maya_scene:
-            construct_transform_descendents(root_assembly, root_assembly, [], transform, mb_sample_number_list, non_mb_sample_number, params['export_camera_blur'], params['export_transformation_blur'], params['export_deformation_blur'])
+            construct_transform_descendents(params, root_assembly, root_assembly, [], transform, mb_sample_number_list, non_mb_sample_number, params['export_camera_blur'], params['export_transformation_blur'], params['export_deformation_blur'])
 
         # end construction of as project hierarchy ************************************************
 
@@ -1859,7 +1920,7 @@ def translate_maya_scene(params, maya_scene, maya_environment):
         file_name = base_file_name.replace("#", str(frame_number).zfill(4))
         project_file_path = os.path.join(params['output_directory'], file_name)
 
-        as_object_models[project_file_path] = as_project
+        as_object_models.append((project_file_path, as_project))
 
     return as_object_models
 
@@ -1868,7 +1929,7 @@ def translate_maya_scene(params, maya_scene, maya_environment):
 # construct_transform_descendents function.
 #--------------------------------------------------------------------------------------------------
 
-def construct_transform_descendents(root_assembly, parent_assembly, matrix_stack, maya_transform, mb_sample_number_list, non_mb_sample_number, camera_blur, transformation_blur, object_blur):
+def construct_transform_descendents(params, root_assembly, parent_assembly, matrix_stack, maya_transform, mb_sample_number_list, non_mb_sample_number, camera_blur, transformation_blur, object_blur):
 
     """ this function recursivley builds an as object hierarchy from a Maya scene """
 
@@ -1896,21 +1957,28 @@ def construct_transform_descendents(root_assembly, parent_assembly, matrix_stack
                 sample_index += 1
 
         for transform in maya_transform.child_transforms:
-            construct_transform_descendents(root_assembly, current_assembly, current_matrix_stack, transform, mb_sample_number_list, non_mb_sample_number, camera_blur, transformation_blur, object_blur)
+            construct_transform_descendents(params, root_assembly, current_assembly, current_matrix_stack, transform, mb_sample_number_list, non_mb_sample_number, camera_blur, transformation_blur, object_blur)
 
         for light in maya_transform.child_lights:
-            light_color = AsColor()
-            light_color.name = light.name + '_color'
-            light_color.RGB_color = light.color[0]
-            light_color.multiplier.value = light.multiplier
-            current_assembly.colors.append(light_color)
 
             new_light = AsLight()
             new_light.name = light.safe_name
+
+            new_light.exitance_multiplier.value = light.multiplier
+
+            if light.color.__class__.__name__ == 'MFile':
+                light_color_file, light_color =  m_file_to_as_texture(params, light.color, '_light_color')
+                current_assembly.textures.append(light_color_file)
+                current_assembly.texture_instances.append(light_color)
+            else:
+                light_color = m_color_connection_to_as_color(light.color, '_light_color')
+                new_light.exitance_multiplier.value = new_light.exitance_multiplier.value * light_color.multiplier.value
+                current_assembly.colors.append(light_color)
+
             new_light.exitance = AsParameter('exitance', light_color.name)
             new_light.transform = AsTransform()
             if current_matrix_stack is not []:
-                new_light.transform.martices = current_matrix_stack
+                new_light.transform.matrices = current_matrix_stack
 
             if light.model == 'spotLight':
                 new_light.model = 'spot_light'
@@ -1930,7 +1998,11 @@ def construct_transform_descendents(root_assembly, parent_assembly, matrix_stack
             new_mesh.has_deformation = mesh.has_deformation
 
             if not object_blur or not new_mesh.has_deformation:
-                new_mesh.file_names = AsParameter('filename', mesh.mesh_file_names[0])
+                # If the mesh has no deformation there will only be one sample so always take the first sample.
+                if new_mesh.has_deformation:
+                    new_mesh.file_names = AsParameter('filename', mesh.mesh_file_names[non_mb_sample_number])
+                else:
+                    new_mesh.file_names = AsParameter('filename', mesh.mesh_file_names[0])
             else:
                 file_names = AsParameters('filename')
                 for i in mb_sample_number_list:
@@ -1946,14 +2018,19 @@ def construct_transform_descendents(root_assembly, parent_assembly, matrix_stack
 
             # translate materials and assign
             for maya_ms_material in mesh.ms_materials:
-                as_materials = convert_maya_ms_material_network(root_assembly, maya_ms_material)
+                as_materials = convert_maya_ms_material_network(params, root_assembly, maya_ms_material)
 
                 if as_materials is not None:
+                    
                     if as_materials[0] is not None:
                         mesh_instance.material_assignments.append(AsObjectInstanceMaterialAssignment(maya_ms_material.safe_name, 'front', as_materials[0].name))
+                    else:
+                        mesh_instance.material_assignments.append(AsObjectInstanceMaterialAssignment('0', 'front', 'as_default_material'))
+                    
                     if as_materials[1] is not None:
                         mesh_instance.material_assignments.append(AsObjectInstanceMaterialAssignment(maya_ms_material.safe_name, 'back', as_materials[1].name))
-
+                    else:
+                        mesh_instance.material_assignments.append(AsObjectInstanceMaterialAssignment('0', 'back', 'as_default_material'))
 
             for maya_generic_material in mesh.generic_materials:
                 as_material = convert_maya_generic_material(root_assembly, maya_generic_material)
@@ -1961,9 +2038,8 @@ def construct_transform_descendents(root_assembly, parent_assembly, matrix_stack
                 mesh_instance.material_assignments.append(AsObjectInstanceMaterialAssignment(maya_generic_material.safe_name, 'front', as_material.name))
                 mesh_instance.material_assignments.append(AsObjectInstanceMaterialAssignment(maya_generic_material.safe_name, 'back', as_material.name))
 
-
-
             current_assembly.object_instances.append(mesh_instance)
+
 
 #--------------------------------------------------------------------------------------------------
 # convert_maya_generic_material function.
@@ -1987,7 +2063,7 @@ def convert_maya_generic_material(root_assembly, generic_material):
     new_material.bsdf = AsParameter('bsdf', new_bsdf.name)
 
     if generic_material.diffuse.__class__.__name__ == 'MFile':
-        bsdf_texture, bsdf_texture_instance = m_file_to_as_texture(generic_material.diffuse, '_bsdf')
+        bsdf_texture, bsdf_texture_instance = m_file_to_as_texture(params, generic_material.diffuse, '_bsdf')
         new_bsdf.parameters.append(AsParameter('reflectance', bsdf_texture_instance.name))
         root_assembly.textures.append(bsdf_texture)
         root_assembly.texture_instances.append(bsdf_texture_instance)
@@ -2005,7 +2081,7 @@ def convert_maya_generic_material(root_assembly, generic_material):
         new_material.edf = AsParameter('edf', new_edf.name)
 
         if generic_material.incandescence.__class__.__name__ == 'MFile':
-            edf_texture, edf_texture_instance = m_file_to_as_texture(generic_material.incandescence, '_edf')
+            edf_texture, edf_texture_instance = m_file_to_as_texture(params, generic_material.incandescence, '_edf')
             new_edf.parameters.append(AsParameter('exitance', edf_texture_instance.name))
             root_assembly.textures.append(edf_texture)
             root_assembly.texture_instances.append(edf_texture_instance)
@@ -2022,7 +2098,7 @@ def convert_maya_generic_material(root_assembly, generic_material):
 
     if generic_material.alpha is not None:
         if generic_material.alpha.__class__.__name__ == 'MFile':
-            alpha_texture, alpha_texture_instance = m_file_to_as_texture(generic_material.alpha)
+            alpha_texture, alpha_texture_instance = m_file_to_as_texture(params, generic_material.alpha)
             new_surface_shader.parameters.append(AsParameter('exitance', alpha_texture_instance.name))
             root_assembly.textures.append(alpha_texture)
             root_assembly.texture_instances.append(alpha_texture_instance)
@@ -2038,7 +2114,7 @@ def convert_maya_generic_material(root_assembly, generic_material):
 # convert_maya_ms_material_network function.
 #--------------------------------------------------------------------------------------------------
 
-def convert_maya_ms_material_network(root_assembly, ms_material):
+def convert_maya_ms_material_network(params, root_assembly, ms_material):
 
     """ constructs a AsMaterial from an MMsMaterial """
 
@@ -2053,28 +2129,55 @@ def convert_maya_ms_material_network(root_assembly, ms_material):
 
     if materials[0] is None and materials[1] is None:
         if ms_material.alpha_map is not None:
-            alpha_texture, alpha_texture_instance = m_file_to_as_texture(ms_material.alpha_map)
+            alpha_texture, alpha_texture_instance = m_file_to_as_texture(params, ms_material.alpha_map)
             root_assembly.textures.append(alpha_texture)
             root_assembly.texture_instances.append(alpha_texture_instance)
+
+        normal_map_up = None
+        displacement_mode = None
+        bump_amplitude = None
+        # create displacement attributes
+        if ms_material.displacement_mode == 0:
+            displacement_mode = AsParameter('displacement_mode', 'bump')
+            bump_amplitude = AsParameter('bump_amplitude', str(ms_material.bump_amplitude))
+        else:
+            displacement_mode = AsParameter('displacement_mode', 'normal')
+            if ms_material.normal_map_up == '0':
+                normal_map_up = AsParameter('normal_map_up', 'y')
+            else:
+                normal_map_up = AsParameter('normal_map_up', 'z')
 
         # if the materials are not yet defined construct them
         if ms_material.enable_front:
             front_material = AsMaterial()
             front_material.name = ms_material.safe_name + '_front'
             if ms_material.bsdf_front is not None:
-                new_bsdf = build_as_shading_nodes(root_assembly, ms_material.bsdf_front)
+                new_bsdf = build_as_shading_nodes(params, root_assembly, ms_material.bsdf_front)
                 front_material.bsdf = AsParameter('bsdf', new_bsdf.name)
             if ms_material.edf_front is not None:
-                new_edf = build_as_shading_nodes(root_assembly, ms_material.edf_front)
+                new_edf = build_as_shading_nodes(params, root_assembly, ms_material.edf_front)
                 front_material.edf = AsParameter('edf', new_edf.name)
             if ms_material.surface_shader_front is not None:
-                new_surface_shader = build_as_shading_nodes(root_assembly, ms_material.surface_shader_front)
+                new_surface_shader = build_as_shading_nodes(params, root_assembly, ms_material.surface_shader_front)
                 front_material.surface_shader = AsParameter('surface_shader', new_surface_shader.name)
-            if ms_material.normal_map_front is not None:
-                new_texture, new_texture_instance = m_file_to_as_texture(ms_material.normal_map_front)
-                root_assembly.textures.append(new_texture)
-                root_assembly.texture_instances.append(new_texture_instance)
-                front_material.normal_map = AsParameter('normal_map', new_texture_instance.name)
+            if ms_material.displacement_map_front is not None:
+
+                texture, texture_instance = m_file_to_as_texture(params, ms_material.displacement_map_front)
+                existing_texture = get_from_list(root_assembly.textures, texture.name)
+                existing_texture_instance = get_from_list(root_assembly.texture_instances, texture_instance.name)
+
+                if existing_texture is None:
+                    root_assembly.textures.append(texture)
+                    root_assembly.texture_instances.append(texture_instance)
+                else:
+                    texture = existing_texture
+                    texture_instance = existing_texture_instance
+
+                front_material.displacement_map = AsParameter('displacement_map', texture_instance.name)
+
+                front_material.displacement_mode = displacement_mode
+                front_material.bump_amplitude = bump_amplitude
+                front_material.normal_map_up = normal_map_up
 
             if ms_material.alpha_map is not None:
                 front_material.alpha_map = AsParameter('alpha_map', alpha_texture_instance.name)
@@ -2086,19 +2189,33 @@ def convert_maya_ms_material_network(root_assembly, ms_material):
             back_material = AsMaterial()
             back_material.name = ms_material.safe_name + '_back'
             if ms_material.bsdf_back is not None:
-                new_bsdf = build_as_shading_nodes(root_assembly, ms_material.bsdf_back)
+                new_bsdf = build_as_shading_nodes(params, root_assembly, ms_material.bsdf_back)
                 back_material.bsdf = AsParameter('bsdf', new_bsdf.name)
             if ms_material.edf_back is not None:
-                new_edf = build_as_shading_nodes(root_assembly, ms_material.edf_back)
+                new_edf = build_as_shading_nodes(params, root_assembly, ms_material.edf_back)
                 back_material.edf = AsParameter('edf', new_edf.name)
             if ms_material.surface_shader_back is not None:
-                new_surface_shader = build_as_shading_nodes(root_assembly, ms_material.surface_shader_back)
+                new_surface_shader = build_as_shading_nodes(params, root_assembly, ms_material.surface_shader_back)
                 back_material.surface_shader = AsParameter('surface_shader', new_surface_shader.name)
-            if ms_material.normal_map_back is not None:
-                new_texture, new_texture_instance = m_file_to_as_texture(ms_material.normal_map_back)
-                root_assembly.textures.append(new_texture)
-                root_assembly.texture_instances.append(new_texture_instance)
-                back_material.normal_map = AsParameter('normal_map', new_texture_instance.name)
+            if ms_material.displacement_map_back is not None:
+
+                texture, texture_instance = m_file_to_as_texture(params, ms_material.displacement_map_back)
+                existing_texture = get_from_list(root_assembly.textures, texture.name)
+                existing_texture_instance = get_from_list(root_assembly.texture_instances, texture_instance.name)
+
+                if existing_texture is None:
+                    root_assembly.textures.append(texture)
+                    root_assembly.texture_instances.append(texture_instance)
+                else:
+                    texture = existing_texture
+                    texture_instance = existing_texture_instance
+
+                back_material.displacement_map = AsParameter('displacement_map', texture_instance.name)
+
+                back_material.displacement_mode = displacement_mode
+                back_material.bump_amplitude = bump_amplitude
+                back_material.normal_map_up = normal_map_up
+
 
             if ms_material.alpha_map is not None:
                 back_material.alpha_map = AsParameter('alpha_map', alpha_texture_instance.name)
@@ -2128,10 +2245,11 @@ def get_from_list(list, name):
 # build_as_shading_nodes function.
 #--------------------------------------------------------------------------------------------------
 
-def build_as_shading_nodes(root_assembly, current_maya_shading_node):
+def build_as_shading_nodes(params, root_assembly, current_maya_shading_node):
 
-    """ takes a Maya MMsShading node and returns a AsEdf, AsBsdf or AsSurfaceSahder """
+    """ takes a Maya MMsShading node and returns a AsEdf, AsBsdf or AsSurfaceShader"""
 
+    # the connection is an edf, bsdf or surface_shader
     current_shading_node = None
     if current_maya_shading_node.type == 'bsdf':
         current_shading_node = get_from_list(root_assembly.bsdfs, current_maya_shading_node.safe_name)
@@ -2162,10 +2280,16 @@ def build_as_shading_nodes(root_assembly, current_maya_shading_node):
 
     for attrib_key in current_maya_shading_node.attributes:
         if current_maya_shading_node.attributes[attrib_key].__class__.__name__ == 'MMsShadingNode':
-            new_shading_node = get_from_list(shading_nodes, current_maya_shading_node.attributes[attrib_key].safe_name)
+            new_shading_node = get_from_list(root_assembly.edfs, current_maya_shading_node.attributes[attrib_key].safe_name)
 
             if new_shading_node is None:
-                new_shading_node = build_as_shading_nodes(root_assembly, current_maya_shading_node.attributes[attrib_key])
+                new_shading_node = get_from_list(root_assembly.bsdfs, current_maya_shading_node.attributes[attrib_key].safe_name)
+
+            if new_shading_node is None:
+                new_shading_node = get_from_list(root_assembly.surface_shaders, current_maya_shading_node.attributes[attrib_key].safe_name)
+
+            if new_shading_node is None:
+                new_shading_node = build_as_shading_nodes(params, root_assembly, current_maya_shading_node.attributes[attrib_key])
 
             new_shading_node_parameter = AsParameter(attrib_key, new_shading_node.name)
             current_shading_node.parameters.append(new_shading_node_parameter)
@@ -2175,13 +2299,10 @@ def build_as_shading_nodes(root_assembly, current_maya_shading_node):
             new_texture_entity = get_from_list(root_assembly.textures, current_maya_shading_node.attributes[attrib_key].safe_name)
 
             if new_texture_entity is None:
-                new_texture_entity = AsTexture()
-                new_texture_entity.name = current_maya_shading_node.attributes[attrib_key].safe_name
-                new_texture_entity.file_name = AsParameter('filename', current_maya_shading_node.attributes[attrib_key].image_file_names[0])
-                root_assembly.textures.append(new_texture_entity)
+                new_texture_entity, new_texture_instance = m_file_to_as_texture(params, current_maya_shading_node.attributes[attrib_key])
 
-            new_texture_instance = new_texture_entity.instantiate()
-            root_assembly.texture_instances.append(new_texture_instance)
+                root_assembly.textures.append(new_texture_entity)
+                root_assembly.texture_instances.append(new_texture_instance)
 
             new_shading_node_parameter = AsParameter(attrib_key, new_texture_instance.name)
             current_shading_node.parameters.append(new_shading_node_parameter)
@@ -2194,6 +2315,8 @@ def build_as_shading_nodes(root_assembly, current_maya_shading_node):
                 new_color_entity.name = current_maya_shading_node.attributes[attrib_key].safe_name
                 new_color_entity.RGB_color = current_maya_shading_node.attributes[attrib_key].normalized_color
                 new_color_entity.multiplier.value = current_maya_shading_node.attributes[attrib_key].multiplier
+                if params['force_linear_color_interpretation']:
+                    new_color_entity.color_space.value = 'linear_rgb'
                 root_assembly.colors.append(new_color_entity)
 
             new_shading_node_parameter = AsParameter(attrib_key, new_color_entity.name)
@@ -2227,12 +2350,12 @@ def export_container(render_settings_node):
 
     ms_commands.info('Scene translated in %.2f seconds.' % (scene_translation_finish_time - scene_cache_finish_time))
 
-    for as_object_model_key in as_object_models:
-        ms_commands.info('Saving %s...' % as_object_model_key)
-        doc = WriteXml(as_object_model_key)
+    for as_object in as_object_models:
+        ms_commands.info('Saving %s...' % as_object[0])
+        doc = WriteXml(as_object[0])
         doc.append_line('<?xml version="1.0" encoding="UTF-8"?>')
         doc.append_line('<!-- File generated by Mayaseed version {0} -->'.format(ms_commands.MAYASEED_VERSION))
-        as_object_models[as_object_model_key].emit_xml(doc)
+        as_object[1].emit_xml(doc)
         doc.close()
 
     export_finish_time = time.time()

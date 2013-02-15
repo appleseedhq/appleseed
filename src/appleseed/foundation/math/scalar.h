@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2012 Francois Beaune, Jupiter Jazz Limited
+// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -512,7 +512,7 @@ inline V fit(
 {
     assert(min_x != max_x);
 
-    const V k = static_cast<V>((x - min_x) / (max_x - min_x));
+    const V k = static_cast<V>(x - min_x) / (max_x - min_x);
 
     return min_y * (V(1.0) - k) + max_y * k;
 }

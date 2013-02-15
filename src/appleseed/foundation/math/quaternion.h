@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2012 Francois Beaune, Jupiter Jazz Limited
+// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -240,7 +240,7 @@ inline void Quaternion<T>::extract_axis_angle(
     VectorType&         axis,
     ValueType&          angle) const
 {
-    assert(is_normalized(*this));
+    assert(is_normalized(*this, make_eps<T>(1.0e-4f, 1.0e-6)));
 
     angle = T(2.0) * std::acos(s);
 

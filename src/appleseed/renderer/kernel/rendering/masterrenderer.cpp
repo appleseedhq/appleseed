@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2012 Francois Beaune, Jupiter Jazz Limited
+// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -62,10 +62,21 @@
 #include "foundation/core/exceptions/stringexception.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/thread.h"
+#include "foundation/utility/searchpaths.h"
+
+// boost headers
+#include "boost/shared_ptr.hpp"
+#include "boost/bind.hpp"
 
 // Standard headers.
 #include <deque>
 #include <exception>
+
+#ifdef WITH_OSL
+    #include "OpenImageIO/texture.h"
+
+    #include "renderer/kernel/rendering/rendererservices.h"
+#endif
 
 using namespace foundation;
 using namespace std;
@@ -414,6 +425,57 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     assert(m_project.get_scene());
     assert(m_project.get_frame());
 
+    #ifdef WITH_OSL
+        // Create our renderer services.
+        RendererServices services;
+
+        // Create the error handler
+        // TODO: replace this by an appropiate error handler...
+        OIIO::ErrorHandler error_handler;
+
+        // Create the OIIO texture system.
+        boost::shared_ptr<OIIO::TextureSystem> texture_system( OIIO::TextureSystem::create(false),
+                                                               boost::bind( &OIIO::TextureSystem::destroy, _1));
+
+
+        // Set texture system mem limit.
+        {
+            size_t max_size = m_params.get_optional<size_t>("texture_cache_size", 256 * 1024 * 1024);
+            texture_system->attribute("max_memory_MB", static_cast<float>(max_size / 1024));
+        }
+
+        std::string osl_search_path;
+        for(size_t i = 0, e = m_project.get_search_paths().size(); i < e; ++i)
+        {
+            osl_search_path.append( m_project.get_search_paths()[i]);
+
+            // do not append a colon after the last path.
+            if (i != e - 1)
+                osl_search_path.append(";");
+        }
+
+        // setup search paths.
+        texture_system->attribute("searchpath", osl_search_path);
+
+        // TODO: set other texture system options here...
+
+        // Create our OSL shading system.
+        boost::shared_ptr<OSL::ShadingSystem> shading_system( OSL::ShadingSystem::create(&services,
+                                                                                         texture_system.get(),
+                                                                                         &error_handler),
+                                                              boost::bind( &OSL::ShadingSystem::destroy, _1));
+
+        shading_system->attribute("searchpath:shader", osl_search_path);
+        shading_system->attribute("lockgeom", 1);
+        shading_system->attribute("colorspace", "Linear");
+        shading_system->attribute("commonspace", "world");
+        // TODO: set more shading system options here...
+        // string[] raytypes      Array of ray type names
+        // ...
+
+        register_closures(*shading_system);
+    #endif
+
     // We start by binding entities inputs. This must be done before creating/updating the trace context.
     if (!bind_scene_entities_inputs())
         return IRendererController::AbortRendering;
@@ -701,5 +763,12 @@ bool MasterRenderer::bind_scene_entities_inputs() const
     input_binder.bind(*m_project.get_scene());
     return input_binder.get_error_count() == 0;
 }
+
+#ifdef WITH_OSL
+    void MasterRenderer::register_closures(OSL::ShadingSystem& shading_sys) const
+    {
+       // OSL TODO: implement this...
+    }
+#endif
 
 }   // namespace renderer

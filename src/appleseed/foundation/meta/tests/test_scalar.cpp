@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2012 Francois Beaune, Jupiter Jazz Limited
+// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -315,43 +315,6 @@ TEST_SUITE(Foundation_Math_Scalar)
         EXPECT_EQ(1.0, smoothstep(10.0, 20.0, 30.0));
     }
 
-    TEST_CASE(TestFeqScalarScalarReturnsTrue)
-    {
-        EXPECT_TRUE(feq(  0.0,   0.0));
-        EXPECT_TRUE(feq( 42.0,  42.0));
-        EXPECT_TRUE(feq(-42.0, -42.0));
-    }
-
-    TEST_CASE(TestFeqScalarScalarReturnsFalse)
-    {
-        EXPECT_FALSE(feq(  0.0,  42.0));
-        EXPECT_FALSE(feq( 42.0,   0.0));
-        EXPECT_FALSE(feq( 42.0, -42.0));
-        EXPECT_FALSE(feq(-42.0,  42.0));
-    }
-
-    TEST_CASE(TestFeqScalarScalarOverflows)
-    {
-        EXPECT_FALSE(feq(0.5 * numeric_limits<double>::max(), 0.1));
-    }
-
-    TEST_CASE(TestFeqScalarScalarUnderflows)
-    {
-        EXPECT_FALSE(feq(2.0 * numeric_limits<double>::min(), 10.0));
-    }
-
-    TEST_CASE(TestFzScalarReturnsTrue)
-    {
-        EXPECT_TRUE(fz(+0.0));
-        EXPECT_TRUE(fz(-0.0));
-    }
-
-    TEST_CASE(TestFzScalarReturnsFalse)
-    {
-        EXPECT_FALSE(fz( 42.0));
-        EXPECT_FALSE(fz(-42.0));
-    }
-
     TEST_CASE(Mix_GivenBlendParameterLessThan0_ReturnsFirstValue)
     {
         const double result = mix(1.0, 5.0, -1.0);
@@ -422,5 +385,48 @@ TEST_SUITE(Foundation_Math_Scalar)
     {
         const double result = lerp(1.0, 5.0, 0.5f);
         EXPECT_FEQ(3.0, result);
+    }
+
+    TEST_CASE(Fit_GivenIntegerInputRangeAndFloatingPointOutputRange)
+    {
+        const double result = fit<size_t, double>(4, 0, 19, 0.0, 1.0);
+        EXPECT_FEQ(4.0 / 19.0, result);
+    }
+
+    TEST_CASE(TestFeqScalarScalarReturnsTrue)
+    {
+        EXPECT_TRUE(feq(  0.0,   0.0));
+        EXPECT_TRUE(feq( 42.0,  42.0));
+        EXPECT_TRUE(feq(-42.0, -42.0));
+    }
+
+    TEST_CASE(TestFeqScalarScalarReturnsFalse)
+    {
+        EXPECT_FALSE(feq(  0.0,  42.0));
+        EXPECT_FALSE(feq( 42.0,   0.0));
+        EXPECT_FALSE(feq( 42.0, -42.0));
+        EXPECT_FALSE(feq(-42.0,  42.0));
+    }
+
+    TEST_CASE(TestFeqScalarScalarOverflows)
+    {
+        EXPECT_FALSE(feq(0.5 * numeric_limits<double>::max(), 0.1));
+    }
+
+    TEST_CASE(TestFeqScalarScalarUnderflows)
+    {
+        EXPECT_FALSE(feq(2.0 * numeric_limits<double>::min(), 10.0));
+    }
+
+    TEST_CASE(TestFzScalarReturnsTrue)
+    {
+        EXPECT_TRUE(fz(+0.0));
+        EXPECT_TRUE(fz(-0.0));
+    }
+
+    TEST_CASE(TestFzScalarReturnsFalse)
+    {
+        EXPECT_FALSE(fz( 42.0));
+        EXPECT_FALSE(fz(-42.0));
     }
 }
