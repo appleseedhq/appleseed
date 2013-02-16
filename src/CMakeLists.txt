@@ -483,6 +483,11 @@ install ( DIRECTORY
   DESTINATION
   extras/devkit
 )
+install ( DIRECTORY
+  ${CMAKE_SOURCE_DIR}/../sandbox/extras/devkit/sample
+  DESTINATION
+  extras/devkit
+)
 
 #---------------------------
 # CPack : software packaging
