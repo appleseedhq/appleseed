@@ -483,6 +483,16 @@ install (
         ${CMAKE_BINARY_DIR}/extras/devkit/include
     DESTINATION extras/devkit
 )
+install ( DIRECTORY
+  ${CMAKE_SOURCE_DIR}/../sandbox/extras/devkit/cmake
+  DESTINATION
+  extras/devkit
+)
+install ( DIRECTORY
+  ${CMAKE_SOURCE_DIR}/../sandbox/extras/devkit/sample
+  DESTINATION
+  extras/devkit
+)
 
 
 #--------------------------------------------------------------------------------------------------
