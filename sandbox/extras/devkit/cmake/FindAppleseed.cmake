@@ -1,6 +1,6 @@
 #-*-cmake-*-
 #
-# This auxiliary CMake file helps in find the MtoA headers and libraries
+# This auxiliary CMake file helps in find the appleseed's headers and libraries
 #
 # APPLESEED_FOUND            set if Appleseed is found.
 # APPLESEED_INCLUDE_DIR      Appleseed's include directory
