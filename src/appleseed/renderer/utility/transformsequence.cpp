@@ -275,6 +275,146 @@ void TransformSequence::interpolate(
     m_interpolators[begin].evaluate(t, result);
 }
 
+namespace
+{
+    struct FParams
+    {
+        const double m_kx;
+        const double m_ky;
+        const double m_lx;
+        const double m_ly;
+        const double m_x;
+        const double m_y;
+
+        FParams(const double kx, const double ky, const double lx, const double ly, const double x, const double y)
+          : m_kx(kx)
+          , m_ky(ky)
+          , m_lx(lx)
+          , m_ly(ly)
+          , m_x(x)
+          , m_y(y)
+        {
+        }
+    };
+
+    struct Fx : public FParams
+    {
+        Fx(const double kx, const double ky, const double lx, const double ly, const double x, const double y)
+          : FParams(kx, ky, lx, ly, x, y) {}
+
+        Fx(const FParams& rhs)
+          : FParams(rhs.m_kx, rhs.m_ky, rhs.m_lx, rhs.m_ly, rhs.m_x, rhs.m_y) {}
+
+        double operator()(const double theta) const
+        {
+            const double cos_theta = cos(theta);
+            const double sin_theta = sin(theta);
+            return (m_kx * theta + m_lx) * cos_theta * m_x - (m_ky * theta + m_ly) * sin_theta * m_y;
+        }
+    };
+
+    struct Fy : public FParams
+    {
+        Fy(const double kx, const double ky, const double lx, const double ly, const double x, const double y)
+          : FParams(kx, ky, lx, ly, x, y) {}
+
+        Fy(const FParams& rhs)
+          : FParams(rhs.m_kx, rhs.m_ky, rhs.m_lx, rhs.m_ly, rhs.m_x, rhs.m_y) {}
+
+        double operator()(const double theta) const
+        {
+            const double cos_theta = cos(theta);
+            const double sin_theta = sin(theta);
+            return (m_kx * theta + m_lx) * sin_theta * m_x + (m_ky * theta + m_ly) * cos_theta * m_y;
+        }
+    };
+
+    struct DFx : public FParams
+    {
+        DFx(const double kx, const double ky, const double lx, const double ly, const double x, const double y)
+          : FParams(kx, ky, lx, ly, x, y) {}
+
+        DFx(const FParams& rhs)
+          : FParams(rhs.m_kx, rhs.m_ky, rhs.m_lx, rhs.m_ly, rhs.m_x, rhs.m_y) {}
+
+        double operator()(const double theta) const
+        {
+            const double cos_theta = cos(theta);
+            const double sin_theta = sin(theta);
+            return m_kx * cos_theta * m_x - (m_kx * theta + m_lx) * sin_theta * m_x - m_ky * sin_theta * m_y - (m_ky * theta + m_ly) * cos_theta * m_y;
+        }
+    };
+
+    struct DFy : public FParams
+    {
+        DFy(const double kx, const double ky, const double lx, const double ly, const double x, const double y)
+          : FParams(kx, ky, lx, ly, x, y) {}
+
+        DFy(const FParams& rhs)
+          : FParams(rhs.m_kx, rhs.m_ky, rhs.m_lx, rhs.m_ly, rhs.m_x, rhs.m_y) {}
+
+        double operator()(const double theta) const
+        {
+            const double cos_theta = cos(theta);
+            const double sin_theta = sin(theta);
+            return m_kx * sin_theta * m_x + (m_kx * theta + m_lx) * cos_theta * m_x + m_ky * cos_theta * m_y - (m_ky * theta + m_ly) * sin_theta * m_y;
+        }
+    };
+
+    template <typename T, typename F>
+    bool find_root(const F& f, T a, T b, const T eps, T& root)
+    {
+        T fa = f(a);
+        T fb = f(b);
+
+        if (fa * fb > T(0.0))
+            return false;
+
+        while (abs(b - a) > eps)
+        {
+            const T m = (a + b) / T(2.0);
+            const T fm = f(m);
+
+            if (fa * fm <= T(0.0))
+            {
+                b = m;
+                fb = fm;
+            }
+            else
+            {
+                assert(fm * fb <= T(0.0));
+                a = m;
+                fa = fm;
+            }
+        }
+
+        root = (a + b) / 2.0;
+        return true;
+    }
+
+    template <typename T, typename F>
+    void find_all_roots(const F& f, const T a, const T b, const T min_length, const T eps, size_t& root_count, T roots[])
+    {
+        T root;
+
+        if (abs(b - a) > min_length)
+        {
+            const T m = (a + b) / T(2.0);
+
+            if (find_root(f, a, m, eps, root))
+                roots[root_count++] = root;
+
+            if (find_root(f, m, b, eps, root))
+                roots[root_count++] = root;
+        }
+        else
+        {
+            if (find_root(f, a, b, eps, root))
+                roots[root_count++] = root;
+        }
+    }
+}
+
 AABB3d TransformSequence::compute_motion_segment_bbox(
     const AABB3d&       bbox,
     const Transformd&   from,
@@ -286,12 +426,16 @@ AABB3d TransformSequence::compute_motion_segment_bbox(
     //   http://gruenschloss.org/motion-blur/motion-blur.pdf page 11.
     //
 
-    AABB3d result = from.to_parent(bbox);
-
-    // Compute the relative rotation between 'from' and 'to'.
+    // Setup an interpolator between 'from' and 'to'.
     TransformInterpolatord interpolator;
     if (!interpolator.set_transforms(from, to))
-        return result;
+        return from.to_parent(bbox);
+
+    // Compute the scalings at 'from' and 'to'.
+    const Vector3d s0 = interpolator.get_s0();
+    const Vector3d s1 = interpolator.get_s1();
+
+    // Compute the relative rotation between 'from' and 'to'.
     const Quaterniond q =
         interpolator.get_q1() * conjugate(interpolator.get_q0());
 
@@ -299,8 +443,8 @@ AABB3d TransformSequence::compute_motion_segment_bbox(
     Vector3d axis;
     double angle;
     q.extract_axis_angle(axis, angle);
-    if (angle == 0.0)
-        return result;
+    if (axis.z < 0.0)
+        angle = -angle;
 
     // Compute the rotation required to align the rotation axis with the Z axis.
     const Vector3d Z(0.0, 0.0, 1.0);
@@ -312,54 +456,53 @@ AABB3d TransformSequence::compute_motion_segment_bbox(
             : Matrix4d::rotation(
                   perp / perp_norm,
                   asin(clamp(perp_norm, -1.0, 1.0))));
-    if (axis == -Z)
-        angle = -angle;
+
+    // Start with the bounding box at 'from'.
+    const AABB3d from_bbox = from.to_parent(bbox);
+    AABB3d motion_bbox = from_bbox;
 
     // Consider each corner point of the bounding box.
     for (size_t c = 0; c < 8; ++c)
     {
         // Compute the position of this corner at 'from'.
-        const Vector3d p0 = axis_to_z.point_to_local(bbox.compute_corner(c));
+        const Vector3d corner = axis_to_z.point_to_local(from_bbox.compute_corner(c));
 
-        // Compute the four rotations that place the corner at an extremum in X or Y.
-        const double theta_maxx = atan2(-p0.y, p0.x);
-        const double theta_maxy = atan2(p0.x, p0.y);
-        const double thetas[4] =
+        // Build the functions x(theta), y(theta), x'(theta) and y'(theta).
+        const FParams params(
+            (s1.x / s0.x - 1.0) / angle,    // kx
+            (s1.y / s0.y - 1.0) / angle,    // ky
+            1.0,                            // lx
+            1.0,                            // ly
+            corner.x,                       // x
+            corner.y);                      // y
+        const Fx fx(params);
+        const Fy fy(params);
+        const DFx dfx(params);
+        const DFy dfy(params);
+
+        const double MinLength = Pi / 8.0;
+        const double Eps = 1.0e-6;
+
+        // Find all the rotation angles at which this corner is an extremum.
+        size_t root_count = 0;
+        double roots[16];
+        find_all_roots(dfx, 0.0, angle, MinLength, Eps, root_count, roots);
+        find_all_roots(dfy, 0.0, angle, MinLength, Eps, root_count, roots);
+
+        // Compute the position of this corner at each angle and insert it into the motion bounding box.
+        for (size_t i = 0; i < root_count; ++i)
         {
-            mod(theta_maxy, TwoPi),
-            mod(theta_maxx + Pi, TwoPi),
-            mod(theta_maxy + Pi, TwoPi),
-            mod(theta_maxx, TwoPi)
-        };
-
-        // Compute the quadrant the corner belongs to at 'from'.
-        const int qinit = p0.y > 0 ? (p0.x > 0 ? 0 : 1) : (p0.x < 0 ? 2 : 3);
-
-        for (int i = 0; i < 4; ++i)
-        {
-            // Compute the orientation of the next extremum.
-            const int theta_index = angle > 0.0 ? qinit + i : qinit - i - 1;
-            const double theta = thetas[mod(theta_index, 4)];
-
-            // Don't consider extrema past the full rotation.
-            if ((angle > 0.0 && theta > angle) ||
-                (angle < 0.0 && theta - TwoPi < angle))
-                break;
-
-            // Compute the position of this extrema.
-            const double cos_theta = cos(theta);
-            const double sin_theta = sin(theta);
-            const Vector3d extremum(
-                p0.x * cos_theta - p0.y * sin_theta,
-                p0.x * sin_theta + p0.y * cos_theta,
-                p0.z);
-
-            // Include the extrema in the final bounding box.
-            result.insert(axis_to_z.point_to_parent(extremum));
+            const double root = roots[i];
+            const double sz = (s1.z / s0.z - 1.0) * (root / angle) + 1.0;
+            const double fz = sz * corner.z;
+            const Vector3d extremum(fx(root), fy(root), fz);
+            motion_bbox.insert(axis_to_z.point_to_parent(extremum));
         }
     }
 
-    return result;
+    motion_bbox.robust_grow(1.0e-4);
+
+    return motion_bbox;
 }
 
 }   // namespace renderer
