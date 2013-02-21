@@ -1,6 +1,6 @@
 @echo off
 
-set build=..\..\..\build\win-vs100
+set build=..\..\..\build\win-vs110
 
 REM Cleanup.
 
