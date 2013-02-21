@@ -536,6 +536,23 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
             bbox);
     }
 
+    TEST_CASE(ToParent_GivenAABB_VisualizeLargePositiveRotationWithVaryingScalingAndTranslation)
+    {
+        TransformSequence sequence;
+        sequence.set_transform(0.0, Transformd(Matrix4d::rotation(Vector3d(0.0, 0.0, 1.0), 0.0) * Matrix4d::scaling(Vector3d(0.1))));
+        sequence.set_transform(1.0, Transformd(Matrix4d::translation(Vector3d(20.0, 0.0, 0.0)) *
+                                               Matrix4d::rotation(Vector3d(0.0, 0.0, 1.0), Pi - Pi / 8) *
+                                               Matrix4d::scaling(Vector3d(0.2))));
+        sequence.prepare();
+
+        const AABB3d bbox(Vector3d(-20.0, -20.0, -5.0), Vector3d(-10.0, -10.0, 5.0));
+
+        visualize(
+            "unit tests/outputs/test_transformsequence_toparent_givenaabb_largepositiverotationwithvaryingscalingandtranslation.py",
+            sequence,
+            bbox);
+    }
+
     TEST_CASE(ToParent_GivenAABB_VisualizeLargeNegativeRotationWithUnitScaling)
     {
         TransformSequence sequence;

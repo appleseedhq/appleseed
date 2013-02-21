@@ -32,6 +32,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/matrix.h"
 #include "foundation/math/quaternion.h"
+#include "foundation/math/root.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 
@@ -40,7 +41,6 @@
 #include <cassert>
 #include <cmath>
 #include <cstring>
-#include <functional>
 #include <vector>
 
 using namespace foundation;
@@ -278,14 +278,14 @@ void TransformSequence::interpolate(
 
 namespace
 {
-    struct LinearScaling
+    struct LinearFunction
     {
         const double    m_s0;
         const double    m_s1;
         const double    m_rcp_max_theta;
         const double    m_d;
 
-        LinearScaling(const double s0, const double s1, const double max_theta)
+        LinearFunction(const double s0, const double s1, const double max_theta)
           : m_s0(s0)
           , m_s1(s1)
           , m_rcp_max_theta(1.0 / max_theta)
@@ -304,13 +304,13 @@ namespace
         }
     };
 
-    struct PositionX
+    struct TrajectoryX
     {
-        const LinearScaling&    m_sx;
-        const LinearScaling&    m_sy;
+        const LinearFunction&   m_sx;
+        const LinearFunction&   m_sy;
         const Vector2d&         m_p;
 
-        PositionX(const LinearScaling& sx, const LinearScaling& sy, const Vector2d& p)
+        TrajectoryX(const LinearFunction& sx, const LinearFunction& sy, const Vector2d& p)
           : m_sx(sx)
           , m_sy(sy)
           , m_p(p)
@@ -329,13 +329,13 @@ namespace
         }
     };
 
-    struct PositionY
+    struct TrajectoryY
     {
-        const LinearScaling&    m_sx;
-        const LinearScaling&    m_sy;
+        const LinearFunction&   m_sx;
+        const LinearFunction&   m_sy;
         const Vector2d&         m_p;
 
-        PositionY(const LinearScaling& sx, const LinearScaling& sy, const Vector2d& p)
+        TrajectoryY(const LinearFunction& sx, const LinearFunction& sy, const Vector2d& p)
           : m_sx(sx)
           , m_sy(sy)
           , m_p(p)
@@ -353,60 +353,6 @@ namespace
                    (m_sx.d(theta) * m_p.x - m_sy.f(theta) * m_p.y) * sin(theta);
         }
     };
-
-    template <typename T, typename F>
-    bool find_root_bisection(const F& f, T a, T b, const T eps, T& root)
-    {
-        T fa = f(a);
-        T fb = f(b);
-
-        if (fa * fb > T(0.0))
-            return false;
-
-        while (abs(b - a) > eps)
-        {
-            const T m = (a + b) / T(2.0);
-            const T fm = f(m);
-
-            if (fa * fm <= T(0.0))
-            {
-                b = m;
-                fb = fm;
-            }
-            else
-            {
-                assert(fm * fb <= T(0.0));
-                a = m;
-                fa = fm;
-            }
-        }
-
-        root = (a + b) / T(2.0);
-        return true;
-    }
-
-    template <typename T, typename F>
-    void find_all_roots_bisection(
-        const F&                        f,
-        const T                         a,
-        const T                         b,
-        const T                         max_length,
-        const T                         eps,
-        const function<void(double)>&   root_handler)
-    {
-        if (abs(b - a) > max_length)
-        {
-            const T m = (a + b) / T(2.0);
-            find_all_roots_bisection(f, a, m, max_length, eps, root_handler);
-            find_all_roots_bisection(f, m, b, max_length, eps, root_handler);
-        }
-        else
-        {
-            T root;
-            if (find_root_bisection(f, a, b, eps, root))
-                root_handler(root);
-        }
-    }
 
     template <typename Class>
     struct Bind
@@ -480,9 +426,9 @@ AABB3d TransformSequence::compute_motion_segment_bbox(
                   asin(clamp(perp_norm, -1.0, 1.0))));
 
     // Build the linear scaling functions Sx(theta), Sy(theta) and Sz(theta).
-    const LinearScaling sx(1.0, s1.x / s0.x, angle);
-    const LinearScaling sy(1.0, s1.y / s0.y, angle);
-    const LinearScaling sz(1.0, s1.z / s0.z, angle);
+    const LinearFunction sx(1.0, s1.x / s0.x, angle);
+    const LinearFunction sy(1.0, s1.y / s0.y, angle);
+    const LinearFunction sz(1.0, s1.z / s0.z, angle);
 
     // Start with the bounding box at 'from'.
     const AABB3d from_bbox = from.to_parent(bbox);
@@ -496,18 +442,18 @@ AABB3d TransformSequence::compute_motion_segment_bbox(
         const Vector2d corner2d(corner.x, corner.y);
 
         // Build the trajectory functions x(theta) and y(theta).
-        const PositionX fx(sx, sy, corner2d);
-        const PositionY fy(sx, sy, corner2d);
+        const TrajectoryX tx(sx, sy, corner2d);
+        const TrajectoryY ty(sx, sy, corner2d);
 
         // Find all the rotation angles at which this corner is an extremum and update the motion bounding box.
-        auto root_handler = [fx, fy, sz, corner, axis_to_z, &motion_bbox](const double theta) mutable
+        auto root_handler = [tx, ty, sz, corner, axis_to_z, &motion_bbox](const double theta) mutable
         {
             const double fz = sz.f(theta) * corner.z;
-            const Vector3d extremum(fx.f(theta), fy.f(theta), fz);
+            const Vector3d extremum(tx.f(theta), ty.f(theta), fz);
             motion_bbox.insert(axis_to_z.point_to_parent(extremum));
         };
-        find_all_roots_bisection(Bind<PositionX>(fx, &PositionX::d), 0.0, angle, MinLength, RootEps, root_handler);
-        find_all_roots_bisection(Bind<PositionY>(fy, &PositionY::d), 0.0, angle, MinLength, RootEps, root_handler);
+        find_multiple_roots_bisection(Bind<TrajectoryX>(tx, &TrajectoryX::d), 0.0, angle, MinLength, RootEps, root_handler);
+        find_multiple_roots_bisection(Bind<TrajectoryY>(ty, &TrajectoryY::d), 0.0, angle, MinLength, RootEps, root_handler);
     }
 
     motion_bbox.robust_grow(GrowEps);
