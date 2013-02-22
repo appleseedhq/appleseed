@@ -405,7 +405,7 @@ AABB3d TransformSequence::compute_motion_segment_bbox(
     //
 
     // Parameters.
-    const double MinLength = Pi / 4.0;
+    const double MinLength = Pi / 2.0;
     const double RootEps = 1.0e-6;
     const double GrowEps = 1.0e-4;
 
@@ -446,10 +446,11 @@ AABB3d TransformSequence::compute_motion_segment_bbox(
         axis_to_z = Transformd::identity();
     else
     {
-        const Vector3d u = perp / perp_norm;
-        const double a = asin(clamp(perp_norm, -1.0, 1.0));
-        axis_to_z.set_local_to_parent(Matrix4d::rotation(u, +a));
-        axis_to_z.set_parent_to_local(Matrix4d::rotation(u, -a));
+        const Vector3d v = perp / perp_norm;
+        const double sin_a = clamp(perp_norm, -1.0, 1.0);
+        const double cos_a = sqrt(1.0 - sin_a * sin_a);
+        axis_to_z.set_local_to_parent(Matrix4d::rotation(v, cos_a, +sin_a));
+        axis_to_z.set_parent_to_local(Matrix4d::rotation(v, cos_a, -sin_a));
     }
 
     // Build the linear scaling functions Sx(theta), Sy(theta) and Sz(theta).
@@ -457,8 +458,11 @@ AABB3d TransformSequence::compute_motion_segment_bbox(
     const LinearFunction sy(1.0, s1.y / s0.y, angle);
     const LinearFunction sz(1.0, s1.z / s0.z, angle);
 
-    // Consider each corner point of the bounding box.
-    for (size_t c = 0; c < 8; ++c)
+    // Consider each corner of the bounding box. Notice an important trick here:
+    // we take advantage of the way AABB::compute_corner() works to only iterate
+    // over the four corners at Z=min instead of over all eight corners since we
+    // anyway transform the rotation to be aligned with the Z axis.
+    for (size_t c = 0; c < 4; ++c)
     {
         // Compute the position of this corner at 'from'.
         const Vector3d corner = axis_to_z.point_to_local(from_bbox.compute_corner(c));
@@ -471,8 +475,7 @@ AABB3d TransformSequence::compute_motion_segment_bbox(
         // Find all the rotation angles at which this corner is an extremum and update the motion bounding box.
         auto root_handler = [&](const double theta)
         {
-            const double fz = sz.f(theta) * corner.z;
-            const Vector3d extremum(tx.f(theta), ty.f(theta), fz);
+            const Vector3d extremum(tx.f(theta), ty.f(theta), sz.f(theta) * corner.z);
             motion_bbox.insert(axis_to_z.point_to_parent(extremum));
         };
         find_multiple_roots_newton(
