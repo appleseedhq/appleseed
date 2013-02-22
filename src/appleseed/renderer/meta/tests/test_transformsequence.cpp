@@ -468,8 +468,8 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
         const TransformSequence&    sequence,
         const AABB3d&               bbox)
     {
-        const double Width = 0.005;
-        const size_t Steps = 20;
+        const double Width = 0.01;
+        const size_t Steps = 10;
 
         const AABB3d motion_bbox = sequence.to_parent(bbox);
 
@@ -481,7 +481,7 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
         {
             const double t = fit<size_t, double>(i, 0, Steps - 1, 0.0, 1.0);
             const Transformd transform = sequence.evaluate(t);
-            const char* color = i == 0 ? "yellow" : i == Steps - 1 ? "blue" : "white";
+            const char* color = i == 0 ? "yellow" : i == Steps - 1 ? "white" : "blue";
 
             file.draw_aabb(transform.to_parent(bbox), color, Width);
             file.draw_arrow(Vector3d(0.0), transform.point_to_parent(bbox.center()), color, Width);
