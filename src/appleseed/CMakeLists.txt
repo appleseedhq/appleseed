@@ -1046,6 +1046,7 @@ set (renderer_meta_benchmarks_sources
     renderer/meta/benchmarks/benchmark_ewa.cpp
     renderer/meta/benchmarks/benchmark_frame.cpp
     renderer/meta/benchmarks/benchmark_mipmap.cpp
+    renderer/meta/benchmarks/benchmark_transformsequence.cpp
 )
 list (APPEND appleseed_sources
     ${renderer_meta_benchmarks_sources}
