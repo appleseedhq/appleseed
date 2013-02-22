@@ -441,12 +441,16 @@ AABB3d TransformSequence::compute_motion_segment_bbox(
     const Vector3d Z(0.0, 0.0, 1.0);
     const Vector3d perp = cross(Z, axis);
     const double perp_norm = norm(perp);
-    const Transformd axis_to_z(
-        perp_norm == 0.0
-            ? Matrix4d::identity()
-            : Matrix4d::rotation(
-                  perp / perp_norm,
-                  asin(clamp(perp_norm, -1.0, 1.0))));
+    Transformd axis_to_z;
+    if (perp_norm == 0.0)
+        axis_to_z = Transformd::identity();
+    else
+    {
+        const Vector3d u = perp / perp_norm;
+        const double a = asin(clamp(perp_norm, -1.0, 1.0));
+        axis_to_z.set_local_to_parent(Matrix4d::rotation(u, +a));
+        axis_to_z.set_parent_to_local(Matrix4d::rotation(u, -a));
+    }
 
     // Build the linear scaling functions Sx(theta), Sy(theta) and Sz(theta).
     const LinearFunction sx(1.0, s1.x / s0.x, angle);

@@ -45,8 +45,8 @@ BENCHMARK_SUITE(Foundation_Math_Transform_TransformInterpolator)
         Transformd              m_result;
 
         Fixture()
-          : m_from(Matrix4d::rotation(Vector3d(1.0, 0.0, 0.0), 0.0))
-          , m_to(Matrix4d::rotation(Vector3d(1.0, 0.0, 0.0), HalfPi))
+          : m_from(Transformd::from_local_to_parent(Matrix4d::rotation(Vector3d(1.0, 0.0, 0.0), 0.0)))
+          , m_to(Transformd::from_local_to_parent(Matrix4d::rotation(Vector3d(1.0, 0.0, 0.0), HalfPi)))
           , m_interpolator(m_from, m_to)
         {
         }

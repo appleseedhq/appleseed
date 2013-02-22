@@ -51,8 +51,16 @@ BENCHMARK_SUITE(Renderer_Utility_TransformSequence)
         Fixture()
           : m_bbox(Vector3d(-20.0, -20.0, -5.0), Vector3d(-10.0, -10.0, 5.0))
         {
-            m_sequence.set_transform(0.0, Transformd(Matrix4d::rotation(Vector3d(0.0, 0.0, 1.0), 0.0) * Matrix4d::scaling(Vector3d(0.1))));
-            m_sequence.set_transform(1.0, Transformd(Matrix4d::rotation(Vector3d(0.0, 0.0, 1.0), Pi - Pi / 8) * Matrix4d::scaling(Vector3d(0.2))));
+            m_sequence.set_transform(
+                0.0,
+                Transformd::from_local_to_parent(
+                    Matrix4d::rotation(Vector3d(0.0, 0.0, 1.0), 0.0) *
+                    Matrix4d::scaling(Vector3d(0.1))));
+            m_sequence.set_transform(
+                1.0,
+                Transformd::from_local_to_parent(
+                    Matrix4d::rotation(Vector3d(0.0, 0.0, 1.0), Pi - Pi / 8) *
+                    Matrix4d::scaling(Vector3d(0.2))));
             m_sequence.prepare();
         }
     };

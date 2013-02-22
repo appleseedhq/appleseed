@@ -478,14 +478,18 @@ namespace
             // Compute the transform of the camera at the last frame.
             const double angle = -1.0 / frame_count * TwoPi;
             const Vector3d position(distance * cos(angle), elevation, distance * sin(angle));
-            Transformd previous_transform(Matrix4d::lookat(position, center, Up));
+            Transformd previous_transform(
+                Transformd::from_local_to_parent(
+                    Matrix4d::lookat(position, center, Up)));
 
             for (int i = 0; i < frame_count; ++i)
             {
                 // Compute the transform of the camera at this frame.
                 const double angle = static_cast<double>(i) / frame_count * TwoPi;
                 const Vector3d position(distance * cos(angle), elevation, distance * sin(angle));
-                const Transformd new_transform(Matrix4d::lookat(position, center, Up));
+                const Transformd new_transform(
+                    Transformd::from_local_to_parent(
+                        Matrix4d::lookat(position, center, Up)));
 
                 // Set the camera's transform sequence.
                 Camera* camera = project->get_scene()->get_camera();

@@ -109,7 +109,10 @@ namespace
             m_cos_outer_half_angle = cos(outer_half_angle);
             m_rcp_screen_half_size = 1.0 / tan(outer_half_angle);
 
-            m_transform = Transformd(Matrix4d::rotation(Vector3d(1.0, 0.0, 0.0), -HalfPi)) * get_transform();
+            m_transform =
+                Transformd::from_local_to_parent(
+                    Matrix4d::rotation(Vector3d(1.0, 0.0, 0.0), -HalfPi)) *
+                get_transform();
             m_position = m_transform.point_to_parent(Vector3d(0.0));
             m_axis = normalize(m_transform.vector_to_parent(Vector3d(0.0, 1.0, 0.0)));
 

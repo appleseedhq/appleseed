@@ -101,7 +101,7 @@ TEST_SUITE(Foundation_Math_Transform)
         const Transformd transform;
 
         FixtureTransformByTranslation()
-          : transform(Matrix4d::translation(Vector3d(10.0, 20.0, 30.0)))
+          : transform(Transformd::from_local_to_parent(Matrix4d::translation(Vector3d(10.0, 20.0, 30.0))))
         {
         }
     };
@@ -147,7 +147,7 @@ TEST_SUITE(Foundation_Math_Transform)
         const Transformd transform;
 
         FixtureTransformByRotation()
-          : transform(Matrix4d::rotation_z(deg_to_rad(90.0)))
+          : transform(Transformd::from_local_to_parent(Matrix4d::rotation_z(deg_to_rad(90.0))))
         {
         }
     };
@@ -203,7 +203,7 @@ TEST_SUITE(Foundation_Math_Transform)
         const Matrix4d rotation(Matrix4d::rotation_z(deg_to_rad(90.0)));
 
         const Transformd a(Transformd::identity());
-        const Transformd b(rotation);
+        const Transformd b(Transformd::from_local_to_parent(rotation));
 
         const Transformd result = a * b;
 
@@ -214,7 +214,7 @@ TEST_SUITE(Foundation_Math_Transform)
     {
         const Matrix4d rotation(Matrix4d::rotation_z(deg_to_rad(90.0)));
 
-        const Transformd a(rotation);
+        const Transformd a(Transformd::from_local_to_parent(rotation));
         const Transformd b(Transformd::identity());
 
         const Transformd result = a * b;
@@ -227,8 +227,8 @@ TEST_SUITE(Foundation_Math_TransformInterpolator)
 {
     TEST_CASE(Evaluate_GivenScalingComponents_ReturnsValidScalingInterpolationTransform)
     {
-        const Transformd from(Matrix4d::identity());
-        const Transformd to(Matrix4d::scaling(Vector3d(3.0, 5.0, 0.6)));
+        const Transformd from(Transformd::identity());
+        const Transformd to(Transformd::from_local_to_parent(Matrix4d::scaling(Vector3d(3.0, 5.0, 0.6))));
         const TransformInterpolatord interpolator(from, to);
 
         Transformd result;
@@ -248,8 +248,7 @@ TEST_SUITE(Foundation_Math_TransformInterpolator)
              0.0, 0.0, 0.0, 1.0
         };
 
-        const Matrix4d matrix(Values);
-        const Transformd transform(matrix);
+        const Transformd transform(Transformd::from_local_to_parent(Matrix4d(Values)));
         const TransformInterpolatord interpolator(transform, transform);
 
         Transformd result;
@@ -277,8 +276,8 @@ TEST_SUITE(Foundation_Math_TransformInterpolator)
         };
 
         const TransformInterpolatord interpolator(
-            (Transformd(Matrix4d(FromValues))),
-            (Transformd(Matrix4d(ToValues))));
+            Transformd::from_local_to_parent(Matrix4d(FromValues)),
+            Transformd::from_local_to_parent(Matrix4d(ToValues)));
 
         Transformd result;
         interpolator.evaluate(0.024320000000000008, result);
@@ -291,11 +290,12 @@ TEST_SUITE(Foundation_Math_TransformInterpolator)
 
     TEST_CASE(VisualizeTransform)
     {
-        const Transformd from(Matrix4d::identity());
+        const Transformd from(Transformd::identity());
 
         const Transformd to(
-            Matrix4d::translation(Vector3d(1.0, 0.0, 0.0)) *
-            Matrix4d::rotation_x(Pi));
+            Transformd::from_local_to_parent(
+                Matrix4d::translation(Vector3d(1.0, 0.0, 0.0)) *
+                Matrix4d::rotation_x(Pi)));
 
         const TransformInterpolatord interpolator(from, to);
 

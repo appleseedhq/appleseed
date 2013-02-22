@@ -631,7 +631,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
                 "floor_inst",
                 ParamArray(),
                 "floor",
-                Transformd(Matrix4d::scaling(Vector3d(0.001f))),
+                Transformd::from_local_to_parent(Matrix4d::scaling(Vector3d(0.001f))),
                 StringDictionary()
                     .insert("white_material", "white_material")));
     }
@@ -670,7 +670,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
                 "ceiling_inst",
                 ParamArray(),
                 "ceiling",
-                Transformd(Matrix4d::scaling(Vector3d(0.001f))),
+                Transformd::from_local_to_parent(Matrix4d::scaling(Vector3d(0.001f))),
                 StringDictionary()
                     .insert("white_material", "white_material")));
     }
@@ -709,7 +709,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
                 "back_wall_inst",
                 ParamArray(),
                 "back_wall",
-                Transformd(Matrix4d::scaling(Vector3d(0.001f))),
+                Transformd::from_local_to_parent(Matrix4d::scaling(Vector3d(0.001f))),
                 StringDictionary()
                     .insert("white_material", "white_material")));
     }
@@ -748,7 +748,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
                 "right_wall_inst",
                 ParamArray(),
                 "right_wall",
-                Transformd(Matrix4d::scaling(Vector3d(0.001f))),
+                Transformd::from_local_to_parent(Matrix4d::scaling(Vector3d(0.001f))),
                 StringDictionary()
                     .insert("green_material", "green_material")));
     }
@@ -788,7 +788,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
                 "left_wall_inst",
                 ParamArray(),
                 "left_wall",
-                Transformd(Matrix4d::scaling(Vector3d(0.001f))),
+                Transformd::from_local_to_parent(Matrix4d::scaling(Vector3d(0.001f))),
                 StringDictionary()
                     .insert("red_material", "red_material")));
     }
@@ -855,7 +855,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
                 "short_block_inst",
                 ParamArray(),
                 "short_block",
-                Transformd(Matrix4d::scaling(Vector3d(0.001f))),
+                Transformd::from_local_to_parent(Matrix4d::scaling(Vector3d(0.001f))),
                 StringDictionary()
                     .insert("white_material", "white_material")));
     }
@@ -922,7 +922,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
                 "tall_block_inst",
                 ParamArray(),
                 "tall_block",
-                Transformd(Matrix4d::scaling(Vector3d(0.001f))),
+                Transformd::from_local_to_parent(Matrix4d::scaling(Vector3d(0.001f))),
                 StringDictionary()
                     .insert("white_material", "white_material")));
     }
@@ -961,7 +961,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
                 "light_inst",
                 ParamArray(),
                 "light",
-                Transformd(Matrix4d::scaling(Vector3d(0.001f))),
+                Transformd::from_local_to_parent(Matrix4d::scaling(Vector3d(0.001f))),
                 StringDictionary()
                     .insert("light_material", "light_material")));
     }
@@ -989,7 +989,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
             PinholeCameraFactory().create("camera", params));
         camera->transform_sequence().set_transform(
             0.0,
-            Transformd(
+            Transformd::from_local_to_parent(
                   Matrix4d::translation(Vector3d(0.278, 0.273, -0.800))
                 * Matrix4d::rotation_y(Pi)));
 

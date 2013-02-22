@@ -63,14 +63,20 @@ class Transform
 
     // Constructors.
     Transform();                                // leave the transformation uninitialized
-    explicit Transform(
-        const MatrixType& local_to_parent);
     Transform(
         const MatrixType& local_to_parent,
         const MatrixType& parent_to_local);     // must be equal to inverse(local_to_parent)
 
     // Return the identity transform.
     static Transform identity();
+
+    // Build a transform using a given local-to-parent transform.
+    // The parent-to-local transform will be computed using matrix inversion.
+    static Transform from_local_to_parent(const MatrixType& m);
+
+    // Set the transformation matrices.
+    void set_local_to_parent(const MatrixType& m);
+    void set_parent_to_local(const MatrixType& m);
 
     // Retrieve the transformation matrices.
     const MatrixType& get_local_to_parent() const;
@@ -189,13 +195,6 @@ inline Transform<T>::Transform()
 }
 
 template <typename T>
-inline Transform<T>::Transform(const MatrixType& local_to_parent)
-  : m_local_to_parent(local_to_parent)
-  , m_parent_to_local(inverse(local_to_parent))
-{
-}
-
-template <typename T>
 inline Transform<T>::Transform(
     const MatrixType& local_to_parent,
     const MatrixType& parent_to_local)
@@ -209,6 +208,24 @@ template <typename T>
 inline Transform<T> Transform<T>::identity()
 {
     return Transform(MatrixType::identity(), MatrixType::identity());
+}
+
+template <typename T>
+inline Transform<T> Transform<T>::from_local_to_parent(const MatrixType& m)
+{
+    return Transform(m, inverse(m));
+}
+
+template <typename T>
+inline void Transform<T>::set_local_to_parent(const MatrixType& m)
+{
+    m_local_to_parent = m;
+}
+
+template <typename T>
+inline void Transform<T>::set_parent_to_local(const MatrixType& m)
+{
+    m_parent_to_local = m;
 }
 
 template <typename T>
