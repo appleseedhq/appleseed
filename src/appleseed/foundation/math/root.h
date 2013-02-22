@@ -40,7 +40,23 @@ namespace foundation
 // Find one root of the continuous function f over the interval [a, b] using
 // the bisection method.
 template <typename T, typename F>
-bool find_root_bisection(const F& f, T a, T b, const T eps, T& root);
+bool find_root_bisection(
+    const F&    f,
+    T           a,
+    T           b,
+    const T     eps,
+    T&          root);
+
+// Find one root of the continuous function f over the interval [a, b] using
+// Newton's method.
+template <typename T, typename F, typename D>
+bool find_root_newton(
+    const F&    f,
+    const D&    d,
+    const T     a,
+    const T     b,
+    const T     eps,
+    T&          root);
 
 // Find multiple roots of the continuous function f over the interval [a, b]
 // by recursively splitting the input interval into subintervals no longer
@@ -54,13 +70,31 @@ void find_multiple_roots_bisection(
     const T                             eps,
     const std::function<void(double)>&  root_handler);
 
+// Find multiple roots of the continuous function f over the interval [a, b]
+// by recursively splitting the input interval into subintervals no longer
+// than max_length and using Newton's method on those subintervals.
+template <typename T, typename F, typename D>
+void find_multiple_roots_newton(
+    const F&                            f,
+    const D&                            d,
+    const T                             a,
+    const T                             b,
+    const T                             max_length,
+    const T                             eps,
+    const std::function<void(double)>&  root_handler);
+
 
 //
 // Implementation.
 //
 
 template <typename T, typename F>
-bool find_root_bisection(const F& f, T a, T b, const T eps, T& root)
+bool find_root_bisection(
+    const F&    f,
+    T           a,
+    T           b,
+    const T     eps,
+    T&          root)
 {
     T fa = f(a);
     T fb = f(b);
@@ -90,6 +124,33 @@ bool find_root_bisection(const F& f, T a, T b, const T eps, T& root)
     return true;
 }
 
+template <typename T, typename F, typename D>
+bool find_root_newton(
+    const F&    f,
+    const D&    d,
+    const T     a,
+    const T     b,
+    const T     eps,
+    T&          root)
+{
+    T fa = f(a);
+    T fb = f(b);
+
+    if (fa * fb > T(0.0))
+        return false;
+
+    root = (a + b) / T(2.0);
+
+    while (true)
+    {
+        const T delta = f(root) / d(root);
+        root -= delta;
+
+        if (std::abs(delta) <= eps)
+            return true;
+    }
+}
+
 template <typename T, typename F>
 void find_multiple_roots_bisection(
     const F&                            f,
@@ -109,6 +170,30 @@ void find_multiple_roots_bisection(
     {
         T root;
         if (find_root_bisection(f, a, b, eps, root))
+            root_handler(root);
+    }
+}
+
+template <typename T, typename F, typename D>
+void find_multiple_roots_newton(
+    const F&                            f,
+    const D&                            d,
+    const T                             a,
+    const T                             b,
+    const T                             max_length,
+    const T                             eps,
+    const std::function<void(double)>&  root_handler)
+{
+    if (std::abs(b - a) > max_length)
+    {
+        const T m = (a + b) / T(2.0);
+        find_multiple_roots_newton(f, d, a, m, max_length, eps, root_handler);
+        find_multiple_roots_newton(f, d, m, b, max_length, eps, root_handler);
+    }
+    else
+    {
+        T root;
+        if (find_root_newton(f, d, a, b, eps, root))
             root_handler(root);
     }
 }
