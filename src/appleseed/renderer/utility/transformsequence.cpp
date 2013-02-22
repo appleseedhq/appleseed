@@ -327,6 +327,15 @@ namespace
             return (m_sx.d(theta) * m_p.x - m_sy.f(theta) * m_p.y) * cos(theta) -
                    (m_sx.f(theta) * m_p.x + m_sy.d(theta) * m_p.y) * sin(theta);
         }
+
+        double dd(const double theta) const
+        {
+            const double a = m_sx.d(theta) * m_p.x - m_sy.f(theta) * m_p.y;
+            const double b = m_sx.f(theta) * m_p.x + m_sy.d(theta) * m_p.y;
+            const double ap = -m_sy.d(theta) * m_p.y;
+            const double bp = m_sx.d(theta) * m_p.x;
+            return (ap - b) * cos(theta) - (bp + a) * sin(theta);
+        }
     };
 
     struct TrajectoryY
@@ -351,6 +360,15 @@ namespace
         {
             return (m_sx.f(theta) * m_p.x + m_sy.d(theta) * m_p.y) * cos(theta) +
                    (m_sx.d(theta) * m_p.x - m_sy.f(theta) * m_p.y) * sin(theta);
+        }
+
+        double dd(const double theta) const
+        {
+            const double a = m_sx.f(theta) * m_p.x + m_sy.d(theta) * m_p.y;
+            const double b = m_sx.d(theta) * m_p.x - m_sy.f(theta) * m_p.y;
+            const double ap = m_sx.d(theta) * m_p.x;
+            const double bp = -m_sy.d(theta) * m_p.y;
+            return (ap + b) * cos(theta) + (bp - a) * sin(theta);
         }
     };
 
@@ -386,14 +404,19 @@ AABB3d TransformSequence::compute_motion_segment_bbox(
     //   http://gruenschloss.org/motion-blur/motion-blur.pdf page 11.
     //
 
-    const double MinLength = Pi / 8.0;
+    // Parameters.
+    const double MinLength = Pi / 4.0;
     const double RootEps = 1.0e-6;
     const double GrowEps = 1.0e-4;
+
+    // Start with the bounding box at 'from'.
+    const AABB3d from_bbox = from.to_parent(bbox);
+    AABB3d motion_bbox = from_bbox;
 
     // Setup an interpolator between 'from' and 'to'.
     TransformInterpolatord interpolator;
     if (!interpolator.set_transforms(from, to))
-        return from.to_parent(bbox);
+        return motion_bbox;
 
     // Compute the scalings at 'from' and 'to'.
     const Vector3d s0 = interpolator.get_s0();
@@ -412,7 +435,7 @@ AABB3d TransformSequence::compute_motion_segment_bbox(
 
     // The following code only makes sense if there is a rotation component.
     if (angle == 0.0)
-        return from.to_parent(bbox);
+        return motion_bbox;
 
     // Compute the rotation required to align the rotation axis with the Z axis.
     const Vector3d Z(0.0, 0.0, 1.0);
@@ -430,10 +453,6 @@ AABB3d TransformSequence::compute_motion_segment_bbox(
     const LinearFunction sy(1.0, s1.y / s0.y, angle);
     const LinearFunction sz(1.0, s1.z / s0.z, angle);
 
-    // Start with the bounding box at 'from'.
-    const AABB3d from_bbox = from.to_parent(bbox);
-    AABB3d motion_bbox = from_bbox;
-
     // Consider each corner point of the bounding box.
     for (size_t c = 0; c < 8; ++c)
     {
@@ -446,14 +465,24 @@ AABB3d TransformSequence::compute_motion_segment_bbox(
         const TrajectoryY ty(sx, sy, corner2d);
 
         // Find all the rotation angles at which this corner is an extremum and update the motion bounding box.
-        auto root_handler = [tx, ty, sz, corner, axis_to_z, &motion_bbox](const double theta) mutable
+        auto root_handler = [&](const double theta)
         {
             const double fz = sz.f(theta) * corner.z;
             const Vector3d extremum(tx.f(theta), ty.f(theta), fz);
             motion_bbox.insert(axis_to_z.point_to_parent(extremum));
         };
-        find_multiple_roots_bisection(Bind<TrajectoryX>(tx, &TrajectoryX::d), 0.0, angle, MinLength, RootEps, root_handler);
-        find_multiple_roots_bisection(Bind<TrajectoryY>(ty, &TrajectoryY::d), 0.0, angle, MinLength, RootEps, root_handler);
+        find_multiple_roots_newton(
+            Bind<TrajectoryX>(tx, &TrajectoryX::d),
+            Bind<TrajectoryX>(tx, &TrajectoryX::dd),
+            0.0, angle,
+            MinLength, RootEps,
+            root_handler);
+        find_multiple_roots_newton(
+            Bind<TrajectoryY>(ty, &TrajectoryY::d),
+            Bind<TrajectoryY>(ty, &TrajectoryY::dd),
+            0.0, angle,
+            MinLength, RootEps,
+            root_handler);
     }
 
     motion_bbox.robust_grow(GrowEps);
