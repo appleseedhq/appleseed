@@ -1,6 +1,6 @@
 @echo off
 
-set packageName=appleseed-win-vs100-devkit.zip
+set packageName=appleseed-win-vs110-devkit.zip
 
 REM Remove leftovers.
 del %packageName% 2>nul
@@ -9,6 +9,7 @@ rd /S /Q package 2>nul
 REM Create staging directory.
 mkdir package
 xcopy /E bin package\bin\
+xcopy /E cmake package\cmake\
 xcopy /E include package\include\
 xcopy /E lib package\lib\
 xcopy /E sample package\sample\
