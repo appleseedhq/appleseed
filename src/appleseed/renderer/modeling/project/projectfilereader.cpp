@@ -1981,10 +1981,8 @@ namespace
 
         virtual void end_element() OVERRIDE
         {
-            // Compute the bounding box of the scene.
             const GAABB3 scene_bbox = m_scene->compute_bbox();
 
-            // Print the bounding box of the scene.
             if (scene_bbox.is_valid())
             {
                 RENDERER_LOG_INFO("scene bounding box: (%f, %f, %f)-(%f, %f, %f).",

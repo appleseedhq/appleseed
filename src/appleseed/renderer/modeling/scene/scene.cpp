@@ -42,6 +42,7 @@
 #include "foundation/utility/uid.h"
 
 // Standard headers.
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
 
@@ -143,10 +144,10 @@ double Scene::compute_radius() const
     {
         for (size_t i = 0; i < 8; ++i)
         {
-            const double square_distance = square_norm(bbox.compute_corner(i));
+            const double square_distance =
+                static_cast<double>(square_norm(bbox.compute_corner(i)));
 
-            if (square_radius < square_distance)
-                square_radius = square_distance;
+            square_radius = max(square_radius, square_distance);
         }
     }
 
