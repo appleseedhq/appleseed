@@ -408,6 +408,7 @@ AABB3d TransformSequence::compute_motion_segment_bbox(
     const double MinLength = Pi / 2.0;
     const double RootEps = 1.0e-6;
     const double GrowEps = 1.0e-4;
+    const size_t MaxIterations = 100;
 
     // Start with the bounding box at 'from'.
     const AABB3d from_bbox = from.to_parent(bbox);
@@ -482,13 +483,17 @@ AABB3d TransformSequence::compute_motion_segment_bbox(
             Bind<TrajectoryX>(tx, &TrajectoryX::d),
             Bind<TrajectoryX>(tx, &TrajectoryX::dd),
             0.0, angle,
-            MinLength, RootEps,
+            MinLength,
+            RootEps,
+            MaxIterations,
             root_handler);
         find_multiple_roots_newton(
             Bind<TrajectoryY>(ty, &TrajectoryY::d),
             Bind<TrajectoryY>(ty, &TrajectoryY::dd),
             0.0, angle,
-            MinLength, RootEps,
+            MinLength,
+            RootEps,
+            MaxIterations,
             root_handler);
     }
 
