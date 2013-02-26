@@ -1985,9 +1985,12 @@ namespace
 
             if (scene_bbox.is_valid())
             {
-                RENDERER_LOG_INFO("scene bounding box: (%f, %f, %f)-(%f, %f, %f).",
+                RENDERER_LOG_INFO(
+                    "scene bounding box: (%f, %f, %f)-(%f, %f, %f).\n"
+                    "scene diameter: %f.",
                     scene_bbox.min[0], scene_bbox.min[1], scene_bbox.min[2],
-                    scene_bbox.max[0], scene_bbox.max[1], scene_bbox.max[2]);
+                    scene_bbox.max[0], scene_bbox.max[1], scene_bbox.max[2],
+                    2.0 * m_scene->compute_radius());
             }
             else
             {
