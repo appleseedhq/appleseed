@@ -87,4 +87,18 @@ TEST_SUITE(Foundation_Math_Quaternion)
         EXPECT_EQ(Vector3d(1.0, 0.0, 0.0), axis);
         EXPECT_EQ(0.0, angle);
     }
+
+    TEST_CASE(ExtractAxisAngle_HandlesNotQuiteNormalizedQuaternion)
+    {
+        const Quaterniond q(
+            1.0000000000000002,
+            Vector3d(-3.4700225332029433e-011, 5.3246259831829512e-011, 1.3098189199922672e-011));
+
+        Vector3d axis;
+        double angle;
+        q.extract_axis_angle(axis, angle);
+
+        EXPECT_EQ(Vector3d(1.0, 0.0, 0.0), axis);
+        EXPECT_EQ(0.0, angle);
+    }
 }
