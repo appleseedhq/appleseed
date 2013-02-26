@@ -72,6 +72,10 @@ option (WITH_PYTHON             "Build Python module"           ON)
 option (WITH_TOOLS              "Build appleseed tools"         ON)
 option (WITH_OSL                "Build OSL support"             OFF)
 
+#--------------------------------------------------------------------------------------------------
+# CTest settings.
+#--------------------------------------------------------------------------------------------------
+enable_testing()
 
 #--------------------------------------------------------------------------------------------------
 # Platform-specific settings.
