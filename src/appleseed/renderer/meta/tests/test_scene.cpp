@@ -97,7 +97,7 @@ TEST_SUITE(Renderer_Modeling_Scene_Scene)
                 "assembly"));
         assembly_instance->transform_sequence().set_transform(
             0.0,
-            Transformd(
+            Transformd::from_local_to_parent(
                 Matrix4d::translation(Vector3d(1.0)) *
                 Matrix4d::scaling(Vector3d(10.0))));
 

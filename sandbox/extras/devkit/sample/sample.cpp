@@ -149,7 +149,7 @@ asf::auto_release_ptr<asr::Project> build_project()
                 instance_name.c_str(),
                 asr::ParamArray(),
                 object->get_name(),
-                asf::Transformd(asf::Matrix4d::identity()),
+                asf::Transformd::identity(),
                 asf::StringDictionary()
                     .insert("default", "gray_material")
                     .insert("default2", "gray_material")));
@@ -175,8 +175,9 @@ asf::auto_release_ptr<asr::Project> build_project()
             "light",
             asr::ParamArray()
                 .insert("exitance", "light_exitance")));
-    light->set_transform(asf::Transformd(
-        asf::Matrix4d::translation(asf::Vector3d(0.6, 2.0, 1.0))));
+    light->set_transform(
+        asf::Transformd::from_local_to_parent(
+            asf::Matrix4d::translation(asf::Vector3d(0.6, 2.0, 1.0))));
     assembly->lights().insert(light);
 
     // Create an instance of the assembly and insert it into the scene.
@@ -189,7 +190,7 @@ asf::auto_release_ptr<asr::Project> build_project()
         ->transform_sequence()
             .set_transform(
                 0.0,
-                asf::Transformd(asf::Matrix4d::identity()));
+                asf::Transformd::identity());
     scene->assembly_instances().insert(assembly_instance);
 
     // Insert the assembly into the scene.
@@ -247,7 +248,7 @@ asf::auto_release_ptr<asr::Project> build_project()
     // and are looking toward Z- (0.0, 0.0, -1.0).
     camera->transform_sequence().set_transform(
         0.0,
-        asf::Transformd(
+        asf::Transformd::from_local_to_parent(
             asf::Matrix4d::rotation(asf::Vector3d(1.0, 0.0, 0.0), asf::deg_to_rad(-20.0)) *
             asf::Matrix4d::translation(asf::Vector3d(0.0, 0.8, 11.0))));
 

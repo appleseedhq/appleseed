@@ -735,7 +735,7 @@ namespace
         {
             try
             {
-                m_transform = Transformd(m_matrix);
+                m_transform = Transformd::from_local_to_parent(m_matrix);
             }
             catch (const ExceptionSingularMatrix&)
             {

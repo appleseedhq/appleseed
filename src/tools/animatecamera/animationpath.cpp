@@ -168,7 +168,7 @@ bool AnimationPath::load(const char* filename, const Format format)
             orientation.v = from_3ds_max(orientation.v);
 
             m_keyframes.push_back(
-                Transformd(
+                Transformd::from_local_to_parent(
                     Matrix4d::translation(position) *
                     Matrix4d::rotation(orientation) *
                     Matrix4d::rotation(Vector3d(1.0, 0.0, 0.0), -HalfPi)));
@@ -176,7 +176,7 @@ bool AnimationPath::load(const char* filename, const Format format)
         else
         {
             m_keyframes.push_back(
-                Transformd(
+                Transformd::from_local_to_parent(
                     Matrix4d::translation(position) *
                     Matrix4d::rotation(orientation)));
         }

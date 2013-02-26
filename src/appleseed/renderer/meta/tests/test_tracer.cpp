@@ -158,7 +158,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                     name,
                     ParamArray(),
                     "plane",
-                    Transformd(Matrix4d::translation(position)),
+                    Transformd::from_local_to_parent(Matrix4d::translation(position)),
                     StringDictionary()
                         .insert("material", material_name)));
         }

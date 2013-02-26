@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
+// Copyright (c) 2010-2012 Francois Beaune, Jupiter Jazz Limited
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,11 @@
 // THE SOFTWARE.
 //
 
+// appleseed.renderer headers.
+#include "renderer/utility/transformsequence.h"
+
 // appleseed.foundation headers.
+#include "foundation/math/aabb.h"
 #include "foundation/math/matrix.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
@@ -34,26 +38,36 @@
 #include "foundation/utility/benchmark.h"
 
 using namespace foundation;
+using namespace renderer;
 
-BENCHMARK_SUITE(Foundation_Math_Transform_TransformInterpolator)
+BENCHMARK_SUITE(Renderer_Utility_TransformSequence)
 {
     struct Fixture
     {
-        Transformd              m_from;
-        Transformd              m_to;
-        TransformInterpolatord  m_interpolator;
-        Transformd              m_result;
+        const AABB3d        m_bbox;
+        TransformSequence   m_sequence;
+        AABB3d              m_motion_bbox;
 
         Fixture()
-          : m_from(Transformd::from_local_to_parent(Matrix4d::rotation(Vector3d(1.0, 0.0, 0.0), 0.0)))
-          , m_to(Transformd::from_local_to_parent(Matrix4d::rotation(Vector3d(1.0, 0.0, 0.0), HalfPi)))
-          , m_interpolator(m_from, m_to)
+          : m_bbox(Vector3d(-20.0, -20.0, -5.0), Vector3d(-10.0, -10.0, 5.0))
         {
+            const Vector3d axis = normalize(Vector3d(0.1, 0.2, 1.0));
+            m_sequence.set_transform(
+                0.0,
+                Transformd::from_local_to_parent(
+                    Matrix4d::rotation(axis, 0.0) *
+                    Matrix4d::scaling(Vector3d(0.1))));
+            m_sequence.set_transform(
+                1.0,
+                Transformd::from_local_to_parent(
+                    Matrix4d::rotation(axis, Pi - Pi / 8) *
+                    Matrix4d::scaling(Vector3d(0.2))));
+            m_sequence.prepare();
         }
     };
 
-    BENCHMARK_CASE_F(Test, Fixture)
+    BENCHMARK_CASE_F(ToParent, Fixture)
     {
-        m_interpolator.evaluate(0.5, m_result);
+        m_motion_bbox = m_sequence.to_parent(m_bbox);
     }
 }

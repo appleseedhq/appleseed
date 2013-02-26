@@ -85,7 +85,7 @@ TEST_SUITE(Renderer_Modeling_Scene_Assembly)
 
             inner_assembly_instance->transform_sequence().set_transform(
                 0.0,
-                Transformd(Matrix4d::scaling(Vector3d(10.0))));
+                Transformd::from_local_to_parent(Matrix4d::scaling(Vector3d(10.0))));
 
             // Outer assembly.
 

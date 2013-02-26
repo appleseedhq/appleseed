@@ -74,7 +74,9 @@ void CameraController::update_camera_transform()
 {
     // Moving the camera kills camera motion blur.
     m_camera->transform_sequence().clear();
-    m_camera->transform_sequence().set_transform(0.0, Transformd(m_controller.get_transform()));
+    m_camera->transform_sequence().set_transform(
+        0.0,
+        Transformd::from_local_to_parent(m_controller.get_transform()));
 }
 
 bool CameraController::eventFilter(QObject* object, QEvent* event)

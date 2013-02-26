@@ -271,6 +271,7 @@ set (foundation_math_sources
     foundation/math/quaternion.h
     foundation/math/ray.h
     foundation/math/rng.h
+    foundation/math/root.h
     foundation/math/rr.h
     foundation/math/sah.h
     foundation/math/sampling.h
@@ -1045,6 +1046,7 @@ set (renderer_meta_benchmarks_sources
     renderer/meta/benchmarks/benchmark_ewa.cpp
     renderer/meta/benchmarks/benchmark_frame.cpp
     renderer/meta/benchmarks/benchmark_mipmap.cpp
+    renderer/meta/benchmarks/benchmark_transformsequence.cpp
 )
 list (APPEND appleseed_sources
     ${renderer_meta_benchmarks_sources}
