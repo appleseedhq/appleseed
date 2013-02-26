@@ -72,10 +72,6 @@ option (WITH_PYTHON             "Build Python module"           ON)
 option (WITH_TOOLS              "Build appleseed tools"         ON)
 option (WITH_OSL                "Build OSL support"             OFF)
 
-#--------------------------------------------------------------------------------------------------
-# CTest settings.
-#--------------------------------------------------------------------------------------------------
-enable_testing()
 
 #--------------------------------------------------------------------------------------------------
 # Platform-specific settings.
@@ -133,7 +129,7 @@ link_directories (${Boost_LIBRARY_DIRS})
 if (WITH_OSL)
     find_package (OpenImageIO REQUIRED)
     find_package (OSL REQUIRED)
-    add_definitions( -DWITH_OSL)
+    add_definitions (-DWITH_OSL)
 endif ()
 
 if (USE_EXTERNAL_PNG)
@@ -424,6 +420,13 @@ endif ()
 
 
 #--------------------------------------------------------------------------------------------------
+# Unit testing.
+#--------------------------------------------------------------------------------------------------
+
+enable_testing ()
+
+
+#--------------------------------------------------------------------------------------------------
 # Devkit preparation (for installation).
 #--------------------------------------------------------------------------------------------------
 
@@ -487,15 +490,17 @@ install (
         ${CMAKE_BINARY_DIR}/extras/devkit/include
     DESTINATION extras/devkit
 )
-install ( DIRECTORY
-  ${CMAKE_SOURCE_DIR}/../sandbox/extras/devkit/cmake
-  DESTINATION
-  extras/devkit
+
+install (
+    DIRECTORY
+        ${CMAKE_SOURCE_DIR}/../sandbox/extras/devkit/cmake
+    DESTINATION extras/devkit
 )
-install ( DIRECTORY
-  ${CMAKE_SOURCE_DIR}/../sandbox/extras/devkit/sample
-  DESTINATION
-  extras/devkit
+
+install (
+    DIRECTORY
+        ${CMAKE_SOURCE_DIR}/../sandbox/extras/devkit/sample
+    DESTINATION extras/devkit
 )
 
 

@@ -92,22 +92,20 @@ target_link_libraries (appleseed.cli
 
 
 #--------------------------------------------------------------------------------------------------
-# CTests configuration
-#--------------------------------------------------------------------------------------------------
-add_test(NAME appleseed-unit-tests
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/../sandbox/bin
-  COMMAND ${CMAKE_BUILD_TYPE}/appleseed.cli --run-unit-tests
-  )
-# add_test(NAME appleseed-unit-benchmarks
-#  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/../sandbox/bin
-#  COMMAND ${CMAKE_BUILD_TYPE}/appleseed.cli --run-unit-benchmarks
-#  )
-
-#--------------------------------------------------------------------------------------------------
 # Post-build commands.
 #--------------------------------------------------------------------------------------------------
 
 add_copy_target_to_sandbox_command (appleseed.cli)
+
+
+#--------------------------------------------------------------------------------------------------
+# Testing.
+#--------------------------------------------------------------------------------------------------
+
+add_test (NAME appleseed-unit-tests
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/../sandbox/bin
+    COMMAND ${CMAKE_BUILD_TYPE}/appleseed.cli --run-unit-tests
+)
 
 
 #--------------------------------------------------------------------------------------------------
