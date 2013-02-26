@@ -98,10 +98,10 @@ add_test(NAME appleseed-unit-tests
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/../sandbox/bin
   COMMAND ${CMAKE_BUILD_TYPE}/appleseed.cli --run-unit-tests
   )
-add_test(NAME appleseed-unit-benchmarks
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/../sandbox/bin
-  COMMAND ${CMAKE_BUILD_TYPE}/appleseed.cli --run-unit-benchmarks
-  )
+# add_test(NAME appleseed-unit-benchmarks
+#  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/../sandbox/bin
+#  COMMAND ${CMAKE_BUILD_TYPE}/appleseed.cli --run-unit-benchmarks
+#  )
 
 #--------------------------------------------------------------------------------------------------
 # Post-build commands.
