@@ -100,7 +100,9 @@ namespace
             m_inputs.evaluate_uniforms(&m_values);
             m_values.m_radiance *= static_cast<float>(m_values.m_radiance_multiplier);
 
-            m_safe_scene_radius = project.get_scene()->compute_radius();
+            m_scene_radius = project.get_scene()->compute_radius();
+            m_safe_scene_diameter = 1.01 * (2.0 * m_scene_radius);
+
             m_outgoing = normalize(get_transform().vector_to_parent(Vector3d(0.0, 0.0, -1.0)));
             m_basis.build(m_outgoing);
 
@@ -118,7 +120,7 @@ namespace
             const Vector2d point_on_disk = sample_disk_uniform(s);
             position =
                 m_basis.transform_to_parent(
-                    m_safe_scene_radius * Vector3d(point_on_disk[0], -1.0, point_on_disk[1]));
+                    m_scene_radius * Vector3d(point_on_disk[0], -1.0, point_on_disk[1]));
             outgoing = m_outgoing;
             value = m_values.m_radiance;
             probability = RcpPi;
@@ -131,7 +133,7 @@ namespace
             Vector3d&           outgoing,
             Spectrum&           value) const OVERRIDE
         {
-            position = target - m_safe_scene_radius * m_outgoing;
+            position = target - m_safe_scene_diameter * m_outgoing;
             outgoing = m_outgoing;
             value = m_values.m_radiance;
         }
@@ -145,7 +147,8 @@ namespace
         };
 
         InputValues     m_values;
-        double          m_safe_scene_radius;    // world space
+        double          m_scene_radius;         // world space
+        double          m_safe_scene_diameter;  // world space
         Vector3d        m_outgoing;             // world space
         Basis3d         m_basis;                // world space
     };
