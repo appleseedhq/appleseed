@@ -29,6 +29,9 @@
 // Interface header.
 #include "light.h"
 
+// appleseed.foundation headers.
+#include "foundation/math/distance.h"
+
 using namespace foundation;
 
 namespace renderer
@@ -89,6 +92,13 @@ void Light::on_frame_end(
     const Project&      project,
     const Assembly&     assembly)
 {
+}
+
+double Light::compute_distance_attenuation(
+    const Vector3d&     target,
+    const Vector3d&     position) const
+{
+    return 1.0 / square_distance(target, position);
 }
 
 }   // namespace renderer

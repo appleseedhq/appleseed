@@ -104,6 +104,10 @@ class DLLSYMBOL Light
         foundation::Vector3d&           outgoing,                   // world space emission direction, unit-length
         Spectrum&                       value) const = 0;           // light value
 
+    virtual double compute_distance_attenuation(
+        const foundation::Vector3d&     target,                     // world space target point
+        const foundation::Vector3d&     position) const;            // world space emission position
+
   private:
     struct Impl;
     Impl* impl;

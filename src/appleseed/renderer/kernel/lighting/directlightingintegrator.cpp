@@ -29,9 +29,6 @@
 // Interface header.
 #include "directlightingintegrator.h"
 
-// appleseed.foundation headers.
-#include "foundation/math/distance.h"
-
 // appleseed.renderer headers.
 #include "renderer/modeling/light/light.h"
 
@@ -150,6 +147,8 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
         sample_position,
         emission_direction,
         light_value);
+
+    // Transform the sample position and emission direction from assembly space to world space.
     sample_position = sample.m_light_transform.point_to_parent(sample_position);
     emission_direction = normalize(sample.m_light_transform.vector_to_parent(emission_direction));
 
@@ -192,7 +191,8 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
         return;
 
     // Add the contribution of this sample to the illumination.
-    const double weight = transmission / (square_distance(m_point, sample_position) * sample.m_probability);
+    const double attenuation = sample.m_light->compute_distance_attenuation(m_point, sample_position);
+    const double weight = (transmission * attenuation) / sample.m_probability;
     light_value *= static_cast<float>(weight);
     light_value *= bsdf_value;
     radiance += light_value;
