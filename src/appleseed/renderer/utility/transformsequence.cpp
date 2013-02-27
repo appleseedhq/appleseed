@@ -391,6 +391,38 @@ namespace
             return (m_class.*m_method)(t);
         }
     };
+
+    struct RootHandler
+    {
+        const TrajectoryX&          m_tx;
+        const TrajectoryY&          m_ty;
+        const LinearFunction&       m_sz;
+        const Transformd&           m_axis_to_z;
+        const Vector3d&             m_corner;
+        AABB3d&                     m_motion_bbox;
+
+        RootHandler(
+            const TrajectoryX&      tx,
+            const TrajectoryY&      ty,
+            const LinearFunction&   sz,
+            const Transformd&       axis_to_z,
+            const Vector3d&         corner,
+            AABB3d&                 motion_bbox)
+          : m_tx(tx)
+          , m_ty(ty)
+          , m_sz(sz)
+          , m_axis_to_z(axis_to_z)
+          , m_corner(corner)
+          , m_motion_bbox(motion_bbox)
+        {
+        }
+
+        void operator()(const double theta) const
+        {
+            const Vector3d extremum(m_tx.f(theta), m_ty.f(theta), m_sz.f(theta) * m_corner.z);
+            m_motion_bbox.insert(m_axis_to_z.point_to_parent(extremum));
+        };
+    };
 }
 
 AABB3d TransformSequence::compute_motion_segment_bbox(
@@ -474,11 +506,7 @@ AABB3d TransformSequence::compute_motion_segment_bbox(
         const TrajectoryY ty(sx, sy, corner2d);
 
         // Find all the rotation angles at which this corner is an extremum and update the motion bounding box.
-        auto root_handler = [&](const double theta)
-        {
-            const Vector3d extremum(tx.f(theta), ty.f(theta), sz.f(theta) * corner.z);
-            motion_bbox.insert(axis_to_z.point_to_parent(extremum));
-        };
+        RootHandler root_handler(tx, ty, sz, axis_to_z, corner, motion_bbox);
         find_multiple_roots_newton(
             Bind<TrajectoryX>(tx, &TrajectoryX::d),
             Bind<TrajectoryX>(tx, &TrajectoryX::dd),
