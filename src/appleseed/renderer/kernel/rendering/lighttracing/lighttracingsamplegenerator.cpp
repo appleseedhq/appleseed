@@ -660,17 +660,19 @@ namespace
             // Sample the light.
             InputEvaluator input_evaluator(m_texture_cache);
             sampling_context.split_in_place(2, 1);
-            Vector3d sample_position, emission_direction;
+            Vector3d emission_position, emission_direction;
             Spectrum light_value;
             double light_prob;
             light_sample.m_light->sample(
                 input_evaluator,
                 sampling_context.next_vector2<2>(),
-                sample_position,
+                emission_position,
                 emission_direction,
                 light_value,
                 light_prob);
-            sample_position = light_sample.m_light_transform.point_to_parent(sample_position);
+
+            // Transform the emission position and direction from assembly space to world space.
+            emission_position = light_sample.m_light_transform.point_to_parent(emission_position);
             emission_direction = normalize(light_sample.m_light_transform.vector_to_parent(emission_direction));
 
             // Compute the initial particle weight.
@@ -680,7 +682,7 @@ namespace
             // Build the light ray.
             sampling_context.split_in_place(1, 1);
             const ShadingRay light_ray(
-                sample_position,
+                emission_position,
                 emission_direction,
                 sampling_context.next_double2(),
                 ~0);
@@ -703,7 +705,7 @@ namespace
             Spectrum light_particle_flux = light_value;
             light_particle_flux /= static_cast<float>(light_sample.m_probability);
             path_visitor.visit_non_physical_light_vertex(
-                sample_position,
+                emission_position,
                 light_particle_flux,
                 light_ray.m_time);
 
