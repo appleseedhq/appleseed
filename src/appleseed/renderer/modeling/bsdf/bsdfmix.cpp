@@ -329,7 +329,7 @@ namespace
         }
 
       private:
-        struct InputValues
+        DECLARE_INPUT_VALUES(InputValues)
         {
             double  m_weight[2];
         };

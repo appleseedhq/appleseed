@@ -161,7 +161,7 @@ namespace
         }
 
       private:
-        struct InputValues
+        DECLARE_INPUT_VALUES(InputValues)
         {
             Spectrum    m_transmittance;                // diffuse transmittance
             Alpha       m_transmittance_alpha;          // unused

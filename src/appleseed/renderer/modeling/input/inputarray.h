@@ -32,6 +32,7 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/vector.h"
+#include "foundation/platform/compiler.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -209,6 +210,22 @@ class DLLSYMBOL InputArray
     struct Impl;
     Impl* impl;
 };
+
+
+//
+// Declare a collection of input values.
+//
+// Usage:
+//
+//     DECLARE_INPUT_VALUES(InputValues)
+//     {
+//         Spectrum    m_color;
+//         Alpha       m_alpha;
+//         double      m_multiplier;
+//     };
+//
+
+#define DECLARE_INPUT_VALUES(name) struct FOUNDATION_ALIGN(16) name
 
 }       // namespace renderer
 

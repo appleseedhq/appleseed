@@ -138,7 +138,7 @@ namespace
         }
 
       private:
-        struct InputValues
+        DECLARE_INPUT_VALUES(InputValues)
         {
             Spectrum    m_reflectance;              // specular reflectance
             Alpha       m_reflectance_alpha;        // unused

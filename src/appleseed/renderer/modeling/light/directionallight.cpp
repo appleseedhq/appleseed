@@ -146,7 +146,7 @@ namespace
         }
 
       private:
-        struct InputValues
+        DECLARE_INPUT_VALUES(InputValues)
         {
             Spectrum    m_radiance;             // emitted radiance in W.m^-2.sr^-1
             Alpha       m_radiance_alpha;       // unused

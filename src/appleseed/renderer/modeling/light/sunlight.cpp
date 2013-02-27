@@ -156,7 +156,7 @@ namespace
         }
 
       private:
-        struct InputValues
+        DECLARE_INPUT_VALUES(InputValues)
         {
             double      m_turbidity;                // atmosphere turbidity
             double      m_radiance_multiplier;      // emitted radiance multiplier

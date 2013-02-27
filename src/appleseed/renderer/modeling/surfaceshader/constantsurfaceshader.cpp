@@ -136,7 +136,7 @@ namespace
         }
 
       private:
-        struct InputValues
+        DECLARE_INPUT_VALUES(InputValues)
         {
             Spectrum    m_color;
             Alpha       m_alpha;

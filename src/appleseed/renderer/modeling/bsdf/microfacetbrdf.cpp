@@ -228,7 +228,7 @@ namespace
         }
 
       private:
-        struct InputValues
+        DECLARE_INPUT_VALUES(InputValues)
         {
             double      m_mdf_parameter;
             Spectrum    m_reflectance;

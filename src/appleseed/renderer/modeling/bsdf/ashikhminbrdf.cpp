@@ -431,7 +431,7 @@ namespace
         }
 
       private:
-        struct InputValues
+        DECLARE_INPUT_VALUES(InputValues)
         {
             Spectrum    m_rd;               // diffuse reflectance of the substrate
             Alpha       m_rd_alpha;         // unused

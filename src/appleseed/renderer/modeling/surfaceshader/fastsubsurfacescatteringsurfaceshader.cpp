@@ -251,7 +251,7 @@ namespace
         const size_t            m_occlusion_samples;
         auto_ptr<LightSampler>  m_light_sampler;
 
-        struct InputValues
+        DECLARE_INPUT_VALUES(InputValues)
         {
             double      m_scale;            // distance at which light absorption reaches 95%
             double      m_ambient_sss;

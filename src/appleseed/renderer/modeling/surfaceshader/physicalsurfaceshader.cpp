@@ -203,7 +203,7 @@ namespace
         }
 
       private:
-        struct InputValues
+        DECLARE_INPUT_VALUES(InputValues)
         {
             double      m_color_multiplier;
             double      m_alpha_multiplier;

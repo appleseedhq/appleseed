@@ -204,7 +204,7 @@ namespace
         }
 
       private:
-        struct InputValues
+        DECLARE_INPUT_VALUES(InputValues)
         {
             Spectrum    m_reflectance;              // diffuse reflectance (albedo, technically)
             Alpha       m_reflectance_alpha;        // unused

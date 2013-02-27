@@ -197,7 +197,7 @@ namespace
         }
 
       private:
-        struct InputValues
+        DECLARE_INPUT_VALUES(InputValues)
         {
             double  m_sun_theta;                    // sun zenith angle in degrees, 0=zenith
             double  m_sun_phi;                      // degrees
