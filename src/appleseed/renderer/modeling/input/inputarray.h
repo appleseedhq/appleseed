@@ -48,7 +48,7 @@ namespace renderer
 {
 
 //
-// Input formats.
+// Supported input formats.
 //
 
 enum InputFormat
@@ -60,7 +60,7 @@ enum InputFormat
 
 
 //
-// Input array.
+// A collection of named and typed inputs.
 //
 
 class DLLSYMBOL InputArray
@@ -184,6 +184,8 @@ class DLLSYMBOL InputArray
     // Return 0 if the input could not be found, or no source is bound to it.
     Source* source(const char* name) const;
 
+    // Get the entity bound to a given input.
+    // Return 0 if the input could not be found, or no entity is bound to it.
     Entity* get_entity(const char* name) const;
 
     // Compute the cumulated size in bytes of the input values.
