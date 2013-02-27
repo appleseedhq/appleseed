@@ -104,7 +104,7 @@ add_copy_target_to_sandbox_command (appleseed.cli)
 
 add_test (NAME appleseed-unit-tests
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/../sandbox/bin
-    COMMAND ${CMAKE_BUILD_TYPE}/appleseed.cli --run-unit-tests
+    COMMAND $<CONFIGURATION>/appleseed.cli --run-unit-tests
 )
 
 
