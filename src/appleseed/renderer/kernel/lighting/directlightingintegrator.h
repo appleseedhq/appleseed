@@ -321,9 +321,6 @@ void DirectLightingIntegrator::sample_lights_low_variance(
     // immediately return black here since there will be no contribution from
     // such a BSDF.
 
-    if (!m_light_sampler.has_lights_or_emitting_triangles())
-        return;
-
     // Sample emitting triangles.
     if (m_light_sampler.get_emitting_triangle_count() > 0)
     {
