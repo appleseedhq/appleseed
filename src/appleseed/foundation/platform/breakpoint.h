@@ -29,9 +29,6 @@
 #ifndef APPLESEED_FOUNDATION_PLATFORM_BREAKPOINT_H
 #define APPLESEED_FOUNDATION_PLATFORM_BREAKPOINT_H
 
-namespace foundation
-{
-
 //
 // Break the execution of the program into the debugger.
 //
@@ -39,16 +36,21 @@ namespace foundation
 // Visual C++.
 #if defined _MSC_VER
 
-// See http://ccollomb.free.fr/blog/?p=30 for details.
-#define BREAKPOINT() _asm __emit 0xF1
+    // appleseed.foundation headers.
+    #include "foundation/platform/windows.h"
 
-// Unsupported platform.
+    // Reference: http://msdn.microsoft.com/en-us/library/windows/desktop/ms679297(v=vs.85).aspx.
+    #define BREAKPOINT() DebugBreak()
+
+// Other platforms.
 #else
 
-#define BREAKPOINT()
+    // Standard headers.
+    #include <csignal>
+
+    // Reference: http://stackoverflow.com/questions/4326414/set-breakpoint-in-c-or-c-code-programmatically-for-gdb-on-linux.
+    #define BREAKPOINT() std::raise(SIGINT)
 
 #endif
-
-}       // namespace foundation
 
 #endif  // !APPLESEED_FOUNDATION_PLATFORM_BREAKPOINT_H
