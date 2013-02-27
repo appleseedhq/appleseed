@@ -128,7 +128,7 @@ class Tree
     // Recursively write solid leaves to a file.
     bool dump_recurse(
         const size_t    node_index,
-        const AABBType& node_bbox,          // world space
+        const AABBType& node_bbox,
         size_t&         vertex_count,
         std::FILE*      file) const;
 };
