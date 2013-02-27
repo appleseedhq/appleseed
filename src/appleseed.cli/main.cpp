@@ -146,7 +146,7 @@ namespace
         print_suite_case_result(result);
     }
 
-    void run_unit_tests()
+    bool run_unit_tests()
     {
         SaveLogFormatterConfig save_g_logger_config(g_logger);
         g_logger.set_all_formats("{datetime} | {category}: {message}");
@@ -193,6 +193,8 @@ namespace
         filesystem::current_path(old_current_path);
 
         print_unit_test_result(result);
+
+        return result.get_assertion_failure_count() == 0;
     }
 
     void run_unit_benchmarks()
@@ -647,9 +649,11 @@ int main(int argc, const char* argv[])
     // Now that the log target is fully configured, bind it to the renderer's logger.
     global_logger().add_target(&g_logger.get_log_target());
 
+    bool success = true;
+
     // Run unit tests.
     if (g_cl.m_run_unit_tests.is_set())
-        run_unit_tests();
+        success = success && run_unit_tests();
 
     // Run unit benchmarks.
     if (g_cl.m_run_unit_benchmarks.is_set())
@@ -669,5 +673,5 @@ int main(int argc, const char* argv[])
         else render(project_filename);
     }
 
-    return 0;
+    return success ? 0 : 1;
 }
