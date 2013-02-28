@@ -261,6 +261,9 @@ void DirectLightingIntegrator::sample_bsdf(
     radiance.set(0.0f);
     aovs.set(0.0f);
 
+    if (m_light_sampler.get_emitting_triangle_count() == 0)
+        return;
+
     for (size_t i = 0; i < m_bsdf_sample_count; ++i)
     {
         take_single_bsdf_sample(
