@@ -47,5 +47,3 @@ REM Copy Headers.
 xcopy /E ..\..\..\src\appleseed\*.h         include\appleseed\
 xcopy /E ..\..\..\src\appleseed.shared\*.h  include\appleseed.shared\
 xcopy /E ..\..\..\src\openexr\include\*.h   include\openexr\
-
-pause

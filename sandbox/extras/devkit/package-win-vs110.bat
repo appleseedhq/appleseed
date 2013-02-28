@@ -42,5 +42,3 @@ cd ..
 
 REM Remove staging directory.
 rd /S /Q package 2>nul
-
-pause
