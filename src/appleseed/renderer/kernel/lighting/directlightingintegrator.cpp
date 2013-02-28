@@ -110,23 +110,36 @@ void DirectLightingIntegrator::take_single_bsdf_or_light_sample(
     radiance.set(0.0f);
     aovs.set(0.0f);
 
-    sampling_context.split_in_place(1, 1);
-
-    if (sampling_context.next_double2() < 0.5)
+    if (m_light_sampler.get_emitting_triangle_count() > 0)
     {
-        sampling_context.split_in_place(3, m_light_sample_count);
+        sampling_context.split_in_place(1, 1);
 
-        take_single_light_sample(
-            sampling_context,
-            DirectLightingIntegrator::mis_balance,
-            radiance,
-            aovs);
+        if (sampling_context.next_double2() < 0.5)
+        {
+            sampling_context.split_in_place(3, m_light_sample_count);
+            take_single_light_sample(
+                sampling_context,
+                DirectLightingIntegrator::mis_balance,
+                radiance,
+                aovs);
+        }
+        else
+        {
+            take_single_bsdf_sample(
+                sampling_context,
+                DirectLightingIntegrator::mis_balance,
+                radiance,
+                aovs);
+        }
+
+        radiance *= 2.0f;
+        aovs *= 2.0f;
     }
     else
     {
-        take_single_bsdf_sample(
+        take_single_light_sample(
             sampling_context,
-            DirectLightingIntegrator::mis_balance,
+            DirectLightingIntegrator::mis_none,
             radiance,
             aovs);
     }

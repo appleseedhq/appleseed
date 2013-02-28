@@ -72,6 +72,13 @@ namespace renderer
 class DirectLightingIntegrator
 {
   public:
+    // No MIS weighting.
+    static double mis_none(
+        const size_t    n1,
+        const size_t    n2,
+        const double    q1,
+        const double    q2);
+
     // Balance MIS weighting function.
     static double mis_balance(
         const size_t    n1,
@@ -233,13 +240,24 @@ class DirectLightingIntegrator
 //                                          `-->  sample_lights
 //
 
+inline double DirectLightingIntegrator::mis_none(
+    const size_t                        n1,
+    const size_t                        n2,
+    const double                        q1,
+    const double                        q2)
+{
+    return 1.0;
+}
+
 inline double DirectLightingIntegrator::mis_balance(
     const size_t                        n1,
     const size_t                        n2,
     const double                        q1,
     const double                        q2)
 {
-    return q1 / (0.5 * (q1 + q2));
+    assert(n1 == 0);
+    assert(n2 == 0);
+    return foundation::mis_balance(q1, q2);
 }
 
 inline double DirectLightingIntegrator::mis_power2(
