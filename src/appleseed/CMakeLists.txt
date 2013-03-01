@@ -1481,6 +1481,8 @@ endif ()
 
 set (renderer_utility_sources
     renderer/utility/bbox.h
+    renderer/utility/filterfactory.cpp
+    renderer/utility/filterfactory.h
     renderer/utility/messagecontext.cpp
     renderer/utility/messagecontext.h
     renderer/utility/paramarray.cpp

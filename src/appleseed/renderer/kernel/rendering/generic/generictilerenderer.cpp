@@ -41,6 +41,7 @@
 #include "renderer/kernel/rendering/isamplerenderer.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/frame/frame.h"
+#include "renderer/utility/filterfactory.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
@@ -275,16 +276,16 @@ namespace
       private:
         struct Parameters
         {
-            typedef Filter2<double> FilterType;
-
-            const double            m_filter_radius;
-            auto_ptr<FilterType>    m_filter;
+            typedef FilterFactory::FilterType FilterType;
 
             enum SamplerType
             {
                 UniformSampler,
                 AdaptiveSampler
             };
+
+            const double            m_filter_radius;
+            auto_ptr<FilterType>    m_filter;
 
             SamplerType             m_sampler_type;
             const size_t            m_min_samples;          // minimum number of samples per pixel
@@ -305,28 +306,15 @@ namespace
             {
                 // Retrieve filter parameter.
                 const string filter_str = params.get_required<string>("filter", "mitchell");
-                if (filter_str == "box")
-                    m_filter.reset(new BoxFilter2<double>(m_filter_radius, m_filter_radius));
-                else if (filter_str == "triangle")
-                    m_filter.reset(new TriangleFilter2<double>(m_filter_radius, m_filter_radius));
-                else if (filter_str == "gaussian")
-                    m_filter.reset(new GaussianFilter2<double>(m_filter_radius, m_filter_radius, 8.0));
-                else if (filter_str == "mitchell")
-                    m_filter.reset(new MitchellFilter2<double>(m_filter_radius, m_filter_radius, 1.0/3, 1.0/3));
-                else if (filter_str == "bspline")
-                    m_filter.reset(new MitchellFilter2<double>(m_filter_radius, m_filter_radius, 1.0, 0.0));
-                else if (filter_str == "catmull")
-                    m_filter.reset(new MitchellFilter2<double>(m_filter_radius, m_filter_radius, 0.0, 0.5));
-                else if (filter_str == "lanczos")
-                    m_filter.reset(new LanczosFilter2<double>(m_filter_radius, m_filter_radius, 3.0));
-                else
+                m_filter = FilterFactory::create(filter_str, m_filter_radius);
+                if (m_filter.get() == 0)
                 {
                     RENDERER_LOG_ERROR(
                         "invalid value \"%s\" for parameter \"%s\", using default value \"%s\".",
                         filter_str.c_str(),
                         "filter",
                         "mitchell");
-                    m_filter.reset(new MitchellFilter2<double>(m_filter_radius, m_filter_radius, 1.0/3, 1.0/3));
+                    m_filter = FilterFactory::create("mitchell", m_filter_radius);
                 }
 
                 // Retrieve sampler parameter.
