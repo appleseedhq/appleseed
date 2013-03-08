@@ -45,10 +45,10 @@ namespace foundation
 //
 // References:
 //
-//   [1] Physically Based Rendering, first edition, pp. 444-447 and 681-684
+//   Physically Based Rendering, first edition, pp. 444-447 and 681-684
 //
-//   [2] Microfacet Models for Refraction through Rough Surfaces
-//       http://www.cs.cornell.edu/~srm/publications/EGSR07-btdf.pdf
+//   Microfacet Models for Refraction through Rough Surfaces
+//   http://www.cs.cornell.edu/~srm/publications/EGSR07-btdf.pdf
 //
 
 template <typename T>
