@@ -256,7 +256,6 @@ namespace
             const bool      m_print_luminance_stats;    // compute and print luminance statistics?
             const string    m_ref_image_path;           // path to the reference image
 
-            // Constructor, extract parameters.
             explicit Parameters(const ParamArray& params)
               : m_thread_count(FrameRendererBase::get_rendering_thread_count(params))
               , m_max_sample_count(params.get_optional<uint64>("max_samples", numeric_limits<uint64>::max()))
