@@ -30,6 +30,7 @@
 #define APPLESEED_RENDERER_KERNEL_AOV_IMAGESTACK_H
 
 // appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/image/pixel.h"
 
 // appleseed.main headers.
@@ -50,6 +51,7 @@ namespace renderer
 //
 
 class DLLSYMBOL ImageStack
+  : public foundation::NonCopyable
 {
   public:
     ImageStack(
