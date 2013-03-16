@@ -30,11 +30,14 @@
 #define APPLESEED_FOUNDATION_MATH_FILTER_H
 
 // appleseed.foundation headers.
+#include "foundation/math/qmc.h"
 #include "foundation/math/scalar.h"
+#include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 
 // Standard headers.
 #include <cmath>
+#include <cstddef>
 
 namespace foundation
 {
@@ -50,6 +53,8 @@ template <typename T>
 class Filter2
 {
   public:
+    typedef T ValueType;
+
     Filter2(const T xradius, const T yradius);
 
     virtual ~Filter2() {}
@@ -172,6 +177,17 @@ class LanczosFilter2
     static T lanczos(const T x, const T rcp_tau);
     static T sinc(const T x);
 };
+
+
+//
+// Utilities.
+//
+
+// Compute the normalization factor for a given filter.
+template <typename Filter>
+typename Filter::ValueType compute_normalization_factor(
+    const Filter&   filter,
+    const size_t    sample_count = 1024);
 
 
 //
@@ -372,6 +388,43 @@ template <typename T>
 FORCE_INLINE T LanczosFilter2<T>::sinc(const T x)
 {
     return std::sin(x) / x;
+}
+
+
+//
+// Utilities implementation.
+//
+
+template <typename Filter>
+typename Filter::ValueType compute_normalization_factor(
+    const Filter&   filter,
+    const size_t    sample_count)
+{
+    typedef typename Filter::ValueType ValueType;
+
+    const ValueType xradius = filter.get_xradius();
+    const ValueType yradius = filter.get_yradius();
+
+    ValueType result(0.0);
+
+    for (size_t i = 0; i < sample_count; ++i)
+    {
+        static const size_t Bases[1] = { 2 };
+
+        const Vector<ValueType, 2> s =
+            hammersley_sequence<ValueType, 2>(Bases, i, sample_count);
+
+        const Vector<ValueType, 2> p(
+            xradius * (ValueType(2.0) * s.x - ValueType(1.0)),
+            yradius * (ValueType(2.0) * s.y - ValueType(1.0)));
+
+        result += filter.evaluate(p.x, p.y);
+    }
+
+    result *= ValueType(4.0) * xradius * yradius;
+    result /= static_cast<ValueType>(sample_count);
+
+    return result;
 }
 
 }       // namespace foundation
