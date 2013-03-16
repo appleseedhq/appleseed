@@ -38,6 +38,7 @@
 #include "renderer/kernel/intersection/triangletree.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
+#include "renderer/kernel/shading/shadingresult.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/string.h"
@@ -62,12 +63,14 @@ TraceContext::TraceContext(const Scene& scene)
         "  RegionInfo       %s\n"
         "  ShadingPoint     %s\n"
         "  ShadingRay       %s\n"
+        "  ShadingResult    %s\n"
         "  TriangleKey      %s\n",
         pretty_size(sizeof(TriangleTree::NodeType)).c_str(),
         pretty_size(sizeof(GTriangleType)).c_str(),
         pretty_size(sizeof(RegionInfo)).c_str(),
         pretty_size(sizeof(ShadingPoint)).c_str(),
         pretty_size(sizeof(ShadingRay)).c_str(),
+        pretty_size(sizeof(ShadingResult)).c_str(),
         pretty_size(sizeof(TriangleKey)).c_str());
 }
 
