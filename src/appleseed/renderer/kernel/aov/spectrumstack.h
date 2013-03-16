@@ -50,7 +50,7 @@ class SpectrumStack
   : public foundation::NonCopyable
 {
   public:
-    static const size_t MaxSize = 32;
+    static const size_t MaxSize = 16;
 
     SpectrumStack();
     explicit SpectrumStack(const size_t size);
