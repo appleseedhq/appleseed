@@ -141,13 +141,12 @@ TEST_SUITE(Foundation_Math_Scalar)
 
     TEST_CASE(TestLog2)
     {
-        // Fully qualify to disambiguate between foundation::log2() and std::log2().
-        EXPECT_EQ(0,  foundation::log2(1));
-        EXPECT_EQ(1,  foundation::log2(2));
-        EXPECT_EQ(1,  foundation::log2(3));
-        EXPECT_EQ(2,  foundation::log2(4));
-        EXPECT_EQ(16, foundation::log2(1UL << 16));
-        EXPECT_EQ(31, foundation::log2(1UL << 31));
+        EXPECT_EQ(0,  int_log2(1));
+        EXPECT_EQ(1,  int_log2(2));
+        EXPECT_EQ(1,  int_log2(3));
+        EXPECT_EQ(2,  int_log2(4));
+        EXPECT_EQ(16, int_log2(1UL << 16));
+        EXPECT_EQ(31, int_log2(1UL << 31));
     }
 
     TEST_CASE(TestFactorial)

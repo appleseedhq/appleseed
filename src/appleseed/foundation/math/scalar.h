@@ -39,6 +39,9 @@
 #include <cassert>
 #include <cmath>
 #include <cstddef>
+#ifdef _MSC_VER
+#include <intrin.h>
+#endif
 #include <limits>
 
 namespace foundation
@@ -119,7 +122,7 @@ bool is_pow2(const T x);
 
 // Return the base-2 logarithm of a given integer.
 template <typename T>
-T log2(T x);
+T int_log2(T x);
 
 // Return the factorial of a given integer.
 template <typename T>
@@ -333,8 +336,11 @@ inline bool is_pow2(const T x)
     return (x & (x - 1)) == 0;
 }
 
+// Visual C++.
+#if defined _MSC_VER
+
 template <typename T>
-inline T log2(T x)
+inline T int_log2(T x)
 {
     assert(x > 0);
 
@@ -345,6 +351,57 @@ inline T log2(T x)
 
     return n;
 }
+
+template <>
+inline uint32 int_log2(const uint32 x)
+{
+    assert(x > 0);
+
+    unsigned long index;
+    _BitScanReverse(&index, x);
+
+    return static_cast<uint32>(index);
+}
+
+template <>
+inline uint64 int_log2(const uint64 x)
+{
+    assert(x > 0);
+
+    unsigned long index;
+    _BitScanReverse64(&index, x);
+
+    return static_cast<uint64>(index);
+}
+
+// gcc.
+#elif defined __GNUC__
+
+template <typename T>
+inline T int_log2(const T x)
+{
+    assert(x > 0);
+
+    return 8 * sizeof(T) - __builtin_clz(x) - 1;
+}
+
+// Other compilers.
+#else
+
+template <typename T>
+inline T int_log2(T x)
+{
+    assert(x > 0);
+
+    T n = 0;
+
+    while (x >>= 1)
+        ++n;
+
+    return n;
+}
+
+#endif
 
 template <typename T>
 inline T factorial(T x)

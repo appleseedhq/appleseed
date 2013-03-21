@@ -47,7 +47,7 @@ void PixelSampler::initialize(const size_t subpixel_grid_size)
     m_rcp_subpixel_grid_size = 1.0 / subpixel_grid_size;
 
     const size_t subpixel_count = subpixel_grid_size * subpixel_grid_size;
-    m_log_period = log2(subpixel_count * 32);
+    m_log_period = int_log2(subpixel_count * 32);
 
     if (m_log_period > 16)
         m_log_period = 16;
