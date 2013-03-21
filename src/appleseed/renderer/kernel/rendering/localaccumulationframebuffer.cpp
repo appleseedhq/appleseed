@@ -58,16 +58,17 @@ namespace renderer
 //
 // The algorithm for progressive display deserves some explanations.  Here is how it works:
 //
-//   When the accumulation framebuffer is constructed, we create a "pyramid" of framebuffers
-//   of decreasing resolution, much like a mipmap pyramid: each level of this pyramid is half
-//   the resolution of the previous one.  We actually don't go down all the way to the 1x1
-//   level, instead we stop when we reach what we consider to be a coarse enough resolution.
+//   When the accumulation framebuffer is constructed, we create a stack of framebuffers
+//   of decreasing resolution, much like a mipmap pyramid: each level of this pyramid is a
+//   quarter of the resolution of the previous one (half the resolution in each dimension).
+//   We don't actually go down all the way to the 1x1 level; instead we stop when we reach
+//   a resolution that we consider provides a good balance between speed and usefulness.
 //
 //   At render-time, the store_samples() method pushes the individual samples through this
 //   pyramid.  Samples are stored starting at the highest resolution level and up to what
 //   we call the "active level", that is, the coarsest level of the pyramid that we're still
-//   pushing samples to and the level that is displayed.  As soon as a level has been filled
-//   up (i.e. all its pixels contain at least one sample), it becomes the new active level.
+//   pushing samples to and the level that is displayed.  As soon as a level contains enough
+//   samples, it becomes the new active level.
 //
 
 LocalAccumulationFramebuffer::LocalAccumulationFramebuffer(
