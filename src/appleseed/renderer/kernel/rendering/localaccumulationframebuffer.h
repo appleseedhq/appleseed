@@ -33,10 +33,8 @@
 #include "renderer/kernel/rendering/accumulationframebuffer.h"
 
 // appleseed.foundation headers.
-#include "foundation/image/color.h"
 #include "foundation/math/filter.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <cstddef>
@@ -75,12 +73,6 @@ class LocalAccumulationFramebuffer
     virtual void develop_to_frame(Frame& frame) OVERRIDE;
 
   private:
-    struct AccumulationPixel
-    {
-        foundation::Color4f             m_color;
-        foundation::uint32              m_count;
-    };
-
     std::vector<FilteredFrameBuffer*>   m_levels;
     std::vector<size_t>                 m_remaining_pixels;
     size_t                              m_active_level;

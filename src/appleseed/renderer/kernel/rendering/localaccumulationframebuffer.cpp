@@ -36,6 +36,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
+#include "foundation/image/color.h"
 #include "foundation/image/image.h"
 #include "foundation/image/pixel.h"
 #include "foundation/image/tile.h"
@@ -76,9 +77,6 @@ LocalAccumulationFramebuffer::LocalAccumulationFramebuffer(
     const size_t    height,
     const Filter2d& filter)
 {
-    // todo: change to static_assert<>.
-    assert(sizeof(AccumulationPixel) == 5 * sizeof(float));
-
     const size_t MinSize = 32;
 
     size_t level_width = width;
@@ -90,7 +88,7 @@ LocalAccumulationFramebuffer::LocalAccumulationFramebuffer(
             new FilteredFrameBuffer(
                 max(level_width, MinSize),
                 max(level_height, MinSize),
-                4 + 1,
+                4,
                 filter));
 
         m_remaining_pixels.push_back(level_width * level_height);
