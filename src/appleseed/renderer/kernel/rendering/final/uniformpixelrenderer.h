@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2012 Francois Beaune, Jupiter Jazz Limited
+// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,59 +26,51 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_VARIATIONTRACKER_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_VARIATIONTRACKER_H
+#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_FINAL_UNIFORMPIXELRENDERER_H
+#define APPLESEED_RENDERER_KERNEL_RENDERING_FINAL_UNIFORMPIXELRENDERER_H
 
-// Standard headers.
-#include <cmath>
-#include <cstddef>
-#include <limits>
+// appleseed.renderer headers.
+#include "renderer/kernel/rendering/ipixelrenderer.h"
+#include "renderer/utility/paramarray.h"
+
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
+
+// Forward declarations.
+namespace renderer  { class ISampleRendererFactory; }
 
 namespace renderer
 {
 
-class VariationTracker
+//
+// Uniform pixel renderer.
+//
+
+class UniformPixelRendererFactory
+  : public IPixelRendererFactory
 {
   public:
-    VariationTracker()
-      : m_size(0)
-      , m_mean(0.0f)
-      , m_relative_mean_change(std::numeric_limits<float>::max())
-    {
-    }
+    // Constructor.
+    UniformPixelRendererFactory(
+        ISampleRendererFactory*     factory,
+        const ParamArray&           params);
 
-    void insert(const float value)
-    {
-        const float old_mean = m_mean;
+    // Delete this instance.
+    virtual void release() OVERRIDE;
 
-        ++m_size;
-        m_mean += (value - m_mean) / m_size;
+    // Return a new uniform pixel renderer instance.
+    virtual IPixelRenderer* create() OVERRIDE;
 
-        m_relative_mean_change =
-            m_mean > 0.0f ? std::abs(m_mean - old_mean) / m_mean : 0.0f;
-    }
-
-    size_t get_size() const
-    {
-        return m_size;
-    }
-
-    float get_mean() const
-    {
-        return m_mean;
-    }
-
-    float get_variation() const
-    {
-        return m_relative_mean_change;
-    }
+    // Return a new uniform pixel renderer instance.
+    static IPixelRenderer* create(
+        ISampleRendererFactory*     factory,
+        const ParamArray&           params);
 
   private:
-    size_t  m_size;
-    float   m_mean;
-    float   m_relative_mean_change;
+    ISampleRendererFactory*         m_factory;
+    ParamArray                      m_params;
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_VARIATIONTRACKER_H
+#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_FINAL_UNIFORMPIXELRENDERER_H

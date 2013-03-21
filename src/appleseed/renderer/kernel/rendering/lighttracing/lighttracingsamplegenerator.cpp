@@ -57,6 +57,7 @@
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
 #include "foundation/image/image.h"
 #include "foundation/image/spectrum.h"
@@ -841,14 +842,15 @@ ISampleGenerator* LightTracingSampleGeneratorFactory::create(
             m_params);
 }
 
-AccumulationFramebuffer* LightTracingSampleGeneratorFactory::create_accumulation_framebuffer(
-    const size_t            canvas_width,
-    const size_t            canvas_height)
+AccumulationFramebuffer* LightTracingSampleGeneratorFactory::create_accumulation_framebuffer()
 {
+    const CanvasProperties& props = m_frame.image().properties();
+
     return
         new GlobalAccumulationFramebuffer(
-            canvas_width,
-            canvas_height);
+            props.m_canvas_width,
+            props.m_canvas_height,
+            m_frame.get_filter());
 }
 
 }   // namespace renderer

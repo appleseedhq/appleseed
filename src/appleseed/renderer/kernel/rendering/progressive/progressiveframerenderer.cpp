@@ -92,11 +92,7 @@ namespace
             assert(generator_factory);
 
             // Create an accumulation framebuffer.
-            const CanvasProperties& props = m_frame.image().properties();
-            m_framebuffer.reset(
-                generator_factory->create_accumulation_framebuffer(
-                    props.m_canvas_width,
-                    props.m_canvas_height));
+            m_framebuffer.reset(generator_factory->create_accumulation_framebuffer());
 
             // Create and initialize the job manager.
             m_job_manager.reset(

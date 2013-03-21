@@ -26,27 +26,61 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_UTILITY_FILTERFACTORY_H
-#define APPLESEED_RENDERER_UTILITY_FILTERFACTORY_H
-
-// appleseed.foundation headers.
-#include "foundation/math/filter.h"
+#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_FINAL_VARIATIONTRACKER_H
+#define APPLESEED_RENDERER_KERNEL_RENDERING_FINAL_VARIATIONTRACKER_H
 
 // Standard headers.
-#include <memory>
-#include <string>
+#include <cmath>
+#include <cstddef>
 
 namespace renderer
 {
 
-class FilterFactory
+class VariationTracker
 {
   public:
-    typedef foundation::Filter2<double> FilterType;
+    VariationTracker()
+      : m_size(0)
+      , m_mean(0.0f)
+      , m_relative_mean_change(0.0f)
+    {
+    }
 
-    static std::auto_ptr<FilterType> create(const std::string& name, const double radius);
+    void insert(const float value)
+    {
+        const float old_mean = m_mean;
+
+        ++m_size;
+
+        m_mean += (value - m_mean) / m_size;
+
+        m_relative_mean_change =
+            m_size == 1 ? 0.0f :
+            m_mean == 0.0f ? 0.0f :
+            std::abs(m_mean - old_mean) / m_mean;
+    }
+
+    size_t get_size() const
+    {
+        return m_size;
+    }
+
+    float get_mean() const
+    {
+        return m_mean;
+    }
+
+    float get_variation() const
+    {
+        return m_relative_mean_change;
+    }
+
+  private:
+    size_t  m_size;
+    float   m_mean;
+    float   m_relative_mean_change;
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_UTILITY_FILTERFACTORY_H
+#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_FINAL_VARIATIONTRACKER_H

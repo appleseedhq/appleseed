@@ -27,7 +27,7 @@
 //
 
 // appleseed.renderer headers.
-#include "renderer/kernel/rendering/generic/pixelsampler.h"
+#include "renderer/kernel/rendering/final/pixelsampler.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
@@ -41,7 +41,7 @@ using namespace foundation;
 using namespace renderer;
 using namespace std;
 
-TEST_SUITE(Rendering_Generic_PixelSampler)
+TEST_SUITE(Renderer_Kernel_Rendering_Final_PixelSampler)
 {
     template <size_t SubpixelGridSize>
     struct Fixture

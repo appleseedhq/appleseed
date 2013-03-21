@@ -30,6 +30,7 @@
 #include "localaccumulationframebuffer.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/rendering/filteredframebuffer.h"
 #include "renderer/kernel/rendering/sample.h"
 #include "renderer/modeling/frame/frame.h"
 
@@ -69,13 +70,10 @@ namespace renderer
 //   up (i.e. all its pixels contain at least one sample), it becomes the new active level.
 //
 
-// If defined, draw each pixel with a shade of gray proportional to the number of samples it contains.
-#undef DEBUG_DISPLAY_SAMPLE_COUNT
-
 LocalAccumulationFramebuffer::LocalAccumulationFramebuffer(
     const size_t    width,
-    const size_t    height)
-  : AccumulationFramebuffer(width, height)
+    const size_t    height,
+    const Filter2d& filter)
 {
     // todo: change to static_assert<>.
     assert(sizeof(AccumulationPixel) == 5 * sizeof(float));
@@ -88,20 +86,18 @@ LocalAccumulationFramebuffer::LocalAccumulationFramebuffer(
     do
     {
         m_levels.push_back(
-            new Tile(
+            new FilteredFrameBuffer(
                 max(level_width, MinSize),
                 max(level_height, MinSize),
                 4 + 1,
-                PixelFormatFloat));
+                filter));
 
-        m_set_pixels.push_back(0);
+        m_remaining_pixels.push_back(level_width * level_height);
 
         level_width /= 2;
         level_height /= 2;
     }
     while (level_width >= MinSize && level_height >= MinSize);
-
-    clear();
 }
 
 LocalAccumulationFramebuffer::~LocalAccumulationFramebuffer()
@@ -118,18 +114,8 @@ void LocalAccumulationFramebuffer::clear()
 
     for (size_t level_index = 0; level_index < m_levels.size(); ++level_index)
     {
-        Tile* level = m_levels[level_index];
-
-        AccumulationPixel* pixel = reinterpret_cast<AccumulationPixel*>(level->pixel(0));
-        const size_t pixel_count = level->get_pixel_count();
-
-        for (size_t i = 0; i < pixel_count; ++i)
-        {
-            pixel[i].m_color.set(0.0f);
-            pixel[i].m_count = 0;
-        }
-
-        m_set_pixels[level_index] = 0;
+        m_levels[level_index]->clear();
+        m_remaining_pixels[level_index] = m_levels[level_index]->get_pixel_count();
     }
 
     m_active_level = m_levels.size() - 1;
@@ -141,94 +127,112 @@ void LocalAccumulationFramebuffer::store_samples(
 {
     mutex::scoped_lock lock(m_mutex);
 
-    const Sample* RESTRICT sample_ptr = samples;
-    const Sample* RESTRICT sample_end = samples + sample_count;
+    const Sample* sample_end = samples + sample_count;
 
     if (m_active_level == 0)
     {
-        Tile* level = m_levels[0];
+        FilteredFrameBuffer* level = m_levels[0];
 
-        const double fw = static_cast<double>(level->get_width());
-        const double fh = static_cast<double>(level->get_height());
-        const size_t max_x = level->get_width() - 1;
-        const size_t max_y = level->get_height() - 1;
+        const double level_width = static_cast<double>(level->get_width());
+        const double level_height = static_cast<double>(level->get_height());
 
-        while (sample_ptr < sample_end)
+        for (const Sample* sample_ptr = samples; sample_ptr < sample_end; ++sample_ptr)
         {
-            const double fx = sample_ptr->m_position.x * fw;
-            const double fy = sample_ptr->m_position.y * fh;
+            const double fx = sample_ptr->m_position.x * level_width;
+            const double fy = sample_ptr->m_position.y * level_height;
 
-            const size_t x = min(truncate<size_t>(fx), max_x);
-            const size_t y = min(truncate<size_t>(fy), max_y);
-
-            AccumulationPixel* pixel =
-                reinterpret_cast<AccumulationPixel*>(level->pixel(x, y));
-
-            pixel->m_color += sample_ptr->m_color;
-            pixel->m_count += 1;
-
-            ++sample_ptr;
+            level->add(fx, fy, &sample_ptr->m_color[0]);
         }
     }
     else
     {
-        while (sample_ptr < sample_end)
+        for (const Sample* sample_ptr = samples; sample_ptr < sample_end; ++sample_ptr)
         {
             for (size_t level_index = 0; level_index <= m_active_level; ++level_index)
             {
-                Tile* level = m_levels[level_index];
+                FilteredFrameBuffer* level = m_levels[level_index];
 
-                const size_t level_width = level->get_width();
-                const size_t level_height = level->get_height();
+                const double fx = sample_ptr->m_position.x * level->get_width();
+                const double fy = sample_ptr->m_position.y * level->get_height();
 
-                const double fx = sample_ptr->m_position.x * level_width;
-                const double fy = sample_ptr->m_position.y * level_height;
+                level->add(fx, fy, &sample_ptr->m_color[0]);
 
-                const size_t x = min(truncate<size_t>(fx), level_width - 1);
-                const size_t y = min(truncate<size_t>(fy), level_height - 1);
+                size_t& remaining_pixels = m_remaining_pixels[level_index];
 
-                AccumulationPixel* pixel =
-                    reinterpret_cast<AccumulationPixel*>(level->pixel(x, y));
+                if (remaining_pixels > 0)
+                    --remaining_pixels;
 
-                pixel->m_color += sample_ptr->m_color;
-                pixel->m_count += 1;
-
-                if (pixel->m_count == 1)
+                if (remaining_pixels == 0)
                 {
-                    if (++m_set_pixels[level_index] == level->get_pixel_count())
-                    {
-                        // We just completed this level: make it the new active level.
-                        m_active_level = level_index;
+                    // We just completed this level: make it the new active level.
+                    m_active_level = level_index;
 
-                        // No need to fill the coarser levels anymore.
-                        break;
-                    }
+                    // No need to fill the coarser levels anymore.
+                    break;
                 }
             }
-
-            ++sample_ptr;
         }
     }
 
     m_sample_count += sample_count;
 }
 
-void LocalAccumulationFramebuffer::develop_to_frame_no_lock(Frame& frame) const
+namespace
 {
+    void develop_to_tile(
+        Tile&                       tile,
+        const size_t                image_width,
+        const size_t                image_height,
+        const FilteredFrameBuffer&  level,
+        const size_t                origin_x,
+        const size_t                origin_y,
+        const bool                  undo_premultiplied_alpha)
+    {
+        const size_t tile_width = tile.get_width();
+        const size_t tile_height = tile.get_height();
+        const size_t level_width = level.get_width();
+        const size_t level_height = level.get_height();
+
+        for (size_t y = 0; y < tile_height; ++y)
+        {
+            for (size_t x = 0; x < tile_width; ++x)
+            {
+                Color4f color;
+
+                level.get(
+                    (origin_x + x) * level_width / image_width,
+                    (origin_y + y) * level_height / image_height,
+                    &color[0]);
+
+                color[3] = 1.0f;
+
+                if (undo_premultiplied_alpha)
+                {
+                    const float rcp_alpha = color[3] == 0.0f ? 0.0f : 1.0f / color[3];
+                    color[0] *= rcp_alpha;
+                    color[1] *= rcp_alpha;
+                    color[2] *= rcp_alpha;
+                }
+
+                tile.set_pixel(x, y, color);
+            }
+        }
+    }
+}
+
+void LocalAccumulationFramebuffer::develop_to_frame(Frame& frame)
+{
+    mutex::scoped_lock lock(m_mutex);
+
     Image& image = frame.image();
     const CanvasProperties& frame_props = image.properties();
 
-    assert(frame_props.m_canvas_width == m_width);
-    assert(frame_props.m_canvas_height == m_height);
+    assert(frame_props.m_canvas_width == m_levels[0]->get_width());
+    assert(frame_props.m_canvas_height == m_levels[0]->get_height());
     assert(frame_props.m_channel_count == 4);
 
-    // Find the first (the highest resolution) level that has all its pixels set.
-    size_t display_level = 0;
-    while (display_level < m_levels.size() - 1 &&
-           m_set_pixels[display_level] < m_levels[display_level]->get_pixel_count())
-        ++display_level;
-
-    const Tile& level = *m_levels[display_level];
+    const FilteredFrameBuffer& level = find_display_level();
+    const bool undo_premultiplied_alpha = !frame.is_premultiplied_alpha();
 
     for (size_t ty = 0; ty < frame_props.m_tile_count_y; ++ty)
     {
@@ -239,77 +243,28 @@ void LocalAccumulationFramebuffer::develop_to_frame_no_lock(Frame& frame) const
             const size_t origin_x = tx * frame_props.m_tile_width;
             const size_t origin_y = ty * frame_props.m_tile_height;
 
-            develop_to_tile(frame, level, tile, origin_x, origin_y, tx, ty);
+            develop_to_tile(
+                tile,
+                frame_props.m_canvas_width,
+                frame_props.m_canvas_height,
+                level,
+                origin_x, origin_y,
+                undo_premultiplied_alpha);
         }
     }
 }
 
-void LocalAccumulationFramebuffer::develop_to_tile(
-    const Frame&    frame,
-    const Tile&     level,
-    Tile&           tile,
-    const size_t    origin_x,
-    const size_t    origin_y,
-    const size_t    tile_x,
-    const size_t    tile_y) const
+const FilteredFrameBuffer& LocalAccumulationFramebuffer::find_display_level() const
 {
-    const size_t tile_width = tile.get_width();
-    const size_t tile_height = tile.get_height();
+    assert(!m_levels.empty());
 
-#ifdef DEBUG_DISPLAY_SAMPLE_COUNT
-
-    const Tile* level = m_levels[0];
-
-    for (size_t y = 0; y < tile_height; ++y)
+    for (size_t i = 0; i < m_levels.size() - 1; ++i)
     {
-        for (size_t x = 0; x < tile_width; ++x)
-        {
-            const AccumulationPixel* pixel =
-                reinterpret_cast<const AccumulationPixel*>(
-                    level->pixel(
-                        origin_x + x,
-                        origin_y + y));
-
-            const float c = saturate(static_cast<float>(pixel->m_count) / 20.0f);
-
-            tile.set_pixel(x, y, Color4f(c, c, c, 1.0f));
-        }
+        if (m_remaining_pixels[i] == 0)
+            return *m_levels[i];
     }
 
-#else
-
-    const size_t level_width = level.get_width();
-    const size_t level_height = level.get_height();
-
-    for (size_t y = 0; y < tile_height; ++y)
-    {
-        for (size_t x = 0; x < tile_width; ++x)
-        {
-            const AccumulationPixel* pixel =
-                reinterpret_cast<const AccumulationPixel*>(
-                    level.pixel(
-                        (origin_x + x) * level_width / m_width,
-                        (origin_y + y) * level_height / m_height));
-
-            Color4f color =
-                pixel->m_count > 0
-                    ? pixel->m_color / static_cast<float>(pixel->m_count)
-                    : Color4f(0.0f);
-
-            // Optionally undo alpha premultiplication.
-            if (!frame.is_premultiplied_alpha())
-            {
-                const float rcp_alpha = color[3] == 0.0f ? 0.0f : 1.0f / color[3];
-                color[0] *= rcp_alpha;
-                color[1] *= rcp_alpha;
-                color[2] *= rcp_alpha;
-            }
-
-            tile.set_pixel(x, y, color);
-        }
-    }
-
-#endif
+    return *m_levels.back();
 }
 
 }   // namespace renderer

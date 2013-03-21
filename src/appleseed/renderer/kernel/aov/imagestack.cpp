@@ -83,6 +83,16 @@ ImageStack::~ImageStack()
     delete impl;
 }
 
+void ImageStack::clear()
+{
+    const size_t size = impl->m_images.size();
+
+    for (size_t i = 0; i < size; ++i)
+        delete impl->m_images[i].m_image;
+
+    impl->m_images.clear();
+}
+
 bool ImageStack::empty() const
 {
     return impl->m_images.empty();
@@ -105,14 +115,17 @@ const Image& ImageStack::get_image(const size_t index) const
     return *impl->m_images[index].m_image;
 }
 
-void ImageStack::clear()
+size_t ImageStack::get(const char* name) const
 {
     const size_t size = impl->m_images.size();
 
     for (size_t i = 0; i < size; ++i)
-        delete impl->m_images[i].m_image;
+    {
+        if (strcmp(impl->m_images[i].m_name.c_str(), name) == 0)
+            return i;
+    }
 
-    impl->m_images.clear();
+    return ~0;
 }
 
 size_t ImageStack::append(
@@ -136,21 +149,6 @@ size_t ImageStack::append(
     impl->m_images.push_back(named_image);
 
     return aov_index;
-}
-
-size_t ImageStack::get_or_append(
-    const char*             name,
-    const PixelFormat       format)
-{
-    const size_t size = impl->m_images.size();
-
-    for (size_t i = 0; i < size; ++i)
-    {
-        if (strcmp(impl->m_images[i].m_name.c_str(), name) == 0)
-            return i;
-    }
-
-    return append(name, format);
 }
 
 TileStack ImageStack::tiles(

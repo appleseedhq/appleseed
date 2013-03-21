@@ -73,6 +73,14 @@ class Filter2
 
 
 //
+// Specializations.
+//
+
+typedef Filter2<float>  Filter2f;
+typedef Filter2<double> Filter2d;
+
+
+//
 // 2D box filter.
 //
 

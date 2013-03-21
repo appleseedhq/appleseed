@@ -35,6 +35,7 @@
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/colorspace.h"
+#include "foundation/math/filter.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
@@ -77,6 +78,22 @@ class DLLSYMBOL Frame
     // Access the AOV images.
     ImageStack& aov_images() const;
 
+    // Return the reconstruction filter used by the main image and the AOV images.
+    const foundation::Filter2d& get_filter() const;
+
+    // Return the color space the frame should be converted to for display.
+    foundation::ColorSpace get_color_space() const;
+
+    // Return the lighting conditions for spectral-to-RGB conversions.
+    const foundation::LightingConditions& get_lighting_conditions() const;
+
+    // Return true if the frame uses premultiplied alpha, false if it uses straight alpha.
+    bool is_premultiplied_alpha() const;
+
+    // Convert a tile or an image from linear RGB to the output color space.
+    void transform_to_output_color_space(foundation::Tile& tile) const;
+    void transform_to_output_color_space(foundation::Image& image) const;
+
     // Return the normalized device coordinates of a given sample.
     foundation::Vector2d get_sample_position(
         const double    sample_x,               // x coordinate of the sample in the image, in [0,width)
@@ -93,19 +110,6 @@ class DLLSYMBOL Frame
         const size_t    pixel_y,                // y coordinate of the pixel in the tile
         const double    sample_x,               // x coordinate of the sample in the pixel, in [0,1)
         const double    sample_y) const;        // y coordinate of the sample in the pixel, in [0,1)
-
-    // Return the color space the frame should be converted to for display.
-    foundation::ColorSpace get_color_space() const;
-
-    // Return the lighting conditions for spectral to RGB conversion.
-    const foundation::LightingConditions& get_lighting_conditions() const;
-
-    // Return true if the frame uses premultiplied alpha, false if it uses straight alpha.
-    bool is_premultiplied_alpha() const;
-
-    // Convert a tile or an image from linear RGB to the output color space.
-    void transform_to_output_color_space(foundation::Tile& tile) const;
-    void transform_to_output_color_space(foundation::Image& image) const;
 
     // Clear the main image to transparent black.
     void clear_main_image();

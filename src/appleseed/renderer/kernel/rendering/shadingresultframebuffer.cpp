@@ -27,7 +27,7 @@
 //
 
 // Interface header.
-#include "sampleaccumulationbuffer.h"
+#include "shadingresultframebuffer.h"
 
 // appleseed.renderer headers.
 #include "renderer/kernel/aov/tilestack.h"
@@ -35,6 +35,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
+#include "foundation/image/colorspace.h"
 #include "foundation/image/tile.h"
 #include "foundation/platform/compiler.h"
 
@@ -42,74 +43,85 @@
 #include <cassert>
 
 using namespace foundation;
+using namespace std;
 
 namespace renderer
 {
 
-SampleAccumulationBuffer::SampleAccumulationBuffer(
+ShadingResultFrameBuffer::ShadingResultFrameBuffer(
     const size_t                    width,
     const size_t                    height,
-    const size_t                    aov_count)
-  : m_width(width)
-  , m_height(height)
+    const size_t                    aov_count,
+    const Filter2d&                 filter)
+  : FilteredFrameBuffer(
+        width,
+        height,
+        4 + aov_count * 3,
+        filter)
   , m_aov_count(aov_count)
-  , m_channel_count(1 + 4 + aov_count * 3)
-  , m_buffer_size(m_width * m_height * m_channel_count)
+  , m_scratch(4 + aov_count * 3)
 {
-    m_buffer.resize(m_buffer_size, 0.0f);
 }
 
-void SampleAccumulationBuffer::clear()
+ShadingResultFrameBuffer::ShadingResultFrameBuffer(
+    const size_t                    width,
+    const size_t                    height,
+    const size_t                    aov_count,
+    const AABB2u&                   crop_window,
+    const Filter2d&                 filter)
+  : FilteredFrameBuffer(
+        width,
+        height,
+        4 + aov_count * 3,
+        crop_window,
+        filter)
+  , m_aov_count(aov_count)
+  , m_scratch(4 + aov_count * 3)
 {
-    for (size_t i = 0; i < m_buffer_size; ++i)
-        m_buffer[i] = 0.0f;
 }
 
-void SampleAccumulationBuffer::add(
-    const size_t                    x,
-    const size_t                    y,
-    const ShadingResult&            sample,
-    const float                     weight)
+void ShadingResultFrameBuffer::add(
+    const double                    x,
+    const double                    y,
+    const ShadingResult&            sample)
 {
     assert(sample.m_color_space == ColorSpaceLinearRGB);
-    assert(sample.m_aovs.size() == m_aov_count);
 
-    float* ptr = pixel(x, y);
+    float* ptr = &m_scratch[0];
 
-    *ptr++ += weight;
-
-    *ptr++ += sample.m_alpha[0] * weight;
-
-    *ptr++ += sample.m_color[0] * weight;
-    *ptr++ += sample.m_color[1] * weight;
-    *ptr++ += sample.m_color[2] * weight;
+    *ptr++ = sample.m_alpha[0];
+    *ptr++ = sample.m_color[0];
+    *ptr++ = sample.m_color[1];
+    *ptr++ = sample.m_color[2];
 
     for (size_t i = 0; i < m_aov_count; ++i)
     {
-        *ptr++ += sample.m_aovs[i][0] * weight;
-        *ptr++ += sample.m_aovs[i][1] * weight;
-        *ptr++ += sample.m_aovs[i][2] * weight;
+        *ptr++ = sample.m_aovs[i][0];
+        *ptr++ = sample.m_aovs[i][1];
+        *ptr++ = sample.m_aovs[i][2];
     }
+
+    FilteredFrameBuffer::add(x, y, &m_scratch[0]);
 }
 
-void SampleAccumulationBuffer::add(
-    const SampleAccumulationBuffer& source,
-    const size_t                    source_x,
-    const size_t                    source_y,
+void ShadingResultFrameBuffer::merge(
     const size_t                    dest_x,
     const size_t                    dest_y,
-    const float                     weight)
+    const ShadingResultFrameBuffer& source,
+    const size_t                    source_x,
+    const size_t                    source_y,
+    const float                     scaling)
 {
     assert(m_channel_count == source.m_channel_count);
 
     const float* RESTRICT source_ptr = source.pixel(source_x, source_y);
     float* RESTRICT dest_ptr = pixel(dest_x, dest_y);
 
-    for (size_t i = 0; i < m_channel_count; ++i)
-        dest_ptr[i] += source_ptr[i] * weight;
+    for (size_t i = 0; i < m_channel_count + 1; ++i)
+        dest_ptr[i] += source_ptr[i] * scaling;
 }
 
-void SampleAccumulationBuffer::develop_to_tile_premult_alpha(
+void ShadingResultFrameBuffer::develop_to_tile_premult_alpha(
     Tile&                           tile,
     TileStack&                      aov_tiles) const
 {
@@ -138,7 +150,7 @@ void SampleAccumulationBuffer::develop_to_tile_premult_alpha(
     }
 }
 
-void SampleAccumulationBuffer::develop_to_tile_straight_alpha(
+void ShadingResultFrameBuffer::develop_to_tile_straight_alpha(
     Tile&                           tile,
     TileStack&                      aov_tiles) const
 {
@@ -152,10 +164,10 @@ void SampleAccumulationBuffer::develop_to_tile_straight_alpha(
             const float rcp_weight = weight == 0.0f ? 0.0f : 1.0f / weight;
 
             const float alpha = *ptr++;
-            const float rcp_alpha = alpha == 0.0f ? 0.0f : 1.0f / alpha;
+            const float rcp_weight_alpha = alpha == 0.0f ? 0.0f : 1.0f / alpha;
 
             Color4f color(ptr[0], ptr[1], ptr[2], alpha);
-            color.rgb() *= rcp_alpha;
+            color.rgb() *= rcp_weight_alpha;
             color.a *= rcp_weight;
             tile.set_pixel(x, y, color);
             ptr += 3;
@@ -163,30 +175,13 @@ void SampleAccumulationBuffer::develop_to_tile_straight_alpha(
             for (size_t i = 0; i < m_aov_count; ++i)
             {
                 Color4f aov(ptr[0], ptr[1], ptr[2], alpha);
-                aov.rgb() *= rcp_alpha;
+                aov.rgb() *= rcp_weight_alpha;
                 aov.a *= rcp_weight;
                 aov_tiles.set_pixel(x, y, i, aov);
                 ptr += 3;
             }
         }
     }
-}
-
-float* SampleAccumulationBuffer::pixel(
-    const size_t                    x,
-    const size_t                    y)
-{
-    assert(x < m_width);
-    assert(y < m_height);
-
-    return &m_buffer[(y * m_width + x) * m_channel_count];
-}
-
-const float* SampleAccumulationBuffer::pixel(
-    const size_t                    x,
-    const size_t                    y) const
-{
-    return const_cast<SampleAccumulationBuffer*>(this)->pixel(x, y);
 }
 
 }   // namespace renderer

@@ -44,7 +44,7 @@ using namespace std;
 
 namespace
 {
-    bool is_zero_on_domain_border(const Filter2<double>& filter)
+    bool is_zero_on_domain_border(const Filter2d& filter)
     {
         return
             fz(filter.evaluate(-filter.get_xradius(), -filter.get_yradius())) &&
@@ -58,9 +58,9 @@ namespace
     }
 
     void plot(
-        const string&           filename,
-        const string&           legend,
-        const Filter2<double>&  filter)
+        const string&   filename,
+        const string&   legend,
+        const Filter2d& filter)
     {
         const double r = filter.get_xradius();
 

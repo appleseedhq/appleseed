@@ -27,7 +27,7 @@
 //
 
 // appleseed.renderer headers.
-#include "renderer/kernel/rendering/generic/variationtracker.h"
+#include "renderer/kernel/rendering/final/variationtracker.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/rng.h"
@@ -42,8 +42,71 @@ using namespace foundation;
 using namespace renderer;
 using namespace std;
 
-TEST_SUITE(Renderer_Kernel_Rendering_Generic_VariationTracker)
+TEST_SUITE(Renderer_Kernel_Rendering_Final_VariationTracker)
 {
+    TEST_CASE(GetSize_GivenDefaultState_ReturnsZero)
+    {
+        VariationTracker tracker;
+
+        EXPECT_EQ(0, tracker.get_size());
+    }
+
+    TEST_CASE(GetMean_GivenDefaultState_ReturnsZero)
+    {
+        VariationTracker tracker;
+
+        EXPECT_EQ(0.0f, tracker.get_mean());
+    }
+
+    TEST_CASE(GetVariation_GivenDefaultState_ReturnsZero)
+    {
+        VariationTracker tracker;
+
+        EXPECT_EQ(0.0f, tracker.get_variation());
+    }
+
+    TEST_CASE(GetSize_GivenSingleValue_ReturnsOne)
+    {
+        VariationTracker tracker;
+        tracker.insert(5.0f);
+
+        EXPECT_EQ(1, tracker.get_size());
+    }
+
+    TEST_CASE(GetMean_GivenSingleValue_ReturnsValue)
+    {
+        VariationTracker tracker;
+        tracker.insert(5.0f);
+
+        EXPECT_EQ(5.0f, tracker.get_mean());
+    }
+
+    TEST_CASE(GetVariation_GivenSingleValue_ReturnsZero)
+    {
+        VariationTracker tracker;
+        tracker.insert(5.0f);
+
+        EXPECT_EQ(0.0f, tracker.get_variation());
+    }
+
+    TEST_CASE(GetMean_GivenTwoValues_ReturnsMeanValue)
+    {
+        VariationTracker tracker;
+        tracker.insert(2.0f);
+        tracker.insert(4.0f);
+
+        EXPECT_EQ(3.0f, tracker.get_mean());
+    }
+
+    TEST_CASE(GetVariation_GivenTwoValues_ReturnsRelativeMeanChange)
+    {
+        VariationTracker tracker;
+        tracker.insert(2.0f);       // mean is now 2.0f
+        tracker.insert(4.0f);       // mean is now 3.0f
+
+        EXPECT_FEQ(1.0f / 3.0f, tracker.get_variation());
+    }
+
     TEST_CASE(Visualize)
     {
         VariationTracker tracker;

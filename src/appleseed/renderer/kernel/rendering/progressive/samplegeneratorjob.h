@@ -29,18 +29,18 @@
 #ifndef APPLESEED_RENDERER_KERNEL_RENDERING_PROGRESSIVE_SAMPLEGENERATORJOB_H
 #define APPLESEED_RENDERER_KERNEL_RENDERING_PROGRESSIVE_SAMPLEGENERATORJOB_H
 
-// appleseed.renderer headers.
-#include "renderer/global/global.h"
-
 // appleseed.foundation headers.
 #include "foundation/utility/job.h"
 
+// Standard headers.
+#include <cstddef>
+
 // Forward declarations.
-namespace renderer      { class AccumulationFramebuffer; }
-namespace renderer      { class Frame; }
-namespace renderer      { class ISampleGenerator; }
-namespace renderer      { class ITileCallback; }
-namespace renderer      { class SampleCounter; }
+namespace renderer  { class AccumulationFramebuffer; }
+namespace renderer  { class Frame; }
+namespace renderer  { class ISampleGenerator; }
+namespace renderer  { class ITileCallback; }
+namespace renderer  { class SampleCounter; }
 
 namespace renderer
 {

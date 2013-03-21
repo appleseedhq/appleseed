@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_PIXELSAMPLER_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_PIXELSAMPLER_H
+#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_FINAL_PIXELSAMPLER_H
+#define APPLESEED_RENDERER_KERNEL_RENDERING_FINAL_PIXELSAMPLER_H
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -60,7 +60,8 @@ class PixelSampler
     // Compute the position of a pixel sample and the initial instance number
     // of the corresponding sampling context, given the integer coordinates
     // of the subpixel grid cell containing the sample. The coordinates of the
-    // pixel sample are expressed in sample space (http://appleseedhq.net/conventions).
+    // pixel sample are expressed in continous image space
+    // (http://appleseedhq.net/conventions).
     void sample(
         const int               sx,
         const int               sy,
@@ -110,4 +111,4 @@ FORCE_INLINE void PixelSampler::sample(
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_PIXELSAMPLER_H
+#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_FINAL_PIXELSAMPLER_H

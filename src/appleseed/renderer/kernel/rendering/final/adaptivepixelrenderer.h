@@ -26,11 +26,11 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_GENERICTILERENDERER_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_GENERICTILERENDERER_H
+#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_FINAL_ADAPTIVEPIXELRENDERER_H
+#define APPLESEED_RENDERER_KERNEL_RENDERING_FINAL_ADAPTIVEPIXELRENDERER_H
 
 // appleseed.renderer headers.
-#include "renderer/kernel/rendering/itilerenderer.h"
+#include "renderer/kernel/rendering/ipixelrenderer.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
@@ -38,43 +38,43 @@
 
 // Forward declarations.
 namespace renderer  { class Frame; }
-namespace renderer  { class IPixelRendererFactory; }
+namespace renderer  { class ISampleRendererFactory; }
 
 namespace renderer
 {
 
 //
-// Generic tile renderer factory.
+// Adaptive pixel renderer.
 //
 
-class GenericTileRendererFactory
-  : public ITileRendererFactory
+class AdaptivePixelRendererFactory
+  : public IPixelRendererFactory
 {
   public:
     // Constructor.
-    GenericTileRendererFactory(
-        const Frame&            frame,
-        IPixelRendererFactory*  factory,
-        const ParamArray&       params);
+    AdaptivePixelRendererFactory(
+        const Frame&                frame,
+        ISampleRendererFactory*     factory,
+        const ParamArray&           params);
 
     // Delete this instance.
     virtual void release() OVERRIDE;
 
-    // Return a new generic tile renderer instance.
-    virtual ITileRenderer* create() OVERRIDE;
+    // Return a new adaptive pixel renderer instance.
+    virtual IPixelRenderer* create() OVERRIDE;
 
-    // Return a new generic tile renderer instance.
-    static ITileRenderer* create(
-        const Frame&            frame,
-        IPixelRendererFactory*  factory,
-        const ParamArray&       params);
+    // Return a new adaptive pixel renderer instance.
+    static IPixelRenderer* create(
+        const Frame&                frame,
+        ISampleRendererFactory*     factory,
+        const ParamArray&           params);
 
   private:
-    const Frame&                m_frame;
-    IPixelRendererFactory*      m_factory;
-    ParamArray                  m_params;
+    const Frame&                    m_frame;
+    ISampleRendererFactory*         m_factory;
+    ParamArray                      m_params;
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_GENERICTILERENDERER_H
+#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_FINAL_ADAPTIVEPIXELRENDERER_H

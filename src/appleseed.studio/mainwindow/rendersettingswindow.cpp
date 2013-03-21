@@ -189,21 +189,6 @@ void RenderSettingsWindow::create_image_plane_sampling_general_settings(QVBoxLay
     QVBoxLayout* layout = new QVBoxLayout();
     groupbox->setLayout(layout);
 
-    QHBoxLayout* sublayout = create_horizontal_layout();
-    layout->addLayout(sublayout);
-
-    QComboBox* filter = create_combobox("image_plane_sampling.general.filter");
-    filter->addItem("Box", "box");
-    filter->addItem("Triangle", "triangle");
-    filter->addItem("Gaussian", "gaussian");
-    filter->addItem("Mitchell-Netravali", "mitchell");
-    filter->addItem("Cubic B-spline", "bspline");
-    filter->addItem("Catmull-Rom Spline", "catmull");
-    filter->addItem("Lanczos", "lanczos");
-    sublayout->addLayout(create_form_layout("Filter:", filter));
-
-    sublayout->addLayout(create_form_layout("Filter Size:", create_double_input("image_plane_sampling.general.filter_size", 1, 256, 1, 0.1)));
-
     m_image_planer_sampler_combo = create_combobox("image_plane_sampling.general.sampler");
     m_image_planer_sampler_combo->addItem("Uniform", "uniform");
     m_image_planer_sampler_combo->addItem("Adaptive", "adaptive");
@@ -663,11 +648,12 @@ QComboBox* RenderSettingsWindow::create_combobox(
 void RenderSettingsWindow::create_direct_links()
 {
     // Image Plane Sampling.
-    create_direct_link("image_plane_sampling.general.filter", "generic_tile_renderer.filter", "mitchell");
-    create_direct_link("image_plane_sampling.general.filter_size", "generic_tile_renderer.filter_size", 2.0);
-    create_direct_link("image_plane_sampling.general.sampler", "generic_tile_renderer.sampler", "uniform");
-    create_direct_link("image_plane_sampling.adaptive_sampler.quality", "generic_tile_renderer.quality", 3.0);
-    create_direct_link("image_plane_sampling.adaptive_sampler.enable_diagnostics", "generic_tile_renderer.enable_adaptive_sampler_diagnostics", false);
+    create_direct_link("image_plane_sampling.general.sampler", "pixel_renderer", "uniform");
+    create_direct_link("image_plane_sampling.uniform_sampler.samples", "uniform_pixel_renderer.samples", 64);
+    create_direct_link("image_plane_sampling.adaptive_sampler.min_samples", "adaptive_pixel_renderer.min_samples", 16);
+    create_direct_link("image_plane_sampling.adaptive_sampler.max_samples", "adaptive_pixel_renderer.max_samples", 64);
+    create_direct_link("image_plane_sampling.adaptive_sampler.quality", "adaptive_pixel_renderer.quality", 3.0);
+    create_direct_link("image_plane_sampling.adaptive_sampler.enable_diagnostics", "adaptive_pixel_renderer.enable_diagnostics", false);
 
     // Lighting.
     create_direct_link("lighting.engine", "lighting_engine", "pt");
@@ -745,11 +731,6 @@ void RenderSettingsWindow::do_load_configuration(const Configuration& config)
 {
     load_directly_linked_values(config);
 
-    // Image Plane Sampling.
-    set_widget("image_plane_sampling.uniform_sampler.samples", get_config<size_t>(config, "generic_tile_renderer.max_samples", 16));
-    set_widget("image_plane_sampling.adaptive_sampler.min_samples", get_config<size_t>(config, "generic_tile_renderer.min_samples", 4));
-    set_widget("image_plane_sampling.adaptive_sampler.max_samples", get_config<size_t>(config, "generic_tile_renderer.max_samples", 64));
-
     // Distribution Ray Tracer.
     {
         const size_t DefaultMaxBounces = 8;
@@ -784,20 +765,6 @@ void RenderSettingsWindow::do_load_configuration(const Configuration& config)
 void RenderSettingsWindow::do_save_configuration(Configuration& config)
 {
     save_directly_linked_values(config);
-
-    // Image Plane Sampling.
-    if (get_widget<string>("image_plane_sampling.general.sampler") == "uniform")
-    {
-        const size_t samples = get_widget<size_t>("image_plane_sampling.uniform_sampler.samples");
-        set_config(config, "generic_tile_renderer.min_samples", samples);
-        set_config(config, "generic_tile_renderer.max_samples", samples);
-    }
-    else
-    {
-        assert(get_widget<string>("image_plane_sampling.general.sampler") == "adaptive");
-        set_config(config, "generic_tile_renderer.min_samples", get_widget<size_t>("image_plane_sampling.adaptive_sampler.min_samples"));
-        set_config(config, "generic_tile_renderer.max_samples", get_widget<size_t>("image_plane_sampling.adaptive_sampler.max_samples"));
-    }
 
     // Distribution Ray Tracer.
     set_config(config, "drt.max_path_length",

@@ -88,6 +88,7 @@ struct Frame::Impl
     float                   m_target_gamma;
     float                   m_rcp_target_gamma;
     LightingConditions      m_lighting_conditions;
+    auto_ptr<Filter2d>      m_filter;
 
     auto_ptr<Image>         m_image;
     auto_ptr<ImageStack>    m_aov_images;
@@ -152,6 +153,11 @@ Image& Frame::image() const
 ImageStack& Frame::aov_images() const
 {
     return *impl->m_aov_images.get();
+}
+
+const Filter2d& Frame::get_filter() const
+{
+    return *impl->m_filter.get();
 }
 
 const LightingConditions& Frame::get_lighting_conditions() const
@@ -502,89 +508,124 @@ bool Frame::archive(
 void Frame::extract_parameters()
 {
     // Retrieve frame resolution parameter.
-    const Vector2i DefaultResolution(512, 512);
-    Vector2i resolution = m_params.get_required<Vector2i>("resolution", DefaultResolution);
-    if (resolution[0] < 1 || resolution[1] < 1)
     {
-        // Invalid value for resolution parameter, use default.
-        RENDERER_LOG_ERROR(
-            "invalid value \"%d %d\" for parameter \"%s\", using default value \"%d %d\".",
-            resolution[0],
-            resolution[1],
-            "resolution",
-            DefaultResolution[0],
-            DefaultResolution[1]);
-        resolution = DefaultResolution;
+        const Vector2i DefaultResolution(512, 512);
+        Vector2i resolution = m_params.get_required<Vector2i>("resolution", DefaultResolution);
+        if (resolution[0] < 1 || resolution[1] < 1)
+        {
+            RENDERER_LOG_ERROR(
+                "invalid value \"%d %d\" for parameter \"%s\", using default value \"%d %d\".",
+                resolution[0],
+                resolution[1],
+                "resolution",
+                DefaultResolution[0],
+                DefaultResolution[1]);
+            resolution = DefaultResolution;
+        }
+        impl->m_frame_width = static_cast<size_t>(resolution[0]);
+        impl->m_frame_height = static_cast<size_t>(resolution[1]);
     }
-    impl->m_frame_width = static_cast<size_t>(resolution[0]);
-    impl->m_frame_height = static_cast<size_t>(resolution[1]);
 
     // Retrieve tile size parameter.
-    const Vector2i DefaultTileSize(64, 64);
-    Vector2i tile_size = m_params.get_optional<Vector2i>("tile_size", DefaultTileSize);
-    if (tile_size[0] < 1 || tile_size[1] < 1)
     {
-        // Invalid value for tile_size parameter, use default.
-        RENDERER_LOG_ERROR(
-            "invalid value \"%d %d\" for parameter \"%s\", using default value \"%d %d\".",
-            tile_size[0],
-            tile_size[1],
-            "tile_size",
-            DefaultTileSize[0],
-            DefaultTileSize[1]);
-        tile_size = DefaultTileSize;
+        const Vector2i DefaultTileSize(64, 64);
+        Vector2i tile_size = m_params.get_optional<Vector2i>("tile_size", DefaultTileSize);
+        if (tile_size[0] < 1 || tile_size[1] < 1)
+        {
+            RENDERER_LOG_ERROR(
+                "invalid value \"%d %d\" for parameter \"%s\", using default value \"%d %d\".",
+                tile_size[0],
+                tile_size[1],
+                "tile_size",
+                DefaultTileSize[0],
+                DefaultTileSize[1]);
+            tile_size = DefaultTileSize;
+        }
+        impl->m_tile_width = static_cast<size_t>(tile_size[0]);
+        impl->m_tile_height = static_cast<size_t>(tile_size[1]);
     }
-    impl->m_tile_width = static_cast<size_t>(tile_size[0]);
-    impl->m_tile_height = static_cast<size_t>(tile_size[1]);
 
     // Retrieve pixel format parameter.
-    const PixelFormat DefaultPixelFormat = PixelFormatFloat;
-    const char* DefaultPixelFormatString = "float";
-    const string pixel_format =
-        m_params.get_optional<string>("pixel_format", DefaultPixelFormatString);
-    if (pixel_format == "uint8")
-        impl->m_pixel_format = PixelFormatUInt8;
-    else if (pixel_format == "uint16")
-        impl->m_pixel_format = PixelFormatUInt16;
-    else if (pixel_format == "uint32")
-        impl->m_pixel_format = PixelFormatUInt32;
-    else if (pixel_format == "half")
-        impl->m_pixel_format = PixelFormatHalf;
-    else if (pixel_format == "float")
-        impl->m_pixel_format = PixelFormatFloat;
-    else if (pixel_format == "double")
-        impl->m_pixel_format = PixelFormatDouble;
-    else
     {
-        // Invalid value for pixel_format parameter, use default.
-        RENDERER_LOG_ERROR(
-            "invalid value \"%s\" for parameter \"%s\", using default value \"%s\".",
-            pixel_format.c_str(),
-            "pixel_format",
-            DefaultPixelFormatString);
-        impl->m_pixel_format = DefaultPixelFormat;
+        const PixelFormat DefaultPixelFormat = PixelFormatFloat;
+        const char* DefaultPixelFormatString = "float";
+        const string pixel_format_str =
+            m_params.get_optional<string>("pixel_format", DefaultPixelFormatString);
+        if (pixel_format_str == "uint8")
+            impl->m_pixel_format = PixelFormatUInt8;
+        else if (pixel_format_str == "uint16")
+            impl->m_pixel_format = PixelFormatUInt16;
+        else if (pixel_format_str == "uint32")
+            impl->m_pixel_format = PixelFormatUInt32;
+        else if (pixel_format_str == "half")
+            impl->m_pixel_format = PixelFormatHalf;
+        else if (pixel_format_str == "float")
+            impl->m_pixel_format = PixelFormatFloat;
+        else if (pixel_format_str == "double")
+            impl->m_pixel_format = PixelFormatDouble;
+        else
+        {
+            RENDERER_LOG_ERROR(
+                "invalid value \"%s\" for parameter \"%s\", using default value \"%s\".",
+                pixel_format_str.c_str(),
+                "pixel_format",
+                DefaultPixelFormatString);
+            impl->m_pixel_format = DefaultPixelFormat;
+        }
+    }
+
+    // Retrieve reconstruction filter parameter.
+    {
+        const double radius = m_params.get_optional<double>("filter_size", 2.0);
+
+        const char* DefaultFilterString = "mitchell";
+        const string filter_str = m_params.get_optional<string>("filter", DefaultFilterString);
+        if (filter_str == "box")
+            impl->m_filter.reset(new BoxFilter2<double>(radius, radius));
+        else if (filter_str == "triangle")
+            impl->m_filter.reset(new TriangleFilter2<double>(radius, radius));
+        else if (filter_str == "gaussian")
+            impl->m_filter.reset(new GaussianFilter2<double>(radius, radius, 8.0));
+        else if (filter_str == "mitchell")
+            impl->m_filter.reset(new MitchellFilter2<double>(radius, radius, 1.0/3, 1.0/3));
+        else if (filter_str == "bspline")
+            impl->m_filter.reset(new MitchellFilter2<double>(radius, radius, 1.0, 0.0));
+        else if (filter_str == "catmull")
+            impl->m_filter.reset(new MitchellFilter2<double>(radius, radius, 0.0, 0.5));
+        else if (filter_str == "lanczos")
+            impl->m_filter.reset(new LanczosFilter2<double>(radius, radius, 3.0));
+        else
+        {
+            RENDERER_LOG_ERROR(
+                "invalid value \"%s\" for parameter \"%s\", using default value \"%s\".",
+                filter_str.c_str(),
+                "filter",
+                DefaultFilterString);
+            impl->m_filter.reset(new MitchellFilter2<double>(radius, radius, 1.0/3, 1.0/3));
+        }
     }
 
     // Retrieve color space parameter.
-    const ColorSpace DefaultColorSpace = ColorSpaceLinearRGB;
-    const char* DefaultColorSpaceString = "linear_rgb";
-    const string color_space =
-        m_params.get_optional<string>("color_space", DefaultColorSpaceString);
-    if (color_space == "linear_rgb")
-        m_color_space = ColorSpaceLinearRGB;
-    else if (color_space == "srgb")
-        m_color_space = ColorSpaceSRGB;
-    else if (color_space == "ciexyz")
-        m_color_space = ColorSpaceCIEXYZ;
-    else
     {
-        // Invalid value for color_space parameter, use default.
-        RENDERER_LOG_ERROR(
-            "invalid value \"%s\" for parameter \"%s\", using default value \"%s\".",
-            color_space.c_str(),
-            "color_space",
-            DefaultColorSpaceString);
-        m_color_space = DefaultColorSpace;
+        const ColorSpace DefaultColorSpace = ColorSpaceLinearRGB;
+        const char* DefaultColorSpaceString = "linear_rgb";
+        const string color_space_str =
+            m_params.get_optional<string>("color_space", DefaultColorSpaceString);
+        if (color_space_str == "linear_rgb")
+            m_color_space = ColorSpaceLinearRGB;
+        else if (color_space_str == "srgb")
+            m_color_space = ColorSpaceSRGB;
+        else if (color_space_str == "ciexyz")
+            m_color_space = ColorSpaceCIEXYZ;
+        else
+        {
+            RENDERER_LOG_ERROR(
+                "invalid value \"%s\" for parameter \"%s\", using default value \"%s\".",
+                color_space_str.c_str(),
+                "color_space",
+                DefaultColorSpaceString);
+            m_color_space = DefaultColorSpace;
+        }
     }
 
     // Retrieve premultiplied alpha parameter.
@@ -697,6 +738,31 @@ DictionaryArray FrameFactory::get_widget_definitions()
                     .insert("Floating-Point, 64-bit", "double"))
             .insert("use", "optional")
             .insert("default", "float"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "filter")
+            .insert("label", "Filter")
+            .insert("widget", "dropdown_list")
+            .insert("dropdown_items",
+                Dictionary()
+                    .insert("Box", "box")
+                    .insert("Triangle", "triangle")
+                    .insert("Gaussian", "gaussian")
+                    .insert("Mitchell-Netravali", "mitchell")
+                    .insert("Cubic B-spline", "bspline")
+                    .insert("Catmull-Rom Spline", "catmull")
+                    .insert("Lanczos", "lanczos"))
+            .insert("use", "optional")
+            .insert("default", "mitchell"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "filter_size")
+            .insert("label", "Filter Size")
+            .insert("widget", "text_box")
+            .insert("use", "optional")
+            .insert("default", "2.0"));
 
     definitions.push_back(
         Dictionary()

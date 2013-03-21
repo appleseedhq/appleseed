@@ -26,11 +26,15 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_SAMPLEACCUMULATIONBUFFER_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_SAMPLEACCUMULATIONBUFFER_H
+#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_SHADINGRESULTFRAMEBUFFER_H
+#define APPLESEED_RENDERER_KERNEL_RENDERING_SHADINGRESULTFRAMEBUFFER_H
+
+// appleseed.renderer headers.
+#include "renderer/kernel/rendering/filteredframebuffer.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
+#include "foundation/math/aabb.h"
+#include "foundation/math/filter.h"
 
 // Standard headers.
 #include <cstddef>
@@ -44,30 +48,36 @@ namespace renderer      { class TileStack; }
 namespace renderer
 {
 
-class SampleAccumulationBuffer
-  : public foundation::NonCopyable
+class ShadingResultFrameBuffer
+  : public FilteredFrameBuffer
 {
   public:
-    SampleAccumulationBuffer(
+    ShadingResultFrameBuffer(
         const size_t                    width,
         const size_t                    height,
-        const size_t                    aov_count);
+        const size_t                    aov_count,
+        const foundation::Filter2d&     filter);
 
-    void clear();
+    ShadingResultFrameBuffer(
+        const size_t                    width,
+        const size_t                    height,
+        const size_t                    aov_count,
+        const foundation::AABB2u&       crop_window,
+        const foundation::Filter2d&     filter);
 
+    // The sample must be in the linear RGB color space.
     void add(
-        const size_t                    x,
-        const size_t                    y,
-        const ShadingResult&            sample,
-        const float                     weight);
+        const double                    x,
+        const double                    y,
+        const ShadingResult&            sample);
 
-    void add(
-        const SampleAccumulationBuffer& source,
-        const size_t                    source_x,
-        const size_t                    source_y,
+    void merge(
         const size_t                    dest_x,
         const size_t                    dest_y,
-        const float                     weight);
+        const ShadingResultFrameBuffer& source,
+        const size_t                    source_x,
+        const size_t                    source_y,
+        const float                     scaling);
 
     void develop_to_tile_premult_alpha(
         foundation::Tile&               tile,
@@ -78,22 +88,10 @@ class SampleAccumulationBuffer
         TileStack&                      aov_tiles) const;
 
   private:
-    const size_t        m_width;
-    const size_t        m_height;
-    const size_t        m_aov_count;
-    const size_t        m_channel_count;
-    const size_t        m_buffer_size;
-    std::vector<float>  m_buffer;
-
-    float* pixel(
-        const size_t                    x,
-        const size_t                    y);
-
-    const float* pixel(
-        const size_t                    x,
-        const size_t                    y) const;
+    const size_t                        m_aov_count;
+    std::vector<float>                  m_scratch;
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_SAMPLEACCUMULATIONBUFFER_H
+#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_SHADINGRESULTFRAMEBUFFER_H

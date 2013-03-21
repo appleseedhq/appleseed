@@ -120,17 +120,22 @@ auto_release_ptr<Configuration> BaseConfigurationFactory::create_base_final()
     ParamArray& parameters = configuration->get_parameters();
 
     parameters.insert("frame_renderer", "generic");
-    parameters.insert("tile_renderer", "generic");
-    parameters.insert("sample_renderer", "generic");
-    parameters.insert("lighting_engine", "pt");
 
-    ParamArray generic_tile_renderer_params;
-    generic_tile_renderer_params.insert("filter", "mitchell");
-    generic_tile_renderer_params.insert("filter_size", "2.0");
-    generic_tile_renderer_params.insert("sampler", "uniform");
-    generic_tile_renderer_params.insert("min_samples", "64");
-    generic_tile_renderer_params.insert("max_samples", "64");
-    parameters.dictionaries().insert("generic_tile_renderer", generic_tile_renderer_params);
+    parameters.insert("tile_renderer", "generic");
+    parameters.dictionaries().insert(
+        "generic_tile_renderer",
+        ParamArray()
+            .insert("sampler", "uniform"));
+
+    parameters.insert("pixel_renderer", "uniform");
+    parameters.dictionaries().insert(
+        "uniform_pixel_renderer",
+        ParamArray()
+            .insert("samples", "64"));
+
+    parameters.insert("sample_renderer", "generic");
+
+    parameters.insert("lighting_engine", "pt");
 
     return configuration;
 }
@@ -142,8 +147,8 @@ auto_release_ptr<Configuration> BaseConfigurationFactory::create_base_interactiv
     ParamArray& parameters = configuration->get_parameters();
 
     parameters.insert("frame_renderer", "progressive");
-    parameters.insert("sample_renderer", "generic");
     parameters.insert("sample_generator", "generic");
+    parameters.insert("sample_renderer", "generic");
     parameters.insert("lighting_engine", "pt");
 
     return configuration;

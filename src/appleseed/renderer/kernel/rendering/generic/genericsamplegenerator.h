@@ -64,9 +64,7 @@ class GenericSampleGeneratorFactory
         const size_t            generator_count) OVERRIDE;
 
     // Create an accumulation framebuffer that fit this sample generator.
-    virtual AccumulationFramebuffer* create_accumulation_framebuffer(
-        const size_t            canvas_width,
-        const size_t            canvas_height) OVERRIDE;
+    virtual AccumulationFramebuffer* create_accumulation_framebuffer() OVERRIDE;
 
   private:
     const Frame&                m_frame;

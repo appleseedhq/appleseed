@@ -35,13 +35,11 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
+#include "foundation/image/color.h"
 #include "foundation/image/image.h"
 #include "foundation/image/pixel.h"
-#include "foundation/math/scalar.h"
+#include "foundation/image/tile.h"
 #include "foundation/platform/thread.h"
-
-// Standard headers.
-#include <algorithm>
 
 using namespace boost;
 using namespace foundation;
@@ -52,17 +50,11 @@ namespace renderer
 
 GlobalAccumulationFramebuffer::GlobalAccumulationFramebuffer(
     const size_t    width,
-    const size_t    height)
-  : AccumulationFramebuffer(width, height)
+    const size_t    height,
+    const Filter2d& filter)
+  : m_fb(width, height, 3, filter)
+  , m_filter_rcp_norm_factor(static_cast<float>(1.0 / compute_normalization_factor(filter)))
 {
-    m_tile.reset(
-        new Tile(
-            m_width,
-            m_height,
-            3,
-            PixelFormatFloat));
-
-    clear();
 }
 
 void GlobalAccumulationFramebuffer::clear()
@@ -71,7 +63,7 @@ void GlobalAccumulationFramebuffer::clear()
 
     AccumulationFramebuffer::clear_no_lock();
 
-    m_tile->clear(Color3f(0.0));
+    m_fb.clear();
 }
 
 void GlobalAccumulationFramebuffer::store_samples(
@@ -80,42 +72,31 @@ void GlobalAccumulationFramebuffer::store_samples(
 {
     mutex::scoped_lock lock(m_mutex);
 
-    const double fw = static_cast<double>(m_width);
-    const double fh = static_cast<double>(m_height);
-    const size_t max_x = m_width - 1;
-    const size_t max_y = m_height - 1;
+    const double fw = static_cast<double>(m_fb.get_width());
+    const double fh = static_cast<double>(m_fb.get_height());
+    const Sample* sample_end = samples + sample_count;
 
-    const Sample* RESTRICT sample_ptr = samples;
-    const Sample* RESTRICT sample_end = samples + sample_count;
-
-    while (sample_ptr < sample_end)
+    for (const Sample* sample_ptr = samples; sample_ptr < sample_end; ++sample_ptr)
     {
         const double fx = sample_ptr->m_position.x * fw;
         const double fy = sample_ptr->m_position.y * fh;
 
-        const size_t x = min(truncate<size_t>(fx), max_x);
-        const size_t y = min(truncate<size_t>(fy), max_y);
+        Color3f value = sample_ptr->m_color.rgb();
+        value *= m_filter_rcp_norm_factor;
 
-        add_pixel(x, y, sample_ptr->m_color.rgb());
-
-        ++sample_ptr;
+        m_fb.add(fx, fy, &value[0]);
     }
 }
 
-void GlobalAccumulationFramebuffer::increment_sample_count(const uint64 delta_sample_count)
+void GlobalAccumulationFramebuffer::develop_to_frame(Frame& frame)
 {
     mutex::scoped_lock lock(m_mutex);
 
-    m_sample_count += delta_sample_count;
-}
-
-void GlobalAccumulationFramebuffer::develop_to_frame_no_lock(Frame& frame) const
-{
     Image& image = frame.image();
     const CanvasProperties& frame_props = image.properties();
 
-    assert(frame_props.m_canvas_width == m_width);
-    assert(frame_props.m_canvas_height == m_height);
+    assert(frame_props.m_canvas_width == m_fb.get_width());
+    assert(frame_props.m_canvas_height == m_fb.get_height());
     assert(frame_props.m_channel_count == 4);
 
     const float scale = 1.0f / m_sample_count;
@@ -134,6 +115,13 @@ void GlobalAccumulationFramebuffer::develop_to_frame_no_lock(Frame& frame) const
     }
 }
 
+void GlobalAccumulationFramebuffer::increment_sample_count(const uint64 delta_sample_count)
+{
+    mutex::scoped_lock lock(m_mutex);
+
+    m_sample_count += delta_sample_count;
+}
+
 void GlobalAccumulationFramebuffer::develop_to_tile(
     Tile&           tile,
     const size_t    origin_x,
@@ -149,16 +137,10 @@ void GlobalAccumulationFramebuffer::develop_to_tile(
     {
         for (size_t x = 0; x < tile_width; ++x)
         {
-            Color4f color;
-            
-            color.rgb() =
-                get_pixel(
-                    origin_x + x,
-                    origin_y + y);
+            const float* ptr = m_fb.pixel(origin_x + x, origin_y + y);
 
+            Color4f color(ptr[1], ptr[2], ptr[3], 1.0f);
             color.rgb() *= scale;
-
-            color.a = 1.0f;
 
             tile.set_pixel(x, y, color);
         }

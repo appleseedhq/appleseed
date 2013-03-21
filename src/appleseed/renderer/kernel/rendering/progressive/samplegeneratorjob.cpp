@@ -34,6 +34,11 @@
 #include "renderer/kernel/rendering/accumulationframebuffer.h"
 #include "renderer/kernel/rendering/isamplegenerator.h"
 #include "renderer/kernel/rendering/itilecallback.h"
+#include "renderer/modeling/frame/frame.h"
+
+// appleseed.foundation headers.
+#include "foundation/image/canvasproperties.h"
+#include "foundation/image/image.h"
 
 // Standard headers.
 #include <algorithm>
@@ -99,11 +104,12 @@ void SampleGeneratorJob::execute(const size_t thread_index)
 
     if (m_tile_callback)
     {
+        const CanvasProperties& props = m_frame.image().properties();
         m_tile_callback->pre_render(
             0,
             0,
-            m_framebuffer.get_width(),
-            m_framebuffer.get_height());
+            props.m_canvas_width,
+            props.m_canvas_height);
     }
 
     if (m_pass == 0)

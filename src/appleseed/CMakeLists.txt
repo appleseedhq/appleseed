@@ -897,6 +897,22 @@ source_group ("renderer\\kernel\\rendering\\debug" FILES
     ${renderer_kernel_rendering_debug_sources}
 )
 
+set (renderer_kernel_rendering_final_sources
+    renderer/kernel/rendering/final/adaptivepixelrenderer.cpp
+    renderer/kernel/rendering/final/adaptivepixelrenderer.h
+    renderer/kernel/rendering/final/pixelsampler.cpp
+    renderer/kernel/rendering/final/pixelsampler.h
+    renderer/kernel/rendering/final/uniformpixelrenderer.cpp
+    renderer/kernel/rendering/final/uniformpixelrenderer.h
+    renderer/kernel/rendering/final/variationtracker.h
+)
+list (APPEND appleseed_sources
+    ${renderer_kernel_rendering_final_sources}
+)
+source_group ("renderer\\kernel\\rendering\\final" FILES
+    ${renderer_kernel_rendering_final_sources}
+)
+
 set (renderer_kernel_rendering_generic_sources
     renderer/kernel/rendering/generic/genericframerenderer.cpp
     renderer/kernel/rendering/generic/genericframerenderer.h
@@ -906,10 +922,6 @@ set (renderer_kernel_rendering_generic_sources
     renderer/kernel/rendering/generic/genericsamplerenderer.h
     renderer/kernel/rendering/generic/generictilerenderer.cpp
     renderer/kernel/rendering/generic/generictilerenderer.h
-    renderer/kernel/rendering/generic/pixelsampler.cpp
-    renderer/kernel/rendering/generic/pixelsampler.h
-    renderer/kernel/rendering/generic/sampleaccumulationbuffer.cpp
-    renderer/kernel/rendering/generic/sampleaccumulationbuffer.h
     renderer/kernel/rendering/generic/tilejob.cpp
     renderer/kernel/rendering/generic/tilejob.h
     renderer/kernel/rendering/generic/tilejobfactory.cpp
@@ -949,15 +961,17 @@ source_group ("renderer\\kernel\\rendering\\progressive" FILES
 )
 
 set (renderer_kernel_rendering_sources
-    renderer/kernel/rendering/accumulationframebuffer.cpp
     renderer/kernel/rendering/accumulationframebuffer.h
     renderer/kernel/rendering/defaultrenderercontroller.cpp
     renderer/kernel/rendering/defaultrenderercontroller.h
+    renderer/kernel/rendering/filteredframebuffer.cpp
+    renderer/kernel/rendering/filteredframebuffer.h
     renderer/kernel/rendering/framerendererbase.cpp
     renderer/kernel/rendering/framerendererbase.h
     renderer/kernel/rendering/globalaccumulationframebuffer.cpp
     renderer/kernel/rendering/globalaccumulationframebuffer.h
     renderer/kernel/rendering/iframerenderer.h
+    renderer/kernel/rendering/ipixelrenderer.h
     renderer/kernel/rendering/irenderercontroller.h
     renderer/kernel/rendering/isamplegenerator.h
     renderer/kernel/rendering/isamplerenderer.h
@@ -970,6 +984,8 @@ set (renderer_kernel_rendering_sources
     renderer/kernel/rendering/sample.h
     renderer/kernel/rendering/samplegeneratorbase.cpp
     renderer/kernel/rendering/samplegeneratorbase.h
+    renderer/kernel/rendering/shadingresultframebuffer.cpp
+    renderer/kernel/rendering/shadingresultframebuffer.h
     renderer/kernel/rendering/tilecallbackbase.h
 )
 if (WITH_OSL)
@@ -1062,6 +1078,7 @@ set (renderer_meta_tests_sources
     renderer/meta/tests/test_entityvector.cpp
     renderer/meta/tests/test_environmentedf.cpp
     renderer/meta/tests/test_ewa.cpp
+    renderer/meta/tests/test_filteredframebuffer.cpp
     renderer/meta/tests/test_frame.cpp
     renderer/meta/tests/test_imagebasedlighting.cpp
     renderer/meta/tests/test_imageimportancesampler.cpp
@@ -1081,6 +1098,7 @@ set (renderer_meta_tests_sources
     renderer/meta/tests/test_texturestore.cpp
     renderer/meta/tests/test_tracer.cpp
     renderer/meta/tests/test_transformsequence.cpp
+    renderer/meta/tests/test_variationtracker.cpp
 )
 list (APPEND appleseed_sources
     ${renderer_meta_tests_sources}
@@ -1481,8 +1499,6 @@ endif ()
 
 set (renderer_utility_sources
     renderer/utility/bbox.h
-    renderer/utility/filterfactory.cpp
-    renderer/utility/filterfactory.h
     renderer/utility/messagecontext.cpp
     renderer/utility/messagecontext.h
     renderer/utility/paramarray.cpp

@@ -31,18 +31,18 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/rendering/accumulationframebuffer.h"
+#include "renderer/kernel/rendering/filteredframebuffer.h"
 
 // appleseed.foundation headers.
-#include "foundation/image/color.h"
-#include "foundation/image/tile.h"
+#include "foundation/math/filter.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
 
 // Standard headers.
 #include <cstddef>
-#include <memory>
 
 // Forward declarations.
+namespace foundation    { class Tile; }
 namespace renderer      { class Frame; }
 namespace renderer      { class Sample; }
 
@@ -55,68 +55,36 @@ class GlobalAccumulationFramebuffer
   public:
     // Constructor.
     GlobalAccumulationFramebuffer(
-        const size_t    width,
-        const size_t    height);
+        const size_t                width,
+        const size_t                height,
+        const foundation::Filter2d& filter);
 
     // Reset the framebuffer to its initial state. Thread-safe.
-    virtual void clear();
+    virtual void clear() OVERRIDE;
 
     // Store @samples into the framebuffer. Thread-safe.
     virtual void store_samples(
-        const size_t    sample_count,
-        const Sample    samples[]);
+        const size_t                sample_count,
+        const Sample                samples[]) OVERRIDE;
+
+    // Develop the framebuffer to a frame. Thread-safe.
+    virtual void develop_to_frame(Frame& frame) OVERRIDE;
 
     // Increment the number of samples used for pixel values renormalization. Thread-safe.
     void increment_sample_count(const foundation::uint64 delta_sample_count);
 
   private:
-    std::auto_ptr<foundation::Tile>     m_tile;
-
-    void add_pixel(
-        const size_t                    x,
-        const size_t                    y,
-        const foundation::Color3f&      color);
-
-    foundation::Color3f get_pixel(
-        const size_t                    x,
-        const size_t                    y) const;
-
-    virtual void develop_to_frame_no_lock(Frame& frame) const OVERRIDE;
+    FilteredFrameBuffer     m_fb;
+    const float             m_filter_rcp_norm_factor;
 
     void develop_to_tile(
-        foundation::Tile&               tile,
-        const size_t                    origin_x,
-        const size_t                    origin_y,
-        const size_t                    tile_x,
-        const size_t                    tile_y,
-        const float                     scale) const;
+        foundation::Tile&           tile,
+        const size_t                origin_x,
+        const size_t                origin_y,
+        const size_t                tile_x,
+        const size_t                tile_y,
+        const float                 scale) const;
 };
-
-
-//
-// GlobalAccumulationFramebuffer class implementation.
-//
-
-inline void GlobalAccumulationFramebuffer::add_pixel(
-    const size_t                        x,
-    const size_t                        y,
-    const foundation::Color3f&          color)
-{
-    foundation::Color3f* pixel =
-        reinterpret_cast<foundation::Color3f*>(m_tile->pixel(x, y));
-
-    *pixel += color;
-}
-
-inline foundation::Color3f GlobalAccumulationFramebuffer::get_pixel(
-    const size_t                        x,
-    const size_t                        y) const
-{
-    const foundation::Color3f* pixel =
-        reinterpret_cast<const foundation::Color3f*>(m_tile->pixel(x, y));
-
-    return *pixel;
-}
 
 }       // namespace renderer
 

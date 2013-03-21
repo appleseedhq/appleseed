@@ -40,8 +40,8 @@ BENCHMARK_SUITE(Foundation_Math_Filter_BoxFilter2)
 {
     struct Fixture
     {
-        auto_ptr<Filter2<float> >   m_filter;
-        float                       m_dummy;
+        auto_ptr<Filter2f>  m_filter;
+        float               m_dummy;
 
         Fixture()
           : m_filter(new BoxFilter2<float>(2.0f, 2.0f))
@@ -66,8 +66,8 @@ BENCHMARK_SUITE(Foundation_Math_Filter_MitchellFilter2)
 {
     struct Fixture
     {
-        auto_ptr<Filter2<float> >   m_filter;
-        float                       m_dummy;
+        auto_ptr<Filter2f>  m_filter;
+        float               m_dummy;
 
         Fixture()
           : m_filter(new MitchellFilter2<float>(2.0f, 2.0f, 1.0f / 3, 1.0f / 3))

@@ -26,39 +26,57 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_ISAMPLEGENERATOR_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_ISAMPLEGENERATOR_H
+#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_IPIXELRENDERER_H
+#define APPLESEED_RENDERER_KERNEL_RENDERING_IPIXELRENDERER_H
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/iunknown.h"
+#include "foundation/math/aabb.h"
 
 // Standard headers.
 #include <cstddef>
 
 // Forward declarations.
-namespace foundation    { class AbortSwitch; }
 namespace foundation    { class StatisticsVector; }
-namespace renderer      { class AccumulationFramebuffer; }
+namespace foundation    { class Tile; }
+namespace renderer      { class Frame; }
+namespace renderer      { class ShadingResultFrameBuffer; }
+namespace renderer      { class TileStack; }
 
 namespace renderer
 {
 
 //
-// Sample generator interface.
+// Pixel renderer interface.
 //
 
-class ISampleGenerator
+class IPixelRenderer
   : public foundation::IUnknown
 {
   public:
-    // Reset the sample generator to its initial state.
-    virtual void reset() = 0;
+    // This method is called before a tile gets rendered.
+    virtual void on_tile_begin(
+        const Frame&                frame,
+        foundation::Tile&           tile,
+        TileStack&                  aov_tiles) = 0;
 
-    // Generate a given number of samples and store them into a progressive framebuffer.
-    virtual void generate_samples(
-        const size_t                sample_count,
-        AccumulationFramebuffer&    framebuffer,
-        foundation::AbortSwitch&    abort_switch) = 0;
+    // This method is called after a tile has been rendered.
+    virtual void on_tile_end(
+        const Frame&                frame,
+        foundation::Tile&           tile,
+        TileStack&                  aov_tiles) = 0;
+
+    // Render a pixel.
+    virtual void render_pixel(
+        const Frame&                frame,
+        foundation::Tile&           tile,
+        TileStack&                  aov_tiles,
+        const foundation::AABB2u&   tile_bbox,
+        const int                   ix,
+        const int                   iy,
+        const int                   tx,
+        const int                   ty,
+        ShadingResultFrameBuffer&   framebuffer) = 0;
 
     // Retrieve performance statistics.
     virtual foundation::StatisticsVector get_statistics() const = 0;
@@ -66,22 +84,17 @@ class ISampleGenerator
 
 
 //
-// Interface of a ISampleGenerator factory that can cross DLL boundaries.
+// Interface of a IPixelRenderer factory.
 //
 
-class ISampleGeneratorFactory
+class IPixelRendererFactory
   : public foundation::IUnknown
 {
   public:
-    // Return a new sample generator instance.
-    virtual ISampleGenerator* create(
-        const size_t                generator_index,
-        const size_t                generator_count) = 0;
-
-    // Create an accumulation framebuffer that fit this sample generator.
-    virtual AccumulationFramebuffer* create_accumulation_framebuffer() = 0;
+    // Return a new pixel renderer instance.
+    virtual IPixelRenderer* create() = 0;
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_ISAMPLEGENERATOR_H
+#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_IPIXELRENDERER_H
