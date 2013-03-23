@@ -27,19 +27,19 @@
 //
 
 // Interface header.
-#include "filteredframebuffer.h"
+#include "filteredtile.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/pixel.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 
 // Standard headers.
 #include <cmath>
 
-using namespace foundation;
 using namespace std;
 
-namespace renderer
+namespace foundation
 {
 
 //
@@ -55,47 +55,41 @@ namespace renderer
 //   http://alvyray.com/Memos/CG/Microsoft/6_pixel.pdf
 //
 
-FilteredFrameBuffer::FilteredFrameBuffer(
-    const size_t                width,
-    const size_t                height,
-    const size_t                channel_count,
-    const foundation::Filter2d& filter)
-  : m_width(width)
-  , m_height(height)
-  , m_channel_count(channel_count)
+FilteredTile::FilteredTile(
+    const size_t        width,
+    const size_t        height,
+    const size_t        channel_count,
+    const Filter2d&     filter)
+  : Tile(width, height, channel_count + 1, PixelFormatFloat)
   , m_crop_window(Vector2u(0, 0), Vector2u(width - 1, height - 1))
   , m_filter(filter)
-  , m_buffer_size(width * height * (channel_count + 1))
 {
-    m_buffer.resize(m_buffer_size, 0.0f);
 }
 
-FilteredFrameBuffer::FilteredFrameBuffer(
-    const size_t                width,
-    const size_t                height,
-    const size_t                channel_count,
-    const AABB2u&               crop_window,
-    const foundation::Filter2d& filter)
-  : m_width(width)
-  , m_height(height)
-  , m_channel_count(channel_count)
+FilteredTile::FilteredTile(
+    const size_t        width,
+    const size_t        height,
+    const size_t        channel_count,
+    const AABB2u&       crop_window,
+    const Filter2d&     filter)
+  : Tile(width, height, channel_count + 1, PixelFormatFloat)
   , m_crop_window(crop_window)
   , m_filter(filter)
-  , m_buffer_size(width * height * (channel_count + 1))
 {
-    m_buffer.resize(m_buffer_size, 0.0f);
 }
 
-void FilteredFrameBuffer::clear()
+void FilteredTile::clear()
 {
-    for (size_t i = 0; i < m_buffer_size; ++i)
-        m_buffer[i] = 0.0f;
+    float* ptr = reinterpret_cast<float*>(pixel(0));
+
+    for (size_t i = 0; i < m_pixel_count; ++i)
+        ptr[i] = 0.0f;
 }
 
-void FilteredFrameBuffer::add(
-    const double                x,
-    const double                y,
-    const float*                values)
+void FilteredTile::add(
+    const double        x,
+    const double        y,
+    const float*        values)
 {
     // Convert (x, y) from continuous image space to discrete image space.
     const double dx = x - 0.5;
@@ -117,14 +111,14 @@ void FilteredFrameBuffer::add(
         {
             const float weight = static_cast<float>(m_filter.evaluate(rx - dx, ry - dy));
 
-            float* RESTRICT ptr = pixel(rx, ry);
+            float* RESTRICT ptr = reinterpret_cast<float*>(pixel(rx, ry));
 
             *ptr++ += weight;
 
-            for (size_t i = 0; i < m_channel_count; ++i)
+            for (size_t i = 0; i < m_channel_count - 1; ++i)
                 ptr[i] += values[i] * weight;
         }
     }
 }
 
-}   // namespace renderer
+}   // namespace foundation

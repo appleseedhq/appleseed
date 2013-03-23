@@ -83,6 +83,8 @@ set (foundation_image_sources
     foundation/image/exrimagefilewriter.h
     foundation/image/exrutils.cpp
     foundation/image/exrutils.h
+    foundation/image/filteredtile.cpp
+    foundation/image/filteredtile.h
     foundation/image/genericimagefilereader.cpp
     foundation/image/genericimagefilereader.h
     foundation/image/genericimagefilewriter.cpp
@@ -372,6 +374,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_distance.cpp
     foundation/meta/tests/test_exrimagefilewriter.cpp
     foundation/meta/tests/test_fastmath.cpp
+    foundation/meta/tests/test_filteredtile.cpp
     foundation/meta/tests/test_fixedsizehistory.cpp
     foundation/meta/tests/test_fp.cpp
     foundation/meta/tests/test_fresnel.cpp
@@ -963,8 +966,6 @@ source_group ("renderer\\kernel\\rendering\\progressive" FILES
 set (renderer_kernel_rendering_sources
     renderer/kernel/rendering/defaultrenderercontroller.cpp
     renderer/kernel/rendering/defaultrenderercontroller.h
-    renderer/kernel/rendering/filteredframebuffer.cpp
-    renderer/kernel/rendering/filteredframebuffer.h
     renderer/kernel/rendering/framerendererbase.cpp
     renderer/kernel/rendering/framerendererbase.h
     renderer/kernel/rendering/globalsampleaccumulationbuffer.cpp
@@ -1078,7 +1079,6 @@ set (renderer_meta_tests_sources
     renderer/meta/tests/test_entityvector.cpp
     renderer/meta/tests/test_environmentedf.cpp
     renderer/meta/tests/test_ewa.cpp
-    renderer/meta/tests/test_filteredframebuffer.cpp
     renderer/meta/tests/test_frame.cpp
     renderer/meta/tests/test_imagebasedlighting.cpp
     renderer/meta/tests/test_imageimportancesampler.cpp

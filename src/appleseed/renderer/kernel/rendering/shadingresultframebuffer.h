@@ -29,10 +29,8 @@
 #ifndef APPLESEED_RENDERER_KERNEL_RENDERING_SHADINGRESULTFRAMEBUFFER_H
 #define APPLESEED_RENDERER_KERNEL_RENDERING_SHADINGRESULTFRAMEBUFFER_H
 
-// appleseed.renderer headers.
-#include "renderer/kernel/rendering/filteredframebuffer.h"
-
 // appleseed.foundation headers.
+#include "foundation/image/filteredtile.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/filter.h"
 
@@ -49,7 +47,7 @@ namespace renderer
 {
 
 class ShadingResultFrameBuffer
-  : public FilteredFrameBuffer
+  : public foundation::FilteredTile
 {
   public:
     ShadingResultFrameBuffer(

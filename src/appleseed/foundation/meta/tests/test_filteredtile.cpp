@@ -26,10 +26,8 @@
 // THE SOFTWARE.
 //
 
-// appleseed.renderer headers.
-#include "renderer/kernel/rendering/filteredframebuffer.h"
-
 // appleseed.foundation headers.
+#include "foundation/image/filteredtile.h"
 #include "foundation/math/filter.h"
 #include "foundation/utility/test.h"
 
@@ -38,26 +36,25 @@
 #include <cstdio>
 
 using namespace foundation;
-using namespace renderer;
 using namespace std;
 
-TEST_SUITE(Renderer_Kernel_Rendering_FilteredFrameBuffer)
+TEST_SUITE(Foundation_Image_FilteredTile)
 {
-    void dump_fb(const char* filepath, const FilteredFrameBuffer& fb)
+    void dump(const char* filepath, const FilteredTile& tile)
     {
         FILE* file = fopen(filepath, "wt");
 
         if (file == 0)
             return;
 
-        for (size_t y = 0; y < fb.get_height(); ++y)
+        for (size_t y = 0; y < tile.get_height(); ++y)
         {
-            for (size_t x = 0; x < fb.get_width(); ++x)
+            for (size_t x = 0; x < tile.get_width(); ++x)
             {
                 if (x > 0)
                     fprintf(file, "\t");
 
-                const float* ptr = fb.pixel(x, y);
+                const float* ptr = tile.pixel(x, y);
                 const float weight = ptr[0];
 
                 fprintf(file, "%.2f", weight);
@@ -72,35 +69,35 @@ TEST_SUITE(Renderer_Kernel_Rendering_FilteredFrameBuffer)
     template <typename Filter>
     void test(const char* filepath, const Filter& filter)
     {
-        FilteredFrameBuffer fb(5, 6, 1, filter);
+        FilteredTile tile(5, 6, 1, filter);
 
         const float values[1] = { 1.0f };
-        fb.add(2.5, 3.0, values);
+        tile.add(2.5, 3.0, values);
 
-        dump_fb(filepath, fb);
+        dump(filepath, tile);
     }
 
     TEST_CASE(BoxFilter_Radius0Dot5)
     {
         const BoxFilter2<double> filter(0.5, 0.5);
-        test("unit tests/outputs/test_filteredframebuffer_boxfilter_radius0dot5.txt", filter);
+        test("unit tests/outputs/test_filteredtile_boxfilter_radius0dot5.txt", filter);
     }
 
     TEST_CASE(BoxFilter_Radius1Dot0)
     {
         const BoxFilter2<double> filter(1.0, 1.0);
-        test("unit tests/outputs/test_filteredframebuffer_boxfilter_radius1dot0.txt", filter);
+        test("unit tests/outputs/test_filteredtile_boxfilter_radius1dot0.txt", filter);
     }
 
     TEST_CASE(BoxFilter_Radius1Dot5)
     {
         const BoxFilter2<double> filter(1.5, 1.5);
-        test("unit tests/outputs/test_filteredframebuffer_boxfilter_radius1dot5.txt", filter);
+        test("unit tests/outputs/test_filteredtile_boxfilter_radius1dot5.txt", filter);
     }
 
     TEST_CASE(BoxFilter_Radius2Dot0)
     {
         const BoxFilter2<double> filter(2.0, 2.0);
-        test("unit tests/outputs/test_filteredframebuffer_boxfilter_radius2dot0.txt", filter);
+        test("unit tests/outputs/test_filteredtile_boxfilter_radius2dot0.txt", filter);
     }
 }

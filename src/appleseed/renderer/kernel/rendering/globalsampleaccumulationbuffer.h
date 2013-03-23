@@ -30,10 +30,10 @@
 #define APPLESEED_RENDERER_KERNEL_RENDERING_GLOBALSAMPLEACCUMULATIONBUFFER_H
 
 // appleseed.renderer headers.
-#include "renderer/kernel/rendering/filteredframebuffer.h"
 #include "renderer/kernel/rendering/sampleaccumulationbuffer.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/filteredtile.h"
 #include "foundation/math/filter.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
@@ -74,8 +74,8 @@ class GlobalSampleAccumulationBuffer
     void increment_sample_count(const foundation::uint64 delta_sample_count);
 
   private:
-    FilteredFrameBuffer     m_fb;
-    const float             m_filter_rcp_norm_factor;
+    foundation::FilteredTile        m_fb;
+    const float                     m_filter_rcp_norm_factor;
 
     void develop_to_tile(
         foundation::Tile&           tile,

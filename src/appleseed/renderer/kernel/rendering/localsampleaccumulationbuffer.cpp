@@ -30,13 +30,13 @@
 #include "localsampleaccumulationbuffer.h"
 
 // appleseed.renderer headers.
-#include "renderer/kernel/rendering/filteredframebuffer.h"
 #include "renderer/kernel/rendering/sample.h"
 #include "renderer/modeling/frame/frame.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
+#include "foundation/image/filteredtile.h"
 #include "foundation/image/image.h"
 #include "foundation/image/pixel.h"
 #include "foundation/image/tile.h"
@@ -85,7 +85,7 @@ LocalSampleAccumulationBuffer::LocalSampleAccumulationBuffer(
     do
     {
         m_levels.push_back(
-            new FilteredFrameBuffer(
+            new FilteredTile(
                 max(level_width, MinSize),
                 max(level_height, MinSize),
                 4,
@@ -130,7 +130,7 @@ void LocalSampleAccumulationBuffer::store_samples(
 
     if (m_active_level == 0)
     {
-        FilteredFrameBuffer* level = m_levels[0];
+        FilteredTile* level = m_levels[0];
 
         const double level_width = static_cast<double>(level->get_width());
         const double level_height = static_cast<double>(level->get_height());
@@ -149,7 +149,7 @@ void LocalSampleAccumulationBuffer::store_samples(
         {
             for (size_t level_index = 0; level_index <= m_active_level; ++level_index)
             {
-                FilteredFrameBuffer* level = m_levels[level_index];
+                FilteredTile* level = m_levels[level_index];
 
                 const double fx = sample_ptr->m_position.x * level->get_width();
                 const double fy = sample_ptr->m_position.y * level->get_height();
@@ -179,13 +179,13 @@ void LocalSampleAccumulationBuffer::store_samples(
 namespace
 {
     void develop_to_tile(
-        Tile&                       tile,
-        const size_t                image_width,
-        const size_t                image_height,
-        const FilteredFrameBuffer&  level,
-        const size_t                origin_x,
-        const size_t                origin_y,
-        const bool                  undo_premultiplied_alpha)
+        Tile&                   tile,
+        const size_t            image_width,
+        const size_t            image_height,
+        const FilteredTile&     level,
+        const size_t            origin_x,
+        const size_t            origin_y,
+        const bool              undo_premultiplied_alpha)
     {
         const size_t tile_width = tile.get_width();
         const size_t tile_height = tile.get_height();
@@ -198,7 +198,7 @@ namespace
             {
                 Color4f color;
 
-                level.get(
+                level.get_pixel(
                     (origin_x + x) * level_width / image_width,
                     (origin_y + y) * level_height / image_height,
                     &color[0]);
@@ -230,7 +230,7 @@ void LocalSampleAccumulationBuffer::develop_to_frame(Frame& frame)
     assert(frame_props.m_canvas_height == m_levels[0]->get_height());
     assert(frame_props.m_channel_count == 4);
 
-    const FilteredFrameBuffer& level = find_display_level();
+    const FilteredTile& level = find_display_level();
     const bool undo_premultiplied_alpha = !frame.is_premultiplied_alpha();
 
     for (size_t ty = 0; ty < frame_props.m_tile_count_y; ++ty)
@@ -253,7 +253,7 @@ void LocalSampleAccumulationBuffer::develop_to_frame(Frame& frame)
     }
 }
 
-const FilteredFrameBuffer& LocalSampleAccumulationBuffer::find_display_level() const
+const FilteredTile& LocalSampleAccumulationBuffer::find_display_level() const
 {
     assert(!m_levels.empty());
 

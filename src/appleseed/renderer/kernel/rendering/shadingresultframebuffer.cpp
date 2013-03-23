@@ -53,7 +53,7 @@ ShadingResultFrameBuffer::ShadingResultFrameBuffer(
     const size_t                    height,
     const size_t                    aov_count,
     const Filter2d&                 filter)
-  : FilteredFrameBuffer(
+  : FilteredTile(
         width,
         height,
         4 + aov_count * 3,
@@ -69,7 +69,7 @@ ShadingResultFrameBuffer::ShadingResultFrameBuffer(
     const size_t                    aov_count,
     const AABB2u&                   crop_window,
     const Filter2d&                 filter)
-  : FilteredFrameBuffer(
+  : FilteredTile(
         width,
         height,
         4 + aov_count * 3,
@@ -101,7 +101,7 @@ void ShadingResultFrameBuffer::add(
         *ptr++ = sample.m_aovs[i][2];
     }
 
-    FilteredFrameBuffer::add(x, y, &m_scratch[0]);
+    FilteredTile::add(x, y, &m_scratch[0]);
 }
 
 void ShadingResultFrameBuffer::merge(
@@ -125,7 +125,7 @@ void ShadingResultFrameBuffer::develop_to_tile_premult_alpha(
     Tile&                           tile,
     TileStack&                      aov_tiles) const
 {
-    const float* ptr = &m_buffer[0];
+    const float* ptr = pixel(0);
 
     for (size_t y = 0; y < m_height; ++y)
     {
@@ -154,7 +154,7 @@ void ShadingResultFrameBuffer::develop_to_tile_straight_alpha(
     Tile&                           tile,
     TileStack&                      aov_tiles) const
 {
-    const float* ptr = &m_buffer[0];
+    const float* ptr = pixel(0);
 
     for (size_t y = 0; y < m_height; ++y)
     {
