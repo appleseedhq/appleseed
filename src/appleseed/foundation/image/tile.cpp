@@ -48,15 +48,14 @@ Tile::Tile(
   , m_height(height)
   , m_channel_count(channel_count)
   , m_pixel_format(pixel_format)
+  , m_pixel_count(width * height)
+  , m_channel_size(Pixel::size(pixel_format))
+  , m_pixel_size(m_channel_size * channel_count)
+  , m_array_size(m_pixel_size * m_pixel_count)
 {
     assert(m_width > 0);
     assert(m_height > 0);
     assert(m_channel_count > 0);
-
-    m_pixel_count = m_width * m_height;
-    m_channel_size = Pixel::size(m_pixel_format);
-    m_pixel_size = m_channel_size * m_channel_count;
-    m_array_size = m_pixel_size * m_pixel_count;
 
     if (storage)
     {
@@ -79,11 +78,10 @@ Tile::Tile(
   , m_channel_count(tile.m_channel_count)
   , m_pixel_format(pixel_format)
   , m_pixel_count(tile.m_pixel_count)
+  , m_channel_size(Pixel::size(pixel_format))
+  , m_pixel_size(m_channel_size * m_channel_count)
+  , m_array_size(m_pixel_size * m_pixel_count)
 {
-    m_channel_size = Pixel::size(m_pixel_format);
-    m_pixel_size = m_channel_size * m_channel_count;
-    m_array_size = m_pixel_size * m_pixel_count;
-
     if (storage)
     {
          m_pixel_array = storage;
@@ -112,18 +110,13 @@ Tile::Tile(
     uint8*              storage)
   : m_width(tile.m_width)
   , m_height(tile.m_height)
+  , m_channel_count(Pixel::get_dest_channel_count(tile.m_channel_count, shuffle_table))
   , m_pixel_format(pixel_format)
   , m_pixel_count(tile.m_pixel_count)
+  , m_channel_size(Pixel::size(pixel_format))
+  , m_pixel_size(m_channel_size * m_channel_count)
+  , m_array_size(m_pixel_size * m_pixel_count)
 {
-    m_channel_count =
-        Pixel::get_dest_channel_count(
-            tile.m_channel_count,
-            shuffle_table);
-
-    m_channel_size = Pixel::size(m_pixel_format);
-    m_pixel_size = m_channel_size * m_channel_count;
-    m_array_size = m_pixel_size * m_pixel_count;
-
     if (storage)
     {
          m_pixel_array = storage;
