@@ -30,7 +30,7 @@
 #include "samplegeneratorbase.h"
 
 // appleseed.renderer headers.
-#include "renderer/kernel/rendering/accumulationframebuffer.h"
+#include "renderer/kernel/rendering/sampleaccumulationbuffer.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/job.h"
@@ -66,7 +66,7 @@ void SampleGeneratorBase::reset()
 
 void SampleGeneratorBase::generate_samples(
     const size_t                sample_count,
-    AccumulationFramebuffer&    framebuffer,
+    SampleAccumulationBuffer&   buffer,
     AbortSwitch&                abort_switch)
 {
     assert(sample_count > 0);
@@ -93,7 +93,7 @@ void SampleGeneratorBase::generate_samples(
     }
 
     if (stored_sample_count > 0)
-        framebuffer.store_samples(stored_sample_count, &m_samples[0]);
+        buffer.store_samples(stored_sample_count, &m_samples[0]);
 }
 
 }   // namespace renderer

@@ -27,7 +27,7 @@
 //
 
 // Interface header.
-#include "localaccumulationframebuffer.h"
+#include "localsampleaccumulationbuffer.h"
 
 // appleseed.renderer headers.
 #include "renderer/kernel/rendering/filteredframebuffer.h"
@@ -55,12 +55,12 @@ namespace renderer
 {
 
 //
-// LocalAccumulationFramebuffer class implementation.
+// LocalSampleAccumulationBuffer class implementation.
 //
 // The algorithm for progressive display deserves some explanations.  Here is how it works:
 //
-//   When the accumulation framebuffer is constructed, we create a stack of framebuffers
-//   of decreasing resolution, much like a mipmap pyramid: each level of this pyramid is a
+//   When the accumulation buffer is constructed, we create a stack of framebuffers of
+//   decreasing resolution, much like a mipmap pyramid: each level of this pyramid is a
 //   quarter of the resolution of the previous one (half the resolution in each dimension).
 //   We don't actually go down all the way to the 1x1 level; instead we stop when we reach
 //   a resolution that we consider provides a good balance between speed and usefulness.
@@ -72,7 +72,7 @@ namespace renderer
 //   samples, it becomes the new active level.
 //
 
-LocalAccumulationFramebuffer::LocalAccumulationFramebuffer(
+LocalSampleAccumulationBuffer::LocalSampleAccumulationBuffer(
     const size_t    width,
     const size_t    height,
     const Filter2d& filter)
@@ -99,17 +99,17 @@ LocalAccumulationFramebuffer::LocalAccumulationFramebuffer(
     while (level_width >= MinSize && level_height >= MinSize);
 }
 
-LocalAccumulationFramebuffer::~LocalAccumulationFramebuffer()
+LocalSampleAccumulationBuffer::~LocalSampleAccumulationBuffer()
 {
     for (size_t i = 0; i < m_levels.size(); ++i)
         delete m_levels[i];
 }
 
-void LocalAccumulationFramebuffer::clear()
+void LocalSampleAccumulationBuffer::clear()
 {
     mutex::scoped_lock lock(m_mutex);
 
-    AccumulationFramebuffer::clear_no_lock();
+    SampleAccumulationBuffer::clear_no_lock();
 
     for (size_t level_index = 0; level_index < m_levels.size(); ++level_index)
     {
@@ -120,7 +120,7 @@ void LocalAccumulationFramebuffer::clear()
     m_active_level = m_levels.size() - 1;
 }
 
-void LocalAccumulationFramebuffer::store_samples(
+void LocalSampleAccumulationBuffer::store_samples(
     const size_t    sample_count,
     const Sample    samples[])
 {
@@ -219,7 +219,7 @@ namespace
     }
 }
 
-void LocalAccumulationFramebuffer::develop_to_frame(Frame& frame)
+void LocalSampleAccumulationBuffer::develop_to_frame(Frame& frame)
 {
     mutex::scoped_lock lock(m_mutex);
 
@@ -253,7 +253,7 @@ void LocalAccumulationFramebuffer::develop_to_frame(Frame& frame)
     }
 }
 
-const FilteredFrameBuffer& LocalAccumulationFramebuffer::find_display_level() const
+const FilteredFrameBuffer& LocalSampleAccumulationBuffer::find_display_level() const
 {
     assert(!m_levels.empty());
 

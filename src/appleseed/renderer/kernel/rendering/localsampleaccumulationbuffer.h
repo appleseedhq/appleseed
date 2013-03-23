@@ -26,11 +26,11 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_LOCALACCUMULATIONFRAMEBUFFER_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_LOCALACCUMULATIONFRAMEBUFFER_H
+#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_LOCALSAMPLEACCUMULATIONBUFFER_H
+#define APPLESEED_RENDERER_KERNEL_RENDERING_LOCALSAMPLEACCUMULATIONBUFFER_H
 
 // appleseed.renderer headers.
-#include "renderer/kernel/rendering/accumulationframebuffer.h"
+#include "renderer/kernel/rendering/sampleaccumulationbuffer.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/filter.h"
@@ -48,28 +48,28 @@ namespace renderer  { class Sample; }
 namespace renderer
 {
 
-class LocalAccumulationFramebuffer
-  : public AccumulationFramebuffer
+class LocalSampleAccumulationBuffer
+  : public SampleAccumulationBuffer
 {
   public:
     // Constructor.
-    LocalAccumulationFramebuffer(
+    LocalSampleAccumulationBuffer(
         const size_t                    width,
         const size_t                    height,
         const foundation::Filter2d&     filter);
 
     // Destructor.
-    ~LocalAccumulationFramebuffer();
+    ~LocalSampleAccumulationBuffer();
 
-    // Reset the framebuffer to its initial state. Thread-safe.
+    // Reset the buffer to its initial state. Thread-safe.
     virtual void clear() OVERRIDE;
 
-    // Store @samples into the framebuffer. Thread-safe.
+    // Store @samples into the buffer. Thread-safe.
     virtual void store_samples(
         const size_t                    sample_count,
         const Sample                    samples[]) OVERRIDE;
 
-    // Develop the framebuffer to a frame. Thread-safe.
+    // Develop the buffer to a frame. Thread-safe.
     virtual void develop_to_frame(Frame& frame) OVERRIDE;
 
   private:
@@ -83,4 +83,4 @@ class LocalAccumulationFramebuffer
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_LOCALACCUMULATIONFRAMEBUFFER_H
+#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_LOCALSAMPLEACCUMULATIONBUFFER_H

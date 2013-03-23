@@ -40,12 +40,12 @@
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer      { class AccumulationFramebuffer; }
-namespace renderer      { class Frame; }
-namespace renderer      { class LightSampler; }
-namespace renderer      { class Scene; }
-namespace renderer      { class TextureStore; }
-namespace renderer      { class TraceContext; }
+namespace renderer  { class Frame; }
+namespace renderer  { class LightSampler; }
+namespace renderer  { class SampleAccumulationBuffer; }
+namespace renderer  { class Scene; }
+namespace renderer  { class TextureStore; }
+namespace renderer  { class TraceContext; }
 
 namespace renderer
 {
@@ -71,8 +71,8 @@ class LightTracingSampleGeneratorFactory
         const size_t            generator_index,
         const size_t            generator_count) OVERRIDE;
 
-    // Create an accumulation framebuffer that fit this sample generator.
-    virtual AccumulationFramebuffer* create_accumulation_framebuffer() OVERRIDE;
+    // Create an accumulation buffer for this sample generator.
+    virtual SampleAccumulationBuffer* create_sample_accumulation_buffer() OVERRIDE;
 
   private:
     const Scene&                m_scene;

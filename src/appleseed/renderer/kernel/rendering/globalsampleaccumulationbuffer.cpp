@@ -27,7 +27,7 @@
 //
 
 // Interface header.
-#include "globalaccumulationframebuffer.h"
+#include "globalsampleaccumulationbuffer.h"
 
 // appleseed.renderer headers.
 #include "renderer/kernel/rendering/sample.h"
@@ -48,7 +48,7 @@ using namespace std;
 namespace renderer
 {
 
-GlobalAccumulationFramebuffer::GlobalAccumulationFramebuffer(
+GlobalSampleAccumulationBuffer::GlobalSampleAccumulationBuffer(
     const size_t    width,
     const size_t    height,
     const Filter2d& filter)
@@ -57,16 +57,16 @@ GlobalAccumulationFramebuffer::GlobalAccumulationFramebuffer(
 {
 }
 
-void GlobalAccumulationFramebuffer::clear()
+void GlobalSampleAccumulationBuffer::clear()
 {
     mutex::scoped_lock lock(m_mutex);
 
-    AccumulationFramebuffer::clear_no_lock();
+    SampleAccumulationBuffer::clear_no_lock();
 
     m_fb.clear();
 }
 
-void GlobalAccumulationFramebuffer::store_samples(
+void GlobalSampleAccumulationBuffer::store_samples(
     const size_t    sample_count,
     const Sample    samples[])
 {
@@ -88,7 +88,7 @@ void GlobalAccumulationFramebuffer::store_samples(
     }
 }
 
-void GlobalAccumulationFramebuffer::develop_to_frame(Frame& frame)
+void GlobalSampleAccumulationBuffer::develop_to_frame(Frame& frame)
 {
     mutex::scoped_lock lock(m_mutex);
 
@@ -115,14 +115,14 @@ void GlobalAccumulationFramebuffer::develop_to_frame(Frame& frame)
     }
 }
 
-void GlobalAccumulationFramebuffer::increment_sample_count(const uint64 delta_sample_count)
+void GlobalSampleAccumulationBuffer::increment_sample_count(const uint64 delta_sample_count)
 {
     mutex::scoped_lock lock(m_mutex);
 
     m_sample_count += delta_sample_count;
 }
 
-void GlobalAccumulationFramebuffer::develop_to_tile(
+void GlobalSampleAccumulationBuffer::develop_to_tile(
     Tile&           tile,
     const size_t    origin_x,
     const size_t    origin_y,

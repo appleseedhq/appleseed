@@ -38,7 +38,7 @@
 // Forward declarations.
 namespace foundation    { class AbortSwitch; }
 namespace foundation    { class StatisticsVector; }
-namespace renderer      { class AccumulationFramebuffer; }
+namespace renderer      { class SampleAccumulationBuffer; }
 
 namespace renderer
 {
@@ -54,10 +54,10 @@ class ISampleGenerator
     // Reset the sample generator to its initial state.
     virtual void reset() = 0;
 
-    // Generate a given number of samples and store them into a progressive framebuffer.
+    // Generate a given number of samples and accumulate them into a buffer.
     virtual void generate_samples(
         const size_t                sample_count,
-        AccumulationFramebuffer&    framebuffer,
+        SampleAccumulationBuffer&   buffer,
         foundation::AbortSwitch&    abort_switch) = 0;
 
     // Retrieve performance statistics.
@@ -78,8 +78,8 @@ class ISampleGeneratorFactory
         const size_t                generator_index,
         const size_t                generator_count) = 0;
 
-    // Create an accumulation framebuffer that fit this sample generator.
-    virtual AccumulationFramebuffer* create_accumulation_framebuffer() = 0;
+    // Create an accumulation buffer for this sample generator.
+    virtual SampleAccumulationBuffer* create_sample_accumulation_buffer() = 0;
 };
 
 }       // namespace renderer

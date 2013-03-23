@@ -36,9 +36,9 @@
 #include "renderer/kernel/lighting/pathtracer.h"
 #include "renderer/kernel/lighting/tracer.h"
 #include "renderer/kernel/intersection/intersector.h"
-#include "renderer/kernel/rendering/accumulationframebuffer.h"
-#include "renderer/kernel/rendering/globalaccumulationframebuffer.h"
+#include "renderer/kernel/rendering/globalsampleaccumulationbuffer.h"
 #include "renderer/kernel/rendering/sample.h"
+#include "renderer/kernel/rendering/sampleaccumulationbuffer.h"
 #include "renderer/kernel/rendering/samplegeneratorbase.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
@@ -174,14 +174,14 @@ namespace
 
         virtual void generate_samples(
             const size_t                sample_count,
-            AccumulationFramebuffer&    framebuffer,
+            SampleAccumulationBuffer&   buffer,
             AbortSwitch&                abort_switch) OVERRIDE
         {
             m_light_sample_count = 0;
 
-            SampleGeneratorBase::generate_samples(sample_count, framebuffer, abort_switch);
+            SampleGeneratorBase::generate_samples(sample_count, buffer, abort_switch);
 
-            static_cast<GlobalAccumulationFramebuffer&>(framebuffer)
+            static_cast<GlobalSampleAccumulationBuffer&>(buffer)
                 .increment_sample_count(m_light_sample_count);
         }
 
@@ -842,12 +842,12 @@ ISampleGenerator* LightTracingSampleGeneratorFactory::create(
             m_params);
 }
 
-AccumulationFramebuffer* LightTracingSampleGeneratorFactory::create_accumulation_framebuffer()
+SampleAccumulationBuffer* LightTracingSampleGeneratorFactory::create_sample_accumulation_buffer()
 {
     const CanvasProperties& props = m_frame.image().properties();
 
     return
-        new GlobalAccumulationFramebuffer(
+        new GlobalSampleAccumulationBuffer(
             props.m_canvas_width,
             props.m_canvas_height,
             m_frame.get_filter());

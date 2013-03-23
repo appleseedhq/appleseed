@@ -31,9 +31,9 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/rendering/progressive/samplecounter.h"
-#include "renderer/kernel/rendering/accumulationframebuffer.h"
 #include "renderer/kernel/rendering/isamplegenerator.h"
 #include "renderer/kernel/rendering/itilecallback.h"
+#include "renderer/kernel/rendering/sampleaccumulationbuffer.h"
 #include "renderer/modeling/frame/frame.h"
 
 // appleseed.foundation headers.
@@ -72,7 +72,7 @@ namespace
 
 SampleGeneratorJob::SampleGeneratorJob(
     Frame&                      frame,
-    AccumulationFramebuffer&    framebuffer,
+    SampleAccumulationBuffer&   buffer,
     ISampleGenerator*           sample_generator,
     SampleCounter&              sample_counter,
     ITileCallback*              tile_callback,
@@ -82,7 +82,7 @@ SampleGeneratorJob::SampleGeneratorJob(
     const size_t                pass,
     AbortSwitch&                abort_switch)
   : m_frame(frame)
-  , m_framebuffer(framebuffer)
+  , m_buffer(buffer)
   , m_sample_generator(sample_generator)
   , m_sample_counter(sample_counter)
   , m_tile_callback(tile_callback)
@@ -117,22 +117,16 @@ void SampleGeneratorJob::execute(const size_t thread_index)
         // The first pass is uninterruptible in order to always get something
         // on screen during navigation.
         AbortSwitch no_abort;
-        m_sample_generator->generate_samples(
-            sample_count,
-            m_framebuffer,
-            no_abort);
+        m_sample_generator->generate_samples(sample_count, m_buffer, no_abort);
     }
     else
     {
-        m_sample_generator->generate_samples(
-            sample_count,
-            m_framebuffer,
-            m_abort_switch);
+        m_sample_generator->generate_samples(sample_count, m_buffer, m_abort_switch);
     }
 
     if (m_job_index == 0)
     {
-        m_framebuffer.develop_to_frame(m_frame);
+        m_buffer.develop_to_frame(m_frame);
 
         if (m_tile_callback)
             m_tile_callback->post_render(&m_frame);
@@ -143,7 +137,7 @@ void SampleGeneratorJob::execute(const size_t thread_index)
         m_job_queue.schedule(
             new SampleGeneratorJob(
                 m_frame,
-                m_framebuffer,
+                m_buffer,
                 m_sample_generator,
                 m_sample_counter,
                 m_tile_callback,

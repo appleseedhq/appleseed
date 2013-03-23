@@ -26,12 +26,12 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_GLOBALACCUMULATIONFRAMEBUFFER_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_GLOBALACCUMULATIONFRAMEBUFFER_H
+#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_GLOBALSAMPLEACCUMULATIONBUFFER_H
+#define APPLESEED_RENDERER_KERNEL_RENDERING_GLOBALSAMPLEACCUMULATIONBUFFER_H
 
 // appleseed.renderer headers.
-#include "renderer/kernel/rendering/accumulationframebuffer.h"
 #include "renderer/kernel/rendering/filteredframebuffer.h"
+#include "renderer/kernel/rendering/sampleaccumulationbuffer.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/filter.h"
@@ -49,25 +49,25 @@ namespace renderer      { class Sample; }
 namespace renderer
 {
 
-class GlobalAccumulationFramebuffer
-  : public AccumulationFramebuffer
+class GlobalSampleAccumulationBuffer
+  : public SampleAccumulationBuffer
 {
   public:
     // Constructor.
-    GlobalAccumulationFramebuffer(
+    GlobalSampleAccumulationBuffer(
         const size_t                width,
         const size_t                height,
         const foundation::Filter2d& filter);
 
-    // Reset the framebuffer to its initial state. Thread-safe.
+    // Reset the buffer to its initial state. Thread-safe.
     virtual void clear() OVERRIDE;
 
-    // Store @samples into the framebuffer. Thread-safe.
+    // Store @samples into the buffer. Thread-safe.
     virtual void store_samples(
         const size_t                sample_count,
         const Sample                samples[]) OVERRIDE;
 
-    // Develop the framebuffer to a frame. Thread-safe.
+    // Develop the buffer to a frame. Thread-safe.
     virtual void develop_to_frame(Frame& frame) OVERRIDE;
 
     // Increment the number of samples used for pixel values renormalization. Thread-safe.
@@ -88,4 +88,4 @@ class GlobalAccumulationFramebuffer
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_GLOBALACCUMULATIONFRAMEBUFFER_H
+#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_GLOBALSAMPLEACCUMULATIONBUFFER_H

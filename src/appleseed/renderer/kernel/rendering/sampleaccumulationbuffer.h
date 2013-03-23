@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_ACCUMULATIONFRAMEBUFFER_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_ACCUMULATIONFRAMEBUFFER_H
+#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_SAMPLEACCUMULATIONBUFFER_H
+#define APPLESEED_RENDERER_KERNEL_RENDERING_SAMPLEACCUMULATIONBUFFER_H
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -44,25 +44,25 @@ namespace renderer  { class Sample; }
 namespace renderer
 {
 
-class AccumulationFramebuffer
+class SampleAccumulationBuffer
   : public foundation::NonCopyable
 {
   public:
     // Destructor.
-    virtual ~AccumulationFramebuffer() {}
+    virtual ~SampleAccumulationBuffer() {}
 
-    // Get the number of samples stored in the framebuffer.
+    // Get the number of samples stored in the buffer.
     foundation::uint64 get_sample_count() const;
 
-    // Reset the framebuffer to its initial state. Thread-safe.
+    // Reset the buffer to its initial state. Thread-safe.
     virtual void clear() = 0;
 
-    // Store @samples into the framebuffer. Thread-safe.
+    // Store @samples into the buffer. Thread-safe.
     virtual void store_samples(
         const size_t        sample_count,
         const Sample        samples[]) = 0;
 
-    // Develop the framebuffer to a frame. Thread-safe.
+    // Develop the buffer to a frame. Thread-safe.
     virtual void develop_to_frame(Frame& frame) = 0;
 
   protected:
@@ -74,21 +74,21 @@ class AccumulationFramebuffer
 
 
 //
-// AccumulationFramebuffer class implementation.
+// SampleAccumulationBufferclass implementation.
 //
 
-inline foundation::uint64 AccumulationFramebuffer::get_sample_count() const
+inline foundation::uint64 SampleAccumulationBuffer::get_sample_count() const
 {
     boost::mutex::scoped_lock lock(m_mutex);
 
     return m_sample_count;
 }
 
-inline void AccumulationFramebuffer::clear_no_lock()
+inline void SampleAccumulationBuffer::clear_no_lock()
 {
     m_sample_count = 0;
 }
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_ACCUMULATIONFRAMEBUFFER_H
+#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_SAMPLEACCUMULATIONBUFFER_H

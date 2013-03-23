@@ -961,15 +961,14 @@ source_group ("renderer\\kernel\\rendering\\progressive" FILES
 )
 
 set (renderer_kernel_rendering_sources
-    renderer/kernel/rendering/accumulationframebuffer.h
     renderer/kernel/rendering/defaultrenderercontroller.cpp
     renderer/kernel/rendering/defaultrenderercontroller.h
     renderer/kernel/rendering/filteredframebuffer.cpp
     renderer/kernel/rendering/filteredframebuffer.h
     renderer/kernel/rendering/framerendererbase.cpp
     renderer/kernel/rendering/framerendererbase.h
-    renderer/kernel/rendering/globalaccumulationframebuffer.cpp
-    renderer/kernel/rendering/globalaccumulationframebuffer.h
+    renderer/kernel/rendering/globalsampleaccumulationbuffer.cpp
+    renderer/kernel/rendering/globalsampleaccumulationbuffer.h
     renderer/kernel/rendering/iframerenderer.h
     renderer/kernel/rendering/ipixelrenderer.h
     renderer/kernel/rendering/irenderercontroller.h
@@ -977,11 +976,12 @@ set (renderer_kernel_rendering_sources
     renderer/kernel/rendering/isamplerenderer.h
     renderer/kernel/rendering/itilecallback.h
     renderer/kernel/rendering/itilerenderer.h
-    renderer/kernel/rendering/localaccumulationframebuffer.cpp
-    renderer/kernel/rendering/localaccumulationframebuffer.h
+    renderer/kernel/rendering/localsampleaccumulationbuffer.cpp
+    renderer/kernel/rendering/localsampleaccumulationbuffer.h
     renderer/kernel/rendering/masterrenderer.cpp
     renderer/kernel/rendering/masterrenderer.h
     renderer/kernel/rendering/sample.h
+    renderer/kernel/rendering/sampleaccumulationbuffer.h
     renderer/kernel/rendering/samplegeneratorbase.cpp
     renderer/kernel/rendering/samplegeneratorbase.h
     renderer/kernel/rendering/shadingresultframebuffer.cpp

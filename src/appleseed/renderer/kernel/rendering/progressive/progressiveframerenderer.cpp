@@ -32,10 +32,10 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/rendering/progressive/samplecounter.h"
 #include "renderer/kernel/rendering/progressive/samplegeneratorjob.h"
-#include "renderer/kernel/rendering/accumulationframebuffer.h"
 #include "renderer/kernel/rendering/framerendererbase.h"
 #include "renderer/kernel/rendering/isamplegenerator.h"
 #include "renderer/kernel/rendering/itilecallback.h"
+#include "renderer/kernel/rendering/sampleaccumulationbuffer.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/project/project.h"
 
@@ -91,8 +91,8 @@ namespace
             // We must have a generator factory, but it's OK not to have a callback factory.
             assert(generator_factory);
 
-            // Create an accumulation framebuffer.
-            m_framebuffer.reset(generator_factory->create_accumulation_framebuffer());
+            // Create an accumulation buffer.
+            m_buffer.reset(generator_factory->create_sample_accumulation_buffer());
 
             // Create and initialize the job manager.
             m_job_manager.reset(
@@ -173,7 +173,7 @@ namespace
             assert(!m_job_queue.has_scheduled_or_running_jobs());
 
             m_abort_switch.clear();
-            m_framebuffer->clear();
+            m_buffer->clear();
             m_sample_counter.clear();
 
             // Reset sample generators.
@@ -186,7 +186,7 @@ namespace
                 m_job_queue.schedule(
                     new SampleGeneratorJob(
                         m_frame,
-                        *m_framebuffer.get(),
+                        *m_buffer.get(),
                         m_sample_generators[i],
                         m_sample_counter,
                         m_tile_callbacks[i],
@@ -204,7 +204,7 @@ namespace
             m_statistics_func.reset(
                 new StatisticsFunc(
                     m_frame,
-                    *m_framebuffer.get(),
+                    *m_buffer.get(),
                     m_params.m_print_luminance_stats,
                     m_ref_image.get(),
                     m_ref_image_avg_lum,
@@ -248,7 +248,7 @@ namespace
         struct Parameters
         {
             const size_t    m_thread_count;             // number of rendering threads
-            const uint64    m_max_sample_count;         // maximum total number of samples to store in the framebuffer
+            const uint64    m_max_sample_count;         // maximum total number of samples to compute
             const bool      m_print_luminance_stats;    // compute and print luminance statistics?
             const string    m_ref_image_path;           // path to the reference image
 
@@ -265,7 +265,7 @@ namespace
         const Parameters                    m_params;
         SampleCounter                       m_sample_counter;
 
-        auto_ptr<AccumulationFramebuffer>   m_framebuffer;
+        auto_ptr<SampleAccumulationBuffer>  m_buffer;
 
         JobQueue                            m_job_queue;
         auto_ptr<JobManager>                m_job_manager;
@@ -283,13 +283,13 @@ namespace
           public:
             StatisticsFunc(
                 Frame&                      frame,
-                AccumulationFramebuffer&    framebuffer,
+                SampleAccumulationBuffer&   buffer,
                 const bool                  print_luminance_stats,
                 const Image*                ref_image,
                 const double                ref_image_avg_lum,
                 AbortSwitch&                abort_switch)
               : m_frame(frame)
-              , m_framebuffer(framebuffer)
+              , m_buffer(buffer)
               , m_print_luminance_stats(print_luminance_stats)
               , m_ref_image(ref_image)
               , m_ref_image_avg_lum(ref_image_avg_lum)
@@ -330,7 +330,7 @@ namespace
 
           private:
             Frame&                          m_frame;
-            AccumulationFramebuffer&        m_framebuffer;
+            SampleAccumulationBuffer&       m_buffer;
             const bool                      m_print_luminance_stats;
             const Image*                    m_ref_image;
             const double                    m_ref_image_avg_lum;
@@ -355,7 +355,7 @@ namespace
 
             void print_performance_statistics(const double elapsed_seconds)
             {
-                const uint64 new_sample_count = m_framebuffer.get_sample_count();
+                const uint64 new_sample_count = m_buffer.get_sample_count();
                 const uint64 pixel_count = static_cast<uint64>(m_frame.image().properties().m_pixel_count);
                 const double spp_count = static_cast<double>(new_sample_count) / pixel_count;
                 const double sps_count = static_cast<double>(new_sample_count - m_last_sample_count) / elapsed_seconds;
@@ -402,7 +402,7 @@ namespace
                         output += ", ";
 
                     const double spp_count =
-                          static_cast<double>(m_framebuffer.get_sample_count())
+                          static_cast<double>(m_buffer.get_sample_count())
                         / m_frame.image().properties().m_pixel_count;
 
                     const double rmsd = compute_rms_deviation(current_image, *m_ref_image);

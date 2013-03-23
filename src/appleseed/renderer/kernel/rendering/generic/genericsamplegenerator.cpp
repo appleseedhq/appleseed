@@ -32,7 +32,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/rendering/isamplerenderer.h"
-#include "renderer/kernel/rendering/localaccumulationframebuffer.h"
+#include "renderer/kernel/rendering/localsampleaccumulationbuffer.h"
 #include "renderer/kernel/rendering/sample.h"
 #include "renderer/kernel/rendering/samplegeneratorbase.h"
 #include "renderer/kernel/shading/shadingresult.h"
@@ -209,12 +209,12 @@ ISampleGenerator* GenericSampleGeneratorFactory::create(
             generator_count);
 }
 
-AccumulationFramebuffer* GenericSampleGeneratorFactory::create_accumulation_framebuffer()
+SampleAccumulationBuffer* GenericSampleGeneratorFactory::create_sample_accumulation_buffer()
 {
     const CanvasProperties& props = m_frame.image().properties();
 
     return
-        new LocalAccumulationFramebuffer(
+        new LocalSampleAccumulationBuffer(
             props.m_canvas_width,
             props.m_canvas_height,
             m_frame.get_filter());

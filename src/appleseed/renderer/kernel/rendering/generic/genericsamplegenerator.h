@@ -39,9 +39,9 @@
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer      { class AccumulationFramebuffer; }
-namespace renderer      { class Frame; }
-namespace renderer      { class ISampleRendererFactory; }
+namespace renderer  { class Frame; }
+namespace renderer  { class ISampleRendererFactory; }
+namespace renderer  { class SampleAccumulationBuffer; }
 
 namespace renderer
 {
@@ -63,8 +63,8 @@ class GenericSampleGeneratorFactory
         const size_t            generator_index,
         const size_t            generator_count) OVERRIDE;
 
-    // Create an accumulation framebuffer that fit this sample generator.
-    virtual AccumulationFramebuffer* create_accumulation_framebuffer() OVERRIDE;
+    // Create an accumulation buffer for this sample generator.
+    virtual SampleAccumulationBuffer* create_sample_accumulation_buffer() OVERRIDE;
 
   private:
     const Frame&                m_frame;
