@@ -298,7 +298,7 @@ inline void Tile::set_pixel(
     assert(x < m_width);
     assert(y < m_height);
 
-    set_pixel(y * m_width + x, components);
+    set_pixel<T>(y * m_width + x, components);
 }
 
 template <typename Color>
@@ -375,7 +375,7 @@ inline void Tile::get_pixel(
     assert(x < m_width);
     assert(y < m_height);
 
-    get_pixel(y * m_width + x, components);
+    get_pixel<T>(y * m_width + x, components);
 }
 
 template <typename Color>
@@ -427,7 +427,7 @@ inline T Tile::get_component(
     assert(x < m_width);
     assert(y < m_height);
 
-    return get_component(y * m_width + x, c);
+    return get_component<T>(y * m_width + x, c);
 }
 
 template <typename Color>

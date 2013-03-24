@@ -179,7 +179,7 @@ inline void FilteredTile::get_pixel(
     assert(x < m_width);
     assert(y < m_height);
 
-    get_pixel(y * m_width + x, components);
+    get_pixel<T>(y * m_width + x, components);
 }
 
 template <typename Color>
