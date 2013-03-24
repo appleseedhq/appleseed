@@ -82,7 +82,7 @@ void FilteredTile::clear()
 {
     float* ptr = reinterpret_cast<float*>(pixel(0));
 
-    for (size_t i = 0; i < m_pixel_count; ++i)
+    for (size_t i = 0; i < m_pixel_count * m_channel_count; ++i)
         ptr[i] = 0.0f;
 }
 
