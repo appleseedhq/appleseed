@@ -149,6 +149,7 @@ namespace
                 aov_count,
                 tile_bbox,
                 frame.get_filter());
+            framebuffer.clear();
 
             // Loop over tile pixels.
             const size_t tile_pixel_count = m_pixel_ordering.size();
