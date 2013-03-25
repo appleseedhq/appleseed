@@ -33,6 +33,9 @@
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
 
+// boost headers.
+#include "boost/static_assert.hpp"
+
 // Standard headers.
 #include <cassert>
 #include <cstddef>
@@ -237,8 +240,10 @@ inline size_t Node<AABB>::get_right_bbox_count() const
     return static_cast<uint32>(m_right_bbox_count);
 }
 
+#define MAX_USER_DATA_SIZE (4 * Node<AABB>::Dimension * sizeof(typename AABB::ValueType))
+
 template <typename AABB>
-const size_t Node<AABB>::MaxUserDataSize = 4 * Node<AABB>::Dimension * sizeof(typename AABB::ValueType);
+const size_t Node<AABB>::MaxUserDataSize = MAX_USER_DATA_SIZE;
 
 template <typename AABB>
 template <typename U>
@@ -251,7 +256,7 @@ template <typename AABB>
 template <typename U>
 inline const U& Node<AABB>::get_user_data() const
 {
-    assert(sizeof(U) <= MaxUserDataSize);               // todo: use static_assert<>
+    BOOST_STATIC_ASSERT(sizeof(U) <= MAX_USER_DATA_SIZE);
     return *reinterpret_cast<const U*>(m_bbox_data);
 }
 
@@ -259,9 +264,11 @@ template <typename AABB>
 template <typename U>
 inline U& Node<AABB>::get_user_data()
 {
-    assert(sizeof(U) <= MaxUserDataSize);               // todo: use static_assert<>
+    BOOST_STATIC_ASSERT(sizeof(U) <= MAX_USER_DATA_SIZE);
     return *reinterpret_cast<U*>(m_bbox_data);
 }
+
+#undef MAX_USER_DATA_SIZE
 
 template <typename AABB>
 inline void Node<AABB>::set_child_node_index(const size_t index)

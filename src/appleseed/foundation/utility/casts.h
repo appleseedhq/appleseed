@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_CASTS_H
 #define APPLESEED_FOUNDATION_UTILITY_CASTS_H
 
+// boost headers.
+#include "boost/static_assert.hpp"
+
 // Standard headers.
 #include <cassert>
 
@@ -66,8 +69,7 @@ Target binary_cast(Source s);
 template <typename Target, typename Source>
 inline Target binary_cast(Source s)
 {
-    // todo: replace by compile-time assertion when available.
-    assert(sizeof(Target) == sizeof(Source));
+    BOOST_STATIC_ASSERT(sizeof(Target) == sizeof(Source));
 
     return *static_cast<const Target*>(static_cast<const void*>(&s));
 }
@@ -77,8 +79,7 @@ inline Target binary_cast(Source s)
 template <typename Target, typename Source>
 inline Target binary_cast(Source s)
 {
-    // todo: replace by compile-time assertion when available.
-    assert(sizeof(Target) == sizeof(Source));
+    BOOST_STATIC_ASSERT(sizeof(Target) == sizeof(Source));
 
     union
     {
