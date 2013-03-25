@@ -149,14 +149,14 @@ namespace
     bool run_unit_tests()
     {
         SaveLogFormatterConfig save_g_logger_config(g_logger);
-        g_logger.set_all_formats("{datetime} | {category}: {message}");
-        g_logger.set_format(LogMessage::Info, "{datetime} | {message}");
+        g_logger.set_all_formats("{datetime-utc} | {category}: {message}");
+        g_logger.set_format(LogMessage::Info, "{datetime-utc} | {message}");
 
         SaveLogFormatterConfig save_global_logger_config(global_logger());
         global_logger().set_all_formats(string());
-        global_logger().set_format(LogMessage::Warning, "{datetime} | {category}: {message}");
-        global_logger().set_format(LogMessage::Error, "{datetime} | {category}: {message}");
-        global_logger().set_format(LogMessage::Fatal, "{datetime} | {category}: {message}");
+        global_logger().set_format(LogMessage::Warning, "{datetime-utc} | {category}: {message}");
+        global_logger().set_format(LogMessage::Error, "{datetime-utc} | {category}: {message}");
+        global_logger().set_format(LogMessage::Fatal, "{datetime-utc} | {category}: {message}");
 
         // Create a test listener that outputs to the logger.
         auto_release_ptr<ITestListener> listener(
@@ -200,14 +200,14 @@ namespace
     void run_unit_benchmarks()
     {
         SaveLogFormatterConfig save_g_logger_config(g_logger);
-        g_logger.set_all_formats("{datetime} | {category}: {message}");
-        g_logger.set_format(LogMessage::Info, "{datetime} | {message}");
+        g_logger.set_all_formats("{datetime-utc} | {category}: {message}");
+        g_logger.set_format(LogMessage::Info, "{datetime-utc} | {message}");
 
         SaveLogFormatterConfig save_global_logger_config(global_logger());
         global_logger().set_all_formats(string());
-        global_logger().set_format(LogMessage::Warning, "{datetime} | {category}: {message}");
-        global_logger().set_format(LogMessage::Error, "{datetime} | {category}: {message}");
-        global_logger().set_format(LogMessage::Fatal, "{datetime} | {category}: {message}");
+        global_logger().set_format(LogMessage::Warning, "{datetime-utc} | {category}: {message}");
+        global_logger().set_format(LogMessage::Error, "{datetime-utc} | {category}: {message}");
+        global_logger().set_format(LogMessage::Fatal, "{datetime-utc} | {category}: {message}");
 
         BenchmarkResult result;
 

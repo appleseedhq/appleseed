@@ -37,16 +37,20 @@
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/string.h"
 
+// boost headers.
+#include "boost/date_time/posix_time/posix_time.hpp"
+
 // Standard headers.
 #include <algorithm>
 #include <cassert>
 #include <cstdarg>
 #include <cstdlib>
-#include <ctime>
 #include <list>
 #include <map>
 #include <vector>
 
+using namespace boost;
+using namespace boost::posix_time;
 using namespace std;
 
 namespace foundation
@@ -64,12 +68,12 @@ namespace
       public:
         FormatEvaluator(
             const LogMessage::Category  category,
-            const time_t&               datetime,
+            const ptime&                datetime,
             const size_t                thread,
             const string&               message)
           : m_category(LogMessage::get_category_name(category))
           , m_padded_category(LogMessage::get_padded_category_name(category))
-          , m_datetime(get_datetime_string(datetime))
+          , m_datetime(to_iso_extended_string(datetime) + 'Z')
           , m_thread(to_string(thread))
           , m_padded_thread(pad_left(m_thread, '0', 2))
           , m_message(message)
@@ -81,7 +85,7 @@ namespace
             string result = format;
             result = replace(result, "{category}", m_category);
             result = replace(result, "{padded-category}", m_padded_category);
-            result = replace(result, "{datetime}", m_datetime);
+            result = replace(result, "{datetime-utc}", m_datetime);
             result = replace(result, "{thread}", m_thread);
             result = replace(result, "{padded-thread}", m_padded_thread);
             result = replace(result, "{message}", m_message);
@@ -95,22 +99,6 @@ namespace
         const string    m_thread;
         const string    m_padded_thread;
         const string    m_message;
-
-        static string get_datetime_string(const time_t& datetime)
-        {
-            const tm* dt = localtime(&datetime);
-
-            stringstream sstr;
-            sstr << setfill('0');
-            sstr << setw(4) << dt->tm_year + 1900 << '-';
-            sstr << setw(2) << dt->tm_mon + 1 << '-';
-            sstr << setw(2) << dt->tm_mday << ' ';
-            sstr << setw(2) << dt->tm_hour << ':';
-            sstr << setw(2) << dt->tm_min << ':';
-            sstr << setw(2) << dt->tm_sec;
-
-            return sstr.str();
-        }
     };
 
     class Formatter
@@ -130,7 +118,7 @@ namespace
 
         void reset_format(const LogMessage::Category category)
         {
-            set_format(category, "{datetime} {padded-thread} {padded-category} | {message}");
+            set_format(category, "{datetime-utc} <{padded-thread}> {padded-category} | {message}");
         }
 
         void set_all_formats(const string& format)
@@ -188,7 +176,7 @@ namespace
         {
         }
 
-        size_t thread_id_to_int(const boost::thread::id id)
+        size_t thread_id_to_int(const thread::id id)
         {
             const ThreadIdToIntMap::const_iterator i = m_thread_id_to_int.find(id);
 
@@ -201,7 +189,7 @@ namespace
         }
 
       private:
-        typedef map<boost::thread::id, size_t> ThreadIdToIntMap;
+        typedef map<thread::id, size_t> ThreadIdToIntMap;
 
         size_t              m_thread_count;
         ThreadIdToIntMap    m_thread_id_to_int;
@@ -217,7 +205,7 @@ struct Logger::Impl
 {
     typedef list<ILogTarget*> LogTargetContainer;
 
-    boost::mutex        m_mutex;
+    mutex               m_mutex;
     bool                m_enabled;
     LogTargetContainer  m_targets;
     vector<char>        m_message_buffer;
@@ -245,43 +233,43 @@ Logger::~Logger()
 
 void Logger::set_enabled(const bool enabled)
 {
-    boost::mutex::scoped_lock lock(impl->m_mutex);
+    mutex::scoped_lock lock(impl->m_mutex);
     impl->m_enabled = enabled;
 }
 
 void Logger::reset_all_formats()
 {
-    boost::mutex::scoped_lock lock(impl->m_mutex);
+    mutex::scoped_lock lock(impl->m_mutex);
     impl->m_formatter.reset_all_formats();
 }
 
 void Logger::reset_format(const LogMessage::Category category)
 {
-    boost::mutex::scoped_lock lock(impl->m_mutex);
+    mutex::scoped_lock lock(impl->m_mutex);
     impl->m_formatter.reset_format(category);
 }
 
 void Logger::set_all_formats(const char* format)
 {
-    boost::mutex::scoped_lock lock(impl->m_mutex);
+    mutex::scoped_lock lock(impl->m_mutex);
     impl->m_formatter.set_all_formats(format);
 }
 
 void Logger::set_format(const LogMessage::Category category, const char* format)
 {
-    boost::mutex::scoped_lock lock(impl->m_mutex);
+    mutex::scoped_lock lock(impl->m_mutex);
     impl->m_formatter.set_format(category, format);
 }
 
 const char* Logger::get_format(const LogMessage::Category category) const
 {
-    boost::mutex::scoped_lock lock(impl->m_mutex);
+    mutex::scoped_lock lock(impl->m_mutex);
     return impl->m_formatter.get_format(category).c_str();
 }
 
 void Logger::add_target(ILogTarget* target)
 {
-    boost::mutex::scoped_lock lock(impl->m_mutex);
+    mutex::scoped_lock lock(impl->m_mutex);
 
     assert(target);
     impl->m_targets.push_back(target);
@@ -289,7 +277,7 @@ void Logger::add_target(ILogTarget* target)
 
 void Logger::remove_target(ILogTarget* target)
 {
-    boost::mutex::scoped_lock lock(impl->m_mutex);
+    mutex::scoped_lock lock(impl->m_mutex);
 
     assert(target);
     impl->m_targets.remove(target);
@@ -335,7 +323,7 @@ void Logger::write(
     const size_t                line,
     const char*                 format, ...)
 {
-    boost::mutex::scoped_lock lock(impl->m_mutex);
+    mutex::scoped_lock lock(impl->m_mutex);
 
     if (impl->m_enabled)
     {
@@ -344,10 +332,11 @@ void Logger::write(
         va_start(argptr, format);
         write_to_buffer(impl->m_message_buffer, MaxBufferSize, format, argptr);
 
+        // Retrieve the current UTC time.
+        const ptime datetime(microsec_clock::universal_time());
+
         // Format the header and message.
-        time_t datetime;
-        time(&datetime);
-        const size_t thread = impl->m_thread_map.thread_id_to_int(boost::this_thread::get_id());
+        const size_t thread = impl->m_thread_map.thread_id_to_int(this_thread::get_id());
         const FormatEvaluator format_evaluator(category, datetime, thread, &impl->m_message_buffer[0]);
         const string header = format_evaluator.evaluate(impl->m_formatter.get_header_format(category));
         const string message = format_evaluator.evaluate(impl->m_formatter.get_message_format(category));
