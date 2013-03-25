@@ -865,7 +865,7 @@ void linear_rgb_reflectance_to_spectrum(
         RGBToSpectrumBlueReflectance,
         spectrum);
 
-    spectrum = clamp(spectrum, 0.0f, 1.0f);
+    spectrum = clamp_low(spectrum, 0.0f);
 }
 
 template <typename T, typename Spectrum>
