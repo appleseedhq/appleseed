@@ -30,6 +30,7 @@
 #define APPLESEED_FOUNDATION_MATH_SAMPLING_QMCSAMPLINGCONTEXT_H
 
 // appleseed.foundation headers.
+#include "foundation/core/exceptions/exceptionnotimplemented.h"
 #include "foundation/math/permutation.h"
 #include "foundation/math/primes.h"
 #include "foundation/math/qmc.h"
@@ -68,13 +69,16 @@ template <typename RNG>
 class QMCSamplingContext
 {
   public:
-    // Random number generator.
+    // Random number generator type.
     typedef RNG RNGType;
 
-    typedef Vector<double, 4> VectorType;
-
-    // Constructors.
+    // Construct a sampling context of dimension 0. It cannot be used
+    // directly; only child contexts obtained by splitting can.
     explicit QMCSamplingContext(RNG& rng);
+
+    // Construct a sampling context for a given number of dimensions
+    // and samples. Set sample_count to 0 if the required number of
+    // samples is unknown or infinite.
     QMCSamplingContext(
         RNG&            rng,
         const size_t    dimension,
@@ -85,7 +89,7 @@ class QMCSamplingContext
     QMCSamplingContext& operator=(const QMCSamplingContext& rhs);
 
     // Trajectory splitting: return a child sampling context for
-    // a given number of dimensions and a given number of samples.
+    // a given number of dimensions and samples.
     QMCSamplingContext split(
         const size_t    dimension,
         const size_t    sample_count) const;
@@ -124,6 +128,8 @@ class QMCSamplingContext
     GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Sampling_QMCSamplingContext, TestSplitting);
     GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Sampling_QMCSamplingContext, TestDoubleSplitting);
 
+    typedef Vector<double, 4> VectorType;
+
     RNG&        m_rng;
 
     size_t      m_base_dimension;
@@ -136,11 +142,11 @@ class QMCSamplingContext
     VectorType  m_offset;
 
     QMCSamplingContext(
-        RNG&                rng,
-        const size_t        base_dimension,
-        const size_t        base_instance,
-        const size_t        dimension,
-        const size_t        sample_count);
+        RNG&            rng,
+        const size_t    base_dimension,
+        const size_t    base_instance,
+        const size_t    dimension,
+        const size_t    sample_count);
 
     void compute_offset();
 
@@ -289,8 +295,7 @@ inline double QMCSamplingContext<RNG>::next_double2()
 template <typename RNG>
 inline void QMCSamplingContext<RNG>::next_vector1(const size_t n, double v[])
 {
-    // todo: implement.
-    assert(!"Not implemented yet.");
+    throw ExceptionNotImplemented();
 }
 
 template <typename RNG>
@@ -348,6 +353,8 @@ inline Vector<double, N> QMCSamplingContext<RNG>::next_vector2()
 template <typename RNG>
 inline double QMCSamplingContext<RNG>::rotate(double x, const double offset)
 {
+    assert(offset >= 0.0);
+
     x += offset;
 
     if (x >= 1.0)

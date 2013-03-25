@@ -49,29 +49,28 @@ using namespace std;
 TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext)
 {
     typedef MersenneTwister RNG;
-    typedef QMCSamplingContext<RNG> QMCSamplingContext;
-    typedef QMCSamplingContext::VectorType VectorType;
+    typedef QMCSamplingContext<RNG> SamplingContext;
 
     TEST_CASE(InitialStateIsCorrect)
     {
         RNG rng;
-        QMCSamplingContext context(rng, 2, 64, 7);
+        SamplingContext context(rng, 2, 64, 7);
 
         EXPECT_EQ(0, context.m_base_dimension);
         EXPECT_EQ(0, context.m_base_instance);
         EXPECT_EQ(2, context.m_dimension);
         EXPECT_EQ(7, context.m_instance);
-        EXPECT_EQ(VectorType(0.0), context.m_offset);
+        EXPECT_EQ(SamplingContext::VectorType(0.0), context.m_offset);
     }
 
     TEST_CASE(TestAssignmentOperator)
     {
         RNG rng;
-        QMCSamplingContext original_parent(rng, 2, 64, 7);
-        QMCSamplingContext original = original_parent.split(3, 16);
+        SamplingContext original_parent(rng, 2, 64, 7);
+        SamplingContext original = original_parent.split(3, 16);
         original.set_instance(6);
 
-        QMCSamplingContext copy(rng, 4, 16, 9);
+        SamplingContext copy(rng, 4, 16, 9);
         copy = original;
 
         EXPECT_EQ(2, copy.m_base_dimension);
@@ -83,8 +82,8 @@ TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext)
     TEST_CASE(TestSplitting)
     {
         RNG rng;
-        QMCSamplingContext context(rng, 2, 64, 7);
-        QMCSamplingContext child_context = context.split(3, 16);
+        SamplingContext context(rng, 2, 64, 7);
+        SamplingContext child_context = context.split(3, 16);
 
         EXPECT_EQ(2, child_context.m_base_dimension);
         EXPECT_EQ(7, child_context.m_base_instance);
@@ -95,9 +94,9 @@ TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext)
     TEST_CASE(TestDoubleSplitting)
     {
         RNG rng;
-        QMCSamplingContext context(rng, 2, 64, 7);
-        QMCSamplingContext child_context = context.split(3, 16);
-        QMCSamplingContext child_child_context = child_context.split(4, 8);
+        SamplingContext context(rng, 2, 64, 7);
+        SamplingContext child_context = context.split(3, 16);
+        SamplingContext child_child_context = child_context.split(4, 8);
 
         EXPECT_EQ(5, child_child_context.m_base_dimension);
         EXPECT_EQ(7, child_child_context.m_base_instance);
@@ -109,14 +108,14 @@ TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext)
 TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext_DirectIlluminationSimulation)
 {
     typedef MersenneTwister RNG;
-    typedef QMCSamplingContext<RNG> QMCSamplingContext;
+    typedef QMCSamplingContext<RNG> SamplingContext;
 
     void shade(
-        const QMCSamplingContext&   context,
+        const SamplingContext&      context,
         const size_t                light_sample_count,
         vector<Vector2d>&           light_samples)
     {
-        QMCSamplingContext child_context = context.split(2, light_sample_count);
+        SamplingContext child_context = context.split(2, light_sample_count);
 
         for (size_t i = 0; i < light_sample_count; ++i)
         {
@@ -130,7 +129,7 @@ TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext_DirectIlluminationSimulat
         const size_t                light_sample_count)
     {
         RNG rng;
-        QMCSamplingContext sampling_context(rng, 2, pixel_sample_count, 0);
+        SamplingContext sampling_context(rng, 2, pixel_sample_count, 0);
 
         vector<Vector2d> pixel_samples;
         vector<Vector2d> light_samples;

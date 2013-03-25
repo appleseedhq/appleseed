@@ -47,11 +47,16 @@ template <typename RNG>
 class RNGSamplingContext
 {
   public:
-    // Random number generator.
+    // Random number generator type.
     typedef RNG RNGType;
 
-    // Constructors.
+    // Construct a sampling context of dimension 0. It cannot be used
+    // directly; only child contexts obtained by splitting can.
     explicit RNGSamplingContext(RNG& rng);
+
+    // Construct a sampling context for a given number of dimensions
+    // and samples. Set sample_count to 0 if the required number of
+    // samples is unknown or infinite.
     RNGSamplingContext(
         RNG&            rng,
         const size_t    dimension,
@@ -61,8 +66,8 @@ class RNGSamplingContext
     // Assignment operator.
     RNGSamplingContext& operator=(const RNGSamplingContext& rhs);
 
-    // Trajectory splitting: return a child sampling context with
-    // a given number of dimensions and a given number of samples.
+    // Trajectory splitting: return a child sampling context for
+    // a given number of dimensions and samples.
     RNGSamplingContext split(
         const size_t    dimension,
         const size_t    sample_count) const;
@@ -93,7 +98,7 @@ class RNGSamplingContext
     size_t get_total_instance() const;
 
   private:
-    RNG&    m_rng;
+    RNG& m_rng;
 };
 
 
