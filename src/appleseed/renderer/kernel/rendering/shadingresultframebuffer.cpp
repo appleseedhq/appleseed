@@ -117,7 +117,7 @@ void ShadingResultFrameBuffer::merge(
     const float* RESTRICT source_ptr = source.pixel(source_x, source_y);
     float* RESTRICT dest_ptr = pixel(dest_x, dest_y);
 
-    for (size_t i = 0; i < m_channel_count + 1; ++i)
+    for (size_t i = 0; i < m_channel_count; ++i)
         dest_ptr[i] += source_ptr[i] * scaling;
 }
 
