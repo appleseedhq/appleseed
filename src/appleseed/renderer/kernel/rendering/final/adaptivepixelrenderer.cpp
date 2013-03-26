@@ -169,13 +169,13 @@ namespace
             m_scratch_fb->clear();
 
             // Create a sampling context.
-            const size_t pixel_index = iy * frame.image().properties().m_canvas_width + ix;
-            const size_t instance = hashint32(static_cast<uint32>(pixel_index));
+            const size_t frame_width = frame.image().properties().m_canvas_width;
+            const size_t instance = hashint32(static_cast<uint32>(iy * frame_width + ix));
             SamplingContext sampling_context(
                 m_rng,
                 2,                      // number of dimensions
-                0,                      // number of samples
-                instance);
+                0,                      // number of samples -- unknown
+                instance);              // initial instance number
 
             const size_t aov_count = frame.aov_images().size();
             VariationTracker trackers[3];
@@ -201,11 +201,10 @@ namespace
                     const Vector2d s = sampling_context.next_vector2<2>();
 
                     // Compute the sample position in NDC.
-                    const Vector2d sample_position =
-                        frame.get_sample_position(ix + s.x, iy + s.y);
+                    const Vector2d sample_position = frame.get_sample_position(ix + s.x, iy + s.y);
 
                     // Render the sample.
-                    SamplingContext child_sampling_context = sampling_context.split(0, 0);
+                    SamplingContext child_sampling_context(sampling_context);
                     ShadingResult shading_result;
                     shading_result.m_aovs.set_size(aov_count);
                     m_sample_renderer->render_sample(

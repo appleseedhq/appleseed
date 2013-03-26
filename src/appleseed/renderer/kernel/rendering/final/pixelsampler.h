@@ -57,11 +57,15 @@ class PixelSampler
     // Initialize the pixel sampler for a given subpixel grid size.
     void initialize(const size_t subpixel_grid_size);
 
-    // Compute the position of a pixel sample and the initial instance number
-    // of the corresponding sampling context, given the integer coordinates
+    // Compute the position of a pixel sample and optionally the initial instance
+    // number of the corresponding sampling context, given the integer coordinates
     // of the subpixel grid cell containing the sample. The coordinates of the
     // pixel sample are expressed in continous image space
     // (http://appleseedhq.net/conventions).
+    void sample(
+        const int               sx,
+        const int               sy,
+        foundation::Vector2d&   sample_position) const;
     void sample(
         const int               sx,
         const int               sy,
@@ -86,14 +90,37 @@ class PixelSampler
 FORCE_INLINE void PixelSampler::sample(
     const int                   sx,
     const int                   sy,
+    foundation::Vector2d&       sample_position) const
+{
+    // Compute the sample coordinates in image space.
+    if (m_subpixel_grid_size == 1)
+    {
+        sample_position[0] = sx + 0.5;
+        sample_position[1] = sy + 0.5;
+    }
+    else
+    {
+        const size_t j = sx & m_period_mask;
+        const size_t k = sy & m_period_mask;
+        const size_t sigma_j = m_sigma[j];
+        const size_t sigma_k = m_sigma[k];
+
+        sample_position[0] = (sx + sigma_k * m_rcp_period) * m_rcp_subpixel_grid_size;
+        sample_position[1] = (sy + sigma_j * m_rcp_period) * m_rcp_subpixel_grid_size;
+    }
+}
+
+FORCE_INLINE void PixelSampler::sample(
+    const int                   sx,
+    const int                   sy,
     foundation::Vector2d&       sample_position,
     size_t&                     initial_instance) const
 {
-    // Compute the initial instance number of the sampling context.
     const size_t j = sx & m_period_mask;
     const size_t k = sy & m_period_mask;
-    const size_t sigma_j = m_sigma[j];
     const size_t sigma_k = m_sigma[k];
+
+    // Compute the initial instance number of the sampling context.
     initial_instance = (j << m_log_period) + sigma_k;
 
     // Compute the sample coordinates in image space.
@@ -104,6 +131,8 @@ FORCE_INLINE void PixelSampler::sample(
     }
     else
     {
+        const size_t sigma_j = m_sigma[j];
+
         sample_position[0] = (sx + sigma_k * m_rcp_period) * m_rcp_subpixel_grid_size;
         sample_position[1] = (sy + sigma_j * m_rcp_period) * m_rcp_subpixel_grid_size;
     }

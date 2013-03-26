@@ -225,6 +225,7 @@ void RenderSettingsWindow::create_image_plane_sampling_uniform_sampler_settings(
     m_uniform_image_plane_sampler->setLayout(layout);
 
     layout->addLayout(create_form_layout("Samples:", create_integer_input("image_plane_sampling.uniform_sampler.samples", 1, 1000000)));
+    layout->addWidget(create_checkbox("image_plane_sampling.uniform_sampler.decorrelate_pixels", "Decorrelate Pixels"));
 }
 
 void RenderSettingsWindow::create_image_plane_sampling_adaptive_sampler_settings(QHBoxLayout* parent)
@@ -650,6 +651,7 @@ void RenderSettingsWindow::create_direct_links()
     // Image Plane Sampling.
     create_direct_link("image_plane_sampling.general.sampler", "pixel_renderer", "uniform");
     create_direct_link("image_plane_sampling.uniform_sampler.samples", "uniform_pixel_renderer.samples", 64);
+    create_direct_link("image_plane_sampling.uniform_sampler.decorrelate_pixels", "uniform_pixel_renderer.decorrelate_pixels", true);
     create_direct_link("image_plane_sampling.adaptive_sampler.min_samples", "adaptive_pixel_renderer.min_samples", 16);
     create_direct_link("image_plane_sampling.adaptive_sampler.max_samples", "adaptive_pixel_renderer.max_samples", 64);
     create_direct_link("image_plane_sampling.adaptive_sampler.quality", "adaptive_pixel_renderer.quality", 3.0);

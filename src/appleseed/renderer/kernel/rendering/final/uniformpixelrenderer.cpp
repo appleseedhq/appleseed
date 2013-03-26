@@ -41,7 +41,10 @@
 #include "renderer/modeling/frame/frame.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/canvasproperties.h"
+#include "foundation/image/image.h"
 #include "foundation/math/aabb.h"
+#include "foundation/math/hash.h"
 #include "foundation/math/rng.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
@@ -77,8 +80,9 @@ namespace
             const ParamArray&           params)
           : m_params(params)
           , m_sample_renderer(factory->create())
+          , m_sqrt_sample_count(round<int>(sqrt(static_cast<double>(m_params.m_samples))))
+          , m_sample_count(m_sqrt_sample_count * m_sqrt_sample_count)
         {
-            m_sqrt_sample_count = round<int>(sqrt(static_cast<double>(m_params.m_samples)));
             m_pixel_sampler.initialize(m_sqrt_sample_count);
 
             RENDERER_LOG_INFO(
@@ -118,47 +122,76 @@ namespace
             ShadingResultFrameBuffer&   framebuffer) OVERRIDE
         {
             const size_t aov_count = frame.aov_images().size();
-            const int base_sx = ix * m_sqrt_sample_count;
-            const int base_sy = iy * m_sqrt_sample_count;
 
-            //size_t random_instance = static_cast<size_t>(rand_int31(m_rng));
-
-            for (int sy = 0; sy < m_sqrt_sample_count; ++sy)
+            if (m_params.m_decorrelate)
             {
-                for (int sx = 0; sx < m_sqrt_sample_count; ++sx)
+                // Create a sampling context.
+                const size_t frame_width = frame.image().properties().m_canvas_width;
+                const size_t instance = hashint32(static_cast<uint32>(iy * frame_width + ix));
+                SamplingContext sampling_context(
+                    m_rng,
+                    2,                  // number of dimensions
+                    0,                  // number of samples -- unknown
+                    instance);          // initial instance number
+
+                for (size_t i = 0; i < m_sample_count; ++i)
                 {
-                    // Compute the sample position (in continuous image space) and the instance number.
-                    Vector2d s;
-                    size_t instance;
-                    m_pixel_sampler.sample(
-                        base_sx + sx,
-                        base_sy + sy,
-                        s,
-                        instance);
+                    // Generate a uniform sample in [0,1)^2.
+                    const Vector2d s = sampling_context.next_vector2<2>();
 
                     // Compute the sample position in NDC.
-                    const Vector2d sample_position = frame.get_sample_position(s.x, s.y);
-
-                    // Create a sampling context. We start with an initial dimension of 1,
-                    // as this seems to give less correlation artifacts than when the
-                    // initial dimension is set to 0 or 2.
-                    SamplingContext sampling_context(
-                        m_rng,
-                        1,              // number of dimensions
-                        instance,       // number of samples
-                        //random_instance++);      // initial instance number
-                        instance);      // initial instance number
+                    const Vector2d sample_position = frame.get_sample_position(ix + s.x, iy + s.y);
 
                     // Render the sample.
+                    SamplingContext child_sampling_context(sampling_context);
                     ShadingResult shading_result;
                     shading_result.m_aovs.set_size(aov_count);
                     m_sample_renderer->render_sample(
-                        sampling_context,
+                        child_sampling_context,
                         sample_position,
                         shading_result);
 
                     // Merge the sample into the framebuffer.
-                    framebuffer.add(s.x - ix + tx, s.y - iy + ty, shading_result);
+                    framebuffer.add(tx + s.x, ty + s.y, shading_result);
+                }
+            }
+            else
+            {
+                const int base_sx = ix * m_sqrt_sample_count;
+                const int base_sy = iy * m_sqrt_sample_count;
+
+                for (int sy = 0; sy < m_sqrt_sample_count; ++sy)
+                {
+                    for (int sx = 0; sx < m_sqrt_sample_count; ++sx)
+                    {
+                        // Compute the sample position (in continuous image space) and the instance number.
+                        Vector2d s;
+                        size_t instance;
+                        m_pixel_sampler.sample(base_sx + sx, base_sy + sy, s, instance);
+
+                        // Compute the sample position in NDC.
+                        const Vector2d sample_position = frame.get_sample_position(s.x, s.y);
+
+                        // Create a sampling context. We start with an initial dimension of 1,
+                        // as this seems to give less correlation artifacts than when the
+                        // initial dimension is set to 0 or 2.
+                        SamplingContext sampling_context(
+                            m_rng,
+                            1,              // number of dimensions
+                            instance,       // number of samples
+                            instance);      // initial instance number -- end of sequence
+
+                        // Render the sample.
+                        ShadingResult shading_result;
+                        shading_result.m_aovs.set_size(aov_count);
+                        m_sample_renderer->render_sample(
+                            sampling_context,
+                            sample_position,
+                            shading_result);
+
+                        // Merge the sample into the framebuffer.
+                        framebuffer.add(s.x - ix + tx, s.y - iy + ty, shading_result);
+                    }
                 }
             }
         }
@@ -172,18 +205,21 @@ namespace
         struct Parameters
         {
             const size_t    m_samples;
+            const bool      m_decorrelate;
 
             explicit Parameters(const ParamArray& params)
               : m_samples(params.get_required<size_t>("samples", 1))
+              , m_decorrelate(params.get_optional<bool>("decorrelate_pixels", true))
             {
             }
         };
 
         const Parameters                    m_params;
         auto_release_ptr<ISampleRenderer>   m_sample_renderer;
-        SamplingContext::RNGType            m_rng;
-        int                                 m_sqrt_sample_count;
+        const int                           m_sqrt_sample_count;
+        const size_t                        m_sample_count;
         PixelSampler                        m_pixel_sampler;
+        SamplingContext::RNGType            m_rng;
     };
 }
 
