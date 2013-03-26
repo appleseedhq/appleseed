@@ -303,6 +303,7 @@ filter_list (
 )
 QT4_WRAP_CPP (appleseed.studio_generated_moc_h_files
     ${appleseed.studio_h_files}
+    OPTIONS -DBOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION      # See https://bugreports.qt-project.org/browse/QTBUG-22829
 )
 
 # Moc .cpp files.
@@ -313,6 +314,7 @@ filter_list (
 )
 QT4_WRAP_CPP_CPLUSPLUS_FILES (appleseed.studio_generated_moc_cpp_files
     ${appleseed.studio_cpp_files}
+    OPTIONS -DBOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION      # See https://bugreports.qt-project.org/browse/QTBUG-22829
 )
 
 
