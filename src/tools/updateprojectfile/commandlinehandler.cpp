@@ -26,61 +26,56 @@
 // THE SOFTWARE.
 //
 
-// Project headers.
+// Interface header.
 #include "commandlinehandler.h"
 
 // appleseed.shared headers.
-#include "application/application.h"
 #include "application/superlogger.h"
 
-// appleseed.renderer headers.
-#include "renderer/api/project.h"
-
 // appleseed.foundation headers.
-#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/utility/log.h"
+#include "foundation/utility/string.h"
 
-// boost headers.
-#include "boost/filesystem/path.hpp"
+// Standard headers.
+#include <cstdlib>
 
-using namespace appleseed::normalizeprojectfile;
 using namespace appleseed::shared;
-using namespace boost;
 using namespace foundation;
-using namespace renderer;
+using namespace std;
 
+namespace appleseed {
+namespace updateprojectfile {
 
-//
-// Entry point of normalizeprojectfile.
-//
-
-int main(int argc, const char* argv[])
+CommandLineHandler::CommandLineHandler()
+  : CommandLineHandlerBase("updateprojectfile")
 {
-    SuperLogger logger;
-
-    Application::check_installation(logger);
-
-    CommandLineHandler cl;
-    cl.parse(argc, argv, logger);
-
-    global_logger().add_target(&logger.get_log_target());
-
-    // Construct the schema filename.
-    const filesystem::path schema_path =
-          filesystem::path(Application::get_root_path())
-        / "schemas"
-        / "project.xsd";
-
-    // Load the input project from disk.
-    ProjectFileReader reader;
-    auto_release_ptr<Project> project(
-        reader.read(
-            cl.m_filename.values()[0].c_str(),
-            schema_path.string().c_str()));
-
-    // Bail out if the project couldn't be loaded.
-    if (project.get() == 0)
-        return 1;
-
-    // Write the project back to disk.
-    return ProjectFileWriter::write(project.ref(), project->get_path()) ? 0 : 1;
+    m_filename.set_exact_value_count(1);
+    parser().set_default_option_handler(&m_filename);
 }
+
+void CommandLineHandler::parse(
+    const int       argc,
+    const char*     argv[],
+    SuperLogger&    logger)
+{
+    CommandLineHandlerBase::parse(argc, argv, logger);
+
+    if (!m_filename.is_set())
+        exit(0);
+}
+
+void CommandLineHandler::print_program_usage(
+    const char*     program_name,
+    SuperLogger&    logger) const
+{
+    SaveLogFormatterConfig save_config(logger);
+    logger.set_format(LogMessage::Info, "{message}");
+
+    LOG_INFO(logger, "usage: %s [options] project.appleseed", program_name);
+    LOG_INFO(logger, "options:");
+
+    parser().print_usage(logger);
+}
+
+}   // namespace updateprojectfile
+}   // namespace appleseed

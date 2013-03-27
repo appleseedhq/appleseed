@@ -418,7 +418,7 @@ endif ()
 if (WITH_TOOLS)
     add_subdirectory (tools/animatecamera)
     add_subdirectory (tools/maketiledexr)
-    add_subdirectory (tools/normalizeprojectfile)
+    add_subdirectory (tools/updateprojectfile)
 endif()
 
 if (WITH_PYTHON)

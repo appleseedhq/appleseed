@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_NORMALIZEPROJECTFILE_COMMANDLINEHANDLER_H
-#define APPLESEED_NORMALIZEPROJECTFILE_COMMANDLINEHANDLER_H
+#ifndef APPLESEED_UPDATEPROJECTFILE_COMMANDLINEHANDLER_H
+#define APPLESEED_UPDATEPROJECTFILE_COMMANDLINEHANDLER_H
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -43,7 +43,7 @@
 namespace appleseed { namespace shared { class SuperLogger; } }
 
 namespace appleseed {
-namespace normalizeprojectfile {
+namespace updateprojectfile {
 
 //
 // Command line handler.
@@ -71,7 +71,7 @@ class CommandLineHandler
         shared::SuperLogger&    logger) const;
 };
 
-}       // namespace normalizeprojectfile
+}       // namespace updateprojectfile
 }       // namespace appleseed
 
-#endif  // !APPLESEED_NORMALIZEPROJECTFILE_COMMANDLINEHANDLER_H
+#endif  // !APPLESEED_UPDATEPROJECTFILE_COMMANDLINEHANDLER_H

@@ -36,7 +36,7 @@ set (sources
     commandlinehandler.h
     main.cpp
 )
-list (APPEND normalizeprojectfile_sources
+list (APPEND updateprojectfile_sources
     ${sources}
 )
 source_group ("" FILES
@@ -48,14 +48,14 @@ source_group ("" FILES
 # Target.
 #--------------------------------------------------------------------------------------------------
 
-add_executable (normalizeprojectfile
-    ${normalizeprojectfile_sources}
+add_executable (updateprojectfile
+    ${updateprojectfile_sources}
 )
 
-set_target_properties (normalizeprojectfile PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/normalizeprojectfile
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/normalizeprojectfile
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/normalizeprojectfile
+set_target_properties (updateprojectfile PROPERTIES
+    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/updateprojectfile
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/updateprojectfile
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/updateprojectfile
 )
 
 
@@ -73,16 +73,16 @@ include_directories (
 # Preprocessor definitions.
 #--------------------------------------------------------------------------------------------------
 
-apply_preprocessor_definitions (normalizeprojectfile)
+apply_preprocessor_definitions (updateprojectfile)
 
 
 #--------------------------------------------------------------------------------------------------
 # Static libraries.
 #--------------------------------------------------------------------------------------------------
 
-link_against_platform (normalizeprojectfile)
+link_against_platform (updateprojectfile)
 
-target_link_libraries (normalizeprojectfile
+target_link_libraries (updateprojectfile
     appleseed
     appleseed.shared
     ${Boost_LIBRARIES}
@@ -93,13 +93,13 @@ target_link_libraries (normalizeprojectfile
 # Post-build commands.
 #--------------------------------------------------------------------------------------------------
 
-add_copy_target_to_sandbox_command (normalizeprojectfile)
+add_copy_target_to_sandbox_command (updateprojectfile)
 
 
 #--------------------------------------------------------------------------------------------------
 # Installation.
 #--------------------------------------------------------------------------------------------------
 
-install (TARGETS normalizeprojectfile
+install (TARGETS updateprojectfile
     DESTINATION bin
 )
