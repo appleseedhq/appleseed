@@ -362,6 +362,23 @@ namespace
         }
     }
 
+    void apply_samples_command_line_option(ParamArray& params)
+    {
+        if (g_cl.m_samples.is_set())
+        {
+            params.insert_path(
+                "uniform_pixel_renderer.samples",
+                g_cl.m_samples.string_values()[1].c_str());
+
+            params.insert_path(
+                "adaptive_pixel_renderer.min_samples",
+                g_cl.m_samples.string_values()[0].c_str());
+            params.insert_path(
+                "adaptive_pixel_renderer.max_samples",
+                g_cl.m_samples.string_values()[1].c_str());
+        }
+    }
+
     void apply_parameter_command_line_options(ParamArray& params)
     {
         for (size_t i = 0; i < g_cl.m_params.values().size(); ++i)
@@ -408,15 +425,7 @@ namespace
         }
 
         // Apply --samples option.
-        if (g_cl.m_samples.is_set())
-        {
-            params.insert_path(
-                "generic_tile_renderer.min_samples",
-                g_cl.m_samples.string_values()[0].c_str());
-            params.insert_path(
-                "generic_tile_renderer.max_samples",
-                g_cl.m_samples.string_values()[1].c_str());
-        }
+        apply_samples_command_line_option(params);
 
         // Apply --override-shading option.
         if (g_cl.m_override_shading.is_set())
