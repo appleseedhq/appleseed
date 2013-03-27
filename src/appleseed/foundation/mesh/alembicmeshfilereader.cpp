@@ -170,8 +170,8 @@ namespace
         {
             const int32* face_sizes = mesh_sample.getFaceCounts()->get();
             const size_t face_count = mesh_sample.getFaceCounts()->size();
-        
             const int32* face_indices = mesh_sample.getFaceIndices()->get();
+
             size_t current_vertex_index = 0;
             vector<size_t> indices;
 
@@ -183,30 +183,24 @@ namespace
                 if (face_size < 3)
                     continue;
 
-                m_mesh_builder.begin_face(face_size);
-
+                // Collect feature indices for this face.
                 ensure_minimum_size(indices, face_size);
-
-                // Collect face vertex indices and push them to the builder.
                 for (size_t j = 0; j < face_size; ++j)
                     indices[j] = static_cast<size_t>(face_indices[current_vertex_index + j]);
+
+                m_mesh_builder.begin_face(face_size);
+                m_mesh_builder.set_face_material(0);
+
+                // Vertices.
                 m_mesh_builder.set_face_vertices(&indices[0]);
 
-                // Compute vertex normal indices and push them to the builder.
+                // Vertex normals.
                 if (m_has_vertex_normals)
-                {
-                    for (size_t j = 0; j < face_size; ++j)
-                        indices[j] = current_vertex_index + j;
                     m_mesh_builder.set_face_vertex_normals(&indices[0]);
-                }
 
-                // Compute texture coordinates indices and push them to the builder.
+                // Texture coordinates.
                 if (m_has_uv)
-                {
-                    for (size_t j = 0; j < face_size; ++j)
-                        indices[j] = current_vertex_index + j;
                     m_mesh_builder.set_face_vertex_tex_coords(&indices[0]);
-                }
 
                 m_mesh_builder.end_face();
 
