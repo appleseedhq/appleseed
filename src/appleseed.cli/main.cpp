@@ -222,8 +222,7 @@ namespace
         const string xmlfile_name = "benchmark." + get_time_stamp_string() + ".xml";
         const filesystem::path xmlfile_path =
               filesystem::path(Application::get_tests_root_path())
-            / "unit benchmarks/results/"
-            / xmlfile_name;
+            / "unit benchmarks" / "results" / xmlfile_name;
         if (xmlfile_listener->open(xmlfile_path.string().c_str()))
             result.add_listener(xmlfile_listener.get());
         else
@@ -566,7 +565,7 @@ namespace
             // Construct the path to the archive directory.
             const filesystem::path autosave_path =
                   filesystem::path(Application::get_root_path())
-                / "images/autosave/";
+                / "images" / "autosave";
 
             // Archive the frame to disk.
             LOG_INFO(g_logger, "archiving frame to disk...");
