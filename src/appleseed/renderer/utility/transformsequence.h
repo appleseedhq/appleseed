@@ -162,10 +162,7 @@ FORCE_INLINE const foundation::Transformd& TransformSequence::evaluate(
     foundation::Transformd& tmp) const
 {
     if (m_size == 0)
-    {
-        tmp = foundation::Transformd::identity();
-        return tmp;
-    }
+        return foundation::Transformd::identity();
 
     assert(m_size == 1 || m_interpolators != 0);
 

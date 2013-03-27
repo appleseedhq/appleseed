@@ -178,7 +178,7 @@ class Matrix<T, N, N>
     Matrix(const Matrix<U, N, N>& rhs);
 
     // Return the NxN identity matrix.
-    static MatrixType identity();
+    static const MatrixType& identity();
 
     // Unchecked array subscripting.
     ValueType& operator[](const size_t i);
@@ -190,6 +190,12 @@ class Matrix<T, N, N>
 
   private:
     ValueType m_comp[Components];
+
+    // The identity matrix returned by identity().
+    static const MatrixType m_identity;
+
+    // Construct and return an NxN identity matrix.
+    static MatrixType make_identity();
 };
 
 // Matrix trace.
@@ -249,7 +255,7 @@ class Matrix<T, 3, 3>
 #endif
 
     // Return the 3x3 identity matrix.
-    static MatrixType identity();
+    static const MatrixType& identity();
 
     // Build canonical transformation matrices.
     static MatrixType scaling(const Vector<T, 3>& s);
@@ -303,6 +309,12 @@ class Matrix<T, 3, 3>
 
   private:
     ValueType m_comp[Components];
+
+    // The identity matrix returned by identity().
+    static const MatrixType m_identity;
+
+    // Construct and return a 3x3 identity matrix.
+    static MatrixType make_identity();
 };
 
 // Rotate a given vector by a given angle around a given axis.
@@ -351,7 +363,7 @@ class Matrix<T, 4, 4>
 #endif
 
     // Return the 4x4 identity matrix.
-    static MatrixType identity();
+    static const MatrixType& identity();
 
     // Build canonical transformation matrices.
     static MatrixType translation(const Vector<T, 3>& v);
@@ -408,6 +420,12 @@ class Matrix<T, 4, 4>
 
   private:
     SSE_ALIGN ValueType m_comp[Components];
+
+    // The identity matrix returned by identity().
+    static const MatrixType m_identity;
+
+    // Construct and return a 4x4 identity matrix.
+    static MatrixType make_identity();
 };
 
 
@@ -800,7 +818,16 @@ inline Matrix<T, N, N>::Matrix(const Matrix<U, N, N>& rhs)
 }
 
 template <typename T, size_t N>
-inline Matrix<T, N, N> Matrix<T, N, N>::identity()
+inline const Matrix<T, N, N>& Matrix<T, N, N>::identity()
+{
+    return m_identity;
+}
+
+template <typename T, size_t N>
+const Matrix<T, N, N> Matrix<T, N, N>::m_identity(Matrix<T, N, N>::make_identity());
+
+template <typename T, size_t N>
+Matrix<T, N, N> Matrix<T, N, N>::make_identity()
 {
     MatrixType mat(T(0.0));
 
@@ -1009,7 +1036,16 @@ inline Matrix<T, 3, 3>::operator const Imath::Matrix33<T>&() const
 #endif
 
 template <typename T>
-inline Matrix<T, 3, 3> Matrix<T, 3, 3>::identity()
+inline const Matrix<T, 3, 3>& Matrix<T, 3, 3>::identity()
+{
+    return m_identity;
+}
+
+template <typename T>
+const Matrix<T, 3, 3> Matrix<T, 3, 3>::m_identity(Matrix<T, 3, 3>::make_identity());
+
+template <typename T>
+Matrix<T, 3, 3> Matrix<T, 3, 3>::make_identity()
 {
     MatrixType mat(T(0.0));
 
@@ -1476,7 +1512,16 @@ inline Matrix<T, 4, 4>::operator const Imath::Matrix44<T>&() const
 #endif
 
 template <typename T>
-inline Matrix<T, 4, 4> Matrix<T, 4, 4>::identity()
+inline const Matrix<T, 4, 4>& Matrix<T, 4, 4>::identity()
+{
+    return m_identity;
+}
+
+template <typename T>
+const Matrix<T, 4, 4> Matrix<T, 4, 4>::m_identity(Matrix<T, 4, 4>::make_identity());
+
+template <typename T>
+Matrix<T, 4, 4> Matrix<T, 4, 4>::make_identity()
 {
     MatrixType mat(T(0.0));
 

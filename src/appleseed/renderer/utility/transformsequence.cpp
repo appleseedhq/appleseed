@@ -130,15 +130,10 @@ void TransformSequence::get_transform(
     transform = m_keys[index].m_transform;
 }
 
-namespace
-{
-    const Transformd Identity = Transformd::identity();
-}
-
 const Transformd& TransformSequence::get_earliest_transform() const
 {
     if (m_size == 0)
-        return Identity;
+        return Transformd::identity();
 
     double earliest_time = m_keys[0].m_time;
     size_t earliest_index = 0;

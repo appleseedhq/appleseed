@@ -68,7 +68,7 @@ class Transform
         const MatrixType& parent_to_local);     // must be equal to inverse(local_to_parent)
 
     // Return the identity transform.
-    static Transform identity();
+    static const Transform& identity();
 
     // Build a transform using a given local-to-parent transform.
     // The parent-to-local transform will be computed using matrix inversion.
@@ -112,6 +112,12 @@ class Transform
 
     MatrixType  m_local_to_parent;
     MatrixType  m_parent_to_local;
+
+    // The identity transform returned by identity().
+    static const TransformType m_identity;
+
+    // Construct and return an identity transform.
+    static TransformType make_identity();
 };
 
 // Exact inequality and equality tests.
@@ -205,7 +211,16 @@ inline Transform<T>::Transform(
 }
 
 template <typename T>
-inline Transform<T> Transform<T>::identity()
+inline const Transform<T>& Transform<T>::identity()
+{
+    return m_identity;
+}
+
+template <typename T>
+const Transform<T> Transform<T>::m_identity(Transform<T>::make_identity());
+
+template <typename T>
+Transform<T> Transform<T>::make_identity()
 {
     return Transform(MatrixType::identity(), MatrixType::identity());
 }
