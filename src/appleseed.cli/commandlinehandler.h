@@ -52,28 +52,31 @@ class CommandLineHandler
   : public shared::CommandLineHandlerBase
 {
   public:
+    // Input files.
+    foundation::ValueOptionHandler<std::string>     m_filenames;
+
     // General options.
+    foundation::ValueOptionHandler<std::string>     m_configuration;
+    foundation::ValueOptionHandler<std::string>     m_params;
 #if defined __APPLE__ || defined _WIN32
     foundation::FlagOptionHandler                   m_display_output;
 #endif
-    foundation::ValueOptionHandler<std::string>     m_run_unit_tests;
-    foundation::ValueOptionHandler<std::string>     m_run_unit_benchmarks;
-    foundation::FlagOptionHandler                   m_verbose_unit_tests;
-    foundation::FlagOptionHandler                   m_dump_entity_definitions;
-
-    foundation::ValueOptionHandler<std::string>     m_configuration;
-    foundation::ValueOptionHandler<std::string>     m_params;
-    foundation::ValueOptionHandler<std::string>     m_filenames;
-
-    foundation::FlagOptionHandler                   m_benchmark_mode;
+    foundation::FlagOptionHandler                   m_disable_autosave;
 
     // Aliases for rendering options.
-    foundation::ValueOptionHandler<int>             m_rendering_threads;
+    foundation::ValueOptionHandler<int>             m_threads;
     foundation::ValueOptionHandler<std::string>     m_output;
     foundation::ValueOptionHandler<int>             m_resolution;
     foundation::ValueOptionHandler<int>             m_window;
     foundation::ValueOptionHandler<int>             m_samples;
     foundation::ValueOptionHandler<std::string>     m_override_shading;
+
+    // Developer-oriented options.
+    foundation::ValueOptionHandler<std::string>     m_run_unit_tests;
+    foundation::ValueOptionHandler<std::string>     m_run_unit_benchmarks;
+    foundation::FlagOptionHandler                   m_verbose_unit_tests;
+    foundation::FlagOptionHandler                   m_benchmark_mode;
+    foundation::FlagOptionHandler                   m_dump_entity_definitions;
 
     // Constructor.
     CommandLineHandler();

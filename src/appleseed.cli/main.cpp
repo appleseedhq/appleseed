@@ -341,62 +341,6 @@ namespace
         dump_definitions<TextureFactoryRegistrar>("texture", file, indenter);
     }
 
-    void apply_command_line_options(ParamArray& params)
-    {
-        // Apply rendering threads option.
-        if (g_cl.m_rendering_threads.is_set())
-        {
-            params.insert_path(
-                "rendering_threads",
-                g_cl.m_rendering_threads.string_values()[0].c_str());
-        }
-
-        // Apply window option.
-        if (g_cl.m_window.is_set())
-        {
-            const string window =
-                  g_cl.m_window.string_values()[0] + ' ' +
-                  g_cl.m_window.string_values()[1] + ' ' +
-                  g_cl.m_window.string_values()[2] + ' ' +
-                  g_cl.m_window.string_values()[3];
-            params.insert_path("generic_tile_renderer.crop_window", window);
-        }
-
-        // Apply samples option.
-        if (g_cl.m_samples.is_set())
-        {
-            params.insert_path(
-                "generic_tile_renderer.min_samples",
-                g_cl.m_samples.string_values()[0].c_str());
-            params.insert_path(
-                "generic_tile_renderer.max_samples",
-                g_cl.m_samples.string_values()[1].c_str());
-        }
-
-        // Apply shading override option.
-        if (g_cl.m_override_shading.is_set())
-        {
-            params.insert_path(
-                "shading_engine.override_shading.mode",
-                g_cl.m_override_shading.string_values()[0].c_str());
-        }
-
-        // Apply custom parameters.
-        for (size_t i = 0; i < g_cl.m_params.values().size(); ++i)
-        {
-            // Retrieve the assignment string (of the form name=value).
-            const string& s = g_cl.m_params.values()[i];
-
-            // Retrieve the name and the value of the parameter.
-            const string::size_type equal_pos = s.find_first_of('=');
-            const string path = s.substr(0, equal_pos);
-            const string value = s.substr(equal_pos + 1);
-
-            // Insert the parameter.
-            params.insert_path(path, value);
-        }
-    }
-
     void apply_resolution_command_line_option(Project& project)
     {
         if (g_cl.m_resolution.is_set())
@@ -416,6 +360,74 @@ namespace
 
             project.set_frame(new_frame);
         }
+    }
+
+    void apply_parameter_command_line_options(ParamArray& params)
+    {
+        for (size_t i = 0; i < g_cl.m_params.values().size(); ++i)
+        {
+            // Retrieve the assignment string (of the form name=value).
+            const string& s = g_cl.m_params.values()[i];
+
+            // Retrieve the name and the value of the parameter.
+            const string::size_type equal_pos = s.find_first_of('=');
+            const string path = s.substr(0, equal_pos);
+            const string value = s.substr(equal_pos + 1);
+
+            // Insert the parameter.
+            params.insert_path(path, value);
+        }
+    }
+
+    void apply_command_line_options(Project& project, ParamArray& params)
+    {
+        // Apply --disable-autosave option.
+        if (g_cl.m_disable_autosave.is_set())
+            params.insert_path("autosave", false);
+
+        // Apply --threads option.
+        if (g_cl.m_threads.is_set())
+        {
+            params.insert_path(
+                "rendering_threads",
+                g_cl.m_threads.string_values()[0].c_str());
+        }
+
+        // Apply --resolution option.
+        apply_resolution_command_line_option(project);
+
+        // Apply --window option.
+        if (g_cl.m_window.is_set())
+        {
+            const string window =
+                  g_cl.m_window.string_values()[0] + ' ' +
+                  g_cl.m_window.string_values()[1] + ' ' +
+                  g_cl.m_window.string_values()[2] + ' ' +
+                  g_cl.m_window.string_values()[3];
+            params.insert_path("generic_tile_renderer.crop_window", window);
+        }
+
+        // Apply --samples option.
+        if (g_cl.m_samples.is_set())
+        {
+            params.insert_path(
+                "generic_tile_renderer.min_samples",
+                g_cl.m_samples.string_values()[0].c_str());
+            params.insert_path(
+                "generic_tile_renderer.max_samples",
+                g_cl.m_samples.string_values()[1].c_str());
+        }
+
+        // Apply --override-shading option.
+        if (g_cl.m_override_shading.is_set())
+        {
+            params.insert_path(
+                "shading_engine.override_shading.mode",
+                g_cl.m_override_shading.string_values()[0].c_str());
+        }
+
+        // Apply --parameter options.
+        apply_parameter_command_line_options(params);
     }
 
 #if defined __APPLE__ || defined _WIN32
@@ -486,15 +498,18 @@ namespace
             return false;
         }
 
-        // Retrieve the parameters from the configuration.
+        // Start with the parameters from the base configuration.
         if (configuration->get_base())
             params = configuration->get_base()->get_parameters();
+
+        // Apply the application settings.
         params.merge(g_settings);
+
+        // Merge the parameters from the configuration.
         params.merge(configuration->get_parameters());
 
-        // Apply command line options.
-        apply_command_line_options(params);
-        apply_resolution_command_line_option(project);
+        // Apply the command line options.
+        apply_command_line_options(project, params);
 
         return true;
     }
@@ -535,17 +550,21 @@ namespace
             "rendering finished in %s.",
             pretty_time(seconds, 3).c_str());
 
-        // Construct the path to the archive directory.
-        const filesystem::path autosave_path =
-              filesystem::path(Application::get_root_path())
-            / "images/autosave/";
-
         // Archive the frame to disk.
-        LOG_INFO(g_logger, "archiving frame to disk...");
-        char* archive_path;
-        project->get_frame()->archive(
-            autosave_path.string().c_str(),
-            &archive_path);
+        char* archive_path = 0;
+        if (params.get_optional<bool>("autosave", true))
+        {
+            // Construct the path to the archive directory.
+            const filesystem::path autosave_path =
+                  filesystem::path(Application::get_root_path())
+                / "images/autosave/";
+
+            // Archive the frame to disk.
+            LOG_INFO(g_logger, "archiving frame to disk...");
+            project->get_frame()->archive(
+                autosave_path.string().c_str(),
+                &archive_path);
+        }
 
         // Write the frame to disk.
         if (g_cl.m_output.is_set())
@@ -559,7 +578,11 @@ namespace
 
         // Display the output image.
         if (g_cl.m_display_output.is_set())
-            display_frame(archive_path);
+        {
+            if (archive_path)
+                display_frame(archive_path);
+            else LOG_WARNING(g_logger, "cannot display output when autosave is disabled.");
+        }
 
 #endif
 

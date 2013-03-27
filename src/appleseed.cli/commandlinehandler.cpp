@@ -44,33 +44,9 @@ namespace cli {
 CommandLineHandler::CommandLineHandler()
   : CommandLineHandlerBase("appleseed.cli")
 {
-#if defined __APPLE__ || defined _WIN32
-
-    m_display_output.add_name("--display-output");
-    m_display_output.set_description("display the output image");
-    parser().add_option_handler(&m_display_output);
-
-#endif
-
-    m_run_unit_tests.add_name("--run-unit-tests");
-    m_run_unit_tests.set_description("run unit tests; filter them based on the optional regular expression argument");
-    m_run_unit_tests.set_min_value_count(0);
-    m_run_unit_tests.set_max_value_count(1);
-    parser().add_option_handler(&m_run_unit_tests);
-
-    m_run_unit_benchmarks.add_name("--run-unit-benchmarks");
-    m_run_unit_benchmarks.set_description("run unit benchmarks; filter them based on the optional regular expression argument");
-    m_run_unit_benchmarks.set_min_value_count(0);
-    m_run_unit_benchmarks.set_max_value_count(1);
-    parser().add_option_handler(&m_run_unit_benchmarks);
-
-    m_verbose_unit_tests.add_name("--verbose-unit-tests");
-    m_verbose_unit_tests.set_description("enable verbose mode while unit testing");
-    parser().add_option_handler(&m_verbose_unit_tests);
-
-    m_dump_entity_definitions.add_name("--dump-entity-definitions");
-    m_dump_entity_definitions.set_description("dump the definitions of all known entities to stderr as xml");
-    parser().add_option_handler(&m_dump_entity_definitions);
+    m_filenames.set_min_value_count(0);
+    m_filenames.set_max_value_count(1);
+    parser().set_default_option_handler(&m_filenames);
 
     m_configuration.add_name("--configuration");
     m_configuration.add_name("-c");
@@ -86,20 +62,24 @@ CommandLineHandler::CommandLineHandler()
     m_params.set_exact_value_count(1);
     parser().add_option_handler(&m_params);
 
-    m_filenames.set_min_value_count(0);
-    m_filenames.set_max_value_count(1);
-    parser().set_default_option_handler(&m_filenames);
+#if defined __APPLE__ || defined _WIN32
 
-    m_benchmark_mode.add_name("--benchmark-mode");
-    m_benchmark_mode.set_description("enable benchmark mode");
-    parser().add_option_handler(&m_benchmark_mode);
+    m_display_output.add_name("--display-output");
+    m_display_output.set_description("display the output image");
+    parser().add_option_handler(&m_display_output);
 
-    m_rendering_threads.add_name("--threads");
-    m_rendering_threads.add_name("-t");
-    m_rendering_threads.set_description("set the number of rendering threads");
-    m_rendering_threads.set_syntax("n");
-    m_rendering_threads.set_exact_value_count(1);
-    parser().add_option_handler(&m_rendering_threads);
+#endif
+
+    m_disable_autosave.add_name("--disable-autosave");
+    m_disable_autosave.set_description("disable automatic saving of rendered images");
+    parser().add_option_handler(&m_disable_autosave);
+
+    m_threads.add_name("--threads");
+    m_threads.add_name("-t");
+    m_threads.set_description("set the number of rendering threads");
+    m_threads.set_syntax("n");
+    m_threads.set_exact_value_count(1);
+    parser().add_option_handler(&m_threads);
 
     m_output.add_name("--output");
     m_output.add_name("-o");
@@ -134,6 +114,30 @@ CommandLineHandler::CommandLineHandler()
     m_override_shading.set_syntax("shader");
     m_override_shading.set_exact_value_count(1);
     parser().add_option_handler(&m_override_shading);
+
+    m_run_unit_tests.add_name("--run-unit-tests");
+    m_run_unit_tests.set_description("run unit tests; filter them based on the optional regular expression argument");
+    m_run_unit_tests.set_min_value_count(0);
+    m_run_unit_tests.set_max_value_count(1);
+    parser().add_option_handler(&m_run_unit_tests);
+
+    m_run_unit_benchmarks.add_name("--run-unit-benchmarks");
+    m_run_unit_benchmarks.set_description("run unit benchmarks; filter them based on the optional regular expression argument");
+    m_run_unit_benchmarks.set_min_value_count(0);
+    m_run_unit_benchmarks.set_max_value_count(1);
+    parser().add_option_handler(&m_run_unit_benchmarks);
+
+    m_verbose_unit_tests.add_name("--verbose-unit-tests");
+    m_verbose_unit_tests.set_description("enable verbose mode while unit testing");
+    parser().add_option_handler(&m_verbose_unit_tests);
+
+    m_benchmark_mode.add_name("--benchmark-mode");
+    m_benchmark_mode.set_description("enable benchmark mode");
+    parser().add_option_handler(&m_benchmark_mode);
+
+    m_dump_entity_definitions.add_name("--dump-entity-definitions");
+    m_dump_entity_definitions.set_description("dump the definitions of all known entities to stderr as xml");
+    parser().add_option_handler(&m_dump_entity_definitions);
 }
 
 void CommandLineHandler::print_program_usage(
