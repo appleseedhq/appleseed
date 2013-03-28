@@ -37,7 +37,7 @@
 #include "main/dllsymbol.h"
 
 // Forward declarations.
-namespace renderer      { class Project; }
+namespace renderer  { class Project; }
 
 namespace renderer
 {

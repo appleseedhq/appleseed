@@ -42,11 +42,15 @@
 // boost headers.
 #include "boost/filesystem/path.hpp"
 
+// Standard headers.
+#include <string>
+
 using namespace appleseed::shared;
 using namespace appleseed::updateprojectfile;
 using namespace boost;
 using namespace foundation;
 using namespace renderer;
+using namespace std;
 
 
 //
@@ -64,22 +68,28 @@ int main(int argc, const char* argv[])
 
     global_logger().add_target(&logger.get_log_target());
 
-    // Construct the schema filename.
-    const filesystem::path schema_path =
-          filesystem::path(Application::get_root_path())
-        / "schemas"
-        / "project.xsd";
+    // Retrieve the input file path.
+    const string& input_filepath = cl.m_filename.values()[0];
+
+    // Construct the schema file path.
+    const string schema_filepath =
+        (filesystem::path(Application::get_root_path())
+        / "schemas" / "project.xsd").string();
 
     // Load the input project from disk.
     ProjectFileReader reader;
     auto_release_ptr<Project> project(
         reader.read(
-            cl.m_filename.values()[0].c_str(),
-            schema_path.string().c_str()));
+            input_filepath.c_str(),
+            schema_filepath.c_str()));
 
     // Bail out if the project couldn't be loaded.
     if (project.get() == 0)
         return 1;
+
+    // Update the project.
+    ProjectFileUpdater updater;
+    updater.update(project.ref());
 
     // Write the project back to disk.
     return ProjectFileWriter::write(project.ref(), project->get_path()) ? 0 : 1;

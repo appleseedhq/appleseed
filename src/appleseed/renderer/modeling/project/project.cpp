@@ -30,6 +30,7 @@
 #include "project.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
 #include "renderer/kernel/aov/imagestack.h"
 #include "renderer/kernel/aov/spectrumstack.h"
 #include "renderer/kernel/intersection/tracecontext.h"
@@ -51,11 +52,15 @@
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
 #include "foundation/image/pixel.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/searchpaths.h"
+#include "foundation/utility/uid.h"
 
 // Standard headers.
+#include <cassert>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -71,12 +76,18 @@ namespace renderer
 
 struct Project::Impl
 {
-    string                          m_path;
-    auto_release_ptr<Scene>         m_scene;
-    auto_release_ptr<Frame>         m_frame;
-    ConfigurationContainer          m_configurations;
-    SearchPaths                     m_search_paths;
-    auto_ptr<TraceContext>          m_trace_context;
+    size_t                      m_format_revision;
+    string                      m_path;
+    auto_release_ptr<Scene>     m_scene;
+    auto_release_ptr<Frame>     m_frame;
+    ConfigurationContainer      m_configurations;
+    SearchPaths                 m_search_paths;
+    auto_ptr<TraceContext>      m_trace_context;
+
+    Impl()
+      : m_format_revision(0)
+    {
+    }
 };
 
 namespace
@@ -100,6 +111,16 @@ Project::~Project()
 void Project::release()
 {
     delete this;
+}
+
+void Project::set_format_revision(const size_t format_revision)
+{
+    impl->m_format_revision = format_revision;
+}
+
+size_t Project::get_format_revision() const
+{
+    return impl->m_format_revision;
 }
 
 bool Project::has_path() const

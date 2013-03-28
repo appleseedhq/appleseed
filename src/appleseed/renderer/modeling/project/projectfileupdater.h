@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
+// Copyright (c) 2010-2012 Francois Beaune, Jupiter Jazz Limited
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,11 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFILEWRITER_H
-#define APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFILEWRITER_H
-
-// appleseed.renderer headers.
-#include "renderer/global/global.h"
+#ifndef APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFILEUPDATER_H
+#define APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFILEUPDATER_H
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -42,27 +39,15 @@ namespace renderer
 {
 
 //
-// Project file writer.
+// Project file reader.
 //
 
-class DLLSYMBOL ProjectFileWriter
+class DLLSYMBOL ProjectFileUpdater
 {
   public:
-    enum Options
-    {
-        Defaults                = 0,        // none of the flags below
-        OmitHeaderComment       = 1 << 0,   // do not write the header comment
-        OmitWritingMeshFiles    = 1 << 1,   // do not write mesh files to disk
-        OmitCopyingAssets       = 1 << 2    // do not copy asset files (such as texture files) to reside alongside the project file
-    };
-
-    // Write a project to disk. Return true on success, false otherwise.
-    static bool write(
-        const Project&  project,
-        const char*     filepath,
-        const Options   options = Defaults);
+    void update(Project& project);
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFILEWRITER_H
+#endif  // !APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFILEUPDATER_H

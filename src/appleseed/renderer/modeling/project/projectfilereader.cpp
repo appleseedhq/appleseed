@@ -2370,6 +2370,17 @@ namespace
         {
         }
 
+        virtual void start_element(const Attributes& attrs) OVERRIDE
+        {
+            ElementHandlerBase::start_element(attrs);
+
+            const size_t format_revision =
+                from_string<size_t>(
+                    ElementHandlerBase::get_value(attrs, "format_revision"));
+
+            m_project->set_format_revision(format_revision);
+        }
+
         virtual void start_child_element(
             const ProjectElementID      element,
             ElementHandlerType*         handler) OVERRIDE

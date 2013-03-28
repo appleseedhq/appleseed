@@ -30,12 +30,18 @@
 #define APPLESEED_RENDERER_MODELING_PROJECT_PROJECT_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
 #include "renderer/modeling/entity/entity.h"
 #include "renderer/modeling/project/configurationcontainer.h"
 
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
+#include "foundation/utility/autoreleaseptr.h"
+
 // appleseed.main headers.
 #include "main/dllsymbol.h"
+
+// Standard headers.
+#include <cstddef>
 
 // Forward declarations.
 namespace foundation    { class SearchPaths; }
@@ -55,7 +61,12 @@ class DLLSYMBOL Project
 {
   public:
     // Delete this instance.
-    virtual void release();
+    virtual void release() OVERRIDE;
+
+    // Set/get the format revision of the project.
+    // By default, the format revision is set to 0.
+    void set_format_revision(const size_t format_revision);
+    size_t get_format_revision() const;
 
     // Set/get the project path.
     bool has_path() const;

@@ -34,6 +34,7 @@
 #include "renderer/modeling/project/configurationcontainer.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/project/projectfilereader.h"
+#include "renderer/modeling/project/projectfileupdater.h"
 #include "renderer/modeling/project/projectfilewriter.h"
 #include "renderer/modeling/project-builtin/cornellboxproject.h"
 #include "renderer/modeling/project-builtin/defaultproject.h"

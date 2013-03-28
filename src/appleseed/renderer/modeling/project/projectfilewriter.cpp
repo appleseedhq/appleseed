@@ -90,8 +90,8 @@ namespace renderer
 
 namespace
 {
-    // Revision number of the project file format.
-    const size_t ProjectFileFormatRevision = 2;
+    // Revision number of the project format.
+    const size_t ProjectFormatRevision = 3;
 
     // Floating-point formatting settings.
     const char* VectorFormat     = "%.15f";
@@ -744,7 +744,7 @@ namespace
         void write_project(const Project& project)
         {
             XMLElement element("project", m_file, m_indenter);
-            element.add_attribute("format_revision", ProjectFileFormatRevision);
+            element.add_attribute("format_revision", ProjectFormatRevision);
             element.write(true);
 
             if (project.get_scene())
