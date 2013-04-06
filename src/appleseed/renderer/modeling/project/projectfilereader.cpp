@@ -2376,7 +2376,7 @@ namespace
 
             const size_t format_revision =
                 from_string<size_t>(
-                    ElementHandlerBase::get_value(attrs, "format_revision"));
+                    ElementHandlerBase::get_value(attrs, "format_revision", "2"));
 
             m_project->set_format_revision(format_revision);
         }
