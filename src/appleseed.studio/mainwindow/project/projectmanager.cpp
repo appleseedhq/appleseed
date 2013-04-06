@@ -67,7 +67,15 @@ bool ProjectManager::load_project(const string& filepath)
     auto_release_ptr<Project> loaded_project(
         reader.read(filepath.c_str(), schema_filepath.c_str()));
 
-    return try_set_project(loaded_project);
+    ProjectFileUpdater updater;
+    const bool project_modified = updater.update(loaded_project.ref());
+
+    const bool project_set = try_set_project(loaded_project);
+
+    if (project_set && project_modified)
+        set_project_dirty_flag();
+
+    return project_set;
 }
 
 bool ProjectManager::load_builtin_project(const string& name)

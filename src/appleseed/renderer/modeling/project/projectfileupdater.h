@@ -45,7 +45,7 @@ namespace renderer
 class DLLSYMBOL ProjectFileUpdater
 {
   public:
-    void update(Project& project);
+    bool update(Project& project);
 };
 
 }       // namespace renderer

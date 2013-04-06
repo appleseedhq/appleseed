@@ -355,14 +355,18 @@ namespace
     };
 }
 
-void ProjectFileUpdater::update(Project& project)
+bool ProjectFileUpdater::update(Project& project)
 {
+    bool modified = false;
+
     const size_t format_revision = project.get_format_revision();
 
     switch (format_revision)
     {
-      case 2: { Updater_2_to_3 updater(project); updater.update(); }
-      case 3: { Updater_3_to_4 updater(project); updater.update(); }
+      case 0: ; // Nothing to do
+      case 1: ; // Nothing to do
+      case 2: { Updater_2_to_3 updater(project); updater.update(); modified = true; }
+      case 3: { Updater_3_to_4 updater(project); updater.update(); modified = true; }
 
       case 4:
         // Project is up-to-date.
@@ -372,6 +376,8 @@ void ProjectFileUpdater::update(Project& project)
         RENDERER_LOG_ERROR("unsupported project format revision: " FMT_SIZE_T, format_revision);
         break;
     }
+
+    return modified;
 }
 
 }   // namespace renderer
