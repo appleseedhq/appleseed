@@ -31,9 +31,26 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/modeling/edf/diffuseedf.h"
+#include "renderer/modeling/edf/edf.h"
+#include "renderer/modeling/entity/entity.h"
+#include "renderer/modeling/environmentedf/constantenvironmentedf.h"
+#include "renderer/modeling/environmentedf/constanthemisphereenvironmentedf.h"
+#include "renderer/modeling/environmentedf/environmentedf.h"
+#include "renderer/modeling/environmentedf/gradientenvironmentedf.h"
+#include "renderer/modeling/environmentedf/latlongmapenvironmentedf.h"
+#include "renderer/modeling/environmentedf/mirrorballmapenvironmentedf.h"
 #include "renderer/modeling/frame/frame.h"
+#include "renderer/modeling/light/directionallight.h"
+#include "renderer/modeling/light/light.h"
+#include "renderer/modeling/light/pointlight.h"
+#include "renderer/modeling/light/spotlight.h"
+#include "renderer/modeling/light/sunlight.h"
 #include "renderer/modeling/project/configuration.h"
 #include "renderer/modeling/project/project.h"
+#include "renderer/modeling/scene/assembly.h"
+#include "renderer/modeling/scene/containers.h"
+#include "renderer/modeling/scene/scene.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -133,6 +150,22 @@ namespace
                 src.strings().remove(src_key);
             }
         }
+
+        static void rename_if_exist(
+            Dictionary&         dic,
+            const char*         dest_key,
+            const char*         src_key)
+        {
+            move_if_exist(dic, dest_key, dic, src_key);
+        }
+
+        static void rename_if_exist(
+            Entity&             entity,
+            const char*         dest_param,
+            const char*         src_param)
+        {
+            rename_if_exist(entity.get_parameters(), dest_param, src_param);
+        }
     };
 
 
@@ -225,6 +258,101 @@ namespace
             }
         }
     };
+
+
+    //
+    // Update from revision 3 to revision 4.
+    //
+
+    class Updater_3_to_4
+      : public Updater
+    {
+      public:
+        explicit Updater_3_to_4(Project& project)
+          : Updater(project, 3)
+        {
+        }
+
+        virtual void update() OVERRIDE
+        {
+            const Scene* scene = m_project.get_scene();
+
+            if (scene)
+            {
+                for (each<EnvironmentEDFContainer> i = scene->environment_edfs(); i; ++i)
+                    rename_exitance_inputs(*i);
+
+                rename_exitance_inputs(scene->assemblies());
+            }
+        }
+
+      private:
+        void rename_exitance_inputs(AssemblyContainer& assemblies)
+        {
+            for (each<AssemblyContainer> i = assemblies; i; ++i)
+            {
+                rename_exitance_inputs(*i);
+                rename_exitance_inputs(i->assemblies());
+            }
+        }
+
+        void rename_exitance_inputs(Assembly& assembly)
+        {
+            for (each<EDFContainer> i = assembly.edfs(); i; ++i)
+                rename_exitance_inputs(*i);
+
+            for (each<LightContainer> i = assembly.lights(); i; ++i)
+                rename_exitance_inputs(*i);
+        }
+
+        void rename_exitance_inputs(EDF& edf)
+        {
+            if (strcmp(edf.get_model(), DiffuseEDFFactory().get_model()) == 0)
+            {
+                rename_if_exist(edf, "radiance", "exitance");
+                rename_if_exist(edf, "radiance_multiplier", "exitance_multiplier");
+            }
+        }
+
+        void rename_exitance_inputs(Light& light)
+        {
+            if (strcmp(light.get_model(), DirectionalLightFactory().get_model()) == 0 ||
+                strcmp(light.get_model(), PointLightFactory().get_model()) == 0 ||
+                strcmp(light.get_model(), SpotLightFactory().get_model()) == 0)
+            {
+                rename_if_exist(light, "radiance", "exitance");
+                rename_if_exist(light, "radiance_multiplier", "exitance_multiplier");
+            }
+            else if (strcmp(light.get_model(), SunLightFactory().get_model()) == 0)
+            {
+                rename_if_exist(light, "radiance_multiplier", "exitance_multiplier");
+            }
+        }
+
+        void rename_exitance_inputs(EnvironmentEDF& edf)
+        {
+            if (strcmp(edf.get_model(), ConstantEnvironmentEDFFactory().get_model()) == 0)
+            {
+                rename_if_exist(edf, "radiance", "exitance");
+            }
+            else if (strcmp(edf.get_model(), ConstantHemisphereEnvironmentEDFFactory().get_model()) == 0)
+            {
+                rename_if_exist(edf, "upper_hemi_radiance", "upper_hemi_exitance");
+                rename_if_exist(edf, "lower_hemi_radiance", "lower_hemi_exitance");
+            }
+            else if (strcmp(edf.get_model(), GradientEnvironmentEDFFactory().get_model()) == 0)
+            {
+                rename_if_exist(edf, "horizon_radiance", "horizon_exitance");
+                rename_if_exist(edf, "zenith_radiance", "zenith_exitance");
+            }
+            else if (strcmp(edf.get_model(), LatLongMapEnvironmentEDFFactory().get_model()) == 0 ||
+                     strcmp(edf.get_model(), MirrorBallMapEnvironmentEDFFactory().get_model()) == 0)
+            {
+                rename_if_exist(edf, "radiance", "exitance");
+                rename_if_exist(edf, "radiance_multiplier", "exitance_multiplier");
+            }
+        }
+    };
 }
 
 void ProjectFileUpdater::update(Project& project)
@@ -234,8 +362,9 @@ void ProjectFileUpdater::update(Project& project)
     switch (format_revision)
     {
       case 2: { Updater_2_to_3 updater(project); updater.update(); }
+      case 3: { Updater_3_to_4 updater(project); updater.update(); }
 
-      case 3:
+      case 4:
         // Project is up-to-date.
         break;
 

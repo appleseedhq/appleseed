@@ -85,7 +85,7 @@ namespace
         {
             m_inputs.declare("environment_edf", InputFormatEntity, "");
             m_inputs.declare("turbidity", InputFormatScalar);
-            m_inputs.declare("exitance_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("radiance_multiplier", InputFormatScalar, "1.0");
         }
 
         virtual void release() OVERRIDE
@@ -331,7 +331,7 @@ DictionaryArray SunLightFactory::get_widget_definitions() const
 
     definitions.push_back(
         Dictionary()
-            .insert("name", "exitance_multiplier")
+            .insert("name", "radiance_multiplier")
             .insert("label", "Radiance Multiplier")
             .insert("widget", "text_box")
             .insert("use", "optional")

@@ -162,8 +162,8 @@ namespace
           , m_importance_map_height(0)
           , m_probability_scale(0.0)
         {
-            m_inputs.declare("exitance", InputFormatSpectrum);
-            m_inputs.declare("exitance_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("radiance", InputFormatSpectrum);
+            m_inputs.declare("radiance_multiplier", InputFormatScalar, "1.0");
 
             m_u_shift = m_params.get_optional<double>("horizontal_shift", 0.0) / 360.0;
             m_v_shift = m_params.get_optional<double>("vertical_shift", 0.0) / 360.0;
@@ -184,7 +184,7 @@ namespace
             if (!EnvironmentEDF::on_frame_begin(project))
                 return false;
 
-            check_non_zero_radiance("exitance", "exitance_multiplier");
+            check_non_zero_radiance("radiance", "radiance_multiplier");
 
             if (m_importance_sampler.get() == 0)
                 build_importance_map(*project.get_scene());
@@ -295,7 +295,7 @@ namespace
 
         void build_importance_map(const Scene& scene)
         {
-            const Source* radiance_source = m_inputs.source("exitance");
+            const Source* radiance_source = m_inputs.source("radiance");
             assert(radiance_source);
 
             if (dynamic_cast<const TextureSource*>(radiance_source))
@@ -311,7 +311,7 @@ namespace
             {
                 RENDERER_LOG_ERROR(
                     "while building importance map for environment edf \"%s\": a texture instance "
-                    "must be bound to the \"exitance\" input.",
+                    "must be bound to the \"radiance\" input.",
                     get_name());
 
                 m_importance_map_width = 1;
@@ -329,7 +329,7 @@ namespace
             ImageSampler sampler(
                 texture_cache,
                 radiance_source,
-                m_inputs.source("exitance_multiplier"),
+                m_inputs.source("radiance_multiplier"),
                 m_importance_map_width,
                 m_importance_map_height,
                 m_u_shift,
@@ -405,7 +405,7 @@ DictionaryArray LatLongMapEnvironmentEDFFactory::get_widget_definitions() const
 
     definitions.push_back(
         Dictionary()
-            .insert("name", "exitance")
+            .insert("name", "radiance")
             .insert("label", "Radiance")
             .insert("widget", "entity_picker")
             .insert("entity_types",
@@ -416,7 +416,7 @@ DictionaryArray LatLongMapEnvironmentEDFFactory::get_widget_definitions() const
 
     definitions.push_back(
         Dictionary()
-            .insert("name", "exitance_multiplier")
+            .insert("name", "radiance_multiplier")
             .insert("label", "Radiance Multiplier")
             .insert("widget", "entity_picker")
             .insert("entity_types",

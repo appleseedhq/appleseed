@@ -584,7 +584,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
     {
         // Create a new EDF.
         ParamArray params;
-        params.insert("exitance", "light_radiance");
+        params.insert("radiance", "light_radiance");
         assembly->edfs().insert(
             DiffuseEDFFactory().create("light_material_edf", params));
     }

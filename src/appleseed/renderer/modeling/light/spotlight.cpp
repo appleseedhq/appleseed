@@ -76,8 +76,8 @@ namespace
             const ParamArray&   params)
           : Light(name, params)
         {
-            m_inputs.declare("exitance", InputFormatSpectrum);
-            m_inputs.declare("exitance_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("radiance", InputFormatSpectrum);
+            m_inputs.declare("radiance_multiplier", InputFormatScalar, "1.0");
         }
 
         virtual void release() OVERRIDE
@@ -97,8 +97,8 @@ namespace
             if (!Light::on_frame_begin(project, assembly))
                 return false;
 
-            m_radiance_source = m_inputs.source("exitance");
-            m_radiance_multiplier_source = m_inputs.source("exitance_multiplier");
+            m_radiance_source = m_inputs.source("radiance");
+            m_radiance_multiplier_source = m_inputs.source("radiance_multiplier");
             check_non_zero_radiance(m_radiance_source, m_radiance_multiplier_source);
 
             const double inner_half_angle = deg_to_rad(m_params.get_required<double>("inner_angle", 20.0) / 2.0);
@@ -223,7 +223,7 @@ DictionaryArray SpotLightFactory::get_widget_definitions() const
 
     definitions.push_back(
         Dictionary()
-            .insert("name", "exitance")
+            .insert("name", "radiance")
             .insert("label", "Radiance")
             .insert("widget", "entity_picker")
             .insert("entity_types",
@@ -235,7 +235,7 @@ DictionaryArray SpotLightFactory::get_widget_definitions() const
 
     definitions.push_back(
         Dictionary()
-            .insert("name", "exitance_multiplier")
+            .insert("name", "radiance_multiplier")
             .insert("label", "Radiance Multiplier")
             .insert("widget", "entity_picker")
             .insert("entity_types",

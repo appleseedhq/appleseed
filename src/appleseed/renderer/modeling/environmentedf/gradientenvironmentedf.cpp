@@ -72,8 +72,8 @@ namespace
             const ParamArray&   params)
           : EnvironmentEDF(name, params)
         {
-            m_inputs.declare("horizon_exitance", InputFormatSpectrum);
-            m_inputs.declare("zenith_exitance", InputFormatSpectrum);
+            m_inputs.declare("horizon_radiance", InputFormatSpectrum);
+            m_inputs.declare("zenith_radiance", InputFormatSpectrum);
         }
 
         virtual void release() OVERRIDE
@@ -91,10 +91,10 @@ namespace
             if (!EnvironmentEDF::on_frame_begin(project))
                 return false;
 
-            if (!check_uniform("horizon_exitance") || !check_uniform("zenith_exitance"))
+            if (!check_uniform("horizon_radiance") || !check_uniform("zenith_radiance"))
                 return false;
 
-            if (is_uniform_zero("horizon_exitance") && is_uniform_zero("zenith_exitance"))
+            if (is_uniform_zero("horizon_radiance") && is_uniform_zero("zenith_radiance"))
                 warn_zero_radiance();
 
             m_inputs.evaluate_uniforms(&m_values);
@@ -191,7 +191,7 @@ DictionaryArray GradientEnvironmentEDFFactory::get_widget_definitions() const
 
     definitions.push_back(
         Dictionary()
-            .insert("name", "horizon_exitance")
+            .insert("name", "horizon_radiance")
             .insert("label", "Horizon Radiance")
             .insert("widget", "entity_picker")
             .insert("entity_types",
@@ -202,7 +202,7 @@ DictionaryArray GradientEnvironmentEDFFactory::get_widget_definitions() const
 
     definitions.push_back(
         Dictionary()
-            .insert("name", "zenith_exitance")
+            .insert("name", "zenith_radiance")
             .insert("label", "Zenith Radiance")
             .insert("widget", "entity_picker")
             .insert("entity_types",

@@ -71,8 +71,8 @@ namespace
             const ParamArray&   params)
           : Light(name, params)
         {
-            m_inputs.declare("exitance", InputFormatSpectrum);
-            m_inputs.declare("exitance_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("radiance", InputFormatSpectrum);
+            m_inputs.declare("radiance_multiplier", InputFormatScalar, "1.0");
         }
 
         virtual void release() OVERRIDE
@@ -92,10 +92,10 @@ namespace
             if (!Light::on_frame_begin(project, assembly))
                 return false;
 
-            if (!check_uniform("exitance") || !check_uniform("exitance_multiplier"))
+            if (!check_uniform("radiance") || !check_uniform("radiance_multiplier"))
                 return false;
 
-            check_non_zero_radiance("exitance", "exitance_multiplier");
+            check_non_zero_radiance("radiance", "radiance_multiplier");
 
             m_inputs.evaluate_uniforms(&m_values);
             m_values.m_radiance *= static_cast<float>(m_values.m_radiance_multiplier);
@@ -182,7 +182,7 @@ DictionaryArray DirectionalLightFactory::get_widget_definitions() const
 
     definitions.push_back(
         Dictionary()
-            .insert("name", "exitance")
+            .insert("name", "radiance")
             .insert("label", "Radiance")
             .insert("widget", "entity_picker")
             .insert("entity_types",
@@ -193,7 +193,7 @@ DictionaryArray DirectionalLightFactory::get_widget_definitions() const
 
     definitions.push_back(
         Dictionary()
-            .insert("name", "exitance_multiplier")
+            .insert("name", "radiance_multiplier")
             .insert("label", "Radiance Multiplier")
             .insert("widget", "text_box")
             .insert("use", "optional")

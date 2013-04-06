@@ -91,7 +91,7 @@ namespace renderer
 namespace
 {
     // Revision number of the project format.
-    const size_t ProjectFormatRevision = 3;
+    const size_t ProjectFormatRevision = 4;
 
     // Floating-point formatting settings.
     const char* VectorFormat     = "%.15f";

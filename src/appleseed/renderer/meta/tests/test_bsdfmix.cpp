@@ -48,6 +48,7 @@
 #include "foundation/utility/test.h"
 
 // Standard headers.
+#include <cassert>
 #include <cstddef>
 
 using namespace foundation;
@@ -116,6 +117,7 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
 
         InputBinder input_binder;
         input_binder.bind(scene);
+        assert(input_binder.get_error_count() == 0);
 
         scene.on_frame_begin(project.ref());
 

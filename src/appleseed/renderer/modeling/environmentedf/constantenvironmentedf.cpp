@@ -72,7 +72,7 @@ namespace
             const ParamArray&   params)
           : EnvironmentEDF(name, params)
         {
-            m_inputs.declare("exitance", InputFormatSpectrum);
+            m_inputs.declare("radiance", InputFormatSpectrum);
         }
 
         virtual void release() OVERRIDE
@@ -90,10 +90,10 @@ namespace
             if (!EnvironmentEDF::on_frame_begin(project))
                 return false;
 
-            if (!check_uniform("exitance"))
+            if (!check_uniform("radiance"))
                 return false;
 
-            check_non_zero_radiance("exitance");
+            check_non_zero_radiance("radiance");
 
             m_inputs.evaluate_uniforms(&m_values);
 
@@ -172,7 +172,7 @@ DictionaryArray ConstantEnvironmentEDFFactory::get_widget_definitions() const
 
     definitions.push_back(
         Dictionary()
-            .insert("name", "exitance")
+            .insert("name", "radiance")
             .insert("label", "Radiance")
             .insert("widget", "entity_picker")
             .insert("entity_types",

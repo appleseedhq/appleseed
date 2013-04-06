@@ -89,7 +89,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_ImageBasedLighting)
         m_assembly.bsdfs().insert(specular_brdf);
 
         ParamArray env_edf_params;
-        env_edf_params.insert("exitance", "white");
+        env_edf_params.insert("radiance", "white");
         auto_release_ptr<EnvironmentEDF> env_edf(
             ConstantEnvironmentEDFFactory().create("env_edf", env_edf_params));
         EnvironmentEDF& env_edf_ref = env_edf.ref();

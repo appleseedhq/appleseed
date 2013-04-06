@@ -202,7 +202,7 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
         auto_release_ptr<EnvironmentEDF> env_edf(
             ConstantEnvironmentEDFFactory().create(
                 "env_edf",
-                ParamArray().insert("exitance", "blue")));
+                ParamArray().insert("radiance", "blue")));
         EnvironmentEDF& env_edf_ref = env_edf.ref();
         m_scene.environment_edfs().insert(env_edf);
 
@@ -220,8 +220,8 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
             GradientEnvironmentEDFFactory().create(
                 "env_edf",
                 ParamArray()
-                    .insert("horizon_exitance", "red")
-                    .insert("zenith_exitance", "green")));
+                    .insert("horizon_radiance", "red")
+                    .insert("zenith_radiance", "green")));
         EnvironmentEDF& env_edf_ref = env_edf.ref();
         m_scene.environment_edfs().insert(env_edf);
 
@@ -238,7 +238,7 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
         auto_release_ptr<EnvironmentEDF> env_edf(
             LatLongMapEnvironmentEDFFactory().create(
                 "env_edf",
-                ParamArray().insert("exitance", "horiz_gradient_texture_inst")));
+                ParamArray().insert("radiance", "horiz_gradient_texture_inst")));
         EnvironmentEDF& env_edf_ref = env_edf.ref();
         m_scene.environment_edfs().insert(env_edf);
 
@@ -255,7 +255,7 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
         auto_release_ptr<EnvironmentEDF> env_edf(
             MirrorBallMapEnvironmentEDFFactory().create(
                 "env_edf",
-                ParamArray().insert("exitance", "horiz_gradient_texture_inst")));
+                ParamArray().insert("radiance", "horiz_gradient_texture_inst")));
         EnvironmentEDF& env_edf_ref = env_edf.ref();
         m_scene.environment_edfs().insert(env_edf);
 

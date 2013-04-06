@@ -111,6 +111,7 @@ void TestFixtureBase::bind_inputs()
 {
     InputBinder input_binder;
     input_binder.bind(m_scene);
+    assert(input_binder.get_error_count() == 0);
 }
 
 

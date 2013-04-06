@@ -71,8 +71,8 @@ namespace
             const ParamArray&   params)
           : EnvironmentEDF(name, params)
         {
-            m_inputs.declare("upper_hemi_exitance", InputFormatSpectrum);
-            m_inputs.declare("lower_hemi_exitance", InputFormatSpectrum);
+            m_inputs.declare("upper_hemi_radiance", InputFormatSpectrum);
+            m_inputs.declare("lower_hemi_radiance", InputFormatSpectrum);
         }
 
         virtual void release() OVERRIDE
@@ -90,10 +90,10 @@ namespace
             if (!EnvironmentEDF::on_frame_begin(project))
                 return false;
 
-            if (!check_uniform("upper_hemi_exitance") || !check_uniform("lower_hemi_exitance"))
+            if (!check_uniform("upper_hemi_radiance") || !check_uniform("lower_hemi_radiance"))
                 return false;
 
-            if (is_uniform_zero("upper_hemi_exitance") && is_uniform_zero("lower_hemi_exitance"))
+            if (is_uniform_zero("upper_hemi_radiance") && is_uniform_zero("lower_hemi_radiance"))
                 warn_zero_radiance();
 
             m_inputs.evaluate_uniforms(&m_values);
@@ -184,7 +184,7 @@ DictionaryArray ConstantHemisphereEnvironmentEDFFactory::get_widget_definitions(
 
     definitions.push_back(
         Dictionary()
-            .insert("name", "upper_hemi_exitance")
+            .insert("name", "upper_hemi_radiance")
             .insert("label", "Upper Hemisphere Radiance")
             .insert("widget", "entity_picker")
             .insert("entity_types",
@@ -194,7 +194,7 @@ DictionaryArray ConstantHemisphereEnvironmentEDFFactory::get_widget_definitions(
 
     definitions.push_back(
         Dictionary()
-            .insert("name", "lower_hemi_exitance")
+            .insert("name", "lower_hemi_radiance")
             .insert("label", "Lower Hemisphere Radiance")
             .insert("widget", "entity_picker")
             .insert("entity_types",

@@ -70,8 +70,8 @@ namespace
             const ParamArray&   params)
           : EDF(name, params)
         {
-            m_inputs.declare("exitance", InputFormatSpectrum);
-            m_inputs.declare("exitance_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("radiance", InputFormatSpectrum);
+            m_inputs.declare("radiance_multiplier", InputFormatScalar, "1.0");
         }
 
         virtual void release() OVERRIDE
@@ -91,7 +91,7 @@ namespace
             if (!EDF::on_frame_begin(project, assembly))
                 return false;
 
-            check_non_zero_radiance("exitance", "exitance_multiplier");
+            check_non_zero_radiance("radiance", "radiance_multiplier");
 
             return true;
         }
@@ -219,7 +219,7 @@ DictionaryArray DiffuseEDFFactory::get_widget_definitions() const
 
     definitions.push_back(
         Dictionary()
-            .insert("name", "exitance")
+            .insert("name", "radiance")
             .insert("label", "Radiance")
             .insert("widget", "entity_picker")
             .insert("entity_types",
@@ -231,7 +231,7 @@ DictionaryArray DiffuseEDFFactory::get_widget_definitions() const
 
     definitions.push_back(
         Dictionary()
-            .insert("name", "exitance_multiplier")
+            .insert("name", "radiance_multiplier")
             .insert("label", "Radiance Multiplier")
             .insert("widget", "entity_picker")
             .insert("entity_types",

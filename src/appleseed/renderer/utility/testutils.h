@@ -48,6 +48,7 @@
 #include "main/dllsymbol.h"
 
 // Standard headers.
+#include <cassert>
 #include <cstddef>
 
 // Forward declarations.
@@ -103,6 +104,7 @@ class BindInputs
     {
         InputBinder input_binder;
         input_binder.bind(*Scene::m_scene);
+        assert(input_binder.get_error_count() == 0);
     }
 };
 
