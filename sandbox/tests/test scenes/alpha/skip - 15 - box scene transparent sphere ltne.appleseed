@@ -63,6 +63,9 @@
                 <parameter name="radiance" value="light_exitance" />
             </edf>
             <surface_shader name="physical_surface_shader" model="physical_surface_shader" />
+            <surface_shader name="pass_through_shader" model="constant_surface_shader">
+                <parameter name="color" value="transparent_black" />
+            </surface_shader>
             <material name="walls_material" model="generic_material">
                 <parameter name="bsdf" value="walls_brdf" />
                 <parameter name="surface_shader" value="physical_surface_shader" />
@@ -71,6 +74,9 @@
                 <parameter name="bsdf" value="walls_brdf" />
                 <parameter name="edf" value="diffuse_edf" />
                 <parameter name="surface_shader" value="physical_surface_shader" />
+            </material>
+            <material name="sphere_material" model="generic_material">
+                <parameter name="surface_shader" value="pass_through_shader" />
             </material>
             <object name="box scene" model="mesh_object">
                 <parameter name="filename" value="box scene.obj" />
@@ -106,7 +112,9 @@
                         0.000000000000000 0.000000000000000 0.000000000000000 1.000000000000000
                     </matrix>
                 </transform>
-                <assign_material slot="0" side="front" material="walls_material" />
+                <assign_material slot="0" side="front" material="sphere_material" />
+                <assign_material slot="Default" side="front" material="sphere_material" />
+                <assign_material slot="Default" side="back" material="sphere_material" />
             </object_instance>
         </assembly>
         <assembly_instance name="assembly_inst" assembly="assembly">
@@ -129,6 +137,8 @@
     </output>
     <configurations>
         <configuration name="final" base="base_final" />
-        <configuration name="interactive" base="base_interactive" />
+        <configuration name="interactive" base="base_interactive">
+            <parameter name="sample_generator" value="lighttracing" />
+        </configuration>
     </configurations>
 </project>

@@ -15,10 +15,56 @@
                 </matrix>
             </transform>
         </camera>
+        <color name="color1">
+            <parameter name="alpha" value="1" />
+            <parameter name="color" value="0 0 1" />
+            <parameter name="color_space" value="linear_rgb" />
+            <parameter name="multiplier" value="1.0" />
+            <parameter name="wavelength_range" value="400.0 700.0" />
+            <values>
+                0.000000 0.000000 1.000000
+            </values>
+            <alpha>
+                1.000000
+            </alpha>
+        </color>
+        <color name="color2">
+            <parameter name="alpha" value="1" />
+            <parameter name="color" value="1 0.333333 0" />
+            <parameter name="color_space" value="linear_rgb" />
+            <parameter name="multiplier" value="1.0" />
+            <parameter name="wavelength_range" value="400.0 700.0" />
+            <values>
+                1.000000 0.333333 0.000000
+            </values>
+            <alpha>
+                1.000000
+            </alpha>
+        </color>
+        <environment_edf name="environment_edf1" model="gradient_environment_edf">
+            <parameter name="horizon_radiance" value="color1" />
+            <parameter name="zenith_radiance" value="color2" />
+        </environment_edf>
+        <environment_shader name="environment_shader1" model="edf_environment_shader">
+            <parameter name="environment_edf" value="environment_edf1" />
+        </environment_shader>
         <environment name="environment" model="generic_environment" />
         <assembly name="assembly">
-            <color name="green">
+            <color name="red">
                 <parameter name="alpha" value="0.1" />
+                <parameter name="color" value="1 0 0" />
+                <parameter name="color_space" value="linear_rgb" />
+                <parameter name="multiplier" value="1.0" />
+                <parameter name="wavelength_range" value="400.0 700.0" />
+                <values>
+                    1.000000 0.000000 0.000000
+                </values>
+                <alpha>
+                    0.100000
+                </alpha>
+            </color>
+            <color name="green">
+                <parameter name="alpha" value="0.0" />
                 <parameter name="color" value="0 1 0" />
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1.0" />
@@ -27,10 +73,16 @@
                     0.000000 1.000000 0.000000
                 </values>
                 <alpha>
-                    0.100000
+                    0.000000
                 </alpha>
             </color>
             <surface_shader name="surface_shader1" model="constant_surface_shader">
+                <parameter name="alpha_multiplier" value="1.0" />
+                <parameter name="alpha_source" value="color" />
+                <parameter name="color" value="red" />
+                <parameter name="color_multiplier" value="1.0" />
+            </surface_shader>
+            <surface_shader name="surface_shader2" model="constant_surface_shader">
                 <parameter name="alpha_multiplier" value="1.0" />
                 <parameter name="alpha_source" value="color" />
                 <parameter name="color" value="green" />
@@ -40,6 +92,11 @@
                 <parameter name="bump_amplitude" value="1.0" />
                 <parameter name="displacement_method" value="bump" />
                 <parameter name="surface_shader" value="surface_shader1" />
+            </material>
+            <material name="material2" model="generic_material">
+                <parameter name="bump_amplitude" value="1.0" />
+                <parameter name="displacement_method" value="bump" />
+                <parameter name="surface_shader" value="surface_shader2" />
             </material>
             <object name="disk" model="mesh_object">
                 <parameter name="filename" value="disk.obj" />
@@ -54,6 +111,19 @@
                     </matrix>
                 </transform>
                 <assign_material slot="Default" side="front" material="material1" />
+                <assign_material slot="Default" side="back" material="material1" />
+            </object_instance>
+            <object_instance name="disk.disk_inst2" object="disk.disk">
+                <transform>
+                    <matrix>
+                        1.000000000000000 0.000000000000000 0.000000000000000 0.500000000000000
+                        0.000000000000000 1.000000000000000 0.000000000000000 0.500000000000000
+                        0.000000000000000 0.000000000000000 1.000000000000000 0.000000000000000
+                        0.000000000000000 0.000000000000000 0.000000000000000 1.000000000000000
+                    </matrix>
+                </transform>
+                <assign_material slot="Default" side="front" material="material2" />
+                <assign_material slot="Default" side="back" material="material2" />
             </object_instance>
         </assembly>
         <assembly_instance name="assembly_inst" assembly="assembly">
@@ -84,7 +154,7 @@
                 <parameter name="enable_diagnostics" value="false" />
                 <parameter name="max_samples" value="16" />
                 <parameter name="min_samples" value="16" />
-                <parameter name="quality" value="0.8" />
+                <parameter name="quality" value="0.800000" />
             </parameters>
             <parameters name="drt">
                 <parameter name="dl_bsdf_samples" value="1" />
@@ -94,6 +164,9 @@
                 <parameter name="ibl_env_samples" value="1" />
                 <parameter name="max_path_length" value="0" />
                 <parameter name="rr_min_path_length" value="3" />
+            </parameters>
+            <parameters name="generic_sample_renderer">
+                <parameter name="premultiplied_alpha" value="false" />
             </parameters>
             <parameters name="generic_tile_renderer">
                 <parameter name="premultiplied_alpha" value="false" />
@@ -110,7 +183,8 @@
                 <parameter name="rr_min_path_length" value="3" />
             </parameters>
             <parameters name="uniform_pixel_renderer">
-                <parameter name="samples" value="16" />
+                <parameter name="decorrelate_pixels" value="true" />
+                <parameter name="samples" value="9" />
             </parameters>
         </configuration>
         <configuration name="interactive" base="base_interactive" />
