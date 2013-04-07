@@ -44,6 +44,7 @@
 #include "renderer/modeling/project/configurationcontainer.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
+#include "renderer/modeling/scene/basegroup.h"
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
@@ -216,23 +217,55 @@ namespace
             assign_entity_to_render_layer(aov_images, mapping, format, *i);
     }
 
-    void assign_entities_to_render_layers(
+    void assign_base_group_entities_to_render_layer(
+        ImageStack&             aov_images,
+        RenderLayerMapping&     mapping,
+        const PixelFormat       format,
+        BaseGroup&              base_group);
+
+    void assign_assembly_entities_to_render_layers(
+        ImageStack&             aov_images,
+        RenderLayerMapping&     mapping,
+        const PixelFormat       format,
+        Assembly&               assembly)
+    {
+        assign_base_group_entities_to_render_layer(
+            aov_images,
+            mapping,
+            format,
+            assembly);
+
+        assign_entities_to_render_layers(aov_images, mapping, format, assembly.edfs());
+        assign_entities_to_render_layers(aov_images, mapping, format, assembly.lights());
+        assign_entities_to_render_layers(aov_images, mapping, format, assembly.objects());
+        assign_entities_to_render_layers(aov_images, mapping, format, assembly.object_instances());
+    }
+
+    void assign_base_group_entities_to_render_layer(
+        ImageStack&             aov_images,
+        RenderLayerMapping&     mapping,
+        const PixelFormat       format,
+        BaseGroup&              base_group)
+    {
+        assign_entities_to_render_layers(aov_images, mapping, format, base_group.assemblies());
+        assign_entities_to_render_layers(aov_images, mapping, format, base_group.assembly_instances());
+
+        for (each<AssemblyContainer> i = base_group.assemblies(); i; ++i)
+            assign_assembly_entities_to_render_layers(aov_images, mapping, format, *i);
+    }
+
+    void assign_scene_entities_to_render_layers(
         ImageStack&             aov_images,
         const PixelFormat       format,
-        const Scene&            scene)
+        Scene&                  scene)
     {
         RenderLayerMapping mapping;
 
-        assign_entities_to_render_layers(aov_images, mapping, format, scene.assemblies());
-        assign_entities_to_render_layers(aov_images, mapping, format, scene.assembly_instances());
-
-        for (const_each<AssemblyContainer> i = scene.assemblies(); i; ++i)
-        {
-            assign_entities_to_render_layers(aov_images, mapping, format, i->edfs());
-            assign_entities_to_render_layers(aov_images, mapping, format, i->lights());
-            assign_entities_to_render_layers(aov_images, mapping, format, i->objects());
-            assign_entities_to_render_layers(aov_images, mapping, format, i->object_instances());
-        }
+        assign_base_group_entities_to_render_layer(
+            aov_images,
+            mapping,
+            format,
+            scene);
 
         EnvironmentEDF* env_edf = scene.get_environment()->get_environment_edf();
 
@@ -245,14 +278,12 @@ void Project::create_aov_images()
 {
     assert(impl->m_frame.get());
 
-    const PixelFormat format =
-        impl->m_frame->image().properties().m_pixel_format;
-
+    const PixelFormat format = impl->m_frame->image().properties().m_pixel_format;
     ImageStack& aov_images = impl->m_frame->aov_images();
 
     aov_images.clear();
 
-    assign_entities_to_render_layers(
+    assign_scene_entities_to_render_layers(
         aov_images,
         format,
         impl->m_scene.ref());
