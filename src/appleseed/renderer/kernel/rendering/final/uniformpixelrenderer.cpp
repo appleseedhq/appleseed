@@ -137,7 +137,10 @@ namespace
                 for (size_t i = 0; i < m_sample_count; ++i)
                 {
                     // Generate a uniform sample in [0,1)^2.
-                    const Vector2d s = sampling_context.next_vector2<2>();
+                    const Vector2d s =
+                        m_sample_count == 1
+                            ? Vector2d(0.5)
+                            : sampling_context.next_vector2<2>();
 
                     // Compute the sample position in NDC.
                     const Vector2d sample_position = frame.get_sample_position(ix + s.x, iy + s.y);
