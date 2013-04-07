@@ -127,11 +127,22 @@ namespace
                 GenericImageFileReader reader;
                 m_ref_image.reset(reader.read(ref_image_path.c_str()));
 
-                m_ref_image_avg_lum = compute_average_luminance(*m_ref_image.get());
+                if (are_images_compatible(m_frame.image(), *m_ref_image))
+                {
+                    m_ref_image_avg_lum = compute_average_luminance(*m_ref_image.get());
 
-                RENDERER_LOG_DEBUG(
-                    "reference image average luminance is %s.",
-                    pretty_scalar(m_ref_image_avg_lum, 6).c_str());
+                    RENDERER_LOG_DEBUG(
+                        "reference image average luminance is %s.",
+                        pretty_scalar(m_ref_image_avg_lum, 6).c_str());
+                }
+                else
+                {
+                    RENDERER_LOG_ERROR(
+                        "the reference image is not compatible with the output frame "
+                        "(different dimensions, tile size or number of channels).");
+
+                    m_ref_image.reset();
+                }
             }
 
             print_rendering_thread_count(m_params.m_thread_count);

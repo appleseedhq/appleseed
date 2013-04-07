@@ -117,6 +117,19 @@ double compute_average_luminance(const Image& image)
         : 0.0;
 }
 
+bool are_images_compatible(const Image& image1, const Image& image2)
+{
+    const CanvasProperties& props1 = image1.properties();
+    const CanvasProperties& props2 = image2.properties();
+
+    return
+        props1.m_canvas_width == props2.m_canvas_width &&
+        props1.m_canvas_height == props2.m_canvas_height &&
+        props1.m_tile_width == props2.m_tile_width &&
+        props1.m_tile_height == props2.m_tile_height &&
+        props1.m_channel_count == props2.m_channel_count;
+}
+
 namespace
 {
     double sum_pixel_components(
@@ -134,19 +147,13 @@ namespace
     }
 }
 
-double compute_rms_deviation(
-    const Image&    image1,
-    const Image&    image2)
+double compute_rms_deviation(const Image& image1, const Image& image2)
 {
+    if (!are_images_compatible(image1, image2))
+        throw ExceptionIncompatibleImages();
+
     const CanvasProperties& props1 = image1.properties();
     const CanvasProperties& props2 = image2.properties();
-
-    if (props1.m_canvas_width != props2.m_canvas_width ||
-        props1.m_canvas_height != props2.m_canvas_height ||
-        props1.m_tile_width != props2.m_tile_width ||
-        props1.m_tile_height != props2.m_tile_height ||
-        props1.m_channel_count != props2.m_channel_count)
-        throw ExceptionIncompatibleImages();
 
     double mse = 0.0;   // mean square error
 
