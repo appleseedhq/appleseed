@@ -31,12 +31,12 @@ import subprocess
 import os
 import sys
 
-def normalize_project_file(filepath, tool_path):
+def update_project_file(filepath, tool_path):
     subprocess.call([tool_path, filepath])
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: {0} <path-to-normalizeprojectfile-tool>".format(sys.argv[0]))
+        print("Usage: {0} <path-to-updateprojectfile-tool>".format(sys.argv[0]))
         sys.exit(1)
 
     tool_path = sys.argv[1]
@@ -44,6 +44,6 @@ def main():
     for dirpath, dirnames, filenames in os.walk("."):
         for filename in filenames:
             if os.path.splitext(filename)[1] == ".appleseed":
-                normalize_project_file(os.path.join(dirpath, filename), tool_path)
+                update_project_file(os.path.join(dirpath, filename), tool_path)
 
 main()
