@@ -105,14 +105,10 @@ class ProjectManager
     bool is_project_dirty() const;
 
   private:
-    typedef foundation::auto_release_ptr<renderer::Project> ProjectAutoReleasePtr;
-
-    ProjectAutoReleasePtr   m_project;
-    bool                    m_dirty_flag;
+    foundation::auto_release_ptr<renderer::Project> m_project;
+    bool                                            m_dirty_flag;
 
     static std::string get_project_schema_filepath();
-
-    bool try_set_project(ProjectAutoReleasePtr project);
 };
 
 }       // namespace studio

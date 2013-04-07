@@ -61,29 +61,33 @@ void ProjectManager::create_project()
 
 bool ProjectManager::load_project(const string& filepath)
 {
-    const string schema_filepath = get_project_schema_filepath();
+    {
+        const string schema_filepath = get_project_schema_filepath();
 
-    ProjectFileReader reader;
-    auto_release_ptr<Project> loaded_project(
-        reader.read(filepath.c_str(), schema_filepath.c_str()));
+        ProjectFileReader reader;
+        auto_release_ptr<Project> loaded_project(
+            reader.read(filepath.c_str(), schema_filepath.c_str()));
+
+        if (loaded_project.get() == 0)
+            return false;
+
+        m_project = loaded_project;
+    }
 
     ProjectFileUpdater updater;
-    const bool project_modified = updater.update(loaded_project.ref());
+    m_dirty_flag = updater.update(m_project.ref());
 
-    const bool project_set = try_set_project(loaded_project);
-
-    if (project_set && project_modified)
-        set_project_dirty_flag();
-
-    return project_set;
+    return true;
 }
 
 bool ProjectManager::load_builtin_project(const string& name)
 {
     ProjectFileReader reader;
-    auto_release_ptr<Project> loaded_project = reader.load_builtin(name.c_str());
+    m_project = reader.load_builtin(name.c_str());
 
-    return try_set_project(loaded_project);
+    m_dirty_flag = false;
+
+    return true;
 }
 
 bool ProjectManager::reload_project()
@@ -171,17 +175,6 @@ string ProjectManager::get_project_schema_filepath()
         / "project.xsd";
 
     return schema_path.string();
-}
-
-bool ProjectManager::try_set_project(auto_release_ptr<Project> project)
-{
-    if (project.get() == 0)
-        return false;
-
-    m_project = project;
-    m_dirty_flag = false;
-
-    return true;
 }
 
 }   // namespace studio
