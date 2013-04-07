@@ -83,16 +83,23 @@ int main(int argc, const char* argv[])
     {
         const int tw = cl.m_tile_size.values()[0];
         const int th = cl.m_tile_size.values()[1];
+
         if (tw > 0 && th > 0)
         {
             tile_width = static_cast<size_t>(tw);
             tile_height = static_cast<size_t>(th);
+
+            LOG_INFO(
+                logger,
+                "using tile size " FMT_SIZE_T "x" FMT_SIZE_T " pixels.",
+                tile_width,
+                tile_height);
         }
         else
         {
             LOG_ERROR(
                 logger,
-                "invalid tile size, using default size %dx%d pixels.",
+                "invalid tile size, using default size " FMT_SIZE_T "x" FMT_SIZE_T " pixels.",
                 tile_width,
                 tile_height);
         }
