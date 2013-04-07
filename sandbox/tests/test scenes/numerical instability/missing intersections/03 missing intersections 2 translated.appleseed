@@ -37,7 +37,7 @@
             <object name="quad" model="mesh_object">
                 <parameter name="filename" value="quad translated.obj" />
             </object>
-            <object_instance name="quad_inst" object="quad">
+            <object_instance name="quad_inst" object="quad.quad">
                 <transform>
                     <matrix>
                         1.000000000000000 0.000000000000000 0.000000000000000 0.000000000000000
