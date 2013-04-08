@@ -4,14 +4,14 @@
     <scene>
         <camera name="Camera" model="pinhole_camera">
             <parameter name="aspect_ratio" value="1.7777777777777777" />
-            <parameter name="controller_target" value="0.0428055 0.100119 -0.136962" />
+            <parameter name="controller_target" value="-5.96046e-008 0.1 -5.96046e-008" />
             <parameter name="film_width" value="0.032" />
             <parameter name="focal_length" value="0.035" />
             <transform time="0">
                 <matrix>
-                    -0.297854353377813 0.474054299145758 -0.828586329621307 -0.757433946129191
-                    0.000000000000000 0.867982923364518 0.496594044212761 0.577672933242269
-                    0.954611326233816 0.147912697930265 -0.258532492381722 -0.350293006404941
+                    -0.297854353377813 0.474054299145758 -0.828586329621307 -0.800239481398159
+                    0.000000000000000 0.867982923364518 0.496594044212761 0.577554270140637
+                    0.954611326233816 0.147912697930265 -0.258532492381722 -0.213330902956183
                     0.000000000000000 0.000000000000000 0.000000000000000 1.000000000000000
                 </matrix>
             </transform>
@@ -57,12 +57,39 @@
                     1.000000
                 </alpha>
             </color>
+            <color name="Lamp_exitance">
+                <parameter name="color_space" value="linear_rgb" />
+                <parameter name="multiplier" value="1.0" />
+                <values>
+                    1.000000 1.000000 1.000000
+                </values>
+                <alpha>
+                    1.000000
+                </alpha>
+            </color>
+            <color name="red">
+                <parameter name="alpha" value="1" />
+                <parameter name="color" value="1 0 0" />
+                <parameter name="color_space" value="srgb" />
+                <parameter name="multiplier" value="1.0" />
+                <parameter name="wavelength_range" value="400.0 700.0" />
+                <values>
+                    1.000000 0.000000 0.000000
+                </values>
+                <alpha>
+                    1.000000
+                </alpha>
+            </color>
             <bsdf name="__default_material_bsdf" model="lambertian_brdf">
                 <parameter name="reflectance" value="__default_material_bsdf_reflectance" />
             </bsdf>
             <bsdf name="Material_dg" model="lambertian_brdf">
                 <parameter name="reflectance" value="Material_dg_reflectance" />
             </bsdf>
+            <edf name="diffuse_red_edf" model="diffuse_edf">
+                <parameter name="radiance" value="red" />
+                <parameter name="radiance_multiplier" value="1.0" />
+            </edf>
             <surface_shader name="physical_surface_shader" model="physical_surface_shader" />
             <material name="__default_material" model="generic_material">
                 <parameter name="bsdf" value="__default_material_bsdf" />
@@ -72,6 +99,24 @@
                 <parameter name="bsdf" value="Material_dg" />
                 <parameter name="surface_shader" value="physical_surface_shader" />
             </material>
+            <material name="red_emitting_material" model="generic_material">
+                <parameter name="bump_amplitude" value="1.0" />
+                <parameter name="displacement_method" value="bump" />
+                <parameter name="edf" value="diffuse_red_edf" />
+                <parameter name="normal_map_up" value="z" />
+                <parameter name="surface_shader" value="physical_surface_shader" />
+            </material>
+            <light name="Lamp" model="point_light">
+                <parameter name="radiance" value="Lamp_exitance" />
+                <transform>
+                    <matrix>
+                        -0.029086465016007 -0.077110081911087 0.056639321148396 0.227187976241112
+                        -0.005518905818462 0.060452472418547 0.079467229545116 0.590386211872101
+                        -0.095517121255398 0.019988335669041 -0.021839119493961 -0.100545398890972
+                        0.000000000000000 0.000000000000000 0.000000000000000 1.000000000000000
+                    </matrix>
+                </transform>
+            </light>
             <object name="Cube" model="mesh_object">
                 <parameter name="filename" value="Cube.obj" />
             </object>
@@ -112,33 +157,8 @@
                         0.000000000000000 0.000000000000000 0.000000000000000 1.000000000000000
                     </matrix>
                 </transform>
-                <assign_material slot="0" side="front" material="Material" />
+                <assign_material slot="0" side="front" material="red_emitting_material" />
             </object_instance>
-        </assembly>
-        <assembly name="light_assembly">
-            <color name="Lamp_exitance">
-                <parameter name="color_space" value="linear_rgb" />
-                <parameter name="multiplier" value="1.0" />
-                <values>
-                    1.000000 1.000000 1.000000
-                </values>
-                <alpha>
-                    1.000000
-                </alpha>
-            </color>
-            <light name="Lamp" model="spot_light">
-                <parameter name="inner_angle" value="20.0" />
-                <parameter name="outer_angle" value="30.0" />
-                <parameter name="radiance" value="Lamp_exitance" />
-                <transform>
-                    <matrix>
-                        1.000000000000000 0.000000000000000 0.000000000000000 0.227187976241112
-                        0.000000000000000 0.000000000000000 1.000000000000000 0.700000000000000
-                        0.000000000000000 -1.000000000000000 0.000000000000000 -0.100545398890972
-                        0.000000000000000 0.000000000000000 0.000000000000000 1.000000000000000
-                    </matrix>
-                </transform>
-            </light>
         </assembly>
         <assembly_instance name="Scene_instance" assembly="Scene">
             <transform time="0">
@@ -150,52 +170,28 @@
                 </matrix>
             </transform>
         </assembly_instance>
-        <assembly_instance name="light_assembly_instance" assembly="light_assembly">
-            <transform time="0">
-                <matrix>
-                    1.000000000000000 0.000000000000000 0.000000000000000 0.000000000000000
-                    0.000000000000000 1.000000000000000 0.000000000000000 0.000000000000000
-                    0.000000000000000 0.000000000000000 1.000000000000000 -1.000000000000000
-                    0.000000000000000 0.000000000000000 0.000000000000000 1.000000000000000
-                </matrix>
-            </transform>
-            <transform time="1">
-                <matrix>
-                    1.000000000000000 0.000000000000000 0.000000000000000 0.000000000000000
-                    0.000000000000000 1.000000000000000 0.000000000000000 0.000000000000000
-                    0.000000000000000 0.000000000000000 1.000000000000000 1.000000000000000
-                    0.000000000000000 0.000000000000000 0.000000000000000 1.000000000000000
-                </matrix>
-            </transform>
-        </assembly_instance>
     </scene>
     <output>
         <frame name="beauty">
             <parameter name="camera" value="Camera" />
             <parameter name="color_space" value="srgb" />
             <parameter name="filter" value="mitchell" />
-            <parameter name="filter_size" value="2" />
+            <parameter name="filter_size" value="2.000000" />
             <parameter name="resolution" value="480 270" />
         </frame>
     </output>
     <configurations>
         <configuration name="interactive" base="base_interactive">
             <parameter name="lighting_engine" value="drt" />
-            <parameters name="drt">
-                <parameter name="enable_ibl" value="false" />
-            </parameters>
-        </configuration>
-        <configuration name="final" base="base_final">
-            <parameter name="lighting_engine" value="drt" />
             <parameter name="pixel_renderer" value="uniform" />
             <parameters name="adaptive_pixel_renderer">
                 <parameter name="enable_diagnostics" value="false" />
-                <parameter name="max_samples" value="64" />
-                <parameter name="min_samples" value="64" />
+                <parameter name="max_samples" value="16" />
+                <parameter name="min_samples" value="16" />
             </parameters>
             <parameters name="drt">
-                <parameter name="dl_bsdf_samples" value="1" />
-                <parameter name="dl_light_samples" value="1" />
+                <parameter name="dl_bsdf_samples" value="0" />
+                <parameter name="dl_light_samples" value="2" />
                 <parameter name="enable_ibl" value="false" />
                 <parameter name="ibl_bsdf_samples" value="1" />
                 <parameter name="ibl_env_samples" value="1" />
@@ -203,7 +199,7 @@
                 <parameter name="rr_min_path_length" value="3" />
             </parameters>
             <parameters name="generic_tile_renderer">
-                <parameter name="quality" value="3" />
+                <parameter name="quality" value="3.000000" />
             </parameters>
             <parameters name="pt">
                 <parameter name="dl_light_samples" value="1" />
@@ -217,7 +213,44 @@
                 <parameter name="rr_min_path_length" value="3" />
             </parameters>
             <parameters name="uniform_pixel_renderer">
-                <parameter name="samples" value="64" />
+                <parameter name="samples" value="16" />
+            </parameters>
+        </configuration>
+        <configuration name="final" base="base_final">
+            <parameter name="lighting_engine" value="drt" />
+            <parameter name="pixel_renderer" value="uniform" />
+            <parameters name="adaptive_pixel_renderer">
+                <parameter name="enable_diagnostics" value="false" />
+                <parameter name="max_samples" value="64" />
+                <parameter name="min_samples" value="64" />
+                <parameter name="quality" value="3.000000" />
+            </parameters>
+            <parameters name="drt">
+                <parameter name="dl_bsdf_samples" value="0" />
+                <parameter name="dl_light_samples" value="2" />
+                <parameter name="enable_ibl" value="false" />
+                <parameter name="ibl_bsdf_samples" value="1" />
+                <parameter name="ibl_env_samples" value="1" />
+                <parameter name="max_path_length" value="0" />
+                <parameter name="rr_min_path_length" value="3" />
+            </parameters>
+            <parameters name="generic_tile_renderer">
+                <parameter name="quality" value="3.000000" />
+            </parameters>
+            <parameters name="pt">
+                <parameter name="dl_light_samples" value="1" />
+                <parameter name="enable_caustics" value="true" />
+                <parameter name="enable_dl" value="true" />
+                <parameter name="enable_ibl" value="true" />
+                <parameter name="ibl_bsdf_samples" value="1" />
+                <parameter name="ibl_env_samples" value="1" />
+                <parameter name="max_path_length" value="0" />
+                <parameter name="next_event_estimation" value="true" />
+                <parameter name="rr_min_path_length" value="3" />
+            </parameters>
+            <parameters name="uniform_pixel_renderer">
+                <parameter name="decorrelate_pixels" value="true" />
+                <parameter name="samples" value="25" />
             </parameters>
         </configuration>
     </configurations>
