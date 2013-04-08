@@ -55,20 +55,20 @@
             <material name="blue_material" model="generic_material">
                 <parameter name="surface_shader" value="blue_surface_shader" />
             </material>
-            <object name="grid.0" model="mesh_object">
+            <object name="sphere.0" model="mesh_object">
                 <parameters name="filename">
-                    <parameter name="0" value="grid.0.obj" />
-                    <parameter name="1" value="grid.1.obj" />
+                    <parameter name="0" value="sphere.0.obj" />
+                    <parameter name="1" value="sphere.1.obj" />
                 </parameters>
             </object>
-            <object name="static_grid" model="mesh_object">
-                <parameter name="filename" value="static_grid.obj" />
+            <object name="static_sphere" model="mesh_object">
+                <parameter name="filename" value="static_sphere.obj" />
             </object>
-            <object_instance name="grid.0.grid_inst" object="grid.0.grid">
+            <object_instance name="sphere.0.sphere_inst" object="sphere.0.sphere">
                 <transform>
                     <matrix>
                         1.000000000000000 0.000000000000000 0.000000000000000 0.000000000000000
-                        0.000000000000000 1.000000000000000 0.000000000000000 0.500000000000000
+                        0.000000000000000 1.000000000000000 0.000000000000000 0.000000000000000
                         0.000000000000000 0.000000000000000 1.000000000000000 0.000000000000000
                         0.000000000000000 0.000000000000000 0.000000000000000 1.000000000000000
                     </matrix>
@@ -76,12 +76,12 @@
                 <assign_material slot="0" side="front" material="blue_material" />
                 <assign_material slot="0" side="back" material="blue_material" />
             </object_instance>
-            <object_instance name="static_grid.grid_inst" object="static_grid.grid">
+            <object_instance name="static_sphere.sphere_inst" object="static_sphere.sphere">
                 <transform>
                     <matrix>
                         1.000000000000000 0.000000000000000 0.000000000000000 0.000000000000000
-                        0.000000000000000 1.000000000000000 0.000000000000000 1.000000000000000
-                        0.000000000000000 0.000000000000000 1.000000000000000 -0.100000000000000
+                        0.000000000000000 1.000000000000000 0.000000000000000 0.500000000000000
+                        0.000000000000000 0.000000000000000 1.000000000000000 0.000000000000000
                         0.000000000000000 0.000000000000000 0.000000000000000 1.000000000000000
                     </matrix>
                 </transform>
@@ -108,7 +108,40 @@
         </frame>
     </output>
     <configurations>
-        <configuration name="final" base="base_final" />
+        <configuration name="final" base="base_final">
+            <parameter name="lighting_engine" value="pt" />
+            <parameter name="pixel_renderer" value="uniform" />
+            <parameters name="adaptive_pixel_renderer">
+                <parameter name="enable_diagnostics" value="false" />
+                <parameter name="max_samples" value="64" />
+                <parameter name="min_samples" value="16" />
+                <parameter name="quality" value="3.000000" />
+            </parameters>
+            <parameters name="drt">
+                <parameter name="dl_bsdf_samples" value="1" />
+                <parameter name="dl_light_samples" value="1" />
+                <parameter name="enable_ibl" value="true" />
+                <parameter name="ibl_bsdf_samples" value="1" />
+                <parameter name="ibl_env_samples" value="1" />
+                <parameter name="max_path_length" value="0" />
+                <parameter name="rr_min_path_length" value="3" />
+            </parameters>
+            <parameters name="pt">
+                <parameter name="dl_light_samples" value="1" />
+                <parameter name="enable_caustics" value="true" />
+                <parameter name="enable_dl" value="true" />
+                <parameter name="enable_ibl" value="true" />
+                <parameter name="ibl_bsdf_samples" value="1" />
+                <parameter name="ibl_env_samples" value="1" />
+                <parameter name="max_path_length" value="0" />
+                <parameter name="next_event_estimation" value="true" />
+                <parameter name="rr_min_path_length" value="3" />
+            </parameters>
+            <parameters name="uniform_pixel_renderer">
+                <parameter name="decorrelate_pixels" value="true" />
+                <parameter name="samples" value="25" />
+            </parameters>
+        </configuration>
         <configuration name="interactive" base="base_interactive" />
     </configurations>
 </project>
