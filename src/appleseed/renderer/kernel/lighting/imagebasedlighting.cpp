@@ -61,7 +61,6 @@ namespace
         const Vector3d&             outgoing,
         const BSDF&                 bsdf,
         const void*                 bsdf_data,
-        const int                   bsdf_modes,
         const size_t                bsdf_sample_count,
         const size_t                env_sample_count,
         Spectrum&                   radiance,
@@ -72,6 +71,7 @@ namespace
         for (size_t i = 0; i < bsdf_sample_count; ++i)
         {
             // Sample the BSDF.
+            // todo: we should be able to tell BSDF::sample() that we only care about diffuse components.
             Vector3d incoming;
             Spectrum bsdf_value;
             double bsdf_prob;
@@ -150,7 +150,6 @@ namespace
         const Vector3d&             outgoing,
         const BSDF&                 bsdf,
         const void*                 bsdf_data,
-        const int                   bsdf_modes,
         const size_t                bsdf_sample_count,
         const size_t                env_sample_count,
         Spectrum&                   radiance,
@@ -210,7 +209,7 @@ namespace
                     shading_basis,
                     outgoing,
                     incoming,
-                    bsdf_modes,
+                    BSDF::Diffuse,
                     bsdf_value);
             if (bsdf_prob == 0.0)
                 continue;
@@ -248,7 +247,6 @@ void compute_image_based_lighting(
     const Vector3d&                 outgoing,
     const BSDF&                     bsdf,
     const void*                     bsdf_data,
-    const int                       bsdf_modes,
     const size_t                    bsdf_sample_count,
     const size_t                    env_sample_count,
     Spectrum&                       radiance,
@@ -269,7 +267,6 @@ void compute_image_based_lighting(
         outgoing,
         bsdf,
         bsdf_data,
-        bsdf_modes,
         bsdf_sample_count,
         env_sample_count,
         radiance,
@@ -288,7 +285,6 @@ void compute_image_based_lighting(
         outgoing,
         bsdf,
         bsdf_data,
-        bsdf_modes,
         bsdf_sample_count,
         env_sample_count,
         radiance_env_sampling,

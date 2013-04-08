@@ -276,7 +276,6 @@ namespace
                         outgoing,
                         *bsdf,
                         bsdf_data,
-                        BSDF::AllScatteringModes,
                         m_params.m_ibl_bsdf_sample_count,
                         m_params.m_ibl_env_sample_count,
                         ibl_radiance,

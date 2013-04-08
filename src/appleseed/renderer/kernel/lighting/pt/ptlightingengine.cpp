@@ -309,7 +309,6 @@ namespace
                             outgoing,
                             *bsdf,
                             bsdf_data,
-                            m_params.m_enable_caustics ? BSDF::AllScatteringModes : BSDF::Diffuse,
                             m_params.m_ibl_bsdf_sample_count,
                             m_params.m_ibl_env_sample_count,
                             ibl_radiance,
