@@ -243,7 +243,9 @@ DictionaryArray MaterialFactory::get_widget_definitions()
             .insert("label", "Alpha Map")
             .insert("widget", "entity_picker")
             .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
+                Dictionary()
+                    .insert("color", "Colors")
+                    .insert("texture_instance", "Textures"))
             .insert("use", "optional"));
 
     definitions.push_back(
