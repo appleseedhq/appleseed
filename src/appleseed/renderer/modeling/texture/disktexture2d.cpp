@@ -201,8 +201,7 @@ DictionaryArray DiskTexture2dFactory::get_widget_definitions() const
                 Dictionary()
                     .insert("Linear RGB", "linear_rgb")
                     .insert("sRGB", "srgb")
-                    .insert("CIE XYZ", "ciexyz")
-                    .insert("Spectral", "spectral"))
+                    .insert("CIE XYZ", "ciexyz"))
             .insert("use", "required")
             .insert("default", "srgb"));
 
