@@ -789,6 +789,19 @@ void daylight_ciexy_to_spectrum(
 namespace impl
 {
     template <typename T, typename Spectrum>
+    void linear_rgb_to_spectrum_approximation(
+        const Color<T, 3>&      linear_rgb,
+        Spectrum&               spectrum)
+    {
+        for (size_t w = 0;  w < 10; ++w)
+            spectrum[w] = static_cast<T>(linear_rgb[2]);
+        for (size_t w = 10; w < 20; ++w)
+            spectrum[w] = static_cast<T>(linear_rgb[1]);
+        for (size_t w = 20; w < 31; ++w)
+            spectrum[w] = static_cast<T>(linear_rgb[0]);
+    }
+
+    template <typename T, typename Spectrum>
     void linear_rgb_to_spectrum(
         const Color<T, 3>&      linear_rgb,
         const Spectrum&         white,
