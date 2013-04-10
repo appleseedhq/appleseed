@@ -217,8 +217,10 @@ namespace
             {
                 if (!m_params.m_enable_caustics)
                 {
-                    if ((prev_bsdf_mode & BSDF::Diffuse) != 0 &&
-                        (bsdf_mode & (BSDF::Glossy | BSDF::Specular)) != 0)
+                    const bool was_diffuse = (prev_bsdf_mode & BSDF::Diffuse) != 0;
+                    const bool is_glossy_specular = (bsdf_mode & (BSDF::Glossy | BSDF::Specular)) != 0;
+
+                    if (was_diffuse && is_glossy_specular)
                         return false;
                 }
 
