@@ -71,7 +71,10 @@ namespace
         for (size_t i = 0; i < bsdf_sample_count; ++i)
         {
             // Sample the BSDF.
-            // todo: we should be able to tell BSDF::sample() that we only care about diffuse components.
+            // todo: rendering will be incorrect if the BSDF value returned by the sample() method
+            // includes the contribution of a specular component since these are explicitly rejected
+            // afterward. We need a mechanism to indicate that we want the contribution of some of
+            // the components only.
             Vector3d incoming;
             Spectrum bsdf_value;
             double bsdf_prob;
@@ -79,8 +82,8 @@ namespace
                 bsdf.sample(
                     sampling_context,
                     bsdf_data,
-                    false,          // not adjoint
-                    true,           // multiply by |cos(incoming, normal)|
+                    false,              // not adjoint
+                    true,               // multiply by |cos(incoming, normal)|
                     geometric_normal,
                     shading_basis,
                     outgoing,
@@ -88,23 +91,18 @@ namespace
                     bsdf_value,
                     bsdf_prob);
 
-            // Ignore glossy/specular components: they must be handled by the parent.
-            // See Physically Based Rendering vol. 1 page 732.
-            if (bsdf_mode != BSDF::Diffuse)
+            // Ignore specular components, they must be handled by the parent (see PBRT vol. 1 page 732).
+            if (!(bsdf_mode & (BSDF::Diffuse | BSDF::Glossy)))
                 continue;
-
-            // Since we're limiting ourselves to the diffuse case, the BSDF should not be a Dirac delta.
             assert(bsdf_prob != BSDF::DiracDelta);
 
-            // Compute the transmission factor toward the incoming direction.
+            // Discard occluded samples.
             const double transmission =
                 shading_context.get_tracer().trace(
                     point,
                     incoming,
                     time,
                     parent_shading_point);
-
-            // Discard occluded samples.
             if (transmission == 0.0)
                 continue;
 
@@ -186,30 +184,29 @@ namespace
             if (cos_in < 0.0)
                 continue;
 
-            // Compute the transmission factor toward the incoming direction.
+            // Discard occluded samples.
             const double transmission =
                 shading_context.get_tracer().trace(
                     point,
                     incoming,
                     time,
                     parent_shading_point);
-
-            // Discard occluded samples.
             if (transmission == 0.0)
                 continue;
 
             // Evaluate the BSDF.
+            // Ignore specular components, they must be handled by the parent (see PBRT vol. 1 page 732).
             Spectrum bsdf_value;
             const double bsdf_prob =
                 bsdf.evaluate(
                     bsdf_data,
-                    false,          // not adjoint
-                    true,           // multiply by |cos(incoming, normal)|
+                    false,              // not adjoint
+                    true,               // multiply by |cos(incoming, normal)|
                     geometric_normal,
                     shading_basis,
                     outgoing,
                     incoming,
-                    BSDF::Diffuse,
+                    BSDF::Diffuse | BSDF::Glossy,
                     bsdf_value);
             if (bsdf_prob == 0.0)
                 continue;

@@ -398,29 +398,31 @@ namespace
                 //
                 //   Mode               IBL     Contribute?     Rationale
                 //   ---------------------------------------------------------------------------------------------
-                //   Diffuse            Yes     No              Already accounted for as IBL during path tracing
-                //   Diffuse            No      No              Not wanted since IBL is disabled
-                //   Specular/Glossy    Yes     Yes             Deliberately not accounted for during path tracing
-                //   Specular/Glossy    No      Yes             Specular/glossy reflections are not IBL
+                //   Diffuse/Glossy     Yes     No              Already accounted for as IBL during path tracing
+                //   Diffuse/Glossy     No      No              Not wanted since IBL is disabled
+                //   Specular           Yes     Yes             Deliberately not accounted for during path tracing
+                //   Specular           No      Yes             Specular reflections are not IBL
                 //
                 // When next event estimation is disabled:
                 //
                 //   Mode               IBL     Contribute?     Rationale
                 //   ---------------------------------------------------------------------------------------------
-                //   Diffuse            Yes     Yes             IBL not computed during path tracing
-                //   Diffuse            No      No              Not wanted since IBL is disabled
-                //   Specular/Glossy    Yes     Yes             IBL not computed during path tracing
-                //   Specular/Glossy    No      Yes             Specular/glossy reflections are not IBL
+                //   Diffuse/Glossy     Yes     Yes             IBL not computed during path tracing
+                //   Diffuse/Glossy     No      No              Not wanted since IBL is disabled
+                //   Specular           Yes     Yes             IBL not computed during path tracing
+                //   Specular           No      Yes             Specular reflections are not IBL
                 //
+
+                assert(prev_bsdf_mode != BSDF::Absorption);
 
                 if (m_params.m_next_event_estimation)
                 {
-                    if (prev_bsdf_mode == BSDF::Diffuse)
+                    if (prev_bsdf_mode != BSDF::Specular)
                         return;
                 }
                 else
                 {
-                    if (prev_bsdf_mode == BSDF::Diffuse && !m_params.m_enable_ibl)
+                    if (prev_bsdf_mode != BSDF::Specular && !m_params.m_enable_ibl)
                         return;
                 }
 

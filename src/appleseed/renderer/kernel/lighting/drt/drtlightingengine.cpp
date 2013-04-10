@@ -200,6 +200,8 @@ namespace
                 const BSDF::Mode        prev_bsdf_mode,
                 const BSDF::Mode        bsdf_mode) const
             {
+                assert((prev_bsdf_mode & BSDF::Diffuse) == 0);
+
                 return (bsdf_mode & (BSDF::Glossy | BSDF::Specular)) != 0;
             }
 
@@ -353,13 +355,15 @@ namespace
                 //
                 //   Mode               IBL     Contribute?     Rationale
                 //   ---------------------------------------------------------------------------------------------
-                //   Diffuse            Yes     No              Already accounted for as IBL during path tracing
-                //   Diffuse            No      No              Not wanted since IBL is disabled
-                //   Specular/Glossy    Yes     Yes             Deliberately not accounted for during path tracing
-                //   Specular/Glossy    No      Yes             Specular/glossy reflections are not IBL
+                //   Diffuse/Glossy     Yes     No              Already accounted for as IBL during path tracing
+                //   Diffuse/Glossy     No      No              Not wanted since IBL is disabled
+                //   Specular           Yes     Yes             Deliberately not accounted for during path tracing
+                //   Specular           No      Yes             Specular reflections are not IBL
                 //
 
-                if (prev_bsdf_mode == BSDF::Diffuse)
+                assert(prev_bsdf_mode != BSDF::Absorption);
+
+                if (prev_bsdf_mode != BSDF::Specular)
                     return;
 
                 // Evaluate the environment EDF.
