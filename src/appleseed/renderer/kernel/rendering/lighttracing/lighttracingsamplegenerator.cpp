@@ -239,7 +239,9 @@ namespace
                 const BSDF::Mode            prev_bsdf_mode,
                 const BSDF::Mode            bsdf_mode) const
             {
-                return (bsdf_mode & (BSDF::Diffuse | BSDF::Glossy | BSDF::Specular)) != 0;
+                assert(bsdf_mode != BSDF::Absorption);
+
+                return true;
             }
 
             void visit_area_light_vertex(
@@ -418,6 +420,7 @@ namespace
                 const ShadingPoint&         shading_point,
                 const Vector3d&             outgoing,
                 const BSDF::Mode            prev_bsdf_mode,
+                const double                prev_bsdf_prob,
                 const Spectrum&             throughput)
             {
                 // The particle escapes.

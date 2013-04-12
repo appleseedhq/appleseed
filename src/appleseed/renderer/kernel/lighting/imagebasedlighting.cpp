@@ -44,210 +44,22 @@ using namespace foundation;
 namespace renderer
 {
 
-namespace
-{
-    //
-    // Compute image-based lighting via BSDF sampling.
-    //
-
-    void compute_ibl_bsdf_sampling(
-        SamplingContext&            sampling_context,
-        const ShadingContext&       shading_context,
-        const EnvironmentEDF&       environment_edf,
-        const Vector3d&             point,
-        const Vector3d&             geometric_normal,
-        const Basis3d&              shading_basis,
-        const double                time,
-        const Vector3d&             outgoing,
-        const BSDF&                 bsdf,
-        const void*                 bsdf_data,
-        const size_t                bsdf_sample_count,
-        const size_t                env_sample_count,
-        Spectrum&                   radiance,
-        const ShadingPoint*         parent_shading_point)
-    {
-        radiance.set(0.0f);
-
-        for (size_t i = 0; i < bsdf_sample_count; ++i)
-        {
-            // Sample the BSDF.
-            // todo: rendering will be incorrect if the BSDF value returned by the sample() method
-            // includes the contribution of a specular component since these are explicitly rejected
-            // afterward. We need a mechanism to indicate that we want the contribution of some of
-            // the components only.
-            Vector3d incoming;
-            Spectrum bsdf_value;
-            double bsdf_prob;
-            const BSDF::Mode bsdf_mode =
-                bsdf.sample(
-                    sampling_context,
-                    bsdf_data,
-                    false,              // not adjoint
-                    true,               // multiply by |cos(incoming, normal)|
-                    geometric_normal,
-                    shading_basis,
-                    outgoing,
-                    incoming,
-                    bsdf_value,
-                    bsdf_prob);
-
-            // Ignore specular components, they must be handled by the parent (see PBRT vol. 1 page 732).
-            if (!(bsdf_mode & (BSDF::Diffuse | BSDF::Glossy)))
-                continue;
-            assert(bsdf_prob != BSDF::DiracDelta);
-
-            // Discard occluded samples.
-            const double transmission =
-                shading_context.get_tracer().trace(
-                    point,
-                    incoming,
-                    time,
-                    parent_shading_point);
-            if (transmission == 0.0)
-                continue;
-
-            // Evaluate the environment's EDF.
-            InputEvaluator input_evaluator(shading_context.get_texture_cache());
-            Spectrum env_value;
-            double env_prob;
-            environment_edf.evaluate(
-                input_evaluator,
-                incoming,
-                env_value,
-                env_prob);
-
-            // Compute MIS weight.
-            const double mis_weight =
-                mis_power2(
-                    bsdf_sample_count * bsdf_prob,
-                    env_sample_count * env_prob);
-
-            // Add the contribution of this sample to the illumination.
-            env_value *= static_cast<float>(transmission / bsdf_prob * mis_weight);
-            env_value *= bsdf_value;
-            radiance += env_value;
-        }
-
-        if (bsdf_sample_count > 1)
-            radiance /= static_cast<float>(bsdf_sample_count);
-    }
-
-
-    //
-    // Compute image-based lighting via environment sampling.
-    //
-
-    void compute_ibl_environment_sampling(
-        SamplingContext&            sampling_context,
-        const ShadingContext&       shading_context,
-        const EnvironmentEDF&       environment_edf,
-        const Vector3d&             point,
-        const Vector3d&             geometric_normal,
-        const Basis3d&              shading_basis,
-        const double                time,
-        const Vector3d&             outgoing,
-        const BSDF&                 bsdf,
-        const void*                 bsdf_data,
-        const size_t                bsdf_sample_count,
-        const size_t                env_sample_count,
-        Spectrum&                   radiance,
-        const ShadingPoint*         parent_shading_point)
-    {
-        radiance.set(0.0f);
-
-        // todo: if we had a way to know that a BSDF is purely specular, we could
-        // immediately return black here since there will be no contribution from
-        // such a BSDF.
-
-        sampling_context.split_in_place(2, env_sample_count);
-
-        for (size_t i = 0; i < env_sample_count; ++i)
-        {
-            // Generate a uniform sample in [0,1)^2.
-            const Vector2d s = sampling_context.next_vector2<2>();
-
-            // Sample the environment.
-            InputEvaluator input_evaluator(shading_context.get_texture_cache());
-            Vector3d incoming;
-            Spectrum env_value;
-            double env_prob;
-            environment_edf.sample(
-                input_evaluator,
-                s,
-                incoming,
-                env_value,
-                env_prob);
-
-            // Cull samples behind the shading surface.
-            assert(is_normalized(incoming));
-            const double cos_in = dot(incoming, shading_basis.get_normal());
-            if (cos_in < 0.0)
-                continue;
-
-            // Discard occluded samples.
-            const double transmission =
-                shading_context.get_tracer().trace(
-                    point,
-                    incoming,
-                    time,
-                    parent_shading_point);
-            if (transmission == 0.0)
-                continue;
-
-            // Evaluate the BSDF.
-            // Ignore specular components, they must be handled by the parent (see PBRT vol. 1 page 732).
-            Spectrum bsdf_value;
-            const double bsdf_prob =
-                bsdf.evaluate(
-                    bsdf_data,
-                    false,              // not adjoint
-                    true,               // multiply by |cos(incoming, normal)|
-                    geometric_normal,
-                    shading_basis,
-                    outgoing,
-                    incoming,
-                    BSDF::Diffuse | BSDF::Glossy,
-                    bsdf_value);
-            if (bsdf_prob == 0.0)
-                continue;
-
-            // Compute MIS weight.
-            const double mis_weight =
-                mis_power2(
-                    env_sample_count * env_prob,
-                    bsdf_sample_count * bsdf_prob);
-
-            // Add the contribution of this sample to the illumination.
-            env_value *= static_cast<float>(transmission / env_prob * mis_weight);
-            env_value *= bsdf_value;
-            radiance += env_value;
-        }
-
-        if (env_sample_count > 1)
-            radiance /= static_cast<float>(env_sample_count);
-    }
-}
-
-
-//
-// Compute image-based lighting at a given point in space.
-//
-
-void compute_image_based_lighting(
-    SamplingContext&                sampling_context,
-    const ShadingContext&           shading_context,
-    const EnvironmentEDF&           environment_edf,
-    const Vector3d&                 point,
-    const Vector3d&                 geometric_normal,
-    const Basis3d&                  shading_basis,
-    const double                    time,
-    const Vector3d&                 outgoing,
-    const BSDF&                     bsdf,
-    const void*                     bsdf_data,
-    const size_t                    bsdf_sample_count,
-    const size_t                    env_sample_count,
-    Spectrum&                       radiance,
-    const ShadingPoint*             parent_shading_point)
+void compute_ibl(
+    SamplingContext&            sampling_context,
+    const ShadingContext&       shading_context,
+    const EnvironmentEDF&       environment_edf,
+    const Vector3d&             point,
+    const Vector3d&             geometric_normal,
+    const Basis3d&              shading_basis,
+    const double                time,
+    const Vector3d&             outgoing,
+    const BSDF&                 bsdf,
+    const void*                 bsdf_data,
+    const int                   selected_bsdf_modes,
+    const size_t                bsdf_sample_count,
+    const size_t                env_sample_count,
+    Spectrum&                   radiance,
+    const ShadingPoint*         parent_shading_point)
 {
     assert(is_normalized(geometric_normal));
     assert(is_normalized(outgoing));
@@ -264,6 +76,7 @@ void compute_image_based_lighting(
         outgoing,
         bsdf,
         bsdf_data,
+        selected_bsdf_modes,
         bsdf_sample_count,
         env_sample_count,
         radiance,
@@ -287,6 +100,184 @@ void compute_image_based_lighting(
         radiance_env_sampling,
         parent_shading_point);
     radiance += radiance_env_sampling;
+}
+
+void compute_ibl_bsdf_sampling(
+    SamplingContext&            sampling_context,
+    const ShadingContext&       shading_context,
+    const EnvironmentEDF&       environment_edf,
+    const Vector3d&             point,
+    const Vector3d&             geometric_normal,
+    const Basis3d&              shading_basis,
+    const double                time,
+    const Vector3d&             outgoing,
+    const BSDF&                 bsdf,
+    const void*                 bsdf_data,
+    const int                   selected_bsdf_modes,
+    const size_t                bsdf_sample_count,
+    const size_t                env_sample_count,
+    Spectrum&                   radiance,
+    const ShadingPoint*         parent_shading_point)
+{
+    assert(is_normalized(geometric_normal));
+    assert(is_normalized(outgoing));
+
+    radiance.set(0.0f);
+
+    for (size_t i = 0; i < bsdf_sample_count; ++i)
+    {
+        // Sample the BSDF.
+        // todo: rendering will be incorrect if the BSDF value returned by the sample() method
+        // includes the contribution of a specular component since these are explicitly rejected
+        // afterward. We need a mechanism to indicate that we want the contribution of some of
+        // the components only.
+        Vector3d incoming;
+        Spectrum bsdf_value;
+        double bsdf_prob;
+        const BSDF::Mode bsdf_mode =
+            bsdf.sample(
+                sampling_context,
+                bsdf_data,
+                false,              // not adjoint
+                true,               // multiply by |cos(incoming, normal)|
+                geometric_normal,
+                shading_basis,
+                outgoing,
+                incoming,
+                bsdf_value,
+                bsdf_prob);
+
+        // Filter scattering modes.
+        if (!(selected_bsdf_modes & bsdf_mode))
+            return;
+        assert(bsdf_prob != BSDF::DiracDelta);
+
+        // Discard occluded samples.
+        const double transmission =
+            shading_context.get_tracer().trace(
+                point,
+                incoming,
+                time,
+                parent_shading_point);
+        if (transmission == 0.0)
+            continue;
+
+        // Evaluate the environment's EDF.
+        InputEvaluator input_evaluator(shading_context.get_texture_cache());
+        Spectrum env_value;
+        double env_prob;
+        environment_edf.evaluate(
+            input_evaluator,
+            incoming,
+            env_value,
+            env_prob);
+
+        // Compute MIS weight.
+        const double mis_weight =
+            mis_power2(
+                bsdf_sample_count * bsdf_prob,
+                env_sample_count * env_prob);
+
+        // Add the contribution of this sample to the illumination.
+        env_value *= static_cast<float>(transmission / bsdf_prob * mis_weight);
+        env_value *= bsdf_value;
+        radiance += env_value;
+    }
+
+    if (bsdf_sample_count > 1)
+        radiance /= static_cast<float>(bsdf_sample_count);
+}
+
+void compute_ibl_environment_sampling(
+    SamplingContext&            sampling_context,
+    const ShadingContext&       shading_context,
+    const EnvironmentEDF&       environment_edf,
+    const Vector3d&             point,
+    const Vector3d&             geometric_normal,
+    const Basis3d&              shading_basis,
+    const double                time,
+    const Vector3d&             outgoing,
+    const BSDF&                 bsdf,
+    const void*                 bsdf_data,
+    const size_t                bsdf_sample_count,
+    const size_t                env_sample_count,
+    Spectrum&                   radiance,
+    const ShadingPoint*         parent_shading_point)
+{
+    assert(is_normalized(geometric_normal));
+    assert(is_normalized(outgoing));
+
+    radiance.set(0.0f);
+
+    // todo: if we had a way to know that a BSDF is purely specular, we could
+    // immediately return black here since there will be no contribution from
+    // such a BSDF.
+
+    sampling_context.split_in_place(2, env_sample_count);
+
+    for (size_t i = 0; i < env_sample_count; ++i)
+    {
+        // Generate a uniform sample in [0,1)^2.
+        const Vector2d s = sampling_context.next_vector2<2>();
+
+        // Sample the environment.
+        InputEvaluator input_evaluator(shading_context.get_texture_cache());
+        Vector3d incoming;
+        Spectrum env_value;
+        double env_prob;
+        environment_edf.sample(
+            input_evaluator,
+            s,
+            incoming,
+            env_value,
+            env_prob);
+
+        // Cull samples behind the shading surface.
+        assert(is_normalized(incoming));
+        const double cos_in = dot(incoming, shading_basis.get_normal());
+        if (cos_in < 0.0)
+            continue;
+
+        // Discard occluded samples.
+        const double transmission =
+            shading_context.get_tracer().trace(
+                point,
+                incoming,
+                time,
+                parent_shading_point);
+        if (transmission == 0.0)
+            continue;
+
+        // Evaluate the BSDF.
+        Spectrum bsdf_value;
+        const double bsdf_prob =
+            bsdf.evaluate(
+                bsdf_data,
+                false,                          // not adjoint
+                true,                           // multiply by |cos(incoming, normal)|
+                geometric_normal,
+                shading_basis,
+                outgoing,
+                incoming,
+                BSDF::AllScatteringModes,       // however specular components contribute with probability 0
+                bsdf_value);
+        if (bsdf_prob == 0.0)
+            continue;
+
+        // Compute MIS weight.
+        const double mis_weight =
+            mis_power2(
+                env_sample_count * env_prob,
+                bsdf_sample_count * bsdf_prob);
+
+        // Add the contribution of this sample to the illumination.
+        env_value *= static_cast<float>(transmission / env_prob * mis_weight);
+        env_value *= bsdf_value;
+        radiance += env_value;
+    }
+
+    if (env_sample_count > 1)
+        radiance /= static_cast<float>(env_sample_count);
 }
 
 }   // namespace renderer

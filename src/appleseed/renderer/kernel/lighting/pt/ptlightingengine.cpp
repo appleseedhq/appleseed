@@ -90,8 +90,6 @@ namespace
             const bool      m_next_event_estimation;        // use next event estimation?
 
             const size_t    m_dl_light_sample_count;        // number of light samples used to estimate direct illumination
-            
-            const size_t    m_ibl_bsdf_sample_count;        // number of BSDF samples used to estimate IBL
             const size_t    m_ibl_env_sample_count;         // number of environment samples used to estimate IBL
 
             explicit Parameters(const ParamArray& params)
@@ -102,7 +100,6 @@ namespace
               , m_rr_min_path_length(params.get_optional<size_t>("rr_min_path_length", 3))
               , m_next_event_estimation(params.get_optional<bool>("next_event_estimation", true))
               , m_dl_light_sample_count(params.get_optional<size_t>("dl_light_samples", 1))
-              , m_ibl_bsdf_sample_count(params.get_optional<size_t>("ibl_bsdf_samples", 1))
               , m_ibl_env_sample_count(params.get_optional<size_t>("ibl_env_samples", 1))
             {
             }
@@ -118,7 +115,6 @@ namespace
                     "  rr min path len. %s\n"
                     "  next event est.  %s\n"
                     "  dl light samples %s\n"
-                    "  ibl bsdf samples %s\n"
                     "  ibl env samples  %s",
                     m_enable_dl ? "on" : "off",
                     m_enable_ibl ? "on" : "off",
@@ -127,7 +123,6 @@ namespace
                     m_rr_min_path_length == 0 ? "infinite" : pretty_uint(m_rr_min_path_length).c_str(),
                     m_next_event_estimation ? "on" : "off",
                     pretty_uint(m_dl_light_sample_count).c_str(),
-                    pretty_uint(m_ibl_bsdf_sample_count).c_str(),
                     pretty_uint(m_ibl_env_sample_count).c_str());
             }
         };
@@ -215,16 +210,16 @@ namespace
                 const BSDF::Mode        prev_bsdf_mode,
                 const BSDF::Mode        bsdf_mode) const
             {
+                assert(bsdf_mode != BSDF::Absorption);
+
                 if (!m_params.m_enable_caustics)
                 {
-                    const bool was_diffuse = (prev_bsdf_mode & BSDF::Diffuse) != 0;
-                    const bool is_glossy_specular = (bsdf_mode & (BSDF::Glossy | BSDF::Specular)) != 0;
-
-                    if (was_diffuse && is_glossy_specular)
+                    // No caustics.
+                    if (BSDF::has_diffuse(prev_bsdf_mode) && BSDF::has_glossy_or_specular(bsdf_mode))
                         return false;
                 }
 
-                return (bsdf_mode & (BSDF::Diffuse | BSDF::Glossy | BSDF::Specular)) != 0;
+                return true;
             }
 
             bool visit_vertex(
@@ -262,10 +257,10 @@ namespace
 
                     if (bsdf && (m_params.m_enable_dl || path_length > 1))
                     {
-                        // Compute direct lighting. We're using light sampling only: direct lighting
-                        // via BSDF sampling will be taken into account when we'll extend the path.
-                        // The number of light samples is user-adjustable. The number of BSDF samples
-                        // is set to 1 since we'll extend the path via a single BSDF sample.
+                        // Compute direct lighting.
+                        // We compute direct lighting by sampling the lights only. Direct
+                        // lighting via BSDF sampling will be done by extending the current
+                        // path with a single ray.
                         DirectLightingIntegrator integrator(
                             m_shading_context,
                             m_light_sampler,
@@ -276,9 +271,8 @@ namespace
                             outgoing,
                             *bsdf,
                             bsdf_data,
-                            m_params.m_enable_caustics ? BSDF::AllScatteringModes : BSDF::Diffuse,
-                            1,
-                            m_params.m_dl_light_sample_count,
+                            1,                                  // a single BSDF sample since the path will be extended with a single ray
+                            m_params.m_dl_light_sample_count,   // the number of light samples is user-adjustable
                             &shading_point);
                         integrator.sample_lights_low_variance(
                             sampling_context,
@@ -294,13 +288,12 @@ namespace
 
                     if (bsdf && m_env_edf && m_params.m_enable_ibl)
                     {
-                        // Compute image-based lighting. We're sampling both the lights and
-                        // the BSDF. There's no double contribution for diffuse BSDF samples
-                        // because IBL is not accounted for a second time when the path hits
-                        // the environment and next event estimation is enabled.
-                        // See visit_environment() below.
+                        // Compute image-based lighting.
+                        // We compute image-based lighting by sampling the environment only.
+                        // Image-based lighting via BSDF sampling will be done by extending
+                        // the current path with a single ray.
                         Spectrum ibl_radiance;
-                        compute_image_based_lighting(
+                        compute_ibl_environment_sampling(
                             sampling_context,
                             m_shading_context,
                             *m_env_edf,
@@ -311,8 +304,8 @@ namespace
                             outgoing,
                             *bsdf,
                             bsdf_data,
-                            m_params.m_ibl_bsdf_sample_count,
-                            m_params.m_ibl_env_sample_count,
+                            1,                                  // a single BSDF sample since the path will be extended with a single ray
+                            m_params.m_ibl_env_sample_count,    // the number of environment samples is user-adjustable
                             ibl_radiance,
                             &shading_point);
                         vertex_radiance += ibl_radiance;
@@ -344,7 +337,7 @@ namespace
                             // Apply MIS.
                             const double mis_weight =
                                 mis_power2(
-                                    bsdf_point_prob,
+                                    1 * bsdf_point_prob,
                                     m_params.m_dl_light_sample_count * light_point_prob);
                             emitted_radiance *= static_cast<float>(mis_weight);
                         }
@@ -361,7 +354,7 @@ namespace
                 }
                 else
                 {
-                    if (edf && cos_on > 0.0)
+                    if (edf && cos_on > 0.0 && (m_params.m_enable_dl || path_length > 2))
                     {
                         // Compute the emitted radiance.
                         Spectrum emitted_radiance;
@@ -387,59 +380,44 @@ namespace
                 const ShadingPoint&     shading_point,
                 const Vector3d&         outgoing,
                 const BSDF::Mode        prev_bsdf_mode,
+                const double            prev_bsdf_prob,
                 const Spectrum&         throughput)
             {
+                assert(prev_bsdf_mode != BSDF::Absorption);
+
                 // Can't look up the environment if there's no environment EDF.
                 if (m_env_edf == 0)
                     return;
 
-                //
-                // When should we add the contribution of the environment here?
-                //
-                // When next event estimation is enabled:
-                //
-                //   Mode               IBL     Contribute?     Rationale
-                //   ---------------------------------------------------------------------------------------------
-                //   Diffuse/Glossy     Yes     No              Already accounted for as IBL during path tracing
-                //   Diffuse/Glossy     No      No              Not wanted since IBL is disabled
-                //   Specular           Yes     Yes             Deliberately not accounted for during path tracing
-                //   Specular           No      Yes             Specular reflections are not IBL
-                //
-                // When next event estimation is disabled:
-                //
-                //   Mode               IBL     Contribute?     Rationale
-                //   ---------------------------------------------------------------------------------------------
-                //   Diffuse/Glossy     Yes     Yes             IBL not computed during path tracing
-                //   Diffuse/Glossy     No      No              Not wanted since IBL is disabled
-                //   Specular           Yes     Yes             IBL not computed during path tracing
-                //   Specular           No      Yes             Specular reflections are not IBL
-                //
-
-                assert(prev_bsdf_mode != BSDF::Absorption);
-
-                if (m_params.m_next_event_estimation)
-                {
-                    if (prev_bsdf_mode != BSDF::Specular)
-                        return;
-                }
-                else
-                {
-                    if (prev_bsdf_mode != BSDF::Specular && !m_params.m_enable_ibl)
-                        return;
-                }
+                // When IBL is disabled, only specular reflections should contribute here.
+                if (!m_params.m_enable_ibl && prev_bsdf_mode != BSDF::Specular)
+                    return;
 
                 // Evaluate the environment EDF.
                 InputEvaluator input_evaluator(m_texture_cache);
-                Spectrum environment_radiance;
+                Spectrum env_radiance;
+                double env_prob;
                 m_env_edf->evaluate(
                     input_evaluator,
                     -outgoing,
-                    environment_radiance);
+                    env_radiance,
+                    env_prob);
+
+                // If next event estimation is enabled, apply multiple importance sampling.
+                if (m_params.m_next_event_estimation && prev_bsdf_mode != BSDF::Specular)
+                {
+                    assert(prev_bsdf_prob > 0.0);
+                    const double mis_weight =
+                        mis_power2(
+                            1 * prev_bsdf_prob,
+                            m_params.m_ibl_env_sample_count * env_prob);
+                    env_radiance *= static_cast<float>(mis_weight);
+                }
 
                 // Update the path radiance.
-                environment_radiance *= throughput;
-                m_path_radiance += environment_radiance;
-                m_path_aovs.add(m_env_edf->get_render_layer_index(), environment_radiance);
+                env_radiance *= throughput;
+                m_path_radiance += env_radiance;
+                m_path_aovs.add(m_env_edf->get_render_layer_index(), env_radiance);
             }
 
           private:

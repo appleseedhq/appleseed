@@ -316,7 +316,6 @@ void RenderSettingsWindow::create_drt_advanced_dl_settings(QVBoxLayout* parent)
     layout->addLayout(sublayout);
 
     sublayout->addLayout(create_form_layout("Light Samples:", create_integer_input("drt.advanced.dl.light_samples", 0, 1000000)));
-    sublayout->addLayout(create_form_layout("BSDF Samples:", create_integer_input("drt.advanced.dl.bsdf_samples", 0, 1000000)));
 }
 
 void RenderSettingsWindow::create_drt_advanced_ibl_settings(QVBoxLayout* parent)
@@ -331,7 +330,6 @@ void RenderSettingsWindow::create_drt_advanced_ibl_settings(QVBoxLayout* parent)
     layout->addLayout(sublayout);
 
     sublayout->addLayout(create_form_layout("Environment Samples:", create_integer_input("drt.advanced.ibl.env_samples", 0, 1000000)));
-    sublayout->addLayout(create_form_layout("BSDF Samples:", create_integer_input("drt.advanced.ibl.bsdf_samples", 0, 1000000)));
 }
 
 //---------------------------------------------------------------------------------------------
@@ -403,7 +401,6 @@ void RenderSettingsWindow::create_pt_advanced_ibl_settings(QVBoxLayout* parent)
     layout->addLayout(sublayout);
 
     sublayout->addLayout(create_form_layout("Environment Samples:", create_integer_input("pt.advanced.ibl.env_samples", 0, 1000000)));
-    sublayout->addLayout(create_form_layout("BSDF Samples:", create_integer_input("pt.advanced.ibl.bsdf_samples", 0, 1000000)));
 }
 
 //---------------------------------------------------------------------------------------------
@@ -664,9 +661,7 @@ void RenderSettingsWindow::create_direct_links()
     create_direct_link("drt.lighting_components.ibl", "drt.enable_ibl", true);
     create_direct_link("drt.bounces.rr_start_bounce", "drt.rr_min_path_length", 3);
     create_direct_link("drt.advanced.dl.light_samples", "drt.dl_light_samples", 1);
-    create_direct_link("drt.advanced.dl.bsdf_samples", "drt.dl_bsdf_samples", 1);
     create_direct_link("drt.advanced.ibl.env_samples", "drt.ibl_env_samples", 1);
-    create_direct_link("drt.advanced.ibl.bsdf_samples", "drt.ibl_bsdf_samples", 1);
 
     // Unidirectional Path Tracer.
     create_direct_link("pt.lighting_components.dl", "pt.enable_dl", true);
@@ -676,7 +671,6 @@ void RenderSettingsWindow::create_direct_links()
     create_direct_link("pt.advanced.next_event_estimation", "pt.next_event_estimation", true);
     create_direct_link("pt.advanced.dl.light_samples", "pt.dl_light_samples", 1);
     create_direct_link("pt.advanced.ibl.env_samples", "pt.ibl_env_samples", 1);
-    create_direct_link("pt.advanced.ibl.bsdf_samples", "pt.ibl_bsdf_samples", 1);
 }
 
 template <typename T>

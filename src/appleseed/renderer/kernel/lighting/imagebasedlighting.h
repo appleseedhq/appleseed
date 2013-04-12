@@ -48,7 +48,44 @@ namespace renderer
 // Compute image-based lighting at a given point in space.
 //
 
-void compute_image_based_lighting(
+// Compute image-based lighting via BSDF and environment sampling.
+void compute_ibl(
+    SamplingContext&                sampling_context,
+    const ShadingContext&           shading_context,
+    const EnvironmentEDF&           environment_edf,
+    const foundation::Vector3d&     point,              // world space point
+    const foundation::Vector3d&     geometric_normal,   // world space geometric normal, unit-length
+    const foundation::Basis3d&      shading_basis,      // world space orthonormal basis around shading normal
+    const double                    time,
+    const foundation::Vector3d&     outgoing,           // world space outgoing direction, unit-length
+    const BSDF&                     bsdf,
+    const void*                     bsdf_data,
+    const int                       selected_bsdf_modes,
+    const size_t                    bsdf_sample_count,  // number of samples in BSDF sampling
+    const size_t                    env_sample_count,   // number of samples in environment sampling
+    Spectrum&                       radiance,
+    const ShadingPoint*             parent_shading_point = 0);
+
+// Compute image-based lighting via BSDF sampling.
+void compute_ibl_bsdf_sampling(
+    SamplingContext&                sampling_context,
+    const ShadingContext&           shading_context,
+    const EnvironmentEDF&           environment_edf,
+    const foundation::Vector3d&     point,              // world space point
+    const foundation::Vector3d&     geometric_normal,   // world space geometric normal, unit-length
+    const foundation::Basis3d&      shading_basis,      // world space orthonormal basis around shading normal
+    const double                    time,
+    const foundation::Vector3d&     outgoing,           // world space outgoing direction, unit-length
+    const BSDF&                     bsdf,
+    const void*                     bsdf_data,
+    const int                       selected_bsdf_modes,
+    const size_t                    bsdf_sample_count,  // number of samples in BSDF sampling
+    const size_t                    env_sample_count,   // number of samples in environment sampling
+    Spectrum&                       radiance,
+    const ShadingPoint*             parent_shading_point = 0);
+
+// Compute image-based lighting via environment sampling.
+void compute_ibl_environment_sampling(
     SamplingContext&                sampling_context,
     const ShadingContext&           shading_context,
     const EnvironmentEDF&           environment_edf,

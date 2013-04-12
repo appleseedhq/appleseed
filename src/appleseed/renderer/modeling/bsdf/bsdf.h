@@ -88,6 +88,12 @@ class DLLSYMBOL BSDF
         AllScatteringModes  = Diffuse | Glossy | Specular
     };
 
+    // Test for the presence of specific scattering modes.
+    static bool has_diffuse(const Mode mode);
+    static bool has_glossy(const Mode mode);
+    static bool has_specular(const Mode mode);
+    static bool has_glossy_or_specular(const Mode mode);
+
     // Use a particular (negative) value as the probability density
     // of the Dirac Delta in order to detect incorrect usages.
     static const double DiracDelta;
@@ -181,6 +187,26 @@ class DLLSYMBOL BSDF
 //
 // BSDF class implementation.
 //
+
+inline bool BSDF::has_diffuse(const Mode mode)
+{
+    return (mode & Diffuse) != 0;
+}
+
+inline bool BSDF::has_glossy(const Mode mode)
+{
+    return (mode & Glossy) != 0;
+}
+
+inline bool BSDF::has_specular(const Mode mode)
+{
+    return (mode & Specular) != 0;
+}
+
+inline bool BSDF::has_glossy_or_specular(const Mode mode)
+{
+    return (mode & (Glossy | Specular)) != 0;
+}
 
 inline BSDF::Type BSDF::get_type() const
 {

@@ -169,12 +169,15 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                 *shading_point_ptr,
                 foundation::normalize(-ray.m_dir),
                 prev_bsdf_mode,
+                prev_bsdf_prob,
                 throughput);
             break;
         }
 
         // Retrieve the material at the shading point.
         const Material* material = shading_point_ptr->get_material();
+
+        // Terminate the path if the surface has no material.
         if (material == 0)
             break;
 
@@ -267,6 +270,8 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                 incoming,
                 bsdf_value,
                 bsdf_prob);
+        if (bsdf_mode == BSDF::Absorption)
+            break;
 
         // Terminate the path if this scattering mode is not accepted.
         if (!m_path_visitor.accept_scattering_mode(prev_bsdf_mode, bsdf_mode))
@@ -288,14 +293,17 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             sampling_context.split_in_place(1, 1);
             const double s = sampling_context.next_double2();
 
+            // Compute the probability of extending this path.
             const double scattering_prob =
                 std::min(
                     static_cast<double>(foundation::max_value(bsdf_value)),
                     1.0);
 
+            // Russian Roulette.
             if (!foundation::pass_rr(scattering_prob, s))
                 break;
 
+            // Adjust throughput to account for terminated paths.
             assert(scattering_prob > 0.0);
             throughput /= static_cast<float>(scattering_prob);
         }

@@ -79,19 +79,14 @@ namespace
             const size_t    m_max_path_length;              // maximum path length, 0 for unlimited
             const size_t    m_rr_min_path_length;           // minimum path length before Russian Roulette is used, 0 for unlimited
 
-            const size_t    m_dl_bsdf_sample_count;         // number of BSDF samples used to estimate direct illumination
             const size_t    m_dl_light_sample_count;        // number of light samples used to estimate direct illumination
-
-            const size_t    m_ibl_bsdf_sample_count;        // number of BSDF samples used to estimate IBL
             const size_t    m_ibl_env_sample_count;         // number of environment samples used to estimate IBL
 
             explicit Parameters(const ParamArray& params)
               : m_enable_ibl(params.get_optional<bool>("enable_ibl", true))
               , m_max_path_length(params.get_optional<size_t>("max_path_length", 0))
               , m_rr_min_path_length(params.get_optional<size_t>("rr_min_path_length", 3))
-              , m_dl_bsdf_sample_count(params.get_optional<size_t>("dl_bsdf_samples", 1))
               , m_dl_light_sample_count(params.get_optional<size_t>("dl_light_samples", 1))
-              , m_ibl_bsdf_sample_count(params.get_optional<size_t>("ibl_bsdf_samples", 1))
               , m_ibl_env_sample_count(params.get_optional<size_t>("ibl_env_samples", 1))
             {
             }
@@ -103,16 +98,12 @@ namespace
                     "  ibl              %s\n"
                     "  max path length  %s\n"
                     "  rr min path len. %s\n"
-                    "  dl bsdf samples  %s\n"
                     "  dl light samples %s\n"
-                    "  ibl bsdf samples %s\n"
                     "  ibl env samples  %s",
                     m_enable_ibl ? "on" : "off",
                     m_max_path_length == 0 ? "infinite" : pretty_uint(m_max_path_length).c_str(),
                     m_rr_min_path_length == 0 ? "infinite" : pretty_uint(m_rr_min_path_length).c_str(),
-                    pretty_uint(m_dl_bsdf_sample_count).c_str(),
                     pretty_uint(m_dl_light_sample_count).c_str(),
-                    pretty_uint(m_ibl_bsdf_sample_count).c_str(),
                     pretty_uint(m_ibl_env_sample_count).c_str());
             }
         };
@@ -200,9 +191,17 @@ namespace
                 const BSDF::Mode        prev_bsdf_mode,
                 const BSDF::Mode        bsdf_mode) const
             {
-                assert((prev_bsdf_mode & BSDF::Diffuse) == 0);
+                assert(bsdf_mode != BSDF::Absorption);
 
-                return (bsdf_mode & (BSDF::Glossy | BSDF::Specular)) != 0;
+                // No diffuse bounces.
+                if (BSDF::has_diffuse(bsdf_mode))
+                    return false;
+
+                // No caustics.
+                if (BSDF::has_diffuse(prev_bsdf_mode) && BSDF::has_glossy_or_specular(bsdf_mode))
+                    return false;
+
+                return true;
             }
 
             bool visit_vertex(
@@ -227,14 +226,11 @@ namespace
 
                 if (bsdf)
                 {
-                    // Compute direct lighting. We're sampling both the lights and the BSDF,
-                    // unlike in the path tracer where we're only sampling the lights.
-                    // The reason is that, while the path tracer extends paths that hit a
-                    // diffuse surface (using a single BSDF sample), the distributed ray
-                    // tracer doesn't. There's no double contribution either for glossy
-                    // BSDF samples since compute_direct_lighting() only computes direct
-                    // lighting for diffuse BSDF samples; glossy BSDF samples are accounted
-                    // for when the path is extended.
+                    // Compute direct lighting.
+                    // We compute direct lighting by sampling both the lights and the BSDF.
+                    // Unlike in the path tracer, we need to sample the diffuse components
+                    // of the BSDF (with a single sample) because we won't extend the path
+                    // after a diffuse bounce.
                     DirectLightingIntegrator integrator(
                         m_shading_context,
                         m_light_sampler,
@@ -245,12 +241,12 @@ namespace
                         outgoing,
                         *bsdf,
                         bsdf_data,
-                        BSDF::AllScatteringModes,
-                        m_params.m_dl_bsdf_sample_count,
-                        m_params.m_dl_light_sample_count,
+                        1,                                  // a single BSDF sample since the path will be extended with a single ray
+                        m_params.m_dl_light_sample_count,   // the number of light samples is user-adjustable
                         &shading_point);
                     integrator.sample_bsdf_and_lights_low_variance(
                         sampling_context,
+                        BSDF::Diffuse,                      // only sample diffuse BSDF components
                         vertex_radiance,
                         vertex_aovs);
                 }
@@ -262,12 +258,13 @@ namespace
 
                 if (bsdf && m_env_edf && m_params.m_enable_ibl)
                 {
-                    // Compute image-based lighting. We're sampling both the lights and
-                    // the BSDF. There's no double contribution for diffuse BSDF samples
-                    // because IBL is not accounted for a second time when the path hits
-                    // the environment. See visit_environment() below.
+                    // Compute image-based lighting.
+                    // We compute image-based lighting by sampling both the environment and
+                    // the BSDF. When sampling the BSDF, we limit ourselves to sampling
+                    // diffuse components of the BSDF (with a single sample) since sampling
+                    // of glossy components will be done by extending the current path.
                     Spectrum ibl_radiance;
-                    compute_image_based_lighting(
+                    compute_ibl(
                         sampling_context,
                         m_shading_context,
                         *m_env_edf,
@@ -278,8 +275,9 @@ namespace
                         outgoing,
                         *bsdf,
                         bsdf_data,
-                        m_params.m_ibl_bsdf_sample_count,
-                        m_params.m_ibl_env_sample_count,
+                        BSDF::Diffuse,                      // only sample diffuse BSDF components
+                        1,                                  // a single BSDF sample since the path will be extended with a single ray
+                        m_params.m_ibl_env_sample_count,    // the number of environment samples is user-adjustable
                         ibl_radiance,
                         &shading_point);
                     vertex_radiance += ibl_radiance;
@@ -321,7 +319,7 @@ namespace
                         // Apply MIS.
                         const double mis_weight =
                             mis_power2(
-                                bsdf_point_prob,
+                                1 * bsdf_point_prob,
                                 m_params.m_dl_light_sample_count * light_point_prob);
                         emitted_radiance *= static_cast<float>(mis_weight);
                     }
@@ -344,40 +342,44 @@ namespace
                 const ShadingPoint&     shading_point,
                 const Vector3d&         outgoing,
                 const BSDF::Mode        prev_bsdf_mode,
+                const double            prev_bsdf_prob,
                 const Spectrum&         throughput)
             {
+                assert(prev_bsdf_mode != BSDF::Absorption);
+
                 // Can't look up the environment if there's no environment EDF.
                 if (m_env_edf == 0)
                     return;
-                
-                //
-                // When should we add the contribution of the environment here?
-                //
-                //   Mode               IBL     Contribute?     Rationale
-                //   ---------------------------------------------------------------------------------------------
-                //   Diffuse/Glossy     Yes     No              Already accounted for as IBL during path tracing
-                //   Diffuse/Glossy     No      No              Not wanted since IBL is disabled
-                //   Specular           Yes     Yes             Deliberately not accounted for during path tracing
-                //   Specular           No      Yes             Specular reflections are not IBL
-                //
 
-                assert(prev_bsdf_mode != BSDF::Absorption);
-
-                if (prev_bsdf_mode != BSDF::Specular)
+                // When IBL is disabled, only specular reflections should contribute here.
+                if (!m_params.m_enable_ibl && prev_bsdf_mode != BSDF::Specular)
                     return;
 
                 // Evaluate the environment EDF.
                 InputEvaluator input_evaluator(m_texture_cache);
-                Spectrum environment_radiance;
+                Spectrum env_radiance;
+                double env_prob;
                 m_env_edf->evaluate(
                     input_evaluator,
                     -outgoing,
-                    environment_radiance);
+                    env_radiance,
+                    env_prob);
+
+                // Multiple importance sampling.
+                if (prev_bsdf_mode != BSDF::Specular)
+                {
+                    assert(prev_bsdf_prob > 0.0);
+                    const double mis_weight =
+                        mis_power2(
+                            1 * prev_bsdf_prob,
+                            m_params.m_ibl_env_sample_count * env_prob);
+                    env_radiance *= static_cast<float>(mis_weight);
+                }
 
                 // Update the path radiance.
-                environment_radiance *= throughput;
-                m_path_radiance += environment_radiance;
-                m_path_aovs.add(m_env_edf->get_render_layer_index(), environment_radiance);
+                env_radiance *= throughput;
+                m_path_radiance += env_radiance;
+                m_path_aovs.add(m_env_edf->get_render_layer_index(), env_radiance);
             }
 
           private:

@@ -104,7 +104,6 @@ class DirectLightingIntegrator
         const foundation::Vector3d&     outgoing,           // world space outgoing direction, unit-length
         const BSDF&                     bsdf,
         const void*                     bsdf_data,
-        const int                       bsdf_modes,         // selected scattering modes
         const size_t                    bsdf_sample_count,
         const size_t                    light_sample_count,
         const ShadingPoint*             parent_shading_point = 0);
@@ -113,6 +112,7 @@ class DirectLightingIntegrator
     template <typename WeightingFunction>
     void sample_bsdf(
         SamplingContext&                sampling_context,
+        const int                       selected_bsdf_modes,
         WeightingFunction&              weighting_function,
         Spectrum&                       radiance,
         SpectrumStack&                  aovs);
@@ -136,12 +136,14 @@ class DirectLightingIntegrator
     // Evaluate direct lighting by sampling both the BSDF and the lights.
     void sample_bsdf_and_lights(
         SamplingContext&                sampling_context,
+        const int                       selected_bsdf_modes,
         Spectrum&                       radiance,
         SpectrumStack&                  aovs);
 
     // A low-variance but more expensive variant of sample_bsdf_and_lights().
     void sample_bsdf_and_lights_low_variance(
         SamplingContext&                sampling_context,
+        const int                       selected_bsdf_modes,
         Spectrum&                       radiance,
         SpectrumStack&                  aovs);
 
@@ -155,19 +157,20 @@ class DirectLightingIntegrator
     const foundation::Vector3d&         m_outgoing;
     const BSDF&                         m_bsdf;
     const void*                         m_bsdf_data;
-    const int                           m_bsdf_modes;
     const size_t                        m_bsdf_sample_count;
     const size_t                        m_light_sample_count;
     const ShadingPoint*                 m_parent_shading_point;
 
     void take_single_bsdf_or_light_sample(
         SamplingContext&                sampling_context,
+        const int                       selected_bsdf_modes,
         Spectrum&                       radiance,
         SpectrumStack&                  aovs);
 
     template <typename WeightingFunction>
     void take_single_bsdf_sample(
         SamplingContext&                sampling_context,
+        const int                       selected_bsdf_modes,
         WeightingFunction&              weighting_function,
         Spectrum&                       radiance,
         SpectrumStack&                  aovs);
@@ -272,6 +275,7 @@ inline double DirectLightingIntegrator::mis_power2(
 template <typename WeightingFunction>
 void DirectLightingIntegrator::sample_bsdf(
     SamplingContext&                    sampling_context,
+    const int                           selected_bsdf_modes,
     WeightingFunction&                  weighting_function,
     Spectrum&                           radiance,
     SpectrumStack&                      aovs)
@@ -286,6 +290,7 @@ void DirectLightingIntegrator::sample_bsdf(
     {
         take_single_bsdf_sample(
             sampling_context,
+            selected_bsdf_modes,
             weighting_function,
             radiance,
             aovs);
@@ -393,6 +398,7 @@ void DirectLightingIntegrator::sample_lights_low_variance(
 template <typename WeightingFunction>
 void DirectLightingIntegrator::take_single_bsdf_sample(
     SamplingContext&                    sampling_context,
+    const int                           selected_bsdf_modes,
     WeightingFunction&                  weighting_function,
     Spectrum&                           radiance,
     SpectrumStack&                      aovs)
@@ -414,12 +420,9 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
             bsdf_value,
             bsdf_prob);
 
-    // Ignore glossy/specular components: they must be handled by the parent.
-    // See Physically Based Rendering vol. 1 page 732.
-    if (bsdf_mode != BSDF::Diffuse)
+    // Filter scattering modes.
+    if (!(selected_bsdf_modes & bsdf_mode))
         return;
-
-    // Since we're limiting ourselves to the diffuse case, the BSDF should not be a Dirac delta.
     assert(bsdf_prob != BSDF::DiracDelta);
 
     // Trace a ray in the direction of the reflection.
@@ -581,13 +584,13 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     const double bsdf_prob =
         m_bsdf.evaluate(
             m_bsdf_data,
-            false,                      // not adjoint
-            true,                       // multiply by |cos(incoming, normal)|
+            false,                          // not adjoint
+            true,                           // multiply by |cos(incoming, normal)|
             m_geometric_normal,
             m_shading_basis,
             m_outgoing,
             incoming,
-            m_bsdf_modes,
+            BSDF::AllScatteringModes,       // however specular components contribute with probability 0
             bsdf_value);
     if (bsdf_prob == 0.0)
         return;
