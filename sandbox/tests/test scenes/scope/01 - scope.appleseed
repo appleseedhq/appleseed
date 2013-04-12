@@ -14,10 +14,10 @@
                 </matrix>
             </transform>
         </camera>
-        <color name="pink">
+        <color name="green">
             <parameter name="color_space" value="linear_rgb" />
             <values>
-                1.000000 0.000000 1.000000
+                0.000000 1.000000 0.000000
             </values>
             <alpha>
                 1.000000
@@ -26,7 +26,7 @@
         <environment name="environment" model="generic_environment" />
         <assembly name="assembly">
             <surface_shader name="surface_shader" model="constant_surface_shader">
-                <parameter name="color" value="pink" />
+                <parameter name="color" value="green" />
             </surface_shader>
             <material name="material" model="generic_material">
                 <parameter name="surface_shader" value="surface_shader" />
