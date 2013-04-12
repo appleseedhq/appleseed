@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/aov/imagestack.h"
 #include "renderer/kernel/aov/tilestack.h"
 #include "renderer/kernel/rendering/ipixelrenderer.h"
@@ -151,6 +152,11 @@ namespace
                 frame.get_filter());
             framebuffer.clear();
 
+            // Seed the RNG with the tile index.
+            m_rng = SamplingContext::RNGType(
+                static_cast<uint32>(
+                    tile_y * frame_properties.m_tile_count_x + tile_x));
+
             // Loop over tile pixels.
             const size_t tile_pixel_count = m_pixel_ordering.size();
             for (size_t i = 0; i < tile_pixel_count; ++i)
@@ -192,6 +198,7 @@ namespace
                     tile_bbox,
                     ix, iy,
                     tx, ty,
+                    m_rng,
                     framebuffer);
             }
 
@@ -234,6 +241,7 @@ namespace
         int                                 m_margin_width;
         int                                 m_margin_height;
         vector<Vector<int16, 2> >           m_pixel_ordering;
+        SamplingContext::RNGType            m_rng;
 
         void compute_tile_margins(const Frame& frame)
         {

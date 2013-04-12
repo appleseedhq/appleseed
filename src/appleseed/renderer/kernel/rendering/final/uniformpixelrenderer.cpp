@@ -119,6 +119,7 @@ namespace
             const int                   iy,
             const int                   tx,
             const int                   ty,
+            SamplingContext::RNGType&   rng,
             ShadingResultFrameBuffer&   framebuffer) OVERRIDE
         {
             const size_t aov_count = frame.aov_images().size();
@@ -129,7 +130,7 @@ namespace
                 const size_t frame_width = frame.image().properties().m_canvas_width;
                 const size_t instance = hashint32(static_cast<uint32>(iy * frame_width + ix));
                 SamplingContext sampling_context(
-                    m_rng,
+                    rng,
                     2,                  // number of dimensions
                     0,                  // number of samples -- unknown
                     instance);          // initial instance number
@@ -179,7 +180,7 @@ namespace
                         // as this seems to give less correlation artifacts than when the
                         // initial dimension is set to 0 or 2.
                         SamplingContext sampling_context(
-                            m_rng,
+                            rng,
                             1,              // number of dimensions
                             instance,       // number of samples
                             instance);      // initial instance number -- end of sequence
@@ -222,7 +223,6 @@ namespace
         const int                           m_sqrt_sample_count;
         const size_t                        m_sample_count;
         PixelSampler                        m_pixel_sampler;
-        SamplingContext::RNGType            m_rng;
     };
 }
 

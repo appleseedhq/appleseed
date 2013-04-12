@@ -29,6 +29,9 @@
 #ifndef APPLESEED_RENDERER_KERNEL_RENDERING_IPIXELRENDERER_H
 #define APPLESEED_RENDERER_KERNEL_RENDERING_IPIXELRENDERER_H
 
+// appleseed.renderer headers.
+#include "renderer/global/globaltypes.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/concepts/iunknown.h"
 #include "foundation/math/aabb.h"
@@ -76,6 +79,7 @@ class IPixelRenderer
         const int                   iy,
         const int                   tx,
         const int                   ty,
+        SamplingContext::RNGType&   rng,
         ShadingResultFrameBuffer&   framebuffer) = 0;
 
     // Retrieve performance statistics.

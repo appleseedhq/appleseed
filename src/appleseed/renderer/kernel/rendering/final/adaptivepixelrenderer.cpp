@@ -164,6 +164,7 @@ namespace
             const int                   iy,
             const int                   tx,
             const int                   ty,
+            SamplingContext::RNGType&   rng,
             ShadingResultFrameBuffer&   framebuffer) OVERRIDE
         {
             m_scratch_fb->clear();
@@ -172,7 +173,7 @@ namespace
             const size_t frame_width = frame.image().properties().m_canvas_width;
             const size_t instance = hashint32(static_cast<uint32>(iy * frame_width + ix));
             SamplingContext sampling_context(
-                m_rng,
+                rng,
                 2,                      // number of dimensions
                 0,                      // number of samples -- unknown
                 instance);              // initial instance number
@@ -299,7 +300,6 @@ namespace
 
         const Parameters                    m_params;
         auto_release_ptr<ISampleRenderer>   m_sample_renderer;
-        SamplingContext::RNGType            m_rng;
         size_t                              m_variation_aov_index;
         size_t                              m_samples_aov_index;
         int                                 m_scratch_fb_half_width;
