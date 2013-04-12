@@ -31,8 +31,18 @@ import subprocess
 import os
 import sys
 
+
+#--------------------------------------------------------------------------------------------------
+# Update a given project file.
+#--------------------------------------------------------------------------------------------------
+
 def update_project_file(filepath, tool_path):
     subprocess.call([tool_path, filepath])
+
+
+#--------------------------------------------------------------------------------------------------
+# Entry point.
+#--------------------------------------------------------------------------------------------------
 
 def main():
     if len(sys.argv) < 2:
@@ -46,4 +56,5 @@ def main():
             if os.path.splitext(filename)[1] == ".appleseed":
                 update_project_file(os.path.join(dirpath, filename), tool_path)
 
-main()
+if __name__ == '__main__':
+    main()
