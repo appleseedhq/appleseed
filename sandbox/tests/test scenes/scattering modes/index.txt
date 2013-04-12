@@ -1,0 +1,33 @@
+x   #       DL      IBL     Caustics    Engine      Remark
+-----------------------------------------------------------------------------------------------
+-   01      0       0       0           DRT         Cannot disable DL in DRT
+x   02      0       0       0           PT
+x   03      0       0       0           PTNE
+
+-   04      0       0       1           DRT         Cannot disable DL or enable caustics in DRT
+x   05      0       0       1           PT
+x   06      0       0       1           PTNE
+
+-   07      0       1       0           DRT         Cannot disable DL in DRT
+x   08      0       1       0           PT
+x   09      0       1       0           PTNE
+
+-   10      0       1       1           DRT         Cannot disable DL or enable caustics in DRT
+X   11      0       1       1           PT
+X   12      0       1       1           PTNE
+
+x   13      1       0       0           DRT
+x   14      1       0       0           PT
+x   15      1       0       0           PTNE
+
+-   16      1       0       1           DRT         Cannot enable caustics in DRT
+x   17      1       0       1           PT
+x   18      1       0       1           PTNE
+
+x   19      1       1       0           DRT
+x   20      1       1       0           PT
+x   21      1       1       0           PTNE
+
+-   22      1       1       1           DRT         Cannot enable caustics in DRT
+x   23      1       1       1           PT
+x   24      1       1       1           PTNE
