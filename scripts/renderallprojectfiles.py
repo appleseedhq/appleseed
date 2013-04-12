@@ -53,10 +53,6 @@ def should_skip(path):
 def render_project_file(project_directory, project_filename, tool_path):
     project_filepath = os.path.join(project_directory, project_filename)
 
-    if should_skip(project_filename):
-        print("Skipping {0}...".format(project_filepath))
-        return
-
     output_directory = os.path.join(project_directory, 'renders')
     safe_mkdir(output_directory)
 
@@ -96,6 +92,9 @@ def render_project_files(tool_path):
 
         for filename in filenames:
             if os.path.splitext(filename)[1] == '.appleseed':
+                if should_skip(filename):
+                    print("Skipping:  {0}...".format(os.path.join(dirpath, filename)))
+                    continue
                 render_project_file(dirpath, filename, tool_path)
                 rendered_file_count += 1
 
