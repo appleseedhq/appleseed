@@ -55,7 +55,8 @@ void compute_ibl(
     const Vector3d&             outgoing,
     const BSDF&                 bsdf,
     const void*                 bsdf_data,
-    const int                   selected_bsdf_modes,
+    const int                   bsdf_sampling_modes,
+    const int                   env_sampling_modes,
     const size_t                bsdf_sample_count,
     const size_t                env_sample_count,
     Spectrum&                   radiance,
@@ -76,7 +77,7 @@ void compute_ibl(
         outgoing,
         bsdf,
         bsdf_data,
-        selected_bsdf_modes,
+        bsdf_sampling_modes,
         bsdf_sample_count,
         env_sample_count,
         radiance,
@@ -95,6 +96,7 @@ void compute_ibl(
         outgoing,
         bsdf,
         bsdf_data,
+        env_sampling_modes,
         bsdf_sample_count,
         env_sample_count,
         radiance_env_sampling,
@@ -113,7 +115,7 @@ void compute_ibl_bsdf_sampling(
     const Vector3d&             outgoing,
     const BSDF&                 bsdf,
     const void*                 bsdf_data,
-    const int                   selected_bsdf_modes,
+    const int                   bsdf_sampling_modes,
     const size_t                bsdf_sample_count,
     const size_t                env_sample_count,
     Spectrum&                   radiance,
@@ -148,7 +150,7 @@ void compute_ibl_bsdf_sampling(
                 bsdf_prob);
 
         // Filter scattering modes.
-        if (!(selected_bsdf_modes & bsdf_mode))
+        if (!(bsdf_sampling_modes & bsdf_mode))
             return;
         assert(bsdf_prob != BSDF::DiracDelta);
 
@@ -199,6 +201,7 @@ void compute_ibl_environment_sampling(
     const Vector3d&             outgoing,
     const BSDF&                 bsdf,
     const void*                 bsdf_data,
+    const int                   env_sampling_modes,
     const size_t                bsdf_sample_count,
     const size_t                env_sample_count,
     Spectrum&                   radiance,
@@ -259,7 +262,7 @@ void compute_ibl_environment_sampling(
                 shading_basis,
                 outgoing,
                 incoming,
-                BSDF::AllScatteringModes,       // however specular components contribute with probability 0
+                env_sampling_modes,
                 bsdf_value);
         if (bsdf_prob == 0.0)
             continue;

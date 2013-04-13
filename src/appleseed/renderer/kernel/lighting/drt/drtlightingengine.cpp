@@ -221,6 +221,11 @@ namespace
                 const Basis3d& shading_basis = shading_point.get_shading_basis();
                 const Material* material = shading_point.get_material();
 
+                const int light_sampling_modes =
+                    prev_bsdf_mode == BSDF::Diffuse
+                        ? BSDF::Diffuse
+                        : BSDF::AllScatteringModes;
+
                 Spectrum vertex_radiance;
                 SpectrumStack vertex_aovs(m_path_aovs.size());
 
@@ -241,12 +246,13 @@ namespace
                         outgoing,
                         *bsdf,
                         bsdf_data,
+                        BSDF::Diffuse,
+                        light_sampling_modes,
                         1,                                  // a single BSDF sample since the path will be extended with a single ray
                         m_params.m_dl_light_sample_count,   // the number of light samples is user-adjustable
                         &shading_point);
                     integrator.sample_bsdf_and_lights_low_variance(
                         sampling_context,
-                        BSDF::Diffuse,                      // only sample diffuse BSDF components
                         vertex_radiance,
                         vertex_aovs);
                 }
@@ -275,7 +281,8 @@ namespace
                         outgoing,
                         *bsdf,
                         bsdf_data,
-                        BSDF::Diffuse,                      // only sample diffuse BSDF components
+                        BSDF::Diffuse,
+                        light_sampling_modes,
                         1,                                  // a single BSDF sample since the path will be extended with a single ray
                         m_params.m_ibl_env_sample_count,    // the number of environment samples is user-adjustable
                         ibl_radiance,

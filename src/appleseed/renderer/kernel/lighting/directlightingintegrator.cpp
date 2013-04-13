@@ -48,6 +48,8 @@ DirectLightingIntegrator::DirectLightingIntegrator(
     const Vector3d&             outgoing,
     const BSDF&                 bsdf,
     const void*                 bsdf_data,
+    const int                   bsdf_sampling_modes,
+    const int                   light_sampling_modes,
     const size_t                bsdf_sample_count,
     const size_t                light_sample_count,
     const ShadingPoint*         parent_shading_point)
@@ -60,6 +62,8 @@ DirectLightingIntegrator::DirectLightingIntegrator(
   , m_outgoing(outgoing)
   , m_bsdf(bsdf)
   , m_bsdf_data(bsdf_data)
+  , m_bsdf_sampling_modes(bsdf_sampling_modes)
+  , m_light_sampling_modes(light_sampling_modes)
   , m_bsdf_sample_count(bsdf_sample_count)
   , m_light_sample_count(light_sample_count)
   , m_parent_shading_point(parent_shading_point)
@@ -70,16 +74,15 @@ DirectLightingIntegrator::DirectLightingIntegrator(
 
 void DirectLightingIntegrator::sample_bsdf_and_lights(
     SamplingContext&            sampling_context,
-    const int                   selected_bsdf_modes,
     Spectrum&                   radiance,
     SpectrumStack&              aovs)
 {
     if (m_bsdf_sample_count + m_light_sample_count == 0)
-        take_single_bsdf_or_light_sample(sampling_context, selected_bsdf_modes, radiance, aovs);
+        take_single_bsdf_or_light_sample(sampling_context, radiance, aovs);
     else
     {
         Spectrum radiance_light_sampling;
-        sample_bsdf(sampling_context, selected_bsdf_modes, DirectLightingIntegrator::mis_power2, radiance, aovs);
+        sample_bsdf(sampling_context, DirectLightingIntegrator::mis_power2, radiance, aovs);
         sample_lights(sampling_context, DirectLightingIntegrator::mis_power2, radiance_light_sampling, aovs);
         radiance += radiance_light_sampling;
     }
@@ -87,16 +90,15 @@ void DirectLightingIntegrator::sample_bsdf_and_lights(
 
 void DirectLightingIntegrator::sample_bsdf_and_lights_low_variance(
     SamplingContext&            sampling_context,
-    const int                   selected_bsdf_modes,
     Spectrum&                   radiance,
     SpectrumStack&              aovs)
 {
     if (m_bsdf_sample_count + m_light_sample_count == 0)
-        take_single_bsdf_or_light_sample(sampling_context, selected_bsdf_modes, radiance, aovs);
+        take_single_bsdf_or_light_sample(sampling_context, radiance, aovs);
     else
     {
         Spectrum radiance_light_sampling;
-        sample_bsdf(sampling_context, selected_bsdf_modes, DirectLightingIntegrator::mis_power2, radiance, aovs);
+        sample_bsdf(sampling_context, DirectLightingIntegrator::mis_power2, radiance, aovs);
         sample_lights_low_variance(sampling_context, DirectLightingIntegrator::mis_power2, radiance_light_sampling, aovs);
         radiance += radiance_light_sampling;
     }
@@ -104,7 +106,6 @@ void DirectLightingIntegrator::sample_bsdf_and_lights_low_variance(
 
 void DirectLightingIntegrator::take_single_bsdf_or_light_sample(
     SamplingContext&            sampling_context,
-    const int                   selected_bsdf_modes,
     Spectrum&                   radiance,
     SpectrumStack&              aovs)
 {
@@ -128,7 +129,6 @@ void DirectLightingIntegrator::take_single_bsdf_or_light_sample(
         {
             take_single_bsdf_sample(
                 sampling_context,
-                selected_bsdf_modes,
                 DirectLightingIntegrator::mis_balance,
                 radiance,
                 aovs);
@@ -200,7 +200,7 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
             m_shading_basis,
             m_outgoing,
             incoming,
-            BSDF::AllScatteringModes,       // however specular components contribute with probability 0
+            m_light_sampling_modes,
             bsdf_value);
     if (bsdf_prob == 0.0)
         return;

@@ -252,6 +252,11 @@ namespace
 
                 if (m_params.m_next_event_estimation)
                 {
+                    const int scattering_modes =
+                        prev_bsdf_mode == BSDF::Diffuse && !m_params.m_enable_caustics
+                            ? BSDF::Diffuse
+                            : BSDF::AllScatteringModes;
+
                     Spectrum vertex_radiance;
                     SpectrumStack vertex_aovs(m_path_aovs.size());
 
@@ -271,6 +276,8 @@ namespace
                             outgoing,
                             *bsdf,
                             bsdf_data,
+                            scattering_modes,
+                            scattering_modes,
                             1,                                  // a single BSDF sample since the path will be extended with a single ray
                             m_params.m_dl_light_sample_count,   // the number of light samples is user-adjustable
                             &shading_point);
@@ -304,6 +311,7 @@ namespace
                             outgoing,
                             *bsdf,
                             bsdf_data,
+                            scattering_modes,
                             1,                                  // a single BSDF sample since the path will be extended with a single ray
                             m_params.m_ibl_env_sample_count,    // the number of environment samples is user-adjustable
                             ibl_radiance,
