@@ -44,7 +44,7 @@ bl_info = {
     "name": "appleseed project format",
     "description": "Exports a scene to the appleseed project file format.",
     "author": "Franz Beaune",
-    "version": (1, 3, 3),
+    "version": (1, 3, 4),
     "blender": (2, 6, 2),   # we really need Blender 2.62 or newer
     "api": 36339,
     "location": "File > Export",
@@ -553,8 +553,10 @@ class AppleseedExportOperator(bpy.types.Operator):
 
         # Emit the environment element.
         self.__open_element('environment name="environment" model="generic_environment"')
-        self.__emit_parameter("environment_edf", env_edf_name)
-        self.__emit_parameter("environment_shader", env_shader_name)
+        if len(env_edf_name) > 0:
+            self.__emit_parameter("environment_edf", env_edf_name)
+        if len(env_shader_name) > 0:
+            self.__emit_parameter("environment_shader", env_shader_name)
         self.__close_element('environment')
 
     #----------------------------------------------------------------------------------------------
