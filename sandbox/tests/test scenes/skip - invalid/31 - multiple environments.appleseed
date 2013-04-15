@@ -5,8 +5,8 @@
             <parameter name="film_dimensions" value="0.025 0.025" />
             <parameter name="focal_length" value="0.035" />
         </camera>
-        <environment_shader name="environment1" model="constant_environment_shader" />
-        <environment_shader name="environment2" model="constant_environment_shader" />
+        <environment name="environment1" model="generic_environment" />
+        <environment name="environment2" model="generic_environment" />
     </scene>
     <output>
         <frame name="beauty">
