@@ -37,6 +37,7 @@
 #include "renderer/kernel/aov/tilestack.h"
 #include "renderer/kernel/rendering/final/variationtracker.h"
 #include "renderer/kernel/rendering/isamplerenderer.h"
+#include "renderer/kernel/rendering/pixelrendererbase.h"
 #include "renderer/kernel/rendering/shadingresultframebuffer.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/frame/frame.h"
@@ -73,7 +74,7 @@ namespace
     //
 
     class AdaptivePixelRenderer
-      : public IPixelRenderer
+      : public PixelRendererBase
     {
       public:
         AdaptivePixelRenderer(
@@ -212,6 +213,13 @@ namespace
                         child_sampling_context,
                         sample_position,
                         shading_result);
+
+                    // Ignore invalid samples.
+                    if (!shading_result.is_valid())
+                    {
+                        signal_invalid_sample();
+                        continue;
+                    }
 
                     // Merge the sample into the scratch framebuffer.
                     m_scratch_fb->add(

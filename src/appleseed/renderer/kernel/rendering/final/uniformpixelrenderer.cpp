@@ -36,6 +36,7 @@
 #include "renderer/kernel/aov/spectrumstack.h"
 #include "renderer/kernel/rendering/final/pixelsampler.h"
 #include "renderer/kernel/rendering/isamplerenderer.h"
+#include "renderer/kernel/rendering/pixelrendererbase.h"
 #include "renderer/kernel/rendering/shadingresultframebuffer.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/frame/frame.h"
@@ -72,7 +73,7 @@ namespace
     //
 
     class UniformPixelRenderer
-      : public IPixelRenderer
+      : public PixelRendererBase
     {
       public:
         UniformPixelRenderer(
@@ -156,7 +157,9 @@ namespace
                         shading_result);
 
                     // Merge the sample into the framebuffer.
-                    framebuffer.add(tx + s.x, ty + s.y, shading_result);
+                    if (shading_result.is_valid())
+                        framebuffer.add(tx + s.x, ty + s.y, shading_result);
+                    else signal_invalid_sample();
                 }
             }
             else
@@ -194,7 +197,9 @@ namespace
                             shading_result);
 
                         // Merge the sample into the framebuffer.
-                        framebuffer.add(s.x - ix + tx, s.y - iy + ty, shading_result);
+                        if (shading_result.is_valid())
+                            framebuffer.add(s.x - ix + tx, s.y - iy + ty, shading_result);
+                        else signal_invalid_sample();
                     }
                 }
             }

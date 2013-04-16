@@ -159,8 +159,9 @@ namespace
                 sample_position,
                 shading_result);
 
-            // Transform the sample to the linear RGB color space.
-            shading_result.transform_to_linear_rgb(m_lighting_conditions);
+            // Ignore invalid samples.
+            if (!shading_result.is_valid())
+                return 0;
 
             // Create a single sample.
             Sample sample;

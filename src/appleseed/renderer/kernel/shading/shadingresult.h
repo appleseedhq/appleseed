@@ -55,6 +55,9 @@ class ShadingResult
     Alpha                   m_alpha;
     SpectrumStack           m_aovs;
 
+    // Return true if this shading result is valid, or false if it contains NaN or negative values.
+    bool is_valid() const;
+
     // Set the shading result to transparent black in linear RGB.
     void clear();
 

@@ -47,6 +47,51 @@ namespace renderer
 
 namespace
 {
+    inline Color3f spectrum_as_color3f(const Spectrum& s)
+    {
+        return Color3f(s[0], s[1], s[2]);
+    }
+
+    template <typename T>
+    inline bool is_valid_scalar(const T x)
+    {
+        return x >= T(0.0);
+    }
+
+    template <typename T, size_t N>
+    inline bool is_valid_color(const Color<T, N>& c)
+    {
+        for (size_t i = 0; i < N; ++i)
+        {
+            if (!is_valid_scalar(c[i]))
+                return false;
+        }
+
+        return true;
+    }
+}
+
+bool ShadingResult::is_valid() const
+{
+    if (!is_valid_color(spectrum_as_color3f(m_color)))
+        return false;
+
+    if (!is_valid_color(m_alpha))
+        return false;
+
+    const size_t aov_count = m_aovs.size();
+
+    for (size_t i = 0; i < aov_count; ++i)
+    {
+        if (!is_valid_color(spectrum_as_color3f(m_aovs[i])))
+            return false;
+    }
+
+    return true;
+}
+
+namespace
+{
     inline void transform_srgb_to_linear_rgb(Spectrum& s)
     {
         Color3f& linear_rgb = *reinterpret_cast<Color3f*>(&s[0]);

@@ -981,6 +981,8 @@ set (renderer_kernel_rendering_sources
     renderer/kernel/rendering/localsampleaccumulationbuffer.h
     renderer/kernel/rendering/masterrenderer.cpp
     renderer/kernel/rendering/masterrenderer.h
+    renderer/kernel/rendering/pixelrendererbase.cpp
+    renderer/kernel/rendering/pixelrendererbase.h
     renderer/kernel/rendering/sample.h
     renderer/kernel/rendering/sampleaccumulationbuffer.h
     renderer/kernel/rendering/samplegeneratorbase.cpp
