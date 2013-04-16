@@ -317,8 +317,8 @@ namespace
 
             // Compute the halfway vector.
             const Vector3d H = normalize(L + V);
-            const double dot_HN = dot(H, N);
-            const double dot_HL = dot(H, L);
+            const double dot_HN = abs(dot(H, N));
+            const double dot_HL = abs(dot(H, L));
 
             // Compute the specular albedos for the outgoing and incoming angles.
             Spectrum specular_albedo_V, specular_albedo_L;
@@ -393,8 +393,8 @@ namespace
 
             // Compute the halfway vector.
             const Vector3d H = normalize(L + V);
-            const double dot_HN = dot(H, N);
-            const double dot_HL = dot(H, L);
+            const double dot_HN = abs(dot(H, N));
+            const double dot_HL = abs(dot(H, L));
 
             // Compute the specular albedo for the outgoing angle.
             Spectrum specular_albedo_V;
