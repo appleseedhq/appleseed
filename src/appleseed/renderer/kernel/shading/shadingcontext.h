@@ -59,7 +59,7 @@ class ShadingContext
         TextureCache&           texture_cache,
         ILightingEngine*        lighting_engine = 0,
         const float             transparency_threshold = 0.001f,
-        const size_t            max_iterations = 10000);
+        const size_t            max_iterations = 1000);
 
     const Intersector& get_intersector() const;
 

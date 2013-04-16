@@ -72,7 +72,7 @@ class PathTracer
         PathVisitor&            path_visitor,
         const size_t            rr_min_path_length,
         const size_t            max_path_length,
-        const size_t            max_iterations = 10000);
+        const size_t            max_iterations = 1000);
 
     size_t trace(
         SamplingContext&        sampling_context,
