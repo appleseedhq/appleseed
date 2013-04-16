@@ -317,9 +317,9 @@ Color<T, 3> spectrum_to_ciexyz(
     const LightingConditions&   lighting,
     const Spectrum&             spectrum);
 
-// Convert a color in the CIE XYZ color space to a spectrum.
+// Convert a reflectance in the CIE XYZ color space to a spectrum.
 template <typename T, typename Spectrum>
-void ciexyz_to_spectrum(
+void ciexyz_reflectance_to_spectrum(
     const Color<T, 3>&          xyz,
     Spectrum&                   spectrum);
 
@@ -750,7 +750,7 @@ Color<T, 3> spectrum_to_ciexyz(
 }
 
 template <typename T, typename Spectrum>
-void ciexyz_to_spectrum(
+void ciexyz_reflectance_to_spectrum(
     const Color<T, 3>&          xyz,
     Spectrum&                   spectrum)
 {

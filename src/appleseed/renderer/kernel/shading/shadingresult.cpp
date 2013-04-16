@@ -113,7 +113,7 @@ namespace
 
     inline void transform_ciexyz_to_spectrum(Spectrum& s)
     {
-        ciexyz_to_spectrum(Color3f(s[0], s[1], s[2]), s);
+        ciexyz_reflectance_to_spectrum(Color3f(s[0], s[1], s[2]), s);
     }
 }
 

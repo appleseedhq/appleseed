@@ -201,12 +201,12 @@ TEST_SUITE(Foundation_Image_ColorSpace)
             1.0e-6f);
     }
 
-    TEST_CASE(TestCIEXYZToSpectrumConversion)
+    TEST_CASE(TestCIEXYZReflectanceToSpectrumConversion)
     {
         const Color3f ciexyz(0.699385f, 0.738633f, 0.790319f);
 
         Spectrum31f spectrum;
-        ciexyz_to_spectrum(ciexyz, spectrum);
+        ciexyz_reflectance_to_spectrum(ciexyz, spectrum);
 
         const float ExpectedSpectrumValues[31] =
         {
