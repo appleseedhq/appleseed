@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/modeling/input/inputformat.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/scene/textureinstance.h"
 
@@ -63,7 +64,8 @@ class TextureSource
     TextureSource(
         const foundation::UniqueID          assembly_uid,
         const TextureInstance&              texture_instance,
-        const foundation::CanvasProperties& texture_props);
+        const foundation::CanvasProperties& texture_props,
+        const InputFormat                   input_format);
 
     // Retrieve the texture instance used by this source.
     const TextureInstance& get_texture_instance() const;
@@ -101,6 +103,7 @@ class TextureSource
     const TextureInstance&                  m_texture_instance;
     const foundation::UniqueID              m_texture_uid;
     const foundation::CanvasProperties      m_texture_props;
+    const InputFormat                       m_input_format;
     const double                            m_scalar_canvas_width;
     const double                            m_scalar_canvas_height;
     const double                            m_max_x;
@@ -170,7 +173,9 @@ inline void TextureSource::evaluate(
 {
     const foundation::Color4f color = sample_texture(texture_cache, uv);
 
-    foundation::linear_rgb_reflectance_to_spectrum(color.rgb(), spectrum);
+    if (m_input_format == InputFormatSpectralReflectance)
+        foundation::linear_rgb_reflectance_to_spectrum(color.rgb(), spectrum);
+    else foundation::linear_rgb_illuminance_to_spectrum(color.rgb(), spectrum);
 }
 
 inline void TextureSource::evaluate(
@@ -204,7 +209,9 @@ inline void TextureSource::evaluate(
 {
     const foundation::Color4f color = sample_texture(texture_cache, uv);
 
-    foundation::linear_rgb_reflectance_to_spectrum(color.rgb(), spectrum);
+    if (m_input_format == InputFormatSpectralReflectance)
+        foundation::linear_rgb_reflectance_to_spectrum(color.rgb(), spectrum);
+    else foundation::linear_rgb_illuminance_to_spectrum(color.rgb(), spectrum);
 
     evaluate_alpha(color, alpha);
 }

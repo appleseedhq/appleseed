@@ -84,9 +84,9 @@ namespace
           , m_uniform_reflectance(false)
           , m_uniform_shininess(false)
         {
-            m_inputs.declare("diffuse_reflectance", InputFormatSpectrum);
+            m_inputs.declare("diffuse_reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("diffuse_reflectance_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("glossy_reflectance", InputFormatSpectrum);
+            m_inputs.declare("glossy_reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("glossy_reflectance_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("fresnel_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("shininess_u", InputFormatScalar);

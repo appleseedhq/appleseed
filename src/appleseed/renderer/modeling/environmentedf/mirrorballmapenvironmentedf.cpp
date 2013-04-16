@@ -78,7 +78,7 @@ namespace
             const ParamArray&   params)
           : EnvironmentEDF(name, params)
         {
-            m_inputs.declare("radiance", InputFormatSpectrum);
+            m_inputs.declare("radiance", InputFormatSpectralIlluminance);
             m_inputs.declare("radiance_multiplier", InputFormatScalar, "1.0");
         }
 

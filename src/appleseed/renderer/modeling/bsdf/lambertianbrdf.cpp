@@ -75,7 +75,7 @@ namespace
           : BSDF(name, Reflective, params)
           , m_uniform_reflectance(false)
         {
-            m_inputs.declare("reflectance", InputFormatSpectrum);
+            m_inputs.declare("reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
         }
 

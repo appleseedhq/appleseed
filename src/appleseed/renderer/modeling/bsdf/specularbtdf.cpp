@@ -70,9 +70,9 @@ namespace
             const ParamArray&   params)
           : BSDF(name, Transmissive, params)
         {
-            m_inputs.declare("reflectance", InputFormatSpectrum);
+            m_inputs.declare("reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("transmittance", InputFormatSpectrum);
+            m_inputs.declare("transmittance", InputFormatSpectralReflectance);
             m_inputs.declare("transmittance_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("from_ior", InputFormatScalar);
             m_inputs.declare("to_ior", InputFormatScalar);

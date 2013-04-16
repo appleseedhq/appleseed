@@ -72,8 +72,8 @@ namespace
             const ParamArray&   params)
           : EnvironmentEDF(name, params)
         {
-            m_inputs.declare("horizon_radiance", InputFormatSpectrum);
-            m_inputs.declare("zenith_radiance", InputFormatSpectrum);
+            m_inputs.declare("horizon_radiance", InputFormatSpectralIlluminance);
+            m_inputs.declare("zenith_radiance", InputFormatSpectralIlluminance);
         }
 
         virtual void release() OVERRIDE

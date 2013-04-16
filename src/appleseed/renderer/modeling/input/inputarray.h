@@ -29,6 +29,9 @@
 #ifndef APPLESEED_RENDERER_MODELING_INPUT_INPUTARRAY_H
 #define APPLESEED_RENDERER_MODELING_INPUT_INPUTARRAY_H
 
+// appleseed.renderer headers.
+#include "renderer/modeling/input/inputformat.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/vector.h"
@@ -47,18 +50,6 @@ namespace renderer      { class TextureCache; }
 
 namespace renderer
 {
-
-//
-// Supported input formats.
-//
-
-enum InputFormat
-{
-    InputFormatScalar,
-    InputFormatSpectrum,
-    InputFormatEntity
-};
-
 
 //
 // A collection of named and typed inputs.

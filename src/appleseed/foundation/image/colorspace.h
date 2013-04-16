@@ -323,6 +323,12 @@ void ciexyz_reflectance_to_spectrum(
     const Color<T, 3>&          xyz,
     Spectrum&                   spectrum);
 
+// Convert an illuminance in the CIE XYZ color space to a spectrum.
+template <typename T, typename Spectrum>
+void ciexyz_illuminance_to_spectrum(
+    const Color<T, 3>&          xyz,
+    Spectrum&                   spectrum);
+
 
 //
 // Convert the CIE xy chromaticity of a D series (daylight) illuminant to a spectrum.
@@ -759,6 +765,16 @@ void ciexyz_reflectance_to_spectrum(
         spectrum);
 }
 
+template <typename T, typename Spectrum>
+void ciexyz_illuminance_to_spectrum(
+    const Color<T, 3>&          xyz,
+    Spectrum&                   spectrum)
+{
+    linear_rgb_illuminance_to_spectrum(
+        ciexyz_to_linear_rgb(xyz),
+        spectrum);
+}
+
 
 //
 // Convert the CIE xy chromaticity of a D series (daylight) illuminant to a spectrum.
@@ -878,7 +894,7 @@ void linear_rgb_reflectance_to_spectrum(
         RGBToSpectrumBlueReflectance,
         spectrum);
 
-    spectrum = clamp_low(spectrum, 0.0f);
+    spectrum = clamp(spectrum, 0.0f, 1.0f);
 }
 
 template <typename T, typename Spectrum>

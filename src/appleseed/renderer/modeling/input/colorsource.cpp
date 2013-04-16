@@ -105,9 +105,31 @@ namespace
 
         return spectrum;
     }
+
+    void linear_rgb_to_spectrum(
+        const InputFormat       input_format,
+        const Color3f&          linear_rgb,
+        Spectrum&               spectrum)
+    {
+        if (input_format == InputFormatSpectralReflectance)
+        {
+            linear_rgb_reflectance_to_spectrum(
+                linear_rgb,
+                spectrum);
+        }
+        else
+        {
+            assert(input_format == InputFormatSpectralIlluminance);
+            linear_rgb_illuminance_to_spectrum(
+                linear_rgb,
+                spectrum);
+        }
+    }
 }
 
-ColorSource::ColorSource(const ColorEntity& color_entity)
+ColorSource::ColorSource(
+    const ColorEntity&          color_entity,
+    const InputFormat           input_format)
   : Source(true)
 {
     // todo: this should be user-settable.
@@ -151,19 +173,22 @@ ColorSource::ColorSource(const ColorEntity& color_entity)
         switch (color_space)
         {
           case ColorSpaceLinearRGB:
-            linear_rgb_reflectance_to_spectrum(
+            linear_rgb_to_spectrum(
+                input_format,
                 m_linear_rgb,
                 m_spectrum);
             break;
 
           case ColorSpaceSRGB:
-            linear_rgb_reflectance_to_spectrum(
+            linear_rgb_to_spectrum(
+                input_format,
                 srgb_to_linear_rgb(m_linear_rgb),
                 m_spectrum);
             break;
 
           case ColorSpaceCIEXYZ:
-            linear_rgb_reflectance_to_spectrum(
+            linear_rgb_to_spectrum(
+                input_format,
                 ciexyz_to_linear_rgb(m_linear_rgb),
                 m_spectrum);
             break;

@@ -89,9 +89,9 @@ namespace
             const ParamArray&   params)
           : BSDF(name, Reflective, params)
         {
-            m_inputs.declare("matte_reflectance", InputFormatSpectrum);
+            m_inputs.declare("matte_reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("matte_reflectance_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("specular_reflectance", InputFormatSpectrum);
+            m_inputs.declare("specular_reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("specular_reflectance_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("roughness", InputFormatScalar);
         }

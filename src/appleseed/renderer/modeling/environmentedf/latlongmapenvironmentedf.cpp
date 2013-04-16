@@ -162,7 +162,7 @@ namespace
           , m_importance_map_height(0)
           , m_probability_scale(0.0)
         {
-            m_inputs.declare("radiance", InputFormatSpectrum);
+            m_inputs.declare("radiance", InputFormatSpectralIlluminance);
             m_inputs.declare("radiance_multiplier", InputFormatScalar, "1.0");
 
             m_u_shift = m_params.get_optional<double>("horizontal_shift", 0.0) / 360.0;
@@ -214,12 +214,10 @@ namespace
             unit_square_to_angles(u, v, theta, phi);
             outgoing = Vector3d::unit_vector(theta, phi);
 
-            // todo: it would be more correct to use foundation::linear_rgb_illuminance_to_spectrum()
-            // to compute the spectral illuminance. However, since renderer::TextureSource currently
-            // uses foundation::linear_rgb_reflectance_to_spectrum() indiscriminately, we have to do
-            // the same in order to preserve consistency between the values returned by sample() and
-            // evaluate().
-            linear_rgb_reflectance_to_spectrum(payload.m_color, value);
+            // Compute the spectral illuminance.
+            linear_rgb_illuminance_to_spectrum(payload.m_color, value);
+
+            // Compute the probability of choosing this direction.
             probability = prob_xy * m_probability_scale / sin(theta);
         }
 
@@ -281,15 +279,15 @@ namespace
             double      m_radiance_multiplier;  // emitted radiance multiplier
         };
 
-        double                                  m_u_shift;
-        double                                  m_v_shift;
+        double  m_u_shift;
+        double  m_v_shift;
 
-        size_t                                  m_importance_map_width;
-        size_t                                  m_importance_map_height;
+        size_t  m_importance_map_width;
+        size_t  m_importance_map_height;
 
-        double                                  m_rcp_importance_map_width;
-        double                                  m_rcp_importance_map_height;
-        double                                  m_probability_scale;
+        double  m_rcp_importance_map_width;
+        double  m_rcp_importance_map_height;
+        double  m_probability_scale;
 
         auto_ptr<ImageImportanceSamplerType>    m_importance_sampler;
 

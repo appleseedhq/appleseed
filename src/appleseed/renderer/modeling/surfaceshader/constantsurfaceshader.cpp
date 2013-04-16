@@ -68,7 +68,7 @@ namespace
             const ParamArray&       params)
           : SurfaceShader(name, params)
         {
-            m_inputs.declare("color", InputFormatSpectrum);
+            m_inputs.declare("color", InputFormatSpectralIlluminance);
             m_inputs.declare("color_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("alpha_multiplier", InputFormatScalar, "1.0");
 

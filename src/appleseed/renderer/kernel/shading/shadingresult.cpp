@@ -103,17 +103,17 @@ namespace
 {
     inline void transform_linear_rgb_to_spectrum(Spectrum& s)
     {
-        linear_rgb_reflectance_to_spectrum(Color3f(s[0], s[1], s[2]), s);
+        linear_rgb_illuminance_to_spectrum(Color3f(s[0], s[1], s[2]), s);
     }
 
     inline void transform_srgb_to_spectrum(Spectrum& s)
     {
-        linear_rgb_reflectance_to_spectrum(srgb_to_linear_rgb(Color3f(s[0], s[1], s[2])), s);
+        linear_rgb_illuminance_to_spectrum(srgb_to_linear_rgb(Color3f(s[0], s[1], s[2])), s);
     }
 
     inline void transform_ciexyz_to_spectrum(Spectrum& s)
     {
-        ciexyz_reflectance_to_spectrum(Color3f(s[0], s[1], s[2]), s);
+        ciexyz_illuminance_to_spectrum(Color3f(s[0], s[1], s[2]), s);
     }
 }
 

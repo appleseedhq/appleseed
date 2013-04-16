@@ -102,7 +102,7 @@ namespace
             m_inputs.declare("diffuse", InputFormatScalar);
             m_inputs.declare("power", InputFormatScalar);
             m_inputs.declare("distortion", InputFormatScalar);
-            m_inputs.declare("albedo", InputFormatSpectrum);
+            m_inputs.declare("albedo", InputFormatSpectralReflectance);
         }
 
         virtual void release() OVERRIDE

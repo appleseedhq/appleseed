@@ -95,7 +95,8 @@ namespace
                 size += sizeof(double);
                 break;
 
-              case InputFormatSpectrum:
+              case InputFormatSpectralReflectance:
+              case InputFormatSpectralIlluminance:
                 size = align_to<Spectrum>(size);
                 size += sizeof(Spectrum);
                 size += sizeof(Alpha);
@@ -124,7 +125,8 @@ namespace
                 ptr += sizeof(double);
                 break;
 
-              case InputFormatSpectrum:
+              case InputFormatSpectralReflectance:
+              case InputFormatSpectralIlluminance:
                 ptr = align_to<Spectrum>(ptr);
                 if (m_source)
                 {
@@ -153,7 +155,8 @@ namespace
                 ptr += sizeof(double);
                 break;
 
-              case InputFormatSpectrum:
+              case InputFormatSpectralReflectance:
+              case InputFormatSpectralIlluminance:
                 ptr = align_to<Spectrum>(ptr);
                 if (m_source && m_source->is_uniform())
                 {

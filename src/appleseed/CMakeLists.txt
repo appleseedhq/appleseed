@@ -1293,6 +1293,7 @@ set (renderer_modeling_input_sources
     renderer/modeling/input/inputbinder.cpp
     renderer/modeling/input/inputbinder.h
     renderer/modeling/input/inputevaluator.h
+    renderer/modeling/input/inputformat.h
     renderer/modeling/input/scalarsource.h
     renderer/modeling/input/source.h
     renderer/modeling/input/symbol.h

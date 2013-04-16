@@ -71,8 +71,8 @@ namespace
             const ParamArray&   params)
           : EnvironmentEDF(name, params)
         {
-            m_inputs.declare("upper_hemi_radiance", InputFormatSpectrum);
-            m_inputs.declare("lower_hemi_radiance", InputFormatSpectrum);
+            m_inputs.declare("upper_hemi_radiance", InputFormatSpectralIlluminance);
+            m_inputs.declare("lower_hemi_radiance", InputFormatSpectralIlluminance);
         }
 
         virtual void release() OVERRIDE

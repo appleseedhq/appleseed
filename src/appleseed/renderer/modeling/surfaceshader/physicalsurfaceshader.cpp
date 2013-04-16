@@ -86,7 +86,7 @@ namespace
         {
             m_inputs.declare("color_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("alpha_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("aerial_persp_sky_color", InputFormatSpectrum, "");
+            m_inputs.declare("aerial_persp_sky_color", InputFormatSpectralIlluminance, "");
 
             const string aerial_persp_mode = m_params.get_optional<string>("aerial_persp_mode", "none");
             if (aerial_persp_mode == "none")

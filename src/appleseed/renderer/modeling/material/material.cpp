@@ -82,7 +82,7 @@ Material::Material(
     m_inputs.declare("edf", InputFormatEntity, "");
     m_inputs.declare("surface_shader", InputFormatEntity);
     m_inputs.declare("alpha_map", InputFormatScalar, "");
-    m_inputs.declare("displacement_map", InputFormatSpectrum, "");
+    m_inputs.declare("displacement_map", InputFormatSpectralReflectance, "");
 }
 
 void Material::release()
