@@ -902,6 +902,7 @@ void linear_rgb_illuminance_to_spectrum(
     const Color<T, 3>&          linear_rgb,
     Spectrum&                   spectrum)
 {
+    /* This gives an undesirable blue tint...
     impl::linear_rgb_to_spectrum(
         linear_rgb,
         RGBToSpectrumWhiteIlluminance,
@@ -911,6 +912,17 @@ void linear_rgb_illuminance_to_spectrum(
         RGBToSpectrumRedIlluminance,
         RGBToSpectrumGreenIlluminance,
         RGBToSpectrumBlueIlluminance,
+        spectrum); */
+
+    impl::linear_rgb_to_spectrum(
+        linear_rgb,
+        RGBToSpectrumWhiteReflectance,
+        RGBToSpectrumCyanReflectance,
+        RGBToSpectrumMagentaReflectance,
+        RGBToSpectrumYellowReflectance,
+        RGBToSpectrumRedReflectance,
+        RGBToSpectrumGreenReflectance,
+        RGBToSpectrumBlueReflectance,
         spectrum);
 
     spectrum = clamp_low(spectrum, 0.0f);
