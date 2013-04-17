@@ -485,9 +485,12 @@ namespace
                     project_filename.c_str(),
                     schema_path.string().c_str());
 
-            // Update the project.
-            ProjectFileUpdater updater;
-            updater.update(project.ref());
+            if (project.get())
+            {
+                // Update the project.
+                ProjectFileUpdater updater;
+                updater.update(project.ref());
+            }
 
             return project;
         }
