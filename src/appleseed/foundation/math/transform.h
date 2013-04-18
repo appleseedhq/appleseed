@@ -67,6 +67,9 @@ class Transform
         const MatrixType& local_to_parent,
         const MatrixType& parent_to_local);     // must be equal to inverse(local_to_parent)
 
+    // Construct and return an identity transform.
+    static TransformType make_identity();
+
     // Return the identity transform.
     static const Transform& identity();
 
@@ -115,9 +118,6 @@ class Transform
 
     // The identity transform returned by identity().
     static const TransformType m_identity;
-
-    // Construct and return an identity transform.
-    static TransformType make_identity();
 };
 
 // Exact inequality and equality tests.
@@ -207,13 +207,7 @@ inline Transform<T>::Transform(
   : m_local_to_parent(local_to_parent)
   , m_parent_to_local(parent_to_local)
 {
-    assert(feq(m_local_to_parent * m_parent_to_local, MatrixType::identity(), make_eps<T>(1.0e-4f, 1.0e-6)));
-}
-
-template <typename T>
-inline const Transform<T>& Transform<T>::identity()
-{
-    return m_identity;
+    assert(feq(m_local_to_parent * m_parent_to_local, MatrixType::make_identity(), make_eps<T>(1.0e-4f, 1.0e-6)));
 }
 
 template <typename T>
@@ -222,7 +216,13 @@ const Transform<T> Transform<T>::m_identity(Transform<T>::make_identity());
 template <typename T>
 Transform<T> Transform<T>::make_identity()
 {
-    return Transform(MatrixType::identity(), MatrixType::identity());
+    return Transform(MatrixType::make_identity(), MatrixType::make_identity());
+}
+
+template <typename T>
+inline const Transform<T>& Transform<T>::identity()
+{
+    return m_identity;
 }
 
 template <typename T>

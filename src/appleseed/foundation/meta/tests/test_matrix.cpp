@@ -376,7 +376,7 @@ TEST_SUITE(Foundation_Math_MatrixNN)
             EXPECT_FEQ(static_cast<float>(Values[i]), mf[i]);
     }
 
-    TEST_CASE(ConstructIdentityMatrix)
+    TEST_CASE(RetrieveIdentityMatrix)
     {
         static const double Values[] =
         {
@@ -506,7 +506,7 @@ TEST_SUITE(Foundation_Math_Matrix33)
 
 #endif
 
-    TEST_CASE(ConstructIdentityMatrix)
+    TEST_CASE(RetrieveIdentityMatrix)
     {
         static const double ExpectedValues[] =
         {
@@ -725,7 +725,7 @@ TEST_SUITE(Foundation_Math_Matrix44)
 
 #endif
 
-    TEST_CASE(ConstructIdentityMatrix)
+    TEST_CASE(RetrieveIdentityMatrix)
     {
         static const double ExpectedValues[] =
         {

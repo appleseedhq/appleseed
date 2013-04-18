@@ -44,10 +44,18 @@ TEST_SUITE(Foundation_Math_Transform)
 {
     TEST_CASE(Identity_ReturnsIdentityTransform)
     {
+        static const double ExpectedValues[] =
+        {
+             1.0, 0.0, 0.0, 0.0,
+             0.0, 1.0, 0.0, 0.0,
+             0.0, 0.0, 1.0, 0.0,
+             0.0, 0.0, 0.0, 1.0
+        };
+
         const Transformd transform(Transformd::identity());
 
-        EXPECT_EQ(Matrix4d::identity(), transform.get_local_to_parent());
-        EXPECT_EQ(Matrix4d::identity(), transform.get_parent_to_local());
+        EXPECT_SEQUENCE_EQ(16, ExpectedValues, &transform.get_local_to_parent()[0]);
+        EXPECT_SEQUENCE_EQ(16, ExpectedValues, &transform.get_parent_to_local()[0]);
     }
 
     struct FixtureTransformByIdentity

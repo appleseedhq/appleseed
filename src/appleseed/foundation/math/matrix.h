@@ -177,6 +177,9 @@ class Matrix<T, N, N>
     template <typename U>
     Matrix(const Matrix<U, N, N>& rhs);
 
+    // Construct and return an NxN identity matrix.
+    static MatrixType make_identity();
+
     // Return the NxN identity matrix.
     static const MatrixType& identity();
 
@@ -193,9 +196,6 @@ class Matrix<T, N, N>
 
     // The identity matrix returned by identity().
     static const MatrixType m_identity;
-
-    // Construct and return an NxN identity matrix.
-    static MatrixType make_identity();
 };
 
 // Matrix trace.
@@ -253,6 +253,9 @@ class Matrix<T, 3, 3>
     operator const Imath::Matrix33<T>&() const;
 
 #endif
+
+    // Construct and return a 3x3 identity matrix.
+    static MatrixType make_identity();
 
     // Return the 3x3 identity matrix.
     static const MatrixType& identity();
@@ -312,9 +315,6 @@ class Matrix<T, 3, 3>
 
     // The identity matrix returned by identity().
     static const MatrixType m_identity;
-
-    // Construct and return a 3x3 identity matrix.
-    static MatrixType make_identity();
 };
 
 // Rotate a given vector by a given angle around a given axis.
@@ -361,6 +361,9 @@ class Matrix<T, 4, 4>
     operator const Imath::Matrix44<T>&() const;
 
 #endif
+
+    // Construct and return a 4x4 identity matrix.
+    static MatrixType make_identity();
 
     // Return the 4x4 identity matrix.
     static const MatrixType& identity();
@@ -423,9 +426,6 @@ class Matrix<T, 4, 4>
 
     // The identity matrix returned by identity().
     static const MatrixType m_identity;
-
-    // Construct and return a 4x4 identity matrix.
-    static MatrixType make_identity();
 };
 
 
@@ -818,12 +818,6 @@ inline Matrix<T, N, N>::Matrix(const Matrix<U, N, N>& rhs)
 }
 
 template <typename T, size_t N>
-inline const Matrix<T, N, N>& Matrix<T, N, N>::identity()
-{
-    return m_identity;
-}
-
-template <typename T, size_t N>
 const Matrix<T, N, N> Matrix<T, N, N>::m_identity(Matrix<T, N, N>::make_identity());
 
 template <typename T, size_t N>
@@ -835,6 +829,12 @@ Matrix<T, N, N> Matrix<T, N, N>::make_identity()
         mat(i, i) = T(1.0);
 
     return mat;
+}
+
+template <typename T, size_t N>
+inline const Matrix<T, N, N>& Matrix<T, N, N>::identity()
+{
+    return m_identity;
 }
 
 template <typename T, size_t N>
@@ -1036,12 +1036,6 @@ inline Matrix<T, 3, 3>::operator const Imath::Matrix33<T>&() const
 #endif
 
 template <typename T>
-inline const Matrix<T, 3, 3>& Matrix<T, 3, 3>::identity()
-{
-    return m_identity;
-}
-
-template <typename T>
 const Matrix<T, 3, 3> Matrix<T, 3, 3>::m_identity(Matrix<T, 3, 3>::make_identity());
 
 template <typename T>
@@ -1054,6 +1048,12 @@ Matrix<T, 3, 3> Matrix<T, 3, 3>::make_identity()
     mat[8] = T(1.0);
     
     return mat;
+}
+
+template <typename T>
+inline const Matrix<T, 3, 3>& Matrix<T, 3, 3>::identity()
+{
+    return m_identity;
 }
 
 template <typename T>
@@ -1512,12 +1512,6 @@ inline Matrix<T, 4, 4>::operator const Imath::Matrix44<T>&() const
 #endif
 
 template <typename T>
-inline const Matrix<T, 4, 4>& Matrix<T, 4, 4>::identity()
-{
-    return m_identity;
-}
-
-template <typename T>
 const Matrix<T, 4, 4> Matrix<T, 4, 4>::m_identity(Matrix<T, 4, 4>::make_identity());
 
 template <typename T>
@@ -1531,6 +1525,12 @@ Matrix<T, 4, 4> Matrix<T, 4, 4>::make_identity()
     mat[15] = T(1.0);
 
     return mat;
+}
+
+template <typename T>
+inline const Matrix<T, 4, 4>& Matrix<T, 4, 4>::identity()
+{
+    return m_identity;
 }
 
 template <typename T>
