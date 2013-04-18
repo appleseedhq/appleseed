@@ -45,6 +45,7 @@
 #include "main/dllsymbol.h"
 
 // Standard headers.
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <cstddef>
@@ -883,6 +884,8 @@ void linear_rgb_reflectance_to_spectrum(
     const Color<T, 3>&          linear_rgb,
     Spectrum&                   spectrum)
 {
+    const T m = max_value(linear_rgb);
+
     impl::linear_rgb_to_spectrum(
         linear_rgb,
         RGBToSpectrumWhiteReflectance,
@@ -894,7 +897,7 @@ void linear_rgb_reflectance_to_spectrum(
         RGBToSpectrumBlueReflectance,
         spectrum);
 
-    spectrum = clamp(spectrum, 0.0f, 1.0f);
+    spectrum = clamp(spectrum, 0.0f, std::max(m, 1.0f));
 }
 
 template <typename T, typename Spectrum>
