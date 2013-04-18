@@ -65,10 +65,16 @@ struct SwitchException
 };
 
 // Call assert() when reaching an unhandled case.
-#define assert_otherwise                                        \
-    default:                                                    \
-      assert(!"Unhandled case in switch statement.");           \
-      break
+#if defined NDEBUG && defined _MSC_VER
+    #define assert_otherwise                                    \
+        default:                                                \
+           __assume(0)
+#else
+    #define assert_otherwise                                    \
+        default:                                                \
+          assert(!"Unhandled case in switch statement.");       \
+          break
+#endif
 
 // Throw a SwitchException when reaching an unhandled case.
 #define throw_otherwise                                         \
