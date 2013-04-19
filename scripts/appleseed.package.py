@@ -44,9 +44,9 @@ import sys
 import zipfile
 
 
-#
+#--------------------------------------------------------------------------------------------------
 # Utility functions.
-#
+#--------------------------------------------------------------------------------------------------
 
 def progress(message):
     print("  " + message + "...")
@@ -89,9 +89,9 @@ def copy_glob(input_pattern, output_path):
         shutil.copy(input_file, output_path)
 
 
-#
+#--------------------------------------------------------------------------------------------------
 # Settings.
-#
+#--------------------------------------------------------------------------------------------------
 
 class Settings:
     def load(self):
@@ -125,9 +125,9 @@ class Settings:
         print
 
 
-#
+#--------------------------------------------------------------------------------------------------
 # Package information.
-#
+#--------------------------------------------------------------------------------------------------
 
 class PackageInfo:
     def __init__(self, settings):
@@ -155,9 +155,9 @@ class PackageInfo:
         print
 
 
-#
+#--------------------------------------------------------------------------------------------------
 # Base package builder.
-#
+#--------------------------------------------------------------------------------------------------
 
 class PackageBuilder:
     def __init__(self, settings, package_info):
@@ -264,9 +264,9 @@ class PackageBuilder:
         safe_delete_directory("appleseed")
 
 
-#
+#--------------------------------------------------------------------------------------------------
 # Windows package builder.
-#
+#--------------------------------------------------------------------------------------------------
 
 class WindowsPackageBuilder(PackageBuilder):
     def alterate_stage(self):
@@ -284,9 +284,9 @@ class WindowsPackageBuilder(PackageBuilder):
         shutil.copy(src_filepath, dst_path)
 
 
-#
+#--------------------------------------------------------------------------------------------------
 # Mac package builder.
-#
+#--------------------------------------------------------------------------------------------------
 
 class MacPackageBuilder(PackageBuilder):
     def __init__(self, settings, package_info):
@@ -351,9 +351,9 @@ class MacPackageBuilder(PackageBuilder):
         shutil.copytree(src_path, dest_path)
 
 
-#
+#--------------------------------------------------------------------------------------------------
 # Linux package builder.
-#
+#--------------------------------------------------------------------------------------------------
 
 class LinuxPackageBuilder(PackageBuilder):
     def alterate_stage(self):
@@ -390,9 +390,9 @@ class LinuxPackageBuilder(PackageBuilder):
         shutil.copy("run-appleseed.sh", dest_path)
 
 
-#
+#--------------------------------------------------------------------------------------------------
 # Entry point.
-#
+#--------------------------------------------------------------------------------------------------
 
 def main():
     print "appleseed.package version " + VersionString
@@ -415,4 +415,5 @@ def main():
 
     package_builder.build_package()
 
-main()
+if __name__ == '__main__':
+    main()
