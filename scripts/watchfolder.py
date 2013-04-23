@@ -270,6 +270,8 @@ def main():
 
     # Compute the path to the command line appleseed renderer.
     args.appleseed_bin_path = os.path.join(args.appleseed_dir, APPLESEED_BIN)
+    if os.name == "nt":
+        args.appleseed_bin_path += ".exe"
 
     # Open the log file.
     log_dir = os.path.join(args.watch_dir, LOGS_DIR)
