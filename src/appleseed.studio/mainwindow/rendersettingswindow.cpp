@@ -419,7 +419,7 @@ void RenderSettingsWindow::create_system_panel(QLayout* parent)
     panel->container()->setLayout(layout);
 
     create_system_override_rendering_threads_settings(layout);
-    create_system_override_texture_cache_size_settings(layout);
+    create_system_override_texture_store_max_size_settings(layout);
 }
 
 void RenderSettingsWindow::create_system_override_rendering_threads_settings(QVBoxLayout* parent)
@@ -433,15 +433,15 @@ void RenderSettingsWindow::create_system_override_rendering_threads_settings(QVB
     connect(auto_rendering_threads, SIGNAL(toggled(bool)), rendering_threads, SLOT(setDisabled(bool)));
 }
 
-void RenderSettingsWindow::create_system_override_texture_cache_size_settings(QVBoxLayout* parent)
+void RenderSettingsWindow::create_system_override_texture_store_max_size_settings(QVBoxLayout* parent)
 {
-    QGroupBox* groupbox = create_checkable_groupbox("system.texture_cache_size.override", "Override");
+    QGroupBox* groupbox = create_checkable_groupbox("system.texture_store_max_size.override", "Override");
     parent->addWidget(groupbox);
 
     groupbox->setLayout(
         create_form_layout(
-            "Texture Cache Size:",
-            create_integer_input("system.texture_cache_size.value", 1, 1024 * 1024, "MB")));
+            "Texture Store Size:",
+            create_integer_input("system.texture_store_max_size.value", 1, 1024 * 1024, "MB")));
 }
 
 //---------------------------------------------------------------------------------------------
@@ -753,9 +753,9 @@ void RenderSettingsWindow::do_load_configuration(const Configuration& config)
         set_widget("system.rendering_threads.auto", rendering_threads == "auto");
     }
 
-    // System / Texture Cache Size.
-    set_widget("system.texture_cache_size.override", config.get_inherited_parameters().strings().exist("texture_cache_size"));
-    set_widget("system.texture_cache_size.value", get_config<size_t>(config, "texture_cache_size", 256 * 1024 * 1024) / (1024 * 1024));
+    // System / Texture Store Size.
+    set_widget("system.texture_store_max_size.override", config.get_inherited_parameters().exist_path("texture_store.max_size"));
+    set_widget("system.texture_store_max_size.value", get_config<size_t>(config, "texture_store.max_size", 256 * 1024 * 1024) / (1024 * 1024));
 }
 
 void RenderSettingsWindow::do_save_configuration(Configuration& config)
@@ -778,10 +778,10 @@ void RenderSettingsWindow::do_save_configuration(Configuration& config)
     }
     else config.get_parameters().strings().remove("rendering_threads");
 
-    // System / Texture Cache Size.
-    if (get_widget<bool>("system.texture_cache_size.override"))
-        set_config(config, "texture_cache_size", get_widget<size_t>("system.texture_cache_size.value") * 1024 * 1024);
-    else config.get_parameters().strings().remove("texture_cache_size");
+    // System / Texture Store Size.
+    if (get_widget<bool>("system.texture_store_max_size.override"))
+        set_config(config, "texture_store.max_size", get_widget<size_t>("system.texture_store_max_size.value") * 1024 * 1024);
+    else config.get_parameters().remove_path("texture_store.max_size");
 }
 
 void RenderSettingsWindow::load_directly_linked_values(const Configuration& config)

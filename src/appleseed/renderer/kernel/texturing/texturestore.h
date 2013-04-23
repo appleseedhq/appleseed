@@ -48,6 +48,7 @@
 namespace foundation    { class Statistics; }
 namespace foundation    { class Tile; }
 namespace renderer      { class Assemblies; }
+namespace renderer      { class ParamArray; }
 namespace renderer      { class Scene; }
 
 namespace renderer
@@ -103,7 +104,7 @@ class TextureStore
     // Constructor.
     TextureStore(
         const Scene&        scene,
-        const size_t        memory_limit = 16 * 1024 * 1024);
+        const ParamArray&   params = ParamArray());
 
     // Acquire an element from the cache. Thread-safe.
     TileRecord& acquire(const TileKey& key);
@@ -115,6 +116,13 @@ class TextureStore
     foundation::StatisticsVector get_statistics() const;
 
   private:
+    struct Parameters
+    {
+        const size_t m_memory_limit;
+
+        explicit Parameters(const ParamArray& params);
+    };
+
     class TileSwapper
       : public foundation::NonCopyable
     {
@@ -154,9 +162,10 @@ class TextureStore
         TileSwapper
     > TileCache;
 
-    boost::mutex    m_mutex;
-    TileSwapper     m_tile_swapper;
-    TileCache       m_tile_cache;
+    const Parameters        m_params;
+    boost::mutex            m_mutex;
+    TileSwapper             m_tile_swapper;
+    TileCache               m_tile_cache;
 };
 
 

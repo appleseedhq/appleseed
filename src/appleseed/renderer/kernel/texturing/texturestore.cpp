@@ -34,6 +34,7 @@
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/texture/texture.h"
+#include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
@@ -64,9 +65,10 @@ namespace renderer
 //
 
 TextureStore::TextureStore(
-    const Scene&    scene,
-    const size_t    memory_limit)
-  : m_tile_swapper(scene, memory_limit)
+    const Scene&        scene,
+    const ParamArray&   params)
+  : m_params(params)
+  , m_tile_swapper(scene, m_params.m_memory_limit)
   , m_tile_cache(m_tile_swapper)
 {
 }
@@ -77,6 +79,16 @@ StatisticsVector TextureStore::get_statistics() const
     stats.insert_size("peak size", m_tile_swapper.get_peak_memory_size());
 
     return StatisticsVector::make("texture store statistics", stats);
+}
+
+
+//
+// TextureStore::Parameters class implementation.
+//
+
+TextureStore::Parameters::Parameters(const ParamArray& params)
+  : m_memory_limit(params.get_optional<size_t>("max_size", 256 * 1024 * 1024))
+{
 }
 
 

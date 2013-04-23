@@ -51,6 +51,7 @@
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/scene.h"
+#include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -107,6 +108,7 @@ namespace
         const size_t            m_from_revision;
         const size_t            m_to_revision;
 
+        // Copy a key from one dictionary to another.
         static void copy_if_exist(
             Dictionary&         dest,
             const Dictionary&   src,
@@ -116,6 +118,7 @@ namespace
                 dest.strings().insert(key, src.strings().get(key));
         }
 
+        // Copy a key from one dictionary to another, and rename the key.
         static void copy_if_exist(
             Dictionary&         dest,
             const char*         dest_key,
@@ -126,45 +129,36 @@ namespace
                 dest.strings().insert(dest_key, src.strings().get(src_key));
         }
 
+        // Move a key from one dictionary to another at a given path.
         static void move_if_exist(
-            Dictionary&         dest,
-            Dictionary&         src,
-            const char*         key)
-        {
-            if (src.strings().exist(key))
-            {
-                dest.strings().insert(key, src.strings().get(key));
-                src.strings().remove(key);
-            }
-        }
-
-        static void move_if_exist(
-            Dictionary&         dest,
-            const char*         dest_key,
+            ParamArray&         dest,
+            const char*         dest_path,
             Dictionary&         src,
             const char*         src_key)
         {
             if (src.strings().exist(src_key))
             {
-                dest.strings().insert(dest_key, src.strings().get(src_key));
+                dest.insert_path(dest_path, src.strings().get(src_key));
                 src.strings().remove(src_key);
             }
         }
 
-        static void rename_if_exist(
-            Dictionary&         dic,
-            const char*         dest_key,
+        // Move a key to a new path in the same parameter array.
+        static void move_if_exist(
+            ParamArray&         params,
+            const char*         dest_path,
             const char*         src_key)
         {
-            move_if_exist(dic, dest_key, dic, src_key);
+            move_if_exist(params, dest_path, params, src_key);
         }
 
-        static void rename_if_exist(
+        // Helper function, same functionality as above.
+        static void move_if_exist(
             Entity&             entity,
-            const char*         dest_param,
-            const char*         src_param)
+            const char*         dest_path,
+            const char*         src_key)
         {
-            rename_if_exist(entity.get_parameters(), dest_param, src_param);
+            move_if_exist(entity.get_parameters(), dest_path, src_key);
         }
     };
 
@@ -309,8 +303,8 @@ namespace
         {
             if (strcmp(edf.get_model(), DiffuseEDFFactory().get_model()) == 0)
             {
-                rename_if_exist(edf, "radiance", "exitance");
-                rename_if_exist(edf, "radiance_multiplier", "exitance_multiplier");
+                move_if_exist(edf, "radiance", "exitance");
+                move_if_exist(edf, "radiance_multiplier", "exitance_multiplier");
             }
         }
 
@@ -320,12 +314,12 @@ namespace
                 strcmp(light.get_model(), PointLightFactory().get_model()) == 0 ||
                 strcmp(light.get_model(), SpotLightFactory().get_model()) == 0)
             {
-                rename_if_exist(light, "radiance", "exitance");
-                rename_if_exist(light, "radiance_multiplier", "exitance_multiplier");
+                move_if_exist(light, "radiance", "exitance");
+                move_if_exist(light, "radiance_multiplier", "exitance_multiplier");
             }
             else if (strcmp(light.get_model(), SunLightFactory().get_model()) == 0)
             {
-                rename_if_exist(light, "radiance_multiplier", "exitance_multiplier");
+                move_if_exist(light, "radiance_multiplier", "exitance_multiplier");
             }
         }
 
@@ -333,23 +327,47 @@ namespace
         {
             if (strcmp(edf.get_model(), ConstantEnvironmentEDFFactory().get_model()) == 0)
             {
-                rename_if_exist(edf, "radiance", "exitance");
+                move_if_exist(edf, "radiance", "exitance");
             }
             else if (strcmp(edf.get_model(), ConstantHemisphereEnvironmentEDFFactory().get_model()) == 0)
             {
-                rename_if_exist(edf, "upper_hemi_radiance", "upper_hemi_exitance");
-                rename_if_exist(edf, "lower_hemi_radiance", "lower_hemi_exitance");
+                move_if_exist(edf, "upper_hemi_radiance", "upper_hemi_exitance");
+                move_if_exist(edf, "lower_hemi_radiance", "lower_hemi_exitance");
             }
             else if (strcmp(edf.get_model(), GradientEnvironmentEDFFactory().get_model()) == 0)
             {
-                rename_if_exist(edf, "horizon_radiance", "horizon_exitance");
-                rename_if_exist(edf, "zenith_radiance", "zenith_exitance");
+                move_if_exist(edf, "horizon_radiance", "horizon_exitance");
+                move_if_exist(edf, "zenith_radiance", "zenith_exitance");
             }
             else if (strcmp(edf.get_model(), LatLongMapEnvironmentEDFFactory().get_model()) == 0 ||
                      strcmp(edf.get_model(), MirrorBallMapEnvironmentEDFFactory().get_model()) == 0)
             {
-                rename_if_exist(edf, "radiance", "exitance");
-                rename_if_exist(edf, "radiance_multiplier", "exitance_multiplier");
+                move_if_exist(edf, "radiance", "exitance");
+                move_if_exist(edf, "radiance_multiplier", "exitance_multiplier");
+            }
+        }
+    };
+
+
+    //
+    // Update from revision 4 to revision 5.
+    //
+
+    class Updater_4_to_5
+      : public Updater
+    {
+      public:
+        explicit Updater_4_to_5(Project& project)
+          : Updater(project, 4)
+        {
+        }
+
+        virtual void update() OVERRIDE
+        {
+            for (each<ConfigurationContainer> i = m_project.configurations(); i; ++i)
+            {
+                ParamArray& root = i->get_parameters();
+                move_if_exist(root, "texture_store.max_size", "texture_cache_size");
             }
         }
     };
@@ -367,8 +385,9 @@ bool ProjectFileUpdater::update(Project& project)
       case 1: ; // Nothing to do
       case 2: { Updater_2_to_3 updater(project); updater.update(); modified = true; }
       case 3: { Updater_3_to_4 updater(project); updater.update(); modified = true; }
+      case 4: { Updater_4_to_5 updater(project); updater.update(); modified = true; }
 
-      case 4:
+      case 5:
         // Project is up-to-date.
         break;
 

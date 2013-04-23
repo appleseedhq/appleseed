@@ -135,7 +135,7 @@ class RenderSettingsWindow
 
     void create_system_panel(QLayout* parent);
     void create_system_override_rendering_threads_settings(QVBoxLayout* parent);
-    void create_system_override_texture_cache_size_settings(QVBoxLayout* parent);
+    void create_system_override_texture_store_max_size_settings(QVBoxLayout* parent);
 
     void create_bounce_settings(QVBoxLayout* parent, const std::string& lighting_engine);
 

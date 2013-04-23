@@ -498,9 +498,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     Frame& frame = *m_project.get_frame();
 
     // Create the texture store.
-    TextureStore texture_store(
-        scene,
-        m_params.get_optional<size_t>("texture_cache_size", 256 * 1024 * 1024));
+    TextureStore texture_store(scene, m_params.child("texture_store"));
 
     // Create the light sampler.
     LightSampler light_sampler(scene);
