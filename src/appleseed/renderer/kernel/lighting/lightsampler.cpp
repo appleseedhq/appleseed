@@ -91,8 +91,9 @@ namespace
     }
 }
 
-LightSampler::LightSampler(const Scene& scene)
-  : m_total_emissive_area(0.0)
+LightSampler::LightSampler(const Scene& scene, const ParamArray& params)
+  : m_params(params)
+  , m_total_emissive_area(0.0)
 {
     RENDERER_LOG_INFO("collecting light emitters...");
 
@@ -116,10 +117,10 @@ LightSampler::LightSampler(const Scene& scene)
     m_rcp_emitting_triangle_count = 1.0 / m_emitting_triangles.size();
 
     // Prepare the CDFs for sampling.
-    if (m_emitter_cdf.valid())
-        m_emitter_cdf.prepare();
-    if (m_emitting_triangle_cdf.valid())
-        m_emitting_triangle_cdf.prepare();
+    if (m_non_physical_lights_cdf.valid())
+        m_non_physical_lights_cdf.prepare();
+    if (m_emitting_triangles_cdf.valid())
+        m_emitting_triangles_cdf.prepare();
 
     RENDERER_LOG_INFO(
         "found %s %s, %s emitting %s.",
@@ -174,11 +175,10 @@ void LightSampler::collect_non_physical_lights(
         light_info.m_light = &light;
         m_non_physical_lights.push_back(light_info);
 
+        // Insert the light into the CDF.
         // todo: compute importance.
         const double importance = 1.0;
-
-        // Insert the light into the CDF.
-        m_emitter_cdf.insert(light_index, importance);
+        m_non_physical_lights_cdf.insert(light_index, importance);
     }
 }
 
@@ -327,10 +327,9 @@ void LightSampler::collect_emitting_triangles(
                     const size_t emitting_triangle_index = m_emitting_triangles.size();
                     m_emitting_triangles.push_back(emitting_triangle);
 
-                    // Insert the light-emitting triangle into the CDFs.
-                    const double importance = 1.0;
-                    m_emitter_cdf.insert(emitting_triangle_index + m_non_physical_lights.size(), importance);
-                    m_emitting_triangle_cdf.insert(emitting_triangle_index, importance);
+                    // Insert the light-emitting triangle into the CDF.
+                    const double importance = m_params.m_importance_sampling ? area : 1.0;
+                    m_emitting_triangles_cdf.insert(emitting_triangle_index, importance);
 
                     // Keep track of the total area of the light-emitting triangles.
                     m_total_emissive_area += area;
@@ -341,16 +340,26 @@ void LightSampler::collect_emitting_triangles(
 }
 
 void LightSampler::sample_non_physical_lights(
-    const size_t                        light_index,
     const double                        time,
-    const Vector2d&                     s,
+    const Vector3d&                     s,
     LightSample&                        sample) const
 {
+    assert(m_non_physical_lights_cdf.valid());
+
+    const EmitterCDF::ItemWeightPair result = m_non_physical_lights_cdf.sample(s[0]);
+    const size_t light_index = result.first;
+    const double light_prob = result.second;
+
     sample.m_triangle = 0;
-    sample_non_physical_light(time, s, light_index, 1.0, sample);
+    sample_non_physical_light(
+        time,
+        Vector2d(s[1], s[2]),
+        light_index,
+        light_prob,
+        sample);
 
     assert(sample.m_light);
-    assert(sample.m_probability == 1.0);
+    assert(sample.m_probability > 0.0);
 }
 
 void LightSampler::sample_emitting_triangles(
@@ -358,9 +367,9 @@ void LightSampler::sample_emitting_triangles(
     const Vector3d&                     s,
     LightSample&                        sample) const
 {
-    assert(m_emitting_triangle_cdf.valid());
+    assert(m_emitting_triangles_cdf.valid());
 
-    const EmitterCDF::ItemWeightPair result = m_emitting_triangle_cdf.sample(s[0]);
+    const EmitterCDF::ItemWeightPair result = m_emitting_triangles_cdf.sample(s[0]);
     const size_t emitter_index = result.first;
     const double emitter_prob = result.second;
 
@@ -382,36 +391,32 @@ void LightSampler::sample(
     const Vector3d&                     s,
     LightSample&                        sample) const
 {
-    assert(m_emitter_cdf.valid());
+    assert(m_non_physical_lights_cdf.valid() || m_emitting_triangles_cdf.valid());
 
-    const EmitterCDF::ItemWeightPair result = m_emitter_cdf.sample(s[0]);
-    const size_t emitter_index = result.first;
-    const double emitter_prob = result.second;
-
-    if (emitter_index < m_non_physical_light_count)
+    if (m_non_physical_lights_cdf.valid())
     {
-        sample.m_triangle = 0;
-        sample_non_physical_light(
-            time,
-            Vector2d(s[1], s[2]),
-            emitter_index,
-            emitter_prob,
-            sample);
-    }
-    else
-    {
-        sample.m_light = 0;
-        sample_emitting_triangle(
-            time,
-            Vector2d(s[1], s[2]),
-            emitter_index - m_non_physical_light_count,
-            emitter_prob,
-            sample);
-    }
+        if (m_emitting_triangles_cdf.valid())
+        {
+            if (s[0] < 0.5)
+            {
+                sample_non_physical_lights(
+                    time,
+                    Vector3d(s[0] * 2.0, s[1], s[2]),
+                    sample);
+            }
+            else
+            {
+                sample_emitting_triangles(
+                    time,
+                    Vector3d((s[0] - 0.5) * 2.0, s[1], s[2]),
+                    sample);
+            }
 
-    assert(sample.m_triangle || sample.m_light);
-    assert(sample.m_triangle == 0 || sample.m_triangle->m_edf);
-    assert(sample.m_probability > 0.0);
+            sample.m_probability *= 0.5;
+        }
+        else sample_non_physical_lights(time, s, sample);
+    }
+    else sample_emitting_triangles(time, s, sample);
 }
 
 void LightSampler::sample_non_physical_light(
@@ -467,7 +472,17 @@ void LightSampler::sample_emitting_triangle(
     sample.m_geometric_normal = triangle.m_geometric_normal;
 
     // Compute the probability of choosing this sample.
-    sample.m_probability = triangle.m_rcp_area * m_rcp_emitting_triangle_count;
+    sample.m_probability = triangle_prob * triangle.m_rcp_area;
+}
+
+
+//
+// LightSampler::Parameters class implementation.
+//
+
+LightSampler::Parameters::Parameters(const ParamArray& params)
+  : m_importance_sampling(params.get_optional<bool>("enable_importance_sampling", false))
+{
 }
 
 }   // namespace renderer

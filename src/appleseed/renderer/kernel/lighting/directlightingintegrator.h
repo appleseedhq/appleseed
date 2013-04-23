@@ -382,7 +382,7 @@ void DirectLightingIntegrator::sample_lights_low_variance(
             const foundation::Vector2d s = sampling_context.next_vector2<2>();
 
             LightSample sample;
-            m_light_sampler.sample_non_physical_lights(i, m_time, s, sample);
+            m_light_sampler.sample_non_physical_light(m_time, s, i, sample);
 
             add_non_physical_light_sample_contribution(
                 sample,

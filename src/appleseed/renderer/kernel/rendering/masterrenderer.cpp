@@ -501,7 +501,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     TextureStore texture_store(scene, m_params.child("texture_store"));
 
     // Create the light sampler.
-    LightSampler light_sampler(scene);
+    LightSampler light_sampler(scene, m_params.child("light_sampler"));
 
     // Create the shading engine.
     ShadingEngine shading_engine(m_params.child("shading_engine"));

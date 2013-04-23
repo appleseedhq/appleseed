@@ -117,7 +117,9 @@ class LightSampler
 {
   public:
     // Constructor.
-    explicit LightSampler(const Scene& scene);
+    LightSampler(
+        const Scene&                        scene,
+        const ParamArray&                   params = ParamArray());
 
     // Return the number of non-physical lights in the scene.
     size_t get_non_physical_light_count() const;
@@ -130,9 +132,15 @@ class LightSampler
 
     // Sample the set of non-physical lights.
     void sample_non_physical_lights(
-        const size_t                        light_index,
+        const double                        time,
+        const foundation::Vector3d&         s,
+        LightSample&                        sample) const;
+
+    // Sample a single given non-physical light.
+    void sample_non_physical_light(
         const double                        time,
         const foundation::Vector2d&         s,
+        const size_t                        light_index,
         LightSample&                        sample) const;
 
     // Sample the set of emitting triangles.
@@ -151,9 +159,18 @@ class LightSampler
     double evaluate_pdf(const ShadingPoint& result) const;
 
   private:
+    struct Parameters
+    {
+        const bool m_importance_sampling;
+
+        explicit Parameters(const ParamArray& params);
+    };
+
     typedef std::vector<NonPhysicalLightInfo> NonPhysicalLightVector;
     typedef std::vector<EmittingTriangle> EmittingTriangleVector;
     typedef foundation::CDF<size_t, double> EmitterCDF;
+
+    const Parameters            m_params;
 
     NonPhysicalLightVector      m_non_physical_lights;
     size_t                      m_non_physical_light_count;
@@ -163,8 +180,8 @@ class LightSampler
     double                      m_rcp_total_emissive_area;
     double                      m_rcp_emitting_triangle_count;
 
-    EmitterCDF                  m_emitter_cdf;
-    EmitterCDF                  m_emitting_triangle_cdf;
+    EmitterCDF                  m_non_physical_lights_cdf;
+    EmitterCDF                  m_emitting_triangles_cdf;
 
     // Recursively collect non-physical lights from a given set of assembly instances.
     void collect_non_physical_lights(
@@ -215,17 +232,68 @@ inline size_t LightSampler::get_emitting_triangle_count() const
 
 inline bool LightSampler::has_lights_or_emitting_triangles() const
 {
-    return m_emitter_cdf.valid();
+    return m_non_physical_lights_cdf.valid() || m_emitting_triangles_cdf.valid();
+}
+
+inline void LightSampler::sample_non_physical_light(
+    const double                            time,
+    const foundation::Vector2d&             s,
+    const size_t                            light_index,
+    LightSample&                            sample) const
+{
+    sample_non_physical_light(time, s, light_index, 1.0, sample);
 }
 
 inline double LightSampler::evaluate_pdf(const ShadingPoint& result) const
 {
-    const foundation::Vector3d& v0 = result.get_vertex(0);
-    const foundation::Vector3d& v1 = result.get_vertex(1);
-    const foundation::Vector3d& v2 = result.get_vertex(2);
-    const foundation::Vector3d n = foundation::cross(v1 - v0, v2 - v0);
-    const double pdf_point = 2.0 / foundation::norm(n);
-    return pdf_point * m_rcp_emitting_triangle_count;
+    if (m_params.m_importance_sampling)
+    {
+        //
+        // The probability density of a given triangle is
+        //
+        //                     triangle area
+        //   pdf_triangle = -------------------
+        //                  total emissive area
+        //
+        // The probability density of a given point on a given triangle is
+        //
+        //                    1.0
+        //   pdf_point = -------------
+        //               triangle area
+        //
+        // The probability density of a given light sample is thus
+        //
+        //                                                   1.0
+        //   pdf_sample = pdf_triangle * pdf_point = -------------------
+        //                                           total emissive area
+        //
+
+        return m_rcp_total_emissive_area;
+    }
+    else
+    {
+        //
+        // The probability density of a given triangle is
+        //
+        //                         1.0
+        //   pdf_triangle = -------------------
+        //                  number of triangles
+        //
+        // The probability density of a given point on a given triangle is
+        //
+        //                    1.0
+        //   pdf_point = -------------
+        //               triangle area
+        //
+
+        const foundation::Vector3d& v0 = result.get_vertex(0);
+        const foundation::Vector3d& v1 = result.get_vertex(1);
+        const foundation::Vector3d& v2 = result.get_vertex(2);
+        const foundation::Vector3d n = foundation::cross(v1 - v0, v2 - v0);
+        const double pdf_point = 2.0 / foundation::norm(n);
+
+        return pdf_point * m_rcp_emitting_triangle_count;
+    }
 }
 
 }       // namespace renderer
