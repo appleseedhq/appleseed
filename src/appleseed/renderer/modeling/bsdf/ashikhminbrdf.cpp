@@ -463,7 +463,7 @@ namespace
 
             // Compute average diffuse and glossy reflectances.
             const double rd_avg = average_value(scaled_rd);
-            const double rg_avg = max(average_value(rval.m_scaled_rg), 0.1f);
+            const double rg_avg = average_value(rval.m_scaled_rg);
             const double sum = rd_avg + rg_avg;
             if (sum == 0.0)
                 return false;
