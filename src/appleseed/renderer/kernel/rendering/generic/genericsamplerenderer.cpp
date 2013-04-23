@@ -172,7 +172,10 @@ namespace
 
                     // Apply alpha premultiplication.
                     if (shading_point_ptr->hit())
+                    {
                         shading_result.m_color *= shading_result.m_alpha[0];
+                        shading_result.m_aovs *= shading_result.m_alpha[0];
+                    }
                 }
                 else
                 {
@@ -190,7 +193,10 @@ namespace
 
                     // Apply alpha premultiplication.
                     if (shading_point_ptr->hit())
+                    {
                         local_result.m_color *= local_result.m_alpha[0];
+                        local_result.m_aovs *= local_result.m_alpha[0];
+                    }
 
                     // Compositing.
                     shading_result.composite_over(local_result);
