@@ -259,8 +259,8 @@ def main():
     parser = argparse.ArgumentParser(description="Watch a directory and render any project file that appears in it.")
     parser.add_argument("-a", dest="appleseed_dir", metavar="DIR", required=True, help="set appleseed binaries directory")
     parser.add_argument("-w", dest="watch_dir", metavar="DIR", help="set watch directory")
-    parser.add_argument("-f", dest="output_format", metavar="EXTENSION", help="set output format (e.g. png, exr)")
-    parser.add_argument("-u", dest="user_name", metavar="NAME", help="set user name", default="anonymous")
+    parser.add_argument("-f", dest="output_format", metavar="EXTENSION", default="exr", help="set output format (e.g. png, exr)")
+    parser.add_argument("-u", dest="user_name", metavar="NAME", default="anonymous", help="set user name")
     parser.add_argument("-p", dest="args", metavar="ARG", nargs="*", help="forward additional arguments to appleseed")
     args = parser.parse_args()
 
