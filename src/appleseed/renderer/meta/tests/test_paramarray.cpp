@@ -62,6 +62,46 @@ TEST_SUITE(Renderer_Global_ParamArray)
         EXPECT_EQ("42", string(value));
     }
 
+    TEST_CASE(ExistPath_GivenNameOfExistingItem_ReturnsTrue)
+    {
+        ParamArray params;
+        params.insert_path("a", 42);
+
+        EXPECT_TRUE(params.exist_path("a"));
+    }
+
+    TEST_CASE(ExistPath_GivenNameOfNonExistingItem_ReturnsFalse)
+    {
+        ParamArray params;
+        params.insert_path("a", 42);
+
+        EXPECT_FALSE(params.exist_path("b"));
+    }
+
+    TEST_CASE(ExistPath_GivenPathToExistingItem_ReturnsTrue)
+    {
+        ParamArray params;
+        params.insert_path("a.b.c", 42);
+
+        EXPECT_TRUE(params.exist_path("a.b.c"));
+    }
+
+    TEST_CASE(ExistPath_GivenPath1ToNonExistingItem_ReturnsFalse)
+    {
+        ParamArray params;
+        params.insert_path("a.b.c", 42);
+
+        EXPECT_FALSE(params.exist_path("a.b.x"));
+    }
+
+    TEST_CASE(ExistPath_GivenPath2ToNonExistingItem_ReturnsFalse)
+    {
+        ParamArray params;
+        params.insert_path("a.b.c", 42);
+
+        EXPECT_FALSE(params.exist_path("a.x.c"));
+    }
+
     TEST_CASE(GetPath_GivenItemName_ReturnsItemValue)
     {
         ParamArray params;
@@ -102,6 +142,58 @@ TEST_SUITE(Renderer_Global_ParamArray)
         {
             const char* value = params.get_path("other.x");
         });
+    }
+
+    TEST_CASE(RemovePath_GivenNameOfExistingItem_RemovesItem)
+    {
+        ParamArray params;
+        params.insert("a", 42);
+
+        params.remove_path("a");
+
+        EXPECT_FALSE(params.exist_path("a"));
+    }
+
+    TEST_CASE(RemovePath_GivenNameOfNonExistingItem_DoesNothing)
+    {
+        ParamArray params;
+        params.insert("a", 42);
+
+        params.remove_path("b");
+
+        EXPECT_TRUE(params.exist_path("a"));
+    }
+
+    TEST_CASE(RemovePath_GivenPathToExistingItem_RemovesItemButKeepsParents)
+    {
+        ParamArray params;
+        params.insert_path("a.b.c", 42);
+
+        params.remove_path("a.b.c");
+
+        EXPECT_FALSE(params.exist_path("a.b.c"));
+        EXPECT_TRUE(params.dictionaries().exist("a"));
+        EXPECT_TRUE(params.dictionaries().get("a").dictionaries().exist("b"));
+    }
+
+    TEST_CASE(RemovePath_GivenPath1ToNonExistingItem_DoesNothing)
+    {
+        ParamArray params;
+        params.insert_path("a.b.c", 42);
+
+        params.remove_path("a.b.x");
+
+        EXPECT_TRUE(params.exist_path("a.b.c"));
+    }
+
+    TEST_CASE(RemovePath_GivenPath2ToNonExistingItem_DoesNothing)
+    {
+        ParamArray params;
+        params.insert_path("a.b.c", 42);
+
+        params.remove_path("a.x.c");
+
+        EXPECT_TRUE(params.exist_path("a.b.c"));
     }
 
     TEST_CASE(Merge_GivenOneIntInSourceAndOneIntInDestWithDifferentNames_InsertsDestIntIntoSource)

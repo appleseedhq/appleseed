@@ -123,6 +123,9 @@ class DLLSYMBOL ParamArray
     template <typename T> ParamArray& insert_path(const char* path, const T& value);
     template <typename T> ParamArray& insert_path(const std::string& path, const T& value);
 
+    // Return true if an item at a given path exists.
+    bool exist_path(const char* path) const;
+
     // Retrieve an item in a given hierarchy.
     const char* get_path(const char* path) const;
 
@@ -141,6 +144,9 @@ class DLLSYMBOL ParamArray
         const T&                default_value = T(),
         const StringVec&        allowed_values = StringVec(),
         const MessageContext&   message_context = MessageContext()) const;
+
+    // Remove an item at a given path, if it exists.
+    ParamArray& remove_path(const char* path);
 
     // Return a child set of parameters, or create it if it doesn't exist.
     ParamArray& push(const char* name);

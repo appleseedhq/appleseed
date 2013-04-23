@@ -97,6 +97,28 @@ ParamArray& ParamArray::insert_path(const char* path, const char* value)
     return *this;
 }
 
+bool ParamArray::exist_path(const char* path) const
+{
+    assert(path);
+
+    vector<string> parts;
+    tokenize(path, PartSeparator, parts);
+
+    assert(!parts.empty());
+
+    const Dictionary* leaf = this;
+
+    for (size_t i = 0; i < parts.size() - 1; ++i)
+    {
+        if (!leaf->dictionaries().exist(parts[i]))
+            return false;
+
+        leaf = &leaf->dictionary(parts[i]);
+    }
+
+    return leaf->strings().exist(parts.back().c_str());
+}
+
 const char* ParamArray::get_path(const char* path) const
 {
     assert(path);
@@ -111,7 +133,31 @@ const char* ParamArray::get_path(const char* path) const
     for (size_t i = 0; i < parts.size() - 1; ++i)
         leaf = &leaf->dictionary(parts[i]);
 
-    return leaf->get(parts.back().c_str());
+    return leaf->strings().get(parts.back().c_str());
+}
+
+ParamArray& ParamArray::remove_path(const char* path)
+{
+    assert(path);
+
+    vector<string> parts;
+    tokenize(path, PartSeparator, parts);
+
+    assert(!parts.empty());
+
+    Dictionary* leaf = this;
+
+    for (size_t i = 0; i < parts.size() - 1; ++i)
+    {
+        if (!leaf->dictionaries().exist(parts[i]))
+            return *this;
+
+        leaf = &leaf->dictionary(parts[i]);
+    }
+
+    leaf->strings().remove(parts.back().c_str());
+
+    return *this;
 }
 
 ParamArray& ParamArray::push(const char* name)
