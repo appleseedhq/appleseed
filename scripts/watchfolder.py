@@ -35,6 +35,7 @@ import shutil
 import subprocess
 import sys
 import time
+import traceback
 import xml.dom.minidom
 
 
@@ -71,7 +72,8 @@ class Console:
 
     @staticmethod
     def format_message(msg):
-        return "[{0}] {1}".format(datetime.datetime.now(), msg)
+        now = datetime.datetime.now()
+        return "\n".join("[{0}] {1}".format(now, line) for line in msg.splitlines())
 
     @staticmethod
     def info(msg):
@@ -127,7 +129,7 @@ class Log:
         self.reset()
 
     def message(self, msg):
-        self.emit("{0} : {1} : {2} : {3}".format(xstr(self.project_file), xstr(self.start_time), xstr(self.end_time), xstr(msg)))
+        self.emit("\n".join("{0} : {1} : {2} : {3}".format(xstr(self.project_file), xstr(self.start_time), xstr(self.end_time), line) for line in msg.splitlines()))
 
     def emit(self, msg):
         with open(self.path, "a") as file:
@@ -286,16 +288,19 @@ def main():
     while True:
         try:
             while watch(args, log): pass
-            time.sleep(3)
         except KeyboardInterrupt, SystemExit:
             msg = "Exiting..."
             Console.info(msg)
             log.message(msg)
             break
         except:
-            msg = "Unexpected error: {0}.".format(sys.exc_info()[0])
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
+            msg = "".join(line for line in lines)
             Console.error(msg)
             log.message(msg)
+        finally:
+            time.sleep(3)
 
 if __name__ == '__main__':
     main()
