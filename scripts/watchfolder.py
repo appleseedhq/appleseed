@@ -43,6 +43,7 @@ import xml.dom.minidom
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
+VERSION = "1.0"
 OUTPUT_DIR = "_output"
 COMPLETED_DIR = "_completed"
 LOGS_DIR = "_logs"
@@ -252,10 +253,10 @@ def print_appleseed_version(args, log):
         p = subprocess.Popen([args.appleseed_bin_path, "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         version_string = p.communicate()[1].split(os.linesep, 1)[0]
         msg = "Running {0}.".format(version_string)
-        print(msg)
+        Console.info(msg)
         log.message(msg)
     except OSError:
-        print("Failed to query {0} version.".format(APPLESEED_BIN))
+        Console.error("Failed to query {0} version.".format(APPLESEED_BIN))
         sys.exit(1)
 
 
@@ -288,8 +289,10 @@ def main():
     safe_mkdir(log_dir)
     log = Log(os.path.join(log_dir, log_filename))
 
+    Console.info("Running watchfolder.py version {0}.".format(VERSION))
     print_appleseed_version(args, log)
-    print('Watching directory "{0}"'.format(args.watch_dir))
+
+    Console.info('Watching directory "{0}"'.format(args.watch_dir))
 
     # Main watch loop.
     while True:
