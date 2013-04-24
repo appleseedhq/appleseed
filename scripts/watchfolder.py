@@ -47,6 +47,7 @@ OUTPUT_DIR = "_output"
 COMPLETED_DIR = "_completed"
 LOGS_DIR = "_logs"
 APPLESEED_BIN = "appleseed.cli"
+PAUSE_BETWEEN_CHECKS = 3    # in seconds
 
 
 #--------------------------------------------------------------------------------------------------
@@ -188,34 +189,40 @@ def is_project_renderable(project_file):
 
     return False
 
-def render_project(args, project_file):
-    Console.success('Rendering "{0}"...'.format(project_file))
+def render_project(args, project_filepath):
+    Console.success('Rendering "{0}"...'.format(project_filepath))
 
     # Rename the project file so others don't try to render it.
-    suffix = "." + args.user_name
-    os.rename(project_file, project_file + suffix)
-    project_file += suffix
+    original_project_filepath = project_filepath
+    project_filepath += "." + args.user_name
+    os.rename(original_project_filepath, project_filepath)
 
-    # Create shell command.
-    project_filename = os.path.split(project_file)[1]
-    output_filename = os.path.splitext(project_filename)[0] + '.' + args.output_format
-    output_filepath = os.path.join(args.watch_dir, OUTPUT_DIR, output_filename)
-    command = '"{0}" -o "{1}" "{2}"'.format(args.appleseed_bin_path, output_filepath, project_file)
-    if args.args:
-        command += ' {0}'.format(" ".join(args.args))
+    try:
+        # Create shell command.
+        project_filename = os.path.split(project_filepath)[1]
+        output_filename = os.path.splitext(original_project_filepath)[0] + '.' + args.output_format
+        output_filepath = os.path.join(args.watch_dir, OUTPUT_DIR, output_filename)
+        command = '"{0}" -o "{1}" "{2}"'.format(args.appleseed_bin_path, output_filepath, project_filepath)
+        if args.args:
+            command += ' {0}'.format(" ".join(args.args))
 
-    # Make sure the output directory exists.
-    safe_mkdir(os.path.join(args.watch_dir, OUTPUT_DIR))
+        # Make sure the output directory exists.
+        safe_mkdir(os.path.join(args.watch_dir, OUTPUT_DIR))
 
-    # Execute command.
-    result = subprocess.call(command, shell=True)
-    if result != 0:
-        Console.warning('File may not have rendered correctly: "{0}".'.format(project_file))
+        # Execute command.
+        result = subprocess.call(command, shell=True)
+        if result != 0:
+            raise Exception()
 
-    # Move the file into the completed directory.
-    safe_mkdir(os.path.join(args.watch_dir, COMPLETED_DIR))
-    move_dest = os.path.join(args.watch_dir, COMPLETED_DIR, os.path.split(project_file)[1])
-    shutil.move(project_file, move_dest)
+        # Everything went well, move the file into the completed directory.
+        safe_mkdir(os.path.join(args.watch_dir, COMPLETED_DIR))
+        move_dest = os.path.join(args.watch_dir, COMPLETED_DIR, os.path.split(original_project_filepath)[1])
+        shutil.move(project_filepath, move_dest)
+    except:
+        # Something failed, rename the project file back to its original name.
+        Console.warning('File may not have rendered correctly: "{0}".'.format(original_project_filepath))
+        os.rename(project_filepath, original_project_filepath)
+        raise
 
 def watch(args, log):
     # Look for project files in the watch directory.
@@ -288,6 +295,7 @@ def main():
     while True:
         try:
             while watch(args, log): pass
+            time.sleep(PAUSE_BETWEEN_CHECKS)
         except KeyboardInterrupt, SystemExit:
             msg = "Exiting..."
             Console.info(msg)
@@ -299,8 +307,7 @@ def main():
             msg = "".join(line for line in lines)
             Console.error(msg)
             log.message(msg)
-        finally:
-            time.sleep(3)
+            time.sleep(PAUSE_BETWEEN_CHECKS)
 
 if __name__ == '__main__':
     main()
