@@ -493,7 +493,7 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     edf_value *= static_cast<float>(weight / bsdf_prob);
     edf_value *= bsdf_value;
     radiance += edf_value;
-    aovs.add(edf->get_render_layer_index(), radiance);
+    aovs.add(edf->get_render_layer_index(), edf_value);
 }
 
 template <typename WeightingFunction>
@@ -622,7 +622,7 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     edf_value *= static_cast<float>(weight);
     edf_value *= bsdf_value;
     radiance += edf_value;
-    aovs.add(edf->get_render_layer_index(), radiance);
+    aovs.add(edf->get_render_layer_index(), edf_value);
 }
 
 }       // namespace renderer

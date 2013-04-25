@@ -82,9 +82,11 @@ void DirectLightingIntegrator::sample_bsdf_and_lights(
     else
     {
         Spectrum radiance_light_sampling;
+        SpectrumStack aovs_light_sampling(aovs.size());
         sample_bsdf(sampling_context, DirectLightingIntegrator::mis_power2, radiance, aovs);
-        sample_lights(sampling_context, DirectLightingIntegrator::mis_power2, radiance_light_sampling, aovs);
+        sample_lights(sampling_context, DirectLightingIntegrator::mis_power2, radiance_light_sampling, aovs_light_sampling);
         radiance += radiance_light_sampling;
+        aovs += aovs_light_sampling;
     }
 }
 
@@ -98,9 +100,11 @@ void DirectLightingIntegrator::sample_bsdf_and_lights_low_variance(
     else
     {
         Spectrum radiance_light_sampling;
+        SpectrumStack aovs_light_sampling(aovs.size());
         sample_bsdf(sampling_context, DirectLightingIntegrator::mis_power2, radiance, aovs);
-        sample_lights_low_variance(sampling_context, DirectLightingIntegrator::mis_power2, radiance_light_sampling, aovs);
+        sample_lights_low_variance(sampling_context, DirectLightingIntegrator::mis_power2, radiance_light_sampling, aovs_light_sampling);
         radiance += radiance_light_sampling;
+        aovs += aovs_light_sampling;
     }
 }
 
@@ -211,7 +215,7 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     light_value *= static_cast<float>(weight);
     light_value *= bsdf_value;
     radiance += light_value;
-    aovs.add(sample.m_light->get_render_layer_index(), radiance);
+    aovs.add(sample.m_light->get_render_layer_index(), light_value);
 }
 
 }   // namespace renderer
