@@ -395,9 +395,8 @@ TriangleTree::TriangleTree(const Arguments& arguments)
     Stopwatch<DefaultWallclockTimer> stopwatch;
     stopwatch.start();
 
-    Statistics statistics;
-
     // Build the tree.
+    Statistics statistics;
     if (algorithm == "bvh")
         build_bvh(arguments, params, time, save_memory, statistics);
     else build_sbvh(arguments, params, time, save_memory, statistics);
