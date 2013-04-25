@@ -442,10 +442,13 @@ bool Frame::write_main_image(const char* file_path) const
 {
     assert(file_path);
 
+    Image transformed_image(*impl->m_image);
+    transform_to_output_color_space(transformed_image);
+
     const ImageAttributes image_attributes =
         ImageAttributes::create_default_attributes();
 
-    return write_image(file_path, *impl->m_image, image_attributes);
+    return write_image(file_path, transformed_image, image_attributes);
 }
 
 bool Frame::write_aov_images(const char* file_path) const
@@ -470,6 +473,7 @@ bool Frame::write_aov_images(const char* file_path) const
                 base_file_name + "." + impl->m_aov_images->get_name(i) + extension;
             const string aov_file_path = (directory / aov_file_name).string();
 
+            // Note: AOVs are always in the linear color space.
             if (!write_image(
                     aov_file_path.c_str(),
                     impl->m_aov_images->get_image(i),
@@ -498,10 +502,13 @@ bool Frame::archive(
     if (output_path)
         *output_path = duplicate_string(file_path.c_str());
 
+    Image transformed_image(*impl->m_image);
+    transform_to_output_color_space(transformed_image);
+
     return
         write_image(
             file_path.c_str(),
-            *impl->m_image,
+            transformed_image,
             ImageAttributes::create_default_attributes());
 }
 
@@ -646,9 +653,6 @@ bool Frame::write_image(
 {
     assert(file_path);
 
-    Image final_image(image);
-    transform_to_output_color_space(final_image);
-
     Stopwatch<DefaultWallclockTimer> stopwatch;
     stopwatch.start();
 
@@ -657,7 +661,7 @@ bool Frame::write_image(
         try
         {
             GenericImageFileWriter writer;
-            writer.write(file_path, final_image, image_attributes);
+            writer.write(file_path, image, image_attributes);
         }
         catch (const ExceptionUnsupportedFileFormat&)
         {
@@ -669,7 +673,7 @@ bool Frame::write_image(
                 extension.c_str());
 
             EXRImageFileWriter writer;
-            writer.write(file_path, final_image, image_attributes);
+            writer.write(file_path, image, image_attributes);
         }
     }
     catch (const ExceptionIOError&)
