@@ -104,7 +104,8 @@ Vector<T, 2> sample_disk_uniform_alt(const Vector<T, 2>& s);
 // Other sampling functions.
 //
 
-// Map a uniform sample in [0,1)^2 to a direction in the cone with its apex at the origin and extending toward Y+.
+// Map a uniform sample in [0,1)^2 to a direction in the cone with its apex at
+// the origin and extending toward Y+.
 template <typename T>
 Vector<T, 3> sample_cone_uniform(const Vector<T, 2>& s, const T cos_theta_max);
 template <typename T>
