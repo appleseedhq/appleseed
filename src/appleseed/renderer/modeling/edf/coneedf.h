@@ -26,63 +26,50 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "edffactoryregistrar.h"
+#ifndef APPLESEED_RENDERER_MODELING_EDF_CONEEDF_H
+#define APPLESEED_RENDERER_MODELING_EDF_CONEEDF_H
 
 // appleseed.renderer headers.
-#include "renderer/modeling/edf/coneedf.h"
-#include "renderer/modeling/edf/diffuseedf.h"
+#include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/edf/iedffactory.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/registrar.h"
+#include "foundation/platform/compiler.h"
+#include "foundation/utility/autoreleaseptr.h"
 
-using namespace foundation;
-using namespace std;
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+// Forward declarations.
+namespace foundation    { class DictionaryArray; }
+namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
 
-DEFINE_ARRAY(EDFFactoryArray);
+//
+// Cone-shaped EDF factory.
+//
 
-struct EDFFactoryRegistrar::Impl
+class DLLSYMBOL ConeEDFFactory
+  : public IEDFFactory
 {
-    Registrar<IEDFFactory> m_registrar;
+  public:
+    // Return a string identifying this EDF model.
+    virtual const char* get_model() const OVERRIDE;
+
+    // Return a human-readable string identifying this EDF model.
+    virtual const char* get_human_readable_model() const OVERRIDE;
+
+    // Return a set of widget definitions for this EDF model.
+    virtual foundation::DictionaryArray get_widget_definitions() const OVERRIDE;
+
+    // Create a new EDF instance.
+    virtual foundation::auto_release_ptr<EDF> create(
+        const char*         name,
+        const ParamArray&   params) const OVERRIDE;
 };
 
-EDFFactoryRegistrar::EDFFactoryRegistrar()
-  : impl(new Impl())
-{
-    register_factory(auto_ptr<FactoryType>(new ConeEDFFactory()));
-    register_factory(auto_ptr<FactoryType>(new DiffuseEDFFactory()));
-}
+}       // namespace renderer
 
-EDFFactoryRegistrar::~EDFFactoryRegistrar()
-{
-    delete impl;
-}
-
-void EDFFactoryRegistrar::register_factory(auto_ptr<FactoryType> factory)
-{
-    const string model = factory->get_model();
-    impl->m_registrar.insert(model, factory);
-}
-
-EDFFactoryArray EDFFactoryRegistrar::get_factories() const
-{
-    FactoryArrayType factories;
-
-    for (const_each<Registrar<FactoryType>::Items> i = impl->m_registrar.items(); i; ++i)
-        factories.push_back(i->second);
-
-    return factories;
-}
-
-const EDFFactoryRegistrar::FactoryType* EDFFactoryRegistrar::lookup(const char* name) const
-{
-    assert(name);
-
-    return impl->m_registrar.lookup(name);
-}
-
-}   // namespace renderer
+#endif  // !APPLESEED_RENDERER_MODELING_EDF_CONEEDF_H

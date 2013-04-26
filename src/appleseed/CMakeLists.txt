@@ -1182,6 +1182,8 @@ source_group ("renderer\\modeling\\color" FILES
 )
 
 set (renderer_modeling_edf_sources
+    renderer/modeling/edf/coneedf.cpp
+    renderer/modeling/edf/coneedf.h
     renderer/modeling/edf/diffuseedf.cpp
     renderer/modeling/edf/diffuseedf.h
     renderer/modeling/edf/edf.cpp
