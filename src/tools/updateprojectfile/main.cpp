@@ -81,7 +81,8 @@ int main(int argc, const char* argv[])
     auto_release_ptr<Project> project(
         reader.read(
             input_filepath.c_str(),
-            schema_filepath.c_str()));
+            schema_filepath.c_str(),
+            ProjectFileReader::OmitReadingMeshFiles));
 
     // Bail out if the project couldn't be loaded.
     if (project.get() == 0)
@@ -92,5 +93,11 @@ int main(int argc, const char* argv[])
     updater.update(project.ref());
 
     // Write the project back to disk.
-    return ProjectFileWriter::write(project.ref(), project->get_path()) ? 0 : 1;
+    const bool success =
+        ProjectFileWriter::write(
+            project.ref(),
+            project->get_path(),
+            ProjectFileWriter::OmitWritingMeshFiles | ProjectFileWriter::OmitCopyingAssets);
+
+    return success ? 0 : 1;
 }

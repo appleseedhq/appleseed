@@ -173,8 +173,10 @@ namespace
       public:
         ParseContext(
             Project&        project,
+            const int       options,
             EventCounters&  event_counters)
           : m_project(project)
+          , m_options(options)
           , m_event_counters(event_counters)
         {
             // Extract the root path of the project.
@@ -190,6 +192,11 @@ namespace
             return m_project;
         }
 
+        int get_options() const
+        {
+            return m_options;
+        }
+
         EventCounters& get_event_counters()
         {
             return m_event_counters;
@@ -197,6 +204,7 @@ namespace
 
       private:
         Project&            m_project;
+        const int           m_options;
         EventCounters&      m_event_counters;
     };
 
@@ -1514,15 +1522,19 @@ namespace
             {
                 if (m_model == MeshObjectFactory::get_model())
                 {
-                    MeshObjectArray object_array;
-
-                    if (MeshObjectReader::read(
-                            m_context.get_project().get_search_paths(),
-                            m_name.c_str(),
-                            m_params,
-                            object_array))
-                        m_objects = array_vector<ObjectVector>(object_array);
-                    else m_context.get_event_counters().signal_error();
+                    if (m_context.get_options() & ProjectFileReader::OmitReadingMeshFiles)
+                        m_objects.push_back(MeshObjectFactory::create(m_name.c_str(), m_params).release());
+                    else
+                    {
+                        MeshObjectArray object_array;
+                        if (MeshObjectReader::read(
+                                m_context.get_project().get_search_paths(),
+                                m_name.c_str(),
+                                m_params,
+                                object_array))
+                            m_objects = array_vector<ObjectVector>(object_array);
+                        else m_context.get_event_counters().signal_error();
+                    }
                 }
                 else
                 {
@@ -2550,7 +2562,8 @@ namespace
 
 auto_release_ptr<Project> ProjectFileReader::read(
     const char*             project_filename,
-    const char*             schema_filename)
+    const char*             schema_filename,
+    const int               options)
 {
     assert(project_filename);
     assert(schema_filename);
@@ -2564,6 +2577,7 @@ auto_release_ptr<Project> ProjectFileReader::read(
         load_project_file(
             project_filename,
             schema_filename,
+            options,
             event_counters));
 
     if (project.get())
@@ -2594,6 +2608,7 @@ auto_release_ptr<Project> ProjectFileReader::load_builtin(
 auto_release_ptr<Project> ProjectFileReader::load_project_file(
     const char*             project_filename,
     const char*             schema_filename,
+    const int               options,
     EventCounters&          event_counters) const
 {
     // Create an empty project.
@@ -2607,7 +2622,7 @@ auto_release_ptr<Project> ProjectFileReader::load_project_file(
             event_counters));
 
     // Create the content handler.
-    ParseContext context(project.ref(), event_counters);
+    ParseContext context(project.ref(), options, event_counters);
     auto_ptr<ContentHandler> content_handler(
         new ContentHandler(
             project.get(),

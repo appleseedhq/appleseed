@@ -49,11 +49,18 @@ namespace renderer
 class DLLSYMBOL ProjectFileReader
 {
   public:
+    enum Options
+    {
+        Defaults                = 0,        // none of the flags below
+        OmitReadingMeshFiles    = 1 << 0    // do not read mesh files from disk
+    };
+
     // Read a project from disk.
     // Return 0 if reading or parsing the file failed.
     foundation::auto_release_ptr<Project> read(
         const char*             project_filename,
-        const char*             schema_filename);
+        const char*             schema_filename,
+        const int               options = Defaults);
 
     // Load a built-in project.
     // Return 0 if the requested built-in project does not exist.
@@ -64,6 +71,7 @@ class DLLSYMBOL ProjectFileReader
     foundation::auto_release_ptr<Project> load_project_file(
         const char*             project_filename,
         const char*             schema_filename,
+        const int               options,
         EventCounters&          event_counters) const;
 
     foundation::auto_release_ptr<Project> construct_builtin_project(
