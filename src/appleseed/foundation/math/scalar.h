@@ -336,9 +336,6 @@ inline bool is_pow2(const T x)
     return (x & (x - 1)) == 0;
 }
 
-// Visual C++.
-#if defined _MSC_VER
-
 template <typename T>
 inline T int_log2(T x)
 {
@@ -351,6 +348,9 @@ inline T int_log2(T x)
 
     return n;
 }
+
+// Visual C++.
+#if defined _MSC_VER
 
 template <>
 inline uint32 int_log2(const uint32 x)
@@ -377,28 +377,20 @@ inline uint64 int_log2(const uint64 x)
 // gcc.
 #elif defined __GNUC__
 
-template <typename T>
-inline T int_log2(const T x)
+template <>
+inline unsigned int int_log2(const unsigned int x)
 {
     assert(x > 0);
 
-    return 8 * sizeof(T) - __builtin_clz(x) - 1;
+    return 8 * sizeof(unsigned int) - __builtin_clz(x) - 1;
 }
 
-// Other compilers.
-#else
-
-template <typename T>
-inline T int_log2(T x)
+template <>
+inline unsigned long int_log2(const unsigned long x)
 {
     assert(x > 0);
 
-    T n = 0;
-
-    while (x >>= 1)
-        ++n;
-
-    return n;
+    return 8 * sizeof(unsigned long) - __builtin_clzl(x) - 1;
 }
 
 #endif

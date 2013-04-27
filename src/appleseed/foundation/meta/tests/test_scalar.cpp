@@ -145,6 +145,12 @@ TEST_SUITE(Foundation_Math_Scalar)
         EXPECT_EQ(1,  int_log2(2));
         EXPECT_EQ(1,  int_log2(3));
         EXPECT_EQ(2,  int_log2(4));
+        EXPECT_EQ(5,  int_log2<int16>(1 << 5));
+        EXPECT_EQ(5,  int_log2<int32>(1 << 5));
+        EXPECT_EQ(5,  int_log2<int64>(1 << 5));
+        EXPECT_EQ(5,  int_log2<uint16>(1 << 5));
+        EXPECT_EQ(5,  int_log2<uint32>(1 << 5));
+        EXPECT_EQ(5,  int_log2<uint64>(1 << 5));
         EXPECT_EQ(16, int_log2(1UL << 16));
         EXPECT_EQ(31, int_log2(1UL << 31));
     }
