@@ -60,7 +60,7 @@ class DLLSYMBOL ProjectFileWriter
     static bool write(
         const Project&  project,
         const char*     filepath,
-        const Options   options = Defaults);
+        const int       options = Defaults);
 };
 
 }       // namespace renderer

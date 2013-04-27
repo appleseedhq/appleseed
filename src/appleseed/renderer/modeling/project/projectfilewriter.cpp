@@ -103,10 +103,10 @@ namespace
       public:
         // Constructor.
         Writer(
-            const Project&                      project,
-            const char*                         filepath,
-            FILE*                               file,
-            const ProjectFileWriter::Options    options)
+            const Project&      project,
+            const char*         filepath,
+            FILE*               file,
+            const int           options)
           : m_project_search_paths(project.get_search_paths())
           , m_project_old_root_path(filesystem::path(project.get_path()).parent_path())
           , m_project_new_root_path(filesystem::path(filepath).parent_path())
@@ -133,12 +133,12 @@ namespace
         }
 
       private:
-        const SearchPaths&                      m_project_search_paths;
-        const filesystem::path                  m_project_old_root_path;
-        const filesystem::path                  m_project_new_root_path;
-        FILE*                                   m_file;
-        const ProjectFileWriter::Options        m_options;
-        Indenter                                m_indenter;
+        const SearchPaths&      m_project_search_paths;
+        const filesystem::path  m_project_old_root_path;
+        const filesystem::path  m_project_new_root_path;
+        FILE*                   m_file;
+        const int               m_options;
+        Indenter                m_indenter;
 
         static bool copy_file_if_not_exists(
             const filesystem::path& source_path,
@@ -759,7 +759,7 @@ namespace
 bool ProjectFileWriter::write(
     const Project&  project,
     const char*     filepath,
-    const Options   options)
+    const int       options)
 {
     RENDERER_LOG_INFO("writing project file %s...", filepath);
 
