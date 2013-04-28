@@ -243,7 +243,6 @@ typedef foundation::bsp::Intersector<
 // RegionLeaf class implementation.
 //
 
-// Constructor.
 inline RegionLeaf::RegionLeaf(
     RegionTree&                 tree,
     const foundation::UniqueID  triangle_tree_uid)
@@ -252,13 +251,11 @@ inline RegionLeaf::RegionLeaf(
 {
 }
 
-// Return the parent tree.
 inline RegionTree& RegionLeaf::get_parent_tree() const
 {
     return m_tree;
 }
 
-// Return the unique ID of the triangle tree for this leaf.
 inline foundation::UniqueID RegionLeaf::get_triangle_tree_uid() const
 {
     return m_triangle_tree_uid;
@@ -269,7 +266,6 @@ inline foundation::UniqueID RegionLeaf::get_triangle_tree_uid() const
 // RegionLeafVisitor class implementation.
 //
 
-// Constructor.
 inline RegionLeafVisitor::RegionLeafVisitor(
     ShadingPoint&                               shading_point,
     TriangleTreeAccessCache&                    triangle_tree_cache
@@ -290,7 +286,6 @@ inline RegionLeafVisitor::RegionLeafVisitor(
 // RegionLeafProbeVisitor class implementation.
 //
 
-// Constructor.
 inline RegionLeafProbeVisitor::RegionLeafProbeVisitor(
     TriangleTreeAccessCache&                    triangle_tree_cache
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
