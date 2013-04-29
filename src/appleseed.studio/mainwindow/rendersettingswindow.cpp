@@ -369,10 +369,14 @@ void RenderSettingsWindow::create_pt_advanced_settings(QVBoxLayout* parent)
     QVBoxLayout* layout = new QVBoxLayout();
     groupbox->setLayout(layout);
 
-    layout->addWidget(create_checkbox("pt.advanced.next_event_estimation", "Next Event Estimation"));
+    QGroupBox* nee_groupbox = create_checkable_groupbox("pt.advanced.next_event_estimation", "Next Event Estimation");
+    layout->addWidget(nee_groupbox);
 
-    create_pt_advanced_dl_settings(layout);
-    create_pt_advanced_ibl_settings(layout);
+    QVBoxLayout* nee_layout = create_vertical_layout();
+    nee_groupbox->setLayout(nee_layout);
+
+    create_pt_advanced_dl_settings(nee_layout);
+    create_pt_advanced_ibl_settings(nee_layout);
 }
 
 void RenderSettingsWindow::create_pt_advanced_dl_settings(QVBoxLayout* parent)
