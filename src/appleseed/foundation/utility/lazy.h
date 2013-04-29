@@ -86,27 +86,27 @@ class Lazy
 
     // Construct a lazy object that simply wraps an existing object,
     // effectively bypassing lazy object construction altogether.
-    explicit Lazy(const ObjectType* object);
+    explicit Lazy(ObjectType* object);
 
     // Destructor, deletes the factory, as well as the object if
     // it is owned by the lazy object.
     ~Lazy();
 
   private:
-    template <typename>
-    friend class Access;
+    template <typename> friend class Access;
+    template <typename> friend class Update;
 
-    boost::mutex        m_mutex;
-    int                 m_reference_count;
+    boost::mutex    m_mutex;
+    int             m_reference_count;
 
-    FactoryType*        m_factory;
-    const ObjectType*   m_object;
-    const bool          m_own_object;
+    FactoryType*    m_factory;
+    ObjectType*     m_object;
+    const bool      m_own_object;
 };
 
 
 //
-// Thread-safe access to a lazily constructed object.
+// Thread-safe read-only access to a lazily constructed object.
 //
 
 template <typename Object>
@@ -134,7 +134,7 @@ class Access
     // if any. Note that releasing access to a lazy object does not
     // imply that the object is deleted, even if the reference count
     // on this object has reached 0. An object is deleted only if it
-    // is garbage collected.
+    // is garbage-collected.
     void reset(LazyType* lazy);
 
     // Get the object pointer.
@@ -144,6 +144,47 @@ class Access
     // Access the object. The object must exist.
     const ObjectType* operator->() const;
     const ObjectType& operator*() const;
+
+  private:
+    LazyType*   m_lazy;
+};
+
+
+//
+// Thread-safe read/write access to a lazily constructed object.
+//
+
+template <typename Object>
+class Update
+{
+  public:
+    // Object and lazy object types.
+    typedef Object ObjectType;
+    typedef Lazy<Object> LazyType;
+
+    // Constructor, acquires access to a lazy object.
+    // The object must already exist.
+    explicit Update(LazyType* lazy = 0);
+
+    // Copy constructor.
+    Update(const Update& rhs);
+
+    // Assignment operator.
+    Update<Object>& operator=(const Update& rhs);
+
+    // Destructor.
+    ~Update();
+
+    // Acquire access to another lazy object.
+    void reset(LazyType* lazy);
+
+    // Get the object pointer.
+    ObjectType* get() const;    // may return 0
+    ObjectType& ref() const;
+
+    // Access the object. The object must exist.
+    ObjectType* operator->() const;
+    ObjectType& operator*() const;
 
   private:
     LazyType*   m_lazy;
@@ -345,7 +386,7 @@ Lazy<Object>::Lazy(std::auto_ptr<FactoryType> factory)
 }
 
 template <typename Object>
-Lazy<Object>::Lazy(const ObjectType* object)
+Lazy<Object>::Lazy(ObjectType* object)
   : m_reference_count(0)
   , m_factory(0)
   , m_object(object)
@@ -410,8 +451,9 @@ void Access<Object>::reset(LazyType* lazy)
         --m_lazy->m_reference_count;
     }
 
-    // Acquire access to the new lazy object.
     m_lazy = lazy;
+
+    // Acquire access to the new lazy object.
     if (m_lazy)
     {
         boost::mutex::scoped_lock lock(m_lazy->m_mutex);
@@ -451,6 +493,90 @@ inline const Object* Access<Object>::operator->() const
 
 template <typename Object>
 inline const Object& Access<Object>::operator*() const
+{
+    assert(m_lazy);
+    assert(m_lazy->m_object);
+    return *m_lazy->m_object;
+}
+
+
+//
+// Update class implementation.
+//
+
+template <typename Object>
+inline Update<Object>::Update(LazyType* lazy)
+  : m_lazy(0)
+{
+    reset(lazy);
+}
+
+template <typename Object>
+inline Update<Object>::Update(const Update& rhs)
+  : m_lazy(0)
+{
+    reset(rhs.m_lazy);
+}
+
+template <typename Object>
+inline Update<Object>& Update<Object>::operator=(const Update& rhs)
+{
+    reset(rhs.m_lazy);
+    return *this;
+}
+
+template <typename Object>
+inline Update<Object>::~Update()
+{
+    reset(0);
+}
+
+template <typename Object>
+void Update<Object>::reset(LazyType* lazy)
+{
+    // Release access to the current lazy object, if any.
+    if (m_lazy)
+    {
+        boost::mutex::scoped_lock lock(m_lazy->m_mutex);
+        assert(m_lazy->m_reference_count > 0);
+        --m_lazy->m_reference_count;
+    }
+
+    m_lazy = lazy;
+
+    // Acquire access to the new lazy object.
+    if (m_lazy)
+    {
+        boost::mutex::scoped_lock lock(m_lazy->m_mutex);
+        ++m_lazy->m_reference_count;
+    }
+}
+
+template <typename Object>
+inline Object* Update<Object>::get() const
+{
+    assert(m_lazy);
+    return m_lazy->m_object;
+}
+
+template <typename Object>
+inline Object& Update<Object>::ref() const
+{
+    assert(m_lazy);
+    assert(m_lazy->m_object);
+    return *m_lazy->m_object;
+}
+
+template <typename Object>
+inline Object* Update<Object>::operator->() const
+{
+    assert(m_lazy);
+    assert(m_lazy->m_object);
+    return m_lazy->m_object;
+}
+
+template <typename Object>
+inline Object& Update<Object>::operator*() const
 {
     assert(m_lazy);
     assert(m_lazy->m_object);

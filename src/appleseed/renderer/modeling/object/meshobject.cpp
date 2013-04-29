@@ -56,7 +56,7 @@ namespace
     {
       public:
         // Constructor.
-        explicit MeshRegion(const StaticTriangleTess* tess)
+        explicit MeshRegion(StaticTriangleTess* tess)
           : m_tess(tess)
           , m_lazy_tess(tess)
         {
@@ -75,7 +75,7 @@ namespace
         }
 
       private:
-        const StaticTriangleTess*           m_tess;
+        StaticTriangleTess*                 m_tess;
         mutable Lazy<StaticTriangleTess>    m_lazy_tess;
     };
 }
