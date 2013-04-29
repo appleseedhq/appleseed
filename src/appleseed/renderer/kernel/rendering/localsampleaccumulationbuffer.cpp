@@ -203,8 +203,6 @@ namespace
                     (origin_y + y) * level_height / image_height,
                     &color[0]);
 
-                color[3] = 1.0f;
-
                 if (undo_premultiplied_alpha)
                 {
                     const float rcp_alpha = color[3] == 0.0f ? 0.0f : 1.0f / color[3];
