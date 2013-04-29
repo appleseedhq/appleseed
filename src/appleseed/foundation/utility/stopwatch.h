@@ -60,6 +60,9 @@ class Stopwatch
     // Start or restart the stopwatch.
     void start();
 
+    // Stop the stopwatch.
+    void stop();
+
     // Measure the time elapsed since the last call to start().
     // The stopwatch keeps running.
     Stopwatch& measure();
@@ -124,6 +127,12 @@ inline void Stopwatch<Timer>::start()
 {
     m_is_running = true;
     m_start = m_timer.read();
+}
+
+template <typename Timer>
+inline void Stopwatch<Timer>::stop()
+{
+    m_is_running = false;
 }
 
 template <typename Timer>

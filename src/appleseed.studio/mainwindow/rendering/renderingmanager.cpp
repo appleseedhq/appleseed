@@ -287,7 +287,6 @@ void RenderingManager::slot_rendering_begin()
     }
 
     const int IdleUpdateRate = 15;  // hertz
-
     m_render_widget_update_timer.start(1000 / IdleUpdateRate, this);
 }
 
@@ -322,6 +321,7 @@ void RenderingManager::slot_frame_begin()
 
 void RenderingManager::slot_frame_end()
 {
+    m_rendering_timer.stop();
     m_status_bar.stop_rendering_time_display();
 
     m_render_widget->update();
