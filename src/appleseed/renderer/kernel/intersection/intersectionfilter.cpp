@@ -67,7 +67,10 @@ IntersectionFilter::IntersectionFilter(
         if (material == 0)
             continue;
 
-        const Source* alpha_map = material->get_alpha_map();
+        // Use the uncached version of get_alpha_map() since at this point
+        // entity binding hasn't been performed yet when intersection filters
+        // are updated on existing triangle trees.
+        const Source* alpha_map = material->get_uncached_alpha_map();
         if (alpha_map == 0)
             continue;
 

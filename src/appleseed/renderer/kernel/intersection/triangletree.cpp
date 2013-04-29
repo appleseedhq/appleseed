@@ -381,12 +381,12 @@ TriangleTree::Arguments::Arguments(
 
 TriangleTree::TriangleTree(const Arguments& arguments)
   : TreeType(AlignedAllocator<void>(System::get_l1_data_cache_line_size()))
-  , m_triangle_tree_uid(arguments.m_triangle_tree_uid)
+  , m_arguments(arguments)
 {
     // Retrieve construction parameters.
     const MessageContext context(
-        string("while building acceleration structure for assembly \"") + arguments.m_assembly.get_name() + "\"");
-    const ParamArray& params = arguments.m_assembly.get_parameters().child("acceleration_structure");
+        string("while building acceleration structure for assembly \"") + m_arguments.m_assembly.get_name() + "\"");
+    const ParamArray& params = m_arguments.m_assembly.get_parameters().child("acceleration_structure");
     const string algorithm = params.get_optional<string>("algorithm", "bvh", make_vector("bvh", "sbvh"), context);
     const double time = params.get_optional<double>("time", 0.5);
     const bool save_memory = params.get_optional<bool>("save_temporary_memory", false);
@@ -398,8 +398,8 @@ TriangleTree::TriangleTree(const Arguments& arguments)
     // Build the tree.
     Statistics statistics;
     if (algorithm == "bvh")
-        build_bvh(arguments, params, time, save_memory, statistics);
-    else build_sbvh(arguments, params, time, save_memory, statistics);
+        build_bvh(params, time, save_memory, statistics);
+    else build_sbvh(params, time, save_memory, statistics);
 
 #ifdef RENDERER_TRIANGLE_TREE_REORDER_NODES
     // Optimize the tree layout in memory.
@@ -408,29 +408,31 @@ TriangleTree::TriangleTree(const Arguments& arguments)
     assert(m_nodes.size() == m_nodes.capacity());
 #endif
 
-    // Create intersection filters.
-    if (arguments.m_assembly.get_parameters().get_optional<bool>("enable_intersection_filters", true))
-        create_intersection_filters(arguments, statistics);
-    m_has_intersection_filters = !m_intersection_filters.empty();
-
     // Print triangle tree statistics.
     statistics.insert_size("nodes alignment", alignment(&m_nodes[0]));
     statistics.insert_time("total time", stopwatch.measure().get_seconds());
     RENDERER_LOG_DEBUG("%s",
         StatisticsVector::make(
-            "triangle tree #" + to_string(arguments.m_triangle_tree_uid) + " statistics",
+            "triangle tree #" + to_string(m_arguments.m_triangle_tree_uid) + " statistics",
             statistics).to_string().c_str());
+
+    // Create intersection filters.
+    create_intersection_filters();
 }
 
 TriangleTree::~TriangleTree()
 {
     RENDERER_LOG_INFO(
         "deleting triangle tree #" FMT_UNIQUE_ID "...",
-        m_triangle_tree_uid);
+        m_arguments.m_triangle_tree_uid);
 
-    // Delete intersection filters.
-    for (size_t i = 0; i < m_intersection_filters.size(); ++i)
-        delete m_intersection_filters[i];
+    delete_intersection_filters();
+}
+
+void TriangleTree::update_non_geometry()
+{
+    delete_intersection_filters();
+    create_intersection_filters();
 }
 
 size_t TriangleTree::get_memory_size() const
@@ -479,7 +481,6 @@ namespace
 }
 
 void TriangleTree::build_bvh(
-    const Arguments&    arguments,
     const ParamArray&   params,
     const double        time,
     const bool          save_memory,
@@ -490,16 +491,16 @@ void TriangleTree::build_bvh(
     // Collect triangles intersecting the bounding box of this tree.
     RENDERER_LOG_INFO(
         "collecting geometry for triangle tree #" FMT_UNIQUE_ID " from assembly %s (%s %s)...",
-        arguments.m_triangle_tree_uid,
-        arguments.m_assembly.get_name(),
-        pretty_uint(arguments.m_regions.size()).c_str(),
-        plural(arguments.m_regions.size(), "region").c_str());
+        m_arguments.m_triangle_tree_uid,
+        m_arguments.m_assembly.get_name(),
+        pretty_uint(m_arguments.m_regions.size()).c_str(),
+        plural(m_arguments.m_regions.size(), "region").c_str());
     vector<TriangleKey> triangle_keys;
     vector<TriangleVertexInfo> triangle_vertex_infos;
     vector<GAABB3> triangle_bboxes;
     stopwatch.start();
     collect_triangles(
-        arguments,
+        m_arguments,
         time,
         save_memory,
         &triangle_keys,
@@ -513,7 +514,7 @@ void TriangleTree::build_bvh(
     const size_t moving_triangle_count = triangle_vertex_infos.size() - static_triangle_count;
     RENDERER_LOG_INFO(
         "building bvh triangle tree #" FMT_UNIQUE_ID " (%s %s, %s %s)...",
-        arguments.m_triangle_tree_uid,
+        m_arguments.m_triangle_tree_uid,
         pretty_uint(static_triangle_count).c_str(),
         plural(static_triangle_count, "static triangle").c_str(),
         pretty_uint(moving_triangle_count).c_str(),
@@ -536,7 +537,7 @@ void TriangleTree::build_bvh(
     typedef bvh::Builder<TriangleTree, Partitioner> Builder;
     Builder builder;
     builder.build<DefaultWallclockTimer>(*this, partitioner, triangle_keys.size(), max_leaf_size);
-    statistics.merge(bvh::TreeStatistics<TriangleTree>(*this, AABB3d(arguments.m_bbox)));
+    statistics.merge(bvh::TreeStatistics<TriangleTree>(*this, AABB3d(m_arguments.m_bbox)));
 
     stopwatch.start();
 
@@ -546,7 +547,7 @@ void TriangleTree::build_bvh(
     // Collect triangle vertices.
     vector<GVector3> triangle_vertices;
     collect_triangles<GAABB3>(
-        arguments,
+        m_arguments,
         time,
         save_memory,
         0,
@@ -577,7 +578,6 @@ void TriangleTree::build_bvh(
 }
 
 void TriangleTree::build_sbvh(
-    const Arguments&    arguments,
     const ParamArray&   params,
     const double        time,
     const bool          save_memory,
@@ -588,17 +588,17 @@ void TriangleTree::build_sbvh(
     // Collect triangles intersecting the bounding box of this tree.
     RENDERER_LOG_INFO(
         "collecting geometry for triangle tree #" FMT_UNIQUE_ID " from assembly %s (%s %s)...",
-        arguments.m_triangle_tree_uid,
-        arguments.m_assembly.get_name(),
-        pretty_uint(arguments.m_regions.size()).c_str(),
-        plural(arguments.m_regions.size(), "region").c_str());
+        m_arguments.m_triangle_tree_uid,
+        m_arguments.m_assembly.get_name(),
+        pretty_uint(m_arguments.m_regions.size()).c_str(),
+        plural(m_arguments.m_regions.size(), "region").c_str());
     vector<TriangleKey> triangle_keys;
     vector<TriangleVertexInfo> triangle_vertex_infos;
     vector<GVector3> triangle_vertices;
     vector<AABB3d> triangle_bboxes;
     stopwatch.start();
     collect_triangles(
-        arguments,
+        m_arguments,
         time,
         save_memory,
         &triangle_keys,
@@ -612,7 +612,7 @@ void TriangleTree::build_sbvh(
     const size_t moving_triangle_count = triangle_vertex_infos.size() - static_triangle_count;
     RENDERER_LOG_INFO(
         "building sbvh triangle tree #" FMT_UNIQUE_ID " (%s %s, %s %s)...",
-        arguments.m_triangle_tree_uid,
+        m_arguments.m_triangle_tree_uid,
         pretty_uint(static_triangle_count).c_str(),
         plural(static_triangle_count, "static triangle").c_str(),
         pretty_uint(moving_triangle_count).c_str(),
@@ -650,7 +650,7 @@ void TriangleTree::build_sbvh(
         partitioner,
         root_leaf,
         root_leaf_bbox);
-    statistics.merge(bvh::TreeStatistics<TriangleTree>(*this, AABB3d(arguments.m_bbox)));
+    statistics.merge(bvh::TreeStatistics<TriangleTree>(*this, AABB3d(m_arguments.m_bbox)));
 
     // Add splits statistics.
     const size_t spatial_splits = partitioner.get_spatial_split_count();
@@ -952,7 +952,10 @@ namespace
         {
             const Material* material = materials[i];
 
-            if (material && material->get_alpha_map())
+            // Use the uncached version of get_alpha_map() since at this point
+            // entity binding hasn't been performed yet when intersection filters
+            // are updated on existing triangle trees.
+            if (material && material->get_uncached_alpha_map())
                 return true;
         }
 
@@ -960,62 +963,74 @@ namespace
     }
 }
 
-void TriangleTree::create_intersection_filters(
-    const Arguments&    arguments,
-    Statistics&         statistics)
+void TriangleTree::create_intersection_filters()
 {
-    // Collect object instances.
-    vector<size_t> object_instance_indices;
-    object_instance_indices.reserve(arguments.m_regions.size());
-    for (const_each<RegionInfoVector> i = arguments.m_regions; i; ++i)
-        object_instance_indices.push_back(i->get_object_instance_index());
-
-    // Unique the list of object instances.
-    sort(object_instance_indices.begin(), object_instance_indices.end());
-    object_instance_indices.erase(
-        unique(object_instance_indices.begin(), object_instance_indices.end()),
-        object_instance_indices.end());
-
-    TextureStore texture_store(arguments.m_scene);
-    TextureCache texture_cache(texture_store);
-
-    size_t intersection_filter_count = 0;
-
-    for (const_each<vector<size_t> > i = object_instance_indices; i; ++i)
+    if (m_arguments.m_assembly.get_parameters().get_optional<bool>("enable_intersection_filters", true))
     {
-        // Retrieve the object instance.
-        const size_t object_instance_index = *i;
-        const ObjectInstance* object_instance =
-            arguments.m_assembly.object_instances().get_by_index(object_instance_index);
-        assert(object_instance);
+        // Collect object instances.
+        vector<size_t> object_instance_indices;
+        object_instance_indices.reserve(m_arguments.m_regions.size());
+        for (const_each<RegionInfoVector> i = m_arguments.m_regions; i; ++i)
+            object_instance_indices.push_back(i->get_object_instance_index());
 
-        // No intersection filter for this object instance it it doesn't reference any alpha map.
-        if (!has_alpha_maps(*object_instance))
-            continue;
+        // Unique the list of object instances.
+        sort(object_instance_indices.begin(), object_instance_indices.end());
+        object_instance_indices.erase(
+            unique(object_instance_indices.begin(), object_instance_indices.end()),
+            object_instance_indices.end());
 
-        // Create an intersection filter for this object instance.
-        auto_ptr<IntersectionFilter> intersection_filter(
-            new IntersectionFilter(*object_instance, texture_cache));
+        TextureStore texture_store(m_arguments.m_scene);
+        TextureCache texture_cache(texture_store);
 
-        // Don't store this intersection filter if it's not useful.
-        if (!intersection_filter->keep())
-            continue;
+        size_t intersection_filter_count = 0;
 
-        RENDERER_LOG_DEBUG(
-            "created intersection filter for object instance \"%s\" (%s).",
-            object_instance->get_name(),
-            pretty_size(intersection_filter->get_memory_size()).c_str());
+        for (const_each<vector<size_t> > i = object_instance_indices; i; ++i)
+        {
+            // Retrieve the object instance.
+            const size_t object_instance_index = *i;
+            const ObjectInstance* object_instance =
+                m_arguments.m_assembly.object_instances().get_by_index(object_instance_index);
+            assert(object_instance);
 
-        // Allocate the array of intersection filters.
-        if (m_intersection_filters.empty())
-            m_intersection_filters.resize(object_instance_indices.back() + 1);
+            // No intersection filter for this object instance it it doesn't reference any alpha map.
+            if (!has_alpha_maps(*object_instance))
+                continue;
 
-        // Store the intersection filter.
-        m_intersection_filters[object_instance_index] = intersection_filter.release();
-        ++intersection_filter_count;
+            // Create an intersection filter for this object instance.
+            auto_ptr<IntersectionFilter> intersection_filter(
+                new IntersectionFilter(*object_instance, texture_cache));
+
+            // Don't store this intersection filter if it's not useful.
+            if (!intersection_filter->keep())
+                continue;
+
+            RENDERER_LOG_DEBUG(
+                "triangle tree #" FMT_SIZE_T ": created intersection filter for object instance \"%s\" (%s).",
+                m_arguments.m_triangle_tree_uid,
+                object_instance->get_name(),
+                pretty_size(intersection_filter->get_memory_size()).c_str());
+
+            // Allocate the array of intersection filters.
+            if (m_intersection_filters.empty())
+                m_intersection_filters.resize(object_instance_indices.back() + 1);
+
+            // Store the intersection filter.
+            m_intersection_filters[object_instance_index] = intersection_filter.release();
+            ++intersection_filter_count;
+        }
     }
 
-    statistics.insert<uint64>("int. filters", intersection_filter_count);
+    m_has_intersection_filters = !m_intersection_filters.empty();
+}
+
+void TriangleTree::delete_intersection_filters()
+{
+    for (size_t i = 0; i < m_intersection_filters.size(); ++i)
+        delete m_intersection_filters[i];
+
+    m_intersection_filters.clear();
+
+    m_has_intersection_filters = false;
 }
 
 

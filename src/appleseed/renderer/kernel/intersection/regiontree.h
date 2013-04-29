@@ -107,6 +107,9 @@ class RegionTree
     // Destructor.
     ~RegionTree();
 
+    // Update the non-geometry aspects of the tree.
+    void update_non_geometry();
+
   private:
     friend class RegionLeafVisitor;
     friend class RegionLeafProbeVisitor;

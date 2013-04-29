@@ -351,22 +351,41 @@ void AssemblyTree::update_child_trees()
 
         if (stored_version_it != m_assembly_versions.end())
         {
-            // The assembly has an up-to-date child tree, nothing to do.
             if (stored_version_it->second == current_version_id)
-                continue;
-
-            // The assembly has an out-of-date child tree, delete it.
-            if (assembly.is_flushable())
             {
-                const RegionTreeContainer::iterator it = m_region_trees.find(assembly_uid);
-                delete it->second;
-                m_region_trees.erase(it);
+                // The child tree of this assembly is up-to-date wrt. the assembly's geometry.
+                // Simply update the child tree.
+                if (assembly.is_flushable())
+                {
+                    Update<RegionTree> access(m_region_trees.find(assembly_uid)->second);
+                    if (access.get())
+                        access->update_non_geometry();
+                }
+                else
+                {
+                    Update<TriangleTree> access(m_triangle_trees.find(assembly_uid)->second);
+                    if (access.get())
+                        access->update_non_geometry();
+                }
+
+                continue;
             }
             else
             {
-                const TriangleTreeContainer::iterator it = m_triangle_trees.find(assembly_uid);
-                delete it->second;
-                m_triangle_trees.erase(it);
+                // The child tree is out-of-date wrt. the assembly's geometry: delete it.
+                // It will get rebuilt from scratch lazily.
+                if (assembly.is_flushable())
+                {
+                    const RegionTreeContainer::iterator it = m_region_trees.find(assembly_uid);
+                    delete it->second;
+                    m_region_trees.erase(it);
+                }
+                else
+                {
+                    const TriangleTreeContainer::iterator it = m_triangle_trees.find(assembly_uid);
+                    delete it->second;
+                    m_triangle_trees.erase(it);
+                }
             }
         }
 
@@ -374,7 +393,7 @@ void AssemblyTree::update_child_trees()
         if (assembly.object_instances().empty())
             continue;
 
-        // The assembly does contains geometry, build a new child tree.
+        // The assembly does contains geometry, lazily build a new child tree.
         if (assembly.is_flushable())
         {
             m_region_trees.insert(

@@ -103,6 +103,9 @@ class TriangleTree
     // Destructor.
     ~TriangleTree();
 
+    // Update the non-geometry aspects of the tree.
+    void update_non_geometry();
+
     // Return the size (in bytes) of this object in memory.
     size_t get_memory_size() const;
 
@@ -110,7 +113,7 @@ class TriangleTree
     friend class TriangleLeafVisitor;
     friend class TriangleLeafProbeVisitor;
 
-    const foundation::UniqueID                  m_triangle_tree_uid;
+    const Arguments                             m_arguments;
     std::vector<TriangleKey>                    m_triangle_keys;
     std::vector<foundation::uint8>              m_leaf_data;
 
@@ -118,14 +121,12 @@ class TriangleTree
     std::vector<const IntersectionFilter*>      m_intersection_filters;
 
     void build_bvh(
-        const Arguments&                        arguments,
         const ParamArray&                       params,
         const double                            time,
         const bool                              save_memory,
         foundation::Statistics&                 statistics);
 
     void build_sbvh(
-        const Arguments&                        arguments,
         const ParamArray&                       params,
         const double                            time,
         const bool                              save_memory,
@@ -144,9 +145,8 @@ class TriangleTree
         const std::vector<TriangleKey>&         triangle_keys,
         foundation::Statistics&                 statistics);
 
-    void create_intersection_filters(
-        const Arguments&                        arguments,
-        foundation::Statistics&                 statistics);
+    void create_intersection_filters();
+    void delete_intersection_filters();
 };
 
 

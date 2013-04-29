@@ -456,7 +456,6 @@ RegionTree::RegionTree(const Arguments& arguments)
 
 RegionTree::~RegionTree()
 {
-    // Log a progress message.
     RENDERER_LOG_INFO(
         "deleting region tree for assembly #" FMT_UNIQUE_ID "...", 
         m_assembly_uid);
@@ -464,7 +463,16 @@ RegionTree::~RegionTree()
     // Delete triangle trees.
     for (each<TriangleTreeContainer> i = m_triangle_trees; i; ++i)
         delete i->second;
-    m_triangle_trees.clear();
+}
+
+void RegionTree::update_non_geometry()
+{
+    for (each<TriangleTreeContainer> i = m_triangle_trees; i; ++i)
+    {
+        Update<TriangleTree> access(i->second);
+        if (access.get())
+            access->update_non_geometry();
+    }
 }
 
 
