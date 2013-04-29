@@ -178,15 +178,11 @@ template <typename T>
 inline T radical_inverse_base2(
     size_t              n)
 {
-    n = (n >> 16) | (n << 16);      // 16-bit swap
-    n = ((n & 0xFF00FF00) >> 8) |
-        ((n & 0x00FF00FF) << 8);    // 8-bit swap
-    n = ((n & 0xF0F0F0F0) >> 4) |
-        ((n & 0x0F0F0F0F) << 4);    // 4-bit swap
-    n = ((n & 0xCCCCCCCC) >> 2) |
-        ((n & 0x33333333) << 2);    // 2-bit swap
-    n = ((n & 0xAAAAAAAA) >> 1) |
-        ((n & 0x55555555) << 1);    // 1-bit swap
+    n = (n >> 16) | (n << 16);                                  // 16-bit swap
+    n = ((n & 0xFF00FF00) >> 8) | ((n & 0x00FF00FF) << 8);      // 8-bit swap
+    n = ((n & 0xF0F0F0F0) >> 4) | ((n & 0x0F0F0F0F) << 4);      // 4-bit swap
+    n = ((n & 0xCCCCCCCC) >> 2) | ((n & 0x33333333) << 2);      // 2-bit swap
+    n = ((n & 0xAAAAAAAA) >> 1) | ((n & 0x55555555) << 1);      // 1-bit swap
 
     return static_cast<T>(n) / static_cast<T>(0x100000000LL);
 }
@@ -196,15 +192,11 @@ inline T radical_inverse_base2(
     const size_t        r,
     size_t              n)
 {
-    n = (n >> 16) | (n << 16);      // 16-bit swap
-    n = ((n & 0xFF00FF00) >> 8) |
-        ((n & 0x00FF00FF) << 8);    // 8-bit swap
-    n = ((n & 0xF0F0F0F0) >> 4) |
-        ((n & 0x0F0F0F0F) << 4);    // 4-bit swap
-    n = ((n & 0xCCCCCCCC) >> 2) |
-        ((n & 0x33333333) << 2);    // 2-bit swap
-    n = ((n & 0xAAAAAAAA) >> 1) |
-        ((n & 0x55555555) << 1);    // 1-bit swap
+    n = (n >> 16) | (n << 16);                                  // 16-bit swap
+    n = ((n & 0xFF00FF00) >> 8) | ((n & 0x00FF00FF) << 8);      // 8-bit swap
+    n = ((n & 0xF0F0F0F0) >> 4) | ((n & 0x0F0F0F0F) << 4);      // 4-bit swap
+    n = ((n & 0xCCCCCCCC) >> 2) | ((n & 0x33333333) << 2);      // 2-bit swap
+    n = ((n & 0xAAAAAAAA) >> 1) | ((n & 0x55555555) << 1);      // 1-bit swap
 
     n ^= r;
 
