@@ -128,49 +128,74 @@ namespace
 }
 
 ColorSource::ColorSource(
-    const ColorEntity&          color_entity,
-    const InputFormat           input_format)
+    const ColorEntity&      color_entity,
+    const InputFormat       input_format)
   : Source(true)
 {
-    // todo: this should be user-settable.
-    const LightingConditions lighting_conditions(
-        IlluminantCIED65,
-        XYZCMFCIE196410Deg);
-
     // Retrieve the color values.
-    const ColorSpace color_space = color_entity.get_color_space();
+    if (color_entity.get_color_space() == ColorSpaceSpectral)
+        initialize_from_spectrum(color_entity);
+    else initialize_from_3d_color(color_entity, input_format);
+
+    // Apply the multiplier to the color values.
+    const float multiplier = color_entity.get_multiplier();
+    m_scalar *= multiplier;
+    m_linear_rgb *= multiplier;
+    m_spectrum *= multiplier;
+
+    // Store the alpha values.
+    const ColorValueArray& alpha = color_entity.get_alpha();
+    m_alpha[0] = alpha.size() == 1 ? alpha[0] : 0.0f;
+}
+
+void ColorSource::initialize_from_spectrum(
+    const ColorEntity&      color_entity)
+{
     const ColorValueArray& values = color_entity.get_values();
-    if (color_space == ColorSpaceSpectral)
+
+    if (values.size() > 0)
     {
-        if (values.size() > 0)
-        {
-            m_scalar = static_cast<double>(values[0]);
-            m_spectrum =
-                spectral_values_to_spectrum(
-                    color_entity.get_wavelength_range(),
-                    values);
-            m_linear_rgb =
-                ciexyz_to_linear_rgb(
-                    spectrum_to_ciexyz<float>(lighting_conditions, m_spectrum));
-        }
-        else
-        {
-            m_scalar = 0.0;
-            m_linear_rgb.set(0.0f);
-            m_spectrum.set(0.0f);
-        }
+        // todo: this should be user-settable.
+        const LightingConditions lighting_conditions(
+            IlluminantCIED65,
+            XYZCMFCIE196410Deg);
+
+        m_scalar = static_cast<double>(values[0]);
+
+        m_spectrum =
+            spectral_values_to_spectrum(
+                color_entity.get_wavelength_range(),
+                values);
+
+        m_linear_rgb =
+            ciexyz_to_linear_rgb(
+                spectrum_to_ciexyz<float>(lighting_conditions, m_spectrum));
     }
     else
     {
-        if (values.size() == 1)
-            m_linear_rgb.set(values[0]);
-        else if (values.size() == 3)
-            m_linear_rgb = Color3f(values[0], values[1], values[2]);
-        else m_linear_rgb.set(0.0f);
+        m_scalar = 0.0;
+        m_linear_rgb.set(0.0f);
+        m_spectrum.set(0.0f);
+    }
+}
 
-        m_scalar = static_cast<double>(m_linear_rgb[0]);
+void ColorSource::initialize_from_3d_color(
+    const ColorEntity&      color_entity,
+    const InputFormat       input_format)
+{
+    const ColorValueArray& values = color_entity.get_values();
 
-        switch (color_space)
+    if (values.size() == 1)
+        m_linear_rgb.set(values[0]);
+    else if (values.size() == 3)
+        m_linear_rgb = Color3f(values[0], values[1], values[2]);
+    else m_linear_rgb.set(0.0f);
+
+    m_scalar = static_cast<double>(m_linear_rgb[0]);
+
+    if (input_format == InputFormatSpectralIlluminance || input_format == InputFormatSpectralReflectance)
+    {
+        switch (color_entity.get_color_space())
         {
           case ColorSpaceLinearRGB:
             linear_rgb_to_spectrum(
@@ -198,16 +223,7 @@ ColorSource::ColorSource(
             break;
         }
     }
-
-    // Apply the multiplier to the color values.
-    const float multiplier = color_entity.get_multiplier();
-    m_scalar *= multiplier;
-    m_linear_rgb *= multiplier;
-    m_spectrum *= multiplier;
-
-    // Store the alpha values.
-    const ColorValueArray& alpha = color_entity.get_alpha();
-    m_alpha[0] = alpha.size() == 1 ? alpha[0] : 0.0f;
+    else m_spectrum.set(0.0f);
 }
 
 }   // namespace renderer

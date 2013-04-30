@@ -68,8 +68,11 @@ class DLLSYMBOL ConnectableEntity
   protected:
     InputArray m_inputs;
 
-    static bool is_uniform_zero(const Source* source);
-    bool is_uniform_zero(const char* input_name) const;
+    static bool is_uniform_zero_scalar(const Source* source);
+    static bool is_uniform_zero_spectrum(const Source* source);
+
+    bool is_uniform_zero_scalar(const char* input_name) const;
+    bool is_uniform_zero_spectrum(const char* input_name) const;
 
     static bool is_uniform_zero(const Source* source, const Source* multiplier);
     bool is_uniform_zero(const char* input_name, const char* multiplier_name) const;

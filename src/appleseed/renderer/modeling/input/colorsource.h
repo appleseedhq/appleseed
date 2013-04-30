@@ -78,6 +78,13 @@ class ColorSource
     foundation::Color3f             m_linear_rgb;
     Spectrum                        m_spectrum;
     Alpha                           m_alpha;
+
+    void initialize_from_spectrum(
+        const ColorEntity&          color_entity);
+
+    void initialize_from_3d_color(
+        const ColorEntity&          color_entity,
+        const InputFormat           input_format);
 };
 
 

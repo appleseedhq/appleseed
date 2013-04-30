@@ -93,7 +93,7 @@ namespace
             if (!check_uniform("upper_hemi_radiance") || !check_uniform("lower_hemi_radiance"))
                 return false;
 
-            if (is_uniform_zero("upper_hemi_radiance") && is_uniform_zero("lower_hemi_radiance"))
+            if (is_uniform_zero_spectrum("upper_hemi_radiance") && is_uniform_zero_spectrum("lower_hemi_radiance"))
                 warn_zero_radiance();
 
             m_inputs.evaluate_uniforms(&m_values);

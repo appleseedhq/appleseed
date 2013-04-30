@@ -40,15 +40,30 @@
 namespace renderer
 {
 
-bool ConnectableEntity::is_uniform_zero(const Source* source)
+bool ConnectableEntity::is_uniform_zero_scalar(const Source* source)
+{
+    assert(source);
+
+    if (source->is_uniform())
+    {
+        double value;
+        source->evaluate_uniform(value);
+
+        if (value == 0.0)
+            return true;
+    }
+
+    return false;
+}
+
+bool ConnectableEntity::is_uniform_zero_spectrum(const Source* source)
 {
     assert(source);
 
     if (source->is_uniform())
     {
         Spectrum spectrum;
-        Alpha alpha;
-        source->evaluate_uniform(spectrum, alpha);
+        source->evaluate_uniform(spectrum);
 
         if (spectrum == Spectrum(0.0f))
             return true;
@@ -57,14 +72,19 @@ bool ConnectableEntity::is_uniform_zero(const Source* source)
     return false;
 }
 
-bool ConnectableEntity::is_uniform_zero(const char* input_name) const
+bool ConnectableEntity::is_uniform_zero_scalar(const char* input_name) const
 {
-    return is_uniform_zero(m_inputs.source(input_name));
+    return is_uniform_zero_scalar(m_inputs.source(input_name));
+}
+
+bool ConnectableEntity::is_uniform_zero_spectrum(const char* input_name) const
+{
+    return is_uniform_zero_spectrum(m_inputs.source(input_name));
 }
 
 bool ConnectableEntity::is_uniform_zero(const Source* source, const Source* multiplier)
 {
-    return is_uniform_zero(source) || is_uniform_zero(multiplier);
+    return is_uniform_zero_spectrum(source) || is_uniform_zero_scalar(multiplier);
 }
 
 bool ConnectableEntity::is_uniform_zero(const char* input_name, const char* multiplier_name) const
@@ -91,13 +111,13 @@ bool ConnectableEntity::check_uniform(const char* input_name) const
 
 void ConnectableEntity::check_non_zero_radiance(const Source* source) const
 {
-    if (is_uniform_zero(source))
+    if (is_uniform_zero_spectrum(source))
         warn_zero_radiance();
 }
 
 void ConnectableEntity::check_non_zero_radiance(const char* input_name) const
 {
-    if (is_uniform_zero(input_name))
+    if (is_uniform_zero_spectrum(input_name))
         warn_zero_radiance();
 }
 
