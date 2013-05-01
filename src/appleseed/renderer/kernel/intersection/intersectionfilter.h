@@ -44,7 +44,8 @@
 #include <vector>
 
 // Forward declarations.
-namespace renderer  { class ObjectInstance; }
+namespace renderer  { class MaterialArray; }
+namespace renderer  { class Object; }
 namespace renderer  { class Source; }
 namespace renderer  { class TextureCache; }
 
@@ -56,7 +57,8 @@ class IntersectionFilter
 {
   public:
     IntersectionFilter(
-        const ObjectInstance&   object_instance,
+        Object&                 object,
+        const MaterialArray&    materials,
         TextureCache&           texture_cache);
 
     ~IntersectionFilter();
@@ -88,8 +90,7 @@ class IntersectionFilter
         const Source*           alpha_map,
         TextureCache&           texture_cache);
 
-    void copy_uv_coordinates(
-        const ObjectInstance&   object_instance);
+    void copy_uv_coordinates(Object& object);
 };
 
 

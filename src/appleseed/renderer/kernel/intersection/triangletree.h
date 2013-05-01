@@ -116,8 +116,7 @@ class TriangleTree
     const Arguments                             m_arguments;
     std::vector<TriangleKey>                    m_triangle_keys;
     std::vector<foundation::uint8>              m_leaf_data;
-
-    bool                                        m_has_intersection_filters;
+    std::vector<const IntersectionFilter*>      m_intersection_filters_repository;
     std::vector<const IntersectionFilter*>      m_intersection_filters;
 
     void build_bvh(
@@ -220,6 +219,7 @@ class TriangleLeafVisitor
 
   private:
     const TriangleTree&     m_tree;
+    const bool              m_has_intersection_filters;
     ShadingPoint&           m_shading_point;
     GTriangleType           m_interpolated_triangle;
     const GTriangleType*    m_hit_triangle;
@@ -253,6 +253,7 @@ class TriangleLeafProbeVisitor
 
   private:
     const TriangleTree&     m_tree;
+    const bool              m_has_intersection_filters;
 };
 
 
@@ -321,6 +322,7 @@ inline TriangleLeafVisitor::TriangleLeafVisitor(
     const TriangleTree&                     tree,
     ShadingPoint&                           shading_point)
   : m_tree(tree)
+  , m_has_intersection_filters(!tree.m_intersection_filters.empty())
   , m_shading_point(shading_point)
   , m_hit_triangle(0)
 {
@@ -368,7 +370,7 @@ inline bool TriangleLeafVisitor::visit(
             if (reader.m_triangle.intersect(m_shading_point.m_ray, t, u, v))
             {
                 // Optionally filter intersections.
-                if (m_tree.m_has_intersection_filters)
+                if (m_has_intersection_filters)
                 {
                     const TriangleKey& triangle_key = m_tree.m_triangle_keys[triangle_index + i];
                     const IntersectionFilter* filter =
@@ -407,7 +409,7 @@ inline bool TriangleLeafVisitor::visit(
             if (reader.m_triangle.intersect(m_shading_point.m_ray, t, u, v))
             {
                 // Optionally filter intersections.
-                if (m_tree.m_has_intersection_filters)
+                if (m_has_intersection_filters)
                 {
                     const TriangleKey& triangle_key = m_tree.m_triangle_keys[triangle_index + i];
                     const IntersectionFilter* filter =
@@ -460,6 +462,7 @@ inline void TriangleLeafVisitor::read_hit_triangle_data() const
 inline TriangleLeafProbeVisitor::TriangleLeafProbeVisitor(
     const TriangleTree&                     tree)
   : m_tree(tree)
+  , m_has_intersection_filters(!tree.m_intersection_filters.empty())
 {
 }
 

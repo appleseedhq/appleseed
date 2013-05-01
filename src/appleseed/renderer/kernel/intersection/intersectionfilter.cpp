@@ -55,12 +55,12 @@ namespace renderer
 {
 
 IntersectionFilter::IntersectionFilter(
-    const ObjectInstance&   object_instance,
+    Object&                 object,
+    const MaterialArray&    materials,
     TextureCache&           texture_cache)
 {
-    // Create one alpha mask per material in the object instance.
-    const MaterialArray& materials = object_instance.get_front_materials();
-    m_alpha_masks.resize(materials.size(), 0);
+    // Create one alpha mask per material.
+    m_alpha_masks.assign(materials.size(), 0);
     for (size_t i = 0; i < materials.size(); ++i)
     {
         const Material* material = materials[i];
@@ -68,8 +68,9 @@ IntersectionFilter::IntersectionFilter(
             continue;
 
         // Use the uncached version of get_alpha_map() since at this point
-        // entity binding hasn't been performed yet when intersection filters
-        // are updated on existing triangle trees.
+        // on_frame_begin() hasn't been called on the materials, when
+        // intersection filters are updated on existing triangle trees
+        // prior to rendering.
         const Source* alpha_map = material->get_uncached_alpha_map();
         if (alpha_map == 0)
             continue;
@@ -78,7 +79,7 @@ IntersectionFilter::IntersectionFilter(
     }
 
     // Make a local copy of the object's UV coordinates.
-    copy_uv_coordinates(object_instance);
+    copy_uv_coordinates(object);
 }
 
 IntersectionFilter::~IntersectionFilter()
@@ -180,11 +181,8 @@ IntersectionFilter::Bitmap* IntersectionFilter::create_alpha_mask(
     return alpha_mask;
 }
 
-void IntersectionFilter::copy_uv_coordinates(const ObjectInstance& object_instance)
+void IntersectionFilter::copy_uv_coordinates(Object& object)
 {
-    // Retrieve the object.
-    Object& object = object_instance.get_object();
-
     // Retrieve the region kit of the object.
     Access<RegionKit> region_kit(&object.get_region_kit());
 
