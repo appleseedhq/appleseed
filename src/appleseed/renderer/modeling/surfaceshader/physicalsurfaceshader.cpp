@@ -86,6 +86,7 @@ namespace
         {
             m_inputs.declare("color_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("alpha_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("translucency", InputFormatScalar, "0.0");
             m_inputs.declare("aerial_persp_sky_color", InputFormatSpectralIlluminance, "");
 
             const string aerial_persp_mode = m_params.get_optional<string>("aerial_persp_mode", "none");
@@ -132,11 +133,10 @@ namespace
                 &values);
 
             // Retrieve the lighting engine.
-            ILightingEngine* lighting_engine =
-                shading_context.get_lighting_engine();
+            ILightingEngine* lighting_engine = shading_context.get_lighting_engine();
             assert(lighting_engine);
 
-            // Compute the lighting.
+            // Compute lighting.
             shading_result.m_color_space = ColorSpaceSpectral;
             lighting_engine->compute_lighting(
                 sampling_context,
@@ -145,11 +145,46 @@ namespace
                 shading_result.m_color,
                 shading_result.m_aovs);
 
-            // Handle alpha mapping.
+            // Compute fake translucency.
+            if (values.m_translucency > 0.0)
+            {
+                const Vector3d& p = shading_point.get_point();
+                const Vector3d& n = shading_point.get_original_shading_normal();
+                const Vector3d& d = shading_point.get_ray().m_dir;
+
+                ShadingRay back_ray(shading_point.get_ray());
+                back_ray.m_tmax *= norm(d);
+                back_ray.m_dir = dot(d, n) > 0.0 ? -n : n;
+                back_ray.m_org = p - back_ray.m_tmax * back_ray.m_dir;
+
+                ShadingPoint back_shading_point(shading_point);
+                back_shading_point.set_ray(back_ray);
+
+                ShadingResult back_shading_result;
+                back_shading_result.m_aovs.set_size(shading_result.m_aovs.size());
+                lighting_engine->compute_lighting(
+                    sampling_context,
+                    shading_context,
+                    back_shading_point,
+                    back_shading_result.m_color,
+                    back_shading_result.m_aovs);
+
+                const float translucency = static_cast<float>(values.m_translucency);
+
+                back_shading_result.m_color *= translucency;
+                back_shading_result.m_aovs *= translucency;
+
+                shading_result.m_color *= 1.0f - translucency;
+                shading_result.m_aovs *= 1.0f - translucency;
+
+                shading_result.m_color += back_shading_result.m_color;
+                shading_result.m_aovs += back_shading_result.m_aovs;
+            }
+
+            // Compute alpha channel.
             const Material* material = shading_point.get_material();
             if (material && material->get_alpha_map())
             {
-                // Evaluate the alpha map at the shading point.
                 material->get_alpha_map()->evaluate(
                     shading_context.get_texture_cache(),
                     shading_point.get_uv(0),
@@ -162,7 +197,7 @@ namespace
             shading_result.m_aovs *= static_cast<float>(values.m_color_multiplier);
             shading_result.m_alpha *= static_cast<float>(values.m_alpha_multiplier);
 
-            // Handle aerial perspective.
+            // Add fake aerial perspective.
             if (m_aerial_persp_mode != AerialPerspNone)
             {
                 Spectrum sky_color;
@@ -207,6 +242,7 @@ namespace
         {
             double      m_color_multiplier;
             double      m_alpha_multiplier;
+            double      m_translucency;
             Spectrum    m_aerial_persp_sky_color;
             Alpha       m_aerial_persp_sky_alpha;       // unused
         };
@@ -262,6 +298,16 @@ DictionaryArray PhysicalSurfaceShaderFactory::get_widget_definitions() const
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("default", "1.0")
+            .insert("use", "optional"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "translucency")
+            .insert("label", "Translucency")
+            .insert("widget", "entity_picker")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("default", "0.0")
             .insert("use", "optional"));
 
     definitions.push_back(
