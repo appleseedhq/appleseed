@@ -88,9 +88,6 @@ inline void ShadingEngine::shade(
     const ShadingPoint&         shading_point,
     ShadingResult&              shading_result) const
 {
-    // Default to transparent black.
-    shading_result.clear();
-
     if (shading_point.hit())
     {
         return

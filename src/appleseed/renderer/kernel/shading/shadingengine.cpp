@@ -125,9 +125,8 @@ void ShadingEngine::shade_environment(
     ShadingResult&          shading_result) const
 {
     // Retrieve the environment shader of the scene.
-    const Scene& scene = shading_point.get_scene();
     const EnvironmentShader* environment_shader =
-        scene.get_environment()->get_environment_shader();
+        shading_point.get_scene().get_environment()->get_environment_shader();
 
     if (environment_shader)
     {
@@ -139,6 +138,11 @@ void ShadingEngine::shade_environment(
             input_evaluator,
             direction,
             shading_result);
+    }
+    else
+    {
+        // No environment shader: return transparent black.
+        shading_result.clear();
     }
 }
 
