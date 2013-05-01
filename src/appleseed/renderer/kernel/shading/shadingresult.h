@@ -91,12 +91,8 @@ inline void ShadingResult::clear()
 {
     m_color_space = foundation::ColorSpaceLinearRGB;
 
-    m_color[0] =
-    m_color[1] =
-    m_color[2] = 0.0f;
-
+    m_color.set(0.0f);
     m_alpha.set(0.0f);
-
     m_aovs.set(0.0f);
 }
 
