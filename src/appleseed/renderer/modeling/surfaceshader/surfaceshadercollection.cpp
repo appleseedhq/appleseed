@@ -117,7 +117,20 @@ namespace
             const Assembly&         assembly)
         {
             const Frame* frame = project.get_frame();
+            const ColorSpace frame_color_space = frame->get_color_space();
             const PixelFormat frame_pixel_format = frame->image().properties().m_pixel_format;
+
+            if (frame_color_space != ColorSpaceLinearRGB &&
+                frame->aov_images().empty() &&
+                get_surface_shader_count() > 1)
+            {
+                RENDERER_LOG_WARNING(
+                    "since AOVs are never color-corrected (only the primary output is), "
+                    "the first output of the \"%s\" surface shader will be expressed in the "
+                    "%s color space while all others will be expressed in linear RGB.",
+                    get_name(),
+                    color_space_name(frame->get_color_space()));
+            }
 
             m_surface_shaders[0] =
                 static_cast<SurfaceShader*>(
@@ -193,6 +206,19 @@ namespace
         const LightingConditions    m_lighting_conditions;
         const SurfaceShader*        m_surface_shaders[MaxShaderCount];
         size_t                      m_surface_shader_aov_index[MaxShaderCount];
+
+        size_t get_surface_shader_count() const
+        {
+            size_t count = 0;
+
+            for (size_t i = 0; i < MaxShaderCount; ++i)
+            {
+                if (m_inputs.get_entity(get_shader_name(i).c_str()))
+                    ++count;
+            }
+
+            return count;
+        }
     };
 }
 
