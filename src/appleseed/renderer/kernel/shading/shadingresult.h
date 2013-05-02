@@ -55,17 +55,23 @@ class ShadingResult
     Alpha                   m_alpha;
     SpectrumStack           m_aovs;
 
-    // Return true if this shading result is valid, or false if it contains NaN or negative values.
-    bool is_valid() const;
+    // Return true if this shading result contains valid linear RGB values;
+    // false if the color, alpha or any AOV contains NaN or negative values.
+    bool is_valid_linear_rgb() const;
 
-    // Set the shading result to transparent black in linear RGB.
-    void clear();
+    // Set the shading result to transparent black in linear RGBA.
+    void set_to_transparent_black();
 
-    // Set the shading result to a given linear RGBA value.
-    void set_to_linear_rgba(const foundation::Color4f& linear_rgba);
+    // Set the shading result to solid pink in linear RGBA (used for debugging).
+    void set_to_solid_pink();
 
     // Set the shading result to a given fully opaque linear RGB value.
+    // All AOVs are set to black.
     void set_to_linear_rgb(const foundation::Color3f& linear_rgb);
+
+    // Set the shading result to a given linear RGBA value.
+    // All AOVs are set to black.
+    void set_to_linear_rgba(const foundation::Color4f& linear_rgba);
 
     // Transform the shading result to the linear RGB color space.
     void transform_to_linear_rgb(
@@ -75,11 +81,9 @@ class ShadingResult
     void transform_to_spectrum(
         const foundation::LightingConditions&   lighting);
 
-    // Set the shading result to solid pink (used for debugging).
-    void set_to_solid_pink();
-
     // Composite this shading result over 'background'.
-    void composite_over(const ShadingResult& background);
+    // Both shading results must be expressed in linear RGB.
+    void composite_over_linear_rgb(const ShadingResult& background);
 };
 
 
@@ -87,13 +91,19 @@ class ShadingResult
 // ShadingResult class implementation.
 //
 
-inline void ShadingResult::clear()
+inline void ShadingResult::set_to_transparent_black()
 {
-    m_color_space = foundation::ColorSpaceLinearRGB;
+    set_to_linear_rgba(foundation::Color4f(0.0f));
+}
 
-    m_color.set(0.0f);
-    m_alpha.set(0.0f);
-    m_aovs.set(0.0f);
+inline void ShadingResult::set_to_solid_pink()
+{
+    set_to_linear_rgba(foundation::Color4f(1.0f, 0.0f, 1.0f, 1.0f));
+}
+
+inline void ShadingResult::set_to_linear_rgb(const foundation::Color3f& linear_rgb)
+{
+    set_to_linear_rgba(foundation::Color4f(linear_rgb[0], linear_rgb[1], linear_rgb[2], 1.0f));
 }
 
 inline void ShadingResult::set_to_linear_rgba(const foundation::Color4f& linear_rgba)
@@ -105,22 +115,14 @@ inline void ShadingResult::set_to_linear_rgba(const foundation::Color4f& linear_
     m_color[2] = linear_rgba[2];
 
     m_alpha.set(linear_rgba[3]);
-}
 
-inline void ShadingResult::set_to_linear_rgb(const foundation::Color3f& linear_rgb)
-{
-    m_color_space = foundation::ColorSpaceLinearRGB;
+    const size_t aov_count = m_aovs.size();
 
-    m_color[0] = linear_rgb[0];
-    m_color[1] = linear_rgb[1];
-    m_color[2] = linear_rgb[2];
-
-    m_alpha.set(1.0f);
-}
-
-inline void ShadingResult::set_to_solid_pink()
-{
-    set_to_linear_rgb(foundation::Color3f(1.0f, 0.0f, 1.0f));
+    for (size_t i = 0; i < aov_count; ++i)
+    {
+        Spectrum& aov = m_aovs[i];
+        aov[0] = aov[1] = aov[2] = 0.0f;
+    }
 }
 
 }       // namespace renderer

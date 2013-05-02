@@ -160,7 +160,7 @@ namespace
                 shading_result);
 
             // Ignore invalid samples.
-            if (!shading_result.is_valid())
+            if (!shading_result.is_valid_linear_rgb())
                 return 0;
 
             // Create a single sample.

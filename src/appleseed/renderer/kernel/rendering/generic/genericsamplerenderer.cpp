@@ -199,7 +199,7 @@ namespace
                     }
 
                     // Compositing.
-                    shading_result.composite_over(local_result);
+                    shading_result.composite_over_linear_rgb(local_result);
                 }
 
                 // Stop once we hit the environment.

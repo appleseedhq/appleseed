@@ -153,7 +153,7 @@ TEST_SUITE(Renderer_Kernel_Shading_ShadingResult)
         EXPECT_EQ(Spectrum(0.0f), result.m_color);
     }
 
-    TEST_CASE(CompositeOver_TenPercentOpaqueWhiteOverFullyTransparentBlack)
+    TEST_CASE(CompositeOverLinearRGB_TenPercentOpaqueWhiteOverFullyTransparentBlack)
     {
         ShadingResult a;
         a.m_color_space = ColorSpaceLinearRGB;
@@ -165,13 +165,13 @@ TEST_SUITE(Renderer_Kernel_Shading_ShadingResult)
         b.m_color.set(0.0f);
         b.m_alpha.set(0.0f);
 
-        a.composite_over(b);
+        a.composite_over_linear_rgb(b);
 
         EXPECT_FEQ(0.1f, a.m_color[0]);
         EXPECT_FEQ(0.1f, a.m_alpha[0]);
     }
 
-    TEST_CASE(CompositeOver_FullyTransparentBlackOverTenPercentOpaqueWhite)
+    TEST_CASE(CompositeOverLinearRGB_FullyTransparentBlackOverTenPercentOpaqueWhite)
     {
         ShadingResult a;
         a.m_color_space = ColorSpaceLinearRGB;
@@ -183,7 +183,7 @@ TEST_SUITE(Renderer_Kernel_Shading_ShadingResult)
         b.m_color.set(0.1f);
         b.m_alpha.set(0.1f);
 
-        a.composite_over(b);
+        a.composite_over_linear_rgb(b);
 
         EXPECT_FEQ(0.1f, a.m_color[0]);
         EXPECT_FEQ(0.1f, a.m_alpha[0]);

@@ -142,7 +142,7 @@ void ShadingEngine::shade_environment(
     else
     {
         // No environment shader: return transparent black.
-        shading_result.clear();
+        shading_result.set_to_transparent_black();
     }
 }
 

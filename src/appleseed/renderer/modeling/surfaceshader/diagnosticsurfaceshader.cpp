@@ -357,7 +357,7 @@ void DiagnosticSurfaceShader::evaluate(
 
       default:
         assert(false);
-        shading_result.clear();
+        shading_result.set_to_transparent_black();
         break;
     }
 }

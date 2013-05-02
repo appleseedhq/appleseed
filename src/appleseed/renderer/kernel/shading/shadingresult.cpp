@@ -71,8 +71,10 @@ namespace
     }
 }
 
-bool ShadingResult::is_valid() const
+bool ShadingResult::is_valid_linear_rgb() const
 {
+    assert(m_color_space == ColorSpaceLinearRGB);
+
     if (!is_valid_color(spectrum_as_color3f(m_color)))
         return false;
 
@@ -195,7 +197,7 @@ void ShadingResult::transform_to_spectrum(const LightingConditions& lighting)
     m_color_space = ColorSpaceSpectral;
 }
 
-void ShadingResult::composite_over(const ShadingResult& background)
+void ShadingResult::composite_over_linear_rgb(const ShadingResult& background)
 {
     //
     // Shading results use premultiplied alpha.

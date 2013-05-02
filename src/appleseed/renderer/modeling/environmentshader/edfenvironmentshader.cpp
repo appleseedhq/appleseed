@@ -133,7 +133,7 @@ namespace
             else
             {
                 // Environment shader not properly initialized: return transparent black.
-                shading_result.clear();
+                shading_result.set_to_transparent_black();
             }
         }
 
