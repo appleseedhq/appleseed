@@ -36,7 +36,6 @@
 #include "renderer/kernel/volume/occupancygrid.h"
 #include "renderer/kernel/volume/volume.h"
 #include "renderer/modeling/input/inputarray.h"
-#include "renderer/modeling/input/source.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 

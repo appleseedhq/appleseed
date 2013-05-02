@@ -36,7 +36,6 @@
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/input/inputarray.h"
-#include "renderer/modeling/input/source.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/utility/transformsequence.h"
