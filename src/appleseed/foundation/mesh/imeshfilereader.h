@@ -32,6 +32,9 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // Forward declarations.
 namespace foundation    { class IMeshBuilder; }
 
@@ -42,7 +45,7 @@ namespace foundation
 // Mesh file reader interface.
 //
 
-class IMeshFileReader
+class DLLSYMBOL IMeshFileReader
   : public NonCopyable
 {
   public:

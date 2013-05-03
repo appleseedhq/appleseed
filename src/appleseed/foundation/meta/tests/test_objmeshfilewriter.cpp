@@ -32,6 +32,7 @@
 #include "foundation/mesh/meshbuilderbase.h"
 #include "foundation/mesh/objmeshfilereader.h"
 #include "foundation/mesh/objmeshfilewriter.h"
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.
@@ -45,7 +46,10 @@ using namespace std;
 
 TEST_SUITE(Foundation_Mesh_OBJMeshFileWriter)
 {
-    typedef IMeshWalker::Face Face;
+    struct Face
+    {
+        size_t m_v0, m_v1, m_v2;
+    };
 
     struct Mesh
     {
@@ -57,27 +61,27 @@ TEST_SUITE(Foundation_Mesh_OBJMeshFileWriter)
     struct MeshBuilder
       : public MeshBuilderBase
     {
-        vector<Mesh>        m_meshes;
+        vector<Mesh> m_meshes;
 
-        virtual void begin_mesh(const string& name)
+        virtual void begin_mesh(const char* name) OVERRIDE
         {
             m_meshes.push_back(Mesh());
             m_meshes.back().m_name = name;
         }
 
-        virtual size_t push_vertex(const Vector3d& v)
+        virtual size_t push_vertex(const Vector3d& v) OVERRIDE
         {
             m_meshes.back().m_vertices.push_back(v);
             return m_meshes.back().m_vertices.size() - 1;
         }
 
-        virtual void begin_face(const size_t vertex_count)
+        virtual void begin_face(const size_t vertex_count) OVERRIDE
         {
             assert(vertex_count == 3);
             m_meshes.back().m_faces.push_back(Face());
         }
 
-        virtual void set_face_vertices(const size_t vertices[])
+        virtual void set_face_vertices(const size_t vertices[]) OVERRIDE
         {
             Face& face = m_meshes.back().m_faces.back();
             face.m_v0 = vertices[0];
@@ -96,49 +100,80 @@ TEST_SUITE(Foundation_Mesh_OBJMeshFileWriter)
         {
         }
 
-        virtual string get_name() const
+        virtual const char* get_name() const OVERRIDE
         {
-            return m_mesh.m_name;
+            return m_mesh.m_name.c_str();
         }
 
-        virtual size_t get_vertex_count() const
+        virtual size_t get_vertex_count() const OVERRIDE
         {
             return m_mesh.m_vertices.size();
         }
 
-        virtual Vector3d get_vertex(const size_t i) const
+        virtual Vector3d get_vertex(const size_t i) const OVERRIDE
         {
             return m_mesh.m_vertices[i];
         }
 
-        virtual size_t get_vertex_normal_count() const
+        virtual size_t get_vertex_normal_count() const OVERRIDE
         {
             return 0;
         }
 
-        virtual Vector3d get_vertex_normal(const size_t i) const
+        virtual Vector3d get_vertex_normal(const size_t i) const OVERRIDE
         {
             return Vector3d();
         }
 
-        virtual size_t get_tex_coords_count() const
+        virtual size_t get_tex_coords_count() const OVERRIDE
         {
             return 0;
         }
 
-        virtual Vector2d get_tex_coords(const size_t i) const
+        virtual Vector2d get_tex_coords(const size_t i) const OVERRIDE
         {
             return Vector2d();
         }
 
-        virtual size_t get_face_count() const
+        virtual size_t get_material_slot_count() const OVERRIDE
+        {
+            return 0;
+        }
+
+        virtual const char* get_material_slot(const size_t i) const OVERRIDE
+        {
+            return 0;
+        }
+
+        virtual size_t get_face_count() const OVERRIDE
         {
             return m_mesh.m_faces.size();
         }
 
-        virtual Face get_face(const size_t i) const
+        virtual size_t get_face_vertex_count(const size_t face_index) const OVERRIDE
         {
-            return m_mesh.m_faces[i];
+            return 3;
+        }
+
+        virtual size_t get_face_vertex(const size_t face_index, const size_t vertex_index) const OVERRIDE
+        {
+            assert(vertex_index < 3);
+            return (&m_mesh.m_faces[face_index].m_v0)[vertex_index];
+        }
+
+        virtual size_t get_face_vertex_normal(const size_t face_index, const size_t vertex_index) const OVERRIDE
+        {
+            return None;
+        }
+
+        virtual size_t get_face_tex_coords(const size_t face_index, const size_t vertex_index) const OVERRIDE
+        {
+            return None;
+        }
+
+        virtual size_t get_face_material(const size_t face_index) const OVERRIDE
+        {
+            return None;
         }
     };
 

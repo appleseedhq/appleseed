@@ -26,45 +26,47 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MESH_ALEMBICMESHFILEREADER_H
-#define APPLESEED_FOUNDATION_MESH_ALEMBICMESHFILEREADER_H
+// Interface header.
+#include "genericmeshfilewriter.h"
 
 // appleseed.foundation headers.
-#include "foundation/mesh/imeshfilereader.h"
-#include "foundation/platform/compiler.h"
+#include "foundation/core/exceptions/exceptionunsupportedfileformat.h"
+#include "foundation/mesh/binarymeshfilewriter.h"
+#include "foundation/mesh/objmeshfilewriter.h"
+#include "foundation/utility/string.h"
+
+// boost headers.
+#include "boost/filesystem/path.hpp"
 
 // Standard headers.
 #include <string>
 
-// Forward declarations.
-namespace foundation    { class IMeshBuilder; }
+using namespace boost;
+using namespace std;
 
 namespace foundation
 {
 
-//
-// Alembic mesh file reader.
-//
-// References:
-//
-//   http://www.alembic.io
-//   http://code.google.com/p/alembic/
-//
-
-class AlembicMeshFileReader
-  : public IMeshFileReader
+GenericMeshFileWriter::GenericMeshFileWriter(const char* filename)
 {
-  public:
-    // Constructor.
-    explicit AlembicMeshFileReader(const std::string& filename);
+    const filesystem::path filepath(filename);
+    const string extension = lower_case(filepath.extension().string());
 
-    // Read a mesh.
-    virtual void read(IMeshBuilder& builder) OVERRIDE;
+    if (extension == ".obj")
+        m_writer = new OBJMeshFileWriter(filename);
+    else if (extension == ".binarymesh")
+        m_writer = new BinaryMeshFileWriter(filename);
+    else throw ExceptionUnsupportedFileFormat(filename);
+}
 
-  private:
-    const std::string m_filename;
-};
+GenericMeshFileWriter::~GenericMeshFileWriter()
+{
+    delete m_writer;
+}
 
-}       // namespace foundation
+void GenericMeshFileWriter::write(const IMeshWalker& walker)
+{
+    m_writer->write(walker);
+}
 
-#endif  // !APPLESEED_FOUNDATION_MESH_ALEMBICMESHFILEREADER_H
+}   // namespace foundation

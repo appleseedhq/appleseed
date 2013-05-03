@@ -33,9 +33,11 @@
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/vector.h"
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // Standard headers.
 #include <cstddef>
-#include <string>
 
 namespace foundation
 {
@@ -44,50 +46,48 @@ namespace foundation
 // Mesh walker interface.
 //
 
-class IMeshWalker
+class DLLSYMBOL IMeshWalker
   : public NonCopyable
 {
   public:
-    struct Face
-    {
-        // Special index value indicating that a feature is not present.
-        static const size_t None = ~0;
-
-        size_t  m_v0, m_v1, m_v2;
-        size_t  m_n0, m_n1, m_n2;
-        size_t  m_t0, m_t1, m_t2;
-        size_t  m_material;
-    };
+    // Special index value indicating that a feature is absent.
+    static const size_t None = ~0;
 
     // Destructor.
     virtual ~IMeshWalker() {}
 
     // Return the name of the mesh.
-    virtual std::string get_name() const = 0;
+    virtual const char* get_name() const = 0;
 
-    // Return the number of vertices in the mesh.
+    // Return vertices.
     virtual size_t get_vertex_count() const = 0;
-
-    // Return a given vertex from the mesh.
     virtual Vector3d get_vertex(const size_t i) const = 0;
 
-    // Return the number of vertex normals in the mesh.
+    // Return vertex normals.
     virtual size_t get_vertex_normal_count() const = 0;
-
-    // Return a given vertex normal from the mesh.
     virtual Vector3d get_vertex_normal(const size_t i) const = 0;
 
-    // Return the number of texture coordinates in the mesh.
+    // Return texture coordinates.
     virtual size_t get_tex_coords_count() const = 0;
-
-    // Return a given texture coordinate from the mesh.
     virtual Vector2d get_tex_coords(const size_t i) const = 0;
 
-    // Return the number of faces in the mesh.
+    // Return material slots.
+    virtual size_t get_material_slot_count() const = 0;
+    virtual const char* get_material_slot(const size_t i) const = 0;
+
+    // Return the number of faces.
     virtual size_t get_face_count() const = 0;
 
-    // Return a given face from the mesh.
-    virtual Face get_face(const size_t i) const = 0;
+    // Return the number of vertices in a given face.
+    virtual size_t get_face_vertex_count(const size_t face_index) const = 0;
+
+    // Return data for a given vertex of a given face.
+    virtual size_t get_face_vertex(const size_t face_index, const size_t vertex_index) const = 0;
+    virtual size_t get_face_vertex_normal(const size_t face_index, const size_t vertex_index) const = 0;
+    virtual size_t get_face_tex_coords(const size_t face_index, const size_t vertex_index) const = 0;
+
+    // Return the material assigned to a given face.
+    virtual size_t get_face_material(const size_t face_index) const = 0;
 };
 
 }       // namespace foundation

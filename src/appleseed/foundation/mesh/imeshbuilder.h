@@ -33,9 +33,11 @@
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/vector.h"
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // Standard headers.
 #include <cstddef>
-#include <string>
 
 namespace foundation
 {
@@ -44,7 +46,7 @@ namespace foundation
 // Mesh builder interface.
 //
 
-class IMeshBuilder
+class DLLSYMBOL IMeshBuilder
   : public NonCopyable
 {
   public:
@@ -52,7 +54,7 @@ class IMeshBuilder
     virtual ~IMeshBuilder() {}
 
     // Begin the definition of a mesh.
-    virtual void begin_mesh(const std::string& name) = 0;
+    virtual void begin_mesh(const char* name) = 0;
 
     // Append a vertex to the mesh.
     // Return the index of the vertex within the mesh.
@@ -67,7 +69,7 @@ class IMeshBuilder
     virtual size_t push_tex_coords(const Vector2d& v) = 0;
 
     // Append a material slot to the mesh.
-    virtual size_t push_material_slot(const std::string& name) = 0;
+    virtual size_t push_material_slot(const char* name) = 0;
 
     // Begin the definition of a face.
     virtual void begin_face(const size_t vertex_count) = 0;

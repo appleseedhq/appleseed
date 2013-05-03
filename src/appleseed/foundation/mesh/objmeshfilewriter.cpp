@@ -76,10 +76,7 @@ void OBJMeshFileWriter::write(const IMeshWalker& walker)
     }
 
     // Write the mesh object name.
-    fprintf(
-        m_file,
-        "o %s\n",
-        walker.get_name().c_str());
+    fprintf(m_file, "o %s\n", walker.get_name());
 
     // Write the mesh data.
     write_vertices(walker);
@@ -102,7 +99,7 @@ void OBJMeshFileWriter::close()
     }
 }
 
-void OBJMeshFileWriter::write_vertices(const IMeshWalker& walker)
+void OBJMeshFileWriter::write_vertices(const IMeshWalker& walker) const
 {
     const size_t vertex_count = walker.get_vertex_count();
 
@@ -119,7 +116,7 @@ void OBJMeshFileWriter::write_vertices(const IMeshWalker& walker)
     }
 }
 
-void OBJMeshFileWriter::write_vertex_normals(const IMeshWalker& walker)
+void OBJMeshFileWriter::write_vertex_normals(const IMeshWalker& walker) const
 {
     const size_t vertex_normal_count = walker.get_vertex_normal_count();
 
@@ -139,7 +136,7 @@ void OBJMeshFileWriter::write_vertex_normals(const IMeshWalker& walker)
     }
 }
 
-void OBJMeshFileWriter::write_texture_coordinates(const IMeshWalker& walker)
+void OBJMeshFileWriter::write_texture_coordinates(const IMeshWalker& walker) const
 {
     const size_t tex_coords_count = walker.get_tex_coords_count();
 
@@ -159,7 +156,7 @@ void OBJMeshFileWriter::write_texture_coordinates(const IMeshWalker& walker)
     }
 }
 
-void OBJMeshFileWriter::write_faces(const IMeshWalker& walker)
+void OBJMeshFileWriter::write_faces(const IMeshWalker& walker) const
 {
     const size_t face_count = walker.get_face_count();
 
@@ -183,98 +180,102 @@ void OBJMeshFileWriter::write_faces(const IMeshWalker& walker)
     }
 }
 
-void OBJMeshFileWriter::write_faces_no_vn_no_vt(const IMeshWalker& walker)
+void OBJMeshFileWriter::write_faces_no_vn_no_vt(const IMeshWalker& walker) const
 {
     const size_t face_count = walker.get_face_count();
 
-    for (size_t i = 0; i < face_count; ++i)
+    for (size_t face_index = 0; face_index < face_count; ++face_index)
     {
-        const IMeshWalker::Face face = walker.get_face(i);
+        fprintf(m_file, "f");
 
-        fprintf(
-            m_file,
-            "f " FMT_SIZE_T
-            " "  FMT_SIZE_T
-            " "  FMT_SIZE_T "\n",
-            m_base_vertex_index + face.m_v0,
-            m_base_vertex_index + face.m_v1,
-            m_base_vertex_index + face.m_v2);
+        const size_t face_vertex_count = walker.get_face_vertex_count(face_index);
+
+        for (size_t vertex_index = 0; vertex_index < face_vertex_count; ++vertex_index)
+        {
+            fprintf(
+                m_file,
+                " " FMT_SIZE_T,
+                m_base_vertex_index + walker.get_face_vertex(face_index, vertex_index));
+        }
+
+        fprintf(m_file, "\n");
     }
 }
 
-void OBJMeshFileWriter::write_faces_vn_no_vt(const IMeshWalker& walker)
+void OBJMeshFileWriter::write_faces_vn_no_vt(const IMeshWalker& walker) const
 {
     const size_t face_count = walker.get_face_count();
 
-    for (size_t i = 0; i < face_count; ++i)
+    for (size_t face_index = 0; face_index < face_count; ++face_index)
     {
-        const IMeshWalker::Face face = walker.get_face(i);
+        fprintf(m_file, "f");
 
-        fprintf(
-            m_file,
-            "f " FMT_SIZE_T "//" FMT_SIZE_T
-            " "  FMT_SIZE_T "//" FMT_SIZE_T
-            " "  FMT_SIZE_T "//" FMT_SIZE_T "\n",
-            m_base_vertex_index + face.m_v0,
-            m_base_vertex_normal_index + face.m_n0,
-            m_base_vertex_index + face.m_v1,
-            m_base_vertex_normal_index + face.m_n1,
-            m_base_vertex_index + face.m_v2,
-            m_base_vertex_normal_index + face.m_n2);
+        const size_t face_vertex_count = walker.get_face_vertex_count(face_index);
+
+        for (size_t vertex_index = 0; vertex_index < face_vertex_count; ++vertex_index)
+        {
+            fprintf(
+                m_file,
+                " "  FMT_SIZE_T "//" FMT_SIZE_T,
+                m_base_vertex_index + walker.get_face_vertex(face_index, vertex_index),
+                m_base_vertex_normal_index + walker.get_face_vertex_normal(face_index, vertex_index));
+        }
+
+        fprintf(m_file, "\n");
     }
 }
 
-void OBJMeshFileWriter::write_faces_no_vn_vt(const IMeshWalker& walker)
+void OBJMeshFileWriter::write_faces_no_vn_vt(const IMeshWalker& walker) const
 {
     const size_t face_count = walker.get_face_count();
 
-    for (size_t i = 0; i < face_count; ++i)
+    for (size_t face_index = 0; face_index < face_count; ++face_index)
     {
-        const IMeshWalker::Face face = walker.get_face(i);
+        fprintf(m_file, "f");
 
-        fprintf(
-            m_file,
-            "f " FMT_SIZE_T "/" FMT_SIZE_T
-            " "  FMT_SIZE_T "/" FMT_SIZE_T
-            " "  FMT_SIZE_T "/" FMT_SIZE_T "\n",
-            m_base_vertex_index + face.m_v0,
-            m_base_tex_coords_index + face.m_t0,
-            m_base_vertex_index + face.m_v1,
-            m_base_tex_coords_index + face.m_t1,
-            m_base_vertex_index + face.m_v2,
-            m_base_tex_coords_index + face.m_t2);
+        const size_t face_vertex_count = walker.get_face_vertex_count(face_index);
+
+        for (size_t vertex_index = 0; vertex_index < face_vertex_count; ++vertex_index)
+        {
+            fprintf(
+                m_file,
+                " "  FMT_SIZE_T "/" FMT_SIZE_T,
+                m_base_vertex_index + walker.get_face_vertex(face_index, vertex_index),
+                m_base_tex_coords_index + walker.get_face_tex_coords(face_index, vertex_index));
+        }
+
+        fprintf(m_file, "\n");
     }
 }
 
-void OBJMeshFileWriter::write_faces_vn_vt(const IMeshWalker& walker)
+void OBJMeshFileWriter::write_faces_vn_vt(const IMeshWalker& walker) const
 {
     const size_t face_count = walker.get_face_count();
 
-    for (size_t i = 0; i < face_count; ++i)
+    for (size_t face_index = 0; face_index < face_count; ++face_index)
     {
-        const IMeshWalker::Face face = walker.get_face(i);
+        fprintf(m_file, "f");
 
-        fprintf(
-            m_file,
-            "f " FMT_SIZE_T "/" FMT_SIZE_T "/" FMT_SIZE_T
-            " "  FMT_SIZE_T "/" FMT_SIZE_T "/" FMT_SIZE_T
-            " "  FMT_SIZE_T "/" FMT_SIZE_T "/" FMT_SIZE_T "\n",
-            m_base_vertex_index + face.m_v0,
-            m_base_tex_coords_index + face.m_t0,
-            m_base_vertex_normal_index + face.m_n0,
-            m_base_vertex_index + face.m_v1,
-            m_base_tex_coords_index + face.m_t1,
-            m_base_vertex_normal_index + face.m_n1,
-            m_base_vertex_index + face.m_v2,
-            m_base_tex_coords_index + face.m_t2,
-            m_base_vertex_normal_index + face.m_n2);
+        const size_t face_vertex_count = walker.get_face_vertex_count(face_index);
+
+        for (size_t vertex_index = 0; vertex_index < face_vertex_count; ++vertex_index)
+        {
+            fprintf(
+                m_file,
+                " "  FMT_SIZE_T "/" FMT_SIZE_T "/" FMT_SIZE_T,
+                m_base_vertex_index + walker.get_face_vertex(face_index, vertex_index),
+                m_base_tex_coords_index + walker.get_face_tex_coords(face_index, vertex_index),
+                m_base_vertex_normal_index + walker.get_face_vertex_normal(face_index, vertex_index));
+        }
+
+        fprintf(m_file, "\n");
     }
 }
 
 // Formatting string for all floating-point values.
 #define FP_FORMAT "%.15f"
 
-void OBJMeshFileWriter::write_vector(const char* prefix, const Vector2d& v)
+void OBJMeshFileWriter::write_vector(const char* prefix, const Vector2d& v) const
 {
     fprintf(
         m_file,
@@ -282,7 +283,7 @@ void OBJMeshFileWriter::write_vector(const char* prefix, const Vector2d& v)
         prefix, v[0], v[1]);
 }
 
-void OBJMeshFileWriter::write_vector(const char* prefix, const Vector3d& v)
+void OBJMeshFileWriter::write_vector(const char* prefix, const Vector3d& v) const
 {
     fprintf(
         m_file,

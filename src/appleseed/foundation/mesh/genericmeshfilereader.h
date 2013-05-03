@@ -33,8 +33,8 @@
 #include "foundation/mesh/imeshfilereader.h"
 #include "foundation/mesh/objmeshfilereader.h"
 
-// Standard headers.
-#include <string>
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Forward declarations.
 namespace foundation    { class IMeshBuilder; }
@@ -46,12 +46,15 @@ namespace foundation
 // Read a mesh file using the right reader based on the extension of the mesh file name.
 //
 
-class GenericMeshFileReader
+class DLLSYMBOL GenericMeshFileReader
   : public IMeshFileReader
 {
   public:
     // Constructor.
-    explicit GenericMeshFileReader(const std::string& filename);
+    explicit GenericMeshFileReader(const char* filename);
+
+    // Destructor.
+    virtual ~GenericMeshFileReader();
 
     // Get/set options for the Wavefront OBJ mesh file reader.
     int get_obj_options() const;
@@ -61,8 +64,8 @@ class GenericMeshFileReader
     virtual void read(IMeshBuilder& builder);
 
   private:
-    const std::string   m_filename;
-    int                 m_obj_options;
+    struct Impl;
+    Impl* impl;
 };
 
 }       // namespace foundation

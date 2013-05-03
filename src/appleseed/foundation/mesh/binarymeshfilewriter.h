@@ -26,11 +26,10 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MESH_OBJMESHFILEWRITER_H
-#define APPLESEED_FOUNDATION_MESH_OBJMESHFILEWRITER_H
+#ifndef APPLESEED_FOUNDATION_MESH_BINARYMESHFILEWRITER_H
+#define APPLESEED_FOUNDATION_MESH_BINARYMESHFILEWRITER_H
 
 // appleseed.foundation headers.
-#include "foundation/math/vector.h"
 #include "foundation/mesh/imeshfilewriter.h"
 #include "foundation/platform/compiler.h"
 
@@ -46,22 +45,18 @@ namespace foundation
 {
 
 //
-// Wavefront OBJ mesh file writer.
-//
-// Reference:
-//
-//   http://people.scs.fsu.edu/~burkardt/txt/obj_format.txt
+// Writer for a simple binary mesh file format.
 //
 
-class OBJMeshFileWriter
+class BinaryMeshFileWriter
   : public IMeshFileWriter
 {
   public:
     // Constructor.
-    explicit OBJMeshFileWriter(const std::string& filename);
+    explicit BinaryMeshFileWriter(const std::string& filename);
 
     // Destructor, closes the file.
-    virtual ~OBJMeshFileWriter();
+    virtual ~BinaryMeshFileWriter();
 
     // Write a mesh.
     virtual void write(const IMeshWalker& walker) OVERRIDE;
@@ -72,22 +67,17 @@ class OBJMeshFileWriter
   private:
     const std::string   m_filename;
     std::FILE*          m_file;
-    size_t              m_base_vertex_index;
-    size_t              m_base_vertex_normal_index;
-    size_t              m_base_tex_coords_index;
+
+    void write_string(const char* s) const;
 
     void write_vertices(const IMeshWalker& walker) const;
     void write_vertex_normals(const IMeshWalker& walker) const;
     void write_texture_coordinates(const IMeshWalker& walker) const;
+    void write_material_slots(const IMeshWalker& walker) const;
     void write_faces(const IMeshWalker& walker) const;
-    void write_faces_no_vn_no_vt(const IMeshWalker& walker) const;
-    void write_faces_vn_no_vt(const IMeshWalker& walker) const;
-    void write_faces_no_vn_vt(const IMeshWalker& walker) const;
-    void write_faces_vn_vt(const IMeshWalker& walker) const;
-    void write_vector(const char* prefix, const Vector2d& v) const;
-    void write_vector(const char* prefix, const Vector3d& v) const;
+    void write_face(const IMeshWalker& walker, const size_t face_index) const;
 };
 
 }       // namespace foundation
 
-#endif  // !APPLESEED_FOUNDATION_MESH_OBJMESHFILEWRITER_H
+#endif  // !APPLESEED_FOUNDATION_MESH_BINARYMESHFILEWRITER_H

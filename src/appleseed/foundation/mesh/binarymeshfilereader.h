@@ -26,68 +26,55 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MESH_OBJMESHFILEWRITER_H
-#define APPLESEED_FOUNDATION_MESH_OBJMESHFILEWRITER_H
+#ifndef APPLESEED_FOUNDATION_MESH_BINARYMESHFILEREADER_H
+#define APPLESEED_FOUNDATION_MESH_BINARYMESHFILEREADER_H
 
 // appleseed.foundation headers.
-#include "foundation/math/vector.h"
-#include "foundation/mesh/imeshfilewriter.h"
+#include "foundation/mesh/imeshfilereader.h"
 #include "foundation/platform/compiler.h"
 
 // Standard headers.
 #include <cstddef>
-#include <cstdio>
 #include <string>
+#include <vector>
 
 // Forward declarations.
-namespace foundation    { class IMeshWalker; }
+namespace foundation    { class IMeshBuilder; }
 
 namespace foundation
 {
 
 //
-// Wavefront OBJ mesh file writer.
-//
-// Reference:
-//
-//   http://people.scs.fsu.edu/~burkardt/txt/obj_format.txt
+// Read for a simple binary mesh file format.
 //
 
-class OBJMeshFileWriter
-  : public IMeshFileWriter
+class BinaryMeshFileReader
+  : public IMeshFileReader
 {
   public:
     // Constructor.
-    explicit OBJMeshFileWriter(const std::string& filename);
+    explicit BinaryMeshFileReader(const std::string& filename);
 
-    // Destructor, closes the file.
-    virtual ~OBJMeshFileWriter();
-
-    // Write a mesh.
-    virtual void write(const IMeshWalker& walker) OVERRIDE;
-
-    // Close the file.
-    void close();
+    // Read a mesh.
+    virtual void read(IMeshBuilder& builder) OVERRIDE;
 
   private:
-    const std::string   m_filename;
-    std::FILE*          m_file;
-    size_t              m_base_vertex_index;
-    size_t              m_base_vertex_normal_index;
-    size_t              m_base_tex_coords_index;
+    const std::string       m_filename;
+    std::vector<size_t>     m_vertices;
+    std::vector<size_t>     m_vertex_normals;
+    std::vector<size_t>     m_tex_coords;
 
-    void write_vertices(const IMeshWalker& walker) const;
-    void write_vertex_normals(const IMeshWalker& walker) const;
-    void write_texture_coordinates(const IMeshWalker& walker) const;
-    void write_faces(const IMeshWalker& walker) const;
-    void write_faces_no_vn_no_vt(const IMeshWalker& walker) const;
-    void write_faces_vn_no_vt(const IMeshWalker& walker) const;
-    void write_faces_no_vn_vt(const IMeshWalker& walker) const;
-    void write_faces_vn_vt(const IMeshWalker& walker) const;
-    void write_vector(const char* prefix, const Vector2d& v) const;
-    void write_vector(const char* prefix, const Vector3d& v) const;
+    std::string read_string(std::FILE* file);
+
+    bool read_mesh(IMeshBuilder& builder, std::FILE* file);
+    void read_vertices(IMeshBuilder& builder, std::FILE* file);
+    void read_vertex_normals(IMeshBuilder& builder, std::FILE* file);
+    void read_texture_coordinates(IMeshBuilder& builder, std::FILE* file);
+    void read_material_slots(IMeshBuilder& builder, std::FILE* file);
+    void read_faces(IMeshBuilder& builder, std::FILE* file);
+    void read_face(IMeshBuilder& builder, std::FILE* file);
 };
 
 }       // namespace foundation
 
-#endif  // !APPLESEED_FOUNDATION_MESH_OBJMESHFILEWRITER_H
+#endif  // !APPLESEED_FOUNDATION_MESH_BINARYMESHFILEREADER_H

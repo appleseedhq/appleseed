@@ -540,7 +540,7 @@ struct OBJMeshFileReader::Impl
         else
         {
             // It hasn't: insert it into the mesh and make it the active material slot.
-            m_current_material_slot_index = m_builder.push_material_slot(material_slot_name);
+            m_current_material_slot_index = m_builder.push_material_slot(material_slot_name.c_str());
             m_material_slots.insert(make_pair(material_slot_name, m_current_material_slot_index));
         }
     }
@@ -550,7 +550,7 @@ struct OBJMeshFileReader::Impl
         if (!m_inside_mesh_def)
         {
             // Begin the definition of the new mesh.
-            m_builder.begin_mesh(m_current_mesh_name);
+            m_builder.begin_mesh(m_current_mesh_name.c_str());
             m_inside_mesh_def = true;
 
             // Clear material slot definitions.

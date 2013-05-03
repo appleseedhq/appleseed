@@ -32,6 +32,7 @@
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
 #include "foundation/mesh/imeshfilereader.h"
+#include "foundation/platform/compiler.h"
 
 // Standard headers.
 #include <cstddef>
@@ -90,7 +91,7 @@ class OBJMeshFileReader
         const int           options = Default);
 
     // Read a mesh.
-    virtual void read(IMeshBuilder& builder);
+    virtual void read(IMeshBuilder& builder) OVERRIDE;
 
   private:
     struct Impl;

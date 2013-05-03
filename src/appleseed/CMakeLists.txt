@@ -297,8 +297,14 @@ source_group ("foundation\\math" FILES
 set (foundation_mesh_sources
     foundation/mesh/alembicmeshfilereader.cpp
     foundation/mesh/alembicmeshfilereader.h
+    foundation/mesh/binarymeshfilereader.cpp
+    foundation/mesh/binarymeshfilereader.h
+    foundation/mesh/binarymeshfilewriter.cpp
+    foundation/mesh/binarymeshfilewriter.h
     foundation/mesh/genericmeshfilereader.cpp
     foundation/mesh/genericmeshfilereader.h
+    foundation/mesh/genericmeshfilewriter.cpp
+    foundation/mesh/genericmeshfilewriter.h
     foundation/mesh/imeshbuilder.h
     foundation/mesh/imeshfilereader.h
     foundation/mesh/imeshfilewriter.h

@@ -34,9 +34,11 @@
 #include "foundation/mesh/imeshbuilder.h"
 #include "foundation/platform/compiler.h"
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // Standard headers.
 #include <cstddef>
-#include <string>
 
 namespace foundation
 {
@@ -45,12 +47,12 @@ namespace foundation
 // A mesh builder that does nothing, typically serves as a base class.
 //
 
-class MeshBuilderBase
+class DLLSYMBOL MeshBuilderBase
   : public IMeshBuilder
 {
   public:
     // Begin the definition of a mesh.
-    virtual void begin_mesh(const std::string& name) OVERRIDE
+    virtual void begin_mesh(const char* name) OVERRIDE
     {
     }
 
@@ -73,7 +75,7 @@ class MeshBuilderBase
     }
 
     // Append a material slot to the mesh.
-    virtual size_t push_material_slot(const std::string& name) OVERRIDE
+    virtual size_t push_material_slot(const char* name) OVERRIDE
     {
         return 0;
     }

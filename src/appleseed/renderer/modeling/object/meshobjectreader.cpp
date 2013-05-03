@@ -121,7 +121,7 @@ namespace
             return m_total_triangle_count;
         }
 
-        virtual void begin_mesh(const string& mesh_name) OVERRIDE
+        virtual void begin_mesh(const char* mesh_name) OVERRIDE
         {
             // Construct the object name.
             const string object_name = m_base_object_name + "." + make_unique_mesh_name(mesh_name);
@@ -170,9 +170,9 @@ namespace
             return m_objects.back()->push_tex_coords(GVector2(v));
         }
 
-        virtual size_t push_material_slot(const string& name) OVERRIDE
+        virtual size_t push_material_slot(const char* name) OVERRIDE
         {
-            return m_objects.back()->push_material_slot(name.c_str());
+            return m_objects.back()->push_material_slot(name);
         }
 
         virtual void begin_face(const size_t vertex_count) OVERRIDE

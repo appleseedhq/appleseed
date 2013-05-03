@@ -39,6 +39,7 @@
 #include "foundation/mesh/imeshfilewriter.h"
 #include "foundation/mesh/imeshwalker.h"
 #include "foundation/mesh/objmeshfilewriter.h"
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
 
@@ -62,7 +63,6 @@ namespace
       : public IMeshWalker
     {
       public:
-        // Constructor.
         MeshObjectWalker(
             const MeshObject&   object,
             const char*         object_name)
@@ -71,76 +71,87 @@ namespace
         {
         }
 
-        // Return the name of the mesh.
-        virtual string get_name() const
+        virtual const char* get_name() const OVERRIDE
         {
-            return m_object_name;
+            return m_object_name.c_str();
         }
 
-        // Return the number of vertices in the mesh.
-        virtual size_t get_vertex_count() const
+        virtual size_t get_vertex_count() const OVERRIDE
         {
             return m_object.get_vertex_count();
         }
 
-        // Return a given vertex from the mesh.
-        virtual Vector3d get_vertex(const size_t i) const
+        virtual Vector3d get_vertex(const size_t i) const OVERRIDE
         {
             return Vector3d(m_object.get_vertex(i));
         }
 
-        // Return the number of vertex normals in the mesh.
-        virtual size_t get_vertex_normal_count() const
+        virtual size_t get_vertex_normal_count() const OVERRIDE
         {
             return m_object.get_vertex_normal_count();
         }
 
-        // Return a given vertex normal from the mesh.
-        virtual Vector3d get_vertex_normal(const size_t i) const
+        virtual Vector3d get_vertex_normal(const size_t i) const OVERRIDE
         {
             return Vector3d(m_object.get_vertex_normal(i));
         }
 
-        // Return the number of texture coordinates in the mesh.
-        virtual size_t get_tex_coords_count() const
+        virtual size_t get_tex_coords_count() const OVERRIDE
         {
             return m_object.get_tex_coords_count();
         }
 
-        // Return a given texture coordinate from the mesh.
-        virtual Vector2d get_tex_coords(const size_t i) const
+        virtual Vector2d get_tex_coords(const size_t i) const OVERRIDE
         {
             return Vector2d(m_object.get_tex_coords(i));
         }
 
-        // Return the number of faces in the mesh.
-        virtual size_t get_face_count() const
+        virtual size_t get_material_slot_count() const OVERRIDE
+        {
+            return m_object.get_material_slot_count();
+        }
+
+        virtual const char* get_material_slot(const size_t i) const OVERRIDE
+        {
+            return m_object.get_material_slot(i);
+        }
+
+        virtual size_t get_face_count() const OVERRIDE
         {
             return m_object.get_triangle_count();
         }
 
-        // Return a given face from the mesh.
-        virtual Face get_face(const size_t i) const
+        virtual size_t get_face_vertex_count(const size_t face_index) const OVERRIDE
         {
-            const Triangle& triangle = m_object.get_triangle(i);
+            return 3;
+        }
 
-            Face face;
+        virtual size_t get_face_vertex(const size_t face_index, const size_t vertex_index) const OVERRIDE
+        {
+            assert(vertex_index < 3);
+            const Triangle& triangle = m_object.get_triangle(face_index);
+            return static_cast<size_t>((&triangle.m_v0)[vertex_index]);
+        }
 
-            face.m_v0 = static_cast<size_t>(triangle.m_v0);
-            face.m_v1 = static_cast<size_t>(triangle.m_v1);
-            face.m_v2 = static_cast<size_t>(triangle.m_v2);
+        virtual size_t get_face_vertex_normal(const size_t face_index, const size_t vertex_index) const OVERRIDE
+        {
+            assert(vertex_index < 3);
+            const Triangle& triangle = m_object.get_triangle(face_index);
+            const size_t n = static_cast<size_t>((&triangle.m_n0)[vertex_index]);
+            return n == Triangle::None ? None : n;
+        }
 
-            face.m_n0 = triangle.m_n0 == Triangle::None ? Face::None : static_cast<size_t>(triangle.m_n0);
-            face.m_n1 = triangle.m_n1 == Triangle::None ? Face::None : static_cast<size_t>(triangle.m_n1);
-            face.m_n2 = triangle.m_n2 == Triangle::None ? Face::None : static_cast<size_t>(triangle.m_n2);
+        virtual size_t get_face_tex_coords(const size_t face_index, const size_t vertex_index) const OVERRIDE
+        {
+            assert(vertex_index < 3);
+            const Triangle& triangle = m_object.get_triangle(face_index);
+            const size_t n = static_cast<size_t>((&triangle.m_a0)[vertex_index]);
+            return n == Triangle::None ? None : n;
+        }
 
-            face.m_t0 = triangle.m_a0 == Triangle::None ? Face::None : static_cast<size_t>(triangle.m_a0);
-            face.m_t1 = triangle.m_a1 == Triangle::None ? Face::None : static_cast<size_t>(triangle.m_a1);
-            face.m_t2 = triangle.m_a2 == Triangle::None ? Face::None : static_cast<size_t>(triangle.m_a2);
-
-            face.m_material = static_cast<size_t>(triangle.m_pa);
-
-            return face;
+        virtual size_t get_face_material(const size_t face_index) const OVERRIDE
+        {
+            return static_cast<size_t>(m_object.get_triangle(face_index).m_pa);
         }
 
       private:
