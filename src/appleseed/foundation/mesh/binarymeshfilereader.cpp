@@ -37,7 +37,6 @@
 #include "foundation/utility/memory.h"
 
 // Standard headers.
-#include <cstdio>
 #include <cstring>
 
 using namespace std;

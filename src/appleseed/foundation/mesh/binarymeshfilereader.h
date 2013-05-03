@@ -35,6 +35,7 @@
 
 // Standard headers.
 #include <cstddef>
+#include <cstdio>
 #include <string>
 #include <vector>
 
