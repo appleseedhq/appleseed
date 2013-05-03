@@ -40,8 +40,6 @@
 #include "renderer/modeling/environmentshader/environmentshader.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/inputevaluator.h"
-#include "renderer/modeling/input/source.h"
-#include "renderer/modeling/material/material.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/utility/paramarray.h"
@@ -180,17 +178,6 @@ namespace
                 shading_result.m_color += back_shading_result.m_color;
                 shading_result.m_aovs += back_shading_result.m_aovs;
             }
-
-            // Compute alpha channel.
-            const Material* material = shading_point.get_material();
-            if (material && material->get_alpha_map())
-            {
-                material->get_alpha_map()->evaluate(
-                    shading_context.get_texture_cache(),
-                    shading_point.get_uv(0),
-                    shading_result.m_alpha);
-            }
-            else shading_result.m_alpha = Alpha(1.0);
 
             // Apply multipliers.
             shading_result.m_color *= static_cast<float>(values.m_color_multiplier);

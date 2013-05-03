@@ -34,6 +34,7 @@
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentshader/environmentshader.h"
 #include "renderer/modeling/input/inputevaluator.h"
+#include "renderer/modeling/input/source.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/scene/assembly.h"
@@ -78,38 +79,61 @@ void ShadingEngine::shade_hit_point(
     const ShadingPoint&     shading_point,
     ShadingResult&          shading_result) const
 {
-    // Use the diagnostic surface shader if there is one.
-    const SurfaceShader* surface_shader = m_diagnostic_surface_shader.get();
+    // Retrieve the material of the intersected surface.
+    const Material* material = shading_point.get_material();
 
-    if (surface_shader == 0)
+    // Compute the alpha channel.
+    if (material && material->get_alpha_map())
     {
-        // There is no diagnostic shader. Retrieve the material of the intersected surface.
-        const Material* material = shading_point.get_material();
+        // There is an alpha map: evaluate it.
+        material->get_alpha_map()->evaluate(
+            shading_context.get_texture_cache(),
+            shading_point.get_uv(0),
+            shading_result.m_alpha);
+    }
+    else
+    {
+        // No alpha map: solid sample.
+        shading_result.m_alpha = Alpha(1.0);
+    }
 
-        if (material == 0)
-        {
-            // The intersected surface has no material: return solid pink.
-            shading_result.set_to_solid_pink();
-            return;
-        }
-
-        // Use the surface shader of the intersected surface.
-        surface_shader = material->get_surface_shader();
+    if (shading_result.m_alpha[0] > 0.0f)
+    {
+        // Use the diagnostic surface shader if there is one.
+        const SurfaceShader* surface_shader = m_diagnostic_surface_shader.get();
 
         if (surface_shader == 0)
         {
-            // The intersected surface has no surface shader: return solid pink.
-            shading_result.set_to_solid_pink();
-            return;
-        }
-    }
+            if (material == 0)
+            {
+                // The intersected surface has no material: return solid pink.
+                shading_result.set_to_solid_pink();
+                return;
+            }
 
-    // Execute the surface shader.
-    surface_shader->evaluate(
-        sampling_context,
-        shading_context,
-        shading_point,
-        shading_result);
+            // Use the surface shader of the intersected surface.
+            surface_shader = material->get_surface_shader();
+
+            if (surface_shader == 0)
+            {
+                // The intersected surface has no surface shader: return solid pink.
+                shading_result.set_to_solid_pink();
+                return;
+            }
+        }
+
+        // Execute the surface shader.
+        surface_shader->evaluate(
+            sampling_context,
+            shading_context,
+            shading_point,
+            shading_result);
+    }
+    else
+    {
+        // Alpha is zero: shade as transparent black.
+        shading_result.set_to_transparent_black();
+    }
 
     // Set AOVs.
     shading_result.m_aovs.set(shading_point.get_assembly().get_render_layer_index(), shading_result.m_color);

@@ -40,7 +40,6 @@
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/inputevaluator.h"
-#include "renderer/modeling/input/source.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"

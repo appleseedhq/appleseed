@@ -35,8 +35,6 @@
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/input/inputarray.h"
-#include "renderer/modeling/input/source.h"
-#include "renderer/modeling/material/material.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/utility/paramarray.h"
 
@@ -113,22 +111,9 @@ namespace
             shading_result.m_color_space = ColorSpaceSpectral;
             shading_result.m_color = values.m_color;
 
-            // Handle alpha mapping.
+            // This surface shader can override alpha.
             if (m_alpha_source == AlphaSourceColor)
                 shading_result.m_alpha = values.m_alpha;
-            else
-            {
-                const Material* material = shading_point.get_material();
-                if (material && material->get_alpha_map())
-                {
-                    // Evaluate the alpha map at the shading point.
-                    material->get_alpha_map()->evaluate(
-                        shading_context.get_texture_cache(),
-                        shading_point.get_uv(0),
-                        shading_result.m_alpha);
-                }
-                else shading_result.m_alpha = Alpha(1.0f);
-            }
 
             // Apply multipliers.
             shading_result.m_color *= static_cast<float>(values.m_color_multiplier);
