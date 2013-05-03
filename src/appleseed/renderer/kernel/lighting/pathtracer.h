@@ -92,6 +92,11 @@ class PathTracer
     const size_t                m_rr_min_path_length;
     const size_t                m_max_path_length;
     const size_t                m_max_iterations;
+
+    // Determine whether a ray can pass through a surface with a given alpha value.
+    static bool pass_through(
+        SamplingContext&        sampling_context,
+        const Alpha             alpha);
 };
 
 
@@ -191,34 +196,27 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                 shading_point_ptr->get_uv(0),
                 alpha);
 
-            if (alpha[0] < 1.0)
+            if (pass_through(sampling_context, alpha))
             {
-                // Generate a uniform sample in [0,1).
-                sampling_context.split_in_place(1, 1);
-                const double s = sampling_context.next_double2();
+                // Construct a ray that continues in the same direction as the incoming ray.
+                const ShadingRay cutoff_ray(
+                    shading_point_ptr->get_point(),
+                    ray.m_dir,
+                    ray.m_time,
+                    ~0);            // ray flags
 
-                if (s >= alpha[0])
-                {
-                    // Construct a ray that continues in the same direction as the incoming ray.
-                    const ShadingRay cutoff_ray(
-                        shading_point_ptr->get_point(),
-                        ray.m_dir,
-                        ray.m_time,
-                        ~0);            // ray flags
+                // Trace the ray.
+                shading_points[shading_point_index].clear();
+                intersector.trace(
+                    cutoff_ray,
+                    shading_points[shading_point_index],
+                    shading_point_ptr);
 
-                    // Trace the ray.
-                    shading_points[shading_point_index].clear();
-                    intersector.trace(
-                        cutoff_ray,
-                        shading_points[shading_point_index],
-                        shading_point_ptr);
+                // Update the pointers to the shading points.
+                shading_point_ptr = &shading_points[shading_point_index];
+                shading_point_index = 1 - shading_point_index;
 
-                    // Update the pointers to the shading points.
-                    shading_point_ptr = &shading_points[shading_point_index];
-                    shading_point_index = 1 - shading_point_index;
-
-                    continue;
-                }
+                continue;
             }
         }
 
@@ -335,6 +333,22 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
     }
 
     return path_length;
+}
+
+template <typename PathVisitor, bool Adjoint>
+inline bool PathTracer<PathVisitor, Adjoint>::pass_through(
+    SamplingContext&            sampling_context,
+    const Alpha                 alpha)
+{
+    if (alpha[0] <= 0.0f)
+        return true;
+
+    if (alpha[0] >= 1.0f)
+        return false;
+
+    sampling_context.split_in_place(1, 1);
+
+    return sampling_context.next_double2() >= alpha[0];
 }
 
 }       // namespace renderer
