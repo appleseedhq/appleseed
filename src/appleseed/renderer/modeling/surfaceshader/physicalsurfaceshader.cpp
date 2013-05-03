@@ -123,6 +123,8 @@ namespace
             const ShadingPoint&     shading_point,
             ShadingResult&          shading_result) const OVERRIDE
         {
+            shading_result.m_color_space = ColorSpaceSpectral;
+
             // Evaluate the shader inputs.
             InputValues values;
             m_inputs.evaluate(
@@ -130,53 +132,23 @@ namespace
                 shading_point.get_uv(0),
                 &values);
 
-            // Retrieve the lighting engine.
-            ILightingEngine* lighting_engine = shading_context.get_lighting_engine();
-            assert(lighting_engine);
-
-            // Compute lighting.
-            shading_result.m_color_space = ColorSpaceSpectral;
-            lighting_engine->compute_lighting(
+            // Compute front lighting.
+            shading_context.get_lighting_engine()->compute_lighting(
                 sampling_context,
                 shading_context,
                 shading_point,
                 shading_result.m_color,
                 shading_result.m_aovs);
 
-            // Compute fake translucency.
+            // Optionally simulate translucency by adding back lighting.
             if (values.m_translucency > 0.0)
             {
-                const Vector3d& p = shading_point.get_point();
-                const Vector3d& n = shading_point.get_original_shading_normal();
-                const Vector3d& d = shading_point.get_ray().m_dir;
-
-                ShadingRay back_ray(shading_point.get_ray());
-                back_ray.m_tmax *= norm(d);
-                back_ray.m_dir = dot(d, n) > 0.0 ? -n : n;
-                back_ray.m_org = p - back_ray.m_tmax * back_ray.m_dir;
-
-                ShadingPoint back_shading_point(shading_point);
-                back_shading_point.set_ray(back_ray);
-
-                ShadingResult back_shading_result;
-                back_shading_result.m_aovs.set_size(shading_result.m_aovs.size());
-                lighting_engine->compute_lighting(
+                add_back_lighting(
+                    values,
                     sampling_context,
                     shading_context,
-                    back_shading_point,
-                    back_shading_result.m_color,
-                    back_shading_result.m_aovs);
-
-                const float translucency = static_cast<float>(values.m_translucency);
-
-                back_shading_result.m_color *= translucency;
-                back_shading_result.m_aovs *= translucency;
-
-                shading_result.m_color *= 1.0f - translucency;
-                shading_result.m_aovs *= 1.0f - translucency;
-
-                shading_result.m_color += back_shading_result.m_color;
-                shading_result.m_aovs += back_shading_result.m_aovs;
+                    shading_point,
+                    shading_result);
             }
 
             // Apply multipliers.
@@ -184,43 +156,14 @@ namespace
             shading_result.m_aovs *= static_cast<float>(values.m_color_multiplier);
             shading_result.m_alpha *= static_cast<float>(values.m_alpha_multiplier);
 
-            // Add fake aerial perspective.
+            // Optionally apply fake aerial perspective.
             if (m_aerial_persp_mode != AerialPerspNone)
             {
-                Spectrum sky_color;
-
-                if (m_aerial_persp_mode == AerialPerspSkyColor)
-                    sky_color = values.m_aerial_persp_sky_color;
-                else
-                {
-                    // Retrieve the environment shader of the scene.
-                    const Scene& scene = shading_point.get_scene();
-                    const EnvironmentShader* environment_shader =
-                        scene.get_environment()->get_environment_shader();
-
-                    if (environment_shader)
-                    {
-                        // Execute the environment shader to obtain the sky color in the direction of the ray.
-                        InputEvaluator input_evaluator(shading_context.get_texture_cache());
-                        const ShadingRay& ray = shading_point.get_ray();
-                        const Vector3d direction = normalize(ray.m_dir);
-                        ShadingResult sky;
-                        environment_shader->evaluate(input_evaluator, direction, sky);
-                        sky.transform_to_spectrum(m_lighting_conditions);
-                        sky_color = sky.m_color;
-                    }
-                    else sky_color.set(0.0f);
-                }
-
-                // Compute the blend factor.
-                const double d = shading_point.get_distance() * m_aerial_persp_rcp_distance;
-                const double k = m_aerial_persp_intensity * exp(d);
-                const double blend = min(k, 1.0);
-
-                // Blend the shading result and the sky color.
-                sky_color *= static_cast<float>(blend);
-                shading_result.m_color *= static_cast<float>(1.0 - blend);
-                shading_result.m_color += sky_color;
+                apply_aerial_perspective(
+                    values,
+                    shading_context,
+                    shading_point,
+                    shading_result);
             }
         }
 
@@ -245,6 +188,89 @@ namespace
         AerialPerspMode             m_aerial_persp_mode;
         double                      m_aerial_persp_rcp_distance;
         double                      m_aerial_persp_intensity;
+
+        void add_back_lighting(
+            const InputValues&      values,
+            SamplingContext&        sampling_context,
+            const ShadingContext&   shading_context,
+            const ShadingPoint&     shading_point,
+            ShadingResult&          shading_result) const
+        {
+            const Vector3d& p = shading_point.get_point();
+            const Vector3d& n = shading_point.get_original_shading_normal();
+            const Vector3d& d = shading_point.get_ray().m_dir;
+
+            // Construct a ray perpendicular to the other side of the surface.
+            ShadingRay back_ray(shading_point.get_ray());
+            back_ray.m_tmax *= norm(d);
+            back_ray.m_dir = dot(d, n) > 0.0 ? -n : n;
+            back_ray.m_org = p - back_ray.m_tmax * back_ray.m_dir;
+
+            ShadingPoint back_shading_point(shading_point);
+            back_shading_point.set_ray(back_ray);
+
+            ShadingResult back_shading_result;
+            back_shading_result.m_aovs.set_size(shading_result.m_aovs.size());
+
+            // Compute back lighting.
+            shading_context.get_lighting_engine()->compute_lighting(
+                sampling_context,
+                shading_context,
+                back_shading_point,
+                back_shading_result.m_color,
+                back_shading_result.m_aovs);
+
+            // Combine front and back lighting based on the translucency value.
+            const float translucency = static_cast<float>(values.m_translucency);
+            back_shading_result.m_color *= translucency;
+            back_shading_result.m_aovs *= translucency;
+            shading_result.m_color *= 1.0f - translucency;
+            shading_result.m_aovs *= 1.0f - translucency;
+            shading_result.m_color += back_shading_result.m_color;
+            shading_result.m_aovs += back_shading_result.m_aovs;
+        }
+
+        void apply_aerial_perspective(
+            const InputValues&      values,
+            const ShadingContext&   shading_context,
+            const ShadingPoint&     shading_point,
+            ShadingResult&          shading_result) const
+        {
+            Spectrum sky_color;
+
+            if (m_aerial_persp_mode == AerialPerspSkyColor)
+                sky_color = values.m_aerial_persp_sky_color;
+            else
+            {
+                // Retrieve the environment shader of the scene.
+                const Scene& scene = shading_point.get_scene();
+                const EnvironmentShader* environment_shader =
+                    scene.get_environment()->get_environment_shader();
+
+                if (environment_shader)
+                {
+                    // Execute the environment shader to obtain the sky color in the direction of the ray.
+                    InputEvaluator input_evaluator(shading_context.get_texture_cache());
+                    const ShadingRay& ray = shading_point.get_ray();
+                    const Vector3d direction = normalize(ray.m_dir);
+                    ShadingResult sky;
+                    environment_shader->evaluate(input_evaluator, direction, sky);
+                    sky.transform_to_spectrum(m_lighting_conditions);
+                    sky_color = sky.m_color;
+                }
+                else sky_color.set(0.0f);
+            }
+
+            // Compute the blend factor.
+            const double d = shading_point.get_distance() * m_aerial_persp_rcp_distance;
+            const double k = m_aerial_persp_intensity * exp(d);
+            const double blend = min(k, 1.0);
+
+            // Blend the shading result and the sky color.
+            sky_color *= static_cast<float>(blend);
+            shading_result.m_color *= static_cast<float>(1.0 - blend);
+            shading_result.m_color += sky_color;
+        }
     };
 }
 
