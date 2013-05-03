@@ -68,8 +68,8 @@ option (USE_EXTERNAL_ALEMBIC    "Use external Alembic lib"      OFF)
 option (USE_EXTERNAL_XERCES     "Use external Xerces lib"       OFF)
 option (WITH_CLI                "Build appleseed.cli"           ON)
 option (WITH_STUDIO             "Build appleseed.studio"        ON)
-option (WITH_PYTHON             "Build Python module"           ON)
 option (WITH_TOOLS              "Build appleseed tools"         ON)
+option (WITH_PYTHON             "Build Python module"           ON)
 option (WITH_OSL                "Build OSL support"             OFF)
 
 
@@ -417,6 +417,7 @@ endif ()
 
 if (WITH_TOOLS)
     add_subdirectory (tools/animatecamera)
+    add_subdirectory (tools/convertmeshfile)
     add_subdirectory (tools/maketiledexr)
     add_subdirectory (tools/updateprojectfile)
 endif()
