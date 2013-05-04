@@ -84,12 +84,15 @@ namespace
           , m_sqrt_sample_count(round<int>(sqrt(static_cast<double>(m_params.m_samples))))
           , m_sample_count(m_sqrt_sample_count * m_sqrt_sample_count)
         {
-            m_pixel_sampler.initialize(m_sqrt_sample_count);
+            if (!m_params.m_decorrelate)
+            {
+                m_pixel_sampler.initialize(m_sqrt_sample_count);
 
-            RENDERER_LOG_INFO(
-                "effective max subpixel grid size: %dx%d",
-                m_sqrt_sample_count,
-                m_sqrt_sample_count);
+                RENDERER_LOG_INFO(
+                    "effective max subpixel grid size: %dx%d",
+                    m_sqrt_sample_count,
+                    m_sqrt_sample_count);
+            }
         }
 
         virtual void release() OVERRIDE
