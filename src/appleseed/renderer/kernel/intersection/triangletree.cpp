@@ -965,7 +965,7 @@ namespace
         {
         }
 
-        bool FilterKey::operator==(const FilterKey& rhs) const
+        bool operator==(const FilterKey& rhs) const
         {
             if (m_object != rhs.m_object)
                 return false;
@@ -984,7 +984,7 @@ namespace
             return true;
         }
 
-        bool FilterKey::operator<(const FilterKey& rhs) const
+        bool operator<(const FilterKey& rhs) const
         {
             if (m_object < rhs.m_object)
                 return true;
