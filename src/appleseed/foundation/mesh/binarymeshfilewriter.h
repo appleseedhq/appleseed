@@ -32,10 +32,10 @@
 // appleseed.foundation headers.
 #include "foundation/mesh/imeshfilewriter.h"
 #include "foundation/platform/compiler.h"
+#include "foundation/utility/bufferedfile.h"
 
 // Standard headers.
 #include <cstddef>
-#include <cstdio>
 #include <string>
 
 // Forward declarations.
@@ -55,27 +55,25 @@ class BinaryMeshFileWriter
     // Constructor.
     explicit BinaryMeshFileWriter(const std::string& filename);
 
-    // Destructor, closes the file.
-    virtual ~BinaryMeshFileWriter();
-
     // Write a mesh.
     virtual void write(const IMeshWalker& walker) OVERRIDE;
 
-    // Close the file.
-    void close();
-
   private:
     const std::string   m_filename;
-    std::FILE*          m_file;
+    BufferedFile        m_file;
 
-    void write_string(const char* s) const;
+    void write_string(const char* s);
 
-    void write_vertices(const IMeshWalker& walker) const;
-    void write_vertex_normals(const IMeshWalker& walker) const;
-    void write_texture_coordinates(const IMeshWalker& walker) const;
-    void write_material_slots(const IMeshWalker& walker) const;
-    void write_faces(const IMeshWalker& walker) const;
-    void write_face(const IMeshWalker& walker, const size_t face_index) const;
+    void write_signature();
+    void write_version();
+
+    void write_mesh(const IMeshWalker& walker);
+    void write_vertices(const IMeshWalker& walker);
+    void write_vertex_normals(const IMeshWalker& walker);
+    void write_texture_coordinates(const IMeshWalker& walker);
+    void write_material_slots(const IMeshWalker& walker);
+    void write_faces(const IMeshWalker& walker);
+    void write_face(const IMeshWalker& walker, const size_t face_index);
 };
 
 }       // namespace foundation

@@ -30,10 +30,12 @@
 #include "binarymeshfilereader.h"
 
 // appleseed.foundation headers.
+#include "foundation/core/exceptions/exception.h"
 #include "foundation/core/exceptions/exceptionioerror.h"
 #include "foundation/math/vector.h"
 #include "foundation/mesh/imeshbuilder.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/bufferedfile.h"
 #include "foundation/utility/memory.h"
 
 // Standard headers.
@@ -48,6 +50,31 @@ namespace foundation
 // BinaryMeshFileReader class implementation.
 //
 
+namespace
+{
+    struct ExceptionEOF : public Exception {};
+
+    inline void checked_read(BufferedFile& file, void* outbuf, const size_t size)
+    {
+        if (size == 0)
+            return;
+
+        const size_t bytes_read = file.read(outbuf, size);
+
+        if (bytes_read == 0)
+            throw ExceptionEOF();
+
+        if (bytes_read < size)
+            throw ExceptionIOError();
+    }
+
+    template <typename T>
+    inline void checked_read(BufferedFile& file, T& object)
+    {
+        checked_read(file, &object, sizeof(T));
+    }
+}
+
 BinaryMeshFileReader::BinaryMeshFileReader(const string& filename)
   : m_filename(filename)
 {
@@ -55,108 +82,132 @@ BinaryMeshFileReader::BinaryMeshFileReader(const string& filename)
 
 void BinaryMeshFileReader::read(IMeshBuilder& builder)
 {
-    // Open the file.
-    FILE* file = fopen(m_filename.c_str(), "rb");
-    if (file == 0)
+    BufferedFile file(
+        m_filename.c_str(),
+        BufferedFile::BinaryType,
+        BufferedFile::ReadMode);
+
+    if (!file.is_open())
         throw ExceptionIOError();
 
-    // Read and check the file signature.
-    static const char ExpectedSig[10] = { 'B', 'I', 'N', 'A', 'R', 'Y', 'M', 'E', 'S', 'H' };
-    char signature[sizeof(ExpectedSig)];
-    fread(signature, sizeof(signature), 1, file);
-    if (memcmp(signature, ExpectedSig, sizeof(ExpectedSig)))
-        throw ExceptionIOError();   // todo: throw better-qualified exception
-
-    // Read version information.
-    const uint16 ExpectedVersion = 1;
-    uint16 version;
-    fread(&version, sizeof(version), 1, file);
-    if (version != ExpectedVersion)
-        throw ExceptionIOError();   // todo: throw better-qualified exception
-
-    // Read meshes.
-    while (read_mesh(builder, file)) ;
-
-    // Close the file.
-    fclose(file);
+    read_and_check_signature(file);
+    read_and_check_version(file);
+    read_meshes(file, builder);
 }
 
-string BinaryMeshFileReader::read_string(FILE* file)
+string BinaryMeshFileReader::read_string(BufferedFile& file)
 {
-    string s;
     uint16 length;
+    checked_read(file, length);
 
-    if (fread(&length, sizeof(length), 1, file) > 0)
-    {
-        s.resize(length);
-        fread(&s[0], length, 1, file);
-    }
+    string s;
+    s.resize(length);
+    checked_read(file, &s[0], length);
 
     return s;
 }
 
-bool BinaryMeshFileReader::read_mesh(IMeshBuilder& builder, FILE* file)
+void BinaryMeshFileReader::read_and_check_signature(BufferedFile& file)
 {
-    const string mesh_name = read_string(file);
+    static const char ExpectedSig[10] = { 'B', 'I', 'N', 'A', 'R', 'Y', 'M', 'E', 'S', 'H' };
 
-    if (feof(file))
-        return false;
+    char signature[sizeof(ExpectedSig)];
+    checked_read(file, signature, sizeof(signature));
 
-    // Read the mesh data.
-    builder.begin_mesh(mesh_name.c_str());
-    read_vertices(builder, file);
-    read_vertex_normals(builder, file);
-    read_texture_coordinates(builder, file);
-    read_material_slots(builder, file);
-    read_faces(builder, file);
-    builder.end_mesh();
-
-    return true;
+    if (memcmp(signature, ExpectedSig, sizeof(ExpectedSig)))
+        throw ExceptionIOError();   // todo: throw better-qualified exception
 }
 
-void BinaryMeshFileReader::read_vertices(IMeshBuilder& builder, FILE* file)
+void BinaryMeshFileReader::read_and_check_version(BufferedFile& file)
+{
+    const uint16 ExpectedVersion = 1;
+
+    uint16 version;
+    checked_read(file, version);
+
+    if (version != ExpectedVersion)
+        throw ExceptionIOError();   // todo: throw better-qualified exception
+}
+
+void BinaryMeshFileReader::read_meshes(BufferedFile& file, IMeshBuilder& builder)
+{
+    try
+    {
+        while (true)
+        {
+            // Read the name of the next mesh.
+            string mesh_name;
+            try
+            {
+                mesh_name = read_string(file);
+            }
+            catch (const ExceptionEOF&)
+            {
+                // Expected EOF.
+                break;
+            }
+
+            builder.begin_mesh(mesh_name.c_str());
+
+            read_vertices(file, builder);
+            read_vertex_normals(file, builder);
+            read_texture_coordinates(file, builder);
+            read_material_slots(file, builder);
+            read_faces(file, builder);
+
+            builder.end_mesh();
+        }
+    }
+    catch (const ExceptionEOF&)
+    {
+        // Unexpected EOF.
+        throw ExceptionIOError();
+    }
+}
+
+void BinaryMeshFileReader::read_vertices(BufferedFile& file, IMeshBuilder& builder)
 {
     uint32 count;
-    fread(&count, sizeof(count), 1, file);
+    checked_read(file, count);
 
     for (uint32 i = 0; i < count; ++i)
     {
         Vector3d v;
-        fread(&v, sizeof(v), 1, file);
+        checked_read(file, v);
         builder.push_vertex(v);
     }
 }
 
-void BinaryMeshFileReader::read_vertex_normals(IMeshBuilder& builder, FILE* file)
+void BinaryMeshFileReader::read_vertex_normals(BufferedFile& file, IMeshBuilder& builder)
 {
     uint32 count;
-    fread(&count, sizeof(count), 1, file);
+    checked_read(file, count);
 
     for (uint32 i = 0; i < count; ++i)
     {
         Vector3d v;
-        fread(&v, sizeof(v), 1, file);
+        checked_read(file, v);
         builder.push_vertex_normal(v);
     }
 }
 
-void BinaryMeshFileReader::read_texture_coordinates(IMeshBuilder& builder, FILE* file)
+void BinaryMeshFileReader::read_texture_coordinates(BufferedFile& file, IMeshBuilder& builder)
 {
     uint32 count;
-    fread(&count, sizeof(count), 1, file);
+    checked_read(file, count);
 
     for (uint32 i = 0; i < count; ++i)
     {
         Vector2d v;
-        fread(&v, sizeof(v), 1, file);
+        checked_read(file, v);
         builder.push_tex_coords(v);
     }
 }
 
-void BinaryMeshFileReader::read_material_slots(IMeshBuilder& builder, FILE* file)
+void BinaryMeshFileReader::read_material_slots(BufferedFile& file, IMeshBuilder& builder)
 {
     uint16 count;
-    fread(&count, sizeof(count), 1, file);
+    checked_read(file, count);
 
     for (uint16 i = 0; i < count; ++i)
     {
@@ -165,19 +216,19 @@ void BinaryMeshFileReader::read_material_slots(IMeshBuilder& builder, FILE* file
     }
 }
 
-void BinaryMeshFileReader::read_faces(IMeshBuilder& builder, FILE* file)
+void BinaryMeshFileReader::read_faces(BufferedFile& file, IMeshBuilder& builder)
 {
     uint32 count;
-    fread(&count, sizeof(count), 1, file);
+    checked_read(file, count);
 
     for (uint32 i = 0; i < count; ++i)
-        read_face(builder, file);
+        read_face(file, builder);
 }
 
-void BinaryMeshFileReader::read_face(IMeshBuilder& builder, FILE* file)
+void BinaryMeshFileReader::read_face(BufferedFile& file, IMeshBuilder& builder)
 {
     uint16 count;
-    fread(&count, sizeof(count), 1, file);
+    checked_read(file, count);
 
     ensure_minimum_size(m_vertices, count);
     ensure_minimum_size(m_vertex_normals, count);
@@ -186,20 +237,20 @@ void BinaryMeshFileReader::read_face(IMeshBuilder& builder, FILE* file)
     for (uint16 i = 0; i < count; ++i)
     {
         uint32 face_vertex;
-        fread(&face_vertex, sizeof(face_vertex), 1, file);
+        checked_read(file, face_vertex);
         m_vertices[i] = face_vertex;
 
         uint32 face_vertex_normal;
-        fread(&face_vertex_normal, sizeof(face_vertex_normal), 1, file);
+        checked_read(file, face_vertex_normal);
         m_vertex_normals[i] = face_vertex_normal;
 
         uint32 face_tex_coords;
-        fread(&face_tex_coords, sizeof(face_tex_coords), 1, file);
+        checked_read(file, face_tex_coords);
         m_tex_coords[i] = face_tex_coords;
     }
 
     uint16 material;
-    fread(&material, sizeof(material), 1, file);
+    checked_read(file, material);
 
     builder.begin_face(count);
     builder.set_face_vertices(&m_vertices[0]);

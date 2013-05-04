@@ -35,11 +35,11 @@
 
 // Standard headers.
 #include <cstddef>
-#include <cstdio>
 #include <string>
 #include <vector>
 
 // Forward declarations.
+namespace foundation    { class BufferedFile; }
 namespace foundation    { class IMeshBuilder; }
 
 namespace foundation
@@ -65,15 +65,18 @@ class BinaryMeshFileReader
     std::vector<size_t>     m_vertex_normals;
     std::vector<size_t>     m_tex_coords;
 
-    std::string read_string(std::FILE* file);
+    static std::string read_string(BufferedFile& file);
 
-    bool read_mesh(IMeshBuilder& builder, std::FILE* file);
-    void read_vertices(IMeshBuilder& builder, std::FILE* file);
-    void read_vertex_normals(IMeshBuilder& builder, std::FILE* file);
-    void read_texture_coordinates(IMeshBuilder& builder, std::FILE* file);
-    void read_material_slots(IMeshBuilder& builder, std::FILE* file);
-    void read_faces(IMeshBuilder& builder, std::FILE* file);
-    void read_face(IMeshBuilder& builder, std::FILE* file);
+    static void read_and_check_signature(BufferedFile& file);
+    static void read_and_check_version(BufferedFile& file);
+
+    void read_meshes(BufferedFile& file, IMeshBuilder& builder);
+    void read_vertices(BufferedFile& file, IMeshBuilder& builder);
+    void read_vertex_normals(BufferedFile& file, IMeshBuilder& builder);
+    void read_texture_coordinates(BufferedFile& file, IMeshBuilder& builder);
+    void read_material_slots(BufferedFile& file, IMeshBuilder& builder);
+    void read_faces(BufferedFile& file, IMeshBuilder& builder);
+    void read_face(BufferedFile& file, IMeshBuilder& builder);
 };
 
 }       // namespace foundation
