@@ -139,6 +139,71 @@ class Log:
 
 
 #--------------------------------------------------------------------------------------------------
+# Code to temporarily disable Windows Error Reporting.
+#--------------------------------------------------------------------------------------------------
+
+if os.name == "nt":
+    import _winreg
+
+    WER_KEY_PATH = r"Software\Microsoft\Windows\Windows Error Reporting"
+
+    def open_wer_key():
+        try:
+            return _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, WER_KEY_PATH, 0, _winreg.KEY_ALL_ACCESS)
+        except WindowsError:
+            pass
+
+        try:
+            return _winreg.CreateKey(_winreg.HKEY_CURRENT_USER, WER_KEY_PATH)
+        except WindowsError:
+            pass
+
+        return None
+
+    def configure_wer(new_dont_show_ui, new_disabled):
+        key = open_wer_key()
+
+        if key is None:
+            return None
+
+        previous_dont_show_ui = _winreg.QueryValueEx(key, "DontShowUI")[0]
+        previous_disabled = _winreg.QueryValueEx(key, "Disabled")[0]
+
+        _winreg.SetValueEx(key, "DontShowUI", 0, _winreg.REG_DWORD, new_dont_show_ui)
+        _winreg.SetValueEx(key, "Disabled", 0, _winreg.REG_DWORD, new_disabled)
+
+        _winreg.CloseKey(key)
+
+        return previous_dont_show_ui, previous_disabled
+
+    def get_wer_status():
+        key = open_wer_key()
+
+        if key is None:
+            return "(unavailable)"
+
+        dont_show_ui = _winreg.QueryValueEx(key, "DontShowUI")[0]
+        disabled = _winreg.QueryValueEx(key, "Disabled")[0]
+
+        _winreg.CloseKey(key)
+
+        return "DontShowUI={0} Disabled={1}".format(dont_show_ui, disabled)
+
+    def disable_wer():
+        Console.info("Disabling Windows Error Reporting...")
+        previous_values = configure_wer(1, 1)
+        if previous_values is None:
+            Console.warning("Could not disable Windows Error Reporting.")
+        return previous_values
+
+    def restore_wer(previous_values):
+        Console.info("Restoring initial Windows Error Reporting parameters...")
+        result = configure_wer(previous_values[0], previous_values[1])
+        if result is None:
+            Console.warning("Could not restore initial Windows Error Reporting parameters.")
+
+
+#--------------------------------------------------------------------------------------------------
 # Watching and rendering logic.
 #--------------------------------------------------------------------------------------------------
 
@@ -292,6 +357,12 @@ def main():
     Console.info("Running watchfolder.py version {0}.".format(VERSION))
     print_appleseed_version(args, log)
 
+    # Disable Windows Error Reporting on Windows.
+    if os.name == "nt":
+        Console.info("Initial Windows Error Reporting status: {0}".format(get_wer_status()))
+        initial_wer_values = disable_wer()
+        Console.info("New Windows Error Reporting status: {0}".format(get_wer_status()))
+
     Console.info('Watching directory "{0}"'.format(args.watch_dir))
 
     # Main watch loop.
@@ -311,6 +382,11 @@ def main():
             Console.error(msg)
             log.message(msg)
             time.sleep(PAUSE_BETWEEN_CHECKS)
+
+    # Restore initial Windows Error Reporting parameters.
+    if os.name == "nt":
+        restore_wer(initial_wer_values)
+        Console.info("Final Windows Error Reporting status: {0}".format(get_wer_status()))
 
 if __name__ == '__main__':
     main()
