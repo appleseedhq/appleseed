@@ -43,7 +43,7 @@ import xml.dom.minidom
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "1.0"
+VERSION = "1.1"
 OUTPUT_DIR = "_output"
 COMPLETED_DIR = "_completed"
 LOGS_DIR = "_logs"
@@ -55,87 +55,91 @@ PAUSE_BETWEEN_CHECKS = 3    # in seconds
 # Utility functions.
 #--------------------------------------------------------------------------------------------------
 
-def xstr(s):
-    return "N/A" if s is None else str(s)
-
 def safe_mkdir(dir):
     if not os.path.exists(dir):
         os.mkdir(dir)
 
+def format_message(severity, msg):
+    now = datetime.datetime.now()
+    padded_severity = severity.ljust(7)
+    return "\n".join("{0} WATCH {1} | {2}".format(now, padded_severity, line) for line in msg.splitlines())
+
 
 #--------------------------------------------------------------------------------------------------
-# Console class to write to the console, using colors on systems that support them.
+# Log backend to write to the console, using colors on systems that support them.
 #--------------------------------------------------------------------------------------------------
 
-class Console:
+class ConsoleBackend:
+    @staticmethod
+    def info(msg):
+        print("{0}".format(msg))
+
+    @staticmethod
+    def warning(msg):
+        if ConsoleBackend.is_coloring_supported():
+            print("\033[93m{0}\033[0m".format(msg))
+        else:
+            print("{0}".format(msg))
+
+    @staticmethod
+    def error(msg):
+        if ConsoleBackend.is_coloring_supported():
+            print("\033[91m{0}\033[0m".format(msg))
+        else:
+            print("{0}".format(msg))
+
     @staticmethod
     def is_coloring_supported():
         return os.system == 'darwin'
 
-    @staticmethod
-    def format_message(msg):
-        now = datetime.datetime.now()
-        return "\n".join("[{0}] {1}".format(now, line) for line in msg.splitlines())
 
-    @staticmethod
-    def info(msg):
-        print("{0}".format(Console.format_message(msg)))
+#--------------------------------------------------------------------------------------------------
+# Log backend to write to a log file.
+#--------------------------------------------------------------------------------------------------
 
-    @staticmethod
-    def success(msg):
-        s = Console.format_message(msg)
-        if Console.is_coloring_supported():
-            print("\033[92m{0}\033[0m".format(s))
-        else:
-            print("{0}".format(s))
+class LogFileBackend:
+    def __init__(self, path):
+        self.path = path
 
-    @staticmethod
-    def warning(msg):
-        s = Console.format_message(msg)
-        if Console.is_coloring_supported():
-            print("\033[93m{0}\033[0m".format(s))
-        else:
-            print("{0}".format(s))
-
-    @staticmethod
-    def error(msg):
-        s = Console.format_message(msg)
-        if Console.is_coloring_supported():
-            print("\033[91m{0}\033[0m".format(s))
-        else:
-            print("{0}".format(s))
+    def write(self, msg):
+        with open(self.path, "a") as file:
+            file.write(msg + "\n")
 
 
 #--------------------------------------------------------------------------------------------------
-# Log class to write to log files.
+# Log class to simultaneously write to a log file and to the console.
 #--------------------------------------------------------------------------------------------------
 
 class Log:
     def __init__(self, path):
-        self.path = path
-        self.reset()
-        self.emit("# Beginning logging at {0}.".format(datetime.datetime.now()))
+        self.log_file = LogFileBackend(path)
 
-    def reset(self):
-        self.project_file = None
-        self.start_time = None
-        self.end_time = None
+    def info(self, msg):
+        formatted_msg = format_message("info", msg)
+        self.log_file.write(formatted_msg)
+        ConsoleBackend.info(formatted_msg)
 
-    def begin_rendering(self, project_file):
-        self.project_file = project_file
-        self.start_time = datetime.datetime.now()
+    def warning(self, msg):
+        formatted_msg = format_message("warning", msg)
+        self.log_file.write(formatted_msg)
+        ConsoleBackend.warning(formatted_msg)
 
-    def end_rendering(self):
-        self.end_time = datetime.datetime.now()
-        self.message("Completed")
-        self.reset()
+    def error(self, msg):
+        formatted_msg = format_message("error", msg)
+        self.log_file.write(formatted_msg)
+        ConsoleBackend.error(formatted_msg)
 
-    def message(self, msg):
-        self.emit("\n".join("{0} : {1} : {2} : {3}".format(xstr(self.project_file), xstr(self.start_time), xstr(self.end_time), line) for line in msg.splitlines()))
+    @staticmethod
+    def info_no_log(msg):
+        ConsoleBackend.info(format_message("info", msg))
 
-    def emit(self, msg):
-        with open(self.path, "a") as file:
-            file.write(msg + "\n")
+    @staticmethod
+    def warning_no_log(msg):
+        ConsoleBackend.warning(format_message("warning", msg))
+
+    @staticmethod
+    def error_no_log(msg):
+        ConsoleBackend.error(format_message("error", msg))
 
 
 #--------------------------------------------------------------------------------------------------
@@ -189,74 +193,39 @@ if os.name == "nt":
 
         return "DontShowUI={0} Disabled={1}".format(dont_show_ui, disabled)
 
-    def disable_wer():
-        Console.info("Disabling Windows Error Reporting...")
+    def disable_wer(log):
+        log.info("Disabling Windows Error Reporting...")
         previous_values = configure_wer(1, 1)
         if previous_values is None:
-            Console.warning("Could not disable Windows Error Reporting.")
+            log.warning("Could not disable Windows Error Reporting.")
         return previous_values
 
-    def restore_wer(previous_values):
-        Console.info("Restoring initial Windows Error Reporting parameters...")
-        result = configure_wer(previous_values[0], previous_values[1])
-        if result is None:
-            Console.warning("Could not restore initial Windows Error Reporting parameters.")
+    def restore_wer(previous_values, log):
+        log.info("Restoring initial Windows Error Reporting parameters...")
+        if configure_wer(previous_values[0], previous_values[1]) is None:
+            log.warning("Could not restore initial Windows Error Reporting parameters.")
 
 
 #--------------------------------------------------------------------------------------------------
-# Watching and rendering logic.
+# Launches appleseed.cli and print appleseed version information.
 #--------------------------------------------------------------------------------------------------
 
-def get_project_files(directory):
-    project_files = []
+def print_appleseed_version(args, log):
+    try:
+        p = subprocess.Popen([args.appleseed_bin_path, "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        version_string = p.communicate()[1].split(os.linesep, 1)[0]
+        log.info("Running {0}.".format(version_string))
+    except OSError:
+        log.error("Failed to query {0} version.".format(APPLESEED_BIN))
+        sys.exit(1)
 
-    for entity in os.listdir(directory):
-        file_path = os.path.join(directory, entity)
-        if os.path.isfile(file_path):
-            if os.path.splitext(file_path)[1] == '.appleseed':
-                project_files.append(file_path)
 
-    return project_files
+#--------------------------------------------------------------------------------------------------
+# Rendering logic.
+#--------------------------------------------------------------------------------------------------
 
-def get_missing_project_dependencies(project_file):
-    missing_deps = []
-
-    directory = os.path.split(project_file)[0]
-
-    with open(project_file, 'r') as file:
-        data = file.read()
-
-    for entity in xml.dom.minidom.parseString(data).getElementsByTagName('parameter'):
-        if entity.getAttribute('name') == 'filename':
-            filename = entity.getAttribute('value')
-
-            if sys.platform == 'win32':
-                filename = filename.replace('/', '\\')
-            else:
-                filename = filename.replace('\\', '/')
-
-            filepath = os.path.join(directory, filename)
-
-            if not os.path.exists(filepath):
-                missing_deps.append(filepath)
-
-    return missing_deps
-
-def is_project_renderable(project_file):
-    missing_deps = get_missing_project_dependencies(project_file)
-
-    if len(missing_deps) == 0:
-        return True
-
-    Console.error('Missing dependencies for "{0}":'.format(os.path.split(project_file)[1]))
-
-    for dep in missing_deps:
-        Console.error("    {0}".format(dep))
-
-    return False
-
-def render_project(args, project_filepath):
-    Console.success('Rendering "{0}"...'.format(project_filepath))
+def render_project(args, project_filepath, log):
+    log.info("Starting rendering {0}...".format(project_filepath))
 
     # Rename the project file so others don't try to render it.
     original_project_filepath = project_filepath
@@ -286,9 +255,51 @@ def render_project(args, project_filepath):
         shutil.move(project_filepath, move_dest)
     except:
         # Something failed, rename the project file back to its original name.
-        Console.warning('File may not have rendered correctly: "{0}".'.format(original_project_filepath))
+        log.error("Failed to render {0}.".format(original_project_filepath))
         os.rename(project_filepath, original_project_filepath)
         raise
+
+    log.info("Successfully rendered {0}.".format(original_project_filepath))
+
+
+#--------------------------------------------------------------------------------------------------
+# Watching logic.
+#--------------------------------------------------------------------------------------------------
+
+def get_project_files(directory):
+    project_files = []
+
+    for entity in os.listdir(directory):
+        file_path = os.path.join(directory, entity)
+        if os.path.isfile(file_path):
+            if os.path.splitext(file_path)[1] == '.appleseed':
+                project_files.append(file_path)
+
+    return project_files
+
+def get_missing_deps(project_filepath):
+    missing_deps = []
+
+    directory = os.path.split(project_filepath)[0]
+
+    with open(project_filepath, 'r') as file:
+        data = file.read()
+
+    for entity in xml.dom.minidom.parseString(data).getElementsByTagName('parameter'):
+        if entity.getAttribute('name') == 'filename':
+            filename = entity.getAttribute('value')
+
+            if os.name == "nt":
+                filename = filename.replace('/', '\\')
+            else:
+                filename = filename.replace('\\', '/')
+
+            filepath = os.path.join(directory, filename)
+
+            if not os.path.exists(filepath):
+                missing_deps.append(filepath)
+
+    return missing_deps
 
 def watch(args, log):
     # Look for project files in the watch directory.
@@ -296,33 +307,23 @@ def watch(args, log):
 
     # No project file found.
     if len(project_files) == 0:
-        Console.info("Nothing to render.")
+        Log.info_no_log("Waiting for incoming data...")
         return False
 
     # Define random start point for list.
     random_start_point = int(random.random() * (len(project_files) - 1))
 
     # Iterate over reordered list of project files.
-    for project_file in project_files[random_start_point:] + project_files[:random_start_point]:
-        if is_project_renderable(project_file):
-            log.begin_rendering(project_file)
-            render_project(args, project_file)
-            log.end_rendering()
+    for project_filepath in project_files[random_start_point:] + project_files[:random_start_point]:
+        missing_deps = get_missing_deps(project_filepath)
+        if len(missing_deps) > 0:
+            Log.info_no_log("{0} missing dependencies for {1}.".format(len(missing_deps), project_filepath))
+        else:
+            render_project(args, project_filepath, log)
             return True
 
     # No renderable project file found.
     return False
-
-def print_appleseed_version(args, log):
-    try:
-        p = subprocess.Popen([args.appleseed_bin_path, "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        version_string = p.communicate()[1].split(os.linesep, 1)[0]
-        msg = "Running {0}.".format(version_string)
-        Console.info(msg)
-        log.message(msg)
-    except OSError:
-        Console.error("Failed to query {0} version.".format(APPLESEED_BIN))
-        sys.exit(1)
 
 
 #--------------------------------------------------------------------------------------------------
@@ -350,20 +351,21 @@ def main():
 
     # Open the log file.
     log_dir = os.path.join(args.watch_dir, LOGS_DIR)
-    log_filename = args.user_name + ".log"
     safe_mkdir(log_dir)
-    log = Log(os.path.join(log_dir, log_filename))
+    log = Log(os.path.join(log_dir, args.user_name + ".log"))
+    log.info("--- Starting logging ---")
 
-    Console.info("Running watchfolder.py version {0}.".format(VERSION))
+    # Print version information.
+    log.info("Running watchfolder.py version {0}.".format(VERSION))
     print_appleseed_version(args, log)
 
     # Disable Windows Error Reporting on Windows.
     if os.name == "nt":
-        Console.info("Initial Windows Error Reporting status: {0}".format(get_wer_status()))
-        initial_wer_values = disable_wer()
-        Console.info("New Windows Error Reporting status: {0}".format(get_wer_status()))
+        log.info("Initial Windows Error Reporting status: {0}".format(get_wer_status()))
+        initial_wer_values = disable_wer(log)
+        log.info("New Windows Error Reporting status: {0}".format(get_wer_status()))
 
-    Console.info('Watching directory "{0}"'.format(args.watch_dir))
+    log.info("Watching directory {0}...".format(args.watch_dir))
 
     # Main watch loop.
     while True:
@@ -371,22 +373,19 @@ def main():
             while watch(args, log): pass
             time.sleep(PAUSE_BETWEEN_CHECKS)
         except KeyboardInterrupt, SystemExit:
-            msg = "Exiting..."
-            Console.info(msg)
-            log.message(msg)
             break
         except:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
-            msg = "".join(line for line in lines)
-            Console.error(msg)
-            log.message(msg)
+            log.error("".join(line for line in lines))
             time.sleep(PAUSE_BETWEEN_CHECKS)
 
     # Restore initial Windows Error Reporting parameters.
     if os.name == "nt":
-        restore_wer(initial_wer_values)
-        Console.info("Final Windows Error Reporting status: {0}".format(get_wer_status()))
+        restore_wer(initial_wer_values, log)
+        log.info("Final Windows Error Reporting status: {0}".format(get_wer_status()))
+
+    log.info("Exiting...")
 
 if __name__ == '__main__':
     main()
