@@ -218,18 +218,6 @@ class DirectLightingIntegrator
 //                                 `-->  add_non_physical_light_sample_contribution
 //
 //
-//                                                                       .-->  take_single_bsdf_sample
-//                                                                       |     (Balance MIS)
-//                             .-->  take_single_bsdf_or_light_sample  --+                                 .-->  add_emitting_triangle_sample_contribution
-//                             |                                         |                                 |     (Balance MIS)
-//                             |                                         `-->  take_single_light_sample  --+
-//                             |                                               (Balance MIS)               |
-//                             |                                                                           `-->  add_non_physical_light_sample_contribution
-//   sample_bsdf_and_lights  --+-->  sample_bsdf
-//                             |
-//                             `-->  sample_lights
-//
-//
 //                                                                                    .-->  take_single_bsdf_sample
 //                                                                                    |     (Balance MIS)
 //                                          .-->  take_single_bsdf_or_light_sample  --+                                 .-->  add_emitting_triangle_sample_contribution
@@ -237,9 +225,9 @@ class DirectLightingIntegrator
 //                                          |                                         `-->  take_single_light_sample  --+
 //                                          |                                               (Balance MIS)               |
 //                                          |                                                                           `-->  add_non_physical_light_sample_contribution
-//   sample_bsdf_and_lights_low_variance  --+-->  sample_bsdf
-//                                          |
-//                                          `-->  sample_lights
+//   sample_bsdf_and_lights               --+-->  sample_bsdf  -->  take_single_bsdf_sample
+//   sample_bsdf_and_lights_low_variance    |
+//                                          `-->  sample_lights  -->  take_single_light_sample  -->  ...
 //
 
 inline double DirectLightingIntegrator::mis_none(
@@ -399,6 +387,8 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     Spectrum&                           radiance,
     SpectrumStack&                      aovs)
 {
+    assert(m_light_sampler.get_emitting_triangle_count() > 0);
+
     // Sample the BSDF.
     foundation::Vector3d incoming;
     Spectrum bsdf_value;
