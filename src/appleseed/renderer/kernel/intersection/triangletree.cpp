@@ -385,10 +385,10 @@ TriangleTree::TriangleTree(const Arguments& arguments)
   , m_arguments(arguments)
 {
     // Retrieve construction parameters.
-    const MessageContext context(
+    const MessageContext message_context(
         string("while building acceleration structure for assembly \"") + m_arguments.m_assembly.get_name() + "\"");
     const ParamArray& params = m_arguments.m_assembly.get_parameters().child("acceleration_structure");
-    const string algorithm = params.get_optional<string>("algorithm", "bvh", make_vector("bvh", "sbvh"), context);
+    const string algorithm = params.get_optional<string>("algorithm", "bvh", make_vector("bvh", "sbvh"), message_context);
     const double time = params.get_optional<double>("time", 0.5);
     const bool save_memory = params.get_optional<bool>("save_temporary_memory", false);
 

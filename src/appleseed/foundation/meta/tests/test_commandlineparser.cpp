@@ -46,10 +46,10 @@ TEST_SUITE(Foundation_Utility_CommandLineParser_ValueOptionHandler)
         handler.set_flags(OptionHandler::Repeatable);
 
         MessageList messages;
-        handler.parse("-opt", make_vector<string>("val1"), messages);
-        handler.parse("-opt", make_vector<string>("val2"), messages);
+        handler.parse("-opt", make_vector("val1"), messages);
+        handler.parse("-opt", make_vector("val2"), messages);
 
-        const StringVector expected = make_vector<string>("val1", "val2");
+        const StringVector expected = make_vector("val1", "val2");
 
         EXPECT_EQ(expected, handler.string_values());
         EXPECT_EQ(expected, handler.values());
