@@ -32,10 +32,13 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/scene/assembly.h"
+#include "renderer/utility/messagecontext.h"
+#include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/makevector.h"
 #include "foundation/utility/uid.h"
 
 // Standard headers.
@@ -90,6 +93,25 @@ ObjectInstance::ObjectInstance(
     impl->m_back_material_mappings = back_material_mappings;
 
     m_object = 0;
+
+    // Retrieve ray bias method.
+    const EntityDefMessageContext message_context("object instance", get_name());
+    const string ray_bias_method =
+        params.get_optional<string>(
+            "ray_bias_method",
+            "adaptive_offset",
+            make_vector("fixed_offset", "adaptive_offset", "normal_shift", "incoming_direction_shift"),
+            message_context);
+    if (ray_bias_method == "fixed_offset")
+        m_ray_bias_method = RayBiasMethodFixedOffset;
+    else if (ray_bias_method == "adaptive_offset")
+        m_ray_bias_method = RayBiasMethodAdaptiveOffset;
+    else if (ray_bias_method == "normal_shift")
+        m_ray_bias_method = RayBiasMethodNormalShift;
+    else m_ray_bias_method = RayBiasMethodIncomingDirectionShift;
+
+    // Retrieve ray bias distance.
+    m_ray_bias_distance = params.get_optional<double>("ray_bias_distance", 0.0);
 }
 
 ObjectInstance::~ObjectInstance()
@@ -311,6 +333,28 @@ void ObjectInstance::check_materials() const
 DictionaryArray ObjectInstanceFactory::get_widget_definitions()
 {
     DictionaryArray definitions;
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "ray_bias_method")
+            .insert("label", "Ray Bias Method")
+            .insert("widget", "dropdown_list")
+            .insert("dropdown_items",
+                Dictionary()
+                    .insert("Fixed Offset", "fixed_offset")
+                    .insert("Adaptive Offset", "adaptive_offset")
+                    .insert("Shift Along Normal", "normal_shift")
+                    .insert("Shift Along Incoming Direction", "incoming_direction_shift"))
+            .insert("use", "optional")
+            .insert("default", "adaptive_offset"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "ray_bias_distance")
+            .insert("label", "Ray Bias Distance")
+            .insert("widget", "text_box")
+            .insert("use", "optional")
+            .insert("default", ""));
 
     return definitions;
 }

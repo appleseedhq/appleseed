@@ -129,6 +129,18 @@ class DLLSYMBOL ObjectInstance
     const MaterialArray& get_front_materials() const;
     const MaterialArray& get_back_materials() const;
 
+    enum RayBiasMethod
+    {
+        RayBiasMethodFixedOffset,               // use a fixed offset procedure
+        RayBiasMethodAdaptiveOffset,            // use an adaptive offset procedure
+        RayBiasMethodNormalShift,               // shift along the surface's geometric normal
+        RayBiasMethodIncomingDirectionShift     // shift along the incoming ray's direction
+    };
+
+    // Per-object ray bias settings.
+    RayBiasMethod get_ray_bias_method() const;
+    double get_ray_bias_distance() const;
+
   private:
     friend class ObjectInstanceFactory;
 
@@ -138,6 +150,9 @@ class DLLSYMBOL ObjectInstance
     Object*             m_object;
     MaterialArray       m_front_materials;
     MaterialArray       m_back_materials;
+
+    RayBiasMethod       m_ray_bias_method;
+    double              m_ray_bias_distance;
 
     // Constructor.
     ObjectInstance(
@@ -193,6 +208,16 @@ inline const MaterialArray& ObjectInstance::get_front_materials() const
 inline const MaterialArray& ObjectInstance::get_back_materials() const
 {
     return m_back_materials;
+}
+
+inline ObjectInstance::RayBiasMethod ObjectInstance::get_ray_bias_method() const
+{
+    return m_ray_bias_method;
+}
+
+inline double ObjectInstance::get_ray_bias_distance() const
+{
+    return m_ray_bias_distance;
 }
 
 }       // namespace renderer

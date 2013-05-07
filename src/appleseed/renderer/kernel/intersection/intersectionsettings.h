@@ -115,17 +115,6 @@ const size_t TriangleTreeAccessCacheWays = 2;
 // Size of the stack (in number of nodes) used during traversal.
 const size_t TriangleTreeStackSize = 64;
 
-
-//
-// Miscellaneous settings.
-//
-
-// If defined, an adaptive procedure is used to offset intersection points.
-// If left undefined, a fixed, constant-time procedure is used. The adaptive
-// procedure handles degenerate cases better but is slightly slower. It must
-// be used when the triangle model is set to Moller-Trumbore (MT).
-#define RENDERER_ADAPTIVE_OFFSET
-
 }       // namespace renderer
 
 #endif  // !APPLESEED_RENDERER_KERNEL_INTERSECTION_INTERSECTIONSETTINGS_H

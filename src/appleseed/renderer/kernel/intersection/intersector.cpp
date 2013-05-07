@@ -84,7 +84,7 @@ Vector3d Intersector::refine(
     return result;
 }
 
-void Intersector::offset(
+void Intersector::fixed_offset(
     const Vector3d&                 p,
     Vector3d                        n,
     Vector3d&                       front,
@@ -135,7 +135,7 @@ void Intersector::offset(
 
 namespace
 {
-    Vector3d offset_point(
+    Vector3d adaptive_offset_point_step(
         const Vector3d&                 p,
         const Vector3d&                 n,
         const int64                     mag)
@@ -171,7 +171,7 @@ namespace
 
         for (size_t i = 0; i < 64; ++i)
         {
-            result = offset_point(result, n, mag);
+            result = adaptive_offset_point_step(result, n, mag);
 
             if (support_plane.intersect(result, n) < 0.0)
                 break;

@@ -78,7 +78,7 @@ class Intersector
         const foundation::Vector3d&     direction);     // incoming or outgoing direction
 
     // Offset a point away from a surface represented by its normal.
-    static void offset(
+    static void fixed_offset(
         const foundation::Vector3d&     p,
         foundation::Vector3d            n,
         foundation::Vector3d&           front,
