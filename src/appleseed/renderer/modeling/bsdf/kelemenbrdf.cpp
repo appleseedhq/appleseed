@@ -31,8 +31,8 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/modeling/bsdf/brdfwrapper.h"
 #include "renderer/modeling/bsdf/bsdf.h"
+#include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/input/uniforminputevaluator.h"
@@ -678,7 +678,7 @@ namespace
         }
     };
 
-    typedef BRDFWrapper<KelemenBRDFImpl> KelemenBRDF;
+    typedef BSDFWrapper<KelemenBRDFImpl> KelemenBRDF;
 }
 
 

@@ -1121,7 +1121,6 @@ source_group ("renderer\\meta\\tests" FILES
 set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/ashikhminbrdf.cpp
     renderer/modeling/bsdf/ashikhminbrdf.h
-    renderer/modeling/bsdf/brdfwrapper.h
     renderer/modeling/bsdf/bsdf.cpp
     renderer/modeling/bsdf/bsdf.h
     renderer/modeling/bsdf/bsdffactoryregistrar.cpp
@@ -1129,7 +1128,7 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/bsdfmix.cpp
     renderer/modeling/bsdf/bsdfmix.h
     renderer/modeling/bsdf/bsdftraits.h
-    renderer/modeling/bsdf/btdfwrapper.h
+    renderer/modeling/bsdf/bsdfwrapper.h
     renderer/modeling/bsdf/diffusebtdf.cpp
     renderer/modeling/bsdf/diffusebtdf.h
     renderer/modeling/bsdf/ibsdffactory.h

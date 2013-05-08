@@ -31,8 +31,8 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/modeling/bsdf/brdfwrapper.h"
 #include "renderer/modeling/bsdf/bsdf.h"
+#include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/input/uniforminputevaluator.h"
@@ -215,7 +215,7 @@ namespace
         Spectrum        m_brdf_value;               // precomputed value of the BRDF (albedo/Pi)
     };
 
-    typedef BRDFWrapper<LambertianBRDFImpl> LambertianBRDF;
+    typedef BSDFWrapper<LambertianBRDFImpl> LambertianBRDF;
 }
 
 

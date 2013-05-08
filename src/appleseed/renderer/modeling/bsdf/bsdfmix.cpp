@@ -33,7 +33,7 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/bsdf/bsdf.h"
-#include "renderer/modeling/bsdf/btdfwrapper.h"
+#include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/scene/assembly.h"
 
 // appleseed.foundation headers.
@@ -357,7 +357,7 @@ namespace
         }
     };
 
-    typedef BTDFWrapper<BSDFMixImpl> BSDFMix;
+    typedef BSDFWrapper<BSDFMixImpl> BSDFMix;
 }
 
 

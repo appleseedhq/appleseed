@@ -26,33 +26,42 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSDF_BRDFWRAPPER_H
-#define APPLESEED_RENDERER_MODELING_BSDF_BRDFWRAPPER_H
+#ifndef APPLESEED_RENDERER_MODELING_BSDF_BSDFWRAPPER_H
+#define APPLESEED_RENDERER_MODELING_BSDF_BSDFWRAPPER_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/global/globaltypes.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
+#include "foundation/math/vector.h"
+#include "foundation/platform/compiler.h"
+
+// Standard headers.
+#include <cassert>
+#include <cmath>
+
+// Forward declarations.
+namespace renderer  { class ParamArray; }
 
 namespace renderer
 {
 
 //
-// The BRDFWrapper class wraps a BRDF implementation with domain validity checks
+// The BSDFWrapper class wraps a BRDF or BTDF implementation with validity checks
 // and takes care of correcting for the use of shading normals in the adjoint case.
 //
 
-template <typename BRDFImpl>
-class BRDFWrapper
-  : public BRDFImpl
+template <typename BSDFImpl>
+class BSDFWrapper
+  : public BSDFImpl
 {
   public:
-    BRDFWrapper(
+    BSDFWrapper(
         const char*                     name,
         const ParamArray&               params);
 
-    virtual typename BRDFImpl::Mode sample(
+    virtual typename BSDFImpl::Mode sample(
         SamplingContext&                sampling_context,
         const void*                     data,
         const bool                      adjoint,
@@ -86,19 +95,19 @@ class BRDFWrapper
 
 
 //
-// BRDFWrapper class implementation.
+// BSDFWrapper class implementation.
 //
 
-template <typename BRDFImpl>
-BRDFWrapper<BRDFImpl>::BRDFWrapper(
+template <typename BSDFImpl>
+BSDFWrapper<BSDFImpl>::BSDFWrapper(
     const char*                         name,
     const ParamArray&                   params)
-  : BRDFImpl(name, params)
+  : BSDFImpl(name, params)
 {
 }
 
-template <typename BRDFImpl>
-typename BRDFImpl::Mode BRDFWrapper<BRDFImpl>::sample(
+template <typename BSDFImpl>
+typename BSDFImpl::Mode BSDFWrapper<BSDFImpl>::sample(
     SamplingContext&                    sampling_context,
     const void*                         data,
     const bool                          adjoint,
@@ -112,10 +121,9 @@ typename BRDFImpl::Mode BRDFWrapper<BRDFImpl>::sample(
 {
     assert(foundation::is_normalized(geometric_normal));
     assert(foundation::is_normalized(outgoing));
-    assert(foundation::dot(outgoing, geometric_normal) >= 0.0);
 
-    const typename BRDFImpl::Mode mode =
-        BRDFImpl::sample(
+    const typename BSDFImpl::Mode mode =
+        BSDFImpl::sample(
             sampling_context,
             data,
             adjoint,
@@ -127,19 +135,18 @@ typename BRDFImpl::Mode BRDFWrapper<BRDFImpl>::sample(
             value,
             probability);
 
-    if (mode != BRDFImpl::Absorption)
+    if (mode != BSDFImpl::Absorption)
     {
         assert(foundation::is_normalized(incoming));
-        assert(foundation::dot(incoming, geometric_normal) >= 0.0);
-        assert(probability == BRDFImpl::DiracDelta || probability > 0.0);
+        assert(probability == BSDFImpl::DiracDelta || probability > 0.0);
 
         if (cosine_mult)
         {
             if (adjoint)
             {
                 const double cos_on = std::abs(foundation::dot(outgoing, shading_basis.get_normal()));
-                const double cos_ig = foundation::dot(incoming, geometric_normal);
-                const double cos_og = foundation::dot(outgoing, geometric_normal);
+                const double cos_ig = std::abs(foundation::dot(incoming, geometric_normal));
+                const double cos_og = std::abs(foundation::dot(outgoing, geometric_normal));
                 value *= static_cast<float>(cos_on * cos_ig / cos_og);
             }
             else
@@ -153,8 +160,8 @@ typename BRDFImpl::Mode BRDFWrapper<BRDFImpl>::sample(
     return mode;
 }
 
-template <typename BRDFImpl>
-double BRDFWrapper<BRDFImpl>::evaluate(
+template <typename BSDFImpl>
+double BSDFWrapper<BSDFImpl>::evaluate(
     const void*                         data,
     const bool                          adjoint,
     const bool                          cosine_mult,
@@ -169,15 +176,8 @@ double BRDFWrapper<BRDFImpl>::evaluate(
     assert(foundation::is_normalized(outgoing));
     assert(foundation::is_normalized(incoming));
 
-    const double cos_ig = foundation::dot(incoming, geometric_normal);
-    const double cos_og = foundation::dot(outgoing, geometric_normal);
-
-    // No reflection in or below the geometric surface.
-    if (cos_ig <= 0.0 || cos_og <= 0.0)
-        return 0.0;
-
     const double probability =
-        BRDFImpl::evaluate(
+        BSDFImpl::evaluate(
             data,
             adjoint,
             false,
@@ -195,6 +195,8 @@ double BRDFWrapper<BRDFImpl>::evaluate(
         if (adjoint)
         {
             const double cos_on = std::abs(foundation::dot(outgoing, shading_basis.get_normal()));
+            const double cos_ig = std::abs(foundation::dot(incoming, geometric_normal));
+            const double cos_og = std::abs(foundation::dot(outgoing, geometric_normal));
             value *= static_cast<float>(cos_on * cos_ig / cos_og);
         }
         else
@@ -207,8 +209,8 @@ double BRDFWrapper<BRDFImpl>::evaluate(
     return probability;
 }
 
-template <typename BRDFImpl>
-double BRDFWrapper<BRDFImpl>::evaluate_pdf(
+template <typename BSDFImpl>
+double BSDFWrapper<BSDFImpl>::evaluate_pdf(
     const void*                         data,
     const foundation::Vector3d&         geometric_normal,
     const foundation::Basis3d&          shading_basis,
@@ -220,15 +222,8 @@ double BRDFWrapper<BRDFImpl>::evaluate_pdf(
     assert(foundation::is_normalized(outgoing));
     assert(foundation::is_normalized(incoming));
 
-    const double cos_ig = foundation::dot(incoming, geometric_normal);
-    const double cos_og = foundation::dot(outgoing, geometric_normal);
-
-    // No reflection in or below the geometric surface.
-    if (cos_ig <= 0.0 || cos_og <= 0.0)
-        return 0.0;
-
     const double probability =
-        BRDFImpl::evaluate_pdf(
+        BSDFImpl::evaluate_pdf(
             data,
             geometric_normal,
             shading_basis,
@@ -243,4 +238,4 @@ double BRDFWrapper<BRDFImpl>::evaluate_pdf(
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_BSDF_BRDFWRAPPER_H
+#endif  // !APPLESEED_RENDERER_MODELING_BSDF_BSDFWRAPPER_H
