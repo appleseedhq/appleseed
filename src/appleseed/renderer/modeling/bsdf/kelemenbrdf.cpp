@@ -172,14 +172,16 @@ namespace
             Spectrum&           value,
             double&             probability) const
         {
-            const InputValues* values = static_cast<const InputValues*>(data);
-
             // Define aliases to match the notations in the paper.
             const Vector3d& V = outgoing;
             const Vector3d& N = shading_basis.get_normal();
 
-            // Compute the outgoing angle.
-            const double dot_VN = max(dot(V, N), 0.0);
+            // No reflection below the shading surface.
+            const double dot_VN = dot(V, N);
+            if (dot_VN < 0.0)
+                return Absorption;
+
+            const InputValues* values = static_cast<const InputValues*>(data);
 
             // Compute the specular albedo for the outgoing angle.
             Spectrum specular_albedo_V;
@@ -220,7 +222,7 @@ namespace
                 H = normalize(incoming + V);
 
                 dot_LN = wi.y;
-                dot_HN = max(dot(H, N), 0.0);
+                dot_HN = dot(H, N);
                 dot_HV = dot(H, V);
             }
             else if (s[2] < matte_prob + specular_prob)
@@ -241,19 +243,14 @@ namespace
                 dot_LN = dot(incoming, N);
                 dot_HN = local_H.y;
 
-                // No reflection in or below the shading surface.
-                if (dot_LN <= 0.0)
+                // No reflection below the shading surface.
+                if (dot_LN < 0.0)
                     return Absorption;
             }
             else
             {
                 return Absorption;
             }
-
-            // No reflection in or below the geometric surface.
-            const double cos_ig = dot(incoming, geometric_normal);
-            if (cos_ig <= 0.0)
-                return Absorption;
 
             // Compute the specular albedo for the incoming angle.
             Spectrum specular_albedo_L;
@@ -302,23 +299,26 @@ namespace
             const int           modes,
             Spectrum&           value) const
         {
-            const InputValues* values = static_cast<const InputValues*>(data);
-
-            value.set(0.0f);
-            double probability = 0.0;
-
             // Define aliases to match the notations in the paper.
             const Vector3d& V = outgoing;
             const Vector3d& L = incoming;
             const Vector3d& N = shading_basis.get_normal();
 
-            const double dot_VN = abs(dot(V, N));
-            const double dot_LN = abs(dot(L, N));
+            // No reflection below the shading surface.
+            const double dot_VN = dot(V, N);
+            const double dot_LN = dot(L, N);
+            if (dot_VN < 0.0 || dot_LN < 0.0)
+                return 0.0;
+
+            const InputValues* values = static_cast<const InputValues*>(data);
+
+            value.set(0.0f);
+            double probability = 0.0;
 
             // Compute the halfway vector.
             const Vector3d H = normalize(L + V);
-            const double dot_HN = abs(dot(H, N));
-            const double dot_HL = abs(dot(H, L));
+            const double dot_HN = dot(H, N);
+            const double dot_HL = dot(H, L);
 
             // Compute the specular albedos for the outgoing and incoming angles.
             Spectrum specular_albedo_V, specular_albedo_L;
@@ -379,22 +379,25 @@ namespace
             const Vector3d&     incoming,
             const int           modes) const
         {
-            const InputValues* values = static_cast<const InputValues*>(data);
-
-            double probability = 0.0;
-
             // Define aliases to match the notations in the paper.
             const Vector3d& V = outgoing;
             const Vector3d& L = incoming;
             const Vector3d& N = shading_basis.get_normal();
 
-            const double dot_VN = abs(dot(V, N));
-            const double dot_LN = abs(dot(L, N));
+            // No reflection below the shading surface.
+            const double dot_VN = dot(V, N);
+            const double dot_LN = dot(L, N);
+            if (dot_VN < 0.0 || dot_LN < 0.0)
+                return 0.0;
+
+            const InputValues* values = static_cast<const InputValues*>(data);
+
+            double probability = 0.0;
 
             // Compute the halfway vector.
             const Vector3d H = normalize(L + V);
-            const double dot_HN = abs(dot(H, N));
-            const double dot_HL = abs(dot(H, L));
+            const double dot_HN = dot(H, N);
+            const double dot_HL = dot(H, L);
 
             // Compute the specular albedo for the outgoing angle.
             Spectrum specular_albedo_V;

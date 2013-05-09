@@ -135,9 +135,6 @@ namespace
                     // Compute the reflected direction.
                     incoming = reflect(outgoing, shading_normal);
 
-                    // Force the reflected direction to be above the geometric surface.
-                    incoming = force_above_surface(incoming, geometric_normal);
-
                     // Compute the reflected radiance.
                     value = values->m_reflectance;
                     value *= static_cast<float>(fresnel_reflection * values->m_reflectance_multiplier / reflection_prob);

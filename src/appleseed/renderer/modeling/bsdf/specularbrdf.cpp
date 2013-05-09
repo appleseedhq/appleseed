@@ -91,16 +91,22 @@ namespace
             Spectrum&           value,
             double&             probability) const
         {
+            // No reflection below the shading surface.
             const Vector3d& shading_normal = shading_basis.get_normal();
+            const double cos_on = dot(outgoing, shading_normal);
+            if (cos_on < 0.0)
+                return Absorption;
 
             // Compute the incoming direction.
             incoming = reflect(outgoing, shading_normal);
-
-            // Force the incoming direction to be above the geometric surface.
             incoming = force_above_surface(incoming, geometric_normal);
 
+            // No reflection below the shading surface.
+            const double cos_in = dot(incoming, shading_normal);
+            if (cos_in < 0.0)
+                return Absorption;
+
             // Compute the BRDF value.
-            const double cos_in = abs(dot(incoming, shading_normal));
             const InputValues* values = static_cast<const InputValues*>(data);
             value = values->m_reflectance;
             value *= static_cast<float>(values->m_reflectance_multiplier / cos_in);

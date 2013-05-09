@@ -132,11 +132,6 @@ namespace
             // Transform the incoming direction to parent space.
             incoming = shading_basis.transform_to_parent(wi);
 
-            // No reflection in or below the geometric surface.
-            const double cos_ig = dot(incoming, geometric_normal);
-            if (cos_ig <= 0.0)
-                return Absorption;
-
             // Compute the BRDF value.
             if (m_uniform_reflectance)
                 value = m_brdf_value;
@@ -169,8 +164,11 @@ namespace
             if (!(modes & Diffuse))
                 return 0.0;
 
+            // No reflection below the shading surface.
             const Vector3d& n = shading_basis.get_normal();
-            const double cos_in = abs(dot(incoming, n));
+            const double cos_in = dot(incoming, n);
+            if (cos_in < 0.0)
+                return 0.0;
 
             // Compute the BRDF value.
             if (m_uniform_reflectance)
@@ -197,8 +195,11 @@ namespace
             if (!(modes & Diffuse))
                 return 0.0;
 
+            // No reflection below the shading surface.
             const Vector3d& n = shading_basis.get_normal();
-            const double cos_in = abs(dot(incoming, n));
+            const double cos_in = dot(incoming, n);
+            if (cos_in < 0.0)
+                return 0.0;
 
             return cos_in * RcpPi;
         }

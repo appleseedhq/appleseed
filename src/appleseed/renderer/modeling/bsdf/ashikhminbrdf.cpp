@@ -145,6 +145,12 @@ namespace
             Spectrum&           value,
             double&             probability) const
         {
+            // No reflection below the shading surface.
+            const Vector3d& shading_normal = shading_basis.get_normal();
+            const double cos_on = dot(outgoing, shading_normal);
+            if (cos_on < 0.0)
+                return Absorption;
+
             const InputValues* values = static_cast<const InputValues*>(data);
 
             // Compute (or retrieve precomputed) reflectance-related values.
@@ -174,11 +180,6 @@ namespace
 
                 // Transform the incoming direction to parent space.
                 incoming = shading_basis.transform_to_parent(wi);
-
-                // No reflection in or below the geometric surface.
-                const double cos_ig = dot(incoming, geometric_normal);
-                if (cos_ig <= 0.0)
-                    return Absorption;
 
                 // Compute the halfway vector in world space.
                 h = normalize(incoming + outgoing);
@@ -229,22 +230,17 @@ namespace
 
                 // Compute the incoming direction in world space.
                 incoming = reflect(outgoing, h);
-
-                // Force the incoming direction to be above the geometric surface.
                 incoming = force_above_surface(incoming, geometric_normal);
             }
 
-            const Vector3d& shading_normal = shading_basis.get_normal();
-
-            // No reflection in or below the shading surface.
+            // No reflection below the shading surface.
             const double cos_in = dot(incoming, shading_normal);
-            if (cos_in <= 0.0)
+            if (cos_in < 0.0)
                 return Absorption;
 
             // Compute dot products.
-            const double cos_on = abs(dot(outgoing, shading_normal));
             const double cos_oh = abs(dot(outgoing, h));
-            const double cos_hn = abs(dot(h, shading_normal));
+            const double cos_hn = dot(h, shading_normal);
 
             // Evaluate the diffuse component of the BRDF (equation 5).
             const double a = 1.0 - pow5(1.0 - 0.5 * cos_in);
@@ -284,6 +280,13 @@ namespace
             const int           modes,
             Spectrum&           value) const
         {
+            // No reflection below the shading surface.
+            const Vector3d& shading_normal = shading_basis.get_normal();
+            const double cos_in = dot(incoming, shading_normal);
+            const double cos_on = dot(outgoing, shading_normal);
+            if (cos_in < 0.0 || cos_on < 0.0)
+                return 0.0;
+
             const InputValues* values = static_cast<const InputValues*>(data);
 
             // Compute (or retrieve precomputed) reflectance-related values.
@@ -302,11 +305,8 @@ namespace
             const Vector3d h = normalize(incoming + outgoing);
 
             // Compute dot products.
-            const Vector3d& shading_normal = shading_basis.get_normal();
-            const double cos_in = abs(dot(incoming, shading_normal));
-            const double cos_on = abs(dot(outgoing, shading_normal));
-            const double cos_oh = abs(dot(outgoing, h));
-            const double cos_hn = abs(dot(h, shading_normal));
+            const double cos_oh = dot(outgoing, h);
+            const double cos_hn = dot(h, shading_normal);
             const double cos_hu = dot(h, shading_basis.get_tangent_u());
             const double cos_hv = dot(h, shading_basis.get_tangent_v());
 
@@ -355,6 +355,13 @@ namespace
             const Vector3d&     incoming,
             const int           modes) const
         {
+            // No reflection below the shading surface.
+            const Vector3d& shading_normal = shading_basis.get_normal();
+            const double cos_in = dot(incoming, shading_normal);
+            const double cos_on = dot(outgoing, shading_normal);
+            if (cos_in < 0.0 || cos_on < 0.0)
+                return 0.0;
+
             const InputValues* values = static_cast<const InputValues*>(data);
 
             // Compute (or retrieve precomputed) reflectance-related values.
@@ -372,11 +379,8 @@ namespace
             const Vector3d h = normalize(incoming + outgoing);
 
             // Compute dot products.
-            const Vector3d& shading_normal = shading_basis.get_normal();
-            const double cos_in = abs(dot(incoming, shading_normal));
-            const double cos_on = abs(dot(outgoing, shading_normal));
-            const double cos_oh = abs(dot(outgoing, h));
-            const double cos_hn = abs(dot(h, shading_normal));
+            const double cos_oh = dot(outgoing, h);
+            const double cos_hn = dot(h, shading_normal);
             const double cos_hu = dot(h, shading_basis.get_tangent_u());
             const double cos_hv = dot(h, shading_basis.get_tangent_v());
 

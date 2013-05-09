@@ -136,6 +136,12 @@ namespace
             Spectrum&           value,
             double&             probability) const
         {
+            // No reflection below the shading surface.
+            const Vector3d& n = shading_basis.get_normal();
+            const double cos_on = dot(outgoing, n);
+            if (cos_on < 0.0)
+                return Absorption;
+
             const InputValues* values = static_cast<const InputValues*>(data);
 
             // Compute the incoming direction by sampling the MDF.
@@ -146,17 +152,13 @@ namespace
             sample_mdf(values->m_mdf_parameter, s, h, mdf_value, mdf_pdf);
             h = shading_basis.transform_to_parent(h);
             incoming = reflect(outgoing, h);
+            const double cos_hn = dot(h, n);
+            const double cos_oh = dot(outgoing, h);
 
-            // No reflection in or below the geometric surface.
-            const double cos_ig = dot(incoming, geometric_normal);
-            if (cos_ig <= 0.0)
+            // No reflection below the shading surface.
+            const double cos_in = dot(incoming, n);
+            if (cos_in < 0.0)
                 return Absorption;
-
-            const Vector3d& n = shading_basis.get_normal();
-            const double cos_on = abs(dot(outgoing, n));
-            const double cos_in = abs(dot(incoming, n));
-            const double cos_hn = abs(dot(h, n));
-            const double cos_oh = abs(dot(outgoing, h));
 
             // Compute the BRDF value.
             const double g = evaluate_attenuation(cos_on, cos_in, cos_hn, cos_oh);
@@ -183,14 +185,19 @@ namespace
             if (!(modes & Diffuse))
                 return 0.0;
 
+            // No reflection below the shading surface.
+            const Vector3d& n = shading_basis.get_normal();
+            const double cos_in = dot(incoming, n);
+            const double cos_on = dot(outgoing, n);
+            if (cos_in < 0.0 || cos_on < 0.0)
+                return 0.0;
+
             const InputValues* values = static_cast<const InputValues*>(data);
 
+            // Compute the halfway vector in world space.
             const Vector3d h = normalize(incoming + outgoing);
-            const Vector3d& n = shading_basis.get_normal();
-            const double cos_on = abs(dot(outgoing, n));
-            const double cos_in = abs(dot(incoming, n));
-            const double cos_hn = abs(dot(h, n));
-            const double cos_oh = abs(dot(outgoing, h));
+            const double cos_hn = dot(h, n);
+            const double cos_oh = dot(outgoing, h);
 
             // Evaluate the MDF.
             double mdf_value, mdf_pdf;
@@ -216,12 +223,19 @@ namespace
             if (!(modes & Diffuse))
                 return 0.0;
 
+            // No reflection below the shading surface.
+            const Vector3d& n = shading_basis.get_normal();
+            const double cos_in = dot(incoming, n);
+            const double cos_on = dot(outgoing, n);
+            if (cos_in < 0.0 || cos_on < 0.0)
+                return 0.0;
+
             const InputValues* values = static_cast<const InputValues*>(data);
 
+            // Compute the halfway vector in world space.
             const Vector3d h = normalize(incoming + outgoing);
-            const Vector3d& n = shading_basis.get_normal();
-            const double cos_hn = abs(dot(h, n));
-            const double cos_oh = abs(dot(outgoing, h));
+            const double cos_hn = dot(h, n);
+            const double cos_oh = dot(outgoing, h);
 
             // Compute and return the PDF value.
             return evaluate_mdf_pdf(values->m_mdf_parameter, cos_hn) / (4.0 * cos_oh);
