@@ -417,32 +417,41 @@ void AssemblyTree::update_child_trees()
 
 namespace
 {
-    void transform_ray_to_assembly_instance_space(
+    void compute_assembly_instance_ray(
         const AssemblyInstance&     assembly_instance,
         const Transformd&           assembly_instance_transform,
-        const ShadingPoint*         parent_shading_point,
+        const ShadingPoint*         parent_sp,
         const ShadingRay&           input_ray,
         ShadingRay&                 output_ray)
     {
-        // Transform the ray direction.
+        // Transform the ray direction to assembly instance space.
         output_ray.m_dir = assembly_instance_transform.vector_to_local(input_ray.m_dir);
 
-        if (parent_shading_point &&
-            parent_shading_point->get_assembly_instance().get_uid() == assembly_instance.get_uid())
+        // Compute the ray origin in assembly instance space.
+        if (parent_sp &&
+            parent_sp->get_assembly_instance().get_uid() == assembly_instance.get_uid() &&
+            parent_sp->get_object_instance().get_ray_bias_method() == ObjectInstance::RayBiasMethodNone)
         {
             // The caller provided the previous intersection, and we are about
             // to intersect the assembly instance that contains the previous
             // intersection. Use the properly offset intersection point as the
             // origin of the child ray.
-            output_ray.m_org = parent_shading_point->get_offset_point(output_ray.m_dir);
+            output_ray.m_org = parent_sp->get_offset_point(output_ray.m_dir);
         }
         else
         {
             // The caller didn't provide the previous intersection, or we are
             // about to intersect an assembly instance that does not contain
-            // the previous intersection: proceed normally.
+            // the previous intersection: simply transform the ray origin to
+            // assembly instance space.
             output_ray.m_org = assembly_instance_transform.point_to_local(input_ray.m_org);
         }
+
+        // Copy the remaining members.
+        output_ray.m_tmin = input_ray.m_tmin;
+        output_ray.m_tmax = input_ray.m_tmax;
+        output_ray.m_time = input_ray.m_time;
+        output_ray.m_flags = input_ray.m_flags;
     }
 }
 
@@ -481,16 +490,12 @@ bool AssemblyLeafVisitor::visit(
 
         // Transform the ray to assembly instance space.
         ShadingPoint local_shading_point;
-        transform_ray_to_assembly_instance_space(
+        compute_assembly_instance_ray(
             *item.m_assembly_instance,
             assembly_instance_transform,
             m_parent_shading_point,
             ray,
             local_shading_point.m_ray);
-        local_shading_point.m_ray.m_tmin = ray.m_tmin;
-        local_shading_point.m_ray.m_tmax = ray.m_tmax;
-        local_shading_point.m_ray.m_time = m_shading_point.m_ray.m_time;
-        local_shading_point.m_ray.m_flags = m_shading_point.m_ray.m_flags;
         const RayInfo3d local_ray_info(local_shading_point.m_ray);
 
         FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(1));
@@ -599,16 +604,12 @@ bool AssemblyLeafProbeVisitor::visit(
 
         // Transform the ray to assembly instance space.
         ShadingRay local_ray;
-        transform_ray_to_assembly_instance_space(
+        compute_assembly_instance_ray(
             *item.m_assembly_instance,
             assembly_instance_transform,
             m_parent_shading_point,
             ray,
             local_ray);
-        local_ray.m_tmin = ray.m_tmin;
-        local_ray.m_tmax = ray.m_tmax;
-        local_ray.m_time = ray.m_time;
-        local_ray.m_flags = ray.m_flags;
         const RayInfo3d local_ray_info(local_ray);
 
         FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(1));

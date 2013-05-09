@@ -157,7 +157,7 @@ void compute_ibl_bsdf_sampling(
         // Discard occluded samples.
         const double transmission =
             shading_context.get_tracer().trace(
-                point,
+                parent_shading_point ? parent_shading_point->get_shifted_point(incoming) : point,
                 incoming,
                 time,
                 parent_shading_point);
@@ -244,7 +244,7 @@ void compute_ibl_environment_sampling(
         // Discard occluded samples.
         const double transmission =
             shading_context.get_tracer().trace(
-                point,
+                parent_shading_point ? parent_shading_point->get_shifted_point(incoming) : point,
                 incoming,
                 time,
                 parent_shading_point);

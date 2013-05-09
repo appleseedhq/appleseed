@@ -99,16 +99,16 @@ ObjectInstance::ObjectInstance(
     const string ray_bias_method =
         params.get_optional<string>(
             "ray_bias_method",
-            "adaptive_offset",
-            make_vector("fixed_offset", "adaptive_offset", "normal_shift", "incoming_direction_shift"),
+            "none",
+            make_vector("none", "normal", "incoming_direction", "outgoing_direction"),
             message_context);
-    if (ray_bias_method == "fixed_offset")
-        m_ray_bias_method = RayBiasMethodFixedOffset;
-    else if (ray_bias_method == "adaptive_offset")
-        m_ray_bias_method = RayBiasMethodAdaptiveOffset;
-    else if (ray_bias_method == "normal_shift")
-        m_ray_bias_method = RayBiasMethodNormalShift;
-    else m_ray_bias_method = RayBiasMethodIncomingDirectionShift;
+    if (ray_bias_method == "none")
+        m_ray_bias_method = RayBiasMethodNone;
+    else if (ray_bias_method == "normal")
+        m_ray_bias_method = RayBiasMethodNormal;
+    else if (ray_bias_method == "incoming_direction")
+        m_ray_bias_method = RayBiasMethodIncomingDirection;
+    else m_ray_bias_method = RayBiasMethodOutgoingDirection;
 
     // Retrieve ray bias distance.
     m_ray_bias_distance = params.get_optional<double>("ray_bias_distance", 0.0);
@@ -341,12 +341,12 @@ DictionaryArray ObjectInstanceFactory::get_widget_definitions()
             .insert("widget", "dropdown_list")
             .insert("dropdown_items",
                 Dictionary()
-                    .insert("Fixed Offset", "fixed_offset")
-                    .insert("Adaptive Offset", "adaptive_offset")
-                    .insert("Shift Along Normal", "normal_shift")
-                    .insert("Shift Along Incoming Direction", "incoming_direction_shift"))
+                    .insert("No Ray Bias", "none")
+                    .insert("Shift Along Surface Normal", "normal")
+                    .insert("Shift Along Incoming Direction", "incoming_direction")
+                    .insert("Shift Along Outgoing Direction", "outgoing_direction"))
             .insert("use", "optional")
-            .insert("default", "adaptive_offset"));
+            .insert("default", "none"));
 
     definitions.push_back(
         Dictionary()
@@ -354,7 +354,7 @@ DictionaryArray ObjectInstanceFactory::get_widget_definitions()
             .insert("label", "Ray Bias Distance")
             .insert("widget", "text_box")
             .insert("use", "optional")
-            .insert("default", ""));
+            .insert("default", "0.0"));
 
     return definitions;
 }

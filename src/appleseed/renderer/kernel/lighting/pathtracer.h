@@ -315,7 +315,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
 
         // Construct the scattered ray.
         const ShadingRay scattered_ray(
-            shading_point_ptr->get_point(),
+            shading_point_ptr->get_shifted_point(incoming),
             incoming,
             ray.m_time,
             ~0);            // ray flags

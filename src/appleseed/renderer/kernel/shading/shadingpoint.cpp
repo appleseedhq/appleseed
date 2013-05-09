@@ -175,61 +175,56 @@ void ShadingPoint::refine_and_offset() const
     m_asm_geo_normal = m_object_instance->get_transform().normal_to_parent(m_asm_geo_normal);
     m_asm_geo_normal = faceforward(m_asm_geo_normal, local_ray.m_dir);
 
-    // Compute the front and back points in assembly instance space.
-    switch (m_object_instance->get_ray_bias_method())
-    {
-      case ObjectInstance::RayBiasMethodFixedOffset:
-        Intersector::fixed_offset(
-            local_ray.m_org,
-            m_asm_geo_normal,
-            m_front_point,
-            m_back_point);
-        break;
-
-      case ObjectInstance::RayBiasMethodAdaptiveOffset:
-        Intersector::adaptive_offset(
-            m_triangle_support_plane,
-            local_ray.m_org,
-            m_asm_geo_normal,
-            m_front_point,
-            m_back_point);
-        break;
-
-      case ObjectInstance::RayBiasMethodNormalShift:
-        {
-            Intersector::adaptive_offset(
-                m_triangle_support_plane,
-                local_ray.m_org,
-                m_asm_geo_normal,
-                m_front_point,
-                m_back_point);
-
-            const Vector3d ray_bias_vector = m_object_instance->get_ray_bias_distance() * normalize(m_asm_geo_normal);
-
-            m_front_point += ray_bias_vector;
-            m_back_point -= ray_bias_vector;
-        }
-        break;
-
-      case ObjectInstance::RayBiasMethodIncomingDirectionShift:
-        {
-            Intersector::adaptive_offset(
-                m_triangle_support_plane,
-                local_ray.m_org,
-                m_asm_geo_normal,
-                m_front_point,
-                m_back_point);
-
-            const Vector3d ray_bias_vector = m_object_instance->get_ray_bias_distance() * normalize(local_ray.m_dir);
-
-            m_front_point += ray_bias_vector;
-            m_back_point -= ray_bias_vector;
-        }
-        break;
-    }
+    // Compute the offset points in assembly instance space.
+#ifdef RENDERER_ADAPTIVE_OFFSET
+    Intersector::adaptive_offset(
+        m_triangle_support_plane,
+        local_ray.m_org,
+        m_asm_geo_normal,
+        m_front_point,
+        m_back_point);
+#else
+    Intersector::offset(
+        local_ray.m_org,
+        m_asm_geo_normal,
+        m_front_point,
+        m_back_point);
+#endif
 
     // The refined intersection points are now available.
     m_members |= ShadingPoint::HasRefinedPoints;
+}
+
+Vector3d ShadingPoint::get_shifted_point(const Vector3d& direction) const
+{
+    assert(hit());
+
+    const double bias = m_object_instance->get_ray_bias_distance();
+    Vector3d point = m_ray.point_at(m_ray.m_tmax);
+
+    switch (m_object_instance->get_ray_bias_method())
+    {
+      case ObjectInstance::RayBiasMethodNormal:
+        {
+            const Vector3d& n = get_geometric_normal();
+            if (dot(direction, n) > 0.0)
+                point += bias * n;
+            else point -= bias * n;
+        }
+        break;
+
+      case ObjectInstance::RayBiasMethodIncomingDirection:
+        point += bias * normalize(m_ray.m_dir);
+        break;
+
+      case ObjectInstance::RayBiasMethodOutgoingDirection:
+        point += bias * normalize(direction);
+        break;
+
+      default:;
+    }
+
+    return point;
 }
 
 }   // namespace renderer

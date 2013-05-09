@@ -131,13 +131,13 @@ class DLLSYMBOL ObjectInstance
 
     enum RayBiasMethod
     {
-        RayBiasMethodFixedOffset,               // use a fixed offset procedure
-        RayBiasMethodAdaptiveOffset,            // use an adaptive offset procedure
-        RayBiasMethodNormalShift,               // shift along the surface's geometric normal
-        RayBiasMethodIncomingDirectionShift     // shift along the incoming ray's direction
+        RayBiasMethodNone,                  // no ray bias for this object instance
+        RayBiasMethodNormal,                // shift the ray's origin along the surface's geometric normal
+        RayBiasMethodIncomingDirection,     // shift the ray's origin along the incoming ray's direction
+        RayBiasMethodOutgoingDirection      // shift the ray's origin along the outgoing ray's direction
     };
 
-    // Per-object ray bias settings.
+    // Per-object ray bias settings. The bias distance is expressed in world space.
     RayBiasMethod get_ray_bias_method() const;
     double get_ray_bias_distance() const;
 

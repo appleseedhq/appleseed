@@ -312,10 +312,10 @@ double compute_fast_ambient_occlusion(
     SamplingContext child_sampling_context = sampling_context.split(2, sample_count);
 
     // Construct an ambient occlusion ray.
-    ShadingRay::RayType ao_ray;
-    ao_ray.m_org = point;
-    ao_ray.m_tmin = 0.0;
-    ao_ray.m_tmax = max_distance;
+    ShadingRay::RayType ray;
+    ray.m_org = point;
+    ray.m_tmin = 0.0;
+    ray.m_tmax = max_distance;
 
     size_t computed_samples = 0;
     size_t occluded_samples = 0;
@@ -326,13 +326,13 @@ double compute_fast_ambient_occlusion(
     {
         // Generate a cosine-weighted direction over the unit hemisphere.
         const Vector2d s = child_sampling_context.next_vector2<2>();
-        ao_ray.m_dir = sample_hemisphere_cosine(s);
+        ray.m_dir = sample_hemisphere_cosine(s);
 
         // Transform the direction to world space.
-        ao_ray.m_dir = basis.transform_to_parent(ao_ray.m_dir);
+        ray.m_dir = basis.transform_to_parent(ray.m_dir);
 
         // Don't cast rays on or below the geometric surface.
-        if (dot(ao_ray.m_dir, geometric_normal) <= 0.0)
+        if (dot(ray.m_dir, geometric_normal) <= 0.0)
             continue;
 
         // Count the number of computed samples.
@@ -340,7 +340,7 @@ double compute_fast_ambient_occlusion(
 
         // Trace the ambient occlusion ray and count the number of occluded samples.
         double distance;
-        if (intersector.trace(ao_ray, true, distance))
+        if (intersector.trace(ray, true, distance))
         {
             ++occluded_samples;
             min_distance = min(min_distance, distance);

@@ -72,7 +72,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
     {
         auto_release_ptr<Project>   m_project;
         Scene*                      m_scene;
-        const Assembly*             m_assembly;
+        Assembly*                   m_assembly;
+        AssemblyInstance*           m_assembly_instance;
 
         SceneBase()
           : m_project(ProjectFactory::create("project"))
@@ -89,6 +90,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                     "assembly_inst",
                     ParamArray(),
                     "assembly"));
+            m_assembly_instance = m_scene->assembly_instances().get_by_name("assembly_inst");
 
             create_color("white", Color4f(1.0f));
             create_constant_surface_shader("constant_white_surface_shader", "white");
@@ -151,12 +153,16 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             m_assembly->objects().insert(object);
         }
 
-        void create_plane_object_instance(const char* name, const Vector3d& position, const char* material_name)
+        void create_plane_object_instance(
+            const char*             name,
+            const Vector3d&         position,
+            const char*             material_name,
+            const ParamArray&       params = ParamArray())
         {
             m_assembly->object_instances().insert(
                 ObjectInstanceFactory::create(
                     name,
-                    ParamArray(),
+                    params,
                     "plane",
                     Transformd::from_local_to_parent(Matrix4d::translation(position)),
                     StringDictionary()
@@ -485,5 +491,75 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 0.0);
 
         EXPECT_FEQ(0.5, transmission);
+    }
+
+    struct SceneWithTwoOpaqueOccluders
+      : public SceneBase
+    {
+        SceneWithTwoOpaqueOccluders()
+        {
+            create_plane_object_instance("plane_inst1", Vector3d(2.0, 0.0, 0.0), "opaque_material");
+            create_plane_object_instance("plane_inst2", Vector3d(4.0, 0.0, 0.0), "opaque_material");
+        }
+    };
+
+    TEST_CASE_F(TraceBetween_ComputeVisibilityBetweenTwoOpaqueOccluders_ReturnsOne, Fixture<SceneWithTwoOpaqueOccluders>)
+    {
+        Tracer parent_tracer(*m_scene, m_intersector, m_texture_cache);
+        double parent_transmission;
+        const ShadingPoint& parent_shading_point =
+            parent_tracer.trace(
+                Vector3d(0.0, 0.0, 0.0),
+                Vector3d(1.0, 0.0, 0.0),
+                0.0,
+                parent_transmission);
+
+        ASSERT_TRUE(parent_shading_point.hit());
+        ASSERT_FEQ(2.0, parent_shading_point.get_distance());
+
+        Tracer tracer(*m_scene, m_intersector, m_texture_cache);
+        const double transmission =
+            tracer.trace_between(
+                parent_shading_point.get_point(),
+                Vector3d(4.0, 0.0, 0.0),
+                0.0,
+                &parent_shading_point);
+
+        EXPECT_EQ(1.0, transmission);
+    }
+
+    struct SceneWithTwoOpaqueOccludersAndScaledAssemblyInstance
+      : public SceneWithTwoOpaqueOccluders
+    {
+        SceneWithTwoOpaqueOccludersAndScaledAssemblyInstance()
+        {
+            m_assembly_instance->transform_sequence().set_transform(
+                0.0, Transformd::from_local_to_parent(Matrix4d::scaling(Vector3d(0.5))));
+        }
+    };
+
+    TEST_CASE_F(TraceBetween_ComputeVisibilityBetweenTwoOpaqueOccludersAndScaledAssemblyInstance_ReturnsOne, Fixture<SceneWithTwoOpaqueOccludersAndScaledAssemblyInstance>)
+    {
+        Tracer parent_tracer(*m_scene, m_intersector, m_texture_cache);
+        double parent_transmission;
+        const ShadingPoint& parent_shading_point =
+            parent_tracer.trace(
+                Vector3d(0.0, 0.0, 0.0),
+                Vector3d(1.0, 0.0, 0.0),
+                0.0,
+                parent_transmission);
+
+        ASSERT_TRUE(parent_shading_point.hit());
+        ASSERT_FEQ(1.0, parent_shading_point.get_distance());
+
+        Tracer tracer(*m_scene, m_intersector, m_texture_cache);
+        const double transmission =
+            tracer.trace_between(
+                parent_shading_point.get_point(),
+                Vector3d(2.0, 0.0, 0.0),
+                0.0,
+                &parent_shading_point);
+
+        EXPECT_EQ(1.0, transmission);
     }
 }

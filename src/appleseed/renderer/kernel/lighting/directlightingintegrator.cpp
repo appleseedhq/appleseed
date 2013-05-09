@@ -184,7 +184,7 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     // Compute the transmission factor between the light sample and the shading point.
     const double transmission =
         m_shading_context.get_tracer().trace_between(
-            m_point,
+            m_parent_shading_point ? m_parent_shading_point->get_shifted_point(incoming) : m_point,
             emission_position,
             m_time,
             m_parent_shading_point);

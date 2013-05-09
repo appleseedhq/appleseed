@@ -415,7 +415,7 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     double weight;
     const ShadingPoint& light_shading_point =
         m_shading_context.get_tracer().trace(
-            m_point,
+            m_parent_shading_point ? m_parent_shading_point->get_shifted_point(incoming) : m_point,
             incoming,
             m_time,
             weight,
@@ -547,7 +547,7 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     // Compute the transmission factor between the light sample and the shading point.
     const double transmission =
         m_shading_context.get_tracer().trace_between(
-            m_point,
+            m_parent_shading_point ? m_parent_shading_point->get_shifted_point(incoming) : m_point,
             sample.m_point,
             m_time,
             m_parent_shading_point);

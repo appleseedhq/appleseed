@@ -275,12 +275,11 @@ namespace
             SamplingContext child_sampling_context = sampling_context.split(2, sample_count);
 
             // Construct an ambient occlusion ray.
-            ShadingRay ao_ray;
-            ao_ray.m_org = point;
-            ao_ray.m_tmin = 0.0;
-            ao_ray.m_tmax = numeric_limits<double>::max();
-            ao_ray.m_time = 0.0;
-            ao_ray.m_flags = ~0;
+            ShadingRay ray;
+            ray.m_tmin = 0.0;
+            ray.m_tmax = numeric_limits<double>::max();
+            ray.m_time = 0.0;
+            ray.m_flags = ~0;
 
             size_t computed_samples = 0;
             double average_distance = 0.0;
@@ -289,21 +288,24 @@ namespace
             {
                 // Generate a cosine-weighted direction over the unit hemisphere.
                 const Vector2d s = child_sampling_context.next_vector2<2>();
-                ao_ray.m_dir = sample_hemisphere_cosine(s);
+                ray.m_dir = sample_hemisphere_cosine(s);
 
                 // Transform the direction to world space.
-                ao_ray.m_dir = shading_basis.transform_to_parent(ao_ray.m_dir);
+                ray.m_dir = shading_basis.transform_to_parent(ray.m_dir);
 
                 // Don't cast rays on or below the geometric surface.
-                if (dot(ao_ray.m_dir, geometric_normal) <= 0.0)
+                if (dot(ray.m_dir, geometric_normal) <= 0.0)
                     continue;
+
+                // Compute the ray origin.
+                ray.m_org = parent_shading_point->get_shifted_point(ray.m_dir);
 
                 // Count the number of computed samples.
                 ++computed_samples;
 
                 // Trace the ambient occlusion ray and update the accumulated hit distance.
                 ShadingPoint shading_point;
-                if (intersector.trace(ao_ray, shading_point, parent_shading_point))
+                if (intersector.trace(ray, shading_point, parent_shading_point))
                     average_distance += shading_point.get_distance();
             }
 

@@ -101,6 +101,9 @@ class ShadingPoint
     // Return the intersection point in world space.
     const foundation::Vector3d& get_point() const;
 
+    // Return the intersection point in world space, with per-object-instance ray bias applied.
+    foundation::Vector3d get_shifted_point(const foundation::Vector3d& direction) const;
+
     // Return the intersection point in world space, properly offset to avoid self-intersections.
     const foundation::Vector3d& get_offset_point(const foundation::Vector3d& direction) const;
 
