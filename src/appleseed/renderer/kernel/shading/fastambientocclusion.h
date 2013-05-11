@@ -132,7 +132,7 @@ double compute_fast_ambient_occlusion(
     const AOVoxelTreeIntersector&   intersector,
     const foundation::Vector3d&     point,
     const foundation::Vector3d&     geometric_normal,
-    const foundation::Basis3d&      basis,
+    const foundation::Basis3d&      shading_basis,
     const double                    max_distance,
     const size_t                    sample_count,
     double&                         min_distance);
@@ -142,7 +142,6 @@ double compute_fast_ambient_occlusion(
 // AOVoxelTree class implementation.
 //
 
-// Return the maximum leaf node diagonal length.
 inline GScalar AOVoxelTree::get_max_diag_length() const
 {
     return m_tree.get_max_diag_length();

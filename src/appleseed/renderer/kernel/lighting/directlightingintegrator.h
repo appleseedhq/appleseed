@@ -97,18 +97,14 @@ class DirectLightingIntegrator
     DirectLightingIntegrator(
         const ShadingContext&           shading_context,
         const LightSampler&             light_sampler,
-        const foundation::Vector3d&     point,                      // world space point
-        const foundation::Vector3d&     geometric_normal,           // world space geometric normal, unit-length
-        const foundation::Basis3d&      shading_basis,              // world space orthonormal basis around shading normal
-        const double                    time,
+        const ShadingPoint&             shading_point,
         const foundation::Vector3d&     outgoing,                   // world space outgoing direction, unit-length
         const BSDF&                     bsdf,
         const void*                     bsdf_data,
         const int                       bsdf_sampling_modes,        // permitted scattering modes during BSDF sampling
         const int                       light_sampling_modes,       // permitted scattering modes during environment sampling
         const size_t                    bsdf_sample_count,          // number of samples in BSDF sampling
-        const size_t                    light_sample_count,         // number of samples in light sampling
-        const ShadingPoint*             parent_shading_point = 0);
+        const size_t                    light_sample_count);        // number of samples in light sampling
 
     // Evaluate direct lighting by sampling the BSDF only.
     template <typename WeightingFunction>
@@ -149,6 +145,7 @@ class DirectLightingIntegrator
   private:
     const ShadingContext&               m_shading_context;
     const LightSampler&                 m_light_sampler;
+    const ShadingPoint&                 m_shading_point;
     const foundation::Vector3d&         m_point;
     const foundation::Vector3d&         m_geometric_normal;
     const foundation::Basis3d&          m_shading_basis;
@@ -160,7 +157,6 @@ class DirectLightingIntegrator
     const int                           m_light_sampling_modes;
     const size_t                        m_bsdf_sample_count;
     const size_t                        m_light_sample_count;
-    const ShadingPoint*                 m_parent_shading_point;
 
     void take_single_bsdf_or_light_sample(
         SamplingContext&                sampling_context,
@@ -415,11 +411,9 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     double weight;
     const ShadingPoint& light_shading_point =
         m_shading_context.get_tracer().trace(
-            m_parent_shading_point ? m_parent_shading_point->get_shifted_point(incoming) : m_point,
+            m_shading_point,
             incoming,
-            m_time,
-            weight,
-            m_parent_shading_point);
+            weight);
 
     // todo: wouldn't it be more efficient to look the environment up at this point?
     if (!light_shading_point.hit())
@@ -547,10 +541,8 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     // Compute the transmission factor between the light sample and the shading point.
     const double transmission =
         m_shading_context.get_tracer().trace_between(
-            m_parent_shading_point ? m_parent_shading_point->get_shifted_point(incoming) : m_point,
-            sample.m_point,
-            m_time,
-            m_parent_shading_point);
+            m_shading_point,
+            sample.m_point);
 
     // Discard occluded samples.
     if (transmission == 0.0)

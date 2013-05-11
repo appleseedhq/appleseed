@@ -78,6 +78,7 @@ class ShadingPoint
     // Reset the shading point to its initial state (no intersection).
     void clear();
 
+    // Replace the ray stored in the shading point.
     void set_ray(const ShadingRay& ray);
 
     // Return the scene that was tested for intersection.
@@ -85,6 +86,9 @@ class ShadingPoint
 
     // Return the world space ray that was cast through the scene.
     const ShadingRay& get_ray() const;
+
+    // Return the time stored in the ray.
+    double get_time() const;
 
     // Return true if an intersection was found, false otherwise.
     bool hit() const;
@@ -102,7 +106,7 @@ class ShadingPoint
     const foundation::Vector3d& get_point() const;
 
     // Return the intersection point in world space, with per-object-instance ray bias applied.
-    foundation::Vector3d get_shifted_point(const foundation::Vector3d& direction) const;
+    foundation::Vector3d get_biased_point(const foundation::Vector3d& direction) const;
 
     // Return the intersection point in world space, properly offset to avoid self-intersections.
     const foundation::Vector3d& get_offset_point(const foundation::Vector3d& direction) const;
@@ -193,15 +197,16 @@ class ShadingPoint
         HasSourceGeometry               = 1 << 0,
         HasUV0                          = 1 << 1,
         HasPoint                        = 1 << 2,
-        HasRefinedPoints                = 1 << 3,
-        HasPartialDerivatives           = 1 << 4,
-        HasGeometricNormal              = 1 << 5,
-        HasShadingNormal                = 1 << 6,
-        HasOriginalShadingNormal        = 1 << 7,
-        HasShadingBasis                 = 1 << 8,
-        HasWorldSpaceVertices           = 1 << 9,
-        HasWorldSpaceVertexNormals      = 1 << 10,
-        HasMaterial                     = 1 << 11
+        HasBiasedPoint                  = 1 << 3,
+        HasRefinedPoints                = 1 << 4,
+        HasPartialDerivatives           = 1 << 5,
+        HasGeometricNormal              = 1 << 6,
+        HasShadingNormal                = 1 << 7,
+        HasOriginalShadingNormal        = 1 << 8,
+        HasShadingBasis                 = 1 << 9,
+        HasWorldSpaceVertices           = 1 << 10,
+        HasWorldSpaceVertexNormals      = 1 << 11,
+        HasMaterial                     = 1 << 12
     };
     mutable foundation::uint32          m_members;                      // which members have already been computed
     mutable const Assembly*             m_assembly;                     // hit assembly
@@ -213,6 +218,7 @@ class ShadingPoint
     mutable GVector3                    m_n0, m_n1, m_n2;               // object instance space triangle vertex normals
     mutable foundation::Vector2d        m_uv;                           // texture coordinates from UV set #0
     mutable foundation::Vector3d        m_point;                        // world space intersection point
+    mutable foundation::Vector3d        m_biased_point;                 // world space intersection point with per-object-instance bias applied
     mutable foundation::Vector3d        m_dpdu;                         // world space partial derivative of the intersection point wrt. U
     mutable foundation::Vector3d        m_dpdv;                         // world space partial derivative of the intersection point wrt. V
     mutable foundation::Vector3d        m_geometric_normal;             // world space geometric normal, unit-length
@@ -294,6 +300,11 @@ inline const Scene& ShadingPoint::get_scene() const
 inline const ShadingRay& ShadingPoint::get_ray() const
 {
     return m_ray;
+}
+
+inline double ShadingPoint::get_time() const
+{
+    return m_ray.m_time;
 }
 
 inline bool ShadingPoint::hit() const

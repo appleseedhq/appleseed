@@ -39,30 +39,28 @@
 // appleseed.foundation headers.
 #include "foundation/math/mis.h"
 
+// Standard headers.
+#include <cassert>
+
 using namespace foundation;
 
 namespace renderer
 {
 
 void compute_ibl(
-    SamplingContext&            sampling_context,
-    const ShadingContext&       shading_context,
-    const EnvironmentEDF&       environment_edf,
-    const Vector3d&             point,
-    const Vector3d&             geometric_normal,
-    const Basis3d&              shading_basis,
-    const double                time,
-    const Vector3d&             outgoing,
-    const BSDF&                 bsdf,
-    const void*                 bsdf_data,
-    const int                   bsdf_sampling_modes,
-    const int                   env_sampling_modes,
-    const size_t                bsdf_sample_count,
-    const size_t                env_sample_count,
-    Spectrum&                   radiance,
-    const ShadingPoint*         parent_shading_point)
+    SamplingContext&        sampling_context,
+    const ShadingContext&   shading_context,
+    const EnvironmentEDF&   environment_edf,
+    const ShadingPoint&     shading_point,
+    const Vector3d&         outgoing,
+    const BSDF&             bsdf,
+    const void*             bsdf_data,
+    const int               bsdf_sampling_modes,
+    const int               env_sampling_modes,
+    const size_t            bsdf_sample_count,
+    const size_t            env_sample_count,
+    Spectrum&               radiance)
 {
-    assert(is_normalized(geometric_normal));
     assert(is_normalized(outgoing));
 
     // Compute IBL by sampling the BSDF.
@@ -70,18 +68,14 @@ void compute_ibl(
         sampling_context,
         shading_context,
         environment_edf,
-        point,
-        geometric_normal,
-        shading_basis,
-        time,
+        shading_point,
         outgoing,
         bsdf,
         bsdf_data,
         bsdf_sampling_modes,
         bsdf_sample_count,
         env_sample_count,
-        radiance,
-        parent_shading_point);
+        radiance);
 
     // Compute IBL by sampling the environment.
     Spectrum radiance_env_sampling;
@@ -89,40 +83,34 @@ void compute_ibl(
         sampling_context,
         shading_context,
         environment_edf,
-        point,
-        geometric_normal,
-        shading_basis,
-        time,
+        shading_point,
         outgoing,
         bsdf,
         bsdf_data,
         env_sampling_modes,
         bsdf_sample_count,
         env_sample_count,
-        radiance_env_sampling,
-        parent_shading_point);
+        radiance_env_sampling);
     radiance += radiance_env_sampling;
 }
 
 void compute_ibl_bsdf_sampling(
-    SamplingContext&            sampling_context,
-    const ShadingContext&       shading_context,
-    const EnvironmentEDF&       environment_edf,
-    const Vector3d&             point,
-    const Vector3d&             geometric_normal,
-    const Basis3d&              shading_basis,
-    const double                time,
-    const Vector3d&             outgoing,
-    const BSDF&                 bsdf,
-    const void*                 bsdf_data,
-    const int                   bsdf_sampling_modes,
-    const size_t                bsdf_sample_count,
-    const size_t                env_sample_count,
-    Spectrum&                   radiance,
-    const ShadingPoint*         parent_shading_point)
+    SamplingContext&        sampling_context,
+    const ShadingContext&   shading_context,
+    const EnvironmentEDF&   environment_edf,
+    const ShadingPoint&     shading_point,
+    const Vector3d&         outgoing,
+    const BSDF&             bsdf,
+    const void*             bsdf_data,
+    const int               bsdf_sampling_modes,
+    const size_t            bsdf_sample_count,
+    const size_t            env_sample_count,
+    Spectrum&               radiance)
 {
-    assert(is_normalized(geometric_normal));
     assert(is_normalized(outgoing));
+
+    const Vector3d& geometric_normal = shading_point.get_geometric_normal();
+    const Basis3d& shading_basis = shading_point.get_shading_basis();
 
     radiance.set(0.0f);
 
@@ -157,10 +145,8 @@ void compute_ibl_bsdf_sampling(
         // Discard occluded samples.
         const double transmission =
             shading_context.get_tracer().trace(
-                parent_shading_point ? parent_shading_point->get_shifted_point(incoming) : point,
-                incoming,
-                time,
-                parent_shading_point);
+                shading_point,
+                incoming);
         if (transmission == 0.0)
             continue;
 
@@ -191,24 +177,22 @@ void compute_ibl_bsdf_sampling(
 }
 
 void compute_ibl_environment_sampling(
-    SamplingContext&            sampling_context,
-    const ShadingContext&       shading_context,
-    const EnvironmentEDF&       environment_edf,
-    const Vector3d&             point,
-    const Vector3d&             geometric_normal,
-    const Basis3d&              shading_basis,
-    const double                time,
-    const Vector3d&             outgoing,
-    const BSDF&                 bsdf,
-    const void*                 bsdf_data,
-    const int                   env_sampling_modes,
-    const size_t                bsdf_sample_count,
-    const size_t                env_sample_count,
-    Spectrum&                   radiance,
-    const ShadingPoint*         parent_shading_point)
+    SamplingContext&        sampling_context,
+    const ShadingContext&   shading_context,
+    const EnvironmentEDF&   environment_edf,
+    const ShadingPoint&     shading_point,
+    const Vector3d&         outgoing,
+    const BSDF&             bsdf,
+    const void*             bsdf_data,
+    const int               env_sampling_modes,
+    const size_t            bsdf_sample_count,
+    const size_t            env_sample_count,
+    Spectrum&               radiance)
 {
-    assert(is_normalized(geometric_normal));
     assert(is_normalized(outgoing));
+
+    const Vector3d& geometric_normal = shading_point.get_geometric_normal();
+    const Basis3d& shading_basis = shading_point.get_shading_basis();
 
     radiance.set(0.0f);
 
@@ -244,10 +228,8 @@ void compute_ibl_environment_sampling(
         // Discard occluded samples.
         const double transmission =
             shading_context.get_tracer().trace(
-                parent_shading_point ? parent_shading_point->get_shifted_point(incoming) : point,
-                incoming,
-                time,
-                parent_shading_point);
+                shading_point,
+                incoming);
         if (transmission == 0.0)
             continue;
 

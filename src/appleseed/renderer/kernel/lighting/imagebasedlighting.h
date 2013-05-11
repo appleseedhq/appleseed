@@ -30,10 +30,13 @@
 #define APPLESEED_RENDERER_KERNEL_LIGHTING_IMAGEBASEDLIGHTING_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/global/globaltypes.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/basis.h"
+#include "foundation/math/vector.h"
+
+// Standard headers.
+#include <cstddef>
 
 // Forward declarations.
 namespace renderer      { class BSDF; }
@@ -53,10 +56,7 @@ void compute_ibl(
     SamplingContext&                sampling_context,
     const ShadingContext&           shading_context,
     const EnvironmentEDF&           environment_edf,
-    const foundation::Vector3d&     point,                  // world space point
-    const foundation::Vector3d&     geometric_normal,       // world space geometric normal, unit-length
-    const foundation::Basis3d&      shading_basis,          // world space orthonormal basis around shading normal
-    const double                    time,
+    const ShadingPoint&             shading_point,
     const foundation::Vector3d&     outgoing,               // world space outgoing direction, unit-length
     const BSDF&                     bsdf,
     const void*                     bsdf_data,
@@ -64,44 +64,35 @@ void compute_ibl(
     const int                       env_sampling_modes,     // permitted scattering modes during environment sampling
     const size_t                    bsdf_sample_count,      // number of samples in BSDF sampling
     const size_t                    env_sample_count,       // number of samples in environment sampling
-    Spectrum&                       radiance,
-    const ShadingPoint*             parent_shading_point = 0);
+    Spectrum&                       radiance);
 
 // Compute image-based lighting via BSDF sampling.
 void compute_ibl_bsdf_sampling(
     SamplingContext&                sampling_context,
     const ShadingContext&           shading_context,
     const EnvironmentEDF&           environment_edf,
-    const foundation::Vector3d&     point,                  // world space point
-    const foundation::Vector3d&     geometric_normal,       // world space geometric normal, unit-length
-    const foundation::Basis3d&      shading_basis,          // world space orthonormal basis around shading normal
-    const double                    time,
+    const ShadingPoint&             shading_point,
     const foundation::Vector3d&     outgoing,               // world space outgoing direction, unit-length
     const BSDF&                     bsdf,
     const void*                     bsdf_data,
     const int                       bsdf_sampling_modes,    // permitted scattering modes during BSDF sampling
     const size_t                    bsdf_sample_count,      // number of samples in BSDF sampling
     const size_t                    env_sample_count,       // number of samples in environment sampling
-    Spectrum&                       radiance,
-    const ShadingPoint*             parent_shading_point = 0);
+    Spectrum&                       radiance);
 
 // Compute image-based lighting via environment sampling.
 void compute_ibl_environment_sampling(
     SamplingContext&                sampling_context,
     const ShadingContext&           shading_context,
     const EnvironmentEDF&           environment_edf,
-    const foundation::Vector3d&     point,                  // world space point
-    const foundation::Vector3d&     geometric_normal,       // world space geometric normal, unit-length
-    const foundation::Basis3d&      shading_basis,          // world space orthonormal basis around shading normal
-    const double                    time,
+    const ShadingPoint&             shading_point,
     const foundation::Vector3d&     outgoing,               // world space outgoing direction, unit-length
     const BSDF&                     bsdf,
     const void*                     bsdf_data,
     const int                       env_sampling_modes,     // permitted scattering modes during environment sampling
     const size_t                    bsdf_sample_count,      // number of samples in BSDF sampling
     const size_t                    env_sample_count,       // number of samples in environment sampling
-    Spectrum&                       radiance,
-    const ShadingPoint*             parent_shading_point = 0);
+    Spectrum&                       radiance);
 
 }       // namespace renderer
 

@@ -520,10 +520,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         Tracer tracer(*m_scene, m_intersector, m_texture_cache);
         const double transmission =
             tracer.trace_between(
-                parent_shading_point.get_point(),
-                Vector3d(4.0, 0.0, 0.0),
-                0.0,
-                &parent_shading_point);
+                parent_shading_point,
+                Vector3d(4.0, 0.0, 0.0));
 
         EXPECT_EQ(1.0, transmission);
     }
@@ -555,10 +553,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         Tracer tracer(*m_scene, m_intersector, m_texture_cache);
         const double transmission =
             tracer.trace_between(
-                parent_shading_point.get_point(),
-                Vector3d(2.0, 0.0, 0.0),
-                0.0,
-                &parent_shading_point);
+                parent_shading_point,
+                Vector3d(2.0, 0.0, 0.0));
 
         EXPECT_EQ(1.0, transmission);
     }

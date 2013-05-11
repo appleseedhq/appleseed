@@ -183,7 +183,7 @@ namespace
                 // Sample the light sources.
                 LightSample light_sample;
                 m_light_sampler->sample(
-                    shading_point.get_ray().m_time,
+                    shading_point.get_time(),
                     sampling_context.next_vector2<3>(),
                     light_sample);
 
@@ -298,7 +298,7 @@ namespace
                     continue;
 
                 // Compute the ray origin.
-                ray.m_org = parent_shading_point->get_shifted_point(ray.m_dir);
+                ray.m_org = parent_shading_point->get_biased_point(ray.m_dir);
 
                 // Count the number of computed samples.
                 ++computed_samples;

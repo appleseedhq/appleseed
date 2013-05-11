@@ -108,13 +108,9 @@ namespace
                         sampling_context,
                         sample_hemisphere_uniform<double>,
                         shading_context.get_intersector(),
-                        shading_point.get_point(),
-                        shading_point.get_geometric_normal(),
-                        shading_point.get_shading_basis(),
-                        shading_point.get_ray().m_time,
+                        shading_point,
                         m_max_distance,
-                        m_samples,
-                        &shading_point);
+                        m_samples);
             }
             else
             {
@@ -123,13 +119,9 @@ namespace
                         sampling_context,
                         sample_hemisphere_cosine<double>,
                         shading_context.get_intersector(),
-                        shading_point.get_point(),
-                        shading_point.get_geometric_normal(),
-                        shading_point.get_shading_basis(),
-                        shading_point.get_ray().m_time,
+                        shading_point,
                         m_max_distance,
-                        m_samples,
-                        &shading_point);
+                        m_samples);
             }
 
             const float accessibility = static_cast<float>(1.0 - occlusion);

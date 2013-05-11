@@ -303,7 +303,7 @@ double compute_fast_ambient_occlusion(
     const AOVoxelTreeIntersector&   intersector,
     const Vector3d&                 point,
     const Vector3d&                 geometric_normal,
-    const Basis3d&                  basis,
+    const Basis3d&                  shading_basis,
     const double                    max_distance,
     const size_t                    sample_count,
     double&                         min_distance)
@@ -311,7 +311,7 @@ double compute_fast_ambient_occlusion(
     // Create a sampling context.
     SamplingContext child_sampling_context = sampling_context.split(2, sample_count);
 
-    // Construct an ambient occlusion ray.
+    // Construct the ambient occlusion ray.
     ShadingRay::RayType ray;
     ray.m_org = point;
     ray.m_tmin = 0.0;
@@ -325,11 +325,10 @@ double compute_fast_ambient_occlusion(
     for (size_t i = 0; i < sample_count; ++i)
     {
         // Generate a cosine-weighted direction over the unit hemisphere.
-        const Vector2d s = child_sampling_context.next_vector2<2>();
-        ray.m_dir = sample_hemisphere_cosine(s);
+        ray.m_dir = sample_hemisphere_cosine(child_sampling_context.next_vector2<2>());
 
         // Transform the direction to world space.
-        ray.m_dir = basis.transform_to_parent(ray.m_dir);
+        ray.m_dir = shading_basis.transform_to_parent(ray.m_dir);
 
         // Don't cast rays on or below the geometric surface.
         if (dot(ray.m_dir, geometric_normal) <= 0.0)
@@ -347,8 +346,14 @@ double compute_fast_ambient_occlusion(
         }
     }
 
-    // Return occlusion as a scalar between 0.0 and 1.0.
-    return static_cast<double>(occluded_samples) / computed_samples;
+    // Compute occlusion as a scalar between 0.0 and 1.0.
+    double occlusion = static_cast<double>(occluded_samples);
+    if (computed_samples > 1)
+        occlusion /= computed_samples;
+    assert(occlusion >= 0.0);
+    assert(occlusion <= 1.0);
+
+    return occlusion;
 }
 
 }   // namespace renderer

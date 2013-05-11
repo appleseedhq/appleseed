@@ -31,8 +31,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
-#include "renderer/kernel/intersection/intersector.h"
-#include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/scene/assembly.h"
@@ -130,7 +128,7 @@ Tracer::Tracer(
     else RENDERER_LOG_DEBUG("the scene uses alpha mapping; using standard tracing.");
 }
 
-const ShadingPoint& Tracer::trace(
+const ShadingPoint& Tracer::do_trace(
     const Vector3d&         origin,
     const Vector3d&         direction,
     const double            time,
@@ -212,44 +210,7 @@ const ShadingPoint& Tracer::trace(
     return *shading_point_ptr;
 }
 
-double Tracer::trace(
-    const Vector3d&         origin,
-    const Vector3d&         direction,
-    const double            time,
-    const ShadingPoint*     parent_shading_point)
-{
-    if (m_assume_no_alpha_mapping)
-    {
-        const ShadingRay ray(
-            origin,
-            direction,
-            time,
-            ~0);            // ray flags
-
-        return m_intersector.trace_probe(ray, parent_shading_point) ? 0.0 : 1.0;
-    }
-    else
-    {
-        double transmission;
-        const ShadingPoint& shading_point =
-            trace(
-                origin,
-                direction,
-                time,
-                transmission,
-                parent_shading_point);
-
-        return shading_point.hit() ? 0.0 : transmission;
-    }
-}
-
-namespace
-{
-    // todo: get rid of this epsilon.
-    const double SafeMaxDistance = 1.0 - 1.0e-6;
-}
-
-const ShadingPoint& Tracer::trace_between(
+const ShadingPoint& Tracer::do_trace_between(
     const Vector3d&         origin,
     const Vector3d&         target,
     const double            time,
@@ -269,7 +230,7 @@ const ShadingPoint& Tracer::trace_between(
         if (++iterations >= m_max_iterations)
         {
             RENDERER_LOG_WARNING(
-                "reached hard iteration limit (%s), breaking trace_between loop.",
+                "reached hard iteration limit (%s), breaking trace loop.",
                 pretty_int(m_max_iterations).c_str());
             break;
         }
@@ -278,10 +239,10 @@ const ShadingPoint& Tracer::trace_between(
         const ShadingRay ray(
             point,
             target - point,
-            0.0,                    // ray tmin
-            SafeMaxDistance,        // ray tmax
+            0.0,            // ray tmin
+            1.0 - 1.0e-6,   // ray tmax
             time,
-            ~0);                    // ray flags
+            ~0);            // ray flags
 
         // Trace the ray.
         m_shading_points[shading_point_index].clear();
@@ -294,7 +255,7 @@ const ShadingPoint& Tracer::trace_between(
         shading_point_ptr = &m_shading_points[shading_point_index];
         shading_point_index = 1 - shading_point_index;
 
-        // Stop if the target point was reached.
+        // Stop if the ray reached the target point.
         if (!shading_point_ptr->hit())
             break;
 
@@ -331,39 +292,6 @@ const ShadingPoint& Tracer::trace_between(
     }
 
     return *shading_point_ptr;
-}
-
-double Tracer::trace_between(
-    const Vector3d&         origin,
-    const Vector3d&         target,
-    const double            time,
-    const ShadingPoint*     parent_shading_point)
-{
-    if (m_assume_no_alpha_mapping)
-    {
-        const ShadingRay ray(
-            origin,
-            target - origin,
-            0.0,                // ray tmin
-            SafeMaxDistance,    // ray tmax
-            time,
-            ~0);                // ray flags
-
-        return m_intersector.trace_probe(ray, parent_shading_point) ? 0.0 : 1.0;
-    }
-    else
-    {
-        double transmission;
-        const ShadingPoint& shading_point =
-            trace_between(
-                origin,
-                target,
-                time,
-                transmission,
-                parent_shading_point);
-
-        return shading_point.hit() ? 0.0 : transmission;
-    }
 }
 
 }   // namespace renderer

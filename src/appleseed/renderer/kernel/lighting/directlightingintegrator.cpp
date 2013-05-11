@@ -41,24 +41,21 @@ namespace renderer
 DirectLightingIntegrator::DirectLightingIntegrator(
     const ShadingContext&       shading_context,
     const LightSampler&         light_sampler,
-    const Vector3d&             point,
-    const Vector3d&             geometric_normal,
-    const Basis3d&              shading_basis,
-    const double                time,
+    const ShadingPoint&         shading_point,
     const Vector3d&             outgoing,
     const BSDF&                 bsdf,
     const void*                 bsdf_data,
     const int                   bsdf_sampling_modes,
     const int                   light_sampling_modes,
     const size_t                bsdf_sample_count,
-    const size_t                light_sample_count,
-    const ShadingPoint*         parent_shading_point)
+    const size_t                light_sample_count)
   : m_shading_context(shading_context)
   , m_light_sampler(light_sampler)
-  , m_point(point)
-  , m_geometric_normal(geometric_normal)
-  , m_shading_basis(shading_basis)
-  , m_time(time)
+  , m_shading_point(shading_point)
+  , m_point(shading_point.get_point())
+  , m_geometric_normal(shading_point.get_geometric_normal())
+  , m_shading_basis(shading_point.get_shading_basis())
+  , m_time(shading_point.get_time())
   , m_outgoing(outgoing)
   , m_bsdf(bsdf)
   , m_bsdf_data(bsdf_data)
@@ -66,9 +63,7 @@ DirectLightingIntegrator::DirectLightingIntegrator(
   , m_light_sampling_modes(light_sampling_modes)
   , m_bsdf_sample_count(bsdf_sample_count)
   , m_light_sample_count(light_sample_count)
-  , m_parent_shading_point(parent_shading_point)
 {
-    assert(is_normalized(geometric_normal));
     assert(is_normalized(outgoing));
 }
 
@@ -184,10 +179,8 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     // Compute the transmission factor between the light sample and the shading point.
     const double transmission =
         m_shading_context.get_tracer().trace_between(
-            m_parent_shading_point ? m_parent_shading_point->get_shifted_point(incoming) : m_point,
-            emission_position,
-            m_time,
-            m_parent_shading_point);
+            m_shading_point,
+            emission_position);
 
     // Discard occluded samples.
     if (transmission == 0.0)

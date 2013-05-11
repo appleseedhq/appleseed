@@ -250,7 +250,7 @@ void DiagnosticSurfaceShader::evaluate(
 
             // Retrieve the camera transform.
             Transformd tmp;
-            const double time = shading_point.get_ray().m_time;
+            const double time = shading_point.get_time();
             const Transformd& camera_transform = camera.transform_sequence().evaluate(time, tmp);
 
             // Compute the film space coordinates of the intersection point.
@@ -300,13 +300,9 @@ void DiagnosticSurfaceShader::evaluate(
                     sampling_context,
                     sample_hemisphere_uniform<double>,
                     shading_context.get_intersector(),
-                    shading_point.get_point(),
-                    shading_point.get_geometric_normal(),
-                    shading_point.get_shading_basis(),
-                    shading_point.get_ray().m_time,
+                    shading_point,
                     m_ao_max_distance,
-                    m_ao_samples,
-                    &shading_point);
+                    m_ao_samples);
 
             // Return a gray scale value proportional to the accessibility.
             const float accessibility = static_cast<float>(1.0 - occlusion);

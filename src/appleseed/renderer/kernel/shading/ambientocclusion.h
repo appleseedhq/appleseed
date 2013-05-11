@@ -30,15 +30,18 @@
 #define APPLESEED_RENDERER_KERNEL_SHADING_AMBIENTOCCLUSION_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/intersection/intersector.h"
+#include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
+#include "foundation/math/vector.h"
 
-// Forward declarations.
-namespace renderer      { class ShadingPoint; }
+// Standard headers.
+#include <cassert>
+#include <cstddef>
 
 namespace renderer
 {
@@ -51,27 +54,25 @@ namespace renderer
 
 template <typename SamplingFunction>
 double compute_ambient_occlusion(
-    const SamplingContext&          sampling_context,
-    SamplingFunction&               sampling_function,
-    const Intersector&              intersector,
-    const foundation::Vector3d&     point,              // world space point
-    const foundation::Vector3d&     geometric_normal,   // world space geometric normal, unit-length
-    const foundation::Basis3d&      shading_basis,      // world space orthonormal basis around shading normal
-    const double                    time,
-    const double                    max_distance,
-    const size_t                    sample_count,
-    const ShadingPoint*             parent_shading_point = 0)
+    const SamplingContext&  sampling_context,
+    SamplingFunction&       sampling_function,
+    const Intersector&      intersector,
+    const ShadingPoint&     shading_point,
+    const double            max_distance,
+    const size_t            sample_count)
 {
+    const foundation::Vector3d& geometric_normal = shading_point.get_geometric_normal();
+    const foundation::Basis3d& shading_basis = shading_point.get_shading_basis();
+
     // Create a sampling context.
     SamplingContext child_sampling_context = sampling_context.split(2, sample_count);
 
-    // Construct an ambient occlusion ray.
+    // Construct the ambient occlusion ray.
     ShadingRay ray;
-    ray.m_org = point;
     ray.m_tmin = 0.0;
     ray.m_tmax = max_distance;
-    ray.m_time = time;
-    ray.m_flags = ~0;
+    ray.m_time = shading_point.get_time();
+    ray.m_flags = shading_point.get_ray().m_flags;
 
     size_t computed_samples = 0;
     size_t occluded_samples = 0;
@@ -79,8 +80,7 @@ double compute_ambient_occlusion(
     for (size_t i = 0; i < sample_count; ++i)
     {
         // Generate a direction over the unit hemisphere.
-        const foundation::Vector2d s = child_sampling_context.next_vector2<2>();
-        ray.m_dir = sampling_function(s);
+        ray.m_dir = sampling_function(child_sampling_context.next_vector2<2>());
 
         // Transform the direction to world space.
         ray.m_dir = shading_basis.transform_to_parent(ray.m_dir);
@@ -90,14 +90,13 @@ double compute_ambient_occlusion(
             continue;
 
         // Compute the ray origin.
-        if (parent_shading_point)
-            ray.m_org = parent_shading_point->get_shifted_point(ray.m_dir);
+        ray.m_org = shading_point.get_biased_point(ray.m_dir);
 
         // Count the number of computed samples.
         ++computed_samples;
 
         // Trace the ambient occlusion ray and count the number of occluded samples.
-        if (intersector.trace_probe(ray, parent_shading_point))
+        if (intersector.trace_probe(ray, &shading_point))
             ++occluded_samples;
     }
 

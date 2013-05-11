@@ -37,6 +37,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/intersection.h"
 #include "foundation/utility/attributeset.h"
+#include "foundation/utility/otherwise.h"
 
 using namespace foundation;
 using namespace std;
@@ -195,36 +196,49 @@ void ShadingPoint::refine_and_offset() const
     m_members |= ShadingPoint::HasRefinedPoints;
 }
 
-Vector3d ShadingPoint::get_shifted_point(const Vector3d& direction) const
+Vector3d ShadingPoint::get_biased_point(const Vector3d& direction) const
 {
     assert(hit());
 
-    const double bias = m_object_instance->get_ray_bias_distance();
-    Vector3d point = m_ray.point_at(m_ray.m_tmax);
-
-    switch (m_object_instance->get_ray_bias_method())
+    if (!(m_members & HasBiasedPoint))
     {
-      case ObjectInstance::RayBiasMethodNormal:
+        const Vector3d point = m_ray.point_at(m_ray.m_tmax);
+
+        switch (m_object_instance->get_ray_bias_method())
         {
-            const Vector3d& n = get_geometric_normal();
-            if (dot(direction, n) > 0.0)
-                point += bias * n;
-            else point -= bias * n;
+          case ObjectInstance::RayBiasMethodNone:
+            {
+                m_biased_point = point;
+                m_members |= HasBiasedPoint;
+                return m_biased_point;
+            }
+
+          case ObjectInstance::RayBiasMethodNormal:
+            {
+                const Vector3d& n = get_geometric_normal();
+                const double bias = m_object_instance->get_ray_bias_distance();
+                return dot(direction, n) > 0.0 ? point + bias * n : point - bias * n;
+            }
+
+          case ObjectInstance::RayBiasMethodIncomingDirection:
+            {
+                const double bias = m_object_instance->get_ray_bias_distance();
+                m_biased_point = point + bias * normalize(m_ray.m_dir);
+                m_members |= HasBiasedPoint;
+                return m_biased_point;
+            }
+
+          case ObjectInstance::RayBiasMethodOutgoingDirection:
+            {
+                const double bias = m_object_instance->get_ray_bias_distance();
+                return point + bias * normalize(direction);
+            }
+
+          assert_otherwise;
         }
-        break;
-
-      case ObjectInstance::RayBiasMethodIncomingDirection:
-        point += bias * normalize(m_ray.m_dir);
-        break;
-
-      case ObjectInstance::RayBiasMethodOutgoingDirection:
-        point += bias * normalize(direction);
-        break;
-
-      default:;
     }
 
-    return point;
+    return m_biased_point;
 }
 
 }   // namespace renderer

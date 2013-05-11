@@ -216,13 +216,9 @@ namespace
                         sampling_context,
                         sample_hemisphere_cosine<double>,
                         shading_context.get_intersector(),
-                        shading_point.get_point(),
-                        shading_point.get_geometric_normal(),
-                        shading_point.get_shading_basis(),
-                        shading_point.get_ray().m_time,
+                        shading_point,
                         m_max_distance,
-                        m_samples,
-                        &shading_point);
+                        m_samples);
 
                 if (m_enable_diagnostics)
                 {
@@ -242,13 +238,9 @@ namespace
                         sampling_context,
                         sample_hemisphere_cosine<double>,
                         shading_context.get_intersector(),
-                        shading_point.get_point(),
-                        shading_point.get_geometric_normal(),
-                        shading_point.get_shading_basis(),
-                        shading_point.get_ray().m_time,
+                        shading_point,
                         m_max_distance,
-                        m_half_samples,
-                        &shading_point);
+                        m_half_samples);
 
                 // Compute fast ambient occlusion.
                 double min_distance;

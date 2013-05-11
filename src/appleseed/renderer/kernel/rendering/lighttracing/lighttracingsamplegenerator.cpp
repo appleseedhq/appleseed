@@ -361,7 +361,7 @@ namespace
                 const double transmission =
                     vertex_visible_to_camera(
                         shading_point.get_point(),
-                        shading_point.get_ray().m_time,
+                        shading_point.get_time(),
                         sample_position_ndc);
 
                 // Ignore occluded vertices.
