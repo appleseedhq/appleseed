@@ -52,6 +52,7 @@
 // appleseed.foundation headers.
 #include "foundation/core/appleseed.h"
 #include "foundation/platform/path.h"
+#include "foundation/platform/thread.h"
 #include "foundation/platform/timer.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/benchmark.h"
@@ -449,8 +450,6 @@ namespace
         const string command = "open " + quoted_path;
 #elif defined _WIN32
         const string command = quoted_path;
-#else
-#error Unsupported platform.
 #endif
 
         LOG_DEBUG(g_logger, "executing '%s'", command.c_str());
@@ -556,9 +555,19 @@ namespace
 
         // Render the frame.
         Stopwatch<DefaultWallclockTimer> stopwatch;
-        stopwatch.start();
-        renderer.render();
-        stopwatch.measure();
+        if (params.get_optional<bool>("background_mode", true))
+        {
+            BackgroundProcessContext background_context(g_logger);
+            stopwatch.start();
+            renderer.render();
+            stopwatch.measure();
+        }
+        else
+        {
+            stopwatch.start();
+            renderer.render();
+            stopwatch.measure();
+        }
 
         // Print rendering time.
         const double seconds = stopwatch.get_seconds();

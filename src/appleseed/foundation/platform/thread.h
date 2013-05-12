@@ -46,6 +46,9 @@
 #pragma warning (pop)
 #include "boost/version.hpp"
 
+// Forward declarations.
+namespace foundation    { class Logger; }
+
 // Starting with Boost 1.48, the atomic primitives are defined in boost::interprocess::ipcdetail.
 #if BOOST_VERSION >= 104800
 namespace boost_atomic = boost::interprocess::ipcdetail;
@@ -86,22 +89,41 @@ class Spinlock
 
 
 //
-// An object to configure a thread for accurate benchmarking.
+// An object to configure the current process and thread for accurate microbenchmarking.
 //
 
 class DLLSYMBOL BenchmarkingThreadContext
   : public NonCopyable
 {
   public:
-    // The constructor configures the current thread for benchmarking.
+    // The constructor enables the benchmarking mode.
     BenchmarkingThreadContext();
 
-    // The destructor restores previous thread settings.
+    // The destructor restores previous settings.
     ~BenchmarkingThreadContext();
 
   private:
     struct Impl;
     Impl* impl;
+};
+
+
+//
+// An object to configure the current process for background operation.
+//
+
+class DLLSYMBOL BackgroundProcessContext
+  : public NonCopyable
+{
+  public:
+    // The constructor enables the background mode.
+    explicit BackgroundProcessContext(Logger& logger);
+
+    // The destructor restores previous settings.
+    ~BackgroundProcessContext();
+
+  private:
+    Logger& m_logger;
 };
 
 

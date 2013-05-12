@@ -33,6 +33,7 @@
 #ifdef _WIN32
 #include "foundation/platform/windows.h"
 #endif
+#include "foundation/utility/log.h"
 
 // boost headers.
 #include "boost/date_time/posix_time/posix_time_types.hpp"
@@ -75,10 +76,11 @@ BenchmarkingThreadContext::BenchmarkingThreadContext()
 
 BenchmarkingThreadContext::~BenchmarkingThreadContext()
 {
-    // Restore the previous settings.
+    // Restore previous settings.
     SetThreadAffinityMask(GetCurrentThread(), impl->m_thread_affinity_mask);
     SetThreadPriority(GetCurrentThread(), impl->m_thread_priority);
     SetPriorityClass(GetCurrentProcess(), impl->m_process_priority_class);
+
     delete impl;
 }
 
@@ -89,15 +91,47 @@ BenchmarkingThreadContext::~BenchmarkingThreadContext()
 
 #else
 
-BenchmarkingThreadContext::BenchmarkingThreadContext()
+// Do nothing on unsupported platforms.
+BenchmarkingThreadContext::BenchmarkingThreadContext() {}
+BenchmarkingThreadContext::~BenchmarkingThreadContext() {}
+
+#endif
+
+
+//
+// BackgroundProcessContext class implementation (Windows).
+//
+
+#ifdef _WIN32
+
+BackgroundProcessContext::BackgroundProcessContext(Logger& logger)
+  : m_logger(logger)
 {
-    // Do nothing on unsupported platforms.
+    if (!SetPriorityClass(GetCurrentProcess(), PROCESS_MODE_BACKGROUND_BEGIN))
+    {
+        const DWORD error = GetLastError();
+
+        if (error != ERROR_PROCESS_MODE_ALREADY_BACKGROUND)
+            LOG_WARNING(m_logger, "failed to enter background processing mode (%d).", error);
+    }
 }
 
-BenchmarkingThreadContext::~BenchmarkingThreadContext()
+BackgroundProcessContext::~BackgroundProcessContext()
 {
-    // Do nothing on unsupported platforms.
+    if (!SetPriorityClass(GetCurrentProcess(), PROCESS_MODE_BACKGROUND_END))
+        LOG_WARNING(m_logger, "failed to leave background processing mode (%d).", GetLastError());
 }
+
+
+//
+// BackgroundProcessContext class implementation (other platforms).
+//
+
+#else
+
+// Do nothing on unsupported platforms.
+BackgroundProcessContext::BackgroundProcessContext() {}
+BackgroundProcessContext::~BackgroundProcessContext() {}
 
 #endif
 
