@@ -78,7 +78,7 @@ def render_project_file(project_directory, project_filename, tool_path):
 
 
 #--------------------------------------------------------------------------------------------------
-# Render all project files in a given directory and all its subdirectories.
+# Render all project files in the current directory and all its subdirectories.
 # Returns the number of rendered project files.
 #--------------------------------------------------------------------------------------------------
 
