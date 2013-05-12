@@ -43,9 +43,9 @@ import xml.dom.minidom as xml
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "1.2"
-OUTPUT_DIR = "_output"
-COMPLETED_DIR = "_completed"
+VERSION = "1.3"
+OUTPUT_DIR = "_renders"
+COMPLETED_DIR = "_archives"
 LOGS_DIR = "_logs"
 APPLESEED_BIN = "appleseed.cli"
 PAUSE_BETWEEN_CHECKS = 3    # in seconds
@@ -233,18 +233,19 @@ def print_appleseed_version(args, log):
 
 def render_project(args, project_filepath, log):
     log.info("Starting rendering {0}...".format(project_filepath))
+    start_time = datetime.datetime.now()
 
     # Rename the project file so others don't try to render it.
-    original_project_filepath = project_filepath
-    project_filepath += "." + args.user_name
-    os.rename(original_project_filepath, project_filepath)
+    user_project_filepath = project_filepath + "." + args.user_name
+    os.rename(project_filepath, user_project_filepath)
 
     try:
         # Create shell command.
+        user_project_filename = os.path.split(user_project_filepath)[1]
         project_filename = os.path.split(project_filepath)[1]
-        output_filename = os.path.splitext(original_project_filepath)[0] + '.' + args.output_format
+        output_filename = os.path.splitext(project_filename)[0] + '.' + args.output_format
         output_filepath = os.path.join(args.watch_dir, OUTPUT_DIR, output_filename)
-        command = '"{0}" -o "{1}" "{2}"'.format(args.appleseed_bin_path, output_filepath, project_filepath)
+        command = '"{0}" -o "{1}" "{2}"'.format(args.appleseed_bin_path, output_filepath, user_project_filepath)
         if args.args:
             command += ' {0}'.format(" ".join(args.args))
 
@@ -257,16 +258,17 @@ def render_project(args, project_filepath, log):
             raise Exception()
 
         # Everything went well, move the file into the completed directory.
-        safe_mkdir(os.path.join(args.watch_dir, COMPLETED_DIR))
-        move_dest = os.path.join(args.watch_dir, COMPLETED_DIR, os.path.split(original_project_filepath)[1])
-        shutil.move(project_filepath, move_dest)
+        completed_dir = os.path.join(args.watch_dir, COMPLETED_DIR)
+        safe_mkdir(completed_dir)
+        shutil.move(user_project_filepath, os.path.join(completed_dir, project_filename))
     except:
         # Something failed, rename the project file back to its original name.
-        log.error("Failed to render {0}.".format(original_project_filepath))
-        os.rename(project_filepath, original_project_filepath)
+        log.error("Failed to render {0}.".format(project_filepath))
+        os.rename(user_project_filepath, project_filepath)
         raise
 
-    log.info("Successfully rendered {0}.".format(original_project_filepath))
+    rendering_time = datetime.datetime.now() - start_time
+    log.info("Successfully rendered {0} in {1}.".format(project_filepath, rendering_time))
 
 
 #--------------------------------------------------------------------------------------------------
