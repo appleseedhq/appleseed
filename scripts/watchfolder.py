@@ -36,14 +36,14 @@ import subprocess
 import sys
 import time
 import traceback
-import xml.dom.minidom
+import xml.dom.minidom as xml
 
 
 #--------------------------------------------------------------------------------------------------
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "1.1"
+VERSION = "1.2"
 OUTPUT_DIR = "_output"
 COMPLETED_DIR = "_completed"
 LOGS_DIR = "_logs"
@@ -164,7 +164,7 @@ if os.name == "nt":
 
         return None
 
-    def configure_wer(new_dont_show_ui, new_disabled):
+    def configure_wer(dont_show_ui, disabled):
         key = open_wer_key()
 
         if key is None:
@@ -173,8 +173,8 @@ if os.name == "nt":
         previous_dont_show_ui = _winreg.QueryValueEx(key, "DontShowUI")[0]
         previous_disabled = _winreg.QueryValueEx(key, "Disabled")[0]
 
-        _winreg.SetValueEx(key, "DontShowUI", 0, _winreg.REG_DWORD, new_dont_show_ui)
-        _winreg.SetValueEx(key, "Disabled", 0, _winreg.REG_DWORD, new_disabled)
+        _winreg.SetValueEx(key, "DontShowUI", 0, _winreg.REG_DWORD, dont_show_ui)
+        _winreg.SetValueEx(key, "Disabled", 0, _winreg.REG_DWORD, disabled)
 
         _winreg.CloseKey(key)
 
@@ -192,6 +192,13 @@ if os.name == "nt":
         _winreg.CloseKey(key)
 
         return "DontShowUI={0} Disabled={1}".format(dont_show_ui, disabled)
+
+    def enable_wer(log):
+        log.info("Enabling Windows Error Reporting...")
+        previous_values = configure_wer(0, 0)
+        if previous_values is None:
+            log.warning("Could not enable Windows Error Reporting.")
+        return previous_values
 
     def disable_wer(log):
         log.info("Disabling Windows Error Reporting...")
@@ -269,35 +276,52 @@ def render_project(args, project_filepath, log):
 def get_project_files(directory):
     project_files = []
 
-    for entity in os.listdir(directory):
-        file_path = os.path.join(directory, entity)
-        if os.path.isfile(file_path):
-            if os.path.splitext(file_path)[1] == '.appleseed':
-                project_files.append(file_path)
+    for entry in os.listdir(directory):
+        filepath = os.path.join(directory, entry)
+        if os.path.isfile(filepath):
+            if os.path.splitext(filepath)[1] == '.appleseed':
+                project_files.append(filepath)
 
     return project_files
 
-def get_missing_deps(project_filepath):
-    missing_deps = []
+def convert_path_to_local(path):
+    if os.name == "nt":
+        return path.replace('/', '\\')
+    else:
+        return path.replace('\\', '/')
+
+def extract_project_deps(project_filepath):
+    deps = set()
 
     directory = os.path.split(project_filepath)[0]
 
     with open(project_filepath, 'r') as file:
-        data = file.read()
+        contents = file.read()
 
-    for entity in xml.dom.minidom.parseString(data).getElementsByTagName('parameter'):
-        if entity.getAttribute('name') == 'filename':
-            filename = entity.getAttribute('value')
+    for node in xml.parseString(contents).getElementsByTagName('parameter'):
+        if node.getAttribute('name') == 'filename':
+            filepath = node.getAttribute('value')
+            filepath = convert_path_to_local(filepath)
+            filepath = os.path.join(directory, filepath)
+            deps.add(filepath)
 
-            if os.name == "nt":
-                filename = filename.replace('/', '\\')
-            else:
-                filename = filename.replace('\\', '/')
+    for node in xml.parseString(contents).getElementsByTagName('parameters'):
+        if node.getAttribute('name') == 'filename':
+            for child in node.childNodes:
+                if child.nodeType == xml.Node.ELEMENT_NODE:
+                    filepath = child.getAttribute('value')
+                    filepath = convert_path_to_local(filepath)
+                    filepath = os.path.join(directory, filepath)
+                    deps.add(filepath)
 
-            filepath = os.path.join(directory, filename)
+    return deps
 
-            if not os.path.exists(filepath):
-                missing_deps.append(filepath)
+def count_missing_project_deps(deps):
+    missing_deps = 0
+
+    for filepath in deps:
+        if not os.path.exists(filepath):
+            missing_deps += 1
 
     return missing_deps
 
@@ -315,12 +339,14 @@ def watch(args, log):
 
     # Iterate over reordered list of project files.
     for project_filepath in project_files[random_start_point:] + project_files[:random_start_point]:
-        missing_deps = get_missing_deps(project_filepath)
-        if len(missing_deps) > 0:
-            Log.info_no_log("{0} missing dependencies for {1}.".format(len(missing_deps), project_filepath))
-        else:
+        deps = extract_project_deps(project_filepath)
+        missing_deps = count_missing_project_deps(deps)
+
+        if missing_deps == 0:
             render_project(args, project_filepath, log)
             return True
+        else:
+            Log.info_no_log("{0} missing dependencies for {1}.".format(missing_deps, project_filepath))
 
     # No renderable project file found.
     return False
@@ -366,6 +392,7 @@ def main():
         log.info("New Windows Error Reporting status: {0}".format(get_wer_status()))
 
     log.info("Watching directory {0}".format(args.watch_dir))
+    random.seed()
 
     # Main watch loop.
     while True:
@@ -382,7 +409,8 @@ def main():
 
     # Restore initial Windows Error Reporting parameters.
     if os.name == "nt":
-        restore_wer(initial_wer_values, log)
+        # restore_wer(initial_wer_values, log)
+        enable_wer(log)
         log.info("Final Windows Error Reporting status: {0}".format(get_wer_status()))
 
     log.info("Exiting...")
