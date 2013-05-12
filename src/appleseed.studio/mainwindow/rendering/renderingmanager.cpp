@@ -154,6 +154,7 @@ void RenderingManager::start_rendering(
     RenderWidget*               render_widget)
 {
     m_project = project;
+    m_params = params;
     m_render_widget = render_widget;
     m_camera_changed = false;
 
@@ -183,7 +184,7 @@ void RenderingManager::start_rendering(
     m_master_renderer.reset(
         new MasterRenderer(
             *m_project,
-            params,
+            m_params,
             &m_renderer_controller,
             m_tile_callback_factory.get()));
 
@@ -297,7 +298,8 @@ void RenderingManager::slot_rendering_end()
     print_final_rendering_time();
     print_average_luminance();
 
-    archive_frame_to_disk();
+    if (m_params.get_optional<bool>("autosave", true))
+        archive_frame_to_disk();
 
     // Prevent manipulation of the camera after rendering has ended.
     m_camera_controller.reset();

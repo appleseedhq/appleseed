@@ -101,6 +101,7 @@ class RenderingManager
     QtRendererController                        m_renderer_controller;
 
     renderer::Project*                          m_project;
+    renderer::ParamArray                        m_params;
     RenderWidget*                               m_render_widget;
 
     std::auto_ptr<CameraController>             m_camera_controller;

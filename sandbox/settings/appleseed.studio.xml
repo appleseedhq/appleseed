@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <settings>
     <parameter name="rendering_threads" value="auto" />
+    <parameter name="autosave" value="true" />
 </settings>
