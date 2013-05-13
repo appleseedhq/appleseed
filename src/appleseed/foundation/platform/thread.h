@@ -89,18 +89,34 @@ class Spinlock
 
 
 //
-// An object to configure the current process and thread for accurate microbenchmarking.
+// Process/thread priority levels.
 //
 
-class DLLSYMBOL BenchmarkingThreadContext
+enum ProcessPriority
+{
+    ProcessPriorityLowest,
+    ProcessPriorityLow,
+    ProcessPriorityNormal,
+    ProcessPriorityHigh,
+    ProcessPriorityHighest
+};
+
+
+//
+// An object to set the priority for the current process.
+//
+
+class DLLSYMBOL ProcessPriorityContext
   : public NonCopyable
 {
   public:
-    // The constructor enables the benchmarking mode.
-    BenchmarkingThreadContext();
+    // The constructor sets the priority of the current process.
+    ProcessPriorityContext(
+        const ProcessPriority   priority,
+        Logger*                 logger = 0);
 
     // The destructor restores previous settings.
-    ~BenchmarkingThreadContext();
+    ~ProcessPriorityContext();
 
   private:
     struct Impl;
@@ -109,21 +125,44 @@ class DLLSYMBOL BenchmarkingThreadContext
 
 
 //
-// An object to configure the current process for background operation.
+// An object to set the priority for the current thread.
 //
 
-class DLLSYMBOL BackgroundProcessContext
+class DLLSYMBOL ThreadPriorityContext
   : public NonCopyable
 {
   public:
-    // The constructor enables the background mode.
-    explicit BackgroundProcessContext(Logger& logger);
+    // The constructor sets the priority of the current thread.
+    ThreadPriorityContext(
+        const ProcessPriority   priority,
+        Logger*                 logger = 0);
 
     // The destructor restores previous settings.
-    ~BackgroundProcessContext();
+    ~ThreadPriorityContext();
 
   private:
-    Logger& m_logger;
+    struct Impl;
+    Impl* impl;
+};
+
+
+//
+// An object to configure the current process and thread for accurate microbenchmarking.
+//
+
+class DLLSYMBOL BenchmarkingThreadContext
+  : public NonCopyable
+{
+  public:
+    // The constructor enables the benchmarking mode.
+    explicit BenchmarkingThreadContext(Logger* logger = 0);
+
+    // The destructor restores previous settings.
+    ~BenchmarkingThreadContext();
+
+  private:
+    struct Impl;
+    Impl* impl;
 };
 
 
