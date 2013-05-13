@@ -39,6 +39,7 @@
 #include "foundation/core/exceptions/exceptionioerror.h"
 #include "foundation/core/exceptions/exceptionunsupportedfileformat.h"
 #include "foundation/image/color.h"
+#include "foundation/image/exceptionunsupportedimageformat.h"
 #include "foundation/image/exrimagefilewriter.h"
 #include "foundation/image/genericimagefilewriter.h"
 #include "foundation/image/image.h"
@@ -675,6 +676,14 @@ bool Frame::write_image(
             EXRImageFileWriter writer;
             writer.write(file_path, image, image_attributes);
         }
+    }
+    catch (const ExceptionUnsupportedImageFormat&)
+    {
+        RENDERER_LOG_ERROR(
+            "failed to write image file %s: unsupported image format.",
+            file_path);
+
+        return false;
     }
     catch (const ExceptionIOError&)
     {
