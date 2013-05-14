@@ -200,7 +200,7 @@ TEST_SUITE(Foundation_Math_Scalar)
         EXPECT_EQ(0.5, wrap(-1.5));
     }
 
-    TEST_CASE(TestTruncate)
+    TEST_CASE(Truncate_FloatToSignedInteger)
     {
         EXPECT_EQ(static_cast<int>(-1.5f), truncate<int>(-1.5f));
         EXPECT_EQ(static_cast<int>(-1.0f), truncate<int>(-1.0f));
@@ -209,6 +209,16 @@ TEST_SUITE(Foundation_Math_Scalar)
         EXPECT_EQ(static_cast<int>(+0.5f), truncate<int>(+0.5f));
         EXPECT_EQ(static_cast<int>(+1.0f), truncate<int>(+1.0f));
         EXPECT_EQ(static_cast<int>(+1.5f), truncate<int>(+1.5f));
+    }
+
+    TEST_CASE(Truncate_FloatToUnsignedInteger)
+    {
+        EXPECT_EQ(3221225472UL, truncate<uint32>(3221225472.0f));
+    }
+
+    TEST_CASE(Truncate_DoubleToUnsignedInteger)
+    {
+        EXPECT_EQ(3221225472UL, truncate<uint32>(3221225472.0));
     }
 
     TEST_CASE(Round_Given0_Returns0)

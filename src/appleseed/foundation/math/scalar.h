@@ -457,22 +457,70 @@ inline T normalize_angle(const T angle)
 template <typename Int>
 inline Int truncate(const float x)
 {
-#ifdef APPLESEED_FOUNDATION_USE_SSE
-    return static_cast<Int>(_mm_cvttss_si32(_mm_load_ss(&x)));
-#else
     return static_cast<Int>(x);
-#endif
 }
+
+#ifdef APPLESEED_FOUNDATION_USE_SSE
+
+template <>
+inline int8 truncate<int8>(const float x)
+{
+    return static_cast<int8>(_mm_cvttss_si32(_mm_load_ss(&x)));
+}
+
+template <>
+inline int16 truncate<int16>(const float x)
+{
+    return static_cast<int16>(_mm_cvttss_si32(_mm_load_ss(&x)));
+}
+
+template <>
+inline int32 truncate<int32>(const float x)
+{
+    return static_cast<int32>(_mm_cvttss_si32(_mm_load_ss(&x)));
+}
+
+template <>
+inline int64 truncate<int64>(const float x)
+{
+    return static_cast<int64>(_mm_cvttss_si32(_mm_load_ss(&x)));
+}
+
+#endif
 
 template <typename Int>
 inline Int truncate(const double x)
 {
-#ifdef APPLESEED_FOUNDATION_USE_SSE
-    return static_cast<Int>(_mm_cvttsd_si32(_mm_load_sd(&x)));
-#else
     return static_cast<Int>(x);
-#endif
 }
+
+#ifdef APPLESEED_FOUNDATION_USE_SSE
+
+template <>
+inline int8 truncate<int8>(const double x)
+{
+    return static_cast<int8>(_mm_cvttsd_si32(_mm_load_sd(&x)));
+}
+
+template <>
+inline int16 truncate<int16>(const double x)
+{
+    return static_cast<int16>(_mm_cvttsd_si32(_mm_load_sd(&x)));
+}
+
+template <>
+inline int32 truncate<int32>(const double x)
+{
+    return static_cast<int32>(_mm_cvttsd_si32(_mm_load_sd(&x)));
+}
+
+template <>
+inline int64 truncate<int64>(const double x)
+{
+    return static_cast<int64>(_mm_cvttsd_si32(_mm_load_sd(&x)));
+}
+
+#endif
 
 template <typename Int, typename T>
 inline Int round(const T x)
