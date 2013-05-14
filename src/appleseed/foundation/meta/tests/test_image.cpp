@@ -36,10 +36,10 @@
 // Standard headers.
 #include <cstddef>
 
+using namespace foundation;
+
 TEST_SUITE(Foundation_Image_Image)
 {
-    using namespace foundation;
-
     TEST_CASE(Constructor_CreatesBlankImage)
     {
         Image image(2, 1, 1, 1, 3, PixelFormatFloat);
