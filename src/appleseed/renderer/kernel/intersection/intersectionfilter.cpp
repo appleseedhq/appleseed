@@ -30,6 +30,7 @@
 #include "intersectionfilter.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
 #include "renderer/kernel/tessellation/statictessellation.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/input/texturesource.h"
@@ -50,17 +51,74 @@
 #include "foundation/utility/lazy.h"
 
 using namespace foundation;
+using namespace std;
 
 namespace renderer
 {
+
+namespace
+{
+    size_t get_triangle_count(Object& object)
+    {
+        size_t triangle_count = 0;
+
+        Access<RegionKit> region_kit(&object.get_region_kit());
+
+        for (const_each<RegionKit> i = *region_kit; i; ++i)
+        {
+            const IRegion* region = *i;
+            Access<StaticTriangleTess> tess(&region->get_static_triangle_tess());
+
+            triangle_count += tess->m_primitives.size();
+        }
+
+        return triangle_count;
+    }
+
+    void copy_uv_coordinates(const StaticTriangleTess& tess, vector<Vector2f>& uv)
+    {
+        for (const_each<StaticTriangleTess::PrimitiveArray> i = tess.m_primitives; i; ++i)
+        {
+            if (i->has_vertex_attributes() && tess.get_uv_vertex_count() > 0)
+            {
+                const Vector2f uv0(tess.get_uv_vertex(i->m_a0));
+                const Vector2f uv1(tess.get_uv_vertex(i->m_a1));
+                const Vector2f uv2(tess.get_uv_vertex(i->m_a2));
+
+                uv.push_back(Vector2f(uv0[0], 1.0f - uv0[1]));
+                uv.push_back(Vector2f(uv1[0], 1.0f - uv1[1]));
+                uv.push_back(Vector2f(uv2[0], 1.0f - uv2[1]));
+            }
+            else
+            {
+                uv.push_back(Vector2f(0.0f));
+                uv.push_back(Vector2f(0.0f));
+                uv.push_back(Vector2f(0.0f));
+            }
+        }
+    }
+
+    void copy_uv_coordinates(Object& object, vector<Vector2f>& uv)
+    {
+        Access<RegionKit> region_kit(&object.get_region_kit());
+
+        for (const_each<RegionKit> i = *region_kit; i; ++i)
+        {
+            const IRegion* region = *i;
+            Access<StaticTriangleTess> tess(&region->get_static_triangle_tess());
+
+            copy_uv_coordinates(*tess, uv);
+        }
+    }
+}
 
 IntersectionFilter::IntersectionFilter(
     Object&                 object,
     const MaterialArray&    materials,
     TextureCache&           texture_cache)
+  : m_alpha_masks(materials.size(), 0)
 {
     // Create one alpha mask per material.
-    m_alpha_masks.assign(materials.size(), 0);
     for (size_t i = 0; i < materials.size(); ++i)
     {
         const Material* material = materials[i];
@@ -75,11 +133,31 @@ IntersectionFilter::IntersectionFilter(
         if (alpha_map == 0)
             continue;
 
-        m_alpha_masks[i] = create_alpha_mask(alpha_map, texture_cache);
+        // Build the alpha mask.
+        auto_ptr<Bitmap> alpha_mask(create_alpha_mask(alpha_map, texture_cache));
+
+        // Discard the alpha mask if it's mostly opaque.
+        if (alpha_mask->m_transparency < 5.0 / 100)
+            continue;
+
+        // Store the alpha mask.
+        m_alpha_masks[i] = alpha_mask.release();
     }
 
-    // Make a local copy of the object's UV coordinates.
-    copy_uv_coordinates(object);
+    if (has_alpha_masks())
+    {
+        // Make a local copy of the object's UV coordinates.
+        m_uv.reserve(get_triangle_count(object) * 3);
+        copy_uv_coordinates(object, m_uv);
+
+        RENDERER_LOG_DEBUG(
+            "created intersection filter for object \"%s\" with " FMT_SIZE_T " material%s (masks: %s, uvs: %s).",
+            object.get_name(),
+            materials.size(),
+            materials.size() > 1 ? "s" : "",
+            pretty_size(get_masks_memory_size()).c_str(),
+            pretty_size(m_uv.capacity() * sizeof(Vector2f)).c_str());
+    }
 }
 
 IntersectionFilter::~IntersectionFilter()
@@ -88,76 +166,47 @@ IntersectionFilter::~IntersectionFilter()
         delete m_alpha_masks[i];
 }
 
-bool IntersectionFilter::keep() const
+bool IntersectionFilter::has_alpha_masks() const
 {
     for (size_t i = 0; i < m_alpha_masks.size(); ++i)
     {
         if (m_alpha_masks[i])
-        {
-            // If at least one alpha mask has some transparency, keep the intersection filter.
-            if (m_alpha_masks[i]->m_transparency >= 5.0 / 100)
-                return true;
-        }
+            return true;
     }
 
     return false;
-}
-
-size_t IntersectionFilter::get_memory_size() const
-{
-    size_t size = sizeof(*this);
-
-    for (size_t i = 0; i < m_alpha_masks.size(); ++i)
-    {
-        if (m_alpha_masks[i])
-        {
-            size += sizeof(*m_alpha_masks[i]);
-            size += m_alpha_masks[i]->m_bits.capacity() * sizeof(uint8);
-        }
-    }
-
-    size += m_uv.capacity() * sizeof(Vector2f);
-
-    return size;
 }
 
 IntersectionFilter::Bitmap* IntersectionFilter::create_alpha_mask(
     const Source*           alpha_map,
     TextureCache&           texture_cache)
 {
-    Bitmap* alpha_mask = new Bitmap();
-
     // Compute the dimensions of the alpha mask.
+    size_t width, height;
     if (dynamic_cast<const TextureSource*>(alpha_map))
     {
         const CanvasProperties& texture_props =
             static_cast<const TextureSource*>(alpha_map)->get_texture_instance().get_texture().properties();
-        alpha_mask->m_width = texture_props.m_canvas_width;
-        alpha_mask->m_height = texture_props.m_canvas_height;
+        width = texture_props.m_canvas_width;
+        height = texture_props.m_canvas_height;
     }
     else
     {
-        alpha_mask->m_width = 1;
-        alpha_mask->m_height = 1;
+        width = 1;
+        height = 1;
     }
 
-    // Precompute some values used during lookup.
-    alpha_mask->m_max_x = static_cast<float>(alpha_mask->m_width) - 1.0f;
-    alpha_mask->m_max_y = static_cast<float>(alpha_mask->m_height) - 1.0f;
+    // Create and initialize the alpha mask.
+    Bitmap* alpha_mask = new Bitmap(width, height);
 
-    const double rcp_width = 1.0 / alpha_mask->m_width;
-    const double rcp_height = 1.0 / alpha_mask->m_height;
-
-    const size_t texel_count = alpha_mask->m_width * alpha_mask->m_height;
+    const double rcp_width = 1.0 / width;
+    const double rcp_height = 1.0 / height;
     size_t transparent_texel_count = 0;
 
-    // Allocate the alpha mask.
-    alpha_mask->m_bits.resize(texel_count);
-
     // Compute the alpha mask.
-    for (size_t y = 0; y < alpha_mask->m_height; ++y)
+    for (size_t y = 0; y < height; ++y)
     {
-        for (size_t x = 0; x < alpha_mask->m_width; ++x)
+        for (size_t x = 0; x < width; ++x)
         {
             // Evaluate the alpha map at the center of the texel.
             const Vector2d uv(
@@ -167,8 +216,9 @@ IntersectionFilter::Bitmap* IntersectionFilter::create_alpha_mask(
             alpha_map->evaluate(texture_cache, uv, alpha);
 
             // Mark this texel as opaque or transparent in the alpha mask.
-            const uint8 opaque = alpha[0] > 0.0f ? ~0 : 0;
-            alpha_mask->m_bits[y * alpha_mask->m_width + x] = opaque;
+            const size_t index = y * alpha_mask->m_width + x / 8;
+            const uint8 opaque = alpha[0] > 0.0f ? 1 : 0;
+            alpha_mask->set(x, y, opaque);
 
             // Keep track of the number of opaque texels.
             transparent_texel_count += (~opaque) & 1;
@@ -176,50 +226,22 @@ IntersectionFilter::Bitmap* IntersectionFilter::create_alpha_mask(
     }
 
     // Compute the ratio of transparent texels to the total number of texels.
-    alpha_mask->m_transparency = static_cast<double>(transparent_texel_count) / texel_count;
+    alpha_mask->m_transparency = static_cast<double>(transparent_texel_count) / (width * height);
 
     return alpha_mask;
 }
 
-void IntersectionFilter::copy_uv_coordinates(Object& object)
+size_t IntersectionFilter::get_masks_memory_size() const
 {
-    // Retrieve the region kit of the object.
-    Access<RegionKit> region_kit(&object.get_region_kit());
+    size_t size = 0;
 
-    // Iterate over the regions of this object.
-    for (const_each<RegionKit> region_it = *region_kit; region_it; ++region_it)
+    for (size_t i = 0; i < m_alpha_masks.size(); ++i)
     {
-        // Retrieve the region.
-        const IRegion* region = *region_it;
-
-        // Retrieve the tessellation of the region.
-        Access<StaticTriangleTess> tess(&region->get_static_triangle_tess());
-
-        // Iterate over the triangles of this region.
-        for (const_each<StaticTriangleTess::PrimitiveArray> tri_it = tess->m_primitives; tri_it; ++tri_it)
-        {
-            // Fetch the triangle.
-            const Triangle& triangle = *tri_it;
-
-            // Copy and rescale UV coordinates.
-            if (triangle.has_vertex_attributes() && tess->get_uv_vertex_count() > 0)
-            {
-                const Vector2f uv0(tess->get_uv_vertex(triangle.m_a0));
-                const Vector2f uv1(tess->get_uv_vertex(triangle.m_a1));
-                const Vector2f uv2(tess->get_uv_vertex(triangle.m_a2));
-
-                m_uv.push_back(Vector2f(uv0[0], 1.0f - uv0[1]));
-                m_uv.push_back(Vector2f(uv1[0], 1.0f - uv1[1]));
-                m_uv.push_back(Vector2f(uv2[0], 1.0f - uv2[1]));
-            }
-            else
-            {
-                m_uv.push_back(Vector2f(0.0f));
-                m_uv.push_back(Vector2f(0.0f));
-                m_uv.push_back(Vector2f(0.0f));
-            }
-        }
+        if (m_alpha_masks[i])
+            size += m_alpha_masks[i]->get_memory_size();
     }
+
+    return size;
 }
 
 }   // namespace renderer

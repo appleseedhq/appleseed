@@ -1088,19 +1088,9 @@ namespace
                     filter_key.m_materials,
                     texture_cache));
 
-            // Don't store this intersection filter if it's not useful.
-            if (!intersection_filter->keep())
-                continue;
-
-            RENDERER_LOG_DEBUG(
-                "created intersection filter for object \"%s\" with " FMT_SIZE_T " material%s (%s).",
-                i->m_object->get_name(),
-                i->m_materials.size(),
-                i->m_materials.size() > 1 ? "s" : "",
-                pretty_size(intersection_filter->get_memory_size()).c_str());
-
-            // Store the intersection filter.
-            intersection_filters[&filter_key] = intersection_filter.release();
+            // Store this intersection filter if it's useful.
+            if (intersection_filter->has_alpha_masks())
+                intersection_filters[&filter_key] = intersection_filter.release();
         }
     }
 }

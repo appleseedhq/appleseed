@@ -41,6 +41,7 @@
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <cstring>
 #include <vector>
 
 // Forward declarations.
@@ -63,24 +64,63 @@ class IntersectionFilter
 
     ~IntersectionFilter();
 
-    bool keep() const;
+    bool has_alpha_masks() const;
 
     bool accept(
         const TriangleKey&      triangle_key,
         const double            u,
         const double            v) const;
 
-    size_t get_memory_size() const;
-
   private:
     struct Bitmap
     {
-        size_t                          m_width;
-        size_t                          m_height;
-        float                           m_max_x;
-        float                           m_max_y;
-        double                          m_transparency;
-        std::vector<foundation::uint8>  m_bits;
+        size_t                  m_width;
+        size_t                  m_height;
+        size_t                  m_block_width;
+        size_t                  m_size;
+        float                   m_max_x;
+        float                   m_max_y;
+        double                  m_transparency;
+        foundation::uint8*      m_bits;
+
+        Bitmap(
+            const size_t        width,
+            const size_t        height)
+          : m_width(width)
+          , m_height(height)
+          , m_block_width((width + 7) / 8)
+          , m_size(m_block_width * m_height)
+          , m_max_x(static_cast<float>(width) - 1.0f)
+          , m_max_y(static_cast<float>(height) - 1.0f)
+          , m_bits(new foundation::uint8[m_size])
+        {
+            std::memset(m_bits, 0, m_size);
+        }
+
+        ~Bitmap()
+        {
+            delete [] m_bits;
+        }
+
+        size_t get_memory_size() const
+        {
+            return sizeof(*this) + m_size;
+        }
+
+        void set(
+            const size_t            x,
+            const size_t            y,
+            const foundation::uint8 b)
+        {
+            m_bits[y * m_block_width + x / 8] = b << (x & 7);
+        }
+
+        foundation::uint8 get(
+            const size_t            x,
+            const size_t            y) const
+        {
+            return m_bits[y * m_block_width + x / 8] >> (x & 7);
+        }
     };
 
     std::vector<Bitmap*>                m_alpha_masks;
@@ -90,7 +130,7 @@ class IntersectionFilter
         const Source*           alpha_map,
         TextureCache&           texture_cache);
 
-    void copy_uv_coordinates(Object& object);
+    size_t get_masks_memory_size() const;
 };
 
 
@@ -125,7 +165,7 @@ inline bool IntersectionFilter::accept(
     const size_t ix = foundation::truncate<size_t>(fx);
     const size_t iy = foundation::truncate<size_t>(fy);
 
-    return alpha_mask->m_bits[iy * alpha_mask->m_width + ix] > 0;
+    return alpha_mask->get(ix, iy) != 0;
 }
 
 }       // namespace renderer
