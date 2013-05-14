@@ -480,7 +480,7 @@ inline void Pixel::convert_to_format<half>(
             uint32* typed_dest = reinterpret_cast<uint32*>(dest);
             for (const half* it = src_begin; it < src_end; it += src_stride)
             {
-                const float val = clamp(*it * 4294967296.0f, 0.0f, 4294967295.0f);
+                const double val = clamp(static_cast<double>(*it) * 4294967296.0, 0.0, 4294967295.0);
                 *typed_dest = truncate<uint32>(val);
                 typed_dest += dest_stride;
             }
@@ -569,7 +569,7 @@ inline void Pixel::convert_to_format<float>(
             uint32* typed_dest = reinterpret_cast<uint32*>(dest);
             for (const float* it = src_begin; it < src_end; it += src_stride)
             {
-                const float val = clamp(*it * 4294967296.0f, 0.0f, 4294967295.0f);
+                const double val = clamp(static_cast<double>(*it) * 4294967296.0, 0.0, 4294967295.0);
                 *typed_dest = truncate<uint32>(val);
                 typed_dest += dest_stride;
             }
@@ -930,7 +930,7 @@ inline void Pixel::convert_from_format<uint32>(
             const half* it = reinterpret_cast<const half*>(src_begin);
             for (; it < reinterpret_cast<const half*>(src_end); it += src_stride)
             {
-                const half val = static_cast<half>(clamp(*it * 4294967296.0f, 0.0f, 4294967295.0f));
+                const double val = clamp(static_cast<double>(*it) * 4294967296.0, 0.0, 4294967295.0);
                 *dest = truncate<uint32>(val);
                 dest += dest_stride;
             }
@@ -942,7 +942,7 @@ inline void Pixel::convert_from_format<uint32>(
             const float* it = reinterpret_cast<const float*>(src_begin);
             for (; it < reinterpret_cast<const float*>(src_end); it += src_stride)
             {
-                const float val = clamp(*it * 4294967296.0f, 0.0f, 4294967295.0f);
+                const double val = clamp(static_cast<double>(*it) * 4294967296.0, 0.0, 4294967295.0);
                 *dest = truncate<uint32>(val);
                 dest += dest_stride;
             }
