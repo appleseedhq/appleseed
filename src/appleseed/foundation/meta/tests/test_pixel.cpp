@@ -47,7 +47,7 @@ TEST_SUITE(Foundation_Image_Pixel)
             &input, &input + 1,
             1,
             PixelFormatUInt32,
-            (uint8*)&output,
+            &output,
             1);
 
         EXPECT_EQ(4294967295UL, output);
@@ -62,7 +62,7 @@ TEST_SUITE(Foundation_Image_Pixel)
             &input, &input + 1,
             1,
             PixelFormatUInt32,
-            (uint8*)&output,
+            &output,
             1);
 
         EXPECT_EQ(4294967295UL, output);
@@ -75,7 +75,7 @@ TEST_SUITE(Foundation_Image_Pixel)
         uint32 output;
         Pixel::convert_from_format(
             PixelFormatHalf,
-            (const uint8*)&input, (const uint8*)&input + 1,
+            &input, &input + 1,
             1,
             &output,
             1);
@@ -90,7 +90,7 @@ TEST_SUITE(Foundation_Image_Pixel)
         uint32 output;
         Pixel::convert_from_format(
             PixelFormatFloat,
-            (const uint8*)&input, (const uint8*)&input + 1,
+            &input, &input + 1,
             1,
             &output,
             1);

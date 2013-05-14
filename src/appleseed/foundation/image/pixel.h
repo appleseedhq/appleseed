@@ -93,15 +93,15 @@ class Pixel
         const T*            src_end,        // one beyond the last value to convert
         const size_t        src_stride,     // source stride (in words)
         const PixelFormat   dest_format,    // destination format
-        uint8*              dest,           // destination
+        void*               dest,           // destination
         const size_t        dest_stride);   // destination stride (in words)
 
     // Convert from variable format to templatized format.
     template <typename T>
     static void convert_from_format(
         const PixelFormat   src_format,     // source format
-        const uint8*        src_begin,      // points to the first value to convert
-        const uint8*        src_end,        // one beyond the last value to convert
+        const void*         src_begin,      // points to the first value to convert
+        const void*         src_end,        // one beyond the last value to convert
         const size_t        src_stride,     // source stride (in words)
         T*                  dest,           // destination
         const size_t        dest_stride);   // destination stride (in words)
@@ -109,11 +109,11 @@ class Pixel
     // Convert from variable format to variable format.
     static void convert(
         const PixelFormat   src_format,     // source format
-        const uint8*        src_begin,      // points to the first value to convert
-        const uint8*        src_end,        // one beyond the last value to convert
+        const void*         src_begin,      // points to the first value to convert
+        const void*         src_end,        // one beyond the last value to convert
         const size_t        src_stride,     // source stride (in words)
         const PixelFormat   dest_format,    // destination format
-        uint8*              dest,           // destination
+        void*               dest,           // destination
         const size_t        dest_stride);   // destination stride (in words)
 
     //
@@ -142,11 +142,11 @@ class Pixel
     static void convert_and_shuffle(
         const PixelFormat   src_format,     // source format
         const size_t        src_channels,   // number of source channels
-        const uint8*        src_begin,      // points to the first value to convert
-        const uint8*        src_end,        // one beyond the last value to convert
+        const void*         src_begin,      // points to the first value to convert
+        const void*         src_end,        // one beyond the last value to convert
         const PixelFormat   dest_format,    // destination format
         const size_t        dest_channels,  // number of destination channels
-        uint8*              dest,           // destination
+        void*               dest,           // destination
         const size_t*       shuffle_table); // channel shuffling table
 
     // Use this value in a channel shuffling table to indicate that a channel
@@ -183,12 +183,12 @@ inline size_t Pixel::size(PixelFormat format)
 
 template <>
 inline void Pixel::convert_to_format<uint8>(
-    const uint8*            src_begin,      // points to the first value to convert
-    const uint8*            src_end,        // one beyond the last value to convert
-    const size_t            src_stride,     // source stride (in words)
-    const PixelFormat       dest_format,    // destination format
-    uint8*                  dest,           // destination
-    const size_t            dest_stride)    // destination stride (in words)
+    const uint8*            src_begin,
+    const uint8*            src_end,
+    const size_t            src_stride,
+    const PixelFormat       dest_format,
+    void*                   dest,
+    const size_t            dest_stride)
 {
     assert(src_begin);
     assert(src_end);
@@ -198,7 +198,7 @@ inline void Pixel::convert_to_format<uint8>(
     {
       case PixelFormatUInt8:                // lossless uint8 -> uint8
         {
-            uint8* typed_dest = dest;
+            uint8* typed_dest = reinterpret_cast<uint8*>(dest);
             for (const uint8* it = src_begin; it < src_end; it += src_stride)
             {
                 *typed_dest = *it;
@@ -268,12 +268,12 @@ inline void Pixel::convert_to_format<uint8>(
 
 template <>
 inline void Pixel::convert_to_format<uint16>(
-    const uint16*           src_begin,      // points to the first value to convert
-    const uint16*           src_end,        // one beyond the last value to convert
-    const size_t            src_stride,     // source stride (in words)
-    const PixelFormat       dest_format,    // destination format
-    uint8*                  dest,           // destination
-    const size_t            dest_stride)    // destination stride (in words)
+    const uint16*           src_begin,
+    const uint16*           src_end,
+    const size_t            src_stride,
+    const PixelFormat       dest_format,
+    void*                   dest,
+    const size_t            dest_stride)
 {
     assert(src_begin);
     assert(src_end);
@@ -283,7 +283,7 @@ inline void Pixel::convert_to_format<uint16>(
     {
       case PixelFormatUInt8:                // lossy uint16 -> uint8
         {
-            uint8* typed_dest = dest;
+            uint8* typed_dest = reinterpret_cast<uint8*>(dest);
             for (const uint16* it = src_begin; it < src_end; it += src_stride)
             {
                 *typed_dest = static_cast<uint8>(*it >> 8);
@@ -353,12 +353,12 @@ inline void Pixel::convert_to_format<uint16>(
 
 template <>
 inline void Pixel::convert_to_format<uint32>(
-    const uint32*           src_begin,      // points to the first value to convert
-    const uint32*           src_end,        // one beyond the last value to convert
-    const size_t            src_stride,     // source stride (in words)
-    const PixelFormat       dest_format,    // destination format
-    uint8*                  dest,           // destination
-    const size_t            dest_stride)    // destination stride (in words)
+    const uint32*           src_begin,
+    const uint32*           src_end,
+    const size_t            src_stride,
+    const PixelFormat       dest_format,
+    void*                   dest,
+    const size_t            dest_stride)
 {
     assert(src_begin);
     assert(src_end);
@@ -368,7 +368,7 @@ inline void Pixel::convert_to_format<uint32>(
     {
       case PixelFormatUInt8:                // lossy uint32 -> uint8
         {
-            uint8* typed_dest = dest;
+            uint8* typed_dest = reinterpret_cast<uint8*>(dest);
             for (const uint32* it = src_begin; it < src_end; it += src_stride)
             {
                 *typed_dest = static_cast<uint8>(*it >> 24);
@@ -438,12 +438,12 @@ inline void Pixel::convert_to_format<uint32>(
 
 template <>
 inline void Pixel::convert_to_format<half>(
-    const half*             src_begin,      // points to the first value to convert
-    const half*             src_end,        // one beyond the last value to convert
-    const size_t            src_stride,     // source stride (in words)
-    const PixelFormat       dest_format,    // destination format
-    uint8*                  dest,           // destination
-    const size_t            dest_stride)    // destination stride (in words)
+    const half*             src_begin,
+    const half*             src_end,
+    const size_t            src_stride,
+    const PixelFormat       dest_format,
+    void*                   dest,
+    const size_t            dest_stride)
 {
     assert(src_begin);
     assert(src_end);
@@ -453,7 +453,7 @@ inline void Pixel::convert_to_format<half>(
     {
       case PixelFormatUInt8:                // lossy half -> uint8
         {
-            uint8* typed_dest = dest;
+            uint8* typed_dest = reinterpret_cast<uint8*>(dest);
             for (const half* it = src_begin; it < src_end; it += src_stride)
             {
                 const float val = clamp(*it * 256.0f, 0.0f, 255.0f);
@@ -526,12 +526,12 @@ inline void Pixel::convert_to_format<half>(
 
 template <>
 inline void Pixel::convert_to_format<float>(
-    const float*            src_begin,      // points to the first value to convert
-    const float*            src_end,        // one beyond the last value to convert
-    const size_t            src_stride,     // source stride (in words)
-    const PixelFormat       dest_format,    // destination format
-    uint8*                  dest,           // destination
-    const size_t            dest_stride)    // destination stride (in words)
+    const float*            src_begin,
+    const float*            src_end,
+    const size_t            src_stride,
+    const PixelFormat       dest_format,
+    void*                   dest,
+    const size_t            dest_stride)
 {
     assert(src_begin);
     assert(src_end);
@@ -542,7 +542,7 @@ inline void Pixel::convert_to_format<float>(
       case PixelFormatUInt8:                // lossy float -> uint8
         {
             // todo: optimize this case using SSE?
-            uint8* typed_dest = dest;
+            uint8* typed_dest = reinterpret_cast<uint8*>(dest);
             for (const float* it = src_begin; it < src_end; it += src_stride)
             {
                 const float val = clamp(*it * 256.0f, 0.0f, 255.0f);
@@ -615,12 +615,12 @@ inline void Pixel::convert_to_format<float>(
 
 template <>
 inline void Pixel::convert_to_format<double>(
-    const double*           src_begin,      // points to the first value to convert
-    const double*           src_end,        // one beyond the last value to convert
-    const size_t            src_stride,     // source stride (in words)
-    const PixelFormat       dest_format,    // destination format
-    uint8*                  dest,           // destination
-    const size_t            dest_stride)    // destination stride (in words)
+    const double*           src_begin,
+    const double*           src_end,
+    const size_t            src_stride,
+    const PixelFormat       dest_format,
+    void*                   dest,
+    const size_t            dest_stride)
 {
     assert(src_begin);
     assert(src_end);
@@ -630,7 +630,7 @@ inline void Pixel::convert_to_format<double>(
     {
       case PixelFormatUInt8:                // lossy double -> uint8
         {
-            uint8* typed_dest = dest;
+            uint8* typed_dest = reinterpret_cast<uint8*>(dest);
             for (const double* it = src_begin; it < src_end; it += src_stride)
             {
                 const double val = clamp(*it * 256.0, 0.0, 255.0);
@@ -703,12 +703,12 @@ inline void Pixel::convert_to_format<double>(
 
 template <>
 inline void Pixel::convert_from_format<uint8>(
-    const PixelFormat       src_format,     // source format
-    const uint8*            src_begin,      // points to the first value to convert
-    const uint8*            src_end,        // one beyond the last value to convert
-    const size_t            src_stride,     // source stride (in words)
-    uint8*                  dest,           // destination
-    const size_t            dest_stride)    // destination stride (in words)
+    const PixelFormat       src_format,
+    const void*             src_begin,
+    const void*             src_end,
+    const size_t            src_stride,
+    uint8*                  dest,
+    const size_t            dest_stride)
 {
     assert(src_begin);
     assert(src_end);
@@ -718,7 +718,7 @@ inline void Pixel::convert_from_format<uint8>(
     {
       case PixelFormatUInt8:                // lossless uint8 -> uint8
         {
-            const uint8* it = src_begin;
+            const uint8* it = reinterpret_cast<const uint8*>(src_begin);
             for (; it < src_end; it += src_stride)
             {
                 *dest = *it;
@@ -791,12 +791,12 @@ inline void Pixel::convert_from_format<uint8>(
 
 template <>
 inline void Pixel::convert_from_format<uint16>(
-    const PixelFormat       src_format,     // source format
-    const uint8*            src_begin,      // points to the first value to convert
-    const uint8*            src_end,        // one beyond the last value to convert
-    const size_t            src_stride,     // source stride (in words)
-    uint16*                 dest,           // destination
-    const size_t            dest_stride)    // destination stride (in words)
+    const PixelFormat       src_format,
+    const void*             src_begin,
+    const void*             src_end,
+    const size_t            src_stride,
+    uint16*                 dest,
+    const size_t            dest_stride)
 {
     assert(src_begin);
     assert(src_end);
@@ -879,12 +879,12 @@ inline void Pixel::convert_from_format<uint16>(
 
 template <>
 inline void Pixel::convert_from_format<uint32>(
-    const PixelFormat       src_format,     // source format
-    const uint8*            src_begin,      // points to the first value to convert
-    const uint8*            src_end,        // one beyond the last value to convert
-    const size_t            src_stride,     // source stride (in words)
-    uint32*                 dest,           // destination
-    const size_t            dest_stride)    // destination stride (in words)
+    const PixelFormat       src_format,
+    const void*             src_begin,
+    const void*             src_end,
+    const size_t            src_stride,
+    uint32*                 dest,
+    const size_t            dest_stride)
 {
     assert(src_begin);
     assert(src_end);
@@ -967,12 +967,12 @@ inline void Pixel::convert_from_format<uint32>(
 
 template <>
 inline void Pixel::convert_from_format<float>(
-    const PixelFormat       src_format,     // source format
-    const uint8*            src_begin,      // points to the first value to convert
-    const uint8*            src_end,        // one beyond the last value to convert
-    const size_t            src_stride,     // source stride (in words)
-    float*                  dest,           // destination
-    const size_t            dest_stride)    // destination stride (in words)
+    const PixelFormat       src_format,
+    const void*             src_begin,
+    const void*             src_end,
+    const size_t            src_stride,
+    float*                  dest,
+    const size_t            dest_stride)
 {
     assert(src_begin);
     assert(src_end);
@@ -1052,12 +1052,12 @@ inline void Pixel::convert_from_format<float>(
 
 template <>
 inline void Pixel::convert_from_format<double>(
-    const PixelFormat       src_format,     // source format
-    const uint8*            src_begin,      // points to the first value to convert
-    const uint8*            src_end,        // one beyond the last value to convert
-    const size_t            src_stride,     // source stride (in words)
-    double*                 dest,           // destination
-    const size_t            dest_stride)    // destination stride (in words)
+    const PixelFormat       src_format,
+    const void*             src_begin,
+    const void*             src_end,
+    const size_t            src_stride,
+    double*                 dest,
+    const size_t            dest_stride)
 {
     assert(src_begin);
     assert(src_end);
@@ -1136,13 +1136,13 @@ inline void Pixel::convert_from_format<double>(
 }
 
 inline void Pixel::convert(
-    const PixelFormat       src_format,     // source format
-    const uint8*            src_begin,      // points to the first value to convert
-    const uint8*            src_end,        // one beyond the last value to convert
-    const size_t            src_stride,     // source stride (in words)
-    const PixelFormat       dest_format,    // destination format
-    uint8*                  dest,           // destination
-    const size_t            dest_stride)    // destination stride (in words)
+    const PixelFormat       src_format,
+    const void*             src_begin,
+    const void*             src_end,
+    const size_t            src_stride,
+    const PixelFormat       dest_format,
+    void*                   dest,
+    const size_t            dest_stride)
 {
     assert(src_begin);
     assert(src_end);
@@ -1152,8 +1152,8 @@ inline void Pixel::convert(
     {
       case PixelFormatUInt8:                // uint8 -> destination format
         convert_to_format<uint8>(
-            src_begin,
-            src_end,
+            reinterpret_cast<const uint8*>(src_begin),
+            reinterpret_cast<const uint8*>(src_end),
             src_stride,
             dest_format,
             dest,

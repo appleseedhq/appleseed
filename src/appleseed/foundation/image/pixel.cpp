@@ -33,14 +33,14 @@ namespace foundation
 {
 
 void Pixel::convert_and_shuffle(
-    const PixelFormat   src_format,         // source format
-    const size_t        src_channels,       // number of source channels
-    const uint8*        src_begin,          // points to the first value to convert
-    const uint8*        src_end,            // one beyond the last value to convert
-    const PixelFormat   dest_format,        // destination format
-    const size_t        dest_channels,      // number of destination channels
-    uint8*              dest,               // destination
-    const size_t*       shuffle_table)      // channel shuffling table
+    const PixelFormat   src_format,
+    const size_t        src_channels,
+    const void*         src_begin,
+    const void*         src_end,
+    const PixelFormat   dest_format,
+    const size_t        dest_channels,
+    void*               dest,
+    const size_t*       shuffle_table)
 {
     // Compute size in bytes of source and destination pixel formats.
     const size_t src_channel_size = size(src_format);
@@ -69,11 +69,11 @@ void Pixel::convert_and_shuffle(
         // Convert source channel to destination channel.
         convert(
             src_format,
-            src_begin + src_channel_offset,
-            src_end + src_channel_offset,
+            reinterpret_cast<const uint8*>(src_begin) + src_channel_offset,
+            reinterpret_cast<const uint8*>(src_end) + src_channel_offset,
             src_channels,
             dest_format,
-            dest + dest_channel_offset,
+            reinterpret_cast<uint8*>(dest) + dest_channel_offset,
             dest_channels);
 
         // Compute offset in bytes of next destination channel.
@@ -82,8 +82,8 @@ void Pixel::convert_and_shuffle(
 }
 
 size_t Pixel::get_dest_channel_count(
-    const size_t        src_channels,       // number of source channels
-    const size_t*       shuffle_table)      // channel shuffling table
+    const size_t        src_channels,
+    const size_t*       shuffle_table)
 {
     size_t dest_channel_count = 0;
 
