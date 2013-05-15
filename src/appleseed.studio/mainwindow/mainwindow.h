@@ -105,6 +105,8 @@ class MainWindow
     QAction*                            m_action_start_final_rendering;
     QAction*                            m_action_stop_rendering;
 
+    std::vector<QAction*>               m_recently_opened;
+
     StatusBar                           m_status_bar;
     std::auto_ptr<QtLogTarget>          m_log_target;
 
@@ -156,8 +158,6 @@ class MainWindow
     typedef std::map<std::string, RenderWidgetRecord*> RenderWidgetCollection;
 
     RenderWidgetCollection              m_render_widgets;
-
-    std::vector<QAction*> m_recently_opened;
 
     void build_menus();
     void build_override_shading_menu_item();
@@ -233,7 +233,7 @@ class MainWindow
     void slot_filter_text_changed(const QString& pattern);
     void slot_clear_filter();
 
-    void slot_render_widget_context_menu(const QPoint&);
+    void slot_render_widget_context_menu(const QPoint& point);
     void slot_save_frame();
     void slot_save_all_aovs();
     void slot_clear_frame();
