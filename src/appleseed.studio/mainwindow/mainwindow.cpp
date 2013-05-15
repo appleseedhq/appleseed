@@ -1154,7 +1154,7 @@ void MainWindow::slot_render_widget_context_menu(const QPoint& point)
     menu->addSeparator();
     menu->addAction("Clear Frame", this, SLOT(slot_clear_frame()));
 
-    menu->exec(reinterpret_cast<QWidget*>(sender())->mapToGlobal(point));
+    menu->exec(qobject_cast<QWidget*>(sender())->mapToGlobal(point));
 }
 
 void MainWindow::slot_save_frame()

@@ -139,7 +139,7 @@ void ItemBase::slot_delete()
 
 void ItemBase::slot_delete_multiple(QList<ItemBase*> items)
 {
-    QAction* action = static_cast<QAction*>(sender());
+    QAction* action = qobject_cast<QAction*>(sender());
 
     if (action && !action->data().isNull())
         items = action->data().value<QList<ItemBase*> >();

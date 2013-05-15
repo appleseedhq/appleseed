@@ -203,7 +203,7 @@ void ObjectInstanceItem::slot_open_material_assignment_editor()
 
 void ObjectInstanceItem::slot_assign_material()
 {
-    QAction* action = static_cast<QAction*>(sender());
+    QAction* action = qobject_cast<QAction*>(sender());
 
     const MaterialAssignmentData data = action->data().value<MaterialAssignmentData>();
 
@@ -265,7 +265,7 @@ void ObjectInstanceItem::slot_assign_material_accepted(QString page_name, QStrin
 
 void ObjectInstanceItem::slot_clear_material()
 {
-    QAction* action = static_cast<QAction*>(sender());
+    QAction* action = qobject_cast<QAction*>(sender());
 
     const MaterialAssignmentData data = action->data().value<MaterialAssignmentData>();
     const bool front_side = data.m_side == FrontSide || data.m_side == FrontAndBackSides;
