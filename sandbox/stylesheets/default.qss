@@ -310,7 +310,8 @@ QMenu::separator
 
 QMenu::right-arrow
 {
-    image: url(":/widgets/menu_arrow_right.png");
+    margin: 4px;
+    image: url(":/widgets/menu_arrow_right_enabled.png");
 }
 
 QMenu::right-arrow:selected
@@ -318,10 +319,9 @@ QMenu::right-arrow:selected
     image: url(":/widgets/menu_arrow_right_selected.png");
 }
 
-QMenu::right-arrow,
-QMenu::right-arrow:selected
+QMenu::right-arrow:disabled
 {
-    margin: 4px;
+    image: url(":/widgets/menu_arrow_right_disabled.png");
 }
 
 QMenu::tearoff

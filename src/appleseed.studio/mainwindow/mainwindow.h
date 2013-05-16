@@ -188,8 +188,8 @@ class MainWindow
     void update_project_explorer();
     void update_window_title();
 
-    void set_project_widgets_enabled(const bool enabled);
-    void set_rendering_widgets_enabled(const bool enabled, const bool is_rendering);
+    void set_project_widgets_enabled(const bool is_enabled);
+    void set_rendering_widgets_enabled(const bool is_enabled, const bool is_rendering);
 
     void recreate_render_widgets();
     void remove_render_widgets();

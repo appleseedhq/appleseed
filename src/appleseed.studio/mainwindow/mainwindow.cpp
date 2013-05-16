@@ -635,45 +635,46 @@ void MainWindow::update_window_title()
     setWindowTitle(title);
 }
 
-void MainWindow::set_project_widgets_enabled(const bool enabled)
+void MainWindow::set_project_widgets_enabled(const bool is_enabled)
 {
+    const bool is_project_open = is_enabled && m_project_manager.is_project_open();
+
     // File -> New Project.
-    m_ui->action_file_new_project->setEnabled(enabled);
-    m_action_new_project->setEnabled(enabled);
+    m_ui->action_file_new_project->setEnabled(is_enabled);
+    m_action_new_project->setEnabled(is_enabled);
 
     // File -> Open Project.
-    m_ui->action_file_open_project->setEnabled(enabled);
-    m_action_open_project->setEnabled(enabled);
+    m_ui->action_file_open_project->setEnabled(is_enabled);
+    m_action_open_project->setEnabled(is_enabled);
 
     // File -> Open Recent.
-    m_ui->menu_open_recent->setEnabled(enabled);
+    m_ui->menu_open_recent->setEnabled(is_enabled);
 
     // File -> Open Built-in Project.
-    m_ui->menu_file_open_builtin_project->setEnabled(enabled);
+    m_ui->menu_file_open_builtin_project->setEnabled(is_enabled);
 
     // File -> Reload Project.
     m_ui->action_file_reload_project->setEnabled(
-        enabled &&
-        m_project_manager.is_project_open() &&
+        is_project_open &&
         m_project_manager.get_project()->has_path());
 
     // File -> Save Project and Save Project As.
-    const bool allow_saving = enabled && m_project_manager.is_project_open();
-    m_ui->action_file_save_project->setEnabled(allow_saving);
-    m_action_save_project->setEnabled(allow_saving);
-    m_ui->action_file_save_project_as->setEnabled(allow_saving);
+    m_ui->action_file_save_project->setEnabled(is_project_open);
+    m_action_save_project->setEnabled(is_project_open);
+    m_ui->action_file_save_project_as->setEnabled(is_project_open);
 
     // Project Explorer.
-    m_ui->treewidget_project_explorer_scene->setEnabled(
-        enabled &&
-        m_project_manager.is_project_open());
+    m_ui->label_filter->setEnabled(is_project_open);
+    m_ui->lineedit_filter->setEnabled(is_project_open);
+    m_ui->pushbutton_clear_filter->setEnabled(is_project_open);
+    m_ui->treewidget_project_explorer_scene->setEnabled(is_project_open);
 }
 
-void MainWindow::set_rendering_widgets_enabled(const bool enabled, const bool is_rendering)
+void MainWindow::set_rendering_widgets_enabled(const bool is_enabled, const bool is_rendering)
 {
-    const bool is_project_open = m_project_manager.is_project_open();
-    const bool allow_starting_rendering = enabled && is_project_open && !is_rendering;
-    const bool allow_stopping_rendering = enabled && is_project_open && is_rendering;
+    const bool is_project_open = is_enabled && m_project_manager.is_project_open();
+    const bool allow_starting_rendering = is_project_open && !is_rendering;
+    const bool allow_stopping_rendering = is_project_open && is_rendering;
 
     // Rendering -> Start Interactive Rendering.
     m_ui->action_rendering_start_interactive_rendering->setEnabled(allow_starting_rendering);
