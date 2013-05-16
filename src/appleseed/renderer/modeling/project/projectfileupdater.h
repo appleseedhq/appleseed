@@ -39,7 +39,7 @@ namespace renderer
 {
 
 //
-// Project file reader.
+// Project file updater.
 //
 
 class DLLSYMBOL ProjectFileUpdater

@@ -80,7 +80,7 @@ class DLLSYMBOL ProjectFileReader
 
     // Finish loading a project.
     void postprocess_project(
-        const Project&          project,
+        Project&                project,
         EventCounters&          event_counters) const;
 
     // Check the validity of a project.
@@ -90,7 +90,12 @@ class DLLSYMBOL ProjectFileReader
 
     // Add missing entities to a valid project.
     void complete_project(
-        const Project&          project,
+        Project&                project,
+        EventCounters&          event_counters) const;
+
+    // Update a project to the latest project format revision.
+    void upgrade_project(
+        Project&                project,
         EventCounters&          event_counters) const;
 
     void print_loading_results(

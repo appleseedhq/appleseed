@@ -75,6 +75,12 @@ namespace renderer
 // Project class implementation.
 //
 
+namespace
+{
+    // Revision number of the project format.
+    const size_t ProjectFormatRevision = 5;
+}
+
 struct Project::Impl
 {
     size_t                      m_format_revision;
@@ -86,7 +92,7 @@ struct Project::Impl
     auto_ptr<TraceContext>      m_trace_context;
 
     Impl()
-      : m_format_revision(0)
+      : m_format_revision(ProjectFormatRevision)
     {
     }
 };

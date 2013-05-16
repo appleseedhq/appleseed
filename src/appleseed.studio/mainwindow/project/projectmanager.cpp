@@ -171,21 +171,16 @@ string ProjectManager::get_project_schema_filepath()
 
 bool ProjectManager::do_load_project(const string& filepath)
 {
-    {
-        const string schema_filepath = get_project_schema_filepath();
+    const string schema_filepath = get_project_schema_filepath();
 
-        ProjectFileReader reader;
-        auto_release_ptr<Project> loaded_project(
-            reader.read(filepath.c_str(), schema_filepath.c_str()));
+    ProjectFileReader reader;
+    auto_release_ptr<Project> loaded_project(
+        reader.read(filepath.c_str(), schema_filepath.c_str()));
 
-        if (loaded_project.get() == 0)
-            return false;
+    if (loaded_project.get() == 0)
+        return false;
 
-        m_project = loaded_project;
-    }
-
-    ProjectFileUpdater updater;
-    m_dirty_flag = updater.update(m_project.ref());
+    m_project = loaded_project;
 
     return true;
 }

@@ -479,19 +479,10 @@ namespace
 
             // Load the project from disk.
             ProjectFileReader reader;
-            auto_release_ptr<Project> project =
+            return
                 reader.read(
                     project_filename.c_str(),
                     schema_path.string().c_str());
-
-            if (project.get())
-            {
-                // Update the project.
-                ProjectFileUpdater updater;
-                updater.update(project.ref());
-            }
-
-            return project;
         }
     }
 

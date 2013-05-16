@@ -164,6 +164,46 @@ namespace
 
 
     //
+    // Update from revision 0 to revision 1.
+    //
+
+    class Updater_0_to_1
+      : public Updater
+    {
+      public:
+        explicit Updater_0_to_1(Project& project)
+          : Updater(project, 0)
+        {
+        }
+
+        virtual void update() OVERRIDE
+        {
+            // Nothing to do.
+        }
+    };
+
+
+    //
+    // Update from revision 1 to revision 2.
+    //
+
+    class Updater_1_to_2
+      : public Updater
+    {
+      public:
+        explicit Updater_1_to_2(Project& project)
+          : Updater(project, 1)
+        {
+        }
+
+        virtual void update() OVERRIDE
+        {
+            // Nothing to do.
+        }
+    };
+
+
+    //
     // Update from revision 2 to revision 3.
     //
 
@@ -381,8 +421,8 @@ bool ProjectFileUpdater::update(Project& project)
 
     switch (format_revision)
     {
-      case 0: ; // Nothing to do
-      case 1: ; // Nothing to do
+      case 0: { Updater_0_to_1 updater(project); updater.update(); modified = true; }
+      case 1: { Updater_1_to_2 updater(project); updater.update(); modified = true; }
       case 2: { Updater_2_to_3 updater(project); updater.update(); modified = true; }
       case 3: { Updater_3_to_4 updater(project); updater.update(); modified = true; }
       case 4: { Updater_4_to_5 updater(project); updater.update(); modified = true; }

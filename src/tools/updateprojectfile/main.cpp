@@ -88,10 +88,6 @@ int main(int argc, const char* argv[])
     if (project.get() == 0)
         return 1;
 
-    // Update the project.
-    ProjectFileUpdater updater;
-    updater.update(project.ref());
-
     // Write the project back to disk.
     const bool success =
         ProjectFileWriter::write(

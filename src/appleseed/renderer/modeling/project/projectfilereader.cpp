@@ -58,6 +58,7 @@
 #include "renderer/modeling/project/configuration.h"
 #include "renderer/modeling/project/configurationcontainer.h"
 #include "renderer/modeling/project/project.h"
+#include "renderer/modeling/project/projectfileupdater.h"
 #include "renderer/modeling/project-builtin/cornellboxproject.h"
 #include "renderer/modeling/project-builtin/defaultproject.h"
 #include "renderer/modeling/scene/assembly.h"
@@ -2686,7 +2687,7 @@ auto_release_ptr<Project> ProjectFileReader::construct_builtin_project(
 }
 
 void ProjectFileReader::postprocess_project(
-    const Project&          project,
+    Project&                project,
     EventCounters&          event_counters) const
 {
     if (!event_counters.has_errors())
@@ -2694,6 +2695,9 @@ void ProjectFileReader::postprocess_project(
 
     if (!event_counters.has_errors())
         complete_project(project, event_counters);
+
+    if (!event_counters.has_errors())
+        upgrade_project(project, event_counters);
 }
 
 void ProjectFileReader::validate_project(
@@ -2737,7 +2741,7 @@ void ProjectFileReader::validate_project(
 }
 
 void ProjectFileReader::complete_project(
-    const Project&          project,
+    Project&                project,
     EventCounters&          event_counters) const
 {
     // Add a default environment if the project doesn't define any.
@@ -2747,6 +2751,14 @@ void ProjectFileReader::complete_project(
             EnvironmentFactory::create("environment", ParamArray()));
         project.get_scene()->set_environment(environment);
     }
+}
+
+void ProjectFileReader::upgrade_project(
+    Project&                project,
+    EventCounters&          event_counters) const
+{
+    ProjectFileUpdater updater;
+    updater.update(project);
 }
 
 void ProjectFileReader::print_loading_results(
