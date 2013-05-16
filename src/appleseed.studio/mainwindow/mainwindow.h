@@ -188,8 +188,8 @@ class MainWindow
     void update_project_explorer();
     void update_window_title();
 
-    void enable_disable_widgets(const bool rendering);
-    void enable_disable_menu_items(const bool rendering);
+    void set_project_widgets_enabled(const bool enabled);
+    void set_rendering_widgets_enabled(const bool enabled, const bool is_rendering);
 
     void recreate_render_widgets();
     void remove_render_widgets();
@@ -210,6 +210,7 @@ class MainWindow
     void slot_clear_open_recent_files_menu();
     void slot_open_cornellbox_builtin_project();
     void slot_reload_project();
+    void slot_open_project_complete(const QString& filepath, const bool successful);
     void slot_save_project();
     void slot_save_project_as();
 

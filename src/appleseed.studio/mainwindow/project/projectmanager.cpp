@@ -32,6 +32,9 @@
 // appleseed.shared headers.
 #include "application/application.h"
 
+// Qt headers.
+#include <QtConcurrentRun>
+
 // boost headers.
 #include "boost/filesystem/path.hpp"
 
@@ -51,6 +54,9 @@ namespace studio {
 ProjectManager::ProjectManager()
   : m_dirty_flag(false)
 {
+    connect(
+        &m_async_io_future_watcher, SIGNAL(finished()),
+        this, SLOT(slot_load_project_async_complete()));
 }
 
 void ProjectManager::create_project()
@@ -59,25 +65,12 @@ void ProjectManager::create_project()
     assert(result);
 }
 
-bool ProjectManager::load_project(const string& filepath)
+void ProjectManager::load_project(const string& filepath)
 {
-    {
-        const string schema_filepath = get_project_schema_filepath();
+    m_async_io_filepath = QString::fromStdString(filepath);
 
-        ProjectFileReader reader;
-        auto_release_ptr<Project> loaded_project(
-            reader.read(filepath.c_str(), schema_filepath.c_str()));
-
-        if (loaded_project.get() == 0)
-            return false;
-
-        m_project = loaded_project;
-    }
-
-    ProjectFileUpdater updater;
-    m_dirty_flag = updater.update(m_project.ref());
-
-    return true;
+    m_async_io_future_watcher.setFuture(
+        QtConcurrent::run(this, &ProjectManager::do_load_project, filepath));
 }
 
 bool ProjectManager::load_builtin_project(const string& name)
@@ -88,16 +81,6 @@ bool ProjectManager::load_builtin_project(const string& name)
     m_dirty_flag = false;
 
     return true;
-}
-
-bool ProjectManager::reload_project()
-{
-    assert(m_project.get());
-    assert(m_project->has_path());
-
-    const string project_path(m_project->get_path());
-
-    return load_project(project_path);
 }
 
 bool ProjectManager::save_project()
@@ -167,6 +150,15 @@ bool ProjectManager::is_project_dirty() const
     return m_dirty_flag;
 }
 
+void ProjectManager::slot_load_project_async_complete()
+{
+    // Can't use qobject_cast<>: https://bugreports.qt-project.org/browse/QTBUG-10727.
+    const bool successful =
+        static_cast<QFutureWatcher<bool>*>(sender())->future().result();
+
+    emit signal_load_project_async_complete(m_async_io_filepath, successful);
+}
+
 string ProjectManager::get_project_schema_filepath()
 {
     const filesystem::path schema_path =
@@ -175,6 +167,27 @@ string ProjectManager::get_project_schema_filepath()
         / "project.xsd";
 
     return schema_path.string();
+}
+
+bool ProjectManager::do_load_project(const string& filepath)
+{
+    {
+        const string schema_filepath = get_project_schema_filepath();
+
+        ProjectFileReader reader;
+        auto_release_ptr<Project> loaded_project(
+            reader.read(filepath.c_str(), schema_filepath.c_str()));
+
+        if (loaded_project.get() == 0)
+            return false;
+
+        m_project = loaded_project;
+    }
+
+    ProjectFileUpdater updater;
+    m_dirty_flag = updater.update(m_project.ref());
+
+    return true;
 }
 
 }   // namespace studio

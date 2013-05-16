@@ -33,8 +33,12 @@
 #include "renderer/api/project.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/utility/autoreleaseptr.h"
+
+// Qt headers.
+#include <QFutureWatcher>
+#include <QObject>
+#include <QString>
 
 // Standard headers.
 #include <string>
@@ -47,8 +51,10 @@ namespace studio {
 //
 
 class ProjectManager
-  : public foundation::NonCopyable
+  : public QObject
 {
+    Q_OBJECT
+
   public:
     // Constructor.
     ProjectManager();
@@ -57,22 +63,18 @@ class ProjectManager
     // If there already is a project open, it is first closed.
     void create_project();
 
-    // Load a project from disk.
+    // Asynchronously load a project from disk.
+    // Emits a signal_load_project_async_complete() signal upon completion.
     // If loading was successful, closes the current project, replaces it
     // with the project loaded from disk, and returns true.  Otherwise,
     // keeps the current project open and returns false.
-    bool load_project(const std::string& filepath);
+    void load_project(const std::string& filepath);
 
     // Load a built-in project.
     // If loading was successful, closes the current project, replaces it
     // with the built-in project, and returns true.  Otherwise, keeps the
     // current project open and returns false.
     bool load_builtin_project(const std::string& name);
-
-    // Reload the project that is currently open. The project must already have
-    // its path set.  If loading was successful, closes the project, reopens it,
-    // and returns true.  Otherwise, keeps the project open and returns false.
-    bool reload_project();
 
     // Save the current project to disk.
     // A project must be open, and it must have its path set.
@@ -104,11 +106,23 @@ class ProjectManager
     void set_project_dirty_flag();
     bool is_project_dirty() const;
 
+  signals:
+    void signal_load_project_async_complete(const QString& filepath, const bool successful);
+
+  private slots:
+    void slot_load_project_async_complete();
+
   private:
     foundation::auto_release_ptr<renderer::Project> m_project;
-    bool                                            m_dirty_flag;
+
+    bool                    m_dirty_flag;
+
+    QString                 m_async_io_filepath;
+    QFutureWatcher<bool>    m_async_io_future_watcher;
 
     static std::string get_project_schema_filepath();
+
+    bool do_load_project(const std::string& filepath);
 };
 
 }       // namespace studio

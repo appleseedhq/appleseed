@@ -442,6 +442,10 @@ void MainWindow::build_project_explorer()
 void MainWindow::build_connections()
 {
     connect(
+        &m_project_manager, SIGNAL(signal_load_project_async_complete(const QString&, const bool)),
+        this, SLOT(slot_open_project_complete(const QString&, const bool)));
+
+    connect(
         &m_rendering_manager, SIGNAL(signal_rendering_end()),
         this, SLOT(slot_rendering_end()));
 
@@ -525,18 +529,16 @@ namespace
 
 void MainWindow::open_project(const QString& filepath)
 {
+    set_project_widgets_enabled(false);
+    set_rendering_widgets_enabled(false, false);
+
     const filesystem::path path(filepath.toStdString());
 
     m_settings.insert_path(
         LAST_DIRECTORY_SETTINGS_KEY,
         path.parent_path().string());
 
-    const bool successful =
-        m_project_manager.load_project(filepath.toAscii().constData());
-
-    if (successful)
-        on_project_change();
-    else  show_project_file_loading_failed_message_box(this, filepath);
+    m_project_manager.load_project(filepath.toAscii().constData());
 }
 
 bool MainWindow::can_close_project()
@@ -585,7 +587,8 @@ void MainWindow::on_project_change()
 void MainWindow::update_workspace()
 {
     update_window_title();
-    enable_disable_widgets(false);
+    set_project_widgets_enabled(true);
+    set_rendering_widgets_enabled(true, false);
 }
 
 void MainWindow::update_project_explorer()
@@ -632,53 +635,45 @@ void MainWindow::update_window_title()
     setWindowTitle(title);
 }
 
-void MainWindow::enable_disable_widgets(const bool rendering)
+void MainWindow::set_project_widgets_enabled(const bool enabled)
 {
-    const bool is_project_open = m_project_manager.is_project_open();
-
-    // Project Explorer.
-    m_ui->treewidget_project_explorer_scene->setEnabled(is_project_open);
-
-    enable_disable_menu_items(rendering);
-}
-
-void MainWindow::enable_disable_menu_items(const bool rendering)
-{
-    const bool is_project_open = m_project_manager.is_project_open();
-
-    const bool allow_replacing_project = !rendering;
-
     // File -> New Project.
-    m_ui->action_file_new_project->setEnabled(allow_replacing_project);
-    m_action_new_project->setEnabled(allow_replacing_project);
+    m_ui->action_file_new_project->setEnabled(enabled);
+    m_action_new_project->setEnabled(enabled);
 
     // File -> Open Project.
-    m_ui->action_file_open_project->setEnabled(allow_replacing_project);
-    m_action_open_project->setEnabled(allow_replacing_project);
+    m_ui->action_file_open_project->setEnabled(enabled);
+    m_action_open_project->setEnabled(enabled);
 
     // File -> Open Recent.
-    m_ui->menu_open_recent->setEnabled(allow_replacing_project);
+    m_ui->menu_open_recent->setEnabled(enabled);
 
     // File -> Open Built-in Project.
-    m_ui->menu_file_open_builtin_project->setEnabled(allow_replacing_project);
+    m_ui->menu_file_open_builtin_project->setEnabled(enabled);
 
     // File -> Reload Project.
     m_ui->action_file_reload_project->setEnabled(
-        is_project_open &&
-        m_project_manager.get_project()->has_path() &&
-        !rendering);
+        enabled &&
+        m_project_manager.is_project_open() &&
+        m_project_manager.get_project()->has_path());
 
-    const bool allow_saving_project = is_project_open && !rendering;
+    // File -> Save Project and Save Project As.
+    const bool allow_saving = enabled && m_project_manager.is_project_open();
+    m_ui->action_file_save_project->setEnabled(allow_saving);
+    m_action_save_project->setEnabled(allow_saving);
+    m_ui->action_file_save_project_as->setEnabled(allow_saving);
 
-    // File -> Save Project.
-    m_ui->action_file_save_project->setEnabled(allow_saving_project);
-    m_action_save_project->setEnabled(allow_saving_project);
+    // Project Explorer.
+    m_ui->treewidget_project_explorer_scene->setEnabled(
+        enabled &&
+        m_project_manager.is_project_open());
+}
 
-    // File -> Save Project As.
-    m_ui->action_file_save_project_as->setEnabled(allow_saving_project);
-
-    const bool allow_starting_rendering = is_project_open && !rendering;
-    const bool allow_stopping_rendering = is_project_open && rendering;
+void MainWindow::set_rendering_widgets_enabled(const bool enabled, const bool is_rendering)
+{
+    const bool is_project_open = m_project_manager.is_project_open();
+    const bool allow_starting_rendering = enabled && is_project_open && !is_rendering;
+    const bool allow_stopping_rendering = enabled && is_project_open && is_rendering;
 
     // Rendering -> Start Interactive Rendering.
     m_ui->action_rendering_start_interactive_rendering->setEnabled(allow_starting_rendering);
@@ -693,7 +688,7 @@ void MainWindow::enable_disable_menu_items(const bool rendering)
     m_action_stop_rendering->setEnabled(allow_stopping_rendering);
 
     // Rendering -> Render Settings.
-    m_ui->action_rendering_render_settings->setEnabled(is_project_open && !rendering);
+    m_ui->action_rendering_render_settings->setEnabled(allow_starting_rendering);
 }
 
 void MainWindow::recreate_render_widgets()
@@ -701,9 +696,7 @@ void MainWindow::recreate_render_widgets()
     remove_render_widgets();
 
     if (m_project_manager.is_project_open())
-    {
         add_render_widgets();
-    }
 }
 
 void MainWindow::remove_render_widgets()
@@ -785,7 +778,8 @@ void MainWindow::start_rendering(const bool interactive)
 {
     assert(m_project_manager.is_project_open());
 
-    enable_disable_widgets(true);
+    set_project_widgets_enabled(false);
+    set_rendering_widgets_enabled(true, true);
 
     // Internally, clear the main image to transparent black and delete all AOV images.
     Project* project = m_project_manager.get_project();
@@ -925,14 +919,14 @@ void MainWindow::slot_reload_project()
     if (!can_close_project())
         return;
 
-    if (m_project_manager.reload_project())
+    open_project(m_project_manager.get_project()->get_path());
+}
+
+void MainWindow::slot_open_project_complete(const QString& filepath, const bool successful)
+{
+    if (successful)
         on_project_change();
-    else
-    {
-        show_project_file_loading_failed_message_box(
-            this,
-            m_project_manager.get_project()->get_path());
-    }
+    else show_project_file_loading_failed_message_box(this, filepath);
 }
 
 void MainWindow::slot_save_project()
