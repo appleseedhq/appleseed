@@ -55,12 +55,12 @@ class ExceptionIOError
 //
 
 inline ExceptionIOError::ExceptionIOError()
-  : StringException("foundation::ExceptionIOError", "")
+  : StringException("i/o error")
 {
 }
 
 inline ExceptionIOError::ExceptionIOError(const char* what)
-  : StringException(what, "")
+  : StringException(what)
 {
 }
 

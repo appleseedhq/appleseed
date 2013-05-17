@@ -36,18 +36,23 @@ namespace foundation
 {
 
 //
-// An exception carrying an additional string.
+// Like foundation::Exception but optionally carrying an additional string.
 //
 
 class StringException
   : public Exception
 {
   public:
-    // Constructor.
+    // Constructors.
+    StringException();
+    explicit StringException(const char* what);
     StringException(const char* what, const char* s);
 
     // Return the additional string stored in the exception.
     const char* string() const;
+
+  protected:
+    void set_string(const char* s);
 
   private:
     char m_string[4096];
@@ -58,15 +63,31 @@ class StringException
 // String class implementation.
 //
 
+inline StringException::StringException()
+{
+    set_string("n/a");
+}
+
+inline StringException::StringException(const char* what)
+  : Exception(what)
+{
+    set_string("n/a");
+}
+
 inline StringException::StringException(const char* what, const char* s)
   : Exception(what)
 {
-    copy_string(m_string, s, sizeof(m_string));
+    set_string(s);
 }
 
 inline const char* StringException::string() const
 {
     return m_string;
+}
+
+inline void StringException::set_string(const char* s)
+{
+    copy_string(m_string, s, sizeof(m_string));
 }
 
 }       // namespace foundation

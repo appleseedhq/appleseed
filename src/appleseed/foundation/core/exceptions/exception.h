@@ -61,6 +61,8 @@ class Exception
         const char*     source,
         const size_t    destination_size);
 
+    void set_what(const char* what);
+
   private:
     char m_what[4096];
 };
@@ -72,12 +74,12 @@ class Exception
 
 inline Exception::Exception()
 {
-    copy_string(m_what, "foundation::Exception", sizeof(m_what));
+    set_what("foundation::Exception");
 }
 
 inline Exception::Exception(const char* what)
 {
-    copy_string(m_what, what, sizeof(m_what));
+    set_what(what);
 }
 
 inline const char* Exception::what() const throw()
@@ -97,6 +99,11 @@ inline void Exception::copy_string(
     std::strncpy(destination, source, destination_size - 1);
 
     destination[destination_size - 1] = '\0';
+}
+
+inline void Exception::set_what(const char* what)
+{
+    copy_string(m_what, what, sizeof(m_what));
 }
 
 }       // namespace foundation
