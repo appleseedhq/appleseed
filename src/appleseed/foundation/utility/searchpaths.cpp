@@ -127,11 +127,11 @@ char* SearchPaths::qualify(const char* filepath) const
     {
         for (const_each<Impl::PathCollection> i = impl->m_paths; i; ++i)
         {
-            const filesystem::path qualified_fp = filesystem::path(*i) / fp;
+            filesystem::path qualified_fp = filesystem::path(*i) / fp;
 
             if (filesystem::exists(qualified_fp))
             {
-                result = qualified_fp.string();
+                result = qualified_fp.make_preferred().string();
                 break;
             }
         }
