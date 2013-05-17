@@ -44,6 +44,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstdarg>
+#include <cstdio>
 #include <cstdlib>
 #include <list>
 #include <map>
@@ -302,7 +303,14 @@ namespace
                 portable_vsnprintf(&buffer[0], buffer_size, format, argptr_copy);
 
             if (result < 0)
+            {
+                sprintf(
+                    &buffer[0],
+                    "(failed to format message, format string is \"%s\".)",
+                    replace(format, "\n", "\\n").c_str());
+
                 return false;
+            }
 
             const size_t needed_buffer_size = static_cast<size_t>(result) + 1;
 
