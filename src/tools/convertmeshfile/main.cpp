@@ -41,10 +41,12 @@
 #include "foundation/mesh/imeshwalker.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/foreach.h"
+#include "foundation/utility/log.h"
 
 // Standard headers.
 #include <cstddef>
 #include <deque>
+#include <exception>
 #include <list>
 #include <string>
 #include <vector>
@@ -270,15 +272,37 @@ int main(int argc, const char* argv[])
 
     // Read the input mesh file.
     MeshBuilder builder;
-    GenericMeshFileReader reader(input_filepath.c_str());
-    reader.read(builder);
+    try
+    {
+        GenericMeshFileReader reader(input_filepath.c_str());
+        reader.read(builder);
+    }
+    catch (const StringException& e)
+    {
+        LOG_FATAL(logger, "could not read mesh file %s (%s: %s).", input_filepath.c_str(), e.what(), e.string());
+    }
+    catch (const exception& e)
+    {
+        LOG_FATAL(logger, "could not read mesh file %s (%s).", input_filepath.c_str(), e.what());
+    }
 
     // Write the output mesh file.
     GenericMeshFileWriter writer(output_filepath.c_str());
-    for (const_each<list<Mesh> > i = builder.get_meshes(); i; ++i)
+    try
     {
-        const MeshWalker walker(*i);
-        writer.write(walker);
+        for (const_each<list<Mesh> > i = builder.get_meshes(); i; ++i)
+        {
+            const MeshWalker walker(*i);
+            writer.write(walker);
+        }
+    }
+    catch (const StringException& e)
+    {
+        LOG_FATAL(logger, "could not read mesh file %s (%s: %s).", output_filepath.c_str(), e.what(), e.string());
+    }
+    catch (const exception& e)
+    {
+        LOG_FATAL(logger, "could not write mesh file %s (%s).", output_filepath.c_str(), e.what());
     }
 
     return 0;
