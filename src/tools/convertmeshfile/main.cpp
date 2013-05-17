@@ -34,6 +34,7 @@
 #include "application/superlogger.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/aabb.h"
 #include "foundation/math/vector.h"
 #include "foundation/mesh/genericmeshfilereader.h"
 #include "foundation/mesh/genericmeshfilewriter.h"
@@ -250,6 +251,22 @@ namespace
       private:
         const Mesh& m_mesh;
     };
+
+    void print_bbox(Logger& logger, const Mesh& mesh)
+    {
+        AABB3d bbox;
+        bbox.invalidate();
+
+        for (size_t i = 0; i < mesh.m_vertices.size(); ++i)
+            bbox.insert(mesh.m_vertices[i]);
+
+        LOG_INFO(
+            logger,
+            "mesh \"%s\" bounding box: (%f, %f, %f)-(%f, %f, %f).",
+            mesh.m_name.c_str(),
+            bbox.min[0], bbox.min[1], bbox.min[2],
+            bbox.max[0], bbox.max[1], bbox.max[2]);
+    }
 }
 
 
@@ -284,6 +301,12 @@ int main(int argc, const char* argv[])
     catch (const exception& e)
     {
         LOG_FATAL(logger, "could not read mesh file %s (%s).", input_filepath.c_str(), e.what());
+    }
+
+    if (cl.m_print_bboxes.is_set())
+    {
+        for (const_each<list<Mesh> > i = builder.get_meshes(); i; ++i)
+            print_bbox(logger, *i);
     }
 
     // Write the output mesh file.

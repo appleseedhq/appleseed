@@ -51,6 +51,11 @@ CommandLineHandler::CommandLineHandler()
 {
     m_filename.set_exact_value_count(2);
     parser().set_default_option_handler(&m_filename);
+
+    m_print_bboxes.add_name("--print-bounding-boxes");
+    m_print_bboxes.add_name("-b");
+    m_print_bboxes.set_description("print mesh bounding boxes");
+    parser().add_option_handler(&m_print_bboxes);
 }
 
 void CommandLineHandler::parse(

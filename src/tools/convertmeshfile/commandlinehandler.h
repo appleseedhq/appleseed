@@ -54,6 +54,7 @@ class CommandLineHandler
 {
   public:
     foundation::ValueOptionHandler<std::string> m_filename;
+    foundation::FlagOptionHandler               m_print_bboxes;
 
     // Constructor.
     CommandLineHandler();
