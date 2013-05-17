@@ -181,12 +181,10 @@ int main(int argc, const char* argv[])
     catch (const StringException& e)
     {
         LOG_FATAL(logger, "%s: %s", e.what(), e.string());
-        return 1;
     }
     catch (const Exception& e)
     {
         LOG_FATAL(logger, "%s", e.what());
-        return 1;
     }
 
     return 0;
