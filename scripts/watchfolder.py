@@ -43,7 +43,7 @@ import xml.dom.minidom as xml
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "1.3"
+VERSION = "1.4"
 OUTPUT_DIR = "_renders"
 COMPLETED_DIR = "_archives"
 LOGS_DIR = "_logs"
@@ -232,12 +232,16 @@ def print_appleseed_version(args, log):
 #--------------------------------------------------------------------------------------------------
 
 def render_project(args, project_filepath, log):
-    log.info("Starting rendering {0}...".format(project_filepath))
-    start_time = datetime.datetime.now()
-
     # Rename the project file so others don't try to render it.
     user_project_filepath = project_filepath + "." + args.user_name
-    os.rename(project_filepath, user_project_filepath)
+    try:
+        os.rename(project_filepath, user_project_filepath)
+    except:
+        log.warning("Failed to acquire {0}.".format(project_filepath))
+        return
+
+    log.info("Starting rendering {0}...".format(project_filepath))
+    start_time = datetime.datetime.now()
 
     try:
         # Create shell command.
@@ -336,21 +340,22 @@ def watch(args, log):
         Log.info_no_log("Waiting for incoming data...")
         return False
 
-    # Define random start point for list.
-    random_start_point = int(random.random() * (len(project_files) - 1))
+    # Shuffle the array of project files.
+    random.shuffle(project_files)
 
-    # Iterate over reordered list of project files.
-    for project_filepath in project_files[random_start_point:] + project_files[:random_start_point]:
+    # Render the first project file that has no missing dependencies.
+    for project_filepath in project_files:
         deps = extract_project_deps(project_filepath)
         missing_deps = count_missing_project_deps(deps)
 
-        if missing_deps == 0:
-            render_project(args, project_filepath, log)
-            return True
-        else:
+        if missing_deps > 0:
             Log.info_no_log("{0} missing dependencies for {1}.".format(missing_deps, project_filepath))
+            continue
 
-    # No renderable project file found.
+        render_project(args, project_filepath, log)
+        return True
+
+    # None of the project file has all its dependencies ready.
     return False
 
 
