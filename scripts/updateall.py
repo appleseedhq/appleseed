@@ -27,6 +27,7 @@
 # THE SOFTWARE.
 #
 
+import datetime
 import subprocess
 import os
 import sys
@@ -41,6 +42,23 @@ def update_project_file(filepath, tool_path):
 
 
 #--------------------------------------------------------------------------------------------------
+# Update all project files in the current directory.
+# Returns the number of updated project files.
+#--------------------------------------------------------------------------------------------------
+
+def update_project_files(tool_path):
+    updated_file_count = 0
+
+    for dirpath, dirnames, filenames in os.walk("."):
+        for filename in filenames:
+            if os.path.splitext(filename)[1] == ".appleseed":
+                update_project_file(os.path.join(dirpath, filename), tool_path)
+                updated_file_count += 1
+
+    return updated_file_count
+
+
+#--------------------------------------------------------------------------------------------------
 # Entry point.
 #--------------------------------------------------------------------------------------------------
 
@@ -51,10 +69,11 @@ def main():
 
     tool_path = sys.argv[1]
 
-    for dirpath, dirnames, filenames in os.walk("."):
-        for filename in filenames:
-            if os.path.splitext(filename)[1] == ".appleseed":
-                update_project_file(os.path.join(dirpath, filename), tool_path)
+    start_time = datetime.datetime.now()
+    updated_file_count = update_project_files(tool_path)
+    end_time = datetime.datetime.now()
+
+    print("\nUpdated {0} project files in {1}.".format(updated_file_count, end_time - start_time))
 
 if __name__ == '__main__':
     main()

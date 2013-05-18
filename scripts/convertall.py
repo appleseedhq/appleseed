@@ -27,6 +27,7 @@
 # THE SOFTWARE.
 #
 
+import datetime
 import fnmatch
 import os
 import subprocess
@@ -38,8 +39,27 @@ import sys
 #--------------------------------------------------------------------------------------------------
 
 def convert_mesh_file(input_filepath, output_filepath, tool_path):
-    print("Converting \"{0}\" to \"{1}\"...".format(input_filepath, output_filepath))
+    print("Converting {0} to {1}...".format(input_filepath, output_filepath))
     subprocess.call([tool_path, input_filepath, output_filepath])
+
+
+#--------------------------------------------------------------------------------------------------
+# Convert all matching mesh files in the current directory.
+# Returns the number of converted mesh files.
+#--------------------------------------------------------------------------------------------------
+
+def convert_mesh_files(tool_path, input_pattern, output_format):
+    converted_file_count = 0
+
+    for dirpath, dirnames, filenames in os.walk("."):
+        for filename in filenames:
+            if fnmatch.fnmatch(filename, input_pattern):
+                input_filepath = os.path.join(dirpath, filename)
+                output_filepath = os.path.splitext(input_filepath)[0] + "." + output_format
+                convert_mesh_file(input_filepath, output_filepath, tool_path)
+                converted_file_count += 1
+
+    return converted_file_count
 
 
 #--------------------------------------------------------------------------------------------------
@@ -55,12 +75,11 @@ def main():
     input_pattern = sys.argv[2]
     output_format = sys.argv[3]
 
-    for dirpath, dirnames, filenames in os.walk("."):
-        for filename in filenames:
-            if fnmatch.fnmatch(filename, input_pattern):
-                input_filepath = os.path.join(dirpath, filename)
-                output_filepath = os.path.splitext(input_filepath)[0] + "." + output_format
-                convert_mesh_file(input_filepath, output_filepath, tool_path)
+    start_time = datetime.datetime.now()
+    converted_file_count = convert_mesh_files(tool_path, input_pattern, output_format)
+    end_time = datetime.datetime.now()
+
+    print("\nConverted {0} mesh files in {1}.".format(converted_file_count, end_time - start_time))
 
 if __name__ == '__main__':
     main()
