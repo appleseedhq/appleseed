@@ -43,7 +43,7 @@ import xml.dom.minidom as xml
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "1.4"
+VERSION = "1.5"
 OUTPUT_DIR = "_renders"
 COMPLETED_DIR = "_archives"
 LOGS_DIR = "_logs"
@@ -231,6 +231,9 @@ def print_appleseed_version(args, log):
 # Rendering logic.
 #--------------------------------------------------------------------------------------------------
 
+class ProcessFailedException(Exception):
+    pass
+
 def render_project(args, project_filepath, log):
     # Rename the project file so others don't try to render it.
     user_project_filepath = project_filepath + "." + args.user_name
@@ -259,7 +262,7 @@ def render_project(args, project_filepath, log):
         # Execute command.
         result = subprocess.call(command, shell=True)
         if result != 0:
-            raise Exception()
+            raise ProcessFailedException()
 
         # Everything went well, move the file into the completed directory.
         completed_dir = os.path.join(args.watch_dir, COMPLETED_DIR)
@@ -408,6 +411,8 @@ def main():
             time.sleep(PAUSE_BETWEEN_CHECKS)
         except KeyboardInterrupt, SystemExit:
             break
+        except ProcessFailedException:
+            time.sleep(PAUSE_BETWEEN_CHECKS)
         except:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
