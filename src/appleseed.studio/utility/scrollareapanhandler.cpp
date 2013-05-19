@@ -84,6 +84,9 @@ bool ScrollAreaPanHandler::eventFilter(QObject* object, QEvent* event)
 
 bool ScrollAreaPanHandler::handle_mouse_button_press_event(QMouseEvent* event)
 {
+    if (!(event->modifiers() & Qt::ShiftModifier))
+        return false;
+
     if (event->button() != Qt::LeftButton)
         return false;
 
