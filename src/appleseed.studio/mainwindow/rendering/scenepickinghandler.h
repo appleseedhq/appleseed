@@ -26,24 +26,43 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_RENDERING_H
-#define APPLESEED_RENDERER_API_RENDERING_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_RENDERING_SCENEPICKINGHANDLER_H
+#define APPLESEED_STUDIO_MAINWINDOW_RENDERING_SCENEPICKINGHANDLER_H
 
-// API headers.
-#include "renderer/kernel/rendering/debug/blanktilerenderer.h"
-#include "renderer/kernel/rendering/debug/debugtilerenderer.h"
-#include "renderer/kernel/rendering/generic/genericframerenderer.h"
-#include "renderer/kernel/rendering/generic/genericsamplerenderer.h"
-#include "renderer/kernel/rendering/generic/generictilerenderer.h"
-#include "renderer/kernel/rendering/progressive/progressiveframerenderer.h"
-#include "renderer/kernel/rendering/defaultrenderercontroller.h"
-#include "renderer/kernel/rendering/iframerenderer.h"
-#include "renderer/kernel/rendering/irenderercontroller.h"
-#include "renderer/kernel/rendering/isamplerenderer.h"
-#include "renderer/kernel/rendering/itilecallback.h"
-#include "renderer/kernel/rendering/itilerenderer.h"
-#include "renderer/kernel/rendering/masterrenderer.h"
-#include "renderer/kernel/rendering/scenepicker.h"
-#include "renderer/kernel/rendering/tilecallbackbase.h"
+// Qt headers.
+#include <QObject>
 
-#endif  // !APPLESEED_RENDERER_API_RENDERING_H
+// Forward declarations.
+namespace appleseed { namespace studio { class MouseCoordinatesTracker; } }
+namespace renderer  { class Project; }
+class QEvent;
+class QPoint;
+
+namespace appleseed {
+namespace studio {
+
+class ScenePickingHandler
+  : public QObject
+{
+    Q_OBJECT
+
+  public:
+    ScenePickingHandler(
+        const MouseCoordinatesTracker&      mouse_tracker,
+        const renderer::Project&            project);
+
+    ~ScenePickingHandler();
+
+  private:
+    const MouseCoordinatesTracker&          m_mouse_tracker;
+    const renderer::Project&                m_project;
+
+    virtual bool eventFilter(QObject* object, QEvent* event);
+
+    void pick(const QPoint& point);
+};
+
+}       // namespace studio
+}       // namespace appleseed
+
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_RENDERING_SCENEPICKINGHANDLER_H

@@ -734,12 +734,6 @@ void MainWindow::add_render_widget(
     // Create a render widget.
     RenderWidget* render_widget = new RenderWidget(width, height);
 
-    // Attach a contextual menu to the render widget.
-    render_widget->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(
-        render_widget, SIGNAL(customContextMenuRequested(const QPoint&)),
-        this, SLOT(slot_render_widget_context_menu(const QPoint&)));
-
     // Encapsulate the render widget into another widget that adds a margin around it.
     QWidget* render_widget_wrapper = new QWidget();
     render_widget_wrapper->setLayout(new QGridLayout());
@@ -756,15 +750,6 @@ void MainWindow::add_render_widget(
     QLabel* info_label = new QLabel();
     info_label->setObjectName("info_label");
 
-    // Associate a zoom handler to the scroll area / render widget.
-    m_render_widgets[label.toStdString()] =
-        new RenderWidgetRecord(
-            scroll_area,
-            render_widget,
-            info_label,
-            width,
-            height);
-
     // Encapsulate the scroll area inside a tab.
     QWidget* tab = new QWidget();
     tab->setLayout(new QGridLayout());
@@ -773,6 +758,37 @@ void MainWindow::add_render_widget(
 
     // Add the tab to the render channels tab bar.
     m_ui->tab_render_channels->addTab(tab, label);
+
+    // Attach a bunch of handlers to the render widget.
+    RenderWidgetRecord* record = new RenderWidgetRecord();
+    record->m_render_widget = render_widget;
+    record->m_zoom_handler.reset(
+        new WidgetZoomHandler(
+            scroll_area,
+            render_widget,
+            width,
+            height));
+    record->m_pan_handler.reset(
+        new ScrollAreaPanHandler(
+            scroll_area));
+    record->m_mouse_tracker.reset(
+        new MouseCoordinatesTracker(
+            render_widget,
+            info_label,
+            width,
+            height));
+    record->m_picking_handler.reset(
+        new ScenePickingHandler(
+            *record->m_mouse_tracker.get(),
+            *m_project_manager.get_project()));
+    m_render_widgets[label.toStdString()] = record;
+
+    // Attach a contextual menu to the render widget.
+    render_widget->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(
+        render_widget, SIGNAL(customContextMenuRequested(const QPoint&)),
+        this, SLOT(slot_render_widget_context_menu(const QPoint&)));
+
 }
 
 void MainWindow::start_rendering(const bool interactive)
@@ -1140,6 +1156,9 @@ void MainWindow::slot_clear_filter()
 
 void MainWindow::slot_render_widget_context_menu(const QPoint& point)
 {
+    if (!(QApplication::keyboardModifiers() & Qt::ShiftModifier))
+        return;
+
     if (m_rendering_manager.is_rendering())
         return;
 

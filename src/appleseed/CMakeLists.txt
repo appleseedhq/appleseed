@@ -994,6 +994,8 @@ set (renderer_kernel_rendering_sources
     renderer/kernel/rendering/sampleaccumulationbuffer.h
     renderer/kernel/rendering/samplegeneratorbase.cpp
     renderer/kernel/rendering/samplegeneratorbase.h
+    renderer/kernel/rendering/scenepicker.cpp
+    renderer/kernel/rendering/scenepicker.h
     renderer/kernel/rendering/serialrenderercontroller.cpp
     renderer/kernel/rendering/serialrenderercontroller.h
     renderer/kernel/rendering/serialtilecallback.cpp

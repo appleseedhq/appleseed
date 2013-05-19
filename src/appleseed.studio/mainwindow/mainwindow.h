@@ -37,6 +37,7 @@
 #include "mainwindow/project/projectmanager.h"
 #include "mainwindow/rendering/renderingmanager.h"
 #include "mainwindow/rendering/renderwidget.h"
+#include "mainwindow/rendering/scenepickinghandler.h"
 #include "mainwindow/qtlogtarget.h"
 #include "mainwindow/rendersettingswindow.h"
 #include "mainwindow/statusbar.h"
@@ -128,31 +129,7 @@ class MainWindow
         std::auto_ptr<WidgetZoomHandler>        m_zoom_handler;
         std::auto_ptr<ScrollAreaPanHandler>     m_pan_handler;
         std::auto_ptr<MouseCoordinatesTracker>  m_mouse_tracker;
-
-        RenderWidgetRecord(
-            QScrollArea*    scroll_area,
-            RenderWidget*   render_widget,
-            QLabel*         info_label,
-            const int       content_width,
-            const int       content_height)
-          : m_render_widget(render_widget)
-        {
-            m_zoom_handler.reset(
-                new WidgetZoomHandler(
-                    scroll_area,
-                    render_widget,
-                    content_width,
-                    content_height));
-
-            m_pan_handler.reset(new ScrollAreaPanHandler(scroll_area));
-
-            m_mouse_tracker.reset(
-                new MouseCoordinatesTracker(
-                    m_render_widget,
-                    info_label,
-                    content_width,
-                    content_height));
-        }
+        std::auto_ptr<ScenePickingHandler>      m_picking_handler;
     };
 
     typedef std::map<std::string, RenderWidgetRecord*> RenderWidgetCollection;

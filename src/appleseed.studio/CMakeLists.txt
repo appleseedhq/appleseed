@@ -189,6 +189,8 @@ set (mainwindow_rendering_sources
     mainwindow/rendering/renderingtimer.h
     mainwindow/rendering/renderwidget.cpp
     mainwindow/rendering/renderwidget.h
+    mainwindow/rendering/scenepickinghandler.cpp
+    mainwindow/rendering/scenepickinghandler.h
 )
 list (APPEND appleseed.studio_sources
     ${mainwindow_rendering_sources}

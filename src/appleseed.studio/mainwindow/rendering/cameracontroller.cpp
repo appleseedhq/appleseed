@@ -40,6 +40,7 @@
 // Qt headers.
 #include <QEvent>
 #include <QMouseEvent>
+#include <Qt>
 #include <QWidget>
 
 using namespace foundation;

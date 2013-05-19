@@ -101,6 +101,9 @@ class DLLSYMBOL Project
     foundation::SearchPaths& get_search_paths();
     const foundation::SearchPaths& get_search_paths() const;
 
+    // Return true if the trace context has already been built.
+    bool has_trace_context() const;
+
     // Get the trace context.
     const TraceContext& get_trace_context() const;
 
