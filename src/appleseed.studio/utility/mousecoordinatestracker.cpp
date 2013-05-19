@@ -40,6 +40,7 @@
 // Standard headers.
 #include <cassert>
 
+using namespace foundation;
 using namespace std;
 
 namespace appleseed {
@@ -66,6 +67,29 @@ MouseCoordinatesTracker::~MouseCoordinatesTracker()
     m_widget->setMouseTracking(m_was_mouse_tracked);
 }
 
+QWidget* MouseCoordinatesTracker::get_widget() const
+{
+    return m_widget;
+}
+
+Vector2d MouseCoordinatesTracker::widget_to_ndc(const QPoint& point) const
+{
+    return
+        Vector2d(
+            static_cast<double>(point.x()) / m_widget->width(),
+            static_cast<double>(point.y()) / m_widget->height());
+}
+
+Vector2i MouseCoordinatesTracker::widget_to_pixel(const QPoint& point) const
+{
+    const Vector2d ndc = widget_to_ndc(point);
+
+    return
+        Vector2i(
+            static_cast<int>(ndc.x * m_content_width),
+            static_cast<int>(ndc.y * m_content_height));
+}
+
 bool MouseCoordinatesTracker::eventFilter(QObject* object, QEvent* event)
 {
     assert(object == m_widget);
@@ -86,18 +110,15 @@ bool MouseCoordinatesTracker::eventFilter(QObject* object, QEvent* event)
 
 void MouseCoordinatesTracker::set_label_text(const QPoint& point) const
 {
-    const double ndc_x = static_cast<double>(point.x()) / m_widget->width();
-    const double ndc_y = static_cast<double>(point.y()) / m_widget->height();
-
-    const int pix_x = static_cast<int>(ndc_x * m_content_width);
-    const int pix_y = static_cast<int>(ndc_y * m_content_height);
+    const Vector2i pix = widget_to_pixel(point);
+    const Vector2d ndc = widget_to_ndc(point);
 
     m_label->setText(
         QString("Pixel: %1, %2  -  NDC: %3, %4")
-            .arg(QString::number(pix_x))
-            .arg(QString::number(pix_y))
-            .arg(QString::number(ndc_x))
-            .arg(QString::number(ndc_y)));
+            .arg(QString::number(pix.x))
+            .arg(QString::number(pix.y))
+            .arg(QString::number(ndc.x))
+            .arg(QString::number(ndc.y)));
 }
 
 }   // namespace studio

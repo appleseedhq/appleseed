@@ -29,6 +29,9 @@
 #ifndef APPLESEED_STUDIO_UTILITY_MOUSECOORDINATESTRACKER_H
 #define APPLESEED_STUDIO_UTILITY_MOUSECOORDINATESTRACKER_H
 
+// appleseed.foundation headers.
+#include "foundation/math/vector.h"
+
 // Qt headers.
 #include <QObject>
 
@@ -54,6 +57,11 @@ class MouseCoordinatesTracker
         const int   content_height);
 
     ~MouseCoordinatesTracker();
+
+    QWidget* get_widget() const;
+
+    foundation::Vector2d widget_to_ndc(const QPoint& point) const;
+    foundation::Vector2i widget_to_pixel(const QPoint& point) const;
 
   private:
     QWidget*        m_widget;
