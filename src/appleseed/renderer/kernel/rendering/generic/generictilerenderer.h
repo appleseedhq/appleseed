@@ -63,13 +63,6 @@ class GenericTileRendererFactory
     // Return a new generic tile renderer instance.
     virtual ITileRenderer* create(const bool primary) OVERRIDE;
 
-    // Return a new generic tile renderer instance.
-    static ITileRenderer* create(
-        const Frame&            frame,
-        IPixelRendererFactory*  factory,
-        const ParamArray&       params,
-        const bool              primary);
-
   private:
     const Frame&                m_frame;
     IPixelRendererFactory*      m_factory;

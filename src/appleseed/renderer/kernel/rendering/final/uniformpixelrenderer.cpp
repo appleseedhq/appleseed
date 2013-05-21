@@ -261,12 +261,4 @@ IPixelRenderer* UniformPixelRendererFactory::create(const bool primary)
     return new UniformPixelRenderer(m_factory, m_params, primary);
 }
 
-IPixelRenderer* UniformPixelRendererFactory::create(
-    ISampleRendererFactory*     factory,
-    const ParamArray&           params,
-    const bool                  primary)
-{
-    return new UniformPixelRenderer(factory, params, primary);
-}
-
 }   // namespace renderer

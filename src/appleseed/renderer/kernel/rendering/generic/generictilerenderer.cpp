@@ -325,13 +325,4 @@ ITileRenderer* GenericTileRendererFactory::create(const bool primary)
     return new GenericTileRenderer(m_frame, m_factory, m_params, primary);
 }
 
-ITileRenderer* GenericTileRendererFactory::create(
-    const Frame&                frame,
-    IPixelRendererFactory*      factory,
-    const ParamArray&           params,
-    const bool                  primary)
-{
-    return new GenericTileRenderer(frame, factory, params, primary);
-}
-
 }   // namespace renderer

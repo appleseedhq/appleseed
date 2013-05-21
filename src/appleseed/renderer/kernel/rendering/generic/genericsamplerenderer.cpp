@@ -335,26 +335,4 @@ ISampleRenderer* GenericSampleRendererFactory::create(const bool primary)
             primary);
 }
 
-ISampleRenderer* GenericSampleRendererFactory::create(
-    const Scene&            scene,
-    const Frame&            frame,
-    const TraceContext&     trace_context,
-    TextureStore&           texture_store,
-    ILightingEngineFactory* lighting_engine_factory,
-    ShadingEngine&          shading_engine,
-    const ParamArray&       params,
-    const bool              primary)
-{
-    return
-        new GenericSampleRenderer(
-            scene,
-            frame,
-            trace_context,
-            texture_store,
-            lighting_engine_factory,
-            shading_engine,
-            params,
-            primary);
-}
-
 }   // namespace renderer

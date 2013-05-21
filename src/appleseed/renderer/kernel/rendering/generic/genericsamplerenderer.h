@@ -71,17 +71,6 @@ class GenericSampleRendererFactory
     // Return a new generic sample renderer instance.
     virtual ISampleRenderer* create(const bool primary) OVERRIDE;
 
-    // Return a new generic sample renderer instance.
-    static ISampleRenderer* create(
-        const Scene&            scene,
-        const Frame&            frame,
-        const TraceContext&     trace_context,
-        TextureStore&           texture_store,
-        ILightingEngineFactory* lighting_engine_factory,
-        ShadingEngine&          shading_engine,
-        const ParamArray&       params,
-        const bool              primary);
-
   private:
     const Scene&                m_scene;
     const Frame&                m_frame;

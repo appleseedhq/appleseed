@@ -352,13 +352,4 @@ IPixelRenderer* AdaptivePixelRendererFactory::create(const bool primary)
     return new AdaptivePixelRenderer(m_frame, m_factory, m_params, primary);
 }
 
-IPixelRenderer* AdaptivePixelRendererFactory::create(
-    const Frame&                frame,
-    ISampleRendererFactory*     factory,
-    const ParamArray&           params,
-    const bool                  primary)
-{
-    return new AdaptivePixelRenderer(frame, factory, params, primary);
-}
-
 }   // namespace renderer

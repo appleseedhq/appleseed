@@ -63,13 +63,6 @@ class AdaptivePixelRendererFactory
     // Return a new adaptive pixel renderer instance.
     virtual IPixelRenderer* create(const bool primary) OVERRIDE;
 
-    // Return a new adaptive pixel renderer instance.
-    static IPixelRenderer* create(
-        const Frame&                frame,
-        ISampleRendererFactory*     factory,
-        const ParamArray&           params,
-        const bool                  primary);
-
   private:
     const Frame&                    m_frame;
     ISampleRendererFactory*         m_factory;
