@@ -52,6 +52,7 @@
 #include "foundation/utility/otherwise.h"
 
 // Standard headers.
+#include <algorithm>
 #include <cmath>
 #include <string>
 
@@ -138,7 +139,7 @@ namespace
         {
             // No reflection below the shading surface.
             const Vector3d& n = shading_basis.get_normal();
-            const double cos_on = dot(outgoing, n);
+            const double cos_on = min(dot(outgoing, n), 1.0);
             if (cos_on < 0.0)
                 return Absorption;
 
@@ -188,7 +189,7 @@ namespace
             // No reflection below the shading surface.
             const Vector3d& n = shading_basis.get_normal();
             const double cos_in = dot(incoming, n);
-            const double cos_on = dot(outgoing, n);
+            const double cos_on = min(dot(outgoing, n), 1.0);
             if (cos_in < 0.0 || cos_on < 0.0)
                 return 0.0;
 
@@ -226,7 +227,7 @@ namespace
             // No reflection below the shading surface.
             const Vector3d& n = shading_basis.get_normal();
             const double cos_in = dot(incoming, n);
-            const double cos_on = dot(outgoing, n);
+            const double cos_on = min(dot(outgoing, n), 1.0);
             if (cos_in < 0.0 || cos_on < 0.0)
                 return 0.0;
 
