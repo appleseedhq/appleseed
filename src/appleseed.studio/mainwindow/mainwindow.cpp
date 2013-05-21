@@ -943,7 +943,11 @@ void MainWindow::slot_open_project_complete(const QString& filepath, const bool 
 {
     if (successful)
         on_project_change();
-    else show_project_file_loading_failed_message_box(this, filepath);
+    else
+    {
+        show_project_file_loading_failed_message_box(this, filepath);
+        update_workspace();
+    }
 }
 
 void MainWindow::slot_save_project()
