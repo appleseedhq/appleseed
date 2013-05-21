@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
+// Copyright (c) 2010-2012 Francois Beaune, Jupiter Jazz Limited
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,46 +26,60 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_RENDERING_SCENEPICKINGHANDLER_H
-#define APPLESEED_STUDIO_MAINWINDOW_RENDERING_SCENEPICKINGHANDLER_H
+// Interface header.
+#include "itemregistry.h"
 
-// Qt headers.
-#include <QObject>
+// Standard headers.
+#include <cassert>
+#include <utility>
 
-// Forward declarations.
-namespace appleseed { namespace studio { class MouseCoordinatesTracker; } }
-namespace appleseed { namespace studio { class ProjectExplorer; } }
-namespace renderer  { class Project; }
-class QEvent;
-class QPoint;
+using namespace foundation;
+using namespace std;
 
 namespace appleseed {
 namespace studio {
 
-class ScenePickingHandler
-  : public QObject
+void ItemRegistry::insert(
+    const UniqueID  uid,
+    ItemBase*       item)
 {
-    Q_OBJECT
+    m_mutex.lock();
 
-  public:
-    ScenePickingHandler(
-        const MouseCoordinatesTracker&      mouse_tracker,
-        const ProjectExplorer&              project_explorer,
-        const renderer::Project&            project);
+#ifndef NDEBUG
+    const pair<RegistryType::iterator, bool> result =
+#endif
+    m_registry.insert(make_pair(uid, item));
 
-    ~ScenePickingHandler();
+    assert(result.second);
 
-  private:
-    const MouseCoordinatesTracker&          m_mouse_tracker;
-    const ProjectExplorer&                  m_project_explorer;
-    const renderer::Project&                m_project;
+    m_mutex.unlock();
+}
 
-    virtual bool eventFilter(QObject* object, QEvent* event);
+void ItemRegistry::remove(const UniqueID uid)
+{
+    m_mutex.lock();
 
-    void pick(const QPoint& point);
-};
+#ifndef NDEBUG
+    const RegistryType::size_type result =
+#endif
+    m_registry.erase(uid);
 
-}       // namespace studio
-}       // namespace appleseed
+    assert(result == 1);
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_RENDERING_SCENEPICKINGHANDLER_H
+    m_mutex.unlock();
+}
+
+ItemBase* ItemRegistry::get_item(const UniqueID uid) const
+{
+    m_mutex.lock();
+
+    const RegistryType::const_iterator i = m_registry.find(uid);
+    ItemBase* result = i == m_registry.end() ? 0 : i->second;
+
+    m_mutex.unlock();
+
+    return result;
+}
+
+}   // namespace studio
+}   // namespace appleseed

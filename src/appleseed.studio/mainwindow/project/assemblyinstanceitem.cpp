@@ -30,6 +30,7 @@
 #include "assemblyinstanceitem.h"
 
 // appleseed.studio headers.
+#include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/projectbuilder.h"
 
 // appleseed.renderer headers.
@@ -73,7 +74,8 @@ void AssemblyInstanceItem::slot_delete()
     m_project_builder.notify_project_modification();
 
     // Remove and delete the assembly instance item.
-    m_collection_item->delete_item(assembly_instance_uid);
+    delete m_project_builder.get_item_registry().get_item(assembly_instance_uid);
+    m_project_builder.get_item_registry().remove(assembly_instance_uid);
 
     // At this point 'this' no longer exists.
 }

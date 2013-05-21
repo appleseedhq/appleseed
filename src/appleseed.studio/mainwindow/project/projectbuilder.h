@@ -30,6 +30,7 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTBUILDER_H
 
 // appleseed.studio headers.
+#include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/multimodelentityeditorformfactory.h"
 
 // appleseed.renderer headers.
@@ -80,8 +81,10 @@ class ProjectBuilder
     const renderer::Project& get_project() const;
 
     template <typename Entity>
-    const typename renderer::EntityTraits<Entity>::FactoryRegistrarType&
-        get_factory_registrar() const;
+    const typename renderer::EntityTraits<Entity>::FactoryRegistrarType& get_factory_registrar() const;
+
+    ItemRegistry& get_item_registry();
+    const ItemRegistry& get_item_registry() const;
 
     void notify_project_modification() const;
 
@@ -126,6 +129,8 @@ class ProjectBuilder
     renderer::LightFactoryRegistrar                 m_light_factory_registrar;
     renderer::SurfaceShaderFactoryRegistrar         m_surface_shader_factory_registrar;
     renderer::TextureFactoryRegistrar               m_texture_factory_registrar;
+
+    ItemRegistry                                    m_item_registry;
 
     static std::string get_entity_name(const foundation::Dictionary& values);
 
@@ -195,6 +200,16 @@ inline const renderer::EntityTraits<renderer::Texture>::FactoryRegistrarType&
 ProjectBuilder::get_factory_registrar<renderer::Texture>() const
 {
     return m_texture_factory_registrar;
+}
+
+inline ItemRegistry& ProjectBuilder::get_item_registry()
+{
+    return m_item_registry;
+}
+
+inline const ItemRegistry& ProjectBuilder::get_item_registry() const
+{
+    return m_item_registry;
 }
 
 template <typename Entity, typename ParentEntity>

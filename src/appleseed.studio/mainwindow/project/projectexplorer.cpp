@@ -39,14 +39,17 @@
 #include "renderer/api/project.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/uid.h"
+#include "foundation/utility/iterators.h"
 
 // Qt headers.
 #include <QKeySequence>
 #include <QMenu>
 #include <QPoint>
+#include <QRegExp>
+#include <QString>
 #include <Qt>
 #include <QTreeWidget>
+#include <QTreeWidgetItem>
 
 // Standard headers.
 #include <cassert>
@@ -96,6 +99,56 @@ ProjectExplorer::ProjectExplorer(
     connect(
         &m_project_builder, SIGNAL(signal_frame_modified()),
         this, SIGNAL(signal_frame_modified()));
+}
+
+namespace
+{
+    bool do_filter_items(QTreeWidgetItem* item, const QRegExp& regexp)
+    {
+        bool any_children_visible = false;
+
+        for (int i = 0; i < item->childCount(); ++i)
+        {
+            if (do_filter_items(item->child(i), regexp))
+                any_children_visible = true;
+        }
+
+        const bool visible = any_children_visible || regexp.indexIn(item->text(0)) >= 0;
+
+        item->setHidden(!visible);
+
+        return visible;
+    }
+}
+
+void ProjectExplorer::filter_items(const QString& pattern) const
+{
+    const QRegExp regexp(pattern);
+
+    for (int i = 0; i < m_tree_widget->topLevelItemCount(); ++i)
+        do_filter_items(m_tree_widget->topLevelItem(i), regexp);
+}
+
+void ProjectExplorer::clear_highlighting() const
+{
+    m_tree_widget->clearSelection();
+}
+
+void ProjectExplorer::highlight_entity(const UniqueID uid) const
+{
+    clear_highlighting();
+
+    QTreeWidgetItem* item = m_project_builder.get_item_registry().get_item(uid);
+
+    if (item)
+    {
+        m_tree_widget->scrollToItem(item);
+
+        item->setSelected(true);
+
+        while ((item = item->parent()))
+            item->setExpanded(true);
+    }
 }
 
 QMenu* ProjectExplorer::build_single_item_context_menu(QTreeWidgetItem* item) const

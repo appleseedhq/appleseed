@@ -34,6 +34,7 @@
 #include "mainwindow/project/assemblyinstanceitem.h"
 #include "mainwindow/project/collectionitem.h"
 #include "mainwindow/project/instancecollectionitem.h"
+#include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/multimodelcollectionitem.h"
 #include "mainwindow/project/objectcollectionitem.h"
 #include "mainwindow/project/objectinstanceitem.h"
@@ -303,8 +304,8 @@ namespace
     }
 
     void remove_assembly_instances(
+        ItemRegistry&                       item_registry,
         BaseGroup&                          base_group,
-        BaseGroupItem*                      base_group_item,
         const UniqueID                      assembly_uid)
     {
         AssemblyInstanceContainer& assembly_instances = base_group.assembly_instances();
@@ -317,17 +318,13 @@ namespace
         for (const_each<vector<UniqueID> > i = remove_list; i; ++i)
         {
             assembly_instances.remove(*i);
-            base_group_item->get_assembly_instance_collection_item().delete_item(*i);
+            delete item_registry.get_item(*i);
+            item_registry.remove(*i);
         }
 
         // Recurse into child assemblies.
         for (each<AssemblyContainer> i = base_group.assemblies(); i; ++i)
-        {
-            AssemblyItem* child_item =
-                static_cast<AssemblyItem*>(
-                    base_group_item->get_assembly_collection_item().get_item(i->get_uid()));
-            remove_assembly_instances(*i, child_item, assembly_uid);
-        }
+            remove_assembly_instances(item_registry, *i, assembly_uid);
     }
 }
 
@@ -344,7 +341,10 @@ void AssemblyItem::slot_delete()
     const UniqueID assembly_uid = m_assembly.get_uid();
 
     // Remove all assembly instances and their corresponding project items.
-    remove_assembly_instances(m_parent, m_parent_item, assembly_uid);
+    remove_assembly_instances(
+        m_project_builder.get_item_registry(),
+        m_parent,
+        assembly_uid);
 
     // Remove and delete the assembly.
     m_parent.assemblies().remove(assembly_uid);
@@ -353,7 +353,8 @@ void AssemblyItem::slot_delete()
     m_project_builder.notify_project_modification();
 
     // Remove and delete the assembly item.
-    m_parent_item->get_assembly_collection_item().delete_item(assembly_uid);
+    delete m_project_builder.get_item_registry().get_item(assembly_uid);
+    m_project_builder.get_item_registry().remove(assembly_uid);
 
     // At this point 'this' no longer exists.
 }

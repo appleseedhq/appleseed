@@ -31,6 +31,8 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/itembase.h"
+#include "mainwindow/project/itemregistry.h"
+#include "mainwindow/project/projectbuilder.h"
 #include "utility/treewidget.h"
 
 // appleseed.foundation headers.
@@ -44,7 +46,6 @@
 
 // Standard headers.
 #include <cassert>
-#include <map>
 
 // Forward declarations.
 class QString;
@@ -75,22 +76,19 @@ class CollectionItemBase
   : public CollectionItemBaseSlots
 {
   public:
-    explicit CollectionItemBase(const foundation::UniqueID class_uid);
-    CollectionItemBase(const foundation::UniqueID class_uid, const QString& title);
+    CollectionItemBase(
+        const foundation::UniqueID  class_uid,
+        ProjectBuilder&             project_builder);
+    CollectionItemBase(
+        const foundation::UniqueID  class_uid,
+        const QString&              title,
+        ProjectBuilder&             project_builder);
 
     void add_item(Entity* entity);
     template <typename EntityContainer> void add_items(EntityContainer& items);
-    void delete_item(const foundation::UniqueID entity_id);
-
-    void insert_item(const foundation::UniqueID entity_id, ItemBase* item);
-    void remove_item(const foundation::UniqueID entity_id);
-
-    ItemBase* get_item(const foundation::UniqueID entity_id) const;
 
   protected:
-    typedef std::map<foundation::UniqueID, ItemBase*> ItemMap;
-
-    ItemMap m_items;
+    ProjectBuilder& m_project_builder;
 
     void initialize();
 
@@ -105,15 +103,22 @@ class CollectionItemBase
 //
 
 template <typename Entity>
-CollectionItemBase<Entity>::CollectionItemBase(const foundation::UniqueID class_uid)
+CollectionItemBase<Entity>::CollectionItemBase(
+    const foundation::UniqueID  class_uid,
+    ProjectBuilder&             project_builder)
   : CollectionItemBaseSlots(class_uid)
+  , m_project_builder(project_builder)
 {
     initialize();
 }
 
 template <typename Entity>
-CollectionItemBase<Entity>::CollectionItemBase(const foundation::UniqueID class_uid, const QString& title)
+CollectionItemBase<Entity>::CollectionItemBase(
+    const foundation::UniqueID  class_uid,
+    const QString&              title,
+    ProjectBuilder&             project_builder)
   : CollectionItemBaseSlots(class_uid, title)
+  , m_project_builder(project_builder)
 {
     initialize();
 }
@@ -154,41 +159,7 @@ void CollectionItemBase<Entity>::add_item(const int index, Entity* entity)
 
     insertChild(index, item);
 
-    m_items[entity->get_uid()] = item;
-}
-
-template <typename Entity>
-void CollectionItemBase<Entity>::delete_item(const foundation::UniqueID entity_id)
-{
-    const ItemMap::iterator it = m_items.find(entity_id);
-    assert(it != m_items.end());
-
-    delete it->second;
-
-    m_items.erase(it);
-}
-
-template <typename Entity>
-void CollectionItemBase<Entity>::insert_item(const foundation::UniqueID entity_id, ItemBase* item)
-{
-    m_items[entity_id] = item;
-}
-
-template <typename Entity>
-void CollectionItemBase<Entity>::remove_item(const foundation::UniqueID entity_id)
-{
-    const ItemMap::iterator it = m_items.find(entity_id);
-    assert(it != m_items.end());
-
-    m_items.erase(it);
-}
-
-template <typename Entity>
-ItemBase* CollectionItemBase<Entity>::get_item(const foundation::UniqueID entity_id) const
-{
-    const ItemMap::const_iterator it = m_items.find(entity_id);
-
-    return it == m_items.end() ? 0 : it->second;
+    m_project_builder.get_item_registry().insert(entity->get_uid(), item);
 }
 
 template <typename Entity>

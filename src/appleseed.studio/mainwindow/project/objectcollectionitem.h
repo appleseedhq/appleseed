@@ -76,7 +76,6 @@ class ObjectCollectionItem
   private:
     renderer::Assembly&             m_parent;
     AssemblyItem*                   m_parent_item;
-    ProjectBuilder&                 m_project_builder;
     renderer::ParamArray&           m_settings;
 
     virtual ItemBase* create_item(renderer::Object* object) OVERRIDE;

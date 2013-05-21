@@ -32,6 +32,7 @@
 // appleseed.studio headers.
 #include "mainwindow/project/entitycreatorbase.h"
 #include "mainwindow/project/entityitembase.h"
+#include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "utility/treewidget.h"
 
@@ -127,7 +128,7 @@ void EntityItem<Entity, ParentEntity, CollectionItem>::slot_edit_accepted(founda
 template <typename Entity, typename ParentEntity, typename CollectionItem>
 void EntityItem<Entity, ParentEntity, CollectionItem>::edit(const foundation::Dictionary& values)
 {
-    m_collection_item->remove_item(EntityItemBaseType::m_entity->get_uid());
+    m_project_builder.get_item_registry().remove(EntityItemBaseType::m_entity->get_uid());
 
     const std::string old_entity_name = EntityItemBaseType::m_entity->get_name();
 
@@ -146,7 +147,7 @@ void EntityItem<Entity, ParentEntity, CollectionItem>::edit(const foundation::Di
 
     qobject_cast<QWidget*>(QObject::sender())->close();
 
-    m_collection_item->insert_item(EntityItemBaseType::m_entity->get_uid(), this);
+    m_project_builder.get_item_registry().insert(EntityItemBaseType::m_entity->get_uid(), this);
 }
 
 template <typename Entity, typename ParentEntity, typename CollectionItem>

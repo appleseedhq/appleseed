@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
+// Copyright (c) 2010-2012 Francois Beaune, Jupiter Jazz Limited
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,59 +26,49 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYCOLLECTIONITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYCOLLECTIONITEM_H
-
-// appleseed.studio headers.
-#include "mainwindow/project/collectionitembase.h"
-
-// appleseed.renderer headers.
-#include "renderer/api/scene.h"
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ITEMREGISTRY_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ITEMREGISTRY_H
 
 // appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
-
-// Qt headers.
-#include <QObject>
+#include "foundation/utility/uid.h"
 
 // Forward declarations.
-namespace appleseed { namespace studio { class AssemblyItem; } }
-namespace appleseed { namespace studio { class BaseGroupItem; } }
 namespace appleseed { namespace studio { class ItemBase; } }
-namespace appleseed { namespace studio { class ProjectBuilder; } }
-namespace renderer  { class ParamArray; }
-class QMenu;
+
+// Qt headers.
+#include <QMutex>
+
+// Standard headers.
+#include <map>
 
 namespace appleseed {
 namespace studio {
 
-class AssemblyCollectionItem
-  : public CollectionItemBase<renderer::Assembly>
+//
+// The item registry maintains a mapping between entities (identified by
+// their unique ID) and their corresponding project explorer item.
+// All methods of this class are thread-safe.
+//
+
+class ItemRegistry
 {
-    Q_OBJECT
-
   public:
-    AssemblyCollectionItem(
-        renderer::AssemblyContainer&    assemblies,
-        renderer::BaseGroup&            parent,
-        BaseGroupItem*                  parent_item,
-        ProjectBuilder&                 project_builder,
-        renderer::ParamArray&           settings);
+    void insert(
+        const foundation::UniqueID  uid,
+        ItemBase*                   item);
 
-    virtual QMenu* get_single_item_context_menu() const OVERRIDE;
+    void remove(const foundation::UniqueID uid);
 
-  public slots:
-    void slot_create();
+    ItemBase* get_item(const foundation::UniqueID uid) const;
 
   private:
-    renderer::BaseGroup&    m_parent;
-    BaseGroupItem*          m_parent_item;
-    renderer::ParamArray&   m_settings;
+    typedef std::map<foundation::UniqueID, ItemBase*> RegistryType;
 
-    virtual ItemBase* create_item(renderer::Assembly* assembly) OVERRIDE;
+    mutable QMutex  m_mutex;
+    RegistryType    m_registry;
 };
 
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYCOLLECTIONITEM_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ITEMREGISTRY_H

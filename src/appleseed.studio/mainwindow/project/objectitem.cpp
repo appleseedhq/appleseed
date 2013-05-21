@@ -33,6 +33,7 @@
 #include "mainwindow/project/assemblycollectionitem.h"
 #include "mainwindow/project/assemblyitem.h"
 #include "mainwindow/project/instancecollectionitem.h"
+#include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/objectcollectionitem.h"
 #include "mainwindow/project/objectinstanceitem.h"
 #include "mainwindow/project/projectbuilder.h"
@@ -88,8 +89,8 @@ namespace
     }
 
     void remove_object_instances(
+        ItemRegistry&                       item_registry,
         Assembly&                           assembly,
-        AssemblyItem*                       assembly_item,
         const UniqueID                      object_uid)
     {
         ObjectInstanceContainer& object_instances = assembly.object_instances();
@@ -102,7 +103,8 @@ namespace
         for (const_each<vector<UniqueID> > i = remove_list; i; ++i)
         {
             object_instances.remove(object_instances.get_by_uid(*i));
-            assembly_item->get_object_instance_collection_item().delete_item(*i);
+            delete item_registry.get_item(*i);
+            item_registry.remove(*i);
         }
 
         if (!remove_list.empty())
@@ -110,12 +112,7 @@ namespace
 
         // Recurse into child assemblies.
         for (each<AssemblyContainer> i = assembly.assemblies(); i; ++i)
-        {
-            AssemblyItem* child_item =
-                static_cast<AssemblyItem*>(
-                    assembly_item->get_assembly_collection_item().get_item(i->get_uid()));
-            remove_object_instances(*i, child_item, object_uid);
-        }
+            remove_object_instances(item_registry, *i, object_uid);
     }
 }
 
@@ -127,7 +124,10 @@ void ObjectItem::slot_delete()
     const UniqueID object_uid = m_entity->get_uid();
 
     // Remove all object instances and their corresponding project items.
-    remove_object_instances(m_parent, m_parent_item, object_uid);
+    remove_object_instances(
+        m_project_builder.get_item_registry(),
+        m_parent,
+        object_uid);
 
     // Remove and delete the object.
     m_parent.objects().remove(m_parent.objects().get_by_uid(object_uid));
@@ -136,7 +136,8 @@ void ObjectItem::slot_delete()
     m_project_builder.notify_project_modification();
 
     // Remove and delete the object item.
-    m_parent_item->get_object_collection_item().delete_item(object_uid);
+    delete m_project_builder.get_item_registry().get_item(object_uid);
+    m_project_builder.get_item_registry().remove(object_uid);
 
     // At this point 'this' no longer exists.
 }

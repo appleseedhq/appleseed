@@ -75,7 +75,6 @@ class CollectionItem
   protected:
     ParentEntity&       m_parent;
     ParentItem*         m_parent_item;
-    ProjectBuilder&     m_project_builder;
     bool                m_allow_creation;
 
     virtual void slot_create_accepted(foundation::Dictionary values) OVERRIDE;
@@ -97,10 +96,9 @@ CollectionItem<Entity, ParentEntity, ParentItem>::CollectionItem(
     ParentEntity&                   parent,
     ParentItem*                     parent_item,
     ProjectBuilder&                 project_builder)
-  : CollectionItemBase<Entity>(class_uid, title)
+  : CollectionItemBase<Entity>(class_uid, title, project_builder)
   , m_parent(parent)
   , m_parent_item(parent_item)
-  , m_project_builder(project_builder)
   , m_allow_creation(true)
 {
 }

@@ -34,6 +34,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/utility/uid.h"
 
 // Qt headers.
 #include <QList>
@@ -48,6 +49,7 @@ namespace renderer  { class ParamArray; }
 namespace renderer  { class Project; }
 class QMenu;
 class QPoint;
+class QString;
 class QTreeWidget;
 class QTreeWidgetItem;
 
@@ -65,6 +67,11 @@ class ProjectExplorer
         QTreeWidget*            tree_widget,
         renderer::Project&      project,
         renderer::ParamArray&   settings);
+
+    void filter_items(const QString& pattern) const;
+
+    void clear_highlighting() const;
+    void highlight_entity(const foundation::UniqueID uid) const;
 
   signals:
     void signal_project_modified() const;

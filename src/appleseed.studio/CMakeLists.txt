@@ -134,6 +134,8 @@ set (mainwindow_project_sources
     mainwindow/project/instancecollectionitem.h
     mainwindow/project/itembase.cpp
     mainwindow/project/itembase.h
+    mainwindow/project/itemregistry.cpp
+    mainwindow/project/itemregistry.h
     mainwindow/project/materialassignmenteditorwindow.cpp
     mainwindow/project/materialassignmenteditorwindow.h
     mainwindow/project/materialassignmenteditorwindow.ui

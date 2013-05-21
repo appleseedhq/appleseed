@@ -73,7 +73,6 @@
 #include <QLabel>
 #include <QMessageBox>
 #include <QMetaType>
-#include <QRegExp>
 #include <QSettings>
 #include <QStatusBar>
 #include <QString>
@@ -119,10 +118,9 @@ MainWindow::MainWindow(QWidget* parent)
     print_startup_information();
     slot_load_settings();
 
-    update_workspace();
     update_project_explorer();
-
     remove_render_widgets();
+    update_workspace();
 
     showMaximized();
 }
@@ -571,17 +569,17 @@ bool MainWindow::can_close_project()
 
 void MainWindow::on_project_change()
 {
+    update_project_explorer();
     recreate_render_widgets();
 
-    update_workspace();
-    update_project_explorer();
     update_override_shading_menu_item();
 
     if (m_render_settings_window.get())
         m_render_settings_window->reload();
 
-    m_ui->lineedit_filter->clear();
     m_status_bar.clear();
+
+    update_workspace();
 }
 
 void MainWindow::update_workspace()
@@ -593,6 +591,7 @@ void MainWindow::update_workspace()
 
 void MainWindow::update_project_explorer()
 {
+    m_ui->lineedit_filter->clear();
     m_ui->treewidget_project_explorer_scene->clear();
 
     if (m_project_manager.is_project_open())
@@ -780,6 +779,7 @@ void MainWindow::add_render_widget(
     record->m_picking_handler.reset(
         new ScenePickingHandler(
             *record->m_mouse_tracker.get(),
+            *m_project_explorer.get(),
             *m_project_manager.get_project()));
     m_render_widgets[label.toStdString()] = record;
 
@@ -1114,39 +1114,10 @@ void MainWindow::slot_save_settings()
     else RENDERER_LOG_ERROR("failed to save settings to %s.", settings_file_path.c_str());
 }
 
-namespace
-{
-    bool filter_items(QTreeWidgetItem* item, const QRegExp& regexp)
-    {
-        bool any_children_visible = false;
-
-        for (int i = 0; i < item->childCount(); ++i)
-        {
-            if (filter_items(item->child(i), regexp))
-                any_children_visible = true;
-        }
-
-        const bool visible = any_children_visible || regexp.indexIn(item->text(0)) >= 0;
-
-        item->setHidden(!visible);
-
-        return visible;
-    }
-
-    void filter_items(const QTreeWidget* tree_widget, const QRegExp& regexp)
-    {
-        for (int i = 0; i < tree_widget->topLevelItemCount(); ++i)
-            filter_items(tree_widget->topLevelItem(i), regexp);
-    }
-}
-
 void MainWindow::slot_filter_text_changed(const QString& pattern)
 {
     m_ui->pushbutton_clear_filter->setEnabled(!pattern.isEmpty());
-
-    const QRegExp regexp(pattern);
-
-    filter_items(m_ui->treewidget_project_explorer_scene, regexp);
+    m_project_explorer->filter_items(pattern);
 }
 
 void MainWindow::slot_clear_filter()

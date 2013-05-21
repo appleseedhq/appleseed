@@ -59,8 +59,7 @@ class InstanceCollectionItem
         ProjectBuilder&             project_builder);
 
   private:
-    ParentEntity&                   m_parent;
-    ProjectBuilder&                 m_project_builder;
+    ParentEntity& m_parent;
 
     virtual ItemBase* create_item(Entity* entity) OVERRIDE;
 };
@@ -76,9 +75,8 @@ InstanceCollectionItem<Entity, EntityItem, ParentEntity>::InstanceCollectionItem
     const QString&                  title,
     ParentEntity&                   parent,
     ProjectBuilder&                 project_builder)
-  : CollectionItemBase<Entity>(class_uid, title)
+  : CollectionItemBase<Entity>(class_uid, title, project_builder)
   , m_parent(parent)
-  , m_project_builder(project_builder)
 {
 }
 

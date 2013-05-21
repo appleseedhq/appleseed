@@ -34,6 +34,7 @@
 #include "mainwindow/project/assemblyitem.h"
 #include "mainwindow/project/basegroupitem.h"
 #include "mainwindow/project/instancecollectionitem.h"
+#include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/texturecollectionitem.h"
 #include "mainwindow/project/textureinstanceitem.h"
@@ -87,8 +88,8 @@ namespace
     }
 
     void remove_texture_instances(
+        ItemRegistry&                       item_registry,
         BaseGroup&                          base_group,
-        BaseGroupItem*                      base_group_item,
         const UniqueID                      texture_uid)
     {
         TextureInstanceContainer& texture_instances = base_group.texture_instances();
@@ -101,17 +102,13 @@ namespace
         for (const_each<vector<UniqueID> > i = remove_list; i; ++i)
         {
             texture_instances.remove(texture_instances.get_by_uid(*i));
-            base_group_item->get_texture_instance_collection_item().delete_item(*i);
+            delete item_registry.get_item(*i);
+            item_registry.remove(*i);
         }
 
         // Recurse into child assemblies.
         for (each<AssemblyContainer> i = base_group.assemblies(); i; ++i)
-        {
-            AssemblyItem* child_item =
-                static_cast<AssemblyItem*>(
-                    base_group_item->get_assembly_collection_item().get_item(i->get_uid()));
-            remove_texture_instances(*i, child_item, texture_uid);
-        }
+            remove_texture_instances(item_registry, *i, texture_uid);
     }
 }
 
@@ -123,7 +120,10 @@ void TextureItem::slot_delete()
     const UniqueID texture_uid = m_entity->get_uid();
 
     // Remove all texture instances and their corresponding project items.
-    remove_texture_instances(m_parent, m_base_group_item, texture_uid);
+    remove_texture_instances(
+        m_project_builder.get_item_registry(),
+        m_parent,
+        texture_uid);
 
     // Remove and delete the texture.
     m_parent.textures().remove(m_parent.textures().get_by_uid(texture_uid));
@@ -132,7 +132,8 @@ void TextureItem::slot_delete()
     m_project_builder.notify_project_modification();
 
     // Remove and delete the texture item.
-    m_collection_item->delete_item(texture_uid);
+    delete m_project_builder.get_item_registry().get_item(texture_uid);
+    m_project_builder.get_item_registry().remove(texture_uid);
 
     // At this point 'this' no longer exists.
 }

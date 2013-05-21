@@ -81,6 +81,7 @@ Scene::Scene()
   , BaseGroup(this)
   , impl(new Impl(this))
 {
+    set_name("scene");
 }
 
 Scene::~Scene()

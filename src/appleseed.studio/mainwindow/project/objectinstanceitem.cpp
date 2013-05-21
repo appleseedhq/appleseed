@@ -33,6 +33,7 @@
 #include "mainwindow/project/assemblyitem.h"
 #include "mainwindow/project/entitybrowser.h"
 #include "mainwindow/project/entitybrowserwindow.h"
+#include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/materialassignmenteditorwindow.h"
 #include "mainwindow/project/projectbuilder.h"
 
@@ -301,7 +302,8 @@ void ObjectInstanceItem::slot_delete()
     m_project_builder.notify_project_modification();
 
     // Remove and delete the object instance item.
-    m_collection_item->delete_item(object_instance_uid);
+    delete m_project_builder.get_item_registry().get_item(object_instance_uid);
+    m_project_builder.get_item_registry().remove(object_instance_uid);
 
     // At this point 'this' no longer exists.
 }

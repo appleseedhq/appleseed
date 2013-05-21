@@ -79,10 +79,9 @@ ObjectCollectionItem::ObjectCollectionItem(
     AssemblyItem*       parent_item,
     ProjectBuilder&     project_builder,
     ParamArray&         settings)
-  : CollectionItemBase<Object>(g_class_uid, "Objects")
+  : CollectionItemBase<Object>(g_class_uid, "Objects", project_builder)
   , m_parent(parent)
   , m_parent_item(parent_item)
-  , m_project_builder(project_builder)
   , m_settings(settings)
 {
     add_items(objects);

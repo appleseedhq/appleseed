@@ -67,10 +67,9 @@ AssemblyCollectionItem::AssemblyCollectionItem(
     BaseGroupItem*      parent_item,
     ProjectBuilder&     project_builder,
     ParamArray&         settings)
-  : CollectionItemBase<Assembly>(g_class_uid, "Assemblies")
+  : CollectionItemBase<Assembly>(g_class_uid, "Assemblies", project_builder)
   , m_parent(parent)
   , m_parent_item(parent_item)
-  , m_project_builder(project_builder)
   , m_settings(settings)
 {
     add_items(assemblies);

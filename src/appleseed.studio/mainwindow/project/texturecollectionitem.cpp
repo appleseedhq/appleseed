@@ -76,10 +76,9 @@ TextureCollectionItem::TextureCollectionItem(
     BaseGroupItem*      parent_item,
     ProjectBuilder&     project_builder,
     ParamArray&         settings)
-  : CollectionItemBase<Texture>(g_class_uid, "Textures")
+  : CollectionItemBase<Texture>(g_class_uid, "Textures", project_builder)
   , m_parent(parent)
   , m_parent_item(parent_item)
-  , m_project_builder(project_builder)
   , m_settings(settings)
 {
     add_items(textures);

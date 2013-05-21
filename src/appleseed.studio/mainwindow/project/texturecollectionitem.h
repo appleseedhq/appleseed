@@ -74,7 +74,6 @@ class TextureCollectionItem
   private:
     renderer::BaseGroup&            m_parent;
     BaseGroupItem*                  m_parent_item;
-    ProjectBuilder&                 m_project_builder;
     renderer::ParamArray&           m_settings;
 
     virtual ItemBase* create_item(renderer::Texture* texture) OVERRIDE;

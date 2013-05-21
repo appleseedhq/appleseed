@@ -30,6 +30,7 @@
 #include "scenepickinghandler.h"
 
 // appleseed.studio headers.
+#include "mainwindow/project/projectexplorer.h"
 #include "utility/mousecoordinatestracker.h"
 
 // appleseed.renderer headers.
@@ -66,8 +67,10 @@ namespace studio {
 
 ScenePickingHandler::ScenePickingHandler(
     const MouseCoordinatesTracker&  mouse_tracker,
+    const ProjectExplorer&          project_explorer,
     const Project&                  project)
   : m_mouse_tracker(mouse_tracker)
+  , m_project_explorer(project_explorer)
   , m_project(project)
 {
     m_mouse_tracker.get_widget()->installEventFilter(this);
@@ -140,6 +143,10 @@ void ScenePickingHandler::pick(const QPoint& point)
     print_entity(sstr, "  edf              ", result.m_edf);
 
     RENDERER_LOG_INFO("%s", sstr.str().c_str());
+
+    if (result.m_object)
+        m_project_explorer.highlight_entity(result.m_object->get_uid());
+    else m_project_explorer.clear_highlighting();
 }
 
 }   // namespace studio
