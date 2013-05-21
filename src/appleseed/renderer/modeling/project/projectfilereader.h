@@ -101,7 +101,8 @@ class DLLSYMBOL ProjectFileReader
     void print_loading_results(
         const char*             project_name,
         const bool              builtin_project,
-        const EventCounters&    event_counters) const;
+        const EventCounters&    event_counters,
+        const double            loading_time) const;
 };
 
 }       // namespace renderer

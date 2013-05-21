@@ -79,11 +79,13 @@
 #include "foundation/math/matrix.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
+#include "foundation/platform/defaulttimers.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/iterators.h"
 #include "foundation/utility/memory.h"
 #include "foundation/utility/searchpaths.h"
+#include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
 #include "foundation/utility/xercesc.h"
 
@@ -2573,6 +2575,9 @@ auto_release_ptr<Project> ProjectFileReader::read(
     if (!xerces_context.is_initialized())
         return auto_release_ptr<Project>(0);
 
+    Stopwatch<DefaultWallclockTimer> stopwatch;
+    stopwatch.start();
+
     EventCounters event_counters;
     auto_release_ptr<Project> project(
         load_project_file(
@@ -2584,7 +2589,13 @@ auto_release_ptr<Project> ProjectFileReader::read(
     if (project.get())
         postprocess_project(project.ref(), event_counters);
 
-    print_loading_results(project_filename, false, event_counters);
+    stopwatch.measure();
+
+    print_loading_results(
+        project_filename,
+        false,
+        event_counters,
+        stopwatch.get_seconds());
 
     return event_counters.has_errors() ? auto_release_ptr<Project>(0) : project;
 }
@@ -2594,6 +2605,9 @@ auto_release_ptr<Project> ProjectFileReader::load_builtin(
 {
     assert(project_name);
 
+    Stopwatch<DefaultWallclockTimer> stopwatch;
+    stopwatch.start();
+
     EventCounters event_counters;
     auto_release_ptr<Project> project(
         construct_builtin_project(project_name, event_counters));
@@ -2601,7 +2615,13 @@ auto_release_ptr<Project> ProjectFileReader::load_builtin(
     if (project.get())
         postprocess_project(project.ref(), event_counters);
 
-    print_loading_results(project_name, true, event_counters);
+    stopwatch.measure();
+
+    print_loading_results(
+        project_name,
+        true,
+        event_counters,
+        stopwatch.get_seconds());
 
     return event_counters.has_errors() ? auto_release_ptr<Project>(0) : project;
 }
@@ -2764,7 +2784,8 @@ void ProjectFileReader::upgrade_project(
 void ProjectFileReader::print_loading_results(
     const char*             project_name,
     const bool              builtin_project,
-    const EventCounters&    event_counters) const
+    const EventCounters&    event_counters,
+    const double            loading_time) const
 {
     const size_t warning_count = event_counters.get_warning_count();
     const size_t error_count = event_counters.get_error_count();
@@ -2774,16 +2795,31 @@ void ProjectFileReader::print_loading_results(
         warning_count > 0 ? LogMessage::Warning :
         LogMessage::Info;
 
-    RENDERER_LOG(
-        log_category,
-        "%s %s %s (" FMT_SIZE_T " %s, " FMT_SIZE_T " %s).",
-        error_count > 0 ? "failed to load" : "successfully loaded",
-        builtin_project ? "built-in project" : "project file",
-        project_name,
-        error_count,
-        plural(error_count, "error").c_str(),
-        warning_count,
-        plural(warning_count, "warning").c_str());
+    if (error_count > 0)
+    {
+        RENDERER_LOG(
+            log_category,
+            "failed to load %s %s (" FMT_SIZE_T " %s, " FMT_SIZE_T " %s).",
+            builtin_project ? "built-in project" : "project file",
+            project_name,
+            error_count,
+            plural(error_count, "error").c_str(),
+            warning_count,
+            plural(warning_count, "warning").c_str());
+    }
+    else
+    {
+        RENDERER_LOG(
+            log_category,
+            "successfully loaded %s %s in %s (" FMT_SIZE_T " %s, " FMT_SIZE_T " %s).",
+            builtin_project ? "built-in project" : "project file",
+            project_name,
+            pretty_time(loading_time).c_str(),
+            error_count,
+            plural(error_count, "error").c_str(),
+            warning_count,
+            plural(warning_count, "warning").c_str());
+    }
 }
 
 }   // namespace renderer
