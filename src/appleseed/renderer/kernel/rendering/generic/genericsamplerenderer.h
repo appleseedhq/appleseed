@@ -69,7 +69,7 @@ class GenericSampleRendererFactory
     virtual void release() OVERRIDE;
 
     // Return a new generic sample renderer instance.
-    virtual ISampleRenderer* create() OVERRIDE;
+    virtual ISampleRenderer* create(const bool primary) OVERRIDE;
 
     // Return a new generic sample renderer instance.
     static ISampleRenderer* create(
@@ -79,7 +79,8 @@ class GenericSampleRendererFactory
         TextureStore&           texture_store,
         ILightingEngineFactory* lighting_engine_factory,
         ShadingEngine&          shading_engine,
-        const ParamArray&       params);
+        const ParamArray&       params,
+        const bool              primary);
 
   private:
     const Scene&                m_scene;

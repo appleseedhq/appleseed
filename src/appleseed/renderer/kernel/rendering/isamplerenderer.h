@@ -72,7 +72,7 @@ class ISampleRendererFactory
 {
   public:
     // Return a new sample renderer instance.
-    virtual ISampleRenderer* create() = 0;
+    virtual ISampleRenderer* create(const bool primary) = 0;
 };
 
 }       // namespace renderer

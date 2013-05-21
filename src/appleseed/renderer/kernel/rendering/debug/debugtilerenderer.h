@@ -55,7 +55,7 @@ class DebugTileRendererFactory
     virtual void release() OVERRIDE;
 
     // Return a new debug tile renderer instance.
-    virtual ITileRenderer* create() OVERRIDE;
+    virtual ITileRenderer* create(const bool primary) OVERRIDE;
 };
 
 }       // namespace renderer

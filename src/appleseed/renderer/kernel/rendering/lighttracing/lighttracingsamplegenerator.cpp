@@ -831,7 +831,8 @@ void LightTracingSampleGeneratorFactory::release()
 
 ISampleGenerator* LightTracingSampleGeneratorFactory::create(
     const size_t            generator_index,
-    const size_t            generator_count)
+    const size_t            generator_count,
+    const bool              primary)
 {
     return
         new LightTracingSampleGenerator(

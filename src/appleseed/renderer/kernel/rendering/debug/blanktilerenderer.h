@@ -56,7 +56,7 @@ class BlankTileRendererFactory
     virtual void release() OVERRIDE;
 
     // Return a new blank tile renderer instance.
-    virtual ITileRenderer* create() OVERRIDE;
+    virtual ITileRenderer* create(const bool primary) OVERRIDE;
 };
 
 }       // namespace renderer

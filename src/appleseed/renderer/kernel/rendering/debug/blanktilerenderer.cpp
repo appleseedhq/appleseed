@@ -101,7 +101,7 @@ void BlankTileRendererFactory::release()
     delete this;
 }
 
-ITileRenderer* BlankTileRendererFactory::create()
+ITileRenderer* BlankTileRendererFactory::create(const bool primary)
 {
     return new BlankTileRenderer();
 }

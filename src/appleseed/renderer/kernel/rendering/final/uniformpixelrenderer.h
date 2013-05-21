@@ -59,12 +59,13 @@ class UniformPixelRendererFactory
     virtual void release() OVERRIDE;
 
     // Return a new uniform pixel renderer instance.
-    virtual IPixelRenderer* create() OVERRIDE;
+    virtual IPixelRenderer* create(const bool primary) OVERRIDE;
 
     // Return a new uniform pixel renderer instance.
     static IPixelRenderer* create(
         ISampleRendererFactory*     factory,
-        const ParamArray&           params);
+        const ParamArray&           params,
+        const bool                  primary);
 
   private:
     ISampleRendererFactory*         m_factory;

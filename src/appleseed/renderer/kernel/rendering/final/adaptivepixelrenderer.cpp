@@ -80,9 +80,10 @@ namespace
         AdaptivePixelRenderer(
             const Frame&                frame,
             ISampleRendererFactory*     factory,
-            const ParamArray&           params)
+            const ParamArray&           params,
+            const bool                  primary)
           : m_params(params)
-          , m_sample_renderer(factory->create())
+          , m_sample_renderer(factory->create(primary))
         {
             if (m_params.m_diagnostics)
             {
@@ -96,7 +97,7 @@ namespace
                 if (m_samples_aov_index == ~0 && images.size() < SpectrumStack::MaxSize)
                     m_samples_aov_index = images.append("samples", PixelFormatFloat);
 
-                if (m_variation_aov_index == ~0 || m_samples_aov_index == ~0)
+                if (primary && (m_variation_aov_index == ~0 || m_samples_aov_index == ~0))
                 {
                     RENDERER_LOG_WARNING(
                         "could not create some of the diagnostic AOVs, maximum number of AOVs (" FMT_SIZE_T ") reached.",
@@ -346,17 +347,18 @@ void AdaptivePixelRendererFactory::release()
     delete this;
 }
 
-IPixelRenderer* AdaptivePixelRendererFactory::create()
+IPixelRenderer* AdaptivePixelRendererFactory::create(const bool primary)
 {
-    return new AdaptivePixelRenderer(m_frame, m_factory, m_params);
+    return new AdaptivePixelRenderer(m_frame, m_factory, m_params, primary);
 }
 
 IPixelRenderer* AdaptivePixelRendererFactory::create(
     const Frame&                frame,
     ISampleRendererFactory*     factory,
-    const ParamArray&           params)
+    const ParamArray&           params,
+    const bool                  primary)
 {
-    return new AdaptivePixelRenderer(frame, factory, params);
+    return new AdaptivePixelRenderer(frame, factory, params, primary);
 }
 
 }   // namespace renderer

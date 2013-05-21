@@ -66,7 +66,8 @@ class Tracer
         const Intersector&              intersector,
         TextureCache&                   texture_cache,
         const float                     transparency_threshold = 0.001f,
-        const size_t                    max_iterations = 1000);
+        const size_t                    max_iterations = 1000,
+        const bool                      print_details = true);
 
     // Compute the transmission in a given direction. Returns the intersection
     // with the closest fully opaque occluder and the transmission factor up

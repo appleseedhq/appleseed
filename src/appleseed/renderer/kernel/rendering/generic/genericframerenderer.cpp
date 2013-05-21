@@ -81,7 +81,7 @@ namespace
 
             // Instantiate tile renderers, one per rendering thread.
             for (size_t i = 0; i < m_params.m_thread_count; ++i)
-                m_tile_renderers.push_back(renderer_factory->create());
+                m_tile_renderers.push_back(renderer_factory->create(i == 0));
 
             if (callback_factory)
             {

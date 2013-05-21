@@ -78,9 +78,10 @@ namespace
       public:
         UniformPixelRenderer(
             ISampleRendererFactory*     factory,
-            const ParamArray&           params)
+            const ParamArray&           params,
+            const bool                  primary)
           : m_params(params)
-          , m_sample_renderer(factory->create())
+          , m_sample_renderer(factory->create(primary))
           , m_sqrt_sample_count(round<int>(sqrt(static_cast<double>(m_params.m_samples))))
           , m_sample_count(m_sqrt_sample_count * m_sqrt_sample_count)
         {
@@ -88,10 +89,13 @@ namespace
             {
                 m_pixel_sampler.initialize(m_sqrt_sample_count);
 
-                RENDERER_LOG_INFO(
-                    "effective max subpixel grid size: %dx%d",
-                    m_sqrt_sample_count,
-                    m_sqrt_sample_count);
+                if (primary)
+                {
+                    RENDERER_LOG_INFO(
+                        "effective max subpixel grid size: %dx%d",
+                        m_sqrt_sample_count,
+                        m_sqrt_sample_count);
+                }
             }
         }
 
@@ -252,16 +256,17 @@ void UniformPixelRendererFactory::release()
     delete this;
 }
 
-IPixelRenderer* UniformPixelRendererFactory::create()
+IPixelRenderer* UniformPixelRendererFactory::create(const bool primary)
 {
-    return new UniformPixelRenderer(m_factory, m_params);
+    return new UniformPixelRenderer(m_factory, m_params, primary);
 }
 
 IPixelRenderer* UniformPixelRendererFactory::create(
     ISampleRendererFactory*     factory,
-    const ParamArray&           params)
+    const ParamArray&           params,
+    const bool                  primary)
 {
-    return new UniformPixelRenderer(factory, params);
+    return new UniformPixelRenderer(factory, params, primary);
 }
 
 }   // namespace renderer

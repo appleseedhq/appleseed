@@ -90,11 +90,12 @@ namespace
         GenericTileRenderer(
             const Frame&                frame,
             IPixelRendererFactory*      factory,
-            const ParamArray&           params)
+            const ParamArray&           params,
+            const bool                  primary)
           : m_params(params)
-          , m_pixel_renderer(factory->create())
+          , m_pixel_renderer(factory->create(primary))
         {
-            compute_tile_margins(frame);
+            compute_tile_margins(frame, primary);
             compute_pixel_ordering(frame);
         }
 
@@ -243,7 +244,7 @@ namespace
         vector<Vector<int16, 2> >           m_pixel_ordering;
         SamplingContext::RNGType            m_rng;
 
-        void compute_tile_margins(const Frame& frame)
+        void compute_tile_margins(const Frame& frame, const bool primary)
         {
             m_margin_width = truncate<int>(ceil(frame.get_filter().get_xradius() - 0.5));
             m_margin_height = truncate<int>(ceil(frame.get_filter().get_yradius() - 0.5));
@@ -257,14 +258,17 @@ namespace
             const double wasted_effort = static_cast<double>(overhead_pixel_count) / pixel_count * 100.0;
             const double MaxWastedEffort = 15.0;    // percents
 
-            RENDERER_LOG(
-                wasted_effort > MaxWastedEffort ? LogMessage::Warning : LogMessage::Info,
-                "rendering effort wasted by tile borders: %s (tile dimensions: %sx%s, tile margins: %sx%s)",
-                pretty_percent(overhead_pixel_count, pixel_count).c_str(),
-                pretty_uint(properties.m_tile_width).c_str(),
-                pretty_uint(properties.m_tile_height).c_str(),
-                pretty_uint(2 * m_margin_width).c_str(),
-                pretty_uint(2 * m_margin_height).c_str());
+            if (primary)
+            {
+                RENDERER_LOG(
+                    wasted_effort > MaxWastedEffort ? LogMessage::Warning : LogMessage::Info,
+                    "rendering effort wasted by tile borders: %s (tile dimensions: %sx%s, tile margins: %sx%s)",
+                    pretty_percent(overhead_pixel_count, pixel_count).c_str(),
+                    pretty_uint(properties.m_tile_width).c_str(),
+                    pretty_uint(properties.m_tile_height).c_str(),
+                    pretty_uint(2 * m_margin_width).c_str(),
+                    pretty_uint(2 * m_margin_height).c_str());
+            }
         }
 
         void compute_pixel_ordering(const Frame& frame)
@@ -316,17 +320,18 @@ void GenericTileRendererFactory::release()
     delete this;
 }
 
-ITileRenderer* GenericTileRendererFactory::create()
+ITileRenderer* GenericTileRendererFactory::create(const bool primary)
 {
-    return new GenericTileRenderer(m_frame, m_factory, m_params);
+    return new GenericTileRenderer(m_frame, m_factory, m_params, primary);
 }
 
 ITileRenderer* GenericTileRendererFactory::create(
     const Frame&                frame,
     IPixelRendererFactory*      factory,
-    const ParamArray&           params)
+    const ParamArray&           params,
+    const bool                  primary)
 {
-    return new GenericTileRenderer(frame, factory, params);
+    return new GenericTileRenderer(frame, factory, params, primary);
 }
 
 }   // namespace renderer

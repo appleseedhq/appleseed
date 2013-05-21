@@ -59,7 +59,7 @@ class EWATestTileRendererFactory
     virtual void release() OVERRIDE;
 
     // Return a new blank tile renderer instance.
-    virtual ITileRenderer* create() OVERRIDE;
+    virtual ITileRenderer* create(const bool primary) OVERRIDE;
 
   private:
     const Scene&            m_scene;

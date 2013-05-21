@@ -249,7 +249,7 @@ void EWATestTileRendererFactory::release()
     delete this;
 }
 
-ITileRenderer* EWATestTileRendererFactory::create()
+ITileRenderer* EWATestTileRendererFactory::create(const bool primary)
 {
     return
         new EWATestTileRenderer(

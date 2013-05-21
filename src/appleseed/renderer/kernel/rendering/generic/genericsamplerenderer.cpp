@@ -88,16 +88,29 @@ namespace
             TextureStore&           texture_store,
             ILightingEngineFactory* lighting_engine_factory,
             ShadingEngine&          shading_engine,
-            const ParamArray&       params)
+            const ParamArray&       params,
+            const bool              primary)
           : m_params(params)
           , m_scene(scene)
           , m_lighting_conditions(frame.get_lighting_conditions())
           , m_opacity_threshold(1.0f - m_params.m_transparency_threshold)
           , m_texture_cache(texture_store)
           , m_intersector(trace_context, m_texture_cache, m_params.m_report_self_intersections)
-          , m_tracer(m_scene, m_intersector, m_texture_cache, m_params.m_transparency_threshold, m_params.m_max_iterations)
+          , m_tracer(
+                m_scene,
+                m_intersector,
+                m_texture_cache,
+                m_params.m_transparency_threshold,
+                m_params.m_max_iterations,
+                primary)
           , m_lighting_engine(lighting_engine_factory->create())
-          , m_shading_context(m_intersector, m_tracer, m_texture_cache, m_lighting_engine, m_params.m_transparency_threshold, m_params.m_max_iterations)
+          , m_shading_context(
+                m_intersector,
+                m_tracer,
+                m_texture_cache,
+                m_lighting_engine,
+                m_params.m_transparency_threshold,
+                m_params.m_max_iterations)
           , m_shading_engine(shading_engine)
         {
         }
@@ -308,7 +321,7 @@ void GenericSampleRendererFactory::release()
     delete this;
 }
 
-ISampleRenderer* GenericSampleRendererFactory::create()
+ISampleRenderer* GenericSampleRendererFactory::create(const bool primary)
 {
     return
         new GenericSampleRenderer(
@@ -318,7 +331,8 @@ ISampleRenderer* GenericSampleRendererFactory::create()
             m_texture_store,
             m_lighting_engine_factory,
             m_shading_engine,
-            m_params);
+            m_params,
+            primary);
 }
 
 ISampleRenderer* GenericSampleRendererFactory::create(
@@ -328,7 +342,8 @@ ISampleRenderer* GenericSampleRendererFactory::create(
     TextureStore&           texture_store,
     ILightingEngineFactory* lighting_engine_factory,
     ShadingEngine&          shading_engine,
-    const ParamArray&       params)
+    const ParamArray&       params,
+    const bool              primary)
 {
     return
         new GenericSampleRenderer(
@@ -338,7 +353,8 @@ ISampleRenderer* GenericSampleRendererFactory::create(
             texture_store,
             lighting_engine_factory,
             shading_engine,
-            params);
+            params,
+            primary);
 }
 
 }   // namespace renderer

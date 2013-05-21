@@ -116,16 +116,20 @@ Tracer::Tracer(
     const Intersector&      intersector,
     TextureCache&           texture_cache,
     const float             transparency_threshold,
-    const size_t            max_iterations)
+    const size_t            max_iterations,
+    const bool              print_details)
   : m_intersector(intersector)
   , m_texture_cache(texture_cache)
   , m_assume_no_alpha_mapping(!uses_alpha_mapping(scene))
   , m_transmission_threshold(static_cast<double>(transparency_threshold))
   , m_max_iterations(max_iterations)
 {
-    if (m_assume_no_alpha_mapping)
-        RENDERER_LOG_DEBUG("the scene does not rely on alpha mapping; using probe tracing.");
-    else RENDERER_LOG_DEBUG("the scene uses alpha mapping; using standard tracing.");
+    if (print_details)
+    {
+        if (m_assume_no_alpha_mapping)
+            RENDERER_LOG_DEBUG("the scene does not rely on alpha mapping; using probe tracing.");
+        else RENDERER_LOG_DEBUG("the scene uses alpha mapping; using standard tracing.");
+    }
 }
 
 const ShadingPoint& Tracer::do_trace(

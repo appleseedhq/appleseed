@@ -69,7 +69,8 @@ class LightTracingSampleGeneratorFactory
     // Return a new sample generator instance.
     virtual ISampleGenerator* create(
         const size_t            generator_index,
-        const size_t            generator_count) OVERRIDE;
+        const size_t            generator_count,
+        const bool              primary) OVERRIDE;
 
     // Create an accumulation buffer for this sample generator.
     virtual SampleAccumulationBuffer* create_sample_accumulation_buffer() OVERRIDE;

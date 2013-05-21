@@ -72,7 +72,7 @@ class ITileRendererFactory
 {
   public:
     // Return a new tile renderer instance.
-    virtual ITileRenderer* create() = 0;
+    virtual ITileRenderer* create(const bool primary) = 0;
 };
 
 }       // namespace renderer

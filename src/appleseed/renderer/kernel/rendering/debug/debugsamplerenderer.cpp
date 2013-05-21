@@ -93,7 +93,7 @@ void DebugSampleRendererFactory::release()
     delete this;
 }
 
-ISampleRenderer* DebugSampleRendererFactory::create()
+ISampleRenderer* DebugSampleRendererFactory::create(const bool primary)
 {
     return new DebugSampleRenderer();
 }

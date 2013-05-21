@@ -106,7 +106,10 @@ namespace
             for (size_t i = 0; i < m_params.m_thread_count; ++i)
             {
                 m_sample_generators.push_back(
-                    generator_factory->create(i, m_params.m_thread_count));
+                    generator_factory->create(
+                        i,
+                        m_params.m_thread_count,
+                        i == 0));
             }
 
             // Instantiate tile callbacks, one per rendering thread.

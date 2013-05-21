@@ -119,7 +119,7 @@ void DebugTileRendererFactory::release()
     delete this;
 }
 
-ITileRenderer* DebugTileRendererFactory::create()
+ITileRenderer* DebugTileRendererFactory::create(const bool primary)
 {
     return new DebugTileRenderer();
 }

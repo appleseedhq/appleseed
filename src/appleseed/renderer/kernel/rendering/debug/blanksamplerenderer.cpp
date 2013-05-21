@@ -82,7 +82,7 @@ void BlankSampleRendererFactory::release()
     delete this;
 }
 
-ISampleRenderer* BlankSampleRendererFactory::create()
+ISampleRenderer* BlankSampleRendererFactory::create(const bool primary)
 {
     return new BlankSampleRenderer();
 }
