@@ -1617,12 +1617,6 @@ install (TARGETS appleseed
     DESTINATION bin
 )
 
-#-------
-# Devkit
-#-------
-install ( TARGETS appleseed
-  DESTINATION
-  extras/devkit/lib
+install (TARGETS appleseed
+    DESTINATION extras/devkit/lib
 )
-
-

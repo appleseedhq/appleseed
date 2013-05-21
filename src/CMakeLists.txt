@@ -415,16 +415,16 @@ if (WITH_STUDIO)
     add_subdirectory (appleseed.studio)
 endif ()
 
+if (WITH_PYTHON)
+    add_subdirectory (appleseed.python)
+endif ()
+
 if (WITH_TOOLS)
     add_subdirectory (tools/animatecamera)
     add_subdirectory (tools/convertmeshfile)
     add_subdirectory (tools/maketiledexr)
     add_subdirectory (tools/updateprojectfile)
 endif()
-
-if (WITH_PYTHON)
-    add_subdirectory (appleseed.python)
-endif ()
 
 
 #--------------------------------------------------------------------------------------------------

@@ -87,6 +87,7 @@ include_directories (
 
 apply_preprocessor_definitions (appleseed.shared)
 
+
 #--------------------------------------------------------------------------------------------------
 # Static libraries.
 #--------------------------------------------------------------------------------------------------
@@ -112,10 +113,6 @@ install (TARGETS appleseed.shared
     DESTINATION bin
 )
 
-#-------
-# Devkit
-#-------
-install ( TARGETS appleseed.shared
-  DESTINATION
-  extras/devkit/lib
+install (TARGETS appleseed.shared
+    DESTINATION extras/devkit/lib
 )
