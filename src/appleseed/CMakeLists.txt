@@ -1578,9 +1578,9 @@ append_custom_preprocessor_definitions (appleseed
 #--------------------------------------------------------------------------------------------------
 
 link_against_platform (appleseed)
-link_against_openexr (appleseed)
 link_against_zlib (appleseed)
 link_against_libpng (appleseed)
+link_against_openexr (appleseed)
 link_against_xercesc (appleseed)
 link_against_hdf5 (appleseed)
 link_against_alembic (appleseed)
@@ -1590,9 +1590,8 @@ if (WITH_OSL)
     link_against_oslexec (appleseed)
 endif ()
 
-target_link_libraries (appleseed
-    ${Boost_LIBRARIES}
-)
+target_link_libraries (appleseed ${Boost_LIBRARIES})
+target_link_libraries (appleseed minilzo)
 
 
 #--------------------------------------------------------------------------------------------------
