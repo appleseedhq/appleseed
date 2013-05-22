@@ -49,7 +49,8 @@ namespace foundation
 
 namespace
 {
-    inline void checked_write(BufferedFile& file, const void* inbuf, const size_t size)
+    template <typename File>
+    inline void checked_write(File& file, const void* inbuf, const size_t size)
     {
         const size_t bytes_written = file.write(inbuf, size);
 
@@ -57,8 +58,8 @@ namespace
             throw ExceptionIOError();
     }
 
-    template <typename T>
-    inline void checked_write(BufferedFile& file, const T& object)
+    template <typename File, typename T>
+    inline void checked_write(File& file, const T& object)
     {
         checked_write(file, &object, sizeof(T));
     }
@@ -66,6 +67,7 @@ namespace
 
 BinaryMeshFileWriter::BinaryMeshFileWriter(const string& filename)
   : m_filename(filename)
+  , m_writer(m_file)
 {
 }
 
@@ -88,14 +90,6 @@ void BinaryMeshFileWriter::write(const IMeshWalker& walker)
     write_mesh(walker);
 }
 
-void BinaryMeshFileWriter::write_string(const char* s)
-{
-    const uint16 length = static_cast<uint16>(strlen(s));
-
-    checked_write(m_file, length);
-    checked_write(m_file, s, length);
-}
-
 void BinaryMeshFileWriter::write_signature()
 {
     static const char Signature[10] = { 'B', 'I', 'N', 'A', 'R', 'Y', 'M', 'E', 'S', 'H' };
@@ -105,9 +99,17 @@ void BinaryMeshFileWriter::write_signature()
 
 void BinaryMeshFileWriter::write_version()
 {
-    const uint16 Version = 1;
+    const uint16 Version = 2;
 
     checked_write(m_file, Version);
+}
+
+void BinaryMeshFileWriter::write_string(const char* s)
+{
+    const uint16 length = static_cast<uint16>(strlen(s));
+
+    checked_write(m_writer, length);
+    checked_write(m_writer, s, length);
 }
 
 void BinaryMeshFileWriter::write_mesh(const IMeshWalker& walker)
@@ -123,34 +125,34 @@ void BinaryMeshFileWriter::write_mesh(const IMeshWalker& walker)
 void BinaryMeshFileWriter::write_vertices(const IMeshWalker& walker)
 {
     const uint32 count = static_cast<uint32>(walker.get_vertex_count());
-    checked_write(m_file, count);
+    checked_write(m_writer, count);
 
     for (uint32 i = 0; i < count; ++i)
-        checked_write(m_file, walker.get_vertex(i));
+        checked_write(m_writer, walker.get_vertex(i));
 }
 
 void BinaryMeshFileWriter::write_vertex_normals(const IMeshWalker& walker)
 {
     const uint32 count = static_cast<uint32>(walker.get_vertex_normal_count());
-    checked_write(m_file, count);
+    checked_write(m_writer, count);
 
     for (uint32 i = 0; i < count; ++i)
-        checked_write(m_file, walker.get_vertex_normal(i));
+        checked_write(m_writer, walker.get_vertex_normal(i));
 }
 
 void BinaryMeshFileWriter::write_texture_coordinates(const IMeshWalker& walker)
 {
     const uint32 count = static_cast<uint32>(walker.get_tex_coords_count());
-    checked_write(m_file, count);
+    checked_write(m_writer, count);
 
     for (uint32 i = 0; i < count; ++i)
-        checked_write(m_file, walker.get_tex_coords(i));
+        checked_write(m_writer, walker.get_tex_coords(i));
 }
 
 void BinaryMeshFileWriter::write_material_slots(const IMeshWalker& walker)
 {
     const uint16 count = static_cast<uint16>(walker.get_material_slot_count());
-    checked_write(m_file, count);
+    checked_write(m_writer, count);
 
     for (uint16 i = 0; i < count; ++i)
         write_string(walker.get_material_slot(i));
@@ -159,7 +161,7 @@ void BinaryMeshFileWriter::write_material_slots(const IMeshWalker& walker)
 void BinaryMeshFileWriter::write_faces(const IMeshWalker& walker)
 {
     const uint32 count = static_cast<uint32>(walker.get_face_count());
-    checked_write(m_file, count);
+    checked_write(m_writer, count);
 
     for (uint32 i = 0; i < count; ++i)
         write_face(walker, i);
@@ -168,16 +170,16 @@ void BinaryMeshFileWriter::write_faces(const IMeshWalker& walker)
 void BinaryMeshFileWriter::write_face(const IMeshWalker& walker, const size_t face_index)
 {
     const uint16 count = static_cast<uint16>(walker.get_face_vertex_count(face_index));
-    checked_write(m_file, count);
+    checked_write(m_writer, count);
 
     for (uint16 i = 0; i < count; ++i)
     {
-        checked_write(m_file, static_cast<uint32>(walker.get_face_vertex(face_index, i)));
-        checked_write(m_file, static_cast<uint32>(walker.get_face_vertex_normal(face_index, i)));
-        checked_write(m_file, static_cast<uint32>(walker.get_face_tex_coords(face_index, i)));
+        checked_write(m_writer, static_cast<uint32>(walker.get_face_vertex(face_index, i)));
+        checked_write(m_writer, static_cast<uint32>(walker.get_face_vertex_normal(face_index, i)));
+        checked_write(m_writer, static_cast<uint32>(walker.get_face_tex_coords(face_index, i)));
     }
 
-    checked_write(m_file, static_cast<uint16>(walker.get_face_material(face_index)));
+    checked_write(m_writer, static_cast<uint16>(walker.get_face_material(face_index)));
 }
 
 }   // namespace foundation

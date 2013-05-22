@@ -40,6 +40,7 @@
 #include <cstddef>
 #include <cstdio>
 #include <string>
+#include <vector>
 
 namespace foundation
 {
@@ -199,6 +200,53 @@ class DLLSYMBOL BufferedFile
     // Flush the I/O buffer to disk (write mode only).
     // Return true on success, false on error.
     bool flush_buffer();
+};
+
+
+//
+// Wrappers providing data compression on top of foundation::BufferedFile.
+//
+
+class CompressedWriter
+{
+  public:
+    explicit CompressedWriter(BufferedFile& file);
+
+    ~CompressedWriter();
+
+    template <typename T>
+    size_t write(const T& object);
+
+    size_t write(const void* inbuf, const size_t size);
+
+  private:
+    BufferedFile&       m_file;
+    const size_t        m_buffer_size;
+    size_t              m_buffer_index;
+    std::vector<uint8>  m_buffer;
+    std::vector<uint8>  m_compressed_buffer;
+
+    void flush_buffer();
+};
+
+class CompressedReader
+{
+  public:
+    explicit CompressedReader(BufferedFile& file);
+
+    template <typename T>
+    size_t read(T& object);
+
+    size_t read(void* outbuf, const size_t size);
+
+  private:
+    BufferedFile&       m_file;
+    size_t              m_buffer_index;
+    size_t              m_buffer_end;
+    std::vector<uint8>  m_buffer;
+    std::vector<uint8>  m_compressed_buffer;
+
+    bool fill_buffer();
 };
 
 

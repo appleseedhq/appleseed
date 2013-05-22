@@ -54,7 +54,8 @@ namespace
 {
     struct ExceptionEOF : public Exception {};
 
-    inline void checked_read(BufferedFile& file, void* outbuf, const size_t size)
+    template <typename File>
+    inline void checked_read(File& file, void* outbuf, const size_t size)
     {
         if (size == 0)
             return;
@@ -68,8 +69,8 @@ namespace
             throw ExceptionIOError();
     }
 
-    template <typename T>
-    inline void checked_read(BufferedFile& file, T& object)
+    template <typename File, typename T>
+    inline void checked_read(File& file, T& object)
     {
         checked_read(file, &object, sizeof(T));
     }
@@ -92,19 +93,9 @@ void BinaryMeshFileReader::read(IMeshBuilder& builder)
 
     read_and_check_signature(file);
     read_and_check_version(file);
-    read_meshes(file, builder);
-}
 
-string BinaryMeshFileReader::read_string(BufferedFile& file)
-{
-    uint16 length;
-    checked_read(file, length);
-
-    string s;
-    s.resize(length);
-    checked_read(file, &s[0], length);
-
-    return s;
+    CompressedReader reader(file);
+    read_meshes(reader, builder);
 }
 
 void BinaryMeshFileReader::read_and_check_signature(BufferedFile& file)
@@ -120,7 +111,7 @@ void BinaryMeshFileReader::read_and_check_signature(BufferedFile& file)
 
 void BinaryMeshFileReader::read_and_check_version(BufferedFile& file)
 {
-    const uint16 ExpectedVersion = 1;
+    const uint16 ExpectedVersion = 2;
 
     uint16 version;
     checked_read(file, version);
@@ -129,7 +120,19 @@ void BinaryMeshFileReader::read_and_check_version(BufferedFile& file)
         throw ExceptionIOError();   // todo: throw better-qualified exception
 }
 
-void BinaryMeshFileReader::read_meshes(BufferedFile& file, IMeshBuilder& builder)
+string BinaryMeshFileReader::read_string(CompressedReader& reader)
+{
+    uint16 length;
+    checked_read(reader, length);
+
+    string s;
+    s.resize(length);
+    checked_read(reader, &s[0], length);
+
+    return s;
+}
+
+void BinaryMeshFileReader::read_meshes(CompressedReader& reader, IMeshBuilder& builder)
 {
     try
     {
@@ -139,7 +142,7 @@ void BinaryMeshFileReader::read_meshes(BufferedFile& file, IMeshBuilder& builder
             string mesh_name;
             try
             {
-                mesh_name = read_string(file);
+                mesh_name = read_string(reader);
             }
             catch (const ExceptionEOF&)
             {
@@ -149,11 +152,11 @@ void BinaryMeshFileReader::read_meshes(BufferedFile& file, IMeshBuilder& builder
 
             builder.begin_mesh(mesh_name.c_str());
 
-            read_vertices(file, builder);
-            read_vertex_normals(file, builder);
-            read_texture_coordinates(file, builder);
-            read_material_slots(file, builder);
-            read_faces(file, builder);
+            read_vertices(reader, builder);
+            read_vertex_normals(reader, builder);
+            read_texture_coordinates(reader, builder);
+            read_material_slots(reader, builder);
+            read_faces(reader, builder);
 
             builder.end_mesh();
         }
@@ -165,70 +168,70 @@ void BinaryMeshFileReader::read_meshes(BufferedFile& file, IMeshBuilder& builder
     }
 }
 
-void BinaryMeshFileReader::read_vertices(BufferedFile& file, IMeshBuilder& builder)
+void BinaryMeshFileReader::read_vertices(CompressedReader& reader, IMeshBuilder& builder)
 {
     uint32 count;
-    checked_read(file, count);
+    checked_read(reader, count);
 
     for (uint32 i = 0; i < count; ++i)
     {
         Vector3d v;
-        checked_read(file, v);
+        checked_read(reader, v);
         builder.push_vertex(v);
     }
 }
 
-void BinaryMeshFileReader::read_vertex_normals(BufferedFile& file, IMeshBuilder& builder)
+void BinaryMeshFileReader::read_vertex_normals(CompressedReader& reader, IMeshBuilder& builder)
 {
     uint32 count;
-    checked_read(file, count);
+    checked_read(reader, count);
 
     for (uint32 i = 0; i < count; ++i)
     {
         Vector3d v;
-        checked_read(file, v);
+        checked_read(reader, v);
         builder.push_vertex_normal(v);
     }
 }
 
-void BinaryMeshFileReader::read_texture_coordinates(BufferedFile& file, IMeshBuilder& builder)
+void BinaryMeshFileReader::read_texture_coordinates(CompressedReader& reader, IMeshBuilder& builder)
 {
     uint32 count;
-    checked_read(file, count);
+    checked_read(reader, count);
 
     for (uint32 i = 0; i < count; ++i)
     {
         Vector2d v;
-        checked_read(file, v);
+        checked_read(reader, v);
         builder.push_tex_coords(v);
     }
 }
 
-void BinaryMeshFileReader::read_material_slots(BufferedFile& file, IMeshBuilder& builder)
+void BinaryMeshFileReader::read_material_slots(CompressedReader& reader, IMeshBuilder& builder)
 {
     uint16 count;
-    checked_read(file, count);
+    checked_read(reader, count);
 
     for (uint16 i = 0; i < count; ++i)
     {
-        const string material_slot = read_string(file);
+        const string material_slot = read_string(reader);
         builder.push_material_slot(material_slot.c_str());
     }
 }
 
-void BinaryMeshFileReader::read_faces(BufferedFile& file, IMeshBuilder& builder)
+void BinaryMeshFileReader::read_faces(CompressedReader& reader, IMeshBuilder& builder)
 {
     uint32 count;
-    checked_read(file, count);
+    checked_read(reader, count);
 
     for (uint32 i = 0; i < count; ++i)
-        read_face(file, builder);
+        read_face(reader, builder);
 }
 
-void BinaryMeshFileReader::read_face(BufferedFile& file, IMeshBuilder& builder)
+void BinaryMeshFileReader::read_face(CompressedReader& reader, IMeshBuilder& builder)
 {
     uint16 count;
-    checked_read(file, count);
+    checked_read(reader, count);
 
     ensure_minimum_size(m_vertices, count);
     ensure_minimum_size(m_vertex_normals, count);
@@ -237,20 +240,20 @@ void BinaryMeshFileReader::read_face(BufferedFile& file, IMeshBuilder& builder)
     for (uint16 i = 0; i < count; ++i)
     {
         uint32 face_vertex;
-        checked_read(file, face_vertex);
+        checked_read(reader, face_vertex);
         m_vertices[i] = face_vertex;
 
         uint32 face_vertex_normal;
-        checked_read(file, face_vertex_normal);
+        checked_read(reader, face_vertex_normal);
         m_vertex_normals[i] = face_vertex_normal;
 
         uint32 face_tex_coords;
-        checked_read(file, face_tex_coords);
+        checked_read(reader, face_tex_coords);
         m_tex_coords[i] = face_tex_coords;
     }
 
     uint16 material;
-    checked_read(file, material);
+    checked_read(reader, material);
 
     builder.begin_face(count);
     builder.set_face_vertices(&m_vertices[0]);

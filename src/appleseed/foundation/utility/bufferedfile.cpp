@@ -30,7 +30,13 @@
 #include "bufferedfile.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/memory.h"
 #include "foundation/utility/otherwise.h"
+
+// minilzo headers.
+extern "C" {
+#include "minilzo.h"
+}
 
 // Standard headers.
 #include <algorithm>
@@ -449,6 +455,145 @@ bool BufferedFile::seek(
             m_file_index = portable_ftell(m_file);
         }
     }
+
+    return true;
+}
+
+
+//
+// CompressedWriter class implementation.
+//
+
+CompressedWriter::CompressedWriter(BufferedFile& file)
+  : m_file(file)
+  , m_buffer_size(64 * 1024)
+  , m_buffer_index(0)
+{
+#ifdef NDEBUG
+    lzo_init();
+#else
+    assert(lzo_init() == LZO_E_OK);
+#endif
+}
+
+CompressedWriter::~CompressedWriter()
+{
+    if (m_buffer_index > 0)
+        flush_buffer();
+}
+
+template <typename T>
+size_t CompressedWriter::write(const T& object)
+{
+    return write(&object, sizeof(T));
+}
+
+size_t CompressedWriter::write(const void* inbuf, const size_t size)
+{
+    if (size > 0)
+    {
+        ensure_minimum_size(m_buffer, m_buffer_index + size);
+        memcpy(&m_buffer[m_buffer_index], inbuf, size);
+        m_buffer_index += size;
+
+        if (m_buffer_index >= m_buffer_size)
+            flush_buffer();
+    }
+
+    return size;
+}
+
+void CompressedWriter::flush_buffer()
+{
+    static lzo_align_t __LZO_MMODEL working_mem[(LZO1X_1_MEM_COMPRESS + (sizeof(lzo_align_t) - 1)) / sizeof(lzo_align_t)];
+
+    const size_t max_compressed_buffer_size = m_buffer_index + (m_buffer_index / 16) + 64 + 3;
+    ensure_minimum_size(m_compressed_buffer, max_compressed_buffer_size);
+
+    lzo_uint compressed_buffer_size;
+    lzo1x_1_compress(
+        &m_buffer[0],
+        m_buffer_index,
+        &m_compressed_buffer[0],
+        &compressed_buffer_size,
+        working_mem);
+
+    m_file.write(m_buffer_index);
+    m_file.write(compressed_buffer_size);
+    m_file.write(&m_compressed_buffer[0], compressed_buffer_size);
+
+    m_buffer_index = 0;
+}
+
+
+//
+// CompressedReader class implementation.
+//
+
+CompressedReader::CompressedReader(BufferedFile& file)
+  : m_file(file)
+  , m_buffer_index(0)
+  , m_buffer_end(0)
+{
+#ifdef NDEBUG
+    lzo_init();
+#else
+    assert(lzo_init() == LZO_E_OK);
+#endif
+}
+
+template <typename T>
+size_t CompressedReader::read(T& object)
+{
+    return read(&object, sizeof(T));
+}
+
+size_t CompressedReader::read(void* outbuf, const size_t size)
+{
+    size_t remaining = size;
+
+    while (remaining > 0)
+    {
+        if (m_buffer_index == m_buffer_end)
+        {
+            if (!fill_buffer())
+                break;
+        }
+
+        const size_t copy = min(size, m_buffer_end - m_buffer_index);
+        memcpy(outbuf, &m_buffer[m_buffer_index], copy);
+        outbuf = reinterpret_cast<uint8*>(outbuf) + copy;
+        m_buffer_index += copy;
+        remaining -= copy;
+    }
+
+    return size - remaining;
+}
+
+bool CompressedReader::fill_buffer()
+{
+    static lzo_align_t __LZO_MMODEL working_mem[(LZO1X_1_MEM_COMPRESS + (sizeof(lzo_align_t) - 1)) / sizeof(lzo_align_t)];
+
+    size_t buffer_size;
+    if (m_file.read(buffer_size) == 0)
+        return false;
+
+    ensure_minimum_size(m_buffer, buffer_size);
+
+    lzo_uint compressed_buffer_size;
+    m_file.read(compressed_buffer_size);
+
+    ensure_minimum_size(m_compressed_buffer, compressed_buffer_size);
+    m_file.read(&m_compressed_buffer[0], compressed_buffer_size);
+
+    lzo1x_decompress(
+        &m_compressed_buffer[0],
+        compressed_buffer_size,
+        &m_buffer[0],
+        &m_buffer_end,
+        working_mem);
+
+    m_buffer_index = 0;
 
     return true;
 }

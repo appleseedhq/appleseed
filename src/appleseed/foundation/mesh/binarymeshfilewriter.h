@@ -61,12 +61,12 @@ class BinaryMeshFileWriter
   private:
     const std::string   m_filename;
     BufferedFile        m_file;
-
-    void write_string(const char* s);
+    CompressedWriter    m_writer;
 
     void write_signature();
     void write_version();
 
+    void write_string(const char* s);
     void write_mesh(const IMeshWalker& walker);
     void write_vertices(const IMeshWalker& walker);
     void write_vertex_normals(const IMeshWalker& walker);
