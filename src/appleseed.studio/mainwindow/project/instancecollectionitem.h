@@ -90,7 +90,7 @@ ItemBase* InstanceCollectionItem<Entity, EntityItem, ParentEntity>::create_item(
             entity,
             m_parent,
             this,
-            m_project_builder);
+            CollectionItemBase<Entity>::m_project_builder);
 }
 
 }       // namespace studio
