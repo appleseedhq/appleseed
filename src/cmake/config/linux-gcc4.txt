@@ -45,26 +45,16 @@ set (git_command "git")
 # Preprocessor definitions.
 #--------------------------------------------------------------------------------------------------
 
-# All configurations.
-set (preprocessor_definitions_common
-)
-
-# Debug configuration.
-set (preprocessor_definitions_debug
-)
-
-# Release configuration.
-set (preprocessor_definitions_release
-)
-
 
 #--------------------------------------------------------------------------------------------------
 # Compilation/Linking Flags.
 #--------------------------------------------------------------------------------------------------
 
-# All configurations.
-set (compiler_flags_common
+# Flags common to all configurations.
+set (c_compiler_flags_common
     -Werror                                             # Treat Warnings As Errors
+)
+set (cxx_compiler_flags_common
     -fvisibility=hidden -fvisibility-inlines-hidden     # Hide all non-exported symbols
 )
 set (exe_linker_flags_common
@@ -76,16 +66,10 @@ set (shared_lib_linker_flags_common
     -fvisibility=hidden -fvisibility-inlines-hidden     # Hide all non-exported symbols
 )
 
-# Debug configuration.
-
 # Release configuration.
-set (compiler_flags_release
+set (c_compiler_flags_release
     -O3                                                 # Maximum optimization
 )
-
-# Ship configuration.
-
-# Profile configuration.
 
 
 #--------------------------------------------------------------------------------------------------

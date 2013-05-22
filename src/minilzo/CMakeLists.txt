@@ -59,6 +59,8 @@ set_target_properties (minilzo PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/minilzo
 )
 
+apply_static_lib_linker_flags (minilzo)
+
 
 #--------------------------------------------------------------------------------------------------
 # Include paths.
