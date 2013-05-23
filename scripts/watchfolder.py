@@ -43,7 +43,7 @@ import xml.dom.minidom as xml
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "1.5"
+VERSION = "1.6"
 OUTPUT_DIR = "_renders"
 COMPLETED_DIR = "_archives"
 LOGS_DIR = "_logs"
@@ -102,6 +102,8 @@ class LogFileBackend:
         self.path = path
 
     def write(self, msg):
+        safe_mkdir(os.path.dirname(self.path))
+
         with open(self.path, "a") as file:
             file.write(msg + "\n")
 
@@ -300,12 +302,15 @@ def convert_path_to_local(path):
         return path.replace('\\', '/')
 
 def extract_project_deps(project_filepath):
+    try:
+        with open(project_filepath, 'r') as file:
+            contents = file.read()
+    except:
+        log.warning("Failed to acquire {0}.".format(project_filepath))
+        return False, set()
+
     deps = set()
-
     directory = os.path.split(project_filepath)[0]
-
-    with open(project_filepath, 'r') as file:
-        contents = file.read()
 
     for node in xml.parseString(contents).getElementsByTagName('parameter'):
         if node.getAttribute('name') == 'filename':
@@ -323,7 +328,7 @@ def extract_project_deps(project_filepath):
                     filepath = os.path.join(directory, filepath)
                     deps.add(filepath)
 
-    return deps
+    return True, deps
 
 def count_missing_project_deps(deps):
     missing_deps = 0
@@ -348,9 +353,11 @@ def watch(args, log):
 
     # Render the first project file that has no missing dependencies.
     for project_filepath in project_files:
-        deps = extract_project_deps(project_filepath)
-        missing_deps = count_missing_project_deps(deps)
+        deps_success, deps = extract_project_deps(project_filepath)
+        if not deps_success:
+            continue
 
+        missing_deps = count_missing_project_deps(deps)
         if missing_deps > 0:
             Log.info_no_log("{0} missing dependencies for {1}.".format(missing_deps, project_filepath))
             continue
@@ -385,10 +392,8 @@ def main():
     if os.name == "nt":
         args.appleseed_bin_path += ".exe"
 
-    # Open the log file.
-    log_dir = os.path.join(args.watch_dir, LOGS_DIR)
-    safe_mkdir(log_dir)
-    log = Log(os.path.join(log_dir, args.user_name + ".log"))
+    # Start the log.
+    log = Log(os.path.join(args.watch_dir, LOGS_DIR, args.user_name + ".log"))
     log.info("--- Starting logging ---")
 
     # Print version information.
