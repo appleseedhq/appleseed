@@ -67,7 +67,7 @@ namespace
 
 BinaryMeshFileWriter::BinaryMeshFileWriter(const string& filename)
   : m_filename(filename)
-  , m_writer(m_file)
+  , m_writer(m_file, 256 * 1024)
 {
 }
 
