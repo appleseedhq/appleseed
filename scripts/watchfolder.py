@@ -406,7 +406,7 @@ def main():
         initial_wer_values = disable_wer(log)
         log.info("New Windows Error Reporting status: {0}".format(get_wer_status()))
 
-    log.info("Watching directory {0}".format(args.watch_dir))
+    log.info("Watching directory {0}".format(os.path.abspath(args.watch_dir)))
     random.seed()
 
     # Main watch loop.
