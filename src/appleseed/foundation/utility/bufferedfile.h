@@ -85,18 +85,18 @@ class DLLSYMBOL BufferedFile
     // Initial position for seek().
     enum SeekOrigin
     {
-        SeekFromBeginning,      // offset must be positive or null
-        SeekFromCurrent,        // offset may be positive, negative or null
-        SeekFromEnd             // offset must be negative or null
+        SeekFromBeginning,  // offset must be positive or null
+        SeekFromCurrent,    // offset may be positive, negative or null
+        SeekFromEnd         // offset must be negative or null
     };
 
     // Constructors.
     BufferedFile();
     BufferedFile(
-        const char*             path,
-        const FileType          type,
-        const FileMode          mode,
-        const size_t            buffer_size = DefaultBufferSize);
+        const char*         path,
+        const FileType      type,
+        const FileMode      mode,
+        const size_t        buffer_size = DefaultBufferSize);
 
     // Destructor, closes the file if it is still open.
     ~BufferedFile();
@@ -104,10 +104,10 @@ class DLLSYMBOL BufferedFile
     // Open a file.
     // Return true on success, false on error.
     bool open(
-        const char*             path,
-        const FileType          type,
-        const FileMode          mode,
-        const size_t            buffer_size = DefaultBufferSize);
+        const char*         path,
+        const FileType      type,
+        const FileMode      mode,
+        const size_t        buffer_size = DefaultBufferSize);
 
     // Close the file.
     // Return true on success, false on error.
@@ -120,51 +120,49 @@ class DLLSYMBOL BufferedFile
     // The file must be open in read mode.
     // Return the number of bytes that were successfully read.
     size_t read(
-        void*                   outbuf,
-        const size_t            size);
+        void*               outbuf,
+        const size_t        size);
 
     // Read one byte from the file.
     // The file must be open in read mode.
     // Return the number of bytes that were successfully read (0 or 1).
-    size_t read(
-        void*                   outbuf);
+    size_t read(void* outbuf);
 
     // Read an object from the file.
     // The file must be open in read mode.
     // Return the number of bytes that were successfully read.
     template <typename T>
-    size_t read(T&              object);
+    size_t read(T& object);
 
     // Same as read(), but without buffering.
     size_t read_unbuf(
-        void*                   outbuf,
-        const size_t            size);
+        void*               outbuf,
+        const size_t        size);
     template <typename T>
-    size_t read_unbuf(T&        object);
+    size_t read_unbuf(T& object);
 
     // Write a contiguous sequence of bytes to the file.
     // The file must be open in write mode.
     // Return the number of bytes that were successfully written.
     size_t write(
-        const void*             inbuf,
-        const size_t            size);
+        const void*         inbuf,
+        const size_t        size);
 
     // Write one byte to the file.
     // The file must be open in write mode.
     // Return the number of bytes that were successfully written (0 or 1).
-    size_t write(
-        const void*             inbuf);
+    size_t write(const void* inbuf);
 
     // Write an object to the file.
     // The file must be open in write mode.
     // Return the number of bytes that were successfully written.
     template <typename T>
-    size_t write(const T&       object);
+    size_t write(const T& object);
 
     // Same as write(), but without buffering.
     size_t write_unbuf(
-        const void*             inbuf,
-        const size_t            size);
+        const void*         inbuf,
+        const size_t        size);
     template <typename T>
     size_t write_unbuf(const T& object);
 
@@ -172,21 +170,21 @@ class DLLSYMBOL BufferedFile
     // The file must be binary, and open in read or write mode.
     // Return true on success, false on error.
     bool seek(
-        const int64             offset,
-        const SeekOrigin        origin);
+        const int64         offset,
+        const SeekOrigin    origin);
 
     // Return the current position of the file pointer.
     // The file must be binary, and open in read or write mode.
     int64 tell() const;
 
   private:
-    std::FILE*  m_file;
-    FileMode    m_file_mode;
-    int64       m_file_index;       // index in the file of the first byte of the I/O buffer
-    uint8*      m_buffer;           // I/O buffer
-    size_t      m_buffer_size;      // size of the I/O buffer
-    size_t      m_buffer_end;       // one past the index of the last byte in the I/O buffer
-    size_t      m_buffer_index;     // index of the next byte in the I/O buffer
+    std::FILE*              m_file;
+    FileMode                m_file_mode;
+    int64                   m_file_index;       // index in the file of the first byte of the I/O buffer
+    uint8*                  m_buffer;           // I/O buffer
+    size_t                  m_buffer_size;      // size of the I/O buffer
+    size_t                  m_buffer_end;       // one past the index of the last byte in the I/O buffer
+    size_t                  m_buffer_index;     // index of the next byte in the I/O buffer
 
     // Reset the internal state of the object.
     void reset();
@@ -210,21 +208,32 @@ class DLLSYMBOL BufferedFile
 class CompressedWriter
 {
   public:
-    explicit CompressedWriter(BufferedFile& file);
+    // Default compression buffer size, in bytes.
+    enum
+    {
+        DefaultBufferSize = 64 * 1024
+    };
+
+    CompressedWriter(
+        BufferedFile&       file,
+        const size_t        buffer_size = DefaultBufferSize);
 
     ~CompressedWriter();
 
     template <typename T>
     size_t write(const T& object);
 
-    size_t write(const void* inbuf, const size_t size);
+    size_t write(
+        const void*         inbuf,
+        const size_t        size);
 
   private:
-    BufferedFile&       m_file;
-    const size_t        m_buffer_size;
-    size_t              m_buffer_index;
-    std::vector<uint8>  m_buffer;
-    std::vector<uint8>  m_compressed_buffer;
+    BufferedFile&           m_file;
+    const size_t            m_buffer_size;
+    size_t                  m_buffer_index;
+    std::vector<uint8>      m_buffer;
+    std::vector<uint8>      m_compressed_buffer;
+    std::vector<uint8>      m_working_memory;
 
     void flush_buffer();
 };
@@ -237,14 +246,17 @@ class CompressedReader
     template <typename T>
     size_t read(T& object);
 
-    size_t read(void* outbuf, const size_t size);
+    size_t read(
+        void*               outbuf,
+        const size_t        size);
 
   private:
-    BufferedFile&       m_file;
-    size_t              m_buffer_index;
-    size_t              m_buffer_end;
-    std::vector<uint8>  m_buffer;
-    std::vector<uint8>  m_compressed_buffer;
+    BufferedFile&           m_file;
+    size_t                  m_buffer_index;
+    size_t                  m_buffer_end;
+    std::vector<uint8>      m_buffer;
+    std::vector<uint8>      m_compressed_buffer;
+    std::vector<uint8>      m_working_memory;
 
     bool fill_buffer();
 };
@@ -254,8 +266,7 @@ class CompressedReader
 // BufferedFile class implementation.
 //
 
-inline size_t BufferedFile::read(
-    void*               outbuf)
+inline size_t BufferedFile::read(void* outbuf)
 {
     assert(m_file);
     assert(m_file_mode == ReadMode);
@@ -292,8 +303,7 @@ inline size_t BufferedFile::read_unbuf(T& object)
     return read_unbuf(&object, sizeof(T));
 }
 
-inline size_t BufferedFile::write(
-    const void*         inbuf)
+inline size_t BufferedFile::write(const void* inbuf)
 {
     assert(m_file);
     assert(m_file_mode == WriteMode);

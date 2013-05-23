@@ -464,10 +464,19 @@ bool BufferedFile::seek(
 // CompressedWriter class implementation.
 //
 
-CompressedWriter::CompressedWriter(BufferedFile& file)
+namespace
+{
+    const size_t WorkingMemorySizeBytes =
+        sizeof(lzo_align_t) * ((LZO1X_1_MEM_COMPRESS + (sizeof(lzo_align_t) - 1)) / sizeof(lzo_align_t));
+}
+
+CompressedWriter::CompressedWriter(
+    BufferedFile&       file,
+    const size_t        buffer_size)
   : m_file(file)
-  , m_buffer_size(64 * 1024)
+  , m_buffer_size(buffer_size)
   , m_buffer_index(0)
+  , m_working_memory(WorkingMemorySizeBytes)
 {
 #ifdef NDEBUG
     lzo_init();
@@ -488,7 +497,9 @@ size_t CompressedWriter::write(const T& object)
     return write(&object, sizeof(T));
 }
 
-size_t CompressedWriter::write(const void* inbuf, const size_t size)
+size_t CompressedWriter::write(
+    const void*         inbuf,
+    const size_t        size)
 {
     if (size > 0)
     {
@@ -505,8 +516,6 @@ size_t CompressedWriter::write(const void* inbuf, const size_t size)
 
 void CompressedWriter::flush_buffer()
 {
-    static lzo_align_t __LZO_MMODEL working_mem[(LZO1X_1_MEM_COMPRESS + (sizeof(lzo_align_t) - 1)) / sizeof(lzo_align_t)];
-
     const size_t max_compressed_buffer_size = m_buffer_index + (m_buffer_index / 16) + 64 + 3;
     ensure_minimum_size(m_compressed_buffer, max_compressed_buffer_size);
 
@@ -516,7 +525,7 @@ void CompressedWriter::flush_buffer()
         m_buffer_index,
         &m_compressed_buffer[0],
         &compressed_buffer_size,
-        working_mem);
+        &m_working_memory[0]);
 
     m_file.write(m_buffer_index);
     m_file.write(compressed_buffer_size);
@@ -534,6 +543,7 @@ CompressedReader::CompressedReader(BufferedFile& file)
   : m_file(file)
   , m_buffer_index(0)
   , m_buffer_end(0)
+  , m_working_memory(WorkingMemorySizeBytes)
 {
 #ifdef NDEBUG
     lzo_init();
@@ -548,7 +558,9 @@ size_t CompressedReader::read(T& object)
     return read(&object, sizeof(T));
 }
 
-size_t CompressedReader::read(void* outbuf, const size_t size)
+size_t CompressedReader::read(
+    void*               outbuf,
+    const size_t        size)
 {
     size_t remaining = size;
 
@@ -572,8 +584,6 @@ size_t CompressedReader::read(void* outbuf, const size_t size)
 
 bool CompressedReader::fill_buffer()
 {
-    static lzo_align_t __LZO_MMODEL working_mem[(LZO1X_1_MEM_COMPRESS + (sizeof(lzo_align_t) - 1)) / sizeof(lzo_align_t)];
-
     size_t buffer_size;
     if (m_file.read(buffer_size) == 0)
         return false;
@@ -591,7 +601,7 @@ bool CompressedReader::fill_buffer()
         compressed_buffer_size,
         &m_buffer[0],
         &m_buffer_end,
-        working_mem);
+        &m_working_memory[0]);
 
     m_buffer_index = 0;
 
