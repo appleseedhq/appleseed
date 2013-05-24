@@ -31,11 +31,13 @@
 
 // Qt headers.
 #include <QObject>
+#include <QString>
 
 // Forward declarations.
 namespace appleseed { namespace studio { class MouseCoordinatesTracker; } }
 namespace appleseed { namespace studio { class ProjectExplorer; } }
 namespace renderer  { class Project; }
+class QComboBox;
 class QEvent;
 class QPoint;
 
@@ -49,13 +51,19 @@ class ScenePickingHandler
 
   public:
     ScenePickingHandler(
+        QComboBox*                          picking_mode_combo,
         const MouseCoordinatesTracker&      mouse_tracker,
         const ProjectExplorer&              project_explorer,
         const renderer::Project&            project);
 
     ~ScenePickingHandler();
 
+  public slots:
+    void slot_picking_mode_changed(const int index);
+
   private:
+    QComboBox*                              m_picking_mode_combo;
+    QString                                 m_picking_mode;
     const MouseCoordinatesTracker&          m_mouse_tracker;
     const ProjectExplorer&                  m_project_explorer;
     const renderer::Project&                m_project;

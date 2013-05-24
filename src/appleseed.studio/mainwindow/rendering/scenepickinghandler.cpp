@@ -50,6 +50,7 @@
 #include "foundation/math/vector.h"
 
 // Qt headers.
+#include <QComboBox>
 #include <QEvent>
 #include <QMouseEvent>
 #include <Qt>
@@ -66,19 +67,38 @@ namespace appleseed {
 namespace studio {
 
 ScenePickingHandler::ScenePickingHandler(
+    QComboBox*                      picking_mode_combo,
     const MouseCoordinatesTracker&  mouse_tracker,
     const ProjectExplorer&          project_explorer,
     const Project&                  project)
-  : m_mouse_tracker(mouse_tracker)
+  : m_picking_mode_combo(picking_mode_combo)
+  , m_mouse_tracker(mouse_tracker)
   , m_project_explorer(project_explorer)
   , m_project(project)
 {
     m_mouse_tracker.get_widget()->installEventFilter(this);
+
+    m_picking_mode_combo->addItem("Assembly", "assembly");
+    m_picking_mode_combo->addItem("Assembly Instance", "assembly_instance");
+    m_picking_mode_combo->addItem("Object", "object");
+    m_picking_mode_combo->addItem("Object Instance", "object_instance");
+    m_picking_mode_combo->addItem("Material", "material");
+
+    connect(
+        m_picking_mode_combo, SIGNAL(currentIndexChanged(int)), 
+        this, SLOT(slot_picking_mode_changed(int)));
+
+    m_picking_mode_combo->setCurrentIndex(3);
 }
 
 ScenePickingHandler::~ScenePickingHandler()
 {
     m_mouse_tracker.get_widget()->removeEventFilter(this);
+}
+
+void ScenePickingHandler::slot_picking_mode_changed(const int index)
+{
+    m_picking_mode = m_picking_mode_combo->itemData(index).value<QString>();
 }
 
 bool ScenePickingHandler::eventFilter(QObject* object, QEvent* event)
@@ -109,6 +129,21 @@ namespace
         else sstr << "n/a";
 
         sstr << endl;
+    }
+
+    const Entity* get_picked_entity(
+        const ScenePicker::PickingResult&   picking_result,
+        const QString&                      picking_mode)
+    {
+        if (picking_mode == "assembly")
+            return picking_result.m_assembly;
+        else if (picking_mode == "assembly_instance")
+            return picking_result.m_assembly_instance;
+        else if (picking_mode == "object")
+            return picking_result.m_object;
+        else if (picking_mode == "object_instance")
+            return picking_result.m_object_instance;
+        else return picking_result.m_material;
     }
 }
 
@@ -144,8 +179,10 @@ void ScenePickingHandler::pick(const QPoint& point)
 
     RENDERER_LOG_INFO("%s", sstr.str().c_str());
 
-    if (result.m_object)
-        m_project_explorer.highlight_entity(result.m_object->get_uid());
+    const Entity* picked_entity = get_picked_entity(result, m_picking_mode);
+
+    if (picked_entity)
+        m_project_explorer.highlight_entity(picked_entity->get_uid());
     else m_project_explorer.clear_highlighting();
 }
 

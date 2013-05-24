@@ -26,12 +26,6 @@
    <layout class="QGridLayout" name="gridLayout_3">
     <item row="0" column="0">
      <widget class="QTabWidget" name="tab_render_channels">
-      <property name="styleSheet">
-       <string>QWidget
-{
-	background-color: transparent;
-}</string>
-      </property>
       <property name="currentIndex">
        <number>0</number>
       </property>

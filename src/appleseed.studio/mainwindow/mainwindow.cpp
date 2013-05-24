@@ -66,6 +66,7 @@
 #include <QAction>
 #include <QActionGroup>
 #include <QApplication>
+#include <QComboBox>
 #include <QDir>
 #include <QFileDialog>
 #include <QGridLayout>
@@ -74,6 +75,7 @@
 #include <QMessageBox>
 #include <QMetaType>
 #include <QSettings>
+#include <QSpacerItem>
 #include <QStatusBar>
 #include <QString>
 #include <QStringList>
@@ -745,15 +747,34 @@ void MainWindow::add_render_widget(
     scroll_area->setAlignment(Qt::AlignCenter);
     scroll_area->setWidget(render_widget_wrapper);
 
-    // Create a lebel to display various information such as mouse coordinates, etc.
+    // Create the frame hosting render tools.
+    QFrame* render_tools_frame = new QFrame();
+    render_tools_frame->setObjectName(QString::fromUtf8("render_tools_frame"));
+    render_tools_frame->setLayout(new QHBoxLayout());
+    render_tools_frame->layout()->setMargin(4);
+
+    // Create the picking mode combobox.
+    // The combo will be populated by the ScenePickingHandler instantiated below.
+    QComboBox* picking_mode_combo = new QComboBox();
+    picking_mode_combo->setObjectName(QString::fromUtf8("picking_mode_combo"));
+    render_tools_frame->layout()->addWidget(picking_mode_combo);
+
+    // Add an horizontal spacer.
+    render_tools_frame->layout()->addItem(
+        new QSpacerItem(1, 1, QSizePolicy::Expanding, QSizePolicy::Minimum));
+    
+    // Create a label to display various information such as mouse coordinates, etc.
     QLabel* info_label = new QLabel();
-    info_label->setObjectName("info_label");
+    info_label->setObjectName(QString::fromUtf8("info_label"));
+    render_tools_frame->layout()->addWidget(info_label);
 
     // Encapsulate the scroll area inside a tab.
     QWidget* tab = new QWidget();
     tab->setLayout(new QGridLayout());
+    tab->layout()->setSpacing(0);
+    tab->layout()->setMargin(0);
+    tab->layout()->addWidget(render_tools_frame);
     tab->layout()->addWidget(scroll_area);
-    tab->layout()->addWidget(info_label);
 
     // Add the tab to the render channels tab bar.
     m_ui->tab_render_channels->addTab(tab, label);
@@ -778,6 +799,7 @@ void MainWindow::add_render_widget(
             height));
     record->m_picking_handler.reset(
         new ScenePickingHandler(
+            picking_mode_combo,
             *record->m_mouse_tracker.get(),
             *m_project_explorer.get(),
             *m_project_manager.get_project()));

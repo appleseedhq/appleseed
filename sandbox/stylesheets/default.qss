@@ -44,6 +44,7 @@
     
 #define DEFAULT_TEXT_COLOR                  rgb(210, 210, 210)
 #define DISABLED_TEXT_COLOR                 rgb(100, 100, 100)
+#define INFO_TEXT_COLOR                     rgb(100, 100, 100)
 #define HOVER_TEXT_COLOR                    rgb(255, 255, 255)
 #define SELECTED_TEXT_COLOR                 rgb(255, 255, 255)
 
@@ -105,8 +106,7 @@ QStatusBar::item
 
 QScrollBar
 {
-    background-color: transparent;
-    border: BORDER_STYLE;
+    background-color: INPUT_BACKGROUND_COLOR;
 }
 
 QScrollBar::handle
@@ -122,14 +122,13 @@ QScrollBar::handle:hover
 QScrollBar::add-page,
 QScrollBar::sub-page
 {
-    background-color: transparent;
+    background-color: INPUT_BACKGROUND_COLOR;
 }
 
 QScrollBar::add-line,
 QScrollBar::sub-line
 {
-    border: BORDER_STYLE;
-    background-color: transparent;
+    background-color: INPUT_BACKGROUND_COLOR;
     subcontrol-origin: margin;
 }
 
@@ -890,7 +889,29 @@ QWidget#MaterialAssignmentEditorWindow QWidget#scrollarea_contents
     background-color: transparent;
 }
 
-QLabel#info_label
+QTabWidget#tab_render_channels QWidget
 {
-    color: rgb(100, 100, 100);
+    background-color: transparent;
+}
+
+/* Overqualify to give precedence. */
+QWidget > QFrame#render_tools_frame
+{
+    background-color: DEFAULT_BACKGROUND_COLOR;
+}
+
+/* Overqualify to give precedence. */
+QFrame#render_tools_frame QComboBox#picking_mode_combo
+{
+    background-color: INPUT_BACKGROUND_COLOR;
+    min-width: 120px;
+    max-width: 120px;
+}
+
+/* Overqualify to give precedence. */
+QFrame#render_tools_frame QLabel#info_label
+{
+    color: INFO_TEXT_COLOR;
+    min-width: 240px;
+    max-width: 240px;
 }
