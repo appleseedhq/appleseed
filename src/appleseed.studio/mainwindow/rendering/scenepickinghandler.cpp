@@ -57,6 +57,7 @@
 #include <QWidget>
 
 // Standard headers.
+#include <cassert>
 #include <sstream>
 
 using namespace foundation;
@@ -83,6 +84,9 @@ ScenePickingHandler::ScenePickingHandler(
     m_picking_mode_combo->addItem("Object", "object");
     m_picking_mode_combo->addItem("Object Instance", "object_instance");
     m_picking_mode_combo->addItem("Material", "material");
+    m_picking_mode_combo->addItem("Surface Shader", "surface_shader");
+    m_picking_mode_combo->addItem("BSDF", "bsdf");
+    m_picking_mode_combo->addItem("EDF", "edf");
 
     connect(
         m_picking_mode_combo, SIGNAL(currentIndexChanged(int)), 
@@ -143,7 +147,19 @@ namespace
             return picking_result.m_object;
         else if (picking_mode == "object_instance")
             return picking_result.m_object_instance;
-        else return picking_result.m_material;
+        else if (picking_mode == "material")
+            return picking_result.m_material;
+        else if (picking_mode == "surface_shader")
+            return picking_result.m_surface_shader;
+        else if (picking_mode == "bsdf")
+            return picking_result.m_bsdf;
+        else if (picking_mode == "edf")
+            return picking_result.m_edf;
+        else
+        {
+            assert(!"Invalid picking mode.");
+            return 0;
+        }
     }
 }
 
