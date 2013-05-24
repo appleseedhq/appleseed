@@ -153,11 +153,15 @@ QScrollBar:vertical
 QScrollBar::handle:horizontal
 {
     min-width: 15px;
+    margin-top: 3px;
+    margin-bottom: 3px;
 }
 
 QScrollBar::handle:vertical
 {
     min-height: 15px;
+    margin-left: 3px;
+    margin-right: 3px;
 }
 
 QScrollBar::add-line:horizontal
