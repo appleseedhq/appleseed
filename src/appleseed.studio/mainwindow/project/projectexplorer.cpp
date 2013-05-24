@@ -45,7 +45,9 @@
 #include <QKeySequence>
 #include <QMenu>
 #include <QPoint>
+#include <QRect>
 #include <QRegExp>
+#include <QScrollBar>
 #include <QString>
 #include <Qt>
 #include <QTreeWidget>
@@ -143,6 +145,9 @@ void ProjectExplorer::highlight_entity(const UniqueID uid) const
     if (item)
     {
         m_tree_widget->scrollToItem(item);
+
+        const QRect r = m_tree_widget->visualItemRect(item);
+        m_tree_widget->horizontalScrollBar()->setValue(r.x());
 
         item->setSelected(true);
 
