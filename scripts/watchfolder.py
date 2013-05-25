@@ -43,11 +43,10 @@ import xml.dom.minidom as xml
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "1.6"
+VERSION = "1.7"
 OUTPUT_DIR = "_renders"
 COMPLETED_DIR = "_archives"
 LOGS_DIR = "_logs"
-APPLESEED_BIN = "appleseed.cli"
 PAUSE_BETWEEN_CHECKS = 3    # in seconds
 
 
@@ -62,7 +61,8 @@ def safe_mkdir(dir):
 def format_message(severity, msg):
     now = datetime.datetime.now()
     padded_severity = severity.ljust(7)
-    return "\n".join("{0} WATCH {1} | {2}".format(now, padded_severity, line) for line in msg.splitlines())
+    return "\n".join("{0} watch {1} | {2}".format(now, padded_severity, line) \
+        for line in msg.splitlines())
 
 
 #--------------------------------------------------------------------------------------------------
@@ -155,7 +155,8 @@ if os.name == "nt":
 
     def open_wer_key():
         try:
-            return _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, WER_KEY_PATH, 0, _winreg.KEY_ALL_ACCESS)
+            return _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, WER_KEY_PATH, 0,
+                                   _winreg.KEY_ALL_ACCESS)
         except WindowsError:
             pass
 
@@ -196,23 +197,23 @@ if os.name == "nt":
         return "DontShowUI={0} Disabled={1}".format(dont_show_ui, disabled)
 
     def enable_wer(log):
-        log.info("Enabling Windows Error Reporting...")
+        log.info("enabling windows error reporting...")
         previous_values = configure_wer(0, 0)
         if previous_values is None:
-            log.warning("Could not enable Windows Error Reporting.")
+            log.warning("could not enable windows error reporting.")
         return previous_values
 
     def disable_wer(log):
-        log.info("Disabling Windows Error Reporting...")
+        log.info("disabling windows error reporting...")
         previous_values = configure_wer(1, 1)
         if previous_values is None:
-            log.warning("Could not disable Windows Error Reporting.")
+            log.warning("could not disable windows error reporting.")
         return previous_values
 
     def restore_wer(previous_values, log):
-        log.info("Restoring initial Windows Error Reporting parameters...")
+        log.info("restoring initial windows error reporting parameters...")
         if configure_wer(previous_values[0], previous_values[1]) is None:
-            log.warning("Could not restore initial Windows Error Reporting parameters.")
+            log.warning("could not restore initial windows error reporting parameters.")
 
 
 #--------------------------------------------------------------------------------------------------
@@ -221,11 +222,12 @@ if os.name == "nt":
 
 def print_appleseed_version(args, log):
     try:
-        p = subprocess.Popen([args.appleseed_bin_path, "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        p = subprocess.Popen([args.tool_path, "--version"], stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE)
         version_string = p.communicate()[1].split(os.linesep, 1)[0]
-        log.info("Running {0}.".format(version_string))
+        log.info("running {0}.".format(version_string))
     except OSError:
-        log.error("Failed to query {0} version.".format(APPLESEED_BIN))
+        log.error("failed to query {0} version.".format(args.tool_path))
         sys.exit(1)
 
 
@@ -242,10 +244,10 @@ def render_project(args, project_filepath, log):
     try:
         os.rename(project_filepath, user_project_filepath)
     except:
-        log.warning("Failed to acquire {0}.".format(project_filepath))
+        log.warning("failed to acquire {0}.".format(project_filepath))
         return
 
-    log.info("Starting rendering {0}...".format(project_filepath))
+    log.info("starting rendering {0}...".format(project_filepath))
     start_time = datetime.datetime.now()
 
     try:
@@ -253,13 +255,14 @@ def render_project(args, project_filepath, log):
         user_project_filename = os.path.split(user_project_filepath)[1]
         project_filename = os.path.split(project_filepath)[1]
         output_filename = os.path.splitext(project_filename)[0] + '.' + args.output_format
-        output_filepath = os.path.join(args.watch_dir, OUTPUT_DIR, output_filename)
-        command = '"{0}" -o "{1}" "{2}"'.format(args.appleseed_bin_path, output_filepath, user_project_filepath)
+        output_filepath = os.path.join(args.directory, OUTPUT_DIR, output_filename)
+        command = '"{0}" -o "{1}" "{2}"'.format(args.tool_path, output_filepath,
+                                                user_project_filepath)
         if args.args:
             command += ' {0}'.format(" ".join(args.args))
 
         # Make sure the output directory exists.
-        safe_mkdir(os.path.join(args.watch_dir, OUTPUT_DIR))
+        safe_mkdir(os.path.join(args.directory, OUTPUT_DIR))
 
         # Execute command.
         result = subprocess.call(command, shell=True)
@@ -267,17 +270,17 @@ def render_project(args, project_filepath, log):
             raise ProcessFailedException()
 
         # Everything went well, move the file into the completed directory.
-        completed_dir = os.path.join(args.watch_dir, COMPLETED_DIR)
+        completed_dir = os.path.join(args.directory, COMPLETED_DIR)
         safe_mkdir(completed_dir)
         shutil.move(user_project_filepath, os.path.join(completed_dir, project_filename))
     except:
         # Something failed, rename the project file back to its original name.
-        log.error("Failed to render {0}.".format(project_filepath))
+        log.error("failed to render {0}.".format(project_filepath))
         os.rename(user_project_filepath, project_filepath)
         raise
 
     rendering_time = datetime.datetime.now() - start_time
-    log.info("Successfully rendered {0} in {1}.".format(project_filepath, rendering_time))
+    log.info("successfully rendered {0} in {1}.".format(project_filepath, rendering_time))
 
 
 #--------------------------------------------------------------------------------------------------
@@ -301,12 +304,12 @@ def convert_path_to_local(path):
     else:
         return path.replace('\\', '/')
 
-def extract_project_deps(project_filepath):
+def extract_project_deps(project_filepath, log):
     try:
         with open(project_filepath, 'r') as file:
             contents = file.read()
     except:
-        log.warning("Failed to acquire {0}.".format(project_filepath))
+        log.warning("failed to acquire {0}.".format(project_filepath))
         return False, set()
 
     deps = set()
@@ -341,11 +344,11 @@ def count_missing_project_deps(deps):
 
 def watch(args, log):
     # Look for project files in the watch directory.
-    project_files = get_project_files(args.watch_dir)
+    project_files = get_project_files(args.directory)
 
     # No project file found.
     if len(project_files) == 0:
-        Log.info_no_log("Waiting for incoming data...")
+        Log.info_no_log("waiting for incoming data...")
         return False
 
     # Shuffle the array of project files.
@@ -353,13 +356,14 @@ def watch(args, log):
 
     # Render the first project file that has no missing dependencies.
     for project_filepath in project_files:
-        deps_success, deps = extract_project_deps(project_filepath)
+        deps_success, deps = extract_project_deps(project_filepath, log)
         if not deps_success:
             continue
 
         missing_deps = count_missing_project_deps(deps)
         if missing_deps > 0:
-            Log.info_no_log("{0} missing dependencies for {1}.".format(missing_deps, project_filepath))
+            Log.info_no_log("{0} missing dependencies for {1}.".format(missing_deps,
+                                                                       project_filepath))
             continue
 
         render_project(args, project_filepath, log)
@@ -375,41 +379,41 @@ def watch(args, log):
 
 def main():
     # Parse the command line.
-    parser = argparse.ArgumentParser(description="Watch a directory and render any project file that appears in it.")
-    parser.add_argument("-a", dest="appleseed_dir", metavar="DIR", required=True, help="set appleseed binaries directory")
-    parser.add_argument("-w", dest="watch_dir", metavar="DIR", help="set watch directory")
-    parser.add_argument("-f", dest="output_format", metavar="EXTENSION", default="exr", help="set output format (e.g. png, exr)")
-    parser.add_argument("-u", dest="user_name", metavar="NAME", default="anonymous", help="set user name")
-    parser.add_argument("-p", dest="args", metavar="ARG", nargs="*", help="forward additional arguments to appleseed")
+    parser = argparse.ArgumentParser(description="watch a directory and render any project file " \
+                                     "that appears in it.")
+    parser.add_argument("-t", "--tool-path", metavar="tool-path", required=True,
+                        help="set the path to the appleseed.cli tool")
+    parser.add_argument("-f", "--format", dest="output_format", metavar="FORMAT", default="exr",
+                        help="set output format (e.g. png, exr)")
+    parser.add_argument("-u", "--user", dest="user_name", metavar="NAME", default="anonymous",
+                        help="set user name")
+    parser.add_argument("-p", "--parameter", dest="args", metavar="ARG", nargs="*",
+                        help="forward additional arguments to appleseed")
+    parser.add_argument("directory", help="directory to watch")
     args = parser.parse_args()
 
     # If no watch directory is provided, watch the current directory.
-    if args.watch_dir is None:
-        args.watch_dir = os.getcwd()
-
-    # Compute the path to the command line appleseed renderer.
-    args.appleseed_bin_path = os.path.join(args.appleseed_dir, APPLESEED_BIN)
-    if os.name == "nt":
-        args.appleseed_bin_path += ".exe"
+    if args.directory is None:
+        args.directory = os.getcwd()
 
     # Start the log.
-    log = Log(os.path.join(args.watch_dir, LOGS_DIR, args.user_name + ".log"))
-    log.info("--- Starting logging ---")
+    log = Log(os.path.join(args.directory, LOGS_DIR, args.user_name + ".log"))
+    log.info("--- starting logging ---")
 
     # Print version information.
-    log.info("Running watchfolder.py version {0}.".format(VERSION))
+    log.info("running watchfolder.py version {0}.".format(VERSION))
     print_appleseed_version(args, log)
 
     # Disable Windows Error Reporting on Windows.
     if os.name == "nt":
-        log.info("Initial Windows Error Reporting status: {0}".format(get_wer_status()))
+        log.info("initial windows error reporting status: {0}".format(get_wer_status()))
         initial_wer_values = disable_wer(log)
-        log.info("New Windows Error Reporting status: {0}".format(get_wer_status()))
+        log.info("new windows error reporting status: {0}".format(get_wer_status()))
 
-    log.info("Watching directory {0}".format(os.path.abspath(args.watch_dir)))
+    log.info("watching directory {0}".format(os.path.abspath(args.directory)))
     random.seed()
 
-    # Main watch loop.
+    # Main watch/render loop.
     while True:
         try:
             while watch(args, log): pass
@@ -426,11 +430,10 @@ def main():
 
     # Restore initial Windows Error Reporting parameters.
     if os.name == "nt":
-        # restore_wer(initial_wer_values, log)
-        enable_wer(log)
-        log.info("Final Windows Error Reporting status: {0}".format(get_wer_status()))
+        restore_wer(initial_wer_values, log)
+        log.info("final windows error reporting status: {0}".format(get_wer_status()))
 
-    log.info("Exiting...")
+    log.info("exiting...")
 
 if __name__ == '__main__':
     main()

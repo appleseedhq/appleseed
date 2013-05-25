@@ -232,6 +232,9 @@ class PackageBuilder:
 
     def add_scripts_to_stage(self):
         progress("Adding scripts to staging directory")
+        shutil.copy("convertmany.py", "appleseed/bin/")
+        shutil.copy("rendermany.py", "appleseed/bin/")
+        shutil.copy("updatemany.py", "appleseed/bin/")
         shutil.copy("watchfolder.py", "appleseed/bin/")
 
     def add_local_schema_files_to_stage(self):

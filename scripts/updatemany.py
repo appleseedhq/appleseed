@@ -27,39 +27,50 @@
 # THE SOFTWARE.
 #
 
+import argparse
 import datetime
-import fnmatch
-import os
 import subprocess
-import sys
+import os
 
 
 #--------------------------------------------------------------------------------------------------
-# Convert a given mesh file.
+# Utility functions.
 #--------------------------------------------------------------------------------------------------
 
-def convert_mesh_file(input_filepath, output_filepath, tool_path):
-    print("Converting {0} to {1}...".format(input_filepath, output_filepath))
-    subprocess.call([tool_path, input_filepath, output_filepath])
-
-
-#--------------------------------------------------------------------------------------------------
-# Convert all matching mesh files in the current directory.
-# Returns the number of converted mesh files.
-#--------------------------------------------------------------------------------------------------
-
-def convert_mesh_files(tool_path, input_pattern, output_format):
-    converted_file_count = 0
-
-    for dirpath, dirnames, filenames in os.walk("."):
+def walk(directory, recursive):
+    if recursive:
+        for dirpath, dirnames, filenames in os.walk(directory):
+            for filename in filenames:
+                yield os.path.join(dirpath, filename)
+    else:
+        dirpath, dirnames, filenames = os.walk(directory).next()
         for filename in filenames:
-            if fnmatch.fnmatch(filename, input_pattern):
-                input_filepath = os.path.join(dirpath, filename)
-                output_filepath = os.path.splitext(input_filepath)[0] + "." + output_format
-                convert_mesh_file(input_filepath, output_filepath, tool_path)
-                converted_file_count += 1
+            yield os.path.join(dirpath, filename)
 
-    return converted_file_count
+
+#--------------------------------------------------------------------------------------------------
+# Update a given project file.
+#--------------------------------------------------------------------------------------------------
+
+def update_project_file(filepath, tool_path):
+    print("updating {0}...".format(filepath))
+    subprocess.call([tool_path, filepath])
+
+
+#--------------------------------------------------------------------------------------------------
+# Update all project files in a given directory (possibly recursively).
+# Returns the number of updated project files.
+#--------------------------------------------------------------------------------------------------
+
+def update_project_files(tool_path, directory, recursive):
+    updated_file_count = 0
+
+    for filepath in walk(directory, recursive):
+        if os.path.splitext(filepath)[1] == ".appleseed":
+            update_project_file(filepath, tool_path)
+            updated_file_count += 1
+
+    return updated_file_count
 
 
 #--------------------------------------------------------------------------------------------------
@@ -67,19 +78,20 @@ def convert_mesh_files(tool_path, input_pattern, output_format):
 #--------------------------------------------------------------------------------------------------
 
 def main():
-    if len(sys.argv) < 4:
-        print("Usage: {0} <path-to-convertmesh-tool> <input-pattern> <output-format>".format(sys.argv[0]))
-        sys.exit(1)
-
-    tool_path = sys.argv[1]
-    input_pattern = sys.argv[2]
-    output_format = sys.argv[3]
+    parser = argparse.ArgumentParser(description="normalize multiple project files and update " \
+                                     "them to the latest format revision if necessary.")
+    parser.add_argument("-t", "--tool-path", metavar="tool-path", required=True,
+                        help="set the path to the updateprojectfile tool")
+    parser.add_argument("-r", "--recursive", action='store_true', dest="recursive",
+                        help="scan the specified directory and all its subdirectories")
+    parser.add_argument("directory", help="directory to scan")
+    args = parser.parse_args()
 
     start_time = datetime.datetime.now()
-    converted_file_count = convert_mesh_files(tool_path, input_pattern, output_format)
+    updated_file_count = update_project_files(args.tool_path, args.directory, args.recursive)
     end_time = datetime.datetime.now()
 
-    print("\nConverted {0} mesh files in {1}.".format(converted_file_count, end_time - start_time))
+    print("updated {0} project file(s) in {1}.".format(updated_file_count, end_time - start_time))
 
 if __name__ == '__main__':
     main()
