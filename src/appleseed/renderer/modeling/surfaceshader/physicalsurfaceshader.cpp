@@ -105,6 +105,9 @@ namespace
 
             m_aerial_persp_rcp_distance = 1.0 / m_params.get_optional<double>("aerial_persp_distance", 1000.0);
             m_aerial_persp_intensity = m_params.get_optional<double>("aerial_persp_intensity", 0.01);
+
+            m_front_lighting_samples = m_params.get_optional<size_t>("front_lighting_samples", 1);
+            m_back_lighting_samples = m_params.get_optional<size_t>("back_lighting_samples", 1);
         }
 
         virtual void release() OVERRIDE
@@ -133,12 +136,12 @@ namespace
                 &values);
 
             // Compute front lighting.
-            shading_context.get_lighting_engine()->compute_lighting(
+            compute_front_lighting(
+                values,
                 sampling_context,
                 shading_context,
                 shading_point,
-                shading_result.m_color,
-                shading_result.m_aovs);
+                shading_result);
 
             // Optionally simulate translucency by adding back lighting.
             if (values.m_translucency > 0.0)
@@ -188,6 +191,36 @@ namespace
         AerialPerspMode             m_aerial_persp_mode;
         double                      m_aerial_persp_rcp_distance;
         double                      m_aerial_persp_intensity;
+        size_t                      m_front_lighting_samples;
+        size_t                      m_back_lighting_samples;
+
+        void compute_front_lighting(
+            const InputValues&      values,
+            SamplingContext&        sampling_context,
+            const ShadingContext&   shading_context,
+            const ShadingPoint&     shading_point,
+            ShadingResult&          shading_result) const
+        {
+            shading_result.m_color.set(0.0f);
+            shading_result.m_aovs.set(0.0f);
+
+            for (size_t i = 0; i < m_front_lighting_samples; ++i)
+            {
+                shading_context.get_lighting_engine()->compute_lighting(
+                    sampling_context,
+                    shading_context,
+                    shading_point,
+                    shading_result.m_color,
+                    shading_result.m_aovs);
+            }
+
+            if (m_front_lighting_samples > 1)
+            {
+                const float rcp_sample_count = 1.0f / static_cast<float>(m_front_lighting_samples);
+                shading_result.m_color *= rcp_sample_count;
+                shading_result.m_aovs *= rcp_sample_count;
+            }
+        }
 
         void add_back_lighting(
             const InputValues&      values,
@@ -211,19 +244,25 @@ namespace
 
             ShadingResult back_shading_result;
             back_shading_result.m_aovs.set_size(shading_result.m_aovs.size());
+            back_shading_result.m_color.set(0.0f);
+            back_shading_result.m_aovs.set(0.0f);
 
             // Compute back lighting.
-            shading_context.get_lighting_engine()->compute_lighting(
-                sampling_context,
-                shading_context,
-                back_shading_point,
-                back_shading_result.m_color,
-                back_shading_result.m_aovs);
+            for (size_t i = 0; i < m_back_lighting_samples; ++i)
+            {
+                shading_context.get_lighting_engine()->compute_lighting(
+                    sampling_context,
+                    shading_context,
+                    back_shading_point,
+                    back_shading_result.m_color,
+                    back_shading_result.m_aovs);
+            }
 
             // Combine front and back lighting based on the translucency value.
             const float translucency = static_cast<float>(values.m_translucency);
-            back_shading_result.m_color *= translucency;
-            back_shading_result.m_aovs *= translucency;
+            const float rcp_sample_count = 1.0f / static_cast<float>(m_back_lighting_samples);
+            back_shading_result.m_color *= translucency * rcp_sample_count;
+            back_shading_result.m_aovs *= translucency * rcp_sample_count;
             shading_result.m_color *= 1.0f - translucency;
             shading_result.m_aovs *= 1.0f - translucency;
             shading_result.m_color += back_shading_result.m_color;
@@ -321,6 +360,22 @@ DictionaryArray PhysicalSurfaceShaderFactory::get_widget_definitions() const
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("default", "0.0")
+            .insert("use", "optional"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "front_lighting_samples")
+            .insert("label", "Front Lighting Samples")
+            .insert("widget", "text_box")
+            .insert("default", "1")
+            .insert("use", "optional"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "back_lighting_samples")
+            .insert("label", "Back Lighting Samples")
+            .insert("widget", "text_box")
+            .insert("default", "1")
             .insert("use", "optional"));
 
     definitions.push_back(

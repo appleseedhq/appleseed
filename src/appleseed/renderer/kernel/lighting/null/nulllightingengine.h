@@ -66,7 +66,6 @@ class NullLightingEngine
         Spectrum&               radiance,
         SpectrumStack&          aovs) OVERRIDE
     {
-        radiance.set(0.0f);
     }
 };
 

@@ -202,8 +202,6 @@ namespace
               , m_path_radiance(path_radiance)
               , m_path_aovs(path_aovs)
             {
-                m_path_radiance.set(0.0f);
-                m_path_aovs.set(0.0f);
             }
 
             bool accept_scattering_mode(
