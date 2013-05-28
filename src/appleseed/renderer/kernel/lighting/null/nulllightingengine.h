@@ -30,8 +30,11 @@
 #define APPLESEED_RENDERER_KERNEL_LIGHTING_NULL_NULLLIGHTINGENGINE_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/lighting/ilightingengine.h"
+
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 
 // Forward declarations.
 namespace renderer  { class ShadingContext; }
@@ -50,7 +53,7 @@ class NullLightingEngine
 {
   public:
     // Delete this instance.
-    virtual void release()
+    virtual void release() OVERRIDE
     {
         delete this;
     }
@@ -61,7 +64,7 @@ class NullLightingEngine
         const ShadingContext&   shading_context,
         const ShadingPoint&     shading_point,
         Spectrum&               radiance,
-        SpectrumStack&          aovs)
+        SpectrumStack&          aovs) OVERRIDE
     {
         radiance.set(0.0f);
     }
