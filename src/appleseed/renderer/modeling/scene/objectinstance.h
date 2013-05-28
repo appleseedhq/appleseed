@@ -137,7 +137,7 @@ class DLLSYMBOL ObjectInstance
         RayBiasMethodOutgoingDirection      // shift the ray's origin along the outgoing ray's direction
     };
 
-    // Per-object ray bias settings. The bias distance is expressed in world space.
+    // Per-instance ray bias settings. The bias distance is expressed in world space.
     RayBiasMethod get_ray_bias_method() const;
     double get_ray_bias_distance() const;
 
