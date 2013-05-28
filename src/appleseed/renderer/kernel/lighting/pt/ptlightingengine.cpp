@@ -462,11 +462,4 @@ ILightingEngine* PTLightingEngineFactory::create()
     return new PTLightingEngine(m_light_sampler, m_params);
 }
 
-ILightingEngine* PTLightingEngineFactory::create(
-    const LightSampler& light_sampler,
-    const ParamArray&   params)
-{
-    return new PTLightingEngine(light_sampler, params);
-}
-
 }   // namespace renderer

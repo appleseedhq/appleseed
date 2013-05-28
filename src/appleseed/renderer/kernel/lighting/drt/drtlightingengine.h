@@ -58,11 +58,6 @@ class DRTLightingEngineFactory
     // Return a new DRT lighting engine instance.
     virtual ILightingEngine* create() OVERRIDE;
 
-    // Return a new DRT lighting engine instance.
-    static ILightingEngine* create(
-        const LightSampler& light_sampler,
-        const ParamArray&   params);
-
   private:
     const LightSampler&     m_light_sampler;
     ParamArray              m_params;

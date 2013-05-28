@@ -423,11 +423,4 @@ ILightingEngine* DRTLightingEngineFactory::create()
     return new DRTLightingEngine(m_light_sampler, m_params);
 }
 
-ILightingEngine* DRTLightingEngineFactory::create(
-    const LightSampler& light_sampler,
-    const ParamArray&   params)
-{
-    return new DRTLightingEngine(light_sampler, params);
-}
-
 }   // namespace renderer
