@@ -43,11 +43,11 @@ import xml.dom.minidom as xml
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "1.7"
-OUTPUT_DIR = "_renders"
-COMPLETED_DIR = "_archives"
+VERSION = "1.8"
+RENDERS_DIR = "_renders"
+ARCHIVE_DIR = "_archives"
 LOGS_DIR = "_logs"
-PAUSE_BETWEEN_CHECKS = 3    # in seconds
+PAUSE_BETWEEN_CHECKS = 10   # in seconds
 
 
 #--------------------------------------------------------------------------------------------------
@@ -244,43 +244,54 @@ def render_project(args, project_filepath, log):
     try:
         os.rename(project_filepath, user_project_filepath)
     except:
-        log.warning("failed to acquire {0}.".format(project_filepath))
-        return
+        # log.warning("failed to acquire {0}.".format(project_filepath))
+        return False
 
     log.info("starting rendering {0}...".format(project_filepath))
     start_time = datetime.datetime.now()
 
     try:
         # Create shell command.
-        user_project_filename = os.path.split(user_project_filepath)[1]
         project_filename = os.path.split(project_filepath)[1]
         output_filename = os.path.splitext(project_filename)[0] + '.' + args.output_format
-        output_filepath = os.path.join(args.directory, OUTPUT_DIR, output_filename)
+        output_filepath = os.path.join(args.directory, RENDERS_DIR, output_filename)
         command = '"{0}" -o "{1}" "{2}"'.format(args.tool_path, output_filepath,
                                                 user_project_filepath)
         if args.args:
             command += ' {0}'.format(" ".join(args.args))
 
         # Make sure the output directory exists.
-        safe_mkdir(os.path.join(args.directory, OUTPUT_DIR))
+        safe_mkdir(os.path.join(args.directory, RENDERS_DIR))
 
         # Execute command.
         result = subprocess.call(command, shell=True)
         if result != 0:
             raise ProcessFailedException()
-
-        # Everything went well, move the file into the completed directory.
-        completed_dir = os.path.join(args.directory, COMPLETED_DIR)
-        safe_mkdir(completed_dir)
-        shutil.move(user_project_filepath, os.path.join(completed_dir, project_filename))
     except:
         # Something failed, rename the project file back to its original name.
         log.error("failed to render {0}.".format(project_filepath))
         os.rename(user_project_filepath, project_filepath)
         raise
 
+    # Create the archive directory if necessary.
+    try:
+        archive_dir = os.path.join(args.directory, ARCHIVE_DIR)
+        safe_mkdir(archive_dir)
+    except:
+        pass
+
+    try:
+        # Rename the file and move it into the archive directory.
+        shutil.move(user_project_filepath, os.path.join(archive_dir, project_filename))
+    except:
+        # For some reason we couldn't rename and move the file, try moving it without renaming it.
+        user_project_filename = os.path.split(user_project_filepath)[1]
+        shutil.move(user_project_filepath, os.path.join(archive_dir, user_project_filename))
+
     rendering_time = datetime.datetime.now() - start_time
     log.info("successfully rendered {0} in {1}.".format(project_filepath, rendering_time))
+
+    return True
 
 
 #--------------------------------------------------------------------------------------------------
@@ -309,7 +320,7 @@ def extract_project_deps(project_filepath, log):
         with open(project_filepath, 'r') as file:
             contents = file.read()
     except:
-        log.warning("failed to acquire {0}.".format(project_filepath))
+        # log.warning("failed to acquire {0}.".format(project_filepath))
         return False, set()
 
     deps = set()
@@ -366,8 +377,7 @@ def watch(args, log):
                                                                        project_filepath))
             continue
 
-        render_project(args, project_filepath, log)
-        return True
+        return render_project(args, project_filepath, log)
 
     # None of the project file has all its dependencies ready.
     return False
@@ -414,19 +424,22 @@ def main():
     random.seed()
 
     # Main watch/render loop.
-    while True:
-        try:
-            while watch(args, log): pass
-            time.sleep(PAUSE_BETWEEN_CHECKS)
-        except KeyboardInterrupt, SystemExit:
-            break
-        except ProcessFailedException:
-            time.sleep(PAUSE_BETWEEN_CHECKS)
-        except:
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-            lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
-            log.error("".join(line for line in lines))
-            time.sleep(PAUSE_BETWEEN_CHECKS)
+    try:
+        while True:
+            try:
+                while watch(args, log): pass
+                time.sleep(PAUSE_BETWEEN_CHECKS)
+            except KeyboardInterrupt, SystemExit:
+                raise
+            except ProcessFailedException:
+                time.sleep(PAUSE_BETWEEN_CHECKS)
+            except:
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
+                log.error("".join(line for line in lines))
+                time.sleep(PAUSE_BETWEEN_CHECKS)
+    except KeyboardInterrupt, SystemExit:
+        pass
 
     # Restore initial Windows Error Reporting parameters.
     if os.name == "nt":
