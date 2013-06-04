@@ -63,15 +63,16 @@ def convert_mesh_file(input_filepath, output_filepath, tool_path):
 # Returns the number of converted mesh files.
 #--------------------------------------------------------------------------------------------------
 
-def convert_mesh_files(tool_path, directory, recursive, input_pattern, output_format):
+def convert_mesh_files(tool_path, directory, recursive, input_pattern, output_format, overwrite):
     converted_file_count = 0
 
     for filepath in walk(directory, recursive):
         filename = os.path.basename(filepath)
         if fnmatch.fnmatch(filename, input_pattern):
             output_filepath = os.path.splitext(filepath)[0] + "." + output_format
-            convert_mesh_file(filepath, output_filepath, tool_path)
-            converted_file_count += 1
+            if overwrite or not os.path.exists(output_filepath):
+                convert_mesh_file(filepath, output_filepath, tool_path)
+                converted_file_count += 1
 
     return converted_file_count
 
@@ -85,8 +86,10 @@ def main():
                                      "to another.")
     parser.add_argument("-t", "--tool-path", metavar="tool-path", required=True,
                         help="set the path to the convertmeshfile tool")
-    parser.add_argument("-r", "--recursive", action='store_true', dest="recursive",
+    parser.add_argument("-r", "--recursive", action='store_true', dest='recursive',
                         help="scan the specified directory and all its subdirectories")
+    parser.add_argument("-n", "--no-overwrite", action='store_false', dest='overwrite',
+                        help="do not overwrite destination files if they already exist.")
     parser.add_argument("directory", help="directory to scan")
     parser.add_argument("input_pattern", metavar="input-pattern", help="input files pattern (e.g. *.obj)")
     parser.add_argument("output_format", metavar="output-format", help="output file format (e.g. abc, binarymesh)")
@@ -94,7 +97,8 @@ def main():
 
     start_time = datetime.datetime.now()
     converted_file_count = convert_mesh_files(args.tool_path, args.directory, args.recursive,
-                                              args.input_pattern, args.output_format)
+                                              args.input_pattern, args.output_format,
+                                              args.overwrite)
     end_time = datetime.datetime.now()
 
     print("converted {0} mesh file(s) in {1}.".format(converted_file_count, end_time - start_time))
