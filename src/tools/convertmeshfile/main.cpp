@@ -303,6 +303,14 @@ int main(int argc, const char* argv[])
         LOG_FATAL(logger, "could not read mesh file %s (%s).", input_filepath.c_str(), e.what());
     }
 
+    // Print a warning message and exit if no mesh were defined in the input file.
+    if (builder.get_meshes().empty())
+    {
+        LOG_WARNING(logger, "no mesh defined.");
+        return 0;
+    }
+
+    // Optionally print the bounding box of each loaded mesh.
     if (cl.m_print_bboxes.is_set())
     {
         for (const_each<list<Mesh> > i = builder.get_meshes(); i; ++i)
