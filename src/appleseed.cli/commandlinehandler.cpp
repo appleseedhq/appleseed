@@ -115,6 +115,12 @@ CommandLineHandler::CommandLineHandler()
     m_override_shading.set_exact_value_count(1);
     parser().add_option_handler(&m_override_shading);
 
+    m_select_object_instances.add_name("--select-object-instances");
+    m_select_object_instances.set_description("select which object instances to include in the render using a regular expression");
+    m_select_object_instances.set_syntax("regex");
+    m_select_object_instances.set_exact_value_count(1);
+    parser().add_option_handler(&m_select_object_instances);
+
     m_run_unit_tests.add_name("--run-unit-tests");
     m_run_unit_tests.set_description("run unit tests; filter them based on the optional regular expression argument");
     m_run_unit_tests.set_min_value_count(0);

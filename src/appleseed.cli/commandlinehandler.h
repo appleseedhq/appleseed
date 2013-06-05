@@ -70,6 +70,7 @@ class CommandLineHandler
     foundation::ValueOptionHandler<int>             m_window;
     foundation::ValueOptionHandler<int>             m_samples;
     foundation::ValueOptionHandler<std::string>     m_override_shading;
+    foundation::ValueOptionHandler<std::string>     m_select_object_instances;
 
     // Developer-oriented options.
     foundation::ValueOptionHandler<std::string>     m_run_unit_tests;
