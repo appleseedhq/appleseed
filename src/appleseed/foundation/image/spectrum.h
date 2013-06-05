@@ -223,14 +223,14 @@ FORCE_INLINE void RegularSpectrum<float, 31>::set(const float val)
 template <typename T, size_t N>
 inline T& RegularSpectrum<T, N>::operator[](const size_t i)
 {
-    assert(i < Samples);
+    assert(i < StoredSamples);
     return m_samples[i];
 }
 
 template <typename T, size_t N>
 inline const T& RegularSpectrum<T, N>::operator[](const size_t i) const
 {
-    assert(i < Samples);
+    assert(i < StoredSamples);
     return m_samples[i];
 }
 

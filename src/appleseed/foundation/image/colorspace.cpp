@@ -1458,6 +1458,7 @@ LightingConditions::LightingConditions(
         m_cmf[w][0] = cmf[0][w] * illuminant[w];
         m_cmf[w][1] = cmf[1][w] * illuminant[w];
         m_cmf[w][2] = cmf[2][w] * illuminant[w];
+        m_cmf[w][3] = 0.0f;
     }
 
     // Integrate the luminance.

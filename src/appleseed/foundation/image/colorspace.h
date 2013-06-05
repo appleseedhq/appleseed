@@ -162,7 +162,7 @@ extern const Spectrum31f RGBToSpectrumBlueIlluminance;
 class LightingConditions
 {
   public:
-    Color3f                     m_cmf[31];                  // precomputed values of (cmf[0], cmf[1], cmf[2]) * illuminant
+    SSE_ALIGN Color4f           m_cmf[32];                  // precomputed values of (cmf[0], cmf[1], cmf[2]) * illuminant
 
     LightingConditions();                                   // leaves the object uninitialized
 
@@ -755,6 +755,38 @@ Color<T, 3> spectrum_to_ciexyz(
 
     return Color<T, 3>(x, y, z);
 }
+
+#ifdef APPLESEED_FOUNDATION_USE_SSE
+
+template <>
+inline Color3f spectrum_to_ciexyz<float, Spectrum31f>(
+    const LightingConditions&   lighting,
+    const Spectrum31f&          spectrum)
+{
+    __m128 xyz1 = _mm_setzero_ps();
+    __m128 xyz2 = _mm_setzero_ps();
+    __m128 xyz3 = _mm_setzero_ps();
+    __m128 xyz4 = _mm_setzero_ps();
+
+    for (size_t w = 0; w < 8; ++w)
+    {
+        xyz1 = _mm_add_ps(xyz1, _mm_mul_ps(_mm_set1_ps(spectrum[4 * w + 0]), _mm_load_ps(&lighting.m_cmf[4 * w + 0][0])));
+        xyz2 = _mm_add_ps(xyz2, _mm_mul_ps(_mm_set1_ps(spectrum[4 * w + 1]), _mm_load_ps(&lighting.m_cmf[4 * w + 1][0])));
+        xyz3 = _mm_add_ps(xyz3, _mm_mul_ps(_mm_set1_ps(spectrum[4 * w + 2]), _mm_load_ps(&lighting.m_cmf[4 * w + 2][0])));
+        xyz4 = _mm_add_ps(xyz4, _mm_mul_ps(_mm_set1_ps(spectrum[4 * w + 3]), _mm_load_ps(&lighting.m_cmf[4 * w + 3][0])));
+    }
+
+    xyz1 = _mm_add_ps(xyz1, xyz2);
+    xyz3 = _mm_add_ps(xyz3, xyz4);
+    xyz1 = _mm_add_ps(xyz1, xyz3);
+
+    SSE_ALIGN float transfer[4];
+    _mm_store_ps(transfer, xyz1);
+
+    return Color3f(transfer[0], transfer[1], transfer[2]);
+}
+
+#endif  // APPLESEED_FOUNDATION_USE_SSE
 
 template <typename T, typename Spectrum>
 void ciexyz_reflectance_to_spectrum(
