@@ -1453,7 +1453,7 @@ LightingConditions::LightingConditions(
     const Spectrum31f   cmf[3])
 {
     // Precompute convolution of color matching functions and illuminant.
-    for (size_t w = 0; w < 31; ++w)
+    for (size_t w = 0; w < 32; ++w)
     {
         m_cmf[w][0] = cmf[0][w] * illuminant[w];
         m_cmf[w][1] = cmf[1][w] * illuminant[w];
