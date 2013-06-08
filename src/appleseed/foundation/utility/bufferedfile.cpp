@@ -539,17 +539,23 @@ void CompressedWriter::flush_buffer()
 // CompressedReader class implementation.
 //
 
-CompressedReader::CompressedReader(BufferedFile& file)
+CompressedReader::CompressedReader(
+    BufferedFile&       file,
+    const bool          is_compressed)
   : m_file(file)
+  , m_is_compressed(is_compressed)
   , m_buffer_index(0)
   , m_buffer_end(0)
-  , m_working_memory(WorkingMemorySizeBytes)
+  , m_working_memory(is_compressed ? WorkingMemorySizeBytes : 0)
 {
+    if (m_is_compressed)
+    {
 #ifdef NDEBUG
-    lzo_init();
+        lzo_init();
 #else
-    assert(lzo_init() == LZO_E_OK);
+        assert(lzo_init() == LZO_E_OK);
 #endif
+    }
 }
 
 template <typename T>
@@ -562,28 +568,38 @@ size_t CompressedReader::read(
     void*               outbuf,
     const size_t        size)
 {
-    size_t remaining = size;
-
-    while (remaining > 0)
+    if (m_is_compressed)
     {
-        if (m_buffer_index == m_buffer_end)
+        size_t remaining = size;
+
+        while (remaining > 0)
         {
-            if (!fill_buffer())
-                break;
+            if (m_buffer_index == m_buffer_end)
+            {
+                if (!fill_buffer())
+                    break;
+            }
+
+            const size_t copy = min(size, m_buffer_end - m_buffer_index);
+            memcpy(outbuf, &m_buffer[m_buffer_index], copy);
+
+            outbuf = reinterpret_cast<uint8*>(outbuf) + copy;
+            m_buffer_index += copy;
+            remaining -= copy;
         }
 
-        const size_t copy = min(size, m_buffer_end - m_buffer_index);
-        memcpy(outbuf, &m_buffer[m_buffer_index], copy);
-        outbuf = reinterpret_cast<uint8*>(outbuf) + copy;
-        m_buffer_index += copy;
-        remaining -= copy;
+        return size - remaining;
     }
-
-    return size - remaining;
+    else
+    {
+        return m_file.read(outbuf, size);
+    }
 }
 
 bool CompressedReader::fill_buffer()
 {
+    assert(m_is_compressed);
+
     size_t buffer_size;
     if (m_file.read(buffer_size) == 0)
         return false;

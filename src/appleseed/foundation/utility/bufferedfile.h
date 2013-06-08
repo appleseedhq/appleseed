@@ -241,7 +241,9 @@ class CompressedWriter
 class CompressedReader
 {
   public:
-    explicit CompressedReader(BufferedFile& file);
+    CompressedReader(
+        BufferedFile&       file,
+        const bool          is_compressed = true);
 
     template <typename T>
     size_t read(T& object);
@@ -252,6 +254,7 @@ class CompressedReader
 
   private:
     BufferedFile&           m_file;
+    const bool              m_is_compressed;
     size_t                  m_buffer_index;
     size_t                  m_buffer_end;
     std::vector<uint8>      m_buffer;

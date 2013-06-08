@@ -67,7 +67,6 @@ class BinaryMeshFileReader
     std::vector<size_t>     m_tex_coords;
 
     static void read_and_check_signature(BufferedFile& file);
-    static void read_and_check_version(BufferedFile& file);
 
     static std::string read_string(CompressedReader& reader);
     void read_meshes(CompressedReader& reader, IMeshBuilder& builder);

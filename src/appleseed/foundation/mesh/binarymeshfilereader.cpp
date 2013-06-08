@@ -92,9 +92,26 @@ void BinaryMeshFileReader::read(IMeshBuilder& builder)
         throw ExceptionIOError();
 
     read_and_check_signature(file);
-    read_and_check_version(file);
 
-    CompressedReader reader(file);
+    uint16 version;
+    checked_read(file, version);
+
+    bool compressed;
+    switch (version)
+    {
+      case 1:                       // original non-compressed version
+        compressed = false;
+        break;
+
+      case 2:                       // LZO-compressed
+        compressed = true;
+        break;
+
+      default:                      // unknown format
+        throw ExceptionIOError();   // todo: throw better-qualified exception
+    }
+
+    CompressedReader reader(file, compressed);
     read_meshes(reader, builder);
 }
 
@@ -106,17 +123,6 @@ void BinaryMeshFileReader::read_and_check_signature(BufferedFile& file)
     checked_read(file, signature, sizeof(signature));
 
     if (memcmp(signature, ExpectedSig, sizeof(ExpectedSig)))
-        throw ExceptionIOError();   // todo: throw better-qualified exception
-}
-
-void BinaryMeshFileReader::read_and_check_version(BufferedFile& file)
-{
-    const uint16 ExpectedVersion = 2;
-
-    uint16 version;
-    checked_read(file, version);
-
-    if (version != ExpectedVersion)
         throw ExceptionIOError();   // todo: throw better-qualified exception
 }
 
