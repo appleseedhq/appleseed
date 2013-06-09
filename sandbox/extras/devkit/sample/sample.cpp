@@ -76,8 +76,7 @@ asf::auto_release_ptr<asr::Project> build_project()
     // of samples, the smoother the image but the longer the rendering time.
     project->configurations()
         .get_by_name("final")->get_parameters()
-            .insert_path("generic_tile_renderer.min_samples", "25")
-            .insert_path("generic_tile_renderer.max_samples", "25");
+            .insert_path("uniform_pixel_renderer.samples", "25");
 
     // Create a scene.
     asf::auto_release_ptr<asr::Scene> scene(asr::SceneFactory::create());
@@ -159,22 +158,22 @@ asf::auto_release_ptr<asr::Project> build_project()
     // Light
     //------------------------------------------------------------------------
 
-    // Create a color called "light_exitance" and insert it into the assembly.
-    static const float LightExitance[] = { 1.0f, 1.0f, 1.0f };
+    // Create a color called "light_radiance" and insert it into the assembly.
+    static const float LightRadiance[] = { 1.0f, 1.0f, 1.0f };
     assembly->colors().insert(
         asr::ColorEntityFactory::create(
-            "light_exitance",
+            "light_radiance",
             asr::ParamArray()
                 .insert("color_space", "srgb")
                 .insert("multiplier", "30.0"),
-            asr::ColorValueArray(3, LightExitance)));
+            asr::ColorValueArray(3, LightRadiance)));
 
     // Create a point light called "light" and insert it into the assembly.
     asf::auto_release_ptr<asr::Light> light(
         asr::PointLightFactory().create(
             "light",
             asr::ParamArray()
-                .insert("exitance", "light_exitance")));
+                .insert("radiance", "light_radiance")));
     light->set_transform(
         asf::Transformd::from_local_to_parent(
             asf::Matrix4d::translation(asf::Vector3d(0.6, 2.0, 1.0))));
@@ -200,22 +199,22 @@ asf::auto_release_ptr<asr::Project> build_project()
     // Environment
     //------------------------------------------------------------------------
 
-    // Create a color called "sky_exitance" and insert it into the scene.
-    static const float SkyExitance[] = { 0.75f, 0.80f, 1.0f };
+    // Create a color called "sky_radiance" and insert it into the scene.
+    static const float SkyRadiance[] = { 0.75f, 0.80f, 1.0f };
     scene->colors().insert(
         asr::ColorEntityFactory::create(
-            "sky_exitance",
+            "sky_radiance",
             asr::ParamArray()
                 .insert("color_space", "srgb")
                 .insert("multiplier", "0.5"),
-            asr::ColorValueArray(3, SkyExitance)));
+            asr::ColorValueArray(3, SkyRadiance)));
 
     // Create an environment EDF called "sky_edf" and insert it into the scene.
     scene->environment_edfs().insert(
         asr::ConstantEnvironmentEDFFactory().create(
             "sky_edf",
             asr::ParamArray()
-                .insert("exitance", "sky_exitance")));
+                .insert("radiance", "sky_radiance")));
 
     // Create an environment shader called "sky_shader" and insert it into the scene.
     scene->environment_shaders().insert(
