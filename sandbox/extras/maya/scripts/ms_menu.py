@@ -1,6 +1,6 @@
 
 #
-# Copyright (c) 2012 Jonathan Topf
+# Copyright (c) 2012-2013 Jonathan Topf
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +20,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
-
 
 import maya.cmds as cmds
 import maya.mel
@@ -84,7 +83,7 @@ def buildMenu():
 
     # convert materials
     cmds.menuItem(divider=True, parent='ms_menu')
-    cmds.menuItem('menu_convert_maya_materials', subMenu=True, label='Convert Maya materials', to=True, parent='ms_menu')
+    cmds.menuItem('menu_convert_maya_materials', subMenu=True, label='Convert Maya Materials', to=True, parent='ms_menu')
 
     cmds.menuItem(label='Selected Materials', parent='menu_convert_maya_materials', command='import ms_commands\nms_commands.convert_selected_materials()')
     cmds.menuItem(label='All Materials', parent='menu_convert_maya_materials', command='import ms_commands\nms_commands.convert_all_materials()')

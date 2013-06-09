@@ -1,6 +1,6 @@
 
 #
-# Copyright (c) 2012 Jonathan Topf
+# Copyright (c) 2012-2013 Jonathan Topf
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -32,23 +32,19 @@ kPluginNodeName = 'ms_appleseed_shading_node'
 kPluginNodeClassify = 'utility/color'
 kPluginNodeId = OpenMaya.MTypeId(0x00335)
 
-##########################################################
-# Plug-in 
-##########################################################
+#--------------------------------------------------------------------------------------------------
+# ms_appleseed_shading_node.
+#--------------------------------------------------------------------------------------------------
+
 class appleseed_shading_node(OpenMayaMPx.MPxNode):
     outColorAttribute = OpenMaya.MObject()
     inColorAttribute = OpenMaya.MObject()
 
     def __init__(self):
-        ''' Constructor. '''
         OpenMayaMPx.MPxNode.__init__(self)
  
-##########################################################
-# Plug-in compute.
-##########################################################
 
     def compute(self, pPlug, pDataBlock):
-
         if ( pPlug == appleseed_shading_node.outColorAttribute ):
 
             inColorDataHandle = pDataBlock.inputValue( appleseed_material.inColorAttribute )
@@ -69,32 +65,21 @@ class appleseed_shading_node(OpenMayaMPx.MPxNode):
             return OpenMaya.kUnknownParameter
 
 
-
-##########################################################
-# Plug-in initialization.
-##########################################################
 def nodeCreator():
-
     return OpenMayaMPx.asMPxPtr( appleseed_shading_node() )
 
 def nodeInitializer():
-
     # Create a numeric attribute function set, since our attributes will all be defined by numeric types.
     numericAttributeFn = OpenMaya.MFnNumericAttribute()
 
-
-    #==================================
-    # inpuut NODE ATTRIBUTE(S)
-    #==================================  
+    # input attributes
     appleseed_shading_node.inColorAttribute = numericAttributeFn.createColor( 'incolor', 'ic' )
     numericAttributeFn.setStorable( True )
     numericAttributeFn.setHidden( True )
     numericAttributeFn.setDefault( 0.5,0.5,0.5 )
     appleseed_shading_node.addAttribute( appleseed_shading_node.inColorAttribute )
 
-    #==================================
-    # OUTPUT NODE ATTRIBUTE(S)
-    #==================================    
+    # output attributes  
     appleseed_shading_node.outColorAttribute = numericAttributeFn.createColor( 'outColor', 'oc')
     numericAttributeFn.setStorable( False )
     numericAttributeFn.setWritable( False )
@@ -104,7 +89,6 @@ def nodeInitializer():
 
 
 def initializePlugin( mobject ):
-    ''' Initializes the plug-in. '''
     mplugin = OpenMayaMPx.MFnPlugin( mobject )
     try:
         mplugin.registerNode( kPluginNodeName, kPluginNodeId, nodeCreator, nodeInitializer, OpenMayaMPx.MPxNode.kDependNode, kPluginNodeClassify )
@@ -113,7 +97,6 @@ def initializePlugin( mobject ):
         raise
 
 def uninitializePlugin( mobject ):
-    ''' Unitializes the plug-in. '''
     mplugin = OpenMayaMPx.MFnPlugin( mobject )
     try:
         mplugin.deregisterNode( kPluginNodeId )

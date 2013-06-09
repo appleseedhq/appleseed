@@ -1,6 +1,6 @@
 
 #
-# Copyright (c) 2012 Jonathan Topf
+# Copyright (c) 2012-2013 Jonathan Topf
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,6 @@
 # THE SOFTWARE.
 #
 
-
 import maya.cmds as cmds
 import maya.mel as mel
 import maya.utils as mu
@@ -35,7 +34,7 @@ reload(ms_commands)
 import ms_export_obj
 import time
 
-inch_to_meter = 0.02539999983236
+INCH_TO_METER = 0.02539999983236
 
 
 #--------------------------------------------------------------------------------------------------
@@ -154,44 +153,28 @@ def get_maya_params(render_settings_node):
 
     params['output_res_width'] = cmds.getAttr(render_settings_node + '.width')
     params['output_res_height'] = cmds.getAttr(render_settings_node + '.height')
+    params['export_straight_alpha'] = cmds.getAttr(render_settings_node + '.export_straight_alpha')
 
-    # Custom final configuration.
-
-    params['custom_final_config_check'] = cmds.getAttr(render_settings_node + '.export_custom_final_config')
-    params['custom_final_config_engine'] = cmds.getAttr(render_settings_node + '.final_lighting_engine')
-    if params['custom_final_config_engine'] == 0:
-        params['custom_final_config_engine'] = 'pt'
+    # configuration settings.
+    params['sampler'] = cmds.getAttr(render_settings_node + '.sampler')
+    if params['sampler'] == 0:
+        params['sampler'] = 'adaptive'
     else:
-        params['custom_final_config_engine'] = 'drt'
+        params['sampler'] = 'uniform'
 
-    params['drt_dl_bsdf_samples'] = cmds.getAttr(render_settings_node + '.drt_dl_bsdf_samples')
-    params['drt_dl_light_samples'] = cmds.getAttr(render_settings_node + '.drt_dl_light_samples')
-    params['drt_enable_ibl'] = cmds.getAttr(render_settings_node + '.drt_enable_ibl')
-    params['drt_ibl_bsdf_samples'] = cmds.getAttr(render_settings_node + '.drt_ibl_bsdf_samples')
-    params['drt_ibl_env_samples'] = cmds.getAttr(render_settings_node + '.drt_ibl_env_samples')
-    params['drt_max_path_length'] = cmds.getAttr(render_settings_node + '.drt_max_path_length')
-    params['drt_rr_min_path_length'] = cmds.getAttr(render_settings_node + '.drt_rr_min_path_length')
-
-    params['pt_dl_light_samples'] = cmds.getAttr(render_settings_node + '.pt_dl_light_samples')
-    params['pt_enable_caustics'] = cmds.getAttr(render_settings_node + '.pt_enable_caustics')
-    params['pt_enable_dl'] = cmds.getAttr(render_settings_node + '.pt_enable_dl')
-    params['pt_enable_ibl'] = cmds.getAttr(render_settings_node + '.pt_enable_ibl')
-    params['pt_ibl_bsdf_samples'] = cmds.getAttr(render_settings_node + '.pt_ibl_bsdf_samples')
-    params['pt_ibl_env_samples'] = cmds.getAttr(render_settings_node + '.pt_ibl_env_samples')
-    params['pt_max_path_length'] = cmds.getAttr(render_settings_node + '.pt_max_path_length')
+    params['uniform_samples'] = cmds.getAttr(render_settings_node + '.uniform_samples')
+    params['uniform_decorrelate_pixels'] = cmds.getAttr(render_settings_node + '.uniform_decorrelate_pixels')
+ 
+    params['adaptive_min_samples'] = cmds.getAttr(render_settings_node + '.adaptive_min_samples')
+    params['adaptive_max_samples'] = cmds.getAttr(render_settings_node + '.adaptive_max_samples')
+    params['adaptive_quality'] = cmds.getAttr(render_settings_node + '.adaptive_quality')
+    params['pt_ibl'] = cmds.getAttr(render_settings_node + '.pt_ibl')
+    params['pt_caustics'] = cmds.getAttr(render_settings_node + '.pt_caustics')
+    params['pt_direct_lighting'] = cmds.getAttr(render_settings_node + '.pt_direct_lighting')
     params['pt_next_event_estimation'] = cmds.getAttr(render_settings_node + '.pt_next_event_estimation')
-    params['pt_rr_min_path_length'] = cmds.getAttr(render_settings_node + '.pt_rr_min_path_length')
-
-    params['gtr_filter_size'] = cmds.getAttr(render_settings_node + '.gtr_filter_size')
-    params['gtr_min_samples'] = cmds.getAttr(render_settings_node + '.gtr_min_samples')
-    params['gtr_max_samples'] = cmds.getAttr(render_settings_node + '.gtr_max_samples')
-    params['gtr_max_contrast'] = cmds.getAttr(render_settings_node + '.gtr_max_contrast')
-    params['gtr_max_variation'] = cmds.getAttr(render_settings_node + '.gtr_max_variation')
-
-    if cmds.getAttr(render_settings_node + '.gtr_sampler') == 0:
-        params['gtr_sampler'] = 'uniform'
-    else:
-        params['gtr_sampler'] = 'adaptive'
+    params['pt_max_bounces'] = cmds.getAttr(render_settings_node + '.pt_max_bounces')
+    params['pt_light_samples'] = cmds.getAttr(render_settings_node + '.pt_light_samples')
+    params['pt_environment_samples'] = cmds.getAttr(render_settings_node + '.pt_environment_samples')
 
     # Select obj exporter.
     if cmds.pluginInfo('ms_export_obj_' + str(int(mel.eval('getApplicationVersionAsFloat()'))), query=True, r=True):
@@ -218,7 +201,7 @@ def get_maya_scene(params):
 
     start_time = cmds.currentTime(query=True)
 
-    # the Maya scene is stored as a list of root transforms that contain mesh's/geometry/lights as children
+    # the Maya scene is stored as a list of root transforms that contain meshes/geometry/lights as children
     maya_root_transforms = []
 
     # find all root transforms and create Mtransforms from them
@@ -253,8 +236,8 @@ def get_maya_scene(params):
     geo_dir = '_geometry'
     ms_commands.create_dir(os.path.join(params['output_directory'], geo_dir))
 
-    environment = None
     # get environment
+    environment = None
     if params['environment']:
         environment = MMsEnvironment(params, params['environment'])
         environment.add_environment_sample(params['output_directory'], texture_dir, 0)
@@ -264,28 +247,23 @@ def get_maya_scene(params):
     frame_sample_number = 1
 
     while current_frame <= end_frame:
-        cmds.currentTime(current_frame)
-
         ms_commands.info("Adding motion samples, frame {0}...".format(current_frame))
 
-        # if this is the first sample of a frame set initial_sample True
-        if frame_sample_number == 1:
-            initial_sample = True
-        else:
-            initial_sample = False
+        cmds.currentTime(current_frame)
+
+        # determine if this is the first sample of a frame
+        initial_sample = (frame_sample_number == 1)
 
         for transform in maya_root_transforms:
             add_scene_sample(transform, params['export_transformation_blur'], params['export_deformation_blur'], params['export_camera_blur'], current_frame, start_frame, frame_sample_number, initial_sample, params['output_directory'], geo_dir, texture_dir)
 
-
         frame_sample_number += 1
-
         if frame_sample_number == params['motion_samples']:
             frame_sample_number = 1
 
         current_frame += sample_increment
 
-        # add code to export textures here
+        # TODO: add code to export textures here
 
     # return to pre-export time
     cmds.currentTime(start_time)
@@ -295,10 +273,8 @@ def get_maya_scene(params):
 
 #--------------------------------------------------------------------------------------------------
 # add_scene_sample function.
+# TODO: needs mechanism to sample frames for camera and transforms on whole frame numbers for non mb scenes
 #--------------------------------------------------------------------------------------------------
-
-
-# needs mechanism to sample frames for camera and transforms on whole frame numbers for non mb scenes
 
 def add_scene_sample(m_transform, transform_blur, deform_blur, camera_blur, current_frame, start_frame, frame_sample_number, initial_sample, export_root, geo_dir, tex_dir):
 
@@ -397,7 +373,7 @@ class MTransform():
         if mesh_names is not None:
             self.has_children = True
             for mesh_name in mesh_names:
-                if ms_commands.shape_is_exportable(mesh_name):
+                if ms_commands.transform_is_visible(mesh_name):
                     self.child_meshes.append(MMesh(params, mesh_name, self))
 
         light_names = cmds.listRelatives(self.name, type='light', fullPath=True)
@@ -418,8 +394,6 @@ class MTransform():
             self.has_children = True
             for transform_name in transform_names:
                 self.child_transforms.append(MTransform(params, transform_name, self))
-
-
 
     def add_transform_sample(self):
         self.matrices.append(cmds.xform(self.name, query=True, matrix=True))
@@ -477,22 +451,25 @@ class MMesh(MTransformChild):
             for material_name in attached_material_names:
                 if cmds.nodeType(material_name) == 'ms_appleseed_material':
                     self.ms_materials.append(MMsMaterial(self.params, material_name))
-
                 else:
                     self.generic_materials.append(MGenericMaterial(self.params, material_name))
 
-
     def add_deform_sample(self, export_root, geo_dir, time):
-        file_name = '%s_%i_%i.obj' % (self.safe_short_name, self.id, time)
-        output_file_path = os.path.join(geo_dir, file_name)
+        # if the shape current transform is visible, export;
+        # otherwise skip export and just append a null
+        if ms_commands.visible_in_hierarchy(self.transform.name):
+            file_name = '%s_%i_%i.obj' % (self.safe_short_name, self.id, time)
+            output_file_path = os.path.join(geo_dir, file_name)
 
-        # set file path as relative value
-        self.mesh_file_names.append(output_file_path)
+            # set file path as relative value
+            self.mesh_file_names.append(output_file_path)
 
-        # export mesh using absolute file path
-        absolute_file_path = os.path.join(export_root, output_file_path)
-        if not os.path.exists(absolute_file_path) or self.params['overwrite_existing_geometry']:
-            self.params['obj_exporter'](self.name, absolute_file_path, overwrite=True)
+            # export mesh using absolute file path
+            absolute_file_path = os.path.join(export_root, output_file_path)
+            if not os.path.exists(absolute_file_path) or self.params['overwrite_existing_geometry']:
+                self.params['obj_exporter'](self.name, absolute_file_path, overwrite=True)
+        else:
+            self.mesh_file_names.append(None)
 
 
 #--------------------------------------------------------------------------------------------------
@@ -532,7 +509,6 @@ class MCamera(MTransformChild):
         # transform even though it's not a 'correct' representation of the Maya scene.
 
         self.world_space_matrices = []
-
         self.dof = cmds.getAttr(self.name + '.depthOfField')
         self.focal_distance_values = []
         self.focus_region_scale = cmds.getAttr(self.name + '.focusRegionScale')
@@ -543,10 +519,10 @@ class MCamera(MTransformChild):
         maya_film_aspect = cmds.getAttr(self.name + '.horizontalFilmAperture') / cmds.getAttr(self.name + '.verticalFilmAperture')
 
         if maya_resolution_aspect > maya_film_aspect:
-            self.film_width = float(cmds.getAttr(self.name + '.horizontalFilmAperture')) * inch_to_meter * 100
+            self.film_width = float(cmds.getAttr(self.name + '.horizontalFilmAperture')) * INCH_TO_METER * 100
             self.film_height = self.film_width / maya_resolution_aspect
         else:
-            self.film_height = float(cmds.getAttr(self.name + '.verticalFilmAperture')) * inch_to_meter * 100
+            self.film_height = float(cmds.getAttr(self.name + '.verticalFilmAperture')) * INCH_TO_METER * 100
             self.film_width = self.film_height * maya_resolution_aspect
 
     def add_matrix_sample(self):
@@ -554,7 +530,7 @@ class MCamera(MTransformChild):
         self.world_space_matrices.append(ms_commands.matrix_remove_scale(world_space_matrix))
 
     def add_focal_distance_sample(self):
-        self.focal_distance_values.append(cmds.getAttr(self.name + '.focusDistance') )
+        self.focal_distance_values.append(cmds.getAttr(self.name + '.focusDistance'))
 
 
 #--------------------------------------------------------------------------------------------------
@@ -568,13 +544,13 @@ class MFile():
     def __init__(self, params, maya_file_node, source_node=False, attribute=False):
         self.params = params
         self.image_file_names = []
+        self.converted_images = set()
         self.node_type = cmds.nodeType(maya_file_node)
         
         if self.node_type == 'file':
             self.name = maya_file_node
             self.safe_name = ms_commands.legalize_name(self.name)
             self.image_name = cmds.getAttr(self.name + '.fileTextureName')
-            self.resolved_image_name = ms_commands.get_file_texture_name(self.name)
             self.is_animated = cmds.getAttr(self.name + '.useFrameExtension')
             self.alpha_is_luminance = cmds.getAttr(self.name + '.alphaIsLuminance')
             self.autodetect_alpha = params['autodetect_alpha']
@@ -589,7 +565,6 @@ class MFile():
                 self.repeat_v = cmds.getAttr(texture_placement_node + '.repeatV')
             else:
                 self.has_uv_placement = False
-
 
         else:
             self.source_node = source_node
@@ -607,9 +582,10 @@ class MFile():
             image_name = ms_commands.convert_connection_to_image(self.source_node, self.attribute, os.path.join(export_root, texture_dir, ('{0}_{1}.iff'.format(self.name, time))))
 
         if self.params['convert_textures_to_exr']:
-            converted_image = ms_commands.convert_texture_to_exr(image_name, export_root, texture_dir, overwrite=self.params['overwrite_existing_textures'], pass_through=False)
-
-            self.image_file_names.append(converted_image)
+            if image_name not in self.converted_images:
+                self.converted_images.add(image_name)
+                converted_image_name = ms_commands.convert_texture_to_exr(image_name, export_root, texture_dir, overwrite=self.params['overwrite_existing_textures'], pass_through=False)
+                self.image_file_names.append(converted_image_name)
         else:
             self.image_file_names.append(image_name)
 
@@ -679,9 +655,15 @@ class MColorConnection():
             self.name = color_connection
             self.safe_name = ms_commands.legalize_name(self.name)
             self.color_value = cmds.getAttr(self.name)
-            self.normalized_color = ms_commands.normalizeRGB(cmds.getAttr(self.name)[0])[:3]
+
+            if self.color_value.__class__.__name__ != 'float':
+                self.normalized_color = ms_commands.normalizeRGB(self.color_value[0])[:3]
+                self.multiplier = ms_commands.normalizeRGB(self.color_value[0])[3]
+            else:
+                self.normalized_color = ms_commands.normalizeRGB((self.color_value, self.color_value, self.color_value))[:3]
+                self.multiplier       = ms_commands.normalizeRGB((self.color_value, self.color_value, self.color_value))[3]
+
             self.is_black = self.normalized_color == (0,0,0)
-            self.multiplier = ms_commands.normalizeRGB(cmds.getAttr(self.name)[0])[3]
             self.connected_node = ms_commands.get_connected_node(self.name)
             if self.connected_node is not None:
                 self.connected_node_type = cmds.nodeType(self.connected_node)
@@ -753,21 +735,20 @@ class MMsMaterial():
     def get_connections(self, attr_name):
         connection = MColorConnection(self.params, attr_name)
 
-        if connection.connected_node is not None:
-            if connection.connected_node_type == 'ms_appleseed_shading_node':
-                shading_node = MMsShadingNode(self.params, connection.connected_node)
-                self.shading_nodes = self.shading_nodes + [shading_node] + shading_node.child_shading_nodes
-                self.colors += shading_node.colors
-                self.textures += shading_node.textures
-                return shading_node
-
-            elif connection.connected_node_type == 'file':
-                texture_node = MFile(self.params, connection.connected_node)
-                self.textures += [texture_node]
-                return texture_node
-
-        else:
+        if connection.connected_node is None:
             return None
+
+        if connection.connected_node_type == 'ms_appleseed_shading_node':
+            shading_node = MMsShadingNode(self.params, connection.connected_node)
+            self.shading_nodes = self.shading_nodes + [shading_node] + shading_node.child_shading_nodes
+            self.colors += shading_node.colors
+            self.textures += shading_node.textures
+            return shading_node
+
+        elif connection.connected_node_type == 'file':
+            texture_node = MFile(self.params, connection.connected_node)
+            self.textures += [texture_node]
+            return texture_node
 
 
 #--------------------------------------------------------------------------------------------------
@@ -782,10 +763,13 @@ class MGenericMaterial():
         self.params = params
         self.name = maya_material_name
         self.safe_name = ms_commands.legalize_name(self.name)
+        self.type = cmds.nodeType(maya_material_name)
 
         self.diffuse = None
         self.alpha = None
         self.incandescence = None
+        self.specular_cosine_power = None
+        self.specular_color = None
 
         self.textures = []
 
@@ -802,10 +786,22 @@ class MGenericMaterial():
                 self.diffuse = m_file_from_color_connection(self.params, self.diffuse)
                 self.textures.append(self.diffuse)
 
-        # work out specular component
+        # work out specular components
+        if cmds.attributeQuery('cosinePower', node=self.name, exists=True):
+            self.specular_cosine_power = MColorConnection(self.params, self.name + '.cosinePower')
+            if self.specular_cosine_power.connected_node is not None:
+                self.specular_cosine_power = m_file_from_color_connection(self.params, self.specular_cosine_power)
+                self.textures.append(self.alpha)
+            elif self.specular_cosine_power.is_black:
+                self.specular_cosine_power = None
+
         if cmds.attributeQuery('specularColor', node=self.name, exists=True):
-            # code should be added here when an appleseed phong/blinn maode is added
-            pass
+            self.specular_color = MColorConnection(self.params, self.name + '.specularColor')
+            if self.specular_color.connected_node is not None:
+                self.specular_color = m_file_from_color_connection(self.params, self.specular_color)
+                self.textures.append(self.alpha)
+            elif self.specular_color.is_black:
+                self.specular_color = None
 
         # work out alpha component
         if cmds.attributeQuery('transparency', node=self.name, exists=True):
@@ -856,58 +852,47 @@ class MMsShadingNode():
         self.name = maya_ms_shading_node_name
         self.safe_name = ms_commands.legalize_name(self.name)
 
-        self.type = cmds.getAttr(self.name + '.node_type')    #bsdf, edf etc
-        self.model = cmds.getAttr(self.name + '.node_model')  #lambertian etc
+        self.type = cmds.getAttr(self.name + '.node_type')    # bsdf, edf etc.
+        self.model = cmds.getAttr(self.name + '.node_model')  # lambertian etc.
 
         self.child_shading_nodes = []
         self.attributes = dict()
         self.colors = []
         self.textures = []
 
-        #add the correct attributes based on the entity defs xml
+        # add the correct attributes based on the entity defs xml
         for attribute_key in params['entity_defs'][self.model].attributes.keys():
-            if params['entity_defs'][self.model].attributes[attribute_key].type is not 'dropdown_list':
-                self.attributes[attribute_key] = ''
+            self.attributes[attribute_key] = ''
 
         for attribute_key in self.attributes.keys():
             maya_attribute = self.name + '.' + attribute_key
 
-            # create variable to store the final string value
-            attribute_value = ''
-
             # if the attribute is a color/entity
             if params['entity_defs'][self.model].attributes[attribute_key].type == 'entity_picker':
-
                 color_connection = MColorConnection(self.params, maya_attribute)
 
                 if color_connection.connected_node:
-
                     # if the node is an appleseed shading node
                     if color_connection.connected_node_type == 'ms_appleseed_shading_node':
                         shading_node = MMsShadingNode(self.params, color_connection.connected_node)
-                        attribute_value = shading_node
-                        self.child_shading_nodes = self.child_shading_nodes + [shading_node] + shading_node.child_shading_nodes
+                        self.attributes[attribute_key] = shading_node
+                        self.child_shading_nodes += [shading_node] + shading_node.child_shading_nodes
                         self.colors += shading_node.colors
-                        self.textures = self.textures + shading_node.textures
+                        self.textures += shading_node.textures
 
                     # else if it's a Maya texture node
                     elif color_connection.connected_node_type == 'file':
                         texture_node = MFile(self.params, color_connection.connected_node)
+                        self.attributes[attribute_key] = texture_node
                         self.textures += [texture_node]
-                        attribute_value = texture_node
 
                 # no node is connected, just use the color value
                 else:
-                    attribute_value = color_connection
+                    self.attributes[attribute_key] = color_connection
 
-            elif params['entity_defs'][self.model].attributes[attribute_key].type == 'dropdown_list':
-                pass
-            # the node must be a text entity
+            # the attribute is a string or an item from a drop-down list
             else:
-                attribute_value = str(cmds.getAttr(maya_attribute))
-
-            # add attribute to dict
-            self.attributes[attribute_key] = attribute_value
+                self.attributes[attribute_key] = str(cmds.getAttr(maya_attribute))
 
 
 #--------------------------------------------------------------------------------------------------
@@ -922,9 +907,14 @@ class AsParameter():
         self.name = name
         self.value = value
 
+    def as_normalized_path(self):
+        return AsParameter(self.name, ms_commands.normalize_path(self.value))
+
     def emit_xml(self, doc):
-        if (self.value is not None) and self.value != '':
-            doc.append_parameter(self.name, str(self.value))
+        if self.value is not None:
+            value_string = str(self.value)
+            if len(value_string) > 0:
+                doc.append_parameter(self.name, value_string)
 
 
 #--------------------------------------------------------------------------------------------------
@@ -938,6 +928,12 @@ class AsParameters():
     def __init__(self, name=None):
         self.name = name
         self.parameters = []
+
+    def as_normalized_path(self):
+        result = AsParameters(self.name)
+        for parameter in self.parameters:
+            result.parameters.append(parameter.as_normalized_path())
+        return result
 
     def emit_xml(self, doc):
         doc.start_element('parameters name="%s"' % self.name)
@@ -957,10 +953,9 @@ class AsColor():
     def __init__(self):
         self.name = None
         self.RGB_color = [0.5, 0.5, 0.5]
-        self.alpha = 1
+        self.alpha = 1.0
         self.multiplier = AsParameter('multiplier', '1.0')
         self.color_space = AsParameter('color_space', 'srgb')
-        self.wavelength_range = '400.0, 700.0'
 
     def emit_xml(self, doc):
         doc.start_element('color name="%s"' % self.name)
@@ -970,9 +965,11 @@ class AsColor():
         doc.start_element('values')
         doc.append_line('%.6f %.6f %.6f' % (self.RGB_color[0], self.RGB_color[1], self.RGB_color[2]))
         doc.end_element('values')
+
         doc.start_element('alpha')
         doc.append_line('%.6f' % self.alpha)
         doc.end_element('alpha')
+
         doc.end_element('color')
 
 
@@ -1029,7 +1026,7 @@ class AsTexture():
     def emit_xml(self, doc):
         doc.start_element('texture name="%s" model="%s"' % (self.name, self.model))
         self.color_space.emit_xml(doc)
-        self.file_name.emit_xml(doc)
+        self.file_name.as_normalized_path().emit_xml(doc)
         doc.end_element('texture')
 
 
@@ -1079,7 +1076,7 @@ class AsObject():
 
     def emit_xml(self, doc):
         doc.start_element('object name="%s" model="%s"' % (self.name, self.model))
-        self.file_names.emit_xml(doc)
+        self.file_names.as_normalized_path().emit_xml(doc)
         doc.end_element('object')
 
 
@@ -1468,12 +1465,14 @@ class AsFrame():
         self.camera = None
         self.color_space = AsParameter('color_space', 'linear_rgb')
         self.resolution = None
+        self.premultiplied_alpha = AsParameter('premultiplied_alpha', 'true')
 
     def emit_xml(self, doc):
         doc.start_element('frame name="%s"' % self.name)
         self.camera.emit_xml(doc)
         self.color_space.emit_xml(doc)
         self.resolution.emit_xml(doc)
+        self.premultiplied_alpha.emit_xml(doc)
         doc.end_element('frame')
 
 
@@ -1655,7 +1654,10 @@ def m_file_to_as_texture(params, m_file, postfix='', file_number=0):
 
     as_texture = AsTexture()
     as_texture.name = m_file.safe_name + postfix
-    as_texture.file_name = AsParameter('filename', m_file.image_file_names[file_number])
+    if m_file.is_animated:
+        as_texture.file_name = AsParameter('filename', m_file.image_file_names[file_number])
+    else:
+        as_texture.file_name = AsParameter('filename', m_file.image_file_names[0])
 
     as_texture_instance = as_texture.instantiate()
     if m_file.autodetect_alpha:
@@ -1737,6 +1739,9 @@ def translate_maya_scene(params, maya_scene, maya_environment):
         as_frame.resolution = AsParameter('resolution', '%i %i' % (params['output_res_width'], params['output_res_height']))
         as_frame.color_space.value = params['output_color_space']
 
+        if params['export_straight_alpha']:
+            as_frame.premultiplied_alpha.value = 'false'
+
         # create configurations object
         as_configurations = AsConfigurations()
         as_project.configurations = as_configurations
@@ -1753,42 +1758,30 @@ def translate_maya_scene(params, maya_scene, maya_environment):
         final_config.name = 'final'
         final_config.base = 'base_final'
 
-        if ['custom_final_config_check']:
-            final_config.parameters.append(AsParameter('lighting_engine', params['custom_final_config_engine']))
+        for config in [interactive_config, final_config]:
+            config.parameters.append(AsParameter('lighting_engine', 'pt'))
+            config.parameters.append(AsParameter('pixel_renderer', params['sampler']))
 
-            pt_parameters = AsParameters()
-            pt_parameters.name = 'pt'
-            pt_parameters.parameters.append(AsParameter('dl_light_samples',      params['pt_dl_light_samples']))
-            pt_parameters.parameters.append(AsParameter('enable_caustics',       params['pt_enable_caustics']))
-            pt_parameters.parameters.append(AsParameter('enable_dl',             params['pt_enable_dl']))
-            pt_parameters.parameters.append(AsParameter('enable_ibl',            params['pt_enable_ibl']))
-            pt_parameters.parameters.append(AsParameter('ibl_env_samples',       params['pt_ibl_env_samples']))
-            pt_parameters.parameters.append(AsParameter('ibl_bsdf_samples',      params['pt_ibl_bsdf_samples']))
-            pt_parameters.parameters.append(AsParameter('max_path_length',       params['pt_max_path_length']))
-            pt_parameters.parameters.append(AsParameter('next_event_estimation', params['pt_next_event_estimation']))
-            pt_parameters.parameters.append(AsParameter('rr_min_path_length',    params['pt_rr_min_path_length']))
-            final_config.parameters.append(pt_parameters)
+            adaptive_pixel_renderer_params = AsParameters('adaptive_pixel_renderer')
+            adaptive_pixel_renderer_params.parameters.append(AsParameter('min_samples', params['adaptive_min_samples']))
+            adaptive_pixel_renderer_params.parameters.append(AsParameter('max_samples', params['adaptive_max_samples']))
+            adaptive_pixel_renderer_params.parameters.append(AsParameter('quality', params['adaptive_quality']))
+            config.parameters.append(adaptive_pixel_renderer_params)
 
-            drt_parameters = AsParameters()
-            drt_parameters.name = 'drt'
-            drt_parameters.parameters.append(AsParameter('dl_bsdf_samples',      params['drt_dl_bsdf_samples']))
-            drt_parameters.parameters.append(AsParameter('dl_light_samples',     params['drt_dl_light_samples']))
-            drt_parameters.parameters.append(AsParameter('enable_ibl',           params['drt_enable_ibl']))
-            drt_parameters.parameters.append(AsParameter('ibl_bsdf_samples',     params['drt_ibl_bsdf_samples']))
-            drt_parameters.parameters.append(AsParameter('ibl_env_samples',      params['drt_ibl_env_samples']))
-            drt_parameters.parameters.append(AsParameter('max_path_length',      params['drt_max_path_length']))
-            drt_parameters.parameters.append(AsParameter('rr_min_path_length',   params['drt_rr_min_path_length']))
-            final_config.parameters.append(drt_parameters)
+            uniform_pixel_renderer_params = AsParameters('uniform_pixel_renderer')
+            uniform_pixel_renderer_params.parameters.append(AsParameter('samples', params['uniform_samples']))
+            uniform_pixel_renderer_params.parameters.append(AsParameter('decorrelate_pixels', params['uniform_decorrelate_pixels']))
+            config.parameters.append(uniform_pixel_renderer_params)
 
-            generic_tile_renderer_parameters = AsParameters()
-            generic_tile_renderer_parameters.name = 'generic_tile_renderer'
-            generic_tile_renderer_parameters.parameters.append(AsParameter('filter_size',   params['gtr_filter_size']))
-            generic_tile_renderer_parameters.parameters.append(AsParameter('sampler',       params['gtr_sampler']))
-            generic_tile_renderer_parameters.parameters.append(AsParameter('min_samples',   params['gtr_min_samples']))
-            generic_tile_renderer_parameters.parameters.append(AsParameter('max_samples',   params['gtr_max_samples']))
-            generic_tile_renderer_parameters.parameters.append(AsParameter('max_contrast',  params['gtr_max_contrast']))
-            generic_tile_renderer_parameters.parameters.append(AsParameter('max_variation', params['gtr_max_variation']))
-            final_config.parameters.append(generic_tile_renderer_parameters)
+            pt_params = AsParameters('pt')
+            pt_params.parameters.append(AsParameter('dl_light_samples', params['pt_light_samples']))
+            pt_params.parameters.append(AsParameter('enable_caustics', params['pt_caustics']))
+            pt_params.parameters.append(AsParameter('enable_dl', params['pt_direct_lighting']))
+            pt_params.parameters.append(AsParameter('enable_ibl', params['pt_ibl']))
+            pt_params.parameters.append(AsParameter('ibl_env_samples', params['pt_environment_samples']))
+            pt_params.parameters.append(AsParameter('max_path_length', params['pt_max_bounces']))
+            pt_params.parameters.append(AsParameter('next_event_estimation', params['pt_next_event_estimation']))
+            config.parameters.append(pt_params)
 
         # begin scene object
         as_project.scene = AsScene()
@@ -1819,7 +1812,7 @@ def translate_maya_scene(params, maya_scene, maya_environment):
                 as_project.scene.colors.append(zenith_horizon_exitance)
 
             elif environment_edf.model == 'latlong_map_environment_edf':
-                lat_long_map, lat_long_map_instance = m_file_to_as_texture(params, maya_environment.latitude_longitude_exitance, '_texture')                
+                lat_long_map, lat_long_map_instance = m_file_to_as_texture(params, maya_environment.latitude_longitude_exitance, '_texture', non_mb_sample_number)                
                 
                 as_project.scene.textures.append(lat_long_map)
                 as_project.scene.texture_instances.append(lat_long_map_instance)
@@ -1827,7 +1820,7 @@ def translate_maya_scene(params, maya_scene, maya_environment):
                 environment_edf.parameters.append(AsParameter('exitance', lat_long_map_instance.name))
 
             elif environment_edf.model == 'mirrorball_map_environment_edf':
-                mirror_ball_map, mirror_ball_map_instance = m_file_to_as_texture(params, maya_environment.mirrorball_exitance, '_texture')
+                mirror_ball_map, mirror_ball_map_instance = m_file_to_as_texture(params, maya_environment.mirrorball_exitance, '_texture', non_mb_sample_number)
                 
                 as_project.scene.textures.append(mirror_ball_map)
                 as_project.scene.texture_instances.append(mirror_ball_map_instance)
@@ -1931,7 +1924,7 @@ def translate_maya_scene(params, maya_scene, maya_environment):
 
 def construct_transform_descendents(params, root_assembly, parent_assembly, matrix_stack, maya_transform, mb_sample_number_list, non_mb_sample_number, camera_blur, transformation_blur, object_blur):
 
-    """ this function recursivley builds an as object hierarchy from a Maya scene """
+    """ this function recursively builds an appleseed object hierarchy from a Maya scene """
 
     current_assembly = parent_assembly
     current_matrix_stack = matrix_stack + [maya_transform.matrices[non_mb_sample_number]]
@@ -1967,7 +1960,7 @@ def construct_transform_descendents(params, root_assembly, parent_assembly, matr
             new_light.exitance_multiplier.value = light.multiplier
 
             if light.color.__class__.__name__ == 'MFile':
-                light_color_file, light_color =  m_file_to_as_texture(params, light.color, '_light_color')
+                light_color_file, light_color =  m_file_to_as_texture(params, light.color, '_light_color', non_mb_sample_number)
                 current_assembly.textures.append(light_color_file)
                 current_assembly.texture_instances.append(light_color)
             else:
@@ -2018,25 +2011,30 @@ def construct_transform_descendents(params, root_assembly, parent_assembly, matr
 
             # translate materials and assign
             for maya_ms_material in mesh.ms_materials:
-                as_materials = convert_maya_ms_material_network(params, root_assembly, maya_ms_material)
+                as_materials = convert_maya_ms_material_network(params, root_assembly, maya_ms_material, non_mb_sample_number)
 
                 if as_materials is not None:
                     
                     if as_materials[0] is not None:
-                        mesh_instance.material_assignments.append(AsObjectInstanceMaterialAssignment(maya_ms_material.safe_name, 'front', as_materials[0].name))
+                        mesh_instance.material_assignments.append(AsObjectInstanceMaterialAssignment(maya_ms_material.name, 'front', as_materials[0].name))
                     else:
                         mesh_instance.material_assignments.append(AsObjectInstanceMaterialAssignment('0', 'front', 'as_default_material'))
                     
                     if as_materials[1] is not None:
-                        mesh_instance.material_assignments.append(AsObjectInstanceMaterialAssignment(maya_ms_material.safe_name, 'back', as_materials[1].name))
+                        mesh_instance.material_assignments.append(AsObjectInstanceMaterialAssignment(maya_ms_material.name, 'back', as_materials[1].name))
                     else:
                         mesh_instance.material_assignments.append(AsObjectInstanceMaterialAssignment('0', 'back', 'as_default_material'))
 
             for maya_generic_material in mesh.generic_materials:
-                as_material = convert_maya_generic_material(root_assembly, maya_generic_material)
+
+                as_material = convert_maya_generic_material(params, root_assembly, maya_generic_material, non_mb_sample_number)
+
                 
-                mesh_instance.material_assignments.append(AsObjectInstanceMaterialAssignment(maya_generic_material.safe_name, 'front', as_material.name))
-                mesh_instance.material_assignments.append(AsObjectInstanceMaterialAssignment(maya_generic_material.safe_name, 'back', as_material.name))
+                # only apply surface shaders to front of object
+                if maya_generic_material.type != 'surfaceShader':
+                    mesh_instance.material_assignments.append(AsObjectInstanceMaterialAssignment(maya_generic_material.name, 'back', as_material.name))
+                
+                mesh_instance.material_assignments.append(AsObjectInstanceMaterialAssignment(maya_generic_material.name, 'front', as_material.name))
 
             current_assembly.object_instances.append(mesh_instance)
 
@@ -2045,7 +2043,7 @@ def construct_transform_descendents(params, root_assembly, parent_assembly, matr
 # convert_maya_generic_material function.
 #--------------------------------------------------------------------------------------------------
 
-def convert_maya_generic_material(root_assembly, generic_material):
+def convert_maya_generic_material(params, root_assembly, generic_material, non_mb_sample_number):
 
     # check if material already exits in the root assembly
     new_material = get_from_list(root_assembly.materials, generic_material.safe_name)
@@ -2055,23 +2053,72 @@ def convert_maya_generic_material(root_assembly, generic_material):
     new_material = AsMaterial()
     new_material.name = generic_material.safe_name
     root_assembly.materials.append(new_material)
-    
-    new_bsdf = AsBsdf()
-    new_bsdf.name = generic_material.safe_name + '_bsdf'
-    new_bsdf.model = 'lambertian_brdf'
-    root_assembly.bsdfs.append(new_bsdf)
-    new_material.bsdf = AsParameter('bsdf', new_bsdf.name)
+
+    new_lambertian_bsdf = AsBsdf()
+    new_lambertian_bsdf.name = generic_material.safe_name + '_lambertian_bsdf'
+    new_lambertian_bsdf.model = 'lambertian_brdf'
+    root_assembly.bsdfs.append(new_lambertian_bsdf)
+
+    # only use phong mix if the specular color is > 0 or exists
+    if generic_material.specular_color is not None:
+        if not generic_material.specular_color.is_black: 
+
+            new_microfacet_bsdf = AsBsdf()
+            new_microfacet_bsdf.name = generic_material.safe_name + '_microfacet_brdf'
+            new_microfacet_bsdf.model = 'microfacet_brdf'
+            new_microfacet_bsdf.parameters.append(AsParameter('mdf', 'blinn'))
+            root_assembly.bsdfs.append(new_microfacet_bsdf)
+
+            new_bsdf_mix_bsdf = AsBsdf()
+            new_bsdf_mix_bsdf.name = generic_material.safe_name + '_bsdf_mix_bsdf'
+            new_bsdf_mix_bsdf.model = 'bsdf_mix'
+            root_assembly.bsdfs.append(new_bsdf_mix_bsdf)
+
+            new_bsdf_mix_bsdf.parameters.append(AsParameter('bsdf0', new_lambertian_bsdf.name))
+            new_bsdf_mix_bsdf.parameters.append(AsParameter('bsdf1', new_microfacet_bsdf.name))
+            new_bsdf_mix_bsdf.parameters.append(AsParameter('weight0', '1.0'))
+            new_bsdf_mix_bsdf.parameters.append(AsParameter('weight1', '0.2'))
+
+            new_material.bsdf = AsParameter('bsdf', new_bsdf_mix_bsdf.name)
+
+
+            if generic_material.specular_cosine_power.__class__.__name__ == 'MFile':
+                bsdf_specular_cosine_texture, bsdf_specular_cosine_texture_instance = m_file_to_as_texture(params, generic_material.specular_cosine_power, '_bsdf', non_mb_sample_number)
+                new_microfacet_bsdf.parameters.append(AsParameter('mdf_parameter', bsdf_specular_cosine_texture_instance.name))
+                root_assembly.textures.append(bsdf_specular_cosine_texture)
+                root_assembly.texture_instances.append(bsdf_specular_cosine_texture_instance)
+            else:
+                bsdf_specular_cosine_color = m_color_connection_to_as_color(generic_material.specular_cosine_power, '_bsdf')
+                bsdf_specular_cosine_color.multiplier.value = bsdf_specular_cosine_color.multiplier.value * 1.3
+                new_microfacet_bsdf.parameters.append(AsParameter('mdf_parameter', bsdf_specular_cosine_color.name))
+                root_assembly.colors.append(bsdf_specular_cosine_color)
+
+            if generic_material.specular_color.__class__.__name__ == 'MFile':
+                bsdf_specular_color_texture, bsdf_specular_color_texture_instance = m_file_to_as_texture(params, generic_material.specular_color, '_bsdf', non_mb_sample_number)
+                new_microfacet_bsdf.parameters.append(AsParameter('reflectance', bsdf_specular_color_texture_instance.name))
+                root_assembly.textures.append(bsdf_specular_color_texture)
+                root_assembly.texture_instances.append(bsdf_specular_color_texture_instance)
+            else:
+                bsdf_specular_color_color = m_color_connection_to_as_color(generic_material.specular_color, '_bsdf')
+                if bsdf_specular_color_color.multiplier.value > 1 : bsdf_specular_color_color.multiplier.value = 1
+                new_microfacet_bsdf.parameters.append(AsParameter('reflectance', bsdf_specular_color_color.name))
+                root_assembly.colors.append(bsdf_specular_color_color)
+
+    else:
+        new_material.bsdf = AsParameter('bsdf', new_lambertian_bsdf.name)
+
 
     if generic_material.diffuse.__class__.__name__ == 'MFile':
-        bsdf_texture, bsdf_texture_instance = m_file_to_as_texture(params, generic_material.diffuse, '_bsdf')
-        new_bsdf.parameters.append(AsParameter('reflectance', bsdf_texture_instance.name))
+        bsdf_texture, bsdf_texture_instance = m_file_to_as_texture(params, generic_material.diffuse, '_bsdf', non_mb_sample_number)
+        new_lambertian_bsdf.parameters.append(AsParameter('reflectance', bsdf_texture_instance.name))
         root_assembly.textures.append(bsdf_texture)
         root_assembly.texture_instances.append(bsdf_texture_instance)
     else:
         bsdf_color = m_color_connection_to_as_color(generic_material.diffuse, '_bsdf')
         if bsdf_color.multiplier.value > 1 : bsdf_color.multiplier.value = 1
-        new_bsdf.parameters.append(AsParameter('reflectance', bsdf_color.name))
+        new_lambertian_bsdf.parameters.append(AsParameter('reflectance', bsdf_color.name))
         root_assembly.colors.append(bsdf_color)
+
 
     if generic_material.incandescence is not None:
         new_edf = AsEdf()
@@ -2081,7 +2128,7 @@ def convert_maya_generic_material(root_assembly, generic_material):
         new_material.edf = AsParameter('edf', new_edf.name)
 
         if generic_material.incandescence.__class__.__name__ == 'MFile':
-            edf_texture, edf_texture_instance = m_file_to_as_texture(params, generic_material.incandescence, '_edf')
+            edf_texture, edf_texture_instance = m_file_to_as_texture(params, generic_material.incandescence, '_edf', non_mb_sample_number)
             new_edf.parameters.append(AsParameter('exitance', edf_texture_instance.name))
             root_assembly.textures.append(edf_texture)
             root_assembly.texture_instances.append(edf_texture_instance)
@@ -2089,6 +2136,7 @@ def convert_maya_generic_material(root_assembly, generic_material):
             edf_color = m_color_connection_to_as_color(generic_material.incandescence, '_edf')
             new_edf.parameters.append(AsParameter('exitance', edf_color.name))
             root_assembly.colors.append(edf_color)
+
 
     new_surface_shader = AsSurfaceShader()
     new_surface_shader.name = generic_material.safe_name + '_surface_shader'
@@ -2098,7 +2146,7 @@ def convert_maya_generic_material(root_assembly, generic_material):
 
     if generic_material.alpha is not None:
         if generic_material.alpha.__class__.__name__ == 'MFile':
-            alpha_texture, alpha_texture_instance = m_file_to_as_texture(params, generic_material.alpha)
+            alpha_texture, alpha_texture_instance = m_file_to_as_texture(params, generic_material.alpha, '_alpha', non_mb_sample_number)
             new_surface_shader.parameters.append(AsParameter('exitance', alpha_texture_instance.name))
             root_assembly.textures.append(alpha_texture)
             root_assembly.texture_instances.append(alpha_texture_instance)
@@ -2114,7 +2162,7 @@ def convert_maya_generic_material(root_assembly, generic_material):
 # convert_maya_ms_material_network function.
 #--------------------------------------------------------------------------------------------------
 
-def convert_maya_ms_material_network(params, root_assembly, ms_material):
+def convert_maya_ms_material_network(params, root_assembly, ms_material, non_mb_sample_number):
 
     """ constructs a AsMaterial from an MMsMaterial """
 
@@ -2129,7 +2177,7 @@ def convert_maya_ms_material_network(params, root_assembly, ms_material):
 
     if materials[0] is None and materials[1] is None:
         if ms_material.alpha_map is not None:
-            alpha_texture, alpha_texture_instance = m_file_to_as_texture(params, ms_material.alpha_map)
+            alpha_texture, alpha_texture_instance = m_file_to_as_texture(params, ms_material.alpha_map, '_alpha', non_mb_sample_number)
             root_assembly.textures.append(alpha_texture)
             root_assembly.texture_instances.append(alpha_texture_instance)
 
@@ -2152,17 +2200,17 @@ def convert_maya_ms_material_network(params, root_assembly, ms_material):
             front_material = AsMaterial()
             front_material.name = ms_material.safe_name + '_front'
             if ms_material.bsdf_front is not None:
-                new_bsdf = build_as_shading_nodes(params, root_assembly, ms_material.bsdf_front)
+                new_bsdf = build_as_shading_nodes(params, root_assembly, ms_material.bsdf_front, non_mb_sample_number)
                 front_material.bsdf = AsParameter('bsdf', new_bsdf.name)
             if ms_material.edf_front is not None:
-                new_edf = build_as_shading_nodes(params, root_assembly, ms_material.edf_front)
+                new_edf = build_as_shading_nodes(params, root_assembly, ms_material.edf_front, non_mb_sample_number)
                 front_material.edf = AsParameter('edf', new_edf.name)
             if ms_material.surface_shader_front is not None:
-                new_surface_shader = build_as_shading_nodes(params, root_assembly, ms_material.surface_shader_front)
+                new_surface_shader = build_as_shading_nodes(params, root_assembly, ms_material.surface_shader_front, non_mb_sample_number)
                 front_material.surface_shader = AsParameter('surface_shader', new_surface_shader.name)
             if ms_material.displacement_map_front is not None:
 
-                texture, texture_instance = m_file_to_as_texture(params, ms_material.displacement_map_front)
+                texture, texture_instance = m_file_to_as_texture(params, ms_material.displacement_map_front, '_displacement_back', non_mb_sample_number)
                 existing_texture = get_from_list(root_assembly.textures, texture.name)
                 existing_texture_instance = get_from_list(root_assembly.texture_instances, texture_instance.name)
 
@@ -2189,17 +2237,17 @@ def convert_maya_ms_material_network(params, root_assembly, ms_material):
             back_material = AsMaterial()
             back_material.name = ms_material.safe_name + '_back'
             if ms_material.bsdf_back is not None:
-                new_bsdf = build_as_shading_nodes(params, root_assembly, ms_material.bsdf_back)
+                new_bsdf = build_as_shading_nodes(params, root_assembly, ms_material.bsdf_back, non_mb_sample_number)
                 back_material.bsdf = AsParameter('bsdf', new_bsdf.name)
             if ms_material.edf_back is not None:
-                new_edf = build_as_shading_nodes(params, root_assembly, ms_material.edf_back)
+                new_edf = build_as_shading_nodes(params, root_assembly, ms_material.edf_back, non_mb_sample_number)
                 back_material.edf = AsParameter('edf', new_edf.name)
             if ms_material.surface_shader_back is not None:
-                new_surface_shader = build_as_shading_nodes(params, root_assembly, ms_material.surface_shader_back)
+                new_surface_shader = build_as_shading_nodes(params, root_assembly, ms_material.surface_shader_back, non_mb_sample_number)
                 back_material.surface_shader = AsParameter('surface_shader', new_surface_shader.name)
             if ms_material.displacement_map_back is not None:
 
-                texture, texture_instance = m_file_to_as_texture(params, ms_material.displacement_map_back)
+                texture, texture_instance = m_file_to_as_texture(params, ms_material.displacement_map_back, '_displacement_back', non_mb_sample_number)
                 existing_texture = get_from_list(root_assembly.textures, texture.name)
                 existing_texture_instance = get_from_list(root_assembly.texture_instances, texture_instance.name)
 
@@ -2245,7 +2293,7 @@ def get_from_list(list, name):
 # build_as_shading_nodes function.
 #--------------------------------------------------------------------------------------------------
 
-def build_as_shading_nodes(params, root_assembly, current_maya_shading_node):
+def build_as_shading_nodes(params, root_assembly, current_maya_shading_node, non_mb_sample_number):
 
     """ takes a Maya MMsShading node and returns a AsEdf, AsBsdf or AsSurfaceShader"""
 
@@ -2289,22 +2337,24 @@ def build_as_shading_nodes(params, root_assembly, current_maya_shading_node):
                 new_shading_node = get_from_list(root_assembly.surface_shaders, current_maya_shading_node.attributes[attrib_key].safe_name)
 
             if new_shading_node is None:
-                new_shading_node = build_as_shading_nodes(params, root_assembly, current_maya_shading_node.attributes[attrib_key])
+                new_shading_node = build_as_shading_nodes(params, root_assembly, current_maya_shading_node.attributes[attrib_key], non_mb_sample_number)
 
             new_shading_node_parameter = AsParameter(attrib_key, new_shading_node.name)
             current_shading_node.parameters.append(new_shading_node_parameter)
 
         elif current_maya_shading_node.attributes[attrib_key].__class__.__name__ == 'MFile':
+            texture_entity = get_from_list(root_assembly.textures, current_maya_shading_node.attributes[attrib_key].safe_name)
 
-            new_texture_entity = get_from_list(root_assembly.textures, current_maya_shading_node.attributes[attrib_key].safe_name)
+            if texture_entity is None:
+                texture_entity, texture_instance = m_file_to_as_texture(params, current_maya_shading_node.attributes[attrib_key], '', non_mb_sample_number)
 
-            if new_texture_entity is None:
-                new_texture_entity, new_texture_instance = m_file_to_as_texture(params, current_maya_shading_node.attributes[attrib_key])
-
-                root_assembly.textures.append(new_texture_entity)
-                root_assembly.texture_instances.append(new_texture_instance)
-
-            new_shading_node_parameter = AsParameter(attrib_key, new_texture_instance.name)
+                root_assembly.textures.append(texture_entity)
+                root_assembly.texture_instances.append(texture_instance)
+            else:
+                texture_instance = texture_entity.instantiate()
+                root_assembly.texture_instances.append(texture_instance)
+            
+            new_shading_node_parameter = AsParameter(attrib_key, texture_instance.name)
             current_shading_node.parameters.append(new_shading_node_parameter)
 
         elif current_maya_shading_node.attributes[attrib_key].__class__.__name__ == 'MColorConnection':
@@ -2360,7 +2410,10 @@ def export_container(render_settings_node):
 
     export_finish_time = time.time()
 
-    ms_commands.info('Export finished in %.2f seconds, see the script editor for details.' % (export_finish_time - export_start_time))
+    completed_message = 'Export completed in %.2f seconds, see the script editor for details.' % (export_finish_time - export_start_time)
+
+    ms_commands.info(completed_message)
+    cmds.confirmDialog(message=completed_message, button='ok')
 
 
 #--------------------------------------------------------------------------------------------------
