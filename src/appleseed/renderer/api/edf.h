@@ -30,6 +30,7 @@
 #define APPLESEED_RENDERER_API_EDF_H
 
 // API headers.
+#include "renderer/modeling/edf/coneedf.h"
 #include "renderer/modeling/edf/diffuseedf.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/edf/edffactoryregistrar.h"
