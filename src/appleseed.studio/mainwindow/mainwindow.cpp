@@ -80,7 +80,6 @@
 #include <QString>
 #include <QStringList>
 #include <QWidget>
-#include <QTimer>
 
 // boost headers.
 #include "boost/filesystem/path.hpp"
