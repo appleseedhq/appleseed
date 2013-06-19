@@ -35,7 +35,6 @@
 #include "foundation/utility/string.h"
 
 // OpenEXR headers.
-#include "OpenEXR/ImfHeader.h"
 #include "OpenEXR/ImfStandardAttributes.h"
 #include "OpenEXR/ImfStringAttribute.h"
 

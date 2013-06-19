@@ -32,6 +32,9 @@
 // appleseed.foundation headers.
 #include "foundation/image/iprogressiveimagefilereader.h"
 
+// OpenEXR headers.
+#include "OpenEXR/ImfChannelList.h"
+
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
@@ -43,7 +46,6 @@ namespace foundation    { class CanvasProperties; }
 namespace foundation    { class ImageAttributes; }
 namespace foundation    { class Logger; }
 namespace foundation    { class Tile; }
-namespace Imf           { struct Channel; }
 
 
 namespace foundation
