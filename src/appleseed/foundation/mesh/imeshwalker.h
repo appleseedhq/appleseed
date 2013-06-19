@@ -51,7 +51,7 @@ class DLLSYMBOL IMeshWalker
 {
   public:
     // Special index value indicating that a feature is absent.
-    static const size_t None = ~0;
+    enum { None = ~0};
 
     // Destructor.
     virtual ~IMeshWalker() {}
