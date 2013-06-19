@@ -166,6 +166,7 @@ endif ()
 # Common include paths.
 include_directories (
     appleseed
+    lz4
     minilzo
     STANN/include
     ${OPENIMAGEIO_INCLUDE_DIRS}
@@ -408,6 +409,7 @@ if (WITH_PYTHON)
     add_subdirectory (appleseed.python)
 endif ()
 
+add_subdirectory (lz4)
 add_subdirectory (minilzo)
 
 if (WITH_TOOLS)
