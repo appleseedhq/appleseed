@@ -1,4 +1,3 @@
-
 //
 // This source file is part of appleseed.
 // Visit http://appleseedhq.net/ for additional information and resources.
@@ -60,7 +59,7 @@ void CommandLineHandler::print_program_usage(
     SaveLogFormatterConfig save_config(logger);
     logger.set_format(LogMessage::Info, "{message}");
 
-    LOG_INFO(logger, "usage: %s project.appleseed", program_name);
+    LOG_INFO(logger, "usage: %s [project.appleseed]", program_name);
     LOG_INFO(logger, "options:");
 
     parser().print_usage(logger);

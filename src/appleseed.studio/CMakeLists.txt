@@ -1,4 +1,3 @@
-
 #
 # This source file is part of appleseed.
 # Visit http://appleseedhq.net/ for additional information and resources.
@@ -95,8 +94,8 @@ source_group ("help\\about" FILES
 
 set (main_sources
     main/main.cpp
-    main/commandlinehandler.h
     main/commandlinehandler.cpp
+    main/commandlinehandler.h
 )
 list (APPEND appleseed.studio_sources
     ${main_sources}
