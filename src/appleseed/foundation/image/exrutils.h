@@ -29,9 +29,11 @@
 #ifndef APPLESEED_FOUNDATION_IMAGE_EXRUTILS_H
 #define APPLESEED_FOUNDATION_IMAGE_EXRUTILS_H
 
+// OpenEXR headers.
+#include "OpenEXR/ImfHeader.h"
+
 // Forward declarations.
 namespace foundation    { class ImageAttributes; }
-namespace Imf           { class Header; }
 
 namespace foundation
 {
