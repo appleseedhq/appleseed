@@ -222,7 +222,7 @@ int main(int argc, char *argv[])
 {
     start_memory_tracking();
 
-    g_cl.parse(argc, const_cast<const char**>( argv), g_logger);
+    g_cl.parse(argc, const_cast<const char**>(argv), g_logger);
 
     QApplication application(argc, argv);
     QApplication::setOrganizationName("appleseedhq");
