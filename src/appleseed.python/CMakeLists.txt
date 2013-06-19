@@ -31,13 +31,19 @@
 #--------------------------------------------------------------------------------------------------
 
 find_package (PythonLibs REQUIRED)
+string (SUBSTRING "${PYTHONLIBS_VERSION_STRING}" 0 1 PYTHON_MAJOR_VERSION)
 
 
 #--------------------------------------------------------------------------------------------------
 # Boost libraries.
 #--------------------------------------------------------------------------------------------------
 
-find_package (Boost 1.46 REQUIRED ${BOOST_NEEDED_LIBS} python)
+#PYTHONLIBS_VERSION_STRING
+if( PYTHON_MAJOR_VERSION STREQUAL "3")
+    find_package (Boost 1.46 REQUIRED ${BOOST_NEEDED_LIBS} python3)
+else()
+    find_package (Boost 1.46 REQUIRED ${BOOST_NEEDED_LIBS} python)
+endif()
 
 
 #--------------------------------------------------------------------------------------------------
