@@ -26,29 +26,35 @@
 # THE SOFTWARE.
 #
 
-
 import bpy
 
-class AppleseedRender( bpy.types.RenderEngine):
-    bl_idname = 'APPLESEED_RENDER'
-    bl_label = "Appleseed"
+class AppleseedRenderButtons( bpy.types.Panel):
+    bl_context = "render"
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+    bl_label = "Render"
+    COMPAT_ENGINES = {'APPLESEED'}
 
-    def update( self, data, scene):
-        print( "AppleseedRender update called")
+    @classmethod
+    def poll( cls, context):
+        renderer = context.scene.render
+        return renderer.engine == 'APPLESEED_RENDER'
+    
+    def draw( self, context):
+        scene = context.scene
+        layout = self.layout
+        layout.prop( scene.appleseed, "appleseed_dir", text = "Appleseed")
 
-    def render( self, scene):
-        print( "AppleseedRender render called")
+        row = layout.row( align=True)
+        row.operator( "appleseed.render_frame", text="Render", icon='RENDER_STILL')
+        row.operator( "appleseed.render_anim", text="Animation", icon='RENDER_ANIMATION')
 
-    def preview_update( self, context, id):
-        print( "AppleseedRender preview update called")
+        layout.prop( scene.appleseed, "display_mode", text = "Display")
 
-    def preview_render( self):
-        print( "AppleseedRender preview render called")
+def register():
+    bpy.types.RENDER_PT_dimensions.COMPAT_ENGINES.add( 'APPLESEED_RENDER')
+    bpy.types.RENDER_PT_output.COMPAT_ENGINES.add( 'APPLESEED_RENDER')
 
-    '''
-    def view_update( self, context):
-        print( "AppleseedRender view update called")
-
-    def view_draw( self, context):
-        print( "AppleseedRender view draw called")
-    '''
+def unregister():
+    bpy.types.RENDER_PT_dimensions.COMPAT_ENGINES.remove( 'APPLESEED_RENDER')
+    bpy.types.RENDER_PT_shading.COMPAT_ENGINES.remove( 'APPLESEED_RENDER')

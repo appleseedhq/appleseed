@@ -26,29 +26,24 @@
 # THE SOFTWARE.
 #
 
-
 import bpy
 
-class AppleseedRender( bpy.types.RenderEngine):
-    bl_idname = 'APPLESEED_RENDER'
-    bl_label = "Appleseed"
+class Appleseed_PT_preview( bpy.types.Panel):
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+    bl_label = "Preview"
+    bl_context = "material"
+    bl_options = {'DEFAULT_CLOSED'}
 
-    def update( self, data, scene):
-        print( "AppleseedRender update called")
+    @classmethod
+    def poll( cls, context):
+        return True
 
-    def render( self, scene):
-        print( "AppleseedRender render called")
+    def draw(self, context):
+        self.layout.template_preview( context.material)
 
-    def preview_update( self, context, id):
-        print( "AppleseedRender preview update called")
+def register():
+    pass
 
-    def preview_render( self):
-        print( "AppleseedRender preview render called")
-
-    '''
-    def view_update( self, context):
-        print( "AppleseedRender view update called")
-
-    def view_draw( self, context):
-        print( "AppleseedRender view draw called")
-    '''
+def unregister():
+    pass

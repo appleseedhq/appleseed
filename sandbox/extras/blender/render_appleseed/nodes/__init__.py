@@ -26,29 +26,10 @@
 # THE SOFTWARE.
 #
 
-
 import bpy
 
-class AppleseedRender( bpy.types.RenderEngine):
-    bl_idname = 'APPLESEED_RENDER'
-    bl_label = "Appleseed"
+def register():
+    pass
 
-    def update( self, data, scene):
-        print( "AppleseedRender update called")
-
-    def render( self, scene):
-        print( "AppleseedRender render called")
-
-    def preview_update( self, context, id):
-        print( "AppleseedRender preview update called")
-
-    def preview_render( self):
-        print( "AppleseedRender preview render called")
-
-    '''
-    def view_update( self, context):
-        print( "AppleseedRender view update called")
-
-    def view_draw( self, context):
-        print( "AppleseedRender view draw called")
-    '''
+def unregister():
+    pass

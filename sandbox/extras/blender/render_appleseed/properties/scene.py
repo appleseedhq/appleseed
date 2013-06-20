@@ -26,42 +26,34 @@
 # THE SOFTWARE.
 #
 
-bl_info = {
-    "name": "Appleseed",
-    "author": "Franz Beaune, Joel Daniels, Esteban Tovagliari",
-    "version": (0, 0, 1),
-    "blender": (2, 6, 7),
-    "location": "Render > Engine > Appleseed",
-    "description": "Appleseed integration for blender",
-    "warning": "",
-    "wiki_url": "",
-    "tracker_url": "",
-    "category": "Render"}
-
-
 import bpy
-from . import properties
-from . import nodes
-from . import operators
-from . import export
-from . import ui
-from . import render
+
+class AppleseedRenderSettings( bpy.types.PropertyGroup):
+    @classmethod
+    def register( cls):
+        bpy.types.Scene.appleseed = bpy.props.PointerProperty(
+                name = "Appleseed Render Settings",
+                description = "appleseed render settings",
+                type = cls
+                )
+
+        cls.appleseed_dir = bpy.props.StringProperty( description = "Path to the appleseed directory", subtype = 'DIR_PATH')
+
+        cls.display_mode = bpy.props.EnumProperty(  name = "Display Mode",
+                                                    description = "Select where rendered images will be displayed",
+                                                    items=(( 'KEEP_UI', "Keep UI", ""),
+                                                           ( 'NEW_WINDOW', "New Window", ""),
+                                                           ( 'IMAGE_EDITOR', "Image Editor", ""),
+                                                           ( 'FULL_SCREEN', "Full Screen", ""),
+                                                           ( 'AS_STUDIO', "Appleseed Studio", "")),
+                                                    default = 'IMAGE_EDITOR')
+
+    @classmethod
+    def unregister( cls):
+        del bpy.types.Scene.appleseed
 
 def register():
-    properties.register()
-    nodes.register()
-    operators.register()
-    export.register()
-    ui.register()
-    bpy.utils.register_module( __name__)
+    pass
 
 def unregister():
-    properties.unregister()
-    nodes.unregister()
-    operators.register()
-    export.unregister()
-    ui.unregister()
-    bpy.utils.unregister_module( __name__)
-
-if __name__ == "__main__":
-    register()
+    pass

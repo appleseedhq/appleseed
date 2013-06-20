@@ -28,30 +28,8 @@
 
 import bpy
 
-class AppleseedRenderSettings( bpy.types.PropertyGroup):
-    @classmethod
-    def register( cls):
-        bpy.types.Scene.appleseed = bpy.props.PointerProperty(
-                name = "Appleseed Render Settings",
-                description = "appleseed render settings",
-                type = cls
-                )
-
-        cls.display_mode = bpy.props.EnumProperty(  name = "Display Mode",
-                                                    description = "Select where rendered images will be displayed",
-                                                    items=(( 'KEEP_UI', "Keep UI", ""),
-                                                           ( 'NEW_WINDOW', "New Window", ""),
-                                                           ( 'IMAGE_EDITOR', "Image Editor", ""),
-                                                           ( 'FULL_SCREEN', "Full Screen", ""),
-                                                           ( 'AS_STUDIO', "Appleseed Studio", "")),
-                                                    default = 'IMAGE_EDITOR')
-
-    @classmethod
-    def unregister( cls):
-        del bpy.types.Scene.appleseed
-
 def register():
-    pass
+    bpy.types.SCENE_PT_custom_props.COMPAT_ENGINES.add( 'APPLESEED_RENDER')
 
 def unregister():
-    pass
+    bpy.types.SCENE_PT_custom_props.COMPAT_ENGINES.remove( 'APPLESEED_RENDER')

@@ -27,35 +27,15 @@
 #
 
 import bpy
-
-class AppleseedRenderButtons( bpy.types.Panel):
-    bl_context = "render"
-    bl_space_type = "PROPERTIES"
-    bl_region_type = "WINDOW"
-    bl_label = "Render"
-    COMPAT_ENGINES = {'APPLESEED'}
-
-    @classmethod
-    def poll( cls, context):
-        renderer = context.scene.render
-        return renderer.engine == 'APPLESEED_RENDER'
-    
-    def draw(self, context):
-        layout = self.layout
-        row = layout.row( align=True)
-        row.operator( "appleseed.render_frame", text="Render", icon='RENDER_STILL')
-        row.operator( "appleseed.render_anim", text="Animation", icon='RENDER_ANIMATION')
-
-        scene = context.scene
-        layout.prop( scene.appleseed, "display_mode", text = "Display")
+from . import render
+from . import scene
+from . import material
 
 def register():
-    bpy.types.RENDER_PT_dimensions.COMPAT_ENGINES.add( 'APPLESEED_RENDER')
-    bpy.types.RENDER_PT_output.COMPAT_ENGINES.add( 'APPLESEED_RENDER')
-    bpy.types.SCENE_PT_custom_props.COMPAT_ENGINES.add( 'APPLESEED_RENDER')
-
+    render.register()
+    scene.register()
+    material.register()
 
 def unregister():
-    bpy.types.RENDER_PT_dimensions.COMPAT_ENGINES.remove( 'APPLESEED_RENDER')
-    bpy.types.RENDER_PT_shading.COMPAT_ENGINES.remove( 'APPLESEED_RENDER')
-    bpy.types.SCENE_PT_custom_props.COMPAT_ENGINES.remove( 'APPLESEED_RENDER')
+    scene.unregister()
+    material.unregister()
