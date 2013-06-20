@@ -91,7 +91,7 @@ class MainWindow
     // Destructor.
     ~MainWindow();
 
-    void open_and_render_project(const QString& filepath, bool final);
+    void open_and_render_project(const QString& filepath, const bool final);
 
   public slots:
     void slot_recreate_render_widgets();

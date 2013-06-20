@@ -132,9 +132,9 @@ MainWindow::~MainWindow()
     delete m_ui;
 }
 
-void MainWindow::open_and_render_project(const QString& filepath, bool final)
+void MainWindow::open_and_render_project(const QString& filepath, const bool final)
 {
-    if(final)
+    if (final)
     {
         connect(&m_project_manager, SIGNAL(signal_load_project_async_complete(const QString&, const bool)),
                 this, SLOT(slot_start_final_rendering_once(const QString&, const bool)));
@@ -1253,21 +1253,32 @@ void MainWindow::slot_clear_frame()
         i->second->m_render_widget->clear(Color4f(0.0f));
 }
 
-void MainWindow::slot_start_interactive_rendering_once(const QString& filepath,
-                                                   const bool successful)
+void MainWindow::slot_start_interactive_rendering_once(const QString& filepath, const bool successful)
 {
     disconnect(&m_project_manager, SIGNAL(signal_load_project_async_complete(const QString&, bool)),
                this, SLOT(slot_start_interactive_rendering_once(const QString&, const bool)));
 
-    slot_start_interactive_rendering();
+    if (success)
+        slot_start_interactive_rendering();
+    else
+    {
+        show_project_file_loading_failed_message_box(this, filepath);
+        update_workspace();
+    }
 }
 
 void MainWindow::slot_start_final_rendering_once(const QString& filepath, const bool successful)
 {
-    disconnect(&m_project_manager, SIGNAL(signal_load_project_async_complete(const QSting&, bool)),
+    disconnect(&m_project_manager, SIGNAL(signal_load_project_async_complete(const QString&, bool)),
                this, SLOT(slot_start_final_rendering_once(const QString&, const bool)));
 
-    slot_start_final_rendering();
+    if (success)
+        slot_start_final_rendering();
+    else
+    {
+        show_project_file_loading_failed_message_box(this, filepath);
+        update_workspace();
+    }
 }
 
 }   // namespace studio
