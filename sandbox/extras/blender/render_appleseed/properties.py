@@ -5,7 +5,7 @@
 #
 # This software is released under the MIT license.
 #
-# Copyright (c) 2012 Esteban Tovagliari.
+# Copyright (c) 2013 Franz Beaune, Joel Daniels, Esteban Tovagliari.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -28,83 +28,30 @@
 
 import bpy
 
-from bpy.props import PointerProperty, StringProperty, BoolProperty, EnumProperty
-from bpy.props import IntProperty, FloatProperty, FloatVectorProperty, CollectionProperty
-
 class AppleseedRenderSettings( bpy.types.PropertyGroup):
     @classmethod
-    def register(cls):
-        bpy.types.Scene.appleseed = PointerProperty(
+    def register( cls):
+        bpy.types.Scene.appleseed = bpy.props.PointerProperty(
                 name = "Appleseed Render Settings",
-                description = "Appleseed render settings",
+                description = "appleseed render settings",
                 type = cls
                 )
 
-        # sampling
-        cls.pixel_filter = bpy.props.EnumProperty( name = "Filter",
-                                                    description = "Pixel filter to use",
-                                                    items = [ ( "box", "Box", "Box" ),
-                                                              ( "gaussian", "Gaussian", "Gaussian"),
-                                                              ( "mitchell", "Mitchell", "Mitchell")],
-                                                    default = "mitchell")
-
-        cls.filter_size = bpy.props.IntProperty( name = "Filter Size",
-                                                 description = "Filter size",
-                                                 min = 1,
-                                                 max = 64,
-                                                 default = 2,
-                                                 subtype = 'UNSIGNED')
-
-        cls.pixel_sampler = bpy.props.EnumProperty( name = "Sampler",
-                                                    description = "Sampler",
-                                                    items = [ ( "uniform", "Uniform", "Uniform" ),
-                                                              ( "adaptive", "Adaptive", "Adaptive")],
-                                                    default = "adaptive")
-
-        cls.sampler_min_samples = bpy.props.IntProperty( name = "Min Samples",
-                                                 description = "Min Samples",
-                                                 min = 1,
-                                                 max = 1000000,
-                                                 default = 2,
-                                                 subtype = 'UNSIGNED')
-
-        cls.sampler_max_samples = bpy.props.IntProperty( name = "Max Samples",
-                                                 description = "Max Samples",
-                                                 min = 1,
-                                                 max = 1000000,
-                                                 default = 64,
-                                                 subtype = 'UNSIGNED')
-
-        cls.sampler_max_contrast = bpy.props.FloatProperty( name = "Max Contrast",
-                                                 description = "Max contrast",
-                                                 min = 0,
-                                                 max = 1000,
-                                                 default = 1)
-
-        cls.sampler_max_variation = bpy.props.FloatProperty( name = "Max Variation",
-                                                 description = "Max variation",
-                                                 min = 0,
-                                                 max = 1000,
-                                                 default = 1)
-
-        # lighting
-        cls.lighting_engine = bpy.props.EnumProperty( name = "Lighting Engine",
-                    								 description = "Select the lighting engine to use",
-                            						 items = [ ( 'pt', "Path Tracing", "Full Global Illumination"),
-                                    						( 'drt', "Distributed Ray Tracing", "Direct Lighting Only")],
-                                            		 default = 'pt')
-
-        # drt
-        cls.drt_ibl_enable = BoolProperty( name = "Image Based Lighting",
-                                            description = "Image based lighting",
-                                            default = False)
+        cls.display_mode = bpy.props.EnumProperty(  name = "Display Mode",
+                                                    description = "Select where rendered images will be displayed",
+                                                    items=(( 'KEEP_UI', "Keep UI", ""),
+                                                           ( 'NEW_WINDOW', "New Window", ""),
+                                                           ( 'IMAGE_EDITOR', "Image Editor", ""),
+                                                           ( 'FULL_SCREEN', "Full Screen", ""),
+                                                           ( 'AS_STUDIO', "Appleseed Studio", "")),
+                                                    default = 'IMAGE_EDITOR')
 
     @classmethod
-    def unregister(cls):
+    def unregister( cls):
         del bpy.types.Scene.appleseed
 
 def register():
-	bpy.utils.register_class( AppleseedRenderSettings)
+    pass
 
 def unregister():
-	bpy.utils.unregister_class( AppleseedRenderSettings)
+    pass

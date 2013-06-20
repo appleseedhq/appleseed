@@ -5,7 +5,7 @@
 #
 # This software is released under the MIT license.
 #
-# Copyright (c) 2012 Esteban Tovagliari.
+# Copyright (c) 2013 Franz Beaune, Joel Daniels, Esteban Tovagliari.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -26,48 +26,43 @@
 # THE SOFTWARE.
 #
 
-import os
-
 import bpy
-from bpy.types import Operator
-from bpy.props import StringProperty, BoolProperty, EnumProperty
-from bpy_extras.io_utils import ExportHelper
 
-from .project_writer import ProjectWriter
+class AppleseedRenderFrame( bpy.types.Operator):
+    """Render active scene"""
+    bl_idname = "appleseed.render_frame"
+    bl_label = "Appleseed Render Frame"
 
-class ExportAppleseedProject( Operator, ExportHelper):
-    bl_idname = "appleseed.export"
-    bl_label = "Export Appleseed Project"
-
-    filename_ext = ".appleseed"
-    filter_glob = StringProperty( default="*.appleseed", options={'HIDDEN'} )
-
-    use_anim = BoolProperty( name="Animation", description = "Animation", default = False)
+    @classmethod
+    def poll( cls, context):
+        return True
 
     def execute( self, context):
-        proj_path = os.path.dirname( self.filepath)
-        filename = os.path.basename( self.filepath)
+        # get the scene from the context, 
+        # copy appleseed.display_mode to render.display_mode
+        # launch render
+        return {'FINISHED'}
 
-        if filename.endswith( ".appleseed"):
-            filename = filename[0 : -len( ".appleseed")]
+class AppleseedRenderAnim( bpy.types.Operator):
+    """Render active scene"""
+    bl_idname = "appleseed.render_anim"
+    bl_label = "Appleseed Render Anim"
 
-        if self.use_anim:
-            for frame in range( context.scene.frame_start, context.scene.frame_end + 1):
-                writer = ProjectWriter( context.scene, proj_path, filename + "." + str( frame), True)
-                writer.write()
-        else:
-            writer = ProjectWriter( context.scene, proj_path, filename)
-            writer.write()
+    @classmethod
+    def poll( cls, context):
+        return True
 
-        return { 'FINISHED'}
+    def execute( self, context):
+        # get the scene from the context, 
+        # copy appleseed.display_mode to render.display_mode
+        # launch render
+        return {'FINISHED'}
 
-def menu_func_export_appleseed( self, context):
-    self.layout.operator( ExportAppleseedProject.bl_idname, text = "Appleseed project (.appleseed)")
 
 def register():
-    bpy.utils.register_class( ExportAppleseedProject)
-    bpy.types.INFO_MT_file_export.append( menu_func_export_appleseed)
+    bpy.utils.register_class( AppleseedRenderFrame)
+    bpy.utils.register_class( AppleseedRenderAnim)
 
 def unregister():
-    bpy.utils.unregister_class( ExportAppleseedProject)
-    bpy.types.INFO_MT_file_export.remove( menu_func_export_appleseed)
+    bpy.utils.unregister_class( AppleseedRenderFrame)
+    bpy.utils.unregister_class( AppleseedRenderAnim)

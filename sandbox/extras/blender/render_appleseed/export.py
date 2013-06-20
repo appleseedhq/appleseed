@@ -26,39 +26,31 @@
 # THE SOFTWARE.
 #
 
-bl_info = {
-    "name": "Appleseed",
-    "author": "Franz Beaune, Joel Daniels, Esteban Tovagliari",
-    "version": (0, 0, 1),
-    "blender": (2, 6, 7),
-    "location": "Render > Engine > Appleseed",
-    "description": "Appleseed integration for blender",
-    "warning": "",
-    "wiki_url": "",
-    "tracker_url": "",
-    "category": "Render"}
-
-
 import bpy
-from . import properties
-from . import operators
-from . import export
-from . import ui
-from . import render
+from bpy_extras.io_utils import ExportHelper
+
+
+class ExportAppleseedScene( bpy.types.Operator, ExportHelper):
+    """Saves an appleseed scene"""
+    bl_idname = "appleseed.export_scene"
+    bl_label = "Export Appleseed Scene"
+
+    # ExportHelper mixin class uses this
+    filename_ext = ".appleseed"
+
+    filter_glob = bpy.props.StringProperty( default="*.appleseed", options={'HIDDEN'},)
+
+    def execute(self, context):
+        pass
+
+def menu_func_export_scene( self, context):
+    self.layout.operator( ExportAppleseedScene.bl_idname, text="Appleseed (.appleseed)")
 
 def register():
-    properties.register()
-    operators.register()
-    export.register()
-    ui.register()
-    bpy.utils.register_module( __name__)
+    bpy.utils.register_class( ExportAppleseedScene)
+    bpy.types.INFO_MT_file_export.append( menu_func_export_scene)
+
 
 def unregister():
-    properties.unregister()
-    operators.register()
-    export.unregister()
-    ui.unregister()
-    bpy.utils.unregister_module( __name__)
-
-if __name__ == "__main__":
-    register()
+    bpy.utils.unregister_class( ExportAppleseedScene)
+    bpy.types.INFO_MT_file_export.remove( menu_func_export_scene)

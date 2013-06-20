@@ -5,7 +5,7 @@
 #
 # This software is released under the MIT license.
 #
-# Copyright (c) 2012 Esteban Tovagliari.
+# Copyright (c) 2013 Franz Beaune, Joel Daniels, Esteban Tovagliari.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -27,150 +27,35 @@
 #
 
 import bpy
-from bpy.types import Panel, Menu
 
-# Use some of the existing buttons.
-from bl_ui import properties_render
-properties_render.RENDER_PT_render.COMPAT_ENGINES.add( 'APPLESEED')
-properties_render.RENDER_PT_dimensions.COMPAT_ENGINES.add( 'APPLESEED')
-properties_render.RENDER_PT_output.COMPAT_ENGINES.add( 'APPLESEED')
-properties_render.RENDER_PT_post_processing.COMPAT_ENGINES.add( 'APPLESEED')
-properties_render.RENDER_PT_stamp.COMPAT_ENGINES.add( 'APPLESEED')
-del properties_render
-
-import bl_ui.properties_scene as properties_scene
-properties_scene.SCENE_PT_scene.COMPAT_ENGINES.add( 'APPLESEED')
-properties_scene.SCENE_PT_audio.COMPAT_ENGINES.add( 'APPLESEED')
-properties_scene.SCENE_PT_physics.COMPAT_ENGINES.add( 'APPLESEED')
-properties_scene.SCENE_PT_keying_sets.COMPAT_ENGINES.add( 'APPLESEED')
-properties_scene.SCENE_PT_keying_set_paths.COMPAT_ENGINES.add( 'APPLESEED')
-properties_scene.SCENE_PT_unit.COMPAT_ENGINES.add( 'APPLESEED')
-properties_scene.SCENE_PT_custom_props.COMPAT_ENGINES.add( 'APPLESEED')
-del properties_scene
-
-import bl_ui.properties_world as properties_world
-properties_world.WORLD_PT_context_world.COMPAT_ENGINES.add( 'APPLESEED')
-del properties_world
-
-import bl_ui.properties_material as properties_material
-properties_material.MATERIAL_PT_context_material.COMPAT_ENGINES.add( 'APPLESEED')
-properties_material.MATERIAL_PT_preview.COMPAT_ENGINES.add( 'APPLESEED')
-properties_material.MATERIAL_PT_custom_props.COMPAT_ENGINES.add( 'APPLESEED')
-del properties_material
-
-import bl_ui.properties_texture as properties_texture
-properties_texture.TEXTURE_PT_preview.COMPAT_ENGINES.add( 'APPLESEED')
-del properties_texture
-
-import bl_ui.properties_data_lamp as properties_data_lamp
-properties_data_lamp.DATA_PT_context_lamp.COMPAT_ENGINES.add( 'APPLESEED')
-properties_data_lamp.DATA_PT_spot.COMPAT_ENGINES.add( 'APPLESEED')
-del properties_data_lamp
-
-# enable all existing panels for these contexts
-import bl_ui.properties_data_mesh as properties_data_mesh
-for member in dir( properties_data_mesh):
-    subclass = getattr( properties_data_mesh, member)
-    try: subclass.COMPAT_ENGINES.add( 'APPLESEED')
-    except: pass
-del properties_data_mesh
-
-import bl_ui.properties_object as properties_object
-for member in dir( properties_object):
-    subclass = getattr( properties_object, member)
-    try: subclass.COMPAT_ENGINES.add( 'APPLESEED')
-    except: pass
-del properties_object
-
-import bl_ui.properties_data_mesh as properties_data_mesh
-for member in dir( properties_data_mesh):
-    subclass = getattr( properties_data_mesh, member)
-    try: subclass.COMPAT_ENGINES.add( 'APPLESEED')
-    except: pass
-del properties_data_mesh
-
-import bl_ui.properties_data_camera as properties_data_camera
-for member in dir( properties_data_camera):
-    subclass = getattr( properties_data_camera, member)
-    try: subclass.COMPAT_ENGINES.add( 'APPLESEED')
-    except: pass
-del properties_data_camera
-
-import bl_ui.properties_particle as properties_particle
-for member in dir( properties_particle):
-    if member == 'PARTICLE_PT_render': continue
-
-    subclass = getattr( properties_particle, member)
-    try: subclass.COMPAT_ENGINES.add( 'APPLESEED')
-    except:  pass
-del properties_particle
-
-######################################################################
-
-class AppleseedRenderPanelBase( object):
+class AppleseedRenderButtons( bpy.types.Panel):
     bl_context = "render"
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
+    bl_label = "Render"
+    COMPAT_ENGINES = {'APPLESEED'}
 
     @classmethod
     def poll( cls, context):
         renderer = context.scene.render
-        return renderer.engine == 'APPLESEED'
-
-class AppleseedSamplesPanel( Panel, AppleseedRenderPanelBase):
-    bl_label = "Samples"
-    COMPAT_ENGINES = {'APPLESEED'}
-    bl_options = {'DEFAULT_CLOSED'}
-
-    def draw( self, context):
+        return renderer.engine == 'APPLESEED_RENDER'
+    
+    def draw(self, context):
         layout = self.layout
+        row = layout.row( align=True)
+        row.operator( "appleseed.render_frame", text="Render", icon='RENDER_STILL')
+        row.operator( "appleseed.render_anim", text="Animation", icon='RENDER_ANIMATION')
+
         scene = context.scene
-        asr_scene_props = scene.appleseed
-
-        col = layout.column()
-        row = col.row( align=True)
-        row.prop( asr_scene_props, "pixel_filter")
-        row.prop( asr_scene_props, "filter_size")
-
-        col.separator()
-        col.prop( asr_scene_props, "pixel_sampler")
-
-        if asr_scene_props.pixel_sampler == 'adaptive':
-            col.prop( asr_scene_props, "sampler_min_samples")
-            col.prop( asr_scene_props, "sampler_max_samples")
-            col.prop( asr_scene_props, "sampler_max_contrast")
-            col.prop( asr_scene_props, "sampler_max_variation")
-        else:
-            col.prop( asr_scene_props, "sampler_max_samples")
-
-class AppleseedLightingPanel( Panel, AppleseedRenderPanelBase):
-    bl_label = "Lighting"
-    COMPAT_ENGINES = {'APPLESEED'}
-    bl_options = {'DEFAULT_CLOSED'}
-
-    def draw( self, context):
-        layout = self.layout
-        scene = context.scene
-        asr_scene_props = scene.appleseed
-
-        col = layout.column()
-        col.prop( asr_scene_props, "lighting_engine")
-
-        if asr_scene_props.lighting_engine == 'drt':
-            col.prop( asr_scene_props, "drt_ibl_enable")
-
-class AppleseedSearchPathsPanel( Panel, AppleseedRenderPanelBase):
-    bl_label = "Search Paths"
-    bl_options = {'DEFAULT_CLOSED'}
-
-    def draw( self, context):
-        layout = self.layout
-        scene = context.scene
-        asr_scene_props = scene.appleseed
-        #layout.prop( asr_scene_props, "appleseed_path")
+        layout.prop( scene.appleseed, "display_mode", text = "Display")
 
 def register():
-    pass
+    bpy.types.RENDER_PT_dimensions.COMPAT_ENGINES.add( 'APPLESEED_RENDER')
+    bpy.types.RENDER_PT_output.COMPAT_ENGINES.add( 'APPLESEED_RENDER')
+    bpy.types.SCENE_PT_custom_props.COMPAT_ENGINES.add( 'APPLESEED_RENDER')
+
 
 def unregister():
-    pass
+    bpy.types.RENDER_PT_dimensions.COMPAT_ENGINES.remove( 'APPLESEED_RENDER')
+    bpy.types.RENDER_PT_shading.COMPAT_ENGINES.remove( 'APPLESEED_RENDER')
+    bpy.types.SCENE_PT_custom_props.COMPAT_ENGINES.remove( 'APPLESEED_RENDER')
