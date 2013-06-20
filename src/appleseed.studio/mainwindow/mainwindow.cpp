@@ -1258,7 +1258,7 @@ void MainWindow::slot_start_interactive_rendering_once(const QString& filepath, 
     disconnect(&m_project_manager, SIGNAL(signal_load_project_async_complete(const QString&, bool)),
                this, SLOT(slot_start_interactive_rendering_once(const QString&, const bool)));
 
-    if (success)
+    if (successful)
         slot_start_interactive_rendering();
     else
     {
@@ -1272,7 +1272,7 @@ void MainWindow::slot_start_final_rendering_once(const QString& filepath, const 
     disconnect(&m_project_manager, SIGNAL(signal_load_project_async_complete(const QString&, bool)),
                this, SLOT(slot_start_final_rendering_once(const QString&, const bool)));
 
-    if (success)
+    if (successful)
         slot_start_final_rendering();
     else
     {
