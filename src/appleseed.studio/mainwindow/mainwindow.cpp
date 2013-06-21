@@ -132,6 +132,22 @@ MainWindow::~MainWindow()
     delete m_ui;
 }
 
+void MainWindow::open_and_render_project(const QString& filepath, const bool final)
+{
+    if (final)
+    {
+        connect(&m_project_manager, SIGNAL(signal_load_project_async_complete(const QString&, const bool)),
+                this, SLOT(slot_start_final_rendering_once(const QString&, const bool)));
+    }
+    else
+    {
+        connect(&m_project_manager, SIGNAL(signal_load_project_async_complete(const QString&, const bool)),
+                this, SLOT(slot_start_interactive_rendering_once(const QString&, const bool)));
+    }
+
+    open_project(filepath);
+}
+
 void MainWindow::slot_recreate_render_widgets()
 {
     recreate_render_widgets();
@@ -1235,6 +1251,34 @@ void MainWindow::slot_clear_frame()
     // In the UI, clear all render widgets to black.
     for (const_each<RenderWidgetCollection> i = m_render_widgets; i; ++i)
         i->second->m_render_widget->clear(Color4f(0.0f));
+}
+
+void MainWindow::slot_start_interactive_rendering_once(const QString& filepath, const bool successful)
+{
+    disconnect(&m_project_manager, SIGNAL(signal_load_project_async_complete(const QString&, bool)),
+               this, SLOT(slot_start_interactive_rendering_once(const QString&, const bool)));
+
+    if (successful)
+        slot_start_interactive_rendering();
+    else
+    {
+        show_project_file_loading_failed_message_box(this, filepath);
+        update_workspace();
+    }
+}
+
+void MainWindow::slot_start_final_rendering_once(const QString& filepath, const bool successful)
+{
+    disconnect(&m_project_manager, SIGNAL(signal_load_project_async_complete(const QString&, bool)),
+               this, SLOT(slot_start_final_rendering_once(const QString&, const bool)));
+
+    if (successful)
+        slot_start_final_rendering();
+    else
+    {
+        show_project_file_loading_failed_message_box(this, filepath);
+        update_workspace();
+    }
 }
 
 }   // namespace studio
