@@ -33,6 +33,9 @@
 #include "foundation/utility/memory.h"
 #include "foundation/utility/otherwise.h"
 
+// lz4 headers.
+#include "lz4.h"
+
 // minilzo headers.
 extern "C" {
 #include "minilzo.h"
@@ -461,43 +464,24 @@ bool BufferedFile::seek(
 
 
 //
-// CompressedWriter class implementation.
+// CompressedWriterAdapter class implementation.
 //
 
-namespace
-{
-    const size_t WorkingMemorySizeBytes =
-        sizeof(lzo_align_t) * ((LZO1X_1_MEM_COMPRESS + (sizeof(lzo_align_t) - 1)) / sizeof(lzo_align_t));
-}
-
-CompressedWriter::CompressedWriter(
+CompressedWriterAdapter::CompressedWriterAdapter(
     BufferedFile&       file,
     const size_t        buffer_size)
   : m_file(file)
   , m_buffer_size(buffer_size)
   , m_buffer_index(0)
-  , m_working_memory(WorkingMemorySizeBytes)
 {
-#ifdef NDEBUG
-    lzo_init();
-#else
-    assert(lzo_init() == LZO_E_OK);
-#endif
 }
 
-CompressedWriter::~CompressedWriter()
+CompressedWriterAdapter::~CompressedWriterAdapter()
 {
-    if (m_buffer_index > 0)
-        flush_buffer();
+    assert(m_buffer_index == 0);
 }
 
-template <typename T>
-size_t CompressedWriter::write(const T& object)
-{
-    return write(&object, sizeof(T));
-}
-
-size_t CompressedWriter::write(
+size_t CompressedWriterAdapter::write(
     const void*         inbuf,
     const size_t        size)
 {
@@ -514,7 +498,102 @@ size_t CompressedWriter::write(
     return size;
 }
 
-void CompressedWriter::flush_buffer()
+
+//
+// CompressedReaderAdapter class implementation.
+//
+
+CompressedReaderAdapter::CompressedReaderAdapter(BufferedFile& file)
+  : m_file(file)
+  , m_buffer_index(0)
+  , m_buffer_end(0)
+{
+}
+
+size_t CompressedReaderAdapter::read(
+    void*               outbuf,
+    const size_t        size)
+{
+    size_t remaining = size;
+
+    while (remaining > 0)
+    {
+        if (m_buffer_index == m_buffer_end)
+        {
+            if (!fill_buffer())
+                break;
+        }
+
+        const size_t copy = min(size, m_buffer_end - m_buffer_index);
+        memcpy(outbuf, &m_buffer[m_buffer_index], copy);
+
+        outbuf = reinterpret_cast<uint8*>(outbuf) + copy;
+        m_buffer_index += copy;
+        remaining -= copy;
+    }
+
+    return size - remaining;
+}
+
+
+//
+// Convenient function to read a 64-bit unsigned integer from a foundation::BufferedFile.
+//
+
+namespace
+{
+    template <typename T>
+    inline size_t read_uint64(BufferedFile& file, T& x)
+    {
+        uint64 y;
+        const size_t result = file.read(y);
+        x = static_cast<T>(y);
+        return result;
+    }
+}
+
+
+//
+// LZOCompressedWriterAdapter class implementation.
+//
+
+namespace
+{
+    const size_t WorkingMemorySizeBytes =
+        sizeof(lzo_align_t) * ((LZO1X_1_MEM_COMPRESS + (sizeof(lzo_align_t) - 1)) / sizeof(lzo_align_t));
+}
+
+LZOCompressedWriterAdapter::LZOCompressedWriterAdapter(BufferedFile& file)
+  : CompressedWriterAdapter(file)
+  , m_working_memory(WorkingMemorySizeBytes)
+{
+#ifdef NDEBUG
+    lzo_init();
+#else
+    assert(lzo_init() == LZO_E_OK);
+#endif
+}
+
+LZOCompressedWriterAdapter::LZOCompressedWriterAdapter(
+    BufferedFile&       file,
+    const size_t        buffer_size)
+  : CompressedWriterAdapter(file, buffer_size)
+  , m_working_memory(WorkingMemorySizeBytes)
+{
+#ifdef NDEBUG
+    lzo_init();
+#else
+    assert(lzo_init() == LZO_E_OK);
+#endif
+}
+
+LZOCompressedWriterAdapter::~LZOCompressedWriterAdapter()
+{
+    if (m_buffer_index > 0)
+        flush_buffer();
+}
+
+void LZOCompressedWriterAdapter::flush_buffer()
 {
     const size_t max_compressed_buffer_size = m_buffer_index + (m_buffer_index / 16) + 64 + 3;
     ensure_minimum_size(m_compressed_buffer, max_compressed_buffer_size);
@@ -527,8 +606,8 @@ void CompressedWriter::flush_buffer()
         &compressed_buffer_size,
         &m_working_memory[0]);
 
-    m_file.write(m_buffer_index);
-    m_file.write(compressed_buffer_size);
+    m_file.write(static_cast<uint64>(m_buffer_index));
+    m_file.write(static_cast<uint64>(compressed_buffer_size));
     m_file.write(&m_compressed_buffer[0], compressed_buffer_size);
 
     m_buffer_index = 0;
@@ -536,78 +615,30 @@ void CompressedWriter::flush_buffer()
 
 
 //
-// CompressedReader class implementation.
+// LZOCompressedReaderAdapter class implementation.
 //
 
-CompressedReader::CompressedReader(
-    BufferedFile&       file,
-    const bool          is_compressed)
-  : m_file(file)
-  , m_is_compressed(is_compressed)
-  , m_buffer_index(0)
-  , m_buffer_end(0)
-  , m_working_memory(is_compressed ? WorkingMemorySizeBytes : 0)
+LZOCompressedReaderAdapter::LZOCompressedReaderAdapter(BufferedFile& file)
+  : CompressedReaderAdapter(file)
+  , m_working_memory(WorkingMemorySizeBytes)
 {
-    if (m_is_compressed)
-    {
 #ifdef NDEBUG
-        lzo_init();
+    lzo_init();
 #else
-        assert(lzo_init() == LZO_E_OK);
+    assert(lzo_init() == LZO_E_OK);
 #endif
-    }
 }
 
-template <typename T>
-size_t CompressedReader::read(T& object)
+bool LZOCompressedReaderAdapter::fill_buffer()
 {
-    return read(&object, sizeof(T));
-}
-
-size_t CompressedReader::read(
-    void*               outbuf,
-    const size_t        size)
-{
-    if (m_is_compressed)
-    {
-        size_t remaining = size;
-
-        while (remaining > 0)
-        {
-            if (m_buffer_index == m_buffer_end)
-            {
-                if (!fill_buffer())
-                    break;
-            }
-
-            const size_t copy = min(size, m_buffer_end - m_buffer_index);
-            memcpy(outbuf, &m_buffer[m_buffer_index], copy);
-
-            outbuf = reinterpret_cast<uint8*>(outbuf) + copy;
-            m_buffer_index += copy;
-            remaining -= copy;
-        }
-
-        return size - remaining;
-    }
-    else
-    {
-        return m_file.read(outbuf, size);
-    }
-}
-
-bool CompressedReader::fill_buffer()
-{
-    assert(m_is_compressed);
-
     size_t buffer_size;
-    if (m_file.read(buffer_size) == 0)
+    if (read_uint64(m_file, buffer_size) == 0)
         return false;
 
     ensure_minimum_size(m_buffer, buffer_size);
 
     lzo_uint compressed_buffer_size;
-    m_file.read(compressed_buffer_size);
+    read_uint64(m_file, compressed_buffer_size);
 
     ensure_minimum_size(m_compressed_buffer, compressed_buffer_size);
     m_file.read(&m_compressed_buffer[0], compressed_buffer_size);
@@ -620,6 +651,83 @@ bool CompressedReader::fill_buffer()
         &m_working_memory[0]);
 
     m_buffer_index = 0;
+
+    return true;
+}
+
+
+//
+// LZ4CompressedWriterAdapter class implementation.
+//
+
+LZ4CompressedWriterAdapter::LZ4CompressedWriterAdapter(BufferedFile& file)
+  : CompressedWriterAdapter(file)
+{
+}
+
+LZ4CompressedWriterAdapter::LZ4CompressedWriterAdapter(
+    BufferedFile&       file,
+    const size_t        buffer_size)
+  : CompressedWriterAdapter(file, buffer_size)
+{
+}
+
+LZ4CompressedWriterAdapter::~LZ4CompressedWriterAdapter()
+{
+    if (m_buffer_index > 0)
+        flush_buffer();
+}
+
+void LZ4CompressedWriterAdapter::flush_buffer()
+{
+    const size_t max_compressed_buffer_size =
+        static_cast<size_t>(LZ4_compressBound(static_cast<int>(m_buffer_index)));
+    ensure_minimum_size(m_compressed_buffer, max_compressed_buffer_size);
+
+    const int compressed_buffer_size =
+        LZ4_compress(
+            reinterpret_cast<const char*>(&m_buffer[0]),
+            reinterpret_cast<char*>(&m_compressed_buffer[0]),
+            static_cast<int>(m_buffer_index));
+ 
+    m_file.write(static_cast<uint64>(m_buffer_index));
+    m_file.write(static_cast<uint64>(compressed_buffer_size));
+    m_file.write(&m_compressed_buffer[0], compressed_buffer_size);
+
+    m_buffer_index = 0;
+}
+
+
+//
+// LZ4CompressedReaderAdapter class implementation.
+//
+
+LZ4CompressedReaderAdapter::LZ4CompressedReaderAdapter(BufferedFile& file)
+  : CompressedReaderAdapter(file)
+{
+}
+
+bool LZ4CompressedReaderAdapter::fill_buffer()
+{
+    size_t buffer_size;
+    if (read_uint64(m_file, buffer_size) == 0)
+        return false;
+
+    ensure_minimum_size(m_buffer, buffer_size);
+
+    size_t compressed_buffer_size;
+    read_uint64(m_file, compressed_buffer_size);
+
+    ensure_minimum_size(m_compressed_buffer, compressed_buffer_size);
+    m_file.read(&m_compressed_buffer[0], compressed_buffer_size);
+
+    LZ4_decompress_fast(
+        reinterpret_cast<const char*>(&m_compressed_buffer[0]),
+        reinterpret_cast<char*>(&m_buffer[0]),
+        static_cast<int>(buffer_size));
+
+    m_buffer_index = 0;
+    m_buffer_end = buffer_size;
 
     return true;
 }
