@@ -43,11 +43,14 @@ class AppleseedRenderButtons( bpy.types.Panel):
     def draw( self, context):
         scene = context.scene
         layout = self.layout
-        layout.prop( scene.appleseed, "appleseed_dir", text = "Appleseed")
+        layout.prop( scene.appleseed, "appleseed_dir", text = "Appleseed Dir")
 
-        row = layout.row( align=True)
-        row.operator( "appleseed.render_frame", text="Render", icon='RENDER_STILL')
-        row.operator( "appleseed.render_anim", text="Animation", icon='RENDER_ANIMATION')
+        if scene.appleseed.display_mode != 'AS_STUDIO':
+            row = layout.row( align=True)
+            row.operator( "appleseed.render_frame", text="Render", icon = 'RENDER_STILL')
+            row.operator( "render.render", text = "Animation", icon = 'RENDER_ANIMATION').animation = True
+        else:
+            layout.operator( "appleseed.render_frame", text="Render", icon='RENDER_STILL')
 
         layout.prop( scene.appleseed, "display_mode", text = "Display")
 
