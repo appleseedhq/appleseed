@@ -99,7 +99,7 @@ void BinaryMeshFileWriter::write_signature()
 
 void BinaryMeshFileWriter::write_version()
 {
-    const uint16 Version = 2;
+    const uint16 Version = 3;
 
     checked_write(m_file, Version);
 }

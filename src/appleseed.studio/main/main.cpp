@@ -27,10 +27,12 @@
 //
 
 // appleseed.studio headers.
+#include "commandlinehandler.h"
 #include "mainwindow/mainwindow.h"
 
 // appleseed.shared headers.
 #include "application/application.h"
+#include "application/superlogger.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/appleseed.h"
@@ -58,6 +60,7 @@
 #include <sstream>
 #include <string>
 
+using namespace appleseed::studio;
 using namespace appleseed::shared;
 using namespace boost;
 using namespace foundation;
@@ -65,6 +68,9 @@ using namespace std;
 
 namespace
 {
+    SuperLogger        g_logger;
+    CommandLineHandler g_cl;
+
     void display_incorrect_installation_error()
     {
         // We need the path to the application's executable to construct the error message.
@@ -216,6 +222,8 @@ int main(int argc, char *argv[])
 {
     start_memory_tracking();
 
+    g_cl.parse(argc, const_cast<const char**>(argv), g_logger);
+
     QApplication application(argc, argv);
     QApplication::setOrganizationName("appleseedhq");
     QApplication::setOrganizationDomain("appleseedhq.net");
@@ -231,6 +239,14 @@ int main(int argc, char *argv[])
     configure_application(application);
 
     appleseed::studio::MainWindow window;
+
+    if (!g_cl.m_filenames.values().empty())
+    {
+        window.open_and_render_project(
+            QString::fromStdString(g_cl.m_filenames.values().front()),
+            g_cl.m_final_render.is_set());
+    }
+
     window.show();
 
     return application.exec();

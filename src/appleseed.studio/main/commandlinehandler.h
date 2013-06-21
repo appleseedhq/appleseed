@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
+// Copyright (c) 2010-2013 Esteban Tovagliari
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,56 +26,47 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MESH_BINARYMESHFILEWRITER_H
-#define APPLESEED_FOUNDATION_MESH_BINARYMESHFILEWRITER_H
+#ifndef APPLESEED_STUDIO_COMMANDLINEHANDLER_H
+#define APPLESEED_STUDIO_COMMANDLINEHANDLER_H
 
 // appleseed.foundation headers.
-#include "foundation/mesh/imeshfilewriter.h"
-#include "foundation/platform/compiler.h"
-#include "foundation/utility/bufferedfile.h"
+#include "foundation/utility/commandlineparser.h"
+
+// appleseed.shared headers.
+#include "application/commandlinehandlerbase.h"
 
 // Standard headers.
-#include <cstddef>
 #include <string>
 
 // Forward declarations.
-namespace foundation    { class IMeshWalker; }
+namespace appleseed { namespace shared { class SuperLogger; } }
 
-namespace foundation
-{
+namespace appleseed {
+namespace studio {
 
 //
-// Writer for a simple binary mesh file format.
+// Command line handler.
 //
 
-class BinaryMeshFileWriter
-  : public IMeshFileWriter
+class CommandLineHandler
+  : public shared::CommandLineHandlerBase
 {
   public:
-    // Constructor.
-    explicit BinaryMeshFileWriter(const std::string& filename);
+    // Input files.
+    foundation::ValueOptionHandler<std::string>     m_filenames;
+    foundation::FlagOptionHandler                   m_final_render;
 
-    // Write a mesh.
-    virtual void write(const IMeshWalker& walker) OVERRIDE;
+    // Constructor.
+    CommandLineHandler();
 
   private:
-    const std::string           m_filename;
-    BufferedFile                m_file;
-    LZ4CompressedWriterAdapter  m_writer;
-
-    void write_signature();
-    void write_version();
-
-    void write_string(const char* s);
-    void write_mesh(const IMeshWalker& walker);
-    void write_vertices(const IMeshWalker& walker);
-    void write_vertex_normals(const IMeshWalker& walker);
-    void write_texture_coordinates(const IMeshWalker& walker);
-    void write_material_slots(const IMeshWalker& walker);
-    void write_faces(const IMeshWalker& walker);
-    void write_face(const IMeshWalker& walker, const size_t face_index);
+    // Emit usage instructions to the logger.
+    virtual void print_program_usage(
+        const char*             program_name,
+        shared::SuperLogger&    logger) const;
 };
 
-}       // namespace foundation
+}       // namespace studio
+}       // namespace appleseed
 
-#endif  // !APPLESEED_FOUNDATION_MESH_BINARYMESHFILEWRITER_H
+#endif  // !APPLESEED_STUDIO_COMMANDLINEHANDLER_H
