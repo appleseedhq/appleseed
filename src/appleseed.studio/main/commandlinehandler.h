@@ -54,7 +54,7 @@ class CommandLineHandler
   public:
     // Input files.
     foundation::ValueOptionHandler<std::string>     m_filenames;
-    foundation::FlagOptionHandler                   m_render_final;
+    foundation::FlagOptionHandler                   m_final_render;
 
     // Constructor.
     CommandLineHandler();

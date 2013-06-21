@@ -242,9 +242,9 @@ int main(int argc, char *argv[])
 
     if (!g_cl.m_filenames.values().empty())
     {
-        const string project_filename = g_cl.m_filenames.values().front();        
-        window.open_and_render_project(QString::fromStdString( project_filename),
-                                       g_cl.m_render_final.is_set());
+        window.open_and_render_project(
+            QString::fromStdString(g_cl.m_filenames.values().front()),
+            g_cl.m_final_render.is_set());
     }
 
     window.show();

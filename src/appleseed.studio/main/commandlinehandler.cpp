@@ -47,9 +47,9 @@ CommandLineHandler::CommandLineHandler()
     m_filenames.set_max_value_count(1);
     parser().set_default_option_handler(&m_filenames);
 
-    m_render_final.add_name("--final");
-    m_render_final.set_description("start final rendering");
-    parser().add_option_handler(&m_render_final);
+    m_final_render.add_name("--final-render");
+    m_final_render.set_description("start final rendering");
+    parser().add_option_handler(&m_final_render);
 }
 
 void CommandLineHandler::print_program_usage(
