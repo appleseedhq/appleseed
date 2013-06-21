@@ -35,24 +35,20 @@ class AppleseedRenderFrame( bpy.types.Operator):
 
     @classmethod
     def poll( cls, context):
-        return True
+        renderer = context.scene.render
+        return renderer.engine == 'APPLESEED_RENDER'
+        #return True
 
     def execute( self, context):
-        # get the scene from the context, 
-        # copy appleseed.display_mode to render.display_mode
-        # launch render
-        return {'FINISHED'}
+        scene = context.scene
 
-class AppleseedRenderAnim( bpy.types.Operator):
-    """Render active scene"""
-    bl_idname = "appleseed.render_anim"
-    bl_label = "Appleseed Render Anim"
+        if scene.appleseed.display_mode != 'AS_STUDIO':
+            scene.render.display_mode = scene.appleseed.display_mode
+            bpy.ops.render.render()
+        else:
+            # launch appleseed studio here
+            pass
 
-    @classmethod
-    def poll( cls, context):
-        return True
-
-    def execute( self, context):
         # get the scene from the context, 
         # copy appleseed.display_mode to render.display_mode
         # launch render
@@ -61,8 +57,6 @@ class AppleseedRenderAnim( bpy.types.Operator):
 
 def register():
     bpy.utils.register_class( AppleseedRenderFrame)
-    bpy.utils.register_class( AppleseedRenderAnim)
 
 def unregister():
     bpy.utils.unregister_class( AppleseedRenderFrame)
-    bpy.utils.unregister_class( AppleseedRenderAnim)
