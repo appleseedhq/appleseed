@@ -27,36 +27,30 @@
 #
 
 import bpy
+from bpy_extras.io_utils import ExportHelper
 
-class AppleseedRenderFrame( bpy.types.Operator):
-    """Render active scene"""
-    bl_idname = "appleseed.render_frame"
-    bl_label = "Appleseed Render Frame"
 
-    @classmethod
-    def poll( cls, context):
-        renderer = context.scene.render
-        return renderer.engine == 'APPLESEED_RENDER'
-        #return True
+class ExportAppleseedScene( bpy.types.Operator, ExportHelper):
+    """Saves an appleseed scene"""
+    bl_idname = "appleseed.export_scene"
+    bl_label = "Export Appleseed Scene"
 
-    def execute( self, context):
-        scene = context.scene
+    # ExportHelper mixin class uses this
+    filename_ext = ".appleseed"
 
-        if scene.appleseed.display_mode != 'AS_STUDIO':
-            scene.render.display_mode = scene.appleseed.display_mode
-            bpy.ops.render.render()
-        else:
-            # launch appleseed studio here
-            pass
+    filter_glob = bpy.props.StringProperty( default="*.appleseed", options={'HIDDEN'},)
 
-        # get the scene from the context, 
-        # copy appleseed.display_mode to render.display_mode
-        # launch render
-        return {'FINISHED'}
+    def execute(self, context):
+        pass
 
+def menu_func_export_scene( self, context):
+    self.layout.operator( ExportAppleseedScene.bl_idname, text="Appleseed (.appleseed)")
 
 def register():
-    bpy.utils.register_class( AppleseedRenderFrame)
+    bpy.utils.register_class( ExportAppleseedScene)
+    bpy.types.INFO_MT_file_export.append( menu_func_export_scene)
+
 
 def unregister():
-    bpy.utils.unregister_class( AppleseedRenderFrame)
+    bpy.utils.unregister_class( ExportAppleseedScene)
+    bpy.types.INFO_MT_file_export.remove( menu_func_export_scene)
