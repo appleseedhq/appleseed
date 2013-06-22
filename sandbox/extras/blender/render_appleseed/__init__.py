@@ -5,7 +5,7 @@
 #
 # This software is released under the MIT license.
 #
-# Copyright (c) 2012 Esteban Tovagliari.
+# Copyright (c) 2013 Franz Beaune, Joel Daniels, Esteban Tovagliari.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -28,64 +28,40 @@
 
 bl_info = {
     "name": "Appleseed",
-    "author": "Est.",
-    "version": (0, 1, 0),
-    "blender": (2, 6, 3),
-    "location": "Info Header (engine dropdown)",
-    "description": "Appleseed integration",
+    "author": "Franz Beaune, Joel Daniels, Esteban Tovagliari",
+    "version": (0, 0, 1),
+    "blender": (2, 6, 7),
+    "location": "Render > Engine > Appleseed",
+    "description": "Appleseed integration for blender",
     "warning": "",
     "wiki_url": "",
     "tracker_url": "",
     "category": "Render"}
 
-#import appleseed
 
 import bpy
-from . import ui, properties, operators, renderer
-
-class RenderAppleseed( bpy.types.RenderEngine):
-    bl_idname = 'APPLESEED'
-    bl_label = "Appleseed"
-    bl_use_preview = True
-
-    def __init__( self):
-        renderer.init( self)
-
-    def __del__( self):
-        renderer.free( self)
-
-    # final rendering
-    def update( self, data, scene):
-        renderer.update( self, data, scene)
-
-    def render( self, scene):
-        renderer.render( self, scene)
-
-    # viewport rendering
-    #try:
-        # if appleseed can be imported, it could be possible
-        # to support scene updates and viewport renders
-        #import appleseed
-
-        #def view_update( self, context):
-            #print( "RenderEngine.view_update called.")
-
-        #def view_draw( self, context):
-            #print( "RenderEngine.view_draw called.")
-    #except:
-        #pass
+from . import properties
+from . import nodes
+from . import operators
+from . import export
+from . import ui
+from . import render
 
 def register():
     properties.register()
-    ui.register()
+    nodes.register()
     operators.register()
-    bpy.utils.register_module(__name__)
+    export.register()
+    ui.register()
+    bpy.utils.register_module( __name__)
 
 def unregister():
     properties.unregister()
+    nodes.unregister()
+    operators.register()
+    export.unregister()
     ui.unregister()
-    operators.unregister()
-    bpy.utils.unregister_module(__name__)
+    bpy.utils.unregister_module( __name__)
 
 if __name__ == "__main__":
     register()

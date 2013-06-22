@@ -26,37 +26,29 @@
 # THE SOFTWARE.
 #
 
+
 import bpy
 
-class AppleseedRenderFrame( bpy.types.Operator):
-    """Render active scene"""
-    bl_idname = "appleseed.render_frame"
-    bl_label = "Appleseed Render Frame"
+class AppleseedRender( bpy.types.RenderEngine):
+    bl_idname = 'APPLESEED_RENDER'
+    bl_label = "Appleseed"
 
-    @classmethod
-    def poll( cls, context):
-        renderer = context.scene.render
-        return renderer.engine == 'APPLESEED_RENDER'
-        #return True
+    def update( self, data, scene):
+        print( "AppleseedRender update called")
 
-    def execute( self, context):
-        scene = context.scene
+    def render( self, scene):
+        print( "AppleseedRender render called")
 
-        if scene.appleseed.display_mode != 'AS_STUDIO':
-            scene.render.display_mode = scene.appleseed.display_mode
-            bpy.ops.render.render()
-        else:
-            # launch appleseed studio here
-            pass
+    def preview_update( self, context, id):
+        print( "AppleseedRender preview update called")
 
-        # get the scene from the context, 
-        # copy appleseed.display_mode to render.display_mode
-        # launch render
-        return {'FINISHED'}
+    def preview_render( self):
+        print( "AppleseedRender preview render called")
 
+    '''
+    def view_update( self, context):
+        print( "AppleseedRender view update called")
 
-def register():
-    bpy.utils.register_class( AppleseedRenderFrame)
-
-def unregister():
-    bpy.utils.unregister_class( AppleseedRenderFrame)
+    def view_draw( self, context):
+        print( "AppleseedRender view draw called")
+    '''

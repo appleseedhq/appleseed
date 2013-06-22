@@ -28,35 +28,36 @@
 
 import bpy
 
-class AppleseedRenderFrame( bpy.types.Operator):
-    """Render active scene"""
-    bl_idname = "appleseed.render_frame"
-    bl_label = "Appleseed Render Frame"
+class AppleseedRenderButtons( bpy.types.Panel):
+    bl_context = "render"
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+    bl_label = "Render"
+    COMPAT_ENGINES = {'APPLESEED'}
 
     @classmethod
     def poll( cls, context):
         renderer = context.scene.render
         return renderer.engine == 'APPLESEED_RENDER'
-        #return True
-
-    def execute( self, context):
+    
+    def draw( self, context):
         scene = context.scene
+        layout = self.layout
+        layout.prop( scene.appleseed, "appleseed_dir", text = "Appleseed Dir")
 
         if scene.appleseed.display_mode != 'AS_STUDIO':
-            scene.render.display_mode = scene.appleseed.display_mode
-            bpy.ops.render.render()
+            row = layout.row( align=True)
+            row.operator( "appleseed.render_frame", text="Render", icon = 'RENDER_STILL')
+            row.operator( "render.render", text = "Animation", icon = 'RENDER_ANIMATION').animation = True
         else:
-            # launch appleseed studio here
-            pass
+            layout.operator( "appleseed.render_frame", text="Render", icon='RENDER_STILL')
 
-        # get the scene from the context, 
-        # copy appleseed.display_mode to render.display_mode
-        # launch render
-        return {'FINISHED'}
-
+        layout.prop( scene.appleseed, "display_mode", text = "Display")
 
 def register():
-    bpy.utils.register_class( AppleseedRenderFrame)
+    bpy.types.RENDER_PT_dimensions.COMPAT_ENGINES.add( 'APPLESEED_RENDER')
+    bpy.types.RENDER_PT_output.COMPAT_ENGINES.add( 'APPLESEED_RENDER')
 
 def unregister():
-    bpy.utils.unregister_class( AppleseedRenderFrame)
+    bpy.types.RENDER_PT_dimensions.COMPAT_ENGINES.remove( 'APPLESEED_RENDER')
+    bpy.types.RENDER_PT_shading.COMPAT_ENGINES.remove( 'APPLESEED_RENDER')
