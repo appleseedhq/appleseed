@@ -1255,30 +1255,22 @@ void MainWindow::slot_clear_frame()
 
 void MainWindow::slot_start_interactive_rendering_once(const QString& filepath, const bool successful)
 {
-    disconnect(&m_project_manager, SIGNAL(signal_load_project_async_complete(const QString&, bool)),
-               this, SLOT(slot_start_interactive_rendering_once(const QString&, const bool)));
+    disconnect(
+        &m_project_manager, SIGNAL(signal_load_project_async_complete(const QString&, bool)),
+        this, SLOT(slot_start_interactive_rendering_once(const QString&, const bool)));
 
     if (successful)
         slot_start_interactive_rendering();
-    else
-    {
-        show_project_file_loading_failed_message_box(this, filepath);
-        update_workspace();
-    }
 }
 
 void MainWindow::slot_start_final_rendering_once(const QString& filepath, const bool successful)
 {
-    disconnect(&m_project_manager, SIGNAL(signal_load_project_async_complete(const QString&, bool)),
-               this, SLOT(slot_start_final_rendering_once(const QString&, const bool)));
+    disconnect(
+        &m_project_manager, SIGNAL(signal_load_project_async_complete(const QString&, bool)),
+        this, SLOT(slot_start_final_rendering_once(const QString&, const bool)));
 
     if (successful)
         slot_start_final_rendering();
-    else
-    {
-        show_project_file_loading_failed_message_box(this, filepath);
-        update_workspace();
-    }
 }
 
 }   // namespace studio
