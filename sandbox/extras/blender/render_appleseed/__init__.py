@@ -38,8 +38,8 @@ bl_info = {
     "tracker_url": "",
     "category": "Render"}
 
-
 import bpy
+from . import preferences
 from . import properties
 from . import nodes
 from . import operators
@@ -48,6 +48,7 @@ from . import ui
 from . import render
 
 def register():
+    preferences.register()
     properties.register()
     nodes.register()
     operators.register()
@@ -56,6 +57,7 @@ def register():
     bpy.utils.register_module( __name__)
 
 def unregister():
+    preferences.unregister()
     properties.unregister()
     nodes.unregister()
     operators.register()

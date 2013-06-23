@@ -27,13 +27,19 @@
 #
 
 import bpy
-from . import scene
-from . import world
 
-def register():
-    scene.register()
-    world.register()
+def scene_enumerator( self, context):
+    matches = []
+    for scene in bpy.data.scenes:
+        matches.append(( scene.name, scene.name, ""))
+    return matches
 
-def unregister():
-    scene.unregister()
-    world.unregister()
+def object_enumerator( type):
+    matches = []
+    for object in bpy.data.objects:
+        if object.type == type:
+            matches.append(( object.name, object.name, ""))
+    return matches
+
+def camera_enumerator( self, context):
+    return object_enumerator( 'CAMERA')

@@ -28,16 +28,13 @@
 
 import bpy
 
-class AppleseedRenderSettings( bpy.types.PropertyGroup):
+class AppleseedSceneSettings( bpy.types.PropertyGroup):
     @classmethod
     def register( cls):
-        bpy.types.Scene.appleseed = bpy.props.PointerProperty(
-                name = "Appleseed Render Settings",
-                description = "appleseed render settings",
-                type = cls
-                )
-
-        cls.appleseed_dir = bpy.props.StringProperty( description = "Path to the appleseed directory", subtype = 'DIR_PATH')
+        bpy.types.Scene.appleseed = bpy.props.PointerProperty( name = "Appleseed Scene Settings",
+                                                                description = "appleseed scene settings",
+                                                                type = cls
+                                                                )
 
         cls.display_mode = bpy.props.EnumProperty(  name = "Display Mode",
                                                     description = "Select where rendered images will be displayed",
@@ -47,6 +44,66 @@ class AppleseedRenderSettings( bpy.types.PropertyGroup):
                                                            ( 'FULL_SCREEN', "Full Screen", ""),
                                                            ( 'AS_STUDIO', "Appleseed Studio", "")),
                                                     default = 'IMAGE_EDITOR')
+
+        # sampling
+        cls.decorrelate_pixels = bpy.props.BoolProperty( name = "Decorrelate Pixels", description = '', default = False)
+        
+        cls.pixel_filter = bpy.props.EnumProperty(  name = "Filter",
+                                                    description = "Pixel filter to use",
+                                                    items = [ ( "box", "Box", "Box" ),
+                                                              ( "gaussian", "Gaussian", "Gaussian"),
+                                                              ( "mitchell", "Mitchell", "Mitchell")],
+                                                    default = "mitchell")
+
+        cls.filter_size = bpy.props.IntProperty( name = "Filter Size",
+                                                 description = "Filter size",
+                                                 min = 1,
+                                                 max = 64,
+                                                 default = 2,
+                                                 subtype = 'UNSIGNED')
+
+        cls.pixel_sampler = bpy.props.EnumProperty( name = "Sampler",
+                                                    description = "Sampler",
+                                                    items = [( "uniform", "Uniform", "Uniform" ),
+                                                             ( "adaptive", "Adaptive", "Adaptive")],
+                                                    default = "adaptive")
+
+        cls.sampler_min_samples = bpy.props.IntProperty( name = "Min Samples",
+                                                         description = "Min Samples",
+                                                         min = 1,
+                                                         max = 1000000,
+                                                         default = 2,
+                                                         subtype = 'UNSIGNED')
+
+        cls.sampler_max_samples = bpy.props.IntProperty( name = "Max Samples",
+                                                         description = "Max Samples",
+                                                         min = 1,
+                                                         max = 1000000,
+                                                         default = 64,
+                                                         subtype = 'UNSIGNED')
+
+        cls.sampler_max_contrast = bpy.props.FloatProperty(  name = "Max Contrast",
+                                                             description = "Max contrast",
+                                                             min = 0,
+                                                             max = 1000,
+                                                             default = 1)
+
+        cls.sampler_max_variation = bpy.props.FloatProperty( name = "Max Variation",
+                                                             description = "Max variation",
+                                                             min = 0,
+                                                             max = 1000,
+                                                             default = 1)
+
+        # lighting
+        cls.lighting_engine = bpy.props.EnumProperty(   name = "Lighting Engine",
+                                                        description = "Select the lighting engine to use",
+                                                        items = [ ( 'pt', "Path Tracing", "Full Global Illumination"),
+                                                                  ( 'drt', "Distributed Ray Tracing", "Direct Lighting Only")],
+                                                        default = 'pt')
+
+        cls.caustics_enable = bpy.props.BoolProperty( name = "Caustics",
+                                                      description = "Caustics",
+                                                      default = True)
 
     @classmethod
     def unregister( cls):
