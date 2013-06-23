@@ -27,13 +27,15 @@
 #
 
 import bpy
-from . import scene
-from . import world
 
 def register():
-    scene.register()
-    world.register()
-
+    bpy.types.DATA_PT_camera.COMPAT_ENGINES.add( 'APPLESEED_RENDER')
+    bpy.types.DATA_PT_camera_display.COMPAT_ENGINES.add( 'APPLESEED_RENDER')
+    bpy.types.DATA_PT_lens.COMPAT_ENGINES.add( 'APPLESEED_RENDER')
+    bpy.types.DATA_PT_custom_props_camera.COMPAT_ENGINES.add( 'APPLESEED_RENDER')
+    
 def unregister():
-    scene.unregister()
-    world.unregister()
+    bpy.types.DATA_PT_camera.COMPAT_ENGINES.remove( 'APPLESEED_RENDER')
+    bpy.types.DATA_PT_camera_display.COMPAT_ENGINES.remove( 'APPLESEED_RENDER')
+    bpy.types.DATA_PT_lens.COMPAT_ENGINES.remove( 'APPLESEED_RENDER')
+    bpy.types.DATA_PT_custom_props_camera.COMPAT_ENGINES.remove( 'APPLESEED_RENDER')

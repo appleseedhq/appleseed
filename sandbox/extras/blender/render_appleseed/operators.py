@@ -27,6 +27,7 @@
 #
 
 import bpy
+import os
 
 class AppleseedRenderFrame( bpy.types.Operator):
     """Render active scene"""
@@ -37,7 +38,6 @@ class AppleseedRenderFrame( bpy.types.Operator):
     def poll( cls, context):
         renderer = context.scene.render
         return renderer.engine == 'APPLESEED_RENDER'
-        #return True
 
     def execute( self, context):
         scene = context.scene

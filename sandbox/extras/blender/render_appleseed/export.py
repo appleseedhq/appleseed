@@ -37,8 +37,12 @@ class ExportAppleseedScene( bpy.types.Operator, ExportHelper):
 
     # ExportHelper mixin class uses this
     filename_ext = ".appleseed"
+    filter_glob = bpy.props.StringProperty( default = "*.appleseed", options = {'HIDDEN'},)
 
-    filter_glob = bpy.props.StringProperty( default="*.appleseed", options={'HIDDEN'},)
+    @classmethod
+    def poll( cls, context):
+        renderer = context.scene.render
+        return renderer.engine == 'APPLESEED_RENDER'
 
     def execute(self, context):
         pass
