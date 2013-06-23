@@ -28,22 +28,23 @@
 
 import bpy
 
-class AppleseedRenderButtons( bpy.types.Panel):
+class AppleseedRenderPanelBase():
     bl_context = "render"
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
-    bl_label = "Render"
     COMPAT_ENGINES = {'APPLESEED'}
 
     @classmethod
     def poll( cls, context):
         renderer = context.scene.render
         return renderer.engine == 'APPLESEED_RENDER'
+
+class AppleseedRenderButtons( bpy.types.Panel, AppleseedRenderPanelBase):
+    bl_label = "Render"
     
     def draw( self, context):
         scene = context.scene
         layout = self.layout
-        layout.prop( scene.appleseed, "appleseed_dir", text = "Appleseed Dir")
 
         if scene.appleseed.display_mode != 'AS_STUDIO':
             row = layout.row( align=True)
@@ -53,6 +54,47 @@ class AppleseedRenderButtons( bpy.types.Panel):
             layout.operator( "appleseed.render_frame", text="Render", icon='RENDER_STILL')
 
         layout.prop( scene.appleseed, "display_mode", text = "Display")
+
+class AppleseedSamplesPanel( bpy.types.Panel, AppleseedRenderPanelBase):
+    bl_label = "Sampling"
+
+    def draw( self, context):
+        layout = self.layout
+        scene = context.scene
+        asr_scene_props = scene.appleseed
+
+        col = layout.column()
+        row = col.row( align = True)
+        row.prop( asr_scene_props, "pixel_filter")
+        row.prop( asr_scene_props, "filter_size")
+
+        col.separator()
+        col.prop( asr_scene_props, "pixel_sampler")
+
+        if asr_scene_props.pixel_sampler == 'adaptive':
+            col.prop( asr_scene_props, "sampler_min_samples")
+            col.prop( asr_scene_props, "sampler_max_samples")
+            col.prop( asr_scene_props, "sampler_max_contrast")
+            col.prop( asr_scene_props, "sampler_max_variation")
+        else:
+            col.prop(asr_scene_props, "decorrelate_pixels")
+            col.prop( asr_scene_props, "sampler_max_samples")
+
+class AppleseedLightingPanel( bpy.types.Panel, AppleseedRenderPanelBase):
+    bl_label = "Lighting"
+
+    def draw( self, context):
+        layout = self.layout
+        scene = context.scene
+        asr_scene_props = scene.appleseed
+
+        col = layout.column()
+        col.prop( asr_scene_props, "lighting_engine")
+        split = layout.split()
+
+        if asr_scene_props.lighting_engine == 'pt':
+            col = split.column()
+            col.prop(asr_scene_props, "caustics_enable")          
 
 def register():
     bpy.types.RENDER_PT_dimensions.COMPAT_ENGINES.add( 'APPLESEED_RENDER')
