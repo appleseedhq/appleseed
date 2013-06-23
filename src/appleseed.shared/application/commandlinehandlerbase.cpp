@@ -73,24 +73,49 @@ struct CommandLineHandlerBase::Impl
 CommandLineHandlerBase::CommandLineHandlerBase(const char* application_name)
   : impl(new Impl(application_name))
 {
+}
+
+void CommandLineHandlerBase::add_default_options()
+{
+    add_help_option();
+    add_version_option();
+    add_system_option();
+    add_message_coloring_option();
+    add_display_options_option();
+}
+
+void CommandLineHandlerBase::add_help_option()
+{
     impl->m_help.add_name("--help");
     impl->m_help.add_name("-h");
     impl->m_help.set_description("print program usage and exit");
     impl->m_parser.add_option_handler(&impl->m_help);
+}
 
+void CommandLineHandlerBase::add_version_option()
+{
     impl->m_version.add_name("--version");
     impl->m_version.add_name("-v");
     impl->m_version.set_description("print program version");
     impl->m_parser.add_option_handler(&impl->m_version);
+}
 
+void CommandLineHandlerBase::add_system_option()
+{
     impl->m_system.add_name("--system");
     impl->m_system.set_description("print system information");
     impl->m_parser.add_option_handler(&impl->m_system);
+}
 
+void CommandLineHandlerBase::add_message_coloring_option()
+{
     impl->m_message_coloring.add_name("--message-coloring");
     impl->m_message_coloring.set_description("enable message coloring");
     impl->m_parser.add_option_handler(&impl->m_message_coloring);
+}
 
+void CommandLineHandlerBase::add_display_options_option()
+{
     impl->m_display_options.add_name("--display-options");
     impl->m_display_options.set_description("display the recognized command line options");
     impl->m_parser.add_option_handler(&impl->m_display_options);

@@ -49,6 +49,8 @@ namespace convertmeshfile {
 CommandLineHandler::CommandLineHandler()
   : CommandLineHandlerBase("convertmeshfile")
 {
+    add_default_options();
+
     m_filename.set_exact_value_count(2);
     parser().set_default_option_handler(&m_filename);
 

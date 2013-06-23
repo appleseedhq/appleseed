@@ -49,6 +49,8 @@ namespace updateprojectfile {
 CommandLineHandler::CommandLineHandler()
   : CommandLineHandlerBase("updateprojectfile")
 {
+    add_default_options();
+
     m_filename.set_exact_value_count(1);
     parser().set_default_option_handler(&m_filename);
 }
