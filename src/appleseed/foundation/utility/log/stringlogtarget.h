@@ -26,19 +26,58 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_LOG_H
-#define APPLESEED_FOUNDATION_UTILITY_LOG_H
+#ifndef APPLESEED_FOUNDATION_UTILITY_LOG_STRINGLOGTARGET_H
+#define APPLESEED_FOUNDATION_UTILITY_LOG_STRINGLOGTARGET_H
 
-// Interface headers.
-#include "foundation/utility/log/consolelogtarget.h"
-#include "foundation/utility/log/filelogtarget.h"
-#include "foundation/utility/log/filelogtargetbase.h"
-#include "foundation/utility/log/helpers.h"
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/log/ilogtarget.h"
-#include "foundation/utility/log/logformatter.h"
-#include "foundation/utility/log/logger.h"
-#include "foundation/utility/log/logmessage.h"
-#include "foundation/utility/log/openfilelogtarget.h"
-#include "foundation/utility/log/stringlogtarget.h"
 
-#endif  // !APPLESEED_FOUNDATION_UTILITY_LOG_H
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+// Standard headers.
+#include <cstddef>
+
+namespace foundation
+{
+
+//
+// A log target that outputs to a string.
+//
+
+class DLLSYMBOL StringLogTarget
+  : public ILogTarget
+{
+  public:
+    // Constructor.
+    StringLogTarget();
+
+    // Destructor.
+    ~StringLogTarget();
+
+    // Delete this instance.
+    virtual void release() OVERRIDE;
+
+    // Write a message.
+    virtual void write(
+        const LogMessage::Category  category,
+        const char*                 file,
+        const size_t                line,
+        const char*                 header,
+        const char*                 message) OVERRIDE;
+
+    // Retrieve the string so far.
+    const char* get_string() const;
+
+  private:
+    struct Impl;
+    Impl* impl;
+};
+
+// Create an instance of a log target that outputs to a string.
+DLLSYMBOL StringLogTarget* create_string_log_target();
+
+}       // namespace foundation
+
+#endif  // !APPLESEED_FOUNDATION_UTILITY_LOG_STRINGLOGTARGET_H

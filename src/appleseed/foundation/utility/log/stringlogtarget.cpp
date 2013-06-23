@@ -26,19 +26,68 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_LOG_H
-#define APPLESEED_FOUNDATION_UTILITY_LOG_H
+// Interface header.
+#include "stringlogtarget.h"
 
-// Interface headers.
-#include "foundation/utility/log/consolelogtarget.h"
-#include "foundation/utility/log/filelogtarget.h"
-#include "foundation/utility/log/filelogtargetbase.h"
-#include "foundation/utility/log/helpers.h"
-#include "foundation/utility/log/ilogtarget.h"
-#include "foundation/utility/log/logformatter.h"
-#include "foundation/utility/log/logger.h"
-#include "foundation/utility/log/logmessage.h"
-#include "foundation/utility/log/openfilelogtarget.h"
-#include "foundation/utility/log/stringlogtarget.h"
+// appleseed.foundation headers.
+#include "foundation/utility/foreach.h"
+#include "foundation/utility/string.h"
 
-#endif  // !APPLESEED_FOUNDATION_UTILITY_LOG_H
+// Standard headers.
+#include <string>
+#include <vector>
+
+using namespace std;
+
+namespace foundation
+{
+
+struct StringLogTarget::Impl
+{
+    string m_str;
+};
+
+StringLogTarget::StringLogTarget()
+  : impl(new Impl())
+{
+}
+
+StringLogTarget::~StringLogTarget()
+{
+    delete impl;
+}
+
+void StringLogTarget::release()
+{
+    delete this;
+}
+
+void StringLogTarget::write(
+    const LogMessage::Category  category,
+    const char*                 file,
+    const size_t                line,
+    const char*                 header,
+    const char*                 message)
+{
+    vector<string> lines;
+    split(message, "\n", lines);
+
+    for (const_each<vector<string> > i = lines; i; ++i)
+    {
+        impl->m_str.append(header);
+        impl->m_str.append(*i);
+        impl->m_str.append("\n");
+    }
+}
+
+const char* StringLogTarget::get_string() const
+{
+    return impl->m_str.c_str();
+}
+
+StringLogTarget* create_string_log_target()
+{
+    return new StringLogTarget();
+}
+
+}   // namespace foundation
