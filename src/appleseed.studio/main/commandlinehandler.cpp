@@ -34,6 +34,10 @@
 // appleseed.foundation headers.
 #include "foundation/utility/log.h"
 
+// Qt headers.
+#include <QMessageBox>
+#include <QString>
+
 using namespace appleseed::shared;
 using namespace foundation;
 
@@ -43,6 +47,8 @@ namespace studio {
 CommandLineHandler::CommandLineHandler()
   : CommandLineHandlerBase("appleseed.studio")
 {
+    add_help_option();
+
     m_filenames.set_min_value_count(0);
     m_filenames.set_max_value_count(1);
     parser().set_default_option_handler(&m_filenames);
@@ -63,6 +69,22 @@ void CommandLineHandler::print_program_usage(
     LOG_INFO(logger, "options:");
 
     parser().print_usage(logger);
+
+#ifdef _WIN32
+
+    const StringLogTarget& target =
+        static_cast<const StringLogTarget&>(logger.get_log_target());
+    const QString str = QString::fromStdString(target.get_string());
+
+    QMessageBox msgbox;
+    msgbox.setWindowTitle("appleseed.studio Program Usage");
+    msgbox.setIcon(QMessageBox::Information);
+    msgbox.setText("<pre>" + str + "</pre>");
+    msgbox.setStandardButtons(QMessageBox::Ok);
+    msgbox.setDefaultButton(QMessageBox::Ok);
+    msgbox.exec();
+
+#endif
 }
 
 }   // namespace studio
