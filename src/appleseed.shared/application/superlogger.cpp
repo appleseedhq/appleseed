@@ -39,9 +39,9 @@ namespace appleseed {
 namespace shared {
 
 SuperLogger::SuperLogger()
-  : m_log_target(create_open_file_log_target(stderr))
+  : m_log_target(0)
 {
-    add_target(m_log_target);
+    set_log_target(create_open_file_log_target(stderr));
 }
 
 SuperLogger::~SuperLogger()
@@ -49,18 +49,26 @@ SuperLogger::~SuperLogger()
     delete m_log_target;
 }
 
-void SuperLogger::enable_message_coloring()
+void SuperLogger::set_log_target(ILogTarget* log_target)
 {
-    remove_target(m_log_target);
-    delete m_log_target;
+    if (m_log_target)
+    {
+        remove_target(m_log_target);
+        delete m_log_target;
+    }
 
-    m_log_target = create_console_log_target(stderr);
+    m_log_target = log_target;
     add_target(m_log_target);
 }
 
 ILogTarget& SuperLogger::get_log_target() const
 {
     return *m_log_target;
+}
+
+void SuperLogger::enable_message_coloring()
+{
+    set_log_target(create_console_log_target(stderr));
 }
 
 }   // namespace shared

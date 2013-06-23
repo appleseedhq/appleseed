@@ -26,39 +26,68 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_SERIALTILECALLBACK_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_SERIALTILECALLBACK_H
-
-// appleseed.renderer headers.
-#include "renderer/kernel/rendering/itilecallback.h"
+// Interface header.
+#include "stringlogtarget.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
+#include "foundation/utility/foreach.h"
+#include "foundation/utility/string.h"
 
-// Forward declarations.
-namespace renderer  { class SerialRendererController; }
+// Standard headers.
+#include <string>
+#include <vector>
 
-namespace renderer
+using namespace std;
+
+namespace foundation
 {
 
-//
-// A tile callback that simply serializes updates to a renderer::SerialRendererController.
-//
-
-class SerialTileCallbackFactory
-  : public ITileCallbackFactory
+struct StringLogTarget::Impl
 {
-  public:
-    explicit SerialTileCallbackFactory(SerialRendererController* controller);
-
-    virtual void release() OVERRIDE;
-
-    virtual ITileCallback* create() OVERRIDE;
-
-  private:
-    SerialRendererController* m_controller;
+    string m_str;
 };
 
-}       // namespace renderer
+StringLogTarget::StringLogTarget()
+  : impl(new Impl())
+{
+}
 
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_SERIALTILECALLBACK_H
+StringLogTarget::~StringLogTarget()
+{
+    delete impl;
+}
+
+void StringLogTarget::release()
+{
+    delete this;
+}
+
+void StringLogTarget::write(
+    const LogMessage::Category  category,
+    const char*                 file,
+    const size_t                line,
+    const char*                 header,
+    const char*                 message)
+{
+    vector<string> lines;
+    split(message, "\n", lines);
+
+    for (const_each<vector<string> > i = lines; i; ++i)
+    {
+        impl->m_str.append(header);
+        impl->m_str.append(*i);
+        impl->m_str.append("\n");
+    }
+}
+
+const char* StringLogTarget::get_string() const
+{
+    return impl->m_str.c_str();
+}
+
+StringLogTarget* create_string_log_target()
+{
+    return new StringLogTarget();
+}
+
+}   // namespace foundation
