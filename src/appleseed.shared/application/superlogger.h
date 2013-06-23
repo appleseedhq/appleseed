@@ -48,9 +48,14 @@ class SHAREDDLL SuperLogger
     // Destructor.
     virtual ~SuperLogger();
 
-    void enable_message_coloring();
+    // Replace the current log target.
+    void set_log_target(foundation::ILogTarget* log_target);
 
+    // Retrieve the current log target.
     foundation::ILogTarget& get_log_target() const;
+
+    // Replace the current log target by one that supports message coloring.
+    void enable_message_coloring();
 
   private:
     foundation::ILogTarget* m_log_target;
