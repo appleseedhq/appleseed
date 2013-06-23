@@ -36,8 +36,6 @@ class AppleseedSceneSettings( bpy.types.PropertyGroup):
                                                                 type = cls
                                                                 )
 
-        cls.appleseed_dir = bpy.props.StringProperty( description = "Path to the appleseed directory", subtype = 'DIR_PATH')
-
         cls.display_mode = bpy.props.EnumProperty(  name = "Display Mode",
                                                     description = "Select where rendered images will be displayed",
                                                     items=(( 'KEEP_UI', "Keep UI", ""),

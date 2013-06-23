@@ -45,7 +45,6 @@ class AppleseedRenderButtons( bpy.types.Panel, AppleseedRenderPanelBase):
     def draw( self, context):
         scene = context.scene
         layout = self.layout
-        layout.prop( scene.appleseed, "appleseed_dir", text = "Appleseed Dir")
 
         if scene.appleseed.display_mode != 'AS_STUDIO':
             row = layout.row( align=True)
