@@ -102,8 +102,7 @@ namespace detail
 void bind_object()
 {
     bpy::class_<Object, auto_release_ptr<Object>, bpy::bases<Entity>, boost::noncopyable>("Object", bpy::no_init)
-        .def("compute_local_bbox", &Object::compute_local_bbox)
-        ;
+        .def("compute_local_bbox", &Object::compute_local_bbox);
 
     bind_typed_entity_vector<Object>("ObjectContainer");
 
@@ -112,8 +111,7 @@ void bind_object()
         .def("__init__", bpy::make_constructor(detail::create_obj_instance_with_back_mat))
         .def("get_object", &ObjectInstance::get_object, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("get_transform", &detail::obj_inst_get_transform)
-        .def("compute_parent_bbox", &ObjectInstance::compute_parent_bbox)
-        ;
+        .def("compute_parent_bbox", &ObjectInstance::compute_parent_bbox);
 
     bind_typed_entity_vector<ObjectInstance>("ObjectInstanceContainer");
 }
