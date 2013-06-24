@@ -39,13 +39,13 @@ class AppleseedRender( bpy.types.RenderEngine):
     def render( self, scene):
         print( "AppleseedRender render called")
 
+    '''
     def preview_update( self, context, id):
         print( "AppleseedRender preview update called")
 
     def preview_render( self):
         print( "AppleseedRender preview render called")
 
-    '''
     def view_update( self, context):
         print( "AppleseedRender view update called")
 

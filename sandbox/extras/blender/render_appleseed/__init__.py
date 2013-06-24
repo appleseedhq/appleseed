@@ -38,14 +38,24 @@ bl_info = {
     "tracker_url": "",
     "category": "Render"}
 
-import bpy
-from . import preferences
-from . import properties
-from . import nodes
-from . import operators
-from . import export
-from . import ui
-from . import render
+if "bpy" in locals():
+    import imp
+    imp.reload( preferences)
+    imp.reload( properties)
+    imp.reload( nodes)
+    imp.reload( operators)
+    imp.reload( export)
+    imp.reload( ui)
+    imp.reload( render)
+else:
+    import bpy
+    from . import preferences
+    from . import properties
+    from . import nodes
+    from . import operators
+    from . import export
+    from . import ui
+    from . import render
 
 def register():
     preferences.register()
