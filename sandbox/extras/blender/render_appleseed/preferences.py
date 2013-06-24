@@ -1,11 +1,6 @@
-
+# ##### BEGIN MIT LICENSE BLOCK #####
 #
-# This source file is part of appleseed.
-# Visit http://appleseedhq.net/ for additional information and resources.
-#
-# This software is released under the MIT license.
-#
-# Copyright (c) 2013 Franz Beaune, Joel Daniels, Esteban Tovagliari.
+# Copyright (c) 2013 Matt Ebb
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -24,16 +19,30 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
+# 
 #
+# ##### END MIT LICENSE BLOCK #####
 
 import bpy
-from . import scene
-from . import world
+
+class AppleseedPreferences( bpy.types.PropertyGroup):
+    name = bpy.props.StringProperty( name = "", subtype = 'DIR_PATH')
+
+class AppleseedPreferencesPanel( bpy.types.AddonPreferences):
+    bl_idname = __package__
+    
+    appleseed_path = bpy.props.StringProperty(  name = "Appleseed installation dir",
+                                                description = "Path to Appleseed installation dir",
+                                                subtype = 'DIR_PATH',
+                                                default = "")
+
+    def draw(self, context):
+        self.layout.prop( self, "appleseed_path")
 
 def register():
-    scene.register()
-    world.register()
+    bpy.utils.register_class( AppleseedPreferences)
+    bpy.utils.register_class( AppleseedPreferencesPanel)
 
 def unregister():
-    scene.unregister()
-    world.unregister()
+    bpy.utils.unregister_class( AppleseedPreferences)
+    bpy.utils.unregister_class( AppleseedPreferencesPanel)

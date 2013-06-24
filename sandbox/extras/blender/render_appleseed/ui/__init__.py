@@ -29,13 +29,20 @@
 import bpy
 from . import render
 from . import scene
+from . import world
 from . import material
+from . import camera
 
 def register():
-    render.register()
-    scene.register()
-    material.register()
+	render.register()
+	scene.register()
+	world.register()
+	material.register()
+	camera.register()
 
 def unregister():
-    scene.unregister()
-    material.unregister()
+	render.unregister()
+	scene.unregister()
+	world.unregister()
+	material.unregister()
+	camera.unregister()
