@@ -244,11 +244,19 @@ int main(int argc, char *argv[])
 
     appleseed::studio::MainWindow window;
 
-    if (!cl.m_filenames.values().empty())
+    if (!cl.m_filename.values().empty())
     {
-        window.open_and_render_project(
-            QString::fromStdString(cl.m_filenames.values().front()),
-            cl.m_final_render.is_set());
+        const QString filename = QString::fromStdString(cl.m_filename.values().front());
+
+        if (cl.m_render.is_set())
+        {
+            const QString configuration = QString::fromStdString(cl.m_render.values()[0]);
+            window.open_and_render_project(filename, configuration);
+        }
+        else
+        {
+            window.open_project(filename);
+        }
     }
 
     window.show();

@@ -49,13 +49,14 @@ CommandLineHandler::CommandLineHandler()
 {
     add_help_option();
 
-    m_filenames.set_min_value_count(0);
-    m_filenames.set_max_value_count(1);
-    parser().set_default_option_handler(&m_filenames);
+    m_filename.set_min_value_count(0);
+    m_filename.set_max_value_count(1);
+    parser().set_default_option_handler(&m_filename);
 
-    m_final_render.add_name("--final-render");
-    m_final_render.set_description("start final rendering");
-    parser().add_option_handler(&m_final_render);
+    m_render.add_name("--render");
+    m_render.set_description("start rendering using the specified configuration");
+    m_render.set_exact_value_count(1);
+    parser().add_option_handler(&m_render);
 }
 
 void CommandLineHandler::print_program_usage(
