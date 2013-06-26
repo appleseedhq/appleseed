@@ -76,6 +76,9 @@ class DLLSYMBOL EDF
     // Retrieve the flags.
     int get_flags() const;
 
+    // Retrieve the importance multiplier.
+    double get_importance_multiplier() const;
+
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
     virtual bool on_frame_begin(
@@ -122,7 +125,8 @@ class DLLSYMBOL EDF
         const foundation::Vector3d& outgoing) const = 0;        // world space emission direction, unit-length
 
   private:
-    int m_flags;
+    int     m_flags;
+    double  m_importance_multiplier;
 };
 
 
@@ -133,6 +137,11 @@ class DLLSYMBOL EDF
 inline int EDF::get_flags() const
 {
     return m_flags;
+}
+
+inline double EDF::get_importance_multiplier() const
+{
+    return m_importance_multiplier;
 }
 
 }       // namespace renderer

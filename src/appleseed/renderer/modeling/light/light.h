@@ -76,6 +76,9 @@ class DLLSYMBOL Light
     // Retrieve the flags.
     int get_flags() const;
 
+    // Retrieve the importance multiplier.
+    double get_importance_multiplier() const;
+
     // Set the light transformation.
     void set_transform(const foundation::Transformd& transform);
 
@@ -121,7 +124,8 @@ class DLLSYMBOL Light
     struct Impl;
     Impl* impl;
 
-    int m_flags;
+    int     m_flags;
+    double  m_importance_multiplier;
 };
 
 
@@ -132,6 +136,11 @@ class DLLSYMBOL Light
 inline int Light::get_flags() const
 {
     return m_flags;
+}
+
+inline double Light::get_importance_multiplier() const
+{
+    return m_importance_multiplier;
 }
 
 }       // namespace renderer
