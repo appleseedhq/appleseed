@@ -68,6 +68,14 @@ class DLLSYMBOL Light
     // Return a string identifying the model of this entity.
     virtual const char* get_model() const = 0;
 
+    enum Flags
+    {
+        CastIndirectLight = 1 << 0                                  // does this light generate indirect lighting?
+    };
+
+    // Retrieve the flags.
+    int get_flags() const;
+
     // Set the light transformation.
     void set_transform(const foundation::Transformd& transform);
 
@@ -112,7 +120,19 @@ class DLLSYMBOL Light
   private:
     struct Impl;
     Impl* impl;
+
+    int m_flags;
 };
+
+
+//
+// Light class implementation.
+//
+
+inline int Light::get_flags() const
+{
+    return m_flags;
+}
 
 }       // namespace renderer
 

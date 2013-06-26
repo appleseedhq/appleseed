@@ -117,6 +117,7 @@ class DirectLightingIntegrator
     // Evaluate direct lighting by sampling the lights only.
     template <typename WeightingFunction>
     void sample_lights(
+        const bool                      indirect,
         SamplingContext&                sampling_context,
         WeightingFunction&              weighting_function,
         Spectrum&                       radiance,
@@ -125,6 +126,7 @@ class DirectLightingIntegrator
     // A low-variance but more expensive variant of sample_lights().
     template <typename WeightingFunction>
     void sample_lights_low_variance(
+        const bool                      indirect,
         SamplingContext&                sampling_context,
         WeightingFunction&              weighting_function,
         Spectrum&                       radiance,
@@ -132,12 +134,14 @@ class DirectLightingIntegrator
 
     // Evaluate direct lighting by sampling both the BSDF and the lights.
     void sample_bsdf_and_lights(
+        const bool                      indirect,
         SamplingContext&                sampling_context,
         Spectrum&                       radiance,
         SpectrumStack&                  aovs);
 
     // A low-variance but more expensive variant of sample_bsdf_and_lights().
     void sample_bsdf_and_lights_low_variance(
+        const bool                      indirect,
         SamplingContext&                sampling_context,
         Spectrum&                       radiance,
         SpectrumStack&                  aovs);
@@ -159,6 +163,7 @@ class DirectLightingIntegrator
     const size_t                        m_light_sample_count;
 
     void take_single_bsdf_or_light_sample(
+        const bool                      indirect,
         SamplingContext&                sampling_context,
         Spectrum&                       radiance,
         SpectrumStack&                  aovs);
@@ -172,6 +177,7 @@ class DirectLightingIntegrator
 
     template <typename WeightingFunction>
     void take_single_light_sample(
+        const bool                      indirect,
         SamplingContext&                sampling_context,
         WeightingFunction&              weighting_function,
         Spectrum&                       radiance,
@@ -180,12 +186,14 @@ class DirectLightingIntegrator
     template <typename WeightingFunction>
     void add_emitting_triangle_sample_contribution(
         const LightSample&              sample,
+        const bool                      indirect,
         WeightingFunction&              weighting_function,
         Spectrum&                       radiance,
         SpectrumStack&                  aovs);
 
     void add_non_physical_light_sample_contribution(
         const LightSample&              sample,
+        const bool                      indirect,
         Spectrum&                       radiance,
         SpectrumStack&                  aovs);
 };
@@ -287,6 +295,7 @@ void DirectLightingIntegrator::sample_bsdf(
 
 template <typename WeightingFunction>
 void DirectLightingIntegrator::sample_lights(
+    const bool                          indirect,
     SamplingContext&                    sampling_context,
     WeightingFunction&                  weighting_function,
     Spectrum&                           radiance,
@@ -300,6 +309,7 @@ void DirectLightingIntegrator::sample_lights(
     for (size_t i = 0; i < m_light_sample_count; ++i)
     {
         take_single_light_sample(
+            indirect,
             sampling_context,
             weighting_function,
             radiance,
@@ -316,6 +326,7 @@ void DirectLightingIntegrator::sample_lights(
 
 template <typename WeightingFunction>
 void DirectLightingIntegrator::sample_lights_low_variance(
+    const bool                          indirect,
     SamplingContext&                    sampling_context,
     WeightingFunction&                  weighting_function,
     Spectrum&                           radiance,
@@ -342,6 +353,7 @@ void DirectLightingIntegrator::sample_lights_low_variance(
 
             add_emitting_triangle_sample_contribution(
                 sample,
+                indirect,
                 weighting_function,
                 radiance,
                 aovs);
@@ -370,6 +382,7 @@ void DirectLightingIntegrator::sample_lights_low_variance(
 
             add_non_physical_light_sample_contribution(
                 sample,
+                indirect,
                 radiance,
                 aovs);
         }
@@ -482,6 +495,7 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
 
 template <typename WeightingFunction>
 void DirectLightingIntegrator::take_single_light_sample(
+    const bool                          indirect,
     SamplingContext&                    sampling_context,
     WeightingFunction&                  weighting_function,
     Spectrum&                           radiance,
@@ -503,6 +517,7 @@ void DirectLightingIntegrator::take_single_light_sample(
     {
         add_emitting_triangle_sample_contribution(
             sample,
+            indirect,
             weighting_function,
             radiance,
             aovs);
@@ -511,6 +526,7 @@ void DirectLightingIntegrator::take_single_light_sample(
     {
         add_non_physical_light_sample_contribution(
             sample,
+            indirect,
             radiance,
             aovs);
     }
@@ -519,10 +535,17 @@ void DirectLightingIntegrator::take_single_light_sample(
 template <typename WeightingFunction>
 void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     const LightSample&                  sample,
+    const bool                          indirect,
     WeightingFunction&                  weighting_function,
     Spectrum&                           radiance,
     SpectrumStack&                      aovs)
 {
+    const EDF* edf = sample.m_triangle->m_edf;
+
+    // No contribution if we are in an indirect lighting situation but this light does not cast indirect light.
+    if (indirect && !(edf->get_flags() & EDF::CastIndirectLight))
+        return;
+
     // Compute the incoming direction in world space.
     foundation::Vector3d incoming = sample.m_point - m_point;
 
@@ -572,8 +595,6 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
             bsdf_value);
     if (bsdf_prob == 0.0)
         return;
-
-    const EDF* edf = sample.m_triangle->m_edf;
 
     // Evaluate the input values of the EDF.
     InputEvaluator edf_input_evaluator(m_shading_context.get_texture_cache());

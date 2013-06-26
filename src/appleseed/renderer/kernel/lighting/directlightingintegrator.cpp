@@ -68,42 +68,81 @@ DirectLightingIntegrator::DirectLightingIntegrator(
 }
 
 void DirectLightingIntegrator::sample_bsdf_and_lights(
+    const bool                  indirect,
     SamplingContext&            sampling_context,
     Spectrum&                   radiance,
     SpectrumStack&              aovs)
 {
     if (m_bsdf_sample_count + m_light_sample_count == 0)
-        take_single_bsdf_or_light_sample(sampling_context, radiance, aovs);
+    {
+        take_single_bsdf_or_light_sample(
+            indirect,
+            sampling_context,
+            radiance,
+            aovs);
+    }
     else
     {
+        sample_bsdf(
+            sampling_context,
+            DirectLightingIntegrator::mis_power2,
+            radiance,
+            aovs);
+
         Spectrum radiance_light_sampling;
         SpectrumStack aovs_light_sampling(aovs.size());
-        sample_bsdf(sampling_context, DirectLightingIntegrator::mis_power2, radiance, aovs);
-        sample_lights(sampling_context, DirectLightingIntegrator::mis_power2, radiance_light_sampling, aovs_light_sampling);
+
+        sample_lights(
+            indirect,
+            sampling_context,
+            DirectLightingIntegrator::mis_power2,
+            radiance_light_sampling,
+            aovs_light_sampling);
+
         radiance += radiance_light_sampling;
         aovs += aovs_light_sampling;
     }
 }
 
 void DirectLightingIntegrator::sample_bsdf_and_lights_low_variance(
+    const bool                  indirect,
     SamplingContext&            sampling_context,
     Spectrum&                   radiance,
     SpectrumStack&              aovs)
 {
     if (m_bsdf_sample_count + m_light_sample_count == 0)
-        take_single_bsdf_or_light_sample(sampling_context, radiance, aovs);
+    {
+        take_single_bsdf_or_light_sample(
+            indirect,
+            sampling_context,
+            radiance,
+            aovs);
+    }
     else
     {
+        sample_bsdf(
+            sampling_context,
+            DirectLightingIntegrator::mis_power2,
+            radiance,
+            aovs);
+
         Spectrum radiance_light_sampling;
         SpectrumStack aovs_light_sampling(aovs.size());
-        sample_bsdf(sampling_context, DirectLightingIntegrator::mis_power2, radiance, aovs);
-        sample_lights_low_variance(sampling_context, DirectLightingIntegrator::mis_power2, radiance_light_sampling, aovs_light_sampling);
+
+        sample_lights_low_variance(
+            indirect,
+            sampling_context,
+            DirectLightingIntegrator::mis_power2,
+            radiance_light_sampling,
+            aovs_light_sampling);
+
         radiance += radiance_light_sampling;
         aovs += aovs_light_sampling;
     }
 }
 
 void DirectLightingIntegrator::take_single_bsdf_or_light_sample(
+    const bool                  indirect,
     SamplingContext&            sampling_context,
     Spectrum&                   radiance,
     SpectrumStack&              aovs)
@@ -119,6 +158,7 @@ void DirectLightingIntegrator::take_single_bsdf_or_light_sample(
         {
             sampling_context.split_in_place(3, m_light_sample_count);
             take_single_light_sample(
+                indirect,
                 sampling_context,
                 DirectLightingIntegrator::mis_balance,
                 radiance,
@@ -139,6 +179,7 @@ void DirectLightingIntegrator::take_single_bsdf_or_light_sample(
     else
     {
         take_single_light_sample(
+            indirect,
             sampling_context,
             DirectLightingIntegrator::mis_none,
             radiance,
@@ -148,14 +189,21 @@ void DirectLightingIntegrator::take_single_bsdf_or_light_sample(
 
 void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     const LightSample&          sample,
+    const bool                  indirect,
     Spectrum&                   radiance,
     SpectrumStack&              aovs)
 {
+    const Light* light = sample.m_light;
+
+    // No contribution if we are in an indirect lighting situation but this light does not cast indirect light.
+    if (indirect && !(light->get_flags() & Light::CastIndirectLight))
+        return;
+
     // Evaluate the light.
     InputEvaluator input_evaluator(m_shading_context.get_texture_cache());
     Vector3d emission_position, emission_direction;
     Spectrum light_value;
-    sample.m_light->evaluate(
+    light->evaluate(
         input_evaluator,
         sample.m_light_transform.point_to_local(m_point),
         emission_position,
@@ -203,12 +251,12 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
         return;
 
     // Add the contribution of this sample to the illumination.
-    const double attenuation = sample.m_light->compute_distance_attenuation(m_point, emission_position);
+    const double attenuation = light->compute_distance_attenuation(m_point, emission_position);
     const double weight = (transmission * attenuation) / sample.m_probability;
     light_value *= static_cast<float>(weight);
     light_value *= bsdf_value;
     radiance += light_value;
-    aovs.add(sample.m_light->get_render_layer_index(), light_value);
+    aovs.add(light->get_render_layer_index(), light_value);
 }
 
 }   // namespace renderer

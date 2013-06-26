@@ -61,6 +61,7 @@ Light::Light(
     const ParamArray&   params)
   : ConnectableEntity(g_class_uid, params)
   , impl(new Impl())
+  , m_flags(0)
 {
     set_name(name);
 }
@@ -85,6 +86,11 @@ bool Light::on_frame_begin(
     const Project&      project,
     const Assembly&     assembly)
 {
+    m_flags = 0;
+
+    if (m_params.get_optional<bool>("cast_indirect_light", true))
+        m_flags |= CastIndirectLight;
+
     return true;
 }
 

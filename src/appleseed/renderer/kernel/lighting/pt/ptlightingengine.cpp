@@ -276,6 +276,7 @@ namespace
                             1,                                  // a single BSDF sample since the path will be extended with a single ray
                             m_params.m_dl_light_sample_count);  // the number of light samples is user-adjustable
                         integrator.sample_lights_low_variance(
+                            prev_bsdf_mode == BSDF::Diffuse,    // indirect lighting situation?
                             sampling_context,
                             DirectLightingIntegrator::mis_power2,
                             vertex_radiance,
@@ -310,7 +311,10 @@ namespace
                         vertex_aovs.add(m_env_edf->get_render_layer_index(), ibl_radiance);
                     }
 
-                    if (edf && cos_on > 0.0 && (m_params.m_enable_dl || path_length > 2))
+                    if (edf &&
+                        cos_on > 0.0 &&
+                        (path_length > 2 || m_params.m_enable_dl) &&
+                        (path_length < 2 || (edf->get_flags() & EDF::CastIndirectLight)))
                     {
                         // Compute the emitted radiance.
                         Spectrum emitted_radiance;
@@ -352,7 +356,10 @@ namespace
                 }
                 else
                 {
-                    if (edf && cos_on > 0.0 && (m_params.m_enable_dl || path_length > 2))
+                    if (edf &&
+                        cos_on > 0.0 &&
+                        (path_length > 2 || m_params.m_enable_dl) &&
+                        (path_length < 2 || (edf->get_flags() & EDF::CastIndirectLight)))
                     {
                         // Compute the emitted radiance.
                         Spectrum emitted_radiance;

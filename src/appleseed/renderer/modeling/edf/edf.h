@@ -68,6 +68,14 @@ class DLLSYMBOL EDF
     // Return a string identifying the model of this entity.
     virtual const char* get_model() const = 0;
 
+    enum Flags
+    {
+        CastIndirectLight = 1 << 0                              // does this light generate indirect lighting?
+    };
+
+    // Retrieve the flags.
+    int get_flags() const;
+
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
     virtual bool on_frame_begin(
@@ -112,7 +120,20 @@ class DLLSYMBOL EDF
         const foundation::Vector3d& geometric_normal,           // world space geometric normal, unit-length
         const foundation::Basis3d&  shading_basis,              // world space orthonormal basis around shading normal
         const foundation::Vector3d& outgoing) const = 0;        // world space emission direction, unit-length
+
+  private:
+    int m_flags;
 };
+
+
+//
+// EDF class implementation.
+//
+
+inline int EDF::get_flags() const
+{
+    return m_flags;
+}
 
 }       // namespace renderer
 
