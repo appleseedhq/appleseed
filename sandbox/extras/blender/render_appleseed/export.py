@@ -28,7 +28,7 @@
 
 import bpy
 from bpy_extras.io_utils import ExportHelper
-
+from . import project_file_writer
 
 class ExportAppleseedScene( bpy.types.Operator, ExportHelper):
     """Saves an appleseed scene"""
@@ -44,11 +44,11 @@ class ExportAppleseedScene( bpy.types.Operator, ExportHelper):
         renderer = context.scene.render
         return renderer.engine == 'APPLESEED_RENDER'
 
-    def execute(self, context):
+    def execute( self, context):
         pass
 
 def menu_func_export_scene( self, context):
-    self.layout.operator( ExportAppleseedScene.bl_idname, text="Appleseed (.appleseed)")
+    self.layout.operator( ExportAppleseedScene.bl_idname, text = "Appleseed (.appleseed)")
 
 def register():
     bpy.utils.register_class( ExportAppleseedScene)
