@@ -84,7 +84,7 @@ class MapleFile
     ~MapleFile();
 
     // Print an arbitrary string with formatting.
-    void print(PRINTF_FMT const char* format, ...) PRINTF_FMT_ATTR(1, 2);
+    void print(PRINTF_FMT const char* format, ...) PRINTF_FMT_ATTR(2, 3);
 
     // Issue a restart command.
     void restart();

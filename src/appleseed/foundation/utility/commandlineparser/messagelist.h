@@ -58,7 +58,7 @@ class DLLSYMBOL MessageList
     void add(
         const LogMessage::Category  category,
         PRINTF_FMT const char*      format, ...)
-        PRINTF_FMT_ATTR(2, 3);
+        PRINTF_FMT_ATTR(3, 4);
 
     // Print the messages.
     void print(Logger& logger) const;

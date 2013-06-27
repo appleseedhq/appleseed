@@ -96,7 +96,7 @@ MapleFile::~MapleFile()
     fclose(m_file);
 }
 
-void MapleFile::print(PRINTF_FMT const char* format, ...) PRINTF_FMT_ATTR(1, 2)
+void MapleFile::print(PRINTF_FMT const char* format, ...) PRINTF_FMT_ATTR(2, 3)
 {
     // Size in bytes of the temporary text buffer.
     static const size_t BufferSize = 4096;

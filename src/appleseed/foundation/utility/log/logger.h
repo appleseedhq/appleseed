@@ -100,7 +100,7 @@ class DLLSYMBOL Logger
         const char*                 file,
         const size_t                line,
         PRINTF_FMT const char*      format, ...)
-        PRINTF_FMT_ATTR(4, 5);
+        PRINTF_FMT_ATTR(5, 6);
 
   private:
     struct Impl;

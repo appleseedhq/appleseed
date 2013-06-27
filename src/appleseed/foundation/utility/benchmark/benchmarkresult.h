@@ -108,7 +108,7 @@ class DLLSYMBOL BenchmarkResult
         const char*             file,
         const size_t            line,
         PRINTF_FMT const char*  format, ...)
-        PRINTF_FMT_ATTR(5, 6);
+        PRINTF_FMT_ATTR(6, 7);
 
     // Write a timing result.
     void write(
