@@ -59,7 +59,6 @@ struct BenchmarkResult::Impl
     size_t                      m_case_failure_count;
 };
 
-// Constructor.
 BenchmarkResult::BenchmarkResult()
   : impl(new Impl())
 {
@@ -69,49 +68,51 @@ BenchmarkResult::BenchmarkResult()
     impl->m_case_failure_count = 0;
 }
 
-// Destructor.
 BenchmarkResult::~BenchmarkResult()
 {
     delete impl;
 }
 
-// Report and retrieve benchmark suite execution metrics.
 void BenchmarkResult::signal_suite_execution()
 {
     ++impl->m_suite_execution_count;
 }
+
 void BenchmarkResult::signal_suite_failure()
 {
     ++impl->m_suite_failure_count;
 }
+
 size_t BenchmarkResult::get_suite_execution_count() const
 {
     return impl->m_suite_execution_count;
 }
+
 size_t BenchmarkResult::get_suite_failure_count() const
 {
     return impl->m_suite_failure_count;
 }
 
-// Report and retrieve benchmark case execution metrics.
 void BenchmarkResult::signal_case_execution()
 {
     ++impl->m_case_execution_count;
 }
+
 void BenchmarkResult::signal_case_failure()
 {
     ++impl->m_case_failure_count;
 }
+
 size_t BenchmarkResult::get_case_execution_count() const
 {
     return impl->m_case_execution_count;
 }
+
 size_t BenchmarkResult::get_case_failure_count() const
 {
     return impl->m_case_failure_count;
 }
 
-// Merge another benchmark result into this one.
 void BenchmarkResult::merge(const BenchmarkResult& rhs)
 {
     impl->m_suite_execution_count += rhs.impl->m_suite_execution_count;
@@ -120,14 +121,12 @@ void BenchmarkResult::merge(const BenchmarkResult& rhs)
     impl->m_case_failure_count += rhs.impl->m_case_failure_count;
 }
 
-// Add a benchmark listener.
 void BenchmarkResult::add_listener(IBenchmarkListener* listener)
 {
     assert(listener);
     impl->m_listeners.push_back(listener);
 }
 
-// Add the benchmark listeners from another benchmark result object.
 void BenchmarkResult::add_listeners(const BenchmarkResult& rhs)
 {
     impl->m_listeners.insert(
@@ -136,7 +135,6 @@ void BenchmarkResult::add_listeners(const BenchmarkResult& rhs)
         rhs.impl->m_listeners.end());
 }
 
-// Called before each benchmark suite is run.
 void BenchmarkResult::begin_suite(
     const BenchmarkSuite&   benchmark_suite)
 {
@@ -144,7 +142,6 @@ void BenchmarkResult::begin_suite(
         (*i)->begin_suite(benchmark_suite);
 }
 
-// Called after each benchmark suite is run.
 void BenchmarkResult::end_suite(
     const BenchmarkSuite&   benchmark_suite)
 {
@@ -152,7 +149,6 @@ void BenchmarkResult::end_suite(
         (*i)->end_suite(benchmark_suite);
 }
 
-// Called before each benchmark case is run.
 void BenchmarkResult::begin_case(
     const BenchmarkSuite&   benchmark_suite,
     const IBenchmarkCase&   benchmark_case)
@@ -161,7 +157,6 @@ void BenchmarkResult::begin_case(
         (*i)->begin_case(benchmark_suite, benchmark_case);
 }
 
-// Called after each benchmark case is run.
 void BenchmarkResult::end_case(
     const BenchmarkSuite&   benchmark_suite,
     const IBenchmarkCase&   benchmark_case)
@@ -170,7 +165,6 @@ void BenchmarkResult::end_case(
         (*i)->end_case(benchmark_suite, benchmark_case);
 }
 
-// Write a message.
 void BenchmarkResult::write(
     const BenchmarkSuite&   benchmark_suite,
     const IBenchmarkCase&   benchmark_case,
@@ -199,7 +193,6 @@ void BenchmarkResult::write(
     }
 }
 
-// Write a timing result.
 void BenchmarkResult::write(
     const BenchmarkSuite&   benchmark_suite,
     const IBenchmarkCase&   benchmark_case,
