@@ -282,10 +282,7 @@ void Basis3<T>::checks()
     assert(fz(dot(m_n, m_v)));
 
     // Make sure (m_u, m_n, m_v) is right-handed.
-    const T Eps = make_eps<T>(1.0e-4f, 1.0e-6);
-    assert(feq(cross(m_n, m_v), m_u, Eps));
-    assert(feq(cross(m_v, m_u), m_n, Eps));
-    assert(feq(cross(m_u, m_n), m_v, Eps));
+    assert(feq(dot(cross(m_u, m_n), m_v), T(1.0)));
 }
 
 #endif
