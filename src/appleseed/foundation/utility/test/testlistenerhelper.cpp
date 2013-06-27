@@ -53,7 +53,6 @@ void TestListenerHelper::write(
     const size_t            line,
     const TestMessage::Type message_type,
     PRINTF_FMT const char*  format, ...)
-    PRINTF_FMT_ATTR(7, 8)
 {
     // Size in bytes of the temporary message buffer.
     const size_t BufferSize = 4096;
