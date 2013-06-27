@@ -98,16 +98,20 @@ namespace
 
         DWORD buffer_size = 0;
         BOOL success = GetLogicalProcessorInformation(0, &buffer_size);
-
         if (success == TRUE || GetLastError() != ERROR_INSUFFICIENT_BUFFER)
             return false;
 
         SYSTEM_LOGICAL_PROCESSOR_INFORMATION* buffer =
             (SYSTEM_LOGICAL_PROCESSOR_INFORMATION*)malloc(buffer_size);
-        success = GetLogicalProcessorInformation(buffer, &buffer_size);
-
-        if (success == FALSE)
+        if (buffer == 0)
             return false;
+
+        success = GetLogicalProcessorInformation(buffer, &buffer_size);
+        if (success == FALSE)
+        {
+            free(buffer);
+            return false;
+        }
 
         bool found = false;
 
