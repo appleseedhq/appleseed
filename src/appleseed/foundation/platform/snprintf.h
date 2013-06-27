@@ -47,7 +47,7 @@ int portable_snprintf(
     char*                   str,
     size_t                  str_m,
     PRINTF_FMT const char*  fmt, ...)
-    PRINTF_FMT_ATTR(4, 5);
+    PRINTF_FMT_ATTR(3, 4);
 
 int portable_vsnprintf(
     char*                   str,
