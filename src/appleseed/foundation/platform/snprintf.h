@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_PLATFORM_SNPRINTF_H
 #define APPLESEED_FOUNDATION_PLATFORM_SNPRINTF_H
 
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
+
 // Standard headers.
 #include <cstdarg>
 #include <cstddef>
@@ -40,8 +43,17 @@ namespace foundation
 // Portable versions of snprintf() and vsnprintf().
 //
 
-int portable_snprintf(char *str, size_t str_m, const char *fmt, ...);
-int portable_vsnprintf(char *str, size_t str_m, const char *fmt, va_list ap);
+int portable_snprintf(
+    char*                   str,
+    size_t                  str_m,
+    PRINTF_FMT const char*  fmt, ...)
+    PRINTF_FMT_ATTR(3, 4);
+
+int portable_vsnprintf(
+    char*                   str,
+    size_t                  str_m,
+    const char*             fmt,
+    va_list                 ap);
 
 }       // namespace foundation
 

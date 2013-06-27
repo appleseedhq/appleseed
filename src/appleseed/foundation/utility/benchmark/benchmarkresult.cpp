@@ -170,7 +170,8 @@ void BenchmarkResult::write(
     const IBenchmarkCase&   benchmark_case,
     const char*             file,
     const size_t            line,
-    const char*             format, ...)
+    PRINTF_FMT const char*  format, ...)
+    PRINTF_FMT_ATTR(5, 6)
 {
     // Size in bytes of the temporary message buffer.
     const size_t BufferSize = 4096;

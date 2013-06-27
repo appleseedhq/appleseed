@@ -73,7 +73,8 @@ MessageList::~MessageList()
 
 void MessageList::add(
     const LogMessage::Category  category,
-    const char*                 format, ...)
+    PRINTF_FMT const char*      format, ...)
+    PRINTF_FMT_ATTR(2, 3)
 {
     // Size in bytes of the temporary message buffer.
     static const size_t BufferSize = 4096;
