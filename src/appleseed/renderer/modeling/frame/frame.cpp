@@ -555,8 +555,8 @@ void Frame::extract_parameters()
 
     // Retrieve pixel format parameter.
     {
-        const PixelFormat DefaultPixelFormat = PixelFormatFloat;
-        const char* DefaultPixelFormatString = "float";
+        const PixelFormat DefaultPixelFormat = PixelFormatHalf;
+        const char* DefaultPixelFormatString = "half";
         const string pixel_format_str =
             m_params.get_optional<string>("pixel_format", DefaultPixelFormatString);
         if (pixel_format_str == "uint8")
