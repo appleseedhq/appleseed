@@ -30,10 +30,15 @@
 #include "foundation/platform/snprintf.h"
 #include "foundation/utility/test.h"
 
+// Standard headers.
+#include <cstddef>
+#include <string>
+
+using namespace foundation;
+using namespace std;
+
 TEST_SUITE(Foundation_Platform_Snprintf)
 {
-    using namespace foundation;
-
     TEST_CASE(PortableSnprintf_GivenResultSmallerThanBuffer_WritesTrailingZero_DoesNotWritePastBuffer_ReturnsNumberOfWrittenCharacters)
     {
         const size_t BufferSize = 3;
@@ -77,5 +82,31 @@ TEST_SUITE(Foundation_Platform_Snprintf)
         EXPECT_EQ('!',  buf[3]);
 
         EXPECT_EQ(4, result);
+    }
+
+#if defined ARCH32
+    const size_t MaxSizeTValue = ~0;
+    const char MaxSizeTValueString[] = "4294967295";
+#elif defined ARCH64
+    const size_t MaxSizeTValue = ~0;
+    const char MaxSizeTValueString[] = "18446744073709551615";
+#else
+    #error Cannot determine machine architecture.
+#endif
+
+    TEST_CASE(PortableSnprintf_GivenLargeSizeTValue_UsingC99FormatString_ReturnsProperlyFormattedString)
+    {
+        char buf[100];
+        const int result = portable_snprintf(buf, sizeof(buf), "%zu", MaxSizeTValue);
+
+        EXPECT_EQ(MaxSizeTValueString, string(buf));
+    }
+
+    TEST_CASE(PortableSnprintf_GivenLargeSizeTValue_UsingVisualStudioFormatString_ReturnsProperlyFormattedString)
+    {
+        char buf[100];
+        const int result = portable_snprintf(buf, sizeof(buf), "%Iu", MaxSizeTValue);
+
+        EXPECT_EQ(MaxSizeTValueString, string(buf));
     }
 }
