@@ -85,11 +85,12 @@ struct Frame::Impl
     size_t                  m_tile_width;
     size_t                  m_tile_height;
     PixelFormat             m_pixel_format;
+    auto_ptr<Filter2d>      m_filter;
     bool                    m_clamp;
     float                   m_target_gamma;
     float                   m_rcp_target_gamma;
     LightingConditions      m_lighting_conditions;
-    auto_ptr<Filter2d>      m_filter;
+    AABB2u                  m_crop_window;
 
     auto_ptr<Image>         m_image;
     auto_ptr<ImageStack>    m_aov_images;
@@ -112,6 +113,7 @@ Frame::Frame(
   , impl(new Impl())
 {
     set_name(name);
+
     extract_parameters();
 
     // Create the underlying image.
@@ -164,6 +166,11 @@ const Filter2d& Frame::get_filter() const
 const LightingConditions& Frame::get_lighting_conditions() const
 {
     return impl->m_lighting_conditions;
+}
+
+const AABB2u& Frame::get_crop_window() const
+{
+    return impl->m_crop_window;
 }
 
 namespace
@@ -645,6 +652,12 @@ void Frame::extract_parameters()
     // Retrieve gamma correction parameter.
     impl->m_target_gamma = m_params.get_optional<float>("gamma_correction", 1.0f);
     impl->m_rcp_target_gamma = 1.0f / impl->m_target_gamma;
+
+    // Retrieve crop window parameter.
+    const AABB2u default_crop_window(
+        Vector2u(0, 0),
+        Vector2u(impl->m_frame_width, impl->m_frame_height));
+    impl->m_crop_window = m_params.get_optional<AABB2u>("crop_window", default_crop_window);
 }
 
 bool Frame::write_image(
@@ -728,6 +741,13 @@ DictionaryArray FrameFactory::get_widget_definitions()
             .insert("label", "Resolution")
             .insert("widget", "text_box")
             .insert("use", "required"));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "crop_window")
+            .insert("label", "Crop Window")
+            .insert("widget", "text_box")
+            .insert("use", "optional"));
 
     definitions.push_back(
         Dictionary()

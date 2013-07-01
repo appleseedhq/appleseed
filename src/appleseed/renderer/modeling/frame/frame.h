@@ -35,6 +35,7 @@
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/colorspace.h"
+#include "foundation/math/aabb.h"
 #include "foundation/math/filter.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
@@ -89,6 +90,9 @@ class DLLSYMBOL Frame
 
     // Return true if the frame uses premultiplied alpha, false if it uses straight alpha.
     bool is_premultiplied_alpha() const;
+
+    // Return the crop window.
+    const foundation::AABB2u& get_crop_window() const;
 
     // Convert a tile or an image from linear RGB to the output color space.
     void transform_to_output_color_space(foundation::Tile& tile) const;
