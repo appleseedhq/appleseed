@@ -102,6 +102,11 @@ TEST_SUITE(Foundation_Platform_Snprintf)
         EXPECT_EQ(MaxSizeTValueString, string(buf));
     }
 
+#ifdef _MSC_VER
+
+    // This test is only enabled when building with Visual Studio, as other compilers
+    // such as gcc will complain about %Iu being an invalid format string.
+
     TEST_CASE(PortableSnprintf_GivenLargeSizeTValue_UsingVisualStudioFormatString_ReturnsProperlyFormattedString)
     {
         char buf[100];
@@ -109,4 +114,6 @@ TEST_SUITE(Foundation_Platform_Snprintf)
 
         EXPECT_EQ(MaxSizeTValueString, string(buf));
     }
+
+#endif
 }
