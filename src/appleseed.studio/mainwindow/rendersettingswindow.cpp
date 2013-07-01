@@ -734,17 +734,17 @@ void RenderSettingsWindow::do_load_configuration(const Configuration& config)
     // Distribution Ray Tracer.
     {
         const size_t DefaultMaxBounces = 8;
-        const size_t drt_max_path_length = get_config<size_t>(config, "drt.max_path_length", 0);
-        set_widget("drt.bounces.unlimited_bounces", drt_max_path_length == 0);
-        set_widget("drt.bounces.max_bounces", drt_max_path_length == 0 ? DefaultMaxBounces : drt_max_path_length - 1);
+        const size_t max_path_length = get_config<size_t>(config, "drt.max_path_length", 0);
+        set_widget("drt.bounces.unlimited_bounces", max_path_length == 0);
+        set_widget("drt.bounces.max_bounces", max_path_length == 0 ? DefaultMaxBounces : max_path_length - 1);
     }
 
     // Unidirectional Path Tracer.
     {
         const size_t DefaultMaxBounces = 3;
-        const size_t pt_max_path_length = get_config<size_t>(config, "pt.max_path_length", 0);
-        set_widget("pt.bounces.unlimited_bounces", pt_max_path_length == 0);
-        set_widget("pt.bounces.max_bounces", pt_max_path_length == 0 ? DefaultMaxBounces : pt_max_path_length - 1);
+        const size_t max_path_length = get_config<size_t>(config, "pt.max_path_length", 0);
+        set_widget("pt.bounces.unlimited_bounces", max_path_length == 0);
+        set_widget("pt.bounces.max_bounces", max_path_length == 0 ? DefaultMaxBounces : max_path_length - 1);
     }
 
     // System / Rendering Threads.
