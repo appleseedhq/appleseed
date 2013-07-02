@@ -33,6 +33,7 @@ import os
 import random
 import shutil
 import socket
+import string
 import subprocess
 import sys
 import time
@@ -44,7 +45,7 @@ import xml.dom.minidom as xml
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "1.9"
+VERSION = "1.10"
 RENDERS_DIR = "_renders"
 ARCHIVE_DIR = "_archives"
 LOGS_DIR = "_logs"
@@ -64,6 +65,11 @@ def format_message(severity, msg):
     padded_severity = severity.ljust(7)
     return "\n".join("{0} watch {1} | {2}".format(now, padded_severity, line) \
         for line in msg.splitlines())
+
+VALID_USER_NAME_CHARS = frozenset("%s%s_-" % (string.ascii_letters, string.digits))
+
+def cleanup_user_name(user_name):
+    return "".join(c if c in VALID_USER_NAME_CHARS else '_' for c in user_name)
 
 
 #--------------------------------------------------------------------------------------------------
@@ -419,7 +425,8 @@ def main():
     log.info("running watchfolder.py version {0}.".format(VERSION))
     print_appleseed_version(args, log)
 
-    # Print user name.
+    # Clean up and print user name.
+    args.user_name = cleanup_user_name(args.user_name)
     log.info("user name is {0}.".format(args.user_name))
 
     # Disable Windows Error Reporting on Windows.
