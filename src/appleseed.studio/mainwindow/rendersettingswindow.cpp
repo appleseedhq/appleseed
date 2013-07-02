@@ -377,6 +377,7 @@ void RenderSettingsWindow::create_pt_advanced_settings(QVBoxLayout* parent)
 
     create_pt_advanced_dl_settings(nee_layout);
     create_pt_advanced_ibl_settings(nee_layout);
+    create_pt_advanced_max_ray_intensity_settings(nee_layout);
 }
 
 void RenderSettingsWindow::create_pt_advanced_dl_settings(QVBoxLayout* parent)
@@ -405,6 +406,14 @@ void RenderSettingsWindow::create_pt_advanced_ibl_settings(QVBoxLayout* parent)
     layout->addLayout(sublayout);
 
     sublayout->addLayout(create_form_layout("Environment Samples:", create_integer_input("pt.advanced.ibl.env_samples", 0, 1000000)));
+}
+
+void RenderSettingsWindow::create_pt_advanced_max_ray_intensity_settings(QVBoxLayout* parent)
+{
+    QDoubleSpinBox* max_ray_intensity = create_double_input("pt.advanced.max_ray_intensity", 0.0, 1.0e9, 3, 0.5);
+    QCheckBox* unlimited_ray_intensity = create_checkbox("pt.advanced.unlimited_ray_intensity", "Unlimited");
+    parent->addLayout(create_form_layout("Max Ray Intensity:", create_horizontal_group(max_ray_intensity, unlimited_ray_intensity)));
+    connect(unlimited_ray_intensity, SIGNAL(toggled(bool)), max_ray_intensity, SLOT(setDisabled(bool)));
 }
 
 //---------------------------------------------------------------------------------------------
@@ -746,6 +755,10 @@ void RenderSettingsWindow::do_load_configuration(const Configuration& config)
         set_widget("pt.bounces.unlimited_bounces", max_path_length == 0);
         set_widget("pt.bounces.max_bounces", max_path_length == 0 ? DefaultMaxBounces : max_path_length - 1);
     }
+    {
+        set_widget("pt.advanced.unlimited_ray_intensity", !config.get_parameters().exist_path("pt.max_ray_intensity"));
+        set_widget("pt.advanced.max_ray_intensity", get_config<double>(config, "pt.max_ray_intensity", 1.0));
+    }
 
     // System / Rendering Threads.
     {
@@ -773,6 +786,9 @@ void RenderSettingsWindow::do_save_configuration(Configuration& config)
     // Unidirectional Path Tracer.
     set_config(config, "pt.max_path_length",
         get_widget<bool>("pt.bounces.unlimited_bounces") ? 0 : get_widget<size_t>("pt.bounces.max_bounces") + 1);
+    if (get_widget<bool>("pt.advanced.unlimited_ray_intensity"))
+        config.get_parameters().remove_path("pt.max_ray_intensity");
+    else set_config(config, "pt.max_ray_intensity", get_widget<double>("pt.advanced.max_ray_intensity"));
 
     // System / Rendering Threads.
     if (get_widget<bool>("system.rendering_threads.override"))

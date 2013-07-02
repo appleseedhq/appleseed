@@ -92,6 +92,9 @@ namespace
             const size_t    m_dl_light_sample_count;        // number of light samples used to estimate direct illumination
             const size_t    m_ibl_env_sample_count;         // number of environment samples used to estimate IBL
 
+            const bool      m_has_max_ray_intensity;
+            const float     m_max_ray_intensity;
+
             explicit Parameters(const ParamArray& params)
               : m_enable_dl(params.get_optional<bool>("enable_dl", true))
               , m_enable_ibl(params.get_optional<bool>("enable_ibl", true))
@@ -101,6 +104,8 @@ namespace
               , m_next_event_estimation(params.get_optional<bool>("next_event_estimation", true))
               , m_dl_light_sample_count(params.get_optional<size_t>("dl_light_samples", 1))
               , m_ibl_env_sample_count(params.get_optional<size_t>("ibl_env_samples", 1))
+              , m_has_max_ray_intensity(params.strings().exist("max_ray_intensity"))
+              , m_max_ray_intensity(params.get_optional<float>("max_ray_intensity", 0.0f))
             {
             }
 
@@ -346,6 +351,14 @@ namespace
 
                         vertex_radiance += emitted_radiance;
                         vertex_aovs.add(edf->get_render_layer_index(), emitted_radiance);
+                    }
+
+                    // Optionally clamp secondary rays contribution.
+                    if (m_params.m_has_max_ray_intensity && path_length > 1)
+                    {
+                        const float avg = average_value(vertex_radiance);
+                        if (avg > m_params.m_max_ray_intensity)
+                            vertex_radiance *= m_params.m_max_ray_intensity / avg;
                     }
 
                     // Update the path radiance.
