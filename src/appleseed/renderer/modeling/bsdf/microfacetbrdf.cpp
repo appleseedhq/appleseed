@@ -84,6 +84,7 @@ namespace
           : BSDF(name, Reflective, params)
         {
             m_inputs.declare("mdf_parameter", InputFormatScalar);
+            m_inputs.declare("mdf_parameter_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("fresnel_multiplier", InputFormatScalar, "1.0");
@@ -150,7 +151,8 @@ namespace
             const Vector2d s = sampling_context.next_vector2<2>();
             Vector3d h;
             double mdf_value, mdf_pdf;
-            sample_mdf(values->m_mdf_parameter, s, h, mdf_value, mdf_pdf);
+            const double mdf_parameter = values->m_glossiness * values->m_glossiness_multiplier;
+            sample_mdf(mdf_parameter, s, h, mdf_value, mdf_pdf);
             h = shading_basis.transform_to_parent(h);
             incoming = reflect(outgoing, h);
             const double cos_hn = dot(h, n);
@@ -202,7 +204,8 @@ namespace
 
             // Evaluate the MDF.
             double mdf_value, mdf_pdf;
-            evaluate_mdf(values->m_mdf_parameter, cos_hn, mdf_value, mdf_pdf);
+            const double mdf_parameter = values->m_glossiness * values->m_glossiness_multiplier;
+            evaluate_mdf(mdf_parameter, cos_hn, mdf_value, mdf_pdf);
 
             // Compute the BRDF value.
             const double g = evaluate_attenuation(cos_on, cos_in, cos_hn, cos_oh);
@@ -239,13 +242,15 @@ namespace
             const double cos_oh = dot(outgoing, h);
 
             // Compute and return the PDF value.
-            return evaluate_mdf_pdf(values->m_mdf_parameter, cos_hn) / (4.0 * cos_oh);
+            const double mdf_parameter = values->m_glossiness * values->m_glossiness_multiplier;
+            return evaluate_mdf_pdf(mdf_parameter, cos_hn) / (4.0 * cos_oh);
         }
 
       private:
         DECLARE_INPUT_VALUES(InputValues)
         {
-            double      m_mdf_parameter;
+            double      m_glossiness;
+            double      m_glossiness_multiplier;
             Spectrum    m_reflectance;
             Alpha       m_reflectance_alpha;        // unused
             double      m_reflectance_multiplier;
@@ -442,12 +447,22 @@ DictionaryArray MicrofacetBRDFFactory::get_widget_definitions() const
     definitions.push_back(
         Dictionary()
             .insert("name", "mdf_parameter")
-            .insert("label", "Distribution Function Parameter")
+            .insert("label", "Glossiness")
             .insert("widget", "entity_picker")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "required")
             .insert("default", ""));
+
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "mdf_parameter_multiplier")
+            .insert("label", "Glossiness Multiplier")
+            .insert("widget", "entity_picker")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "optional")
+            .insert("default", "1.0"));
 
     definitions.push_back(
         Dictionary()
