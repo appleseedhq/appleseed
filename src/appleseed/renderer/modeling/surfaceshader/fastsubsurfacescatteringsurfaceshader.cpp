@@ -137,6 +137,7 @@ namespace
             // Initialize the shading result to opaque black.
             shading_result.m_color_space = ColorSpaceSpectral;
             shading_result.m_color.set(0.0f);
+            shading_result.m_aovs.set(0.0f);
             shading_result.m_alpha.set(1.0f);
 
             // Return black if there is no light in the scene.
