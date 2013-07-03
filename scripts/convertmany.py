@@ -35,6 +35,13 @@ import subprocess
 
 
 #--------------------------------------------------------------------------------------------------
+# Constants.
+#--------------------------------------------------------------------------------------------------
+
+DEFAULT_TOOL_FILENAME = "convertmeshfile.exe" if os.name == "nt" else "convertmeshfile"
+
+
+#--------------------------------------------------------------------------------------------------
 # Utility functions.
 #--------------------------------------------------------------------------------------------------
 
@@ -84,7 +91,7 @@ def convert_mesh_files(tool_path, directory, recursive, input_pattern, output_fo
 def main():
     parser = argparse.ArgumentParser(description="convert multiple mesh files from one format " \
                                      "to another.")
-    parser.add_argument("-t", "--tool-path", metavar="tool-path", required=True,
+    parser.add_argument("-t", "--tool-path", metavar="tool-path",
                         help="set the path to the convertmeshfile tool")
     parser.add_argument("-r", "--recursive", action='store_true', dest='recursive',
                         help="scan the specified directory and all its subdirectories")
@@ -94,6 +101,12 @@ def main():
     parser.add_argument("input_pattern", metavar="input-pattern", help="input files pattern (e.g. *.obj)")
     parser.add_argument("output_format", metavar="output-format", help="output file format (e.g. abc, binarymesh)")
     args = parser.parse_args()
+
+    # If no tool path is provided, search for the tool in the same directory as this script.
+    if args.tool_path is None:
+        script_directory = os.path.dirname(os.path.realpath(__file__))
+        args.tool_path = os.path.join(script_directory, DEFAULT_TOOL_FILENAME)
+        print("setting tool path to {0}.".format(args.tool_path))
 
     start_time = datetime.datetime.now()
     converted_file_count = convert_mesh_files(args.tool_path, args.directory, args.recursive,

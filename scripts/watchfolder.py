@@ -45,11 +45,12 @@ import xml.dom.minidom as xml
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "1.10"
+VERSION = "1.11"
 RENDERS_DIR = "_renders"
 ARCHIVE_DIR = "_archives"
 LOGS_DIR = "_logs"
 PAUSE_BETWEEN_CHECKS = 10   # in seconds
+DEFAULT_TOOL_FILENAME = "appleseed.cli.exe" if os.name == "nt" else "appleseed.cli"
 
 
 #--------------------------------------------------------------------------------------------------
@@ -398,7 +399,7 @@ def main():
     # Parse the command line.
     parser = argparse.ArgumentParser(description="continuously watch a directory and render any project file " \
                                      "that appears in it.")
-    parser.add_argument("-t", "--tool-path", metavar="tool-path", required=True,
+    parser.add_argument("-t", "--tool-path", metavar="tool-path",
                         help="set the path to the appleseed.cli tool")
     parser.add_argument("-f", "--format", dest="output_format", metavar="FORMAT", default="exr",
                         help="set output format (e.g. png, exr)")
@@ -408,6 +409,12 @@ def main():
                         help="forward additional arguments to appleseed")
     parser.add_argument("directory", help="directory to watch")
     args = parser.parse_args()
+
+    # If no tool path is provided, search for the tool in the same directory as this script.
+    if args.tool_path is None:
+        script_directory = os.path.dirname(os.path.realpath(__file__))
+        args.tool_path = os.path.join(script_directory, DEFAULT_TOOL_FILENAME)
+        print("setting tool path to {0}.".format(args.tool_path))
 
     # If no watch directory is provided, watch the current directory.
     if args.directory is None:
