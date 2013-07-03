@@ -30,7 +30,6 @@
 #include "workerthread.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/exceptions/stringexception.h"
 #include "foundation/platform/thread.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/job/ijob.h"
@@ -139,17 +138,6 @@ bool WorkerThread::execute_job(IJob& job)
     try
     {
         job.execute(m_index);
-    }
-    catch (const StringException& e)
-    {
-        LOG_ERROR(
-            m_logger,
-            "worker thread " FMT_SIZE_T ": job was terminated (%s: %s).",
-            m_index,
-            e.what(),
-            e.string());
-
-        return false;
     }
     catch (const bad_alloc&)
     {

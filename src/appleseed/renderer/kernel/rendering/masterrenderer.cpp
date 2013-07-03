@@ -67,7 +67,6 @@
 #include "renderer/modeling/scene/scene.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/exceptions/stringexception.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/thread.h"
 #include "foundation/utility/searchpaths.h"
@@ -82,7 +81,6 @@
 #include "boost/bind.hpp"
 
 // Standard headers.
-#include <cstring>
 #include <deque>
 #include <exception>
 
@@ -146,14 +144,6 @@ bool MasterRenderer::render() const
     {
         do_render();
         return true;
-    }
-    catch (const StringException& e)
-    {
-        m_renderer_controller->on_rendering_abort();
-        if (strlen(e.string()) > 0)
-            RENDERER_LOG_ERROR("rendering failed (%s: %s).", e.what(), e.string());
-        else RENDERER_LOG_ERROR("rendering failed (%s).", e.what());
-        return false;
     }
     catch (const bad_alloc&)
     {

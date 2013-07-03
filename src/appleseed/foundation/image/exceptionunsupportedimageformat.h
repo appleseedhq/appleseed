@@ -43,9 +43,8 @@ class ExceptionUnsupportedImageFormat
   : public Exception
 {
   public:
-    // Constructors.
+    // Constructor.
     ExceptionUnsupportedImageFormat();
-    explicit ExceptionUnsupportedImageFormat(const char* what);
 };
 
 
@@ -54,11 +53,7 @@ class ExceptionUnsupportedImageFormat
 //
 
 inline ExceptionUnsupportedImageFormat::ExceptionUnsupportedImageFormat()
-{
-}
-
-inline ExceptionUnsupportedImageFormat::ExceptionUnsupportedImageFormat(const char* what)
-  : Exception(what)
+  : Exception("unsupported image format")
 {
 }
 
