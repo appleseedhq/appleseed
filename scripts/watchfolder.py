@@ -45,7 +45,7 @@ import xml.dom.minidom as xml
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "1.11"
+VERSION = "1.12"
 RENDERS_DIR = "_renders"
 ARCHIVE_DIR = "_archives"
 LOGS_DIR = "_logs"
@@ -233,7 +233,13 @@ def print_appleseed_version(args, log):
         p = subprocess.Popen([args.tool_path, "--version"], stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
         version_string = p.communicate()[1].split(os.linesep, 1)[0]
+
+        if p.returncode != 0:
+            log.error("failed to query {0} version (return code: {1}).".format(args.tool_path, p.returncode))
+            sys.exit(1)
+
         log.info("running {0}.".format(version_string))
+
     except OSError:
         log.error("failed to query {0} version.".format(args.tool_path))
         sys.exit(1)
