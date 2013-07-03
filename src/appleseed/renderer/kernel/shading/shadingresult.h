@@ -59,17 +59,18 @@ class ShadingResult
     // false if the color, alpha or any AOV contains NaN or negative values.
     bool is_valid_linear_rgb() const;
 
-    // Set the shading result to transparent black in linear RGBA.
+    // Set the main color and all AOVs to transparent black in linear RGBA.
     void set_to_transparent_black();
 
-    // Set the shading result to solid pink in linear RGBA (used for debugging).
+    // Set the main color to solid pink in linear RGBA (used for debugging).
+    // All AOVs are set to black.
     void set_to_solid_pink();
 
-    // Set the shading result to a given fully opaque linear RGB value.
+    // Set the main color to a given fully opaque linear RGB value.
     // All AOVs are set to black.
     void set_to_linear_rgb(const foundation::Color3f& linear_rgb);
 
-    // Set the shading result to a given linear RGBA value.
+    // Set the main color to a given linear RGBA value.
     // All AOVs are set to black.
     void set_to_linear_rgba(const foundation::Color4f& linear_rgba);
 
