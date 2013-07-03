@@ -45,7 +45,7 @@ import xml.dom.minidom as xml
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "1.12"
+VERSION = "1.13"
 RENDERS_DIR = "_renders"
 ARCHIVE_DIR = "_archives"
 LOGS_DIR = "_logs"
@@ -430,6 +430,9 @@ def main():
     if args.user_name is None:
         args.user_name = socket.gethostname()
 
+    # Clean up the user name.
+    args.user_name = cleanup_user_name(args.user_name)
+
     # Start the log.
     log = Log(os.path.join(args.directory, LOGS_DIR, args.user_name + ".log"))
     log.info("--- starting logging ---")
@@ -438,8 +441,7 @@ def main():
     log.info("running watchfolder.py version {0}.".format(VERSION))
     print_appleseed_version(args, log)
 
-    # Clean up and print user name.
-    args.user_name = cleanup_user_name(args.user_name)
+    # Print the user name.
     log.info("user name is {0}.".format(args.user_name))
 
     # Disable Windows Error Reporting on Windows.
