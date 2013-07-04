@@ -593,7 +593,7 @@ void Frame::extract_parameters()
     {
         const double radius = m_params.get_optional<double>("filter_size", 2.0);
 
-        const char* DefaultFilterString = "mitchell";
+        const char* DefaultFilterString = "gaussian";
         const string filter_str = m_params.get_optional<string>("filter", DefaultFilterString);
         if (filter_str == "box")
             impl->m_filter.reset(new BoxFilter2<double>(radius, radius));
@@ -616,7 +616,7 @@ void Frame::extract_parameters()
                 filter_str.c_str(),
                 "filter",
                 DefaultFilterString);
-            impl->m_filter.reset(new MitchellFilter2<double>(radius, radius, 1.0/3, 1.0/3));
+            impl->m_filter.reset(new GaussianFilter2<double>(radius, radius, 8.0));
         }
     }
 
@@ -787,7 +787,7 @@ DictionaryArray FrameFactory::get_widget_definitions()
                     .insert("Catmull-Rom Spline", "catmull")
                     .insert("Lanczos", "lanczos"))
             .insert("use", "optional")
-            .insert("default", "mitchell"));
+            .insert("default", "gaussian"));
 
     definitions.push_back(
         Dictionary()
