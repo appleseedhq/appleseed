@@ -129,6 +129,9 @@ MainWindow::MainWindow(QWidget* parent)
 
 MainWindow::~MainWindow()
 {
+    // Delete the project explorer before its tree widget.
+    m_project_explorer.reset();
+
     delete m_ui;
 }
 

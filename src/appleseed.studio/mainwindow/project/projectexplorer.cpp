@@ -103,6 +103,11 @@ ProjectExplorer::ProjectExplorer(
         this, SIGNAL(signal_frame_modified()));
 }
 
+ProjectExplorer::~ProjectExplorer()
+{
+    m_tree_widget->clear();
+}
+
 namespace
 {
     bool do_filter_items(QTreeWidgetItem* item, const QRegExp& regexp)

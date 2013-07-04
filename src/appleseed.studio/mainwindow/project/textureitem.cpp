@@ -133,7 +133,6 @@ void TextureItem::slot_delete()
 
     // Remove and delete the texture item.
     delete m_project_builder.get_item_registry().get_item(texture_uid);
-    m_project_builder.get_item_registry().remove(texture_uid);
 
     // At this point 'this' no longer exists.
 }

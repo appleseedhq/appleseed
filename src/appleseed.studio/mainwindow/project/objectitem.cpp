@@ -137,7 +137,6 @@ void ObjectItem::slot_delete()
 
     // Remove and delete the object item.
     delete m_project_builder.get_item_registry().get_item(object_uid);
-    m_project_builder.get_item_registry().remove(object_uid);
 
     // At this point 'this' no longer exists.
 }

@@ -41,6 +41,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/uid.h"
 
 // Qt headers.
 #include <QObject>
@@ -64,6 +65,8 @@ class EntityItem
         CollectionItem*     collection_item,
         ProjectBuilder&     project_builder);
 
+    virtual ~EntityItem();
+
     void set_fixed_position(const bool fixed);
     bool is_fixed_position() const;
 
@@ -82,6 +85,7 @@ class EntityItem
   private:
     friend class EntityCreatorBase;
 
+    foundation::UniqueID    m_entity_uid;
     bool                    m_fixed_position;
 };
 
@@ -100,8 +104,16 @@ EntityItem<Entity, ParentEntity, CollectionItem>::EntityItem(
   , m_parent(parent)
   , m_collection_item(collection_item)
   , m_project_builder(project_builder)
+  , m_entity_uid(entity->get_uid())
   , m_fixed_position(false)
 {
+    m_project_builder.get_item_registry().insert(m_entity_uid, this);
+}
+
+template <typename Entity, typename ParentEntity, typename CollectionItem>
+EntityItem<Entity, ParentEntity, CollectionItem>::~EntityItem()
+{
+    m_project_builder.get_item_registry().remove(m_entity_uid);
 }
 
 template <typename Entity, typename ParentEntity, typename CollectionItem>
@@ -128,7 +140,7 @@ void EntityItem<Entity, ParentEntity, CollectionItem>::slot_edit_accepted(founda
 template <typename Entity, typename ParentEntity, typename CollectionItem>
 void EntityItem<Entity, ParentEntity, CollectionItem>::edit(const foundation::Dictionary& values)
 {
-    m_project_builder.get_item_registry().remove(EntityItemBaseType::m_entity->get_uid());
+    m_project_builder.get_item_registry().remove(m_entity_uid);
 
     const std::string old_entity_name = EntityItemBaseType::m_entity->get_name();
 
@@ -140,14 +152,17 @@ void EntityItem<Entity, ParentEntity, CollectionItem>::edit(const foundation::Di
 
     const std::string new_entity_name = EntityItemBaseType::m_entity->get_name();
 
+    m_entity_uid = EntityItemBaseType::m_entity->get_uid();
+    m_project_builder.get_item_registry().insert(m_entity_uid, this);
+
     EntityItemBaseType::update();
 
+    // Move the item to its sorted position.
     if (!m_fixed_position && old_entity_name != new_entity_name)
         move_to_sorted_position(this);
 
+    // Close the editor.
     qobject_cast<QWidget*>(QObject::sender())->close();
-
-    m_project_builder.get_item_registry().insert(EntityItemBaseType::m_entity->get_uid(), this);
 }
 
 template <typename Entity, typename ParentEntity, typename CollectionItem>
