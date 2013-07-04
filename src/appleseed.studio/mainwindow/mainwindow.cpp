@@ -132,18 +132,59 @@ MainWindow::~MainWindow()
     delete m_ui;
 }
 
-void MainWindow::open_and_render_project(const QString& filepath, bool final)
+void MainWindow::open_project(const QString& filepath)
 {
-    if(final)
+    set_project_widgets_enabled(false);
+    set_rendering_widgets_enabled(false, false);
+
+    const filesystem::path path(filepath.toStdString());
+
+    m_settings.insert_path(
+        LAST_DIRECTORY_SETTINGS_KEY,
+        path.parent_path().string());
+
+    m_project_manager.load_project(filepath.toAscii().constData());
+}
+
+namespace
+{
+    class CustomSignalMapper
+      : public QObject
     {
-        connect(&m_project_manager, SIGNAL(signal_load_project_async_complete(const QString&, const bool)),
-                this, SLOT(slot_start_final_rendering_once(const QString&, const bool)));
-    }
-    else
-    {
-        connect(&m_project_manager, SIGNAL(signal_load_project_async_complete(const QString&, const bool)),
-                this, SLOT(slot_start_interactive_rendering_once(const QString&, const bool)));
-    }
+        Q_OBJECT
+
+      public:
+        CustomSignalMapper(QObject* parent, const QString& configuration)
+          : QObject(parent)
+          , m_configuration(configuration)
+        {
+        }
+
+      signals:
+        void mapped(const QString& filepath, const QString& config, const bool success);
+
+      public slots:
+        void map(const QString& filepath, const bool success)
+        {
+            emit mapped(filepath, m_configuration, success);
+        }
+
+      private:
+        const QString m_configuration;
+    };
+}
+
+void MainWindow::open_and_render_project(const QString& filepath, const QString& configuration)
+{
+    CustomSignalMapper* mapper = new CustomSignalMapper(this, configuration);
+
+    connect(
+        &m_project_manager, SIGNAL(signal_load_project_async_complete(const QString&, const bool)),
+        mapper, SLOT(map(const QString&, const bool)));
+
+    connect(
+        mapper, SIGNAL(mapped(const QString&, const QString&, const bool)),
+        this, SLOT(slot_start_rendering_once(const QString&, const QString&, const bool)));
 
     open_project(filepath);
 }
@@ -541,20 +582,6 @@ namespace
         msgbox.setStandardButtons(QMessageBox::Ok);
         msgbox.exec();
     }
-}
-
-void MainWindow::open_project(const QString& filepath)
-{
-    set_project_widgets_enabled(false);
-    set_rendering_widgets_enabled(false, false);
-
-    const filesystem::path path(filepath.toStdString());
-
-    m_settings.insert_path(
-        LAST_DIRECTORY_SETTINGS_KEY,
-        path.parent_path().string());
-
-    m_project_manager.load_project(filepath.toAscii().constData());
 }
 
 bool MainWindow::can_close_project()
@@ -1055,6 +1082,17 @@ void MainWindow::slot_start_final_rendering()
     start_rendering(false);
 }
 
+void MainWindow::slot_start_rendering_once(const QString& filepath, const QString& configuration, const bool successful)
+{
+    sender()->deleteLater();
+
+    if (successful)
+    {
+        const bool interactive = configuration == "interactive";
+        start_rendering(interactive);
+    }
+}
+
 void MainWindow::slot_stop_rendering()
 {
     m_rendering_manager.abort_rendering();
@@ -1253,22 +1291,7 @@ void MainWindow::slot_clear_frame()
         i->second->m_render_widget->clear(Color4f(0.0f));
 }
 
-void MainWindow::slot_start_interactive_rendering_once(const QString& filepath,
-                                                   const bool successful)
-{
-    disconnect(&m_project_manager, SIGNAL(signal_load_project_async_complete(const QString&, bool)),
-               this, SLOT(slot_start_interactive_rendering_once(const QString&, const bool)));
-
-    slot_start_interactive_rendering();
-}
-
-void MainWindow::slot_start_final_rendering_once(const QString& filepath, const bool successful)
-{
-    disconnect(&m_project_manager, SIGNAL(signal_load_project_async_complete(const QSting&, bool)),
-               this, SLOT(slot_start_final_rendering_once(const QString&, const bool)));
-
-    slot_start_final_rendering();
-}
-
 }   // namespace studio
 }   // namespace appleseed
+
+#include "mainwindow/moc_cpp_mainwindow.cxx"

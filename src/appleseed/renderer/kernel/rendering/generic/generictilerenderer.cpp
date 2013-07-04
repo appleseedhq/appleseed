@@ -92,8 +92,7 @@ namespace
             IPixelRendererFactory*      factory,
             const ParamArray&           params,
             const bool                  primary)
-          : m_params(params)
-          , m_pixel_renderer(factory->create(primary))
+          : m_pixel_renderer(factory->create(primary))
         {
             compute_tile_margins(frame, primary);
             compute_pixel_ordering(frame);
@@ -124,14 +123,14 @@ namespace
             const size_t tile_width = tile.get_width();
             const size_t tile_height = tile.get_height();
 
-            // Compute the bounding box in image space of the pixels that need to be rendered.
+            // Compute the image space bounding box of the pixels to render.
+            const AABB2u& crop_window = frame.get_crop_window();
             AABB2u tile_bbox;
             tile_bbox.min.x = tile_origin_x;
             tile_bbox.min.y = tile_origin_y;
             tile_bbox.max.x = tile_origin_x + tile_width - 1;
             tile_bbox.max.y = tile_origin_y + tile_height - 1;
-            if (m_params.m_crop)
-                tile_bbox = AABB2u::intersect(tile_bbox, m_params.m_crop_window);
+            tile_bbox = AABB2u::intersect(tile_bbox, crop_window);
             if (!tile_bbox.is_valid())
                 return;
 
@@ -187,8 +186,8 @@ namespace
 
 #endif
 
-                // If cropping is enabled, skip pixels outside the crop window.
-                if (m_params.m_crop && !m_params.m_crop_window.contains(Vector2u(ix, iy)))
+                // Skip pixels outside the crop window.
+                if (!crop_window.contains(Vector2u(ix, iy)))
                     continue;
 
                 // Render this pixel.
@@ -218,26 +217,6 @@ namespace
         }
 
       protected:
-        struct Parameters
-        {
-            bool    m_crop;
-            AABB2u  m_crop_window;
-
-            explicit Parameters(const ParamArray& params)
-            {
-                // Retrieve crop window parameter.
-                m_crop = params.strings().exist("crop_window");
-                if (m_crop)
-                {
-                    m_crop_window =
-                        params.get_required<AABB2u>(
-                            "crop_window",
-                            AABB2u(Vector2u(0, 0), Vector2u(65535, 65535)));
-                }
-            }
-        };
-
-        const Parameters                    m_params;
         auto_release_ptr<IPixelRenderer>    m_pixel_renderer;
         int                                 m_margin_width;
         int                                 m_margin_height;

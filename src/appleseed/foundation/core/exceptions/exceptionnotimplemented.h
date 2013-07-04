@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_CORE_EXCEPTIONNOTIMPLEMENTED_H
-#define APPLESEED_FOUNDATION_CORE_EXCEPTIONNOTIMPLEMENTED_H
+#ifndef APPLESEED_FOUNDATION_CORE_EXCEPTIONS_EXCEPTIONNOTIMPLEMENTED_H
+#define APPLESEED_FOUNDATION_CORE_EXCEPTIONS_EXCEPTIONNOTIMPLEMENTED_H
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
@@ -44,12 +44,19 @@ class ExceptionNotImplemented
 {
   public:
     // Constructor.
-    ExceptionNotImplemented()
-      : Exception("reached non-implemented code path")
-    {
-    }
+    ExceptionNotImplemented();
 };
+
+
+//
+// ExceptionNotImplemented class implementation.
+//
+
+inline ExceptionNotImplemented::ExceptionNotImplemented()
+  : Exception("reached non-implemented code path")
+{
+}
 
 }       // namespace foundation
 
-#endif  // !APPLESEED_FOUNDATION_CORE_EXCEPTIONNOTIMPLEMENTED_H
+#endif  // !APPLESEED_FOUNDATION_CORE_EXCEPTIONS_EXCEPTIONNOTIMPLEMENTED_H

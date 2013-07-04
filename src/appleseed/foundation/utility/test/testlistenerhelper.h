@@ -30,6 +30,7 @@
 #define APPLESEED_FOUNDATION_UTILITY_TEST_TESTLISTENERHELPER_H
 
 // appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/test/testmessage.h"
 
 // appleseed.main headers.
@@ -57,7 +58,8 @@ class DLLSYMBOL TestListenerHelper
         const char*             file,
         const size_t            line,
         const TestMessage::Type message_type,
-        const char*             format, ...);
+        PRINTF_FMT const char*  format, ...)
+        PRINTF_FMT_ATTR(7, 8);
 };
 
 }       // namespace foundation

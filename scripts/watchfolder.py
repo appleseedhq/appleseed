@@ -32,6 +32,8 @@ import datetime
 import os
 import random
 import shutil
+import socket
+import string
 import subprocess
 import sys
 import time
@@ -43,11 +45,12 @@ import xml.dom.minidom as xml
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "1.8"
+VERSION = "1.13"
 RENDERS_DIR = "_renders"
 ARCHIVE_DIR = "_archives"
 LOGS_DIR = "_logs"
 PAUSE_BETWEEN_CHECKS = 10   # in seconds
+DEFAULT_TOOL_FILENAME = "appleseed.cli.exe" if os.name == "nt" else "appleseed.cli"
 
 
 #--------------------------------------------------------------------------------------------------
@@ -63,6 +66,11 @@ def format_message(severity, msg):
     padded_severity = severity.ljust(7)
     return "\n".join("{0} watch {1} | {2}".format(now, padded_severity, line) \
         for line in msg.splitlines())
+
+VALID_USER_NAME_CHARS = frozenset("%s%s_-" % (string.ascii_letters, string.digits))
+
+def cleanup_user_name(user_name):
+    return "".join(c if c in VALID_USER_NAME_CHARS else '_' for c in user_name)
 
 
 #--------------------------------------------------------------------------------------------------
@@ -225,7 +233,13 @@ def print_appleseed_version(args, log):
         p = subprocess.Popen([args.tool_path, "--version"], stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
         version_string = p.communicate()[1].split(os.linesep, 1)[0]
+
+        if p.returncode != 0:
+            log.error("failed to query {0} version (return code: {1}).".format(args.tool_path, p.returncode))
+            sys.exit(1)
+
         log.info("running {0}.".format(version_string))
+
     except OSError:
         log.error("failed to query {0} version.".format(args.tool_path))
         sys.exit(1)
@@ -389,22 +403,35 @@ def watch(args, log):
 
 def main():
     # Parse the command line.
-    parser = argparse.ArgumentParser(description="watch a directory and render any project file " \
+    parser = argparse.ArgumentParser(description="continuously watch a directory and render any project file " \
                                      "that appears in it.")
-    parser.add_argument("-t", "--tool-path", metavar="tool-path", required=True,
+    parser.add_argument("-t", "--tool-path", metavar="tool-path",
                         help="set the path to the appleseed.cli tool")
     parser.add_argument("-f", "--format", dest="output_format", metavar="FORMAT", default="exr",
                         help="set output format (e.g. png, exr)")
-    parser.add_argument("-u", "--user", dest="user_name", metavar="NAME", default="anonymous",
-                        help="set user name")
+    parser.add_argument("-u", "--user", dest="user_name", metavar="NAME",
+                        help="set user name (by default the host name is used)")
     parser.add_argument("-p", "--parameter", dest="args", metavar="ARG", nargs="*",
                         help="forward additional arguments to appleseed")
     parser.add_argument("directory", help="directory to watch")
     args = parser.parse_args()
 
+    # If no tool path is provided, search for the tool in the same directory as this script.
+    if args.tool_path is None:
+        script_directory = os.path.dirname(os.path.realpath(__file__))
+        args.tool_path = os.path.join(script_directory, DEFAULT_TOOL_FILENAME)
+        print("setting tool path to {0}.".format(args.tool_path))
+
     # If no watch directory is provided, watch the current directory.
     if args.directory is None:
         args.directory = os.getcwd()
+
+    # If no user name is provided, use the host name.
+    if args.user_name is None:
+        args.user_name = socket.gethostname()
+
+    # Clean up the user name.
+    args.user_name = cleanup_user_name(args.user_name)
 
     # Start the log.
     log = Log(os.path.join(args.directory, LOGS_DIR, args.user_name + ".log"))
@@ -413,6 +440,9 @@ def main():
     # Print version information.
     log.info("running watchfolder.py version {0}.".format(VERSION))
     print_appleseed_version(args, log)
+
+    # Print the user name.
+    log.info("user name is {0}.".format(args.user_name))
 
     # Disable Windows Error Reporting on Windows.
     if os.name == "nt":

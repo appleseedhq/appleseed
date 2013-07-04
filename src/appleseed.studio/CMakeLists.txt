@@ -93,9 +93,9 @@ source_group ("help\\about" FILES
 )
 
 set (main_sources
-    main/main.cpp
     main/commandlinehandler.cpp
     main/commandlinehandler.h
+    main/main.cpp
 )
 list (APPEND appleseed.studio_sources
     ${main_sources}

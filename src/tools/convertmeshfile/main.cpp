@@ -294,13 +294,13 @@ int main(int argc, const char* argv[])
         GenericMeshFileReader reader(input_filepath.c_str());
         reader.read(builder);
     }
-    catch (const StringException& e)
-    {
-        LOG_FATAL(logger, "could not read mesh file %s (%s: %s).", input_filepath.c_str(), e.what(), e.string());
-    }
     catch (const exception& e)
     {
-        LOG_FATAL(logger, "could not read mesh file %s (%s).", input_filepath.c_str(), e.what());
+        LOG_FATAL(
+            logger,
+            "could not read mesh file %s (%s).",
+            input_filepath.c_str(),
+            e.what());
     }
 
     // Print a warning message and exit if no mesh were defined in the input file.
@@ -327,13 +327,13 @@ int main(int argc, const char* argv[])
             writer.write(walker);
         }
     }
-    catch (const StringException& e)
-    {
-        LOG_FATAL(logger, "could not read mesh file %s (%s: %s).", output_filepath.c_str(), e.what(), e.string());
-    }
     catch (const exception& e)
     {
-        LOG_FATAL(logger, "could not write mesh file %s (%s).", output_filepath.c_str(), e.what());
+        LOG_FATAL(
+            logger,
+            "could not write mesh file %s (%s).",
+            output_filepath.c_str(),
+            e.what());
     }
 
     return 0;

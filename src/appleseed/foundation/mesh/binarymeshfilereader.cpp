@@ -40,6 +40,7 @@
 
 // Standard headers.
 #include <cstring>
+#include <memory>
 
 using namespace std;
 
@@ -96,23 +97,27 @@ void BinaryMeshFileReader::read(IMeshBuilder& builder)
     uint16 version;
     checked_read(file, version);
 
-    bool compressed;
+    auto_ptr<ReaderAdapter> reader;
+
     switch (version)
     {
-      case 1:                       // original non-compressed version
-        compressed = false;
+      case 1:                       // uncompressed (deprecated)
+        reader.reset(new PassthroughReaderAdapter(file));
         break;
 
-      case 2:                       // LZO-compressed
-        compressed = true;
+      case 2:                       // LZO-compressed (deprecated)
+        reader.reset(new LZOCompressedReaderAdapter(file));
+        break;
+
+      case 3:                       // LZ4-compressed
+        reader.reset(new LZ4CompressedReaderAdapter(file));
         break;
 
       default:                      // unknown format
         throw ExceptionIOError();   // todo: throw better-qualified exception
     }
 
-    CompressedReader reader(file, compressed);
-    read_meshes(reader, builder);
+    read_meshes(*reader.get(), builder);
 }
 
 void BinaryMeshFileReader::read_and_check_signature(BufferedFile& file)
@@ -126,7 +131,7 @@ void BinaryMeshFileReader::read_and_check_signature(BufferedFile& file)
         throw ExceptionIOError();   // todo: throw better-qualified exception
 }
 
-string BinaryMeshFileReader::read_string(CompressedReader& reader)
+string BinaryMeshFileReader::read_string(ReaderAdapter& reader)
 {
     uint16 length;
     checked_read(reader, length);
@@ -138,7 +143,7 @@ string BinaryMeshFileReader::read_string(CompressedReader& reader)
     return s;
 }
 
-void BinaryMeshFileReader::read_meshes(CompressedReader& reader, IMeshBuilder& builder)
+void BinaryMeshFileReader::read_meshes(ReaderAdapter& reader, IMeshBuilder& builder)
 {
     try
     {
@@ -174,7 +179,7 @@ void BinaryMeshFileReader::read_meshes(CompressedReader& reader, IMeshBuilder& b
     }
 }
 
-void BinaryMeshFileReader::read_vertices(CompressedReader& reader, IMeshBuilder& builder)
+void BinaryMeshFileReader::read_vertices(ReaderAdapter& reader, IMeshBuilder& builder)
 {
     uint32 count;
     checked_read(reader, count);
@@ -187,7 +192,7 @@ void BinaryMeshFileReader::read_vertices(CompressedReader& reader, IMeshBuilder&
     }
 }
 
-void BinaryMeshFileReader::read_vertex_normals(CompressedReader& reader, IMeshBuilder& builder)
+void BinaryMeshFileReader::read_vertex_normals(ReaderAdapter& reader, IMeshBuilder& builder)
 {
     uint32 count;
     checked_read(reader, count);
@@ -200,7 +205,7 @@ void BinaryMeshFileReader::read_vertex_normals(CompressedReader& reader, IMeshBu
     }
 }
 
-void BinaryMeshFileReader::read_texture_coordinates(CompressedReader& reader, IMeshBuilder& builder)
+void BinaryMeshFileReader::read_texture_coordinates(ReaderAdapter& reader, IMeshBuilder& builder)
 {
     uint32 count;
     checked_read(reader, count);
@@ -213,7 +218,7 @@ void BinaryMeshFileReader::read_texture_coordinates(CompressedReader& reader, IM
     }
 }
 
-void BinaryMeshFileReader::read_material_slots(CompressedReader& reader, IMeshBuilder& builder)
+void BinaryMeshFileReader::read_material_slots(ReaderAdapter& reader, IMeshBuilder& builder)
 {
     uint16 count;
     checked_read(reader, count);
@@ -225,7 +230,7 @@ void BinaryMeshFileReader::read_material_slots(CompressedReader& reader, IMeshBu
     }
 }
 
-void BinaryMeshFileReader::read_faces(CompressedReader& reader, IMeshBuilder& builder)
+void BinaryMeshFileReader::read_faces(ReaderAdapter& reader, IMeshBuilder& builder)
 {
     uint32 count;
     checked_read(reader, count);
@@ -234,7 +239,7 @@ void BinaryMeshFileReader::read_faces(CompressedReader& reader, IMeshBuilder& bu
         read_face(reader, builder);
 }
 
-void BinaryMeshFileReader::read_face(CompressedReader& reader, IMeshBuilder& builder)
+void BinaryMeshFileReader::read_face(ReaderAdapter& reader, IMeshBuilder& builder)
 {
     uint16 count;
     checked_read(reader, count);

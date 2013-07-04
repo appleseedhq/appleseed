@@ -246,6 +246,7 @@ namespace
                         1,                                  // a single BSDF sample since the path will be extended with a single ray
                         m_params.m_dl_light_sample_count);  // the number of light samples is user-adjustable
                     integrator.sample_bsdf_and_lights_low_variance(
+                        false,                              // never in an indirect lighting situation
                         sampling_context,
                         vertex_radiance,
                         vertex_aovs);

@@ -26,11 +26,12 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_CORE_STRINGEXCEPTION_H
-#define APPLESEED_FOUNDATION_CORE_STRINGEXCEPTION_H
+#ifndef APPLESEED_FOUNDATION_CORE_EXCEPTIONS_STRINGEXCEPTION_H
+#define APPLESEED_FOUNDATION_CORE_EXCEPTIONS_STRINGEXCEPTION_H
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
+#include "foundation/platform/snprintf.h"
 
 namespace foundation
 {
@@ -52,10 +53,9 @@ class StringException
     const char* string() const;
 
   protected:
-    void set_string(const char* s);
+    char m_string[2048];
 
-  private:
-    char m_string[4096];
+    void set_string(const char* s);
 };
 
 
@@ -65,18 +65,21 @@ class StringException
 
 inline StringException::StringException()
 {
-    set_string("n/a");
+    set_string("");
 }
 
 inline StringException::StringException(const char* what)
   : Exception(what)
 {
-    set_string("n/a");
+    set_string("");
 }
 
 inline StringException::StringException(const char* what, const char* s)
-  : Exception(what)
 {
+    char buf[sizeof(m_what) + sizeof(m_string) + 2];
+    portable_snprintf(buf, sizeof(buf), "%s: %s", what, s);
+    set_what(buf);
+
     set_string(s);
 }
 
@@ -92,4 +95,4 @@ inline void StringException::set_string(const char* s)
 
 }       // namespace foundation
 
-#endif  // !APPLESEED_FOUNDATION_CORE_STRINGEXCEPTION_H
+#endif  // !APPLESEED_FOUNDATION_CORE_EXCEPTIONS_STRINGEXCEPTION_H

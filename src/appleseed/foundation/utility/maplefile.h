@@ -31,6 +31,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/platform/compiler.h"
 
 // Standard headers.
 #include <cassert>
@@ -83,7 +84,7 @@ class MapleFile
     ~MapleFile();
 
     // Print an arbitrary string with formatting.
-    void print(const char* format, ...);
+    void print(PRINTF_FMT const char* format, ...) PRINTF_FMT_ATTR(2, 3);
 
     // Issue a restart command.
     void restart();

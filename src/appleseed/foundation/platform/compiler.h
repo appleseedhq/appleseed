@@ -29,11 +29,26 @@
 #ifndef APPLESEED_FOUNDATION_PLATFORM_COMPILER_H
 #define APPLESEED_FOUNDATION_PLATFORM_COMPILER_H
 
+//
+// Quick reminder about Visual Studio versions:
+//
+//   Visual Studio 2012   MSVC++ 11.0   _MSC_VER == 1700
+//   Visual Studio 2010   MSVC++ 10.0   _MSC_VER == 1600
+//   Visual Studio 2008   MSVC++ 9.0    _MSC_VER == 1500
+//   Visual Studio 2005   MSVC++ 8.0    _MSC_VER == 1400
+//   Visual Studio 2003   MSVC++ 7.1    _MSC_VER == 1310
+//
+
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
+
+// Source code annotations are available starting with Visual Studio 2005.
+#if _MSC_VER >= 1400
+#include <sal.h>
+#endif
 
 namespace foundation
 {
@@ -143,20 +158,12 @@ class DLLSYMBOL Compiler
 //
 
 // Visual C++: supported since Visual Studio 2010.
-#if defined _MSC_VER
-    #if _MSC_VER >= 1600
-        #define OVERRIDE override
-    #else
-        #define OVERRIDE
-    #endif
+#if _MSC_VER >= 1600
+    #define OVERRIDE override
 
 // gcc: supported since gcc 4.7.
-#elif defined __GNUC__
-    #if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7)
-        #define OVERRIDE override
-    #else
-        #define OVERRIDE
-    #endif
+#elif __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7)
+    #define OVERRIDE override
 
 // Other compilers: the OVERRIDE qualifier has no effect.
 #else
@@ -193,6 +200,32 @@ class DLLSYMBOL Compiler
 #ifndef va_copy
 #define va_copy(dst, src) ((dst) = (src))
 #endif
+#endif
+
+
+//
+// Source code annotations.
+//
+
+// Visual C++: Visual Studio 2008+ annotations.
+#if _MSC_VER >= 1500
+    #define PRINTF_FMT _Printf_format_string_
+    #define PRINTF_FMT_ATTR(m, n)
+
+// Visual C++: Visual Studio 2005 annotations.
+#elif _MSC_VER >= 1400
+    #define PRINTF_FMT __format_string
+    #define PRINTF_FMT_ATTR(m, n)
+
+// gcc.
+#elif defined __GNUC__
+    #define PRINTF_FMT
+    #define PRINTF_FMT_ATTR(m, n) __attribute__((format(printf, m, n)))
+
+// Other compilers: annotations have no effect.
+#else
+    #define PRINTF_FMT
+    #define PRINTF_FMT_ATTR(m, n)
 #endif
 
 }       // namespace foundation

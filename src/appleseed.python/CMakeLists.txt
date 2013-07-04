@@ -1,4 +1,3 @@
-
 #
 # This source file is part of appleseed.
 # Visit http://appleseedhq.net/ for additional information and resources.
@@ -33,16 +32,17 @@
 find_package (PythonLibs REQUIRED)
 string (SUBSTRING "${PYTHONLIBS_VERSION_STRING}" 0 1 PYTHON_MAJOR_VERSION)
 
+
 #--------------------------------------------------------------------------------------------------
 # Boost libraries.
 #--------------------------------------------------------------------------------------------------
 
-#PYTHONLIBS_VERSION_STRING
-if( PYTHON_MAJOR_VERSION STREQUAL "3")
+if (PYTHON_MAJOR_VERSION STREQUAL "3")
     find_package (Boost 1.46 REQUIRED ${BOOST_NEEDED_LIBS} python3)
-else()
+else ()
     find_package (Boost 1.46 REQUIRED ${BOOST_NEEDED_LIBS} python)
-endif()
+endif ()
+
 
 #--------------------------------------------------------------------------------------------------
 # Source files.

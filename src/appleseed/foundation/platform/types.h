@@ -92,6 +92,17 @@ namespace foundation
 // Format string to print size_t values using std::printf() variants.
 //
 
-#define FMT_SIZE_T "%lu"
+// Visual C++.
+#if defined _MSC_VER
+    #define FMT_SIZE_T "%Iu"
+
+// gcc.
+#elif defined __GNUC__
+    #define FMT_SIZE_T "%zu"
+
+// Other compilers: choose something sensible.
+#else
+    #define FMT_SIZE_T "%lu"
+#endif
 
 #endif  // !APPLESEED_FOUNDATION_PLATFORM_TYPES_H

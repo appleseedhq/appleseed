@@ -43,7 +43,20 @@ namespace foundation
 class ExceptionAssertionFailure
   : public Exception
 {
+  public:
+    // Constructor.
+    ExceptionAssertionFailure();
 };
+
+
+//
+// ExceptionAssertionFailure class implementation.
+//
+
+inline ExceptionAssertionFailure::ExceptionAssertionFailure()
+  : Exception("assertion failure")
+{
+}
 
 }       // namespace foundation
 

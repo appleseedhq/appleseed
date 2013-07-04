@@ -40,6 +40,7 @@
 #include "foundation/image/image.h"
 #include "foundation/image/pixel.h"
 #include "foundation/image/tile.h"
+#include "foundation/math/aabb.h"
 #include "foundation/math/scalar.h"
 #include "foundation/platform/thread.h"
 
@@ -185,6 +186,7 @@ namespace
         const FilteredTile&     level,
         const size_t            origin_x,
         const size_t            origin_y,
+        const AABB2u&           crop_window,
         const bool              undo_premultiplied_alpha)
     {
         const size_t tile_width = tile.get_width();
@@ -198,17 +200,27 @@ namespace
             {
                 Color4f color;
 
-                level.get_pixel(
-                    (origin_x + x) * level_width / image_width,
-                    (origin_y + y) * level_height / image_height,
-                    &color[0]);
+                const size_t ix = origin_x + x;
+                const size_t iy = origin_y + y;
 
-                if (undo_premultiplied_alpha)
+                if (crop_window.contains(Vector2u(ix, iy)))
                 {
-                    const float rcp_alpha = color[3] == 0.0f ? 0.0f : 1.0f / color[3];
-                    color[0] *= rcp_alpha;
-                    color[1] *= rcp_alpha;
-                    color[2] *= rcp_alpha;
+                    level.get_pixel(
+                        ix * level_width / image_width,
+                        iy * level_height / image_height,
+                        &color[0]);
+
+                    if (undo_premultiplied_alpha)
+                    {
+                        const float rcp_alpha = color[3] == 0.0f ? 0.0f : 1.0f / color[3];
+                        color[0] *= rcp_alpha;
+                        color[1] *= rcp_alpha;
+                        color[2] *= rcp_alpha;
+                    }
+                }
+                else
+                {
+                    color.set(0.0f);
                 }
 
                 tile.set_pixel(x, y, color);
@@ -228,8 +240,10 @@ void LocalSampleAccumulationBuffer::develop_to_frame(Frame& frame)
     assert(frame_props.m_canvas_height == m_levels[0]->get_height());
     assert(frame_props.m_channel_count == 4);
 
-    const FilteredTile& level = find_display_level();
+    const AABB2u& crop_window = frame.get_crop_window();
     const bool undo_premultiplied_alpha = !frame.is_premultiplied_alpha();
+
+    const FilteredTile& level = find_display_level();
 
     for (size_t ty = 0; ty < frame_props.m_tile_count_y; ++ty)
     {
@@ -246,6 +260,7 @@ void LocalSampleAccumulationBuffer::develop_to_frame(Frame& frame)
                 frame_props.m_canvas_height,
                 level,
                 origin_x, origin_y,
+                crop_window,
                 undo_premultiplied_alpha);
         }
     }

@@ -91,7 +91,8 @@ class MainWindow
     // Destructor.
     ~MainWindow();
 
-    void open_and_render_project(const QString& filepath, bool final);
+    void open_project(const QString& filepath);
+    void open_and_render_project(const QString& filepath, const QString& configuration);
 
   public slots:
     void slot_recreate_render_widgets();
@@ -159,7 +160,6 @@ class MainWindow
 
     renderer::ParamArray get_project_params(const char* configuration_name) const;
 
-    void open_project(const QString& filepath);
     bool can_close_project();
     void on_project_change();
 
@@ -197,6 +197,10 @@ class MainWindow
 
     void slot_start_interactive_rendering();
     void slot_start_final_rendering();
+    void slot_start_rendering_once(
+        const QString&  filepath,
+        const QString&  configuration,
+        const bool      successful);
     void slot_stop_rendering();
     void slot_rendering_end();
 
@@ -217,9 +221,6 @@ class MainWindow
     void slot_save_frame();
     void slot_save_all_aovs();
     void slot_clear_frame();
-
-    void slot_start_interactive_rendering_once(const QString& filepath, const bool successful);
-    void slot_start_final_rendering_once(const QString& filepath, const bool successful);
 };
 
 }       // namespace studio

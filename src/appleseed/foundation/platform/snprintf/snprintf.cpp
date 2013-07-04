@@ -712,6 +712,7 @@ portable_vsnprintf(char *str, size_t size, const char *format, va_list args)
 				ch = *format++;
 				break;
 			case 'z':
+			case 'I':				/* Support Visual Studio's %I format. */
 				cflags = PRINT_C_SIZE;
 				ch = *format++;
 				break;

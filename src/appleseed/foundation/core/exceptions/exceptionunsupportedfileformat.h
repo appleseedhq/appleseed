@@ -44,11 +44,18 @@ class ExceptionUnsupportedFileFormat
 {
   public:
     // Constructor.
-    explicit ExceptionUnsupportedFileFormat(const char* filename)
-      : StringException("could not determine the format of this file, or this format is unsupported", filename)
-    {
-    }
+    explicit ExceptionUnsupportedFileFormat(const char* filename);
 };
+
+
+//
+// ExceptionUnsupportedFileFormat class implementation.
+//
+
+inline ExceptionUnsupportedFileFormat::ExceptionUnsupportedFileFormat(const char* filename)
+  : StringException("could not determine the format of this file, or this format is unsupported", filename)
+{
+}
 
 }       // namespace foundation
 

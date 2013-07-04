@@ -40,8 +40,8 @@
 
 // Forward declarations.
 namespace foundation    { class BufferedFile; }
-namespace foundation    { class CompressedReader; }
 namespace foundation    { class IMeshBuilder; }
+namespace foundation    { class ReaderAdapter; }
 
 namespace foundation
 {
@@ -68,14 +68,14 @@ class BinaryMeshFileReader
 
     static void read_and_check_signature(BufferedFile& file);
 
-    static std::string read_string(CompressedReader& reader);
-    void read_meshes(CompressedReader& reader, IMeshBuilder& builder);
-    void read_vertices(CompressedReader& reader, IMeshBuilder& builder);
-    void read_vertex_normals(CompressedReader& reader, IMeshBuilder& builder);
-    void read_texture_coordinates(CompressedReader& reader, IMeshBuilder& builder);
-    void read_material_slots(CompressedReader& reader, IMeshBuilder& builder);
-    void read_faces(CompressedReader& reader, IMeshBuilder& builder);
-    void read_face(CompressedReader& reader, IMeshBuilder& builder);
+    static std::string read_string(ReaderAdapter& reader);
+    void read_meshes(ReaderAdapter& reader, IMeshBuilder& builder);
+    void read_vertices(ReaderAdapter& reader, IMeshBuilder& builder);
+    void read_vertex_normals(ReaderAdapter& reader, IMeshBuilder& builder);
+    void read_texture_coordinates(ReaderAdapter& reader, IMeshBuilder& builder);
+    void read_material_slots(ReaderAdapter& reader, IMeshBuilder& builder);
+    void read_faces(ReaderAdapter& reader, IMeshBuilder& builder);
+    void read_face(ReaderAdapter& reader, IMeshBuilder& builder);
 };
 
 }       // namespace foundation

@@ -56,6 +56,16 @@ class SHAREDDLL CommandLineHandlerBase
     // Destructor.
     virtual ~CommandLineHandlerBase();
 
+    // Add all the default command line options.
+    void add_default_options();
+
+    // Add individual default command line options.
+    void add_help_option();
+    void add_version_option();
+    void add_system_option();
+    void add_message_coloring_option();
+    void add_display_options_option();
+
     // Parse the application's command line.
     // This method may reconfigure the logger (to enable message coloring, for instance).
     virtual void parse(

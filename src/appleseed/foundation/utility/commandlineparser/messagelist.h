@@ -31,6 +31,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/log.h"
 
 // appleseed.main headers.
@@ -56,7 +57,8 @@ class DLLSYMBOL MessageList
     // Add a message to the list.
     void add(
         const LogMessage::Category  category,
-        const char*                 format, ...);
+        PRINTF_FMT const char*      format, ...)
+        PRINTF_FMT_ATTR(3, 4);
 
     // Print the messages.
     void print(Logger& logger) const;

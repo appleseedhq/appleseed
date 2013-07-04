@@ -34,6 +34,7 @@
 #include "foundation/math/quaternion.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/log.h"
 
 // Standard headers.
@@ -186,7 +187,7 @@ bool AnimationPath::load(const char* filename, const Format format)
 
     LOG_INFO(
         m_logger,
-        "read %d keyframe%s from animation path file %s.",
+        "read " FMT_SIZE_T " keyframe%s from animation path file %s.",
         m_keyframes.size(),
         m_keyframes.size() > 1 ? "s" : "",
         filename);

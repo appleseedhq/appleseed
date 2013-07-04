@@ -30,7 +30,6 @@
 #include "logger.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
 #include "foundation/platform/snprintf.h"
 #include "foundation/platform/thread.h"
 #include "foundation/utility/log/ilogtarget.h"
@@ -329,7 +328,7 @@ void Logger::write(
     const LogMessage::Category  category,
     const char*                 file,
     const size_t                line,
-    const char*                 format, ...)
+    PRINTF_FMT const char*      format, ...)
 {
     mutex::scoped_lock lock(impl->m_mutex);
 

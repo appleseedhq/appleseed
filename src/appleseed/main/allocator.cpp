@@ -72,6 +72,10 @@
 #include <string>
 #include <utility>
 
+#if _MSC_VER >= 1500
+#include <sal.h>
+#endif
+
 using namespace boost;
 using namespace foundation;
 using namespace std;
@@ -492,24 +496,36 @@ namespace
     }
 }
 
+#if _MSC_VER >= 1500
+_Ret_notnull_ _Post_writable_byte_size_(size)
+#endif
 void* operator new(size_t size)
   throw(bad_alloc)
 {
     return new_impl(size);
 }
 
+#if _MSC_VER >= 1500
+_Ret_notnull_ _Post_writable_byte_size_(size)
+#endif
 void* operator new[](size_t size)
   throw(bad_alloc)
 {
     return new_impl(size);
 }
 
+#if _MSC_VER >= 1500
+_Ret_maybenull_ _Post_writable_byte_size_(size)
+#endif
 void* operator new(size_t size, const nothrow_t&)
   throw()
 {
     return new_impl(size);
 }
 
+#if _MSC_VER >= 1500
+_Ret_maybenull_ _Post_writable_byte_size_(size)
+#endif
 void* operator new[](size_t size, const nothrow_t&)
   throw()
 {

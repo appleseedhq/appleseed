@@ -56,6 +56,9 @@
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/string.h"
 
+// Standard headers.
+#include <exception>
+
 using namespace foundation;
 using namespace std;
 
@@ -678,7 +681,7 @@ void InputBinder::bind_texture_instance_to_input(
     catch (const exception& e)
     {
         RENDERER_LOG_ERROR(
-            "while defining %s \"%s\", while binding \"%s\" to parameter \"%s\": %s.",
+            "while defining %s \"%s\", while binding \"%s\" to parameter \"%s\" (%s).",
             entity_type,
             entity_name,
             param_value,

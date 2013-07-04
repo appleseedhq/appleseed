@@ -59,9 +59,9 @@ class BinaryMeshFileWriter
     virtual void write(const IMeshWalker& walker) OVERRIDE;
 
   private:
-    const std::string   m_filename;
-    BufferedFile        m_file;
-    CompressedWriter    m_writer;
+    const std::string           m_filename;
+    BufferedFile                m_file;
+    LZ4CompressedWriterAdapter  m_writer;
 
     void write_signature();
     void write_version();

@@ -31,6 +31,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/log/logmessage.h"
 
 // appleseed.main headers.
@@ -98,7 +99,8 @@ class DLLSYMBOL Logger
         const LogMessage::Category  category,
         const char*                 file,
         const size_t                line,
-        const char*                 format, ...);
+        PRINTF_FMT const char*      format, ...)
+        PRINTF_FMT_ATTR(5, 6);
 
   private:
     struct Impl;

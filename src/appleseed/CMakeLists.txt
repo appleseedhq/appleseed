@@ -592,6 +592,8 @@ set (foundation_utility_log_sources
     foundation/utility/log/logmessage.h
     foundation/utility/log/openfilelogtarget.cpp
     foundation/utility/log/openfilelogtarget.h
+    foundation/utility/log/stringlogtarget.cpp
+    foundation/utility/log/stringlogtarget.h
 )
 list (APPEND appleseed_sources
     ${foundation_utility_log_sources}

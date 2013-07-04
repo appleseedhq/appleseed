@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/tessellation/statictessellation.h"
+#include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/object/iregion.h"
@@ -177,7 +178,8 @@ void LightSampler::collect_non_physical_lights(
 
         // Insert the light into the CDF.
         // todo: compute importance.
-        const double importance = 1.0;
+        double importance = 1.0;
+        importance *= light.get_importance_multiplier();
         m_non_physical_lights_cdf.insert(light_index, importance);
     }
 }
@@ -328,7 +330,8 @@ void LightSampler::collect_emitting_triangles(
                     m_emitting_triangles.push_back(emitting_triangle);
 
                     // Insert the light-emitting triangle into the CDF.
-                    const double importance = m_params.m_importance_sampling ? area : 1.0;
+                    double importance = m_params.m_importance_sampling ? area : 1.0;
+                    importance *= edf->get_importance_multiplier();
                     m_emitting_triangles_cdf.insert(emitting_triangle_index, importance);
 
                     // Keep track of the total area of the light-emitting triangles.

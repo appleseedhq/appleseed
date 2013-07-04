@@ -48,6 +48,8 @@ namespace maketiledexr {
 CommandLineHandler::CommandLineHandler()
   : CommandLineHandlerBase("maketiledexr")
 {
+    add_default_options();
+
     m_progress_messages.add_name("--progress");
     m_progress_messages.add_name("-p");
     m_progress_messages.set_description("print progress messages");

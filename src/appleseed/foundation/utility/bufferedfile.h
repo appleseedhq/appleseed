@@ -30,6 +30,7 @@
 #define APPLESEED_FOUNDATION_UTILITY_BUFFEREDFILE_H
 
 // appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
 
 // appleseed.main headers.
@@ -202,66 +203,185 @@ class DLLSYMBOL BufferedFile
 
 
 //
-// Wrappers providing data compression on top of foundation::BufferedFile.
+// Base classes for foundation::BufferedFile adapters.
 //
 
-class CompressedWriter
+class WriterAdapter
 {
   public:
-    // Default compression buffer size, in bytes.
-    enum
-    {
-        DefaultBufferSize = 64 * 1024
-    };
+    virtual ~WriterAdapter() {}
 
-    CompressedWriter(
-        BufferedFile&       file,
-        const size_t        buffer_size = DefaultBufferSize);
-
-    ~CompressedWriter();
+    virtual size_t write(
+        const void*         inbuf,
+        const size_t        size) = 0;
 
     template <typename T>
     size_t write(const T& object);
+};
 
-    size_t write(
+class ReaderAdapter
+{
+  public:
+    virtual ~ReaderAdapter() {}
+
+    virtual size_t read(
+        void*               outbuf,
+        const size_t        size) = 0;
+
+    template <typename T>
+    size_t read(T& object);
+};
+
+
+//
+// Passthrough adapters.
+//
+
+class PassthroughWriterAdapter
+  : public WriterAdapter
+{
+  public:
+    explicit PassthroughWriterAdapter(BufferedFile& file);
+
+    virtual size_t write(
         const void*         inbuf,
-        const size_t        size);
+        const size_t        size) OVERRIDE;
 
   private:
+    BufferedFile&           m_file;
+};
+
+class PassthroughReaderAdapter
+  : public ReaderAdapter
+{
+  public:
+    explicit PassthroughReaderAdapter(BufferedFile& file);
+
+    virtual size_t read(
+        void*               outbuf,
+        const size_t        size) OVERRIDE;
+
+  private:
+    BufferedFile&           m_file;
+};
+
+
+//
+// Base classes for adapters providing data compression on top of foundation::BufferedFile.
+//
+
+class CompressedWriterAdapter
+  : public WriterAdapter
+{
+  public:
+    CompressedWriterAdapter(
+        BufferedFile&       file,
+        const size_t        buffer_size = 64 * 1024);   // compression buffer size, in bytes
+
+    virtual ~CompressedWriterAdapter();
+
+    virtual size_t write(
+        const void*         inbuf,
+        const size_t        size) OVERRIDE;
+
+  protected:
     BufferedFile&           m_file;
     const size_t            m_buffer_size;
     size_t                  m_buffer_index;
     std::vector<uint8>      m_buffer;
-    std::vector<uint8>      m_compressed_buffer;
-    std::vector<uint8>      m_working_memory;
 
-    void flush_buffer();
+    virtual void flush_buffer() = 0;
 };
 
-class CompressedReader
+class CompressedReaderAdapter
+  : public ReaderAdapter
 {
   public:
-    CompressedReader(
-        BufferedFile&       file,
-        const bool          is_compressed = true);
+    explicit CompressedReaderAdapter(BufferedFile& file);
 
-    template <typename T>
-    size_t read(T& object);
-
-    size_t read(
+    virtual size_t read(
         void*               outbuf,
-        const size_t        size);
+        const size_t        size) OVERRIDE;
 
-  private:
+  protected:
     BufferedFile&           m_file;
-    const bool              m_is_compressed;
     size_t                  m_buffer_index;
     size_t                  m_buffer_end;
     std::vector<uint8>      m_buffer;
-    std::vector<uint8>      m_compressed_buffer;
-    std::vector<uint8>      m_working_memory;
 
-    bool fill_buffer();
+    virtual bool fill_buffer() = 0;
+};
+
+
+//
+// LZO compression adapters.
+//
+
+class LZOCompressedWriterAdapter
+  : public CompressedWriterAdapter
+{
+  public:
+    explicit LZOCompressedWriterAdapter(BufferedFile& file);
+
+    LZOCompressedWriterAdapter(
+        BufferedFile&       file,
+        const size_t        buffer_size);               // compression buffer size, in bytes
+
+    virtual ~LZOCompressedWriterAdapter();
+
+  private:
+    std::vector<uint8>      m_working_memory;
+    std::vector<uint8>      m_compressed_buffer;
+
+    virtual void flush_buffer() OVERRIDE;
+};
+
+class LZOCompressedReaderAdapter
+  : public CompressedReaderAdapter
+{
+  public:
+    explicit LZOCompressedReaderAdapter(BufferedFile& file);
+
+  private:
+    std::vector<uint8>      m_working_memory;
+    std::vector<uint8>      m_compressed_buffer;
+
+    virtual bool fill_buffer() OVERRIDE;
+};
+
+
+//
+// LZ4 compression adapters.
+//
+
+class LZ4CompressedWriterAdapter
+  : public CompressedWriterAdapter
+{
+  public:
+    explicit LZ4CompressedWriterAdapter(BufferedFile& file);
+
+    LZ4CompressedWriterAdapter(
+        BufferedFile&       file,
+        const size_t        buffer_size);               // compression buffer size, in bytes
+
+    virtual ~LZ4CompressedWriterAdapter();
+
+  private:
+    std::vector<uint8>      m_compressed_buffer;
+
+    virtual void flush_buffer() OVERRIDE;
+};
+
+class LZ4CompressedReaderAdapter
+  : public CompressedReaderAdapter
+{
+  public:
+    explicit LZ4CompressedReaderAdapter(BufferedFile& file);
+
+  private:
+    std::vector<uint8>      m_compressed_buffer;
+
+    virtual bool fill_buffer() OVERRIDE;
 };
 
 
@@ -366,6 +486,62 @@ inline void BufferedFile::invalidate_buffer()
 
     m_buffer_end = 0;
     m_buffer_index = 0;
+}
+
+
+//
+// WriterAdapter class implementation.
+//
+
+template <typename T>
+inline size_t WriterAdapter::write(const T& object)
+{
+    return write(&object, sizeof(T));
+}
+
+
+//
+// ReaderAdapter class implementation.
+//
+
+template <typename T>
+inline size_t ReaderAdapter::read(T& object)
+{
+    return read(&object, sizeof(T));
+}
+
+
+//
+// PassthroughWriterAdapter class implementation.
+//
+
+inline PassthroughWriterAdapter::PassthroughWriterAdapter(BufferedFile& file)
+  : m_file(file)
+{
+}
+
+inline size_t PassthroughWriterAdapter::write(
+    const void*         inbuf,
+    const size_t        size)
+{
+    return m_file.write(inbuf, size);
+}
+
+
+//
+// PassthroughReaderAdapter class implementation.
+//
+
+inline PassthroughReaderAdapter::PassthroughReaderAdapter(BufferedFile& file)
+  : m_file(file)
+{
+}
+
+inline size_t PassthroughReaderAdapter::read(
+    void*               outbuf,
+    const size_t        size)
+{
+    return m_file.read(outbuf, size);
 }
 
 }       // namespace foundation

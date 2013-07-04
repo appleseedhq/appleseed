@@ -181,6 +181,8 @@ IntersectionFilter::Bitmap* IntersectionFilter::create_alpha_mask(
     const Source*           alpha_map,
     TextureCache&           texture_cache)
 {
+    assert(alpha_map);
+
     // Compute the dimensions of the alpha mask.
     size_t width, height;
     if (dynamic_cast<const TextureSource*>(alpha_map))

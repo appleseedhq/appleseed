@@ -26,8 +26,11 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_CORE_EXCEPTION_H
-#define APPLESEED_FOUNDATION_CORE_EXCEPTION_H
+#ifndef APPLESEED_FOUNDATION_CORE_EXCEPTIONS_EXCEPTION_H
+#define APPLESEED_FOUNDATION_CORE_EXCEPTIONS_EXCEPTION_H
+
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 
 // Standard headers.
 #include <cassert>
@@ -51,7 +54,7 @@ class Exception
     explicit Exception(const char* what);
 
     // Returns a generic, implementation-defined description of the exception.
-    virtual const char* what() const throw();
+    virtual const char* what() const throw() OVERRIDE;
 
   protected:
     // Copy a string to another, ensuring that no overflow occurs and that the
@@ -61,10 +64,9 @@ class Exception
         const char*     source,
         const size_t    destination_size);
 
-    void set_what(const char* what);
+    char m_what[2048];
 
-  private:
-    char m_what[4096];
+    void set_what(const char* what);
 };
 
 
@@ -108,4 +110,4 @@ inline void Exception::set_what(const char* what)
 
 }       // namespace foundation
 
-#endif  // !APPLESEED_FOUNDATION_CORE_EXCEPTION_H
+#endif  // !APPLESEED_FOUNDATION_CORE_EXCEPTIONS_EXCEPTION_H

@@ -31,6 +31,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/platform/compiler.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -106,7 +107,8 @@ class DLLSYMBOL BenchmarkResult
         const IBenchmarkCase&   benchmark_case,
         const char*             file,
         const size_t            line,
-        const char*             format, ...);
+        PRINTF_FMT const char*  format, ...)
+        PRINTF_FMT_ATTR(6, 7);
 
     // Write a timing result.
     void write(

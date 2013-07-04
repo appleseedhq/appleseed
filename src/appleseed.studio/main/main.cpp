@@ -37,6 +37,7 @@
 // appleseed.foundation headers.
 #include "foundation/core/appleseed.h"
 #include "foundation/platform/path.h"
+#include "foundation/utility/log.h"
 #include "foundation/utility/preprocessor.h"
 
 // appleseed.main headers.
@@ -68,9 +69,6 @@ using namespace std;
 
 namespace
 {
-    SuperLogger        g_logger;
-    CommandLineHandler g_cl;
-
     void display_incorrect_installation_error()
     {
         // We need the path to the application's executable to construct the error message.
@@ -222,8 +220,6 @@ int main(int argc, char *argv[])
 {
     start_memory_tracking();
 
-    g_cl.parse(argc, const_cast<const char**>(argv), g_logger);
-
     QApplication application(argc, argv);
     QApplication::setOrganizationName("appleseedhq");
     QApplication::setOrganizationDomain("appleseedhq.net");
@@ -236,15 +232,31 @@ int main(int argc, char *argv[])
 
     check_installation();
 
+    SuperLogger logger;
+#ifdef _WIN32
+    logger.set_log_target(create_string_log_target());
+#endif
+
+    CommandLineHandler cl;
+    cl.parse(argc, const_cast<const char**>(argv), logger);
+
     configure_application(application);
 
     appleseed::studio::MainWindow window;
 
-    if (!g_cl.m_filenames.values().empty())
+    if (!cl.m_filename.values().empty())
     {
-        const string project_filename = g_cl.m_filenames.values().front();        
-        window.open_and_render_project(QString::fromStdString( project_filename),
-                                       g_cl.m_render_final.is_set());
+        const QString filename = QString::fromStdString(cl.m_filename.values().front());
+
+        if (cl.m_render.is_set())
+        {
+            const QString configuration = QString::fromStdString(cl.m_render.values()[0]);
+            window.open_and_render_project(filename, configuration);
+        }
+        else
+        {
+            window.open_project(filename);
+        }
     }
 
     window.show();

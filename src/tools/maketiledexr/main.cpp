@@ -34,8 +34,6 @@
 #include "application/superlogger.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/exceptions/exception.h"
-#include "foundation/core/exceptions/stringexception.h"
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/exceptionunsupportedimageformat.h"
 #include "foundation/image/genericprogressiveimagefilereader.h"
@@ -56,7 +54,9 @@
 
 // Standard headers.
 #include <cstddef>
+#include <exception>
 #include <memory>
+#include <string>
 
 using namespace appleseed::maketiledexr;
 using namespace appleseed::shared;
@@ -75,6 +75,10 @@ int main(int argc, const char* argv[])
 
     CommandLineHandler cl;
     cl.parse(argc, argv, logger);
+
+    // Retrieve the input and output file paths.
+    const string& input_filepath = cl.m_filenames.values()[0];
+    const string& output_filepath = cl.m_filenames.values()[1];
 
     // Retrieve the tile size.
     size_t tile_width = 32;
@@ -109,7 +113,7 @@ int main(int argc, const char* argv[])
     {
         // Open the input file.
         GenericProgressiveImageFileReader reader(&logger, tile_width, tile_height);
-        reader.open(cl.m_filenames.values()[0].c_str());
+        reader.open(input_filepath.c_str());
 
         // Read canvas properties from the input file.
         CanvasProperties props;
@@ -124,7 +128,7 @@ int main(int argc, const char* argv[])
         bool require_format_conversion = false;
         try
         {
-            writer.open(cl.m_filenames.values()[1].c_str(), props, attrs);
+            writer.open(output_filepath.c_str(), props, attrs);
         }
         catch (const ExceptionUnsupportedImageFormat&)
         {
@@ -136,7 +140,7 @@ int main(int argc, const char* argv[])
                     props.m_tile_height,
                     props.m_channel_count,
                     PixelFormatFloat);
-            writer.open(cl.m_filenames.values()[1].c_str(), props, attrs);
+            writer.open(output_filepath.c_str(), props, attrs);
             require_format_conversion = true;
         }
 
@@ -178,13 +182,13 @@ int main(int argc, const char* argv[])
         writer.close();
         reader.close();
     }
-    catch (const StringException& e)
+    catch (const exception& e)
     {
-        LOG_FATAL(logger, "%s: %s", e.what(), e.string());
-    }
-    catch (const Exception& e)
-    {
-        LOG_FATAL(logger, "%s", e.what());
+        LOG_FATAL(
+            logger,
+            "failed to convert %s to a tiled OpenEXR file (%s).",
+            input_filepath.c_str(),
+            e.what());
     }
 
     return 0;

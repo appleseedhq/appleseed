@@ -132,6 +132,7 @@ class RenderSettingsWindow
     void create_pt_advanced_settings(QVBoxLayout* parent);
     void create_pt_advanced_dl_settings(QVBoxLayout* parent);
     void create_pt_advanced_ibl_settings(QVBoxLayout* parent);
+    void create_pt_advanced_max_ray_intensity_settings(QVBoxLayout* parent);
 
     void create_system_panel(QLayout* parent);
     void create_system_override_rendering_threads_settings(QVBoxLayout* parent);

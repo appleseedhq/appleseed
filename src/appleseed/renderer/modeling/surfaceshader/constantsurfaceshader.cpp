@@ -110,6 +110,7 @@ namespace
 
             shading_result.m_color_space = ColorSpaceSpectral;
             shading_result.m_color = values.m_color;
+            shading_result.m_aovs.set(0.0f);
 
             // This surface shader can override alpha.
             if (m_alpha_source == AlphaSourceColor)
