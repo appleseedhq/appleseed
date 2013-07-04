@@ -121,7 +121,7 @@ class MainWindow
     std::auto_ptr<BenchmarkWindow>      m_benchmark_window;
 
     ProjectManager                      m_project_manager;
-    std::auto_ptr<ProjectExplorer>      m_project_explorer;
+    ProjectExplorer*                    m_project_explorer;
     RenderingManager                    m_rendering_manager;
 
     // A helper structure to associate event handlers to a render widget.
