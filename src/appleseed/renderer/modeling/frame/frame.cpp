@@ -770,7 +770,7 @@ DictionaryArray FrameFactory::get_widget_definitions()
                     .insert("Floating-Point, 32-bit", "float")
                     .insert("Floating-Point, 64-bit", "double"))
             .insert("use", "optional")
-            .insert("default", "float"));
+            .insert("default", "half"));
 
     definitions.push_back(
         Dictionary()
