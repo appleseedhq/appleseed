@@ -62,6 +62,7 @@ set (sources
     bind_frame.cpp
     bind_image.cpp
     bind_light.cpp
+    bind_logger.cpp
     bind_master_renderer.cpp
     bind_material.cpp
     bind_matrix.cpp

@@ -26,9 +26,45 @@
 # THE SOFTWARE.
 #
 
-import sys
+#import sys
+from sys import hexversion as python_hexversion
 
-if sys.hexversion < 0x030000F0:
+if python_hexversion < 0x030000F0:
     from _appleseedpython import *  # Python 2.X
 else:
     from ._appleseedpython import * # Python 3.X
+
+class ConsoleLogTarget(ILogTarget):
+    def __init__(self, stream):
+        super(ConsoleLogTarget, self).__init__()
+        self.__stream = stream
+
+    def write(self, category, file, line, header, message):
+        lines = message.split('\n')
+        for line in lines:
+            self.__stream.write(header + line + '\n')
+
+class FileLogTarget(ILogTarget):
+    def __init__(self):
+        super(FileLogTarget, self).__init__()
+        self.__file = None
+
+    def open(self, filename):
+        if self.is_open():
+            self.close()
+
+        self.__file = open(filename, "w")
+
+    def close(self):
+        if self.is_open():
+            self.__file.close()
+            self.__file = None
+
+    def is_open(self):
+        return self.__file != None
+
+    def write(self, category, file, line, header, message):
+        if self.is_open():
+            lines = message.split('\n')
+            for line in lines:
+                self.__file.write(header + line + '\n')
