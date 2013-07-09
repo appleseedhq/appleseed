@@ -31,6 +31,8 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/modeling/bsdf/bsdf.h"
+#include "renderer/modeling/color/colorentity.h"
 #include "renderer/modeling/edf/diffuseedf.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/entity/entity.h"
@@ -41,6 +43,8 @@
 #include "renderer/modeling/environmentedf/latlongmapenvironmentedf.h"
 #include "renderer/modeling/environmentedf/mirrorballmapenvironmentedf.h"
 #include "renderer/modeling/frame/frame.h"
+#include "renderer/modeling/input/colorsource.h"
+#include "renderer/modeling/input/inputformat.h"
 #include "renderer/modeling/light/directionallight.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/light/pointlight.h"
@@ -55,11 +59,14 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/math/root.h"
 #include "foundation/math/scalar.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/foreach.h"
+#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <cassert>
@@ -411,6 +418,193 @@ namespace
             }
         }
     };
+
+
+    //
+    // Update from revision 5 to revision 6.
+    //
+
+    class Updater_5_to_6
+      : public Updater
+    {
+      public:
+        explicit Updater_5_to_6(Project& project)
+          : Updater(project, 5)
+        {
+        }
+
+        virtual void update() OVERRIDE
+        {
+            Scene* scene = m_project.get_scene();
+
+            if (scene)
+                update_assemblies(scene->assemblies());
+        }
+
+      private:
+        class ExponentFunction
+        {
+          public:
+            explicit ExponentFunction(const double e)
+              : m_e(e)
+            {
+            }
+
+            double operator()(const double x) const
+            {
+                return 100.0 * pow_int(x, 3) + 9900.0 * pow(x, 30.0) - m_e;
+            }
+
+          private:
+            const double m_e;
+        };
+
+        static void update_assemblies(const AssemblyContainer& assemblies)
+        {
+            for (const_each<AssemblyContainer> i = assemblies; i; ++i)
+            {
+                update_bsdfs(*i, i->bsdfs());
+                update_assemblies(i->assemblies());
+            }
+        }
+
+        static void update_bsdfs(const Assembly& assembly, BSDFContainer& bsdfs)
+        {
+            for (each<BSDFContainer> i = bsdfs; i; ++i)
+            {
+                BSDF& bsdf = *i;
+
+                if (strcmp(bsdf.get_model(), "microfacet_brdf"))
+                    continue;
+
+                ParamArray& params = bsdf.get_parameters();
+
+                if (params.get_optional<string>("mdf", "") != "blinn")
+                    continue;
+
+                const string mdf_param = params.get_optional<string>("mdf_parameter", "");
+
+                if (mdf_param.empty())
+                    continue;
+
+                double exponent;
+                if (try_parse_scalar(mdf_param, exponent))
+                {
+                    double glossiness;
+                    if (!exponent_to_glossiness(exponent, glossiness))
+                    {
+                        RENDERER_LOG_ERROR(
+                            "while updating BSDF \"%s\", failed to normalize Blinn exponent %f.",
+                            bsdf.get_name(),
+                            exponent);
+                        continue;
+                    }
+
+                    params.strings().remove("mdf_parameter");
+                    params.insert("glossiness", glossiness);
+                }
+                else
+                {
+                    ColorEntity* color = find_color_entity(assembly, mdf_param);
+
+                    if (color)
+                    {
+                        const ColorSource source(*color, InputFormatScalar);
+
+                        double exponent;
+                        source.evaluate_uniform(exponent);
+
+                        double glossiness;
+                        if (!exponent_to_glossiness(exponent, glossiness))
+                        {
+                            RENDERER_LOG_ERROR(
+                                "while updating BSDF \"%s\", failed to normalize Blinn exponent %f in color entity \"%s\".",
+                                bsdf.get_name(),
+                                exponent,
+                                color->get_name());
+                            continue;
+                        }
+
+                        ColorValueArray new_color_values;
+                        new_color_values.push_back(static_cast<float>(glossiness));
+
+                        auto_release_ptr<ColorEntity> new_color_entity(
+                            ColorEntityFactory::create(
+                                color->get_name(),
+                                color->get_parameters(),
+                                new_color_values));
+
+                        Assembly* parent_assembly = dynamic_cast<Assembly*>(color->get_parent());
+
+                        if (parent_assembly)
+                        {
+                            parent_assembly->colors().remove(color);
+                            parent_assembly->colors().insert(new_color_entity);
+                        }
+                        else
+                        {
+                            Scene* parent_scene = dynamic_cast<Scene*>(color->get_parent());
+                            assert(parent_scene);
+
+                            parent_scene->colors().remove(color);
+                            parent_scene->colors().insert(new_color_entity);
+                        }
+                    }
+
+                    move_if_exist(params, "glossiness", "mdf_parameter");
+                }
+            }
+        }
+
+        static bool try_parse_scalar(const string& s, double& value)
+        {
+            try
+            {
+                value = from_string<double>(s);
+                return true;
+            }
+            catch (const ExceptionStringConversionError&)
+            {
+                return false;
+            }
+        }
+
+        static ColorEntity* find_color_entity(const Assembly& assembly, const string& name)
+        {
+            for (each<ColorContainer> i = assembly.colors(); i; ++i)
+            {
+                if (i->get_name() == name)
+                    return &*i;
+            }
+
+            Assembly* parent_assembly = dynamic_cast<Assembly*>(assembly.get_parent());
+
+            if (parent_assembly)
+                return find_color_entity(*parent_assembly, name);
+
+            Scene* parent_scene = dynamic_cast<Scene*>(assembly.get_parent());
+            assert(parent_scene);
+
+            return find_color_entity(*parent_scene, name);
+        }
+
+        static ColorEntity* find_color_entity(const Scene& scene, const string& name)
+        {
+            for (each<ColorContainer> i = scene.colors(); i; ++i)
+            {
+                if (i->get_name() == name)
+                    return &*i;
+            }
+
+            return 0;
+        }
+
+        static bool exponent_to_glossiness(const double exponent, double& glossiness)
+        {
+            const ExponentFunction f(exponent);
+            return find_root_bisection(f, 0.0, 1.0, 1.0e-6, 100, glossiness);
+        }
+    };
 }
 
 bool ProjectFileUpdater::update(Project& project)
@@ -426,8 +620,9 @@ bool ProjectFileUpdater::update(Project& project)
       case 2: { Updater_2_to_3 updater(project); updater.update(); modified = true; }
       case 3: { Updater_3_to_4 updater(project); updater.update(); modified = true; }
       case 4: { Updater_4_to_5 updater(project); updater.update(); modified = true; }
+      case 5: { Updater_5_to_6 updater(project); updater.update(); modified = true; }
 
-      case 5:
+      case 6:
         // Project is up-to-date.
         break;
 

@@ -78,7 +78,7 @@ namespace renderer
 namespace
 {
     // Revision number of the project format.
-    const size_t ProjectFormatRevision = 5;
+    const size_t ProjectFormatRevision = 6;
 }
 
 struct Project::Impl

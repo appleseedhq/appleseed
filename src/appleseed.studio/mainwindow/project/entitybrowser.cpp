@@ -43,6 +43,9 @@
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
 
+// Standard headers.
+#include <cassert>
+
 using namespace foundation;
 using namespace renderer;
 using namespace std;
@@ -177,13 +180,22 @@ StringDictionary EntityBrowser<Assembly>::get_entities(const Assembly& assembly,
     }
     else
     {
-        return EntityBrowser<BaseGroup>::get_entities(type);
+        entities = EntityBrowser<BaseGroup>::get_entities(type);
     }
 
-    const Assembly* parent = dynamic_cast<const Assembly*>(assembly.get_parent());
+    const Assembly* parent_assembly = dynamic_cast<const Assembly*>(assembly.get_parent());
 
-    if (parent)
-        merge_dictionary(entities, get_entities(*parent, type));
+    if (parent_assembly)
+    {
+        merge_dictionary(entities, get_entities(*parent_assembly, type));
+    }
+    else
+    {
+        const Scene* parent_scene = dynamic_cast<const Scene*>(assembly.get_parent());
+        assert(parent_scene);
+
+        merge_dictionary(entities, EntityBrowser<Scene>(*parent_scene).get_entities(type));
+    }
 
     return entities;
 }
