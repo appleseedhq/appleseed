@@ -37,6 +37,7 @@
 #include "renderer/global/globallogger.h"
 
 // Standard headers.
+#include <map>
 #include <cstdio>
 
 namespace bpy = boost::python;
@@ -45,13 +46,8 @@ using namespace renderer;
 
 namespace detail
 {
-    struct ILogTargetWrap : ILogTarget, bpy::wrapper<ILogTarget>
+    struct ILogTargetPyBase : public ILogTarget
     {
-        virtual void release()
-        {
-            delete this;
-        }
-
         virtual void write(
             const LogMessage::Category  category,
             const char*                 file,
@@ -59,7 +55,42 @@ namespace detail
             const char*                 header,
             const char*                 message)
         {
-            this->get_override("write")(category, file, line, header, message);
+            write_from_py(category, file, line, header, message);
+        }
+
+        virtual void write_from_py(
+            const LogMessage::Category  category,
+            const std::string&          file,
+            const size_t                line,
+            const std::string&          header,
+            const std::string&          message) = 0;
+    };
+
+    struct ILogTargetWrap : ILogTargetPyBase, bpy::wrapper<ILogTargetPyBase>
+    {
+        ILogTargetWrap() {}
+        ~ILogTargetWrap() {}
+
+        virtual void write_from_py(
+            const LogMessage::Category  category,
+            const std::string&          file,
+            const size_t                line,
+            const std::string&          header,
+            const std::string&          message)
+        {
+            try
+            {
+                this->get_override("write")(category, file, line, header, message);
+            }
+            catch (bpy::error_already_set)
+            {
+                PyErr_Print();
+            }
+        }
+
+        virtual void release()
+        {
+            delete this;
         }
     };
 
@@ -77,22 +108,31 @@ namespace detail
     {
         logger->set_format(category, format);
     }
+
+    // we need to keep the targets python objects alive,
+    // so that Python does not delete them and cause a crash.
+    std::map<ILogTargetWrap*, bpy::object> g_targets;
+
+    void logger_add_target(Logger* logger, bpy::object target)
+    {
+        ILogTargetWrap* p = bpy::extract<ILogTargetWrap*>(target);
+        g_targets[p] = target;
+        logger->add_target(p);
+    }
+
+    void logger_remove_target(Logger* logger, bpy::object target)
+    {
+        ILogTargetWrap* p = bpy::extract<ILogTargetWrap*>(target);
+        logger->remove_target(p);
+        g_targets.erase(p);
+    }
 }
 
 void bind_logger()
 {    
-    bpy::class_<detail::ILogTargetWrap, auto_release_ptr<detail::ILogTargetWrap>, boost::noncopyable>("ILogTarget")
-        .def("write", bpy::pure_virtual(&ILogTarget::write))
+    bpy::class_<detail::ILogTargetWrap, boost::shared_ptr<detail::ILogTargetWrap> ,boost::noncopyable>("ILogTarget")
+        .def("write", bpy::pure_virtual(&detail::ILogTargetPyBase::write_from_py))
         ;
-
-    /*
-    bpy::class_<FileLogTarget, auto_release_ptr<FileLogTarget>, bpy::bases<ILogTarget>, boost::noncopyable>( "FileLogTarget", bpy::no_init)
-        .def("__init__", bpy::make_constructor(detail::create_file_log_target))
-        .def("open", &FileLogTarget::open)
-        .def("close", &FileLogTarget::close)
-        .def("is_open", &FileLogTarget::is_open)
-        ;
-    */
 
     bpy::enum_<LogMessage::Category>( "LogMessageCategory")
         .value("Info", LogMessage::Info)
@@ -109,8 +149,8 @@ void bind_logger()
         .def("set_all_formats", detail::logger_set_all_formats)
         .def("set_format", detail::logger_set_format)
         .def("get_format", &Logger::get_format)
-        .def("add_target", &Logger::add_target)
-        .def("remove_target", &Logger::remove_target)
+        .def("add_target", detail::logger_add_target)
+        .def("remove_target", detail::logger_remove_target)
         ;
 
     bpy::def("global_logger", &detail::get_global_logger, bpy::return_value_policy<bpy::reference_existing_object>());

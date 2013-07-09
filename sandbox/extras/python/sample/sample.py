@@ -214,14 +214,6 @@ class TileCallback(asr.ITileCallback):
     def post_render(self, frame):
         pass
 
-class RenderThread(threading.Thread):
-    def __init__(self, renderer):
-        super(RenderThread, self).__init__()
-        self.__renderer = renderer
-
-    def run(self):
-        self.__renderer.render()
-
 def main():
     log_target = asr.ConsoleLogTarget(sys.stderr)
     asr.global_logger().add_target(log_target)
@@ -238,7 +230,7 @@ def main():
                                   tile_callback)
 
     # Render the frame.
-    render_thread = RenderThread(renderer)
+    render_thread = asr.RenderThread(renderer)
     render_thread.start()
     render_thread.join()
 

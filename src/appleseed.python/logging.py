@@ -30,11 +30,42 @@ from sys import hexversion as python_hexversion
 
 if python_hexversion < 0x030000F0:
     # Python 2.X
-    from _appleseedpython import *
-    from logging import *
-    from util import *
+    from _appleseedpython import ILogTarget
 else:
     # Python 3.X
-    from ._appleseedpython import *
-    from .logging import *
-    from .util import *
+    from ._appleseedpython import ILogTarget
+
+class ConsoleLogTarget(ILogTarget):
+    def __init__(self, stream):
+        ILogTarget.__init__(self)
+        self.__stream = stream
+
+    def write(self, category, file, line, header, message):
+        lines = message.split('\n')
+        for line in lines:
+            self.__stream.write(header + line + '\n')
+
+class FileLogTarget(ILogTarget):
+    def __init__(self):
+        ILogTarget.__init__(self)
+        self.__file = None
+
+    def open(self, filename):
+        if self.is_open():
+            self.close()
+
+        self.__file = open(filename, "w")
+
+    def close(self):
+        if self.is_open():
+            self.__file.close()
+            self.__file = None
+
+    def is_open(self):
+        return self.__file != None
+
+    def write(self, category, file, line, header, message):
+        if self.is_open():
+            lines = message.split('\n')
+            for line in lines:
+                self.__file.write(header + line + '\n')
