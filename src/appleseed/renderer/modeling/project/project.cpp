@@ -39,6 +39,7 @@
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/light/light.h"
+#include "renderer/modeling/material/material.h"
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/project/configuration.h"
 #include "renderer/modeling/project/configurationcontainer.h"
@@ -243,6 +244,7 @@ namespace
 
         assign_entities_to_render_layers(aov_images, mapping, format, assembly.edfs());
         assign_entities_to_render_layers(aov_images, mapping, format, assembly.lights());
+        assign_entities_to_render_layers(aov_images, mapping, format, assembly.materials());
         assign_entities_to_render_layers(aov_images, mapping, format, assembly.objects());
         assign_entities_to_render_layers(aov_images, mapping, format, assembly.object_instances());
     }
