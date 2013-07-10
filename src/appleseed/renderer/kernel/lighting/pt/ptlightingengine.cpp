@@ -356,15 +356,16 @@ namespace
                     // Optionally clamp secondary rays contribution.
                     if (m_params.m_has_max_ray_intensity && path_length > 1)
                     {
-                        const float avg = average_value(vertex_radiance);
-                        if (avg > m_params.m_max_ray_intensity)
-                            vertex_radiance *= m_params.m_max_ray_intensity / avg;
+                        clamp_contribution(vertex_radiance);
+
+                        for (size_t i = 0; i < vertex_aovs.size(); ++i)
+                            clamp_contribution(vertex_aovs[i]);
                     }
 
                     // Update the path radiance.
                     vertex_radiance *= throughput;
-                    vertex_aovs *= throughput;
                     m_path_radiance += vertex_radiance;
+                    vertex_aovs *= throughput;
                     m_path_aovs += vertex_aovs;
                 }
                 else
@@ -446,6 +447,14 @@ namespace
             const EnvironmentEDF*   m_env_edf;
             Spectrum&               m_path_radiance;
             SpectrumStack&          m_path_aovs;
+
+            void clamp_contribution(Spectrum& radiance)
+            {
+                const float avg = average_value(radiance);
+
+                if (avg > m_params.m_max_ray_intensity)
+                    radiance *= m_params.m_max_ray_intensity / avg;
+            }
         };
 
         const Parameters        m_params;

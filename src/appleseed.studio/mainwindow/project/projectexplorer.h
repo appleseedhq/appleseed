@@ -68,6 +68,8 @@ class ProjectExplorer
         renderer::Project&      project,
         renderer::ParamArray&   settings);
 
+    ~ProjectExplorer();
+
     void filter_items(const QString& pattern) const;
 
     void clear_highlighting() const;

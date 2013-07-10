@@ -75,7 +75,6 @@ void AssemblyInstanceItem::slot_delete()
 
     // Remove and delete the assembly instance item.
     delete m_project_builder.get_item_registry().get_item(assembly_instance_uid);
-    m_project_builder.get_item_registry().remove(assembly_instance_uid);
 
     // At this point 'this' no longer exists.
 }

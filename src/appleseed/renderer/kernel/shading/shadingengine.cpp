@@ -140,6 +140,8 @@ void ShadingEngine::shade_hit_point(
     shading_result.m_aovs.set(shading_point.get_assembly_instance().get_render_layer_index(), shading_result.m_color);
     shading_result.m_aovs.set(shading_point.get_object().get_render_layer_index(), shading_result.m_color);
     shading_result.m_aovs.set(shading_point.get_object_instance().get_render_layer_index(), shading_result.m_color);
+    if (material)
+        shading_result.m_aovs.set(material->get_render_layer_index(), shading_result.m_color);
 }
 
 void ShadingEngine::shade_environment(

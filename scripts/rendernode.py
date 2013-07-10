@@ -6,7 +6,7 @@
 #
 # This software is released under the MIT license.
 #
-# Copyright (c) 2012-2013 Jonathan Topf
+# Copyright (c) 2012-2013 Jonathan Topf, Jupiter Jazz Limited
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -60,6 +60,12 @@ DEFAULT_TOOL_FILENAME = "appleseed.cli.exe" if os.name == "nt" else "appleseed.c
 def safe_mkdir(dir):
     if not os.path.exists(dir):
         os.mkdir(dir)
+
+def convert_path_to_local(path):
+    if os.name == "nt":
+        return path.replace('/', '\\')
+    else:
+        return path.replace('\\', '/')
 
 def format_message(severity, msg):
     now = datetime.datetime.now()
@@ -323,12 +329,6 @@ def get_project_files(directory):
 
     return project_files
 
-def convert_path_to_local(path):
-    if os.name == "nt":
-        return path.replace('/', '\\')
-    else:
-        return path.replace('\\', '/')
-
 def extract_project_deps(project_filepath, log):
     try:
         with open(project_filepath, 'r') as file:
@@ -403,8 +403,8 @@ def watch(args, log):
 
 def main():
     # Parse the command line.
-    parser = argparse.ArgumentParser(description="continuously watch a directory and render any project file " \
-                                     "that appears in it.")
+    parser = argparse.ArgumentParser(description="continuously watch a directory and render any " \
+                                     "appleseed project file that appears in it.")
     parser.add_argument("-t", "--tool-path", metavar="tool-path",
                         help="set the path to the appleseed.cli tool")
     parser.add_argument("-f", "--format", dest="output_format", metavar="FORMAT", default="exr",
@@ -438,7 +438,7 @@ def main():
     log.info("--- starting logging ---")
 
     # Print version information.
-    log.info("running watchfolder.py version {0}.".format(VERSION))
+    log.info("running rendernode.py version {0}.".format(VERSION))
     print_appleseed_version(args, log)
 
     # Print the user name.

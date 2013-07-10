@@ -158,8 +158,6 @@ void CollectionItemBase<Entity>::add_item(const int index, Entity* entity)
     ItemBase* item = create_item(entity);
 
     insertChild(index, item);
-
-    m_project_builder.get_item_registry().insert(entity->get_uid(), item);
 }
 
 template <typename Entity>
@@ -167,7 +165,11 @@ ItemBase* CollectionItemBase<Entity>::create_item(Entity* entity)
 {
     assert(entity);
 
-    return new ItemBase(entity->get_class_uid(), entity->get_name());
+    ItemBase* item = new ItemBase(entity->get_class_uid(), entity->get_name());
+
+    m_project_builder.get_item_registry().insert(entity->get_uid(), item);
+
+    return item;
 }
 
 }       // namespace studio

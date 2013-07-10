@@ -105,6 +105,7 @@ MainWindow::MainWindow(QWidget* parent)
   : QMainWindow(parent)
   , m_ui(new Ui::MainWindow())
   , m_rendering_manager(m_status_bar)
+  , m_project_explorer(0)
 {
     m_ui->setupUi(this);
 
@@ -129,6 +130,7 @@ MainWindow::MainWindow(QWidget* parent)
 
 MainWindow::~MainWindow()
 {
+    delete m_project_explorer;
     delete m_ui;
 }
 
@@ -636,29 +638,26 @@ void MainWindow::update_workspace()
 
 void MainWindow::update_project_explorer()
 {
-    m_ui->lineedit_filter->clear();
-    m_ui->treewidget_project_explorer_scene->clear();
+    delete m_project_explorer;
 
     if (m_project_manager.is_project_open())
     {
-        m_project_explorer.reset(
+        m_project_explorer =
             new ProjectExplorer(
                 m_ui->treewidget_project_explorer_scene,    
                 *m_project_manager.get_project(),
-                m_settings));
+                m_settings);
 
         connect(
-            m_project_explorer.get(), SIGNAL(signal_project_modified()),
+            m_project_explorer, SIGNAL(signal_project_modified()),
             this, SLOT(slot_project_modified()));
 
         connect(
-            m_project_explorer.get(), SIGNAL(signal_frame_modified()),
+            m_project_explorer, SIGNAL(signal_frame_modified()),
             this, SLOT(slot_recreate_render_widgets()));
     }
-    else
-    {
-        m_project_explorer.reset();
-    }
+
+    m_ui->lineedit_filter->clear();
 }
 
 void MainWindow::update_window_title()
@@ -844,7 +843,7 @@ void MainWindow::add_render_widget(
         new ScenePickingHandler(
             picking_mode_combo,
             *record->m_mouse_tracker.get(),
-            *m_project_explorer.get(),
+            *m_project_explorer,
             *m_project_manager.get_project()));
     m_render_widgets[label.toStdString()] = record;
 
