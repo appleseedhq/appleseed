@@ -26,15 +26,12 @@
 # THE SOFTWARE.
 #
 
-from sys import hexversion as python_hexversion
+import threading
 
-if python_hexversion < 0x030000F0:
-    # Python 2.X
-    from _appleseedpython import *
-    from logging import *
-    from util import *
-else:
-    # Python 3.X
-    from ._appleseedpython import *
-    from .logging import *
-    from .util import *
+class RenderThread(threading.Thread):
+    def __init__(self, renderer):
+        super(RenderThread, self).__init__()
+        self.__renderer = renderer
+
+    def run(self):
+        self.__renderer.render()
