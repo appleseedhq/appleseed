@@ -46,8 +46,11 @@ using namespace renderer;
 
 namespace detail
 {
-    struct ILogTargetPyBase : public ILogTarget
+    struct ILogTargetWrap : ILogTarget, bpy::wrapper<ILogTarget>
     {
+        ILogTargetWrap() {}
+        ~ILogTargetWrap() {}
+
         virtual void write(
             const LogMessage::Category  category,
             const char*                 file,
@@ -55,32 +58,13 @@ namespace detail
             const char*                 header,
             const char*                 message)
         {
-            write_from_py(category, file, line, header, message);
-        }
-
-        virtual void write_from_py(
-            const LogMessage::Category  category,
-            const std::string&          file,
-            const size_t                line,
-            const std::string&          header,
-            const std::string&          message) = 0;
-    };
-
-    struct ILogTargetWrap : ILogTargetPyBase, bpy::wrapper<ILogTargetPyBase>
-    {
-        ILogTargetWrap() {}
-        ~ILogTargetWrap() {}
-
-        virtual void write_from_py(
-            const LogMessage::Category  category,
-            const std::string&          file,
-            const size_t                line,
-            const std::string&          header,
-            const std::string&          message)
-        {
             try
             {
+                // because this can be called from multiple threads
+                // we need to lock python here.
+                PyGILState_STATE state = PyGILState_Ensure();
                 this->get_override("write")(category, file, line, header, message);
+                PyGILState_Release(state);
             }
             catch (bpy::error_already_set)
             {
@@ -109,13 +93,16 @@ namespace detail
         logger->set_format(category, format);
     }
 
-    // we need to keep the targets python objects alive,
-    // so that Python does not delete them and cause a crash.
+    // because the logger does not take ownership of the target objects
+    // itself, we need to manually keep them alive,
+    // so that python does not delete them and cause a crash.
     std::map<ILogTargetWrap*, bpy::object> g_targets;
 
     void logger_add_target(Logger* logger, bpy::object target)
     {
         ILogTargetWrap* p = bpy::extract<ILogTargetWrap*>(target);
+        assert(p);
+
         g_targets[p] = target;
         logger->add_target(p);
     }
@@ -123,15 +110,17 @@ namespace detail
     void logger_remove_target(Logger* logger, bpy::object target)
     {
         ILogTargetWrap* p = bpy::extract<ILogTargetWrap*>(target);
+        assert(p);
+
         logger->remove_target(p);
         g_targets.erase(p);
     }
 }
 
 void bind_logger()
-{    
+{
     bpy::class_<detail::ILogTargetWrap, boost::shared_ptr<detail::ILogTargetWrap> ,boost::noncopyable>("ILogTarget")
-        .def("write", bpy::pure_virtual(&detail::ILogTargetPyBase::write_from_py))
+        .def("write", bpy::pure_virtual(&ILogTarget::write))
         ;
 
     bpy::enum_<LogMessage::Category>( "LogMessageCategory")
