@@ -44,6 +44,7 @@ void bind_environment();
 void bind_frame();
 void bind_image();
 void bind_light();
+void bind_logger();
 void bind_master_renderer();
 void bind_material();
 void bind_matrix();
@@ -63,6 +64,7 @@ void bind_vector();
 BOOST_PYTHON_MODULE(_appleseedpython)
 {
     bind_utility();
+    bind_logger();
 
     bind_vector();
     bind_quaternion();
