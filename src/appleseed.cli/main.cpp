@@ -667,7 +667,7 @@ namespace
         }
 
         // Write the frame to disk.
-        if (g_cl.m_output.is_set())
+        if (g_cl.m_output.is_set() && !g_cl.m_continuous_saving.is_set())
         {
             LOG_INFO(g_logger, "writing frame to disk...");
             project->get_frame()->write_main_image(g_cl.m_output.values()[0].c_str());
