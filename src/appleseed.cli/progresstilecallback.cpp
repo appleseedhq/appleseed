@@ -42,7 +42,6 @@
 
 // Standard headers.
 #include <cstddef>
-#include <string>
 
 using namespace boost;
 using namespace foundation;
@@ -64,10 +63,19 @@ namespace
       public:
         explicit ProgressTileCallback(Logger& logger)
           : m_logger(logger)
+          , m_continuous_saving(false)
           , m_rendered_pixels(0)
         {
         }
 
+        ProgressTileCallback(const string& output_filename, Logger& logger)
+          : m_logger(logger)
+          , m_continuous_saving(true)
+          , m_output_filename(output_filename)
+          , m_rendered_pixels(0)
+        {
+        }
+  
         virtual void release() OVERRIDE
         {
             // Do nothing.
@@ -80,18 +88,30 @@ namespace
         {
             mutex::scoped_lock lock(m_mutex);
 
+            // If continuous saving is enabled, write the frame to disk (the main image and all the AOV images).
+            if (m_continuous_saving)
+            {
+                frame->write_main_image(m_output_filename.c_str());
+                frame->write_aov_images(m_output_filename.c_str());
+            }
+
+            // Keep track of the total number of rendered pixels.
             const Tile& tile = frame->image().tile(tile_x, tile_y);
             m_rendered_pixels += tile.get_pixel_count();
 
+            // Retrieve the total number of pixels in the frame.
             const size_t total_pixels = frame->image().properties().m_pixel_count;
 
+            // Print a progress message.
             LOG_INFO(m_logger, "rendering, %s done", pretty_percent(m_rendered_pixels, total_pixels).c_str());
         }
 
       private:
-        Logger& m_logger;
-        mutex   m_mutex;
-        size_t  m_rendered_pixels;
+        Logger&         m_logger;
+        const bool      m_continuous_saving;
+        const string    m_output_filename;
+        mutex           m_mutex;
+        size_t          m_rendered_pixels;
     };
 }
 
@@ -102,6 +122,13 @@ namespace
 
 ProgressTileCallbackFactory::ProgressTileCallbackFactory(Logger& logger)
   : m_callback(new ProgressTileCallback(logger))
+{
+}
+
+ProgressTileCallbackFactory::ProgressTileCallbackFactory(
+    const string&   output_filename,
+    Logger&         logger)
+  : m_callback(new ProgressTileCallback(output_filename, logger))
 {
 }
 

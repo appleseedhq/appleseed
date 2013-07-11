@@ -37,6 +37,7 @@
 
 // Standard headers.
 #include <memory>
+#include <string>
 
 // Forward declarations.
 namespace foundation    { class Logger; }
@@ -49,6 +50,10 @@ class ProgressTileCallbackFactory
 {
   public:
     explicit ProgressTileCallbackFactory(foundation::Logger& logger);
+
+    ProgressTileCallbackFactory(
+        const std::string&  output_filename,
+        foundation::Logger& logger);
 
     virtual void release() OVERRIDE;
 
