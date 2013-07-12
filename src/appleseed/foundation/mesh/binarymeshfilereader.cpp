@@ -101,7 +101,7 @@ void BinaryMeshFileReader::read(IMeshBuilder& builder)
 
     switch (version)
     {
-      case 1:                       // uncompressed (deprecated)
+      case 1:                       // uncompressed
         reader.reset(new PassthroughReaderAdapter(file));
         break;
 
