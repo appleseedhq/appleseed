@@ -27,22 +27,17 @@
 //
 
 // Interface header.
+#include "continuoussavingtilecallback.h"
+
+// appleseed.cli headers.
 #include "progresstilecallback.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/frame.h"
-#include "renderer/api/log.h"
-
-// appleseed.foundation headers.
-#include "foundation/image/canvasproperties.h"
-#include "foundation/image/image.h"
-#include "foundation/image/tile.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
-#include <string>
+#include <cstddef>
 
-using namespace boost;
 using namespace foundation;
 using namespace renderer;
 using namespace std;
@@ -51,61 +46,55 @@ namespace appleseed {
 namespace cli {
 
 //
-// ProgressTileCallback class implementation.
+// ContinuousSavingTileCallback.
 //
 
-ProgressTileCallback::ProgressTileCallback(Logger& logger)
-  : m_logger(logger)
-  , m_rendered_pixels(0)
+namespace
 {
-}
+    class ContinuousSavingTileCallback
+      : public ProgressTileCallback
+    {
+      public:
+        ContinuousSavingTileCallback(const string& output_filename, Logger& logger)
+          : ProgressTileCallback(logger)
+          , m_output_filename(output_filename)
+        {
+        }
 
-void ProgressTileCallback::release()
-{
-    // Do nothing.
-}
+      private:
+        const string m_output_filename;
 
-void ProgressTileCallback::post_render_tile(
-    const Frame*    frame,
-    const size_t    tile_x,
-    const size_t    tile_y)
-{
-    mutex::scoped_lock lock(m_mutex);
-    do_post_render_tile(frame, tile_x, tile_y);
-}
+        virtual void do_post_render_tile(
+            const Frame*    frame,
+            const size_t    tile_x,
+            const size_t    tile_y) OVERRIDE
+        {
+            ProgressTileCallback::do_post_render_tile(frame, tile_x, tile_y);
 
-void ProgressTileCallback::do_post_render_tile(
-    const Frame*    frame,
-    const size_t    tile_x,
-    const size_t    tile_y)
-{
-    // Keep track of the total number of rendered pixels.
-    const Tile& tile = frame->image().tile(tile_x, tile_y);
-    m_rendered_pixels += tile.get_pixel_count();
-
-    // Retrieve the total number of pixels in the frame.
-    const size_t total_pixels = frame->image().properties().m_pixel_count;
-
-    // Print a progress message.
-    LOG_INFO(m_logger, "rendering, %s done", pretty_percent(m_rendered_pixels, total_pixels).c_str());
+            frame->write_main_image(m_output_filename.c_str());
+            frame->write_aov_images(m_output_filename.c_str());
+        }
+    };
 }
 
 
 //
-// ProgressTileCallbackFactory class implementation.
+// ContinuousSavingTileCallbackFactory class implementation.
 //
 
-ProgressTileCallbackFactory::ProgressTileCallbackFactory(Logger& logger)
-  : m_callback(new ProgressTileCallback(logger))
+ContinuousSavingTileCallbackFactory::ContinuousSavingTileCallbackFactory(
+    const string&   output_filename,
+    Logger&         logger)
+  : m_callback(new ContinuousSavingTileCallback(output_filename, logger))
 {
 }
 
-void ProgressTileCallbackFactory::release()
+void ContinuousSavingTileCallbackFactory::release()
 {
     delete this;
 }
 
-ITileCallback* ProgressTileCallbackFactory::create()
+ITileCallback* ContinuousSavingTileCallbackFactory::create()
 {
     return m_callback.get();
 }

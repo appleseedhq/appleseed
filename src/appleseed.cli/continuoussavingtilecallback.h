@@ -26,58 +26,32 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_CLI_PROGRESSTILECALLBACK_H
-#define APPLESEED_CLI_PROGRESSTILECALLBACK_H
+#ifndef APPLESEED_CLI_CONTINUOUSSAVINGTILECALLBACK_H
+#define APPLESEED_CLI_CONTINUOUSSAVINGTILECALLBACK_H
 
 // appleseed.renderer headers.
 #include "renderer/api/rendering.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
-#include "foundation/platform/thread.h"
 
 // Standard headers.
-#include <cstddef>
 #include <memory>
+#include <string>
 
 // Forward declarations.
 namespace foundation    { class Logger; }
-namespace renderer      { class Frame; }
 
 namespace appleseed {
 namespace cli {
 
-class ProgressTileCallback
-  : public renderer::TileCallbackBase
-{
-  public:
-    explicit ProgressTileCallback(foundation::Logger& logger);
-
-    virtual void release() OVERRIDE;
-
-    virtual void post_render_tile(
-        const renderer::Frame*  frame,
-        const size_t            tile_x,
-        const size_t            tile_y) OVERRIDE;
-
-  protected:
-    foundation::Logger&         m_logger;
-
-    virtual void do_post_render_tile(
-        const renderer::Frame*  frame,
-        const size_t            tile_x,
-        const size_t            tile_y);
-
-  private:
-    boost::mutex                m_mutex;
-    size_t                      m_rendered_pixels;
-};
-
-class ProgressTileCallbackFactory
+class ContinuousSavingTileCallbackFactory
   : public renderer::ITileCallbackFactory
 {
   public:
-    explicit ProgressTileCallbackFactory(foundation::Logger& logger);
+    ContinuousSavingTileCallbackFactory(
+        const std::string&  output_filename,
+        foundation::Logger& logger);
 
     virtual void release() OVERRIDE;
 
@@ -90,4 +64,4 @@ class ProgressTileCallbackFactory
 }       // namespace cli
 }       // namespace appleseed
 
-#endif  // !APPLESEED_CLI_PROGRESSTILECALLBACK_H
+#endif  // !APPLESEED_CLI_CONTINUOUSSAVINGTILECALLBACK_H

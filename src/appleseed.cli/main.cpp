@@ -28,6 +28,7 @@
 
 // appleseed.cli headers.
 #include "commandlinehandler.h"
+#include "continuoussavingtilecallback.h"
 #include "progresstilecallback.h"
 
 // appleseed.shared headers.
@@ -602,11 +603,11 @@ namespace
             return;
 
         // Create the tile callback factory.
-        auto_ptr<ProgressTileCallbackFactory> tile_callback_factory;
+        auto_ptr<ITileCallbackFactory> tile_callback_factory;
         if (g_cl.m_output.is_set() && g_cl.m_continuous_saving.is_set())
         {
             tile_callback_factory.reset(
-                new ProgressTileCallbackFactory(
+                new ContinuousSavingTileCallbackFactory(
                     g_cl.m_output.values()[0].c_str(),
                     g_logger));
         }
