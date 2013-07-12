@@ -28,7 +28,7 @@
 #
 
 # Package builder settings.
-VersionString = "2.2.0"
+VersionString = "2.3.0"
 SettingsFileName = "appleseed.package.configuration.xml"
 
 # Imports.
@@ -235,7 +235,8 @@ class PackageBuilder:
         shutil.copy("convertmany.py", "appleseed/bin/")
         shutil.copy("rendermany.py", "appleseed/bin/")
         shutil.copy("updatemany.py", "appleseed/bin/")
-        shutil.copy("watchfolder.py", "appleseed/bin/")
+        shutil.copy("rendernode.py", "appleseed/bin/")
+        shutil.copy("rendermanager.py", "appleseed/bin/")
 
     def add_local_schema_files_to_stage(self):
         progress("Adding local schema files to staging directory")
