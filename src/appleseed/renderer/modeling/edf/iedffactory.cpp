@@ -26,52 +26,35 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_EDF_IEDFFACTORY_H
-#define APPLESEED_RENDERER_MODELING_EDF_IEDFFACTORY_H
+// Interface header.
+#include "iedffactory.h"
 
-// appleseed.renderer headers.
-#include "renderer/global/global.h"
+// appleseed.foundation headers.
+#include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/containers/specializedarrays.h"
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
-// Forward declarations.
-namespace foundation    { class DictionaryArray; }
-namespace renderer      { class EDF; }
+using namespace foundation;
 
 namespace renderer
 {
 
-//
-// EDF factory interface.
-//
-
-class DLLSYMBOL IEDFFactory
-  : public foundation::NonCopyable
+void IEDFFactory::add_common_widget_definitions(DictionaryArray& definitions)
 {
-  public:
-    // Destructor.
-    virtual ~IEDFFactory() {}
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "cast_indirect_light")
+            .insert("label", "Cast Indirect Light")
+            .insert("widget", "checkbox")
+            .insert("use", "optional")
+            .insert("default", "true"));
 
-    // Return a string identifying this EDF model.
-    virtual const char* get_model() const = 0;
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "importance_multiplier")
+            .insert("label", "Importance Multiplier")
+            .insert("widget", "text_box")
+            .insert("use", "optional")
+            .insert("default", "1.0"));
+}
 
-    // Return a human-readable string identifying this EDF model.
-    virtual const char* get_human_readable_model() const = 0;
-
-    // Return a set of widget definitions for this EDF model.
-    virtual foundation::DictionaryArray get_widget_definitions() const = 0;
-
-    // Create a new EDF instance.
-    virtual foundation::auto_release_ptr<EDF> create(
-        const char*         name,
-        const ParamArray&   params) const = 0;
-
-  protected:
-    // Add the widget definitions common to all EDF models.
-    static void add_common_widget_definitions(foundation::DictionaryArray& definitions);
-};
-
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_EDF_IEDFFACTORY_H
+}   // namespace renderer

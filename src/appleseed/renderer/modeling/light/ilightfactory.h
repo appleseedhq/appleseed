@@ -68,6 +68,10 @@ class DLLSYMBOL ILightFactory
     virtual foundation::auto_release_ptr<Light> create(
         const char*         name,
         const ParamArray&   params) const = 0;
+
+  protected:
+    // Add the widget definitions common to all light models.
+    static void add_common_widget_definitions(foundation::DictionaryArray& definitions);
 };
 
 }       // namespace renderer
