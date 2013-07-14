@@ -1205,6 +1205,7 @@ set (renderer_modeling_edf_sources
     renderer/modeling/edf/edffactoryregistrar.cpp
     renderer/modeling/edf/edffactoryregistrar.h
     renderer/modeling/edf/edftraits.h
+    renderer/modeling/edf/iedffactory.cpp
     renderer/modeling/edf/iedffactory.h
 )
 list (APPEND appleseed_sources
@@ -1329,6 +1330,7 @@ source_group ("renderer\\modeling\\input" FILES
 set (renderer_modeling_light_sources
     renderer/modeling/light/directionallight.cpp
     renderer/modeling/light/directionallight.h
+    renderer/modeling/light/ilightfactory.cpp
     renderer/modeling/light/ilightfactory.h
     renderer/modeling/light/light.cpp
     renderer/modeling/light/light.h

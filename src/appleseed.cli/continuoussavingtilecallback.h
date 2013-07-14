@@ -26,52 +26,42 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_EDF_IEDFFACTORY_H
-#define APPLESEED_RENDERER_MODELING_EDF_IEDFFACTORY_H
+#ifndef APPLESEED_CLI_CONTINUOUSSAVINGTILECALLBACK_H
+#define APPLESEED_CLI_CONTINUOUSSAVINGTILECALLBACK_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/api/rendering.h"
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
+
+// Standard headers.
+#include <memory>
+#include <string>
 
 // Forward declarations.
-namespace foundation    { class DictionaryArray; }
-namespace renderer      { class EDF; }
+namespace foundation    { class Logger; }
 
-namespace renderer
-{
+namespace appleseed {
+namespace cli {
 
-//
-// EDF factory interface.
-//
-
-class DLLSYMBOL IEDFFactory
-  : public foundation::NonCopyable
+class ContinuousSavingTileCallbackFactory
+  : public renderer::ITileCallbackFactory
 {
   public:
-    // Destructor.
-    virtual ~IEDFFactory() {}
+    ContinuousSavingTileCallbackFactory(
+        const std::string&  output_filename,
+        foundation::Logger& logger);
 
-    // Return a string identifying this EDF model.
-    virtual const char* get_model() const = 0;
+    virtual void release() OVERRIDE;
 
-    // Return a human-readable string identifying this EDF model.
-    virtual const char* get_human_readable_model() const = 0;
+    virtual renderer::ITileCallback* create() OVERRIDE;
 
-    // Return a set of widget definitions for this EDF model.
-    virtual foundation::DictionaryArray get_widget_definitions() const = 0;
-
-    // Create a new EDF instance.
-    virtual foundation::auto_release_ptr<EDF> create(
-        const char*         name,
-        const ParamArray&   params) const = 0;
-
-  protected:
-    // Add the widget definitions common to all EDF models.
-    static void add_common_widget_definitions(foundation::DictionaryArray& definitions);
+  private:
+    std::auto_ptr<renderer::ITileCallback> m_callback;
 };
 
-}       // namespace renderer
+}       // namespace cli
+}       // namespace appleseed
 
-#endif  // !APPLESEED_RENDERER_MODELING_EDF_IEDFFACTORY_H
+#endif  // !APPLESEED_CLI_CONTINUOUSSAVINGTILECALLBACK_H

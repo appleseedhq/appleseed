@@ -239,6 +239,8 @@ DictionaryArray DiffuseEDFFactory::get_widget_definitions() const
             .insert("use", "optional")
             .insert("default", "1.0"));
 
+    add_common_widget_definitions(definitions);
+
     return definitions;
 }
 

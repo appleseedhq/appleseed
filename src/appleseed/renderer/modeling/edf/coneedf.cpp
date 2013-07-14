@@ -252,6 +252,8 @@ DictionaryArray ConeEDFFactory::get_widget_definitions() const
             .insert("use", "required")
             .insert("default", "90.0"));
 
+    add_common_widget_definitions(definitions);
+
     return definitions;
 }
 

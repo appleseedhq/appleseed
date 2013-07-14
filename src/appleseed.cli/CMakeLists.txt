@@ -34,6 +34,8 @@
 set (sources
     commandlinehandler.cpp
     commandlinehandler.h
+    continuoussavingtilecallback.cpp
+    continuoussavingtilecallback.h
     main.cpp
     progresstilecallback.cpp
     progresstilecallback.h

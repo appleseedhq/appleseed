@@ -214,22 +214,9 @@ class TileCallback(asr.ITileCallback):
     def post_render(self, frame):
         pass
 
-class RenderThread(threading.Thread):
-    def __init__(self, renderer):
-        super(RenderThread, self).__init__()
-        self.__renderer = renderer
-
-    def run(self):
-        self.__renderer.render()
-
 def main():
-    """
-    # Create a log target that outputs to stderr, and binds it to the renderer's global logger.
-    # Eventually you will probably want to redirect log messages to your own target. For this
-    # you will need to implement foundation::ILogTarget (foundation/utility/log/ilogtarget.h).
-    std::auto_ptr<asf::ILogTarget> log_target(asf::create_console_log_target(stderr))
-    asr::global_logger().add_target(log_target.get())
-    """
+    log_target = asr.ConsoleLogTarget(sys.stderr)
+    asr.global_logger().add_target(log_target)
 
     # Build the project.
     project = build_project()
@@ -243,7 +230,7 @@ def main():
                                   tile_callback)
 
     # Render the frame.
-    render_thread = RenderThread(renderer)
+    render_thread = asr.RenderThread(renderer)
     render_thread.start()
     render_thread.join()
 

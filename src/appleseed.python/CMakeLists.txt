@@ -62,6 +62,7 @@ set (sources
     bind_frame.cpp
     bind_image.cpp
     bind_light.cpp
+    bind_logger.cpp
     bind_master_renderer.cpp
     bind_material.cpp
     bind_matrix.cpp
@@ -148,6 +149,8 @@ target_link_libraries (appleseed.python
 
 add_copy_target_to_sandbox_py_module_command (appleseed.python)
 add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/appleseed.python/__init__.py)
+add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/appleseed.python/logging.py)
+add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/appleseed.python/util.py)
 
 
 #--------------------------------------------------------------------------------------------------

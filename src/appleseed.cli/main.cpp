@@ -28,6 +28,7 @@
 
 // appleseed.cli headers.
 #include "commandlinehandler.h"
+#include "continuoussavingtilecallback.h"
 #include "progresstilecallback.h"
 
 // appleseed.shared headers.
@@ -596,23 +597,36 @@ namespace
         if (project.get() == 0)
             return;
 
-        // Figure out the rendering parameters.
+        // Retrieve the rendering parameters.
         ParamArray params;
         if (!configure_project(project.ref(), params))
             return;
 
-        LOG_INFO(g_logger, "rendering frame...");
-
+        // Create the tile callback factory.
+        auto_ptr<ITileCallbackFactory> tile_callback_factory;
+        if (g_cl.m_output.is_set() && g_cl.m_continuous_saving.is_set())
+        {
+            tile_callback_factory.reset(
+                new ContinuousSavingTileCallbackFactory(
+                    g_cl.m_output.values()[0].c_str(),
+                    g_logger));
+        }
+        else
+        {
+            tile_callback_factory.reset(
+                new ProgressTileCallbackFactory(g_logger));
+        }
+        
         // Create the master renderer.
         DefaultRendererController renderer_controller;
-        ProgressTileCallbackFactory tile_callback_factory(g_logger);
         MasterRenderer renderer(
             project.ref(),
             params,
             &renderer_controller,
-            &tile_callback_factory);
+            tile_callback_factory.get());
 
         // Render the frame.
+        LOG_INFO(g_logger, "rendering frame...");
         Stopwatch<DefaultWallclockTimer> stopwatch;
         if (params.get_optional<bool>("background_mode", true))
         {
@@ -654,7 +668,7 @@ namespace
         }
 
         // Write the frame to disk.
-        if (g_cl.m_output.is_set())
+        if (g_cl.m_output.is_set() && !g_cl.m_continuous_saving.is_set())
         {
             LOG_INFO(g_logger, "writing frame to disk...");
             project->get_frame()->write_main_image(g_cl.m_output.values()[0].c_str());

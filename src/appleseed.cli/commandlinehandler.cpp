@@ -90,6 +90,10 @@ CommandLineHandler::CommandLineHandler()
     m_output.set_exact_value_count(1);
     parser().add_option_handler(&m_output);
 
+    m_continuous_saving.add_name("--continuous-saving");
+    m_continuous_saving.set_description("write each tile to disk as soon as it is rendered");
+    parser().add_option_handler(&m_continuous_saving);
+
     m_resolution.add_name("--resolution");
     m_resolution.add_name("-r");
     m_resolution.set_description("set the resolution of the rendered image");

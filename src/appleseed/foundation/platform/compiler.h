@@ -162,8 +162,9 @@ class DLLSYMBOL Compiler
     #define OVERRIDE override
 
 // gcc: supported since gcc 4.7.
-#elif __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7)
-    #define OVERRIDE override
+// Note: only if C++11 mode is enabled! Disabling support for now.
+// #elif __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7)
+//     #define OVERRIDE override
 
 // Other compilers: the OVERRIDE qualifier has no effect.
 #else
