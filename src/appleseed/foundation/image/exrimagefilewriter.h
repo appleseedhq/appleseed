@@ -64,18 +64,12 @@ class DLLSYMBOL EXRImageFileWriter
   : public IImageFileWriter
 {
   public:
-    // Constructor.
-    explicit EXRImageFileWriter(
-        const size_t            thread_count = 1);
 
     // Write an OpenEXR image file.
     virtual void write(
         const char*             filename,
         const ICanvas&          image,
         const ImageAttributes&  image_attributes = ImageAttributes());
-
-  private:
-    const int m_thread_count;
 };
 
 }       // namespace foundation
