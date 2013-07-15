@@ -69,8 +69,8 @@
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/thread.h"
-#include "foundation/utility/searchpaths.h"
 #include "foundation/platform/system.h"
+#include "foundation/utility/searchpaths.h"
 
 // OIIO headers.
 #ifdef WITH_OSL
