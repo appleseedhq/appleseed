@@ -67,14 +67,6 @@ namespace
     const char* ChannelName[] = { "R", "G", "B", "A" };
 }
 
-EXRImageFileWriter::EXRImageFileWriter(
-    const size_t            thread_count)
-  : m_thread_count(static_cast<int>(thread_count))
-{
-    // Set the total maximum number of threads that are spawned for I/O operations.
-    setGlobalThreadCount(m_thread_count);
-}
-
 void EXRImageFileWriter::write(
     const char*             filename,
     const ICanvas&          image,
@@ -120,7 +112,7 @@ void EXRImageFileWriter::write(
         add_attributes(image_attributes, header);
 
         // Create the output file.
-        TiledOutputFile file(filename, header, m_thread_count);
+        TiledOutputFile file(filename, header);
 
         // Write tiles.
         for (size_t y = 0; y < props.m_tile_count_y; ++y)
