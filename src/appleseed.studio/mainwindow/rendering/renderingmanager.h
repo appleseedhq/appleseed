@@ -46,7 +46,7 @@
 
 // Standard headers.
 #include <memory>
-#include <string>
+#include <vector>
 
 // Forward declarations.
 namespace appleseed { namespace studio { class RenderWidget; } }
@@ -88,13 +88,30 @@ class RenderingManager
     // Reinitialize rendering.
     void reinitialize_rendering();
 
+    // Interface of a delayed action. A delayed action is a procedure
+    // that gets executed just before rendering begins.
+    class IDelayedAction
+    {
+      public:
+        virtual ~IDelayedAction() {}
+
+        virtual void operator()(
+            renderer::MasterRenderer&   master_renderer,
+            renderer::Project&          project) = 0;
+    };
+
+    // Add a delayed action. All delayed actions are deleted after
+    // they are executed, just before rendering begins.
+    void push_delayed_action(std::auto_ptr<IDelayedAction> action);
+
   signals:
     void signal_camera_changed();
     void signal_rendering_end();
 
   public slots:
-    void slot_clear_shading_override();
-    void slot_set_shading_override();
+    void slot_abort_rendering();
+    void slot_restart_rendering();
+    void slot_reinitialize_rendering();
 
   private:
     StatusBar&                                  m_status_bar;
@@ -105,9 +122,6 @@ class RenderingManager
     RenderWidget*                               m_render_widget;
 
     std::auto_ptr<CameraController>             m_camera_controller;
-
-    bool                                        m_override_shading;
-    std::string                                 m_override_shading_mode;
     bool                                        m_camera_changed;
 
     std::auto_ptr<QtTileCallbackFactory>        m_tile_callback_factory;
@@ -117,12 +131,17 @@ class RenderingManager
     RenderingTimer                              m_rendering_timer;
     QBasicTimer                                 m_render_widget_update_timer;
 
+    typedef std::vector<IDelayedAction*> DelayedActionCollection;
+
+    DelayedActionCollection                     m_delayed_actions;
+
     virtual void timerEvent(QTimerEvent* event);
 
     void print_final_rendering_time();
     void print_average_luminance();
-
     void archive_frame_to_disk();
+
+    void consume_delayed_actions();
 
   private slots:
     void slot_rendering_begin();

@@ -37,25 +37,28 @@
 #include "application/application.h"
 
 // appleseed.renderer headers.
-#include "renderer/api/aov.h"
 #include "renderer/api/camera.h"
 #include "renderer/api/frame.h"
 #include "renderer/api/project.h"
-#include "renderer/api/scene.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/analysis.h"
 #include "foundation/image/image.h"
-#include "foundation/math/transform.h"
+#include "foundation/utility/foreach.h"
 #include "foundation/utility/string.h"
 
 // boost headers.
 #include "boost/filesystem/path.hpp"
 
 // Qt headers.
-#include <QAction>
 #include <QApplication>
 #include <QTimerEvent>
+
+// Standard headers.
+#include <cassert>
+
+// Forward declarations.
+namespace renderer  { class Scene; }
 
 using namespace appleseed::shared;
 using namespace boost;
@@ -97,7 +100,6 @@ RenderingManager::RenderingManager(StatusBar& status_bar)
   : m_status_bar(status_bar)
   , m_project(0)
   , m_render_widget(0)
-  , m_override_shading(false)
   , m_camera_changed(false)
 {
     //
@@ -207,6 +209,11 @@ void RenderingManager::wait_until_rendering_end()
     }
 }
 
+void RenderingManager::push_delayed_action(auto_ptr<IDelayedAction> action)
+{
+    m_delayed_actions.push_back(action.release());
+}
+
 void RenderingManager::abort_rendering()
 {
     RENDERER_LOG_DEBUG("aborting rendering...");
@@ -222,6 +229,21 @@ void RenderingManager::restart_rendering()
 void RenderingManager::reinitialize_rendering()
 {
     m_renderer_controller.set_status(IRendererController::ReinitializeRendering);
+}
+
+void RenderingManager::slot_abort_rendering()
+{
+    abort_rendering();
+}
+
+void RenderingManager::slot_restart_rendering()
+{
+    restart_rendering();
+}
+
+void RenderingManager::slot_reinitialize_rendering()
+{
+    reinitialize_rendering();
 }
 
 void RenderingManager::timerEvent(QTimerEvent* event)
@@ -269,23 +291,23 @@ void RenderingManager::archive_frame_to_disk()
     m_project->get_frame()->archive(autosave_path.string().c_str());
 }
 
+void RenderingManager::consume_delayed_actions()
+{
+    for (each<DelayedActionCollection> i = m_delayed_actions; i; ++i)
+    {
+        IDelayedAction* action = *i;
+        (*action)(*m_master_renderer.get(), *m_project);
+        delete action;
+    }
+
+    m_delayed_actions.clear();
+}
+
 void RenderingManager::slot_rendering_begin()
 {
     assert(m_master_renderer.get());
 
-    if (m_override_shading)
-    {
-        m_master_renderer->get_parameters()
-            .push("shading_engine")
-            .push("override_shading")
-            .insert("mode", m_override_shading_mode);
-    }
-    else
-    {
-        m_master_renderer->get_parameters()
-            .push("shading_engine")
-            .dictionaries().remove("override_shading");
-    }
+    consume_delayed_actions();
 
     const int IdleUpdateRate = 15;  // hertz
     m_render_widget_update_timer.start(1000 / IdleUpdateRate, this);
@@ -327,24 +349,6 @@ void RenderingManager::slot_frame_end()
     m_status_bar.stop_rendering_time_display();
 
     m_render_widget->update();
-}
-
-void RenderingManager::slot_clear_shading_override()
-{
-    m_override_shading = false;
-
-    reinitialize_rendering();
-}
-
-void RenderingManager::slot_set_shading_override()
-{
-    QAction* action = qobject_cast<QAction*>(sender());
-    const string shading_mode = action->data().toString().toStdString();
-
-    m_override_shading = true;
-    m_override_shading_mode = shading_mode;
-
-    reinitialize_rendering();
 }
 
 void RenderingManager::slot_camera_changed()

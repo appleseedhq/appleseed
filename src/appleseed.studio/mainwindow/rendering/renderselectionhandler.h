@@ -26,57 +26,51 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_RENDERING_SCENEPICKINGHANDLER_H
-#define APPLESEED_STUDIO_MAINWINDOW_RENDERING_SCENEPICKINGHANDLER_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_RENDERING_RENDERSELECTIONHANDLER_H
+#define APPLESEED_STUDIO_MAINWINDOW_RENDERING_RENDERSELECTIONHANDLER_H
 
 // Qt headers.
 #include <QObject>
-#include <QString>
+#include <QPoint>
 
 // Forward declarations.
 namespace appleseed { namespace studio { class MouseCoordinatesTracker; } }
-namespace appleseed { namespace studio { class ProjectExplorer; } }
-namespace renderer  { class Project; }
-class QComboBox;
+namespace appleseed { namespace studio { class RenderWidget; } }
 class QEvent;
-class QPoint;
+class QRect;
+class QRubberBand;
 
 namespace appleseed {
 namespace studio {
 
-class ScenePickingHandler
+class RenderSelectionHandler
   : public QObject
 {
     Q_OBJECT
 
   public:
-    ScenePickingHandler(
-        QComboBox*                          picking_mode_combo,
-        const MouseCoordinatesTracker&      mouse_tracker,
-        const ProjectExplorer&              project_explorer,
-        const renderer::Project&            project);
+    RenderSelectionHandler(
+        RenderWidget*                       render_widget,
+        const MouseCoordinatesTracker&      mouse_tracker);
 
-    ~ScenePickingHandler();
+    ~RenderSelectionHandler();
 
     void set_enabled(const bool enabled);
 
-  public slots:
-    void slot_picking_mode_changed(const int index);
+  signals:
+    void signal_render_selection(const QRect& rect);
 
   private:
-    QComboBox*                              m_picking_mode_combo;
-    QString                                 m_picking_mode;
+    RenderWidget*                           m_render_widget;
     const MouseCoordinatesTracker&          m_mouse_tracker;
-    const ProjectExplorer&                  m_project_explorer;
-    const renderer::Project&                m_project;
     bool                                    m_enabled;
+    QRubberBand*                            m_rubber_band;
+    QPoint                                  m_origin;
 
     virtual bool eventFilter(QObject* object, QEvent* event);
-
-    void pick(const QPoint& point);
 };
 
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_RENDERING_SCENEPICKINGHANDLER_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_RENDERING_RENDERSELECTIONHANDLER_H

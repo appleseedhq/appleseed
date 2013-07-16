@@ -76,6 +76,7 @@ ScenePickingHandler::ScenePickingHandler(
   , m_mouse_tracker(mouse_tracker)
   , m_project_explorer(project_explorer)
   , m_project(project)
+  , m_enabled(true)
 {
     m_mouse_tracker.get_widget()->installEventFilter(this);
 
@@ -100,6 +101,11 @@ ScenePickingHandler::~ScenePickingHandler()
     m_mouse_tracker.get_widget()->removeEventFilter(this);
 }
 
+void ScenePickingHandler::set_enabled(const bool enabled)
+{
+    m_enabled = enabled;
+}
+
 void ScenePickingHandler::slot_picking_mode_changed(const int index)
 {
     m_picking_mode = m_picking_mode_combo->itemData(index).value<QString>();
@@ -107,6 +113,9 @@ void ScenePickingHandler::slot_picking_mode_changed(const int index)
 
 bool ScenePickingHandler::eventFilter(QObject* object, QEvent* event)
 {
+    if (!m_enabled)
+        return QObject::eventFilter(object, event);
+
     if (event->type() == QEvent::MouseButtonPress)
     {
         const QMouseEvent* mouse_event = static_cast<QMouseEvent*>(event);

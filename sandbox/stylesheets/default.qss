@@ -347,7 +347,7 @@ QMenu::tearoff:selected
 QToolBar
 {
     border: BORDER_STYLE;
-    padding: 2px;
+    padding: 4px;
 }
 
 QToolBar::separator
@@ -375,7 +375,8 @@ QToolButton:hover
     color: HOVER_TEXT_COLOR;
 }
 
-QToolButton:pressed
+QToolButton:pressed,
+QToolButton:checked
 {
     background-color: SELECTED_BACKGROUND_COLOR;
     color: SELECTED_TEXT_COLOR;
@@ -893,29 +894,33 @@ QWidget#MaterialAssignmentEditorWindow QWidget#scrollarea_contents
     background-color: transparent;
 }
 
-QTabWidget#tab_render_channels QWidget
+QTabWidget#tab_render_channels > QWidget,
+QTabWidget#tab_render_channels QWidget#render_widget_tab,
+QTabWidget#tab_render_channels QScrollArea#render_widget_scrollarea,
+QTabWidget#tab_render_channels QWidget#render_widget_wrapper
 {
     background-color: transparent;
 }
 
-/* Overqualify to give precedence. */
-QWidget > QFrame#render_tools_frame
+QLabel#picking_mode_label
 {
-    background-color: DEFAULT_BACKGROUND_COLOR;
+    margin-left: 4px;
+    margin-right: 4px;
 }
 
-/* Overqualify to give precedence. */
-QFrame#render_tools_frame QComboBox#picking_mode_combo
+QComboBox#picking_mode_combo
 {
-    background-color: INPUT_BACKGROUND_COLOR;
     min-width: 120px;
     max-width: 120px;
+    margin-left: 1px;
+    margin-right: 1px;
 }
 
-/* Overqualify to give precedence. */
-QFrame#render_tools_frame QLabel#info_label
+QLabel#info_label
 {
     color: INFO_TEXT_COLOR;
     min-width: 240px;
     max-width: 240px;
+    margin-left: 4px;
+    margin-right: 4px;
 }

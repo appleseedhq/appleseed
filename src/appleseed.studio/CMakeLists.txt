@@ -190,6 +190,8 @@ set (mainwindow_rendering_sources
     mainwindow/rendering/renderingmanager.cpp
     mainwindow/rendering/renderingmanager.h
     mainwindow/rendering/renderingtimer.h
+    mainwindow/rendering/renderselectionhandler.cpp
+    mainwindow/rendering/renderselectionhandler.h
     mainwindow/rendering/renderwidget.cpp
     mainwindow/rendering/renderwidget.h
     mainwindow/rendering/scenepickinghandler.cpp

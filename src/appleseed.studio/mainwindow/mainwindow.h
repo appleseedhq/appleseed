@@ -36,6 +36,7 @@
 #include "mainwindow/project/projectexplorer.h"
 #include "mainwindow/project/projectmanager.h"
 #include "mainwindow/rendering/renderingmanager.h"
+#include "mainwindow/rendering/renderselectionhandler.h"
 #include "mainwindow/rendering/renderwidget.h"
 #include "mainwindow/rendering/scenepickinghandler.h"
 #include "mainwindow/qtlogtarget.h"
@@ -67,10 +68,14 @@
 namespace appleseed { namespace studio { class LogWidget; } }
 namespace Ui        { class MainWindow; }
 class QAction;
+class QComboBox;
 class QLabel;
 class QPoint;
+class QRect;
 class QString;
 class QStringList;
+class QToolBar;
+class QToolButton;
 
 namespace appleseed {
 namespace studio {
@@ -124,15 +129,22 @@ class MainWindow
     ProjectExplorer*                    m_project_explorer;
     RenderingManager                    m_rendering_manager;
 
-    // A helper structure to associate event handlers to a render widget.
+    // A helper structure to associate widgets and event handlers to a render widget.
     struct RenderWidgetRecord
       : public foundation::NonCopyable
     {
         RenderWidget*                           m_render_widget;
+
+        QToolBar*                               m_toolbar;
+        QComboBox*                              m_picking_mode_combo;
+        QToolButton*                            m_render_selection_button;
+        QLabel*                                 m_info_label;
+
         std::auto_ptr<WidgetZoomHandler>        m_zoom_handler;
         std::auto_ptr<ScrollAreaPanHandler>     m_pan_handler;
         std::auto_ptr<MouseCoordinatesTracker>  m_mouse_tracker;
         std::auto_ptr<ScenePickingHandler>      m_picking_handler;
+        std::auto_ptr<RenderSelectionHandler>   m_render_selection_handler;
     };
 
     typedef std::map<std::string, RenderWidgetRecord*> RenderWidgetCollection;
@@ -201,8 +213,14 @@ class MainWindow
         const QString&  filepath,
         const QString&  configuration,
         const bool      successful);
-    void slot_stop_rendering();
     void slot_rendering_end();
+
+    void slot_clear_shading_override();
+    void slot_set_shading_override();
+
+    void slot_toggle_render_selection(const bool checked);
+    void slot_clear_render_selection();
+    void slot_render_selection(const QRect& rect);
 
     void slot_camera_changed();
 

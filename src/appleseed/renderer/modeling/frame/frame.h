@@ -91,7 +91,9 @@ class DLLSYMBOL Frame
     // Return true if the frame uses premultiplied alpha, false if it uses straight alpha.
     bool is_premultiplied_alpha() const;
 
-    // Return the crop window.
+    // Set/get the crop window.
+    void clear_crop_window();
+    void set_crop_window(const foundation::AABB2u& crop_window);
     const foundation::AABB2u& get_crop_window() const;
 
     // Convert a tile or an image from linear RGB to the output color space.

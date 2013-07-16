@@ -168,6 +168,19 @@ const LightingConditions& Frame::get_lighting_conditions() const
     return impl->m_lighting_conditions;
 }
 
+void Frame::clear_crop_window()
+{
+    impl->m_crop_window =
+        AABB2u(
+            Vector2u(0, 0),
+            Vector2u(impl->m_frame_width, impl->m_frame_height));
+}
+
+void Frame::set_crop_window(const AABB2u& crop_window)
+{
+    impl->m_crop_window = crop_window;
+}
+
 const AABB2u& Frame::get_crop_window() const
 {
     return impl->m_crop_window;
