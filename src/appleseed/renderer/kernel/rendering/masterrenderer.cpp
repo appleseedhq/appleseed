@@ -68,8 +68,8 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
-#include "foundation/platform/thread.h"
 #include "foundation/platform/system.h"
+#include "foundation/platform/thread.h"
 #include "foundation/utility/searchpaths.h"
 
 // OIIO headers.
@@ -77,7 +77,7 @@
 #include "OpenImageIO/texture.h"
 #endif
 
-// OpenEXR headers
+// OpenEXR headers.
 #include "OpenEXR/ImfThreading.h"
 
 // boost headers.
@@ -215,8 +215,9 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     assert(m_project.get_scene());
     assert(m_project.get_frame());
 
-    // OpenEXR threading
-    setGlobalThreadCount(System::get_logical_cpu_core_count());
+    // OpenEXR threading.
+    setGlobalThreadCount(
+        static_cast<int>(System::get_logical_cpu_core_count()));
 
 #ifdef WITH_OSL
 
