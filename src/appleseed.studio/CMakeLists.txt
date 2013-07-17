@@ -243,6 +243,8 @@ source_group ("meta\\tests" FILES
 set (utility_sources
     utility/chartwidget.cpp
     utility/chartwidget.h
+    utility/doubleslider.cpp
+    utility/doubleslider.h
     utility/foldablepanelwidget.cpp
     utility/foldablepanelwidget.h
     utility/inputwidgetproxies.cpp
