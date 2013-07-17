@@ -134,6 +134,7 @@ class EntityEditorWindow
 
     void create_input_widget(const foundation::Dictionary& definition);
     void create_text_box_input_widget(const foundation::Dictionary& definition);
+    void create_numeric_input_widget(const foundation::Dictionary& definition);
     void create_checkbox_input_widget(const foundation::Dictionary& definition);
     void create_dropdown_list_input_widget(const foundation::Dictionary& definition);
     void create_entity_picker_input_widget(const foundation::Dictionary& definition);

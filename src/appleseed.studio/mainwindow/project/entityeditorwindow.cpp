@@ -34,6 +34,7 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/entitybrowserwindow.h"
+#include "utility/doubleslider.h"
 #include "utility/inputwidgetproxies.h"
 #include "utility/interop.h"
 #include "utility/tweaks.h"
@@ -201,6 +202,10 @@ void EntityEditorWindow::create_input_widget(const Dictionary& definition)
     {
         create_text_box_input_widget(definition);
     }
+    else if (widget_type == "numeric")
+    {
+        create_numeric_input_widget(definition);
+    }
     else if (widget_type == "checkbox")
     {
         create_checkbox_input_widget(definition);
@@ -261,6 +266,82 @@ void EntityEditorWindow::create_text_box_input_widget(const Dictionary& definiti
     }
 
     m_form_layout->addRow(get_label_text(definition), line_edit);
+}
+
+namespace
+{
+    class LineEditDoubleSliderAdaptor
+      : public QObject
+    {
+        Q_OBJECT
+
+      public:
+        LineEditDoubleSliderAdaptor(QLineEdit* line_edit, DoubleSlider* slider)
+          : QObject(line_edit)
+          , m_line_edit(line_edit)
+          , m_slider(slider)
+        {
+        }
+
+      public slots:
+        void slot_set_line_edit_value(const double value)
+        {
+            m_line_edit->blockSignals(true);
+            m_line_edit->setText(QString("%1").arg(value));
+            m_line_edit->blockSignals(false);
+        }
+
+        void slot_set_slider_value(const QString& value)
+        {
+            m_slider->blockSignals(true);
+            m_slider->setValue(value.toDouble());
+            m_slider->blockSignals(false);
+        }
+
+      private:
+        QLineEdit*      m_line_edit;
+        DoubleSlider*   m_slider;
+    };
+}
+
+void EntityEditorWindow::create_numeric_input_widget(const Dictionary& definition)
+{
+    QLineEdit* line_edit = new QLineEdit(m_ui->scrollarea_contents);
+    line_edit->setMaximumWidth(60);
+
+    DoubleSlider* slider = new DoubleSlider(Qt::Horizontal, m_ui->scrollarea_contents);
+    slider->setRange(
+        definition.get<double>("min_value"),
+        definition.get<double>("max_value"));
+
+    LineEditDoubleSliderAdaptor* adaptor =
+        new LineEditDoubleSliderAdaptor(line_edit, slider);
+    connect(
+        slider, SIGNAL(valueChanged(const double)),
+        adaptor, SLOT(slot_set_line_edit_value(const double)));
+    connect(
+        line_edit, SIGNAL(textChanged(const QString&)),
+        adaptor, SLOT(slot_set_slider_value(const QString&)));
+
+    const string name = definition.get<string>("name");
+
+    IInputWidgetProxy* widget_proxy = new LineEditProxy(line_edit);
+    m_widget_proxies[name] = widget_proxy;
+
+    if (definition.strings().exist("default"))
+        widget_proxy->set(definition.strings().get<string>("default"));
+
+    if (should_be_focused(definition))
+    {
+        line_edit->selectAll();
+        line_edit->setFocus();
+    }
+
+    QHBoxLayout* layout = new QHBoxLayout();
+    layout->setSpacing(6);
+    layout->addWidget(line_edit);
+    layout->addWidget(slider);
+    m_form_layout->addRow(get_label_text(definition), layout);
 }
 
 void EntityEditorWindow::create_checkbox_input_widget(const Dictionary& definition)
