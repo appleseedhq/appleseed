@@ -153,10 +153,9 @@ void MaterialAssignmentEditorWindow::create_widgets_for_slot(
     const char*         slot_name)
 {
     QGridLayout* row_layout = new QGridLayout();
-    row_layout->setHorizontalSpacing(20);
-    row_layout->setVerticalSpacing(10);
+    row_layout->setSpacing(10);
 
-    row_layout->addWidget(new QLabel("Slot:"), 0, 0);
+    row_layout->addWidget(new QLabel("Slot:"), 0, 0, Qt::AlignRight);
     row_layout->addWidget(new QLabel(QString("<b>%1</b>").arg(slot_name)), 0, 1);
 
     create_widgets_for_side(row_layout, 1, slot_name, ObjectInstance::FrontSide);
@@ -171,7 +170,7 @@ void MaterialAssignmentEditorWindow::create_widgets_for_side(
     const char*         slot_name,
     const Side          side)
 {
-    parent->addWidget(new QLabel(side == ObjectInstance::FrontSide ? "Front:" : "Back:"), row_index, 0);
+    parent->addWidget(new QLabel(side == ObjectInstance::FrontSide ? "Front:" : "Back:"), row_index, 0, Qt::AlignRight);
 
     QHBoxLayout* layout = new QHBoxLayout();
     layout->setSpacing(6);
