@@ -721,6 +721,67 @@ QComboBox:disabled
 
 
 /*
+ * QSlider.
+ */
+
+QSlider:horizontal
+{
+    height: 20px;
+}
+
+QSlider:vertical
+{
+    width: 20px;
+}
+
+QSlider::groove
+{
+    border: BORDER_STYLE;
+    background-color: INPUT_BACKGROUND_COLOR;
+}
+
+QSlider::groove:horizontal
+{
+    height: 4px;
+}
+
+QSlider::groove:vertical
+{
+    width: 4px;
+}
+
+QSlider::sub-page:horizontal,
+QSlider::add-page:vertical
+{
+    background-color: SELECTED_BACKGROUND_COLOR;
+}
+
+QSlider::handle
+{
+    background-color: rgb(120, 120, 120);
+}
+
+QSlider::handle:horizontal
+{
+    width: 8px;
+    margin-top: -6px;
+    margin-bottom: -6px;
+}
+
+QSlider::handle:vertical
+{
+    height: 8px;
+    margin-left: -6px;
+    margin-right: -6px;
+}
+
+QSlider::handle:hover
+{
+    background-color: HOVER_BACKGROUND_COLOR;
+}
+
+
+/*
  * QLabel.
  */
 
