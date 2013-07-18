@@ -248,7 +248,9 @@ DictionaryArray ConeEDFFactory::get_widget_definitions() const
         Dictionary()
             .insert("name", "angle")
             .insert("label", "Angle")
-            .insert("widget", "text_box")
+            .insert("widget", "numeric")
+            .insert("min_value", "-360.0")
+            .insert("max_value", "360.0")
             .insert("use", "required")
             .insert("default", "90.0"));
 

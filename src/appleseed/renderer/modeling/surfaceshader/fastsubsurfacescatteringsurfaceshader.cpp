@@ -338,100 +338,87 @@ DictionaryArray FastSubSurfaceScatteringSurfaceShaderFactory::get_widget_definit
 {
     DictionaryArray definitions;
 
-    {
-        Dictionary widget;
-        widget.insert("name", "scale");
-        widget.insert("label", "Geometric Scale");
-        widget.insert("widget", "text_box");
-        widget.insert("use", "required");
-        widget.insert("default", "1.0");
-        definitions.push_back(widget);
-    }
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "scale")
+            .insert("label", "Geometric Scale")
+            .insert("widget", "text_box")
+            .insert("use", "required")
+            .insert("default", "1.0"));
 
-    {
-        Dictionary widget;
-        widget.insert("name", "ambient_sss");
-        widget.insert("label", "Ambient SSS");
-        widget.insert("widget", "text_box");
-        widget.insert("use", "required");
-        widget.insert("default", "0.0");
-        definitions.push_back(widget);
-    }
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "ambient_sss")
+            .insert("label", "Ambient SSS")
+            .insert("widget", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "1.0")
+            .insert("use", "required")
+            .insert("default", "0.0"));
 
-    {
-        Dictionary widget;
-        widget.insert("name", "view_dep_sss");
-        widget.insert("label", "View-Dependent SSS");
-        widget.insert("widget", "text_box");
-        widget.insert("use", "required");
-        widget.insert("default", "0.0");
-        definitions.push_back(widget);
-    }
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "view_dep_sss")
+            .insert("label", "View-Dependent SSS")
+            .insert("widget", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "1.0")
+            .insert("use", "required")
+            .insert("default", "0.0"));
 
-    {
-        Dictionary widget;
-        widget.insert("name", "diffuse");
-        widget.insert("label", "Diffuse Lighting");
-        widget.insert("widget", "text_box");
-        widget.insert("use", "required");
-        widget.insert("default", "0.0");
-        definitions.push_back(widget);
-    }
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "diffuse")
+            .insert("label", "Diffuse Lighting")
+            .insert("widget", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "1.0")
+            .insert("use", "required")
+            .insert("default", "0.0"));
 
-    {
-        Dictionary widget;
-        widget.insert("name", "power");
-        widget.insert("label", "Power");
-        widget.insert("widget", "text_box");
-        widget.insert("use", "required");
-        widget.insert("default", "1.0");
-        definitions.push_back(widget);
-    }
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "power")
+            .insert("label", "Power")
+            .insert("widget", "text_box")
+            .insert("use", "required")
+            .insert("default", "1.0"));
 
-    {
-        Dictionary widget;
-        widget.insert("name", "distortion");
-        widget.insert("label", "Normal Distortion");
-        widget.insert("widget", "text_box");
-        widget.insert("use", "required");
-        widget.insert("default", "0.0");
-        definitions.push_back(widget);
-    }
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "distortion")
+            .insert("label", "Normal Distortion")
+            .insert("widget", "text_box")
+            .insert("use", "required")
+            .insert("default", "0.0"));
 
-    {
-        Dictionary entity_types;
-        entity_types.insert("color", "Colors");
-        entity_types.insert("texture_instance", "Textures");
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "albedo")
+            .insert("label", "Albedo")
+            .insert("widget", "entity_picker")
+            .insert("entity_types",
+                Dictionary()
+                    .insert("color", "Colors")
+                    .insert("texture_instance", "Textures"))
+            .insert("use", "required")
+            .insert("default", ""));
 
-        Dictionary widget;
-        widget.insert("name", "albedo");
-        widget.insert("label", "Albedo");
-        widget.insert("widget", "entity_picker");
-        widget.insert("entity_types", entity_types);
-        widget.insert("use", "required");
-        widget.insert("default", "");
-        definitions.push_back(widget);
-    }
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "light_samples")
+            .insert("label", "Light Samples")
+            .insert("widget", "text_box")
+            .insert("use", "required")
+            .insert("default", "1"));
 
-    {
-        Dictionary widget;
-        widget.insert("name", "light_samples");
-        widget.insert("label", "Light Samples");
-        widget.insert("widget", "text_box");
-        widget.insert("use", "required");
-        widget.insert("default", "1");
-        definitions.push_back(widget);
-    }
-
-    {
-        Dictionary widget;
-        widget.insert("name", "occlusion_samples");
-        widget.insert("label", "Occlusion Samples");
-        widget.insert("widget", "text_box");
-        widget.insert("use", "required");
-        widget.insert("default", "1");
-        definitions.push_back(widget);
-    }
+    definitions.push_back(
+        Dictionary()
+            .insert("name", "occlusion_samples")
+            .insert("label", "Occlusion Samples")
+            .insert("widget", "text_box")
+            .insert("use", "required")
+            .insert("default", "1"));
 
     return definitions;
 }

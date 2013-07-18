@@ -365,7 +365,9 @@ DictionaryArray ThinLensCameraFactory::get_widget_definitions() const
         Dictionary()
             .insert("name", "diaphragm_tilt_angle")
             .insert("label", "Diaphragm Tilt Angle")
-            .insert("widget", "text_box")
+            .insert("widget", "numeric")
+            .insert("min_value", "-360.0")
+            .insert("max_value", "360.0")
             .insert("use", "required")
             .insert("default", "0.0"));
 

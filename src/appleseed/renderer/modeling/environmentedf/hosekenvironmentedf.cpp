@@ -445,7 +445,9 @@ DictionaryArray HosekEnvironmentEDFFactory::get_widget_definitions() const
         Dictionary()
             .insert("name", "sun_theta")
             .insert("label", "Sun Theta Angle")
-            .insert("widget", "text_box")
+            .insert("widget", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "90.0")
             .insert("use", "required")
             .insert("default", "45.0"));
 
@@ -453,7 +455,9 @@ DictionaryArray HosekEnvironmentEDFFactory::get_widget_definitions() const
         Dictionary()
             .insert("name", "sun_phi")
             .insert("label", "Sun Phi Angle")
-            .insert("widget", "text_box")
+            .insert("widget", "numeric")
+            .insert("min_value", "-360.0")
+            .insert("max_value", "360.0")
             .insert("use", "required")
             .insert("default", "0.0"));
 
@@ -471,7 +475,9 @@ DictionaryArray HosekEnvironmentEDFFactory::get_widget_definitions() const
         Dictionary()
             .insert("name", "turbidity_min")
             .insert("label", "Turbidity Min")
-            .insert("widget", "text_box")
+            .insert("widget", "numeric")
+            .insert("min_value", "1.0")
+            .insert("max_value", "10.0")
             .insert("use", "optional")
             .insert("default", "2.0"));
 
@@ -479,7 +485,9 @@ DictionaryArray HosekEnvironmentEDFFactory::get_widget_definitions() const
         Dictionary()
             .insert("name", "turbidity_max")
             .insert("label", "Turbidity Max")
-            .insert("widget", "text_box")
+            .insert("widget", "numeric")
+            .insert("min_value", "1.0")
+            .insert("max_value", "10.0")
             .insert("use", "optional")
             .insert("default", "6.0"));
 
@@ -487,7 +495,9 @@ DictionaryArray HosekEnvironmentEDFFactory::get_widget_definitions() const
         Dictionary()
             .insert("name", "ground_albedo")
             .insert("label", "Ground Albedo")
-            .insert("widget", "text_box")
+            .insert("widget", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "1.0")
             .insert("use", "optional")
             .insert("default", "0.3"));
 
@@ -495,7 +505,9 @@ DictionaryArray HosekEnvironmentEDFFactory::get_widget_definitions() const
         Dictionary()
             .insert("name", "luminance_multiplier")
             .insert("label", "Luminance Multiplier")
-            .insert("widget", "text_box")
+            .insert("widget", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "1.0")
             .insert("use", "optional")
             .insert("default", "1.0"));
 
@@ -503,7 +515,9 @@ DictionaryArray HosekEnvironmentEDFFactory::get_widget_definitions() const
         Dictionary()
             .insert("name", "saturation_multiplier")
             .insert("label", "Saturation Multiplier")
-            .insert("widget", "text_box")
+            .insert("widget", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "1.0")
             .insert("use", "optional")
             .insert("default", "1.0"));
 

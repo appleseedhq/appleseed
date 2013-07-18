@@ -426,7 +426,9 @@ DictionaryArray LatLongMapEnvironmentEDFFactory::get_widget_definitions() const
         Dictionary()
             .insert("name", "horizontal_shift")
             .insert("label", "Horizontal Shift")
-            .insert("widget", "text_box")
+            .insert("widget", "numeric")
+            .insert("min_value", "-360.0")
+            .insert("max_value", "360.0")
             .insert("default", "0.0")
             .insert("use", "optional"));
 
@@ -434,7 +436,9 @@ DictionaryArray LatLongMapEnvironmentEDFFactory::get_widget_definitions() const
         Dictionary()
             .insert("name", "vertical_shift")
             .insert("label", "Vertical Shift")
-            .insert("widget", "text_box")
+            .insert("widget", "numeric")
+            .insert("min_value", "-360.0")
+            .insert("max_value", "360.0")
             .insert("default", "0.0")
             .insert("use", "optional"));
 

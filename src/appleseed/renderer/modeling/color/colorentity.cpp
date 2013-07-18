@@ -283,7 +283,9 @@ DictionaryArray ColorEntityFactory::get_widget_definitions()
         Dictionary()
             .insert("name", "alpha")
             .insert("label", "Alpha")
-            .insert("widget", "text_box")
+            .insert("widget", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "1.0")
             .insert("default", "1.0")
             .insert("use", "optional"));
 
@@ -291,7 +293,9 @@ DictionaryArray ColorEntityFactory::get_widget_definitions()
         Dictionary()
             .insert("name", "multiplier")
             .insert("label", "Multiplier")
-            .insert("widget", "text_box")
+            .insert("widget", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "1.0")
             .insert("default", "1.0")
             .insert("use", "optional"));
 
