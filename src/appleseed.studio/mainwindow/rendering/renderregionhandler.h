@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_RENDERING_RENDERSELECTIONHANDLER_H
-#define APPLESEED_STUDIO_MAINWINDOW_RENDERING_RENDERSELECTIONHANDLER_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_RENDERING_RENDERREGIONHANDLER_H
+#define APPLESEED_STUDIO_MAINWINDOW_RENDERING_RENDERREGIONHANDLER_H
 
 // Qt headers.
 #include <QObject>
@@ -43,22 +43,22 @@ class QRubberBand;
 namespace appleseed {
 namespace studio {
 
-class RenderSelectionHandler
+class RenderRegionHandler
   : public QObject
 {
     Q_OBJECT
 
   public:
-    RenderSelectionHandler(
+    RenderRegionHandler(
         RenderWidget*                       render_widget,
         const MouseCoordinatesTracker&      mouse_tracker);
 
-    ~RenderSelectionHandler();
+    ~RenderRegionHandler();
 
     void set_enabled(const bool enabled);
 
   signals:
-    void signal_render_selection(const QRect& rect);
+    void signal_render_region(const QRect& rect);
 
   private:
     RenderWidget*                           m_render_widget;
@@ -73,4 +73,4 @@ class RenderSelectionHandler
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_RENDERING_RENDERSELECTIONHANDLER_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_RENDERING_RENDERREGIONHANDLER_H

@@ -781,7 +781,7 @@ namespace
     {
         QToolBar*       m_toolbar;
         QComboBox*      m_picking_mode_combo;
-        QToolButton*    m_render_selection_button;
+        QToolButton*    m_render_region_button;
         QLabel*         m_info_label;
     };
 
@@ -807,26 +807,26 @@ namespace
 
         widgets.m_toolbar->addSeparator();
 
-        // Create the Render Selection button in the render toolbar.
-        widgets.m_render_selection_button = new QToolButton();
-        widgets.m_render_selection_button->setIcon(QIcon(":/icons/selection-blue.png"));
-        widgets.m_render_selection_button->setToolTip("Render Selection");
-        widgets.m_render_selection_button->setShortcut(Qt::Key_R);
-        widgets.m_render_selection_button->setCheckable(true);
-        widgets.m_toolbar->addWidget(widgets.m_render_selection_button);
+        // Create the Set Render Region button in the render toolbar.
+        widgets.m_render_region_button = new QToolButton();
+        widgets.m_render_region_button->setIcon(QIcon(":/icons/selection-blue.png"));
+        widgets.m_render_region_button->setToolTip("Set Render Region");
+        widgets.m_render_region_button->setShortcut(Qt::Key_R);
+        widgets.m_render_region_button->setCheckable(true);
+        widgets.m_toolbar->addWidget(widgets.m_render_region_button);
         QObject::connect(
-            widgets.m_render_selection_button, SIGNAL(toggled(bool)),
-            parent, SLOT(slot_toggle_render_selection(const bool)));
+            widgets.m_render_region_button, SIGNAL(toggled(bool)),
+            parent, SLOT(slot_toggle_render_region(const bool)));
 
-        // Create the Clear Render Selection button in the render toolbar.
-        QToolButton* clear_render_selection_button = new QToolButton();
-        clear_render_selection_button->setIcon(QIcon(":/icons/selection-crossed.png"));
-        clear_render_selection_button->setToolTip("Clear Render Selection");
-        clear_render_selection_button->setShortcut(Qt::Key_C);
-        widgets.m_toolbar->addWidget(clear_render_selection_button);
+        // Create the Clear Render Region button in the render toolbar.
+        QToolButton* clear_render_region_button = new QToolButton();
+        clear_render_region_button->setIcon(QIcon(":/icons/selection-crossed.png"));
+        clear_render_region_button->setToolTip("Clear Render Region");
+        clear_render_region_button->setShortcut(Qt::Key_C);
+        widgets.m_toolbar->addWidget(clear_render_region_button);
         QObject::connect(
-            clear_render_selection_button, SIGNAL(clicked()),
-            parent, SLOT(slot_clear_render_selection()));
+            clear_render_region_button, SIGNAL(clicked()),
+            parent, SLOT(slot_clear_render_region()));
 
         widgets.m_toolbar->addSeparator();
 
@@ -880,7 +880,7 @@ void MainWindow::add_render_widget(
     record->m_render_widget = render_widget;
     record->m_toolbar = render_toolbar_widgets.m_toolbar;
     record->m_picking_mode_combo = render_toolbar_widgets.m_picking_mode_combo;
-    record->m_render_selection_button = render_toolbar_widgets.m_render_selection_button;
+    record->m_render_region_button = render_toolbar_widgets.m_render_region_button;
     record->m_info_label = render_toolbar_widgets.m_info_label;
 
     // Attach a bunch of handlers to the render widget.
@@ -905,19 +905,19 @@ void MainWindow::add_render_widget(
             *record->m_mouse_tracker.get(),
             *m_project_explorer,
             *m_project_manager.get_project()));
-    record->m_render_selection_handler.reset(
-        new RenderSelectionHandler(
+    record->m_render_region_handler.reset(
+        new RenderRegionHandler(
             render_widget,
             *record->m_mouse_tracker.get()));
     m_render_widgets[label.toStdString()] = record;
 
     connect(
-        record->m_render_selection_handler.get(), SIGNAL(signal_render_selection(const QRect&)),
-        SLOT(slot_render_selection(const QRect&)));
+        record->m_render_region_handler.get(), SIGNAL(signal_render_region(const QRect&)),
+        SLOT(slot_set_render_region(const QRect&)));
 
-    // Initially, scene picking is enabled and render selection is disabled.
+    // Initially, scene picking is enabled and render region is disabled.
     record->m_picking_handler->set_enabled(true);
-    record->m_render_selection_handler->set_enabled(false);
+    record->m_render_region_handler->set_enabled(false);
 
     // Attach a contextual menu to the render widget.
     render_widget->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -1229,17 +1229,17 @@ void MainWindow::slot_set_shading_override()
     m_rendering_manager.reinitialize_rendering();
 }
 
-void MainWindow::slot_toggle_render_selection(const bool checked)
+void MainWindow::slot_toggle_render_region(const bool checked)
 {
     // todo: use the current render widget.
     RenderWidgetRecord* render_widget_record = m_render_widgets["RGB"];
     render_widget_record->m_picking_handler->set_enabled(!checked);
-    render_widget_record->m_render_selection_handler->set_enabled(checked);
+    render_widget_record->m_render_region_handler->set_enabled(checked);
 }
 
 namespace
 {
-    class ClearRenderSelectionDelayedAction
+    class ClearRenderRegionDelayedAction
       : public RenderingManager::IDelayedAction
     {
       public:
@@ -1253,11 +1253,11 @@ namespace
         }
     };
 
-    class SetRenderSelectionDelayedAction
+    class SetRenderRegionDelayedAction
       : public RenderingManager::IDelayedAction
     {
       public:
-        explicit SetRenderSelectionDelayedAction(const QRect& rect)
+        explicit SetRenderRegionDelayedAction(const QRect& rect)
           : m_rect(rect)
         {
         }
@@ -1290,24 +1290,24 @@ namespace
     };
 }
 
-void MainWindow::slot_clear_render_selection()
+void MainWindow::slot_clear_render_region()
 {
     m_rendering_manager.push_delayed_action(
         auto_ptr<RenderingManager::IDelayedAction>(
-            new ClearRenderSelectionDelayedAction()));
+            new ClearRenderRegionDelayedAction()));
 
     m_rendering_manager.reinitialize_rendering();
 }
 
-void MainWindow::slot_render_selection(const QRect& rect)
+void MainWindow::slot_set_render_region(const QRect& rect)
 {
     // todo: use the current render widget.
     RenderWidgetRecord* render_widget_record = m_render_widgets["RGB"];
-    render_widget_record->m_render_selection_button->setChecked(false);
+    render_widget_record->m_render_region_button->setChecked(false);
 
     m_rendering_manager.push_delayed_action(
         auto_ptr<RenderingManager::IDelayedAction>(
-            new SetRenderSelectionDelayedAction(rect)));
+            new SetRenderRegionDelayedAction(rect)));
 
     if (m_rendering_manager.is_rendering())
         m_rendering_manager.reinitialize_rendering();

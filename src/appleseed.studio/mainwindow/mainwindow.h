@@ -36,7 +36,7 @@
 #include "mainwindow/project/projectexplorer.h"
 #include "mainwindow/project/projectmanager.h"
 #include "mainwindow/rendering/renderingmanager.h"
-#include "mainwindow/rendering/renderselectionhandler.h"
+#include "mainwindow/rendering/renderregionhandler.h"
 #include "mainwindow/rendering/renderwidget.h"
 #include "mainwindow/rendering/scenepickinghandler.h"
 #include "mainwindow/qtlogtarget.h"
@@ -137,14 +137,14 @@ class MainWindow
 
         QToolBar*                               m_toolbar;
         QComboBox*                              m_picking_mode_combo;
-        QToolButton*                            m_render_selection_button;
+        QToolButton*                            m_render_region_button;
         QLabel*                                 m_info_label;
 
         std::auto_ptr<WidgetZoomHandler>        m_zoom_handler;
         std::auto_ptr<ScrollAreaPanHandler>     m_pan_handler;
         std::auto_ptr<MouseCoordinatesTracker>  m_mouse_tracker;
         std::auto_ptr<ScenePickingHandler>      m_picking_handler;
-        std::auto_ptr<RenderSelectionHandler>   m_render_selection_handler;
+        std::auto_ptr<RenderRegionHandler>      m_render_region_handler;
     };
 
     typedef std::map<std::string, RenderWidgetRecord*> RenderWidgetCollection;
@@ -218,9 +218,9 @@ class MainWindow
     void slot_clear_shading_override();
     void slot_set_shading_override();
 
-    void slot_toggle_render_selection(const bool checked);
-    void slot_clear_render_selection();
-    void slot_render_selection(const QRect& rect);
+    void slot_toggle_render_region(const bool checked);
+    void slot_clear_render_region();
+    void slot_set_render_region(const QRect& rect);
 
     void slot_camera_changed();
 

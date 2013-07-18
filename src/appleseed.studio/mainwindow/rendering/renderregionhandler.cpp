@@ -27,7 +27,7 @@
 //
 
 // Interface header.
-#include "renderselectionhandler.h"
+#include "renderregionhandler.h"
 
 // appleseed.studio headers.
 #include "mainwindow/rendering/renderwidget.h"
@@ -53,7 +53,7 @@ using namespace std;
 namespace appleseed {
 namespace studio {
 
-RenderSelectionHandler::RenderSelectionHandler(
+RenderRegionHandler::RenderRegionHandler(
     RenderWidget*                   render_widget,
     const MouseCoordinatesTracker&  mouse_tracker)
   : m_render_widget(render_widget)
@@ -64,17 +64,17 @@ RenderSelectionHandler::RenderSelectionHandler(
     m_mouse_tracker.get_widget()->installEventFilter(this);
 }
 
-RenderSelectionHandler::~RenderSelectionHandler()
+RenderRegionHandler::~RenderRegionHandler()
 {
     m_mouse_tracker.get_widget()->removeEventFilter(this);
 }
 
-void RenderSelectionHandler::set_enabled(const bool enabled)
+void RenderRegionHandler::set_enabled(const bool enabled)
 {
     m_enabled = enabled;
 }
 
-bool RenderSelectionHandler::eventFilter(QObject* object, QEvent* event)
+bool RenderRegionHandler::eventFilter(QObject* object, QEvent* event)
 {
     if (!m_enabled)
         return QObject::eventFilter(object, event);
@@ -130,7 +130,7 @@ bool RenderSelectionHandler::eventFilter(QObject* object, QEvent* event)
                 const int w = x1 - x0 + 1;
                 const int h = y1 - y0 + 1;
 
-                emit signal_render_selection(QRect(x0, y0, w, h));
+                emit signal_render_region(QRect(x0, y0, w, h));
 
                 return true;
             }
