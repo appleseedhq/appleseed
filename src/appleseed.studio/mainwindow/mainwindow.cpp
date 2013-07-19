@@ -1309,9 +1309,13 @@ void MainWindow::slot_set_render_region(const QRect& rect)
         auto_ptr<RenderingManager::IDelayedAction>(
             new SetRenderRegionDelayedAction(rect)));
 
-    if (m_rendering_manager.is_rendering())
-        m_rendering_manager.reinitialize_rendering();
-    else start_rendering(true);
+    if (m_settings.get_path_optional<bool>("ui.render_region.triggers_rendering"))
+    {
+        if (m_rendering_manager.is_rendering())
+            m_rendering_manager.reinitialize_rendering();
+        else start_rendering(true);
+    }
+    else m_rendering_manager.reinitialize_rendering();
 }
 
 void MainWindow::slot_camera_changed()
