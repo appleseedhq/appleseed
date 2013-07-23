@@ -479,10 +479,12 @@ namespace
 
                 ParamArray& params = bsdf.get_parameters();
 
+                move_if_exist(params, "glossiness", "mdf_parameter");
+
                 if (params.get_optional<string>("mdf", "") != "blinn")
                     continue;
 
-                const string mdf_param = params.get_optional<string>("mdf_parameter", "");
+                const string mdf_param = params.get_optional<string>("glossiness", "");
 
                 if (mdf_param.empty())
                     continue;
@@ -500,7 +502,6 @@ namespace
                         continue;
                     }
 
-                    params.strings().remove("mdf_parameter");
                     params.insert("glossiness", glossiness);
                 }
                 else
@@ -550,8 +551,6 @@ namespace
                             parent_scene->colors().insert(new_color_entity);
                         }
                     }
-
-                    move_if_exist(params, "glossiness", "mdf_parameter");
                 }
             }
         }
