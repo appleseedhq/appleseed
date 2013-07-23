@@ -680,9 +680,11 @@ namespace
         // Display the output image.
         if (g_cl.m_display_output.is_set())
         {
-            if (archive_path)
+            if (g_cl.m_output.is_set())
+                display_frame(g_cl.m_output.values()[0].c_str());
+            else if (archive_path)
                 display_frame(archive_path);
-            else LOG_WARNING(g_logger, "cannot display output when autosave is disabled.");
+            else LOG_WARNING(g_logger, "cannot display output when no output is specified and autosave is disabled.");
         }
 
 #endif
