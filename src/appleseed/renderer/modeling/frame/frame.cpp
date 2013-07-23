@@ -202,7 +202,7 @@ namespace
         for (size_t i = 0; i < pixel_count; ++i)
         {
             // Load the pixel color.
-            Color4f color;
+            SSE_ALIGN Color4f color;
             tile.get_pixel(i, color);
 
             // Apply color space conversion.
