@@ -32,6 +32,9 @@
 // appleseed.renderer headers.
 #include "renderer/api/rendering.h"
 
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
+
 // Forward declarations.
 namespace appleseed { namespace studio { class IRenderWidget; } }
 
@@ -48,10 +51,10 @@ class QtTileCallbackFactory
         const bool      highlight_tiles);
 
     // Delete this instance.
-    virtual void release();
+    virtual void release() OVERRIDE;
 
     // Return a new instance of the class.
-    virtual renderer::ITileCallback* create();
+    virtual renderer::ITileCallback* create() OVERRIDE;
 
   private:
     IRenderWidget*      m_render_widget;
