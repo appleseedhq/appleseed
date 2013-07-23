@@ -83,21 +83,26 @@ LocalSampleAccumulationBuffer::LocalSampleAccumulationBuffer(
     size_t level_width = width;
     size_t level_height = height;
 
-    do
+    while (true)
     {
         m_levels.push_back(
             new FilteredTile(
-                max(level_width, MinSize),
-                max(level_height, MinSize),
+                level_width,
+                level_height,
                 4,
                 filter));
 
         m_remaining_pixels.push_back(level_width * level_height);
 
-        level_width /= 2;
-        level_height /= 2;
+        if (level_width <= MinSize * 2 || level_height <= MinSize * 2)
+            break;
+
+        if (level_width > MinSize)
+            level_width = max(level_width / 2, MinSize);
+
+        if (level_height > MinSize)
+            level_height = max(level_height / 2, MinSize);
     }
-    while (level_width >= MinSize && level_height >= MinSize);
 }
 
 LocalSampleAccumulationBuffer::~LocalSampleAccumulationBuffer()
