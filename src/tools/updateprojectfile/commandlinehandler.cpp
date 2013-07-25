@@ -53,6 +53,13 @@ CommandLineHandler::CommandLineHandler()
 
     m_filename.set_exact_value_count(1);
     parser().set_default_option_handler(&m_filename);
+
+    m_to_revision.add_name("--to-revision");
+    m_to_revision.add_name("-r");
+    m_to_revision.set_description("update the project to this revision (by default, update to the latest revision)");
+    m_to_revision.set_syntax("revision");
+    m_to_revision.set_exact_value_count(1);
+    parser().add_option_handler(&m_to_revision);
 }
 
 void CommandLineHandler::parse(

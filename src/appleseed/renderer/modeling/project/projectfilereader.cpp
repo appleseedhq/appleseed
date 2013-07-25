@@ -2587,7 +2587,7 @@ auto_release_ptr<Project> ProjectFileReader::read(
             event_counters));
 
     if (project.get())
-        postprocess_project(project.ref(), event_counters);
+        postprocess_project(project.ref(), event_counters, options);
 
     stopwatch.measure();
 
@@ -2708,7 +2708,8 @@ auto_release_ptr<Project> ProjectFileReader::construct_builtin_project(
 
 void ProjectFileReader::postprocess_project(
     Project&                project,
-    EventCounters&          event_counters) const
+    EventCounters&          event_counters,
+    const int               options) const
 {
     if (!event_counters.has_errors())
         validate_project(project, event_counters);
@@ -2716,7 +2717,7 @@ void ProjectFileReader::postprocess_project(
     if (!event_counters.has_errors())
         complete_project(project, event_counters);
 
-    if (!event_counters.has_errors())
+    if (!event_counters.has_errors() && !(options & OmitProjectFileUpdate))
         upgrade_project(project, event_counters);
 }
 

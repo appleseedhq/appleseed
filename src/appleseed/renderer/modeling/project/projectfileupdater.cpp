@@ -70,7 +70,6 @@
 
 // Standard headers.
 #include <cassert>
-#include <cstddef>
 #include <cstring>
 #include <string>
 
@@ -606,20 +605,32 @@ namespace
     };
 }
 
-bool ProjectFileUpdater::update(Project& project)
+bool ProjectFileUpdater::update(Project& project, const size_t to_revision)
 {
     bool modified = false;
 
-    const size_t format_revision = project.get_format_revision();
+    size_t format_revision = project.get_format_revision();
+
+#define UPDATE(from, to)                            \
+    {                                               \
+        if (format_revision >= to_revision)         \
+            break;                                  \
+                                                    \
+        Updater_##from##_to_##to updater(project);  \
+        updater.update();                           \
+                                                    \
+        format_revision = to;                       \
+        modified = true;                            \
+    }
 
     switch (format_revision)
     {
-      case 0: { Updater_0_to_1 updater(project); updater.update(); modified = true; }
-      case 1: { Updater_1_to_2 updater(project); updater.update(); modified = true; }
-      case 2: { Updater_2_to_3 updater(project); updater.update(); modified = true; }
-      case 3: { Updater_3_to_4 updater(project); updater.update(); modified = true; }
-      case 4: { Updater_4_to_5 updater(project); updater.update(); modified = true; }
-      case 5: { Updater_5_to_6 updater(project); updater.update(); modified = true; }
+      case 0: UPDATE(0, 1);
+      case 1: UPDATE(1, 2);
+      case 2: UPDATE(2, 3);
+      case 3: UPDATE(3, 4);
+      case 4: UPDATE(4, 5);
+      case 5: UPDATE(5, 6);
 
       case 6:
         // Project is up-to-date.
@@ -629,6 +640,8 @@ bool ProjectFileUpdater::update(Project& project)
         RENDERER_LOG_ERROR("unsupported project format revision: " FMT_SIZE_T, format_revision);
         break;
     }
+
+#undef UPDATE
 
     return modified;
 }

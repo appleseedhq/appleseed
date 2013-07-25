@@ -54,6 +54,7 @@ class CommandLineHandler
 {
   public:
     foundation::ValueOptionHandler<std::string> m_filename;
+    foundation::ValueOptionHandler<int>         m_to_revision;
 
     // Constructor.
     CommandLineHandler();
