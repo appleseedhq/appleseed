@@ -513,16 +513,18 @@ void TriangleTree::build_bvh(
         &triangle_bboxes);
     const double collection_time = stopwatch.measure().get_seconds();
 
+    // Store the number of static and moving triangles.
+    m_static_triangle_count = count_static_triangles(triangle_vertex_infos);
+    m_moving_triangle_count = triangle_vertex_infos.size() - m_static_triangle_count;
+
     // Print statistics about the input geometry.
-    const size_t static_triangle_count = count_static_triangles(triangle_vertex_infos);
-    const size_t moving_triangle_count = triangle_vertex_infos.size() - static_triangle_count;
     RENDERER_LOG_INFO(
         "building bvh triangle tree #" FMT_UNIQUE_ID " (%s %s, %s %s)...",
         m_arguments.m_triangle_tree_uid,
-        pretty_uint(static_triangle_count).c_str(),
-        plural(static_triangle_count, "static triangle").c_str(),
-        pretty_uint(moving_triangle_count).c_str(),
-        plural(moving_triangle_count, "moving triangle").c_str());
+        pretty_uint(m_static_triangle_count).c_str(),
+        plural(m_static_triangle_count, "static triangle").c_str(),
+        pretty_uint(m_moving_triangle_count).c_str(),
+        plural(m_moving_triangle_count, "moving triangle").c_str());
 
     // Retrieving the partitioner parameters.
     const size_t max_leaf_size = params.get_optional<size_t>("max_leaf_size", TriangleTreeDefaultMaxLeafSize);
@@ -611,16 +613,18 @@ void TriangleTree::build_sbvh(
         &triangle_bboxes);
     const double collection_time = stopwatch.measure().get_seconds();
 
+    // Store the number of static and moving triangles.
+    m_static_triangle_count = count_static_triangles(triangle_vertex_infos);
+    m_moving_triangle_count = triangle_vertex_infos.size() - m_static_triangle_count;
+
     // Print statistics about the input geometry.
-    const size_t static_triangle_count = count_static_triangles(triangle_vertex_infos);
-    const size_t moving_triangle_count = triangle_vertex_infos.size() - static_triangle_count;
     RENDERER_LOG_INFO(
         "building sbvh triangle tree #" FMT_UNIQUE_ID " (%s %s, %s %s)...",
         m_arguments.m_triangle_tree_uid,
-        pretty_uint(static_triangle_count).c_str(),
-        plural(static_triangle_count, "static triangle").c_str(),
-        pretty_uint(moving_triangle_count).c_str(),
-        plural(moving_triangle_count, "moving triangle").c_str());
+        pretty_uint(m_static_triangle_count).c_str(),
+        plural(m_static_triangle_count, "static triangle").c_str(),
+        pretty_uint(m_moving_triangle_count).c_str(),
+        plural(m_moving_triangle_count, "moving triangle").c_str());
 
     // Retrieving the partitioner parameters.
     const size_t max_leaf_size = params.get_optional<size_t>("max_leaf_size", TriangleTreeDefaultMaxLeafSize);

@@ -106,6 +106,10 @@ class TriangleTree
     // Update the non-geometry aspects of the tree.
     void update_non_geometry();
 
+    // Return the number of static and moving triangles.
+    size_t get_static_triangle_count() const;
+    size_t get_moving_triangle_count() const;
+
     // Return the size (in bytes) of this object in memory.
     size_t get_memory_size() const;
 
@@ -114,6 +118,10 @@ class TriangleTree
     friend class TriangleLeafProbeVisitor;
 
     const Arguments                             m_arguments;
+
+    size_t                                      m_static_triangle_count;
+    size_t                                      m_moving_triangle_count;
+
     std::vector<TriangleKey>                    m_triangle_keys;
     std::vector<foundation::uint8>              m_leaf_data;
     std::vector<const IntersectionFilter*>      m_intersection_filters_repository;
@@ -311,6 +319,21 @@ namespace impl
     typedef TriangleReaderImpl<
         sizeof(GTriangleType::ValueType) == sizeof(TriangleType::ValueType)
     > TriangleReader;
+}
+
+
+//
+// TriangleTree class implementation.
+//
+
+inline size_t TriangleTree::get_static_triangle_count() const
+{
+    return m_static_triangle_count;
+}
+
+inline size_t TriangleTree::get_moving_triangle_count() const
+{
+    return m_moving_triangle_count;
 }
 
 
