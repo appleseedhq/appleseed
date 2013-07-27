@@ -30,6 +30,7 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_OBJECTINSTANCEITEM_H
 
 // appleseed.studio headers.
+#include "mainwindow/project/entitydelayedactions.h"
 #include "mainwindow/project/instancecollectionitem.h"
 #include "mainwindow/project/itembase.h"
 #include "mainwindow/project/singlemodelentityitem.h"
@@ -78,28 +79,47 @@ class ObjectInstanceItem
     virtual QMenu* get_single_item_context_menu() const OVERRIDE;
     virtual QMenu* get_multiple_items_context_menu(const QList<ItemBase*>& items) const OVERRIDE;
 
+    void assign_material(
+        const QString&                  page_name,
+        const QString&                  entity_name,
+        const QVariant&                 untyped_data);
+
+    void clear_material(const QVariant& untyped_data);
+
   private slots:
     void slot_open_material_assignment_editor();
     void slot_assign_material();
-    void slot_assign_material_accepted(QString page_name, QString entity_name, QVariant untyped_data);
+    void slot_assign_material_accepted(QString page_name, QString entity_name, QVariant data);
     void slot_clear_material();
 
   private:
+    friend class EntityDeletionDelayedAction<ObjectInstanceItem>;
+
     typedef SingleModelEntityItem<renderer::ObjectInstance, renderer::Assembly, ObjectInstanceCollectionItem> Base;
 
+    void schedule_assign_material(
+        const QString&                  page_name,
+        const QString&                  entity_name,
+        const QVariant&                 data);
+
+    void schedule_clear_material(const QVariant& data);
+
     virtual void slot_delete() OVERRIDE;
+
+    void schedule_delete();
+    void do_delete();
 
     void add_material_assignment_menu_actions(
         QMenu*                          menu,
         const QList<ItemBase*>&         items = QList<ItemBase*>()) const;
 
-    void assign_material(
+    void do_assign_material(
         const char*                     slot_name,
         const bool                      font_side,
         const bool                      back_side,
         const char*                     material_name);
 
-    void unassign_material(
+    void do_unassign_material(
         const char*                     slot_name,
         const bool                      font_side,
         const bool                      back_side);

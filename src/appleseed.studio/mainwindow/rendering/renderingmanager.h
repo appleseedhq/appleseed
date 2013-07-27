@@ -45,7 +45,9 @@
 #include <QThread>
 
 // Standard headers.
+#include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
 // Forward declarations.
@@ -66,12 +68,15 @@ class RenderingManager
     // Constructor.
     explicit RenderingManager(StatusBar& status_bar);
 
+    // Destructor.
+    ~RenderingManager();
+
     // Start rendering.
     void start_rendering(
-        renderer::Project*                      project,
-        const renderer::ParamArray&             params,
-        const bool                              interactive,
-        RenderWidget*                           render_widget);
+        renderer::Project*              project,
+        const renderer::ParamArray&     params,
+        const bool                      interactive,
+        RenderWidget*                   render_widget);
 
     // Return true if currently rendering, false otherwise.
     bool is_rendering() const;
@@ -104,6 +109,14 @@ class RenderingManager
     // they are executed, just before rendering begins.
     void push_delayed_action(std::auto_ptr<IDelayedAction> action);
 
+    void clear_delayed_actions();
+
+    void set_permanent_state(
+        const std::string&              key,
+        std::auto_ptr<IDelayedAction>   action);
+
+    void clear_permanent_states();
+
   signals:
     void signal_camera_changed();
     void signal_rendering_end();
@@ -132,8 +145,10 @@ class RenderingManager
     QBasicTimer                                 m_render_widget_update_timer;
 
     typedef std::vector<IDelayedAction*> DelayedActionCollection;
+    typedef std::map<std::string, IDelayedAction*> PermanentStateCollection;
 
     DelayedActionCollection                     m_delayed_actions;
+    PermanentStateCollection                    m_permanent_states;
 
     virtual void timerEvent(QTimerEvent* event);
 
@@ -141,6 +156,7 @@ class RenderingManager
     void print_average_luminance();
     void archive_frame_to_disk();
 
+    void apply_permanent_states();
     void consume_delayed_actions();
 
   private slots:

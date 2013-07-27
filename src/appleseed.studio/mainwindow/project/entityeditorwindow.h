@@ -107,7 +107,9 @@ class EntityEditorWindow
     void rebuild_form(const foundation::Dictionary& values);
 
   signals:
+    void signal_applied(foundation::Dictionary values);
     void signal_accepted(foundation::Dictionary values);
+    void signal_canceled(foundation::Dictionary values);
 
   private:
     typedef std::map<std::string, IInputWidgetProxy*> WidgetProxyCollection;
@@ -128,6 +130,8 @@ class EntityEditorWindow
     QSignalMapper*                      m_color_picker_signal_mapper;
     QSignalMapper*                      m_file_picker_signal_mapper;
 
+    foundation::Dictionary              m_initial_values;
+
     void create_form_layout();
 
     foundation::Dictionary get_widget_definition(const std::string& name) const;
@@ -143,6 +147,8 @@ class EntityEditorWindow
 
     foundation::Dictionary get_values() const;
 
+    void delete_widget_proxies();
+
   private slots:
     void slot_rebuild_form();
 
@@ -151,7 +157,9 @@ class EntityEditorWindow
     void slot_open_color_picker(const QString& widget_name);
     void slot_open_file_picker(const QString& widget_name);
 
+    void slot_apply();
     void slot_accept();
+    void slot_cancel();
 };
 
 }       // namespace studio

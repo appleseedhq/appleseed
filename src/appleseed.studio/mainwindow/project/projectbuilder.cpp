@@ -46,8 +46,11 @@ using namespace std;
 namespace appleseed {
 namespace studio {
 
-ProjectBuilder::ProjectBuilder(Project& project)
+ProjectBuilder::ProjectBuilder(
+    Project&            project,
+    RenderingManager&   rendering_manager)
   : m_project(project)
+  , m_rendering_manager(rendering_manager)
 {
 }
 
@@ -59,6 +62,16 @@ Project& ProjectBuilder::get_project()
 const Project& ProjectBuilder::get_project() const
 {
     return m_project;
+}
+
+RenderingManager& ProjectBuilder::get_rendering_manager()
+{
+    return m_rendering_manager;
+}
+
+const RenderingManager& ProjectBuilder::get_rendering_manager() const
+{
+    return m_rendering_manager;
 }
 
 void ProjectBuilder::notify_project_modification() const

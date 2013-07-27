@@ -33,6 +33,9 @@
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/image/color.h"
 
+// Qt headers.
+#include <QObject>
+
 // Standard headers.
 #include <string>
 
@@ -49,17 +52,23 @@ namespace appleseed {
 namespace studio {
 
 //
-// A widget proxy provides a uniform string-based read/write access to Qt input widgets.
+// A widget proxy provides a uniform string-based read/write access
+// to Qt input widgets as well as uniform change notifications.
 //
 
 class IInputWidgetProxy
-  : public foundation::NonCopyable
+  : public QObject
 {
+    Q_OBJECT
+
   public:
     virtual ~IInputWidgetProxy() {}
 
     virtual void set(const std::string& value) = 0;
     virtual std::string get() const = 0;
+
+  signals:
+    void signal_changed();
 };
 
 

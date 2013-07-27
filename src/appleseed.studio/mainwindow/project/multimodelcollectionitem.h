@@ -33,8 +33,10 @@
 #include "mainwindow/project/collectionitem.h"
 #include "mainwindow/project/entitybrowser.h"
 #include "mainwindow/project/entityeditorwindow.h"
+#include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/multimodelentityeditorformfactory.h"
 #include "mainwindow/project/multimodelentityitem.h"
+#include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/tools.h"
 
 // appleseed.renderer headers.
@@ -103,12 +105,16 @@ ItemBase* MultiModelCollectionItem<Entity, ParentEntity, ParentItem>::create_ite
 {
     assert(entity);
 
-    return
+    ItemBase* item =
         new MultiModelEntityItem<Entity, ParentEntity, This>(
             entity,
             Base::m_parent,
             this,
             Base::m_project_builder);
+
+    m_project_builder.get_item_registry().insert(entity->get_uid(), item);
+
+    return item;
 }
 
 template <typename Entity, typename ParentEntity, typename ParentItem>
@@ -142,7 +148,9 @@ void MultiModelCollectionItem<Entity, ParentEntity, ParentItem>::slot_create()
         form_factory,
         entity_browser,
         this,
-        SLOT(slot_create_accepted(foundation::Dictionary)));
+        SLOT(slot_create_applied(foundation::Dictionary)),
+        SLOT(slot_create_accepted(foundation::Dictionary)),
+        SLOT(slot_create_canceled(foundation::Dictionary)));
 }
 
 }       // namespace studio

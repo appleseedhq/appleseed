@@ -62,21 +62,37 @@ namespace studio {
 //
 
 RenderWidget::RenderWidget(
-    const int       width,
-    const int       height,
+    const size_t    width,
+    const size_t    height,
     QWidget*        parent)
   : QWidget(parent)
-  , m_image(width, height, QImage::Format_RGB888)
+  , m_mutex(QMutex::Recursive)
 {
     setFocusPolicy(Qt::StrongFocus);
-
-    setFixedWidth(width);
-    setFixedHeight(height);
-
     setAutoFillBackground(false);
     setAttribute(Qt::WA_OpaquePaintEvent, true);
 
+    resize(width, height);
+}
+
+void RenderWidget::resize(
+    const size_t    width,
+    const size_t    height)
+{
+    m_mutex.lock();
+
+    setFixedWidth(static_cast<int>(width));
+    setFixedHeight(static_cast<int>(height));
+
+    m_image =
+        QImage(
+            static_cast<int>(width),
+            static_cast<int>(height),
+            QImage::Format_RGB888);
+
     clear(Color4f(0.0f));
+
+    m_mutex.unlock();
 }
 
 void RenderWidget::clear(const Color4f& color)

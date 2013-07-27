@@ -51,6 +51,7 @@ namespace appleseed { namespace studio { class ItemBase; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace renderer  { class ParamArray; }
 class QMenu;
+class QStringList;
 
 namespace appleseed {
 namespace studio {
@@ -70,6 +71,8 @@ class ObjectCollectionItem
 
     virtual QMenu* get_single_item_context_menu() const OVERRIDE;
 
+    void import_objects(const QStringList& filepaths);
+
   public slots:
     void slot_import_objects();
 
@@ -79,6 +82,8 @@ class ObjectCollectionItem
     renderer::ParamArray&           m_settings;
 
     virtual ItemBase* create_item(renderer::Object* object) OVERRIDE;
+
+    void schedule_import_objects(const QStringList& filepaths);
 
     void insert_objects(const std::string& path) const;
 };

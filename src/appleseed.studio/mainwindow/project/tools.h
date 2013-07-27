@@ -71,7 +71,9 @@ void open_entity_editor(
     std::auto_ptr<EntityEditorWindow::IEntityBrowser>   entity_browser,
     const foundation::Dictionary&                       values,
     QObject*                                            receiver,
-    const char*                                         member);
+    const char*                                         slot_apply,
+    const char*                                         slot_accept,
+    const char*                                         slot_cancel);
 
 void open_entity_editor(
     QWidget*                                            parent,
@@ -80,7 +82,9 @@ void open_entity_editor(
     std::auto_ptr<EntityEditorWindow::IFormFactory>     form_factory,
     std::auto_ptr<EntityEditorWindow::IEntityBrowser>   entity_browser,
     QObject*                                            receiver,
-    const char*                                         member);
+    const char*                                         slot_apply,
+    const char*                                         slot_accept,
+    const char*                                         slot_cancel);
 
 
 //

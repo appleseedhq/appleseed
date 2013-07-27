@@ -32,7 +32,9 @@
 // appleseed.studio headers.
 #include "mainwindow/project/collectionitembase.h"
 #include "mainwindow/project/entitycreatorbase.h"
+#include "mainwindow/project/entitydelayedactions.h"
 #include "mainwindow/project/projectbuilder.h"
+#include "mainwindow/rendering/renderingmanager.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/entity.h"
@@ -45,7 +47,9 @@
 #include <QMenu>
 #include <QObject>
 #include <QString>
-#include <QWidget>
+
+// Standard headers.
+#include <memory>
 
 // Forward declarations.
 namespace appleseed     { namespace studio { class ProjectBuilder; } }
@@ -78,10 +82,13 @@ class CollectionItem
     bool                m_allow_creation;
 
     virtual void slot_create_accepted(foundation::Dictionary values) OVERRIDE;
+
+    void schedule_create(const foundation::Dictionary& values);
     void create(const foundation::Dictionary& values);
 
   private:
     friend class EntityCreatorBase;
+    friend class EntityCreationDelayedAction<CollectionItem>;
 };
 
 
@@ -137,20 +144,32 @@ template <typename Entity, typename ParentEntity, typename ParentItem>
 void CollectionItem<Entity, ParentEntity, ParentItem>::slot_create_accepted(foundation::Dictionary values)
 {
     catch_entity_creation_errors(
-        &CollectionItem::create,
+        m_project_builder.get_rendering_manager().is_rendering()
+            ? &CollectionItem::schedule_create
+            : &CollectionItem::create,
         values,
         renderer::EntityTraits<Entity>::get_human_readable_entity_type_name());
 }
 
 template <typename Entity, typename ParentEntity, typename ParentItem>
+void CollectionItem<Entity, ParentEntity, ParentItem>::schedule_create(const foundation::Dictionary& values)
+{
+    ProjectBuilder& project_builder = CollectionItemBase<Entity>::m_project_builder;
+
+    project_builder.get_rendering_manager().push_delayed_action(
+        std::auto_ptr<RenderingManager::IDelayedAction>(
+            new EntityCreationDelayedAction<CollectionItem>(this, values)));
+
+    project_builder.get_rendering_manager().reinitialize_rendering();
+}
+
+template <typename Entity, typename ParentEntity, typename ParentItem>
 void CollectionItem<Entity, ParentEntity, ParentItem>::create(const foundation::Dictionary& values)
 {
-    ProjectBuilder& pb = CollectionItemBase<Entity>::m_project_builder;
-    Entity* entity = pb.insert_entity<Entity>(m_parent, values);
+    ProjectBuilder& project_builder = CollectionItemBase<Entity>::m_project_builder;
+    Entity* entity = project_builder.insert_entity<Entity>(m_parent, values);
 
     m_parent_item->add_item(entity);
-
-    qobject_cast<QWidget*>(QObject::sender())->close();
 }
 
 }       // namespace studio

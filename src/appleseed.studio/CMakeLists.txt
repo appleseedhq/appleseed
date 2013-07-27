@@ -122,6 +122,7 @@ set (mainwindow_project_sources
     mainwindow/project/entitybrowserwindow.ui
     mainwindow/project/entitycreatorbase.cpp
     mainwindow/project/entitycreatorbase.h
+    mainwindow/project/entitydelayedactions.h
     mainwindow/project/entityeditorformfactorybase.cpp
     mainwindow/project/entityeditorformfactorybase.h
     mainwindow/project/entityeditorwindow.cpp

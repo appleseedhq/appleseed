@@ -149,6 +149,12 @@ RenderingManager::RenderingManager(StatusBar& status_bar)
         this, SIGNAL(signal_rendering_end()));
 }
 
+RenderingManager::~RenderingManager()
+{
+    clear_permanent_states();
+    clear_delayed_actions();
+}
+
 void RenderingManager::start_rendering(
     Project*                    project,
     const ParamArray&           params,
@@ -204,14 +210,35 @@ bool RenderingManager::is_rendering() const
 void RenderingManager::wait_until_rendering_end()
 {
     while (is_rendering())
-    {
         QApplication::processEvents();
-    }
 }
 
 void RenderingManager::push_delayed_action(auto_ptr<IDelayedAction> action)
 {
     m_delayed_actions.push_back(action.release());
+}
+
+void RenderingManager::clear_delayed_actions()
+{
+    for (each<DelayedActionCollection> i = m_delayed_actions; i; ++i)
+        delete *i;
+
+    m_delayed_actions.clear();
+}
+
+void RenderingManager::set_permanent_state(
+    const string&               key,
+    auto_ptr<IDelayedAction>    action)
+{
+    m_permanent_states[key] = action.release();
+}
+
+void RenderingManager::clear_permanent_states()
+{
+    for (each<PermanentStateCollection> i = m_permanent_states; i; ++i)
+        delete i->second;
+
+    m_permanent_states.clear();
 }
 
 void RenderingManager::abort_rendering()
@@ -291,6 +318,15 @@ void RenderingManager::archive_frame_to_disk()
     m_project->get_frame()->archive(autosave_path.string().c_str());
 }
 
+void RenderingManager::apply_permanent_states()
+{
+    for (each<PermanentStateCollection> i = m_permanent_states; i; ++i)
+    {
+        IDelayedAction* action = i->second;
+        (*action)(*m_master_renderer.get(), *m_project);
+    }
+}
+
 void RenderingManager::consume_delayed_actions()
 {
     for (each<DelayedActionCollection> i = m_delayed_actions; i; ++i)
@@ -307,6 +343,7 @@ void RenderingManager::slot_rendering_begin()
 {
     assert(m_master_renderer.get());
 
+    apply_permanent_states();
     consume_delayed_actions();
 
     const int IdleUpdateRate = 15;  // hertz

@@ -197,11 +197,6 @@ void MainWindow::open_and_render_project(const QString& filepath, const QString&
     open_project(filepath);
 }
 
-void MainWindow::slot_recreate_render_widgets()
-{
-    recreate_render_widgets();
-}
-
 void MainWindow::build_menus()
 {
     //
@@ -652,6 +647,7 @@ void MainWindow::update_project_explorer()
             new ProjectExplorer(
                 m_ui->treewidget_project_explorer_scene,    
                 *m_project_manager.get_project(),
+                m_rendering_manager,
                 m_settings);
 
         connect(
@@ -660,7 +656,7 @@ void MainWindow::update_project_explorer()
 
         connect(
             m_project_explorer, SIGNAL(signal_frame_modified()),
-            SLOT(slot_recreate_render_widgets()));
+            SLOT(slot_frame_modified()));
     }
 
     m_ui->lineedit_filter->clear();
@@ -845,7 +841,10 @@ void MainWindow::add_render_widget(
     const QString&  label)
 {
     // Create a render widget.
-    RenderWidget* render_widget = new RenderWidget(width, height);
+    RenderWidget* render_widget =
+        new RenderWidget(
+            static_cast<size_t>(width),
+            static_cast<size_t>(height));
 
     // Encapsulate the render widget into another widget that adds a margin around it.
     QWidget* render_widget_wrapper = new QWidget();
@@ -930,7 +929,6 @@ void MainWindow::start_rendering(const bool interactive)
 {
     assert(m_project_manager.is_project_open());
 
-    set_project_widgets_enabled(false);
     set_rendering_widgets_enabled(true, true);
 
     // Internally, clear the main image to transparent black and delete all AOV images.
@@ -1142,6 +1140,19 @@ void MainWindow::slot_project_modified()
     update_window_title();
 }
 
+void MainWindow::slot_frame_modified()
+{
+    const CanvasProperties& props =
+        m_project_manager.get_project()->get_frame()->image().properties();
+
+    for (each<RenderWidgetCollection> i = m_render_widgets; i; ++i)
+    {
+        i->second->m_render_widget->resize(
+            props.m_canvas_width,
+            props.m_canvas_height);
+    }
+}
+
 void MainWindow::slot_start_interactive_rendering()
 {
     start_rendering(true);
@@ -1210,7 +1221,8 @@ namespace
 
 void MainWindow::slot_clear_shading_override()
 {
-    m_rendering_manager.push_delayed_action(
+    m_rendering_manager.set_permanent_state(
+        "override_shading",
         auto_ptr<RenderingManager::IDelayedAction>(
             new ClearShadingOverrideDelayedAction()));
 
@@ -1222,7 +1234,8 @@ void MainWindow::slot_set_shading_override()
     QAction* action = qobject_cast<QAction*>(sender());
     const string shading_mode = action->data().toString().toStdString();
 
-    m_rendering_manager.push_delayed_action(
+    m_rendering_manager.set_permanent_state(
+        "override_shading",
         auto_ptr<RenderingManager::IDelayedAction>(
             new SetShadingOverrideDelayedAction(shading_mode)));
 

@@ -99,9 +99,6 @@ class MainWindow
     void open_project(const QString& filepath);
     void open_and_render_project(const QString& filepath, const QString& configuration);
 
-  public slots:
-    void slot_recreate_render_widgets();
-
   private:
     // Not wrapped in std::auto_ptr<> to avoid pulling in the UI definition code.
     Ui::MainWindow*                     m_ui;
@@ -206,6 +203,7 @@ class MainWindow
     void slot_save_project_as();
 
     void slot_project_modified();
+    void slot_frame_modified();
 
     void slot_start_interactive_rendering();
     void slot_start_final_rendering();

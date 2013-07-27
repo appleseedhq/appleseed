@@ -32,6 +32,7 @@
 // appleseed.studio headers.
 #include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/projectbuilder.h"
+#include "mainwindow/rendering/renderingmanager.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/project.h"
@@ -40,8 +41,12 @@
 // appleseed.foundation headers.
 #include "foundation/utility/uid.h"
 
+// Standard headers.
+#include <memory>
+
 using namespace foundation;
 using namespace renderer;
+using namespace std;
 
 namespace appleseed {
 namespace studio {
@@ -61,6 +66,22 @@ AssemblyInstanceItem::AssemblyInstanceItem(
 
 void AssemblyInstanceItem::slot_delete()
 {
+    if (m_project_builder.get_rendering_manager().is_rendering())
+        schedule_delete();
+    else do_delete();
+}
+
+void AssemblyInstanceItem::schedule_delete()
+{
+    m_project_builder.get_rendering_manager().push_delayed_action(
+        auto_ptr<RenderingManager::IDelayedAction>(
+            new EntityDeletionDelayedAction<AssemblyInstanceItem>(this)));
+
+    m_project_builder.get_rendering_manager().reinitialize_rendering();
+}
+
+void AssemblyInstanceItem::do_delete()
+{
     if (!allows_deletion())
         return;
 
@@ -74,7 +95,9 @@ void AssemblyInstanceItem::slot_delete()
     m_project_builder.notify_project_modification();
 
     // Remove and delete the assembly instance item.
-    delete m_project_builder.get_item_registry().get_item(assembly_instance_uid);
+    ItemBase* assembly_instance_item = m_project_builder.get_item_registry().get_item(assembly_instance_uid);
+    m_project_builder.get_item_registry().remove(assembly_instance_uid);
+    delete assembly_instance_item;
 
     // At this point 'this' no longer exists.
 }

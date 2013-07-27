@@ -37,6 +37,7 @@
 #include "mainwindow/project/objectcollectionitem.h"
 #include "mainwindow/project/objectinstanceitem.h"
 #include "mainwindow/project/projectbuilder.h"
+#include "mainwindow/rendering/renderingmanager.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/object.h"
@@ -47,6 +48,7 @@
 #include "foundation/utility/uid.h"
 
 // Standard headers.
+#include <memory>
 #include <vector>
 
 using namespace foundation;
@@ -118,6 +120,22 @@ namespace
 
 void ObjectItem::slot_delete()
 {
+    if (m_project_builder.get_rendering_manager().is_rendering())
+        schedule_delete();
+    else do_delete();
+}
+
+void ObjectItem::schedule_delete()
+{
+    m_project_builder.get_rendering_manager().push_delayed_action(
+        auto_ptr<RenderingManager::IDelayedAction>(
+            new EntityDeletionDelayedAction<ObjectItem>(this)));
+
+    m_project_builder.get_rendering_manager().reinitialize_rendering();
+}
+
+void ObjectItem::do_delete()
+{
     if (!allows_deletion())
         return;
 
@@ -136,7 +154,9 @@ void ObjectItem::slot_delete()
     m_project_builder.notify_project_modification();
 
     // Remove and delete the object item.
-    delete m_project_builder.get_item_registry().get_item(object_uid);
+    ItemBase* object_item = m_project_builder.get_item_registry().get_item(object_uid);
+    m_project_builder.get_item_registry().remove(object_uid);
+    delete object_item;
 
     // At this point 'this' no longer exists.
 }

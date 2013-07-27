@@ -45,6 +45,7 @@
 #include <memory>
 
 // Forward declarations.
+namespace appleseed { namespace studio { class RenderingManager; } }
 namespace renderer  { class ParamArray; }
 namespace renderer  { class Project; }
 class QMenu;
@@ -66,6 +67,7 @@ class ProjectExplorer
     ProjectExplorer(
         QTreeWidget*            tree_widget,
         renderer::Project&      project,
+        RenderingManager&       rendering_manager,
         renderer::ParamArray&   settings);
 
     ~ProjectExplorer();

@@ -63,11 +63,12 @@ namespace appleseed {
 namespace studio {
 
 ProjectExplorer::ProjectExplorer(
-    QTreeWidget*    tree_widget,
-    Project&        project,
-    ParamArray&     settings)
+    QTreeWidget*        tree_widget,
+    Project&            project,
+    RenderingManager&   rendering_manager,
+    ParamArray&         settings)
   : m_tree_widget(tree_widget)
-  , m_project_builder(project)
+  , m_project_builder(project, rendering_manager)
 {
     m_tree_widget->setContextMenuPolicy(Qt::CustomContextMenu);
 

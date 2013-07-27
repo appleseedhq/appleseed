@@ -116,6 +116,8 @@ void SingleModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit()
         entity_browser,
         values,
         this,
+        SLOT(slot_edit_accepted(foundation::Dictionary)),
+        SLOT(slot_edit_accepted(foundation::Dictionary)),
         SLOT(slot_edit_accepted(foundation::Dictionary)));
 }
 

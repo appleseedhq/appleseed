@@ -68,7 +68,10 @@ class CollectionItemBaseSlots
 
   protected slots:
     virtual void slot_create() {}
+
+    virtual void slot_create_applied(foundation::Dictionary values) {}
     virtual void slot_create_accepted(foundation::Dictionary values) {}
+    virtual void slot_create_canceled(foundation::Dictionary values) {}
 };
 
 template <typename Entity>

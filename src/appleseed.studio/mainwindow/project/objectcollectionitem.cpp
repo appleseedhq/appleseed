@@ -31,8 +31,10 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/assemblyitem.h"
+#include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/objectitem.h"
 #include "mainwindow/project/projectbuilder.h"
+#include "mainwindow/rendering/renderingmanager.h"
 #include "utility/interop.h"
 #include "utility/settingskeys.h"
 
@@ -121,6 +123,50 @@ void ObjectCollectionItem::slot_import_objects()
         LAST_DIRECTORY_SETTINGS_KEY,
         path.parent_path().string());
 
+    if (m_project_builder.get_rendering_manager().is_rendering())
+        schedule_import_objects(filepaths);
+    else import_objects(filepaths);
+
+}
+
+namespace
+{
+    class ImportObjectsDelayedAction
+      : public RenderingManager::IDelayedAction
+    {
+      public:
+        ImportObjectsDelayedAction(
+            ObjectCollectionItem*   parent,
+            const QStringList&      filepaths)
+          : m_parent(parent)
+          , m_filepaths(filepaths)
+        {
+        }
+
+        virtual void operator()(
+            MasterRenderer&         master_renderer,
+            Project&                project) OVERRIDE
+        {
+            m_parent->import_objects(m_filepaths);
+        }
+
+      private:
+        ObjectCollectionItem*       m_parent;
+        const QStringList           m_filepaths;
+    };
+}
+
+void ObjectCollectionItem::schedule_import_objects(const QStringList& filepaths)
+{
+    m_project_builder.get_rendering_manager().push_delayed_action(
+        auto_ptr<RenderingManager::IDelayedAction>(
+            new ImportObjectsDelayedAction(this, filepaths)));
+
+    m_project_builder.get_rendering_manager().reinitialize_rendering();
+}
+
+void ObjectCollectionItem::import_objects(const QStringList& filepaths)
+{
     for (int i = 0; i < filepaths.size(); ++i)
         insert_objects(QDir::toNativeSeparators(filepaths[i]).toStdString());
 }
@@ -177,12 +223,16 @@ ItemBase* ObjectCollectionItem::create_item(Object* object)
 {
     assert(object);
 
-    return
+    ItemBase* item =
         new ObjectItem(
             object,
             m_parent,
             m_parent_item,
             m_project_builder);
+
+    m_project_builder.get_item_registry().insert(object->get_uid(), item);
+
+    return item;
 }
 
 }   // namespace studio
