@@ -499,11 +499,9 @@ void EntityEditorWindow::create_file_picker_input_widget(const Dictionary& defin
 
 void EntityEditorWindow::slot_rebuild_form()
 {
-    const Dictionary values = m_widget_proxies.get_values();
+    rebuild_form(m_widget_proxies.get_values());
 
-    rebuild_form(values);
-
-    emit signal_applied(values);
+    emit signal_applied(m_widget_proxies.get_values());
 }
 
 namespace
