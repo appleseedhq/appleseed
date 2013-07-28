@@ -445,7 +445,7 @@ void EntityEditorWindow::create_color_picker_input_widget(const Dictionary& defi
 
     if (definition.strings().exist("default"))
         widget_proxy->set(definition.strings().get<string>("default"));
-    else widget_proxy->set("1.0 1.0 1.0");
+    else widget_proxy->set("0.0 0.0 0.0");
 
     connect(widget_proxy.get(), SIGNAL(signal_changed()), SLOT(slot_apply()));
 
