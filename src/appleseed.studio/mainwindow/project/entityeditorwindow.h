@@ -29,6 +29,9 @@
 #ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYEDITORWINDOW_H
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYEDITORWINDOW_H
 
+// appleseed.studio headers.
+#include "utility/inputwidgetproxies.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/utility/containers/dictionary.h"
@@ -38,13 +41,11 @@
 #include <QWidget>
 
 // Standard headers.
-#include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class IInputWidgetProxy; } }
 namespace renderer  { class Project; }
 namespace Ui        { class EntityEditorWindow; }
 class QFormLayout;
@@ -112,8 +113,6 @@ class EntityEditorWindow
     void signal_canceled(foundation::Dictionary values);
 
   private:
-    typedef std::map<std::string, IInputWidgetProxy*> WidgetProxyCollection;
-
     // Not wrapped in std::auto_ptr<> to avoid pulling in the UI definition code.
     Ui::EntityEditorWindow*             m_ui;
 
@@ -124,7 +123,7 @@ class EntityEditorWindow
 
     QFormLayout*                        m_form_layout;
     WidgetDefinitionCollection          m_widget_definitions;
-    WidgetProxyCollection               m_widget_proxies;
+    InputWidgetProxyCollection          m_widget_proxies;
 
     QSignalMapper*                      m_entity_picker_signal_mapper;
     QSignalMapper*                      m_color_picker_signal_mapper;
@@ -144,10 +143,6 @@ class EntityEditorWindow
     void create_entity_picker_input_widget(const foundation::Dictionary& definition);
     void create_color_picker_input_widget(const foundation::Dictionary& definition);
     void create_file_picker_input_widget(const foundation::Dictionary& definition);
-
-    foundation::Dictionary get_values() const;
-
-    void delete_widget_proxies();
 
   private slots:
     void slot_rebuild_form();

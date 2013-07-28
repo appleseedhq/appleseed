@@ -33,6 +33,8 @@
 #include "utility/interop.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/foreach.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/string.h"
 
@@ -234,6 +236,53 @@ Color3d ColorPickerProxy::get_color_from_string(const string& s)
     {
         return Color3d(0.0);
     }
+}
+
+
+//
+// InputWidgetProxyCollection class implementation.
+//
+
+InputWidgetProxyCollection::~InputWidgetProxyCollection()
+{
+    clear();
+}
+
+void InputWidgetProxyCollection::clear()
+{
+    for (const_each<ProxyCollection> i = m_proxies; i; ++i)
+        delete i->second;
+
+    m_proxies.clear();
+}
+
+void InputWidgetProxyCollection::insert(
+    const string&               key,
+    auto_ptr<IInputWidgetProxy> proxy)
+{
+    m_proxies[key] = proxy.release();
+}
+
+IInputWidgetProxy* InputWidgetProxyCollection::get(const string& key) const
+{
+    const ProxyCollection::const_iterator i = m_proxies.find(key);
+    return i != m_proxies.end() ? i->second : 0;
+}
+
+Dictionary InputWidgetProxyCollection::get_values() const
+{
+    Dictionary values;
+
+    for (const_each<ProxyCollection> i = m_proxies; i; ++i)
+    {
+        const string name = i->first;
+        const string value = i->second->get();
+
+        if (!value.empty())
+            values.insert(name, value);
+    }
+
+    return values;
 }
 
 }   // namespace studio

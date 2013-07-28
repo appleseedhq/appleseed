@@ -35,7 +35,6 @@
 // appleseed.studio headers.
 #include "mainwindow/project/entitybrowserwindow.h"
 #include "utility/doubleslider.h"
-#include "utility/inputwidgetproxies.h"
 #include "utility/interop.h"
 #include "utility/tweaks.h"
 
@@ -111,32 +110,30 @@ EntityEditorWindow::EntityEditorWindow(
     create_form_layout();
     rebuild_form(values);
 
-    m_initial_values = get_values();
+    m_initial_values = m_widget_proxies.get_values();
 
     connect(
         m_entity_picker_signal_mapper, SIGNAL(mapped(const QString&)),
-        this, SLOT(slot_open_entity_browser(const QString&)));
+        SLOT(slot_open_entity_browser(const QString&)));
 
     connect(
         m_color_picker_signal_mapper, SIGNAL(mapped(const QString&)),
-        this, SLOT(slot_open_color_picker(const QString&)));
+        SLOT(slot_open_color_picker(const QString&)));
 
     connect(
         m_file_picker_signal_mapper, SIGNAL(mapped(const QString&)),
-        this, SLOT(slot_open_file_picker(const QString&)));
+        SLOT(slot_open_file_picker(const QString&)));
 
-    connect(m_ui->buttonbox, SIGNAL(accepted()), this, SLOT(slot_accept()));
-    connect(m_ui->buttonbox, SIGNAL(rejected()), this, SLOT(slot_cancel()));
+    connect(m_ui->buttonbox, SIGNAL(accepted()), SLOT(slot_accept()));
+    connect(m_ui->buttonbox, SIGNAL(rejected()), SLOT(slot_cancel()));
 
     connect(
         create_window_local_shortcut(this, Qt::Key_Escape), SIGNAL(activated()),
-        this, SLOT(slot_cancel()));
+        SLOT(slot_cancel()));
 }
 
 EntityEditorWindow::~EntityEditorWindow()
 {
-    delete_widget_proxies();
-
     delete m_ui;
 }
 
@@ -160,7 +157,8 @@ namespace
 void EntityEditorWindow::rebuild_form(const Dictionary& values)
 {
     delete_layout_items(m_form_layout);
-    delete_widget_proxies();
+
+    m_widget_proxies.clear();
 
     m_form_factory->update(values, m_widget_definitions);
 
@@ -247,13 +245,14 @@ void EntityEditorWindow::create_text_box_input_widget(const Dictionary& definiti
     QLineEdit* line_edit = new QLineEdit(m_ui->scrollarea_contents);
 
     const string name = definition.get<string>("name");
-    IInputWidgetProxy* widget_proxy = new LineEditProxy(line_edit);
-    m_widget_proxies[name] = widget_proxy;
+    auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
 
     if (definition.strings().exist("default"))
         widget_proxy->set(definition.strings().get<string>("default"));
 
-    connect(widget_proxy, SIGNAL(signal_changed()), SLOT(slot_apply()));
+    connect(widget_proxy.get(), SIGNAL(signal_changed()), SLOT(slot_apply()));
+
+    m_widget_proxies.insert(name, widget_proxy);
 
     if (should_be_focused(definition))
     {
@@ -320,13 +319,14 @@ void EntityEditorWindow::create_numeric_input_widget(const Dictionary& definitio
         adaptor, SLOT(slot_set_slider_value(const QString&)));
 
     const string name = definition.get<string>("name");
-    IInputWidgetProxy* widget_proxy = new LineEditProxy(line_edit);
-    m_widget_proxies[name] = widget_proxy;
+    auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
 
     if (definition.strings().exist("default"))
         widget_proxy->set(definition.strings().get<string>("default"));
 
     connect(slider, SIGNAL(valueChanged(int)), SLOT(slot_apply()));
+
+    m_widget_proxies.insert(name, widget_proxy);
 
     if (should_be_focused(definition))
     {
@@ -346,13 +346,14 @@ void EntityEditorWindow::create_checkbox_input_widget(const Dictionary& definiti
     QCheckBox* checkbox = new QCheckBox(m_ui->scrollarea_contents);
 
     const string name = definition.get<string>("name");
-    IInputWidgetProxy* widget_proxy = new CheckBoxProxy(checkbox);
-    m_widget_proxies[name] = widget_proxy;
+    auto_ptr<IInputWidgetProxy> widget_proxy(new CheckBoxProxy(checkbox));
 
     if (definition.strings().exist("default"))
         widget_proxy->set(definition.strings().get<string>("default"));
 
-    connect(widget_proxy, SIGNAL(signal_changed()), SLOT(slot_apply()));
+    connect(widget_proxy.get(), SIGNAL(signal_changed()), SLOT(slot_apply()));
+
+    m_widget_proxies.insert(name, widget_proxy);
 
     if (should_be_focused(definition))
         checkbox->setFocus();
@@ -366,8 +367,7 @@ void EntityEditorWindow::create_dropdown_list_input_widget(const Dictionary& def
     combo_box->setEditable(false);
 
     const string name = definition.get<string>("name");
-    IInputWidgetProxy* widget_proxy = new ComboBoxProxy(combo_box);
-    m_widget_proxies[name] = widget_proxy;
+    auto_ptr<IInputWidgetProxy> widget_proxy(new ComboBoxProxy(combo_box));
 
     const StringDictionary& items = definition.dictionaries().get("dropdown_items").strings();
     for (const_each<StringDictionary> i = items; i; ++i)
@@ -382,12 +382,14 @@ void EntityEditorWindow::create_dropdown_list_input_widget(const Dictionary& def
     if (definition.strings().exist("on_change") &&
         definition.strings().get<string>("on_change") == "rebuild_form")
     {
-        connect(combo_box, SIGNAL(currentIndexChanged(int)), this, SLOT(slot_rebuild_form()));
+        connect(combo_box, SIGNAL(currentIndexChanged(int)), SLOT(slot_rebuild_form()));
     }
     else
     {
-        connect(widget_proxy, SIGNAL(signal_changed()), SLOT(slot_apply()));
+        connect(widget_proxy.get(), SIGNAL(signal_changed()), SLOT(slot_apply()));
     }
+
+    m_widget_proxies.insert(name, widget_proxy);
 
     if (should_be_focused(definition))
         combo_box->setFocus();
@@ -406,13 +408,14 @@ void EntityEditorWindow::create_entity_picker_input_widget(const Dictionary& def
     const string name = definition.get<string>("name");
     m_entity_picker_signal_mapper->setMapping(browse_button, QString::fromStdString(name));
 
-    IInputWidgetProxy* widget_proxy = new LineEditProxy(line_edit);
-    m_widget_proxies[name] = widget_proxy;
+    auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
 
     if (definition.strings().exist("default"))
         widget_proxy->set(definition.strings().get<string>("default"));
 
-    connect(widget_proxy, SIGNAL(signal_changed()), SLOT(slot_apply()));
+    connect(widget_proxy.get(), SIGNAL(signal_changed()), SLOT(slot_apply()));
+
+    m_widget_proxies.insert(name, widget_proxy);
 
     if (should_be_focused(definition))
     {
@@ -438,14 +441,15 @@ void EntityEditorWindow::create_color_picker_input_widget(const Dictionary& defi
     const string name = definition.get<string>("name");
     m_color_picker_signal_mapper->setMapping(picker_button, QString::fromStdString(name));
 
-    IInputWidgetProxy* widget_proxy = new ColorPickerProxy(line_edit, picker_button);
-    m_widget_proxies[name] = widget_proxy;
+    auto_ptr<IInputWidgetProxy> widget_proxy(new ColorPickerProxy(line_edit, picker_button));
 
     if (definition.strings().exist("default"))
         widget_proxy->set(definition.strings().get<string>("default"));
     else widget_proxy->set("1.0 1.0 1.0");
 
-    connect(widget_proxy, SIGNAL(signal_changed()), SLOT(slot_apply()));
+    connect(widget_proxy.get(), SIGNAL(signal_changed()), SLOT(slot_apply()));
+
+    m_widget_proxies.insert(name, widget_proxy);
 
     if (should_be_focused(definition))
     {
@@ -471,13 +475,14 @@ void EntityEditorWindow::create_file_picker_input_widget(const Dictionary& defin
     const string name = definition.get<string>("name");
     m_file_picker_signal_mapper->setMapping(browse_button, QString::fromStdString(name));
 
-    IInputWidgetProxy* widget_proxy = new LineEditProxy(line_edit);
-    m_widget_proxies[name] = widget_proxy;
+    auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
 
     if (definition.strings().exist("default"))
         widget_proxy->set(definition.strings().get<string>("default"));
 
-    connect(widget_proxy, SIGNAL(signal_changed()), SLOT(slot_apply()));
+    connect(widget_proxy.get(), SIGNAL(signal_changed()), SLOT(slot_apply()));
+
+    m_widget_proxies.insert(name, widget_proxy);
 
     if (should_be_focused(definition))
     {
@@ -492,35 +497,9 @@ void EntityEditorWindow::create_file_picker_input_widget(const Dictionary& defin
     m_form_layout->addRow(get_label_text(definition), layout);
 }
 
-Dictionary EntityEditorWindow::get_values() const
-{
-    Dictionary values;
-
-    for (const_each<WidgetDefinitionCollection> i = m_widget_definitions; i; ++i)
-    {
-        const Dictionary& definition = *i;
-
-        const string name = definition.get<string>("name");
-        const string value = m_widget_proxies.find(name)->second->get();
-
-        if (!value.empty())
-            values.insert(name, value);
-    }
-
-    return values;
-}
-
-void EntityEditorWindow::delete_widget_proxies()
-{
-    for (const_each<WidgetProxyCollection> i = m_widget_proxies; i; ++i)
-        delete i->second;
-
-    m_widget_proxies.clear();
-}
-
 void EntityEditorWindow::slot_rebuild_form()
 {
-    const Dictionary values = get_values();
+    const Dictionary values = m_widget_proxies.get_values();
 
     rebuild_form(values);
 
@@ -583,7 +562,7 @@ void EntityEditorWindow::slot_open_entity_browser(const QString& widget_name)
 
     connect(
         forward_signal, SIGNAL(signal_accepted(QString, QString, QString)),
-        this, SLOT(slot_entity_browser_accept(QString, QString, QString)));
+        SLOT(slot_entity_browser_accept(QString, QString, QString)));
 
     browser_window->showNormal();
     browser_window->activateWindow();
@@ -591,7 +570,7 @@ void EntityEditorWindow::slot_open_entity_browser(const QString& widget_name)
 
 void EntityEditorWindow::slot_entity_browser_accept(QString widget_name, QString page_name, QString entity_name)
 {
-    m_widget_proxies[widget_name.toStdString()]->set(entity_name.toStdString());
+    m_widget_proxies.get(widget_name.toStdString())->set(entity_name.toStdString());
 
     // Close the entity browser.
     qobject_cast<QWidget*>(sender()->parent())->close();
@@ -599,7 +578,7 @@ void EntityEditorWindow::slot_entity_browser_accept(QString widget_name, QString
 
 void EntityEditorWindow::slot_open_color_picker(const QString& widget_name)
 {
-    IInputWidgetProxy* widget_proxy = m_widget_proxies[widget_name.toStdString()];
+    IInputWidgetProxy* widget_proxy = m_widget_proxies.get(widget_name.toStdString());
 
     const Color3d initial_color = ColorPickerProxy::get_color_from_string(widget_proxy->get());
 
@@ -616,7 +595,7 @@ void EntityEditorWindow::slot_open_color_picker(const QString& widget_name)
 
 void EntityEditorWindow::slot_open_file_picker(const QString& widget_name)
 {
-    IInputWidgetProxy* widget_proxy = m_widget_proxies[widget_name.toStdString()];
+    IInputWidgetProxy* widget_proxy = m_widget_proxies.get(widget_name.toStdString());
 
     const Dictionary widget_definition = get_widget_definition(widget_name.toStdString());
 
@@ -645,19 +624,19 @@ void EntityEditorWindow::slot_open_file_picker(const QString& widget_name)
 
 void EntityEditorWindow::slot_apply()
 {
-    emit signal_applied(get_values());
+    emit signal_applied(m_widget_proxies.get_values());
 }
 
 void EntityEditorWindow::slot_accept()
 {
-    emit signal_accepted(get_values());
+    emit signal_accepted(m_widget_proxies.get_values());
 
     close();
 }
 
 void EntityEditorWindow::slot_cancel()
 {
-    if (m_initial_values != get_values())
+    if (m_initial_values != m_widget_proxies.get_values())
         emit signal_canceled(m_initial_values);
 
     close();

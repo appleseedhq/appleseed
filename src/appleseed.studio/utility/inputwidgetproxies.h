@@ -37,9 +37,12 @@
 #include <QObject>
 
 // Standard headers.
+#include <map>
+#include <memory>
 #include <string>
 
 // Forward declarations.
+namespace foundation    { class Dictionary; }
 class QCheckBox;
 class QComboBox;
 class QDoubleSpinBox;
@@ -198,6 +201,33 @@ class ColorPickerProxy
   private:
     QLineEdit*      m_line_edit;
     QToolButton*    m_picker_button;
+};
+
+
+//
+// A collection of named proxies.
+//
+
+class InputWidgetProxyCollection
+  : public foundation::NonCopyable
+{
+  public:
+    ~InputWidgetProxyCollection();
+
+    void clear();
+
+    void insert(
+        const std::string&                  key,
+        std::auto_ptr<IInputWidgetProxy>    proxy);
+
+    IInputWidgetProxy* get(const std::string& key) const;
+
+    foundation::Dictionary get_values() const;
+
+  private:
+    typedef std::map<std::string, IInputWidgetProxy*> ProxyCollection;
+
+    ProxyCollection m_proxies;
 };
 
 }       // namespace studio
