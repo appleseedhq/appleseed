@@ -36,6 +36,7 @@
 #include "mainwindow/project/entitybrowser.h"
 #include "mainwindow/project/entitybrowserwindow.h"
 #include "mainwindow/project/projectbuilder.h"
+#include "mainwindow/rendering/renderingmanager.h"
 #include "utility/interop.h"
 #include "utility/spinboxeventfilter.h"
 #include "utility/tweaks.h"
@@ -51,7 +52,6 @@
 #include <QGridLayout>
 #include <QHBoxLayout>
 #include <QLabel>
-#include <QLineEdit>
 #include <QPushButton>
 #include <QShortcut>
 #include <QSizePolicy>
@@ -61,6 +61,7 @@
 
 // Standard headers.
 #include <cstddef>
+#include <memory>
 #include <set>
 #include <sstream>
 
@@ -85,6 +86,7 @@ MaterialAssignmentEditorWindow::MaterialAssignmentEditorWindow(
 
     setAttribute(Qt::WA_DeleteOnClose);
     setWindowFlags(Qt::Tool);
+    setWindowModality(Qt::NonModal);
 
     resize(600, 400);
 
@@ -92,20 +94,14 @@ MaterialAssignmentEditorWindow::MaterialAssignmentEditorWindow(
 
     create_widgets();
 
-    connect(m_ui->buttonbox, SIGNAL(accepted()), this, SLOT(slot_accept()));
-    connect(m_ui->buttonbox, SIGNAL(rejected()), this, SLOT(close()));
+    m_initial_slot_values = get_slot_values();
 
-    connect(
-        create_window_local_shortcut(this, Qt::Key_Return), SIGNAL(activated()),
-        this, SLOT(slot_accept()));
-
-    connect(
-        create_window_local_shortcut(this, Qt::Key_Enter), SIGNAL(activated()),
-        this, SLOT(slot_accept()));
+    connect(m_ui->buttonbox, SIGNAL(accepted()), SLOT(slot_accept()));
+    connect(m_ui->buttonbox, SIGNAL(rejected()), SLOT(slot_cancel()));
 
     connect(
         create_window_local_shortcut(this, Qt::Key_Escape), SIGNAL(activated()),
-        this, SLOT(close()));
+        SLOT(slot_cancel()));
 }
 
 MaterialAssignmentEditorWindow::~MaterialAssignmentEditorWindow()
@@ -192,21 +188,31 @@ void MaterialAssignmentEditorWindow::create_widgets_for_side(
 
         new SpinBoxEventFilter(combo_box);
 
-        m_model_combo_to_widget_group[combo_box] = group;
-
-        connect(
-            combo_box, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(slot_change_back_material_mode(int)));
+        m_mode_combo_to_widget_group[combo_box] = group;
 
         const StringDictionary& front_mappings = m_object_instance.get_front_material_mappings();
         const StringDictionary& back_mappings = m_object_instance.get_back_material_mappings();
 
         if (!back_mappings.exist(slot_name))
+        {
             combo_box->setCurrentIndex(combo_box->findData("none"));
+            group->setEnabled(false);
+        }
         else if (front_mappings.exist(slot_name) &&
                  front_mappings.get<string>(slot_name) == back_mappings.get<string>(slot_name))
+        {
             combo_box->setCurrentIndex(combo_box->findData("same"));
-        else combo_box->setCurrentIndex(combo_box->findData("enabled"));
+            group->setEnabled(false);
+        }
+        else
+        {
+            combo_box->setCurrentIndex(combo_box->findData("enabled"));
+            group->setEnabled(true);
+        }
+
+        connect(
+            combo_box, SIGNAL(currentIndexChanged(int)),
+            SLOT(slot_change_back_material_mode(int)));
     }
 
     QLineEdit* line_edit = new QLineEdit();
@@ -227,6 +233,8 @@ void MaterialAssignmentEditorWindow::create_widgets_for_side(
         line_edit->setText(mappings.begin().value<QString>());
     }
 
+    connect(line_edit, SIGNAL(returnPressed()), SLOT(slot_apply()));
+
     QPushButton* browse_button = new QPushButton("Browse");
     browse_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     group->layout()->addWidget(browse_button);
@@ -239,7 +247,7 @@ void MaterialAssignmentEditorWindow::create_widgets_for_side(
 
     connect(
         browse_button, SIGNAL(clicked()),
-        this, SLOT(slot_open_entity_browser()));
+        SLOT(slot_open_entity_browser()));
 
     layout->addWidget(group);
     parent->addLayout(layout, row_index, 1);
@@ -255,59 +263,115 @@ void MaterialAssignmentEditorWindow::append_row(
     parent->addWidget(row);
 }
 
-void MaterialAssignmentEditorWindow::assign_materials()
+MaterialAssignmentEditorWindow::SlotValueCollection MaterialAssignmentEditorWindow::get_slot_values() const
 {
+    SlotValueCollection slot_values;
+
     for (const_each<SlotInfoCollection> i = m_slot_infos; i; ++i)
+        slot_values.push_back(get_slot_value(i->second));
+
+    return slot_values;
+}
+
+MaterialAssignmentEditorWindow::SlotValue MaterialAssignmentEditorWindow::get_slot_value(const SlotInfo& slot_info) const
+{
+    SlotValue slot_value;
+    slot_value.m_slot_name = slot_info.m_slot_name;
+    slot_value.m_side = slot_info.m_side;
+
+    if (slot_info.m_side == ObjectInstance::FrontSide)
+        slot_value.m_material_name = slot_info.get_material_name().toStdString();
+    else if (slot_info.get_mode() == "enabled")
+        slot_value.m_material_name = slot_info.get_material_name().toStdString();
+    else if (slot_info.get_mode() == "same")
     {
-        const SlotInfo& slot_info = i->second;
-
-        if (slot_info.m_side == ObjectInstance::FrontSide)
-            assign_material(slot_info);
-        else
-        {
-            const QString mode = slot_info.get_mode();
-
-            if (mode == "enabled")
-                assign_material(slot_info);
-            else if (mode == "none")
-                assign_material(slot_info, QString());
-            else
-            {
-                assert(mode == "same");
-
-                const StringDictionary& front_mappings = m_object_instance.get_front_material_mappings();
-                const QString material_name =
-                    front_mappings.exist(slot_info.m_slot_name)
-                        ? front_mappings.get<QString>(slot_info.m_slot_name)
-                        : QString();
-
-                assign_material(slot_info, material_name);
-            }
-        }
+        const StringDictionary& front_mappings = m_object_instance.get_front_material_mappings();
+        if (front_mappings.exist(slot_info.m_slot_name))
+            slot_value.m_material_name = front_mappings.get<string>(slot_info.m_slot_name);
     }
+
+    return slot_value;
 }
 
-void MaterialAssignmentEditorWindow::assign_material(const SlotInfo& slot_info)
+namespace
 {
-    assign_material(slot_info, slot_info.m_line_edit->text());
-}
-
-void MaterialAssignmentEditorWindow::assign_material(
-    const SlotInfo&     slot_info,
-    const QString&      material_name)
-{
-    if (material_name.isEmpty())
+    void do_assign_material(
+        ObjectInstance&                 object_instance,
+        const string&                   slot,
+        const ObjectInstance::Side      side,
+        const string&                   name)
     {
-        m_object_instance.unassign_material(
-            slot_info.m_slot_name.c_str(),
-            slot_info.m_side);
+        if (name.empty())
+            object_instance.unassign_material(slot.c_str(), side);
+        else object_instance.assign_material(slot.c_str(), side, name.c_str());
+    }
+
+    class AssignMaterialDelayedAction
+      : public RenderingManager::IDelayedAction
+    {
+      public:
+        AssignMaterialDelayedAction(
+            ObjectInstance&             object_instance,
+            const string&               slot,
+            const ObjectInstance::Side  side,
+            const string&               name)
+          : m_object_instance(object_instance)
+          , m_slot(slot)
+          , m_side(side)
+          , m_name(name)
+        {
+        }
+
+        virtual void operator()(
+            MasterRenderer&             master_renderer,
+            Project&                    project) OVERRIDE
+        {
+            do_assign_material(m_object_instance, m_slot, m_side, m_name);
+        }
+
+      private:
+        ObjectInstance&                 m_object_instance;
+        const string                    m_slot;
+        const ObjectInstance::Side      m_side;
+        const string                    m_name;
+    };
+}
+
+void MaterialAssignmentEditorWindow::assign_materials(const SlotValueCollection& slot_values)
+{
+    const StringDictionary old_front_mappings = m_object_instance.get_front_material_mappings();
+    const StringDictionary old_back_mappings = m_object_instance.get_back_material_mappings();
+
+    for (const_each<SlotValueCollection> i = slot_values; i; ++i)
+        assign_material(*i);
+
+    if (old_front_mappings != m_object_instance.get_front_material_mappings() ||
+        old_back_mappings != m_object_instance.get_back_material_mappings())
+        m_project_builder.notify_project_modification();
+
+    if (m_project_builder.get_rendering_manager().is_rendering())
+        m_project_builder.get_rendering_manager().reinitialize_rendering();
+}
+
+void MaterialAssignmentEditorWindow::assign_material(const SlotValue& slot_value)
+{
+    if (m_project_builder.get_rendering_manager().is_rendering())
+    {
+        m_project_builder.get_rendering_manager().push_delayed_action(
+            auto_ptr<RenderingManager::IDelayedAction>(
+                new AssignMaterialDelayedAction(
+                    m_object_instance,
+                    slot_value.m_slot_name,
+                    slot_value.m_side,
+                    slot_value.m_material_name)));
     }
     else
     {
-        m_object_instance.assign_material(
-            slot_info.m_slot_name.c_str(),
-            slot_info.m_side,
-            material_name.toAscii().constData());
+        do_assign_material(
+            m_object_instance,
+            slot_value.m_slot_name,
+            slot_value.m_side,
+            slot_value.m_material_name);
     }
 }
 
@@ -316,8 +380,10 @@ void MaterialAssignmentEditorWindow::slot_change_back_material_mode(int index)
     QComboBox* combo_box = qobject_cast<QComboBox*>(QObject::sender());
     const QString mode = combo_box->itemData(index).value<QString>();
 
-    QWidget* group = m_model_combo_to_widget_group[combo_box];
+    QWidget* group = m_mode_combo_to_widget_group[combo_box];
     group->setEnabled(mode == "enabled");
+
+    slot_apply();
 }
 
 namespace
@@ -372,7 +438,7 @@ void MaterialAssignmentEditorWindow::slot_open_entity_browser()
 
     connect(
         forward_signal, SIGNAL(signal_accepted(QLineEdit*, QString, QString)),
-        this, SLOT(slot_entity_browser_accept(QLineEdit*, QString, QString)));
+        SLOT(slot_entity_browser_accept(QLineEdit*, QString, QString)));
 
     browser_window->showNormal();
     browser_window->activateWindow();
@@ -385,19 +451,26 @@ void MaterialAssignmentEditorWindow::slot_entity_browser_accept(
 {
     line_edit->setText(entity_name);
 
+    assign_materials(get_slot_values());
+
     qobject_cast<QWidget*>(sender()->parent())->close();
+}
+
+void MaterialAssignmentEditorWindow::slot_apply()
+{
+    assign_materials(get_slot_values());
 }
 
 void MaterialAssignmentEditorWindow::slot_accept()
 {
-    const StringDictionary old_front_mappings = m_object_instance.get_front_material_mappings();
-    const StringDictionary old_back_mappings = m_object_instance.get_back_material_mappings();
+    assign_materials(get_slot_values());
 
-    assign_materials();
+    close();
+}
 
-    if (old_front_mappings != m_object_instance.get_front_material_mappings() ||
-        old_back_mappings != m_object_instance.get_back_material_mappings())
-        m_project_builder.notify_project_modification();
+void MaterialAssignmentEditorWindow::slot_cancel()
+{
+    assign_materials(m_initial_slot_values);
 
     close();
 }
