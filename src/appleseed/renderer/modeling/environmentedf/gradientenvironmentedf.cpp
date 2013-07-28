@@ -198,7 +198,7 @@ DictionaryArray GradientEnvironmentEDFFactory::get_widget_definitions() const
                 Dictionary()
                     .insert("color", "Colors"))
             .insert("use", "required")
-            .insert("default", ""));
+            .insert("default", "0.3"));
 
     definitions.push_back(
         Dictionary()
@@ -209,7 +209,7 @@ DictionaryArray GradientEnvironmentEDFFactory::get_widget_definitions() const
                 Dictionary()
                     .insert("color", "Colors"))
             .insert("use", "required")
-            .insert("default", ""));
+            .insert("default", "0.7"));
 
     return definitions;
 }

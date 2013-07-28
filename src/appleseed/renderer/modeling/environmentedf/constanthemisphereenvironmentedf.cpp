@@ -190,7 +190,7 @@ DictionaryArray ConstantHemisphereEnvironmentEDFFactory::get_widget_definitions(
             .insert("entity_types",
                 Dictionary().insert("color", "Colors"))
             .insert("use", "required")
-            .insert("default", ""));
+            .insert("default", "0.7"));
 
     definitions.push_back(
         Dictionary()
@@ -200,7 +200,7 @@ DictionaryArray ConstantHemisphereEnvironmentEDFFactory::get_widget_definitions(
             .insert("entity_types",
                 Dictionary().insert("color", "Colors"))
             .insert("use", "required")
-            .insert("default", ""));
+            .insert("default", "0.3"));
 
     return definitions;
 }

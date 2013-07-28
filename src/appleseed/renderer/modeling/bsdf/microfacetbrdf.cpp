@@ -482,7 +482,7 @@ DictionaryArray MicrofacetBRDFFactory::get_widget_definitions() const
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "required")
-            .insert("default", ""));
+            .insert("default", "0.5"));
 
     definitions.push_back(
         Dictionary()
@@ -504,7 +504,7 @@ DictionaryArray MicrofacetBRDFFactory::get_widget_definitions() const
                     .insert("color", "Colors")
                     .insert("texture_instance", "Textures"))
             .insert("use", "required")
-            .insert("default", ""));
+            .insert("default", "0.5"));
 
     definitions.push_back(
         Dictionary()

@@ -397,7 +397,7 @@ DictionaryArray PhysicalSurfaceShaderFactory::get_widget_definitions() const
             .insert("label", "Aerial Perspective Sky Color")
             .insert("widget", "entity_picker")
             .insert("entity_types", Dictionary().insert("color", "Colors"))
-            .insert("default", "")
+            .insert("default", "0.5")
             .insert("use", "optional"));
 
     definitions.push_back(

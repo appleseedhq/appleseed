@@ -189,7 +189,7 @@ DictionaryArray DirectionalLightFactory::get_widget_definitions() const
                 Dictionary()
                     .insert("color", "Colors"))
             .insert("use", "required")
-            .insert("default", ""));
+            .insert("default", "1.0"));
 
     definitions.push_back(
         Dictionary()

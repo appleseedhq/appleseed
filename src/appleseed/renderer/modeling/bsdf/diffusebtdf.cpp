@@ -201,7 +201,7 @@ DictionaryArray DiffuseBTDFFactory::get_widget_definitions() const
                     .insert("color", "Colors")
                     .insert("texture_instance", "Textures"))
             .insert("use", "required")
-            .insert("default", ""));
+            .insert("default", "0.5"));
 
     definitions.push_back(
         Dictionary()

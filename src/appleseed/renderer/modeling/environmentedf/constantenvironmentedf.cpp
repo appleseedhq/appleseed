@@ -178,7 +178,7 @@ DictionaryArray ConstantEnvironmentEDFFactory::get_widget_definitions() const
             .insert("entity_types",
                 Dictionary().insert("color", "Colors"))
             .insert("use", "required")
-            .insert("default", ""));
+            .insert("default", "1.0"));
 
     return definitions;
 }
