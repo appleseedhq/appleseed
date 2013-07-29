@@ -94,7 +94,7 @@ ItemBase* InstanceCollectionItem<Entity, EntityItem, ParentEntity>::create_item(
             this,
             CollectionItemBase<Entity>::m_project_builder);
 
-    m_project_builder.get_item_registry().insert(entity->get_uid(), item);
+    CollectionItemBase<Entity>::m_project_builder.get_item_registry().insert(entity->get_uid(), item);
 
     return item;
 }
