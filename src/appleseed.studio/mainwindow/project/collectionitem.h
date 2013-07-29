@@ -144,7 +144,7 @@ template <typename Entity, typename ParentEntity, typename ParentItem>
 void CollectionItem<Entity, ParentEntity, ParentItem>::slot_create_accepted(foundation::Dictionary values)
 {
     catch_entity_creation_errors(
-        m_project_builder.get_rendering_manager().is_rendering()
+        CollectionItemBase<Entity>::m_project_builder.get_rendering_manager().is_rendering()
             ? &CollectionItem::schedule_create
             : &CollectionItem::create,
         values,
