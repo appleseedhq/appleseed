@@ -295,7 +295,7 @@ DictionaryArray ColorEntityFactory::get_widget_definitions()
             .insert("label", "Multiplier")
             .insert("widget", "numeric")
             .insert("min_value", "0.0")
-            .insert("max_value", "1.0")
+            .insert("max_value", "10.0")
             .insert("default", "1.0")
             .insert("use", "optional"));
 

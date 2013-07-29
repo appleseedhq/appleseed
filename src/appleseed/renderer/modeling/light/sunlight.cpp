@@ -335,7 +335,7 @@ DictionaryArray SunLightFactory::get_widget_definitions() const
             .insert("label", "Radiance Multiplier")
             .insert("widget", "numeric")
             .insert("min_value", "0.0")
-            .insert("max_value", "1.0")
+            .insert("max_value", "10.0")
             .insert("use", "optional")
             .insert("default", "1.0"));
 
