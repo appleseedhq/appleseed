@@ -324,6 +324,7 @@ void EntityEditorWindow::create_numeric_input_widget(const Dictionary& definitio
     if (definition.strings().exist("default"))
         widget_proxy->set(definition.strings().get<string>("default"));
 
+    connect(line_edit, SIGNAL(returnPressed()), SLOT(slot_apply()));
     connect(slider, SIGNAL(valueChanged(int)), SLOT(slot_apply()));
 
     m_widget_proxies.insert(name, widget_proxy);
