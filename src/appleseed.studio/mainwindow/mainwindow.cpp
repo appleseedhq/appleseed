@@ -33,6 +33,9 @@
 #include "ui_mainwindow.h"
 
 // appleseed.studio headers.
+#include "help/about/aboutwindow.h"
+#include "mainwindow/project/projectexplorer.h"
+#include "mainwindow/rendering/rendertab.h"
 #include "mainwindow/logwidget.h"
 #include "utility/interop.h"
 #include "utility/settingskeys.h"
@@ -51,14 +54,12 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/appleseed.h"
-#include "foundation/image/canvasproperties.h"
-#include "foundation/image/color.h"
-#include "foundation/image/image.h"
+#include "foundation/math/aabb.h"
+#include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/system.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/settings.h"
 #include "foundation/utility/string.h"
@@ -67,25 +68,22 @@
 #include <QAction>
 #include <QActionGroup>
 #include <QApplication>
-#include <QComboBox>
+#include <QCloseEvent>
 #include <QDir>
 #include <QFileDialog>
-#include <QGridLayout>
+#include <QFont>
 #include <QIcon>
 #include <QLabel>
+#include <QLayout>
+#include <QLineEdit>
+#include <QMenu>
 #include <QMessageBox>
-#include <QMetaType>
 #include <QRect>
 #include <QSettings>
-#include <QSize>
-#include <QSpacerItem>
 #include <QStatusBar>
 #include <QString>
 #include <QStringList>
 #include <Qt>
-#include <QToolBar>
-#include <QToolButton>
-#include <QWidget>
 
 // boost headers.
 #include "boost/filesystem/path.hpp"
@@ -742,187 +740,47 @@ void MainWindow::recreate_render_widgets()
     remove_render_widgets();
 
     if (m_project_manager.is_project_open())
-        add_render_widgets();
+    {
+        add_render_widget("RGB");
+        add_render_widget("Alpha");
+        add_render_widget("Depth");
+        add_render_widget("Anomalies");
+    }
 }
 
 void MainWindow::remove_render_widgets()
 {
-    for (const_each<RenderWidgetCollection> i = m_render_widgets; i; ++i)
+    for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
         delete i->second;
 
-    m_render_widgets.clear();
+    m_render_tabs.clear();
 
     while (m_ui->tab_render_channels->count() > 0)
         m_ui->tab_render_channels->removeTab(0);
 }
 
-void MainWindow::add_render_widgets()
+void MainWindow::add_render_widget(const QString& label)
 {
-    const Project* project = m_project_manager.get_project();
-    const Frame* frame = project->get_frame();
-    const CanvasProperties& props = frame->image().properties();
-
-    const int width = static_cast<int>(props.m_canvas_width);
-    const int height = static_cast<int>(props.m_canvas_height);
-
-    add_render_widget(width, height, "RGB");
-    add_render_widget(width, height, "Alpha");
-    add_render_widget(width, height, "Depth");
-    add_render_widget(width, height, "Anomalies");
-}
-
-namespace
-{
-    struct RenderToolbarWidgets
-    {
-        QToolBar*       m_toolbar;
-        QComboBox*      m_picking_mode_combo;
-        QToolButton*    m_render_region_button;
-        QLabel*         m_info_label;
-    };
-
-    RenderToolbarWidgets create_render_toolbar(MainWindow* parent)
-    {
-        RenderToolbarWidgets widgets;
-
-        // Create the render toolbar.
-        widgets.m_toolbar = new QToolBar();
-        widgets.m_toolbar->setObjectName(QString::fromUtf8("render_toolbar"));
-        widgets.m_toolbar->setIconSize(QSize(18, 18));
-
-        // Create the label preceding the picking mode combobox.
-        QLabel* picking_mode_label = new QLabel("Picking Mode:");
-        picking_mode_label->setObjectName(QString::fromUtf8("picking_mode_label"));
-        widgets.m_toolbar->addWidget(picking_mode_label);
-
-        // Create the picking mode combobox.
-        // The combo will be populated by the ScenePickingHandler instantiated below.
-        widgets.m_picking_mode_combo = new QComboBox();
-        widgets.m_picking_mode_combo->setObjectName(QString::fromUtf8("picking_mode_combo"));
-        widgets.m_toolbar->addWidget(widgets.m_picking_mode_combo);
-
-        widgets.m_toolbar->addSeparator();
-
-        // Create the Set Render Region button in the render toolbar.
-        widgets.m_render_region_button = new QToolButton();
-        widgets.m_render_region_button->setIcon(QIcon(":/icons/selection-blue.png"));
-        widgets.m_render_region_button->setToolTip("Set Render Region");
-        widgets.m_render_region_button->setShortcut(Qt::Key_R);
-        widgets.m_render_region_button->setCheckable(true);
-        widgets.m_toolbar->addWidget(widgets.m_render_region_button);
-        QObject::connect(
-            widgets.m_render_region_button, SIGNAL(toggled(bool)),
-            parent, SLOT(slot_toggle_render_region(const bool)));
-
-        // Create the Clear Render Region button in the render toolbar.
-        QToolButton* clear_render_region_button = new QToolButton();
-        clear_render_region_button->setIcon(QIcon(":/icons/selection-crossed.png"));
-        clear_render_region_button->setToolTip("Clear Render Region");
-        clear_render_region_button->setShortcut(Qt::Key_C);
-        widgets.m_toolbar->addWidget(clear_render_region_button);
-        QObject::connect(
-            clear_render_region_button, SIGNAL(clicked()),
-            parent, SLOT(slot_clear_render_region()));
-
-        widgets.m_toolbar->addSeparator();
-
-        // Create a label to display various information such as mouse coordinates, etc.
-        widgets.m_info_label = new QLabel();
-        widgets.m_info_label->setObjectName(QString::fromUtf8("info_label"));
-        widgets.m_toolbar->addWidget(widgets.m_info_label);
-
-        return widgets;
-    }
-}
-
-void MainWindow::add_render_widget(
-    const int       width,
-    const int       height,
-    const QString&  label)
-{
-    // Create a render widget.
-    RenderWidget* render_widget =
-        new RenderWidget(
-            static_cast<size_t>(width),
-            static_cast<size_t>(height));
-
-    // Encapsulate the render widget into another widget that adds a margin around it.
-    QWidget* render_widget_wrapper = new QWidget();
-    render_widget_wrapper->setObjectName(QString::fromUtf8("render_widget_wrapper"));
-    render_widget_wrapper->setLayout(new QGridLayout());
-    render_widget_wrapper->layout()->setSizeConstraint(QLayout::SetFixedSize);
-    render_widget_wrapper->layout()->setContentsMargins(20, 20, 20, 20);
-    render_widget_wrapper->layout()->addWidget(render_widget);
-
-    // Wrap the render widget in a scroll area.
-    QScrollArea* render_widget_scroll_area = new QScrollArea();
-    render_widget_scroll_area->setObjectName(QString::fromUtf8("render_widget_scrollarea"));
-    render_widget_scroll_area->setAlignment(Qt::AlignCenter);
-    render_widget_scroll_area->setWidget(render_widget_wrapper);
-
-    // Create the render toolbar.
-    RenderToolbarWidgets render_toolbar_widgets = create_render_toolbar(this);
-
-    // Create the tab hosting the render widget and the render toolbar.
-    QWidget* render_widget_tab = new QWidget();
-    render_widget_tab->setObjectName(QString::fromUtf8("render_widget_tab"));
-    render_widget_tab->setLayout(new QGridLayout());
-    render_widget_tab->layout()->setSpacing(0);
-    render_widget_tab->layout()->setMargin(0);
-    render_widget_tab->layout()->addWidget(render_toolbar_widgets.m_toolbar);
-    render_widget_tab->layout()->addWidget(render_widget_scroll_area);
-
-    // Add the tab to the render channels tab bar.
-    m_ui->tab_render_channels->addTab(render_widget_tab, label);
-
-    RenderWidgetRecord* record = new RenderWidgetRecord();
-    record->m_render_widget = render_widget;
-    record->m_toolbar = render_toolbar_widgets.m_toolbar;
-    record->m_picking_mode_combo = render_toolbar_widgets.m_picking_mode_combo;
-    record->m_render_region_button = render_toolbar_widgets.m_render_region_button;
-    record->m_info_label = render_toolbar_widgets.m_info_label;
-
-    // Attach a bunch of handlers to the render widget.
-    record->m_zoom_handler.reset(
-        new WidgetZoomHandler(
-            render_widget_scroll_area,
-            render_widget,
-            width,
-            height));
-    record->m_pan_handler.reset(
-        new ScrollAreaPanHandler(
-            render_widget_scroll_area));
-    record->m_mouse_tracker.reset(
-        new MouseCoordinatesTracker(
-            render_widget,
-            render_toolbar_widgets.m_info_label,
-            width,
-            height));
-    record->m_picking_handler.reset(
-        new ScenePickingHandler(
-            render_toolbar_widgets.m_picking_mode_combo,
-            *record->m_mouse_tracker.get(),
+    // Create the render tab.
+    RenderTab* render_tab =
+        new RenderTab(
             *m_project_explorer,
-            *m_project_manager.get_project()));
-    record->m_render_region_handler.reset(
-        new RenderRegionHandler(
-            render_widget,
-            *record->m_mouse_tracker.get()));
-    m_render_widgets[label.toStdString()] = record;
-
+            *m_project_manager.get_project());
     connect(
-        record->m_render_region_handler.get(), SIGNAL(signal_render_region(const QRect&)),
-        SLOT(slot_set_render_region(const QRect&)));
-
-    // Initially, scene picking is enabled and render region is disabled.
-    record->m_picking_handler->set_enabled(true);
-    record->m_render_region_handler->set_enabled(false);
-
-    // Attach a contextual menu to the render widget.
-    render_widget->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(
-        render_widget, SIGNAL(customContextMenuRequested(const QPoint&)),
+        render_tab, SIGNAL(signal_render_widget_context_menu(const QPoint&)),
         SLOT(slot_render_widget_context_menu(const QPoint&)));
+    connect(
+        render_tab, SIGNAL(signal_set_render_region(const QRect&)),
+        SLOT(slot_set_render_region(const QRect&)));
+    connect(
+        render_tab, SIGNAL(signal_clear_render_region()),
+        SLOT(slot_clear_render_region()));
+
+    // Add the render tab to the tab bar.
+    m_ui->tab_render_channels->addTab(render_tab, label);
+
+    // Update the label -> render tab mapping.
+    m_render_tabs[label.toStdString()] = render_tab;
 }
 
 void MainWindow::start_rendering(const bool interactive)
@@ -937,8 +795,8 @@ void MainWindow::start_rendering(const bool interactive)
     project->get_frame()->aov_images().clear();
 
     // In the UI, darken all render widgets.
-    for (const_each<RenderWidgetCollection> i = m_render_widgets; i; ++i)
-        i->second->m_render_widget->multiply(0.2f);
+    for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
+        i->second->darken();
 
     const char* configuration_name = interactive ? "interactive" : "final";
     const ParamArray params = get_project_params(configuration_name);
@@ -947,7 +805,7 @@ void MainWindow::start_rendering(const bool interactive)
         project,
         params,
         interactive,
-        m_render_widgets["RGB"]->m_render_widget);
+        m_render_tabs["RGB"]->get_render_widget());
 }
 
 namespace
@@ -1142,15 +1000,10 @@ void MainWindow::slot_project_modified()
 
 void MainWindow::slot_frame_modified()
 {
-    const CanvasProperties& props =
-        m_project_manager.get_project()->get_frame()->image().properties();
+    for (each<RenderTabCollection> i = m_render_tabs; i; ++i)
+        i->second->update_size();
 
-    for (each<RenderWidgetCollection> i = m_render_widgets; i; ++i)
-    {
-        i->second->m_render_widget->resize(
-            props.m_canvas_width,
-            props.m_canvas_height);
-    }
+    m_project_manager.get_project()->get_frame()->clear_crop_window();
 }
 
 void MainWindow::slot_start_interactive_rendering()
@@ -1242,14 +1095,6 @@ void MainWindow::slot_set_shading_override()
     m_rendering_manager.reinitialize_rendering();
 }
 
-void MainWindow::slot_toggle_render_region(const bool checked)
-{
-    // todo: use the current render widget.
-    RenderWidgetRecord* render_widget_record = m_render_widgets["RGB"];
-    render_widget_record->m_picking_handler->set_enabled(!checked);
-    render_widget_record->m_render_region_handler->set_enabled(checked);
-}
-
 namespace
 {
     class ClearRenderRegionDelayedAction
@@ -1260,9 +1105,7 @@ namespace
             MasterRenderer& master_renderer,
             Project&        project) OVERRIDE
         {
-            Frame* frame = project.get_frame();
-            frame->get_parameters().strings().remove("crop_window");
-            frame->clear_crop_window();
+            project.get_frame()->clear_crop_window();
         }
     };
 
@@ -1291,11 +1134,10 @@ namespace
             assert(x0 <= x1);
             assert(y0 <= y1);
 
-            const AABB2u crop_window(AABB2i(Vector2i(x0, y0), Vector2i(x1, y1)));
-
-            Frame* frame = project.get_frame();
-            frame->get_parameters().insert("crop_window", crop_window);
-            frame->set_crop_window(crop_window);
+            project.get_frame()->set_crop_window(
+                AABB2i(
+                    Vector2i(x0, y0),
+                    Vector2i(x1, y1)));
         }
 
       private:
@@ -1314,10 +1156,6 @@ void MainWindow::slot_clear_render_region()
 
 void MainWindow::slot_set_render_region(const QRect& rect)
 {
-    // todo: use the current render widget.
-    RenderWidgetRecord* render_widget_record = m_render_widgets["RGB"];
-    render_widget_record->m_render_region_button->setChecked(false);
-
     m_rendering_manager.push_delayed_action(
         auto_ptr<RenderingManager::IDelayedAction>(
             new SetRenderRegionDelayedAction(rect)));
@@ -1447,7 +1285,7 @@ void MainWindow::slot_render_widget_context_menu(const QPoint& point)
     menu->addSeparator();
     menu->addAction("Clear Frame", this, SLOT(slot_clear_frame()));
 
-    menu->exec(qobject_cast<QWidget*>(sender())->mapToGlobal(point));
+    menu->exec(point);
 }
 
 void MainWindow::slot_save_frame()
@@ -1515,8 +1353,8 @@ void MainWindow::slot_clear_frame()
     frame->aov_images().clear();
 
     // In the UI, clear all render widgets to black.
-    for (const_each<RenderWidgetCollection> i = m_render_widgets; i; ++i)
-        i->second->m_render_widget->clear(Color4f(0.0f));
+    for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
+        i->second->clear();
 }
 
 }   // namespace studio

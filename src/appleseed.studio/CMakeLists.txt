@@ -193,6 +193,8 @@ set (mainwindow_rendering_sources
     mainwindow/rendering/renderingtimer.h
     mainwindow/rendering/renderregionhandler.cpp
     mainwindow/rendering/renderregionhandler.h
+    mainwindow/rendering/rendertab.cpp
+    mainwindow/rendering/rendertab.h
     mainwindow/rendering/renderwidget.cpp
     mainwindow/rendering/renderwidget.h
     mainwindow/rendering/scenepickinghandler.cpp

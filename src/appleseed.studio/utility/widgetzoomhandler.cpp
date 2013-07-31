@@ -63,13 +63,11 @@ namespace
 
 WidgetZoomHandler::WidgetZoomHandler(
     QScrollArea*    scroll_area,
-    QWidget*        content_widget,
-    const int       content_width,
-    const int       content_height)
+    QWidget*        content_widget)
   : m_scroll_area(scroll_area)
   , m_content_widget(content_widget)
-  , m_content_width(content_width)
-  , m_content_height(content_height)
+  , m_content_width(content_widget->width())
+  , m_content_height(content_widget->height())
   , m_scale_factor(1.0)
 {
     compute_min_max_scale_factors();

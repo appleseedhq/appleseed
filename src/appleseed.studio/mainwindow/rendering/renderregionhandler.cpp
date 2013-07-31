@@ -30,7 +30,6 @@
 #include "renderregionhandler.h"
 
 // appleseed.studio headers.
-#include "mainwindow/rendering/renderwidget.h"
 #include "utility/mousecoordinatestracker.h"
 
 // appleseed.foundation headers.
@@ -43,6 +42,7 @@
 #include <QRubberBand>
 #include <QSize>
 #include <Qt>
+#include <QWidget>
 
 // Standard headers.
 #include <algorithm>
@@ -54,19 +54,19 @@ namespace appleseed {
 namespace studio {
 
 RenderRegionHandler::RenderRegionHandler(
-    RenderWidget*                   render_widget,
+    QWidget*                        widget,
     const MouseCoordinatesTracker&  mouse_tracker)
-  : m_render_widget(render_widget)
+  : m_widget(widget)
   , m_mouse_tracker(mouse_tracker)
   , m_enabled(true)
   , m_rubber_band(0)
 {
-    m_mouse_tracker.get_widget()->installEventFilter(this);
+    m_widget->installEventFilter(this);
 }
 
 RenderRegionHandler::~RenderRegionHandler()
 {
-    m_mouse_tracker.get_widget()->removeEventFilter(this);
+    m_widget->removeEventFilter(this);
 }
 
 void RenderRegionHandler::set_enabled(const bool enabled)
@@ -91,7 +91,7 @@ bool RenderRegionHandler::eventFilter(QObject* object, QEvent* event)
                 m_origin = mouse_event->pos();
 
                 if (m_rubber_band == 0)
-                    m_rubber_band = new QRubberBand(QRubberBand::Rectangle, m_render_widget);
+                    m_rubber_band = new QRubberBand(QRubberBand::Rectangle, m_widget);
 
                 m_rubber_band->setGeometry(QRect(m_origin, QSize()));
                 m_rubber_band->show();

@@ -174,11 +174,15 @@ void Frame::clear_crop_window()
         AABB2u(
             Vector2u(0, 0),
             Vector2u(impl->m_frame_width, impl->m_frame_height));
+
+    m_params.strings().remove("crop_window");
 }
 
 void Frame::set_crop_window(const AABB2u& crop_window)
 {
     impl->m_crop_window = crop_window;
+
+    m_params.insert("crop_window", crop_window);
 }
 
 const AABB2u& Frame::get_crop_window() const

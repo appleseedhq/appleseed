@@ -48,13 +48,11 @@ namespace studio {
 
 MouseCoordinatesTracker::MouseCoordinatesTracker(
     QWidget*    widget,
-    QLabel*     label,
-    const int   content_width,
-    const int   content_height)
+    QLabel*     label)
   : m_widget(widget)
   , m_label(label)
-  , m_content_width(content_width)
-  , m_content_height(content_height)
+  , m_content_width(widget->width())
+  , m_content_height(widget->height())
   , m_was_mouse_tracked(widget->hasMouseTracking())
 {
     m_widget->setMouseTracking(true);
@@ -65,11 +63,6 @@ MouseCoordinatesTracker::~MouseCoordinatesTracker()
 {
     m_widget->removeEventFilter(this);
     m_widget->setMouseTracking(m_was_mouse_tracked);
-}
-
-QWidget* MouseCoordinatesTracker::get_widget() const
-{
-    return m_widget;
 }
 
 Vector2d MouseCoordinatesTracker::widget_to_ndc(const QPoint& point) const

@@ -35,10 +35,10 @@
 
 // Forward declarations.
 namespace appleseed { namespace studio { class MouseCoordinatesTracker; } }
-namespace appleseed { namespace studio { class RenderWidget; } }
 class QEvent;
 class QRect;
 class QRubberBand;
+class QWidget;
 
 namespace appleseed {
 namespace studio {
@@ -50,7 +50,7 @@ class RenderRegionHandler
 
   public:
     RenderRegionHandler(
-        RenderWidget*                       render_widget,
+        QWidget*                            widget,
         const MouseCoordinatesTracker&      mouse_tracker);
 
     ~RenderRegionHandler();
@@ -61,7 +61,7 @@ class RenderRegionHandler
     void signal_render_region(const QRect& rect);
 
   private:
-    RenderWidget*                           m_render_widget;
+    QWidget*                                m_widget;
     const MouseCoordinatesTracker&          m_mouse_tracker;
     bool                                    m_enabled;
     QRubberBand*                            m_rubber_band;
