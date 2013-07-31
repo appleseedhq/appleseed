@@ -86,9 +86,11 @@ class DoubleSlider
     void setRange(const double min, const double max);
     void setMinimum(const double min);
     void setMaximum(const double max);
-
     double minimum() const;
     double maximum() const;
+
+    void setPageStep(const double step);
+    double pageStep() const;
 
     double value() const;
 

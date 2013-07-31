@@ -60,26 +60,28 @@ void DoubleSlider::setValue(const int value)
 
 void DoubleSlider::setValue(const double value)
 {
-    QSlider::setValue(value * Multiplier);
+    QSlider::setValue(static_cast<int>(value * Multiplier));
 }
 
 void DoubleSlider::setRange(const double min, const double max)
 {
-    QSlider::setRange(min * Multiplier, max * Multiplier);
+    QSlider::setRange(
+        static_cast<int>(min * Multiplier),
+        static_cast<int>(max * Multiplier));
 
     emit rangeChanged(min, max);
 }
 
 void DoubleSlider::setMinimum(const double min)
 {
-    QSlider::setMinimum(min * Multiplier);
+    QSlider::setMinimum(static_cast<int>(min * Multiplier));
 
     emit rangeChanged(minimum(), maximum());
 }
 
 void DoubleSlider::setMaximum(const double max)
 {
-    QSlider::setMaximum(max * Multiplier);
+    QSlider::setMaximum(static_cast<int>(max * Multiplier));
 
     emit rangeChanged(minimum(), maximum());
 }
@@ -92,6 +94,16 @@ double DoubleSlider::minimum() const
 double DoubleSlider::maximum() const
 {
     return static_cast<double>(QSlider::maximum()) / Multiplier;
+}
+
+void DoubleSlider::setPageStep(const double step)
+{
+    QSlider::setPageStep(static_cast<int>(step * Multiplier));
+}
+
+double DoubleSlider::pageStep() const
+{
+    return static_cast<double>(QSlider::pageStep()) / Multiplier;
 }
 
 double DoubleSlider::value() const

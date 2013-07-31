@@ -303,10 +303,12 @@ void EntityEditorWindow::create_numeric_input_widget(const Dictionary& definitio
     QLineEdit* line_edit = new QLineEdit(m_ui->scrollarea_contents);
     line_edit->setMaximumWidth(60);
 
+    const double min_value = definition.get<double>("min_value");
+    const double max_value = definition.get<double>("max_value");
+
     DoubleSlider* slider = new DoubleSlider(Qt::Horizontal, m_ui->scrollarea_contents);
-    slider->setRange(
-        definition.get<double>("min_value"),
-        definition.get<double>("max_value"));
+    slider->setRange(min_value, max_value);
+    slider->setPageStep((max_value - min_value) / 10.0);
 
     // Connect the line edit and the slider together.
     LineEditDoubleSliderAdaptor* adaptor =
