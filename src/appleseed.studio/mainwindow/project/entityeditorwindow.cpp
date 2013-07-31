@@ -522,13 +522,18 @@ namespace
         }
 
       public slots:
-        void slot_accept(QString page_name, QString entity_name)
+        void slot_accept(
+            const QString&  page_name,
+            const QString&  entity_name)
         {
             emit signal_accepted(m_widget_name, page_name, entity_name);
         }
 
       signals:
-        void signal_accepted(QString widget_name, QString page_name, QString entity_name);
+        void signal_accepted(
+            const QString&  widget_name,
+            const QString&  page_name,
+            const QString&  entity_name);
 
       private:
         const QString m_widget_name;
@@ -556,14 +561,12 @@ void EntityEditorWindow::slot_open_entity_browser(const QString& widget_name)
 
     ForwardAcceptedSignal* forward_signal =
         new ForwardAcceptedSignal(browser_window, widget_name);
-
     connect(
-        browser_window, SIGNAL(signal_accepted(QString, QString)),
-        forward_signal, SLOT(slot_accept(QString, QString)));
-
+        browser_window, SIGNAL(signal_accepted(const QString&, const QString&)),
+        forward_signal, SLOT(slot_accept(const QString&, const QString&)));
     connect(
-        forward_signal, SIGNAL(signal_accepted(QString, QString, QString)),
-        SLOT(slot_entity_browser_accept(QString, QString, QString)));
+        forward_signal, SIGNAL(signal_accepted(const QString&, const QString&, const QString&)),
+        SLOT(slot_entity_browser_accept(const QString&, const QString&, const QString&)));
 
     browser_window->showNormal();
     browser_window->activateWindow();
@@ -577,21 +580,62 @@ void EntityEditorWindow::slot_entity_browser_accept(QString widget_name, QString
     qobject_cast<QWidget*>(sender()->parent())->close();
 }
 
+namespace
+{
+    class ForwardColorChangedSignal
+      : public QObject
+    {
+        Q_OBJECT
+
+      public:
+        ForwardColorChangedSignal(QObject* parent, const QString& widget_name)
+          : QObject(parent)
+          , m_widget_name(widget_name)
+        {
+        }
+
+      public slots:
+        void slot_color_changed(const QColor& color)
+        {
+            emit signal_color_changed(m_widget_name, color);
+        }
+
+      signals:
+        void signal_color_changed(const QString& widget_name, const QColor& color);
+
+      private:
+        const QString m_widget_name;
+    };
+}
+
 void EntityEditorWindow::slot_open_color_picker(const QString& widget_name)
 {
     IInputWidgetProxy* widget_proxy = m_widget_proxies.get(widget_name.toStdString());
 
     const Color3d initial_color = ColorPickerProxy::get_color_from_string(widget_proxy->get());
 
-    const QColor new_color =
-        QColorDialog::getColor(
+    QColorDialog* dialog =
+        new QColorDialog(
             color_to_qcolor(initial_color),
-            this,
-            "Pick Color",
-            QColorDialog::DontUseNativeDialog);
+            this);
+    dialog->setWindowTitle("Pick Color");
+    dialog->setOptions(QColorDialog::DontUseNativeDialog);
 
-    if (new_color.isValid())
-        widget_proxy->set(to_string(qcolor_to_color<Color3d>(new_color)));
+    ForwardColorChangedSignal* forward_signal =
+        new ForwardColorChangedSignal(dialog, widget_name);
+    connect(
+        dialog, SIGNAL(currentColorChanged(const QColor&)),
+        forward_signal, SLOT(slot_color_changed(const QColor&)));
+    connect(
+        forward_signal, SIGNAL(signal_color_changed(const QString&, const QColor&)),
+        SLOT(slot_color_changed(const QString&, const QColor&)));
+
+    dialog->exec();
+}
+
+void EntityEditorWindow::slot_color_changed(const QString& widget_name, const QColor& color)
+{
+    m_widget_proxies.get(widget_name.toStdString())->set(to_string(qcolor_to_color<Color3d>(color)));
 }
 
 void EntityEditorWindow::slot_open_file_picker(const QString& widget_name)

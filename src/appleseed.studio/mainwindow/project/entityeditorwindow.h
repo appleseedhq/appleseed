@@ -48,6 +48,7 @@
 // Forward declarations.
 namespace renderer  { class Project; }
 namespace Ui        { class EntityEditorWindow; }
+class QColor;
 class QFormLayout;
 class QSignalMapper;
 class QString;
@@ -150,6 +151,7 @@ class EntityEditorWindow
     void slot_open_entity_browser(const QString& widget_name);
     void slot_entity_browser_accept(QString widget_name, QString page_name, QString entity_name);
     void slot_open_color_picker(const QString& widget_name);
+    void slot_color_changed(const QString& widget_name, const QColor& color);
     void slot_open_file_picker(const QString& widget_name);
 
     void slot_apply();
