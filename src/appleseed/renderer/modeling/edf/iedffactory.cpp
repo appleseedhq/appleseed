@@ -38,21 +38,21 @@ using namespace foundation;
 namespace renderer
 {
 
-void IEDFFactory::add_common_widget_definitions(DictionaryArray& definitions)
+void IEDFFactory::add_common_input_metadata(DictionaryArray& metadata)
 {
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "cast_indirect_light")
             .insert("label", "Cast Indirect Light")
-            .insert("widget", "checkbox")
+            .insert("type", "boolean")
             .insert("use", "optional")
             .insert("default", "true"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "importance_multiplier")
             .insert("label", "Importance Multiplier")
-            .insert("widget", "text_box")
+            .insert("type", "text")
             .insert("use", "optional")
             .insert("default", "1.0"));
 }

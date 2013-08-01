@@ -61,8 +61,8 @@ class DLLSYMBOL ConeEDFFactory
     // Return a human-readable string identifying this EDF model.
     virtual const char* get_human_readable_model() const OVERRIDE;
 
-    // Return a set of widget definitions for this EDF model.
-    virtual foundation::DictionaryArray get_widget_definitions() const OVERRIDE;
+    // Return a set of input metadata for this EDF model.
+    virtual foundation::DictionaryArray get_input_metadata() const OVERRIDE;
 
     // Create a new EDF instance.
     virtual foundation::auto_release_ptr<EDF> create(

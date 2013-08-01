@@ -133,8 +133,8 @@ class DLLSYMBOL MaterialFactory
     // Return a string identifying this material model.
     static const char* get_model();
 
-    // Return a set of widget definitions for this material model.
-    static foundation::DictionaryArray get_widget_definitions();
+    // Return a set of input metadata for this material model.
+    static foundation::DictionaryArray get_input_metadata();
 
     // Create a new material.
     static foundation::auto_release_ptr<Material> create(

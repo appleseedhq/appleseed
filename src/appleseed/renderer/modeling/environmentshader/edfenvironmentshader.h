@@ -61,8 +61,8 @@ class DLLSYMBOL EDFEnvironmentShaderFactory
     // Return a human-readable string identifying this environment shader model.
     virtual const char* get_human_readable_model() const OVERRIDE;
 
-    // Return a set of widget definitions for this environment shader model.
-    virtual foundation::DictionaryArray get_widget_definitions() const OVERRIDE;
+    // Return a set of input metadata for this environment shader model.
+    virtual foundation::DictionaryArray get_input_metadata() const OVERRIDE;
 
     // Create a new environment shader instance.
     virtual foundation::auto_release_ptr<EnvironmentShader> create(

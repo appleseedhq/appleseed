@@ -150,11 +150,11 @@ const char* WritableTexture2dFactory::get_human_readable_model() const
     return "Writable 2D Texture";
 }
 
-DictionaryArray WritableTexture2dFactory::get_widget_definitions() const
+DictionaryArray WritableTexture2dFactory::get_input_metadata() const
 {
-    DictionaryArray definitions;
+    DictionaryArray metadata;
 
-    return definitions;
+    return metadata;
 }
 
 auto_release_ptr<Texture> WritableTexture2dFactory::create(

@@ -99,8 +99,8 @@ class DLLSYMBOL EnvironmentFactory
     // Return a string identifying this environment model.
     static const char* get_model();
 
-    // Return a set of widget definitions for this environment model.
-    static foundation::DictionaryArray get_widget_definitions();
+    // Return a set of input metadata for this environment model.
+    static foundation::DictionaryArray get_input_metadata();
 
     // Create a new environment.
     static foundation::auto_release_ptr<Environment> create(

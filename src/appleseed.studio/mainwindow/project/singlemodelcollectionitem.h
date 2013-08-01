@@ -136,7 +136,7 @@ void SingleModelCollectionItem<Entity, ParentEntity, ParentItem>::slot_create()
     std::auto_ptr<EntityEditorWindow::IFormFactory> form_factory(
         new SingleModelEntityEditorFormFactory(
             name_suggestion,
-            FactoryType::get_widget_definitions()));
+            FactoryType::get_input_metadata()));
 
     std::auto_ptr<EntityEditorWindow::IEntityBrowser> entity_browser(
         new EntityBrowser<ParentEntity>(Base::m_parent));

@@ -62,8 +62,8 @@ class DLLSYMBOL DiskTexture2dFactory
     // Return a human-readable string identifying this texture model.
     virtual const char* get_human_readable_model() const OVERRIDE;
 
-    // Return a set of widget definitions for this texture model.
-    virtual foundation::DictionaryArray get_widget_definitions() const OVERRIDE;
+    // Return a set of input metadata for this texture model.
+    virtual foundation::DictionaryArray get_input_metadata() const OVERRIDE;
 
     // Create a new texture instance.
     virtual foundation::auto_release_ptr<Texture> create(

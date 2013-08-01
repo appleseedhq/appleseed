@@ -76,7 +76,7 @@ void FrameItem::slot_edit()
     auto_ptr<EntityEditorWindow::IFormFactory> form_factory(
         new SingleModelEntityEditorFormFactory(
             m_frame->get_name(),
-            FrameFactory::get_widget_definitions()));
+            FrameFactory::get_input_metadata()));
 
     open_entity_editor(
         treeWidget(),

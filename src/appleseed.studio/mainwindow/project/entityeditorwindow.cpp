@@ -163,10 +163,10 @@ void EntityEditorWindow::rebuild_form(const Dictionary& values)
 
     // The mappings were removed when the widgets were deleted.
 
-    m_form_factory->update(values, m_widget_definitions);
+    m_form_factory->update(values, m_input_metadata);
 
-    for (const_each<WidgetDefinitionCollection> i = m_widget_definitions; i; ++i)
-        create_input_widget(*i);
+    for (const_each<InputMetadataCollection> i = m_input_metadata; i; ++i)
+        create_input_widgets(*i);
 }
 
 void EntityEditorWindow::create_form_layout()
@@ -177,93 +177,97 @@ void EntityEditorWindow::create_form_layout()
     m_form_layout->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
 }
 
-Dictionary EntityEditorWindow::get_widget_definition(const string& name) const
+Dictionary EntityEditorWindow::get_input_metadata(const string& name) const
 {
-    for (const_each<WidgetDefinitionCollection> i = m_widget_definitions; i; ++i)
+    for (const_each<InputMetadataCollection> i = m_input_metadata; i; ++i)
     {
-        const Dictionary& definition = *i;
+        const Dictionary& metadata = *i;
 
-        if (definition.get<string>("name") == name)
-            return definition;
+        if (metadata.get<string>("name") == name)
+            return metadata;
     }
 
     return Dictionary();
 }
 
-void EntityEditorWindow::create_input_widget(const Dictionary& definition)
+void EntityEditorWindow::create_input_widgets(const Dictionary& metadata)
 {
-    const string widget_type = definition.get<string>("widget");
+    const string type = metadata.get<string>("type");
 
-    if (widget_type == "text_box")
+    if (type == "text")
     {
-        create_text_box_input_widget(definition);
+        create_text_input_widgets(metadata);
     }
-    else if (widget_type == "numeric")
+    else if (type == "numeric")
     {
-        create_numeric_input_widget(definition);
+        create_numeric_input_widgets(metadata);
     }
-    else if (widget_type == "checkbox")
+    else if (type == "colormap")
     {
-        create_checkbox_input_widget(definition);
+        create_colormap_input_widgets(metadata);
     }
-    else if (widget_type == "dropdown_list")
+    else if (type == "boolean")
     {
-        create_dropdown_list_input_widget(definition);
+        create_boolean_input_widgets(metadata);
     }
-    else if (widget_type == "entity_picker")
+    else if (type == "enumeration")
     {
-        create_entity_picker_input_widget(definition);
+        create_enumeration_input_widgets(metadata);
     }
-    else if (widget_type == "color_picker")
+    else if (type == "entity")
     {
-        create_color_picker_input_widget(definition);
+        create_entity_input_widgets(metadata);
     }
-    else if (widget_type == "file_picker")
+    else if (type == "color")
     {
-        create_file_picker_input_widget(definition);
+        create_color_input_widgets(metadata);
+    }
+    else if (type == "file")
+    {
+        create_file_input_widgets(metadata);
     }
     else
     {
-        assert(!"Unknown widget type.");
+        assert(!"Unknown input type.");
     }
 }
 
 namespace
 {
-    QString get_label_text(const Dictionary& definition)
+    QString get_label_text(const Dictionary& metadata)
     {
-        return definition.get<QString>("label") + ":";
+        return metadata.get<QString>("label") + ":";
     }
 
-    bool should_be_focused(const Dictionary& definition)
+    bool should_be_focused(const Dictionary& metadata)
     {
         return
-            definition.strings().exist("focus") &&
-            definition.strings().get<bool>("focus");
+            metadata.strings().exist("focus") &&
+            metadata.strings().get<bool>("focus");
     }
 }
 
-void EntityEditorWindow::create_text_box_input_widget(const Dictionary& definition)
+void EntityEditorWindow::create_text_input_widgets(const Dictionary& metadata)
 {
     QLineEdit* line_edit = new QLineEdit(m_ui->scrollarea_contents);
 
-    const string name = definition.get<string>("name");
+    const string name = metadata.get<string>("name");
     auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
 
-    if (definition.strings().exist("default"))
-        widget_proxy->set(definition.strings().get<string>("default"));
+    if (metadata.strings().exist("default"))
+        widget_proxy->set(metadata.strings().get<string>("default"));
 
     connect(widget_proxy.get(), SIGNAL(signal_changed()), SLOT(slot_apply()));
 
     m_widget_proxies.insert(name, widget_proxy);
 
-    if (should_be_focused(definition))
+    if (should_be_focused(metadata))
     {
         line_edit->selectAll();
         line_edit->setFocus();
     }
 
-    m_form_layout->addRow(get_label_text(definition), line_edit);
+    m_form_layout->addRow(get_label_text(metadata), line_edit);
 }
 
 namespace
@@ -301,13 +305,13 @@ namespace
     };
 }
 
-void EntityEditorWindow::create_numeric_input_widget(const Dictionary& definition)
+void EntityEditorWindow::create_numeric_input_widgets(const Dictionary& metadata)
 {
     QLineEdit* line_edit = new QLineEdit(m_ui->scrollarea_contents);
     line_edit->setMaximumWidth(60);
 
-    const double min_value = definition.get<double>("min_value");
-    const double max_value = definition.get<double>("max_value");
+    const double min_value = metadata.get<double>("min_value");
+    const double max_value = metadata.get<double>("max_value");
 
     DoubleSlider* slider = new DoubleSlider(Qt::Horizontal, m_ui->scrollarea_contents);
     slider->setRange(min_value, max_value);
@@ -325,18 +329,18 @@ void EntityEditorWindow::create_numeric_input_widget(const Dictionary& definitio
         line_edit, SIGNAL(textChanged(const QString&)),
         adaptor, SLOT(slot_set_slider_value(const QString&)));
 
-    const string name = definition.get<string>("name");
+    const string name = metadata.get<string>("name");
     auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
 
-    if (definition.strings().exist("default"))
-        widget_proxy->set(definition.strings().get<string>("default"));
+    if (metadata.strings().exist("default"))
+        widget_proxy->set(metadata.strings().get<string>("default"));
 
     connect(line_edit, SIGNAL(returnPressed()), SLOT(slot_apply()));
     connect(slider, SIGNAL(valueChanged(int)), SLOT(slot_apply()));
 
     m_widget_proxies.insert(name, widget_proxy);
 
-    if (should_be_focused(definition))
+    if (should_be_focused(metadata))
     {
         line_edit->selectAll();
         line_edit->setFocus();
@@ -346,68 +350,10 @@ void EntityEditorWindow::create_numeric_input_widget(const Dictionary& definitio
     layout->setSpacing(6);
     layout->addWidget(line_edit);
     layout->addWidget(slider);
-    m_form_layout->addRow(get_label_text(definition), layout);
+    m_form_layout->addRow(get_label_text(metadata), layout);
 }
 
-void EntityEditorWindow::create_checkbox_input_widget(const Dictionary& definition)
-{
-    QCheckBox* checkbox = new QCheckBox(m_ui->scrollarea_contents);
-
-    const string name = definition.get<string>("name");
-    auto_ptr<IInputWidgetProxy> widget_proxy(new CheckBoxProxy(checkbox));
-
-    if (definition.strings().exist("default"))
-        widget_proxy->set(definition.strings().get<string>("default"));
-
-    connect(widget_proxy.get(), SIGNAL(signal_changed()), SLOT(slot_apply()));
-
-    m_widget_proxies.insert(name, widget_proxy);
-
-    if (should_be_focused(definition))
-        checkbox->setFocus();
-
-    m_form_layout->addRow(get_label_text(definition), checkbox);
-}
-
-void EntityEditorWindow::create_dropdown_list_input_widget(const Dictionary& definition)
-{
-    QComboBox* combo_box = new QComboBox(m_ui->scrollarea_contents);
-    combo_box->setEditable(false);
-
-    new MouseWheelFocusEventFilter(combo_box);
-
-    const string name = definition.get<string>("name");
-    auto_ptr<IInputWidgetProxy> widget_proxy(new ComboBoxProxy(combo_box));
-
-    const StringDictionary& items = definition.dictionaries().get("dropdown_items").strings();
-    for (const_each<StringDictionary> i = items; i; ++i)
-        combo_box->addItem(i->name(), i->value<QString>());
-
-    if (definition.strings().exist("default"))
-    {
-        const QString default_value = definition.strings().get<QString>("default");
-        combo_box->setCurrentIndex(combo_box->findData(QVariant::fromValue(default_value)));
-    }
-
-    if (definition.strings().exist("on_change") &&
-        definition.strings().get<string>("on_change") == "rebuild_form")
-    {
-        connect(combo_box, SIGNAL(currentIndexChanged(int)), SLOT(slot_rebuild_form()));
-    }
-    else
-    {
-        connect(widget_proxy.get(), SIGNAL(signal_changed()), SLOT(slot_apply()));
-    }
-
-    m_widget_proxies.insert(name, widget_proxy);
-
-    if (should_be_focused(definition))
-        combo_box->setFocus();
-
-    m_form_layout->addRow(get_label_text(definition), combo_box);
-}
-
-void EntityEditorWindow::create_entity_picker_input_widget(const Dictionary& definition)
+void EntityEditorWindow::create_colormap_input_widgets(const Dictionary& metadata)
 {
     QLineEdit* line_edit = new QLineEdit(m_ui->scrollarea_contents);
     line_edit->setMaximumWidth(120);
@@ -431,7 +377,7 @@ void EntityEditorWindow::create_entity_picker_input_widget(const Dictionary& def
         line_edit, SIGNAL(textChanged(const QString&)),
         adaptor, SLOT(slot_set_slider_value(const QString&)));
 
-    const string name = definition.get<string>("name");
+    const string name = metadata.get<string>("name");
 
     QWidget* bind_button = new QPushButton("Bind", m_ui->scrollarea_contents);
     bind_button->setObjectName("bind_entity_button");
@@ -441,15 +387,15 @@ void EntityEditorWindow::create_entity_picker_input_widget(const Dictionary& def
 
     auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
 
-    if (definition.strings().exist("default"))
-        widget_proxy->set(definition.strings().get<string>("default"));
+    if (metadata.strings().exist("default"))
+        widget_proxy->set(metadata.strings().get<string>("default"));
 
     connect(line_edit, SIGNAL(returnPressed()), SLOT(slot_apply()));
     connect(slider, SIGNAL(valueChanged(int)), SLOT(slot_apply()));
 
     m_widget_proxies.insert(name, widget_proxy);
 
-    if (should_be_focused(definition))
+    if (should_be_focused(metadata))
     {
         line_edit->selectAll();
         line_edit->setFocus();
@@ -460,10 +406,102 @@ void EntityEditorWindow::create_entity_picker_input_widget(const Dictionary& def
     layout->addWidget(line_edit);
     layout->addWidget(slider);
     layout->addWidget(bind_button);
-    m_form_layout->addRow(get_label_text(definition), layout);
+    m_form_layout->addRow(get_label_text(metadata), layout);
 }
 
-void EntityEditorWindow::create_color_picker_input_widget(const Dictionary& definition)
+void EntityEditorWindow::create_boolean_input_widgets(const Dictionary& metadata)
+{
+    QCheckBox* checkbox = new QCheckBox(m_ui->scrollarea_contents);
+
+    const string name = metadata.get<string>("name");
+    auto_ptr<IInputWidgetProxy> widget_proxy(new CheckBoxProxy(checkbox));
+
+    if (metadata.strings().exist("default"))
+        widget_proxy->set(metadata.strings().get<string>("default"));
+
+    connect(widget_proxy.get(), SIGNAL(signal_changed()), SLOT(slot_apply()));
+
+    m_widget_proxies.insert(name, widget_proxy);
+
+    if (should_be_focused(metadata))
+        checkbox->setFocus();
+
+    m_form_layout->addRow(get_label_text(metadata), checkbox);
+}
+
+void EntityEditorWindow::create_enumeration_input_widgets(const Dictionary& metadata)
+{
+    QComboBox* combo_box = new QComboBox(m_ui->scrollarea_contents);
+    combo_box->setEditable(false);
+
+    new MouseWheelFocusEventFilter(combo_box);
+
+    const string name = metadata.get<string>("name");
+    auto_ptr<IInputWidgetProxy> widget_proxy(new ComboBoxProxy(combo_box));
+
+    const StringDictionary& items = metadata.dictionaries().get("items").strings();
+    for (const_each<StringDictionary> i = items; i; ++i)
+        combo_box->addItem(i->name(), i->value<QString>());
+
+    if (metadata.strings().exist("default"))
+    {
+        const QString default_value = metadata.strings().get<QString>("default");
+        combo_box->setCurrentIndex(combo_box->findData(QVariant::fromValue(default_value)));
+    }
+
+    if (metadata.strings().exist("on_change") &&
+        metadata.strings().get<string>("on_change") == "rebuild_form")
+    {
+        connect(combo_box, SIGNAL(currentIndexChanged(int)), SLOT(slot_rebuild_form()));
+    }
+    else
+    {
+        connect(widget_proxy.get(), SIGNAL(signal_changed()), SLOT(slot_apply()));
+    }
+
+    m_widget_proxies.insert(name, widget_proxy);
+
+    if (should_be_focused(metadata))
+        combo_box->setFocus();
+
+    m_form_layout->addRow(get_label_text(metadata), combo_box);
+}
+
+void EntityEditorWindow::create_entity_input_widgets(const Dictionary& metadata)
+{
+    QLineEdit* line_edit = new QLineEdit(m_ui->scrollarea_contents);
+
+    const string name = metadata.get<string>("name");
+
+    QWidget* bind_button = new QPushButton("Bind", m_ui->scrollarea_contents);
+    bind_button->setObjectName("bind_entity_button");
+    bind_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    connect(bind_button, SIGNAL(clicked()), m_entity_picker_bind_signal_mapper, SLOT(map()));
+    m_entity_picker_bind_signal_mapper->setMapping(bind_button, QString::fromStdString(name));
+
+    auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
+
+    if (metadata.strings().exist("default"))
+        widget_proxy->set(metadata.strings().get<string>("default"));
+
+    connect(widget_proxy.get(), SIGNAL(signal_changed()), SLOT(slot_apply()));
+
+    m_widget_proxies.insert(name, widget_proxy);
+
+    if (should_be_focused(metadata))
+    {
+        line_edit->selectAll();
+        line_edit->setFocus();
+    }
+
+    QHBoxLayout* layout = new QHBoxLayout();
+    layout->setSpacing(6);
+    layout->addWidget(line_edit);
+    layout->addWidget(bind_button);
+    m_form_layout->addRow(get_label_text(metadata), layout);
+}
+
+void EntityEditorWindow::create_color_input_widgets(const Dictionary& metadata)
 {
     QLineEdit* line_edit = new QLineEdit(m_ui->scrollarea_contents);
 
@@ -471,20 +509,20 @@ void EntityEditorWindow::create_color_picker_input_widget(const Dictionary& defi
     picker_button->setObjectName("ColorPicker");
     connect(picker_button, SIGNAL(clicked()), m_color_picker_signal_mapper, SLOT(map()));
 
-    const string name = definition.get<string>("name");
+    const string name = metadata.get<string>("name");
     m_color_picker_signal_mapper->setMapping(picker_button, QString::fromStdString(name));
 
     auto_ptr<IInputWidgetProxy> widget_proxy(new ColorPickerProxy(line_edit, picker_button));
 
-    if (definition.strings().exist("default"))
-        widget_proxy->set(definition.strings().get<string>("default"));
+    if (metadata.strings().exist("default"))
+        widget_proxy->set(metadata.strings().get<string>("default"));
     else widget_proxy->set("0.0 0.0 0.0");
 
     connect(widget_proxy.get(), SIGNAL(signal_changed()), SLOT(slot_apply()));
 
     m_widget_proxies.insert(name, widget_proxy);
 
-    if (should_be_focused(definition))
+    if (should_be_focused(metadata))
     {
         line_edit->selectAll();
         line_edit->setFocus();
@@ -494,10 +532,10 @@ void EntityEditorWindow::create_color_picker_input_widget(const Dictionary& defi
     layout->setSpacing(6);
     layout->addWidget(line_edit);
     layout->addWidget(picker_button);
-    m_form_layout->addRow(get_label_text(definition), layout);
+    m_form_layout->addRow(get_label_text(metadata), layout);
 }
 
-void EntityEditorWindow::create_file_picker_input_widget(const Dictionary& definition)
+void EntityEditorWindow::create_file_input_widgets(const Dictionary& metadata)
 {
     QLineEdit* line_edit = new QLineEdit(m_ui->scrollarea_contents);
 
@@ -505,19 +543,19 @@ void EntityEditorWindow::create_file_picker_input_widget(const Dictionary& defin
     browse_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     connect(browse_button, SIGNAL(clicked()), m_file_picker_signal_mapper, SLOT(map()));
 
-    const string name = definition.get<string>("name");
+    const string name = metadata.get<string>("name");
     m_file_picker_signal_mapper->setMapping(browse_button, QString::fromStdString(name));
 
     auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
 
-    if (definition.strings().exist("default"))
-        widget_proxy->set(definition.strings().get<string>("default"));
+    if (metadata.strings().exist("default"))
+        widget_proxy->set(metadata.strings().get<string>("default"));
 
     connect(widget_proxy.get(), SIGNAL(signal_changed()), SLOT(slot_apply()));
 
     m_widget_proxies.insert(name, widget_proxy);
 
-    if (should_be_focused(definition))
+    if (should_be_focused(metadata))
     {
         line_edit->selectAll();
         line_edit->setFocus();
@@ -527,7 +565,7 @@ void EntityEditorWindow::create_file_picker_input_widget(const Dictionary& defin
     layout->setSpacing(6);
     layout->addWidget(line_edit);
     layout->addWidget(browse_button);
-    m_form_layout->addRow(get_label_text(definition), layout);
+    m_form_layout->addRow(get_label_text(metadata), layout);
 }
 
 void EntityEditorWindow::slot_rebuild_form()
@@ -572,14 +610,14 @@ namespace
 
 void EntityEditorWindow::slot_open_entity_browser(const QString& widget_name)
 {
-    const Dictionary widget_definition = get_widget_definition(widget_name.toStdString());
+    const Dictionary metadata = get_input_metadata(widget_name.toStdString());
 
     EntityBrowserWindow* browser_window =
         new EntityBrowserWindow(
             this,
-            widget_definition.get<string>("label"));
+            metadata.get<string>("label"));
 
-    const Dictionary& entity_types = widget_definition.dictionaries().get("entity_types");
+    const Dictionary& entity_types = metadata.dictionaries().get("entity_types");
 
     for (const_each<StringDictionary> i = entity_types.strings(); i; ++i)
     {
@@ -672,9 +710,9 @@ void EntityEditorWindow::slot_open_file_picker(const QString& widget_name)
 {
     IInputWidgetProxy* widget_proxy = m_widget_proxies.get(widget_name.toStdString());
 
-    const Dictionary widget_definition = get_widget_definition(widget_name.toStdString());
+    const Dictionary metadata = get_input_metadata(widget_name.toStdString());
 
-    if (widget_definition.get<string>("file_picker_mode") == "open")
+    if (metadata.get<string>("file_picker_mode") == "open")
     {
         const filesystem::path project_root_path = filesystem::path(m_project.get_path()).parent_path();
         const filesystem::path file_path = absolute(widget_proxy->get(), project_root_path);
@@ -688,7 +726,7 @@ void EntityEditorWindow::slot_open_file_picker(const QString& widget_name)
                 this,
                 "Open...",
                 QString::fromStdString(file_root_path.string()),
-                widget_definition.get<QString>("file_picker_filter"),
+                metadata.get<QString>("file_picker_filter"),
                 &selected_filter,
                 options);
 

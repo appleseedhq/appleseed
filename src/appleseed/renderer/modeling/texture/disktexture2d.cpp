@@ -178,26 +178,26 @@ const char* DiskTexture2dFactory::get_human_readable_model() const
     return "2D Texture File";
 }
 
-DictionaryArray DiskTexture2dFactory::get_widget_definitions() const
+DictionaryArray DiskTexture2dFactory::get_input_metadata() const
 {
-    DictionaryArray definitions;
+    DictionaryArray metadata;
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "filename")
             .insert("label", "File Path")
-            .insert("widget", "file_picker")
+            .insert("type", "file")
             .insert("file_picker_mode", "open")
             .insert("file_picker_filter", "OpenEXR (*.exr);;PNG (*.png)")
             .insert("default", "")
             .insert("use", "required"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "color_space")
             .insert("label", "Color Space")
-            .insert("widget", "dropdown_list")
-            .insert("dropdown_items",
+            .insert("type", "enumeration")
+            .insert("items",
                 Dictionary()
                     .insert("Linear RGB", "linear_rgb")
                     .insert("sRGB", "srgb")
@@ -205,7 +205,7 @@ DictionaryArray DiskTexture2dFactory::get_widget_definitions() const
             .insert("use", "required")
             .insert("default", "srgb"));
 
-    return definitions;
+    return metadata;
 }
 
 auto_release_ptr<Texture> DiskTexture2dFactory::create(

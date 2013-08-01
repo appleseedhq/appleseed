@@ -456,16 +456,16 @@ const char* MicrofacetBRDFFactory::get_human_readable_model() const
     return "Microfacet BRDF";
 }
 
-DictionaryArray MicrofacetBRDFFactory::get_widget_definitions() const
+DictionaryArray MicrofacetBRDFFactory::get_input_metadata() const
 {
-    DictionaryArray definitions;
+    DictionaryArray metadata;
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "mdf")
             .insert("label", "Microfacet Distribution Function")
-            .insert("widget", "dropdown_list")
-            .insert("dropdown_items",
+            .insert("type", "enumeration")
+            .insert("items",
                 Dictionary()
                     .insert("Blinn", "blinn")
                     .insert("Beckmann", "beckmann")
@@ -474,31 +474,31 @@ DictionaryArray MicrofacetBRDFFactory::get_widget_definitions() const
             .insert("use", "required")
             .insert("default", "blinn"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "glossiness")
             .insert("label", "Glossiness")
-            .insert("widget", "entity_picker")
+            .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "required")
             .insert("default", "0.5"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "glossiness_multiplier")
             .insert("label", "Glossiness Multiplier")
-            .insert("widget", "entity_picker")
+            .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "optional")
             .insert("default", "1.0"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "reflectance")
             .insert("label", "Reflectance")
-            .insert("widget", "entity_picker")
+            .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
@@ -506,27 +506,27 @@ DictionaryArray MicrofacetBRDFFactory::get_widget_definitions() const
             .insert("use", "required")
             .insert("default", "0.5"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "reflectance_multiplier")
             .insert("label", "Reflectance Multiplier")
-            .insert("widget", "entity_picker")
+            .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "optional")
             .insert("default", "1.0"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "fresnel_multiplier")
             .insert("label", "Fresnel Multiplier")
-            .insert("widget", "entity_picker")
+            .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "optional")
             .insert("default", "1.0"));
 
-    return definitions;
+    return metadata;
 }
 
 auto_release_ptr<BSDF> MicrofacetBRDFFactory::create(

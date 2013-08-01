@@ -234,15 +234,15 @@ const char* LambertianBRDFFactory::get_human_readable_model() const
     return "Lambertian BRDF";
 }
 
-DictionaryArray LambertianBRDFFactory::get_widget_definitions() const
+DictionaryArray LambertianBRDFFactory::get_input_metadata() const
 {
-    DictionaryArray definitions;
+    DictionaryArray metadata;
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "reflectance")
             .insert("label", "Reflectance")
-            .insert("widget", "entity_picker")
+            .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
@@ -250,17 +250,17 @@ DictionaryArray LambertianBRDFFactory::get_widget_definitions() const
             .insert("use", "required")
             .insert("default", "0.5"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "reflectance_multiplier")
             .insert("label", "Reflectance Multiplier")
-            .insert("widget", "entity_picker")
+            .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "optional")
             .insert("default", "1.0"));
 
-    return definitions;
+    return metadata;
 }
 
 auto_release_ptr<BSDF> LambertianBRDFFactory::create(

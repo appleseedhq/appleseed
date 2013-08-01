@@ -61,8 +61,8 @@ class DLLSYMBOL ILightFactory
     // Return a human-readable string identifying this light model.
     virtual const char* get_human_readable_model() const = 0;
 
-    // Return a set of widget definitions for this light model.
-    virtual foundation::DictionaryArray get_widget_definitions() const = 0;
+    // Return a set of input metadata for this light model.
+    virtual foundation::DictionaryArray get_input_metadata() const = 0;
 
     // Create a new light instance.
     virtual foundation::auto_release_ptr<Light> create(
@@ -70,8 +70,8 @@ class DLLSYMBOL ILightFactory
         const ParamArray&   params) const = 0;
 
   protected:
-    // Add the widget definitions common to all light models.
-    static void add_common_widget_definitions(foundation::DictionaryArray& definitions);
+    // Add the input metadata common to all light models.
+    static void add_common_input_metadata(foundation::DictionaryArray& metadata);
 };
 
 }       // namespace renderer

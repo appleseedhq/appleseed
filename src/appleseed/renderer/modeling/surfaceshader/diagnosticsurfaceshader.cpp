@@ -397,7 +397,7 @@ const char* DiagnosticSurfaceShaderFactory::get_human_readable_model() const
     return "Diagnostics";
 }
 
-DictionaryArray DiagnosticSurfaceShaderFactory::get_widget_definitions() const
+DictionaryArray DiagnosticSurfaceShaderFactory::get_input_metadata() const
 {
     Dictionary model_items;
 
@@ -408,19 +408,19 @@ DictionaryArray DiagnosticSurfaceShaderFactory::get_widget_definitions() const
         model_items.insert(shading_mode_name, shading_mode_value);
     }
 
-    DictionaryArray definitions;
+    DictionaryArray metadata;
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "mode")
             .insert("label", "Mode")
-            .insert("widget", "dropdown_list")
-            .insert("dropdown_items", model_items)
+            .insert("type", "enumeration")
+            .insert("items", model_items)
             .insert("use", "required")
             .insert("default", "coverage")
             .insert("on_change", "rebuild_form"));
 
-    return definitions;
+    return metadata;
 }
 
 auto_release_ptr<SurfaceShader> DiagnosticSurfaceShaderFactory::create(

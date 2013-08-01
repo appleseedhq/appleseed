@@ -330,16 +330,16 @@ void ObjectInstance::check_materials() const
 // ObjectInstanceFactory class implementation.
 //
 
-DictionaryArray ObjectInstanceFactory::get_widget_definitions()
+DictionaryArray ObjectInstanceFactory::get_input_metadata()
 {
-    DictionaryArray definitions;
+    DictionaryArray metadata;
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "ray_bias_method")
             .insert("label", "Ray Bias Method")
-            .insert("widget", "dropdown_list")
-            .insert("dropdown_items",
+            .insert("type", "enumeration")
+            .insert("items",
                 Dictionary()
                     .insert("No Ray Bias", "none")
                     .insert("Shift Along Surface Normal", "normal")
@@ -348,15 +348,15 @@ DictionaryArray ObjectInstanceFactory::get_widget_definitions()
             .insert("use", "optional")
             .insert("default", "none"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "ray_bias_distance")
             .insert("label", "Ray Bias Distance")
-            .insert("widget", "text_box")
+            .insert("type", "text")
             .insert("use", "optional")
             .insert("default", "0.0"));
 
-    return definitions;
+    return metadata;
 }
 
 auto_release_ptr<ObjectInstance> ObjectInstanceFactory::create(

@@ -341,10 +341,11 @@ const char* VoxelAOSurfaceShaderFactory::get_human_readable_model() const
     return "Voxel-Based Ambient Occlusion (experimental)";
 }
 
-DictionaryArray VoxelAOSurfaceShaderFactory::get_widget_definitions() const
+DictionaryArray VoxelAOSurfaceShaderFactory::get_input_metadata() const
 {
-    DictionaryArray definitions;
-    return definitions;
+    DictionaryArray metadata;
+
+    return metadata;
 }
 
 auto_release_ptr<SurfaceShader> VoxelAOSurfaceShaderFactory::create(

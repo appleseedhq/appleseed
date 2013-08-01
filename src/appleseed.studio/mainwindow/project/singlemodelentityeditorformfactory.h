@@ -54,7 +54,7 @@ class SingleModelEntityEditorFormFactory
 
     virtual void update(
         const foundation::Dictionary&       values,
-        WidgetDefinitionCollection&         definitions) const;
+        InputMetadataCollection&            metadata) const;
 
   private:
     const foundation::DictionaryArray       m_entity_widgets;

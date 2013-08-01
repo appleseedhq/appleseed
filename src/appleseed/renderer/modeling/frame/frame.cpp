@@ -748,37 +748,37 @@ bool Frame::write_image(
 // FrameFactory class implementation.
 //
 
-DictionaryArray FrameFactory::get_widget_definitions()
+DictionaryArray FrameFactory::get_input_metadata()
 {
-    DictionaryArray definitions;
+    DictionaryArray metadata;
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "resolution")
             .insert("label", "Resolution")
-            .insert("widget", "text_box")
+            .insert("type", "text")
             .insert("use", "required"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "crop_window")
             .insert("label", "Crop Window")
-            .insert("widget", "text_box")
+            .insert("type", "text")
             .insert("use", "optional"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "tile_size")
             .insert("label", "Tile Size")
-            .insert("widget", "text_box")
+            .insert("type", "text")
             .insert("use", "required"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "pixel_format")
             .insert("label", "Pixel Format")
-            .insert("widget", "dropdown_list")
-            .insert("dropdown_items",
+            .insert("type", "enumeration")
+            .insert("items",
                 Dictionary()
                     .insert("Integer, 8-bit", "uint8")
                     .insert("Integer, 16-bit", "uint16")
@@ -789,12 +789,12 @@ DictionaryArray FrameFactory::get_widget_definitions()
             .insert("use", "optional")
             .insert("default", "half"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "filter")
             .insert("label", "Filter")
-            .insert("widget", "dropdown_list")
-            .insert("dropdown_items",
+            .insert("type", "enumeration")
+            .insert("items",
                 Dictionary()
                     .insert("Box", "box")
                     .insert("Triangle", "triangle")
@@ -806,20 +806,20 @@ DictionaryArray FrameFactory::get_widget_definitions()
             .insert("use", "optional")
             .insert("default", "gaussian"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "filter_size")
             .insert("label", "Filter Size")
-            .insert("widget", "text_box")
+            .insert("type", "text")
             .insert("use", "optional")
             .insert("default", "2.0"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "color_space")
             .insert("label", "Color Space")
-            .insert("widget", "dropdown_list")
-            .insert("dropdown_items",
+            .insert("type", "enumeration")
+            .insert("items",
                 Dictionary()
                     .insert("Linear RGB", "linear_rgb")
                     .insert("sRGB", "srgb")
@@ -827,31 +827,31 @@ DictionaryArray FrameFactory::get_widget_definitions()
             .insert("use", "optional")
             .insert("default", "linear_rgb"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "premultiplied_alpha")
             .insert("label", "Premultiplied Alpha")
-            .insert("widget", "checkbox")
+            .insert("type", "boolean")
             .insert("use", "optional")
             .insert("default", "true"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "clamping")
             .insert("label", "Clamping")
-            .insert("widget", "checkbox")
+            .insert("type", "boolean")
             .insert("use", "optional")
             .insert("default", "false"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "gamma_correction")
             .insert("label", "Gamma Correction")
-            .insert("widget", "text_box")
+            .insert("type", "text")
             .insert("use", "optional")
             .insert("default", "1.0"));
 
-    return definitions;
+    return metadata;
 }
 
 auto_release_ptr<Frame> FrameFactory::create(

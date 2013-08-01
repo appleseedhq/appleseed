@@ -55,14 +55,14 @@ class MultiModelEntityEditorFormFactory
 
     virtual void update(
         const foundation::Dictionary&   values,
-        WidgetDefinitionCollection&     definitions) const;
+        InputMetadataCollection&        metadata) const;
 
   private:
     const FactoryRegistrar&     m_factory_registrar;
 
     std::string add_model_widget_definition(
         const foundation::Dictionary&   values,
-        WidgetDefinitionCollection&     definitions) const;
+        InputMetadataCollection&        metadata) const;
 };
 
 
@@ -85,32 +85,32 @@ MultiModelEntityEditorFormFactory<FactoryRegistrar>::MultiModelEntityEditorFormF
 template <typename FactoryRegistrar>
 void MultiModelEntityEditorFormFactory<FactoryRegistrar>::update(
     const foundation::Dictionary&       values,
-    WidgetDefinitionCollection&         definitions) const
+    InputMetadataCollection&            metadata) const
 {
-    definitions.clear();
+    metadata.clear();
 
-    add_name_widget_definition(values, definitions);
-    add_render_layer_widget_definition(values, definitions);
+    add_name_input_metadata(values, metadata);
+    add_render_layer_input_metadata(values, metadata);
 
     const std::string model =
-        add_model_widget_definition(values, definitions);
+        add_model_widget_definition(values, metadata);
 
     if (!model.empty())
     {
         const typename FactoryRegistrar::FactoryType* factory =
             m_factory_registrar.lookup(model.c_str());
 
-        add_widget_definitions(
-            factory->get_widget_definitions(),
+        add_input_metadata(
+            factory->get_input_metadata(),
             values,
-            definitions);
+            metadata);
     }
 }
 
 template <typename FactoryRegistrar>
 std::string MultiModelEntityEditorFormFactory<FactoryRegistrar>::add_model_widget_definition(
     const foundation::Dictionary&       values,
-    WidgetDefinitionCollection&         definitions) const
+    InputMetadataCollection&            metadata) const
 {
     const typename FactoryRegistrar::FactoryArrayType factories =
         m_factory_registrar.get_factories();
@@ -129,12 +129,12 @@ std::string MultiModelEntityEditorFormFactory<FactoryRegistrar>::add_model_widge
             ModelParameter,
             factories.empty() ? "" : factories[0]->get_model());
 
-    definitions.push_back(
+    metadata.push_back(
         foundation::Dictionary()
             .insert("name", ModelParameter)
             .insert("label", "Model")
-            .insert("widget", "dropdown_list")
-            .insert("dropdown_items", model_items)
+            .insert("type", "enumeration")
+            .insert("items", model_items)
             .insert("use", "required")
             .insert("default", model)
             .insert("on_change", "rebuild_form"));

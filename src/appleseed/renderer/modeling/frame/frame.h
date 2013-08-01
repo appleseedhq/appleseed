@@ -169,8 +169,8 @@ class DLLSYMBOL Frame
 class DLLSYMBOL FrameFactory
 {
   public:
-    // Return a set of widget definitions for frames.
-    static foundation::DictionaryArray get_widget_definitions();
+    // Return a set of input metadata for frames.
+    static foundation::DictionaryArray get_input_metadata();
 
     // Create a new frame.
     static foundation::auto_release_ptr<Frame> create(

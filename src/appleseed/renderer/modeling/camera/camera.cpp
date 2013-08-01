@@ -346,69 +346,69 @@ void Camera::compute_view_pyramid()
 // CameraFactory class implementation.
 //
 
-DictionaryArray CameraFactory::get_widget_definitions()
+DictionaryArray CameraFactory::get_input_metadata()
 {
-    DictionaryArray definitions;
+    DictionaryArray metadata;
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "film_dimensions")
             .insert("label", "Film Dimensions")
-            .insert("widget", "text_box")
+            .insert("type", "text")
             .insert("use", "required"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "film_width")
             .insert("label", "Film Width")
-            .insert("widget", "text_box")
+            .insert("type", "text")
             .insert("use", "required"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "film_height")
             .insert("label", "Film Height")
-            .insert("widget", "text_box")
+            .insert("type", "text")
             .insert("use", "required"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "aspect_ratio")
             .insert("label", "Aspect Ratio")
-            .insert("widget", "text_box")
+            .insert("type", "text")
             .insert("use", "required"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "focal_length")
             .insert("label", "Focal Length")
-            .insert("widget", "text_box")
+            .insert("type", "text")
             .insert("use", "required"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "horizontal_fov")
             .insert("label", "Horizontal FOV")
-            .insert("widget", "text_box")
+            .insert("type", "text")
             .insert("use", "required"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "shutter_open_time")
             .insert("label", "Shutter Open Time")
-            .insert("widget", "text_box")
+            .insert("type", "text")
             .insert("use", "optional")
             .insert("default", "0.0"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "shutter_close_time")
             .insert("label", "Shutter Close Time")
-            .insert("widget", "text_box")
+            .insert("type", "text")
             .insert("use", "optional")
             .insert("default", "1.0"));
 
-    return definitions;
+    return metadata;
 }
 
 }   // namespace renderer

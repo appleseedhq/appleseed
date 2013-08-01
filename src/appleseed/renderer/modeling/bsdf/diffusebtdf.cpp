@@ -187,15 +187,15 @@ const char* DiffuseBTDFFactory::get_human_readable_model() const
     return "Diffuse BTDF";
 }
 
-DictionaryArray DiffuseBTDFFactory::get_widget_definitions() const
+DictionaryArray DiffuseBTDFFactory::get_input_metadata() const
 {
-    DictionaryArray definitions;
+    DictionaryArray metadata;
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "transmittance")
             .insert("label", "Transmittance")
-            .insert("widget", "entity_picker")
+            .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
@@ -203,17 +203,17 @@ DictionaryArray DiffuseBTDFFactory::get_widget_definitions() const
             .insert("use", "required")
             .insert("default", "0.5"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "transmittance_multiplier")
             .insert("label", "Transmittance Multiplier")
-            .insert("widget", "entity_picker")
+            .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "optional")
             .insert("default", "1.0"));
 
-    return definitions;
+    return metadata;
 }
 
 auto_release_ptr<BSDF> DiffuseBTDFFactory::create(

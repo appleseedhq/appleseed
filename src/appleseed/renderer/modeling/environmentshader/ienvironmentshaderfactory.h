@@ -61,8 +61,8 @@ class DLLSYMBOL IEnvironmentShaderFactory
     // Return a human-readable string identifying this environment shader model.
     virtual const char* get_human_readable_model() const = 0;
 
-    // Return a set of widget definitions for this environment shader model.
-    virtual foundation::DictionaryArray get_widget_definitions() const = 0;
+    // Return a set of input metadata for this environment shader model.
+    virtual foundation::DictionaryArray get_input_metadata() const = 0;
 
     // Create a new environment shader instance.
     virtual foundation::auto_release_ptr<EnvironmentShader> create(

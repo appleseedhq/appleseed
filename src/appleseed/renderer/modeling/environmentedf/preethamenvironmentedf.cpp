@@ -424,89 +424,89 @@ const char* PreethamEnvironmentEDFFactory::get_human_readable_model() const
     return "Preetham Environment EDF";
 }
 
-DictionaryArray PreethamEnvironmentEDFFactory::get_widget_definitions() const
+DictionaryArray PreethamEnvironmentEDFFactory::get_input_metadata() const
 {
-    DictionaryArray definitions;
+    DictionaryArray metadata;
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "sun_theta")
             .insert("label", "Sun Theta Angle")
-            .insert("widget", "numeric")
+            .insert("type", "numeric")
             .insert("min_value", "0.0")
             .insert("max_value", "90.0")
             .insert("use", "required")
             .insert("default", "45.0"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "sun_phi")
             .insert("label", "Sun Phi Angle")
-            .insert("widget", "numeric")
+            .insert("type", "numeric")
             .insert("min_value", "-360.0")
             .insert("max_value", "360.0")
             .insert("use", "required")
             .insert("default", "0.0"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "turbidity")
             .insert("label", "Turbidity")
-            .insert("widget", "entity_picker")
+            .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "required")
             .insert("default", "4.0"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "turbidity_min")
             .insert("label", "Turbidity Min")
-            .insert("widget", "numeric")
+            .insert("type", "numeric")
             .insert("min_value", "1.0")
             .insert("max_value", "10.0")
             .insert("use", "optional")
             .insert("default", "2.0"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "turbidity_max")
             .insert("label", "Turbidity Max")
-            .insert("widget", "numeric")
+            .insert("type", "numeric")
             .insert("min_value", "1.0")
             .insert("max_value", "10.0")
             .insert("use", "optional")
             .insert("default", "6.0"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "luminance_multiplier")
             .insert("label", "Luminance Multiplier")
-            .insert("widget", "numeric")
+            .insert("type", "numeric")
             .insert("min_value", "0.0")
             .insert("max_value", "10.0")
             .insert("use", "optional")
             .insert("default", "1.0"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "saturation_multiplier")
             .insert("label", "Saturation Multiplier")
-            .insert("widget", "numeric")
+            .insert("type", "numeric")
             .insert("min_value", "0.0")
             .insert("max_value", "10.0")
             .insert("use", "optional")
             .insert("default", "1.0"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "horizon_shift")
             .insert("label", "Horizon Shift")
-            .insert("widget", "text_box")
+            .insert("type", "text")
             .insert("use", "optional")
             .insert("default", "0.0"));
 
-    return definitions;
+    return metadata;
 }
 
 auto_release_ptr<EnvironmentEDF> PreethamEnvironmentEDFFactory::create(

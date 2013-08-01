@@ -220,15 +220,15 @@ const char* SpecularBTDFFactory::get_human_readable_model() const
     return "Specular BTDF";
 }
 
-DictionaryArray SpecularBTDFFactory::get_widget_definitions() const
+DictionaryArray SpecularBTDFFactory::get_input_metadata() const
 {
-    DictionaryArray definitions;
+    DictionaryArray metadata;
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "reflectance")
             .insert("label", "Reflectance")
-            .insert("widget", "entity_picker")
+            .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
@@ -236,21 +236,21 @@ DictionaryArray SpecularBTDFFactory::get_widget_definitions() const
             .insert("use", "required")
             .insert("default", "0.5"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "reflectance_multiplier")
             .insert("label", "Reflectance Multiplier")
-            .insert("widget", "entity_picker")
+            .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "optional")
             .insert("default", "1.0"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "transmittance")
             .insert("label", "Transmittance")
-            .insert("widget", "entity_picker")
+            .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
@@ -258,33 +258,33 @@ DictionaryArray SpecularBTDFFactory::get_widget_definitions() const
             .insert("use", "required")
             .insert("default", "0.5"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "transmittance_multiplier")
             .insert("label", "Transmittance Multiplier")
-            .insert("widget", "entity_picker")
+            .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "optional")
             .insert("default", "1.0"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "from_ior")
             .insert("label", "From Index of Refraction")
-            .insert("widget", "text_box")
+            .insert("type", "text")
             .insert("use", "required")
             .insert("default", "1.0"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "to_ior")
             .insert("label", "To Index of Refraction")
-            .insert("widget", "text_box")
+            .insert("type", "text")
             .insert("use", "required")
             .insert("default", "1.5"));
 
-    return definitions;
+    return metadata;
 }
 
 auto_release_ptr<BSDF> SpecularBTDFFactory::create(

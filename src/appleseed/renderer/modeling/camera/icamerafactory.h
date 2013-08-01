@@ -61,8 +61,8 @@ class DLLSYMBOL ICameraFactory
     // Return a human-readable string identifying this camera model.
     virtual const char* get_human_readable_model() const = 0;
 
-    // Return a set of widget definitions for this camera model.
-    virtual foundation::DictionaryArray get_widget_definitions() const = 0;
+    // Return a set of input metadata for this camera model.
+    virtual foundation::DictionaryArray get_input_metadata() const = 0;
 
     // Create a new camera instance.
     virtual foundation::auto_release_ptr<Camera> create(

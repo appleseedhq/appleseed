@@ -244,16 +244,16 @@ float ColorEntity::get_multiplier() const
 // ColorEntityFactory class implementation.
 //
 
-DictionaryArray ColorEntityFactory::get_widget_definitions()
+DictionaryArray ColorEntityFactory::get_input_metadata()
 {
-    DictionaryArray definitions;
+    DictionaryArray metadata;
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "color_space")
             .insert("label", "Color Space")
-            .insert("widget", "dropdown_list")
-            .insert("dropdown_items",
+            .insert("type", "enumeration")
+            .insert("items",
                 Dictionary()
                     .insert("Linear RGB", "linear_rgb")
                     .insert("sRGB", "srgb")
@@ -263,43 +263,43 @@ DictionaryArray ColorEntityFactory::get_widget_definitions()
             .insert("default", "srgb")
 /*          .insert("on_change", "rebuild_form")*/);
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "wavelength_range")
             .insert("label", "Wavelength Range")
-            .insert("widget", "text_box")
+            .insert("type", "text")
             .insert("default", "400.0 700.0")
             .insert("use", "optional"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "color")
             .insert("label", "Color")
-            .insert("widget", "color_picker")
+            .insert("type", "color")
             .insert("default", "0.0 0.0 0.0")
             .insert("use", "required"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "alpha")
             .insert("label", "Alpha")
-            .insert("widget", "numeric")
+            .insert("type", "numeric")
             .insert("min_value", "0.0")
             .insert("max_value", "1.0")
             .insert("default", "1.0")
             .insert("use", "optional"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "multiplier")
             .insert("label", "Multiplier")
-            .insert("widget", "numeric")
+            .insert("type", "numeric")
             .insert("min_value", "0.0")
             .insert("max_value", "10.0")
             .insert("default", "1.0")
             .insert("use", "optional"));
 
-    return definitions;
+    return metadata;
 }
 
 auto_release_ptr<ColorEntity> ColorEntityFactory::create(

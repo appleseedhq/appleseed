@@ -334,69 +334,69 @@ const char* FastSubSurfaceScatteringSurfaceShaderFactory::get_human_readable_mod
     return "Fast Subsurface Scattering (experimental)";
 }
 
-DictionaryArray FastSubSurfaceScatteringSurfaceShaderFactory::get_widget_definitions() const
+DictionaryArray FastSubSurfaceScatteringSurfaceShaderFactory::get_input_metadata() const
 {
-    DictionaryArray definitions;
+    DictionaryArray metadata;
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "scale")
             .insert("label", "Geometric Scale")
-            .insert("widget", "text_box")
+            .insert("type", "text")
             .insert("use", "required")
             .insert("default", "1.0"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "ambient_sss")
             .insert("label", "Ambient SSS")
-            .insert("widget", "numeric")
+            .insert("type", "numeric")
             .insert("min_value", "0.0")
             .insert("max_value", "1.0")
             .insert("use", "required")
             .insert("default", "0.0"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "view_dep_sss")
             .insert("label", "View-Dependent SSS")
-            .insert("widget", "numeric")
+            .insert("type", "numeric")
             .insert("min_value", "0.0")
             .insert("max_value", "1.0")
             .insert("use", "required")
             .insert("default", "0.0"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "diffuse")
             .insert("label", "Diffuse Lighting")
-            .insert("widget", "numeric")
+            .insert("type", "numeric")
             .insert("min_value", "0.0")
             .insert("max_value", "1.0")
             .insert("use", "required")
             .insert("default", "0.0"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "power")
             .insert("label", "Power")
-            .insert("widget", "text_box")
+            .insert("type", "text")
             .insert("use", "required")
             .insert("default", "1.0"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "distortion")
             .insert("label", "Normal Distortion")
-            .insert("widget", "text_box")
+            .insert("type", "text")
             .insert("use", "required")
             .insert("default", "0.0"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "albedo")
             .insert("label", "Albedo")
-            .insert("widget", "entity_picker")
+            .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
@@ -404,23 +404,23 @@ DictionaryArray FastSubSurfaceScatteringSurfaceShaderFactory::get_widget_definit
             .insert("use", "required")
             .insert("default", "0.5"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "light_samples")
             .insert("label", "Light Samples")
-            .insert("widget", "text_box")
+            .insert("type", "text")
             .insert("use", "required")
             .insert("default", "1"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "occlusion_samples")
             .insert("label", "Occlusion Samples")
-            .insert("widget", "text_box")
+            .insert("type", "text")
             .insert("use", "required")
             .insert("default", "1"));
 
-    return definitions;
+    return metadata;
 }
 
 auto_release_ptr<SurfaceShader> FastSubSurfaceScatteringSurfaceShaderFactory::create(

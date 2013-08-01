@@ -62,7 +62,7 @@ class EntityEditorWindow
     Q_OBJECT
 
   public:
-    typedef std::vector<foundation::Dictionary> WidgetDefinitionCollection;
+    typedef std::vector<foundation::Dictionary> InputMetadataCollection;
 
     class IFormFactory
       : public foundation::NonCopyable
@@ -72,7 +72,7 @@ class EntityEditorWindow
 
         virtual void update(
             const foundation::Dictionary&   values,
-            WidgetDefinitionCollection&     definitions) const = 0;
+            InputMetadataCollection&        metadata) const = 0;
 
       protected:
         static std::string get_value(
@@ -123,7 +123,7 @@ class EntityEditorWindow
     std::auto_ptr<IEntityBrowser>       m_entity_browser;
 
     QFormLayout*                        m_form_layout;
-    WidgetDefinitionCollection          m_widget_definitions;
+    InputMetadataCollection             m_input_metadata;
     InputWidgetProxyCollection          m_widget_proxies;
 
     QSignalMapper*                      m_entity_picker_bind_signal_mapper;
@@ -134,16 +134,17 @@ class EntityEditorWindow
 
     void create_form_layout();
 
-    foundation::Dictionary get_widget_definition(const std::string& name) const;
+    foundation::Dictionary get_input_metadata(const std::string& name) const;
 
-    void create_input_widget(const foundation::Dictionary& definition);
-    void create_text_box_input_widget(const foundation::Dictionary& definition);
-    void create_numeric_input_widget(const foundation::Dictionary& definition);
-    void create_checkbox_input_widget(const foundation::Dictionary& definition);
-    void create_dropdown_list_input_widget(const foundation::Dictionary& definition);
-    void create_entity_picker_input_widget(const foundation::Dictionary& definition);
-    void create_color_picker_input_widget(const foundation::Dictionary& definition);
-    void create_file_picker_input_widget(const foundation::Dictionary& definition);
+    void create_input_widgets(const foundation::Dictionary& definition);
+    void create_text_input_widgets(const foundation::Dictionary& definition);
+    void create_numeric_input_widgets(const foundation::Dictionary& definition);
+    void create_colormap_input_widgets(const foundation::Dictionary& definition);
+    void create_boolean_input_widgets(const foundation::Dictionary& definition);
+    void create_enumeration_input_widgets(const foundation::Dictionary& definition);
+    void create_entity_input_widgets(const foundation::Dictionary& definition);
+    void create_color_input_widgets(const foundation::Dictionary& definition);
+    void create_file_input_widgets(const foundation::Dictionary& definition);
 
   private slots:
     void slot_rebuild_form();

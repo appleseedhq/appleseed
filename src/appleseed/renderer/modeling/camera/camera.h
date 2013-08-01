@@ -160,8 +160,8 @@ class DLLSYMBOL Camera
 class DLLSYMBOL CameraFactory
 {
   public:
-    // Return a set of widget definitions common to all camera models.
-    static foundation::DictionaryArray get_widget_definitions();
+    // Return a set of input metadata common to all camera models.
+    static foundation::DictionaryArray get_input_metadata();
 };
 
 

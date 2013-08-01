@@ -809,10 +809,11 @@ const char* SmokeSurfaceShaderFactory::get_human_readable_model() const
     return "Smoke (experimental)";
 }
 
-DictionaryArray SmokeSurfaceShaderFactory::get_widget_definitions() const
+DictionaryArray SmokeSurfaceShaderFactory::get_input_metadata() const
 {
-    DictionaryArray definitions;
-    return definitions;
+    DictionaryArray metadata;
+
+    return metadata;
 }
 
 auto_release_ptr<SurfaceShader> SmokeSurfaceShaderFactory::create(

@@ -48,14 +48,14 @@ SingleModelEntityEditorFormFactory::SingleModelEntityEditorFormFactory(
 
 void SingleModelEntityEditorFormFactory::update(
     const Dictionary&           values,
-    WidgetDefinitionCollection& definitions) const
+    InputMetadataCollection&    metadata) const
 {
-    definitions.clear();
+    metadata.clear();
 
-    add_name_widget_definition(values, definitions);
-    add_render_layer_widget_definition(values, definitions);
+    add_name_input_metadata(values, metadata);
+    add_render_layer_input_metadata(values, metadata);
 
-    add_widget_definitions(m_entity_widgets, values, definitions);
+    add_input_metadata(m_entity_widgets, values, metadata);
 }
 
 }   // namespace studio

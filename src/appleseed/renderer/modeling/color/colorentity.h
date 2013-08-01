@@ -117,8 +117,8 @@ class DLLSYMBOL ColorEntity
 class DLLSYMBOL ColorEntityFactory
 {
   public:
-    // Return a set of widget definitions for this color entity model.
-    static foundation::DictionaryArray get_widget_definitions();
+    // Return a set of input metadata for this color entity model.
+    static foundation::DictionaryArray get_input_metadata();
 
     // Create a new color entity.
     static foundation::auto_release_ptr<ColorEntity> create(

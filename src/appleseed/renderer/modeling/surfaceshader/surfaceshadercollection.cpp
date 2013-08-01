@@ -237,24 +237,24 @@ const char* SurfaceShaderCollectionFactory::get_human_readable_model() const
     return "Collection";
 }
 
-DictionaryArray SurfaceShaderCollectionFactory::get_widget_definitions() const
+DictionaryArray SurfaceShaderCollectionFactory::get_input_metadata() const
 {
-    DictionaryArray definitions;
+    DictionaryArray metadata;
 
     for (size_t i = 0; i < MaxShaderCount; ++i)
     {
-        definitions.push_back(
+        metadata.push_back(
             Dictionary()
                 .insert("name", get_shader_name(i))
                 .insert("label", get_shader_label(i))
-                .insert("widget", "entity_picker")
+                .insert("type", "entity")
                 .insert("entity_types",
                     Dictionary().insert("surface_shader", "Surface Shaders"))
                 .insert("default", "")
                 .insert("use", i == 0 ? "required" : "optional"));
     }
 
-    return definitions;
+    return metadata;
 }
 
 auto_release_ptr<SurfaceShader> SurfaceShaderCollectionFactory::create(
