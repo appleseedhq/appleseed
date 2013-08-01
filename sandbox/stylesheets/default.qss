@@ -985,3 +985,8 @@ QLabel#info_label
     margin-left: 4px;
     margin-right: 4px;
 }
+
+QPushButton#bind_entity_button
+{
+    min-width: 30px;
+}

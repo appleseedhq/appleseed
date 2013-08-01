@@ -38,7 +38,7 @@
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/rendering/renderingmanager.h"
 #include "utility/interop.h"
-#include "utility/spinboxeventfilter.h"
+#include "utility/mousewheelfocuseventfilter.h"
 #include "utility/tweaks.h"
 
 // appleseed.renderer headers.
@@ -186,7 +186,7 @@ void MaterialAssignmentEditorWindow::create_widgets_for_side(
         combo_box->setCurrentIndex(-1);
         layout->addWidget(combo_box);
 
-        new SpinBoxEventFilter(combo_box);
+        new MouseWheelFocusEventFilter(combo_box);
 
         m_mode_combo_to_widget_group[combo_box] = group;
 

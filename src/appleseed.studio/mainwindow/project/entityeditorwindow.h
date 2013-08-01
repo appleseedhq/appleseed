@@ -126,7 +126,7 @@ class EntityEditorWindow
     WidgetDefinitionCollection          m_widget_definitions;
     InputWidgetProxyCollection          m_widget_proxies;
 
-    QSignalMapper*                      m_entity_picker_signal_mapper;
+    QSignalMapper*                      m_entity_picker_bind_signal_mapper;
     QSignalMapper*                      m_color_picker_signal_mapper;
     QSignalMapper*                      m_file_picker_signal_mapper;
 
@@ -150,8 +150,10 @@ class EntityEditorWindow
 
     void slot_open_entity_browser(const QString& widget_name);
     void slot_entity_browser_accept(QString widget_name, QString page_name, QString entity_name);
+
     void slot_open_color_picker(const QString& widget_name);
     void slot_color_changed(const QString& widget_name, const QColor& color);
+
     void slot_open_file_picker(const QString& widget_name);
 
     void slot_apply();

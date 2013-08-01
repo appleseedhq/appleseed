@@ -255,11 +255,11 @@ set (utility_sources
     utility/interop.h
     utility/mousecoordinatestracker.cpp
     utility/mousecoordinatestracker.h
+    utility/mousewheelfocuseventfilter.cpp
+    utility/mousewheelfocuseventfilter.h
     utility/scrollareapanhandler.cpp
     utility/scrollareapanhandler.h
     utility/settingskeys.h
-    utility/spinboxeventfilter.cpp
-    utility/spinboxeventfilter.h
     utility/treewidget.cpp
     utility/treewidget.h
     utility/tweaks.cpp

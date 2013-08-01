@@ -36,6 +36,7 @@
 #include "mainwindow/project/entitybrowserwindow.h"
 #include "utility/doubleslider.h"
 #include "utility/interop.h"
+#include "utility/mousewheelfocuseventfilter.h"
 #include "utility/tweaks.h"
 
 // appleseed.renderer headers.
@@ -94,7 +95,7 @@ EntityEditorWindow::EntityEditorWindow(
   , m_form_factory(form_factory)
   , m_entity_browser(entity_browser)
   , m_form_layout(0)
-  , m_entity_picker_signal_mapper(new QSignalMapper(this))
+  , m_entity_picker_bind_signal_mapper(new QSignalMapper(this))
   , m_color_picker_signal_mapper(new QSignalMapper(this))
   , m_file_picker_signal_mapper(new QSignalMapper(this))
 {
@@ -113,7 +114,7 @@ EntityEditorWindow::EntityEditorWindow(
     m_initial_values = m_widget_proxies.get_values();
 
     connect(
-        m_entity_picker_signal_mapper, SIGNAL(mapped(const QString&)),
+        m_entity_picker_bind_signal_mapper, SIGNAL(mapped(const QString&)),
         SLOT(slot_open_entity_browser(const QString&)));
 
     connect(
@@ -159,6 +160,8 @@ void EntityEditorWindow::rebuild_form(const Dictionary& values)
     delete_layout_items(m_form_layout);
 
     m_widget_proxies.clear();
+
+    // The mappings were removed when the widgets were deleted.
 
     m_form_factory->update(values, m_widget_definitions);
 
@@ -310,6 +313,8 @@ void EntityEditorWindow::create_numeric_input_widget(const Dictionary& definitio
     slider->setRange(min_value, max_value);
     slider->setPageStep((max_value - min_value) / 10.0);
 
+    new MouseWheelFocusEventFilter(slider);
+
     // Connect the line edit and the slider together.
     LineEditDoubleSliderAdaptor* adaptor =
         new LineEditDoubleSliderAdaptor(line_edit, slider);
@@ -369,6 +374,8 @@ void EntityEditorWindow::create_dropdown_list_input_widget(const Dictionary& def
     QComboBox* combo_box = new QComboBox(m_ui->scrollarea_contents);
     combo_box->setEditable(false);
 
+    new MouseWheelFocusEventFilter(combo_box);
+
     const string name = definition.get<string>("name");
     auto_ptr<IInputWidgetProxy> widget_proxy(new ComboBoxProxy(combo_box));
 
@@ -403,20 +410,42 @@ void EntityEditorWindow::create_dropdown_list_input_widget(const Dictionary& def
 void EntityEditorWindow::create_entity_picker_input_widget(const Dictionary& definition)
 {
     QLineEdit* line_edit = new QLineEdit(m_ui->scrollarea_contents);
+    line_edit->setMaximumWidth(120);
 
-    QWidget* browse_button = new QPushButton("Browse", m_ui->scrollarea_contents);
-    browse_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    connect(browse_button, SIGNAL(clicked()), m_entity_picker_signal_mapper, SLOT(map()));
+    const double min_value = 0.0;
+    const double max_value = 1.0;
+
+    DoubleSlider* slider = new DoubleSlider(Qt::Horizontal, m_ui->scrollarea_contents);
+    slider->setRange(min_value, max_value);
+    slider->setPageStep((max_value - min_value) / 10.0);
+
+    new MouseWheelFocusEventFilter(slider);
+
+    // Connect the line edit and the slider together.
+    LineEditDoubleSliderAdaptor* adaptor =
+        new LineEditDoubleSliderAdaptor(line_edit, slider);
+    connect(
+        slider, SIGNAL(valueChanged(const double)),
+        adaptor, SLOT(slot_set_line_edit_value(const double)));
+    connect(
+        line_edit, SIGNAL(textChanged(const QString&)),
+        adaptor, SLOT(slot_set_slider_value(const QString&)));
 
     const string name = definition.get<string>("name");
-    m_entity_picker_signal_mapper->setMapping(browse_button, QString::fromStdString(name));
+
+    QWidget* bind_button = new QPushButton("Bind", m_ui->scrollarea_contents);
+    bind_button->setObjectName("bind_entity_button");
+    bind_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    connect(bind_button, SIGNAL(clicked()), m_entity_picker_bind_signal_mapper, SLOT(map()));
+    m_entity_picker_bind_signal_mapper->setMapping(bind_button, QString::fromStdString(name));
 
     auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
 
     if (definition.strings().exist("default"))
         widget_proxy->set(definition.strings().get<string>("default"));
 
-    connect(widget_proxy.get(), SIGNAL(signal_changed()), SLOT(slot_apply()));
+    connect(line_edit, SIGNAL(returnPressed()), SLOT(slot_apply()));
+    connect(slider, SIGNAL(valueChanged(int)), SLOT(slot_apply()));
 
     m_widget_proxies.insert(name, widget_proxy);
 
@@ -429,7 +458,8 @@ void EntityEditorWindow::create_entity_picker_input_widget(const Dictionary& def
     QHBoxLayout* layout = new QHBoxLayout();
     layout->setSpacing(6);
     layout->addWidget(line_edit);
-    layout->addWidget(browse_button);
+    layout->addWidget(slider);
+    layout->addWidget(bind_button);
     m_form_layout->addRow(get_label_text(definition), layout);
 }
 
