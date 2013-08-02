@@ -390,7 +390,7 @@ void EntityEditorWindow::create_colormap_input_widgets(const Dictionary& metadat
     if (metadata.strings().exist("default"))
         widget_proxy->set(metadata.strings().get<string>("default"));
 
-    connect(line_edit, SIGNAL(returnPressed()), SLOT(slot_apply()));
+    connect(widget_proxy.get(), SIGNAL(signal_changed()), SLOT(slot_apply()));
     connect(slider, SIGNAL(valueChanged(int)), SLOT(slot_apply()));
 
     m_widget_proxies.insert(name, widget_proxy);
