@@ -30,6 +30,7 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_OBJECTITEM_H
 
 // appleseed.studio headers.
+#include "mainwindow/project/entitydelayedactions.h"
 #include "mainwindow/project/entityitembase.h"
 
 // appleseed.foundation headers.
@@ -55,11 +56,16 @@ class ObjectItem
         ProjectBuilder&     project_builder);
 
   private:
+    friend class EntityDeletionDelayedAction<ObjectItem>;
+
     renderer::Assembly&     m_parent;
     AssemblyItem*           m_parent_item;
     ProjectBuilder&         m_project_builder;
 
     virtual void slot_delete() OVERRIDE;
+
+    void schedule_delete();
+    void do_delete();
 };
 
 }       // namespace studio

@@ -119,7 +119,7 @@ macro (link_against_libpng target)
     else ()
         target_link_libraries (${target}
             ${CMAKE_SOURCE_DIR}/../build/${platform}/libpng/libpng.a
-)
+        )
     endif ()
 endmacro ()
 
@@ -155,12 +155,13 @@ macro (link_against_alembic target)
 endmacro ()
 
 macro (link_against_oiio target)
-        target_link_libraries (${target} ${OPENIMAGEIO_LIBRARIES})
+    target_link_libraries (${target} ${OPENIMAGEIO_LIBRARIES})
 endmacro ()
 
 macro (link_against_oslexec target)
-        target_link_libraries (${target} ${OSL_EXEC_LIBRARY})
+    target_link_libraries (${target} ${OSL_EXEC_LIBRARY})
 endmacro ()
+
 
 #--------------------------------------------------------------------------------------------------
 # Copy a target binary to the sandbox.
@@ -196,5 +197,5 @@ macro (add_copy_py_file_to_sandbox_py_module_command py_src)
     add_custom_command (TARGET appleseed.python POST_BUILD
         COMMAND mkdir -p ${sandbox_path}/appleseed
         COMMAND cp ${py_src} ${sandbox_path}/appleseed
-)
+    )
 endmacro ()

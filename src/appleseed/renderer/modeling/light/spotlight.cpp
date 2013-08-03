@@ -217,59 +217,65 @@ const char* SpotLightFactory::get_human_readable_model() const
     return "Spot Light";
 }
 
-DictionaryArray SpotLightFactory::get_widget_definitions() const
+DictionaryArray SpotLightFactory::get_input_metadata() const
 {
-    DictionaryArray definitions;
+    DictionaryArray metadata;
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "radiance")
             .insert("label", "Radiance")
-            .insert("widget", "entity_picker")
+            .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
                     .insert("texture_instance", "Textures"))
             .insert("use", "required")
-            .insert("default", ""));
+            .insert("default", "1.0"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "radiance_multiplier")
             .insert("label", "Radiance Multiplier")
-            .insert("widget", "entity_picker")
+            .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "optional")
             .insert("default", "1.0"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "inner_angle")
             .insert("label", "Inner Angle")
-            .insert("widget", "text_box")
+            .insert("type", "numeric")
+            .insert("min_value", "-180.0")
+            .insert("max_value", "180.0")
             .insert("use", "required")
             .insert("default", "20.0"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "outer_angle")
             .insert("label", "Outer Angle")
-            .insert("widget", "text_box")
+            .insert("type", "numeric")
+            .insert("min_value", "-180.0")
+            .insert("max_value", "180.0")
             .insert("use", "required")
             .insert("default", "30.0"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "tilt_angle")
             .insert("label", "Tilt Angle")
-            .insert("widget", "text_box")
+            .insert("type", "numeric")
+            .insert("min_value", "-360.0")
+            .insert("max_value", "360.0")
             .insert("use", "optional")
             .insert("default", "0.0"));
 
-    add_common_widget_definitions(definitions);
+    add_common_input_metadata(metadata);
 
-    return definitions;
+    return metadata;
 }
 
 auto_release_ptr<Light> SpotLightFactory::create(

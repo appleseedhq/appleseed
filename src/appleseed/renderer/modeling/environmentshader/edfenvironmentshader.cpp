@@ -159,22 +159,22 @@ const char* EDFEnvironmentShaderFactory::get_human_readable_model() const
     return "Environment EDF-Based Environment Shader";
 }
 
-DictionaryArray EDFEnvironmentShaderFactory::get_widget_definitions() const
+DictionaryArray EDFEnvironmentShaderFactory::get_input_metadata() const
 {
-    DictionaryArray definitions;
+    DictionaryArray metadata;
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "environment_edf")
             .insert("label", "Environment EDF")
-            .insert("widget", "entity_picker")
+            .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary()
                     .insert("environment_edf", "Environment EDFs"))
             .insert("use", "required")
             .insert("default", ""));
 
-    return definitions;
+    return metadata;
 }
 
 auto_release_ptr<EnvironmentShader> EDFEnvironmentShaderFactory::create(

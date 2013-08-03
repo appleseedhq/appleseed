@@ -306,40 +306,42 @@ const char* SunLightFactory::get_human_readable_model() const
     return "Sun Light";
 }
 
-DictionaryArray SunLightFactory::get_widget_definitions() const
+DictionaryArray SunLightFactory::get_input_metadata() const
 {
-    DictionaryArray definitions;
+    DictionaryArray metadata;
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "environment_edf")
             .insert("label", "Bind To")
-            .insert("widget", "entity_picker")
+            .insert("type", "entity")
             .insert("entity_types",
                 Dictionary().insert("environment_edf", "Environment EDFs"))
             .insert("use", "optional"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "turbidity")
             .insert("label", "Turbidity")
-            .insert("widget", "entity_picker")
+            .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "required")
             .insert("default", "4.0"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "radiance_multiplier")
             .insert("label", "Radiance Multiplier")
-            .insert("widget", "text_box")
+            .insert("type", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "10.0")
             .insert("use", "optional")
             .insert("default", "1.0"));
 
-    add_common_widget_definitions(definitions);
+    add_common_input_metadata(metadata);
 
-    return definitions;
+    return metadata;
 }
 
 auto_release_ptr<Light> SunLightFactory::create(

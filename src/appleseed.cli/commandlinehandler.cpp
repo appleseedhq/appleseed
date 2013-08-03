@@ -147,9 +147,9 @@ CommandLineHandler::CommandLineHandler()
     m_benchmark_mode.set_description("enable benchmark mode");
     parser().add_option_handler(&m_benchmark_mode);
 
-    m_dump_entity_definitions.add_name("--dump-entity-definitions");
-    m_dump_entity_definitions.set_description("dump the definitions of all known entities to stderr as xml");
-    parser().add_option_handler(&m_dump_entity_definitions);
+    m_dump_input_metadata.add_name("--dump-input-metadata");
+    m_dump_input_metadata.set_description("dump the input metadata of all known entities to stderr (as xml)");
+    parser().add_option_handler(&m_dump_input_metadata);
 }
 
 void CommandLineHandler::print_program_usage(

@@ -33,6 +33,7 @@
 #include "renderer/modeling/environmentedf/ienvironmentedffactory.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/autoreleaseptr.h"
 
@@ -55,18 +56,18 @@ class DLLSYMBOL MirrorBallMapEnvironmentEDFFactory
 {
   public:
     // Return a string identifying this environment EDF model.
-    virtual const char* get_model() const;
+    virtual const char* get_model() const OVERRIDE;
 
     // Return a human-readable string identifying this environment EDF model.
-    virtual const char* get_human_readable_model() const;
+    virtual const char* get_human_readable_model() const OVERRIDE;
 
-    // Return a set of widget definitions for this environment EDF model.
-    virtual foundation::DictionaryArray get_widget_definitions() const;
+    // Return a set of input metadata for this environment EDF model.
+    virtual foundation::DictionaryArray get_input_metadata() const OVERRIDE;
 
     // Create a new environment EDF instance.
     virtual foundation::auto_release_ptr<EnvironmentEDF> create(
         const char*         name,
-        const ParamArray&   params) const;
+        const ParamArray&   params) const OVERRIDE;
 };
 
 }       // namespace renderer

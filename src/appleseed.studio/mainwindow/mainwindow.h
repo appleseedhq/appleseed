@@ -32,30 +32,18 @@
 // appleseed.studio headers.
 #include "debug/benchmarks/benchmarkwindow.h"
 #include "debug/tests/testwindow.h"
-#include "help/about/aboutwindow.h"
-#include "mainwindow/project/projectexplorer.h"
 #include "mainwindow/project/projectmanager.h"
 #include "mainwindow/rendering/renderingmanager.h"
-#include "mainwindow/rendering/renderwidget.h"
-#include "mainwindow/rendering/scenepickinghandler.h"
 #include "mainwindow/qtlogtarget.h"
 #include "mainwindow/rendersettingswindow.h"
 #include "mainwindow/statusbar.h"
-#include "utility/mousecoordinatestracker.h"
-#include "utility/scrollareapanhandler.h"
-#include "utility/widgetzoomhandler.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/utility.h"
 
-// appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
-
 // Qt headers.
-#include <QCloseEvent>
 #include <QMainWindow>
 #include <QObject>
-#include <QScrollArea>
 
 // Standard headers.
 #include <map>
@@ -65,18 +53,22 @@
 
 // Forward declarations.
 namespace appleseed { namespace studio { class LogWidget; } }
+namespace appleseed { namespace studio { class ProjectExplorer; } }
+namespace appleseed { namespace studio { class RenderTab; } }
 namespace Ui        { class MainWindow; }
 class QAction;
-class QLabel;
+class QCloseEvent;
 class QPoint;
+class QRect;
 class QString;
 class QStringList;
+class QWidget;
 
 namespace appleseed {
 namespace studio {
 
 //
-// Application's main window.
+// appleseed.studio's main window.
 //
 
 class MainWindow
@@ -93,9 +85,6 @@ class MainWindow
 
     void open_project(const QString& filepath);
     void open_and_render_project(const QString& filepath, const QString& configuration);
-
-  public slots:
-    void slot_recreate_render_widgets();
 
   private:
     // Not wrapped in std::auto_ptr<> to avoid pulling in the UI definition code.
@@ -124,20 +113,9 @@ class MainWindow
     ProjectExplorer*                    m_project_explorer;
     RenderingManager                    m_rendering_manager;
 
-    // A helper structure to associate event handlers to a render widget.
-    struct RenderWidgetRecord
-      : public foundation::NonCopyable
-    {
-        RenderWidget*                           m_render_widget;
-        std::auto_ptr<WidgetZoomHandler>        m_zoom_handler;
-        std::auto_ptr<ScrollAreaPanHandler>     m_pan_handler;
-        std::auto_ptr<MouseCoordinatesTracker>  m_mouse_tracker;
-        std::auto_ptr<ScenePickingHandler>      m_picking_handler;
-    };
+    typedef std::map<std::string, RenderTab*> RenderTabCollection;
 
-    typedef std::map<std::string, RenderWidgetRecord*> RenderWidgetCollection;
-
-    RenderWidgetCollection              m_render_widgets;
+    RenderTabCollection                 m_render_tabs;
 
     void build_menus();
     void build_override_shading_menu_item();
@@ -172,11 +150,7 @@ class MainWindow
 
     void recreate_render_widgets();
     void remove_render_widgets();
-    void add_render_widgets();
-    void add_render_widget(
-        const int       width,
-        const int       height,
-        const QString&  label);
+    void add_render_widget(const QString& label);
 
     void start_rendering(const bool interactive);
 
@@ -194,6 +168,7 @@ class MainWindow
     void slot_save_project_as();
 
     void slot_project_modified();
+    void slot_frame_modified();
 
     void slot_start_interactive_rendering();
     void slot_start_final_rendering();
@@ -201,8 +176,13 @@ class MainWindow
         const QString&  filepath,
         const QString&  configuration,
         const bool      successful);
-    void slot_stop_rendering();
     void slot_rendering_end();
+
+    void slot_clear_shading_override();
+    void slot_set_shading_override();
+
+    void slot_clear_render_region();
+    void slot_set_render_region(const QRect& rect);
 
     void slot_camera_changed();
 

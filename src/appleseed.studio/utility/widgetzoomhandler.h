@@ -51,9 +51,7 @@ class WidgetZoomHandler
   public:
     WidgetZoomHandler(
         QScrollArea*    scroll_area,
-        QWidget*        content_widget,
-        const int       content_width,
-        const int       content_height);
+        QWidget*        content_widget);
 
     ~WidgetZoomHandler();
 

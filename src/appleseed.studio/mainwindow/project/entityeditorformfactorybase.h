@@ -49,22 +49,22 @@ class EntityEditorFormFactoryBase
     static const std::string NameParameter;
 
   protected:
-    typedef EntityEditorWindow::WidgetDefinitionCollection WidgetDefinitionCollection;
+    typedef EntityEditorWindow::InputMetadataCollection InputMetadataCollection;
 
     explicit EntityEditorFormFactoryBase(const std::string& entity_name);
 
-    void add_name_widget_definition(
+    void add_name_input_metadata(
         const foundation::Dictionary&       values,
-        WidgetDefinitionCollection&         definitions) const;
+        InputMetadataCollection&            metadata) const;
 
-    void add_render_layer_widget_definition(
+    void add_render_layer_input_metadata(
         const foundation::Dictionary&       values,
-        WidgetDefinitionCollection&         definitions) const;
+        InputMetadataCollection&            metadata) const;
 
-    void add_widget_definitions(
+    void add_input_metadata(
         const foundation::DictionaryArray&  widgets,
         const foundation::Dictionary&       values,
-        WidgetDefinitionCollection&         definitions) const;
+        InputMetadataCollection&            metadata) const;
 
   private:
     const std::string   m_entity_name;

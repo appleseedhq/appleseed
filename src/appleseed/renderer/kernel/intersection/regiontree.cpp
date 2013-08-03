@@ -514,15 +514,31 @@ double RegionLeafVisitor::visit(
         // Check the intersection between the ray and the triangle tree.
         TriangleTreeIntersector intersector;
         TriangleLeafVisitor visitor(*triangle_tree, m_shading_point);
-        intersector.intersect(
-            *triangle_tree,
-            ray,
-            ray_info,
-            visitor
+        if (triangle_tree->get_moving_triangle_count() > 0)
+        {
+            intersector.intersect_motion(
+                *triangle_tree,
+                ray,
+                ray_info,
+                ray.m_time,
+                visitor
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
-            , m_triangle_tree_stats
+                , m_triangle_tree_stats
 #endif
-            );
+                );
+        }
+        else
+        {
+            intersector.intersect_no_motion(
+                *triangle_tree,
+                ray,
+                ray_info,
+                visitor
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+                , m_triangle_tree_stats
+#endif
+                );
+        }
         visitor.read_hit_triangle_data();
     }
 
@@ -553,15 +569,31 @@ double RegionLeafProbeVisitor::visit(
         // Check the intersection between the ray and the triangle tree.
         TriangleTreeProbeIntersector intersector;
         TriangleLeafProbeVisitor visitor(*triangle_tree);
-        intersector.intersect(
-            *triangle_tree,
-            ray,
-            ray_info,
-            visitor
+        if (triangle_tree->get_moving_triangle_count() > 0)
+        {
+            intersector.intersect_motion(
+                *triangle_tree,
+                ray,
+                ray_info,
+                ray.m_time,
+                visitor
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
-            , m_triangle_tree_stats
+                , m_triangle_tree_stats
 #endif
-            );
+                );
+        }
+        else
+        {
+            intersector.intersect_no_motion(
+                *triangle_tree,
+                ray,
+                ray_info,
+                visitor
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+                , m_triangle_tree_stats
+#endif
+                );
+        }
 
         // Terminate traversal if there was a hit.
         if (visitor.hit())

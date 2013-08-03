@@ -77,7 +77,9 @@ void open_entity_editor(
     auto_ptr<EntityEditorWindow::IEntityBrowser>    entity_browser,
     const Dictionary&                               values,
     QObject*                                        receiver,
-    const char*                                     member)
+    const char*                                     slot_apply,
+    const char*                                     slot_accept,
+    const char*                                     slot_cancel)
 {
     EntityEditorWindow* editor_window =
         new EntityEditorWindow(
@@ -89,8 +91,16 @@ void open_entity_editor(
             values);
 
     QObject::connect(
+        editor_window, SIGNAL(signal_applied(foundation::Dictionary)),
+        receiver, slot_apply);
+
+    QObject::connect(
         editor_window, SIGNAL(signal_accepted(foundation::Dictionary)),
-        receiver, member);
+        receiver, slot_accept);
+
+    QObject::connect(
+        editor_window, SIGNAL(signal_canceled(foundation::Dictionary)),
+        receiver, slot_cancel);
 
     editor_window->showNormal();
     editor_window->activateWindow();
@@ -103,7 +113,9 @@ void open_entity_editor(
     auto_ptr<EntityEditorWindow::IFormFactory>      form_factory,
     auto_ptr<EntityEditorWindow::IEntityBrowser>    entity_browser,
     QObject*                                        receiver,
-    const char*                                     member)
+    const char*                                     slot_apply,
+    const char*                                     slot_accept,
+    const char*                                     slot_cancel)
 {
     open_entity_editor(
         parent,
@@ -113,7 +125,9 @@ void open_entity_editor(
         entity_browser,
         Dictionary(),
         receiver,
-        member);
+        slot_apply,
+        slot_accept,
+        slot_cancel);
 }
 
 }   // namespace studio

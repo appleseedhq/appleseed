@@ -42,6 +42,7 @@
 #include "mainwindow/project/singlemodelcollectionitem.h"
 #include "mainwindow/project/texturecollectionitem.h"
 #include "mainwindow/project/tools.h"
+#include "mainwindow/rendering/renderingmanager.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/bsdf.h"
@@ -65,6 +66,7 @@
 #include <QString>
 
 // Standard headers.
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -330,6 +332,22 @@ namespace
 
 void AssemblyItem::slot_delete()
 {
+    if (m_project_builder.get_rendering_manager().is_rendering())
+        schedule_delete();
+    else do_delete();
+}
+
+void AssemblyItem::schedule_delete()
+{
+    m_project_builder.get_rendering_manager().push_delayed_action(
+        auto_ptr<RenderingManager::IDelayedAction>(
+            new EntityDeletionDelayedAction<AssemblyItem>(this)));
+
+    m_project_builder.get_rendering_manager().reinitialize_rendering();
+}
+
+void AssemblyItem::do_delete()
+{
     if (!allows_deletion())
         return;
 
@@ -353,7 +371,9 @@ void AssemblyItem::slot_delete()
     m_project_builder.notify_project_modification();
 
     // Remove and delete the assembly item.
-    delete m_project_builder.get_item_registry().get_item(assembly_uid);
+    ItemBase* assembly_item = m_project_builder.get_item_registry().get_item(assembly_uid);
+    m_project_builder.get_item_registry().remove(assembly_uid);
+    delete assembly_item;
 
     // At this point 'this' no longer exists.
 }

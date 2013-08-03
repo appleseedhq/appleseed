@@ -157,39 +157,39 @@ const char* AOSurfaceShaderFactory::get_human_readable_model() const
     return "Ambient Occlusion";
 }
 
-DictionaryArray AOSurfaceShaderFactory::get_widget_definitions() const
+DictionaryArray AOSurfaceShaderFactory::get_input_metadata() const
 {
-    DictionaryArray definitions;
+    DictionaryArray metadata;
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "sampling_method")
             .insert("label", "Sampling Method")
-            .insert("widget", "dropdown_list")
-            .insert("dropdown_items",
+            .insert("type", "enumeration")
+            .insert("items",
                 Dictionary()
                     .insert("Uniform Sampling", "uniform")
                     .insert("Cosine-Weighted Sampling", "cosine"))
             .insert("use", "required")
             .insert("default", "uniform"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "samples")
             .insert("label", "Samples")
-            .insert("widget", "text_box")
+            .insert("type", "text")
             .insert("use", "required")
             .insert("default", "16"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "max_distance")
             .insert("label", "Maximum Occlusion Distance")
-            .insert("widget", "text_box")
+            .insert("type", "text")
             .insert("use", "required")
             .insert("default", "1.0"));
 
-    return definitions;
+    return metadata;
 }
 
 auto_release_ptr<SurfaceShader> AOSurfaceShaderFactory::create(

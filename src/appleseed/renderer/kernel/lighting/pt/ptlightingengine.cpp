@@ -120,7 +120,8 @@ namespace
                     "  rr min path len. %s\n"
                     "  next event est.  %s\n"
                     "  dl light samples %s\n"
-                    "  ibl env samples  %s",
+                    "  ibl env samples  %s\n"
+                    "  max ray intens.  %s",
                     m_enable_dl ? "on" : "off",
                     m_enable_ibl ? "on" : "off",
                     m_enable_caustics ? "on" : "off",
@@ -128,7 +129,8 @@ namespace
                     m_rr_min_path_length == 0 ? "infinite" : pretty_uint(m_rr_min_path_length).c_str(),
                     m_next_event_estimation ? "on" : "off",
                     pretty_uint(m_dl_light_sample_count).c_str(),
-                    pretty_uint(m_ibl_env_sample_count).c_str());
+                    pretty_uint(m_ibl_env_sample_count).c_str(),
+                    m_has_max_ray_intensity ? pretty_scalar(m_max_ray_intensity).c_str() : "infinite");
             }
         };
 

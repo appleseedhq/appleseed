@@ -31,7 +31,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/aabb.h"
-#include "foundation/math/fp.h"
 #include "foundation/math/minmax.h"
 #include "foundation/math/ray.h"
 #include "foundation/math/vector.h"
@@ -111,85 +110,97 @@ bool clip(
 //   Packet ray/AABB intersection code in Radius, by Thierry Berger-Perrin:
 //   http://cvs.gna.org/cvsweb/radius/src/rt_render_packet.cc?rev=1.3;cvsroot=radius#l382
 //
+//   Robust BVH Ray Traversal
+//   Thiago Ize, Solid Angle
+//   http://jcgt.org/published/0002/02/02/paper.pdf
+//
+
+template <typename T>
+inline bool intersect(
+    const Ray<T, 3>&        ray,
+    const RayInfo<T, 3>&    ray_info,
+    const AABB<T, 3>&       bbox)
+{
+    const T xl1 = ray_info.m_rcp_dir.x * (bbox[1 - ray_info.m_sgn_dir.x].x - ray.m_org.x);
+    const T yl1 = ray_info.m_rcp_dir.y * (bbox[1 - ray_info.m_sgn_dir.y].y - ray.m_org.y);
+    const T zl1 = ray_info.m_rcp_dir.z * (bbox[1 - ray_info.m_sgn_dir.z].z - ray.m_org.z);
+
+    const T xl2 = ray_info.m_rcp_dir.x * (bbox[    ray_info.m_sgn_dir.x].x - ray.m_org.x);
+    const T yl2 = ray_info.m_rcp_dir.y * (bbox[    ray_info.m_sgn_dir.y].y - ray.m_org.y);
+    const T zl2 = ray_info.m_rcp_dir.z * (bbox[    ray_info.m_sgn_dir.z].z - ray.m_org.z);
+
+    const T tmin = ssemax(zl1, ssemax(yl1, ssemax(xl1, ray.m_tmin)));
+    const T tmax = ssemin(zl2, ssemin(yl2, ssemin(xl2, ray.m_tmax)));
+
+    return !(tmin > tmax || tmax < ray.m_tmin || tmin >= ray.m_tmax);
+}
 
 #ifdef APPLESEED_FOUNDATION_USE_SSE
 
-// Test the intersection between a ray and a bounding box.
 template <>
 inline bool intersect<float>(
     const Ray3f&            ray,
     const RayInfo3f&        ray_info,
     const AABB3f&           bbox)
 {
-    const __m128 pos_inf = _mm_set1_ps(FP<float>::pos_inf());
-    const __m128 neg_inf = _mm_set1_ps(FP<float>::neg_inf());
-
     const __m128 org_x = _mm_set1_ps(ray.m_org.x);
-    const __m128 rcp_dir_x = _mm_set1_ps(ray_info.m_rcp_dir.x);
-    const __m128 xl1 = _mm_mul_ps(rcp_dir_x, _mm_sub_ps(_mm_set1_ps(bbox.min.x), org_x));
-    const __m128 xl2 = _mm_mul_ps(rcp_dir_x, _mm_sub_ps(_mm_set1_ps(bbox.max.x), org_x));
-
-    __m128 tmax = _mm_max_ps(_mm_min_ps(xl1, pos_inf), _mm_min_ps(xl2, pos_inf));
-    __m128 tmin = _mm_min_ps(_mm_max_ps(xl1, neg_inf), _mm_max_ps(xl2, neg_inf));
-
     const __m128 org_y = _mm_set1_ps(ray.m_org.y);
-    const __m128 rcp_dir_y = _mm_set1_ps(ray_info.m_rcp_dir.y);
-    const __m128 yl1 = _mm_mul_ps(rcp_dir_y, _mm_sub_ps(_mm_set1_ps(bbox.min.y), org_y));
-    const __m128 yl2 = _mm_mul_ps(rcp_dir_y, _mm_sub_ps(_mm_set1_ps(bbox.max.y), org_y));
-
-    tmax = _mm_min_ps(_mm_max_ps(_mm_min_ps(yl1, pos_inf), _mm_min_ps(yl2, pos_inf)), tmax);
-    tmin = _mm_max_ps(_mm_min_ps(_mm_max_ps(yl1, neg_inf), _mm_max_ps(yl2, neg_inf)), tmin);
-
     const __m128 org_z = _mm_set1_ps(ray.m_org.z);
-    const __m128 rcp_dir_z = _mm_set1_ps(ray_info.m_rcp_dir.z);
-    const __m128 zl1 = _mm_mul_ps(rcp_dir_z, _mm_sub_ps(_mm_set1_ps(bbox.min.z), org_z));
-    const __m128 zl2 = _mm_mul_ps(rcp_dir_z, _mm_sub_ps(_mm_set1_ps(bbox.max.z), org_z));
 
-    tmax = _mm_min_ps(_mm_max_ps(_mm_min_ps(zl1, pos_inf), _mm_min_ps(zl2, pos_inf)), tmax);
-    tmin = _mm_max_ps(_mm_min_ps(_mm_max_ps(zl1, neg_inf), _mm_max_ps(zl2, neg_inf)), tmin);
+    const __m128 rcp_dir_x = _mm_set1_ps(ray_info.m_rcp_dir.x);
+    const __m128 rcp_dir_y = _mm_set1_ps(ray_info.m_rcp_dir.y);
+    const __m128 rcp_dir_z = _mm_set1_ps(ray_info.m_rcp_dir.z);
+
+    const __m128 xl1 = _mm_mul_ps(rcp_dir_x, _mm_sub_ps(_mm_set1_ps(bbox[1 - ray_info.m_sgn_dir.x].x), org_x));
+    const __m128 yl1 = _mm_mul_ps(rcp_dir_y, _mm_sub_ps(_mm_set1_ps(bbox[1 - ray_info.m_sgn_dir.y].y), org_y));
+    const __m128 zl1 = _mm_mul_ps(rcp_dir_z, _mm_sub_ps(_mm_set1_ps(bbox[1 - ray_info.m_sgn_dir.z].z), org_z));
+
+    const __m128 xl2 = _mm_mul_ps(rcp_dir_x, _mm_sub_ps(_mm_set1_ps(bbox[    ray_info.m_sgn_dir.x].x), org_x));
+    const __m128 yl2 = _mm_mul_ps(rcp_dir_y, _mm_sub_ps(_mm_set1_ps(bbox[    ray_info.m_sgn_dir.y].y), org_y));
+    const __m128 zl2 = _mm_mul_ps(rcp_dir_z, _mm_sub_ps(_mm_set1_ps(bbox[    ray_info.m_sgn_dir.z].z), org_z));
+
+    const __m128 ray_tmin = _mm_set1_ps(ray.m_tmin);
+    const __m128 ray_tmax = _mm_set1_ps(ray.m_tmax);
+
+    const __m128 tmin = _mm_max_ps(zl1, _mm_max_ps(yl1, _mm_max_ps(xl1, ray_tmin)));
+    const __m128 tmax = _mm_min_ps(zl2, _mm_min_ps(yl2, _mm_min_ps(xl2, ray_tmax)));
 
     return
         _mm_movemask_ps(
             _mm_or_ps(
                 _mm_cmpgt_ps(tmin, tmax),
                 _mm_or_ps(
-                    _mm_cmplt_ps(tmax, _mm_set1_ps(ray.m_tmin)),
-                    _mm_cmpge_ps(tmin, _mm_set1_ps(ray.m_tmax))))) == 0;
+                    _mm_cmplt_ps(tmax, ray_tmin),
+                    _mm_cmpge_ps(tmin, ray_tmax)))) == 0;
 }
 
-// Test the intersection between a ray and a bounding box.
 template <>
 inline bool intersect<double>(
     const Ray3d&            ray,
     const RayInfo3d&        ray_info,
     const AABB3d&           bbox)
 {
-    const __m128d pos_inf = _mm_set1_pd(FP<double>::pos_inf());
-    const __m128d neg_inf = _mm_set1_pd(FP<double>::neg_inf());
-
     const __m128d org_x = _mm_set1_pd(ray.m_org.x);
-    const __m128d rcp_dir_x = _mm_set1_pd(ray_info.m_rcp_dir.x);
-    const __m128d xl1 = _mm_mul_pd(rcp_dir_x, _mm_sub_pd(_mm_set1_pd(bbox.min.x), org_x));
-    const __m128d xl2 = _mm_mul_pd(rcp_dir_x, _mm_sub_pd(_mm_set1_pd(bbox.max.x), org_x));
-
-    __m128d tmax = _mm_max_pd(_mm_min_pd(xl1, pos_inf), _mm_min_pd(xl2, pos_inf));
-    __m128d tmin = _mm_min_pd(_mm_max_pd(xl1, neg_inf), _mm_max_pd(xl2, neg_inf));
-
     const __m128d org_y = _mm_set1_pd(ray.m_org.y);
-    const __m128d rcp_dir_y = _mm_set1_pd(ray_info.m_rcp_dir.y);
-    const __m128d yl1 = _mm_mul_pd(rcp_dir_y, _mm_sub_pd(_mm_set1_pd(bbox.min.y), org_y));
-    const __m128d yl2 = _mm_mul_pd(rcp_dir_y, _mm_sub_pd(_mm_set1_pd(bbox.max.y), org_y));
-
-    tmax = _mm_min_pd(_mm_max_pd(_mm_min_pd(yl1, pos_inf), _mm_min_pd(yl2, pos_inf)), tmax);
-    tmin = _mm_max_pd(_mm_min_pd(_mm_max_pd(yl1, neg_inf), _mm_max_pd(yl2, neg_inf)), tmin);
-
     const __m128d org_z = _mm_set1_pd(ray.m_org.z);
-    const __m128d rcp_dir_z = _mm_set1_pd(ray_info.m_rcp_dir.z);
-    const __m128d zl1 = _mm_mul_pd(rcp_dir_z, _mm_sub_pd(_mm_set1_pd(bbox.min.z), org_z));
-    const __m128d zl2 = _mm_mul_pd(rcp_dir_z, _mm_sub_pd(_mm_set1_pd(bbox.max.z), org_z));
 
-    tmax = _mm_min_pd(_mm_max_pd(_mm_min_pd(zl1, pos_inf), _mm_min_pd(zl2, pos_inf)), tmax);
-    tmin = _mm_max_pd(_mm_min_pd(_mm_max_pd(zl1, neg_inf), _mm_max_pd(zl2, neg_inf)), tmin);
+    const __m128d rcp_dir_x = _mm_set1_pd(ray_info.m_rcp_dir.x);
+    const __m128d rcp_dir_y = _mm_set1_pd(ray_info.m_rcp_dir.y);
+    const __m128d rcp_dir_z = _mm_set1_pd(ray_info.m_rcp_dir.z);
+
+    const __m128d xl1 = _mm_mul_pd(rcp_dir_x, _mm_sub_pd(_mm_set1_pd(bbox[1 - ray_info.m_sgn_dir.x].x), org_x));
+    const __m128d yl1 = _mm_mul_pd(rcp_dir_y, _mm_sub_pd(_mm_set1_pd(bbox[1 - ray_info.m_sgn_dir.y].y), org_y));
+    const __m128d zl1 = _mm_mul_pd(rcp_dir_z, _mm_sub_pd(_mm_set1_pd(bbox[1 - ray_info.m_sgn_dir.z].z), org_z));
+
+    const __m128d xl2 = _mm_mul_pd(rcp_dir_x, _mm_sub_pd(_mm_set1_pd(bbox[    ray_info.m_sgn_dir.x].x), org_x));
+    const __m128d yl2 = _mm_mul_pd(rcp_dir_y, _mm_sub_pd(_mm_set1_pd(bbox[    ray_info.m_sgn_dir.y].y), org_y));
+    const __m128d zl2 = _mm_mul_pd(rcp_dir_z, _mm_sub_pd(_mm_set1_pd(bbox[    ray_info.m_sgn_dir.z].z), org_z));
+
+    const __m128d ray_tmin = _mm_set1_pd(ray.m_tmin);
+    const __m128d ray_tmax = _mm_set1_pd(ray.m_tmax);
+
+    const __m128d tmin = _mm_max_pd(zl1, _mm_max_pd(yl1, _mm_max_pd(xl1, ray_tmin)));
+    const __m128d tmax = _mm_min_pd(zl2, _mm_min_pd(yl2, _mm_min_pd(xl2, ray_tmax)));
 
     return
         _mm_movemask_pd(
@@ -200,42 +211,8 @@ inline bool intersect<double>(
                     _mm_cmpge_pd(tmin, _mm_set1_pd(ray.m_tmax))))) == 0;
 }
 
-#else
-
-// Test the intersection between a ray and a bounding box.
-template <typename T>
-inline bool intersect(
-    const Ray<T, 3>&        ray,
-    const RayInfo<T, 3>&    ray_info,
-    const AABB<T, 3>&       bbox)
-{
-    const T pos_inf = FP<T>::pos_inf();
-    const T neg_inf = FP<T>::neg_inf();
-
-    const T xl1 = ray_info.m_rcp_dir.x * (bbox.min.x - ray.m_org.x);
-    const T xl2 = ray_info.m_rcp_dir.x * (bbox.max.x - ray.m_org.x);
-
-    T tmax = ssemax(ssemin(xl1, pos_inf), ssemin(xl2, pos_inf));
-    T tmin = ssemin(ssemax(xl1, neg_inf), ssemax(xl2, neg_inf));
-
-    const T yl1 = ray_info.m_rcp_dir.y * (bbox.min.y - ray.m_org.y);
-    const T yl2 = ray_info.m_rcp_dir.y * (bbox.max.y - ray.m_org.y);
-
-    tmax = ssemin(ssemax(ssemin(yl1, pos_inf), ssemin(yl2, pos_inf)), tmax);
-    tmin = ssemax(ssemin(ssemax(yl1, neg_inf), ssemax(yl2, neg_inf)), tmin);
-
-    const T zl1 = ray_info.m_rcp_dir.z * (bbox.min.z - ray.m_org.z);
-    const T zl2 = ray_info.m_rcp_dir.z * (bbox.max.z - ray.m_org.z);
-
-    tmax = ssemin(ssemax(ssemin(zl1, pos_inf), ssemin(zl2, pos_inf)), tmax);
-    tmin = ssemax(ssemin(ssemax(zl1, neg_inf), ssemax(zl2, neg_inf)), tmin);
-
-    return !(tmin > tmax || tmax < ray.m_tmin || tmin >= ray.m_tmax);
-}
-
 #endif  // APPLESEED_FOUNDATION_USE_SSE
 
-// Test the intersection between a ray and a bounding box.
 template <typename T>
 inline bool intersect(
     const Ray<T, 3>&        ray,
@@ -243,26 +220,16 @@ inline bool intersect(
     const AABB<T, 3>&       bbox,
     T&                      tmin_out)
 {
-    const T pos_inf = FP<T>::pos_inf();
-    const T neg_inf = FP<T>::neg_inf();
+    const T xl1 = ray_info.m_rcp_dir.x * (bbox[1 - ray_info.m_sgn_dir.x].x - ray.m_org.x);
+    const T yl1 = ray_info.m_rcp_dir.y * (bbox[1 - ray_info.m_sgn_dir.y].y - ray.m_org.y);
+    const T zl1 = ray_info.m_rcp_dir.z * (bbox[1 - ray_info.m_sgn_dir.z].z - ray.m_org.z);
 
-    const T xl1 = ray_info.m_rcp_dir.x * (bbox.min.x - ray.m_org.x);
-    const T xl2 = ray_info.m_rcp_dir.x * (bbox.max.x - ray.m_org.x);
+    const T xl2 = ray_info.m_rcp_dir.x * (bbox[    ray_info.m_sgn_dir.x].x - ray.m_org.x);
+    const T yl2 = ray_info.m_rcp_dir.y * (bbox[    ray_info.m_sgn_dir.y].y - ray.m_org.y);
+    const T zl2 = ray_info.m_rcp_dir.z * (bbox[    ray_info.m_sgn_dir.z].z - ray.m_org.z);
 
-    T tmax = ssemax(ssemin(xl1, pos_inf), ssemin(xl2, pos_inf));
-    T tmin = ssemin(ssemax(xl1, neg_inf), ssemax(xl2, neg_inf));
-
-    const T yl1 = ray_info.m_rcp_dir.y * (bbox.min.y - ray.m_org.y);
-    const T yl2 = ray_info.m_rcp_dir.y * (bbox.max.y - ray.m_org.y);
-
-    tmax = ssemin(ssemax(ssemin(yl1, pos_inf), ssemin(yl2, pos_inf)), tmax);
-    tmin = ssemax(ssemin(ssemax(yl1, neg_inf), ssemax(yl2, neg_inf)), tmin);
-
-    const T zl1 = ray_info.m_rcp_dir.z * (bbox.min.z - ray.m_org.z);
-    const T zl2 = ray_info.m_rcp_dir.z * (bbox.max.z - ray.m_org.z);
-
-    tmax = ssemin(ssemax(ssemin(zl1, pos_inf), ssemin(zl2, pos_inf)), tmax);
-    tmin = ssemax(ssemin(ssemax(zl1, neg_inf), ssemax(zl2, neg_inf)), tmin);
+    const T tmin = ssemax(zl1, ssemax(yl1, ssemax(xl1, ray.m_tmin)));
+    const T tmax = ssemin(zl2, ssemin(yl2, ssemin(xl2, ray.m_tmax)));
 
     if (tmin > tmax || tmax < ray.m_tmin || tmin >= ray.m_tmax)
         return false;
@@ -272,7 +239,6 @@ inline bool intersect(
     return true;
 }
 
-// Test the intersection between a ray and a bounding box.
 template <typename T>
 inline bool intersect(
     const Ray<T, 3>&        ray,
@@ -281,26 +247,16 @@ inline bool intersect(
     T&                      tmin_out,
     T&                      tmax_out)
 {
-    const T pos_inf = FP<T>::pos_inf();
-    const T neg_inf = FP<T>::neg_inf();
+    const T xl1 = ray_info.m_rcp_dir.x * (bbox[1 - ray_info.m_sgn_dir.x].x - ray.m_org.x);
+    const T yl1 = ray_info.m_rcp_dir.y * (bbox[1 - ray_info.m_sgn_dir.y].y - ray.m_org.y);
+    const T zl1 = ray_info.m_rcp_dir.z * (bbox[1 - ray_info.m_sgn_dir.z].z - ray.m_org.z);
 
-    const T xl1 = ray_info.m_rcp_dir.x * (bbox.min.x - ray.m_org.x);
-    const T xl2 = ray_info.m_rcp_dir.x * (bbox.max.x - ray.m_org.x);
+    const T xl2 = ray_info.m_rcp_dir.x * (bbox[    ray_info.m_sgn_dir.x].x - ray.m_org.x);
+    const T yl2 = ray_info.m_rcp_dir.y * (bbox[    ray_info.m_sgn_dir.y].y - ray.m_org.y);
+    const T zl2 = ray_info.m_rcp_dir.z * (bbox[    ray_info.m_sgn_dir.z].z - ray.m_org.z);
 
-    T tmax = ssemax(ssemin(xl1, pos_inf), ssemin(xl2, pos_inf));
-    T tmin = ssemin(ssemax(xl1, neg_inf), ssemax(xl2, neg_inf));
-
-    const T yl1 = ray_info.m_rcp_dir.y * (bbox.min.y - ray.m_org.y);
-    const T yl2 = ray_info.m_rcp_dir.y * (bbox.max.y - ray.m_org.y);
-
-    tmax = ssemin(ssemax(ssemin(yl1, pos_inf), ssemin(yl2, pos_inf)), tmax);
-    tmin = ssemax(ssemin(ssemax(yl1, neg_inf), ssemax(yl2, neg_inf)), tmin);
-
-    const T zl1 = ray_info.m_rcp_dir.z * (bbox.min.z - ray.m_org.z);
-    const T zl2 = ray_info.m_rcp_dir.z * (bbox.max.z - ray.m_org.z);
-
-    tmax = ssemin(ssemax(ssemin(zl1, pos_inf), ssemin(zl2, pos_inf)), tmax);
-    tmin = ssemax(ssemin(ssemax(zl1, neg_inf), ssemax(zl2, neg_inf)), tmin);
+    const T tmin = ssemax(zl1, ssemax(yl1, ssemax(xl1, ray.m_tmin)));
+    const T tmax = ssemin(zl2, ssemin(yl2, ssemin(xl2, ray.m_tmax)));
 
     if (tmin > tmax || tmax < ray.m_tmin || tmin >= ray.m_tmax)
         return false;
@@ -311,44 +267,61 @@ inline bool intersect(
     return true;
 }
 
+template <typename T>
+inline bool clip(
+    Ray<T, 3>&              ray,
+    const RayInfo<T, 3>&    ray_info,
+    const AABB<T, 3>&       bbox)
+{
+    const T xl1 = ray_info.m_rcp_dir.x * (bbox[1 - ray_info.m_sgn_dir.x].x - ray.m_org.x);
+    const T yl1 = ray_info.m_rcp_dir.y * (bbox[1 - ray_info.m_sgn_dir.y].y - ray.m_org.y);
+    const T zl1 = ray_info.m_rcp_dir.z * (bbox[1 - ray_info.m_sgn_dir.z].z - ray.m_org.z);
+
+    const T xl2 = ray_info.m_rcp_dir.x * (bbox[    ray_info.m_sgn_dir.x].x - ray.m_org.x);
+    const T yl2 = ray_info.m_rcp_dir.y * (bbox[    ray_info.m_sgn_dir.y].y - ray.m_org.y);
+    const T zl2 = ray_info.m_rcp_dir.z * (bbox[    ray_info.m_sgn_dir.z].z - ray.m_org.z);
+
+    const T tmin = ssemax(zl1, ssemax(yl1, ssemax(xl1, ray.m_tmin)));
+    const T tmax = ssemin(zl2, ssemin(yl2, ssemin(xl2, ray.m_tmax)));
+
+    if (tmin > tmax || tmax < ray.m_tmin || tmin >= ray.m_tmax)
+        return false;
+
+    ray.m_tmin = ssemax(ray.m_tmin, tmin);
+    ray.m_tmax = ssemin(ray.m_tmax, tmax);
+
+    return true;
+}
+
 #ifdef APPLESEED_FOUNDATION_USE_SSE
 
-// Clip a ray to its intersection with a bounding box.
 template <>
 inline bool clip<float>(
     Ray3f&                  ray,
     const RayInfo3f&        ray_info,
     const AABB3f&           bbox)
 {
-    const __m128 pos_inf = _mm_set1_ps(FP<float>::pos_inf());
-    const __m128 neg_inf = _mm_set1_ps(FP<float>::neg_inf());
-
     const __m128 org_x = _mm_set1_ps(ray.m_org.x);
-    const __m128 rcp_dir_x = _mm_set1_ps(ray_info.m_rcp_dir.x);
-    const __m128 xl1 = _mm_mul_ps(rcp_dir_x, _mm_sub_ps(_mm_set1_ps(bbox.min.x), org_x));
-    const __m128 xl2 = _mm_mul_ps(rcp_dir_x, _mm_sub_ps(_mm_set1_ps(bbox.max.x), org_x));
-
-    __m128 tmax = _mm_max_ps(_mm_min_ps(xl1, pos_inf), _mm_min_ps(xl2, pos_inf));
-    __m128 tmin = _mm_min_ps(_mm_max_ps(xl1, neg_inf), _mm_max_ps(xl2, neg_inf));
-
     const __m128 org_y = _mm_set1_ps(ray.m_org.y);
-    const __m128 rcp_dir_y = _mm_set1_ps(ray_info.m_rcp_dir.y);
-    const __m128 yl1 = _mm_mul_ps(rcp_dir_y, _mm_sub_ps(_mm_set1_ps(bbox.min.y), org_y));
-    const __m128 yl2 = _mm_mul_ps(rcp_dir_y, _mm_sub_ps(_mm_set1_ps(bbox.max.y), org_y));
-
-    tmax = _mm_min_ps(_mm_max_ps(_mm_min_ps(yl1, pos_inf), _mm_min_ps(yl2, pos_inf)), tmax);
-    tmin = _mm_max_ps(_mm_min_ps(_mm_max_ps(yl1, neg_inf), _mm_max_ps(yl2, neg_inf)), tmin);
-
     const __m128 org_z = _mm_set1_ps(ray.m_org.z);
-    const __m128 rcp_dir_z = _mm_set1_ps(ray_info.m_rcp_dir.z);
-    const __m128 zl1 = _mm_mul_ps(rcp_dir_z, _mm_sub_ps(_mm_set1_ps(bbox.min.z), org_z));
-    const __m128 zl2 = _mm_mul_ps(rcp_dir_z, _mm_sub_ps(_mm_set1_ps(bbox.max.z), org_z));
 
-    tmax = _mm_min_ps(_mm_max_ps(_mm_min_ps(zl1, pos_inf), _mm_min_ps(zl2, pos_inf)), tmax);
-    tmin = _mm_max_ps(_mm_min_ps(_mm_max_ps(zl1, neg_inf), _mm_max_ps(zl2, neg_inf)), tmin);
+    const __m128 rcp_dir_x = _mm_set1_ps(ray_info.m_rcp_dir.x);
+    const __m128 rcp_dir_y = _mm_set1_ps(ray_info.m_rcp_dir.y);
+    const __m128 rcp_dir_z = _mm_set1_ps(ray_info.m_rcp_dir.z);
+
+    const __m128 xl1 = _mm_mul_ps(rcp_dir_x, _mm_sub_ps(_mm_set1_ps(bbox[1 - ray_info.m_sgn_dir.x].x), org_x));
+    const __m128 yl1 = _mm_mul_ps(rcp_dir_y, _mm_sub_ps(_mm_set1_ps(bbox[1 - ray_info.m_sgn_dir.y].y), org_y));
+    const __m128 zl1 = _mm_mul_ps(rcp_dir_z, _mm_sub_ps(_mm_set1_ps(bbox[1 - ray_info.m_sgn_dir.z].z), org_z));
+
+    const __m128 xl2 = _mm_mul_ps(rcp_dir_x, _mm_sub_ps(_mm_set1_ps(bbox[    ray_info.m_sgn_dir.x].x), org_x));
+    const __m128 yl2 = _mm_mul_ps(rcp_dir_y, _mm_sub_ps(_mm_set1_ps(bbox[    ray_info.m_sgn_dir.y].y), org_y));
+    const __m128 zl2 = _mm_mul_ps(rcp_dir_z, _mm_sub_ps(_mm_set1_ps(bbox[    ray_info.m_sgn_dir.z].z), org_z));
 
     const __m128 ray_tmin = _mm_set1_ps(ray.m_tmin);
     const __m128 ray_tmax = _mm_set1_ps(ray.m_tmax);
+
+    const __m128 tmin = _mm_max_ps(zl1, _mm_max_ps(yl1, _mm_max_ps(xl1, ray_tmin)));
+    const __m128 tmax = _mm_min_ps(zl2, _mm_min_ps(yl2, _mm_min_ps(xl2, ray_tmax)));
 
     const bool hit =
         _mm_movemask_ps(
@@ -367,42 +340,33 @@ inline bool clip<float>(
     return hit;
 }
 
-// Clip a ray to its intersection with a bounding box.
 template <>
 inline bool clip<double>(
     Ray3d&                  ray,
     const RayInfo3d&        ray_info,
     const AABB3d&           bbox)
 {
-    const __m128d pos_inf = _mm_set1_pd(FP<double>::pos_inf());
-    const __m128d neg_inf = _mm_set1_pd(FP<double>::neg_inf());
-
     const __m128d org_x = _mm_set1_pd(ray.m_org.x);
-    const __m128d rcp_dir_x = _mm_set1_pd(ray_info.m_rcp_dir.x);
-    const __m128d xl1 = _mm_mul_pd(rcp_dir_x, _mm_sub_pd(_mm_set1_pd(bbox.min.x), org_x));
-    const __m128d xl2 = _mm_mul_pd(rcp_dir_x, _mm_sub_pd(_mm_set1_pd(bbox.max.x), org_x));
-
-    __m128d tmax = _mm_max_pd(_mm_min_pd(xl1, pos_inf), _mm_min_pd(xl2, pos_inf));
-    __m128d tmin = _mm_min_pd(_mm_max_pd(xl1, neg_inf), _mm_max_pd(xl2, neg_inf));
-
     const __m128d org_y = _mm_set1_pd(ray.m_org.y);
-    const __m128d rcp_dir_y = _mm_set1_pd(ray_info.m_rcp_dir.y);
-    const __m128d yl1 = _mm_mul_pd(rcp_dir_y, _mm_sub_pd(_mm_set1_pd(bbox.min.y), org_y));
-    const __m128d yl2 = _mm_mul_pd(rcp_dir_y, _mm_sub_pd(_mm_set1_pd(bbox.max.y), org_y));
-
-    tmax = _mm_min_pd(_mm_max_pd(_mm_min_pd(yl1, pos_inf), _mm_min_pd(yl2, pos_inf)), tmax);
-    tmin = _mm_max_pd(_mm_min_pd(_mm_max_pd(yl1, neg_inf), _mm_max_pd(yl2, neg_inf)), tmin);
-
     const __m128d org_z = _mm_set1_pd(ray.m_org.z);
-    const __m128d rcp_dir_z = _mm_set1_pd(ray_info.m_rcp_dir.z);
-    const __m128d zl1 = _mm_mul_pd(rcp_dir_z, _mm_sub_pd(_mm_set1_pd(bbox.min.z), org_z));
-    const __m128d zl2 = _mm_mul_pd(rcp_dir_z, _mm_sub_pd(_mm_set1_pd(bbox.max.z), org_z));
 
-    tmax = _mm_min_pd(_mm_max_pd(_mm_min_pd(zl1, pos_inf), _mm_min_pd(zl2, pos_inf)), tmax);
-    tmin = _mm_max_pd(_mm_min_pd(_mm_max_pd(zl1, neg_inf), _mm_max_pd(zl2, neg_inf)), tmin);
+    const __m128d rcp_dir_x = _mm_set1_pd(ray_info.m_rcp_dir.x);
+    const __m128d rcp_dir_y = _mm_set1_pd(ray_info.m_rcp_dir.y);
+    const __m128d rcp_dir_z = _mm_set1_pd(ray_info.m_rcp_dir.z);
+
+    const __m128d xl1 = _mm_mul_pd(rcp_dir_x, _mm_sub_pd(_mm_set1_pd(bbox[1 - ray_info.m_sgn_dir.x].x), org_x));
+    const __m128d yl1 = _mm_mul_pd(rcp_dir_y, _mm_sub_pd(_mm_set1_pd(bbox[1 - ray_info.m_sgn_dir.y].y), org_y));
+    const __m128d zl1 = _mm_mul_pd(rcp_dir_z, _mm_sub_pd(_mm_set1_pd(bbox[1 - ray_info.m_sgn_dir.z].z), org_z));
+
+    const __m128d xl2 = _mm_mul_pd(rcp_dir_x, _mm_sub_pd(_mm_set1_pd(bbox[    ray_info.m_sgn_dir.x].x), org_x));
+    const __m128d yl2 = _mm_mul_pd(rcp_dir_y, _mm_sub_pd(_mm_set1_pd(bbox[    ray_info.m_sgn_dir.y].y), org_y));
+    const __m128d zl2 = _mm_mul_pd(rcp_dir_z, _mm_sub_pd(_mm_set1_pd(bbox[    ray_info.m_sgn_dir.z].z), org_z));
 
     const __m128d ray_tmin = _mm_set1_pd(ray.m_tmin);
     const __m128d ray_tmax = _mm_set1_pd(ray.m_tmax);
+
+    const __m128d tmin = _mm_max_pd(zl1, _mm_max_pd(yl1, _mm_max_pd(xl1, ray_tmin)));
+    const __m128d tmax = _mm_min_pd(zl2, _mm_min_pd(yl2, _mm_min_pd(xl2, ray_tmax)));
 
     const bool hit =
         _mm_movemask_pd(
@@ -419,45 +383,6 @@ inline bool clip<double>(
     }
 
     return hit;
-}
-
-#else
-
-// Clip a ray to its intersection with a bounding box.
-template <typename T>
-inline bool clip(
-    Ray<T, 3>&              ray,
-    const RayInfo<T, 3>&    ray_info,
-    const AABB<T, 3>&       bbox)
-{
-    const T pos_inf = FP<T>::pos_inf();
-    const T neg_inf = FP<T>::neg_inf();
-
-    const T xl1 = ray_info.m_rcp_dir.x * (bbox.min.x - ray.m_org.x);
-    const T xl2 = ray_info.m_rcp_dir.x * (bbox.max.x - ray.m_org.x);
-
-    T tmax = ssemax(ssemin(xl1, pos_inf), ssemin(xl2, pos_inf));
-    T tmin = ssemin(ssemax(xl1, neg_inf), ssemax(xl2, neg_inf));
-
-    const T yl1 = ray_info.m_rcp_dir.y * (bbox.min.y - ray.m_org.y);
-    const T yl2 = ray_info.m_rcp_dir.y * (bbox.max.y - ray.m_org.y);
-
-    tmax = ssemin(ssemax(ssemin(yl1, pos_inf), ssemin(yl2, pos_inf)), tmax);
-    tmin = ssemax(ssemin(ssemax(yl1, neg_inf), ssemax(yl2, neg_inf)), tmin);
-
-    const T zl1 = ray_info.m_rcp_dir.z * (bbox.min.z - ray.m_org.z);
-    const T zl2 = ray_info.m_rcp_dir.z * (bbox.max.z - ray.m_org.z);
-
-    tmax = ssemin(ssemax(ssemin(zl1, pos_inf), ssemin(zl2, pos_inf)), tmax);
-    tmin = ssemax(ssemin(ssemax(zl1, neg_inf), ssemax(zl2, neg_inf)), tmin);
-
-    if (tmin > tmax || tmax < ray.m_tmin || tmin >= ray.m_tmax)
-        return false;
-
-    ray.m_tmin = ssemax(ray.m_tmin, tmin);
-    ray.m_tmax = ssemin(ray.m_tmax, tmax);
-
-    return true;
 }
 
 #endif  // APPLESEED_FOUNDATION_USE_SSE

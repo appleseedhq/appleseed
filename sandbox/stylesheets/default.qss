@@ -347,7 +347,7 @@ QMenu::tearoff:selected
 QToolBar
 {
     border: BORDER_STYLE;
-    padding: 2px;
+    padding: 4px;
 }
 
 QToolBar::separator
@@ -375,7 +375,8 @@ QToolButton:hover
     color: HOVER_TEXT_COLOR;
 }
 
-QToolButton:pressed
+QToolButton:pressed,
+QToolButton:checked
 {
     background-color: SELECTED_BACKGROUND_COLOR;
     color: SELECTED_TEXT_COLOR;
@@ -720,6 +721,67 @@ QComboBox:disabled
 
 
 /*
+ * QSlider.
+ */
+
+QSlider:horizontal
+{
+    height: 20px;
+}
+
+QSlider:vertical
+{
+    width: 20px;
+}
+
+QSlider::groove
+{
+    border: BORDER_STYLE;
+    background-color: INPUT_BACKGROUND_COLOR;
+}
+
+QSlider::groove:horizontal
+{
+    height: 6px;
+}
+
+QSlider::groove:vertical
+{
+    width: 6px;
+}
+
+QSlider::sub-page:horizontal,
+QSlider::add-page:vertical
+{
+    background-color: SELECTED_BACKGROUND_COLOR;
+}
+
+QSlider::handle
+{
+    background-color: rgb(120, 120, 120);
+}
+
+QSlider::handle:horizontal
+{
+    width: 8px;
+    margin-top: -7px;
+    margin-bottom: -7px;
+}
+
+QSlider::handle:vertical
+{
+    height: 8px;
+    margin-left: -7px;
+    margin-right: -7px;
+}
+
+QSlider::handle:hover
+{
+    background-color: HOVER_BACKGROUND_COLOR;
+}
+
+
+/*
  * QLabel.
  */
 
@@ -893,29 +955,38 @@ QWidget#MaterialAssignmentEditorWindow QWidget#scrollarea_contents
     background-color: transparent;
 }
 
-QTabWidget#tab_render_channels QWidget
+QTabWidget#tab_render_channels > QWidget,
+QTabWidget#tab_render_channels QWidget#render_widget_tab,
+QTabWidget#tab_render_channels QScrollArea#render_widget_scrollarea,
+QTabWidget#tab_render_channels QWidget#render_widget_wrapper
 {
     background-color: transparent;
 }
 
-/* Overqualify to give precedence. */
-QWidget > QFrame#render_tools_frame
+QLabel#picking_mode_label
 {
-    background-color: DEFAULT_BACKGROUND_COLOR;
+    margin-left: 4px;
+    margin-right: 4px;
 }
 
-/* Overqualify to give precedence. */
-QFrame#render_tools_frame QComboBox#picking_mode_combo
+QComboBox#picking_mode_combo
 {
-    background-color: INPUT_BACKGROUND_COLOR;
     min-width: 120px;
     max-width: 120px;
+    margin-left: 1px;
+    margin-right: 1px;
 }
 
-/* Overqualify to give precedence. */
-QFrame#render_tools_frame QLabel#info_label
+QLabel#info_label
 {
     color: INFO_TEXT_COLOR;
     min-width: 240px;
     max-width: 240px;
+    margin-left: 4px;
+    margin-right: 4px;
+}
+
+QPushButton#bind_entity_button
+{
+    min-width: 30px;
 }

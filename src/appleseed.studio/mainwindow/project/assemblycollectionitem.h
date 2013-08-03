@@ -68,7 +68,7 @@ class AssemblyCollectionItem
     virtual QMenu* get_single_item_context_menu() const OVERRIDE;
 
   public slots:
-    void slot_create();
+    virtual void slot_create() OVERRIDE;
 
   private:
     renderer::BaseGroup&    m_parent;

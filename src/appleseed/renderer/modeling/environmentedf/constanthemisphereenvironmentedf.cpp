@@ -178,31 +178,31 @@ const char* ConstantHemisphereEnvironmentEDFFactory::get_human_readable_model() 
     return "Per-Hemisphere Constant Environment EDF";
 }
 
-DictionaryArray ConstantHemisphereEnvironmentEDFFactory::get_widget_definitions() const
+DictionaryArray ConstantHemisphereEnvironmentEDFFactory::get_input_metadata() const
 {
-    DictionaryArray definitions;
+    DictionaryArray metadata;
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "upper_hemi_radiance")
             .insert("label", "Upper Hemisphere Radiance")
-            .insert("widget", "entity_picker")
+            .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary().insert("color", "Colors"))
             .insert("use", "required")
-            .insert("default", ""));
+            .insert("default", "0.7"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "lower_hemi_radiance")
             .insert("label", "Lower Hemisphere Radiance")
-            .insert("widget", "entity_picker")
+            .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary().insert("color", "Colors"))
             .insert("use", "required")
-            .insert("default", ""));
+            .insert("default", "0.3"));
 
-    return definitions;
+    return metadata;
 }
 
 auto_release_ptr<EnvironmentEDF> ConstantHemisphereEnvironmentEDFFactory::create(

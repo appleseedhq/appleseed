@@ -49,41 +49,41 @@ EntityEditorFormFactoryBase::EntityEditorFormFactoryBase(const string& entity_na
 {
 }
 
-void EntityEditorFormFactoryBase::add_name_widget_definition(
+void EntityEditorFormFactoryBase::add_name_input_metadata(
     const Dictionary&                   values,
-    WidgetDefinitionCollection&         definitions) const
+    InputMetadataCollection&            metadata) const
 {
     const string name = get_value(values, NameParameter, m_entity_name);
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", NameParameter)
             .insert("label", "Name")
-            .insert("widget", "text_box")
+            .insert("type", "text")
             .insert("use", "required")
             .insert("default", name)
             .insert("focus", "true"));
 }
 
-void EntityEditorFormFactoryBase::add_render_layer_widget_definition(
+void EntityEditorFormFactoryBase::add_render_layer_input_metadata(
     const Dictionary&                   values,
-    WidgetDefinitionCollection&         definitions) const
+    InputMetadataCollection&            metadata) const
 {
     const string render_layer = get_value(values, "render_layer", "");
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "render_layer")
             .insert("label", "Render Layer")
-            .insert("widget", "text_box")
+            .insert("type", "text")
             .insert("use", "optional")
             .insert("default", render_layer));
 }
 
-void EntityEditorFormFactoryBase::add_widget_definitions(
+void EntityEditorFormFactoryBase::add_input_metadata(
     const DictionaryArray&              widgets,
     const Dictionary&                   values,
-    WidgetDefinitionCollection&         definitions) const
+    InputMetadataCollection&            metadata) const
 {
     for (size_t i = 0; i < widgets.size(); ++i)
     {
@@ -93,7 +93,7 @@ void EntityEditorFormFactoryBase::add_widget_definitions(
         if (values.strings().exist(widget_name))
             widget.insert("default", values.get<string>(widget_name));
 
-        definitions.push_back(widget);
+        metadata.push_back(widget);
     }
 }
 

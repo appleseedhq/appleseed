@@ -375,49 +375,49 @@ const char* BSDFMixFactory::get_human_readable_model() const
     return "BSDF Mix";
 }
 
-DictionaryArray BSDFMixFactory::get_widget_definitions() const
+DictionaryArray BSDFMixFactory::get_input_metadata() const
 {
-    DictionaryArray definitions;
+    DictionaryArray metadata;
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "bsdf0")
             .insert("label", "BSDF 1")
-            .insert("widget", "entity_picker")
+            .insert("type", "entity")
             .insert("entity_types",
                 Dictionary().insert("bsdf", "BSDF"))
             .insert("use", "required"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "weight0")
             .insert("label", "Weight 1")
-            .insert("widget", "entity_picker")
+            .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "required")
             .insert("default", "0.5"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "bsdf1")
             .insert("label", "BSDF 2")
-            .insert("widget", "entity_picker")
+            .insert("type", "entity")
             .insert("entity_types",
                 Dictionary().insert("bsdf", "BSDF"))
             .insert("use", "required"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "weight1")
             .insert("label", "Weight 2")
-            .insert("widget", "entity_picker")
+            .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "required")
             .insert("default", "0.5"));
 
-    return definitions;
+    return metadata;
 }
 
 auto_release_ptr<BSDF> BSDFMixFactory::create(

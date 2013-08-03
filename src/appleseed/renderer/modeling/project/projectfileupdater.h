@@ -32,6 +32,9 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
+// Standard headers.
+#include <cstddef>
+
 // Forward declarations.
 namespace renderer  { class Project; }
 
@@ -45,7 +48,9 @@ namespace renderer
 class DLLSYMBOL ProjectFileUpdater
 {
   public:
-    bool update(Project& project);
+    bool update(
+        Project&        project,
+        const size_t    to_revision = ~0);
 };
 
 }       // namespace renderer

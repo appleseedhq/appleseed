@@ -218,43 +218,45 @@ const char* ConeEDFFactory::get_human_readable_model() const
     return "Cone EDF";
 }
 
-DictionaryArray ConeEDFFactory::get_widget_definitions() const
+DictionaryArray ConeEDFFactory::get_input_metadata() const
 {
-    DictionaryArray definitions;
+    DictionaryArray metadata;
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "radiance")
             .insert("label", "Radiance")
-            .insert("widget", "entity_picker")
+            .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
                     .insert("texture_instance", "Textures"))
             .insert("use", "required")
-            .insert("default", ""));
+            .insert("default", "1.0"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "radiance_multiplier")
             .insert("label", "Radiance Multiplier")
-            .insert("widget", "entity_picker")
+            .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "optional")
             .insert("default", "1.0"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "angle")
             .insert("label", "Angle")
-            .insert("widget", "text_box")
+            .insert("type", "numeric")
+            .insert("min_value", "-360.0")
+            .insert("max_value", "360.0")
             .insert("use", "required")
             .insert("default", "90.0"));
 
-    add_common_widget_definitions(definitions);
+    add_common_input_metadata(metadata);
 
-    return definitions;
+    return metadata;
 }
 
 auto_release_ptr<EDF> ConeEDFFactory::create(

@@ -61,7 +61,7 @@ namespace
         }
 
         // Delete this instance.
-        virtual void release()
+        virtual void release() OVERRIDE
         {
             delete this;
         }
@@ -71,7 +71,7 @@ namespace
             const size_t    x,
             const size_t    y,
             const size_t    width,
-            const size_t    height)
+            const size_t    height) OVERRIDE
         {
             assert(m_render_widget);
 
@@ -83,7 +83,7 @@ namespace
         virtual void post_render_tile(
             const Frame*    frame,
             const size_t    tile_x,
-            const size_t    tile_y)
+            const size_t    tile_y) OVERRIDE
         {
             assert(m_render_widget);
 
@@ -92,7 +92,7 @@ namespace
 
         // This method is called after a whole frame is rendered.
         virtual void post_render(
-            const Frame*    frame)
+            const Frame*    frame) OVERRIDE
         {
             assert(m_render_widget);
 

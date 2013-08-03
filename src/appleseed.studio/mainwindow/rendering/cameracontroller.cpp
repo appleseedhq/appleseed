@@ -57,9 +57,9 @@ CameraController::CameraController(
     QWidget*    render_widget,
     Scene*      scene)
   : m_render_widget(render_widget)
-  , m_camera(scene->get_camera())
+  , m_scene(scene)
 {
-    configure_controller(scene);
+    configure_controller(m_scene);
 
     m_render_widget->installEventFilter(this);
 }
@@ -68,16 +68,19 @@ CameraController::~CameraController()
 {
     m_render_widget->removeEventFilter(this);
 
-    m_camera->get_parameters().insert("controller_target", m_controller.get_target());
+    m_scene->get_camera()->get_parameters().insert("controller_target", m_controller.get_target());
 }
 
 void CameraController::update_camera_transform()
 {
+    Camera* camera = m_scene->get_camera();
+
     // Moving the camera kills camera motion blur.
-    m_camera->transform_sequence().clear();
-    m_camera->transform_sequence().set_transform(
-        0.0,
-        Transformd::from_local_to_parent(m_controller.get_transform()));
+    camera->transform_sequence().clear();
+
+    // Set the scene camera orientation and position based on the controller.
+    const Transformd transform = Transformd::from_local_to_parent(m_controller.get_transform());
+    camera->transform_sequence().set_transform(0.0, transform);
 }
 
 bool CameraController::eventFilter(QObject* object, QEvent* event)
@@ -105,15 +108,17 @@ bool CameraController::eventFilter(QObject* object, QEvent* event)
 
 void CameraController::configure_controller(const Scene* scene)
 {
+    Camera* camera = m_scene->get_camera();
+
     // Set the controller orientation and position based on the scene camera.
     m_controller.set_transform(
-        m_camera->transform_sequence().get_earliest_transform().get_local_to_parent());
+        camera->transform_sequence().get_earliest_transform().get_local_to_parent());
 
-    if (m_camera->get_parameters().strings().exist("controller_target"))
+    if (camera->get_parameters().strings().exist("controller_target"))
     {
         // The camera already has a target position, use it.
         m_controller.set_target(
-            m_camera->get_parameters().get_optional<Vector3d>(
+            camera->get_parameters().get_optional<Vector3d>(
                 "controller_target",
                 Vector3d(0.0)));
     }

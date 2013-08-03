@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_UTILITY_SPINBOXEVENTFILTER_H
-#define APPLESEED_STUDIO_UTILITY_SPINBOXEVENTFILTER_H
+#ifndef APPLESEED_STUDIO_UTILITY_MOUSEWHEELFOCUSEVENTFILTER_H
+#define APPLESEED_STUDIO_UTILITY_MOUSEWHEELFOCUSEVENTFILTER_H
 
 // Qt headers.
 #include <QObject>
@@ -41,22 +41,22 @@ namespace appleseed {
 namespace studio {
 
 //
-// An event filter to prevent spin boxes and comboboxes from stealing focus when scrolling with the mouse wheel.
+// An event filter to prevent widgets from stealing focus when scrolling with the mouse wheel.
 //
 // Reference:
 //
 //   http://stackoverflow.com/questions/5821802/qspinbox-inside-a-qscrollarea-how-to-prevent-spin-box-from-stealing-focus-when
 //
 
-class SpinBoxEventFilter
+class MouseWheelFocusEventFilter
   : public QObject
 {
     Q_OBJECT
 
   public:
-    explicit SpinBoxEventFilter(QWidget* parent);
+    explicit MouseWheelFocusEventFilter(QWidget* parent);
 
-    ~SpinBoxEventFilter();
+    ~MouseWheelFocusEventFilter();
 
     virtual bool eventFilter(QObject* object, QEvent* event);
 
@@ -67,4 +67,4 @@ class SpinBoxEventFilter
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_UTILITY_SPINBOXEVENTFILTER_H
+#endif  // !APPLESEED_STUDIO_UTILITY_MOUSEWHEELFOCUSEVENTFILTER_H

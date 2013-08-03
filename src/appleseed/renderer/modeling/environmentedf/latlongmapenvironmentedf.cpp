@@ -397,48 +397,52 @@ const char* LatLongMapEnvironmentEDFFactory::get_human_readable_model() const
     return "Latitude-Longitude Map Environment EDF";
 }
 
-DictionaryArray LatLongMapEnvironmentEDFFactory::get_widget_definitions() const
+DictionaryArray LatLongMapEnvironmentEDFFactory::get_input_metadata() const
 {
-    DictionaryArray definitions;
+    DictionaryArray metadata;
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "radiance")
             .insert("label", "Radiance")
-            .insert("widget", "entity_picker")
+            .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary()
                     .insert("texture_instance", "Textures"))
             .insert("use", "required")
-            .insert("default", ""));
+            .insert("default", "1.0"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "radiance_multiplier")
             .insert("label", "Radiance Multiplier")
-            .insert("widget", "entity_picker")
+            .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "optional")
             .insert("default", "1.0"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "horizontal_shift")
             .insert("label", "Horizontal Shift")
-            .insert("widget", "text_box")
+            .insert("type", "numeric")
+            .insert("min_value", "-360.0")
+            .insert("max_value", "360.0")
             .insert("default", "0.0")
             .insert("use", "optional"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "vertical_shift")
             .insert("label", "Vertical Shift")
-            .insert("widget", "text_box")
+            .insert("type", "numeric")
+            .insert("min_value", "-360.0")
+            .insert("max_value", "360.0")
             .insert("default", "0.0")
             .insert("use", "optional"));
 
-    return definitions;
+    return metadata;
 }
 
 auto_release_ptr<EnvironmentEDF> LatLongMapEnvironmentEDFFactory::create(

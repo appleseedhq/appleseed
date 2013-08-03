@@ -208,88 +208,88 @@ const char* MaterialFactory::get_model()
     return "generic_material";
 }
 
-DictionaryArray MaterialFactory::get_widget_definitions()
+DictionaryArray MaterialFactory::get_input_metadata()
 {
-    DictionaryArray definitions;
+    DictionaryArray metadata;
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "bsdf")
             .insert("label", "BSDF")
-            .insert("widget", "entity_picker")
+            .insert("type", "entity")
             .insert("entity_types", Dictionary().insert("bsdf", "BSDF"))
             .insert("use", "optional"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "edf")
             .insert("label", "EDF")
-            .insert("widget", "entity_picker")
+            .insert("type", "entity")
             .insert("entity_types", Dictionary().insert("edf", "EDF"))
             .insert("use", "optional"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "surface_shader")
             .insert("label", "Surface Shader")
-            .insert("widget", "entity_picker")
+            .insert("type", "entity")
             .insert("entity_types",
                 Dictionary().insert("surface_shader", "Surface Shaders"))
             .insert("use", "required"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "alpha_map")
             .insert("label", "Alpha Map")
-            .insert("widget", "entity_picker")
+            .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
                     .insert("texture_instance", "Textures"))
             .insert("use", "optional"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "displacement_map")
             .insert("label", "Displacement Map")
-            .insert("widget", "entity_picker")
+            .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "optional"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "displacement_method")
             .insert("label", "Displacement Method")
-            .insert("widget", "dropdown_list")
-            .insert("dropdown_items",
+            .insert("type", "enumeration")
+            .insert("items",
                 Dictionary()
                     .insert("Bump Mapping", "bump")
                     .insert("Normal Mapping", "normal"))
             .insert("use", "required")
             .insert("default", "bump"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "bump_amplitude")
             .insert("label", "Bump Amplitude")
-            .insert("widget", "text_box")
+            .insert("type", "text")
             .insert("use", "optional")
             .insert("default", "1.0"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "normal_map_up")
             .insert("label", "Normal Map Up Vector")
-            .insert("widget", "dropdown_list")
-            .insert("dropdown_items",
+            .insert("type", "enumeration")
+            .insert("items",
                 Dictionary()
                     .insert("Green Channel (Y)", "y")
                     .insert("Blue Channel (Z)", "z"))
             .insert("use", "optional")
             .insert("default", "z"));
 
-    return definitions;
+    return metadata;
 }
 
 auto_release_ptr<Material> MaterialFactory::create(

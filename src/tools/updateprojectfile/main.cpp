@@ -82,11 +82,17 @@ int main(int argc, const char* argv[])
         reader.read(
             input_filepath.c_str(),
             schema_filepath.c_str(),
-            ProjectFileReader::OmitReadingMeshFiles));
+            ProjectFileReader::OmitReadingMeshFiles | ProjectFileReader::OmitProjectFileUpdate));
 
     // Bail out if the project couldn't be loaded.
     if (project.get() == 0)
         return 1;
+
+    // Update the project file to the desired revision.
+    ProjectFileUpdater updater;
+    if (cl.m_to_revision.is_set())
+        updater.update(project.ref(), cl.m_to_revision.values()[0]);
+    else updater.update(project.ref());
 
     // Write the project back to disk.
     const bool success =

@@ -147,8 +147,8 @@ class DLLSYMBOL TextureInstance
 class DLLSYMBOL TextureInstanceFactory
 {
   public:
-    // Return a set of widget definitions for texture instance entities.
-    static foundation::DictionaryArray get_widget_definitions();
+    // Return a set of input metadata for texture instance entities.
+    static foundation::DictionaryArray get_input_metadata();
 
     // Create a new texture instance.
     static foundation::auto_release_ptr<TextureInstance> create(

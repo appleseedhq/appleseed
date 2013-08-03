@@ -34,6 +34,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
+#include "foundation/platform/compiler.h"
 
 // Qt headers.
 #include <QImage>
@@ -65,32 +66,37 @@ class RenderWidget
   public:
     // Constructor.
     RenderWidget(
-        const int                   width,
-        const int                   height,
+        const size_t                width,
+        const size_t                height,
         QWidget*                    parent = 0);
 
     // Thread-safe.
-    virtual void clear(const foundation::Color4f& color);
+    virtual void resize(
+        const size_t                width,
+        const size_t                height) OVERRIDE;
 
     // Thread-safe.
-    virtual void multiply(const float multiplier);
+    virtual void clear(const foundation::Color4f& color) OVERRIDE;
+
+    // Thread-safe.
+    virtual void multiply(const float multiplier) OVERRIDE;
 
     // Thread-safe.
     virtual void highlight_region(
         const size_t                x,
         const size_t                y,
         const size_t                width,
-        const size_t                height);
+        const size_t                height) OVERRIDE;
 
     // Thread-safe.
     virtual void blit_tile(
         const renderer::Frame&      frame,
         const size_t                tile_x,
-        const size_t                tile_y);
+        const size_t                tile_y) OVERRIDE;
 
     // Thread-safe.
     virtual void blit_frame(
-        const renderer::Frame&      frame);
+        const renderer::Frame&      frame) OVERRIDE;
 
   private:
     QMutex      m_mutex;

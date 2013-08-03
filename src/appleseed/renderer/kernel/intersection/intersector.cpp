@@ -275,7 +275,7 @@ bool Intersector::trace(
         , m_triangle_tree_traversal_stats
 #endif
         );
-    intersector.intersect(
+    intersector.intersect_no_motion(
         assembly_tree,
         shading_point.m_ray,
         ray_info,
@@ -324,7 +324,7 @@ bool Intersector::trace_probe(
         , m_triangle_tree_traversal_stats
 #endif
         );
-    intersector.intersect(
+    intersector.intersect_no_motion(
         assembly_tree,
         ray,
         ray_info,

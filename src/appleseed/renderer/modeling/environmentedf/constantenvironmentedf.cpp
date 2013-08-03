@@ -166,21 +166,21 @@ const char* ConstantEnvironmentEDFFactory::get_human_readable_model() const
     return "Constant Environment EDF";
 }
 
-DictionaryArray ConstantEnvironmentEDFFactory::get_widget_definitions() const
+DictionaryArray ConstantEnvironmentEDFFactory::get_input_metadata() const
 {
-    DictionaryArray definitions;
+    DictionaryArray metadata;
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "radiance")
             .insert("label", "Radiance")
-            .insert("widget", "entity_picker")
+            .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary().insert("color", "Colors"))
             .insert("use", "required")
-            .insert("default", ""));
+            .insert("default", "1.0"));
 
-    return definitions;
+    return metadata;
 }
 
 auto_release_ptr<EnvironmentEDF> ConstantEnvironmentEDFFactory::create(

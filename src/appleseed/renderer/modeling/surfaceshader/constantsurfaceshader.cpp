@@ -155,55 +155,55 @@ const char* ConstantSurfaceShaderFactory::get_human_readable_model() const
     return "Constant";
 }
 
-DictionaryArray ConstantSurfaceShaderFactory::get_widget_definitions() const
+DictionaryArray ConstantSurfaceShaderFactory::get_input_metadata() const
 {
-    DictionaryArray definitions;
+    DictionaryArray metadata;
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "color")
             .insert("label", "Color")
-            .insert("widget", "entity_picker")
+            .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
                     .insert("texture_instance", "Textures"))
             .insert("use", "required")
-            .insert("default", ""));
+            .insert("default", "0.5"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "alpha_source")
             .insert("label", "Alpha Source")
-            .insert("widget", "dropdown_list")
-            .insert("dropdown_items",
+            .insert("type", "enumeration")
+            .insert("items",
                 Dictionary()
                     .insert("Alpha channel of the color", "color")
                     .insert("Alpha map of the material", "material"))
             .insert("use", "optional")
             .insert("default", "color"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "color_multiplier")
             .insert("label", "Color Multiplier")
-            .insert("widget", "entity_picker")
+            .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("default", "1.0")
             .insert("use", "optional"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "alpha_multiplier")
             .insert("label", "Alpha Multiplier")
-            .insert("widget", "entity_picker")
+            .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("default", "1.0")
             .insert("use", "optional"));
 
-    return definitions;
+    return metadata;
 }
 
 auto_release_ptr<SurfaceShader> ConstantSurfaceShaderFactory::create(

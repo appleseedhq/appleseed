@@ -48,6 +48,10 @@ class IRenderWidget
   public:
     virtual ~IRenderWidget() {}
 
+    virtual void resize(
+        const size_t                width,
+        const size_t                height) = 0;
+
     virtual void clear(const foundation::Color4f& color) = 0;
 
     virtual void multiply(const float multiplier) = 0;

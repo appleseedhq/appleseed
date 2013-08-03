@@ -100,7 +100,7 @@ void SingleModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit()
     std::auto_ptr<EntityEditorWindow::IFormFactory> form_factory(
         new SingleModelEntityEditorFormFactory(
             Base::m_entity->get_name(),
-            FactoryType::get_widget_definitions()));
+            FactoryType::get_input_metadata()));
 
     std::auto_ptr<EntityEditorWindow::IEntityBrowser> entity_browser(
         new EntityBrowser<ParentEntity>(Base::m_parent));
@@ -116,6 +116,8 @@ void SingleModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit()
         entity_browser,
         values,
         this,
+        SLOT(slot_edit_accepted(foundation::Dictionary)),
+        SLOT(slot_edit_accepted(foundation::Dictionary)),
         SLOT(slot_edit_accepted(foundation::Dictionary)));
 }
 

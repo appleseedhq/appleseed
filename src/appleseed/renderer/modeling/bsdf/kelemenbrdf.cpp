@@ -699,59 +699,63 @@ const char* KelemenBRDFFactory::get_human_readable_model() const
     return "Kelemen BRDF";
 }
 
-DictionaryArray KelemenBRDFFactory::get_widget_definitions() const
+DictionaryArray KelemenBRDFFactory::get_input_metadata() const
 {
-    DictionaryArray definitions;
+    DictionaryArray metadata;
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "matte_reflectance")
             .insert("label", "Matte Reflectance")
-            .insert("widget", "entity_picker")
+            .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
                     .insert("texture_instance", "Textures"))
             .insert("use", "required")
-            .insert("default", ""));
+            .insert("default", "0.5"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "matte_reflectance_multiplier")
             .insert("label", "Matte Reflectance Multiplier")
-            .insert("widget", "entity_picker")
+            .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "optional")
             .insert("default", "1.0"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "specular_reflectance")
             .insert("label", "Specular Reflectance")
-            .insert("widget", "entity_picker")
+            .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary().insert("color", "Colors"))
             .insert("use", "required")
-            .insert("default", ""));
+            .insert("default", "0.5"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "specular_reflectance_multiplier")
             .insert("label", "Specular Reflectance Multiplier")
-            .insert("widget", "text_box")
+            .insert("type", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "10.0")
             .insert("use", "optional")
             .insert("default", "1.0"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "roughness")
             .insert("label", "Roughness")
-            .insert("widget", "text_box")
+            .insert("type", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "1.0")
             .insert("use", "required")
             .insert("default", "0.5"));
 
-    return definitions;
+    return metadata;
 }
 
 auto_release_ptr<BSDF> KelemenBRDFFactory::create(

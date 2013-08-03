@@ -328,62 +328,62 @@ const char* PhysicalSurfaceShaderFactory::get_human_readable_model() const
     return "Physical";
 }
 
-DictionaryArray PhysicalSurfaceShaderFactory::get_widget_definitions() const
+DictionaryArray PhysicalSurfaceShaderFactory::get_input_metadata() const
 {
-    DictionaryArray definitions;
+    DictionaryArray metadata;
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "color_multiplier")
             .insert("label", "Color Multiplier")
-            .insert("widget", "entity_picker")
+            .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("default", "1.0")
             .insert("use", "optional"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "alpha_multiplier")
             .insert("label", "Alpha Multiplier")
-            .insert("widget", "entity_picker")
+            .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("default", "1.0")
             .insert("use", "optional"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "translucency")
             .insert("label", "Translucency")
-            .insert("widget", "entity_picker")
+            .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("default", "0.0")
             .insert("use", "optional"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "front_lighting_samples")
             .insert("label", "Front Lighting Samples")
-            .insert("widget", "text_box")
+            .insert("type", "text")
             .insert("default", "1")
             .insert("use", "optional"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "back_lighting_samples")
             .insert("label", "Back Lighting Samples")
-            .insert("widget", "text_box")
+            .insert("type", "text")
             .insert("default", "1")
             .insert("use", "optional"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "aerial_persp_mode")
             .insert("label", "Aerial Perspective Mode")
-            .insert("widget", "dropdown_list")
-            .insert("dropdown_items",
+            .insert("type", "enumeration")
+            .insert("items",
                 Dictionary()
                     .insert("None", "none")
                     .insert("Use Environment Shader", "environment_shader")
@@ -391,32 +391,32 @@ DictionaryArray PhysicalSurfaceShaderFactory::get_widget_definitions() const
             .insert("default", "none")
             .insert("use", "optional"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "aerial_persp_sky_color")
             .insert("label", "Aerial Perspective Sky Color")
-            .insert("widget", "entity_picker")
+            .insert("type", "colormap")
             .insert("entity_types", Dictionary().insert("color", "Colors"))
-            .insert("default", "")
+            .insert("default", "0.5")
             .insert("use", "optional"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "aerial_persp_distance")
             .insert("label", "Aerial Perspective Distance")
-            .insert("widget", "text_box")
+            .insert("type", "text")
             .insert("default", "1000.0")
             .insert("use", "optional"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "aerial_persp_intensity")
             .insert("label", "Aerial Perspective Intensity")
-            .insert("widget", "text_box")
+            .insert("type", "text")
             .insert("default", "0.01")
             .insert("use", "optional"));
 
-    return definitions;
+    return metadata;
 }
 
 auto_release_ptr<SurfaceShader> PhysicalSurfaceShaderFactory::create(

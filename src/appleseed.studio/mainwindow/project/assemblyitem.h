@@ -31,6 +31,7 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/basegroupitem.h"
+#include "mainwindow/project/entitydelayedactions.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -91,6 +92,8 @@ class AssemblyItem
     void slot_instantiate();
 
   private:
+    friend class EntityDeletionDelayedAction<AssemblyItem>;
+
     renderer::Assembly&             m_assembly;
     renderer::BaseGroup&            m_parent;
     BaseGroupItem*                  m_parent_item;
@@ -111,6 +114,9 @@ class AssemblyItem
     ObjectInstanceCollectionItem*   m_object_instance_collection_item;
 
     virtual void slot_delete() OVERRIDE;
+
+    void schedule_delete();
+    void do_delete();
 
     template <typename Entity, typename EntityContainer>
     CollectionItem<Entity, renderer::Assembly, AssemblyItem>* add_single_model_collection_item(EntityContainer& entities);

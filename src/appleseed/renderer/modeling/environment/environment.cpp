@@ -101,29 +101,29 @@ const char* EnvironmentFactory::get_model()
     return "generic_environment";
 }
 
-DictionaryArray EnvironmentFactory::get_widget_definitions()
+DictionaryArray EnvironmentFactory::get_input_metadata()
 {
-    DictionaryArray definitions;
+    DictionaryArray metadata;
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "environment_edf")
             .insert("label", "Environment EDF")
-            .insert("widget", "entity_picker")
+            .insert("type", "entity")
             .insert("entity_types",
                 Dictionary().insert("environment_edf", "Environment EDFs"))
             .insert("use", "optional"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "environment_shader")
             .insert("label", "Environment Shader")
-            .insert("widget", "entity_picker")
+            .insert("type", "entity")
             .insert("entity_types",
                 Dictionary().insert("environment_shader", "Environment Shaders"))
             .insert("use", "optional"));
 
-    return definitions;
+    return metadata;
 }
 
 auto_release_ptr<Environment> EnvironmentFactory::create(

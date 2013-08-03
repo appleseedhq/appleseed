@@ -27,7 +27,7 @@
 //
 
 // Interface header.
-#include "spinboxeventfilter.h"
+#include "mousewheelfocuseventfilter.h"
 
 // Qt headers.
 #include <QEvent>
@@ -36,7 +36,7 @@
 namespace appleseed {
 namespace studio {
 
-SpinBoxEventFilter::SpinBoxEventFilter(QWidget* parent)
+MouseWheelFocusEventFilter::MouseWheelFocusEventFilter(QWidget* parent)
   : QObject(parent)
   , m_old_focus_policy(parent->focusPolicy())
 {
@@ -44,7 +44,7 @@ SpinBoxEventFilter::SpinBoxEventFilter(QWidget* parent)
     parent->setFocusPolicy(Qt::StrongFocus);
 }
 
-SpinBoxEventFilter::~SpinBoxEventFilter()
+MouseWheelFocusEventFilter::~MouseWheelFocusEventFilter()
 {
     QWidget* parent = qobject_cast<QWidget*>(QObject::parent());
 
@@ -52,7 +52,7 @@ SpinBoxEventFilter::~SpinBoxEventFilter()
     parent->removeEventFilter(this);
 }
 
-bool SpinBoxEventFilter::eventFilter(QObject* object, QEvent* event)
+bool MouseWheelFocusEventFilter::eventFilter(QObject* object, QEvent* event)
 {
     QWidget* parent = qobject_cast<QWidget*>(object);
 

@@ -33,10 +33,16 @@
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/image/color.h"
 
+// Qt headers.
+#include <QObject>
+
 // Standard headers.
+#include <map>
+#include <memory>
 #include <string>
 
 // Forward declarations.
+namespace foundation    { class Dictionary; }
 class QCheckBox;
 class QComboBox;
 class QDoubleSpinBox;
@@ -49,17 +55,23 @@ namespace appleseed {
 namespace studio {
 
 //
-// A widget proxy provides a uniform string-based read/write access to Qt input widgets.
+// A widget proxy provides a uniform string-based read/write access
+// to Qt input widgets as well as uniform change notifications.
 //
 
 class IInputWidgetProxy
-  : public foundation::NonCopyable
+  : public QObject
 {
+    Q_OBJECT
+
   public:
     virtual ~IInputWidgetProxy() {}
 
     virtual void set(const std::string& value) = 0;
     virtual std::string get() const = 0;
+
+  signals:
+    void signal_changed();
 };
 
 
@@ -189,6 +201,33 @@ class ColorPickerProxy
   private:
     QLineEdit*      m_line_edit;
     QToolButton*    m_picker_button;
+};
+
+
+//
+// A collection of named proxies.
+//
+
+class InputWidgetProxyCollection
+  : public foundation::NonCopyable
+{
+  public:
+    ~InputWidgetProxyCollection();
+
+    void clear();
+
+    void insert(
+        const std::string&                  key,
+        std::auto_ptr<IInputWidgetProxy>    proxy);
+
+    IInputWidgetProxy* get(const std::string& key) const;
+
+    foundation::Dictionary get_values() const;
+
+  private:
+    typedef std::map<std::string, IInputWidgetProxy*> ProxyCollection;
+
+    ProxyCollection m_proxies;
 };
 
 }       // namespace studio

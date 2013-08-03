@@ -36,7 +36,6 @@
 #include "foundation/math/ray.h"
 #include "foundation/math/scalar.h"
 #ifdef APPLESEED_FOUNDATION_USE_SSE
-#include "foundation/math/fp.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/sse.h"
 #endif
@@ -96,8 +95,8 @@ class Intersector
     typedef Ray RayType;
     typedef RayInfo<ValueType, NodeType::Dimension> RayInfoType;
 
-    // Intersect a ray with a given BVH.
-    void intersect(
+    // Intersect a ray with a given BVH without motion.
+    void intersect_no_motion(
         const Tree&             tree,
         const RayType&          ray,
         const RayInfoType&      ray_info,
@@ -108,7 +107,7 @@ class Intersector
         ) const;
 
     // Intersect a ray with a given BVH with motion.
-    void intersect(
+    void intersect_motion(
         const Tree&             tree,
         const RayType&          ray,
         const RayInfoType&      ray_info,
@@ -132,7 +131,7 @@ template <
     size_t StackSize,
     size_t N
 >
-void Intersector<Tree, Visitor, Ray, StackSize, N>::intersect(
+void Intersector<Tree, Visitor, Ray, StackSize, N>::intersect_no_motion(
     const Tree&                 tree,
     const RayType&              ray,
     const RayInfoType&          ray_info,
@@ -264,7 +263,7 @@ template <
     size_t StackSize,
     size_t N
 >
-void Intersector<Tree, Visitor, Ray, StackSize, N>::intersect(
+void Intersector<Tree, Visitor, Ray, StackSize, N>::intersect_motion(
     const Tree&                 tree,
     const RayType&              ray,
     const RayInfoType&          ray_info,
@@ -443,8 +442,8 @@ class Intersector<Tree, Visitor, Ray, StackSize, 3>
     typedef Ray RayType;
     typedef RayInfo<ValueType, NodeType::Dimension> RayInfoType;
 
-    // Intersect a ray with a given BVH.
-    void intersect(
+    // Intersect a ray with a given BVH without motion.
+    void intersect_no_motion(
         const Tree&             tree,
         const RayType&          ray,
         const RayInfoType&      ray_info,
@@ -455,7 +454,7 @@ class Intersector<Tree, Visitor, Ray, StackSize, 3>
         ) const;
 
     // Intersect a ray with a given BVH with motion.
-    void intersect(
+    void intersect_motion(
         const Tree&             tree,
         const RayType&          ray,
         const RayInfoType&      ray_info,
@@ -473,7 +472,7 @@ template <
     typename Ray,
     size_t StackSize
 >
-void Intersector<Tree, Visitor, Ray, StackSize, 3>::intersect(
+void Intersector<Tree, Visitor, Ray, StackSize, 3>::intersect_no_motion(
     const Tree&                 tree,
     const RayType&              ray,
     const RayInfoType&          ray_info,
@@ -487,17 +486,13 @@ void Intersector<Tree, Visitor, Ray, StackSize, 3>::intersect(
     assert(!tree.m_nodes.empty());
 
     // Load the ray into SSE registers.
-    const __m128d mrox = _mm_set1_pd(ray.m_org.x);
-    const __m128d mroy = _mm_set1_pd(ray.m_org.y);
-    const __m128d mroz = _mm_set1_pd(ray.m_org.z);
-    const __m128d mrrcpdx = _mm_set1_pd(ray_info.m_rcp_dir.x);
-    const __m128d mrrcpdy = _mm_set1_pd(ray_info.m_rcp_dir.y);
-    const __m128d mrrcpdz = _mm_set1_pd(ray_info.m_rcp_dir.z);
-    const __m128d mraytmin = _mm_set1_pd(ray.m_tmin);
-
-    // Load constants.
-    const __m128d mposinf = _mm_set1_pd(FP<double>::pos_inf());
-    const __m128d mneginf = _mm_set1_pd(FP<double>::neg_inf());
+    const __m128d org_x = _mm_set1_pd(ray.m_org.x);
+    const __m128d org_y = _mm_set1_pd(ray.m_org.y);
+    const __m128d org_z = _mm_set1_pd(ray.m_org.z);
+    const __m128d rcp_dir_x = _mm_set1_pd(ray_info.m_rcp_dir.x);
+    const __m128d rcp_dir_y = _mm_set1_pd(ray_info.m_rcp_dir.y);
+    const __m128d rcp_dir_z = _mm_set1_pd(ray_info.m_rcp_dir.z);
+    const __m128d ray_tmin = _mm_set1_pd(ray.m_tmin);
 
     // Node stack.
     const NodeType* stack[StackSize];
@@ -514,7 +509,7 @@ void Intersector<Tree, Visitor, Ray, StackSize, 3>::intersect(
     FOUNDATION_BVH_TRAVERSAL_STATS(size_t discarded_nodes = 0);
 
     // Traverse the tree and intersect leaf nodes.
-    ValueType ray_tmax = ray.m_tmax;
+    ValueType rtmax = ray.m_tmax;
     while (true)
     {
         // Fetch the node.
@@ -524,38 +519,24 @@ void Intersector<Tree, Visitor, Ray, StackSize, 3>::intersect(
         {
             FOUNDATION_BVH_TRAVERSAL_STATS(intersected_bboxes += 2);
 
-            const __m128d mbbminx2d = _mm_load_pd(node_ptr->m_bbox_data + 0);
-            const __m128d mbbmaxx2d = _mm_load_pd(node_ptr->m_bbox_data + 2);
-            const __m128d mx1 = _mm_mul_pd(mrrcpdx, _mm_sub_pd(mbbminx2d, mrox));
-            const __m128d mx2 = _mm_mul_pd(mrrcpdx, _mm_sub_pd(mbbmaxx2d, mrox));
+            const __m128d xl1 = _mm_mul_pd(rcp_dir_x, _mm_sub_pd(_mm_load_pd(node_ptr->m_bbox_data + 0 + 2 * (1 - ray_info.m_sgn_dir.x)), org_x));
+            const __m128d xl2 = _mm_mul_pd(rcp_dir_x, _mm_sub_pd(_mm_load_pd(node_ptr->m_bbox_data + 0 + 2 * (    ray_info.m_sgn_dir.x)), org_x));
+            const __m128d yl1 = _mm_mul_pd(rcp_dir_y, _mm_sub_pd(_mm_load_pd(node_ptr->m_bbox_data + 4 + 2 * (1 - ray_info.m_sgn_dir.y)), org_y));
+            const __m128d yl2 = _mm_mul_pd(rcp_dir_y, _mm_sub_pd(_mm_load_pd(node_ptr->m_bbox_data + 4 + 2 * (    ray_info.m_sgn_dir.y)), org_y));
+            const __m128d zl1 = _mm_mul_pd(rcp_dir_z, _mm_sub_pd(_mm_load_pd(node_ptr->m_bbox_data + 8 + 2 * (1 - ray_info.m_sgn_dir.z)), org_z));
+            const __m128d zl2 = _mm_mul_pd(rcp_dir_z, _mm_sub_pd(_mm_load_pd(node_ptr->m_bbox_data + 8 + 2 * (    ray_info.m_sgn_dir.z)), org_z));
 
-            __m128d mtmax = _mm_max_pd(_mm_min_pd(mx1, mposinf), _mm_min_pd(mx2, mposinf));
-            __m128d mtmin = _mm_min_pd(_mm_max_pd(mx1, mneginf), _mm_max_pd(mx2, mneginf));
+            const __m128d ray_tmax = _mm_set1_pd(rtmax);
+            const __m128d tmin = _mm_max_pd(zl1, _mm_max_pd(yl1, _mm_max_pd(xl1, ray_tmin)));
+            const __m128d tmax = _mm_min_pd(zl2, _mm_min_pd(yl2, _mm_min_pd(xl2, ray_tmax)));
 
-            const __m128d mbbminy2d = _mm_load_pd(node_ptr->m_bbox_data + 4);
-            const __m128d mbbmaxy2d = _mm_load_pd(node_ptr->m_bbox_data + 6);
-            const __m128d my1 = _mm_mul_pd(mrrcpdy, _mm_sub_pd(mbbminy2d, mroy));
-            const __m128d my2 = _mm_mul_pd(mrrcpdy, _mm_sub_pd(mbbmaxy2d, mroy));
-
-            mtmax = _mm_min_pd(mtmax, _mm_max_pd(_mm_min_pd(my1, mposinf), _mm_min_pd(my2, mposinf)));
-            mtmin = _mm_max_pd(mtmin, _mm_min_pd(_mm_max_pd(my1, mneginf), _mm_max_pd(my2, mneginf)));
-
-            const __m128d mbbminz2d = _mm_load_pd(node_ptr->m_bbox_data + 8);
-            const __m128d mbbmaxz2d = _mm_load_pd(node_ptr->m_bbox_data + 10);
-            const __m128d mz1 = _mm_mul_pd(mrrcpdz, _mm_sub_pd(mbbminz2d, mroz));
-            const __m128d mz2 = _mm_mul_pd(mrrcpdz, _mm_sub_pd(mbbmaxz2d, mroz));
-
-            mtmax = _mm_min_pd(mtmax, _mm_max_pd(_mm_min_pd(mz1, mposinf), _mm_min_pd(mz2, mposinf)));
-            mtmin = _mm_max_pd(mtmin, _mm_min_pd(_mm_max_pd(mz1, mneginf), _mm_max_pd(mz2, mneginf)));
-
-            const __m128d mraytmax = _mm_set1_pd(ray_tmax);
             const int hits =
                 _mm_movemask_pd(
                     _mm_or_pd(
-                        _mm_cmpgt_pd(mtmin, mtmax),
+                        _mm_cmpgt_pd(tmin, tmax),
                         _mm_or_pd(
-                            _mm_cmplt_pd(mtmax, mraytmin),
-                            _mm_cmpge_pd(mtmin, mraytmax)))) ^ 3;
+                            _mm_cmplt_pd(tmax, ray_tmin),
+                            _mm_cmpge_pd(tmin, ray_tmax)))) ^ 3;
 
             const size_t hit_left = hits & 1;
             const size_t hit_right = hits >> 1;
@@ -576,8 +557,8 @@ void Intersector<Tree, Visitor, Ray, StackSize, 3>::intersect(
                 const int far =
                     _mm_movemask_pd(
                         _mm_cmplt_pd(
-                            mtmin,
-                            _mm_shuffle_pd(mtmin, mtmin, _MM_SHUFFLE2(1, 1))));
+                            tmin,
+                            _mm_shuffle_pd(tmin, tmin, _MM_SHUFFLE2(1, 1))));
                 *stack_ptr++ = node_ptr + far - 1;
                 node_ptr -= far;
                 continue;
@@ -618,8 +599,8 @@ void Intersector<Tree, Visitor, Ray, StackSize, 3>::intersect(
                 break;
 
             // Keep track of the distance to the closest intersection.
-            if (ray_tmax > distance)
-                ray_tmax = distance;
+            if (rtmax > distance)
+                rtmax = distance;
 
             // Terminate traversal if the node stack is empty.
             if (stack_ptr == stack)
@@ -643,7 +624,7 @@ template <
     typename Ray,
     size_t StackSize
 >
-void Intersector<Tree, Visitor, Ray, StackSize, 3>::intersect(
+void Intersector<Tree, Visitor, Ray, StackSize, 3>::intersect_motion(
     const Tree&                 tree,
     const RayType&              ray,
     const RayInfoType&          ray_info,
@@ -658,19 +639,17 @@ void Intersector<Tree, Visitor, Ray, StackSize, 3>::intersect(
     assert(!tree.m_nodes.empty());
 
     // Load the ray into SSE registers.
-    const __m128d mrox = _mm_set1_pd(ray.m_org.x);
-    const __m128d mroy = _mm_set1_pd(ray.m_org.y);
-    const __m128d mroz = _mm_set1_pd(ray.m_org.z);
-    const __m128d mrrcpdx = _mm_set1_pd(ray_info.m_rcp_dir.x);
-    const __m128d mrrcpdy = _mm_set1_pd(ray_info.m_rcp_dir.y);
-    const __m128d mrrcpdz = _mm_set1_pd(ray_info.m_rcp_dir.z);
-    const __m128d mraytmin = _mm_set1_pd(ray.m_tmin);
-    const __m128d mraytime = _mm_set1_pd(ray_time);
+    const __m128d org_x = _mm_set1_pd(ray.m_org.x);
+    const __m128d org_y = _mm_set1_pd(ray.m_org.y);
+    const __m128d org_z = _mm_set1_pd(ray.m_org.z);
+    const __m128d rcp_dir_x = _mm_set1_pd(ray_info.m_rcp_dir.x);
+    const __m128d rcp_dir_y = _mm_set1_pd(ray_info.m_rcp_dir.y);
+    const __m128d rcp_dir_z = _mm_set1_pd(ray_info.m_rcp_dir.z);
+    const __m128d ray_tmin = _mm_set1_pd(ray.m_tmin);
+    const __m128d mray_time = _mm_set1_pd(ray_time);
 
     // Load constants.
-    const __m128d mone = _mm_set1_pd(1.0);
-    const __m128d mposinf = _mm_set1_pd(FP<double>::pos_inf());
-    const __m128d mneginf = _mm_set1_pd(FP<double>::neg_inf());
+    const __m128d one = _mm_set1_pd(1.0);
 
     // Node stack.
     const NodeType* stack[StackSize];
@@ -687,7 +666,7 @@ void Intersector<Tree, Visitor, Ray, StackSize, 3>::intersect(
     FOUNDATION_BVH_TRAVERSAL_STATS(size_t discarded_nodes = 0);
 
     // Traverse the tree and intersect leaf nodes.
-    ValueType ray_tmax = ray.m_tmax;
+    ValueType rtmax = ray.m_tmax;
     while (true)
     {
         // Fetch the node.
@@ -697,7 +676,9 @@ void Intersector<Tree, Visitor, Ray, StackSize, 3>::intersect(
         {
             FOUNDATION_BVH_TRAVERSAL_STATS(intersected_bboxes += 2);
 
-            __m128d mtmax, mtmin;
+            __m128d tmin, tmax;
+
+            const __m128d ray_tmax = _mm_set1_pd(rtmax);
 
             const NodeType* base_child_node_ptr = &tree.m_nodes[node_ptr->get_child_node_index()];
             const size_t left_motion_segment_count = node_ptr->get_left_bbox_count() - 1;
@@ -705,17 +686,17 @@ void Intersector<Tree, Visitor, Ray, StackSize, 3>::intersect(
 
             if (left_motion_segment_count > 0 && right_motion_segment_count > 0)
             {
-                const __m128d left_t = _mm_mul_pd(mraytime, _mm_set1_pd(static_cast<double>(left_motion_segment_count)));
+                const __m128d left_t = _mm_mul_pd(mray_time, _mm_set1_pd(static_cast<double>(left_motion_segment_count)));
                 const int left_prev_index = _mm_cvttsd_si32(left_t);
                 const size_t left_base_index = node_ptr->get_left_bbox_index() + left_prev_index;
                 const __m128d left_w2 = _mm_sub_pd(left_t, _mm_set1_pd(left_prev_index));
-                const __m128d left_w1 = _mm_sub_pd(mone, left_w2);
+                const __m128d left_w1 = _mm_sub_pd(one, left_w2);
 
-                const __m128d right_t = _mm_mul_pd(mraytime, _mm_set1_pd(static_cast<double>(right_motion_segment_count)));
+                const __m128d right_t = _mm_mul_pd(mray_time, _mm_set1_pd(static_cast<double>(right_motion_segment_count)));
                 const int right_prev_index = _mm_cvttsd_si32(right_t);
                 const size_t right_base_index = node_ptr->get_right_bbox_index() + right_prev_index;
                 const __m128d right_w2 = _mm_sub_pd(right_t, _mm_set1_pd(right_prev_index));
-                const __m128d right_w1 = _mm_sub_pd(mone, right_w2);
+                const __m128d right_w1 = _mm_sub_pd(one, right_w2);
 
                 const double* base_bbox = &tree.m_node_bboxes[0][0][0];
                 const double* left_bbox = base_bbox + left_base_index * 6;
@@ -723,33 +704,26 @@ void Intersector<Tree, Visitor, Ray, StackSize, 3>::intersect(
 
                 const __m128d mleftbbx = _mm_add_pd(_mm_mul_pd(_mm_load_pd(left_bbox + 0), left_w1), _mm_mul_pd(_mm_load_pd(left_bbox + 6), left_w2));
                 const __m128d mrightbbx = _mm_add_pd(_mm_mul_pd(_mm_load_pd(right_bbox + 0), right_w1), _mm_mul_pd(_mm_load_pd(right_bbox + 6), right_w2));
-                const __m128d mbbminx2d = _mm_shuffle_pd(mleftbbx, mrightbbx, _MM_SHUFFLE2(0, 0));
-                const __m128d mbbmaxx2d = _mm_shuffle_pd(mleftbbx, mrightbbx, _MM_SHUFFLE2(1, 1));
-                const __m128d mx1 = _mm_mul_pd(mrrcpdx, _mm_sub_pd(mbbminx2d, mrox));
-                const __m128d mx2 = _mm_mul_pd(mrrcpdx, _mm_sub_pd(mbbmaxx2d, mrox));
-
-                mtmax = _mm_max_pd(_mm_min_pd(mx1, mposinf), _mm_min_pd(mx2, mposinf));
-                mtmin = _mm_min_pd(_mm_max_pd(mx1, mneginf), _mm_max_pd(mx2, mneginf));
+                const __m128d bbox_x[2] = { _mm_shuffle_pd(mleftbbx, mrightbbx, _MM_SHUFFLE2(0, 0)), _mm_shuffle_pd(mleftbbx, mrightbbx, _MM_SHUFFLE2(1, 1)) };
 
                 const __m128d mleftbby = _mm_add_pd(_mm_mul_pd(_mm_load_pd(left_bbox + 2), left_w1), _mm_mul_pd(_mm_load_pd(left_bbox + 8), left_w2));
                 const __m128d mrightbby = _mm_add_pd(_mm_mul_pd(_mm_load_pd(right_bbox + 2), right_w1), _mm_mul_pd(_mm_load_pd(right_bbox + 8), right_w2));
-                const __m128d mbbminy2d = _mm_shuffle_pd(mleftbby, mrightbby, _MM_SHUFFLE2(0, 0));
-                const __m128d mbbmaxy2d = _mm_shuffle_pd(mleftbby, mrightbby, _MM_SHUFFLE2(1, 1));
-                const __m128d my1 = _mm_mul_pd(mrrcpdy, _mm_sub_pd(mbbminy2d, mroy));
-                const __m128d my2 = _mm_mul_pd(mrrcpdy, _mm_sub_pd(mbbmaxy2d, mroy));
-
-                mtmax = _mm_min_pd(mtmax, _mm_max_pd(_mm_min_pd(my1, mposinf), _mm_min_pd(my2, mposinf)));
-                mtmin = _mm_max_pd(mtmin, _mm_min_pd(_mm_max_pd(my1, mneginf), _mm_max_pd(my2, mneginf)));
+                const __m128d bbox_y[2] = { _mm_shuffle_pd(mleftbby, mrightbby, _MM_SHUFFLE2(0, 0)), _mm_shuffle_pd(mleftbby, mrightbby, _MM_SHUFFLE2(1, 1)) };
 
                 const __m128d mleftbbz = _mm_add_pd(_mm_mul_pd(_mm_load_pd(left_bbox + 4), left_w1), _mm_mul_pd(_mm_load_pd(left_bbox + 10), left_w2));
                 const __m128d mrightbbz = _mm_add_pd(_mm_mul_pd(_mm_load_pd(right_bbox + 4), right_w1), _mm_mul_pd(_mm_load_pd(right_bbox + 10), right_w2));
-                const __m128d mbbminz2d = _mm_shuffle_pd(mleftbbz, mrightbbz, _MM_SHUFFLE2(0, 0));
-                const __m128d mbbmaxz2d = _mm_shuffle_pd(mleftbbz, mrightbbz, _MM_SHUFFLE2(1, 1));
-                const __m128d mz1 = _mm_mul_pd(mrrcpdz, _mm_sub_pd(mbbminz2d, mroz));
-                const __m128d mz2 = _mm_mul_pd(mrrcpdz, _mm_sub_pd(mbbmaxz2d, mroz));
+                const __m128d bbox_z[2] = { _mm_shuffle_pd(mleftbbz, mrightbbz, _MM_SHUFFLE2(0, 0)), _mm_shuffle_pd(mleftbbz, mrightbbz, _MM_SHUFFLE2(1, 1)) };
 
-                mtmax = _mm_min_pd(mtmax, _mm_max_pd(_mm_min_pd(mz1, mposinf), _mm_min_pd(mz2, mposinf)));
-                mtmin = _mm_max_pd(mtmin, _mm_min_pd(_mm_max_pd(mz1, mneginf), _mm_max_pd(mz2, mneginf)));
+                const __m128d xl1 = _mm_mul_pd(rcp_dir_x, _mm_sub_pd(bbox_x[1 - ray_info.m_sgn_dir.x], org_x));
+                const __m128d yl1 = _mm_mul_pd(rcp_dir_y, _mm_sub_pd(bbox_y[1 - ray_info.m_sgn_dir.y], org_y));
+                const __m128d zl1 = _mm_mul_pd(rcp_dir_z, _mm_sub_pd(bbox_z[1 - ray_info.m_sgn_dir.z], org_z));
+
+                const __m128d xl2 = _mm_mul_pd(rcp_dir_x, _mm_sub_pd(bbox_x[    ray_info.m_sgn_dir.x], org_x));
+                const __m128d yl2 = _mm_mul_pd(rcp_dir_y, _mm_sub_pd(bbox_y[    ray_info.m_sgn_dir.y], org_y));
+                const __m128d zl2 = _mm_mul_pd(rcp_dir_z, _mm_sub_pd(bbox_z[    ray_info.m_sgn_dir.z], org_z));
+
+                tmin = _mm_max_pd(zl1, _mm_max_pd(yl1, _mm_max_pd(xl1, ray_tmin)));
+                tmax = _mm_min_pd(zl2, _mm_min_pd(yl2, _mm_min_pd(xl2, ray_tmax)));
             }
             else
             {
@@ -758,10 +732,10 @@ void Intersector<Tree, Visitor, Ray, StackSize, 3>::intersect(
                 // Fetch the left bounding box.
                 if (left_motion_segment_count > 0)
                 {
-                    const __m128d t = _mm_mul_pd(mraytime, _mm_set1_pd(static_cast<double>(left_motion_segment_count)));
+                    const __m128d t = _mm_mul_pd(mray_time, _mm_set1_pd(static_cast<double>(left_motion_segment_count)));
                     const int prev_index = _mm_cvttsd_si32(t);
                     const __m128d w2 = _mm_sub_pd(t, _mm_set1_pd(prev_index));
-                    const __m128d w1 = _mm_sub_pd(mone, w2);
+                    const __m128d w1 = _mm_sub_pd(one, w2);
 
                     const size_t base_index = node_ptr->get_left_bbox_index() + prev_index;
                     const double* bbox = &tree.m_node_bboxes[0][0][0] + base_index * 6;
@@ -791,10 +765,10 @@ void Intersector<Tree, Visitor, Ray, StackSize, 3>::intersect(
                 // Fetch the right bounding box.
                 if (right_motion_segment_count > 0)
                 {
-                    const __m128d t = _mm_mul_pd(mraytime, _mm_set1_pd(static_cast<double>(right_motion_segment_count)));
+                    const __m128d t = _mm_mul_pd(mray_time, _mm_set1_pd(static_cast<double>(right_motion_segment_count)));
                     const int prev_index = _mm_cvttsd_si32(t);
                     const __m128d w2 = _mm_sub_pd(t, _mm_set1_pd(prev_index));
-                    const __m128d w1 = _mm_sub_pd(mone, w2);
+                    const __m128d w1 = _mm_sub_pd(one, w2);
 
                     const size_t base_index = node_ptr->get_right_bbox_index() + prev_index;
                     const double* bbox = &tree.m_node_bboxes[0][0][0] + base_index * 6;
@@ -821,39 +795,24 @@ void Intersector<Tree, Visitor, Ray, StackSize, 3>::intersect(
                     bbox_data[11] = node_ptr->m_bbox_data[11];
                 }
 
-                const __m128d mbbminx2d = _mm_load_pd(bbox_data + 0);
-                const __m128d mbbmaxx2d = _mm_load_pd(bbox_data + 2);
-                const __m128d mx1 = _mm_mul_pd(mrrcpdx, _mm_sub_pd(mbbminx2d, mrox));
-                const __m128d mx2 = _mm_mul_pd(mrrcpdx, _mm_sub_pd(mbbmaxx2d, mrox));
+                const __m128d xl1 = _mm_mul_pd(rcp_dir_x, _mm_sub_pd(_mm_load_pd(bbox_data + 0 + 2 * (1 - ray_info.m_sgn_dir.x)), org_x));
+                const __m128d xl2 = _mm_mul_pd(rcp_dir_x, _mm_sub_pd(_mm_load_pd(bbox_data + 0 + 2 * (    ray_info.m_sgn_dir.x)), org_x));
+                const __m128d yl1 = _mm_mul_pd(rcp_dir_y, _mm_sub_pd(_mm_load_pd(bbox_data + 4 + 2 * (1 - ray_info.m_sgn_dir.y)), org_y));
+                const __m128d yl2 = _mm_mul_pd(rcp_dir_y, _mm_sub_pd(_mm_load_pd(bbox_data + 4 + 2 * (    ray_info.m_sgn_dir.y)), org_y));
+                const __m128d zl1 = _mm_mul_pd(rcp_dir_z, _mm_sub_pd(_mm_load_pd(bbox_data + 8 + 2 * (1 - ray_info.m_sgn_dir.z)), org_z));
+                const __m128d zl2 = _mm_mul_pd(rcp_dir_z, _mm_sub_pd(_mm_load_pd(bbox_data + 8 + 2 * (    ray_info.m_sgn_dir.z)), org_z));
 
-                mtmax = _mm_max_pd(_mm_min_pd(mx1, mposinf), _mm_min_pd(mx2, mposinf));
-                mtmin = _mm_min_pd(_mm_max_pd(mx1, mneginf), _mm_max_pd(mx2, mneginf));
-
-                const __m128d mbbminy2d = _mm_load_pd(bbox_data + 4);
-                const __m128d mbbmaxy2d = _mm_load_pd(bbox_data + 6);
-                const __m128d my1 = _mm_mul_pd(mrrcpdy, _mm_sub_pd(mbbminy2d, mroy));
-                const __m128d my2 = _mm_mul_pd(mrrcpdy, _mm_sub_pd(mbbmaxy2d, mroy));
-
-                mtmax = _mm_min_pd(mtmax, _mm_max_pd(_mm_min_pd(my1, mposinf), _mm_min_pd(my2, mposinf)));
-                mtmin = _mm_max_pd(mtmin, _mm_min_pd(_mm_max_pd(my1, mneginf), _mm_max_pd(my2, mneginf)));
-
-                const __m128d mbbminz2d = _mm_load_pd(bbox_data + 8);
-                const __m128d mbbmaxz2d = _mm_load_pd(bbox_data + 10);
-                const __m128d mz1 = _mm_mul_pd(mrrcpdz, _mm_sub_pd(mbbminz2d, mroz));
-                const __m128d mz2 = _mm_mul_pd(mrrcpdz, _mm_sub_pd(mbbmaxz2d, mroz));
-
-                mtmax = _mm_min_pd(mtmax, _mm_max_pd(_mm_min_pd(mz1, mposinf), _mm_min_pd(mz2, mposinf)));
-                mtmin = _mm_max_pd(mtmin, _mm_min_pd(_mm_max_pd(mz1, mneginf), _mm_max_pd(mz2, mneginf)));
+                tmin = _mm_max_pd(zl1, _mm_max_pd(yl1, _mm_max_pd(xl1, ray_tmin)));
+                tmax = _mm_min_pd(zl2, _mm_min_pd(yl2, _mm_min_pd(xl2, ray_tmax)));
             }
 
-            const __m128d mraytmax = _mm_set1_pd(ray_tmax);
             const int hits =
                 _mm_movemask_pd(
                     _mm_or_pd(
-                        _mm_cmpgt_pd(mtmin, mtmax),
+                        _mm_cmpgt_pd(tmin, tmax),
                         _mm_or_pd(
-                            _mm_cmplt_pd(mtmax, mraytmin),
-                            _mm_cmpge_pd(mtmin, mraytmax)))) ^ 3;
+                            _mm_cmplt_pd(tmax, ray_tmin),
+                            _mm_cmpge_pd(tmin, ray_tmax)))) ^ 3;
 
             const size_t hit_left = hits & 1;
             const size_t hit_right = hits >> 1;
@@ -873,8 +832,8 @@ void Intersector<Tree, Visitor, Ray, StackSize, 3>::intersect(
                 const int far =
                     _mm_movemask_pd(
                         _mm_cmplt_pd(
-                            mtmin,
-                            _mm_shuffle_pd(mtmin, mtmin, _MM_SHUFFLE2(1, 1))));
+                            tmin,
+                            _mm_shuffle_pd(tmin, tmin, _MM_SHUFFLE2(1, 1))));
                 *stack_ptr++ = node_ptr + far - 1;
                 node_ptr -= far;
                 continue;
@@ -915,8 +874,8 @@ void Intersector<Tree, Visitor, Ray, StackSize, 3>::intersect(
                 break;
 
             // Keep track of the distance to the closest intersection.
-            if (ray_tmax > distance)
-                ray_tmax = distance;
+            if (rtmax > distance)
+                rtmax = distance;
 
             // Terminate traversal if the node stack is empty.
             if (stack_ptr == stack)

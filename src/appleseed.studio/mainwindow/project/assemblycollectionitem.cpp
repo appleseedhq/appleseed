@@ -32,6 +32,7 @@
 // appleseed.studio headers.
 #include "mainwindow/project/assemblyitem.h"
 #include "mainwindow/project/basegroupitem.h"
+#include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/tools.h"
 
@@ -113,13 +114,17 @@ ItemBase* AssemblyCollectionItem::create_item(Assembly* assembly)
 {
     assert(assembly);
 
-    return
+    ItemBase* item =
         new AssemblyItem(
             *assembly,
             m_parent,
             m_parent_item,
             m_project_builder,
             m_settings);
+
+    m_project_builder.get_item_registry().insert(assembly->get_uid(), item);
+
+    return item;
 }
 
 }   // namespace studio

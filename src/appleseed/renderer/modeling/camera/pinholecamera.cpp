@@ -158,11 +158,11 @@ const char* PinholeCameraFactory::get_human_readable_model() const
     return "Pinhole Camera";
 }
 
-DictionaryArray PinholeCameraFactory::get_widget_definitions() const
+DictionaryArray PinholeCameraFactory::get_input_metadata() const
 {
-    DictionaryArray definitions = CameraFactory::get_widget_definitions();
+    DictionaryArray metadata = CameraFactory::get_input_metadata();
 
-    return definitions;
+    return metadata;
 }
 
 auto_release_ptr<Camera> PinholeCameraFactory::create(

@@ -34,6 +34,7 @@
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/singlemodelentityeditorformfactory.h"
 #include "mainwindow/project/tools.h"
+#include "mainwindow/rendering/renderingmanager.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/frame.h"
@@ -75,7 +76,7 @@ void FrameItem::slot_edit()
     auto_ptr<EntityEditorWindow::IFormFactory> form_factory(
         new SingleModelEntityEditorFormFactory(
             m_frame->get_name(),
-            FrameFactory::get_widget_definitions()));
+            FrameFactory::get_input_metadata()));
 
     open_entity_editor(
         treeWidget(),
@@ -85,12 +86,28 @@ void FrameItem::slot_edit()
         auto_ptr<EntityEditorWindow::IEntityBrowser>(0),
         m_frame->get_parameters(),
         this,
+        SLOT(slot_edit_accepted(foundation::Dictionary)),
+        SLOT(slot_edit_accepted(foundation::Dictionary)),
         SLOT(slot_edit_accepted(foundation::Dictionary)));
 }
 
 void FrameItem::slot_edit_accepted(Dictionary values)
 {
-    catch_entity_creation_errors(&FrameItem::edit, values, "Frame");
+    catch_entity_creation_errors(
+        m_project_builder.get_rendering_manager().is_rendering()
+            ? &FrameItem::schedule_edit
+            : &FrameItem::edit,
+        values,
+        "Frame");
+}
+
+void FrameItem::schedule_edit(const Dictionary& values)
+{
+    m_project_builder.get_rendering_manager().push_delayed_action(
+        auto_ptr<RenderingManager::IDelayedAction>(
+            new EntityEditionDelayedAction<FrameItem>(this, values)));
+
+    m_project_builder.get_rendering_manager().reinitialize_rendering();
 }
 
 void FrameItem::edit(const Dictionary& values)
@@ -98,8 +115,6 @@ void FrameItem::edit(const Dictionary& values)
     m_frame = m_project_builder.edit_frame(values);
 
     set_title(QString::fromAscii(m_frame->get_name()));
-
-    qobject_cast<QWidget*>(QObject::sender())->close();
 }
 
 }   // namespace studio

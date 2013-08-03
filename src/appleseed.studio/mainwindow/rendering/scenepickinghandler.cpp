@@ -53,6 +53,7 @@
 #include <QComboBox>
 #include <QEvent>
 #include <QMouseEvent>
+#include <QString>
 #include <Qt>
 #include <QWidget>
 
@@ -68,17 +69,21 @@ namespace appleseed {
 namespace studio {
 
 ScenePickingHandler::ScenePickingHandler(
+    QWidget*                        widget,
     QComboBox*                      picking_mode_combo,
     const MouseCoordinatesTracker&  mouse_tracker,
     const ProjectExplorer&          project_explorer,
     const Project&                  project)
-  : m_picking_mode_combo(picking_mode_combo)
+  : m_widget(widget)
+  , m_picking_mode_combo(picking_mode_combo)
   , m_mouse_tracker(mouse_tracker)
   , m_project_explorer(project_explorer)
   , m_project(project)
+  , m_enabled(true)
 {
-    m_mouse_tracker.get_widget()->installEventFilter(this);
+    m_widget->installEventFilter(this);
 
+    m_picking_mode_combo->clear();
     m_picking_mode_combo->addItem("Assembly", "assembly");
     m_picking_mode_combo->addItem("Assembly Instance", "assembly_instance");
     m_picking_mode_combo->addItem("Object", "object");
@@ -87,26 +92,24 @@ ScenePickingHandler::ScenePickingHandler(
     m_picking_mode_combo->addItem("Surface Shader", "surface_shader");
     m_picking_mode_combo->addItem("BSDF", "bsdf");
     m_picking_mode_combo->addItem("EDF", "edf");
-
-    connect(
-        m_picking_mode_combo, SIGNAL(currentIndexChanged(int)), 
-        this, SLOT(slot_picking_mode_changed(int)));
-
     m_picking_mode_combo->setCurrentIndex(3);
 }
 
 ScenePickingHandler::~ScenePickingHandler()
 {
-    m_mouse_tracker.get_widget()->removeEventFilter(this);
+    m_widget->removeEventFilter(this);
 }
 
-void ScenePickingHandler::slot_picking_mode_changed(const int index)
+void ScenePickingHandler::set_enabled(const bool enabled)
 {
-    m_picking_mode = m_picking_mode_combo->itemData(index).value<QString>();
+    m_enabled = enabled;
 }
 
 bool ScenePickingHandler::eventFilter(QObject* object, QEvent* event)
 {
+    if (!m_enabled)
+        return QObject::eventFilter(object, event);
+
     if (event->type() == QEvent::MouseButtonPress)
     {
         const QMouseEvent* mouse_event = static_cast<QMouseEvent*>(event);
@@ -195,7 +198,10 @@ void ScenePickingHandler::pick(const QPoint& point)
 
     RENDERER_LOG_INFO("%s", sstr.str().c_str());
 
-    const Entity* picked_entity = get_picked_entity(result, m_picking_mode);
+    const QString picking_mode =
+        m_picking_mode_combo->itemData(m_picking_mode_combo->currentIndex()).value<QString>();
+
+    const Entity* picked_entity = get_picked_entity(result, picking_mode);
 
     if (picked_entity)
         m_project_explorer.highlight_entity(picked_entity->get_uid());

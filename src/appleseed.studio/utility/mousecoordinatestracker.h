@@ -52,13 +52,9 @@ class MouseCoordinatesTracker
   public:
     MouseCoordinatesTracker(
         QWidget*    widget,
-        QLabel*     label,
-        const int   content_width,
-        const int   content_height);
+        QLabel*     label);
 
     ~MouseCoordinatesTracker();
-
-    QWidget* get_widget() const;
 
     foundation::Vector2d widget_to_ndc(const QPoint& point) const;
     foundation::Vector2i widget_to_pixel(const QPoint& point) const;

@@ -31,6 +31,7 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/basegroupitem.h"
+#include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/textureitem.h"
 #include "utility/interop.h"
@@ -55,6 +56,7 @@
 #include "boost/filesystem/path.hpp"
 
 // Standard headers.
+#include <cassert>
 #include <string>
 
 using namespace boost;
@@ -179,7 +181,17 @@ ItemBase* TextureCollectionItem::create_item(Texture* texture)
 {
     assert(texture);
 
-    return new TextureItem(texture, m_parent, this, m_parent_item, m_project_builder);
+    ItemBase* item =
+        new TextureItem(
+            texture,
+            m_parent,
+            this,
+            m_parent_item,
+            m_project_builder);
+
+    m_project_builder.get_item_registry().insert(texture->get_uid(), item);
+
+    return item;
 }
 
 }   // namespace studio

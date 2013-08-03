@@ -122,6 +122,7 @@ set (mainwindow_project_sources
     mainwindow/project/entitybrowserwindow.ui
     mainwindow/project/entitycreatorbase.cpp
     mainwindow/project/entitycreatorbase.h
+    mainwindow/project/entitydelayedactions.h
     mainwindow/project/entityeditorformfactorybase.cpp
     mainwindow/project/entityeditorformfactorybase.h
     mainwindow/project/entityeditorwindow.cpp
@@ -190,6 +191,10 @@ set (mainwindow_rendering_sources
     mainwindow/rendering/renderingmanager.cpp
     mainwindow/rendering/renderingmanager.h
     mainwindow/rendering/renderingtimer.h
+    mainwindow/rendering/renderregionhandler.cpp
+    mainwindow/rendering/renderregionhandler.h
+    mainwindow/rendering/rendertab.cpp
+    mainwindow/rendering/rendertab.h
     mainwindow/rendering/renderwidget.cpp
     mainwindow/rendering/renderwidget.h
     mainwindow/rendering/scenepickinghandler.cpp
@@ -241,6 +246,8 @@ source_group ("meta\\tests" FILES
 set (utility_sources
     utility/chartwidget.cpp
     utility/chartwidget.h
+    utility/doubleslider.cpp
+    utility/doubleslider.h
     utility/foldablepanelwidget.cpp
     utility/foldablepanelwidget.h
     utility/inputwidgetproxies.cpp
@@ -248,11 +255,11 @@ set (utility_sources
     utility/interop.h
     utility/mousecoordinatestracker.cpp
     utility/mousecoordinatestracker.h
+    utility/mousewheelfocuseventfilter.cpp
+    utility/mousewheelfocuseventfilter.h
     utility/scrollareapanhandler.cpp
     utility/scrollareapanhandler.h
     utility/settingskeys.h
-    utility/spinboxeventfilter.cpp
-    utility/spinboxeventfilter.h
     utility/treewidget.cpp
     utility/treewidget.h
     utility/tweaks.cpp

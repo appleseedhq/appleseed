@@ -77,6 +77,10 @@ void minmax(const T a, const T b, const T c, T& min, T& max);
 // Return the lesser (resp. greater) of two objects with the exact
 // same semantics as the SSE instructions 'minps' (resp. 'maxps').
 //
+// An important property guaranteed by these functions is that if
+// a, b or both are NaN, b will always be returned. Thus, if b is
+// never NaN, the min/max of a and b is guaranteed not to be NaN.
+//
 // References:
 //
 //   http://www.sesp.cse.clrc.ac.uk/html/SoftwareTools/vtune/users_guide/mergedProjects/analyzer_ec/mergedProjects/reference_olh/mergedProjects/instructions/instruct32_hh/vc174.htm

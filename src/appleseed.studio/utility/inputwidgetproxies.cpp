@@ -33,6 +33,8 @@
 #include "utility/interop.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/foreach.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/string.h"
 
@@ -64,11 +66,14 @@ namespace studio {
 LineEditProxy::LineEditProxy(QLineEdit* line_edit)
   : m_line_edit(line_edit)
 {
+    connect(m_line_edit, SIGNAL(returnPressed()), SIGNAL(signal_changed()));
 }
 
 void LineEditProxy::set(const string& value)
 {
     m_line_edit->setText(QString::fromStdString(value));
+
+    emit signal_changed();
 }
 
 string LineEditProxy::get() const
@@ -84,6 +89,7 @@ string LineEditProxy::get() const
 SpinBoxProxy::SpinBoxProxy(QSpinBox* spinbox)
   : m_spinbox(spinbox)
 {
+    connect(m_spinbox, SIGNAL(valueChanged(int)), SIGNAL(signal_changed()));
 }
 
 void SpinBoxProxy::set(const string& value)
@@ -104,6 +110,7 @@ string SpinBoxProxy::get() const
 DoubleSpinBoxProxy::DoubleSpinBoxProxy(QDoubleSpinBox* spinbox)
   : m_spinbox(spinbox)
 {
+    connect(m_spinbox, SIGNAL(valueChanged(double)), SIGNAL(signal_changed()));
 }
 
 void DoubleSpinBoxProxy::set(const string& value)
@@ -124,6 +131,7 @@ string DoubleSpinBoxProxy::get() const
 CheckBoxProxy::CheckBoxProxy(QCheckBox* checkbox)
   : m_checkbox(checkbox)
 {
+    connect(m_checkbox, SIGNAL(stateChanged(int)), SIGNAL(signal_changed()));
 }
 
 void CheckBoxProxy::set(const string& value)
@@ -144,6 +152,7 @@ string CheckBoxProxy::get() const
 GroupBoxProxy::GroupBoxProxy(QGroupBox* groupbox)
   : m_groupbox(groupbox)
 {
+    connect(m_groupbox, SIGNAL(clicked(bool)), SIGNAL(signal_changed()));
 }
 
 void GroupBoxProxy::set(const string& value)
@@ -164,6 +173,7 @@ string GroupBoxProxy::get() const
 ComboBoxProxy::ComboBoxProxy(QComboBox* combobox)
   : m_combobox(combobox)
 {
+    connect(m_combobox, SIGNAL(currentIndexChanged(int)), SIGNAL(signal_changed()));
 }
 
 void ComboBoxProxy::set(const string& value)
@@ -186,6 +196,7 @@ ColorPickerProxy::ColorPickerProxy(QLineEdit* line_edit, QToolButton* picker_but
   : m_line_edit(line_edit)
   , m_picker_button(picker_button)
 {
+    connect(m_line_edit, SIGNAL(returnPressed()), SIGNAL(signal_changed()));
 }
 
 void ColorPickerProxy::set(const string& value)
@@ -199,6 +210,8 @@ void ColorPickerProxy::set(const string& value)
             .arg(color.red())
             .arg(color.green())
             .arg(color.blue()));
+
+    emit signal_changed();
 }
 
 string ColorPickerProxy::get() const
@@ -223,6 +236,53 @@ Color3d ColorPickerProxy::get_color_from_string(const string& s)
     {
         return Color3d(0.0);
     }
+}
+
+
+//
+// InputWidgetProxyCollection class implementation.
+//
+
+InputWidgetProxyCollection::~InputWidgetProxyCollection()
+{
+    clear();
+}
+
+void InputWidgetProxyCollection::clear()
+{
+    for (const_each<ProxyCollection> i = m_proxies; i; ++i)
+        delete i->second;
+
+    m_proxies.clear();
+}
+
+void InputWidgetProxyCollection::insert(
+    const string&               key,
+    auto_ptr<IInputWidgetProxy> proxy)
+{
+    m_proxies[key] = proxy.release();
+}
+
+IInputWidgetProxy* InputWidgetProxyCollection::get(const string& key) const
+{
+    const ProxyCollection::const_iterator i = m_proxies.find(key);
+    return i != m_proxies.end() ? i->second : 0;
+}
+
+Dictionary InputWidgetProxyCollection::get_values() const
+{
+    Dictionary values;
+
+    for (const_each<ProxyCollection> i = m_proxies; i; ++i)
+    {
+        const string name = i->first;
+        const string value = i->second->get();
+
+        if (!value.empty())
+            values.insert(name, value);
+    }
+
+    return values;
 }
 
 }   // namespace studio

@@ -31,16 +31,18 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/entitycreatorbase.h"
+#include "mainwindow/project/entitydelayedactions.h"
 #include "mainwindow/project/entityitembase.h"
 #include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/projectbuilder.h"
+#include "mainwindow/rendering/renderingmanager.h"
 #include "utility/treewidget.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/entity.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/containers/dictionary.h"
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/uid.h"
 
 // Qt headers.
@@ -48,7 +50,11 @@
 #include <QWidget>
 
 // Standard headers.
+#include <memory>
 #include <string>
+
+// Forward declarations.
+namespace foundation { class Dictionary; }
 
 namespace appleseed {
 namespace studio {
@@ -65,8 +71,6 @@ class EntityItem
         CollectionItem*     collection_item,
         ProjectBuilder&     project_builder);
 
-    virtual ~EntityItem();
-
     void set_fixed_position(const bool fixed);
     bool is_fixed_position() const;
 
@@ -77,13 +81,20 @@ class EntityItem
     CollectionItem*         m_collection_item;
     ProjectBuilder&         m_project_builder;
 
-    virtual void slot_edit_accepted(foundation::Dictionary values);
+    virtual void slot_edit_accepted(foundation::Dictionary values) OVERRIDE;
+
+    void schedule_edit(const foundation::Dictionary& values);
     void edit(const foundation::Dictionary& values);
 
-    virtual void slot_delete();
+    virtual void slot_delete() OVERRIDE;
+
+    void schedule_delete();
+    void do_delete();
 
   private:
     friend class EntityCreatorBase;
+    friend class EntityEditionDelayedAction<EntityItem>;
+    friend class EntityDeletionDelayedAction<EntityItem>;
 
     foundation::UniqueID    m_entity_uid;
     bool                    m_fixed_position;
@@ -107,13 +118,6 @@ EntityItem<Entity, ParentEntity, CollectionItem>::EntityItem(
   , m_entity_uid(entity->get_uid())
   , m_fixed_position(false)
 {
-    m_project_builder.get_item_registry().insert(m_entity_uid, this);
-}
-
-template <typename Entity, typename ParentEntity, typename CollectionItem>
-EntityItem<Entity, ParentEntity, CollectionItem>::~EntityItem()
-{
-    m_project_builder.get_item_registry().remove(m_entity_uid);
 }
 
 template <typename Entity, typename ParentEntity, typename CollectionItem>
@@ -132,9 +136,21 @@ template <typename Entity, typename ParentEntity, typename CollectionItem>
 void EntityItem<Entity, ParentEntity, CollectionItem>::slot_edit_accepted(foundation::Dictionary values)
 {
     catch_entity_creation_errors(
-        &EntityItem::edit,
+        m_project_builder.get_rendering_manager().is_rendering()
+            ? &EntityItem::schedule_edit
+            : &EntityItem::edit,
         values,
         renderer::EntityTraits<Entity>::get_human_readable_entity_type_name());
+}
+
+template <typename Entity, typename ParentEntity, typename CollectionItem>
+void EntityItem<Entity, ParentEntity, CollectionItem>::schedule_edit(const foundation::Dictionary& values)
+{
+    m_project_builder.get_rendering_manager().push_delayed_action(
+        std::auto_ptr<RenderingManager::IDelayedAction>(
+            new EntityEditionDelayedAction<EntityItem>(this, values)));
+
+    m_project_builder.get_rendering_manager().reinitialize_rendering();
 }
 
 template <typename Entity, typename ParentEntity, typename CollectionItem>
@@ -160,13 +176,28 @@ void EntityItem<Entity, ParentEntity, CollectionItem>::edit(const foundation::Di
     // Move the item to its sorted position.
     if (!m_fixed_position && old_entity_name != new_entity_name)
         move_to_sorted_position(this);
-
-    // Close the editor.
-    qobject_cast<QWidget*>(QObject::sender())->close();
 }
 
 template <typename Entity, typename ParentEntity, typename CollectionItem>
 void EntityItem<Entity, ParentEntity, CollectionItem>::slot_delete()
+{
+    if (m_project_builder.get_rendering_manager().is_rendering())
+        schedule_delete();
+    else do_delete();
+}
+
+template <typename Entity, typename ParentEntity, typename CollectionItem>
+void EntityItem<Entity, ParentEntity, CollectionItem>::schedule_delete()
+{
+    m_project_builder.get_rendering_manager().push_delayed_action(
+        std::auto_ptr<RenderingManager::IDelayedAction>(
+            new EntityDeletionDelayedAction<EntityItem>(this)));
+
+    m_project_builder.get_rendering_manager().reinitialize_rendering();
+}
+
+template <typename Entity, typename ParentEntity, typename CollectionItem>
+void EntityItem<Entity, ParentEntity, CollectionItem>::do_delete()
 {
     if (EntityItemBaseType::allows_deletion())
     {

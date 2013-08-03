@@ -185,33 +185,33 @@ const char* GradientEnvironmentEDFFactory::get_human_readable_model() const
     return "Gradient Environment EDF";
 }
 
-DictionaryArray GradientEnvironmentEDFFactory::get_widget_definitions() const
+DictionaryArray GradientEnvironmentEDFFactory::get_input_metadata() const
 {
-    DictionaryArray definitions;
+    DictionaryArray metadata;
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "horizon_radiance")
             .insert("label", "Horizon Radiance")
-            .insert("widget", "entity_picker")
+            .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors"))
             .insert("use", "required")
-            .insert("default", ""));
+            .insert("default", "0.3"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "zenith_radiance")
             .insert("label", "Zenith Radiance")
-            .insert("widget", "entity_picker")
+            .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors"))
             .insert("use", "required")
-            .insert("default", ""));
+            .insert("default", "0.7"));
 
-    return definitions;
+    return metadata;
 }
 
 auto_release_ptr<EnvironmentEDF> GradientEnvironmentEDFFactory::create(

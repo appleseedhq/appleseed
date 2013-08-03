@@ -248,40 +248,40 @@ void TextureInstance::check_texture() const
 // TextureInstanceFactory class implementation.
 //
 
-DictionaryArray TextureInstanceFactory::get_widget_definitions()
+DictionaryArray TextureInstanceFactory::get_input_metadata()
 {
-    DictionaryArray definitions;
+    DictionaryArray metadata;
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "addressing_mode")
             .insert("label", "Addressing Mode")
-            .insert("widget", "dropdown_list")
-            .insert("dropdown_items",
+            .insert("type", "enumeration")
+            .insert("items",
                 Dictionary()
                     .insert("Clamp", "clamp")
                     .insert("Wrap/Tile", "wrap"))
             .insert("use", "required")
             .insert("default", "wrap"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "filtering_mode")
             .insert("label", "Filtering Mode")
-            .insert("widget", "dropdown_list")
-            .insert("dropdown_items",
+            .insert("type", "enumeration")
+            .insert("items",
                 Dictionary()
                     .insert("Nearest", "nearest")
                     .insert("Bilinear", "bilinear"))
             .insert("use", "required")
             .insert("default", "bilinear"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "alpha_mode")
             .insert("label", "Alpha Mode")
-            .insert("widget", "dropdown_list")
-            .insert("dropdown_items",
+            .insert("type", "enumeration")
+            .insert("items",
                 Dictionary()
                     .insert("Alpha Channel", "alpha_channel")
                     .insert("Luminance", "luminance")
@@ -289,7 +289,7 @@ DictionaryArray TextureInstanceFactory::get_widget_definitions()
             .insert("use", "optional")
             .insert("default", "alpha_channel"));
 
-    return definitions;
+    return metadata;
 }
 
 auto_release_ptr<TextureInstance> TextureInstanceFactory::create(

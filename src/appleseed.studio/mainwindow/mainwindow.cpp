@@ -33,6 +33,9 @@
 #include "ui_mainwindow.h"
 
 // appleseed.studio headers.
+#include "help/about/aboutwindow.h"
+#include "mainwindow/project/projectexplorer.h"
+#include "mainwindow/rendering/rendertab.h"
 #include "mainwindow/logwidget.h"
 #include "utility/interop.h"
 #include "utility/settingskeys.h"
@@ -46,18 +49,17 @@
 #include "renderer/api/frame.h"
 #include "renderer/api/log.h"
 #include "renderer/api/project.h"
+#include "renderer/api/rendering.h"
 #include "renderer/api/surfaceshader.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/appleseed.h"
-#include "foundation/image/canvasproperties.h"
-#include "foundation/image/color.h"
-#include "foundation/image/image.h"
+#include "foundation/math/aabb.h"
+#include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/system.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/settings.h"
 #include "foundation/utility/string.h"
@@ -66,20 +68,22 @@
 #include <QAction>
 #include <QActionGroup>
 #include <QApplication>
-#include <QComboBox>
+#include <QCloseEvent>
 #include <QDir>
 #include <QFileDialog>
-#include <QGridLayout>
+#include <QFont>
 #include <QIcon>
 #include <QLabel>
+#include <QLayout>
+#include <QLineEdit>
+#include <QMenu>
 #include <QMessageBox>
-#include <QMetaType>
+#include <QRect>
 #include <QSettings>
-#include <QSpacerItem>
 #include <QStatusBar>
 #include <QString>
 #include <QStringList>
-#include <QWidget>
+#include <Qt>
 
 // boost headers.
 #include "boost/filesystem/path.hpp"
@@ -186,14 +190,9 @@ void MainWindow::open_and_render_project(const QString& filepath, const QString&
 
     connect(
         mapper, SIGNAL(mapped(const QString&, const QString&, const bool)),
-        this, SLOT(slot_start_rendering_once(const QString&, const QString&, const bool)));
+        SLOT(slot_start_rendering_once(const QString&, const QString&, const bool)));
 
     open_project(filepath);
-}
-
-void MainWindow::slot_recreate_render_widgets()
-{
-    recreate_render_widgets();
 }
 
 void MainWindow::build_menus()
@@ -217,7 +216,7 @@ void MainWindow::build_menus()
     connect(m_ui->action_file_save_project, SIGNAL(triggered()), SLOT(slot_save_project()));
 
     m_ui->action_file_save_project_as->setShortcut(QKeySequence::SaveAs);
-    connect(m_ui->action_file_save_project_as, SIGNAL(triggered()), this, SLOT(slot_save_project_as()));
+    connect(m_ui->action_file_save_project_as, SIGNAL(triggered()), SLOT(slot_save_project_as()));
 
     m_ui->action_file_exit->setShortcut(QKeySequence::Quit);
     connect(m_ui->action_file_exit, SIGNAL(triggered()), SLOT(close()));
@@ -235,7 +234,7 @@ void MainWindow::build_menus()
 
     connect(m_ui->action_rendering_start_interactive_rendering, SIGNAL(triggered()), SLOT(slot_start_interactive_rendering()));
     connect(m_ui->action_rendering_start_final_rendering, SIGNAL(triggered()), SLOT(slot_start_final_rendering()));
-    connect(m_ui->action_rendering_stop_rendering, SIGNAL(triggered()), SLOT(slot_stop_rendering()));
+    connect(m_ui->action_rendering_stop_rendering, SIGNAL(triggered()), &m_rendering_manager, SLOT(slot_abort_rendering()));
     connect(m_ui->action_rendering_render_settings, SIGNAL(triggered()), SLOT(slot_show_render_settings_window()));
 
     //
@@ -271,7 +270,7 @@ void MainWindow::build_override_shading_menu_item()
 
     connect(
         m_ui->action_diagnostics_override_shading_no_override, SIGNAL(triggered()),
-        &m_rendering_manager, SLOT(slot_clear_shading_override()));
+        SLOT(slot_clear_shading_override()));
 
     action_group->addAction(m_ui->action_diagnostics_override_shading_no_override);
 
@@ -312,7 +311,7 @@ void MainWindow::build_override_shading_menu_item()
 
         connect(
             action, SIGNAL(triggered()),
-            &m_rendering_manager, SLOT(slot_set_shading_override()));
+            SLOT(slot_set_shading_override()));
 
         m_ui->menu_diagnostics_override_shading->addAction(action);
 
@@ -416,30 +415,30 @@ void MainWindow::update_recent_files_menu(const QStringList& files)
 
 void MainWindow::build_toolbar()
 {
-    m_action_new_project = new QAction(QIcon(":/icons/page_white.png"), "&New", this);
-    connect(m_action_new_project, SIGNAL(triggered()), this, SLOT(slot_new_project()));
+    m_action_new_project = new QAction(QIcon(":/icons/page_white.png"), "New", this);
+    connect(m_action_new_project, SIGNAL(triggered()), SLOT(slot_new_project()));
     m_ui->main_toolbar->addAction(m_action_new_project);
 
-    m_action_open_project = new QAction(QIcon(":/icons/folder.png"), "&Open", this);
-    connect(m_action_open_project, SIGNAL(triggered()), this, SLOT(slot_open_project()));
+    m_action_open_project = new QAction(QIcon(":/icons/folder.png"), "Open", this);
+    connect(m_action_open_project, SIGNAL(triggered()), SLOT(slot_open_project()));
     m_ui->main_toolbar->addAction(m_action_open_project);
 
-    m_action_save_project = new QAction(QIcon(":/icons/disk.png"), "&Save", this);
-    connect(m_action_save_project, SIGNAL(triggered()), this, SLOT(slot_save_project()));
+    m_action_save_project = new QAction(QIcon(":/icons/disk.png"), "Save", this);
+    connect(m_action_save_project, SIGNAL(triggered()), SLOT(slot_save_project()));
     m_ui->main_toolbar->addAction(m_action_save_project);
 
     m_ui->main_toolbar->addSeparator();
 
-    m_action_start_interactive_rendering = new QAction(QIcon(":/icons/film_go.png"), "Start &Interactive Rendering", this);
-    connect(m_action_start_interactive_rendering, SIGNAL(triggered()), this, SLOT(slot_start_interactive_rendering()));
+    m_action_start_interactive_rendering = new QAction(QIcon(":/icons/film_go.png"), "Start Interactive Rendering", this);
+    connect(m_action_start_interactive_rendering, SIGNAL(triggered()), SLOT(slot_start_interactive_rendering()));
     m_ui->main_toolbar->addAction(m_action_start_interactive_rendering);
 
-    m_action_start_final_rendering = new QAction(QIcon(":/icons/cog_go.png"), "Start &Final Rendering", this);
-    connect(m_action_start_final_rendering, SIGNAL(triggered()), this, SLOT(slot_start_final_rendering()));
+    m_action_start_final_rendering = new QAction(QIcon(":/icons/cog_go.png"), "Start Final Rendering", this);
+    connect(m_action_start_final_rendering, SIGNAL(triggered()), SLOT(slot_start_final_rendering()));
     m_ui->main_toolbar->addAction(m_action_start_final_rendering);
 
-    m_action_stop_rendering = new QAction(QIcon(":/icons/cross.png"), "S&top Rendering", this);
-    connect(m_action_stop_rendering, SIGNAL(triggered()), this, SLOT(slot_stop_rendering()));
+    m_action_stop_rendering = new QAction(QIcon(":/icons/cross.png"), "Stop Rendering", this);
+    connect(m_action_stop_rendering, SIGNAL(triggered()), &m_rendering_manager, SLOT(slot_abort_rendering()));
     m_ui->main_toolbar->addAction(m_action_stop_rendering);
 }
 
@@ -489,11 +488,11 @@ void MainWindow::build_project_explorer()
 
     connect(
         m_ui->lineedit_filter, SIGNAL(textChanged(const QString&)),
-        this, SLOT(slot_filter_text_changed(const QString&)));
+        SLOT(slot_filter_text_changed(const QString&)));
 
     connect(
         m_ui->pushbutton_clear_filter, SIGNAL(clicked()),
-        this, SLOT(slot_clear_filter()));
+        SLOT(slot_clear_filter()));
 
     m_ui->pushbutton_clear_filter->setEnabled(false);
 }
@@ -502,15 +501,15 @@ void MainWindow::build_connections()
 {
     connect(
         &m_project_manager, SIGNAL(signal_load_project_async_complete(const QString&, const bool)),
-        this, SLOT(slot_open_project_complete(const QString&, const bool)));
+        SLOT(slot_open_project_complete(const QString&, const bool)));
 
     connect(
         &m_rendering_manager, SIGNAL(signal_rendering_end()),
-        this, SLOT(slot_rendering_end()));
+        SLOT(slot_rendering_end()));
 
     connect(
         &m_rendering_manager, SIGNAL(signal_camera_changed()),
-        this, SLOT(slot_camera_changed()));
+        SLOT(slot_camera_changed()));
 }
 
 void MainWindow::print_startup_information()
@@ -646,15 +645,16 @@ void MainWindow::update_project_explorer()
             new ProjectExplorer(
                 m_ui->treewidget_project_explorer_scene,    
                 *m_project_manager.get_project(),
+                m_rendering_manager,
                 m_settings);
 
         connect(
             m_project_explorer, SIGNAL(signal_project_modified()),
-            this, SLOT(slot_project_modified()));
+            SLOT(slot_project_modified()));
 
         connect(
             m_project_explorer, SIGNAL(signal_frame_modified()),
-            this, SLOT(slot_recreate_render_widgets()));
+            SLOT(slot_frame_modified()));
     }
 
     m_ui->lineedit_filter->clear();
@@ -740,126 +740,53 @@ void MainWindow::recreate_render_widgets()
     remove_render_widgets();
 
     if (m_project_manager.is_project_open())
-        add_render_widgets();
+    {
+        add_render_widget("RGB");
+        add_render_widget("Alpha");
+        add_render_widget("Depth");
+        add_render_widget("Anomalies");
+    }
 }
 
 void MainWindow::remove_render_widgets()
 {
-    for (const_each<RenderWidgetCollection> i = m_render_widgets; i; ++i)
+    for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
         delete i->second;
 
-    m_render_widgets.clear();
+    m_render_tabs.clear();
 
     while (m_ui->tab_render_channels->count() > 0)
         m_ui->tab_render_channels->removeTab(0);
 }
 
-void MainWindow::add_render_widgets()
+void MainWindow::add_render_widget(const QString& label)
 {
-    const Project* project = m_project_manager.get_project();
-    const Frame* frame = project->get_frame();
-    const CanvasProperties& props = frame->image().properties();
-
-    const int width = static_cast<int>(props.m_canvas_width);
-    const int height = static_cast<int>(props.m_canvas_height);
-
-    add_render_widget(width, height, "RGB");
-    add_render_widget(width, height, "Alpha");
-    add_render_widget(width, height, "Depth");
-    add_render_widget(width, height, "Anomalies");
-}
-
-void MainWindow::add_render_widget(
-    const int       width,
-    const int       height,
-    const QString&  label)
-{
-    // Create a render widget.
-    RenderWidget* render_widget = new RenderWidget(width, height);
-
-    // Encapsulate the render widget into another widget that adds a margin around it.
-    QWidget* render_widget_wrapper = new QWidget();
-    render_widget_wrapper->setLayout(new QGridLayout());
-    render_widget_wrapper->layout()->setSizeConstraint(QLayout::SetFixedSize);
-    render_widget_wrapper->layout()->setContentsMargins(20, 20, 20, 20);
-    render_widget_wrapper->layout()->addWidget(render_widget);
-
-    // Wrap the render widget with a scroll area.
-    QScrollArea* scroll_area = new QScrollArea();
-    scroll_area->setAlignment(Qt::AlignCenter);
-    scroll_area->setWidget(render_widget_wrapper);
-
-    // Create the frame hosting render tools.
-    QFrame* render_tools_frame = new QFrame();
-    render_tools_frame->setObjectName(QString::fromUtf8("render_tools_frame"));
-    render_tools_frame->setLayout(new QHBoxLayout());
-    render_tools_frame->layout()->setMargin(4);
-
-    // Create the picking mode combobox.
-    // The combo will be populated by the ScenePickingHandler instantiated below.
-    QComboBox* picking_mode_combo = new QComboBox();
-    picking_mode_combo->setObjectName(QString::fromUtf8("picking_mode_combo"));
-    render_tools_frame->layout()->addWidget(picking_mode_combo);
-
-    // Add an horizontal spacer.
-    render_tools_frame->layout()->addItem(
-        new QSpacerItem(1, 1, QSizePolicy::Expanding, QSizePolicy::Minimum));
-    
-    // Create a label to display various information such as mouse coordinates, etc.
-    QLabel* info_label = new QLabel();
-    info_label->setObjectName(QString::fromUtf8("info_label"));
-    render_tools_frame->layout()->addWidget(info_label);
-
-    // Encapsulate the scroll area inside a tab.
-    QWidget* tab = new QWidget();
-    tab->setLayout(new QGridLayout());
-    tab->layout()->setSpacing(0);
-    tab->layout()->setMargin(0);
-    tab->layout()->addWidget(render_tools_frame);
-    tab->layout()->addWidget(scroll_area);
-
-    // Add the tab to the render channels tab bar.
-    m_ui->tab_render_channels->addTab(tab, label);
-
-    // Attach a bunch of handlers to the render widget.
-    RenderWidgetRecord* record = new RenderWidgetRecord();
-    record->m_render_widget = render_widget;
-    record->m_zoom_handler.reset(
-        new WidgetZoomHandler(
-            scroll_area,
-            render_widget,
-            width,
-            height));
-    record->m_pan_handler.reset(
-        new ScrollAreaPanHandler(
-            scroll_area));
-    record->m_mouse_tracker.reset(
-        new MouseCoordinatesTracker(
-            render_widget,
-            info_label,
-            width,
-            height));
-    record->m_picking_handler.reset(
-        new ScenePickingHandler(
-            picking_mode_combo,
-            *record->m_mouse_tracker.get(),
+    // Create the render tab.
+    RenderTab* render_tab =
+        new RenderTab(
             *m_project_explorer,
-            *m_project_manager.get_project()));
-    m_render_widgets[label.toStdString()] = record;
-
-    // Attach a contextual menu to the render widget.
-    render_widget->setContextMenuPolicy(Qt::CustomContextMenu);
+            *m_project_manager.get_project());
     connect(
-        render_widget, SIGNAL(customContextMenuRequested(const QPoint&)),
-        this, SLOT(slot_render_widget_context_menu(const QPoint&)));
+        render_tab, SIGNAL(signal_render_widget_context_menu(const QPoint&)),
+        SLOT(slot_render_widget_context_menu(const QPoint&)));
+    connect(
+        render_tab, SIGNAL(signal_set_render_region(const QRect&)),
+        SLOT(slot_set_render_region(const QRect&)));
+    connect(
+        render_tab, SIGNAL(signal_clear_render_region()),
+        SLOT(slot_clear_render_region()));
 
+    // Add the render tab to the tab bar.
+    m_ui->tab_render_channels->addTab(render_tab, label);
+
+    // Update the label -> render tab mapping.
+    m_render_tabs[label.toStdString()] = render_tab;
 }
 
 void MainWindow::start_rendering(const bool interactive)
 {
     assert(m_project_manager.is_project_open());
 
-    set_project_widgets_enabled(false);
     set_rendering_widgets_enabled(true, true);
 
     // Internally, clear the main image to transparent black and delete all AOV images.
@@ -868,8 +795,8 @@ void MainWindow::start_rendering(const bool interactive)
     project->get_frame()->aov_images().clear();
 
     // In the UI, darken all render widgets.
-    for (const_each<RenderWidgetCollection> i = m_render_widgets; i; ++i)
-        i->second->m_render_widget->multiply(0.2f);
+    for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
+        i->second->darken();
 
     const char* configuration_name = interactive ? "interactive" : "final";
     const ParamArray params = get_project_params(configuration_name);
@@ -878,7 +805,7 @@ void MainWindow::start_rendering(const bool interactive)
         project,
         params,
         interactive,
-        m_render_widgets["RGB"]->m_render_widget);
+        m_render_tabs["RGB"]->get_render_widget());
 }
 
 namespace
@@ -1071,6 +998,14 @@ void MainWindow::slot_project_modified()
     update_window_title();
 }
 
+void MainWindow::slot_frame_modified()
+{
+    for (each<RenderTabCollection> i = m_render_tabs; i; ++i)
+        i->second->update_size();
+
+    m_project_manager.get_project()->get_frame()->clear_crop_window();
+}
+
 void MainWindow::slot_start_interactive_rendering()
 {
     start_rendering(true);
@@ -1092,14 +1027,146 @@ void MainWindow::slot_start_rendering_once(const QString& filepath, const QStrin
     }
 }
 
-void MainWindow::slot_stop_rendering()
-{
-    m_rendering_manager.abort_rendering();
-}
-
 void MainWindow::slot_rendering_end()
 {
     update_workspace();
+}
+
+namespace
+{
+    class ClearShadingOverrideDelayedAction
+      : public RenderingManager::IDelayedAction
+    {
+      public:
+        virtual void operator()(
+            MasterRenderer& master_renderer,
+            Project&        project) OVERRIDE
+        {
+            master_renderer.get_parameters()
+                .push("shading_engine")
+                .dictionaries().remove("override_shading");
+        }
+    };
+
+    class SetShadingOverrideDelayedAction
+      : public RenderingManager::IDelayedAction
+    {
+      public:
+        explicit SetShadingOverrideDelayedAction(const string& shading_mode)
+          : m_shading_mode(shading_mode)
+        {
+        }
+
+        virtual void operator()(
+            MasterRenderer& master_renderer,
+            Project&        project) OVERRIDE
+        {
+            master_renderer.get_parameters()
+                .push("shading_engine")
+                .push("override_shading")
+                .insert("mode", m_shading_mode);
+        }
+
+      private:
+        const string m_shading_mode;
+    };
+}
+
+void MainWindow::slot_clear_shading_override()
+{
+    m_rendering_manager.set_permanent_state(
+        "override_shading",
+        auto_ptr<RenderingManager::IDelayedAction>(
+            new ClearShadingOverrideDelayedAction()));
+
+    m_rendering_manager.reinitialize_rendering();
+}
+
+void MainWindow::slot_set_shading_override()
+{
+    QAction* action = qobject_cast<QAction*>(sender());
+    const string shading_mode = action->data().toString().toStdString();
+
+    m_rendering_manager.set_permanent_state(
+        "override_shading",
+        auto_ptr<RenderingManager::IDelayedAction>(
+            new SetShadingOverrideDelayedAction(shading_mode)));
+
+    m_rendering_manager.reinitialize_rendering();
+}
+
+namespace
+{
+    class ClearRenderRegionDelayedAction
+      : public RenderingManager::IDelayedAction
+    {
+      public:
+        virtual void operator()(
+            MasterRenderer& master_renderer,
+            Project&        project) OVERRIDE
+        {
+            project.get_frame()->clear_crop_window();
+        }
+    };
+
+    class SetRenderRegionDelayedAction
+      : public RenderingManager::IDelayedAction
+    {
+      public:
+        explicit SetRenderRegionDelayedAction(const QRect& rect)
+          : m_rect(rect)
+        {
+        }
+
+        virtual void operator()(
+            MasterRenderer& master_renderer,
+            Project&        project) OVERRIDE
+        {
+            const int w = m_rect.width();
+            const int h = m_rect.height();
+            const int x0 = m_rect.x();
+            const int y0 = m_rect.y();
+            const int x1 = x0 + w - 1;
+            const int y1 = y0 + h - 1;
+
+            assert(x0 >= 0);
+            assert(y0 >= 0);
+            assert(x0 <= x1);
+            assert(y0 <= y1);
+
+            project.get_frame()->set_crop_window(
+                AABB2i(
+                    Vector2i(x0, y0),
+                    Vector2i(x1, y1)));
+        }
+
+      private:
+        const QRect m_rect;
+    };
+}
+
+void MainWindow::slot_clear_render_region()
+{
+    m_rendering_manager.push_delayed_action(
+        auto_ptr<RenderingManager::IDelayedAction>(
+            new ClearRenderRegionDelayedAction()));
+
+    m_rendering_manager.reinitialize_rendering();
+}
+
+void MainWindow::slot_set_render_region(const QRect& rect)
+{
+    m_rendering_manager.push_delayed_action(
+        auto_ptr<RenderingManager::IDelayedAction>(
+            new SetRenderRegionDelayedAction(rect)));
+
+    if (m_settings.get_path_optional<bool>("ui.render_region.triggers_rendering"))
+    {
+        if (m_rendering_manager.is_rendering())
+            m_rendering_manager.reinitialize_rendering();
+        else start_rendering(true);
+    }
+    else m_rendering_manager.reinitialize_rendering();
 }
 
 void MainWindow::slot_camera_changed()
@@ -1117,7 +1184,7 @@ void MainWindow::slot_show_render_settings_window()
 
         connect(
             m_render_settings_window.get(), SIGNAL(signal_settings_modified()),
-            this, SLOT(slot_project_modified()));
+            SLOT(slot_project_modified()));
     }
 
     m_render_settings_window->showNormal();
@@ -1218,7 +1285,7 @@ void MainWindow::slot_render_widget_context_menu(const QPoint& point)
     menu->addSeparator();
     menu->addAction("Clear Frame", this, SLOT(slot_clear_frame()));
 
-    menu->exec(qobject_cast<QWidget*>(sender())->mapToGlobal(point));
+    menu->exec(point);
 }
 
 void MainWindow::slot_save_frame()
@@ -1286,8 +1353,8 @@ void MainWindow::slot_clear_frame()
     frame->aov_images().clear();
 
     // In the UI, clear all render widgets to black.
-    for (const_each<RenderWidgetCollection> i = m_render_widgets; i; ++i)
-        i->second->m_render_widget->clear(Color4f(0.0f));
+    for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
+        i->second->clear();
 }
 
 }   // namespace studio

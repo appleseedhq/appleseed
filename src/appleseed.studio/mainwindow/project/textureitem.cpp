@@ -38,6 +38,7 @@
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/texturecollectionitem.h"
 #include "mainwindow/project/textureinstanceitem.h"
+#include "mainwindow/rendering/renderingmanager.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/scene.h"
@@ -48,6 +49,7 @@
 #include "foundation/utility/uid.h"
 
 // Standard headers.
+#include <memory>
 #include <vector>
 
 using namespace foundation;
@@ -114,6 +116,22 @@ namespace
 
 void TextureItem::slot_delete()
 {
+    if (m_project_builder.get_rendering_manager().is_rendering())
+        schedule_delete();
+    else do_delete();
+}
+
+void TextureItem::schedule_delete()
+{
+    m_project_builder.get_rendering_manager().push_delayed_action(
+        auto_ptr<RenderingManager::IDelayedAction>(
+            new EntityDeletionDelayedAction<TextureItem>(this)));
+
+    m_project_builder.get_rendering_manager().reinitialize_rendering();
+}
+
+void TextureItem::do_delete()
+{
     if (!allows_deletion())
         return;
 
@@ -132,7 +150,9 @@ void TextureItem::slot_delete()
     m_project_builder.notify_project_modification();
 
     // Remove and delete the texture item.
-    delete m_project_builder.get_item_registry().get_item(texture_uid);
+    ItemBase* texture_item = m_project_builder.get_item_registry().get_item(texture_uid);
+    m_project_builder.get_item_registry().remove(texture_uid);
+    delete texture_item;
 
     // At this point 'this' no longer exists.
 }

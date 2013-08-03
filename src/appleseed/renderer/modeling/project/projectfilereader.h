@@ -52,7 +52,8 @@ class DLLSYMBOL ProjectFileReader
     enum Options
     {
         Defaults                = 0,        // none of the flags below
-        OmitReadingMeshFiles    = 1 << 0    // do not read mesh files from disk
+        OmitReadingMeshFiles    = 1 << 0,   // do not read mesh files from disk
+        OmitProjectFileUpdate   = 1 << 1    // do not update the project file format to the latest revision
     };
 
     // Read a project from disk.
@@ -81,7 +82,8 @@ class DLLSYMBOL ProjectFileReader
     // Finish loading a project.
     void postprocess_project(
         Project&                project,
-        EventCounters&          event_counters) const;
+        EventCounters&          event_counters,
+        const int               options = Defaults) const;
 
     // Check the validity of a project.
     void validate_project(

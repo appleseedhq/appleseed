@@ -65,6 +65,9 @@
 #include <cstddef>
 #include <string>
 
+// Forward declarations.
+namespace appleseed { namespace studio { class RenderingManager; } }
+
 namespace appleseed {
 namespace studio {
 
@@ -75,10 +78,15 @@ class ProjectBuilder
     Q_OBJECT
 
   public:
-    explicit ProjectBuilder(renderer::Project& project);
+    ProjectBuilder(
+        renderer::Project&                  project,
+        RenderingManager&                   rendering_manager);
 
     renderer::Project& get_project();
     const renderer::Project& get_project() const;
+
+    RenderingManager& get_rendering_manager();
+    const RenderingManager& get_rendering_manager() const;
 
     template <typename Entity>
     const typename renderer::EntityTraits<Entity>::FactoryRegistrarType& get_factory_registrar() const;
@@ -120,6 +128,7 @@ class ProjectBuilder
 
   private:
     renderer::Project&                              m_project;
+    RenderingManager&                               m_rendering_manager;
 
     renderer::CameraFactoryRegistrar                m_camera_factory_registrar;
     renderer::BSDFFactoryRegistrar                  m_bsdf_factory_registrar;

@@ -334,106 +334,93 @@ const char* FastSubSurfaceScatteringSurfaceShaderFactory::get_human_readable_mod
     return "Fast Subsurface Scattering (experimental)";
 }
 
-DictionaryArray FastSubSurfaceScatteringSurfaceShaderFactory::get_widget_definitions() const
+DictionaryArray FastSubSurfaceScatteringSurfaceShaderFactory::get_input_metadata() const
 {
-    DictionaryArray definitions;
+    DictionaryArray metadata;
 
-    {
-        Dictionary widget;
-        widget.insert("name", "scale");
-        widget.insert("label", "Geometric Scale");
-        widget.insert("widget", "text_box");
-        widget.insert("use", "required");
-        widget.insert("default", "1.0");
-        definitions.push_back(widget);
-    }
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "scale")
+            .insert("label", "Geometric Scale")
+            .insert("type", "text")
+            .insert("use", "required")
+            .insert("default", "1.0"));
 
-    {
-        Dictionary widget;
-        widget.insert("name", "ambient_sss");
-        widget.insert("label", "Ambient SSS");
-        widget.insert("widget", "text_box");
-        widget.insert("use", "required");
-        widget.insert("default", "0.0");
-        definitions.push_back(widget);
-    }
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "ambient_sss")
+            .insert("label", "Ambient SSS")
+            .insert("type", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "1.0")
+            .insert("use", "required")
+            .insert("default", "0.0"));
 
-    {
-        Dictionary widget;
-        widget.insert("name", "view_dep_sss");
-        widget.insert("label", "View-Dependent SSS");
-        widget.insert("widget", "text_box");
-        widget.insert("use", "required");
-        widget.insert("default", "0.0");
-        definitions.push_back(widget);
-    }
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "view_dep_sss")
+            .insert("label", "View-Dependent SSS")
+            .insert("type", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "1.0")
+            .insert("use", "required")
+            .insert("default", "0.0"));
 
-    {
-        Dictionary widget;
-        widget.insert("name", "diffuse");
-        widget.insert("label", "Diffuse Lighting");
-        widget.insert("widget", "text_box");
-        widget.insert("use", "required");
-        widget.insert("default", "0.0");
-        definitions.push_back(widget);
-    }
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "diffuse")
+            .insert("label", "Diffuse Lighting")
+            .insert("type", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "1.0")
+            .insert("use", "required")
+            .insert("default", "0.0"));
 
-    {
-        Dictionary widget;
-        widget.insert("name", "power");
-        widget.insert("label", "Power");
-        widget.insert("widget", "text_box");
-        widget.insert("use", "required");
-        widget.insert("default", "1.0");
-        definitions.push_back(widget);
-    }
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "power")
+            .insert("label", "Power")
+            .insert("type", "text")
+            .insert("use", "required")
+            .insert("default", "1.0"));
 
-    {
-        Dictionary widget;
-        widget.insert("name", "distortion");
-        widget.insert("label", "Normal Distortion");
-        widget.insert("widget", "text_box");
-        widget.insert("use", "required");
-        widget.insert("default", "0.0");
-        definitions.push_back(widget);
-    }
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "distortion")
+            .insert("label", "Normal Distortion")
+            .insert("type", "text")
+            .insert("use", "required")
+            .insert("default", "0.0"));
 
-    {
-        Dictionary entity_types;
-        entity_types.insert("color", "Colors");
-        entity_types.insert("texture_instance", "Textures");
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "albedo")
+            .insert("label", "Albedo")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary()
+                    .insert("color", "Colors")
+                    .insert("texture_instance", "Textures"))
+            .insert("use", "required")
+            .insert("default", "0.5"));
 
-        Dictionary widget;
-        widget.insert("name", "albedo");
-        widget.insert("label", "Albedo");
-        widget.insert("widget", "entity_picker");
-        widget.insert("entity_types", entity_types);
-        widget.insert("use", "required");
-        widget.insert("default", "");
-        definitions.push_back(widget);
-    }
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "light_samples")
+            .insert("label", "Light Samples")
+            .insert("type", "text")
+            .insert("use", "required")
+            .insert("default", "1"));
 
-    {
-        Dictionary widget;
-        widget.insert("name", "light_samples");
-        widget.insert("label", "Light Samples");
-        widget.insert("widget", "text_box");
-        widget.insert("use", "required");
-        widget.insert("default", "1");
-        definitions.push_back(widget);
-    }
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "occlusion_samples")
+            .insert("label", "Occlusion Samples")
+            .insert("type", "text")
+            .insert("use", "required")
+            .insert("default", "1"));
 
-    {
-        Dictionary widget;
-        widget.insert("name", "occlusion_samples");
-        widget.insert("label", "Occlusion Samples");
-        widget.insert("widget", "text_box");
-        widget.insert("use", "required");
-        widget.insert("default", "1");
-        definitions.push_back(widget);
-    }
-
-    return definitions;
+    return metadata;
 }
 
 auto_release_ptr<SurfaceShader> FastSubSurfaceScatteringSurfaceShaderFactory::create(

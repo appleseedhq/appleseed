@@ -31,6 +31,8 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/collectionitembase.h"
+#include "mainwindow/project/itemregistry.h"
+#include "mainwindow/project/projectbuilder.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -85,12 +87,16 @@ ItemBase* InstanceCollectionItem<Entity, EntityItem, ParentEntity>::create_item(
 {
     assert(entity);
 
-    return
+    ItemBase* item =
         new EntityItem(
             entity,
             m_parent,
             this,
             CollectionItemBase<Entity>::m_project_builder);
+
+    CollectionItemBase<Entity>::m_project_builder.get_item_registry().insert(entity->get_uid(), item);
+
+    return item;
 }
 
 }       // namespace studio

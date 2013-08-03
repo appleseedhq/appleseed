@@ -37,7 +37,6 @@
 #include <QObject>
 
 // Forward declarations.
-namespace renderer  { class Camera; }
 namespace renderer  { class Scene; }
 
 class QEvent;
@@ -70,7 +69,7 @@ class CameraController
     typedef foundation::CameraController<double> ControllerType;
 
     QWidget*            m_render_widget;
-    renderer::Camera*   m_camera;
+    renderer::Scene*    m_scene;
     ControllerType      m_controller;
 
     virtual bool eventFilter(QObject* object, QEvent* event);

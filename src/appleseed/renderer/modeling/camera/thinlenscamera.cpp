@@ -326,50 +326,52 @@ const char* ThinLensCameraFactory::get_human_readable_model() const
     return "Thin Lens Camera";
 }
 
-DictionaryArray ThinLensCameraFactory::get_widget_definitions() const
+DictionaryArray ThinLensCameraFactory::get_input_metadata() const
 {
-    DictionaryArray definitions = CameraFactory::get_widget_definitions();
+    DictionaryArray metadata = CameraFactory::get_input_metadata();
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "f_stop")
             .insert("label", "F-number")
-            .insert("widget", "text_box")
+            .insert("type", "text")
             .insert("use", "required")
             .insert("default", "8.0"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "focal_distance")
             .insert("label", "Focal Distance")
-            .insert("widget", "text_box")
+            .insert("type", "text")
             .insert("use", "required")
             .insert("default", "1.0"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "autofocus_target")
             .insert("label", "Autofocus Target")
-            .insert("widget", "text_box")
+            .insert("type", "text")
             .insert("use", "required"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "diaphragm_blades")
             .insert("label", "Diaphragm Blades")
-            .insert("widget", "text_box")
+            .insert("type", "text")
             .insert("use", "required")
             .insert("default", "0"));
 
-    definitions.push_back(
+    metadata.push_back(
         Dictionary()
             .insert("name", "diaphragm_tilt_angle")
             .insert("label", "Diaphragm Tilt Angle")
-            .insert("widget", "text_box")
+            .insert("type", "numeric")
+            .insert("min_value", "-360.0")
+            .insert("max_value", "360.0")
             .insert("use", "required")
             .insert("default", "0.0"));
 
-    return definitions;
+    return metadata;
 }
 
 auto_release_ptr<Camera> ThinLensCameraFactory::create(

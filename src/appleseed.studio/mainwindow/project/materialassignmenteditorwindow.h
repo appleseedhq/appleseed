@@ -37,6 +37,7 @@
 
 // Qt headers.
 #include <QComboBox>
+#include <QLineEdit>
 #include <QObject>
 #include <QWidget>
 
@@ -49,7 +50,6 @@ namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace renderer  { class Object; }
 namespace Ui        { class MaterialAssignmentEditorWindow; }
 class QGridLayout;
-class QLineEdit;
 class QPushButton;
 class QString;
 class QVBoxLayout;
@@ -94,12 +94,28 @@ class MaterialAssignmentEditorWindow
         {
             return m_combo_box->itemData(m_combo_box->currentIndex()).toString();
         }
+
+        QString get_material_name() const
+        {
+            return m_line_edit->text();
+        }
     };
 
     typedef std::map<QPushButton*, SlotInfo> SlotInfoCollection;
 
-    std::map<QComboBox*, QWidget*>      m_model_combo_to_widget_group;
+    struct SlotValue
+    {
+        std::string     m_slot_name;
+        Side            m_side;
+        std::string     m_material_name;
+    };
+
+    typedef std::vector<SlotValue> SlotValueCollection;
+
     SlotInfoCollection                  m_slot_infos;
+    SlotValueCollection                 m_initial_slot_values;
+
+    std::map<QComboBox*, QWidget*>      m_mode_combo_to_widget_group;
 
     void create_widgets();
 
@@ -117,17 +133,20 @@ class MaterialAssignmentEditorWindow
         QVBoxLayout*    parent,
         QLayout*        row_layout);
 
-    void assign_materials();
-    void assign_material(const SlotInfo& slot_info);
-    void assign_material(
-        const SlotInfo& slot_info,
-        const QString&  material_name);
+    SlotValueCollection get_slot_values() const;
+    SlotValue get_slot_value(const SlotInfo& slot_info) const;
+
+    void assign_materials(const SlotValueCollection& slot_values);
+    void assign_material(const SlotValue& slot_value);
 
   private slots:
     void slot_change_back_material_mode(int index);
     void slot_open_entity_browser();
     void slot_entity_browser_accept(QLineEdit* line_edit, QString page_name, QString entity_name);
+
+    void slot_apply();
     void slot_accept();
+    void slot_cancel();
 };
 
 }       // namespace studio

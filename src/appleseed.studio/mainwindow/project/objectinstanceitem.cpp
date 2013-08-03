@@ -36,6 +36,7 @@
 #include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/materialassignmenteditorwindow.h"
 #include "mainwindow/project/projectbuilder.h"
+#include "mainwindow/rendering/renderingmanager.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/scene.h"
@@ -54,6 +55,7 @@
 #include <QWidget>
 
 // Standard headers.
+#include <memory>
 #include <string>
 
 using namespace appleseed::studio;
@@ -240,7 +242,64 @@ void ObjectInstanceItem::slot_assign_material()
     browser_window->activateWindow();
 }
 
-void ObjectInstanceItem::slot_assign_material_accepted(QString page_name, QString entity_name, QVariant untyped_data)
+void ObjectInstanceItem::slot_assign_material_accepted(QString page_name, QString entity_name, QVariant data)
+{
+    if (m_project_builder.get_rendering_manager().is_rendering())
+        schedule_assign_material(page_name, entity_name, data);
+    else assign_material(page_name, entity_name, data);
+
+    qobject_cast<QWidget*>(sender()->parent())->close();
+}
+
+namespace
+{
+    class AssignMaterialDelayedAction
+      : public RenderingManager::IDelayedAction
+    {
+      public:
+        AssignMaterialDelayedAction(
+            ObjectInstanceItem*     parent,
+            const QString&          page_name,
+            const QString&          entity_name,
+            const QVariant&         data)
+          : m_parent(parent)
+          , m_page_name(page_name)
+          , m_entity_name(entity_name)
+          , m_data(data)
+        {
+        }
+
+        virtual void operator()(
+            MasterRenderer&         master_renderer,
+            Project&                project) OVERRIDE
+        {
+            m_parent->assign_material(m_page_name, m_entity_name, m_data);
+        }
+
+      private:
+        ObjectInstanceItem*         m_parent;
+        const QString               m_page_name;
+        const QString               m_entity_name;
+        const QVariant              m_data;
+    };
+}
+
+void ObjectInstanceItem::schedule_assign_material(
+    const QString&                  page_name,
+    const QString&                  entity_name,
+    const QVariant&                 data)
+{
+    m_project_builder.get_rendering_manager().push_delayed_action(
+        auto_ptr<RenderingManager::IDelayedAction>(
+            new AssignMaterialDelayedAction(this, page_name, entity_name, data)));
+
+    m_project_builder.get_rendering_manager().reinitialize_rendering();
+}
+
+void ObjectInstanceItem::assign_material(
+    const QString&                  page_name,
+    const QString&                  entity_name,
+    const QVariant&                 untyped_data)
 {
     const string material_name = entity_name.toStdString();
 
@@ -250,43 +309,100 @@ void ObjectInstanceItem::slot_assign_material_accepted(QString page_name, QStrin
 
     if (data.m_items.empty())
     {
-        assign_material(data.m_slot.c_str(), front_side, back_side, material_name.c_str());
+        do_assign_material(data.m_slot.c_str(), front_side, back_side, material_name.c_str());
     }
     else
     {
         for (int i = 0; i < data.m_items.size(); ++i)
         {
             ObjectInstanceItem* item = static_cast<ObjectInstanceItem*>(data.m_items[i]);
-            item->assign_material(data.m_slot.c_str(), front_side, back_side, material_name.c_str());
+            item->do_assign_material(data.m_slot.c_str(), front_side, back_side, material_name.c_str());
         }
     }
-
-    qobject_cast<QWidget*>(sender()->parent())->close();
 }
 
 void ObjectInstanceItem::slot_clear_material()
 {
-    QAction* action = qobject_cast<QAction*>(sender());
+    const QVariant data = qobject_cast<QAction*>(sender())->data();
 
-    const MaterialAssignmentData data = action->data().value<MaterialAssignmentData>();
+    if (m_project_builder.get_rendering_manager().is_rendering())
+        schedule_clear_material(data);
+    else clear_material(data);
+}
+
+namespace
+{
+    class ClearMaterialDelayedAction
+      : public RenderingManager::IDelayedAction
+    {
+      public:
+        ClearMaterialDelayedAction(
+            ObjectInstanceItem*     parent,
+            const QVariant&         data)
+          : m_parent(parent)
+          , m_data(data)
+        {
+        }
+
+        virtual void operator()(
+            MasterRenderer&         master_renderer,
+            Project&                project) OVERRIDE
+        {
+            m_parent->clear_material(m_data);
+        }
+
+      private:
+        ObjectInstanceItem*         m_parent;
+        const QVariant              m_data;
+    };
+}
+
+void ObjectInstanceItem::schedule_clear_material(const QVariant& data)
+{
+    m_project_builder.get_rendering_manager().push_delayed_action(
+        auto_ptr<RenderingManager::IDelayedAction>(
+            new ClearMaterialDelayedAction(this, data)));
+
+    m_project_builder.get_rendering_manager().reinitialize_rendering();
+}
+
+void ObjectInstanceItem::clear_material(const QVariant& untyped_data)
+{
+    const MaterialAssignmentData data = untyped_data.value<MaterialAssignmentData>();
     const bool front_side = data.m_side == FrontSide || data.m_side == FrontAndBackSides;
     const bool back_side = data.m_side == BackSide || data.m_side == FrontAndBackSides;
 
     if (data.m_items.empty())
     {
-        unassign_material(data.m_slot.c_str(), front_side, back_side);
+        do_unassign_material(data.m_slot.c_str(), front_side, back_side);
     }
     else
     {
         for (int i = 0; i < data.m_items.size(); ++i)
         {
             ObjectInstanceItem* item = static_cast<ObjectInstanceItem*>(data.m_items[i]);
-            item->unassign_material(data.m_slot.c_str(), front_side, back_side);
+            item->do_unassign_material(data.m_slot.c_str(), front_side, back_side);
         }
     }
 }
 
 void ObjectInstanceItem::slot_delete()
+{
+    if (m_project_builder.get_rendering_manager().is_rendering())
+        schedule_delete();
+    else do_delete();
+}
+
+void ObjectInstanceItem::schedule_delete()
+{
+    m_project_builder.get_rendering_manager().push_delayed_action(
+        auto_ptr<RenderingManager::IDelayedAction>(
+            new EntityDeletionDelayedAction<ObjectInstanceItem>(this)));
+
+    m_project_builder.get_rendering_manager().reinitialize_rendering();
+}
+
+void ObjectInstanceItem::do_delete()
 {
     if (!allows_deletion())
         return;
@@ -302,7 +418,9 @@ void ObjectInstanceItem::slot_delete()
     m_project_builder.notify_project_modification();
 
     // Remove and delete the object instance item.
-    delete m_project_builder.get_item_registry().get_item(object_instance_uid);
+    ItemBase* object_instance_item = m_project_builder.get_item_registry().get_item(object_instance_uid);
+    m_project_builder.get_item_registry().remove(object_instance_uid);
+    delete object_instance_item;
 
     // At this point 'this' no longer exists.
 }
@@ -349,7 +467,7 @@ void ObjectInstanceItem::add_material_assignment_menu_actions(
     }
 }
 
-void ObjectInstanceItem::assign_material(
+void ObjectInstanceItem::do_assign_material(
     const char*                     slot_name,
     const bool                      front_side,
     const bool                      back_side,
@@ -366,7 +484,7 @@ void ObjectInstanceItem::assign_material(
     update_style();
 }
 
-void ObjectInstanceItem::unassign_material(
+void ObjectInstanceItem::do_unassign_material(
     const char*                     slot_name,
     const bool                      front_side,
     const bool                      back_side)
