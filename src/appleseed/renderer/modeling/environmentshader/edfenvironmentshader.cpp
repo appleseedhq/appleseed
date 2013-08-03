@@ -167,7 +167,7 @@ DictionaryArray EDFEnvironmentShaderFactory::get_input_metadata() const
         Dictionary()
             .insert("name", "environment_edf")
             .insert("label", "Environment EDF")
-            .insert("type", "colormap")
+            .insert("type", "entity")
             .insert("entity_types",
                 Dictionary()
                     .insert("environment_edf", "Environment EDFs"))
