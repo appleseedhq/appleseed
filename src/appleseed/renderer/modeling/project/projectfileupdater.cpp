@@ -521,13 +521,16 @@ namespace
                             continue;
                         }
 
+                        ParamArray new_color_params = color->get_parameters();
+                        new_color_params.remove_path("multiplier");
+
                         ColorValueArray new_color_values;
                         new_color_values.push_back(static_cast<float>(glossiness));
 
                         auto_release_ptr<ColorEntity> new_color_entity(
                             ColorEntityFactory::create(
                                 color->get_name(),
-                                color->get_parameters(),
+                                new_color_params,
                                 new_color_values));
 
                         Assembly* parent_assembly = dynamic_cast<Assembly*>(color->get_parent());
