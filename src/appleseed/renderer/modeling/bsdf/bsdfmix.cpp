@@ -98,6 +98,9 @@ namespace
             m_bsdf[0] = retrieve_bsdf(assembly, "bsdf0");
             m_bsdf[1] = retrieve_bsdf(assembly, "bsdf1");
 
+            if (m_bsdf[0] == 0 || m_bsdf[1] == 0)
+                return false;
+
             m_bsdf_data_offset[0] = get_inputs().compute_data_size();
             m_bsdf_data_offset[1] = m_bsdf_data_offset[0] + m_bsdf[0]->compute_input_data_size(assembly);
 
@@ -107,13 +110,21 @@ namespace
         virtual size_t compute_input_data_size(
             const Assembly&     assembly) const OVERRIDE
         {
-            const BSDF* bsdf0 = retrieve_bsdf(assembly, "bsdf0");
-            const BSDF* bsdf1 = retrieve_bsdf(assembly, "bsdf1");
+            size_t size = get_inputs().compute_data_size();
 
-            return
-                  get_inputs().compute_data_size()
-                + bsdf0->compute_input_data_size(assembly)
-                + bsdf1->compute_input_data_size(assembly);
+            {
+                const BSDF* bsdf0 = retrieve_bsdf(assembly, "bsdf0");
+                if (bsdf0)
+                    size += bsdf0->compute_input_data_size(assembly);
+            }
+
+            {
+                const BSDF* bsdf1 = retrieve_bsdf(assembly, "bsdf1");
+                if (bsdf1)
+                    size += bsdf1->compute_input_data_size(assembly);
+            }
+
+            return size;
         }
 
         virtual void evaluate_inputs(
@@ -121,6 +132,8 @@ namespace
             const Vector2d&     uv,
             const size_t        offset) const OVERRIDE
         {
+            assert(m_bsdf[0] && m_bsdf[1]);
+
             BSDF::evaluate_inputs(input_evaluator, uv, offset);
 
             m_bsdf[0]->evaluate_inputs(input_evaluator, uv, offset + m_bsdf_data_offset[0]);
@@ -139,6 +152,8 @@ namespace
             Spectrum&           value,
             double&             probability) const
         {
+            assert(m_bsdf[0] && m_bsdf[1]);
+
             // Retrieve the blending weights.
             const InputValues* values = static_cast<const InputValues*>(data);
             double w[2] = { values->m_weight[0], values->m_weight[1] };
@@ -226,6 +241,8 @@ namespace
             const int           modes,
             Spectrum&           value) const
         {
+            assert(m_bsdf[0] && m_bsdf[1]);
+
             // Retrieve the blending weights.
             const InputValues* values = static_cast<const InputValues*>(data);
             double w0 = values->m_weight[0];
@@ -294,6 +311,8 @@ namespace
             const Vector3d&     incoming,
             const int           modes) const
         {
+            assert(m_bsdf[0] && m_bsdf[1]);
+
             // Retrieve the blending weights.
             const InputValues* values = static_cast<const InputValues*>(data);
             double w0 = values->m_weight[0];
@@ -341,7 +360,10 @@ namespace
         {
             const string bsdf_name = m_params.get_required<string>(param_name, "");
             if (bsdf_name.empty())
+            {
+                RENDERER_LOG_ERROR("while preparing bsdf \"%s\": no bsdf bound to \"%s\".", get_name(), param_name);
                 return 0;
+            }
 
             const BSDF* bsdf = assembly.bsdfs().get_by_name(bsdf_name.c_str());
             if (bsdf == 0)
