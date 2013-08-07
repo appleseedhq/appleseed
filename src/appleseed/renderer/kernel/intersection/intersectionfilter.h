@@ -36,12 +36,11 @@
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/types.h"
+#include "foundation/utility/bitmask.h"
 
 // Standard headers.
 #include <cassert>
 #include <cstddef>
-#include <cstring>
 #include <vector>
 
 // Forward declarations.
@@ -72,63 +71,56 @@ class IntersectionFilter
         const double            v) const;
 
   private:
-    struct Bitmap
+    class AlphaMask
+      : public foundation::NonCopyable
     {
-        size_t                  m_width;
-        size_t                  m_height;
-        size_t                  m_block_width;
-        size_t                  m_size;
-        float                   m_max_x;
-        float                   m_max_y;
-        double                  m_transparency;
-        foundation::uint8*      m_bits;
-
-        Bitmap(
+      public:
+        AlphaMask(
             const size_t        width,
             const size_t        height)
-          : m_width(width)
-          , m_height(height)
-          , m_block_width((width + 7) / 8)
-          , m_size(m_block_width * m_height)
-          , m_max_x(static_cast<float>(width) - 1.0f)
+          : m_max_x(static_cast<float>(width) - 1.0f)
           , m_max_y(static_cast<float>(height) - 1.0f)
-          , m_bits(new foundation::uint8[m_size])
+          , m_bitmask(width, height)
         {
-            std::memset(m_bits, 0, m_size);
         }
 
-        ~Bitmap()
+        void set_opaque(
+            const size_t        x,
+            const size_t        y,
+            const bool          opaque)
         {
-            delete [] m_bits;
+            m_bitmask.set(x, y, opaque);
+        }
+
+        bool is_opaque(const foundation::Vector2f& uv) const
+        {
+            const float fx = foundation::clamp(uv[0] * m_bitmask.get_width(), 0.0f, m_max_x);
+            const float fy = foundation::clamp(uv[1] * m_bitmask.get_height(), 0.0f, m_max_y);
+
+            const size_t ix = foundation::truncate<size_t>(fx);
+            const size_t iy = foundation::truncate<size_t>(fy);
+
+            return m_bitmask.is_set(ix, iy);
         }
 
         size_t get_memory_size() const
         {
-            return sizeof(*this) + m_size;
+            return m_bitmask.get_memory_size();
         }
 
-        void set(
-            const size_t            x,
-            const size_t            y,
-            const foundation::uint8 b)
-        {
-            m_bits[y * m_block_width + x / 8] |= b << (x & 7);
-        }
-
-        foundation::uint8 get(
-            const size_t            x,
-            const size_t            y) const
-        {
-            return m_bits[y * m_block_width + x / 8] >> (x & 7);
-        }
+      private:
+        const float             m_max_x;
+        const float             m_max_y;
+        foundation::BitMask2    m_bitmask;
     };
 
-    std::vector<Bitmap*>                m_alpha_masks;
+    std::vector<AlphaMask*>             m_alpha_masks;
     std::vector<foundation::Vector2f>   m_uv;
 
-    static Bitmap* create_alpha_mask(
+    static AlphaMask* create_alpha_mask(
         const Source*           alpha_map,
-        TextureCache&           texture_cache);
+        TextureCache&           texture_cache,
+        double&                 transparency);
 
     size_t get_masks_memory_size() const;
 };
@@ -145,7 +137,7 @@ inline bool IntersectionFilter::accept(
 {
     assert(triangle_key.get_region_index() == 0);
 
-    const Bitmap* alpha_mask = m_alpha_masks[triangle_key.get_triangle_pa()];
+    const AlphaMask* alpha_mask = m_alpha_masks[triangle_key.get_triangle_pa()];
 
     if (alpha_mask == 0)
         return true;
@@ -160,12 +152,7 @@ inline bool IntersectionFilter::accept(
         + m_uv[triangle_index * 3 + 1] * fu
         + m_uv[triangle_index * 3 + 2] * fv;
 
-    const float fx = foundation::clamp(uv[0] * alpha_mask->m_width, 0.0f, alpha_mask->m_max_x);
-    const float fy = foundation::clamp(uv[1] * alpha_mask->m_height, 0.0f, alpha_mask->m_max_y);
-    const size_t ix = foundation::truncate<size_t>(fx);
-    const size_t iy = foundation::truncate<size_t>(fy);
-
-    return alpha_mask->get(ix, iy) != 0;
+    return alpha_mask->is_opaque(uv);
 }
 
 }       // namespace renderer

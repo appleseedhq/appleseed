@@ -360,6 +360,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_attributeset.cpp
     foundation/meta/tests/test_autoreleaseptr.cpp
     foundation/meta/tests/test_benchmarkaggregator.cpp
+    foundation/meta/tests/test_bitmask.cpp
     foundation/meta/tests/test_boost_datetime.cpp
     foundation/meta/tests/test_boost_path.cpp
     foundation/meta/tests/test_boost_regex.cpp
@@ -653,6 +654,7 @@ set (foundation_utility_sources
     foundation/utility/attributeset.h
     foundation/utility/autoreleaseptr.h
     foundation/utility/benchmark.h
+    foundation/utility/bitmask.h
     foundation/utility/bufferedfile.cpp
     foundation/utility/bufferedfile.h
     foundation/utility/cache.cpp
