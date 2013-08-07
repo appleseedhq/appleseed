@@ -112,7 +112,7 @@ class IntersectionFilter
             const size_t            y,
             const foundation::uint8 b)
         {
-            m_bits[y * m_block_width + x / 8] = b << (x & 7);
+            m_bits[y * m_block_width + x / 8] |= b << (x & 7);
         }
 
         foundation::uint8 get(

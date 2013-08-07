@@ -218,7 +218,6 @@ IntersectionFilter::Bitmap* IntersectionFilter::create_alpha_mask(
             alpha_map->evaluate(texture_cache, uv, alpha);
 
             // Mark this texel as opaque or transparent in the alpha mask.
-            const size_t index = y * alpha_mask->m_width + x / 8;
             const uint8 opaque = alpha[0] > 0.0f ? 1 : 0;
             alpha_mask->set(x, y, opaque);
 
