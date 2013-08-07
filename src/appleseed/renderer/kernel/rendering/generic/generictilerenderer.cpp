@@ -124,17 +124,16 @@ namespace
             const size_t tile_height = tile.get_height();
 
             // Compute the image space bounding box of the pixels to render.
-            const AABB2u& crop_window = frame.get_crop_window();
             AABB2u tile_bbox;
             tile_bbox.min.x = tile_origin_x;
             tile_bbox.min.y = tile_origin_y;
             tile_bbox.max.x = tile_origin_x + tile_width - 1;
             tile_bbox.max.y = tile_origin_y + tile_height - 1;
-            tile_bbox = AABB2u::intersect(tile_bbox, crop_window);
+            tile_bbox = AABB2u::intersect(tile_bbox, frame.get_crop_window());
             if (!tile_bbox.is_valid())
                 return;
 
-            // Transform the bounding box to tile space.
+            // Transform the bounding box to local (tile) space.
             tile_bbox.min.x -= tile_origin_x;
             tile_bbox.min.y -= tile_origin_y;
             tile_bbox.max.x -= tile_origin_x;
@@ -169,9 +168,9 @@ namespace
                 const int tx = m_pixel_ordering[i].x;
                 const int ty = m_pixel_ordering[i].y;
 
-                // Skip pixels outside of the padded tile.
-                if (tx >= static_cast<int>(tile_width + m_margin_width) ||
-                    ty >= static_cast<int>(tile_height + m_margin_height))
+                // Skip pixels outside the intersection of the padded tile and the crop window.
+                if (tx > static_cast<int>(tile_bbox.max.x) + m_margin_width ||
+                    ty > static_cast<int>(tile_bbox.max.y) + m_margin_height)
                     continue;
 
                 // Compute the coordinates of the pixel in the padded image.
@@ -185,10 +184,6 @@ namespace
                     BREAKPOINT();
 
 #endif
-
-                // Skip pixels outside the crop window.
-                if (!crop_window.contains(Vector2u(ix, iy)))
-                    continue;
 
                 // Render this pixel.
                 m_pixel_renderer->render_pixel(
@@ -264,7 +259,7 @@ namespace
             hilbert_ordering(ordering, padded_tile_width, padded_tile_height);
             assert(ordering.size() == pixel_count);
 
-            // Convert the pixel ordering to (x, y) representation.
+            // Convert the pixel ordering to a 2D representation.
             m_pixel_ordering.resize(pixel_count);
             for (size_t i = 0; i < pixel_count; ++i)
             {
