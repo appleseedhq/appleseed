@@ -91,7 +91,7 @@ DirectLightingIntegrator::DirectLightingIntegrator(
   , m_bsdf_sample_count(bsdf_sample_count)
   , m_light_sample_count(light_sample_count)
 {
-    assert(is_normalized(outgoing));
+    assert(is_normalized(vertex.m_outgoing));
 }
 
 void DirectLightingIntegrator::sample_bsdf_and_lights(
