@@ -550,7 +550,7 @@ IRendererController::Status MasterRenderer::render_frame_sequence(IFrameRenderer
 
         frame_renderer->start_rendering();
 
-        const IRendererController::Status status = render_frame(frame_renderer);
+        const IRendererController::Status status = wait_for_event(frame_renderer);
 
         switch (status)
         {
@@ -578,7 +578,7 @@ IRendererController::Status MasterRenderer::render_frame_sequence(IFrameRenderer
     }
 }
 
-IRendererController::Status MasterRenderer::render_frame(IFrameRenderer* frame_renderer) const
+IRendererController::Status MasterRenderer::wait_for_event(IFrameRenderer* frame_renderer) const
 {
     while (frame_renderer->is_rendering())
     {

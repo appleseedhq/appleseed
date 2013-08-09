@@ -102,8 +102,8 @@ class DLLSYMBOL MasterRenderer
     // Render a frame sequence until the sequence is completed or rendering is aborted.
     IRendererController::Status render_frame_sequence(IFrameRenderer* frame_renderer) const;
 
-    // Render a frame until until the frame is completed or rendering is aborted.
-    IRendererController::Status render_frame(IFrameRenderer* frame_renderer) const;
+    // Wait until the the frame is completed or rendering is aborted.
+    IRendererController::Status wait_for_event(IFrameRenderer* frame_renderer) const;
 
     // Bind all scene entities inputs. Return true on success, false otherwise.
     bool bind_scene_entities_inputs() const;
