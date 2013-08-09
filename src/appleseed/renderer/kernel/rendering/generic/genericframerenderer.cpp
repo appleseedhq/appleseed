@@ -63,14 +63,14 @@ namespace
       public:
         GenericFrameRenderer(
             const Frame&            frame,
-            ITileRendererFactory*   renderer_factory,
-            ITileCallbackFactory*   callback_factory,   // may be 0
+            ITileRendererFactory*   tile_renderer_factory,
+            ITileCallbackFactory*   tile_callback_factory,
             const ParamArray&       params)
           : m_frame(frame)
           , m_params(params)
         {
             // We must have a renderer factory, but it's OK not to have a callback factory.
-            assert(renderer_factory);
+            assert(tile_renderer_factory);
 
             // Create and initialize job manager.
             m_job_manager.reset(
@@ -81,13 +81,13 @@ namespace
 
             // Instantiate tile renderers, one per rendering thread.
             for (size_t i = 0; i < m_params.m_thread_count; ++i)
-                m_tile_renderers.push_back(renderer_factory->create(i == 0));
+                m_tile_renderers.push_back(tile_renderer_factory->create(i == 0));
 
-            if (callback_factory)
+            if (tile_callback_factory)
             {
                 // Instantiate tile callbacks, one per rendering thread.
                 for (size_t i = 0; i < m_params.m_thread_count; ++i)
-                    m_tile_callbacks.push_back(callback_factory->create());
+                    m_tile_callbacks.push_back(tile_callback_factory->create());
             }
 
             print_rendering_thread_count(m_params.m_thread_count);
@@ -243,12 +243,12 @@ namespace
 
 GenericFrameRendererFactory::GenericFrameRendererFactory(
     const Frame&            frame,
-    ITileRendererFactory*   renderer_factory,
-    ITileCallbackFactory*   callback_factory,
+    ITileRendererFactory*   tile_renderer_factory,
+    ITileCallbackFactory*   tile_callback_factory,
     const ParamArray&       params)
   : m_frame(frame)
-  , m_renderer_factory(renderer_factory)  
-  , m_callback_factory(callback_factory)
+  , m_tile_renderer_factory(tile_renderer_factory)  
+  , m_tile_callback_factory(tile_callback_factory)
   , m_params(params)
 {
 }
@@ -263,22 +263,22 @@ IFrameRenderer* GenericFrameRendererFactory::create()
     return
         new GenericFrameRenderer(
             m_frame,
-            m_renderer_factory,
-            m_callback_factory,
+            m_tile_renderer_factory,
+            m_tile_callback_factory,
             m_params);
 }
 
 IFrameRenderer* GenericFrameRendererFactory::create(
     const Frame&            frame,
-    ITileRendererFactory*   renderer_factory,
-    ITileCallbackFactory*   callback_factory,
+    ITileRendererFactory*   tile_renderer_factory,
+    ITileCallbackFactory*   tile_callback_factory,
     const ParamArray&       params)
 {
     return
         new GenericFrameRenderer(
             frame,
-            renderer_factory,
-            callback_factory,
+            tile_renderer_factory,
+            tile_callback_factory,
             params);
 }
 

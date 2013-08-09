@@ -52,8 +52,8 @@ class GenericFrameRendererFactory
     // Constructor.
     GenericFrameRendererFactory(
         const Frame&            frame,
-        ITileRendererFactory*   renderer_factory,
-        ITileCallbackFactory*   callback_factory,       // may be 0
+        ITileRendererFactory*   tile_renderer_factory,
+        ITileCallbackFactory*   tile_callback_factory,      // may be 0
         const ParamArray&       params);
 
     // Delete this instance.
@@ -65,14 +65,14 @@ class GenericFrameRendererFactory
     // Return a new generic frame renderer instance.
     static IFrameRenderer* create(
         const Frame&            frame,
-        ITileRendererFactory*   renderer_factory,
-        ITileCallbackFactory*   callback_factory,       // may be 0
+        ITileRendererFactory*   tile_renderer_factory,
+        ITileCallbackFactory*   tile_callback_factory,      // may be 0
         const ParamArray&       params);
 
   private:
     const Frame&                m_frame;
-    ITileRendererFactory*       m_renderer_factory;
-    ITileCallbackFactory*       m_callback_factory;     // may be 0
+    ITileRendererFactory*       m_tile_renderer_factory;
+    ITileCallbackFactory*       m_tile_callback_factory;    // may be 0
     ParamArray                  m_params;
 };
 
