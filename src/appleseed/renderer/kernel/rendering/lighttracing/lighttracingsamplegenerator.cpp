@@ -34,6 +34,7 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/lighting/lightsampler.h"
 #include "renderer/kernel/lighting/pathtracer.h"
+#include "renderer/kernel/lighting/pathvertex.h"
 #include "renderer/kernel/lighting/tracer.h"
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/rendering/globalsampleaccumulationbuffer.h"
@@ -108,8 +109,8 @@ namespace
             const size_t    m_max_iterations;
             const bool      m_report_self_intersections;
 
-            const size_t    m_max_path_length;              // maximum path length, 0 for unlimited
-            const size_t    m_rr_min_path_length;           // minimum path length before Russian Roulette is used, 0 for unlimited
+            const size_t    m_max_path_length;              // maximum path length, ~0 for unlimited
+            const size_t    m_rr_min_path_length;           // minimum path length before Russian Roulette kicks in, ~0 for unlimited
 
             explicit Parameters(const ParamArray& params)
               : m_enable_ibl(params.get_optional<bool>("enable_ibl", true))
@@ -117,9 +118,14 @@ namespace
               , m_transparency_threshold(params.get_optional<float>("transparency_threshold", 0.001f))
               , m_max_iterations(params.get_optional<size_t>("max_iterations", 1000))
               , m_report_self_intersections(params.get_optional<bool>("report_self_intersections", false))
-              , m_rr_min_path_length(params.get_optional<size_t>("rr_min_path_length", 3))
-              , m_max_path_length(params.get_optional<size_t>("max_path_length", 0))
+              , m_max_path_length(nz(params.get_optional<size_t>("max_path_length", 0)))
+              , m_rr_min_path_length(nz(params.get_optional<size_t>("rr_min_path_length", 3)))
             {
+            }
+
+            static size_t nz(const size_t x)
+            {
+                return x == 0 ? ~0 : x;
             }
 
             void print() const
@@ -132,8 +138,8 @@ namespace
                     "  rr min path len. %s",
                     m_enable_ibl ? "on" : "off",
                     m_enable_caustics ? "on" : "off",
-                    m_max_path_length == 0 ? "infinite" : pretty_uint(m_max_path_length).c_str(),
-                    m_rr_min_path_length == 0 ? "infinite" : pretty_uint(m_rr_min_path_length).c_str());
+                    m_max_path_length == ~0 ? "infinite" : pretty_uint(m_max_path_length).c_str(),
+                    m_rr_min_path_length == ~0 ? "infinite" : pretty_uint(m_rr_min_path_length).c_str());
             }
         };
 
@@ -195,9 +201,22 @@ namespace
         }
 
       private:
-        class PathVisitor
+        struct PathVisitor
         {
-          public:
+            const Parameters&               m_params;
+            const Camera&                   m_camera;
+            const LightingConditions&       m_lighting_conditions;
+            const ShadingContext&           m_shading_context;
+
+            const Spectrum                  m_initial_alpha;        // initial particle flux (in W)
+            Transformd                      m_camera_transform;     // camera transform at selected time
+            Vector3d                        m_camera_position;      // camera position in world space
+            Vector3d                        m_camera_direction;     // camera direction (gaze) in world space
+            double                          m_rcp_pixel_area;       // reciprocal of the area of a single pixel (in m^-2)
+            double                          m_focal_length;         // camera's focal length (in m)
+            SampleVector&                   m_samples;
+            size_t                          m_sample_count;         // the number of samples added to m_samples
+
             PathVisitor(
                 const Parameters&           params,
                 const Scene&                scene,
@@ -325,34 +344,25 @@ namespace
                 emit_sample(sample_position_ndc, radiance);
             }
 
-            bool visit_vertex(
-                SamplingContext&            sampling_context,
-                const ShadingPoint&         shading_point,
-                const Vector3d&             outgoing,       // in this context, toward the light
-                const BSDF*                 bsdf,
-                const void*                 bsdf_data,
-                const size_t                path_length,
-                const BSDF::Mode            prev_bsdf_mode,
-                const double                prev_bsdf_prob,
-                const Spectrum&             throughput)
+            bool visit_vertex(const PathVertex& vertex)
             {
                 if (!m_params.m_enable_caustics &&
-                    path_length > 1 &&
-                    (prev_bsdf_mode & (BSDF::Glossy | BSDF::Specular)) != 0)
+                    vertex.m_path_length > 1 &&
+                    (vertex.m_prev_bsdf_mode & (BSDF::Glossy | BSDF::Specular)) != 0)
                 {
                     // This is a caustics path but caustics are disabled.
                     return false;
                 }
 
                 // Terminate the path if there is no BSDF.
-                if (bsdf == 0)
+                if (vertex.m_bsdf == 0)
                     return false;
 
                 // Start computing the vertex-to-camera direction vector.
-                Vector3d vertex_to_camera = m_camera_position - shading_point.get_point();
+                Vector3d vertex_to_camera = m_camera_position - vertex.get_point();
 
                 // Reject vertices on the back side of the shading surface.
-                const Vector3d& shading_normal = shading_point.get_shading_normal();
+                const Vector3d& shading_normal = vertex.get_shading_normal();
                 if (dot(vertex_to_camera, shading_normal) <= 0.0)
                     return true;            // proceed with this path
 
@@ -360,8 +370,8 @@ namespace
                 Vector2d sample_position_ndc;
                 const double transmission =
                     vertex_visible_to_camera(
-                        shading_point.get_point(),
-                        shading_point.get_time(),
+                        vertex.get_point(),
+                        vertex.get_time(),
                         sample_position_ndc);
 
                 // Ignore occluded vertices.
@@ -375,19 +385,19 @@ namespace
                 // Retrieve the geometric normal at the vertex.
                 const Vector3d geometric_normal =
                     flip_to_same_hemisphere(
-                        shading_point.get_geometric_normal(),
+                        vertex.get_geometric_normal(),
                         shading_normal);
 
                 // Evaluate the BSDF at the vertex position.
                 Spectrum bsdf_value;
                 const double bsdf_prob =
-                    bsdf->evaluate(
-                        bsdf_data,
+                    vertex.m_bsdf->evaluate(
+                        vertex.m_bsdf_data,
                         true,                               // adjoint
                         true,                               // multiply by |cos(incoming, normal)|
                         geometric_normal,
-                        shading_point.get_shading_basis(),
-                        outgoing,                           // outgoing
+                        vertex.get_shading_basis(),
+                        vertex.m_outgoing,                  // outgoing (toward the light in this context)
                         vertex_to_camera,                   // incoming
                         BSDF::AllScatteringModes,           // todo: likely incorrect
                         bsdf_value);
@@ -407,7 +417,7 @@ namespace
 
                 // Store the contribution of this vertex.
                 Spectrum radiance = m_initial_alpha;
-                radiance *= throughput;
+                radiance *= vertex.m_throughput;
                 radiance *= bsdf_value;
                 radiance *= static_cast<float>(g * flux_to_radiance);
                 emit_sample(sample_position_ndc, radiance);
@@ -415,31 +425,6 @@ namespace
                 // Proceed with this path.
                 return true;
             }
-
-            void visit_environment(
-                const ShadingPoint&         shading_point,
-                const Vector3d&             outgoing,
-                const BSDF::Mode            prev_bsdf_mode,
-                const double                prev_bsdf_prob,
-                const Spectrum&             throughput)
-            {
-                // The particle escapes.
-            }
-
-          private:
-            const Parameters&               m_params;
-            const Camera&                   m_camera;
-            const LightingConditions&       m_lighting_conditions;
-            const ShadingContext&           m_shading_context;
-
-            const Spectrum                  m_initial_alpha;        // initial particle flux (in W)
-            Transformd                      m_camera_transform;     // camera transform at selected time
-            Vector3d                        m_camera_position;      // camera position in world space
-            Vector3d                        m_camera_direction;     // camera direction (gaze) in world space
-            double                          m_rcp_pixel_area;       // reciprocal of the area of a single pixel (in m^-2)
-            double                          m_focal_length;         // camera's focal length (in m)
-            SampleVector&                   m_samples;
-            size_t                          m_sample_count;         // the number of samples added to m_samples
 
             double vertex_visible_to_camera(
                 const Vector3d&             vertex_position_world,
@@ -483,6 +468,16 @@ namespace
                 sample.m_color[3] = 1.0f;
                 m_samples.push_back(sample);
                 ++m_sample_count;
+            }
+
+            void visit_environment(
+                const ShadingPoint&         shading_point,
+                const Vector3d&             outgoing,
+                const BSDF::Mode            prev_bsdf_mode,
+                const double                prev_bsdf_prob,
+                const Spectrum&             throughput)
+            {
+                // The particle escapes.
             }
         };
 

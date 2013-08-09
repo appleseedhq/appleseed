@@ -33,6 +33,7 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/intersection/intersector.h"
+#include "renderer/kernel/lighting/pathvertex.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/bsdf/bsdf.h"
@@ -145,12 +146,14 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
 {
     ShadingPoint shading_points[2];
     size_t shading_point_index = 0;
-    const ShadingPoint* shading_point_ptr = &shading_point;
 
-    Spectrum throughput(1.0f);
-    BSDF::Mode prev_bsdf_mode = BSDF::Specular;
-    double prev_bsdf_prob = BSDF::DiracDelta;
-    size_t path_length = 1;
+    PathVertex vertex(sampling_context);
+    vertex.m_shading_point = &shading_point;
+    vertex.m_path_length = 1;
+    vertex.m_prev_bsdf_mode = BSDF::Specular;
+    vertex.m_prev_bsdf_prob = BSDF::DiracDelta;
+    vertex.m_throughput.set(1.0f);
+
     size_t iterations = 0;
 
     while (true)
@@ -165,42 +168,42 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         }
 
         // Retrieve the ray.
-        const ShadingRay& ray = shading_point_ptr->get_ray();
+        const ShadingRay& ray = vertex.get_ray();
 
         // Terminate the path if the ray didn't hit anything.
-        if (!shading_point_ptr->hit())
+        if (!vertex.m_shading_point->hit())
         {
             m_path_visitor.visit_environment(
-                *shading_point_ptr,
+                *vertex.m_shading_point,
                 foundation::normalize(-ray.m_dir),
-                prev_bsdf_mode,
-                prev_bsdf_prob,
-                throughput);
+                vertex.m_prev_bsdf_mode,
+                vertex.m_prev_bsdf_prob,
+                vertex.m_throughput);
             break;
         }
 
         // Retrieve the material at the shading point.
-        const Material* material = shading_point_ptr->get_material();
+        const Material* material = vertex.get_material();
 
         // Terminate the path if the surface has no material.
         if (material == 0)
             break;
 
         // Handle alpha mapping.
-        if (path_length > 1 && material->get_alpha_map())
+        if (vertex.m_path_length > 1 && material->get_alpha_map())
         {
             // Evaluate the alpha map at the shading point.
             Alpha alpha;
             material->get_alpha_map()->evaluate(
                 texture_cache, 
-                shading_point_ptr->get_uv(0),
+                vertex.get_uv(0),
                 alpha);
 
             if (pass_through(sampling_context, alpha))
             {
                 // Construct a ray that continues in the same direction as the incoming ray.
                 const ShadingRay cutoff_ray(
-                    shading_point_ptr->get_point(),
+                    vertex.get_point(),
                     ray.m_dir,
                     ray.m_time,
                     ~0);            // ray flags
@@ -210,46 +213,38 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                 intersector.trace(
                     cutoff_ray,
                     shading_points[shading_point_index],
-                    shading_point_ptr);
+                    vertex.m_shading_point);
 
                 // Update the pointers to the shading points.
-                shading_point_ptr = &shading_points[shading_point_index];
+                vertex.m_shading_point = &shading_points[shading_point_index];
                 shading_point_index = 1 - shading_point_index;
 
                 continue;
             }
         }
 
-        // Retrieve the BSDF.
-        const BSDF* bsdf = material->get_bsdf();
+        // Retrieve the EDF and the BSDF.
+        vertex.m_edf = material->get_edf();
+        vertex.m_bsdf = material->get_bsdf();
 
         // Evaluate the input values of the BSDF.
         InputEvaluator bsdf_input_evaluator(texture_cache);
-        if (bsdf)
+        if (vertex.m_bsdf)
         {
-            bsdf->evaluate_inputs(
-                bsdf_input_evaluator,
-                shading_point_ptr->get_uv(0));
+            vertex.m_bsdf->evaluate_inputs(bsdf_input_evaluator, vertex.get_uv(0));
+            vertex.m_bsdf_data = bsdf_input_evaluator.data();
         }
 
         // Compute the outgoing direction.
-        const foundation::Vector3d outgoing = foundation::normalize(-ray.m_dir);
+        vertex.m_outgoing = foundation::normalize(-ray.m_dir);
+        vertex.m_cos_on = foundation::dot(vertex.m_outgoing, vertex.get_shading_normal());
 
         // Compute radiance contribution at this vertex.
-        if (!m_path_visitor.visit_vertex(
-                sampling_context,
-                *shading_point_ptr,
-                outgoing,
-                bsdf,
-                bsdf_input_evaluator.data(),
-                path_length,
-                prev_bsdf_mode,
-                prev_bsdf_prob,
-                throughput))
+        if (!m_path_visitor.visit_vertex(vertex))
             break;
 
         // Terminate the path if the material doesn't have a BSDF.
-        if (bsdf == 0)
+        if (vertex.m_bsdf == 0)
             break;
 
         // Sample the BSDF.
@@ -257,14 +252,14 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         Spectrum bsdf_value;
         double bsdf_prob;
         const BSDF::Mode bsdf_mode =
-            bsdf->sample(
+            vertex.m_bsdf->sample(
                 sampling_context,
-                bsdf_input_evaluator.data(),
+                vertex.m_bsdf_data,
                 Adjoint,
                 true,       // multiply by |cos(incoming, normal)|
-                shading_point_ptr->get_geometric_normal(),
-                shading_point_ptr->get_shading_basis(),
-                outgoing,
+                vertex.get_geometric_normal(),
+                vertex.get_shading_basis(),
+                vertex.m_outgoing,
                 incoming,
                 bsdf_value,
                 bsdf_prob);
@@ -272,20 +267,20 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             break;
 
         // Terminate the path if this scattering mode is not accepted.
-        if (!m_path_visitor.accept_scattering_mode(prev_bsdf_mode, bsdf_mode))
+        if (!m_path_visitor.accept_scattering_mode(vertex.m_prev_bsdf_mode, bsdf_mode))
             break;
 
-        prev_bsdf_prob = bsdf_prob;
-        prev_bsdf_mode = bsdf_mode;
+        vertex.m_prev_bsdf_prob = bsdf_prob;
+        vertex.m_prev_bsdf_mode = bsdf_mode;
 
         if (bsdf_prob != BSDF::DiracDelta)
             bsdf_value /= static_cast<float>(bsdf_prob);
 
         // Update the path throughput.
-        throughput *= bsdf_value;
+        vertex.m_throughput *= bsdf_value;
 
         // Use Russian Roulette to cut the path without introducing bias.
-        if (m_rr_min_path_length > 0 && path_length >= m_rr_min_path_length)
+        if (vertex.m_path_length >= m_rr_min_path_length)
         {
             // Generate a uniform sample in [0,1).
             sampling_context.split_in_place(1, 1);
@@ -303,19 +298,19 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
 
             // Adjust throughput to account for terminated paths.
             assert(scattering_prob > 0.0);
-            throughput /= static_cast<float>(scattering_prob);
+            vertex.m_throughput /= static_cast<float>(scattering_prob);
         }
 
         // Honor the user bounce limit.
-        if (m_max_path_length > 0 && path_length >= m_max_path_length)
+        if (vertex.m_path_length >= m_max_path_length)
             break;
 
         // Keep track of the number of bounces.
-        ++path_length;
+        ++vertex.m_path_length;
 
         // Construct the scattered ray.
         const ShadingRay scattered_ray(
-            shading_point_ptr->get_biased_point(incoming),
+            vertex.m_shading_point->get_biased_point(incoming),
             incoming,
             ray.m_time,
             ~0);            // ray flags
@@ -325,14 +320,14 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         intersector.trace(
             scattered_ray,
             shading_points[shading_point_index],
-            shading_point_ptr);
+            vertex.m_shading_point);
 
         // Update the pointers to the shading points.
-        shading_point_ptr = &shading_points[shading_point_index];
+        vertex.m_shading_point = &shading_points[shading_point_index];
         shading_point_index = 1 - shading_point_index;
     }
 
-    return path_length;
+    return vertex.m_path_length;
 }
 
 template <typename PathVisitor, bool Adjoint>

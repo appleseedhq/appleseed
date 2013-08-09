@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/lighting/pathvertex.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
@@ -65,6 +66,15 @@ void compute_ibl(
     const size_t                    bsdf_sample_count,      // number of samples in BSDF sampling
     const size_t                    env_sample_count,       // number of samples in environment sampling
     Spectrum&                       radiance);
+void compute_ibl(
+    const ShadingContext&           shading_context,
+    const EnvironmentEDF&           environment_edf,
+    const PathVertex&               vertex,
+    const int                       bsdf_sampling_modes,    // permitted scattering modes during BSDF sampling
+    const int                       env_sampling_modes,     // permitted scattering modes during environment sampling
+    const size_t                    bsdf_sample_count,      // number of samples in BSDF sampling
+    const size_t                    env_sample_count,       // number of samples in environment sampling
+    Spectrum&                       radiance);
 
 // Compute image-based lighting via BSDF sampling.
 void compute_ibl_bsdf_sampling(
@@ -75,6 +85,14 @@ void compute_ibl_bsdf_sampling(
     const foundation::Vector3d&     outgoing,               // world space outgoing direction, unit-length
     const BSDF&                     bsdf,
     const void*                     bsdf_data,
+    const int                       bsdf_sampling_modes,    // permitted scattering modes during BSDF sampling
+    const size_t                    bsdf_sample_count,      // number of samples in BSDF sampling
+    const size_t                    env_sample_count,       // number of samples in environment sampling
+    Spectrum&                       radiance);
+void compute_ibl_bsdf_sampling(
+    const ShadingContext&           shading_context,
+    const EnvironmentEDF&           environment_edf,
+    const PathVertex&               vertex,
     const int                       bsdf_sampling_modes,    // permitted scattering modes during BSDF sampling
     const size_t                    bsdf_sample_count,      // number of samples in BSDF sampling
     const size_t                    env_sample_count,       // number of samples in environment sampling
@@ -93,6 +111,90 @@ void compute_ibl_environment_sampling(
     const size_t                    bsdf_sample_count,      // number of samples in BSDF sampling
     const size_t                    env_sample_count,       // number of samples in environment sampling
     Spectrum&                       radiance);
+void compute_ibl_environment_sampling(
+    const ShadingContext&           shading_context,
+    const EnvironmentEDF&           environment_edf,
+    const PathVertex&               vertex,
+    const int                       env_sampling_modes,     // permitted scattering modes during environment sampling
+    const size_t                    bsdf_sample_count,      // number of samples in BSDF sampling
+    const size_t                    env_sample_count,       // number of samples in environment sampling
+    Spectrum&                       radiance);
+
+
+//
+// Implementation.
+//
+
+inline void compute_ibl(
+    const ShadingContext&           shading_context,
+    const EnvironmentEDF&           environment_edf,
+    const PathVertex&               vertex,
+    const int                       bsdf_sampling_modes,
+    const int                       env_sampling_modes,
+    const size_t                    bsdf_sample_count,
+    const size_t                    env_sample_count,
+    Spectrum&                       radiance)
+{
+    compute_ibl(
+        vertex.m_sampling_context,
+        shading_context,
+        environment_edf,
+        *vertex.m_shading_point,
+        vertex.m_outgoing,
+        *vertex.m_bsdf,
+        vertex.m_bsdf_data,
+        bsdf_sampling_modes,
+        env_sampling_modes,
+        bsdf_sample_count,
+        env_sample_count,
+        radiance);
+}
+
+inline void compute_ibl_bsdf_sampling(
+    const ShadingContext&           shading_context,
+    const EnvironmentEDF&           environment_edf,
+    const PathVertex&               vertex,
+    const int                       bsdf_sampling_modes,
+    const size_t                    bsdf_sample_count,
+    const size_t                    env_sample_count,
+    Spectrum&                       radiance)
+{
+    compute_ibl_bsdf_sampling(
+        vertex.m_sampling_context,
+        shading_context,
+        environment_edf,
+        *vertex.m_shading_point,
+        vertex.m_outgoing,
+        *vertex.m_bsdf,
+        vertex.m_bsdf_data,
+        bsdf_sampling_modes,
+        bsdf_sample_count,
+        env_sample_count,
+        radiance);
+}
+
+inline void compute_ibl_environment_sampling(
+    const ShadingContext&           shading_context,
+    const EnvironmentEDF&           environment_edf,
+    const PathVertex&               vertex,
+    const int                       env_sampling_modes,
+    const size_t                    bsdf_sample_count,
+    const size_t                    env_sample_count,
+    Spectrum&                       radiance)
+{
+    compute_ibl_environment_sampling(
+        vertex.m_sampling_context,
+        shading_context,
+        environment_edf,
+        *vertex.m_shading_point,
+        vertex.m_outgoing,
+        *vertex.m_bsdf,
+        vertex.m_bsdf_data,
+        env_sampling_modes,
+        bsdf_sample_count,
+        env_sample_count,
+        radiance);
+}
 
 }       // namespace renderer
 

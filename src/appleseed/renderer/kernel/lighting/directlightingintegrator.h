@@ -51,6 +51,9 @@
 #include <cmath>
 #include <cstddef>
 
+// Forward declarations.
+namespace renderer  { class PathVertex; }
+
 namespace renderer
 {
 
@@ -93,7 +96,7 @@ class DirectLightingIntegrator
         const double    q1,
         const double    q2);
 
-    // Constructor.
+    // Constructors.
     DirectLightingIntegrator(
         const ShadingContext&           shading_context,
         const LightSampler&             light_sampler,
@@ -101,6 +104,14 @@ class DirectLightingIntegrator
         const foundation::Vector3d&     outgoing,                   // world space outgoing direction, unit-length
         const BSDF&                     bsdf,
         const void*                     bsdf_data,
+        const int                       bsdf_sampling_modes,        // permitted scattering modes during BSDF sampling
+        const int                       light_sampling_modes,       // permitted scattering modes during environment sampling
+        const size_t                    bsdf_sample_count,          // number of samples in BSDF sampling
+        const size_t                    light_sample_count);        // number of samples in light sampling
+    DirectLightingIntegrator(
+        const ShadingContext&           shading_context,
+        const LightSampler&             light_sampler,
+        const PathVertex&               vertex,
         const int                       bsdf_sampling_modes,        // permitted scattering modes during BSDF sampling
         const int                       light_sampling_modes,       // permitted scattering modes during environment sampling
         const size_t                    bsdf_sample_count,          // number of samples in BSDF sampling

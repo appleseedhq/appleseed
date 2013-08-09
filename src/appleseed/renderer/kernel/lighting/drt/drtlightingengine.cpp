@@ -76,19 +76,24 @@ namespace
         {
             const bool      m_enable_ibl;                   // image-based lighting enabled?
 
-            const size_t    m_max_path_length;              // maximum path length, 0 for unlimited
-            const size_t    m_rr_min_path_length;           // minimum path length before Russian Roulette is used, 0 for unlimited
+            const size_t    m_max_path_length;              // maximum path length, ~0 for unlimited
+            const size_t    m_rr_min_path_length;           // minimum path length before Russian Roulette kicks in, ~0 for unlimited
 
             const size_t    m_dl_light_sample_count;        // number of light samples used to estimate direct illumination
             const size_t    m_ibl_env_sample_count;         // number of environment samples used to estimate IBL
 
             explicit Parameters(const ParamArray& params)
               : m_enable_ibl(params.get_optional<bool>("enable_ibl", true))
-              , m_max_path_length(params.get_optional<size_t>("max_path_length", 0))
-              , m_rr_min_path_length(params.get_optional<size_t>("rr_min_path_length", 3))
+              , m_max_path_length(nz(params.get_optional<size_t>("max_path_length", 0)))
+              , m_rr_min_path_length(nz(params.get_optional<size_t>("rr_min_path_length", 3)))
               , m_dl_light_sample_count(params.get_optional<size_t>("dl_light_samples", 1))
               , m_ibl_env_sample_count(params.get_optional<size_t>("ibl_env_samples", 1))
             {
+            }
+
+            static size_t nz(const size_t x)
+            {
+                return x == 0 ? ~0 : x;
             }
 
             void print() const
@@ -101,8 +106,8 @@ namespace
                     "  dl light samples %s\n"
                     "  ibl env samples  %s",
                     m_enable_ibl ? "on" : "off",
-                    m_max_path_length == 0 ? "infinite" : pretty_uint(m_max_path_length).c_str(),
-                    m_rr_min_path_length == 0 ? "infinite" : pretty_uint(m_rr_min_path_length).c_str(),
+                    m_max_path_length == ~0 ? "infinite" : pretty_uint(m_max_path_length).c_str(),
+                    m_rr_min_path_length == ~0 ? "infinite" : pretty_uint(m_rr_min_path_length).c_str(),
                     pretty_uint(m_dl_light_sample_count).c_str(),
                     pretty_uint(m_ibl_env_sample_count).c_str());
             }
@@ -165,9 +170,22 @@ namespace
         }
 
       private:
-        class PathVisitor
+        const Parameters        m_params;
+        const LightSampler&     m_light_sampler;
+
+        uint64                  m_path_count;
+        Population<uint64>      m_path_length;
+
+        struct PathVisitor
         {
-          public:
+            const Parameters&           m_params;
+            const LightSampler&         m_light_sampler;
+            const ShadingContext&       m_shading_context;
+            TextureCache&               m_texture_cache;
+            const EnvironmentEDF*       m_env_edf;
+            Spectrum&                   m_path_radiance;
+            SpectrumStack&              m_path_aovs;
+
             PathVisitor(
                 const Parameters&       params,
                 const LightSampler&     light_sampler,
@@ -202,54 +220,32 @@ namespace
                 return true;
             }
 
-            bool visit_vertex(
-                SamplingContext&        sampling_context,
-                const ShadingPoint&     shading_point,
-                const Vector3d&         outgoing,
-                const BSDF*             bsdf,
-                const void*             bsdf_data,
-                const size_t            path_length,
-                const BSDF::Mode        prev_bsdf_mode,
-                const double            prev_bsdf_prob,
-                const Spectrum&         throughput)
+            bool visit_vertex(const PathVertex& vertex)
             {
-                const Vector3d& point = shading_point.get_point();
-                const Vector3d& geometric_normal = shading_point.get_geometric_normal();
-                const Vector3d& shading_normal = shading_point.get_shading_normal();
-                const Basis3d& shading_basis = shading_point.get_shading_basis();
-                const Material* material = shading_point.get_material();
-
                 const int light_sampling_modes =
-                    prev_bsdf_mode == BSDF::Diffuse
+                    vertex.m_prev_bsdf_mode == BSDF::Diffuse
                         ? BSDF::Diffuse
                         : BSDF::AllScatteringModes;
 
                 Spectrum vertex_radiance;
                 SpectrumStack vertex_aovs(m_path_aovs.size());
 
-                if (bsdf)
+                if (vertex.m_bsdf)
                 {
-                    // Compute direct lighting.
-                    // We compute direct lighting by sampling both the lights and the BSDF.
-                    // Unlike in the path tracer, we need to sample the diffuse components
-                    // of the BSDF (with a single sample) because we won't extend the path
-                    // after a diffuse bounce.
-                    DirectLightingIntegrator integrator(
-                        m_shading_context,
-                        m_light_sampler,
-                        shading_point,
-                        outgoing,
-                        *bsdf,
-                        bsdf_data,
-                        BSDF::Diffuse,
+                    add_direct_lighting_contribution(
+                        vertex,
                         light_sampling_modes,
-                        1,                                  // a single BSDF sample since the path will be extended with a single ray
-                        m_params.m_dl_light_sample_count);  // the number of light samples is user-adjustable
-                    integrator.sample_bsdf_and_lights_low_variance(
-                        false,                              // never in an indirect lighting situation
-                        sampling_context,
                         vertex_radiance,
                         vertex_aovs);
+
+                    if (m_env_edf && m_params.m_enable_ibl)
+                    {
+                        add_image_based_lighting_contribution(
+                            vertex,
+                            light_sampling_modes,
+                            vertex_radiance,
+                            vertex_aovs);
+                    }
                 }
                 else
                 {
@@ -257,83 +253,96 @@ namespace
                     vertex_aovs.set(0.0f);
                 }
 
-                if (bsdf && m_env_edf && m_params.m_enable_ibl)
-                {
-                    // Compute image-based lighting.
-                    // We compute image-based lighting by sampling both the environment and
-                    // the BSDF. When sampling the BSDF, we limit ourselves to sampling
-                    // diffuse components of the BSDF (with a single sample) since sampling
-                    // of glossy components will be done by extending the current path.
-                    Spectrum ibl_radiance;
-                    compute_ibl(
-                        sampling_context,
-                        m_shading_context,
-                        *m_env_edf,
-                        shading_point,
-                        outgoing,
-                        *bsdf,
-                        bsdf_data,
-                        BSDF::Diffuse,
-                        light_sampling_modes,
-                        1,                                  // a single BSDF sample since the path will be extended with a single ray
-                        m_params.m_ibl_env_sample_count,    // the number of environment samples is user-adjustable
-                        ibl_radiance);
-                    vertex_radiance += ibl_radiance;
-                    vertex_aovs.add(m_env_edf->get_render_layer_index(), ibl_radiance);
-                }
-
-                const EDF* edf = material->get_edf();
-                const double cos_on = dot(outgoing, shading_normal);
-
-                if (edf && cos_on > 0.0)
-                {
-                    // Evaluate the input values of the EDF.
-                    InputEvaluator edf_input_evaluator(m_texture_cache);
-                    const void* edf_data =
-                        edf_input_evaluator.evaluate(
-                            edf->get_inputs(),
-                            shading_point.get_uv(0));
-
-                    // Compute the emitted radiance.
-                    Spectrum emitted_radiance;
-                    edf->evaluate(
-                        edf_data,
-                        geometric_normal,
-                        shading_basis,
-                        outgoing,
-                        emitted_radiance);
-
-                    // Multiple importance sampling.
-                    const double square_distance = square(shading_point.get_distance());
-                    if (prev_bsdf_mode != BSDF::Specular && square_distance > 0.0)
-                    {
-                        // Transform prev_bsdf_prob to surface area measure (Veach: 8.2.2.2 eq. 8.10).
-                        const double bsdf_point_prob = prev_bsdf_prob * cos_on / square_distance;
-
-                        // Compute the probability density wrt. surface area of choosing this point
-                        // by sampling the light sources.
-                        const double light_point_prob = m_light_sampler.evaluate_pdf(shading_point);
-
-                        // Apply MIS.
-                        const double mis_weight =
-                            mis_power2(
-                                1 * bsdf_point_prob,
-                                m_params.m_dl_light_sample_count * light_point_prob);
-                        emitted_radiance *= static_cast<float>(mis_weight);
-                    }
-
-                    vertex_radiance += emitted_radiance;
-                    vertex_aovs.add(edf->get_render_layer_index(), emitted_radiance);
-                }
+                add_emitted_light_contribution(
+                    vertex,
+                    vertex_radiance,
+                    vertex_aovs);
 
                 // Update the path radiance.
-                vertex_radiance *= throughput;
+                vertex_radiance *= vertex.m_throughput;
                 m_path_radiance += vertex_radiance;
-                vertex_aovs *= throughput;
+                vertex_aovs *= vertex.m_throughput;
                 m_path_aovs += vertex_aovs;
 
                 // Proceed with this path.
                 return true;
+            }
+
+            void add_direct_lighting_contribution(
+                const PathVertex&       vertex,
+                const int               light_sampling_modes,
+                Spectrum&               vertex_radiance,
+                SpectrumStack&          vertex_aovs)
+            {
+                // We compute direct lighting by sampling both the lights and the BSDF.
+                // Unlike in the path tracer, we need to sample the diffuse components
+                // of the BSDF (with a single sample) because we won't extend the path
+                // after a diffuse bounce.
+                DirectLightingIntegrator integrator(
+                    m_shading_context,
+                    m_light_sampler,
+                    vertex,
+                    BSDF::Diffuse,
+                    light_sampling_modes,
+                    1,                                      // a single BSDF sample since the path will be extended with a single ray
+                    m_params.m_dl_light_sample_count);      // the number of light samples is user-adjustable
+                integrator.sample_bsdf_and_lights_low_variance(
+                    false,                                  // never in an indirect lighting situation
+                    vertex.m_sampling_context,
+                    vertex_radiance,
+                    vertex_aovs);
+            }
+
+            void add_image_based_lighting_contribution(
+                const PathVertex&       vertex,
+                const int               light_sampling_modes,
+                Spectrum&               vertex_radiance,
+                SpectrumStack&          vertex_aovs)
+            {
+                Spectrum ibl_radiance;
+
+                // We compute image-based lighting by sampling both the environment and
+                // the BSDF. When sampling the BSDF, we limit ourselves to sampling
+                // diffuse components of the BSDF (with a single sample) since sampling
+                // of glossy components will be done by extending the current path.
+                compute_ibl(
+                    m_shading_context,
+                    *m_env_edf,
+                    vertex,
+                    BSDF::Diffuse,
+                    light_sampling_modes,
+                    1,                                      // a single BSDF sample since the path will be extended with a single ray
+                    m_params.m_ibl_env_sample_count,        // the number of environment samples is user-adjustable
+                    ibl_radiance);
+
+                vertex_radiance += ibl_radiance;
+                vertex_aovs.add(m_env_edf->get_render_layer_index(), ibl_radiance);
+            }
+
+            void add_emitted_light_contribution(
+                const PathVertex&       vertex,
+                Spectrum&               vertex_radiance,
+                SpectrumStack&          vertex_aovs)
+            {
+                if (vertex.m_edf && vertex.m_cos_on > 0.0)
+                {
+                    // Compute the emitted radiance.
+                    Spectrum emitted_radiance;
+                    vertex.compute_emitted_radiance(m_texture_cache, emitted_radiance);
+
+                    // Multiple importance sampling.
+                    if (vertex.m_prev_bsdf_mode != BSDF::Specular)
+                    {
+                        const double mis_weight =
+                            mis_power2(
+                                1 * vertex.get_bsdf_point_prob(),
+                                m_params.m_dl_light_sample_count * vertex.get_light_point_prob(m_light_sampler));
+                        emitted_radiance *= static_cast<float>(mis_weight);
+                    }
+
+                    vertex_radiance += emitted_radiance;
+                    vertex_aovs.add(vertex.m_edf->get_render_layer_index(), emitted_radiance);
+                }
             }
 
             void visit_environment(
@@ -379,22 +388,7 @@ namespace
                 m_path_radiance += env_radiance;
                 m_path_aovs.add(m_env_edf->get_render_layer_index(), env_radiance);
             }
-
-          private:
-            const Parameters&       m_params;
-            const LightSampler&     m_light_sampler;
-            const ShadingContext&   m_shading_context;
-            TextureCache&           m_texture_cache;
-            const EnvironmentEDF*   m_env_edf;
-            Spectrum&               m_path_radiance;
-            SpectrumStack&          m_path_aovs;
         };
-
-        const Parameters        m_params;
-        const LightSampler&     m_light_sampler;
-
-        uint64                  m_path_count;
-        Population<uint64>      m_path_length;
     };
 }
 
