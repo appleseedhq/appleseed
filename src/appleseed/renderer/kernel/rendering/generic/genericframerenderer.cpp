@@ -30,12 +30,12 @@
 #include "genericframerenderer.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
 #include "renderer/kernel/rendering/generic/tilejob.h"
 #include "renderer/kernel/rendering/generic/tilejobfactory.h"
 #include "renderer/kernel/rendering/framerendererbase.h"
 #include "renderer/kernel/rendering/itilecallback.h"
 #include "renderer/kernel/rendering/itilerenderer.h"
-#include "renderer/modeling/frame/frame.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
@@ -43,6 +43,10 @@
 #include "foundation/utility/statistics.h"
 
 // Standard headers.
+#include <cassert>
+#include <cstddef>
+#include <memory>
+#include <string>
 #include <vector>
 
 using namespace foundation;
@@ -104,18 +108,18 @@ namespace
                 (*i)->release();
         }
 
-        virtual void release()
+        virtual void release() OVERRIDE
         {
             delete this;
         }
 
-        virtual void render()
+        virtual void render() OVERRIDE
         {
             start_rendering();
             m_job_queue.wait_until_completion();
         }
 
-        virtual void start_rendering()
+        virtual void start_rendering() OVERRIDE
         {
             assert(!is_rendering());
             assert(!m_job_queue.has_scheduled_or_running_jobs());
@@ -140,7 +144,7 @@ namespace
             m_job_manager->start();
         }
 
-        virtual void stop_rendering()
+        virtual void stop_rendering() OVERRIDE
         {
             // Tell rendering jobs to stop.
             m_abort_switch.abort();
@@ -152,14 +156,14 @@ namespace
             m_job_queue.clear_scheduled_jobs();
         }
 
-        virtual void terminate_rendering()
+        virtual void terminate_rendering() OVERRIDE
         {
             stop_rendering();
 
             print_tile_renderers_stats();
         }
 
-        virtual bool is_rendering() const
+        virtual bool is_rendering() const OVERRIDE
         {
             return m_job_queue.has_scheduled_or_running_jobs();
         }
