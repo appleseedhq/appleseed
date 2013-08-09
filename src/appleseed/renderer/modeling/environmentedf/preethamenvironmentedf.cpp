@@ -75,6 +75,9 @@ namespace
 
     const char* Model = "preetham_environment_edf";
 
+    // The smallest valid turbidity value.
+    const double BaseTurbidity = 2.0;
+
     class PreethamEnvironmentEDF
       : public EnvironmentEDF
     {
@@ -88,9 +91,9 @@ namespace
             m_inputs.declare("sun_theta", InputFormatScalar);
             m_inputs.declare("sun_phi", InputFormatScalar);
             m_inputs.declare("turbidity", InputFormatScalar);
-            m_inputs.declare("turbidity_min", InputFormatScalar, "2.0");
-            m_inputs.declare("turbidity_max", InputFormatScalar, "6.0");
+            m_inputs.declare("turbidity_multiplier", InputFormatScalar, "2.0");
             m_inputs.declare("luminance_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("luminance_gamma", InputFormatScalar, "1.0");
             m_inputs.declare("saturation_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("horizon_shift", InputFormatScalar, "0.0");
         }
@@ -123,6 +126,10 @@ namespace
             m_uniform_turbidity = m_inputs.source("turbidity")->is_uniform();
             if (m_uniform_turbidity)
             {
+                // Apply turbidity multiplier and bias.
+                m_uniform_values.m_turbidity *= m_uniform_values.m_turbidity_multiplier;
+                m_uniform_values.m_turbidity += BaseTurbidity;
+
                 // Precompute the coefficients of the luminance and chromaticity distribution functions.
                 compute_x_coefficients(m_uniform_values.m_turbidity, m_uniform_x_coeffs);
                 compute_y_coefficients(m_uniform_values.m_turbidity, m_uniform_y_coeffs);
@@ -198,9 +205,9 @@ namespace
             double  m_sun_theta;                    // sun zenith angle in degrees, 0=zenith
             double  m_sun_phi;                      // degrees
             double  m_turbidity;                    // atmosphere turbidity
-            double  m_turbidity_min;
-            double  m_turbidity_max;
+            double  m_turbidity_multiplier;
             double  m_luminance_multiplier;
+            double  m_luminance_gamma;
             double  m_saturation_multiplier;
             double  m_horizon_shift;
         };
@@ -346,13 +353,11 @@ namespace
                 double u, v;
                 unit_vector_to_angles(outgoing, theta, phi);
                 angles_to_unit_square(theta, phi, u, v);
-                const double turbidity =
-                    fit(
-                        input_evaluator.evaluate<InputValues>(m_inputs, Vector2d(u, v))->m_turbidity,
-                        0.0,
-                        1.0,
-                        m_uniform_values.m_turbidity_min,
-                        m_uniform_values.m_turbidity_max);
+                double turbidity = input_evaluator.evaluate<InputValues>(m_inputs, Vector2d(u, v))->m_turbidity;
+
+                // Apply turbidity multiplier and bias.
+                turbidity *= m_uniform_values.m_turbidity_multiplier;
+                turbidity += BaseTurbidity;
 
                 // Compute the coefficients of the luminance and chromaticity distribution functions.
                 double Y_coeffs[5], x_coeffs[5], y_coeffs[5];
@@ -388,17 +393,21 @@ namespace
                 xyY = ciexyz_to_ciexyy(ciexyz);
             }
 
-            // Convert the sky chromaticity to a spectrum.
+            // Split sky color into luminance and chromaticity.
+            float luminance = static_cast<float>(xyY[2]);
             daylight_ciexy_to_spectrum(xyY[0], xyY[1], value);
+
+            // Apply luminance gamma and multiplier.
+            if (m_uniform_values.m_luminance_gamma != 1.0)
+                luminance = pow(luminance, static_cast<float>(m_uniform_values.m_luminance_gamma));
+            luminance *= static_cast<float>(m_uniform_values.m_luminance_multiplier);
 
             // Compute the final sky radiance.
             value *=
-                static_cast<float>(
-                      m_uniform_values.m_luminance_multiplier   // luminance multiplier
-                    / sum_value(value * XYZCMFCIE19312Deg[1])   // normalize to unit luminance
-                    * xyY[2]                                    // apply computed luminance
-                    / 683.0                                     // convert lumens to Watts
-                    * RcpPi);                                   // convert irradiance to radiance
+                  luminance                                 // start with computed luminance
+                / sum_value(value * XYZCMFCIE19312Deg[1])   // normalize to unit luminance
+                * (1.0f / 683.0f)                           // convert lumens to Watts
+                * static_cast<float>(RcpPi);                // convert irradiance to radiance
         }
 
         Vector3d shift(Vector3d v) const
@@ -456,27 +465,17 @@ DictionaryArray PreethamEnvironmentEDFFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "required")
-            .insert("default", "4.0"));
+            .insert("default", "1.0"));
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "turbidity_min")
-            .insert("label", "Turbidity Min")
+            .insert("name", "turbidity_multiplier")
+            .insert("label", "Turbidity Multiplier")
             .insert("type", "numeric")
-            .insert("min_value", "1.0")
-            .insert("max_value", "10.0")
+            .insert("min_value", "0.0")
+            .insert("max_value", "8.0")
             .insert("use", "optional")
             .insert("default", "2.0"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "turbidity_max")
-            .insert("label", "Turbidity Max")
-            .insert("type", "numeric")
-            .insert("min_value", "1.0")
-            .insert("max_value", "10.0")
-            .insert("use", "optional")
-            .insert("default", "6.0"));
 
     metadata.push_back(
         Dictionary()
@@ -485,6 +484,16 @@ DictionaryArray PreethamEnvironmentEDFFactory::get_input_metadata() const
             .insert("type", "numeric")
             .insert("min_value", "0.0")
             .insert("max_value", "10.0")
+            .insert("use", "optional")
+            .insert("default", "1.0"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "luminance_gamma")
+            .insert("label", "Luminance Gamma")
+            .insert("type", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "3.0")
             .insert("use", "optional")
             .insert("default", "1.0"));
 
