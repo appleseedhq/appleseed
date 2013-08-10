@@ -26,23 +26,50 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_BSDF_H
-#define APPLESEED_RENDERER_API_BSDF_H
+#ifndef APPLESEED_RENDERER_MODELING_BSDF_BSDFBLEND_H
+#define APPLESEED_RENDERER_MODELING_BSDF_BSDFBLEND_H
 
-// API headers.
-#include "renderer/modeling/bsdf/ashikhminbrdf.h"
-#include "renderer/modeling/bsdf/bsdf.h"
-#include "renderer/modeling/bsdf/bsdfblend.h"
-#include "renderer/modeling/bsdf/bsdffactoryregistrar.h"
-#include "renderer/modeling/bsdf/bsdfmix.h"
-#include "renderer/modeling/bsdf/bsdftraits.h"
-#include "renderer/modeling/bsdf/diffusebtdf.h"
+// appleseed.renderer headers.
 #include "renderer/modeling/bsdf/ibsdffactory.h"
-#include "renderer/modeling/bsdf/kelemenbrdf.h"
-#include "renderer/modeling/bsdf/lambertianbrdf.h"
-#include "renderer/modeling/bsdf/microfacetbrdf.h"
-#include "renderer/modeling/bsdf/nullbsdf.h"
-#include "renderer/modeling/bsdf/specularbrdf.h"
-#include "renderer/modeling/bsdf/specularbtdf.h"
 
-#endif  // !APPLESEED_RENDERER_API_BSDF_H
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
+#include "foundation/utility/autoreleaseptr.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+// Forward declarations.
+namespace foundation    { class DictionaryArray; }
+namespace renderer      { class BSDF; }
+namespace renderer      { class ParamArray; }
+
+namespace renderer
+{
+
+//
+// BSDF blend factory.
+//
+
+class DLLSYMBOL BSDFBlendFactory
+  : public IBSDFFactory
+{
+  public:
+    // Return a string identifying this BSDF model.
+    virtual const char* get_model() const OVERRIDE;
+
+    // Return a human-readable string identifying this BSDF model.
+    virtual const char* get_human_readable_model() const OVERRIDE;
+
+    // Return a set of input metadata for this BSDF model.
+    virtual foundation::DictionaryArray get_input_metadata() const OVERRIDE;
+
+    // Create a new BSDF instance.
+    virtual foundation::auto_release_ptr<BSDF> create(
+        const char*         name,
+        const ParamArray&   params) const OVERRIDE;
+};
+
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_MODELING_BSDF_BSDFBLEND_H

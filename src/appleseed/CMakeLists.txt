@@ -1132,6 +1132,8 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/ashikhminbrdf.h
     renderer/modeling/bsdf/bsdf.cpp
     renderer/modeling/bsdf/bsdf.h
+    renderer/modeling/bsdf/bsdfblend.cpp
+    renderer/modeling/bsdf/bsdfblend.h
     renderer/modeling/bsdf/bsdffactoryregistrar.cpp
     renderer/modeling/bsdf/bsdffactoryregistrar.h
     renderer/modeling/bsdf/bsdfmix.cpp

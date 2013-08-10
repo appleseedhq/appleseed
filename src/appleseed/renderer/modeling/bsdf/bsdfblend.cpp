@@ -27,7 +27,7 @@
 //
 
 // Interface header.
-#include "bsdfmix.h"
+#include "bsdfblend.h"
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
@@ -60,22 +60,21 @@ namespace renderer
 namespace
 {
     //
-    // A mix of two BSDFs, each with its own weight.
+    // A blend of two BSDFs, with a single weight controlling the amount of each.
     //
 
-    const char* Model = "bsdf_mix";
+    const char* Model = "bsdf_blend";
 
-    class BSDFMixImpl
+    class BSDFBlendImpl
       : public BSDF
     {
       public:
-        BSDFMixImpl(
+        BSDFBlendImpl(
             const char*         name,
             const ParamArray&   params)
           : BSDF(name, Reflective, params)
         {
-            m_inputs.declare("weight0", InputFormatScalar);
-            m_inputs.declare("weight1", InputFormatScalar);
+            m_inputs.declare("weight", InputFormatScalar);
         }
 
         virtual void release() OVERRIDE
@@ -156,17 +155,7 @@ namespace
 
             // Retrieve the blending weights.
             const InputValues* values = static_cast<const InputValues*>(data);
-            double w[2] = { values->m_weight[0], values->m_weight[1] };
-
-            // Handle absorption.
-            const double total_weight = w[0] + w[1];
-            if (total_weight == 0.0)
-                return Absorption;
-
-            // Normalize the blending weights.
-            const double rcp_total_weight = 1.0 / total_weight;
-            w[0] *= rcp_total_weight;
-            w[1] *= rcp_total_weight;
+            double w[2] = { values->m_weight, 1.0 - values->m_weight };
 
             // Choose which of the two BSDFs to sample.
             sampling_context.split_in_place(1, 1);
@@ -245,18 +234,8 @@ namespace
 
             // Retrieve the blending weights.
             const InputValues* values = static_cast<const InputValues*>(data);
-            double w0 = values->m_weight[0];
-            double w1 = values->m_weight[1];
-            const double total_weight = w0 + w1;
-
-            // Handle absorption.
-            if (total_weight == 0.0)
-                return 0.0;
-
-            // Normalize the blending weights.
-            const double rcp_total_weight = 1.0 / total_weight;
-            w0 *= rcp_total_weight;
-            w1 *= rcp_total_weight;
+            double w0 = values->m_weight;
+            double w1 = 1.0 - w0;
 
             // Evaluate the first BSDF.
             Spectrum bsdf0_value;
@@ -315,13 +294,8 @@ namespace
 
             // Retrieve the blending weights.
             const InputValues* values = static_cast<const InputValues*>(data);
-            double w0 = values->m_weight[0];
-            double w1 = values->m_weight[1];
-            const double total_weight = w0 + w1;
-
-            // Handle absorption.
-            if (total_weight == 0.0)
-                return 0.0;
+            double w0 = values->m_weight;
+            double w1 = 1.0 - w0;
 
             // Evaluate the PDF of the first BSDF.
             const double bsdf0_prob =
@@ -344,13 +318,13 @@ namespace
                     modes);
 
             // Blend PDF values.
-            return (bsdf0_prob * w0 + bsdf1_prob * w1) / total_weight;
+            return bsdf0_prob * w0 + bsdf1_prob * w1;
         }
 
       private:
         DECLARE_INPUT_VALUES(InputValues)
         {
-            double  m_weight[2];
+            double  m_weight;
         };
 
         const BSDF* m_bsdf[2];
@@ -379,25 +353,25 @@ namespace
         }
     };
 
-    typedef BSDFWrapper<BSDFMixImpl> BSDFMix;
+    typedef BSDFWrapper<BSDFBlendImpl> BSDFBlend;
 }
 
 
 //
-// BSDFMixFactory class implementation.
+// BSDFBlendFactory class implementation.
 //
 
-const char* BSDFMixFactory::get_model() const
+const char* BSDFBlendFactory::get_model() const
 {
     return Model;
 }
 
-const char* BSDFMixFactory::get_human_readable_model() const
+const char* BSDFBlendFactory::get_human_readable_model() const
 {
-    return "BSDF Mix";
+    return "BSDF Blend";
 }
 
-DictionaryArray BSDFMixFactory::get_input_metadata() const
+DictionaryArray BSDFBlendFactory::get_input_metadata() const
 {
     DictionaryArray metadata;
 
@@ -412,16 +386,6 @@ DictionaryArray BSDFMixFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "weight0")
-            .insert("label", "Weight 1")
-            .insert("type", "colormap")
-            .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
-            .insert("use", "required")
-            .insert("default", "0.5"));
-
-    metadata.push_back(
-        Dictionary()
             .insert("name", "bsdf1")
             .insert("label", "BSDF 2")
             .insert("type", "entity")
@@ -431,8 +395,8 @@ DictionaryArray BSDFMixFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "weight1")
-            .insert("label", "Weight 2")
+            .insert("name", "weight")
+            .insert("label", "Weight")
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
@@ -442,11 +406,11 @@ DictionaryArray BSDFMixFactory::get_input_metadata() const
     return metadata;
 }
 
-auto_release_ptr<BSDF> BSDFMixFactory::create(
+auto_release_ptr<BSDF> BSDFBlendFactory::create(
     const char*         name,
     const ParamArray&   params) const
 {
-    return auto_release_ptr<BSDF>(new BSDFMix(name, params));
+    return auto_release_ptr<BSDF>(new BSDFBlend(name, params));
 }
 
 }   // namespace renderer
