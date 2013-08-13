@@ -361,13 +361,13 @@ namespace
             const string bsdf_name = m_params.get_required<string>(param_name, "");
             if (bsdf_name.empty())
             {
-                RENDERER_LOG_ERROR("while preparing bsdf \"%s\": no bsdf bound to \"%s\".", get_name(), param_name);
+                RENDERER_LOG_ERROR("while preparing bsdf \"%s\": no bsdf bound to \"%s\".", get_path().c_str(), param_name);
                 return 0;
             }
 
             const BSDF* bsdf = assembly.bsdfs().get_by_name(bsdf_name.c_str());
             if (bsdf == 0)
-                RENDERER_LOG_ERROR("while preparing bsdf \"%s\": cannot find bsdf \"%s\".", get_name(), bsdf_name.c_str());
+                RENDERER_LOG_ERROR("while preparing bsdf \"%s\": cannot find bsdf \"%s\".", get_path().c_str(), bsdf_name.c_str());
 
             return bsdf;
         }

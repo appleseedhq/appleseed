@@ -107,7 +107,7 @@ bool Material::on_frame_begin(
     const Project&      project,
     const Assembly&     assembly)
 {
-    const EntityDefMessageContext context("material", get_name());
+    const EntityDefMessageContext context("material", this);
 
     m_surface_shader = get_uncached_surface_shader();
     m_bsdf = get_uncached_bsdf();

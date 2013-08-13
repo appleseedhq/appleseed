@@ -105,7 +105,7 @@ namespace
                     RENDERER_LOG_ERROR(
                         "while preparing environment shader \"%s\": "
                         "cannot find environment EDF \"%s\".",
-                        get_name(),
+                        get_path().c_str(),
                         m_env_edf_name.c_str());
 
                     return false;

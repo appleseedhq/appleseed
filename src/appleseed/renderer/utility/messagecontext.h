@@ -35,6 +35,9 @@
 // Standard headers.
 #include <string>
 
+// Forward declarations.
+namespace renderer  { class Entity; }
+
 namespace renderer
 {
 
@@ -73,8 +76,8 @@ class DLLSYMBOL EntityDefMessageContext
 {
   public:
     EntityDefMessageContext(
-        const char* entity_type,
-        const char* entity_name);
+        const char*     entity_type,
+        const Entity*   entity);
 };
 
 

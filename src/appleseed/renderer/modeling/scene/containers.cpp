@@ -27,69 +27,47 @@
 //
 
 // Interface header.
-#include "messagecontext.h"
+#include "containers.h"
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entity.h"
 
+using namespace foundation;
 using namespace std;
 
 namespace renderer
 {
 
 //
-// MessageContext class implementation.
+// ExceptionUnknownEntity class implementation.
 //
 
-struct MessageContext::Impl
+namespace
 {
-    string m_message;
-};
+    string build_message(
+        const char*     entity_name,
+        const Entity*   context)
+    {
+        return
+            context
+                ? "while defining \"" + context->get_path() + "\": unknown entity"
+                : "unknown entity";
+    }
+}
 
-MessageContext::MessageContext()
-  : impl(0)
+ExceptionUnknownEntity::ExceptionUnknownEntity(
+    const char*         entity_name,
+    const Entity*       context)
+  : StringException(
+        build_message(entity_name, context).c_str(),
+        entity_name)
+  , m_context_path(context->get_path())
 {
 }
 
-MessageContext::MessageContext(const char* message)
-  : impl(0)
+const string& ExceptionUnknownEntity::get_context_path() const
 {
-    set_message(message);
-}
-
-MessageContext::~MessageContext()
-{
-    delete impl;
-}
-
-bool MessageContext::empty() const
-{
-    return impl == 0 || impl->m_message.empty();
-}
-
-const char* MessageContext::get() const
-{
-    return impl ? impl->m_message.c_str() : "";
-}
-
-void MessageContext::set_message(const char* message)
-{
-    if (impl == 0)
-        impl = new Impl();
-
-    impl->m_message = message;
-}
-
-
-//
-// EntityDefMessageContext class implementation.
-//
-
-EntityDefMessageContext::EntityDefMessageContext(
-    const char*     entity_type,
-    const Entity*   entity)
-{
-    set_message("while defining " + string(entity_type) + " \"" + entity->get_path() + "\"");
+    return m_context_path;
 }
 
 }   // namespace renderer

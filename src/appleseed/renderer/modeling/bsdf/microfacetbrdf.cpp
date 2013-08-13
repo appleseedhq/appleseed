@@ -107,7 +107,7 @@ namespace
             if (!BSDF::on_frame_begin(project, assembly))
                 return false;
 
-            const EntityDefMessageContext context("bsdf", get_name());
+            const EntityDefMessageContext context("bsdf", this);
             const string mdf =
                 m_params.get_required<string>(
                     "mdf",

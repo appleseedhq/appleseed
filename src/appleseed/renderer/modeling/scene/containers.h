@@ -83,13 +83,18 @@ typedef TypedEntityVector<TextureInstance>      TextureInstanceContainer;
 // Exception thrown when an entity is not found.
 //
 
-struct ExceptionUnknownEntity
+class ExceptionUnknownEntity
   : public foundation::StringException
 {
-    explicit ExceptionUnknownEntity(const char* s)
-      : foundation::StringException("unknown entity", s)
-    {
-    }
+  public:
+    explicit ExceptionUnknownEntity(
+        const char*     entity_name,
+        const Entity*   context = 0);
+
+    const std::string& get_context_path() const;
+
+  private:
+    const std::string m_context_path;
 };
 
 
