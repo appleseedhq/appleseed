@@ -851,6 +851,17 @@ source_group ("renderer\\kernel\\lighting\\drt" FILES
     ${renderer_kernel_lighting_drt_sources}
 )
 
+set (renderer_kernel_lighting_lighttracing_sources
+    renderer/kernel/lighting/lighttracing/lighttracingsamplegenerator.cpp
+    renderer/kernel/lighting/lighttracing/lighttracingsamplegenerator.h
+)
+list (APPEND appleseed_sources
+    ${renderer_kernel_lighting_lighttracing_sources}
+)
+source_group ("renderer\\kernel\\lighting\\lighttracing" FILES
+    ${renderer_kernel_lighting_lighttracing_sources}
+)
+
 set (renderer_kernel_lighting_null_sources
     renderer/kernel/lighting/null/nulllightingengine.h
 )
@@ -870,6 +881,19 @@ list (APPEND appleseed_sources
 )
 source_group ("renderer\\kernel\\lighting\\pt" FILES
     ${renderer_kernel_lighting_pt_sources}
+)
+
+set (renderer_kernel_lighting_sppm_sources
+    renderer/kernel/lighting/sppm/sppmlightingengine.cpp
+    renderer/kernel/lighting/sppm/sppmlightingengine.h
+    renderer/kernel/lighting/sppm/sppmpasscallback.cpp
+    renderer/kernel/lighting/sppm/sppmpasscallback.h
+)
+list (APPEND appleseed_sources
+    ${renderer_kernel_lighting_sppm_sources}
+)
+source_group ("renderer\\kernel\\lighting\\sppm" FILES
+    ${renderer_kernel_lighting_sppm_sources}
 )
 
 set (renderer_kernel_lighting_sources
@@ -950,17 +974,6 @@ source_group ("renderer\\kernel\\rendering\\generic" FILES
     ${renderer_kernel_rendering_generic_sources}
 )
 
-set (renderer_kernel_rendering_lighttracing_sources
-    renderer/kernel/rendering/lighttracing/lighttracingsamplegenerator.cpp
-    renderer/kernel/rendering/lighttracing/lighttracingsamplegenerator.h
-)
-list (APPEND appleseed_sources
-    ${renderer_kernel_rendering_lighttracing_sources}
-)
-source_group ("renderer\\kernel\\rendering\\lighttracing" FILES
-    ${renderer_kernel_rendering_lighttracing_sources}
-)
-
 set (renderer_kernel_rendering_progressive_sources
     renderer/kernel/rendering/progressive/progressiveframerenderer.cpp
     renderer/kernel/rendering/progressive/progressiveframerenderer.h
@@ -984,6 +997,7 @@ set (renderer_kernel_rendering_sources
     renderer/kernel/rendering/globalsampleaccumulationbuffer.cpp
     renderer/kernel/rendering/globalsampleaccumulationbuffer.h
     renderer/kernel/rendering/iframerenderer.h
+    renderer/kernel/rendering/ipasscallback.h
     renderer/kernel/rendering/ipixelrenderer.h
     renderer/kernel/rendering/irenderercontroller.h
     renderer/kernel/rendering/isamplegenerator.h

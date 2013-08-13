@@ -34,6 +34,7 @@
 #include "renderer/kernel/rendering/generic/tilejob.h"
 #include "renderer/kernel/rendering/generic/tilejobfactory.h"
 #include "renderer/kernel/rendering/framerendererbase.h"
+#include "renderer/kernel/rendering/ipasscallback.h"
 #include "renderer/kernel/rendering/itilecallback.h"
 #include "renderer/kernel/rendering/itilerenderer.h"
 
@@ -87,7 +88,8 @@ namespace
                 new JobManager(
                     global_logger(),
                     m_job_queue,
-                    m_params.m_thread_count));
+                    m_params.m_thread_count,
+                    JobManager::KeepRunningOnEmptyQueue));
 
             // Instantiate tile renderers, one per rendering thread.
             for (size_t i = 0; i < m_params.m_thread_count; ++i)
@@ -261,8 +263,8 @@ namespace
             virtual void execute(const size_t thread_index) OVERRIDE
             {
                 // Invoke the pass callback if there is one.
-                //if (m_pass_callback)
-                //    m_pass_callback->invoke();
+                if (m_pass_callback)
+                    m_pass_callback->pre_render();
 
                 // Create tile jobs.
                 TileJobFactory::TileJobVector tile_jobs;

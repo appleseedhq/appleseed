@@ -26,64 +26,46 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_LIGHTTRACING_LIGHTTRACINGSAMPLEGENERATOR_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_LIGHTTRACING_LIGHTTRACINGSAMPLEGENERATOR_H
+#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMLIGHTINGENGINE_H
+#define APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMLIGHTINGENGINE_H
 
 // appleseed.renderer headers.
-#include "renderer/kernel/rendering/isamplegenerator.h"
+#include "renderer/kernel/lighting/ilightingengine.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 
-// Standard headers.
-#include <cstddef>
-
 // Forward declarations.
-namespace renderer  { class Frame; }
 namespace renderer  { class LightSampler; }
-namespace renderer  { class SampleAccumulationBuffer; }
-namespace renderer  { class Scene; }
-namespace renderer  { class TextureStore; }
-namespace renderer  { class TraceContext; }
 
 namespace renderer
 {
 
-class LightTracingSampleGeneratorFactory
-  : public ISampleGeneratorFactory
+//
+// SPPM lighting engine factory.
+//
+
+class SPPMLightingEngineFactory
+  : public ILightingEngineFactory
 {
   public:
     // Constructor.
-    LightTracingSampleGeneratorFactory(
-        const Scene&            scene,
-        const Frame&            frame,
-        const TraceContext&     trace_context,
-        TextureStore&           texture_store,
-        const LightSampler&     light_sampler,
-        const ParamArray&       params);
+    SPPMLightingEngineFactory(
+        const LightSampler& light_sampler,
+        const ParamArray&   params);
 
     // Delete this instance.
     virtual void release() OVERRIDE;
 
-    // Return a new sample generator instance.
-    virtual ISampleGenerator* create(
-        const size_t            generator_index,
-        const size_t            generator_count,
-        const bool              primary) OVERRIDE;
-
-    // Create an accumulation buffer for this sample generator.
-    virtual SampleAccumulationBuffer* create_sample_accumulation_buffer() OVERRIDE;
+    // Return a new path tracing lighting engine instance.
+    virtual ILightingEngine* create() OVERRIDE;
 
   private:
-    const Scene&                m_scene;
-    const Frame&                m_frame;
-    const TraceContext&         m_trace_context;
-    TextureStore&               m_texture_store;
-    const LightSampler&         m_light_sampler;
-    const ParamArray            m_params;
+    const LightSampler&     m_light_sampler;
+    ParamArray              m_params;
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_LIGHTTRACING_LIGHTTRACINGSAMPLEGENERATOR_H
+#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMLIGHTINGENGINE_H

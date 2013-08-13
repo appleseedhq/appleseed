@@ -31,7 +31,10 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/drt/drtlightingengine.h"
+#include "renderer/kernel/lighting/lighttracing/lighttracingsamplegenerator.h"
 #include "renderer/kernel/lighting/pt/ptlightingengine.h"
+#include "renderer/kernel/lighting/sppm/sppmlightingengine.h"
+#include "renderer/kernel/lighting/sppm/sppmpasscallback.h"
 #include "renderer/kernel/lighting/ilightingengine.h"
 #include "renderer/kernel/lighting/lightsampler.h"
 #include "renderer/kernel/rendering/debug/blanksamplerenderer.h"
@@ -45,9 +48,9 @@
 #include "renderer/kernel/rendering/generic/genericsamplegenerator.h"
 #include "renderer/kernel/rendering/generic/genericsamplerenderer.h"
 #include "renderer/kernel/rendering/generic/generictilerenderer.h"
-#include "renderer/kernel/rendering/lighttracing/lighttracingsamplegenerator.h"
 #include "renderer/kernel/rendering/progressive/progressiveframerenderer.h"
 #include "renderer/kernel/rendering/iframerenderer.h"
+#include "renderer/kernel/rendering/ipasscallback.h"
 #include "renderer/kernel/rendering/ipixelrenderer.h"
 #include "renderer/kernel/rendering/isamplegenerator.h"
 #include "renderer/kernel/rendering/isamplerenderer.h"
@@ -315,6 +318,13 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
                     light_sampler,
                     m_params.child("pt")));
         }
+        else if (lighting_engine_param == "sppm")
+        {
+            lighting_engine_factory.reset(
+                new SPPMLightingEngineFactory(
+                    light_sampler,
+                    m_params.child("sppm")));
+        }
         else
         {
             RENDERER_LOG_ERROR(
@@ -480,6 +490,30 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     }
 
     //
+    // Create a pass callback.
+    //
+
+    auto_ptr<IPassCallback> pass_callback;
+    {
+        const string pass_callback_param =
+            m_params.get_optional<string>("pass_callback", "");
+
+        if (pass_callback_param == "sppm")
+        {
+            pass_callback.reset(
+                new SPPMPassCallback());
+        }
+        else if (!pass_callback_param.empty())
+        {
+            RENDERER_LOG_ERROR(
+                "invalid value for \"pass_callback\" parameter: \"%s\".",
+                pass_callback_param.c_str());
+
+            return IRendererController::AbortRendering;
+        }
+    }
+
+    //
     // Create a frame renderer.
     //
 
@@ -498,8 +532,10 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
                     frame,
                     tile_renderer_factory.get(),
                     m_tile_callback_factory,
-                    0,
-                    GenericFrameRendererFactory::SinglePass,
+                    pass_callback.get(),
+                    pass_callback.get()
+                        ? GenericFrameRendererFactory::MultiPass
+                        : GenericFrameRendererFactory::SinglePass,
                     params));
         }
         else if (frame_renderer_param == "progressive")
