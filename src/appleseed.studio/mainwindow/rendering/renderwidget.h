@@ -71,6 +71,9 @@ class RenderWidget
         QWidget*                    parent = 0);
 
     // Thread-safe.
+    QImage get_image() const;
+
+    // Thread-safe.
     virtual void resize(
         const size_t                width,
         const size_t                height) OVERRIDE;
@@ -99,9 +102,9 @@ class RenderWidget
         const renderer::Frame&      frame) OVERRIDE;
 
   private:
-    QMutex      m_mutex;
-    QImage      m_image;
-    QPainter    m_painter;
+    mutable QMutex  m_mutex;
+    QImage          m_image;
+    QPainter        m_painter;
 
     std::auto_ptr<foundation::Tile> m_float_tile_storage;
     std::auto_ptr<foundation::Tile> m_uint8_tile_storage;

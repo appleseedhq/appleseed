@@ -44,6 +44,7 @@
 #include "foundation/platform/types.h"
 
 // Qt headers.
+#include <QMutexLocker>
 #include <Qt>
 
 // Standard headers.
@@ -75,11 +76,18 @@ RenderWidget::RenderWidget(
     resize(width, height);
 }
 
+QImage RenderWidget::get_image() const
+{
+    QMutexLocker locker(&m_mutex);
+
+    return m_image.copy();
+}
+
 void RenderWidget::resize(
     const size_t    width,
     const size_t    height)
 {
-    m_mutex.lock();
+    QMutexLocker locker(&m_mutex);
 
     setFixedWidth(static_cast<int>(width));
     setFixedHeight(static_cast<int>(height));
@@ -91,17 +99,13 @@ void RenderWidget::resize(
             QImage::Format_RGB888);
 
     clear(Color4f(0.0f));
-
-    m_mutex.unlock();
 }
 
 void RenderWidget::clear(const Color4f& color)
 {
-    m_mutex.lock();
+    QMutexLocker locker(&m_mutex);
 
     m_image.fill(color_to_qcolor(color).rgba());
-
-    m_mutex.unlock();
 }
 
 namespace
@@ -118,9 +122,9 @@ namespace
 
 void RenderWidget::multiply(const float multiplier)
 {
-    assert(multiplier >= 0.0f && multiplier <= 1.0f);
+    QMutexLocker locker(&m_mutex);
 
-    m_mutex.lock();
+    assert(multiplier >= 0.0f && multiplier <= 1.0f);
 
     const size_t image_width = static_cast<size_t>(m_image.width());
     const size_t image_height = static_cast<size_t>(m_image.height());
@@ -135,8 +139,6 @@ void RenderWidget::multiply(const float multiplier)
         for (size_t x = 0; x < image_width * 3; ++x)
             row[x] = truncate<uint8>(row[x] * multiplier);
     }
-
-    m_mutex.unlock();
 }
 
 namespace
@@ -180,7 +182,7 @@ void RenderWidget::highlight_region(
     const size_t    width,
     const size_t    height)
 {
-    m_mutex.lock();
+    QMutexLocker locker(&m_mutex);
 
     // Retrieve destination image information.
     const size_t image_width = static_cast<size_t>(m_image.width());
@@ -217,8 +219,6 @@ void RenderWidget::highlight_region(
         BracketExtent,
         BracketColor,
         sizeof(BracketColor));
-
-    m_mutex.unlock();
 }
 
 void RenderWidget::blit_tile(
@@ -226,18 +226,16 @@ void RenderWidget::blit_tile(
     const size_t    tile_x,
     const size_t    tile_y)
 {
-    m_mutex.lock();
+    QMutexLocker locker(&m_mutex);
 
     allocate_working_storage(frame.image().properties());
 
     blit_tile_no_lock(frame, tile_x, tile_y);
-
-    m_mutex.unlock();
 }
 
 void RenderWidget::blit_frame(const Frame& frame)
 {
-    m_mutex.lock();
+    QMutexLocker locker(&m_mutex);
 
     const CanvasProperties& frame_props = frame.image().properties();
 
@@ -248,8 +246,6 @@ void RenderWidget::blit_frame(const Frame& frame)
         for (size_t tx = 0; tx < frame_props.m_tile_count_x; ++tx)
             blit_tile_no_lock(frame, tx, ty);
     }
-
-    m_mutex.unlock();
 }
 
 namespace
@@ -336,13 +332,11 @@ void RenderWidget::blit_tile_no_lock(
 
 void RenderWidget::paintEvent(QPaintEvent* event)
 {
-    m_mutex.lock();
+    QMutexLocker locker(&m_mutex);
 
     m_painter.begin(this);
     m_painter.drawImage(rect(), m_image);
     m_painter.end();
-
-    m_mutex.unlock();
 }
 
 }   // namespace studio

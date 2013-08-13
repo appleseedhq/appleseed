@@ -188,6 +188,8 @@ set (mainwindow_rendering_sources
     mainwindow/rendering/qtrenderercontroller.h
     mainwindow/rendering/qttilecallbackfactory.cpp
     mainwindow/rendering/qttilecallbackfactory.h
+    mainwindow/rendering/renderclipboardhandler.cpp
+    mainwindow/rendering/renderclipboardhandler.h
     mainwindow/rendering/renderingmanager.cpp
     mainwindow/rendering/renderingmanager.h
     mainwindow/rendering/renderingtimer.h

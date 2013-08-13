@@ -248,6 +248,9 @@ void RenderTab::recreate_handlers()
         m_render_region_handler.get(), SIGNAL(signal_render_region(const QRect&)),
         SLOT(slot_set_render_region(const QRect&)));
 
+    // Clipboard handler.
+    m_clipboard_handler.reset(new RenderClipboardHandler(m_render_widget));
+
     // Initially, the picking handler is active and the render region is inactive.
     m_picking_handler->set_enabled(true);
     m_render_region_handler->set_enabled(false);
