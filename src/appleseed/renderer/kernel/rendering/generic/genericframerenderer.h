@@ -38,6 +38,7 @@
 
 // Forward declarations.
 namespace renderer  { class Frame; }
+namespace renderer  { class IPassCallback; }
 namespace renderer  { class ITileCallbackFactory; }
 namespace renderer  { class ITileRendererFactory; }
 
@@ -52,11 +53,19 @@ class GenericFrameRendererFactory
   : public IFrameRendererFactory
 {
   public:
+    enum PassMode
+    {
+        SinglePass,
+        MultiPass
+    };
+
     // Constructor.
     GenericFrameRendererFactory(
         const Frame&            frame,
         ITileRendererFactory*   tile_renderer_factory,
         ITileCallbackFactory*   tile_callback_factory,      // may be 0
+        IPassCallback*          pass_callback,              // may be 0
+        const PassMode          pass_mode,
         const ParamArray&       params);
 
     // Delete this instance.
@@ -70,12 +79,16 @@ class GenericFrameRendererFactory
         const Frame&            frame,
         ITileRendererFactory*   tile_renderer_factory,
         ITileCallbackFactory*   tile_callback_factory,      // may be 0
+        IPassCallback*          pass_callback,              // may be 0
+        const PassMode          pass_mode,
         const ParamArray&       params);
 
   private:
     const Frame&                m_frame;
     ITileRendererFactory*       m_tile_renderer_factory;
     ITileCallbackFactory*       m_tile_callback_factory;    // may be 0
+    IPassCallback*              m_pass_callback;            // may be 0
+    const PassMode              m_pass_mode;
     ParamArray                  m_params;
 };
 

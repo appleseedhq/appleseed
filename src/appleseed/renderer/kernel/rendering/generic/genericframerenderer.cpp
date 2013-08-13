@@ -65,13 +65,19 @@ namespace
       : public FrameRendererBase
     {
       public:
+        typedef GenericFrameRendererFactory::PassMode PassMode;
+
         GenericFrameRenderer(
             const Frame&            frame,
             ITileRendererFactory*   tile_renderer_factory,
             ITileCallbackFactory*   tile_callback_factory,
+            IPassCallback*          pass_callback,
+            const PassMode          pass_mode,
             const ParamArray&       params)
           : m_frame(frame)
+          , m_pass_mode(pass_mode)
           , m_params(params)
+          , m_pass_callback(pass_callback)
         {
             // We must have a renderer factory, but it's OK not to have a callback factory.
             assert(tile_renderer_factory);
@@ -126,19 +132,35 @@ namespace
 
             m_abort_switch.clear();
 
-            // Create tile jobs.
-            TileJobFactory::TileJobVector tile_jobs;
-            m_tile_job_factory.create(
-                m_frame,
-                m_params.m_tile_ordering,
-                m_tile_renderers,
-                m_tile_callbacks,
-                tile_jobs,
-                m_abort_switch);
+            if (m_pass_mode == GenericFrameRendererFactory::SinglePass)
+            {
+                // Create tile jobs.
+                TileJobFactory::TileJobVector tile_jobs;
+                m_tile_job_factory.create(
+                    m_frame,
+                    m_params.m_tile_ordering,
+                    m_tile_renderers,
+                    m_tile_callbacks,
+                    tile_jobs,
+                    m_abort_switch);
 
-            // Schedule tile jobs.
-            for (const_each<TileJobFactory::TileJobVector> i = tile_jobs; i; ++i)
-                m_job_queue.schedule(*i);
+                // Schedule tile jobs.
+                for (const_each<TileJobFactory::TileJobVector> i = tile_jobs; i; ++i)
+                    m_job_queue.schedule(*i);
+            }
+            else
+            {
+                // Create and schedule the initial pass job.
+                m_job_queue.schedule(
+                    new PassJob(
+                        m_frame,
+                        m_params.m_tile_ordering,
+                        m_tile_renderers,
+                        m_tile_callbacks,
+                        m_pass_callback,
+                        m_job_queue,
+                        m_abort_switch));
+            }
 
             // Start job execution.
             m_job_manager->start();
@@ -214,7 +236,76 @@ namespace
             }
         };
 
+        class PassJob
+          : public IJob
+        {
+          public:
+            PassJob(
+                const Frame&                        frame,
+                const TileJobFactory::TileOrdering  tile_ordering,
+                vector<ITileRenderer*>&             tile_renderers,
+                vector<ITileCallback*>&             tile_callbacks,
+                IPassCallback*                      pass_callback,
+                JobQueue&                           job_queue,
+                AbortSwitch&                        abort_switch)
+              : m_frame(frame)
+              , m_tile_ordering(tile_ordering)
+              , m_tile_renderers(tile_renderers)
+              , m_tile_callbacks(tile_callbacks)
+              , m_pass_callback(pass_callback)
+              , m_job_queue(job_queue)
+              , m_abort_switch(abort_switch)
+            {
+            }
+
+            virtual void execute(const size_t thread_index) OVERRIDE
+            {
+                // Invoke the pass callback if there is one.
+                //if (m_pass_callback)
+                //    m_pass_callback->invoke();
+
+                // Create tile jobs.
+                TileJobFactory::TileJobVector tile_jobs;
+                m_tile_job_factory.create(
+                    m_frame,
+                    m_tile_ordering,
+                    m_tile_renderers,
+                    m_tile_callbacks,
+                    tile_jobs,
+                    m_abort_switch);
+
+                // Schedule tile jobs.
+                for (const_each<TileJobFactory::TileJobVector> i = tile_jobs; i; ++i)
+                    m_job_queue.schedule(*i);
+
+                // This job reschedules itself automatically.
+                if (!m_abort_switch.is_aborted())
+                {
+                    m_job_queue.schedule(
+                        new PassJob(
+                            m_frame,
+                            m_tile_ordering,
+                            m_tile_renderers,
+                            m_tile_callbacks,
+                            m_pass_callback,
+                            m_job_queue,
+                            m_abort_switch));
+                }
+            }
+
+          private:
+            const Frame&                            m_frame;
+            const TileJobFactory::TileOrdering      m_tile_ordering;
+            vector<ITileRenderer*>&                 m_tile_renderers;
+            vector<ITileCallback*>&                 m_tile_callbacks;
+            IPassCallback*                          m_pass_callback;
+            JobQueue&                               m_job_queue;
+            AbortSwitch&                            m_abort_switch;
+            TileJobFactory                          m_tile_job_factory;
+        };
+
         const Frame&                m_frame;            // target framebuffer
+        const PassMode              m_pass_mode;
         const Parameters            m_params;
 
         JobQueue                    m_job_queue;
@@ -223,6 +314,7 @@ namespace
 
         vector<ITileRenderer*>      m_tile_renderers;   // tile renderers, one per thread
         vector<ITileCallback*>      m_tile_callbacks;   // tile callbacks, none or one per thread
+        IPassCallback*              m_pass_callback;
 
         TileJobFactory              m_tile_job_factory;
 
@@ -249,10 +341,14 @@ GenericFrameRendererFactory::GenericFrameRendererFactory(
     const Frame&            frame,
     ITileRendererFactory*   tile_renderer_factory,
     ITileCallbackFactory*   tile_callback_factory,
+    IPassCallback*          pass_callback,
+    const PassMode          pass_mode,
     const ParamArray&       params)
   : m_frame(frame)
   , m_tile_renderer_factory(tile_renderer_factory)  
   , m_tile_callback_factory(tile_callback_factory)
+  , m_pass_callback(pass_callback)
+  , m_pass_mode(pass_mode)
   , m_params(params)
 {
 }
@@ -269,6 +365,8 @@ IFrameRenderer* GenericFrameRendererFactory::create()
             m_frame,
             m_tile_renderer_factory,
             m_tile_callback_factory,
+            m_pass_callback,
+            m_pass_mode,
             m_params);
 }
 
@@ -276,6 +374,8 @@ IFrameRenderer* GenericFrameRendererFactory::create(
     const Frame&            frame,
     ITileRendererFactory*   tile_renderer_factory,
     ITileCallbackFactory*   tile_callback_factory,
+    IPassCallback*          pass_callback,
+    const PassMode          pass_mode,
     const ParamArray&       params)
 {
     return
@@ -283,6 +383,8 @@ IFrameRenderer* GenericFrameRendererFactory::create(
             frame,
             tile_renderer_factory,
             tile_callback_factory,
+            pass_callback,
+            pass_mode,
             params);
 }
 

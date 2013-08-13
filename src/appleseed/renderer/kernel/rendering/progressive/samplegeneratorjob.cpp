@@ -102,6 +102,7 @@ void SampleGeneratorJob::execute(const size_t thread_index)
     if (sample_count == 0)
         return;
 
+    // Invoke the pre-pass callback if there is one.
     if (m_tile_callback)
     {
         const CanvasProperties& props = m_frame.image().properties();
@@ -115,7 +116,8 @@ void SampleGeneratorJob::execute(const size_t thread_index)
     if (m_pass == 0)
     {
         // The first pass is uninterruptible in order to always get something
-        // on screen during navigation.
+        // on screen during navigation. todo: this needs to change as it will
+        // freeze rendering if the first pass cannot generate samples.
         AbortSwitch no_abort;
         m_sample_generator->generate_samples(sample_count, m_buffer, no_abort);
     }
@@ -132,6 +134,7 @@ void SampleGeneratorJob::execute(const size_t thread_index)
             m_tile_callback->post_render(&m_frame);
     }
 
+    // This job reschedules itself automatically.
     if (!m_abort_switch.is_aborted())
     {
         m_job_queue.schedule(
