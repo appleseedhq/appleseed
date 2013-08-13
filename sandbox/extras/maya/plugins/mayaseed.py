@@ -53,13 +53,13 @@ def ms_renderSettings_nodeCreator():
 
 def ms_renderSettings_nodeInitializer():
     # define attributes
-    #  output directory
+    # output directory
     output_dir_string = OpenMaya.MFnStringData().create(os.path.join("<ProjectDir>Mayaseed", "<SceneName>"))
     output_dir_Attr = OpenMaya.MFnTypedAttribute()
     ms_renderSettings.output_dir = output_dir_Attr.create("output_directory", "out_dir", OpenMaya.MFnData.kString, output_dir_string)
     ms_renderSettings.addAttribute(ms_renderSettings.output_dir)
 
-    #  output file
+    # output file
     output_file_string = OpenMaya.MFnStringData().create("<SceneName>.#.appleseed")
     output_file_Attr = OpenMaya.MFnTypedAttribute()
     ms_renderSettings.output_file = output_file_Attr.create("output_file", "out_file", OpenMaya.MFnData.kString, output_file_string)  
@@ -80,12 +80,12 @@ def ms_renderSettings_nodeInitializer():
     ms_renderSettings.convert_shading_nodes_to_textures = convert_shading_nodes_to_textures_nAttr.create("convert_shading_nodes_to_textures", "convert_shading_nodes", OpenMaya.MFnNumericData.kBoolean, True)
     ms_renderSettings.addAttribute(ms_renderSettings.convert_shading_nodes_to_textures)
 
-    #  overwrite existing textures
+    # overwrite existing textures
     overwrite_existing_textures_nAttr = OpenMaya.MFnNumericAttribute()
     ms_renderSettings.overwrite_existing_textures = overwrite_existing_textures_nAttr.create("overwrite_existing_textures", "overwrite_exrs", OpenMaya.MFnNumericData.kBoolean, True)
     ms_renderSettings.addAttribute(ms_renderSettings.overwrite_existing_textures)
 
-    #  overwrite existing geometry
+    # overwrite existing geometry
     overwrite_existing_geometry_nAttr = OpenMaya.MFnNumericAttribute()
     ms_renderSettings.overwrite_existing_geometry = overwrite_existing_geometry_nAttr.create("overwrite_existing_geometry", "overwrite_geo", OpenMaya.MFnNumericData.kBoolean, True)
     ms_renderSettings.addAttribute(ms_renderSettings.overwrite_existing_geometry)
@@ -155,6 +155,11 @@ def ms_renderSettings_nodeInitializer():
     environment_msgAttr = OpenMaya.MFnMessageAttribute()
     ms_renderSettings.environment = environment_msgAttr.create("environment", "env")   
     ms_renderSettings.addAttribute(ms_renderSettings.environment)
+
+    # render_sky
+    render_skynAttr = OpenMaya.MFnNumericAttribute()
+    ms_renderSettings.render_sky = render_skynAttr.create("render_sky", "render_sky", OpenMaya.MFnNumericData.kBoolean, True)
+    ms_renderSettings.addAttribute(ms_renderSettings.render_sky)
 
     # cameras --------------------------------------------------
     # export all cameras as thin lens bool attribute
@@ -280,6 +285,13 @@ def ms_renderSettings_nodeInitializer():
     pt_environment_samples_AttrFloat.setKeyable(True)
     ms_renderSettings.addAttribute(ms_renderSettings.pt_environment_samples)
 
+    # pt_max_ray_intensity
+    pt_max_ray_intensity_AttrFloat = OpenMaya.MFnNumericAttribute()
+    ms_renderSettings.pt_max_ray_intensity = pt_max_ray_intensity_AttrFloat.create("pt_max_ray_intensity", "pt_max_ray_intensity", OpenMaya.MFnNumericData.kFloat, 0)
+    pt_max_ray_intensity_AttrFloat.setHidden(False)
+    pt_max_ray_intensity_AttrFloat.setKeyable(True)
+    ms_renderSettings.addAttribute(ms_renderSettings.pt_max_ray_intensity)
+
     # profile export
     profile_export_nAttr = OpenMaya.MFnNumericAttribute()
     ms_renderSettings.profile_export = profile_export_nAttr.create("profile_export", "profile_export", OpenMaya.MFnNumericData.kBoolean, False)
@@ -318,6 +330,8 @@ def initializePlugin(obj):
             cmds.loadPlugin('ms_appleseed_shading_node.py')
         if not cmds.pluginInfo('ms_environment_node.py', query=True, loaded=True):
             cmds.loadPlugin('ms_environment_node.py')
+        if not cmds.pluginInfo('ms_physical_environment_node.py', query=True, loaded=True):
+            cmds.loadPlugin('ms_physical_environment_node.py')
     except: 
         print 'objExport plugin could not be loaded, cannot load mayaseed'
 

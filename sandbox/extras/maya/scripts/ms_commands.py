@@ -38,7 +38,7 @@ import math
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-MAYASEED_VERSION = '0.4.0'
+MAYASEED_VERSION = '0.5.0'
 MAYASEED_URL = 'https://github.com/jupiter-jazz/Mayaseed'
 APPLESEED_URL = 'http://appleseedhq.net/'
 ROOT_DIRECTORY = os.path.split((os.path.dirname(inspect.getfile(inspect.currentframe()))))[0]
@@ -227,6 +227,8 @@ def convert_texture_to_exr(file_path, export_root, texture_dir, overwrite=True, 
 
 def transform_is_visible(node_name):
 
+    """ Returns the visibility state of a transform for the current frame, this visibility state may change over time """
+
     # check if the node exists
     if not cmds.objExists(node_name):
         return False
@@ -244,6 +246,17 @@ def transform_is_visible(node_name):
         if cmds.getAttr(node_name + '.intermediateObject'):
             return False
 
+    return True
+
+
+#--------------------------------------------------------------------------------------------------
+# Check if an object is visible for the current frame.
+#--------------------------------------------------------------------------------------------------
+
+def transform_is_renderable(node_name):
+
+    """ Returns the renderability state of a transform, this value will not change over time """
+
     # check if it is a hidden display layer
     if cmds.attributeQuery('overrideEnabled', node=node_name, exists=True) and cmds.getAttr(node_name + '.overrideEnabled'):
         if not cmds.getAttr(node_name + '.overrideVisibility'):
@@ -253,7 +266,7 @@ def transform_is_visible(node_name):
 
 
 #--------------------------------------------------------------------------------------------------
-# check if a transform or any of its parents are set as visible
+# check if a transform or any of its parents are set as visible.
 #--------------------------------------------------------------------------------------------------
 
 def visible_in_hierarchy(parent):
@@ -349,7 +362,7 @@ def get_entity_defs(xml_file_path, list=False):
                 if param.nodeName == 'parameter':
                     name = param.getAttribute('name')
                     value = param.getAttribute('value')
-                    if name == 'widget':
+                    if name == 'type':
                         nodes[entity_model].attributes[child_name].type = value
                     elif name == 'default':
                         nodes[entity_model].attributes[child_name].default_value = value
@@ -417,15 +430,18 @@ def create_shading_node(model, name=None, entity_defs_obj=False):
 
     cmds.addAttr(shading_node_name, longName='node_type', dt="string")
     cmds.setAttr(shading_node_name + '.node_type', entity_defs[model].type, type="string", lock=True)
-    
+
+    cmds.addAttr(shading_node_name, longName='render_layer', dt="string")
+    cmds.setAttr(shading_node_name + '.render_layer', '', type="string")
+
     for entity_key in entity_defs.keys():
         if entity_key == model:
             for attr_key in entity_defs[entity_key].attributes.keys():
                 attr = entity_defs[entity_key].attributes[attr_key]
-                if attr.type == 'text_box' or attr.type == 'dropdown_list':
+                if attr.type == 'text' or attr.type == 'enumeration' or attr.type == 'boolean':
                      cmds.addAttr(shading_node_name, longName=attr_key, dt="string")
                      cmds.setAttr(shading_node_name + '.' + attr_key, attr.default_value, type="string")
-                elif attr.type == 'entity_picker':
+                elif (attr.type == 'colormap') or (attr.type == 'entity'):
                     # if there is a default value, use it
                     if attr.default_value:
                         default_value = float(attr.default_value)
@@ -647,12 +663,12 @@ def convert_phong_blinn_material(material):
 
     # glossy component
     glossy_brdf = create_shading_node('microfacet_brdf', name=(material + '_blinn_brdf'))
-    cmds.setAttr(glossy_brdf + '.mdf', 'blinn', type='string')
+    cmds.setAttr(glossy_brdf + '.glossiness', 'blinn', type='string')
     if cmds.nodeType(material) == 'phong':
-        mdf_param = cmds.getAttr(material + '.cosinePower') * 1.3
+        glossy_param = ((cmds.getAttr(material + '.cosinePower') - 2) / 98) * -1 + 1
     else:
-        mdf_param = 10.0
-    cmds.setAttr(glossy_brdf + '.mdf_parameter', mdf_param, mdf_param, mdf_param, type='float3')
+        glossy_param = 0.5
+    cmds.setAttr(glossy_brdf + '.mdf_parameter', glossy_param, glossy_param, glossy_param, type='float3')
     assign_connection_or_color(glossy_brdf + '.reflectance', material + '.specularColor', material + '.specularColor')
 
     # mix diffuse and glossy

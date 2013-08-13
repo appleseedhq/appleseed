@@ -76,17 +76,19 @@ global proc AEcustomEnvironmentMenuCreate(string $attr) {
     string $currentEnvironmentConnection = $currentEnvironmentConnectionTransformRelatives[0];
 
     optionMenuGrp -label "Environment" -cc ("setEnvironmentConnection " + $nodeName) customEnvironmentMenu;
+    string $physical_environments[] = `ls -type "ms_physical_environment"`;
+    for ($item in $physical_environments) {
+        menuItem -label $item;
+    }
     string $environments[] = `ls -type "ms_environment"`;
-    menuItem -label "<none>";
     for ($item in $environments) {
         menuItem -label $item;
     }
-    print ($currentEnvironmentConnection + "****\n\n");
+    menuItem -label "<none>";
     if ($currentEnvironmentConnection != "") {
         optionMenuGrp -e -v $currentEnvironmentConnection customEnvironmentMenu;  
     }
     button -l " select " -h 20 -w 50 -c ("AEselecConnectedEnvironmentNode " + $nodeName) -p customEnvironmentMenu;
-    button -l " + " -h 20 -c ("createMsEnvironmentNode " + $nodeName ) -p customEnvironmentMenu;
 }
 
 global proc AEselecConnectedEnvironmentNode(string $nodeName) {
@@ -113,11 +115,6 @@ global proc setEnvironmentConnection(string $nodeName) {
         print ("connecting "+$newSelectionAttr+" and "+$environmentConnectionName+"\n");
         connectAttr -f $newSelectionAttr $environmentConnectionName;
     }
-}
-
-global proc createMsEnvironmentNode(string $nodeName) {
-    string $node = `createNode "ms_environment"`;
-    connectAttr -f ($node + ".nodeState") ($nodeName + ".environment");
 }
 
 
@@ -222,6 +219,7 @@ global proc AEms_renderSettingsTemplate(string $nodeName) {
 
         editorTemplate -beginLayout "Environment Settings" -collapse true;
             editorTemplate -callCustom "AEcustomEnvironmentMenuCreate" "AEcustomEnvironmentMenuEdit" "environment";
+            editorTemplate -addControl "render_sky";
         editorTemplate -endLayout;
 
         editorTemplate -beginLayout "Camera Settings" -collapse true;;
@@ -250,6 +248,7 @@ global proc AEms_renderSettingsTemplate(string $nodeName) {
             editorTemplate -addControl "pt_max_bounces";
             editorTemplate -addControl "pt_light_samples";
             editorTemplate -addControl "pt_environment_samples";
+            editorTemplate -addControl "pt_max_ray_intensity";
         editorTemplate -endLayout;
 
         editorTemplate -beginLayout "Advanced Settings" -collapse true;
