@@ -91,6 +91,8 @@ class ExceptionUnknownEntity
         const char*     entity_name,
         const Entity*   context = 0);
 
+    virtual ~ExceptionUnknownEntity() throw() {}
+
     const std::string& get_context_path() const;
 
   private:
