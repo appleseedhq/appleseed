@@ -30,7 +30,7 @@
 #include "qttilecallbackfactory.h"
 
 // appleseed.studio headers.
-#include "mainwindow/rendering/irenderwidget.h"
+#include "mainwindow/rendering/renderwidget.h"
 
 // Standard headers.
 #include <cassert>
@@ -51,22 +51,19 @@ namespace
       : public TileCallbackBase
     {
       public:
-        // Constructor.
         QtTileCallback(
-            IRenderWidget*  render_widget,
+            RenderWidget*   render_widget,
             const bool      highlight_tiles)
           : m_render_widget(render_widget)
           , m_highlight_tiles(highlight_tiles)
         {
         }
 
-        // Delete this instance.
         virtual void release() OVERRIDE
         {
             delete this;
         }
 
-        // This method is called before a region is rendered.
         virtual void pre_render(
             const size_t    x,
             const size_t    y,
@@ -79,7 +76,6 @@ namespace
                 m_render_widget->highlight_region(x, y, width, height);
         }
 
-        // This method is called after a tile is rendered.
         virtual void post_render_tile(
             const Frame*    frame,
             const size_t    tile_x,
@@ -90,7 +86,6 @@ namespace
             m_render_widget->blit_tile(*frame, tile_x, tile_y);
         }
 
-        // This method is called after a whole frame is rendered.
         virtual void post_render(
             const Frame*    frame) OVERRIDE
         {
@@ -100,7 +95,7 @@ namespace
         }
 
       private:
-        IRenderWidget*      m_render_widget;
+        RenderWidget*       m_render_widget;
         const bool          m_highlight_tiles;
     };
 }
@@ -111,7 +106,7 @@ namespace
 //
 
 QtTileCallbackFactory::QtTileCallbackFactory(
-    IRenderWidget*  render_widget,
+    RenderWidget*   render_widget,
     const bool      highlight_tiles)
   : m_render_widget(render_widget)
   , m_highlight_tiles(highlight_tiles)

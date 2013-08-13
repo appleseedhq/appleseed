@@ -36,7 +36,7 @@
 #include "foundation/platform/compiler.h"
 
 // Forward declarations.
-namespace appleseed { namespace studio { class IRenderWidget; } }
+namespace appleseed { namespace studio { class RenderWidget; } }
 
 namespace appleseed {
 namespace studio {
@@ -47,7 +47,7 @@ class QtTileCallbackFactory
   public:
     // Constructor.
     QtTileCallbackFactory(
-        IRenderWidget*  render_widget,
+        RenderWidget*   render_widget,
         const bool      highlight_tiles);
 
     // Delete this instance.
@@ -57,7 +57,7 @@ class QtTileCallbackFactory
     virtual renderer::ITileCallback* create() OVERRIDE;
 
   private:
-    IRenderWidget*      m_render_widget;
+    RenderWidget*       m_render_widget;
     const bool          m_highlight_tiles;
 };
 
