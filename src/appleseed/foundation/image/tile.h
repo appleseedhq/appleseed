@@ -84,7 +84,7 @@ class DLLSYMBOL Tile
     // Like foundation::IUnknown::release() but without introducing a virtual function table.
     void release();
 
-    // Return the size in memory of this object.
+    // Return the size (in bytes) of this object in memory.
     size_t get_memory_size() const;
 
     // Tile properties.
