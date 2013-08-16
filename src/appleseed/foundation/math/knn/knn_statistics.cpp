@@ -44,7 +44,7 @@ QueryStatistics::QueryStatistics()
 Statistics QueryStatistics::get_statistics() const
 {
     Statistics stats;
-    stats.insert("queries", m_query_count);
+    stats.insert<uint64>("queries", m_query_count);
     stats.insert("fetched nodes", m_fetched_nodes);
     stats.insert("visited leaves", m_visited_leaves);
     stats.insert("tested points", m_tested_points);
