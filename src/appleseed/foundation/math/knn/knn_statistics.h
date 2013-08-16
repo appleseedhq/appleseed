@@ -32,6 +32,7 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/population.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/statistics.h"
 #include "foundation/utility/string.h"
 
@@ -105,7 +106,7 @@ TreeStatistics<Tree>::TreeStatistics(
 
     collect_stats_recurse(tree, tree.m_nodes.front(), 1);
 
-    insert("points", tree.m_points.size());
+    insert<uint64>("points", tree.m_points.size());
     insert_size("size", tree.get_memory_size());
     insert(
         "nodes",
