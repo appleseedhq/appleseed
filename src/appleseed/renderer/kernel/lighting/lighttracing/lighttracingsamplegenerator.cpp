@@ -541,10 +541,9 @@ namespace
             SampleVector&               samples)
         {
             // Sample the light sources.
-            sampling_context.split_in_place(4, 1);
-            const Vector4d s = sampling_context.next_vector2<4>();
             LightSample light_sample;
-            m_light_sampler.sample(s[0], Vector3d(s[1], s[2], s[3]), light_sample);
+            sampling_context.split_in_place(4, 1);
+            m_light_sampler.sample(sampling_context.next_vector2<4>(), light_sample);
 
             return
                 light_sample.m_triangle
