@@ -320,7 +320,8 @@ namespace
             const double        g,
             const double        cos_alpha)
         {
-            return (1.0 + cos_alpha * cos_alpha) / pow(1.0 + g * g - 2.0 * g * cos_alpha, (3.0 / 2.0));
+            const double k = 1.0 + g * g - 2.0 * g * cos_alpha;
+            return (1.0 + cos_alpha * cos_alpha) / sqrt(k * k * k);
         }
 
         // Extended Perez formula.
