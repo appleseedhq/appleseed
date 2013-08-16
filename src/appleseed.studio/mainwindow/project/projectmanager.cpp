@@ -181,6 +181,7 @@ bool ProjectManager::do_load_project(const string& filepath)
         return false;
 
     m_project = loaded_project;
+    m_dirty_flag = false;
 
     return true;
 }
