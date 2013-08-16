@@ -30,24 +30,32 @@
 #define APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTSAMPLER_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
 #include "renderer/kernel/intersection/intersectionsettings.h"
-#include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/modeling/scene/containers.h"
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
+#include "foundation/platform/types.h"
 #include "foundation/math/cdf.h"
+#include "foundation/math/hash.h"
 #include "foundation/math/transform.h"
+#include "foundation/math/vector.h"
+#include "foundation/utility/containers/hashtable.h"
+#include "foundation/utility/uid.h"
 
 // Standard headers.
+#include <cstddef>
 #include <vector>
 
 // Forward declarations.
-namespace renderer      { class Assembly; }
-namespace renderer      { class AssemblyInstance; }
-namespace renderer      { class EDF; }
-namespace renderer      { class Light; }
-namespace renderer      { class Scene; }
+namespace renderer  { class Assembly; }
+namespace renderer  { class AssemblyInstance; }
+namespace renderer  { class EDF; }
+namespace renderer  { class Light; }
+namespace renderer  { class ParamArray; }
+namespace renderer  { class Scene; }
+namespace renderer  { class ShadingPoint; }
 
 namespace renderer
 {
@@ -80,8 +88,48 @@ class EmittingTriangle
     foundation::Vector3d        m_geometric_normal;             // world space geometric normal, unit-length
     TriangleSupportPlaneType    m_triangle_support_plane;       // support plane of the triangle in assembly space
     double                      m_rcp_area;                     // world space triangle area reciprocal
+    double                      m_triangle_pdf;                 // probability of this triangle to be chosen
     const EDF*                  m_edf;
 };
+
+
+//
+// A key to uniquely identify a light-emitting triangle in a hash table.
+//
+
+class EmittingTriangleKey
+{
+  public:
+    foundation::UniqueID            m_assembly_instance_uid;
+    foundation::uint32              m_object_instance_index;
+    foundation::uint32              m_region_index;
+    foundation::uint32              m_triangle_index;
+
+    EmittingTriangleKey();
+    EmittingTriangleKey(
+        const foundation::UniqueID  assembly_instance_uid,
+        const size_t                object_instance_index,
+        const size_t                region_index,
+        const size_t                triangle_index);
+
+    bool operator==(const EmittingTriangleKey& rhs) const;
+};
+
+
+//
+// A hash table of light-emitting triangles.
+//
+
+struct EmittingTriangleKeyHasher
+{
+    size_t operator()(const EmittingTriangleKey& key) const;
+};
+
+typedef foundation::HashTable<
+    EmittingTriangleKey,
+    EmittingTriangleKeyHasher,
+    const EmittingTriangle*
+> EmittingTriangleHashTable;
 
 
 //
@@ -134,29 +182,32 @@ class LightSampler
     void sample_non_physical_lights(
         const double                        time,
         const foundation::Vector3d&         s,
-        LightSample&                        sample) const;
+        LightSample&                        light_sample) const;
 
     // Sample a single given non-physical light.
     void sample_non_physical_light(
         const double                        time,
         const foundation::Vector2d&         s,
         const size_t                        light_index,
-        LightSample&                        sample) const;
+        LightSample&                        light_sample) const;
 
     // Sample the set of emitting triangles.
     void sample_emitting_triangles(
         const double                        time,
         const foundation::Vector3d&         s,
-        LightSample&                        sample) const;
+        LightSample&                        light_sample) const;
 
     // Sample the sets of non-physical lights and emitting triangles.
     void sample(
         const double                        time,
         const foundation::Vector3d&         s,
-        LightSample&                        sample) const;
+        LightSample&                        light_sample) const;
+    void sample(
+        const foundation::Vector4d&         s,
+        LightSample&                        light_sample) const;
 
     // Compute the probability density in area measure of a given light sample.
-    double evaluate_pdf(const ShadingPoint& result) const;
+    double evaluate_pdf(const ShadingPoint& shading_point) const;
 
   private:
     struct Parameters
@@ -176,12 +227,12 @@ class LightSampler
     size_t                      m_non_physical_light_count;
 
     EmittingTriangleVector      m_emitting_triangles;
-    double                      m_total_emissive_area;
-    double                      m_rcp_total_emissive_area;
-    double                      m_rcp_emitting_triangle_count;
 
     EmitterCDF                  m_non_physical_lights_cdf;
     EmitterCDF                  m_emitting_triangles_cdf;
+
+    EmittingTriangleKeyHasher   m_triangle_key_hasher;
+    EmittingTriangleHashTable   m_emitting_triangle_hash_table;
 
     // Recursively collect non-physical lights from a given set of assembly instances.
     void collect_non_physical_lights(
@@ -197,6 +248,9 @@ class LightSampler
     void collect_emitting_triangles(
         const Assembly&                     assembly,
         const AssemblyInstance&             assembly_instance);
+
+    // Build a hash table that allows to find the emitting triangle at a given shading point.
+    void build_emitting_triangle_hash_table();
 
     // Sample a given non-physical light.
     void sample_non_physical_light(
@@ -214,6 +268,51 @@ class LightSampler
         const double                        triangle_prob,
         LightSample&                        sample) const;
 };
+
+
+//
+// EmittingTriangleKey class implementation.
+//
+
+inline EmittingTriangleKey::EmittingTriangleKey()
+{
+}
+
+inline EmittingTriangleKey::EmittingTriangleKey(
+    const foundation::UniqueID              assembly_instance_uid,
+    const size_t                            object_instance_index,
+    const size_t                            region_index,
+    const size_t                            triangle_index)
+  : m_assembly_instance_uid(static_cast<foundation::uint32>(assembly_instance_uid))
+  , m_object_instance_index(static_cast<foundation::uint32>(object_instance_index))
+  , m_region_index(static_cast<foundation::uint32>(region_index))
+  , m_triangle_index(static_cast<foundation::uint32>(triangle_index))
+{
+}
+
+inline bool EmittingTriangleKey::operator==(const EmittingTriangleKey& rhs) const
+{
+    return
+        m_triangle_index == rhs.m_triangle_index &&
+        m_object_instance_index == rhs.m_object_instance_index &&
+        m_assembly_instance_uid == rhs.m_assembly_instance_uid &&
+        m_region_index == rhs.m_region_index;
+}
+
+
+//
+// EmittingTriangleKeyHasher class implementation.
+//
+
+inline size_t EmittingTriangleKeyHasher::operator()(const EmittingTriangleKey& key) const
+{
+    return
+        foundation::mix32(
+            static_cast<foundation::uint32>(key.m_assembly_instance_uid),
+            key.m_object_instance_index,
+            key.m_region_index,
+            key.m_triangle_index);
+}
 
 
 //
@@ -244,56 +343,11 @@ inline void LightSampler::sample_non_physical_light(
     sample_non_physical_light(time, s, light_index, 1.0, sample);
 }
 
-inline double LightSampler::evaluate_pdf(const ShadingPoint& result) const
+inline void LightSampler::sample(
+    const foundation::Vector4d&             s,
+    LightSample&                            light_sample) const
 {
-    if (m_params.m_importance_sampling)
-    {
-        //
-        // The probability density of a given triangle is
-        //
-        //                     triangle area
-        //   pdf_triangle = -------------------
-        //                  total emissive area
-        //
-        // The probability density of a given point on a given triangle is
-        //
-        //                    1.0
-        //   pdf_point = -------------
-        //               triangle area
-        //
-        // The probability density of a given light sample is thus
-        //
-        //                                                   1.0
-        //   pdf_sample = pdf_triangle * pdf_point = -------------------
-        //                                           total emissive area
-        //
-
-        return m_rcp_total_emissive_area;
-    }
-    else
-    {
-        //
-        // The probability density of a given triangle is
-        //
-        //                         1.0
-        //   pdf_triangle = -------------------
-        //                  number of triangles
-        //
-        // The probability density of a given point on a given triangle is
-        //
-        //                    1.0
-        //   pdf_point = -------------
-        //               triangle area
-        //
-
-        const foundation::Vector3d& v0 = result.get_vertex(0);
-        const foundation::Vector3d& v1 = result.get_vertex(1);
-        const foundation::Vector3d& v2 = result.get_vertex(2);
-        const foundation::Vector3d n = foundation::cross(v1 - v0, v2 - v0);
-        const double pdf_point = 2.0 / foundation::norm(n);
-
-        return pdf_point * m_rcp_emitting_triangle_count;
-    }
+    sample(s[0], foundation::Vector3d(s[1], s[2], s[3]), light_sample);
 }
 
 }       // namespace renderer

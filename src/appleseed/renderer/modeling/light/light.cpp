@@ -62,7 +62,6 @@ Light::Light(
   : ConnectableEntity(g_class_uid, params)
   , impl(new Impl())
   , m_flags(0)
-  , m_importance_multiplier(1.0)
 {
     set_name(name);
 }
@@ -70,6 +69,11 @@ Light::Light(
 Light::~Light()
 {
     delete impl;
+}
+
+double Light::get_uncached_importance_multiplier() const
+{
+    return m_params.get_optional<double>("importance_multiplier", 1.0);
 }
 
 void Light::set_transform(const Transformd& transform)
@@ -91,9 +95,6 @@ bool Light::on_frame_begin(
 
     if (m_params.get_optional<bool>("cast_indirect_light", true))
         m_flags |= CastIndirectLight;
-
-    m_importance_multiplier =
-        m_params.get_optional<double>("importance_multiplier", 1.0);
 
     return true;
 }

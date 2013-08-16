@@ -30,6 +30,9 @@
 #include "lightsampler.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
+#include "renderer/global/globaltypes.h"
+#include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/tessellation/statictessellation.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/light/light.h"
@@ -39,7 +42,6 @@
 #include "renderer/modeling/object/regionkit.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
-#include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
 
@@ -53,6 +55,7 @@
 
 // Standard headers.
 #include <algorithm>
+#include <cassert>
 #include <map>
 
 using namespace foundation;
@@ -94,12 +97,13 @@ namespace
 
 LightSampler::LightSampler(const Scene& scene, const ParamArray& params)
   : m_params(params)
-  , m_total_emissive_area(0.0)
+  , m_emitting_triangle_hash_table(m_triangle_key_hasher)
 {
     RENDERER_LOG_INFO("collecting light emitters...");
 
     // Collect all non-physical lights.
     collect_non_physical_lights(scene.assembly_instances(), TransformSequence());
+    m_non_physical_light_count = m_non_physical_lights.size();
 
     // Collect all light-emitting triangles.
     // todo: update to support nested assemblies.
@@ -112,10 +116,8 @@ LightSampler::LightSampler(const Scene& scene, const ParamArray& params)
             collect_emitting_triangles(assembly, assembly_instance);
     }
 
-    // Precompute some values.
-    m_non_physical_light_count = m_non_physical_lights.size();
-    m_rcp_total_emissive_area = 1.0 / m_total_emissive_area;
-    m_rcp_emitting_triangle_count = 1.0 / m_emitting_triangles.size();
+    // Build the hash table of emitting triangles.
+    build_emitting_triangle_hash_table();
 
     // Prepare the CDFs for sampling.
     if (m_non_physical_lights_cdf.valid())
@@ -123,7 +125,12 @@ LightSampler::LightSampler(const Scene& scene, const ParamArray& params)
     if (m_emitting_triangles_cdf.valid())
         m_emitting_triangles_cdf.prepare();
 
-    RENDERER_LOG_INFO(
+    // Store the triangle PDFs into the emitting triangles.
+    const size_t emitting_triangle_count = m_emitting_triangles.size();
+    for (size_t i = 0; i < emitting_triangle_count; ++i)
+        m_emitting_triangles[i].m_triangle_pdf = m_emitting_triangles_cdf[i].second;
+
+   RENDERER_LOG_INFO(
         "found %s %s, %s emitting %s.",
         pretty_int(m_non_physical_light_count).c_str(),
         plural(m_non_physical_light_count, "non-physical light").c_str(),
@@ -179,7 +186,7 @@ void LightSampler::collect_non_physical_lights(
         // Insert the light into the CDF.
         // todo: compute importance.
         double importance = 1.0;
-        importance *= light.get_importance_multiplier();
+        importance *= light.get_uncached_importance_multiplier();
         m_non_physical_lights_cdf.insert(light_index, importance);
     }
 }
@@ -292,21 +299,19 @@ void LightSampler::collect_emitting_triangles(
 
                 for (size_t side = 0; side < 2; ++side)
                 {
+                    // Retrieve the material; skip sides without a material.
                     const Material* material = side == 0 ? front_material : back_material;
-                    const Vector3d side_geometric_normal = side == 0 ? geometric_normal : -geometric_normal;
-                    const Vector3d side_n0 = side == 0 ? n0 : -n0;
-                    const Vector3d side_n1 = side == 0 ? n1 : -n1;
-                    const Vector3d side_n2 = side == 0 ? n2 : -n2;
-
-                    // Skip sides without a material.
                     if (material == 0)
                         continue;
 
+                    // Retrieve the EDF; skip sides without a light-emitting material.
                     const EDF* edf = material->get_uncached_edf();
-
-                    // Skip sides without a light-emitting material.
                     if (edf == 0)
                         continue;
+
+                    // Compute the PDF of this triangle.
+                    const double triangle_importance = m_params.m_importance_sampling ? area : 1.0;
+                    const double triangle_pdf = triangle_importance * edf->get_uncached_importance_multiplier();
 
                     // Create a light-emitting triangle.
                     EmittingTriangle emitting_triangle;
@@ -317,12 +322,13 @@ void LightSampler::collect_emitting_triangles(
                     emitting_triangle.m_v0 = v0;
                     emitting_triangle.m_v1 = v1;
                     emitting_triangle.m_v2 = v2;
-                    emitting_triangle.m_n0 = side_n0;
-                    emitting_triangle.m_n1 = side_n1;
-                    emitting_triangle.m_n2 = side_n2;
-                    emitting_triangle.m_geometric_normal = side_geometric_normal;
+                    emitting_triangle.m_n0 = side == 0 ? n0 : -n0;
+                    emitting_triangle.m_n1 = side == 0 ? n1 : -n1;
+                    emitting_triangle.m_n2 = side == 0 ? n2 : -n2;
+                    emitting_triangle.m_geometric_normal = side == 0 ? geometric_normal : -geometric_normal;
                     emitting_triangle.m_triangle_support_plane = triangle_support_plane;
                     emitting_triangle.m_rcp_area = rcp_area;
+                    emitting_triangle.m_triangle_pdf = 0.0;     // will be initialized once the emitting triangle CDF is built
                     emitting_triangle.m_edf = edf;
 
                     // Store the light-emitting triangle.
@@ -330,22 +336,37 @@ void LightSampler::collect_emitting_triangles(
                     m_emitting_triangles.push_back(emitting_triangle);
 
                     // Insert the light-emitting triangle into the CDF.
-                    double importance = m_params.m_importance_sampling ? area : 1.0;
-                    importance *= edf->get_importance_multiplier();
-                    m_emitting_triangles_cdf.insert(emitting_triangle_index, importance);
-
-                    // Keep track of the total area of the light-emitting triangles.
-                    m_total_emissive_area += area;
+                    m_emitting_triangles_cdf.insert(emitting_triangle_index, triangle_pdf);
                 }
             }
         }
     }
 }
 
+void LightSampler::build_emitting_triangle_hash_table()
+{
+    const size_t emitting_triangle_count = m_emitting_triangles.size();
+
+    m_emitting_triangle_hash_table.resize(emitting_triangle_count);
+
+    for (size_t i = 0; i < emitting_triangle_count; ++i)
+    {
+        const EmittingTriangle& emitting_triangle = m_emitting_triangles[i];
+
+        const EmittingTriangleKey emitting_triangle_key(
+            emitting_triangle.m_assembly_instance->get_uid(),
+            emitting_triangle.m_object_instance_index,
+            emitting_triangle.m_region_index,
+            emitting_triangle.m_triangle_index);
+
+        m_emitting_triangle_hash_table.insert(emitting_triangle_key, &emitting_triangle);
+    }
+}
+
 void LightSampler::sample_non_physical_lights(
     const double                        time,
     const Vector3d&                     s,
-    LightSample&                        sample) const
+    LightSample&                        light_sample) const
 {
     assert(m_non_physical_lights_cdf.valid());
 
@@ -353,22 +374,22 @@ void LightSampler::sample_non_physical_lights(
     const size_t light_index = result.first;
     const double light_prob = result.second;
 
-    sample.m_triangle = 0;
+    light_sample.m_triangle = 0;
     sample_non_physical_light(
         time,
         Vector2d(s[1], s[2]),
         light_index,
         light_prob,
-        sample);
+        light_sample);
 
-    assert(sample.m_light);
-    assert(sample.m_probability > 0.0);
+    assert(light_sample.m_light);
+    assert(light_sample.m_probability > 0.0);
 }
 
 void LightSampler::sample_emitting_triangles(
     const double                        time,
     const Vector3d&                     s,
-    LightSample&                        sample) const
+    LightSample&                        light_sample) const
 {
     assert(m_emitting_triangles_cdf.valid());
 
@@ -376,23 +397,22 @@ void LightSampler::sample_emitting_triangles(
     const size_t emitter_index = result.first;
     const double emitter_prob = result.second;
 
-    sample.m_light = 0;
+    light_sample.m_light = 0;
     sample_emitting_triangle(
         time,
         Vector2d(s[1], s[2]),
         emitter_index,
         emitter_prob,
-        sample);
+        light_sample);
 
-    assert(sample.m_triangle);
-    assert(sample.m_triangle->m_edf);
-    assert(sample.m_probability > 0.0);
+    assert(light_sample.m_triangle);
+    assert(light_sample.m_probability > 0.0);
 }
 
 void LightSampler::sample(
     const double                        time,
     const Vector3d&                     s,
-    LightSample&                        sample) const
+    LightSample&                        light_sample) const
 {
     assert(m_non_physical_lights_cdf.valid() || m_emitting_triangles_cdf.valid());
 
@@ -405,21 +425,33 @@ void LightSampler::sample(
                 sample_non_physical_lights(
                     time,
                     Vector3d(s[0] * 2.0, s[1], s[2]),
-                    sample);
+                    light_sample);
             }
             else
             {
                 sample_emitting_triangles(
                     time,
                     Vector3d((s[0] - 0.5) * 2.0, s[1], s[2]),
-                    sample);
+                    light_sample);
             }
 
-            sample.m_probability *= 0.5;
+            light_sample.m_probability *= 0.5;
         }
-        else sample_non_physical_lights(time, s, sample);
+        else sample_non_physical_lights(time, s, light_sample);
     }
-    else sample_emitting_triangles(time, s, sample);
+    else sample_emitting_triangles(time, s, light_sample);
+}
+
+double LightSampler::evaluate_pdf(const ShadingPoint& shading_point) const
+{
+    const EmittingTriangleKey triangle_key(
+        shading_point.get_assembly_instance().get_uid(),
+        shading_point.get_object_instance_index(),
+        shading_point.get_region_index(),
+        shading_point.get_triangle_index());
+
+    const EmittingTriangle* triangle = m_emitting_triangle_hash_table.get(triangle_key);
+    return triangle->m_triangle_pdf * triangle->m_rcp_area;
 }
 
 void LightSampler::sample_non_physical_light(
@@ -427,17 +459,17 @@ void LightSampler::sample_non_physical_light(
     const Vector2d&                     s,
     const size_t                        light_index,
     const double                        light_prob,
-    LightSample&                        sample) const
+    LightSample&                        light_sample) const
 {
     // Fetch the light.
     const NonPhysicalLightInfo& light_info = m_non_physical_lights[light_index];
-    sample.m_light = light_info.m_light;
+    light_sample.m_light = light_info.m_light;
 
     // Evaluate and store the transform of the light.
-    sample.m_light_transform = light_info.m_transform_sequence.evaluate(time);
+    light_sample.m_light_transform = light_info.m_transform_sequence.evaluate(time);
 
     // Store the probability of choosing this light.
-    sample.m_probability = light_prob;
+    light_sample.m_probability = light_prob;
 }
 
 void LightSampler::sample_emitting_triangle(
@@ -445,37 +477,40 @@ void LightSampler::sample_emitting_triangle(
     const Vector2d&                     s,
     const size_t                        triangle_index,
     const double                        triangle_prob,
-    LightSample&                        sample) const
+    LightSample&                        light_sample) const
 {
-    // Fetch and set the emitting triangle.
-    const EmittingTriangle& triangle = m_emitting_triangles[triangle_index];
-    sample.m_triangle = &triangle;
+    // Fetch the emitting triangle.
+    const EmittingTriangle& emitting_triangle = m_emitting_triangles[triangle_index];
+    assert(emitting_triangle.m_triangle_pdf == triangle_prob);
+
+    // Store a pointer to the emitting triangle.
+    light_sample.m_triangle = &emitting_triangle;
 
     // Uniformly sample the surface of the triangle.
     const Vector3d bary = sample_triangle_uniform(s);
 
     // Set the barycentric coordinates.
-    sample.m_bary[0] = bary[0];
-    sample.m_bary[1] = bary[1];
+    light_sample.m_bary[0] = bary[0];
+    light_sample.m_bary[1] = bary[1];
 
     // Compute the world space position of the sample.
-    sample.m_point =
-          bary[0] * triangle.m_v0
-        + bary[1] * triangle.m_v1
-        + bary[2] * triangle.m_v2;
+    light_sample.m_point =
+          bary[0] * emitting_triangle.m_v0
+        + bary[1] * emitting_triangle.m_v1
+        + bary[2] * emitting_triangle.m_v2;
 
     // Compute the world space shading normal at the position of the sample.
-    sample.m_shading_normal =
-          bary[0] * triangle.m_n0
-        + bary[1] * triangle.m_n1
-        + bary[2] * triangle.m_n2;
-    sample.m_shading_normal = normalize(sample.m_shading_normal);
+    light_sample.m_shading_normal =
+          bary[0] * emitting_triangle.m_n0
+        + bary[1] * emitting_triangle.m_n1
+        + bary[2] * emitting_triangle.m_n2;
+    light_sample.m_shading_normal = normalize(light_sample.m_shading_normal);
 
     // Set the world space geometric normal.
-    sample.m_geometric_normal = triangle.m_geometric_normal;
+    light_sample.m_geometric_normal = emitting_triangle.m_geometric_normal;
 
     // Compute the probability of choosing this sample.
-    sample.m_probability = triangle_prob * triangle.m_rcp_area;
+    light_sample.m_probability = triangle_prob * emitting_triangle.m_rcp_area;
 }
 
 
