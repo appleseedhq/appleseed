@@ -36,6 +36,7 @@
 #include "foundation/utility/benchmark.h"
 #include "foundation/utility/bufferedfile.h"
 #include "foundation/utility/log.h"
+#include "foundation/utility/statistics.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
@@ -136,13 +137,18 @@ BENCHMARK_SUITE(Foundation_Math_Knn_Query)
             configure_logger(name);
         }
 
+#ifdef FOUNDATION_KNN_ENABLE_QUERY_STATS
+
         ~FixtureBase()
         {
-#ifdef FOUNDATION_KNN_ENABLE_QUERY_STATS
-            LOG_DEBUG(m_logger, "query statistics:");
-            m_query_stats.print(m_logger);
-#endif
+            LOG_DEBUG(
+                m_logger, "%s",
+                StatisticsVector::make(
+                    "query statistics",
+                    m_query_stats.get_statistics()).to_string().c_str());
         }
+
+#endif
 
         void prepare()
         {
@@ -196,10 +202,11 @@ BENCHMARK_SUITE(Foundation_Math_Knn_Query)
             knn::Builder3f builder(m_tree);
             builder.build<DefaultWallclockTimer>(&m_points[0], m_points.size());
 
-            knn::TreeStatistics<knn::Tree3f, knn::Builder3f> tree_stats(m_tree, builder);
-
-            LOG_DEBUG(m_logger, "tree statistics:");
-            tree_stats.print(m_logger);
+            LOG_DEBUG(
+                m_logger, "%s",
+                StatisticsVector::make(
+                    "tree statistics",
+                    knn::TreeStatistics<knn::Tree3f>(m_tree)).to_string().c_str());
         }
 
         void find_query_points()

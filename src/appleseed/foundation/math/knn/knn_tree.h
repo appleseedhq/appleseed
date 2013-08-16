@@ -65,7 +65,7 @@ class Tree
   private:
     template <typename, size_t> friend class Builder;
     template <typename, size_t> friend class Query;
-    template <typename Tree, typename Builder> friend class TreeStatistics;
+    template <typename> friend class TreeStatistics;
 
     GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Knn_Builder, Build_GivenZeroPoint_BuildsEmptyTree);
     GRANT_ACCESS_TO_TEST_CASE(Foundation_Math_Knn_Builder, Build_GivenTwoPoints_BuildsCorrectTree);

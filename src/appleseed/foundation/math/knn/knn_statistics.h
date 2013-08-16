@@ -32,7 +32,7 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/population.h"
-#include "foundation/utility/log.h"
+#include "foundation/utility/statistics.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
@@ -46,26 +46,19 @@ namespace knn {
 // Tree statistics.
 //
 
-template <typename Tree, typename Builder>
+template <typename Tree>
 class TreeStatistics
-  : public NonCopyable
+  : public Statistics
 {
   public:
     typedef typename Tree::ValueType ValueType;
     typedef typename Tree::NodeType NodeType;
 
     // Constructor, collects statistics for a given tree.
-    TreeStatistics(
-        const Tree&         tree,
-        const Builder&      builder);
-
-    void print(Logger& logger);
+    explicit TreeStatistics(
+        const Tree&         tree);
 
   private:
-    const double            m_build_time;           // construction time in seconds
-    const size_t            m_point_count;          // number of points in the tree
-    const size_t            m_memory_size;          // size of the tree in memory
-    const size_t            m_node_count;           // total number of nodes (leaf and interior nodes)
     size_t                  m_leaf_count;           // number of leaf nodes
     Population<size_t>      m_leaf_depth;           // leaf depth statistics
     Population<size_t>      m_leaf_size;            // leaf size statistics
@@ -91,9 +84,11 @@ class QueryStatistics
     Population<size_t>      m_visited_leaves;       // number of leaves actually visited
     Population<size_t>      m_tested_points;        // number of points tested for inclusion
 
+    // Constructor.
     QueryStatistics();
 
-    void print(Logger& logger);
+    // Retrieve query statistics.
+    Statistics get_statistics() const;
 };
 
 
@@ -101,50 +96,28 @@ class QueryStatistics
 // TreeStatistics class implementation.
 //
 
-template <typename Tree, typename Builder>
-TreeStatistics<Tree, Builder>::TreeStatistics(
-    const Tree&         tree,
-    const Builder&      builder)
-  : m_build_time(builder.get_build_time())
-  , m_point_count(tree.m_points.size())
-  , m_memory_size(tree.get_memory_size())
-  , m_node_count(tree.m_nodes.size())
-  , m_leaf_count(0)
+template <typename Tree>
+TreeStatistics<Tree>::TreeStatistics(
+    const Tree&             tree)
+  : m_leaf_count(0)
 {
     assert(!tree.empty());
 
     collect_stats_recurse(tree, tree.m_nodes.front(), 1);
+
+    insert("points", tree.m_points.size());
+    insert_size("size", tree.get_memory_size());
+    insert(
+        "nodes",
+        "total " + pretty_uint(tree.m_nodes.size()) +
+        "  interior " + pretty_uint(tree.m_nodes.size() - m_leaf_count) +
+        "  leaves " + pretty_uint(m_leaf_count));
+    insert("leaf depth", m_leaf_depth);
+    insert("leaf size", m_leaf_size);
 }
 
-template <typename Tree, typename Builder>
-void TreeStatistics<Tree, Builder>::print(Logger& logger)
-{
-    LOG_DEBUG(
-        logger,
-        "  build time       %s\n"
-        "  points           %s\n"
-        "  size             %s\n"
-        "  nodes            total %s  interior %s  leaves %s\n"
-        "  leaf depth       avg %.1f  min %s  max %s  dev %.1f\n"
-        "  leaf size        avg %.1f  min %s  max %s  dev %.1f",
-        pretty_time(m_build_time).c_str(),
-        pretty_uint(m_point_count).c_str(),
-        pretty_size(m_memory_size).c_str(),
-        pretty_uint(m_node_count).c_str(),
-        pretty_uint(m_node_count - m_leaf_count).c_str(),
-        pretty_uint(m_leaf_count).c_str(),
-        m_leaf_depth.get_mean(),
-        pretty_uint(m_leaf_depth.get_min()).c_str(),
-        pretty_uint(m_leaf_depth.get_max()).c_str(),
-        m_leaf_depth.get_dev(),
-        m_leaf_size.get_mean(),
-        pretty_uint(m_leaf_size.get_min()).c_str(),
-        pretty_uint(m_leaf_size.get_max()).c_str(),
-        m_leaf_size.get_dev());
-}
-
-template <typename Tree, typename Builder>
-void TreeStatistics<Tree, Builder>::collect_stats_recurse(
+template <typename Tree>
+void TreeStatistics<Tree>::collect_stats_recurse(
     const Tree&             tree,
     const NodeType&         node,
     const size_t            depth)
