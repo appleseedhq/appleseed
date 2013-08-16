@@ -813,21 +813,25 @@ void ciexyz_illuminance_to_spectrum(
 // Convert the CIE xy chromaticity of a D series (daylight) illuminant to a spectrum.
 //
 
-template <typename T, typename Spectrum>
-void daylight_ciexy_to_spectrum(
-    const T                     x,
-    const T                     y,
-    Spectrum&                   spectrum)
+template <>
+inline void daylight_ciexy_to_spectrum<float, Spectrum31f>(
+    const float                 x,
+    const float                 y,
+    Spectrum31f&                spectrum)
 {
-    const T rcp_m = T(1.0) / (T(0.0241) + T(0.2562) * x - T(0.7341) * y);
-    const T m1 = (T(-1.3515) - T(1.7703) * x +  T(5.9114) * y) * rcp_m;
-    const T m2 = (T( 0.0300) - T(31.4424) * x + T(30.0717) * y) * rcp_m;
+    const float rcp_m = 1.0f / (0.0241f + 0.2562f * x - 0.7341f * y);
+    const float m1 = (-1.3515f - 1.7703f * x + 5.9114f * y) * rcp_m;
+    const float m2 = (0.0300f - 31.4424f * x + 30.0717f * y) * rcp_m;
 
-    spectrum =
-        Spectrum(
-            DaylightS0 +
-            DaylightS1 * static_cast<float>(m1) +
-            DaylightS2 * static_cast<float>(m2));
+    spectrum = DaylightS0;
+
+    Spectrum31f s1 = DaylightS1;
+    s1 *= m1;
+    spectrum += s1;
+
+    Spectrum31f s2 = DaylightS2;
+    s2 *= m2;
+    spectrum += s2;
 }
 
 

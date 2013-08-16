@@ -337,14 +337,14 @@ namespace
             const double cos_gamma = dot(outgoing, m_sun_dir);
             const double gamma = acos(cos_gamma);
 
-            Color3d xyY;
+            Color3f xyY;
 
             if (m_uniform_turbidity)
             {
                 // Compute the sky color in the xyY color space.
-                xyY[0] = compute_quantity(rcp_cos_theta, gamma, cos_gamma, m_sun_theta, m_cos_sun_theta, m_uniform_x_zenith, m_uniform_x_coeffs);
-                xyY[1] = compute_quantity(rcp_cos_theta, gamma, cos_gamma, m_sun_theta, m_cos_sun_theta, m_uniform_y_zenith, m_uniform_y_coeffs);
-                xyY[2] = compute_quantity(rcp_cos_theta, gamma, cos_gamma, m_sun_theta, m_cos_sun_theta, m_uniform_Y_zenith, m_uniform_Y_coeffs);
+                xyY[0] = static_cast<float>(compute_quantity(rcp_cos_theta, gamma, cos_gamma, m_sun_theta, m_cos_sun_theta, m_uniform_x_zenith, m_uniform_x_coeffs));
+                xyY[1] = static_cast<float>(compute_quantity(rcp_cos_theta, gamma, cos_gamma, m_sun_theta, m_cos_sun_theta, m_uniform_y_zenith, m_uniform_y_coeffs));
+                xyY[2] = static_cast<float>(compute_quantity(rcp_cos_theta, gamma, cos_gamma, m_sun_theta, m_cos_sun_theta, m_uniform_Y_zenith, m_uniform_Y_coeffs));
             }
             else
             {
@@ -371,9 +371,9 @@ namespace
                 const double Y_zenith = compute_zenith_Y(turbidity, m_sun_theta);
 
                 // Compute the sky color in the xyY color space.
-                xyY[0] = compute_quantity(rcp_cos_theta, gamma, cos_gamma, m_sun_theta, m_cos_sun_theta, x_zenith, x_coeffs);
-                xyY[1] = compute_quantity(rcp_cos_theta, gamma, cos_gamma, m_sun_theta, m_cos_sun_theta, y_zenith, y_coeffs);
-                xyY[2] = compute_quantity(rcp_cos_theta, gamma, cos_gamma, m_sun_theta, m_cos_sun_theta, Y_zenith, Y_coeffs);
+                xyY[0] = static_cast<float>(compute_quantity(rcp_cos_theta, gamma, cos_gamma, m_sun_theta, m_cos_sun_theta, x_zenith, x_coeffs));
+                xyY[1] = static_cast<float>(compute_quantity(rcp_cos_theta, gamma, cos_gamma, m_sun_theta, m_cos_sun_theta, y_zenith, y_coeffs));
+                xyY[2] = static_cast<float>(compute_quantity(rcp_cos_theta, gamma, cos_gamma, m_sun_theta, m_cos_sun_theta, Y_zenith, Y_coeffs));
             }
 
             // Apply an optional saturation correction.
@@ -394,7 +394,7 @@ namespace
             }
 
             // Split sky color into luminance and chromaticity.
-            float luminance = static_cast<float>(xyY[2]);
+            float luminance = xyY[2];
             daylight_ciexy_to_spectrum(xyY[0], xyY[1], value);
 
             // Apply luminance gamma and multiplier.
