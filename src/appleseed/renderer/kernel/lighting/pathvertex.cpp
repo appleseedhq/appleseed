@@ -33,9 +33,6 @@
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/input/inputevaluator.h"
 
-// Standard headers.
-#include <cassert>
-
 namespace renderer
 {
 

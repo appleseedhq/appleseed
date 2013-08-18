@@ -55,6 +55,9 @@
 #include "foundation/utility/statistics.h"
 #include "foundation/utility/string.h"
 
+// Standard headers.
+#include <algorithm>
+
 // Forward declarations.
 namespace renderer  { class EnvironmentEDF; }
 
@@ -634,10 +637,11 @@ namespace
                 if (prev_bsdf_mode != BSDF::Specular)
                 {
                     assert(prev_bsdf_prob > 0.0);
+                    const double env_sample_count = max(m_params.m_ibl_env_sample_count, 1.0);
                     const double mis_weight =
                         mis_power2(
-                            1 * prev_bsdf_prob,
-                            m_params.m_ibl_env_sample_count * env_prob);
+                            1.0 * prev_bsdf_prob,
+                            env_sample_count * env_prob);
                     env_radiance *= static_cast<float>(mis_weight);
                 }
 

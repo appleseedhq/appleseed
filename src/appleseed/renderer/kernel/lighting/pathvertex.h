@@ -41,6 +41,7 @@
 #include "foundation/math/vector.h"
 
 // Standard headers.
+#include <cassert>
 #include <cstddef>
 
 // Forward declarations.
@@ -150,6 +151,7 @@ inline const Material* PathVertex::get_material() const
 inline double PathVertex::get_bsdf_point_prob() const
 {
     // Veach: 8.2.2.2 eq. 8.10.
+    assert(prev_bsdf_prob > 0.0);
     const double d = m_shading_point->get_distance();
     return m_prev_bsdf_prob * m_cos_on / (d * d);
 }
