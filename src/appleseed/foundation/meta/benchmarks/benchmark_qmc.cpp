@@ -30,6 +30,7 @@
 #include "foundation/math/permutation.h"
 #include "foundation/math/primes.h"
 #include "foundation/math/qmc.h"
+#include "foundation/math/vector.h"
 #include "foundation/utility/benchmark.h"
 
 // Standard headers.
