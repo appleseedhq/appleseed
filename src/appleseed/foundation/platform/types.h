@@ -84,8 +84,26 @@ namespace foundation
 //
 
 #else
-#error Integral types are not defined on this platform.
+    #error Integral types are not defined on this platform.
 #endif
+
+
+//
+// A synonym for the non-standard ssize_t type.
+//
+
+namespace foundation
+{
+
+#if defined ARCH32
+    typedef int32 isize_t;
+#elif defined ARCH64
+    typedef int64 isize_t;
+#else
+    #error Cannot determine machine architecture.
+#endif
+
+}
 
 
 //
