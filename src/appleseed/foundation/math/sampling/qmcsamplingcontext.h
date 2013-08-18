@@ -261,9 +261,9 @@ inline void QMCSamplingContext<RNG>::compute_offset()
             assert(d < PrimeTableSize);
 
             m_offset[i] =
-                permuted_radical_inverse<double>(
-                    PrimesFaurePermutations[d].m_prime,
-                    PrimesFaurePermutations[d].m_perm,
+                fast_permuted_radical_inverse<double>(
+                    d,
+                    FaurePermutations[d],
                     m_base_instance);
         }
         else
@@ -331,7 +331,7 @@ inline void QMCSamplingContext<RNG>::next_vector2(const size_t n, double v[])
 
         for (size_t i = 1; i < n; ++i)
         {
-            v[i] = radical_inverse<double>(PrimesFaurePermutations[i].m_prime, m_instance);
+            v[i] = fast_radical_inverse<double>(i, m_instance);
             v[i] = rotate(v[i], m_offset[i]);
         }
     }
