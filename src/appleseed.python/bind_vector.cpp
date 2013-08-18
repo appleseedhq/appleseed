@@ -40,22 +40,22 @@ using namespace foundation;
 namespace detail
 {
     template <typename T, std::size_t N>
-    Vector<T,N>* construct_vec_from_list(bpy::list l)
+    Vector<T, N>* construct_vec_from_list(bpy::list l)
     {
         if (bpy::len(l) != N)
         {
-            PyErr_SetString(PyExc_RuntimeError, "Invalid list length given to appleseed.Vector" );
+            PyErr_SetString(PyExc_RuntimeError, "Invalid list length given to appleseed.Vector");
             bpy::throw_error_already_set();
         }
 
-        Vector<T,N>* r = new Vector<T,N>();
+        Vector<T, N>* r = new Vector<T, N>();
 
         for (unsigned i = 0; i < N; ++i)
         {
             bpy::extract<T> ex(l[i]);
             if (!ex.check())
             {
-                PyErr_SetString(PyExc_TypeError, "Incompatible type type. Only floats." );
+                PyErr_SetString(PyExc_TypeError, "Incompatible type type. Only floats.");
                 bpy::throw_error_already_set();
             }
 
@@ -110,7 +110,7 @@ namespace detail
     template <typename T, std::size_t N>
     struct vector_indexer
     {
-        static T get(const Vector<T,N>& x, int i)
+        static T get(const Vector<T, N>& x, int i)
         {
             if (i < 0)
                 i = N + i;
@@ -119,14 +119,14 @@ namespace detail
                 return x[i];
             else
             {
-                PyErr_SetString(PyExc_IndexError, "Invalid index in appleseed.Vector" );
+                PyErr_SetString(PyExc_IndexError, "Invalid index in appleseed.Vector");
                 boost::python::throw_error_already_set();
             }
 
             return T();
         }
 
-        static void set(Vector<T,N>& x, int i, const T& v)
+        static void set(Vector<T, N>& x, int i, const T& v)
         {
             if (i < 0)
                 i = N + i;
@@ -135,7 +135,7 @@ namespace detail
                 x[i] = v;
             else
             {
-                PyErr_SetString(PyExc_IndexError, "Invalid index in appleseed.Vector" );
+                PyErr_SetString(PyExc_IndexError, "Invalid index in appleseed.Vector");
                 boost::python::throw_error_already_set();
             }
         }
@@ -144,15 +144,15 @@ namespace detail
     template <typename T, std::size_t N>
     void do_bind_vector(const char* class_name)
     {
-        bpy::class_<Vector<T,N> >(class_name)
+        bpy::class_<Vector<T, N> >(class_name)
             .def(bpy::init<>())
             .def(bpy::init<T>())
-            .def("__init__", bpy::make_constructor(&vector_constructor<T,N>::construct))
-            .def("__init__", bpy::make_constructor(&construct_vec_from_list<T,N>))
+            .def("__init__", bpy::make_constructor(&vector_constructor<T, N>::construct))
+            .def("__init__", bpy::make_constructor(&construct_vec_from_list<T, N>))
 
             // operator[]
-            .def("__getitem__", &vector_indexer<T,N>::get)
-            .def("__setitem__", &vector_indexer<T,N>::set)
+            .def("__getitem__", &vector_indexer<T, N>::get)
+            .def("__setitem__", &vector_indexer<T, N>::set)
 
             // operators
             .def(bpy::self += bpy::self)

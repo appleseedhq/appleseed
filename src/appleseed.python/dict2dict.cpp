@@ -139,7 +139,7 @@ namespace
                 }
             }
 
-            // TODO: add conversions from bpy::tuple to Vector<T,N>.
+            // TODO: add conversions from bpy::tuple to Vector<T, N>.
             // ...
 
             // TODO: check more types here if needed... (est.)
@@ -205,7 +205,7 @@ namespace
         }
         catch (ExceptionStringConversionError&) {}
 
-        // TODO: add conversions from bpy::tuple to Vector<T,N>.
+        // TODO: add conversions from bpy::tuple to Vector<T, N>.
 
         // TODO: check more types here if needed... (est.)
 

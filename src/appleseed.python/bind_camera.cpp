@@ -51,7 +51,7 @@ namespace detail
             std::string error = "Camera type ";
             error += camera_type;
             error += " not found";
-            PyErr_SetString(PyExc_RuntimeError, error.c_str() );
+            PyErr_SetString(PyExc_RuntimeError, error.c_str());
             bpy::throw_error_already_set();
         }
 
