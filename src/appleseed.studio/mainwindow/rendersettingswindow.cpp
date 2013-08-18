@@ -315,7 +315,7 @@ void RenderSettingsWindow::create_drt_advanced_dl_settings(QVBoxLayout* parent)
     QHBoxLayout* sublayout = create_horizontal_layout();
     layout->addLayout(sublayout);
 
-    sublayout->addLayout(create_form_layout("Light Samples:", create_integer_input("drt.advanced.dl.light_samples", 0, 1000000)));
+    sublayout->addLayout(create_form_layout("Light Samples:", create_double_input("drt.advanced.dl.light_samples", 0.0, 1000000.0, 3, 1.0)));
 }
 
 void RenderSettingsWindow::create_drt_advanced_ibl_settings(QVBoxLayout* parent)
@@ -329,7 +329,7 @@ void RenderSettingsWindow::create_drt_advanced_ibl_settings(QVBoxLayout* parent)
     QHBoxLayout* sublayout = create_horizontal_layout();
     layout->addLayout(sublayout);
 
-    sublayout->addLayout(create_form_layout("Environment Samples:", create_integer_input("drt.advanced.ibl.env_samples", 0, 1000000)));
+    sublayout->addLayout(create_form_layout("Environment Samples:", create_double_input("drt.advanced.ibl.env_samples", 0.0, 1000000.0, 3, 1.0)));
 }
 
 //---------------------------------------------------------------------------------------------
@@ -391,7 +391,7 @@ void RenderSettingsWindow::create_pt_advanced_dl_settings(QVBoxLayout* parent)
     QHBoxLayout* sublayout = create_horizontal_layout();
     layout->addLayout(sublayout);
 
-    sublayout->addLayout(create_form_layout("Light Samples:", create_integer_input("pt.advanced.dl.light_samples", 0, 1000000)));
+    sublayout->addLayout(create_form_layout("Light Samples:", create_double_input("pt.advanced.dl.light_samples", 0.0, 1000000.0, 3, 1.0)));
 }
 
 void RenderSettingsWindow::create_pt_advanced_ibl_settings(QVBoxLayout* parent)
@@ -405,7 +405,7 @@ void RenderSettingsWindow::create_pt_advanced_ibl_settings(QVBoxLayout* parent)
     QHBoxLayout* sublayout = create_horizontal_layout();
     layout->addLayout(sublayout);
 
-    sublayout->addLayout(create_form_layout("Environment Samples:", create_integer_input("pt.advanced.ibl.env_samples", 0, 1000000)));
+    sublayout->addLayout(create_form_layout("Environment Samples:", create_double_input("pt.advanced.ibl.env_samples", 0.0, 1000000.0, 3, 1.0)));
 }
 
 void RenderSettingsWindow::create_pt_advanced_max_ray_intensity_settings(QVBoxLayout* parent)

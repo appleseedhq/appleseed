@@ -54,6 +54,7 @@ class SpectrumStack
 
     SpectrumStack();
     explicit SpectrumStack(const size_t size);
+    SpectrumStack(const size_t size, const float val);
 
     void set_size(const size_t size);
     size_t size() const;
@@ -90,6 +91,13 @@ inline SpectrumStack::SpectrumStack(const size_t size)
   : m_size(size)
 {
     assert(size <= MaxSize);
+}
+
+inline SpectrumStack::SpectrumStack(const size_t size, const float val)
+  : m_size(size)
+{
+    assert(size <= MaxSize);
+    set(val);
 }
 
 inline void SpectrumStack::set_size(const size_t size)
