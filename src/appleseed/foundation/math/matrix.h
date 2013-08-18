@@ -2011,7 +2011,7 @@ inline Vector<T, 4> operator*(
     return res;
 }
 
-#ifdef APPLESEED_FOUNDATION_USE_SSE_DISABLED
+#ifdef APPLESEED_FOUNDATION_USE_SSE
 
 // SSE2-optimized double precision 4x4 matrix-vector multiplication.
 template <>
@@ -2057,7 +2057,7 @@ inline Vector<T, 4> operator*(
     res[1] = v[0] * m[ 1] + v[1] * m[ 5] + v[2] * m[ 9] + v[3] * m[13];
     res[2] = v[0] * m[ 2] + v[1] * m[ 6] + v[2] * m[10] + v[3] * m[14];
     res[3] = v[0] * m[ 3] + v[1] * m[ 7] + v[2] * m[11] + v[3] * m[15];
-    
+
     return res;
 }
 
