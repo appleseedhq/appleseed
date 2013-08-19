@@ -70,11 +70,19 @@ class DLLSYMBOL Environment
     // This method is called once after rendering each frame.
     void on_frame_end(const Project& project);
 
+    //
+    // The get_*() methods below retrieve entities that were cached by on_frame_begin().
+    // To retrieve the entities before on_frame_begin() or after on_frame_end() is called,
+    // use the get_uncached_*() variants.
+    //
+
     // Return the EDF of this environment, or 0 if the environment doesn't have one.
     EnvironmentEDF* get_environment_edf() const;
+    EnvironmentEDF* get_uncached_environment_edf() const;
 
     // Return the shader of this environment, or 0 if the environment doesn't have one.
     EnvironmentShader* get_environment_shader() const;
+    EnvironmentShader* get_uncached_environment_shader() const;
 
   private:
     friend class EnvironmentFactory;

@@ -275,7 +275,7 @@ namespace
             format,
             scene);
 
-        EnvironmentEDF* env_edf = scene.get_environment()->get_environment_edf();
+        EnvironmentEDF* env_edf = scene.get_environment()->get_uncached_environment_edf();
 
         if (env_edf)
             assign_entity_to_render_layer(aov_images, mapping, format, *env_edf);
