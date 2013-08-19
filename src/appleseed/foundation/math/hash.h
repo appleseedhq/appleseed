@@ -49,7 +49,7 @@ namespace foundation
 //
 // Reference:
 //
-//   http://www.concentric.net/~Ttwang/tech/inthash.htm
+//   https://gist.github.com/badboy/6267743
 //
 
 // Hash a 32-bit integer into a 32-bit integer.
