@@ -29,6 +29,9 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_CONTAINERS_HASHTABLE_H
 #define APPLESEED_FOUNDATION_UTILITY_CONTAINERS_HASHTABLE_H
 
+// appleseed.foundation headers.
+#include "foundation/math/scalar.h"
+
 // Standard headers.
 #include <cassert>
 #include <cstddef>
@@ -42,7 +45,8 @@ namespace foundation
 // A minimalist hash table implementation with many restrictions:
 //
 //   * No dynamic resizing (the table is cleared on resize)
-//   * No element deletion
+//   * Table size must be a power of two
+//   * No deletion of elements
 //   * No control over memory allocation
 //   * get() expects the element to be present in the hash table
 //
@@ -57,7 +61,8 @@ class HashTable
     // Destructor.
     ~HashTable();
 
-    // Resize the table. All previously inserted elements are lost.
+    // Resize the table. The size must be a power of two.
+    // All previously inserted elements are lost.
     void resize(const size_t size);
 
     // Insert an element into the hash table. The key must be unique.
@@ -71,7 +76,7 @@ class HashTable
     typedef std::vector<Entry> EntryVector;
 
     const KeyHasherType&    m_key_hasher;
-    size_t                  m_size;
+    size_t                  m_mask;
     EntryVector*            m_vectors;
 };
 
@@ -83,7 +88,7 @@ class HashTable
 template <typename KeyType, typename KeyHasherType, typename ValueType>
 HashTable<KeyType, KeyHasherType, ValueType>::HashTable(const KeyHasherType& key_hasher)
   : m_key_hasher(key_hasher)
-  , m_size(0)
+  , m_mask(0)
   , m_vectors(0)
 {
 }
@@ -97,10 +102,12 @@ HashTable<KeyType, KeyHasherType, ValueType>::~HashTable()
 template <typename KeyType, typename KeyHasherType, typename ValueType>
 void HashTable<KeyType, KeyHasherType, ValueType>::resize(const size_t size)
 {
+    assert(size == 0 || is_pow2(size));
+
     delete [] m_vectors;
 
-    m_size = size;
-    m_vectors = size > 0 ? new EntryVector[m_size] : 0;
+    m_mask = size > 0 ? size - 1 : 0;
+    m_vectors = size > 0 ? new EntryVector[size] : 0;
 }
 
 template <typename KeyType, typename KeyHasherType, typename ValueType>
@@ -108,7 +115,7 @@ void HashTable<KeyType, KeyHasherType, ValueType>::insert(const KeyType& key, co
 {
     assert(m_vectors);
 
-    const size_t index = m_key_hasher(key) % m_size;
+    const size_t index = m_key_hasher(key) & m_mask;
     EntryVector& vec = m_vectors[index];
 
     vec.push_back(std::make_pair(key, value));
@@ -119,7 +126,7 @@ const ValueType& HashTable<KeyType, KeyHasherType, ValueType>::get(const KeyType
 {
     assert(m_vectors);
 
-    const size_t index = m_key_hasher(key) % m_size;
+    const size_t index = m_key_hasher(key) & m_mask;
     const EntryVector& vec = m_vectors[index];
 
     const size_t size = vec.size();
