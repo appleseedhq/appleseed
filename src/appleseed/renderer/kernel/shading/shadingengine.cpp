@@ -164,6 +164,9 @@ void ShadingEngine::shade_environment(
             input_evaluator,
             direction,
             shading_result);
+
+        // Set environment shader AOV.
+        shading_result.m_aovs.set(environment_shader->get_render_layer_index(), shading_result.m_color);
     }
     else
     {

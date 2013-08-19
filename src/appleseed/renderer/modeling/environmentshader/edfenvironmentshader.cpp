@@ -70,10 +70,9 @@ namespace
     {
       public:
         EDFEnvironmentShader(
-            const char*             name,
-            const ParamArray&       params)
+            const char*         name,
+            const ParamArray&   params)
           : EnvironmentShader(name, params)
-          , m_env_edf_name(m_params.get_required<string>("environment_edf", ""))
           , m_env_edf(0)
         {
         }
@@ -93,54 +92,40 @@ namespace
             if (!EnvironmentShader::on_frame_begin(project))
                 return false;
 
-            m_env_edf = 0;
+            const string name = m_params.get_required<string>("environment_edf", "");
+            m_env_edf = project.get_scene()->environment_edfs().get_by_name(name.c_str());
 
-            if (!m_env_edf_name.empty())
+            if (m_env_edf == 0)
             {
-                m_env_edf =
-                    project.get_scene()->environment_edfs().get_by_name(m_env_edf_name.c_str());
+                RENDERER_LOG_ERROR(
+                    "while preparing environment shader \"%s\": "
+                    "cannot find environment edf \"%s\".",
+                    get_path().c_str(),
+                    name.c_str());
 
-                if (m_env_edf == 0)
-                {
-                    RENDERER_LOG_ERROR(
-                        "while preparing environment shader \"%s\": "
-                        "cannot find environment EDF \"%s\".",
-                        get_path().c_str(),
-                        m_env_edf_name.c_str());
-
-                    return false;
-                }
+                return false;
             }
 
             return true;
         }
 
         virtual void evaluate(
-            InputEvaluator&         input_evaluator,
-            const Vector3d&         direction,
-            ShadingResult&          shading_result) const OVERRIDE
+            InputEvaluator&     input_evaluator,
+            const Vector3d&     direction,
+            ShadingResult&      shading_result) const OVERRIDE
         {
-            if (m_env_edf)
-            {
-                // Evaluate the environment EDF.
-                shading_result.m_color_space = ColorSpaceSpectral;
-                shading_result.m_aovs.set(0.0f);
-                shading_result.m_alpha.set(1.0f);
-                m_env_edf->evaluate(
-                    input_evaluator,
-                    direction,
-                    shading_result.m_color);
-            }
-            else
-            {
-                // Environment shader not properly initialized: return transparent black.
-                shading_result.set_to_transparent_black();
-            }
+            shading_result.m_color_space = ColorSpaceSpectral;
+            shading_result.m_aovs.set(0.0f);
+            shading_result.m_alpha.set(1.0f);
+
+            m_env_edf->evaluate(
+                input_evaluator,
+                direction,
+                shading_result.m_color);
         }
 
       private:
-        const string        m_env_edf_name;
-        EnvironmentEDF*     m_env_edf;
+        EnvironmentEDF* m_env_edf;
     };
 }
 

@@ -37,6 +37,7 @@
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
+#include "renderer/modeling/environmentshader/environmentshader.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/material/material.h"
@@ -276,9 +277,12 @@ namespace
             scene);
 
         EnvironmentEDF* env_edf = scene.get_environment()->get_uncached_environment_edf();
-
         if (env_edf)
             assign_entity_to_render_layer(aov_images, mapping, format, *env_edf);
+
+        EnvironmentShader* env_shader = scene.get_environment()->get_uncached_environment_shader();
+        if (env_shader)
+            assign_entity_to_render_layer(aov_images, mapping, format, *env_shader);
     }
 }
 
