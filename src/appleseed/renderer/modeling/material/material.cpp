@@ -180,17 +180,17 @@ void Material::on_frame_end(
 
 const SurfaceShader* Material::get_uncached_surface_shader() const
 {
-    return static_cast<SurfaceShader*>(m_inputs.get_entity("surface_shader"));
+    return static_cast<const SurfaceShader*>(m_inputs.get_entity("surface_shader"));
 }
 
 const BSDF* Material::get_uncached_bsdf() const
 {
-    return static_cast<BSDF*>(m_inputs.get_entity("bsdf"));
+    return static_cast<const BSDF*>(m_inputs.get_entity("bsdf"));
 }
 
 const EDF* Material::get_uncached_edf() const
 {
-    return static_cast<EDF*>(m_inputs.get_entity("edf"));
+    return static_cast<const EDF*>(m_inputs.get_entity("edf"));
 }
 
 const Source* Material::get_uncached_alpha_map() const
