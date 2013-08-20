@@ -128,6 +128,9 @@ void ShadingEngine::shade_hit_point(
             shading_context,
             shading_point,
             shading_result);
+
+        // Set the surface shader AOV.
+        shading_result.m_aovs.set(surface_shader->get_render_layer_index(), shading_result.m_color);
     }
     else
     {
