@@ -75,6 +75,7 @@ namespace
           : EnvironmentShader(name, params)
           , m_env_edf(0)
         {
+            m_inputs.declare("alpha_value", InputFormatScalar, "1.0");
         }
 
         virtual void release() OVERRIDE
@@ -92,6 +93,7 @@ namespace
             if (!EnvironmentShader::on_frame_begin(project))
                 return false;
 
+            // Bind the environment EDF to this environment shader.
             const string name = m_params.get_required<string>("environment_edf", "");
             m_env_edf = project.get_scene()->environment_edfs().get_by_name(name.c_str());
 
@@ -106,6 +108,11 @@ namespace
                 return false;
             }
 
+            // Evaluate and store alpha value.
+            InputValues uniform_values;
+            m_inputs.evaluate_uniforms(&uniform_values);
+            m_alpha_value = static_cast<float>(uniform_values.m_alpha_value);
+
             return true;
         }
 
@@ -116,7 +123,7 @@ namespace
         {
             shading_result.m_color_space = ColorSpaceSpectral;
             shading_result.m_aovs.set(0.0f);
-            shading_result.m_alpha.set(1.0f);
+            shading_result.m_alpha.set(m_alpha_value);
 
             m_env_edf->evaluate(
                 input_evaluator,
@@ -125,7 +132,13 @@ namespace
         }
 
       private:
-        EnvironmentEDF* m_env_edf;
+        DECLARE_INPUT_VALUES(InputValues)
+        {
+            double m_alpha_value;
+        };
+
+        EnvironmentEDF*     m_env_edf;
+        float               m_alpha_value;
     };
 }
 
@@ -158,6 +171,16 @@ DictionaryArray EDFEnvironmentShaderFactory::get_input_metadata() const
                     .insert("environment_edf", "Environment EDFs"))
             .insert("use", "required")
             .insert("default", ""));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "alpha_value")
+            .insert("label", "Alpha Value")
+            .insert("type", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "1.0")
+            .insert("use", "optional")
+            .insert("default", "1.0"));
 
     return metadata;
 }
