@@ -50,7 +50,7 @@ typedef uint64 UniqueID;
 // Format string for printing unique identifiers to strings.
 //
 
-#define FMT_UNIQUE_ID "%llu"
+#define FMT_UNIQUE_ID FMT_UINT64
 
 
 //
