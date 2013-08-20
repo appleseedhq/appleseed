@@ -348,7 +348,8 @@ void LightSampler::build_emitting_triangle_hash_table()
 {
     const size_t emitting_triangle_count = m_emitting_triangles.size();
 
-    m_emitting_triangle_hash_table.resize(next_pow2(emitting_triangle_count));
+    m_emitting_triangle_hash_table.resize(
+        emitting_triangle_count > 0 ? next_pow2(emitting_triangle_count) : 0);
 
     for (size_t i = 0; i < emitting_triangle_count; ++i)
     {
