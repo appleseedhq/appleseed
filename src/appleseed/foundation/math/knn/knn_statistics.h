@@ -106,7 +106,7 @@ TreeStatistics<Tree>::TreeStatistics(
 
     collect_stats_recurse(tree, tree.m_nodes.front(), 1);
 
-    insert<uint64>("points", tree.m_points.size());
+    insert("points", tree.m_points.size());
     insert_size("size", tree.get_memory_size());
     insert(
         "nodes",

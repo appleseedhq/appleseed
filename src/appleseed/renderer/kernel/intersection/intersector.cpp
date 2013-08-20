@@ -405,7 +405,7 @@ StatisticsVector Intersector::get_statistics() const
     const uint64 total_ray_count = m_shading_ray_count + m_probe_ray_count;
 
     Statistics intersection_stats;
-    intersection_stats.insert<uint64>("total rays", total_ray_count);
+    intersection_stats.insert("total rays", total_ray_count);
     intersection_stats.insert(
         auto_ptr<RayCountStatisticsEntry>(
             new RayCountStatisticsEntry(
