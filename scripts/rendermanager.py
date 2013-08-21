@@ -44,11 +44,11 @@ import xml.dom.minidom as xml
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "1.0"
+VERSION = "1.1"
 RENDERS_DIR = "_renders"
 ARCHIVE_DIR = "_archives"
 LOGS_DIR = "_logs"
-PAUSE_BETWEEN_CHECKS = 10   # in seconds
+PAUSE_BETWEEN_CHECKS = 15   # in seconds
 
 
 #--------------------------------------------------------------------------------------------------
@@ -60,7 +60,10 @@ def get_directory_size(directory):
     for dirpath, dirnames, filenames in os.walk(directory):
         for filename in filenames:
             fp = os.path.join(dirpath, filename)
-            size += os.path.getsize(fp)
+            try:
+                size += os.path.getsize(fp)
+            except:
+                pass
     return size
 
 def safe_mkdir(dir):
