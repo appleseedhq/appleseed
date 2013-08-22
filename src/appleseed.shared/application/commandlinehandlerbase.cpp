@@ -38,7 +38,6 @@
 #include "foundation/platform/system.h"
 #include "foundation/utility/commandlineparser.h"
 #include "foundation/utility/log.h"
-#include "foundation/utility/string.h"
 
 // boost headers.
 #include "boost/filesystem/path.hpp"
@@ -140,7 +139,7 @@ void CommandLineHandlerBase::parse(
         print_version_information(logger);
 
     if (impl->m_system.is_set())
-        print_system_information(logger);
+        System::print_information(logger);
 
     if (impl->m_help.is_set())
     {
@@ -188,22 +187,6 @@ void CommandLineHandlerBase::print_version_information(SuperLogger& logger) cons
         Appleseed::get_lib_compilation_time(),
         Compiler::get_compiler_name(),
         Compiler::get_compiler_version());
-}
-
-void CommandLineHandlerBase::print_system_information(SuperLogger& logger)
-{
-    LOG_INFO(
-        logger,
-        "system information:\n"
-        "  L1 data cache    size %s, line size %s\n"
-        "  L2 cache         size %s, line size %s\n"
-        "  L3 cache         size %s, line size %s\n",
-        pretty_size(System::get_l1_data_cache_size()).c_str(),
-        pretty_size(System::get_l1_data_cache_line_size()).c_str(),
-        pretty_size(System::get_l2_cache_size()).c_str(),
-        pretty_size(System::get_l2_cache_line_size()).c_str(),
-        pretty_size(System::get_l3_cache_size()).c_str(),
-        pretty_size(System::get_l3_cache_line_size()).c_str());
 }
 
 }   // namespace shared

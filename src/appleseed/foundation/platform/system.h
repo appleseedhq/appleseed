@@ -39,6 +39,9 @@
 // Standard headers.
 #include <cstddef>
 
+// Forward declarations.
+namespace foundation    { class Logger; }
+
 namespace foundation
 {
 
@@ -50,6 +53,9 @@ class DLLSYMBOL System
   : public NonCopyable
 {
   public:
+    // Print system information.
+    static void print_information(Logger& logger);
+
     //
     // CPU cores.
     //

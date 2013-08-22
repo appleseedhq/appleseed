@@ -88,7 +88,6 @@ class SHAREDDLL CommandLineHandlerBase
     Impl* impl;
 
     void print_version_information(SuperLogger& logger) const;
-    static void print_system_information(SuperLogger& logger);
 };
 
 }       // namespace shared

@@ -32,6 +32,11 @@
 // appleseed.foundation headers.
 #include "foundation/platform/thread.h"
 #include "foundation/platform/x86timer.h"
+#include "foundation/utility/log.h"
+#include "foundation/utility/string.h"
+
+// Standard headers.
+#include <string>
 
 // Windows.
 #if defined _WIN32
@@ -57,8 +62,10 @@
 
 // Unsupported platform.
 #else
-#error Unsupported platform.
+    #error Unsupported platform.
 #endif
+
+using namespace std;
 
 namespace foundation
 {
@@ -66,6 +73,22 @@ namespace foundation
 // ------------------------------------------------------------------------------------------------
 // Common code.
 // ------------------------------------------------------------------------------------------------
+
+void System::print_information(Logger& logger)
+{
+    LOG_INFO(
+        logger,
+        "system information:\n"
+        "  L1 data cache    size %s, line size %s\n"
+        "  L2 cache         size %s, line size %s\n"
+        "  L3 cache         size %s, line size %s\n",
+        pretty_size(get_l1_data_cache_size()).c_str(),
+        pretty_size(get_l1_data_cache_line_size()).c_str(),
+        pretty_size(get_l2_cache_size()).c_str(),
+        pretty_size(get_l2_cache_line_size()).c_str(),
+        pretty_size(get_l3_cache_size()).c_str(),
+        pretty_size(get_l3_cache_line_size()).c_str());
+}
 
 size_t System::get_logical_cpu_core_count()
 {
