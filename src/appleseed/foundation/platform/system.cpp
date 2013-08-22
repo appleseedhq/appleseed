@@ -79,9 +79,11 @@ void System::print_information(Logger& logger)
     LOG_INFO(
         logger,
         "system information:\n"
+        "  logical cores    %s\n"
         "  L1 data cache    size %s, line size %s\n"
         "  L2 cache         size %s, line size %s\n"
         "  L3 cache         size %s, line size %s\n",
+        pretty_uint(get_logical_cpu_core_count()).c_str(),
         pretty_size(get_l1_data_cache_size()).c_str(),
         pretty_size(get_l1_data_cache_line_size()).c_str(),
         pretty_size(get_l2_cache_size()).c_str(),
