@@ -87,6 +87,13 @@ class DLLSYMBOL System
 
     // Return the size in bytes of a L3 cache line, or 0 if there's no L3 cache.
     static size_t get_l3_cache_line_size();
+
+    //
+    // Physical RAM.
+    //
+
+    // Return the total size in bytes of the physical RAM.
+    static uint64 get_total_physical_ram_size();
 };
 
 }       // namespace foundation
