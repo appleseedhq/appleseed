@@ -126,7 +126,7 @@ LightSampler::LightSampler(const Scene& scene, const ParamArray& params)
     if (m_emitting_triangles_cdf.valid())
         m_emitting_triangles_cdf.prepare();
 
-    // Store the triangle PDFs into the emitting triangles.
+    // Store the triangle probability densities into the emitting triangles.
     const size_t emitting_triangle_count = m_emitting_triangles.size();
     for (size_t i = 0; i < emitting_triangle_count; ++i)
         m_emitting_triangles[i].m_triangle_pdf = m_emitting_triangles_cdf[i].second;
@@ -310,9 +310,9 @@ void LightSampler::collect_emitting_triangles(
                     if (edf == 0)
                         continue;
 
-                    // Compute the PDF of this triangle.
+                    // Compute the probability density of this triangle.
                     const double triangle_importance = m_params.m_importance_sampling ? area : 1.0;
-                    const double triangle_pdf = triangle_importance * edf->get_uncached_importance_multiplier();
+                    const double triangle_prob = triangle_importance * edf->get_uncached_importance_multiplier();
 
                     // Create a light-emitting triangle.
                     EmittingTriangle emitting_triangle;
@@ -337,7 +337,7 @@ void LightSampler::collect_emitting_triangles(
                     m_emitting_triangles.push_back(emitting_triangle);
 
                     // Insert the light-emitting triangle into the CDF.
-                    m_emitting_triangles_cdf.insert(emitting_triangle_index, triangle_pdf);
+                    m_emitting_triangles_cdf.insert(emitting_triangle_index, triangle_prob);
                 }
             }
         }
