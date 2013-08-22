@@ -44,7 +44,7 @@ import xml.dom.minidom as xml
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "1.1"
+VERSION = "1.2"
 RENDERS_DIR = "_renders"
 ARCHIVE_DIR = "_archives"
 LOGS_DIR = "_logs"
@@ -68,7 +68,7 @@ def get_directory_size(directory):
 
 def safe_mkdir(dir):
     if not os.path.exists(dir):
-        os.mkdir(dir)
+        os.makedirs(dir)
 
 def convert_path_to_local(path):
     if os.name == "nt":
@@ -282,10 +282,10 @@ def try_submitting_project_file(shot_directory, watched_directory, max_size, pro
     # Don't submit this project if it doesn't fit in the remaining available space.
     if max_size is not None and watched_dir_size_mb + project_size_mb >= max_size:
         log.info("watched directory is full at {0:.2f} MB ({1} bytes), " \
-                 "max allowed size is {2:.2f} MB".format(watched_dir_size_mb, watched_dir_size, max_size))
+                 "max allowed size is {2:.2f} MB.".format(watched_dir_size_mb, watched_dir_size, max_size))
         return False    # don't try to submit new files in this round
 
-    log.info("submitting project file {0}, size {1:.2f} MB ({2} bytes)".format(project_filepath, project_size_mb, project_size))
+    log.info("submitting project file {0}, size {1:.2f} MB ({2} bytes)...".format(project_filepath, project_size_mb, project_size))
 
     # Submit the project file.
     shutil.copyfile(os.path.join(shot_directory, project_filepath), os.path.join(watched_directory, project_filepath))
@@ -294,7 +294,10 @@ def try_submitting_project_file(shot_directory, watched_directory, max_size, pro
     copied_deps = 0
     for dep in deps:
         if not os.path.isfile(os.path.join(watched_directory, dep)):
-            shutil.copyfile(os.path.join(shot_directory, dep), os.path.join(watched_directory, dep))
+            src_path = os.path.join(shot_directory, dep)
+            dest_path = os.path.join(watched_directory, dep)
+            safe_mkdir(os.path.dirname(dest_path))
+            shutil.copyfile(src_path, dest_path)
             copied_deps += 1
     if copied_deps > 0:
         log.info("copied {0} dependency(ies).".format(copied_deps))
@@ -328,7 +331,10 @@ def submit_project_files(shot_directory, watched_directory, archive_directory, m
         if os.path.isfile(os.path.join(archive_directory, entry)):
             continue
 
-        try_submitting_project_file(shot_directory, watched_directory, max_size, entry, log)
+        # Try submitting the project file; stop submitting files if that failed.
+        if not try_submitting_project_file(shot_directory, watched_directory, max_size, entry, log):
+            log.info("no longer submitting project files in this round.")
+            break
 
     if rendered_files > 0:
         log.info("{0} project files are being rendered (by {1}).".format(rendered_files, ", ".join(suffixes)))
