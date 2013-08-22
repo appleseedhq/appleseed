@@ -28,7 +28,7 @@
 #
 
 # Package builder settings.
-VersionString = "2.3.0"
+VersionString = "2.3.1"
 SettingsFileName = "appleseed.package.configuration.xml"
 
 # Imports.
@@ -300,6 +300,7 @@ class MacPackageBuilder(PackageBuilder):
     def alterate_stage(self):
         self.fixup_binaries()
         self.add_dependencies_to_stage()
+        self.copy_run_script()
         safe_delete_file("appleseed/bin/.DS_Store")
 
     def fixup_binaries(self):
@@ -354,6 +355,10 @@ class MacPackageBuilder(PackageBuilder):
         dest_path = os.path.join("appleseed", "bin", framework_dir, "Resources")
         shutil.copytree(src_path, dest_path)
 
+    def copy_run_script(self):
+        dest_path = os.path.join("appleseed", "bin")
+        shutil.copy("run-appleseed.sh", dest_path)
+
 
 #--------------------------------------------------------------------------------------------------
 # Linux package builder.
@@ -362,6 +367,7 @@ class MacPackageBuilder(PackageBuilder):
 class LinuxPackageBuilder(PackageBuilder):
     def alterate_stage(self):
         self.add_dependencies_to_stage()
+        self.copy_run_script()
 
     def add_dependencies_to_stage(self):
         progress("Linux-specific: adding dependencies to staging directory")
@@ -369,7 +375,6 @@ class LinuxPackageBuilder(PackageBuilder):
         self.copy_qt_library("QtGui")
         self.copy_qt_library("QtOpenGL")
         self.copy_png_library()
-        self.copy_run_script()
 
     def copy_qt_library(self, library_name):
         library_filename = "lib" + library_name + ".so.4"
