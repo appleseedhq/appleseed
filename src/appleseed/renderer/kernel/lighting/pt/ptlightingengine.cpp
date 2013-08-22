@@ -388,6 +388,8 @@ namespace
         struct PathVisitorNextEventEstimation
           : public PathVisitorBase
         {
+            bool m_is_indirect_lighting;
+
             PathVisitorNextEventEstimation(
                 const Parameters&       params,
                 const LightSampler&     light_sampler,
@@ -404,11 +406,16 @@ namespace
                     scene,
                     path_radiance,
                     path_aovs)
+              , m_is_indirect_lighting(false)
             {
             }
 
             bool visit_vertex(const PathVertex& vertex)
             {
+                // Any light contribution after a diffuse or glossy bounce is considered indirect.
+                if (vertex.m_prev_bsdf_mode & (BSDF::Diffuse | BSDF::Glossy))
+                    m_is_indirect_lighting = true;
+
                 Spectrum vertex_radiance(0.0f);
                 SpectrumStack vertex_aovs(m_path_aovs.size(), 0.0f);
 
@@ -478,7 +485,6 @@ namespace
                 Spectrum dl_radiance;
                 SpectrumStack dl_aovs(vertex_aovs.size());
 
-                const bool indirect = vertex.m_prev_bsdf_mode == BSDF::Diffuse;
                 const bool last_vertex = vertex.m_path_length == m_params.m_max_path_length;
 
                 const size_t light_sample_count =
@@ -501,7 +507,7 @@ namespace
                 {
                     // This path won't be extended: sample both the lights and the BSDF.
                     integrator.sample_bsdf_and_lights_low_variance(
-                        indirect,
+                        m_is_indirect_lighting,
                         vertex.m_sampling_context,
                         dl_radiance,
                         dl_aovs);
@@ -510,7 +516,7 @@ namespace
                 {
                     // This path will be extended via BSDF sampling: sample the lights only.
                     integrator.sample_lights_low_variance(
-                        indirect,
+                        m_is_indirect_lighting,
                         vertex.m_sampling_context,
                         DirectLightingIntegrator::mis_power2,
                         dl_radiance,
