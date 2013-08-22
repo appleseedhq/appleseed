@@ -139,7 +139,7 @@ void CommandLineHandlerBase::parse(
         print_version_information(logger);
 
     if (impl->m_system.is_set())
-        System::print_information(logger);
+        print_system_information(logger);
 
     if (impl->m_help.is_set())
     {
@@ -187,6 +187,14 @@ void CommandLineHandlerBase::print_version_information(SuperLogger& logger) cons
         Appleseed::get_lib_compilation_time(),
         Compiler::get_compiler_name(),
         Compiler::get_compiler_version());
+}
+
+void CommandLineHandlerBase::print_system_information(SuperLogger& logger)
+{
+    SaveLogFormatterConfig save_config(logger);
+    logger.set_format(LogMessage::Info, "{message}");
+
+    System::print_information(logger);
 }
 
 }   // namespace shared
