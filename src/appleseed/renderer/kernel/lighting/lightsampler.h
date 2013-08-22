@@ -88,7 +88,7 @@ class EmittingTriangle
     foundation::Vector3d        m_geometric_normal;             // world space geometric normal, unit-length
     TriangleSupportPlaneType    m_triangle_support_plane;       // support plane of the triangle in assembly space
     double                      m_rcp_area;                     // world space triangle area reciprocal
-    double                      m_triangle_pdf;                 // probability of this triangle to be chosen
+    double                      m_triangle_prob;                // probability density of this triangle
     const EDF*                  m_edf;
 };
 
@@ -151,7 +151,7 @@ class LightSample
     foundation::Transformd      m_light_transform;
 
     // Data common to all sample types.
-    double                      m_probability;                  // probability of this sample to be chosen
+    double                      m_probability;                  // probability density of this sample
 };
 
 

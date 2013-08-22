@@ -217,7 +217,7 @@ namespace
             // Compute the spectral illuminance.
             linear_rgb_illuminance_to_spectrum(payload.m_color, value);
 
-            // Compute the probability of choosing this direction.
+            // Compute the probability density of this direction.
             probability = prob_xy * m_probability_scale / sin(theta);
         }
 

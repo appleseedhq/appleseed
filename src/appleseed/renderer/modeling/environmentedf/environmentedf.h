@@ -74,9 +74,8 @@ class DLLSYMBOL EnvironmentEDF
     // This method is called once after rendering each frame.
     virtual void on_frame_end(const Project& project);
 
-    // Sample the EDF and compute the emission direction, the probability
-    // density with which it was chosen and the value of the EDF for this
-    // direction.
+    // Sample the EDF and compute the emission direction, its probability
+    // density and the value of the EDF for this direction.
     virtual void sample(
         InputEvaluator&             input_evaluator,
         const foundation::Vector2d& s,                          // sample in [0,1)^2

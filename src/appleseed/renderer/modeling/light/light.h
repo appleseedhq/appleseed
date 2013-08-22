@@ -97,8 +97,7 @@ class DLLSYMBOL Light
         const Assembly&                 assembly);
 
     // Sample the light and compute the emission position, the emission direction,
-    // the probability density with which this direction was chosen and the value
-    // of the light for this direction.
+    // its probability density and the value of the light for this direction.
     virtual void sample(
         InputEvaluator&                 input_evaluator,
         const foundation::Vector2d&     s,                          // sample in [0,1)^2

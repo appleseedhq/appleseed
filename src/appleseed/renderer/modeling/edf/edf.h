@@ -90,9 +90,8 @@ class DLLSYMBOL EDF
         const Project&              project,
         const Assembly&             assembly);
 
-    // Sample the EDF and compute the emission direction, the probability
-    // density with which it was chosen and the value of the EDF for this
-    // direction.
+    // Sample the EDF and compute the emission direction, its probability
+    // density and the value of the EDF for this direction.
     virtual void sample(
         const void*                 data,                       // input values
         const foundation::Vector3d& geometric_normal,           // world space geometric normal, unit-length

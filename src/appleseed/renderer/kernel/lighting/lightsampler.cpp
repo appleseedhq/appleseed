@@ -129,7 +129,7 @@ LightSampler::LightSampler(const Scene& scene, const ParamArray& params)
     // Store the triangle probability densities into the emitting triangles.
     const size_t emitting_triangle_count = m_emitting_triangles.size();
     for (size_t i = 0; i < emitting_triangle_count; ++i)
-        m_emitting_triangles[i].m_triangle_pdf = m_emitting_triangles_cdf[i].second;
+        m_emitting_triangles[i].m_triangle_prob = m_emitting_triangles_cdf[i].second;
 
    RENDERER_LOG_INFO(
         "found %s %s, %s emitting %s.",
@@ -329,7 +329,7 @@ void LightSampler::collect_emitting_triangles(
                     emitting_triangle.m_geometric_normal = side == 0 ? geometric_normal : -geometric_normal;
                     emitting_triangle.m_triangle_support_plane = triangle_support_plane;
                     emitting_triangle.m_rcp_area = rcp_area;
-                    emitting_triangle.m_triangle_pdf = 0.0;     // will be initialized once the emitting triangle CDF is built
+                    emitting_triangle.m_triangle_prob = 0.0;    // will be initialized once the emitting triangle CDF is built
                     emitting_triangle.m_edf = edf;
 
                     // Store the light-emitting triangle.
@@ -453,7 +453,7 @@ double LightSampler::evaluate_pdf(const ShadingPoint& shading_point) const
         shading_point.get_triangle_index());
 
     const EmittingTriangle* triangle = m_emitting_triangle_hash_table.get(triangle_key);
-    return triangle->m_triangle_pdf * triangle->m_rcp_area;
+    return triangle->m_triangle_prob * triangle->m_rcp_area;
 }
 
 void LightSampler::sample_non_physical_light(
@@ -470,7 +470,7 @@ void LightSampler::sample_non_physical_light(
     // Evaluate and store the transform of the light.
     light_sample.m_light_transform = light_info.m_transform_sequence.evaluate(time);
 
-    // Store the probability of choosing this light.
+    // Store the probability density of this light.
     light_sample.m_probability = light_prob;
 }
 
@@ -483,7 +483,7 @@ void LightSampler::sample_emitting_triangle(
 {
     // Fetch the emitting triangle.
     const EmittingTriangle& emitting_triangle = m_emitting_triangles[triangle_index];
-    assert(emitting_triangle.m_triangle_pdf == triangle_prob);
+    assert(emitting_triangle.m_triangle_prob == triangle_prob);
 
     // Store a pointer to the emitting triangle.
     light_sample.m_triangle = &emitting_triangle;
@@ -511,7 +511,7 @@ void LightSampler::sample_emitting_triangle(
     // Set the world space geometric normal.
     light_sample.m_geometric_normal = emitting_triangle.m_geometric_normal;
 
-    // Compute the probability of choosing this sample.
+    // Compute the probability density of this sample.
     light_sample.m_probability = triangle_prob * emitting_triangle.m_rcp_area;
 }
 

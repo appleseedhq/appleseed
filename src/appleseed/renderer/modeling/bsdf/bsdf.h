@@ -135,9 +135,9 @@ class DLLSYMBOL BSDF
         const size_t                offset = 0) const;
 
     // Given an outgoing direction, sample the BSDF and compute the incoming
-    // direction, the probability density with which it was chosen and the value
-    // of the BSDF for this pair of directions. Return the scattering mode.
-    // If the scattering mode is Absorption, the BSDF and PDF values are undefined.
+    // direction, its probability density and the value of the BSDF for this
+    // pair of directions. Return the scattering mode. If the scattering mode
+    // is Absorption, the BSDF and PDF values are undefined.
     virtual Mode sample(
         SamplingContext&            sampling_context,
         const void*                 data,                       // input values
