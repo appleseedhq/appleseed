@@ -45,6 +45,7 @@ namespace renderer      { class Assembly; }
 namespace renderer      { class BSDF; }
 namespace renderer      { class EDF; }
 namespace renderer      { class INormalModifier; }
+namespace renderer      { class MessageContext; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 namespace renderer      { class Source; }
@@ -120,6 +121,8 @@ class DLLSYMBOL Material
     Material(
         const char*         name,
         const ParamArray&   params);
+
+    bool create_normal_modifier(const MessageContext& context);
 };
 
 

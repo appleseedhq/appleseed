@@ -114,52 +114,14 @@ bool Material::on_frame_begin(
     m_edf = get_uncached_edf();
     m_alpha_map = get_uncached_alpha_map();
 
-    const Source* displacement_source = m_inputs.source("displacement_map");
+    if (!create_normal_modifier(context))
+        return false;
 
-    if (displacement_source)
+    if (m_edf && m_alpha_map)
     {
-        if (dynamic_cast<const TextureSource*>(displacement_source) == 0)
-        {
-            RENDERER_LOG_ERROR(
-                "%s: a texture instance must be bound to the \"displacement_map\" input.",
-                context.get());
-
-            return false;
-        }
-        else
-        {
-            const TextureSource* displacement_map = static_cast<const TextureSource*>(displacement_source);
-            const Texture& texture = displacement_map->get_texture_instance().get_texture();
-
-            if (texture.get_color_space() != ColorSpaceLinearRGB)
-            {
-                RENDERER_LOG_WARNING(
-                    "%s: color space for displacement map \"%s\" "
-                    "should be \"%s\" but is \"%s\" instead; expect artifacts and/or slowdowns.",
-                    context.get(),
-                    texture.get_name(),
-                    color_space_name(ColorSpaceLinearRGB),
-                    color_space_name(texture.get_color_space()));
-            }
-
-            // Retrieve the displacement method and create the normal modifier.
-            const string displacement_method =
-                m_params.get_required<string>("displacement_method", "bump", make_vector("bump", "normal"), context);
-            if (displacement_method == "bump")
-            {
-                const double amplitude = m_params.get_optional<double>("bump_amplitude", 1.0);
-                m_normal_modifier = new BumpMappingModifier(displacement_map, 2.0, amplitude);
-            }
-            else
-            {
-                const string up_string =
-                    m_params.get_optional<string>("normal_map_up", "z", make_vector("y", "z"), context);
-                m_normal_modifier =
-                    new NormalMappingModifier(
-                        displacement_map,
-                        up_string == "y" ? NormalMappingModifier::UpVectorY : NormalMappingModifier::UpVectorZ);
-            }
-        }
+        RENDERER_LOG_WARNING(
+            "%s: material is emitting light but may be partially or entirely transparent; this may lead to unexpected or unphysical results.",
+            context.get());
     }
 
     return true;
@@ -196,6 +158,68 @@ const EDF* Material::get_uncached_edf() const
 const Source* Material::get_uncached_alpha_map() const
 {
     return m_inputs.source("alpha_map");
+}
+
+bool Material::create_normal_modifier(const MessageContext& context)
+{
+    assert(m_normal_modifier == 0);
+
+    // Retrieve the source bound to the displacement map input.
+    const Source* displacement_source = m_inputs.source("displacement_map");
+
+    // Nothing to do if there is no displacement source.
+    if (displacement_source == 0)
+        return true;
+
+    // Only texture instances can be bound to the displacement map input.
+    if (dynamic_cast<const TextureSource*>(displacement_source) == 0)
+    {
+        RENDERER_LOG_ERROR(
+            "%s: a texture instance must be bound to the \"displacement_map\" input.",
+            context.get());
+        return false;
+    }
+
+    // Retrieve the displacement texture.
+    const TextureSource* displacement_map = static_cast<const TextureSource*>(displacement_source);
+    const Texture& texture = displacement_map->get_texture_instance().get_texture();
+
+    // Print a warning if the displacement texture is not expressed in the linear RGB color space.
+    if (texture.get_color_space() != ColorSpaceLinearRGB)
+    {
+        RENDERER_LOG_WARNING(
+            "%s: color space for displacement map \"%s\" "
+            "should be \"%s\" but is \"%s\" instead; expect artifacts and/or slowdowns.",
+            context.get(),
+            texture.get_name(),
+            color_space_name(ColorSpaceLinearRGB),
+            color_space_name(texture.get_color_space()));
+    }
+
+    // Retrieve the displacement method.
+    const string displacement_method =
+        m_params.get_required<string>(
+            "displacement_method",
+            "bump",
+            make_vector("bump", "normal"),
+            context);
+
+    // Create the normal modifier.
+    if (displacement_method == "bump")
+    {
+        const double amplitude = m_params.get_optional<double>("bump_amplitude", 1.0);
+        m_normal_modifier = new BumpMappingModifier(displacement_map, 2.0, amplitude);
+    }
+    else
+    {
+        const NormalMappingModifier::UpVector up_vector =
+            m_params.get_optional<string>("normal_map_up", "z", make_vector("y", "z"), context) == "y"
+                ? NormalMappingModifier::UpVectorY
+                : NormalMappingModifier::UpVectorZ;
+        m_normal_modifier = new NormalMappingModifier(displacement_map, up_vector);
+    }
+
+    return true;
 }
 
 
