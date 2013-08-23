@@ -205,12 +205,15 @@ class TypedEntityMap
   : public EntityMap
 {
   public:
+    // Value type.
+    typedef T value_type;
+
     // Mutable iterator.
     class iterator
       : public EntityMap::iterator
     {
       public:
-        // Value type.
+        // Types.
         typedef T value_type;
         typedef T& reference;
         typedef T* pointer;
@@ -229,7 +232,7 @@ class TypedEntityMap
       : public EntityMap::const_iterator
     {
       public:
-        // Value type.
+        // Types.
         typedef T value_type;
         typedef const T& reference;
         typedef const T* pointer;

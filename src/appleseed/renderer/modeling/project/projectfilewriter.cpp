@@ -71,11 +71,13 @@
 #include "boost/filesystem/path.hpp"
 
 // Standard headers.
+#include <algorithm>
 #include <cstdio>
 #include <cstring>
 #include <exception>
 #include <map>
 #include <set>
+#include <vector>
 
 using namespace boost;
 using namespace foundation;
@@ -324,18 +326,37 @@ namespace
             write_params(entity.get_parameters());
         }
 
-        template <typename T>
-        void write_collection(TypedEntityVector<T>& collection)
+        // An alphabetically-sorted vector of entities.
+        template <typename Collection>
+        struct SortedEntityVector
+          : public vector<typename Collection::value_type*>
         {
-            for (each<TypedEntityVector<T> > i = collection; i; ++i)
-                write(*i);
-        }
+            struct EntitySortingPredicate
+            {
+                bool operator()(const Entity* lhs, const Entity* rhs) const
+                {
+                    return strcmp(lhs->get_name(), rhs->get_name()) < 0;
+                }
+            };
 
-        template <typename T>
-        void write_collection(const TypedEntityMap<T>& collection)
+            explicit SortedEntityVector(Collection& collection)
+            {
+                reserve(collection.size());
+
+                for (each<Collection> i = collection; i; ++i)
+                    push_back(&*i);
+
+                sort(begin(), end(), EntitySortingPredicate());
+            }
+        };
+
+        template <typename Collection>
+        void write_collection(Collection& collection)
         {
-            for (const_each<TypedEntityMap<T> > i = collection; i; ++i)
-                write(*i);
+            const SortedEntityVector<Collection> sorted(collection);
+
+            for (const_each<SortedEntityVector<Collection> > i = sorted; i; ++i)
+                write(**i);
         }
 
         // Write a <color> element.
@@ -447,11 +468,12 @@ namespace
         // Write a collection of <object> elements.
         void write_object_collection(ObjectContainer& objects)
         {
+            const SortedEntityVector<ObjectContainer> sorted(objects);
             set<string> groups;
 
-            for (size_t i = 0; i < objects.size(); ++i)
+            for (const_each<SortedEntityVector<ObjectContainer> > i = sorted; i; ++i)
             {
-                Object& object = *objects.get_by_index(i);
+                Object& object = **i;
 
                 if (strcmp(object.get_model(), MeshObjectFactory::get_model()) == 0)
                 {
@@ -527,7 +549,7 @@ namespace
         }
 
         // Write an <object> element for a mesh object without a filename.
-        void write_orphan_mesh_object(Object& object)
+        void write_orphan_mesh_object(const Object& object)
         {
             // Construct the name of the mesh file.
             const string name = object.get_name();
